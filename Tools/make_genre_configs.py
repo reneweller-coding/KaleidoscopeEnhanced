@@ -253,6 +253,7 @@ RECENT_SCENES = {
     "AfKlintSpirals", "TextureCrackleGlaze", "TextureAnodizeRainbow",
     "SpiralPhoto", "CrossHatchPhoto", "RecursiveRectSubdivision",
     "TextureWaterSurfaceLookUp", "TextureGlassBlocksWall", "FoamCoarsening",
+    "TextureGasGiantDive", "TextureIceFloes", "WeatherRadarSweep",
 }
 
 def rule_recent(m, h):

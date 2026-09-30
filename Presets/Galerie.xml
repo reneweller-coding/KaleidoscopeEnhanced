@@ -1048,15 +1048,6 @@
     <expr name="hueP" formula="clamp(0.5 + 0.2*(seed3*2.0-1.0) + 0.2*sin(chromaHue), 0.1, 0.9)"/>
     <float name="hueP"    minValue="0.1"  maxValue="0.9"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\Magnetosphere.frag" type="scene3d" geom="indirect" probability="0.5" mood="dark,dreamy,space" complexity="4">
-    <rig preset="procedural"/>
-    <float name="shellsP"  minValue="0.8"  maxValue="1.3"></float>
-    <float name="tubeP"    minValue="0.7"  maxValue="1.4"></float>
-    <float name="tiltP"    minValue="0.5"  maxValue="1.5"></float>
-    <float name="camDistP" minValue="6.5"  maxValue="9.0"></float>
-    <expr name="glowP" formula="clamp(0.725 + 0.11*(seed2*2.0-1.0) + 0.2475*(0.6*kick+0.4*snare), 0.45, 1)"/>
-    <float name="glowP"    minValue="0.45" maxValue="1.0"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\PillarHall.frag" type="scene3d" geom="cubes" probability="0.45" mood="dark,dreamy" complexity="4" shadowExtent="60">
     <rig preset="procedural"/>
     <float name="camHP"    minValue="6.0"  maxValue="13.0"></float>
@@ -1094,20 +1085,6 @@
     <float name="densityP" minValue="0.35" maxValue="0.85"></float>
     <float name="windP"    minValue="0.4"  maxValue="1.3"></float>
     <float name="depthP"   minValue="0.3"  maxValue="0.9"></float>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\FlowRibbons.frag" type="scene3d" geom="indirect" probability="0.5" mood="dreamy" complexity="4">
-    <rig preset="procedural"/>
-    <expr name="widthP" formula="clamp(1.05 + 0.175*(seed3*2.0-1.0) + 0.175*(swell), 0.7, 1.4)"/>
-    <float name="widthP" minValue="0.7"  maxValue="1.4"></float>
-    <expr name="twistP" formula="clamp(1.05 + 0.22*(seed2*2.0-1.0) + 0.385*(flux), 0.5, 1.6)"/>
-    <float name="twistP" minValue="0.5"  maxValue="1.6"></float>
-    <expr name="scaleP" formula="clamp(1.1 + 0.2*(seed1*2.0-1.0) + 0.2*(swell), 0.7, 1.5)"/>
-    <float name="scaleP" minValue="0.7"  maxValue="1.5"></float>
-    <float name="camHP"  minValue="-1.5" maxValue="1.5"></float>
-    <expr name="glowP" formula="clamp(0.7 + 0.12*(seed2*2.0-1.0) + 0.27*(0.6*kick+0.4*snare), 0.4, 1)"/>
-    <float name="glowP"  minValue="0.4"  maxValue="1.0"></float>
-    <expr name="hueP" formula="clamp(0.5 + 0.25*(seed3*2.0-1.0) + 0.25*sin(chromaHue), 0, 1)"/>
-    <float name="hueP"   minValue="0.0"  maxValue="1.0"></float>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\Harmonograph.frag" type="scene3d" geom="indirect" probability="0.45" mood="calm" complexity="3">
     <rig preset="procedural"/>
@@ -3264,6 +3241,22 @@
     <float name="bubbleP" minValue="0" maxValue="1"></float>
     <float name="wallP" minValue="0" maxValue="1"></float>
     <float name="lensP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureGasGiantDive.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="stormP" minValue="0" maxValue="1"></float>
+    <float name="contrastP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureIceFloes.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="floeP" minValue="0" maxValue="1"></float>
+    <float name="pondP" minValue="0" maxValue="1"></float>
+    <float name="snowP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

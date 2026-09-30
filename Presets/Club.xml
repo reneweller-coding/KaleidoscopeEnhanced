@@ -1696,13 +1696,6 @@
     <float name="chiralP" minValue="0.5" maxValue="2.2"></float>
     <float name="driftP" minValue="0.3" maxValue="1.5"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\MoireTwistedBilayerGraphene.frag" type="normal" probability="0.4" mood="psychedelic,bright" complexity="3">
-    <rig preset="flat"/>
-    <float name="twistP" minValue="0.5" maxValue="2.0"></float>
-    <float name="flatBandP" minValue="0.6" maxValue="2.2"></float>
-    <float name="interfP" minValue="0.8" maxValue="2.5"></float>
-    <float name="honeyP" minValue="0.2" maxValue="1.2"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\ChiralNematicBeetleCuticle.frag" type="normal" probability="0.4" mood="bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="pitchP" minValue="0.5" maxValue="2.2"></float>
@@ -3099,6 +3092,14 @@
     <float name="depthP" minValue="0" maxValue="1"></float>
     <float name="barP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\WeatherRadarSweep.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="siteP" minValue="0" maxValue="1"></float>
+    <float name="stormP" minValue="0" maxValue="1"></float>
+    <float name="mapP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

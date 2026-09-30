@@ -1047,3 +1047,6 @@ RecursiveRectSubdivision	4	3	6	3	6	9	7
 TextureWaterSurfaceLookUp	8	7	4	5	6	7	7
 TextureGlassBlocksWall	6	4	4	5	5	7	6
 FoamCoarsening	7	5	3	4	6	7	6
+TextureGasGiantDive	7	9	4	5	7	7	7
+TextureIceFloes	7	5	2	4	2	6	5
+WeatherRadarSweep	3	6	7	6	5	4	6
