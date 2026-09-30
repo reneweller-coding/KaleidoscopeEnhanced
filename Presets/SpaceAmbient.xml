@@ -1172,15 +1172,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\InkWater.frag" type="normal" probability="0.4" mood="calm" complexity="2">
-    <rig preset="flat"/>
-    <expr name="inkHueP" formula="chromaHue + 0.3*sin(0.07*time)"/>
-    <int name="plumesP" minValue="2" maxValue="5"></int>
-    <float name="inkHueP" minValue="0.0" maxValue="6.28"></float>
-    <expr name="swirlP" formula="clamp(1.2 + 0.24*(seed3*2.0-1.0) + 0.42*(flux), 0.6, 1.8)"/>
-    <float name="swirlP" minValue="0.6" maxValue="1.8"></float>
-    <float name="speedP" minValue="0.6" maxValue="1.5"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Aurora.frag" type="normal" probability="0.4" mood="calm,dark,space" complexity="1">
     <rig preset="flat"/>
     <expr name="heightP" formula="0.9 + 0.35*swell"/>
@@ -1255,9 +1246,6 @@
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\OrbitalShells.frag" type="scene3d" geom="points" probability="0.3" mood="dark,dreamy,space" complexity="2">
-    <rig preset="procedural"/>
-  </TextureShader>
-  <TextureShader file="..\\Scene3D\\ChromeFlow.frag" type="scene3d" geom="grid" probability="0.3" mood="calm" complexity="2">
     <rig preset="procedural"/>
   </TextureShader>
   <TextureShader file="..\\Scene3D\\PolyDance.frag" type="scene3d" geom="cubes" mood="aggressive,dark" probability="0.3" complexity="3">
@@ -3502,6 +3490,22 @@
     <rig preset="flat"/>
     <float name="bubbleP" minValue="0" maxValue="1"></float>
     <float name="dyeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureSatelliteClouds.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="cycloneP" minValue="0" maxValue="1"></float>
+    <float name="streetP" minValue="0" maxValue="1"></float>
+    <float name="groundP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\LiquidMarbleSpheres.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="marbleP" minValue="0" maxValue="1"></float>
+    <float name="ribbonP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
