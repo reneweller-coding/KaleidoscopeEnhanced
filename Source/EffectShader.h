@@ -703,6 +703,13 @@ protected:
 	int		m_chainParsed = -1;         ///< chainInfo(): -1 = source not read yet, 0 = no chain classes, 1 = parsed.
 	std::map<std::string, std::vector<std::string>> m_chainClasses;   ///< Stage knob -> class names (energy order), from "// @chainclasses".
 	std::map<std::string, float> m_chainConsts;   ///< Knobs frozen as constants (ChainLike*): name -> value.
+	std::map<std::string, std::vector<int>> m_chainOpening;   ///< Stage knob -> positions of its classes streaming into an opening, from "// @chainopening".
+	/// @brief Reads the chain lab's "// @chainclasses" / "// @chainopening" lines and frozen knobs once (m_chainParsed).
+	void parseChainSource();
+	/// @brief Whether knob value x of stage s (0..3 = A..D) picks a class streaming into an opening (chain_classes.OPENING).
+	bool opensAt( int s, float x ) const;
+	/// @brief The nearest class of stage s without an opening (energy order), same sub-variant; x if there is none.
+	float closedClass( int s, float x ) const;
 	GLuint	m_walkProg = 0;             ///< Program the walk locations belong to.
 	GLint	m_walkLoc[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };   ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 = stage absent).
 	GLint	m_walkHostLoc = -1;         ///< Location of walkHost (-1: not a chain lab).

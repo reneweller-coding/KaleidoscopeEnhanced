@@ -1817,6 +1817,9 @@ def build(name):
             _CC.pop("orderP", None)                             # the tunnel runs a fixed order
         for k, names in _CC.items():
             out.append("// @chainclasses %s %s" % (k, "|".join(n if n else "none" for n in names)))
+        if not _ex:                                             # the flat labs: at most one stage with an opening
+            for _k in ("chainAP", "chainBP", "chainCP", "chainDP"):
+                out.append("// @chainopening %s %s" % (_k, "|".join(str(i) for i in _ccm.opening_positions(_k, _CC[_k]))))
     out.append(body.rstrip() + "\n")
     # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
     # scene frame instead of the photos; the same library applies.

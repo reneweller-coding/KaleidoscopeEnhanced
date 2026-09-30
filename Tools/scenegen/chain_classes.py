@@ -37,3 +37,21 @@ def subset_names(knob, exclude):
     return [n for n in CLASSES[knob] if n not in exclude.get(knob, set())]
 def tunnel_classes(knob):
     return subset_names(knob, TUNNEL_EXCLUDE)
+# Classes that stream the picture into (or out of) a point without end: the
+# tunnel, the Droste zooms, the log-polar spirals and the pole streams.  Their
+# centre is a dark opening the eye keeps flying into, and with two of them in
+# one chain nearly every roll read as a tunnel.  (Rosettes and kaleidoscopes
+# have a centre too, but a still one -- they are not in this list.)  The app
+# lets at most one stage of a flat lab (2D lab, FxChain) hold such a class --
+# at the roll and on every walk step -- from the "// @chainopening" lines gen.py
+# writes (positions in the lists above).
+OPENING = {
+    "chainAP": {"Droste zoom", "Escher spiral Droste", "bipolar Droste", "hyperbolic Droste", "log-polar spiral",
+                "hyperbolic spiral", "parabolic stream", "hyperbolic Moebius flow", "bipolar stream",
+                "loxodromic stream", "tunnel"},
+    "chainBP": set(),
+    "chainCP": {"spiral", "tunnel"},
+    "chainDP": set(),
+}
+def opening_positions(knob, names):
+    return [i for i, n in enumerate(names) if n in OPENING.get(knob, set())]

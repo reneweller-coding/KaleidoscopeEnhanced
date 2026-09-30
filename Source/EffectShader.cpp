@@ -984,6 +984,28 @@ static bool isStructure( int s ) { return s >= 5 && s <= 7; }
 
 void EffectShader::resetChainWalk()
 {
+	// At most one of the stages A..D on a class that streams the picture into
+	// an opening (tunnel, Droste zoom, log-polar spiral, pole stream), and that
+	// one only every other time: with two or more nearly every roll of the flat
+	// labs read as a tunnel.  A stage that gives its opening up moves to the
+	// nearest class without one.  The half is decided from the rolled knob
+	// itself (no draw from the scene's random stream), and the knobs are
+	// constant for the whole activation, so this never shows as a jump.
+	parseChainSource();
+	bool opening = false;
+	for( int s = 0; s < 4; ++s )
+		for( Uniform *u : m_uniforms )
+			if( u->getName() == kWalkKnob[s] && opensAt( s, u->snapshotValue() ) )
+			{
+				const float h = u->snapshotValue() * 9173.13f;
+				if( opening || h - floorf( h ) < 0.5f )
+				{
+					const float v = closedClass( s, u->snapshotValue() );
+					fprintf( stderr, "%s: stage %s %.3f -> %.3f (openings: at most one, half as often)\n", fragmentName(), kWalkName[s], u->snapshotValue(), v );
+					u->restoreValue( v );
+				}
+				opening = true;
+			}
 	float morph = -1.f;
 	for( const Uniform *u : m_uniforms )
 		if( u->getName() == "morphP" ) morph = u->snapshotValue();
@@ -1016,6 +1038,17 @@ void EffectShader::startWalk( int s, float target, float dur )
 		for( int o = 5; o <= 7; ++o )
 			if( m_walk.fading[o] ) return;
 	m_walk.x1[s]      = target < 0.f ? 0.f : ( target > 0.999f ? 0.999f : target );
+	// The same on the walk: a stage fades to a class with an opening only every
+	// other time, and only while no other stage shows one or is fading to one.
+	if( s < 4 && opensAt( s, m_walk.x1[s] ) )
+	{
+		bool other = std::uniform_real_distribution<float>( 0.f, 1.f )( m_walk.rng ) < 0.5f;
+		for( int o = 0; o < 4; ++o )
+			if( o != s && ( opensAt( o, m_walk.x0[o] ) || ( m_walk.fading[o] && opensAt( o, m_walk.x1[o] ) ) ) )
+				other = true;
+		if( other )
+			m_walk.x1[s] = closedClass( s, m_walk.x1[s] );
+	}
 	m_walk.f[s]       = 0.f;
 	// dur is given at 120 BPM; with a steady beat it becomes the same number
 	// of beats at the real tempo (so a fade spans whole bars of this song).
@@ -1159,7 +1192,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	}
 }
 
-std::string EffectShader::chainInfo()
+void EffectShader::parseChainSource()
 {
 	if( m_chainParsed < 0 )
 	{
@@ -1195,6 +1228,23 @@ std::string EffectShader::chainInfo()
 					m_chainClasses[ rest.substr( 0, sp ) ] = names;
 					m_chainParsed = 1;
 				}
+				// "// @chainopening chainAP 9|10|13": the classes streaming into an opening (flat labs only)
+				static const std::string ztag = "// @chainopening ";
+				if( line.compare( 0, ztag.size(), ztag ) == 0 )
+				{
+					const std::string rest = line.substr( ztag.size() );
+					const size_t sp = rest.find( ' ' );
+					std::vector<int> pos;
+					if( sp != std::string::npos )
+						for( size_t c = sp + 1; c < rest.size(); )
+						{
+							size_t d = rest.find( '|', c );
+							if( d == std::string::npos ) d = rest.size();
+							if( d > c ) pos.push_back( atoi( rest.c_str() + c ) );
+							c = d + 1;
+						}
+					m_chainOpening[ rest.substr( 0, sp ) ] = pos;
+				}
 				// frozen likes: "const float chainAP = 0.4752;"
 				static const std::string ctag = "const float ";
 				if( line.compare( 0, ctag.size(), ctag ) == 0 )
@@ -1210,6 +1260,49 @@ std::string EffectShader::chainInfo()
 			}
 		}
 	}
+}
+
+// Class position of a knob value, exactly as the shader's pickStage().
+static int classPos( float x, int n )
+{
+	int k = (int)( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );
+	return k > n - 1 ? n - 1 : k;
+}
+
+bool EffectShader::opensAt( int s, float x ) const
+{
+	auto c = m_chainOpening.find( kWalkKnob[s] );
+	auto n = m_chainClasses.find( kWalkKnob[s] );
+	if( c == m_chainOpening.end() || n == m_chainClasses.end() || n->second.empty() )
+		return false;
+	const int k = classPos( x, (int) n->second.size() );
+	for( int p : c->second )
+		if( p == k ) return true;
+	return false;
+}
+
+float EffectShader::closedClass( int s, float x ) const
+{
+	auto n = m_chainClasses.find( kWalkKnob[s] );
+	if( n == m_chainClasses.end() || n->second.empty() )
+		return x;
+	const int cnt = (int) n->second.size();
+	const int k = classPos( x, cnt );
+	const float sub = x * cnt - (float) k;          // the sub-variant (arms, mirrors ...) stays
+	for( int d = 1; d < cnt; ++d )
+		for( int sign = -1; sign <= 1; sign += 2 )
+		{
+			const int j = k + sign * d;
+			if( j < 0 || j >= cnt ) continue;
+			const float v = ( (float) j + ( sub < 0.f ? 0.f : ( sub > 0.99f ? 0.99f : sub ) ) ) / (float) cnt;
+			if( !opensAt( s, v ) ) return v;
+		}
+	return x;
+}
+
+std::string EffectShader::chainInfo()
+{
+	parseChainSource();
 	if( m_chainParsed != 1 )
 		return std::string();
 

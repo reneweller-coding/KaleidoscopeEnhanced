@@ -1578,6 +1578,10 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
 // @chainclasses chainDP none|turning|bend|shear wave|Gerstner waves|wave interference|convection cells|curl flow|cylinder flow|dipole field|Taylor-Green vortices|twirl|vortex pair|double gyre|vortex street|Karman street|gravitational wave|Kelvin-Helmholtz rolls|domain warp|ripple
 // @chainclasses styleP photo|relief|contour lines|flow|glowing edges
 // @chainclasses orderP A → B → C → D|A → B → D → C|A → C → B → D|A → C → D → B|A → D → B → C|A → D → C → B|B → A → C → D|B → A → D → C|B → C → A → D|B → C → D → A|B → D → A → C|B → D → C → A|C → A → B → D|C → A → D → B|C → B → A → D|C → B → D → A|C → D → A → B|C → D → B → A|D → A → B → C|D → A → C → B|D → B → A → C|D → B → C → A|D → C → A → B|D → C → B → A
+// @chainopening chainAP 9|10|13|14|20|22|31|32|38|44|57
+// @chainopening chainBP 
+// @chainopening chainCP 12|17
+// @chainopening chainDP 
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
 // The stage index and a sub-variant 0..1 from one rolled knob.
@@ -1911,8 +1915,8 @@ vec2 runChain(vec2 uv)
     }
     // Never an empty chain: as the stages together approach 'none' -- or only
     // weak classes that leave the photo nearly bare (gIdW) -- a calm six-fold
-    // kaleidoscope fades in -- the bare photo is never shown.
-    if (gIdW > 0.0) a = morphMix(a, tKaleido(mirrorUV(a), gCw, 6.0, gRot), gIdW);
+    // mirror lattice fades in (a lattice, not a kaleidoscope: no centre) -- the bare photo is never shown.
+    if (gIdW > 0.0) a = morphMix(a, tHex(tRot(mirrorUV(a), gCw, 0.5 * gRot), 2.5), gIdW);   // a flat six-fold lattice: no centre
     return a;
 }
 vec2 chain(vec2 p)

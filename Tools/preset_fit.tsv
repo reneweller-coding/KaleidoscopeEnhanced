@@ -1195,3 +1195,15 @@ ChainLab3D	5	8	8	5	9	6	9
 ChainLabTunnel	6	8	8	6	9	6	9
 PenroseParquet	6	6	7	5	8	8	8
 TruchetMaze	5	5	8	6	8	7	7
+ChainCurlFarris	5	7	7	5	9	7	8
+ChainWarpQuasi	5	7	7	5	9	7	8
+ChainTaylorHex	5	7	7	5	9	7	8
+ChainGerstnerJacobi	5	7	7	5	9	7	8
+ChainBillowPenrose	5	7	7	5	9	7	8
+ChainConvectionSierpinski	5	7	7	5	9	7	8
+ChainGyreSquareWave	5	7	7	5	9	7	8
+ChainTriangleStreet	5	7	7	5	9	7	8
+ChainWeierstrassWarp	5	7	7	5	9	7	8
+ChainInterferenceKoch	5	7	7	5	9	7	8
+ChainCurlAmmann	5	7	7	5	9	7	8
+ChainSquareChirikov	5	7	7	5	9	7	8

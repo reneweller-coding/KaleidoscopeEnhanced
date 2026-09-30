@@ -308,6 +308,7 @@ RECENT_SCENES = {
     "ChainLabTunnel",
     "PenroseParquet",
     "TruchetMaze",
+    "ChainCurlFarris", "ChainWarpQuasi", "ChainTaylorHex", "ChainGerstnerJacobi", "ChainBillowPenrose", "ChainConvectionSierpinski", "ChainGyreSquareWave", "ChainTriangleStreet", "ChainWeierstrassWarp", "ChainInterferenceKoch", "ChainCurlAmmann", "ChainSquareChirikov",
 }
 
 def rule_recent(m, h):
@@ -376,6 +377,15 @@ def rule_none(m, h):        return False
 # Knob ranges a preset narrows for its scenes: in Kettenlabor every start walks.
 KNOB_RANGES = {"Kettenlabor": {"morphP": ("0.5", "1")},
                "Transformationen": {"morphP": ("0.5", "1")}}
+# Scene weights a preset scales: in Transformationen the scenes that stream the
+# picture into a dark opening (tunnels, Droste zooms, log-polar spirals) were,
+# with the 3D flights, two thirds of the play time -- "more than 80 % a tunnel"
+# (user, 01.10.2026).  They stay, at 0.4 of their weight (about a fifth of the time).
+OPENING_SCENES = {"ChainSpiralKaleido", "ChainKaleidoSpiral", "ChainFoldSpiral", "ChainWarpKaleidoSpiral",
+                  "ChainSpiralInvertKaleido", "ChainP4mSpiralKaleidoWarp", "ChainTunnelKaleido", "ChainKaleidoTunnel",
+                  "ChainTunnelHex", "ChainHexTunnel", "ChainTunnelLens", "ChainMirrorTunnelSpiral",
+                  "ChainDrosteKaleido", "ChainWaveDrosteHex", "ChainLabTunnel", "Chain3DPolarTunnelBoxes"}
+PROB_FACTOR = {"Transformationen": (0.4, OPENING_SCENES)}
 
 GENRES = [
     ("Ambient",     rule_ambient,     False),
@@ -551,6 +561,8 @@ for entry in GENRES:
         for knob, (lo, hi) in KNOB_RANGES.get(name, {}).items():
             blk = re.sub(r'(<float name="%s") minValue="[^"]*" maxValue="[^"]*"' % knob,
                          r'\1 minValue="%s" maxValue="%s"' % (lo, hi), blk)
+        if name in PROB_FACTOR and b[0] == "TextureShader" and b[1] in PROB_FACTOR[name][1]:
+            blk = re.sub(r'probability="([^"]*)"', lambda m: 'probability="%.3g"' % (float(m.group(1)) * PROB_FACTOR[name][0]), blk, count=1)
         out.append(blk)
     if graded:
         print("%-12s %3d scenes wear a colour grade (%s)" % (name, graded, GRADE[name][1]))

@@ -358,8 +358,8 @@ vec2 runChain(vec2 uv)
     }
     // Never an empty chain: as the stages together approach 'none' -- or only
     // weak classes that leave the photo nearly bare (gIdW) -- a calm six-fold
-    // kaleidoscope fades in -- the bare photo is never shown.
-    if (gIdW > 0.0) a = morphMix(a, tKaleido(mirrorUV(a), gCw, 6.0, gRot), gIdW);
+    // mirror lattice fades in (a lattice, not a kaleidoscope: no centre) -- the bare photo is never shown.
+    if (gIdW > 0.0) a = morphMix(a, tHex(tRot(mirrorUV(a), gCw, 0.5 * gRot), 2.5), gIdW);   // a flat six-fold lattice: no centre
     return a;
 }
 vec2 chain(vec2 p)

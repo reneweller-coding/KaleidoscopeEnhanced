@@ -68,6 +68,40 @@ SPECS2 = [
  ("ChainWaveDrosteHex", "a shear wave, a Droste zoom and a six-fold mirror lattice in sequence",
   [CT, "uv = tWave(uv, 6.0, 0.02 + 0.04 * gSpread, gT * 3.0);", "uv = tDroste(uv, ct, 2.5, gT);", M, "uv = tHex(uv, 2.0);"]),
 ]
+# Round 7: chains without an opening (no tunnel, no zoom into a point) -- the
+# first 24 were mostly spirals, tunnels and Droste zooms, and together with the
+# 3D flights about two thirds of the transform preset flew into a dark hole.
+# These are lattices, quasicrystals and wallpapers bent by flows and waves:
+# the whole picture moves, and nothing streams into a centre.
+SPECS3 = [
+ ("ChainCurlFarris", "a curling flow, then a Farris wallpaper (a smooth symmetric pattern tiling the plane)",
+  [W, "uv = tCurl(uv, 0.4 + 0.8 * gSpread, gT);", M, "uv = tFarris(uv, cw, 7, 1.5 + gSpread, gT * 1.5);"]),
+ ("ChainWarpQuasi", "a flowing domain warp, then a seven-fold quasicrystal",
+  [W, "uv = tWarp(uv, 0.05 + 0.15 * gSpread, gT);", M, "uv = tQuasi(uv, cw, 7.0, 5.0, gT * 1.5);"]),
+ ("ChainTaylorHex", "Taylor-Green vortices, then a six-fold mirror lattice",
+  ["uv = tTaylorGreen(uv, 1.0 + gSpread, gT * 2.0);", M, "uv = tHex(uv, 2.5);"]),
+ ("ChainGerstnerJacobi", "rolling Gerstner waves, then a Jacobi elliptic wallpaper",
+  [W, "uv = tGerstner(uv, 1.0 + gSpread, gT * 3.0);", M, "uv = tJacobiWall(uv, cw, 5.5, 0, gT);"]),
+ ("ChainBillowPenrose", "Kelvin-Helmholtz billows, then a Penrose mirror (a five-fold aperiodic tiling)",
+  [W, "uv = tKelvinHelmholtz(uv, 1.0 + gSpread, gT);", M,
+   "uv = tPenrose(uv, cw, 4.0, vec2(gT * 0.7, gT * 0.3), vec4(0.13, 0.27, -0.21, 0.36));"]),
+ ("ChainConvectionSierpinski", "convection cells, then a Sierpinski fold",
+  [W, "uv = tConvection(uv, 25.0, 1.0 + gSpread, gT * 2.0);", M, "uv = tSierpinski(uv, cw, 4.0, 0.3 * sin(gT * 0.4));"]),
+ ("ChainGyreSquareWave", "a double gyre, a square mirror lattice and a shear wave",
+  ["uv = tDoubleGyre(uv, 0.3 + 0.3 * gSpread, gT * 2.0);", M, "uv = tP4m(uv, 4.0);",
+   "uv = tWave(uv, 7.0, 0.02 + 0.04 * gSpread, gT * 4.0);"]),
+ ("ChainTriangleStreet", "a triangle mirror lattice (p3m1), its tiles streaming with a vortex street",
+  [W, ROT, "uv = tTriMirror(uv, cw, 3.0, rot * 0.5);", M, "uv = tVortexStreet(uv, 1.5 + 2.0 * gSpread, gT * 2.0);"]),
+ ("ChainWeierstrassWarp", "the Weierstrass p function (a doubly periodic lattice of poles), then a domain warp",
+  [W, "uv = tWeierstrass(uv, cw, 3.0, gT);", M, "uv = tWarp(uv, 0.05 + 0.15 * gSpread, gT);"]),
+ ("ChainInterferenceKoch", "interfering waves, then a Koch-snowflake fold",
+  [W, "uv = tInterference(uv, 50.0, 1.0 + gSpread, gT * 2.0);", M, "uv = tKoch(uv, cw, 3.0, 0.3 * sin(gT * 0.3));"]),
+ ("ChainCurlAmmann", "a curling flow, then an Ammann-Beenker mirror (an eight-fold aperiodic tiling)",
+  [W, "uv = tCurl(uv, 0.4 + 0.8 * gSpread, gT);", M, "uv = tQuasiMirror(uv, cw, 4.0, 4.0, vec2(gT * 0.7, gT * 0.3));"]),
+ ("ChainSquareChirikov", "a square mirror lattice, its tiles stirred by the Chirikov standard map (a chaotic kicked rotor) and rippled",
+  [W, "uv = tP4m(uv, 3.0);", "uv = tChirikov(uv, cw, 1.2 + 0.4 * sin(gT * 0.2), 3.0);", M,
+   "uv = tWave(uv, 6.0, 0.02 + 0.04 * gSpread, gT * 4.0);"]),
+]
 TEMPLATE = """//@doc
  * @brief {NAME}: a chain of continuous transforms -- {DESC}.  Every stage is
  * continuous and the stages are joined by the photo's mirror repeat, so the
@@ -129,7 +163,7 @@ void main()
 }}
 """
 import sys
-for name, desc, lines in (SPECS2 if '2' in sys.argv[1:] else SPECS + SPECS2 if 'all' in sys.argv[1:] else SPECS):
+for name, desc, lines in (SPECS3 if '3' in sys.argv[1:] else SPECS2 if '2' in sys.argv[1:] else SPECS + SPECS2 + SPECS3 if 'all' in sys.argv[1:] else SPECS):
     body = "\n".join("    " + l for l in lines)
     io.open(os.path.join(SP, "src", name + ".glsl"), "w", encoding="utf-8").write(
         TEMPLATE.format(NAME=name.upper(), DESC=desc, CHAIN=body))
