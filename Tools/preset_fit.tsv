@@ -531,7 +531,7 @@ Ocean	8	3	2	5	1	7	6
 OceanAbyssalBrinePool	6	4	3	4	4	5	6
 OceanNight	7	3	2	6	1	6	6
 OctagrammicMirrorVault	4	2	5	2	7	5	5
-OilProjector	6	1	3	3	5	6	5
+OilProjector	7	1	4	2	9	6	9
 OortCloudDrift	7	9	2	6	3	4	6
 OpalStructuralColour	5	2	1	3	2	5	3
 OpticalDispersionCausticVault	3	1	4	3	5	3	4
@@ -947,3 +947,8 @@ UVMineralsGlow	4	2	5	3	7	7	7
 GemInclusionFlight	7	2	2	3	5	7	7
 MarbleVeinsFlight	7	1	2	6	2	8	6
 SmokeColourCollide	5	2	4	4	8	7	7
+TextureBoreTunnel	5	3	6	5	8	5	8
+TextureNeonTrace	3	2	8	6	8	5	8
+TextureLavaCracks	4	3	6	5	7	6	8
+TextureMaelstrom	6	3	5	5	7	6	8
+WallpaperGroupCycle	5	1	5	3	9	7	8
