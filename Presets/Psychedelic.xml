@@ -489,14 +489,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\CyberGridCity.frag" type="normal" probability="0.5" mood="aggressive,dark" complexity="3">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.5" maxValue="1.8"></float>
-    <float name="densityP" minValue="0.6" maxValue="1.5"></float>
-    <float name="neonP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\QuantumChromaField.frag" type="normal" probability="0.48" mood="bright,psychedelic" complexity="3">
     <rig preset="flat"/>
     <float name="waveFreqP" minValue="0.5" maxValue="2.2"></float>
@@ -3121,6 +3113,14 @@
     <float name="stripeP" minValue="0" maxValue="1"></float>
     <float name="widthP" minValue="0" maxValue="1"></float>
     <float name="zoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\OilWheelMacro.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <float name="dyeP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

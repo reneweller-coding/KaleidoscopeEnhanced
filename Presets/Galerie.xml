@@ -14,16 +14,6 @@
     <int name="kSides" minValue="0" maxValue="9"></int>
     <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\BreathingFractalNoir.frag" type="normal" probability="0.7" mood="dark,psychedelic" complexity="1">
-    <rig preset="flat"/>
-    <expr name="darkP" formula="clamp(0.42 - 0.18*level - 0.1*swell, 0.18, 0.5)"/>
-    <float name="oscP" minValue="0.03" maxValue="0.09"></float>
-    <float name="deepP" minValue="2.5" maxValue="4.5"></float>
-    <float name="breathP" minValue="12.0" maxValue="30.0"></float>
-    <float name="darkP" minValue="0.2" maxValue="0.45"></float>
-    <int name="kSides" minValue="0" maxValue="9"></int>
-    <float name="rosetteP" minValue="0.15" maxValue="0.35"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\Bubble.frag" type="normal" mood="calm,bright,dreamy" probability="0.15" complexity="10">
     <rig preset="flat"/>
     <float name="speed" minValue="1.0" maxValue="2.5"></float>
@@ -3297,6 +3287,14 @@
     <rig preset="flat"/>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="trailP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\OilWheelMacro.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <float name="dyeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

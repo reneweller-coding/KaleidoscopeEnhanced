@@ -343,14 +343,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\DepthPortalRecursion.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="portalP" minValue="0.55" maxValue="0.80"></float>
-    <float name="twistP" minValue="0.05" maxValue="0.35"></float>
-    <float name="decayP" minValue="0.90" maxValue="0.96"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\MelodyConstellation.frag" type="normal" mood="calm,dark,dreamy,space" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="spreadP" minValue="0.8" maxValue="1.3"></float>
@@ -3255,6 +3247,14 @@
     <rig preset="flat"/>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="trailP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\OilWheelMacro.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <float name="dyeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>

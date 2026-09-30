@@ -289,6 +289,7 @@ RECENT_SCENES = {
     "FlyEyeLensArray", "TextureNewtonRings", "TenPrintMaze",
     "HitomezashiStitch", "ConcentricPhoto", "PhotoLowPolyFacets",
     "StripePhoto", "MarchingSquaresIsobands", "SubstrateCracks",
+    "OilWheelMacro", "MeltingCrayonRainbow",
 }
 
 def rule_recent(m, h):

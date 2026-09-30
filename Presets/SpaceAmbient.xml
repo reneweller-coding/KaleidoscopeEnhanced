@@ -1323,16 +1323,6 @@
     <float name="diskP" minValue="0.3" maxValue="0.8"></float>
     <float name="tiltP" minValue="0.2" maxValue="0.9"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene3D\\Ocean.frag" type="scene3d" geom="patches" probability="0.45" mood="calm" complexity="3">
-    <rig preset="procedural"/>
-    <float name="camHP"    minValue="5.5"  maxValue="9.0"></float>
-    <float name="detailP"  minValue="0.75" maxValue="1.25"></float>
-    <float name="swellP"   minValue="0.8"  maxValue="1.5"></float>
-    <float name="choppyP"  minValue="0.7"  maxValue="1.1"></float>
-    <expr name="foamP" formula="clamp(0.65 + 0.1*(seed2*2.0-1.0) + 0.2*(max(bassRel-0.9,0.0)), 0.4, 0.9)"/>
-    <float name="foamP"    minValue="0.4"  maxValue="0.9"></float>
-    <float name="glitterP" minValue="0.35" maxValue="0.85"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene3D\\Magnetosphere.frag" type="scene3d" geom="indirect" probability="0.5" mood="dark,dreamy,space" complexity="4">
     <rig preset="procedural"/>
     <float name="shellsP"  minValue="0.8"  maxValue="1.3"></float>
@@ -3504,6 +3494,14 @@
     <rig preset="flat"/>
     <float name="scaleP" minValue="0" maxValue="1"></float>
     <float name="trailP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\OilWheelMacro.frag" type="normal" mood="psychedelic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <float name="dyeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
