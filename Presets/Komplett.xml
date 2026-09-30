@@ -11081,4 +11081,31 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\TextureOpWaves.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="stripeP" minValue="0" maxValue="1"></float>
+    <float name="bendP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TextureRiverDelta.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="braidP" minValue="0" maxValue="1"></float>
+    <float name="waterP" minValue="0" maxValue="1"></float>
+    <float name="landP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TextureLatticeTunnel.frag" type="normal" mood="energetic,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="girderP" minValue="0" maxValue="1"></float>
+    <float name="countP" minValue="0" maxValue="1"></float>
+    <float name="outerP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>

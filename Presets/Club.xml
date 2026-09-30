@@ -2174,15 +2174,6 @@
     <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\CliffordAttractorSilkRibbons.frag" type="normal" mood="psychedelic,dark,dreamy" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="densityP" minValue="0.98" maxValue="1.5"></float>
-    <float name="silkP" minValue="0.7" maxValue="1.4"></float>
-    <float name="glowP" minValue="0.945" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\ConformalLogPolarDive.frag" type="normal" mood="psychedelic,aggressive,dark" probability="0.4" complexity="2">
     <rig preset="flat"/>
     <float name="speedP" minValue="0.6" maxValue="1.6"></float>
@@ -2352,15 +2343,6 @@
     <float name="branchP" minValue="0.8" maxValue="1.4"></float>
     <float name="glowP" minValue="0.7" maxValue="1.4"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\KleinBottleHyperLoopDive.frag" type="normal" mood="psychedelic,aggressive,dark" probability="0.4" complexity="2">
-    <rig preset="flat"/>
-    <float name="speedP" minValue="0.6" maxValue="1.6"></float>
-    <float name="radiusP" minValue="1.2" maxValue="2.4"></float>
-    <float name="twistP" minValue="0.7" maxValue="1.4"></float>
-    <float name="glowP" minValue="0.7" maxValue="1.4"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
   <TextureShader file="..\Scene2D\LiquidMarbleEbruAcidWash.frag" type="normal" mood="psychedelic,dreamy,dark" probability="0.4" complexity="2">
@@ -3089,6 +3071,22 @@
     <float name="cellP" minValue="0" maxValue="1"></float>
     <float name="twistP" minValue="0" maxValue="1"></float>
     <float name="photoZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureOpWaves.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="stripeP" minValue="0" maxValue="1"></float>
+    <float name="bendP" minValue="0" maxValue="1"></float>
+    <float name="colourP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureLatticeTunnel.frag" type="normal" mood="energetic,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="girderP" minValue="0" maxValue="1"></float>
+    <float name="countP" minValue="0" maxValue="1"></float>
+    <float name="outerP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
