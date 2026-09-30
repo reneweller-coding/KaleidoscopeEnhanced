@@ -2374,6 +2374,19 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
 			pin.echoAmt = m_audioConditioner.echoOverride();
 		pin.echoDelay  = 1.4f;
 		pin.breath     = m_audioConditioner.breath();
+		// Scene grade: the outgoing scene weighs texInterp (1 while solo), the
+		// incoming one the rest -- the grade fades with the scene, never jumps.
+		if( m_scheduler.actTexture() < m_effectTextures.size() )
+		{
+			const float w = m_scheduler.texState() != 0 ? m_scheduler.texInterp() : 1.f;
+			pin.gradeModeA = (float) m_effectTextures[m_scheduler.actTexture()]->gradeMode();
+			pin.gradeAmtA  = pin.gradeModeA > 0.f ? w : 0.f;
+			if( m_scheduler.texState() != 0 && m_scheduler.nextTexture() < m_effectTextures.size() )
+			{
+				pin.gradeModeB = (float) m_effectTextures[m_scheduler.nextTexture()]->gradeMode();
+				pin.gradeAmtB  = pin.gradeModeB > 0.f ? 1.f - w : 0.f;
+			}
+		}
 		// Welle 2: Letterbox, Schockwelle, Cover-Palette, Zeilen-Slam,
 		// 2.5D-Parallaxe (Tiefe der AKTIVEN Szene; eine 2D-Szene hat auf
 		// die Fernebene geloeschte Tiefe -> Parallaxe neutralisiert sich).

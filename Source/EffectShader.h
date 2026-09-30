@@ -481,6 +481,17 @@ public:
 	 * once and cached; reset on recompile.
 	 */
 	bool usesSceneLod();
+	/**
+	 * @brief Sets the colour grades this entry may wear: the preset attribute grade="fade,grey,sepia".
+	 *
+	 * One of them is rolled per activation (resetParameters()) and applied to the
+	 * finished frame by Present.frag -- how a colourful scene takes its place in a
+	 * dark preset such as Noir.  Unknown words are ignored; an empty list means no grade.
+	 * @param list Comma-separated grade names (fade, grey, sepia).
+	 */
+	void setGradeModes( const std::string &list );
+	/// @return The grade rolled for the current activation: 0 none, 1 faded, 2 grey, 3 sepia.
+	int gradeMode() const { return m_gradeMode; }
 
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
@@ -623,6 +634,8 @@ protected:
 	int		m_usesOit = -1;      ///< Cached usesOit() result (-1 = not yet queried): order-independent transparency, `oitPass`.
 	int		m_usesBake = -1;     ///< Cached usesBake() result (-1 = not yet queried): the per-scene baked-field texture, `texBake`.
 	int		m_usesSceneLod = -1;     ///< Cached usesSceneLod() result (-1 = not yet read from the source file).
+	std::vector<int> m_gradeModes;  ///< Grades this entry may wear (1 faded, 2 grey, 3 sepia), from the preset attribute grade="...".
+	int		m_gradeMode = 0;         ///< Grade rolled for the current activation (0 = none).
 	int		m_usesMandelbrot = -1;   ///< Cached usesMandelbrot() result (-1 = not yet queried): the deep-zoom Mandelbrot field texture, `texMandelbrot`.
 	int		m_usesPhysarum = -1; ///< Cached usesPhysarum() result (-1 = not yet queried): the Physarum trail map, `texPhysarum`.
 	unsigned int	m_cfxMask = 0;   ///< Compute-FX sampler bits (see cfxMask()); cached result, resolved once per compiled program (see m_cfxProg).

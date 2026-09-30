@@ -232,6 +232,10 @@ public:
 		float  echoDelay     = 1.4f;  ///< Time-echo delay in seconds (looked up in the history ring).
 		// Build-up-"Atem anhalten": Entsättigen + Dimmen + Vignette 0..1.
 		float  breath        = 0.f;   ///< "Held breath" build-up effect: desaturate + dim + vignette, 0..1.
+		// Szenen-Grade (Preset-Attribut grade="fade,grey,sepia"): Modus (0 aus, 1 verblasst,
+		// 2 grau, 3 Sepia) und Gewicht der ausgehenden (A) und kommenden (B) Szene;
+		// die Gewichte tragen die Szenen-Ueberblendung schon in sich (kein Sprung).
+		float  gradeModeA = 0.f, /**< Grade of the outgoing/solo scene (0 none, 1 faded, 2 grey, 3 sepia). */ gradeAmtA = 0.f, /**< Its weight (texInterp while fading, 1 solo). */ gradeModeB = 0.f, /**< Grade of the incoming scene during a fade. */ gradeAmtB = 0.f;   ///< Its weight (1 - texInterp).
 		// CinemaScope-Letterbox 0..1 (Balken je ~11% Bildhöhe bei 1).
 		float  letterbox     = 0.f;   ///< CinemaScope letterbox amount 0..1 (bars ~11% of frame height at 1).
 		// Bass-Schockwelle: expandierender Verzerrungsring.
@@ -384,6 +388,7 @@ private:
 	GLint	m_presentRewindUni   = -1;   ///< Uniform location: rewind as vec2( mix, layer ) ("rewind").
 	GLint	m_presentEchoUni     = -1;   ///< Uniform location: time-echo as vec2( amount, layer ) ("echo").
 	GLint	m_presentBreathUni   = -1;   ///< Uniform location: "held breath" amount ("breath").
+	GLint	m_presentGradeUni    = -1;   ///< Uniform location: scene grade ("sceneGrade": mode A, weight A, mode B, weight B).
 	GLint	m_presentDropUni     = -1;   ///< Uniform location: drop pulse ("audioDrop").
 	GLint	m_presentLetterUni   = -1;   ///< Uniform location: letterbox amount ("letterbox").
 	GLint	m_presentShockUni    = -1;   ///< Uniform location: bass shockwave as vec2( radius, amplitude ) ("shock").

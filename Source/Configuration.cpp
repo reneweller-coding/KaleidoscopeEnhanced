@@ -395,6 +395,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
+			shader->setGradeModes( el.attribute("grade").toStdString() );   // grade="fade,grey,sepia": rolled per activation, applied by Present.frag
 			m_renderPipeline->addTextureShader( shader );
 			m_loadedScenes++;
 
@@ -407,6 +408,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
+			shader->setGradeModes( el.attribute("grade").toStdString() );   // grade="fade,grey,sepia": rolled per activation, applied by Present.frag
 			m_renderPipeline->addTextureShader( shader );
 			m_loadedScenes++;
 		}
@@ -451,6 +453,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
 			shader->setComplexity( complexity );
 			shader->setProbability( probability );
 			shader->setMoodFlags( moodFlags );
+			shader->setGradeModes( el.attribute("grade").toStdString() );   // grade="fade,grey,sepia": rolled per activation, applied by Present.frag
 			m_renderPipeline->addTextureShader( shader );
 			m_loadedScenes++;
 		}

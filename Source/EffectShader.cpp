@@ -192,6 +192,11 @@ void EffectShader::resetParameters()
 	for( int i = 0; i < 3; i++ )
 		m_exprSeeds[i] = (float) rand() / (float) RAND_MAX;
 
+	// Colour grade (preset entry grade="fade,grey,sepia"): one of the listed
+	// looks per activation.  Entries without the attribute draw nothing, so
+	// their random stream stays exactly as before.
+	m_gradeMode = m_gradeModes.empty() ? 0 : m_gradeModes[ rand() % m_gradeModes.size() ];
+
 	// Unter KALEIDO_SEED protokollieren, was gezogen wurde: der Beweis, dass
 	// dieselbe Szene in jeder Konfiguration dieselben Zahlen bekommt, ist
 	// ein Diff dieser Zeilen -- nicht ein Bildvergleich, den die Ueberblendung
@@ -959,6 +964,27 @@ bool EffectShader::usesBake()
 		m_usesBake = ( m_sh_prog_id != 0 &&
 		               glGetUniformLocation( m_sh_prog_id, "texBake" ) >= 0 ) ? 1 : 0;
 	return m_usesBake == 1;
+}
+
+void EffectShader::setGradeModes( const std::string &list )
+{
+	m_gradeModes.clear();
+	size_t a = 0;
+	while( a <= list.size() )
+	{
+		size_t b = list.find( ',', a );
+		if( b == std::string::npos ) b = list.size();
+		std::string w = list.substr( a, b - a );
+		w.erase( 0, w.find_first_not_of( " \t" ) );
+		w.erase( w.find_last_not_of( " \t" ) + 1 );
+		if( w == "fade" )       m_gradeModes.push_back( 1 );
+		else if( w == "grey" )  m_gradeModes.push_back( 2 );
+		else if( w == "sepia" ) m_gradeModes.push_back( 3 );
+		a = b + 1;
+	}
+	// The very first activation after loading does not pass through
+	// resetParameters(), so roll the first grade here.
+	m_gradeMode = m_gradeModes.empty() ? 0 : m_gradeModes[ rand() % m_gradeModes.size() ];
 }
 
 bool EffectShader::usesSceneLod()

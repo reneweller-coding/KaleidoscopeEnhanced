@@ -429,6 +429,11 @@ FIT_FLOOR = 3          # never fill with a scene rated below this, even short of
 DULL = 2
 INTEREST_WEIGHT = 0.15
 SECOND_FIT = {"SpaceAmbient": ("ambient", 0.4)}
+# Colour grade per preset: a scene that is in the preset only as filler (its fit
+# for the genre at or below the limit -- typically a colourful scene in Noir,
+# which must reach MIN_SCENES) wears one of these looks there, rolled per
+# activation and applied by Present.frag (EffectShader::setGradeModes).
+GRADE = {"Noir": (5, "fade,grey,sepia")}
 MAX_VARIANTS = 6
 
 fit = {}
@@ -513,8 +518,16 @@ for entry in GENRES:
             "  <!-- %d scenes + %d FX overlays + %d transitions, filtered by mood tags -->")
            % ((len(sel_s),) if review else (len(sel_s), len(sel_f), len(sel_t))),
            ""]
+    graded = 0
     for b in sel_s + sel_f + sel_t:
-        out.append(b[3].rstrip("\n"))
+        blk = b[3].rstrip("\n")
+        if (name in GRADE and b[0] == "TextureShader" and b[1] in fit and 'grade="' not in b[4]
+                and fit[b[1]][FIT_COLUMN[name]] <= GRADE[name][0]):
+            blk = blk.replace("<TextureShader ", '<TextureShader grade="%s" ' % GRADE[name][1], 1)
+            graded += 1
+        out.append(blk)
+    if graded:
+        print("%-12s %3d scenes wear a colour grade (%s)" % (name, graded, GRADE[name][1]))
     out.append("")
     out.append("</configuration>")
     out.append("")

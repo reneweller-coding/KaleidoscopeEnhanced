@@ -82,6 +82,8 @@ uniform sampler2DArray histTex; // Unit 5 - IMMER eigene Unit (Sampler-Typ!)
 uniform vec2  rewind;           // x = Mix 0..1, y = Ring-Layer (Vergangenheit)
 uniform vec2  echo;             // x = Staerke,  y = Ring-Layer (~1.4 s zurueck)
 uniform float breath;           // Build-up "Atem anhalten": Desat/Dim/Vignette
+uniform vec4  sceneGrade;       // Szenen-Grade: x/z Modus (0 aus, 1 verblasst, 2 grau, 3 Sepia) der
+                                // ausgehenden/kommenden Szene, y/w ihr Gewicht (Ueberblendung schon drin)
 uniform float audioDrop;        // Drop-/Slam-Puls (Streak-Boost, Rewind-Wuerze)
 
 // ---- Welle 2 ----
@@ -149,6 +151,17 @@ float stereoDepthAt(vec2 puv, vec2 cuv)
              : dot(texture(tex, puv, 4.0).rgb, vec3(0.299, 0.587, 0.114));
     return clamp(bl * 1.4, 0.0, 1.0) * 0.7
          + clamp(length(cuv) * 1.5, 0.0, 1.0) * 0.3;
+}
+
+// Scene grade looks: 1 faded (most colour gone, blacks lifted like old
+// print), 2 grey (a cool black-and-white), 3 sepia (warm brown toning).
+vec3 sceneGradeCol(vec3 c, float mode)
+{
+    float y = dot(c, vec3(0.299, 0.587, 0.114));
+    if (mode < 0.5) return c;
+    if (mode < 1.5) return mix(vec3(y), c, 0.3) * 0.9 + 0.035;
+    if (mode < 2.5) return vec3(y) * vec3(0.96, 1.0, 1.05);
+    return vec3(y) * vec3(1.08, 0.94, 0.74) + vec3(0.025, 0.012, 0.0);
 }
 
 void main()
@@ -394,6 +407,15 @@ void main()
     // Soft highlight knee: compress values above ~0.8 toward white instead of
     // hard-clipping the whole frame to flat white when the grade pushes it high.
     c = c / (1.0 + max(c - 0.8, 0.0));
+
+    // --- Szenen-Grade: eine bunte Szene in einem dunklen Preset (Noir) wird
+    // verblasst, grau oder in Sepia gezeigt (Preset-Attribut grade="...").  Die
+    // Gewichte folgen der Szenen-Ueberblendung, also blendet der Look mit.
+    if (sceneGrade.y + sceneGrade.w > 0.001)
+    {
+        c = mix(c, sceneGradeCol(c, sceneGrade.x), sceneGrade.y);
+        c = mix(c, sceneGradeCol(c, sceneGrade.z), sceneGrade.w);
+    }
 
     // --- Build-up "Atem anhalten": in den letzten Takten vor dem Drop nimmt
     // das Bild koordiniert Farbe und Licht zurueck und die Vignette zieht

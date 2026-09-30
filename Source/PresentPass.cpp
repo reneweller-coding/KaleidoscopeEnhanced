@@ -129,6 +129,7 @@ void PresentPass::setup( int renderW, int renderH,
 		m_presentRewindUni   = glGetUniformLocation( m_presentProgId, "rewind" );
 		m_presentEchoUni     = glGetUniformLocation( m_presentProgId, "echo" );
 		m_presentBreathUni   = glGetUniformLocation( m_presentProgId, "breath" );
+		m_presentGradeUni    = glGetUniformLocation( m_presentProgId, "sceneGrade" );
 		m_presentDropUni     = glGetUniformLocation( m_presentProgId, "audioDrop" );
 		m_presentLetterUni   = glGetUniformLocation( m_presentProgId, "letterbox" );
 		m_presentShockUni    = glGetUniformLocation( m_presentProgId, "shock" );
@@ -703,6 +704,7 @@ void PresentPass::run( const Inputs &in )
 			glUniform2f( m_presentEchoUni, ech,
 			             m_histReady ? historyLayerBack( in.echoDelay ) : 0.f );
 		if( m_presentBreathUni >= 0 ) glUniform1f( m_presentBreathUni, in.breath );
+		if( m_presentGradeUni >= 0 ) glUniform4f( m_presentGradeUni, in.gradeModeA, in.gradeAmtA, in.gradeModeB, in.gradeAmtB );
 		if( m_presentDropUni   >= 0 ) glUniform1f( m_presentDropUni, audioFx.dropPulse );
 	}
 
