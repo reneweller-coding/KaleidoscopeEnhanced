@@ -432,13 +432,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\SpirographGearDraw.frag" type="normal" mood="calm,bright,psychedelic" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="ratioP" minValue="0" maxValue="1"></float>
-    <float name="holeP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\ThermalIronbowStreet.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="walkP" minValue="0" maxValue="1"></float>
@@ -3097,6 +3090,14 @@
     <float name="layerP" minValue="0" maxValue="1"></float>
     <float name="lineP" minValue="0" maxValue="1"></float>
     <float name="canvasP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\KandinskyField.frag" type="normal" mood="bright,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="circleP" minValue="0" maxValue="1"></float>
+    <float name="lineP" minValue="0" maxValue="1"></float>
+    <float name="checkP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

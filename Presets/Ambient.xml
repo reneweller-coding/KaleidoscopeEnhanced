@@ -563,13 +563,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\SpiralStairwellDescent.frag" type="normal" mood="dark,dreamy,calm" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="turnsP" minValue="0" maxValue="1"></float>
-    <float name="wellP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\PowersOfTenZoom.frag" type="normal" mood="space,dreamy,calm" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="zoomP" minValue="0.7" maxValue="1.4"></float>
@@ -758,13 +751,6 @@
     <rig preset="flat"/>
     <float name="densP" minValue="0" maxValue="1"></float>
     <float name="windP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\FrescoRestorationReveal.frag" type="normal" mood="dark,calm,dreamy" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="gridP" minValue="0" maxValue="1"></float>
-    <float name="sootP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3236,6 +3222,22 @@
     <float name="poolP" minValue="0" maxValue="1"></float>
     <float name="edgeP" minValue="0" maxValue="1"></float>
     <float name="canvasP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\SumiEnsoField.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <float name="brushP" minValue="0" maxValue="1"></float>
+    <float name="gapP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\KleinBlueSponge.frag" type="normal" mood="calm,dark" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="spongeP" minValue="0" maxValue="1"></float>
+    <float name="poreP" minValue="0" maxValue="1"></float>
+    <float name="undertoneP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
