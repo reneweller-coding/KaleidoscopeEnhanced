@@ -650,13 +650,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\BubbleChamberTracks.frag" type="normal" mood="dark,calm" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="curlP" minValue="0" maxValue="1"></float>
-    <float name="tracksP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\Teleidoscope.frag" type="normal" mood="psychedelic,bright,dreamy" probability="0.45" complexity="2">
     <rig preset="flat"/>
     <float name="sizeP" minValue="0" maxValue="1"></float>
@@ -679,25 +672,10 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\VoxelizedModel.frag" type="scene3d" geom="mesh" model="..\Models\MarbleBust.glb" mood="psychedelic,bright,calm" probability="0.45" complexity="3">
-    <rig preset="mesh-14"/>
-    <float name="sizeP" minValue="0.9" maxValue="1.1"></float>
-    <float name="tiltP" minValue="0" maxValue="1"></float>
-    <float name="resP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene3D\MeshSandSculpture.frag" type="scene3d" geom="mesh" model="..\Models\MarbleBust.glb" mood="calm,bright,dreamy" probability="0.45" complexity="3">
     <rig preset="mesh-14"/>
     <float name="sizeP" minValue="0.9" maxValue="1.1"></float>
     <float name="erodeP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\TransitLightCurveStars.frag" type="normal" mood="space,calm,dark" probability="0.45" complexity="2">
-    <rig preset="flat"/>
-    <float name="countP" minValue="0" maxValue="1"></float>
-    <float name="depthP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3261,6 +3239,30 @@
     <float name="countP" minValue="0" maxValue="1"></float>
     <float name="sizeP" minValue="0" maxValue="1"></float>
     <float name="dispP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\LouisVeilPours.frag" type="normal" mood="calm,dreamy,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="layersP" minValue="0" maxValue="1"></float>
+    <float name="glazeP" minValue="0" maxValue="1"></float>
+    <float name="canvasP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\HoneyFold.frag" type="normal" mood="calm,dreamy" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="ropesP" minValue="0" maxValue="1"></float>
+    <float name="coilP" minValue="0" maxValue="1"></float>
+    <float name="bubbleP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\PointillistDots.frag" type="normal" mood="bright,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="sizeP" minValue="0" maxValue="1"></float>
+    <float name="splitP" minValue="0" maxValue="1"></float>
+    <float name="zoomP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
