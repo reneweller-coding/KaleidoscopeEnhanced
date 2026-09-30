@@ -675,6 +675,9 @@ protected:
 		int   lastSection = -1;         ///< Last seen AudioFeatures::sectionCount (-1 = not yet).
 		int   lastDrop = -1;            ///< Last seen AudioFeatures::dropCount.
 		float energy = 0.5f;            ///< Slowly smoothed arousal (8 s).
+		float energyFast = 0.5f;        ///< Arousal smoothed over ~1 s: drives the walk's speed.
+		float fluxS = 0.f;              ///< Spectral flux smoothed over ~0.5 s: bursts hurry a fade.
+		float rate = 1.f;               ///< Current music speed of the walk (fades and holds), 0.25 .. 2.5.
 		float harmCool = 0.f;           ///< Cooldown for harmonic-change walks, seconds.
 		std::map<int, std::array<float, 8>> sectionLook;   ///< Look per section id: a returning section returns to it.
 		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.

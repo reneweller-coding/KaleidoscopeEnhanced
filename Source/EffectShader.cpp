@@ -1017,10 +1017,15 @@ void EffectShader::startWalk( int s, float target, float dur )
 			if( m_walk.fading[o] ) return;
 	m_walk.x1[s]      = target < 0.f ? 0.f : ( target > 0.999f ? 0.999f : target );
 	m_walk.f[s]       = 0.f;
+	// dur is given at 120 BPM; with a steady beat it becomes the same number
+	// of beats at the real tempo (so a fade spans whole bars of this song).
+	const float bpm = 40.f + 160.f * m_lastAudioForBake.estimatedBPM;
+	if( m_lastAudioForBake.estimatedBPM > 0.01f && m_lastAudioForBake.rhythmStrength > 0.35f )
+		dur = floorf( dur * 2.f + 0.5f ) * 60.f / bpm;            // beats at 120 BPM -> seconds now
 	m_walk.fadeDur[s] = dur > 0.3f ? dur : 0.3f;
 	m_walk.fading[s]  = true;
-	fprintf( stderr, "WALK %s stage %s: %.3f -> %.3f over %.1f s\n", fragmentName(), kWalkName[s],
-	         m_walk.x0[s], m_walk.x1[s], m_walk.fadeDur[s] );
+	fprintf( stderr, "WALK %s stage %s: %.3f -> %.3f, %.1f s at music speed %.2f\n", fragmentName(), kWalkName[s],
+	         m_walk.x0[s], m_walk.x1[s], m_walk.fadeDur[s], m_walk.rate );
 }
 
 void EffectShader::stepChainWalk( const AudioFeatures &f )
@@ -1053,6 +1058,14 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	// Energy: arousal smoothed over ~8 s -- it picks the region of each class.
 	m_walk.energy += ( f.arousal - m_walk.energy ) * ( dt / 8.f < 1.f ? dt / 8.f : 1.f );
 	const float E = m_walk.energy;
+	// Music time: the short-term energy and the flux set how fast fades and
+	// holds run (a quiet passage lets a fade crawl, a burst rushes it).
+	m_walk.energyFast += ( f.arousal - m_walk.energyFast ) * ( dt < 1.f ? dt : 1.f );
+	m_walk.fluxS      += ( f.spectralFlux - m_walk.fluxS ) * ( dt * 2.f < 1.f ? dt * 2.f : 1.f );
+	{
+		float r = 0.35f + 0.9f * m_walk.energyFast + 1.2f * m_walk.fluxS;
+		m_walk.rate = r < 0.25f ? 0.25f : ( r > 2.5f ? 2.5f : r );
+	}
 	std::uniform_real_distribution<float> uni( 0.f, 1.f );
 	// A target on the calm..energetic scale of the classes, with some spread.
 	auto pick = [&]() { return 0.08f + 0.84f * E + ( uni( m_walk.rng ) - 0.5f ) * 0.5f; };
@@ -1111,7 +1124,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	// 4. Otherwise the stage held longest walks when its time is up (sooner
 	//    the more energy; the look holds longer than the chain).
 	for( int s = 0; s < kWalkN; ++s )
-		if( !m_walk.fading[s] ) m_walk.hold[s] += dt;
+		if( !m_walk.fading[s] ) m_walk.hold[s] += dt * m_walk.rate;
 	if( !anyFading() )
 	{
 		int best = -1; float bestR = 1.f;
@@ -1131,7 +1144,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	{
 		if( m_walk.fading[s] )
 		{
-			m_walk.f[s] += dt / m_walk.fadeDur[s];
+			m_walk.f[s] += dt * m_walk.rate / m_walk.fadeDur[s];     // music time: never backwards, never a jump
 			if( m_walk.f[s] >= 1.f )
 			{
 				m_walk.x0[s] = m_walk.x1[s];
