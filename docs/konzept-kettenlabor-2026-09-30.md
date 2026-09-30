@@ -109,6 +109,18 @@ Schritte, alle stetig und ohne Audio auf der Kamera:
 
 ## 6. Weiterdenken
 
+* **Ketten als FX-Stufe (größter Hebel, braucht deine Entscheidung)**: Jede
+  Szene läuft durch eine CombineShader-Stufe, die dieselbe Schnittstelle hat
+  wie die Szenen (`tex0`/`tex1`/`interpolation`); `FxKaleidoscope` ist schon
+  eine Ein-Stufen-Kette auf dem fertigen Szenenbild. Eine `FxChain` mit der
+  gewürfelten Stufenmaschine machte **jede der ~1800 Szenen** zum Eingang
+  einer Kette. Haken: Das Szenenbild, das die FX bekommt, hat keine
+  Mip-Stufen (nur Fotos und Nachzieh-Puffer werden gemipmappt) — eine Kette
+  flimmert ohne sie. Nötig wäre `glGenerateMipmap` auf dem Szenen-FBO, nur
+  wenn die aktive FX es verlangt (etwa per `usesLod()` wie die anderen
+  `uses…()`-Abfragen). FX laufen bei dir bewusst selten (0,002–0,005); ob
+  eine Ketten-FX öfter kommen soll, ist eine Geschmacksfrage.
+
 * **Kette als Gelände**: als Tunnelwand umgesetzt (ChainLabTunnel); ein
   Flug *über* ein Höhenfeld hätte einen Horizont und verletzt die
   Ursprungs-Kriterien — höchstens senkrecht von oben.
