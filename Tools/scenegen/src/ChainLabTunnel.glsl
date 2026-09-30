@@ -36,7 +36,7 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-const int ORD_A[11] = int[11](5, 4, 9, 1, 6, 10, 7, 8, 3, 0, 2);
+const int ORD_A[12] = int[12](11, 5, 4, 9, 1, 6, 10, 7, 8, 3, 0, 2);   // 11 = none (identity)
 const int ORD_B[6] = int[6](0, 5, 3, 1, 2, 4);
 const int ORD_C[8] = int[8](0, 5, 7, 1, 4, 3, 6, 2);
 const int ORD_D[6] = int[6](0, 5, 2, 1, 4, 3);
@@ -50,6 +50,7 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = ORD_A[k];
+    if (k == 11) return uv;                                  // none: the chain starts at stage B
     if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
     if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gTC * 2.0);
     if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gTC * 3.0);
@@ -139,18 +140,18 @@ float walkFade(float kf) { return smoothstep(walkAll() ? 0.7 : 0.55, 1.0, fract(
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 vec2 stageA(vec2 uv)
 {
-    int k0 = pickStage(chainAP, 11); float v0 = subVar(chainAP, 11);
+    int k0 = pickStage(chainAP, 12); float v0 = subVar(chainAP, 12);
     if (!walks(1)) return stageAk(uv, k0, v0);
     if (walkHost > 0.5 && walkAll()) {
         float f = smoothstep(0.0, 1.0, walkA.z);
-        int j0 = pickStage(walkA.x, 11), j1 = pickStage(walkA.y, 11);
-        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 11));
-        return morphMix(stageAk(uv, j0, subVar(walkA.x, 11)), stageAk(uv, j1, subVar(walkA.y, 11)), f);
+        int j0 = pickStage(walkA.x, 12), j1 = pickStage(walkA.y, 12);
+        if (f <= 0.0) return stageAk(uv, j0, subVar(walkA.x, 12));
+        return morphMix(stageAk(uv, j0, subVar(walkA.x, 12)), stageAk(uv, j1, subVar(walkA.y, 12)), f);
     }
     float kf = walkPos(1), c = floor(kf);
     int i0, i1; float w0, w1;
-    walkPick(c, k0, v0, 11, 1.3, i0, w0);
-    walkPick(c + 1.0, k0, v0, 11, 1.3, i1, w1);
+    walkPick(c, k0, v0, 12, 1.3, i0, w0);
+    walkPick(c + 1.0, k0, v0, 12, 1.3, i1, w1);
     float f = walkFade(kf);
     if (f <= 0.0) return stageAk(uv, i0, w0);
     return morphMix(stageAk(uv, i0, w0), stageAk(uv, i1, w1), f);

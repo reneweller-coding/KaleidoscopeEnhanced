@@ -26,7 +26,7 @@ CLASSES = {
     "coreP": ["no fold core", "tetrahedral KIFS", "octahedral KIFS", "sphere-inversion box fold", "plane folds", "Menger sponge"],
     "bodyP": ["blocks", "balls", "tori", "gyroid membrane", "crosses"],
     # chain stages in the labs' energy order (calm .. energetic, ORD_A..ORD_D in ChainLab2D)
-    "chainAP": ["polar unwrap", "Droste zoom", "hyperbolic Poincare tiling", "log-polar spiral", "complex exponential",
+    "chainAP": [None, "polar unwrap", "Droste zoom", "hyperbolic Poincare tiling", "log-polar spiral", "complex exponential",
                 "bipolar stream", "complex sine", "circle inversion", "Moebius stream", "kaleidoscope", "tunnel"],
     "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "p6m lattice", "iterated fold"],
     "chainCP": [None, "lens", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
