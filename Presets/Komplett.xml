@@ -11720,4 +11720,31 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\TextureBurrow.frag" type="normal" mood="dark,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="ribP" minValue="0" maxValue="1"></float>
+    <float name="wobbleP" minValue="0" maxValue="1"></float>
+    <float name="wallZoomP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TextureVortexCloud.frag" type="normal" mood="energetic,calm" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="armP" minValue="0" maxValue="1"></float>
+    <float name="eyeP" minValue="0" maxValue="1"></float>
+    <float name="densityP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
+  <TextureShader file="..\\Scene2D\\TextureForkingTunnel.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="forkP" minValue="0" maxValue="1"></float>
+    <float name="wallZoomP" minValue="0" maxValue="1"></float>
+    <float name="rimP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
