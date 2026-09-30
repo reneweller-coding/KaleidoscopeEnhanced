@@ -12,6 +12,7 @@
 #include "textfile.h"
 #include <string>
 #include <cstring>
+#include <cmath>
 
 #include <cstdlib>
 #include <chrono>
@@ -196,6 +197,9 @@ void EffectShader::resetParameters()
 	// looks per activation.  Entries without the attribute draw nothing, so
 	// their random stream stays exactly as before.
 	m_gradeMode = m_gradeModes.empty() ? 0 : m_gradeModes[ rand() % m_gradeModes.size() ];
+
+	// A chain lab starts its walk afresh from the knobs just rolled.
+	m_walk.pending = true;
 
 	// Unter KALEIDO_SEED protokollieren, was gezogen wurde: der Beweis, dass
 	// dieselbe Szene in jeder Konfiguration dieselben Zahlen bekommt, ist
@@ -523,6 +527,9 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     // Cached for stepBake(), called later from draw() -- which, unlike this
     // function, takes no AudioFeatures parameter.
     m_lastAudioForBake = f;
+
+    // Chain labs: the music steers the walk (no-op for every other shader).
+    stepChainWalk( f );
 
     // Per-program LOCATION CACHE: this used to perform ~45 string-keyed
     // glGetUniformLocation lookups per shader per FRAME - the single biggest
@@ -964,6 +971,166 @@ bool EffectShader::usesBake()
 		m_usesBake = ( m_sh_prog_id != 0 &&
 		               glGetUniformLocation( m_sh_prog_id, "texBake" ) >= 0 ) ? 1 : 0;
 	return m_usesBake == 1;
+}
+
+// ---- Chain walk (host side of the chain labs' walk) ----------------------
+// Stage order: A, B, C, D (the chain), S (the look); each has a rolled knob.
+static const char *kWalkKnob[5]  = { "chainAP", "chainBP", "chainCP", "chainDP", "styleP" };
+static const char *kWalkUni[5]   = { "walkA", "walkB", "walkC", "walkD", "walkS" };
+
+void EffectShader::resetChainWalk()
+{
+	float morph = -1.f;
+	for( const Uniform *u : m_uniforms )
+		if( u->getName() == "morphP" ) morph = u->snapshotValue();
+	m_walk.active = ( m_walkHostLoc >= 0 && morph >= 0.5f );
+	for( int s = 0; s < 5; ++s )
+	{
+		float v = 0.f;
+		for( const Uniform *u : m_uniforms )
+			if( u->getName() == kWalkKnob[s] ) v = u->snapshotValue();
+		v = v < 0.f ? 0.f : ( v > 0.999f ? 0.999f : v );
+		m_walk.x0[s] = m_walk.x1[s] = v;
+		m_walk.f[s] = 0.f;
+		m_walk.fading[s] = false;
+		m_walk.hold[s] = 9.f * (float) s;          // staggered: the stages come due one after another
+	}
+	m_walk.lastSection = m_walk.lastDrop = -1;
+	m_walk.energy   = 0.5f;
+	m_walk.harmCool = 8.f;
+	m_walk.sectionLook.clear();
+	m_walk.hasLast  = false;
+	m_walk.rng.seed( (unsigned) rand() + 1u );
+}
+
+void EffectShader::startWalk( int s, float target, float dur )
+{
+	if( m_walk.fading[s] )
+		return;
+	m_walk.x1[s]      = target < 0.f ? 0.f : ( target > 0.999f ? 0.999f : target );
+	m_walk.f[s]       = 0.f;
+	m_walk.fadeDur[s] = dur > 0.3f ? dur : 0.3f;
+	m_walk.fading[s]  = true;
+	fprintf( stderr, "WALK %s stage %c: %.3f -> %.3f over %.1f s\n", fragmentName(), "ABCDS"[s],
+	         m_walk.x0[s], m_walk.x1[s], m_walk.fadeDur[s] );
+}
+
+void EffectShader::stepChainWalk( const AudioFeatures &f )
+{
+	if( m_walkProg != m_sh_prog_id )
+	{
+		m_walkProg = m_sh_prog_id;
+		for( int s = 0; s < 5; ++s )
+			m_walkLoc[s] = glGetUniformLocation( m_sh_prog_id, kWalkUni[s] );
+		m_walkHostLoc = glGetUniformLocation( m_sh_prog_id, "walkHost" );
+		m_walk.pending = true;
+	}
+	if( m_walkHostLoc < 0 )
+		return;                                     // not a chain lab
+	if( m_walk.pending )
+	{
+		m_walk.pending = false;
+		resetChainWalk();
+	}
+	glUniform1f( m_walkHostLoc, m_walk.active ? 1.f : 0.f );
+	if( !m_walk.active )
+		return;
+
+	const auto now = std::chrono::steady_clock::now();
+	float dt = m_walk.hasLast ? std::chrono::duration<float>( now - m_walk.last ).count() : 0.f;
+	m_walk.last = now;
+	m_walk.hasLast = true;
+	if( dt > 0.25f ) dt = 0.016f;                   // back from a pause: no catch-up leap
+
+	// Energy: arousal smoothed over ~8 s -- it picks the region of each class.
+	m_walk.energy += ( f.arousal - m_walk.energy ) * ( dt / 8.f < 1.f ? dt / 8.f : 1.f );
+	const float E = m_walk.energy;
+	std::uniform_real_distribution<float> uni( 0.f, 1.f );
+	// A target on the calm..energetic scale of the classes, with some spread.
+	auto pick = [&]() { return 0.08f + 0.84f * E + ( uni( m_walk.rng ) - 0.5f ) * 0.5f; };
+	auto lerp = []( float a, float b, float t ) { return a + ( b - a ) * t; };
+	auto anyFading = [&]() { for( bool b : m_walk.fading ) if( b ) return true; return false; };
+
+	if( m_walk.lastSection < 0 )
+	{
+		m_walk.lastSection = f.sectionCount;        // adopt the analyzer's counters
+		m_walk.lastDrop    = f.dropCount;
+	}
+
+	// 1. A new section: a new global map (often a new look too); a RETURNING
+	//    section walks every stage back to the look it had the first time.
+	if( f.sectionCount != m_walk.lastSection )
+	{
+		m_walk.lastSection = f.sectionCount;
+		auto it = m_walk.sectionLook.find( f.sectionId );
+		if( f.sectionKnown && f.sectionId >= 0 && it != m_walk.sectionLook.end() )
+		{
+			for( int s = 0; s < 5; ++s )
+				if( fabsf( it->second[s] - m_walk.x0[s] ) > 1e-4f )
+					startWalk( s, it->second[s], 4.f );
+		}
+		else
+		{
+			startWalk( 0, pick(), 4.f );
+			if( uni( m_walk.rng ) < 0.5f )
+				startWalk( 4, pick(), 6.f );
+		}
+		if( f.sectionId >= 0 )
+		{
+			std::array<float, 5> look;
+			for( int s = 0; s < 5; ++s )
+				look[s] = m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s];
+			m_walk.sectionLook[f.sectionId] = look;
+		}
+	}
+	// 2. A drop: the warp and the look turn fast.
+	if( f.dropCount != m_walk.lastDrop )
+	{
+		m_walk.lastDrop = f.dropCount;
+		startWalk( 3, pick(), 1.5f );
+		startWalk( 4, pick(), 1.5f );
+	}
+	// 3. A harmonic change: the symmetry or the second map.
+	m_walk.harmCool -= dt;
+	if( !anyFading() && m_walk.harmCool <= 0.f && f.harmonicChange > 0.55f )
+	{
+		startWalk( 1 + (int) ( m_walk.rng() % 2u ), pick(), lerp( 8.f, 4.f, E ) );
+		m_walk.harmCool = 12.f;
+	}
+	// 4. Otherwise the stage held longest walks when its time is up (sooner
+	//    the more energy; the look holds longer than the chain).
+	for( int s = 0; s < 5; ++s )
+		if( !m_walk.fading[s] ) m_walk.hold[s] += dt;
+	if( !anyFading() )
+	{
+		int best = -1; float bestR = 1.f;
+		for( int s = 0; s < 5; ++s )
+		{
+			float r = m_walk.hold[s] / ( lerp( 90.f, 35.f, E ) * ( s == 4 ? 1.6f : 1.f ) );
+			if( r >= bestR ) { bestR = r; best = s; }
+		}
+		if( best >= 0 )
+			startWalk( best, pick(), lerp( 10.f, 5.f, E ) );
+	}
+
+	// Advance the fades and upload: (shown, target, progress) per stage.
+	for( int s = 0; s < 5; ++s )
+	{
+		if( m_walk.fading[s] )
+		{
+			m_walk.f[s] += dt / m_walk.fadeDur[s];
+			if( m_walk.f[s] >= 1.f )
+			{
+				m_walk.x0[s] = m_walk.x1[s];
+				m_walk.f[s] = 0.f;
+				m_walk.fading[s] = false;
+				m_walk.hold[s] = 0.f;
+			}
+		}
+		if( m_walkLoc[s] >= 0 )
+			glUniform3f( m_walkLoc[s], m_walk.x0[s], m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s],
+			             m_walk.fading[s] ? m_walk.f[s] : 0.f );
+	}
 }
 
 void EffectShader::setGradeModes( const std::string &list )

@@ -9,6 +9,10 @@
 
 #include <QtGui/qopengl.h>
 #include <string>
+#include <map>
+#include <array>
+#include <chrono>
+#include <random>
 #include "stdinc.h"
 #include "Uniform.h"
 #include "AudioFeatures.h"
@@ -492,6 +496,14 @@ public:
 	void setGradeModes( const std::string &list );
 	/// @return The grade rolled for the current activation: 0 none, 1 faded, 2 grey, 3 sepia.
 	int gradeMode() const { return m_gradeMode; }
+	/**
+	 * @brief True while this effect is a chain lab walking with the music (see stepChainWalk()).
+	 *
+	 * The scheduler then leaves the music's cues to the effect: a section change
+	 * or a drop walks the chain on instead of cutting to another scene, so one lab
+	 * can carry a whole set.
+	 */
+	bool walksWithMusic() const { return m_walk.active; }
 
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
@@ -636,6 +648,47 @@ protected:
 	int		m_usesSceneLod = -1;     ///< Cached usesSceneLod() result (-1 = not yet read from the source file).
 	std::vector<int> m_gradeModes;  ///< Grades this entry may wear (1 faded, 2 grey, 3 sepia), from the preset attribute grade="...".
 	int		m_gradeMode = 0;         ///< Grade rolled for the current activation (0 = none).
+
+	/**
+	 * @brief Host side of the chain lab's walk (uniforms walkA..walkD, walkS, walkHost).
+	 *
+	 * The shader alone cannot let the music choose where a stage walks: it has no
+	 * memory, so a target taken from the current audio could change mid-fade.
+	 * Here each stage (A..D and the look, S) keeps the knob value it shows, its
+	 * target and the fade progress; the music decides when a stage walks (a new
+	 * section, a drop, a harmonic change, or its hold time running out -- shorter
+	 * the more energy) and where to (the classes are ordered calm..energetic in
+	 * the shader, the smoothed arousal picks the region).  A returning section
+	 * (chorus #2) walks back to the chain it had the first time.
+	 */
+	struct ChainWalk
+	{
+		bool  active = false;           ///< Walk mode rolled (morphP >= 0.5) and the shader takes host walks.
+		bool  pending = true;           ///< Reset due (activation); done lazily once the program exists.
+		float x0[5] = {};               ///< Knob value shown per stage (A, B, C, D, look).
+		float x1[5] = {};               ///< Fade target per stage.
+		float f[5] = {};                ///< Fade progress 0..1 per stage.
+		float fadeDur[5] = {};          ///< Fade length per stage, seconds.
+		float hold[5] = {};             ///< Seconds since the stage last changed.
+		bool  fading[5] = {};           ///< Stage is fading to x1.
+		int   lastSection = -1;         ///< Last seen AudioFeatures::sectionCount (-1 = not yet).
+		int   lastDrop = -1;            ///< Last seen AudioFeatures::dropCount.
+		float energy = 0.5f;            ///< Slowly smoothed arousal (8 s).
+		float harmCool = 0.f;           ///< Cooldown for harmonic-change walks, seconds.
+		std::map<int, std::array<float, 5>> sectionLook;   ///< Look per section id: a returning section returns to it.
+		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.
+		bool  hasLast = false;          ///< last is valid.
+		std::minstd_rand rng;           ///< Own random stream (keeps the scene's rand() stream untouched per frame).
+	} m_walk;
+	GLuint	m_walkProg = 0;             ///< Program the walk locations belong to.
+	GLint	m_walkLoc[5] = { -1, -1, -1, -1, -1 };   ///< Locations of walkA, walkB, walkC, walkD, walkS.
+	GLint	m_walkHostLoc = -1;         ///< Location of walkHost (-1: not a chain lab).
+	/// @brief Re-reads the rolled knobs into the walk state (called lazily after an activation).
+	void resetChainWalk();
+	/// @brief Advances the walk by one frame from the music and uploads the walk uniforms (program must be bound).
+	void stepChainWalk( const AudioFeatures &f );
+	/// @brief Starts stage @p s fading to knob value @p target over @p dur seconds (no-op while that stage already fades: a fade never changes its destination).
+	void startWalk( int s, float target, float dur );
 	int		m_usesMandelbrot = -1;   ///< Cached usesMandelbrot() result (-1 = not yet queried): the deep-zoom Mandelbrot field texture, `texMandelbrot`.
 	int		m_usesPhysarum = -1; ///< Cached usesPhysarum() result (-1 = not yet queried): the Physarum trail map, `texPhysarum`.
 	unsigned int	m_cfxMask = 0;   ///< Compute-FX sampler bits (see cfxMask()); cached result, resolved once per compiled program (see m_cfxProg).

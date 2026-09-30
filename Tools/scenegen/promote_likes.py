@@ -25,12 +25,13 @@ CLASSES = {
     "spaceP": ["mirrored lattice", "polar ring tunnel", "twisted lattice", "octahedral lattice", "turning lattice"],
     "coreP": ["no fold core", "tetrahedral KIFS", "octahedral KIFS", "sphere-inversion box fold", "plane folds", "Menger sponge"],
     "bodyP": ["blocks", "balls", "tori", "gyroid membrane", "crosses"],
-    "chainAP": ["kaleidoscope", "log-polar spiral", "tunnel", "Moebius stream", "Droste zoom", "polar unwrap",
-                "complex exponential", "complex sine", "circle inversion", "hyperbolic Poincare tiling", "bipolar stream"],
-    "chainBP": [None, "kaleidoscope", "p6m lattice", "p4m lattice", "iterated fold", "mirror line"],
-    "chainCP": [None, "spiral", "tunnel", "inversion", "complex square", "lens", "kaleidoscope", "Joukowski map"],
-    "chainDP": [None, "twirl", "shear wave", "ripple", "domain warp", "turning"],
-    "morphP": [None, "the first stage", "the symmetry", "the second map", "the warp"],
+    # chain stages in the labs' energy order (calm .. energetic, ORD_A..ORD_D in ChainLab2D)
+    "chainAP": ["polar unwrap", "Droste zoom", "hyperbolic Poincare tiling", "log-polar spiral", "complex exponential",
+                "bipolar stream", "complex sine", "circle inversion", "Moebius stream", "kaleidoscope", "tunnel"],
+    "chainBP": [None, "mirror line", "p4m lattice", "kaleidoscope", "p6m lattice", "iterated fold"],
+    "chainCP": [None, "lens", "Joukowski map", "spiral", "complex square", "inversion", "kaleidoscope", "tunnel"],
+    "chainDP": [None, "turning", "shear wave", "twirl", "domain warp", "ripple"],
+    "morphP": ["the first stage", "the symmetry", "the second map", "the warp"],
 }
 
 def pick(x, n):
@@ -43,9 +44,11 @@ def describe(v, dim):
                                           CLASSES["coreP"][pick(v["coreP"], 6)]))
     stages = [CLASSES[k][pick(v[k], len(CLASSES[k]))] for k in ["chainAP", "chainBP", "chainCP", "chainDP"]]
     parts.append({"3D": "coloured by ", "Tunnel": "a relief tunnel of "}.get(dim, "") + " -> ".join(s for s in stages if s))
-    m = CLASSES["morphP"][pick(v["morphP"], 5)]
-    if m:
-        parts.append("%s morphing on with the music" % m)
+    mp = v["morphP"]
+    if mp >= 0.5:
+        parts.append("every stage and the look walking on with the music")
+    elif mp >= 0.15:
+        parts.append("%s walking on with the music" % CLASSES["morphP"][min(int((mp - 0.15) / 0.35 * 4), 3)])
     return "; ".join(parts)
 
 ap = argparse.ArgumentParser()

@@ -562,6 +562,18 @@ void SceneScheduler::tick( const Tick &t )
 		m_pendingSectionNextFx  = -1;
 	}
 
+	// A chain lab walking with the music takes the music's cues itself: a new
+	// section, a drop or a harmonic change walks its chain on (EffectShader::
+	// stepChainWalk) instead of cutting the scene away, so one lab can carry a
+	// whole set.  A manual change ('n', the remote) still goes through, and the
+	// entry's solo time still ends the scene.
+	if( m_texState == 0 && m_actTexture < tex.size() && tex[m_actTexture]->walksWithMusic()
+	    && !m_forceIsManual )
+	{
+		m_forceEffectChange = false;
+		m_dropCutPending    = false;
+	}
+
 	// ---- Effekt-Zustandsmaschine: Solo ----
 	if( m_texState == 0 )
 	{

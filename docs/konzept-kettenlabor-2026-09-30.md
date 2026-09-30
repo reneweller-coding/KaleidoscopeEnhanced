@@ -41,7 +41,21 @@ passiert unsichtbar zwischen zwei Auftritten.
   (wie die Original-Tunnelszenen), ihre Helligkeit als echtes Relief, die
   Rohrachse windet sich (wandernder Fluchtpunkt). Das Relief wird dort
   geglättet, wo die Kette das Foto staucht — sonst entstehen Sub-Pixel-Spitzen.
-* **Ketten-Morph** (`morphP`): würfelt, welche Stufe (oder keine) während der
+* **Kettenwanderung, von der Musik gesteuert** (`morphP` ≥ 0,5): Ein Labor
+  ist kein einzelner Look, sondern ein Dauerläufer — eine einzige Laborszene
+  trägt stundenlang, stetig, ohne Schnitt und ohne Wiederholung. Alle vier
+  Stufen und der Stil wandern; die App (`EffectShader::stepChainWalk`) merkt
+  sich je Stufe Anzeige, Ziel und Überblendfortschritt und entscheidet mit der
+  Musik: neuer Songteil → neue globale Abbildung (oft auch neuer Stil),
+  **wiederkehrender Songteil → zurück zur Kette von damals**, Drop → Verzerrung
+  und Stil drehen schnell, Akkordwechsel → Symmetrie oder zweite Abbildung,
+  sonst die am längsten gehaltene Stufe nach einer Haltezeit (35–90 s, kürzer
+  bei mehr Energie). Die Klassen jeder Stufe sind nach Energie sortiert
+  (ruhig … energiegeladen), die geglättete Energie wählt die Gegend, ein
+  Zufallsanteil die Abwechslung. Der Planer schneidet ein wanderndes Labor
+  nicht mehr bei Songteilwechseln und Drops weg (die Taste `n` wirkt weiter).
+  Ohne App (Editor) wandert der Shader per Hash.
+* **Ketten-Morph** (`morphP` 0,15–0,5): würfelt, welche Stufe (oder keine) während der
   Szene weiterwandert. Getrieben von `sceneAdvance` (steigt bei Spektralfluss
   und Harmoniewechseln): Transformation halten, dann über die gespiegelten
   Ausgaben zweier Nachbarn überblenden — beide stetig, also sprungfrei. Die
