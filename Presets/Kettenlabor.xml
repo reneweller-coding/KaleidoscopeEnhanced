@@ -45,7 +45,6 @@
     <float name="chainBP" minValue="0" maxValue="1"></float>
     <float name="chainCP" minValue="0" maxValue="1"></float>
     <float name="chainDP" minValue="0" maxValue="1"></float>
-    <float name="orderP" minValue="0" maxValue="1"></float>
     <float name="morphP" minValue="0.5" maxValue="1"></float>
     <float name="depthP" minValue="0" maxValue="1"></float>
     <float name="styleP" minValue="0" maxValue="1"></float>

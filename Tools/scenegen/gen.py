@@ -881,6 +881,362 @@ vec2 tKelvinHelmholtz(vec2 uv, float strength, float t)
     float a = strength * roll * sin(6.2831853 * (uv.x * 4.0 + t * 0.2));
     return uv + vec2(0.04 * strength * tanh(y * 10.0), 0.0) + 0.03 * vec2(-sin(a), cos(a) - 1.0) * roll;
 }
+// ---- round 6 ----
+// Little planet: the photo as an equirectangular panorama on a turning
+// sphere, seen stereographically (longitude jumps by one mirror period: seamless).
+vec2 tLittlePlanet(vec2 uv, vec2 c, float zoom, float a1, float a2)
+{
+    vec2 z = (uv - c) * zoom;
+    float s = dot(z, z);
+    vec3 P = vec3(2.0 * z, s - 1.0) / (s + 1.0);
+    P.yz = rot2(a1) * P.yz;
+    P.xy = rot2(a2) * P.xy;
+    return vec2(atan(P.y, P.x) / 3.14159265, asin(clamp(P.z, -1.0, 1.0)) / 1.5707963 * 0.5 + 0.5);
+}
+// Rotating Mercator: the screen is the Mercator map of a turning sphere that
+// carries the photo stereographically -- loxodromes become straight lines.
+vec2 tMercator(vec2 uv, vec2 c, float scale, float a1, float a2)
+{
+    vec2 m = (uv - c) * scale;
+    float lon = m.x * 3.14159265, lat = atan(sinh(m.y * 3.14159265));
+    vec3 P = vec3(cos(lat) * cos(lon), cos(lat) * sin(lon), sin(lat));
+    P.yz = rot2(a1) * P.yz;
+    P.xy = rot2(a2) * P.xy;
+    return c + P.xy / max(1.0 - P.z, 0.05) * 0.9;
+}
+// Weierstrass p on the square lattice (lemniscatic case): p ~ 1/sn^2.
+vec2 tWeierstrass(vec2 uv, vec2 c, float scale, float t)
+{
+    vec2 z = (uv - c) * scale * 1.8540747;
+    vec2 t1, t2, t3, t4;
+    thetaAll(z * 0.8472131, t1, t2, t3, t4);
+    vec2 q = cdiv(t4, t1) * 0.8473;                        // 1 / sn
+    return c + cmul(cmul(q, q), cexpi(t * 0.3)) * 0.12;
+}
+// Schwarz-Christoffel: the unit disk onto a regular n-gon,
+// sc(z) = z 2F1(1/n, 2/n; 1 + 1/n; z^n); outside the disk folded in.
+vec2 tPolygonMap(vec2 uv, vec2 c, float n, float t)
+{
+    vec2 z = cmul((uv - c) * 2.2, cexpi(t * 0.2));
+    float r2 = dot(z, z);
+    if (r2 > 1.0) z /= r2;
+    vec2 zn = vec2(1.0, 0.0);
+    for (int k = 0; k < 6; ++k) { if (float(k) >= n) break; zn = cmul(zn, z); }
+    float a = 1.0 / n, b = 2.0 / n, cc = 1.0 + 1.0 / n;
+    vec2 term = vec2(1.0, 0.0), sum = vec2(1.0, 0.0);
+    for (int k = 0; k < 12; ++k) {
+        float fk = float(k);
+        term = cmul(term, zn) * ((a + fk) * (b + fk) / ((cc + fk) * (fk + 1.0)));
+        sum += term;
+    }
+    return c + cmul(z, sum) * 1.3;
+}
+// Jacobi theta_3 with a wandering complex nome: quasi-periodic waves.
+vec2 tThetaWave(vec2 uv, vec2 c, float k, float t)
+{
+    vec2 z = (uv - c) * k;
+    vec2 q = 0.55 * cexpi(t * 0.3), q2 = cmul(q, q);
+    vec2 f = vec2(1.0, 0.0), qsq = vec2(1.0, 0.0), qp = q;
+    for (int n = 1; n <= 4; ++n) {
+        qsq = cmul(qsq, qp); qp = cmul(qp, q2);           // q^(n^2)
+        f += 2.0 * cmul(qsq, ccos(2.0 * float(n) * z));
+    }
+    return c + f * 0.55;
+}
+// Chebyshev polynomial T_n (recurrence): the plane folded like cos(n acos z).
+vec2 tChebyshev(vec2 uv, vec2 c, float n, float k)
+{
+    vec2 z = (uv - c) * k, t0 = vec2(1.0, 0.0), t1 = z;
+    for (int i = 1; i < 7; ++i) { if (float(i) >= n) break; vec2 t2 = 2.0 * cmul(z, t1) - t0; t0 = t1; t1 = t2; }
+    return c + t1 * 0.3;
+}
+// Henon map, a few steps (a drifting).
+vec2 tHenon(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 p = (uv - c) * 2.5;
+    float a = 1.2 + 0.2 * sin(t * 0.2);
+    for (int i = 0; i < 4; ++i) { if (float(i) >= steps) break; p = vec2(1.0 - a * p.x * p.x + p.y, 0.3 * p.x); }
+    return c + p * 0.4;
+}
+// Ikeda map (the laser in a ring cavity), a few steps.
+vec2 tIkeda(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 z = (uv - c) * 3.0;
+    float u = 0.8 + 0.1 * sin(t * 0.2);
+    for (int i = 0; i < 4; ++i) {
+        if (float(i) >= steps) break;
+        z = vec2(1.0, 0.0) + u * cmul(z, cexpi(0.4 - 6.0 / (1.0 + dot(z, z))));
+    }
+    return c + z * 0.3;
+}
+// Chirikov standard map (kicked rotor): islands and chaos.
+vec2 tChirikov(vec2 uv, vec2 c, float K, float steps)
+{
+    vec2 q = (uv - c) * 6.2831853;
+    for (int i = 0; i < 4; ++i) { if (float(i) >= steps) break; q.y += K * sin(q.x); q.x += q.y; }
+    return c + q / 6.2831853 * 1.2;
+}
+// Cassini ovals: log-polar of z^2 - a^2 (lemniscate at the critical size).
+vec2 tCassini(vec2 uv, vec2 c, float a, float travel)
+{
+    vec2 z = (uv - c) * 2.0;
+    vec2 w = cmul(z, z) - vec2(a * a, 0.0);
+    return vec2(0.25 * log(max(dot(w, w), 1e-10)) - travel, atan(w.y, w.x) / 3.14159265);
+}
+// Klein's tetrahedral / octahedral invariants: rational maps with the symmetry
+// of a Platonic solid on a turning sphere; f(1/z) = f(z), so |z| > 1 is folded
+// in (no overflow, continuous); the value is read as a sphere point.
+vec2 tKleinInv(vec2 uv, vec2 c, float kind, float a1, float a2)
+{
+    vec2 z = (uv - c) * 2.0;
+    float s = dot(z, z);
+    vec3 P = vec3(2.0 * z, s - 1.0) / (s + 1.0);
+    P.yz = rot2(a1) * P.yz; P.xy = rot2(a2) * P.xy;
+    z = P.xy / max(1.0 - P.z, 1e-3);
+    if (dot(z, z) > 1.0) z = vec2(z.x, -z.y) / dot(z, z);
+    vec2 z2 = cmul(z, z), z4 = cmul(z2, z2), N, D;
+    if (kind < 0.5) {
+        vec2 i2 = vec2(-z2.y, z2.x) * 3.4641016;
+        vec2 phi = z4 - i2 + vec2(1.0, 0.0), psi = z4 + i2 + vec2(1.0, 0.0);
+        N = cmul(cmul(phi, phi), phi); D = cmul(cmul(psi, psi), psi);
+    } else {
+        vec2 a = cmul(z4, z4) + 14.0 * z4 + vec2(1.0, 0.0);
+        vec2 b = z4 - vec2(1.0, 0.0), b2 = cmul(b, b);
+        N = cmul(cmul(a, a), a); D = 108.0 * cmul(z4, cmul(b2, b2));
+    }
+    float nn = dot(N, N), dd = dot(D, D);
+    vec2 ND = vec2(N.x * D.x + N.y * D.y, N.y * D.x - N.x * D.y);
+    vec3 Q = vec3(2.0 * ND, nn - dd) / max(nn + dd, 1e-20);
+    return vec2(atan(Q.y, Q.x) / 3.14159265, asin(clamp(Q.z, -1.0, 1.0)) / 1.5707963 * 0.5 + 0.5);
+}
+// Gumowski-Mira map, a few steps.
+float gmF(float x, float mu) { return mu * x + 2.0 * (1.0 - mu) * x * x / (1.0 + x * x); }
+vec2 tGumowski(vec2 uv, vec2 c, float mu, float steps)
+{
+    vec2 p = (uv - c) * 12.0;
+    for (int i = 0; i < 5; ++i) {
+        if (float(i) >= steps) break;
+        float x = p.y + 0.008 * (1.0 - 0.05 * p.y * p.y) * p.y + gmF(p.x, mu);
+        p = vec2(x, -p.x + gmF(x, mu));
+    }
+    return c + p * 0.05;
+}
+// Zaslavsky web map: a kick and a turn by 2 pi / q -- a q-fold stochastic web.
+vec2 tZaslavsky(vec2 uv, vec2 c, float q, float K, float steps)
+{
+    vec2 p = (uv - c) * 18.0;
+    float a = 6.2831853 / q;
+    for (int i = 0; i < 5; ++i) {
+        if (float(i) >= steps) break;
+        float u = p.x + K * sin(p.y);
+        p = vec2(u * cos(a) + p.y * sin(a), -u * sin(a) + p.y * cos(a));
+    }
+    return c + p / 18.0;
+}
+// Spherical Droste: a twisted Droste between two antipodal points of a
+// turning sphere -- the poles travel, even through infinity.
+vec2 tSphereDroste(vec2 uv, vec2 c, float K, float zoom, float a1, float a2)
+{
+    vec2 z = (uv - c) * 2.0;
+    float s = dot(z, z);
+    vec3 P = vec3(2.0 * z, s - 1.0) / (s + 1.0);
+    P.yz = rot2(a1) * P.yz; P.xy = rot2(a2) * P.xy;
+    vec2 w = P.xy / max(1.0 - P.z, 1e-4);
+    vec2 L = vec2(log(max(length(w), 1e-6)), atan(w.y, w.x));
+    float lk = log(K), b = -lk / 3.14159265;
+    vec2 W = vec2(L.x - b * L.y, L.y + b * L.x);
+    float tri = abs(fract((W.x / lk - zoom) * 0.5) * 2.0 - 1.0);
+    return c + exp(tri * lk - lk) * cexpi(W.y) * 0.9;
+}
+// Cubic Julia: z^3 + k, k wandering.
+vec2 tJulia3(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 z = (uv - c) * 2.2, k = 0.55 * cexpi(t * 0.13 + 1.0);
+    for (int i = 0; i < 3; ++i) { if (float(i) >= steps) break; z = cmul(cmul(z, z), z) + k; }
+    return c + z * 0.55;
+}
+// Magnet map (the Ising-model fractal, type I): z <- ((z^2 + k - 1) / (2z + k - 2))^2.
+vec2 tMagnet(vec2 uv, vec2 c, float steps, float t)
+{
+    vec2 z = (uv - c) * 2.5, k = vec2(1.2, 0.3) + 0.25 * cexpi(t * 0.17);
+    for (int i = 0; i < 3; ++i) {
+        if (float(i) >= steps) break;
+        z = cdiv(cmul(z, z) + k - vec2(1.0, 0.0), 2.0 * z + k - vec2(2.0, 0.0));
+        z = cmul(z, z);
+    }
+    return c + z * 0.6;
+}
+// Hyperbolic Droste: Escher's spiral Droste read as a point of the Poincare
+// disk and folded into a {p,q} tiling -- self-similar and hyperbolic at once.
+vec2 tHypDroste(vec2 uv, vec2 c, float K, float zoom, float p, float q)
+{
+    vec2 w = (tDrosteSpiral(uv, c, K, zoom) - c) / 0.45 * 0.97;
+    return c + poincareFold(w, p, q) * 0.9;
+}
+// ---- symmetries ----
+// The modular group PSL(2,Z) as a mirror group ((2,3,inf) triangles): in the
+// half-plane, mirrors x = 0, x = 1/2 and the unit circle, repeated.
+vec2 tModular(vec2 uv, vec2 c, float scale, float travel)
+{
+    vec2 w = (uv - c) * scale;
+    w.y = abs(w.y) + 0.03;
+    w.x += travel;
+    for (int i = 0; i < 12; ++i) {
+        w.x = abs(fract(w.x + 0.5) - 0.5);
+        float r2 = dot(w, w);
+        if (r2 < 1.0) w /= r2;
+    }
+    return c + vec2(w.x, log(w.y) * 0.6) * 0.9;
+}
+// Schottky mirror group: inversions in four circles (tangent at r = 0.707).
+vec2 tSchottky(vec2 uv, vec2 c, float r, float turn)
+{
+    // four circles (tangent at r = 0.707) and a fifth, large one that mirrors
+    // the outside in: the whole plane becomes the group's lace
+    vec2 z = rot2(turn) * (uv - c) * 3.0;
+    const float R0 = 1.75;
+    for (int i = 0; i < 8; ++i) {
+        float zz = dot(z, z);
+        if (zz > R0 * R0) z *= R0 * R0 / zz;
+        for (int k = 0; k < 4; ++k) {
+            vec2 cc = cexpi(1.5707963 * float(k)), d = z - cc;
+            float dd = dot(d, d);
+            if (dd < r * r) z = cc + d * (r * r / dd);
+        }
+    }
+    return c + z * 0.5;
+}
+// p3m1: the equilateral-triangle mirror group (three mirrors through every
+// three-fold centre): hexagonal cell, angle folded into the 60-degree wedge
+// whose rays run through the cell's corners.
+vec2 tTriMirror(vec2 uv, vec2 c, float cells, float turn)
+{
+    vec2 q = rot2(turn) * (uv - c) * cells;
+    const vec2 s = vec2(1.0, 1.7320508);
+    vec2 a = mod(q, s) - s * 0.5, b = mod(q - s * 0.5, s) - s * 0.5;
+    vec2 h = dot(a, a) < dot(b, b) ? a : b;
+    float an = abs(mod(atan(h.y, h.x) - 0.5235988, 2.0943951) - 1.0471976);
+    return c + length(h) * cexpi(an) / cells * 2.0;
+}
+// Pappus chain: inversion about a point turns the arbelos into a strip; the
+// strip mirror-repeated and inverted back gives the endless chain of circles.
+vec2 tPappus(vec2 uv, vec2 c, float width, float travel)
+{
+    vec2 p = c + vec2(0.35, 0.0), d = uv - p;
+    vec2 w = d / max(dot(d, d), 1e-5);
+    w.y = width * (abs(mod(w.y / width - 1.0 + travel, 4.0) - 2.0) - 1.0);
+    return p + w / max(dot(w, w), 1e-5) * 0.8;
+}
+// Origami: up to four mirror lines (folds) turning slowly.
+vec2 tOrigami(vec2 uv, vec2 c, float n, float t)
+{
+    for (int k = 0; k < 4; ++k) {
+        if (float(k) >= n) break;
+        float fk = float(k);
+        vec2 nn = cexpi(t * (0.1 + 0.03 * fk) + fk * 1.7);
+        vec2 pk = c + 0.18 * cexpi(fk * 2.3 + t * 0.07);
+        float s = dot(uv - pk, nn);
+        uv -= nn * (s - abs(s));
+    }
+    return uv;
+}
+// Steiner: a kaleidoscope seen through a circle inversion -- its mirrors
+// become circles through the inversion point.
+vec2 tSteiner(vec2 uv, vec2 c, float n, float rot)
+{
+    vec2 d = (uv - c) * 2.0 + vec2(0.3, 0.0);
+    vec2 w = d / max(dot(d, d), 1e-6) - vec2(1.2, 0.0);
+    float sec = 6.2831853 / n;
+    float an = abs(mod(atan(w.y, w.x) + rot, sec) - 0.5 * sec);
+    w = length(w) * cexpi(an) + vec2(1.2, 0.0);
+    return c + (w / max(dot(w, w), 1e-6) - vec2(0.3, 0.0)) * 0.5;
+}
+// Spiral kaleidoscope: the sectors twist with the log-radius.
+vec2 tSpiralKaleido(vec2 uv, vec2 c, float sides, float twist, float rot)
+{
+    vec2 d = uv - c;
+    float r = max(length(d), 1e-5), sec = 6.2831853 / sides;
+    float an = abs(mod(atan(d.y, d.x) + twist * log(r) + rot, sec) - 0.5 * sec);
+    return c + r * cexpi(an);
+}
+// ---- second maps ----
+// Gravitational lens (point mass): the source seen through an Einstein ring.
+vec2 tGravLens(vec2 uv, vec2 c, float rE, vec2 pos)
+{
+    vec2 d = uv - c - pos;
+    return uv - rE * rE * d / max(dot(d, d), 1e-5);
+}
+// Binary lens: two masses orbiting -- caustic folds.
+vec2 tBinaryLens(vec2 uv, vec2 c, float rE, float t)
+{
+    vec2 d1 = uv - c - 0.12 * cexpi(t), d2 = uv - c + 0.12 * cexpi(t);
+    return uv - rE * rE * (d1 / max(dot(d1, d1), 1e-5) + 0.6 * d2 / max(dot(d2, d2), 1e-5));
+}
+// Lorentz boost (hyperbolic rotation): squeezed along the diagonals.
+vec2 tBoost(vec2 uv, vec2 c, float phi)
+{
+    vec2 d = uv - c;
+    float ch = cosh(phi), sh = sinh(phi);
+    return c + vec2(d.x * ch + d.y * sh, d.x * sh + d.y * ch);
+}
+// Log vortex: turned by an angle growing with log r (a spiral sink).
+vec2 tLogVortex(vec2 uv, vec2 c, float k)
+{
+    vec2 d = uv - c;
+    return c + rot2(k * log(max(length(d), 1e-4))) * d;
+}
+// Zone lens: the magnification oscillates with r^2 (a smooth Fresnel lens).
+vec2 tZoneLens(vec2 uv, vec2 c, float a, float k)
+{
+    vec2 d = uv - c;
+    return c + d * (1.0 + a * sin(k * dot(d, d)));
+}
+// ---- flows ----
+// Gravitational wave: plus and cross polarisation, travelling out.
+vec2 tGravWave(vec2 uv, vec2 c, float h, float t)
+{
+    vec2 d = uv - c;
+    float ph = sin(length(d) * 25.0 - t * 3.0) * exp(-length(d) * 1.5);
+    return uv + h * ph * (cos(t * 0.3) * vec2(d.x, -d.y) + sin(t * 0.3) * vec2(d.y, d.x));
+}
+// Double gyre (the textbook time-periodic flow), advected four steps.
+vec2 tDoubleGyre(vec2 uv, float A, float t)
+{
+    vec2 p = mirrorUV(uv) * vec2(2.0, 1.0);
+    float s = 0.25 * sin(0.6 * t);
+    for (int i = 0; i < 4; ++i) {
+        float f = s * p.x * p.x + (1.0 - 2.0 * s) * p.x, dfx = 2.0 * s * p.x + 1.0 - 2.0 * s;
+        p += 0.08 * 3.14159265 * A * vec2(-sin(3.14159265 * f) * cos(3.14159265 * p.y), cos(3.14159265 * f) * sin(3.14159265 * p.y) * dfx);
+    }
+    return p / vec2(2.0, 1.0);
+}
+// Taylor-Green vortices, amplitude breathing.
+vec2 tTaylorGreen(vec2 uv, float A, float t)
+{
+    vec2 p = uv * 9.424778;
+    float a = A * sin(t * 0.4);
+    for (int i = 0; i < 4; ++i) p += 0.16 * a * vec2(sin(p.x) * cos(p.y), -cos(p.x) * sin(p.y));
+    return p / 9.424778;
+}
+// Convection cells: displaced along the gradient of a hexagonal wave field.
+vec2 tConvection(vec2 uv, float k, float s, float t)
+{
+    vec2 g = vec2(0.0);
+    for (int j = 0; j < 3; ++j) {
+        vec2 e = cexpi(2.0943951 * float(j));
+        g -= k * e * sin(k * dot(e, uv) + t * 0.3);
+    }
+    return uv + s * g * 0.002;
+}
+// Gerstner waves: three trochoidal waves, horizontal displacement.
+vec2 tGerstner(vec2 uv, float A, float t)
+{
+    for (int j = 0; j < 3; ++j) {
+        vec2 dir = cexpi(0.7 + 1.9 * float(j));
+        uv += A * dir * cos(dot(dir, uv) * (14.0 + 5.0 * float(j)) - t * (1.5 + 0.4 * float(j))) * 0.022;
+    }
+    return uv;
+}
 // ---- idea round 4 ----
 // Farris frieze: a power series in w = exp(i z) -- periodic along the band,
 // fading across it; the band folded (mirrored) so friezes stack endlessly.
@@ -1338,6 +1694,26 @@ float sdLidinoid(vec3 p, float th)
     float f = 0.5 * (s2.x * c.y * s.z + s2.y * c.z * s.x + s2.z * c.x * s.y) - 0.5 * (c2.x * c2.y + c2.y * c2.z + c2.z * c2.x) + 0.15;
     return (abs(f) - th) / 3.0;
 }
+// ---- round 6 (3D) ----
+vec3 fRollZ(vec3 p, float R, float cell)
+{
+    float rho = length(p.xy), arc = atan(p.y, p.x) * R;
+    float per = 6.2831853 * R / max(floor(6.2831853 * R / (4.0 * cell) + 0.5), 1.0) / 4.0;
+    gDR *= max(R / max(rho, 0.5), 1.0);
+    vec3 q = vec3(rho - R, arc, p.z);
+    return per * (abs(mod(q / per - 1.0, 4.0) - 2.0) - 1.0);
+}
+float sdTetra3(vec3 p, float s) { return (max(abs(p.x + p.y) - p.z, abs(p.x - p.y) + p.z) - s) * 0.57735027; }
+float sdIcosa3(vec3 p, float s)
+{
+    p = abs(p);
+    const float g = 1.618034, ig = 0.618034;
+    float d = dot(p, vec3(1.0));
+    d = max(d, dot(p, vec3(0.0, ig, g)));
+    d = max(d, dot(p, vec3(ig, g, 0.0)));
+    d = max(d, dot(p, vec3(g, 0.0, ig)));
+    return (d * 0.57735027 - s);
+}
 // Twist around z (keep k small: it stretches space).
 vec3 fTwistZ(vec3 p, float k) { vec2 q = rot2(k * p.z) * p.xy; return vec3(q, p.z); }
 // Sphere inversion (radius R): the outside comes inside, endlessly nested.
@@ -1345,7 +1721,11 @@ vec3 fInvert(vec3 p, float R) { float r2 = max(dot(p, p), 1e-4); gDR *= R * R / 
 // Smooth 3D noise warp (small strength).
 vec3 fWarp(vec3 p, float s, float t)
 {
-    return p + s * vec3(fbm3(p.yz + t), fbm3(p.zx + 3.1 - t), fbm3(p.xy + 5.7 + t)) - s * 0.5;
+    // One octave at a low frequency: three fbm3 calls per evaluation, and the
+    // steep slope they forced on the ray march (gDR * 2.25), halved the frame
+    // rate (46 fps).  The value noise's slope is at most 1.5 * 0.8 per axis.
+    gDR *= 1.0 + 1.3 * s;
+    return p + s * (vec3(noise2(p.yz * 0.8 + t), noise2(p.zx * 0.8 + 3.1 - t), noise2(p.xy * 0.8 + 5.7 + t)) - 0.5) * 1.6;
 }
 // End bodies.
 float sdSphere3(vec3 p, float r) { return length(p) - r; }
@@ -1428,7 +1808,13 @@ def build(name):
     # Chain labs: the class names of every stage, for the app's shader-info
     # overlay (key v; EffectShader::chainInfo reads these comment lines).
     if "int orda(" in body:
-        from chain_classes import CLASSES as _CC
+        import chain_classes as _ccm
+        _CC = dict(_ccm.CLASSES)
+        _ex = _ccm.TUNNEL_EXCLUDE if "tunnelD(" in body else (_ccm.LAB3D_EXCLUDE if "float field3(" in body else {})
+        for _k in ("chainAP", "chainBP", "chainCP", "chainDP"):     # labs with their own subset (labsubset.py)
+            _CC[_k] = _ccm.subset_names(_k, _ex)
+        if "tunnelD(" in body:
+            _CC.pop("orderP", None)                             # the tunnel runs a fixed order
         for k, names in _CC.items():
             out.append("// @chainclasses %s %s" % (k, "|".join(n if n else "none" for n in names)))
     out.append(body.rstrip() + "\n")

@@ -6,7 +6,13 @@ SP = os.path.dirname(os.path.abspath(__file__))
 lab2 = io.open(os.path.join(SP, "src", "ChainLab2D.glsl"), encoding="utf-8").read()
 a = lab2.index("// The stage index and a sub-variant")
 b = lab2.index("vec2 chain(vec2 p)")
-STAGES = re.sub(r"\bgT\b", "gTC", lab2[a:b])      # the wall's chain flows at the 2D lab's calm pace
+STAGES = re.sub(r"\bgT\b", "gTC", lab2[a:b])
+# the wall's chain flows at the 2D lab's calm pace; no free order in the tunnel
+# (the chain runs in every march step): drop the order machinery entirely
+STAGES = STAGES[:STAGES.index("// Stage order: the four stages are not commutative")]
+# The tunnel's own class subset (chain_classes.TUNNEL_EXCLUDE), see labsubset.py.
+import chain_classes as _cc, labsubset
+STAGES = labsubset.apply(STAGES, _cc.TUNNEL_EXCLUDE, "tunnel")
 HEAD = r'''//@doc
  * @brief CHAIN LAB TUNNEL: the chain laboratory as a tunnel, like the original
  * Tunnel scenes -- every start rolls a new chain of four continuous transforms
@@ -31,7 +37,7 @@ HEAD = r'''//@doc
  * morphP (which stage, if any, morphs on with the music), depthP (relief
  * height), styleP (lit photo / glowing crests), speedP (flight speed),
  * detailP (texture sharpness), paletteP (photo colours / colour field), hueP.
-//@params chainAP chainBP chainCP chainDP orderP morphP depthP styleP speedP detailP paletteP
+//@params chainAP chainBP chainCP chainDP morphP depthP styleP speedP detailP paletteP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gTC, gSpread, gRot, gMw, gH;
@@ -40,7 +46,16 @@ vec2 gCw, gCt;
 BODY = r'''
 vec2 chain(vec2 uv)
 {
-    return runChain(uv);
+    // Fixed order A -> B -> C -> D: the chain runs in every march step here,
+    // and the free order (a switch over the four stages at every position)
+    // tripled its cost.
+    gIdW = 1.0;
+    uv = stageA(uv); uv = mirrorUV(uv);
+    uv = stageB(uv); uv = mirrorUV(uv);
+    uv = stageC(uv); uv = mirrorUV(uv);
+    uv = stageD(uv);
+    if (gIdW > 0.0) uv = morphMix(uv, tKaleido(mirrorUV(uv), gCw, 6.0, gRot), gIdW);
+    return uv;
 }
 // The tube's axis winds slowly: the vanishing point wanders.
 vec2 axisXY(float z) { return vec2(0.35 * sin(z * 0.11) + 0.15 * sin(z * 0.27 + 1.0), 0.3 * sin(z * 0.087 + 0.6) + 0.12 * cos(z * 0.21)); }
@@ -64,7 +79,9 @@ float tunnelD(vec3 q, out vec2 c)
 {
     vec2 w = wallUV(q);
     c = chain(w);
-    return (1.0 - gH * wallHeight(w, c)) - length(q.xy - axisXY(q.z));
+    // In the march one chain per step: the relief blurred by a fixed amount
+    // (the stretch-dependent blur of wallHeight needs a second chain).
+    return (1.0 - gH * luma(imgLod(c, 5.0))) - length(q.xy - axisXY(q.z));
 }
 
 void main()

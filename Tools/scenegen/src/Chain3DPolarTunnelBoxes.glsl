@@ -72,10 +72,10 @@ void main()
     gCam = ro;
     gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
     vec3 rd = cf * normalize(vec3(p, 1.1));
-    float t = 0.05; float d = 1.0; bool hit = false;
+    float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0;
     for (int i = 0; i < 100; ++i) {
         d = fieldD(ro + rd * t);
-        if (abs(d) < 0.0008 * t) { hit = true; break; }
+        if (abs(d) < 0.0008 * t) { hit = true; fp = gP; fdr = gDR; break; }   // gP of the hit point: no extra evaluation
         t += d * 0.8;
         if (t > 30.0) break;
     }
@@ -87,8 +87,6 @@ void main()
     if (hit) {
         vec3 q = ro + rd * t;
         vec3 n = normal3(q);
-        fieldD(q);                                              // sets gP for this point
-        vec3 fp = gP;
         float lod = clamp(log2(t * 2.0) + 1.5 * (1.0 - clamp(detailP, 0.0, 1.0)), 0.0, 7.0);
         vec3 tex = photoChain3(fp, n, lod, 0.2 + 0.7 * clamp(paletteP, 0.0, 1.0));
         float tm = luma(tex);
@@ -96,8 +94,8 @@ void main()
         vec3 L = normalize(vec3(0.5, 0.7, -0.4));
         float diff = max(dot(n, L), 0.0);
         float ao = 0.0;
-        for (int k = 1; k <= 4; ++k) { float h = 0.04 * float(k); ao += (h - fieldD(q + n * h)) / h; }
-        ao = clamp(1.0 - 0.2 * ao, 0.2, 1.0);
+        for (int k = 1; k <= 2; ++k) { float h = 0.06 * float(k); ao += (h - fieldD(q + n * h)) / h; }
+        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0);
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
         vec3 surf = tex * lc * (0.35 + 0.9 * diff) * ao;
         vec3 rimC = glowColour(tex, fp.xy, hueP * 0.159);

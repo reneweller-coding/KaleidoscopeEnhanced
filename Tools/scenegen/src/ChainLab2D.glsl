@@ -47,10 +47,10 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 39; if (i == 4) return 14; if (i == 5) return 26; if (i == 6) return 41; if (i == 7) return 25; if (i == 8) return 4; if (i == 9) return 16; if (i == 10) return 33; if (i == 11) return 9; if (i == 12) return 15; if (i == 13) return 28; if (i == 14) return 24; if (i == 15) return 1; if (i == 16) return 29; if (i == 17) return 34; if (i == 18) return 12; if (i == 19) return 42; if (i == 20) return 17; if (i == 21) return 27; if (i == 22) return 30; if (i == 23) return 19; if (i == 24) return 31; if (i == 25) return 6; if (i == 26) return 40; if (i == 27) return 18; if (i == 28) return 32; if (i == 29) return 10; if (i == 30) return 7; if (i == 31) return 21; if (i == 32) return 35; if (i == 33) return 8; if (i == 34) return 3; if (i == 35) return 13; if (i == 36) return 22; if (i == 37) return 23; if (i == 38) return 36; if (i == 39) return 37; if (i == 40) return 38; if (i == 41) return 0; return 2; }   // energy order, 43 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 3; if (i == 3) return 1; if (i == 4) return 10; if (i == 5) return 8; if (i == 6) return 14; if (i == 7) return 15; if (i == 8) return 2; if (i == 9) return 7; if (i == 10) return 9; if (i == 11) return 11; if (i == 12) return 12; if (i == 13) return 13; if (i == 14) return 4; return 6; }   // energy order, 16 classes
-int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 12; if (i == 3) return 8; if (i == 4) return 9; if (i == 5) return 10; if (i == 6) return 11; if (i == 7) return 7; if (i == 8) return 1; if (i == 9) return 4; if (i == 10) return 3; if (i == 11) return 6; return 2; }   // energy order, 13 classes
-int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 2; if (i == 4) return 13; if (i == 5) return 7; if (i == 6) return 10; if (i == 7) return 11; if (i == 8) return 1; if (i == 9) return 12; if (i == 10) return 6; if (i == 11) return 9; if (i == 12) return 14; if (i == 13) return 4; return 3; }   // energy order, 15 classes
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 39; if (i == 4) return 52; if (i == 5) return 14; if (i == 6) return 26; if (i == 7) return 41; if (i == 8) return 25; if (i == 9) return 4; if (i == 10) return 16; if (i == 11) return 43; if (i == 12) return 44; if (i == 13) return 33; if (i == 14) return 56; if (i == 15) return 9; if (i == 16) return 15; if (i == 17) return 28; if (i == 18) return 24; if (i == 19) return 53; if (i == 20) return 1; if (i == 21) return 29; if (i == 22) return 34; if (i == 23) return 12; if (i == 24) return 42; if (i == 25) return 17; if (i == 26) return 46; if (i == 27) return 27; if (i == 28) return 47; if (i == 29) return 30; if (i == 30) return 45; if (i == 31) return 19; if (i == 32) return 31; if (i == 33) return 48; if (i == 34) return 6; if (i == 35) return 40; if (i == 36) return 18; if (i == 37) return 32; if (i == 38) return 10; if (i == 39) return 7; if (i == 40) return 21; if (i == 41) return 35; if (i == 42) return 8; if (i == 43) return 3; if (i == 44) return 13; if (i == 45) return 22; if (i == 46) return 23; if (i == 47) return 55; if (i == 48) return 54; if (i == 49) return 51; if (i == 50) return 49; if (i == 51) return 50; if (i == 52) return 36; if (i == 53) return 37; if (i == 54) return 38; if (i == 55) return 57; if (i == 56) return 0; return 2; }   // energy order, 58 classes
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 3; if (i == 4) return 18; if (i == 5) return 1; if (i == 6) return 22; if (i == 7) return 10; if (i == 8) return 21; if (i == 9) return 8; if (i == 10) return 14; if (i == 11) return 15; if (i == 12) return 16; if (i == 13) return 2; if (i == 14) return 7; if (i == 15) return 9; if (i == 16) return 11; if (i == 17) return 19; if (i == 18) return 12; if (i == 19) return 13; if (i == 20) return 4; if (i == 21) return 6; return 17; }   // energy order, 23 classes
+int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 12; if (i == 4) return 15; if (i == 5) return 8; if (i == 6) return 9; if (i == 7) return 10; if (i == 8) return 11; if (i == 9) return 13; if (i == 10) return 14; if (i == 11) return 7; if (i == 12) return 1; if (i == 13) return 16; if (i == 14) return 4; if (i == 15) return 3; if (i == 16) return 6; return 2; }   // energy order, 18 classes
+int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 2; if (i == 4) return 19; if (i == 5) return 13; if (i == 6) return 18; if (i == 7) return 7; if (i == 8) return 10; if (i == 9) return 11; if (i == 10) return 17; if (i == 11) return 1; if (i == 12) return 12; if (i == 13) return 16; if (i == 14) return 6; if (i == 15) return 9; if (i == 16) return 15; if (i == 17) return 14; if (i == 18) return 4; return 3; }   // energy order, 20 classes
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
@@ -61,6 +61,22 @@ uniform float walkHost;
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
+    if (k == 43) return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gT * 0.3), gT * 0.4 + gRot);
+    if (k == 44) return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gT * 0.3) + 0.8, gT * 0.4 + gRot);
+    if (k == 45) return tWeierstrass(uv, gCw, 2.0 + 2.0 * v, gT);
+    if (k == 46) return tMagnet(uv, gCw, 2.0 + floor(v * 1.99), gT);
+    if (k == 47) return tThetaWave(uv, gCw, 3.0 + 3.0 * v, gT);
+    if (k == 48) return tChebyshev(uv, gCw, 3.0 + floor(v * 3.99), 1.4 + 0.6 * sin(gT * 0.2));
+    if (k == 49) return tHenon(uv, gCw, 3.0, gT);
+    if (k == 50) return tIkeda(uv, gCw, 3.0, gT);
+    if (k == 51) return tChirikov(uv, gCw, 1.3 + 0.7 * v + 0.3 * sin(gT * 0.2), 4.0);
+    if (k == 52) return tCassini(uv, gCt, 0.6 + 0.4 * sin(gT * 0.25), gT * 1.2);
+    if (k == 53) return tKleinInv(uv, gCw, v < 0.5 ? 0.0 : 1.0, 0.6 * sin(gT * 0.3), gT * 0.3 + gRot);
+    if (k == 54) return tGumowski(uv, gCw, -0.4 + 0.3 * sin(gT * 0.15) + 0.2 * v, 3.0);
+    if (k == 55) return tZaslavsky(uv, gCw, 4.0 + floor(v * 3.99), 1.0 + 0.4 * sin(gT * 0.2), 4.0);
+    if (k == 56) { int j = int(floor(v * 2.99)); vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : vec2(4.0, 6.0);
+                   return tHypDroste(uv, gCt, 2.5 + 2.0 * fract(v * 3.0), gT * 0.5, pq.x, pq.y); }
+    if (k == 57) return tJulia3(uv, gCw, 2.0, gT);
     if (k == 30) return tJacobiWall(uv, gCw, 2.0 + 2.0 * v, v < 0.5 ? 0 : 1, gT);
     if (k == 31) return tHypFlow(uv, gCw, v * 3.0, gT * 0.8);
     if (k == 32) return tPoles(uv, gCw, 2.0 + floor(v * 2.99), gT);
@@ -125,6 +141,13 @@ vec2 stageAk(vec2 uv, int k, float v)
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
+    if (k == 16) return tModular(uv, gCw, 2.0 + 1.5 * v, gT * 0.5);
+    if (k == 17) return tSchottky(uv, gCw, 0.62 + 0.08 * v, gRot);
+    if (k == 18) return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
+    if (k == 19) return tPappus(uv, gCw, 0.25 + 0.2 * v, gT * 0.5);
+    if (k == 20) return tOrigami(uv, gCw, 2.0 + floor(v * 2.99), gT);
+    if (k == 21) return tSteiner(uv, gCw, sides(v), gRot);
+    if (k == 22) return tSpiralKaleido(uv, gCw, sides(v), 1.0 + 1.5 * sin(gT * 0.2), gRot);
     if (k == 10) return tCurvedKaleido(uv, gCw, sides(v), gRot, 0.4 * vec2(sin(gT * 0.3), cos(gT * 0.23)));
     if (k == 11) return tLevy(uv, gCw, 4.0 + floor(v * 2.99), 0.2 * sin(gT * 0.3));
     if (k == 12) return tPythagoras(uv, gCw, 4.0 + floor(v * 2.99), 0.2 * sin(gT * 0.4));
@@ -146,6 +169,11 @@ vec2 stageBk(vec2 uv, int k, float v)
 vec2 stageCk(vec2 uv, int k, float v)
 {
     k = ordc(k);
+    if (k == 13) return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gT * 0.4), cos(gT * 0.31)));
+    if (k == 14) return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gT * 0.5);
+    if (k == 15) return tBoost(uv, gCw, 0.6 * sin(gT * 0.3 + v * 6.28));
+    if (k == 16) return tLogVortex(uv, gCw, 0.5 + 1.0 * sin(gT * 0.2));
+    if (k == 17) return tZoneLens(uv, gCw, 0.15 + 0.1 * v, 30.0 + 20.0 * v);
     if (k == 11) return tCayley(uv, gCw, 2.0 + 2.0 * v);
     if (k == 12) return tFisheye(uv, gCw, 0.6 + 0.8 * v + 0.2 * sin(gT * 0.3));
     if (k == 10) return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gT * 0.3))   /* 0.5: the square-root fold */;
@@ -164,6 +192,11 @@ vec2 stageCk(vec2 uv, int k, float v)
 vec2 stageDk(vec2 uv, int k, float v)
 {
     k = ordd(k);
+    if (k == 15) return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gT * 2.0);
+    if (k == 16) return tDoubleGyre(uv, 0.5 + 0.5 * gSpread, gT * 2.0);
+    if (k == 17) return tTaylorGreen(uv, 1.0 + gSpread, gT * 2.0);
+    if (k == 18) return tConvection(uv, 20.0 + 10.0 * v, 1.0 + gSpread, gT * 2.0);
+    if (k == 19) return tGerstner(uv, 1.0 + gSpread, gT * 3.0);
     if (k == 9) return tKarman(uv, 2.0 + 2.0 * gSpread, gT * 2.0);
     if (k == 10) return tCylinderFlow(uv, gCw, 1.0 + gSpread, 0.5 * sin(gT * 0.3));
     if (k == 11) return tDipole(uv, gCw, 1.0 + gSpread, gT);
@@ -216,17 +249,17 @@ vec2 stageA(vec2 uv)
 {
     // Decide first (the class shown, the class faded to, the fade), then
     // evaluate: the class switch is inlined at most twice.
-    int k0 = pickStage(chainAP, 43); float v0 = subVar(chainAP, 43);
+    int k0 = pickStage(chainAP, 58); float v0 = subVar(chainAP, 58);
     int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
     if (walks(1)) {
         if (walkHost > 0.5 && walkAll()) {
             f = smoothstep(0.0, 1.0, walkA.z);
-            ka = pickStage(walkA.x, 43); va = subVar(walkA.x, 43);
-            kb = pickStage(walkA.y, 43); vb = subVar(walkA.y, 43);
+            ka = pickStage(walkA.x, 58); va = subVar(walkA.x, 58);
+            kb = pickStage(walkA.y, 58); vb = subVar(walkA.y, 58);
         } else {
             float kf = walkPos(1), c = floor(kf);
-            walkPick(c, k0, v0, 43, 1.3, ka, va);
-            walkPick(c + 1.0, k0, v0, 43, 1.3, kb, vb);
+            walkPick(c, k0, v0, 58, 1.3, ka, va);
+            walkPick(c + 1.0, k0, v0, 58, 1.3, kb, vb);
             f = walkFade(kf);
         }
     }
@@ -239,21 +272,21 @@ vec2 stageB(vec2 uv)
 {
     // Decide first (the class shown, the class faded to, the fade), then
     // evaluate: the class switch is inlined at most twice.
-    int k0 = pickStage(chainBP, 16); float v0 = subVar(chainBP, 16);
+    int k0 = pickStage(chainBP, 23); float v0 = subVar(chainBP, 23);
     int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
     if (walks(2)) {
         if (walkHost > 0.5 && walkAll()) {
             f = smoothstep(0.0, 1.0, walkB.z);
-            ka = pickStage(walkB.x, 16); va = subVar(walkB.x, 16);
-            kb = pickStage(walkB.y, 16); vb = subVar(walkB.y, 16);
+            ka = pickStage(walkB.x, 23); va = subVar(walkB.x, 23);
+            kb = pickStage(walkB.y, 23); vb = subVar(walkB.y, 23);
         } else {
             float kf = walkPos(2), c = floor(kf);
-            walkPick(c, k0, v0, 16, 2.9, ka, va);
-            walkPick(c + 1.0, k0, v0, 16, 2.9, kb, vb);
+            walkPick(c, k0, v0, 23, 2.9, ka, va);
+            walkPick(c + 1.0, k0, v0, 23, 2.9, kb, vb);
             f = walkFade(kf);
         }
     }
-    gIdW *= (ka <= 1 ? 1.0 - f : 0.0) + (kb <= 1 ? f : 0.0);
+    gIdW *= (ka <= 2 ? 1.0 - f : 0.0) + (kb <= 2 ? f : 0.0);
     vec2 r = stageBk(uv, ka, va);
     if (f > 0.0) r = morphMix(r, stageBk(uv, kb, vb), f);
     return r;
@@ -262,17 +295,17 @@ vec2 stageC(vec2 uv)
 {
     // Decide first (the class shown, the class faded to, the fade), then
     // evaluate: the class switch is inlined at most twice.
-    int k0 = pickStage(chainCP, 13); float v0 = subVar(chainCP, 13);
+    int k0 = pickStage(chainCP, 18); float v0 = subVar(chainCP, 18);
     int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
     if (walks(3)) {
         if (walkHost > 0.5 && walkAll()) {
             f = smoothstep(0.0, 1.0, walkC.z);
-            ka = pickStage(walkC.x, 13); va = subVar(walkC.x, 13);
-            kb = pickStage(walkC.y, 13); vb = subVar(walkC.y, 13);
+            ka = pickStage(walkC.x, 18); va = subVar(walkC.x, 18);
+            kb = pickStage(walkC.y, 18); vb = subVar(walkC.y, 18);
         } else {
             float kf = walkPos(3), c = floor(kf);
-            walkPick(c, k0, v0, 13, 4.7, ka, va);
-            walkPick(c + 1.0, k0, v0, 13, 4.7, kb, vb);
+            walkPick(c, k0, v0, 18, 4.7, ka, va);
+            walkPick(c + 1.0, k0, v0, 18, 4.7, kb, vb);
             f = walkFade(kf);
         }
     }
@@ -285,17 +318,17 @@ vec2 stageD(vec2 uv)
 {
     // Decide first (the class shown, the class faded to, the fade), then
     // evaluate: the class switch is inlined at most twice.
-    int k0 = pickStage(chainDP, 15); float v0 = subVar(chainDP, 15);
+    int k0 = pickStage(chainDP, 20); float v0 = subVar(chainDP, 20);
     int ka = k0, kb = k0; float va = v0, vb = v0, f = 0.0;
     if (walks(4)) {
         if (walkHost > 0.5 && walkAll()) {
             f = smoothstep(0.0, 1.0, walkD.z);
-            ka = pickStage(walkD.x, 15); va = subVar(walkD.x, 15);
-            kb = pickStage(walkD.y, 15); vb = subVar(walkD.y, 15);
+            ka = pickStage(walkD.x, 20); va = subVar(walkD.x, 20);
+            kb = pickStage(walkD.y, 20); vb = subVar(walkD.y, 20);
         } else {
             float kf = walkPos(4), c = floor(kf);
-            walkPick(c, k0, v0, 15, 6.1, ka, va);
-            walkPick(c + 1.0, k0, v0, 15, 6.1, kb, vb);
+            walkPick(c, k0, v0, 20, 6.1, ka, va);
+            walkPick(c + 1.0, k0, v0, 20, 6.1, kb, vb);
             f = walkFade(kf);
         }
     }
