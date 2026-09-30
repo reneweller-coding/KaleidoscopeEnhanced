@@ -352,6 +352,40 @@ def check(paths, reg):
 EDITOR = os.path.join(ROOT, "PresetEditor", "build", "Release", "PresetEditor.exe")
 STAGES = (".frag", ".vert", ".comp", ".geom", ".tesc", ".tese")
 
+# ---- Cold compile time of the chain labs (C2) ----------------------------------
+# A chain lab holds every transform class at once; without the driver's shader
+# cache (after every change, a driver update, a fresh install) it compiles for
+# seconds.  The app builds in the background where the driver allows it, but
+# on drivers without parallel compile the first fade-in would freeze.  So a lab
+# that CHANGED is compiled cold (a copy with a fresh comment defeats the cache)
+# and timed; above the budget it is a warning.
+COLD_BUDGET_S = 8.0
+
+def cold_compile_check(paths):
+    import random, tempfile, time
+    if not os.path.exists(EDITOR):
+        return []
+    changed = set(sh("git", "diff", "--name-only", "HEAD").split()) | set(sh("git", "ls-files", "--others", "--exclude-standard").split())
+    warns = []
+    for p in paths:
+        rel = os.path.relpath(p, ROOT).replace("\\", "/")
+        if rel not in changed or not p.endswith(".frag"):
+            continue
+        src = open(p, encoding="utf-8", errors="replace").read()
+        if "// @chainclasses" not in src:
+            continue
+        tmp = os.path.join(tempfile.gettempdir(), "coldcheck_%d.frag" % random.randint(0, 10**9))
+        open(tmp, "w", encoding="utf-8", newline="\n").write("// cold %d\n" % random.randint(0, 10**9) + src)
+        t0 = time.time()
+        subprocess.run([EDITOR, "--compile", tmp], cwd=ROOT, capture_output=True, text=True, timeout=600)
+        dt = time.time() - t0 - 0.65                    # minus the editor's own start-up
+        os.remove(tmp)
+        print(f"cold compile {rel}: {dt:.1f} s")
+        if dt > COLD_BUDGET_S:
+            warns.append((rel, f"[C2] cold compile {dt:.1f} s > {COLD_BUDGET_S:.0f} s budget -- drivers without "
+                               "parallel compile freeze on the first fade-in; split the lab or drop weak classes"))
+    return warns
+
 def compile_check(paths):
     """Compile every file with the real driver.  Returns (errors, warnings)."""
     if not os.path.exists(EDITOR):
@@ -409,6 +443,8 @@ def main():
         ce, cw = compile_check(cfiles)
         errors += ce
         warnings += cw
+        if not ce:
+            warnings += cold_compile_check(cfiles)
     for f, m in warnings: print(f"WARN  {f}\n      {m}")
     if warnings and errors: print()
     for f, m in errors:    print(f"ERROR {f}\n      {m}")
