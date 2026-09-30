@@ -1005,3 +1005,6 @@ KusamaDotInfinity	4	5	7	3	8	8	7
 TextureIrisShutter	5	7	7	6	8	6	8
 TextureNacreSheen	8	4	2	3	5	8	6
 ZaoWouKiStorm	8	7	2	7	4	9	7
+TextureTubeBundle	4	7	7	5	7	5	7
+TextureSmokeChamber	3	5	8	6	5	3	6
+CirclePackingBloom	6	5	5	3	7	8	7
