@@ -143,6 +143,7 @@ public:
 		m_usesSim = m_usesFluid = m_usesSmoke3D = m_usesSSM = m_usesPhysarum = -1;
 		m_usesSpectro = m_usesShadow = m_usesShadow2 = m_usesOit = m_usesBake = -1;
 		m_usesMandelbrot = -1;
+		m_usesSceneLod = -1;
 	}
 	/// @return True once ensureCompiled() has successfully built the GL program.
 	bool isCompiled() const { return m_glReady; }
@@ -470,6 +471,16 @@ public:
 	bool usesBake();
 	/// @return True if this effect's compiled fragment shader declares the "texMandelbrot" sampler. Cached after first query; see ComputeFX::stepMandelbrot() for why this bypasses the generic cfxMask() system.
 	bool usesMandelbrot();
+	/**
+	 * @brief True if this effect samples its input image at explicit mip levels (`textureLod(tex0` in its source).
+	 *
+	 * For an overlay/FX shader the input is the finished scene frame, which has no
+	 * mip chain of its own; RenderPipeline::renderOverlayPass() builds one only
+	 * while an FX that asks for it is on screen (FxChain: a rolled transform chain
+	 * squeezes the frame and shimmers without mips).  Read from the source file
+	 * once and cached; reset on recompile.
+	 */
+	bool usesSceneLod();
 
 	// ---- Song-structure memory ----
 	// Snapshot / restore of all rolled per-activation parameter values, so a
@@ -611,6 +622,7 @@ protected:
 	int		m_usesShadow2 = -1;   ///< Cached usesShadow2() result (-1 = not yet queried): the second, independent shadow map, `texShadow2`.
 	int		m_usesOit = -1;      ///< Cached usesOit() result (-1 = not yet queried): order-independent transparency, `oitPass`.
 	int		m_usesBake = -1;     ///< Cached usesBake() result (-1 = not yet queried): the per-scene baked-field texture, `texBake`.
+	int		m_usesSceneLod = -1;     ///< Cached usesSceneLod() result (-1 = not yet read from the source file).
 	int		m_usesMandelbrot = -1;   ///< Cached usesMandelbrot() result (-1 = not yet queried): the deep-zoom Mandelbrot field texture, `texMandelbrot`.
 	int		m_usesPhysarum = -1; ///< Cached usesPhysarum() result (-1 = not yet queried): the Physarum trail map, `texPhysarum`.
 	unsigned int	m_cfxMask = 0;   ///< Compute-FX sampler bits (see cfxMask()); cached result, resolved once per compiled program (see m_cfxProg).

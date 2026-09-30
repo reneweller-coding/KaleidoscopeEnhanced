@@ -11,6 +11,7 @@
 #include "ComputeFX.h"
 #include "textfile.h"
 #include <string>
+#include <cstring>
 
 #include <cstdlib>
 #include <chrono>
@@ -958,6 +959,21 @@ bool EffectShader::usesBake()
 		m_usesBake = ( m_sh_prog_id != 0 &&
 		               glGetUniformLocation( m_sh_prog_id, "texBake" ) >= 0 ) ? 1 : 0;
 	return m_usesBake == 1;
+}
+
+bool EffectShader::usesSceneLod()
+{
+	if( m_usesSceneLod < 0 )
+	{
+		m_usesSceneLod = 0;
+		if( m_fragmentShaderFilename )
+			if( char *src = textFileRead( m_fragmentShaderFilename ) )
+			{
+				m_usesSceneLod = strstr( src, "textureLod(tex0" ) ? 1 : 0;
+				free( src );
+			}
+	}
+	return m_usesSceneLod == 1;
 }
 
 bool EffectShader::usesMandelbrot()

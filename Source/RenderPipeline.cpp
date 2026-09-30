@@ -2039,6 +2039,29 @@ void RenderPipeline::renderOverlayPass( const AudioFeatures &audioFx, GLuint sce
 	// pair — scene mixing is entirely the transition pass's job now.
 	glActiveTexture(GL_TEXTURE3);
 	glBindTexture( GL_TEXTURE_2D, sceneTex );
+	// An FX that samples the scene at explicit mip levels (FxChain: a transform
+	// chain squeezes the frame) gets a fresh mip chain of the finished frame --
+	// one glGenerateMipmap, the same the present pass already does every frame
+	// for bloom.  Only while such an FX is on screen; afterwards the textures go
+	// back to plain linear filtering, so no stale level is ever read.
+	const bool wantMips = m_effectFx[m_scheduler.actFx()]->usesSceneLod()
+	    || ( m_scheduler.fxState() != 0 && m_effectFx[m_scheduler.nextFx()]->usesSceneLod() );
+	if( wantMips )
+	{
+		glGenerateMipmap( GL_TEXTURE_2D );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+		m_sceneMipTex.insert( sceneTex );
+	}
+	else if( !m_sceneMipTex.empty() )
+	{
+		for( GLuint t : m_sceneMipTex )
+		{
+			glBindTexture( GL_TEXTURE_2D, t );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		}
+		m_sceneMipTex.clear();
+		glBindTexture( GL_TEXTURE_2D, sceneTex );
+	}
 	glActiveTexture(GL_TEXTURE4);
 	glBindTexture( GL_TEXTURE_2D, sceneTex );
 	glActiveTexture(GL_TEXTURE0);

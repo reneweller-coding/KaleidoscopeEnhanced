@@ -8,6 +8,7 @@
 #ifndef RENDERPIPELINE_H
 #define RENDERPIPELINE_H
 
+#include <set>
 #include <QtGui/qopengl.h>
 #include <QtCore/QElapsedTimer>
 #include <QtCore/QThread>
@@ -531,6 +532,7 @@ private:
 	GLuint			m_texIDFBOEffectFx1 = 0;  ///< Colour texture attached to m_fboEffectFx1.
 	GLuint			m_texIDFBOEffectFx2 = 0;  ///< Colour texture attached to m_fboEffectFx2.
 	GLuint			m_texIDFBOTransition = 0;      ///< Colour texture attached to m_fboTransition (the finished, blended scene the overlays read).
+	std::set<GLuint>	m_sceneMipTex;                 ///< Scene textures currently switched to mipmapped filtering for an FX that samples them with textureLod (see renderOverlayPass()); reset to GL_LINEAR once no such FX is on screen.
 
 	// Target framebuffer for the final on-screen pass (QOpenGLWidget's FBO, not 0).
 	GLuint			m_defaultFBO = 0;   ///< Target framebuffer for the final on-screen pass; see setDefaultFBO().

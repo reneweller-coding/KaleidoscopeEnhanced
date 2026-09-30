@@ -1,23 +1,60 @@
-# -*- coding: utf-8 -*-
-"""Assemble Scene2D/<Name>.frag from Tools/scenegen/src/<Name>.glsl.
+#version 330 core
+out vec4 fragColor;
+/**
+ * @file FxChain.frag
+ * @brief FX CHAIN: the chain laboratory as an overlay -- the finished frame of
+ * whatever scene is playing flows through a rolled chain of four continuous
+ * transforms (the 2D chain lab's classes: global map, symmetry, second map,
+ * warp), so every scene becomes the input of a new chain.  The frame has no
+ * mip chain of its own; the engine builds one while this FX is on screen
+ * (EffectShader::usesSceneLod), which keeps the squeezed parts from shimmering.
+ * Rendered as the frame itself, a lit relief or glowing edges (the preset keeps
+ * styleP low), optionally tinted by a colour field that follows the chain.
+ *
+ * Audio Reactivity (structure, not only light):
+ *   audioAdvance    -> the flow through the chain (integrated, jump-free)
+ *   sceneAdvance    -> the chain morphs on to the next transform (integrated)
+ *   audioPhase      -> the kaleidoscopes turn, the colour field wanders (integrated)
+ *   audioSpread     -> the strength of the distorting stages
+ *   audioKick       -> the edges flare (light)
+ *   audioMode       -> the tint: cool in minor, warm in major
+ *   audioSwell      -> the relief light (slow)
+ *
+ * Knobs: chainAP / chainBP / chainCP / chainDP (the chain, rolled per start),
+ * morphP (which stage, if any, morphs on with the music), styleP (frame /
+ * relief / edges / contours / flow), speedP (flow speed), detailP (sharpness),
+ * paletteP (the frame's own colours / colour field), hueP.
+ */
 
-Source format:
-    //@doc
-     * @brief ...            (doc comment lines, without /** */)
-    //@params fooP barP       (per-activation knobs, 0..1; hueP is always added)
-    //@audio audioSwell audioSpectrum[32] ...
-    //@expr fooP = clamp(0.5 + 0.3*swell, 0.0, 1.0)   (optional, any number)
-    //@body
-    ... GLSL (functions + main, main ends with finish(col);)
-Usage: gen.py Name [Name ...]
-"""
-import io, os, re, sys
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
-SP = os.path.dirname(os.path.abspath(__file__))
+uniform vec2  resolution;
+uniform float time;
+uniform sampler2D tex0;
+uniform sampler2D tex1;
+uniform float interpolation;
 
-BASE_AUDIO = ["audioAdvance", "audioLevel", "audioValence", "audioChromaHue", "audioPhase"]
+uniform float sceneTime;
+uniform float sceneAdvance;
+uniform float audioAdvance;
+uniform float audioLevel;
+uniform float audioValence;
+uniform float audioChromaHue;
+uniform float audioPhase;
+uniform float audioSpread;
+uniform float audioKick;
+uniform float audioMode;
+uniform float audioSwell;
 
-LIB = r"""
+uniform float chainAP;
+uniform float chainBP;
+uniform float chainCP;
+uniform float chainDP;
+uniform float morphP;
+uniform float styleP;
+uniform float speedP;
+uniform float detailP;
+uniform float paletteP;
+uniform float hueP;
+
 // ---- shared building blocks (texture pool, noise, shapes) ----
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 float hash21(vec2 p)
@@ -189,9 +226,8 @@ void finish(vec3 col)
     t /= 1.0 + 0.35 * max(t.r, max(t.g, t.b));
     fragColor = vec4(clamp(t, 0.0, 1.0), 1.0);
 }
-"""
 
-CHAIN_LIB = r"""
+
 // ---- composable continuous transforms (photo space, centre 0.5) ----
 // Every stage may be followed by mirrorUV: it is continuous and periodic with
 // the photo's mirror period 2, so stages whose output jumps by whole periods
@@ -392,154 +428,196 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
     grad = vec2(lx, ly) * 0.5;                                  // luma change per 1.5 px
     return col;
 }
-"""
 
-CHAIN3D_LIB = r"""
-// ---- composable continuous 3D space transforms (for raymarched fields) ----
-// Each stage is continuous; stages that scale space multiply gDR so the
-// distance estimate stays conservative.  gP keeps the final folded point
-// (used to texture the surface with the kaleidoscoped photo).
-float gDR = 1.0;
-vec3 gP = vec3(0.0);
-vec3 fRot(vec3 p, vec3 axis, float a)
-{
-    axis = normalize(axis);
-    float c = cos(a), s = sin(a);
-    return p * c + cross(axis, p) * s + axis * dot(axis, p) * (1.0 - c);
-}
-vec3 fAbs(vec3 p) { return abs(p); }
-// Reflect onto the positive side of the plane n.p = d.
-vec3 fPlane(vec3 p, vec3 n, float d) { float s = dot(p, n) - d; return p - 2.0 * n * min(s, 0.0); }
-// Octahedral mirror symmetry (48-fold): abs plus sorting (swaps are continuous).
-vec3 fOcta(vec3 p)
-{
-    p = abs(p);
-    if (p.x < p.y) p.xy = p.yx;
-    if (p.x < p.z) p.xz = p.zx;
-    if (p.y < p.z) p.yz = p.zy;
-    return p;
-}
-// Tetrahedral mirror symmetry.
-vec3 fTetra(vec3 p)
-{
-    if (p.x + p.y < 0.0) p.xy = -p.yx;
-    if (p.x + p.z < 0.0) p.xz = -p.zx;
-    if (p.y + p.z < 0.0) p.zy = -p.yz;
-    return p;
-}
-// Mandelbox folds.
-vec3 fBox(vec3 p, float l) { return clamp(p, -l, l) * 2.0 - p; }
-vec3 fSphere(vec3 p, float rMin, float rFix)
-{
-    float r2 = dot(p, p);
-    float k = r2 < rMin * rMin ? (rFix * rFix) / (rMin * rMin) : (r2 < rFix * rFix ? (rFix * rFix) / r2 : 1.0);
-    gDR *= k;
-    return p * k;
-}
-vec3 fScale(vec3 p, float s, vec3 offset) { gDR *= abs(s); return p * s - offset; }
-// Mirrored repetition (triangle wave: continuous), period 4c per axis.
-vec3 fRepeat(vec3 p, vec3 c) { return c * (abs(mod(p / c - 1.0, 4.0) - 2.0) - 1.0); }
-// Mirrored polar repetition around the z axis (n wedges, n whole).
-vec3 fPolarZ(vec3 p, float n)
-{
-    float sec = 6.2831853 / n;
-    float a = abs(mod(atan(p.y, p.x), sec) - 0.5 * sec);
-    return vec3(length(p.xy) * vec2(cos(a), sin(a)), p.z);
-}
-// Twist around z (keep k small: it stretches space).
-vec3 fTwistZ(vec3 p, float k) { vec2 q = rot2(k * p.z) * p.xy; return vec3(q, p.z); }
-// Sphere inversion (radius R): the outside comes inside, endlessly nested.
-vec3 fInvert(vec3 p, float R) { float r2 = max(dot(p, p), 1e-4); gDR *= R * R / r2; return p * R * R / r2; }
-// Smooth 3D noise warp (small strength).
-vec3 fWarp(vec3 p, float s, float t)
-{
-    return p + s * vec3(fbm3(p.yz + t), fbm3(p.zx + 3.1 - t), fbm3(p.xy + 5.7 + t)) - s * 0.5;
-}
-// End bodies.
-float sdSphere3(vec3 p, float r) { return length(p) - r; }
-float sdBox3(vec3 p, vec3 b) { vec3 q = abs(p) - b; return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0); }
-float sdTorus3(vec3 p, float R, float r) { return length(vec2(length(p.xz) - R, p.y)) - r; }
-float sdGyroid3(vec3 p, float thick) { return (abs(dot(sin(p), cos(p.yzx))) - thick) / 1.8; }
+float gT, gSpread, gRot, gMw;
+vec2 gCw, gCt;
+// The stage index and a sub-variant 0..1 from one rolled knob.
+int pickStage(float x, int n) { return int(min(floor(clamp(x, 0.0, 1.0) * float(n)), float(n - 1))); }
+float subVar(float x, int n) { return fract(clamp(x, 0.0, 0.9999) * float(n)); }
+float evenArms(float v) { return 2.0 * (1.0 + floor(v * 3.99)); }        // 2, 4, 6, 8 (seamless spiral)
+float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 .. 9 mirrors
 
-float field3(vec3 p);
-vec3 gCam = vec3(0.0);
-// Collision-free flight: the camera follows a winding path through the field, and a
-// tube around that path is carved out of every body (soft edges, so the cut faces
-// read as sculpted walls).  The path depends only on z, so the carve is stateless.
-float gPathAmp = 1.0;   // how far the path winds (a scene may shrink it)
-float gTube = 0.45;     // tube radius
-vec2 camPathXY(float z)
+// Stage A: a global map.
+vec2 stageAk(vec2 uv, int k, float v)
 {
-    return gPathAmp * vec2(1.1 * sin(z * 0.11) + 0.4 * sin(z * 0.23 + 1.3), 0.8 * sin(z * 0.083 + 0.7) + 0.3 * cos(z * 0.19));
+    if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
+    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gT * 2.0);
+    if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gT * 3.0);
+    if (k == 3) {
+        vec2 pa = vec2(0.5) + 0.3 * vec2(sin(gT), cos(gT * 0.7)), pb = vec2(0.5) - 0.3 * vec2(sin(gT * 0.8), cos(gT));
+        return tMobius(uv, pa, pb, 0.25 + 0.2 * gSpread);
+    }
+    if (k == 4) return tDroste(uv, gCt, 2.0 + floor(v * 2.99), gT * 1.5);
+    if (k == 5) return tPolar(uv, gCt, 1.2 + 0.8 * v);
+    if (k == 6) return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
+    if (k == 7) return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
+    if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+    if (k == 9) {
+        // {p,q} from the sub-variant: (5,4) (4,5) (6,4) (7,3) (8,3) (4,6)
+        int j = int(floor(v * 5.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(4.0, 5.0) : j == 2 ? vec2(6.0, 4.0) : j == 3 ? vec2(7.0, 3.0) : j == 4 ? vec2(8.0, 3.0) : vec2(4.0, 6.0);
+        return tPoincare(uv, vec2(0.5), pq.x, pq.y, 2.2, 0.45 * vec2(sin(gT * 0.7), sin(gT * 0.53 + 1.0)));
+    }
+    return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gT * 2.0);
 }
-float smaxK(float a, float b, float k) { float h = clamp(0.5 - 0.5 * (b - a) / k, 0.0, 1.0); return mix(b, a, h) + k * h * (1.0 - h); }
-float fieldD(vec3 p)
+// Stage B: a symmetry.
+vec2 stageBk(vec2 uv, int k, float v)
 {
-    gDR = 1.0;
-    float d = field3(p);
-    float tube = gTube - length(p.xy - camPathXY(p.z));
-    return max(smaxK(d, 0.8 * tube, 0.15), 0.3 - length(p - gCam));
+    if (k == 0) return uv;
+    if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
+    if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
+    if (k == 3) return tP4m(uv, 2.0 + 1.5 * v);
+    if (k == 4) return tFold(uv, 0.4 + 0.3 * sin(gT), 1.2 + 0.1 * v, 3.0);
+    return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
 }
-// The camera frame at depth z: on the path, looking at the path ahead.
-mat3 camFrame(float z, out vec3 ro)
+// Stage C: a second global map.
+vec2 stageCk(vec2 uv, int k, float v)
 {
-    ro = vec3(camPathXY(z), z);
-    vec3 ta = vec3(camPathXY(z + 2.0), z + 2.0);
-    vec3 fw = normalize(ta - ro);
-    // Bank into the curves: the roll follows the path's sideways curvature at
-    // this depth -- a function of position only, like a road, never of loudness.
-    vec2 curv = camPathXY(z + 1.5) - 2.0 * camPathXY(z) + camPathXY(z - 1.5);
-    float roll = clamp(-curv.x * 1.6, -0.3, 0.3);
-    vec3 up = vec3(sin(roll), cos(roll), 0.0);
-    vec3 rt = normalize(cross(up, fw));
-    return mat3(rt, cross(fw, rt), fw);
+    if (k == 0) return uv;
+    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gT * 1.5);
+    if (k == 2) return tTunnel(uv, gCt, 0.25, gT * 2.5);
+    if (k == 3) return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
+    if (k == 4) return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
+    if (k == 5) return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gT));
+    if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gT * 0.4) + 0.1 * v, 2.0);
 }
-vec3 normal3(vec3 p)
+// Stage D: a warp.
+vec2 stageDk(vec2 uv, int k, float v)
 {
-    const vec2 e = vec2(0.0015, -0.0015);
-    return normalize(e.xyy * fieldD(p + e.xyy) + e.yyx * fieldD(p + e.yyx) + e.yxy * fieldD(p + e.yxy) + e.xxx * fieldD(p + e.xxx));
+    if (k == 0) return uv;
+    if (k == 1) return tTwirl(uv, gCw, 2.5 * sin(gT * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
+    if (k == 2) return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gT * 4.0);
+    if (k == 3) return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gT * 8.0);
+    if (k == 4) return tWarp(uv, 0.05 + 0.15 * gSpread, gT);
+    return tRot(uv, vec2(0.5), 0.5 * sin(gT * 0.3 + v * 6.28));
 }
-// The kaleidoscoped photo projected triplanarly onto the surface.
-vec3 photo3(vec3 q, vec3 n, float lod)
-{
-    vec3 w = pow(abs(n), vec3(4.0)); w /= (w.x + w.y + w.z);
-    return imgK(q.yz * 0.35 + 0.5, lod) * w.x + imgK(q.zx * 0.35 + 0.5, lod) * w.y + imgK(q.xy * 0.35 + 0.5, lod) * w.z;
-}
-"""
 
+// Chain morph: morphP picks (once per start) which stage wanders -- none, A, B,
+// C or D.  That stage then walks through its class, driven by time and the
+// integrated music (sceneAdvance, which surges on flux and harmonic changes):
+// it holds a transform, then cross-fades to the next one.  The fade mixes the
+// two MIRRORED outputs, each continuous, so the picture never jumps.
+int morphStage() { return pickStage(morphP, 5); }
+vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
+vec2 stageA(vec2 uv)
+{
+    int k0 = pickStage(chainAP, 11); float v = subVar(chainAP, 11);
+    if (morphStage() != 1) return stageAk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 11.0)), i1 = int(mod(floor(kf) + 1.0, 11.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageAk(uv, i0, v);
+    return morphMix(stageAk(uv, i0, v), stageAk(uv, i1, v), f);
+}
+vec2 stageB(vec2 uv)
+{
+    int k0 = pickStage(chainBP, 6); float v = subVar(chainBP, 6);
+    if (morphStage() != 2) return stageBk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 6.0)), i1 = int(mod(floor(kf) + 1.0, 6.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageBk(uv, i0, v);
+    return morphMix(stageBk(uv, i0, v), stageBk(uv, i1, v), f);
+}
+vec2 stageC(vec2 uv)
+{
+    int k0 = pickStage(chainCP, 8); float v = subVar(chainCP, 8);
+    if (morphStage() != 3) return stageCk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 8.0)), i1 = int(mod(floor(kf) + 1.0, 8.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageCk(uv, i0, v);
+    return morphMix(stageCk(uv, i0, v), stageCk(uv, i1, v), f);
+}
+vec2 stageD(vec2 uv)
+{
+    int k0 = pickStage(chainDP, 6); float v = subVar(chainDP, 6);
+    if (morphStage() != 4) return stageDk(uv, k0, v);
+    float kf = float(k0) + gMw;
+    int i0 = int(mod(floor(kf), 6.0)), i1 = int(mod(floor(kf) + 1.0, 6.0));
+    float f = smoothstep(0.55, 1.0, fract(kf));
+    if (f <= 0.0) return stageDk(uv, i0, v);
+    return morphMix(stageDk(uv, i0, v), stageDk(uv, i1, v), f);
+}
+vec2 chain(vec2 p)
+{
+    vec2 uv = p * 0.5 + 0.5;
+    uv = stageA(uv);
+    uv = mirrorUV(uv);
+    uv = stageB(uv);
+    uv = mirrorUV(uv);
+    uv = stageC(uv);
+    uv = mirrorUV(uv);
+    uv = stageD(uv);
+    return uv;
+}
 
-def build(name):
-    src = io.open(os.path.join(SP, "src", name + ".glsl"), encoding="utf-8").read()
-    doc = src.split("//@doc", 1)[1].split("//@", 1)[0].rstrip()
-    params = re.search(r"^//@params(.*)$", src, re.M).group(1).split()
-    audio = re.search(r"^//@audio(.*)$", src, re.M).group(1).split()
-    exprs = re.findall(r"^//@expr\s+(\w+)\s*=\s*(.+)$", src, re.M)
-    body = src.split("//@body", 1)[1].lstrip("\n")
-    out = ["#version 330 core", "out vec4 fragColor;", "/**", " * @file %s.frag" % name]
-    out += [l for l in doc.split("\n") if l.strip()]
-    out += [" */", "", "uniform vec2  resolution;", "uniform float time;", "uniform sampler2D tex0;",
-            "uniform sampler2D tex1;", "uniform float interpolation;", "", "uniform float sceneTime;",
-            "uniform float sceneAdvance;"]
-    for a in BASE_AUDIO + [a for a in audio if a not in BASE_AUDIO]:
-        m = re.match(r"(\w+)\[(\d+)\]", a)
-        out.append("uniform float %s[%s];" % m.groups() if m else "uniform float %s;" % a)
-    out.append("")
-    for q in params + ["hueP"]:
-        out.append("uniform float %s;" % q)
-    for n, f in exprs:
-        out.append("// @expr %s = %s" % (n, f.strip()))
-    out.append(LIB)
-    if re.search(r"vec2\s+chain\s*\(", body):
-        out.append(CHAIN_LIB)
-    if re.search(r"float\s+field3\s*\(", body):
-        out.append(CHAIN3D_LIB)
-    out.append(body.rstrip() + "\n")
-    # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
-    # scene frame instead of the photos; the same library applies.
-    folder = "FX" if re.search(r"^//@target\s+fx\b", src, re.M) else "Scene2D"
-    io.open(os.path.join(ROOT, folder, name + ".frag"), "w", encoding="utf-8", newline="\n").write("\n".join(out))
-    print("gebaut:", name)
-
-
-for n in sys.argv[1:]:
-    build(n)
+void main()
+{
+    vec2 p = screenP();
+    float kick = clamp(audioKick, 0.0, 1.0);
+    float swell = clamp(audioSwell, 0.0, 1.0);
+    float mode = clamp(audioMode, 0.0, 1.0);
+    gT = (0.03 + 0.06 * clamp(speedP, 0.0, 1.0)) * sceneTime + 0.25 * audioAdvance;
+    gSpread = clamp(audioSpread, 0.0, 1.0);
+    gRot = 0.02 * sceneTime + 0.2 * audioPhase;
+    gMw = 0.012 * sceneTime + 0.15 * sceneAdvance;          // morph position (integrated, never jumps)
+    gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
+    gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
+    vec2 grad;
+    vec3 ph = imgChain(p, 1.0 - 1.2 * clamp(detailP, 0.0, 1.0), grad);
+    float m = luma(ph);
+    // Colour field: follows the chain's own (mirrored, hence seamless) coordinates
+    // and wanders with the music; the photo's luma keeps the detail.
+    vec2 cm = mirrorUV(chain(p));
+    float h = hueP * 0.159 + 0.9 * cm.x + 0.6 * cm.y + 0.25 * m + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
+    vec3 field = hsv2rgb(vec3(fract(h), 0.6 + 0.35 * swell, 1.0)) * (0.35 + 1.3 * m);
+    vec3 photo = max((ph - m) * 1.4 + m, 0.0);
+    photo = mix(photo, field, 0.7 * clamp(paletteP, 0.0, 1.0));   // the scene keeps its colours unless paletteP asks
+    // Relief: the chain's photo lit from a slowly circling light.
+    float la = 0.1 * sceneTime;
+    float relief = clamp(0.5 + dot(grad, vec2(cos(la), sin(la))) * 5.0, 0.0, 1.0);
+    vec3 reliefC = photo * (0.3 + 1.2 * relief) + vec3(1.0) * pow(relief, 6.0) * (0.1 + 0.3 * swell);
+    // Glowing edges: gradient magnitude as neon.
+    vec3 gc = mix(glowColour(ph, p, hueP * 0.159), neonOf(field + 1e-3, 2.0), clamp(paletteP, 0.0, 1.0));
+    float edge = smoothstep(0.01, 0.14, length(grad));        // lab audit: 0.02..0.25 left smooth chains nearly black
+    vec3 neon = gc * edge * (1.6 + 1.2 * kick) + photo * 0.22;
+    // Isolines of the chain's luma: glowing contour lines.
+    float xi = m * 12.0 - gT * 6.0;                          // the contour lines flow uphill (integrated, jump-free)
+    float pxi = fwidth(xi) + 1e-4;
+    float iso = smoothstep(pxi * 1.5, 0.0, abs(fract(xi) - 0.5) - 0.5 + pxi * 1.5);
+    vec3 isoC = gc * iso * (1.3 + kick) + photo * 0.12;
+    // The rolled style snaps to a pure look (blends between two looks are muddy);
+    // it is constant while the scene runs, so the snap never shows as a jump.
+    float st = clamp(styleP, 0.0, 1.0) * 4.0;               // 0 photo, 1 relief, 2 edges, 3 isolines, 4 flow
+    st = floor(st) + smoothstep(0.35, 0.65, fract(st));
+    // Flow: noise living in the chain's own space, smeared along the chain's
+    // contour direction (line integral convolution) with a travelling phase --
+    // silky stream lines that follow the chain.  Only the flow style pays for
+    // it (st depends on a knob alone, so every pixel takes the same branch).
+    vec3 flowC = photo * 0.25;
+    if (st > 3.0) {
+        vec2 fd = vec2(-grad.y, grad.x);
+        float gl = length(fd);
+        fd /= max(gl, 1e-5);
+        float hpx = 3.0 / resolution.y;
+        float ph = gT * 25.0;
+        float acc = 0.0, wsum = 0.0;
+        for (int k = -6; k <= 6; ++k) {
+            float fk = float(k);
+            float nz = noise2(mirrorUV(chain(p + fd * fk * hpx)) * 70.0);
+            float w = 1.0 + 0.8 * sin(fk * 0.7 - ph);
+            acc += nz * w; wsum += w;
+        }
+        float lic = smoothstep(0.38, 0.72, acc / wsum) * smoothstep(0.004, 0.04, gl);
+        flowC = gc * lic * (1.3 + kick) + photo * 0.25;
+    }
+    vec3 col = mix(photo, reliefC, smoothstep(0.0, 1.0, st));
+    col = mix(col, neon, smoothstep(1.0, 2.0, st));
+    col = mix(col, isoC, smoothstep(2.0, 3.0, st));
+    col = mix(col, flowC, smoothstep(3.0, 4.0, st));
+    col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
+    col += gc * edge * kick * 0.3 * (1.0 - smoothstep(1.0, 2.0, st));
+    finish(col);
+}
