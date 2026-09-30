@@ -367,7 +367,26 @@ Abbildung, D Verzerrung), **R/K/Kö** 3D-Raum/Kern/Körper, **E** Einzelshader,
 - Kette rückwärts laufen lassen (Inverse, wo es sie gibt: Möbius, Spiegel).
 - Kettenlänge mit der Musik (Identität am ruhigen Ende — schon da).
 
-## 10. Weiterdenken
+## 10. Runde 5 und die Reihenfolge
+
+50 weitere Transformationen eingebaut (Liste im Commit d0c744a2), jede
+einzeln per Stichprobe gerendert; zu schwache (Pole, Mandelbrot, Burning
+Ship, Kardioide, Halbraum, apollonische Packung, Sierpiński-Oktaeder)
+nachgebessert. Stand: Stufe A 43, B 16, C 13, D 15 Klassen; 3D Raum 16,
+Kern 16, Körper 14; Einzelshader PenroseParquet (8/10/12/14-zählig),
+TruchetMaze.
+
+**Reihenfolge:** Die Stufen sind nicht kommutativ — dieselben vier
+Transformationen (Spirale, p6m, Inversion, Verzerrung) ergeben je nach
+Reihenfolge ein zur Spirale gewickeltes Sechseckparkett, ein Sechseckgitter
+voller Spiralen oder Inversionsblasen im Sechseckraster; nur schwache
+Verzerrungen vertauschen fast folgenlos. Deshalb ist die Reihenfolge jetzt ein
+eigener Knopf (`orderP`, 24 Permutationen, 0 = A→B→C→D) und eine neunte
+Wanderstufe: die App überblendet zwei ganze Ketten verschiedener Reihenfolge
+(einen Zustand „halb vertauscht“ gibt es nicht). Kosten: während dieser
+Überblendung doppelt (gemessen kurz bis 74 fps, Median 120).
+
+## 11. Weiterdenken
 
 * **Ketten als FX-Stufe (größter Hebel, braucht deine Entscheidung)**: Jede
   Szene läuft durch eine CombineShader-Stufe, die dieselbe Schnittstelle hat
