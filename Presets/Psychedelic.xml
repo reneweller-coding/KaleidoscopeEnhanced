@@ -450,12 +450,6 @@
     <expr name="glowP" formula="clamp(0.55 + 0.1*(seed1*2.0-1.0) + 0.225*(0.6*kick+0.4*snare), 0.3, 0.8)"/>
     <float name="glowP" minValue="0.3" maxValue="0.8"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\EventHorizon.frag" type="normal" mood="dark,aggressive" probability="0.5" complexity="3">
-    <rig preset="flat"/>
-    <float name="massP" minValue="0.3" maxValue="0.9"></float>
-    <float name="diskP" minValue="0.3" maxValue="0.8"></float>
-    <float name="tiltP" minValue="0.2" maxValue="0.9"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\VoronoiShatter.frag" type="normal" probability="0.5" mood="aggressive,psychedelic" complexity="2">
     <rig preset="flat"/>
     <float name="cellsP" minValue="0.3"  maxValue="0.75"></float>
@@ -3121,6 +3115,14 @@
     <float name="bubbleP" minValue="0" maxValue="1"></float>
     <float name="dyeP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\TextureChromatographyRings.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="spotP" minValue="0" maxValue="1"></float>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="paperP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
