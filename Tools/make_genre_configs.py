@@ -76,6 +76,9 @@ TIMING = {
     "SpaceAmbient": (55, 150, 22, 45),
     # One chain lab walking with the music carries a long stretch on its own.
     "Kettenlabor": (600, 1800, 15, 30),
+    # All transform scenes: a named chain gets a normal stretch, a lab (which
+    # walks) may stay long -- 90..300 s solo, gentle 6..12 s fades.
+    "Transformationen": (90, 300, 6, 12),
     # Review bench: the photograph must hold still while a scene is judged.
     # 45-60 s solo = one photo lives ~6-7 scenes of the walk; a 15-25 s fade
     # is below the threshold of notice while a scene is on trial.
@@ -361,10 +364,18 @@ def rule_modified(m, h):
 # preset with FxPlain and Crossfade alone.  Its overlays therefore use the
 # ambient rule: calm or dreamy, never aggressive.
 CHAIN_LABS = ("ChainLab2D", "ChainLab3D", "ChainLabTunnel")
+# Every transform-chain scene: the labs, the named chains (Chain*, Chain3D*)
+# and frozen liked rolls (ChainLike*) -- not the old chain-mail scene.
+def rule_transform(m, h):
+    fm = re.search(r'file="[^"]*[\\/](\w+)\.frag"', h)
+    n = fm.group(1) if fm else ""
+    return n.startswith("Chain") and not n.startswith("Chainmail")
+def rule_fxchain(m, h):     return "FxChain.frag" in h
 def rule_chainlab(m, h):    return any(("%s.frag" % n) in h for n in CHAIN_LABS)
 def rule_none(m, h):        return False
 # Knob ranges a preset narrows for its scenes: in Kettenlabor every start walks.
-KNOB_RANGES = {"Kettenlabor": {"morphP": ("0.5", "1")}}
+KNOB_RANGES = {"Kettenlabor": {"morphP": ("0.5", "1")},
+               "Transformationen": {"morphP": ("0.5", "1")}}
 
 GENRES = [
     ("Ambient",     rule_ambient,     False),
@@ -375,6 +386,7 @@ GENRES = [
     ("SpaceAmbient", rule_space,      False, rule_ambient),
     ("Allround",    rule_all,         False),
     ("Kettenlabor", rule_chainlab,    False, rule_none),
+    ("Transformationen", rule_transform, False, rule_fxchain),
     ("TestAlle",    rule_all,         True),
     ("TestModified", rule_modified,   True),
     ("TestNeu",      rule_recent,     True),
