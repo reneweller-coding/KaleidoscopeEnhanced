@@ -2657,12 +2657,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\\Scene2D\\FiberOpticChandelier.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.2" complexity="2">
-    <rig preset="flat"/>
-    <float name="spreadP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\\Scene2D\\StarTrailsPolaris.frag" type="normal" mood="calm,dark,space" probability="0.2" complexity="2">
     <rig preset="flat"/>
     <float name="trailP" minValue="0" maxValue="1"></float>
@@ -3539,6 +3533,14 @@
     <float name="flakeP" minValue="0" maxValue="1"></float>
     <float name="sheetP" minValue="0" maxValue="1"></float>
     <float name="stoneP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\HotWaxBlobsTop.frag" type="normal" mood="calm,psychedelic" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="blobP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

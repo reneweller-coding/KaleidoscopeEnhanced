@@ -284,6 +284,7 @@ RECENT_SCENES = {
     "MitchellStrokes", "TexturePlanktonDrift", "TextureOilSlickSheen",
     "TextureIceGlaze", "TextureMicaGlitter",
     "IkedaDataStreams", "ThermochromicSheet", "HeatHazeOverFlames",
+    "SyrupCurtain", "HotWaxBlobsTop", "CaramelBubbling",
 }
 
 def rule_recent(m, h):
