@@ -384,12 +384,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene2D\AttentionHeadRibbons.frag" type="normal" mood="dark,calm,psychedelic" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="headsP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\ThermalIronbowStreet.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.45" complexity="3">
     <rig preset="flat"/>
     <float name="walkP" minValue="0" maxValue="1"></float>
@@ -401,13 +395,6 @@
     <rig preset="flat"/>
     <float name="loadsP" minValue="0" maxValue="1"></float>
     <float name="orderP" minValue="0" maxValue="1"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene2D\LightPaintingTrails.frag" type="normal" mood="dark,psychedelic,dreamy" probability="0.45" complexity="3">
-    <rig preset="flat"/>
-    <float name="wandsP" minValue="0" maxValue="1"></float>
-    <float name="lobesP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -3108,6 +3095,22 @@
     <float name="blobP" minValue="0" maxValue="1"></float>
     <float name="glowP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\InkInOilDroplet.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="dropP" minValue="0" maxValue="1"></float>
+    <float name="swirlP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DyedIceMelt.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bloomP" minValue="0" maxValue="1"></float>
+    <float name="splitP" minValue="0" maxValue="1"></float>
+    <float name="fabricP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

@@ -1096,31 +1096,6 @@
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
-  <TextureShader file="..\Scene3D\KineticMirrorHexagonArray.frag" type="scene3d" geom="quads" probability="0.5" mood="bright,calm" complexity="3">
-    <rig preset="procedural"/>
-    <expr name="waveP" formula="clamp(1.25 + 0.3*(seed3*2.0-1.0) + 0.6*(max(bassRel-0.9,0.0)), 0.5, 2)"/>
-    <float name="waveP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="tiltP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="speedP" minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed2*6.28"/>
-    <float name="hueP"   minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\PlasmaFilamentTornado.frag" type="scene3d" geom="indirect" probability="0.5" mood="aggressive,dark" complexity="4">
-    <rig preset="procedural"/>
-    <float name="vortexP" minValue="0.5" maxValue="2.2"></float>
-    <float name="pinchP"  minValue="0.5" maxValue="2.0"></float>
-    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed3*6.28"/>
-    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
-  <TextureShader file="..\Scene3D\SuperconductingFluxVortex.frag" type="scene3d" geom="indirect" probability="0.5" mood="bright,calm" complexity="4">
-    <rig preset="procedural"/>
-    <float name="fluxP"   minValue="0.5" maxValue="2.0"></float>
-    <float name="kelvinP" minValue="0.5" maxValue="2.2"></float>
-    <float name="speedP"  minValue="0.5" maxValue="2.0"></float>
-    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
-    <float name="hueP"    minValue="0.0" maxValue="6.28"></float>
-  </TextureShader>
   <TextureShader file="..\Scene2D\PenroseAperiodicTessellation.frag" type="normal" probability="0.5" mood="bright,calm,dreamy" complexity="3">
     <rig preset="flat"/>
     <float name="tileP"  minValue="0.5" maxValue="2.2"></float>
@@ -3337,6 +3312,30 @@
     <float name="blobP" minValue="0" maxValue="1"></float>
     <float name="glowP" minValue="0" maxValue="1"></float>
     <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\InkInOilDroplet.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="dropP" minValue="0" maxValue="1"></float>
+    <float name="swirlP" minValue="0" maxValue="1"></float>
+    <float name="photoP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\EpoxyWaves.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bandP" minValue="0" maxValue="1"></float>
+    <float name="laceP" minValue="0" maxValue="1"></float>
+    <float name="shoreP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+  <TextureShader file="..\\Scene2D\\DyedIceMelt.frag" type="normal" mood="calm,bright" probability="0.45" complexity="2">
+    <rig preset="flat"/>
+    <float name="bloomP" minValue="0" maxValue="1"></float>
+    <float name="splitP" minValue="0" maxValue="1"></float>
+    <float name="fabricP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
