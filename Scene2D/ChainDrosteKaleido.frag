@@ -349,6 +349,53 @@ vec2 tMirrorLine(vec2 uv, vec2 c, float a)
     return uv - n * (s - abs(s));
 }
 
+// Hyperbolic {p,q} tiling of the Poincare disk, built only from mirrors (the
+// p-fold kaleidoscope and the inversion in a circle orthogonal to the rim), so
+// the map is continuous; the outside of the disk is folded in by the inversion
+// in the rim.  `move` is a point inside the disk: the disk automorphism
+// z -> (z - a) / (1 - conj(a) z) carries the tiling along it (a flight
+// through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
+vec2 tPoincare(vec2 uv, vec2 c, float p, float q, float zoom, vec2 move)
+{
+    vec2 z = (uv - c) * zoom;
+    float r2 = dot(z, z);
+    if (r2 > 1.0) z /= r2;                                      // fold the outside in (continuous at the rim)
+    vec2 nu = z - move, de = vec2(1.0, 0.0) - vec2(move.x * z.x + move.y * z.y, move.x * z.y - move.y * z.x);
+    z = vec2(nu.x * de.x + nu.y * de.y, nu.y * de.x - nu.x * de.y) / max(dot(de, de), 1e-6);
+    float a = 3.14159265 / p;
+    float cq = cos(3.14159265 / q), sa = sin(a);
+    float R = 1.0 / sqrt(max(cq * cq / (sa * sa) - 1.0, 1e-4));
+    vec2 cc = vec2(R * cq / sa, 0.0);
+    for (int i = 0; i < 14; ++i) {
+        float an = atan(z.y, z.x);
+        an = abs(mod(an, 2.0 * a) - a);                         // mirror into the wedge [0, pi/p]
+        z = length(z) * vec2(cos(an), sin(an));
+        vec2 d = z - cc;
+        float dd = dot(d, d);
+        if (dd < R * R) z = cc + d * (R * R / dd);               // mirror in the orthogonal circle
+    }
+    return c + z * 0.9;
+}
+// Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the
+// foci subtend) across, tau (log ratio of the distances) along -- the picture
+// streams out of one focus into the other.  sigma/pi jumps by 2 on the segment
+// between the foci, so `bands` must be whole.
+vec2 tBipolar(vec2 uv, vec2 c, float f, float bands, float travel)
+{
+    vec2 z = uv - c;
+    vec2 a = z + vec2(f, 0.0), b = z - vec2(f, 0.0);
+    float sigma = atan(a.y * b.x - a.x * b.y, a.x * b.x + a.y * b.y);
+    float tau = 0.5 * log(max(dot(a, a), 1e-8) / max(dot(b, b), 1e-8));
+    return vec2(sigma / 3.14159265 * bands, tau * 0.35 - travel);
+}
+// Joukowski map w = z + R^2 / z (the airfoil map): circles become wings.
+vec2 tJoukowski(vec2 uv, vec2 c, float R, float scale)
+{
+    vec2 z = (uv - c) * scale;
+    vec2 iz = vec2(z.x, -z.y) / max(dot(z, z), 1e-5);
+    return c + (z + R * R * iz) * 0.5;
+}
+
 vec2 chain(vec2 p);
 // The chain's photo read with a seam-proof footprint (per axis the smaller of
 // the two one-sided differences) and the screen-space luma gradient.
@@ -402,7 +449,7 @@ void main()
     float edge = smoothstep(0.02, 0.25, length(grad));
     vec3 neon = glowColour(ph, p, hueP * 0.159) * edge * (1.2 + 1.2 * kick) + photo * 0.06;
     // Isolines of the chain's luma: glowing contour lines.
-    float xi = m * 12.0;
+    float xi = m * 12.0 - gT * 6.0;                          // the contour lines flow uphill (integrated, jump-free)
     float pxi = fwidth(xi) + 1e-4;
     float iso = smoothstep(pxi * 1.5, 0.0, abs(fract(xi) - 0.5) - 0.5 + pxi * 1.5);
     vec3 isoC = glowColour(ph, p, hueP * 0.159) * iso * (1.0 + kick) + photo * 0.08;

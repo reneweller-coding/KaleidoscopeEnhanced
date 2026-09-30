@@ -115,7 +115,7 @@ void main()
     float edge = smoothstep(0.02, 0.25, length(grad));
     vec3 neon = glowColour(ph, p, hueP * 0.159) * edge * (1.2 + 1.2 * kick) + photo * 0.06;
     // Isolines of the chain's luma: glowing contour lines.
-    float xi = m * 12.0;
+    float xi = m * 12.0 - gT * 6.0;                          // the contour lines flow uphill (integrated, jump-free)
     float pxi = fwidth(xi) + 1e-4;
     float iso = smoothstep(pxi * 1.5, 0.0, abs(fract(xi) - 0.5) - 0.5 + pxi * 1.5);
     vec3 isoC = glowColour(ph, p, hueP * 0.159) * iso * (1.0 + kick) + photo * 0.08;
