@@ -150,7 +150,7 @@ public:
 		m_usesSceneLod = -1;
 	}
 	/// @return The fragment shader file (for background builds).
-	const char *fragmentFile() const { return m_fragmentShaderFilename; }
+	const char *fragmentFile() const { return m_compileFile ? m_compileFile : m_fragmentShaderFilename; }
 	/// @brief True if this effect builds with plain setShaders() (fullscreen fragment only); background builds apply only to those.
 	virtual bool plainFragment() const { return true; }
 	/// @return True once ensureCompiled() has successfully built the GL program.
@@ -751,6 +751,14 @@ protected:
 	void bindProgram( GLuint prog );
 	/// @brief Drops every variant (back to the generic program); with release, also frees them.
 	void dropVariants( bool release );
+	// ---- Chain runner: the lab's chain as one small pass per transform ----
+	char   *m_compileFile = nullptr;    ///< Engine/ChainPass/Final_<name>.frag when this lab runs its chain as passes (else null: the fragment file itself).
+	GLuint	m_cpFbo[5] = {}, m_cpTex[5] = {};   ///< RG32F coordinate textures (ping-pong plus fade temporaries).
+	int		m_cpW = 0, m_cpH = 0;       ///< Their size (the target viewport).
+	std::vector<int> m_permCodes;       ///< The 24 stage orders (base-4 digits), from "int permCode(int i)".
+	float	m_lastSceneTime = 0.f;      ///< sceneTime as uploaded this frame (the passes need the same value).
+	/// @brief Runs this frame's chain as passes and binds the result as texChain (program must be bound; restores the GL state it touches).
+	void runChainPasses( const AudioFeatures &f );
 	int		m_chainParsed = -1;         ///< chainInfo(): -1 = source not read yet, 0 = no chain classes, 1 = parsed.
 	std::map<std::string, std::vector<std::string>> m_chainClasses;   ///< Stage knob -> class names (energy order), from "// @chainclasses".
 	std::map<std::string, float> m_chainConsts;   ///< Knobs frozen as constants (ChainLike*): name -> value.

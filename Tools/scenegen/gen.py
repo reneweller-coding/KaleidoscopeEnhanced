@@ -1950,6 +1950,11 @@ def build(name):
     folder = "FX" if re.search(r"^//@target\s+fx\b", src, re.M) else "Scene2D"
     io.open(os.path.join(ROOT, folder, name + ".frag"), "w", encoding="utf-8", newline="\n").write("\n".join(out))
     print("gebaut:", name)
+    # The app runs these two labs' chains as passes (Engine/ChainPass): their
+    # pass shaders and final shaders follow every rebuild.
+    if name in ("ChainLab2D", "FxChain"):
+        import make_chainpass
+        make_chainpass.main()
 
 
 for n in sys.argv[1:]:
