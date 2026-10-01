@@ -532,9 +532,13 @@ bei 3D auch `paletteP` und `camP`).
 * **Einstufiges Wandern** (`morphP` 0,15–0,5, nur in Genre-Presets): Dort wählt
   der Shader selbst und kennt die Öffnungs-Regel nicht.
 * **Energie-Ordnung** ist Handarbeit, nicht gemessen.
-* **3D-Leistung**: Dichte Welt-Kombinationen fallen auf 70–90 fps, während
-  einer Strukturblende kurz tiefer. Chain3DMandelbox liegt bei rund 54 fps. Die
-  adaptive Auflösung (Taste `g`) fängt das auf, ist in der Repo-ini aber aus.
+* **3D-Leistung**: Seit 01.10. rechnet die App das 3D-Labor in Durchgängen
+  (Geometrie einmal in einen G-Buffer, die Farbketten darauf, s.
+  `docs/leistung-2026-10-01.md`): 117–121 fps beim Wandern, GPU 4–5 ms. Jede
+  *neue* Weltkombination kostet in der laufenden Sitzung einmal 25–35 ms
+  (Treiber erzeugt den GPU-Code beim ersten Draw), ab der nächsten Sitzung
+  nichts mehr. Chain3DMandelbox (benannte Kette, Uber-Shader) liegt weiter
+  bei rund 54 fps.
 * Die Taste `v` zeigt den Kamerablick der 3D-Labore noch nicht an.
 
 ---
@@ -548,4 +552,6 @@ bei 3D auch `paletteP` und `camP`).
 | Laborquellen | `Tools/scenegen/src/ChainLab2D.glsl`, `make_chainlab3d.py`, `make_chainlabtunnel.py`, `make_fxchain.py` |
 | benannte Ketten | `Tools/scenegen/make_chains.py`, `make_chains3d.py` |
 | Wandern, Öffnungs-Regel, Kamera | `Source/EffectShader.cpp` (`stepChainWalk`, `resetChainWalk`, `stepChainCam`) |
+| Durchgänge (ein Shader je Transformation), 3D-G-Buffer | `Tools/scenegen/make_chainpass.py` → `Engine/ChainPass/`; `EffectShader.cpp` (`runChainPasses`, `runChain3D`, `geomProgram`) |
+| Programme im Helferprozess, Binär-Cache | `Source/ShaderForge.{h,cpp}`, `Source/ShaderForgeMain.{h,cpp}` |
 | Presets | `Tools/make_genre_configs.py` → `Presets/Kettenlabor.xml`, `Presets/Transformationen.xml` |

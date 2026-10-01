@@ -6,6 +6,8 @@ uniform int firstPass;
 uniform float subV;
 uniform vec2 chainOff;   // the target viewport's origin (gl_FragCoord of the lab = pass pixel + chainOff)
 uniform float bakeSize;  // > 0: the chain baked over [0,1]^2 (a lab that reads it at arbitrary points)
+uniform sampler2D texStart;  // useStart: the chain's input per pixel (xy) and its time offset (z)
+uniform int useStart;
 uniform vec2  resolution;
 uniform float sceneTime;
 uniform float audioAdvance;
@@ -57,9 +59,12 @@ void main()
     gRot = 0.02 * sceneTime + 0.2 * audioPhase;
     gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
     gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
+    vec4 st = useStart == 1 ? texelFetch(texStart, ivec2(gl_FragCoord.xy), 0) : vec4(0.0);
+    gT += 0.3 * st.z;                          // the solid look: the depth along the normal is the chain's time
+    gRot += 0.15 * st.z;
     vec2 fc = gl_FragCoord.xy + chainOff;     // the lab's own pixel position (screenP)
     vec2 sp = (fc / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0);
-    vec2 uv0 = bakeSize > 0.0 ? gl_FragCoord.xy / bakeSize : sp * 0.5 + 0.5;   // bake: the chain over [0,1]^2
+    vec2 uv0 = useStart == 1 ? st.xy : (bakeSize > 0.0 ? gl_FragCoord.xy / bakeSize : sp * 0.5 + 0.5);
     vec2 uv = firstPass == 1 ? uv0 : mirrorUV(texelFetch(texIn, ivec2(gl_FragCoord.xy), 0).xy);
     fragColor = vec4(cls(uv, subV), 0.0, 1.0);
 }

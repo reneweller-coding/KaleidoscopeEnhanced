@@ -322,6 +322,7 @@ GLC_FN(void,   glDeleteQueries, (GLsizei, const GLuint *))
 GLC_FN(void,   glBeginQuery, (GLenum, GLuint))
 GLC_FN(void,   glEndQuery, (GLenum))
 GLC_FN(void,   glGetQueryObjectuiv, (GLuint, GLenum, GLuint *))
+GLC_FN(void,   glProgramBinary, (GLuint, GLenum, const void *, GLsizei))   ///< GL 4.1: load a program binary (ShaderForge)
 
 #ifndef GL_SAMPLES_PASSED
 #define GL_SAMPLES_PASSED 0x8914   ///< Occlusion-query target: samples that passed the depth test.
@@ -425,6 +426,7 @@ GLC_FN(void,   glTexImage2DMultisample, (GLenum, GLsizei, GLenum, GLsizei, GLsiz
 #define glBeginQuery               glcore_glBeginQuery
 #define glEndQuery                 glcore_glEndQuery
 #define glGetQueryObjectuiv        glcore_glGetQueryObjectuiv
+#define glProgramBinary            glcore_glProgramBinary
 #define glPatchParameteri          glcore_glPatchParameteri
 #define glBlendFunci               glcore_glBlendFunci
 #define glDrawBuffers              glcore_glDrawBuffers

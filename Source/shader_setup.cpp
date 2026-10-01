@@ -357,31 +357,42 @@ bool shaderPrebuildStart( const char *frag_source )
 
 static std::map<std::string, int> s_variantFailed;   ///< variant keys whose build failed (no retry)
 
+/// @brief Hands one finished background build to the program cache (its link-status query may block).
+static GLuint collectPrebuild( const PrebuildJob &j )
+{
+	GLint linked = 0;
+	const double tL0 = nowMs();
+	glGetProgramiv( j.prog, GL_LINK_STATUS, &linked );
+	if( getenv( "KALEIDO_SPEC_LOG" ) && nowMs() - tL0 > 5.0 )
+		fprintf( stderr, "SPEC link status took %.1f ms\n", nowMs() - tL0 );
+	if( !linked && j.key.compare( 0, 4, "FSV|" ) == 0 )
+	{
+		// a variant has no blocking twin that would log it later: log it now
+		fprintf( stderr, "SHADER: variant build failed: %.120s\n", j.key.c_str() );
+		printShaderInfoLog( j.fs );
+		printProgramInfoLog( j.prog );
+		s_variantFailed[j.key] = 1;
+	}
+	glDeleteShader( j.fs );     // flagged; freed with the program
+	if( linked )
+		return progStore( j.key, j.prog );
+	glDeleteProgram( j.prog );   // the blocking path will build it again and log why
+	return 0;
+}
+
 int shaderPrebuildPoll()
 {
-	for( auto it = s_prebuild.begin(); it != s_prebuild.end(); )
+	// The driver reports a build complete, and the link-status query still
+	// blocks 5-15 ms on NVIDIA: collecting all finished ones at once made the
+	// chain labs' warm-up (120 small pass shaders) 260-300 ms frames.  A few
+	// ms per frame; the rest waits for the next poll.
+	const double t0 = nowMs();
+	for( auto it = s_prebuild.begin(); it != s_prebuild.end() && nowMs() - t0 < 3.0; )
 	{
 		GLint done = 0;
 		glGetProgramiv( it->second.prog, GL_COMPLETION_STATUS_KHR, &done );
 		if( !done ) { ++it; continue; }
-		GLint linked = 0;
-		const double tL0 = nowMs();
-		glGetProgramiv( it->second.prog, GL_LINK_STATUS, &linked );
-		if( getenv( "KALEIDO_SPEC_LOG" ) && nowMs() - tL0 > 5.0 )
-			fprintf( stderr, "SPEC link status took %.1f ms\n", nowMs() - tL0 );
-		if( !linked && it->second.key.compare( 0, 4, "FSV|" ) == 0 )
-		{
-			// a variant has no blocking twin that would log it later: log it now
-			fprintf( stderr, "SHADER: variant build failed: %.120s\n", it->second.key.c_str() );
-			printShaderInfoLog( it->second.fs );
-			printProgramInfoLog( it->second.prog );
-			s_variantFailed[it->second.key] = 1;
-		}
-		glDeleteShader( it->second.fs );     // flagged; freed with the program
-		if( linked )
-			progStore( it->second.key, it->second.prog );
-		else
-			glDeleteProgram( it->second.prog );   // the blocking path will build it again and log why
+		collectPrebuild( it->second );
 		it = s_prebuild.erase( it );
 	}
 	return (int) s_prebuild.size();
@@ -442,6 +453,25 @@ GLuint shaderVariantTake( const char *frag_source, const std::string &defines )
 	return it->second;
 }
 
+GLuint shaderBuildFromText( const std::string &fragText )
+{
+	static std::map<std::string, GLuint> built;
+	auto it = built.find( fragText );
+	if( it != built.end() ) return it->second;
+	GLuint prog = glCreateProgram();
+	glAttachShader( prog, fullscreenVertShader() );
+	GLuint fs = glCreateShader( GL_FRAGMENT_SHADER );
+	const GLchar *p = fragText.c_str();
+	glShaderSource( fs, 1, &p, NULL );
+	glCompileShader( fs );
+	printShaderInfoLog( fs );
+	glAttachShader( prog, fs );
+	const GLuint ok = linkOrFail( prog );
+	glDeleteShader( fs );
+	built[fragText] = ok;
+	return ok;
+}
+
 bool shaderVariantFailed( const char *frag_source, const std::string &defines )
 {
 	return s_variantFailed.count( progKey( "FSV", frag_source, defines.c_str(), 0, 0, 0 ) ) != 0;
@@ -457,6 +487,14 @@ GLuint setShaders( const char *vert_source, const char * frag_source )
 	// Keyed on the FRAGMENT alone: this builder ignores vert_source.
 	const std::string key = progKey( "FS", frag_source, 0, 0, 0, 0 );
 	if( GLuint hit = progLookup( key ) ) return hit;
+	auto pending = s_prebuild.find( key );          // started in the background, not yet collected: take it
+	if( pending != s_prebuild.end() )
+	{
+		const PrebuildJob j = pending->second;
+		s_prebuild.erase( pending );
+		if( collectPrebuild( j ) )
+			if( GLuint hit = progLookup( key ) ) return hit;
+	}
 	const double t0 = nowMs();
 	GLuint s_id, sh_prog_id;
 	(void)vert_source;   // historical parameter; the shared fullscreen vert rules

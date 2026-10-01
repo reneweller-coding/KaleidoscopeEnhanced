@@ -47,6 +47,7 @@
 #include <QtCore/QDir>
 #include <QtCore/QFileInfo>
 #include <QtCore/QTimer>
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 #include <QtCore/QRegularExpression>
 #include <QtGui/QOffscreenSurface>
@@ -54,6 +55,7 @@
 #include <QtGui/QOpenGLExtraFunctions>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 #include <vector>
 #include <algorithm>
@@ -61,6 +63,7 @@
 #include <memory>
 
 #include "EditorWindow.h"
+#include "ShaderForgeMain.h"
 #include "PreviewWidget.h"
 #include "Preset.h"
 
@@ -247,6 +250,11 @@ int main(int argc, char *argv[])
     //   --compile @list.txt       one file per line (long lists)
     // Output: "COMPILE FAIL <file>" + the driver log per failure, then a
     // summary line; exit code = number of failed files (capped at 255).
+    // Shader workshop (the app's ShaderForge, Source/ShaderForgeMain.h).  The app
+    // forges with its own executable; this entry serves diagnosis runs.
+    if (shaderForgeIsCommand(argc, argv))
+        return shaderForgeMain(argc, argv);
+
     if (args.value(0) == "--compile")
     {
         QStringList files;

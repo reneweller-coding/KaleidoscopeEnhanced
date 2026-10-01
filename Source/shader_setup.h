@@ -41,6 +41,8 @@ bool   shaderVariantStart( const char *frag_source, const std::string &defines )
 GLuint shaderVariantTake( const char *frag_source, const std::string &defines );
 /// @brief True if the variant's build failed (its log is printed once).
 bool   shaderVariantFailed( const char *frag_source, const std::string &defines );
+/// @brief Builds a fullscreen program from fragment TEXT now (blocking; cached by text). 0 on failure (logged).
+GLuint shaderBuildFromText( const std::string &fragText );
 // Vertex+fragment pair (3D scenes) — actually attaches the vertex shader.
 /**
  * @brief Builds a vertex+fragment program where the vertex shader is actually the caller's own file, not the shared fullscreen one.

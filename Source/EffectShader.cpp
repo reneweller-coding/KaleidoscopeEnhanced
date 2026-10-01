@@ -7,6 +7,7 @@
 #include <float.h>
 
 #include "shader_setup.h"
+#include "ShaderForge.h"
 #include "EffectShader.h"
 #include "ComputeFX.h"
 #include "textfile.h"
@@ -16,6 +17,7 @@
 
 #include <cstdlib>
 #include <chrono>
+#include <set>
 #include <typeinfo>
 #include <algorithm>
 #include <QtCore/qdir.h>
@@ -52,7 +54,7 @@ m_minTimeSolo(minTimeSolo)
 		size_t d = base.rfind( ".frag" );
 		if( d != std::string::npos ) base = base.substr( 0, d );
 		const std::string fin = "..\\Engine\\ChainPass\\Final_" + base + ".frag";
-		if( !getenv( "KALEIDO_NO_CHAINPASS" ) )
+		if( s_chainRunner && !getenv( "KALEIDO_NO_CHAINPASS" ) )
 			if( FILE *fp = fopen( fin.c_str(), "rb" ) )
 			{
 				fclose( fp );
@@ -62,7 +64,14 @@ m_minTimeSolo(minTimeSolo)
 				{
 					if( const char *b = strstr( t, "// @chainbake " ) )
 						m_chainBake = atoi( b + 14 );
+					m_chain3D = strstr( t, "// @chain3d" ) != nullptr;
 					free( t );
+				}
+				if( m_chain3D )
+				{
+					const std::string g = "..\\Engine\\ChainPass\\Geom_" + base + ".frag";
+					if( char *t = textFileRead( g.c_str() ) ) { m_geomSrc = t; free( t ); }
+					else m_chain3D = false;
 				}
 			}
 	}
@@ -120,6 +129,7 @@ EffectShader::~EffectShader()
 float EffectShader::s_depthValid[2] = { 0.f, 0.f };
 float EffectShader::s_shadowPass = 0.f;
 float EffectShader::s_reviewSolo  = 0.f;
+bool  EffectShader::s_chainRunner = false;
 float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
@@ -615,7 +625,10 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
     stepChainWalk( f );
     stepChainCam( f );
     if( m_compileFile && m_glReady )
-        runChainPasses( f );
+    {
+        if( m_chain3D ) runChain3D( f );
+        else            runChainPasses( f );
+    }
 
     // Per-program LOCATION CACHE: this used to perform ~45 string-keyed
     // glGetUniformLocation lookups per shader per FRAME - the single biggest
@@ -1326,6 +1339,13 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	{
 		if( m_walk.fading[s] )
 		{
+			// 3D lab: a structure fade waits at 0 % for the geometry variant with both worlds
+			if( m_chain3D && isStructure( s ) && m_walk.f[s] <= 0.f && m_geomWait < 8.f
+			    && !geomProgram( m_walk.x0, m_walk.x1, m_walk.fading ) )
+			{
+				m_geomWait += dt;
+				goto upload;
+			}
 			// a bound variant without this fade's target: wait at 0 %
 			if( variantBound && m_walk.f[s] <= 0.f && want != m_specBound )
 			{
@@ -1333,6 +1353,20 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 				goto upload;
 			}
 			m_walk.f[s] += dt * m_walk.rate / m_walk.fadeDur[s];     // music time: never backwards, never a jump
+			if( m_chain3D && isStructure( s ) && m_walk.f[s] >= 1.f && m_geomWait < 8.f )
+			{
+				// ... and at 100 % for the variant of the world after it
+				float x0[9]; bool fd[9];
+				for( int o = 0; o < kWalkN; ++o ) { x0[o] = m_walk.x0[o]; fd[o] = m_walk.fading[o]; }
+				x0[s] = m_walk.x1[s]; fd[s] = false;
+				if( !geomProgram( x0, m_walk.x1, fd ) )
+				{
+					m_walk.f[s] = 1.f;
+					m_geomWait += dt;
+					goto upload;
+				}
+			}
+			if( m_chain3D && isStructure( s ) ) m_geomWait = 0.f;
 			if( m_walk.f[s] >= 1.f && variantBound )
 			{
 				// the state after this fade needs its own variant: wait at 100 %
@@ -1434,7 +1468,7 @@ namespace {
 struct PassProg
 {
 	GLuint prog = 0;
-	GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1,
+	GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1, texStart = -1, useStart = -1,
 	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1;
 };
 std::map<std::string, PassProg> s_passProgs;      ///< pass shader file -> program and locations
@@ -1462,6 +1496,8 @@ const PassProg &passProg( const std::string &file )
 	p.mixF = glGetUniformLocation( p.prog, "mixF" );
 	p.chainOff = glGetUniformLocation( p.prog, "chainOff" );
 	p.bakeSize = glGetUniformLocation( p.prog, "bakeSize" );
+	p.texStart = glGetUniformLocation( p.prog, "texStart" );
+	p.useStart = glGetUniformLocation( p.prog, "useStart" );
 	p.res = glGetUniformLocation( p.prog, "resolution" );
 	p.sceneTime = glGetUniformLocation( p.prog, "sceneTime" );
 	p.adv = glGetUniformLocation( p.prog, "audioAdvance" );
@@ -1469,6 +1505,40 @@ const PassProg &passProg( const std::string &file )
 	p.spread = glGetUniformLocation( p.prog, "audioSpread" );
 	p.speed = glGetUniformLocation( p.prog, "speedP" );
 	return s_passProgs[file] = p;
+}
+/// @brief Pass shaders built in the background a few at a time, once per session (every chain runner lab, each frame).
+void warmPasses( std::map<std::string, std::vector<int>> &ord, bool with3D )
+{
+	static const char kStage[4] = { 'A', 'B', 'C', 'D' };
+	if( !s_passWarmInit )
+	{
+		s_passWarmInit = true;
+		for( int s = 0; s < 4; ++s )
+			for( int b : ord[ kWalkKnob[s] ] )
+				s_passWarm.push_back( passFile( kStage[s], b ) );
+		s_passWarm.push_back( "..\\Engine\\ChainPass\\Id.frag" );
+		s_passWarm.push_back( "..\\Engine\\ChainPass\\Mix.frag" );
+		s_passWarm.push_back( "..\\Engine\\ChainPass\\Fallback.frag" );
+	}
+	static bool with3DDone = false;
+	if( with3D && !with3DDone )
+	{
+		with3DDone = true;
+		s_passWarm.push_back( "..\\Engine\\ChainPass\\Start3D.frag" );   // popped from the back: first
+	}
+	// A trickle, not a flood: collecting a finished build still blocks 5-15 ms
+	// on NVIDIA (shaderPrebuildPoll), and 120 at once held the lab's first
+	// seconds at 17-90 fps.  One every 150 ms costs one slightly long frame in
+	// twenty; a class the walk needs before its turn is built on use.
+	static auto lastStart = std::chrono::steady_clock::time_point();
+	const auto now = std::chrono::steady_clock::now();
+	if( shaderPrebuildPoll() == 0 && !s_passWarm.empty() && now - lastStart > std::chrono::milliseconds( 150 ) )
+	{
+		lastStart = now;
+		const std::string w = s_passWarm.back();
+		s_passWarm.pop_back();
+		if( !shaderPrebuildStart( w.c_str() ) ) s_passWarm.clear();   // no background compile: build on use
+	}
 }
 float smooth01( float x ) { x = x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ); return x * x * ( 3.f - 2.f * x ); }
 } // namespace
@@ -1482,23 +1552,7 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 		if( m_chainOrd.find( kWalkKnob[s] ) == m_chainOrd.end() ) return;
 	const bool fixedOrder = m_permCodes.size() != 24;  // a lab without an order knob: A -> B -> C -> D
 
-	// Pass shaders: built in the background a few at a time, once per session.
-	if( !s_passWarmInit )
-	{
-		s_passWarmInit = true;
-		for( int s = 0; s < 4; ++s )
-			for( int b : m_chainOrd[ kWalkKnob[s] ] )
-				s_passWarm.push_back( passFile( kStage[s], b ) );
-		s_passWarm.push_back( "..\\Engine\\ChainPass\\Id.frag" );
-		s_passWarm.push_back( "..\\Engine\\ChainPass\\Mix.frag" );
-		s_passWarm.push_back( "..\\Engine\\ChainPass\\Fallback.frag" );
-	}
-	while( !s_passWarm.empty() && shaderPrebuildPoll() < 4 )
-	{
-		const std::string w = s_passWarm.back();
-		s_passWarm.pop_back();
-		if( !shaderPrebuildStart( w.c_str() ) ) { s_passWarm.clear(); break; }   // no background compile: build on use
-	}
+	warmPasses( m_chainOrd, false );
 
 	// GL state this function changes, restored at the end.
 	GLint vp[4], drawFb = 0, readFb = 0, activeTex = 0, vao = 0;
@@ -1665,6 +1719,307 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	if( lt >= 0 ) glUniform1i( lt, 40 );
 	if( lo >= 0 ) glUniform2f( lo, (float) vp[0], (float) vp[1] );
 	glActiveTexture( (GLenum) activeTex );
+}
+
+// ---- 3D lab ------------------------------------------------------------------
+GLuint EffectShader::geomProgram( const float *x0, const float *x1, const bool *fading )
+{
+	static const int   kSt[3]   = { 5, 6, 7 };
+	static const char *kName[3] = { "SP", "CO", "BO" };
+	std::string d;
+	char buf[96];
+	for( int i = 0; i < 3; ++i )
+	{
+		auto o = m_chainOrd.find( kWalkKnob[ kSt[i] ] );
+		if( o == m_chainOrd.end() || o->second.empty() ) return 0;
+		const int n = (int) o->second.size();
+		const int p0 = classPos( x0[ kSt[i] ], n );
+		const int p1 = fading[ kSt[i] ] ? classPos( x1[ kSt[i] ], n ) : p0;
+		snprintf( buf, sizeof buf, "#define SPEC_%s0 %d\n#define SPEC_%s1 %d\n", kName[i], o->second[p0], kName[i], o->second[p1] );
+		d += buf;
+	}
+	std::string src = m_geomSrc;
+	const size_t nl = src.find( '\n' );
+	src.insert( nl == std::string::npos ? src.size() : nl + 1, d );
+	if( shaderForgeAvailable() )
+	{
+		bool failed = false;
+		const GLuint p = shaderForgeGet( src, &failed, 2 );   // the G-buffer: two RGBA32F targets
+		if( p || !failed ) return p;
+	}
+	return shaderBuildFromText( src );                 // no helper (or it failed): build here, blocking
+}
+
+void EffectShader::runChain3D( const AudioFeatures &f )
+{
+	static const char kStage[4] = { 'A', 'B', 'C', 'D' };
+	static const int  kWeak[4]  = { 0, 2, 1, 2 };
+	parseChainSource();
+	for( int s = 0; s < 4; ++s )
+		if( m_chainOrd.find( kWalkKnob[s] ) == m_chainOrd.end() ) return;
+	const bool fixedOrder = m_permCodes.size() != 24;
+	using Clock = std::chrono::steady_clock;
+	const bool specLog = getenv( "KALEIDO_SPEC_LOG" ) != nullptr;
+	const auto tc0 = Clock::now();
+	auto msSince = []( Clock::time_point t ) { return std::chrono::duration<double, std::milli>( Clock::now() - t ).count(); };
+	std::string slowDraws;                               // first draws of programs that took long (KALEIDO_SPEC_LOG)
+	static std::set<GLuint> drawnOnce;
+	warmPasses( m_chainOrd, true );   // the 3D lab built its passes on first use: 25-80 ms frames at every new class
+	const GLuint geom = geomProgram( m_walk.x0, m_walk.x1, m_walk.fading );
+	const double tSel = msSince( tc0 );
+
+	GLint vp[4], drawFb = 0, readFb = 0, activeTex = 0, vao = 0;
+	glGetIntegerv( GL_VIEWPORT, vp );
+	glGetIntegerv( 0x8CA6, &drawFb );
+	glGetIntegerv( 0x8CAA, &readFb );
+	glGetIntegerv( 0x84E0, &activeTex );
+	glGetIntegerv( 0x85B5, &vao );
+	const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST ), scissor = glIsEnabled( GL_SCISSOR_TEST );
+	const int W = vp[2] > 0 ? vp[2] : 1, H = vp[3] > 0 ? vp[3] : 1;
+
+	auto makeTex = [&]( GLuint tex ) {
+		glBindTexture( GL_TEXTURE_2D, tex );
+		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, W, H, 0, GL_RGBA, GL_FLOAT, nullptr );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+	};
+	if( W != m_cpW || H != m_cpH || !m_cpTex[0] )
+	{
+		if( m_cpTex[0] ) { glDeleteTextures( 8, m_cpTex ); glDeleteFramebuffers( 8, m_cpFbo ); }
+		glGenTextures( 8, m_cpTex );
+		glGenFramebuffers( 8, m_cpFbo );
+		for( int i = 0; i < 8; ++i )
+		{
+			makeTex( m_cpTex[i] );
+			glBindFramebuffer( GL_FRAMEBUFFER, m_cpFbo[i] );
+			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_cpTex[i], 0 );
+		}
+		if( m_gbTex[0] ) { glDeleteTextures( 2, m_gbTex ); glDeleteFramebuffers( 1, &m_gbFbo ); }
+		glGenTextures( 2, m_gbTex );
+		glGenFramebuffers( 1, &m_gbFbo );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_gbFbo );
+		for( int i = 0; i < 2; ++i )
+		{
+			makeTex( m_gbTex[i] );
+			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_gbTex[i], 0 );
+		}
+		m_cpW = W; m_cpH = H;
+	}
+	glDisable( GL_BLEND ); glDisable( GL_DEPTH_TEST ); glDisable( GL_SCISSOR_TEST );
+	glViewport( 0, 0, W, H );
+	glBindVertexArray( fullscreenVAO() );
+
+	// 1. Geometry into the G-buffer (no program yet: every pixel misses -- fog).
+	glBindFramebuffer( GL_FRAMEBUFFER, m_gbFbo );
+	const GLenum bufs[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers( 2, bufs );
+	if( geom )
+	{
+		glUseProgram( geom );
+		auto loc = [&]( const char *n ) { return glGetUniformLocation( geom, n ); };
+		for( const Uniform *u : m_uniforms )
+		{
+			const std::string &nm = u->getName();
+			if( !nm.empty() && nm.back() == 'P' )
+			{
+				const GLint l = loc( nm.c_str() );
+				if( l >= 0 ) glUniform1f( l, u->snapshotValue() );
+			}
+		}
+		GLint l;
+		if( ( l = loc( "resolution" ) ) >= 0 )   glUniform2f( l, (float) m_width, (float) m_height );
+		if( ( l = loc( "sceneTime" ) ) >= 0 )    glUniform1f( l, m_lastSceneTime );
+		if( ( l = loc( "sceneAdvance" ) ) >= 0 ) glUniform1f( l, f.audioAdvance - m_advanceAtReset );
+		if( ( l = loc( "audioAdvance" ) ) >= 0 ) glUniform1f( l, f.audioAdvance );
+		if( ( l = loc( "audioPhase" ) ) >= 0 )   glUniform1f( l, f.audioRotPhase );
+		if( ( l = loc( "audioSpread" ) ) >= 0 )  glUniform1f( l, f.spectralSpread );
+		if( ( l = loc( "audioSwell" ) ) >= 0 )   glUniform1f( l, f.swell );
+		if( ( l = loc( "audioKick" ) ) >= 0 )    glUniform1f( l, f.onsetKick );
+		if( ( l = loc( "audioMode" ) ) >= 0 )    glUniform1f( l, f.musicalMode );
+		if( ( l = loc( "audioLevel" ) ) >= 0 )   glUniform1f( l, f.overallLevel );
+		if( ( l = loc( "walkHost" ) ) >= 0 )     glUniform1f( l, m_walk.active ? 1.f : 0.f );
+		static const char *kW[3] = { "walkSpace", "walkCore", "walkBody" };
+		for( int i = 0; i < 3; ++i )
+			if( ( l = loc( kW[i] ) ) >= 0 )
+			{
+				const int s = 5 + i;
+				glUniform3f( l, m_walk.x0[s], m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s], m_walk.fading[s] ? m_walk.f[s] : 0.f );
+			}
+		if( ( l = loc( "camHost" ) ) >= 0 )      glUniform1f( l, m_camHostLoc >= 0 ? 1.f : 0.f );
+		if( ( l = loc( "camZ" ) ) >= 0 )         glUniform1f( l, m_cam.z );
+		if( ( l = loc( "camGaze" ) ) >= 0 )      glUniform3f( l, (float) m_cam.g0, (float) m_cam.g1, m_cam.f );
+		static GLuint lastGeom = 0;
+		const auto td0 = std::chrono::steady_clock::now();
+		glDrawArrays( GL_TRIANGLES, 0, 3 );
+		if( geom != lastGeom && getenv( "KALEIDO_SPEC_LOG" ) )
+			fprintf( stderr, "GEOM first draw %u: %.1f ms\n", geom, std::chrono::duration<double, std::milli>( std::chrono::steady_clock::now() - td0 ).count() );
+		lastGeom = geom;
+	}
+	else
+	{
+		const GLfloat miss[4] = { 0.f, 0.f, 0.f, -1.f }, up[4] = { 0.f, 0.f, 1.f, 1.f };
+		glClearBufferfv( GL_COLOR, 0, miss );
+		glClearBufferfv( GL_COLOR, 1, up );
+	}
+	glDrawBuffers( 1, bufs );
+
+	// 2. The colour chain once per projection plane, from the G-buffer.
+	float speedP = 0.5f, solidP = 0.f;
+	for( const Uniform *u : m_uniforms )
+	{
+		if( u->getName() == "speedP" ) speedP = u->snapshotValue();
+		if( u->getName() == "solidP" ) solidP = u->snapshotValue();
+	}
+	int start = -1;
+	auto pass = [&]( const std::string &file, int in, int inB, int out, float subV, float mixF ) {
+		const PassProg &p = passProg( file );
+		if( !p.prog ) return;
+		glBindFramebuffer( GL_FRAMEBUFFER, m_cpFbo[out] );
+		glUseProgram( p.prog );
+		glActiveTexture( GL_TEXTURE0 + 41 );
+		glBindTexture( GL_TEXTURE_2D, in >= 0 ? m_cpTex[in] : glcoreDummyTex2D() );
+		glActiveTexture( GL_TEXTURE0 + 42 );
+		glBindTexture( GL_TEXTURE_2D, inB >= 0 ? m_cpTex[inB] : glcoreDummyTex2D() );
+		glActiveTexture( GL_TEXTURE0 + 47 );
+		glBindTexture( GL_TEXTURE_2D, start >= 0 ? m_cpTex[start] : glcoreDummyTex2D() );
+		if( p.texIn >= 0 )     glUniform1i( p.texIn, 41 );
+		if( p.texB >= 0 )      glUniform1i( p.texB, 42 );
+		if( p.texStart >= 0 )  glUniform1i( p.texStart, 47 );
+		if( p.useStart >= 0 )  glUniform1i( p.useStart, start >= 0 ? 1 : 0 );
+		if( p.firstPass >= 0 ) glUniform1i( p.firstPass, in < 0 ? 1 : 0 );
+		if( p.subV >= 0 )      glUniform1f( p.subV, subV );
+		if( p.mixF >= 0 )      glUniform1f( p.mixF, mixF );
+		if( p.chainOff >= 0 )  glUniform2f( p.chainOff, 0.f, 0.f );
+		if( p.bakeSize >= 0 )  glUniform1f( p.bakeSize, 0.f );
+		if( p.res >= 0 )       glUniform2f( p.res, (float) m_width, (float) m_height );
+		if( p.sceneTime >= 0 ) glUniform1f( p.sceneTime, m_lastSceneTime );
+		if( p.adv >= 0 )       glUniform1f( p.adv, f.audioAdvance );
+		if( p.phase >= 0 )     glUniform1f( p.phase, f.audioRotPhase );
+		if( p.spread >= 0 )    glUniform1f( p.spread, f.spectralSpread );
+		if( p.speed >= 0 )     glUniform1f( p.speed, speedP );
+		const auto td = Clock::now();
+		glDrawArrays( GL_TRIANGLES, 0, 3 );
+		if( specLog && drawnOnce.insert( p.prog ).second && msSince( td ) > 2.0 )
+		{
+			char b[160];
+			snprintf( b, sizeof b, " %s %.1f", file.substr( file.find_last_of( '\\' ) + 1 ).c_str(), msSince( td ) );
+			slowDraws += b;
+		}
+	};
+	unsigned busy = 0;
+	auto freeTex = [&]( unsigned also ) { for( int i = 0; i < 8; ++i ) if( !( ( busy | also ) & ( 1u << i ) ) ) return i; return 0; };
+	auto runOrder = [&]( int code ) -> int {
+		int cur = -1;
+		for( int pos = 0; pos < 4; ++pos )
+		{
+			const int s = ( code >> ( 2 * pos ) ) & 3;
+			const std::vector<int> &ord = m_chainOrd[ kWalkKnob[s] ];
+			const int n = (int) ord.size();
+			const float x0 = m_walk.x0[s], x1 = m_walk.x1[s];
+			const int p0 = classPos( x0, n );
+			const float v0 = ( x0 < 0.f ? 0.f : ( x0 > 0.9999f ? 0.9999f : x0 ) ) * n - (float) p0;
+			const bool fade = m_walk.active && m_walk.fading[s] && m_walk.f[s] > 0.f;
+			const unsigned keep = cur >= 0 ? ( 1u << cur ) : 0u;
+			if( !fade )
+			{
+				if( p0 == 0 ) continue;
+				const int out = freeTex( keep );
+				pass( passFile( kStage[s], ord[p0] ), cur, -1, out, v0, 0.f );
+				cur = out;
+				continue;
+			}
+			const int p1 = classPos( x1, n );
+			const float v1 = ( x1 < 0.f ? 0.f : ( x1 > 0.9999f ? 0.9999f : x1 ) ) * n - (float) p1;
+			const int ta = freeTex( keep );
+			pass( p0 == 0 ? std::string( "..\\Engine\\ChainPass\\Id.frag" ) : passFile( kStage[s], ord[p0] ), cur, -1, ta, v0, 0.f );
+			const int tb = freeTex( keep | ( 1u << ta ) );
+			pass( p1 == 0 ? std::string( "..\\Engine\\ChainPass\\Id.frag" ) : passFile( kStage[s], ord[p1] ), cur, -1, tb, v1, 0.f );
+			const int out = freeTex( ( 1u << ta ) | ( 1u << tb ) );
+			pass( "..\\Engine\\ChainPass\\Mix.frag", ta, tb, out, 0.f, smooth01( m_walk.f[s] ) );
+			cur = out;
+		}
+		if( cur < 0 )
+		{
+			cur = freeTex( 0 );
+			pass( "..\\Engine\\ChainPass\\Id.frag", -1, -1, cur, 0.f, 0.f );
+		}
+		return cur;
+	};
+	float w = 1.f;
+	for( int s = 0; s < 4; ++s )
+	{
+		const int n = (int) m_chainOrd[ kWalkKnob[s] ].size();
+		const int p0 = classPos( m_walk.x0[s], n );
+		if( m_walk.active && m_walk.fading[s] && m_walk.f[s] > 0.f )
+		{
+			const float fs = smooth01( m_walk.f[s] );
+			const int p1 = classPos( m_walk.x1[s], n );
+			w *= ( p0 <= kWeak[s] ? 1.f - fs : 0.f ) + ( p1 <= kWeak[s] ? fs : 0.f );
+		}
+		else
+			w *= p0 <= kWeak[s] ? 1.f : 0.f;
+	}
+	const double tGeom = msSince( tc0 );
+	const PassProg &st = passProg( "..\\Engine\\ChainPass\\Start3D.frag" );
+	const GLint stG = glGetUniformLocation( st.prog, "texGPos" ), stPl = glGetUniformLocation( st.prog, "plane" ),
+	            stSd = glGetUniformLocation( st.prog, "solidP" );
+	const int code = fixedOrder ? 228 : m_permCodes[ classPos( m_walk.x0[8], 24 ) ];
+	int res[3];
+	for( int pl = 0; pl < 3; ++pl )
+	{
+		start = -1;
+		const int s0 = freeTex( 0 );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_cpFbo[s0] );
+		glUseProgram( st.prog );
+		glActiveTexture( GL_TEXTURE0 + 45 );
+		glBindTexture( GL_TEXTURE_2D, m_gbTex[0] );
+		if( stG >= 0 )  glUniform1i( stG, 45 );
+		if( stPl >= 0 ) glUniform1i( stPl, pl );
+		if( stSd >= 0 ) glUniform1f( stSd, solidP );
+		glDrawArrays( GL_TRIANGLES, 0, 3 );
+		start = s0;
+		busy |= 1u << s0;
+		int r = runOrder( code );
+		if( w > 0.f )
+		{
+			const int out = freeTex( 1u << r );
+			pass( "..\\Engine\\ChainPass\\Fallback.frag", r, -1, out, 0.f, w );
+			r = out;
+		}
+		busy &= ~( 1u << s0 );
+		busy |= 1u << r;
+		res[pl] = r;
+	}
+	start = -1;
+
+	// 3. Restore, and hand the G-buffer and the three chains to the lab's last pass.
+	glBindFramebuffer( 0x8CA9, drawFb );
+	glBindFramebuffer( 0x8CA8, readFb );
+	glViewport( vp[0], vp[1], vp[2], vp[3] );
+	if( blend ) glEnable( GL_BLEND );
+	if( depth ) glEnable( GL_DEPTH_TEST );
+	if( scissor ) glEnable( GL_SCISSOR_TEST );
+	glBindVertexArray( (GLuint) vao );
+	glUseProgram( m_sh_prog_id );
+	static const int   kUnit[5] = { 45, 46, 40, 43, 44 };
+	static const char *kSam[5]  = { "texGPos", "texGNrm", "texChain0", "texChain1", "texChain2" };
+	const GLuint texs[5] = { m_gbTex[0], m_gbTex[1], m_cpTex[ res[0] ], m_cpTex[ res[1] ], m_cpTex[ res[2] ] };
+	for( int i = 0; i < 5; ++i )
+	{
+		glActiveTexture( GL_TEXTURE0 + kUnit[i] );
+		glBindTexture( GL_TEXTURE_2D, texs[i] );
+		const GLint l = glGetUniformLocation( m_sh_prog_id, kSam[i] );
+		if( l >= 0 ) glUniform1i( l, kUnit[i] );
+	}
+	const GLint lo = glGetUniformLocation( m_sh_prog_id, "chainOff" );
+	if( lo >= 0 ) glUniform2f( lo, (float) vp[0], (float) vp[1] );
+	glActiveTexture( (GLenum) activeTex );
+	const double tAll = msSince( tc0 );
+	if( specLog && tAll > 15.0 )
+		fprintf( stderr, "CHAIN3D slow frame: %.1f ms (select %.1f, geom %.1f, passes %.1f)%s%s\n", tAll, tSel, tGeom - tSel,
+		         tAll - tGeom, slowDraws.empty() ? "" : " first draws:", slowDraws.c_str() );
 }
 
 std::string EffectShader::specDefines( const float *x0, const float *x1, const bool *fading ) const

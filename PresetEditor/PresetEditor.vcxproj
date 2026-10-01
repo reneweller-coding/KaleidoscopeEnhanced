@@ -110,6 +110,9 @@
     <ClCompile Include="..\Source\Uniform.cpp" />
     <ClCompile Include="..\Source\ExprEval.cpp" />
     <ClCompile Include="..\Source\shader_setup.cpp" />
+    <ClCompile Include="..\Source\ShaderWorker.cpp" />
+    <ClCompile Include="..\Source\ShaderForge.cpp" />
+    <ClCompile Include="..\Source\ShaderForgeMain.cpp" />
     <ClCompile Include="..\Source\textfile.cpp" />
     <ClCompile Include="..\Source\glcore.cpp" />
     <!-- Actually dispatched now: ComputeFXPreview.cpp (2D path, see its own
@@ -134,6 +137,7 @@
     <ClInclude Include="..\Source\Uniform.h" />
     <ClInclude Include="..\Source\ExprEval.h" />
     <ClInclude Include="..\Source\shader_setup.h" />
+    <ClInclude Include="..\Source\ShaderWorker.h" />
     <ClInclude Include="..\Source\textfile.h" />
     <ClInclude Include="..\Source\glcore.h" />
     <ClInclude Include="..\Source\ComputeFX.h" />

@@ -57,7 +57,9 @@
 
 #include "RenderPipeline.h"
 #include "glwidget.h"
+#include "EffectShader.h"
 #include "CueReceiver.h"
+#include "ShaderForgeMain.h"
 
 #include <QtWidgets/QApplication>
 #include <QtGui/QIcon>
@@ -338,6 +340,10 @@ void parsecommandline( int argc, char *argv[] )
  */
 int main(int argc, char *argv[])
 {
+	// A ShaderForge helper run (this executable started by itself, ShaderForge.h): build one program and end.
+	if( shaderForgeIsCommand( argc, argv ) )
+		return shaderForgeMain( argc, argv );
+
 	// Seed the C-runtime RNG for THIS (main/render) thread. rand() was never
 	// seeded anywhere in this codebase, so it always started from the C
 	// runtime's fixed default state -- every launch replayed the exact same
@@ -415,6 +421,7 @@ int main(int argc, char *argv[])
 	if( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) )
 		fmt.setSwapInterval( 0 );
 	QSurfaceFormat::setDefaultFormat( fmt );
+	EffectShader::s_chainRunner = true;   // chain labs as passes (Engine/ChainPass); the editor keeps the uber-shaders
 
 	// The normal windowed-app path: build the Qt application and its single top-level
 	// window, then either show it windowed or on the chosen fullscreen monitor.

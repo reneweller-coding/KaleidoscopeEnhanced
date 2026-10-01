@@ -31,6 +31,7 @@
 #include "glcore.h"        // core-profile GL entry points (glcoreInit)
 #include "glwidget.h"
 #include "ShaderWorker.h"
+#include "ShaderForge.h"
 #include "PlatformQt.h"
 #include "WebRemote.h"
 #include "CueReceiver.h"
@@ -650,6 +651,9 @@ void GLwidget::initializeGL()
 	// A thread with a shared context compiles the chain labs' specialised
 	// variants, so their builds never stall the picture (ShaderWorker.h).
 	shaderWorkerStart( context() );
+	// Big shaders (the 3D lab's geometry variants) are built by a helper
+	// process and loaded as program binaries (ShaderForge.h).
+	shaderForgeInit();
 
 	m_actConfiguration->start( 100, 100 );
 
@@ -958,6 +962,13 @@ void GLwidget::paintGL()
 	if( frameLog )
 	{
 		const double ms = ( m_fpsTimer.nsecsElapsed() - frameT0 ) * 1e-6;
+		// The time between two frames, too: a stall in the buffer swap or outside
+		// paintGL (another process holding the GPU) does not show in the frame's own time.
+		static qint64 prevT0 = 0;
+		const double gap = prevT0 > 0 ? ( frameT0 - prevT0 ) * 1e-6 : 0.0;
+		prevT0 = frameT0;
+		if( gap > 2.0 * frameLimit )
+			fprintf( stderr, "[gap] t=%7.2fs  %8.1f ms since the last frame\n", m_fpsTimer.elapsed() / 1000.0, gap );
 		if( ms > frameLimit )
 			fprintf( stderr, "[frame] t=%7.2fs  %8.1f ms  warm=%s\n",
 			         m_fpsTimer.elapsed() / 1000.0, ms,

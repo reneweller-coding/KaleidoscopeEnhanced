@@ -435,6 +435,8 @@ public:
 	/// the first third of its arc on the very bench meant to judge it.
 	/// SceneScheduler::setReviewMode() owns this value.
 	static float s_reviewSolo;
+	/// True in the app (main.cpp): chain labs with Engine/ChainPass/Final_<name>.frag run as passes; the editor keeps the uber-shaders.
+	static bool s_chainRunner;
 	static float s_shadowExtent;      ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box), published by RenderPipeline so the shadow receivers and the light matrix use the same box.
 	static float s_shadowPass;        ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass` uniform.
 	static float s_lightM[16];        ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per frame by RenderPipeline::updateLightMatrix().
@@ -753,9 +755,18 @@ protected:
 	void dropVariants( bool release );
 	// ---- Chain runner: the lab's chain as one small pass per transform ----
 	char   *m_compileFile = nullptr;    ///< Engine/ChainPass/Final_<name>.frag when this lab runs its chain as passes (else null: the fragment file itself).
-	GLuint	m_cpFbo[5] = {}, m_cpTex[5] = {};   ///< RG32F coordinate textures (ping-pong plus fade temporaries).
+	GLuint	m_cpFbo[8] = {}, m_cpTex[8] = {};   ///< Coordinate textures (ping-pong plus fade temporaries; 5 for the flat labs, 8 RGBA32F for the 3D lab).
 	int		m_cpW = 0, m_cpH = 0;       ///< Their size (the target viewport, or the bake square).
 	int		m_chainBake = 0;            ///< > 0: the chain is baked over [0,1]^2 at this size ("// @chainbake N" in the final shader).
+	bool	m_chain3D = false;          ///< "// @chain3d": the 3D lab's deferred passes (geometry, three plane chains, shading).
+	std::string m_geomSrc;              ///< Engine/ChainPass/Geom_<name>.frag: the geometry pass, world classes as #if selections.
+	GLuint	m_gbFbo = 0, m_gbTex[2] = {};   ///< G-buffer: hit point + distance, normal + AO (RGBA32F).
+	int		m_gbW = 0, m_gbH = 0;
+	float	m_geomWait = 0.f;           ///< Seconds a structure fade has waited for its geometry variant.
+	/// @brief The geometry program for a walk state (world 0 = shown, world 1 = faded to); 0 while the helper builds it.
+	GLuint	geomProgram( const float *x0, const float *x1, const bool *fading );
+	/// @brief The 3D lab's passes (see runChainPasses).
+	void	runChain3D( const AudioFeatures &f );
 	std::vector<int> m_permCodes;       ///< The 24 stage orders (base-4 digits), from "int permCode(int i)".
 	float	m_lastSceneTime = 0.f;      ///< sceneTime as uploaded this frame (the passes need the same value).
 	/// @brief Runs this frame's chain as passes and binds the result as texChain (program must be bound; restores the GL state it touches).
