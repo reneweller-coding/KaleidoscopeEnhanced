@@ -1578,6 +1578,10 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
 // @chainclasses chainDP none|turning|bend|shear wave|Gerstner waves|wave interference|convection cells|curl flow|cylinder flow|dipole field|Taylor-Green vortices|twirl|vortex pair|double gyre|vortex street|Karman street|gravitational wave|Kelvin-Helmholtz rolls|domain warp|ripple
 // @chainclasses styleP photo|relief|contour lines|flow|glowing edges
 // @chainclasses orderP A → B → C → D|A → B → D → C|A → C → B → D|A → C → D → B|A → D → B → C|A → D → C → B|B → A → C → D|B → A → D → C|B → C → A → D|B → C → D → A|B → D → A → C|B → D → C → A|C → A → B → D|C → A → D → B|C → B → A → D|C → B → D → A|C → D → A → B|C → D → B → A|D → A → B → C|D → A → C → B|D → B → A → C|D → B → C → A|D → C → A → B|D → C → B → A
+// @chainord chainAP 11|5|20|39|52|14|26|41|25|4|16|43|44|33|56|9|15|28|24|53|1|29|34|12|42|17|46|27|47|30|45|19|31|48|6|40|18|32|10|7|21|35|8|3|13|22|23|55|54|51|49|50|36|37|38|57|0|2
+// @chainord chainBP 0|5|20|3|18|1|22|10|21|8|14|15|16|2|7|9|11|19|12|13|4|6|17
+// @chainord chainCP 0|5|17|12|15|8|9|10|11|13|14|7|1|16|4|3|6|2
+// @chainord chainDP 0|5|8|2|19|13|18|7|10|11|17|1|12|16|6|9|15|14|4|3
 // @chainopening chainAP 9|10|13|14|20|22|31|32|38|44|57
 // @chainopening chainBP 
 // @chainopening chainCP 12|17
@@ -1684,6 +1688,166 @@ vec2 stageAk(vec2 uv, int k, float v)
     }
     return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gT * 2.0);
 }
+#ifdef SPEC_A0
+vec2 stageAk_0(vec2 uv, float v)
+{
+    int k = SPEC_A0;
+    if (k == 43) return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gT * 0.3), gT * 0.4 + gRot);
+    if (k == 44) return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gT * 0.3) + 0.8, gT * 0.4 + gRot);
+    if (k == 45) return tWeierstrass(uv, gCw, 2.0 + 2.0 * v, gT);
+    if (k == 46) return tMagnet(uv, gCw, 2.0 + floor(v * 1.99), gT);
+    if (k == 47) return tThetaWave(uv, gCw, 3.0 + 3.0 * v, gT);
+    if (k == 48) return tChebyshev(uv, gCw, 3.0 + floor(v * 3.99), 1.4 + 0.6 * sin(gT * 0.2));
+    if (k == 49) return tHenon(uv, gCw, 3.0, gT);
+    if (k == 50) return tIkeda(uv, gCw, 3.0, gT);
+    if (k == 51) return tChirikov(uv, gCw, 1.3 + 0.7 * v + 0.3 * sin(gT * 0.2), 4.0);
+    if (k == 52) return tCassini(uv, gCt, 0.6 + 0.4 * sin(gT * 0.25), gT * 1.2);
+    if (k == 53) return tKleinInv(uv, gCw, v < 0.5 ? 0.0 : 1.0, 0.6 * sin(gT * 0.3), gT * 0.3 + gRot);
+    if (k == 54) return tGumowski(uv, gCw, -0.4 + 0.3 * sin(gT * 0.15) + 0.2 * v, 3.0);
+    if (k == 55) return tZaslavsky(uv, gCw, 4.0 + floor(v * 3.99), 1.0 + 0.4 * sin(gT * 0.2), 4.0);
+    if (k == 56) { int j = int(floor(v * 2.99)); vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : vec2(4.0, 6.0);
+                   return tHypDroste(uv, gCt, 2.5 + 2.0 * fract(v * 3.0), gT * 0.5, pq.x, pq.y); }
+    if (k == 57) return tJulia3(uv, gCw, 2.0, gT);
+    if (k == 30) return tJacobiWall(uv, gCw, 2.0 + 2.0 * v, v < 0.5 ? 0 : 1, gT);
+    if (k == 31) return tHypFlow(uv, gCw, v * 3.0, gT * 0.8);
+    if (k == 32) return tPoles(uv, gCw, 2.0 + floor(v * 2.99), gT);
+    if (k == 33) return tBiDroste(uv, gCt, 0.2 + 0.1 * v, 2.5 + 2.0 * v, gT * 0.5);
+    if (k == 34) return tHypSpiral(uv, gCt, 0.08 + 0.06 * v, 1.0 + floor(v * 2.99), gT * 2.0);
+    if (k == 35) return tZeta(uv, gCw, 4.0 + floor(v * 3.99), gT * 2.0);
+    if (k == 36) return tMandel(uv, gCw, 4.0, gT);
+    if (k == 37) return tShip(uv, gCw, 4.0, gT);
+    if (k == 38) return tPhoenix(uv, gCw, 3.0, gT);
+    if (k == 39) return tParabCoords(uv, gCt, 6.0 + 6.0 * v, gT * 1.5);
+    if (k == 40) return tCardioid(uv, gCw, 2.5 + v, gT);
+    if (k == 41) return tSunflower(uv, gCt, 1.0 + floor(v * 3.99), 2.0 + floor(fract(v * 4.0) * 2.99), gT * 0.6);
+    if (k == 42) return tBreathSphere(uv, gCw, 2.0 + floor(v * 3.99), gT);
+    if (k == 26) return tFrieze(uv, gCw, 0.35 + 0.3 * v, gT * 1.5);
+    if (k == 27) return tEllipticWall(uv, gCw, 2.0 + 2.0 * v, gT);
+    if (k == 28) { int j = int(floor(v * 2.99)); vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : vec2(4.0, 6.0);
+                   return tHalfPlane(uv, gCt, pq.x, pq.y, 3.0 + 2.0 * v, gT * 0.8); }
+    if (k == 29) return tArchimedes(uv, gCt, 4.0 + 6.0 * v, gT * 2.0);
+    if (k == 18) return tBlaschke(uv, gCw, 2.0 + floor(v * 2.99), gT);
+    if (k == 19) return tParabolic(uv, gCw, 0.8 + 0.6 * v, gT * 0.8);
+    if (k == 20) return tElliptic(uv, gCt, 0.15 + 0.1 * v, gT * 1.5);
+    if (k == 21) return tTanLattice(uv, gCw, 2.5 + 2.0 * v);
+    if (k == 22) return tNewtonN(uv, gCw, 2.0 + floor(fract(v * 2.0) * 1.99), 3.0 + floor(v * 2.99), gT);
+    if (k == 23) return tJulia(uv, gCw, 3.0, gT);
+    if (k == 24) return tSphereKaleido(uv, gCw, 3.0 + floor(v * 2.99), 0.4 * sin(gT * 0.3), gT * 0.4 + gRot);
+    if (k == 25) return tQuasi(uv, gCw, v < 0.5 ? 5.0 : 7.0, 2.0 + 1.5 * fract(v * 2.0), gT * 1.5);
+    if (k == 17) return tQuincunx(uv, gCw, 3.0 + 2.0 * v, 0.5 * sin(gT * 0.37) + v * 2.0, gT * 0.5 + gRot);
+    if (k == 14) return tFarris(uv, gCw, int(floor(v * 13.99)), 1.5 + gSpread, gT * 1.5);
+    if (k == 15) {
+        int j = int(floor(v * 3.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : j == 2 ? vec2(4.0, 5.0) : vec2(6.0, 4.0);
+        return tHyperBand(uv, gCt, pq.x, pq.y, 0.8 + 0.4 * v, gT * 1.2);
+    }
+    if (k == 16) return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gT * 0.6);
+    if (k == 13) {
+        vec2 pa = gCw + 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3)), pb = gCw - 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3));
+        return tLoxo(uv, pa, pb, 1.0 + floor(v * 2.99), gT * 2.0);
+    }
+    if (k == 11) return uv;                                  // none: the chain starts at stage B
+    if (k == 12) return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gT * 0.4) + v * 3.0, gT * 0.8 + gRot);
+    if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
+    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gT * 2.0);
+    if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gT * 3.0);
+    if (k == 3) {
+        vec2 pa = vec2(0.5) + 0.3 * vec2(sin(gT), cos(gT * 0.7)), pb = vec2(0.5) - 0.3 * vec2(sin(gT * 0.8), cos(gT));
+        return tMobius(uv, pa, pb, 0.25 + 0.2 * gSpread);
+    }
+    if (k == 4) return tDroste(uv, gCt, 2.0 + floor(v * 2.99), gT * 1.5);
+    if (k == 5) return tPolar(uv, gCt, 1.2 + 0.8 * v);
+    if (k == 6) return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
+    if (k == 7) return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
+    if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+    if (k == 9) {
+        // {p,q} from the sub-variant: (5,4) (4,5) (6,4) (7,3) (8,3) (4,6)
+        int j = int(floor(v * 5.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(4.0, 5.0) : j == 2 ? vec2(6.0, 4.0) : j == 3 ? vec2(7.0, 3.0) : j == 4 ? vec2(8.0, 3.0) : vec2(4.0, 6.0);
+        return tPoincare(uv, vec2(0.5), pq.x, pq.y, 2.2, 0.45 * vec2(sin(gT * 0.7), sin(gT * 0.53 + 1.0)));
+    }
+    return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gT * 2.0);
+}
+vec2 stageAk_1(vec2 uv, float v)
+{
+    int k = SPEC_A1;
+    if (k == 43) return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gT * 0.3), gT * 0.4 + gRot);
+    if (k == 44) return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gT * 0.3) + 0.8, gT * 0.4 + gRot);
+    if (k == 45) return tWeierstrass(uv, gCw, 2.0 + 2.0 * v, gT);
+    if (k == 46) return tMagnet(uv, gCw, 2.0 + floor(v * 1.99), gT);
+    if (k == 47) return tThetaWave(uv, gCw, 3.0 + 3.0 * v, gT);
+    if (k == 48) return tChebyshev(uv, gCw, 3.0 + floor(v * 3.99), 1.4 + 0.6 * sin(gT * 0.2));
+    if (k == 49) return tHenon(uv, gCw, 3.0, gT);
+    if (k == 50) return tIkeda(uv, gCw, 3.0, gT);
+    if (k == 51) return tChirikov(uv, gCw, 1.3 + 0.7 * v + 0.3 * sin(gT * 0.2), 4.0);
+    if (k == 52) return tCassini(uv, gCt, 0.6 + 0.4 * sin(gT * 0.25), gT * 1.2);
+    if (k == 53) return tKleinInv(uv, gCw, v < 0.5 ? 0.0 : 1.0, 0.6 * sin(gT * 0.3), gT * 0.3 + gRot);
+    if (k == 54) return tGumowski(uv, gCw, -0.4 + 0.3 * sin(gT * 0.15) + 0.2 * v, 3.0);
+    if (k == 55) return tZaslavsky(uv, gCw, 4.0 + floor(v * 3.99), 1.0 + 0.4 * sin(gT * 0.2), 4.0);
+    if (k == 56) { int j = int(floor(v * 2.99)); vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : vec2(4.0, 6.0);
+                   return tHypDroste(uv, gCt, 2.5 + 2.0 * fract(v * 3.0), gT * 0.5, pq.x, pq.y); }
+    if (k == 57) return tJulia3(uv, gCw, 2.0, gT);
+    if (k == 30) return tJacobiWall(uv, gCw, 2.0 + 2.0 * v, v < 0.5 ? 0 : 1, gT);
+    if (k == 31) return tHypFlow(uv, gCw, v * 3.0, gT * 0.8);
+    if (k == 32) return tPoles(uv, gCw, 2.0 + floor(v * 2.99), gT);
+    if (k == 33) return tBiDroste(uv, gCt, 0.2 + 0.1 * v, 2.5 + 2.0 * v, gT * 0.5);
+    if (k == 34) return tHypSpiral(uv, gCt, 0.08 + 0.06 * v, 1.0 + floor(v * 2.99), gT * 2.0);
+    if (k == 35) return tZeta(uv, gCw, 4.0 + floor(v * 3.99), gT * 2.0);
+    if (k == 36) return tMandel(uv, gCw, 4.0, gT);
+    if (k == 37) return tShip(uv, gCw, 4.0, gT);
+    if (k == 38) return tPhoenix(uv, gCw, 3.0, gT);
+    if (k == 39) return tParabCoords(uv, gCt, 6.0 + 6.0 * v, gT * 1.5);
+    if (k == 40) return tCardioid(uv, gCw, 2.5 + v, gT);
+    if (k == 41) return tSunflower(uv, gCt, 1.0 + floor(v * 3.99), 2.0 + floor(fract(v * 4.0) * 2.99), gT * 0.6);
+    if (k == 42) return tBreathSphere(uv, gCw, 2.0 + floor(v * 3.99), gT);
+    if (k == 26) return tFrieze(uv, gCw, 0.35 + 0.3 * v, gT * 1.5);
+    if (k == 27) return tEllipticWall(uv, gCw, 2.0 + 2.0 * v, gT);
+    if (k == 28) { int j = int(floor(v * 2.99)); vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : vec2(4.0, 6.0);
+                   return tHalfPlane(uv, gCt, pq.x, pq.y, 3.0 + 2.0 * v, gT * 0.8); }
+    if (k == 29) return tArchimedes(uv, gCt, 4.0 + 6.0 * v, gT * 2.0);
+    if (k == 18) return tBlaschke(uv, gCw, 2.0 + floor(v * 2.99), gT);
+    if (k == 19) return tParabolic(uv, gCw, 0.8 + 0.6 * v, gT * 0.8);
+    if (k == 20) return tElliptic(uv, gCt, 0.15 + 0.1 * v, gT * 1.5);
+    if (k == 21) return tTanLattice(uv, gCw, 2.5 + 2.0 * v);
+    if (k == 22) return tNewtonN(uv, gCw, 2.0 + floor(fract(v * 2.0) * 1.99), 3.0 + floor(v * 2.99), gT);
+    if (k == 23) return tJulia(uv, gCw, 3.0, gT);
+    if (k == 24) return tSphereKaleido(uv, gCw, 3.0 + floor(v * 2.99), 0.4 * sin(gT * 0.3), gT * 0.4 + gRot);
+    if (k == 25) return tQuasi(uv, gCw, v < 0.5 ? 5.0 : 7.0, 2.0 + 1.5 * fract(v * 2.0), gT * 1.5);
+    if (k == 17) return tQuincunx(uv, gCw, 3.0 + 2.0 * v, 0.5 * sin(gT * 0.37) + v * 2.0, gT * 0.5 + gRot);
+    if (k == 14) return tFarris(uv, gCw, int(floor(v * 13.99)), 1.5 + gSpread, gT * 1.5);
+    if (k == 15) {
+        int j = int(floor(v * 3.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(7.0, 3.0) : j == 2 ? vec2(4.0, 5.0) : vec2(6.0, 4.0);
+        return tHyperBand(uv, gCt, pq.x, pq.y, 0.8 + 0.4 * v, gT * 1.2);
+    }
+    if (k == 16) return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gT * 0.6);
+    if (k == 13) {
+        vec2 pa = gCw + 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3)), pb = gCw - 0.25 * vec2(cos(gT * 0.3), sin(gT * 0.3));
+        return tLoxo(uv, pa, pb, 1.0 + floor(v * 2.99), gT * 2.0);
+    }
+    if (k == 11) return uv;                                  // none: the chain starts at stage B
+    if (k == 12) return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gT * 0.4) + v * 3.0, gT * 0.8 + gRot);
+    if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
+    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gT * 2.0);
+    if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gT * 3.0);
+    if (k == 3) {
+        vec2 pa = vec2(0.5) + 0.3 * vec2(sin(gT), cos(gT * 0.7)), pb = vec2(0.5) - 0.3 * vec2(sin(gT * 0.8), cos(gT));
+        return tMobius(uv, pa, pb, 0.25 + 0.2 * gSpread);
+    }
+    if (k == 4) return tDroste(uv, gCt, 2.0 + floor(v * 2.99), gT * 1.5);
+    if (k == 5) return tPolar(uv, gCt, 1.2 + 0.8 * v);
+    if (k == 6) return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
+    if (k == 7) return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
+    if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+    if (k == 9) {
+        // {p,q} from the sub-variant: (5,4) (4,5) (6,4) (7,3) (8,3) (4,6)
+        int j = int(floor(v * 5.99));
+        vec2 pq = j == 0 ? vec2(5.0, 4.0) : j == 1 ? vec2(4.0, 5.0) : j == 2 ? vec2(6.0, 4.0) : j == 3 ? vec2(7.0, 3.0) : j == 4 ? vec2(8.0, 3.0) : vec2(4.0, 6.0);
+        return tPoincare(uv, vec2(0.5), pq.x, pq.y, 2.2, 0.45 * vec2(sin(gT * 0.7), sin(gT * 0.53 + 1.0)));
+    }
+    return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gT * 2.0);
+}
+#endif
 // Stage B: a symmetry.
 vec2 stageBk(vec2 uv, int k, float v)
 {
@@ -1712,6 +1876,62 @@ vec2 stageBk(vec2 uv, int k, float v)
     if (k == 4) return tFold(uv, 0.4 + 0.3 * sin(gT), 1.2 + 0.1 * v, 3.0);
     return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
 }
+#ifdef SPEC_B0
+vec2 stageBk_0(vec2 uv, float v)
+{
+    int k = SPEC_B0;
+    if (k == 16) return tModular(uv, gCw, 2.0 + 1.5 * v, gT * 0.5);
+    if (k == 17) return tSchottky(uv, gCw, 0.62 + 0.08 * v, gRot);
+    if (k == 18) return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
+    if (k == 19) return tPappus(uv, gCw, 0.25 + 0.2 * v, gT * 0.5);
+    if (k == 20) return tOrigami(uv, gCw, 2.0 + floor(v * 2.99), gT);
+    if (k == 21) return tSteiner(uv, gCw, sides(v), gRot);
+    if (k == 22) return tSpiralKaleido(uv, gCw, sides(v), 1.0 + 1.5 * sin(gT * 0.2), gRot);
+    if (k == 10) return tCurvedKaleido(uv, gCw, sides(v), gRot, 0.4 * vec2(sin(gT * 0.3), cos(gT * 0.23)));
+    if (k == 11) return tLevy(uv, gCw, 4.0 + floor(v * 2.99), 0.2 * sin(gT * 0.3));
+    if (k == 12) return tPythagoras(uv, gCw, 4.0 + floor(v * 2.99), 0.2 * sin(gT * 0.4));
+    if (k == 13) return tVicsek(uv, gCw, 2.0 + floor(v * 1.99), 0.3 * sin(gT * 0.3));
+    if (k == 14) return tQuasiMirror(uv, gCw, 4.0, 3.0 + 2.0 * v, vec2(gT * 0.7, gT * 0.3));
+    if (k == 15) return tQuasiMirror(uv, gCw, 6.0, 3.0 + 2.0 * v, vec2(gT * 0.7, gT * 0.3));
+    if (k == 9) return tKoch(uv, gCw, 2.0 + floor(v * 1.99), 0.3 * sin(gT * 0.3));
+    if (k == 8) return tPenrose(uv, gCw, 3.0 + 2.0 * v, vec2(gT * 0.7, gT * 0.3), vec4(0.13, 0.27, -0.21, 0.36));
+    if (k == 7) return tSierpinski(uv, gCw, 3.0 + floor(v * 1.99), 0.3 * sin(gT * 0.4));
+    if (k == 6) return tApollo(uv, gCw, 1.04 + 0.08 * v + 0.04 * sin(gT * 0.3), 3.0);   // more rounds or a larger s turn to sub-pixel lace
+    if (k == 0) return uv;
+    if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
+    if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
+    if (k == 3) return tP4m(uv, 2.0 + 1.5 * v);
+    if (k == 4) return tFold(uv, 0.4 + 0.3 * sin(gT), 1.2 + 0.1 * v, 3.0);
+    return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
+}
+vec2 stageBk_1(vec2 uv, float v)
+{
+    int k = SPEC_B1;
+    if (k == 16) return tModular(uv, gCw, 2.0 + 1.5 * v, gT * 0.5);
+    if (k == 17) return tSchottky(uv, gCw, 0.62 + 0.08 * v, gRot);
+    if (k == 18) return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
+    if (k == 19) return tPappus(uv, gCw, 0.25 + 0.2 * v, gT * 0.5);
+    if (k == 20) return tOrigami(uv, gCw, 2.0 + floor(v * 2.99), gT);
+    if (k == 21) return tSteiner(uv, gCw, sides(v), gRot);
+    if (k == 22) return tSpiralKaleido(uv, gCw, sides(v), 1.0 + 1.5 * sin(gT * 0.2), gRot);
+    if (k == 10) return tCurvedKaleido(uv, gCw, sides(v), gRot, 0.4 * vec2(sin(gT * 0.3), cos(gT * 0.23)));
+    if (k == 11) return tLevy(uv, gCw, 4.0 + floor(v * 2.99), 0.2 * sin(gT * 0.3));
+    if (k == 12) return tPythagoras(uv, gCw, 4.0 + floor(v * 2.99), 0.2 * sin(gT * 0.4));
+    if (k == 13) return tVicsek(uv, gCw, 2.0 + floor(v * 1.99), 0.3 * sin(gT * 0.3));
+    if (k == 14) return tQuasiMirror(uv, gCw, 4.0, 3.0 + 2.0 * v, vec2(gT * 0.7, gT * 0.3));
+    if (k == 15) return tQuasiMirror(uv, gCw, 6.0, 3.0 + 2.0 * v, vec2(gT * 0.7, gT * 0.3));
+    if (k == 9) return tKoch(uv, gCw, 2.0 + floor(v * 1.99), 0.3 * sin(gT * 0.3));
+    if (k == 8) return tPenrose(uv, gCw, 3.0 + 2.0 * v, vec2(gT * 0.7, gT * 0.3), vec4(0.13, 0.27, -0.21, 0.36));
+    if (k == 7) return tSierpinski(uv, gCw, 3.0 + floor(v * 1.99), 0.3 * sin(gT * 0.4));
+    if (k == 6) return tApollo(uv, gCw, 1.04 + 0.08 * v + 0.04 * sin(gT * 0.3), 3.0);   // more rounds or a larger s turn to sub-pixel lace
+    if (k == 0) return uv;
+    if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
+    if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
+    if (k == 3) return tP4m(uv, 2.0 + 1.5 * v);
+    if (k == 4) return tFold(uv, 0.4 + 0.3 * sin(gT), 1.2 + 0.1 * v, 3.0);
+    return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
+}
+#endif
 // Stage C: a second global map.
 vec2 stageCk(vec2 uv, int k, float v)
 {
@@ -1735,6 +1955,52 @@ vec2 stageCk(vec2 uv, int k, float v)
     if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
     return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gT * 0.4) + 0.1 * v, 2.0);
 }
+#ifdef SPEC_C0
+vec2 stageCk_0(vec2 uv, float v)
+{
+    int k = SPEC_C0;
+    if (k == 13) return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gT * 0.4), cos(gT * 0.31)));
+    if (k == 14) return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gT * 0.5);
+    if (k == 15) return tBoost(uv, gCw, 0.6 * sin(gT * 0.3 + v * 6.28));
+    if (k == 16) return tLogVortex(uv, gCw, 0.5 + 1.0 * sin(gT * 0.2));
+    if (k == 17) return tZoneLens(uv, gCw, 0.15 + 0.1 * v, 30.0 + 20.0 * v);
+    if (k == 11) return tCayley(uv, gCw, 2.0 + 2.0 * v);
+    if (k == 12) return tFisheye(uv, gCw, 0.6 + 0.8 * v + 0.2 * sin(gT * 0.3));
+    if (k == 10) return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gT * 0.3))   /* 0.5: the square-root fold */;
+    if (k == 9) return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gT * 1.5);
+    if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gT * 2.0);
+    if (k == 0) return uv;
+    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gT * 1.5);
+    if (k == 2) return tTunnel(uv, gCt, 0.25, gT * 2.5);
+    if (k == 3) return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
+    if (k == 4) return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
+    if (k == 5) return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gT));
+    if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gT * 0.4) + 0.1 * v, 2.0);
+}
+vec2 stageCk_1(vec2 uv, float v)
+{
+    int k = SPEC_C1;
+    if (k == 13) return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gT * 0.4), cos(gT * 0.31)));
+    if (k == 14) return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gT * 0.5);
+    if (k == 15) return tBoost(uv, gCw, 0.6 * sin(gT * 0.3 + v * 6.28));
+    if (k == 16) return tLogVortex(uv, gCw, 0.5 + 1.0 * sin(gT * 0.2));
+    if (k == 17) return tZoneLens(uv, gCw, 0.15 + 0.1 * v, 30.0 + 20.0 * v);
+    if (k == 11) return tCayley(uv, gCw, 2.0 + 2.0 * v);
+    if (k == 12) return tFisheye(uv, gCw, 0.6 + 0.8 * v + 0.2 * sin(gT * 0.3));
+    if (k == 10) return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gT * 0.3))   /* 0.5: the square-root fold */;
+    if (k == 9) return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gT * 1.5);
+    if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gT * 2.0);
+    if (k == 0) return uv;
+    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gT * 1.5);
+    if (k == 2) return tTunnel(uv, gCt, 0.25, gT * 2.5);
+    if (k == 3) return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
+    if (k == 4) return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
+    if (k == 5) return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gT));
+    if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gT * 0.4) + 0.1 * v, 2.0);
+}
+#endif
 // Stage D: a warp.
 vec2 stageDk(vec2 uv, int k, float v)
 {
@@ -1760,6 +2026,56 @@ vec2 stageDk(vec2 uv, int k, float v)
     if (k == 4) return tWarp(uv, 0.05 + 0.15 * gSpread, gT);
     return tRot(uv, vec2(0.5), 0.5 * sin(gT * 0.3 + v * 6.28));
 }
+#ifdef SPEC_D0
+vec2 stageDk_0(vec2 uv, float v)
+{
+    int k = SPEC_D0;
+    if (k == 15) return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gT * 2.0);
+    if (k == 16) return tDoubleGyre(uv, 0.5 + 0.5 * gSpread, gT * 2.0);
+    if (k == 17) return tTaylorGreen(uv, 1.0 + gSpread, gT * 2.0);
+    if (k == 18) return tConvection(uv, 20.0 + 10.0 * v, 1.0 + gSpread, gT * 2.0);
+    if (k == 19) return tGerstner(uv, 1.0 + gSpread, gT * 3.0);
+    if (k == 9) return tKarman(uv, 2.0 + 2.0 * gSpread, gT * 2.0);
+    if (k == 10) return tCylinderFlow(uv, gCw, 1.0 + gSpread, 0.5 * sin(gT * 0.3));
+    if (k == 11) return tDipole(uv, gCw, 1.0 + gSpread, gT);
+    if (k == 12) return tVortexPair(uv, gCw, 2.0 + 2.0 * gSpread, gT);
+    if (k == 13) return tInterference(uv, 40.0 + 20.0 * v, 1.0 + gSpread, gT * 2.0);
+    if (k == 14) return tKelvinHelmholtz(uv, 1.0 + gSpread, gT);
+    if (k == 8) return tBend(uv, 1.8 * sin(gT * 0.4 + v * 6.28));
+    if (k == 6) return tVortexStreet(uv, 1.5 + 2.0 * gSpread, gT * 2.0);
+    if (k == 7) return tCurl(uv, 0.4 + 0.8 * gSpread, gT);
+    if (k == 0) return uv;
+    if (k == 1) return tTwirl(uv, gCw, 2.5 * sin(gT * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
+    if (k == 2) return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gT * 4.0);
+    if (k == 3) return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gT * 8.0);
+    if (k == 4) return tWarp(uv, 0.05 + 0.15 * gSpread, gT);
+    return tRot(uv, vec2(0.5), 0.5 * sin(gT * 0.3 + v * 6.28));
+}
+vec2 stageDk_1(vec2 uv, float v)
+{
+    int k = SPEC_D1;
+    if (k == 15) return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gT * 2.0);
+    if (k == 16) return tDoubleGyre(uv, 0.5 + 0.5 * gSpread, gT * 2.0);
+    if (k == 17) return tTaylorGreen(uv, 1.0 + gSpread, gT * 2.0);
+    if (k == 18) return tConvection(uv, 20.0 + 10.0 * v, 1.0 + gSpread, gT * 2.0);
+    if (k == 19) return tGerstner(uv, 1.0 + gSpread, gT * 3.0);
+    if (k == 9) return tKarman(uv, 2.0 + 2.0 * gSpread, gT * 2.0);
+    if (k == 10) return tCylinderFlow(uv, gCw, 1.0 + gSpread, 0.5 * sin(gT * 0.3));
+    if (k == 11) return tDipole(uv, gCw, 1.0 + gSpread, gT);
+    if (k == 12) return tVortexPair(uv, gCw, 2.0 + 2.0 * gSpread, gT);
+    if (k == 13) return tInterference(uv, 40.0 + 20.0 * v, 1.0 + gSpread, gT * 2.0);
+    if (k == 14) return tKelvinHelmholtz(uv, 1.0 + gSpread, gT);
+    if (k == 8) return tBend(uv, 1.8 * sin(gT * 0.4 + v * 6.28));
+    if (k == 6) return tVortexStreet(uv, 1.5 + 2.0 * gSpread, gT * 2.0);
+    if (k == 7) return tCurl(uv, 0.4 + 0.8 * gSpread, gT);
+    if (k == 0) return uv;
+    if (k == 1) return tTwirl(uv, gCw, 2.5 * sin(gT * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
+    if (k == 2) return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gT * 4.0);
+    if (k == 3) return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gT * 8.0);
+    if (k == 4) return tWarp(uv, 0.05 + 0.15 * gSpread, gT);
+    return tRot(uv, vec2(0.5), 0.5 * sin(gT * 0.3 + v * 6.28));
+}
+#endif
 
 // Chain walk.  morphP is rolled once per start:
 //   below 0.15  the chain stays as rolled;
@@ -1811,8 +2127,13 @@ vec2 stageA(vec2 uv)
         }
     }
     gIdW *= (ka <= 0 ? 1.0 - f : 0.0) + (kb <= 0 ? f : 0.0);
+#ifdef SPEC_A0
+    vec2 r = stageAk_0(uv, va);
+    if (f > 0.0) r = morphMix(r, stageAk_1(uv, vb), f);
+#else
     vec2 r = stageAk(uv, ka, va);
     if (f > 0.0) r = morphMix(r, stageAk(uv, kb, vb), f);
+#endif
     return r;
 }
 vec2 stageB(vec2 uv)
@@ -1834,8 +2155,13 @@ vec2 stageB(vec2 uv)
         }
     }
     gIdW *= (ka <= 2 ? 1.0 - f : 0.0) + (kb <= 2 ? f : 0.0);
+#ifdef SPEC_B0
+    vec2 r = stageBk_0(uv, va);
+    if (f > 0.0) r = morphMix(r, stageBk_1(uv, vb), f);
+#else
     vec2 r = stageBk(uv, ka, va);
     if (f > 0.0) r = morphMix(r, stageBk(uv, kb, vb), f);
+#endif
     return r;
 }
 vec2 stageC(vec2 uv)
@@ -1857,8 +2183,13 @@ vec2 stageC(vec2 uv)
         }
     }
     gIdW *= (ka <= 1 ? 1.0 - f : 0.0) + (kb <= 1 ? f : 0.0);
+#ifdef SPEC_C0
+    vec2 r = stageCk_0(uv, va);
+    if (f > 0.0) r = morphMix(r, stageCk_1(uv, vb), f);
+#else
     vec2 r = stageCk(uv, ka, va);
     if (f > 0.0) r = morphMix(r, stageCk(uv, kb, vb), f);
+#endif
     return r;
 }
 vec2 stageD(vec2 uv)
@@ -1880,8 +2211,13 @@ vec2 stageD(vec2 uv)
         }
     }
     gIdW *= (ka <= 2 ? 1.0 - f : 0.0) + (kb <= 2 ? f : 0.0);
+#ifdef SPEC_D0
+    vec2 r = stageDk_0(uv, va);
+    if (f > 0.0) r = morphMix(r, stageDk_1(uv, vb), f);
+#else
     vec2 r = stageDk(uv, ka, va);
     if (f > 0.0) r = morphMix(r, stageDk(uv, kb, vb), f);
+#endif
     return r;
 }
 // Stage order: the four stages are not commutative (a spiral seen through a
@@ -1949,11 +2285,11 @@ void main()
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp(0.5 + dot(grad, vec2(cos(la), sin(la))) * 5.0, 0.0, 1.0);
-    vec3 reliefC = photo * (0.3 + 1.2 * relief) + vec3(1.0) * pow(relief, 6.0) * (0.1 + 0.3 * swell);
+    vec3 reliefC = photo * (0.3 + 1.2 * relief) + vec3(1.0) * pow(relief, 6.0) * (0.1 + 0.3 * swell + 0.35 * kick);   // the kick catches the highlights
     // Glowing edges: gradient magnitude as neon.
     vec3 gc = mix(glowColour(ph, p, hueP * 0.159), neonOf(field + 1e-3, 2.0), clamp(paletteP, 0.0, 1.0));
     float edge = smoothstep(0.01, 0.14, length(grad));        // lab audit: 0.02..0.25 left smooth chains nearly black
-    vec3 neon = gc * edge * (1.6 + 1.2 * kick) + photo * 0.22;
+    vec3 neon = gc * edge * (1.6 + 1.6 * kick) + photo * 0.22;
     // Isolines of the chain's luma: glowing contour lines.
     float xi = m * 12.0 - gT * 6.0;                          // the contour lines flow uphill (integrated, jump-free)
     float pxi = fwidth(xi) + 1e-4;
@@ -1998,6 +2334,6 @@ void main()
     s0 = ords(s0); s1 = ords(s1);                            // position on the calm..energetic scale -> look
     vec3 col = mix(looks[s0], looks[s1], sf);
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
-    col += gc * edge * kick * 0.3 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief
+    col += gc * edge * kick * 0.55 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief (light only)
     finish(col);
 }

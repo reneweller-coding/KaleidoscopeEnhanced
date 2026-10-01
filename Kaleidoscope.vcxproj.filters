@@ -105,6 +105,9 @@
     <ClCompile Include="Source\shader_setup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ShaderWorker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source\ExprEval.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -231,6 +234,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\shader_setup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ShaderWorker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\stdinc.h">

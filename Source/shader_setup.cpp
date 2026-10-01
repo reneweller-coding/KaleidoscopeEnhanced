@@ -9,6 +9,7 @@
 
 #include "textfile.h"
 #include "shader_setup.h"
+#include "ShaderWorker.h"
 
 #include <map>
 #include <string>
@@ -354,6 +355,8 @@ bool shaderPrebuildStart( const char *frag_source )
 	return true;
 }
 
+static std::map<std::string, int> s_variantFailed;   ///< variant keys whose build failed (no retry)
+
 int shaderPrebuildPoll()
 {
 	for( auto it = s_prebuild.begin(); it != s_prebuild.end(); )
@@ -362,7 +365,18 @@ int shaderPrebuildPoll()
 		glGetProgramiv( it->second.prog, GL_COMPLETION_STATUS_KHR, &done );
 		if( !done ) { ++it; continue; }
 		GLint linked = 0;
+		const double tL0 = nowMs();
 		glGetProgramiv( it->second.prog, GL_LINK_STATUS, &linked );
+		if( getenv( "KALEIDO_SPEC_LOG" ) && nowMs() - tL0 > 5.0 )
+			fprintf( stderr, "SPEC link status took %.1f ms\n", nowMs() - tL0 );
+		if( !linked && it->second.key.compare( 0, 4, "FSV|" ) == 0 )
+		{
+			// a variant has no blocking twin that would log it later: log it now
+			fprintf( stderr, "SHADER: variant build failed: %.120s\n", it->second.key.c_str() );
+			printShaderInfoLog( it->second.fs );
+			printProgramInfoLog( it->second.prog );
+			s_variantFailed[it->second.key] = 1;
+		}
 		glDeleteShader( it->second.fs );     // flagged; freed with the program
 		if( linked )
 			progStore( it->second.key, it->second.prog );
@@ -371,6 +385,66 @@ int shaderPrebuildPoll()
 		it = s_prebuild.erase( it );
 	}
 	return (int) s_prebuild.size();
+}
+
+static std::map<std::string, int> s_workerPending;   ///< variant keys queued on the compile worker
+
+bool shaderVariantStart( const char *frag_source, const std::string &defines )
+{
+	const std::string key = progKey( "FSV", frag_source, defines.c_str(), 0, 0, 0 );
+	if( s_progByKey.count( key ) || s_prebuild.count( key ) || s_variantFailed.count( key ) || s_workerPending.count( key ) )
+		return true;
+	const bool worker = shaderWorkerUsable();
+	if( !worker && !parallelCompile() ) return false;
+	GLchar *src = textFileRead( frag_source );
+	if( !src ) return false;
+	std::string text( src );
+	free( src );
+	const size_t nl = text.find( '\n' );                  // after "#version ..."
+	text.insert( nl == std::string::npos ? text.size() : nl + 1, defines );
+	// The worker thread builds it start to finish: the driver's own background
+	// compile still blocked ~0.8 s on the link-status query (ShaderWorker.h).
+	if( worker )
+	{
+		shaderWorkerSubmit( key, text );
+		s_workerPending[key] = 1;
+		return true;
+	}
+	PrebuildJob j;
+	j.key  = key;
+	j.prog = glCreateProgram();
+	glAttachShader( j.prog, fullscreenVertShader() );
+	j.fs = glCreateShader( GL_FRAGMENT_SHADER );
+	const GLchar *p = text.c_str();
+	glShaderSource( j.fs, 1, &p, NULL );
+	glCompileShader( j.fs );                 // no status query: that would block
+	glAttachShader( j.prog, j.fs );
+	glLinkProgram( j.prog );
+	s_prebuild[key] = j;
+	return true;
+}
+
+GLuint shaderVariantTake( const char *frag_source, const std::string &defines )
+{
+	std::string k;
+	GLuint built = 0;
+	while( shaderWorkerCollect( k, built ) )
+	{
+		s_workerPending.erase( k );
+		if( built ) progStore( k, built );
+		else        s_variantFailed[k] = 1;
+	}
+	shaderPrebuildPoll();
+	const std::string key = progKey( "FSV", frag_source, defines.c_str(), 0, 0, 0 );
+	auto it = s_progByKey.find( key );
+	if( it == s_progByKey.end() ) return 0;
+	++s_progRefs[it->second];
+	return it->second;
+}
+
+bool shaderVariantFailed( const char *frag_source, const std::string &defines )
+{
+	return s_variantFailed.count( progKey( "FSV", frag_source, defines.c_str(), 0, 0, 0 ) ) != 0;
 }
 
 bool shaderPrebuildReady( const char *frag_source )

@@ -388,12 +388,16 @@ int ordbo(int i) { if (i == 0) return 1; if (i == 1) return 21; if (i == 2) retu
 uniform vec3 walkSpace, walkCore, walkBody;
 
 // One world: a space, a fold core and a body, each a knob value on its energy scale.
-float fieldK(vec3 p, float xs, float xc, float xb)
+float fieldK(vec3 p, float xs, float xc, float xb, int world)
 {
     gDR = 1.0;
     int ks = ordsp(pickStage(xs, 20)); float vs = subVar(xs, 20);
     int kc = ordco(pickStage(xc, 22)); float vc = subVar(xc, 22);
     int kb = ordbo(pickStage(xb, 22)); float vb = subVar(xb, 22);
+#ifdef SPEC_SP0
+    // the app's specialised variant: world 0 / 1 are constants (each call site folds to its branches)
+    ks = ordsp(world == 0 ? SPEC_SP0 : SPEC_SP1); kc = ordco(world == 0 ? SPEC_CO0 : SPEC_CO1); kb = ordbo(world == 0 ? SPEC_BO0 : SPEC_BO1);
+#endif
     vec3 q;
     if (ks == 0) q = fRepeat(p, vec3(1.2 + 0.4 * vs));
     else if (ks == 1) { q = fPolarZ(p, 6.0 + 2.0 * floor(vs * 2.99)); q.x -= 2.2; q = zRepeat(q, 0.8); }
@@ -578,10 +582,10 @@ float field3(vec3 p)
         ys = walkSpace.y; yc = walkCore.y; yb = walkBody.y;
         f = smoothstep(0.0, 1.0, max(walkSpace.z, max(walkCore.z, walkBody.z)));   // one structure stage fades at a time
     }
-    float d0 = fieldK(p, xs, xc, xb);
+    float d0 = fieldK(p, xs, xc, xb, 0);
     if (f <= 0.0) return d0;
     vec3 p0 = gP;
-    float d1 = fieldK(p, ys, yc, yb);
+    float d1 = fieldK(p, ys, yc, yb, 1);
     gP = mix(p0, gP, f);
     return mix(d0, d1, f);
 }

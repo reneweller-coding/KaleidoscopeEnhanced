@@ -16,6 +16,8 @@
 
 #include <cstdlib>
 #include <chrono>
+#include <typeinfo>
+#include <algorithm>
 #include <QtCore/qdir.h>
 #include <QtCore/qfileinfo.h>
 
@@ -104,6 +106,7 @@ float EffectShader::s_lightM2[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
 
 void EffectShader::cleanShaderPrograms()
 {
+	dropVariants( true );       // back to the generic program, variants released
 	// NOT glDeleteProgram: this program may be shared. 212 of the 831 scene
 	// entries reuse a program another entry compiled -- almost all of them
 	// the 3D-model families, where 24 shaders carry 238 scenes. Deleting it
@@ -215,7 +218,60 @@ void EffectShader::resetParameters()
 void EffectShader::enableShader( )
 {
 	ensureCompiled();          // lazy: compile on first use (see prepare())
+	// A specialised variant chosen last frame takes over at the START of this
+	// one, before setUniforms(), so every uniform of the frame goes to it.
+	if( m_specRevert )
+	{
+		m_specRevert = false;
+		dropVariants( false );
+	}
+	if( m_specNext )
+	{
+		if( !m_genericProg ) m_genericProg = m_sh_prog_id;
+		bindProgram( m_specNext );
+		m_specBound = m_specNextKey;
+		static const bool specLog = getenv( "KALEIDO_SPEC_LOG" ) != 0;
+		if( specLog ) fprintf( stderr, "SPEC bind %u for %s\n", m_sh_prog_id, fragmentName() );
+		m_specNext = 0;
+		m_specNextKey.clear();
+	}
 	glUseProgram( m_sh_prog_id );
+}
+
+void EffectShader::bindProgram( GLuint prog )
+{
+	m_sh_prog_id = prog;
+	glUseProgram( prog );
+	m_texPointUni1     = glGetUniformLocation( prog, "tex0" );
+	m_texPointUni2     = glGetUniformLocation( prog, "tex1" );
+	m_texSizeRcpUni    = glGetUniformLocation( prog, "resolution" );
+	m_timeUni          = glGetUniformLocation( prog, "time" );
+	m_interpolationUni = glGetUniformLocation( prog, "interpolation" );
+	m_progressUni      = glGetUniformLocation( prog, "sceneProgress" );
+	m_sceneTimeUni     = glGetUniformLocation( prog, "sceneTime" );
+	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
+		m_uniforms[i]->initUniform( prog );
+	// every other location cache is keyed by the program id and refreshes
+	// itself -- the walk's must not take the switch for a new activation
+	m_walkProgSwap = true;
+}
+
+void EffectShader::dropVariants( bool release )
+{
+	if( m_genericProg && m_sh_prog_id != m_genericProg )
+		bindProgram( m_genericProg );
+	m_genericProg = 0;
+	m_specBound.clear();
+	m_specNext = 0;
+	m_specNextKey.clear();
+	m_specWait = 0.f;
+	if( release )
+	{
+		for( auto &kv : m_specProgs )
+			shaderProgramRelease( kv.second );
+		m_specProgs.clear();
+		m_specLru.clear();
+	}
 }
 
 
@@ -1012,6 +1068,9 @@ void EffectShader::resetChainWalk()
 	for( const Uniform *u : m_uniforms )
 		if( u->getName() == "morphP" ) morph = u->snapshotValue();
 	m_walk.active = ( m_walkHostLoc >= 0 && morph >= 0.5f );
+	m_walkMorph = morph;
+	m_specOff = false;
+	m_specWait = 0.f;
 	for( int s = 0; s < kWalkN; ++s )
 	{
 		float v = 0.f;
@@ -1075,7 +1134,9 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		for( int s = 0; s < kWalkN; ++s )
 			m_walkLoc[s] = glGetUniformLocation( m_sh_prog_id, kWalkUni[s] );
 		m_walkHostLoc = glGetUniformLocation( m_sh_prog_id, "walkHost" );
-		m_walk.pending = true;
+		if( !m_walkProgSwap )                       // a variant switch is not a new activation
+			m_walk.pending = true;
+		m_walkProgSwap = false;
 	}
 	if( m_walkHostLoc < 0 )
 		return;                                     // not a chain lab
@@ -1218,12 +1279,54 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 			startWalk( best, pick(), isStructure( best ) ? lerp( 14.f, 8.f, E ) : lerp( 10.f, 5.f, E ) );
 	}
 
+	// Specialised variant (specDefines): while one is bound, a fade waits at
+	// 0 % until the variant with its target is bound, and at 100 % until the
+	// one after it is.  The wanted variant is requested after the fades moved
+	// on (below the loop) and bound at the start of the next frame.
+	// EXPERIMENTAL, off by default (KALEIDO_SPEC=1): a new variant costs a
+	// 0.8-1.8 s stall on the NVIDIA driver (its compile blocks the render
+	// thread even from a worker context) -- see docs/leistung-2026-10-01.md.
+	static const bool specEnabled = getenv( "KALEIDO_SPEC" ) != 0;
+	const bool specOn = specEnabled && !m_specOff && !m_chainOrd.empty() && typeid( *this ) == typeid( EffectShader )
+	                    && ( m_walk.active || m_walkMorph < 0.15f );
+	const bool variantBound = specOn && !m_specBound.empty() && m_genericProg;
+	const std::string want = variantBound ? specDefines( m_walk.x0, m_walk.x1, m_walk.fading ) : std::string();
+	bool held = false;
+
 	// Advance the fades and upload: (shown, target, progress) per stage.
 	for( int s = 0; s < kWalkN; ++s )
 	{
 		if( m_walk.fading[s] )
 		{
+			// a bound variant without this fade's target: wait at 0 %
+			if( variantBound && m_walk.f[s] <= 0.f && want != m_specBound )
+			{
+				held = true;
+				goto upload;
+			}
 			m_walk.f[s] += dt * m_walk.rate / m_walk.fadeDur[s];     // music time: never backwards, never a jump
+			if( m_walk.f[s] >= 1.f && variantBound )
+			{
+				// the state after this fade needs its own variant: wait at 100 %
+				float x0[9]; bool fd[9];
+				for( int o = 0; o < kWalkN; ++o ) { x0[o] = m_walk.x0[o]; fd[o] = m_walk.fading[o]; }
+				x0[s] = m_walk.x1[s]; fd[s] = false;
+				const std::string after = specDefines( x0, m_walk.x1, fd );
+				if( !after.empty() && after != m_specBound )
+				{
+					m_walk.f[s] = 1.f;
+					held = true;
+					auto it = m_specProgs.find( after );
+					GLuint prog = it != m_specProgs.end() ? it->second : 0;
+					if( !prog && shaderVariantStart( m_fragmentShaderFilename, after ) )
+					{
+						prog = shaderVariantTake( m_fragmentShaderFilename, after );
+						if( prog ) m_specProgs[after] = prog;
+					}
+					if( prog && m_specNextKey != after ) { m_specNext = prog; m_specNextKey = after; }
+					goto upload;
+				}
+			}
 			if( m_walk.f[s] >= 1.f )
 			{
 				m_walk.x0[s] = m_walk.x1[s];
@@ -1232,10 +1335,91 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 				m_walk.hold[s] = 0.f;
 			}
 		}
+	upload:
 		if( m_walkLoc[s] >= 0 )
 			glUniform3f( m_walkLoc[s], m_walk.x0[s], m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s],
 			             m_walk.fading[s] ? m_walk.f[s] : 0.f );
 	}
+	// The variant for the state the fades left: start its build, bind it at
+	// the start of the next frame (unless a 100 % hold already asked for one).
+	if( specOn )
+	{
+		const std::string cur = specDefines( m_walk.x0, m_walk.x1, m_walk.fading );
+		if( !cur.empty() && cur != m_specBound && m_specNextKey.empty() )
+		{
+			auto it = m_specProgs.find( cur );
+			GLuint prog = it != m_specProgs.end() ? it->second : 0;
+			static const bool specLog = getenv( "KALEIDO_SPEC_LOG" ) != 0;
+			if( !prog && specLog && m_specProgs.find( cur ) == m_specProgs.end() ) fprintf( stderr, "SPEC want %zu bytes\n", cur.size() );
+			const auto tS0 = std::chrono::steady_clock::now();
+			const bool started = !prog && shaderVariantStart( m_fragmentShaderFilename, cur );
+			const auto tS1 = std::chrono::steady_clock::now();
+			if( started )
+			{
+				prog = shaderVariantTake( m_fragmentShaderFilename, cur );
+				if( specLog )
+				{
+					const auto tS2 = std::chrono::steady_clock::now();
+					const double a = std::chrono::duration<double, std::milli>( tS1 - tS0 ).count();
+					const double b = std::chrono::duration<double, std::milli>( tS2 - tS1 ).count();
+					if( a > 5.0 || b > 5.0 ) fprintf( stderr, "SPEC start %.1f ms  take %.1f ms\n", a, b );
+				}
+				if( prog ) m_specProgs[cur] = prog;
+				else if( shaderVariantFailed( m_fragmentShaderFilename, cur ) ) { m_specOff = true; m_specRevert = true; }
+			}
+			if( prog ) { m_specNext = prog; m_specNextKey = cur; }
+		}
+		if( !cur.empty() )
+		{
+			m_specLru.erase( std::remove( m_specLru.begin(), m_specLru.end(), cur ), m_specLru.end() );
+			m_specLru.push_back( cur );
+			while( m_specLru.size() > 12 )                // keep a dozen variants per lab
+			{
+				const std::string old = m_specLru.front();
+				m_specLru.erase( m_specLru.begin() );
+				auto it = m_specProgs.find( old );
+				if( it != m_specProgs.end() && old != m_specBound && old != m_specNextKey )
+				{
+					shaderProgramRelease( it->second );
+					m_specProgs.erase( it );
+				}
+			}
+		}
+	}
+	else if( m_genericProg )
+		m_specRevert = true;
+	// A variant that keeps a fade waiting for more than 4 s (a slow driver):
+	// back to the generic program for the rest of this activation.
+	m_specWait = held ? m_specWait + dt : 0.f;
+	if( m_specWait > 4.f )
+	{
+		fprintf( stderr, "%s: specialised variant too slow, generic program\n", fragmentName() );
+		m_specOff = true;
+		m_specRevert = true;
+		m_specWait = 0.f;
+	}
+}
+
+std::string EffectShader::specDefines( const float *x0, const float *x1, const bool *fading ) const
+{
+	// stage index (kWalkKnob) -> macro stem
+	static const int   kSpecStage[7] = { 0, 1, 2, 3, 5, 6, 7 };
+	static const char *kSpecName[7]  = { "A", "B", "C", "D", "SP", "CO", "BO" };
+	std::string out;
+	char buf[64];
+	for( int i = 0; i < 7; ++i )
+	{
+		const int s = kSpecStage[i];
+		auto o = m_chainOrd.find( kWalkKnob[s] );
+		if( o == m_chainOrd.end() || o->second.empty() )
+			continue;
+		const int n = (int) o->second.size();
+		const int p0 = classPos( x0[s], n );
+		const int p1 = fading[s] ? classPos( x1[s], n ) : p0;
+		snprintf( buf, sizeof buf, "#define SPEC_%s0 %d\n#define SPEC_%s1 %d\n", kSpecName[i], o->second[p0], kSpecName[i], o->second[p1] );
+		out += buf;
+	}
+	return out;
 }
 
 void EffectShader::parseChainSource()
@@ -1273,6 +1457,23 @@ void EffectShader::parseChainSource()
 					}
 					m_chainClasses[ rest.substr( 0, sp ) ] = names;
 					m_chainParsed = 1;
+				}
+				// "// @chainord chainAP 11|5|20|...": position -> branch (for the specialised variants)
+				static const std::string otag = "// @chainord ";
+				if( line.compare( 0, otag.size(), otag ) == 0 )
+				{
+					const std::string rest = line.substr( otag.size() );
+					const size_t sp = rest.find( ' ' );
+					std::vector<int> br;
+					if( sp != std::string::npos )
+						for( size_t c = sp + 1; c < rest.size(); )
+						{
+							size_t d = rest.find( '|', c );
+							if( d == std::string::npos ) d = rest.size();
+							if( d > c ) br.push_back( atoi( rest.c_str() + c ) );
+							c = d + 1;
+						}
+					m_chainOrd[ rest.substr( 0, sp ) ] = br;
 				}
 				// "// @chainopening chainAP 9|10|13": the classes streaming into an opening (flat labs only)
 				static const std::string ztag = "// @chainopening ";

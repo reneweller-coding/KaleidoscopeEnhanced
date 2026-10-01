@@ -269,6 +269,7 @@ if errorlevel 1 exit /b 1
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
     <ClCompile Include="Source\QMyWindow.cpp" />
     <ClCompile Include="Source\shader_setup.cpp" />
+    <ClCompile Include="Source\ShaderWorker.cpp" />
     <ClCompile Include="Source\ExprEval.cpp" />
     <ClCompile Include="Source\Scene3DShader.cpp" />
     <ClCompile Include="Source\VideoIn.cpp" />
@@ -390,6 +391,7 @@ if errorlevel 1 exit /b 1
     <ClInclude Include="Source\OsdMenu.h" />
     <ClInclude Include="Source\SpoutIn.h" />
     <ClInclude Include="Source\shader_setup.h" />
+    <ClInclude Include="Source\ShaderWorker.h" />
     <ClInclude Include="Source\stdinc.h" />
     <ClInclude Include="Source\textfile.h" />
     <ClInclude Include="Source\TextureEffectKaleidoscopeBase.h" />

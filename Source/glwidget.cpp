@@ -30,6 +30,7 @@
 
 #include "glcore.h"        // core-profile GL entry points (glcoreInit)
 #include "glwidget.h"
+#include "ShaderWorker.h"
 #include "PlatformQt.h"
 #include "WebRemote.h"
 #include "CueReceiver.h"
@@ -646,6 +647,9 @@ void GLwidget::initializeGL()
 	// optional, everything else is required).
 	if( !glcoreInit() )
 		fprintf( stderr, "FATAL: required OpenGL core functions missing\n" );
+	// A thread with a shared context compiles the chain labs' specialised
+	// variants, so their builds never stall the picture (ShaderWorker.h).
+	shaderWorkerStart( context() );
 
 	m_actConfiguration->start( 100, 100 );
 

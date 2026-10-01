@@ -1847,6 +1847,54 @@ vec3 photo3(vec3 q, vec3 n, float lod)
 """
 
 
+def spec_variants(body):
+    """Chain labs: the dispatch functions twice more, with the class of the
+    specialised variant built in (see patch_spec2.py); the generic code stays."""
+    if "int orda(" not in body:                            # not a chain lab
+        return body
+    def func_span(src, header):
+        i = src.index(header)
+        j = src.index("\n{", i) + 2
+        depth = 1
+        while depth:
+            c = src[j]
+            depth += (c == "{") - (c == "}")
+            j += 1
+        return i, j
+    for st in "ABCD":
+        header = "vec2 stage%sk(vec2 uv, int k, float v)" % st
+        if header not in body:
+            continue
+        i, j = func_span(body, header)
+        fn = body[i:j]
+        copies = ""
+        for w in "01":
+            c = fn.replace(header, "vec2 stage%sk_%s(vec2 uv, float v)" % (st, w), 1)
+            # the branch number directly: the ord if-chain is not folded by the driver
+            c, nk = re.subn(r"\n\{\n    k = ord[a-d]\(k\);\n", "\n{\n    int k = SPEC_%s%s;\n" % (st, w), c, count=1)
+            assert nk == 1, st
+            copies += "\n" + c
+        body = body[:j] + "\n#ifdef SPEC_%s0%s\n#endif" % (st, copies) + body[j:]
+        a = ("    vec2 r = stage%sk(uv, ka, va);\n    if (f > 0.0) r = morphMix(r, stage%sk(uv, kb, vb), f);\n" % (st, st))
+        assert body.count(a) == 1, st
+        body = body.replace(a, "#ifdef SPEC_%s0\n    vec2 r = stage%sk_0(uv, va);\n    if (f > 0.0) r = morphMix(r, stage%sk_1(uv, vb), f);\n#else\n%s#endif\n" % (st, st, st, a))
+    header = "float fieldK(vec3 p, float xs, float xc, float xb, int world)"
+    if header in body:
+        i, j = func_span(body, header)
+        fn = body[i:j]
+        ov = "    ks = ordsp(world == 0 ? SPEC_SP0 : SPEC_SP1); kc = ordco(world == 0 ? SPEC_CO0 : SPEC_CO1); kb = ordbo(world == 0 ? SPEC_BO0 : SPEC_BO1);"
+        assert ov in fn
+        copies = ""
+        for w in "01":
+            c = fn.replace(header, "float fieldK_%s(vec3 p, float xs, float xc, float xb, int world)" % w, 1)
+            c = c.replace(ov, "    ks = SPEC_SP%s; kc = SPEC_CO%s; kb = SPEC_BO%s;" % (w, w, w))
+            copies += "\n" + c
+        body = body[:j] + "\n#ifdef SPEC_SP0%s\n#endif" % copies + body[j:]
+        for w, a in (("0", "    float d0 = fieldK(p, xs, xc, xb, 0);\n"), ("1", "    float d1 = fieldK(p, ys, yc, yb, 1);\n")):
+            assert body.count(a) == 1, a
+            body = body.replace(a, "#ifdef SPEC_SP0\n%s#else\n%s#endif\n" % (a.replace("fieldK(", "fieldK_%s(" % w), a))
+    return body
+
 def build(name):
     src = io.open(os.path.join(SP, "src", name + ".glsl"), encoding="utf-8").read()
     doc = src.split("//@doc", 1)[1].split("//@", 1)[0].rstrip()
@@ -1884,10 +1932,19 @@ def build(name):
             _CC.pop("orderP", None)                             # the tunnel runs a fixed order
         for k, names in _CC.items():
             out.append("// @chainclasses %s %s" % (k, "|".join(n if n else "none" for n in names)))
+        # position -> branch of every stage (the frag's own ord functions, so
+        # a lab's class subset is right): the app's specialised variants name
+        # branches, because the drivers do not fold the ord if-chains.
+        for _k, _f in (("chainAP", "orda"), ("chainBP", "ordb"), ("chainCP", "ordc"), ("chainDP", "ordd"),
+                       ("spaceP", "ordsp"), ("coreP", "ordco"), ("bodyP", "ordbo")):
+            _m = re.search(r"int %s\(int i\) \{(.*?)\}" % _f, body)
+            if _m:
+                _b = [int(x) for x in re.findall(r"return (\d+);", _m.group(1))]
+                out.append("// @chainord %s %s" % (_k, "|".join(str(x) for x in _b)))
         if not _ex:                                             # the flat labs: at most one stage with an opening
             for _k in ("chainAP", "chainBP", "chainCP", "chainDP"):
                 out.append("// @chainopening %s %s" % (_k, "|".join(str(i) for i in _ccm.opening_positions(_k, _CC[_k]))))
-    out.append(body.rstrip() + "\n")
+    out.append(spec_variants(body).rstrip() + "\n")
     # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
     # scene frame instead of the photos; the same library applies.
     folder = "FX" if re.search(r"^//@target\s+fx\b", src, re.M) else "Scene2D"

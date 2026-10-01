@@ -729,6 +729,28 @@ protected:
 	GLint	m_camHostLoc = -1, m_camZLoc = -1, m_camGazeLoc = -1;   ///< camHost / camZ / camGaze (-1: no camera host).
 	/// @brief Advances the 3D chains' camera (flight and gaze) and uploads it (program must be bound).
 	void stepChainCam( const AudioFeatures &f );
+	// ---- Specialised variants of the chain labs ----
+	// One lab shader holds every class; the GPU reserves registers for the
+	// heaviest branch on every pixel.  A variant with the classes on screen
+	// built in runs 2.5-6x faster (3D lab: 5.1 -> 1.3 ms for the same world).
+	std::map<std::string, std::vector<int>> m_chainOrd;   ///< Stage knob -> branch per position, from "// @chainord".
+	GLuint	m_genericProg = 0;          ///< The generic program while a variant is bound (0: none bound).
+	std::string m_specBound;            ///< Defines of the bound variant ("" = generic).
+	std::string m_specNextKey;          ///< Variant to bind at the start of the next frame (enableShader).
+	GLuint	m_specNext = 0;             ///< Its program.
+	std::map<std::string, GLuint> m_specProgs;   ///< Built variants this effect holds a reference to.
+	std::vector<std::string> m_specLru;          ///< Their keys, least recently wanted first.
+	float	m_specWait = 0.f;           ///< Seconds a fade has been held for a variant (timeout 4 s).
+	bool	m_specOff = false;          ///< Variants given up for this activation (timeout / failure).
+	float	m_walkMorph = 0.f;          ///< morphP of this activation (the shader walks on its own at 0.15..0.5).
+	bool	m_walkProgSwap = false;     ///< The last program change was a variant switch: the walk keeps its state.
+	bool	m_specRevert = false;       ///< Back to the generic program at the start of the next frame.
+	/// @brief The defines of the variant for a walk state (stage classes shown and faded to); "" if not specialisable.
+	std::string specDefines( const float *x0, const float *x1, const bool *fading ) const;
+	/// @brief Makes `prog` this effect's program and re-resolves the base uniform locations (program must be usable).
+	void bindProgram( GLuint prog );
+	/// @brief Drops every variant (back to the generic program); with release, also frees them.
+	void dropVariants( bool release );
 	int		m_chainParsed = -1;         ///< chainInfo(): -1 = source not read yet, 0 = no chain classes, 1 = parsed.
 	std::map<std::string, std::vector<std::string>> m_chainClasses;   ///< Stage knob -> class names (energy order), from "// @chainclasses".
 	std::map<std::string, float> m_chainConsts;   ///< Knobs frozen as constants (ChainLike*): name -> value.

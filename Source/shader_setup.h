@@ -12,6 +12,7 @@
 #include "glcore.h"
 #include <GL/gl.h>
 #endif
+#include <string>
 
 /**
  * @brief Builds a "classic" fragment-only effect program: the single shared fullscreen vertex shader plus the given fragment shader.
@@ -32,6 +33,14 @@ GLuint setShaders( const char *vert_source, const char * frag_source );
 bool shaderPrebuildStart( const char *frag_source );
 int  shaderPrebuildPoll();          ///< Collects finished background builds; returns how many are still running.
 bool shaderPrebuildReady( const char *frag_source );   ///< True if setShaders() for this file would be a cache hit.
+// Specialised variants (chain labs): the fragment file with `defines` inserted
+// after its #version line, built in the background like shaderPrebuildStart().
+/// @brief Starts the variant's background build (no-op if built or building). False without background compile.
+bool   shaderVariantStart( const char *frag_source, const std::string &defines );
+/// @brief The variant's program once built, with a reference taken (release with shaderProgramRelease()); 0 while building.
+GLuint shaderVariantTake( const char *frag_source, const std::string &defines );
+/// @brief True if the variant's build failed (its log is printed once).
+bool   shaderVariantFailed( const char *frag_source, const std::string &defines );
 // Vertex+fragment pair (3D scenes) — actually attaches the vertex shader.
 /**
  * @brief Builds a vertex+fragment program where the vertex shader is actually the caller's own file, not the shared fullscreen one.
