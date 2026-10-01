@@ -754,7 +754,8 @@ protected:
 	// ---- Chain runner: the lab's chain as one small pass per transform ----
 	char   *m_compileFile = nullptr;    ///< Engine/ChainPass/Final_<name>.frag when this lab runs its chain as passes (else null: the fragment file itself).
 	GLuint	m_cpFbo[5] = {}, m_cpTex[5] = {};   ///< RG32F coordinate textures (ping-pong plus fade temporaries).
-	int		m_cpW = 0, m_cpH = 0;       ///< Their size (the target viewport).
+	int		m_cpW = 0, m_cpH = 0;       ///< Their size (the target viewport, or the bake square).
+	int		m_chainBake = 0;            ///< > 0: the chain is baked over [0,1]^2 at this size ("// @chainbake N" in the final shader).
 	std::vector<int> m_permCodes;       ///< The 24 stage orders (base-4 digits), from "int permCode(int i)".
 	float	m_lastSceneTime = 0.f;      ///< sceneTime as uploaded this frame (the passes need the same value).
 	/// @brief Runs this frame's chain as passes and binds the result as texChain (program must be bound; restores the GL state it touches).

@@ -5,6 +5,7 @@ uniform sampler2D texIn;
 uniform int firstPass;
 uniform float subV;
 uniform vec2 chainOff;   // the target viewport's origin (gl_FragCoord of the lab = pass pixel + chainOff)
+uniform float bakeSize;  // > 0: the chain baked over [0,1]^2 (a lab that reads it at arbitrary points)
 uniform sampler2D texB;
 uniform float mixF;
 uniform vec2  resolution;

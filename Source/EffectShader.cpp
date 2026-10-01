@@ -58,6 +58,12 @@ m_minTimeSolo(minTimeSolo)
 				fclose( fp );
 				m_compileFile = (char *) malloc( fin.size() + 1 );
 				strcpy( m_compileFile, fin.c_str() );
+				if( char *t = textFileRead( m_compileFile ) )
+				{
+					if( const char *b = strstr( t, "// @chainbake " ) )
+						m_chainBake = atoi( b + 14 );
+					free( t );
+				}
 			}
 	}
 
@@ -1428,7 +1434,7 @@ namespace {
 struct PassProg
 {
 	GLuint prog = 0;
-	GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1,
+	GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1,
 	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1;
 };
 std::map<std::string, PassProg> s_passProgs;      ///< pass shader file -> program and locations
@@ -1455,6 +1461,7 @@ const PassProg &passProg( const std::string &file )
 	p.subV = glGetUniformLocation( p.prog, "subV" );
 	p.mixF = glGetUniformLocation( p.prog, "mixF" );
 	p.chainOff = glGetUniformLocation( p.prog, "chainOff" );
+	p.bakeSize = glGetUniformLocation( p.prog, "bakeSize" );
 	p.res = glGetUniformLocation( p.prog, "resolution" );
 	p.sceneTime = glGetUniformLocation( p.prog, "sceneTime" );
 	p.adv = glGetUniformLocation( p.prog, "audioAdvance" );
@@ -1473,7 +1480,7 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	parseChainSource();
 	for( int s = 0; s < 4; ++s )
 		if( m_chainOrd.find( kWalkKnob[s] ) == m_chainOrd.end() ) return;
-	if( m_permCodes.size() != 24 ) return;
+	const bool fixedOrder = m_permCodes.size() != 24;  // a lab without an order knob: A -> B -> C -> D
 
 	// Pass shaders: built in the background a few at a time, once per session.
 	if( !s_passWarmInit )
@@ -1502,7 +1509,8 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	glGetIntegerv( 0x85B5 /* GL_VERTEX_ARRAY_BINDING */, &vao );
 	const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST ), scissor = glIsEnabled( GL_SCISSOR_TEST );
 
-	const int W = vp[2] > 0 ? vp[2] : 1, H = vp[3] > 0 ? vp[3] : 1;
+	const int W = m_chainBake > 0 ? m_chainBake : ( vp[2] > 0 ? vp[2] : 1 );
+	const int H = m_chainBake > 0 ? m_chainBake : ( vp[3] > 0 ? vp[3] : 1 );
 	if( W != m_cpW || H != m_cpH || !m_cpTex[0] )
 	{
 		if( m_cpTex[0] ) { glDeleteTextures( 5, m_cpTex ); glDeleteFramebuffers( 5, m_cpFbo ); }
@@ -1512,10 +1520,13 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 		{
 			glBindTexture( GL_TEXTURE_2D, m_cpTex[i] );
 			glTexImage2D( GL_TEXTURE_2D, 0, GL_RG32F, W, H, 0, GL_RG, GL_FLOAT, nullptr );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+			// baked: read bilinearly at any point of the mirrored square (passes use texelFetch)
+			const GLint filt = m_chainBake > 0 ? GL_LINEAR : GL_NEAREST;
+			const GLint wrap = m_chainBake > 0 ? 0x8370 /* GL_MIRRORED_REPEAT */ : GL_CLAMP_TO_EDGE;
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filt );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filt );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap );
+			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap );
 			glBindFramebuffer( GL_FRAMEBUFFER, m_cpFbo[i] );
 			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_cpTex[i], 0 );
 		}
@@ -1544,7 +1555,8 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 		if( p.firstPass >= 0 ) glUniform1i( p.firstPass, in < 0 ? 1 : 0 );
 		if( p.subV >= 0 )      glUniform1f( p.subV, subV );
 		if( p.mixF >= 0 )      glUniform1f( p.mixF, mixF );
-		if( p.chainOff >= 0 )  glUniform2f( p.chainOff, (float) vp[0], (float) vp[1] );
+		if( p.chainOff >= 0 )  glUniform2f( p.chainOff, m_chainBake > 0 ? 0.f : (float) vp[0], m_chainBake > 0 ? 0.f : (float) vp[1] );
+		if( p.bakeSize >= 0 )  glUniform1f( p.bakeSize, (float) m_chainBake );
 		if( p.res >= 0 )       glUniform2f( p.res, (float) m_width, (float) m_height );
 		if( p.sceneTime >= 0 ) glUniform1f( p.sceneTime, m_lastSceneTime );
 		if( p.adv >= 0 )       glUniform1f( p.adv, f.audioAdvance );
@@ -1595,9 +1607,9 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 		return cur;
 	};
 
-	auto orderCode = [&]( float x ) { return m_permCodes[ classPos( x, 24 ) ]; };
+	auto orderCode = [&]( float x ) { return fixedOrder ? 228 : m_permCodes[ classPos( x, 24 ) ]; };   // 228: A, B, C, D
 	int res = runOrder( orderCode( m_walk.x0[8] ) );
-	const bool orderFade = m_walk.active && m_walk.fading[8] && m_walk.f[8] > 0.f
+	const bool orderFade = !fixedOrder && m_walk.active && m_walk.fading[8] && m_walk.f[8] > 0.f
 	                       && classPos( m_walk.x1[8], 24 ) != classPos( m_walk.x0[8], 24 );
 	if( orderFade )
 	{
@@ -1627,6 +1639,13 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	{
 		const int out = freeTex( 1u << res );
 		pass( "..\\Engine\\ChainPass\\Fallback.frag", res, -1, out, 0.f, w );
+		res = out;
+	}
+	else if( m_chainBake > 0 )
+	{
+		// baked coordinates are interpolated: store them mirrored (continuous)
+		const int out = freeTex( 1u << res );
+		pass( "..\\Engine\\ChainPass\\Id.frag", res, -1, out, 0.f, 0.f );
 		res = out;
 	}
 
