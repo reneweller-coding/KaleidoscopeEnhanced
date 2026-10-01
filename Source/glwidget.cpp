@@ -905,7 +905,51 @@ void GLwidget::paintGL()
 	const qint64 frameT0 = ( costLog || frameLog ) ? m_fpsTimer.nsecsElapsed() : 0;
 	const qint64 costT0 = frameT0;
 
+	// KALEIDO_GPU_TIMING=1: the GPU time of each frame.  With vsync the fps
+	// stop at the panel's rate (120 here) and hide how much headroom a scene
+	// has -- or how far a slower GPU is from it.  A ring of four queries is
+	// read three frames late, so the readback never waits for the GPU.
+	static const bool gpuTiming = qEnvironmentVariableIsSet( "KALEIDO_GPU_TIMING" );
+	static GLuint gpuQ[4] = { 0, 0, 0, 0 };
+	static int    gpuFrame = 0;
+	static double gpuSum = 0.0, gpuMax = 0.0;
+	static int    gpuN = 0;
+	static qint64 gpuLast = 0;
+	const bool gpuOn = gpuTiming && glGenQueries && glBeginQuery && glEndQuery && glGetQueryObjectuiv;
+	if( gpuOn )
+	{
+		if( !gpuQ[0] ) glGenQueries( 4, gpuQ );
+		const GLuint old = gpuQ[ ( gpuFrame + 1 ) & 3 ];     // issued three frames ago
+		if( gpuFrame >= 3 )
+		{
+			GLuint ready = 0;
+			glGetQueryObjectuiv( old, 0x8867 /* GL_QUERY_RESULT_AVAILABLE */, &ready );
+			if( ready )
+			{
+				GLuint ns = 0;
+				glGetQueryObjectuiv( old, GL_QUERY_RESULT, &ns );
+				const double ms = ns * 1e-6;
+				gpuSum += ms; gpuN++;
+				if( ms > gpuMax ) gpuMax = ms;
+			}
+		}
+		glBeginQuery( 0x88BF /* GL_TIME_ELAPSED */, gpuQ[ gpuFrame & 3 ] );
+	}
+
 	 draw();
+
+	if( gpuOn )
+	{
+		glEndQuery( 0x88BF );
+		++gpuFrame;
+		const qint64 t = m_fpsTimer.elapsed();
+		if( t - gpuLast >= 1000 && gpuN > 0 )
+		{
+			fprintf( stderr, "[gpu] %.2f ms avg  %.2f ms max  %dx%d  renderScale %.2f\n",
+			         gpuSum / gpuN, gpuMax, m_width, m_height, RenderPipeline::renderScale() );
+			gpuSum = gpuMax = 0.0; gpuN = 0; gpuLast = t;
+		}
+	}
 
 	if( frameLog )
 	{

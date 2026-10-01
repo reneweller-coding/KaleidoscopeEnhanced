@@ -411,6 +411,9 @@ int main(int argc, char *argv[])
 	fmt.setRenderableType( QSurfaceFormat::OpenGL );
 	fmt.setSwapBehavior( QSurfaceFormat::DoubleBuffer );
 	fmt.setDepthBufferSize( 24 );
+	// KALEIDO_NO_VSYNC=1: measure without the panel's frame cap (see KALEIDO_GPU_TIMING).
+	if( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) )
+		fmt.setSwapInterval( 0 );
 	QSurfaceFormat::setDefaultFormat( fmt );
 
 	// The normal windowed-app path: build the Qt application and its single top-level

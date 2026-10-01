@@ -1885,6 +1885,16 @@ void main()
     vec3 rt = normalize(cross(vec3(0.0, 1.0, 0.0), fw));
     vec3 rd = mat3(rt, cross(fw, rt), fw) * normalize(vec3(p, 1.2));
     float t = 0.05; float d = 1.0; vec2 c = vec2(0.5); bool hit = false;
+    // Phase 1: inside radius 1 - gH no relief can reach, so up to there the
+    // wall is the plain tube -- no chain per step (the chain in every step
+    // was most of the frame: 8 ms at 2880x1620).
+    for (int i = 0; i < 64; ++i) {
+        vec3 q = ro + rd * t;
+        float db = (1.0 - gH) - length(q.xy - axisXY(q.z));
+        if (db < 0.01 || t > 28.0) break;
+        t += db * 0.8;
+    }
+    // Phase 2: through the relief layer with the chain.
     for (int i = 0; i < 90; ++i) {
         d = tunnelD(ro + rd * t, c);
         if (d < 0.0015 * t) { hit = true; break; }
