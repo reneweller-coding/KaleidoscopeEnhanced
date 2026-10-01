@@ -2042,7 +2042,7 @@ def build(name):
     print("gebaut:", name)
     # The app runs these two labs' chains as passes (Engine/ChainPass): their
     # pass shaders and final shaders follow every rebuild.
-    if name in ("ChainLab2D", "FxChain"):
+    if name in ("ChainLab2D", "FxChain", "ChainLab3D", "ChainSlice3D"):
         import make_chainpass
         make_chainpass.main()
 

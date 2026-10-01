@@ -304,7 +304,7 @@ RECENT_SCENES = {
     "ChainSpiralKaleido", "ChainKaleidoSpiral", "ChainMobiusKaleido", "ChainKaleidoMobius", "ChainInvertFold", "ChainFoldSpiral", "ChainSquareKaleido", "ChainTwirlP4m", "ChainWarpKaleidoSpiral", "ChainSpiralInvertKaleido", "ChainMobiusFoldTwirl", "ChainP4mSpiralKaleidoWarp",
     "ChainTunnelKaleido", "ChainKaleidoTunnel", "ChainTunnelHex", "ChainHexTunnel", "ChainExpKaleido", "ChainSinFold", "ChainDrosteKaleido", "ChainRippleHex", "ChainTunnelLens", "ChainPolarKaleidoWave", "ChainMirrorTunnelSpiral", "ChainWaveDrosteHex",
     "Chain3DKifsTetra", "Chain3DMandelbox", "Chain3DOctaGyroid", "Chain3DPolarTunnelBoxes", "Chain3DTwistTorus",
-    "ChainLab2D", "ChainLab3D",
+    "ChainLab2D", "ChainLab3D", "ChainSlice3D",
     "ChainLabTunnel",
     "PenroseParquet",
     "TruchetMaze",
@@ -364,7 +364,7 @@ def rule_modified(m, h):
 # transition carries that tag -- filtering overlays by it would leave the
 # preset with FxPlain and Crossfade alone.  Its overlays therefore use the
 # ambient rule: calm or dreamy, never aggressive.
-CHAIN_LABS = ("ChainLab2D", "ChainLab3D", "ChainLabTunnel")
+CHAIN_LABS = ("ChainLab2D", "ChainLab3D", "ChainLabTunnel", "ChainSlice3D")
 # Every transform-chain scene: the labs, the named chains (Chain*, Chain3D*)
 # and frozen liked rolls (ChainLike*) -- not the old chain-mail scene.
 def rule_transform(m, h):

@@ -463,6 +463,34 @@ Blick 2–5 min und schwenkt in 40–60 s zu einem anderen, nur nach der Uhr.
 Die App summiert auch die Flugposition auf, damit Schweben den Flug ohne
 Sprung bremsen kann.
 
+### ChainSlice3D – der Raumschnitt (Prototyp seit 01.10.)
+Die 3D-Kette ohne Raymarching: Der Bildschirm ist eine **Ebene durch die
+Welt** des 3D-Labors (dieselben Raum-, Faltkern- und Körperklassen). Jeder
+Bildpunkt ist ein Raumpunkt, der die Kette einmal durchläuft, statt eines
+Marschs mit bis zu 100 Schritten.
+
+* `layerP`: 1–8 Ebenen hintereinander. Gezeigt wird die erste, die Materie
+  schneidet. Durch ihre Löcher sieht man die tieferen, wie ein Stapel
+  geschnittener Platten.
+* Materie trägt die Farbkette (wie im 3D-Labor auf drei Projektionsebenen),
+  Luft bleibt gedämpft. Die Schnittkanten leuchten über den Gradienten der
+  Abstandsfunktion.
+* Die Ebene wandert mit dem Flug durch die Welt. Die Kamerablicke der App
+  werden zu Schnittrichtungen (quer, längs, diagonal 1-1-1, langsam
+  drehend …), gewechselt wird nur nach der Uhr. In der Ebene dreht sie sich
+  langsam (eine Umdrehung in 7 min).
+* `cutP ≥ 0,5` – **Raumzeit-Schnitt**, ganz ohne Welt: Die Ebene schneidet
+  das implizite Volumen der 2D-Kette selbst. (x, y) sind die
+  Fotokoordinaten, die Zeit der Kette ist die dritte Achse:
+  t = t₀ + a·x + b·y, die Neigung (a, b) aus der Schnittrichtung. Ungeneigt
+  ist das das 2D-Labor; geneigt zeigt jede Bildstelle einen anderen
+  Zeitpunkt der Kette – nie verschmiert, weil der Schnitt immer über (x, y)
+  läuft.
+* Leistung: 117–120 fps, GPU 2,9 ms (3D-Labor 4–5 ms). Jede neue
+  Weltkombination kostet einmal ~20–30 ms (wie im 3D-Labor).
+* Bekannt: Sehr feine Faltkerne zerfallen im Schnitt zu Splittern und
+  bleiben dunkel.
+
 ### FxChain – die Kette als Nachbearbeitung
 Dieselbe 2D-Stufenmaschine, aber als **FX-Stufe**: Sie verformt nicht das Foto,
 sondern das *fertige Bild einer beliebigen anderen Szene*. Dafür bekommt das

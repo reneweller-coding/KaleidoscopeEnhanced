@@ -246,14 +246,16 @@ def assemble(text, main_text, header, title, replace=None):
     out.append(main_text.strip())
     return "\n".join(out) + "\n"
 
-def write_3d():
+def write_3d(base="ChainLab3D"):
     """The 3D lab in three parts (EffectShader's chain runner, "// @chain3d"):
     Geom_ChainLab3D -- the camera, the march, normal and AO into a G-buffer
     (its world classes as #if selections on SPEC_SP/CO/BO: the app builds one
     small variant per world through ShaderForge); Start3D -- one projection
     plane's chain input and time offset from the G-buffer; Final_ChainLab3D --
     colour (three chain coordinates), relief, light, rim and fog."""
-    lab = io.open(os.path.join(ROOT, "Scene2D", "ChainLab3D.frag"), encoding="utf-8").read()
+    lab = io.open(os.path.join(ROOT, "Scene2D", base + ".frag"), encoding="utf-8").read()
+    slice_ = base == "ChainSlice3D"
+    fieldF, normalF = ("fieldS", "normalS") if slice_ else ("fieldD", "normal3")
     body = strip_comments(lab)
     mt = body[body.index("void main()"):]
     pre = mt[mt.index("{") + 1:mt.index("    vec3 ro;")]
@@ -264,9 +266,9 @@ def write_3d():
     # One call site of the field for march, normal and AO (the driver's first-draw code generation
     # goes with the code size: seven inlined worlds -> one, 130-180 ms -> 45 ms cold).  The lab's
     # own march is checked, so a change there cannot slip past this rewrite.
-    for piece in ("for (int i = 0; i < 100; ++i) {", "d = fieldD(ro + rd * t);",
+    for piece in (() if slice_ else ("for (int i = 0; i < 100; ++i) {", "d = fieldD(ro + rd * t);",
                   "if (abs(d) < 0.0015 * t) { hit = true; fp = gP; fdr = gDR; break; }",
-                  "t += d * 0.8;", "if (t > 30.0) break;"):
+                  "t += d * 0.8;", "if (t > 30.0) break;")):
         assert piece in march, "3D geometry: the lab's march changed (" + piece + ")"
     one_site = r"""    int z0 = min(int(sceneTime), 0);       // a start the compiler cannot see: the loop stays a loop
     float t = 0.05; bool hit = false; vec3 fp = vec3(0.0);
@@ -298,7 +300,50 @@ def write_3d():
         }
     }
 """
-    geo_main = ("void main()\n{\n" + pre + cam + one_site +
+    if slice_:
+        # The cut: planes 1..8 until one cuts matter (the last always shown), then the
+        # normal and AO taps -- one call site; the space-time cut needs no world at all.
+        for piece in ("int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);", "t = 1.0 + 1.2 * float(i);", "float cutM = step(0.5, cutP);",
+                      "if (cutM > 0.5) { hit = true; t = 1.0; fp = cutFp; dHit = -1.0; }"):
+            assert piece in march, "slice geometry: the lab's cut changed (" + piece + ")"
+        one_site = r"""    int z0 = min(int(sceneTime), 0);
+    int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);
+    if (cutP >= 0.5) {                     // the space-time cut: the plane point, facing the viewer
+        gbPos = vec4(cutFp, 1.0); gbNrm = vec4(0.0, 0.0, -1.0, 1.25); return;
+    }
+    float t = 1.0; bool hit = false; vec3 fp = vec3(0.0); float dHit = 0.0;
+    vec3 q = vec3(0.0), n = vec3(0.0), e = vec3(0.0);
+    float ao = 0.0;
+    int stage = 0, layer = 0;              // stage 0 the planes, 1..4 normal taps, 5..6 AO taps
+    for (int i = z0; i < 14; ++i) {
+        vec3 pos = ro + rd * t;
+        if (stage > 4) pos = q + n * (0.06 * float(stage - 4));
+        else if (stage > 0) {
+            int k = stage - 1;
+            e = 0.5773 * (2.0 * vec3(float(((k + 3) >> 1) & 1), float((k >> 1) & 1), float(k & 1)) - 1.0);
+            pos = q + 0.0015 * e;
+        }
+        float d = fieldS(pos);
+        if (stage == 0) {
+            if (d < 0.0 || layer >= nl - 1) { hit = true; fp = gP; q = pos; dHit = d; stage = 1; continue; }
+            ++layer; t = 1.0 + 1.2 * float(layer);
+        } else if (stage <= 4) {
+            n += e * d;
+            if (stage == 4) n = normalize(n + vec3(1e-7));
+            ++stage;
+        } else {
+            float h = 0.06 * float(stage - 4);
+            ao += (h - d + dHit) / h;              // relative to the cut point
+            if (stage == 6) break;
+            ++stage;
+        }
+    }
+    ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit);
+"""
+        geo_main = ("void main()\n{\n" + pre + cam + one_site +
+                    "    gbPos = vec4(fp, t);\n    gbNrm = vec4(n, ao);\n}\n")
+    else:
+      geo_main = ("void main()\n{\n" + pre + cam + one_site +
                 "    if (!hit) { gbPos = vec4(0.0, 0.0, 0.0, -1.0); gbNrm = vec4(0.0, 0.0, 1.0, 1.0); return; }\n"
                 "    gbPos = vec4(fp, t);\n    gbNrm = vec4(n, clamp(1.0 - 0.4 * ao, 0.2, 1.0));\n}\n")
     # A variant without a fade has no second world: fieldK_1 only where a stage fades.
@@ -308,7 +353,7 @@ def write_3d():
     b = geo_src.index("\n", b) + 1
     geo_src = (geo_src[:a] + "#if SPEC_SP0 == SPEC_SP1 && SPEC_CO0 == SPEC_CO1 && SPEC_BO0 == SPEC_BO1\n    return d0;\n#else\n"
                + geo_src[a:b] + "#endif\n" + geo_src[b:])
-    io.open(os.path.join(OUT, "Geom_ChainLab3D.frag"), "w", encoding="utf-8", newline="\n").write(assemble(
+    io.open(os.path.join(OUT, "Geom_" + base + ".frag"), "w", encoding="utf-8", newline="\n").write(assemble(
         geo_src, geo_main, ["layout(location = 0) out vec4 gbPos;   // folded hit point, distance (-1: no hit)",
                             "layout(location = 1) out vec4 gbNrm;   // normal, ambient occlusion",
                             "// world classes: SPEC_SP0/1, SPEC_CO0/1, SPEC_BO0/1 (branch numbers), set by the app"],
@@ -358,7 +403,9 @@ def write_3d():
         "    if (walkHost < -1.0) col += vec3(walkA.x + walkB.x + walkC.x + walkD.x + walkS.x + walkSpace.x + walkCore.x + walkBody.x);\n"
         "    finish(col);\n}\n")
     # inside the hit branch: the G-buffer replaces the march results
-    fin_main = fin_main.replace("        vec3 q = ro + rd * t;\n        vec3 n = normal3(q);\n", "")
+    _nline = "        vec3 n = cutM > 0.5 ? vec3(0.0, 0.0, -1.0) : normalS(q);\n" if slice_ else "        vec3 n = normal3(q);\n"
+    assert ("        vec3 q = ro + rd * t;\n" + _nline) in fin_main, "3D final: the hit point lines changed"
+    fin_main = fin_main.replace("        vec3 q = ro + rd * t;\n" + _nline, "")
     fin_main = re.sub(r"        float lod = clamp\(log2\(t \* 2\.0\).*?\n", "", fin_main)
     fin_main = fin_main.replace("        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one\n", "")
     k0 = fin_main.index("        if (reliefP > 0.3) {")
@@ -367,7 +414,7 @@ def write_3d():
     fin_main = re.sub(r"        vec3 tex = colour3\(fp, nGeo, lod, [^;]*\);", "        vec3 tex = tex0;", fin_main)
     fin_main = re.sub(r"        float ao = 0\.0;\n        for \(int k = 1; k <= 2; \+\+k\) \{[^\n]*\n        ao = clamp\([^\n]*\n",
                       "        float ao = gn.w;\n", fin_main)
-    assert "fieldD" not in fin_main and "normal3" not in fin_main and "colour3(" not in fin_main, "3D final: march code left"
+    assert fieldF not in fin_main and normalF not in fin_main and "colour3(" not in fin_main, "3D final: march code left"
     colour3t = r"""vec3 colour3T(vec3 n, float lod, float pal)
 {
     // the three projection planes' chain coordinates, weighted by the normal (tiny weights skipped)
@@ -384,7 +431,7 @@ def write_3d():
     cpc = cp.replace("vec3 chainPlane(vec2 uv, float lod, float pal)", "vec3 chainPlaneC(vec2 c, float lod, float pal)").replace("    vec2 c = chain(uv);\n", "")
     fin_src = preprocess(body, set(), {"SPEC_SP0", "SPEC_A0", "SPEC_B0", "SPEC_C0", "SPEC_D0"})
     fin_main = cpc + "\n" + colour3t + "\n" + fin_main
-    io.open(os.path.join(OUT, "Final_ChainLab3D.frag"), "w", encoding="utf-8", newline="\n").write(assemble(
+    io.open(os.path.join(OUT, "Final_" + base + ".frag"), "w", encoding="utf-8", newline="\n").write(assemble(
         fin_src, fin_main, ["// @chain3d", "out vec4 fragColor;", "uniform sampler2D texGPos, texGNrm;   // the geometry pass",
                             "uniform sampler2D texChain0, texChain1, texChain2;   // the colour chain per projection plane",
                             "uniform vec2 chainOff;"],
@@ -494,6 +541,8 @@ def main():
                             ("Scene2D/ChainLabTunnel.frag", "ChainLabTunnel", 2048)):
         write_final(rel, name, bake)
     write_3d()
+    if os.path.exists(os.path.join(ROOT, "Scene2D", "ChainSlice3D.frag")):
+        write_3d("ChainSlice3D")
     print("chain passes:", written, "+ Id, Mix, Fallback, Final_ChainLab2D, Final_FxChain ->", OUT)
 
 if __name__ == "__main__":

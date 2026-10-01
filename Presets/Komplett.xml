@@ -12846,4 +12846,28 @@
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
 
+  <TextureShader file="..\\Scene2D\\ChainSlice3D.frag" type="normal" mood="psychedelic,energetic" probability="0.45" complexity="3">
+    <rig preset="flat"/>
+    <float name="spaceP" minValue="0" maxValue="1"></float>
+    <float name="coreP" minValue="0" maxValue="1"></float>
+    <float name="bodyP" minValue="0" maxValue="1"></float>
+    <float name="layerP" minValue="0" maxValue="1"></float>
+    <float name="cutP" minValue="0" maxValue="1"></float>
+    <float name="solidP" minValue="0.5" maxValue="1"></float>
+    <float name="reliefP" minValue="0" maxValue="1"></float>
+    <float name="chainAP" minValue="0" maxValue="1"></float>
+    <float name="chainBP" minValue="0" maxValue="1"></float>
+    <float name="chainCP" minValue="0" maxValue="1"></float>
+    <float name="chainDP" minValue="0" maxValue="1"></float>
+    <float name="orderP" minValue="0" maxValue="1"></float>
+    <float name="morphP" minValue="0" maxValue="1"></float>
+    <float name="styleP" minValue="0" maxValue="1"></float>
+    <float name="speedP" minValue="0" maxValue="1"></float>
+    <float name="detailP" minValue="0" maxValue="1"></float>
+    <float name="paletteP" minValue="0" maxValue="1"></float>
+    <float name="camP" minValue="0" maxValue="1"></float>
+    <expr name="hueP" formula="chromaHue + seed1*6.28"/>
+    <float name="hueP" minValue="0.0" maxValue="6.28"></float>
+  </TextureShader>
+
 </configuration>
