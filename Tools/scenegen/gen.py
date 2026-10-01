@@ -1740,6 +1740,7 @@ vec3 gCam = vec3(0.0);
 // read as sculpted walls).  The path depends only on z, so the carve is stateless.
 float gPathAmp = 1.0;   // how far the path winds (a scene may shrink it)
 float gTube = 0.45;     // tube radius
+float gSide = 0.0;      // how far the gaze looks out of a side window (0 ahead .. 1): see gazeDir
 vec2 camPathXY(float z)
 {
     return gPathAmp * vec2(1.1 * sin(z * 0.11) + 0.4 * sin(z * 0.23 + 1.3), 0.8 * sin(z * 0.083 + 0.7) + 0.3 * cos(z * 0.19));
@@ -1749,7 +1750,12 @@ float fieldD(vec3 p)
 {
     gDR = 1.0;
     float d = field3(p);
-    float tube = gTube - length(p.xy - camPathXY(p.z));
+    float tube = max(gTube - length(p.xy - camPathXY(p.z)), -1.0);
+    // Looking out of a side window the tube is carved only around the camera
+    // (it fades out 3..6 along the flight): carved along the whole path it
+    // showed from the side as a dark channel winding off.  The fade is gentle
+    // (slope below 0.5, tube clamped at -1), so the distance stays conservative.
+    if (gSide > 0.0) tube = mix(tube, -1.0, gSide * smoothstep(3.0, 6.0, abs(p.z - gCam.z)));
     return max(smaxK(d, 0.8 * tube, 0.15), 0.3 - length(p - gCam));
 }
 // The camera frame at depth z: on the path, looking at the path ahead.
@@ -1765,6 +1771,34 @@ mat3 camFrame(float z, out vec3 ro)
     vec3 up = vec3(sin(roll), cos(roll), 0.0);
     vec3 rt = normalize(cross(up, fw));
     return mat3(rt, cross(fw, rt), fw);
+}
+// The gaze: where the camera looks relative to its flight.  Straight ahead
+// shows the vanishing point -- a dark opening the eye keeps flying into -- so
+// that is only one of five: 0 ahead, 1 out of the right window (the world
+// slides past with parallax, no vanishing point), 2 slanted down ahead, 3 out
+// of the left window, 4 slanted up.  The knob picks the first; the scene pans
+// on to the next every ~4 minutes (a ~1 minute pan) and the gaze drifts a
+// little.  Time only, never the music: the camera does not follow the audio.
+vec2 gazeAngles(float k)
+{
+    float i = mod(k, 5.0);
+    if (i > 3.5) return vec2(-0.3, 0.75);
+    if (i > 2.5) return vec2(-1.35, 0.08);
+    if (i > 1.5) return vec2(0.35, -0.8);
+    if (i > 0.5) return vec2(1.35, -0.08);
+    return vec2(0.0);
+}
+vec3 gazeDir(vec2 p, float cam, float time)
+{
+    float g = floor(clamp(cam, 0.0, 0.999) * 5.0) + 0.004 * time;
+    float k = floor(g), f = smoothstep(0.75, 1.0, fract(g));
+    vec2 a = mix(gazeAngles(k), gazeAngles(k + 1.0), f);   // (yaw, pitch)
+    a += vec2(0.12 * sin(0.031 * time), 0.08 * sin(0.023 * time + 1.0));
+    gSide = smoothstep(0.6, 1.2, abs(a.x));
+    vec3 d = normalize(vec3(p, 1.1));
+    d.yz = rot2(a.y) * d.yz;
+    d.xz = rot2(-a.x) * d.xz;
+    return d;
 }
 vec3 normal3(vec3 p)
 {

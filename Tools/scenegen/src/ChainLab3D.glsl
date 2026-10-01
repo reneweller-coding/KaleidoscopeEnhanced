@@ -26,8 +26,9 @@
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
  * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
- * colour field), hueP.
-//@params spaceP coreP bodyP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP
+ * colour field), camP (the gaze: ahead, out of a side window, slanted down or up --
+ * it pans on every few minutes), hueP.
+//@params spaceP coreP bodyP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gTC, gSpread, gRot, gMw;
@@ -677,7 +678,7 @@ void main()
     mat3 cf = camFrame(gT, ro);
     gCam = ro;
     gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
-    vec3 rd = cf * normalize(vec3(p, 1.1));
+    vec3 rd = cf * gazeDir(p, camP, sceneTime);
     float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0;
     for (int i = 0; i < 100; ++i) {
         d = fieldD(ro + rd * t);

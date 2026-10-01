@@ -664,6 +664,7 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <float name="camP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -673,6 +674,7 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <float name="camP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -682,6 +684,7 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <float name="camP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -691,6 +694,7 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <float name="camP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -700,6 +704,7 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <float name="camP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>
@@ -855,6 +860,7 @@
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
+    <float name="camP" minValue="0" maxValue="1"></float>
     <expr name="hueP" formula="chromaHue + seed1*6.28"/>
     <float name="hueP" minValue="0.0" maxValue="6.28"></float>
   </TextureShader>

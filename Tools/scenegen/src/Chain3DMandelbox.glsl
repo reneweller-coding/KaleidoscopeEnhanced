@@ -16,8 +16,9 @@
  *   audioPhase      -> the surface colours wander (integrated, jump-free)
  *
  * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo colours / a colour field
- * following the 2D chain), hueP.
-//@params styleP speedP detailP paletteP
+ * following the 2D chain), camP (the gaze: ahead, out of a side window, slanted down or up -- it pans on
+ * every few minutes), hueP.
+//@params styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gSpread, gRot;
@@ -71,11 +72,11 @@ void main()
     mat3 cf = camFrame(gT, ro);
     gCam = ro;
     gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
-    vec3 rd = cf * normalize(vec3(p, 1.1));
+    vec3 rd = cf * gazeDir(p, camP, sceneTime);
     float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0;
     for (int i = 0; i < 100; ++i) {
         d = fieldD(ro + rd * t);
-        if (abs(d) < 0.0008 * t) { hit = true; fp = gP; fdr = gDR; break; }   // gP of the hit point: no extra evaluation
+        if (abs(d) < 0.0015 * t) { hit = true; fp = gP; fdr = gDR; break; }   // gP of the hit point: no extra evaluation
         t += d * 0.8;
         if (t > 30.0) break;
     }
