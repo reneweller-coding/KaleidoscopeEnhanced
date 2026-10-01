@@ -402,11 +402,11 @@ void main()
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp(0.5 + dot(grad, vec2(cos(la), sin(la))) * 5.0, 0.0, 1.0);
-    vec3 reliefC = photo * (0.3 + 1.2 * relief) + vec3(1.0) * pow(relief, 6.0) * (0.1 + 0.3 * swell);
+    vec3 reliefC = photo * (0.3 + 1.2 * relief) + vec3(1.0) * pow(relief, 6.0) * (0.1 + 0.3 * swell + 0.35 * kick);   // the kick catches the highlights
     // Glowing edges: gradient magnitude as neon.
     vec3 gc = mix(glowColour(ph, p, hueP * 0.159), neonOf(field + 1e-3, 2.0), clamp(paletteP, 0.0, 1.0));
     float edge = smoothstep(0.01, 0.14, length(grad));        // lab audit: 0.02..0.25 left smooth chains nearly black
-    vec3 neon = gc * edge * (1.6 + 1.2 * kick) + photo * 0.22;
+    vec3 neon = gc * edge * (1.6 + 1.6 * kick) + photo * 0.22;
     // Isolines of the chain's luma: glowing contour lines.
     float xi = m * 12.0 - gT * 6.0;                          // the contour lines flow uphill (integrated, jump-free)
     float pxi = fwidth(xi) + 1e-4;
@@ -451,6 +451,6 @@ void main()
     s0 = ords(s0); s1 = ords(s1);                            // position on the calm..energetic scale -> look
     vec3 col = mix(looks[s0], looks[s1], sf);
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
-    col += gc * edge * kick * 0.3 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief
+    col += gc * edge * kick * 0.55 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief (light only)
     finish(col);
 }

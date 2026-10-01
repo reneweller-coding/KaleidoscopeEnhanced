@@ -695,6 +695,8 @@ protected:
 		float fluxS = 0.f;              ///< Spectral flux smoothed over ~0.5 s: bursts hurry a fade.
 		float rate = 1.f;               ///< Current music speed of the walk (fades and holds), 0.25 .. 2.5.
 		float harmCool = 0.f;           ///< Cooldown for harmonic-change walks, seconds.
+		float lastPhrase = -1.f;        ///< AudioFeatures::phrasePos of the previous frame (-1 = not yet): its wrap is an 8-bar boundary.
+		int   phraseN = 0;              ///< Phrase boundaries seen: odd ones bring a new variant, even ones a new transform.
 		std::map<int, std::array<float, 9>> sectionLook;   ///< Look per section id: a returning section returns to it.
 		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.
 		bool  hasLast = false;          ///< last is valid.

@@ -859,7 +859,11 @@ void SceneScheduler::tick( const Tick &t )
 
 			m_texInterp = 1.0;
 
-			m_texFadeDur = (float) (tex[m_actTexture]->getTimeSolo()) / t.timingScale;
+			// A chain lab walking with the music sets its own pace (its walk runs in
+			// music time), so its stay is not shortened by the music's timing scale:
+			// at 2.6 a 3-minute lab would have ended after 70 s.
+			m_texFadeDur = (float) (tex[m_actTexture]->getTimeSolo())
+			             / ( tex[m_actTexture]->walksWithMusic() ? 1.f : t.timingScale );
 
 			restart( m_clockEffectTexture );
 		}

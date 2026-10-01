@@ -1024,6 +1024,8 @@ void EffectShader::resetChainWalk()
 		m_walk.hold[s] = 9.f * (float) s;          // staggered: the stages come due one after another
 	}
 	m_walk.lastSection = m_walk.lastDrop = -1;
+	m_walk.lastPhrase  = -1.f;
+	m_walk.phraseN     = 0;
 	m_walk.energy   = 0.5f;
 	m_walk.harmCool = 8.f;
 	m_walk.sectionLook.clear();
@@ -1063,6 +1065,8 @@ void EffectShader::startWalk( int s, float target, float dur )
 	         m_walk.x0[s], m_walk.x1[s], m_walk.fadeDur[s], m_walk.rate );
 }
 
+static int classPos( float x, int n );
+
 void EffectShader::stepChainWalk( const AudioFeatures &f )
 {
 	if( m_walkProg != m_sh_prog_id )
@@ -1098,12 +1102,15 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	m_walk.energyFast += ( f.arousal - m_walk.energyFast ) * ( dt < 1.f ? dt : 1.f );
 	m_walk.fluxS      += ( f.spectralFlux - m_walk.fluxS ) * ( dt * 2.f < 1.f ? dt * 2.f : 1.f );
 	{
-		float r = 0.35f + 0.9f * m_walk.energyFast + 1.2f * m_walk.fluxS;
+		// a build-up hurries the walk toward the drop
+		float r = 0.35f + 0.9f * m_walk.energyFast + 1.2f * m_walk.fluxS + 0.8f * f.buildUp;
 		m_walk.rate = r < 0.25f ? 0.25f : ( r > 2.5f ? 2.5f : r );
 	}
 	std::uniform_real_distribution<float> uni( 0.f, 1.f );
 	// A target on the calm..energetic scale of the classes, with some spread.
-	auto pick = [&]() { return 0.08f + 0.84f * E + ( uni( m_walk.rng ) - 0.5f ) * 0.5f; };
+	// (a build-up pulls the targets toward the energetic end)
+	const float Eb = E + 0.3f * f.buildUp < 1.f ? E + 0.3f * f.buildUp : 1.f;
+	auto pick = [&]() { return 0.08f + 0.84f * Eb + ( uni( m_walk.rng ) - 0.5f ) * 0.5f; };
 	auto lerp = []( float a, float b, float t ) { return a + ( b - a ) * t; };
 	auto anyFading = [&]() { for( bool b : m_walk.fading ) if( b ) return true; return false; };
 
@@ -1142,10 +1149,11 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 			m_walk.sectionLook[f.sectionId] = look;
 		}
 	}
-	// 2. A drop: the warp and the look turn fast.
+	// 2. A drop: the frame, the warp and the look turn fast (about a bar).
 	if( f.dropCount != m_walk.lastDrop )
 	{
 		m_walk.lastDrop = f.dropCount;
+		startWalk( 0, pick(), 2.f );
 		startWalk( 3, pick(), 1.5f );
 		startWalk( 4, pick(), 1.5f );
 	}
@@ -1156,7 +1164,43 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		startWalk( 1 + (int) ( m_walk.rng() % 2u ), pick(), lerp( 8.f, 4.f, E ) );
 		m_walk.harmCool = 12.f;
 	}
-	// 4. Otherwise the stage held longest walks when its time is up (sooner
+	// 4. Phrases (with a steady beat): every 8-bar boundary moves the chain
+	//    on -- alternately a new VARIANT of one transform (the same class with
+	//    other mirrors, arms, lattice: the transform itself morphs) and a new
+	//    transform for the stage held longest.  The fade spans two bars.
+	const bool steady = f.estimatedBPM > 0.01f && f.rhythmStrength > 0.35f;
+	const bool phraseTurn = steady && m_walk.lastPhrase >= 0.f && f.phrasePos + 0.5f < m_walk.lastPhrase;
+	m_walk.lastPhrase = f.phrasePos;
+	if( phraseTurn && !anyFading() )
+	{
+		++m_walk.phraseN;
+		if( m_walk.phraseN % 2 == 1 )
+		{
+			int cand[4], nc = 0;                        // stages A..D that show a transform (not 'none')
+			for( int s = 0; s < 4; ++s )
+			{
+				auto it = m_chainClasses.find( kWalkKnob[s] );
+				if( m_walkLoc[s] < 0 || it == m_chainClasses.end() || it->second.empty() ) continue;
+				if( it->second[ classPos( m_walk.x0[s], (int) it->second.size() ) ] != "none" ) cand[nc++] = s;
+			}
+			if( nc > 0 )
+			{
+				const int s = cand[ m_walk.rng() % (unsigned) nc ];
+				const int n = (int) m_chainClasses[ kWalkKnob[s] ].size();
+				const int k = classPos( m_walk.x0[s], n );
+				startWalk( s, ( (float) k + 0.05f + 0.9f * uni( m_walk.rng ) ) / (float) n, 4.f );
+			}
+		}
+		else
+		{
+			int best = -1; float bh = -1.f;
+			for( int s = 0; s <= 4; ++s )               // A..D and the look
+				if( m_walkLoc[s] >= 0 && m_walk.hold[s] > bh ) { bh = m_walk.hold[s]; best = s; }
+			if( best >= 0 )
+				startWalk( best, pick(), 4.f );
+		}
+	}
+	// 5. Otherwise the stage held longest walks when its time is up (sooner
 	//    the more energy; the look holds longer than the chain).
 	for( int s = 0; s < kWalkN; ++s )
 		if( !m_walk.fading[s] ) m_walk.hold[s] += dt * m_walk.rate;
@@ -1167,7 +1211,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		{
 			if( m_walkLoc[s] < 0 ) continue;            // stage absent in this shader
 			// the look holds longer than the chain, the 3D structure longer still
-			float r = m_walk.hold[s] / ( lerp( 90.f, 35.f, E ) * ( s == 4 ? 1.6f : ( isStructure( s ) ? 1.4f : 1.f ) ) );
+			float r = m_walk.hold[s] / ( lerp( 70.f, 30.f, E ) * ( s == 4 ? 1.6f : ( isStructure( s ) ? 1.4f : 1.f ) ) );
 			if( r >= bestR ) { bestR = r; best = s; }
 		}
 		if( best >= 0 )

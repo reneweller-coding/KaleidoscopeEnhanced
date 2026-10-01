@@ -386,6 +386,11 @@ OPENING_SCENES = {"ChainSpiralKaleido", "ChainKaleidoSpiral", "ChainFoldSpiral",
                   "ChainTunnelHex", "ChainHexTunnel", "ChainTunnelLens", "ChainMirrorTunnelSpiral",
                   "ChainDrosteKaleido", "ChainWaveDrosteHex", "ChainLabTunnel", "Chain3DPolarTunnelBoxes"}
 PROB_FACTOR = {"Transformationen": (0.4, OPENING_SCENES)}
+# How long a chain lab stays (seconds).  Without an entry time a scene falls
+# back to 20..90 s -- a lab ended before it had walked much, although walking
+# with the music is what it is for (found 01.10.2026; the header times above
+# are only the PHOTO pacing).
+LAB_SOLO = {"Kettenlabor": (600, 1800), "Transformationen": (180, 480)}
 
 GENRES = [
     ("Ambient",     rule_ambient,     False),
@@ -561,6 +566,8 @@ for entry in GENRES:
         for knob, (lo, hi) in KNOB_RANGES.get(name, {}).items():
             blk = re.sub(r'(<float name="%s") minValue="[^"]*" maxValue="[^"]*"' % knob,
                          r'\1 minValue="%s" maxValue="%s"' % (lo, hi), blk)
+        if name in LAB_SOLO and b[0] == "TextureShader" and b[1] in CHAIN_LABS and "minTimeSolo=" not in b[4]:
+            blk = blk.replace("<TextureShader ", '<TextureShader minTimeSolo="%d" maxTimeSolo="%d" ' % LAB_SOLO[name], 1)
         if name in PROB_FACTOR and b[0] == "TextureShader" and b[1] in PROB_FACTOR[name][1]:
             blk = re.sub(r'probability="([^"]*)"', lambda m: 'probability="%.3g"' % (float(m.group(1)) * PROB_FACTOR[name][0]), blk, count=1)
         out.append(blk)

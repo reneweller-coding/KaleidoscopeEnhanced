@@ -376,9 +376,11 @@ Psychedelic …) kann ein Labor auch fest oder einstufig laufen.
 |---|---|
 | **neuer Songabschnitt** | Stufe A (das Gerüst) wechselt, Blende ca. 4 s. Mit 50 % wechselt auch der Look (6 s), im 3D-Labor mit 60 % Raum oder Kern (8–14 s). |
 | **wiederkehrender Abschnitt** (z. B. 2. Refrain) | Alle Stufen laufen zurück zu der Kette, die dieser Abschnitt beim ersten Mal hatte. Das Bild „erinnert“ sich an den Refrain. |
-| **Drop** | Stufe D (Verzerrung) und Look wechseln schnell, in 1,5 s. |
+| **Drop** | Stufe A (das Gerüst), Stufe D (Verzerrung) und der Look wechseln schnell, in etwa einem Takt. |
+| **jede 8-Takt-Phrase** (bei stabilem Beat) | Abwechselnd eine **neue Variante** einer Transformation (dieselbe Klasse mit anderer Spiegelzahl, Armzahl, Gittergröße – die Transformation selbst verwandelt sich) und eine **neue Transformation** für die Stufe, die am längsten steht. Blende über zwei Takte. |
+| **Build-up** | Das Wandern wird schneller, die Ziele rücken ans energische Ende der Listen. |
 | **Harmoniewechsel** (Akkord/Tonart, Schwelle 0,55) | Stufe B (Symmetrie) oder C (zweite Abbildung) wechselt, in 4–8 s. Danach 12 s Pause, und nur, wenn gerade nichts überblendet. |
-| **sonst** | Die Stufe, die am längsten steht, wechselt, wenn ihre Haltezeit um ist: 90 s bei ruhiger, 35 s bei energischer Musik. Look ×1,6, 3D-Struktur ×1,4 länger. Blende 5–10 s, Struktur 8–14 s. |
+| **sonst** | Die Stufe, die am längsten steht, wechselt, wenn ihre Haltezeit um ist: 70 s bei ruhiger, 30 s bei energischer Musik. Look ×1,6, 3D-Struktur ×1,4 länger. Blende 5–10 s, Struktur 8–14 s. |
 
 Dazu kommen drei Regeln:
 
@@ -500,6 +502,7 @@ bei 3D auch `paletteP` und `camP`).
 | FX | nur FxPlain (keine Nachbearbeitung) | FxPlain und FxChain |
 | Gewichte | gleich | die 16 Szenen mit Öffnung auf 0,4 (ca. 19 % der Zeit) |
 | Fotowechsel | alle 10–30 min (Blende 15–30 s) | alle 1,5–5 min (Blende 6–12 s) |
+| Laufzeit eines Labors | 10–30 min | 3–8 min (benannte Ketten: 20–90 s) |
 | Gedacht als | ein Generator, der stundenlang läuft | Querschnitt durch alle Transformationen |
 
 ---
@@ -523,10 +526,9 @@ bei 3D auch `paletteP` und `camP`).
 
 ## 14. Bekannte Schwächen und offene Punkte
 
-* **Szenendauer**: Die Labor-Einträge haben keine eigene Dauer und fallen auf
-  den Standard von **20–90 s** zurück. Die langen Zeiten im Preset-Kopf gelten
-  nur für das Foto. Ein Labor trägt deshalb nicht, wie gedacht, einen ganzen
-  Abend. Vorschlag: 10–30 min im Kettenlabor, 3–8 min in Transformationen.
+* ~~Szenendauer 20–90 s~~ – behoben 01.10.: Labore laufen 10–30 min
+  (Kettenlabor) bzw. 3–8 min (Transformationen). Der Musik-Tempofaktor des
+  Planers verkürzt ein wanderndes Labor nicht mehr.
 * **Einstufiges Wandern** (`morphP` 0,15–0,5, nur in Genre-Presets): Dort wählt
   der Shader selbst und kennt die Öffnungs-Regel nicht.
 * **Energie-Ordnung** ist Handarbeit, nicht gemessen.
