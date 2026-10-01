@@ -7,9 +7,9 @@ SPECS = [
   ["p = fScale(p, 0.45, vec3(0.0));", "p = fRepeat(p, vec3(1.3));",
    "for (int i = 0; i < 4; ++i) { p = fTetra(p); p = fRot(p, vec3(1.0, 1.0, 0.0), gRot); p = fScale(p, 2.0, vec3(1.0)); }",
    "gP = p * 0.3;", "return sdBox3(p, vec3(1.1 + 0.3 * gSpread)) / gDR;"]),
- ("Chain3DMandelbox", "a Mandelbox: box folds and sphere folds repeated eight times, its scale breathing slowly",
+ ("Chain3DMandelbox", "a Mandelbox: box folds and sphere folds repeated six times, its scale breathing slowly",
   ["p = fRepeat(p, vec3(3.0));", "vec3 p0 = p;", "float sc = -1.8 + 0.25 * sin(gRot);",
-   "for (int i = 0; i < 8; ++i) { p = fBox(p, 1.0); p = fSphere(p, 0.5, 1.0); p = fScale(p, sc, -p0); gDR += 1.0; }",
+   "for (int i = 0; i < 6; ++i) { p = fBox(p, 1.0); p = fSphere(p, 0.5, 1.0); p = fScale(p, sc, -p0); gDR += 1.0; }   // 8 rounds: 38 fps",
    "gP = p0 * 0.6;", "return length(p) / gDR - 0.002;"]),
  ("Chain3DOctaGyroid", "a gyroid membrane folded into octahedral mirror symmetry, the mirrors turning",
   ["p = fRot(p, vec3(0.0, 0.0, 1.0), gRot);", "p = fOcta(p);", "p = fRot(p, vec3(1.0, 0.0, 0.0), 0.4 * sin(gT * 0.05));",
@@ -40,8 +40,8 @@ TEMPLATE = """//@doc
  *   audioPhase      -> the surface colours wander (integrated, jump-free)
  *
  * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo colours / a colour field
- * following the 2D chain), camP (the gaze: ahead, out of a side window, slanted down or up -- it pans on
- * every few minutes), hueP.
+ * following the 2D chain), camP (the first gaze: ahead, out of a side window, slanted down or up,
+ * floating, an orthographic side view -- the scene pans on every few minutes), hueP.
 //@params styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
@@ -86,10 +86,10 @@ void main()
     gRot = 0.02 * sceneTime + 0.2 * audioPhase;
     gSpread = clamp(audioSpread, 0.0, 1.0);
     vec3 ro;
-    mat3 cf = camFrame(gT, ro);
+    mat3 cf = camFrame(camFlight(gT), ro);
     gCam = ro;
     gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
-    vec3 rd = cf * gazeDir(p, camP, sceneTime);
+    vec3 rd = gazeDir(p, camP, sceneTime, cf, ro);
     float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0;
     for (int i = 0; i < 100; ++i) {{
         d = fieldD(ro + rd * t);

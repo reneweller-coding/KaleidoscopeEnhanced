@@ -200,6 +200,7 @@ void EffectShader::resetParameters()
 
 	// A chain lab starts its walk afresh from the knobs just rolled.
 	m_walk.pending = true;
+	m_cam.pending  = true;
 
 	// Unter KALEIDO_SEED protokollieren, was gezogen wurde: der Beweis, dass
 	// dieselbe Szene in jeder Konfiguration dieselben Zahlen bekommt, ist
@@ -530,6 +531,7 @@ void EffectShader::applyAudioFeatures(const AudioFeatures &f)
 
     // Chain labs: the music steers the walk (no-op for every other shader).
     stepChainWalk( f );
+    stepChainCam( f );
 
     // Per-program LOCATION CACHE: this used to perform ~45 string-keyed
     // glGetUniformLocation lookups per shader per FRAME - the single biggest
@@ -1298,6 +1300,84 @@ float EffectShader::closedClass( int s, float x ) const
 			if( !opensAt( s, v ) ) return v;
 		}
 	return x;
+}
+
+// ---- Camera host of the 3D chains --------------------------------------------
+// Speed of the flight per gaze -- the order of gazeAngles() in the shader:
+// ahead, right window, slanted down, left window, slanted up, floating, orthographic.
+static const int   kGazeN = 7;
+static const float kGazeSpeed[kGazeN] = { 1.f, 0.7f, 0.85f, 0.7f, 0.85f, 0.08f, 0.5f };
+
+void EffectShader::stepChainCam( const AudioFeatures &f )
+{
+	if( m_camProg != m_sh_prog_id )
+	{
+		m_camProg    = m_sh_prog_id;
+		m_camHostLoc = glGetUniformLocation( m_sh_prog_id, "camHost" );
+		m_camZLoc    = glGetUniformLocation( m_sh_prog_id, "camZ" );
+		m_camGazeLoc = glGetUniformLocation( m_sh_prog_id, "camGaze" );
+	}
+	if( m_camHostLoc < 0 || m_camZLoc < 0 || m_camGazeLoc < 0 )
+		return;                                     // not a 3D chain
+	float speedP = 0.5f, camP = 0.f;
+	for( const Uniform *u : m_uniforms )
+	{
+		if( u->getName() == "speedP" ) speedP = u->snapshotValue();
+		if( u->getName() == "camP" )   camP   = u->snapshotValue();
+	}
+	const auto now = std::chrono::steady_clock::now();
+	if( m_cam.pending )
+	{
+		m_cam.pending = false;
+		m_cam.rng.seed( (unsigned) now.time_since_epoch().count() | 1u );   // not from the scene's rand() stream
+		m_cam.z  = std::uniform_real_distribution<float>( 0.f, 500.f )( m_cam.rng );   // a fresh stretch of the world
+		m_cam.g0 = m_cam.g1 = (int)( ( camP < 0.f ? 0.f : ( camP > 0.999f ? 0.999f : camP ) ) * kGazeN );
+		m_cam.f  = 0.f;
+		m_cam.hold = 0.f;
+		m_cam.holdDur = std::uniform_real_distribution<float>( 120.f, 300.f )( m_cam.rng );
+		m_cam.hasLast = false;
+	}
+	float dt = m_cam.hasLast ? std::chrono::duration<float>( now - m_cam.last ).count() : 0.f;
+	float dAdv = m_cam.hasLast ? f.audioAdvance - m_cam.lastAdv : 0.f;
+	m_cam.last = now;
+	m_cam.lastAdv = f.audioAdvance;
+	m_cam.hasLast = true;
+	if( dt > 0.25f ) dt = 0.016f;                   // back from a pause: no catch-up leap
+	if( dAdv < 0.f || dAdv > 1.f ) dAdv = 0.f;
+
+	// The gaze: hold, then pan to another one (never the same).
+	if( m_cam.g1 == m_cam.g0 )
+	{
+		m_cam.hold += dt;
+		if( m_cam.hold >= m_cam.holdDur )
+		{
+			m_cam.g1 = ( m_cam.g0 + 1 + (int)( m_cam.rng() % (unsigned)( kGazeN - 1 ) ) ) % kGazeN;
+			m_cam.f = 0.f;
+			m_cam.panDur = std::uniform_real_distribution<float>( 40.f, 60.f )( m_cam.rng );
+			fprintf( stderr, "CAM %s gaze %d -> %d, %.0f s pan\n", fragmentName(), m_cam.g0, m_cam.g1, m_cam.panDur );
+		}
+	}
+	else
+	{
+		m_cam.f += dt / m_cam.panDur;
+		if( m_cam.f >= 1.f )
+		{
+			m_cam.g0 = m_cam.g1;
+			m_cam.f = 0.f;
+			m_cam.hold = 0.f;
+			m_cam.holdDur = std::uniform_real_distribution<float>( 120.f, 300.f )( m_cam.rng );
+		}
+	}
+	// The flight: the shader's old closed form (0.15 + 0.25 speedP) * time +
+	// 1.5 * audioAdvance, differentiated, times the speed of the gaze.
+	const float s  = m_cam.f * m_cam.f * ( 3.f - 2.f * m_cam.f );   // smoothstep, as the shader pans
+	const float sp = kGazeSpeed[m_cam.g0] + ( kGazeSpeed[m_cam.g1] - kGazeSpeed[m_cam.g0] ) * s;
+	const float speedK = 0.15f + 0.25f * ( speedP < 0.f ? 0.f : ( speedP > 1.f ? 1.f : speedP ) );
+	m_cam.z += sp * ( speedK * dt + 1.5f * dAdv );
+
+	glUniform1f( m_camHostLoc, 1.f );
+	glUniform1f( m_camZLoc, m_cam.z );
+	glUniform3f( m_camGazeLoc, (float) m_cam.g0, (float) m_cam.g1, m_cam.f );
 }
 
 std::string EffectShader::chainInfo()

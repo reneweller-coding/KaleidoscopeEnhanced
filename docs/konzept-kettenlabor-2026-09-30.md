@@ -426,7 +426,33 @@ rauschverzerrte Gitter war der Ausreißer (46 fps: drei fbm-Aufrufe und
 2,25-fach kleinere Schritte) → eine Oktave, 82 fps. Für die Dellen ist die
 adaptive Auflösung (Taste g) da; sie ist in der Repo-ini ausgeschaltet.
 
-## 12. Weiterdenken
+## 12. Weniger Tunnel (01.10.)
+
+Beobachtung: über 80 % der Szenen wirkten wie Tunnel. Nicht die Rosetten
+stören, sondern die **dunklen Öffnungen, in die man immerzu fliegt**:
+Tunnel, Droste-Zoom, Log-Polar-Spirale, Pol-Strömungen und der Fluchtpunkt
+jedes 3D-Flugs. Gezählt: 21 der 32 Szenen im Preset „Transformationen" waren
+Tunnel oder Zoom in einen Punkt.
+
+* **Preset:** Szenen mit Öffnung auf 0,4 ihres Gewichts → 19 % der Zeit.
+* **12 neue Ketten ohne Öffnung:** Gitter, Quasikristalle, Tapeten, gebogen
+  von Strömungen und Wellen (CurlFarris, TaylorHex, BillowPenrose …).
+* **Labor:** `chain_classes.OPENING`; die App lässt höchstens eine Stufe mit
+  Öffnung zu und die nur jedes zweite Mal (beim Würfeln aus dem Knopfwert,
+  beim Wandern aus dem eigenen Zufallsstrom). Notlösung schwacher Ketten:
+  flaches Sechseckgitter statt Kaleidoskop.
+* **Kamera (`camP`, 3D-Ketten und 3D-Labor):** sieben Blicke — geradeaus,
+  rechtes Fenster, schräg unten, linkes Fenster, schräg oben, Schweben,
+  orthografische Seitenansicht. Die App führt die Kamera (`camHost`): sie
+  integriert die Flugposition (Zeit + Musik × Tempo je Blick, Schweben 0,08),
+  hält einen Blick 2–5 min und schwenkt in 40–60 s zum nächsten — nur nach
+  der Uhr. Beim Seitenblick und Schweben wird die Flugröhre nur um die Kamera
+  ausgeschnitten; die orthografische Ansicht schneidet eine Scheibe quer zur
+  Blickachse frei, ihre Rückwand ist der Querschnitt, der vorbeizieht.
+* **Noch nicht gebaut:** Karussell (Schraubenbahn um eine Säule, eigener
+  Ausschnitt), Kranfahrt (senkrechte Bahn), Dolly-Zoom, langsame Rolle.
+
+## 13. Weiterdenken
 
 * **Ketten als FX-Stufe (größter Hebel, braucht deine Entscheidung)**: Jede
   Szene läuft durch eine CombineShader-Stufe, die dieselbe Schnittstelle hat

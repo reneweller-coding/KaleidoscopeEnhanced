@@ -700,6 +700,33 @@ protected:
 		bool  hasLast = false;          ///< last is valid.
 		std::minstd_rand rng;           ///< Own random stream (keeps the scene's rand() stream untouched per frame).
 	} m_walk;
+	/**
+	 * @brief Camera host of the 3D chains (uniform camHost): the flight
+	 * position and the gaze.
+	 *
+	 * The flight is integrated here -- time plus the music's advance, times a
+	 * speed per gaze -- so a gaze can slow the flight (floating) without the
+	 * camera jumping, which a closed-form position in the shader cannot.  The
+	 * gaze holds 2-5 minutes, then pans 40-60 s to another one; wall-clock
+	 * time only, the camera never follows the audio.
+	 */
+	struct ChainCam
+	{
+		bool  pending = true;           ///< Reset due (activation).
+		float z = 0.f;                  ///< Flight position along the path.
+		int   g0 = 0, g1 = 0;           ///< Gaze shown, gaze panned to (see gazeAngles in the shader).
+		float f = 0.f;                  ///< Pan progress 0..1 (0 = holding g0).
+		float panDur = 50.f;            ///< Pan length, seconds.
+		float hold = 0.f, holdDur = 200.f;   ///< Seconds on g0, and how long it stays.
+		float lastAdv = 0.f;            ///< audioAdvance of the previous frame.
+		bool  hasLast = false;          ///< last/lastAdv valid.
+		std::chrono::steady_clock::time_point last;   ///< Wall clock of the previous step.
+		std::minstd_rand rng;           ///< Own random stream.
+	} m_cam;
+	GLuint	m_camProg = 0;              ///< Program the camera locations belong to.
+	GLint	m_camHostLoc = -1, m_camZLoc = -1, m_camGazeLoc = -1;   ///< camHost / camZ / camGaze (-1: no camera host).
+	/// @brief Advances the 3D chains' camera (flight and gaze) and uploads it (program must be bound).
+	void stepChainCam( const AudioFeatures &f );
 	int		m_chainParsed = -1;         ///< chainInfo(): -1 = source not read yet, 0 = no chain classes, 1 = parsed.
 	std::map<std::string, std::vector<std::string>> m_chainClasses;   ///< Stage knob -> class names (energy order), from "// @chainclasses".
 	std::map<std::string, float> m_chainConsts;   ///< Knobs frozen as constants (ChainLike*): name -> value.

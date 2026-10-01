@@ -45,8 +45,8 @@ HEAD = r'''//@doc
  * (the 2D colour chain, rolled per start), morphP (which colour stage morphs on
  * with the music), styleP (lit surface / glowing rims),
  * speedP (flight speed), detailP (texture sharpness), paletteP (photo colours /
- * colour field), camP (the gaze: ahead, out of a side window, slanted down or up --
- * it pans on every few minutes), hueP.
+ * colour field), camP (the first gaze: ahead, out of a side window, slanted down or up,
+ * floating, an orthographic side view -- the scene pans on every few minutes), hueP.
 //@params spaceP coreP bodyP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body

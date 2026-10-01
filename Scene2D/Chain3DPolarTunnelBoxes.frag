@@ -19,8 +19,8 @@ out vec4 fragColor;
  *   audioPhase      -> the surface colours wander (integrated, jump-free)
  *
  * Knobs: styleP (photo surface / glowing rims), speedP (flight speed), detailP (texture sharpness), paletteP (photo colours / a colour field
- * following the 2D chain), camP (the gaze: ahead, out of a side window, slanted down or up -- it pans on
- * every few minutes), hueP.
+ * following the 2D chain), camP (the first gaze: ahead, out of a side window, slanted down or up,
+ * floating, an orthographic side view -- the scene pans on every few minutes), hueP.
  */
 
 uniform vec2  resolution;
@@ -1769,6 +1769,8 @@ vec3 gCam = vec3(0.0);
 float gPathAmp = 1.0;   // how far the path winds (a scene may shrink it)
 float gTube = 0.45;     // tube radius
 float gSide = 0.0;      // how far the gaze looks out of a side window (0 ahead .. 1): see gazeDir
+float gOrtho = 0.0;      // orthographic share of the gaze (6)
+vec3 gAxis = vec3(0.0, 0.0, 1.0);   // the view axis (world): the ortho slab is cut across it
 vec2 camPathXY(float z)
 {
     return gPathAmp * vec2(1.1 * sin(z * 0.11) + 0.4 * sin(z * 0.23 + 1.3), 0.8 * sin(z * 0.083 + 0.7) + 0.3 * cos(z * 0.19));
@@ -1784,6 +1786,10 @@ float fieldD(vec3 p)
     // showed from the side as a dark channel winding off.  The fade is gentle
     // (slope below 0.5, tube clamped at -1), so the distance stays conservative.
     if (gSide > 0.0) tube = mix(tube, -1.0, gSide * smoothstep(3.0, 6.0, abs(p.z - gCam.z)));
+    // The orthographic gaze starts its rays on a plane through the camera: a
+    // slab across the view axis is carved free, its far face is the
+    // cross-section the view shows.
+    if (gOrtho > 0.0) tube = max(tube, mix(-1.0, 0.35 - abs(dot(p - gCam, gAxis)), gOrtho));
     return max(smaxK(d, 0.8 * tube, 0.15), 0.3 - length(p - gCam));
 }
 // The camera frame at depth z: on the path, looking at the path ahead.
@@ -1802,31 +1808,58 @@ mat3 camFrame(float z, out vec3 ro)
 }
 // The gaze: where the camera looks relative to its flight.  Straight ahead
 // shows the vanishing point -- a dark opening the eye keeps flying into -- so
-// that is only one of five: 0 ahead, 1 out of the right window (the world
-// slides past with parallax, no vanishing point), 2 slanted down ahead, 3 out
-// of the left window, 4 slanted up.  The knob picks the first; the scene pans
-// on to the next every ~4 minutes (a ~1 minute pan) and the gaze drifts a
-// little.  Time only, never the music: the camera does not follow the audio.
-vec2 gazeAngles(float k)
+// that is only one of seven:
+//   0 ahead, 1 out of the right window (the world slides past with parallax),
+//   2 slanted down ahead, 3 out of the left window, 4 slanted up,
+//   5 floating (the flight nearly stops, the gaze turns slowly all round),
+//   6 an orthographic side view (parallel rays, no vanishing point at all:
+//     a cross-section through the world slides past, the depth behind it).
+// In the app the camera host (camHost) picks the gazes and integrates the
+// flight (camZ, slower in some gazes -- EffectShader::stepChainCam keeps the
+// speed table); elsewhere (editor renders) the knob picks the first gaze and
+// the scene pans on to the next every ~4 minutes.  Time only, never the music:
+// the camera does not follow the audio.
+uniform float camHost;   // 1: the app drives the camera (camZ, camGaze)
+uniform float camZ;      // the flight position along the path
+uniform vec3 camGaze;    // (gaze shown, gaze panned to, pan 0..1)
+// (yaw, pitch, ortho, carve the tube only near the camera)
+vec4 gazeAngles(float k, float time)
 {
-    float i = mod(k, 5.0);
-    if (i > 3.5) return vec2(-0.3, 0.75);
-    if (i > 2.5) return vec2(-1.35, 0.08);
-    if (i > 1.5) return vec2(0.35, -0.8);
-    if (i > 0.5) return vec2(1.35, -0.08);
-    return vec2(0.0);
+    float i = mod(k, 7.0);
+    // Never along a lattice axis: parallel rays grazing whole rows of bodies
+    // took the most march steps (39 fps orthographic straight across, 117 tilted).
+    if (i > 5.5) return vec4(1.2, 0.3, 1.0, 1.0);
+    if (i > 4.5) return vec4(0.035 * time, 0.35 + 0.2 * sin(0.019 * time), 0.0, 1.0);
+    if (i > 3.5) return vec4(-0.3, 0.75, 0.0, 0.0);
+    if (i > 2.5) return vec4(-1.35, 0.08, 0.0, 1.0);
+    if (i > 1.5) return vec4(0.35, -0.8, 0.0, 0.0);
+    if (i > 0.5) return vec4(1.35, -0.08, 0.0, 1.0);
+    return vec4(0.0);
 }
-vec3 gazeDir(vec2 p, float cam, float time)
+vec3 gazeTurn(vec3 v, vec2 a) { v.yz = rot2(a.y) * v.yz; v.xz = rot2(-a.x) * v.xz; return v; }
+// The camera's flight position (the app's integrated one, or gT).
+float camFlight(float gt) { return camHost > 0.5 ? camZ : gt; }
+// The ray of pixel p: its direction, and its origin moved off the camera for
+// the orthographic share (rays start on a plane through the camera).
+vec3 gazeDir(vec2 p, float cam, float time, mat3 cf, inout vec3 ro)
 {
-    float g = floor(clamp(cam, 0.0, 0.999) * 5.0) + 0.004 * time;
-    float k = floor(g), f = smoothstep(0.75, 1.0, fract(g));
-    vec2 a = mix(gazeAngles(k), gazeAngles(k + 1.0), f);   // (yaw, pitch)
-    a += vec2(0.12 * sin(0.031 * time), 0.08 * sin(0.023 * time + 1.0));
-    gSide = smoothstep(0.6, 1.2, abs(a.x));
-    vec3 d = normalize(vec3(p, 1.1));
-    d.yz = rot2(a.y) * d.yz;
-    d.xz = rot2(-a.x) * d.xz;
-    return d;
+    float k0, k1, f;
+    if (camHost > 0.5) {
+        k0 = camGaze.x; k1 = camGaze.y; f = smoothstep(0.0, 1.0, camGaze.z);
+    } else {
+        float g = floor(clamp(cam, 0.0, 0.999) * 7.0) + 0.004 * time;
+        k0 = floor(g); k1 = k0 + 1.0; f = smoothstep(0.75, 1.0, fract(g));
+    }
+    vec4 a0 = gazeAngles(k0, time), a1 = gazeAngles(k1, time);
+    a1.x += 6.2831853 * floor((a0.x - a1.x) / 6.2831853 + 0.5);   // pan the shorter way round
+    vec4 a = mix(a0, a1, f);
+    a.xy += (1.0 - a.z) * vec2(0.12 * sin(0.031 * time), 0.08 * sin(0.023 * time + 1.0));
+    gSide = a.w;
+    gOrtho = a.z;
+    vec3 ax = gazeTurn(vec3(0.0, 0.0, 1.0), a.xy);
+    gAxis = cf * ax;
+    ro += cf * gazeTurn(vec3(p, 0.0), a.xy) * (2.2 * gOrtho);
+    return cf * normalize(mix(gazeTurn(normalize(vec3(p, 1.1)), a.xy), ax, gOrtho));
 }
 vec3 normal3(vec3 p)
 {
@@ -1888,10 +1921,10 @@ void main()
     gRot = 0.02 * sceneTime + 0.2 * audioPhase;
     gSpread = clamp(audioSpread, 0.0, 1.0);
     vec3 ro;
-    mat3 cf = camFrame(gT, ro);
+    mat3 cf = camFrame(camFlight(gT), ro);
     gCam = ro;
     gTube = 0.4 + 0.15 * swell;                             // the carved tube breathes with the slow swell
-    vec3 rd = cf * gazeDir(p, camP, sceneTime);
+    vec3 rd = gazeDir(p, camP, sceneTime, cf, ro);
     float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0;
     for (int i = 0; i < 100; ++i) {
         d = fieldD(ro + rd * t);
