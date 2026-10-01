@@ -1847,9 +1847,95 @@ vec3 photo3(vec3 q, vec3 n, float lod)
 """
 
 
+def _stmt_end(src, i):
+    """End (exclusive) of the GLSL statement starting at i: a {block}, or up to ';' at depth 0."""
+    while src[i] in " \t\r\n":
+        i += 1
+    depth, j = 0, i
+    if src[i] == "{":
+        while True:
+            if src[j] == "{":
+                depth += 1
+            elif src[j] == "}":
+                depth -= 1
+                if depth == 0:
+                    return j + 1
+            j += 1
+    while True:
+        c = src[j]
+        if c in "([{":
+            depth += 1
+        elif c in ")]}":
+            depth -= 1
+        elif c == ";" and depth == 0:
+            return j + 1
+        j += 1
+
+def _skip(fn, k):
+    """Past whitespace and comments."""
+    while k < len(fn):
+        if fn[k] in " \t\r\n":
+            k += 1
+        elif fn.startswith("//", k):
+            e = fn.find("\n", k)
+            k = len(fn) if e < 0 else e + 1
+        elif fn.startswith("/*", k):
+            e = fn.find("*/", k)
+            k = len(fn) if e < 0 else e + 2
+        else:
+            break
+    return k
+
+def _select(fn, var, macro):
+    """The if / else-if chains on `var` in function text `fn` as a preprocessor
+    selection on `macro` (#if macro == N ... #elif ... #else default #endif):
+    a variant with the macro set keeps ONE branch in its source, so the driver
+    neither parses nor optimises the others."""
+    pat = re.compile(r"(?:else\s+)?if\s*\(\s*%s\s*==\s*(\d+)\s*\)" % var)
+    out, pos = [], 0
+    while True:
+        m = pat.search(fn, pos)
+        if not m:
+            out.append(fn[pos:])
+            return "".join(out)
+        out.append(fn[pos:m.start()])
+        branches, cur = [], m.start()
+        while True:
+            m2 = pat.match(fn, cur)
+            if not m2:
+                break
+            e = _stmt_end(fn, m2.end())
+            branches.append((int(m2.group(1)), fn[m2.end():e].strip()))
+            cur = e
+            k = _skip(fn, cur)
+            if pat.match(fn, k):
+                cur = k
+                continue
+            break
+        default = None
+        k = _skip(fn, cur)
+        if fn.startswith("else", k) and not pat.match(fn, k):
+            e = _stmt_end(fn, k + 4)
+            default, cur = fn[k + 4:e].strip(), e
+        elif fn.startswith("return", k):
+            e = _stmt_end(fn, k)
+            rest = fn[e:].strip()
+            if rest == "}":                              # the stage dispatch's trailing default
+                default, cur = fn[k:e].strip(), e
+        sel = []
+        for n, (idx, st) in enumerate(branches):
+            sel.append("#%s %s == %d\n    %s\n" % ("if" if n == 0 else "elif", macro, idx, st))
+        if default is not None:
+            sel.append("#else\n    %s\n" % default)
+        sel.append("#endif\n")
+        out.append("\n" + "".join(sel))
+        pos = cur
+
 def spec_variants(body):
-    """Chain labs: the dispatch functions twice more, with the class of the
-    specialised variant built in (see patch_spec2.py); the generic code stays."""
+    """Chain labs: the dispatch functions twice more, with the classes of the
+    specialised variant selected by the preprocessor (see patch_spec2.py and
+    the app's EffectShader::stepChainWalk); the generic functions are dropped
+    from a variant, so its source holds only the classes on screen."""
     if "int orda(" not in body:                            # not a chain lab
         return body
     def func_span(src, header):
@@ -1871,10 +1957,11 @@ def spec_variants(body):
         for w in "01":
             c = fn.replace(header, "vec2 stage%sk_%s(vec2 uv, float v)" % (st, w), 1)
             # the branch number directly: the ord if-chain is not folded by the driver
-            c, nk = re.subn(r"\n\{\n    k = ord[a-d]\(k\);\n", "\n{\n    int k = SPEC_%s%s;\n" % (st, w), c, count=1)
+            c, nk = re.subn(r"\n\{\n    k = ord[a-d]\(k\);\n", "\n{\n", c, count=1)
             assert nk == 1, st
-            copies += "\n" + c
-        body = body[:j] + "\n#ifdef SPEC_%s0%s\n#endif" % (st, copies) + body[j:]
+            c = _select(c, "k", "SPEC_%s%s" % (st, w))
+            copies += "\n" + c.rstrip()[:-1].rstrip() + "\n    return uv;\n}\n"
+        body = body[:i] + "#ifndef SPEC_%s0\n%s\n#else%s\n#endif" % (st, fn, copies) + body[j:]
         a = ("    vec2 r = stage%sk(uv, ka, va);\n    if (f > 0.0) r = morphMix(r, stage%sk(uv, kb, vb), f);\n" % (st, st))
         assert body.count(a) == 1, st
         body = body.replace(a, "#ifdef SPEC_%s0\n    vec2 r = stage%sk_0(uv, va);\n    if (f > 0.0) r = morphMix(r, stage%sk_1(uv, vb), f);\n#else\n%s#endif\n" % (st, st, st, a))
@@ -1888,8 +1975,11 @@ def spec_variants(body):
         for w in "01":
             c = fn.replace(header, "float fieldK_%s(vec3 p, float xs, float xc, float xb, int world)" % w, 1)
             c = c.replace(ov, "    ks = SPEC_SP%s; kc = SPEC_CO%s; kb = SPEC_BO%s;" % (w, w, w))
+            c = re.sub(r"#ifdef SPEC_SP0\n(    ks = SPEC_SP.*?\n)#endif\n", r"\1", c)
+            for var, mac in (("ks", "SPEC_SP"), ("kc", "SPEC_CO"), ("kb", "SPEC_BO")):
+                c = _select(c, var, mac + w)
             copies += "\n" + c
-        body = body[:j] + "\n#ifdef SPEC_SP0%s\n#endif" % copies + body[j:]
+        body = body[:i] + "#ifndef SPEC_SP0\n%s\n#else%s\n#endif" % (fn, copies) + body[j:]
         for w, a in (("0", "    float d0 = fieldK(p, xs, xc, xb, 0);\n"), ("1", "    float d1 = fieldK(p, ys, yc, yb, 1);\n")):
             assert body.count(a) == 1, a
             body = body.replace(a, "#ifdef SPEC_SP0\n%s#else\n%s#endif\n" % (a.replace("fieldK(", "fieldK_%s(" % w), a))

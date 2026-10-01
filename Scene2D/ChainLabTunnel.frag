@@ -1605,6 +1605,7 @@ uniform vec3 walkA, walkB, walkC, walkD, walkS;
 uniform float walkHost;
 
 // Stage A: a global map.
+#ifndef SPEC_A0
 vec2 stageAk(vec2 uv, int k, float v)
 {
     k = orda(k);
@@ -1644,87 +1645,152 @@ vec2 stageAk(vec2 uv, int k, float v)
     if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
     return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
 }
-#ifdef SPEC_A0
+#else
 vec2 stageAk_0(vec2 uv, float v)
 {
-    int k = SPEC_A0;
-    if (k == 43) return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gTC * 0.3), gTC * 0.4 + gRot);
-    if (k == 44) return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gTC * 0.3) + 0.8, gTC * 0.4 + gRot);
-    if (k == 48) return tChebyshev(uv, gCw, 3.0 + floor(v * 3.99), 1.4 + 0.6 * sin(gTC * 0.2));
-    if (k == 52) return tCassini(uv, gCt, 0.6 + 0.4 * sin(gTC * 0.25), gTC * 1.2);
-    if (k == 31) return tHypFlow(uv, gCw, v * 3.0, gTC * 0.8);
-    if (k == 33) return tBiDroste(uv, gCt, 0.2 + 0.1 * v, 2.5 + 2.0 * v, gTC * 0.5);
-    if (k == 34) return tHypSpiral(uv, gCt, 0.08 + 0.06 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
-    if (k == 39) return tParabCoords(uv, gCt, 6.0 + 6.0 * v, gTC * 1.5);
-    if (k == 40) return tCardioid(uv, gCw, 2.5 + v, gTC);
-    if (k == 41) return tSunflower(uv, gCt, 1.0 + floor(v * 3.99), 2.0 + floor(fract(v * 4.0) * 2.99), gTC * 0.6);
-    if (k == 42) return tBreathSphere(uv, gCw, 2.0 + floor(v * 3.99), gTC);
-    if (k == 29) return tArchimedes(uv, gCt, 4.0 + 6.0 * v, gTC * 2.0);
-    if (k == 19) return tParabolic(uv, gCw, 0.8 + 0.6 * v, gTC * 0.8);
-    if (k == 20) return tElliptic(uv, gCt, 0.15 + 0.1 * v, gTC * 1.5);
-    if (k == 21) return tTanLattice(uv, gCw, 2.5 + 2.0 * v);
-    if (k == 16) return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gTC * 0.6);
-    if (k == 13) {
+    
+#if SPEC_A0 == 43
+    return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gTC * 0.3), gTC * 0.4 + gRot);
+#elif SPEC_A0 == 44
+    return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gTC * 0.3) + 0.8, gTC * 0.4 + gRot);
+#elif SPEC_A0 == 48
+    return tChebyshev(uv, gCw, 3.0 + floor(v * 3.99), 1.4 + 0.6 * sin(gTC * 0.2));
+#elif SPEC_A0 == 52
+    return tCassini(uv, gCt, 0.6 + 0.4 * sin(gTC * 0.25), gTC * 1.2);
+#elif SPEC_A0 == 31
+    return tHypFlow(uv, gCw, v * 3.0, gTC * 0.8);
+#elif SPEC_A0 == 33
+    return tBiDroste(uv, gCt, 0.2 + 0.1 * v, 2.5 + 2.0 * v, gTC * 0.5);
+#elif SPEC_A0 == 34
+    return tHypSpiral(uv, gCt, 0.08 + 0.06 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
+#elif SPEC_A0 == 39
+    return tParabCoords(uv, gCt, 6.0 + 6.0 * v, gTC * 1.5);
+#elif SPEC_A0 == 40
+    return tCardioid(uv, gCw, 2.5 + v, gTC);
+#elif SPEC_A0 == 41
+    return tSunflower(uv, gCt, 1.0 + floor(v * 3.99), 2.0 + floor(fract(v * 4.0) * 2.99), gTC * 0.6);
+#elif SPEC_A0 == 42
+    return tBreathSphere(uv, gCw, 2.0 + floor(v * 3.99), gTC);
+#elif SPEC_A0 == 29
+    return tArchimedes(uv, gCt, 4.0 + 6.0 * v, gTC * 2.0);
+#elif SPEC_A0 == 19
+    return tParabolic(uv, gCw, 0.8 + 0.6 * v, gTC * 0.8);
+#elif SPEC_A0 == 20
+    return tElliptic(uv, gCt, 0.15 + 0.1 * v, gTC * 1.5);
+#elif SPEC_A0 == 21
+    return tTanLattice(uv, gCw, 2.5 + 2.0 * v);
+#elif SPEC_A0 == 16
+    return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gTC * 0.6);
+#elif SPEC_A0 == 13
+    {
         vec2 pa = gCw + 0.25 * vec2(cos(gTC * 0.3), sin(gTC * 0.3)), pb = gCw - 0.25 * vec2(cos(gTC * 0.3), sin(gTC * 0.3));
         return tLoxo(uv, pa, pb, 1.0 + floor(v * 2.99), gTC * 2.0);
     }
-    if (k == 11) return uv;                                  // none: the chain starts at stage B
-    if (k == 12) return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gTC * 0.4) + v * 3.0, gTC * 0.8 + gRot);
-    if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
-    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gTC * 2.0);
-    if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gTC * 3.0);
-    if (k == 3) {
+#elif SPEC_A0 == 11
+    return uv;
+#elif SPEC_A0 == 12
+    return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gTC * 0.4) + v * 3.0, gTC * 0.8 + gRot);
+#elif SPEC_A0 == 0
+    return tKaleido(uv, gCw, sides(v), gRot);
+#elif SPEC_A0 == 1
+    return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gTC * 2.0);
+#elif SPEC_A0 == 2
+    return tTunnel(uv, gCt, 0.2 + 0.1 * v, gTC * 3.0);
+#elif SPEC_A0 == 3
+    {
         vec2 pa = vec2(0.5) + 0.3 * vec2(sin(gTC), cos(gTC * 0.7)), pb = vec2(0.5) - 0.3 * vec2(sin(gTC * 0.8), cos(gTC));
         return tMobius(uv, pa, pb, 0.25 + 0.2 * gSpread);
     }
-    if (k == 4) return tDroste(uv, gCt, 2.0 + floor(v * 2.99), gTC * 1.5);
-    if (k == 5) return tPolar(uv, gCt, 1.2 + 0.8 * v);
-    if (k == 6) return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
-    if (k == 7) return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
-    if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+#elif SPEC_A0 == 4
+    return tDroste(uv, gCt, 2.0 + floor(v * 2.99), gTC * 1.5);
+#elif SPEC_A0 == 5
+    return tPolar(uv, gCt, 1.2 + 0.8 * v);
+#elif SPEC_A0 == 6
+    return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
+#elif SPEC_A0 == 7
+    return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
+#elif SPEC_A0 == 8
+    return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+#else
     return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
+#endif
+    return uv;
 }
+
 vec2 stageAk_1(vec2 uv, float v)
 {
-    int k = SPEC_A1;
-    if (k == 43) return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gTC * 0.3), gTC * 0.4 + gRot);
-    if (k == 44) return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gTC * 0.3) + 0.8, gTC * 0.4 + gRot);
-    if (k == 48) return tChebyshev(uv, gCw, 3.0 + floor(v * 3.99), 1.4 + 0.6 * sin(gTC * 0.2));
-    if (k == 52) return tCassini(uv, gCt, 0.6 + 0.4 * sin(gTC * 0.25), gTC * 1.2);
-    if (k == 31) return tHypFlow(uv, gCw, v * 3.0, gTC * 0.8);
-    if (k == 33) return tBiDroste(uv, gCt, 0.2 + 0.1 * v, 2.5 + 2.0 * v, gTC * 0.5);
-    if (k == 34) return tHypSpiral(uv, gCt, 0.08 + 0.06 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
-    if (k == 39) return tParabCoords(uv, gCt, 6.0 + 6.0 * v, gTC * 1.5);
-    if (k == 40) return tCardioid(uv, gCw, 2.5 + v, gTC);
-    if (k == 41) return tSunflower(uv, gCt, 1.0 + floor(v * 3.99), 2.0 + floor(fract(v * 4.0) * 2.99), gTC * 0.6);
-    if (k == 42) return tBreathSphere(uv, gCw, 2.0 + floor(v * 3.99), gTC);
-    if (k == 29) return tArchimedes(uv, gCt, 4.0 + 6.0 * v, gTC * 2.0);
-    if (k == 19) return tParabolic(uv, gCw, 0.8 + 0.6 * v, gTC * 0.8);
-    if (k == 20) return tElliptic(uv, gCt, 0.15 + 0.1 * v, gTC * 1.5);
-    if (k == 21) return tTanLattice(uv, gCw, 2.5 + 2.0 * v);
-    if (k == 16) return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gTC * 0.6);
-    if (k == 13) {
+    
+#if SPEC_A1 == 43
+    return tLittlePlanet(uv, gCw, 2.0 + 1.5 * v, 0.6 * sin(gTC * 0.3), gTC * 0.4 + gRot);
+#elif SPEC_A1 == 44
+    return tMercator(uv, gCw, 1.2 + 0.8 * v, 0.5 * sin(gTC * 0.3) + 0.8, gTC * 0.4 + gRot);
+#elif SPEC_A1 == 48
+    return tChebyshev(uv, gCw, 3.0 + floor(v * 3.99), 1.4 + 0.6 * sin(gTC * 0.2));
+#elif SPEC_A1 == 52
+    return tCassini(uv, gCt, 0.6 + 0.4 * sin(gTC * 0.25), gTC * 1.2);
+#elif SPEC_A1 == 31
+    return tHypFlow(uv, gCw, v * 3.0, gTC * 0.8);
+#elif SPEC_A1 == 33
+    return tBiDroste(uv, gCt, 0.2 + 0.1 * v, 2.5 + 2.0 * v, gTC * 0.5);
+#elif SPEC_A1 == 34
+    return tHypSpiral(uv, gCt, 0.08 + 0.06 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
+#elif SPEC_A1 == 39
+    return tParabCoords(uv, gCt, 6.0 + 6.0 * v, gTC * 1.5);
+#elif SPEC_A1 == 40
+    return tCardioid(uv, gCw, 2.5 + v, gTC);
+#elif SPEC_A1 == 41
+    return tSunflower(uv, gCt, 1.0 + floor(v * 3.99), 2.0 + floor(fract(v * 4.0) * 2.99), gTC * 0.6);
+#elif SPEC_A1 == 42
+    return tBreathSphere(uv, gCw, 2.0 + floor(v * 3.99), gTC);
+#elif SPEC_A1 == 29
+    return tArchimedes(uv, gCt, 4.0 + 6.0 * v, gTC * 2.0);
+#elif SPEC_A1 == 19
+    return tParabolic(uv, gCw, 0.8 + 0.6 * v, gTC * 0.8);
+#elif SPEC_A1 == 20
+    return tElliptic(uv, gCt, 0.15 + 0.1 * v, gTC * 1.5);
+#elif SPEC_A1 == 21
+    return tTanLattice(uv, gCw, 2.5 + 2.0 * v);
+#elif SPEC_A1 == 16
+    return tDrosteSpiral(uv, gCt, 2.5 + 3.5 * v, gTC * 0.6);
+#elif SPEC_A1 == 13
+    {
         vec2 pa = gCw + 0.25 * vec2(cos(gTC * 0.3), sin(gTC * 0.3)), pb = gCw - 0.25 * vec2(cos(gTC * 0.3), sin(gTC * 0.3));
         return tLoxo(uv, pa, pb, 1.0 + floor(v * 2.99), gTC * 2.0);
     }
-    if (k == 11) return uv;                                  // none: the chain starts at stage B
-    if (k == 12) return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gTC * 0.4) + v * 3.0, gTC * 0.8 + gRot);
-    if (k == 0) return tKaleido(uv, gCw, sides(v), gRot);
-    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gTC * 2.0);
-    if (k == 2) return tTunnel(uv, gCt, 0.2 + 0.1 * v, gTC * 3.0);
-    if (k == 3) {
+#elif SPEC_A1 == 11
+    return uv;
+#elif SPEC_A1 == 12
+    return tRiemann(uv, gCw, 2.0 + 1.5 * v, 0.7 * sin(gTC * 0.4) + v * 3.0, gTC * 0.8 + gRot);
+#elif SPEC_A1 == 0
+    return tKaleido(uv, gCw, sides(v), gRot);
+#elif SPEC_A1 == 1
+    return tSpiral(uv, vec2(0.5), evenArms(v), 0.8 + 0.4 * v, gTC * 2.0);
+#elif SPEC_A1 == 2
+    return tTunnel(uv, gCt, 0.2 + 0.1 * v, gTC * 3.0);
+#elif SPEC_A1 == 3
+    {
         vec2 pa = vec2(0.5) + 0.3 * vec2(sin(gTC), cos(gTC * 0.7)), pb = vec2(0.5) - 0.3 * vec2(sin(gTC * 0.8), cos(gTC));
         return tMobius(uv, pa, pb, 0.25 + 0.2 * gSpread);
     }
-    if (k == 4) return tDroste(uv, gCt, 2.0 + floor(v * 2.99), gTC * 1.5);
-    if (k == 5) return tPolar(uv, gCt, 1.2 + 0.8 * v);
-    if (k == 6) return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
-    if (k == 7) return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
-    if (k == 8) return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+#elif SPEC_A1 == 4
+    return tDroste(uv, gCt, 2.0 + floor(v * 2.99), gTC * 1.5);
+#elif SPEC_A1 == 5
+    return tPolar(uv, gCt, 1.2 + 0.8 * v);
+#elif SPEC_A1 == 6
+    return tExp(uv, gCw, 3.0 + 1.5 * v + 1.5 * gSpread);
+#elif SPEC_A1 == 7
+    return tSin(uv, gCw, 3.5 + 1.5 * v + 1.5 * gSpread);
+#elif SPEC_A1 == 8
+    return tInvert(uv, gCw, 0.22 + 0.08 * v + 0.1 * gSpread);
+#else
     return tBipolar(uv, gCt, 0.15 + 0.1 * v, 1.0 + floor(v * 2.99), gTC * 2.0);
+#endif
+    return uv;
 }
+
 #endif
 // Stage B: a symmetry.
+#ifndef SPEC_B0
 vec2 stageBk(vec2 uv, int k, float v)
 {
     k = ordb(k);
@@ -1741,41 +1807,72 @@ vec2 stageBk(vec2 uv, int k, float v)
     if (k == 4) return tFold(uv, 0.4 + 0.3 * sin(gTC), 1.2 + 0.1 * v, 3.0);
     return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
 }
-#ifdef SPEC_B0
+#else
 vec2 stageBk_0(vec2 uv, float v)
 {
-    int k = SPEC_B0;
-    if (k == 18) return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
-    if (k == 19) return tPappus(uv, gCw, 0.25 + 0.2 * v, gTC * 0.5);
-    if (k == 20) return tOrigami(uv, gCw, 2.0 + floor(v * 2.99), gTC);
-    if (k == 21) return tSteiner(uv, gCw, sides(v), gRot);
-    if (k == 22) return tSpiralKaleido(uv, gCw, sides(v), 1.0 + 1.5 * sin(gTC * 0.2), gRot);
-    if (k == 10) return tCurvedKaleido(uv, gCw, sides(v), gRot, 0.4 * vec2(sin(gTC * 0.3), cos(gTC * 0.23)));
-    if (k == 0) return uv;
-    if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
-    if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
-    if (k == 3) return tP4m(uv, 2.0 + 1.5 * v);
-    if (k == 4) return tFold(uv, 0.4 + 0.3 * sin(gTC), 1.2 + 0.1 * v, 3.0);
+    
+#if SPEC_B0 == 18
+    return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
+#elif SPEC_B0 == 19
+    return tPappus(uv, gCw, 0.25 + 0.2 * v, gTC * 0.5);
+#elif SPEC_B0 == 20
+    return tOrigami(uv, gCw, 2.0 + floor(v * 2.99), gTC);
+#elif SPEC_B0 == 21
+    return tSteiner(uv, gCw, sides(v), gRot);
+#elif SPEC_B0 == 22
+    return tSpiralKaleido(uv, gCw, sides(v), 1.0 + 1.5 * sin(gTC * 0.2), gRot);
+#elif SPEC_B0 == 10
+    return tCurvedKaleido(uv, gCw, sides(v), gRot, 0.4 * vec2(sin(gTC * 0.3), cos(gTC * 0.23)));
+#elif SPEC_B0 == 0
+    return uv;
+#elif SPEC_B0 == 1
+    return tKaleido(uv, gCw, sides(v), gRot);
+#elif SPEC_B0 == 2
+    return tHex(uv, 2.0 + 1.5 * v);
+#elif SPEC_B0 == 3
+    return tP4m(uv, 2.0 + 1.5 * v);
+#elif SPEC_B0 == 4
+    return tFold(uv, 0.4 + 0.3 * sin(gTC), 1.2 + 0.1 * v, 3.0);
+#else
     return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
+#endif
+    return uv;
 }
+
 vec2 stageBk_1(vec2 uv, float v)
 {
-    int k = SPEC_B1;
-    if (k == 18) return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
-    if (k == 19) return tPappus(uv, gCw, 0.25 + 0.2 * v, gTC * 0.5);
-    if (k == 20) return tOrigami(uv, gCw, 2.0 + floor(v * 2.99), gTC);
-    if (k == 21) return tSteiner(uv, gCw, sides(v), gRot);
-    if (k == 22) return tSpiralKaleido(uv, gCw, sides(v), 1.0 + 1.5 * sin(gTC * 0.2), gRot);
-    if (k == 10) return tCurvedKaleido(uv, gCw, sides(v), gRot, 0.4 * vec2(sin(gTC * 0.3), cos(gTC * 0.23)));
-    if (k == 0) return uv;
-    if (k == 1) return tKaleido(uv, gCw, sides(v), gRot);
-    if (k == 2) return tHex(uv, 2.0 + 1.5 * v);
-    if (k == 3) return tP4m(uv, 2.0 + 1.5 * v);
-    if (k == 4) return tFold(uv, 0.4 + 0.3 * sin(gTC), 1.2 + 0.1 * v, 3.0);
+    
+#if SPEC_B1 == 18
+    return tTriMirror(uv, gCw, 2.0 + 1.5 * v, gRot);
+#elif SPEC_B1 == 19
+    return tPappus(uv, gCw, 0.25 + 0.2 * v, gTC * 0.5);
+#elif SPEC_B1 == 20
+    return tOrigami(uv, gCw, 2.0 + floor(v * 2.99), gTC);
+#elif SPEC_B1 == 21
+    return tSteiner(uv, gCw, sides(v), gRot);
+#elif SPEC_B1 == 22
+    return tSpiralKaleido(uv, gCw, sides(v), 1.0 + 1.5 * sin(gTC * 0.2), gRot);
+#elif SPEC_B1 == 10
+    return tCurvedKaleido(uv, gCw, sides(v), gRot, 0.4 * vec2(sin(gTC * 0.3), cos(gTC * 0.23)));
+#elif SPEC_B1 == 0
+    return uv;
+#elif SPEC_B1 == 1
+    return tKaleido(uv, gCw, sides(v), gRot);
+#elif SPEC_B1 == 2
+    return tHex(uv, 2.0 + 1.5 * v);
+#elif SPEC_B1 == 3
+    return tP4m(uv, 2.0 + 1.5 * v);
+#elif SPEC_B1 == 4
+    return tFold(uv, 0.4 + 0.3 * sin(gTC), 1.2 + 0.1 * v, 3.0);
+#else
     return tMirrorLine(uv, vec2(0.5), gRot * 2.0 + v * 3.14);
+#endif
+    return uv;
 }
+
 #endif
 // Stage C: a second global map.
+#ifndef SPEC_C0
 vec2 stageCk(vec2 uv, int k, float v)
 {
     k = ordc(k);
@@ -1798,53 +1895,96 @@ vec2 stageCk(vec2 uv, int k, float v)
     if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
     return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gTC * 0.4) + 0.1 * v, 2.0);
 }
-#ifdef SPEC_C0
+#else
 vec2 stageCk_0(vec2 uv, float v)
 {
-    int k = SPEC_C0;
-    if (k == 13) return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gTC * 0.4), cos(gTC * 0.31)));
-    if (k == 14) return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gTC * 0.5);
-    if (k == 15) return tBoost(uv, gCw, 0.6 * sin(gTC * 0.3 + v * 6.28));
-    if (k == 16) return tLogVortex(uv, gCw, 0.5 + 1.0 * sin(gTC * 0.2));
-    if (k == 17) return tZoneLens(uv, gCw, 0.15 + 0.1 * v, 30.0 + 20.0 * v);
-    if (k == 11) return tCayley(uv, gCw, 2.0 + 2.0 * v);
-    if (k == 12) return tFisheye(uv, gCw, 0.6 + 0.8 * v + 0.2 * sin(gTC * 0.3));
-    if (k == 10) return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gTC * 0.3))   /* 0.5: the square-root fold */;
-    if (k == 9) return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gTC * 1.5);
-    if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gTC * 2.0);
-    if (k == 0) return uv;
-    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gTC * 1.5);
-    if (k == 2) return tTunnel(uv, gCt, 0.25, gTC * 2.5);
-    if (k == 3) return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
-    if (k == 4) return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
-    if (k == 5) return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gTC));
-    if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    
+#if SPEC_C0 == 13
+    return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gTC * 0.4), cos(gTC * 0.31)));
+#elif SPEC_C0 == 14
+    return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gTC * 0.5);
+#elif SPEC_C0 == 15
+    return tBoost(uv, gCw, 0.6 * sin(gTC * 0.3 + v * 6.28));
+#elif SPEC_C0 == 16
+    return tLogVortex(uv, gCw, 0.5 + 1.0 * sin(gTC * 0.2));
+#elif SPEC_C0 == 17
+    return tZoneLens(uv, gCw, 0.15 + 0.1 * v, 30.0 + 20.0 * v);
+#elif SPEC_C0 == 11
+    return tCayley(uv, gCw, 2.0 + 2.0 * v);
+#elif SPEC_C0 == 12
+    return tFisheye(uv, gCw, 0.6 + 0.8 * v + 0.2 * sin(gTC * 0.3));
+#elif SPEC_C0 == 10
+    return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gTC * 0.3))   /* 0.5: the square-root fold */;
+#elif SPEC_C0 == 9
+    return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gTC * 1.5);
+#elif SPEC_C0 == 8
+    return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gTC * 2.0);
+#elif SPEC_C0 == 0
+    return uv;
+#elif SPEC_C0 == 1
+    return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gTC * 1.5);
+#elif SPEC_C0 == 2
+    return tTunnel(uv, gCt, 0.25, gTC * 2.5);
+#elif SPEC_C0 == 3
+    return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
+#elif SPEC_C0 == 4
+    return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
+#elif SPEC_C0 == 5
+    return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gTC));
+#elif SPEC_C0 == 6
+    return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+#else
     return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gTC * 0.4) + 0.1 * v, 2.0);
+#endif
+    return uv;
 }
+
 vec2 stageCk_1(vec2 uv, float v)
 {
-    int k = SPEC_C1;
-    if (k == 13) return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gTC * 0.4), cos(gTC * 0.31)));
-    if (k == 14) return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gTC * 0.5);
-    if (k == 15) return tBoost(uv, gCw, 0.6 * sin(gTC * 0.3 + v * 6.28));
-    if (k == 16) return tLogVortex(uv, gCw, 0.5 + 1.0 * sin(gTC * 0.2));
-    if (k == 17) return tZoneLens(uv, gCw, 0.15 + 0.1 * v, 30.0 + 20.0 * v);
-    if (k == 11) return tCayley(uv, gCw, 2.0 + 2.0 * v);
-    if (k == 12) return tFisheye(uv, gCw, 0.6 + 0.8 * v + 0.2 * sin(gTC * 0.3));
-    if (k == 10) return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gTC * 0.3))   /* 0.5: the square-root fold */;
-    if (k == 9) return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gTC * 1.5);
-    if (k == 8) return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gTC * 2.0);
-    if (k == 0) return uv;
-    if (k == 1) return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gTC * 1.5);
-    if (k == 2) return tTunnel(uv, gCt, 0.25, gTC * 2.5);
-    if (k == 3) return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
-    if (k == 4) return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
-    if (k == 5) return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gTC));
-    if (k == 6) return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+    
+#if SPEC_C1 == 13
+    return tGravLens(uv, gCw, 0.12 + 0.06 * v, 0.2 * vec2(sin(gTC * 0.4), cos(gTC * 0.31)));
+#elif SPEC_C1 == 14
+    return tBinaryLens(uv, gCw, 0.1 + 0.05 * v, gTC * 0.5);
+#elif SPEC_C1 == 15
+    return tBoost(uv, gCw, 0.6 * sin(gTC * 0.3 + v * 6.28));
+#elif SPEC_C1 == 16
+    return tLogVortex(uv, gCw, 0.5 + 1.0 * sin(gTC * 0.2));
+#elif SPEC_C1 == 17
+    return tZoneLens(uv, gCw, 0.15 + 0.1 * v, 30.0 + 20.0 * v);
+#elif SPEC_C1 == 11
+    return tCayley(uv, gCw, 2.0 + 2.0 * v);
+#elif SPEC_C1 == 12
+    return tFisheye(uv, gCw, 0.6 + 0.8 * v + 0.2 * sin(gTC * 0.3));
+#elif SPEC_C1 == 10
+    return tPowerMirror(uv, gCw, 0.5 + 2.3 * v + 0.3 * sin(gTC * 0.3))   /* 0.5: the square-root fold */;
+#elif SPEC_C1 == 9
+    return tRosette(uv, gCw, 3.0 + floor(v * 5.99), fract(v * 6.0) < 0.5 ? 0.0 : 1.0, gTC * 1.5);
+#elif SPEC_C1 == 8
+    return tPetal(uv, gCw, 3.0 + floor(v * 5.99), 0.15 + 0.2 * gSpread, gTC * 2.0);
+#elif SPEC_C1 == 0
+    return uv;
+#elif SPEC_C1 == 1
+    return tSpiral(uv, vec2(0.5), evenArms(v), 1.0, gTC * 1.5);
+#elif SPEC_C1 == 2
+    return tTunnel(uv, gCt, 0.25, gTC * 2.5);
+#elif SPEC_C1 == 3
+    return tInvert(uv, gCw, 0.28 + 0.1 * gSpread);
+#elif SPEC_C1 == 4
+    return tSquare(uv, gCw, 1.4 + 0.4 * v + 0.6 * gSpread);
+#elif SPEC_C1 == 5
+    return tLens(uv, gCw, 0.35 + 0.15 * v, 0.4 + 0.4 * sin(gTC));
+#elif SPEC_C1 == 6
+    return tKaleido(uv, vec2(0.5), sides(v), -gRot);
+#else
     return tJoukowski(uv, gCw, 0.5 + 0.2 * sin(gTC * 0.4) + 0.1 * v, 2.0);
+#endif
+    return uv;
 }
+
 #endif
 // Stage D: a warp.
+#ifndef SPEC_D0
 vec2 stageDk(vec2 uv, int k, float v)
 {
     k = ordd(k);
@@ -1863,43 +2003,77 @@ vec2 stageDk(vec2 uv, int k, float v)
     if (k == 3) return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gTC * 8.0);
     return tRot(uv, vec2(0.5), 0.5 * sin(gTC * 0.3 + v * 6.28));
 }
-#ifdef SPEC_D0
+#else
 vec2 stageDk_0(vec2 uv, float v)
 {
-    int k = SPEC_D0;
-    if (k == 15) return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gTC * 2.0);
-    if (k == 18) return tConvection(uv, 20.0 + 10.0 * v, 1.0 + gSpread, gTC * 2.0);
-    if (k == 19) return tGerstner(uv, 1.0 + gSpread, gTC * 3.0);
-    if (k == 10) return tCylinderFlow(uv, gCw, 1.0 + gSpread, 0.5 * sin(gTC * 0.3));
-    if (k == 11) return tDipole(uv, gCw, 1.0 + gSpread, gTC);
-    if (k == 12) return tVortexPair(uv, gCw, 2.0 + 2.0 * gSpread, gTC);
-    if (k == 13) return tInterference(uv, 40.0 + 20.0 * v, 1.0 + gSpread, gTC * 2.0);
-    if (k == 14) return tKelvinHelmholtz(uv, 1.0 + gSpread, gTC);
-    if (k == 8) return tBend(uv, 1.8 * sin(gTC * 0.4 + v * 6.28));
-    if (k == 0) return uv;
-    if (k == 1) return tTwirl(uv, gCw, 2.5 * sin(gTC * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
-    if (k == 2) return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gTC * 4.0);
-    if (k == 3) return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gTC * 8.0);
+    
+#if SPEC_D0 == 15
+    return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gTC * 2.0);
+#elif SPEC_D0 == 18
+    return tConvection(uv, 20.0 + 10.0 * v, 1.0 + gSpread, gTC * 2.0);
+#elif SPEC_D0 == 19
+    return tGerstner(uv, 1.0 + gSpread, gTC * 3.0);
+#elif SPEC_D0 == 10
+    return tCylinderFlow(uv, gCw, 1.0 + gSpread, 0.5 * sin(gTC * 0.3));
+#elif SPEC_D0 == 11
+    return tDipole(uv, gCw, 1.0 + gSpread, gTC);
+#elif SPEC_D0 == 12
+    return tVortexPair(uv, gCw, 2.0 + 2.0 * gSpread, gTC);
+#elif SPEC_D0 == 13
+    return tInterference(uv, 40.0 + 20.0 * v, 1.0 + gSpread, gTC * 2.0);
+#elif SPEC_D0 == 14
+    return tKelvinHelmholtz(uv, 1.0 + gSpread, gTC);
+#elif SPEC_D0 == 8
+    return tBend(uv, 1.8 * sin(gTC * 0.4 + v * 6.28));
+#elif SPEC_D0 == 0
+    return uv;
+#elif SPEC_D0 == 1
+    return tTwirl(uv, gCw, 2.5 * sin(gTC * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
+#elif SPEC_D0 == 2
+    return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gTC * 4.0);
+#elif SPEC_D0 == 3
+    return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gTC * 8.0);
+#else
     return tRot(uv, vec2(0.5), 0.5 * sin(gTC * 0.3 + v * 6.28));
+#endif
+    return uv;
 }
+
 vec2 stageDk_1(vec2 uv, float v)
 {
-    int k = SPEC_D1;
-    if (k == 15) return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gTC * 2.0);
-    if (k == 18) return tConvection(uv, 20.0 + 10.0 * v, 1.0 + gSpread, gTC * 2.0);
-    if (k == 19) return tGerstner(uv, 1.0 + gSpread, gTC * 3.0);
-    if (k == 10) return tCylinderFlow(uv, gCw, 1.0 + gSpread, 0.5 * sin(gTC * 0.3));
-    if (k == 11) return tDipole(uv, gCw, 1.0 + gSpread, gTC);
-    if (k == 12) return tVortexPair(uv, gCw, 2.0 + 2.0 * gSpread, gTC);
-    if (k == 13) return tInterference(uv, 40.0 + 20.0 * v, 1.0 + gSpread, gTC * 2.0);
-    if (k == 14) return tKelvinHelmholtz(uv, 1.0 + gSpread, gTC);
-    if (k == 8) return tBend(uv, 1.8 * sin(gTC * 0.4 + v * 6.28));
-    if (k == 0) return uv;
-    if (k == 1) return tTwirl(uv, gCw, 2.5 * sin(gTC * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
-    if (k == 2) return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gTC * 4.0);
-    if (k == 3) return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gTC * 8.0);
+    
+#if SPEC_D1 == 15
+    return tGravWave(uv, gCw, 0.4 + 0.6 * gSpread, gTC * 2.0);
+#elif SPEC_D1 == 18
+    return tConvection(uv, 20.0 + 10.0 * v, 1.0 + gSpread, gTC * 2.0);
+#elif SPEC_D1 == 19
+    return tGerstner(uv, 1.0 + gSpread, gTC * 3.0);
+#elif SPEC_D1 == 10
+    return tCylinderFlow(uv, gCw, 1.0 + gSpread, 0.5 * sin(gTC * 0.3));
+#elif SPEC_D1 == 11
+    return tDipole(uv, gCw, 1.0 + gSpread, gTC);
+#elif SPEC_D1 == 12
+    return tVortexPair(uv, gCw, 2.0 + 2.0 * gSpread, gTC);
+#elif SPEC_D1 == 13
+    return tInterference(uv, 40.0 + 20.0 * v, 1.0 + gSpread, gTC * 2.0);
+#elif SPEC_D1 == 14
+    return tKelvinHelmholtz(uv, 1.0 + gSpread, gTC);
+#elif SPEC_D1 == 8
+    return tBend(uv, 1.8 * sin(gTC * 0.4 + v * 6.28));
+#elif SPEC_D1 == 0
+    return uv;
+#elif SPEC_D1 == 1
+    return tTwirl(uv, gCw, 2.5 * sin(gTC * 0.6), 0.3 + 0.1 * v + 0.2 * gSpread);
+#elif SPEC_D1 == 2
+    return tWave(uv, 6.0 + 4.0 * v, 0.02 + 0.04 * gSpread, gTC * 4.0);
+#elif SPEC_D1 == 3
+    return tRipple(uv, gCt, 25.0 + 15.0 * v, 0.01 + 0.03 * gSpread, gTC * 8.0);
+#else
     return tRot(uv, vec2(0.5), 0.5 * sin(gTC * 0.3 + v * 6.28));
+#endif
+    return uv;
 }
+
 #endif
 
 // Chain walk.  morphP is rolled once per start:
