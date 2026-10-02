@@ -417,6 +417,11 @@ void EffectShader::initUniforms(int width, int height)
 	m_width = width;
 	m_height = height;
 
+	// A 3D lab forges its geometry variants: start the helper while this lab is
+	// being prepared (the warm-up), not in its first frames -- its own GL
+	// context costs the app a short stutter (ShaderForge.h).
+	if( m_chain3D ) shaderForgeStartHelper();
+
 	// Entry drain: whatever this reports happened BEFORE initUniforms, not in
 	// it. The old label ("loadShader 1") read as an accusation against the
 	// shader being loaded and cost real time chasing that.

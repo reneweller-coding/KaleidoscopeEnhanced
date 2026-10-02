@@ -31,6 +31,15 @@ bool   shaderForgeInit();
 /// @return True once shaderForgeInit() found a helper and a cache directory.
 bool   shaderForgeAvailable();
 /**
+ * @brief Starts the helper process now (no-op if it runs or the forge is off).
+ *
+ * Called when a preset with a forging lab (the 3D chain labs) is loaded, so
+ * the helper's start -- a GL context of its own, a short stutter -- falls
+ * into the preset load, not into the lab's first frames, and apps whose
+ * presets never forge do not start it at all.
+ */
+void   shaderForgeStartHelper();
+/**
  * @brief The program for this fragment source (with the shared fullscreen vertex shader).
  *
  * From the disk cache if it is there (loaded now, a few ms), else the build

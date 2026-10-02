@@ -10,6 +10,10 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QProcess>
 #include <QtCore/QElapsedTimer>
+#include <QtCore/QDateTime>
+#include <QtCore/QDirIterator>
+#include <algorithm>
+#include <vector>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -79,6 +83,47 @@ QProcess *server()
 	return s_server;
 }
 
+/**
+ * @brief Keeps the cache below a size: removes the binaries used longest ago (and leftovers).
+ *
+ * A binary's modification time is refreshed whenever it is loaded, so it
+ * tells when a program was last used.  Leftovers: .tmp files of an
+ * interrupted build, .frag job files whose result is there, stray .err files
+ * older than a week (a fixed shader gets a new key anyway).
+ * @param dir The cache directory.
+ * @param limitBytes The size it may keep.
+ */
+void trimCache( const QString &dir, qint64 limitBytes )
+{
+	struct Item { QString path; qint64 size; QDateTime used; };
+	std::vector<Item> bins;
+	qint64 total = 0;
+	int removed = 0;
+	const QDateTime weekAgo = QDateTime::currentDateTime().addDays( -7 );
+	for( QDirIterator it( dir, QDir::Files ); it.hasNext(); )
+	{
+		const QFileInfo fi( it.next() );
+		const QString ext = fi.suffix(), base = fi.absolutePath() + "/" + fi.completeBaseName();
+		if( ext == "tmp" || ( ext == "frag" && QFileInfo::exists( base + ".bin" ) )
+		    || ( ext == "err" && fi.lastModified() < weekAgo ) )
+		{
+			removed += QFile::remove( fi.absoluteFilePath() ) ? 1 : 0;
+			continue;
+		}
+		total += fi.size();
+		if( ext == "bin" )
+			bins.push_back( { fi.absoluteFilePath(), fi.size(), fi.lastModified() } );
+	}
+	std::sort( bins.begin(), bins.end(), []( const Item &a, const Item &b ) { return a.used < b.used; } );
+	for( const Item &b : bins )
+	{
+		if( total <= limitBytes ) break;
+		if( QFile::remove( b.path ) ) { total -= b.size; ++removed; }
+	}
+	if( removed )
+		fprintf( stderr, "SHADER: forge cache trimmed (%d file(s) removed, %.0f MB kept)\n", removed, total / 1048576.0 );
+}
+
 GLuint loadBinary( const QString &path )
 {
 	QFile f( path );
@@ -92,6 +137,9 @@ GLuint loadBinary( const QString &path )
 	GLint ok = 0;
 	glGetProgramiv( prog, GL_LINK_STATUS, &ok );
 	if( !ok ) { glDeleteProgram( prog ); return 0; }        // another driver: build again
+	f.close();
+	f.open( QIODevice::ReadWrite );                          // "last used" for trimCache()
+	f.setFileTime( QDateTime::currentDateTime(), QFileDevice::FileModificationTime );
 	return prog;
 }
 
@@ -117,14 +165,23 @@ bool shaderForgeInit()
 	const char *v = (const char *) glGetString( GL_VERSION );
 	s_salt = std::string( r ? r : "?" ) + "|" + ( v ? v : "?" ) + "|";
 	if( char *vs = textFileRead( "..\\Engine\\Fullscreen.vert" ) ) { s_salt += vs; free( vs ); }
-	// Started now, with the app's own start: its GL context is made once, here.
-	if( !server() ) return false;
+	// At most 300 MB of binaries: a session can forge hundreds of 3D-lab worlds
+	// (40-180 KB each), and months of them would pile up without bound.
+	trimCache( s_dir, 300LL * 1048576 );
+	// The helper is started when a lab needs it (shaderForgeStartHelper), not
+	// with every app: most presets never forge anything.
 	s_ok = true;
-	fprintf( stderr, "SHADER: forge on (%s --forge-serve)\n", qPrintable( s_helper ) );
+	fprintf( stderr, "SHADER: forge ready (%s --forge-serve when a lab needs it)\n", qPrintable( s_helper ) );
 	return true;
 }
 
 bool shaderForgeAvailable() { return s_ok; }
+
+void shaderForgeStartHelper()
+{
+	if( s_ok && server() && getenv( "KALEIDO_SPEC_LOG" ) )
+		fprintf( stderr, "FORGE helper running\n" );
+}
 
 GLuint shaderForgeGet( const std::string &fragSource, bool *failed, int targets )
 {
@@ -143,6 +200,7 @@ GLuint shaderForgeGet( const std::string &fragSource, bool *failed, int targets 
 		if( e.prog )
 		{
 			if( getenv( "KALEIDO_SPEC_LOG" ) ) fprintf( stderr, "FORGE load %s: %.1f ms\n", key.c_str(), t.nsecsElapsed() * 1e-6 );
+			QFile::remove( base + ".frag" );                  // the job file is done with
 			return e.prog;
 		}
 		QFile::remove( base + ".bin" );                       // stale (another driver): build again below
