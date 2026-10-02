@@ -1274,7 +1274,39 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	const bool steady = f.estimatedBPM > 0.01f && f.rhythmStrength > 0.35f;
 	const bool phraseTurn = steady && m_walk.lastPhrase >= 0.f && f.phrasePos + 0.5f < m_walk.lastPhrase;
 	m_walk.lastPhrase = f.phrasePos;
-	if( phraseTurn && !anyFading() )
+	if( phraseTurn && getenv( "KALEIDO_SPEC_LOG" ) )
+		fprintf( stderr, "PHRASE turn (fading: %s)\n", anyFading() ? "yes" : "no" );
+	// When a stage is due: its hold against its share of the music's pace (the
+	// look holds longer than the chain, the 3D structure longer still).
+	auto dueRatio = [&]( int s ) {
+		return m_walk.hold[s] / ( lerp( 70.f, 30.f, E ) * ( s == 4 ? 1.6f : ( isStructure( s ) ? 1.4f : 1.f ) ) );
+	};
+	// 3D lab, steady beat: a structure stage that is due waits for the next
+	// phrase boundary.  Its target is picked now and its geometry forged
+	// meanwhile, so the new program's first draw (25-35 ms when it is new to
+	// this session) falls on the boundary, not into a running phrase.
+	int structDue = -1;
+	if( m_chain3D && steady && !anyFading() )
+	{
+		float best = 1.f;
+		for( int s = 5; s <= 7; ++s )
+			if( m_walkLoc[s] >= 0 && dueRatio( s ) >= best ) { best = dueRatio( s ); structDue = s; }
+	}
+	if( structDue >= 0 )
+	{
+		if( !m_walk.hasNext[structDue] ) { m_walk.next[structDue] = pick(); m_walk.hasNext[structDue] = true; }
+		float x1[9]; bool fd[9];
+		for( int o = 0; o < kWalkN; ++o ) { x1[o] = m_walk.fading[o] ? m_walk.x1[o] : m_walk.x0[o]; fd[o] = m_walk.fading[o]; }
+		x1[structDue] = m_walk.next[structDue];
+		fd[structDue] = true;
+		geomProgram( m_walk.x0, x1, fd );            // queued on the helper; loaded, not yet drawn
+	}
+	if( phraseTurn && !anyFading() && structDue >= 0 )
+	{
+		startWalk( structDue, m_walk.next[structDue], lerp( 14.f, 8.f, E ) );
+		m_walk.hasNext[structDue] = false;
+	}
+	else if( phraseTurn && !anyFading() )
 	{
 		++m_walk.phraseN;
 		if( m_walk.phraseN % 2 == 1 )
@@ -1313,8 +1345,8 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		for( int s = 0; s < kWalkN; ++s )
 		{
 			if( m_walkLoc[s] < 0 ) continue;            // stage absent in this shader
-			// the look holds longer than the chain, the 3D structure longer still
-			float r = m_walk.hold[s] / ( lerp( 70.f, 30.f, E ) * ( s == 4 ? 1.6f : ( isStructure( s ) ? 1.4f : 1.f ) ) );
+			const float r = dueRatio( s );
+			if( m_chain3D && isStructure( s ) && steady && r < 1.5f ) continue;   // waits for a phrase boundary (above)
 			if( r >= bestR ) { bestR = r; best = s; }
 		}
 		if( best >= 0 )
@@ -1354,6 +1386,19 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 				goto upload;
 			}
 			m_walk.f[s] += dt * m_walk.rate / m_walk.fadeDur[s];     // music time: never backwards, never a jump
+			if( m_chain3D && isStructure( s ) && m_walk.f[s] >= 1.f && steady && !phraseTurn && m_walk.endHold < 24.f )
+			{
+				// The fade's own geometry already shows the new world (f = 1): it
+				// stays until the next phrase boundary, where the world's own
+				// program (forged meanwhile) takes over -- its first draw on the beat.
+				m_walk.f[s] = 1.f;
+				m_walk.endHold += dt;
+				float x0[9]; bool fd[9];
+				for( int o = 0; o < kWalkN; ++o ) { x0[o] = m_walk.x0[o]; fd[o] = m_walk.fading[o]; }
+				x0[s] = m_walk.x1[s]; fd[s] = false;
+				geomProgram( x0, m_walk.x1, fd );
+				goto upload;
+			}
 			if( m_chain3D && isStructure( s ) && m_walk.f[s] >= 1.f && m_geomWait < 8.f )
 			{
 				// ... and at 100 % for the variant of the world after it
@@ -1396,6 +1441,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 				m_walk.f[s] = 0.f;
 				m_walk.fading[s] = false;
 				m_walk.hold[s] = 0.f;
+				m_walk.endHold = 0.f;
 			}
 		}
 	upload:

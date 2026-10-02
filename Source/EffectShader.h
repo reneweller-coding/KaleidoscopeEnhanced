@@ -702,6 +702,9 @@ protected:
 		float harmCool = 0.f;           ///< Cooldown for harmonic-change walks, seconds.
 		float lastPhrase = -1.f;        ///< AudioFeatures::phrasePos of the previous frame (-1 = not yet): its wrap is an 8-bar boundary.
 		int   phraseN = 0;              ///< Phrase boundaries seen: odd ones bring a new variant, even ones a new transform.
+		float next[9] = {};             ///< 3D lab: a structure stage's next target, picked ahead (its geometry forged meanwhile).
+		bool  hasNext[9] = {};          ///< next[s] is valid.
+		float endHold = 0.f;            ///< 3D lab: seconds a finished structure fade has held for the next phrase boundary.
 		std::map<int, std::array<float, 9>> sectionLook;   ///< Look per section id: a returning section returns to it.
 		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.
 		bool  hasLast = false;          ///< last is valid.

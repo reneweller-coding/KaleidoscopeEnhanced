@@ -19,6 +19,7 @@ temporary preset removed.  Nothing is sent anywhere; the app ends itself
   python Tools/perf_labs.py                       # the chain labs and the 3D named chains
   python Tools/perf_labs.py ChainLab2D --secs 60  # some scenes
   python Tools/perf_labs.py --tsv perf.tsv        # also as a table file
+  python Tools/perf_labs.py --wav Tools/review128.wav   # with music (a steady beat: phrase-locked walks)
 """
 import argparse, io, os, re, shutil, statistics, subprocess, sys, time
 
@@ -49,13 +50,17 @@ def preset(scene, still):
 SEED, GLDEBUG = 1, False
 
 
+WAV = None
+
+
 def run(scene, secs, skip, still):
     io.open(os.path.join(ROOT, "Presets", "_perf.xml"), "w", encoding="utf-8").write(preset(scene, still))
     env = dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(secs), KALEIDO_NO_ACTIVATE="1", KALEIDO_FPS_LOG="1",
                KALEIDO_GPU_TIMING="1", KALEIDO_FRAME_LOG="25", KALEIDO_SPEC_LOG="1", KALEIDO_SEED=str(SEED))
     if GLDEBUG:
         env["KALEIDO_GL_DEBUG"] = "1"
-    p = subprocess.Popen([os.path.join(REL, "Kaleidoscope.exe"), "-c", "_perf", "-l"], cwd=REL, env=env,
+    cmd = [os.path.join(REL, "Kaleidoscope.exe"), "-c", "_perf", "-l"] + (["-w", os.path.abspath(WAV)] if WAV else [])
+    p = subprocess.Popen(cmd, cwd=REL, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     p.wait(timeout=secs + 120)
     log = io.open(os.path.join(REL, "kaleidoscope.log"), encoding="utf-8", errors="replace").read()
@@ -84,10 +89,11 @@ def main():
     ap.add_argument("--still", action="store_true", help="no walk: the scene's own morphP range")
     ap.add_argument("--tsv", help="also write the table here")
     ap.add_argument("--seed", type=int, default=1, help="KALEIDO_SEED: the same rolls in every run (default 1)")
+    ap.add_argument("--wav", help="analyse this WAV instead of the live input (silent, real time): music for the walk")
     ap.add_argument("--gldebug", action="store_true", help="KHR_debug on (a debug context: slower, the GL column counts)")
     a = ap.parse_args()
-    global SEED, GLDEBUG
-    SEED, GLDEBUG = a.seed, a.gldebug
+    global SEED, GLDEBUG, WAV
+    SEED, GLDEBUG, WAV = a.seed, a.gldebug, a.wav
     sys.stdout.reconfigure(encoding="utf-8")
     backup = INI + ".perf_backup"
     shutil.copy(INI, backup)

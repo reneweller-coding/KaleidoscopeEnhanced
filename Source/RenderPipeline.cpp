@@ -3164,6 +3164,10 @@ void RenderPipeline::loadNewTexture( GLuint &texID )
 
     // set up texture
     setupTexture( texID, m_nextImage );
+	// KALEIDO_FRAME_LOG: photo swaps in the same log as the long frames and gaps (is a stall a swap?)
+	static const bool frameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
+	if( frameLog )
+		fprintf( stderr, "[photo] swapped in %.1f ms\n", timer.elapsed() );
 
 
     //printf( "%s\n", qPrintable((*m_imageListIterator)) );

@@ -67,21 +67,95 @@ bool readAll( const QString &path, QByteArray &o )
 	return true;
 }
 
+/// @brief Builds one program (compile, link, warm draw into @p targets RGBA32F targets) and writes its binary to @p out
+/// (via out.tmp and a rename), or out.err with the log.  @return 0 on success.
+int forgeOne( QOpenGLExtraFunctions *gl, const QString &frag, const QString &out, int targets, const QString &vert )
+{
+	auto fail = [&]( const QByteArray &why ) {
+		QFile e( out + ".err" );
+		if( e.open( QIODevice::WriteOnly ) ) e.write( why );
+		fprintf( stderr, "FORGE FAIL %s\n%s\n", qPrintable( frag ), why.constData() );
+		return 1;
+	};
+	QByteArray vs, fs;
+	if( !readAll( vert, vs ) ) return fail( "cannot read " + vert.toLocal8Bit() );
+	if( !readAll( frag, fs ) ) return fail( "cannot read " + frag.toLocal8Bit() );
+	auto compile = [&]( GLenum type, const QByteArray &src, QByteArray *log ) -> GLuint {
+		GLuint sh = gl->glCreateShader( type );
+		const char *ptr = src.constData();
+		const GLint len = GLint( src.size() );
+		gl->glShaderSource( sh, 1, &ptr, &len );
+		gl->glCompileShader( sh );
+		GLint ok = 0; gl->glGetShaderiv( sh, GL_COMPILE_STATUS, &ok );
+		if( ok ) return sh;
+		GLint n = 0; gl->glGetShaderiv( sh, GL_INFO_LOG_LENGTH, &n );
+		QByteArray b( n > 1 ? n : 1, '\0' );
+		if( n > 1 ) gl->glGetShaderInfoLog( sh, n, nullptr, b.data() );
+		*log = b;
+		gl->glDeleteShader( sh );
+		return 0;
+	};
+	QByteArray log;
+	const GLuint v = compile( GL_VERTEX_SHADER, vs, &log );
+	if( !v ) return fail( "vertex: " + log );
+	const GLuint f = compile( GL_FRAGMENT_SHADER, fs, &log );
+	if( !f ) return fail( log );
+	const GLuint prog = gl->glCreateProgram();
+	gl->glAttachShader( prog, v );
+	gl->glAttachShader( prog, f );
+	gl->glProgramParameteri( prog, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE );
+	gl->glLinkProgram( prog );
+	GLint ok = 0; gl->glGetProgramiv( prog, GL_LINK_STATUS, &ok );
+	if( !ok )
+	{
+		GLint n = 0; gl->glGetProgramiv( prog, GL_INFO_LOG_LENGTH, &n );
+		QByteArray b( n > 1 ? n : 1, '\0' );
+		if( n > 1 ) gl->glGetProgramInfoLog( prog, n, nullptr, b.data() );
+		return fail( "link: " + b );
+	}
+	// Warm draw.  The program binary carries the compiled shader, but the
+	// NVIDIA driver finishes the GPU code only at the first draw (the 3D lab's
+	// geometry: 45-180 ms) and keeps that in its own disk cache, one per
+	// executable -- which is why the app forges with its own exe.  The driver
+	// reads that cache only when a process starts (measured 01.10.2026): this
+	// draw spares the app's NEXT sessions the cost, not the running one.
+	drawInto( gl, prog, targets, 4 );
+
+	GLint len = 0; gl->glGetProgramiv( prog, GL_PROGRAM_BINARY_LENGTH, &len );
+	if( len <= 0 ) return fail( "no program binary" );
+	QByteArray bin( len, '\0' );
+	GLenum format = 0;
+	gl->glGetProgramBinary( prog, len, &len, &format, bin.data() );
+	QFile o( out + ".tmp" );
+	if( !o.open( QIODevice::WriteOnly ) ) return fail( "cannot write " + out.toLocal8Bit() );
+	o.write( "KFRG", 4 );
+	o.write( reinterpret_cast<const char *>( &format ), 4 );
+	o.write( bin.constData(), len );
+	o.close();
+	QFile::remove( out );
+	const bool renamed = QFile::rename( out + ".tmp", out );
+	gl->glDeleteProgram( prog );                    // the server forges many: nothing may pile up
+	gl->glDeleteShader( v );
+	gl->glDeleteShader( f );
+	if( !renamed ) return fail( "cannot rename to " + out.toLocal8Bit() );
+	return 0;
+}
+
 } // namespace
 
 bool shaderForgeIsCommand( int argc, char *argv[] )
 {
-	return argc >= 2 && ( !strcmp( argv[1], "--forge" ) || !strcmp( argv[1], "--forgeload" ) );
+	return argc >= 2 && ( !strcmp( argv[1], "--forge" ) || !strcmp( argv[1], "--forgeload" ) || !strcmp( argv[1], "--forge-serve" ) );
 }
 
 int shaderForgeMain( int argc, char *argv[] )
 {
 	QStringList args;
 	for( int i = 1; i < argc; ++i ) args << QString::fromLocal8Bit( argv[i] );
-	const bool load = args.value( 0 ) == "--forgeload";
-	if( ( load && args.size() < 2 ) || ( !load && args.size() < 5 ) )
+	const bool load = args.value( 0 ) == "--forgeload", serve = args.value( 0 ) == "--forge-serve";
+	if( ( load && args.size() < 2 ) || ( !load && !serve && args.size() < 5 ) )
 	{
-		fprintf( stderr, "usage: --forge <frag> <out.bin> <targets> <vert>  |  --forgeload <bin> [targets]\n" );
+		fprintf( stderr, "usage: --forge <frag> <out.bin> <targets> <vert>  |  --forge-serve  |  --forgeload <bin> [targets]\n" );
 		return 2;
 	}
 
@@ -122,73 +196,28 @@ int shaderForgeMain( int argc, char *argv[] )
 		return 0;
 	}
 
+	if( serve )
+	{
+#ifdef _WIN32
+		SetPriorityClass( GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS );
+#endif
+		// One job per line on stdin: frag \t out.bin \t targets \t vert.  The
+		// context is made once; the app reads the results from the files (the
+		// .bin appears by a rename, so it is never seen half-written).
+		char line[4096];
+		while( fgets( line, sizeof line, stdin ) )
+		{
+			const QStringList f = QString::fromLocal8Bit( line ).trimmed().split( '\t' );
+			if( f.size() < 4 ) continue;
+			forgeOne( gl, f[0], f[1], f[2].toInt(), f[3] );
+			fprintf( stdout, "done\n" );
+			fflush( stdout );
+		}
+		return 0;
+	}
 #ifdef _WIN32
 	// A guest beside the running app: two helpers at normal priority took it down to 13 fps for a second.
 	SetPriorityClass( GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS );
 #endif
-	const QString out = args[2];
-	auto fail = [&]( const QByteArray &why ) {
-		QFile e( out + ".err" );
-		if( e.open( QIODevice::WriteOnly ) ) e.write( why );
-		fprintf( stderr, "FORGE FAIL %s\n%s\n", qPrintable( args[1] ), why.constData() );
-		return 1;
-	};
-	QByteArray vs, fs;
-	if( !readAll( args[4], vs ) ) return fail( "cannot read " + args[4].toLocal8Bit() );
-	if( !readAll( args[1], fs ) ) return fail( "cannot read " + args[1].toLocal8Bit() );
-	auto compile = [&]( GLenum type, const QByteArray &src, QByteArray *log ) -> GLuint {
-		GLuint sh = gl->glCreateShader( type );
-		const char *ptr = src.constData();
-		const GLint len = GLint( src.size() );
-		gl->glShaderSource( sh, 1, &ptr, &len );
-		gl->glCompileShader( sh );
-		GLint ok = 0; gl->glGetShaderiv( sh, GL_COMPILE_STATUS, &ok );
-		if( ok ) return sh;
-		GLint n = 0; gl->glGetShaderiv( sh, GL_INFO_LOG_LENGTH, &n );
-		QByteArray b( n > 1 ? n : 1, '\0' );
-		if( n > 1 ) gl->glGetShaderInfoLog( sh, n, nullptr, b.data() );
-		*log = b;
-		gl->glDeleteShader( sh );
-		return 0;
-	};
-	QByteArray log;
-	const GLuint v = compile( GL_VERTEX_SHADER, vs, &log );
-	if( !v ) return fail( "vertex: " + log );
-	const GLuint f = compile( GL_FRAGMENT_SHADER, fs, &log );
-	if( !f ) return fail( log );
-	const GLuint prog = gl->glCreateProgram();
-	gl->glAttachShader( prog, v );
-	gl->glAttachShader( prog, f );
-	gl->glProgramParameteri( prog, GL_PROGRAM_BINARY_RETRIEVABLE_HINT, GL_TRUE );
-	gl->glLinkProgram( prog );
-	GLint ok = 0; gl->glGetProgramiv( prog, GL_LINK_STATUS, &ok );
-	if( !ok )
-	{
-		GLint n = 0; gl->glGetProgramiv( prog, GL_INFO_LOG_LENGTH, &n );
-		QByteArray b( n > 1 ? n : 1, '\0' );
-		if( n > 1 ) gl->glGetProgramInfoLog( prog, n, nullptr, b.data() );
-		return fail( "link: " + b );
-	}
-	// Warm draw.  The program binary carries the compiled shader, but the
-	// NVIDIA driver finishes the GPU code only at the first draw (the 3D lab's
-	// geometry: 45-180 ms) and keeps that in its own disk cache, one per
-	// executable -- which is why the app forges with its own exe.  The driver
-	// reads that cache only when a process starts (measured 01.10.2026): this
-	// draw spares the app's NEXT sessions the cost, not the running one.
-	drawInto( gl, prog, args[3].toInt(), 4 );
-
-	GLint len = 0; gl->glGetProgramiv( prog, GL_PROGRAM_BINARY_LENGTH, &len );
-	if( len <= 0 ) return fail( "no program binary" );
-	QByteArray bin( len, '\0' );
-	GLenum format = 0;
-	gl->glGetProgramBinary( prog, len, &len, &format, bin.data() );
-	QFile o( out + ".tmp" );
-	if( !o.open( QIODevice::WriteOnly ) ) return fail( "cannot write " + out.toLocal8Bit() );
-	o.write( "KFRG", 4 );
-	o.write( reinterpret_cast<const char *>( &format ), 4 );
-	o.write( bin.constData(), len );
-	o.close();
-	QFile::remove( out );
-	if( !QFile::rename( out + ".tmp", out ) ) return fail( "cannot rename to " + out.toLocal8Bit() );
-	return 0;
+	return forgeOne( gl, args[1], args[2], args[3].toInt(), args[4] );
 }

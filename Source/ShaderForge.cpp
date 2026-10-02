@@ -14,9 +14,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <map>
-#ifndef _WIN32
-#include <signal.h>
-#endif
 
 namespace {
 
@@ -24,18 +21,15 @@ struct Entry
 {
 	GLuint prog = 0;
 	bool   failed = false;
-	bool   launched = false;
-	qint64 pid = 0;
-#ifdef _WIN32
-	HANDLE proc = nullptr;      ///< the helper, opened at launch (its pid cannot be reused while we hold it)
-#endif
+	bool   queued = false;      ///< handed to the helper, result not there yet
 };
 
 bool                          s_init = false, s_ok = false;
 QString                       s_helper, s_dir, s_vert;
 std::string                   s_salt;        ///< GPU, driver and vertex shader: part of every key
 std::map<std::string, Entry>  s_entries;
-int                           s_running = 0;
+QProcess                     *s_server = nullptr;
+int                           s_serverStarts = 0;
 
 std::string keyOf( const std::string &src )
 {
@@ -48,18 +42,41 @@ std::string keyOf( const std::string &src )
 	return b;
 }
 
-/// @return True while the helper building @p e is still alive.
-bool helperRunning( Entry &e )
+/**
+ * @brief The helper, started once (this executable with --forge-serve) and fed one job per line.
+ *
+ * One process for the whole session: a helper per program created a GL
+ * context each time, and every creation cost the app two frame gaps of ~55 ms
+ * (measured 02.10.2026).  If it dies, it is started again (at most three
+ * times) and every job still waiting is handed over once more.
+ * @return The running helper, or nullptr.
+ */
+QProcess *server()
 {
-#ifdef _WIN32
-	if( !e.proc ) return false;
-	if( WaitForSingleObject( e.proc, 0 ) == WAIT_TIMEOUT ) return true;
-	CloseHandle( e.proc );
-	e.proc = nullptr;
-	return false;
-#else
-	return e.pid > 0 && ::kill( (pid_t) e.pid, 0 ) == 0;
-#endif
+	if( s_server && s_server->state() != QProcess::NotRunning )
+		return s_server;
+	if( s_server )
+	{
+		fprintf( stderr, "SHADER: forge helper ended (exit %d) -- starting it again\n", s_server->exitCode() );
+		delete s_server;
+		s_server = nullptr;
+		for( auto &kv : s_entries ) kv.second.queued = false;   // hand the waiting jobs over again
+	}
+	if( s_serverStarts >= 3 )
+		return nullptr;
+	++s_serverStarts;
+	s_server = new QProcess();
+	s_server->setStandardOutputFile( QProcess::nullDevice() );
+	s_server->setStandardErrorFile( QProcess::nullDevice() );
+	s_server->start( s_helper, { "--forge-serve" } );
+	if( !s_server->waitForStarted( 3000 ) )
+	{
+		fprintf( stderr, "SHADER: forge helper did not start\n" );
+		delete s_server;
+		s_server = nullptr;
+		return nullptr;
+	}
+	return s_server;
 }
 
 GLuint loadBinary( const QString &path )
@@ -87,9 +104,9 @@ bool shaderForgeInit()
 	if( getenv( "KALEIDO_NO_FORGE" ) || !glProgramBinary ) return false;
 	// The helper is this executable itself (both executables answer --forge):
 	// the driver keeps the finished GPU code in a disk cache per executable,
-	// and the helper's warm draw has to fill the one this process reads --
-	// with PresetEditor.exe as the helper every new program still cost
-	// ~120 ms at its first draw here.
+	// and the helper's warm draw has to fill the one this process reads in its
+	// next sessions -- with PresetEditor.exe as the helper every new program
+	// still cost ~120 ms at its first draw here.
 	s_helper = QCoreApplication::applicationFilePath();
 	s_vert = QFileInfo( "..\\Engine\\Fullscreen.vert" ).absoluteFilePath();
 	const char *la = getenv( "LOCALAPPDATA" );
@@ -100,8 +117,10 @@ bool shaderForgeInit()
 	const char *v = (const char *) glGetString( GL_VERSION );
 	s_salt = std::string( r ? r : "?" ) + "|" + ( v ? v : "?" ) + "|";
 	if( char *vs = textFileRead( "..\\Engine\\Fullscreen.vert" ) ) { s_salt += vs; free( vs ); }
+	// Started now, with the app's own start: its GL context is made once, here.
+	if( !server() ) return false;
 	s_ok = true;
-	fprintf( stderr, "SHADER: forge on (%s)\n", qPrintable( s_helper ) );
+	fprintf( stderr, "SHADER: forge on (%s --forge-serve)\n", qPrintable( s_helper ) );
 	return true;
 }
 
@@ -115,17 +134,12 @@ GLuint shaderForgeGet( const std::string &fragSource, bool *failed, int targets 
 	Entry &e = s_entries[key];
 	if( e.prog ) return e.prog;
 	if( e.failed ) { if( failed ) *failed = true; return 0; }
-	// The binary is taken only once its helper has ENDED: the driver writes the
-	// GPU code of the helper's warm draw to its own disk cache at process exit,
-	// and a binary loaded before that still cost 180 ms at its first draw
-	// (1 s later: 6 ms -- measured 01.10.2026).
-	if( e.launched && helperRunning( e ) ) return 0;
 	const QString base = s_dir + "/" + QString::fromStdString( key );
-	if( QFileInfo::exists( base + ".bin" ) )
+	if( QFileInfo::exists( base + ".bin" ) )                  // appears by a rename: never half-written
 	{
 		QElapsedTimer t; t.start();
 		e.prog = loadBinary( base + ".bin" );
-		if( e.launched ) { e.launched = false; --s_running; }
+		e.queued = false;
 		if( e.prog )
 		{
 			if( getenv( "KALEIDO_SPEC_LOG" ) ) fprintf( stderr, "FORGE load %s: %.1f ms\n", key.c_str(), t.nsecsElapsed() * 1e-6 );
@@ -139,42 +153,23 @@ GLuint shaderForgeGet( const std::string &fragSource, bool *failed, int targets 
 		if( f.open( QIODevice::ReadOnly ) )
 			fprintf( stderr, "SHADER: forge build failed (%s):\n%s\n", key.c_str(), f.readAll().left( 2000 ).constData() );
 		e.failed = true;
-		if( e.launched ) { e.launched = false; --s_running; }
+		e.queued = false;
 		if( failed ) *failed = true;
 		return 0;
 	}
-	if( e.launched )                                         // helper gone without a result: crashed
-	{
-		fprintf( stderr, "SHADER: forge helper ended without a result (%s)\n", key.c_str() );
-		e.launched = false;
-		--s_running;
-		e.failed = true;
-		if( failed ) *failed = true;
-		return 0;
-	}
-	if( !e.launched && s_running < 1 )   // one at a time: two at once dropped the app to 13 fps
+	QProcess *sv = server();                                 // (a helper started again clears every queued flag)
+	if( !sv ) { e.failed = true; if( failed ) *failed = true; return 0; }
+	if( !e.queued )
 	{
 		QFile src( base + ".frag" );
 		if( !src.open( QIODevice::WriteOnly ) ) { e.failed = true; return 0; }
 		src.write( fragSource.data(), (qint64) fragSource.size() );
 		src.close();
-		QElapsedTimer tl; tl.start();
-		const bool started = QProcess::startDetached( s_helper, { "--forge", QDir::toNativeSeparators( base + ".frag" ),
-		                                                          QDir::toNativeSeparators( base + ".bin" ),
-		                                                          QString::number( targets ),
-		                                                          QDir::toNativeSeparators( s_vert ) },
-		                                            QString(), &e.pid );
-		if( getenv( "KALEIDO_SPEC_LOG" ) ) fprintf( stderr, "FORGE launch %s: %.1f ms\n", key.c_str(), tl.nsecsElapsed() * 1e-6 );
-		if( started )
-		{
-			e.launched = true;
-			++s_running;
-#ifdef _WIN32
-			e.proc = OpenProcess( SYNCHRONIZE, FALSE, (DWORD) e.pid );
-#endif
-		}
-		else
-			e.failed = true;
+		const QString job = QDir::toNativeSeparators( base + ".frag" ) + "\t" + QDir::toNativeSeparators( base + ".bin" ) + "\t"
+		                    + QString::number( targets ) + "\t" + QDir::toNativeSeparators( s_vert ) + "\n";
+		sv->write( job.toLocal8Bit() );
+		e.queued = true;
+		if( getenv( "KALEIDO_SPEC_LOG" ) ) fprintf( stderr, "FORGE queue %s\n", key.c_str() );
 	}
 	return 0;
 }
