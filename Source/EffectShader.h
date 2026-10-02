@@ -781,6 +781,17 @@ protected:
 	std::string m_geomSrc;              ///< Engine/ChainPass/Geom_NAME.frag: the geometry pass, world classes as \#if selections.
 	GLuint	m_gbFbo = 0;               ///< The 3D lab's G-buffer framebuffer.
 	GLuint	m_gbTex[2] = {};           ///< Its targets: hit point + distance, normal + AO (RGBA32F).
+	GLuint	m_stFbo = 0;               ///< The 3D lab's start target (a plane's chain input and time offset).
+	std::chrono::steady_clock::time_point m_chainUsed;   ///< When this lab last ran its chain (idle labs free their textures).
+	/// @brief Frees the chain runner's textures and framebuffers (GL context current); the next run allocates them again.
+	void freeChainTextures();
+	/// @brief Marks this lab's chain textures as used now and frees those of labs idle for 25 s (GL context current).
+	void retireIdleChains();
+public:
+	/// @brief Frees the chain textures of every lab idle for 25 s (once per frame, GL context current).
+	static void retireIdleChainTextures();
+protected:
+	GLuint	m_stTex = 0;               ///< Its texture (RGBA32F; the chain textures are RG32F).
 	float	m_geomWait = 0.f;           ///< Seconds a structure fade has waited for its geometry variant.
 	/// @brief The geometry program for a walk state (world 0 = shown, world 1 = faded to); 0 while the helper builds it.
 	GLuint	geomProgram( const float *x0, const float *x1, const bool *fading );

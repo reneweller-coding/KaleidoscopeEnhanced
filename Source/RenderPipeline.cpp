@@ -1803,6 +1803,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
 			glActiveTexture( GL_TEXTURE0 );
 		}
 		m_cfx.retireIdle( m_globaltime );
+		EffectShader::retireIdleChainTextures();         // chain labs not shown for 25 s give their coordinate textures back
 	}
 
 	// ---- Previous-frame feedback (opt-in via texPrevFrame) ----

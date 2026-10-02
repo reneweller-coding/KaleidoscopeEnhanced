@@ -122,9 +122,46 @@ m_minTimeSolo(minTimeSolo)
 // Destructor
 EffectShader::~EffectShader()
 {
+	freeChainTextures();
 	cleanShaderPrograms();	
 }
 
+
+namespace { std::set<EffectShader *> s_chainHolders; }   ///< Labs holding chain textures (retireIdleChains)
+
+void EffectShader::freeChainTextures()
+{
+	s_chainHolders.erase( this );
+	const int n = m_chain3D ? 8 : 5;
+	if( m_cpTex[0] ) { glDeleteTextures( n, m_cpTex ); glDeleteFramebuffers( n, m_cpFbo ); }
+	if( m_gbTex[0] ) { glDeleteTextures( 2, m_gbTex ); glDeleteFramebuffers( 1, &m_gbFbo ); }
+	if( m_stTex )    { glDeleteTextures( 1, &m_stTex ); glDeleteFramebuffers( 1, &m_stFbo ); }
+	for( int i = 0; i < 8; ++i ) { m_cpTex[i] = 0; m_cpFbo[i] = 0; }
+	m_gbTex[0] = m_gbTex[1] = 0; m_gbFbo = 0;
+	m_stTex = 0; m_stFbo = 0;
+	m_cpW = m_cpH = 0;
+}
+
+void EffectShader::retireIdleChains()
+{
+	// A lab keeps its coordinate textures between frames (75-525 MB at
+	// 2880x1620); a preset with four labs held them all for its whole life.
+	// The textures of a lab not run for 25 s go (as ComputeFX::retireIdle).
+	m_chainUsed = std::chrono::steady_clock::now();
+	s_chainHolders.insert( this );
+	retireIdleChainTextures();
+}
+
+void EffectShader::retireIdleChainTextures()
+{
+	const auto now = std::chrono::steady_clock::now();
+	for( auto it = s_chainHolders.begin(); it != s_chainHolders.end(); )
+	{
+		EffectShader *e = *it++;
+		if( now - e->m_chainUsed > std::chrono::seconds( 25 ) )
+			e->freeChainTextures();                       // erases e: the iterator has moved on
+	}
+}
 
 float EffectShader::s_depthValid[2] = { 0.f, 0.f };
 float EffectShader::s_shadowPass = 0.f;
@@ -1636,6 +1673,7 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	const bool fixedOrder = m_permCodes.size() != 24;  // a lab without an order knob: A -> B -> C -> D
 
 	warmPasses( m_chainOrd, false );
+	retireIdleChains();
 
 	// GL state this function changes, restored at the end.
 	GLint vp[4], drawFb = 0, readFb = 0, activeTex = 0, vao = 0;
@@ -1860,6 +1898,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 	std::string slowDraws;                               // first draws of programs that took long (KALEIDO_SPEC_LOG)
 	static std::set<GLuint> drawnOnce;
 	warmPasses( m_chainOrd, true );   // the 3D lab built its passes on first use: 25-80 ms frames at every new class
+	retireIdleChains();
 	const GLuint geom = geomProgram( m_walk.x0, m_walk.x1, m_walk.fading );
 	const double tSel = msSince( tc0 );
 
@@ -1872,9 +1911,12 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 	const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST ), scissor = glIsEnabled( GL_SCISSOR_TEST );
 	const int W = vp[2] > 0 ? vp[2] : 1, H = vp[3] > 0 ? vp[3] : 1;
 
-	auto makeTex = [&]( GLuint tex ) {
+	// The chain coordinates need two channels (RG32F: 8 of them at 2880x1620
+	// were 600 MB as RGBA32F, now 300); the start (uv + time offset) and the
+	// G-buffer keep four.
+	auto makeTex = [&]( GLuint tex, GLint fmt = GL_RGBA32F, GLenum layout = GL_RGBA ) {
 		glBindTexture( GL_TEXTURE_2D, tex );
-		glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA32F, W, H, 0, GL_RGBA, GL_FLOAT, nullptr );
+		glTexImage2D( GL_TEXTURE_2D, 0, fmt, W, H, 0, layout, GL_FLOAT, nullptr );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
 		glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
@@ -1887,10 +1929,16 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 		glGenFramebuffers( 8, m_cpFbo );
 		for( int i = 0; i < 8; ++i )
 		{
-			makeTex( m_cpTex[i] );
+			makeTex( m_cpTex[i], GL_RG32F, GL_RG );
 			glBindFramebuffer( GL_FRAMEBUFFER, m_cpFbo[i] );
 			glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_cpTex[i], 0 );
 		}
+		if( m_stTex ) { glDeleteTextures( 1, &m_stTex ); glDeleteFramebuffers( 1, &m_stFbo ); }
+		glGenTextures( 1, &m_stTex );
+		glGenFramebuffers( 1, &m_stFbo );
+		makeTex( m_stTex );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_stFbo );
+		glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_stTex, 0 );
 		if( m_gbTex[0] ) { glDeleteTextures( 2, m_gbTex ); glDeleteFramebuffers( 1, &m_gbFbo ); }
 		glGenTextures( 2, m_gbTex );
 		glGenFramebuffers( 1, &m_gbFbo );
@@ -1978,7 +2026,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 		glActiveTexture( GL_TEXTURE0 + 42 );
 		glBindTexture( GL_TEXTURE_2D, inB >= 0 ? m_cpTex[inB] : glcoreDummyTex2D() );
 		glActiveTexture( GL_TEXTURE0 + 47 );
-		glBindTexture( GL_TEXTURE_2D, start >= 0 ? m_cpTex[start] : glcoreDummyTex2D() );
+		glBindTexture( GL_TEXTURE_2D, start >= 0 ? m_stTex : glcoreDummyTex2D() );
 		if( p.texIn >= 0 )     glUniform1i( p.texIn, 41 );
 		if( p.texB >= 0 )      glUniform1i( p.texB, 42 );
 		if( p.texStart >= 0 )  glUniform1i( p.texStart, 47 );
@@ -2068,8 +2116,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 	for( int pl = 0; pl < 3; ++pl )
 	{
 		start = -1;
-		const int s0 = freeTex( 0 );
-		glBindFramebuffer( GL_FRAMEBUFFER, m_cpFbo[s0] );
+		glBindFramebuffer( GL_FRAMEBUFFER, m_stFbo );        // this plane's start: its own RGBA32F target
 		glUseProgram( st.prog );
 		glActiveTexture( GL_TEXTURE0 + 45 );
 		glBindTexture( GL_TEXTURE_2D, m_gbTex[0] );
@@ -2077,8 +2124,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 		if( stPl >= 0 ) glUniform1i( stPl, pl );
 		if( stSd >= 0 ) glUniform1f( stSd, solidP );
 		glDrawArrays( GL_TRIANGLES, 0, 3 );
-		start = s0;
-		busy |= 1u << s0;
+		start = 0;
 		int r = runOrder( code );
 		if( w > 0.f )
 		{
@@ -2086,7 +2132,6 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 			pass( "..\\Engine\\ChainPass\\Fallback.frag", r, -1, out, 0.f, w );
 			r = out;
 		}
-		busy &= ~( 1u << s0 );
 		busy |= 1u << r;
 		res[pl] = r;
 	}
@@ -2306,7 +2351,8 @@ void EffectShader::stepChainCam( const AudioFeatures &f )
 	if( m_cam.pending )
 	{
 		m_cam.pending = false;
-		m_cam.rng.seed( (unsigned) now.time_since_epoch().count() | 1u );   // not from the scene's rand() stream
+		m_cam.rng.seed( s_freezeTime >= 0.f ? 12345u                    // a comparison run: the same flight every time
+		                                    : (unsigned) now.time_since_epoch().count() | 1u );   // not from the scene's rand() stream
 		m_cam.z  = std::uniform_real_distribution<float>( 0.f, 500.f )( m_cam.rng );   // a fresh stretch of the world
 		m_cam.g0 = m_cam.g1 = (int)( ( camP < 0.f ? 0.f : ( camP > 0.999f ? 0.999f : camP ) ) * kGazeN );
 		m_cam.f  = 0.f;
