@@ -13,6 +13,7 @@ uniform float sceneTime;
 uniform float audioAdvance;
 uniform float audioPhase;
 uniform float audioSpread;
+uniform float audioSwell;
 uniform float speedP;
 vec2 mirrorUV(vec2 uv) { return 1.0 - abs(fract(uv * 0.5) * 2.0 - 1.0); }
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
@@ -27,6 +28,13 @@ vec2 tGerstner(vec2 uv, float A, float t)
 }
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
+uniform float tiltP;
+float chainTiltZ(vec2 q)
+{
+    float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
+    float a = 0.011 * sceneTime;
+    return k * dot(vec2(cos(a), sin(a)), q);
+}
 vec2 cls(vec2 uv, float v)
 {
     return tGerstner(uv, 1.0 + gSpread, gT * 3.0);
@@ -40,6 +48,11 @@ void main()
     gRot = 0.02 * sceneTime + 0.2 * audioPhase;
     gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
     gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
+    if (useStart == 0 && tiltP > 0.0) {       // the time tilt (chainTiltZ): the same shift in every pass of this pixel
+        vec2 sp0 = ((gl_FragCoord.xy + chainOff) / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0);
+        float tz = chainTiltZ(bakeSize > 0.0 ? gl_FragCoord.xy / bakeSize * 2.0 - 1.0 : sp0);
+        gT += tz; gRot += 0.5 * tz;
+    }
     vec4 st = useStart == 1 ? texelFetch(texStart, ivec2(gl_FragCoord.xy), 0) : vec4(0.0);
     gT += 0.3 * st.z;                          // the solid look: the depth along the normal is the chain's time
     gRot += 0.15 * st.z;

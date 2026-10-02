@@ -28,12 +28,7 @@ HEAD = r'''//@doc
  * plane drifts through the world with the flight and turns between
  * orientations (across, along, diagonal, slowly turning) every few minutes.
  *
- * cutP >= 0.5: no world at all -- the plane cuts the implicit volume of the
- * 2D chain itself: (x, y) are the photo coordinates of the chain, its own
- * time the third axis, t = t0 + a x + b y with the tilt (a, b) from the
- * plane's orientation.  Untilted that is the 2D lab; tilted, every pixel
- * shows the chain at another moment -- never smeared, as the cut is
- * parametrised by (x, y) whatever its angle.  Costs what the 2D lab costs.
+ * (The space-time cut of the 2D chain itself lives in the 2D chain labs as tiltP.)
  *
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the drift through the world and the flow through the colour chain (integrated, jump-free)
@@ -43,12 +38,12 @@ HEAD = r'''//@doc
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow and the colour saturation (slow)
  *
- * Knobs: cutP (world cut / space-time cut of the 2D chain), spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes),
+ * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes),
  * solidP (the colour chain on three planes, or as a solid texture), reliefP
  * (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
  * (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
  * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP.
-//@params spaceP coreP bodyP layerP cutP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
+//@params spaceP coreP bodyP layerP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 '''
@@ -78,14 +73,6 @@ vec3 sliceAxis(float k, float time)
     if (i > 1.5) return normalize(vec3(1.0, 1.0, 0.0));
     if (i > 0.5) return normalize(vec3(0.3, 0.2, 1.0));
     return vec3(0.0, 0.0, 1.0);                                                       // across the axis
-}
-// The space-time cut's point: the screen as the chain's (x, y), turning slowly
-// in itself, and the chain's time tilted across it by the plane's orientation.
-vec3 cutPoint(vec2 p, vec3 N, float z0)
-{
-    float a = 0.015 * sceneTime;
-    vec2 u = (cos(a) * p + sin(a) * vec2(-p.y, p.x)) * 3.0;
-    return vec3(u, z0 - dot(N.xy, u));
 }
 void sliceFrame(float cam, float time, out vec3 N, out vec3 X, out vec3 Y)
 {
@@ -120,27 +107,21 @@ CAM = r'''    vec3 ro;
     vec3 rd = normalize(sN + (sX * p.x + sY * p.y) * 0.25);
     ro = sc0 + (sX * p.x + sY * p.y) * 3.0 - rd;
     vec3 sL = normalize(sX * 0.5 + sY * 0.7 - sN * 0.4);     // the light from the viewer's side of the plane
-    vec3 cutFp = cutPoint(p, sN, sc0.z);
-    if (cutP >= 0.5) {                                      // the space-time cut faces the viewer: no rims
-        rd = vec3(0.0, 0.0, 1.0); ro = vec3(cutFp.xy, -1.0); sL = normalize(vec3(0.5, 0.7, -0.85));
-    }
 '''
 CUT = r'''    float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0; float dHit = 0.0;
     int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);      // 1..8 planes, the last one always shown
-    float cutM = step(0.5, cutP);                           // 1: the space-time cut, no world
-    if (cutM > 0.5) { hit = true; t = 1.0; fp = cutFp; dHit = -1.0; }
-    else for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 8; ++i) {
         t = 1.0 + 1.2 * float(i);
         d = fieldS(ro + rd * t);
         if (d < 0.0 || i >= nl - 1) { hit = true; fp = gP; fdr = gDR; dHit = d; break; }
     }
 '''
 main = main[:a] + CAM + CUT + main[c:]
-for old, new in (("        vec3 n = normal3(q);", "        vec3 n = cutM > 0.5 ? vec3(0.0, 0.0, -1.0) : normalS(q);"),
+for old, new in (("        vec3 n = normal3(q);", "        vec3 n = normalS(q);"),
                  ("ao += (h - fieldD(q + n * h)) / h; }", "ao += (h - fieldS(q + n * h) + dHit) / h; }"),   # relative to the cut point: a cut runs through matter
                  ("        vec3 L = normalize(vec3(0.5, 0.7, -0.4));", "        vec3 L = sL;"),
                  ("        float diff = max(dot(n, L), 0.0);", "        float diff = 0.5 + 0.5 * dot(n, L);   // wrapped: a cut shows normals of every direction"),
-                 ("        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0);", "        ao = clamp(1.0 - 0.4 * ao * (1.0 - cutM), 0.2, 1.0) * sliceShade(dHit);")):
+                 ("        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0);", "        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit);")):
     assert main.count(old) == 1, old
     main = main.replace(old, new)
 assert "fieldD" not in main and "gazeDir" not in main

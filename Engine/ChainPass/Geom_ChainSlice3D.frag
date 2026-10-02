@@ -17,7 +17,6 @@ uniform float spaceP;
 uniform float coreP;
 uniform float bodyP;
 uniform float layerP;
-uniform float cutP;
 uniform float morphP;
 uniform float speedP;
 uniform float camP;
@@ -789,12 +788,6 @@ vec3 sliceAxis(float k, float time)
     if (i > 0.5) return normalize(vec3(0.3, 0.2, 1.0));
     return vec3(0.0, 0.0, 1.0);                                                       
 }
-vec3 cutPoint(vec2 p, vec3 N, float z0)
-{
-    float a = 0.015 * sceneTime;
-    vec2 u = (cos(a) * p + sin(a) * vec2(-p.y, p.x)) * 3.0;
-    return vec3(u, z0 - dot(N.xy, u));
-}
 void sliceFrame(float cam, float time, out vec3 N, out vec3 X, out vec3 Y)
 {
     float k0, k1, f;
@@ -835,15 +828,8 @@ void main()
     vec3 rd = normalize(sN + (sX * p.x + sY * p.y) * 0.25);
     ro = sc0 + (sX * p.x + sY * p.y) * 3.0 - rd;
     vec3 sL = normalize(sX * 0.5 + sY * 0.7 - sN * 0.4);     
-    vec3 cutFp = cutPoint(p, sN, sc0.z);
-    if (cutP >= 0.5) {                                      
-        rd = vec3(0.0, 0.0, 1.0); ro = vec3(cutFp.xy, -1.0); sL = normalize(vec3(0.5, 0.7, -0.85));
-    }
     int z0 = min(int(sceneTime), 0);
     int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);
-    if (cutP >= 0.5) {                     // the space-time cut: the plane point, facing the viewer
-        gbPos = vec4(cutFp, 1.0); gbNrm = vec4(0.0, 0.0, -1.0, 1.25); return;
-    }
     float t = 1.0; bool hit = false; vec3 fp = vec3(0.0); float dHit = 0.0;
     vec3 q = vec3(0.0), n = vec3(0.0), e = vec3(0.0);
     float ao = 0.0;

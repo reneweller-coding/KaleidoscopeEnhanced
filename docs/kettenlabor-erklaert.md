@@ -479,17 +479,21 @@ Marschs mit bis zu 100 Schritten.
   werden zu Schnittrichtungen (quer, längs, diagonal 1-1-1, langsam
   drehend …), gewechselt wird nur nach der Uhr. In der Ebene dreht sie sich
   langsam (eine Umdrehung in 7 min).
-* `cutP ≥ 0,5` – **Raumzeit-Schnitt**, ganz ohne Welt: Die Ebene schneidet
-  das implizite Volumen der 2D-Kette selbst. (x, y) sind die
-  Fotokoordinaten, die Zeit der Kette ist die dritte Achse:
-  t = t₀ + a·x + b·y, die Neigung (a, b) aus der Schnittrichtung. Ungeneigt
-  ist das das 2D-Labor; geneigt zeigt jede Bildstelle einen anderen
-  Zeitpunkt der Kette – nie verschmiert, weil der Schnitt immer über (x, y)
-  läuft.
+* Der Raumzeit-Schnitt der 2D-Kette selbst (ohne Welt) ist seit 02.10.
+  die Stellschraube `tiltP` der 2D-Labore (s. „Die Zeitneigung“).
 * Leistung: 117–120 fps, GPU 2,9 ms (3D-Labor 4–5 ms). Jede neue
   Weltkombination kostet einmal ~20–30 ms (wie im 3D-Labor).
 * Bekannt: Sehr feine Faltkerne zerfallen im Schnitt zu Splittern und
   bleiben dunkel.
+
+### Die Zeitneigung (`tiltP`, seit 02.10.)
+Eine 2D-Kette, deren Parameter mit der Zeit laufen, ist ein Volumen
+(x, y, t); jedes Labor zeigte bisher einen Moment davon. `tiltP` kippt den
+Schnitt: Die Zeit der Kette ist t₀ + a·x + b·y, jede Bildstelle zeigt einen
+anderen Moment – eine Zeitwelle, die über das Bild läuft. Die Richtung dreht
+sich langsam (nur nach der Uhr), die Stärke folgt dem langsamen Swell der
+Musik. Unter 0,15 aus. Im 2D-Labor, Tunnel-Labor (auf der Wand) und in
+FxChain, ohne Mehrkosten: jeder Durchgang verschiebt dieselbe Zeit je Pixel.
 
 ### FxChain – die Kette als Nachbearbeitung
 Dieselbe 2D-Stufenmaschine, aber als **FX-Stufe**: Sie verformt nicht das Foto,

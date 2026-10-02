@@ -2219,6 +2219,18 @@ vec2 stageD(vec2 uv)
 #endif
     return r;
 }
+// The time tilt (tiltP): the chain's own time t0 + a x + b y across the
+// picture -- a cut through its space-time volume (x, y, t), so every place
+// shows another moment of the chain.  Its direction turns slowly (clock only),
+// its strength follows the slow swell.  0 below tiltP 0.15.  The uniform lives
+// here (not in the labs' knob lists) so every lab built on these stages compiles.
+uniform float tiltP;
+float chainTiltZ(vec2 q)
+{
+    float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
+    float a = 0.011 * sceneTime;
+    return k * dot(vec2(cos(a), sin(a)), q);
+}
 
 vec2 chain(vec2 uv)
 {
@@ -2226,11 +2238,15 @@ vec2 chain(vec2 uv)
     // and the free order (a switch over the four stages at every position)
     // tripled its cost.
     gIdW = 1.0;
+    float tz = chainTiltZ(uv * 2.0 - 1.0);              // the time tilt on the wall (tiltP)
+    float t0 = gTC, r0 = gRot;
+    gTC += tz; gRot += 0.5 * tz;                      // the wall's chain runs on gTC
     uv = stageA(uv); uv = mirrorUV(uv);
     uv = stageB(uv); uv = mirrorUV(uv);
     uv = stageC(uv); uv = mirrorUV(uv);
     uv = stageD(uv);
     if (gIdW > 0.0) uv = morphMix(uv, tKaleido(mirrorUV(uv), gCw, 6.0, gRot), gIdW);
+    gTC = t0; gRot = r0;
     return uv;
 }
 // The tube's axis winds slowly: the vanishing point wanders.

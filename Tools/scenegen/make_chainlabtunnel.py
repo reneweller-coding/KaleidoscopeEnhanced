@@ -13,6 +13,9 @@ STAGES = STAGES[:STAGES.index("// Stage order: the four stages are not commutati
 # The tunnel's own class subset (chain_classes.TUNNEL_EXCLUDE), see labsubset.py.
 import chain_classes as _cc, labsubset
 STAGES = labsubset.apply(STAGES, _cc.TUNNEL_EXCLUDE, "tunnel")
+# the time tilt (tiltP) sits after the order machinery dropped above: take it along
+_t0 = lab2.index("// The time tilt (tiltP)")
+STAGES += lab2[_t0:lab2.index("vec2 chain(vec2 p)", _t0)]   # chainTiltZ has no gT
 HEAD = r'''//@doc
  * @brief CHAIN LAB TUNNEL: the chain laboratory as a tunnel, like the original
  * Tunnel scenes -- every start rolls a new chain of four continuous transforms
@@ -50,11 +53,15 @@ vec2 chain(vec2 uv)
     // and the free order (a switch over the four stages at every position)
     // tripled its cost.
     gIdW = 1.0;
+    float tz = chainTiltZ(uv * 2.0 - 1.0);              // the time tilt on the wall (tiltP)
+    float t0 = gTC, r0 = gRot;
+    gTC += tz; gRot += 0.5 * tz;                      // the wall's chain runs on gTC
     uv = stageA(uv); uv = mirrorUV(uv);
     uv = stageB(uv); uv = mirrorUV(uv);
     uv = stageC(uv); uv = mirrorUV(uv);
     uv = stageD(uv);
     if (gIdW > 0.0) uv = morphMix(uv, tKaleido(mirrorUV(uv), gCw, 6.0, gRot), gIdW);
+    gTC = t0; gRot = r0;
     return uv;
 }
 // The tube's axis winds slowly: the vanishing point wanders.

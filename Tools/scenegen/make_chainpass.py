@@ -302,15 +302,11 @@ def write_3d(base="ChainLab3D"):
 """
     if slice_:
         # The cut: planes 1..8 until one cuts matter (the last always shown), then the
-        # normal and AO taps -- one call site; the space-time cut needs no world at all.
-        for piece in ("int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);", "t = 1.0 + 1.2 * float(i);", "float cutM = step(0.5, cutP);",
-                      "if (cutM > 0.5) { hit = true; t = 1.0; fp = cutFp; dHit = -1.0; }"):
+        # normal and AO taps -- one call site.
+        for piece in ("int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);", "t = 1.0 + 1.2 * float(i);"):
             assert piece in march, "slice geometry: the lab's cut changed (" + piece + ")"
         one_site = r"""    int z0 = min(int(sceneTime), 0);
     int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);
-    if (cutP >= 0.5) {                     // the space-time cut: the plane point, facing the viewer
-        gbPos = vec4(cutFp, 1.0); gbNrm = vec4(0.0, 0.0, -1.0, 1.25); return;
-    }
     float t = 1.0; bool hit = false; vec3 fp = vec3(0.0); float dHit = 0.0;
     vec3 q = vec3(0.0), n = vec3(0.0), e = vec3(0.0);
     float ao = 0.0;
@@ -403,7 +399,7 @@ def write_3d(base="ChainLab3D"):
         "    if (walkHost < -1.0) col += vec3(walkA.x + walkB.x + walkC.x + walkD.x + walkS.x + walkSpace.x + walkCore.x + walkBody.x);\n"
         "    finish(col);\n}\n")
     # inside the hit branch: the G-buffer replaces the march results
-    _nline = "        vec3 n = cutM > 0.5 ? vec3(0.0, 0.0, -1.0) : normalS(q);\n" if slice_ else "        vec3 n = normal3(q);\n"
+    _nline = "        vec3 n = normalS(q);\n" if slice_ else "        vec3 n = normal3(q);\n"
     assert ("        vec3 q = ro + rd * t;\n" + _nline) in fin_main, "3D final: the hit point lines changed"
     fin_main = fin_main.replace("        vec3 q = ro + rd * t;\n" + _nline, "")
     fin_main = re.sub(r"        float lod = clamp\(log2\(t \* 2\.0\).*?\n", "", fin_main)
@@ -454,6 +450,11 @@ def main():
     gRot = 0.02 * sceneTime + 0.2 * audioPhase;
     gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
     gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
+    if (useStart == 0 && tiltP > 0.0) {       // the time tilt (chainTiltZ): the same shift in every pass of this pixel
+        vec2 sp0 = ((gl_FragCoord.xy + chainOff) / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0);
+        float tz = chainTiltZ(bakeSize > 0.0 ? gl_FragCoord.xy / bakeSize * 2.0 - 1.0 : sp0);
+        gT += tz; gRot += 0.5 * tz;
+    }
 """
     def shader(cls_body, extra_uniforms, main_body, title):
         cls = "vec2 cls(vec2 uv, float v)\n{\n    %s\n    return uv;\n}\n" % strip_comments(cls_body).strip()

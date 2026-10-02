@@ -1469,7 +1469,7 @@ struct PassProg
 {
 	GLuint prog = 0;
 	GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1, texStart = -1, useStart = -1,
-	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1;
+	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1, tilt = -1, swell = -1;
 };
 std::map<std::string, PassProg> s_passProgs;      ///< pass shader file -> program and locations
 std::vector<std::string>        s_passWarm;       ///< pass files still to build in the background
@@ -1504,6 +1504,8 @@ const PassProg &passProg( const std::string &file )
 	p.phase = glGetUniformLocation( p.prog, "audioPhase" );
 	p.spread = glGetUniformLocation( p.prog, "audioSpread" );
 	p.speed = glGetUniformLocation( p.prog, "speedP" );
+	p.tilt = glGetUniformLocation( p.prog, "tiltP" );          // the time tilt (chainTiltZ), 0 in labs without it
+	p.swell = glGetUniformLocation( p.prog, "audioSwell" );
 	return s_passProgs[file] = p;
 }
 /// @brief Pass shaders built in the background a few at a time, once per session (every chain runner lab, each frame).
@@ -1590,9 +1592,12 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	glViewport( 0, 0, W, H );
 	glBindVertexArray( fullscreenVAO() );
 
-	float speedP = 0.5f;
+	float speedP = 0.5f, tiltP = 0.f;
 	for( const Uniform *u : m_uniforms )
+	{
 		if( u->getName() == "speedP" ) speedP = u->snapshotValue();
+		if( u->getName() == "tiltP" ) tiltP = u->snapshotValue();
+	}
 
 	// One pass: `file` reads texture `in` (-1: start from the screen) [and `inB`], writes `out`.
 	auto pass = [&]( const std::string &file, int in, int inB, int out, float subV, float mixF ) {
@@ -1617,6 +1622,8 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 		if( p.phase >= 0 )     glUniform1f( p.phase, f.audioRotPhase );
 		if( p.spread >= 0 )    glUniform1f( p.spread, f.spectralSpread );
 		if( p.speed >= 0 )     glUniform1f( p.speed, speedP );
+		if( p.tilt >= 0 )      glUniform1f( p.tilt, tiltP );
+		if( p.swell >= 0 )     glUniform1f( p.swell, f.swell );
 		glDrawArrays( GL_TRIANGLES, 0, 3 );
 	};
 	unsigned busy = 0;                                   // textures holding a result still needed
@@ -1866,7 +1873,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 	glDrawBuffers( 1, bufs );
 
 	// 2. The colour chain once per projection plane, from the G-buffer.
-	float speedP = 0.5f, solidP = 0.f;
+	float speedP = 0.5f, solidP = 0.f, tiltP = 0.f;
 	for( const Uniform *u : m_uniforms )
 	{
 		if( u->getName() == "speedP" ) speedP = u->snapshotValue();
@@ -1899,6 +1906,8 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 		if( p.phase >= 0 )     glUniform1f( p.phase, f.audioRotPhase );
 		if( p.spread >= 0 )    glUniform1f( p.spread, f.spectralSpread );
 		if( p.speed >= 0 )     glUniform1f( p.speed, speedP );
+		if( p.tilt >= 0 )      glUniform1f( p.tilt, tiltP );
+		if( p.swell >= 0 )     glUniform1f( p.swell, f.swell );
 		const auto td = Clock::now();
 		glDrawArrays( GL_TRIANGLES, 0, 3 );
 		if( specLog && drawnOnce.insert( p.prog ).second && msSince( td ) > 2.0 )

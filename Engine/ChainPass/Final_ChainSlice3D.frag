@@ -19,7 +19,6 @@ uniform float audioSpread;
 uniform float audioKick;
 uniform float audioMode;
 uniform float audioSwell;
-uniform float cutP;
 uniform float reliefP;
 uniform float styleP;
 uniform float speedP;
@@ -102,12 +101,6 @@ vec3 sliceAxis(float k, float time)
     if (i > 0.5) return normalize(vec3(0.3, 0.2, 1.0));
     return vec3(0.0, 0.0, 1.0);                                                       
 }
-vec3 cutPoint(vec2 p, vec3 N, float z0)
-{
-    float a = 0.015 * sceneTime;
-    vec2 u = (cos(a) * p + sin(a) * vec2(-p.y, p.x)) * 3.0;
-    return vec3(u, z0 - dot(N.xy, u));
-}
 void sliceFrame(float cam, float time, out vec3 N, out vec3 X, out vec3 Y)
 {
     float k0, k1, f;
@@ -171,10 +164,6 @@ void main()
     vec3 rd = normalize(sN + (sX * p.x + sY * p.y) * 0.25);
     ro = sc0 + (sX * p.x + sY * p.y) * 3.0 - rd;
     vec3 sL = normalize(sX * 0.5 + sY * 0.7 - sN * 0.4);     
-    vec3 cutFp = cutPoint(p, sN, sc0.z);
-    if (cutP >= 0.5) {                                      
-        rd = vec3(0.0, 0.0, 1.0); ro = vec3(cutFp.xy, -1.0); sL = normalize(vec3(0.5, 0.7, -0.85));
-    }
     ivec2 ip = ivec2(gl_FragCoord.xy - chainOff);
     vec4 gp = texelFetch(texGPos, ip, 0), gn = texelFetch(texGNrm, ip, 0);
     float t = gp.w; bool hit = t >= 0.0;

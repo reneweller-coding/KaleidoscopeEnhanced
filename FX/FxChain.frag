@@ -2521,9 +2521,26 @@ vec2 runChain(vec2 uv)
     if (gIdW > 0.0) a = morphMix(a, tHex(tRot(mirrorUV(a), gCw, 0.5 * gRot), 2.5), gIdW);   // a flat six-fold lattice: no centre
     return a;
 }
+// The time tilt (tiltP): the chain's own time t0 + a x + b y across the
+// picture -- a cut through its space-time volume (x, y, t), so every place
+// shows another moment of the chain.  Its direction turns slowly (clock only),
+// its strength follows the slow swell.  0 below tiltP 0.15.  The uniform lives
+// here (not in the labs' knob lists) so every lab built on these stages compiles.
+uniform float tiltP;
+float chainTiltZ(vec2 q)
+{
+    float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
+    float a = 0.011 * sceneTime;
+    return k * dot(vec2(cos(a), sin(a)), q);
+}
 vec2 chain(vec2 p)
 {
-    return runChain(p * 0.5 + 0.5);
+    float tz = chainTiltZ(p);
+    float t0 = gT, r0 = gRot;
+    gT += tz; gRot += 0.5 * tz;
+    vec2 c = runChain(p * 0.5 + 0.5);
+    gT = t0; gRot = r0;
+    return c;
 }
 
 void main()
