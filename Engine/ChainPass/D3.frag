@@ -26,6 +26,7 @@ vec2 tRipple(vec2 uv, vec2 c, float freq, float amp, float t)
 }
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
+vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 uniform float tiltP;
 float chainTiltZ(vec2 q)
 {
@@ -58,6 +59,6 @@ void main()
     vec2 sp = (fc / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0);
     vec2 uv0 = useStart == 1 ? st.xy : (bakeSize > 0.0 ? gl_FragCoord.xy / bakeSize : sp * 0.5 + 0.5);
     vec2 uv = firstPass == 1 ? uv0 : mirrorUV(texelFetch(texIn, ivec2(gl_FragCoord.xy), 0).xy);
-    fragColor = vec4(cls(uv, subV), 0.0, 1.0);
+    fragColor = vec4(morphMix(uv, cls(uv, subV), 0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0)), 0.0, 1.0);
 }
 

@@ -544,8 +544,13 @@ def main():
                 code = b
             else:
                 code = default
+            main_body = std_main
+            if st == "D" and br not in (0, 1, 5):     # the warp breathes with the swell (stageDs)
+                main_body = std_main.replace("fragColor = vec4(cls(uv, subV), 0.0, 1.0);",
+                                             "fragColor = vec4(morphMix(uv, cls(uv, subV), 0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0)), 0.0, 1.0);")
+                assert main_body != std_main
             io.open(os.path.join(OUT, "%s%d.frag" % (st, br)), "w", encoding="utf-8", newline="\n").write(
-                shader(code, "", std_main, title))
+                shader(code, "", main_body, title))
             written += 1
     # identity (a 'none' stage inside a fade), mix, fallback
     io.open(os.path.join(OUT, "Id.frag"), "w", encoding="utf-8", newline="\n").write(

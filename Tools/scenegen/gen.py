@@ -1963,6 +1963,13 @@ def spec_variants(body):
             copies += "\n" + c.rstrip()[:-1].rstrip() + "\n    return uv;\n}\n"
         body = body[:i] + "#ifndef SPEC_%s0\n%s\n#else%s\n#endif" % (st, fn, copies) + body[j:]
         a = ("    vec2 r = stage%sk(uv, ka, va);\n    if (f > 0.0) r = morphMix(r, stage%sk(uv, kb, vb), f);\n" % (st, st))
+        if st == "D" and body.count(a) == 0:
+            # the warp breathes with the swell (breathD around the branch, its number a constant here)
+            a = "    vec2 r = stageDs(uv, ka, va);\n    if (f > 0.0) r = morphMix(r, stageDs(uv, kb, vb), f);\n"
+            assert body.count(a) == 1, st
+            body = body.replace(a, "#ifdef SPEC_D0\n    vec2 r = breathD(uv, stageDk_0(uv, va), SPEC_D0);\n"
+                                   "    if (f > 0.0) r = morphMix(r, breathD(uv, stageDk_1(uv, vb), SPEC_D1), f);\n#else\n%s#endif\n" % a)
+            continue
         assert body.count(a) == 1, st
         body = body.replace(a, "#ifdef SPEC_%s0\n    vec2 r = stage%sk_0(uv, va);\n    if (f > 0.0) r = morphMix(r, stage%sk_1(uv, vb), f);\n#else\n%s#endif\n" % (st, st, st, a))
     header = "float fieldK(vec3 p, float xs, float xc, float xb, int world)"

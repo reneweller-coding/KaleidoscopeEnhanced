@@ -314,6 +314,18 @@ vec2 stageC(vec2 uv)
     if (f > 0.0) r = morphMix(r, stageCk(uv, kb, vb), f);
     return r;
 }
+// Music in the structure: the warp stage breathes with the slow swell -- 55 %
+// of its displacement in a quiet passage, all of it at full swell (a partial
+// warp: continuous at any strength).  Not for none, twirl and turning: no
+// rotation on the music.
+vec2 breathD(vec2 uv, vec2 r, int b)
+{
+    if (b == 0 || b == 1 || b == 5) return r;
+    return morphMix(uv, r, 0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
+}
+#ifndef SPEC_D0
+vec2 stageDs(vec2 uv, int k, float v) { return breathD(uv, stageDk(uv, k, v), ordd(k)); }
+#endif
 vec2 stageD(vec2 uv)
 {
     // Decide first (the class shown, the class faded to, the fade), then
@@ -333,8 +345,8 @@ vec2 stageD(vec2 uv)
         }
     }
     gIdW *= (ka <= 2 ? 1.0 - f : 0.0) + (kb <= 2 ? f : 0.0);
-    vec2 r = stageDk(uv, ka, va);
-    if (f > 0.0) r = morphMix(r, stageDk(uv, kb, vb), f);
+    vec2 r = stageDs(uv, ka, va);
+    if (f > 0.0) r = morphMix(r, stageDs(uv, kb, vb), f);
     return r;
 }
 // Stage order: the four stages are not commutative (a spiral seen through a
