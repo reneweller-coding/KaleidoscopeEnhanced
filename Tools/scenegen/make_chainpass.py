@@ -324,7 +324,7 @@ def write_3d(base="ChainLab3D"):
     if slice_:
         # The cut: planes 1..8 until one cuts matter (the last always shown), then the
         # normal and AO taps -- one call site.
-        for piece in ("int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);", "t = 1.0 + 1.2 * float(i);"):
+        for piece in ("int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);", "t = 1.0 + sDz * float(i);"):
             assert piece in march, "slice geometry: the lab's cut changed (" + piece + ")"
         one_site = r"""    int z0 = min(int(sceneTime), 0);
     int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);
@@ -343,7 +343,7 @@ def write_3d(base="ChainLab3D"):
         float d = fieldS(pos);
         if (stage == 0) {
             if (d < 0.0 || layer >= nl - 1) { hit = true; fp = gP; q = pos; dHit = d; stage = 1; continue; }
-            ++layer; t = 1.0 + 1.2 * float(layer);
+            ++layer; t = 1.0 + sDz * float(layer);
         } else if (stage <= 4) {
             n += e * d;
             if (stage == 4) n = normalize(n + vec3(1e-7));
@@ -355,7 +355,7 @@ def write_3d(base="ChainLab3D"):
             ++stage;
         }
     }
-    ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit);
+    ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);
 """
         geo_main = ("void main()\n{\n" + pre + cam + one_site +
                     "    gbPos = vec4(fp, t);\n    gbNrm = vec4(n, ao);\n}\n")

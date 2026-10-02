@@ -606,8 +606,22 @@ vec3 normalS(vec3 p)
     vec3 n = e.xyy * fieldS(p + e.xyy) + e.yyx * fieldS(p + e.yyx) + e.yxy * fieldS(p + e.yxy) + e.xxx * fieldS(p + e.xxx);
     return normalize(n + vec3(1e-7));                       // deep inside a body the field can be flat
 }
-// Matter lit, air dim: the cut through a body is the subject.
-float sliceShade(float d) { return mix(0.6, 1.25, smoothstep(0.03, -0.03, d)); }
+// Matter lit, air dim: the cut through a body is the subject.  The edge one
+// pixel wide (px: a pixel in the world) -- crisp, but not stair-stepped.
+float sliceShade(float d, float px) { return mix(0.6, 1.25, smoothstep(px, -px, d)); }
+// How close the view comes per fold core: the finer it folds (its scale per
+// round to the power of its rounds; the inversion folds count as fine), the
+// closer -- a Menger sponge (3^3) seen at a third of the plain lattice's view.
+float sliceZoom(int kc)
+{
+    if (kc == 5) return 0.35;                                   // Menger sponge (27)
+    if (kc == 6 || kc == 11 || kc == 12 || kc == 15) return 0.42;   // Kleinian, pseudo-Kleinian, kaliset, Apollonian
+    if (kc == 17 || kc == 19) return 0.48;                      // cross-Menger (14), mixed Sierpinski (10)
+    if (kc == 13 || kc == 14 || kc == 20 || kc == 7 || kc == 16) return 0.58;   // scale 2 KIFS (8), icosahedral (7), Mandelbulb
+    if (kc == 1 || kc == 2 || kc == 21 || kc == 9) return 0.75; // tetra / octa KIFS (4-5), hyperbolic honeycomb
+    if (kc == 10 || kc == 18) return 0.9;                       // amazing surface, Mandalay box (2-3)
+    return 1.1;                                                 // no core, plane folds, sphere-inversion box, polyhedral kaleidoscope
+}
 // The plane normal per gaze (the app pans between gazes, clock only).
 vec3 sliceAxis(float k, float time)
 {
@@ -731,14 +745,20 @@ void main()
     vec3 sN, sX, sY;
     sliceFrame(camP, sceneTime, sN, sX, sY);
     vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT));
+    // The view height follows the fold core (sliceZoom), gliding through a core fade.
+    vec3 wcore = (walkHost > 0.5 && walkAll()) ? walkCore : vec3(coreP, coreP, 0.0);
+    float sView = 3.0 * mix(sliceZoom(ordco(pickStage(wcore.x, 22))), sliceZoom(ordco(pickStage(wcore.y, 22))),
+                            smoothstep(0.0, 1.0, wcore.z));
+    float sDz = 0.4 * sView;                                // the planes' spacing goes with the view
+    float sPx = sView / resolution.y;                       // one pixel in the world
     gCam = sc0 - vec3(0.0, 0.0, 6.0);                       // the Droste worlds centre on the plane
     vec3 rd = normalize(sN + (sX * p.x + sY * p.y) * 0.25);
-    ro = sc0 + (sX * p.x + sY * p.y) * 3.0 - rd;
+    ro = sc0 + (sX * p.x + sY * p.y) * sView - rd;
     vec3 sL = normalize(sX * 0.5 + sY * 0.7 - sN * 0.4);     // the light from the viewer's side of the plane
     float t = 0.05; float d = 1.0; bool hit = false; vec3 fp = vec3(0.0); float fdr = 1.0; float dHit = 0.0;
     int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);      // 1..8 planes, the last one always shown
     for (int i = 0; i < 8; ++i) {
-        t = 1.0 + 1.2 * float(i);
+        t = 1.0 + sDz * float(i);
         d = fieldS(ro + rd * t);
         if (d < 0.0 || i >= nl - 1) { hit = true; fp = gP; fdr = gDR; dHit = d; break; }
     }
@@ -767,7 +787,7 @@ void main()
         float diff = 0.5 + 0.5 * dot(n, L);   // wrapped: a cut shows normals of every direction
         float ao = 0.0;
         for (int k = 1; k <= 2; ++k) { float h = 0.06 * float(k); ao += (h - fieldS(q + n * h) + dHit) / h; }
-        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit);
+        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);
         float fres = pow(1.0 - abs(dot(n, -rd)), 3.0);
         vec3 surf = tex * lc * (0.35 + 0.9 * diff) * ao;
         vec3 rimC = glowColour(tex, fp.xy, hueP * 0.159);

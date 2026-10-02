@@ -19,7 +19,9 @@ uniform float audioSpread;
 uniform float audioKick;
 uniform float audioMode;
 uniform float audioSwell;
+uniform float coreP;
 uniform float reliefP;
+uniform float morphP;
 uniform float styleP;
 uniform float speedP;
 uniform float detailP;
@@ -86,10 +88,23 @@ uniform vec3 camGaze;
 float camFlight(float gt) { return camHost > 0.5 ? camZ : gt; }
 float gT, gTC, gSpread, gRot, gMw;
 vec2 gCw, gCt;
+int pickStage(float x, int n) { return int(min(floor(clamp(x, 0.0, 1.0) * float(n)), float(n - 1))); }
 float sides(float v) { return 5.0 + floor(v * 4.99); }
 uniform vec3 walkA, walkB, walkC, walkD, walkS;
 uniform float walkHost;
+bool walkAll() { return clamp(morphP, 0.0, 1.0) >= 0.5; }
+int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 20; if (i == 5) return 15; if (i == 6) return 18; if (i == 7) return 9; if (i == 8) return 6; if (i == 9) return 11; if (i == 10) return 10; if (i == 11) return 16; if (i == 12) return 12; if (i == 13) return 1; if (i == 14) return 19; if (i == 15) return 14; if (i == 16) return 7; if (i == 17) return 13; if (i == 18) return 2; if (i == 19) return 21; if (i == 20) return 5; return 17; }
 uniform vec3 walkSpace, walkCore, walkBody;
+float sliceZoom(int kc)
+{
+    if (kc == 5) return 0.35;                                   
+    if (kc == 6 || kc == 11 || kc == 12 || kc == 15) return 0.42;   
+    if (kc == 17 || kc == 19) return 0.48;                      
+    if (kc == 13 || kc == 14 || kc == 20 || kc == 7 || kc == 16) return 0.58;   
+    if (kc == 1 || kc == 2 || kc == 21 || kc == 9) return 0.75; 
+    if (kc == 10 || kc == 18) return 0.9;                       
+    return 1.1;                                                 
+}
 vec3 sliceAxis(float k, float time)
 {
     float i = mod(k, 7.0);
@@ -160,9 +175,15 @@ void main()
     vec3 sN, sX, sY;
     sliceFrame(camP, sceneTime, sN, sX, sY);
     vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT));
+    
+    vec3 wcore = (walkHost > 0.5 && walkAll()) ? walkCore : vec3(coreP, coreP, 0.0);
+    float sView = 3.0 * mix(sliceZoom(ordco(pickStage(wcore.x, 22))), sliceZoom(ordco(pickStage(wcore.y, 22))),
+                            smoothstep(0.0, 1.0, wcore.z));
+    float sDz = 0.4 * sView;                                
+    float sPx = sView / resolution.y;                       
     gCam = sc0 - vec3(0.0, 0.0, 6.0);                       
     vec3 rd = normalize(sN + (sX * p.x + sY * p.y) * 0.25);
-    ro = sc0 + (sX * p.x + sY * p.y) * 3.0 - rd;
+    ro = sc0 + (sX * p.x + sY * p.y) * sView - rd;
     vec3 sL = normalize(sX * 0.5 + sY * 0.7 - sN * 0.4);     
     ivec2 ip = ivec2(gl_FragCoord.xy - chainOff);
     vec4 gp = texelFetch(texGPos, ip, 0), gn = texelFetch(texGNrm, ip, 0);

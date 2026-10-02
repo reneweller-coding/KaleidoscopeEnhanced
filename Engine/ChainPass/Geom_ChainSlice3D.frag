@@ -776,7 +776,17 @@ float field3(vec3 p)
 #endif
 }
 float fieldS(vec3 p) { gDR = 1.0; return field3(p); }
-float sliceShade(float d) { return mix(0.6, 1.25, smoothstep(0.03, -0.03, d)); }
+float sliceShade(float d, float px) { return mix(0.6, 1.25, smoothstep(px, -px, d)); }
+float sliceZoom(int kc)
+{
+    if (kc == 5) return 0.35;                                   
+    if (kc == 6 || kc == 11 || kc == 12 || kc == 15) return 0.42;   
+    if (kc == 17 || kc == 19) return 0.48;                      
+    if (kc == 13 || kc == 14 || kc == 20 || kc == 7 || kc == 16) return 0.58;   
+    if (kc == 1 || kc == 2 || kc == 21 || kc == 9) return 0.75; 
+    if (kc == 10 || kc == 18) return 0.9;                       
+    return 1.1;                                                 
+}
 vec3 sliceAxis(float k, float time)
 {
     float i = mod(k, 7.0);
@@ -824,9 +834,15 @@ void main()
     vec3 sN, sX, sY;
     sliceFrame(camP, sceneTime, sN, sX, sY);
     vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT));
+    
+    vec3 wcore = (walkHost > 0.5 && walkAll()) ? walkCore : vec3(coreP, coreP, 0.0);
+    float sView = 3.0 * mix(sliceZoom(ordco(pickStage(wcore.x, 22))), sliceZoom(ordco(pickStage(wcore.y, 22))),
+                            smoothstep(0.0, 1.0, wcore.z));
+    float sDz = 0.4 * sView;                                
+    float sPx = sView / resolution.y;                       
     gCam = sc0 - vec3(0.0, 0.0, 6.0);                       
     vec3 rd = normalize(sN + (sX * p.x + sY * p.y) * 0.25);
-    ro = sc0 + (sX * p.x + sY * p.y) * 3.0 - rd;
+    ro = sc0 + (sX * p.x + sY * p.y) * sView - rd;
     vec3 sL = normalize(sX * 0.5 + sY * 0.7 - sN * 0.4);     
     int z0 = min(int(sceneTime), 0);
     int nl = 1 + int(clamp(layerP, 0.0, 1.0) * 7.99);
@@ -845,7 +861,7 @@ void main()
         float d = fieldS(pos);
         if (stage == 0) {
             if (d < 0.0 || layer >= nl - 1) { hit = true; fp = gP; q = pos; dHit = d; stage = 1; continue; }
-            ++layer; t = 1.0 + 1.2 * float(layer);
+            ++layer; t = 1.0 + sDz * float(layer);
         } else if (stage <= 4) {
             n += e * d;
             if (stage == 4) n = normalize(n + vec3(1e-7));
@@ -857,7 +873,7 @@ void main()
             ++stage;
         }
     }
-    ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit);
+    ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);
     gbPos = vec4(fp, t);
     gbNrm = vec4(n, ao);
 }
