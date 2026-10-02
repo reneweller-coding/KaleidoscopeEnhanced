@@ -302,7 +302,11 @@ checks all of that and exits 0 or 1, without opening a window.
 
 The sender this was built for is the Phosphene psytrance generator (its
 `docs/PLAN.md`, section 8.3); the wire format is plain OSC 1.0, so anything
-that can send those five messages works.
+that can send those five messages works. The rest of its family is understood
+in its own words as well: Totality (`/tot/...`), Parhelion (`/parh/...`),
+Ephemeris (`/eph/...`) and Noctuary (`/noct/...`) -- their blocks, phases and
+scenes become sections, their Camelot keys keys, a Return, a Drop or a PEAK a
+drop (`Source/CueReceiver.h` has the table).
 
 **From a file, for a batch render.** A rendered track can carry its cues in a
 text file instead: one message per line, tab-separated — the second in the WAV,

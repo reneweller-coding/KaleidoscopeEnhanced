@@ -33,6 +33,14 @@
  * responder: the render loop and the event loop are the same thread here, so a datagram can be
  * turned into state the next frame reads without any synchronisation.
  *
+ * **The family's dialects (02.10.2026).** The other generators of the family say the same things in their own words,
+ * and decodeScoreCue() understands them too: Totality (`/tot/beat i f`, `/tot/bar i`, `/tot/block s`, `/tot/op s`,
+ * `/tot/key s` -- a Camelot label such as "8A"), Parhelion (`/parh/...`, the same five), Ephemeris (`/eph/beat i f`,
+ * `/eph/phase s i`, `/eph/key s`, `/eph/conjunction i f`) and Noctuary (`/noct/bar i`, `/noct/key s`, `/noct/scene s f`).
+ * A block, a phase or a scene becomes a section of the table above (a Return, a Drop, a PEAK lands as a drop as well),
+ * a bar line is a bar line (Ephemeris has none: its every fourth beat is one), an operation or a conjunction keeps the
+ * cues alive without moving anything.
+ *
  * **Or from a file (02.10.2026).** A rendered track has its cues written down beside it, so a batch
  * render (`-x track.wav -k track.cues.tsv`) can be steered by them as a live set is by the socket:
  * ScoreCueFile holds the file's cues and hands each to ScoreCues once the offline WAV has played up
@@ -88,6 +96,7 @@ struct ScoreCue
 	float energy  = 0.f;             ///< 0..1 on the generator's energy arc, for Kind::Section
 	int   keyPc   = -1;              ///< pitch class 0..11 of the key, or -1
 	char  text[40] = {};             ///< the string argument as it arrived ("Drop", "F# Phrygian")
+	bool  drop    = false;           ///< a section that lands as a drop as well (a dialect's Return, Drop or PEAK)
 };
 
 /**

@@ -94,6 +94,136 @@ int pitchClassOf( const char *text )
 	return ( pc % 12 + 12 ) % 12;
 }
 
+/// A section name of one of the family's dialects, and what it means here.
+struct DialectSection
+{
+	const char *name;      ///< as the generator sends it (a prefix where @c prefix is set)
+	CueSection  section;   ///< the section it becomes
+	float       energy;    ///< its energy (the dialects send none)
+	bool        drop;      ///< whether it lands as a drop too
+	bool        prefix;    ///< @c name is a prefix ("Block 3")
+};
+
+/// Totality's blocks (its Cue.h): the intro, the plateaus, the reduction, the return, the outro.
+const DialectSection kTotalitySections[] = {
+	{ "Intro", CueSection::Intro, 0.30f, false, false }, { "Block", CueSection::Groove, 0.60f, false, true },
+	{ "Reduction", CueSection::Break, 0.35f, false, false }, { "Return", CueSection::Drop, 0.90f, true, false },
+	{ "Outro", CueSection::Outro, 0.30f, false, false } };
+/// Parhelion's sections (its Cue.h).
+const DialectSection kParhelionSections[] = {
+	{ "Intro", CueSection::Intro, 0.30f, false, false }, { "Groove", CueSection::Groove, 0.55f, false, false },
+	{ "Breakdown", CueSection::Break, 0.30f, false, false }, { "Build", CueSection::Build, 0.60f, false, false },
+	{ "Main drop", CueSection::Drop, 1.00f, true, false }, { "Drop", CueSection::Drop, 0.90f, true, false },
+	{ "Outro", CueSection::Outro, 0.30f, false, false } };
+/// Ephemeris' phases (its Cue.h).
+const DialectSection kEphemerisSections[] = {
+	{ "ATMOSPHERE", CueSection::Intro, 0.20f, false, false }, { "ENTRY", CueSection::Groove, 0.45f, false, false },
+	{ "BUILD", CueSection::Build, 0.60f, false, false }, { "LEAD", CueSection::Drop, 0.75f, false, false },
+	{ "PEAK", CueSection::Drop, 0.95f, true, false }, { "BREAKDOWN", CueSection::Break, 0.35f, false, false },
+	{ "BRIDGE", CueSection::Groove, 0.50f, false, false }, { "CODA", CueSection::Outro, 0.30f, false, false } };
+
+/// @p text looked up in @p table (@p n entries); anything else -- a set's track, a name not in the table -- is a groove.
+template <size_t N>
+void dialectSection( const DialectSection ( &table )[N], ScoreCue &out )
+{
+	out.kind    = ScoreCue::Kind::Section;
+	out.section = static_cast<int>( CueSection::Groove );
+	out.energy  = 0.5f;
+	for( const DialectSection &d : table )
+		if( d.prefix ? strncmp( out.text, d.name, strlen( d.name ) ) == 0 : strcmp( out.text, d.name ) == 0 )
+		{
+			out.section = static_cast<int>( d.section );
+			out.energy  = d.energy;
+			out.drop    = d.drop;
+			return;
+		}
+}
+
+/// The pitch class of a Camelot label ("8A" A minor, "8B" C major), or -1.
+int camelotPitchClass( const char *text )
+{
+	char *end = nullptr;
+	const long n = strtol( text, &end, 10 );
+	if( end == text || n < 1 || n > 12 || ( *end != 'A' && *end != 'B' ) || end[1] != 0 )
+		return -1;
+	const int minor = static_cast<int>( ( 7 * ( n - 5 ) % 12 + 12 ) % 12 );   // 8A -> 9 (A); the inverse of 7k+4 (mod 12)
+	return *end == 'A' ? minor : ( minor + 3 ) % 12;                          // B: the relative major
+}
+
+/**
+ * @brief One message of the family's other dialects (see CueReceiver.h), after its address.
+ * @return true when it is one of theirs and well formed
+ */
+bool decodeDialect( const char *address, const char *data, int size, int pos, ScoreCue &out )
+{
+	enum Who { Tot, Parh, Eph, Noct } who;
+	const char *what;
+	if( strncmp( address, "/tot/", 5 ) == 0 ) { who = Tot; what = address + 5; }
+	else if( strncmp( address, "/parh/", 6 ) == 0 ) { who = Parh; what = address + 6; }
+	else if( strncmp( address, "/eph/", 5 ) == 0 ) { who = Eph; what = address + 5; }
+	else if( strncmp( address, "/noct/", 6 ) == 0 ) { who = Noct; what = address + 6; }
+	else return false;
+
+	char tags[16];
+	if( !readString( data, size, pos, tags, sizeof( tags ) ) || tags[0] != ',' )
+		return false;
+	// The arguments, by their tags; anything left over or missing refuses the message.
+	int ints[2] = {};
+	float floats[2] = {};
+	int ni = 0, nf = 0, ns = 0;
+	for( const char *t = tags + 1; *t != 0; ++t )
+	{
+		if( *t == 'i' && ni < 2 && pos + 4 <= size ) { ints[ni++] = readInt( data, pos ); pos += 4; }
+		else if( *t == 'f' && nf < 2 && pos + 4 <= size ) { floats[nf++] = readFloat( data, pos ); pos += 4; }
+		else if( *t == 's' && ns < 1 && readString( data, size, pos, out.text, sizeof( out.text ) ) ) ns++;
+		else return false;
+	}
+	if( pos != size )
+		return false;
+
+	const bool beat = strcmp( what, "beat" ) == 0 && ni == 1 && ns == 0;
+	if( beat && who != Noct )
+	{
+		out.index = ints[0];
+		// Ephemeris sends no bar lines: its every fourth beat is one (its pieces are in four).
+		out.kind = ( who == Eph && ints[0] >= 0 && ints[0] % 4 == 0 ) ? ScoreCue::Kind::Bar : ScoreCue::Kind::Beat;
+		if( out.kind == ScoreCue::Kind::Bar )
+			out.index = ints[0] / 4;
+		return true;
+	}
+	if( strcmp( what, "bar" ) == 0 && ni == 1 && ns == 0 && nf == 0 && who != Eph )
+	{
+		out.kind = ScoreCue::Kind::Bar;
+		out.index = ints[0];
+		return true;
+	}
+	if( strcmp( what, "key" ) == 0 && ns == 1 && ni == 0 && nf == 0 )
+	{
+		out.kind  = ScoreCue::Kind::Key;
+		out.keyPc = ( who == Tot || who == Parh ) ? camelotPitchClass( out.text ) : pitchClassOf( out.text );
+		return true;
+	}
+	if( who == Tot && strcmp( what, "block" ) == 0 && ns == 1 && ni == 0 ) { dialectSection( kTotalitySections, out ); return true; }
+	if( who == Parh && strcmp( what, "block" ) == 0 && ns == 1 && ni == 0 ) { dialectSection( kParhelionSections, out ); return true; }
+	if( who == Eph && strcmp( what, "phase" ) == 0 && ns == 1 && ni == 1 ) { dialectSection( kEphemerisSections, out ); return true; }
+	if( who == Noct && strcmp( what, "scene" ) == 0 && ns == 1 && nf == 1 )
+	{
+		// A preset or a journey's step arriving: a new scene, at the energy Noctuary gives it.
+		out.kind    = ScoreCue::Kind::Section;
+		out.section = static_cast<int>( CueSection::Groove );
+		out.energy  = floats[0];
+		return true;
+	}
+	// The rest is traffic: an operation of Totality's or Parhelion's form, a conjunction of Ephemeris' rows.
+	if( ( ( who == Tot || who == Parh ) && strcmp( what, "op" ) == 0 && ns == 1 ) ||
+	    ( who == Eph && strcmp( what, "conjunction" ) == 0 && ni == 1 && nf == 1 ) )
+	{
+		out.kind = ScoreCue::Kind::Unknown;
+		return true;
+	}
+	return false;
+}
+
 } // namespace
 
 bool decodeScoreCue( const char *data, int size, ScoreCue &out )
@@ -111,7 +241,7 @@ bool decodeScoreCue( const char *data, int size, ScoreCue &out )
 		if( strcmp( address, kAddresses[i] ) == 0 )
 			kind = i;
 	if( kind < 0 )
-		return false;                       // not ours; the port may carry anything
+		return decodeDialect( address, data, size, pos, out );   // the family's other generators, or not ours
 
 	char tags[16];
 	if( !readString( data, size, pos, tags, sizeof( tags ) ) || tags[0] != ',' )
@@ -321,6 +451,8 @@ void ScoreCues::apply( const ScoreCue &c )
 			m_section     = true;
 			m_sectionType = c.section;
 			m_energy      = c.energy;
+			if( c.drop )
+				m_drop = true;   // a dialect's Return, Drop or PEAK: a new section that lands as a drop
 			break;
 		case ScoreCue::Kind::Drop:
 			m_drop = true;

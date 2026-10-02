@@ -110,6 +110,21 @@ std::vector<char> dropMessage()
 	return b;
 }
 
+/// A message of any shape the dialects use: the tags, then one string (if 's' is among them) and the numbers in order.
+std::vector<char> dialectMessage( const char *address, const char *tags, const char *text, int i, float f )
+{
+	std::vector<char> b;
+	putString( b, address );
+	putString( b, tags );
+	for( const char *t = tags + 1; *t != 0; ++t )
+	{
+		if( *t == 's' ) putString( b, text );
+		else if( *t == 'i' ) putInt( b, i );
+		else if( *t == 'f' ) putFloat( b, f );
+	}
+	return b;
+}
+
 bool decodes( const std::vector<char> &b, ScoreCue &out )
 {
 	return decodeScoreCue( b.data(), static_cast<int>( b.size() ), out );
@@ -339,6 +354,43 @@ int runCueSelfTest()
 		applyScoreCues( ScoreCues::instance().drain( 0.016f ), bridge, x );
 		check( x.sectionCount == 18, "and a sender that comes back still moves it by exactly one",
 		       std::to_string( x.sectionCount ) );
+	}
+
+	// ---------------------------------------------------------------- the family's dialects (02.10.2026)
+	{
+		ScoreCue d;
+		check( decodes( dialectMessage( "/tot/bar", ",i", "", 12, 0.f ), d ) && d.kind == ScoreCue::Kind::Bar && d.index == 12,
+		       "Totality's bar line is a bar line" );
+		check( decodes( dialectMessage( "/tot/beat", ",if", "", 49, 130.f ), d ) && d.kind == ScoreCue::Kind::Beat && d.index == 49,
+		       "and its beat a beat" );
+		check( decodes( dialectMessage( "/tot/block", ",s", "Block 3", 0, 0.f ), d ) && d.kind == ScoreCue::Kind::Section
+		       && d.section == static_cast<int>( CueSection::Groove ) && !d.drop, "its plateau ('Block 3') a groove" );
+		check( decodes( dialectMessage( "/tot/block", ",s", "Return", 0, 0.f ), d ) && d.section == static_cast<int>( CueSection::Drop ) && d.drop,
+		       "and its Return a drop" );
+		check( decodes( dialectMessage( "/tot/key", ",s", "8A", 0, 0.f ), d ) && d.kind == ScoreCue::Kind::Key && d.keyPc == 9,
+		       "a Camelot label: 8A is A" );
+		check( decodes( dialectMessage( "/parh/key", ",s", "8B", 0, 0.f ), d ) && d.keyPc == 0 && decodes( dialectMessage( "/parh/key", ",s", "1A", 0, 0.f ), d ) && d.keyPc == 8,
+		       "8B is C, 1A is G#" );
+		check( decodes( dialectMessage( "/parh/block", ",s", "Breakdown", 0, 0.f ), d ) && d.section == static_cast<int>( CueSection::Break ),
+		       "Parhelion's breakdown a break" );
+		check( decodes( dialectMessage( "/parh/op", ",s", "add lead", 0, 0.f ), d ) && d.kind == ScoreCue::Kind::Unknown,
+		       "and an operation traffic, nothing more" );
+		check( decodes( dialectMessage( "/eph/beat", ",if", "", 36, 124.f ), d ) && d.kind == ScoreCue::Kind::Bar && d.index == 9
+		       && decodes( dialectMessage( "/eph/beat", ",if", "", 37, 124.f ), d ) && d.kind == ScoreCue::Kind::Beat,
+		       "Ephemeris' every fourth beat is a bar line" );
+		check( decodes( dialectMessage( "/eph/phase", ",si", "PEAK", 5, 0.f ), d ) && d.section == static_cast<int>( CueSection::Drop ) && d.drop,
+		       "its PEAK a drop" );
+		check( decodes( dialectMessage( "/eph/key", ",s", "F#", 0, 0.f ), d ) && d.keyPc == 6, "its key a root" );
+		check( decodes( dialectMessage( "/noct/scene", ",sf", "Somnus Field", 0, 0.3f ), d ) && d.kind == ScoreCue::Kind::Section
+		       && d.energy > 0.29f && d.energy < 0.31f, "Noctuary's scene a section at its energy" );
+		check( !decodes( dialectMessage( "/tot/block", ",i", "", 3, 0.f ), d ) && !decodes( dialectMessage( "/eph/bar", ",i", "", 3, 0.f ), d ),
+		       "and a dialect's message of the wrong shape is refused" );
+		ScoreCues::instance().reset();
+		decodes( dialectMessage( "/tot/block", ",s", "Return", 0, 0.f ), d );
+		ScoreCues::instance().apply( d );
+		const ScoreCues::Frame fr = ScoreCues::instance().drain( 0.016f );
+		check( fr.live && fr.section && fr.drop, "a Return reaches the scheduler as a section and a drop at once" );
+		ScoreCues::instance().reset();
 	}
 
 	// ---------------------------------------------------------------- a cue file (-k, 02.10.2026)
