@@ -130,6 +130,7 @@ float EffectShader::s_depthValid[2] = { 0.f, 0.f };
 float EffectShader::s_shadowPass = 0.f;
 float EffectShader::s_reviewSolo  = 0.f;
 bool  EffectShader::s_chainRunner = false;
+float EffectShader::s_chainScale = 1.f;
 float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
@@ -1469,7 +1470,7 @@ struct PassProg
 {
 	GLuint prog = 0;
 	GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1, texStart = -1, useStart = -1,
-	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1, tilt = -1, swell = -1;
+	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1, tilt = -1, swell = -1, scale = -1;
 };
 std::map<std::string, PassProg> s_passProgs;      ///< pass shader file -> program and locations
 std::vector<std::string>        s_passWarm;       ///< pass files still to build in the background
@@ -1506,6 +1507,7 @@ const PassProg &passProg( const std::string &file )
 	p.speed = glGetUniformLocation( p.prog, "speedP" );
 	p.tilt = glGetUniformLocation( p.prog, "tiltP" );          // the time tilt (chainTiltZ), 0 in labs without it
 	p.swell = glGetUniformLocation( p.prog, "audioSwell" );
+	p.scale = glGetUniformLocation( p.prog, "passScale" );     // the pass grid relative to the frame
 	return s_passProgs[file] = p;
 }
 /// @brief Pass shaders built in the background a few at a time, once per session (every chain runner lab, each frame).
@@ -1565,8 +1567,10 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	glGetIntegerv( 0x85B5 /* GL_VERTEX_ARRAY_BINDING */, &vao );
 	const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST ), scissor = glIsEnabled( GL_SCISSOR_TEST );
 
-	const int W = m_chainBake > 0 ? m_chainBake : ( vp[2] > 0 ? vp[2] : 1 );
-	const int H = m_chainBake > 0 ? m_chainBake : ( vp[3] > 0 ? vp[3] : 1 );
+	// A coarser chain (chainScale < 1): the passes on a smaller grid, the last pass reads it bilinearly.
+	const float cs = m_chainBake > 0 ? 1.f : ( s_chainScale < 0.5f ? 0.5f : ( s_chainScale > 1.f ? 1.f : s_chainScale ) );
+	const int W = m_chainBake > 0 ? m_chainBake : ( vp[2] > 0 ? (int) ceilf( vp[2] * cs ) : 1 );
+	const int H = m_chainBake > 0 ? m_chainBake : ( vp[3] > 0 ? (int) ceilf( vp[3] * cs ) : 1 );
 	if( W != m_cpW || H != m_cpH || !m_cpTex[0] )
 	{
 		if( m_cpTex[0] ) { glDeleteTextures( 5, m_cpTex ); glDeleteFramebuffers( 5, m_cpFbo ); }
@@ -1624,6 +1628,7 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 		if( p.speed >= 0 )     glUniform1f( p.speed, speedP );
 		if( p.tilt >= 0 )      glUniform1f( p.tilt, tiltP );
 		if( p.swell >= 0 )     glUniform1f( p.swell, f.swell );
+		if( p.scale >= 0 )     glUniform1f( p.scale, cs );
 		glDrawArrays( GL_TRIANGLES, 0, 3 );
 	};
 	unsigned busy = 0;                                   // textures holding a result still needed
@@ -1723,8 +1728,10 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	glBindTexture( GL_TEXTURE_2D, m_cpTex[res] );
 	const GLint lt = glGetUniformLocation( m_sh_prog_id, "texChain" );
 	const GLint lo = glGetUniformLocation( m_sh_prog_id, "chainOff" );
+	const GLint ls = glGetUniformLocation( m_sh_prog_id, "chainScale" );
 	if( lt >= 0 ) glUniform1i( lt, 40 );
 	if( lo >= 0 ) glUniform2f( lo, (float) vp[0], (float) vp[1] );
+	if( ls >= 0 ) glUniform1f( ls, cs );
 	glActiveTexture( (GLenum) activeTex );
 }
 
@@ -1908,6 +1915,7 @@ void EffectShader::runChain3D( const AudioFeatures &f )
 		if( p.speed >= 0 )     glUniform1f( p.speed, speedP );
 		if( p.tilt >= 0 )      glUniform1f( p.tilt, tiltP );
 		if( p.swell >= 0 )     glUniform1f( p.swell, f.swell );
+		if( p.scale >= 0 )     glUniform1f( p.scale, 1.f );
 		const auto td = Clock::now();
 		glDrawArrays( GL_TRIANGLES, 0, 3 );
 		if( specLog && drawnOnce.insert( p.prog ).second && msSince( td ) > 2.0 )

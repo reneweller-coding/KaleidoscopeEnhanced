@@ -8,6 +8,7 @@ uniform vec2 chainOff;   // the target viewport's origin (gl_FragCoord of the la
 uniform float bakeSize;  // > 0: the chain baked over [0,1]^2 (a lab that reads it at arbitrary points)
 uniform sampler2D texStart;  // useStart: the chain's input per pixel (xy) and its time offset (z)
 uniform int useStart;
+uniform float passScale;   // the pass grid relative to the frame (chainScale; 0 = 1)
 uniform sampler2D texB;
 uniform float mixF;
 uniform vec2  resolution;
@@ -42,7 +43,7 @@ void main()
     gCw = vec2(0.5) + 0.15 * vec2(sin(0.017 * sceneTime), cos(0.013 * sceneTime));
     gCt = vec2(0.5) + vec2(0.22 * sin(0.023 * sceneTime + 0.3 * sin(0.011 * sceneTime)), 0.16 * cos(0.019 * sceneTime));
     if (useStart == 0 && tiltP > 0.0) {       // the time tilt (chainTiltZ): the same shift in every pass of this pixel
-        vec2 sp0 = ((gl_FragCoord.xy + chainOff) / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0);
+        vec2 sp0 = ((gl_FragCoord.xy / (passScale > 0.0 ? passScale : 1.0) + chainOff) / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0);
         float tz = chainTiltZ(bakeSize > 0.0 ? gl_FragCoord.xy / bakeSize * 2.0 - 1.0 : sp0);
         gT += tz; gRot += 0.5 * tz;
     }

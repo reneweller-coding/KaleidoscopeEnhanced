@@ -111,6 +111,11 @@ void RenderPipeline::loadSettings()
 	s_stereoDepth  = clampParam( s.value( "stereoDepth", s_stereoDepth ).toFloat(), 0.f, 2.f );
 	setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() );  // clamps internally
 	setRenderScaleMax( s.value( "renderScaleMax", s_renderScaleMax ).toFloat() );
+	// The chain labs' coordinate grid relative to the frame: 0.5 computes a
+	// quarter of the chain (for weak GPUs), read back bilinearly.
+	EffectShader::s_chainScale = clampParam( s.value( "chainScale", EffectShader::s_chainScale ).toFloat(), 0.5f, 1.f );
+	if( qEnvironmentVariableIsSet( "KALEIDO_CHAIN_SCALE" ) )
+		EffectShader::s_chainScale = clampParam( qEnvironmentVariable( "KALEIDO_CHAIN_SCALE" ).toFloat(), 0.5f, 1.f );
 
 	// Taste learning: PER-PRESET per-shader selection-weight factors (keys
 	// "<Preset>/<file>"), decayed toward 1.0 a little on every start so old
@@ -190,6 +195,7 @@ void RenderPipeline::saveSettings()
 	s.setValue( "stereoDepth", s_stereoDepth  );
 	s.setValue( "renderScale", s_renderScale  );
 	s.setValue( "renderScaleMax", s_renderScaleMax );
+	s.setValue( "chainScale", EffectShader::s_chainScale );
 	// Written back even when empty, so the key is visible in the file for
 	// anyone who wants to point the visualizer at their own pictures without
 	// hunting through documentation for its name.

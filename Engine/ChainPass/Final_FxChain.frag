@@ -3,6 +3,7 @@
 // run as passes by the app (EffectShader chain runner); the chain coordinate comes from texChain.
 uniform sampler2D texChain;
 uniform vec2 chainOff;
+uniform float chainScale;   // the chain's grid relative to the frame (0 = 1)
 out vec4 fragColor;
 uniform vec2  resolution;
 uniform sampler2D tex0;
@@ -29,7 +30,18 @@ uniform float paletteP;
 uniform float hueP;
 vec2 chain(vec2 p)
 {
-    return texelFetch(texChain, ivec2(gl_FragCoord.xy - chainOff), 0).xy;
+    vec2 fp = gl_FragCoord.xy - chainOff;
+    if (chainScale <= 0.0 || chainScale >= 0.999) return texelFetch(texChain, ivec2(fp), 0).xy;
+    vec2 q = fp * chainScale - 0.5;
+    ivec2 i0 = ivec2(floor(q)), mx = textureSize(texChain, 0) - 1;
+    vec2 f = q - vec2(i0);
+    vec2 a = texelFetch(texChain, clamp(i0, ivec2(0), mx), 0).xy;
+    vec2 b = texelFetch(texChain, clamp(i0 + ivec2(1, 0), ivec2(0), mx), 0).xy;
+    vec2 c = texelFetch(texChain, clamp(i0 + ivec2(0, 1), ivec2(0), mx), 0).xy;
+    vec2 d = texelFetch(texChain, clamp(i0 + ivec2(1, 1), ivec2(0), mx), 0).xy;
+    float gap = max(max(length(a - b), length(a - c)), max(length(b - d), length(c - d)));
+    if (gap > 0.08) return f.y < 0.5 ? (f.x < 0.5 ? a : b) : (f.x < 0.5 ? c : d);
+    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 float hash21(vec2 p)

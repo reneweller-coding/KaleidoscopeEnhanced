@@ -437,6 +437,9 @@ public:
 	static float s_reviewSolo;
 	/// True in the app (main.cpp): chain labs with Engine/ChainPass/Final_<name>.frag run as passes; the editor keeps the uber-shaders.
 	static bool s_chainRunner;
+	/// The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE):
+	/// below 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
+	static float s_chainScale;
 	static float s_shadowExtent;      ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box), published by RenderPipeline so the shadow receivers and the light matrix use the same box.
 	static float s_shadowPass;        ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass` uniform.
 	static float s_lightM[16];        ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per frame by RenderPipeline::updateLightMatrix().
