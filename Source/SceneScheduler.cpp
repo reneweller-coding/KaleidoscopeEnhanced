@@ -119,6 +119,13 @@ void SceneScheduler::reset()
 			m_nextTexture = 0;
 	}
 
+	// KALEIDO_SEED: the first scene rolls its own seeded stream too.  It does not
+	// pass through resetParameters() otherwise, and keeps the rolls made while
+	// loading -- from the global stream, which depends on how many presets were
+	// loaded before it (another hidden preset in the folder changed the roll).
+	static const bool seeded = getenv( "KALEIDO_SEED" ) != nullptr;
+	if( seeded )
+		(*m_textures)[m_actTexture]->resetParameters();
 	m_texFadeDur = (float) ((*m_textures)[m_actTexture]->getTimeSolo());
 
 	for( unsigned int i = 0; i < kMaxSearch; i++ )
@@ -144,6 +151,8 @@ void SceneScheduler::reset()
 			break;
 	}
 
+	if( seeded )
+		(*m_fxShaders)[m_actFx]->resetParameters();
 	m_fxFadeDur = (float) ((*m_fxShaders)[m_actFx]->getTimeSolo());
 
 	m_texState  = 0;
