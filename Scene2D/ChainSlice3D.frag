@@ -27,7 +27,9 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * solidP (the colour chain on three planes, or as a solid texture), reliefP
  * (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
  * (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
- * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP.
+ * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP,
+ * isoP (contour lines of the distance field: the air around the bodies drawn
+ * like a map's height lines, running slowly outward; none below ~0.35).
  */
 
 uniform vec2  resolution;   ///< Size of the render target in pixels.
@@ -53,6 +55,7 @@ uniform float coreP;   ///< Fold core class knob of the 3D chain, 0..1.
 uniform float bodyP;   ///< Body class knob of the 3D chain, 0..1.
 uniform float layerP;   ///< Layer knob, 0..1.
 uniform float hyperP;
+uniform float isoP;
 uniform float solidP;   ///< Solid-texture knob, 0..1.
 uniform float reliefP;   ///< Relief knob, 0..1.
 uniform float chainAP;   ///< Stage A class knob of the chain (global map), 0..1.
@@ -3929,6 +3932,24 @@ void main()
         float st = clamp(styleP, 0.0, 1.0);
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
+        // isoP: the distance field's contour lines -- around every body its
+        // height lines, like a map; every fourth stronger, all running slowly
+        // outward (clock, never audio: the kick only brightens them).  Their
+        // width is a pixel in the world (sPx), not fwidth: the cut loop
+        // branches per pixel.  They fade with the distance from matter.
+        float iso = smoothstep(0.35, 0.75, isoP);
+        if (iso > 0.0) {
+            float isoW = 0.05 * sView;
+            float isoU = dHit / isoW - 0.12 * sceneTime;
+            float isoF = abs(fract(isoU + 0.5) - 0.5) * isoW;  // to the nearest line, in the world
+            float isoPx = sPx * max(1.0, resolution.y / 900.0);   // a pixel at 900 lines: the same lines on a big screen
+            float isoL = 1.0 - smoothstep(0.4 * isoPx, 1.1 * isoPx, isoF);   // thin: where the field is shallow they widen
+            float isoM = abs(mod(floor(isoU + 0.5), 4.0)) < 0.5 ? 1.0 : 0.3;
+            float air = smoothstep(0.0, 2.0 * sPx, dHit);
+            float fade = exp(-abs(dHit) / (0.9 * sView)) * mix(0.45, 1.0, air);   // on a cut face fainter
+            col *= 1.0 - 0.3 * iso * air;                     // the air between the lines darker: the map reads
+            col += iso * isoL * isoM * fade * rimC * (0.9 + 0.8 * kick);
+        }
     }
     finish(chainAfterglow(col));
 }

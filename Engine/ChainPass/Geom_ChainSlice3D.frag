@@ -907,5 +907,5 @@ void main()
     }
     ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);
     gbPos = vec4(fp, t);
-    gbNrm = vec4(n, ao);
+    gbNrm = vec4(n * (2.0 + dHit / (abs(dHit) + sView)), ao);
 }

@@ -21,6 +21,7 @@ uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float coreP;   ///< Fold core class knob of the 3D chain, 0..1.
 uniform float hyperP;
+uniform float isoP;
 uniform float reliefP;   ///< Relief knob, 0..1.
 uniform float morphP;   ///< Morph knob: how the scene changes over time, 0..1.
 uniform float styleP;   ///< Look knob, 0..1.
@@ -220,6 +221,8 @@ void main()
     vec4 gp = texelFetch(texGPos, ip, 0), gn = texelFetch(texGNrm, ip, 0);
     float t = gp.w; bool hit = t >= 0.0;
     vec3 fp = gp.xyz;
+    float gU = length(gn.xyz) - 2.0;                       // the cut point's distance, packed by the geometry pass
+    float dHit = gU * sView / max(1.0 - abs(gU), 1e-6);
     vec3 lc = mix(vec3(0.7, 0.85, 1.1), vec3(1.15, 0.9, 0.7), mode);
     
     vec3 fogPal = hsv2rgb(vec3(fract(hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5), 0.55, 1.0));
@@ -258,6 +261,24 @@ void main()
         float st = clamp(styleP, 0.0, 1.0);
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
+        
+        
+        
+        
+        
+        float iso = smoothstep(0.35, 0.75, isoP);
+        if (iso > 0.0) {
+            float isoW = 0.05 * sView;
+            float isoU = dHit / isoW - 0.12 * sceneTime;
+            float isoF = abs(fract(isoU + 0.5) - 0.5) * isoW;  
+            float isoPx = sPx * max(1.0, resolution.y / 900.0);   
+            float isoL = 1.0 - smoothstep(0.4 * isoPx, 1.1 * isoPx, isoF);   
+            float isoM = abs(mod(floor(isoU + 0.5), 4.0)) < 0.5 ? 1.0 : 0.3;
+            float air = smoothstep(0.0, 2.0 * sPx, dHit);
+            float fade = exp(-abs(dHit) / (0.9 * sView)) * mix(0.45, 1.0, air);   
+            col *= 1.0 - 0.3 * iso * air;                     
+            col += iso * isoL * isoM * fade * rimC * (0.9 + 0.8 * kick);
+        }
     }
     finish(chainAfterglow(col));
     // keeps the walk uniforms: the app finds the lab's stages by their locations

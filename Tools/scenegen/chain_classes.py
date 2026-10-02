@@ -55,3 +55,25 @@ OPENING = {
 }
 def opening_positions(knob, names):
     return [i for i, n in enumerate(names) if n in OPENING.get(knob, set())]
+
+# The classes that sparkle: their aliasing (Tools/chain_class_stats.py --alias,
+# the mean luma change 2x2 supersampling makes, in class_stats.tsv) at least
+# SPARKLE_ALIAS.  The app runs their chain on a doubled grid ("// @chainss").
+SPARKLE_ALIAS = 0.03
+def sparkling():
+    """(stage, class name) of every class whose measured aliasing reaches SPARKLE_ALIAS."""
+    import io, os
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), "class_stats.tsv")
+    if not os.path.exists(p):
+        return set()
+    lines = io.open(p, encoding="utf-8").read().splitlines()
+    hdr = lines[0].split("\t")
+    out = set()
+    for l in lines[1:]:
+        v = dict(zip(hdr, l.split("\t")))
+        try:
+            if float(v.get("alias") or 0) >= SPARKLE_ALIAS:
+                out.add((v["stage"], v["class"]))
+        except ValueError:
+            pass
+    return out

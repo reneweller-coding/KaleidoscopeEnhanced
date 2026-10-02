@@ -953,6 +953,8 @@
     <float name="coreP" minValue="0" maxValue="1"></float>
     <float name="bodyP" minValue="0" maxValue="1"></float>
     <float name="layerP" minValue="0" maxValue="1"></float>
+    <float name="hyperP" minValue="-0.4" maxValue="1"></float>
+    <float name="isoP" minValue="0" maxValue="1"></float>
     <float name="solidP" minValue="0.5" maxValue="1"></float>
     <float name="reliefP" minValue="0" maxValue="1"></float>
     <float name="chainAP" minValue="0" maxValue="1"></float>

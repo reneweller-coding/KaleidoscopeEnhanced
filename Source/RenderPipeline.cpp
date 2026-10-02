@@ -62,6 +62,7 @@ float RenderPipeline::s_latencyLead  = 0.05f; // display-phase lead vs. heard au
 int   RenderPipeline::s_stereoMode  = 0;      // stereoscopic output (CLI -3 / 'z')
 float RenderPipeline::s_stereoDepth = 1.0f;   // disparity strength
 bool  RenderPipeline::s_blackout = false;     // VJ blackout ('b')
+float RenderPipeline::s_chainScaleIni = 1.f;
 bool  RenderPipeline::s_freeze   = false;     // VJ freeze ('e'); a comparison run (KALEIDO_FREEZE_TIME) engages it after the fade-in
 float RenderPipeline::freezeTime()
 {
@@ -120,6 +121,8 @@ void RenderPipeline::loadSettings()
 	// The chain labs' coordinate grid relative to the frame: 0.5 computes a
 	// quarter of the chain (for weak GPUs), read back bilinearly.
 	EffectShader::s_chainScale = clampParam( s.value( "chainScale", EffectShader::s_chainScale ).toFloat(), 0.5f, 1.f );
+	s_chainScaleIni = EffectShader::s_chainScale;       // the quality profile may lower the session's value
+	EffectShader::s_chainSS = s.value( "chainSupersample", true ).toBool();
 	if( qEnvironmentVariableIsSet( "KALEIDO_CHAIN_SCALE" ) )
 		EffectShader::s_chainScale = clampParam( qEnvironmentVariable( "KALEIDO_CHAIN_SCALE" ).toFloat(), 0.5f, 1.f );
 
@@ -156,6 +159,18 @@ void RenderPipeline::loadSettings()
 			s_taste[k] = v;
 	}
 	s.endGroup();
+	// The chain labs' taste per class (EffectShader::s_classTaste), fading
+	// toward neutral by the same 3 % per start: an old like slowly wears off.
+	EffectShader::s_classTaste.clear();
+	s.beginGroup( "classTaste" );
+	for( const QString &k : s.allKeys() )        // recursive: knob/class
+	{
+		float v = clampParam( s.value( k, 1.f ).toFloat(), 0.6f, 1.6f );
+		v = 1.f + ( v - 1.f ) * 0.97f;
+		if( fabsf( v - 1.f ) > 0.01f )
+			EffectShader::s_classTaste[ k.toStdString() ] = v;
+	}
+	s.endGroup();
 }
 
 /**
@@ -189,6 +204,22 @@ void RenderPipeline::bumpTaste( const char *fragPath, float mul )
 	fprintf( stderr, "Taste: %s -> %.2f\n", key.toLocal8Bit().constData(), v );
 }
 
+/**
+ * @brief Weights the classes a walking chain lab shows now (EffectShader::bumpClassTaste) and persists them at once.
+ * @param e The effect on screen (anything but a walking chain lab: nothing happens).
+ * @param mul Factor per class (a like > 1, a skip < 1).
+ */
+static void bumpClassTaste( EffectShader *e, float mul )
+{
+	const auto changed = e->bumpClassTaste( mul );
+	if( changed.empty() )
+		return;
+	QSettings s( settingsFilePath(), QSettings::IniFormat );
+	for( const auto &kv : changed )
+		s.setValue( "classTaste/" + QString::fromStdString( kv.first ), kv.second );
+	s.sync();
+}
+
 void RenderPipeline::saveSettings()
 {
 	QSettings s( settingsFilePath(), QSettings::IniFormat );
@@ -201,7 +232,8 @@ void RenderPipeline::saveSettings()
 	s.setValue( "stereoDepth", s_stereoDepth  );
 	s.setValue( "renderScale", s_renderScale  );
 	s.setValue( "renderScaleMax", s_renderScaleMax );
-	s.setValue( "chainScale", EffectShader::s_chainScale );
+	s.setValue( "chainScale", s_chainScaleIni );
+	s.setValue( "chainSupersample", EffectShader::s_chainSS );
 	// Written back even when empty, so the key is visible in the file for
 	// anyone who wants to point the visualizer at their own pictures without
 	// hunting through documentation for its name.
@@ -943,6 +975,10 @@ void RenderPipeline::requestSceneChange()
 	if( m_scheduler.actTexture() < m_effectTextures.size() &&
 	    m_scheduler.actElapsedSec() < 10.f )
 		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 0.8f );
+	// a chain lab skipped: the classes on screen a little less (a quick skip more)
+	if( m_scheduler.actTexture() < m_effectTextures.size() )
+		bumpClassTaste( m_effectTextures[m_scheduler.actTexture()], m_scheduler.actElapsedSec() < 10.f ? 0.92f : 0.96f );
+	EffectShader::noCarryOver();                     // skipped: the next lab must not take this chain over
 	m_scheduler.requestChange( true );
 }
 
@@ -1043,6 +1079,7 @@ void RenderPipeline::forceScene( int idx )
 		return;
 	if( s_pinned || s_freeze )
 		return;                       // same handbrakes as requestSceneChange
+	EffectShader::noCarryOver();      // a scene picked by hand comes as it was rolled
 	m_scheduler.forceScene( idx );
 }
 
@@ -1216,6 +1253,7 @@ void RenderPipeline::favoriteCurrentEffect()
 	if( m_scheduler.actTexture() < m_effectTextures.size() )
 	{
 		bumpTaste( m_effectTextures[m_scheduler.actTexture()]->fragmentName(), 1.25f );
+		bumpClassTaste( m_effectTextures[m_scheduler.actTexture()], 1.1f );
 		logLikedRoll( m_effectTextures[m_scheduler.actTexture()] );
 	}
 }
@@ -1529,6 +1567,7 @@ void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float 
 		{
 			s_freeze = true;
 			m_globaltime = freezeTime();
+			fprintf( stderr, "FREEZE engaged (comparison run, scene time %.2f)\n", freezeTime() );
 		}
 	}
 	EffectShader::s_frozen = s_freeze || freezeTime() >= 0.f;   // the walk and the 3D flight never move in a comparison run
@@ -2509,7 +2548,10 @@ void RenderPipeline::paint(const float *rotMatrix, float tx, float ty, float tz,
 
 	const FrameTiming ft = readFrameClock();
 	float       timeSinceLastFrameSec = ft.dt;
-	const float dtWall                = ft.dtWall;
+	// A comparison run (KALEIDO_FREEZE_TIME): the wall-clock slews too (exposure,
+	// title, trails) step 1/120 s per frame and stop with the freeze -- the
+	// frame is final the moment it freezes, not ~20 s later.
+	const float dtWall                = freezeTime() < 0.f ? ft.dtWall : ( s_freeze ? 0.f : 1.f / 120.f );
 	// A frame far beyond any real frame rate is a STALL (first-activation
 	// shader compile + mesh load, a driver recompile, a suspend), not time the
 	// viewer spent watching. Subtract it from the scheduler's wall clocks, or

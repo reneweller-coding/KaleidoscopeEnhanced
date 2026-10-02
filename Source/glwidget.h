@@ -153,7 +153,7 @@ public:
 	// (Web-Remote /api/toggle + /api/set; the keyboard shortcuts 'w'/'o'/'g'/
 	// 'p' set the same members directly, these just add a remote-safe API.)
 	bool        autoScaleEnabled() const    { return m_autoScale; }   ///< Whether adaptive render-scale (key 'g') is currently on.
-	void        setAutoScaleEnabled( bool on ) { m_autoScale = on; }   ///< Switches adaptive render-scale on/off (same state as key 'g'); the current scale is left where it is until updateAdaptiveScale() moves it. @param on New state.
+	void        setAutoScaleEnabled( bool on ) { m_autoScale = on; m_autoScaleByProfile = false; }   ///< Switches adaptive render-scale on/off (same state as key 'g'); the current scale is left where it is until updateAdaptiveScale() moves it. @param on New state.
 	bool        nowPlayingEnabled() const   { return m_showNowPlaying; }   ///< Whether the now-playing title reveal (key 'p') is currently on.
 	void        setNowPlayingEnabled( bool on ) { m_showNowPlaying = on; }   ///< Switches the now-playing title reveal on/off (same state as key 'p'). @param on New state.
 	bool        artistImagesEnabled() const { return m_artistShow; }   ///< Whether the artist-image corner (key 'o') is currently on.
@@ -539,6 +539,9 @@ protected:
 	/// a fixed floor and the launch -s ceiling, with a settle delay between steps.
 	void    updateAdaptiveScale();
 	bool    m_autoScale       = true;   ///< toggled with key 'g'
+	bool    m_autoScaleByProfile = false;   ///< m_autoScale was switched on by the quality profile for this session only (not saved)
+	/// @brief The quality profile (ini "qualityProfile": auto | high | low): light settings for a weak GPU (GL context current).
+	void    applyQualityProfile();
 	float   m_autoScaleMax    = 1.f;    ///< ceiling: an explicit -s, else 1.0 (never the persisted working value)
 	float   m_displayHz       = 60.f;   ///< refresh rate the render timer was paced to; adaptation targets a fraction of it
 	qint64  m_lastScaleAdjust = 0;      ///< when the scale was last changed

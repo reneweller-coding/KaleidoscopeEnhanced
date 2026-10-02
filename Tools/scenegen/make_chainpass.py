@@ -125,11 +125,13 @@ class _DocFile:
 # The chain read in the lab's last pass.  On a coarser grid (chainScale < 1)
 # bilinear between the four nearest coordinates -- unless they straddle a seam
 # (a fold edge, a Droste step), where mixing would invent coordinates: there
-# the nearest one (a step of one coarse pixel along the seam).
+# the nearest one (a step of one coarse pixel along the seam).  On a doubled
+# grid (chainScale 2: a class that sparkles is on screen) chain() is the pixel's
+# centre and chainSub() its four sub-samples, which imgChain averages.
 CHAIN_READ = r"""vec2 chain(vec2 p)
 {
     vec2 fp = gl_FragCoord.xy - chainOff;
-    if (chainScale <= 0.0 || chainScale >= 0.999) return texelFetch(texChain, ivec2(fp), 0).xy;
+    if (chainScale <= 0.0 || (chainScale >= 0.999 && chainScale < 1.5)) return texelFetch(texChain, ivec2(fp), 0).xy;
     vec2 q = fp * chainScale - 0.5;
     ivec2 i0 = ivec2(floor(q)), mx = textureSize(texChain, 0) - 1;
     vec2 f = q - vec2(i0);
@@ -140,7 +142,23 @@ CHAIN_READ = r"""vec2 chain(vec2 p)
     float gap = max(max(length(a - b), length(a - c)), max(length(b - d), length(c - d)));
     if (gap > 0.08) return f.y < 0.5 ? (f.x < 0.5 ? a : b) : (f.x < 0.5 ? c : d);
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+/// @brief Sub-sample i (0..3) of this pixel on the doubled grid (chainScale 2).
+vec2 chainSub(int i)
+{
+    ivec2 b = ivec2(gl_FragCoord.xy - chainOff) * 2 + ivec2(i & 1, i >> 1);
+    return texelFetch(texChain, clamp(b, ivec2(0), textureSize(texChain, 0) - 1), 0).xy;
 }"""
+# imgChain on the doubled grid: the photo at the four sub-samples, each with
+# half the pixel's footprint (one mip level finer), averaged.
+IMG_SS_OLD = "    vec3 col = imgLod(c0, lod);"
+IMG_SS_NEW = """    vec3 col;
+    if (chainScale > 1.5) {
+        float ls = max(lod - 1.0, 0.0);
+        col = 0.25 * (imgLod(chainSub(0), ls) + imgLod(chainSub(1), ls) + imgLod(chainSub(2), ls) + imgLod(chainSub(3), ls));
+    } else {
+        col = imgLod(c0, lod);
+    }"""
 
 def write_final(rel, name, bake=0):
     """The lab's own last pass: its main as it is, the chain read from texChain.
@@ -161,6 +179,8 @@ def write_final(rel, name, bake=0):
         fin_funcs["chain"] = ["vec2 chain(vec2 p)\n{\n    return texture(texChain, p).xy;\n}"]
     else:
         fin_funcs["chain"] = [CHAIN_READ]
+        if "imgChain" in fin_funcs:
+            fin_funcs["imgChain"] = [t.replace(IMG_SS_OLD, IMG_SS_NEW) for t in fin_funcs["imgChain"]]
     i = mt.rstrip().rfind("finish(")
     assert i > 0, rel
     walks = [w for w in ("walkA", "walkB", "walkC", "walkD", "walkO") if re.search(r"\b%s\b" % w, body.split("void main()")[0])]
@@ -366,8 +386,9 @@ def write_3d(base="ChainLab3D"):
     }
     ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);
 """
+        # the cut point's distance (iso lines) rides in the normal's length: 2 + d/(|d|+view), in (1, 3)
         geo_main = ("void main()\n{\n" + pre + cam + one_site +
-                    "    gbPos = vec4(fp, t);\n    gbNrm = vec4(n, ao);\n}\n")
+                    "    gbPos = vec4(fp, t);\n    gbNrm = vec4(n * (2.0 + dHit / (abs(dHit) + sView)), ao);\n}\n")
     else:
       geo_main = ("void main()\n{\n" + pre + cam + one_site +
                 "    if (!hit) { gbPos = vec4(0.0, 0.0, 0.0, -1.0); gbNrm = vec4(0.0, 0.0, 1.0, 1.0); return; }\n"
@@ -406,7 +427,9 @@ def write_3d(base="ChainLab3D"):
         "    ivec2 ip = ivec2(gl_FragCoord.xy - chainOff);\n"
         "    vec4 gp = texelFetch(texGPos, ip, 0), gn = texelFetch(texGNrm, ip, 0);\n"
         "    float t = gp.w; bool hit = t >= 0.0;\n"
-        "    vec3 fp = gp.xyz;\n" + head +
+        "    vec3 fp = gp.xyz;\n" +
+        ("    float gU = length(gn.xyz) - 2.0;                       // the cut point's distance, packed by the geometry pass\n"
+         "    float dHit = gU * sView / max(1.0 - abs(gU), 1e-6);\n" if slice_ else "") + head +
         "    // colour and relief for every pixel: the derivatives must not sit in a pixel branch\n"
         "    vec3 q = ro + rd * max(t, 0.0);\n"
         "    vec3 n = normalize(gn.xyz + vec3(1e-6));\n"

@@ -23,6 +23,8 @@ import argparse, io, os, re, shutil, subprocess, sys, time, urllib.request
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REL = os.path.join(ROOT, "Release")
+# KALEIDO_EXE: a copy of the app in Release/ (a long run goes on while the app is rebuilt)
+EXE = os.environ.get("KALEIDO_EXE", "Kaleidoscope.exe")
 INI = os.path.join(ROOT, "kaleidoscope_settings.ini")
 sys.path.insert(0, os.path.join(ROOT, "Tools", "scenegen"))
 import chain_classes as cc                                    # noqa: E402
@@ -46,10 +48,11 @@ def preset(pins):
 def shot(pins, out, runner, photo, wait):
     io.open(os.path.join(ROOT, "Presets", "_regress.xml"), "w", encoding="utf-8").write(preset(pins))
     env = dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(int(wait) + 10), KALEIDO_NO_ACTIVATE="1",
-               KALEIDO_FREEZE_TIME="30", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7")
+               KALEIDO_FREEZE_TIME="30", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7",
+               KALEIDO_CHAIN_SS="0")   # supersampling changes the sparkling classes on purpose
     if not runner:
         env["KALEIDO_NO_CHAINPASS"] = "1"
-    p = subprocess.Popen([os.path.join(REL, "Kaleidoscope.exe"), "-c", "_regress", "-l"], cwd=REL, env=env,
+    p = subprocess.Popen([os.path.join(REL, EXE), "-c", "_regress", "-l"], cwd=REL, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     try:
         for attempt in range(4):                              # the uber shader may still be compiling

@@ -43,8 +43,10 @@ HEAD = r'''//@doc
  * solidP (the colour chain on three planes, or as a solid texture), reliefP
  * (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
  * (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
- * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP.
-//@params spaceP coreP bodyP layerP hyperP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
+ * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP,
+ * isoP (contour lines of the distance field: the air around the bodies drawn
+ * like a map's height lines, running slowly outward; none below ~0.35).
+//@params spaceP coreP bodyP layerP hyperP isoP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 '''
@@ -111,6 +113,27 @@ void sliceFrame(float cam, float time, out vec3 N, out vec3 X, out vec3 Y)
     Y = cos(a) * y0 - sin(a) * x0;
 }
 '''
+COLMIX = "        col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));"
+# isoP: the distance field's contour lines, after the colour of the cut point
+ISO = r'''
+        // isoP: the distance field's contour lines -- around every body its
+        // height lines, like a map; every fourth stronger, all running slowly
+        // outward (clock, never audio: the kick only brightens them).  Their
+        // width is a pixel in the world (sPx), not fwidth: the cut loop
+        // branches per pixel.  They fade with the distance from matter.
+        float iso = smoothstep(0.35, 0.75, isoP);
+        if (iso > 0.0) {
+            float isoW = 0.05 * sView;
+            float isoU = dHit / isoW - 0.12 * sceneTime;
+            float isoF = abs(fract(isoU + 0.5) - 0.5) * isoW;  // to the nearest line, in the world
+            float isoPx = sPx * max(1.0, resolution.y / 900.0);   // a pixel at 900 lines: the same lines on a big screen
+            float isoL = 1.0 - smoothstep(0.4 * isoPx, 1.1 * isoPx, isoF);   // thin: where the field is shallow they widen
+            float isoM = abs(mod(floor(isoU + 0.5), 4.0)) < 0.5 ? 1.0 : 0.3;
+            float air = smoothstep(0.0, 2.0 * sPx, dHit);
+            float fade = exp(-abs(dHit) / (0.9 * sView)) * mix(0.45, 1.0, air);   // on a cut face fainter
+            col *= 1.0 - 0.3 * iso * air;                     // the air between the lines darker: the map reads
+            col += iso * isoL * isoM * fade * rimC * (0.9 + 0.8 * kick);
+        }'''
 k = body.index("vec2 chain(vec2 uv)")
 body = body[:k] + SLICE.lstrip("\n") + body[k:]
 
@@ -154,7 +177,8 @@ for old, new in (("        vec3 n = normal3(q);", "        vec3 n = normalS(q);"
                  ("ao += (h - fieldD(q + n * h)) / h; }", "ao += (h - fieldS(q + n * h) + dHit) / h; }"),   # relative to the cut point: a cut runs through matter
                  ("        vec3 L = normalize(vec3(0.5, 0.7, -0.4));", "        vec3 L = sL;"),
                  ("        float diff = max(dot(n, L), 0.0);", "        float diff = 0.5 + 0.5 * dot(n, L);   // wrapped: a cut shows normals of every direction"),
-                 ("        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0);", "        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);")):
+                 ("        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0);", "        ao = clamp(1.0 - 0.4 * ao, 0.2, 1.0) * sliceShade(dHit, sPx);"),
+                 (COLMIX, COLMIX + ISO)):
     assert main.count(old) == 1, old
     main = main.replace(old, new)
 assert "fieldD" not in main and "gazeDir" not in main

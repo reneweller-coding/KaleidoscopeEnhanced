@@ -15,8 +15,14 @@ branch) and the name lists of chain_classes.py (position -> name); the other
 labs take both over (labsubset.py).  Without --write: the table and the rank
 correlation with the hand order.
 
+--world: the same for the 3D lab's world (space, fold core, body) from
+world_stats.tsv (chain_class_stats.py --world) into the ord functions of
+make_chainlab3d.py ('no fold core' and the plain mirrored lattice stay first;
+then make_chainlab3d.py, make_chainslice3d.py and gen.py rebuild the labs).
+
   python apply_energy_order.py            # show
   python apply_energy_order.py --write    # apply (then rebuild the labs)
+  python apply_energy_order.py --world [--write]
 """
 import argparse, io, os, re, statistics, sys
 
@@ -25,6 +31,7 @@ sys.path.insert(0, SG)
 import chain_classes as cc                                    # noqa: E402
 
 STAGES = [("A", "chainAP", "orda", 0), ("B", "chainBP", "ordb", 2), ("C", "chainCP", "ordc", 1), ("D", "chainDP", "ordd", 2)]
+WORLD = [("space", "spaceP", "ordsp", 0), ("core", "coreP", "ordco", 0), ("body", "bodyP", "ordbo", -1)]
 
 
 def zs(v):
@@ -44,20 +51,21 @@ def spearman(a, b):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--write", action="store_true")
+    ap.add_argument("--world", action="store_true", help="the 3D world stages (world_stats.tsv -> make_chainlab3d.py)")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
-    lines = io.open(os.path.join(SG, "class_stats.tsv"), encoding="utf-8").read().splitlines()
+    lines = io.open(os.path.join(SG, "world_stats.tsv" if a.world else "class_stats.tsv"), encoding="utf-8").read().splitlines()
     hdr = lines[0].split("\t")
     stats = {}
     for l in lines[1:]:
         v = dict(zip(hdr, l.split("\t")))
         if v.get("motion"):
             stats[(v["stage"], v["class"])] = (float(v["motion"]), float(v["detail"]))   # by name: positions move
-    src_p = os.path.join(SG, "src", "ChainLab2D.glsl")
+    src_p = os.path.join(SG, "make_chainlab3d.py") if a.world else os.path.join(SG, "src", "ChainLab2D.glsl")
     src = io.open(src_p, encoding="utf-8", newline="").read()
     cls_p = os.path.join(SG, "chain_classes.py")
     cls = io.open(cls_p, encoding="utf-8", newline="").read()
-    for st, knob, fn, weak in STAGES:
+    for st, knob, fn, weak in (WORLD if a.world else STAGES):
         names = cc.CLASSES[knob]
         n = len(names)
         m = re.search(r"int %s\(int i\) \{(.*?)\}" % fn, src)
@@ -88,7 +96,7 @@ def main():
     if a.write:
         io.open(src_p, "w", encoding="utf-8", newline="").write(src)
         io.open(cls_p, "w", encoding="utf-8", newline="").write(cls)
-        print("\nwritten: src/ChainLab2D.glsl (ord functions), chain_classes.py (names)")
+        print("\nwritten: %s (ord functions), chain_classes.py (names)" % os.path.basename(src_p))
 
 
 if __name__ == "__main__":

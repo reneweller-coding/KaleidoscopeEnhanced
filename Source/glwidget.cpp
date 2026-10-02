@@ -15,6 +15,7 @@
 #include <QtCore/QTimer>
 #include <QtCore/QCoreApplication>
 #include <QtCore/QSettings>
+#include <QtCore/QRegularExpression>
 #include <QtCore/QProcess>
 #include <QtCore/QDir>
 #include <QtGui/QMouseEvent>
@@ -654,6 +655,7 @@ void GLwidget::initializeGL()
 	// Big shaders (the 3D lab's geometry variants) are built by a helper
 	// process and loaded as program binaries (ShaderForge.h).
 	shaderForgeInit();
+	applyQualityProfile();
 
 	m_actConfiguration->start( 100, 100 );
 
@@ -1528,6 +1530,32 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 /// Settings file shared with RenderPipeline (next to the Presets folder).
 static const char *kUiSettingsPath = "..\\kaleidoscope_settings.ini";
 
+void GLwidget::applyQualityProfile()
+{
+	// A weak GPU (an integrated one, or a software renderer) cannot hold the
+	// chain labs at full size: with qualityProfile=auto (the default) it gets,
+	// for this session, the chain on a half grid and the adaptive render scale.
+	// "high" never, "low" always.  Nothing of it is written to the ini.
+	QSettings s( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
+	const QString profile = s.value( "qualityProfile", "auto" ).toString().toLower();
+	const QString vendor   = QString::fromLatin1( (const char *) glGetString( GL_VENDOR ) );
+	const QString renderer = QString::fromLatin1( (const char *) glGetString( GL_RENDERER ) );
+	const bool weak = renderer.contains( "Intel", Qt::CaseInsensitive ) || vendor.contains( "Intel", Qt::CaseInsensitive )
+	               || renderer.contains( QRegularExpression( "Radeon\\(TM\\) Graphics|Radeon Graphics|Vega \\d+ Graphics" ) )
+	               || renderer.contains( "llvmpipe" ) || renderer.contains( "Basic Render" );
+	const bool low = profile == "low" || ( profile == "auto" && weak );
+	fprintf( stderr, "Quality profile: %s (%s, %s)\n", low ? "low" : "high", qPrintable( profile ), qPrintable( renderer ) );
+	if( !low )
+		return;
+	if( EffectShader::s_chainScale > 0.5f )
+		EffectShader::s_chainScale = 0.5f;                  // RenderPipeline saves the ini's own value, not this
+	if( !m_autoScale )
+	{
+		m_autoScale = true;
+		m_autoScaleByProfile = true;
+	}
+}
+
 void GLwidget::loadUiSettings()
 {
 	QSettings s( Platform::assetPath( kUiSettingsPath ), QSettings::IniFormat );
@@ -1565,7 +1593,7 @@ void GLwidget::saveUiSettings()
 	if( m_actConfiguration )
 		s.setValue( "activeConfig", m_actConfiguration->getConfigurationName() );
 	s.setValue( "autoConfig", m_autoConfig );
-	s.setValue( "autoScale",  m_autoScale );
+	s.setValue( "autoScale",  m_autoScaleByProfile ? false : m_autoScale );   // a profile's session value is not the user's
 	s.setValue( "nowPlaying", m_showNowPlaying );
 	s.setValue( "lyricsMode",   m_lyricsMode );
 	s.setValue( "artistImages", m_artistShow );

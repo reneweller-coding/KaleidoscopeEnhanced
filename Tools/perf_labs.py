@@ -25,6 +25,8 @@ import argparse, io, os, re, shutil, statistics, subprocess, sys, time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 REL = os.path.join(ROOT, "Release")
+# KALEIDO_EXE: a copy of the app in Release/ (a long run goes on while the app is rebuilt)
+EXE = os.environ.get("KALEIDO_EXE", "Kaleidoscope.exe")
 INI = os.path.join(ROOT, "kaleidoscope_settings.ini")
 DEFAULT = ["ChainLab2D", "ChainLabTunnel", "ChainLab3D", "ChainSlice3D",
            "Chain3DKifsTetra", "Chain3DMandelbox", "Chain3DOctaGyroid", "Chain3DPolarTunnelBoxes", "Chain3DTwistTorus",
@@ -59,7 +61,7 @@ def run(scene, secs, skip, still):
                KALEIDO_GPU_TIMING="1", KALEIDO_FRAME_LOG="25", KALEIDO_SPEC_LOG="1", KALEIDO_SEED=str(SEED))
     if GLDEBUG:
         env["KALEIDO_GL_DEBUG"] = "1"
-    cmd = [os.path.join(REL, "Kaleidoscope.exe"), "-c", "_perf", "-l"] + (["-w", os.path.abspath(WAV)] if WAV else [])
+    cmd = [os.path.join(REL, EXE), "-c", "_perf", "-l"] + (["-w", os.path.abspath(WAV)] if WAV else [])
     p = subprocess.Popen(cmd, cwd=REL, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     p.wait(timeout=secs + 120)

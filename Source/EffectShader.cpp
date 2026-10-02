@@ -168,8 +168,10 @@ float EffectShader::s_shadowPass = 0.f;
 float EffectShader::s_reviewSolo  = 0.f;
 bool  EffectShader::s_chainRunner = false;
 float EffectShader::s_chainScale = 1.f;
+bool  EffectShader::s_chainSS = true;
 float EffectShader::s_freezeTime = -1.f;
 bool  EffectShader::s_frozen = false;
+std::map<std::string, float> EffectShader::s_classTaste;
 float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
@@ -1132,6 +1134,77 @@ static const char *kWalkName[9]  = { "A", "B", "C", "D", "look", "space", "core"
 /// @return True for the 3D lab's structure stages (space, fold core, body).
 static bool isStructure( int s ) { return s >= 5 && s <= 7; }
 
+/**
+ * @brief What the chain lab on screen showed last (written every frame by stepChainWalk()).
+ *
+ * A chain lab that comes in while another one fades out starts on the
+ * classes that one shows -- matched by class name, sub-variant included -- so
+ * the crossfade between two labs keeps the chain and changes the rest (the
+ * flat lab hands its chain to the tunnel, the 3D flight its world to the slice).
+ */
+static struct LastChain
+{
+	const EffectShader *who = nullptr;               ///< The lab that wrote it.
+	std::string frag;                                ///< Its fragment file.
+	std::chrono::steady_clock::time_point when;      ///< When it was written.
+	std::map<std::string, std::pair<std::string, float>> cls;   ///< Stage knob -> (class shown, sub-variant 0..1).
+} s_lastChain;
+
+static std::chrono::steady_clock::time_point s_noCarryAt;   ///< Last noCarryOver() call.
+static bool s_noCarrySet = false;                            ///< s_noCarryAt is valid.
+
+void EffectShader::noCarryOver()
+{
+	s_noCarryAt  = std::chrono::steady_clock::now();
+	s_noCarrySet = true;
+}
+
+void EffectShader::carryChainOver()
+{
+	const auto now = std::chrono::steady_clock::now();
+	if( !s_lastChain.who || s_lastChain.who == this || now - s_lastChain.when > std::chrono::milliseconds( 1500 ) )
+		return;                                       // no other lab on screen right now
+	if( s_noCarrySet && now - s_noCarryAt < std::chrono::seconds( 5 ) )
+	{
+		s_noCarrySet = false;                         // one activation: the skip's
+		return;
+	}
+	// The same lab again (a new roll of it): two of its chain stages carry over, so the new roll still shows itself.
+	const bool same = s_lastChain.frag == fragmentName();
+	int keep[2] = { -1, -1 };
+	if( same )
+	{
+		keep[0] = rand() % 4;
+		keep[1] = ( keep[0] + 1 + rand() % 3 ) % 4;
+	}
+	for( int s = 0; s < kWalkN; ++s )
+	{
+		if( same && s != keep[0] && s != keep[1] )
+			continue;
+		if( m_chainConsts.count( kWalkKnob[s] ) )
+			continue;                                 // a frozen scene keeps its own chain
+		auto last = s_lastChain.cls.find( kWalkKnob[s] );
+		auto mine = m_chainClasses.find( kWalkKnob[s] );
+		if( last == s_lastChain.cls.end() || mine == m_chainClasses.end() )
+			continue;
+		const auto &names = mine->second;
+		const auto at = std::find( names.begin(), names.end(), last->second.first );
+		if( at == names.end() )
+			continue;                                 // this lab has not got that class
+		const float v = ( (float) ( at - names.begin() ) + last->second.second ) / (float) names.size();
+		for( Uniform *u : m_uniforms )
+			if( u->getName() == kWalkKnob[s] )
+			{
+				u->restoreValue( v );
+				m_walkCarried[s] = true;
+			}
+	}
+	int n = 0;
+	for( bool b : m_walkCarried ) n += b;
+	if( n )
+		fprintf( stderr, "%s: %d stage(s) carried over from %s\n", fragmentName(), n, s_lastChain.frag.c_str() );
+}
+
 void EffectShader::resetChainWalk()
 {
 	// At most one of the stages A..D on a class that streams the picture into
@@ -1142,10 +1215,17 @@ void EffectShader::resetChainWalk()
 	// itself (no draw from the scene's random stream), and the knobs are
 	// constant for the whole activation, so this never shows as a jump.
 	parseChainSource();
+	for( bool &b : m_walkCarried ) b = false;
+	carryChainOver();
+	// a stage carried over keeps its class, opening or not (the lab going out obeyed the rule)
 	bool opening = false;
 	for( int s = 0; s < 4; ++s )
 		for( Uniform *u : m_uniforms )
-			if( u->getName() == kWalkKnob[s] && opensAt( s, u->snapshotValue() ) )
+			if( m_walkCarried[s] && u->getName() == kWalkKnob[s] && opensAt( s, u->snapshotValue() ) )
+				opening = true;
+	for( int s = 0; s < 4; ++s )
+		for( Uniform *u : m_uniforms )
+			if( !m_walkCarried[s] && u->getName() == kWalkKnob[s] && opensAt( s, u->snapshotValue() ) )
 			{
 				const float h = u->snapshotValue() * 9173.13f;
 				if( opening || h - floorf( h ) < 0.5f )
@@ -1241,6 +1321,28 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		resetChainWalk();
 	}
 	glUniform1f( m_walkHostLoc, m_walk.active ? 1.f : 0.f );
+	// what is on screen now, for a lab coming in after this one (carryChainOver)
+	s_lastChain.who  = this;
+	s_lastChain.frag = fragmentName();
+	s_lastChain.when = std::chrono::steady_clock::now();
+	s_lastChain.cls.clear();
+	for( int s = 0; s < kWalkN; ++s )
+	{
+		auto n = m_chainClasses.find( kWalkKnob[s] );
+		if( n == m_chainClasses.end() || n->second.empty() || ( m_walk.active && m_walkLoc[s] < 0 ) )
+			continue;
+		auto c = m_chainConsts.find( kWalkKnob[s] );
+		bool rolled = false;                          // the lab has this knob at all (the class lists are shared)
+		for( const Uniform *u : m_uniforms )
+			if( u->getName() == kWalkKnob[s] ) rolled = true;
+		if( !rolled && c == m_chainConsts.end() )
+			continue;
+		const float x = c != m_chainConsts.end() ? c->second
+		              : ( m_walk.fading[s] && m_walk.f[s] > 0.5f ) ? m_walk.x1[s] : m_walk.x0[s];
+		const int cnt = (int) n->second.size(), k = classPos( x, cnt );
+		const float sub = x * cnt - (float) k;
+		s_lastChain.cls[ kWalkKnob[s] ] = { n->second[k], sub < 0.f ? 0.f : ( sub > 0.99f ? 0.99f : sub ) };
+	}
 	if( !m_walk.active )
 		return;
 
@@ -1268,6 +1370,17 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	// (a build-up pulls the targets toward the energetic end)
 	const float Eb = E + 0.3f * f.buildUp < 1.f ? E + 0.3f * f.buildUp : 1.f;
 	auto pick = [&]() { return 0.08f + 0.84f * Eb + ( uni( m_walk.rng ) - 0.5f ) * 0.5f; };
+	// Taste: of three such targets for stage s, one with odds after its class's
+	// taste weight (classTaste).  Without any taste learnt: one target, as before.
+	auto pickFor = [&]( int s ) {
+		if( s_classTaste.empty() )
+			return pick();
+		float c[3], w[3], sum = 0.f;
+		for( int i = 0; i < 3; ++i ) { c[i] = pick(); w[i] = classTaste( s, c[i] ); sum += w[i]; }
+		float r = uni( m_walk.rng ) * sum;
+		for( int i = 0; i < 2; ++i ) { if( r < w[i] ) return c[i]; r -= w[i]; }
+		return c[2];
+	};
 	auto lerp = []( float a, float b, float t ) { return a + ( b - a ) * t; };
 	auto anyFading = [&]() { for( bool b : m_walk.fading ) if( b ) return true; return false; };
 
@@ -1291,12 +1404,15 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		}
 		else
 		{
-			startWalk( 0, pick(), 4.f );
+			startWalk( 0, pickFor( 0 ), 4.f );
 			if( uni( m_walk.rng ) < 0.5f )
-				startWalk( 4, pick(), 6.f );
+				startWalk( 4, pickFor( 4 ), 6.f );
 			// ... and in the 3D lab often a new space or fold core: the world itself turns.
 			if( uni( m_walk.rng ) < 0.6f )
-				startWalk( 5 + (int) ( m_walk.rng() % 2u ), pick(), lerp( 14.f, 8.f, E ) );
+			{
+				const int s = 5 + (int) ( m_walk.rng() % 2u );
+				startWalk( s, pickFor( s ), lerp( 14.f, 8.f, E ) );
+			}
 		}
 		if( f.sectionId >= 0 )
 		{
@@ -1323,15 +1439,16 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	if( f.dropCount != m_walk.lastDrop )
 	{
 		m_walk.lastDrop = f.dropCount;
-		startWalk( 0, pick(), 2.f );
-		startWalk( 3, pick(), 1.5f );
-		startWalk( 4, pick(), 1.5f );
+		startWalk( 0, pickFor( 0 ), 2.f );
+		startWalk( 3, pickFor( 3 ), 1.5f );
+		startWalk( 4, pickFor( 4 ), 1.5f );
 	}
 	// 3. A harmonic change: the symmetry or the second map.
 	m_walk.harmCool -= dt;
 	if( !anyFading() && m_walk.harmCool <= 0.f && f.harmonicChange > 0.55f )
 	{
-		startWalk( 1 + (int) ( m_walk.rng() % 2u ), pick(), lerp( 8.f, 4.f, E ) );
+		const int s = 1 + (int) ( m_walk.rng() % 2u );
+		startWalk( s, pickFor( s ), lerp( 8.f, 4.f, E ) );
 		m_walk.harmCool = 12.f;
 	}
 	// 4. Phrases (with a steady beat): every 8-bar boundary moves the chain
@@ -1361,7 +1478,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	}
 	if( structDue >= 0 )
 	{
-		if( !m_walk.hasNext[structDue] ) { m_walk.next[structDue] = pick(); m_walk.hasNext[structDue] = true; }
+		if( !m_walk.hasNext[structDue] ) { m_walk.next[structDue] = pickFor( structDue ); m_walk.hasNext[structDue] = true; }
 		float x1[9]; bool fd[9];
 		for( int o = 0; o < kWalkN; ++o ) { x1[o] = m_walk.fading[o] ? m_walk.x1[o] : m_walk.x0[o]; fd[o] = m_walk.fading[o]; }
 		x1[structDue] = m_walk.next[structDue];
@@ -1399,7 +1516,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 			for( int s = 0; s <= 4; ++s )               // A..D and the look
 				if( m_walkLoc[s] >= 0 && m_walk.hold[s] > bh ) { bh = m_walk.hold[s]; best = s; }
 			if( best >= 0 )
-				startWalk( best, pick(), 4.f );
+				startWalk( best, pickFor( best ), 4.f );
 		}
 	}
 	// 5. Otherwise the stage held longest walks when its time is up (sooner
@@ -1417,7 +1534,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 			if( r >= bestR ) { bestR = r; best = s; }
 		}
 		if( best >= 0 )
-			startWalk( best, pick(), isStructure( best ) ? lerp( 14.f, 8.f, E ) : lerp( 10.f, 5.f, E ) );
+			startWalk( best, pickFor( best ), isStructure( best ) ? lerp( 14.f, 8.f, E ) : lerp( 10.f, 5.f, E ) );
 	}
 
 	// Specialised variant (specDefines): while one is bound, a fade waits at
@@ -1685,7 +1802,11 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 	const GLboolean blend = glIsEnabled( GL_BLEND ), depth = glIsEnabled( GL_DEPTH_TEST ), scissor = glIsEnabled( GL_SCISSOR_TEST );
 
 	// A coarser chain (chainScale < 1): the passes on a smaller grid, the last pass reads it bilinearly.
-	const float cs = m_chainBake > 0 ? 1.f : ( s_chainScale < 0.5f ? 0.5f : ( s_chainScale > 1.f ? 1.f : s_chainScale ) );
+	// A finer one (2) while a class that sparkles is on screen: the last pass averages four photo samples
+	// per pixel.  It switches with the walk's fades (on as one heads for such a class, off once none is shown).
+	static const bool ssEnv = !( getenv( "KALEIDO_CHAIN_SS" ) && atoi( getenv( "KALEIDO_CHAIN_SS" ) ) == 0 );
+	const bool ss = m_chainBake <= 0 && s_chainSS && ssEnv && s_chainScale >= 0.999f && chainWantsSS();
+	const float cs = m_chainBake > 0 ? 1.f : ss ? 2.f : ( s_chainScale < 0.5f ? 0.5f : ( s_chainScale > 1.f ? 1.f : s_chainScale ) );
 	const int W = m_chainBake > 0 ? m_chainBake : ( vp[2] > 0 ? (int) ceilf( vp[2] * cs ) : 1 );
 	const int H = m_chainBake > 0 ? m_chainBake : ( vp[3] > 0 ? (int) ceilf( vp[3] * cs ) : 1 );
 	if( W != m_cpW || H != m_cpH || !m_cpTex[0] )
@@ -2247,10 +2368,12 @@ void EffectShader::parseChainSource()
 					m_chainOrd[ rest.substr( 0, sp ) ] = br;
 				}
 				// "// @chainopening chainAP 9|10|13": the classes streaming into an opening (flat labs only)
-				static const std::string ztag = "// @chainopening ";
-				if( line.compare( 0, ztag.size(), ztag ) == 0 )
+				// "// @chainss chainAP 4|17": the classes that sparkle most (supersampled in the runner)
+				static const std::string ztag = "// @chainopening ", stag = "// @chainss ";
+				const bool isSS = line.compare( 0, stag.size(), stag ) == 0;
+				if( isSS || line.compare( 0, ztag.size(), ztag ) == 0 )
 				{
-					const std::string rest = line.substr( ztag.size() );
+					const std::string rest = line.substr( isSS ? stag.size() : ztag.size() );
 					const size_t sp = rest.find( ' ' );
 					std::vector<int> pos;
 					if( sp != std::string::npos )
@@ -2261,7 +2384,7 @@ void EffectShader::parseChainSource()
 							if( d > c ) pos.push_back( atoi( rest.c_str() + c ) );
 							c = d + 1;
 						}
-					m_chainOpening[ rest.substr( 0, sp ) ] = pos;
+					( isSS ? m_chainSS : m_chainOpening )[ rest.substr( 0, sp ) ] = pos;
 				}
 				// frozen likes: "const float chainAP = 0.4752;"
 				static const std::string ctag = "const float ";
@@ -2321,6 +2444,75 @@ float EffectShader::closedClass( int s, float x ) const
 			if( !opensAt( s, v ) ) return v;
 		}
 	return x;
+}
+
+bool EffectShader::chainWantsSS() const
+{
+	if( m_chainSS.empty() )
+		return false;
+	for( int s = 0; s < 4; ++s )
+	{
+		auto ss = m_chainSS.find( kWalkKnob[s] );
+		auto n  = m_chainClasses.find( kWalkKnob[s] );
+		if( ss == m_chainSS.end() || ss->second.empty() || n == m_chainClasses.end() || n->second.empty() )
+			continue;
+		const int cnt = (int) n->second.size();
+		const auto has = [&]( float x ) { return std::find( ss->second.begin(), ss->second.end(), classPos( x, cnt ) ) != ss->second.end(); };
+		if( has( m_walk.x0[s] ) || ( m_walk.fading[s] && has( m_walk.x1[s] ) ) )
+			return true;
+	}
+	return false;
+}
+
+// ---- Taste per chain class ---------------------------------------------------
+// A like or a skip of a whole scene says little about a chain lab, whose walk
+// shows dozens of chains in one activation; what was on screen says more.  The
+// classes shown at the moment weigh a little more (like) or less (skip), within
+// [0.6, 1.6]: a liked class comes about twice as often as a skipped one, never
+// always and never never, and the music still picks the region.
+
+std::string EffectShader::classTasteKey( const char *knob, const std::string &cls )
+{
+	std::string k = std::string( knob ) + "/" + cls;
+	for( size_t i = std::strlen( knob ) + 1; i < k.size(); ++i )
+		if( k[i] == '/' || k[i] == '\\' ) k[i] = '_';
+	return k;
+}
+
+float EffectShader::classTaste( int s, float x ) const
+{
+	if( s_classTaste.empty() )
+		return 1.f;
+	auto n = m_chainClasses.find( kWalkKnob[s] );
+	if( n == m_chainClasses.end() || n->second.empty() )
+		return 1.f;
+	auto t = s_classTaste.find( classTasteKey( kWalkKnob[s], n->second[ classPos( x, (int) n->second.size() ) ] ) );
+	return t == s_classTaste.end() ? 1.f : t->second;
+}
+
+std::vector<std::pair<std::string, float>> EffectShader::bumpClassTaste( float mul )
+{
+	std::vector<std::pair<std::string, float>> out;
+	if( !m_walk.active )
+		return out;
+	for( int s = 0; s < kWalkN; ++s )
+	{
+		auto n = m_chainClasses.find( kWalkKnob[s] );
+		if( m_walkLoc[s] < 0 || n == m_chainClasses.end() || n->second.empty() )
+			continue;                                 // stage absent in this lab
+		// what is on screen: a fade past its middle shows its target
+		const float x = ( m_walk.fading[s] && m_walk.f[s] > 0.5f ) ? m_walk.x1[s] : m_walk.x0[s];
+		const std::string &cls = n->second[ classPos( x, (int) n->second.size() ) ];
+		if( cls == "none" )
+			continue;
+		const std::string key = classTasteKey( kWalkKnob[s], cls );
+		float v = ( s_classTaste.count( key ) ? s_classTaste[key] : 1.f ) * mul;
+		v = v < 0.6f ? 0.6f : ( v > 1.6f ? 1.6f : v );
+		s_classTaste[key] = v;
+		out.emplace_back( key, v );
+		fprintf( stderr, "Class taste: %s -> %.2f\n", key.c_str(), v );
+	}
+	return out;
 }
 
 // ---- Camera host of the 3D chains --------------------------------------------

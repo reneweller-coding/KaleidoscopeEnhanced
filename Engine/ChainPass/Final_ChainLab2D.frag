@@ -32,7 +32,7 @@ uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue pl
 vec2 chain(vec2 p)
 {
     vec2 fp = gl_FragCoord.xy - chainOff;
-    if (chainScale <= 0.0 || chainScale >= 0.999) return texelFetch(texChain, ivec2(fp), 0).xy;
+    if (chainScale <= 0.0 || (chainScale >= 0.999 && chainScale < 1.5)) return texelFetch(texChain, ivec2(fp), 0).xy;
     vec2 q = fp * chainScale - 0.5;
     ivec2 i0 = ivec2(floor(q)), mx = textureSize(texChain, 0) - 1;
     vec2 f = q - vec2(i0);
@@ -43,6 +43,12 @@ vec2 chain(vec2 p)
     float gap = max(max(length(a - b), length(a - c)), max(length(b - d), length(c - d)));
     if (gap > 0.08) return f.y < 0.5 ? (f.x < 0.5 ? a : b) : (f.x < 0.5 ? c : d);
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+/// @brief Sub-sample i (0..3) of this pixel on the doubled grid (chainScale 2).
+vec2 chainSub(int i)
+{
+    ivec2 b = ivec2(gl_FragCoord.xy - chainOff) * 2 + ivec2(i & 1, i >> 1);
+    return texelFetch(texChain, clamp(b, ivec2(0), textureSize(texChain, 0) - 1), 0).xy;
 }
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
@@ -116,7 +122,13 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
     vec2 dx = dFdx(m0), dy = dFdy(m0);
     gChainM = m0; gChainDx = dx; gChainDy = dy;
     float lod = clamp(log2(max(max(length(dx), length(dy)) * 1024.0, 1.0)) + bias, 0.0, 9.0);
-    vec3 col = imgLod(c0, lod);
+    vec3 col;
+    if (chainScale > 1.5) {
+        float ls = max(lod - 1.0, 0.0);
+        col = 0.25 * (imgLod(chainSub(0), ls) + imgLod(chainSub(1), ls) + imgLod(chainSub(2), ls) + imgLod(chainSub(3), ls));
+    } else {
+        col = imgLod(c0, lod);
+    }
     float l = luma(col);
     grad = vec2(dFdx(l), dFdy(l)) * 1.5;                         
     return col;

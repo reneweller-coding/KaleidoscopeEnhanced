@@ -2045,6 +2045,12 @@ def build(name):
         if not _ex:                                             # the flat labs: at most one stage with an opening
             for _k in ("chainAP", "chainBP", "chainCP", "chainDP"):
                 out.append("// @chainopening %s %s" % (_k, "|".join(str(i) for i in _ccm.opening_positions(_k, _CC[_k]))))
+        if not _ex:                                             # the flat labs (2D lab, FxChain): the classes that sparkle (supersampled)
+            _al = _ccm.sparkling()
+            for _st, _k in (("A", "chainAP"), ("B", "chainBP"), ("C", "chainCP"), ("D", "chainDP")):
+                _pos = [i for i, n in enumerate(_CC[_k]) if (_st, n or "none") in _al]
+                if _pos:
+                    out.append("// @chainss %s %s" % (_k, "|".join(str(i) for i in _pos)))
     out.append(spec_variants(body).rstrip() + "\n")
     # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
     # scene frame instead of the photos; the same library applies.

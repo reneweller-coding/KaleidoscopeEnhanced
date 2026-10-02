@@ -314,8 +314,8 @@ public:
 	/**
 	 * @brief KALEIDO_FREEZE_TIME=SECONDS (comparison runs): the scene at that time, with silent audio,
 	 *        frozen once it has faded in (5 s) -- two runs with KALEIDO_SEED and KALEIDO_FIXED_PHOTO
-	 *        then give the same frame, pixel for pixel, once the
-	 *        exposure has settled on it (~20 s after the start).
+	 *        then give the same frame, pixel for pixel, from the moment
+	 *        it freezes (600 fixed steps of 1/120 s; the log says "FREEZE engaged").
 	 * @return The frozen scene time, or a negative value when unset.
 	 */
 	static float freezeTime();
@@ -833,6 +833,7 @@ private:
 	static float	s_latencyLead;   ///< display-phase lead in seconds (default 0.05).
 	static bool		s_blackout;      ///< VJ blackout target (smoothed per instance) — actual fade is smoothed in PresentPass.
 	static bool		s_freeze;        ///< VJ freeze: hold the picture — forces frame time to 0.
+	static float	s_chainScaleIni; ///< chainScale as the ini has it (the session's value may be lowered by the quality profile).
 	static bool		s_pinned;        ///< VJ pin: no effect/combine switches.
 	float			m_breakSmooth = 0.f;   ///< slewed DJ-stop hold (freezes motion) — dampens frame-time advance during a DJ stop.
 

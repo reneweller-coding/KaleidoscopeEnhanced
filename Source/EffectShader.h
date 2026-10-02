@@ -440,10 +440,27 @@ public:
 	/// The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE):
 	/// below 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
 	static float s_chainScale;
+	/// Supersampling of the sparkling chain classes (ini "chainSupersample", KALEIDO_CHAIN_SS=0 off): their chain
+	/// passes run on a doubled grid and the last pass averages four photo samples; only at chainScale 1.
+	static bool s_chainSS;
 	/// KALEIDO_FREEZE_TIME (set by RenderPipeline): the scene time every effect shows in a comparison run; < 0: off.
 	static float s_freezeTime;
 	/// The host's VJ freeze this frame (set by RenderPipeline): the chain walk and the 3D chains' flight stand still.
 	static bool s_frozen;
+	/// Taste per chain class, classTasteKey() -> weight in [0.6, 1.6] (absent: 1).  Likes and skips
+	/// of a chain lab weight the classes it showed; among three targets in the music's region the
+	/// walk takes one with odds after these weights.  Shared by every lab; RenderPipeline loads and saves it.
+	static std::map<std::string, float> s_classTaste;
+	/// @brief The taste key of a chain class: "<stage knob>/<class name>" ('/' in the name made '_').
+	/// @param knob Stage knob ("chainAP", "coreP", ...). @param cls Class name from "// @chainclasses".
+	static std::string classTasteKey( const char *knob, const std::string &cls );
+	/// @brief The next chain lab starts on its own roll, not on the chain of the lab going out
+	/// (a skip or a scene picked by hand: the viewer wants something else).  Holds for 5 s.
+	static void noCarryOver();
+	/// @brief Multiplies the taste of every class this lab shows now (walking stages; 'none' left out), clamped to [0.6, 1.6].
+	/// @param mul Factor (a like > 1, a skip < 1).
+	/// @return The changed entries (key, new weight), for the caller to persist; empty when this is no walking chain lab.
+	std::vector<std::pair<std::string, float>> bumpClassTaste( float mul );
 	static float s_shadowExtent;      ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box), published by RenderPipeline so the shadow receivers and the light matrix use the same box.
 	static float s_shadowPass;        ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass` uniform.
 	static float s_lightM[16];        ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per frame by RenderPipeline::updateLightMatrix().
@@ -805,18 +822,26 @@ protected:
 	std::map<std::string, std::vector<std::string>> m_chainClasses;   ///< Stage knob -> class names (energy order), from "// @chainclasses".
 	std::map<std::string, float> m_chainConsts;   ///< Knobs frozen as constants (ChainLike*): name -> value.
 	std::map<std::string, std::vector<int>> m_chainOpening;   ///< Stage knob -> positions of its classes streaming into an opening, from "// @chainopening".
+	std::map<std::string, std::vector<int>> m_chainSS;   ///< Stage knob -> positions of its classes that sparkle most (supersampled), from "// @chainss".
+	/// @brief Whether a stage A..D shows, or fades to, a class of m_chainSS (the runner then supersamples).
+	bool chainWantsSS() const;
 	/// @brief Reads the chain lab's "// @chainclasses" / "// @chainopening" lines and frozen knobs once (m_chainParsed).
 	void parseChainSource();
 	/// @brief Whether knob value x of stage s (0..3 = A..D) picks a class streaming into an opening (chain_classes.OPENING).
 	bool opensAt( int s, float x ) const;
 	/// @brief The nearest class of stage s without an opening (energy order), same sub-variant; x if there is none.
 	float closedClass( int s, float x ) const;
+	/// @brief The taste weight (s_classTaste) of the class knob value x picks on walk stage s; 1 without one.
+	float classTaste( int s, float x ) const;
 	GLuint	m_walkProg = 0;             ///< Program the walk locations belong to.
 	GLint	m_walkLoc[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };   ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 = stage absent).
 	GLint	m_walkHostLoc = -1;         ///< Location of walkHost (-1: not a chain lab).
 	GLint	m_tiltALoc = -1;            ///< Location of tiltA (the time tilt's direction).
 	/// @brief Re-reads the rolled knobs into the walk state (called lazily after an activation).
 	void resetChainWalk();
+	/// @brief Sets the stage knobs to the classes the chain lab fading out shows (by class name; see s_lastChain in EffectShader.cpp).
+	void carryChainOver();
+	bool	m_walkCarried[9] = {};      ///< Stage knob taken over from the lab fading out at this activation.
 	/// @brief Advances the walk by one frame from the music and uploads the walk uniforms (program must be bound).
 	void stepChainWalk( const AudioFeatures &f );
 	/// @brief Starts stage @p s fading to knob value @p target over @p dur seconds (no-op while that stage already fades: a fade never changes its destination).

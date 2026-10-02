@@ -399,6 +399,29 @@ Dazu kommen drei Regeln:
   Sekunden oben gelten für 120 BPM).
 * **Immer nur eine Strukturstufe** im 3D-Labor überblendet gleichzeitig, weil
   dann zwei ganze 3D-Welten gerechnet werden.
+* **Geschmack** (seit 03.10.): Ein Like (Taste `f`, Fernbedienung ♥) macht die
+  Klassen, die gerade zu sehen sind, um den Faktor 1,1 schwerer; ein Überspringen
+  (`n`) macht sie um 0,96 leichter (0,92, wenn nach weniger als 10 s
+  übersprungen wird). „Keine“ zählt nicht. Die Gewichte bleiben in 0,6 … 1,6
+  und laufen bei jedem Programmstart um 3 % zurück Richtung 1. Beim Wandern
+  zieht die App dann drei Ziele in der Region der Musik und nimmt eines mit
+  Wahrscheinlichkeit nach dem Gewicht seiner Klasse. Eine gemochte Klasse
+  kommt so etwa doppelt so oft wie eine übersprungene, aber nie immer und nie
+  gar nicht, und die Musik bestimmt weiter die Region. Gespeichert in der ini
+  unter `[classTaste]`, je Stufe und Klassenname (`chainAP/Farris frieze`).
+  Ohne gelernten Geschmack verhält sich alles wie vorher.
+
+**Laborwechsel ohne Bruch** (seit 03.10.): Kommt ein Kettenlabor herein,
+während ein anderes ausblendet, übernimmt es dessen Klassen. Abgeglichen wird
+über den Klassennamen, samt Untervariante. Das 2D-Labor gibt so seine Kette an
+den Tunnel weiter, der 3D-Flug seine Welt an den Raumschnitt. Die Überblendung
+zeigt dann dieselbe Transformation in neuer Form, statt zweier fremder Bilder.
+Klassen, die das neue Labor nicht hat, bleiben gewürfelt. Kommt dasselbe Labor
+noch einmal (ein neuer Wurf), gehen nur zwei der Stufen A–D über, damit der
+neue Wurf trotzdem etwas Neues zeigt. Benannte Ketten (`ChainLike*`) behalten
+ihre eingefrorenen Klassen. Nach einem Überspringen (`n`, Fernbedienung) oder
+einer gezielt gewählten Szene wird nichts übernommen: Dann will man etwas anderes
+sehen. Das Log meldet `N stage(s) carried over from …`.
 
 Ein wanderndes Labor wird vom Szenenplaner **nicht** bei Abschnittswechseln
 oder Drops weggeschnitten. Es reagiert ja selbst darauf. Die Taste `n` und die
