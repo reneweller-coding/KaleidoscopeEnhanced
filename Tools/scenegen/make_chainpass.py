@@ -152,7 +152,7 @@ def write_final(rel, name, bake=0):
         fin_funcs["chain"] = ["vec2 chain(vec2 p)\n{\n    return texture(texChain, p).xy;\n}"]
     else:
         fin_funcs["chain"] = [CHAIN_READ]
-    i = mt.rstrip().rfind("finish(col);")
+    i = mt.rstrip().rfind("finish(")
     assert i > 0, rel
     walks = [w for w in ("walkA", "walkB", "walkC", "walkD", "walkO") if re.search(r"\b%s\b" % w, body.split("void main()")[0])]
     mt = mt[:i] + ("if (walkHost < -1.0) col += vec3(%s);   // keeps the walk uniforms\n    " % " + ".join(w + ".x" for w in walks)

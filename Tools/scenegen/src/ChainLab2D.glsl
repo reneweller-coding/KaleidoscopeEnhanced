@@ -384,6 +384,19 @@ float chainTiltZ(vec2 q)
     float a = 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
+// Afterglow (glowP): the last frame's picture as a fading phosphor veil -- the
+// new frame is never darker than a decayed copy of the previous one, so slow
+// chains leave soft trails and a fast change a short shimmer.  Off below 0.15;
+// the decay stays below 0.8 so the composited frame (exposure, bloom) cannot
+// feed itself up.
+uniform float glowP;
+uniform sampler2D texPrevFrame;   // the last frame, fully composited (unit 34)
+vec3 chainAfterglow(vec3 col)
+{
+    if (glowP <= 0.15) return col;
+    vec3 prev = texture(texPrevFrame, gl_FragCoord.xy / resolution).rgb;
+    return max(col, prev * (0.78 * smoothstep(0.15, 1.0, glowP)));
+}
 vec2 chain(vec2 p)
 {
     float tz = chainTiltZ(p);
@@ -469,5 +482,5 @@ void main()
     vec3 col = mix(looks[s0], looks[s1], sf);
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
     col += gc * edge * kick * 0.55 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   // kick glints on photo/relief (light only)
-    finish(col);
+    finish(chainAfterglow(col));
 }

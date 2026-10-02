@@ -348,6 +348,8 @@ float reliefH(vec3 fq, vec3 n, float lod)
 }
 """
 MAIN = MAIN.replace("void main()", RELIEF + "\nvoid main()", 1)
+assert MAIN.rstrip().endswith("finish(col);\n}") or MAIN.rstrip().endswith("finish(col);\r\n}")
+MAIN = MAIN[:MAIN.rindex("finish(col);")] + "finish(chainAfterglow(col));" + MAIN[MAIN.rindex("finish(col);") + len("finish(col);"):]
 MAIN = MAIN.replace("        vec3 tex = colour3(fp, n, lod, ", """        vec3 nGeo = n;                                          // texture on the geometric normal, light on the bumped one
         if (reliefP > 0.3) {                                    // a knob: every pixel takes the same branch
             vec3 t1 = normalize(cross(n, abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0))), t2 = cross(n, t1);

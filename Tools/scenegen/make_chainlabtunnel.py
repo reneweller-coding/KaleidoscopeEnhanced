@@ -179,7 +179,7 @@ void main()
         vec3 sc = mix(surf + glow * 0.25 * (0.5 + kick), glow + surf * 0.55, smoothstep(0.35, 0.65, st));
         col = mix(fogC, sc, exp(-t * (0.07 + 0.03 * swell)));
     }
-    finish(col);
+    finish(chainAfterglow(col));
 }
 '''
 io.open(os.path.join(SP, "src", "ChainLabTunnel.glsl"), "w", encoding="utf-8", newline="\n").write(HEAD + STAGES + BODY)

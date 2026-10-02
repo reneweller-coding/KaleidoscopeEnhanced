@@ -2840,6 +2840,19 @@ float chainTiltZ(vec2 q)
     float a = 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
+// Afterglow (glowP): the last frame's picture as a fading phosphor veil -- the
+// new frame is never darker than a decayed copy of the previous one, so slow
+// chains leave soft trails and a fast change a short shimmer.  Off below 0.15;
+// the decay stays below 0.8 so the composited frame (exposure, bloom) cannot
+// feed itself up.
+uniform float glowP;
+uniform sampler2D texPrevFrame;   // the last frame, fully composited (unit 34)
+vec3 chainAfterglow(vec3 col)
+{
+    if (glowP <= 0.15) return col;
+    vec3 prev = texture(texPrevFrame, gl_FragCoord.xy / resolution).rgb;
+    return max(col, prev * (0.78 * smoothstep(0.15, 1.0, glowP)));
+}
 
 vec3 zRepeat(vec3 q, float c) { q.z = c * (abs(mod(q.z / c - 1.0, 4.0) - 2.0) - 1.0); return q; }
 // Six-fold mirror lattice across the tube (p6m in xy): nearest hexagon
@@ -3754,5 +3767,5 @@ void main()
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
     }
-    finish(col);
+    finish(chainAfterglow(col));
 }

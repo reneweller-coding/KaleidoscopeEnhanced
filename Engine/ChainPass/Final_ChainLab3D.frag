@@ -146,6 +146,14 @@ vec2 gCw, gCt;
 float sides(float v) { return 5.0 + floor(v * 4.99); }
 uniform vec3 walkA, walkB, walkC, walkD, walkS;
 uniform float walkHost;
+uniform float glowP;
+uniform sampler2D texPrevFrame;
+vec3 chainAfterglow(vec3 col)
+{
+    if (glowP <= 0.15) return col;
+    vec3 prev = texture(texPrevFrame, gl_FragCoord.xy / resolution).rgb;
+    return max(col, prev * (0.78 * smoothstep(0.15, 1.0, glowP)));
+}
 uniform vec3 walkSpace, walkCore, walkBody;
 vec3 chainPlaneC(vec2 c, float lod, float pal)
 {
@@ -232,7 +240,7 @@ void main()
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
     }
-    finish(col);
+    finish(chainAfterglow(col));
     // keeps the walk uniforms: the app finds the lab's stages by their locations
     if (walkHost < -1.0) col += vec3(walkA.x + walkB.x + walkC.x + walkD.x + walkS.x + walkSpace.x + walkCore.x + walkBody.x);
     finish(col);

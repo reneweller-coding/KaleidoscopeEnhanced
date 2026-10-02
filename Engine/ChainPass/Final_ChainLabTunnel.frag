@@ -54,6 +54,14 @@ float gT, gTC, gSpread, gRot, gMw, gH;
 vec2 gCw, gCt;
 uniform vec3 walkA, walkB, walkC, walkD, walkS;
 uniform float walkHost;
+uniform float glowP;
+uniform sampler2D texPrevFrame;
+vec3 chainAfterglow(vec3 col)
+{
+    if (glowP <= 0.15) return col;
+    vec3 prev = texture(texPrevFrame, gl_FragCoord.xy / resolution).rgb;
+    return max(col, prev * (0.78 * smoothstep(0.15, 1.0, glowP)));
+}
 vec2 axisXY(float z) { return vec2(0.35 * sin(z * 0.11) + 0.15 * sin(z * 0.27 + 1.0), 0.3 * sin(z * 0.087 + 0.6) + 0.12 * cos(z * 0.21)); }
 vec2 wallUV(vec3 q)
 {
@@ -162,5 +170,5 @@ void main()
         col = mix(fogC, sc, exp(-t * (0.07 + 0.03 * swell)));
     }
     if (walkHost < -1.0) col += vec3(walkA.x + walkB.x + walkC.x + walkD.x);   // keeps the walk uniforms
-    finish(col);
+    finish(chainAfterglow(col));
 }

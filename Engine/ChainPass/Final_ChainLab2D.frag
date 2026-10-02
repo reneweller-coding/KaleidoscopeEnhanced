@@ -121,6 +121,14 @@ void walkPick(float c, int k0, float v0, int n, float salt, out int k, out float
     v = hash11(c * 3.17 + s * 1.7 + 0.5);
 }
 uniform vec3 walkO;
+uniform float glowP;
+uniform sampler2D texPrevFrame;
+vec3 chainAfterglow(vec3 col)
+{
+    if (glowP <= 0.15) return col;
+    vec3 prev = texture(texPrevFrame, gl_FragCoord.xy / resolution).rgb;
+    return max(col, prev * (0.78 * smoothstep(0.15, 1.0, glowP)));
+}
 void main()
 {
     vec2 p = screenP();
@@ -197,5 +205,5 @@ void main()
     col *= mix(vec3(0.9, 0.97, 1.08), vec3(1.08, 0.98, 0.9), mode);
     col += gc * edge * kick * 0.55 * ((s0 <= 1 ? 1.0 - sf : 0.0) + (s1 <= 1 ? sf : 0.0));   
     if (walkHost < -1.0) col += vec3(walkA.x + walkB.x + walkC.x + walkD.x + walkO.x);   // keeps the walk uniforms
-    finish(col);
+    finish(chainAfterglow(col));
 }

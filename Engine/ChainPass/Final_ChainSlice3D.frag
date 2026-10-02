@@ -93,6 +93,14 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }
 uniform vec3 walkA, walkB, walkC, walkD, walkS;
 uniform float walkHost;
 bool walkAll() { return clamp(morphP, 0.0, 1.0) >= 0.5; }
+uniform float glowP;
+uniform sampler2D texPrevFrame;
+vec3 chainAfterglow(vec3 col)
+{
+    if (glowP <= 0.15) return col;
+    vec3 prev = texture(texPrevFrame, gl_FragCoord.xy / resolution).rgb;
+    return max(col, prev * (0.78 * smoothstep(0.15, 1.0, glowP)));
+}
 int ordco(int i) { if (i == 0) return 0; if (i == 1) return 4; if (i == 2) return 8; if (i == 3) return 3; if (i == 4) return 20; if (i == 5) return 15; if (i == 6) return 18; if (i == 7) return 9; if (i == 8) return 6; if (i == 9) return 11; if (i == 10) return 10; if (i == 11) return 16; if (i == 12) return 12; if (i == 13) return 1; if (i == 14) return 19; if (i == 15) return 14; if (i == 16) return 7; if (i == 17) return 13; if (i == 18) return 2; if (i == 19) return 21; if (i == 20) return 5; return 17; }
 uniform vec3 walkSpace, walkCore, walkBody;
 float sliceZoom(int kc)
@@ -228,7 +236,7 @@ void main()
         vec3 sc = mix(surf + rimC * fres * (0.15 + 0.6 * kick), rim * 1.3 + rimC * 0.12 * ao, smoothstep(0.5, 1.0, st));
         col = mix(fogC, sc, exp(-t * (0.06 + 0.04 * swell)));
     }
-    finish(col);
+    finish(chainAfterglow(col));
     // keeps the walk uniforms: the app finds the lab's stages by their locations
     if (walkHost < -1.0) col += vec3(walkA.x + walkB.x + walkC.x + walkD.x + walkS.x + walkSpace.x + walkCore.x + walkBody.x);
     finish(col);

@@ -14,6 +14,7 @@
     <float name="morphP" minValue="0.5" maxValue="1"></float>
     <float name="styleP" minValue="0" maxValue="1"></float>
     <float name="tiltP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="-0.6" maxValue="1"></float>
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
@@ -30,6 +31,7 @@
     <float name="depthP" minValue="0" maxValue="1"></float>
     <float name="styleP" minValue="0" maxValue="1"></float>
     <float name="tiltP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="-0.6" maxValue="1"></float>
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
@@ -50,6 +52,7 @@
     <float name="orderP" minValue="0" maxValue="1"></float>
     <float name="morphP" minValue="0.5" maxValue="1"></float>
     <float name="styleP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="-0.6" maxValue="1"></float>
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
@@ -72,6 +75,7 @@
     <float name="orderP" minValue="0" maxValue="1"></float>
     <float name="morphP" minValue="0.5" maxValue="1"></float>
     <float name="styleP" minValue="0" maxValue="1"></float>
+    <float name="glowP" minValue="-0.6" maxValue="1"></float>
     <float name="speedP" minValue="0" maxValue="1"></float>
     <float name="detailP" minValue="0" maxValue="1"></float>
     <float name="paletteP" minValue="0" maxValue="1"></float>
