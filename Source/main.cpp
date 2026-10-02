@@ -40,6 +40,9 @@
  *                    setting and the preset's ImageDirectory attribute.
  *  - `-q`            score-cue self test (CueReceiver.h): decode, accumulate and receive on a real
  *                    socket, print the result and exit with 0 or 1. No window, no audio device.
+ *  - `-k <file>`     score cues from a file (CueReceiver.h, ScoreCueFile): a generator's bars,
+ *                    sections, drops and key, timed by the `-w`/`-x` WAV -- a batch render follows
+ *                    the score instead of guessing it.
  *  - `-h`            print the help/usage text and exit.
  *
  * There is only one runtime path after parsing: the normal windowed Qt application
@@ -115,6 +118,8 @@ void commandlineerror( char *cmd, char *parm )
 	"              auto-discovered by the Kaleidoscope Remote app - '-t 0' disables\n"
 	"-x <wav>      batch render: record this WAV deterministically to an mp4\n"
 	"              (recordings\\rec_*), then exit automatically\n"
+	"-k <file>     score cues for the -w/-x WAV: one line per OSC cue,\n"
+	"              tab-separated: seconds, /phos/bar|beat|section|key|drop, args\n"
 	"-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"
 	"              webcam via OBS, ...) replaces the photos as source image\n"
 	"              ('any' = whichever sender is active; photos while none runs)\n"
@@ -177,8 +182,8 @@ void parsecommandline( int argc, char *argv[] )
 	// A switch must be listed HERE as well as handled in the switch below —
 	// the table is what makes it valid at all, and a case with no entry here is
 	// rejected before it is ever reached.
-	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 'q', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,   1,   0,  0 };
+	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 'q', 'k', 0 };
+	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,   1,   0,   1,  0 };
 
 	int nopts;
 	int mhp[256];
@@ -253,6 +258,11 @@ void parsecommandline( int argc, char *argv[] )
 				// Score-cue self test: no window, no audio, an exit code (CueReceiver.h).
 				case 'q': cueSelfTest = true; break;
 				case 'r': GLwidget::s_autoRecord = true; break;
+				// Score cues from a file, timed by the offline WAV (-w / -x).
+				case 'k':
+					if( ScoreCueFile::instance().load( QString::fromLocal8Bit( argv[1] ) ) < 0 )
+						exit( -1 );
+					break;
 				// Offline analysis: feed this WAV through the analyzer instead of
 				// capturing live audio (deterministic classifier testing).
 				case 'w':

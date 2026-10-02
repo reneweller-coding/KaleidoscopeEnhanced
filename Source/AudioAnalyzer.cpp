@@ -3,6 +3,7 @@
  * @brief Implementation of AudioAnalyzer: WASAPI loopback capture, the per-block DSP pipeline (processBlock), and offline/replay/recording helpers.
  */
 #include "AudioAnalyzer.h"
+#include "CueReceiver.h"
 
 // Windows / WASAPI headers
 #ifdef _WIN32
@@ -420,6 +421,8 @@ void AudioAnalyzer::analyzeWavOffline( const QString &path )
         // classifier tuning minutes instead of hours.
         static const bool fast = qEnvironmentVariableIsSet( "KALEIDO_OFFLINE_FAST" );
         fed += n;
+        // A cue file (-k) is timed by the WAV itself: this is how far it has played.
+        ScoreCueFile::instance().setClock( double( fed ) / sampleRate );
         if( !fast )
         {
             qint64 ahead = fed * 1000 / sampleRate - clock.elapsed();

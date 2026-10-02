@@ -14,7 +14,9 @@
 #include "CueReceiver.h"
 
 #include <QtCore/QCoreApplication>
+#include <QtCore/QDir>
 #include <QtCore/QElapsedTimer>
+#include <QtCore/QFile>
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QUdpSocket>
 
@@ -337,6 +339,48 @@ int runCueSelfTest()
 		applyScoreCues( ScoreCues::instance().drain( 0.016f ), bridge, x );
 		check( x.sectionCount == 18, "and a sender that comes back still moves it by exactly one",
 		       std::to_string( x.sectionCount ) );
+	}
+
+	// ---------------------------------------------------------------- a cue file (-k, 02.10.2026)
+	{
+		double at = 0.0;
+		ScoreCue line;
+		check( parseScoreCueLine( "12.5\t/phos/bar\t7", at, line ) == 1 && at == 12.5
+		       && line.kind == ScoreCue::Kind::Bar && line.index == 7, "a cue file's bar line reads as the bar it names" );
+		check( parseScoreCueLine( "0\t/phos/section\tDrop\t0.9\r", at, line ) == 1 && line.kind == ScoreCue::Kind::Section
+		       && line.section == static_cast<int>( CueSection::Drop ) && line.energy > 0.89f && line.energy < 0.91f,
+		       "and a section with its energy, a carriage return or not" );
+		check( parseScoreCueLine( "3\t/phos/key\tF# Phrygian", at, line ) == 1 && line.keyPc == 6, "and a key with a space in it" );
+		check( parseScoreCueLine( "4\t/phos/drop", at, line ) == 1 && line.kind == ScoreCue::Kind::Drop, "and a drop without arguments" );
+		check( parseScoreCueLine( "# seconds address arguments", at, line ) == 0 && parseScoreCueLine( "", at, line ) == 0,
+		       "comments and blank lines are neither cues nor errors" );
+		check( parseScoreCueLine( "1\t/phos/bar", at, line ) < 0 && parseScoreCueLine( "1\t/phos/drop\tnow", at, line ) < 0
+		       && parseScoreCueLine( "x\t/phos/bar\t1", at, line ) < 0 && parseScoreCueLine( "1\t/other\t1", at, line ) < 0,
+		       "a line whose time, address or arguments do not fit is refused" );
+
+		// The clock: nothing before the WAV plays, each cue once when it is reached.
+		const QString path = QDir::temp().filePath( "kaleido_cuetest.tsv" );
+		{
+			QFile f( path );
+			if( f.open( QIODevice::WriteOnly | QIODevice::Truncate ) )
+				f.write( "# a test\n2.0\t/phos/drop\n0.0\t/phos/section\tIntro\t0.2\n0.0\t/phos/bar\t0\n1.0\t/phos/bar\t1\n" );
+		}
+		ScoreCues::instance().reset();
+		ScoreCueFile &file = ScoreCueFile::instance();
+		check( file.load( path ) == 4 && file.active(), "a cue file loads its four cues" );
+		check( file.feed() == 0, "nothing goes in before the WAV plays" );
+		file.setClock( 0.5 );
+		check( file.feed() == 2, "at 0.5 s the two cues at zero go in" );
+		ScoreCues::Frame f = ScoreCues::instance().drain( 0.016f );
+		check( f.live && f.section && f.downbeat && f.bar == 0 && !f.drop, "and the scheduler sees them as it would from the socket" );
+		check( file.feed() == 0, "a cue goes in once" );
+		file.setClock( 2.0 );
+		check( file.feed() == 2, "at 2 s the bar and the drop follow" );
+		f = ScoreCues::instance().drain( 0.016f );
+		check( f.drop && f.bar == 1, "the drop lands" );
+		file.reset();
+		ScoreCues::instance().reset();
+		QFile::remove( path );
 	}
 
 	// ---------------------------------------------------------------- a real socket

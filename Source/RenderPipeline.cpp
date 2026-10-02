@@ -1726,6 +1726,8 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
 	// the drops ARE, the scheduler stops guessing them from the loudspeaker output. With no sender
 	// -- the normal case -- this call leaves schedTick byte for byte as it is above; the four fields
 	// it touches when cues are live, and why it touches exactly those four, are in the header.
+	// A cue file (-k) is a sender too: whatever of it the offline WAV has reached goes in first.
+	ScoreCueFile::instance().feed();
 	applyScoreCues( ScoreCues::instance().drain( timeSinceLastFrameSec ), m_cueBridge, schedTick );
 	m_scheduler.tick( schedTick );
     

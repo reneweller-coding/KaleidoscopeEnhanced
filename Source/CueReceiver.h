@@ -32,12 +32,29 @@
  * The socket is a plain QUdpSocket on the Qt main thread, exactly like WebRemote's discovery
  * responder: the render loop and the event loop are the same thread here, so a datagram can be
  * turned into state the next frame reads without any synchronisation.
+ *
+ * **Or from a file (02.10.2026).** A rendered track has its cues written down beside it, so a batch
+ * render (`-x track.wav -k track.cues.tsv`) can be steered by them as a live set is by the socket:
+ * ScoreCueFile holds the file's cues and hands each to ScoreCues once the offline WAV has played up
+ * to its time. One line per message, tab-separated -- the seconds, the address, the arguments:
+ *
+ * @code
+ *   # seconds  address        arguments
+ *   0.000      /phos/key      F# Phrygian
+ *   0.000      /phos/section  Intro   0.20
+ *   0.000      /phos/bar      0
+ *   0.000      /phos/beat     0
+ *   59.077     /phos/drop
+ * @endcode
  */
 #ifndef CUERECEIVER_H
 #define CUERECEIVER_H
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
+
+#include <atomic>
+#include <vector>
 
 #include "SceneScheduler.h"
 
@@ -85,6 +102,18 @@ struct ScoreCue
  * @return true when @p out is one of the five messages.
  */
 bool decodeScoreCue( const char *data, int size, ScoreCue &out );
+
+/**
+ * @brief Reads one line of a cue file (see the file comment): the seconds, the address, the arguments.
+ *
+ * The same five messages with the same arguments as on the wire, and as strict: a line whose
+ * address is not one of them, or whose arguments do not fit it, is refused.
+ * @param line    The line, without its line break (a trailing carriage return is allowed).
+ * @param seconds Receives the time of the cue, in seconds from the start of the WAV.
+ * @param out     Receives the cue.
+ * @return 1 for a cue, 0 for a blank line or a comment (`#`), -1 for a line that is neither.
+ */
+int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out );
 
 /**
  * @brief What the generator has said, as the render loop needs it: counters, not messages.
@@ -146,6 +175,57 @@ private:
 	int   m_barIndex    = -1;       ///< the last bar number
 	int   m_accepted    = 0;        ///< @copydoc accepted
 	int   m_rejected    = 0;        ///< @copydoc rejected
+};
+
+/**
+ * @brief A cue file (`-k`): the generator's cues, handed to ScoreCues as the offline WAV reaches them.
+ *
+ * The clock is the WAV's own position (AudioAnalyzer::analyzeWavOffline() sets it after every block
+ * on its thread; hence the atomic), so the cues land on the music the analyser is hearing, whatever
+ * the frame rate. feed() runs on the main thread before the scheduler drains the cues; a cue whose
+ * time has passed goes in once, in file order. Without a file nothing here does anything.
+ */
+class ScoreCueFile
+{
+public:
+	/** @brief The one instance. */
+	static ScoreCueFile &instance();
+
+	/**
+	 * @brief Reads a cue file and replaces whatever was loaded.
+	 * @param path The file.
+	 * @return The number of cues read, or -1 when the file cannot be opened or has a line that is
+	 *         not a cue (it names the line on stderr).
+	 */
+	int load( const QString &path );
+
+	/** @brief Whether a file with at least one cue is loaded. */
+	bool active() const { return !m_cues.empty(); }
+
+	/** @brief The WAV's position, in seconds (any thread). @param seconds Played so far. */
+	void setClock( double seconds ) { m_clock.store( seconds, std::memory_order_relaxed ); }
+
+	/**
+	 * @brief Hands every cue up to the clock to ScoreCues (main thread).
+	 * @return How many went in this time.
+	 */
+	int feed();
+
+	/** @brief Forgets the file and the clock (used by the self test). */
+	void reset();
+
+private:
+	ScoreCueFile() {}
+
+	/** @brief One line of the file. */
+	struct Timed
+	{
+		double   seconds = 0.0;   ///< when, from the start of the WAV
+		ScoreCue cue;             ///< what
+	};
+	std::vector<Timed>  m_cues;              ///< the file's cues, sorted by time (stable: file order within a time)
+	size_t              m_next  = 0;         ///< the first cue not yet handed over
+	std::atomic<double> m_clock { -1.0 };    ///< the WAV's position; below zero until it plays
 };
 
 /**
@@ -219,7 +299,8 @@ private:
 /**
  * @brief `Kaleidoscope.exe -q`: the score-cue self test, run instead of opening a window.
  *
- * Four things, none of which needs a GL context, a sound card or a generator: the decoder against
+ * Five things, none of which needs a GL context, a sound card or a generator: the cue file's lines
+ * and its clock (02.10.2026); the decoder against
  * datagrams built by hand from the OSC 1.0 specification (and against malformed ones, which have to
  * be refused); the accumulator's live/expire behaviour; a real socket, fed by a real QUdpSocket;
  * and the one property everything else rests on -- with no cues live, a scheduler tick comes out of

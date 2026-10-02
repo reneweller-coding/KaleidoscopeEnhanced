@@ -9,8 +9,13 @@
 #include <QtNetwork/QHostAddress>
 #include <QtNetwork/QUdpSocket>
 
+#include <QtCore/QFile>
+
+#include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
+#include <string>
 
 const char *const kCueSectionNames[static_cast<int>( CueSection::Count )] =
 	{ "Intro", "Groove", "Build", "Drop", "Break", "Outro", "Pdb", "Cut" };
@@ -153,6 +158,145 @@ bool decodeScoreCue( const char *data, int size, ScoreCue &out )
 	}
 	out.kind = static_cast<ScoreCue::Kind>( kind );
 	return true;
+}
+
+// ---------------------------------------------------------------------------- a cue file's lines
+
+int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out )
+{
+	out = ScoreCue();
+	seconds = 0.0;
+	// Tab-separated fields; a trailing carriage return (a file written on Windows) is not part of the last one.
+	std::string text( line != nullptr ? line : "" );
+	while( !text.empty() && ( text.back() == '\r' || text.back() == '\n' ) )
+		text.pop_back();
+	size_t first = text.find_first_not_of( " \t" );
+	if( first == std::string::npos || text[first] == '#' )
+		return 0;
+	std::vector<std::string> field;
+	size_t from = 0;
+	for( ;; )
+	{
+		const size_t tab = text.find( '\t', from );
+		field.push_back( text.substr( from, tab == std::string::npos ? std::string::npos : tab - from ) );
+		if( tab == std::string::npos )
+			break;
+		from = tab + 1;
+	}
+	if( field.size() < 2 )
+		return -1;
+
+	char *end = nullptr;
+	seconds = strtod( field[0].c_str(), &end );
+	if( end == field[0].c_str() || *end != 0 || seconds < 0.0 )
+		return -1;
+	int kind = -1;
+	for( int i = 0; i < 5; i++ )
+		if( field[1] == kAddresses[i] )
+			kind = i;
+	if( kind < 0 )
+		return -1;
+
+	const size_t args = field.size() - 2;
+	switch( static_cast<ScoreCue::Kind>( kind ) )
+	{
+		case ScoreCue::Kind::Beat:
+		case ScoreCue::Kind::Bar:
+		{
+			if( args != 1 )
+				return -1;
+			const long v = strtol( field[2].c_str(), &end, 10 );
+			if( end == field[2].c_str() || *end != 0 )
+				return -1;
+			out.index = static_cast<int>( v );
+			break;
+		}
+		case ScoreCue::Kind::Section:
+		{
+			if( args != 2 )
+				return -1;
+			snprintf( out.text, sizeof( out.text ), "%s", field[2].c_str() );
+			out.energy = static_cast<float>( strtod( field[3].c_str(), &end ) );
+			if( end == field[3].c_str() || *end != 0 )
+				return -1;
+			for( int i = 0; i < static_cast<int>( CueSection::Count ); i++ )
+				if( strcmp( out.text, kCueSectionNames[i] ) == 0 )
+					out.section = i;
+			break;
+		}
+		case ScoreCue::Kind::Key:
+			if( args != 1 )
+				return -1;
+			snprintf( out.text, sizeof( out.text ), "%s", field[2].c_str() );
+			out.keyPc = pitchClassOf( out.text );
+			break;
+		case ScoreCue::Kind::Drop:
+			if( args != 0 )
+				return -1;
+			break;
+		default:
+			return -1;
+	}
+	out.kind = static_cast<ScoreCue::Kind>( kind );
+	return 1;
+}
+
+// ---------------------------------------------------------------------------- ScoreCueFile
+
+ScoreCueFile &ScoreCueFile::instance()
+{
+	static ScoreCueFile s;
+	return s;
+}
+
+int ScoreCueFile::load( const QString &path )
+{
+	reset();
+	QFile f( path );
+	if( !f.open( QIODevice::ReadOnly ) )
+	{
+		fprintf( stderr, "CUES: cannot open %s\n", qPrintable( path ) );
+		return -1;
+	}
+	int lineNo = 0;
+	while( !f.atEnd() )
+	{
+		const QByteArray line = f.readLine();
+		lineNo++;
+		Timed t;
+		const int r = parseScoreCueLine( line.constData(), t.seconds, t.cue );
+		if( r < 0 )
+		{
+			fprintf( stderr, "CUES: %s line %d is not a cue: %s", qPrintable( path ), lineNo, line.constData() );
+			m_cues.clear();
+			return -1;
+		}
+		if( r > 0 )
+			m_cues.push_back( t );
+	}
+	std::stable_sort( m_cues.begin(), m_cues.end(), []( const Timed &a, const Timed &b ) { return a.seconds < b.seconds; } );
+	fprintf( stderr, "CUES: %d cues from %s\n", static_cast<int>( m_cues.size() ), qPrintable( path ) );
+	return static_cast<int>( m_cues.size() );
+}
+
+int ScoreCueFile::feed()
+{
+	const double now = m_clock.load( std::memory_order_relaxed );
+	int n = 0;
+	while( m_next < m_cues.size() && now >= 0.0 && m_cues[m_next].seconds <= now )
+	{
+		ScoreCues::instance().apply( m_cues[m_next].cue );
+		m_next++;
+		n++;
+	}
+	return n;
+}
+
+void ScoreCueFile::reset()
+{
+	m_cues.clear();
+	m_next = 0;
+	m_clock.store( -1.0, std::memory_order_relaxed );
 }
 
 // ---------------------------------------------------------------------------- ScoreCues

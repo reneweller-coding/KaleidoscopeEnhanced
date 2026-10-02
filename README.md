@@ -304,6 +304,24 @@ The sender this was built for is the Phosphene psytrance generator (its
 `docs/PLAN.md`, section 8.3); the wire format is plain OSC 1.0, so anything
 that can send those five messages works.
 
+**From a file, for a batch render.** A rendered track can carry its cues in a
+text file instead: one message per line, tab-separated — the second in the WAV,
+the address, the arguments (`#` starts a comment):
+
+```text
+0.000	/phos/key	F# Phrygian
+0.000	/phos/section	Intro	0.20
+0.000	/phos/bar	0
+59.077	/phos/section	Drop	0.90
+59.077	/phos/drop
+```
+
+`Kaleidoscope.exe -x track.wav -k track.cues.tsv` then renders the video with
+every cut placed by the score: each cue goes in when the WAV reaches its time.
+The demo videos of the VRAudio generators (Noctuary, Ephemeris, Phosphene,
+Totality, Parhelion) are made this way; their `Tools/demo/make_demos.py`
+writes the file from what each generator's renderer knows about its track.
+
 ## Presets
 
 `Presets\*.xml` define which shaders are in rotation, their
@@ -555,6 +573,7 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-o`          | Spout output: publish the frame as sender "Kaleidoscope"           |
 | `-t <port>`   | Web remote port (default 8080; `-t 0` disables it)                 |
 | `-x <wav>`    | Batch render: record this WAV to an mp4, then exit                |
+| `-k <file>`   | Score cues for the `-w`/`-x` WAV, from a file (see [Score cues](#score-cues-letting-a-generator-say-where-the-bars-are)) |
 | `-i <sender>` | Spout input: a live sender replaces the photos                     |
 | `-v <path>`   | Play a video (or folder of videos) as the image source              |
 | `-3 <mode>`   | Stereo 3D: `sbs`, `tb` or `ana`(glyph)                              |
