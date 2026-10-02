@@ -1076,10 +1076,14 @@ bool EffectShader::usesBake()
 // ---- Chain walk (host side of the chain labs' walk) ----------------------
 // Stage order: A, B, C, D (the chain), S (the look); each has a rolled knob.
 // Stages 5..7 (the 3D structure: space, fold core, body) exist in ChainLab3D only.
-static const int   kWalkN = 9;            // + the stage order (8)
+static const int   kWalkN = 9;            ///< Walk stages: A..D, the look, space, core, body and the stage order (8).
+/// The rolled knob of each walk stage.
 static const char *kWalkKnob[9]  = { "chainAP", "chainBP", "chainCP", "chainDP", "styleP", "spaceP", "coreP", "bodyP", "orderP" };
+/// The walk uniform of each stage (shown, target, fade).
 static const char *kWalkUni[9]   = { "walkA", "walkB", "walkC", "walkD", "walkS", "walkSpace", "walkCore", "walkBody", "walkO" };
+/// Short stage names for the log.
 static const char *kWalkName[9]  = { "A", "B", "C", "D", "look", "space", "core", "body", "order" };
+/// @return True for the 3D lab's structure stages (space, fold core, body).
 static bool isStructure( int s ) { return s >= 5 && s <= 7; }
 
 void EffectShader::resetChainWalk()
@@ -2200,7 +2204,12 @@ void EffectShader::parseChainSource()
 	}
 }
 
-// Class position of a knob value, exactly as the shader's pickStage().
+/**
+ * @brief Class position of a knob value, exactly as the shader's pickStage().
+ * @param x Knob value 0..1.
+ * @param n Number of classes of the stage.
+ * @return Position 0..n-1.
+ */
 static int classPos( float x, int n )
 {
 	int k = (int)( ( x < 0.f ? 0.f : ( x > 1.f ? 1.f : x ) ) * n );
@@ -2241,7 +2250,8 @@ float EffectShader::closedClass( int s, float x ) const
 // ---- Camera host of the 3D chains --------------------------------------------
 // Speed of the flight per gaze -- the order of gazeAngles() in the shader:
 // ahead, right window, slanted down, left window, slanted up, floating, orthographic.
-static const int   kGazeN = 7;
+static const int   kGazeN = 7;            ///< Number of gazes (the shader's gazeAngles()).
+/// Flight speed per gaze, in the order above.
 static const float kGazeSpeed[kGazeN] = { 1.f, 0.7f, 0.85f, 0.7f, 0.85f, 0.08f, 0.5f };
 
 void EffectShader::stepChainCam( const AudioFeatures &f )

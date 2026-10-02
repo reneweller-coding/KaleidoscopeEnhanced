@@ -303,11 +303,19 @@ void shaderCacheStats( int *programs, int *reuses, double *buildMs )
 // GL_COMPLETION_STATUS until it is done; then the program goes into the cache.
 // ---------------------------------------------------------------------------
 #ifndef GL_COMPLETION_STATUS_KHR
+/// GL_KHR_parallel_shader_compile's non-blocking 'done' query (where the headers lack it).
 #define GL_COMPLETION_STATUS_KHR 0x91B1
 #endif
-struct PrebuildJob { std::string key; GLuint prog; GLuint fs; };
-static std::map<std::string, PrebuildJob> s_prebuild;
+/// @brief One background build: its cache key, its program and its fragment shader (deleted when collected).
+struct PrebuildJob
+{
+	std::string key;   ///< Program cache key.
+	GLuint prog;       ///< The program being linked.
+	GLuint fs;         ///< Its fragment shader.
+};
+static std::map<std::string, PrebuildJob> s_prebuild;   ///< Builds still running, by key.
 static int s_parallel = -1;                 ///< -1 unknown, 0 no, 1 yes
+/// @return True if the driver compiles in the background (GL_KHR/ARB_parallel_shader_compile; asked once).
 static bool parallelCompile()
 {
 	if( s_parallel >= 0 ) return s_parallel == 1;
@@ -334,6 +342,7 @@ static bool parallelCompile()
 	return s_parallel == 1;
 }
 
+// (documented in shader_setup.h)
 bool shaderPrebuildStart( const char *frag_source )
 {
 	if( !parallelCompile() ) return false;

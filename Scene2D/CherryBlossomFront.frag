@@ -1,7 +1,7 @@
 #version 330 core
 out vec4 fragColor;
 /**
- * @file CHERRY BLOSSOM FRONT: the sakura front arriving along a canal.
+ * @file CherryBlossomFront.frag
  * @brief CHERRY BLOSSOM FRONT: looking down a narrow canal lined with
  * cherry trees whose canopies arch over the water -- stone banks, a path
  * with lanterns, the sky pale with spring.  During the scene arc the

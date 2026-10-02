@@ -32,7 +32,7 @@
  *                                            (core80, clock flicker, flash; optional
  *                                            --images dir, --steps N, --out file.tsv,
  *                                            --scene Blit.frag for a still A, drone)
- *   PresetEditor.exe --compile <files|@list> compile every shader with the real driver
+ *   PresetEditor.exe --compile <files|\@list> compile every shader with the real driver
  *                                            (fullscreen fragments also linked against
  *                                            Engine/Fullscreen.vert); exit code = failures
  *   PresetEditor.exe --cfxcheck              verify the GL 4.3 compute-FX

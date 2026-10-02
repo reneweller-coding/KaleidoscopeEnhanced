@@ -51,7 +51,9 @@ struct OsdItem
 
 	std::function<float()>      getF;  ///< Slider: current value.
 	std::function<void(float)>  setF;  ///< Slider: new value (the callee clamps).
-	float lo = 0.f, hi = 1.f, step = 0.1f;   ///< Slider: range and increment per key press.
+	float lo = 0.f;                          ///< Slider: lower end.
+	float hi = 1.f;                          ///< Slider: upper end.
+	float step = 0.1f;                       ///< Slider: increment per key press.
 	std::function<QString(float)> fmt; ///< Slider: value text (default: one decimal).
 };
 
@@ -121,12 +123,19 @@ private:
 		int top    = 0;                                    ///< First visible row.
 	};
 
+	/// @brief Opens a sub-level. @param title Its heading. @param build Builds its rows (called again on every refresh).
 	void push( const QString &title, std::function<std::vector<OsdItem>()> build );
+	/// @brief Closes the current level (the root closes the menu).
 	void back();
+	/// @brief Runs a row: an action, a sub-menu or the next choice. @param it The row.
 	void activate( OsdItem &it );
+	/// @brief Steps a choice or slider row. @param it The row. @param dir -1 or +1.
 	void adjust( OsdItem &it, int dir );
+	/// @brief Restarts the idle timer (the menu closes itself after a while without input).
 	void touch() { m_idle.restart(); }
+	/// @brief Shows a short confirmation line. @param text The line.
 	void flash( const QString &text ) { m_flashText = text; m_flash.restart(); }
+	/// @return The value column of a row (choice label, slider value, toggle state).
 	QString valueText( const OsdItem &it ) const;
 
 	std::vector<Level> m_stack;     ///< Open levels, root first.

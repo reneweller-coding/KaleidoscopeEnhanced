@@ -435,7 +435,7 @@ public:
 	/// the first third of its arc on the very bench meant to judge it.
 	/// SceneScheduler::setReviewMode() owns this value.
 	static float s_reviewSolo;
-	/// True in the app (main.cpp): chain labs with Engine/ChainPass/Final_<name>.frag run as passes; the editor keeps the uber-shaders.
+	/// True in the app (main.cpp): chain labs with Engine/ChainPass/Final_NAME.frag run as passes; the editor keeps the uber-shaders.
 	static bool s_chainRunner;
 	/// The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE):
 	/// below 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
@@ -709,7 +709,7 @@ protected:
 		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.
 		bool  hasLast = false;          ///< last is valid.
 		std::minstd_rand rng;           ///< Own random stream (keeps the scene's rand() stream untouched per frame).
-	} m_walk;
+	} m_walk;                           ///< The walk of this activation (chain labs only).
 	/**
 	 * @brief Camera host of the 3D chains (uniform camHost): the flight
 	 * position and the gaze.
@@ -724,17 +724,21 @@ protected:
 	{
 		bool  pending = true;           ///< Reset due (activation).
 		float z = 0.f;                  ///< Flight position along the path.
-		int   g0 = 0, g1 = 0;           ///< Gaze shown, gaze panned to (see gazeAngles in the shader).
+		int   g0 = 0;                   ///< Gaze shown (see gazeAngles in the shader).
+		int   g1 = 0;                   ///< Gaze panned to.
 		float f = 0.f;                  ///< Pan progress 0..1 (0 = holding g0).
 		float panDur = 50.f;            ///< Pan length, seconds.
-		float hold = 0.f, holdDur = 200.f;   ///< Seconds on g0, and how long it stays.
+		float hold = 0.f;               ///< Seconds on g0 so far.
+		float holdDur = 200.f;          ///< How long g0 stays before the next pan.
 		float lastAdv = 0.f;            ///< audioAdvance of the previous frame.
 		bool  hasLast = false;          ///< last/lastAdv valid.
 		std::chrono::steady_clock::time_point last;   ///< Wall clock of the previous step.
 		std::minstd_rand rng;           ///< Own random stream.
-	} m_cam;
+	} m_cam;                            ///< The camera of this activation (3D chains only).
 	GLuint	m_camProg = 0;              ///< Program the camera locations belong to.
-	GLint	m_camHostLoc = -1, m_camZLoc = -1, m_camGazeLoc = -1;   ///< camHost / camZ / camGaze (-1: no camera host).
+	GLint	m_camHostLoc = -1;          ///< camHost (-1: no camera host).
+	GLint	m_camZLoc = -1;             ///< camZ, the flight position.
+	GLint	m_camGazeLoc = -1;          ///< camGaze (shown, panned to, pan).
 	/// @brief Advances the 3D chains' camera (flight and gaze) and uploads it (program must be bound).
 	void stepChainCam( const AudioFeatures &f );
 	// ---- Specialised variants of the chain labs ----
@@ -760,14 +764,16 @@ protected:
 	/// @brief Drops every variant (back to the generic program); with release, also frees them.
 	void dropVariants( bool release );
 	// ---- Chain runner: the lab's chain as one small pass per transform ----
-	char   *m_compileFile = nullptr;    ///< Engine/ChainPass/Final_<name>.frag when this lab runs its chain as passes (else null: the fragment file itself).
-	GLuint	m_cpFbo[8] = {}, m_cpTex[8] = {};   ///< Coordinate textures (ping-pong plus fade temporaries; 5 for the flat labs, 8 RGBA32F for the 3D lab).
-	int		m_cpW = 0, m_cpH = 0;       ///< Their size (the target viewport, or the bake square).
+	char   *m_compileFile = nullptr;    ///< Engine/ChainPass/Final_NAME.frag when this lab runs its chain as passes (else null: the fragment file itself).
+	GLuint	m_cpFbo[8] = {};           ///< Framebuffers of the coordinate textures.
+	GLuint	m_cpTex[8] = {};           ///< Coordinate textures (ping-pong plus fade temporaries; 5 for the flat labs, 8 RGBA32F for the 3D lab).
+	int		m_cpW = 0;                 ///< Their width (the chain grid: the viewport times chainScale, or the bake square).
+	int		m_cpH = 0;                 ///< Their height.
 	int		m_chainBake = 0;            ///< > 0: the chain is baked over [0,1]^2 at this size ("// @chainbake N" in the final shader).
 	bool	m_chain3D = false;          ///< "// @chain3d": the 3D lab's deferred passes (geometry, three plane chains, shading).
-	std::string m_geomSrc;              ///< Engine/ChainPass/Geom_<name>.frag: the geometry pass, world classes as #if selections.
-	GLuint	m_gbFbo = 0, m_gbTex[2] = {};   ///< G-buffer: hit point + distance, normal + AO (RGBA32F).
-	int		m_gbW = 0, m_gbH = 0;
+	std::string m_geomSrc;              ///< Engine/ChainPass/Geom_NAME.frag: the geometry pass, world classes as \#if selections.
+	GLuint	m_gbFbo = 0;               ///< The 3D lab's G-buffer framebuffer.
+	GLuint	m_gbTex[2] = {};           ///< Its targets: hit point + distance, normal + AO (RGBA32F).
 	float	m_geomWait = 0.f;           ///< Seconds a structure fade has waited for its geometry variant.
 	/// @brief The geometry program for a walk state (world 0 = shown, world 1 = faded to); 0 while the helper builds it.
 	GLuint	geomProgram( const float *x0, const float *x1, const bool *fading );
