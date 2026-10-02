@@ -1616,9 +1616,9 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
     return col;
 }
 
-// @chainclasses spaceP mirrored lattice|octahedral lattice|icosahedral lattice|hexagonal lattice|rolled world|4D-rotated lattice|log-spherical Droste|twisted 3D Droste|log-cylindrical Droste|turning lattice|bent cells|torus-wrapped world|hyperbolic half-space|twisted lattice|gyroid-warped lattice|noise-warped lattice|helix|double helix|inverted lattice|polar ring tunnel
-// @chainclasses coreP no fold core|plane folds|polyhedral kaleidoscope|sphere-inversion box fold|spherical KIFS|Apollonian sphere packing|Mandalay box|hyperbolic honeycomb|Kleinian fold|pseudo-Kleinian|amazing surface|Mandelbulb|kaliset|tetrahedral KIFS|mixed Sierpinski|Sierpinski octahedron|icosahedral KIFS|dodecahedral KIFS|octahedral KIFS|twisted octahedral KIFS|Menger sponge|cross-Menger
-// @chainclasses bodyP balls|pills|superquadrics|octahedra|rhombic dodecahedra|icosahedra|hollow spheres|tori|chain links|linked rings|gyroid membrane|Schwarz P surface|Schwarz D surface|Neovius surface|Lidinoid|blocks|twisted pillars|rod lattice|stellated octahedra|Steinmetz solids|crosses|gears
+// @chainclasses spaceP mirrored lattice|log-spherical Droste|twisted 3D Droste|icosahedral lattice|log-cylindrical Droste|polar ring tunnel|noise-warped lattice|4D-rotated lattice|bent cells|gyroid-warped lattice|octahedral lattice|turning lattice|torus-wrapped world|hyperbolic half-space|rolled world|hexagonal lattice|twisted lattice|double helix|helix|inverted lattice
+// @chainclasses coreP no fold core|octahedral KIFS|Sierpinski octahedron|twisted octahedral KIFS|polyhedral kaleidoscope|Mandelbulb|tetrahedral KIFS|icosahedral KIFS|plane folds|dodecahedral KIFS|Mandalay box|sphere-inversion box fold|Apollonian sphere packing|pseudo-Kleinian|Menger sponge|kaliset|cross-Menger|amazing surface|spherical KIFS|hyperbolic honeycomb|mixed Sierpinski|Kleinian fold
+// @chainclasses bodyP pills|gears|twisted pillars|Steinmetz solids|balls|chain links|superquadrics|octahedra|blocks|Neovius surface|linked rings|icosahedra|hollow spheres|rhombic dodecahedra|Schwarz P surface|stellated octahedra|Schwarz D surface|tori|Lidinoid|crosses|gyroid membrane|rod lattice
 // @chainclasses chainAP none|Farris frieze|burning ship|Chirikov map|cubic Julia|Weierstrass p|Jacobi sn/dn wallpaper|wandering poles|Zaslavsky web|Henon map|Ikeda map|circle inversion|Farris wallpaper|kaleidoscope|complex sine|tan lattice|Mandelbrot map|Jacobi cn wallpaper|Gumowski-Mira|bipolar Droste|Phoenix Julia|breathing sphere|Klein invariants|polar unwrap|Blaschke product|hyperbolic Droste|quasicrystal|Chebyshev fold|hyperbolic band|hyperbolic half-plane|Newton map|magnet map|complex exponential|Julia map|Moebius stream|sunflower spirals|cardioid coordinates|zeta partial sum|Cassini ovals|Peirce quincuncial sphere|rotating Mercator|hyperbolic spiral|Escher spiral Droste|loxodromic stream|Archimedean spiral|hyperbolic Moebius flow|elliptic coordinates|theta wave|parabolic stream|little planet|Droste zoom|parabolic coordinates|rotating Riemann sphere|log-polar spiral|sphere kaleidoscope|tunnel|bipolar stream|hyperbolic Poincare tiling
 // @chainclasses chainBP none|mirror line|origami folds|curved kaleidoscope|p4m lattice|p6m lattice|Sierpinski fold|Pythagoras-tree fold|Pappus chain|Steiner kaleidoscope|Vicsek fold|Levy C fold|kaleidoscope|Ammann-Beenker mirror|Penrose mirror|12-fold quasicrystal mirror|spiral kaleidoscope|Schottky mirror|modular group mirror|Koch fold|iterated fold|Apollonian inversion fold|p3m1 triangle mirror
 // @chainclasses chainCP none|lens|zone lens|Farris rosette|fisheye|gravitational lens|binary lens|Lorentz boost|blossom|inversion|Joukowski map|kaleidoscope|log vortex|Cayley transform|mirrored power|complex square|spiral|tunnel
@@ -1633,6 +1633,8 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
 // @chainopening chainBP 
 // @chainopening chainCP 16|17
 // @chainopening chainDP 
+// @chainss chainAP 3|28|35|37|44|47|54
+// @chainss chainBP 18|21
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
 // The stage index and a sub-variant 0..1 from one rolled knob.

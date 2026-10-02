@@ -283,6 +283,18 @@ Wofür die Ordnung gebraucht wird: Beim Wandern wählt die App das Ziel einer
 Stufe als `0,08 + 0,84 × Energie ± Zufall`. Ruhige Musik landet also im
 ruhigen Teil der Liste, energische Musik im wilden.
 
+**Die 3D-Welt** (Raum, Faltkern, Körper) ist seit 03.10. ebenso gemessen
+(`chain_class_stats.py --world`, `apply_energy_order.py --world`): jede
+Klasse allein im 3D-Labor (die anderen beiden Weltstufen auf ihrer ersten
+Klasse, die Farbkette leer), zu zwei Zeitpunkten (T = 40 s und 80 s; die
+beiden Messungen stimmen mit Rangkorrelation 0,72–0,85 überein), gemittelt.
+Fest bleiben „kein Faltkern“ und das einfache Spiegelgitter. Auch hier lag
+die Handordnung daneben (Raum 0,37, Kern −0,17, Körper 0,21): Am ruhigen
+Ende der Kerne stehen jetzt die oktaedrischen KIFS und das
+Sierpinski-Oktaeder, am energischen die Kleinschen Faltungen und die
+hyperbolische Wabe; bei den Körpern die Pillen und Zahnräder ruhig, die
+Gyroid-Membran und das Stabgitter energisch.
+
 ---
 
 ## 5. Die Reihenfolge (orderP)
@@ -402,7 +414,9 @@ Dazu kommen drei Regeln:
 * **Geschmack** (seit 03.10.): Ein Like (Taste `f`, Fernbedienung ♥) macht die
   Klassen, die gerade zu sehen sind, um den Faktor 1,1 schwerer; ein Überspringen
   (`n`) macht sie um 0,96 leichter (0,92, wenn nach weniger als 10 s
-  übersprungen wird). „Keine“ zählt nicht. Die Gewichte bleiben in 0,6 … 1,6
+  übersprungen wird). „Keine“ zählt nicht. Das gilt für wandernde Labore und
+  für feste Ketten (morphP < 0,15), nicht beim Ein-Stufen-Wandern im Shader,
+  dessen gezeigte Klasse die App nicht kennt. Die Gewichte bleiben in 0,6 … 1,6
   und laufen bei jedem Programmstart um 3 % zurück Richtung 1. Beim Wandern
   zieht die App dann drei Ziele in der Region der Musik und nimmt eines mit
   Wahrscheinlichkeit nach dem Gewicht seiner Klasse. Eine gemochte Klasse
@@ -422,6 +436,15 @@ neue Wurf trotzdem etwas Neues zeigt. Benannte Ketten (`ChainLike*`) behalten
 ihre eingefrorenen Klassen. Nach einem Überspringen (`n`, Fernbedienung) oder
 einer gezielt gewählten Szene wird nichts übernommen: Dann will man etwas anderes
 sehen. Das Log meldet `N stage(s) carried over from …`.
+
+**Mit einer Partitur** (Score-Cues eines Generators wie Phosphene, live per
+OSC oder als Datei `-k`) zählt der Walk die Abschnitte und Drops, die der
+Generator meldet, genau wie der Szenenplaner. Solche Abschnitte haben keine
+Kennung, also auch kein Gedächtnis: Jeder bringt eine frische Kette und eine
+frische Neigungsrichtung. Kommen oder gehen die Cues, übernimmt der Walk die
+Zähler still, damit der Wechsel selbst nicht als Abschnitt zählt (bis 03.10.
+folgte der Walk nur der eigenen Analyse und die Zeitneigung drehte sich mit
+Cues nie).
 
 Ein wanderndes Labor wird vom Szenenplaner **nicht** bei Abschnittswechseln
 oder Drops weggeschnitten. Es reagiert ja selbst darauf. Die Taste `n` und die
@@ -514,6 +537,15 @@ Marschs mit bis zu 100 Schritten.
   Weltkombination kostet einmal ~20–30 ms (wie im 3D-Labor).
 * Bekannt: Sehr feine Faltkerne zerfallen im Schnitt zu Splittern und
   bleiben dunkel.
+* `isoP` (seit 03.10.): **Höhenlinien des Abstandsfelds** – um jeden Körper
+  seine Linien wie auf einer Landkarte, jede vierte kräftiger, alle laufen
+  langsam nach außen (Uhr, nie Audio; der Kick hellt sie nur auf). Unter
+  ~0,35 keine. Die Luft zwischen den Linien wird etwas dunkler, damit die
+  Karte lesbar bleibt; auf Schnittflächen sind sie schwächer. Breite: ein
+  Pixel bei 900 Zeilen (wächst mit dem Bildschirm), nicht über `fwidth`, weil
+  die Schnittschleife je Pixel verzweigt. Im Kettenläufer reitet der Abstand
+  des Schnittpunkts in der Länge des Normalenvektors vom Geometrie-Durchgang
+  zum Farb-Durchgang (2 + d/(|d|+Sicht), verlustfrei in RGBA32F).
 
 ### Die Zeitneigung (`tiltP`, seit 02.10.)
 Eine 2D-Kette, deren Parameter mit der Zeit laufen, ist ein Volumen
