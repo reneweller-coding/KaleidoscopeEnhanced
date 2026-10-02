@@ -1,120 +1,120 @@
 stage	pos	class	motion	detail	gpu_ms
-A	0	none	0.06905	0.03426	
-A	1	polar unwrap	0.05040	0.02274	
-A	2	elliptic coordinates	0.07503	0.02076	
-A	3	parabolic coordinates	0.07505	0.02457	
-A	4	Cassini ovals	0.06581	0.02032	
-A	5	Farris wallpaper	0.05102	0.01922	
-A	6	Farris frieze	0.03838	0.01541	
-A	7	sunflower spirals	0.05922	0.02271	
-A	8	quasicrystal	0.05762	0.02006	
-A	9	Droste zoom	0.08005	0.02183	
-A	10	Escher spiral Droste	0.06937	0.02044	
-A	11	little planet	0.07211	0.02356	
-A	12	rotating Mercator	0.06112	0.02377	
-A	13	bipolar Droste	0.05497	0.01945	
-A	14	hyperbolic Droste	0.04889	0.02385	
-A	15	hyperbolic Poincare tiling	0.07716	0.03348	
-A	16	hyperbolic band	0.04558	0.02573	
-A	17	hyperbolic half-plane	0.04620	0.02560	
-A	18	sphere kaleidoscope	0.07499	0.03107	
-A	19	Klein invariants	0.05915	0.01872	
-A	20	log-polar spiral	0.07917	0.02400	
-A	21	Archimedean spiral	0.07290	0.01994	
-A	22	hyperbolic spiral	0.07540	0.01777	
-A	23	rotating Riemann sphere	0.07870	0.02374	
-A	24	breathing sphere	0.05013	0.02238	
-A	25	Peirce quincuncial sphere	0.05618	0.02522	
-A	26	magnet map	0.05017	0.02453	
-A	27	Jacobi cn wallpaper	0.04382	0.02336	
-A	28	theta wave	0.05245	0.03127	
-A	29	Jacobi sn/dn wallpaper	0.04040	0.01818	
-A	30	Weierstrass p	0.04080	0.01726	
-A	31	parabolic stream	0.06758	0.02552	
-A	32	hyperbolic Moebius flow	0.06522	0.02413	
-A	33	Chebyshev fold	0.04627	0.02512	
-A	34	complex exponential	0.05577	0.02260	
-A	35	cardioid coordinates	0.05735	0.02358	
-A	36	Blaschke product	0.04976	0.02314	
-A	37	wandering poles	0.03838	0.02072	
-A	38	bipolar stream	0.09866	0.02335	
-A	39	complex sine	0.04488	0.02246	
-A	40	tan lattice	0.04203	0.02384	
-A	41	zeta partial sum	0.06902	0.01875	
-A	42	circle inversion	0.04468	0.02168	
-A	43	Moebius stream	0.06103	0.02188	
-A	44	loxodromic stream	0.07615	0.01826	
-A	45	Newton map	0.05151	0.02382	
-A	46	Julia map	0.04957	0.02558	
-A	47	Zaslavsky web	0.03788	0.02256	
-A	48	Gumowski-Mira	0.04989	0.02161	
-A	49	Chirikov map	0.03591	0.01860	
-A	50	Henon map	0.04209	0.02095	
-A	51	Ikeda map	0.04485	0.02050	
-A	52	Mandelbrot map	0.04205	0.02408	
-A	53	burning ship	0.03434	0.01750	
-A	54	Phoenix Julia	0.04588	0.02418	
-A	55	cubic Julia	0.03651	0.01900	
-A	56	kaleidoscope	0.04555	0.02212	
-A	57	tunnel	0.09695	0.02158	
-B	0	none	0.06905	0.03426	
-B	1	mirror line	0.09364	0.03418	
-B	2	origami folds	0.08263	0.03383	
-B	3	p4m lattice	0.00706	0.03008	
-B	4	p3m1 triangle mirror	0.05869	0.02668	
-B	5	kaleidoscope	0.04555	0.02212	
-B	6	spiral kaleidoscope	0.04707	0.02520	
-B	7	curved kaleidoscope	0.02876	0.00623	
-B	8	Steiner kaleidoscope	0.04795	0.01594	
-B	9	Penrose mirror	0.05024	0.01832	
-B	10	Ammann-Beenker mirror	0.05013	0.01838	
-B	11	12-fold quasicrystal mirror	0.05033	0.01868	
-B	12	modular group mirror	0.05629	0.02257	
-B	13	p6m lattice	0.00504	0.03394	
-B	14	Sierpinski fold	0.03662	0.02297	
-B	15	Koch fold	0.05105	0.02808	
-B	16	Levy C fold	0.04282	0.02399	
-B	17	Pappus chain	0.03992	0.02178	
-B	18	Pythagoras-tree fold	0.03740	0.02338	
-B	19	Vicsek fold	0.04128	0.02373	
-B	20	iterated fold	0.05683	0.02456	
-B	21	Apollonian inversion fold	0.04908	0.03178	
-B	22	Schottky mirror	0.05365	0.02240	
-C	0	none	0.06905	0.03426	
-C	1	lens	0.07433	0.03149	
+A	0	none	0.06905	0.03426	0.030
+A	1	Farris frieze	0.03838	0.01541	-0.040
+A	2	burning ship	0.03434	0.01750	-0.020
+A	3	Chirikov map	0.03591	0.01860	0.010
+A	4	cubic Julia	0.03651	0.01900	-0.040
+A	5	Weierstrass p	0.04080	0.01726	
+A	6	Jacobi sn/dn wallpaper	0.04040	0.01818	
+A	7	wandering poles	0.03838	0.02072	
+A	8	Zaslavsky web	0.03788	0.02256	
+A	9	Henon map	0.04209	0.02095	
+A	10	Ikeda map	0.04485	0.02050	-0.090
+A	11	circle inversion	0.04468	0.02168	
+A	12	Farris wallpaper	0.05102	0.01922	-0.050
+A	13	kaleidoscope	0.04555	0.02212	-0.040
+A	14	complex sine	0.04488	0.02246	0.000
+A	15	tan lattice	0.04203	0.02384	0.000
+A	16	Mandelbrot map	0.04205	0.02408	-0.010
+A	17	Jacobi cn wallpaper	0.04382	0.02336	
+A	18	Gumowski-Mira	0.04989	0.02161	-0.020
+A	19	bipolar Droste	0.05497	0.01945	
+A	20	Phoenix Julia	0.04588	0.02418	
+A	21	breathing sphere	0.05013	0.02238	-0.030
+A	22	Klein invariants	0.05915	0.01872	
+A	23	polar unwrap	0.05040	0.02274	
+A	24	Blaschke product	0.04976	0.02314	
+A	25	hyperbolic Droste	0.04889	0.02385	
+A	26	quasicrystal	0.05762	0.02006	-0.050
+A	27	Chebyshev fold	0.04627	0.02512	0.000
+A	28	hyperbolic band	0.04558	0.02573	
+A	29	hyperbolic half-plane	0.04620	0.02560	0.000
+A	30	Newton map	0.05151	0.02382	-0.010
+A	31	magnet map	0.05017	0.02453	-0.010
+A	32	complex exponential	0.05577	0.02260	-0.040
+A	33	Julia map	0.04957	0.02558	-0.060
+A	34	Moebius stream	0.06103	0.02188	
+A	35	sunflower spirals	0.05922	0.02271	
+A	36	cardioid coordinates	0.05735	0.02358	
+A	37	zeta partial sum	0.06902	0.01875	
+A	38	Cassini ovals	0.06581	0.02032	
+A	39	Peirce quincuncial sphere	0.05618	0.02522	
+A	40	rotating Mercator	0.06112	0.02377	-0.060
+A	41	hyperbolic spiral	0.07540	0.01777	0.000
+A	42	Escher spiral Droste	0.06937	0.02044	-0.020
+A	43	loxodromic stream	0.07615	0.01826	0.030
+A	44	Archimedean spiral	0.07290	0.01994	-0.030
+A	45	hyperbolic Moebius flow	0.06522	0.02413	0.030
+A	46	elliptic coordinates	0.07503	0.02076	0.000
+A	47	theta wave	0.05245	0.03127	-0.050
+A	48	parabolic stream	0.06758	0.02552	0.010
+A	49	little planet	0.07211	0.02356	-0.030
+A	50	Droste zoom	0.08005	0.02183	-0.030
+A	51	parabolic coordinates	0.07505	0.02457	-0.050
+A	52	rotating Riemann sphere	0.07870	0.02374	-0.010
+A	53	log-polar spiral	0.07917	0.02400	-0.040
+A	54	sphere kaleidoscope	0.07499	0.03107	-0.020
+A	55	tunnel	0.09695	0.02158	-0.030
+A	56	bipolar stream	0.09866	0.02335	-0.050
+A	57	hyperbolic Poincare tiling	0.07716	0.03348	0.030
+B	0	none	0.06905	0.03426	0.000
+B	1	mirror line	0.09364	0.03418	0.010
+B	2	origami folds	0.08263	0.03383	0.040
+B	3	curved kaleidoscope	0.02876	0.00623	
+B	4	p4m lattice	0.00706	0.03008	
+B	5	p6m lattice	0.00504	0.03394	
+B	6	Sierpinski fold	0.03662	0.02297	
+B	7	Pythagoras-tree fold	0.03740	0.02338	
+B	8	Pappus chain	0.03992	0.02178	
+B	9	Steiner kaleidoscope	0.04795	0.01594	
+B	10	Vicsek fold	0.04128	0.02373	
+B	11	Levy C fold	0.04282	0.02399	
+B	12	kaleidoscope	0.04555	0.02212	-0.020
+B	13	Ammann-Beenker mirror	0.05013	0.01838	0.070
+B	14	Penrose mirror	0.05024	0.01832	0.230
+B	15	12-fold quasicrystal mirror	0.05033	0.01868	0.450
+B	16	spiral kaleidoscope	0.04707	0.02520	-0.010
+B	17	Schottky mirror	0.05365	0.02240	0.010
+B	18	modular group mirror	0.05629	0.02257	-0.020
+B	19	Koch fold	0.05105	0.02808	-0.030
+B	20	iterated fold	0.05683	0.02456	-0.020
+B	21	Apollonian inversion fold	0.04908	0.03178	0.000
+B	22	p3m1 triangle mirror	0.05869	0.02668	-0.020
+C	0	none	0.06905	0.03426	0.020
+C	1	lens	0.07433	0.03149	0.050
 C	2	zone lens	0.02665	0.02125	
-C	3	fisheye	0.01909	0.02372	
-C	4	Lorentz boost	0.03594	0.02214	
-C	5	blossom	0.04522	0.02163	
-C	6	Farris rosette	0.05428	0.01495	
-C	7	mirrored power	0.05408	0.02374	
-C	8	Cayley transform	0.04409	0.02547	
-C	9	gravitational lens	0.02668	0.02200	
-C	10	binary lens	0.02750	0.02185	
-C	11	Joukowski map	0.04177	0.02270	
-C	12	spiral	0.07800	0.02455	
-C	13	log vortex	0.05163	0.02301	
-C	14	complex square	0.05135	0.02599	
-C	15	inversion	0.04426	0.02197	
-C	16	kaleidoscope	0.05034	0.02240	
+C	3	Farris rosette	0.05428	0.01495	
+C	4	fisheye	0.01909	0.02372	
+C	5	gravitational lens	0.02668	0.02200	
+C	6	binary lens	0.02750	0.02185	
+C	7	Lorentz boost	0.03594	0.02214	
+C	8	blossom	0.04522	0.02163	
+C	9	inversion	0.04426	0.02197	
+C	10	Joukowski map	0.04177	0.02270	
+C	11	kaleidoscope	0.05034	0.02240	
+C	12	log vortex	0.05163	0.02301	
+C	13	Cayley transform	0.04409	0.02547	
+C	14	mirrored power	0.05408	0.02374	
+C	15	complex square	0.05135	0.02599	
+C	16	spiral	0.07800	0.02455	
 C	17	tunnel	0.09734	0.02242	
 D	0	none	0.06905	0.03426	
 D	1	turning	0.06286	0.03425	
 D	2	bend	0.06417	0.03325	
-D	3	shear wave	0.05512	0.02401	
-D	4	Gerstner waves	0.05722	0.02152	
-D	5	wave interference	0.04369	0.02203	
-D	6	convection cells	0.03467	0.02010	
-D	7	curl flow	0.01979	0.02351	
-D	8	cylinder flow	0.01987	0.02348	
-D	9	dipole field	0.02508	0.02271	
+D	3	convection cells	0.03467	0.02010	
+D	4	cylinder flow	0.01987	0.02348	
+D	5	curl flow	0.01979	0.02351	
+D	6	dipole field	0.02508	0.02271	
+D	7	twirl	0.04506	0.01867	
+D	8	Kelvin-Helmholtz rolls	0.02706	0.02318	
+D	9	vortex pair	0.04435	0.02017	
 D	10	Taylor-Green vortices	0.03902	0.02174	
-D	11	twirl	0.04506	0.01867	
-D	12	vortex pair	0.04435	0.02017	
+D	11	domain warp	0.03583	0.02346	
+D	12	wave interference	0.04369	0.02203	
 D	13	double gyre	0.06103	0.01947	
-D	14	vortex street	0.05696	0.02229	
-D	15	Karman street	0.06570	0.02053	
-D	16	gravitational wave	0.06568	0.02102	
-D	17	Kelvin-Helmholtz rolls	0.02706	0.02318	
-D	18	domain warp	0.03583	0.02346	
-D	19	ripple	0.05019	0.02269	
+D	14	ripple	0.05019	0.02269	
+D	15	Gerstner waves	0.05722	0.02152	
+D	16	vortex street	0.05696	0.02229	
+D	17	Karman street	0.06570	0.02053	
+D	18	gravitational wave	0.06568	0.02102	
+D	19	shear wave	0.05512	0.02401	

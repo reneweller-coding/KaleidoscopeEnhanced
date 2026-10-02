@@ -52,7 +52,7 @@ def main():
     for l in lines[1:]:
         v = dict(zip(hdr, l.split("\t")))
         if v.get("motion"):
-            stats[(v["stage"], int(v["pos"]))] = (float(v["motion"]), float(v["detail"]))
+            stats[(v["stage"], v["class"])] = (float(v["motion"]), float(v["detail"]))   # by name: positions move
     src_p = os.path.join(SG, "src", "ChainLab2D.glsl")
     src = io.open(src_p, encoding="utf-8", newline="").read()
     cls_p = os.path.join(SG, "chain_classes.py")
@@ -64,12 +64,13 @@ def main():
         order = [int(x) for x in re.findall(r"return (\d+);", m.group(1))]
         assert len(order) == n, (fn, len(order), n)
         free = [p for p in range(weak + 1, n)]
-        missing = [p for p in free if (st, p) not in stats]
+        key = lambda p: (st, names[p] or "none")
+        missing = [p for p in free if key(p) not in stats]
         if missing:
             print("%s: no measurement for positions %s -- skipped" % (st, missing))
             continue
-        e = dict(zip(free, (x + 0.5 * y for x, y in zip(zs([stats[(st, p)][0] for p in free]),
-                                                        zs([stats[(st, p)][1] for p in free])))))
+        e = dict(zip(free, (x + 0.5 * y for x, y in zip(zs([stats[key(p)][0] for p in free]),
+                                                        zs([stats[key(p)][1] for p in free])))))
         new = list(range(weak + 1)) + sorted(free, key=lambda p: e[p])
         rho = spearman({p: p for p in free}, e)
         print("\n== stage %s (%s): rank correlation hand order vs measured energy %.2f" % (st, knob, rho))

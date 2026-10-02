@@ -14,10 +14,11 @@ lab, "Energie-Ordnung"); that order was set by hand.  This measures it:
             time minus that of an all-'none' chain = the class's own cost.
 
 Results go to Tools/scenegen/class_stats.tsv (one row per stage and class,
-merged with what is there).  apply_energy_order.py turns them into the order.
+keyed by the class NAME -- positions change when the order does -- merged
+with what is there).  apply_energy_order.py turns them into the order.
 
   python Tools/chain_class_stats.py --visual
-  python Tools/chain_class_stats.py --gpu
+  python Tools/chain_class_stats.py --gpu [--missing]   # the GPU must be otherwise idle
 """
 import argparse, io, os, re, shutil, statistics, subprocess, sys, time
 
@@ -49,7 +50,7 @@ def load():
         hdr = lines[0].split("\t")
         for l in lines[1:]:
             v = dict(zip(hdr, l.split("\t")))
-            rows[(v["stage"], int(v["pos"]))] = v
+            rows[(v["stage"], v["class"])] = v
     return rows
 
 
@@ -57,7 +58,7 @@ def save(rows):
     hdr = ["stage", "pos", "class", "motion", "detail", "gpu_ms"]
     with io.open(OUT, "w", encoding="utf-8", newline="\n") as f:
         f.write("\t".join(hdr) + "\n")
-        for key in sorted(rows, key=lambda k: ("ABCD".index(k[0]), k[1])):
+        for key in sorted(rows, key=lambda k: ("ABCD".index(k[0]), int(rows[k].get("pos", 0)))):
             f.write("\t".join(str(rows[key].get(h, "")) for h in hdr) + "\n")
 
 
@@ -94,8 +95,8 @@ def visual(rows, T, DT):
             motion = float(abs(la - lb).mean())
             gy, gx = np.gradient(la)
             detail = float(np.hypot(gx, gy).mean())
-            r = rows.setdefault((st, pos), {"stage": st, "pos": pos})
-            r.update({"class": name or "none", "motion": "%.5f" % motion, "detail": "%.5f" % detail})
+            r = rows.setdefault((st, name or "none"), {"stage": st, "class": name or "none"})
+            r.update({"pos": pos, "motion": "%.5f" % motion, "detail": "%.5f" % detail})
             print("%s%-2d %-30s motion %.4f detail %.4f" % (st, pos, name or "none", motion, detail), flush=True)
             save(rows)
 
@@ -124,6 +125,9 @@ def gpu_once(pins, secs):
     return statistics.median(g) if g else float("nan")
 
 
+MISSING_ONLY = False
+
+
 def gpu(rows, secs):
     backup = INI + ".stats_backup"
     shutil.copy(INI, backup)
@@ -132,9 +136,12 @@ def gpu(rows, secs):
         print("baseline (all none): %.3f ms" % base, flush=True)
         for st, knob in STAGES:
             for pos, name in enumerate(cc.CLASSES[knob]):
+                have = rows.get((st, name or "none"), {}).get("gpu_ms", "")
+                if MISSING_ONLY and have not in ("", "nan"):
+                    continue
                 ms = gpu_once(pins_for(knob, pos), secs) - base
-                r = rows.setdefault((st, pos), {"stage": st, "pos": pos, "class": name or "none"})
-                r["gpu_ms"] = "%.3f" % ms
+                r = rows.setdefault((st, name or "none"), {"stage": st, "class": name or "none"})
+                r.update({"pos": pos, "gpu_ms": "%.3f" % ms})
                 print("%s%-2d %-30s gpu %+.3f ms" % (st, pos, name or "none", ms), flush=True)
                 save(rows)
     finally:
@@ -153,8 +160,11 @@ def main():
     ap.add_argument("--t", type=float, default=40.0, help="scene time of the first frame (visual)")
     ap.add_argument("--dt", type=float, default=2.0, help="seconds between the two frames (visual)")
     ap.add_argument("--secs", type=int, default=9, help="seconds per GPU run")
+    ap.add_argument("--missing", action="store_true", help="GPU: only the classes without a value yet")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
+    global MISSING_ONLY
+    MISSING_ONLY = a.missing
     rows = load()
     if a.visual:
         visual(rows, a.t, a.dt)
