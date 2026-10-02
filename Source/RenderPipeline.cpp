@@ -62,7 +62,13 @@ float RenderPipeline::s_latencyLead  = 0.05f; // display-phase lead vs. heard au
 int   RenderPipeline::s_stereoMode  = 0;      // stereoscopic output (CLI -3 / 'z')
 float RenderPipeline::s_stereoDepth = 1.0f;   // disparity strength
 bool  RenderPipeline::s_blackout = false;     // VJ blackout ('b')
-bool  RenderPipeline::s_freeze   = false;     // VJ freeze ('e')
+bool  RenderPipeline::s_freeze   = qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" );   // VJ freeze ('e'); frozen from the start for a comparison run
+float RenderPipeline::freezeTime()
+{
+	static const float t = qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" )
+	                       ? qEnvironmentVariable( "KALEIDO_FREEZE_TIME" ).toFloat() : -1.f;
+	return t;
+}
 bool  RenderPipeline::s_pinned   = false;     // VJ pin ('u')
 QHash<QString, float> RenderPipeline::s_taste;  // taste learning (skip/favourite)
 bool    RenderPipeline::s_spoutInEnabled = false;  // Spout input (CLI -i)
@@ -338,6 +344,23 @@ void RenderPipeline::start( int width, int height )
 
 	m_imageList.clear();
 	traverse( m_imageDirectory, m_imageList );
+	// KALEIDO_FIXED_PHOTO=<file>: every photo slot shows this one picture (a
+	// path, or a name in the image directory).  For comparisons between two
+	// runs -- with KALEIDO_SEED the same rolls on the same photo, pixel for
+	// pixel; without it every start draws other photos.
+	if( qEnvironmentVariableIsSet( "KALEIDO_FIXED_PHOTO" ) )
+	{
+		QString fixed = qEnvironmentVariable( "KALEIDO_FIXED_PHOTO" );
+		if( !QFileInfo::exists( fixed ) )
+			fixed = QDir( m_imageDirectory ).filePath( fixed );
+		if( QFileInfo::exists( fixed ) )
+		{
+			m_imageList = QStringList{ fixed };
+			fprintf( stderr, "Photo source: KALEIDO_FIXED_PHOTO %s\n", qPrintable( fixed ) );
+		}
+		else
+			fprintf( stderr, "WARNING: KALEIDO_FIXED_PHOTO '%s' not found -- the photos stay random\n", qPrintable( fixed ) );
+	}
 	m_imageListIterator = m_imageList.begin();
 
 	// Name the LAYER the directory came from, not just the path: with three
@@ -1493,6 +1516,8 @@ void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float 
 	// integration and envelope slew; re-arming the activation clocks each
 	// frozen frame keeps scheduled switches from falling "due" behind the
 	// frozen image (they simply start their solo fresh on unfreeze).
+	EffectShader::s_frozen = s_freeze;                // the walk and the 3D flight run on their own clocks
+	EffectShader::s_freezeTime = freezeTime();
 	if( s_freeze )
 	{
 		timeSinceLastFrameSec = 0.f;

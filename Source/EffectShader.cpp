@@ -131,6 +131,8 @@ float EffectShader::s_shadowPass = 0.f;
 float EffectShader::s_reviewSolo  = 0.f;
 bool  EffectShader::s_chainRunner = false;
 float EffectShader::s_chainScale = 1.f;
+float EffectShader::s_freezeTime = -1.f;
+bool  EffectShader::s_frozen = false;
 float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
@@ -351,8 +353,10 @@ void EffectShader::setUniforms( float time, float interpolation, GLint texLoc1, 
 	// Struktur von 0.19 hat und bei Uhr 3600 noch 0.0005.  Gegen sceneTime
 	// geschrieben faengt so ein Flug bei jeder Aktivierung neu an.
 	m_lastSceneTime = time - m_activationTime;
+	if( s_freezeTime >= 0.f )                         // a comparison run: the scene stands at this moment
+		m_lastSceneTime = s_freezeTime;
 	if( m_sceneTimeUni >= 0 )
-		glUniform1f( m_sceneTimeUni, time - m_activationTime );
+		glUniform1f( m_sceneTimeUni, m_lastSceneTime );
 
 	
 	for( unsigned int i = 0; i < m_uniforms.size(); i++ )
@@ -1197,6 +1201,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 
 	const auto now = std::chrono::steady_clock::now();
 	float dt = m_walk.hasLast ? std::chrono::duration<float>( now - m_walk.last ).count() : 0.f;
+	if( s_frozen ) dt = 0.f;                          // VJ freeze / comparison run: no walk either
 	m_walk.last = now;
 	m_walk.hasLast = true;
 	if( dt > 0.25f ) dt = 0.016f;                   // back from a pause: no catch-up leap
@@ -2284,6 +2289,7 @@ void EffectShader::stepChainCam( const AudioFeatures &f )
 		m_cam.hasLast = false;
 	}
 	float dt = m_cam.hasLast ? std::chrono::duration<float>( now - m_cam.last ).count() : 0.f;
+	if( s_frozen ) dt = 0.f;                          // VJ freeze / comparison run: the flight stands too
 	float dAdv = m_cam.hasLast ? f.audioAdvance - m_cam.lastAdv : 0.f;
 	m_cam.last = now;
 	m_cam.lastAdv = f.audioAdvance;

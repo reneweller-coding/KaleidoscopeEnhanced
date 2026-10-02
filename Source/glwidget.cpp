@@ -1036,6 +1036,8 @@ void GLwidget::draw()
 	AudioFeatures audio;
 	if (m_audioAnalyzer)
 		audio = m_audioAnalyzer->getFeatures();
+	if( RenderPipeline::freezeTime() >= 0.f )          // a comparison run: silence, whatever is playing
+		audio = AudioFeatures();
 
 	// Track-change: a fresh track (after a silent gap) gets a clean transition.
 	// Suppressed under KALEIDO_SCENE_SWEEP, where the sweep decides what is on

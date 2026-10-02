@@ -440,6 +440,10 @@ public:
 	/// The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE):
 	/// below 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
 	static float s_chainScale;
+	/// KALEIDO_FREEZE_TIME (set by RenderPipeline): the scene time every effect shows in a comparison run; < 0: off.
+	static float s_freezeTime;
+	/// The host's VJ freeze this frame (set by RenderPipeline): the chain walk and the 3D chains' flight stand still.
+	static bool s_frozen;
 	static float s_shadowExtent;      ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box), published by RenderPipeline so the shadow receivers and the light matrix use the same box.
 	static float s_shadowPass;        ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass` uniform.
 	static float s_lightM[16];        ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per frame by RenderPipeline::updateLightMatrix().

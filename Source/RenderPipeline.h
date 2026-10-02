@@ -311,6 +311,13 @@ public:
 	// are re-armed so no scheduled switch fires behind the frozen image.
 	static void  toggleFreeze()   { s_freeze = !s_freeze; }  ///< @brief Toggles VJ freeze (holds the picture by forcing frame time to 0; key 'e').
 	static bool  frozen()         { return s_freeze; }       ///< @brief Returns whether VJ freeze is currently engaged.
+	/**
+	 * @brief KALEIDO_FREEZE_TIME=<seconds> (comparison runs): the picture frozen from the start at that
+	 *        scene time, with silent audio -- two runs with KALEIDO_SEED and KALEIDO_FIXED_PHOTO then
+	 *        give the same frame, pixel for pixel.
+	 * @return The frozen scene time, or a negative value when unset.
+	 */
+	static float freezeTime();
 	// Pin (key 'u'): keep the CURRENT effect/combine on screen — scheduled and
 	// forced switches (section/drop/novelty) are suppressed until unpinned.
 	static void  togglePin()      { s_pinned = !s_pinned; }  ///< @brief Toggles VJ pin (suppresses scheduled/forced effect and combine switches; key 'u').
