@@ -447,6 +447,11 @@ public:
 	static float s_freezeTime;
 	/// The host's VJ freeze this frame (set by RenderPipeline): the chain walk and the 3D chains' flight stand still.
 	static bool s_frozen;
+	/// Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the
+	/// generator's section and drop counters (s_cueSections, s_cueDrops) instead of the analyser's.
+	static bool s_cueLive;
+	static int  s_cueSections;      ///< The scheduler's section counter while s_cueLive.
+	static int  s_cueDrops;         ///< The scheduler's drop counter while s_cueLive.
 	/// Taste per chain class, classTasteKey() -> weight in [0.6, 1.6] (absent: 1).  Likes and skips
 	/// of a chain lab weight the classes it showed; among three targets in the music's region the
 	/// walk takes one with odds after these weights.  Shared by every lab; RenderPipeline loads and saves it.
@@ -716,6 +721,7 @@ protected:
 		bool  fading[9] = {};           ///< Stage is fading to x1.
 		int   lastSection = -1;         ///< Last seen AudioFeatures::sectionCount (-1 = not yet).
 		int   lastDrop = -1;            ///< Last seen AudioFeatures::dropCount.
+		bool  cueLive = false;          ///< s_cueLive at the previous step (a switch re-adopts the counters).
 		float energy = 0.5f;            ///< Slowly smoothed arousal (8 s).
 		float energyFast = 0.5f;        ///< Arousal smoothed over ~1 s: drives the walk's speed.
 		float fluxS = 0.f;              ///< Spectral flux smoothed over ~0.5 s: bursts hurry a fade.
@@ -843,7 +849,7 @@ protected:
 	void carryChainOver();
 	bool	m_walkCarried[9] = {};      ///< Stage knob taken over from the lab fading out at this activation.
 	/// @brief Advances the walk by one frame from the music and uploads the walk uniforms (program must be bound).
-	void stepChainWalk( const AudioFeatures &f );
+	void stepChainWalk( const AudioFeatures &audio );
 	/// @brief Starts stage @p s fading to knob value @p target over @p dur seconds (no-op while that stage already fades: a fade never changes its destination).
 	void startWalk( int s, float target, float dur );
 	int		m_usesMandelbrot = -1;   ///< Cached usesMandelbrot() result (-1 = not yet queried): the deep-zoom Mandelbrot field texture, `texMandelbrot`.

@@ -1768,6 +1768,9 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
 	// A cue file (-k) is a sender too: whatever of it the offline WAV has reached goes in first.
 	ScoreCueFile::instance().feed();
 	applyScoreCues( ScoreCues::instance().drain( timeSinceLastFrameSec ), m_cueBridge, schedTick );
+	EffectShader::s_cueLive     = m_cueBridge.wasLive;   // the chain walk follows the same counters
+	EffectShader::s_cueSections = schedTick.sectionCount;
+	EffectShader::s_cueDrops    = schedTick.dropCount;
 	m_scheduler.tick( schedTick );
     
 

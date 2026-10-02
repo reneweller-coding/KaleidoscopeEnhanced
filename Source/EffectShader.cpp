@@ -172,6 +172,9 @@ bool  EffectShader::s_chainSS = true;
 float EffectShader::s_freezeTime = -1.f;
 bool  EffectShader::s_frozen = false;
 std::map<std::string, float> EffectShader::s_classTaste;
+bool  EffectShader::s_cueLive = false;
+int   EffectShader::s_cueSections = 0;
+int   EffectShader::s_cueDrops = 0;
 float EffectShader::s_shadowExtent = EffectShader::kShadowExtent;
 float EffectShader::s_lightDir[3] = { 0.45f, 0.80f, -0.40f };
 float EffectShader::s_lightM[16] = { 1.f, 0.f, 0.f, 0.f,  0.f, 1.f, 0.f, 0.f,
@@ -1142,13 +1145,14 @@ static bool isStructure( int s ) { return s >= 5 && s <= 7; }
  * the crossfade between two labs keeps the chain and changes the rest (the
  * flat lab hands its chain to the tunnel, the 3D flight its world to the slice).
  */
-static struct LastChain
+struct LastChain
 {
 	const EffectShader *who = nullptr;               ///< The lab that wrote it.
 	std::string frag;                                ///< Its fragment file.
 	std::chrono::steady_clock::time_point when;      ///< When it was written.
 	std::map<std::string, std::pair<std::string, float>> cls;   ///< Stage knob -> (class shown, sub-variant 0..1).
-} s_lastChain;
+};
+static LastChain s_lastChain;                        ///< The chain on screen last (see LastChain).
 
 static std::chrono::steady_clock::time_point s_noCarryAt;   ///< Last noCarryOver() call.
 static bool s_noCarrySet = false;                            ///< s_noCarryAt is valid.
@@ -1300,8 +1304,20 @@ void EffectShader::startWalk( int s, float target, float dur )
 
 static int classPos( float x, int n );
 
-void EffectShader::stepChainWalk( const AudioFeatures &f )
+void EffectShader::stepChainWalk( const AudioFeatures &audio )
 {
+	// With score cues the generator says where the sections and drops are (as it
+	// does for the scheduler): the walk counts those.  A cue section has no id.
+	AudioFeatures cued;
+	if( s_cueLive )
+	{
+		cued = audio;
+		cued.sectionCount = s_cueSections;
+		cued.dropCount    = s_cueDrops;
+		cued.sectionId    = -1;
+		cued.sectionKnown = false;
+	}
+	const AudioFeatures &f = s_cueLive ? cued : audio;
 	if( m_walkProg != m_sh_prog_id )
 	{
 		m_walkProg = m_sh_prog_id;
@@ -1384,10 +1400,13 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 	auto lerp = []( float a, float b, float t ) { return a + ( b - a ) * t; };
 	auto anyFading = [&]() { for( bool b : m_walk.fading ) if( b ) return true; return false; };
 
-	if( m_walk.lastSection < 0 )
+	// adopt the counters at the start, and silently whenever the score cues come
+	// or go: the two count apart, and the switch itself is no section
+	if( m_walk.lastSection < 0 || s_cueLive != m_walk.cueLive )
 	{
-		m_walk.lastSection = f.sectionCount;        // adopt the analyzer's counters
+		m_walk.lastSection = f.sectionCount;
 		m_walk.lastDrop    = f.dropCount;
+		m_walk.cueLive     = s_cueLive;
 	}
 
 	// 1. A new section: a new global map (often a new look too); a RETURNING
@@ -1422,10 +1441,19 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 			m_walk.sectionLook[f.sectionId] = look;
 			// the time tilt turns to the section's own direction (a new one: a clear turn)
 			auto tl = m_walk.sectionTilt.find( f.sectionId );
-			if( f.sectionKnown && tl != m_walk.sectionTilt.end() )
+			const bool back = f.sectionKnown && tl != m_walk.sectionTilt.end();
+			if( back )
 				m_walk.tiltTarget = tl->second;
 			else
 				m_walk.sectionTilt[f.sectionId] = m_walk.tiltTarget = m_walk.tiltA + 1.2f + 2.5f * uni( m_walk.rng );
+			fprintf( stderr, "TILT %s section %d: %.2f rad (%s)\n", fragmentName(), f.sectionId,
+			         fmodf( m_walk.tiltTarget, 6.2831853f ), back ? "its own again" : "new" );
+		}
+		else
+		{
+			// a section without an id (a score cue: CueReceiver rolls those fresh) turns the tilt too, without memory
+			m_walk.tiltTarget = m_walk.tiltA + 1.2f + 2.5f * uni( m_walk.rng );
+			fprintf( stderr, "TILT %s section (no id): %.2f rad (new)\n", fragmentName(), fmodf( m_walk.tiltTarget, 6.2831853f ) );
 		}
 	}
 	// The tilt's direction eases toward the section's (shortest way round, ~4 s).

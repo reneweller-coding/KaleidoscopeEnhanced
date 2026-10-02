@@ -167,6 +167,8 @@ def alias(rows, T):
         return a @ np.array([0.299, 0.587, 0.114])
     for st, knob in STAGES:
         for pos, name in enumerate(cc.CLASSES[knob]):
+            if MISSING_ONLY and rows.get((st, name or "none"), {}).get("alias"):
+                continue
             pins = pins_for(knob, pos)
             fs = [os.path.join(tmp, "%d.png" % i) for i in range(4)]
             for f in fs:
