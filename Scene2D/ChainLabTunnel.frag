@@ -1620,15 +1620,15 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
 // @chainclasses spaceP mirrored lattice|octahedral lattice|icosahedral lattice|hexagonal lattice|rolled world|4D-rotated lattice|log-spherical Droste|twisted 3D Droste|log-cylindrical Droste|turning lattice|bent cells|torus-wrapped world|hyperbolic half-space|twisted lattice|gyroid-warped lattice|noise-warped lattice|helix|double helix|inverted lattice|polar ring tunnel
 // @chainclasses coreP no fold core|plane folds|polyhedral kaleidoscope|sphere-inversion box fold|spherical KIFS|Apollonian sphere packing|Mandalay box|hyperbolic honeycomb|Kleinian fold|pseudo-Kleinian|amazing surface|Mandelbulb|kaliset|tetrahedral KIFS|mixed Sierpinski|Sierpinski octahedron|icosahedral KIFS|dodecahedral KIFS|octahedral KIFS|twisted octahedral KIFS|Menger sponge|cross-Menger
 // @chainclasses bodyP balls|pills|superquadrics|octahedra|rhombic dodecahedra|icosahedra|hollow spheres|tori|chain links|linked rings|gyroid membrane|Schwarz P surface|Schwarz D surface|Neovius surface|Lidinoid|blocks|twisted pillars|rod lattice|stellated octahedra|Steinmetz solids|crosses|gears
-// @chainclasses chainAP none|polar unwrap|elliptic coordinates|parabolic coordinates|Cassini ovals|sunflower spirals|Droste zoom|Escher spiral Droste|little planet|rotating Mercator|bipolar Droste|log-polar spiral|Archimedean spiral|hyperbolic spiral|rotating Riemann sphere|breathing sphere|parabolic stream|hyperbolic Moebius flow|Chebyshev fold|complex exponential|cardioid coordinates|bipolar stream|complex sine|tan lattice|circle inversion|Moebius stream|loxodromic stream|kaleidoscope|tunnel
-// @chainclasses chainBP none|mirror line|origami folds|p4m lattice|p3m1 triangle mirror|kaleidoscope|spiral kaleidoscope|curved kaleidoscope|Steiner kaleidoscope|p6m lattice|Pappus chain|iterated fold
-// @chainclasses chainCP none|lens|zone lens|fisheye|Lorentz boost|blossom|Farris rosette|mirrored power|Cayley transform|gravitational lens|binary lens|Joukowski map|spiral|log vortex|complex square|inversion|kaleidoscope|tunnel
-// @chainclasses chainDP none|turning|bend|shear wave|Gerstner waves|wave interference|convection cells|cylinder flow|dipole field|twirl|vortex pair|gravitational wave|Kelvin-Helmholtz rolls|ripple
+// @chainclasses chainAP none|circle inversion|kaleidoscope|complex sine|tan lattice|bipolar Droste|breathing sphere|polar unwrap|Chebyshev fold|complex exponential|Moebius stream|sunflower spirals|cardioid coordinates|Cassini ovals|rotating Mercator|hyperbolic spiral|Escher spiral Droste|loxodromic stream|Archimedean spiral|hyperbolic Moebius flow|elliptic coordinates|parabolic stream|little planet|Droste zoom|parabolic coordinates|rotating Riemann sphere|log-polar spiral|tunnel|bipolar stream
+// @chainclasses chainBP none|mirror line|origami folds|curved kaleidoscope|p4m lattice|p6m lattice|Pappus chain|Steiner kaleidoscope|kaleidoscope|spiral kaleidoscope|iterated fold|p3m1 triangle mirror
+// @chainclasses chainCP none|lens|zone lens|Farris rosette|fisheye|gravitational lens|binary lens|Lorentz boost|blossom|inversion|Joukowski map|kaleidoscope|log vortex|Cayley transform|mirrored power|complex square|spiral|tunnel
+// @chainclasses chainDP none|turning|bend|convection cells|cylinder flow|dipole field|twirl|Kelvin-Helmholtz rolls|vortex pair|wave interference|ripple|Gerstner waves|gravitational wave|shear wave
 // @chainclasses styleP photo|relief|contour lines|flow|glowing edges
-// @chainord chainAP 11|5|20|39|52|41|4|16|43|44|33|1|29|34|12|42|19|31|48|6|40|10|7|21|8|3|13|0|2
-// @chainord chainBP 0|5|20|3|18|1|22|10|21|2|19|4
-// @chainord chainCP 0|5|17|12|15|8|9|10|11|13|14|7|1|16|4|3|6|2
-// @chainord chainDP 0|5|8|2|19|13|18|10|11|1|12|15|14|3
+// @chainord chainAP 11|8|0|7|21|33|42|5|48|6|3|41|40|52|44|34|16|13|29|31|20|19|43|4|39|12|1|2|10
+// @chainord chainBP 0|5|20|10|3|2|19|21|1|22|4|18
+// @chainord chainCP 0|5|17|9|12|13|14|15|8|3|7|6|16|11|10|4|1|2
+// @chainord chainDP 0|5|8|18|10|11|1|14|12|13|3|19|15|2
 float gT, gTC, gSpread, gRot, gMw, gH;
 vec2 gCw, gCt;
 // The stage index and a sub-variant 0..1 from one rolled knob.
@@ -1645,10 +1645,10 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 /// The classes of every stage in order of energy (calm .. energetic): a knob
 /// value, rolled or walked, picks a position on that scale, so the music's
 /// energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 39; if (i == 4) return 52; if (i == 5) return 41; if (i == 6) return 4; if (i == 7) return 16; if (i == 8) return 43; if (i == 9) return 44; if (i == 10) return 33; if (i == 11) return 1; if (i == 12) return 29; if (i == 13) return 34; if (i == 14) return 12; if (i == 15) return 42; if (i == 16) return 19; if (i == 17) return 31; if (i == 18) return 48; if (i == 19) return 6; if (i == 20) return 40; if (i == 21) return 10; if (i == 22) return 7; if (i == 23) return 21; if (i == 24) return 8; if (i == 25) return 3; if (i == 26) return 13; if (i == 27) return 0; return 2; }   // tunnel subset, 29 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 3; if (i == 4) return 18; if (i == 5) return 1; if (i == 6) return 22; if (i == 7) return 10; if (i == 8) return 21; if (i == 9) return 2; if (i == 10) return 19; return 4; }   // tunnel subset, 12 classes
-int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 12; if (i == 4) return 15; if (i == 5) return 8; if (i == 6) return 9; if (i == 7) return 10; if (i == 8) return 11; if (i == 9) return 13; if (i == 10) return 14; if (i == 11) return 7; if (i == 12) return 1; if (i == 13) return 16; if (i == 14) return 4; if (i == 15) return 3; if (i == 16) return 6; return 2; }   // energy order, 18 classes
-int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 2; if (i == 4) return 19; if (i == 5) return 13; if (i == 6) return 18; if (i == 7) return 10; if (i == 8) return 11; if (i == 9) return 1; if (i == 10) return 12; if (i == 11) return 15; if (i == 12) return 14; return 3; }   // tunnel subset, 14 classes
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 8; if (i == 2) return 0; if (i == 3) return 7; if (i == 4) return 21; if (i == 5) return 33; if (i == 6) return 42; if (i == 7) return 5; if (i == 8) return 48; if (i == 9) return 6; if (i == 10) return 3; if (i == 11) return 41; if (i == 12) return 40; if (i == 13) return 52; if (i == 14) return 44; if (i == 15) return 34; if (i == 16) return 16; if (i == 17) return 13; if (i == 18) return 29; if (i == 19) return 31; if (i == 20) return 20; if (i == 21) return 19; if (i == 22) return 43; if (i == 23) return 4; if (i == 24) return 39; if (i == 25) return 12; if (i == 26) return 1; if (i == 27) return 2; return 10; }   // tunnel subset, 29 classes
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 10; if (i == 4) return 3; if (i == 5) return 2; if (i == 6) return 19; if (i == 7) return 21; if (i == 8) return 1; if (i == 9) return 22; if (i == 10) return 4; return 18; }   // tunnel subset, 12 classes
+int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 9; if (i == 4) return 12; if (i == 5) return 13; if (i == 6) return 14; if (i == 7) return 15; if (i == 8) return 8; if (i == 9) return 3; if (i == 10) return 7; if (i == 11) return 6; if (i == 12) return 16; if (i == 13) return 11; if (i == 14) return 10; if (i == 15) return 4; if (i == 16) return 1; return 2; }   // energy order, 18 classes
+int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 18; if (i == 4) return 10; if (i == 5) return 11; if (i == 6) return 1; if (i == 7) return 14; if (i == 8) return 12; if (i == 9) return 13; if (i == 10) return 3; if (i == 11) return 19; if (i == 12) return 15; return 2; }   // tunnel subset, 14 classes
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
@@ -2284,14 +2284,17 @@ vec2 stageD(vec2 uv)
 }
 // The time tilt (tiltP): the chain's own time t0 + a x + b y across the
 // picture -- a cut through its space-time volume (x, y, t), so every place
-// shows another moment of the chain.  Its direction turns slowly (clock only),
-// its strength follows the slow swell.  0 below tiltP 0.15.  The uniform lives
-// here (not in the labs' knob lists) so every lab built on these stages compiles.
+// shows another moment of the chain.  Its direction: while the app walks the
+// lab, one per music section (a returning section returns to its own, eased
+// over seconds: tiltA); otherwise turning slowly with the clock.  Its strength
+// follows the slow swell.  0 below tiltP 0.15.  The uniforms live here (not in
+// the labs' knob lists) so every lab built on these stages compiles.
 uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float tiltA;   ///< The tilt's direction (radians) while the app walks the lab (walkHost).
 float chainTiltZ(vec2 q)
 {
     float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
-    float a = 0.011 * sceneTime;
+    float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
 // Afterglow (glowP): the last frame's picture as a fading phosphor veil -- the

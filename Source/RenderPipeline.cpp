@@ -62,7 +62,7 @@ float RenderPipeline::s_latencyLead  = 0.05f; // display-phase lead vs. heard au
 int   RenderPipeline::s_stereoMode  = 0;      // stereoscopic output (CLI -3 / 'z')
 float RenderPipeline::s_stereoDepth = 1.0f;   // disparity strength
 bool  RenderPipeline::s_blackout = false;     // VJ blackout ('b')
-bool  RenderPipeline::s_freeze   = qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" );   // VJ freeze ('e'); frozen from the start for a comparison run
+bool  RenderPipeline::s_freeze   = false;     // VJ freeze ('e'); a comparison run (KALEIDO_FREEZE_TIME) engages it after the fade-in
 float RenderPipeline::freezeTime()
 {
 	static const float t = qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" )
@@ -1516,7 +1516,22 @@ void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float 
 	// integration and envelope slew; re-arming the activation clocks each
 	// frozen frame keeps scheduled switches from falling "due" behind the
 	// frozen image (they simply start their solo fresh on unfreeze).
-	EffectShader::s_frozen = s_freeze;                // the walk and the 3D flight run on their own clocks
+	// A comparison run (KALEIDO_FREEZE_TIME): the scene fades in on the wall
+	// clock (frozen from the first frame it stayed at the dark start of its
+	// fade), then everything stands -- the global clock set to the given time.
+	// The first 600 frames run on a fixed step of 1/120 s instead of the wall
+	// clock, so every run integrates exactly the same (exposure, fades, slews).
+	if( freezeTime() >= 0.f && !s_freeze )
+	{
+		static int frames = 0;
+		timeSinceLastFrameSec = 1.f / 120.f;
+		if( ++frames > 600 )
+		{
+			s_freeze = true;
+			m_globaltime = freezeTime();
+		}
+	}
+	EffectShader::s_frozen = s_freeze || freezeTime() >= 0.f;   // the walk and the 3D flight never move in a comparison run
 	EffectShader::s_freezeTime = freezeTime();
 	if( s_freeze )
 	{

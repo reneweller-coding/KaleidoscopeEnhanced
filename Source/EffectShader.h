@@ -709,6 +709,9 @@ protected:
 		float next[9] = {};             ///< 3D lab: a structure stage's next target, picked ahead (its geometry forged meanwhile).
 		bool  hasNext[9] = {};          ///< next[s] is valid.
 		float endHold = 0.f;            ///< 3D lab: seconds a finished structure fade has held for the next phrase boundary.
+		float tiltA = 0.f;              ///< Direction of the time tilt (radians, eased toward tiltTarget; uniform tiltA).
+		float tiltTarget = 0.f;         ///< The current section's tilt direction.
+		std::map<int, float> sectionTilt;   ///< Tilt direction per section id: a returning section returns to it.
 		std::map<int, std::array<float, 9>> sectionLook;   ///< Look per section id: a returning section returns to it.
 		std::chrono::steady_clock::time_point last;       ///< Wall clock of the previous step.
 		bool  hasLast = false;          ///< last is valid.
@@ -800,6 +803,7 @@ protected:
 	GLuint	m_walkProg = 0;             ///< Program the walk locations belong to.
 	GLint	m_walkLoc[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 };   ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 = stage absent).
 	GLint	m_walkHostLoc = -1;         ///< Location of walkHost (-1: not a chain lab).
+	GLint	m_tiltALoc = -1;            ///< Location of tiltA (the time tilt's direction).
 	/// @brief Re-reads the rolled knobs into the walk state (called lazily after an activation).
 	void resetChainWalk();
 	/// @brief Advances the walk by one frame from the music and uploads the walk uniforms (program must be bound).

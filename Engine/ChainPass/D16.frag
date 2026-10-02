@@ -32,12 +32,14 @@ vec2 tDoubleGyre(vec2 uv, float A, float t)
 }
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
+uniform float walkHost;   ///< 1 when the app walks this lab's stages (walk uniforms valid).
 vec2 morphMix(vec2 a, vec2 b, float f) { return mix(mirrorUV(a), mirrorUV(b), f); }
 uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float tiltA;
 float chainTiltZ(vec2 q)
 {
     float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
-    float a = 0.011 * sceneTime;
+    float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
 vec2 cls(vec2 uv, float v)

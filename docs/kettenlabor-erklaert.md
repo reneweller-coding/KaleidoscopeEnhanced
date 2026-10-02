@@ -103,63 +103,63 @@ Bildschirm, in C faltet es das schon gebaute Muster.
 | Pos. | Name | Was sie macht | |
 |---|---|---|---|
 | 0 | none | Identität: A tut nichts, die Kette beginnt bei B. | |
-| 1 | polar unwrap | Polarkoordinaten: Winkel nach rechts, Abstand nach oben – Strahlen aus einer Mitte. | |
-| 2 | elliptic coordinates | Elliptische Koordinaten um zwei Brennpunkte: konfokale Ellipsen und Hyperbeln. | |
-| 3 | parabolic coordinates | Parabolische Koordinaten: ineinander liegende Parabeln, gespiegelt. | |
-| 4 | Cassini ovals | Cassinische Ovale um zwei Punkte (bei kritischer Größe eine Lemniskate, die „liegende Acht“). | |
-| 5 | Farris wallpaper | Farris-Tapetenfunktion: weiches, symmetrisches Muster, das die Ebene kachelt (14 Symmetriegruppen). | T |
-| 6 | Farris frieze | Farris-Fries: ein Bandmuster, periodisch entlang des Bandes, die Bänder gestapelt. | T |
-| 7 | sunflower spirals | Zwei gekreuzte Spiralscharen wie die Kerne einer Sonnenblume. | |
-| 8 | quasicrystal | Quasikristall (de Bruijn): n Wellen in n Richtungen, n-zählig, wiederholt sich nie. | T |
-| 9 | Droste zoom | Droste-Zoom: Das Bild wiederholt sich nach innen in jeder Größe, der Zoom läuft endlos. | ⭕ |
-| 10 | Escher spiral Droste | Eschers „Bildergalerie“-Droste (Lenstra/de Smit): Eine Umdrehung ist ein Zoomschritt. | ⭕ |
-| 11 | little planet | Das Foto als Panorama auf einer drehenden Kugel, stereografisch gesehen („kleiner Planet“). | |
-| 12 | rotating Mercator | Der Bildschirm ist die Mercator-Karte einer drehenden Kugel mit dem Foto darauf. | |
-| 13 | bipolar Droste | Spiral-Droste zwischen zwei Löchern. | ⭕ |
-| 14 | hyperbolic Droste | Eschers Spiral-Droste, zusätzlich in eine hyperbolische {p,q}-Kachelung gefaltet. | ⭕ T |
-| 15 | hyperbolic Poincare tiling | Hyperbolische Kachelung in der Poincaré-Scheibe (wie Eschers „Kreislimit“). | T |
-| 16 | hyperbolic band | Dieselbe Geometrie im Bandmodell: eine endlose hyperbolische Kachelleiste. | T |
-| 17 | hyperbolic half-plane | Hyperbolische Kachelung in der oberen Halbebene, die am Horizont entlangkriecht. | T |
-| 18 | sphere kaleidoscope | Ein Kaleidoskop auf einer drehenden Kugel (Polyedersymmetrie). | T |
-| 19 | Klein invariants | Kleins Tetraeder-/Oktaeder-Invarianten: rationale Funktionen mit Platonischer Symmetrie. | T |
-| 20 | log-polar spiral | Logarithmische Spirale mit 2–8 Armen, zoomt endlos. | ⭕ |
-| 21 | Archimedean spiral | Archimedische Spirale: gleichmäßig weite Arme. | |
-| 22 | hyperbolic spiral | Hyperbolische Spirale r = a/θ: ein Tunnel mit gewundenen Ringen. | ⭕ |
-| 23 | rotating Riemann sphere | Ebene auf die Riemann-Kugel gehoben, gedreht, zurückprojiziert: Bild strömt von Pol zu Pol. | |
-| 24 | breathing sphere | Riemann-Kugel, durch eine Kugelflächenfunktion ausgebeult, drehend. | |
-| 25 | Peirce quincuncial sphere | Kugel durch Peirces quinkunziale Projektion: eine Quadratkachelung. | T |
-| 26 | magnet map | Magnet-Fraktal (Ising-Modell), einige Iterationen. | T |
-| 27 | Jacobi cn wallpaper | Jacobi-Funktion cn als doppelt periodische Tapete. | T |
-| 28 | theta wave | Jacobi-Thetafunktion mit wanderndem Parameter: quasiperiodische Wellen. | T |
-| 29 | Jacobi sn/dn wallpaper | Die Schwesterfunktionen sn/dn (andere Pole und Nullstellen). | T |
-| 30 | Weierstrass p | Weierstraß-℘-Funktion: ein Gitter aus Polen. | T |
-| 31 | parabolic stream | Parabolische Möbius-Strömung: Kreise, die sich alle in einem Punkt berühren. | ⭕ |
-| 32 | hyperbolic Moebius flow | Bild strömt auf Kreisbögen von einem Fixpunkt zum anderen. | ⭕ |
-| 33 | Chebyshev fold | Tschebyschow-Polynom: die Ebene gefaltet wie cos(n·acos z). | |
-| 34 | complex exponential | Komplexe Exponentialfunktion: Bänder werden zu Kreisen. | |
-| 35 | cardioid coordinates | Kardioid-Koordinaten (der Hauptkörper der Mandelbrot-Menge aufgerollt). | |
-| 36 | Blaschke product | Blaschke-Produkt: Die Einheitsscheibe ist mehrfach um wandernde Nullstellen gewickelt. | T |
-| 37 | wandering poles | Summe aus Polen: Blüten um jeden wandernden Pol. | T |
-| 38 | bipolar stream | Bipolare Koordinaten: Bild strömt von einem Pol zum anderen. | ⭕ |
-| 39 | complex sine | Komplexer Sinus: ein Gitter aus Sattelpunkten. | |
-| 40 | tan lattice | tan z: Streifen, jeder eine ganze Kugel aus Bild zwischen zwei Polen. | |
-| 41 | zeta partial sum | Teilsumme der Riemannschen Zetafunktion: ein paar interferierende Spiralen. | T |
-| 42 | circle inversion | Kreisspiegelung: innen und außen vertauscht. | |
-| 43 | Moebius stream | Möbius-Abbildung mit zwei wandernden Polen. | |
-| 44 | loxodromic stream | Loxodromische Strömung: Bild schraubt sich spiralförmig von Pol zu Pol. | ⭕ |
-| 45 | Newton map | Newton-Verfahren für zⁿ = w: n Einzugsgebiete mit fraktalen Rändern. | T |
-| 46 | Julia map | Julia-Abbildung z² + k, k wandert am Rand der Mandelbrot-Menge. | T |
-| 47 | Zaslavsky web | Zaslavsky-Netz: Stoß und Drehung um 2π/q, ein q-zähliges „stochastisches Netz“. | T |
-| 48 | Gumowski-Mira | Gumowski-Mira-Abbildung (Teilchenbahnen am CERN), einige Schritte. | T |
-| 49 | Chirikov map | Chirikov-Standardabbildung (gestoßener Rotor): Inseln und Chaos. | T |
-| 50 | Henon map | Hénon-Abbildung, einige Schritte. | T |
-| 51 | Ikeda map | Ikeda-Abbildung (Laser im Ringresonator): Wirbelstruktur. | T |
-| 52 | Mandelbrot map | Mandelbrot-Iteration, einige Schritte. | T |
-| 53 | burning ship | „Brennendes Schiff“: Mandelbrot mit Beträgen. | T |
-| 54 | Phoenix Julia | Phoenix-Julia: mit Gedächtnisterm. | T |
-| 55 | cubic Julia | Kubische Julia z³ + k. | T |
-| 56 | kaleidoscope | Klassisches Kaleidoskop, 5–9 Spiegel, dreht sich. | |
-| 57 | tunnel | Klassischer Tunnel: Winkel herum, 1/r als Tiefe. | ⭕ |
+| 1 | Farris frieze | Farris-Fries: ein Bandmuster, periodisch entlang des Bandes, die Bänder gestapelt. | T |
+| 2 | burning ship | „Brennendes Schiff“: Mandelbrot mit Beträgen. | T |
+| 3 | Chirikov map | Chirikov-Standardabbildung (gestoßener Rotor): Inseln und Chaos. | T |
+| 4 | cubic Julia | Kubische Julia z³ + k. | T |
+| 5 | Weierstrass p | Weierstraß-℘-Funktion: ein Gitter aus Polen. | T |
+| 6 | Jacobi sn/dn wallpaper | Die Schwesterfunktionen sn/dn (andere Pole und Nullstellen). | T |
+| 7 | wandering poles | Summe aus Polen: Blüten um jeden wandernden Pol. | T |
+| 8 | Zaslavsky web | Zaslavsky-Netz: Stoß und Drehung um 2π/q, ein q-zähliges „stochastisches Netz“. | T |
+| 9 | Henon map | Hénon-Abbildung, einige Schritte. | T |
+| 10 | Ikeda map | Ikeda-Abbildung (Laser im Ringresonator): Wirbelstruktur. | T |
+| 11 | circle inversion | Kreisspiegelung: innen und außen vertauscht. | |
+| 12 | Farris wallpaper | Farris-Tapetenfunktion: weiches, symmetrisches Muster, das die Ebene kachelt (14 Symmetriegruppen). | T |
+| 13 | kaleidoscope | Klassisches Kaleidoskop, 5–9 Spiegel, dreht sich. | |
+| 14 | complex sine | Komplexer Sinus: ein Gitter aus Sattelpunkten. | |
+| 15 | tan lattice | tan z: Streifen, jeder eine ganze Kugel aus Bild zwischen zwei Polen. | |
+| 16 | Mandelbrot map | Mandelbrot-Iteration, einige Schritte. | T |
+| 17 | Jacobi cn wallpaper | Jacobi-Funktion cn als doppelt periodische Tapete. | T |
+| 18 | Gumowski-Mira | Gumowski-Mira-Abbildung (Teilchenbahnen am CERN), einige Schritte. | T |
+| 19 | bipolar Droste | Spiral-Droste zwischen zwei Löchern. | ⭕ |
+| 20 | Phoenix Julia | Phoenix-Julia: mit Gedächtnisterm. | T |
+| 21 | breathing sphere | Riemann-Kugel, durch eine Kugelflächenfunktion ausgebeult, drehend. | |
+| 22 | Klein invariants | Kleins Tetraeder-/Oktaeder-Invarianten: rationale Funktionen mit Platonischer Symmetrie. | T |
+| 23 | polar unwrap | Polarkoordinaten: Winkel nach rechts, Abstand nach oben – Strahlen aus einer Mitte. | |
+| 24 | Blaschke product | Blaschke-Produkt: Die Einheitsscheibe ist mehrfach um wandernde Nullstellen gewickelt. | T |
+| 25 | hyperbolic Droste | Eschers Spiral-Droste, zusätzlich in eine hyperbolische {p,q}-Kachelung gefaltet. | ⭕ T |
+| 26 | quasicrystal | Quasikristall (de Bruijn): n Wellen in n Richtungen, n-zählig, wiederholt sich nie. | T |
+| 27 | Chebyshev fold | Tschebyschow-Polynom: die Ebene gefaltet wie cos(n·acos z). | |
+| 28 | hyperbolic band | Dieselbe Geometrie im Bandmodell: eine endlose hyperbolische Kachelleiste. | T |
+| 29 | hyperbolic half-plane | Hyperbolische Kachelung in der oberen Halbebene, die am Horizont entlangkriecht. | T |
+| 30 | Newton map | Newton-Verfahren für zⁿ = w: n Einzugsgebiete mit fraktalen Rändern. | T |
+| 31 | magnet map | Magnet-Fraktal (Ising-Modell), einige Iterationen. | T |
+| 32 | complex exponential | Komplexe Exponentialfunktion: Bänder werden zu Kreisen. | |
+| 33 | Julia map | Julia-Abbildung z² + k, k wandert am Rand der Mandelbrot-Menge. | T |
+| 34 | Moebius stream | Möbius-Abbildung mit zwei wandernden Polen. | |
+| 35 | sunflower spirals | Zwei gekreuzte Spiralscharen wie die Kerne einer Sonnenblume. | |
+| 36 | cardioid coordinates | Kardioid-Koordinaten (der Hauptkörper der Mandelbrot-Menge aufgerollt). | |
+| 37 | zeta partial sum | Teilsumme der Riemannschen Zetafunktion: ein paar interferierende Spiralen. | T |
+| 38 | Cassini ovals | Cassinische Ovale um zwei Punkte (bei kritischer Größe eine Lemniskate, die „liegende Acht“). | |
+| 39 | Peirce quincuncial sphere | Kugel durch Peirces quinkunziale Projektion: eine Quadratkachelung. | T |
+| 40 | rotating Mercator | Der Bildschirm ist die Mercator-Karte einer drehenden Kugel mit dem Foto darauf. | |
+| 41 | hyperbolic spiral | Hyperbolische Spirale r = a/θ: ein Tunnel mit gewundenen Ringen. | ⭕ |
+| 42 | Escher spiral Droste | Eschers „Bildergalerie“-Droste (Lenstra/de Smit): Eine Umdrehung ist ein Zoomschritt. | ⭕ |
+| 43 | loxodromic stream | Loxodromische Strömung: Bild schraubt sich spiralförmig von Pol zu Pol. | ⭕ |
+| 44 | Archimedean spiral | Archimedische Spirale: gleichmäßig weite Arme. | |
+| 45 | hyperbolic Moebius flow | Bild strömt auf Kreisbögen von einem Fixpunkt zum anderen. | ⭕ |
+| 46 | elliptic coordinates | Elliptische Koordinaten um zwei Brennpunkte: konfokale Ellipsen und Hyperbeln. | |
+| 47 | theta wave | Jacobi-Thetafunktion mit wanderndem Parameter: quasiperiodische Wellen. | T |
+| 48 | parabolic stream | Parabolische Möbius-Strömung: Kreise, die sich alle in einem Punkt berühren. | ⭕ |
+| 49 | little planet | Das Foto als Panorama auf einer drehenden Kugel, stereografisch gesehen („kleiner Planet“). | |
+| 50 | Droste zoom | Droste-Zoom: Das Bild wiederholt sich nach innen in jeder Größe, der Zoom läuft endlos. | ⭕ |
+| 51 | parabolic coordinates | Parabolische Koordinaten: ineinander liegende Parabeln, gespiegelt. | |
+| 52 | rotating Riemann sphere | Ebene auf die Riemann-Kugel gehoben, gedreht, zurückprojiziert: Bild strömt von Pol zu Pol. | |
+| 53 | log-polar spiral | Logarithmische Spirale mit 2–8 Armen, zoomt endlos. | ⭕ |
+| 54 | sphere kaleidoscope | Ein Kaleidoskop auf einer drehenden Kugel (Polyedersymmetrie). | T |
+| 55 | tunnel | Klassischer Tunnel: Winkel herum, 1/r als Tiefe. | ⭕ |
+| 56 | bipolar stream | Bipolare Koordinaten: Bild strömt von einem Pol zum anderen. | ⭕ |
+| 57 | hyperbolic Poincare tiling | Hyperbolische Kachelung in der Poincaré-Scheibe (wie Eschers „Kreislimit“). | T |
 
 ### Stufe B – Symmetrie (23 Klassen)
 
@@ -168,26 +168,26 @@ Bildschirm, in C faltet es das schon gebaute Muster.
 | 0 | none | Keine Symmetrie. | |
 | 1 | mirror line | Eine einzelne, langsam drehende Spiegelachse. | |
 | 2 | origami folds | Bis zu vier Faltlinien, die sich langsam drehen (wie Papierfalten). | |
-| 3 | p4m lattice | Quadratisches Spiegelgitter (Tapetengruppe p4m). | |
-| 4 | p3m1 triangle mirror | Gleichseitiges Dreiecks-Spiegelgitter (p3m1). | |
-| 5 | kaleidoscope | Kaleidoskop, 5–9 Spiegel. | |
-| 6 | spiral kaleidoscope | Kaleidoskop, dessen Sektoren mit dem Abstand verdreht sind. | |
-| 7 | curved kaleidoscope | Kaleidoskop mit Spiegeln aus Kreisbögen (hyperbolisch). | |
-| 8 | Steiner kaleidoscope | Kaleidoskop durch eine Kreisspiegelung gesehen: Spiegel werden Kreise. | |
-| 9 | Penrose mirror | Penrose-Kachelung als Spiegel: aperiodisch, fünfzählig. | T 3 |
-| 10 | Ammann-Beenker mirror | Ammann-Beenker-Kachelung: aperiodisch, achtzählig. | T 3 |
-| 11 | 12-fold quasicrystal mirror | Zwölfzähliger Quasikristall-Spiegel. | T 3 |
-| 12 | modular group mirror | Die Modulgruppe als Spiegelgruppe: Dreiecke, die zum Horizont hin unendlich klein werden. | T |
-| 13 | p6m lattice | Sechseckiges Spiegelgitter (p6m). | |
-| 14 | Sierpinski fold | Sierpiński-Faltung: drei Spiegel eines Dreiecks, dann ×2, wiederholt. | T |
-| 15 | Koch fold | Koch-Schneeflocken-Faltung. | T |
-| 16 | Levy C fold | Lévy-C-Kurven-Faltung. | T |
-| 17 | Pappus chain | Pappus-Kette: endlose Kette von Kreisen im Arbelos. | |
-| 18 | Pythagoras-tree fold | Pythagoras-Baum-Faltung. | T |
-| 19 | Vicsek fold | Vicsek-Kreuz-Faltung. | T |
+| 3 | curved kaleidoscope | Kaleidoskop mit Spiegeln aus Kreisbögen (hyperbolisch). | |
+| 4 | p4m lattice | Quadratisches Spiegelgitter (Tapetengruppe p4m). | |
+| 5 | p6m lattice | Sechseckiges Spiegelgitter (p6m). | |
+| 6 | Sierpinski fold | Sierpiński-Faltung: drei Spiegel eines Dreiecks, dann ×2, wiederholt. | T |
+| 7 | Pythagoras-tree fold | Pythagoras-Baum-Faltung. | T |
+| 8 | Pappus chain | Pappus-Kette: endlose Kette von Kreisen im Arbelos. | |
+| 9 | Steiner kaleidoscope | Kaleidoskop durch eine Kreisspiegelung gesehen: Spiegel werden Kreise. | |
+| 10 | Vicsek fold | Vicsek-Kreuz-Faltung. | T |
+| 11 | Levy C fold | Lévy-C-Kurven-Faltung. | T |
+| 12 | kaleidoscope | Kaleidoskop, 5–9 Spiegel. | |
+| 13 | Ammann-Beenker mirror | Ammann-Beenker-Kachelung: aperiodisch, achtzählig. | T 3 |
+| 14 | Penrose mirror | Penrose-Kachelung als Spiegel: aperiodisch, fünfzählig. | T 3 |
+| 15 | 12-fold quasicrystal mirror | Zwölfzähliger Quasikristall-Spiegel. | T 3 |
+| 16 | spiral kaleidoscope | Kaleidoskop, dessen Sektoren mit dem Abstand verdreht sind. | |
+| 17 | Schottky mirror | Schottky-Gruppe: Spiegelungen an vier Kreisen. | T |
+| 18 | modular group mirror | Die Modulgruppe als Spiegelgruppe: Dreiecke, die zum Horizont hin unendlich klein werden. | T |
+| 19 | Koch fold | Koch-Schneeflocken-Faltung. | T |
 | 20 | iterated fold | Iterierte Faltung (Kali-artig): wiederholt spiegeln und skalieren. | |
 | 21 | Apollonian inversion fold | Apollonische Packung: Kreisspiegelungen im Wechsel (wie „Indra's Pearls“). | T |
-| 22 | Schottky mirror | Schottky-Gruppe: Spiegelungen an vier Kreisen. | T |
+| 22 | p3m1 triangle mirror | Gleichseitiges Dreiecks-Spiegelgitter (p3m1). | |
 
 Keine B-Klasse hat eine Öffnung. Kaleidoskope haben zwar eine Mitte, aber
 eine *ruhende*. Sie fliegen nicht in einen Punkt.
@@ -199,20 +199,20 @@ eine *ruhende*. Sie fliegen nicht in einen Punkt.
 | 0 | none | Keine zweite Abbildung. | |
 | 1 | lens | Lupe: Ausbeulen oder Einschnüren in einem Kreis, pulsierend. | |
 | 2 | zone lens | Zonenlinse: Vergrößerung schwingt mit r² (wie eine weiche Fresnel-Linse). | |
-| 3 | fisheye | Fischauge / Tonnenverzeichnung. | |
-| 4 | Lorentz boost | Lorentz-Boost: entlang der Diagonalen gestaucht und gestreckt. | |
-| 5 | blossom | Blüte: Radius schwillt mit dem Winkel, n Blütenblätter. | |
-| 6 | Farris rosette | Farris-Rosette: weiche n-zählige Rosette. | |
-| 7 | mirrored power | z^α mit gespiegeltem Winkel (α wandert, z. B. die Wurzel-Faltung). | |
-| 8 | Cayley transform | Cayley-Transformation: Halbebene ↔ Scheibe. | |
-| 9 | gravitational lens | Gravitationslinse (Punktmasse): Einstein-Ring. | |
-| 10 | binary lens | Doppellinse: zwei kreisende Massen, Kaustiken. | |
-| 11 | Joukowski map | Joukowski-Abbildung (Tragflächenprofil). | |
-| 12 | spiral | Logarithmische Spirale, zoomt. | ⭕ |
-| 13 | log vortex | Logarithmischer Wirbel: Drehung wächst mit log r. | |
-| 14 | complex square | Komplexes Quadrat z²: jeder Winkel verdoppelt. | |
-| 15 | inversion | Kreisspiegelung. | |
-| 16 | kaleidoscope | Kaleidoskop (gegenläufig drehend). | |
+| 3 | Farris rosette | Farris-Rosette: weiche n-zählige Rosette. | |
+| 4 | fisheye | Fischauge / Tonnenverzeichnung. | |
+| 5 | gravitational lens | Gravitationslinse (Punktmasse): Einstein-Ring. | |
+| 6 | binary lens | Doppellinse: zwei kreisende Massen, Kaustiken. | |
+| 7 | Lorentz boost | Lorentz-Boost: entlang der Diagonalen gestaucht und gestreckt. | |
+| 8 | blossom | Blüte: Radius schwillt mit dem Winkel, n Blütenblätter. | |
+| 9 | inversion | Kreisspiegelung. | |
+| 10 | Joukowski map | Joukowski-Abbildung (Tragflächenprofil). | |
+| 11 | kaleidoscope | Kaleidoskop (gegenläufig drehend). | |
+| 12 | log vortex | Logarithmischer Wirbel: Drehung wächst mit log r. | |
+| 13 | Cayley transform | Cayley-Transformation: Halbebene ↔ Scheibe. | |
+| 14 | mirrored power | z^α mit gespiegeltem Winkel (α wandert, z. B. die Wurzel-Faltung). | |
+| 15 | complex square | Komplexes Quadrat z²: jeder Winkel verdoppelt. | |
+| 16 | spiral | Logarithmische Spirale, zoomt. | ⭕ |
 | 17 | tunnel | Tunnel. | ⭕ |
 
 ### Stufe D – Verzerrung (20 Klassen)
@@ -222,23 +222,23 @@ eine *ruhende*. Sie fliegen nicht in einen Punkt.
 | 0 | none | Keine Verzerrung. | |
 | 1 | turning | Sanfte Drehung des ganzen Bildes, hin und her. | |
 | 2 | bend | Biegung: Drehwinkel wächst quer über das Bild. | |
-| 3 | shear wave | Scherwelle (Sinus-Versatz). | |
-| 4 | Gerstner waves | Gerstner-Wellen: drei trochoidale Wasserwellen. | |
-| 5 | wave interference | Interferenz zweier Wellenquellen. | |
-| 6 | convection cells | Konvektionszellen (sechseckiges Wellenfeld). | |
-| 7 | curl flow | Curl-Rauschen: divergenzfrei, wirbelt wie eine Flüssigkeit. | T |
-| 8 | cylinder flow | Umströmung eines Zylinders mit Zirkulation. | |
-| 9 | dipole field | Feldlinien eines Dipols. | |
+| 3 | convection cells | Konvektionszellen (sechseckiges Wellenfeld). | |
+| 4 | cylinder flow | Umströmung eines Zylinders mit Zirkulation. | |
+| 5 | curl flow | Curl-Rauschen: divergenzfrei, wirbelt wie eine Flüssigkeit. | T |
+| 6 | dipole field | Feldlinien eines Dipols. | |
+| 7 | twirl | Strudel um eine Mitte. | |
+| 8 | Kelvin-Helmholtz rolls | Kelvin-Helmholtz: eine Scherschicht rollt sich zu Wellen auf. | |
+| 9 | vortex pair | Zwei umeinander kreisende Wirbel. | |
 | 10 | Taylor-Green vortices | Taylor-Green-Wirbel: ein Schachbrett aus Wirbeln, atmend. | T |
-| 11 | twirl | Strudel um eine Mitte. | |
-| 12 | vortex pair | Zwei umeinander kreisende Wirbel. | |
+| 11 | domain warp | Domain Warp: Rausch-Verschiebung. | T |
+| 12 | wave interference | Interferenz zweier Wellenquellen. | |
 | 13 | double gyre | Doppelwirbel (das Lehrbuchbeispiel einer zeitperiodischen Strömung). | T |
-| 14 | vortex street | Wirbelstraße: vier Wirbel wechselnden Drehsinns ziehen vorbei. | T |
-| 15 | Karman street | Kármánsche Wirbelstraße hinter einem Hindernis. | T |
-| 16 | gravitational wave | Gravitationswelle: Plus- und Kreuzpolarisation laufen nach außen. | |
-| 17 | Kelvin-Helmholtz rolls | Kelvin-Helmholtz: eine Scherschicht rollt sich zu Wellen auf. | |
-| 18 | domain warp | Domain Warp: Rausch-Verschiebung. | T |
-| 19 | ripple | Kreiswellen aus einer Mitte. | |
+| 14 | ripple | Kreiswellen aus einer Mitte. | |
+| 15 | Gerstner waves | Gerstner-Wellen: drei trochoidale Wasserwellen. | |
+| 16 | vortex street | Wirbelstraße: vier Wirbel wechselnden Drehsinns ziehen vorbei. | T |
+| 17 | Karman street | Kármánsche Wirbelstraße hinter einem Hindernis. | T |
+| 18 | gravitational wave | Gravitationswelle: Plus- und Kreuzpolarisation laufen nach außen. | |
+| 19 | shear wave | Scherwelle (Sinus-Versatz). | |
 
 ---
 
@@ -264,14 +264,20 @@ ansteuern (nächster Abschnitt).
 ## 4. Die Energie-Ordnung
 
 Die Klassen jeder Stufe sind von **ruhig** (Position 0 = none) bis **energisch**
-sortiert. In A stehen am ruhigen Ende die Koordinatensysteme, am energischen
-die Fraktal-Iterationen sowie Kaleidoskop und Tunnel. In D stehen am ruhigen
-Ende sanfte Drehung und Biegung, am energischen Ende Rauschen und Kreiswellen.
+sortiert – seit 02.10.2026 **gemessen** (`Tools/chain_class_stats.py`,
+`Tools/scenegen/apply_energy_order.py`): jede Klasse allein, im Editor
+gerendert, Energie = Bewegung (Bildänderung über 2 s) + ½ · Detail (mittlerer
+Helligkeitsgradient), je Stufe normiert. Fest bleiben Position 0 und die
+„schwachen“ Positionen (B 1–2, C 1, D 1–2), über denen das ruhige Gitter
+einblendet.
 
-**Wichtig, ehrlich:** Diese Ordnung habe ich *von Hand* festgelegt, nach
-Augenmaß: Wie viel Bewegung, Unruhe und Detail bringt die Klasse ins Bild?
-Gemessen ist sie nicht. Neue Klassen habe ich bei jeder Runde an einer
-plausiblen Stelle eingefügt.
+Die Messung widerspricht der alten Handordnung deutlich (Rangkorrelation A
+−0,37, B 0,21, C 0,69, D 0,20): Am ruhigen Ende von A stehen jetzt die
+chaotischen Abbildungen (Burning Ship, Chirikov, Julia, Hénon) – sie bilden
+große, kaum bewegte Flächen –, am energischen die strömenden Öffnungen
+(Tunnel, bipolarer Strom, Poincaré-Kachelung, log-polare Spirale), die viel
+Bild pro Sekunde bewegen. „Energie“ heißt jetzt sichtbare Bewegung und
+Unruhe, nicht Komplexität.
 
 Wofür die Ordnung gebraucht wird: Beim Wandern wählt die App das Ziel einer
 Stufe als `0,08 + 0,84 × Energie ± Zufall`. Ruhige Musik landet also im
@@ -494,6 +500,9 @@ anderen Moment – eine Zeitwelle, die über das Bild läuft. Die Richtung dreht
 sich langsam (nur nach der Uhr), die Stärke folgt dem langsamen Swell der
 Musik. Unter 0,15 aus. Im 2D-Labor, Tunnel-Labor (auf der Wand) und in
 FxChain, ohne Mehrkosten: jeder Durchgang verschiebt dieselbe Zeit je Pixel.
+Wandert das Labor, folgt die Richtung den **Musikabschnitten**: Jeder neue
+Abschnitt bekommt eine deutlich andere Richtung, ein wiederkehrender seine
+alte; die App gleitet in etwa 4 s dorthin (kürzester Weg, nie ein Sprung).
 
 ### Nachglühen (`glowP`) und atmende Verzerrung (seit 02.10.)
 * `glowP` (alle Kettenlabore): das zuletzt fertig gezeigte Bild als
@@ -508,6 +517,12 @@ FxChain, ohne Mehrkosten: jeder Durchgang verschiebt dieselbe Zeit je Pixel.
 * Raumschnitt: Die Ansicht rückt umso näher, je feiner der Faltkern faltet
   (Menger auf 35 %, Kleinian/Apollonian 42 %, ohne Kern 110 %); der
   Ebenenabstand geht mit, die Materie-Kante ist ein Pixel breit.
+* Raumschnitt, Luft: In Materienähe leuchtet sie als Hof (etwa 25 Pixel
+  breit), sonst bleibt sie gedämpft – auch eine in dünne Splitter zerfallene
+  Welt bleibt lesbar.
+* Raumschnitt durch 4D (`hyperP`): Die Ebene kommt fast zur Ruhe, die Zeit
+  der Welt (Faltwinkel, Drehungen) läuft schneller – die Formen wachsen,
+  teilen und verbinden sich an Ort und Stelle. Etwa jeder zweite Wurf.
 * 3D-Labor mit stetigem Beat: Weltwechsel (Raum/Kern/Körper) warten auf die
   nächste Phrasengrenze, und das Ende einer Weltblende ebenfalls – der
   einmalige erste Draw einer neuen Weltfassung fällt so auf den Schlag.
@@ -580,7 +595,8 @@ bei 3D auch `paletteP` und `camP`).
   Planers verkürzt ein wanderndes Labor nicht mehr.
 * **Einstufiges Wandern** (`morphP` 0,15–0,5, nur in Genre-Presets): Dort wählt
   der Shader selbst und kennt die Öffnungs-Regel nicht.
-* **Energie-Ordnung** ist Handarbeit, nicht gemessen.
+* ~~Energie-Ordnung ist Handarbeit~~ – seit 02.10. gemessen (Abschnitt 4); die
+  Welt-Stufen des 3D-Labors (Raum, Kern, Körper) sind weiter von Hand geordnet.
 * **3D-Leistung**: Seit 01.10. rechnet die App das 3D-Labor in Durchgängen
   (Geometrie einmal in einen G-Buffer, die Farbketten darauf, s.
   `docs/leistung-2026-10-01.md`): 117–121 fps beim Wandern, GPU 4–5 ms. Jede

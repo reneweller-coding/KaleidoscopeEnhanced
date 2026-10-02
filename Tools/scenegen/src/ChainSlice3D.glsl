@@ -19,12 +19,13 @@
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow and the colour saturation (slow)
  *
- * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes),
+ * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes), hyperP (the plane
+ * at rest, the world's own time running: a cut through 4D),
  * solidP (the colour chain on three planes, or as a solid texture), reliefP
  * (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
  * (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
  * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP.
-//@params spaceP coreP bodyP layerP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
+//@params spaceP coreP bodyP layerP hyperP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 float gT, gTC, gSpread, gRot, gMw;
@@ -39,10 +40,10 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 39; if (i == 4) return 52; if (i == 5) return 14; if (i == 6) return 26; if (i == 7) return 41; if (i == 8) return 25; if (i == 9) return 4; if (i == 10) return 16; if (i == 11) return 43; if (i == 12) return 44; if (i == 13) return 33; if (i == 14) return 56; if (i == 15) return 9; if (i == 16) return 15; if (i == 17) return 28; if (i == 18) return 24; if (i == 19) return 53; if (i == 20) return 1; if (i == 21) return 29; if (i == 22) return 34; if (i == 23) return 12; if (i == 24) return 42; if (i == 25) return 17; if (i == 26) return 46; if (i == 27) return 27; if (i == 28) return 47; if (i == 29) return 30; if (i == 30) return 45; if (i == 31) return 19; if (i == 32) return 31; if (i == 33) return 48; if (i == 34) return 6; if (i == 35) return 40; if (i == 36) return 18; if (i == 37) return 32; if (i == 38) return 10; if (i == 39) return 7; if (i == 40) return 21; if (i == 41) return 35; if (i == 42) return 8; if (i == 43) return 3; if (i == 44) return 13; if (i == 45) return 22; if (i == 46) return 23; if (i == 47) return 55; if (i == 48) return 54; if (i == 49) return 51; if (i == 50) return 49; if (i == 51) return 50; if (i == 52) return 36; if (i == 53) return 37; if (i == 54) return 38; if (i == 55) return 57; if (i == 56) return 0; return 2; }   // energy order, 58 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 3; if (i == 4) return 18; if (i == 5) return 1; if (i == 6) return 22; if (i == 7) return 10; if (i == 8) return 21; if (i == 9) return 16; if (i == 10) return 2; if (i == 11) return 7; if (i == 12) return 9; if (i == 13) return 11; if (i == 14) return 19; if (i == 15) return 12; if (i == 16) return 13; if (i == 17) return 4; if (i == 18) return 6; return 17; }   // 3D lab subset, 20 classes
-int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 12; if (i == 4) return 15; if (i == 5) return 8; if (i == 6) return 9; if (i == 7) return 10; if (i == 8) return 11; if (i == 9) return 13; if (i == 10) return 14; if (i == 11) return 7; if (i == 12) return 1; if (i == 13) return 16; if (i == 14) return 4; if (i == 15) return 3; if (i == 16) return 6; return 2; }   // energy order, 18 classes
-int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 2; if (i == 4) return 19; if (i == 5) return 13; if (i == 6) return 18; if (i == 7) return 7; if (i == 8) return 10; if (i == 9) return 11; if (i == 10) return 17; if (i == 11) return 1; if (i == 12) return 12; if (i == 13) return 16; if (i == 14) return 6; if (i == 15) return 9; if (i == 16) return 15; if (i == 17) return 14; if (i == 18) return 4; return 3; }   // energy order, 20 classes
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 26; if (i == 2) return 37; if (i == 3) return 51; if (i == 4) return 57; if (i == 5) return 45; if (i == 6) return 30; if (i == 7) return 32; if (i == 8) return 55; if (i == 9) return 49; if (i == 10) return 50; if (i == 11) return 8; if (i == 12) return 14; if (i == 13) return 0; if (i == 14) return 7; if (i == 15) return 21; if (i == 16) return 36; if (i == 17) return 27; if (i == 18) return 54; if (i == 19) return 33; if (i == 20) return 38; if (i == 21) return 42; if (i == 22) return 53; if (i == 23) return 5; if (i == 24) return 18; if (i == 25) return 56; if (i == 26) return 25; if (i == 27) return 48; if (i == 28) return 15; if (i == 29) return 28; if (i == 30) return 22; if (i == 31) return 46; if (i == 32) return 6; if (i == 33) return 23; if (i == 34) return 3; if (i == 35) return 41; if (i == 36) return 40; if (i == 37) return 35; if (i == 38) return 52; if (i == 39) return 17; if (i == 40) return 44; if (i == 41) return 34; if (i == 42) return 16; if (i == 43) return 13; if (i == 44) return 29; if (i == 45) return 31; if (i == 46) return 20; if (i == 47) return 47; if (i == 48) return 19; if (i == 49) return 43; if (i == 50) return 4; if (i == 51) return 39; if (i == 52) return 12; if (i == 53) return 1; if (i == 54) return 24; if (i == 55) return 2; if (i == 56) return 10; return 9; }   // energy order, 58 classes
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 10; if (i == 4) return 3; if (i == 5) return 2; if (i == 6) return 7; if (i == 7) return 12; if (i == 8) return 19; if (i == 9) return 21; if (i == 10) return 13; if (i == 11) return 11; if (i == 12) return 1; if (i == 13) return 22; if (i == 14) return 17; if (i == 15) return 16; if (i == 16) return 9; if (i == 17) return 4; if (i == 18) return 6; return 18; }   // 3D lab subset, 20 classes
+int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 9; if (i == 4) return 12; if (i == 5) return 13; if (i == 6) return 14; if (i == 7) return 15; if (i == 8) return 8; if (i == 9) return 3; if (i == 10) return 7; if (i == 11) return 6; if (i == 12) return 16; if (i == 13) return 11; if (i == 14) return 10; if (i == 15) return 4; if (i == 16) return 1; return 2; }   // energy order, 18 classes
+int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 18; if (i == 4) return 10; if (i == 5) return 7; if (i == 6) return 11; if (i == 7) return 1; if (i == 8) return 14; if (i == 9) return 12; if (i == 10) return 17; if (i == 11) return 4; if (i == 12) return 13; if (i == 13) return 16; if (i == 14) return 3; if (i == 15) return 19; if (i == 16) return 6; if (i == 17) return 9; if (i == 18) return 15; return 2; }   // energy order, 20 classes
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
@@ -373,14 +374,17 @@ vec2 runChain(vec2 uv)
 }
 // The time tilt (tiltP): the chain's own time t0 + a x + b y across the
 // picture -- a cut through its space-time volume (x, y, t), so every place
-// shows another moment of the chain.  Its direction turns slowly (clock only),
-// its strength follows the slow swell.  0 below tiltP 0.15.  The uniform lives
-// here (not in the labs' knob lists) so every lab built on these stages compiles.
+// shows another moment of the chain.  Its direction: while the app walks the
+// lab, one per music section (a returning section returns to its own, eased
+// over seconds: tiltA); otherwise turning slowly with the clock.  Its strength
+// follows the slow swell.  0 below tiltP 0.15.  The uniforms live here (not in
+// the labs' knob lists) so every lab built on these stages compiles.
 uniform float tiltP;
+uniform float tiltA;   ///< The tilt's direction (radians) while the app walks the lab (walkHost).
 float chainTiltZ(vec2 q)
 {
     float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
-    float a = 0.011 * sceneTime;
+    float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
 // Afterglow (glowP): the last frame's picture as a fading phosphor veil -- the
@@ -631,9 +635,15 @@ vec3 normalS(vec3 p)
     vec3 n = e.xyy * fieldS(p + e.xyy) + e.yyx * fieldS(p + e.yyx) + e.yxy * fieldS(p + e.yxy) + e.xxx * fieldS(p + e.xxx);
     return normalize(n + vec3(1e-7));                       // deep inside a body the field can be flat
 }
-// Matter lit, air dim: the cut through a body is the subject.  The edge one
-// pixel wide (px: a pixel in the world) -- crisp, but not stair-stepped.
-float sliceShade(float d, float px) { return mix(0.6, 1.25, smoothstep(px, -px, d)); }
+// Matter lit, air dimmer: the cut through a body is the subject.  The edge one
+// pixel wide (px: a pixel in the world) -- crisp, but not stair-stepped.  Air
+// glows near matter (a halo ~25 px wide): a world cut into thin splinters
+// stays readable and does not fall dark.
+float sliceShade(float d, float px)
+{
+    float halo = exp(-max(d, 0.0) / (25.0 * px));
+    return mix(0.8 + 0.45 * halo, 1.7, smoothstep(px, -px, d));   // a cut is lit flat-on: brighter than a surface
+}
 // How close the view comes per fold core: the finer it folds (its scale per
 // round to the power of its rounds; the inversion folds count as fine), the
 // closer -- a Menger sponge (3^3) seen at a third of the plain lattice's view.
@@ -769,7 +779,13 @@ void main()
     // the planes behind fan out.
     vec3 sN, sX, sY;
     sliceFrame(camP, sceneTime, sN, sX, sY);
-    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT));
+    // hyperP: a cut through 4D -- the world is a function of time (its folds turn,
+    // its classes breathe); with the plane nearly at rest and the world's time
+    // running faster, the shapes grow, split and merge in place.
+    float hyp = smoothstep(0.3, 0.9, hyperP);
+    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT) * (1.0 - 0.85 * hyp));
+    gT += hyp * 0.6 * sceneTime;
+    gRot += hyp * 0.03 * sceneTime;
     // The view height follows the fold core (sliceZoom), gliding through a core fade.
     vec3 wcore = (walkHost > 0.5 && walkAll()) ? walkCore : vec3(coreP, coreP, 0.0);
     float sView = 3.0 * mix(sliceZoom(ordco(pickStage(wcore.x, 22))), sliceZoom(ordco(pickStage(wcore.y, 22))),

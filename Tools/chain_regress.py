@@ -14,8 +14,8 @@ in 58 runs; the order, the time tilt and the look vary with i too.  Each run is
 a full-resolution screenshot of the app (web remote /api/screenshot), once with
 the runner and once without.  The repo ini is backed up and restored.
 
-  python Tools/chain_regress.py                 # all 58 combinations (~30 min)
-  python Tools/chain_regress.py --every 4       # every 4th (~8 min)
+  python Tools/chain_regress.py                 # all 58 combinations (~1 h)
+  python Tools/chain_regress.py --every 6       # every 6th (~10 min)
   python Tools/chain_regress.py --only 12 30    # these combinations
 Exit code: the number of combinations whose mean difference exceeds --tol.
 """
@@ -78,7 +78,8 @@ def main():
     ap.add_argument("--only", type=int, nargs="*", help="these combinations (0..57)")
     ap.add_argument("--tol", type=float, default=0.5, help="mean absolute difference (0..255) that counts as a failure")
     ap.add_argument("--photo", default=None, help="the fixed photo (default: the first in Images/)")
-    ap.add_argument("--wait", type=float, default=9.0, help="seconds before the screenshot")
+    ap.add_argument("--wait", type=float, default=22.0,
+                    help="seconds before the screenshot (the exposure settles on the frozen frame: ~20 s)")
     ap.add_argument("--keep", help="keep the screenshots in this folder")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")

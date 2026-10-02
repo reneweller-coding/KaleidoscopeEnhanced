@@ -24,11 +24,13 @@ vec2 mirrorUV(vec2 uv) { return 1.0 - abs(fract(uv * 0.5) * 2.0 - 1.0); }
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
+uniform float walkHost;   ///< 1 when the app walks this lab's stages (walk uniforms valid).
 uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float tiltA;
 float chainTiltZ(vec2 q)
 {
     float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
-    float a = 0.011 * sceneTime;
+    float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
 vec2 cls(vec2 uv, float v)

@@ -22,7 +22,8 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow and the colour saturation (slow)
  *
- * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes),
+ * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes), hyperP (the plane
+ * at rest, the world's own time running: a cut through 4D),
  * solidP (the colour chain on three planes, or as a solid texture), reliefP
  * (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
  * (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
@@ -51,6 +52,7 @@ uniform float spaceP;   ///< Space class knob of the 3D chain, 0..1.
 uniform float coreP;   ///< Fold core class knob of the 3D chain, 0..1.
 uniform float bodyP;   ///< Body class knob of the 3D chain, 0..1.
 uniform float layerP;   ///< Layer knob, 0..1.
+uniform float hyperP;
 uniform float solidP;   ///< Solid-texture knob, 0..1.
 uniform float reliefP;   ///< Relief knob, 0..1.
 uniform float chainAP;   ///< Stage A class knob of the chain (global map), 0..1.
@@ -1960,16 +1962,16 @@ vec3 photo3(vec3 q, vec3 n, float lod)
 // @chainclasses spaceP mirrored lattice|octahedral lattice|icosahedral lattice|hexagonal lattice|rolled world|4D-rotated lattice|log-spherical Droste|twisted 3D Droste|log-cylindrical Droste|turning lattice|bent cells|torus-wrapped world|hyperbolic half-space|twisted lattice|gyroid-warped lattice|noise-warped lattice|helix|double helix|inverted lattice|polar ring tunnel
 // @chainclasses coreP no fold core|plane folds|polyhedral kaleidoscope|sphere-inversion box fold|spherical KIFS|Apollonian sphere packing|Mandalay box|hyperbolic honeycomb|Kleinian fold|pseudo-Kleinian|amazing surface|Mandelbulb|kaliset|tetrahedral KIFS|mixed Sierpinski|Sierpinski octahedron|icosahedral KIFS|dodecahedral KIFS|octahedral KIFS|twisted octahedral KIFS|Menger sponge|cross-Menger
 // @chainclasses bodyP balls|pills|superquadrics|octahedra|rhombic dodecahedra|icosahedra|hollow spheres|tori|chain links|linked rings|gyroid membrane|Schwarz P surface|Schwarz D surface|Neovius surface|Lidinoid|blocks|twisted pillars|rod lattice|stellated octahedra|Steinmetz solids|crosses|gears
-// @chainclasses chainAP none|polar unwrap|elliptic coordinates|parabolic coordinates|Cassini ovals|Farris wallpaper|Farris frieze|sunflower spirals|quasicrystal|Droste zoom|Escher spiral Droste|little planet|rotating Mercator|bipolar Droste|hyperbolic Droste|hyperbolic Poincare tiling|hyperbolic band|hyperbolic half-plane|sphere kaleidoscope|Klein invariants|log-polar spiral|Archimedean spiral|hyperbolic spiral|rotating Riemann sphere|breathing sphere|Peirce quincuncial sphere|magnet map|Jacobi cn wallpaper|theta wave|Jacobi sn/dn wallpaper|Weierstrass p|parabolic stream|hyperbolic Moebius flow|Chebyshev fold|complex exponential|cardioid coordinates|Blaschke product|wandering poles|bipolar stream|complex sine|tan lattice|zeta partial sum|circle inversion|Moebius stream|loxodromic stream|Newton map|Julia map|Zaslavsky web|Gumowski-Mira|Chirikov map|Henon map|Ikeda map|Mandelbrot map|burning ship|Phoenix Julia|cubic Julia|kaleidoscope|tunnel
-// @chainclasses chainBP none|mirror line|origami folds|p4m lattice|p3m1 triangle mirror|kaleidoscope|spiral kaleidoscope|curved kaleidoscope|Steiner kaleidoscope|modular group mirror|p6m lattice|Sierpinski fold|Koch fold|Levy C fold|Pappus chain|Pythagoras-tree fold|Vicsek fold|iterated fold|Apollonian inversion fold|Schottky mirror
-// @chainclasses chainCP none|lens|zone lens|fisheye|Lorentz boost|blossom|Farris rosette|mirrored power|Cayley transform|gravitational lens|binary lens|Joukowski map|spiral|log vortex|complex square|inversion|kaleidoscope|tunnel
-// @chainclasses chainDP none|turning|bend|shear wave|Gerstner waves|wave interference|convection cells|curl flow|cylinder flow|dipole field|Taylor-Green vortices|twirl|vortex pair|double gyre|vortex street|Karman street|gravitational wave|Kelvin-Helmholtz rolls|domain warp|ripple
+// @chainclasses chainAP none|Farris frieze|burning ship|Chirikov map|cubic Julia|Weierstrass p|Jacobi sn/dn wallpaper|wandering poles|Zaslavsky web|Henon map|Ikeda map|circle inversion|Farris wallpaper|kaleidoscope|complex sine|tan lattice|Mandelbrot map|Jacobi cn wallpaper|Gumowski-Mira|bipolar Droste|Phoenix Julia|breathing sphere|Klein invariants|polar unwrap|Blaschke product|hyperbolic Droste|quasicrystal|Chebyshev fold|hyperbolic band|hyperbolic half-plane|Newton map|magnet map|complex exponential|Julia map|Moebius stream|sunflower spirals|cardioid coordinates|zeta partial sum|Cassini ovals|Peirce quincuncial sphere|rotating Mercator|hyperbolic spiral|Escher spiral Droste|loxodromic stream|Archimedean spiral|hyperbolic Moebius flow|elliptic coordinates|theta wave|parabolic stream|little planet|Droste zoom|parabolic coordinates|rotating Riemann sphere|log-polar spiral|sphere kaleidoscope|tunnel|bipolar stream|hyperbolic Poincare tiling
+// @chainclasses chainBP none|mirror line|origami folds|curved kaleidoscope|p4m lattice|p6m lattice|Sierpinski fold|Pythagoras-tree fold|Pappus chain|Steiner kaleidoscope|Vicsek fold|Levy C fold|kaleidoscope|spiral kaleidoscope|Schottky mirror|modular group mirror|Koch fold|iterated fold|Apollonian inversion fold|p3m1 triangle mirror
+// @chainclasses chainCP none|lens|zone lens|Farris rosette|fisheye|gravitational lens|binary lens|Lorentz boost|blossom|inversion|Joukowski map|kaleidoscope|log vortex|Cayley transform|mirrored power|complex square|spiral|tunnel
+// @chainclasses chainDP none|turning|bend|convection cells|cylinder flow|curl flow|dipole field|twirl|Kelvin-Helmholtz rolls|vortex pair|Taylor-Green vortices|domain warp|wave interference|double gyre|ripple|Gerstner waves|vortex street|Karman street|gravitational wave|shear wave
 // @chainclasses styleP photo|relief|contour lines|flow|glowing edges
 // @chainclasses orderP A → B → C → D|A → B → D → C|A → C → B → D|A → C → D → B|A → D → B → C|A → D → C → B|B → A → C → D|B → A → D → C|B → C → A → D|B → C → D → A|B → D → A → C|B → D → C → A|C → A → B → D|C → A → D → B|C → B → A → D|C → B → D → A|C → D → A → B|C → D → B → A|D → A → B → C|D → A → C → B|D → B → A → C|D → B → C → A|D → C → A → B|D → C → B → A
-// @chainord chainAP 11|5|20|39|52|14|26|41|25|4|16|43|44|33|56|9|15|28|24|53|1|29|34|12|42|17|46|27|47|30|45|19|31|48|6|40|18|32|10|7|21|35|8|3|13|22|23|55|54|51|49|50|36|37|38|57|0|2
-// @chainord chainBP 0|5|20|3|18|1|22|10|21|16|2|7|9|11|19|12|13|4|6|17
-// @chainord chainCP 0|5|17|12|15|8|9|10|11|13|14|7|1|16|4|3|6|2
-// @chainord chainDP 0|5|8|2|19|13|18|7|10|11|17|1|12|16|6|9|15|14|4|3
+// @chainord chainAP 11|26|37|51|57|45|30|32|55|49|50|8|14|0|7|21|36|27|54|33|38|42|53|5|18|56|25|48|15|28|22|46|6|23|3|41|40|35|52|17|44|34|16|13|29|31|20|47|19|43|4|39|12|1|24|2|10|9
+// @chainord chainBP 0|5|20|10|3|2|7|12|19|21|13|11|1|22|17|16|9|4|6|18
+// @chainord chainCP 0|5|17|9|12|13|14|15|8|3|7|6|16|11|10|4|1|2
+// @chainord chainDP 0|5|8|18|10|7|11|1|14|12|17|4|13|16|3|19|6|9|15|2
 // @chainord spaceP 0|3|15|6|19|7|9|17|14|4|16|10|12|2|11|18|5|13|8|1
 // @chainord coreP 0|4|8|3|20|15|18|9|6|11|10|16|12|1|19|14|7|13|2|21|5|17
 // @chainord bodyP 1|21|9|7|17|18|10|2|11|19|3|5|6|12|13|0|16|8|14|15|4|20
@@ -1989,10 +1991,10 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 /// The classes of every stage in order of energy (calm .. energetic): a knob
 /// value, rolled or walked, picks a position on that scale, so the music's
 /// energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 39; if (i == 4) return 52; if (i == 5) return 14; if (i == 6) return 26; if (i == 7) return 41; if (i == 8) return 25; if (i == 9) return 4; if (i == 10) return 16; if (i == 11) return 43; if (i == 12) return 44; if (i == 13) return 33; if (i == 14) return 56; if (i == 15) return 9; if (i == 16) return 15; if (i == 17) return 28; if (i == 18) return 24; if (i == 19) return 53; if (i == 20) return 1; if (i == 21) return 29; if (i == 22) return 34; if (i == 23) return 12; if (i == 24) return 42; if (i == 25) return 17; if (i == 26) return 46; if (i == 27) return 27; if (i == 28) return 47; if (i == 29) return 30; if (i == 30) return 45; if (i == 31) return 19; if (i == 32) return 31; if (i == 33) return 48; if (i == 34) return 6; if (i == 35) return 40; if (i == 36) return 18; if (i == 37) return 32; if (i == 38) return 10; if (i == 39) return 7; if (i == 40) return 21; if (i == 41) return 35; if (i == 42) return 8; if (i == 43) return 3; if (i == 44) return 13; if (i == 45) return 22; if (i == 46) return 23; if (i == 47) return 55; if (i == 48) return 54; if (i == 49) return 51; if (i == 50) return 49; if (i == 51) return 50; if (i == 52) return 36; if (i == 53) return 37; if (i == 54) return 38; if (i == 55) return 57; if (i == 56) return 0; return 2; }   // energy order, 58 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 3; if (i == 4) return 18; if (i == 5) return 1; if (i == 6) return 22; if (i == 7) return 10; if (i == 8) return 21; if (i == 9) return 16; if (i == 10) return 2; if (i == 11) return 7; if (i == 12) return 9; if (i == 13) return 11; if (i == 14) return 19; if (i == 15) return 12; if (i == 16) return 13; if (i == 17) return 4; if (i == 18) return 6; return 17; }   // 3D lab subset, 20 classes
-int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 12; if (i == 4) return 15; if (i == 5) return 8; if (i == 6) return 9; if (i == 7) return 10; if (i == 8) return 11; if (i == 9) return 13; if (i == 10) return 14; if (i == 11) return 7; if (i == 12) return 1; if (i == 13) return 16; if (i == 14) return 4; if (i == 15) return 3; if (i == 16) return 6; return 2; }   // energy order, 18 classes
-int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 2; if (i == 4) return 19; if (i == 5) return 13; if (i == 6) return 18; if (i == 7) return 7; if (i == 8) return 10; if (i == 9) return 11; if (i == 10) return 17; if (i == 11) return 1; if (i == 12) return 12; if (i == 13) return 16; if (i == 14) return 6; if (i == 15) return 9; if (i == 16) return 15; if (i == 17) return 14; if (i == 18) return 4; return 3; }   // energy order, 20 classes
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 26; if (i == 2) return 37; if (i == 3) return 51; if (i == 4) return 57; if (i == 5) return 45; if (i == 6) return 30; if (i == 7) return 32; if (i == 8) return 55; if (i == 9) return 49; if (i == 10) return 50; if (i == 11) return 8; if (i == 12) return 14; if (i == 13) return 0; if (i == 14) return 7; if (i == 15) return 21; if (i == 16) return 36; if (i == 17) return 27; if (i == 18) return 54; if (i == 19) return 33; if (i == 20) return 38; if (i == 21) return 42; if (i == 22) return 53; if (i == 23) return 5; if (i == 24) return 18; if (i == 25) return 56; if (i == 26) return 25; if (i == 27) return 48; if (i == 28) return 15; if (i == 29) return 28; if (i == 30) return 22; if (i == 31) return 46; if (i == 32) return 6; if (i == 33) return 23; if (i == 34) return 3; if (i == 35) return 41; if (i == 36) return 40; if (i == 37) return 35; if (i == 38) return 52; if (i == 39) return 17; if (i == 40) return 44; if (i == 41) return 34; if (i == 42) return 16; if (i == 43) return 13; if (i == 44) return 29; if (i == 45) return 31; if (i == 46) return 20; if (i == 47) return 47; if (i == 48) return 19; if (i == 49) return 43; if (i == 50) return 4; if (i == 51) return 39; if (i == 52) return 12; if (i == 53) return 1; if (i == 54) return 24; if (i == 55) return 2; if (i == 56) return 10; return 9; }   // energy order, 58 classes
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 10; if (i == 4) return 3; if (i == 5) return 2; if (i == 6) return 7; if (i == 7) return 12; if (i == 8) return 19; if (i == 9) return 21; if (i == 10) return 13; if (i == 11) return 11; if (i == 12) return 1; if (i == 13) return 22; if (i == 14) return 17; if (i == 15) return 16; if (i == 16) return 9; if (i == 17) return 4; if (i == 18) return 6; return 18; }   // 3D lab subset, 20 classes
+int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 9; if (i == 4) return 12; if (i == 5) return 13; if (i == 6) return 14; if (i == 7) return 15; if (i == 8) return 8; if (i == 9) return 3; if (i == 10) return 7; if (i == 11) return 6; if (i == 12) return 16; if (i == 13) return 11; if (i == 14) return 10; if (i == 15) return 4; if (i == 16) return 1; return 2; }   // energy order, 18 classes
+int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 18; if (i == 4) return 10; if (i == 5) return 7; if (i == 6) return 11; if (i == 7) return 1; if (i == 8) return 14; if (i == 9) return 12; if (i == 10) return 17; if (i == 11) return 4; if (i == 12) return 13; if (i == 13) return 16; if (i == 14) return 3; if (i == 15) return 19; if (i == 16) return 6; if (i == 17) return 9; if (i == 18) return 15; return 2; }   // energy order, 20 classes
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
@@ -2909,14 +2911,17 @@ vec2 runChain(vec2 uv)
 }
 // The time tilt (tiltP): the chain's own time t0 + a x + b y across the
 // picture -- a cut through its space-time volume (x, y, t), so every place
-// shows another moment of the chain.  Its direction turns slowly (clock only),
-// its strength follows the slow swell.  0 below tiltP 0.15.  The uniform lives
-// here (not in the labs' knob lists) so every lab built on these stages compiles.
+// shows another moment of the chain.  Its direction: while the app walks the
+// lab, one per music section (a returning section returns to its own, eased
+// over seconds: tiltA); otherwise turning slowly with the clock.  Its strength
+// follows the slow swell.  0 below tiltP 0.15.  The uniforms live here (not in
+// the labs' knob lists) so every lab built on these stages compiles.
 uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float tiltA;   ///< The tilt's direction (radians) while the app walks the lab (walkHost).
 float chainTiltZ(vec2 q)
 {
     float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
-    float a = 0.011 * sceneTime;
+    float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
 // Afterglow (glowP): the last frame's picture as a fading phosphor veil -- the
@@ -3720,9 +3725,15 @@ vec3 normalS(vec3 p)
     vec3 n = e.xyy * fieldS(p + e.xyy) + e.yyx * fieldS(p + e.yyx) + e.yxy * fieldS(p + e.yxy) + e.xxx * fieldS(p + e.xxx);
     return normalize(n + vec3(1e-7));                       // deep inside a body the field can be flat
 }
-/// Matter lit, air dim: the cut through a body is the subject.  The edge one
-/// pixel wide (px: a pixel in the world) -- crisp, but not stair-stepped.
-float sliceShade(float d, float px) { return mix(0.6, 1.25, smoothstep(px, -px, d)); }
+/// Matter lit, air dimmer: the cut through a body is the subject.  The edge one
+/// pixel wide (px: a pixel in the world) -- crisp, but not stair-stepped.  Air
+/// glows near matter (a halo ~25 px wide): a world cut into thin splinters
+/// stays readable and does not fall dark.
+float sliceShade(float d, float px)
+{
+    float halo = exp(-max(d, 0.0) / (25.0 * px));
+    return mix(0.8 + 0.45 * halo, 1.7, smoothstep(px, -px, d));   // a cut is lit flat-on: brighter than a surface
+}
 /// How close the view comes per fold core: the finer it folds (its scale per
 /// round to the power of its rounds; the inversion folds count as fine), the
 /// closer -- a Menger sponge (3^3) seen at a third of the plain lattice's view.
@@ -3861,7 +3872,13 @@ void main()
     // the planes behind fan out.
     vec3 sN, sX, sY;
     sliceFrame(camP, sceneTime, sN, sX, sY);
-    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT));
+    // hyperP: a cut through 4D -- the world is a function of time (its folds turn,
+    // its classes breathe); with the plane nearly at rest and the world's time
+    // running faster, the shapes grow, split and merge in place.
+    float hyp = smoothstep(0.3, 0.9, hyperP);
+    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT) * (1.0 - 0.85 * hyp));
+    gT += hyp * 0.6 * sceneTime;
+    gRot += hyp * 0.03 * sceneTime;
     // The view height follows the fold core (sliceZoom), gliding through a core fade.
     vec3 wcore = (walkHost > 0.5 && walkAll()) ? walkCore : vec3(coreP, coreP, 0.0);
     float sView = 3.0 * mix(sliceZoom(ordco(pickStage(wcore.x, 22))), sliceZoom(ordco(pickStage(wcore.y, 22))),

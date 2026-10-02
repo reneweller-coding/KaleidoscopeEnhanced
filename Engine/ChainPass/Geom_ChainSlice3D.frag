@@ -17,6 +17,7 @@ uniform float spaceP;   ///< Space class knob of the 3D chain, 0..1.
 uniform float coreP;   ///< Fold core class knob of the 3D chain, 0..1.
 uniform float bodyP;   ///< Body class knob of the 3D chain, 0..1.
 uniform float layerP;   ///< Layer knob, 0..1.
+uniform float hyperP;
 uniform float morphP;   ///< Morph knob: how the scene changes over time, 0..1.
 uniform float speedP;   ///< Speed knob, 0..1.
 uniform float camP;   ///< Camera knob, 0..1.
@@ -796,7 +797,11 @@ float field3(vec3 p)
 #endif
 }
 float fieldS(vec3 p) { gDR = 1.0; return field3(p); }
-float sliceShade(float d, float px) { return mix(0.6, 1.25, smoothstep(px, -px, d)); }
+float sliceShade(float d, float px)
+{
+    float halo = exp(-max(d, 0.0) / (25.0 * px));
+    return mix(0.8 + 0.45 * halo, 1.7, smoothstep(px, -px, d));   
+}
 float sliceZoom(int kc)
 {
     if (kc == 5) return 0.35;                                   
@@ -854,7 +859,13 @@ void main()
     
     vec3 sN, sX, sY;
     sliceFrame(camP, sceneTime, sN, sX, sY);
-    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT));
+    
+    
+    
+    float hyp = smoothstep(0.3, 0.9, hyperP);
+    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT) * (1.0 - 0.85 * hyp));
+    gT += hyp * 0.6 * sceneTime;
+    gRot += hyp * 0.03 * sceneTime;
     
     vec3 wcore = (walkHost > 0.5 && walkAll()) ? walkCore : vec3(coreP, coreP, 0.0);
     float sView = 3.0 * mix(sliceZoom(ordco(pickStage(wcore.x, 22))), sliceZoom(ordco(pickStage(wcore.y, 22))),

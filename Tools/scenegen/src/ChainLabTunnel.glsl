@@ -37,10 +37,10 @@ float sides(float v) { return 5.0 + floor(v * 4.99); }                     // 5 
 // The classes of every stage in order of energy (calm .. energetic): a knob
 // value, rolled or walked, picks a position on that scale, so the music's
 // energy can choose the region (EffectShader::stepChainWalk).
-int orda(int i) { if (i == 0) return 11; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 39; if (i == 4) return 52; if (i == 5) return 41; if (i == 6) return 4; if (i == 7) return 16; if (i == 8) return 43; if (i == 9) return 44; if (i == 10) return 33; if (i == 11) return 1; if (i == 12) return 29; if (i == 13) return 34; if (i == 14) return 12; if (i == 15) return 42; if (i == 16) return 19; if (i == 17) return 31; if (i == 18) return 48; if (i == 19) return 6; if (i == 20) return 40; if (i == 21) return 10; if (i == 22) return 7; if (i == 23) return 21; if (i == 24) return 8; if (i == 25) return 3; if (i == 26) return 13; if (i == 27) return 0; return 2; }   // tunnel subset, 29 classes
-int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 3; if (i == 4) return 18; if (i == 5) return 1; if (i == 6) return 22; if (i == 7) return 10; if (i == 8) return 21; if (i == 9) return 2; if (i == 10) return 19; return 4; }   // tunnel subset, 12 classes
-int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 12; if (i == 4) return 15; if (i == 5) return 8; if (i == 6) return 9; if (i == 7) return 10; if (i == 8) return 11; if (i == 9) return 13; if (i == 10) return 14; if (i == 11) return 7; if (i == 12) return 1; if (i == 13) return 16; if (i == 14) return 4; if (i == 15) return 3; if (i == 16) return 6; return 2; }   // energy order, 18 classes
-int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 2; if (i == 4) return 19; if (i == 5) return 13; if (i == 6) return 18; if (i == 7) return 10; if (i == 8) return 11; if (i == 9) return 1; if (i == 10) return 12; if (i == 11) return 15; if (i == 12) return 14; return 3; }   // tunnel subset, 14 classes
+int orda(int i) { if (i == 0) return 11; if (i == 1) return 8; if (i == 2) return 0; if (i == 3) return 7; if (i == 4) return 21; if (i == 5) return 33; if (i == 6) return 42; if (i == 7) return 5; if (i == 8) return 48; if (i == 9) return 6; if (i == 10) return 3; if (i == 11) return 41; if (i == 12) return 40; if (i == 13) return 52; if (i == 14) return 44; if (i == 15) return 34; if (i == 16) return 16; if (i == 17) return 13; if (i == 18) return 29; if (i == 19) return 31; if (i == 20) return 20; if (i == 21) return 19; if (i == 22) return 43; if (i == 23) return 4; if (i == 24) return 39; if (i == 25) return 12; if (i == 26) return 1; if (i == 27) return 2; return 10; }   // tunnel subset, 29 classes
+int ordb(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 20; if (i == 3) return 10; if (i == 4) return 3; if (i == 5) return 2; if (i == 6) return 19; if (i == 7) return 21; if (i == 8) return 1; if (i == 9) return 22; if (i == 10) return 4; return 18; }   // tunnel subset, 12 classes
+int ordc(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 17; if (i == 3) return 9; if (i == 4) return 12; if (i == 5) return 13; if (i == 6) return 14; if (i == 7) return 15; if (i == 8) return 8; if (i == 9) return 3; if (i == 10) return 7; if (i == 11) return 6; if (i == 12) return 16; if (i == 13) return 11; if (i == 14) return 10; if (i == 15) return 4; if (i == 16) return 1; return 2; }   // energy order, 18 classes
+int ordd(int i) { if (i == 0) return 0; if (i == 1) return 5; if (i == 2) return 8; if (i == 3) return 18; if (i == 4) return 10; if (i == 5) return 11; if (i == 6) return 1; if (i == 7) return 14; if (i == 8) return 12; if (i == 9) return 13; if (i == 10) return 3; if (i == 11) return 19; if (i == 12) return 15; return 2; }   // tunnel subset, 14 classes
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }   // photo, relief, contours, flow, glowing edges
 // The app's walk: per stage (shown knob value, target, fade 0..1); walkHost = 1
 // when the app steers (otherwise the hash walk below runs, e.g. in the editor).
@@ -284,14 +284,17 @@ vec2 stageD(vec2 uv)
 }
 // The time tilt (tiltP): the chain's own time t0 + a x + b y across the
 // picture -- a cut through its space-time volume (x, y, t), so every place
-// shows another moment of the chain.  Its direction turns slowly (clock only),
-// its strength follows the slow swell.  0 below tiltP 0.15.  The uniform lives
-// here (not in the labs' knob lists) so every lab built on these stages compiles.
+// shows another moment of the chain.  Its direction: while the app walks the
+// lab, one per music section (a returning section returns to its own, eased
+// over seconds: tiltA); otherwise turning slowly with the clock.  Its strength
+// follows the slow swell.  0 below tiltP 0.15.  The uniforms live here (not in
+// the labs' knob lists) so every lab built on these stages compiles.
 uniform float tiltP;
+uniform float tiltA;   ///< The tilt's direction (radians) while the app walks the lab (walkHost).
 float chainTiltZ(vec2 q)
 {
     float k = smoothstep(0.15, 1.0, tiltP) * 0.6 * (0.55 + 0.45 * clamp(audioSwell, 0.0, 1.0));
-    float a = 0.011 * sceneTime;
+    float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot(vec2(cos(a), sin(a)), q);
 }
 // Afterglow (glowP): the last frame's picture as a fading phosphor veil -- the

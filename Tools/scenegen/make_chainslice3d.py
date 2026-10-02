@@ -38,12 +38,13 @@ HEAD = r'''//@doc
  *   audioMode       -> the light and the palette: cool in minor, warm in major
  *   audioSwell      -> the fog glow and the colour saturation (slow)
  *
- * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes),
+ * Knobs: spaceP / coreP / bodyP (the 3D chain), layerP (1..8 planes), hyperP (the plane
+ * at rest, the world's own time running: a cut through 4D),
  * solidP (the colour chain on three planes, or as a solid texture), reliefP
  * (the surfaces bulge with the colour chain's brightness), chainAP..chainDP
  * (the 2D colour chain), orderP, morphP, styleP (lit / glowing rims), speedP
  * (drift speed), detailP, paletteP, camP (the first plane orientation), hueP.
-//@params spaceP coreP bodyP layerP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
+//@params spaceP coreP bodyP layerP hyperP solidP reliefP chainAP chainBP chainCP chainDP orderP morphP styleP speedP detailP paletteP camP
 //@audio audioSpread audioKick audioMode audioSwell
 //@body
 '''
@@ -60,9 +61,15 @@ vec3 normalS(vec3 p)
     vec3 n = e.xyy * fieldS(p + e.xyy) + e.yyx * fieldS(p + e.yyx) + e.yxy * fieldS(p + e.yxy) + e.xxx * fieldS(p + e.xxx);
     return normalize(n + vec3(1e-7));                       // deep inside a body the field can be flat
 }
-// Matter lit, air dim: the cut through a body is the subject.  The edge one
-// pixel wide (px: a pixel in the world) -- crisp, but not stair-stepped.
-float sliceShade(float d, float px) { return mix(0.6, 1.25, smoothstep(px, -px, d)); }
+// Matter lit, air dimmer: the cut through a body is the subject.  The edge one
+// pixel wide (px: a pixel in the world) -- crisp, but not stair-stepped.  Air
+// glows near matter (a halo ~25 px wide): a world cut into thin splinters
+// stays readable and does not fall dark.
+float sliceShade(float d, float px)
+{
+    float halo = exp(-max(d, 0.0) / (25.0 * px));
+    return mix(0.8 + 0.45 * halo, 1.7, smoothstep(px, -px, d));   // a cut is lit flat-on: brighter than a surface
+}
 // How close the view comes per fold core: the finer it folds (its scale per
 // round to the power of its rounds; the inversion folds count as fine), the
 // closer -- a Menger sponge (3^3) seen at a third of the plain lattice's view.
@@ -116,7 +123,13 @@ CAM = r'''    vec3 ro;
     // the planes behind fan out.
     vec3 sN, sX, sY;
     sliceFrame(camP, sceneTime, sN, sX, sY);
-    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT));
+    // hyperP: a cut through 4D -- the world is a function of time (its folds turn,
+    // its classes breathe); with the plane nearly at rest and the world's time
+    // running faster, the shapes grow, split and merge in place.
+    float hyp = smoothstep(0.3, 0.9, hyperP);
+    vec3 sc0 = vec3(0.0, 0.0, 0.25 * camFlight(gT) * (1.0 - 0.85 * hyp));
+    gT += hyp * 0.6 * sceneTime;
+    gRot += hyp * 0.03 * sceneTime;
     // The view height follows the fold core (sliceZoom), gliding through a core fade.
     vec3 wcore = (walkHost > 0.5 && walkAll()) ? walkCore : vec3(coreP, coreP, 0.0);
     float sView = 3.0 * mix(sliceZoom(ordco(pickStage(wcore.x, 22))), sliceZoom(ordco(pickStage(wcore.y, 22))),

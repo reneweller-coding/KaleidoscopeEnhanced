@@ -1145,6 +1145,8 @@ void EffectShader::resetChainWalk()
 	m_walk.sectionLook.clear();
 	m_walk.hasLast  = false;
 	m_walk.rng.seed( (unsigned) rand() + 1u );
+	m_walk.tiltA = m_walk.tiltTarget = 6.2831853f * (float) ( m_walk.rng() % 10000u ) / 10000.f;
+	m_walk.sectionTilt.clear();
 }
 
 void EffectShader::startWalk( int s, float target, float dur )
@@ -1189,6 +1191,7 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 		for( int s = 0; s < kWalkN; ++s )
 			m_walkLoc[s] = glGetUniformLocation( m_sh_prog_id, kWalkUni[s] );
 		m_walkHostLoc = glGetUniformLocation( m_sh_prog_id, "walkHost" );
+		m_tiltALoc = glGetUniformLocation( m_sh_prog_id, "tiltA" );
 		if( !m_walkProgSwap )                       // a variant switch is not a new activation
 			m_walk.pending = true;
 		m_walkProgSwap = false;
@@ -1264,7 +1267,20 @@ void EffectShader::stepChainWalk( const AudioFeatures &f )
 			for( int s = 0; s < kWalkN; ++s )
 				look[s] = m_walk.fading[s] ? m_walk.x1[s] : m_walk.x0[s];
 			m_walk.sectionLook[f.sectionId] = look;
+			// the time tilt turns to the section's own direction (a new one: a clear turn)
+			auto tl = m_walk.sectionTilt.find( f.sectionId );
+			if( f.sectionKnown && tl != m_walk.sectionTilt.end() )
+				m_walk.tiltTarget = tl->second;
+			else
+				m_walk.sectionTilt[f.sectionId] = m_walk.tiltTarget = m_walk.tiltA + 1.2f + 2.5f * uni( m_walk.rng );
 		}
+	}
+	// The tilt's direction eases toward the section's (shortest way round, ~4 s).
+	{
+		float d = fmodf( m_walk.tiltTarget - m_walk.tiltA + 3.14159265f, 6.2831853f );
+		if( d < 0.f ) d += 6.2831853f;
+		m_walk.tiltA += ( d - 3.14159265f ) * ( dt / 4.f < 1.f ? dt / 4.f : 1.f );
+		if( m_tiltALoc >= 0 ) glUniform1f( m_tiltALoc, m_walk.tiltA );
 	}
 	// 2. A drop: the frame, the warp and the look turn fast (about a bar).
 	if( f.dropCount != m_walk.lastDrop )
@@ -1530,7 +1546,8 @@ struct PassProg
 {
 	GLuint prog = 0;
 	GLint texIn = -1, texB = -1, firstPass = -1, subV = -1, mixF = -1, chainOff = -1, bakeSize = -1, texStart = -1, useStart = -1,
-	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1, tilt = -1, swell = -1, scale = -1;
+	      res = -1, sceneTime = -1, adv = -1, phase = -1, spread = -1, speed = -1, tilt = -1, swell = -1, scale = -1,
+	      tiltA = -1, walkHost = -1;
 };
 std::map<std::string, PassProg> s_passProgs;      ///< pass shader file -> program and locations
 std::vector<std::string>        s_passWarm;       ///< pass files still to build in the background
@@ -1568,6 +1585,8 @@ const PassProg &passProg( const std::string &file )
 	p.tilt = glGetUniformLocation( p.prog, "tiltP" );          // the time tilt (chainTiltZ), 0 in labs without it
 	p.swell = glGetUniformLocation( p.prog, "audioSwell" );
 	p.scale = glGetUniformLocation( p.prog, "passScale" );     // the pass grid relative to the frame
+	p.tiltA = glGetUniformLocation( p.prog, "tiltA" );          // the tilt's direction while walking
+	p.walkHost = glGetUniformLocation( p.prog, "walkHost" );
 	return s_passProgs[file] = p;
 }
 /// @brief Pass shaders built in the background a few at a time, once per session (every chain runner lab, each frame).
@@ -1689,6 +1708,8 @@ void EffectShader::runChainPasses( const AudioFeatures &f )
 		if( p.tilt >= 0 )      glUniform1f( p.tilt, tiltP );
 		if( p.swell >= 0 )     glUniform1f( p.swell, f.swell );
 		if( p.scale >= 0 )     glUniform1f( p.scale, cs );
+		if( p.tiltA >= 0 )     glUniform1f( p.tiltA, m_walk.tiltA );
+		if( p.walkHost >= 0 )  glUniform1f( p.walkHost, m_walk.active ? 1.f : 0.f );
 		glDrawArrays( GL_TRIANGLES, 0, 3 );
 	};
 	unsigned busy = 0;                                   // textures holding a result still needed
