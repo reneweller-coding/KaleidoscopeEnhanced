@@ -345,6 +345,7 @@ QByteArray GLwidget::remoteSnapshot()
 	return m_snapJpg;
 }
 bool    GLwidget::s_autoRecord = false;
+std::atomic<MidiInput *> GLwidget::s_midiOpened{ nullptr };
 
 void GLwidget::traverseConfigurations( const QString& dirname, std::vector<Configuration *> &configurationList )
 {
@@ -779,9 +780,22 @@ void GLwidget::initializeGL()
 	}
 
 	// Optional MIDI control: opens the first controller if one is connected.
-	m_midi = new MidiInput();
-	if( m_midi->start() )
-		fprintf( stderr, "MIDI input: %s\n", m_midi->deviceName().toLocal8Bit().constData() );
+	// MIDI opens on a thread of its own and is taken over by applyMidi() once it
+	// is open: a hanging MIDI subsystem (03.10.2026: midiInGetNumDevs() never
+	// returned) must not keep the app from starting.  KALEIDO_NO_MIDI: none at all.
+	if( !qEnvironmentVariableIsSet( "KALEIDO_NO_MIDI" ) )
+	{
+		std::thread( [] {
+			MidiInput *mi = new MidiInput();
+			if( mi->start() )
+			{
+				fprintf( stderr, "MIDI input: %s\n", mi->deviceName().toLocal8Bit().constData() );
+				s_midiOpened.store( mi );
+			}
+			else
+				delete mi;
+		} ).detach();
+	}
 
 #ifdef WIN32
 	// Kiosk / installation: keep the display on and suppress the screensaver and
@@ -2076,6 +2090,8 @@ static const char *kMidiTargetNames[] =
 
 void GLwidget::applyMidi()
 {
+	if( !m_midi )
+		m_midi = s_midiOpened.exchange( nullptr );   // opened meanwhile by the start thread
 	if( !m_midi )
 		return;
 	std::vector<MidiInput::Event> evs = m_midi->drain();

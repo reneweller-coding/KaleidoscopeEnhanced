@@ -9,6 +9,7 @@
 #include <vector>
 #include <iostream>
 #include <thread>
+#include <atomic>
 #include <mutex>
 #include <condition_variable>
 #include <deque>
@@ -414,7 +415,8 @@ protected:
 	/// knobs (reactivity/trails/mood/latency) and mapped notes to tap-tempo,
 	/// blackout, or next-effect.
 	void            applyMidi();
-	MidiInput      *m_midi          = nullptr;   ///< Optional MIDI controller input; opened in initializeGL() if a device is present.
+	MidiInput      *m_midi          = nullptr;   ///< Optional MIDI controller input; taken over from s_midiOpened once its start thread opened a device.
+	static std::atomic<MidiInput *> s_midiOpened;   ///< Handed over by the MIDI start thread (initializeGL) when a device is open.
 	OscSender       m_osc;                       ///< OSC/UDP output of the analysis (mood, beats, bands); off unless oscPort is set.
 	QElapsedTimer   m_oscClock;                  ///< Wall clock for OscSender's rate limiting.
 	/// Score cues IN (CueReceiver.h): a generator that wrote the music says where the bars,
