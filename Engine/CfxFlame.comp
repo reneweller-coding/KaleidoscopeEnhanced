@@ -26,15 +26,16 @@
 // whenever the loudness moved.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 256) in;
 
 layout(std430, binding = 0) buffer Accum { uint acc[]; };
 
-uniform ivec2 size;
-uniform float phase;      // integrated: overall morph
-uniform float warp;       // integrated: variation blend
-uniform float spin;       // integrated: rotation
-uniform uint  frame;      // RNG decorrelation between frames
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform float phase;      ///< integrated: overall morph
+uniform float warp;       ///< integrated: variation blend
+uniform float spin;       ///< integrated: rotation
+uniform uint  frame;      ///< RNG decorrelation between frames
 uniform float hue;
 uniform float level;
 uniform float kick;
@@ -45,12 +46,14 @@ const float SCALE = 256.0;
 const int   ITERS = 32;
 const int   WARMUP = 12;
 
+/// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg(inout uint s)
 {
     s = s * 747796405u + 2891336453u;
     uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
     return (w >> 22) ^ w;
 }
+/// @brief Random number 0..1 from a PCG state.
 float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
 
 // ---- classic flame variations ----
@@ -80,7 +83,7 @@ vec2 variation(int id, vec2 p)
     return vLinear(p);
 }
 
-// Four affine maps whose coefficients breathe on the integrated phases.
+/// Four affine maps whose coefficients breathe on the integrated phases.
 void affine(int i, out vec2 A, out vec2 B, out vec2 C)
 {
     float fi  = float(i);
@@ -118,6 +121,7 @@ void splat(vec2 p, vec3 col)
     atomicAdd(acc[i + 3u], uint(SCALE));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

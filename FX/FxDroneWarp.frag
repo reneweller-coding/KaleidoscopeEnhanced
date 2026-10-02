@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxDroneWarp.frag
  * @brief The first AMBIENT-reactive combine pass: a slow, round, liquid domain warp
@@ -11,28 +11,30 @@ out vec4 fragColor;
  *   audioPhase   -> slow jump-free drift of the warp field.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioSwell;
-uniform float audioAmbient;
-uniform float audioCentroid;   // brightness of the material -> warp fineness
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
+uniform float audioCentroid;   ///< brightness of the material -> warp fineness
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float warpScaleP;  // warp field scale     (0 -> 3.0; 2 = broad billows, 5 = fine ripples)
-uniform float warpAmtP;    // warp amount multiplier (0 -> 1.0; 0.5 = calm, 1.8 = molten)
-uniform float driftP;      // warp field drift speed (0 -> 1.0; 0.5 = glacial, 2 = flowing)
+uniform float warpScaleP;  ///< warp field scale     (0 -> 3.0; 2 = broad billows, 5 = fine ripples)
+uniform float warpAmtP;    ///< warp amount multiplier (0 -> 1.0; 0.5 = calm, 1.8 = molten)
+uniform float driftP;      ///< warp field drift speed (0 -> 1.0; 0.5 = glacial, 2 = flowing)
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
     p += dot(p, p + 34.345);
     return fract(p.x * p.y);
 }
+/// @brief Value noise with a seed.
 float vnoise(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -42,6 +44,7 @@ float vnoise(vec2 p)
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 p = gl_FragCoord.xy / resolution;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ReactionDiffusionMandala.frag
  * @brief The living Gray-Scott reaction-diffusion field (`texSim`), sampled through TWO nested
@@ -14,40 +14,42 @@ out vec4 fragColor;
  * mandala outline remains (the fold itself needs no simulation state to look intentional).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform sampler2D texSim;      // reaction-diffusion state (R=A, G=B)
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texSim;      ///< reaction-diffusion state (R=A, G=B)
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioValence;
-uniform float audioCentroid;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioPhase;
-uniform float audioSwell;      // slow loudness swell -> inner-layer zoom breathes
-uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar palette wander
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioAdvance;
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;      ///< slow loudness swell -> inner-layer zoom breathes
+uniform float audioBarPhase;   ///< 0..1 per bar -> gentle per-bar palette wander
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP;      // outer fold segment count (0 -> 9; 5..14)
-uniform float innerZoomP;  // inner layer's zoom relative to the outer (0 -> 2.4; 1.8..3.2)
-uniform float spinP;       // outer-fold spin speed multiplier (0 -> 1.0; 0.5..1.8)
-uniform float glowP;       // overall brightness (0 -> 1.0; 0.7..1.4)
+uniform int   sidesP;      ///< outer fold segment count (0 -> 9; 5..14)
+uniform float innerZoomP;  ///< inner layer's zoom relative to the outer (0 -> 2.4; 1.8..3.2)
+uniform float spinP;       ///< outer-fold spin speed multiplier (0 -> 1.0; 0.5..1.8)
+uniform float glowP;       ///< overall brightness (0 -> 1.0; 0.7..1.4)
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue, jump-free) with
-// a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue, jump-free) with
+/// a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,6 +59,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Kaleidoscope fold of the coordinate with the given mirrors.
 vec2 kaleido(vec2 p, float sides)
 {
     float a   = atan(p.y, p.x);
@@ -67,8 +70,8 @@ vec2 kaleido(vec2 p, float sides)
     return vec2(cos(a), sin(a)) * r;
 }
 
-// Blurred B-field sample (2px cross) -- low-passes the sim so per-step noise
-// doesn't shimmer the fold's fine detail.
+/// Blurred B-field sample (2px cross) -- low-passes the sim so per-step noise
+/// doesn't shimmer the fold's fine detail.
 float bSmooth(vec2 suv, vec2 px)
 {
     float b = texture(texSim, suv).g * 2.0;
@@ -79,6 +82,7 @@ float bSmooth(vec2 suv, vec2 px)
     return b / 6.0;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 px = 1.0 / resolution;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxSunShafts.frag
  * @brief FX SUN SHAFTS: volumetric light shafts (godrays) that march toward
@@ -32,29 +32,30 @@ out vec4 fragColor;
 //
 // Depth also gives the shafts their falloff: near geometry is dense dust, the
 // far plane is empty sky.
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
 uniform vec2  depthValid;
-uniform vec2  nearFar;
-uniform float interpolation;
+uniform vec2  nearFar;   ///< Near and far clip distances.
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float shaftP;       // preset: shaft strength
-uniform float lengthP;      // preset: how far the march reaches
-uniform float dustP;        // preset: haze density
+uniform float shaftP;       ///< preset: shaft strength
+uniform float lengthP;      ///< preset: how far the march reaches
+uniform float dustP;        ///< preset: haze density
 
 const int STEPS = 28;
 
+/// @brief Depth buffer value to linear distance.
 float linearise(float d)
 {
     float n = nearFar.x, f = nearFar.y;
@@ -62,20 +63,21 @@ float linearise(float d)
     return (2.0 * n * f) / (f + n - z * (f - n));
 }
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
 }
 
-// March from uv toward the light and measure how much of the path is OPEN.
-//
-// The tempting version accumulates the frame's own colour along the ray, the
-// way a pure radial-blur godray does.  It is wrong here and the reason is worth
-// stating: the colour at a sample is bright exactly where there is geometry —
-// lit windows, a glowing surface — while the light only travels where there is
-// NO geometry.  The two gates then cancel and the shafts vanish.  What travels
-// along the ray is the sky's light; what the frame contributes is only the
-// occluders.  So this returns openness, and the caller supplies the colour.
+/// March from uv toward the light and measure how much of the path is OPEN.
+///
+/// The tempting version accumulates the frame's own colour along the ray, the
+/// way a pure radial-blur godray does.  It is wrong here and the reason is worth
+/// stating: the colour at a sample is bright exactly where there is geometry —
+/// lit windows, a glowing surface — while the light only travels where there is
+/// NO geometry.  The two gates then cancel and the shafts vanish.  What travels
+/// along the ray is the sky's light; what the frame contributes is only the
+/// occluders.  So this returns openness, and the caller supplies the colour.
 float shafts(sampler2D dep, vec2 uv, vec2 lightUV, float valid)
 {
     if (valid < 0.5)
@@ -107,6 +109,7 @@ float shafts(sampler2D dep, vec2 uv, vec2 lightUV, float valid)
     return acc / float(STEPS);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxOilPaintFlow.frag
  * @brief FX OIL PAINT FLOW: FxOilPaint's Kuwahara smoothing plus a flowing fBm
  * warp field and Photoshop-style blend-mode compositing (overlay/screen),
  * giving the brushstrokes a slow marbled drift.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioBeat;    // beats flatten the flow toward the pure painting
-uniform float audioAdvance;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioBeat;    ///< beats flatten the flow toward the pure painting
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
 #ifdef GL_ES
 precision highp float;
@@ -42,6 +42,7 @@ float noise2f( in vec2 p )
 	//return 2.0* (res-10.7);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 c) {
 	float f = 0.0;
 	float w = 1.0;
@@ -228,8 +229,8 @@ vec3 divide( vec3 s, vec3 d )
 	return s / d;
 }
 
-//	rgb<-->hsv functions by Sam Hocevar
-//	http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+///	rgb<-->hsv functions by Sam Hocevar
+///	http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
 vec3 rgb2hsv(vec3 c)
 {
 	vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -241,6 +242,7 @@ vec3 rgb2hsv(vec3 c)
 	return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
 
+/// @brief HSV (all 0..1) to RGB.
 vec3 hsv2rgb(vec3 c)
 {
 	vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -295,6 +297,7 @@ vec3 sample(const int x, const int y, vec2 delta)
 
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main (void) 
  {
 	 vec2 src_size = vec2 (1.0 / resolution.x, 1.0 / resolution.y);

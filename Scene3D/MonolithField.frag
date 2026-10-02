@@ -1,12 +1,12 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;
-uniform float audioKick;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // MonolithField.frag — near-black slab faces; the EDGES are the glyphs:
 // segmented luminous runes running up the corners.
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 in vec3 vCorner;
 in float vFlat;
 
@@ -28,6 +28,7 @@ in float vFlat;
  * coupling alone barely moved any pixels.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float pulse = 0.85 + 0.30 * audioLevel + 0.35 * audioKick;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file BeeWaggleDance.frag
  * @brief Fragment stage for BeeWaggleDance: the comb as a hexagonal grid
@@ -12,29 +12,31 @@ out vec4 fragColor;
  * Audio Reactivity: audioStereo -> light sweep; audioBass -> honey glow;
  *                   audioHigh -> sparkle; audioKick -> dancer flash; audioLevel.
  */
-in vec2  vTexCoord;
-in vec3  vWorld;
-in float vKind;
+in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in float vKind;   ///< Element kind (from the vertex stage).
 in float vRun;
-in float vId;
+in float vId;   ///< Instance or element id (from the vertex stage).
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float audioStereo;
-uniform float audioBass;
-uniform float audioHigh;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
-uniform float hueP;
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -44,10 +46,11 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
-// Hex grid (pointy-top): returns the cell id and the normalised distance
-// to the nearest edge (0 at the centre .. 1 at the edge).
+/// Hex grid (pointy-top): returns the cell id and the normalised distance
+/// to the nearest edge (0 at the centre .. 1 at the edge).
 vec2 hexCell(vec2 p, float s, out float edge)
 {
     vec2 r = vec2(1.7320508, 3.0) * s;
@@ -61,6 +64,7 @@ vec2 hexCell(vec2 p, float s, out float edge)
     return floor(id / s + 0.5);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hue = (hueP > 0.001) ? hueP : 0.0;

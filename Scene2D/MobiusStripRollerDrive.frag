@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MobiusStripRollerDrive.frag
  * @brief MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a
@@ -14,37 +14,39 @@ out vec4 fragColor;
  *   audioChromaHue-> steers the continuous non-orientable rainbow palette
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;
+uniform float speedP;   ///< Speed knob, 0..1.
 uniform float stripWidthP;
-uniform float radiusP;
-uniform float glowP;
-uniform float hueP;
+uniform float radiusP;   ///< Radius knob, 0..1.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t) {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
     float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
@@ -53,29 +55,29 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// Parametric Möbius Strip surface point: r(u, v)
+/// Parametric Möbius Strip surface point: r(u, v)
 vec3 mobiusPoint(float u, float v, float rBase, float w) {
     float uHalf = u * 0.5;
     float rad = rBase + v * w * cos(uHalf);
     return vec3(rad * cos(u), rad * sin(u), v * w * sin(uHalf));
 }
 
-// Signed distance to the Möbius RIBBON.
-//
-// The march used to measure distance to mobiusPoint(u, v = 0), but BOTH the
-// width term and the twist term carry a factor of v, so at v = 0 they vanish
-// identically and mobiusPoint collapses to (rB*cos u, rB*sin u, 0) -- a plain
-// flat circle. What got raymarched was therefore a thin torus around that
-// circle, with no width and no half-twist: `stripWidthP` provably could not
-// affect a single pixel (the hit mask was bit-identical for stripWidthP 0.4 /
-// 0.65 / 0.9), and because a torus is rotationally symmetric about z while the
-// camera frame was built from the track itself, flying along the track just
-// rotated the whole configuration onto itself -- the image was very nearly
-// INVARIANT, which is why a "roller drive" barely moved.
-//
-// So build the real surface instead. At angle u the ribbon is a segment of
-// half-width halfW through the centre circle, rotated by u/2 in the local
-// (radial, z) plane.
+/// Signed distance to the Möbius RIBBON.
+///
+/// The march used to measure distance to mobiusPoint(u, v = 0), but BOTH the
+/// width term and the twist term carry a factor of v, so at v = 0 they vanish
+/// identically and mobiusPoint collapses to (rB*cos u, rB*sin u, 0) -- a plain
+/// flat circle. What got raymarched was therefore a thin torus around that
+/// circle, with no width and no half-twist: `stripWidthP` provably could not
+/// affect a single pixel (the hit mask was bit-identical for stripWidthP 0.4 /
+/// 0.65 / 0.9), and because a torus is rotationally symmetric about z while the
+/// camera frame was built from the track itself, flying along the track just
+/// rotated the whole configuration onto itself -- the image was very nearly
+/// INVARIANT, which is why a "roller drive" barely moved.
+///
+/// So build the real surface instead. At angle u the ribbon is a segment of
+/// half-width halfW through the centre circle, rotated by u/2 in the local
+/// (radial, z) plane.
 float mobiusSDF(vec3 p, float rB, float halfW, float thick,
                 out float along, out float uOut) {
     float u  = atan(p.y, p.x);
@@ -97,6 +99,7 @@ float mobiusSDF(vec3 p, float rB, float halfW, float thick,
     return (length(q) - thick) * 0.6;   // 0.6: Lipschitz safety for the twist
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 

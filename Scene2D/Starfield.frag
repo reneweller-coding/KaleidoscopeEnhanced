@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Starfield.frag
  * @brief Flying INTO the source image: the picture rushes past in looping nebula
@@ -13,29 +13,31 @@ out vec4 fragColor;
  * Accelerates with the music (audioAdvance), rolls with the audio phase
  * (jump-free); per-activation star density / speed / roll variety.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;
-uniform float audioLevel;
-uniform float audioSwell;
-uniform float audioBarPhase;
-uniform float audioAdvance;
-uniform float audioPhase;
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float densP;           // star density threshold (0 -> 0.92; 0.88 = dense, 0.95 = sparse)
-uniform float speedP;          // flight speed multiplier (0 -> 1.0; 0.6..1.6)
-uniform float rollP;           // differential layer roll  (0 -> none; up to ~0.3)
+uniform float densP;           ///< star density threshold (0 -> 0.92; 0.88 = dense, 0.95 = sparse)
+uniform float speedP;          ///< flight speed multiplier (0 -> 1.0; 0.6..1.6)
+uniform float rollP;           ///< differential layer roll  (0 -> none; up to ~0.3)
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -43,6 +45,7 @@ vec3 imgPal(float x)
     return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -50,6 +53,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
@@ -59,6 +63,7 @@ float hash21(vec2 p)
 
 mat2 rotM(float a) { return mat2(cos(a), -sin(a), sin(a), cos(a)); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;

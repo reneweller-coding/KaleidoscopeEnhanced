@@ -13,27 +13,28 @@
  * synthwave grid horizon onto that shell.
  */
 
-in vec4 attrA;   // mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   // mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
+in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform int   meshVertexCount;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
 
-uniform float audioAdvance;
-uniform float audioKick;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP;
-uniform float spinP;
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float spinP;   ///< Spin knob, 0..1.
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out vec3  vLocalPos;    // object space, pre-scale -- the spectrum bars live in THIS space so they stay painted on the device instead of sliding across it as it turns
-out vec3  vObjNormal;   // object space normal, for picking out the flat front panel
-out float vBg;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vLocalPos;    ///< object space, pre-scale -- the spectrum bars live in THIS space so they stay painted on the device instead of sliding across it as it turns
+out vec3  vObjNormal;   ///< object space normal, for picking out the flat front panel
+out float vBg;   ///< Background flag (from the vertex stage).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 world, n;

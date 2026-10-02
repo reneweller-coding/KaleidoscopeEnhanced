@@ -4,6 +4,7 @@
  * @brief Tessellation-control stage companion to CrystallineCavernTessellation.frag -- see that file's header for
  * this scene's description.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(vertices = 4) out;
 
 in vec3 vControlPos[];
@@ -12,9 +13,10 @@ in vec2 vControlUV[];
 out vec3 tcPos[];
 out vec2 tcUV[];
 
-uniform float audioSwell;
-uniform float audioMid;
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioMid;   ///< Mid band level, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     tcPos[gl_InvocationID] = vControlPos[gl_InvocationID];
     tcUV[gl_InvocationID] = vControlUV[gl_InvocationID];

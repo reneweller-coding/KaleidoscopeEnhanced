@@ -9,30 +9,31 @@
  * +Z front.
  */
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform int   meshVertexCount;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 
-uniform float audioSwell;
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sizeP;
+uniform float sizeP;   ///< Size knob, 0..1.
 uniform float swayP;
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out vec3  vLocal;
-out float vBg;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vLocal;   ///< Object-space position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
 
 const float kDist = 52.0;
 const float kTop  = 24.0;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     bool isBg = gl_VertexID >= meshVertexCount;

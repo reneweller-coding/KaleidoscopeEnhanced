@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file RydbergAtomQuantumSimulatorArray.frag
  * @brief RYDBERG ATOM QUANTUM SIMULATOR ARRAY: 59,319 neutral alkali atoms trapped in a 3D optical
@@ -17,26 +17,28 @@ out vec4 fragColor;
  *   haloP      float gaussian atom core halo profile  (0.6..2.2)
  */
 
-in vec3 vCol;
+in vec3 vCol;   ///< Colour (from the vertex stage).
 in float vBlockade;
 in float vPointSize;
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;
-uniform float audioSwell;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float pointGainP;
 uniform float haloP;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 pc = gl_PointCoord - vec2(0.5);

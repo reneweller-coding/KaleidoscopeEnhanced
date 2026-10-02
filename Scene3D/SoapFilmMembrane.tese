@@ -9,24 +9,25 @@
  * the arc (thin at the top, thick at the bottom) and follows the ripples.
  * Projection after displacement; no camera motion.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(quads, fractional_odd_spacing, ccw) in;
 
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-out vec3  vWorld;
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out vec2  vSurfUV;
-out vec3  vNormal;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out float vThick;
 
-uniform mat4  projM;
-uniform float eyeOff;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
 const vec2 EXTENT = vec2(14.0, 9.0);
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float sceneProgress;
-uniform float audioSwell;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float modesP;
 uniform float drainP;
 
@@ -41,6 +42,7 @@ float height(vec2 uv, float clock, float amp, float modes)
     return h * amp;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);

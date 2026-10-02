@@ -16,38 +16,39 @@
  * envelope: the burn is light, the climb is the clock.
  */
 
-in vec4 attrA;   // mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   // mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.
+in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform int   meshVertexCount;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
 uniform int   mesh2VertexCount;
-uniform vec3  meshExtent;     // half-extents of the pad, object space
-uniform vec3  meshCenter;
-uniform vec3  meshExtent2;    // half-extents of the rocket
+uniform vec3  meshExtent;     ///< half-extents of the pad, object space
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
+uniform vec3  meshExtent2;    ///< half-extents of the rocket
 uniform vec3  meshCenter2;
-uniform float sceneProgress;
+uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
 
-uniform float sizeP;
-uniform float platP;    // the pad's platform height as a fraction of the pad's full height
-uniform float offP;     // rocket offset across the pad, as a fraction of the pad's half-width
-uniform float depthP;   // rocket offset into the pad, as a fraction of the pad's half-depth
-uniform float liftP;    // 0..1: where in the scene the liftoff falls
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float platP;    ///< the pad's platform height as a fraction of the pad's full height
+uniform float offP;     ///< rocket offset across the pad, as a fraction of the pad's half-width
+uniform float depthP;   ///< rocket offset into the pad, as a fraction of the pad's half-depth
+uniform float liftP;    ///< 0..1: where in the scene the liftoff falls
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out vec3  vLocal;     // object space, normalised to -1..1 per axis
-out float vBg;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vLocal;     ///< object space, normalised to -1..1 per axis
+out float vBg;   ///< Background flag (from the vertex stage).
 out float vRocket;
-out vec4  vFlame;     // xyz = the engines' world position, w = burn 0..1
-out float vClimb;     // 0 on the pad, 1 at the top of the climb
+out vec4  vFlame;     ///< xyz = the engines' world position, w = burn 0..1
+out float vClimb;     ///< 0 on the pad, 1 at the top of the climb
 
-const float kDist   = 84.0;   // the pad's distance from the camera
-const float kGround = -16.0;  // ground height: the pad sits low so the sky above has room for the climb
+const float kDist   = 84.0;   ///< the pad's distance from the camera
+const float kGround = -16.0;  ///< ground height: the pad sits low so the sky above has room for the climb
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     bool isPad    = gl_VertexID <  meshVertexCount;

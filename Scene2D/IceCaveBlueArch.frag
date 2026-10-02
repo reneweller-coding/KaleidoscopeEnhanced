@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file IceCaveBlueArch.frag
  * @brief ICE CAVE BLUE ARCH: inside a glacier cave.  The walls and ceiling
@@ -20,30 +20,32 @@ out vec4 fragColor;
  * Per-activation variety: scallopP (scallop size), dustP (dust bands), hueP.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioHigh;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float scallopP;
 uniform float dustP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,6 +55,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -65,6 +68,7 @@ vec3 hash33(vec3 p)
     p += dot(p, p.yxz + 33.33);
     return fract((p.xxy + p.yxx) * p.zyx);
 }
+/// @brief Smooth 3D value noise, 0..1.
 float noise3(vec3 p)
 {
     vec3 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -75,7 +79,7 @@ float noise3(vec3 p)
 
 float g_sc = 1.0;
 
-// Scallops: Voronoi cells on the wall; each cell a shallow cup.
+/// Scallops: Voronoi cells on the wall; each cell a shallow cup.
 float scallop(vec3 p)
 {
     vec3 g = p * 1.6 / g_sc;
@@ -89,9 +93,10 @@ float scallop(vec3 p)
     return d1;                                    // 0 in the cup centre, ~0.5 at rims
 }
 
-// The cave: a winding tube along z, flattened floor.
+/// The cave: a winding tube along z, flattened floor.
 vec2 caveAxis(float z) { return vec2(1.2 * sin(z * 0.08), 0.5 * sin(z * 0.11 + 1.0)); }
 
+/// @brief The scene's distance field: distance from p to the nearest surface.
 float map(vec3 p)
 {
     vec2 a = caveAxis(p.z);
@@ -104,12 +109,14 @@ float map(vec3 p)
     return d;
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p)
 {
     vec2 e = vec2(0.02, 0.0);
     return normalize(vec3(map(p + e.xyy) - map(p - e.xyy), map(p + e.yxy) - map(p - e.yxy), map(p + e.yyx) - map(p - e.yyx)));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;

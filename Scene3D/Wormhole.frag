@@ -1,19 +1,19 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Wormhole.frag — the wall image is bent around each throat: near the
 // horizon the angular coordinate smears (extra rotation growing with
 // lensAmt, like light dragged around a photon sphere) and the three colour
 // channels sample at slightly different bend amounts (chromatic
 // aberration).  A bright photon ring traces the horizon itself.
-uniform sampler2D tex0;
-uniform float time;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioChromaHue;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV;
-in float vDist;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vDist;   ///< Distance (from the vertex stage).
 in float vAng;
 in float vLensAmt;
 
@@ -31,6 +31,7 @@ in float vLensAmt;
  * and how brightly that stretch of tube is lit; vDist applies depth fog.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -51,6 +52,7 @@ vec3 sampleBent(float bendMul)
     return texture(tex0, mfold(uv)).rgb;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Chromatic aberration: R bends least, B bends most.

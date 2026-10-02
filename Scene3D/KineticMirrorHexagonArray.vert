@@ -6,48 +6,49 @@
  * with specular glints and audio wave kinematics.
  */
 
-layout(location = 0) in vec4 attrA; // xy = quad UV [0,1], w = quad ID [0..2999]
-layout(location = 1) in vec4 attrB; // seeds
+layout(location = 0) in vec4 attrA; ///< xy = quad UV [0,1], w = quad ID [0..2999]
+layout(location = 1) in vec4 attrB; ///< seeds
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float waveP;
-uniform float tiltP;
-uniform float speedP;
-uniform float hueP;
+uniform float waveP;   ///< Wave knob.
+uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-out vec3 vNormal;
-out vec2 vTexCoord;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
 out vec4 vColor;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,6 +58,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float wav = (waveP > 0.0) ? waveP : 1.0;
     float tlt = (tiltP > 0.0) ? tiltP : 1.0;

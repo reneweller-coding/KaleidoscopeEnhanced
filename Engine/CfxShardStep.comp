@@ -27,10 +27,10 @@ layout(std430, binding = 1) buffer ShardA { vec4 sa[]; };
 layout(std430, binding = 2) buffer ShardB { vec4 sb[]; };
 
 uniform sampler2D texPhoto;
-uniform ivec2 size;
-uniform ivec2 grid;        // shards across x and y
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform ivec2 grid;        ///< shards across x and y
 uniform float dt;
-uniform float springK;     // pull back home
+uniform float springK;     ///< pull back home
 uniform float damp;
 uniform float gravity;
 uniform float level;
@@ -48,6 +48,7 @@ void splat1(ivec2 ip, vec3 col, float w)
     atomicAdd(acc[i + 3u], uint(w * SCALE));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

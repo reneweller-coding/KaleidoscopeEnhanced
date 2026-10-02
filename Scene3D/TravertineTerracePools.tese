@@ -15,38 +15,42 @@
  *
  * The far end rises into the hill so the horizon is filled.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(quads, fractional_odd_spacing, ccw) in;
 
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-out vec3  vWorld;
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out vec2  vSurfUV;
-out vec3  vNormal;
-out float vPool;      // 0 on a rim, 1 in the middle of a pool
-out float vTerrace;   // continuous terrace index
-out float vDist;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vPool;      ///< 0 on a rim, 1 in the middle of a pool
+out float vTerrace;   ///< continuous terrace index
+out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
 const vec2 EXTENT = vec2(260.0, 210.0);
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float camHP;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float camHP;   ///< Camera height knob, 0..1.
 uniform float stepsP;
-uniform float audioSwell;
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
                mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; ++i) { v += a * noise2(p); p = p * 2.03 + 4.1; a *= 0.5; } return v; }
 
-// The terrace field.  Returns the height; pool and terrace come back too.
+/// The terrace field.  Returns the height; pool and terrace come back too.
 float surface(vec2 xz, out float pool, out float terrace)
 {
     float stepsN = 5.0 + 5.0 * clamp(stepsP, 0.0, 1.0);
@@ -74,6 +78,7 @@ float surface(vec2 xz, out float pool, out float terrace)
     return h;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);

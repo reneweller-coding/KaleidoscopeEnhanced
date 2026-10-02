@@ -1,5 +1,5 @@
 #version 400 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file GlacierTessellation.frag
  * @brief GLACIER TESSELLATION: low flight over tessellated glacier ice - white/blue
@@ -9,33 +9,35 @@ out vec4 fragColor;
  *   audioBass    -> ice-wave heave
  */
 
-in vec3 vNormal;
-in vec3 vWorld;
-in vec2 vUV;
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec3 vWorld;   ///< World position (from the vertex stage).
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vCrevasse;
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float time;
-uniform float hueP;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image; the arc follows the musical key (audioChromaHue
-// is circular-slewed = jump-free), valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image; the arc follows the musical key (audioChromaHue
+/// is circular-slewed = jump-free), valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -45,6 +47,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 n = normalize(vNormal);
     vec3 lightDir = normalize(vec3(0.6, 0.8, -0.5));

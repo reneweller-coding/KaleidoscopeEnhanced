@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FerrisWheelNight.frag
  * @brief Fragment stage for FerrisWheelNight: a night sky with round stars,
@@ -12,29 +12,31 @@ out vec4 fragColor;
  * Audio Reactivity: audioSpectrum[32] -> spoke lamps; audioKick -> hub flash;
  *                   audioSwell -> fair light; audioLevel -> brightness.
  */
-in vec2  vTexCoord;
-in vec3  vWorld;
-in float vKind;
+in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in float vKind;   ///< Element kind (from the vertex stage).
 in float vAux;
-in float vId;
+in float vId;   ///< Instance or element id (from the vertex stage).
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float sceneAdvance;
-uniform float audioSpectrum[32];
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
-uniform float hueP;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -44,8 +46,10 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hue = (hueP > 0.001) ? hueP : 0.0;

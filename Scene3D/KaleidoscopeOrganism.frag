@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // KaleidoscopeOrganism.frag — crystalline bioluminescence, coloured by which
 // mirror-wedge a fragment belongs to so the kaleidoscope's own symmetry is
 // visible in the palette, not just the silhouette.
 
-in vec3  vObj;
-in vec3  vNormal;
-in vec3  vView;
-in float vAge;        // 1 = oldest branches, 0 = newest tips
-in float vDepth;
+in vec3  vObj;   ///< Object-space position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vView;   ///< View vector (from the vertex stage).
+in float vAge;        ///< 1 = oldest branches, 0 = newest tips
+in float vDepth;   ///< Depth (from the vertex stage).
 
 /**
  * @file KaleidoscopeOrganism.frag
@@ -22,28 +22,30 @@ in float vDepth;
  * audioAmbient. audioBeat/audioSubBass give the whole image a soft overall pulse.
  */
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float time;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float glowP;
-uniform float hueP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,6 +55,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 n = normalize(vNormal);

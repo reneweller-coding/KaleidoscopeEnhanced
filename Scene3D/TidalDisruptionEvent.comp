@@ -27,6 +27,7 @@
  *
  * Per-instance: massP (hole mass), spinP (star spin), hueP.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
@@ -40,35 +41,38 @@ layout(std430, binding = 2) buffer State
     float st[];
 };
 
-uniform uint  maxVertices;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
 uniform uint  frameIndex;
 uniform float genPass;
-uniform float time;
-uniform float sceneSeed;
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float sceneProgress;
-uniform float audioLevel;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
 uniform float massP;
-uniform float spinP;
-uniform float hueP;
+uniform float spinP;   ///< Spin knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 const uint  kParts = 24576u;
 const float EPS = 0.18;
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
+/// @brief Pseudo-random number 0..1 from a 3D point.
 vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
 uint expectedMagic() { return 0xBEEF0100u ^ uint(fract(sceneSeed * 0.617) * 65535.0); }
 
-// The star's centre on a parabola-like fly-by, parameterised by the arc.
-// Pericentre at u = 0.6 of the arc, closest approach 1.1 units.
+/// The star's centre on a parabola-like fly-by, parameterised by the arc.
+/// Pericentre at u = 0.6 of the arc, closest approach 1.1 units.
 vec3 starPath(float u)
 {
     float s = (u - 0.6) * 9.0;                              // -5.4 .. 3.6
     return vec3(s * 0.75, 0.05 * s, 0.55 + 0.09 * s * s);
 }
 
+/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
 void emitQuad(vec3 c, float s, float id, float a, float kind)
 {
     uint base = atomicAdd(cmd[4], 6u);
@@ -85,6 +89,7 @@ void emitQuad(vec3 c, float s, float id, float a, float kind)
     }
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ApollonianSpherePackingDive.frag
  * @brief APOLLONIAN SPHERE PACKING DIVE: 3D Raymarching continuous dive into the voids
@@ -14,37 +14,39 @@ out vec4 fragColor;
  *   audioChromaHue-> rotates the luminous Apollonian gemstone spectrum
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;
-uniform float scaleP;
-uniform float foldP;
-uniform float glowP;
-uniform float hueP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float scaleP;   ///< Scale knob.
+uniform float foldP;   ///< Fold knob, 0..1.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t) {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
     float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
@@ -53,12 +55,12 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// Overall level of the photo on the texture units (fixed 5-tap grid, rides
-// the tex0/tex1 crossfade so it can never pop). The hit colour is half
-// photo, and since the edge-corridor course (see main) keeps a lit wall in
-// front of the lens the whole time, a bright photo pushed the frame to a
-// luma of 115-145 on a scene tagged "dark". One frame-wide gain rescales
-// the exposure without touching local contrast.
+/// Overall level of the photo on the texture units (fixed 5-tap grid, rides
+/// the tex0/tex1 crossfade so it can never pop). The hit colour is half
+/// photo, and since the edge-corridor course (see main) keeps a lit wall in
+/// front of the lens the whole time, a bright photo pushed the frame to a
+/// luma of 115-145 on a scene tagged "dark". One frame-wide gain rescales
+/// the exposure without touching local contrast.
 float photoLevel() {
     vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
            + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
@@ -66,20 +68,20 @@ float photoLevel() {
     return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
 }
 
-// Soft-max, used to carve a smooth clearance bubble around the camera out
-// of the distance field: the flight can never clip through geometry -- a
-// would-be collision becomes a soft bulge sliding past the lens.
+/// Soft-max, used to carve a smooth clearance bubble around the camera out
+/// of the distance field: the flight can never clip through geometry -- a
+/// would-be collision becomes a soft bulge sliding past the lens.
 float smax(float a, float b, float k) {
     float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
     return mix(a, b, h) + k * h * (1.0 - h);
 }
 
-// Apollonian sphere-packing distance estimator (classic Knighty form).
-// The previous version clamped the inversion Mandelbox-style; the clamp is
-// exactly what shredded the foam into box-shaped chips ("eckig"). The true
-// packing needs the UNCONDITIONAL inversion k = K/r2 -- scale explosion is
-// tamed by dividing the estimate by the accumulated scale, and the r2 guard
-// keeps the fold finite at the fixed point.
+/// Apollonian sphere-packing distance estimator (classic Knighty form).
+/// The previous version clamped the inversion Mandelbox-style; the clamp is
+/// exactly what shredded the foam into box-shaped chips ("eckig"). The true
+/// packing needs the UNCONDITIONAL inversion k = K/r2 -- scale explosion is
+/// tamed by dividing the estimate by the accumulated scale, and the r2 guard
+/// keeps the fold finite at the fixed point.
 float mapApollonian(vec3 p, float K, out float trapLevel) {
     float scale = 1.0;
     trapLevel = 0.0;
@@ -94,6 +96,7 @@ float mapApollonian(vec3 p, float K, out float trapLevel) {
     return 0.25 * abs(p.y) / scale;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 

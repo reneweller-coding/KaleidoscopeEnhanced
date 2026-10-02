@@ -11,19 +11,21 @@
  *
  * Per-instance: sizeP, swayP, hueP.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneAdvance;
-uniform float sceneTime;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
 
-uniform float sizeP;
+uniform float sizeP;   ///< Size knob, 0..1.
 uniform float swayP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
 void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
 {
     uint base = atomicAdd(cmd[4], 6u);
@@ -40,7 +42,7 @@ void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv
     }
 }
 
-// Strut endpoints of the expanded octahedron: strut s (0..5), end e (0/1).
+/// Strut endpoints of the expanded octahedron: strut s (0..5), end e (0/1).
 vec3 strutEnd(int s, int e)
 {
     float L = 1.0, w = 0.5;
@@ -52,6 +54,7 @@ vec3 strutEnd(int s, int e)
     return vec3(0.0, side * w, sgn * L);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

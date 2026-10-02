@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // AuroraVeil.frag — translucent curtain: bright lower hem, airy top.
-in vec4  vCol;
-in float vSide;
+in vec4  vCol;   ///< Colour (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file AuroraVeil.frag
@@ -16,6 +16,7 @@ in float vSide;
  * reactivity to the music is driven entirely by the companion vertex shader.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hem  = exp(-(vSide + 1.0) * (vSide + 1.0) * 1.4);

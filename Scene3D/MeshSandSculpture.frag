@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MeshSandSculpture.frag
  * @brief MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of
@@ -17,33 +17,35 @@ out vec4 fragColor;
  *
  * Per-activation variety: sizeP, erodeP, hueP.
  */
-uniform sampler2DArray texMeshMaterial;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform sampler2DArray texMeshMaterial;   ///< The mesh's material textures (albedo, roughness, normal ...).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float time;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioHigh;
-uniform float audioSwell;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioValence;
-uniform float hueP;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec2 vUV;
-in vec3 vNormal;
-in vec3 vObj;
-in vec3 vPos;
-in float vBg;
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec3 vObj;   ///< Object-space position (from the vertex stage).
+in vec3 vPos;   ///< Position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 in float vErode;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,8 +55,10 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a 3D point.
 float hash31(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hue = (hueP > 0.001) ? hueP : 0.0;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SolarFlareSurfing.frag
  * @brief SOLAR FLARE SURFING: Extreme close-up flight over the turbulent
@@ -16,29 +16,31 @@ out vec4 fragColor;
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float waveP;
+uniform float waveP;   ///< Wave knob.
 uniform float flareP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -48,14 +50,17 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 
+/// @brief Smooth value noise.
 float noise(vec3 p) {
     vec3 i = floor(p);
     vec3 f = fract(p);
@@ -68,21 +73,23 @@ float noise(vec3 p) {
             mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec3 p) {
     float f = 0.0, a = 0.5;
     for(int i = 0; i < 5; i++) { f += a * noise(p); p *= 2.0; a *= 0.5; }
     return f;
 }
 
-// Map function for the stellar surface and flares
-// Soft-max, used to carve a smooth clearance bubble around the camera out
-// of the distance field: the flight can never clip through geometry -- a
-// would-be collision becomes a soft bulge sliding past the lens.
+/// Map function for the stellar surface and flares
+/// Soft-max, used to carve a smooth clearance bubble around the camera out
+/// of the distance field: the flight can never clip through geometry -- a
+/// would-be collision becomes a soft bulge sliding past the lens.
 float smax(float a, float b, float k) {
     float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
     return mix(a, b, h) + k * h * (1.0 - h);
 }
 
+/// @brief The scene's distance field: distance from p to the nearest surface.
 float map(vec3 p, float wp, float fp) {
     // Base surface (turbulent plasma)
     float d = p.y + 2.0;
@@ -109,6 +116,7 @@ float map(vec3 p, float wp, float fp) {
     return d;
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p, float wp, float fp) {
     vec2 e = vec2(0.05, 0.0);
     return normalize(vec3(
@@ -118,6 +126,7 @@ vec3 calcNormal(vec3 p, float wp, float fp) {
     ));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float wp = (waveP > 0.01 ? waveP : 1.0);

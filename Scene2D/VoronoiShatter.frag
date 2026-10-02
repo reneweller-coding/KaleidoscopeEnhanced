@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file VoronoiShatter.frag
  * @brief The photograph fracturing along a Voronoi diagram: each cell is a
@@ -28,36 +28,37 @@ out vec4 fragColor;
 // of the image away with it, and the seams stop lining up.
 // -----------------------------------------------------------------------
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioBuildUp;
-uniform float audioAdvance;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioBuildUp;   ///< Build-up toward a drop, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float cellsP;       // preset: shard count
-uniform float flyP;         // preset: how far shards travel
+uniform float cellsP;       ///< preset: shard count
+uniform float flyP;         ///< preset: how far shards travel
 uniform float edgeP;
-uniform float audioValence;        // preset: crack brightness
+uniform float audioValence;        ///< preset: crack brightness
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -67,17 +68,20 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
 vec2 hash22(vec2 p)
 {
     p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
     return fract(sin(p) * 43758.5453);
 }
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

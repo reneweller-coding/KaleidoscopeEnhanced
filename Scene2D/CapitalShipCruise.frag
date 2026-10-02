@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file CapitalShipCruise.frag
  * @brief CAPITAL SHIP CRUISE: a kilometre-long capital ship under way through
@@ -24,39 +24,40 @@ out vec4 fragColor;
  *   hueP    float palette offset of the nebula                  (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioBeatPhase;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float hullP;
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float nebulaP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -66,16 +67,21 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)  { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 3D point.
 float hash31(vec3 p)  { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
 
+/// @brief Smooth 3D value noise, 0..1.
 float noise3(vec3 p)
 {
     vec3 i = floor(p), f = fract(p);
@@ -88,6 +94,7 @@ float noise3(vec3 p)
     return mix(mix(a, b, f.y), mix(c, d, f.y), f.z);
 }
 
+/// @brief Fractal noise of three octaves, 0..1.
 float fbm3(vec3 p)
 {
     float s = 0.0, a = 0.5;
@@ -95,6 +102,7 @@ float fbm3(vec3 p)
     return s;
 }
 
+/// @brief Signed distance to a box of half size b.
 float sdBox(vec3 p, vec3 b)
 {
     vec3 q = abs(p) - b;
@@ -107,9 +115,9 @@ float sdCyl(vec3 p, float h, float r)
     return min(max(d.x, d.y), 0.0) + length(max(d, 0.0));
 }
 
-// The ship, in its own space: +z is the bow, -z the engines.
-// Only the SILHOUETTE is modelled -- plating and greebles are shaded, not
-// carved, which is what keeps a hull this size cheap to march.
+/// The ship, in its own space: +z is the bow, -z the engines.
+/// Only the SILHOUETTE is modelled -- plating and greebles are shaded, not
+/// carved, which is what keeps a hull this size cheap to march.
 float shipSDF(vec3 p, float len, out float part)
 {
     // Bow taper: the hull narrows over the forward third.
@@ -160,7 +168,7 @@ vec3 shipNormal(vec3 p, float len)
         shipSDF(p + e.yyx, len, u) - shipSDF(p - e.yyx, len, u)));
 }
 
-// Deep-space backdrop: three star magnitudes plus a photo-tinted nebula.
+/// Deep-space backdrop: three star magnitudes plus a photo-tinted nebula.
 vec3 background(vec3 rd, float drift, float neb, vec3 nebTint)
 {
     vec3 col = vec3(0.006, 0.008, 0.016);
@@ -194,6 +202,7 @@ vec3 background(vec3 rd, float drift, float neb, vec3 nebTint)
     return col;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float len = (hullP   > 0.01 ? 12.0 + 9.0 * hullP : 18.0);

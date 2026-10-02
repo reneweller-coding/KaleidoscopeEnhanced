@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Halftone.frag
  * @brief Renders the photograph as a genuine four-colour halftone print: separate CMYK screens, each rotated to its own classic press angle (15, 75, 0 and 45 degrees) so the dot grids never form a moire.
@@ -20,26 +20,26 @@ out vec4 fragColor;
 // picture that looks like a bug rather than like print.
 // -----------------------------------------------------------------------
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioAdvance;
-uniform float audioChromaHue;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float dotP;         // preset: screen frequency
-uniform float inkP;         // preset: ink density
-uniform float slipP;        // preset: registration error
+uniform float dotP;         ///< preset: screen frequency
+uniform float inkP;         ///< preset: ink density
+uniform float slipP;        ///< preset: registration error
 
-// One separation: sample the channel on a grid rotated by 'ang', and return how
-// much of this pixel the dot covers.
+/// One separation: sample the channel on a grid rotated by 'ang', and return how
+/// much of this pixel the dot covers.
 float screenDot(vec2 p, float ang, float value, float freq)
 {
     float c = cos(ang), s = sin(ang);
@@ -66,6 +66,7 @@ float screenDot(vec2 p, float ang, float value, float freq)
     return smoothstep(r + aa, r - aa, d);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

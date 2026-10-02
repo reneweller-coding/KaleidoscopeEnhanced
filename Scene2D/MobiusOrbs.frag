@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MobiusOrbs.frag
  * @brief Adapted from an untitled Shadertoy Möbius-inversion orb field (pasted by the
@@ -15,33 +15,33 @@ out vec4 fragColor;
  * in the source and would just swap the numeric constants below).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;
-uniform float audioPhase;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioBass;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float audioChromaHue;
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 // Per-activation variety (re-rolled by the engine each time the effect comes
 // on): the original's three #define "variants" differed mainly in these very
 // numbers, so rolling them turns one shader into a whole family of looks.
 // All default to the "Variant 01" values when 0 / absent from the config.
-uniform float zoomP;      // 0 -> 0.07   (0.27 = original "Variant 02" look)
-uniform float orbSizeP;   // 0 -> 6.46
-uniform float radiusP;    // 0 -> 11.0
-uniform float stretchP;   // 0 -> 1.2    max extra ellipse aspect (length variance)
-uniform float shapeP;     // 0 -> 0.6    circle -> superellipse shape variance
+uniform float zoomP;      ///< 0 -> 0.07   (0.27 = original "Variant 02" look)
+uniform float orbSizeP;   ///< 0 -> 6.46
+uniform float radiusP;    ///< 0 -> 11.0
+uniform float stretchP;   ///< 0 -> 1.2    max extra ellipse aspect (length variance)
+uniform float shapeP;     ///< 0 -> 0.6    circle -> superellipse shape variance
 
-const float PI   = 3.141592;
+const float PI   = 3.141592;   ///< Pi.
 const float ORBS = 20.0;
 
 const float CONTRAST   = 0.13;
@@ -51,9 +51,11 @@ const float X_MUL      = 0.28;
 const float Y_DIVIDE   = 4.99;
 const float X_DIVIDE   = 6.27;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -62,10 +64,10 @@ vec3 imgPal(float x)
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -75,6 +77,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -84,12 +87,12 @@ vec3 hueRot(vec3 c, float a)
 
 mat2 rotate(float a) { return mat2(cos(a), -sin(a), sin(a), cos(a)); }
 
-// One glowing blob.  No longer a plain circle: each orb is an ELLIPSE with its
-// own orientation (golden-angle spread over the index) whose aspect drifts
-// slowly and stretches with the bass (loudness -> size/elongation, per the
-// crossmodal-correspondence research), and a per-orb SHAPE that blends from
-// round toward a soft superellipse (squarish) - so the field is a mixture of
-// long streaks, plump ovals and rounded lozenges instead of uniform circles.
+/// One glowing blob.  No longer a plain circle: each orb is an ELLIPSE with its
+/// own orientation (golden-angle spread over the index) whose aspect drifts
+/// slowly and stretches with the bass (loudness -> size/elongation, per the
+/// crossmodal-correspondence research), and a per-orb SHAPE that blends from
+/// round toward a soft superellipse (squarish) - so the field is a mixture of
+/// long streaks, plump ovals and rounded lozenges instead of uniform circles.
 float orbDist(vec2 uv, vec2 p, float i, float stretchAmt, float shapeAmt)
 {
     vec2 d = uv + p;
@@ -108,6 +111,7 @@ float orbDist(vec2 uv, vec2 p, float i, float stretchAmt, float shapeAmt)
     return pow(pow(abs(d.x), k) + pow(abs(d.y), k), 1.0 / k);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  fragCoord = gl_FragCoord.xy;

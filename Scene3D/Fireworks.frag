@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Fireworks.frag — glowing spark (additive blending).
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
 /**
  * @file Fireworks.frag
@@ -14,6 +14,7 @@ in vec4 vCol;
  * companion vertex shader and only shaped here by the radial falloff.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

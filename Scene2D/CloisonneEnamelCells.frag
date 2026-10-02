@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file CloisonneEnamelCells.frag
  * @brief CLOISONNE ENAMEL CELLS: a copper plate with gold wires bent into
@@ -19,32 +19,34 @@ out vec4 fragColor;
  *
  * Per-activation variety: cellsP, wireP, hueP.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float sceneProgress;
-uniform float audioAdvance;
-uniform float audioChroma[12];
-uniform float audioSwell;
-uniform float audioHigh;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float cellsP;
 uniform float wireP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -54,12 +56,15 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
 vec2 hash22(vec2 p)
 {
     p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
     return fract(sin(p) * 43758.5453);
 }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -67,8 +72,8 @@ float noise2(vec2 p)
                mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
-// Voronoi over a swirled coordinate: the cells then follow the scroll of
-// the pattern instead of sitting on a grid.
+/// Voronoi over a swirled coordinate: the cells then follow the scroll of
+/// the pattern instead of sitting on a grid.
 void cellAt(vec2 x, out float seam, out float id, out vec2 centre, out float toCentre)
 {
     vec2 n = floor(x), f = fract(x);
@@ -87,6 +92,7 @@ void cellAt(vec2 x, out float seam, out float id, out vec2 centre, out float toC
     toCentre = sqrt(d1);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

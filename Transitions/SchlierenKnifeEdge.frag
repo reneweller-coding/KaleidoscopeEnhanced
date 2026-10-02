@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SchlierenKnifeEdge.frag
  * @brief TRANSITION SCHLIEREN KNIFE EDGE: a knife edge travels across the frame
@@ -26,35 +26,39 @@ out vec4 fragColor;
  * Per-activation variety: gainP, bandP, hueP.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float gainP;
-uniform float bandP;
-uniform float hueP;
+uniform float bandP;   ///< Band knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief 2D rotation matrix.
 mat2 rot2D(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief Luminance of the photo at a coordinate.
 float lum(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float gain = (gainP > 0.0) ? gainP : 1.0;

@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // CosmicBoidsVortex.frag — Soft glowing 3D energy particle (additive blending).
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
 /**
  * @file CosmicBoidsVortex.frag
@@ -17,6 +17,7 @@ in vec4 vCol;
  * shapes that colour into a glowing dot.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec2 d = gl_PointCoord - 0.5;
     float r2 = dot(d, d);

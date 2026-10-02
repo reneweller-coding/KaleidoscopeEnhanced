@@ -24,12 +24,13 @@
 // fullscreen vert provides no texcoords, the engine's Fullscreen.vert does —
 // gl_FragCoord works identically under both.
 uniform sampler2D tex;
-uniform vec2  resolution;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 uniform float rigRoll;
 uniform float rigZoom;
 uniform vec2  rigPan;
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 p = gl_FragCoord.xy / resolution - 0.5;

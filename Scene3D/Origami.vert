@@ -9,26 +9,27 @@
 // straight on, a Miura is a flat rectangle with some shading, and the whole
 // point of folding it is the silhouette.
 
-in vec4 attrA;      // xyz = object position, w = fold depth 0..1
-in vec4 attrB;      // xyz = panel normal, w = position across the sheet
+in vec4 attrA;      ///< xyz = object position, w = fold depth 0..1
+in vec4 attrB;      ///< xyz = panel normal, w = position across the sheet
 
-out vec3  vObj;
-out vec3  vNormal;
-out vec3  vView;
-out vec3  vWorld;
+out vec3  vObj;   ///< Object-space position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out float vFold;
 out float vAcross;
 
-uniform mat4  projM;
-uniform mat4  lightM;
-uniform float shadowPass;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float camDistP;
+uniform float camDistP;   ///< Camera distance knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 p = attrA.xyz;

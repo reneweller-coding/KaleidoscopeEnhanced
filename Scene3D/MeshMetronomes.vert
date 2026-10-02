@@ -10,38 +10,40 @@
  * drawn by instance 0 only.
  */
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform int   meshVertexCount;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
 uniform int   mesh2VertexCount;
-uniform int   meshInstances;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform int   meshInstances;   ///< Number of mesh instances.
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 uniform vec3  meshExtent2;
 uniform vec3  meshCenter2;
 
-uniform float sizeP;
-uniform float armP;       // rod length relative to the body height (default 0.75)
-uniform float pivotP;     // pivot height as a fraction of the body height (default 0.22)
-uniform float frontP;     // rod offset in front of the body as a fraction of its half-depth (default 1.2)
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float armP;       ///< rod length relative to the body height (default 0.75)
+uniform float pivotP;     ///< pivot height as a fraction of the body height (default 0.22)
+uniform float frontP;     ///< rod offset in front of the body as a fraction of its half-depth (default 1.2)
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out vec3  vLocal;
-out float vBg;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vLocal;   ///< Object-space position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
 out float vInst;
 out float vArm;
 out float vSwing;
 
 const float kGround = -14.0;
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) { return fract(sin(p * 12.9898) * 43758.5453); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int inst = gl_InstanceID;

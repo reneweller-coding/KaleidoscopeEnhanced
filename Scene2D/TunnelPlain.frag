@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file TunnelPlain.frag
  * @brief A stripped-down mirrored-segment kaleidoscope tunnel: no base
@@ -24,21 +24,21 @@ out vec4 fragColor;
  *  - audioLowMid   -> WARMTH: 150-500 Hz harmonic body tints the walls from cool
  *                      steel toward warm amber (luminance-matched, no exposure change)
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float speed;
 uniform int sides;
 uniform float power;
-uniform float audioBeat;
-uniform float audioLevel;
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 uniform float audioFlip;
-uniform float audioAdvance;    // integrated, jump-free audio tunnel advance
-uniform float audioFlatness;   // 0=tonal .. 1=noise-like -> superellipse wedge shape
-uniform float audioHat;        // hi-hat/cymbal onset envelope -> rim shimmer
-uniform float audioLowMid;     // 150-500 Hz harmonic warmth -> wall colour
+uniform float audioAdvance;    ///< integrated, jump-free audio tunnel advance
+uniform float audioFlatness;   ///< 0=tonal .. 1=noise-like -> superellipse wedge shape
+uniform float audioHat;        ///< hi-hat/cymbal onset envelope -> rim shimmer
+uniform float audioLowMid;     ///< 150-500 Hz harmonic warmth -> wall colour
 
 
 vec2 clampQuadratic( vec2 p )
@@ -61,6 +61,7 @@ vec2 clampQuadratic( vec2 p )
 }
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
 
     // normalize to the center

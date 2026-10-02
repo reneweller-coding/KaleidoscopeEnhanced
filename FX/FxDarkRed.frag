@@ -1,22 +1,23 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxDarkRed.frag
  * @brief Monochrome colour-tint overlay: desaturates the blended scene to
  * luminance, then recolours it into a single channel (red/blue/green,
  * picked by uniform) -- a stark, flat colour wash.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform int red;
-uniform float audioBeat;    // beat lifts the wash brightness
-uniform float audioSwell;   // slow builds let the real colour bleed through
+uniform float audioBeat;    ///< beat lifts the wash brightness
+uniform float audioSwell;   ///< slow builds let the real colour bleed through
 uniform int blue;
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
 
     // normalize to the center

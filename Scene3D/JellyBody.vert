@@ -19,29 +19,29 @@
 // SpectralOrb; the complement scene: impulse response instead of
 // continuous spectral drive.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float audioAdvance;
-uniform float sceneSeed;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float sceneSeed;   ///< A random number fixed per activation.
 
-uniform float audioKick;
-uniform float audioSnare;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSnare;   ///< Snare envelope, 0..1.
 uniform float audioHat;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioDrop;
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 
 out vec3  vNorm;
-out vec3  vView;
+out vec3  vView;   ///< View vector (from the vertex stage).
 out float vDefo;
 out float vHue;
 
-// Damped modal displacement at direction d.  The envelopes decay host-side;
-// cos(w*time) runs free — amplitude-gated ringing, no phase remapping.
+/// Damped modal displacement at direction d.  The envelopes decay host-side;
+/// cos(w*time) runs free — amplitude-gated ringing, no phase remapping.
 float modes(vec3 d, float th, float ph)
 {
     float x = d.x, y = d.y, z = d.z;
@@ -97,8 +97,8 @@ vec3 jellyPoint(float u, float v)
 }
 
 
-// 3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the
-// body's own y-spin, so the pattern is seen from ever-new angles.
+/// 3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the
+/// body's own y-spin, so the pattern is seen from ever-new angles.
 vec3 tumble(vec3 q)
 {
     float tx = time * 0.19 + audioAdvance * 0.05;
@@ -108,6 +108,7 @@ vec3 tumble(vec3 q)
     return q;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float u = attrA.x, v = attrA.y;

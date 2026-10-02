@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file InkWater.frag
  * @brief INK IN WATER: coloured ink plumes sink into still water and billow into
@@ -19,48 +19,55 @@ out vec4 fragColor;
  *   speedP   float sink/billow speed multiplier(0 -> 1.0; 0.6..1.5)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioBass;
-uniform float audioOnset;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform int   plumesP;
 uniform float inkHueP;
-uniform float swirlP;
-uniform float speedP;
+uniform float swirlP;   ///< Swirl knob, 0..1.
+uniform float speedP;   ///< Speed knob, 0..1.
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.30 * vec2(cos(time * 0.040 + audioPhase * 0.10),
                                       sin(time * 0.031 + audioPhase * 0.07));
     return img(fract(cc + 0.22 * vec2(cos(x), sin(x * 1.37))));
 }
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
     p += dot(p, p + 34.345);
     return fract(p.x * p.y);
 }
+/// @brief Value noise with a seed.
 float vnoise(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -69,6 +76,7 @@ float vnoise(vec2 p)
     float c = hash21(i + vec2(0.0, 1.0)), d = hash21(i + vec2(1.0, 1.0));
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     float s = 0.0, a = 0.5;
@@ -76,6 +84,7 @@ float fbm(vec2 p)
     return s;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int   nPlume = (plumesP > 0) ? plumesP : 3;

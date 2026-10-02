@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FluidSim.frag
  * @brief GPU "ink" simulation step: an RGB dye field is advected semi-Lagrangian
@@ -16,25 +16,28 @@ out vec4 fragColor;
  *   seedMode 1 -> first frame: initialise the dye with the image
  */
 
-uniform sampler2D texPrev;   // dye state (RGB)
-uniform sampler2D tex0;      // source images
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform vec2  resolution;    // sim grid size
+uniform sampler2D texPrev;   ///< dye state (RGB)
+uniform sampler2D tex0;      ///< source images
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2  resolution;    ///< sim grid size
 uniform float seedMode;
 uniform float flowPhase;
 uniform float impulse;
 uniform float injectAmt;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
     p += dot(p, p + 34.345);
     return fract(p.x * p.y);
 }
+/// @brief Value noise with a seed.
 float vnoise(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -44,13 +47,14 @@ float vnoise(vec2 p)
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
-// Noise potential (2 octaves, drifting with the integrated flow phase).
+/// Noise potential (2 octaves, drifting with the integrated flow phase).
 float psi(vec2 p)
 {
     return vnoise(p * 3.0 + vec2(0.0, flowPhase))
          + 0.5 * vnoise(p * 6.0 + vec2(3.7, -flowPhase * 0.7));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

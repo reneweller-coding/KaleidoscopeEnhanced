@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Planet4D.frag — soft glow sprite with a bright core (additive): node
 // clouds read as radiant planets, edge grains as thin light filaments.
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
 /**
  * @file Planet4D.frag
@@ -20,6 +20,7 @@ in vec4 vCol;
  * two-term glow.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

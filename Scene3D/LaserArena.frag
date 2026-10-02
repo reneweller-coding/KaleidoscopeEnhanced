@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // LaserArena.frag — razor core inside a wide fog halo across the beam.
-in vec4  vCol;
-in float vSide;
+in vec4  vCol;   ///< Colour (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file LaserArena.frag
@@ -26,6 +26,7 @@ in float vSide;
  * the catalogue -- see the comment in main().
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float d    = abs(vSide);

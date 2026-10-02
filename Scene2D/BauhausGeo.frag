@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file BauhausGeo.frag
  * @brief BAUHAUS GEOMETRY: a rotating composition of flat geometric primitives
@@ -20,34 +20,38 @@ out vec4 fragColor;
  *   accentP  float accent flash strength      (0 -> 1.0; 0.5..1.6)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioBeat;
-uniform float audioSnare;
-uniform float audioBarPhase;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioSnare;   ///< Snare envelope, 0..1.
+uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform int   gridP;
-uniform float paletteP;
-uniform float spinP;
+uniform int   gridP;   ///< Grid knob, 0..1.
+uniform float paletteP;   ///< Palette knob: photo colours .. colour field, 0..1.
+uniform float spinP;   ///< Spin knob, 0..1.
 uniform float accentP;
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
@@ -55,7 +59,7 @@ float hash21(vec2 p)
     return fract(p.x * p.y);
 }
 
-// Reduce an image colour to a poster colour: strong saturation, few steps.
+/// Reduce an image colour to a poster colour: strong saturation, few steps.
 vec3 poster(vec3 c)
 {
     float lum = dot(c, vec3(0.299, 0.587, 0.114));
@@ -64,6 +68,7 @@ vec3 poster(vec3 c)
     return clamp(c, 0.0, 1.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int   n    = (gridP  > 0)   ? gridP  : 5;

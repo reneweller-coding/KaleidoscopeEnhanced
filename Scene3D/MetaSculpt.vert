@@ -7,27 +7,28 @@
 // MetaSculpt.vert — the vertices arrive straight from MetaSculpt.comp, so
 // there is nothing to generate here: place the body and pass the shading data.
 
-in vec4 attrA;      // xyz = object position, w = field strength at that point
-in vec4 attrB;      // xyz = surface normal (from the field gradient), w = kind
+in vec4 attrA;      ///< xyz = object position, w = field strength at that point
+in vec4 attrB;      ///< xyz = surface normal (from the field gradient), w = kind
 
-out vec3  vObj;
-out vec3  vNormal;
-out vec3  vView;
-out vec3  vWorld;
+out vec3  vObj;   ///< Object-space position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out float vStrength;
-out float vKind;
+out float vKind;   ///< Element kind (from the vertex stage).
 
-uniform mat4  projM;
-uniform mat4  lightM;
-uniform float shadowPass;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
-uniform float audioAdvance;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camDistP;
+uniform float camDistP;   ///< Camera distance knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 p = attrA.xyz;

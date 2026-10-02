@@ -1,11 +1,11 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // NeuralAxonSynapseCloud.frag
 
-uniform vec2  resolution;
-uniform float time;
-uniform float audioChromaHue;
-uniform float hueP;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 in vec4 vColor;
 in float vSize;
@@ -24,12 +24,14 @@ in float vSize;
  * can still be nudged live.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float hue = (hueP > 0.0) ? hueP : 0.0;
 

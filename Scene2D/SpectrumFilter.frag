@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SpectrumFilter.frag
  * @brief The photo re-lit by the song's own EQ curve: its luminance is
@@ -21,34 +21,35 @@ out vec4 fragColor;
 // texFFT: R = filtered luma, G = |filtered - original| (where the filter is
 // working hardest), B = original luma.
 
-uniform sampler2D tex0;
-uniform sampler2D texFFT;        // <- requests the FFT pass
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D texFFT;        ///< <- requests the FFT pass
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float mixP;              // how much of the filtered luma to take
-uniform float glowP;
-uniform sampler2D tex1;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform float mixP;              ///< how much of the filtered luma to take
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,6 +59,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

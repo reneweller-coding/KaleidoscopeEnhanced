@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file PixelMelt.frag
  * @brief The photo dissolving into pixel-sorted streaks that sweep through
@@ -16,25 +16,27 @@ out vec4 fragColor;
 // revealed by a moving mask so the picture MELTS into streaks and re-forms
 // instead of just being permanently scrambled.
 
-uniform sampler2D tex0;
-uniform sampler2D texSorted;     // <- requests the pixel-sort pass
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D texSorted;     ///< <- requests the pixel-sort pass
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioBuildUp;
-uniform float audioAdvance;
-uniform float audioHigh;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioBuildUp;   ///< Build-up toward a drop, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float meltP;             // how much of the frame melts at rest
-uniform float bandP;             // band structure of the mask
+uniform float meltP;             ///< how much of the frame melts at rest
+uniform float bandP;             ///< band structure of the mask
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) { return fract(sin(p * 127.1) * 43758.5453); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

@@ -7,17 +7,19 @@
  * change continuous.  Edge levels from the edge midpoints so neighbouring
  * patches agree.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(vertices = 4) out;
 
-in  vec2 vUV[];
-in  vec4 vSeed[];
+in  vec2 vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in  vec4 vSeed[];   ///< Per-instance random seed (from the vertex stage).
 out vec2 tcUV[];
 out vec4 tcSeed[];
 
 const vec2 EXTENT = vec2(14.0, 9.0);
-uniform float detailP;
-uniform float audioSwell;
+uniform float detailP;   ///< Detail knob, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
+/// @brief Brightness level between two coordinates.
 float levelFor(vec2 uvA, vec2 uvB)
 {
     vec2 mid = mix(uvA, uvB, 0.5);
@@ -26,6 +28,7 @@ float levelFor(vec2 uvA, vec2 uvB)
     return clamp(14.0 * detailP * fine / (1.0 + d * 0.08), 2.0, 24.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     tcUV[gl_InvocationID]   = vUV[gl_InvocationID];

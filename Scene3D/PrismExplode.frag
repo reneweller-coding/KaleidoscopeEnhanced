@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // PrismExplode.frag — real dispersion, from Cauchy's equation.
 // -----------------------------------------------------------------------
 // A prism makes a spectrum because glass has a different refractive index for
@@ -20,11 +20,11 @@ out vec4 fragColor;
 // why this looks like glass rather than like a rainbow gradient painted on.
 // -----------------------------------------------------------------------
 
-in vec3  vNormal;
-in vec3  vView;
-in vec3  vObj;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vView;   ///< View vector (from the vertex stage).
+in vec3  vObj;   ///< Object-space position (from the vertex stage).
 in float vWedge;
-in float vSeed;
+in float vSeed;   ///< Per-instance random seed (from the vertex stage).
 
 /**
  * @file PrismExplode.frag
@@ -43,34 +43,35 @@ in float vSeed;
  * varies facet-edge tinting between shards.
  */
 
-uniform sampler2D tex0;
-uniform float interpolation;
-uniform float time;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float glowP;
-uniform float hueP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float dispP;
-uniform sampler2D tex1;
-uniform float audioAdvance;
-uniform float audioValence;        // preset: how strongly the glass disperses
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;        ///< preset: how strongly the glass disperses
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -80,15 +81,16 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
 }
 
-// What the shard sees in a given direction.  There is no environment map here,
-// so the surroundings are a cheap analytic sky: a bright band overhead, a warm
-// floor bounce, and a couple of hot spots that give the glass something to
-// catch.
+/// What the shard sees in a given direction.  There is no environment map here,
+/// so the surroundings are a cheap analytic sky: a bright band overhead, a warm
+/// floor bounce, and a couple of hot spots that give the glass something to
+/// catch.
 vec3 environment(vec3 d, float hueBase)
 {
     float up = d.y * 0.5 + 0.5;
@@ -112,6 +114,7 @@ vec3 environment(vec3 d, float hueBase)
     return sky;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 n = normalize(vNormal);

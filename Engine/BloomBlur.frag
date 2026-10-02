@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file BloomBlur.frag
  * @brief One pass of the two-pass Gaussian bloom (quarter-resolution).
@@ -11,9 +11,9 @@ out vec4 fragColor;
  */
 
 uniform sampler2D tex;
-uniform vec2  resolution;   // TARGET (bloom buffer) resolution
-uniform vec2  dir;          // blur direction in target pixels
-uniform float threshold;    // >0 -> bright-pass extract (first pass only)
+uniform vec2  resolution;   ///< TARGET (bloom buffer) resolution
+uniform vec2  dir;          ///< blur direction in target pixels
+uniform float threshold;    ///< >0 -> bright-pass extract (first pass only)
 
 vec3 tap(vec2 uv)
 {
@@ -23,6 +23,7 @@ vec3 tap(vec2 uv)
     return c;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

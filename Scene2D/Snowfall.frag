@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Snowfall.frag
  * @brief A blizzard of four depth-layered flake sheets falling in front of a
@@ -27,35 +27,36 @@ out vec4 fragColor;
 // together while the layers still drift past each other.
 // -----------------------------------------------------------------------
 
-uniform sampler2D tex0;
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioAdvance;
-uniform float audioAmbient;
-uniform float audioChromaHue;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float densityP;     // preset: flakes per layer
-uniform float windP;        // preset: gust strength
-uniform float depthP;
-uniform sampler2D tex1;
-uniform float audioValence;       // preset: how much the photo recedes
+uniform float densityP;     ///< preset: flakes per layer
+uniform float windP;        ///< preset: gust strength
+uniform float depthP;   ///< Depth knob, 0..1.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float audioValence;       ///< preset: how much the photo recedes
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -66,21 +67,23 @@ vec3 imgPalette(float t)
 }
 
 
-// House tint: bend a colour toward the photo palette while keeping its
-// luminance -- the identity look survives, only the hue follows the photos.
+/// House tint: bend a colour toward the photo palette while keeping its
+/// luminance -- the identity look survives, only the hue follows the photos.
 vec3 palTint(vec3 c, float t, float k)
 {
     vec3 tp = imgPalette(t);
     tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
     return mix(c, tp, k);
 }
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) { return fract(sin(p * 127.1) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 vec2  hash21(float p)
 {
     return fract(sin(vec2(p * 127.1, p * 311.7)) * 43758.5453);
 }
 
-// One sheet of flakes.  Returns coverage; 'soft' is how out of focus it is.
+/// One sheet of flakes.  Returns coverage; 'soft' is how out of focus it is.
 float layer(vec2 uv, float aspect, float cells, float speed, float soft, float seed)
 {
     // The shared wind field.  It is a function of HEIGHT, so a gust travels
@@ -125,6 +128,7 @@ float layer(vec2 uv, float aspect, float cells, float speed, float soft, float s
     return clamp(acc, 0.0, 1.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

@@ -7,12 +7,13 @@
 // BloomSculpt.vert — pass the patch corner through; the sphere is built and
 // displaced per generated vertex in the evaluation shader.
 
-in vec4 attrA;      // xy = global (u,v) of the patch corner
-in vec4 attrB;
+in vec4 attrA;      ///< xy = global (u,v) of the patch corner
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-out vec2 vUV;
-out vec4 vSeed;
+out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec4 vSeed;   ///< Per-instance random seed (from the vertex stage).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vUV   = attrA.xy;

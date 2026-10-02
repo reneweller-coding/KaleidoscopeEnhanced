@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file GyroidTriplyPeriodicLabyrinth.frag
  * @brief GYROID TRIPLY PERIODIC LABYRINTH: Raymarched infinite non-Euclidean minimal
@@ -21,40 +21,41 @@ out vec4 fragColor;
  *   hueP    float structural chromatic hue offset   (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float scaleP;
+uniform float scaleP;   ///< Scale knob.
 uniform float wallP;
-uniform float speedP;
-uniform float hueP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -64,38 +65,41 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief 2D rotation matrix.
 mat2 rot2D(float a) {
     float c = cos(a), s = sin(a);
     return mat2(c, -s, s, c);
 }
 
-// Triply Periodic Minimal Surface (Gyroid) Distance Function.
-// NOTE the divisor: dividing only by `scale` treats |grad g| as 1, but the
-// gyroid field's gradient runs to about 1.7 in the corridors and past 3 near
-// the saddles.  With the old bound the marcher stepped roughly twice the true
-// clearance, tunnelled straight through the thin walls, ran out of range and
-// took the miss branch -- which painted vec3(0.02,0.03,0.06), i.e. nothing.
-// That is where this scene's dead, flat, quarter-full frame came from.
+/// Triply Periodic Minimal Surface (Gyroid) Distance Function.
+/// NOTE the divisor: dividing only by `scale` treats |grad g| as 1, but the
+/// gyroid field's gradient runs to about 1.7 in the corridors and past 3 near
+/// the saddles.  With the old bound the marcher stepped roughly twice the true
+/// clearance, tunnelled straight through the thin walls, ran out of range and
+/// took the miss branch -- which painted vec3(0.02,0.03,0.06), i.e. nothing.
+/// That is where this scene's dead, flat, quarter-full frame came from.
 float gyroidSDF(vec3 p, float scale, float thickness) {
     vec3 q = p * scale;
     float g = dot(sin(q), cos(q.zxy));
     return (abs(g) - thickness) / (scale * 1.75);
 }
 
-// Analytic gradient of the gyroid field in q space (used to keep the flight
-// path in the middle of a corridor -- far cheaper than a full calcNormal).
+/// Analytic gradient of the gyroid field in q space (used to keep the flight
+/// path in the middle of a corridor -- far cheaper than a full calcNormal).
 vec3 gyroidGrad(vec3 q) {
     return vec3(cos(q.x) * cos(q.z) - sin(q.y) * sin(q.x),
                 cos(q.y) * cos(q.x) - sin(q.z) * sin(q.y),
                 cos(q.z) * cos(q.y) - sin(q.x) * sin(q.z));
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p, float scale, float thickness) {
     float eps = 0.005;
     vec2 h = vec2(eps, 0.0);
@@ -106,6 +110,7 @@ vec3 calcNormal(vec3 p, float scale, float thickness) {
     ));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float scl = (scaleP > 0.0) ? scaleP : 1.0;
     float wll = (wallP  > 0.0) ? wallP  : 1.0;

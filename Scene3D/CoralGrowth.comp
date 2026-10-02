@@ -73,34 +73,36 @@ layout(std430, binding = 2) buffer State
     uint st[];
 };
 
-uniform uint  maxVertices;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
 uniform uint  frameIndex;
 uniform float genPass;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float stickP;       // preset: contact radius, so bond length
-uniform float thickP;       // preset: branch thickness
-uniform float reachP;       // preset: how far the colony is allowed to spread
+uniform float stickP;       ///< preset: contact radius, so bond length
+uniform float thickP;       ///< preset: branch thickness
+uniform float reachP;       ///< preset: how far the colony is allowed to spread
 
 const int   NODES   = 12000;
 const int   WALKERS = 512;
 const int   SEEDS   = 32;
 const int   SIDES   = 6;
 const int   GRID    = 38;
-const float GH      = 3.2;                      // half extent of the hash grid
+const float GH      = 3.2;                      ///< half extent of the hash grid
 const vec3  BASE    = vec3(0.0, -1.55, 0.0);    // the floor the colony sits on
 
 const int OFF_NODES = 0;
 const int OFF_WALK  = 4 * NODES;
 const int OFF_GRID  = 4 * NODES + 4 * WALKERS;
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
+/// @brief Pseudo-random vec3 (each 0..1) from a float.
 vec3  hash3(float n)
 {
     return fract(sin(vec3(n * 91.3458, n * 47.1234, n * 13.9871)) * 43758.5453);
@@ -127,6 +129,7 @@ int cellIndex(ivec3 c)
     return c.x + GRID * (c.y + GRID * c.z);
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float age, float depth)
 {
     uint o = slot * 8u;
@@ -136,6 +139,7 @@ void writeVertex(uint slot, vec3 p, vec3 n, float age, float depth)
     verts[o + 7u] = depth;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

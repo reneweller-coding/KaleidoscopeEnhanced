@@ -10,16 +10,17 @@
  * therefore happens in ShatterSculpture.geom.
  */
 
-in vec4 attrA;   // mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   // mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
+in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
 
-uniform int meshVertexCount;
+uniform int meshVertexCount;   ///< Vertices of the scene's mesh.
 
 out vec3  gPos;
 out vec3  gNormal;
 out vec2  gUV;
 out float gBg;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     gPos    = attrA.xyz;

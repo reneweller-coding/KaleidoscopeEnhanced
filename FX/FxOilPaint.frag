@@ -1,17 +1,17 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxOilPaint.frag
  * @brief FX OIL PAINT: Kuwahara-style edge-preserving smoothing -- each pixel
  * picks the least-variance quadrant of its neighbourhood, giving a
  * painterly, brushstroke-flattened look.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioBeat;    // beats sharpen the painting toward the raw scene
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioBeat;    ///< beats sharpen the painting toward the raw scene
  
  const int radius = 7;
 

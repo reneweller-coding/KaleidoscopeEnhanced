@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 /**
  * @file ShadowTheatre.frag
@@ -28,25 +28,26 @@ out vec4 fragColor;
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 
-uniform float time;
-uniform float interpolation;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioHigh;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float hueP;
-uniform float tintP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP;   ///< Tint knob, 0..1.
 uniform float nearP;
 
-in vec3  vNormal;
-in vec3  vPos;
-in vec3  vWorld;
-in float vBg;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     const vec3 k = vec3(0.57735);
@@ -54,8 +55,10 @@ vec3 hueRot(vec3 c, float a)
     return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
 
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -71,6 +74,7 @@ vec3 photo(vec2 uv)
     return mix(texture(tex1, uv).rgb, texture(tex0, uv).rgb, 1.0 - interpolation);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hue = (hueP > 0.01 ? hueP : 0.0);

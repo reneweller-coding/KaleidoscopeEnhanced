@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 in vec3 gNormal;
 in vec3 gWorld;
@@ -13,6 +13,7 @@ in vec3 gCol;
  * synced explosion are computed in the geometry stage and arrive pre-baked in gCol.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 n = normalize(gNormal);
     vec3 viewDir = normalize(-gWorld);

@@ -24,7 +24,7 @@ layout(std430, binding = 0) buffer Accum { uint acc[]; };
 layout(std430, binding = 1) buffer Parts { vec4 part[]; };   // xy pos, zw vel
 layout(std430, binding = 2) buffer Grid  { uint cell[]; };
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform uint  count;
 uniform int   gridN;
 uniform int   perCell;
@@ -32,7 +32,7 @@ uniform float dt;
 uniform float kick;
 uniform float level;
 uniform float swirl;
-uniform int   buildGrid;    // 1 = only bin into the grid, 0 = simulate + splat
+uniform int   buildGrid;    ///< 1 = only bin into the grid, 0 = simulate + splat
 
 const float SCALE = 256.0;
 
@@ -45,6 +45,7 @@ void splat1(ivec2 ip, float w)
     atomicAdd(acc[i + 3u], uint(w * SCALE));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

@@ -1,4 +1,5 @@
 #version 430
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 /**
@@ -20,15 +21,15 @@ layout(std430, binding = 0) buffer Verts {
 // DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
 layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw), and the
 // camera distance the companion .vert applies.  A generator program gets no
@@ -38,17 +39,18 @@ const float kAspect = 1.7778;
 const float kCam    = 4.8;
 
 const uint ORGS     = 7u;
-const uint SPIC_N   = 48u;                      // radial axopodia per skeleton
-const uint SPIC_S   = 32u;                      // segments per spicule
-const uint SPIC_TOT = SPIC_N * SPIC_S;          // 1536
-const uint ARC_N    = 72u;                      // great-circle shell struts
-const uint ARC_S    = 24u;                      // segments per strut
-const uint ARC_TOT  = ARC_N * ARC_S;            // 1728
-const uint PER_ORG  = SPIC_TOT + ARC_TOT;       // 3264
-const uint ORG_TOT  = PER_ORG * ORGS;           // 22848
-const uint DUST     = 5000u;                    // silica dust motes
-const uint TOTAL    = ORG_TOT + DUST;           // 27848 segs = 167088 vertices
+const uint SPIC_N   = 48u;                      ///< radial axopodia per skeleton
+const uint SPIC_S   = 32u;                      ///< segments per spicule
+const uint SPIC_TOT = SPIC_N * SPIC_S;          ///< 1536
+const uint ARC_N    = 72u;                      ///< great-circle shell struts
+const uint ARC_S    = 24u;                      ///< segments per strut
+const uint ARC_TOT  = ARC_N * ARC_S;            ///< 1728
+const uint PER_ORG  = SPIC_TOT + ARC_TOT;       ///< 3264
+const uint ORG_TOT  = PER_ORG * ORGS;           ///< 22848
+const uint DUST     = 5000u;                    ///< silica dust motes
+const uint TOTAL    = ORG_TOT + DUST;           ///< 27848 segs = 167088 vertices
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 53.19;
@@ -56,10 +58,10 @@ float hash11(float p) {
     return fract(p);
 }
 
-// Each skeleton turns on its own two axes, about ITS OWN centre.  The spin used
-// to live in the vertex stage, where it rotated every position about the world
-// origin -- harmless for a single skeleton sitting there, but it would swing a
-// whole field of them right out of the frustum.
+/// Each skeleton turns on its own two axes, about ITS OWN centre.  The spin used
+/// to live in the vertex stage, where it rotated every position about the world
+/// origin -- harmless for a single skeleton sitting there, but it would swing a
+/// whole field of them right out of the frustum.
 vec3 spin(vec3 p, float a, float b) {
     float ca = cos(a), sa = sin(a);
     p = vec3(p.x * ca - p.z * sa, p.y, p.x * sa + p.z * ca);
@@ -68,6 +70,7 @@ vec3 spin(vec3 p, float a, float b) {
     return p;
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, float e1, float e2) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
@@ -76,6 +79,7 @@ void writeVertex(uint slot, vec3 p, float e1, float e2) {
     verts[o + 7u] = e2;
 }
 
+/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
 void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
@@ -103,6 +107,7 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     writeVertex(base + 5u, b0, e1, e2);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);

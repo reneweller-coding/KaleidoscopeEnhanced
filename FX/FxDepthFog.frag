@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxDepthFog.frag
  * @brief FX DEPTH FOG: physically modelled atmospheric haze that separates
@@ -33,35 +33,37 @@ out vec4 fragColor;
 //
 // Height falloff turns the fog into a layer with a surface rather than a
 // uniform fill, which is what lets tall geometry stand out of it.
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
 uniform vec2  depthValid;
-uniform vec2  nearFar;
+uniform vec2  nearFar;   ///< Near and far clip distances.
 uniform float tanHalfFov;
-uniform float interpolation;
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 uniform float dayPhase;
 
-uniform float densityP;     // preset: how thick the air is
-uniform float heightP;      // preset: how fast the layer thins with height
-uniform float glowP;        // preset: strength of the forward scattering
+uniform float densityP;     ///< preset: how thick the air is
+uniform float heightP;      ///< preset: how fast the layer thins with height
+uniform float glowP;        ///< preset: strength of the forward scattering
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
 }
 
+/// @brief Depth buffer value to linear distance.
 float linearise(float d)
 {
     float n = nearFar.x, f = nearFar.y;
@@ -69,8 +71,8 @@ float linearise(float d)
     return (2.0 * n * f) / (f + n - z * (f - n));
 }
 
-// Henyey-Greenstein phase function: how much light scattered from direction L
-// ends up travelling toward the viewer.
+/// Henyey-Greenstein phase function: how much light scattered from direction L
+/// ends up travelling toward the viewer.
 float phaseHG(float cosT, float g)
 {
     float g2 = g * g;
@@ -120,6 +122,7 @@ vec3 fogged(sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
     return mix(c, air, ext);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

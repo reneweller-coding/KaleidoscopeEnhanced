@@ -1,11 +1,11 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // PhotoShatter.frag — plain image shards with a hot edge while flying.
-uniform sampler2D tex0;
-uniform float audioDrop;
-uniform float audioChromaHue;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vLight;
 
 /**
@@ -18,6 +18,7 @@ in float vLight;
  * edge colour so it tracks the music's key.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -25,6 +26,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 col = texture(tex0, vUV).rgb * vLight;

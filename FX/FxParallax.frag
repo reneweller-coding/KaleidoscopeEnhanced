@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxParallax.frag
  * @brief FX PARALLAX: 32-layer depth parallax -- the scene is resampled at
  * increasing depths along a circling offset, retro-pixellated, each
  * layer masked by its own luminance so nearer layers occlude farther ones.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioPhase;   // music adds orbital drift
-uniform float audioSwell;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioPhase;   ///< music adds orbital drift
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 vec2 clampQuadratic( vec2 p )
 {
@@ -33,6 +33,7 @@ vec2 clampQuadratic( vec2 p )
 	return uv;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
 

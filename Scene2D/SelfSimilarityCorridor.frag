@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SelfSimilarityCorridor.frag
  * @brief SELF-SIMILARITY CORRIDOR: an endless corridor whose floor, ceiling
@@ -20,33 +20,35 @@ out vec4 fragColor;
  *
  * Per-activation variety: scaleP (tiles per second of history), glowP, hueP.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform sampler2D texSSM;       // 256x256 similarity, ring in both axes (unit 10)
-uniform float ssmHead;          // ring head as 0..1 texture coordinate
-uniform float ssmFill;          // 0..1 how much history exists yet
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texSSM;       ///< 256x256 similarity, ring in both axes (unit 10)
+uniform float ssmHead;          ///< ring head as 0..1 texture coordinate
+uniform float ssmFill;          ///< 0..1 how much history exists yet
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioAdvance;
-uniform float audioBeat;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioBarPhase;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float scaleP;
-uniform float glowP;
-uniform float hueP;
+uniform float scaleP;   ///< Scale knob.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -56,8 +58,8 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
-// Similarity between history positions a and b (each 0 = now .. 1 = oldest),
-// unwrapped through the ring head so "now" is always at the same place.
+/// Similarity between history positions a and b (each 0 = now .. 1 = oldest),
+/// unwrapped through the ring head so "now" is always at the same place.
 float ssm(float a, float b)
 {
     // h = 0 is the OLDEST stored moment and h = 1 is now, sampled as
@@ -67,6 +69,7 @@ float ssm(float a, float b)
     return texture(texSSM, h).r * min(ssmFill * 3.0, 1.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

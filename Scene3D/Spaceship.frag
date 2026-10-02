@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Spaceship.frag
  * @brief GEOM="MESH" SHOWCASE: a real loaded 3D model (config attribute
@@ -17,21 +17,22 @@ out vec4 fragColor;
  *   hueP float palette offset (0..6.28)
  */
 
-uniform sampler2DArray texMeshMaterial;   // layer 0 = baseColor+opacity, layer 1 = (unused,roughness,metallic)
-uniform int texMeshMaterialLayers;        // 1 = base color only, 2 = + metallic-roughness
+uniform sampler2DArray texMeshMaterial;   ///< layer 0 = baseColor+opacity, layer 1 = (unused,roughness,metallic)
+uniform int texMeshMaterialLayers;        ///< 1 = base color only, 2 = + metallic-roughness
 
-uniform float time;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec2 vUV;
-in vec3 vNormal;
-in vec3 vPos;
-in float vBg;
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec3 vPos;   ///< Position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -39,11 +40,13 @@ vec3 hueRot(vec3 c, float a) {
 }
 
 // ---- Sky shell: shared hash/noise/fbm + a dust nebula ----
+/// @brief Pseudo-random number 0..1 from a 3D point.
 float hash13(vec3 p) {
     p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
     p *= 17.0;
     return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
 }
+/// @brief Smooth 3D value noise, 0..1.
 float noise3(vec3 x) {
     vec3 i = floor(x), f = fract(x);
     f = f * f * (3.0 - 2.0 * f);
@@ -54,15 +57,18 @@ float noise3(vec3 x) {
     return mix(mix(mix(n000,n100,f.x), mix(n010,n110,f.x), f.y),
                mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
 }
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec3 p) {
     float v = 0.0, a = 0.5;
     for (int i = 0; i < 5; i++) { v += a * noise3(p); p = p * 2.03 + 7.1; a *= 0.5; }
     return v;
 }
+/// @brief Star field brightness for a direction.
 float starsField(vec3 dir, float density) {
     float h = hash13(floor(dir * 500.0));
     return smoothstep(1.0 - density, 1.0, h);
 }
+/// @brief The sky colour for a direction.
 vec3 renderSky(vec3 dir)
 {
     float n1 = fbm(dir * 2.1 + vec3(time * 0.004, 0.0, 0.0));
@@ -77,14 +83,14 @@ vec3 renderSky(vec3 dir)
     return cloud + vec3(1.0) * starsField(dir, 0.0018);
 }
 
-// AUTO-EXPOSURE against the material's own average brightness.
-// This asset set is not uniform: measured base-colour luma runs from 0.14
-// (dark station hulls) to 0.67 (a near-white Culture GSV) -- a factor of
-// more than four. A single fixed lighting gain therefore cannot serve both;
-// tuned for the dark hulls it blows the bright ones out to a featureless
-// white blob, which is exactly how they were rendering.
-// The COARSEST MIP of the material array is the texture's average, so one
-// extra fetch buys a per-model exposure with no CPU side and no new uniform.
+/// AUTO-EXPOSURE against the material's own average brightness.
+/// This asset set is not uniform: measured base-colour luma runs from 0.14
+/// (dark station hulls) to 0.67 (a near-white Culture GSV) -- a factor of
+/// more than four. A single fixed lighting gain therefore cannot serve both;
+/// tuned for the dark hulls it blows the bright ones out to a featureless
+/// white blob, which is exactly how they were rendering.
+/// The COARSEST MIP of the material array is the texture's average, so one
+/// extra fetch buys a per-model exposure with no CPU side and no new uniform.
 float materialExposure(sampler2DArray tex)
 {
     vec3 avg = textureLod(tex, vec3(0.5, 0.5, 0.0), 20.0).rgb;   // lod clamps to the last level
@@ -93,15 +99,15 @@ float materialExposure(sampler2DArray tex)
 }
 
 // ---- normal mapping ------------------------------------------------------
-// Layer 2 of the material array is a tangent-space normal map, present on the
-// assets whose generator run produced a usable one (about a fifth of them).
-//
-// There are no tangents in the vertex format -- it is a fixed 8 floats shared
-// by every geom kind -- so the frame is rebuilt per fragment from screen-space
-// derivatives of position and UV. That is the standard cotangent-frame trick,
-// and it costs nothing in the vertex stage and no change to the buffer layout.
-// A model WITHOUT a normal map has materialLayers < 3 and this returns the
-// interpolated normal untouched, so every scene works either way.
+/// Layer 2 of the material array is a tangent-space normal map, present on the
+/// assets whose generator run produced a usable one (about a fifth of them).
+///
+/// There are no tangents in the vertex format -- it is a fixed 8 floats shared
+/// by every geom kind -- so the frame is rebuilt per fragment from screen-space
+/// derivatives of position and UV. That is the standard cotangent-frame trick,
+/// and it costs nothing in the vertex stage and no change to the buffer layout.
+/// A model WITHOUT a normal map has materialLayers < 3 and this returns the
+/// interpolated normal untouched, so every scene works either way.
 mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
 {
     vec3 dp1 = dFdx(p),  dp2 = dFdy(p);
@@ -114,6 +120,7 @@ mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
     return mat3(T * inv, B * inv, N);
 }
 
+/// @brief The normal tilted by the material's normal map.
 vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength)
 {
     if (layers < 3) return n;
@@ -125,6 +132,7 @@ vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, f
     return normalize(cotangentFrame(n, wpos, uv) * normalize(m));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if (vBg > 0.5)

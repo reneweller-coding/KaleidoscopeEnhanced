@@ -19,38 +19,39 @@
 // broil, and the far sky layer keeps the gaps between the billows off pure
 // black.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 
-uniform float audioSnare;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioDrop;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform float audioSnare;   ///< Snare envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4 vCol;
+out vec4 vCol;   ///< Colour (from the vertex stage).
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -61,18 +62,19 @@ vec3 imgPalette(float t)
 }
 
 
-// House tint: bend a colour toward the photo palette while keeping its
-// luminance -- the identity look survives, only the hue follows the photos.
+/// House tint: bend a colour toward the photo palette while keeping its
+/// luminance -- the identity look survives, only the hue follows the photos.
 vec3 palTint(vec3 c, float t, float k)
 {
     vec3 tp = imgPalette(t);
     tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
     return mix(c, tp, k);
 }
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 
-// Strike envelope of bolt b: its own slow clock arms it, the flash decays
-// fast; audio (snare/drop) multiplies whatever is armed RIGHT NOW.
+/// Strike envelope of bolt b: its own slow clock arms it, the flash decays
+/// fast; audio (snare/drop) multiplies whatever is armed RIGHT NOW.
 float boltEnv(float b)
 {
     float cyc = fract(time * (0.10 + 0.07 * hash11(b * 3.3))
@@ -84,7 +86,7 @@ float boltEnv(float b)
     return max(exp(-cyc * 14.0), leader);
 }
 
-// Bolt b's jagged column: position at height h (0 top .. 1 ground).
+/// Bolt b's jagged column: position at height h (0 top .. 1 ground).
 vec3 boltPos(float b, float h)
 {
     vec2 start = vec2((hash11(b * 1.9) - 0.5) * 110.0,
@@ -95,6 +97,7 @@ vec3 boltPos(float b, float h)
     return vec3(start.x + jag.x, 34.0 - h * 58.0, start.y + jag.y);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;

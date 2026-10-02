@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file DysonSphereCore.frag
  * @brief DYSON SPHERE CORE: Huge panels and spires of a megastructure surrounding
@@ -16,31 +16,33 @@ out vec4 fragColor;
  *   hueP float palette offset (0..6.28)
  */
 
-uniform float time;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioValence;
-uniform float audioLevel;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float panelP;
 uniform float energyP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 in vec3 vCorner;
-in vec3 vPos;
-in vec3 vNormal;
+in vec3 vPos;   ///< Position (from the vertex stage).
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -50,13 +52,14 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// Tech pattern for panels
+/// Tech pattern for panels
 float techPattern(vec2 uv) {
     uv *= 5.0;
     vec2 id = floor(uv);
@@ -75,6 +78,7 @@ float techPattern(vec2 uv) {
     return edge * (0.5 + 0.5 * h);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float pp = (panelP > 0.01 ? panelP : 1.0);

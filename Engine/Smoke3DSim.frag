@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Smoke3DSim.frag
  * @brief GPU volumetric fire/smoke simulation: a real 3D field faked as a 2D-tiled
@@ -24,18 +24,18 @@ out vec4 fragColor;
  */
 
 uniform sampler2D texPrev;
-uniform vec2  resolution;      // full atlas size in pixels
-uniform float seedMode;        // 1 on the very first frame -> clear to black
-uniform float subStep;         // 0 = horizontal pass, 1 = vertical pass
-uniform float time;
-uniform float turbulence;      // audio treble/onset -> per-cell swirl strength
-uniform float injectAmt;       // audio kick/bass/drop -> base injection strength
-uniform float emitterPhase;    // integrated (jump-free) wander phase for emitters
+uniform vec2  resolution;      ///< full atlas size in pixels
+uniform float seedMode;        ///< 1 on the very first frame -> clear to black
+uniform float subStep;         ///< 0 = horizontal pass, 1 = vertical pass
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float turbulence;      ///< audio treble/onset -> per-cell swirl strength
+uniform float injectAmt;       ///< audio kick/bass/drop -> base injection strength
+uniform float emitterPhase;    ///< integrated (jump-free) wander phase for emitters
 
 const float TILE = 64.0;
 const float COLS = 5.0;
 const float ROWS  = 4.0;
-const float NSLICES = COLS * ROWS;   // 20
+const float NSLICES = COLS * ROWS;   ///< 20
 
 vec2 tileOrigin(float slice)
 {
@@ -44,8 +44,8 @@ vec2 tileOrigin(float slice)
     return vec2(col, row) * TILE;
 }
 
-// Sample a texel by its LOCAL (0..TILE) position inside a given depth slice,
-// clamped to stay inside that one cell (never bleeds into the neighbour).
+/// Sample a texel by its LOCAL (0..TILE) position inside a given depth slice,
+/// clamped to stay inside that one cell (never bleeds into the neighbour).
 vec4 sampleSlice(float slice, vec2 localPx)
 {
     slice = clamp(slice, 0.0, NSLICES - 1.0);
@@ -54,6 +54,7 @@ vec4 sampleSlice(float slice, vec2 localPx)
     return texture(texPrev, (o + lp) / resolution);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
@@ -61,6 +62,7 @@ float hash21(vec2 p)
     return fract(p.x * p.y);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  fragPx = gl_FragCoord.xy;

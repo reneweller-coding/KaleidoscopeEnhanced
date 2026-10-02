@@ -1,11 +1,11 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
-in vec4 vCol;
-in vec3 vNormal;
-in vec3 vWorld;
-in vec2 vQuad;      // marine-snow mote's quad coordinate
-in float vSnow;     // 0 = creature, 1 = marine snow
+in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec3 vWorld;   ///< World position (from the vertex stage).
+in vec2 vQuad;      ///< marine-snow mote's quad coordinate
+in float vSnow;     ///< 0 = creature, 1 = marine snow
 
 /**
  * @file BioluminescentSwarm.frag
@@ -25,6 +25,7 @@ in float vSnow;     // 0 = creature, 1 = marine snow
  * shaped into soft discs.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     if (vSnow > 0.5)
     {

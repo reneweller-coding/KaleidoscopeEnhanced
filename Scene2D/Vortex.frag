@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Vortex.frag
  * @brief Adapted from "Vortex" by \@kishimisu (2024) — https://www.shadertoy.com/view/MX33Dr
@@ -11,33 +11,33 @@ out vec4 fragColor;
  * via audioAdvance, spin via audioPhase; beats brighten; centroid/valence grade).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;
-uniform float audioPhase;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSwell;      // slow loudness swell -> tunnel cells breathe
-uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSwell;      ///< slow loudness swell -> tunnel cells breathe
+uniform float audioBarPhase;   ///< 0..1 per bar -> gentle per-bar hue sweep
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sectorsP;   // mirror sector count   (0 -> 10; 6 = broad, 16 = fine)
-uniform float curveP;     // tunnel bend           (0 -> 0.09; 0.04 = straight, 0.14 = swoop)
-uniform float travP;      // scroll speed multiplier (0 -> 1.0)
-uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
-uniform float rosetteP;   // rosette strength      (0 -> 0.22)
+uniform int   sectorsP;   ///< mirror sector count   (0 -> 10; 6 = broad, 16 = fine)
+uniform float curveP;     ///< tunnel bend           (0 -> 0.09; 0.04 = straight, 0.14 = swoop)
+uniform float travP;      ///< scroll speed multiplier (0 -> 1.0)
+uniform int   kSides;     ///< >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;   ///< rosette strength      (0 -> 0.22)
 
-// Original's mat2(cos(vec4(0,11,33,0)+a)) ≈ a proper rotation by a.
+/// Original's mat2(cos(vec4(0,11,33,0)+a)) ≈ a proper rotation by a.
 mat2 rotv(float a) { return mat2(cos(a), sin(a), -sin(a), cos(a)); }
 
-// n-fold kaleidoscopic mirror fold of a centred coordinate.
+/// n-fold kaleidoscopic mirror fold of a centred coordinate.
 vec2 kaleido(vec2 p, float sides)
 {
     float a   = atan(p.y, p.x);
@@ -47,11 +47,12 @@ vec2 kaleido(vec2 p, float sides)
     a = abs(a);
     return vec2(cos(a), sin(a)) * r;
 }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
-// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
-// palette comes from the image and keeps changing over time + with the harmony.
+/// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
+/// palette comes from the image and keeps changing over time + with the harmony.
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -59,7 +60,7 @@ vec3 imgPal(float x)
     return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
 }
 
-// Hue rotation around the luminance axis (keeps brightness + saturation).
+/// Hue rotation around the luminance axis (keeps brightness + saturation).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -67,6 +68,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  Res = resolution;

@@ -14,26 +14,27 @@
 // is to be laid out in FRUSTUM coordinates -- x and y scaled by depth -- so
 // it covers the picture evenly however far away it is.
 
-in vec4 attrA;      // xyz = position (or dust seeds), w = band energy / dust size
-in vec4 attrB;      // xyz = normal (or quad corner), w = band 0..1, -1 = dust
+in vec4 attrA;      ///< xyz = position (or dust seeds), w = band energy / dust size
+in vec4 attrB;      ///< xyz = normal (or quad corner), w = band 0..1, -1 = dust
 
-out vec3  vWorld;
-out vec3  vNormal;
-out vec3  vView;
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
 out float vEnergy;
 out float vBand;
-out float vDist;
+out float vDist;   ///< Distance (from the vertex stage).
 out vec2  vQuad;
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
-uniform float audioAdvance;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;
+uniform float camHP;   ///< Camera height knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // The camera drifts off the bundle's axis and back, so the weave is seen

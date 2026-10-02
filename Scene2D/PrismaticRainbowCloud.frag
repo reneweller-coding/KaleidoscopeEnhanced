@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file PrismaticRainbowCloud.frag
  * @brief PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds
@@ -17,40 +17,41 @@ out vec4 fragColor;
  *   hueP     float iridescent pastel spectrum offset       (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float densityP;
-uniform float waveP;
+uniform float densityP;   ///< Density knob, 0..1.
+uniform float waveP;   ///< Wave knob.
 uniform float rayP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
-// come from a rotating arc in the CURRENT slideshow image, so every
-// activation inherits a fresh palette from the photos, and the arc follows
-// the musical key (chromaHue is circular-slewed = jump-free) with a slow
-// advance drift.  Valence shapes saturation toward the mood.
+/// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
+/// come from a rotating arc in the CURRENT slideshow image, so every
+/// activation inherits a fresh palette from the photos, and the arc follows
+/// the musical key (chromaHue is circular-slewed = jump-free) with a slow
+/// advance drift.  Valence shapes saturation toward the mood.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -61,18 +62,19 @@ vec3 imgPalette(float t)
 }
 
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// Overall level of the photo currently on the texture units, from a fixed
-// 5-tap grid. The nacreous colour is imgPalette (a photo sample) and the
-// cirrus layer is the photo itself, so a bright photo left the god rays and
-// the sparkles no headroom at all. The probe rides the tex0/tex1 crossfade, so
-// the gain it feeds can never pop, and being one number for the whole frame it
-// rescales exposure without touching local contrast.
+/// Overall level of the photo currently on the texture units, from a fixed
+/// 5-tap grid. The nacreous colour is imgPalette (a photo sample) and the
+/// cirrus layer is the photo itself, so a bright photo left the god rays and
+/// the sparkles no headroom at all. The probe rides the tex0/tex1 crossfade, so
+/// the gain it feeds can never pop, and being one number for the whole frame it
+/// rescales exposure without touching local contrast.
 float photoLevel() {
     vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
            + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
@@ -80,12 +82,14 @@ float photoLevel() {
     return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) {
     p = fract(p * vec2(219.78, 483.12));
     p += dot(p, p + 67.21);
     return fract(p.x * p.y);
 }
 
+/// @brief Smooth value noise.
 float noise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
@@ -94,6 +98,7 @@ float noise(vec2 p) {
                mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p) {
     float v = 0.0;
     float a = 0.5;
@@ -106,6 +111,7 @@ float fbm(vec2 p) {
     return v;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float den = (densityP > 0.0) ? densityP : 1.0;
     float wav = (waveP    > 0.0) ? waveP    : 1.0;

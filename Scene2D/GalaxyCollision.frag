@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file GalaxyCollision.frag
  * @brief Displays the compute N-body simulation of two colliding galaxies (32k gravitating bodies) as a star field with a tight stellar glow and a wide galactic haze.
@@ -24,25 +24,26 @@ out vec4 fragColor;
 // Star fields need the opposite grading from a fluid: tiny bright points with
 // long soft halos, so the bloom here is wide and the core is left sharp.
 
-uniform sampler2D tex0;
-uniform sampler2D texNBody;      // <- requests the N-body sim
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D texNBody;      ///< <- requests the N-body sim
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioDrop;
-uniform float audioSpread;      // 0=narrow spectrum .. 1=wide -> dust-haze dispersion
-uniform float audioRolloff;     // 0=bass-bound .. 1=reaching into the highs -> star colour
-uniform float audioTrebRel;     // 0..2.5, ~1 = "as loud as usual" -> star-glow punch
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioSpread;      ///< 0=narrow spectrum .. 1=wide -> dust-haze dispersion
+uniform float audioRolloff;     ///< 0=bass-bound .. 1=reaching into the highs -> star colour
+uniform float audioTrebRel;     ///< 0..2.5, ~1 = "as loud as usual" -> star-glow punch
 
-uniform float glowP;             // preset: halo width
-uniform float dustP;             // preset: interstellar dust haze
+uniform float glowP;             ///< preset: halo width
+uniform float dustP;             ///< preset: interstellar dust haze
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

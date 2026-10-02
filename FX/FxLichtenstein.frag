@@ -1,19 +1,19 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxLichtenstein.frag
  * @brief FX LICHTENSTEIN: halftone-dot pop-art look -- the scene is quantized
  * into a grid of circular dots (Ben-Day dots), flat grey outside each
  * dot's radius.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float size;
-uniform float audioBeat;    // dots pop on the beat
-uniform float audioSwell;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float size;   ///< Size of the simulation grid in cells.
+uniform float audioBeat;    ///< dots pop on the beat
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 
 // Size of the quad in pixels
@@ -22,6 +22,7 @@ uniform float audioSwell;
 // Radius of the circle
 //const float radius = size * 0.5 * 0.75;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
 	// normalize to the center

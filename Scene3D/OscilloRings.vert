@@ -9,23 +9,24 @@
 // own harmonic mode, all of it slow and continuous.
 // attrA.x = angle around the ring, attrA.y = side, attrA.w = ring index.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioSpectrum[32];
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
 uniform float audioWave[64];
-uniform float audioBass;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioAdvance;
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
-out vec4  vCol;
-out float vSide;
+out vec4  vCol;   ///< Colour (from the vertex stage).
+out float vSide;   ///< Which side of a strip (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -33,6 +34,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float t  = attrA.x;

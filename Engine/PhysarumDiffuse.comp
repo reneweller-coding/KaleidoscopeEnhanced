@@ -9,13 +9,15 @@
  * produce identical trails and the host can fall back transparently.
  */
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(rgba16f, binding = 0) writeonly uniform image2D imgTrail;
 
 uniform sampler2D texTrail;
-uniform vec2  resolution;      // trail-map size
+uniform vec2  resolution;      ///< trail-map size
 uniform float decay;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Kaleidoscope.frag
  * @brief The classic kaleidoscope fold: photo pixels are read back through a polar mirror-and-repeat of `sides` segments, with an optional superellipse warp via the `power` exponent.
@@ -23,31 +23,32 @@ out vec4 fragColor;
  *                       perfectly straight mirror seams and rough clusters bend them
  *                       like old, warped kaleidoscope glass
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float interpolationRotation;
 uniform float speed;
 uniform int sides;
 uniform float power;
 uniform int rotate;
 // Audio reactivity
-uniform float audioBeat;      // beat pulse decay 0..1
-uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
-uniform float audioLevel;     // smoothed loudness 0..1
-uniform float audioFlip;      // rotation direction: +1 or -1
-uniform float audioCentroid;  // tonal brightness 0=dark drone, 1=bright shimmer
-uniform float audioFlux;      // spectral flux 0..1
-uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
-uniform float audioValence;   // mood pleasantness 0..1 (low=tense/dark, high=happy)
-uniform float audioMode;      // 0=minor/dark .. 1=major/bright -> rosette superellipse shape
-uniform float audioHarmChange;// spikes on chord/key changes -> zoom breath
-uniform float audioRoughness; // 0=consonant .. 1=dissonant -> wavy mirror-glass ripple
+uniform float audioBeat;      ///< beat pulse decay 0..1
+uniform float audioSwell;   ///< slow envelope, the calm replacement for the fast one (V7d)
+uniform float audioLevel;     ///< smoothed loudness 0..1
+uniform float audioFlip;      ///< rotation direction: +1 or -1
+uniform float audioCentroid;  ///< tonal brightness 0=dark drone, 1=bright shimmer
+uniform float audioFlux;      ///< spectral flux 0..1
+uniform float audioPhase;     ///< integrated audio rotation phase (radians, jump-free)
+uniform float audioValence;   ///< mood pleasantness 0..1 (low=tense/dark, high=happy)
+uniform float audioMode;      ///< 0=minor/dark .. 1=major/bright -> rosette superellipse shape
+uniform float audioHarmChange;///< spikes on chord/key changes -> zoom breath
+uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> wavy mirror-glass ripple
 
 const float M_PI = 3.141592653589793;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
 
     // normalize to the center

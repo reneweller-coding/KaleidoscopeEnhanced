@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // MandalaGrid.frag — an 8-fold colour rosette flowing softly inward; the
 // bar phase rolls a gentle ring of light through the pattern.
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioBarPhase;
-uniform float audioChromaHue;
-uniform float audioSwell;
-uniform float audioDrop;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioValence;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 in vec2  vPolar;
 in float vLift;
@@ -31,15 +31,16 @@ in float vLift;
  * the vertex stage) adds subtle 3D shading.
  */
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -49,6 +50,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -56,6 +58,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float ang = vPolar.x + time * 0.04 + audioAdvance * 0.08;

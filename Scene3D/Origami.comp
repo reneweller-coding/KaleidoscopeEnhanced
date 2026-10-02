@@ -48,23 +48,23 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioBass;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
 
-uniform float foldP;        // preset: how deep the fold goes
-uniform float wavesP;       // preset: fold waves across the sheet
-uniform float skewP;        // preset: crease angle, so how strong the zigzag is
+uniform float foldP;        ///< preset: how deep the fold goes
+uniform float wavesP;       ///< preset: fold waves across the sheet
+uniform float skewP;        ///< preset: crease angle, so how strong the zigzag is
 
-const int   NI = 28;        // columns (across the corrugation)
-const int   NJ = 16;        // rows
-const float CELL = 0.506;   // panel side; sized so the sheet overruns the frame
+const int   NI = 28;        ///< columns (across the corrugation)
+const int   NJ = 16;        ///< rows
+const float CELL = 0.506;   ///< panel side; sized so the sheet overruns the frame
 
 float thetaAt(int i, float phase, float base, float amp, float waves)
 {
@@ -73,7 +73,7 @@ float thetaAt(int i, float phase, float base, float amp, float waves)
     return base + amp * w;
 }
 
-// The four folded-cell lengths.  gam is the crease angle.
+/// The four folded-cell lengths.  gam is the crease angle.
 void cellDims(float th, float gam, out float H, out float S, out float L, out float V)
 {
     float st = sin(th), ct = cos(th);
@@ -108,6 +108,7 @@ vec3 vertexAt(int i, int j, float phase, float base, float amp, float waves, flo
     return vec3(x, y, z);
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float fold, float across)
 {
     uint o = slot * 8u;
@@ -117,6 +118,7 @@ void writeVertex(uint slot, vec3 p, vec3 n, float fold, float across)
     verts[o + 7u] = across;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

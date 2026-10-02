@@ -16,6 +16,7 @@
 // CrystalShatterBurst.geom — Geometry Shader intercepts triangles and violently
 // fractures them into floating tetrahedral crystal shards along explosion vectors on beats.
 layout(triangles) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 3) out;
 
 in vec3  vObjPos[];
@@ -27,23 +28,24 @@ out vec3  gWorld;
 out vec4  gCol;
 out vec3  gBary;
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioSwell;
-uniform float audioSnare;     // snare / clap onset envelope
-uniform float audioBuildUp;   // EDM tension rising toward the drop
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioSnare;     ///< snare / clap onset envelope
+uniform float audioBuildUp;   ///< EDM tension rising toward the drop
 
 uniform float burstP;
-uniform float spinP;
-uniform float camDistP;
-uniform float hueP;
+uniform float spinP;   ///< Spin knob, 0..1.
+uniform float camDistP;   ///< Camera distance knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -55,6 +57,7 @@ vec3 rotAxis(vec3 v, vec3 axis, float a) {
     return v * c + cross(axis, v) * s + axis * dot(axis, v) * (1.0 - c);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float i = vCubeIndex[0];
     vec4 seeds = vSeeds[0];

@@ -34,24 +34,25 @@
 // scaled by their own depth), which is what keeps the field even across the
 // picture at every distance, and no lamp is ever drawn below ~2.6 px.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 
-uniform float audioBeatPhase;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioArousal;   // overall intensity -> flash synchrony
-uniform float audioSpread;    // narrow .. wide spectrum -> swarm dispersion
-uniform float audioMode;      // 0 = minor / cool, 1 = major / warm
+uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioArousal;   ///< overall intensity -> flash synchrony
+uniform float audioSpread;    ///< narrow .. wide spectrum -> swarm dispersion
+uniform float audioMode;      ///< 0 = minor / cool, 1 = major / warm
 
-out vec4 vCol;
+out vec4 vCol;   ///< Colour (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -59,6 +60,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;

@@ -17,34 +17,35 @@
 // wave and settle back behind it, instead of the whole shell pulsing at once.
 // -----------------------------------------------------------------------
 layout(triangles) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 3) out;
 
 in  vec3 gObj[];
 in  vec4 gRnd[];
 in  vec2 gUV[];
 
-out vec3  vNormal;
-out vec3  vView;
-out vec3  vWorld;      // for the shadow lookup
-out float vShard;      // how far this shard has flown, 0..1
-out float vEdge;       // per-shard random, for colour scatter
-out vec2  vUV;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
+out vec3  vWorld;      ///< for the shadow lookup
+out float vShard;      ///< how far this shard has flown, 0..1
+out float vEdge;       ///< per-shard random, for colour scatter
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 
-uniform mat4  projM;
-uniform mat4  lightM;
-uniform float shadowPass;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioLevel;
-uniform float audioHigh;
+uniform mat4  projM;   ///< Projection matrix.
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float blastP;       // preset: how far the shards fly
-uniform float camDistP;     // preset: distance to the shell
-uniform float spinP;        // preset: shard tumble
+uniform float blastP;       ///< preset: how far the shards fly
+uniform float camDistP;     ///< preset: distance to the shell
+uniform float spinP;        ///< preset: shard tumble
 
-const float PI = 3.14159265;
+const float PI = 3.14159265;   ///< Pi.
 
 // The mesh's own triangles are far too fine to be shards — 52800 of them on a
 // unit sphere, each about a hundredth across.  Flung individually they read as
@@ -54,18 +55,20 @@ const float PI = 3.14159265;
 const float PLATE_W = 28.0;
 const float PLATE_H = 15.0;
 
-// Rotate v around a unit axis by angle a (Rodrigues).
+/// Rotate v around a unit axis by angle a (Rodrigues).
 vec3 rotAxis(vec3 v, vec3 axis, float a)
 {
     float c = cos(a), s = sin(a);
     return v * c + cross(axis, v) * s + axis * dot(axis, v) * (1.0 - c);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash1(vec2 p)
 {
     return fract(sin(dot(p, vec2(41.317, 289.113))) * 43758.5453);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 a = gObj[0], b = gObj[1], c = gObj[2];

@@ -20,7 +20,9 @@
  * surface.
  */
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangles) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 4) out;
 
 in  vec3  gPos[];
@@ -28,31 +30,34 @@ in  vec3  gNormal[];
 in  vec2  gUV[];
 in  float gBg[];
 
-out vec2  vUV;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec2  vQuad;
-out vec3  vNormal;
-out vec3  vPos;
-out float vBg;
-out float vFormed;    // 0 = still gas, 1 = arrived on the surface
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
+out float vFormed;    ///< 0 = still gas, 1 = arrived on the surface
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float sceneProgress;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sizeP;
-uniform float cloudP;    // how large the initial cloud is
-uniform float puffP;     // puff size
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float cloudP;    ///< how large the initial cloud is
+uniform float puffP;     ///< puff size
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 3D point.
 vec3  hash31(float n) { return vec3(hash11(n), hash11(n + 17.3), hash11(n + 41.7)); }
 
+/// @brief Smooth 3D value noise, 0..1.
 float noise3(vec3 p)
 {
     vec3 i = floor(p), f = fract(p);
@@ -64,6 +69,7 @@ float noise3(vec3 p)
                    mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if( gBg[0] > 0.5 )

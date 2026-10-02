@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FractalBloom.frag
  * @brief Adapted from kishimisu's GLSL-tutorial fractal (2023) —
@@ -15,35 +15,37 @@ out vec4 fragColor;
  *     onsets brighten the bloom; centroid/valence grade the palette.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float iterZoomP;   // per-iteration zoom (0 -> 1.5; 1.3 = airy, 1.8 = dense)
-uniform float ringFreqP;   // ring frequency     (0 -> 8.0; 5 = broad, 12 = filigree)
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float iterZoomP;   ///< per-iteration zoom (0 -> 1.5; 1.3 = airy, 1.8 = dense)
+uniform float ringFreqP;   ///< ring frequency     (0 -> 8.0; 5 = broad, 12 = filigree)
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 
-uniform float audioChromaHue;
-uniform float audioAdvance;
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,6 +62,7 @@ vec3 palette(float t)
 
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = (2.0 * gl_FragCoord.xy - resolution) / resolution.y;

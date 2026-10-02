@@ -10,27 +10,27 @@
  * on the scene clock, so the shadows stretch and swing slowly; the music
  * is the lamps' brightness.  No camera motion.
  */
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform int   meshVertexCount;
-uniform int   meshInstances;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform int   meshInstances;   ///< Number of mesh instances.
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 
-uniform float sizeP;
+uniform float sizeP;   ///< Size knob, 0..1.
 uniform float swingP;
 
-out vec2 vUV;
-out vec3 vNormal;
-out vec3 vPos;
-out float vBg;
-out float vKind;      // 0 ship, 1 shadow of lamp A, 2 shadow of lamp B
+out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec3 vPos;   ///< Position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
+out float vKind;      ///< 0 ship, 1 shadow of lamp A, 2 shadow of lamp B
 
 const float WALL_Z = 60.0;
 
@@ -44,6 +44,7 @@ vec3 lampPos(int k)
     return              vec3( 16.0 + 9.0 * sw * sin(t + 2.1), 6.0 + 3.0 * sin(t * 0.6 + 1.0), 4.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     bool isBg = gl_VertexID >= meshVertexCount;

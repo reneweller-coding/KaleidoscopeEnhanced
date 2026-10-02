@@ -1,15 +1,15 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // SineTunnel.frag — smooth colour bands flow along the tube; a gentle
 // helix stripe winds around it.  Deep teal-violet palette, no strobes.
-uniform float time;
-uniform float audioAdvance;
-uniform float audioChromaHue;
-uniform float audioSwell;
-uniform float audioKick;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-in vec2  vUV;
-in float vDist;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vDist;   ///< Distance (from the vertex stage).
 in float vAng;
 
 /**
@@ -25,6 +25,7 @@ in float vAng;
  * instead of clipping the frame to white.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -32,6 +33,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float flow = time * 0.35 + audioAdvance * 0.9;

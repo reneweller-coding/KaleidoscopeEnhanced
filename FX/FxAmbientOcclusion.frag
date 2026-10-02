@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxAmbientOcclusion.frag
  * @brief FX AMBIENT OCCLUSION: screen-space ambient occlusion reconstructed
@@ -30,30 +30,31 @@ out vec4 fragColor;
 // letting this shader guess them.  Guessed values do not look broken — they
 // look like slightly wrong occlusion, which is far harder to notice and
 // impossible to debug from the image.
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
 uniform vec2  depthValid;
-uniform vec2  nearFar;
+uniform vec2  nearFar;   ///< Near and far clip distances.
 uniform float tanHalfFov;
-uniform float interpolation;
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioAmbient;
-uniform float audioChromaHue;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float radiusP;      // preset: sampling radius in world units
-uniform float strengthP;    // preset: how dark the creases go
-uniform float tintP;        // preset: how much colour the shadow keeps
+uniform float radiusP;      ///< preset: sampling radius in world units
+uniform float strengthP;    ///< preset: how dark the creases go
+uniform float tintP;        ///< preset: how much colour the shadow keeps
 
 const int SAMPLES = 12;
 
+/// @brief Depth buffer value to linear distance.
 float linearise(float d)
 {
     float n = nearFar.x, f = nearFar.y;
@@ -61,7 +62,7 @@ float linearise(float d)
     return (2.0 * n * f) / (f + n - z * (f - n));
 }
 
-// Screen position -> view-space position, using the depth at that pixel.
+/// Screen position -> view-space position, using the depth at that pixel.
 vec3 viewPos(sampler2D dep, vec2 uv)
 {
     float z = linearise(texture(dep, uv).r);
@@ -126,8 +127,8 @@ float occlusion(sampler2D dep, vec2 uv, float valid)
     return clamp(occ / float(SAMPLES) * (1.2 + 3.4 * strengthP), 0.0, 1.0);
 }
 
-// A cheap 4-tap blur of the occlusion, so the per-pixel dither in the sampling
-// pattern averages out instead of showing as grain.
+/// A cheap 4-tap blur of the occlusion, so the per-pixel dither in the sampling
+/// pattern averages out instead of showing as grain.
 float occlusionSmooth(sampler2D dep, vec2 uv, float valid)
 {
     vec2 t = 1.5 / resolution;
@@ -137,6 +138,7 @@ float occlusionSmooth(sampler2D dep, vec2 uv, float valid)
                  + occlusion(dep, uv + vec2(-t.x, -t.y), valid));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

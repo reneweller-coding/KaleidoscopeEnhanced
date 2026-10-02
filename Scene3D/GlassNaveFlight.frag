@@ -13,33 +13,35 @@
 layout(location = 0) out vec4 outAccum;
 layout(location = 1) out vec4 outReveal;
 
-in vec3  vPos;
-in vec3  vNormal;
-in vec2  vTexCoord;
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
 in float vBand;
-in float vKind;
+in float vKind;   ///< Element kind (from the vertex stage).
 in float vFace;
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float oitPass;
-uniform vec2  nearFar;
-uniform float time;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float oitPass;   ///< Order-independent transparency pass flag.
+uniform vec2  nearFar;   ///< Near and far clip distances.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 uniform float dayPhase;
-uniform float audioSpectrum[32];
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
-uniform float hueP;
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -49,6 +51,7 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hue = (hueP > 0.001) ? hueP : 0.0;

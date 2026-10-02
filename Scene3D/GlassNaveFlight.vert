@@ -6,20 +6,21 @@
  * the face normal from the face code, and hands the pane's spectrum band on.
  * No camera motion here: the flight lives in the generator's bay phase.
  */
-layout(location = 0) in vec4 attrA;   // xyz = position, w = band
-layout(location = 1) in vec4 attrB;   // x = face code, y = kind (0 stone, 1 glass, 2 sky), zw = uv
+layout(location = 0) in vec4 attrA;   ///< xyz = position, w = band
+layout(location = 1) in vec4 attrB;   ///< x = face code, y = kind (0 stone, 1 glass, 2 sky), zw = uv
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float oitPass;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float oitPass;   ///< Order-independent transparency pass flag.
 
-out vec3  vPos;
-out vec3  vNormal;
-out vec2  vTexCoord;
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
 out float vBand;
-out float vKind;
+out float vKind;   ///< Element kind (from the vertex stage).
 out float vFace;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float kind = attrB.y;

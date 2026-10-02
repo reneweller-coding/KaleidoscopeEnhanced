@@ -6,23 +6,24 @@
  * core reads dark, the fringe catches the sky.  Audio here is only tint and
  * brightness; the motion lives in the generator.
  */
-layout(location = 0) in vec4 attrA;   // xyz = position, w = bird id
-layout(location = 1) in vec4 attrB;   // x = seed, y = density in flock, zw = uv
+layout(location = 0) in vec4 attrA;   ///< xyz = position, w = bird id
+layout(location = 1) in vec4 attrB;   ///< x = seed, y = density in flock, zw = uv
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float audioLevel;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioValence;
-uniform float hueP;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 out vec4 vColor;
-out vec2 vTexCoord;
-out float vDepth;
-out float vKind;
+out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out float vDepth;   ///< Depth (from the vertex stage).
+out float vKind;   ///< Element kind (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     const vec3 k = vec3(0.57735);
@@ -30,6 +31,7 @@ vec3 hueRot(vec3 c, float a)
     return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 pos = attrA.xyz;

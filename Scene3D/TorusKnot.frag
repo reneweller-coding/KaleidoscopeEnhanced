@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // TorusKnot.frag — soft glowing point (additive blending).
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
 /**
  * @file TorusKnot.frag
@@ -24,6 +24,7 @@ in vec4 vCol;
  *   audioMode      -> colour temperature (minor = blue, major = ember orange)
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // GyroRings.frag — dark faces, luminous edges (depth-tested).
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 in vec3 vCorner;
 
 /**
@@ -24,6 +24,7 @@ in vec3 vCorner;
 
 uniform float audioSharpness;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Bevel band width follows SHARPNESS: dull -> a wide soft sheen along the

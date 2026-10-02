@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SphereGrid.frag
  * @brief Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
@@ -12,30 +12,31 @@ out vec4 fragColor;
  * (forward travel via audioAdvance; beats brighten; centroid/valence grade).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;
-uniform float audioPhase;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioSwell;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float spacingP;   // lattice fold spacing (0 -> 4.0; 3 = dense, 6 = sparse)
+uniform float spacingP;   ///< lattice fold spacing (0 -> 4.0; 3 = dense, 6 = sparse)
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
-// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
-// palette varies with depth and the crop window moves over time + with the
-// harmony (audioPhase) — the effect is coloured by the ever-changing image.
+/// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
+/// palette varies with depth and the crop window moves over time + with the
+/// harmony (audioPhase) — the effect is coloured by the ever-changing image.
 vec3 imgPal(float x)
 {
     vec2 cc  = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -44,6 +45,7 @@ vec3 imgPal(float x)
     return img(fract(iuv));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  n    = resolution;

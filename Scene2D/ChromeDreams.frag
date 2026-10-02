@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ChromeDreams.frag
  * @brief Adapted from "Chrome Dreams" by \@kishimisu (2022) — https://www.shadertoy.com/view/ctX3RM
@@ -12,36 +12,37 @@ out vec4 fragColor;
  * audioAdvance, spin via audioPhase; beats brighten; centroid/valence grade).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;
-uniform float audioPhase;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSwell;      // slow loudness swell -> torus thickness breathes
-uniform float audioBarPhase;   // 0..1 per bar -> image palette wanders per bar
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSwell;      ///< slow loudness swell -> torus thickness breathes
+uniform float audioBarPhase;   ///< 0..1 per bar -> image palette wanders per bar
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float ringP;      // torus ring radius     (0 -> 0.2; 0.12 = tight, 0.30 = wide)
-uniform float stretchP;   // torus y-stretch max   (0 -> 0.2; 0.10 = discs, 0.35 = barrels)
-uniform float stripeP;    // colour stripe frequency (0 -> 6.0; 4 = broad, 9 = fine)
-uniform float travP;      // scroll speed multiplier (0 -> 1.0)
-uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
-uniform float rosetteP;   // rosette strength      (0 -> 0.22)
+uniform float ringP;      ///< torus ring radius     (0 -> 0.2; 0.12 = tight, 0.30 = wide)
+uniform float stretchP;   ///< torus y-stretch max   (0 -> 0.2; 0.10 = discs, 0.35 = barrels)
+uniform float stripeP;    ///< colour stripe frequency (0 -> 6.0; 4 = broad, 9 = fine)
+uniform float travP;      ///< scroll speed multiplier (0 -> 1.0)
+uniform int   kSides;     ///< >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;   ///< rosette strength      (0 -> 0.22)
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 mat2 crot(float a) { return mat2(cos(a), sin(a), -sin(a), cos(a)); }
 
-// n-fold kaleidoscopic mirror fold of a centred coordinate.
+/// n-fold kaleidoscopic mirror fold of a centred coordinate.
 vec2 kaleido(vec2 p, float sides)
 {
     float a   = atan(p.y, p.x);
@@ -52,12 +53,13 @@ vec2 kaleido(vec2 p, float sides)
     return vec2(cos(a), sin(a)) * r;
 }
 
-// The original's a(a,b,f,o) animated-mix macro.
+/// The original's a(a,b,f,o) animated-mix macro.
 float amix(float A, float B, float f, float o)
 {
     return mix(A, B, sin(o + (time * 0.4) * f) * 0.5 + 0.5);
 }
 
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc  = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -66,6 +68,7 @@ vec3 imgPal(float x)
     return img(fract(iuv));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  r = resolution;

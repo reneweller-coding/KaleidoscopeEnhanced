@@ -21,21 +21,22 @@
  */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = pulse
 // attrB.w   = branchLevel (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float time;
-uniform float audioKick;
+uniform mat4 projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLowMid;
-uniform float audioRoughness;
+uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
 
-out vec3 vPos;
+out vec3 vPos;   ///< Position (from the vertex stage).
 out float vPulse;
 out float vLevel;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 worldP = attrA.xyz;
 

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file CrystalMirrorGrid.frag
  * @brief CRYSTAL MIRROR GRID: Raymarched 3D crystal mirror lattice filling 100% of
@@ -16,40 +16,41 @@ out vec4 fragColor;
  *   hueP     float global hue rotation        (0 -> none; 0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float facetP;
 uniform float shatterP;
 uniform float refractP;
-uniform float hueP;
-uniform float audioChromaHue;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -59,6 +60,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -71,10 +73,10 @@ float hash3D(vec3 p) {
     return fract((p.x + p.y) * p.z);
 }
 
-// Signed Distance Field for Crystal Lattice Box with Facet Beveling
-// Soft-max, used to carve a smooth clearance bubble around the camera out
-// of the distance field: the flight can never clip through geometry -- a
-// would-be collision becomes a soft bulge sliding past the lens.
+/// Signed Distance Field for Crystal Lattice Box with Facet Beveling
+/// Soft-max, used to carve a smooth clearance bubble around the camera out
+/// of the distance field: the flight can never clip through geometry -- a
+/// would-be collision becomes a soft bulge sliding past the lens.
 float smax(float a, float b, float k) {
     float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
     return mix(a, b, h) + k * h * (1.0 - h);
@@ -106,6 +108,7 @@ float mapLattice(vec3 p, float fDensity, float shatter) {
     return max(lat, length(p) - 2.2);
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p, float fDensity, float shatter) {
     vec2 e = vec2(0.002, 0.0);
     return normalize(vec3(
@@ -115,6 +118,7 @@ vec3 calcNormal(vec3 p, float fDensity, float shatter) {
     ));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float fDens = (facetP   > 0.0) ? facetP   : 1.0;
     float shat  = (shatterP > 0.0) ? shatterP : 1.0;

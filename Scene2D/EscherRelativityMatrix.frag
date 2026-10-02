@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file EscherRelativityMatrix.frag
  * @brief PENROSE ENDLESS STAIRCASE: a real Escher, drawn as an isometric
@@ -17,40 +17,41 @@ out vec4 fragColor;
  *   hueP     float palette base hue rotation               (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float gridP;
+uniform float gridP;   ///< Grid knob, 0..1.
 uniform float archP;
 uniform float neonP;
-uniform float hueP;
-uniform float audioChromaHue;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,6 +61,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -78,15 +80,15 @@ vec3 hueRot(vec3 c, float a) {
 // with the kick.
 // =======================================================================
 
-const int   N_LONG  = 7;      // steps in flights 0 and 2
-const int   N_SHORT = 4;      // steps in flights 1 and 3
-const int   N_TOTAL = 22;     // 2*(N_LONG + N_SHORT)
-const float TX      = 0.068;  // iso tread x
-const float TY      = 0.0408; // iso tread y (0.6 * TX, high viewpoint)
-const float STEP_H  = 0.024;  // riser height (screen units)
-const float COLUMN  = 0.075;  // short support skirt below each step
+const int   N_LONG  = 7;      ///< steps in flights 0 and 2
+const int   N_SHORT = 4;      ///< steps in flights 1 and 3
+const int   N_TOTAL = 22;     ///< 2*(N_LONG + N_SHORT)
+const float TX      = 0.068;  ///< iso tread x
+const float TY      = 0.0408; ///< iso tread y (0.6 * TX, high viewpoint)
+const float STEP_H  = 0.024;  ///< riser height (screen units)
+const float COLUMN  = 0.075;  ///< short support skirt below each step
 
-// Solve p = P + s*e1 + t*e2; returns (s,t).
+/// Solve p = P + s*e1 + t*e2; returns (s,t).
 vec2 invBilinear(vec2 p, vec2 P, vec2 e1, vec2 e2)
 {
     float det = e1.x * e2.y - e1.y * e2.x;
@@ -95,7 +97,7 @@ vec2 invBilinear(vec2 p, vec2 P, vec2 e1, vec2 e2)
 }
 bool inQuad(vec2 st) { return st.x >= 0.0 && st.x <= 1.0 && st.y >= 0.0 && st.y <= 1.0; }
 
-// Iso tread edge per flight (top-face advance direction).
+/// Iso tread edge per flight (top-face advance direction).
 vec2 flightTread(int f)
 {
     if (f == 0) return vec2( TX,  TY);
@@ -103,14 +105,14 @@ vec2 flightTread(int f)
     if (f == 2) return vec2(-TX, -TY);
     return          vec2( TX, -TY);
 }
-// Per-step anchor lift: long flights rise by STEP_H; the short flights
-// carry the closure correction  STEP_H - N_TOTAL*STEP_H/(2*N_SHORT).
+/// Per-step anchor lift: long flights rise by STEP_H; the short flights
+/// carry the closure correction  STEP_H - N_TOTAL*STEP_H/(2*N_SHORT).
 float flightLift(int f)
 {
     float corr = STEP_H * (1.0 - float(N_TOTAL) / float(2 * N_SHORT));
     return (f == 0 || f == 2) ? STEP_H : corr;
 }
-// Depth edge of the tread (the other iso axis of the top rhombus).
+/// Depth edge of the tread (the other iso axis of the top rhombus).
 vec2 flightD(int f)
 {
     if (f == 0) return vec2(-0.044,  0.026);
@@ -119,6 +121,7 @@ vec2 flightD(int f)
     return          vec2( 0.044,  0.026);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float hue = (hueP > 0.0) ? hueP : 0.0;
 

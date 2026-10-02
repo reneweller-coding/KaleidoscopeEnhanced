@@ -26,13 +26,14 @@
 // (inverse), so a full 2D transform is four dispatches.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 128) in;
 
 layout(std430, binding = 0) buffer Data { vec2 z[]; };   // complex, N*N
 
 uniform int N;
-uniform int axis;        // 0 = rows, 1 = columns
-uniform int inverse;     // 0 = forward, 1 = inverse (conjugate twiddles + 1/N)
+uniform int axis;        ///< 0 = rows, 1 = columns
+uniform int inverse;     ///< 0 = forward, 1 = inverse (conjugate twiddles + 1/N)
 
 shared vec2 s[256];
 
@@ -46,8 +47,10 @@ uint bitrev8(uint v)
     return v & 0xFFu;
 }
 
+/// @brief Complex multiplication.
 vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int line = int(gl_WorkGroupID.x);

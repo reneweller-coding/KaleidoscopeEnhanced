@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MelodyScript.frag
  * @brief MELODY SCRIPT: the tune written as ink calligraphy on rice paper.
@@ -21,34 +21,37 @@ out vec4 fragColor;
  *   audioLevel  -> brightness
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 uniform float audioMelody[96];
 uniform float audioMelodyHead;
 uniform float audioMelodyPhase;
-uniform float audioOnset;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
     p3 += dot(p3, p3.yzx + 33.33);
     return fract((p3.x + p3.y) * p3.z);
 }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -56,7 +59,7 @@ float noise2(vec2 p)
                mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
 
-// Melody sample k steps into the past (0 = newest).
+/// Melody sample k steps into the past (0 = newest).
 float melodyAgo(int k)
 {
     int head = int(audioMelodyHead * 96.0 + 0.5);
@@ -64,9 +67,9 @@ float melodyAgo(int k)
     return audioMelody[i];
 }
 
-// Periodic value noise over the 96-sample ring (18 cells): the brush's
-// pressure and dry streaks are tied to the ink itself, so they scroll with
-// the stroke instead of standing still while the ink slides through them.
+/// Periodic value noise over the 96-sample ring (18 cells): the brush's
+/// pressure and dry streaks are tied to the ink itself, so they scroll with
+/// the stroke instead of standing still while the ink slides through them.
 float ringNoise(float s, float y)
 {
     float x = s * 0.1875;
@@ -75,6 +78,7 @@ float ringNoise(float s, float y)
     return mix(a, b, f);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

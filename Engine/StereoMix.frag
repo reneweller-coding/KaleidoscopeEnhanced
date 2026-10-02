@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file StereoMix.frag
  * @brief Plain per-pixel cross-mix used ONLY for TRUE-STEREO 3D<->3D scene
@@ -10,9 +10,10 @@ out vec4 fragColor;
  */
 uniform sampler2D texA;
 uniform sampler2D texB;
-uniform vec2  resolution;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

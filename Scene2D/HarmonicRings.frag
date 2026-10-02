@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file HarmonicRings.frag
  * @brief 6 concentric Gaussian glow rings, one per frequency band.
@@ -28,50 +28,50 @@ out vec4 fragColor;
  *   audioBeat     → All rings briefly flare
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float speed;
 uniform float power;
 uniform int   rotate;
 
 // Core audio uniforms
-uniform float audioBeat;
-uniform float audioBeatPhase;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioLevel;
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 uniform float audioFlip;
-uniform float audioCentroid;
-uniform float audioFlux;
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 // 6-band extras
-uniform float audioSubBass;    // 20-60 Hz
-uniform float audioLowMid;     // 150-500 Hz
-uniform float audioUpperMid;   // 2k-6k Hz
+uniform float audioSubBass;    ///< 20-60 Hz
+uniform float audioLowMid;     ///< 150-500 Hz
+uniform float audioUpperMid;   ///< 2k-6k Hz
 
 // Integrated, jump-free audio rotation phase (computed once per frame on host)
-uniform float audioPhase;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
-const float PI = 3.14159265358979;
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+const float PI = 3.14159265358979;   ///< Pi.
 
-// Gaussian glow ring intensity at radius r for a ring centred at ri.
-// wBase: structural minimum half-width.
-// energy: band energy 0..1, widens and brightens the ring.
+/// Gaussian glow ring intensity at radius r for a ring centred at ri.
+/// wBase: structural minimum half-width.
+/// energy: band energy 0..1, widens and brightens the ring.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -88,8 +88,8 @@ float ringGlow(float r, float ri, float wBase, float energy)
     return exp(-(diff * diff) / (w * w)) * (0.35 + energy * 1.65);
 }
 
-// Sample the image texture along the ring arc, offset per ring to avoid
-// identical wrapping on all rings.
+/// Sample the image texture along the ring arc, offset per ring to avoid
+/// identical wrapping on all rings.
 vec4 ringTex(float angle, float r, float ringIdx)
 {
     float u = angle / (2.0 * PI) + ringIdx * 0.137;
@@ -98,6 +98,7 @@ vec4 ringTex(float angle, float r, float ringIdx)
          + (1.0 - interpolation) * texture(tex1, vec2(u, v));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // ---- Centred polar coordinates ----

@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // ParticleGalaxy.frag — soft round point sprite (additive blending).
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
 /**
  * @file ParticleGalaxy.frag
@@ -16,6 +16,7 @@ in vec4 vCol;
  * shader only shapes the resulting vCol into a gaussian point.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

@@ -3,7 +3,7 @@
 // shader at 330 so it still links against the shared 330 fullscreen vertex
 // shader that every other 2D pass uses.
 #extension GL_ARB_shader_storage_buffer_object : require
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 // GPU auto-exposure.  Blend/CfxHistogram.comp builds a luminance histogram of
 // the finished frame and writes the exposure its percentiles justify into this
@@ -29,77 +29,78 @@ layout(std430, binding = 3) readonly buffer AutoExp {
  *  2) The photosensitivity brightness limit (uniform `scale`), applied last.
  */
 uniform sampler2D tex;
-uniform vec2  resolution;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 uniform float scale;
 
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioArousal;   // canon: arousal drives saturation
-uniform float audioLevel;
-uniform float audioFlux;
-uniform float audioChromaHue;   // harmony → global hue shift (0 = neutral in non-music)
-uniform float audioBeat;        // beat → extra bloom on hits
-uniform float audioDownbeat;    // bigger accent on the bar's "1"
-uniform float audioOnset;       // full-spectrum onset (snares/claps/melodic) → cone pulse
-uniform float time;             // for the slow moving-head beam sweep
-uniform float audioChase;       // 0..1, steps 1/4 each onset → corner-cone colour chase
-uniform float lightShow;        // 1 = stage lamps (cones/haze/mirror-ball/gobo) on, 0 = off
-uniform float audioSwell;       // slow loudness build (ambient dynamics) → glow breathing
-uniform float audioBarPhase;    // 0..1 position within the 4-beat bar → per-bar lamp sweep
-uniform sampler2D bloomTex;     // 2-pass Gaussian bloom (quarter res), when useBloom = 1
-uniform float useBloom;         // 1 = bloomTex valid, 0 = fall back to the mip tap
-uniform float sharpen;          // CAS-style sharpen amount (host: >0 when renderScale < 1)
-uniform vec2  srcTexel;         // 1 / render resolution (the sampled texture)
-uniform float camZoom;          // virtual camera: punch-in zoom (host keeps >= 1)
-uniform float camRot;           // virtual camera: small roll (radians)
-uniform vec2  camOff;           // virtual camera: drift + shake offset (uv units)
-uniform sampler2D titleTex;     // track-title reveal texture (transparent bg)
-uniform float titlePhase;       // 0..1 while the reveal runs; >= 1 = off
-uniform float titleAspect;      // title texture width/height
-uniform int   titleStyle;       // reveal style 0..23 (host-rolled, mood-matched)
-uniform float titleSeed;        // per-reveal random seed
-uniform int   stereoMode;       // 0 off, 1 side-by-side, 2 top-bottom, 3 anaglyph
-uniform float stereoDepth;      // disparity strength 0..2 (host, key c/m)
-uniform int   stereoSource;     // 1 = source is ALREADY eye-packed (true 3D stereo)
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioArousal;   ///< canon: arousal drives saturation
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< harmony → global hue shift (0 = neutral in non-music)
+uniform float audioBeat;        ///< beat → extra bloom on hits
+uniform float audioDownbeat;    ///< bigger accent on the bar's "1"
+uniform float audioOnset;       ///< full-spectrum onset (snares/claps/melodic) → cone pulse
+uniform float time;             ///< for the slow moving-head beam sweep
+uniform float audioChase;       ///< 0..1, steps 1/4 each onset → corner-cone colour chase
+uniform float lightShow;        ///< 1 = stage lamps (cones/haze/mirror-ball/gobo) on, 0 = off
+uniform float audioSwell;       ///< slow loudness build (ambient dynamics) → glow breathing
+uniform float audioBarPhase;    ///< 0..1 position within the 4-beat bar → per-bar lamp sweep
+uniform sampler2D bloomTex;     ///< 2-pass Gaussian bloom (quarter res), when useBloom = 1
+uniform float useBloom;         ///< 1 = bloomTex valid, 0 = fall back to the mip tap
+uniform float sharpen;          ///< CAS-style sharpen amount (host: >0 when renderScale < 1)
+uniform vec2  srcTexel;         ///< 1 / render resolution (the sampled texture)
+uniform float camZoom;          ///< virtual camera: punch-in zoom (host keeps >= 1)
+uniform float camRot;           ///< virtual camera: small roll (radians)
+uniform vec2  camOff;           ///< virtual camera: drift + shake offset (uv units)
+uniform sampler2D titleTex;     ///< track-title reveal texture (transparent bg)
+uniform float titlePhase;       ///< 0..1 while the reveal runs; >= 1 = off
+uniform float titleAspect;      ///< title texture width/height
+uniform int   titleStyle;       ///< reveal style 0..23 (host-rolled, mood-matched)
+uniform float titleSeed;        ///< per-reveal random seed
+uniform int   stereoMode;       ///< 0 off, 1 side-by-side, 2 top-bottom, 3 anaglyph
+uniform float stereoDepth;      ///< disparity strength 0..2 (host, key c/m)
+uniform int   stereoSource;     ///< 1 = source is ALREADY eye-packed (true 3D stereo)
 
 // ---- Lyrics-Overlay (LRCLIB; Taste 'w': aus / Scroll / Karaoke) ----
-uniform sampler2D lyricsTex;    // hohe Zeilen-Textur (transparenter Grund)
-uniform float lyricsAlpha;      // 0 = aus (Host blendet weich)
-uniform float lyricsScrollV;    // Textur-V, das im Bildzentrum liegt
-uniform float lyricsAspect;     // Texturbreite / -hoehe
-uniform vec3  lyricsHl;         // Karaoke: aktive Zeile v0, v1, Fortschritt (v0<0 = aus)
-uniform float lyricsUScale;     // nominale/tatsaechliche Texturbreite (<=1, s. TrackMedia)
-uniform vec2  lyricsFocusV;     // V-Band der gerade gelesenen Zeile (x<0 = keine), beide Modi
-uniform float lyricsScrollU;    // Marquee-Versatz (Textur-U) fuer die fokussierte Zeile
+uniform sampler2D lyricsTex;    ///< hohe Zeilen-Textur (transparenter Grund)
+uniform float lyricsAlpha;      ///< 0 = aus (Host blendet weich)
+uniform float lyricsScrollV;    ///< Textur-V, das im Bildzentrum liegt
+uniform float lyricsAspect;     ///< Texturbreite / -hoehe
+uniform vec3  lyricsHl;         ///< Karaoke: aktive Zeile v0, v1, Fortschritt (v0<0 = aus)
+uniform float lyricsUScale;     ///< nominale/tatsaechliche Texturbreite (<=1, s. TrackMedia)
+uniform vec2  lyricsFocusV;     ///< V-Band der gerade gelesenen Zeile (x<0 = keine), beide Modi
+uniform float lyricsScrollU;    ///< Marquee-Versatz (Textur-U) fuer die fokussierte Zeile
 
 // ---- Kuenstlerbild-Overlay (Deezer; Taste 'o') ----
 uniform sampler2D artistTex;
-uniform float artistAlpha;      // 0 = aus (Host blendet weich + rotiert Bilder)
-uniform float artistAspect;     // Bildbreite / -hoehe
+uniform float artistAlpha;      ///< 0 = aus (Host blendet weich + rotiert Bilder)
+uniform float artistAspect;     ///< Bildbreite / -hoehe
 
 // ---- Zeit-Regie: Frame-History-Ring (Drittel-Auflösung, letzte ~3 s) ----
-uniform sampler2DArray histTex; // Unit 5 - IMMER eigene Unit (Sampler-Typ!)
-uniform vec2  rewind;           // x = Mix 0..1, y = Ring-Layer (Vergangenheit)
-uniform vec2  echo;             // x = Staerke,  y = Ring-Layer (~1.4 s zurueck)
-uniform float breath;           // Build-up "Atem anhalten": Desat/Dim/Vignette
-uniform vec4  sceneGrade;       // Szenen-Grade: x/z Modus (0 aus, 1 verblasst, 2 grau, 3 Sepia) der
+uniform sampler2DArray histTex; ///< Unit 5 - IMMER eigene Unit (Sampler-Typ!)
+uniform vec2  rewind;           ///< x = Mix 0..1, y = Ring-Layer (Vergangenheit)
+uniform vec2  echo;             ///< x = Staerke,  y = Ring-Layer (~1.4 s zurueck)
+uniform float breath;           ///< Build-up "Atem anhalten": Desat/Dim/Vignette
+uniform vec4  sceneGrade;       ///< Szenen-Grade: x/z Modus (0 aus, 1 verblasst, 2 grau, 3 Sepia) der
                                 // ausgehenden/kommenden Szene, y/w ihr Gewicht (Ueberblendung schon drin)
-uniform float audioDrop;        // Drop-/Slam-Puls (Streak-Boost, Rewind-Wuerze)
+uniform float audioDrop;        ///< Drop-/Slam-Puls (Streak-Boost, Rewind-Wuerze)
 
 // ---- Welle 2 ----
-uniform float letterbox;        // CinemaScope-Balken 0..1 (Drop reisst auf)
-uniform vec2  shock;            // Bass-Schockwelle: x = Radius, y = Amplitude
-uniform float lyricsLineAge;    // Sek. seit Wechsel der aktiven Karaoke-Zeile
-uniform vec3  paletteA;         // Cover-Palette: dominante Farbe (Lichter)
-uniform vec3  paletteB;         //                Zweitfarbe (Schatten)
-uniform float paletteAmt;       // 0 = neutral (kein/farbloses Cover)
-uniform sampler2D sceneDepth;   // Unit 6: Tiefe der AKTIVEN Szene (2.5D-Parallaxe)
-uniform float depthPar;         // Parallaxe-Staerke (geslewte 3D-heit der Szene)
-uniform vec2  nearFar2;         // Clip-Ebenen zur Linearisierung
+uniform float letterbox;        ///< CinemaScope-Balken 0..1 (Drop reisst auf)
+uniform vec2  shock;            ///< Bass-Schockwelle: x = Radius, y = Amplitude
+uniform float lyricsLineAge;    ///< Sek. seit Wechsel der aktiven Karaoke-Zeile
+uniform vec3  paletteA;         ///< Cover-Palette: dominante Farbe (Lichter)
+uniform vec3  paletteB;         ///< Zweitfarbe (Schatten)
+uniform float paletteAmt;       ///< 0 = neutral (kein/farbloses Cover)
+uniform sampler2D sceneDepth;   ///< Unit 6: Tiefe der AKTIVEN Szene (2.5D-Parallaxe)
+uniform float depthPar;         ///< Parallaxe-Staerke (geslewte 3D-heit der Szene)
+uniform vec2  nearFar2;         ///< Clip-Ebenen zur Linearisierung
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(41.3, 289.1))) * 43758.5453); }
 
-// Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
+/// Hue rotation around the (1,1,1) luminance axis (Rodrigues), turns in [0,1].
 vec3 hueRotate(vec3 c, float turns)
 {
     float a = turns * 6.28318530718;
@@ -108,6 +109,7 @@ vec3 hueRotate(vec3 c, float turns)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief 2D rotation matrix.
 vec2 rot2(vec2 v, float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c) * v; }
 
 // ---- Track-title reveal helpers ----
@@ -126,8 +128,8 @@ vec4 titleTap(vec2 t)
     return texture(titleTex, t);
 }
 
-// A spotlight CONE emanating from `origin` along `dir`: brightest at the source,
-// widening and fading along the beam.  Returns 0..1.
+/// A spotlight CONE emanating from `origin` along `dir`: brightest at the source,
+/// widening and fading along the beam.  Returns 0..1.
 float coneLight(vec2 p, vec2 origin, vec2 dir, float spread, float reach)
 {
     vec2  v = p - origin;
@@ -141,9 +143,9 @@ float coneLight(vec2 p, vec2 origin, vec2 dir, float spread, float reach)
     return across * along;
 }
 
-// Pseudo-depth for the stereoscopic reprojection: smoothed brightness (the
-// blurred bloom buffer doubles as a depth cue) pops bright structures toward
-// the viewer; the radial term sinks the tunnel centre behind the screen.
+/// Pseudo-depth for the stereoscopic reprojection: smoothed brightness (the
+/// blurred bloom buffer doubles as a depth cue) pops bright structures toward
+/// the viewer; the radial term sinks the tunnel centre behind the screen.
 float stereoDepthAt(vec2 puv, vec2 cuv)
 {
     float bl = (useBloom > 0.5)
@@ -153,8 +155,8 @@ float stereoDepthAt(vec2 puv, vec2 cuv)
          + clamp(length(cuv) * 1.5, 0.0, 1.0) * 0.3;
 }
 
-// Scene grade looks: 1 faded (most colour gone, blacks lifted like old
-// print), 2 grey (a cool black-and-white), 3 sepia (warm brown toning).
+/// Scene grade looks: 1 faded (most colour gone, blacks lifted like old
+/// print), 2 grey (a cool black-and-white), 3 sepia (warm brown toning).
 vec3 sceneGradeCol(vec3 c, float mode)
 {
     float y = dot(c, vec3(0.299, 0.587, 0.114));
@@ -164,6 +166,7 @@ vec3 sceneGradeCol(vec3 c, float mode)
     return vec3(y) * vec3(1.08, 0.94, 0.74) + vec3(0.025, 0.012, 0.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

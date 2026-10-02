@@ -9,37 +9,38 @@
  * base's extents (drumXP/YP/ZP), tuned once against the models.
  */
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform int   meshVertexCount;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
 uniform int   mesh2VertexCount;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 uniform vec3  meshExtent2;
 uniform vec3  meshCenter2;
 
-uniform float sizeP;
-uniform float drumP;      // drum size relative to the base (default 0.45)
-uniform float drumXP;     // drum centre across the base, fraction of its half-width
-uniform float drumYP;     // drum centre height, fraction of the base's full height
-uniform float drumZP;     // drum centre depth, fraction of the base's half-depth
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float drumP;      ///< drum size relative to the base (default 0.45)
+uniform float drumXP;     ///< drum centre across the base, fraction of its half-width
+uniform float drumYP;     ///< drum centre height, fraction of the base's full height
+uniform float drumZP;     ///< drum centre depth, fraction of the base's half-depth
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out vec3  vLocal;
-out float vBg;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vLocal;   ///< Object-space position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
 out float vDrum;
 out float vTurn;
 
 const float kDist   = 46.0;
 const float kGround = -16.0;
-const float kRate   = 0.35;   // radians per second, shared with the fragment stage
+const float kRate   = 0.35;   ///< radians per second, shared with the fragment stage
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     bool isBase = gl_VertexID <  meshVertexCount;

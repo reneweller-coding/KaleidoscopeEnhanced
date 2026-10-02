@@ -25,13 +25,14 @@
 // the flock renders as motion-blurred filaments rather than dots.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 256) in;
 
 layout(std430, binding = 0) buffer Accum { uint acc[]; };
 layout(std430, binding = 1) buffer Boids { vec4 boid[]; };
 layout(std430, binding = 2) buffer Grid  { uint cell[]; };
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform uint  count;
 uniform int   gridN;
 uniform int   perCell;
@@ -56,10 +57,10 @@ void splat1(ivec2 ip, vec3 col, float w)
     atomicAdd(acc[i + 3u], uint(w * SCALE));
 }
 
-// A bird gets a small CROSS footprint, not a single texel.  The resolve pass
-// keeps the brighter of (this frame, decayed previous), so a sub-pixel-sparse
-// population would never build up into readable density no matter how long it
-// ran — coverage has to come from the splat itself.
+/// A bird gets a small CROSS footprint, not a single texel.  The resolve pass
+/// keeps the brighter of (this frame, decayed previous), so a sub-pixel-sparse
+/// population would never build up into readable density no matter how long it
+/// ran — coverage has to come from the splat itself.
 void splat(vec2 uv, vec3 col, float w)
 {
     ivec2 ip = ivec2(uv * vec2(size));
@@ -70,6 +71,7 @@ void splat(vec2 uv, vec3 col, float w)
     splat1(ip + ivec2( 0, -1), col, w * 0.5);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

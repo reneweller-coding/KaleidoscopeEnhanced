@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxWater2.frag
  * @brief FX WATER 2: raymarched 3D water surface -- the scene is projected as
  * the reflection/refraction texture of a small raymarched wave field,
  * seen from a fixed aerial camera.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioAdvance; // music speeds the water
-uniform float audioSwell;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance; ///< music speeds the water
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 
 
@@ -37,6 +37,7 @@ float water(vec3 p) {
 }
 
 
+/// @brief The scene's distance field: distance from p to the nearest surface.
 float map(vec3 p) {
 	float d = 100.0;
 	d = water(p);
@@ -62,6 +63,7 @@ vec3 norm(vec3 p) {
 	));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main( void ) {
 	vec2 uv = gl_FragCoord.xy / resolution.xy - 0.5;
 	uv.x *= resolution.x / resolution.y;

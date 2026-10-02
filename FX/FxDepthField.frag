@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxDepthField.frag
  * @brief FX DEPTH FIELD: physically based depth-of-field blur driven by the
@@ -29,31 +29,31 @@ out vec4 fragColor;
 // depthValid tells us whether each layer's depth is real geometry at all.  A 2D
 // effect leaves the far plane there, and blurring THAT would mean blurring the
 // whole frame uniformly — so those layers pass through untouched.
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
 uniform vec2  depthValid;
-uniform vec2  nearFar;
-uniform float interpolation;
+uniform vec2  nearFar;   ///< Near and far clip distances.
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float focusP;       // preset: resting focal distance
-uniform float apertureP;    // preset: how fast things go soft
-uniform float bokehP;       // preset: highlight blooming in the blur
+uniform float focusP;       ///< preset: resting focal distance
+uniform float apertureP;    ///< preset: how fast things go soft
+uniform float bokehP;       ///< preset: highlight blooming in the blur
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
-// A depth buffer is stored non-linearly — most of its precision sits near the
-// camera.  Comparing raw values would put the whole scene in one bucket, so it
-// has to be turned back into a distance first.
+/// A depth buffer is stored non-linearly — most of its precision sits near the
+/// camera.  Comparing raw values would put the whole scene in one bucket, so it
+/// has to be turned back into a distance first.
 float linearise(float d)
 {
     float n = nearFar.x, f = nearFar.y;
@@ -61,9 +61,9 @@ float linearise(float d)
     return (2.0 * n * f) / (f + n - z * (f - n));
 }
 
-// 12-tap ring, golden-angle spaced.  A ring gathers a disc of confusion far
-// more evenly than a box of the same tap count, which is what keeps the bokeh
-// round instead of cross-shaped.
+/// 12-tap ring, golden-angle spaced.  A ring gathers a disc of confusion far
+/// more evenly than a box of the same tap count, which is what keeps the bokeh
+/// round instead of cross-shaped.
 vec3 blurAt(sampler2D src, sampler2D dep, vec2 uv, float focus, float valid)
 {
     vec3 c = texture(src, uv).rgb;
@@ -117,6 +117,7 @@ vec3 blurAt(sampler2D src, sampler2D dep, vec2 uv, float focus, float valid)
     return sum / wsum;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

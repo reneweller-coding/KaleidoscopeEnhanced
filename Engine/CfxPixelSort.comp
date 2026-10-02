@@ -24,18 +24,20 @@
 // the display shader, so the melt can spread and retreat with the music.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 256) in;
 
 layout(rgba16f, binding = 0) writeonly uniform image2D imgOut;
 uniform sampler2D texSrc;
 
-uniform ivec2 size;
-uniform float bias;        // rotates the sort key so the melt direction drifts
-uniform int   reverse;     // 1 = bright-to-dark
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform float bias;        ///< rotates the sort key so the melt direction drifts
+uniform int   reverse;     ///< 1 = bright-to-dark
 
 shared uint hist[256];
 shared uint ofs[256];
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int y = int(gl_WorkGroupID.x);

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file TunnelReverse.frag
  * @brief Two mirrored-segment kaleidoscope tunnels blended 50/50: a forward
@@ -25,27 +25,28 @@ out vec4 fragColor;
  *                      coordinate along the radius (the forward layer stays
  *                      straight), so the two tunnels visibly grate against each other
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float interpolationRotation;
 uniform float speedTunnel;
 uniform float speed;
 uniform int sides;
 uniform float power;
 uniform float speedTunnelReverse;
-uniform int   rotate;   // <bool> in the config -> uploaded with glUniform1i
-uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
-uniform float audioAdvance;   // integrated audio tunnel advance (jump-free)
-uniform float audioKick;      // subtle brightness pulse on kicks
-uniform float audioBuildUp;   // 0..1 EDM tension -> blend tips toward the receding layer
-uniform float audioSpread;    // 0=narrow spectrum .. 1=wide -> depth mismatch between the layers
-uniform float audioRoughness; // 0=consonant .. 1=dissonant -> the reverse layer grinds
+uniform int   rotate;   ///< a bool in the config -> uploaded with glUniform1i
+uniform float audioPhase;     ///< integrated audio rotation phase (radians, jump-free)
+uniform float audioAdvance;   ///< integrated audio tunnel advance (jump-free)
+uniform float audioKick;      ///< subtle brightness pulse on kicks
+uniform float audioBuildUp;   ///< 0..1 EDM tension -> blend tips toward the receding layer
+uniform float audioSpread;    ///< 0=narrow spectrum .. 1=wide -> depth mismatch between the layers
+uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> the reverse layer grinds
 
 const float M_PI = 3.141592653589793;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
 
     // normalize to the center

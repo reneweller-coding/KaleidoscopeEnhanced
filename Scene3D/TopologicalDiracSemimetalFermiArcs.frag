@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file TopologicalDiracSemimetalFermiArcs.frag
  * @brief TOPOLOGICAL DIRAC SEMIMETAL FERMI ARCS: Open disjoint Fermi surface arcs in Dirac and
@@ -18,27 +18,29 @@ out vec4 fragColor;
  *   weylGlowP    float Weyl node chiral current luminance    (0.8..2.5)
  */
 
-in vec2 vUV;
-in float vSide;
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
 in float vRibbonID;
-in vec3 vCol;
+in vec3 vCol;   ///< Colour (from the vertex stage).
 in float vWeylPulse;
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;
-uniform float audioSwell;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float weylGlowP;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float core = pow(1.0 - abs(vSide), 2.2);

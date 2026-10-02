@@ -13,20 +13,22 @@
  * workgroup rather than once per stencil sample. CfxPhoton.comp reads this
  * height field next to refract photons onto the pool floor.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(rgba16f, binding = 0) readonly  uniform image2D imgSrc;
 layout(rgba16f, binding = 1) writeonly uniform image2D imgDst;
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform float damp;
-uniform float speed;       // c^2 * dt^2 / dx^2, keep < 0.5 for stability
+uniform float speed;       ///< c^2 * dt^2 / dx^2, keep < 0.5 for stability
 uniform float kick;
 uniform vec2  dropPos;
 uniform float dropAmp;
 
 shared float tile[18][18];
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

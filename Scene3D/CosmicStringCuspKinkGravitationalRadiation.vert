@@ -8,18 +8,19 @@
 // attrA.xyz = VIEW-space position, attrA.w = parameter along the loop
 // attrB.x   = transverse coordinate across the cord (-1 .. +1)
 // attrB.w   = cuspGlow
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4 projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-out vec3 vPos;
-out float vDepth;
+out vec3 vPos;   ///< Position (from the vertex stage).
+out float vDepth;   ///< Depth (from the vertex stage).
 out float vGlow;
 out float vSideT;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 vp = attrA.xyz;
     vPos = vp;

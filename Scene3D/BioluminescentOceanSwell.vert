@@ -3,27 +3,27 @@
  * @file BioluminescentOceanSwell.vert
  * @brief attrA.xy = u, w (0..1), attrA.w = cell ID, attrB = seeds (GEOM_GRID).
  */
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;
-uniform float eyeOff;
-uniform float time;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform mat4 projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3 vPos;
-out vec3 vNormal;
-out vec2 vUV;
+out vec3 vPos;   ///< Position (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vCrest;
 out float vHeight;
 
-// Gerstner wave function
+/// Gerstner wave function
 vec3 gerstnerWave(vec2 p, vec2 dir, float steepness, float wavelength, float speed, inout vec3 normal) {
     float k = 6.2831853 / wavelength;
     float c = sqrt(9.8 / k) * speed;
@@ -41,6 +41,7 @@ vec3 gerstnerWave(vec2 p, vec2 dir, float steepness, float wavelength, float spe
     );
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec2 uv = attrA.xy;
     vec2 worldXZ = (uv - vec2(0.5)) * vec2(16.0, 10.0);

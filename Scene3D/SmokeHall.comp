@@ -73,20 +73,20 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 
-uniform float spacingP;     // preset: pillar spacing
-uniform float heightP;      // preset: hall height
-uniform float camHP;        // preset: eye height
+uniform float spacingP;     ///< preset: pillar spacing
+uniform float heightP;      ///< preset: hall height
+uniform float camHP;        ///< preset: eye height
 
-const int COLS   = 4;                  // pillar columns (two per side)
-const int ROWS   = 6;                  // pillar rows along the hall
+const int COLS   = 4;                  ///< pillar columns (two per side)
+const int ROWS   = 6;                  ///< pillar rows along the hall
 // The roof is mostly SOLID, with narrow slots between the beams.  Both earlier
 // attempts went the other way, on the reasoning that the beams' black undersides
 // were filling the frame — but that was a framing problem, not a roof one.  What
@@ -97,19 +97,20 @@ const int ROWS   = 6;                  // pillar rows along the hall
 const int BEAMS  = 10;
 const float BEAM_PITCH = 3.40;
 const float SLOT_W     = 0.70;
-const int SLABS  = 56;                 // smoke slices
+const int SLABS  = 56;                 ///< smoke slices
 // The hall is deliberately SHORT.  The shadow box is centred on the origin and
 // sized once, so anything past its edge gets "lit" for free — and a stretch of
 // unshadowed smoke at the far end is a grey wash with no beams in it, sitting
 // right in the middle of the frame where the corridor recedes.  Better a short
 // hall entirely inside the box than a long one half outside it.
 const float SPAN = 26.0;
-const float NEARZ = -4.8;              // first smoke slab (object z; eye is at -6)
-const float FARZ  = 21.0;              // last smoke slab
+const float NEARZ = -4.8;              ///< first smoke slab (object z; eye is at -6)
+const float FARZ  = 21.0;              ///< last smoke slab
 
-const int NPILLQ = COLS * ROWS * 4;    // 160 pillar sides
+const int NPILLQ = COLS * ROWS * 4;    ///< 160 pillar sides
 const int NQUADS = 1 + NPILLQ + BEAMS + SLABS;
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float kind, float extra)
 {
     uint o = slot * 8u;
@@ -119,8 +120,8 @@ void writeVertex(uint slot, vec3 p, vec3 n, float kind, float extra)
     verts[o + 7u] = extra;
 }
 
-// Both windings.  The hall is seen from inside and the slabs from whichever way
-// the frustum happens to face them; neither has a meaningful back.
+/// Both windings.  The hall is seen from inside and the slabs from whichever way
+/// the frustum happens to face them; neither has a meaningful back.
 void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float extra)
 {
     uint base = atomicAdd(cmd[4], 12u);
@@ -140,6 +141,7 @@ void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float extra)
     writeVertex(base + 11u, a, n, kind, extra);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

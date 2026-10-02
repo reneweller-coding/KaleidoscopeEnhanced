@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
-in vec3  vWorldPos;
-in vec3  vNormal;
+in vec3  vWorldPos;   ///< World position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in float vRoadMask;
 in float vPylonGlow;
 in vec3  vTint;
@@ -17,8 +17,9 @@ in vec3  vTint;
  * already baked into vWorldPos/vNormal/vRoadMask by the companion vertex shader.
  */
 
-uniform float audioKick;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 n = normalize(vNormal);
     vec3 lightDir = normalize(vec3(0.3, 0.9, -0.2));

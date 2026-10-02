@@ -9,24 +9,25 @@
 // The "flock" illusion comes from per-bird lag along the path plus smooth
 // per-bird oscillation offsets — no simulation needed.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 
-uniform float audioAdvance;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioCentroid;
-uniform float audioDrop;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 
-out vec4 vCol;
+out vec4 vCol;   ///< Colour (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -41,6 +42,7 @@ vec3 leader(float s)
                 20.0 * sin(0.73 * s + 4.0));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;

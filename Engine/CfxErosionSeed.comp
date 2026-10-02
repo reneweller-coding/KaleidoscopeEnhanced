@@ -13,9 +13,10 @@
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(rgba16f, binding = 0) uniform image2D imgLand;
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform uint  seed;
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p, uint s)
 {
     p += float(s % 4096u) * 0.137;
@@ -24,6 +25,7 @@ float hash21(vec2 p, uint s)
     return fract(p.x * p.y);
 }
 
+/// @brief Value noise with a seed.
 float vnoise(vec2 p, uint s)
 {
     vec2 i = floor(p), f = fract(p);
@@ -33,6 +35,7 @@ float vnoise(vec2 p, uint s)
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

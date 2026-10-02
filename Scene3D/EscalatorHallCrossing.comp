@@ -13,22 +13,25 @@
  *
  * Per-instance: flightsP, ridersP, hueP.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioSwell;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float flightsP;
 uniform float ridersP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) { p = fract(p * 0.1031); p *= p + 33.33; p *= p + p; return fract(p); }
 
+/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
 void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1)
 {
     uint base = atomicAdd(cmd[4], 6u);
@@ -48,8 +51,8 @@ void emitQuad(vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv
 const float FLOOR_Y = -3.2;
 const uint  STEPS   = 34u;
 
-// Flight f: its lower end, its direction and its side offset.  Two flights
-// cross in the middle of the hall; more flights sit behind them.
+/// Flight f: its lower end, its direction and its side offset.  Two flights
+/// cross in the middle of the hall; more flights sit behind them.
 void flightGeom(uint f, out vec3 lowEnd, out vec3 dir, out float len, out float sideS)
 {
     float ff = float(f);
@@ -63,6 +66,7 @@ void flightGeom(uint f, out vec3 lowEnd, out vec3 dir, out float len, out float 
     len = 9.5 + bank * 1.2;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

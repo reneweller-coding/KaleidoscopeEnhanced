@@ -22,6 +22,7 @@ uniform uint  seed;
 uniform float startX;
 uniform float life;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

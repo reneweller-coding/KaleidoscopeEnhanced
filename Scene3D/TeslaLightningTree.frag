@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file TeslaLightningTree.frag
  * @brief TESLA LIGHTNING TREE: a branching discharge tree grown fresh every
@@ -29,35 +29,38 @@ out vec4 fragColor;
  *                     existing tonemap below is untouched
  */
 
-in vec3 vPos;
+in vec3 vPos;   ///< Position (from the vertex stage).
 in float vHeat;
 in float vBoltID;
 in float vGain;
 
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;
-uniform float audioChromaHue;
-uniform float audioSwell;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioSharpness;
 
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float arcP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float glw = (glowP > 0.0) ? glowP : 1.0;
     float arc = (arcP  > 0.0) ? arcP  : 1.0;

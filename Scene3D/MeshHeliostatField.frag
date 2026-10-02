@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MeshHeliostatField.frag
  * @brief MESH HELIOSTAT FIELD: a real receiver tower (model=) in a field
@@ -20,23 +20,23 @@ out vec4 fragColor;
  * Per-instance: sizeP, mirrorP. Per-activation variety: hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;     // the tower
-uniform int   texMeshMaterialLayers;
-uniform sampler2DArray texMeshMaterial2;    // the heliostat
+uniform sampler2DArray texMeshMaterial;     ///< the tower
+uniform int   texMeshMaterialLayers;   ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;    ///< the heliostat
 uniform int   texMeshMaterialLayers2;
 
-uniform float time;
-uniform float audioBass;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec2  vUV;
-in vec3  vNormal;
-in vec3  vPos;
-in vec3  vLocal;
-in float vBg;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vLocal;   ///< Object-space position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 in float vMirror;
 in vec3  vAim;
 
@@ -51,13 +51,17 @@ vec3 sunDir()
     return normalize(vec3(sin(a) * cos(e), sin(e), -cos(a) * cos(e)));
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) { return fract(sin(p * 12.9898) * 43758.5453); }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 x) {
     vec2 i = floor(x), f = fract(x);
     f = f * f * (3.0 - 2.0 * f);
@@ -65,23 +69,27 @@ float noise2(vec2 x) {
     float c = hash21(i + vec2(0.0, 1.0)), d = hash21(i + vec2(1.0, 1.0));
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
+/// @brief Fractal noise of the given number of octaves.
 float fbm2(vec2 p) {
     float v = 0.0, a = 0.5;
     const mat2 R = mat2(0.80, 0.60, -0.60, 0.80);
     for (int i = 0; i < 4; i++) { v += a * noise2(p); p = R * p * 2.03 + 7.1; a *= 0.5; }
     return v;
 }
+/// @brief Smooth 1D value noise.
 float noise1(float x) {
     float i = floor(x), f = fract(x);
     f = f * f * (3.0 - 2.0 * f);
     return mix(hash11(i), hash11(i + 1.0), f);
 }
+/// @brief Exposure that brings the material's average brightness to a common level.
 float materialExposure(sampler2DArray tex)
 {
     vec3 avg = textureLod(tex, vec3(0.5, 0.5, 0.0), 20.0).rgb;
     float l = dot(avg, vec3(0.299, 0.587, 0.114));
     return clamp(0.28 / max(l, 0.02), 0.60, 1.8);
 }
+/// @brief Tangent frame from screen derivatives (normal mapping without tangents).
 mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
 {
     vec3 dp1 = dFdx(p),  dp2 = dFdy(p);
@@ -93,6 +101,7 @@ mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
     float inv = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-12));
     return mat3(T * inv, B * inv, N);
 }
+/// @brief The normal tilted by the material's normal map.
 vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength)
 {
     if (layers < 3) return n;
@@ -102,7 +111,7 @@ vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, f
     return normalize(cotangentFrame(n, wpos, uv) * normalize(m));
 }
 
-// The sky and the desert, also sampled by the mirrors.
+/// The sky and the desert, also sampled by the mirrors.
 vec3 renderSky(vec3 dir)
 {
     float swell = clamp(audioSwell, 0.0, 1.0);
@@ -141,6 +150,7 @@ vec3 renderSky(vec3 dir)
     return col;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if (vBg > 0.5)

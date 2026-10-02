@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FormantVowelSpace.frag
  * @brief FORMANT VOWEL SPACE: the vowel chart of phonetics -- the second
@@ -20,35 +20,37 @@ out vec4 fragColor;
  *
  * Per-activation variety: blobP, trailP, hueP.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioAdvance;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 uniform sampler2D texSpectro;
 uniform float spectroHead;
 uniform float spectroFill;
-uniform float audioHigh;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float blobP;
 uniform float trailP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 const float kSpectroRows = 256.0;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,8 +60,8 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
-// Centroid and spread of one spectrogram row at the given age (in rows),
-// from 16 of the 32 bands; the linear filter between rows smooths a little.
+/// Centroid and spread of one spectrogram row at the given age (in rows),
+/// from 16 of the 32 bands; the linear filter between rows smooths a little.
 vec2 rowShape(float age)
 {
     float y = fract(spectroHead - age / kSpectroRows);
@@ -76,8 +78,8 @@ vec2 rowShape(float age)
     return vec2(cen, spr);
 }
 
-// Marker position on the chart: F2 across (centroid, reversed), F1 down
-// (spread), the shape averaged over a window of rows starting at the age.
+/// Marker position on the chart: F2 across (centroid, reversed), F1 down
+/// (spread), the shape averaged over a window of rows starting at the age.
 vec2 markerAt(float age, int window)
 {
     vec2 acc = vec2(0.0);
@@ -86,6 +88,7 @@ vec2 markerAt(float age, int window)
     return vec2(clamp(0.5 - (acc.x - 0.3) * 2.2, -0.6, 0.6), clamp((acc.y - 0.12) * 4.0 - 0.3, -0.42, 0.42));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

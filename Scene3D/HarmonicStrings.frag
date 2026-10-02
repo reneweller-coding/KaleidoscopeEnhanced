@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // HarmonicStrings.frag — thin bright string with a soft glow.
-in vec4  vCol;
-in float vSide;
+in vec4  vCol;   ///< Colour (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file HarmonicStrings.frag
@@ -15,6 +15,7 @@ in float vSide;
  * audio reactivity arrives already baked into that per-vertex color.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float d    = abs(vSide);

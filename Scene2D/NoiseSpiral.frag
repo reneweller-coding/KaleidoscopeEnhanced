@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file NoiseSpiral.frag
  * @brief "Playing with this idea: https://www.shadertoy.com/view/w3VGzc" (as noted in
@@ -21,33 +21,34 @@ out vec4 fragColor;
  * image.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;
-uniform float audioPhase;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float twistP;   // tunnel twist per depth unit (0 -> 0.2; 0.1 = calm, 0.35 = corkscrew)
-uniform float turbP;    // turbulence amplitude        (0 -> 0.3; 0.15 = smooth, 0.45 = wild)
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float twistP;   ///< tunnel twist per depth unit (0 -> 0.2; 0.1 = calm, 0.35 = corkscrew)
+uniform float turbP;    ///< turbulence amplitude        (0 -> 0.3; 0.15 = smooth, 0.45 = wild)
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,14 +59,15 @@ vec3 imgPalette(float t)
 }
 
 
-// House tint: bend a colour toward the photo palette while keeping its
-// luminance -- the identity look survives, only the hue follows the photos.
+/// House tint: bend a colour toward the photo palette while keeping its
+/// luminance -- the identity look survives, only the hue follows the photos.
 vec3 palTint(vec3 c, float t, float k)
 {
     vec3 tp = imgPalette(t);
     tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
     return mix(c, tp, k);
 }
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -73,6 +75,7 @@ vec3 imgPal(float x)
     return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -80,14 +83,15 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// tanh(), component-wise, hand-rolled (not guaranteed built-in before GLSL
-// 1.30): clamp the exponent so exp() can't overflow -> Inf/Inf -> NaN.
+/// tanh(), component-wise, hand-rolled (not guaranteed built-in before GLSL
+/// 1.30): clamp the exponent so exp() can't overflow -> Inf/Inf -> NaN.
 vec4 tanh4(vec4 x)
 {
     vec4 e2x = exp(clamp(2.0 * x, -40.0, 40.0));
     return (e2x - 1.0) / (e2x + 1.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float tt = time + audioAdvance * 2.5;   // jump-free (host-integrated) clock

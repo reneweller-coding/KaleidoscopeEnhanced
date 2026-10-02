@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
-in vec3  vNormal;
-in vec3  vWorldPos;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vWorldPos;   ///< World position (from the vertex stage).
 in vec3  vTint;
 in float vFlash;
 
@@ -17,14 +17,16 @@ in float vFlash;
  * away from the photo, and a kick-driven flash briefly overexposes toward white.
  */
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 n  = normalize(vNormal);
     vec3 rd = normalize(vWorldPos);   // camera sits near the world origin

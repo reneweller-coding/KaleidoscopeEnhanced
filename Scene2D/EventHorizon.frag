@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file EventHorizon.frag
  * @brief A Schwarzschild black hole with gravitational lensing and a Keplerian accretion disk, integrated per-pixel from the actual light-bending equation rather than an approximation.
@@ -22,28 +22,28 @@ out vec4 fragColor;
 // smears the slideshow around the shadow.
 // -----------------------------------------------------------------------
 
-uniform sampler2D tex0;
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioHigh;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioDrop;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSwell;   ///< slow envelope, the calm replacement for the fast one (V7d)
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 uniform float audioMusic;
 
-uniform float massP;        // preset: how strongly it lenses
-uniform float diskP;        // preset: disk brightness
-uniform float tiltP;        // preset: viewing angle onto the disk
+uniform float massP;        ///< preset: how strongly it lenses
+uniform float diskP;        ///< preset: disk brightness
+uniform float tiltP;        ///< preset: viewing angle onto the disk
 
-// Blackbody-ish ramp for the disk: inner edge white-hot, outer edge deep red.
+/// Blackbody-ish ramp for the disk: inner edge white-hot, outer edge deep red.
 vec3 diskColour(float t)
 {
     vec3 hot  = vec3(1.15, 1.05, 0.95);
@@ -52,6 +52,7 @@ vec3 diskColour(float t)
     return (t < 0.5) ? mix(cool, mid, t * 2.0) : mix(mid, hot, (t - 0.5) * 2.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

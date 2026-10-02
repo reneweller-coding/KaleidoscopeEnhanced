@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file PhysarumAgents.frag
  * @brief Physarum polycephalum (slime mould) agent update — the classic Jones
@@ -16,17 +16,18 @@ out vec4 fragColor;
  * (random new heading) so the net visibly explodes and re-forms.
  */
 
-uniform sampler2D texAgents;   // previous agent state
-uniform sampler2D texTrail;    // trail map (R = species A, G = species B)
-uniform vec2  resolution;      // agent texture size
-uniform float seedMode;        // 1 on the first frame -> random init
-uniform float time;
-uniform float speed;           // move step per frame (trail-map uv units)
-uniform float sensAngle;       // sensor half-angle (radians)
-uniform float sensDist;        // sensor distance (trail-map uv units)
-uniform float turnRate;        // turn per frame (radians)
-uniform float scatter;         // 0..1 fraction of agents re-randomised now
+uniform sampler2D texAgents;   ///< previous agent state
+uniform sampler2D texTrail;    ///< trail map (R = species A, G = species B)
+uniform vec2  resolution;      ///< agent texture size
+uniform float seedMode;        ///< 1 on the first frame -> random init
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float speed;           ///< move step per frame (trail-map uv units)
+uniform float sensAngle;       ///< sensor half-angle (radians)
+uniform float sensDist;        ///< sensor distance (trail-map uv units)
+uniform float turnRate;        ///< turn per frame (radians)
+uniform float scatter;         ///< 0..1 fraction of agents re-randomised now
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
@@ -40,6 +41,7 @@ float senseOwn(vec2 pos, float species)
     return mix(t.r, t.g, species);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 texel = gl_FragCoord.xy / resolution;

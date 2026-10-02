@@ -19,6 +19,7 @@
 // nearest edge.  The fragment shader draws a line where that distance is small.
 // -----------------------------------------------------------------------
 layout(triangles) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 3) out;
 
 in  vec3  gObj[];
@@ -26,23 +27,24 @@ in  vec2  gUV[];
 in  float gCell[];
 in  float gMorph[];
 
-flat out vec3 vEdgeMask;    // 1 = a real quad edge, 0 = the mesh's diagonal
-out float vKind;            // 0 = paper backdrop, 1 = the body
+flat out vec3 vEdgeMask;    ///< 1 = a real quad edge, 0 = the mesh's diagonal
+out float vKind;            ///< 0 = paper backdrop, 1 = the body
 out vec3  vBary;
-out vec3  vObj;
-out vec3  vNormal;
-out vec3  vView;
-out vec2  vUV;
+out vec3  vObj;   ///< Object-space position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vMorph;
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float time;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camDistP;
+uniform float camDistP;   ///< Camera distance knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // One triangle of the mesh is spent on the paper.  A blueprint without its

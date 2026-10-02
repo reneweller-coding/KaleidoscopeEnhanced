@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SoapFilmMembrane.frag
  * @brief SOAP FILM MEMBRANE: a soap film in a frame, filling the view.  Its
@@ -19,27 +19,29 @@ out vec4 fragColor;
  *
  * Per-activation variety: detailP, modesP, drainP, hueP.
  */
-in vec3  vWorld;
+in vec3  vWorld;   ///< World position (from the vertex stage).
 in vec2  vSurfUV;
-in vec3  vNormal;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in float vThick;
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float time;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioChromaHue;
-uniform float audioValence;
-uniform float hueP;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -49,8 +51,8 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
-// Thin-film reflectance for the three wavelengths, thickness d in nm/100,
-// refractive index 1.33, at incidence cosine c.
+/// Thin-film reflectance for the three wavelengths, thickness d in nm/100,
+/// refractive index 1.33, at incidence cosine c.
 vec3 thinFilm(float d, float c)
 {
     float n = 1.33;
@@ -62,6 +64,7 @@ vec3 thinFilm(float d, float c)
     return sin(ph) * sin(ph);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hue = (hueP > 0.001) ? hueP : 0.0;

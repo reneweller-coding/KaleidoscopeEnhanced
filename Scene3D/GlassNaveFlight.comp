@@ -19,19 +19,21 @@
  *
  * Per-instance: bayP (bay spacing), heightP (nave height), hueP.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneAdvance;
-uniform float sceneTime;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
 
 uniform float bayP;
-uniform float heightP;
-uniform float hueP;
+uniform float heightP;   ///< Height knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
 void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, float band, float face, float kind)
 {
     uint base = atomicAdd(cmd[4], 6u);
@@ -56,6 +58,7 @@ void emitBox(vec3 c, vec3 h, float band, float kind)
     emitQuad(c - x + y - z, c + x + y - z, c + x + y + z, c - x + y + z, band, 2.0, kind);   // top
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

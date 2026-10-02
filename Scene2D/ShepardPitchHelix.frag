@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ShepardPitchHelix.frag
  * @brief SHEPARD PITCH HELIX: pitch as a helix -- one turn per octave,
@@ -19,31 +19,33 @@ out vec4 fragColor;
  *
  * Per-activation variety: turnsP (octaves shown), radiusP, hueP.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioAdvance;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 uniform float audioMelody[96];
 uniform float audioMelodyHead;
-uniform float audioChroma[12];
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float turnsP;
-uniform float radiusP;
-uniform float hueP;
+uniform float radiusP;   ///< Radius knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,7 +62,7 @@ float melodyAgo(int k)
     return audioMelody[i];
 }
 
-// Helix point for a pitch value (0..1 spans the shown octaves) at rotation rot.
+/// Helix point for a pitch value (0..1 spans the shown octaves) at rotation rot.
 vec3 helixPoint(float pitch, float turns, float R, float rot)
 {
     float ang = pitch * turns * 6.2831853 + rot;
@@ -73,6 +75,7 @@ vec2 project(vec3 q)
     return vec2(q.x * persp, q.y * persp);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

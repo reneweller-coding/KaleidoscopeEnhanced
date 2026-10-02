@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxHexagon.frag
  * @brief FX HEXAGON: snaps the scene onto a honeycomb of hexagonal cells.
@@ -7,20 +7,20 @@ out vec4 fragColor;
  *   audioOnset -> percussive hits brighten the cell interiors
  *   sizeP      -> per-activation hex density
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;       // beat -> thin dark borders flash between cells
-uniform float audioOnset;      // percussive hits -> cells brighten
+uniform float audioBeat;       ///< beat -> thin dark borders flash between cells
+uniform float audioOnset;      ///< percussive hits -> cells brighten
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float sizeP;           // hex density (0 -> 320; 160 = chunky mosaic, 480 = fine)
+uniform float sizeP;           ///< hex density (0 -> 320; 160 = chunky mosaic, 480 = fine)
 
-float PI = 3.14159265359;
-float TAU = 2.0*PI;
+float PI = 3.14159265359;   ///< Pi.
+float TAU = 2.0*PI;   ///< Two pi.
 float deg30 = TAU/12.0;
 
 // http://www.gamedev.net/page/resources/_/technical/game-programming/coordinates-in-hexagon-based-tile-maps-r1800
@@ -77,6 +77,7 @@ vec2 nearestHex(float s, vec2 st){
 	return vec2(coord.x*2.0*r-xoff, coord.y*(h+s))+vec2(r*2.0, s);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void){
 	vec2 uv = gl_FragCoord.xy/resolution.xy;
 	// Per-activation hex density (0/absent -> the original 320).

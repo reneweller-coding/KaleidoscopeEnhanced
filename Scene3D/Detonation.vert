@@ -7,15 +7,16 @@
 // Detonation.vert — wrap the flat grid onto a sphere.  The shell is broken
 // apart per triangle in the geometry shader, so nothing is displaced here.
 
-in vec4 attrA;      // xy = grid (u,v)
-in vec4 attrB;      // per-cell hashes
+in vec4 attrA;      ///< xy = grid (u,v)
+in vec4 attrB;      ///< per-cell hashes
 
 out vec3 gObj;
 out vec4 gRnd;
 out vec2 gUV;
 
-const float PI = 3.14159265;
+const float PI = 3.14159265;   ///< Pi.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float th  = attrA.x * 2.0 * PI;

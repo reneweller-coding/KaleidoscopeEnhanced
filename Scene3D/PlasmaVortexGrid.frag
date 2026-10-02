@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file PlasmaVortexGrid.frag
  * @brief PLASMA VORTEX GRID: a glowing funnel grid swirled by a TRAVELING SPIRAL
@@ -9,15 +9,16 @@ out vec4 fragColor;
  *   audioSpectrum -> Bessel ripple heights
  */
 
-in vec3 vWorld;
-in vec2 vUV;
-in vec4 vCol;
+in vec3 vWorld;   ///< World position (from the vertex stage).
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float time;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     // Glowing laser grid lines across the heightfield
     vec2 gridUV = fract(vUV * vec2(220.0, 120.0));

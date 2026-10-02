@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file HyperCube.frag
  * @brief Infinity-mirror cube (a la the Hyperspace Lighting Co. "HyperCube"): the
@@ -11,36 +11,38 @@ out vec4 fragColor;
  * onset & downbeat flash, colours follow the harmony / mode.  Jump-free motion.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;      // integrated rotation phase (jump-free)
-uniform float audioAdvance;    // integrated travel into the tunnel (beat-lurch)
-uniform float audioBeat;
-uniform float audioBeatPhase;
-uniform float audioOnset;
+uniform float audioPhase;      ///< integrated rotation phase (jump-free)
+uniform float audioAdvance;    ///< integrated travel into the tunnel (beat-lurch)
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
 uniform float audioDownbeat;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioLevel;
-uniform float audioValence;
-uniform float audioMode;
-uniform float audioChromaHue;
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -52,6 +54,7 @@ vec3 imgPalette(float t)
 
 vec3 pal(float t) { return imgPalette(t) * 1.35; }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;

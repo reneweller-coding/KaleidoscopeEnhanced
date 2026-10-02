@@ -27,27 +27,27 @@ layout(quads, fractional_odd_spacing, ccw) in;
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-out vec3  vObj;         // object-space point (drives the body colour)
-out vec3  vNormal;
-out vec3  vView;        // view direction at the surface
-out vec3  vWorld;       // for the shadow lookup
-out float vSwell;       // total displacement, for the emissive seams
+out vec3  vObj;         ///< object-space point (drives the body colour)
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;        ///< view direction at the surface
+out vec3  vWorld;       ///< for the shadow lookup
+out float vSwell;       ///< total displacement, for the emissive seams
 out vec2  vSurfUV;
 
-uniform mat4  projM;
-uniform mat4  lightM;
-uniform float shadowPass;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioChroma[12];
-uniform float audioSubBass;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float bloomP;       // preset: how far the lobes reach
-uniform float camDistP;     // preset: distance to the sculpture
-uniform float twistP;       // preset: how fast the modes rotate
+uniform float bloomP;       ///< preset: how far the lobes reach
+uniform float camDistP;     ///< preset: distance to the sculpture
+uniform float twistP;       ///< preset: how fast the modes rotate
 
-const float PI = 3.14159265;
+const float PI = 3.14159265;   ///< Pi.
 
 // Twelve (k, m) pairs, one per pitch class: k sets how many rings run from
 // pole to pole, m how many lobes run around the equator.  Low pitch classes
@@ -63,6 +63,7 @@ const float MODE_M[12] = float[12](0.0, 1.0, 2.0, 1.0, 2.0, 3.0,
 const float MODE_W[12] = float[12]( 0.34, -0.26,  0.30, -0.22,  0.25, -0.28,
                                     0.20, -0.17,  0.15, -0.19,  0.12, -0.14);
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);

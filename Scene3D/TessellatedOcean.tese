@@ -7,25 +7,26 @@
  * measure on the steepest crests for the fragment stage.  Projection after
  * displacement.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(quads, fractional_odd_spacing, ccw) in;
 
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-out vec3  vWorld;
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out vec2  vSurfUV;
 out float vCrest;
-out vec3  vNormal;
-out float vDist;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
 const vec2 EXTENT = vec2(220.0, 320.0);
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioSwell;
-uniform float camHP;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float camHP;   ///< Camera height knob, 0..1.
 uniform float swellP;
 uniform float choppyP;
 
@@ -42,6 +43,7 @@ vec3 gerstner(vec2 pos, vec2 dir, float amp, float len, float phase,
     return d;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);

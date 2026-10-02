@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Rorschach.frag
  * @brief An ever-morphing Rorschach inkblot: an fbm noise field mirrored on
@@ -23,31 +23,34 @@ out vec4 fragColor;
  *  - audioMode      -> PAPER MOOD: minor keys cool the plate to a cold clinical grey,
  *                      major keys warm it to aged cream
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform int positive;// = 0; //positive or negative display
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform int positive;///< = 0; //positive or negative display
 uniform float posX;
 uniform float posY;
 uniform float posZ;
 uniform float divisor;
-uniform float fiOffset;//original = 0.1
+uniform float fiOffset;///< original = 0.1
 //uniform float timefactor;
-uniform float audioAdvance;   // integrated drift: the inkblot morphs with the music (jump-free)
-uniform float audioKick;      // kick throb on the blot intensity
-uniform float audioLevel;     // louder music = denser ink
-uniform float audioFlatness;  // 0=tonal/one band .. 1=noise-like -> crisp vs bleeding ink edges
-uniform float audioRoughness; // 0=consonant .. 1=dissonant -> fbm domain-warp / knotted shape
-uniform float audioMode;      // 0=minor/cold .. 1=major/warm -> paper colour
+uniform float audioAdvance;   ///< integrated drift: the inkblot morphs with the music (jump-free)
+uniform float audioKick;      ///< kick throb on the blot intensity
+uniform float audioLevel;     ///< louder music = denser ink
+uniform float audioFlatness;  ///< 0=tonal/one band .. 1=noise-like -> crisp vs bleeding ink edges
+uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> fbm domain-warp / knotted shape
+uniform float audioMode;      ///< 0=minor/cold .. 1=major/warm -> paper colour
 
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+/// @brief Value noise with a seed.
 float vnoise(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -55,6 +58,7 @@ float vnoise(vec2 p)
     return mix(mix(hash21(i), hash21(i + vec2(1, 0)), f.x),
                mix(hash21(i + vec2(0, 1)), hash21(i + vec2(1, 1)), f.x), f.y);
 }
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     float v = 0.0, a = 0.55;
@@ -62,10 +66,10 @@ float fbm(vec2 p)
     return v;
 }
 
-// USER-FEEDBACK-REDESIGN: a real, ever-morphing Rorschach inkblot — an fbm
-// ink field mirrored on the vertical axis, breathing with the music, on a
-// warm paper ghost of the photo.  The old 124-metaball loop collapsed into
-// a static heart (and inverted to solid black on hot audio).
+/// USER-FEEDBACK-REDESIGN: a real, ever-morphing Rorschach inkblot — an fbm
+/// ink field mirrored on the vertical axis, breathing with the music, on a
+/// warm paper ghost of the photo.  The old 124-metaball loop collapsed into
+/// a static heart (and inverted to solid black on hot audio).
 void main(void)
 {
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;

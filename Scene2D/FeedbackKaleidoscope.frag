@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FeedbackKaleidoscope.frag
  * @brief Analog VIDEO FEEDBACK, kaleidoscope edition: last frame's fully composited image
@@ -25,25 +25,25 @@ out vec4 fragColor;
  * the scene starts from pure photo injection and grows into feedback within a few frames.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform sampler2D texPrevFrame;   // last frame's fully composited image
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texPrevFrame;   ///< last frame's fully composited image
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;
-uniform float audioBeat;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioChromaHue;
-uniform float audioValence;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioCentroid;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP;      // fold segment count (0 -> 7; 5..11)
+uniform int   sidesP;      ///< fold segment count (0 -> 7; 5..11)
 // PER-FRAME retention factor -- this compounds every single frame (60x/s),
 // so it must sit very close to 1.0: at 0.985 content is down to ~1% after
 // only 2s (0.985^120 =~ 0.16, and worse over a few more seconds), which
@@ -52,24 +52,26 @@ uniform int   sidesP;      // fold segment count (0 -> 7; 5..11)
 // instead of one that decays before it's ever seen.  It is capped at 0.996
 // below, because the per-frame contrast curve adds up to 1.04x on top of it and
 // the product of the two must stay under 1.0 (see the note at that line).
-uniform float decayP;      // feedback persistence (0 -> 0.997; 0.994..0.999)
-uniform float injectP;     // fresh-photo injection strength (0 -> 0.05; 0.05..0.13)
-uniform float hueP;
+uniform float decayP;      ///< feedback persistence (0 -> 0.997; 0.994..0.999)
+uniform float injectP;     ///< fresh-photo injection strength (0 -> 0.05; 0.05..0.13)
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 const vec3  LW = vec3(0.2126, 0.7152, 0.0722);
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
-// Mean colour of the current photo (the 1x1 mip; the slideshow textures are
-// uploaded at 1024x1024 with glGenerateMipmap, see RenderPipeline.cpp).  The
-// injection is divided by it, so the loop's brightness is a property of the
-// FEEDBACK, not of whichever picture happens to be up -- the library runs from
-// mean luma 0.14 (nebulae) to 0.74 (bright portraits).
+/// Mean colour of the current photo (the 1x1 mip; the slideshow textures are
+/// uploaded at 1024x1024 with glGenerateMipmap, see RenderPipeline.cpp).  The
+/// injection is divided by it, so the loop's brightness is a property of the
+/// FEEDBACK, not of whichever picture happens to be up -- the library runs from
+/// mean luma 0.14 (nebulae) to 0.74 (bright portraits).
 vec3 imgDC() { return (interpolation * textureLod(tex0, vec2(0.5), 10.0)
                      + (1.0 - interpolation) * textureLod(tex1, vec2(0.5), 10.0)).rgb; }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -79,9 +81,9 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// imgPalette at a fixed luminance, so the mandala's own lines keep their
-// brightness on a dark photo.  A nearly-black sample is eased to neutral first:
-// dividing (0.01,0.0,0.0) by its luma would make a hard saturated primary.
+/// imgPalette at a fixed luminance, so the mandala's own lines keep their
+/// brightness on a dark photo.  A nearly-black sample is eased to neutral first:
+/// dividing (0.01,0.0,0.0) by its luma would make a hard saturated primary.
 vec3 palNorm(float t)
 {
     vec3  p  = imgPalette(t);
@@ -90,6 +92,7 @@ vec3 palNorm(float t)
     return mix(vec3(1.0), pn, clamp(pl * 8.0, 0.25, 1.0)) * 0.55;
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -97,8 +100,8 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// Mirror fold.  Also hands back the angle WITHIN the wedge and the wedge width,
-// which the seam and petal terms below need in order to draw the mirror lines.
+/// Mirror fold.  Also hands back the angle WITHIN the wedge and the wedge width,
+/// which the seam and petal terms below need in order to draw the mirror lines.
 vec2 kaleido(vec2 p, float sides, out float wedgeA, out float segOut)
 {
     float a   = atan(p.y, p.x);
@@ -110,6 +113,7 @@ vec2 kaleido(vec2 p, float sides, out float wedgeA, out float segOut)
     return vec2(cos(a), sin(a)) * r;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float sidesV = (sidesP < 5) ? 7.0 : float(sidesP);

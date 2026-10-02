@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Detonation.frag — cold shell outside, molten core inside.
 // Once a shard lifts away, the camera starts seeing the INSIDE of the shell on
 // the far side of the ball, and those fragments are shaded as glowing magma.
@@ -12,12 +12,12 @@ out vec4 fragColor;
 // paints the entire ball as magma.  The geometry shader already orients each
 // shard's normal outward, so the sign of dot(N, V) is the honest test.
 
-in vec3  vNormal;
-in vec3  vView;
-in vec3  vWorld;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vView;   ///< View vector (from the vertex stage).
+in vec3  vWorld;   ///< World position (from the vertex stage).
 in float vShard;
 in float vEdge;
-in vec2  vUV;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 
 /**
  * @file Detonation.frag
@@ -37,42 +37,42 @@ in vec2  vUV;
  * the sampler2DShadow lookup used for shard-on-shard shadowing.
  */
 
-uniform sampler2D tex0;
+uniform sampler2D tex0;   ///< The current photo.
 // Declaring this is what asks the engine for the extra depth pass.
 uniform sampler2DShadow texShadow;
-uniform mat4  lightM;
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
 uniform vec3  lightDir;
-uniform float shadowPass;
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
 uniform float shadowTexel;
 uniform float shadowExtent;
-uniform float interpolation;
-uniform float time;
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float blastP;
-uniform sampler2D tex1;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-// Same normal-offset lookup as PillarHall; the offset is in world units, so it
-// follows this scene's much smaller shadow box automatically.
+/// Same normal-offset lookup as PillarHall; the offset is in world units, so it
+/// follows this scene's much smaller shadow box automatically.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -83,14 +83,15 @@ vec3 imgPalette(float t)
 }
 
 
-// House tint: bend a colour toward the photo palette while keeping its
-// luminance -- the identity look survives, only the hue follows the photos.
+/// House tint: bend a colour toward the photo palette while keeping its
+/// luminance -- the identity look survives, only the hue follows the photos.
 vec3 palTint(vec3 c, float t, float k)
 {
     vec3 tp = imgPalette(t);
     tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
     return mix(c, tp, k);
 }
+/// @brief Shadow factor from the shadow map at a world position.
 float shadowAt(vec3 world, vec3 n, float ndl)
 {
     float lift = (2.0 * shadowExtent * shadowTexel) * 2.2 / max(ndl, 0.15);
@@ -108,6 +109,7 @@ float shadowAt(vec3 world, vec3 n, float ndl)
     return s / 9.0;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Depth pass: nothing to shade, and sampling texShadow here would read the

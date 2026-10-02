@@ -19,18 +19,21 @@
 layout(local_size_x = 16, local_size_y = 16) in;
 layout(rgba16f, binding = 0) uniform image2D imgField;
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform uint  seed;
 uniform float hue;
 
+/// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg(inout uint s)
 {
     s = s * 747796405u + 2891336453u;
     uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
     return (w >> 22) ^ w;
 }
+/// @brief Random number 0..1 from a PCG state.
 float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

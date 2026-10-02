@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file CausticPool.frag
  * @brief The photograph seen as a pool floor through a rippling water surface lit by caustics.
@@ -25,25 +25,26 @@ out vec4 fragColor;
 // same caustic field also displaces the floor, so the picture appears to be
 // seen THROUGH moving water rather than having a light pattern laid over it.
 
-uniform sampler2D tex0;
-uniform sampler2D texCaustics;    // <- requests the wave + photon sim
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D texCaustics;    ///< <- requests the wave + photon sim
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
-uniform float audioSharpness;   // 0=dull/dark .. 1=sharp/bright -> caustic-net crispness
-uniform float audioRolloff;     // 0=bass-bound .. 1=reaching into the highs -> water colour temperature
-uniform float audioLowMid;      // 150-500 Hz harmonic warmth -> water body / depth-tint density
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
+uniform float audioSharpness;   ///< 0=dull/dark .. 1=sharp/bright -> caustic-net crispness
+uniform float audioRolloff;     ///< 0=bass-bound .. 1=reaching into the highs -> water colour temperature
+uniform float audioLowMid;      ///< 150-500 Hz harmonic warmth -> water body / depth-tint density
 
-uniform float warpP;              // refraction strength
-uniform float glowP;
+uniform float warpP;              ///< refraction strength
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

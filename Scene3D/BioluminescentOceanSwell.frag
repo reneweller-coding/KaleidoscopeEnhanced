@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file BioluminescentOceanSwell.frag
  * @brief BIOLUMINESCENT OCEAN SWELL: open-ocean Gerstner swell viewed from a
@@ -10,36 +10,37 @@ out vec4 fragColor;
  *   audioAdvance    -> forward glide over open water
  */
 
-in vec3 vPos;
-in vec3 vNormal;
-in vec2 vUV;
+in vec3 vPos;   ///< Position (from the vertex stage).
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vCrest;
 in float vHeight;
 
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;
-uniform float audioChromaHue;
-uniform float audioSwell;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float bioP;
-uniform float hueP;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -50,20 +51,22 @@ vec3 imgPalette(float t)
 }
 
 
-// House tint: bend a colour toward the photo palette while keeping its
-// luminance -- the identity look survives, only the hue follows the photos.
+/// House tint: bend a colour toward the photo palette while keeping its
+/// luminance -- the identity look survives, only the hue follows the photos.
 vec3 palTint(vec3 c, float t, float k)
 {
     vec3 tp = imgPalette(t);
     tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
     return mix(c, tp, k);
 }
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float glw = (glowP > 0.0) ? glowP : 1.0;
     float bio = (bioP  > 0.0) ? bioP  : 1.0;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MelodyKaleidoscope.frag
  * @brief MELODY KALEIDOSCOPE: the mirrored motif is the melody itself.  The
@@ -20,32 +20,34 @@ out vec4 fragColor;
  *
  * Per-activation variety: sidesP (fold count), widthP (contour width), hueP.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioAdvance;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 uniform float audioMelody[96];
 uniform float audioMelodyHead;
-uniform float audioMelodyPitch;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float audioMelodyPitch;   ///< Pitch of the melody, 0..1 over the tracked range.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float sidesP;
-uniform float widthP;
-uniform float hueP;
+uniform float widthP;   ///< Width knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,7 +57,7 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
-// Melody sample k steps into the past (0 = newest).
+/// Melody sample k steps into the past (0 = newest).
 float melodyAgo(int k)
 {
     int head = int(audioMelodyHead * 96.0 + 0.5);
@@ -63,6 +65,7 @@ float melodyAgo(int k)
     return audioMelody[i];
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

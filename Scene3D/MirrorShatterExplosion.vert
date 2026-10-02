@@ -8,13 +8,14 @@
  * camera/projection math lives entirely in the geometry stage's emitVert() helper, not here).
  */
 
-in vec4 attrA;   // .w = point index
-in vec4 attrB;   // 4 random seeds in [0,1)
+in vec4 attrA;   ///< .w = point index
+in vec4 attrB;   ///< 4 random seeds in [0,1)
 
 out vec3  vObjPos;
 out vec4  vSeeds;
 out float vIndex;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vObjPos = attrA.xyz;
     vSeeds  = attrB;

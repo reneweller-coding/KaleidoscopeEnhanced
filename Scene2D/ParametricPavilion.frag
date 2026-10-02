@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ParametricPavilion.frag
  * @brief PARAMETRIC PAVILION: a white, flowing interior in the manner of Zaha
@@ -22,29 +22,31 @@ out vec4 fragColor;
  * Per-activation variety: twistP (how strongly the space twists), hueP.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioBass;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float twistP;
-uniform float hueP;
+uniform float twistP;   ///< Twist knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -56,10 +58,10 @@ vec3 imgPalette(float t)
 
 float gTw;
 
-// The cross-section's centre drifts and the section twists along z.
+/// The cross-section's centre drifts and the section twists along z.
 vec2 axis(float z) { return vec2(0.9 * sin(z * 0.11), 0.4 * sin(z * 0.08 + 1.0)); }
 
-// Section coordinates: angle around the axis (twisted) and the radius.
+/// Section coordinates: angle around the axis (twisted) and the radius.
 float radiusAt(float th, float z)
 {
     return 3.0 + 0.7 * sin(th * 2.0 + z * 0.23 * gTw) + 0.35 * sin(th * 3.0 - z * 0.17 + 2.0) + 0.25 * sin(z * 0.31);
@@ -84,6 +86,7 @@ vec3 normalAt(vec3 p)
                           sdf(p + e.yyx) - sdf(p - e.yyx)));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

@@ -24,22 +24,23 @@
  * Scene3DShader::runGenerator(), so audioSnare / audioTrebRel have to be
  * applied here on the baked geometry instead.
  */
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float time;
-uniform float audioKick;
-uniform float audioSnare;
+uniform mat4 projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSnare;   ///< Snare envelope, 0..1.
 uniform float audioTrebRel;
 
-out vec3 vPos;
+out vec3 vPos;   ///< Position (from the vertex stage).
 out float vHeat;
 out float vBoltID;
 out float vGain;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 worldP = attrA.xyz;
     // Generator-side brightness class: the draw is opaque, so the faint

@@ -5,18 +5,19 @@
  * front of the horizon and the tiles fly toward and past it.  Tiles carry
  * their photo window (attrB.zw) and life (attrB.x).  No camera motion.
  */
-layout(location = 0) in vec4 attrA;   // xyz = position, w = id
-layout(location = 1) in vec4 attrB;   // x = life, y = kind (-1 sky, 2 horizon, 0 tile), zw = photo uv
+layout(location = 0) in vec4 attrA;   ///< xyz = position, w = id
+layout(location = 1) in vec4 attrB;   ///< x = life, y = kind (-1 sky, 2 horizon, 0 tile), zw = photo uv
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-out vec2 vTexCoord;
-out float vDepth;
-out float vKind;
+out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out float vDepth;   ///< Depth (from the vertex stage).
+out float vKind;   ///< Element kind (from the vertex stage).
 out float vLife;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 vp = attrA.xyz;

@@ -1,13 +1,13 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;
-uniform float audioKick;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // CrystalGrowth.frag — faceted gem faces with luminous edges (depth-tested);
 // a drop blows the edges out into a blinding sparkle.
-uniform float audioDrop;
-in vec4 vCol;
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+in vec4 vCol;   ///< Colour (from the vertex stage).
 in vec3 vCorner;
 
 /**
@@ -23,6 +23,7 @@ in vec3 vCorner;
  * audioBuildUp, audioDrop, audioSwell and audioChromaHue.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

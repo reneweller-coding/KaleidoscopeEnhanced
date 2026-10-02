@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file InkTank.frag
  * @brief INK TANK: drops of ink falling through a backlit tank of water, the
@@ -23,29 +23,31 @@ out vec4 fragColor;
  * Per-activation variety: glowP (edge glint), inkP (ink strength).
  */
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float inkP;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,26 +57,30 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
     p3 += dot(p3, p3.yzx + 33.33);
     return fract((p3.x + p3.y) * p3.z);
 }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
                mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     float v = 0.0, a = 0.5;
     for (int i = 0; i < 4; ++i) { v += a * noise2(p); p = mat2(1.6, 1.2, -1.2, 1.6) * p + 3.1; a *= 0.5; }
     return v;
 }
-// Fibres: ridged noise, thin bright lines where the ink is drawn out.
+/// Fibres: ridged noise, thin bright lines where the ink is drawn out.
 float fibres(vec2 p)
 {
     float v = 0.0, a = 0.5;
@@ -82,7 +88,7 @@ float fibres(vec2 p)
     return v;
 }
 
-// One sinking drop: vortex-ring head + trailing stem, at age a (0..1).
+/// One sinking drop: vortex-ring head + trailing stem, at age a (0..1).
 float plume(vec2 p, float k, float a, float T, float aspect)
 {
     float x0 = 0.5 + (hash11(k * 3.7) - 0.5) * aspect * 0.85;
@@ -117,6 +123,7 @@ float plume(vec2 p, float k, float a, float T, float aspect)
     return (lobe + cap + stem) * fade;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

@@ -1,15 +1,15 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // GrassField.frag — three materials in one shader, chosen by vKind.
 // The blade shading is mostly ambient occlusion along its own length: grass
 // reads as grass because the base sits in shadow and only the tips catch the
 // sun.  Flat-lit blades look like green plastic straws.
 
-in vec3  vWorld;
-in vec3  vNormal;
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in float vAlong;
 in float vTint;
-in float vKind;
+in float vKind;   ///< Element kind (from the vertex stage).
 
 /**
  * @file GrassField.frag
@@ -26,22 +26,23 @@ in float vKind;
  * audioBeat/audioSubBass pulse the final brightness.
  */
 
-uniform sampler2D tex0;
-uniform float interpolation;
-uniform float time;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioHigh;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float camHP;
-uniform float hueP;
+uniform float camHP;   ///< Camera height knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float skyP;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Sun kept low so the blades throw long, warm highlights.

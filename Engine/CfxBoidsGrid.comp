@@ -23,6 +23,7 @@ uniform uint count;
 uniform int  gridN;
 uniform int  perCell;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint i = gl_GlobalInvocationID.x;

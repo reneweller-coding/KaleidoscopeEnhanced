@@ -10,24 +10,24 @@ layout(quads, fractional_odd_spacing, ccw) in;
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioSwell;
-uniform float audioDrop;
-uniform float audioSpectrum[32];
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
 
 uniform float waveHP;
-uniform float camHP;
-uniform float hueP;
+uniform float camHP;   ///< Camera height knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3 vNormal;
-out vec3 vWorld;
-out vec2 vUV;
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec3 vWorld;   ///< World position (from the vertex stage).
+out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vCrevasse;
 
 const vec2 EXTENT = vec2(240.0, 320.0);
@@ -57,6 +57,7 @@ float glacierHeight(vec2 p, float t, out float crevasse) {
     return h;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec2 u0 = mix(tcUV[0], tcUV[1], gl_TessCoord.x);
     vec2 u1 = mix(tcUV[3], tcUV[2], gl_TessCoord.x);

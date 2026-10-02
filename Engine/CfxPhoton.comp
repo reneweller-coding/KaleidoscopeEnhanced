@@ -25,17 +25,18 @@
 // by the dark regions between them; no manual contrast shaping needed.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(std430, binding = 0) buffer Accum { uint acc[]; };
 layout(rgba16f, binding = 1) readonly uniform image2D imgWave;
 
-uniform ivec2 size;        // accumulator size
+uniform ivec2 size;        ///< accumulator size
 uniform ivec2 waveSize;
-uniform float depth;       // how far below the surface the floor sits
+uniform float depth;       ///< how far below the surface the floor sits
 uniform float hue;
 uniform float level;
-uniform float disperse;    // chromatic split between R and B
+uniform float disperse;    ///< chromatic split between R and B
 
 const float SCALE = 256.0;
 
@@ -56,6 +57,7 @@ float hAt(ivec2 p)
     return imageLoad(imgWave, clamp(p, ivec2(0), waveSize - ivec2(1))).r;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

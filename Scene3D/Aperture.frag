@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 /**
  * @file Aperture.frag
@@ -28,29 +28,30 @@ out vec4 fragColor;
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 
-uniform vec2  resolution;      // viewport size in PIXELS (the C++ side calls
+uniform vec2  resolution;      ///< viewport size in PIXELS (the C++ side calls
                                // its location member texSizeRcp, but it uploads
                                // width/height, not their reciprocal)
-uniform float time;
-uniform float interpolation;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioBass;
-uniform float audioHigh;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float hueP;
-uniform float tintP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP;   ///< Tint knob, 0..1.
 uniform float patternP;
 
-in vec3  vNormal;
-in vec3  vPos;
-in vec3  vLocalPos;
-in float vBg;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     const vec3 k = vec3(0.57735);
@@ -58,14 +59,15 @@ vec3 hueRot(vec3 c, float a)
     return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
 }
 
-// The two photographs the rest of the catalogue is drawing from, cross-faded
-// exactly as every 2D scene sees them.
+/// The two photographs the rest of the catalogue is drawing from, cross-faded
+/// exactly as every 2D scene sees them.
 vec3 photo(vec2 uv)
 {
     uv = clamp(uv, 0.0, 1.0);
     return mix(texture(tex1, uv).rgb, texture(tex0, uv).rgb, 1.0 - interpolation);
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     // Sample the photo along a diagonal: a cheap palette that is guaranteed to
@@ -73,6 +75,7 @@ vec3 imgPalette(float t)
     return photo(vec2(fract(t), fract(t * 0.37 + 0.2)));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float hue = (hueP > 0.01 ? hueP : 0.0);

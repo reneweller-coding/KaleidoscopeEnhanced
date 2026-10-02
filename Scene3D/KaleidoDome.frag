@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // KaleidoDome.frag — a 10-sector kaleidoscope rosette of the current image
 // spinning across the dome; kicks bloom the centre, the bar phase breathes
 // the fold radius.
-uniform sampler2D tex0;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioSwell;
-uniform float audioChromaHue;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vR;
 
 /**
@@ -27,6 +27,7 @@ in float vR;
  * flashes the whole sky; audioChromaHue tints the glowing sector seams.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -35,6 +36,7 @@ vec3 hueRot(vec3 c, float a)
 }
 vec2 mfold(vec2 uv) { return abs(fract(uv * 0.5) * 2.0 - 1.0); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Rosette: fold the dome angle into 8/10/12/14 mirrored sectors (rolled

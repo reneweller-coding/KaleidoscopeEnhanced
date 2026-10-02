@@ -1992,6 +1992,10 @@ def spec_variants(body):
             body = body.replace(a, "#ifdef SPEC_SP0\n%s#else\n%s#endif\n" % (a.replace("fieldK(", "fieldK_%s(" % w), a))
     return body
 
+sys.path.insert(0, os.path.join(ROOT, "Tools"))
+import doc_shaders as _doc   # Doxygen comments on what gen.py writes (Tools/doc_shaders.py)
+
+
 def build(name):
     src = io.open(os.path.join(SP, "src", name + ".glsl"), encoding="utf-8").read()
     doc = src.split("//@doc", 1)[1].split("//@", 1)[0].rstrip()
@@ -2045,7 +2049,7 @@ def build(name):
     # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
     # scene frame instead of the photos; the same library applies.
     folder = "FX" if re.search(r"^//@target\s+fx\b", src, re.M) else "Scene2D"
-    io.open(os.path.join(ROOT, folder, name + ".frag"), "w", encoding="utf-8", newline="\n").write("\n".join(out))
+    io.open(os.path.join(ROOT, folder, name + ".frag"), "w", encoding="utf-8", newline="\n").write(_doc.annotate("\n".join(out)))
     print("gebaut:", name)
     # The app runs these two labs' chains as passes (Engine/ChainPass): their
     # pass shaders and final shaders follow every rebuild.

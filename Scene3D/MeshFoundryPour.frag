@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MeshFoundryPour.frag
  * @brief MESH FOUNDRY POUR: a real sand mould (model=) on the foundry floor
@@ -21,25 +21,25 @@ out vec4 fragColor;
  * Per-instance: sizeP, ladleP, lipP. Per-activation variety: hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;     // the mould
-uniform int   texMeshMaterialLayers;
-uniform sampler2DArray texMeshMaterial2;    // the ladle
+uniform sampler2DArray texMeshMaterial;     ///< the mould
+uniform int   texMeshMaterialLayers;   ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;    ///< the ladle
 uniform int   texMeshMaterialLayers2;
 
-uniform float time;
-uniform float sceneTime;
-uniform float sceneProgress;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioSwell;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec2  vUV;
-in vec3  vNormal;
-in vec3  vPos;
-in vec3  vLocal;
-in float vBg;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vLocal;   ///< Object-space position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 in float vLadle;
 in float vPour;
 in vec3  vLip;
@@ -48,13 +48,17 @@ in vec3  vCup;
 const float kDist   = 48.0;
 const float kGround = -18.0;
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) { return fract(sin(p * 12.9898) * 43758.5453); }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 x) {
     vec2 i = floor(x), f = fract(x);
     f = f * f * (3.0 - 2.0 * f);
@@ -62,6 +66,7 @@ float noise2(vec2 x) {
     float c = hash21(i + vec2(0.0, 1.0)), d = hash21(i + vec2(1.0, 1.0));
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
+/// @brief Exposure that brings the material's average brightness to a common level.
 float materialExposure(sampler2DArray tex)
 {
     vec3 avg = textureLod(tex, vec3(0.5, 0.5, 0.0), 20.0).rgb;
@@ -77,14 +82,14 @@ vec3 lightAt(vec3 P, vec3 n, vec3 lp, vec3 lc, float range)
     return lc * max(dot(n, d), 0.0) * att;
 }
 
-// Heat colour: white-hot down to dull red.
+/// Heat colour: white-hot down to dull red.
 vec3 heatCol(float h)
 {
     return mix(mix(vec3(0.25, 0.02, 0.0), vec3(1.0, 0.35, 0.05), smoothstep(0.0, 0.5, h)),
                vec3(1.0, 0.92, 0.75), smoothstep(0.5, 1.0, h));
 }
 
-// Distance from a direction to the great-circle segment between two directions.
+/// Distance from a direction to the great-circle segment between two directions.
 float segDist(vec3 d, vec3 a, vec3 b, out float u)
 {
     vec3 ab = b - a;
@@ -92,6 +97,7 @@ float segDist(vec3 d, vec3 a, vec3 b, out float u)
     return distance(d, normalize(a + ab * u));
 }
 
+/// @brief The sky colour for a direction.
 vec3 renderSky(vec3 dir)
 {
     float bass  = clamp(audioBass, 0.0, 1.0);
@@ -146,6 +152,7 @@ vec3 renderSky(vec3 dir)
     return col;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if (vBg > 0.5)

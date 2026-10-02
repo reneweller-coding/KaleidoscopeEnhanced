@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MonsterBuildingCourtyard.frag
  * @brief MONSTER BUILDING COURTYARD: lying on your back in the courtyard of a
@@ -20,28 +20,30 @@ out vec4 fragColor;
  * Per-activation variety: heightP (how tall the blocks), hueP.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioSpectrum[32];
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float heightP;
-uniform float hueP;
+uniform float heightP;   ///< Height knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -51,18 +53,21 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
     p3 += dot(p3, p3.yzx + 33.33);
     return fract((p3.x + p3.y) * p3.z);
 }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
                mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     float v = 0.0, a = 0.5;
@@ -78,8 +83,8 @@ float boxMask(vec2 q, vec2 lo, vec2 hi, vec2 aa)
     return a.x * a.y;
 }
 
-// One facade at (along, height): the colour of flats, windows, AC boxes
-// and laundry, averaged out where the floors grow too small to resolve.
+/// One facade at (along, height): the colour of flats, windows, AC boxes
+/// and laundry, averaged out where the floors grow too small to resolve.
 vec3 facade(float u, float Y, float wallId, float H)
 {
     vec2 g = vec2(u / 1.6, Y / 2.9);
@@ -141,6 +146,7 @@ vec3 facade(float u, float Y, float wallId, float H)
     return mix(avg, c, detail);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

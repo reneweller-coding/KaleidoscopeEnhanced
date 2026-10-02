@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file RingworldHabitat.frag
  * @brief RINGWORLD HABITAT: the camera glides low over the inner surface of
@@ -19,31 +19,33 @@ out vec4 fragColor;
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float cityP;
 uniform float cloudP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,15 +55,19 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)  { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
+/// @brief Smooth value noise.
 float noise(vec3 p) {
     vec3 i = floor(p);
     vec3 f = fract(p);
@@ -74,6 +80,7 @@ float noise(vec3 p) {
             mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec3 p) {
     float f = 0.0, a = 0.5;
     for(int i = 0; i < 5; i++) { f += a * noise(p); p *= 2.0; a *= 0.5; }
@@ -82,22 +89,22 @@ float fbm(vec3 p) {
 
 float hitMat = 0.0;
 float cityGlow = 0.0;
-float g_rot = 0.0;                    // how far the ring has turned under us
+float g_rot = 0.0;                    ///< how far the ring has turned under us
 
-const float RAD = 100.0;              // ring radius (the sun sits on the axis)
-const float W   = 38.0;               // half width of the band
+const float RAD = 100.0;              ///< ring radius (the sun sits on the axis)
+const float W   = 38.0;               ///< half width of the band
 
-// World -> ring coordinates: the ring turns about the X axis beneath the
-// camera, which is how the glide is done without the camera ever leaving
-// the geometry (V7b).
+/// World -> ring coordinates: the ring turns about the X axis beneath the
+/// camera, which is how the glide is done without the camera ever leaving
+/// the geometry (V7b).
 vec3 toRing(vec3 p)
 {
     float c = cos(g_rot), s = sin(g_rot);
     return vec3(p.x, c * p.y - s * p.z, s * p.y + c * p.z);
 }
 
-// Point on the ideal surface below q: 3D noise there has no seam anywhere
-// around the ring (no atan wrap).
+/// Point on the ideal surface below q: 3D noise there has no seam anywhere
+/// around the ring (no atan wrap).
 vec3 onSurface(vec3 q, float r) { return vec3(q.x, normalize(q.yz) * r); }
 
 float terrainAt(vec3 q)
@@ -106,6 +113,7 @@ float terrainAt(vec3 q)
     return fbm(qs * 0.05) * 4.0 + fbm(qs * 0.2) * 1.0;
 }
 
+/// @brief The scene's distance field: distance from p to the nearest surface.
 float map(vec3 p)
 {
     vec3 q = toRing(p);
@@ -126,6 +134,7 @@ float map(vec3 p)
     return d;
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p)
 {
     vec2 e = vec2(0.1, 0.0);
@@ -135,13 +144,14 @@ vec3 calcNormal(vec3 p)
         map(p + e.yyx) - map(p - e.yyx)));
 }
 
-// Shadow squares orbit the sun inside the ring: 1 = day, 0 = night.
+/// Shadow squares orbit the sun inside the ring: 1 = day, 0 = night.
 float daylight(vec3 q)
 {
     float a = atan(q.y, q.z);
     return smoothstep(-0.75, -0.15, sin(a * 4.0 + sceneTime * 0.035));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float cp = (cityP > 0.01 ? cityP : 1.0);

@@ -14,32 +14,32 @@
  * buildGeometry() appends -- HubStation.frag paints a starfield onto it.
  */
 
-in vec4 attrA;   // mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   // mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
+in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform int   meshVertexCount;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
 
-uniform float audioAdvance;
-uniform float audioKick;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP;
-uniform float spinP;
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float spinP;   ///< Spin knob, 0..1.
 uniform float spinAxisP;
 
-out vec2 vUV;
-out vec3 vNormal;
-out vec3 vPos;
-out float vBg;
+out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec3 vPos;   ///< Position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
 
-// Rotation about one of the model's own object-space axes.
-// spinAxisP: 0 = X, 1 = Y, 2 = Z -- set per instance to the axis the hull is
-// actually rotationally symmetric about (measured per model, not guessed).
-// A station only spins if it HAS such an axis: turning an irregular hull
-// reads as tumbling, which a structure this size would never do, whereas a
-// symmetric one that does NOT turn reads as broken spin gravity.
+/// Rotation about one of the model's own object-space axes.
+/// spinAxisP: 0 = X, 1 = Y, 2 = Z -- set per instance to the axis the hull is
+/// actually rotationally symmetric about (measured per model, not guessed).
+/// A station only spins if it HAS such an axis: turning an irregular hull
+/// reads as tumbling, which a structure this size would never do, whereas a
+/// symmetric one that does NOT turn reads as broken spin gravity.
 mat3 axisSpin(float axis, float ang)
 {
     float c = cos(ang), s = sin(ang);
@@ -48,6 +48,7 @@ mat3 axisSpin(float axis, float ang)
     return                 mat3(c,   s,   0.0,  -s,   c,   0.0,   0.0, 0.0, 1.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 world, n;

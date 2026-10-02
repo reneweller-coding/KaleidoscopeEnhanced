@@ -25,13 +25,14 @@
 // tidal tails form on their own; a drop is what launches the collision.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 256) in;
 
 layout(std430, binding = 0) buffer Accum { uint acc[]; };
 layout(std430, binding = 1) buffer Pos   { vec4 pos[]; };
 layout(std430, binding = 2) buffer Vel   { vec4 vel[]; };
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform uint  count;
 uniform float dt;
 uniform float bass;
@@ -40,8 +41,8 @@ uniform float hue;
 uniform float level;
 
 const float SCALE   = 256.0;
-const uint  STRIDE  = 32u;         // force sample: every 32nd body
-const float SOFTEN  = 0.11;        // generous: hard close encounters slingshot
+const uint  STRIDE  = 32u;         ///< force sample: every 32nd body
+const float SOFTEN  = 0.11;        ///< generous: hard close encounters slingshot
                                    // stars out as straight radial spikes
 
 shared vec4 tile[256];
@@ -58,6 +59,7 @@ void splat(vec2 uv, vec3 col, float w)
     atomicAdd(acc[i + 3u], uint(w * SCALE));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint gid = gl_GlobalInvocationID.x;

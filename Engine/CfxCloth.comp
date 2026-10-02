@@ -29,7 +29,7 @@ layout(rgba16f, binding = 0) readonly  uniform image2D imgCur;
 layout(rgba16f, binding = 1) readonly  uniform image2D imgPrev;
 layout(rgba16f, binding = 2) writeonly uniform image2D imgOut;
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform float damp;
 uniform float stiff;
 uniform float gravity;
@@ -37,16 +37,17 @@ uniform float windPhase;
 uniform float windAmp;
 uniform float kick;
 uniform float level;
-uniform float time;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
 vec3 dAt(ivec2 p) { return imageLoad(imgCur, clamp(p, ivec2(0), size - ivec2(1))).rgb; }
 
-// Rest position of a grid node, in the cloth's own space.
+/// Rest position of a grid node, in the cloth's own space.
 vec3 rest(ivec2 p)
 {
     return vec3((vec2(p) + 0.5) / vec2(size) * 2.0 - 1.0, 0.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

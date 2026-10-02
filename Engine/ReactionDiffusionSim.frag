@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ReactionDiffusionSim.frag
  * @brief One step of a Gray-Scott reaction-diffusion simulation, run on the GPU in
@@ -9,18 +9,19 @@ out vec4 fragColor;
  * the pattern blossoms on the beat.  Displayed by ReactionDiffusion.frag.
  */
 
-uniform sampler2D texPrev;     // previous simulation state (R=A, G=B)
-uniform vec2  resolution;      // grid size
-uniform float seedMode;        // 1.0 -> write the initial seed pattern and return
-uniform float feed;            // Gray-Scott feed rate  (audio-modulated, ~0.055)
-uniform float kill;            // Gray-Scott kill rate  (~0.062)
-uniform float inject;          // 1.0 on a beat/onset -> add reagent at fixed spots
+uniform sampler2D texPrev;     ///< previous simulation state (R=A, G=B)
+uniform vec2  resolution;      ///< grid size
+uniform float seedMode;        ///< 1.0 -> write the initial seed pattern and return
+uniform float feed;            ///< Gray-Scott feed rate  (audio-modulated, ~0.055)
+uniform float kill;            ///< Gray-Scott kill rate  (~0.062)
+uniform float inject;          ///< 1.0 on a beat/onset -> add reagent at fixed spots
 
 float hash(vec2 p)
 {
     return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

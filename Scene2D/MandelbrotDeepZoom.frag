@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MandelbrotDeepZoom.frag
  * @brief Displays the deep-zoom Mandelbrot fractal computed by Engine/CfxMandelbrot.comp
@@ -13,30 +13,32 @@ out vec4 fragColor;
  * texMandelbrot reads 0 -> a flat dark field remains (R=0 reads as freshly-escaped, not garbage).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texMandelbrot;
-uniform float interpolation;
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioValence;
-uniform float audioCentroid;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioChromaHue;
-uniform float audioLevel;
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float cycleP;   // colour-cycle speed across escape time (0 -> 1.0; 0.6..1.8)
-uniform float glowP;    // rim brightness (0 -> 1.0; 0.7..1.4)
-uniform float hueP;
+uniform float cycleP;   ///< colour-cycle speed across escape time (0 -> 1.0; 0.6..1.8)
+uniform float glowP;    ///< rim brightness (0 -> 1.0; 0.7..1.4)
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -46,6 +48,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -53,6 +56,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

@@ -1,16 +1,16 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // MetaSculpt.frag — wet, heavy, subsurface-lit material for the metaball body.
 // The generator maintains no triangle winding (its normals come from the field
 // gradient, which is the more accurate source anyway), so the normal is flipped
 // toward the eye here rather than trusted for facing.
 
-in vec3  vObj;
-in vec3  vNormal;
-in vec3  vView;
-in vec3  vWorld;
-in float vStrength;      // 0..1 thickness probe from the generator
-in float vKind;          // 0 = isosurface, 1 = far-field backdrop panel
+in vec3  vObj;   ///< Object-space position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vView;   ///< View vector (from the vertex stage).
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in float vStrength;      ///< 0..1 thickness probe from the generator
+in float vKind;          ///< 0 = isosurface, 1 = far-field backdrop panel
 
 /**
  * @file MetaSculpt.frag
@@ -30,39 +30,40 @@ in float vKind;          // 0 = isosurface, 1 = far-field backdrop panel
  * audioAmbient sets its brightness and audioAdvance drifts its bands.
  */
 
-uniform sampler2D tex0;
+uniform sampler2D tex0;   ///< The current photo.
 uniform sampler2DShadow texShadow;
-uniform mat4  lightM;
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
 uniform vec3  lightDir;
-uniform float shadowPass;
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
 uniform float shadowTexel;
 uniform float shadowExtent;
-uniform float interpolation;
-uniform float time;
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioHigh;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
 uniform float glossP;
 uniform float isoP;
-uniform sampler2D tex1;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -72,11 +73,13 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
 }
 
+/// @brief Shadow factor from the shadow map at a world position.
 float shadowAt(vec3 world, vec3 n, float ndl)
 {
     float lift = (2.0 * shadowExtent * shadowTexel) * 2.2 / max(ndl, 0.15);
@@ -100,6 +103,7 @@ float shadowAt(vec3 world, vec3 n, float ndl)
     return s / 9.0;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if (shadowPass > 0.5)

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file QuaternionicJulia4DFlight.frag
  * @brief QUATERNIONIC JULIA 4D FLIGHT: Raymarched flight through a true 4D
@@ -25,41 +25,42 @@ out vec4 fragColor;
  * result, so a change to the fractal formula belongs there, not here.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float iterP;
 uniform float sliceP;
-uniform float speedP;
-uniform float hueP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform sampler3D texBake;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -69,12 +70,14 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief 2D rotation matrix.
 mat2 rot2D(float a) {
     float c = cos(a), s = sin(a);
     return mat2(c, -s, s, c);
@@ -87,15 +90,16 @@ vec3 worldToUV(vec3 p) {
     return (p + BAKE_EXTENT) / (2.0 * BAKE_EXTENT);
 }
 
-// Distance + orbit-trap lookup against the baked field (see the .comp file):
-// the 4D hyper-rotation and the qJulia formula itself were already applied
-// PER VOXEL when it was baked, so a lookup by plain 3D world position "p"
-// already accounts for both -- nothing here needs to know about C, wCoord,
-// or the rotation at all.
+/// Distance + orbit-trap lookup against the baked field (see the .comp file):
+/// the 4D hyper-rotation and the qJulia formula itself were already applied
+/// PER VOXEL when it was baked, so a lookup by plain 3D world position "p"
+/// already accounts for both -- nothing here needs to know about C, wCoord,
+/// or the rotation at all.
 vec2 fieldAt(vec3 p) {
     return texture(texBake, worldToUV(p)).rg;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float hue = (hueP   > 0.0) ? hueP   : 0.0;
     float spd = (speedP > 0.0) ? speedP : 1.0;

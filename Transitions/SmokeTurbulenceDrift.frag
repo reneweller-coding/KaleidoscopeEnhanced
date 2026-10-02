@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SmokeTurbulenceDrift.frag
  * @brief TRANSITION SMOKE TURBULENCE DRIFT: Atmospheric smoke and turbulent vapor transition.
@@ -16,42 +16,45 @@ out vec4 fragColor;
  *   hueP   float smoke atmospheric tint hue offset      (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;   // slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float smokeP;
 uniform float driftP;
-uniform float speedP;
-uniform float hueP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) {
     p = fract(p * vec2(523.34, 825.21));
     p += dot(p, p + 41.32);
     return fract(p.x * p.y);
 }
 
+/// @brief Smooth value noise.
 float noise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
@@ -63,6 +66,7 @@ float noise(vec2 p) {
     );
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p) {
     float v = 0.0;
     float a = 0.5;
@@ -74,6 +78,7 @@ float fbm(vec2 p) {
     return v;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float smk = (smokeP > 0.0) ? smokeP : 1.0;
     float drf = (driftP > 0.0) ? driftP : 1.0;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Murmuration.frag
  * @brief A starling flock of 131k boids, composited as dark silhouette density
@@ -15,22 +15,23 @@ out vec4 fragColor;
 // A starling flock reads as DENSITY, not as individuals, so this pass leans
 // on contrast shaping: dense regions go dark and solid, thin regions glow.
 
-uniform sampler2D tex0;
-uniform sampler2D texBoids;      // <- requests the flocking sim
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D texBoids;      ///< <- requests the flocking sim
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float inkP;              // preset: how "ink-like" the dense parts get
-uniform float glowP;
+uniform float inkP;              ///< preset: how "ink-like" the dense parts get
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

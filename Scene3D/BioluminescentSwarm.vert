@@ -12,37 +12,38 @@
 // The snow is placed HERE, in FRUSTUM coordinates -- x and y scaled by depth
 // -- because only this stage knows the aspect ratio, and being frustum-laid
 // is exactly what keeps it evenly spread over the picture at every distance.
-in vec4 attrA; // xyz = world pos (or snow seeds), w = hue
-in vec4 attrB; // xyz = normal (or quad corner + size seed), w = glow / -1
+in vec4 attrA; ///< xyz = world pos (or snow seeds), w = hue
+in vec4 attrB; ///< xyz = normal (or quad corner + size seed), w = glow / -1
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float hueP;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4 vCol;
-out vec3 vNormal;
-out vec3 vWorld;
-out vec2 vQuad;      // marine-snow mote's quad coordinate
-out float vSnow;     // 0 = creature, 1 = marine snow
+out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec3 vWorld;   ///< World position (from the vertex stage).
+out vec2 vQuad;      ///< marine-snow mote's quad coordinate
+out float vSnow;     ///< 0 = creature, 1 = marine snow
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,20 +54,22 @@ vec3 imgPalette(float t)
 }
 
 
-// House tint: bend a colour toward the photo palette while keeping its
-// luminance -- the identity look survives, only the hue follows the photos.
+/// House tint: bend a colour toward the photo palette while keeping its
+/// luminance -- the identity look survives, only the hue follows the photos.
 vec3 palTint(vec3 c, float t, float k)
 {
     vec3 tp = imgPalette(t);
     tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
     return mix(c, tp, k);
 }
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 worldP = attrA.xyz;
     float hue = attrA.w;

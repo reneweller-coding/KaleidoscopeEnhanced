@@ -3,31 +3,32 @@
 // run as passes by the app (EffectShader chain runner); the chain coordinate comes from texChain.
 uniform sampler2D texChain;
 uniform vec2 chainOff;
-uniform float chainScale;   // the chain's grid relative to the frame (0 = 1)
-out vec4 fragColor;
-uniform vec2  resolution;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioPhase;
-uniform float audioSpread;
-uniform float audioKick;
-uniform float audioMode;
-uniform float audioSwell;
-uniform float chainAP;
-uniform float chainBP;
-uniform float chainCP;
-uniform float chainDP;
-uniform float morphP;
-uniform float styleP;
-uniform float speedP;
-uniform float detailP;
-uniform float paletteP;
-uniform float hueP;
+uniform float chainScale;   ///< the chain's grid relative to the frame (0 = 1)
+out vec4 fragColor;   ///< The pixel's colour (output).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSpread;   ///< Spectral spread, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float chainAP;   ///< Stage A class knob of the chain (global map), 0..1.
+uniform float chainBP;   ///< Stage B class knob (symmetry), 0..1.
+uniform float chainCP;   ///< Stage C class knob (second map), 0..1.
+uniform float chainDP;   ///< Stage D class knob (warp), 0..1.
+uniform float morphP;   ///< Morph knob: how the scene changes over time, 0..1.
+uniform float styleP;   ///< Look knob, 0..1.
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float detailP;   ///< Detail knob, 0..1.
+uniform float paletteP;   ///< Palette knob: photo colours .. colour field, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+/// @brief The scene's chain of transforms: a coordinate in, the transformed coordinate out.
 vec2 chain(vec2 p)
 {
     vec2 fp = gl_FragCoord.xy - chainOff;
@@ -43,46 +44,59 @@ vec2 chain(vec2 p)
     if (gap > 0.08) return f.y < 0.5 ? (f.x < 0.5 ? a : b) : (f.x < 0.5 ? c : d);
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
     p3 += dot(p3, p3.yzx + 33.33);
     return fract((p3.x + p3.y) * p3.z);
 }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 p)
 {
     vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
     return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
                mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
 }
+/// @brief Fractal noise of three octaves, 0..1.
 float fbm3(vec2 p)
 {
     float v = 0.0, a = 0.5;
     for (int i = 0; i < 3; ++i) { v += a * noise2(p); p = mat2(1.6, 1.2, -1.2, 1.6) * p + 2.3; a *= 0.5; }
     return v;
 }
+/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
 vec2 mirrorUV(vec2 uv) { return 1.0 - abs(fract(uv * 0.5) * 2.0 - 1.0); }
+/// @brief The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
 vec3 imgLod(vec2 uv, float lod) {
     uv = mirrorUV(uv);
     return (interpolation * textureLod(tex0, uv, lod) + (1.0 - interpolation) * textureLod(tex1, uv, lod)).rgb;
 }
+/// @brief Luminance of a colour (Rec. 601 weights).
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
+/// @brief HSV (all 0..1) to RGB.
 vec3 hsv2rgb(vec3 c) {
     vec3 k = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
     return c.z * mix(vec3(1.0), k, c.y);
 }
+/// @brief Saturation of a colour, 0..1.
 float satOf(vec3 c) { float mx = max(c.r, max(c.g, c.b)); return (mx - min(c.r, min(c.g, c.b))) / max(mx, 1e-3); }
+/// @brief A glowing colour for a place: the photo's own hue where it has one, a wandering hue field where it is grey.
 vec3 glowColour(vec3 photo, vec2 q, float hue0) {
     vec3 field = hsv2rgb(vec3(fract(hue0 + 0.55 * fbm3(q * 0.8) + 0.03 * audioAdvance), 0.85, 1.0));
     vec3 own = photo / max(max(photo.r, max(photo.g, photo.b)), 1e-3); own = own * own * own;
     return mix(field, own, smoothstep(0.12, 0.35, satOf(photo)));
 }
+/// @brief A colour normalised to its maximum and raised to a power: a saturated neon of it.
 vec3 neonOf(vec3 c, float k) {
     vec3 n = c / max(max(c.r, max(c.g, c.b)), 1e-3);
     return pow(n, vec3(k));
 }
+/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
+/// @brief Writes the pixel: loudness brightness and a soft highlight roll-off.
 void finish(vec3 col)
 {
     col *= 0.9 + 0.2 * audioLevel;
@@ -91,6 +105,7 @@ void finish(vec3 col)
     fragColor = vec4(clamp(t, 0.0, 1.0), 1.0);
 }
 vec2 gChainM, gChainDx, gChainDy;
+/// @brief The photo through the chain, with its footprint-correct mip level and the luma gradient.
 vec3 imgChain(vec2 p, float bias, out vec2 grad)
 {
     vec2 c0 = chain(p);
@@ -108,10 +123,11 @@ vec3 imgChain(vec2 p, float bias, out vec2 grad)
 }
 float gT, gSpread, gRot, gMw;
 vec2 gCw, gCt;
+/// @brief Class position of a knob value (n classes).
 int pickStage(float x, int n) { return int(min(floor(clamp(x, 0.0, 1.0) * float(n)), float(n - 1))); }
 int ords(int i) { if (i == 0) return 0; if (i == 1) return 1; if (i == 2) return 3; if (i == 3) return 4; return 2; }
 uniform vec3 walkA, walkB, walkC, walkD, walkS;
-uniform float walkHost;
+uniform float walkHost;   ///< 1 when the app walks this lab's stages (walk uniforms valid).
 bool walkAll() { return clamp(morphP, 0.0, 1.0) >= 0.5; }
 void walkPick(float c, int k0, float v0, int n, float salt, out int k, out float v)
 {
@@ -121,14 +137,15 @@ void walkPick(float c, int k0, float v0, int n, float salt, out int k, out float
     v = hash11(c * 3.17 + s * 1.7 + 0.5);
 }
 uniform vec3 walkO;
-uniform float glowP;
-uniform sampler2D texPrevFrame;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform sampler2D texPrevFrame;   ///< The last frame, fully composited (feedback).
 vec3 chainAfterglow(vec3 col)
 {
     if (glowP <= 0.15) return col;
     vec3 prev = texture(texPrevFrame, gl_FragCoord.xy / resolution).rgb;
     return max(col, prev * (0.78 * smoothstep(0.15, 1.0, glowP)));
 }
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 p = screenP();

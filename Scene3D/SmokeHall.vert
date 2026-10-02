@@ -10,25 +10,26 @@
 //   opaque      hall
 //   transparent smoke
 
-in vec4 attrA;      // xyz = object position, w = kind (0 hall, 1 smoke)
-in vec4 attrB;      // xyz = normal, w = material id / slab depth
+in vec4 attrA;      ///< xyz = object position, w = kind (0 hall, 1 smoke)
+in vec4 attrB;      ///< xyz = normal, w = material id / slab depth
 
-out vec3  vObj;
-out vec3  vNormal;
-out vec3  vView;
-out vec3  vWorld;
-out float vKind;
+out vec3  vObj;   ///< Object-space position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out float vKind;   ///< Element kind (from the vertex stage).
 out float vExtra;
 
-uniform mat4  projM;
-uniform mat4  lightM;
-uniform float shadowPass;
-uniform float oitPass;
-uniform float eyeOff;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
+uniform float oitPass;   ///< Order-independent transparency pass flag.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;
+uniform float camHP;   ///< Camera height knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float kind = attrA.w;

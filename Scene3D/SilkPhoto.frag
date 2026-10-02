@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // SilkPhoto.frag — the photo itself, recognisable, with cloth shading and a
 // silky key-coloured sheen wandering across the folds.
-uniform sampler2D tex0;
-uniform float time;
-uniform float audioChromaHue;
-uniform float audioSwell;
-uniform float audioDrop;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 
-in vec2  vUV;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vShade;
 
 /**
@@ -25,6 +25,7 @@ in float vShade;
  * SilkPhoto.vert.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -32,6 +33,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 col = texture(tex0, vec2(vUV.x, 1.0 - vUV.y)).rgb;

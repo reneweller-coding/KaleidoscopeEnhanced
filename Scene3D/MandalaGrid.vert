@@ -9,20 +9,21 @@
 // waves; the fragment shader paints an 8-fold symmetric colour rosette.
 // attrA.x = angle, attrA.y = radius.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioBass;
-uniform float audioSwell;
-uniform float audioAdvance;
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
-out vec2  vPolar;                        // angle, radius 0..1
+out vec2  vPolar;                        ///< angle, radius 0..1
 out float vLift;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float u = attrA.x;                       // angle 0..1

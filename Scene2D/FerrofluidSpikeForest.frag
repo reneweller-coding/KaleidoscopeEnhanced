@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FerrofluidSpikeForest.frag
  * @brief FERROFLUID SPIKE FOREST: 3D raymarched pool of magnetic liquid ferrofluid
@@ -17,40 +17,41 @@ out vec4 fragColor;
  *   hueP     float specular reflection color offset        (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float spikeP;
-uniform float ringP;
+uniform float ringP;   ///< Ring knob, 0..1.
 uniform float oilP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
-// come from a rotating arc in the CURRENT slideshow image, so every
-// activation inherits a fresh palette from the photos, and the arc follows
-// the musical key (chromaHue is circular-slewed = jump-free) with a slow
-// advance drift.  Valence shapes saturation toward the mood.
+/// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
+/// come from a rotating arc in the CURRENT slideshow image, so every
+/// activation inherits a fresh palette from the photos, and the arc follows
+/// the musical key (chromaHue is circular-slewed = jump-free) with a slow
+/// advance drift.  Valence shapes saturation toward the mood.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -61,18 +62,20 @@ vec3 imgPalette(float t)
 }
 
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief 2D rotation matrix.
 mat2 rot2D(float a) {
     float c = cos(a), s = sin(a);
     return mat2(c, -s, s, c);
 }
 
-// Ferrofluid surface height function
+/// Ferrofluid surface height function
 float ferroHeight(vec2 p, float spk, float rng) {
     float r = length(p);
     float a = atan(p.y, p.x);
@@ -89,6 +92,7 @@ float ferroHeight(vec2 p, float spk, float rng) {
     return spikeH * exp(-r * 0.6);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float spk = (spikeP > 0.0) ? spikeP : 1.0;
     float rng = (ringP  > 0.0) ? ringP  : 1.0;

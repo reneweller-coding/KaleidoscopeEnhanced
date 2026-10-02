@@ -6,23 +6,24 @@
  */
 // FlowRibbons.vert — the ribbons arrive finished; place them and pass through.
 
-in vec4 attrA;      // xyz = object position, w = position along the ribbon
-in vec4 attrB;      // xyz = normal, w = per-ribbon random
+in vec4 attrA;      ///< xyz = object position, w = position along the ribbon
+in vec4 attrB;      ///< xyz = normal, w = per-ribbon random
 
-out vec3  vObj;
-out vec3  vNormal;
-out vec3  vView;
+out vec3  vObj;   ///< Object-space position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
 out float vAlong;
 out float vRnd;
-out float vDist;
+out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;
+uniform float camHP;   ///< Camera height knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 p = attrA.xyz;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file GlassStack.frag
  * @brief GLASS STACK: a sculpture of coloured glass slabs on a white light
@@ -28,32 +28,34 @@ out vec4 fragColor;
  * shellsP (how many panes), glassP (glass density), glowP (edge glow).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioLevel;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float camDistP;
-uniform float spreadP;
+uniform float camDistP;   ///< Camera distance knob, 0..1.
+uniform float spreadP;   ///< Spread knob, 0..1.
 uniform float shellsP;
 uniform float glassP;
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,6 +65,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 
 const int NP = 7;
@@ -76,7 +79,7 @@ mat3 rotY(float a) { float c = cos(a), s = sin(a); return mat3(c, 0.0, -s, 0.0, 
 mat3 rotX(float a) { float c = cos(a), s = sin(a); return mat3(1.0, 0.0, 0.0, 0.0, c, s, 0.0, -s, c); }
 mat3 rotZ(float a) { float c = cos(a), s = sin(a); return mat3(c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0); }
 
-// Ray-box in the pane's frame: entry/exit distances and the entry normal.
+/// Ray-box in the pane's frame: entry/exit distances and the entry normal.
 vec2 boxHit(vec3 ro, vec3 rd, int i, out vec3 nEnt)
 {
     vec3 o = transpose(g_R[i]) * (ro - g_C[i]);
@@ -90,7 +93,7 @@ vec2 boxHit(vec3 ro, vec3 rd, int i, out vec3 nEnt)
     return vec2(tN, tF);
 }
 
-// Absorption along a ray through all panes (for the shadow on the table).
+/// Absorption along a ray through all panes (for the shadow on the table).
 vec3 transmit(vec3 ro, vec3 rd, float dens)
 {
     vec3 tr = vec3(1.0);
@@ -106,6 +109,7 @@ vec3 transmit(vec3 ro, vec3 rd, float dens)
     return tr;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;

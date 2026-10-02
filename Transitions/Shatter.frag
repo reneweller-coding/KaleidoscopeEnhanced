@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Shatter.frag
  * @brief Shatter: the old scene breaks into Voronoi shards that fly apart,
@@ -10,19 +10,21 @@ out vec4 fragColor;
  * interpolation: 1 = old scene fully visible .. 0 = new scene.
  * Extracted from the former FxPlain.frag 28-style library.
  */
-uniform vec2 resolution;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hashT(vec2 p2)
 {
     return fract(sin(dot(p2, vec2(127.1, 311.7))) * 43758.5453);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  p   = gl_FragCoord.xy / resolution;

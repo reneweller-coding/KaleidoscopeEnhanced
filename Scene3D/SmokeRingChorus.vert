@@ -7,21 +7,22 @@
  * pass only the wall is drawn, in the OIT pass only the rings (the other
  * half is collapsed behind the near plane).  No camera motion.
  */
-layout(location = 0) in vec4 attrA;   // xyz = position, w = ring id
-layout(location = 1) in vec4 attrB;   // x = life, y = kind (-1 wall, 0/1 ring by normal z sign), zw = normal xy
+layout(location = 0) in vec4 attrA;   ///< xyz = position, w = ring id
+layout(location = 1) in vec4 attrB;   ///< x = life, y = kind (-1 wall, 0/1 ring by normal z sign), zw = normal xy
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float oitPass;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float oitPass;   ///< Order-independent transparency pass flag.
 
-out vec2 vTexCoord;
-out vec3 vWorld;
-out vec3 vNormal;
-out float vKind;
+out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out vec3 vWorld;   ///< World position (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out float vKind;   ///< Element kind (from the vertex stage).
 out float vLife;
-out float vId;
+out float vId;   ///< Instance or element id (from the vertex stage).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float kind = attrB.y;

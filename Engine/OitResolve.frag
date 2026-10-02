@@ -13,7 +13,7 @@
  * operations are commutative, the result never depends on draw order, so no
  * depth sorting of transparent geometry is needed.
  */
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // -----------------------------------------------------------------------
 // Weighted-blended OIT never sorts anything.  Each transparent fragment adds
 // its premultiplied colour into an accumulation buffer, scaled by a weight that
@@ -27,10 +27,11 @@ out vec4 fragColor;
 // similar depths are averaged rather than composited in sequence — invisible
 // for glass and smoke, wrong for a stack of opaque cards, which is exactly the
 // trade this technique exists to make.
-uniform sampler2D texAccum;     // RGBA16F: sum of colour*alpha*w, and sum of alpha*w
-uniform sampler2D texReveal;    // R16F: product of (1 - alpha)
-uniform vec2 resolution;
+uniform sampler2D texAccum;     ///< RGBA16F: sum of colour*alpha*w, and sum of alpha*w
+uniform sampler2D texReveal;    ///< R16F: product of (1 - alpha)
+uniform vec2 resolution;   ///< Size of the render target in pixels.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

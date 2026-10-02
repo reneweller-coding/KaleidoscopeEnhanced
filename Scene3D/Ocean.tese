@@ -21,14 +21,14 @@ layout(quads, fractional_odd_spacing, ccw) in;
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-out vec3  vWorld;
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out vec2  vSurfUV;
 out float vFoam;
-out vec3  vNormal;
-out float vDist;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
 // The sheet's world size.  Shared by the control and evaluation stages —
 // if these ever disagree, the two stages place the same patch in different
 // spots and the surface tears along every seam.
@@ -37,16 +37,16 @@ const vec2 EXTENT = vec2(220.0, 320.0);
 // audioAdvance is the engine's HOST-INTEGRATED travel phase, and uniforms are
 // program-wide, so the tessellation stages see it without any engine change.
 // Using it (rather than time x a level) is what keeps the swell flicker-free.
-uniform float audioAdvance;
-uniform float audioSubBass;
-uniform float audioKick;
-uniform float camHP;        // preset: camera height
-uniform float swellP;       // preset: wave height
-uniform float choppyP;      // preset: Gerstner pinch
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float camHP;        ///< preset: camera height
+uniform float swellP;       ///< preset: wave height
+uniform float choppyP;      ///< preset: Gerstner pinch
 
-// One Gerstner wave.  Accumulates the analytic tangent frame, so the normal
-// is exact and needs no finite differences (which would alias badly once the
-// tessellation level changes between neighbouring patches).
+/// One Gerstner wave.  Accumulates the analytic tangent frame, so the normal
+/// is exact and needs no finite differences (which would alias badly once the
+/// tessellation level changes between neighbouring patches).
 vec3 gerstner(vec2 pos, vec2 dir, float amp, float len, float phase,
               float sharp, inout vec3 tanX, inout vec3 tanZ)
 {
@@ -66,6 +66,7 @@ vec3 gerstner(vec2 pos, vec2 dir, float amp, float len, float phase,
     return d;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);

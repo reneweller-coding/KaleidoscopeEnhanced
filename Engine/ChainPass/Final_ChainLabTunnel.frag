@@ -4,45 +4,53 @@
 uniform sampler2D texChain;
 uniform vec2 chainOff;
 // @chainbake 2048
-out vec4 fragColor;
-uniform vec2  resolution;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioPhase;
-uniform float audioSpread;
-uniform float audioKick;
-uniform float audioMode;
-uniform float audioSwell;
-uniform float depthP;
-uniform float styleP;
-uniform float speedP;
-uniform float detailP;
-uniform float paletteP;
-uniform float hueP;
+out vec4 fragColor;   ///< The pixel's colour (output).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSpread;   ///< Spectral spread, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float depthP;   ///< Depth knob, 0..1.
+uniform float styleP;   ///< Look knob, 0..1.
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float detailP;   ///< Detail knob, 0..1.
+uniform float paletteP;   ///< Palette knob: photo colours .. colour field, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+/// @brief The scene's chain of transforms: a coordinate in, the transformed coordinate out.
 vec2 chain(vec2 p)
 {
     return texture(texChain, p).xy;
 }
+/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
 vec2 mirrorUV(vec2 uv) { return 1.0 - abs(fract(uv * 0.5) * 2.0 - 1.0); }
+/// @brief The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
 vec3 imgLod(vec2 uv, float lod) {
     uv = mirrorUV(uv);
     return (interpolation * textureLod(tex0, uv, lod) + (1.0 - interpolation) * textureLod(tex1, uv, lod)).rgb;
 }
+/// @brief Luminance of a colour (Rec. 601 weights).
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
+/// @brief HSV (all 0..1) to RGB.
 vec3 hsv2rgb(vec3 c) {
     vec3 k = clamp(abs(mod(c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
     return c.z * mix(vec3(1.0), k, c.y);
 }
+/// @brief A colour normalised to its maximum and raised to a power: a saturated neon of it.
 vec3 neonOf(vec3 c, float k) {
     vec3 n = c / max(max(c.r, max(c.g, c.b)), 1e-3);
     return pow(n, vec3(k));
 }
+/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
 vec2 screenP() { return (gl_FragCoord.xy / resolution - 0.5) * vec2(resolution.x / resolution.y, 1.0); }
+/// @brief Writes the pixel: loudness brightness and a soft highlight roll-off.
 void finish(vec3 col)
 {
     col *= 0.9 + 0.2 * audioLevel;
@@ -53,9 +61,9 @@ void finish(vec3 col)
 float gT, gTC, gSpread, gRot, gMw, gH;
 vec2 gCw, gCt;
 uniform vec3 walkA, walkB, walkC, walkD, walkS;
-uniform float walkHost;
-uniform float glowP;
-uniform sampler2D texPrevFrame;
+uniform float walkHost;   ///< 1 when the app walks this lab's stages (walk uniforms valid).
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform sampler2D texPrevFrame;   ///< The last frame, fully composited (feedback).
 vec3 chainAfterglow(vec3 col)
 {
     if (glowP <= 0.15) return col;
@@ -81,6 +89,7 @@ float tunnelD(vec3 q, out vec2 c)
     
     return (1.0 - gH * luma(imgLod(c, 5.0))) - length(q.xy - axisXY(q.z));
 }
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 p = screenP();

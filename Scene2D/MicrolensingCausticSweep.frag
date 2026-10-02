@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MicrolensingCausticSweep.frag
  * @brief MICROLENSING CAUSTIC SWEEP: a pair of point-mass lenses drifts
@@ -19,29 +19,31 @@ out vec4 fragColor;
  *
  * Per-activation variety: sepP (lens separation), massP, hueP.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float sepP;
 uniform float massP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -51,10 +53,11 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
-// Source plane: a star field (round, jittered) plus the photo as a faint
-// background nebula.
+/// Source plane: a star field (round, jittered) plus the photo as a faint
+/// background nebula.
 vec3 sourceAt(vec2 s, float hue)
 {
     vec2 su = s * 40.0;
@@ -67,13 +70,14 @@ vec3 sourceAt(vec2 s, float hue)
     return starCol * star * 1.5 + neb;
 }
 
-// The lens map: image position -> source position, two point masses.
+/// The lens map: image position -> source position, two point masses.
 vec2 lensMap(vec2 x, vec2 c1, vec2 c2, float m1, float m2)
 {
     vec2 d1 = x - c1, d2 = x - c2;
     return x - m1 * d1 / max(dot(d1, d1), 1e-5) - m2 * d2 / max(dot(d2, d2), 1e-5);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

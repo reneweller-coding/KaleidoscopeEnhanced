@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file QuantumVortexField.frag
  * @brief QUANTUM VORTEX FIELD: a toroidal magnetosphere of filament streamlines -
@@ -9,10 +9,11 @@ out vec4 fragColor;
  *   audioSpectrum -> per-filament glow
  */
 
-in vec4 vCol;
-in vec3 vNormal;
-in vec3 vWorld;
+in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec3 vWorld;   ///< World position (from the vertex stage).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 n = normalize(vNormal);
     vec3 lightDir = normalize(vec3(0.6, 0.8, -0.5));

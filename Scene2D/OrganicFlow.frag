@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file OrganicFlow.frag
  * @brief The source image pushed through an organic, reaction-diffusion-like FLOW:
@@ -14,39 +14,43 @@ out vec4 fragColor;
  *   audioPhase     -> smooth flow (jump-free); audioBeat -> vein flash
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBass;
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioStereo;
-uniform float audioPhase;
-uniform float audioSwell;      // slow loudness swell -> vein scale breathes
-uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;      ///< slow loudness swell -> vein scale breathes
+uniform float audioBarPhase;   ///< 0..1 per bar -> gentle per-bar hue sweep
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP;          // mirror fold count (0 -> 4; 3..8)
-uniform float veinP;           // vein frequency    (0 -> 7.0; 5 = broad, 10 = filigree)
-uniform float swirlP;          // radial swirl amount (0 -> none; up to ~0.8)
+uniform int   sidesP;          ///< mirror fold count (0 -> 4; 3..8)
+uniform float veinP;           ///< vein frequency    (0 -> 7.0; 5 = broad, 10 = filigree)
+uniform float swirlP;          ///< radial swirl amount (0 -> none; up to ~0.8)
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
     p += dot(p, p + 34.345);
     return fract(p.x * p.y);
 }
+/// @brief Value noise with a seed.
 float vnoise(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -55,6 +59,7 @@ float vnoise(vec2 p)
     float c = hash21(i + vec2(0.0, 1.0)), d = hash21(i + vec2(1.0, 1.0));
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     float s = 0.0, a = 0.5;
@@ -62,6 +67,7 @@ float fbm(vec2 p)
     return s;
 }
 
+/// @brief Kaleidoscope fold of the coordinate with the given mirrors.
 vec2 kaleido(vec2 p, float sides)
 {
     float a   = atan(p.y, p.x);
@@ -72,6 +78,7 @@ vec2 kaleido(vec2 p, float sides)
     return vec2(cos(a), sin(a)) * r;
 }
 
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -79,6 +86,7 @@ vec3 imgPal(float x)
     return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -86,6 +94,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;

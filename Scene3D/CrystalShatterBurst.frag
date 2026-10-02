@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 in vec3  gNormal;
 in vec3  gWorld;
@@ -29,8 +29,9 @@ in vec3  gBary;
  *    act upstream in CrystalShatterBurst.geom -- see that file.)
  */
 
-uniform float audioSharpness;   // Zwicker HF loudness: 0 = dull, 1 = harsh-bright
+uniform float audioSharpness;   ///< Zwicker HF loudness: 0 = dull, 1 = harsh-bright
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 n = normalize(gNormal);
     vec3 lightDir = normalize(vec3(0.6, 0.9, -0.4));

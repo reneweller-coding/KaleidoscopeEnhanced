@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // BillboardCity.frag — each screen: kaleido-mirrored crop of the image,
 // neon border, brightness driven by the board's own spectrum band.
-uniform sampler2D tex0;
-uniform float time;
-uniform float audioChromaHue;
-uniform float audioDrop;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 
-in vec2  vUV;
-in vec4  vSeed;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec4  vSeed;   ///< Per-instance random seed (from the vertex stage).
 in float vBand;
 in float vFade;
 
@@ -25,6 +25,7 @@ in float vFade;
  * slow slide and each screen's individual flicker rate.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -32,6 +33,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Kaleido-mirrored crop: the screen content subtly slides with time.

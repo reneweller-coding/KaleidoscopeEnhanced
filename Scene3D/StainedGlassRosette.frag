@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // StainedGlassRosette.frag — a 12-petal kaleidoscope of Voronoi "glass"
 // pieces, each a saturated, hue-varied crop of the current image, held
 // together by dark lead lines; warm godrays radiate from behind, pulsing
 // with the swell and flaring on the kick.
-uniform sampler2D tex0;
-uniform float time;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioChromaHue;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vPolar;      // angle, radius 0..1
+in vec2  vPolar;      ///< angle, radius 0..1
 in vec2  vXY;
 
 /**
@@ -37,7 +37,7 @@ vec2  hash2G(vec2 p)
                           dot(p, vec2(269.5, 183.3)))) * 43758.5453);
 }
 
-// Classic 2D Voronoi: returns (cellHash, edgeDist F2-F1).
+/// Classic 2D Voronoi: returns (cellHash, edgeDist F2-F1).
 vec3 voronoi(vec2 p)
 {
     vec2 ip = floor(p), fp = fract(p);
@@ -61,6 +61,7 @@ vec3 hueRotG(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float ang = vPolar.x + time * 0.02;

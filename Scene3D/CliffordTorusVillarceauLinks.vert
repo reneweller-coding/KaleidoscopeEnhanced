@@ -11,44 +11,46 @@
  * become a far-field dust mote placed in FRUSTUM coordinates, so the corners
  * the donut can never reach still carry something.
  */
-layout(location = 0) in vec4 attrA;
-layout(location = 1) in vec4 attrB;
+layout(location = 0) in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+layout(location = 1) in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float torusP;
 uniform float linkP;
-uniform float speedP;
-uniform float hueP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3 vWorldPos;
-out vec3 vNormal;
-out vec2 vTexCoord;
+out vec3 vWorldPos;   ///< World position (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
 out float vIndex;
 out float vDust;
 
+/// @brief Pseudo-random number 0..1 from two values and a seed.
 float hsh(float a, float b)
 {
     return fract(sin(a * 91.73 + b * 47.31) * 43758.5453);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float trs = (torusP > 0.0) ? torusP : 1.0;
     float lnk = (linkP  > 0.0) ? linkP  : 1.0;

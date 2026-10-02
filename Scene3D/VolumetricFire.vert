@@ -23,18 +23,18 @@
 // the one quad that bridges two runs collapses to zero area and no sheet is
 // ever drawn across the gap between fires.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec2  resolution;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioDrop;
-uniform float audioChromaHue;
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 out vec2  vAtlasUV;
 out float vHeightFrac;
@@ -47,6 +47,7 @@ const float FIRES = 5.0;
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
 const float kTanY = 0.5206;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float t    = attrA.x;            // 0..1 along the ribbon

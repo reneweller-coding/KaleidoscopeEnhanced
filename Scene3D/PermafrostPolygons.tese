@@ -9,27 +9,29 @@
  * The trough depth and the cell id go to the fragment stage.  Projection
  * after displacement; no camera motion.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(quads, fractional_odd_spacing, ccw) in;
 
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-out vec3  vWorld;
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out vec2  vSurfUV;
-out vec3  vNormal;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out float vTrough;
 out float vCell;
-out float vDist;
+out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
 const vec2 EXTENT = vec2(160.0, 220.0);
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float camHP;
-uniform float cellP;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float camHP;   ///< Camera height knob, 0..1.
+uniform float cellP;   ///< Cell size knob, 0..1.
 
+/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
 vec2 hash22(vec2 p)
 {
     p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
@@ -71,6 +73,7 @@ float surface(vec2 xz, out float trough, out float cell)
     return h + rise;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);

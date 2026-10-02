@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SeifertSurfaceBraidKnot.frag
  * @brief SEIFERT SURFACE BRAID KNOT: a torus knot as a studio sculpture --
@@ -22,29 +22,31 @@ out vec4 fragColor;
  * thickness), sheenP (gloss).
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float knotP;
 uniform float ribbonWidthP;
 uniform float sheenP;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -56,10 +58,10 @@ vec3 imgPalette(float t)
 
 float g_P = 3.0, g_Q = 5.0, g_th = 0.14;
 mat3 g_rot;
-float g_s = 0.0;                    // knot parameter at the hit (for colour)
+float g_s = 0.0;                    ///< knot parameter at the hit (for colour)
 
-// Torus knot (P around the tube, Q around the axis): in the cross-section
-// at azimuth phi the Q strands sit at angles (phi + 2 pi i) P / Q.
+/// Torus knot (P around the tube, Q around the axis): in the cross-section
+/// at azimuth phi the Q strands sit at angles (phi + 2 pi i) P / Q.
 float sdKnot(vec3 p)
 {
     const float R = 1.0, r = 0.42;
@@ -76,15 +78,17 @@ float sdKnot(vec3 p)
     return (d - g_th) * 0.6;
 }
 
+/// @brief The scene's distance field: distance from p to the nearest surface.
 float map(vec3 p) { return sdKnot(g_rot * p); }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p)
 {
     vec2 e = vec2(0.0015, 0.0);
     return normalize(vec3(map(p + e.xyy) - map(p - e.xyy), map(p + e.yxy) - map(p - e.yxy), map(p + e.yyx) - map(p - e.yyx)));
 }
 
-// Thin-film interference colour for an optical path difference x.
+/// Thin-film interference colour for an optical path difference x.
 vec3 thinFilm(float x)
 {
     return 0.5 + 0.5 * cos(6.2831853 * (x * vec3(1.0, 1.18, 1.36) + vec3(0.0, 0.1, 0.2)));
@@ -126,6 +130,7 @@ vec3 shade(vec3 ro, vec3 rd, float swell, float gloss, float kick, float T, out 
     return col;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;

@@ -7,21 +7,22 @@
 // Blueprint.vert — wrap the flat grid onto a body that morphs between a torus,
 // a sphere and a trefoil-ish knot, driven by the music.
 
-in vec4 attrA;      // xy = grid (u,v)
-in vec4 attrB;
+in vec4 attrA;      ///< xy = grid (u,v)
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
 out vec3  gObj;
 out vec2  gUV;
 out float gCell;
 out float gMorph;
 
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioSubBass;
-uniform float morphP;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float morphP;   ///< Morph knob: how the scene changes over time, 0..1.
 
-const float PI = 3.14159265;
+const float PI = 3.14159265;   ///< Pi.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float u = attrA.x * 2.0 * PI;       // around the tube's path

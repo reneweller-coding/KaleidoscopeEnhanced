@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Feedback.frag
  * @brief Phosphor-style feedback/trails pass, upgraded to an ECHO-WARP: the previous
@@ -11,14 +11,14 @@ out vec4 fragColor;
  * (longer in ambient/sustained passages), pumps the zoom with the beat and
  * swings the rotation direction slowly.
  */
-uniform sampler2D texCur;    // current combined frame
-uniform sampler2D texPrev;   // previous trail frame
-uniform vec2  resolution;
+uniform sampler2D texCur;    ///< current combined frame
+uniform sampler2D texPrev;   ///< previous trail frame
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 uniform float decay;
-uniform float warpZoom;      // per-frame echo expansion (1.0 = none)
-uniform float warpRot;       // per-frame echo rotation (radians)
-uniform float hueDrift;      // per-frame hue rotation of the echoes
-uniform float depth3D;       // 0..1: a 3D scene is on screen -> depth-aware
+uniform float warpZoom;      ///< per-frame echo expansion (1.0 = none)
+uniform float warpRot;       ///< per-frame echo rotation (radians)
+uniform float hueDrift;      ///< per-frame hue rotation of the echoes
+uniform float depth3D;       ///< 0..1: a 3D scene is on screen -> depth-aware
                              // trails (bright=near fades fast, dim=far lingers)
 
 // ---- MilkDrop-style SPATIALLY VARYING warp field ----
@@ -26,11 +26,11 @@ uniform float depth3D;       // 0..1: a 3D scene is on screen -> depth-aware
 // per-pixel amounts that depend on WHERE the pixel is (radius/angle), not
 // just globally.  All amplitudes are per-frame displacements (host scales
 // by dt) and all phases are integrated host-side (no flicker).
-uniform float rippleAmp;     // radial ripple wave amplitude (uv units/frame)
-uniform float ripplePhase;   // integrated ripple phase
-uniform float swirlAmp;      // extra rotation toward the rim (radians/frame)
-uniform float flowAmp;       // pseudo-noise flow field amplitude
-uniform float flowPhase;     // integrated flow drift phase
+uniform float rippleAmp;     ///< radial ripple wave amplitude (uv units/frame)
+uniform float ripplePhase;   ///< integrated ripple phase
+uniform float swirlAmp;      ///< extra rotation toward the rim (radians/frame)
+uniform float flowAmp;       ///< pseudo-noise flow field amplitude
+uniform float flowPhase;     ///< integrated flow drift phase
 
 vec3 hueRotF(vec3 c, float a)
 {
@@ -39,6 +39,7 @@ vec3 hueRotF(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv  = gl_FragCoord.xy / resolution;

@@ -18,8 +18,9 @@ layout(local_size_x = 16, local_size_y = 16) in;
 layout(rgba16f, binding = 0) writeonly uniform image2D imgCur;
 layout(rgba16f, binding = 1) writeonly uniform image2D imgPrev;
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

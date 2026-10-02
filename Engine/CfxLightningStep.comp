@@ -25,6 +25,7 @@
 // rendered by the same pass that grows it.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 128) in;
 
 layout(std430, binding = 0) buffer Accum { uint acc[]; };
@@ -32,22 +33,24 @@ layout(std430, binding = 0) buffer Accum { uint acc[]; };
 layout(std430, binding = 1) buffer Tips  { vec4 tip[]; };
 layout(std430, binding = 2) buffer Ctrl  { uint tipCount; uint pad[3]; };
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform uint  capacity;
 uniform uint  frame;
 uniform float hue;
 uniform float level;
-uniform float branchP;     // split probability per tip per frame
-uniform float charge;      // 0..1, how hot the bolt burns
+uniform float branchP;     ///< split probability per tip per frame
+uniform float charge;      ///< 0..1, how hot the bolt burns
 
 const float SCALE = 256.0;
 
+/// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg(inout uint s)
 {
     s = s * 747796405u + 2891336453u;
     uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
     return (w >> 22) ^ w;
 }
+/// @brief Random number 0..1 from a PCG state.
 float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
 
 void splat1(ivec2 ip, vec3 col, float w)
@@ -75,6 +78,7 @@ void segment(vec2 a, vec2 b, vec3 col, float w)
     }
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

@@ -21,6 +21,7 @@ layout(rgba16f, binding = 0) writeonly uniform image2D imgOut;
 uniform sampler2D texSrc;
 uniform int N;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

@@ -16,28 +16,29 @@
 // them the gaps between blades would be pure black.
 // -----------------------------------------------------------------------
 layout(points) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 10) out;
 
 in  vec3  gRoot[];
 in  vec4  gRnd[];
 in  float gIndex[];
 
-out vec3  vWorld;
-out vec3  vNormal;
-out float vAlong;       // 0 at the root, 1 at the tip
-out float vTint;        // per-blade colour jitter
-out float vKind;        // 0 = sky, 1 = ground, 2 = blade
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vAlong;       ///< 0 at the root, 1 at the tip
+out float vTint;        ///< per-blade colour jitter
+out float vKind;        ///< 0 = sky, 1 = ground, 2 = blade
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioSubBass;
-uniform float audioKick;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;        // preset: eye height
-uniform float bladeP;       // preset: blade height
-uniform float windP;        // preset: wind strength
+uniform float camHP;        ///< preset: eye height
+uniform float bladeP;       ///< preset: blade height
+uniform float windP;        ///< preset: wind strength
 
 const float FIELD_W = 26.0;
 const float FIELD_D = 55.0;
@@ -69,6 +70,7 @@ void emit(vec3 world, vec3 n, float along, float tint, float kind)
     EmitVertex();
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float idx = gIndex[0];

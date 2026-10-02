@@ -11,12 +11,13 @@
  * overwrite it; a later diffuse/decay compute or fragment pass presumably
  * reads this trail map to steer agent movement and fade old trails.
  */
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 uniform float depositAmt;
 
 in float vSpecies;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     fragColor = vec4(depositAmt * (1.0 - vSpecies),

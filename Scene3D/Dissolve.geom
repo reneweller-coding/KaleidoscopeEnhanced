@@ -22,7 +22,9 @@
  * an explosion has a cause. This should read as breathing.
  */
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangles) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 4) out;
 
 in  vec3  gPos[];
@@ -30,30 +32,32 @@ in  vec3  gNormal[];
 in  vec2  gUV[];
 in  float gBg[];
 
-out vec2  vUV;
-out vec2  vQuad;      // -1..1 across the splat, for the round falloff
-out vec3  vNormal;
-out vec3  vPos;
-out float vBg;
-out float vLoose;     // 0 = home, 1 = fully dispersed
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vQuad;      ///< -1..1 across the splat, for the round falloff
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
+out float vLoose;     ///< 0 = home, 1 = fully dispersed
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioDrop;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 
-uniform float sizeP;
-uniform float looseP;    // how far the cloud travels
-uniform float grainP;    // splat size
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float looseP;    ///< how far the cloud travels
+uniform float grainP;    ///< splat size
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
 
+/// @brief Smooth 3D value noise, 0..1.
 float noise3(vec3 p)
 {
     vec3 i = floor(p), f = fract(p);
@@ -65,9 +69,9 @@ float noise3(vec3 p)
                    mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
 }
 
-// Curl of a noise field, by finite differences. Divergence-free, so the cloud
-// stirs and folds rather than inflating -- which is the whole difference
-// between "breathing" and "exploding".
+/// Curl of a noise field, by finite differences. Divergence-free, so the cloud
+/// stirs and folds rather than inflating -- which is the whole difference
+/// between "breathing" and "exploding".
 vec3 curl(vec3 p)
 {
     const float e = 0.14;
@@ -80,6 +84,7 @@ vec3 curl(vec3 p)
     return normalize(vec3(x1 - x2, y1 - y2, z1 - z2) + vec3(1e-5));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if( gBg[0] > 0.5 )

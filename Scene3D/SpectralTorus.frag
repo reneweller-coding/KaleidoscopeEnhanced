@@ -1,15 +1,15 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // SpectralTorus.frag — companion to SpectralTorus.vert.  Same physical-body
 // language as SpectralOrb (nodal lines dark, antinodes radiant) but in a
 // warmer key so the two manifold-harmonics scenes read as siblings, not
 // twins.
 
-uniform float audioSwell;
-uniform float audioDrop;
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 
 in vec3  vNorm;
-in vec3  vView;
+in vec3  vView;   ///< View vector (from the vertex stage).
 in float vDefo;
 in float vHue;
 
@@ -25,6 +25,7 @@ in float vHue;
  * tint, the glow colour and the rim colour to the current musical hue.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -32,6 +33,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 N = normalize(vNorm);

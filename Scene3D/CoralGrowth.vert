@@ -7,22 +7,23 @@
 // CoralGrowth.vert — the colony arrives finished; turn it slowly so its
 // branching structure is read as volume rather than as a flat thicket.
 
-in vec4 attrA;      // xyz = object position, w = branch age (1 = oldest)
-in vec4 attrB;      // xyz = normal, w = height 0..1
+in vec4 attrA;      ///< xyz = object position, w = branch age (1 = oldest)
+in vec4 attrB;      ///< xyz = normal, w = height 0..1
 
-out vec3  vObj;
-out vec3  vNormal;
-out vec3  vView;
+out vec3  vObj;   ///< Object-space position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
 out float vAge;
 out float vHeight;
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camDistP;
+uniform float camDistP;   ///< Camera distance knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 p = attrA.xyz;      // already framed by the generator

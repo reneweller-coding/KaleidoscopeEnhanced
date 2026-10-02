@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file PlasmaFlow.frag
  * @brief The source image MARBLED and refracted by a flowing plasma field, folded
@@ -14,38 +14,40 @@ out vec4 fragColor;
  *   audioBeat    -> sheen; audioLevel -> picture brightness
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioPhase;
-uniform float audioSwell;      // slow loudness swell -> plasma scale/warp breathe
-uniform float audioBarPhase;   // 0..1 per bar -> gentle per-bar hue sweep
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;      ///< slow loudness swell -> plasma scale/warp breathe
+uniform float audioBarPhase;   ///< 0..1 per bar -> gentle per-bar hue sweep
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP;          // mirror fold count (0 -> 4; 2..8)
-uniform float scaleP;          // plasma scale      (0 -> 6.0; 3.5 = broad, 8 = busy)
-uniform float flowAmtP;        // marbling strength (0 -> 0.10; 0.06..0.16)
-uniform float audioChromaHue;
-uniform float audioAdvance;
+uniform int   sidesP;          ///< mirror fold count (0 -> 4; 2..8)
+uniform float scaleP;          ///< plasma scale      (0 -> 6.0; 3.5 = broad, 8 = busy)
+uniform float flowAmtP;        ///< marbling strength (0 -> 0.10; 0.06..0.16)
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,12 +57,14 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief HSV (all 0..1) to RGB.
 vec3 hsv2rgb(vec3 c)
 {
     vec3 p = imgPalette(c.x) * 1.35;   // photo-arc palette (house standard)
     return c.z * mix(vec3(1.0), p, c.y);
 }
 
+/// @brief Kaleidoscope fold of the coordinate with the given mirrors.
 vec2 kaleido(vec2 p, float sides)
 {
     float a   = atan(p.y, p.x);
@@ -71,6 +75,7 @@ vec2 kaleido(vec2 p, float sides)
     return vec2(cos(a), sin(a)) * r;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;

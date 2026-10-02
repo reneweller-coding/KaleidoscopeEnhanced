@@ -1,16 +1,16 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Blueprint.frag — the body as a drafting drawing rather than a lit object.
 // Almost nothing here is shading: the surface is a dark wash and everything
 // legible is line work, which is what makes the look read as a print.
 
 flat in vec3 vEdgeMask;
-in float vKind;
+in float vKind;   ///< Element kind (from the vertex stage).
 in vec3  vBary;
-in vec3  vObj;
-in vec3  vNormal;
-in vec3  vView;
-in vec2  vUV;
+in vec3  vObj;   ///< Object-space position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vView;   ///< View vector (from the vertex stage).
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vMorph;
 
 /**
@@ -31,22 +31,23 @@ in float vMorph;
  * line thickness and glowP scales both wireframe and rim glow strength.
  */
 
-uniform sampler2D tex0;
-uniform float interpolation;
-uniform float time;
-uniform vec2  resolution;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
 uniform float lineP;
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 n = normalize(vNormal);

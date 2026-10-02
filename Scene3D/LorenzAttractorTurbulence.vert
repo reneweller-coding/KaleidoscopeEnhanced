@@ -4,27 +4,27 @@
  * @brief attrA.x = t (0..1 along ribbon), attrA.y = side (-1..+1 across ribbon),
  * attrA.w = ribbon ID (0..19), attrB = seeds (Scene3DShader.cpp GEOM_RIBBON).
  */
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;
-uniform float eyeOff;
-uniform float time;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform mat4 projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3 vPos;
+out vec3 vPos;   ///< Position (from the vertex stage).
 out float vT;
 out float vRibbonID;
 out float vVelocity;
-out float vSide;
+out float vSide;   ///< Which side of a strip (from the vertex stage).
 
-// Integrated strange attractor parametric path
+/// Integrated strange attractor parametric path
 vec3 evalAttractor(float s, float ribbonIdx, float seed) {
     float t_param = s * 14.0 + time * 0.4 + audioAdvance * 0.2 + ribbonIdx * 0.35;
     
@@ -48,6 +48,7 @@ vec3 evalAttractor(float s, float ribbonIdx, float seed) {
     return vec3(x * ca - y * sa, x * sa + y * ca, z);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float t = attrA.x;
     float side = attrA.y;

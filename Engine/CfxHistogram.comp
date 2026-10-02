@@ -39,15 +39,16 @@ layout(local_size_x = 16, local_size_y = 16) in;
 // no-op that also scribbled 16 bytes into a stranger's buffer every frame.
 layout(std430, binding = 3) buffer Result { float exposureOut; float p50; float p98; float pad; };
 uniform sampler2D texFrame;
-uniform ivec2 size;
-uniform float target;      // where the median should sit
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform float target;      ///< where the median should sit
 uniform float maxGain;
-uniform float slew;        // how fast the exposure may move (per frame)
-uniform float smoothK;     // EMA weight for the percentiles this frame (dt/tau)
-uniform float slewDown;    // like slew, but for DARKENING -- may be faster
+uniform float slew;        ///< how fast the exposure may move (per frame)
+uniform float smoothK;     ///< EMA weight for the percentiles this frame (dt/tau)
+uniform float slewDown;    ///< like slew, but for DARKENING -- may be faster
 
 shared uint hist[256];
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint lid = gl_LocalInvocationIndex;

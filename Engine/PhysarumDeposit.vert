@@ -10,12 +10,13 @@
 // there in the trail map.  Species rides to the fragment stage so the two
 // populations deposit into separate channels.
 
-in vec2 aTexel;           // this agent's texel coordinate (0..1)
+in vec2 aTexel;           ///< this agent's texel coordinate (0..1)
 
 uniform sampler2D texAgents;
 
 out float vSpecies;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec4 ag = texture(texAgents, aTexel);

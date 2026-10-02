@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file HexKaleido.frag
  * @brief Adapted from an untitled Shadertoy hex-kaleidoscope — https://www.shadertoy.com/view/Xljczw
@@ -15,33 +15,34 @@ out vec4 fragColor;
  * image, exactly like the other adapted shaders in this set.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;
-uniform float audioPhase;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float audioChromaHue;
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float zoomP;    // hex-lattice scale        (0 -> 1.0; 0.7 = coarser, 1.6 = finer)
-uniform float swirlP;   // radius-coupled swirl amt (0 -> none; curves the lattice)
+uniform float zoomP;    ///< hex-lattice scale        (0 -> 1.0; 0.7 = coarser, 1.6 = finer)
+uniform float swirlP;   ///< radius-coupled swirl amt (0 -> none; curves the lattice)
 
-const float PI     = 3.14159265358979;
+const float PI     = 3.14159265358979;   ///< Pi.
 const float ROOT_3 = 1.7320508075688772;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
-// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
-// palette comes from the image and keeps changing over time + with the harmony.
+/// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
+/// palette comes from the image and keeps changing over time + with the harmony.
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -50,10 +51,10 @@ vec3 imgPal(float x)
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,7 +64,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// Hue rotation around the luminance axis (keeps brightness + saturation).
+/// Hue rotation around the luminance axis (keeps brightness + saturation).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -71,7 +72,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// Palette by iq (https://iquilezles.org/articles/palettes)
+/// Palette by iq (https://iquilezles.org/articles/palettes)
 vec3 palette(float t)
 {
     return imgPalette(t);
@@ -94,6 +95,7 @@ float hexDist(vec2 p)
     return max(dot(p, s * 0.5), p.x);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 fragCoord = gl_FragCoord.xy;

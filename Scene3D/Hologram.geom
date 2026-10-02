@@ -21,6 +21,7 @@
 // artefact instead of a broken projection.
 // -----------------------------------------------------------------------
 layout(triangles) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 3) out;
 
 in  vec3  gPos[];
@@ -28,25 +29,27 @@ in  vec3  gNormal[];
 in  vec2  gUV[];
 in  float gBg[];
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out vec3  vLocalPos;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
 out vec3  vBary;
-out float vBg;
+out float vBg;   ///< Background flag (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;
-uniform float audioKick;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP;
-uniform float spinP;
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float spinP;   ///< Spin knob, 0..1.
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // The sky shell passes through untouched -- glitching the room around

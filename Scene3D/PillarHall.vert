@@ -16,33 +16,33 @@
 // The world position also goes down the pipeline, because the fragment shader
 // needs it to look itself up in the shadow map.
 // -----------------------------------------------------------------------
-in vec4 attrA;      // xyz = unit-cube corner, w = cube index
-in vec4 attrB;      // per-cube hashes
+in vec4 attrA;      ///< xyz = unit-cube corner, w = cube index
+in vec4 attrB;      ///< per-cube hashes
 
-out vec3  vWorld;
-out vec3  vNormal;
-out float vKind;        // 0 = floor, 1 = pillar
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vKind;        ///< 0 = floor, 1 = pillar
 out float vTint;
-out float vHeight;      // 0 at the base, 1 at the top of this pillar
+out float vHeight;      ///< 0 at the base, 1 at the top of this pillar
 
-uniform mat4  projM;
-uniform mat4  lightM;
-uniform float shadowPass;
+uniform mat4  projM;   ///< Projection matrix.
+uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
+uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
 // Second, independent shadow-casting light (cool rim/fill) -- its own depth
 // pass needs its own matrix here for the same reason light 1 does: the host
 // cannot re-derive it, only the scene knows how it places its own camera.
 uniform mat4  lightM2;
 uniform float shadowPass2;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioSpectrum[32];
-uniform float sceneSeed;
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform float sceneSeed;   ///< A random number fixed per activation.
 
-uniform float camHP;
-uniform float heightP;
+uniform float camHP;   ///< Camera height knob, 0..1.
+uniform float heightP;   ///< Height knob, 0..1.
 uniform float spacingP;
 
 // 30 x 30 pillars = 900 of the 4900 cubes.  At 16 x 16 the colonnade ran out
@@ -50,6 +50,7 @@ uniform float spacingP;
 // sky; a hall wants to recede until the haze closes it off.
 const int GRID = 30;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float idx = attrA.w;

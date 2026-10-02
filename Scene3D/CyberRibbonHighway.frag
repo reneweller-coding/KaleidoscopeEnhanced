@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
-in vec4  vCol;
-in float vSide;
+in vec4  vCol;   ///< Colour (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
 in float vLength;
 
 /**
@@ -18,6 +18,7 @@ in float vLength;
  * into the glowing ribbon-edge and lane-marking look via vSide/vLength.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     // Additive glowing ribbon edges & center stripe
     float edge = 1.0 - abs(vSide);

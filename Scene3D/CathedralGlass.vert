@@ -7,24 +7,25 @@
 // CathedralGlass.vert — place the window, and drop whichever half of the
 // geometry does not belong to the pass currently running.
 
-in vec4 attrA;      // xyz = object position, w = kind (0 stone, 1 glass)
-in vec4 attrB;      // xyz = normal, w = band level for this pane
+in vec4 attrA;      ///< xyz = object position, w = kind (0 stone, 1 glass)
+in vec4 attrB;      ///< xyz = normal, w = band level for this pane
 
-out vec3  vObj;
-out vec3  vNormal;
-out vec3  vView;
-out float vKind;
+out vec3  vObj;   ///< Object-space position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
+out float vKind;   ///< Element kind (from the vertex stage).
 out float vLevel;
 
-uniform mat4  projM;
-uniform float oitPass;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioSubBass;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float oitPass;   ///< Order-independent transparency pass flag.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 
-uniform float camDistP;
+uniform float camDistP;   ///< Camera distance knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float kind = attrA.w;

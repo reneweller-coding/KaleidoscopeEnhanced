@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file TextureEffectParallaxKaleidoscopeTunnel.frag
  * @brief The same 32-layer retro pixel-parallax as
@@ -26,26 +26,26 @@ out vec4 fragColor;
  *  - audioMode     -> HAZE COLOUR: the depth fog down the tunnel is a cold blue-grey
  *                     in minor keys and a warm sand-grey in major ones
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float interpolationRotation;
 uniform float speedTunnel;
 uniform float speed;
 uniform int sides;
 uniform float power;
 uniform int rotate;
-uniform float speedMovement;// = 5.0;
-uniform	float extend;// = 4000;
+uniform float speedMovement;///< = 5.0;
+uniform	float extend;///< = 4000;
 uniform int direction;
-uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
-uniform float audioAdvance;   // integrated tunnel advance + orbit drift (jump-free)
-uniform float audioSwell;     // slow energy envelope widens the orbit
-uniform float audioZCR;       // 0=pure tone .. 1=broadband noise -> retro pixel grain
-uniform float audioFlatness;  // 0=tonal .. 1=noise-like -> how deep the parallax stack reads
-uniform float audioMode;      // 0=minor/cold .. 1=major/warm -> depth-haze colour
+uniform float audioPhase;     ///< integrated audio rotation phase (radians, jump-free)
+uniform float audioAdvance;   ///< integrated tunnel advance + orbit drift (jump-free)
+uniform float audioSwell;     ///< slow energy envelope widens the orbit
+uniform float audioZCR;       ///< 0=pure tone .. 1=broadband noise -> retro pixel grain
+uniform float audioFlatness;  ///< 0=tonal .. 1=noise-like -> how deep the parallax stack reads
+uniform float audioMode;      ///< 0=minor/cold .. 1=major/warm -> depth-haze colour
 
 
 const float M_PI = 3.141592653589793;
@@ -105,6 +105,7 @@ vec3 getKaleidoscopeColor( vec2 coord )
 }
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
 

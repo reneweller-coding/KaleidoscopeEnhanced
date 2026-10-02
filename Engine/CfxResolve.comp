@@ -23,19 +23,21 @@
 // temporal integration is what makes it silky.
 // -----------------------------------------------------------------------
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(std430, binding = 0) readonly buffer Accum { uint acc[]; };
 layout(rgba16f, binding = 0) uniform image2D imgOut;
 
-uniform ivec2 size;
-uniform int   mode;        // 0 = linear exposure, 1 = fractal-flame log density
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform int   mode;        ///< 0 = linear exposure, 1 = fractal-flame log density
 uniform float exposure;
-uniform float gammaInv;    // flame gamma (applied to the brightness term)
-uniform float decay;       // how much of the previous frame survives
+uniform float gammaInv;    ///< flame gamma (applied to the brightness term)
+uniform float decay;       ///< how much of the previous frame survives
 
 const float SCALE = 1.0 / 256.0;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxPlaneFlight.frag
  * @brief FX PLANE FLIGHT: forward-flight perspective warp that projects the
@@ -15,17 +15,18 @@ out vec4 fragColor;
 // FX PLANE FLIGHT: a forward-flight perspective warp -- the scene is
 // projected as if streaming past on either side of a travelling flight
 // path, brightened near the horizon line.
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioPhase;   // music banks the view
-uniform float audioAdvance;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioPhase;   ///< music banks the view
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
     vec2 p = -1.0+2.0*gl_FragCoord.xy/resolution.xy;

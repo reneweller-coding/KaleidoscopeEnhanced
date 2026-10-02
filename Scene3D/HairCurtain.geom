@@ -18,6 +18,7 @@
 // strand carries its own direction down the pipeline.
 // -----------------------------------------------------------------------
 layout(points) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 18) out;
 
 in  vec3  gRoot[];
@@ -25,24 +26,24 @@ in  vec3  gLean[];
 in  vec4  gRnd[];
 in  float gIndex[];
 
-out vec3  vWorld;
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out vec3  vTangent;
-out float vAlong;       // 0 at the root, 1 at the tip
+out float vAlong;       ///< 0 at the root, 1 at the tip
 out float vTint;
-out float vKind;        // 0 = backdrop, 1 = strand
+out float vKind;        ///< 0 = backdrop, 1 = strand
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float time;
-uniform float audioSubBass;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioHigh;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float lengthP;      // preset: strand length
-uniform float swayP;        // preset: how far the wave throws them
-uniform float camHP;
+uniform float lengthP;      ///< preset: strand length
+uniform float swayP;        ///< preset: how far the wave throws them
+uniform float camHP;   ///< Camera height knob, 0..1.
 
 const int SEG = 8;
 
@@ -61,6 +62,7 @@ void emit(vec3 world, vec3 tang, float along, float tint, float kind)
     EmitVertex();
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Point 0 is spent on a backdrop quad at the far plane; without it the gaps

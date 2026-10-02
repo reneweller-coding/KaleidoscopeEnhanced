@@ -1,21 +1,22 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxWave.frag
  * @brief FX WAVE: a soft radial ripple offsets the scene's UVs outward from the
  * centre and blends the displaced copy back with the original.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioAdvance; // music advances the ring wave
-uniform float audioSwell;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance; ///< music advances the ring wave
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
 

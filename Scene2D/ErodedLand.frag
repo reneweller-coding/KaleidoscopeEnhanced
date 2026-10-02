@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ErodedLand.frag
  * @brief ERODED LAND: a slow glide over a worn mountain range -- long smooth
@@ -24,32 +24,34 @@ out vec4 fragColor;
  *  - sceneTime / sceneAdvance -> the glide and the wheeling sun (continuous)
  */
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioAmbient;
-uniform float audioChromaHue;
-uniform float audioAdvance;
-uniform float audioValence;
-uniform float audioRoughness;   // 0=consonant .. 1=dissonant -> relief steepness
-uniform float audioSharpness;   // 0=dull .. 1=bright/harsh -> sun-glint tightness
-uniform float audioMode;        // 0=minor/cold .. 1=major/warm -> sunlight colour
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioRoughness;   ///< 0=consonant .. 1=dissonant -> relief steepness
+uniform float audioSharpness;   ///< 0=dull .. 1=bright/harsh -> sun-glint tightness
+uniform float audioMode;        ///< 0=minor/cold .. 1=major/warm -> sunlight colour
 
 uniform float sunP;
 uniform float waterP;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -59,8 +61,8 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
-// Sine-free hash (Hoskins): the octaves reach large coordinates, where
-// fract(sin(x) * 43758) loses precision on the GPU.
+/// Sine-free hash (Hoskins): the octaves reach large coordinates, where
+/// fract(sin(x) * 43758) loses precision on the GPU.
 float hash21(vec2 p)
 {
     vec3 p3 = fract(vec3(p.xyx) * 0.1031);
@@ -68,7 +70,7 @@ float hash21(vec2 p)
     return fract((p3.x + p3.y) * p3.z);
 }
 
-// Value noise with analytic derivatives (quintic fade).
+/// Value noise with analytic derivatives (quintic fade).
 vec3 noised(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -81,12 +83,12 @@ vec3 noised(vec2 p)
 }
 
 const mat2 M2 = mat2(1.6, -1.2, 1.2, 1.6);
-const float HS = 60.0;          // height scale (world units)
-const float XS = 0.0085;        // horizontal frequency of the broadest octave
+const float HS = 60.0;          ///< height scale (world units)
+const float XS = 0.0085;        ///< horizontal frequency of the broadest octave
 
-// Terrain height: each octave is damped by the slope accumulated so far
-// (1 / (1 + |grad|^2)) -- steep flanks stay smooth, flats get detail,
-// crests come out sharp.  `oct` octaves.
+/// Terrain height: each octave is damped by the slope accumulated so far
+/// (1 / (1 + |grad|^2)) -- steep flanks stay smooth, flats get detail,
+/// crests come out sharp.  `oct` octaves.
 float terrain(vec2 x, int oct)
 {
     vec2 p = x * XS;
@@ -103,6 +105,7 @@ float terrain(vec2 x, int oct)
     return HS * a - 12.0;
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 pos, float t)
 {
     vec2 e = vec2(0.002 * t + 0.02, 0.0);
@@ -111,6 +114,7 @@ vec3 calcNormal(vec3 pos, float t)
                           terrain(pos.xz - e.yx, 8) - terrain(pos.xz + e.yx, 8)));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;

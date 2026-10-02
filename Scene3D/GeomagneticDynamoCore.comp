@@ -27,16 +27,16 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[];   };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float dynamoP;
 uniform float coriolisP;
-uniform float speedP;
+uniform float speedP;   ///< Speed knob, 0..1.
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // generator has no `resolution`; the flux haze is laid out for 16:9 and the
@@ -44,12 +44,13 @@ uniform float speedP;
 const float kTanY = 0.5206;
 const float kAsp  = 1.7778;
 
-const uint COLS     = 160u;     // convective columns
-const uint PTS      = 96u;      // points along each column
-const uint CORE_PTS = 15360u;   // COLS * PTS
-const uint HAZE_PTS = 6144u;    // flux-fog motes filling the frustum
-const uint TOTAL    = 21504u;   // x 6 = 129024 vertices
+const uint COLS     = 160u;     ///< convective columns
+const uint PTS      = 96u;      ///< points along each column
+const uint CORE_PTS = 15360u;   ///< COLS * PTS
+const uint HAZE_PTS = 6144u;    ///< flux-fog motes filling the frustum
+const uint TOTAL    = 21504u;   ///< x 6 = 129024 vertices
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 47.19;
@@ -57,10 +58,10 @@ float hash11(float p) {
     return fract(p);
 }
 
-// attrA = (centre.xyz, corner), attrB = (radius, phase, isHaze, spare).
-// corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
-// quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
-// available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
+/// attrA = (centre.xyz, corner), attrB = (radius, phase, isHaze, spare).
+/// corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
+/// quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
+/// available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
 void writeVertex(uint slot, vec3 c, float radius, float phase, float isHaze, float corner)
 {
     uint o = slot * 8u;
@@ -83,6 +84,7 @@ void emitSprite(vec3 c, float radius, float phase, float isHaze)
     writeVertex(base + 5u, c, radius, phase, isHaze, 3.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);

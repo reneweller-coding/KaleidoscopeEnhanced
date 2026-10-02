@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxWiggle.frag
  * @brief FX WIGGLE: hand-drawn "boil" -- the frame-to-frame line wobble of
@@ -33,34 +33,36 @@ out vec4 fragColor;
 // `floor(time * rate)` with a rate that moves does not speed the boil up — it
 // makes the step index jump backwards and forwards, and the drawing stutters at
 // random.  The music changes how FAR the line moves, never how often.
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
 uniform vec2  depthValid;
-uniform vec2  nearFar;
+uniform vec2  nearFar;   ///< Near and far clip distances.
 uniform float tanHalfFov;
-uniform float interpolation;
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float wiggleP;      // preset: how far the line moves
-uniform float holdP;        // preset: holds per second (the "on twos" rate)
-uniform float grainP;       // preset: paper grain
+uniform float wiggleP;      ///< preset: how far the line moves
+uniform float holdP;        ///< preset: holds per second (the "on twos" rate)
+uniform float grainP;       ///< preset: paper grain
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
 }
 
+/// @brief Pseudo-random number 0..1 from a 3D point.
 float hash31(vec3 p)
 {
     p = fract(p * 0.1031);
@@ -78,6 +80,7 @@ float vnoise3(vec3 x)
                    mix(hash31(i + vec3(0, 1, 1)), hash31(i + vec3(1, 1, 1)), f.x), f.y), f.z);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

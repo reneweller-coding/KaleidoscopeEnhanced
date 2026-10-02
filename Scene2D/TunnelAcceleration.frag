@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file TunnelAcceleration.frag
  * @brief A variant of the mirrored-segment kaleidoscope tunnel with its own,
@@ -23,11 +23,11 @@ out vec4 fragColor;
  *                      blue channels apart along the scroll axis, giving the walls a
  *                      chromatic-aberration sheen on scraping, metallic material
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float interpolationRotation;
 uniform float speedTunnel;
 uniform float speed;
@@ -35,15 +35,16 @@ uniform int sides;
 uniform float power;
 uniform int rotate;
 uniform float speedTunnelAccel;
-uniform float audioPhase;     // integrated audio rotation phase (radians, jump-free)
-uniform float audioAdvance;   // integrated audio tunnel advance (jump-free)
-uniform float audioKick;      // subtle brightness pulse on kicks
-uniform float audioBuildUp;   // 0..1 EDM tension rising toward a climax -> throat tightening
-uniform float audioDownbeat;  // decaying accent on the bar's "1" -> musical brightness accent
-uniform float audioUpperMid;  // 2k-6k Hz metallic/industrial edge -> chromatic fringe
+uniform float audioPhase;     ///< integrated audio rotation phase (radians, jump-free)
+uniform float audioAdvance;   ///< integrated audio tunnel advance (jump-free)
+uniform float audioKick;      ///< subtle brightness pulse on kicks
+uniform float audioBuildUp;   ///< 0..1 EDM tension rising toward a climax -> throat tightening
+uniform float audioDownbeat;  ///< decaying accent on the bar's "1" -> musical brightness accent
+uniform float audioUpperMid;  ///< 2k-6k Hz metallic/industrial edge -> chromatic fringe
 
 const float M_PI = 3.141592653589793;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
 
     // normalize to the center

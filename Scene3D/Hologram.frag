@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Hologram.frag
  * @brief GEOM="MESH" FAMILY: any loaded model re-read as a sci-fi holotable
@@ -26,37 +26,41 @@ out vec4 fragColor;
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform float time;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;
-uniform float tintP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP;   ///< Tint knob, 0..1.
 uniform float scanP;
 
-in vec2  vUV;
-in vec3  vNormal;
-in vec3  vPos;
-in vec3  vLocalPos;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
 in vec3  vBary;
-in float vBg;
+in float vBg;   ///< Background flag (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief HSV (all 0..1) to RGB.
 vec3 hsv2rgb(vec3 c) {
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
+/// @brief Pseudo-random number 0..1 from a 3D point.
 float hash13(vec3 p) {
     p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
     p *= 17.0;
     return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
 }
+/// @brief Smooth 3D value noise, 0..1.
 float noise3(vec3 x) {
     vec3 i = floor(x), f = fract(x);
     f = f * f * (3.0 - 2.0 * f);
@@ -68,10 +72,10 @@ float noise3(vec3 x) {
                mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
 }
 
-// 4x4 ordered (Bayer) threshold. An ordered pattern beats a random one here:
-// white noise makes the fill crawl and sparkle between frames, while a fixed
-// screen-space matrix holds still, so the hologram reads as a steady mesh of
-// dots rather than television static.
+/// 4x4 ordered (Bayer) threshold. An ordered pattern beats a random one here:
+/// white noise makes the fill crawl and sparkle between frames, while a fixed
+/// screen-space matrix holds still, so the hologram reads as a steady mesh of
+/// dots rather than television static.
 float bayer4(vec2 p)
 {
     int x = int(mod(p.x, 4.0)), y = int(mod(p.y, 4.0));
@@ -84,8 +88,8 @@ float bayer4(vec2 p)
 }
 
 // ---- Sky shell: the holotable's room. Near-black, with a cold pool of
-// light on the deck below the projection and a faint tech grid, so the
-// hologram has somewhere to stand. ----
+/// light on the deck below the projection and a faint tech grid, so the
+/// hologram has somewhere to stand. ----
 vec3 renderSky(vec3 dir, vec3 tint)
 {
     vec3 col = vec3(0.008, 0.010, 0.016) * (1.0 - dir.y * 0.4);
@@ -103,6 +107,7 @@ vec3 renderSky(vec3 dir, vec3 tint)
     return col;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 tint = hsv2rgb(vec3(tintP / 6.2831853, 0.62, 1.0));

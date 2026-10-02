@@ -7,19 +7,20 @@
 // HairCurtain.vert — one vertex per strand: fix where it hangs from.
 // The strand itself is grown in the geometry shader.
 
-in vec4 attrA;      // w = strand index
-in vec4 attrB;      // four hashes
+in vec4 attrA;      ///< w = strand index
+in vec4 attrB;      ///< four hashes
 
 out vec3  gRoot;
-out vec3  gLean;        // the direction the strand leaves its root in
+out vec3  gLean;        ///< the direction the strand leaves its root in
 out vec4  gRnd;
 out float gIndex;
 
-uniform float sceneSeed;
+uniform float sceneSeed;   ///< A random number fixed per activation.
 
-const float SPAN_Z = 5.5;       // depth: several layers of strands
-const float CROWN_R = 7.0;      // radius of the surface the hair falls over
+const float SPAN_Z = 5.5;       ///< depth: several layers of strands
+const float CROWN_R = 7.0;      ///< radius of the surface the hair falls over
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float idx = attrA.w;

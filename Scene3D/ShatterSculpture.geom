@@ -25,6 +25,7 @@
 // pass through untouched -- shattering the backdrop would tear the sky open.
 // -----------------------------------------------------------------------
 layout(triangles) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 3) out;
 
 in  vec3  gPos[];
@@ -32,24 +33,25 @@ in  vec3  gNormal[];
 in  vec2  gUV[];
 in  float gBg[];
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out float vBg;
-out float vShard;    // 0 = seated in the statue, 1 = fully flown out; the frag stage glows the fracture
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
+out float vShard;    ///< 0 = seated in the statue, 1 = fully flown out; the frag stage glows the fracture
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;
-uniform float audioKick;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP;
+uniform float sizeP;   ///< Size knob, 0..1.
 uniform float burstP;
-uniform float spinP;
-uniform float chunkP;   // fracture grid resolution: SMALL = few big slabs, LARGE = fine gravel
+uniform float spinP;   ///< Spin knob, 0..1.
+uniform float chunkP;   ///< fracture grid resolution: SMALL = few big slabs, LARGE = fine gravel
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
 
 vec3 hashDir(float n)
@@ -71,6 +73,7 @@ mat3 axisRot(vec3 ax, float ang)
                 t*ax.x*ax.z + s*ax.y, t*ax.y*ax.z - s*ax.x, t*ax.z*ax.z + c);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // The sky shell: emit verbatim, no shatter, no statue transform.

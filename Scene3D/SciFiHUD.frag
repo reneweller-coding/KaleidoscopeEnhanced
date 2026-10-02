@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;
-uniform float audioKick;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // SciFiHUD.frag — crisp glowing HUD line: bright core, soft halo.  vCol
 // already carries the vertex shader's fade (crosshair gaps, sweep trail,
 // lock-ring pulses) baked in.
-in vec4  vCol;
-in float vSide;
+in vec4  vCol;   ///< Colour (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file SciFiHUD.frag
@@ -27,6 +27,7 @@ in float vSide;
  * is computed in SciFiHUD.vert.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float d    = abs(vSide);

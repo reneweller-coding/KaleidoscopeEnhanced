@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxDeformationFlow.frag
  * @brief Polar radial-flow warp (Inigo Quilez, iq/2013): unwraps the scene into
  * polar coordinates around a moving point pair and scrolls it, tiled into
  * "copies" mirrored repeats; an optional grid overlay shows the seams.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioAdvance; // music advances the flow
-uniform float audioBeat;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance; ///< music advances the flow
+uniform float audioBeat;   ///< Beat envelope, 0..1.
 uniform float copies;
 uniform int displayGrid;
 uniform float speed;
@@ -37,8 +37,9 @@ uniform int leftRight;
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 
-const float scaletexture = 2.0;//2.0
+const float scaletexture = 2.0;///< 2.0
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
   vec2 p = gl_FragCoord.xy;

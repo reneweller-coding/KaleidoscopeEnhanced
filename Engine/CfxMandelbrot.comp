@@ -16,16 +16,17 @@
  * to colour via imgPalette rather than a raw HSV rainbow.
  */
 
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 16, local_size_y = 16) in;
 
 layout(rgba16f, binding = 0) writeonly uniform image2D imgOut;
 
-uniform ivec2 size;
-uniform vec2  centerHi;   // (re, im) high half of the zoom centre
-uniform vec2  centerLo;   // (re, im) low half (error term) of the zoom centre
-uniform float zoomScale;  // half-width of the sampled window, in complex-plane units
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform vec2  centerHi;   ///< (re, im) high half of the zoom centre
+uniform vec2  centerLo;   ///< (re, im) low half (error term) of the zoom centre
+uniform float zoomScale;  ///< half-width of the sampled window, in complex-plane units
 uniform int   maxIter;
-uniform float rot;        // slow view rotation (radians), integrated host-side
+uniform float rot;        ///< slow view rotation (radians), integrated host-side
 
 // ---- Double-single (Dekker/Knuth) emulated ~44-48 bit precision ----------
 // Standard error-free-transformation building blocks; see e.g. Thall,
@@ -69,6 +70,7 @@ vec2 ds_mul(vec2 a, vec2 b)
     return ds_quick_two_sum(p.x, p.y);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 gid = ivec2(gl_GlobalInvocationID.xy);

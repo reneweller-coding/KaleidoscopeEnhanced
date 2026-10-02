@@ -23,21 +23,21 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioSpectrum[32];
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
 
 uniform float swarmP;
-uniform float speedP;
-uniform float glowP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
-const int CREATURES = 64 * 64; // 4096 boid creatures, each emitted as a 3D faceted diamond (6 vertices)
+const int CREATURES = 64 * 64; ///< 4096 boid creatures, each emitted as a 3D faceted diamond (6 vertices)
 // Marine snow: 1,600 soft camera-facing motes hanging in the water BEHIND the
 // swarm.  The murmuration is a band across the middle of the frame however
 // large it gets -- a torus seen from outside always is -- so on its own it
@@ -47,9 +47,12 @@ const int CREATURES = 64 * 64; // 4096 boid creatures, each emitted as a 3D face
 const uint SNOW      = 1600u;
 const uint SNOW_BASE = uint(CREATURES);
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash1(float n) { return fract(sin(n * 123.456) * 43758.5453); }
+/// @brief Pseudo-random vec3 (each 0..1) from a float.
 vec3  hash3(float n) { return fract(sin(vec3(n * 91.34, n * 47.12, n * 73.56)) * 43758.5453); }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float hue, float glow) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
@@ -85,6 +88,7 @@ void emitBoid(vec3 center, vec3 forward, float size, float hue, float glow) {
     writeVertex(base + 5u, rgtP,  n2, hue, glow);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);

@@ -41,19 +41,19 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioSpectrum[32];
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
 
-uniform float spinP;        // preset: how fast the back wheels turn
-uniform float paneP;        // preset: pane size, so how thick the leading is
-uniform float depthP;       // preset: how far apart the wheels sit
+uniform float spinP;        ///< preset: how fast the back wheels turn
+uniform float paneP;        ///< preset: pane size, so how thick the leading is
+uniform float depthP;       ///< preset: how far apart the wheels sit
 
 const int LAYERS = 3;
 const int RINGS  = 5;
@@ -61,11 +61,12 @@ const int SECT   = 16;
 const float R0 = 0.55;
 const float DR = 0.72;
 
-const int NGLASS = LAYERS * RINGS * SECT;      // 240 panes
-const int NSPOKE = RINGS * SECT;               // 80 radial ribs
-const int NRINGQ = (RINGS + 1) * SECT;         // 96 arc ribs
+const int NGLASS = LAYERS * RINGS * SECT;      ///< 240 panes
+const int NSPOKE = RINGS * SECT;               ///< 80 radial ribs
+const int NRINGQ = (RINGS + 1) * SECT;         ///< 96 arc ribs
 const int NQUADS = NGLASS + NSPOKE + NRINGQ;
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float kind, float lvl)
 {
     uint o = slot * 8u;
@@ -75,12 +76,12 @@ void writeVertex(uint slot, vec3 p, vec3 n, float kind, float lvl)
     verts[o + 7u] = lvl;
 }
 
-// Both windings, always.  A pane of glass has no back: it is a flat sheet meant
-// to be seen from either side, and the window tips as it sways.  Emitting one
-// winding leaves the result at the mercy of whatever cull state the frame
-// happens to be in — and the failure is not a missing pane but a missing
-// TRIANGLE, so a quad comes back as a thin wedge and the cause reads like a
-// shading bug rather than a geometry one.
+/// Both windings, always.  A pane of glass has no back: it is a flat sheet meant
+/// to be seen from either side, and the window tips as it sways.  Emitting one
+/// winding leaves the result at the mercy of whatever cull state the frame
+/// happens to be in — and the failure is not a missing pane but a missing
+/// TRIANGLE, so a quad comes back as a thin wedge and the cause reads like a
+/// shading bug rather than a geometry one.
 void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float lvl)
 {
     uint base = atomicAdd(cmd[4], 12u);
@@ -102,6 +103,7 @@ void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float lvl)
 
 vec3 pol(float r, float a, float z) { return vec3(r * cos(a), r * sin(a), z); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

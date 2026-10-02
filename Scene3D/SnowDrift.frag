@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // SnowDrift.frag — soft glowing point (additive blending).
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
 /**
  * @file SnowDrift.frag
@@ -23,6 +23,7 @@ in vec4 vCol;
  *   audioMode      -> moonlight temperature (minor = cold blue, major = warm)
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

@@ -1,36 +1,37 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Bubble.frag
  * @brief Soap bubbles rise and pop over a dimmed backdrop of the current photo, each one refracting the picture like a tiny lens with an iridescent rim.
  *
  * audioAdvance integrates travel so the bubbles climb faster with the music without ever jump-cutting; audioFlux (plus audioLevel and audioBeat) sets how many of the 32 bubble slots are alive at once, audioKick puffs each bubble's radius and slams the pop-ring flash, and audioLevel brightens and saturates the backdrop and refracted highlights. Colour comes from an imgPalette-style arc sampled from the photo itself, rotated by audioChromaHue and driven by audioAdvance, with audioValence controlling how saturated versus grey the iridescent tint reads. Optional negative and vigneting toggles invert the image or darken the corners.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float speed;// = 2.0; //1.0
-uniform float speedColor;// = 1.0; //1.0
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float speed;///< = 2.0; //1.0
+uniform float speedColor;///< = 1.0; //1.0
 uniform int negative;
 uniform int vigneting;
-uniform float audioAdvance;   // integrated travel: bubbles rise faster with the music (jump-free)
-uniform float audioKick;      // kick puff on the bubble radius
-uniform float audioLevel;     // louder music = more saturated bubbles
-uniform float audioSwell;     // slow envelope -> how many bubbles are alive
-uniform float audioFlux;      // musical complexity -> how many bubbles are alive
-uniform float audioBeat;      // beat adds a few extra bubbles
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float audioAdvance;   ///< integrated travel: bubbles rise faster with the music (jump-free)
+uniform float audioKick;      ///< kick puff on the bubble radius
+uniform float audioLevel;     ///< louder music = more saturated bubbles
+uniform float audioSwell;     ///< slow envelope -> how many bubbles are alive
+uniform float audioFlux;      ///< musical complexity -> how many bubbles are alive
+uniform float audioBeat;      ///< beat adds a few extra bubbles
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image; the arc follows the musical key, valence shapes
-// saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image; the arc follows the musical key, valence shapes
+/// saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -66,6 +67,7 @@ const int nrBubbles = 32;
 //   a lens, wears an iridescent photo-arc rim - and POPS near the top with
 //   an expanding ring (kick makes the pop flash harder)
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
     vec2 uv = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;

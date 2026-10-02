@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 in vec4 vColor;
-in vec2 vTexCoord;
+in vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
 
 /**
  * @file SupernovaRemnantNebula.frag
@@ -18,10 +18,11 @@ in vec2 vTexCoord;
  * vColor.
  */
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 photo = (interpolation * texture(tex0, vTexCoord) + (1.0 - interpolation) * texture(tex1, vTexCoord)).rgb;
     float filamentEdge = exp(-abs(vTexCoord.x - 0.5) * 8.0);

@@ -16,6 +16,7 @@
 // LaserSpireArray.geom — Extrude point seeds into 3D hexagonal crystalline spires
 // with skyward laser beams and pulsating energy rings.
 layout(points) in;
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(triangle_strip, max_vertices = 24) out;
 
 in vec3  vObjPos[];
@@ -27,23 +28,24 @@ out vec3  gWorld;
 out vec4  gCol;
 out float gBeam;
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioSpectrum[32];
-uniform float audioBuildUp;   // EDM tension rising toward the drop
-uniform float audioTrebRel;   // 0..2.5, treble "as loud as usual right now"
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform float audioBuildUp;   ///< EDM tension rising toward the drop
+uniform float audioTrebRel;   ///< 0..2.5, treble "as loud as usual right now"
 
-uniform float heightP;
+uniform float heightP;   ///< Height knob, 0..1.
 uniform float beamP;
-uniform float camDistP;
-uniform float hueP;
+uniform float camDistP;   ///< Camera distance knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
@@ -65,6 +67,7 @@ void emitVert(vec3 worldPos, vec3 norm, vec3 col, float isBeam, vec3 camPos, vec
     EmitVertex();
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float idx = vSpireIndex[0];
     vec4 seeds = vSeeds[0];

@@ -11,34 +11,35 @@
  * swell.
  */
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform int   meshVertexCount;
-uniform int   meshInstances;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform int   meshInstances;   ///< Number of mesh instances.
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 
-uniform float audioSwell;
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sizeP;
-uniform float cycleP;    // seconds per full pattern cycle (default 40)
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float cycleP;    ///< seconds per full pattern cycle (default 40)
 
-out vec2  vUV;
-out vec3  vNormal;
-out vec3  vPos;
-out vec3  vLocal;
-out float vBg;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vPos;   ///< Position (from the vertex stage).
+out vec3  vLocal;   ///< Object-space position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
 out float vInst;
-out float vSwing;    // -1..1: where in its swing this pendulum is
+out float vSwing;    ///< -1..1: where in its swing this pendulum is
 
 const float kDist   = 70.0;
 const float kPivotY = 22.0;
 const float kSpacing = 10.5;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int inst = gl_InstanceID;

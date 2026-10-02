@@ -1,21 +1,22 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxKaleidoscope.frag
  * @brief FX KALEIDOSCOPE: classic radial mirror-fold -- the polar angle is
  * wrapped and mirrored into "sides" repeating wedges, slowly rotating.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float speed;
 uniform int sides;
-uniform float audioPhase;   // music advances the fold rotation
-uniform float audioSwell;
+uniform float audioPhase;   ///< music advances the fold rotation
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
 
     // normalize to the center

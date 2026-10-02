@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxLens.frag
  * @brief FX LENS: four orbiting refractive lens bubbles bend the scene through
  * a spherical-cap refraction model, like magnifying glasses drifting
  * around the frame in a slow circle.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioAdvance; // music drives the lens orbit
-uniform float audioSwell;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance; ///< music drives the lens orbit
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 
 //vec2 getModifiedUV(vec2 actualUV, vec2 pointUV, float radius, float strength)
@@ -59,6 +59,7 @@ vec2 getModifiedUV(vec2 uv, vec2 position, float radius, float refractivity){
 	return mix(uv, refrac_uv, float(length(uv-position)<radius));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
 	const float radius = 0.15;

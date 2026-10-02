@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file CrystalAsteroidField.frag
  * @brief CRYSTAL ASTEROID FIELD: An asteroid field made entirely of giant,
@@ -16,32 +16,34 @@ out vec4 fragColor;
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 // Beide zaehlen ab DIESER Aktivierung statt ab Programmstart.
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float densityP;
-uniform float glowP;
-uniform float hueP;
+uniform float densityP;   ///< Density knob, 0..1.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -51,12 +53,14 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 vec3 hash33(vec3 p) {
     p = vec3(dot(p,vec3(127.1,311.7, 74.7)),
@@ -69,7 +73,7 @@ mat2 rotM(float a) {
     return mat2(c, -s, s, c);
 }
 
-// Distance to a faceted crystal (octahedron/diamond shape)
+/// Distance to a faceted crystal (octahedron/diamond shape)
 float sdOctahedron(vec3 p, float s) {
     p = abs(p);
     return (p.x + p.y + p.z - s) * 0.57735027;
@@ -79,6 +83,7 @@ float sdOctahedron(vec3 p, float s) {
 float hitGlow = 0.0;
 vec3 hitColor = vec3(0.0);
 
+/// @brief The scene's distance field: distance from p to the nearest surface.
 float map(vec3 p, float dp) {
     // Break space into grid cells for the asteroids
     float cellSize = 3.0 / dp;
@@ -113,6 +118,7 @@ float map(vec3 p, float dp) {
     return d;
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p, float dp) {
     vec2 e = vec2(0.01, 0.0);
     return normalize(vec3(
@@ -122,6 +128,7 @@ vec3 calcNormal(vec3 p, float dp) {
     ));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float dp = (densityP > 0.01 ? densityP : 1.0);

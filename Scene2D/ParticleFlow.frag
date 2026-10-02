@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ParticleFlow.frag
  * @brief Two million curl-noise-advected particles (simulated upstream into
@@ -17,22 +17,23 @@ out vec4 fragColor;
 // divergence-free curl-noise flow; this pass adds the silk: an anisotropic
 // smear along the local flow direction plus a soft glow.
 
-uniform sampler2D tex0;
-uniform sampler2D texParticles;   // <- requests the particle sim
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D texParticles;   ///< <- requests the particle sim
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioBeat;
-uniform float audioAdvance;
-uniform float audioChromaHue;
-uniform float audioHigh;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioHigh;   ///< High band level, 0..1.
 
-uniform float smearP;             // preset: streak length
-uniform float glowP;              // preset: halo strength
+uniform float smearP;             ///< preset: streak length
+uniform float glowP;              ///< preset: halo strength
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

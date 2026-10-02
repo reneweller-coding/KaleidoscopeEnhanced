@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // EchoSpiral.frag — wide soft band with a luminous centre line.
-in vec4  vCol;
-in float vSide;
+in vec4  vCol;   ///< Colour (from the vertex stage).
+in float vSide;   ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file EchoSpiral.frag
@@ -18,6 +18,7 @@ in float vSide;
  * colour into the glowing ribbon cross-section via vSide.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float d    = abs(vSide);

@@ -1,4 +1,5 @@
 #version 430
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 /**
@@ -18,16 +19,17 @@ layout(std430, binding = 0) buffer Verts {
 
 layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 33.33;
@@ -35,6 +37,7 @@ float hash11(float p) {
     return fract(p);
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, float ice, float armID) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
@@ -43,6 +46,7 @@ void writeVertex(uint slot, vec3 p, float ice, float armID) {
     verts[o + 7u] = armID;
 }
 
+/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
 void emitSegment(vec3 pA, vec3 pB, float ice, float armID, float thickness) {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
@@ -75,15 +79,16 @@ void emitSegment(vec3 pA, vec3 pB, float ice, float armID, float thickness) {
 // in for the aspect -- the same value TorusKnot.vert falls back to.
 const float kTanY   = 0.5206;
 const float kAspect = 1.7778;
-const float kCamZ   = 6.5;      // the vert stage adds this back on
+const float kCamZ   = 6.5;      ///< the vert stage adds this back on
 
 const uint SEG_SECT    = 682u;
-const uint SEG_FLAKE   = SEG_SECT * 6u;              // 4092
+const uint SEG_FLAKE   = SEG_SECT * 6u;              ///< 4092
 const uint FLAKES      = 14u;
-const uint FLAKE_TOTAL = SEG_FLAKE * FLAKES;         // 57288
+const uint FLAKE_TOTAL = SEG_FLAKE * FLAKES;         ///< 57288
 const uint DUST        = 4000u;
-const uint TOTAL_SEGMENTS = FLAKE_TOTAL + DUST;      // 61288 segs, 367728 verts
+const uint TOTAL_SEGMENTS = FLAKE_TOTAL + DUST;      ///< 61288 segs, 367728 verts
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);

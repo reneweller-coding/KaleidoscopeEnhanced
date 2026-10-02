@@ -312,7 +312,7 @@ public:
 	static void  toggleFreeze()   { s_freeze = !s_freeze; }  ///< @brief Toggles VJ freeze (holds the picture by forcing frame time to 0; key 'e').
 	static bool  frozen()         { return s_freeze; }       ///< @brief Returns whether VJ freeze is currently engaged.
 	/**
-	 * @brief KALEIDO_FREEZE_TIME=<seconds> (comparison runs): the picture frozen from the start at that
+	 * @brief KALEIDO_FREEZE_TIME=SECONDS (comparison runs): the picture frozen from the start at that
 	 *        scene time, with silent audio -- two runs with KALEIDO_SEED and KALEIDO_FIXED_PHOTO then
 	 *        give the same frame, pixel for pixel.
 	 * @return The frozen scene time, or a negative value when unset.

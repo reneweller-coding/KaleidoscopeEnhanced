@@ -8,24 +8,25 @@
 // face index the generator packed in (box faces are axis-aligned, so an index
 // is exact and leaves two floats free for the window pattern).
 
-in vec4 attrA;      // xyz = world position, w = u along the facade
-in vec4 attrB;      // x = face index, y = height above ground, z = lot hash, w = band energy
+in vec4 attrA;      ///< xyz = world position, w = u along the facade
+in vec4 attrB;      ///< x = face index, y = height above ground, z = lot hash, w = band energy
 
-out vec3  vWorld;
-out vec3  vNormal;
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out float vFaceU;
 out float vUp;
 out float vLot;
 out float vEnergy;
-out float vDist;
+out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;
+uniform float camHP;   ///< Camera height knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 p = attrA.xyz;

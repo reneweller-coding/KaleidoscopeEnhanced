@@ -1,4 +1,5 @@
 #version 430
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 /**
@@ -14,16 +15,17 @@ layout(std430, binding = 0) buffer Verts {
 //   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
 layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 53.17;
@@ -31,6 +33,7 @@ float hash11(float p) {
     return fract(p);
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, float e1, float e2) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
@@ -39,8 +42,8 @@ void writeVertex(uint slot, vec3 p, float e1, float e2) {
     verts[o + 7u] = e2;
 }
 
-// A hyphae segment is a line from parent to child node; GL_TRIANGLES needs a
-// real triangle, so it is emitted as a thin two-triangle ribbon.
+/// A hyphae segment is a line from parent to child node; GL_TRIANGLES needs a
+/// real triangle, so it is emitted as a thin two-triangle ribbon.
 void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
@@ -86,6 +89,7 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     writeVertex(base + 5u, b0, e1, e2);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);

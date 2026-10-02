@@ -6,23 +6,24 @@
  */
 // Skyburst.vert — sparks arrive finished; place them under a night sky.
 
-in vec4 attrA;      // xyz = world position, w = age along the trail / sky elevation
-in vec4 attrB;      // x = shell hue / sky azimuth, y = brightness, z = kind
+in vec4 attrA;      ///< xyz = world position, w = age along the trail / sky elevation
+in vec4 attrB;      ///< x = shell hue / sky azimuth, y = brightness, z = kind
 
-out vec3  vWorld;
+out vec3  vWorld;   ///< World position (from the vertex stage).
 out float vAge;
 out float vHue;
 out float vBright;
-out float vDist;
-out float vKind;    // 0 = spark trail, 1 = sky dome
+out float vDist;   ///< Distance (from the vertex stage).
+out float vKind;    ///< 0 = spark trail, 1 = sky dome
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;
+uniform float camHP;   ///< Camera height knob, 0..1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 p = attrA.xyz;

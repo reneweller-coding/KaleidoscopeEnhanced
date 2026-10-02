@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FractalKIFS.frag
  * @brief Kaleidoscopic Iterated Function System (fold + rotate + scale): the source
@@ -15,35 +15,37 @@ out vec4 fragColor;
  *   audioLevel/Flux -> overall exposure
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioFlux;
-uniform float audioMode;     // 0 = minor/dark .. 1 = major/bright
-uniform float audioPitch;    // 0..1
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioMode;     ///< 0 = minor/dark .. 1 = major/bright
+uniform float audioPitch;    ///< 0..1
 uniform float audioArousal;
-uniform float audioValence;
-uniform float audioPhase;
-uniform float audioChromaHue;
-uniform float audioAdvance;
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,12 +55,12 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// USER-FEEDBACK-REDESIGN: the old fold/rotate/scale parametrisation was
-// degenerate (its attractor is space-filling, every orbit trap read ~0 and
-// the frame came out as flat mush).  Core replaced by the battle-tested
-// KALISET  p = abs(p)/dot(p,p) - c  — robust, endlessly detailed fractal
-// lace for practically any c, with the photo sampled through the final
-// folded coordinate.
+/// USER-FEEDBACK-REDESIGN: the old fold/rotate/scale parametrisation was
+/// degenerate (its attractor is space-filling, every orbit trap read ~0 and
+/// the frame came out as flat mush).  Core replaced by the battle-tested
+/// KALISET  p = abs(p)/dot(p,p) - c  — robust, endlessly detailed fractal
+/// lace for practically any c, with the photo sampled through the final
+/// folded coordinate.
 void main()
 {
     vec2 p = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;

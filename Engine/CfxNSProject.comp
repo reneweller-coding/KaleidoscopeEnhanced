@@ -25,10 +25,11 @@ layout(rgba16f, binding = 1) readonly uniform image2D prsSrc;
 layout(rgba16f, binding = 2) readonly uniform image2D dyeSrc;
 layout(rgba16f, binding = 3) writeonly uniform image2D imgOut;
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 
 float pAt(ivec2 q) { return imageLoad(prsSrc, clamp(q, ivec2(0), size - ivec2(1))).g; }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     ivec2 p = ivec2(gl_GlobalInvocationID.xy);

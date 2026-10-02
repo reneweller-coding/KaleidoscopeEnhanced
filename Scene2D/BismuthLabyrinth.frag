@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file BismuthLabyrinth.frag
  * @brief BISMUTH LABYRINTH: Raymarched infinite 3D hopper crystal labyrinth of metallic
@@ -19,41 +19,43 @@ out vec4 fragColor;
  *   hueP          float global hue rotation               (0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float iterP;
 uniform float stepP;
 uniform float iridescenceP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// Thin-film iridescent rainbow color function (Airy/Newton optical rings)
+/// Thin-film iridescent rainbow color function (Airy/Newton optical rings)
 vec3 thinFilmColor(float thickness) {
     vec3 col;
     col.r = sin(thickness * 6.28318 + 0.0) * 0.5 + 0.5;
@@ -63,8 +65,8 @@ vec3 thinFilmColor(float thickness) {
     return pow(col, vec3(1.3)) * 1.5;
 }
 
-// Bismuth Hopper Crystal Distance Function
-// Fold space into orthogonal stepped square concentric terraces
+/// Bismuth Hopper Crystal Distance Function
+/// Fold space into orthogonal stepped square concentric terraces
 float sdBox(vec3 p, vec3 b) {
     vec3 d = abs(p) - b;
     return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
@@ -76,6 +78,7 @@ float sdBox(vec3 p, vec3 b) {
 vec2  gAxis  = vec2(0.0);
 float gCorrR = 0.78;
 
+/// @brief The scene's distance field: distance from p to the nearest surface.
 float map(vec3 p, out float outLayer, float stpScale, float boxScale) {
     // Spatial repetition for infinite labyrinth
     vec3 c = vec3(4.0, 4.0, 4.0);
@@ -118,6 +121,7 @@ float map(vec3 p, out float outLayer, float stpScale, float boxScale) {
     return d;
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p, float stpScale, float boxScale) {
     float dummy;
     const float eps = 0.002;
@@ -130,6 +134,7 @@ vec3 calcNormal(vec3 p, float stpScale, float boxScale) {
     return normalize(n);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float iters = (iterP        > 0.0) ? iterP        : 1.0;
     float stp   = (stepP        > 0.0) ? stepP        : 1.0;

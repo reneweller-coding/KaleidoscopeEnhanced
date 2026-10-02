@@ -4,21 +4,22 @@
  * @brief Vertex stage companion to GeomagneticDynamoCore.frag -- see that file's header for
  * this scene's description.
  */
-layout(location = 0) in vec4 attrA;   // xyz = sprite centre, w = corner code
-layout(location = 1) in vec4 attrB;   // x = radius, y = phase, z = isHaze, w = spare
+layout(location = 0) in vec4 attrA;   ///< xyz = sprite centre, w = corner code
+layout(location = 1) in vec4 attrB;   ///< x = radius, y = phase, z = isHaze, w = spare
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioKick;
-uniform float time;
-uniform float audioAdvance;
-uniform vec2  resolution;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform vec2  resolution;   ///< Size of the render target in pixels.
 
-out vec3 vWorldPos;
+out vec3 vWorldPos;   ///< World position (from the vertex stage).
 out float vDynamoPhase;
 out float vHaze;
 out vec2 vQuadUV;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3  c      = attrA.xyz;
     float radius = attrB.x;

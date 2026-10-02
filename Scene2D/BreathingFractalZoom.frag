@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file BreathingFractalZoom.frag
  * @brief Forked from https://www.shadertoy.com/view/DsscWn (the same fold/rotate
@@ -18,35 +18,36 @@ out vec4 fragColor;
  * of the shader's own cosine palette remap.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;
-uniform float audioPhase;
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioLevel;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
-uniform float audioSwell;      // slow loudness swell -> breathing deepens
-uniform float audioBarPhase;   // 0..1 per bar -> palette wanders per bar
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;      ///< slow loudness swell -> breathing deepens
+uniform float audioBarPhase;   ///< 0..1 per bar -> palette wanders per bar
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float oscP;       // zoom oscillation speed (0 -> 0.05; 0.03 = glacial, 0.09 = lively)
-uniform float deepP;      // zoom oscillation depth (0 -> 4.0; 2.5 = shallow, 4.5 = deep)
-uniform float breathP;    // breath ring frequency  (0 -> 20; 12 = broad, 30 = tight)
-uniform float palShiftP;  // cosine palette offset  (0 -> 0; any value = different colour family)
-uniform int   kSides;     // >=2: weave a spinning n-fold image rosette in (0 = off)
-uniform float rosetteP;   // rosette strength       (0 -> 0.22)
+uniform float oscP;       ///< zoom oscillation speed (0 -> 0.05; 0.03 = glacial, 0.09 = lively)
+uniform float deepP;      ///< zoom oscillation depth (0 -> 4.0; 2.5 = shallow, 4.5 = deep)
+uniform float breathP;    ///< breath ring frequency  (0 -> 20; 12 = broad, 30 = tight)
+uniform float palShiftP;  ///< cosine palette offset  (0 -> 0; any value = different colour family)
+uniform int   kSides;     ///< >=2: weave a spinning n-fold image rosette in (0 = off)
+uniform float rosetteP;   ///< rosette strength       (0 -> 0.22)
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
 
-// n-fold kaleidoscopic mirror fold of a centred coordinate.
+/// n-fold kaleidoscopic mirror fold of a centred coordinate.
 vec2 kaleido(vec2 p, float sides)
 {
     float a   = atan(p.y, p.x);
@@ -58,10 +59,10 @@ vec2 kaleido(vec2 p, float sides)
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -71,6 +72,7 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
@@ -78,6 +80,7 @@ vec3 imgPal(float x)
     return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -85,7 +88,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// iq-style cosine palette (https://www.shadertoy.com/view/dlVSDK).
+/// iq-style cosine palette (https://www.shadertoy.com/view/dlVSDK).
 vec3 palette(float t)
 {
     vec3 a = vec3(0.2, 0.7, 0.4);
@@ -95,6 +98,7 @@ vec3 palette(float t)
     return imgPalette(t);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  v  = resolution;

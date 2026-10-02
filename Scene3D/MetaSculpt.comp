@@ -48,19 +48,19 @@ layout(std430, binding = 0) buffer Verts { float verts[]; };
 //   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioChroma[12];
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
 
-uniform float blobP;        // preset: blob size
-uniform float spreadP;      // preset: how far they orbit
-uniform float isoP;         // preset: surface threshold
+uniform float blobP;        ///< preset: blob size
+uniform float spreadP;      ///< preset: how far they orbit
+uniform float isoP;         ///< preset: surface threshold
 
 const int   GRID   = 64;
 // SCREEN FILL: the field used to span only [-1.65, 1.65]^3 AND the blobs kept a
@@ -70,11 +70,11 @@ const int   GRID   = 64;
 // The domain, the orbit spread, the blob floor and the central core have all
 // been grown so the body genuinely spans the picture, and the leftover margins
 // are covered by a far-field panel (see emitBackdrop below).
-const float HALF   = 2.70;          // the field spans [-HALF, HALF]^3
+const float HALF   = 2.70;          ///< the field spans [-HALF, HALF]^3
 
-// Metaball field.  Sums to a large value inside a blob and falls off as 1/r^2,
-// which is what makes neighbouring blobs blend into one skin instead of
-// showing a crease where they touch.
+/// Metaball field.  Sums to a large value inside a blob and falls off as 1/r^2,
+/// which is what makes neighbouring blobs blend into one skin instead of
+/// showing a crease where they touch.
 float field(vec3 p)
 {
     float f = 0.0;
@@ -119,16 +119,16 @@ float field(vec3 p)
 
 float iso() { return 1.55 * isoP; }
 
-// Outward surface normal, by central differences.  The field is analytic, but
-// a symbolic gradient of twelve reciprocal-square terms costs more than six
-// extra evaluations and gains nothing visible.
-//
-// NOTE THE SIGN: a metaball field GROWS toward the inside, so its gradient
-// points inward and the outward normal is the negated gradient.  Getting this
-// backwards is easy to miss, because a fragment shader that flips normals
-// toward the eye still lights the body plausibly — while every derived
-// quantity that actually needs the direction (thickness probes, rim terms,
-// reflections) is quietly wrong.
+/// Outward surface normal, by central differences.  The field is analytic, but
+/// a symbolic gradient of twelve reciprocal-square terms costs more than six
+/// extra evaluations and gains nothing visible.
+///
+/// NOTE THE SIGN: a metaball field GROWS toward the inside, so its gradient
+/// points inward and the outward normal is the negated gradient.  Getting this
+/// backwards is easy to miss, because a fragment shader that flips normals
+/// toward the eye still lights the body plausibly — while every derived
+/// quantity that actually needs the direction (thickness probes, rim terms,
+/// reflections) is quietly wrong.
 vec3 fieldNormal(vec3 p)
 {
     const float e = 0.012;
@@ -139,17 +139,17 @@ vec3 fieldNormal(vec3 p)
     return normalize(-g);
 }
 
-// How much body sits behind this point.  The field value AT a surface vertex is
-// useless for this — it equals the threshold by definition — so probe a fixed
-// distance inward instead: on a thin neck the field has barely risen, inside a
-// fat lobe it is far above the threshold.
+/// How much body sits behind this point.  The field value AT a surface vertex is
+/// useless for this — it equals the threshold by definition — so probe a fixed
+/// distance inward instead: on a thin neck the field has barely risen, inside a
+/// fat lobe it is far above the threshold.
 float thickness(vec3 p, vec3 n)
 {
     return clamp(field(p - n * 0.18) / max(iso(), 1e-3) - 1.0, 0.0, 1.0);
 }
 
-// kind: 0 = isosurface vertex (attrB.xyz is the field normal),
-//       1 = far-field backdrop vertex (attrB.xy carries a 0..1 panel u/v).
+/// kind: 0 = isosurface vertex (attrB.xyz is the field normal),
+///       1 = far-field backdrop vertex (attrB.xy carries a 0..1 panel u/v).
 void writeVertex(uint slot, vec3 p, vec3 n, float strength, float kind)
 {
     uint o = slot * 8u;
@@ -163,10 +163,10 @@ void writeVertex(uint slot, vec3 p, vec3 n, float strength, float kind)
     verts[o + 7u] = kind;
 }
 
-// One oversized panel far behind the sculpture, laid out directly in VIEW
-// space -- the vertex stage recognises kind = 1 and skips the body's tumble
-// for it, so it stays put while the sculpture turns.  Without it the whole
-// margin of the frame is the clear colour, i.e. nothing at all.
+/// One oversized panel far behind the sculpture, laid out directly in VIEW
+/// space -- the vertex stage recognises kind = 1 and skips the body's tumble
+/// for it, so it stays put while the sculpture turns.  Without it the whole
+/// margin of the frame is the clear colour, i.e. nothing at all.
 void emitBackdrop()
 {
     const float D  = 15.0;                       // view depth (far plane is 220)
@@ -188,9 +188,9 @@ void emitBackdrop()
     writeVertex(base + 5u, q01, vec3(0.0, 1.0, 0.0), 0.0, 1.0);
 }
 
-// Where the surface crosses the segment a-b, by linear interpolation of the
-// field values.  Snapping to the midpoint instead would quantise the whole
-// surface to the grid and make it visibly blocky at this resolution.
+/// Where the surface crosses the segment a-b, by linear interpolation of the
+/// field values.  Snapping to the midpoint instead would quantise the whole
+/// surface to the grid and make it visibly blocky at this resolution.
 vec3 lerpEdge(vec3 pa, vec3 pb, float va, float vb)
 {
     float t = clamp((iso() - va) / (vb - va), 0.0, 1.0);
@@ -213,14 +213,14 @@ void emitTri(vec3 a, vec3 b, vec3 c)
     writeVertex(base + 2u, c, nc, thickness(c, nc), 0.0);
 }
 
-// One tetrahedron.  Rather than a 16-case table, the vertices are sorted into
-// inside/outside lists and the three topologies are handled directly — the
-// same code covers a case and its complement, and there is no table to get
-// subtly wrong.
-//
-// Winding is deliberately NOT maintained: the normals come from the field
-// gradient, not from the triangle, and the fragment shader flips them toward
-// the eye.  Consistent orientation would cost sorting work that buys nothing.
+/// One tetrahedron.  Rather than a 16-case table, the vertices are sorted into
+/// inside/outside lists and the three topologies are handled directly — the
+/// same code covers a case and its complement, and there is no table to get
+/// subtly wrong.
+///
+/// Winding is deliberately NOT maintained: the normals come from the field
+/// gradient, not from the triangle, and the fragment shader flips them toward
+/// the eye.  Consistent orientation would cost sorting work that buys nothing.
 void marchTet(vec3 p0, vec3 p1, vec3 p2, vec3 p3,
               float v0, float v1, float v2, float v3)
 {
@@ -267,6 +267,7 @@ void marchTet(vec3 p0, vec3 p1, vec3 p2, vec3 p3,
     }
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

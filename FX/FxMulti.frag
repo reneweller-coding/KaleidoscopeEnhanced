@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxMulti.frag
  * @brief FX MULTI: mirrored tile grid -- the scene repeats into a "copies" x
@@ -7,19 +7,19 @@ out vec4 fragColor;
  *   audioPhase -> per-activation continuous grid spin (spinP)
  *   audioSwell -> the whole grid looms slightly closer on loudness swells
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float copies;
 uniform int rot;
 
-uniform float audioPhase;      // slow jump-free rotation of the tile grid
-uniform float audioSwell;      // slow loudness swell -> the grid looms closer
+uniform float audioPhase;      ///< slow jump-free rotation of the tile grid
+uniform float audioSwell;      ///< slow loudness swell -> the grid looms closer
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float spinP;           // grid spin speed (0 -> static, like the original)
+uniform float spinP;           ///< grid spin speed (0 -> static, like the original)
 
 vec2 clampQuadratic( vec2 p )
 {
@@ -50,6 +50,7 @@ vec2 rotate( vec2 p, float amount )
 }
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
 
     // normalize to the center

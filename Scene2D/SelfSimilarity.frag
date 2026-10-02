@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file SelfSimilarity.frag
  * @brief The SONG'S STRUCTURE as the image: the host maintains a self-similarity
@@ -20,44 +20,49 @@ out vec4 fragColor;
  * the picture grows with the song — intentional dramaturgy, not a bug.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform sampler2D texSSM;      // 256x256 similarity bytes (ring in both axes)
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texSSM;      ///< 256x256 similarity bytes (ring in both axes)
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float ssmHead;         // ring head as 0..1 texture coordinate
-uniform float ssmFill;         // 0..1 how much history exists yet
-uniform float audioBeat;
-uniform float audioOnset;
-uniform float audioPhase;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioDrop;
-uniform float audioLevel;
+uniform float ssmHead;         ///< ring head as 0..1 texture coordinate
+uniform float ssmFill;         ///< 0..1 how much history exists yet
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
 // Per-activation variety:
-uniform int   sidesP;          // kaleido fold (0/1 off; 2..8)
-uniform float zoomP;           // matrix zoom (0 -> 1.0; 0.7..1.6)
+uniform int   sidesP;          ///< kaleido fold (0/1 off; 2..8)
+uniform float zoomP;           ///< matrix zoom (0 -> 1.0; 0.7..1.6)
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief 2D rotation matrix.
 mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
 vec3 imgPal(float x)
 {
     vec2 cc = vec2(0.5) + 0.30 * vec2(cos(time * 0.041 + audioPhase * 0.10),
                                       sin(time * 0.029 + audioPhase * 0.08));
     return img(fract(cc + 0.22 * vec2(cos(x), sin(x * 1.37))));
 }
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief Kaleidoscope fold of the coordinate with the given mirrors.
 vec2 kaleido(vec2 p, float sides)
 {
     float a   = atan(p.y, p.x);
@@ -68,14 +73,15 @@ vec2 kaleido(vec2 p, float sides)
     return vec2(cos(a), sin(a)) * r;
 }
 
-// Sample the matrix in HISTORY coordinates: h = 0 is the oldest stored
-// moment, h = 1 is now.  The ring texture repeats, so head-unwrapping is a
-// simple add (wrap mode GL_REPEAT does the mod).
+/// Sample the matrix in HISTORY coordinates: h = 0 is the oldest stored
+/// moment, h = 1 is now.  The ring texture repeats, so head-unwrapping is a
+/// simple add (wrap mode GL_REPEAT does the mod).
 float ssm(vec2 h)
 {
     return texture(texSSM, h + vec2(ssmHead)).r;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

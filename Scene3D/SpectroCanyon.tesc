@@ -9,15 +9,16 @@
 // edge always agree and the walls do not split along the seams.
 layout(vertices = 4) out;
 
-in  vec2 vUV[];
-in  vec4 vSeed[];
+in  vec2 vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in  vec4 vSeed[];   ///< Per-instance random seed (from the vertex stage).
 out vec2 tcUV[];
 out vec4 tcSeed[];
 
-uniform float detailP;
+uniform float detailP;   ///< Detail knob, 0..1.
 
 const vec2 EXTENT = vec2(78.0, 260.0);
 
+/// @brief Brightness level between two coordinates.
 float levelFor(vec2 uvA, vec2 uvB)
 {
     vec2 m = mix(uvA, uvB, 0.5);
@@ -25,6 +26,7 @@ float levelFor(vec2 uvA, vec2 uvB)
     return clamp(210.0 * detailP / d, 1.0, 22.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     tcUV[gl_InvocationID]   = vUV[gl_InvocationID];

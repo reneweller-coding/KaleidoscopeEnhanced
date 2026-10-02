@@ -1,12 +1,12 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // MosaicWave.frag — front = the image; back = hue-inverted twin.  Thin dark
 // grout lines keep the mosaic readable.
-uniform sampler2D tex0;
-uniform float audioChromaHue;
-uniform float audioDrop;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
 
-in vec2  vUV;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vFlip;
 in float vLight;
 
@@ -22,6 +22,7 @@ in float vLight;
  * adds a final brightness pulse across the whole wall.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -29,6 +30,7 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 col = texture(tex0, vUV).rgb;

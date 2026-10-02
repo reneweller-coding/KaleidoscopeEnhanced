@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FluidPhotoMarblingEbru.frag
  * @brief FLUID PHOTO MARBLING EBRU: 100% viewport-filling traditional Turkish
@@ -8,47 +8,49 @@ out vec4 fragColor;
  * plumes, curling swirls, and non-Euclidean fluid streamlines.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float rakeP;
-uniform float swirlP;
-uniform float speedP;
-uniform float hueP;
+uniform float swirlP;   ///< Swirl knob, 0..1.
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
-// Overall level of the photo currently on the texture units, from a fixed
-// 5-tap grid. The whole picture here IS the photo, floated on the water bath,
-// so a bright photo left the gold veins and the surface specular no headroom
-// at all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can
-// never pop, and being one number for the whole frame it rescales exposure
-// without touching the marbling's local contrast.
+/// Overall level of the photo currently on the texture units, from a fixed
+/// 5-tap grid. The whole picture here IS the photo, floated on the water bath,
+/// so a bright photo left the gold veins and the surface specular no headroom
+/// at all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can
+/// never pop, and being one number for the whole frame it rescales exposure
+/// without touching the marbling's local contrast.
 float photoLevel() {
     vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
            + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
@@ -56,14 +58,14 @@ float photoLevel() {
     return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
 }
 
-// Mathematical Ebru Comb / Rake transformation
+/// Mathematical Ebru Comb / Rake transformation
 vec2 ebruRake(vec2 p, vec2 dir, float spacing, float speed) {
     float proj = dot(p, vec2(-dir.y, dir.x)); // Distance perpendicular to rake motion
     float wave = sin(proj * 6.2831853 / spacing + speed);
     return p + dir * (wave * 0.12);
 }
 
-// Mathematical Ebru Vortex / Droplet tine transformation
+/// Mathematical Ebru Vortex / Droplet tine transformation
 vec2 ebruVortex(vec2 p, vec2 center, float strength, float radius) {
     vec2 d = p - center;
     float dist = length(d);
@@ -72,6 +74,7 @@ vec2 ebruVortex(vec2 p, vec2 center, float strength, float radius) {
     return center + vec2(d.x * c - d.y * s, d.x * s + d.y * c);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float rk  = (rakeP  > 0.0) ? rakeP  : 1.0;
     float swl = (swirlP > 0.0) ? swirlP : 1.0;

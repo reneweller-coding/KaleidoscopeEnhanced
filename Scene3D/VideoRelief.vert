@@ -19,34 +19,36 @@
 // faceted into terraces.
 // -----------------------------------------------------------------------
 
-in vec4 attrA;      // xy = u/v across the sheet, w = cell index
-in vec4 attrB;      // per-cell hashes
+in vec4 attrA;      ///< xy = u/v across the sheet, w = cell index
+in vec4 attrB;      ///< per-cell hashes
 
 out vec2  vUv;
-out vec3  vNormal;
-out vec3  vView;
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vView;   ///< View vector (from the vertex stage).
 out float vHeight;
 
-uniform sampler2D tex0;
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
+uniform sampler2D tex0;   ///< The current photo.
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 
-uniform float reliefP;      // preset: height of the relief
-uniform float scrollP;      // preset: how fast the sheet drifts
-uniform float camDistP;
-uniform float tiltP;
+uniform float reliefP;      ///< preset: height of the relief
+uniform float scrollP;      ///< preset: how fast the sheet drifts
+uniform float camDistP;   ///< Camera distance knob, 0..1.
+uniform float tiltP;   ///< Tilt knob, 0..1.
 
+/// @brief Luminance of the photo at a coordinate.
 float lum(vec2 uv)
 {
     return dot(texture(tex0, clamp(uv, vec2(0.001), vec2(0.999))).rgb,
                vec3(0.299, 0.587, 0.114));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = attrA.xy;

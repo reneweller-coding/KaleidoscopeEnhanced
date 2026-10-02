@@ -6,23 +6,26 @@
  * the level changes continuous, so a rim never pops as the level steps.
  * EXTENT must match the evaluation stage exactly.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(vertices = 4) out;
 
-in  vec2 vUV[];
-in  vec4 vSeed[];
+in  vec2 vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in  vec4 vSeed[];   ///< Per-instance random seed (from the vertex stage).
 out vec2 tcUV[];
 out vec4 tcSeed[];
 
 const vec2 EXTENT = vec2(260.0, 210.0);
-uniform float camHP;
-uniform float detailP;
-uniform float audioSwell;
+uniform float camHP;   ///< Camera height knob, 0..1.
+uniform float detailP;   ///< Detail knob, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
+/// @brief The flat (unlit) colour at a coordinate.
 vec3 flatAt(vec2 uv)
 {
     return vec3((uv.x - 0.5) * EXTENT.x, 0.0, uv.y * EXTENT.y + 3.0);
 }
 
+/// @brief Brightness level between two coordinates.
 float levelFor(vec2 uvA, vec2 uvB)
 {
     vec3 mid = flatAt(mix(uvA, uvB, 0.5));
@@ -31,6 +34,7 @@ float levelFor(vec2 uvA, vec2 uvB)
     return clamp(190.0 * detailP * fine / max(d, 2.0), 1.0, 26.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     tcUV[gl_InvocationID]   = vUV[gl_InvocationID];

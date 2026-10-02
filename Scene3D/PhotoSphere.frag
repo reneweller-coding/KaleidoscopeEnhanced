@@ -1,20 +1,20 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // PhotoSphere.frag — the image wraps the planet twice around (mirror-folded
 // so the seam never shows); day-side lighting, a key-coloured rim, and an
 // equator flash band on the kick.
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float time;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioChromaHue;
-uniform float audioCentroid;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
 
-in vec2  vUV;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vN;
-in vec3  vView;
+in vec3  vView;   ///< View vector (from the vertex stage).
 
 /**
  * @file PhotoSphere.frag
@@ -28,6 +28,7 @@ in vec3  vView;
  * audioDrop lights the entire globe.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -36,6 +37,7 @@ vec3 hueRot(vec3 c, float a)
 }
 vec2 mfold(vec2 uv) { return abs(fract(uv * 0.5) * 2.0 - 1.0); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = vec2(vUV.x * 2.0, vUV.y);

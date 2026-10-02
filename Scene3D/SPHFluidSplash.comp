@@ -23,17 +23,18 @@
  * typed persistent regions out of the one buffer binding runGenerator()
  * already provides, no engine change needed for a second buffer.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
-const int   N          = 3000;    // particles
+const int   N          = 3000;    ///< particles
 const int   GRID_RES   = 16;
-const int   CELL_CAP   = 12;      // max particles tracked per cell
-const float DOMAIN     = 3.2;     // box half-width: [-DOMAIN, DOMAIN]^3
-const float FLOOR_Y    = -3.0;    // particles rest on this plane
+const int   CELL_CAP   = 12;      ///< max particles tracked per cell
+const float DOMAIN     = 3.2;     ///< box half-width: [-DOMAIN, DOMAIN]^3
+const float FLOOR_Y    = -3.0;    ///< particles rest on this plane
 const float CELL_SIZE  = (2.0 * DOMAIN) / float(GRID_RES);
-const float H          = CELL_SIZE;         // SPH smoothing radius
-const float REST_DENS  = 6.0;               // target rest density
-const float STIFFNESS  = 2.4;               // pressure = STIFFNESS*(density-REST_DENS)
+const float H          = CELL_SIZE;         ///< SPH smoothing radius
+const float REST_DENS  = 6.0;               ///< target rest density
+const float STIFFNESS  = 2.4;               ///< pressure = STIFFNESS*(density-REST_DENS)
 const float PARTICLE_M = 1.0;
 const float VISCOSITY  = 0.8;
 const float GRAV       = -9.0;
@@ -55,14 +56,16 @@ layout(std430, binding = 0) buffer VBO       { Vertex verts[]; };
 layout(std430, binding = 1) buffer CmdBuf    { uint cmd[]; };   // [0]=count [4]=rawCount (atomic)
 
 uniform float genPass;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioKick;
-uniform float audioLevel;
-uniform float audioSubBass;
-uniform uint  maxVertices;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float x) { return fract(sin(x * 127.1 + sceneSeed * 311.7) * 43758.5453); }
+/// @brief Pseudo-random number 0..1 from a 3D point.
 vec3  hash13(float x)
 {
     return vec3( hash11(x), hash11(x + 71.17), hash11(x + 143.71) );
@@ -87,10 +90,10 @@ void  setDens(int i, float d){ particles[i * 8 + 3] = d; }
 void  setVel(int i, vec3 v)  { int b = i * 8; particles[b+4]=v.x; particles[b+5]=v.y; particles[b+6]=v.z; }
 void  setPres(int i, float p){ particles[i * 8 + 7] = p; }
 
-// Poly6 (density) and spiky-gradient (pressure force) kernels -- the
-// standard SPH pair, chosen because poly6 is smooth (good for a scalar
-// density sum) while spiky avoids poly6's vanishing gradient at short range
-// (which would let particles pile up with no repulsion).
+/// Poly6 (density) and spiky-gradient (pressure force) kernels -- the
+/// standard SPH pair, chosen because poly6 is smooth (good for a scalar
+/// density sum) while spiky avoids poly6's vanishing gradient at short range
+/// (which would let particles pile up with no repulsion).
 float poly6(float r2, float h2)
 {
     if (r2 >= h2) return 0.0;
@@ -105,6 +108,7 @@ vec3 spikyGrad(vec3 rij, float r, float h)
     return coeff * (rij / r);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint gid = gl_GlobalInvocationID.x

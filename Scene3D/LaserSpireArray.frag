@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 
 /**
  * @file LaserSpireArray.frag
@@ -29,8 +29,9 @@ in vec3  gWorld;
 in vec4  gCol;
 in float gBeam;
 
-uniform float audioUpperMid;   // 2-6 kHz metallic / industrial edge
+uniform float audioUpperMid;   ///< 2-6 kHz metallic / industrial edge
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     if (gBeam > 0.5) {
         // Laser beam emission

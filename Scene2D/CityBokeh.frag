@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file CityBokeh.frag
  * @brief CITY LIGHTS BOKEH: a night city seen through a defocused lens — layers of
@@ -19,33 +19,36 @@ out vec4 fragColor;
  *   hueP     float global hue rotation        (0 -> none; 0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float densityP;
-uniform float sizeP;
+uniform float densityP;   ///< Density knob, 0..1.
+uniform float sizeP;   ///< Size knob, 0..1.
 uniform float driftP;
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
                           + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 345.45));
@@ -53,7 +56,7 @@ float hash21(vec2 p)
     return fract(p.x * p.y);
 }
 
-// One depth layer of bokeh discs; returns accumulated light.
+/// One depth layer of bokeh discs; returns accumulated light.
 vec3 bokehLayer(vec2 p, float scale, float drift, float size, float layerSeed)
 {
     vec3 acc = vec3(0.0);
@@ -86,6 +89,7 @@ vec3 bokehLayer(vec2 p, float scale, float drift, float size, float layerSeed)
     return acc;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float dens  = (densityP > 0.0) ? densityP : 1.0;

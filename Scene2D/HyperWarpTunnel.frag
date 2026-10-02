@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file HyperWarpTunnel.frag
  * @brief HYPER WARP TUNNEL: Full-screen infinite warp tunnel with dynamic polar
@@ -24,55 +24,56 @@ out vec4 fragColor;
  *   hueP    float global hue rotation           (0 -> none; 0..6.28)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float speedP;
+uniform float speedP;   ///< Speed knob, 0..1.
 uniform float warpP;
-uniform float twistP;
-uniform float hueP;
-uniform float audioChromaHue;
+uniform float twistP;   ///< Twist knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 const vec3 LW = vec3(0.2126, 0.7152, 0.0722);
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-// Mean colour of the CURRENT slideshow photo, for free: the slideshow textures
-// are uploaded at 1024x1024 with glGenerateMipmap (RenderPipeline.cpp), so
-// level 10 is the 1x1 mip == the exact average.  The tunnel wall is a photo
-// sample, and the photo library swings from near-black nebulae (mean luma
-// ~0.14) to bright portraits (~0.7); without this normalisation the scene's
-// whole brightness AND contrast were inherited from whichever picture happened
-// to be up, which is why it measured flat and near-black on the dark half of
-// the library.
+/// Mean colour of the CURRENT slideshow photo, for free: the slideshow textures
+/// are uploaded at 1024x1024 with glGenerateMipmap (RenderPipeline.cpp), so
+/// level 10 is the 1x1 mip == the exact average.  The tunnel wall is a photo
+/// sample, and the photo library swings from near-black nebulae (mean luma
+/// ~0.14) to bright portraits (~0.7); without this normalisation the scene's
+/// whole brightness AND contrast were inherited from whichever picture happened
+/// to be up, which is why it measured flat and near-black on the dark half of
+/// the library.
 vec3 imgDC() {
     return (interpolation * textureLod(tex0, vec2(0.5), 10.0)
           + (1.0 - interpolation) * textureLod(tex1, vec2(0.5), 10.0)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -82,11 +83,11 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// imgPalette normalised to a fixed luminance, so the tunnel's own lights
-// (rings, spokes, streaks, vanishing point) keep their brightness even when the
-// photo arc happens to land on a black patch of sky.  A nearly-black palette is
-// eased toward neutral first: dividing a (0.01,0.0,0.0) sample by its luma
-// would otherwise produce a hard, fully saturated primary.
+/// imgPalette normalised to a fixed luminance, so the tunnel's own lights
+/// (rings, spokes, streaks, vanishing point) keep their brightness even when the
+/// photo arc happens to land on a black patch of sky.  A nearly-black palette is
+/// eased toward neutral first: dividing a (0.01,0.0,0.0) sample by its luma
+/// would otherwise produce a hard, fully saturated primary.
 vec3 palNorm(float t) {
     vec3  p  = imgPalette(t);
     float pl = max(dot(p, LW), 1e-4);
@@ -95,20 +96,24 @@ vec3 palNorm(float t) {
     return pn * 0.55;
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float x) { return fract(sin(x * 41.317) * 43758.5453); }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 345.45));
     p += dot(p, p + 34.345);
     return fract(p.x * p.y);
 }
 
+/// @brief Smooth value noise.
 float noise(vec2 p) {
     vec2 i = floor(p);
     vec2 f = fract(p);
@@ -120,6 +125,7 @@ float noise(vec2 p) {
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p) {
     float v = 0.0;
     float a = 0.5;
@@ -132,6 +138,7 @@ float fbm(vec2 p) {
     return v;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float spd   = (speedP > 0.0) ? speedP : 1.0;
     float wrp   = (warpP  > 0.0) ? warpP  : 1.0;

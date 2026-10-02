@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxShroom.frag
  * @brief FX SHROOM: psychedelic "trip" warp -- a Lissajous-style offset field
  * displaces the UVs frame to frame, smeared by a short motion-blur
  * accumulation for a breathing, hallucinatory wobble.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioAdvance; // music advances the smear flow
-uniform float audioSwell;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance; ///< music advances the smear flow
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float scale;
 uniform float speed;
 uniform int negativeU;
@@ -42,6 +42,7 @@ vec2 getOffset(float time, vec2 uv)
 }
 
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
   vec2 uv = -gl_FragCoord.xy / resolution.xy;

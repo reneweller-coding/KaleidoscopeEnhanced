@@ -4,18 +4,19 @@
  * @brief Vertex stage companion to BioluminescentSiphonophoreChain.frag -- see that file's header for
  * this scene's description.
  */
-layout(location = 0) in vec4 attrA;
-layout(location = 1) in vec4 attrB;
+layout(location = 0) in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+layout(location = 1) in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioKick;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-out vec3 vWorldPos;
-out vec3 vNormal;
+out vec3 vWorldPos;   ///< World position (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
 out float vChainPhase;
 out vec2 vQuadUV;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 pos = attrA.xyz;
 

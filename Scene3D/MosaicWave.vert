@@ -9,21 +9,22 @@
 // tile under the wave.  Tiles flip around their vertical axis — the back
 // side shows a hue-shifted variant.  attrA.xy = tile corner, attrA.w = tile.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioBarPhase;
-uniform float audioKick;
-uniform float audioSwell;
+uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec2  vUV;
+out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vFlip;
 out float vLight;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float idx = attrA.w;

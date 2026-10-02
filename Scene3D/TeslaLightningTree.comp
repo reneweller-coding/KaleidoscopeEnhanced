@@ -1,4 +1,5 @@
 #version 430
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 /**
@@ -15,16 +16,17 @@ layout(std430, binding = 0) buffer Verts {
 //   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
 layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 33.33;
@@ -32,6 +34,7 @@ float hash11(float p) {
     return fract(p);
 }
 
+/// @brief Pseudo-random number 0..1 from a 3D point.
 vec3 hash31(float p) {
     vec3 p3 = fract(vec3(p) * vec3(0.1031, 0.1030, 0.0973));
     p3 += dot(p3, p3.yzx + 33.33);
@@ -46,11 +49,11 @@ vec3 hash31(float p) {
 // m_timeOffset + time*m_speedFactor to both), so the two agree exactly.
 vec3 gViewAxis = vec3(0.0, 0.0, 1.0);
 
-// attrB.x carries a per-segment GAIN.  The draw is opaque (no additive
-// blending), so a faint element cannot be made faint by drawing less of it --
-// the shading floor in the .frag lights every fragment it covers.  The gain is
-// what lets the surface creep and the corona sparks sit BEHIND the strokes in
-// brightness instead of competing with them.
+/// attrB.x carries a per-segment GAIN.  The draw is opaque (no additive
+/// blending), so a faint element cannot be made faint by drawing less of it --
+/// the shading floor in the .frag lights every fragment it covers.  The gain is
+/// what lets the surface creep and the corona sparks sit BEHIND the strokes in
+/// brightness instead of competing with them.
 void writeVertex(uint slot, vec3 p, float heat, float branchID, float gain) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
@@ -59,6 +62,7 @@ void writeVertex(uint slot, vec3 p, float heat, float branchID, float gain) {
     verts[o + 7u] = branchID;
 }
 
+/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
 void emitSegment(vec3 pA, vec3 pB, float heat, float branchID, float thickness,
                  float gain) {
     uint base = atomicAdd(cmd[4], 6u);
@@ -87,8 +91,8 @@ void emitSegment(vec3 pA, vec3 pB, float heat, float branchID, float thickness,
     writeVertex(base + 5u, b0, heat, branchID, gain);
 }
 
-// Where bolt `b` strikes the ground.  Shared by the bolt itself and by the
-// surface creep that runs outward from the same point.
+/// Where bolt `b` strikes the ground.  Shared by the bolt itself and by the
+/// surface creep that runs outward from the same point.
 vec2 strikePoint(float b) {
     float a = hash11(b * 43.3) * 6.2831853;
     float r = 1.1 + 4.7 * sqrt(hash11(b * 89.1));
@@ -102,13 +106,14 @@ vec2 strikePoint(float b) {
 // a sparse corona fills the dielectric volume around the tree.
 const uint BOLT_COUNT  = 128u;
 const uint BOLT_STEPS  = 64u;
-const uint BOLT_SEGS   = BOLT_COUNT * BOLT_STEPS;      // 8192
+const uint BOLT_SEGS   = BOLT_COUNT * BOLT_STEPS;      ///< 8192
 const uint CREEP_ARMS  = 192u;
 const uint CREEP_STEPS = 24u;
-const uint CREEP_SEGS  = CREEP_ARMS * CREEP_STEPS;     // 4608
+const uint CREEP_SEGS  = CREEP_ARMS * CREEP_STEPS;     ///< 4608
 const uint SPARK_SEGS  = 3072u;
 const float GROUND_Y   = -2.7;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);

@@ -36,32 +36,33 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioSpectrum[32];
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
 
-uniform float shellsP;      // preset: how far the outer shells reach
-uniform float tubeP;        // preset: field-line thickness
-uniform float tiltP;        // preset: dipole tilt against the view
+uniform float shellsP;      ///< preset: how far the outer shells reach
+uniform float tubeP;        ///< preset: field-line thickness
+uniform float tiltP;        ///< preset: dipole tilt against the view
 
-const int SHELLS = 18;          // distinct L values
-const int LONGS  = 16;          // lines per shell
-const int SEGS   = 34;          // segments along one line
-const int SIDES  = 4;           // cross-section of a tube
+const int SHELLS = 18;          ///< distinct L values
+const int LONGS  = 16;          ///< lines per shell
+const int SEGS   = 34;          ///< segments along one line
+const int SIDES  = 4;           ///< cross-section of a tube
 const float PLANET_R = 1.0;
 const int LINES = SHELLS * LONGS;
 
-const int SPHERE_U = 40;        // planet mesh
+const int SPHERE_U = 40;        ///< planet mesh
 const int SPHERE_V = 20;
 
-const float PI = 3.14159265;
+const float PI = 3.14159265;   ///< Pi.
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
 
 mat3 tilt()
@@ -83,7 +84,7 @@ mat3 tilt()
     return ry * rx * rz;
 }
 
-// A point on the field line (L, phi) at colatitude theta.
+/// A point on the field line (L, phi) at colatitude theta.
 vec3 linePoint(float L, float phi, float theta)
 {
     float s = sin(theta);
@@ -91,6 +92,7 @@ vec3 linePoint(float L, float phi, float theta)
     return vec3(r * s * cos(phi), r * cos(theta), r * s * sin(phi));
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float energy, float kind)
 {
     uint o = slot * 8u;
@@ -116,6 +118,7 @@ void emitTri(vec3 a, vec3 b, vec3 c, vec3 na, vec3 nb, vec3 nc,
     writeVertex(base + 2u, c, nc, energy, kind);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

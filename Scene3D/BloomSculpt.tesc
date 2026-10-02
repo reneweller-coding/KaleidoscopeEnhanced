@@ -14,13 +14,14 @@
 // -----------------------------------------------------------------------
 layout(vertices = 4) out;
 
-in  vec2 vUV[];
-in  vec4 vSeed[];
+in  vec2 vUV[];   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in  vec4 vSeed[];   ///< Per-instance random seed (from the vertex stage).
 out vec2 tcUV[];
 out vec4 tcSeed[];
 
-uniform float detailP;      // preset: subdivision quality
+uniform float detailP;      ///< preset: subdivision quality
 
+/// @brief Brightness level between two coordinates.
 float levelFor(vec2 uvA, vec2 uvB)
 {
     vec2 m = mix(uvA, uvB, 0.5);
@@ -28,6 +29,7 @@ float levelFor(vec2 uvA, vec2 uvB)
     return clamp(3.0 + 14.0 * detailP * polar, 1.0, 20.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     tcUV[gl_InvocationID]   = vUV[gl_InvocationID];

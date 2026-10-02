@@ -16,20 +16,22 @@
  * in QuaternionicJulia4DFlight.frag's main() -- this is the SAME field,
  * just computed once per voxel instead of once per ray step.
  */
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(rg32f, binding = 0) uniform image3D bakeField;
 
-uniform float time;
-uniform float audioKick;
-uniform float audioAdvance;
-uniform float speedP;   // per-activation param the .frag also reads; MUST
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float speedP;   ///< per-activation param the .frag also reads; MUST
                          // match its "t" formula or the baked hyper-rotation
                          // drifts out of sync with the live camera rotation
-uniform float sliceP;   // 4D hyperspace slice offset (feeds wCoord below)
+uniform float sliceP;   ///< 4D hyperspace slice offset (feeds wCoord below)
 
 const int   RES = 96;
-const float EXTENT = 2.2;   // bake cube spans [-EXTENT, EXTENT] on every axis
+const float EXTENT = 2.2;   ///< bake cube spans [-EXTENT, EXTENT] on every axis
 
+/// @brief 2D rotation matrix.
 mat2 rot2D(float a) {
     float c = cos(a), s = sin(a);
     return mat2(c, -s, s, c);
@@ -60,6 +62,7 @@ float qJuliaSDF(vec4 p, vec4 c, out float trap) {
     return 0.5 * r * log(r) / max(length(qp), 1e-4);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     ivec3 gid = ivec3(gl_GlobalInvocationID);
     if (gid.x >= RES || gid.y >= RES || gid.z >= RES)

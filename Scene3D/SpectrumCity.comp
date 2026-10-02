@@ -40,30 +40,32 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
 
 uniform sampler2D texSpectro;
-uniform float spectroHead;      // T coordinate of "now", continuous
+uniform float spectroHead;      ///< T coordinate of "now", continuous
 uniform float spectroFill;
 
-uniform float heightP;      // preset: tower height
-uniform float densityP;     // preset: how many lots are actually built on
-uniform float avenueP;      // preset: width of the central avenue
+uniform float heightP;      ///< preset: tower height
+uniform float densityP;     ///< preset: how many lots are actually built on
+uniform float avenueP;      ///< preset: width of the central avenue
 
-const int   COLS   = 40;        // lots across
-const int   ROWS   = 46;        // lots into the distance
+const int   COLS   = 40;        ///< lots across
+const int   ROWS   = 46;        ///< lots into the distance
 const float SPACING = 7.0;
-const float FOOT    = 4.6;      // building footprint (the rest is street)
-const float AGE_SPAN = 0.82;    // how much of the ring the city spans
+const float FOOT    = 4.6;      ///< building footprint (the rest is street)
+const float AGE_SPAN = 0.82;    ///< how much of the ring the city spans
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash1(vec2 p) { return fract(sin(dot(p, vec2(41.317, 289.113))) * 43758.5453); }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, float faceU, float faceIdx,
                  float upAmount, float lotHash, float energy)
 {
@@ -76,6 +78,7 @@ void writeVertex(uint slot, vec3 p, float faceU, float faceIdx,
     verts[o + 7u] = energy;
 }
 
+/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
 void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, float wa, float wb,
               float face, float h0, float h1, float lotHash, float energy)
 {
@@ -90,6 +93,7 @@ void emitQuad(vec3 a, vec3 b, vec3 c, vec3 d, float wa, float wb,
     writeVertex(base + 5u, d, wa, face, h1, lotHash, energy);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

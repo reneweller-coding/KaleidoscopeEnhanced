@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file RadiolarianSilicaLattice.frag
  * @brief RADIOLARIAN SILICA LATTICE: concentric glass micro-skeleton shells
@@ -10,15 +10,16 @@ out vec4 fragColor;
  *   latticeP  -> shell spacing
  */
 
-in vec4 vCol;
-in vec2 vUV;
-in vec3 vNormal;
-in vec3 vWorldPos;
+in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec3 vWorldPos;   ///< World position (from the vertex stage).
 
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec3 photo = (interpolation * texture(tex0, vUV) + (1.0 - interpolation) * texture(tex1, vUV)).rgb;
 

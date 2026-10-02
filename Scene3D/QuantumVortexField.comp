@@ -11,26 +11,29 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioHigh;
-uniform float audioSpectrum[32];
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
 
 uniform float fluxP;
-uniform float spinP;
-uniform float glowP;
+uniform float spinP;   ///< Spin knob, 0..1.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
-const int FILAMENTS = 64 * 48; // 3072 streamlines
-const int STEPS = 8;           // 8 segments per filament -> quad strip
+const int FILAMENTS = 64 * 48; ///< 3072 streamlines
+const int STEPS = 8;           ///< 8 segments per filament -> quad strip
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash1(float n) { return fract(sin(n * 143.567) * 43758.5453); }
+/// @brief Pseudo-random vec3 (each 0..1) from a float.
 vec3  hash3(float n) { return fract(sin(vec3(n * 83.34, n * 39.12, n * 67.56)) * 43758.5453); }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float hue, float glow) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
@@ -39,7 +42,7 @@ void writeVertex(uint slot, vec3 p, vec3 n, float hue, float glow) {
     verts[o + 7u] = glow;
 }
 
-// 3D Toroidal Vortex Vector Field
+/// 3D Toroidal Vortex Vector Field
 vec3 vortexField(vec3 p, float t) {
     float r = length(p.xz);
     float a = atan(p.z, p.x);
@@ -62,6 +65,7 @@ vec3 vortexField(vec3 p, float t) {
     return vToroidal + vPoloidal + lorenz;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint id = g.x + 64u * (g.y + 64u * g.z);

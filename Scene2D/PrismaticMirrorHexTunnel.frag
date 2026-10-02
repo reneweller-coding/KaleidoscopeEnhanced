@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file PrismaticMirrorHexTunnel.frag
  * @brief PRISMATIC MIRROR HEX TUNNEL: 3D Hexagonal infinity mirror tunnel with
@@ -16,37 +16,39 @@ out vec4 fragColor;
  *   audioPhase   -> phase of the haze's slow radial ripple (pre-integrated)
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;
-uniform float radiusP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float radiusP;   ///< Radius knob, 0..1.
 uniform float bounceP;
-uniform float glowP;
-uniform float hueP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t) {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
     float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
@@ -55,12 +57,12 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// Overall level of the photo currently on the texture units, from a fixed
-// 5-tap grid. Every mirror face here is photo-derived and FOUR of them are
-// summed per pixel, so a bright photo left the laser struts no headroom at
-// all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can never
-// pop, and being one number for the whole frame it rescales exposure without
-// touching local contrast.
+/// Overall level of the photo currently on the texture units, from a fixed
+/// 5-tap grid. Every mirror face here is photo-derived and FOUR of them are
+/// summed per pixel, so a bright photo left the laser struts no headroom at
+/// all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can never
+/// pop, and being one number for the whole frame it rescales exposure without
+/// touching local contrast.
 float photoLevel() {
     vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
            + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
@@ -68,8 +70,8 @@ float photoLevel() {
     return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
 }
 
-// 2D Hexagonal SDF.  `r` is the APOTHEM (centre to edge); the six vertices
-// therefore sit at radius r / cos(30 deg) = r * 1.1547, at angles k * 60 deg.
+/// 2D Hexagonal SDF.  `r` is the APOTHEM (centre to edge); the six vertices
+/// therefore sit at radius r / cos(30 deg) = r * 1.1547, at angles k * 60 deg.
 float sdHexagon(vec2 p, float r) {
     const vec3 k = vec3(-0.866025404, 0.5, 0.577350269);
     p = abs(p);
@@ -78,13 +80,13 @@ float sdHexagon(vec2 p, float r) {
     return length(p) * sign(p.y);
 }
 
-// Distance from a point in the tunnel cross-section to the nearest STRUT --
-// the six laser cords running down the hexagon's vertices.  This used to be
-// taken as the distance to the wall SURFACE, which of course falls to the hit
-// epsilon at every single wall hit: the strut glow then evaluated to ~0.92
-// for every pixel that saw a wall, the tint clamped to vec3(0.95), and the
-// whole tunnel was painted over with a flat near-white wash (measured
-// luma 0.82 at contrast 0.06).  The struts are corners, not surface.
+/// Distance from a point in the tunnel cross-section to the nearest STRUT --
+/// the six laser cords running down the hexagon's vertices.  This used to be
+/// taken as the distance to the wall SURFACE, which of course falls to the hit
+/// epsilon at every single wall hit: the strut glow then evaluated to ~0.92
+/// for every pixel that saw a wall, the tint clamped to vec3(0.95), and the
+/// whole tunnel was painted over with a flat near-white wash (measured
+/// luma 0.82 at contrast 0.06).  The struts are corners, not surface.
 float strutDist(vec2 pRot, float r) {
     float ang = atan(pRot.y, pRot.x);
     float sec = ang * 0.954929659;                 // ang / 60 deg
@@ -94,6 +96,7 @@ float strutDist(vec2 pRot, float r) {
     return length(vec2(rr * cos(da) - Rv, rr * sin(da)));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 

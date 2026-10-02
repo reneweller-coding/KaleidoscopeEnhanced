@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file ApollonianGasketNebulaFlight.frag
  * @brief APOLLONIAN GASKET NEBULA FLIGHT: 3D Raymarching camera flight through
@@ -18,37 +18,39 @@ out vec4 fragColor;
  *   audioChromaHue-> steers the nebula & metallic reflection palette
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioSubBass;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioFlux;
-uniform float audioChromaHue;
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;
-uniform float scaleP;
-uniform float densityP;
-uniform float glowP;
-uniform float hueP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float scaleP;   ///< Scale knob.
+uniform float densityP;   ///< Density knob, 0..1.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t) {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
     float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
@@ -57,12 +59,12 @@ vec3 imgPalette(float t) {
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
-// Overall level of the photo currently on the texture units, from a fixed
-// 5-tap grid. Every base colour here is photo-derived and the library spans
-// near-black to near-white, so a bright photo left the additive rim/nebula
-// terms no headroom at all. The probe rides the tex0/tex1 crossfade, so the
-// gain it feeds can never pop, and because it is one number for the whole
-// frame it rescales exposure without touching local contrast.
+/// Overall level of the photo currently on the texture units, from a fixed
+/// 5-tap grid. Every base colour here is photo-derived and the library spans
+/// near-black to near-white, so a bright photo left the additive rim/nebula
+/// terms no headroom at all. The probe rides the tex0/tex1 crossfade, so the
+/// gain it feeds can never pop, and because it is one number for the whole
+/// frame it rescales exposure without touching local contrast.
 float photoLevel() {
     vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
            + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
@@ -70,54 +72,54 @@ float photoLevel() {
     return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
 }
 
-// The fold factor of the inversion IFS. Kept as its own function because the
-// packing scale is now derived in one place: `scaleP` spans 0.7..1.4 in the
-// preset, and only the TOP of that range produced a gasket at all -- below
-// about s = 1.5 the spheres of one lattice cell swallow the camera and the
-// whole frame is the inside of a single smooth ball (measured: occupancy 0.00,
-// contrast 0.018). Remapped so the whole preset range lands in the band that
-// renders nested packings, with audioCentroid riding on top -- s never
-// multiplies `time`, so this is anti-flicker safe.
+/// The fold factor of the inversion IFS. Kept as its own function because the
+/// packing scale is now derived in one place: `scaleP` spans 0.7..1.4 in the
+/// preset, and only the TOP of that range produced a gasket at all -- below
+/// about s = 1.5 the spheres of one lattice cell swallow the camera and the
+/// whole frame is the inside of a single smooth ball (measured: occupancy 0.00,
+/// contrast 0.018). Remapped so the whole preset range lands in the band that
+/// renders nested packings, with audioCentroid riding on top -- s never
+/// multiplies `time`, so this is anti-flicker safe.
 float foldScale(float scaleMod) {
     float u = clamp((scaleMod - 0.7) / 0.7, 0.0, 1.0);
     return 1.64 + 0.16 * u + 0.05 * audioCentroid;
 }
 
-// 3D Apollonian SPHERE PACKING distance estimator.
-//
-// This used to return `0.25 * abs(p.y) / scale`, the distance to the PLANE
-// y = 0 in folded space. That estimator renders a foam whose gradient -- and
-// therefore whose surface normal -- is +-Y almost everywhere: measured over
-// 13k surface samples, |n.y| = 0.81 while |n.x| = |n.z| = 0.22. With the flight
-// climbing +Y the camera only ever saw down-facing faces, every one of them
-// turned away from the sun, so no lighting term could produce any light/dark
-// separation at all and the frame collapsed to one value.
-//
-// `length(p) - 1.0` is the distance to the SPHERE of the folded cell, which is
-// what the scene is named after in the first place, and its normal is
-// isotropic (measured |n.x| = |n.y| = |n.z| = 0.50). The division by the
-// accumulated fold factor is the usual IFS Lipschitz correction and the 0.25
-// is the safety margin; the estimate is signed, so `abs()` at the call site
-// keeps a camera that slips inside a shell marching back out.
-// Sub-bass breathing, restored as a UNIFORM SCALE around the whole estimator
-// rather than as a factor inside the fold. Evaluating map(p/b)*b is exactly the
-// same surface scaled by b, so the Lipschitz bound is preserved by
-// construction -- which is what the earlier breathing radius broke when it
-// scaled the fold from within and pushed the estimate off its bound.
-//
-// The scale is centred on the CAMERA (`c`), not on the world origin. The
-// flight runs away from the origin without bound (ro ~ t*0.55 on two axes,
-// |ro| is 16 after 20 s and 90 after two minutes), and a scale about the
-// origin moves everything near the camera by (b-1)*|ro| -- 3..20 units on a
-// lattice of period 2. Every kick therefore swapped the foam around the
-// lens for a different region of the fractal and slid it back as the
-// sub-bass released: measured as a full-frame change on each beat (frame
-// difference 43 against 8 on quiet material), i.e. a camera jump that is
-// not in `ro` at all. Scaling about the camera keeps the foam in front of
-// the lens where it is and breathes it radially -- continuous by
-// construction. The amplitude is halved as well; 22 % was sized for a
-// subtle origin-centred breath and reads as a hard zoom pump when it
-// actually happens around the viewer.
+/// 3D Apollonian SPHERE PACKING distance estimator.
+///
+/// This used to return `0.25 * abs(p.y) / scale`, the distance to the PLANE
+/// y = 0 in folded space. That estimator renders a foam whose gradient -- and
+/// therefore whose surface normal -- is +-Y almost everywhere: measured over
+/// 13k surface samples, |n.y| = 0.81 while |n.x| = |n.z| = 0.22. With the flight
+/// climbing +Y the camera only ever saw down-facing faces, every one of them
+/// turned away from the sun, so no lighting term could produce any light/dark
+/// separation at all and the frame collapsed to one value.
+///
+/// `length(p) - 1.0` is the distance to the SPHERE of the folded cell, which is
+/// what the scene is named after in the first place, and its normal is
+/// isotropic (measured |n.x| = |n.y| = |n.z| = 0.50). The division by the
+/// accumulated fold factor is the usual IFS Lipschitz correction and the 0.25
+/// is the safety margin; the estimate is signed, so `abs()` at the call site
+/// keeps a camera that slips inside a shell marching back out.
+/// Sub-bass breathing, restored as a UNIFORM SCALE around the whole estimator
+/// rather than as a factor inside the fold. Evaluating map(p/b)*b is exactly the
+/// same surface scaled by b, so the Lipschitz bound is preserved by
+/// construction -- which is what the earlier breathing radius broke when it
+/// scaled the fold from within and pushed the estimate off its bound.
+///
+/// The scale is centred on the CAMERA (`c`), not on the world origin. The
+/// flight runs away from the origin without bound (ro ~ t*0.55 on two axes,
+/// |ro| is 16 after 20 s and 90 after two minutes), and a scale about the
+/// origin moves everything near the camera by (b-1)*|ro| -- 3..20 units on a
+/// lattice of period 2. Every kick therefore swapped the foam around the
+/// lens for a different region of the fractal and slid it back as the
+/// sub-bass released: measured as a full-frame change on each beat (frame
+/// difference 43 against 8 on quiet material), i.e. a camera jump that is
+/// not in `ro` at all. Scaling about the camera keeps the foam in front of
+/// the lens where it is and breathes it radially -- continuous by
+/// construction. The amplitude is halved as well; 22 % was sized for a
+/// subtle origin-centred breath and reads as a hard zoom pump when it
+/// actually happens around the viewer.
 float mapApollonian(vec3 p, vec3 c, float s, out float orbitTrap) {
     float breath = 1.0 + 0.12 * audioSubBass;
     p = c + (p - c) / breath;
@@ -144,6 +146,7 @@ float mapD(vec3 p, vec3 c, float s) {
     return mapApollonian(p, c, s, t);
 }
 
+/// @brief Surface normal of the distance field by central differences.
 vec3 calcNormal(vec3 p, vec3 c, float s) {
     // 1.8e-3 is a little under the hit epsilon: any smaller and the difference
     // drowns in the estimator's own noise, any larger and the shell edges of
@@ -154,22 +157,23 @@ vec3 calcNormal(vec3 p, vec3 c, float s) {
                           mapD(p + e.yyx, c, s) - mapD(p - e.yyx, c, s)));
 }
 
-// Soft-max, used to carve a smooth clearance bubble around the camera out
-// of the distance field: the flight can never clip through geometry -- a
-// would-be collision becomes a soft bulge sliding past the lens.
+/// Soft-max, used to carve a smooth clearance bubble around the camera out
+/// of the distance field: the flight can never clip through geometry -- a
+/// would-be collision becomes a soft bulge sliding past the lens.
 float smax(float a, float b, float k) {
     float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
     return mix(a, b, h) + k * h * (1.0 - h);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) {
     p = fract(p * vec2(123.34, 456.21));
     p += dot(p, p + 45.32);
     return fract(p.x * p.y);
 }
 
-// Far-field star dust, spread over the whole sphere of directions so the voids
-// between gasket shells still carry content instead of reading as dead black.
+/// Far-field star dust, spread over the whole sphere of directions so the voids
+/// between gasket shells still carry content instead of reading as dead black.
 float starField(vec3 rd) {
     vec2 sv = vec2(atan(rd.z, rd.x) * 1.5915494, rd.y * 1.1) * 30.0;
     vec2 gi = floor(sv);
@@ -181,6 +185,7 @@ float starField(vec3 rd) {
     return bright * exp(-dd * 70.0);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
 

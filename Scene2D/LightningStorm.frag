@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file LightningStorm.frag
  * @brief Displays the branching electrical discharge simulated in Engine/CfxLightningStep, built around the fact that a real bolt reads mostly as afterglow rather than as the thin flash itself.
@@ -26,28 +26,28 @@ out vec4 fragColor;
 // lit-up surroundings are what the eye actually reads, so most of the work
 // here is a wide halo and using the bolt's own brightness to light the photo.
 
-uniform sampler2D tex0;
-uniform sampler2D texLightning;   // <- requests the discharge sim
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D texLightning;   ///< <- requests the discharge sim
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioBeat;
-uniform float audioDrop;
-uniform float audioChromaHue;
-uniform float audioSnare;       // snare/clap onset envelope -> thunder-flash reveal
-uniform float audioSharpness;   // 0=dull .. 1=sharp/harsh -> filament vs sheet glow
-uniform float audioZCR;         // 0=pure tone .. 1=broadband noise -> corona crackle
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSnare;       ///< snare/clap onset envelope -> thunder-flash reveal
+uniform float audioSharpness;   ///< 0=dull .. 1=sharp/harsh -> filament vs sheet glow
+uniform float audioZCR;         ///< 0=pure tone .. 1=broadband noise -> corona crackle
 
-uniform float glowP;
-uniform float skyP;               // how much of the photo the flash reveals
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float skyP;               ///< how much of the photo the flash reveals
 
-// One instance of the discharge: the raw filament plus its two halo scales.
-// Every tap is wrapped with fract(), so a sibling frame that runs off the edge
-// of the canvas re-enters on the other side instead of smearing the border
-// texel across half the sky.
+/// One instance of the discharge: the raw filament plus its two halo scales.
+/// Every tap is wrapped with fract(), so a sibling frame that runs off the edge
+/// of the canvas re-enters on the other side instead of smearing the border
+/// texel across half the sky.
 void gather(vec2 p, float jit, float zcr, float r1, float r2,
             out vec3 bolt, out vec3 nearH, out vec3 farH)
 {
@@ -65,8 +65,10 @@ void gather(vec2 p, float jit, float zcr, float r1, float r2,
     farH  *= 0.125;
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
+/// @brief Value noise with a seed.
 float vnoise(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -76,6 +78,7 @@ float vnoise(vec2 p)
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     float s = 0.0, a = 0.55;
@@ -83,6 +86,7 @@ float fbm(vec2 p)
     return s;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

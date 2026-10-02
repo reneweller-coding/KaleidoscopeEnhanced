@@ -1,4 +1,5 @@
 #version 430
+/// Layout qualifiers of this stage (work-group size, or the primitive in or out).
 layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 
 /**
@@ -20,15 +21,15 @@ layout(std430, binding = 0) buffer Verts {
 // DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
 layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float audioPhase;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioBass;
-uniform float audioMid;
-uniform float audioHigh;
-uniform float audioSwell;
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioMid;   ///< Mid band level, 0..1.
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // generator has no `resolution`; the ejecta haze is laid out for 16:9 and the
@@ -36,9 +37,10 @@ uniform float audioSwell;
 const float kTanY = 0.5206;
 const float kAsp  = 1.7778;
 
-const uint kStrands  = 192u;   // jet + torus strands
-const uint kBranches = 288u;   // + 96 ejecta-haze branches; x 64 x 6 = 110592 verts
+const uint kStrands  = 192u;   ///< jet + torus strands
+const uint kBranches = 288u;   ///< + 96 ejecta-haze branches; x 64 x 6 = 110592 verts
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float p) {
     p = fract(p * 0.1031);
     p *= p + 81.37;
@@ -46,6 +48,7 @@ float hash11(float p) {
     return fract(p);
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, float e1, float e2, float isHaze) {
     uint o = slot * 8u;
     verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
@@ -58,6 +61,7 @@ void writeVertex(uint slot, vec3 p, float e1, float e2, float isHaze) {
 // camera looks along this world-space axis.
 const vec3 kViewAxis = vec3(0.0, 0.52269, 0.85252);
 
+/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
 void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness, float isHaze) {
     uint base = atomicAdd(cmd[4], 6u);
     if (base + 6u > maxVertices) return;
@@ -89,6 +93,7 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness, float is
     writeVertex(base + 5u, b0, e1, e2, isHaze);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     uvec3 g = gl_GlobalInvocationID;
     uint idx = g.x + 64u * (g.y + 64u * g.z);

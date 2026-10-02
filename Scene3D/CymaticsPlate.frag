@@ -1,9 +1,9 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;
-uniform float audioKick;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // CymaticsPlate.frag — sand grain sprite (additive): a bright core with a
 // broad halo, so converged nodal lines read as glowing figures.
 //
@@ -18,7 +18,7 @@ uniform float audioKick;
 // moved the frame mean by barely a fifth.  Spreading the same light over more
 // pixels is the only lever that works, so the core is broad and the halo
 // carries real weight.
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 
 /**
  * @file CymaticsPlate.frag
@@ -32,6 +32,7 @@ in vec4 vCol;
  * computed upstream in this scene's vertex/compute stage.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

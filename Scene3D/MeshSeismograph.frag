@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file MeshSeismograph.frag
  * @brief MESH SEISMOGRAPH: a real drum seismograph -- the cast-iron base
@@ -21,41 +21,44 @@ out vec4 fragColor;
  * Per-instance: sizeP, drumP, drumXP/YP/ZP. Per-activation variety: hueP.
  */
 
-uniform sampler2DArray texMeshMaterial;     // the base
-uniform int   texMeshMaterialLayers;
-uniform sampler2DArray texMeshMaterial2;    // the drum
+uniform sampler2DArray texMeshMaterial;     ///< the base
+uniform int   texMeshMaterialLayers;   ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial2;    ///< the drum
 uniform int   texMeshMaterialLayers2;
 
-uniform sampler2D texSpectro;   // 32 log-spaced bands across, ~20 s of history down (ring)
-uniform float spectroHead;      // T coordinate of "now"
+uniform sampler2D texSpectro;   ///< 32 log-spaced bands across, ~20 s of history down (ring)
+uniform float spectroHead;      ///< T coordinate of "now"
 uniform float spectroFill;
 
-uniform float time;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioLevel;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float hueP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec2  vUV;
-in vec3  vNormal;
-in vec3  vPos;
-in vec3  vLocal;
-in float vBg;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vLocal;   ///< Object-space position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 in float vDrum;
 in float vTurn;
 
 const float kDist   = 46.0;
 const float kGround = -16.0;
 const float kRate   = 0.35;
-const float kPenAngle = 1.5708;   // the pen touches the top of the drum (+Y in the drum's frame at turn 0)
+const float kPenAngle = 1.5708;   ///< the pen touches the top of the drum (+Y in the drum's frame at turn 0)
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+/// @brief Smooth 2D value noise, 0..1.
 float noise2(vec2 x) {
     vec2 i = floor(x), f = fract(x);
     f = f * f * (3.0 - 2.0 * f);
@@ -63,6 +66,7 @@ float noise2(vec2 x) {
     float c = hash21(i + vec2(0.0, 1.0)), d = hash21(i + vec2(1.0, 1.0));
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
+/// @brief Exposure that brings the material's average brightness to a common level.
 float materialExposure(sampler2DArray tex)
 {
     vec3 avg = textureLod(tex, vec3(0.5, 0.5, 0.0), 20.0).rgb;
@@ -70,6 +74,7 @@ float materialExposure(sampler2DArray tex)
     return clamp(0.28 / max(l, 0.02), 0.60, 1.8);
 }
 
+/// @brief The sky colour for a direction.
 vec3 renderSky(vec3 dir)
 {
     float swell = clamp(audioSwell, 0.0, 1.0);
@@ -95,6 +100,7 @@ vec3 renderSky(vec3 dir)
     return col;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if (vBg > 0.5)

@@ -1,15 +1,15 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Ocean.frag — water shading for the tessellated surface.
 // Fresnel decides the mix: looking down you see into the water, looking
 // toward the horizon it turns into a mirror.  That single term is what makes
 // a water shader read as water rather than as blue plastic.
 
-in vec3  vWorld;
+in vec3  vWorld;   ///< World position (from the vertex stage).
 in vec2  vSurfUV;
 in float vFoam;
-in vec3  vNormal;
-in float vDist;
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in float vDist;   ///< Distance (from the vertex stage).
 
 /**
  * @file Ocean.frag
@@ -27,22 +27,23 @@ in float vDist;
  * vector.
  */
 
-uniform sampler2D tex0;      // the slideshow photo = the sky this sea reflects
-uniform float interpolation;
-uniform float time;
+uniform sampler2D tex0;      ///< the slideshow photo = the sky this sea reflects
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float camHP;
+uniform float camHP;   ///< Camera height knob, 0..1.
 uniform float foamP;
 uniform float glitterP;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 n = normalize(vNormal);

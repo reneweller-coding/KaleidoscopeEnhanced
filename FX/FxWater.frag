@@ -1,41 +1,41 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxWater.frag
  * @brief FX WATER: multi-directional ripple interference pattern refracts and
  * specular-highlights the scene like light through a rippling water surface.
  */
-uniform vec2 resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float audioAdvance; // integrated music energy: ripples speed up smoothly
-uniform float audioBeat;
+uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float audioAdvance; ///< integrated music energy: ripples speed up smoothly
+uniform float audioBeat;   ///< Beat envelope, 0..1.
 
 
 
 
-const float PI = 3.1415926535897932;
+const float PI = 3.1415926535897932;   ///< Pi.
 
 // play with these parameters to custimize the effect
 // ===================================================
 
 //speed
-const float speed = 0.1;//0.2;
-const float speed_x = 0.01;//0.3;
-const float speed_y = 0.01;//0.3;
+const float speed = 0.1;///< 0.2;
+const float speed_x = 0.01;///< 0.3;
+const float speed_y = 0.01;///< 0.3;
 
 // refraction
 const float emboss = 0.50;
 const float intensity = 2.4;
-const int steps = 4;//8;
+const int steps = 4;///< 8;
 const float frequency = 6.0;
-const int angle = 7; // better when a prime
+const int angle = 7; ///< better when a prime
 
 // reflection
-const float delta = 120.0;//60.;
-const float intence = 120.0;//700.;
+const float delta = 120.0;///< 60.;
+const float intence = 120.0;///< 700.;
 
 const float reflectionCutOff = 0.012;
 const float reflectionIntence = 200000.;
@@ -63,6 +63,7 @@ const float reflectionIntence = 200000.;
 
 //---------- main
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main(void)
 {
 vec2 p = (gl_FragCoord.xy) / resolution.xy, c1 = p, c2 = p;

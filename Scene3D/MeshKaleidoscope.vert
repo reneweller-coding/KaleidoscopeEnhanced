@@ -13,28 +13,29 @@
  * Audio here: none in the geometry (rule V7d) -- light and colour live in
  * the fragment stage.
  */
-in vec4 attrA;   // mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   // mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.
+in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform int   meshVertexCount;
-uniform int   meshInstances;
-uniform vec3  meshExtent;
-uniform vec3  meshCenter;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform int   meshInstances;   ///< Number of mesh instances.
+uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
 
-uniform float ringP;     // radius of the ring of copies, in object radii
-uniform float sizeP;
+uniform float ringP;     ///< radius of the ring of copies, in object radii
+uniform float sizeP;   ///< Size knob, 0..1.
 
-out vec2 vUV;
-out vec3 vNormal;
-out vec3 vPos;
-out float vBg;
+out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec3 vPos;   ///< Position (from the vertex stage).
+out float vBg;   ///< Background flag (from the vertex stage).
 out float vCopy;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     bool isBg = gl_VertexID >= meshVertexCount;

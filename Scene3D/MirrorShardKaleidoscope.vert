@@ -13,32 +13,32 @@
  *   audioSwell     -> camera distance breathes
  */
 
-in vec4 attrA;   // .xyz = unit-cube corner (-0.5..0.5), .w = cube index
-in vec4 attrB;   // 4 random seeds in [0,1)
+in vec4 attrA;   ///< .xyz = unit-cube corner (-0.5..0.5), .w = cube index
+in vec4 attrB;   ///< 4 random seeds in [0,1)
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 uniform float cubeBudget;
 
-uniform float audioAdvance;
-uniform float audioPhase;
-uniform float audioBeatPhase;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform int   sidesP;      // kaleidoscope wedge count (0 -> 6; 4..9)
-uniform float tiltP;       // per-shard tilt amplitude (0 -> 1.0; 0.6..1.6)
-uniform float shardP;      // shard size (0 -> 1.0; 0.7..1.3)
-uniform float hueP;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform int   sidesP;      ///< kaleidoscope wedge count (0 -> 6; 4..9)
+uniform float tiltP;       ///< per-shard tilt amplitude (0 -> 1.0; 0.6..1.6)
+uniform float shardP;      ///< shard size (0 -> 1.0; 0.7..1.3)
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-out vec3 vNormal;
-out vec3 vWorldPos;
+out vec3 vNormal;   ///< Surface normal (from the vertex stage).
+out vec3 vWorldPos;   ///< World position (from the vertex stage).
 out vec3 vTint;
 out float vFlash;
 
@@ -46,11 +46,12 @@ const float NUM_CUBES  = 4900.0;
 const float NUM_RINGS  = 8.0;
 const float PER_RING   = NUM_CUBES / NUM_RINGS;
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
-// IMG-PALETTE (house standard): see Tools/SHADER_AUTHORING.md V8b.
+/// IMG-PALETTE (house standard): see Tools/SHADER_AUTHORING.md V8b.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,12 +61,14 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main() {
     float i = attrA.w;
 

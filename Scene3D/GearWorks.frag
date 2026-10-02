@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // GearWorks.frag — brass faces with machined luminous edges (depth-tested).
-in vec4 vCol;
+in vec4 vCol;   ///< Colour (from the vertex stage).
 in vec3 vCorner;
 
 /**
@@ -15,6 +15,7 @@ in vec3 vCorner;
  * audio reactivity arrives already baked into that per-vertex color.
  */
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 a = abs(vCorner) * 2.0;

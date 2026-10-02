@@ -4,19 +4,20 @@
  * @brief Vertex stage companion to SPHFluidSplash.frag -- see that file's
  * header and SPHFluidSplash.comp for this scene's description.
  */
-in vec4 attrA;   // xyz = world position, w = particle index
-in vec4 attrB;   // xyz = per-particle hash seed, w = density/REST_DENS
+in vec4 attrA;   ///< xyz = world position, w = particle index
+in vec4 attrB;   ///< xyz = per-particle hash seed, w = density/REST_DENS
 
-out vec3  vWorld;
-out vec3  vSeed;
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vSeed;   ///< Per-instance random seed (from the vertex stage).
 out float vDensRatio;
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
-uniform float audioAdvance;
-uniform float audioSwell;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 worldP = attrA.xyz;

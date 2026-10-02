@@ -7,21 +7,22 @@
 // GrassField.vert — one vertex per blade: place its root, nothing more.
 // The blade itself is grown in the geometry shader.
 
-in vec4 attrA;      // w = blade index
-in vec4 attrB;      // four hashes
+in vec4 attrA;      ///< w = blade index
+in vec4 attrB;      ///< four hashes
 
 out vec3  gRoot;
 out vec4  gRnd;
 out float gIndex;
 
-uniform float audioAdvance;
-uniform float sceneSeed;
-uniform float time;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
 // Field size.  z runs ahead of the camera (the engine projects with -z).
 const float FIELD_W = 26.0;
 const float FIELD_D = 55.0;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float idx = attrA.w;

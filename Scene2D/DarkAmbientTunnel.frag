@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file DarkAmbientTunnel.frag
  * @brief Atmospheric void tunnel designed for dark ambient and drone music.
@@ -14,11 +14,11 @@ out vec4 fragColor;
  *   audioLevel    → slow breathing luminance
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float speedTunnel;
 uniform float speed;
 uniform int   sides;
@@ -26,22 +26,23 @@ uniform float power;
 uniform int   rotate;
 
 // Core audio uniforms (uploaded by EffectShader::applyAudioFeatures)
-uniform float audioBeat;       // decaying beat pulse 0..1
-uniform float audioLevel;      // overall smoothed loudness 0..1
-uniform float audioFlip;       // rotation direction +1 or -1
-uniform float audioCentroid;   // tonal brightness 0=dark drone 1=bright shimmer
-uniform float audioFlux;       // spectral change rate 0..1
+uniform float audioBeat;       ///< decaying beat pulse 0..1
+uniform float audioLevel;      ///< overall smoothed loudness 0..1
+uniform float audioFlip;       ///< rotation direction +1 or -1
+uniform float audioCentroid;   ///< tonal brightness 0=dark drone 1=bright shimmer
+uniform float audioFlux;       ///< spectral change rate 0..1
 
 // 6-band extras (only used by this shader; other shaders get -1 silently)
-uniform float audioSubBass;    // 20-60 Hz  physical rumble / sub-bass weight
-uniform float audioLowMid;     // 150-500 Hz harmonic warmth / pad body
+uniform float audioSubBass;    ///< 20-60 Hz  physical rumble / sub-bass weight
+uniform float audioLowMid;     ///< 150-500 Hz harmonic warmth / pad body
 
 // Integrated, jump-free audio motion (computed once per frame on the host)
-uniform float audioPhase;      // audio rotation phase (radians)
-uniform float audioAdvance;    // audio tunnel forward advance
+uniform float audioPhase;      ///< audio rotation phase (radians)
+uniform float audioAdvance;    ///< audio tunnel forward advance
 
-const float PI = 3.14159265358979;
+const float PI = 3.14159265358979;   ///< Pi.
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // ---- Normalise to centred coordinates ----

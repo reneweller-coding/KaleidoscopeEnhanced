@@ -1,16 +1,16 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // Skyburst.frag — sparks are emissive, so there is no lighting here at all.
 // What there IS: a colour that cools along the trail.  A burning ember goes
 // from white-hot through yellow to red as it loses heat, and reproducing that
 // gradient along each streak is what separates a firework from confetti.
 
-in vec3  vWorld;
-in float vAge;         // 0 at the spark's head, 1 at the tail / sky elevation
-in float vHue;         // shell hue / sky azimuth
+in vec3  vWorld;   ///< World position (from the vertex stage).
+in float vAge;         ///< 0 at the spark's head, 1 at the tail / sky elevation
+in float vHue;         ///< shell hue / sky azimuth
 in float vBright;
-in float vDist;
-in float vKind;        // 0 = spark trail, 1 = sky dome
+in float vDist;   ///< Distance (from the vertex stage).
+in float vKind;        ///< 0 = spark trail, 1 = sky dome
 
 /**
  * @file Skyburst.frag
@@ -35,33 +35,34 @@ in float vKind;        // 0 = spark trail, 1 = sky dome
  * audioBeat/audioSubBass pulse it with everything else.
  */
 
-uniform sampler2D tex0;
-uniform float interpolation;
-uniform float time;
+uniform sampler2D tex0;   ///< The current photo.
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float glowP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float skyP;
-uniform sampler2D tex1;
-uniform float audioAdvance;
-uniform float audioValence;
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -83,11 +84,13 @@ vec3 imgPalette(float t)
                clamp((k - 1.4) * 0.35, 0.0, 0.5));
 }
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if (vKind > 0.5)

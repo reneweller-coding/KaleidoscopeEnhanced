@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file BookPagesTunnel.frag
  * @brief BOOK PAGES TUNNEL: a tunnel whose walls are the pages of a book,
@@ -17,29 +17,31 @@ out vec4 fragColor;
  *
  * Per-activation variety: pagesP (pages per unit), sizeP, hueP.
  */
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;
-uniform float sceneTime;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioChromaHue;
-uniform float audioValence;
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float pagesP;
-uniform float sizeP;
-uniform float hueP;
+uniform float sizeP;   ///< Size knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -49,11 +51,12 @@ vec3 imgPalette(float t)
     return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief Pseudo-random number 0..1 from a float.
 float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
 
-// Intersect a ray with a rectangular page: a quad in the plane through the
-// spine (the x axis at height 0, running along z) tilted by angle `ang`.
-// Returns t, and uv on the page, or t < 0.
+/// Intersect a ray with a rectangular page: a quad in the plane through the
+/// spine (the x axis at height 0, running along z) tilted by angle `ang`.
+/// Returns t, and uv on the page, or t < 0.
 vec3 hitPage(vec3 ro, vec3 rd, float zc, float ang, float w, float h)
 {
     // Page plane: contains the spine line (y = 0, z = zc) along x, rotated
@@ -73,8 +76,8 @@ vec3 hitPage(vec3 ro, vec3 rd, float zc, float ang, float w, float h)
     return vec3(t, u / w * 0.5 + 0.5, v / h);
 }
 
-// Shade one page hit: the photo on the front, its palette negative on the
-// back, a reading light from above, a kick-lit edge, faint text lines.
+/// Shade one page hit: the photo on the front, its palette negative on the
+/// back, a reading light from above, a kick-lit edge, faint text lines.
 vec3 shadePage(vec3 best, float bestAng, vec3 rd, float hue)
 {
     vec3 n = vec3(0.0, -sin(bestAng), cos(bestAng));
@@ -94,6 +97,7 @@ vec3 shadePage(vec3 best, float bestAng, vec3 rd, float hue)
     return mix(col, imgPalette(hue * 0.159 + 0.6) * 0.25, clamp(fog, 0.0, 0.85));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;

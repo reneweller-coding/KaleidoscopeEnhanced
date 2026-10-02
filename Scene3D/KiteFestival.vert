@@ -6,18 +6,19 @@
  * the camera at the origin, +z ahead).  Kind, seed and photo uv are handed
  * to the fragment stage.  No camera motion.
  */
-layout(location = 0) in vec4 attrA;   // xyz = position, w = id
-layout(location = 1) in vec4 attrB;   // x = seed/lit, y = kind, zw = uv
+layout(location = 0) in vec4 attrA;   ///< xyz = position, w = id
+layout(location = 1) in vec4 attrB;   ///< x = seed/lit, y = kind, zw = uv
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-out vec2 vTexCoord;
-out vec3 vWorld;
-out float vKind;
+out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out vec3 vWorld;   ///< World position (from the vertex stage).
+out float vKind;   ///< Element kind (from the vertex stage).
 out float vLit;
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 vp = attrA.xyz;

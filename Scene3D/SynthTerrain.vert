@@ -9,23 +9,24 @@
 // spectrum bands.  The grid mesh (attrA.xy = u/v) is displaced here; the
 // fragment shader draws the glowing grid lines.
 
-in vec4 attrA;
-in vec4 attrB;
+in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
+in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float time;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;
-uniform float audioSpectrum[32];
-uniform float audioSwell;
-uniform float audioKick;
-uniform float audioDrop;
-uniform float audioBeatPhase;
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
 
-out vec3  vWorld;    // x, zAbs, height (for the fragment grid lines)
-out float vDist;
+out vec3  vWorld;    ///< x, zAbs, height (for the fragment grid lines)
+out float vDist;   ///< Distance (from the vertex stage).
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float u = attrA.x, v = attrA.y;

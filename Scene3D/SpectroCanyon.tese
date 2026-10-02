@@ -22,27 +22,27 @@ layout(quads, fractional_odd_spacing, ccw) in;
 in  vec2 tcUV[];
 in  vec4 tcSeed[];
 
-out vec3  vWorld;
-out vec3  vNormal;
-out float vEnergy;      // spectrogram value at this point
-out float vFreq;        // 0 = bass (outer wall), 1 = treble (floor)
-out float vDist;
+out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vEnergy;      ///< spectrogram value at this point
+out float vFreq;        ///< 0 = bass (outer wall), 1 = treble (floor)
+out float vDist;   ///< Distance (from the vertex stage).
 
-uniform mat4  projM;
-uniform float eyeOff;
-uniform float audioAdvance;
-uniform float audioSwell;   // slow envelope, the calm replacement for the fast one (V7d)
-uniform float audioSubBass;
-uniform float audioLevel;
+uniform mat4  projM;   ///< Projection matrix.
+uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< slow envelope, the calm replacement for the fast one (V7d)
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioLevel;   ///< Overall loudness, 0..1.
 
 uniform sampler2D texSpectro;
-uniform float spectroHead;      // T coordinate of "now", continuous
+uniform float spectroHead;      ///< T coordinate of "now", continuous
 uniform float spectroFill;
 
-uniform float camHP;        // preset: eye height above the floor
-uniform float time;
-uniform float heightP;      // preset: how tall the music builds
-uniform float wallP;        // preset: the canyon's own V profile
+uniform float camHP;        ///< preset: eye height above the floor
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float heightP;      ///< preset: how tall the music builds
+uniform float wallP;        ///< preset: the canyon's own V profile
 
 // Must match SpectroCanyon.tesc exactly, or the two stages place the same
 // patch in different spots and the walls tear along every seam.
@@ -88,6 +88,7 @@ float terrain(vec2 uv, out float energy, out float freq)
     return (base + energy * heightP * (0.35 + 0.65 * v)) * 30.0;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Creature.frag
  * @brief GEOM="MESH" FAMILY: a sea creature (jellyfish, manta, humpback,
@@ -19,34 +19,37 @@ out vec4 fragColor;
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform sampler2DArray texMeshMaterial;
-uniform int texMeshMaterialLayers;
+uniform sampler2DArray texMeshMaterial;   ///< The mesh's material textures (albedo, roughness, normal ...).
+uniform int texMeshMaterialLayers;   ///< Number of layers in texMeshMaterial.
 
-uniform float time;
-uniform float audioAdvance;
-uniform float audioKick;
-uniform float audioSwell;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;
-uniform float glowP;
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 
-in vec2  vUV;
-in vec3  vNormal;
-in vec3  vPos;
-in vec3  vLocalPos;
-in float vBg;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
+in float vBg;   ///< Background flag (from the vertex stage).
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a) {
     vec3 k = vec3(0.57735026919);
     float cs = cos(a), sn = sin(a);
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a 3D point.
 float hash13(vec3 p) {
     p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
     p *= 17.0;
     return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
 }
+/// @brief Smooth 3D value noise, 0..1.
 float noise3(vec3 x) {
     vec3 i = floor(x), f = fract(x);
     f = f * f * (3.0 - 2.0 * f);
@@ -58,9 +61,9 @@ float noise3(vec3 x) {
                mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
 }
 
-// Caustics: two counter-drifting noise fields, each sharpened to a ridge by
-// folding around 0.5. Where the two ridge sets cross you get the bright
-// knots real caustics show, which a single field never produces.
+/// Caustics: two counter-drifting noise fields, each sharpened to a ridge by
+/// folding around 0.5. Where the two ridge sets cross you get the bright
+/// knots real caustics show, which a single field never produces.
 float caustic(vec2 p, float t)
 {
     float a = 1.0 - abs(noise3(vec3(p * 3.1, t * 0.25)) * 2.0 - 1.0);
@@ -69,8 +72,8 @@ float caustic(vec2 p, float t)
 }
 
 // ---- Sky shell: the water column. Bright green-blue toward the surface
-// overhead, falling off to near-black below; caustics only where you can
-// actually see the surface, plus marine snow drifting through. ----
+/// overhead, falling off to near-black below; caustics only where you can
+/// actually see the surface, plus marine snow drifting through. ----
 vec3 renderSky(vec3 dir)
 {
     float up = dir.y;
@@ -104,15 +107,15 @@ vec3 renderSky(vec3 dir)
 }
 
 // ---- normal mapping ------------------------------------------------------
-// Layer 2 of the material array is a tangent-space normal map, present on the
-// assets whose generator run produced a usable one (about a fifth of them).
-//
-// There are no tangents in the vertex format -- it is a fixed 8 floats shared
-// by every geom kind -- so the frame is rebuilt per fragment from screen-space
-// derivatives of position and UV. That is the standard cotangent-frame trick,
-// and it costs nothing in the vertex stage and no change to the buffer layout.
-// A model WITHOUT a normal map has materialLayers < 3 and this returns the
-// interpolated normal untouched, so every scene works either way.
+/// Layer 2 of the material array is a tangent-space normal map, present on the
+/// assets whose generator run produced a usable one (about a fifth of them).
+///
+/// There are no tangents in the vertex format -- it is a fixed 8 floats shared
+/// by every geom kind -- so the frame is rebuilt per fragment from screen-space
+/// derivatives of position and UV. That is the standard cotangent-frame trick,
+/// and it costs nothing in the vertex stage and no change to the buffer layout.
+/// A model WITHOUT a normal map has materialLayers < 3 and this returns the
+/// interpolated normal untouched, so every scene works either way.
 mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
 {
     vec3 dp1 = dFdx(p),  dp2 = dFdy(p);
@@ -125,6 +128,7 @@ mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
     return mat3(T * inv, B * inv, N);
 }
 
+/// @brief The normal tilted by the material's normal map.
 vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength)
 {
     if (layers < 3) return n;
@@ -136,6 +140,7 @@ vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, f
     return normalize(cotangentFrame(n, wpos, uv) * normalize(m));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     if (vBg > 0.5)

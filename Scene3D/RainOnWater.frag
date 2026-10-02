@@ -1,16 +1,16 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // RainOnWater.frag — ink-dark water under a low moon, ripple rings catching
 // its long trembling reflection, drizzle falling through the night sky behind.
-uniform float time;
-uniform float audioChromaHue;
-uniform float audioSwell;
-uniform float audioMode;
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHat;
 
-in vec3  vWorld;
+in vec3  vWorld;   ///< World position (from the vertex stage).
 in float vSlope;
-in float vDist;
+in float vDist;   ///< Distance (from the vertex stage).
 in float vSky;
 
 /**
@@ -44,6 +44,7 @@ in float vSky;
  *   audioZCR       -> fine wind-chop grain across the whole surface (.vert)
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -51,8 +52,10 @@ vec3 hueRot(vec3 c, float a)
     return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
 }
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 
+/// @brief Value noise with a seed.
 float vnoise(vec2 p)
 {
     vec2 i = floor(p), f = fract(p);
@@ -62,6 +65,7 @@ float vnoise(vec2 p)
     return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     float s = 0.0, a = 0.55;
@@ -72,8 +76,9 @@ float fbm(vec2 p)
 // Where the moon hangs, in angular coordinates (radians off the view axis).
 const float kMoonX = 0.031;
 const float kMoonY = 0.055;
-const float kTanY  = 0.5206;      // tan(55 deg / 2) -- the scene projection
+const float kTanY  = 0.5206;      ///< tan(55 deg / 2) -- the scene projection
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Angular position of this fragment: world offset over distance.  Both

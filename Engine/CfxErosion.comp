@@ -29,33 +29,35 @@ layout(local_size_x = 256) in;
 
 layout(rgba16f, binding = 0) uniform image2D imgLand;   // R=height, G=water, B=sediment
 
-uniform ivec2 size;
+uniform ivec2 size;   ///< Size of the simulation grid in cells.
 uniform uint  count;
 uniform uint  frame;
-uniform float rain;        // erosion strength
-uniform float capacityK;   // how much sediment the water can carry
+uniform float rain;        ///< erosion strength
+uniform float capacityK;   ///< how much sediment the water can carry
 
 const int STEPS = 64;
 
+/// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg(inout uint s)
 {
     s = s * 747796405u + 2891336453u;
     uint w = ((s >> ((s >> 28) + 4u)) ^ s) * 277803737u;
     return (w >> 22) ^ w;
 }
+/// @brief Random number 0..1 from a PCG state.
 float rnd(inout uint s) { return float(pcg(s)) * (1.0 / 4294967296.0); }
 
 float hAt(ivec2 p) { return imageLoad(imgLand, clamp(p, ivec2(0), size - ivec2(1))).r; }
 
-// Only the HEIGHT is written back.  An accumulated "water" channel was the
-// obvious idea and the wrong one: droplets keep visiting the same texels and
-// nothing ever drains it, so within seconds the whole map reads as flooded.
-// The display derives wetness from the terrain's own concavity instead.
-// Spread over a 3x3 kernel.  Applying erosion to the single texel the droplet
-// stands on is a positive feedback at PIXEL scale — a texel that gets cut is
-// lower, so the next droplet cuts it again — and the terrain dissolves into
-// per-pixel noise instead of valleys.  The kernel low-passes that feedback,
-// which is why every serious droplet-erosion implementation uses one.
+/// Only the HEIGHT is written back.  An accumulated "water" channel was the
+/// obvious idea and the wrong one: droplets keep visiting the same texels and
+/// nothing ever drains it, so within seconds the whole map reads as flooded.
+/// The display derives wetness from the terrain's own concavity instead.
+/// Spread over a 3x3 kernel.  Applying erosion to the single texel the droplet
+/// stands on is a positive feedback at PIXEL scale — a texel that gets cut is
+/// lower, so the next droplet cuts it again — and the terrain dissolves into
+/// per-pixel noise instead of valleys.  The kernel low-passes that feedback,
+/// which is why every serious droplet-erosion implementation uses one.
 void addAt(ivec2 p, float dh)
 {
     for (int oy = -1; oy <= 1; ++oy)
@@ -70,6 +72,7 @@ void addAt(ivec2 p, float dh)
     }
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

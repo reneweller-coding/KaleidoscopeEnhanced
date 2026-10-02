@@ -36,18 +36,18 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
 layout(std430, binding = 0) buffer Verts { float verts[]; };
 layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
 
-uniform uint  maxVertices;
-uniform float time;
-uniform float sceneSeed;
-uniform float audioAdvance;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioSubBass;
-uniform float audioChroma[12];
+uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
 
-uniform float sizeP;        // preset: figure size
-uniform float dampP;        // preset: how fast the pendulum decays
-uniform float wireP;        // preset: wire thickness
+uniform float sizeP;        ///< preset: figure size
+uniform float dampP;        ///< preset: how fast the pendulum decays
+uniform float wireP;        ///< preset: wire thickness
 
 const int STEPS = 3600;
 const int SIDES = 5;
@@ -68,8 +68,8 @@ const vec2 JUST[12] = vec2[12](
     vec2(15.0, 8.0)   // major seventh
 );
 
-// The curve.  Three damped pendulums, the classic harmonograph: two driving
-// the plane and one the depth.
+/// The curve.  Three damped pendulums, the classic harmonograph: two driving
+/// the plane and one the depth.
 vec3 curveAt(float t, vec2 ratio, float damp)
 {
     float a = ratio.x, b = ratio.y;
@@ -82,6 +82,7 @@ vec3 curveAt(float t, vec2 ratio, float damp)
                 sin(c * t * 0.5 + ph * 0.7)) * d * sizeP * 2.6;
 }
 
+/// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex(uint slot, vec3 p, vec3 n, float along, float energy)
 {
     uint o = slot * 8u;
@@ -91,6 +92,7 @@ void writeVertex(uint slot, vec3 p, vec3 n, float along, float energy)
     verts[o + 7u] = energy;
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

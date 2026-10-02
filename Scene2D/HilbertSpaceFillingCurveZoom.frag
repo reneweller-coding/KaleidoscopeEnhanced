@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file HilbertSpaceFillingCurveZoom.frag
  * @brief HILBERT SPACE FILLING CURVE: a true Hilbert curve (order 7, one
@@ -23,32 +23,34 @@ out vec4 fragColor;
  * lineThicknessP, glowP, hueP.
  */
 
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;
-uniform float sceneAdvance;
-uniform float audioAdvance;
-uniform float audioSwell;
-uniform float audioLevel;
-uniform float audioKick;
-uniform float audioCentroid;
-uniform float audioValence;
-uniform float audioChromaHue;
+uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float speedP;
-uniform float scaleP;
+uniform float speedP;   ///< Speed knob, 0..1.
+uniform float scaleP;   ///< Scale knob.
 uniform float lineThicknessP;
-uniform float glowP;
-uniform float hueP;
+uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
+/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
 vec3 imgPalette(float t) {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
     float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
@@ -62,9 +64,9 @@ vec3 spectral(float x)
     return clamp(abs(fract(x + vec3(0.0, 2.0 / 3.0, 1.0 / 3.0)) * 6.0 - 3.0) - 1.0, 0.0, 1.0);
 }
 
-const int N = 128;                  // order 7
+const int N = 128;                  ///< order 7
 
-// Hilbert index of cell p (the classic xy2d).
+/// Hilbert index of cell p (the classic xy2d).
 int xy2d(ivec2 p)
 {
     int d = 0;
@@ -80,7 +82,7 @@ int xy2d(ivec2 p)
     return d;
 }
 
-// Cell of Hilbert index d (the classic d2xy).
+/// Cell of Hilbert index d (the classic d2xy).
 ivec2 d2xy(int d)
 {
     ivec2 p = ivec2(0);
@@ -98,6 +100,7 @@ ivec2 d2xy(int d)
     return p;
 }
 
+/// @brief Distance from a point to a line segment.
 float sdSeg(vec2 p, vec2 a, vec2 b, out float h)
 {
     vec2 pa = p - a, ba = b - a;
@@ -105,6 +108,7 @@ float sdSeg(vec2 p, vec2 a, vec2 b, out float h)
     return length(pa - ba * h);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float spd = (speedP > 0.01) ? speedP : 1.0;

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file FxHeatShimmer.frag
  * @brief FX HEAT SHIMMER: refraction of the scene through turbulent heated
@@ -35,29 +35,30 @@ out vec4 fragColor;
 // The channels are sampled at slightly different offsets.  Dispersion is real —
 // the bending depends on wavelength — and it is what stops the shimmer from
 // reading as a plain wobble.
-uniform vec2  resolution;
-uniform float time;
-uniform sampler2D tex0;
-uniform sampler2D tex1;
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
 uniform vec2  depthValid;
-uniform vec2  nearFar;
+uniform vec2  nearFar;   ///< Near and far clip distances.
 uniform float tanHalfFov;
-uniform float interpolation;
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioSubBass;
-uniform float audioChromaHue;
-uniform float audioAmbient;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float heatP;        // preset: how strongly the air bends
-uniform float scaleP;       // preset: cell size of the turbulence
-uniform float splitP;       // preset: chromatic dispersion
+uniform float heatP;        ///< preset: how strongly the air bends
+uniform float scaleP;       ///< preset: cell size of the turbulence
+uniform float splitP;       ///< preset: chromatic dispersion
 
+/// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21(vec2 p)
 {
     p = fract(p * vec2(123.34, 456.21));
@@ -65,6 +66,7 @@ float hash21(vec2 p)
     return fract(p.x * p.y);
 }
 
+/// @brief Value noise with a seed.
 float vnoise(vec2 x)
 {
     vec2 i = floor(x), f = fract(x);
@@ -73,11 +75,13 @@ float vnoise(vec2 x)
                mix(hash21(i + vec2(0, 1)), hash21(i + vec2(1, 1)), f.x), f.y);
 }
 
+/// @brief Fractal noise: octaves of value noise.
 float fbm(vec2 p)
 {
     return 0.58 * vnoise(p) + 0.28 * vnoise(p * 2.07) + 0.14 * vnoise(p * 4.13);
 }
 
+/// @brief Depth buffer value to linear distance.
 float linearise(float d)
 {
     float n = nearFar.x, f = nearFar.y;
@@ -85,6 +89,7 @@ float linearise(float d)
     return (2.0 * n * f) / (f + n - z * (f - n));
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

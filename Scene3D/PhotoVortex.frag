@@ -1,18 +1,18 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 // PhotoVortex.frag — the image is dragged into the throat: texture rings
 // stream inward, stretching as they fall; the throat glows on the drop.
-uniform sampler2D tex0;
-uniform sampler2D tex1;
-uniform float interpolation;
-uniform float time;
-uniform float audioAdvance;
-uniform float audioDrop;
-uniform float audioKick;
-uniform float audioChromaHue;
+uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV;
-in float vDepth;
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vDepth;   ///< Depth (from the vertex stage).
 
 /**
  * @file PhotoVortex.frag
@@ -26,6 +26,7 @@ in float vDepth;
  * hue.
  */
 
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot(vec3 c, float a)
 {
     vec3  k = vec3(0.57735026919);
@@ -34,6 +35,7 @@ vec3 hueRot(vec3 c, float a)
 }
 vec2 mfold(vec2 uv) { return abs(fract(uv * 0.5) * 2.0 - 1.0); }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // The image streams toward the throat (v runs with the music) and is

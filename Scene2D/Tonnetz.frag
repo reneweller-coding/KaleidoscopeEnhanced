@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;
+out vec4 fragColor;   ///< The pixel's colour (output).
 /**
  * @file Tonnetz.frag
  * @brief The music-theory Tonnetz: a triangular lattice of pitch classes
@@ -30,36 +30,37 @@ out vec4 fragColor;
 // harmony's own geometry.
 // -----------------------------------------------------------------------
 
-uniform sampler2D tex0;
-uniform vec2  resolution;
-uniform float time;
-uniform float interpolation;
+uniform sampler2D tex0;   ///< The current photo.
+uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;
-uniform float audioBeat;
-uniform float audioKick;
-uniform float audioHigh;
-uniform float audioAdvance;
-uniform float audioChroma[12];
-uniform float audioChromaHue;
-uniform float audioAmbient;
-uniform float audioHarmChange;
+uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBeat;   ///< Beat envelope, 0..1.
+uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
+uniform float audioHarmChange;   ///< Harmonic change (chord change) envelope, 0..1.
 
-uniform float zoomP;        // preset: how much of the lattice is on screen
-uniform float glowP;        // preset: node brightness
-uniform float photoP;
-uniform sampler2D tex1;
-uniform float audioValence;       // preset: how much of the photo shows through
+uniform float zoomP;        ///< preset: how much of the lattice is on screen
+uniform float glowP;        ///< preset: node brightness
+uniform float photoP;   ///< Photo knob: how much of the photo shows, 0..1.
+uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform float audioValence;       ///< preset: how much of the photo shows through
 
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img(vec2 uv) {
     return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
 }
 
 
-// IMG-PALETTE (house standard): colours come from a rotating arc in the
-// CURRENT slideshow image, so every activation inherits a fresh palette from
-// the photos; the arc follows the musical key (audioChromaHue is circular-
-// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/// IMG-PALETTE (house standard): colours come from a rotating arc in the
+/// CURRENT slideshow image, so every activation inherits a fresh palette from
+/// the photos; the arc follows the musical key (audioChromaHue is circular-
+/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
 vec3 imgPalette(float t)
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -69,14 +70,15 @@ vec3 imgPalette(float t)
     return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
 }
 
+/// @brief A hue as a colour (the house palette).
 vec3 hue2rgb(float h)
 {
     return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
 }
 
-// Pitch class at lattice coordinates (a, b): a steps of a perfect fifth (7
-// semitones) and b steps of a major third (4).  That single line is the whole
-// Tonnetz — everything else here is drawing.
+/// Pitch class at lattice coordinates (a, b): a steps of a perfect fifth (7
+/// semitones) and b steps of a major third (4).  That single line is the whole
+/// Tonnetz — everything else here is drawing.
 int pitchAt(vec2 n)
 {
     int v = int(mod(n.x * 7.0 + n.y * 4.0, 12.0) + 12.0);
@@ -91,6 +93,7 @@ float energyAt(vec2 n)
     return clamp(0.14 + 0.30 * audioLevel + audioChroma[pitchAt(n)] * 4.0, 0.0, 1.4);
 }
 
+/// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
