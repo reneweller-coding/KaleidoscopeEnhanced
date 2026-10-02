@@ -495,6 +495,23 @@ sich langsam (nur nach der Uhr), die Stärke folgt dem langsamen Swell der
 Musik. Unter 0,15 aus. Im 2D-Labor, Tunnel-Labor (auf der Wand) und in
 FxChain, ohne Mehrkosten: jeder Durchgang verschiebt dieselbe Zeit je Pixel.
 
+### Nachglühen (`glowP`) und atmende Verzerrung (seit 02.10.)
+* `glowP` (alle Kettenlabore): das zuletzt fertig gezeigte Bild als
+  abklingender Phosphor-Schleier – max(neu, 0,78 · vorher). Langsame Ketten
+  ziehen weiche Spuren, schnelle Wechsel flimmern kurz nach. Unter 0,15 aus;
+  die Presets würfeln −0,6..1, also etwa jeder zweite Wurf ohne.
+* Die Verzerrungsstufe D atmet mit dem langsamen Swell der Musik: 55 % ihrer
+  Verschiebung in leisen, 100 % in vollen Passagen. Ausgenommen sind „keine“,
+  Drehung und Twirl (keine Rotation auf Musik). Die Untervarianten bleiben
+  unangetastet, weil viele Klassen daraus ganzzahlige Arm- oder Gitterzahlen
+  machen.
+* Raumschnitt: Die Ansicht rückt umso näher, je feiner der Faltkern faltet
+  (Menger auf 35 %, Kleinian/Apollonian 42 %, ohne Kern 110 %); der
+  Ebenenabstand geht mit, die Materie-Kante ist ein Pixel breit.
+* 3D-Labor mit stetigem Beat: Weltwechsel (Raum/Kern/Körper) warten auf die
+  nächste Phrasengrenze, und das Ende einer Weltblende ebenfalls – der
+  einmalige erste Draw einer neuen Weltfassung fällt so auf den Schlag.
+
 ### FxChain – die Kette als Nachbearbeitung
 Dieselbe 2D-Stufenmaschine, aber als **FX-Stufe**: Sie verformt nicht das Foto,
 sondern das *fertige Bild einer beliebigen anderen Szene*. Dafür bekommt das
@@ -586,4 +603,5 @@ bei 3D auch `paletteP` und `camP`).
 | Wandern, Öffnungs-Regel, Kamera | `Source/EffectShader.cpp` (`stepChainWalk`, `resetChainWalk`, `stepChainCam`) |
 | Durchgänge (ein Shader je Transformation), 3D-G-Buffer | `Tools/scenegen/make_chainpass.py` → `Engine/ChainPass/`; `EffectShader.cpp` (`runChainPasses`, `runChain3D`, `geomProgram`) |
 | Programme im Helferprozess, Binär-Cache | `Source/ShaderForge.{h,cpp}`, `Source/ShaderForgeMain.{h,cpp}` |
+| Messlauf über alle Labore | `Tools/perf_labs.py` (`--wav` für Musik) |
 | Presets | `Tools/make_genre_configs.py` → `Presets/Kettenlabor.xml`, `Presets/Transformationen.xml` |
