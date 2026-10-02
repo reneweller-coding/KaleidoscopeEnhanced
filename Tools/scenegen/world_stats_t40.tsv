@@ -1,0 +1,65 @@
+stage	pos	class	motion	detail
+space	0	mirrored lattice	0.05271	0.01307
+space	1	octahedral lattice	0.04628	0.00948
+space	2	icosahedral lattice	0.02919	0.00800
+space	3	hexagonal lattice	0.06662	0.01455
+space	4	rolled world	0.05826	0.01428
+space	5	4D-rotated lattice	0.04643	0.01112
+space	6	log-spherical Droste	0.01873	0.00622
+space	7	twisted 3D Droste	0.01678	0.00606
+space	8	log-cylindrical Droste	0.03091	0.01336
+space	9	turning lattice	0.06012	0.01331
+space	10	bent cells	0.03809	0.00888
+space	11	torus-wrapped world	0.05260	0.00977
+space	12	hyperbolic half-space	0.07243	0.01056
+space	13	twisted lattice	0.07564	0.01433
+space	14	gyroid-warped lattice	0.04947	0.01174
+space	15	noise-warped lattice	0.04688	0.01136
+space	16	helix	0.08141	0.01284
+space	17	double helix	0.07689	0.00994
+space	18	inverted lattice	0.06450	0.02813
+space	19	polar ring tunnel	0.04042	0.00970
+core	0	no fold core	0.05271	0.01307
+core	1	plane folds	0.06489	0.01675
+core	2	polyhedral kaleidoscope	0.06487	0.01475
+core	3	sphere-inversion box fold	0.07987	0.02064
+core	4	spherical KIFS	0.07487	0.04292
+core	5	Apollonian sphere packing	0.08044	0.02819
+core	6	Mandalay box	0.07760	0.03028
+core	7	hyperbolic honeycomb	0.08369	0.04836
+core	8	Kleinian fold	0.07956	0.06297
+core	9	pseudo-Kleinian	0.06880	0.05255
+core	10	amazing surface	0.08469	0.02802
+core	11	Mandelbulb	0.06437	0.02110
+core	12	kaliset	0.07919	0.03201
+core	13	tetrahedral KIFS	0.06562	0.02850
+core	14	mixed Sierpinski	0.08458	0.03808
+core	15	Sierpinski octahedron	0.06805	0.03115
+core	16	icosahedral KIFS	0.07640	0.04012
+core	17	dodecahedral KIFS	0.06712	0.03506
+core	18	octahedral KIFS	0.05709	0.02666
+core	19	twisted octahedral KIFS	0.05239	0.02100
+core	20	Menger sponge	0.06981	0.03987
+core	21	cross-Menger	0.07405	0.03592
+body	0	balls	0.05271	0.01307
+body	1	pills	0.03964	0.00965
+body	2	superquadrics	0.05065	0.01367
+body	3	octahedra	0.06041	0.01306
+body	4	rhombic dodecahedra	0.06295	0.01486
+body	5	icosahedra	0.05742	0.01507
+body	6	hollow spheres	0.05953	0.01403
+body	7	tori	0.06211	0.01650
+body	8	chain links	0.05230	0.01528
+body	9	linked rings	0.05385	0.01695
+body	10	gyroid membrane	0.08422	0.01597
+body	11	Schwarz P surface	0.06197	0.01262
+body	12	Schwarz D surface	0.07192	0.01523
+body	13	Neovius surface	0.06418	0.01212
+body	14	Lidinoid	0.06910	0.01495
+body	15	blocks	0.05044	0.01535
+body	16	twisted pillars	0.05170	0.01276
+body	17	rod lattice	0.08502	0.02411
+body	18	stellated octahedra	0.05608	0.01516
+body	19	Steinmetz solids	0.04790	0.01272
+body	20	crosses	0.07084	0.01970
+body	21	gears	0.04445	0.01338

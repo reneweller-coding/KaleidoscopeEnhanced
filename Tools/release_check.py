@@ -7,13 +7,15 @@ Steps (each with its own threshold; --skip leaves steps out):
   doxygen    Doxygen with EXTRACT_ALL=NO -- no undocumented C++ (if doxygen is installed)
   chain      Tools/chain_regress.py --every 6 -- chain runner and uber shader identical
   perf       Tools/perf_labs.py with music -- fps median >= 100, GPU p90 within budget
-  snapshots  Tools/scene_snapshots.py render + compare against the baseline set
-             (Tools/snapshot_baseline.txt names it) -- the scenes that changed
+  snapshots  Tools/scene_snapshots.py render --jobs 3 + compare against the
+             baseline set (Tools/snapshot_baseline.txt names it): red only for
+             black frames or renders that failed; changed scenes are listed
+             in the HTML report to be looked at
 
 The report goes to docs/release_check.md (and the snapshot comparison's HTML
 into the snapshot set).  Exit code: the number of red steps.
 
-  python Tools/release_check.py                       # everything (~5 h with the snapshots)
+  python Tools/release_check.py                       # everything (~2 h with the snapshots)
   python Tools/release_check.py --skip snapshots      # ~40 min
   python Tools/release_check.py --label v1.18         # name of this snapshot set
 """
@@ -83,7 +85,9 @@ def step_perf():
 
 def step_snapshots(label):
     base_f = os.path.join(ROOT, "Tools", "snapshot_baseline.txt")
-    rc, out, dt = run([PY, "Tools/scene_snapshots.py", "render", label], 8 * 3600)
+    rc, out, dt = run([PY, "Tools/scene_snapshots.py", "render", label, "--jobs", "3"], 8 * 3600)
+    failed = re.search(r"(\d+) rendered, (\d+) failed", out)
+    failed = int(failed.group(2)) if failed else -1
     if not os.path.exists(base_f):
         return None, "rendered %s; no baseline named in Tools/snapshot_baseline.txt -- nothing to compare" % label, dt
     base = io.open(base_f, encoding="utf-8").read().strip()
@@ -91,7 +95,8 @@ def step_snapshots(label):
     last = [l for l in out2.splitlines() if "compared" in l]
     # changed scenes are not a failure by themselves: they have to be looked at
     black = re.search(r"(\d+) black", last[-1]) if last else None
-    return (black is not None and black.group(1) == "0"), (last[-1] if last else out2[-300:]), dt + dt2
+    ok = black is not None and black.group(1) == "0" and failed == 0
+    return ok, "%s; %d render(s) failed" % (last[-1] if last else out2[-300:], failed), dt + dt2
 
 
 def main():

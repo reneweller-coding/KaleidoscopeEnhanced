@@ -48,7 +48,10 @@ def preset(block, fx, name="_snap"):
 
 
 def shoot(block, fx, out, photo, timeout, slot=0):
-    """One scene in its own app run (preset _snap<slot>, port 18200+slot); True when the frame is saved."""
+    """One scene in its own app run (preset _snap<slot>, port 18200+slot).
+    Returns "ok", "unstable" (the frame never stood still after the freeze -- a
+    simulation or a clock of its own; the last one is saved, compare it loosely)
+    or "" (no frame)."""
     name = "_snap%d" % slot
     io.open(os.path.join(ROOT, "Presets", name + ".xml"), "w", encoding="utf-8").write(preset(block, fx, name))
     env = dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(timeout + 15), KALEIDO_NO_ACTIVATE="1",
@@ -75,20 +78,24 @@ def shoot(block, fx, out, photo, timeout, slot=0):
                 get = lambda: urllib.request.urlopen("http://127.0.0.1:%s/api/snapshot" % port, timeout=8).read()
                 get()
                 prev = None
-                for _ in range(25):
+                from PIL import Image
+                save = lambda j: Image.open(io.BytesIO(j)).convert("RGB").resize((640, 360), Image.LANCZOS).save(out, quality=92)
+                for _ in range(12):
                     time.sleep(1.2)
                     jpg = get()
                     if jpg[:2] != b"\xff\xd8":
                         continue
                     if jpg == prev:
-                        from PIL import Image
-                        Image.open(io.BytesIO(jpg)).convert("RGB").resize((640, 360), Image.LANCZOS).save(out, quality=92)
-                        return True
+                        save(jpg)
+                        return "ok"
                     prev = jpg
-                return False
-        return False
+                if prev:
+                    save(prev)
+                    return "unstable"
+                return ""
+        return ""
     except OSError:
-        return False
+        return ""
     finally:
         if p.poll() is None:
             p.terminate()                                     # our own run: it would end itself later anyway
@@ -118,12 +125,12 @@ def render(label, only, photo, timeout, jobs=1):
                     return
                 name, block = todo.pop(0)
             t = time.time()
-            good = shoot(block, fx, os.path.join(out, name + ".jpg"), photo, timeout, slot)
+            r = shoot(block, fx, os.path.join(out, name + ".jpg"), photo, timeout, slot)
             with lock:
-                count["ok" if good else "bad"] += 1
-                idx.write("%s\t%s\t%.1f\n" % (name, "ok" if good else "FAIL", time.time() - t))
+                count["ok" if r else "bad"] += 1
+                idx.write("%s\t%s\t%.1f\n" % (name, r or "FAIL", time.time() - t))
                 idx.flush()
-                print("%-44s %s %.1f s" % (name, "ok  " if good else "FAIL", time.time() - t), flush=True)
+                print("%-44s %-8s %.1f s" % (name, r or "FAIL", time.time() - t), flush=True)
     try:
         ts = [threading.Thread(target=worker, args=(k,)) for k in range(max(1, jobs))]
         for th in ts:
@@ -155,7 +162,18 @@ def compare(a, b, tol):
         y = np.asarray(Image.open(os.path.join(db, n + ".jpg"))).astype(float)
         rows.append((abs(x - y).mean(), n, y.mean()))
     rows.sort(reverse=True)
-    changed = [r for r in rows if r[0] > tol]
+    def unstable_in(d):
+        st = {}
+        p = os.path.join(d, "index.tsv")
+        if os.path.exists(p):
+            for l in io.open(p, encoding="utf-8").read().splitlines():
+                f = l.split("\t")
+                if len(f) >= 2:
+                    st[f[0]] = f[1]
+        return {n for n, v in st.items() if v == "unstable"}
+    loose = unstable_in(da) | unstable_in(db)               # never stood still: a change there says little
+    changed = [r for r in rows if r[0] > tol and r[1] not in loose]
+    wobbly = [r for r in rows if r[1] in loose]
     black = [r for r in rows if r[2] < 3.0]
     rep = os.path.join(db, "report_vs_%s.html" % a)
     with io.open(rep, "w", encoding="utf-8") as h:
@@ -164,7 +182,8 @@ def compare(a, b, tol):
                 "h2{margin-top:2em}</style>")
         h.write("<h1>%s &rarr; %s</h1><p>%d compared, %d changed (mean abs diff &gt; %.1f / 255), %d new, %d gone, %d black.</p>"
                 % (html.escape(a), html.escape(b), len(rows), len(changed), tol, len(nb - na), len(na - nb), len(black)))
-        for title, items in (("Changed", changed), ("Black in %s" % b, black)):
+        for title, items in (("Changed", changed), ("Black in %s" % b, black),
+                             ("Unstable (the frame never stood still; compare by eye)", wobbly)):
             h.write("<h2>%s</h2><table>" % title)
             for d, n, m in items:
                 h.write("<tr><td><b>%s</b><br>diff %.2f<br>mean %.0f</td><td><img src='file:///%s'></td><td><img src='file:///%s'></td></tr>"
@@ -172,7 +191,8 @@ def compare(a, b, tol):
             h.write("</table>")
         for title, names in (("New", sorted(nb - na)), ("Gone", sorted(na - nb))):
             h.write("<h2>%s</h2><p>%s</p>" % (title, ", ".join(html.escape(x) for x in names) or "-"))
-    print("%d compared, %d changed, %d new, %d gone, %d black -> %s" % (len(rows), len(changed), len(nb - na), len(na - nb), len(black), rep))
+    print("%d compared, %d changed, %d new, %d gone, %d black, %d unstable -> %s"
+          % (len(rows), len(changed), len(nb - na), len(na - nb), len(black), len(wobbly), rep))
     for d, n, m in changed[:30]:
         print("  %6.2f  %s" % (d, n))
     return len(changed)
