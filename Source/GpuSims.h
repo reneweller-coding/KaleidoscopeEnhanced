@@ -81,6 +81,7 @@ public:
 		GLuint dyeTexA      = 0;   ///< Current source image (or live texture) sampled as fluid-sim dye (bound as tex0). Not owned; 0 if none.
 		GLuint dyeTexB      = 0;   ///< Next/incoming source image being cross-faded in as dye (bound as tex1). Not owned; 0 if none.
 		float  dyeInterp    = 1.f;   ///< Cross-fade factor between dyeTexA and dyeTexB (0 = pure A, 1 = pure B).
+		bool   hold         = false; ///< Freeze (VJ or comparison run): no step, the newest states stay bound.
 	};
 
 	/** Alle Sim-Ressourcen anlegen (GL-Kontext aktuell); idempotent, wird aus

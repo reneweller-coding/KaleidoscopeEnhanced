@@ -464,7 +464,7 @@ public:
 	static void noCarryOver();
 	/// @brief Multiplies the taste of every class this lab shows now (walking stages; 'none' left out), clamped to [0.6, 1.6].
 	/// @param mul Factor (a like > 1, a skip < 1).
-	/// @return The changed entries (key, new weight), for the caller to persist; empty when this is no walking chain lab.
+	/// @return The changed entries (key, new weight), for the caller to persist; empty for anything but a chain lab that walks or shows a fixed chain.
 	std::vector<std::pair<std::string, float>> bumpClassTaste( float mul );
 	static float s_shadowExtent;      ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box), published by RenderPipeline so the shadow receivers and the light matrix use the same box.
 	static float s_shadowPass;        ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass` uniform.

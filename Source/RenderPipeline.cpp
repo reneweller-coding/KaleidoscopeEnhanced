@@ -1801,6 +1801,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
 		simFrame.dyeTexA      = m_liveTex ? m_liveTex : m_actTex;
 		simFrame.dyeTexB      = m_liveTex ? m_liveTex : m_nextTex;
 		simFrame.dyeInterp    = m_interpolationTexture;
+		simFrame.hold         = s_freeze;            // a frozen picture: the sims stand too
 
 		m_sims.run( audio, timeSinceLastFrameSec, need, simFrame );
 	}
@@ -1817,13 +1818,15 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
 		unsigned int need = m_effectTextures[m_scheduler.actTexture()]->cfxMask();
 		if( m_scheduler.texState() != 0 )
 			need |= m_effectTextures[m_scheduler.nextTexture()]->cfxMask();
+		if( !need )
+			for( GLuint &t : m_cfxLast ) t = 0;
 
 		if( need )
 		{
 			GLuint src = m_liveTex ? m_liveTex : m_actTex;
 			for( int k = 0; k < CFX_COUNT; ++k )
 			{
-				if( !( need & ( 1u << k ) ) ) continue;
+				if( !( need & ( 1u << k ) ) ) { m_cfxLast[k] = 0; continue; }   // retireIdle may free it later
 				// Unit 0 while the sim steps. A sim's alloc/seed frames make raw
 				// glBindTexture calls on whatever unit is ACTIVE -- and after the
 				// previous iteration that was the previous sim's publication unit,
@@ -1832,8 +1835,11 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
 				// lands on the photo binding, which setUniforms restores every
 				// frame anyway.
 				glActiveTexture( GL_TEXTURE0 );
-				GLuint tex = m_cfx.step( k, audio, timeSinceLastFrameSec,
-				                         m_globaltime, src, m_width, m_height );
+				// Frozen (VJ freeze, comparison run): no step -- ComputeFX would take
+				// dt 0 for 1/60 s and run on -- the last published state is bound again.
+				GLuint tex = ( s_freeze && m_cfxLast[k] ) ? m_cfxLast[k]
+				           : m_cfx.step( k, audio, timeSinceLastFrameSec, m_globaltime, src, m_width, m_height );
+				m_cfxLast[k] = tex;
 				// The stand-in when the sim has no output yet -- its first frames of
 				// seeding, or right after retireIdle() deleted the previous tenant's
 				// textures, which auto-unbinds them from the unit. The scene's

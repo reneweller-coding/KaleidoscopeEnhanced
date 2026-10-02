@@ -73,11 +73,13 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 {
 	// Reihenfolge, Sub-Step-Zahlen und Unit-Bindings exakt wie der alte
 	// Inline-Block in RenderPipeline::paint().
+	// f.hold (a freeze): every sim keeps its state -- the binds below still run,
+	// so the scenes sample the newest one as before.
 	if( need.rd && m_rdReady )
 	{
 		// Several PDE sub-steps per frame so the pattern develops quickly and
 		// fills the whole field with lively, evolving structure.
-		for( int s = 0; s < 6; ++s )
+		for( int s = 0; s < 6 && !f.hold; ++s )
 			stepReactionDiffusion( audio );
 		glActiveTexture( GL_TEXTURE7 );
 		glBindTexture( GL_TEXTURE_2D, m_texRD[1 - m_rdIdx] );   // newest state
@@ -85,22 +87,25 @@ void GpuSims::run( const AudioFeatures &audio, float dt, const Demand &need, con
 
 	if( need.fluid && m_fluidReady )
 	{
-		stepFluid( audio, f );
+		if( !f.hold ) stepFluid( audio, f );
 		glActiveTexture( GL_TEXTURE8 );
 		glBindTexture( GL_TEXTURE_2D, m_texFluid[1 - m_fluidIdx] );
 	}
 
 	if( need.smoke3D && m_smoke3DReady )
 	{
-		stepSmoke3D( audio, f );
+		if( !f.hold ) stepSmoke3D( audio, f );
 		glActiveTexture( GL_TEXTURE9 );
 		glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[1 - m_smoke3DIdx] );
 	}
 
 	if( need.physarum && m_physReady )
 	{
-		stepPhysarum( audio, f );
-		stepPhysarum( audio, f );       // 2 sub-steps: the net develops faster
+		if( !f.hold )
+		{
+			stepPhysarum( audio, f );
+			stepPhysarum( audio, f );       // 2 sub-steps: the net develops faster
+		}
 		glActiveTexture( GL_TEXTURE11 );
 		glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[1 - m_physTrailIdx] );
 		glActiveTexture( GL_TEXTURE0 );   // see stepFluid(): leave unit 0 selected

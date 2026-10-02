@@ -2521,7 +2521,9 @@ float EffectShader::classTaste( int s, float x ) const
 std::vector<std::pair<std::string, float>> EffectShader::bumpClassTaste( float mul )
 {
 	std::vector<std::pair<std::string, float>> out;
-	if( !m_walk.active )
+	// a walking lab or a fixed chain (morphP < 0.15): what is on screen is known; the
+	// shader's own one-stage walk (0.15 .. 0.5) shows a class the host does not know
+	if( m_walkHostLoc < 0 || ( !m_walk.active && m_walkMorph >= 0.15f ) )
 		return out;
 	for( int s = 0; s < kWalkN; ++s )
 	{

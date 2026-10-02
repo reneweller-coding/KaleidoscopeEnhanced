@@ -812,6 +812,7 @@ private:
 
 
 	ComputeFX		m_cfx;                     ///< GL 4.3 compute-shader sims — generic; effects opt in via their cfxMask().
+	GLuint			m_cfxLast[CFX_COUNT] = {}; ///< Texture each compute sim published last (bound again while frozen).
 
 
 	// GPU-/Host-Simulationen (RD, Fluid, Smoke3D, Physarum, SSM, Spectro):
