@@ -9,7 +9,7 @@ Steps (each with its own threshold; --skip leaves steps out):
   perf       Tools/perf_labs.py with music -- fps median >= 100, GPU p90 within budget
   snapshots  Tools/scene_snapshots.py render --jobs 3 + compare against the
              baseline set (Tools/snapshot_baseline.txt names it): red only for
-             black frames or renders that failed; changed scenes are listed
+             newly black frames or renders that failed; changed scenes are listed
              in the HTML report to be looked at
 
 The report goes to docs/release_check.md (and the snapshot comparison's HTML
@@ -94,7 +94,7 @@ def step_snapshots(label):
     rc, out2, dt2 = run([PY, "Tools/scene_snapshots.py", "compare", base, label], 3600)
     last = [l for l in out2.splitlines() if "compared" in l]
     # changed scenes are not a failure by themselves: they have to be looked at
-    black = re.search(r"(\d+) black", last[-1]) if last else None
+    black = re.search(r"\((\d+) newly black\)", last[-1]) if last else None
     ok = black is not None and black.group(1) == "0" and failed == 0
     return ok, "%s; %d render(s) failed" % (last[-1] if last else out2[-300:], failed), dt + dt2
 

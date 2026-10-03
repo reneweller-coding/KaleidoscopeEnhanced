@@ -80,7 +80,7 @@ def shoot(block, fx, out, photo, timeout, slot=0):
                 prev = None
                 from PIL import Image
                 save = lambda j: Image.open(io.BytesIO(j)).convert("RGB").resize((640, 360), Image.LANCZOS).save(out, quality=92)
-                for _ in range(12):
+                for _ in range(25):                         # ~30 s: feedback and trails settle slowly
                     time.sleep(1.2)
                     jpg = get()
                     if jpg[:2] != b"\xff\xd8":
@@ -160,7 +160,7 @@ def compare(a, b, tol):
     for n in sorted(na & nb):
         x = np.asarray(Image.open(os.path.join(da, n + ".jpg"))).astype(float)
         y = np.asarray(Image.open(os.path.join(db, n + ".jpg"))).astype(float)
-        rows.append((abs(x - y).mean(), n, y.mean()))
+        rows.append((abs(x - y).mean(), n, y.mean(), x.mean()))
     rows.sort(reverse=True)
     def unstable_in(d):
         st = {}
@@ -175,6 +175,8 @@ def compare(a, b, tol):
     changed = [r for r in rows if r[0] > tol and r[1] not in loose]
     wobbly = [r for r in rows if r[1] in loose]
     black = [r for r in rows if r[2] < 3.0]
+    # silent and frozen, a scene that lives on the music is dark in both sets: only a NEW black frame is news
+    newblack = [r for r in black if r[3] >= 3.0]
     rep = os.path.join(db, "report_vs_%s.html" % a)
     with io.open(rep, "w", encoding="utf-8") as h:
         h.write("<!doctype html><meta charset='utf-8'><title>Scenes %s vs %s</title>"
@@ -182,18 +184,19 @@ def compare(a, b, tol):
                 "h2{margin-top:2em}</style>")
         h.write("<h1>%s &rarr; %s</h1><p>%d compared, %d changed (mean abs diff &gt; %.1f / 255), %d new, %d gone, %d black.</p>"
                 % (html.escape(a), html.escape(b), len(rows), len(changed), tol, len(nb - na), len(na - nb), len(black)))
-        for title, items in (("Changed", changed), ("Black in %s" % b, black),
+        for title, items in (("Changed", changed), ("Newly black in %s" % b, newblack), ("Black in %s (also before)" % b,
+                             [r for r in black if r not in newblack]),
                              ("Unstable (the frame never stood still; compare by eye)", wobbly)):
             h.write("<h2>%s</h2><table>" % title)
-            for d, n, m in items:
+            for d, n, m, _ in items:
                 h.write("<tr><td><b>%s</b><br>diff %.2f<br>mean %.0f</td><td><img src='file:///%s'></td><td><img src='file:///%s'></td></tr>"
                         % (html.escape(n), d, m, os.path.join(da, n + ".jpg").replace("\\", "/"), os.path.join(db, n + ".jpg").replace("\\", "/")))
             h.write("</table>")
         for title, names in (("New", sorted(nb - na)), ("Gone", sorted(na - nb))):
             h.write("<h2>%s</h2><p>%s</p>" % (title, ", ".join(html.escape(x) for x in names) or "-"))
-    print("%d compared, %d changed, %d new, %d gone, %d black, %d unstable -> %s"
-          % (len(rows), len(changed), len(nb - na), len(na - nb), len(black), len(wobbly), rep))
-    for d, n, m in changed[:30]:
+    print("%d compared, %d changed, %d new, %d gone, %d black (%d newly black), %d unstable -> %s"
+          % (len(rows), len(changed), len(nb - na), len(na - nb), len(black), len(newblack), len(wobbly), rep))
+    for d, n, m, _ in changed[:30]:
         print("  %6.2f  %s" % (d, n))
     return len(changed)
 
