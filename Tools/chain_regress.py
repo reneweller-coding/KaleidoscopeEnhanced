@@ -109,7 +109,7 @@ def main():
             x = np.asarray(Image.open(ra).convert("RGB")).astype(float)
             y = np.asarray(Image.open(rb).convert("RGB")).astype(float)
             d = abs(x - y).mean()
-            bad = d > a.tol
+            bad = bool(d > a.tol)                       # a numpy bool would make fails a numpy int
             fails += bad
             print("%2d  %s  diff %.3f  %s" % (i, "FAIL" if bad else "ok  ", d, names), flush=True)
     finally:
@@ -120,7 +120,7 @@ def main():
         except OSError:
             pass
     print("%d of %d combinations differ" % (fails, len(combos)))
-    sys.exit(min(fails, 255))
+    sys.exit(min(int(fails), 255))              # sys.exit(numpy int) prints it and exits 1
 
 
 if __name__ == "__main__":
