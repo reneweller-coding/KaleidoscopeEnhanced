@@ -78,6 +78,7 @@ set(KALEIDO_SOURCES
 	Source/VideoPiP.cpp
 	Source/WebRemote.cpp
 	Source/CueReceiver.cpp
+	Source/ScoreCues.cpp
 	Source/CueSelfTest.cpp
 	Source/glcore.cpp
 	Source/glwidget.cpp

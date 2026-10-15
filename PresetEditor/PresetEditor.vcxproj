@@ -93,6 +93,8 @@
     <ClCompile Include="Scene3DPreview.cpp" />
     <ClCompile Include="Preset.cpp" />
     <ClCompile Include="..\Source\AudioAnalyzer.cpp" />
+    <!-- AudioAnalyzer feeds ScoreCueFile the WAV's clock; ScoreCues.cpp holds it without the socket. -->
+    <ClCompile Include="..\Source\ScoreCues.cpp" />
     <!-- The Qt-free rendering core (a119fe8), shared verbatim with the main
          app so the editor's preview is the SAME code path, not a second one
          that drifts.  None of these include any Qt module. -->

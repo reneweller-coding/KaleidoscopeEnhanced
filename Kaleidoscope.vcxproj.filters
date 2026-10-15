@@ -186,6 +186,9 @@
     <ClCompile Include="Source\CueReceiver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ScoreCues.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Source\CueSelfTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -198,6 +201,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\CueReceiver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\ScoreCues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Source\EffectShader.h">
