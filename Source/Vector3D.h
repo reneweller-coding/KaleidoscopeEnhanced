@@ -114,7 +114,7 @@ public:
     //! returns the length of the vector
     inline float length() const;
     //! returns the L1-Norm of the vector (city-block-metric)
-    inline float L1Norm() const;
+    inline float l1Norm() const;
     //! return the index of the biggest element of the vector
     inline int indexOfGreatestElement() const;
     //! return the value of the biggest element of the vector
@@ -389,7 +389,7 @@ inline float Vector3D::length() const
     return sqrt( sqrLength() );
 }
 
-inline float Vector3D::L1Norm() const
+inline float Vector3D::l1Norm() const
 {
     return fabs( x ) + fabs( y ) + fabs( z );
 }
@@ -409,9 +409,9 @@ inline float Vector3D::greatestElement() const
 
 inline void Vector3D::normalize()
 {
-    float thisLength = length();
-    if ( thisLength != 0 )
-        *this /= thisLength;
+    float this_length = length();
+    if ( this_length != 0 )
+        *this /= this_length;
     else
     {
         x = 0;
@@ -422,9 +422,9 @@ inline void Vector3D::normalize()
 
 inline Vector3D Vector3D::normalized() const
 {
-    float thisLength = length();
-    if ( thisLength != 0 )
-        return Vector3D( x / thisLength, y / thisLength, z / thisLength );
+    float this_length = length();
+    if ( this_length != 0 )
+        return Vector3D( x / this_length, y / this_length, z / this_length );
     else
         return Vector3D( 0, 0, 1 );
 }

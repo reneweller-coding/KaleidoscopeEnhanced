@@ -121,11 +121,11 @@ public:
 
     // ---- Ring-Buchhaltung für die audioFx-Uniforms (Export VOR run()!) ----
     /** @brief Normalized [0,1) write-head position in the self-similarity ring, for the audioFx uniform. Must be read
-     * BEFORE run() advances the ring. @return Head position as a fraction of kSSMSize. */
-    float ssmHeadNorm() const { return float( m_ssmHead ) / float( kSSMSize ); }
+     * BEFORE run() advances the ring. @return Head position as a fraction of SSMSize. */
+    float ssmHeadNorm() const { return float( m_ssmHead ) / float( SSMSize ); }
     /** @brief Normalized [0,1] fraction of the self-similarity ring populated so far. @return Fill fraction of
-     * kSSMSize. */
-    float ssmFillNorm() const { return float( m_ssmCount ) / float( kSSMSize ); }
+     * SSMSize. */
+    float ssmFillNorm() const { return float( m_ssmCount ) / float( SSMSize ); }
     /** Kontinuierliche "Jetzt"-T-Koordinate des Spektrogramm-Rings: hinkt dem
      *  Schreibkopf bewusst 2 Zeilen hinterher und faltet den Sub-Zeilen-Anteil
      *  ein, damit das Terrain nicht alle 80 ms vorwärts ruckt (Details siehe
@@ -135,22 +135,22 @@ public:
      *
      * Deliberately lags the write head by 2 rows and folds in the
      * sub-row fraction so the terrain does not visibly jump forward every
-     * kSpectroStride (~80ms) tick (see the old paint() comments for the
+     * SpectroStride (~80ms) tick (see the old paint() comments for the
      * original derivation).
      * @return Normalized [0,1) time coordinate into the spectrogram ring texture.
      */
     float spectroHeadNorm() const
     {
-        float frac = m_spectroAccum / kSpectroStride;
+        float frac = m_spectroAccum / SpectroStride;
         if ( frac < 0.f )
             frac = 0.f;
         else if ( frac > 1.f )
             frac = 1.f;
-        return ( float( m_spectroHead ) - 1.5f + frac ) / float( kSpectroH );
+        return ( float( m_spectroHead ) - 1.5f + frac ) / float( SpectroH );
     }
     /** @brief Normalized [0,1] fraction of the spectrogram ring's history populated so far. @return Fill fraction of
-     * kSpectroH. */
-    float spectroFillNorm() const { return float( m_spectroCount ) / float( kSpectroH ); }
+     * SpectroH. */
+    float spectroFillNorm() const { return float( m_spectroCount ) / float( SpectroH ); }
 
 private:
     /** @brief Creates the reaction-diffusion ping-pong FBOs/textures and compiles the Gray-Scott step shader.
@@ -200,7 +200,7 @@ private:
      */
     void stepPhysarum( const AudioFeatures &a, const Frame &f );
     /**
-     * @brief Accumulates one row/column of the self-similarity matrix roughly every kSSMStride seconds, from a
+     * @brief Accumulates one row/column of the self-similarity matrix roughly every SSMStride seconds, from a
      * normalized chroma + coarse spectral-shape feature vector.
      * @param a Current audio features (chroma bins and spectrum) that source the feature vector.
      * @param dt Frame delta time in seconds; paces the accumulation.
@@ -217,7 +217,7 @@ private:
      * @param dt Frame delta time in seconds; paces row emission.
      *
      * Emits multiple rows in one call (capped at 8) if more than
-     * kSpectroStride seconds have accumulated (e.g. after a hitch), so
+     * SpectroStride seconds have accumulated (e.g. after a hitch), so
      * scroll speed stays independent of frame rate; a very long stall
      * resyncs instead of catching up.
      */
@@ -231,29 +231,29 @@ private:
     /** @brief Clears the currently-bound FBO and draws the shared fullscreen triangle; the common draw call used by
      * every simulation's fragment-shader step. */
     static void         drawFullscreen();
-    static const GLenum kAttach = GL_COLOR_ATTACHMENT0; ///< Color attachment point used by every simulation's ping-pong
-                                                        ///< FBOs.
+    static const GLenum Attach = GL_COLOR_ATTACHMENT0; ///< Color attachment point used by every simulation's ping-pong
+                                                       ///< FBOs.
 
     // ---- Reaction-Diffusion (Gray-Scott) ----
-    static const int kRDSize = 320; ///< Reaction-diffusion grid width/height in texels (fixed, window-independent, so
-                                    ///< it stays cheap on a weak iGPU).
-    GLuint m_fboRD[2] = { 0, 0 };   ///< Ping-pong framebuffers wrapping m_texRD[0]/[1].
+    static const int RDSize = 320; ///< Reaction-diffusion grid width/height in texels (fixed, window-independent, so
+                                   ///< it stays cheap on a weak iGPU).
+    GLuint m_fboRD[2] = { 0, 0 };  ///< Ping-pong framebuffers wrapping m_texRD[0]/[1].
     GLuint m_texRD[2] = { 0, 0 }; ///< Ping-pong RGBA16F state textures; the newest one is bound as texSim (unit 7) when
                                   ///< ready.
     int m_rdIdx = 0; ///< Index of the buffer written by the NEXT step; the newest finished state is m_texRD[1 -
                      ///< m_rdIdx].
-    GLuint m_rdProgId = 0;          ///< Gray-Scott step fragment shader program.
-    GLint  m_rdPrevUni = -1;        ///< Uniform location: previous-state sampler (texPrev).
-    GLint  m_rdResUni = -1;         ///< Uniform location: grid resolution.
-    GLint  m_rdSeedUni = -1;        ///< Uniform location: seed-pattern trigger (1 on the very first step only).
-    GLint  m_rdFeedUni = -1;        ///< Uniform location: Gray-Scott feed rate.
-    GLint  m_rdKillUni = -1;        ///< Uniform location: Gray-Scott kill rate.
-    GLint  m_rdInjectUni = -1;      ///< Uniform location: reagent-injection trigger (onset/beat driven).
-    bool   m_rdReady = false;       ///< True once setup succeeded; gates stepping and texture binding.
-    bool   m_rdSeeded = false;      ///< False until the first step has written the seed pattern.
+    GLuint m_rdProgId = 0;         ///< Gray-Scott step fragment shader program.
+    GLint  m_rdPrevUni = -1;       ///< Uniform location: previous-state sampler (texPrev).
+    GLint  m_rdResUni = -1;        ///< Uniform location: grid resolution.
+    GLint  m_rdSeedUni = -1;       ///< Uniform location: seed-pattern trigger (1 on the very first step only).
+    GLint  m_rdFeedUni = -1;       ///< Uniform location: Gray-Scott feed rate.
+    GLint  m_rdKillUni = -1;       ///< Uniform location: Gray-Scott kill rate.
+    GLint  m_rdInjectUni = -1;     ///< Uniform location: reagent-injection trigger (onset/beat driven).
+    bool   m_rdReady = false;      ///< True once setup succeeded; gates stepping and texture binding.
+    bool   m_rdSeeded = false;     ///< False until the first step has written the seed pattern.
 
     // ---- Fluid (Curl-Noise-Farbstoff) ----
-    static const int kFluidSize = 512;         ///< Fluid-dye grid width/height in texels (fixed, window-independent).
+    static const int FluidSize = 512;          ///< Fluid-dye grid width/height in texels (fixed, window-independent).
     GLuint           m_fboFluid[2] = { 0, 0 }; ///< Ping-pong framebuffers wrapping m_texFluid[0]/[1].
     GLuint m_texFluid[2] = { 0, 0 }; ///< Ping-pong RGBA16F state textures; the newest one is bound as texFluid (unit 8)
                                      ///< when ready.
@@ -273,36 +273,36 @@ private:
     bool   m_fluidSeeded = false;              ///< False until the first step has written the seed pattern.
 
     // ---- Smoke3D (gekachelter Pseudo-3D-Atlas) ----
-    static const int kSmoke3DTile = 64; ///< Side length in texels of one 2D "slice" tile of the pseudo-3D atlas.
-    static const int kSmoke3DCols = 5;                        ///< Number of tile columns in the atlas grid.
-    static const int kSmoke3DRows = 4;                        ///< Number of tile rows in the atlas grid.
-    static const int kSmoke3DW = kSmoke3DTile * kSmoke3DCols; ///< Full atlas texture width in texels (5 tiles x 64 =
-                                                              ///< 320).
-    static const int kSmoke3DH = kSmoke3DTile * kSmoke3DRows; ///< Full atlas texture height in texels (4 tiles x 64 =
-                                                              ///< 256).
-    GLuint m_fboSmoke3D[2] = { 0, 0 };                        ///< Ping-pong framebuffers wrapping m_texSmoke3D[0]/[1].
+    static const int Smoke3DTile = 64; ///< Side length in texels of one 2D "slice" tile of the pseudo-3D atlas.
+    static const int Smoke3DCols = 5;                      ///< Number of tile columns in the atlas grid.
+    static const int Smoke3DRows = 4;                      ///< Number of tile rows in the atlas grid.
+    static const int Smoke3DW = Smoke3DTile * Smoke3DCols; ///< Full atlas texture width in texels (5 tiles x 64 =
+                                                           ///< 320).
+    static const int Smoke3DH = Smoke3DTile * Smoke3DRows; ///< Full atlas texture height in texels (4 tiles x 64 =
+                                                           ///< 256).
+    GLuint m_fboSmoke3D[2] = { 0, 0 };                     ///< Ping-pong framebuffers wrapping m_texSmoke3D[0]/[1].
     GLuint m_texSmoke3D[2] = { 0, 0 }; ///< Ping-pong RGBA16F state textures; the newest one is bound as texSmoke3D
                                        ///< (unit 9) when ready.
     int m_smoke3DIdx = 0; ///< Index of the buffer written by the NEXT pass; the newest finished state is m_texSmoke3D[1
                           ///< - m_smoke3DIdx].
     GLuint m_smoke3DProgId = 0; ///< Smoke/fire PDE step fragment shader program (shared by both the horizontal and
                                 ///< vertical sub-passes).
-    GLint m_smoke3DPrevUni = -1;                              ///< Uniform location: previous-state sampler (texPrev).
-    GLint m_smoke3DResUni = -1;                               ///< Uniform location: atlas resolution.
+    GLint m_smoke3DPrevUni = -1;                           ///< Uniform location: previous-state sampler (texPrev).
+    GLint m_smoke3DResUni = -1;                            ///< Uniform location: atlas resolution.
     GLint m_smoke3DSeedUni = -1; ///< Uniform location: seed-pattern trigger (1 on the very first step only).
     GLint m_smoke3DSubUni = -1; ///< Uniform location: sub-step selector (0 = horizontal, 1 = vertical half of the PDE).
-    GLint m_smoke3DTimeUni = -1;                              ///< Uniform location: global time.
+    GLint m_smoke3DTimeUni = -1;                           ///< Uniform location: global time.
     GLint m_smoke3DTurbUni = -1;      ///< Uniform location: per-cell turbulence strength (treble/onset driven).
     GLint m_smoke3DInjectUni = -1;    ///< Uniform location: base-cell fuel-injection strength (bass/kick/drop driven).
     GLint m_smoke3DEmitPhaseUni = -1; ///< Uniform location: integrated audio-advance phase driving wandering emitter
                                       ///< positions.
     bool m_smoke3DReady = false;      ///< True once setup succeeded; gates stepping and texture binding.
-    bool m_smoke3DSeeded = false;     ///< False until the first step has written the seed pattern.
+    bool m_smoke3DSeeded = false;                          ///< False until the first step has written the seed pattern.
 
     // ---- Physarum (Agenten + Trail-Map) ----
-    static const int kPhysAgentsSide = 1024; ///< Side length in texels of the square agent-state texture; one texel =
-                                             ///< one agent, so 1024 x 1024 = 1 048 576 agents.
-    static const int kPhysTrailSize = 1024;         ///< Side length in texels of the pheromone trail map.
+    static const int PhysAgentsSide = 1024; ///< Side length in texels of the square agent-state texture; one texel =
+                                            ///< one agent, so 1024 x 1024 = 1 048 576 agents.
+    static const int PhysTrailSize = 1024;          ///< Side length in texels of the pheromone trail map.
     GLuint m_texPhysAgents[2] = { 0, 0 }; ///< Ping-pong RGBA16F agent-state textures (position/heading encoded per
                                           ///< texel).
     GLuint m_fboPhysAgents[2] = { 0, 0 };           ///< Ping-pong framebuffers wrapping m_texPhysAgents[0]/[1].
@@ -350,36 +350,36 @@ private:
     bool  m_physSeeded = false;                     ///< False until the first step has written the seed pattern.
 
     // ---- SSM (host-berechnete Selbstähnlichkeits-Matrix) ----
-    static const int kSSMSize = 256; ///< Ring capacity (feature-vector history length) and side length of the resulting
-                                     ///< similarity matrix texture.
-    static const int kSSMDims = 20;  ///< Dimensionality of each stored feature vector (12 chroma bins + 8 coarse
-                                     ///< spectral-shape bins).
-    static constexpr float kSSMStride = 0.35f; ///< Seconds between successive feature-vector samples pushed into the
-                                               ///< ring.
-    float m_ssmVecs[kSSMSize][kSSMDims] = {};  ///< Ring buffer of unit-normalized feature vectors, one row per ring
-                                               ///< slot.
-    unsigned char m_ssmData[kSSMSize * kSSMSize] = {}; ///< Byte similarity matrix (row-major); mirrored symmetrically
-                                                       ///< on every update. Uploaded verbatim to m_texSSM.
-    int    m_ssmHead = 0;                              ///< Next ring slot to be written.
-    int    m_ssmCount = 0; ///< Number of ring slots populated so far (saturates at kSSMSize).
-    float  m_ssmAccum = 0.f;                           ///< Seconds accumulated toward the next kSSMStride sample.
-    GLuint m_texSSM = 0;                               ///< Lazily-created R8 texture (unit 10) holding m_ssmData.
+    static const int SSMSize = 256; ///< Ring capacity (feature-vector history length) and side length of the resulting
+                                    ///< similarity matrix texture.
+    static const int SSMDims = 20;  ///< Dimensionality of each stored feature vector (12 chroma bins + 8 coarse
+                                    ///< spectral-shape bins).
+    static constexpr float SSMStride = 0.35f; ///< Seconds between successive feature-vector samples pushed into the
+                                              ///< ring.
+    float m_ssmVecs[SSMSize][SSMDims] = {};   ///< Ring buffer of unit-normalized feature vectors, one row per ring
+                                              ///< slot.
+    unsigned char m_ssmData[SSMSize * SSMSize] = {}; ///< Byte similarity matrix (row-major); mirrored symmetrically
+                                                     ///< on every update. Uploaded verbatim to m_texSSM.
+    int    m_ssmHead = 0;                            ///< Next ring slot to be written.
+    int    m_ssmCount = 0;                           ///< Number of ring slots populated so far (saturates at SSMSize).
+    float  m_ssmAccum = 0.f;                         ///< Seconds accumulated toward the next SSMStride sample.
+    GLuint m_texSSM = 0;                             ///< Lazily-created R8 texture (unit 10) holding m_ssmData.
     bool   m_ssmDirty = false; ///< True when m_ssmData has changed since the last upload to m_texSSM.
 
     // ---- Spektrogramm-Ring (host-gefüllt) ----
-    static const int kSpectroW = AudioFeatures::kSpectrumBands; ///< Spectrogram texture width in texels: one column per
-                                                                ///< spectrum band (32).
-    static const int kSpectroH = 256; ///< Spectrogram ring depth in rows of history; at kSpectroStride per row that is
-                                      ///< ~20 s.
-    static constexpr float kSpectroStride = 0.08f; ///< Seconds between successive spectrogram rows pushed into the
-                                                   ///< ring.
-    unsigned char m_spectroData[kSpectroH * kSpectroW] = {}; ///< Byte spectrogram ring buffer (row-major, one row per
-                                                             ///< time slice). Uploaded (in part) to m_texSpectro.
-    int   m_spectroHead = 0;                                    ///< Next ring row to be written.
-    int   m_spectroCount = 0;   ///< Number of ring rows populated so far (saturates at kSpectroH).
-    float m_spectroAccum = 0.f; ///< Seconds accumulated toward the next kSpectroStride row.
+    static const int SpectroW = AudioFeatures::SpectrumBands; ///< Spectrogram texture width in texels: one column per
+                                                              ///< spectrum band (32).
+    static const int SpectroH = 256; ///< Spectrogram ring depth in rows of history; at SpectroStride per row that is
+                                     ///< ~20 s.
+    static constexpr float SpectroStride = 0.08f; ///< Seconds between successive spectrogram rows pushed into the
+                                                  ///< ring.
+    unsigned char m_spectroData[SpectroH * SpectroW] = {};    ///< Byte spectrogram ring buffer (row-major, one row per
+                                                              ///< time slice). Uploaded (in part) to m_texSpectro.
+    int   m_spectroHead = 0;                                  ///< Next ring row to be written.
+    int   m_spectroCount = 0;   ///< Number of ring rows populated so far (saturates at SpectroH).
+    float m_spectroAccum = 0.f; ///< Seconds accumulated toward the next SpectroStride row.
     int   m_spectroPend = 0;    ///< Number of rows written since the last texture upload, still pending (capped at
-                                ///< kSpectroH).
+                                ///< SpectroH).
     GLuint m_texSpectro = 0;    ///< Lazily-created R8 texture (unit 28) holding m_spectroData.
 };
 

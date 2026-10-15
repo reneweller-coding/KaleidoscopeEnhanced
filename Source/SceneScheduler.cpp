@@ -13,10 +13,10 @@
 #include "SceneScheduler.h"
 #include "EffectShader.h"
 
-/** @brief Enable/disable review mode (alphabetical walk, fixed kReviewSoloSecs per scene).
+/** @brief Enable/disable review mode (alphabetical walk, fixed ReviewSoloSecs per scene).
  *
  * The parameter is documented in SceneScheduler.h. Besides flipping the
- * mode, this publishes the span to EffectShader (kReviewSoloSecs while on,
+ * mode, this publishes the span to EffectShader (ReviewSoloSecs while on,
  * 0 when off) so `sceneProgress` normalises over the time a scene is
  * actually SHOWN here rather than over its rolled solo span -- otherwise a
  * staged scene never finishes its arc on the bench.
@@ -24,7 +24,7 @@
 void SceneScheduler::setReviewMode( bool on )
 {
     m_reviewMode = on;
-    EffectShader::s_reviewSolo = on ? kReviewSoloSecs : 0.f;
+    EffectShader::M_ReviewSolo = on ? ReviewSoloSecs : 0.f;
 }
 
 // Basename eines Fragment-Pfads, case-insensitiver Vergleich (Review-Sortierung).
@@ -86,7 +86,7 @@ static bool baseLess( const char *a, const char *b )
  * Mirrors the old inline start() block exactly, including its slightly
  * different (looser) complexity budgets for the very first pick: 12 for the
  * texture pair alone, 20 once the combine pair is added in. Each pick is a
- * bounded rejection-sampling loop (up to #kMaxSearch tries) that requires
+ * bounded rejection-sampling loop (up to #MaxSearch tries) that requires
  * useShader() and, for "next", a distinct index from "act" within the
  * complexity budget; if the loop still lands on the same index as "act" it
  * is nudged forward by one (wrapping) rather than retried further.
@@ -95,7 +95,7 @@ void SceneScheduler::reset()
 {
     // Initiale Zufallswahl - exakt der alte start()-Block (inkl. der etwas
     // anderen Komplexitätsbudgets 12 bzw. 20 der Erst-Wahl).
-    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    for ( unsigned int i = 0; i < MaxSearch; i++ )
     {
         m_actTexture = rand() % m_textures->size();
         if ( ( *m_textures )[m_actTexture]->useShader() )
@@ -105,12 +105,12 @@ void SceneScheduler::reset()
     m_recentTex.clear();
     noteTextureShown( m_actTexture );
 
-    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    for ( unsigned int i = 0; i < MaxSearch; i++ )
     {
         m_nextTexture = rand() % m_textures->size();
         if ( m_nextTexture != m_actTexture
              && ( ( ( *m_textures )[m_actTexture]->getComplexity() + ( *m_textures )[m_nextTexture]->getComplexity() )
-                  < kComplexityBudgetInitial )
+                  < ComplexityBudgetInitial )
              && ( *m_textures )[m_nextTexture]->useShader() )
             break;
     }
@@ -125,12 +125,12 @@ void SceneScheduler::reset()
     // pass through resetParameters() otherwise, and keeps the rolls made while
     // loading -- from the global stream, which depends on how many presets were
     // loaded before it (another hidden preset in the folder changed the roll).
-    static const bool seeded = getenv( "KALEIDO_SEED" ) != nullptr;
-    if ( seeded )
+    static const bool Seeded = getenv( "KALEIDO_SEED" ) != nullptr;
+    if ( Seeded )
         ( *m_textures )[m_actTexture]->resetParameters();
     m_texFadeDur = (float)( ( *m_textures )[m_actTexture]->getTimeSolo() );
 
-    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    for ( unsigned int i = 0; i < MaxSearch; i++ )
     {
         m_actFx = rand() % m_fxShaders->size();
         if ( ( *m_fxShaders )[m_actFx]->useShader() )
@@ -141,17 +141,17 @@ void SceneScheduler::reset()
     // tickFx()'s fade-end for why forbidding a dominant-probability FX (e.g.
     // FxPlain at probability=1.0) from following itself mathematically caps
     // it at ~50%, regardless of its configured probability.
-    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    for ( unsigned int i = 0; i < MaxSearch; i++ )
     {
         m_nextFx = rand() % m_fxShaders->size();
         if ( ( ( ( *m_textures )[m_actTexture]->getComplexity() + ( *m_textures )[m_nextTexture]->getComplexity()
                  + ( *m_fxShaders )[m_actFx]->getComplexity() + ( *m_fxShaders )[m_nextFx]->getComplexity() )
-               < kComplexityBudget )
+               < ComplexityBudget )
              && ( *m_fxShaders )[m_nextFx]->useShader() )
             break;
     }
 
-    if ( seeded )
+    if ( Seeded )
         ( *m_fxShaders )[m_actFx]->resetParameters();
     m_fxFadeDur = (float)( ( *m_fxShaders )[m_actFx]->getTimeSolo() );
 
@@ -290,7 +290,7 @@ int SceneScheduler::findTransition( const char *basename ) const
 /**
  * @brief Tells whether texture @p idx was shown within the no-repeat window.
  *
- * The window holds the last min(kRecentMax, a third of the preset) scenes, so
+ * The window holds the last min(RecentMax, a third of the preset) scenes, so
  * a small preset still has two thirds of its scenes to choose from.
  * @param idx Texture index into the attached texture list.
  * @return True if @p idx is in the window.
@@ -319,8 +319,8 @@ void SceneScheduler::noteTextureShown( unsigned int idx )
 {
     m_recentTex.push_back( idx );
     size_t cap = m_textures ? m_textures->size() / 3 : 0;
-    if ( cap > kRecentMax )
-        cap = kRecentMax;
+    if ( cap > RecentMax )
+        cap = RecentMax;
     while ( m_recentTex.size() > cap )
         m_recentTex.erase( m_recentTex.begin() );
 }
@@ -416,12 +416,12 @@ void SceneScheduler::tick( const Tick &t )
     // the music asked for.  Forcing another one made the freshly faded-in
     // scene get cut away again after the 0.6 s minimum solo -- the reported
     // "scene flashes in for a fraction of a second and is replaced".
-    const bool midFade = ( m_texState != 0 );
+    const bool mid_fade = ( m_texState != 0 );
 
     m_noveltyCooldown -= t.dt;
     if ( !m_reviewMode && m_noveltyCooldown <= 0.f && t.harmonicChange * t.musicPresence > 0.5f )
     {
-        if ( !midFade )
+        if ( !mid_fade )
             m_forceEffectChange = true;
         m_noveltyCooldown = 8.0f; // at most one musical cut every ~8 s
     }
@@ -468,7 +468,7 @@ void SceneScheduler::tick( const Tick &t )
         // within this song, not inherited from a set played an hour ago).
         auto st = m_sectionStamp.find( id );
         bool fresh = st != m_sectionStamp.end()
-                     && ( t.sectionCount - st->second ) <= kSectionMemorySpan;
+                     && ( t.sectionCount - st->second ) <= SectionMemorySpan;
         bool known = t.sectionKnown && ( id >= 0 ) && it != m_sectionEffect.end()
                      && it->second < tex.size() && fresh;
         fprintf( stderr, "SCHED section id=%d %s%s -> %s\n", id,
@@ -488,11 +488,11 @@ void SceneScheduler::tick( const Tick &t )
             if ( known )
             {
                 auto ic = m_sectionFx.find( id );
-                int  fxTarget = ( ic != m_sectionFx.end()
-                                  && ic->second < comb.size()
-                                  && ic->second != m_actFx )
-                                    ? (int)ic->second
-                                    : -1;
+                int  fx_target = ( ic != m_sectionFx.end()
+                                   && ic->second < comb.size()
+                                   && ic->second != m_actFx )
+                                     ? (int)ic->second
+                                     : -1;
 
                 // Texture/scene slot and combine/FX slot are TWO INDEPENDENT
                 // state machines with their own Solo/Fade timing (tick() vs
@@ -506,7 +506,7 @@ void SceneScheduler::tick( const Tick &t )
                 // slots sharing one m_texState guard, which incorrectly let a
                 // mid-fade COMBINE retarget through whenever the unrelated
                 // TEXTURE slot happened to be idle at that moment).
-                if ( !midFade )
+                if ( !mid_fade )
                 {
                     m_nextTexture = it->second;   // replay that section's shader
                     m_pendingSectionRestore = id; //   ... with its exact params
@@ -520,16 +520,16 @@ void SceneScheduler::tick( const Tick &t )
                     m_pendingSectionNextId = id;
                 }
 
-                if ( fxTarget >= 0 )
+                if ( fx_target >= 0 )
                 {
                     if ( m_fxState == 0 )
                     {
-                        m_nextFx = fxTarget;
+                        m_nextFx = fx_target;
                         m_forceFxChange = true;
                     }
                     else
                     {
-                        m_pendingSectionNextFx = fxTarget;
+                        m_pendingSectionNextFx = fx_target;
                         m_forceFxChange = true; // consumed once tickFx() is back in Solo, by which point the deferred
                                                 // m_nextFx has already been applied at its fade-end
                     }
@@ -545,7 +545,7 @@ void SceneScheduler::tick( const Tick &t )
                 if ( ( t.sectionCount & 1 ) == 0 )
                     m_forceFxChange = true; // bigger scenery change
             }
-            if ( !midFade )
+            if ( !mid_fade )
                 m_forceEffectChange = true;
         }
         m_noveltyCooldown = 8.0f; // hold off the harmonic hook right after
@@ -556,7 +556,7 @@ void SceneScheduler::tick( const Tick &t )
     // but a drop IS a downbeat-scale accent).
     if ( !m_reviewMode && t.dropCount == m_lastDropCount + 1 )
     {
-        if ( midFade )
+        if ( mid_fade )
         {
             // The change is already under way: land it ON the drop as a hard
             // cut (finish the running fade within ~0.15 s) instead of queuing
@@ -612,8 +612,8 @@ void SceneScheduler::tick( const Tick &t )
         // REVIEW MODE: a fixed span per scene, regardless of config/music
         // pacing -- long enough to actually judge a scene's motion, which is
         // why it is a named constant rather than a number buried here.
-        if ( m_reviewMode && m_texFadeDur > kReviewSoloSecs )
-            m_texFadeDur = kReviewSoloSecs;
+        if ( m_reviewMode && m_texFadeDur > ReviewSoloSecs )
+            m_texFadeDur = ReviewSoloSecs;
 
         // End the solo early on a manual ('n') or trigger-driven request, but
         // only after a minimum so cuts never come back-to-back.  A human
@@ -621,8 +621,8 @@ void SceneScheduler::tick( const Tick &t )
         // landing right after a fade completed must let the new scene stand
         // for a real shot first -- 0.6 s read as "flashes in, gets replaced".
         bool  forced = m_forceEffectChange;
-        float minSolo = m_forceIsManual ? 0.6f : 2.0f;
-        if ( ts > m_texFadeDur || ( forced && ts > minSolo ) )
+        float min_solo = m_forceIsManual ? 0.6f : 2.0f;
+        if ( ts > m_texFadeDur || ( forced && ts > min_solo ) )
         {
             m_forceEffectChange = false;
             m_forceIsManual = false;
@@ -638,7 +638,7 @@ void SceneScheduler::tick( const Tick &t )
             if ( m_pendingEffectForced || m_reviewMode || t.downbeatTick
                  || m_pendingEffectAge > 2.5f || t.gateSmooth < 0.25f )
             {
-                bool forcedGo = m_pendingEffectForced;
+                bool forced_go = m_pendingEffectForced;
                 m_pendingEffectChange = false;
                 m_pendingEffectForced = false;
                 m_pendingEffectAge = 0.f;
@@ -654,7 +654,7 @@ void SceneScheduler::tick( const Tick &t )
                 if ( m_transitions && !m_transitions->empty() )
                 {
                     std::vector<EffectShader *> &tr = *m_transitions;
-                    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+                    for ( unsigned int i = 0; i < MaxSearch; i++ )
                     {
                         m_actTransition = rand() % tr.size();
                         if ( tr[m_actTransition]->useShader()
@@ -688,24 +688,24 @@ void SceneScheduler::tick( const Tick &t )
                     tr[m_actTransition]->startInterpolators();
                 }
 
-                unsigned int timeAct = tex[m_actTexture]->getTimeInterpolation();
-                unsigned int timeNext = tex[m_nextTexture]->getTimeInterpolation();
+                unsigned int time_act = tex[m_actTexture]->getTimeInterpolation();
+                unsigned int time_next = tex[m_nextTexture]->getTimeInterpolation();
 
                 // Manual cut -> short snappy cross-fade; natural change ->
                 // config time, or exactly 4 BEATS with a confident rhythm
                 // (never longer than the config asked for).
                 {
-                    float cfgT = (float)( std::min( timeAct, timeNext ) ) / t.timingScale;
-                    if ( !forcedGo && t.rhythmStrength > 0.55f
+                    float cfg_t = (float)( std::min( time_act, time_next ) ) / t.timingScale;
+                    if ( !forced_go && t.rhythmStrength > 0.55f
                          && t.estimatedBPM > 0.004f )
                     {
-                        float fourBeats = 4.f * 60.f / ( 40.f + 160.f * t.estimatedBPM );
-                        cfgT = fminf( fmaxf( fourBeats, 1.2f ), cfgT );
+                        float four_beats = 4.f * 60.f / ( 40.f + 160.f * t.estimatedBPM );
+                        cfg_t = fminf( fmaxf( four_beats, 1.2f ), cfg_t );
                     }
                     // ARTICULATION: staccato material gets snappier cross-fades,
                     // legato keeps the full dissolve.
-                    cfgT *= 1.f - 0.35f * t.logAttackTime;
-                    m_texFadeDur = ( forcedGo || m_reviewMode ) ? 0.8f : cfgT;
+                    cfg_t *= 1.f - 0.35f * t.logAttackTime;
+                    m_texFadeDur = ( forced_go || m_reviewMode ) ? 0.8f : cfg_t;
 
                     // FLOORS (never for a manual cut or the review bench).
                     // The four-beat clamp suits a cross-fade; a transition that
@@ -714,25 +714,25 @@ void SceneScheduler::tick( const Tick &t )
                     // as "very, very fast" at two seconds (user, 14.09.2026).
                     // Each transition carries its own measured floor (minFade);
                     // a calm preset adds one for every fade (timeSceneFadeMin).
-                    float floorT = 0.f;
-                    if ( !forcedGo && !m_reviewMode )
+                    float floor_t = 0.f;
+                    if ( !forced_go && !m_reviewMode )
                     {
-                        floorT = m_sceneFadeMin;
+                        floor_t = m_sceneFadeMin;
                         if ( m_transitions && m_actTransition < m_transitions->size() )
-                            floorT = fmaxf( floorT, ( *m_transitions )[m_actTransition]->minFade() );
-                        m_texFadeDur = fmaxf( m_texFadeDur, floorT );
+                            floor_t = fmaxf( floor_t, ( *m_transitions )[m_actTransition]->minFade() );
+                        m_texFadeDur = fmaxf( m_texFadeDur, floor_t );
                     }
                     // KALEIDO_FADE_LOG: one line per scene fade -- which transition,
                     // how long, and what the floor was -- to verify the floors in a
                     // real run instead of trusting the arithmetic.
-                    static const bool fadeLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
-                    if ( fadeLog )
+                    static const bool FadeLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
+                    if ( FadeLog )
                         fprintf( stderr, "FADE %s via %s: %.2f s (beat/config %.2f, floor %.2f)\n",
                                  tex[m_nextTexture]->fragmentName(),
                                  ( m_transitions && m_actTransition < m_transitions->size() )
                                      ? ( *m_transitions )[m_actTransition]->fragmentName()
                                      : "-",
-                                 m_texFadeDur, cfgT, floorT );
+                                 m_texFadeDur, cfg_t, floor_t );
                 }
 
                 // Drop-Dramaturgie: der Wechsel kam von einem erkannten DROP.
@@ -860,12 +860,12 @@ void SceneScheduler::tick( const Tick &t )
                 m_pendingSectionNextId = -1;
             }
             else
-                for ( unsigned int i = 0; i < kMaxSearch; i++ )
+                for ( unsigned int i = 0; i < MaxSearch; i++ )
                 {
                     m_nextTexture = rand() % tex.size();
-                    // Nothing shown in the last kRecentMax scenes, unless the
+                    // Nothing shown in the last RecentMax scenes, unless the
                     // search is running dry (a small preset, a narrow filter).
-                    if ( i < kMaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
+                    if ( i < MaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
                         continue;
                     // Keine Vorliebe fuer INSZENIERTE Szenen (sceneProgress) bei
                     // steigender Spannung mehr (29.09.2026).  Die Regel sollte deren
@@ -877,7 +877,7 @@ void SceneScheduler::tick( const Tick &t )
                     if ( m_nextTexture != m_actTexture
                          && ( ( tex[m_actTexture]->getComplexity() + tex[m_nextTexture]->getComplexity()
                                 + comb[m_actFx]->getComplexity() + comb[m_nextFx]->getComplexity() )
-                              < kComplexityBudget )
+                              < ComplexityBudget )
                          && tex[m_nextTexture]->useShader() && moodAccept( tex[m_nextTexture] ) )
                         break;
                 }
@@ -927,16 +927,16 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
         m_fxInterp = 1.0;
 
         float ts = secsSince( m_clockEffectFx );
-        bool  forcedC = m_forceFxChange;
+        bool  forced_c = m_forceFxChange;
         // The true-stereo hold freezes combine switching: an eye-packed 3D
         // frame must not enter a combine cross-fade (the pending change fires
         // as soon as the hold lifts).
         if ( !trueStereoHold
-             && ( ts > m_fxFadeDur || ( forcedC && ts > 0.6f ) ) )
+             && ( ts > m_fxFadeDur || ( forced_c && ts > 0.6f ) ) )
         {
             m_forceFxChange = false;
             m_pendingFxChange = true;
-            m_pendingFxForced = m_pendingFxForced || forcedC;
+            m_pendingFxForced = m_pendingFxForced || forced_c;
         }
 
         // Beat-quantised, like the texture-effect change (manual cuts fire
@@ -947,26 +947,26 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
             if ( m_pendingFxForced || t.downbeatTick
                  || m_pendingFxAge > 2.5f || t.gateSmooth < 0.25f )
             {
-                bool forcedGo = m_pendingFxForced;
+                bool forced_go = m_pendingFxForced;
                 m_pendingFxChange = false;
                 m_pendingFxForced = false;
                 m_pendingFxAge = 0.f;
 
                 m_fxState = 1;
 
-                unsigned int timeAct = comb[m_actFx]->getTimeInterpolation();
-                unsigned int timeNext = comb[m_nextFx]->getTimeInterpolation();
+                unsigned int time_act = comb[m_actFx]->getTimeInterpolation();
+                unsigned int time_next = comb[m_nextFx]->getTimeInterpolation();
 
                 {
-                    float cfgT = (float)( std::min( timeAct, timeNext ) ) / t.timingScale;
-                    if ( !forcedGo && t.rhythmStrength > 0.55f
+                    float cfg_t = (float)( std::min( time_act, time_next ) ) / t.timingScale;
+                    if ( !forced_go && t.rhythmStrength > 0.55f
                          && t.estimatedBPM > 0.004f )
                     {
-                        float fourBeats = 4.f * 60.f / ( 40.f + 160.f * t.estimatedBPM );
-                        cfgT = fminf( fmaxf( fourBeats, 1.2f ), cfgT );
+                        float four_beats = 4.f * 60.f / ( 40.f + 160.f * t.estimatedBPM );
+                        cfg_t = fminf( fmaxf( four_beats, 1.2f ), cfg_t );
                     }
-                    cfgT *= 1.f - 0.35f * t.logAttackTime;
-                    m_fxFadeDur = forcedGo ? 0.8f : cfgT;
+                    cfg_t *= 1.f - 0.35f * t.logAttackTime;
+                    m_fxFadeDur = forced_go ? 0.8f : cfg_t;
                 }
 
                 comb[m_nextFx]->startInterpolators();
@@ -1021,7 +1021,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
                 // isMeshCalmFx above) -- the rejection loop simply demands it, so the
                 // accent variety survives: a model can still get godrays, a halftone,
                 // a colour grade, just nothing that displaces the frame.
-                const bool meshCalmNeeded =
+                const bool mesh_calm_needed =
                     tex[m_actTexture]->isMeshScene()
                     || ( m_texState != 0 && tex[m_nextTexture]->isMeshScene() );
                 // forceFx() bypasses every acceptance test below -- the whole point
@@ -1034,19 +1034,19 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
                 }
                 else
                 {
-                    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+                    for ( unsigned int i = 0; i < MaxSearch; i++ )
                     {
                         m_nextFx = rand() % comb.size();
                         if ( ( ( tex[m_actTexture]->getComplexity() + tex[m_nextTexture]->getComplexity()
                                  + comb[m_actFx]->getComplexity() + comb[m_nextFx]->getComplexity() )
-                               < kComplexityBudget )
+                               < ComplexityBudget )
                              && comb[m_nextFx]->useShader() && moodAccept( comb[m_nextFx] )
-                             && ( !meshCalmNeeded || isMeshCalmFx( comb[m_nextFx]->fragmentName() ) ) )
+                             && ( !mesh_calm_needed || isMeshCalmFx( comb[m_nextFx]->fragmentName() ) ) )
                             break;
                     }
                     // Unlucky rolls on a mesh scene fall back to the pass-through --
                     // never to a warping overlay.
-                    if ( meshCalmNeeded && !isMeshCalmFx( comb[m_nextFx]->fragmentName() ) )
+                    if ( mesh_calm_needed && !isMeshCalmFx( comb[m_nextFx]->fragmentName() ) )
                     {
                         for ( unsigned int i = 0; i < comb.size(); i++ )
                         {

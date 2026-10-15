@@ -152,52 +152,52 @@ static void loadRigTable( const QString &cfgDir )
 void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 {
     // get all data for the element, by looping through all child elements
-    QDomNode pEntries = el.firstChild();
-    while ( !pEntries.isNull() )
+    QDomNode p_entries = el.firstChild();
+    while ( !p_entries.isNull() )
     {
-        QDomElement peData = pEntries.toElement();
-        QString     tagNam = peData.tagName();
+        QDomElement pe_data = p_entries.toElement();
+        QString     tag_nam = pe_data.tagName();
 
-        std::string name = peData.attribute( "name" ).toStdString();
+        std::string name = pe_data.attribute( "name" ).toStdString();
 
-        if ( tagNam == "interpolator" )
+        if ( tag_nam == "interpolator" )
         {
-            float minMin = peData.attribute( "minMin" ).toFloat();
-            float maxMin = peData.attribute( "maxMin" ).toFloat();
-            float minMax = peData.attribute( "minMax" ).toFloat();
-            float maxMax = peData.attribute( "maxMax" ).toFloat();
+            float min_min = pe_data.attribute( "minMin" ).toFloat();
+            float max_min = pe_data.attribute( "maxMin" ).toFloat();
+            float min_max = pe_data.attribute( "minMax" ).toFloat();
+            float max_max = pe_data.attribute( "maxMax" ).toFloat();
 
-            shader->addUniformInterpolator( name, minMin, minMax, maxMin, maxMax );
+            shader->addUniformInterpolator( name, min_min, min_max, max_min, max_max );
         }
-        else if ( tagNam == "bool" )
+        else if ( tag_nam == "bool" )
         {
-            float probability = peData.attribute( "probability" ).toFloat();
+            float probability = pe_data.attribute( "probability" ).toFloat();
             shader->addUniform( name, probability );
         }
-        else if ( tagNam == "float" )
+        else if ( tag_nam == "float" )
         {
-            float minValueF = peData.attribute( "minValue" ).toFloat();
-            float maxValueF = peData.attribute( "maxValue" ).toFloat();
-            shader->addUniform( name, minValueF, maxValueF );
+            float min_value_f = pe_data.attribute( "minValue" ).toFloat();
+            float max_value_f = pe_data.attribute( "maxValue" ).toFloat();
+            shader->addUniform( name, min_value_f, max_value_f );
         }
-        else if ( tagNam == "int" )
+        else if ( tag_nam == "int" )
         {
-            int minValueI = peData.attribute( "minValue" ).toInt();
-            int maxValueI = peData.attribute( "maxValue" ).toInt();
-            shader->addUniform( name, minValueI, maxValueI );
+            int min_value_i = pe_data.attribute( "minValue" ).toInt();
+            int max_value_i = pe_data.attribute( "maxValue" ).toInt();
+            shader->addUniform( name, min_value_i, max_value_i );
         }
-        else if ( tagNam == "expr" )
+        else if ( tag_nam == "expr" )
         {
             // FORMULA LAYER: per-frame expression evaluated against the live
             // audio features, uploaded as the float uniform `name` (overrides
             // a <float> of the same name — see EffectShader::addExpression).
-            shader->addExpression( name, peData.attribute( "formula" ).toStdString() );
+            shader->addExpression( name, pe_data.attribute( "formula" ).toStdString() );
         }
-        else if ( tagNam == "rig" )
+        else if ( tag_nam == "rig" )
         {
             // <rig preset="mesh-18"/> expands to the same addExpression calls
             // the formulas would have made -- see loadRigTable above.
-            const QString preset = peData.attribute( "preset" );
+            const QString preset = pe_data.attribute( "preset" );
             auto          it = s_rigTable.constFind( preset );
             if ( it == s_rigTable.constEnd() )
             {
@@ -217,7 +217,7 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
             }
         }
 
-        pEntries = pEntries.nextSibling();
+        p_entries = p_entries.nextSibling();
     }
 }
 
@@ -315,19 +315,19 @@ void Configuration::readConfiguration( const QString &filenameIn )
     }
 
     // Get the root element
-    QDomElement docElem = doc.documentElement();
+    QDomElement doc_elem = doc.documentElement();
 
     // you could check the root tag name here if it matters
-    QString rootTag = docElem.tagName(); //
+    QString root_tag = doc_elem.tagName(); //
 
 
-    m_imageDirectory = docElem.attribute( "ImageDirectory" );
-    m_configurationName = docElem.attribute( "ConfigurationName" );
-    m_hidden = docElem.attribute( "hidden" ).compare( "true", Qt::CaseInsensitive ) == 0;
+    m_imageDirectory = doc_elem.attribute( "ImageDirectory" );
+    m_configurationName = doc_elem.attribute( "ConfigurationName" );
+    m_hidden = doc_elem.attribute( "hidden" ).compare( "true", Qt::CaseInsensitive ) == 0;
     // Only read here; GLwidget decides whether to use it, because the audio
     // thread is a process-wide thing that starts once and every preset gets
     // parsed at launch, active or not.
-    m_audioFile = docElem.attribute( "AudioFile" );
+    m_audioFile = doc_elem.attribute( "AudioFile" );
 
     // REVIEW MODE for the Test* presets: scenes run ALPHABETICALLY, 8 s
     // each, and 'n' steps to the next in order — a systematic viewing
@@ -337,7 +337,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
     // Optional floor on every natural scene fade (seconds). Set by the calm
     // presets (Ambient, SpaceAmbient): with a beat in the music the scheduler
     // otherwise clamps fades to four beats, which is not what a calm preset is for.
-    m_renderPipeline->setSceneFadeMin( docElem.attribute( "timeSceneFadeMin" ).toFloat() );
+    m_renderPipeline->setSceneFadeMin( doc_elem.attribute( "timeSceneFadeMin" ).toFloat() );
 
     // Image-cycling times: optional (music steering paces the show anyway);
     // absent/0 falls back to the long-standing baseline.
@@ -347,14 +347,14 @@ void Configuration::readConfiguration( const QString &filenameIn )
     // (min,max) pair; but if the author explicitly customised min, an
     // unset/too-small max is nudged to just min+1 rather than silently
     // jumping to the unrelated wide baseline max.
-    m_timeTextureSoloMin = docElem.attribute( "timeTextureSoloMin" ).toUInt();
-    m_timeTextureSoloMax = docElem.attribute( "timeTextureSoloMax" ).toUInt();
+    m_timeTextureSoloMin = doc_elem.attribute( "timeTextureSoloMin" ).toUInt();
+    m_timeTextureSoloMax = doc_elem.attribute( "timeTextureSoloMax" ).toUInt();
     if ( m_timeTextureSoloMin == 0 )
         m_timeTextureSoloMin = 10;
     if ( m_timeTextureSoloMax <= m_timeTextureSoloMin )
         m_timeTextureSoloMax = ( m_timeTextureSoloMin == 10 ) ? 40 : m_timeTextureSoloMin + 1;
-    m_timeTextureInterpolationMin = docElem.attribute( "timeTextureInterpolationMin" ).toUInt();
-    m_timeTextureInterpolationMax = docElem.attribute( "timeTextureInterpolationMax" ).toUInt();
+    m_timeTextureInterpolationMin = doc_elem.attribute( "timeTextureInterpolationMin" ).toUInt();
+    m_timeTextureInterpolationMax = doc_elem.attribute( "timeTextureInterpolationMax" ).toUInt();
     if ( m_timeTextureInterpolationMin == 0 )
         m_timeTextureInterpolationMin = 20;
     if ( m_timeTextureInterpolationMax <= m_timeTextureInterpolationMin )
@@ -363,33 +363,33 @@ void Configuration::readConfiguration( const QString &filenameIn )
 
 
     // get the node's interested in, this time only caring about person's
-    QDomNodeList nodeList = docElem.elementsByTagName( "TextureShader" );
+    QDomNodeList node_list = doc_elem.elementsByTagName( "TextureShader" );
 
     // Check the TextureShaders
-    for ( int i = 0; i < nodeList.count(); i++ )
+    for ( int i = 0; i < node_list.count(); i++ )
     {
         // get the current one as QDomElement
-        QDomElement el = nodeList.at( i ).toElement();
+        QDomElement el = node_list.at( i ).toElement();
 
         // The per-entry times are OPTIONAL since the timing became music-driven
         // (timingScale/beat-quantisation/section cuts steer the pacing): absent
         // or 0 falls back to a sensible baseline that mainly matters as the
         // no-music (speech/silence) pacing.
-        unsigned int minTimeSolo = el.attribute( "minTimeSolo" ).toUInt();
-        unsigned int maxTimeSolo = el.attribute( "maxTimeSolo" ).toUInt();
-        if ( minTimeSolo == 0 )
-            minTimeSolo = 20;
-        if ( maxTimeSolo <= minTimeSolo )
-            maxTimeSolo = ( minTimeSolo == 20 ) ? 90 : minTimeSolo + 1;
+        unsigned int min_time_solo = el.attribute( "minTimeSolo" ).toUInt();
+        unsigned int max_time_solo = el.attribute( "maxTimeSolo" ).toUInt();
+        if ( min_time_solo == 0 )
+            min_time_solo = 20;
+        if ( max_time_solo <= min_time_solo )
+            max_time_solo = ( min_time_solo == 20 ) ? 90 : min_time_solo + 1;
 
-        unsigned int minTimeInterpolation = el.attribute( "minTimeInterpolation" ).toUInt();
-        unsigned int maxTimeInterpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
-        if ( minTimeInterpolation == 0 )
-            minTimeInterpolation = 15;
-        if ( maxTimeInterpolation <= minTimeInterpolation )
-            maxTimeInterpolation = ( minTimeInterpolation == 15 ) ? 50 : minTimeInterpolation + 1;
+        unsigned int min_time_interpolation = el.attribute( "minTimeInterpolation" ).toUInt();
+        unsigned int max_time_interpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
+        if ( min_time_interpolation == 0 )
+            min_time_interpolation = 15;
+        if ( max_time_interpolation <= min_time_interpolation )
+            max_time_interpolation = ( min_time_interpolation == 15 ) ? 50 : min_time_interpolation + 1;
 
-        QString shaderFile = mapLegacyShaderPath( el.attribute( "file" ) );
+        QString shader_file = mapLegacyShaderPath( el.attribute( "file" ) );
 
         QString type = el.attribute( "type" );
 
@@ -422,25 +422,25 @@ void Configuration::readConfiguration( const QString &filenameIn )
         // Optional mood tags (comma list: dark, bright, calm, aggressive) for
         // the mood-biased shader selection; untagged shaders stay neutral.
         QString      mood = el.attribute( "mood" );
-        unsigned int moodFlags = 0;
+        unsigned int mood_flags = 0;
         if ( mood.contains( "dark" ) )
-            moodFlags |= EffectShader::MOOD_DARK;
+            mood_flags |= EffectShader::MOOD_DARK;
         if ( mood.contains( "bright" ) )
-            moodFlags |= EffectShader::MOOD_BRIGHT;
+            mood_flags |= EffectShader::MOOD_BRIGHT;
         if ( mood.contains( "calm" ) )
-            moodFlags |= EffectShader::MOOD_CALM;
+            mood_flags |= EffectShader::MOOD_CALM;
         if ( mood.contains( "aggressive" ) )
-            moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+            mood_flags |= EffectShader::MOOD_AGGRESSIVE;
 
         if ( type == "normal" )
         {
-            EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo,
-                                                     minTimeInterpolation, maxTimeInterpolation );
+            EffectShader *shader = new EffectShader( shader_file.toStdString(), min_time_solo, max_time_solo,
+                                                     min_time_interpolation, max_time_interpolation );
 
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
-            shader->setMoodFlags( moodFlags );
+            shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
             m_renderPipeline->addTextureShader( shader );
@@ -449,12 +449,13 @@ void Configuration::readConfiguration( const QString &filenameIn )
         else if ( type == "KaleidoscopeBase" )
         {
             TextureEffectKaleidoscopeBase *shader = new TextureEffectKaleidoscopeBase(
-                shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+                shader_file.toStdString(), min_time_solo, max_time_solo, min_time_interpolation,
+                max_time_interpolation );
 
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
-            shader->setMoodFlags( moodFlags );
+            shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
             m_renderPipeline->addTextureShader( shader );
@@ -464,9 +465,9 @@ void Configuration::readConfiguration( const QString &filenameIn )
         {
             // REAL 3D scene: Scene3D\<X>.frag + matching .vert, procedural
             // geometry chosen by geom="points|cubes|ribbon".
-            Scene3DShader *shader = new Scene3DShader( shaderFile.toStdString(), el.attribute( "geom" ).toStdString(),
-                                                       minTimeSolo, maxTimeSolo, minTimeInterpolation,
-                                                       maxTimeInterpolation );
+            Scene3DShader *shader = new Scene3DShader( shader_file.toStdString(), el.attribute( "geom" ).toStdString(),
+                                                       min_time_solo, max_time_solo, min_time_interpolation,
+                                                       max_time_interpolation );
 
             // Optional: half-width of the light's shadow box, in world units.
             // Only the scene knows its own scale, and the shadow map's
@@ -500,7 +501,7 @@ void Configuration::readConfiguration( const QString &filenameIn )
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
-            shader->setMoodFlags( moodFlags );
+            shader->setMoodFlags( mood_flags );
             shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
                                                                             // activation, applied by Present.frag
             m_renderPipeline->addTextureShader( shader );
@@ -510,30 +511,30 @@ void Configuration::readConfiguration( const QString &filenameIn )
 
 
     // get the node's interested in, this time only caring about person's
-    nodeList = docElem.elementsByTagName( "CombineShader" );
+    node_list = doc_elem.elementsByTagName( "CombineShader" );
 
     // Check the TextureShaders
-    for ( int i = 0; i < nodeList.count(); i++ )
+    for ( int i = 0; i < node_list.count(); i++ )
     {
         // get the current one as QDomElement
-        QDomElement el = nodeList.at( i ).toElement();
+        QDomElement el = node_list.at( i ).toElement();
 
         // Times optional here too (see the TextureShader loop above).
-        unsigned int minTimeSolo = el.attribute( "minTimeSolo" ).toUInt();
-        unsigned int maxTimeSolo = el.attribute( "maxTimeSolo" ).toUInt();
-        if ( minTimeSolo == 0 )
-            minTimeSolo = 30;
-        if ( maxTimeSolo <= minTimeSolo )
-            maxTimeSolo = ( minTimeSolo == 30 ) ? 120 : minTimeSolo + 1;
+        unsigned int min_time_solo = el.attribute( "minTimeSolo" ).toUInt();
+        unsigned int max_time_solo = el.attribute( "maxTimeSolo" ).toUInt();
+        if ( min_time_solo == 0 )
+            min_time_solo = 30;
+        if ( max_time_solo <= min_time_solo )
+            max_time_solo = ( min_time_solo == 30 ) ? 120 : min_time_solo + 1;
 
-        unsigned int minTimeInterpolation = el.attribute( "minTimeInterpolation" ).toUInt();
-        unsigned int maxTimeInterpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
-        if ( minTimeInterpolation == 0 )
-            minTimeInterpolation = 20;
-        if ( maxTimeInterpolation <= minTimeInterpolation )
-            maxTimeInterpolation = ( minTimeInterpolation == 20 ) ? 60 : minTimeInterpolation + 1;
+        unsigned int min_time_interpolation = el.attribute( "minTimeInterpolation" ).toUInt();
+        unsigned int max_time_interpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
+        if ( min_time_interpolation == 0 )
+            min_time_interpolation = 20;
+        if ( max_time_interpolation <= min_time_interpolation )
+            max_time_interpolation = ( min_time_interpolation == 20 ) ? 60 : min_time_interpolation + 1;
 
-        QString shaderFile = mapLegacyShaderPath( el.attribute( "file" ) );
+        QString shader_file = mapLegacyShaderPath( el.attribute( "file" ) );
 
         float        probability = el.attribute( "probability" ).toFloat();
         unsigned int complexity = el.attribute( "complexity" ).toFloat();
@@ -541,25 +542,25 @@ void Configuration::readConfiguration( const QString &filenameIn )
         QString type = el.attribute( "type" );
 
         QString      mood = el.attribute( "mood" );
-        unsigned int moodFlags = 0;
+        unsigned int mood_flags = 0;
         if ( mood.contains( "dark" ) )
-            moodFlags |= EffectShader::MOOD_DARK;
+            mood_flags |= EffectShader::MOOD_DARK;
         if ( mood.contains( "bright" ) )
-            moodFlags |= EffectShader::MOOD_BRIGHT;
+            mood_flags |= EffectShader::MOOD_BRIGHT;
         if ( mood.contains( "calm" ) )
-            moodFlags |= EffectShader::MOOD_CALM;
+            mood_flags |= EffectShader::MOOD_CALM;
         if ( mood.contains( "aggressive" ) )
-            moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+            mood_flags |= EffectShader::MOOD_AGGRESSIVE;
 
         if ( type == "normal" )
         {
-            EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo,
-                                                     minTimeInterpolation, maxTimeInterpolation );
+            EffectShader *shader = new EffectShader( shader_file.toStdString(), min_time_solo, max_time_solo,
+                                                     min_time_interpolation, max_time_interpolation );
 
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
-            shader->setMoodFlags( moodFlags );
+            shader->setMoodFlags( mood_flags );
             m_renderPipeline->addFxShader( shader );
         }
     }
@@ -569,27 +570,27 @@ void Configuration::readConfiguration( const QString &filenameIn )
     // blends outgoing/incoming scene during a fade.  One is rolled per fade
     // (probability + mood weighted); absent entries fall back to the plain
     // Crossfade inside RenderPipeline::start().
-    nodeList = docElem.elementsByTagName( "TransitionShader" );
+    node_list = doc_elem.elementsByTagName( "TransitionShader" );
 
-    for ( int i = 0; i < nodeList.count(); i++ )
+    for ( int i = 0; i < node_list.count(); i++ )
     {
-        QDomElement el = nodeList.at( i ).toElement();
+        QDomElement el = node_list.at( i ).toElement();
 
-        unsigned int minTimeSolo = el.attribute( "minTimeSolo" ).toUInt();
-        unsigned int maxTimeSolo = el.attribute( "maxTimeSolo" ).toUInt();
-        if ( minTimeSolo == 0 )
-            minTimeSolo = 30;
-        if ( maxTimeSolo <= minTimeSolo )
-            maxTimeSolo = ( minTimeSolo == 30 ) ? 120 : minTimeSolo + 1;
+        unsigned int min_time_solo = el.attribute( "minTimeSolo" ).toUInt();
+        unsigned int max_time_solo = el.attribute( "maxTimeSolo" ).toUInt();
+        if ( min_time_solo == 0 )
+            min_time_solo = 30;
+        if ( max_time_solo <= min_time_solo )
+            max_time_solo = ( min_time_solo == 30 ) ? 120 : min_time_solo + 1;
 
-        unsigned int minTimeInterpolation = el.attribute( "minTimeInterpolation" ).toUInt();
-        unsigned int maxTimeInterpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
-        if ( minTimeInterpolation == 0 )
-            minTimeInterpolation = 20;
-        if ( maxTimeInterpolation <= minTimeInterpolation )
-            maxTimeInterpolation = ( minTimeInterpolation == 20 ) ? 60 : minTimeInterpolation + 1;
+        unsigned int min_time_interpolation = el.attribute( "minTimeInterpolation" ).toUInt();
+        unsigned int max_time_interpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
+        if ( min_time_interpolation == 0 )
+            min_time_interpolation = 20;
+        if ( max_time_interpolation <= min_time_interpolation )
+            max_time_interpolation = ( min_time_interpolation == 20 ) ? 60 : min_time_interpolation + 1;
 
-        QString shaderFile = mapLegacyShaderPath( el.attribute( "file" ) );
+        QString shader_file = mapLegacyShaderPath( el.attribute( "file" ) );
 
         float        probability = el.attribute( "probability" ).toFloat();
         unsigned int complexity = el.attribute( "complexity" ).toFloat();
@@ -597,25 +598,25 @@ void Configuration::readConfiguration( const QString &filenameIn )
         QString type = el.attribute( "type" );
 
         QString      mood = el.attribute( "mood" );
-        unsigned int moodFlags = 0;
+        unsigned int mood_flags = 0;
         if ( mood.contains( "dark" ) )
-            moodFlags |= EffectShader::MOOD_DARK;
+            mood_flags |= EffectShader::MOOD_DARK;
         if ( mood.contains( "bright" ) )
-            moodFlags |= EffectShader::MOOD_BRIGHT;
+            mood_flags |= EffectShader::MOOD_BRIGHT;
         if ( mood.contains( "calm" ) )
-            moodFlags |= EffectShader::MOOD_CALM;
+            mood_flags |= EffectShader::MOOD_CALM;
         if ( mood.contains( "aggressive" ) )
-            moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+            mood_flags |= EffectShader::MOOD_AGGRESSIVE;
 
         if ( type == "normal" )
         {
-            EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo,
-                                                     minTimeInterpolation, maxTimeInterpolation );
+            EffectShader *shader = new EffectShader( shader_file.toStdString(), min_time_solo, max_time_solo,
+                                                     min_time_interpolation, max_time_interpolation );
 
             addUniforms( shader, el );
             shader->setComplexity( complexity );
             shader->setProbability( probability );
-            shader->setMoodFlags( moodFlags );
+            shader->setMoodFlags( mood_flags );
             // Measured floor on the fade this transition runs in; see
             // EffectShader::setMinFade().
             shader->setMinFade( el.attribute( "minFade" ).toFloat() );

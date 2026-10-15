@@ -117,10 +117,10 @@ void Scene3DPreview::addExpr( const QString &name, const QString &formula )
 static QString captureStderr( const std::function<void()> &body )
 {
     fflush( stderr );
-    char tmpPath[MAX_PATH];
-    char tmpDir[MAX_PATH];
-    GetTempPathA( MAX_PATH, tmpDir );
-    GetTempFileNameA( tmpDir, "kle", 0, tmpPath );
+    char tmp_path[MAX_PATH];
+    char tmp_dir[MAX_PATH];
+    GetTempPathA( MAX_PATH, tmp_dir );
+    GetTempFileNameA( tmp_dir, "kle", 0, tmp_path );
 
     // Duplicate the REAL stderr descriptor first, whatever it actually is --
     // a console, a file, or (any headless/automated run: --render, a test
@@ -130,23 +130,23 @@ static QString captureStderr( const std::function<void()> &body )
     // of the process, so every fprintf(stderr, ...) anywhere else in the app
     // -- including shader_setup.cpp's own compile-error logging -- goes
     // dark with no error of its own. Found by chasing exactly that symptom.
-    const int savedFd = _dup( _fileno( stderr ) );
+    const int saved_fd = _dup( _fileno( stderr ) );
 
-    FILE *redirected = freopen( tmpPath, "w", stderr );
+    FILE *redirected = freopen( tmp_path, "w", stderr );
     body();
     fflush( stderr );
 
     QString log;
-    if ( redirected && savedFd != -1 )
+    if ( redirected && saved_fd != -1 )
     {
-        _dup2( savedFd, _fileno( stderr ) ); // restore the ORIGINAL stderr target
-        QFile f( QString::fromLocal8Bit( tmpPath ) );
+        _dup2( saved_fd, _fileno( stderr ) ); // restore the ORIGINAL stderr target
+        QFile f( QString::fromLocal8Bit( tmp_path ) );
         if ( f.open( QIODevice::ReadOnly | QIODevice::Text ) )
             log = QString::fromLocal8Bit( f.readAll() ).trimmed();
         f.remove();
     }
-    if ( savedFd != -1 )
-        _close( savedFd );
+    if ( saved_fd != -1 )
+        _close( saved_fd );
     return log;
 }
 
@@ -269,7 +269,7 @@ bool Scene3DPreview::ensureShadowMap()
     glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, kShadowSize, kShadowSize,
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, ShadowSize, ShadowSize,
                   0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, nullptr );
 
     glGenFramebuffers( 1, &m_shadowFbo );
@@ -296,10 +296,10 @@ bool Scene3DPreview::ensureShadowMap()
 // direction with an up-vector fallback when the light is near-vertical, P is
 // a symmetric ortho frustum sized by the scene's own shadowExtent E. Both
 // are laid out COLUMN-MAJOR (M[col*4+row]) to match GLSL's mat4 convention,
-// since s_lightM is uploaded to the shader as-is.
+// since M_LightM is uploaded to the shader as-is.
 void Scene3DPreview::updateLightMatrix( float t )
 {
-    const float E = EffectShader::s_shadowExtent;
+    const float E = EffectShader::M_ShadowExtent;
     float       a = t * 0.06f;
     float       lx = 0.42f * sinf( a );
     float       ly = 1.15f + 0.16f * sinf( a * 0.43f );
@@ -308,9 +308,9 @@ void Scene3DPreview::updateLightMatrix( float t )
     lx /= ln;
     ly /= ln;
     lz /= ln;
-    EffectShader::s_lightDir[0] = lx;
-    EffectShader::s_lightDir[1] = ly;
-    EffectShader::s_lightDir[2] = lz;
+    EffectShader::M_LightDir[0] = lx;
+    EffectShader::M_LightDir[1] = ly;
+    EffectShader::M_LightDir[2] = lz;
 
     float fx = -lx, fy = -ly, fz = -lz;
     float ux = 0.f, uy = 1.f, uz = 0.f;
@@ -333,7 +333,7 @@ void Scene3DPreview::updateLightMatrix( float t )
     const float dist = E * 2.f;
     float       ex = lx * dist, ey = ly * dist, ez = lz * dist;
 
-    float V[16] = {
+    float v[16] = {
         sx, tx, -fx, 0.f,
         sy, ty, -fy, 0.f,
         sz, tz, -fz, 0.f,
@@ -342,20 +342,20 @@ void Scene3DPreview::updateLightMatrix( float t )
         ( fx * ex + fy * ey + fz * ez ), 1.f };
 
     const float zn = 0.1f, zf = dist + E * 2.f;
-    float       P[16] = {
+    float       p[16] = {
         1.f / E, 0.f, 0.f, 0.f,
         0.f, 1.f / E, 0.f, 0.f,
         0.f, 0.f, -2.f / ( zf - zn ), 0.f,
         0.f, 0.f, -( zf + zn ) / ( zf - zn ), 1.f };
 
-    float *M = EffectShader::s_lightM;
+    float *m = EffectShader::M_LightM;
     for ( int c = 0; c < 4; ++c )
         for ( int r = 0; r < 4; ++r )
         {
             float sum = 0.f;
             for ( int k = 0; k < 4; ++k )
-                sum += P[k * 4 + r] * V[c * 4 + k];
-            M[c * 4 + r] = sum;
+                sum += p[k * 4 + r] * v[c * 4 + k];
+            m[c * 4 + r] = sum;
         }
 }
 
@@ -365,7 +365,7 @@ void Scene3DPreview::renderShadowPass( float time, float interpolation, const Au
         return;
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_shadowFbo );
-    glViewport( 0, 0, kShadowSize, kShadowSize );
+    glViewport( 0, 0, ShadowSize, ShadowSize );
     glClearDepth( 1.0 );
     glClear( GL_DEPTH_BUFFER_BIT );
     glDisable( GL_CULL_FACE );
@@ -383,12 +383,12 @@ void Scene3DPreview::renderShadowPass( float time, float interpolation, const Au
     // an obvious black rectangle where a shadow map should be.
     glEnable( GL_DEPTH_TEST );
 
-    EffectShader::s_shadowPass = 1.f;
+    EffectShader::M_ShadowPass = 1.f;
     m_scene->enableShader();
     m_scene->setUniforms( time, interpolation, 0, 1 );
     m_scene->applyAudioFeatures( features );
     m_scene->draw();
-    EffectShader::s_shadowPass = 0.f;
+    EffectShader::M_ShadowPass = 0.f;
 
     glActiveTexture( GL_TEXTURE0 + 31 );
     glBindTexture( GL_TEXTURE_2D, m_shadowTex );
@@ -467,12 +467,12 @@ void Scene3DPreview::renderOitPass( float time, float interpolation, const Audio
     glBlendFunci( 0, GL_ONE, GL_ONE );
     glBlendFunci( 1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR );
 
-    EffectShader::s_oitPass = 1.f;
+    EffectShader::M_OitPass = 1.f;
     m_scene->enableShader();
     m_scene->setUniforms( time, interpolation, 0, 1 );
     m_scene->applyAudioFeatures( features );
     m_scene->draw();
-    EffectShader::s_oitPass = 0.f;
+    EffectShader::M_OitPass = 0.f;
 
     glDepthMask( GL_TRUE );
     glDisable( GL_BLEND );
@@ -525,13 +525,13 @@ void Scene3DPreview::render( int w, int h, float time, float interpolation,
     glBindTexture( GL_TEXTURE_2D, tex1 );
     glActiveTexture( GL_TEXTURE0 );
 
-    // Same broadcast the main host uses (EffectShader::s_shadowExtent/s_light*):
+    // Same broadcast the main host uses (EffectShader::M_ShadowExtent/s_light*):
     // the box is sized by THIS scene, because only it knows its own scale.
-    EffectShader::s_shadowExtent = m_scene->shadowExtent();
+    EffectShader::M_ShadowExtent = m_scene->shadowExtent();
     updateLightMatrix( time );
     if ( m_scene->usesShadow() )
         renderShadowPass( time, interpolation, features );
-    EffectShader::s_depthValid[0] = 1.f; // this pass IS a 3D scene, always
+    EffectShader::M_DepthValid[0] = 1.f; // this pass IS a 3D scene, always
 
     // Bound and viewport-set unconditionally, whether or not the shadow pass
     // just ran -- it leaves both the framebuffer and viewport pointed at its

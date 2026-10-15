@@ -10,9 +10,9 @@
 namespace
 {
 
-Lang g_lang = Lang::DE;
+LangE g_lang = LangE::DE;
 
-// Order MUST match the StrId enum exactly -- both tables are indexed
+// Order MUST match the StrIdE enum exactly -- both tables are indexed
 // directly by it, no separate key lookup.
 const char *kDE[S_COUNT] = {
     // ---- Hilfe-Uebersicht ----
@@ -495,28 +495,28 @@ const char *kEN[S_COUNT] = {
 
 } // namespace
 
-void Strings::setLanguage( Lang lang )
+void Strings::setLanguage( LangE lang )
 {
     g_lang = lang;
 }
-Lang Strings::language()
+LangE Strings::language()
 {
     return g_lang;
 }
 
-Lang Strings::fromCode( const char *code )
+LangE Strings::fromCode( const char *code )
 {
-    return ( code && _stricmp( code, "en" ) == 0 ) ? Lang::EN : Lang::DE;
+    return ( code && _stricmp( code, "en" ) == 0 ) ? LangE::EN : LangE::DE;
 }
 
-const char *Strings::toCode( Lang lang )
+const char *Strings::toCode( LangE lang )
 {
-    return ( lang == Lang::EN ) ? "en" : "de";
+    return ( lang == LangE::EN ) ? "en" : "de";
 }
 
-const char *Strings::T( StrId id )
+const char *Strings::uiText( StrIdE id )
 {
     if ( id < 0 || id >= S_COUNT )
         return "";
-    return ( g_lang == Lang::EN ) ? kEN[id] : kDE[id];
+    return ( g_lang == LangE::EN ) ? kEN[id] : kDE[id];
 }

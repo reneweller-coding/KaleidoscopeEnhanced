@@ -56,11 +56,11 @@ public:
         hboxLayout->setObjectName( "hboxLayout" );
         widget = new GLwidget( centralwidget );
         widget->setObjectName( "widget" );
-        QSizePolicy sizePolicy( QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding );
-        sizePolicy.setHorizontalStretch( 0 );
-        sizePolicy.setVerticalStretch( 0 );
-        sizePolicy.setHeightForWidth( widget->sizePolicy().hasHeightForWidth() );
-        widget->setSizePolicy( sizePolicy );
+        QSizePolicy size_policy( QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding );
+        size_policy.setHorizontalStretch( 0 );
+        size_policy.setVerticalStretch( 0 );
+        size_policy.setHeightForWidth( widget->sizePolicy().hasHeightForWidth() );
+        widget->setSizePolicy( size_policy );
 
         hboxLayout->addWidget( widget );
 

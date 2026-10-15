@@ -20,7 +20,7 @@
 #include <QtCore/QRegularExpression>
 #include <cmath>
 
-// For EffectShader::kSceneNear/kSceneFar/kSceneTanHalfFovY only -- these are
+// For EffectShader::SceneNear/SceneFar/SceneTanHalfFovY only -- these are
 // plain static constexpr floats, no GL calls, so unlike glcore.h (see
 // Scene3DPreview.h) this include carries no macro-collision risk here.
 #include "../Source/EffectShader.h"
@@ -71,17 +71,17 @@ static QVector<KomplettRange> komplettRangesFor( const QString &root, const QStr
     if ( !f.open( QIODevice::ReadOnly ) )
         return out;
     const QString      xml = QString::fromUtf8( f.readAll() );
-    QRegularExpression entryRe(
+    QRegularExpression entry_re(
         QString(
             "<(?:Texture|Combine)Shader\\b[^>]*file=\"\\.\\.\\\\\\\\(?:\\w+\\\\\\\\)?%1\"[^>]*>(.*?)</(?:Texture|Combine)Shader>" )
             .arg( QRegularExpression::escape( frag ) ),
         QRegularExpression::DotMatchesEverythingOption );
-    const QRegularExpressionMatch em = entryRe.match( xml );
+    const QRegularExpressionMatch em = entry_re.match( xml );
     if ( !em.hasMatch() )
         return out;
-    QRegularExpression paramRe(
+    QRegularExpression param_re(
         "<(int|float)\\s+name=\"(\\w+)\"\\s+minValue=\"([\\d\\.\\-]+)\"\\s+maxValue=\"([\\d\\.\\-]+)\"" );
-    QRegularExpressionMatchIterator it = paramRe.globalMatch( em.captured( 1 ) );
+    QRegularExpressionMatchIterator it = param_re.globalMatch( em.captured( 1 ) );
     while ( it.hasNext() )
     {
         const QRegularExpressionMatch m = it.next();
@@ -318,8 +318,8 @@ void PreviewWidget::loadImages()
 // (absolute channels + rate channels integrated on the preview clock).
 GLuint PreviewWidget::rig2Apply( GLuint srcTex, int w, int h )
 {
-    static const char *kAbs[4] = { "rig2Roll", "rig2Zoom", "rig2X", "rig2Y" };
-    static const char *kVel[4] = { "rig2RollV", "rig2ZoomV", "rig2XV", "rig2YV" };
+    static const char *Abs[4] = { "rig2Roll", "rig2Zoom", "rig2X", "rig2Y" };
+    static const char *Vel[4] = { "rig2RollV", "rig2ZoomV", "rig2XV", "rig2YV" };
     float              absv[4] = { 0, 0, 0, 0 }, vel[4] = { 0, 0, 0, 0 };
     bool               active = false;
     for ( const SceneExpr &se : m_sceneExprs )
@@ -328,12 +328,12 @@ GLuint PreviewWidget::rig2Apply( GLuint srcTex, int w, int h )
             continue;
         for ( int i = 0; i < 4; ++i )
         {
-            if ( se.name == QLatin1String( kAbs[i] ) )
+            if ( se.name == QLatin1String( Abs[i] ) )
             {
                 absv[i] = evalExpr( *se.prog );
                 active = true;
             }
-            if ( se.name == QLatin1String( kVel[i] ) )
+            if ( se.name == QLatin1String( Vel[i] ) )
             {
                 vel[i] = evalExpr( *se.prog );
                 active = true;
@@ -551,9 +551,9 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
         p->setUniformValue( "audioStereoL", QVector3D( f.stereoLowL, f.stereoMidL, f.stereoHighL ) );
         p->setUniformValue( "audioStereoR", QVector3D( f.stereoLowR, f.stereoMidR, f.stereoHighR ) );
 
-        int specLoc = p->uniformLocation( "audioSpectrum" );
-        if ( specLoc >= 0 )
-            glUniform1fv( specLoc, 32, f.spectrum );
+        int spec_loc = p->uniformLocation( "audioSpectrum" );
+        if ( spec_loc >= 0 )
+            glUniform1fv( spec_loc, 32, f.spectrum );
 
         // Per-shader config params (same defaults as the synthetic path).
         p->setUniformValue( "sides", 6 );
@@ -573,13 +573,13 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     const float t = m_time;
     auto        sw = []( float x )
     { return 0.5f + 0.5f * std::sin( x ); }; // 0..1 sine
-    const bool drone = ( m_mode == Drone );
+    const bool drone = ( m_mode == DRONE );
     // Beat profile: 120 BPM kicks + onsets, audioAmbient = 0.
     // Drone profile: no transients at all, slow majestic swells, audioAmbient = 1.
-    const float beatPhase = t * 2.0f - std::floor( t * 2.0f ); // 120 BPM
-    const float beat = drone ? 0.f : std::exp( -beatPhase * 6.0f );
+    const float beat_phase = t * 2.0f - std::floor( t * 2.0f ); // 120 BPM
+    const float beat = drone ? 0.f : std::exp( -beat_phase * 6.0f );
     const float onset = drone ? 0.f : std::exp( -( ( t * 3.f ) - std::floor( t * 3.f ) ) * 7.0f );
-    const float barPh = t * 0.5f - std::floor( t * 0.5f );
+    const float bar_ph = t * 0.5f - std::floor( t * 0.5f );
     const float downbeat = ( !drone && ( int( std::floor( t * 0.5f ) ) & 3 ) == 0 ) ? beat : 0.f;
     const float ambient = drone ? 1.f : 0.f;
     const float swell = drone ? ( 0.35f + 0.35f * std::sin( t * 0.35f ) ) : ( 0.15f + 0.15f * sw( t * 0.5f ) );
@@ -613,8 +613,8 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     p->setUniformValue( "audioPitch", 0.5f + 0.4f * sw( t * 0.5f ) );
     p->setUniformValue( "audioPhase", t * 0.3f );
     p->setUniformValue( "audioAdvance", t * 0.5f );
-    p->setUniformValue( "audioBeatPhase", beatPhase );
-    p->setUniformValue( "audioBarPhase", barPh );
+    p->setUniformValue( "audioBeatPhase", beat_phase );
+    p->setUniformValue( "audioBarPhase", bar_ph );
     p->setUniformValue( "audioChromaHue", t * 0.02f - std::floor( t * 0.02f ) );
     p->setUniformValue( "audioMode", 0.5f + 0.5f * sw( t * 0.05f ) );
     p->setUniformValue( "audioStereo", 0.3f + 0.3f * sw( t * 0.2f ) );
@@ -630,13 +630,13 @@ void PreviewWidget::applyCommonUniforms( QOpenGLShaderProgram *p )
     p->setUniformValue( "audioStereoR", QVector3D( 0.25f, 0.3f, 0.4f * sw( t * 1.2f ) ) );
 
     // 32-band spectrum array (audioSpectrum[32]) for the analyzer shaders.
-    int specLoc = p->uniformLocation( "audioSpectrum" );
-    if ( specLoc >= 0 )
+    int spec_loc = p->uniformLocation( "audioSpectrum" );
+    if ( spec_loc >= 0 )
     {
         float spec[32];
         for ( int i = 0; i < 32; ++i )
             spec[i] = 0.15f + 0.7f * sw( t * 2.0f + float( i ) * 0.6f ) * std::exp( -float( i ) / 40.f );
-        glUniform1fv( specLoc, 32, spec );
+        glUniform1fv( spec_loc, 32, spec );
     }
 
     // Per-shader config params (defaults so Kaleidoscope/Tunnel/Combine* look ok).
@@ -666,9 +666,9 @@ AudioFeatures PreviewWidget::synthFeatures( float t ) const
 {
     auto sw = []( float x )
     { return 0.5f + 0.5f * std::sin( x ); };
-    const bool  drone = ( m_mode == Drone );
-    const float beatPhase = t * 2.0f - std::floor( t * 2.0f );
-    const float beat = drone ? 0.f : std::exp( -beatPhase * 6.0f );
+    const bool  drone = ( m_mode == DRONE );
+    const float beat_phase = t * 2.0f - std::floor( t * 2.0f );
+    const float beat = drone ? 0.f : std::exp( -beat_phase * 6.0f );
     const float onset = drone ? 0.f : std::exp( -( ( t * 3.f ) - std::floor( t * 3.f ) ) * 7.0f );
     const float downbeat = ( !drone && ( int( std::floor( t * 0.5f ) ) & 3 ) == 0 ) ? beat : 0.f;
 
@@ -688,13 +688,13 @@ AudioFeatures PreviewWidget::synthFeatures( float t ) const
     f.onsetHat = onset * 0.5f;
     f.ambientFactor = drone ? 1.f : 0.f;
     f.swell = drone ? ( 0.35f + 0.35f * std::sin( t * 0.35f ) ) : ( 0.15f + 0.15f * sw( t * 0.5f ) );
-    f.beatPhase = beatPhase;
+    f.beatPhase = beat_phase;
     f.barPhase = t * 0.5f - std::floor( t * 0.5f );
     f.chromaHue = t * 0.02f - std::floor( t * 0.02f );
     f.dayPhase = t * 0.01f - std::floor( t * 0.01f );
     f.audioRotPhase = t * 0.3f;
     f.audioAdvance = t * 0.5f;
-    for ( int i = 0; i < AudioFeatures::kSpectrumBands; ++i )
+    for ( int i = 0; i < AudioFeatures::SpectrumBands; ++i )
         f.spectrum[i] = 0.15f + 0.7f * sw( t * 2.0f + float( i ) * 0.6f ) * std::exp( -float( i ) / 40.f );
     return f;
 }
@@ -852,30 +852,30 @@ void PreviewWidget::paintGL()
 
     if ( m_imagesDirty )
         loadImages();
-    const bool is3D = ( m_texType == "scene3d" );
+    const bool is_3d = ( m_texType == "scene3d" );
     QString    log;
     if ( m_texDirty )
     {
-        if ( is3D )
+        if ( is_3d )
         {
             // shader_setup.cpp's loader exit(1)s on a REQUIRED file (vert or
             // frag) that is missing -- right for the shipped app, wrong for an
             // editor where the shader may be mid-edit.  Confirm both exist
             // BEFORE ever calling in, so that path is never reached.
             const QString base = QFileInfo( m_texFile ).completeBaseName();
-            const QString fragAbs = m_root + "/Scene3D/" + m_texFile;
-            const QString vertAbs = m_root + "/Scene3D/" + base + ".vert";
-            if ( !QFile::exists( fragAbs ) || !QFile::exists( vertAbs ) )
+            const QString frag_abs = m_root + "/Scene3D/" + m_texFile;
+            const QString vert_abs = m_root + "/Scene3D/" + base + ".vert";
+            if ( !QFile::exists( frag_abs ) || !QFile::exists( vert_abs ) )
             {
                 m_scenePreview.clear();
                 emit statusChanged(
                     m_texFile
-                    + QString( "\nmissing %1" ).arg( QFile::exists( fragAbs ) ? base + ".vert" : m_texFile ) );
+                    + QString( "\nmissing %1" ).arg( QFile::exists( frag_abs ) ? base + ".vert" : m_texFile ) );
             }
             else
             {
-                const QString fragRel = "..\\Scene3D\\" + m_texFile;
-                m_scenePreview.setShader( fragRel, m_texGeom, m_texStateBytes,
+                const QString frag_rel = "..\\Scene3D\\" + m_texFile;
+                m_scenePreview.setShader( frag_rel, m_texGeom, m_texStateBytes,
                                           m_texShadowExtent, log );
                 // A fresh Scene3DShader has no per-activation params registered
                 // yet -- without this, every camHP/densityP/glowP/... uniform
@@ -916,11 +916,11 @@ void PreviewWidget::paintGL()
                 m_texProg->bind();
                 for ( int k = 0; k < CFX_COUNT; ++k )
                 {
-                    const int loc = m_texProg->uniformLocation( kCfxInfo[k].sampler );
+                    const int loc = m_texProg->uniformLocation( CfxInfoTable[k].sampler );
                     if ( loc >= 0 )
                     {
                         m_cfxMask |= ( 1u << k );
-                        m_texProg->setUniformValue( loc, kCfxInfo[k].unit );
+                        m_texProg->setUniformValue( loc, CfxInfoTable[k].unit );
                     }
                 }
                 m_texProg->release();
@@ -944,15 +944,15 @@ void PreviewWidget::paintGL()
     glBindTexture( GL_TEXTURE_2D, m_img0 );
     glActiveTexture( GL_TEXTURE0 );
 
-    unsigned sceneColorTex = 0, sceneDepthTex = 0;
-    if ( is3D && m_scenePreview.active() )
+    unsigned scene_color_tex = 0, scene_depth_tex = 0;
+    if ( is_3d && m_scenePreview.active() )
     {
         const AudioFeatures feats = m_timeline.empty() ? synthFeatures( m_time )
                                                        : timelineFeatures();
         m_scenePreview.render( w, h, m_time, testInterpolation(), feats,
-                               m_img0, m_img1, sceneColorTex, sceneDepthTex );
+                               m_img0, m_img1, scene_color_tex, scene_depth_tex );
     }
-    else if ( !is3D && m_texProg )
+    else if ( !is_3d && m_texProg )
     {
         // ---- Compute-FX pre-pass: step whatever this shader declared, bind
         // each result on its own unit before the fragment pass samples it.
@@ -981,7 +981,7 @@ void PreviewWidget::paintGL()
                 const GLuint tex = m_cfx.step( k, feats, dt, now, m_img0, w, h );
                 if ( tex )
                 {
-                    glActiveTexture( GL_TEXTURE0 + kCfxInfo[k].unit );
+                    glActiveTexture( GL_TEXTURE0 + CfxInfoTable[k].unit );
                     glBindTexture( GL_TEXTURE_2D, tex );
                 }
             }
@@ -1003,20 +1003,20 @@ void PreviewWidget::paintGL()
     // ---- 2D CAMERA RIG (preview parity with RenderPipeline::rig2Transform):
     // rig2* formulas of the selected entry transform the pass-1 frame before
     // the combine samples it.  3D scenes have their own projM rig instead.
-    GLuint pass1Tex = ( m_texProg && m_fbo ) ? m_fbo->texture() : 0;
-    if ( !( is3D && sceneColorTex != 0 ) && pass1Tex )
-        pass1Tex = rig2Apply( pass1Tex, w, h );
+    GLuint pass1_tex = ( m_texProg && m_fbo ) ? m_fbo->texture() : 0;
+    if ( !( is_3d && scene_color_tex != 0 ) && pass1_tex )
+        pass1_tex = rig2Apply( pass1_tex, w, h );
 
     // ---- Pass 2: combine shader (samples pass-1 as tex0) -> widget FBO ----
     glBindFramebuffer( GL_FRAMEBUFFER, defaultFramebufferObject() );
     glViewport( 0, 0, w, h );
     glClear( GL_COLOR_BUFFER_BIT );
 
-    const bool haveScene = is3D && sceneColorTex != 0;
-    if ( m_combProg && ( haveScene || m_texProg ) )
+    const bool have_scene = is_3d && scene_color_tex != 0;
+    if ( m_combProg && ( have_scene || m_texProg ) )
     {
         glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, haveScene ? sceneColorTex : pass1Tex );
+        glBindTexture( GL_TEXTURE_2D, have_scene ? scene_color_tex : pass1_tex );
         glActiveTexture( GL_TEXTURE1 );
         glBindTexture( GL_TEXTURE_2D, m_img1 );
         // A depth-reading combine (fog, AO, sun shafts, the edge/rim/heat-
@@ -1025,19 +1025,19 @@ void PreviewWidget::paintGL()
         // like the main app binds both unconditionally too: a combine that
         // never declares the sampler simply never looks it up.
         glActiveTexture( GL_TEXTURE0 + 2 );
-        glBindTexture( GL_TEXTURE_2D, haveScene ? sceneDepthTex : 0 );
+        glBindTexture( GL_TEXTURE_2D, have_scene ? scene_depth_tex : 0 );
         glActiveTexture( GL_TEXTURE0 );
         m_combProg->bind();
         applyCommonUniforms( m_combProg );
         m_combProg->setUniformValue( "texDepth0", 2 );
-        m_combProg->setUniformValue( "depthValid", QVector2D( haveScene ? 1.f : 0.f, 0.f ) );
+        m_combProg->setUniformValue( "depthValid", QVector2D( have_scene ? 1.f : 0.f, 0.f ) );
         m_combProg->setUniformValue( "nearFar",
-                                     QVector2D( EffectShader::kSceneNear, EffectShader::kSceneFar ) );
-        m_combProg->setUniformValue( "tanHalfFov", EffectShader::kSceneTanHalfFovY );
+                                     QVector2D( EffectShader::SceneNear, EffectShader::SceneFar ) );
+        m_combProg->setUniformValue( "tanHalfFov", EffectShader::SceneTanHalfFovY );
         drawFullscreenQuad( m_combProg );
         m_combProg->release();
     }
-    else if ( haveScene )
+    else if ( have_scene )
     {
         // Combine failed to compile: unlike the 2D fallback below (which just
         // re-runs the texture shader), there is no cheap "re-render without a

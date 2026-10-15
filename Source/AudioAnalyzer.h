@@ -157,10 +157,10 @@ public:
      * whatever the system is playing) — used to test/calibrate the
      * classifiers.
      */
-    static QString s_offlineWav;
+    static QString M_OfflineWav;
 
 protected:
-    /** @brief QThread entry point: runs the WASAPI loopback capture loop (or, if s_offlineWav is set, the offline
+    /** @brief QThread entry point: runs the WASAPI loopback capture loop (or, if M_OfflineWav is set, the offline
      * analysis pass). */
     void run() override;
     /**
@@ -187,19 +187,19 @@ private:
 
     // ---- Beat detection ----
     /** @brief Length of #m_bassHistory: ~1.5 s at ~10 ms poll interval. */
-    static constexpr int kHistoryLen = 64;
-    float m_bassHistory[kHistoryLen] = {}; ///< Ring of combined subBass+bass linear RMS, for the adaptive beat
-                                           ///< threshold.
-    int                    m_histIdx = 0;                 ///< Next write index into #m_bassHistory.
-    float                  m_beatCooldown = 0.f;          ///< Blocks remaining before another beat may fire.
-    static constexpr float kBeatThresholdRatio = 1.32f;   ///< Base beat-band/history-mean ratio required to fire (more
-                                                          ///< sensitive — catches softer kicks).
-    static constexpr float kBeatCooldownFrames = 18.f; ///< ~180 ms cooldown — a kick's decay tail must not re-trigger.
-    float                  m_prevBeatBand = 0.f;          ///< Previous-block beat band value (rising-edge test).
+    static constexpr int HistoryLen = 64;
+    float m_bassHistory[HistoryLen] = {}; ///< Ring of combined subBass+bass linear RMS, for the adaptive beat
+                                          ///< threshold.
+    int                    m_histIdx = 0;                ///< Next write index into #m_bassHistory.
+    float                  m_beatCooldown = 0.f;         ///< Blocks remaining before another beat may fire.
+    static constexpr float BeatThresholdRatio = 1.32f;   ///< Base beat-band/history-mean ratio required to fire (more
+                                                         ///< sensitive — catches softer kicks).
+    static constexpr float BeatCooldownFrames = 18.f; ///< ~180 ms cooldown — a kick's decay tail must not re-trigger.
+    float                  m_prevBeatBand = 0.f;         ///< Previous-block beat band value (rising-edge test).
 
     // ---- Ambient detection, and the music/speech classifier's envelope ring ----
     /** @brief Length of #m_envHistory: 600 blocks, i.e. ~6 s at the usual 10 ms block. */
-    static constexpr int kEnvHistLen = 600;
+    static constexpr int EnvHistLen = 600;
     /** @brief Rolling RAW LINEAR broadband envelope, one entry per block (music/speech classifier).
      *
      *  Deliberately NOT the dB-normalised, attack/release-smoothed `level`: both of
@@ -207,7 +207,7 @@ private:
      *  speech pause at -40 dB up to 0.33 of full scale, and the release smoothing
      *  (up to ~1 s) fills the pause in before the next word starts, so gaps stop
      *  looking like gaps. */
-    float m_envHistory[kEnvHistLen] = {};
+    float m_envHistory[EnvHistLen] = {};
     int   m_envIdx = 0;          ///< Next write index into #m_envHistory.
     float m_sBeatAC = 0.f;       ///< Envelope-autocorrelation peak over musical lags (music/speech classifier).
     int   m_beatAcCount = 0;     ///< Block counter that paces the #m_sBeatAC recomputation.
@@ -234,11 +234,11 @@ private:
 
     // ---- BPM estimation ----
     /** @brief Length of #m_beatIntervals: last 8 inter-beat intervals. */
-    static constexpr int kBPMHistLen = 8;
-    float                m_beatIntervals[kBPMHistLen] = {}; ///< Ring of the last inter-beat intervals, in BPM.
-    int                  m_bpmIdx = 0;                      ///< Next write index into #m_beatIntervals.
-    float                m_lastBeatFrame = 0.f;             ///< Frame counter value at the last detected beat.
-    float                m_frameCounter = 0.f;              ///< Total frames processed since start (monotonic).
+    static constexpr int BPMHistLen = 8;
+    float                m_beatIntervals[BPMHistLen] = {}; ///< Ring of the last inter-beat intervals, in BPM.
+    int                  m_bpmIdx = 0;                     ///< Next write index into #m_beatIntervals.
+    float                m_lastBeatFrame = 0.f;            ///< Frame counter value at the last detected beat.
+    float                m_frameCounter = 0.f;             ///< Total frames processed since start (monotonic).
     float m_smoothedBPM = 0.f; ///< Smoothed BPM estimate (from inter-beat intervals, refined by autocorrelation).
 
     // ---- Log attack time state ----
@@ -294,17 +294,17 @@ private:
 
     // ---- Autocorrelation tempo (fixed-rate onset envelope) ----
     /** @brief Onset-envelope sample rate, in Hz. */
-    static constexpr int kEnvRate = 100;
+    static constexpr int EnvRate = 100;
     /** @brief Length of #m_odfEnv: ~4 s of envelope. */
-    static constexpr int kOdfEnvLen = 400;
-    float m_odfEnv[kOdfEnvLen] = {}; ///< Fixed-rate ring of the onset detection function, fed to the tempo
-                                     ///< autocorrelation.
-    int   m_odfEnvIdx = 0;                          ///< Next write index into #m_odfEnv.
-    int   m_envFrameAcc = 0; ///< Sample-frame accumulator that paces writes into #m_odfEnv to #kEnvRate.
-    float m_acBPM = 0.f;                            ///< Autocorrelation tempo estimate, in BPM.
-    float m_acConf = 0.f;                           ///< Confidence of #m_acBPM, 0..1.
-    float m_odfEnvMean = 0.f;                       ///< Last ODF-envelope mean (diagnostic for the tempo gate).
-    float m_odfEnvStd = 0.f;                        ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
+    static constexpr int OdfEnvLen = 400;
+    float m_odfEnv[OdfEnvLen] = {}; ///< Fixed-rate ring of the onset detection function, fed to the tempo
+                                    ///< autocorrelation.
+    int   m_odfEnvIdx = 0;                         ///< Next write index into #m_odfEnv.
+    int   m_envFrameAcc = 0; ///< Sample-frame accumulator that paces writes into #m_odfEnv to #EnvRate.
+    float m_acBPM = 0.f;                           ///< Autocorrelation tempo estimate, in BPM.
+    float m_acConf = 0.f;                          ///< Confidence of #m_acBPM, 0..1.
+    float m_odfEnvMean = 0.f;                      ///< Last ODF-envelope mean (diagnostic for the tempo gate).
+    float m_odfEnvStd = 0.f;                       ///< Last ODF-envelope std-dev (diagnostic for the tempo gate).
     float m_roughRaw = 0.f; ///< Unscaled roughness ratio (diagnostic; the scale constant came from measuring this).
 
     /**
@@ -333,10 +333,10 @@ private:
     float m_prevPitch = 0.f;   ///< Previous dominant pitch (for delta-pitch).
     float m_sDeltaPitch = 0.f; ///< Smoothed melodic activity; see AudioFeatures::deltaPitch.
     /** @brief Length of #m_fluxHistory: ~1 s of spectral-flux samples. */
-    static constexpr int kFluxHistLen = 100;
-    float m_fluxHistory[kFluxHistLen] = {}; ///< Ring of recent spectral-flux values, for the flux-variance
-                                            ///< ("restlessness") measure.
-    int   m_fluxIdx = 0;                                   ///< Next write index into #m_fluxHistory.
+    static constexpr int FluxHistLen = 100;
+    float m_fluxHistory[FluxHistLen] = {}; ///< Ring of recent spectral-flux values, for the flux-variance
+                                           ///< ("restlessness") measure.
+    int   m_fluxIdx = 0;                                  ///< Next write index into #m_fluxHistory.
     float m_sFluxVar = 0.f;       ///< Smoothed flux variance ("restlessness"); see AudioFeatures::fluxVariance.
     float m_sMusicPresence = 1.f; ///< Smoothed music-vs-speech gate (hysteresis); see AudioFeatures::musicPresence.
 
@@ -345,23 +345,23 @@ private:
     // Enables: spectral rolloff, spectral spread, chroma-based major/minor
     // detection (Krumhansl-Kessler profiles), and dominant pitch via HPS.
     /** @brief FFT window size in samples (2048 ≈ 42 ms at 48 kHz → 23.4 Hz / bin). Must be a power of two. */
-    static constexpr int kFFTSize = 2048;
-    /** @brief Number of unique FFT bins after a real-valued FFT (kFFTSize/2 + 1). */
-    static constexpr int kFFTHalf = kFFTSize / 2 + 1;
+    static constexpr int FFTSize = 2048;
+    /** @brief Number of unique FFT bins after a real-valued FFT (FFTSize/2 + 1). */
+    static constexpr int FFTHalf = FFTSize / 2 + 1;
 
-    float m_ringBuf[kFFTSize] = {}; ///< Circular buffer of most-recent mono samples, feeding the FFT window.
-    int   m_ringWrite = 0;          ///< Next write index in #m_ringBuf.
+    float m_ringBuf[FFTSize] = {}; ///< Circular buffer of most-recent mono samples, feeding the FFT window.
+    int   m_ringWrite = 0;         ///< Next write index in #m_ringBuf.
 
-    float m_fftRe[kFFTSize] = {};  ///< Real-part working buffer (in-place FFT input/output).
-    float m_fftIm[kFFTSize] = {};  ///< Imaginary-part working buffer (zero before FFT).
-    float m_fftWin[kFFTSize] = {}; ///< Precomputed Hann window coefficients (filled in the constructor).
+    float m_fftRe[FFTSize] = {};  ///< Real-part working buffer (in-place FFT input/output).
+    float m_fftIm[FFTSize] = {};  ///< Imaginary-part working buffer (zero before FFT).
+    float m_fftWin[FFTSize] = {}; ///< Precomputed Hann window coefficients (filled in the constructor).
 
-    float m_prevMags[kFFTHalf] = {}; ///< Magnitude spectrum from the previous frame (for FFT-based flux / harmonicity).
+    float m_prevMags[FFTHalf] = {};  ///< Magnitude spectrum from the previous frame (for FFT-based flux / harmonicity).
     float m_smoothedChroma[12] = {}; ///< Smoothed 12-bin chroma vector (C .. B), L1-normalised.
 
     // Smoothed FFT-derived outputs
     /** @brief 32-band log-spaced spectrum for the analyzer effects (self-normalised); see AudioFeatures::spectrum. */
-    float m_sSpectrum[AudioFeatures::kSpectrumBands] = {};
+    float m_sSpectrum[AudioFeatures::SpectrumBands] = {};
     float m_specRef = 1e-4f; ///< Decaying-peak reference for #m_sSpectrum auto-scaling.
 
     /**
@@ -381,25 +381,25 @@ private:
      * Downsampled to 64 averaged points per block and normalised with a
      * decaying-peak reference (see AudioFeatures::wave).
      */
-    static const int kWaveRing = 2048;
-    float            m_waveRing[kWaveRing] = {}; ///< Rolling mono sample ring feeding the waveform downsampler.
-    int              m_waveWritePos = 0;                       ///< Next write index into #m_waveRing.
+    static const int WaveRing = 2048;
+    float            m_waveRing[WaveRing] = {}; ///< Rolling mono sample ring feeding the waveform downsampler.
+    int              m_waveWritePos = 0;                      ///< Next write index into #m_waveRing.
     float            m_waveRef = 0.05f; ///< Decaying |peak| reference (keeps the wave visible independent of volume).
-    float m_sWave[AudioFeatures::kWavePoints] = {}; ///< Smoothed, downsampled waveform points; see AudioFeatures::wave.
+    float m_sWave[AudioFeatures::WavePoints] = {}; ///< Smoothed, downsampled waveform points; see AudioFeatures::wave.
 
     /**
      * @brief Section-change detector state (see AudioFeatures::sectionCount): fast/slow EMAs of the normalised 32-band
      * shape and total band energy.
      */
-    float m_secFast[AudioFeatures::kSpectrumBands] = {}; ///< Fast (~2.5 s) EMA of the normalised 32-band spectral
-                                                         ///< shape.
-    float m_secSlow[AudioFeatures::kSpectrumBands] = {}; ///< Slow (~18 s) EMA of the normalised 32-band spectral shape.
-    float m_secFastLvl = 0.f;                            ///< Fast (~2.5 s) EMA of total band energy.
-    float m_secSlowLvl = 0.f;                            ///< Slow (~18 s) EMA of total band energy.
+    float m_secFast[AudioFeatures::SpectrumBands] = {}; ///< Fast (~2.5 s) EMA of the normalised 32-band spectral
+                                                        ///< shape.
+    float m_secSlow[AudioFeatures::SpectrumBands] = {}; ///< Slow (~18 s) EMA of the normalised 32-band spectral shape.
+    float m_secFastLvl = 0.f;                           ///< Fast (~2.5 s) EMA of total band energy.
+    float m_secSlowLvl = 0.f;                           ///< Slow (~18 s) EMA of total band energy.
     float m_secNovelty = 0.f; ///< Current novelty score (fast-vs-slow shape/level distance); see
                               ///< AudioFeatures::sectionNovelty.
     int m_secWarm = 0;        ///< Blocks since start (EMAs must settle before triggers are allowed).
-    int m_secCooldown = 0;                               ///< Blocks until the next section trigger is allowed.
+    int m_secCooldown = 0;                              ///< Blocks until the next section trigger is allowed.
     int m_sectionCount = 0; ///< Cumulative section-change count; see AudioFeatures::sectionCount.
 
     /**
@@ -410,13 +410,13 @@ private:
      * trigger it is matched against the stored prints (cosine similarity) —
      * the same chorus is recognised when it returns.
      */
-    static const int kMaxSectionPrints = 8;
-    float m_secPrint[AudioFeatures::kSpectrumBands] = {}; ///< ~1 s EMA of the spectral shape (used as the section
-                                                          ///< fingerprint).
-    float m_secPrints[kMaxSectionPrints][AudioFeatures::kSpectrumBands] = {}; ///< Stored fingerprints of
-                                                                              ///< previously-seen sections.
-    int  m_secPrintUse[kMaxSectionPrints] = {}; ///< Last-used stamp per stored fingerprint (LRU replacement policy).
-    int  m_secPrintN = 0;                                                     ///< Number of stored fingerprints so far.
+    static const int MaxSectionPrints = 8;
+    float m_secPrint[AudioFeatures::SpectrumBands] = {}; ///< ~1 s EMA of the spectral shape (used as the section
+                                                         ///< fingerprint).
+    float m_secPrints[MaxSectionPrints][AudioFeatures::SpectrumBands] = {}; ///< Stored fingerprints of
+                                                                            ///< previously-seen sections.
+    int  m_secPrintUse[MaxSectionPrints] = {}; ///< Last-used stamp per stored fingerprint (LRU replacement policy).
+    int  m_secPrintN = 0;                                                   ///< Number of stored fingerprints so far.
     int  m_secCurId = -1;    ///< Current section's id (index into #m_secPrints); see AudioFeatures::sectionId.
     bool m_secKnown = false; ///< Whether the current section matched a stored print (vs. was newly stored, possibly in
                              ///< a recycled slot); see AudioFeatures::sectionKnown.
@@ -481,7 +481,7 @@ private:
      * Fed in processBlock() (capture thread), dumped by dumpReplayWav() (main
      * thread) — guarded by #m_replayMx.
      */
-    static const int   kReplaySeconds = 32;
+    static const int   ReplaySeconds = 32;
     std::vector<short> m_replayRing; ///< Ring buffer of captured PCM (stereo, interleaved s16); sized lazily as rate *
                                      ///< 2ch * seconds.
     size_t m_replayPos = 0;          ///< Next write index (frames * 2).

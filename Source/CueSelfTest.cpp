@@ -198,10 +198,10 @@ int decodeCapture( const char *path )
         good++;
         switch ( c.kind )
         {
-            case ScoreCue::Kind::Beat: printf( "beat %d\n", c.index ); break;
-            case ScoreCue::Kind::Bar: printf( "bar %d\n", c.index ); break;
-            case ScoreCue::Kind::Section: printf( "section %s %.4f\n", c.text, c.energy ); break;
-            case ScoreCue::Kind::Key: printf( "key %s %d\n", c.text, c.keyPc ); break;
+            case ScoreCue::KindE::BEAT: printf( "beat %d\n", c.index ); break;
+            case ScoreCue::KindE::BAR: printf( "bar %d\n", c.index ); break;
+            case ScoreCue::KindE::SECTION: printf( "section %s %.4f\n", c.text, c.energy ); break;
+            case ScoreCue::KindE::KEY: printf( "key %s %d\n", c.text, c.keyPc ); break;
             default: printf( "drop\n" ); break;
         }
     }
@@ -224,32 +224,32 @@ int runCueSelfTest()
     const std::vector<char> bar = intMessage( "/phos/bar", 258 );
     check( bar.size() == 20, "a hand-built /phos/bar is 20 bytes (12 address + 4 tags + 4 argument)",
            std::to_string( bar.size() ) );
-    check( decodes( bar, c ) && c.kind == ScoreCue::Kind::Bar && c.index == 258,
+    check( decodes( bar, c ) && c.kind == ScoreCue::KindE::BAR && c.index == 258,
            "/phos/bar i decodes, most significant byte first" );
 
-    check( decodes( intMessage( "/phos/beat", 7 ), c ) && c.kind == ScoreCue::Kind::Beat && c.index == 7,
+    check( decodes( intMessage( "/phos/beat", 7 ), c ) && c.kind == ScoreCue::KindE::BEAT && c.index == 7,
            "/phos/beat i decodes" );
 
     const std::vector<char> sec = sectionMessage( "Drop", 0.75f );
     check( sec.size() == 32, "a hand-built /phos/section is 32 bytes (16 + 4 + 8 + 4)",
            std::to_string( sec.size() ) );
-    check( decodes( sec, c ) && c.kind == ScoreCue::Kind::Section
-               && c.section == static_cast<int>( CueSection::Drop ) && c.energy == 0.75f,
+    check( decodes( sec, c ) && c.kind == ScoreCue::KindE::SECTION
+               && c.section == static_cast<int>( CueSectionE::DROP ) && c.energy == 0.75f,
            "/phos/section s f decodes, type by name and energy as a float32" );
 
-    check( decodes( keyMessage( "F# Phrygian" ), c ) && c.kind == ScoreCue::Kind::Key && c.keyPc == 6,
+    check( decodes( keyMessage( "F# Phrygian" ), c ) && c.kind == ScoreCue::KindE::KEY && c.keyPc == 6,
            "/phos/key s decodes and F# is pitch class 6" );
     check( decodes( keyMessage( "Bb Aeolian" ), c ) && c.keyPc == 10, "and Bb is pitch class 10" );
     check( decodes( keyMessage( "C Dorian" ), c ) && c.keyPc == 0, "and C is pitch class 0" );
 
     const std::vector<char> drop = dropMessage();
-    check( drop.size() == 16 && decodes( drop, c ) && c.kind == ScoreCue::Kind::Drop,
+    check( drop.size() == 16 && decodes( drop, c ) && c.kind == ScoreCue::KindE::DROP,
            "/phos/drop carries the empty type tag string and decodes",
            std::to_string( drop.size() ) + " bytes" );
 
     // A section name this build does not know is still a section: the cue arrives, the type is -1,
     // and the scheduler gets its change. A new category in the generator must not silence the bridge.
-    check( decodes( sectionMessage( "Interlude", 0.5f ), c ) && c.kind == ScoreCue::Kind::Section
+    check( decodes( sectionMessage( "Interlude", 0.5f ), c ) && c.kind == ScoreCue::KindE::SECTION
                && c.section == -1,
            "an unknown section name still decodes, with type -1" );
 
@@ -311,7 +311,7 @@ int runCueSelfTest()
         decodes( sectionMessage( "Break", 0.3f ), s );
         cues.apply( s );
         ScoreCues::Frame f = cues.drain( 0.016f );
-        check( f.live && f.section && f.sectionType == static_cast<int>( CueSection::Break )
+        check( f.live && f.section && f.sectionType == static_cast<int>( CueSectionE::BREAK )
                    && f.energy > 0.29f && f.energy < 0.31f,
                "a section cue arrives once, with its energy" );
         f = cues.drain( 0.016f );
@@ -319,7 +319,7 @@ int runCueSelfTest()
 
         // The generator stops. After the timeout the audio analysis has to take over again -- a
         // scheduler left waiting for a boundary that will never come is worse than no cues at all.
-        f = cues.drain( ScoreCues::kLiveSecs );
+        f = cues.drain( ScoreCues::LiveSecs );
         check( !f.live, "after the silence timeout the cues stop steering the scheduler" );
     }
 
@@ -351,7 +351,7 @@ int runCueSelfTest()
         // Back to the audio, and back again: the numbers must never go backwards, because the
         // scheduler reads a DIFFERENCE and a step of anything but one is a cue thrown away.
         SceneScheduler::Tick w = sampleTick();
-        applyScoreCues( ScoreCues::instance().drain( ScoreCues::kLiveSecs ), bridge, w );
+        applyScoreCues( ScoreCues::instance().drain( ScoreCues::LiveSecs ), bridge, w );
         check( w.sectionCount == 17, "when the sender goes quiet the audio's own counter is back" );
         decodes( sectionMessage( "Groove", 0.5f ), s );
         ScoreCues::instance().apply( s );
@@ -364,41 +364,41 @@ int runCueSelfTest()
     // ---------------------------------------------------------------- the family's dialects (02.10.2026)
     {
         ScoreCue d;
-        check( decodes( dialectMessage( "/tot/bar", ",i", "", 12, 0.f ), d ) && d.kind == ScoreCue::Kind::Bar
+        check( decodes( dialectMessage( "/tot/bar", ",i", "", 12, 0.f ), d ) && d.kind == ScoreCue::KindE::BAR
                    && d.index == 12,
                "Totality's bar line is a bar line" );
-        check( decodes( dialectMessage( "/tot/beat", ",if", "", 49, 130.f ), d ) && d.kind == ScoreCue::Kind::Beat
+        check( decodes( dialectMessage( "/tot/beat", ",if", "", 49, 130.f ), d ) && d.kind == ScoreCue::KindE::BEAT
                    && d.index == 49,
                "and its beat a beat" );
         check( decodes( dialectMessage( "/tot/block", ",s", "Block 3", 0, 0.f ), d )
-                   && d.kind == ScoreCue::Kind::Section && d.section == static_cast<int>( CueSection::Groove )
+                   && d.kind == ScoreCue::KindE::SECTION && d.section == static_cast<int>( CueSectionE::GROOVE )
                    && !d.drop,
                "its plateau ('Block 3') a groove" );
         check( decodes( dialectMessage( "/tot/block", ",s", "Return", 0, 0.f ), d )
-                   && d.section == static_cast<int>( CueSection::Drop ) && d.drop,
+                   && d.section == static_cast<int>( CueSectionE::DROP ) && d.drop,
                "and its Return a drop" );
-        check( decodes( dialectMessage( "/tot/key", ",s", "8A", 0, 0.f ), d ) && d.kind == ScoreCue::Kind::Key
+        check( decodes( dialectMessage( "/tot/key", ",s", "8A", 0, 0.f ), d ) && d.kind == ScoreCue::KindE::KEY
                    && d.keyPc == 9,
                "a Camelot label: 8A is A" );
         check( decodes( dialectMessage( "/parh/key", ",s", "8B", 0, 0.f ), d ) && d.keyPc == 0
                    && decodes( dialectMessage( "/parh/key", ",s", "1A", 0, 0.f ), d ) && d.keyPc == 8,
                "8B is C, 1A is G#" );
         check( decodes( dialectMessage( "/parh/block", ",s", "Breakdown", 0, 0.f ), d )
-                   && d.section == static_cast<int>( CueSection::Break ),
+                   && d.section == static_cast<int>( CueSectionE::BREAK ),
                "Parhelion's breakdown a break" );
         check( decodes( dialectMessage( "/parh/op", ",s", "add lead", 0, 0.f ), d )
-                   && d.kind == ScoreCue::Kind::Unknown,
+                   && d.kind == ScoreCue::KindE::UNKNOWN,
                "and an operation traffic, nothing more" );
-        check( decodes( dialectMessage( "/eph/beat", ",if", "", 36, 124.f ), d ) && d.kind == ScoreCue::Kind::Bar
+        check( decodes( dialectMessage( "/eph/beat", ",if", "", 36, 124.f ), d ) && d.kind == ScoreCue::KindE::BAR
                    && d.index == 9 && decodes( dialectMessage( "/eph/beat", ",if", "", 37, 124.f ), d )
-                   && d.kind == ScoreCue::Kind::Beat,
+                   && d.kind == ScoreCue::KindE::BEAT,
                "Ephemeris' every fourth beat is a bar line" );
         check( decodes( dialectMessage( "/eph/phase", ",si", "PEAK", 5, 0.f ), d )
-                   && d.section == static_cast<int>( CueSection::Drop ) && d.drop,
+                   && d.section == static_cast<int>( CueSectionE::DROP ) && d.drop,
                "its PEAK a drop" );
         check( decodes( dialectMessage( "/eph/key", ",s", "F#", 0, 0.f ), d ) && d.keyPc == 6, "its key a root" );
         check( decodes( dialectMessage( "/noct/scene", ",sf", "Somnus Field", 0, 0.3f ), d )
-                   && d.kind == ScoreCue::Kind::Section && d.energy > 0.29f && d.energy < 0.31f,
+                   && d.kind == ScoreCue::KindE::SECTION && d.energy > 0.29f && d.energy < 0.31f,
                "Noctuary's scene a section at its energy" );
         check( !decodes( dialectMessage( "/tot/block", ",i", "", 3, 0.f ), d )
                    && !decodes( dialectMessage( "/eph/bar", ",i", "", 3, 0.f ), d ),
@@ -416,15 +416,15 @@ int runCueSelfTest()
         double   at = 0.0;
         ScoreCue line;
         check( parseScoreCueLine( "12.5\t/phos/bar\t7", at, line ) == 1 && at == 12.5
-                   && line.kind == ScoreCue::Kind::Bar && line.index == 7,
+                   && line.kind == ScoreCue::KindE::BAR && line.index == 7,
                "a cue file's bar line reads as the bar it names" );
         check( parseScoreCueLine( "0\t/phos/section\tDrop\t0.9\r", at, line ) == 1
-                   && line.kind == ScoreCue::Kind::Section && line.section == static_cast<int>( CueSection::Drop )
+                   && line.kind == ScoreCue::KindE::SECTION && line.section == static_cast<int>( CueSectionE::DROP )
                    && line.energy > 0.89f && line.energy < 0.91f,
                "and a section with its energy, a carriage return or not" );
         check( parseScoreCueLine( "3\t/phos/key\tF# Phrygian", at, line ) == 1 && line.keyPc == 6,
                "and a key with a space in it" );
-        check( parseScoreCueLine( "4\t/phos/drop", at, line ) == 1 && line.kind == ScoreCue::Kind::Drop,
+        check( parseScoreCueLine( "4\t/phos/drop", at, line ) == 1 && line.kind == ScoreCue::KindE::DROP,
                "and a drop without arguments" );
         check( parseScoreCueLine( "# seconds address arguments", at, line ) == 0
                    && parseScoreCueLine( "", at, line ) == 0,
@@ -497,7 +497,7 @@ int runCueSelfTest()
                    std::to_string( ScoreCues::instance().rejected() ) + " rejected" );
             const ScoreCues::Frame f = ScoreCues::instance().drain( 0.016f );
             check( f.live && f.downbeat && f.section && f.drop && f.bar == 40
-                       && f.sectionType == static_cast<int>( CueSection::Drop ) && f.keyPc == 9,
+                       && f.sectionType == static_cast<int>( CueSectionE::DROP ) && f.keyPc == 9,
                    "and one frame carries the bar line, the section, the drop and the key" );
         }
     }

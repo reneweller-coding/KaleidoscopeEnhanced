@@ -58,9 +58,9 @@ public:
                           ///< see rule V7d.
         float trailDepth3D = 0.f; ///< Previous frame's "a 3D scene is up" blend (RenderPipeline::m_trailDepth3D) --
                                   ///< widens the virtual camera's safety zoom.
-        float reactivity = 1.f;   ///< Global audio-motion master gain (RenderPipeline::s_reactivity).
+        float reactivity = 1.f;   ///< Global audio-motion master gain (RenderPipeline::M_Reactivity).
         float latencyLead = 0.f;  ///< Display-phase lead in seconds, for loopback/analysis/render latency compensation
-                                  ///< (RenderPipeline::s_latencyLead).
+                                  ///< (RenderPipeline::M_LatencyLead).
         float ssmHead = 0.f;      ///< GpuSims::ssmHeadNorm() -- self-similarity-matrix ring write head.
         float ssmFill = 0.f;      ///< GpuSims::ssmFillNorm() -- self-similarity-matrix ring fill.
         float spectroHead = 0.f;  ///< GpuSims::spectroHeadNorm() -- spectrogram ring write head.

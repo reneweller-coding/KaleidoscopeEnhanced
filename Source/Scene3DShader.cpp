@@ -53,10 +53,10 @@ static float hash01( unsigned int n )
 }
 
 // FPS-driven cube budget (see RenderPipeline::paint's hysteresis).
-float Scene3DShader::s_cubeBudget = 1.f;
+float Scene3DShader::M_CubeBudget = 1.f;
 
 // Shared by all geom="indirect" scenes (see setupIndirect()).
-GLuint Scene3DShader::s_clampProg = 0;
+GLuint Scene3DShader::M_ClampProg = 0;
 
 /** @brief Basic uniform random float in [0,1) using the C standard library RNG (used only for one-shot per-activation
  * rolls, not per-vertex geometry). @return Pseudo-random value in [0,1). */
@@ -373,7 +373,7 @@ void Scene3DShader::buildGeometry()
     // stall the viewer feels (the early-minutes stutter). The scheduler
     // subtracts the stall from its clocks (absorbHitch), but the per-model
     // numbers logged below are what any future async-loading work starts from.
-    const auto         _meshT0 = std::chrono::steady_clock::now();
+    const auto         mesh_t0 = std::chrono::steady_clock::now();
     std::vector<float> v;
 
     if ( m_geomKind == GEOM_INDIRECT )
@@ -461,13 +461,13 @@ void Scene3DShader::buildGeometry()
         // corner u/v in attrA.xy, per-quad seeds in attrB.
         const int N = 3000;
         v.reserve( size_t( N ) * 6 * 8 );
-        static const float q[6][2] = {
+        static const float Q[6][2] = {
             { 0.f, 0.f }, { 1.f, 0.f }, { 1.f, 1.f }, { 0.f, 0.f }, { 1.f, 1.f }, { 0.f, 1.f } };
         for ( int i = 0; i < N; ++i )
             for ( int k = 0; k < 6; ++k )
             {
-                v.push_back( q[k][0] );
-                v.push_back( q[k][1] );
+                v.push_back( Q[k][0] );
+                v.push_back( Q[k][1] );
                 v.push_back( 0.f );
                 v.push_back( float( i ) );
                 v.push_back( hash01( i * 4u + 0u ) );
@@ -530,7 +530,7 @@ void Scene3DShader::buildGeometry()
         // With no model2 the middle run is empty and m_mesh2VertexCount ==
         // m_meshOwnVertexCount, so every existing single-model shader's
         // "gl_VertexID >= meshVertexCount means shell" test still holds.
-        auto loadInto = [&]( const std::string &path, MeshAsset *pre, GLuint &tex, int &layers ) -> bool
+        auto load_into = [&]( const std::string &path, MeshAsset *pre, GLuint &tex, int &layers ) -> bool
         {
             // A warmed asset skips the expensive part; the GL work below
             // stays on this thread either way. The sync path remains for
@@ -570,8 +570,8 @@ void Scene3DShader::buildGeometry()
         };
 
         const bool warmed = ( ws == WARM_READY );
-        loadInto( m_modelPath, ( warmed && m_warmOk ) ? &m_warmAsset : nullptr,
-                  m_meshMaterialTex, m_meshMaterialLayers );
+        load_into( m_modelPath, ( warmed && m_warmOk ) ? &m_warmAsset : nullptr,
+                   m_meshMaterialTex, m_meshMaterialLayers );
         m_meshOwnVertexCount = int( v.size() / 8 );
 
         // Measure the model's own bounding box, exposed as meshCenter/meshExtent.
@@ -604,8 +604,8 @@ void Scene3DShader::buildGeometry()
         }
 
         if ( !m_modelPath2.empty() )
-            loadInto( m_modelPath2, ( warmed && m_warmOk2 ) ? &m_warmAsset2 : nullptr,
-                      m_meshMaterialTex2, m_meshMaterialLayers2 );
+            load_into( m_modelPath2, ( warmed && m_warmOk2 ) ? &m_warmAsset2 : nullptr,
+                       m_meshMaterialTex2, m_meshMaterialLayers2 );
         m_mesh2VertexCount = int( v.size() / 8 );
 
         // Consumed: release the prefetched CPU copies (tens of MB per model).
@@ -661,10 +661,10 @@ void Scene3DShader::buildGeometry()
                 { -.5f, .5f, -.5f },  { .5f, .5f, -.5f },   { .5f, .5f, .5f },    { -.5f, .5f, -.5f },
                 { .5f, .5f, .5f },    { -.5f, .5f, .5f },   { -.5f, -.5f, -.5f }, { .5f, -.5f, .5f },
                 { .5f, -.5f, -.5f },  { -.5f, -.5f, -.5f }, { -.5f, -.5f, .5f },  { .5f, -.5f, .5f } };
-            const float kSide = 2.f * float( kSkyShellRadius ); // corners are +-0.5 -> +-R
+            const float Side = 2.f * float( SkyShellRadius ); // corners are +-0.5 -> +-R
             for ( int k = 0; k < 36; ++k )
             {
-                const float px = SC[k][0] * kSide, py = SC[k][1] * kSide, pz = SC[k][2] * kSide;
+                const float px = SC[k][0] * Side, py = SC[k][1] * Side, pz = SC[k][2] * Side;
                 const float len = sqrtf( px * px + py * py + pz * pz );
                 v.push_back( px );
                 v.push_back( py );
@@ -731,7 +731,7 @@ void Scene3DShader::buildGeometry()
         if ( m_geomKind == GEOM_MESH )
         {
             const float ms = std::chrono::duration<float, std::milli>(
-                                 std::chrono::steady_clock::now() - _meshT0 )
+                                 std::chrono::steady_clock::now() - mesh_t0 )
                                  .count();
             fprintf( stderr, "MESHLOAD %s %.0f ms (%zu verts)\n",
                      m_modelPath.c_str(), ms, v.size() / 8 );
@@ -758,9 +758,9 @@ bool Scene3DShader::setupIndirect()
 
     // The clamp pass is shared by every indirect scene, so it is compiled once
     // for the whole process.
-    if ( s_clampProg == 0 )
-        s_clampProg = setComputeShader( "..\\Engine\\IndirectClamp.comp" );
-    if ( s_clampProg == 0 )
+    if ( M_ClampProg == 0 )
+        M_ClampProg = setComputeShader( "..\\Engine\\IndirectClamp.comp" );
+    if ( M_ClampProg == 0 )
     {
         glDeleteProgram( m_genProg );
         m_genProg = 0;
@@ -854,40 +854,40 @@ void Scene3DShader::runGenerator( float time )
         m_genLocs.progId = m_genProg;
     }
 
-    auto setF = [&]( GLint l, float v )
+    auto set_f = [&]( GLint l, float v )
     { if( l >= 0 ) glUniform1f( l, v ); };
     const AudioFeatures &a = m_lastAudio; // already carries this scene's offsets
-    setF( m_genLocs.time, m_timeOffset + time * m_speedFactor );
-    setF( m_genLocs.sceneSeed, m_sceneSeed );
-    setF( m_genLocs.audioAdvance, a.audioAdvance );
-    setF( m_genLocs.audioLevel, a.overallLevel );
-    setF( m_genLocs.audioBeat, a.beatDecay );
-    setF( m_genLocs.audioKick, a.onsetKick );
-    setF( m_genLocs.audioSubBass, a.subBassLevel );
-    setF( m_genLocs.audioHigh, a.highLevel );
-    setF( m_genLocs.audioBass, a.bassLevel );
-    setF( m_genLocs.audioMid, a.midLevel );
-    setF( m_genLocs.audioPhase, a.audioRotPhase );
-    setF( m_genLocs.audioSwell, a.swell );
+    set_f( m_genLocs.time, m_timeOffset + time * m_speedFactor );
+    set_f( m_genLocs.sceneSeed, m_sceneSeed );
+    set_f( m_genLocs.audioAdvance, a.audioAdvance );
+    set_f( m_genLocs.audioLevel, a.overallLevel );
+    set_f( m_genLocs.audioBeat, a.beatDecay );
+    set_f( m_genLocs.audioKick, a.onsetKick );
+    set_f( m_genLocs.audioSubBass, a.subBassLevel );
+    set_f( m_genLocs.audioHigh, a.highLevel );
+    set_f( m_genLocs.audioBass, a.bassLevel );
+    set_f( m_genLocs.audioMid, a.midLevel );
+    set_f( m_genLocs.audioPhase, a.audioRotPhase );
+    set_f( m_genLocs.audioSwell, a.swell );
     // Scene clocks, same definitions as the fragment stage: advance and time
     // since this activation, and the staged progress the regie may bend.
-    setF( m_genLocs.sceneAdvance, ( m_advanceAtReset > -1.0e8f ) ? a.audioAdvance - m_advanceAtReset : 0.f );
-    setF( m_genLocs.sceneTime, ( m_activationTime > -1.0e8f ) ? time - m_activationTime : 0.f );
-    setF( m_genLocs.sceneProgress, m_sceneProgress );
+    set_f( m_genLocs.sceneAdvance, ( m_advanceAtReset > -1.0e8f ) ? a.audioAdvance - m_advanceAtReset : 0.f );
+    set_f( m_genLocs.sceneTime, ( m_activationTime > -1.0e8f ) ? time - m_activationTime : 0.f );
+    set_f( m_genLocs.sceneProgress, m_sceneProgress );
     if ( m_genLocs.audioChroma >= 0 )
         glUniform1fv( m_genLocs.audioChroma, 12, a.chroma );
     if ( m_genLocs.audioSpectrum >= 0 )
-        glUniform1fv( m_genLocs.audioSpectrum, AudioFeatures::kSpectrumBands, a.spectrum );
+        glUniform1fv( m_genLocs.audioSpectrum, AudioFeatures::SpectrumBands, a.spectrum );
     // The host binds the spectrogram to unit 28 whenever usesSpectro() says
     // somebody wants it — which, for an indirect scene, includes this program.
     if ( m_genLocs.texSpectro >= 0 )
         glUniform1i( m_genLocs.texSpectro, 28 );
-    setF( m_genLocs.spectroHead, a.spectroHead );
-    setF( m_genLocs.spectroFill, a.spectroFill );
+    set_f( m_genLocs.spectroHead, a.spectroHead );
+    set_f( m_genLocs.spectroFill, a.spectroFill );
     if ( m_genLocs.maxVertices >= 0 )
         glUniform1ui( m_genLocs.maxVertices, GLuint( m_meshCapacity ) );
     for ( size_t i = 0; i < m_uniforms.size(); ++i )
-        setF( m_genUniformLocs[i], m_uniforms[i]->snapshotValue() );
+        set_f( m_genUniformLocs[i], m_uniforms[i]->snapshotValue() );
 
     // FORMULA-LAYER CONSISTENCY: the render stages get their uniforms
     // remapped by the formula layer — applyAudioFeatures evaluates the
@@ -917,7 +917,7 @@ void Scene3DShader::runGenerator( float time )
 
     if ( m_genLocs.frameIndex >= 0 )
         glUniform1ui( m_genLocs.frameIndex, GLuint( m_frameIndex ) );
-    GLint passLoc = m_genLocs.genPass;
+    GLint pass_loc = m_genLocs.genPass;
 
     // A fixed invocation budget: 64^3 = 262144, in 4x4x4 blocks.  What one
     // invocation MEANS is entirely the generator's business — a voxel for an
@@ -941,28 +941,28 @@ void Scene3DShader::runGenerator( float time )
     // not shader-declared. Purely additive: a scene that never calls
     // setGenPassCount() is completely unaffected, still runs through the
     // exact branch below it always did.
-    if ( passLoc >= 0 && m_genPassCount > 0 )
+    if ( pass_loc >= 0 && m_genPassCount > 0 )
     {
         for ( int p = 0; p < m_genPassCount; ++p )
         {
-            glUniform1f( passLoc, float( p ) );
+            glUniform1f( pass_loc, float( p ) );
             glDispatchCompute( 16, 16, 16 );
             glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT
                              | GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
         }
     }
-    else if ( passLoc >= 0 && m_stateBuf )
+    else if ( pass_loc >= 0 && m_stateBuf )
     {
-        glUniform1f( passLoc, 0.f );
+        glUniform1f( pass_loc, 0.f );
         glDispatchCompute( 16, 16, 16 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
-        glUniform1f( passLoc, 1.f );
+        glUniform1f( pass_loc, 1.f );
         glDispatchCompute( 16, 16, 16 );
     }
     else
     {
-        if ( passLoc >= 0 )
-            glUniform1f( passLoc, 1.f );
+        if ( pass_loc >= 0 )
+            glUniform1f( pass_loc, 1.f );
         glDispatchCompute( 16, 16, 16 );
     }
     ++m_frameIndex;
@@ -971,31 +971,31 @@ void Scene3DShader::runGenerator( float time )
     // barrier before it runs — not just one at the end.
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
-    glUseProgram( s_clampProg );
-    // s_clampProg is process-shared (one compute program for every indirect
+    glUseProgram( M_ClampProg );
+    // M_ClampProg is process-shared (one compute program for every indirect
     // scene), so its two locations are cached in function-local statics
     // rather than per-instance -- resolved once for the program's whole
     // lifetime (it is compiled once and never relinked; the progId guard is
     // just cheap insurance against that changing later).
-    static GLuint s_clampLocProg = 0;
-    static GLint  s_clampLocMaxV = -1;
-    static GLint  s_clampLocBudget = -1;
-    if ( s_clampLocProg != s_clampProg )
+    static GLuint clamp_loc_prog = 0;
+    static GLint  clamp_loc_max_v = -1;
+    static GLint  clamp_loc_budget = -1;
+    if ( clamp_loc_prog != M_ClampProg )
     {
-        s_clampLocMaxV = glGetUniformLocation( s_clampProg, "maxVertices" );
-        s_clampLocBudget = glGetUniformLocation( s_clampProg, "budget" );
-        s_clampLocProg = s_clampProg;
+        clamp_loc_max_v = glGetUniformLocation( M_ClampProg, "maxVertices" );
+        clamp_loc_budget = glGetUniformLocation( M_ClampProg, "budget" );
+        clamp_loc_prog = M_ClampProg;
     }
-    if ( s_clampLocMaxV >= 0 )
-        glUniform1ui( s_clampLocMaxV, GLuint( m_meshCapacity ) );
+    if ( clamp_loc_max_v >= 0 )
+        glUniform1ui( clamp_loc_max_v, GLuint( m_meshCapacity ) );
     // Same FPS-driven detail knob GEOM_CUBES scenes already read as
     // `cubeBudget` -- indirect generators had no way to shed triangles under
     // load before this. GLSL floats default to 0 (not 1) when never set, so
     // this MUST be uploaded every dispatch, not just when it changes -- a
     // missed upload after a program relink would silently clamp every
     // indirect scene to zero vertices.
-    if ( s_clampLocBudget >= 0 )
-        glUniform1f( s_clampLocBudget, s_cubeBudget );
+    if ( clamp_loc_budget >= 0 )
+        glUniform1f( clamp_loc_budget, M_CubeBudget );
     glDispatchCompute( 1, 1, 1 );
 
     // Three consumers to fence against: the vertex puller, the indirect command
@@ -1022,34 +1022,34 @@ void Scene3DShader::initUniforms( int width, int height )
     // 3D scene needs its vertex shader actually attached.
     // Tessellation / geometry stages join in automatically when their file is
     // present next to the .vert/.frag — no engine change per scene.
-    m_sh_prog_id = setShadersPipeline( m_vertexShaderFilename,
-                                       m_tescFilename, m_teseFilename,
-                                       m_geomFilename, m_fragmentShaderFilename );
-    m_texPointUni1 = glGetUniformLocation( m_sh_prog_id, "tex0" );
-    m_texPointUni2 = glGetUniformLocation( m_sh_prog_id, "tex1" );
-    m_texSizeRcpUni = glGetUniformLocation( m_sh_prog_id, "resolution" );
-    m_timeUni = glGetUniformLocation( m_sh_prog_id, "time" );
-    m_interpolationUni = glGetUniformLocation( m_sh_prog_id, "interpolation" );
-    m_progressUni = glGetUniformLocation( m_sh_prog_id, "sceneProgress" );
-    m_sceneTimeUni = glGetUniformLocation( m_sh_prog_id, "sceneTime" );
+    m_shProgId = setShadersPipeline( m_vertexShaderFilename,
+                                     m_tescFilename, m_teseFilename,
+                                     m_geomFilename, m_fragmentShaderFilename );
+    m_texPointUni1 = glGetUniformLocation( m_shProgId, "tex0" );
+    m_texPointUni2 = glGetUniformLocation( m_shProgId, "tex1" );
+    m_texSizeRcpUni = glGetUniformLocation( m_shProgId, "resolution" );
+    m_timeUni = glGetUniformLocation( m_shProgId, "time" );
+    m_interpolationUni = glGetUniformLocation( m_shProgId, "interpolation" );
+    m_progressUni = glGetUniformLocation( m_shProgId, "sceneProgress" );
+    m_sceneTimeUni = glGetUniformLocation( m_shProgId, "sceneTime" );
     for ( unsigned int i = 0; i < m_uniforms.size(); i++ )
-        m_uniforms[i]->initUniform( m_sh_prog_id );
+        m_uniforms[i]->initUniform( m_shProgId );
 
-    m_projUni = glGetUniformLocation( m_sh_prog_id, "projM" );
-    m_eyeUni = glGetUniformLocation( m_sh_prog_id, "eyeOff" );
-    m_seedUni = glGetUniformLocation( m_sh_prog_id, "sceneSeed" );
-    m_budgetUni = glGetUniformLocation( m_sh_prog_id, "cubeBudget" );
-    m_meshMaterialUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial" );
-    m_meshMaterialLayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers" );
-    m_meshVertexCountUni = glGetUniformLocation( m_sh_prog_id, "meshVertexCount" );
-    m_meshExtentUni = glGetUniformLocation( m_sh_prog_id, "meshExtent" );
-    m_meshExtent2Uni = glGetUniformLocation( m_sh_prog_id, "meshExtent2" );
-    m_meshCenter2Uni = glGetUniformLocation( m_sh_prog_id, "meshCenter2" );
-    m_meshInstancesUni = glGetUniformLocation( m_sh_prog_id, "meshInstances" );
-    m_meshCenterUni = glGetUniformLocation( m_sh_prog_id, "meshCenter" );
-    m_mesh2VertexCountUni = glGetUniformLocation( m_sh_prog_id, "mesh2VertexCount" );
-    m_meshMaterial2Uni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterial2" );
-    m_meshMaterial2LayersUni = glGetUniformLocation( m_sh_prog_id, "texMeshMaterialLayers2" );
+    m_projUni = glGetUniformLocation( m_shProgId, "projM" );
+    m_eyeUni = glGetUniformLocation( m_shProgId, "eyeOff" );
+    m_seedUni = glGetUniformLocation( m_shProgId, "sceneSeed" );
+    m_budgetUni = glGetUniformLocation( m_shProgId, "cubeBudget" );
+    m_meshMaterialUni = glGetUniformLocation( m_shProgId, "texMeshMaterial" );
+    m_meshMaterialLayersUni = glGetUniformLocation( m_shProgId, "texMeshMaterialLayers" );
+    m_meshVertexCountUni = glGetUniformLocation( m_shProgId, "meshVertexCount" );
+    m_meshExtentUni = glGetUniformLocation( m_shProgId, "meshExtent" );
+    m_meshExtent2Uni = glGetUniformLocation( m_shProgId, "meshExtent2" );
+    m_meshCenter2Uni = glGetUniformLocation( m_shProgId, "meshCenter2" );
+    m_meshInstancesUni = glGetUniformLocation( m_shProgId, "meshInstances" );
+    m_meshCenterUni = glGetUniformLocation( m_shProgId, "meshCenter" );
+    m_mesh2VertexCountUni = glGetUniformLocation( m_shProgId, "mesh2VertexCount" );
+    m_meshMaterial2Uni = glGetUniformLocation( m_shProgId, "texMeshMaterial2" );
+    m_meshMaterial2LayersUni = glGetUniformLocation( m_shProgId, "texMeshMaterialLayers2" );
 
     // The array samplers get their units NOW, while linkOrFail() still has the
     // program bound -- not first in draw(). A sampler uniform defaults to 0,
@@ -1062,18 +1062,18 @@ void Scene3DShader::initUniforms( int width, int height )
     if ( m_meshMaterialUni >= 0 || m_meshMaterial2Uni >= 0 )
     {
         if ( m_meshMaterialUni >= 0 )
-            glUniform1i( m_meshMaterialUni, kMeshMaterialTexUnit );
+            glUniform1i( m_meshMaterialUni, MeshMaterialTexUnit );
         if ( m_meshMaterial2Uni >= 0 )
-            glUniform1i( m_meshMaterial2Uni, kMeshMaterial2TexUnit );
+            glUniform1i( m_meshMaterial2Uni, MeshMaterial2TexUnit );
         const GLuint dummy = glcoreDummyTex2DArray();
-        glActiveTexture( GL_TEXTURE0 + kMeshMaterialTexUnit );
+        glActiveTexture( GL_TEXTURE0 + MeshMaterialTexUnit );
         glBindTexture( GL_TEXTURE_2D_ARRAY, dummy );
-        glActiveTexture( GL_TEXTURE0 + kMeshMaterial2TexUnit );
+        glActiveTexture( GL_TEXTURE0 + MeshMaterial2TexUnit );
         glBindTexture( GL_TEXTURE_2D_ARRAY, dummy );
         glActiveTexture( GL_TEXTURE0 );
     }
-    m_attrA = glGetAttribLocation( m_sh_prog_id, "attrA" );
-    m_attrB = glGetAttribLocation( m_sh_prog_id, "attrB" );
+    m_attrA = glGetAttribLocation( m_shProgId, "attrA" );
+    m_attrB = glGetAttribLocation( m_shProgId, "attrB" );
 
     if ( m_vbo == 0 )
         buildGeometry();
@@ -1154,8 +1154,8 @@ void Scene3DShader::draw()
     // Two copies would drift, and every depth-based effect would then be
     // subtly, invisibly wrong.
     const float aspect = ( m_height > 0 ) ? float( m_width ) / float( m_height ) : 1.f;
-    const float zn = kSceneNear, zf = kSceneFar;
-    const float f = 1.f / kSceneTanHalfFovY;
+    const float zn = SceneNear, zf = SceneFar;
+    const float f = 1.f / SceneTanHalfFovY;
     float       proj[16] = {
         f / aspect, 0.f, 0.f, 0.f,
         0.f, f, 0.f, 0.f,
@@ -1168,31 +1168,31 @@ void Scene3DShader::draw()
     // (+ host-integrated V rates) without touching a single shader.  The
     // shadow pass renders through lightM, so shadows stay world-anchored.
     {
-        bool hasRig = false;
+        bool has_rig = false;
         for ( ExprEntry &e : m_exprs )
             if ( e.prog.valid() && e.name.rfind( "rig", 0 ) == 0 )
             {
-                hasRig = true;
+                has_rig = true;
                 break;
             }
-        if ( hasRig )
+        if ( has_rig )
         {
             float ev[ExprVars::V_COUNT];
             fillExprVars( m_lastAudio, m_exprTime, m_exprSeeds, ev );
             ev[ExprVars::V_PROGRESS] = m_sceneProgress;
             float              absv[4] = { 0, 0, 0, 0 }; // pitch yaw roll dolly
             float              vel[4] = { 0, 0, 0, 0 };
-            static const char *kAbs[4] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly" };
-            static const char *kVel[4] = { "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
+            static const char *Abs[4] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly" };
+            static const char *Vel[4] = { "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
             for ( ExprEntry &e : m_exprs )
             {
                 if ( !e.prog.valid() )
                     continue;
                 for ( int i = 0; i < 4; ++i )
                 {
-                    if ( e.name == kAbs[i] )
+                    if ( e.name == Abs[i] )
                         absv[i] = e.prog.eval( ev );
-                    if ( e.name == kVel[i] )
+                    if ( e.name == Vel[i] )
                         vel[i] = e.prog.eval( ev );
                 }
             }
@@ -1243,7 +1243,7 @@ void Scene3DShader::draw()
     if ( m_seedUni >= 0 )
         glUniform1f( m_seedUni, m_sceneSeed );
     if ( m_budgetUni >= 0 )
-        glUniform1f( m_budgetUni, s_cubeBudget );
+        glUniform1f( m_budgetUni, M_CubeBudget );
 
     // The sampler is declared unconditionally by every mesh shader, so it gets
     // its unit unconditionally too. A model without material layers used to
@@ -1252,12 +1252,12 @@ void Scene3DShader::draw()
     // nothing at all. The layers count still says 0, so the shader does not
     // sample it; this only makes the state the driver validates well-formed.
     if ( m_meshMaterialUni >= 0 )
-        glUniform1i( m_meshMaterialUni, kMeshMaterialTexUnit );
+        glUniform1i( m_meshMaterialUni, MeshMaterialTexUnit );
     if ( m_meshMaterialLayersUni >= 0 )
         glUniform1i( m_meshMaterialLayersUni, m_meshMaterialLayers );
     if ( m_meshMaterialUni >= 0 )
     {
-        glActiveTexture( GL_TEXTURE0 + kMeshMaterialTexUnit );
+        glActiveTexture( GL_TEXTURE0 + MeshMaterialTexUnit );
         glBindTexture( GL_TEXTURE_2D_ARRAY, ( m_meshMaterialLayers > 0 )
                                                 ? m_meshMaterialTex
                                                 : glcoreDummyTex2DArray() );
@@ -1279,12 +1279,12 @@ void Scene3DShader::draw()
         glUniform1i( m_mesh2VertexCountUni, m_mesh2VertexCount );
     // Same for model2's layers; see above.
     if ( m_meshMaterial2Uni >= 0 )
-        glUniform1i( m_meshMaterial2Uni, kMeshMaterial2TexUnit );
+        glUniform1i( m_meshMaterial2Uni, MeshMaterial2TexUnit );
     if ( m_meshMaterial2LayersUni >= 0 )
         glUniform1i( m_meshMaterial2LayersUni, m_meshMaterialLayers2 );
     if ( m_meshMaterial2Uni >= 0 )
     {
-        glActiveTexture( GL_TEXTURE0 + kMeshMaterial2TexUnit );
+        glActiveTexture( GL_TEXTURE0 + MeshMaterial2TexUnit );
         glBindTexture( GL_TEXTURE_2D_ARRAY, ( m_meshMaterialLayers2 > 0 )
                                                 ? m_meshMaterialTex2
                                                 : glcoreDummyTex2DArray() );
@@ -1299,9 +1299,9 @@ void Scene3DShader::draw()
     // blend it needs.  Below, every geometry branch forces its own opaque
     // blend/depth state for the normal case; both the clear and that
     // per-branch state-forcing must defer to the OIT pass instead.
-    const bool inOitPass = ( EffectShader::s_oitPass >= 0.5f );
+    const bool in_oit_pass = ( EffectShader::M_OitPass >= 0.5f );
 
-    if ( !inOitPass )
+    if ( !in_oit_pass )
     {
         // Clear colour AND depth (scissored to the eye viewport in true stereo).
         glClearColor( 0.f, 0.f, 0.f, 1.f );
@@ -1327,16 +1327,16 @@ void Scene3DShader::draw()
             // regenerating would double the compute for an identical result,
             // and — worse — the shadow map would then describe a mesh the
             // camera pass no longer draws if any input changed between them.
-            bool generate = ( EffectShader::s_shadowPass > 0.5f ) || !usesShadow();
+            bool generate = ( EffectShader::M_ShadowPass > 0.5f ) || !usesShadow();
             if ( generate )
             {
                 glBindVertexArray( 0 );
                 runGenerator( m_lastTime );
             }
-            glUseProgram( m_sh_prog_id );
+            glUseProgram( m_shProgId );
 
             glBindVertexArray( m_vao );
-            if ( !inOitPass )
+            if ( !in_oit_pass )
             {
                 glEnable( GL_DEPTH_TEST );
                 glDisable( GL_BLEND );
@@ -1344,7 +1344,7 @@ void Scene3DShader::draw()
             glBindBuffer( GL_DRAW_INDIRECT_BUFFER, m_cmdBuf );
             glDrawArraysIndirect( GL_TRIANGLES, 0 );
             glBindBuffer( GL_DRAW_INDIRECT_BUFFER, 0 );
-            if ( !inOitPass )
+            if ( !in_oit_pass )
                 glDisable( GL_DEPTH_TEST );
 
             // Diagnostic: KALEIDO_INDIRECT_LOG=1 appends the buffer's ACTUAL
@@ -1372,7 +1372,7 @@ void Scene3DShader::draw()
                 {
                     fprintf( df,
                              "shadowPass=%.0f oitPass=%.0f generate=%d count=%u frameIndex=%d\n",
-                             EffectShader::s_shadowPass, EffectShader::s_oitPass, generate,
+                             EffectShader::M_ShadowPass, EffectShader::M_OitPass, generate,
                              count, m_frameIndex );
                     fclose( df );
                 }
@@ -1383,7 +1383,7 @@ void Scene3DShader::draw()
     {
         // Tessellated surface: the patch is the primitive, and the tessellator
         // decides how many triangles it becomes.
-        if ( !inOitPass )
+        if ( !in_oit_pass )
         {
             glEnable( GL_DEPTH_TEST );
             glDisable( GL_BLEND );
@@ -1391,20 +1391,20 @@ void Scene3DShader::draw()
         if ( glPatchParameteri )
             glPatchParameteri( GL_PATCH_VERTICES, 4 );
         glDrawArrays( GL_PATCHES, 0, m_vertexCount );
-        if ( !inOitPass )
+        if ( !in_oit_pass )
             glDisable( GL_DEPTH_TEST );
     }
     else if ( m_geomKind == GEOM_SCATTER )
     {
         // Points that a geometry shader grows into solid bodies: depth-tested
         // and opaque, so a near blade hides the ones behind it.
-        if ( !inOitPass )
+        if ( !in_oit_pass )
         {
             glEnable( GL_DEPTH_TEST );
             glDisable( GL_BLEND );
         }
         glDrawArrays( GL_POINTS, 0, m_vertexCount );
-        if ( !inOitPass )
+        if ( !in_oit_pass )
             glDisable( GL_DEPTH_TEST );
     }
     else if ( m_geomKind == GEOM_CUBES || m_geomKind == GEOM_GRID
@@ -1418,7 +1418,7 @@ void Scene3DShader::draw()
         // accumulation into an ordinary non-blended overwrite (GlassStack,
         // the first geom="cubes" scene to use OIT, was invisible-as-glass
         // this way -- flat opaque shards instead of layered translucency).
-        if ( !inOitPass )
+        if ( !in_oit_pass )
         {
             glEnable( GL_DEPTH_TEST );
             glDisable( GL_BLEND );
@@ -1431,16 +1431,16 @@ void Scene3DShader::draw()
         // KALEIDO_COVER_LOG: zaehlt die Fragmente, die dieser Draw schreibt.
         // Nur im Haupt-Pass -- Schatten- und OIT-Pass wuerden dieselben Pixel
         // ein zweites Mal zaehlen und die Abdeckung ueber 100 % treiben.
-        static const bool coverLog = getenv( "KALEIDO_COVER_LOG" ) != 0;
-        const bool        doCover = coverLog && m_geomKind == GEOM_MESH
-                                    && !inOitPass && s_shadowPass < 0.5f;
-        if ( doCover && !m_coverQuery )
+        static const bool CoverLog = getenv( "KALEIDO_COVER_LOG" ) != 0;
+        const bool        do_cover = CoverLog && m_geomKind == GEOM_MESH
+                                     && !in_oit_pass && M_ShadowPass < 0.5f;
+        if ( do_cover && !m_coverQuery )
             glGenQueries( 1, &m_coverQuery );
         if ( m_geomKind == GEOM_MESH && m_meshInstances > 1 && glDrawArraysInstanced )
             glDrawArraysInstanced( GL_TRIANGLES, 0, m_vertexCount, m_meshInstances );
         else
             glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
-        if ( doCover && m_coverQuery )
+        if ( do_cover && m_coverQuery )
         {
             // Der Draw oben hat den Tiefenpuffer mit der SICHTBAREN Oberflaeche
             // gefuellt.  Ein Wiederholungs-Draw mit GL_EQUAL besteht genau dort
@@ -1484,7 +1484,7 @@ void Scene3DShader::draw()
                 m_coverN++;
             }
         }
-        if ( !inOitPass )
+        if ( !in_oit_pass )
             glDisable( GL_DEPTH_TEST );
     }
     else
@@ -1492,7 +1492,7 @@ void Scene3DShader::draw()
         // Glowing geometry: additive, order-independent (no depth test).
         // (Core profile: point sprites are always on; only the programmable
         // point size still needs its enable.)
-        if ( !inOitPass )
+        if ( !in_oit_pass )
         {
             glDisable( GL_DEPTH_TEST );
             glEnable( GL_BLEND );
@@ -1506,7 +1506,7 @@ void Scene3DShader::draw()
         }
         else
             glDrawArrays( GL_TRIANGLES, 0, m_vertexCount );
-        if ( !inOitPass )
+        if ( !in_oit_pass )
             glDisable( GL_BLEND );
     }
 

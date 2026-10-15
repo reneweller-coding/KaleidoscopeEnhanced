@@ -20,7 +20,7 @@
 
 #include "glcore.h"
 #include "AudioFeatures.h"
-#include "CfxTypes.h" // CfxKind / CfxInfo / kCfxInfo -- split out so code that
+#include "CfxTypes.h" // CfxKindE / CfxInfo / CfxInfoTable -- split out so code that
                       // only needs to name a kind doesn't need glcore.h too.
 
 /**
@@ -30,7 +30,7 @@
  * particle flow, N-body gravity, boids, DLA crystal growth, lightning,
  * caustics, pixel sorting, an audio-driven 2D FFT filter, ferrofluid,
  * hydraulic erosion, liquid metal, shatter/reassemble, Navier-Stokes fluid,
- * cloth, and a (stubbed) 3D sculpt — each identified by a CfxKind. Per-kind
+ * cloth, and a (stubbed) 3D sculpt — each identified by a CfxKindE. Per-kind
  * GPU resources (a splat Canvas, a ping-pong Field, and/or raw SSBOs) are
  * allocated lazily the first time that kind is stepped, and freed again by
  * retireIdle() once a kind has not been requested for a while, so the
@@ -54,7 +54,7 @@ public:
      *
      * Must be called once with a current GL context, before any step() call.
      * Sets m_ok from glcoreHasCompute and queries GL_MAX_TEXTURE_IMAGE_UNITS;
-     * any CfxKind whose published unit (kCfxInfo) does not fit under that
+     * any CfxKindE whose published unit (CfxInfoTable) does not fit under that
      * limit is immediately marked dead so it is never attempted.
      */
     void init();
@@ -72,12 +72,12 @@ public:
      *
      * Dispatches the compute shader(s) for kind `k`, driven by the current
      * audio features and elapsed time, and returns the GL texture name the
-     * effect shader should bind on that kind's sampler unit (see kCfxInfo).
+     * effect shader should bind on that kind's sampler unit (see CfxInfoTable).
      * A non-positive or too-large `dt` is clamped to a nominal 1/60s so a
      * stall or hitch never destabilises an integrator. If the kind is
      * unavailable, disabled, or its step fails, it is marked dead and 0 is
      * returned; the caller then simply binds nothing on that unit.
-     * @param k Which simulation to advance (a CfxKind index).
+     * @param k Which simulation to advance (a CfxKindE index).
      * @param a Current audio-reactive features driving the sim's parameters.
      * @param dt Frame delta time in seconds.
      * @param time Elapsed time in seconds (used to integrate host-side phases).
@@ -92,11 +92,11 @@ public:
     /**
      * @brief Advances the deep-zoom Mandelbrot fractal by one frame.
      *
-     * Called DIRECTLY (not through step()/CfxKind) -- see the definition's
+     * Called DIRECTLY (not through step()/CfxKindE) -- see the definition's
      * comment for why: units 0-31 are already fully claimed on a 32-unit
      * GPU, so this sim is bound to its own dedicated unit straight from
      * RenderPipeline.cpp, the same way texBake/texPrevFrame already are,
-     * rather than competing for the generic kCfxInfo table's headroom. A
+     * rather than competing for the generic CfxInfoTable table's headroom. A
      * per-pixel escape-time iteration using double-single (Dekker/Knuth
      * error-free-transformation) emulated precision for the complex
      * coordinate, so the zoom can go roughly 10,000x deeper than plain
@@ -129,7 +129,7 @@ public:
 private:
     // ---- shared splat canvas (uint accumulator -> RGBA16F image) ----
     // Used by every sim that scatters colour into the frame.  The accumulator
-    // is fixed-point (kSplatScale) because atomicAdd on floats is an optional
+    // is fixed-point (SplatScale) because atomicAdd on floats is an optional
     // GL extension, while uint atomics are core.
     /**
      * @brief GPU state for a "splat" sim: an atomic uint accumulator resolved to an RGBA16F texture.
@@ -479,7 +479,7 @@ private:
      * @brief 3D raymarched-isosurface sculpt simulation — not implemented.
      *
      * Always returns 0; step() then marks CFX_SCULPT dead on the first call
-     * so it is never retried. Present as a placeholder slot in CfxKind.
+     * so it is never retried. Present as a placeholder slot in CfxKindE.
      * @param a Unused.
      * @param dt Unused.
      * @param t Unused.
@@ -492,10 +492,10 @@ private:
                                ///< velocity)
     // The Navier-Stokes solver needs a third: the pressure it iterates on.
     Field m_nsPressure; ///< shared third ping-pong field, used only by stepNSFluid for the pressure Jacobi iteration
-    // Deliberately outside the per-CfxKind arrays -- see stepMandelbrot()'s
-    // comment for why this sim is not a registered CfxKind.
+    // Deliberately outside the per-CfxKindE arrays -- see stepMandelbrot()'s
+    // comment for why this sim is not a registered CfxKindE.
     Field m_mandelbrotField; ///< dedicated field for stepMandelbrot(), bound directly by RenderPipeline.cpp rather than
-                             ///< through the generic kCfxInfo unit table
+                             ///< through the generic CfxInfoTable unit table
 
     bool  m_ok = false;       ///< true once init() has detected usable GL compute support
     int   m_maxTexUnits = 16; ///< cached GL_MAX_TEXTURE_IMAGE_UNITS, used to decide which kinds fit
@@ -503,10 +503,10 @@ private:
 
     enum
     {
-        kProgSlots = 40
+        PROG_SLOTS = 40
     }; ///< size of the compute-program cache; see the P_* slot enum in ComputeFX.cpp
-    GLuint m_prog[kProgSlots] = { 0 };      ///< cached compute program per slot (0 = not yet built or build failed)
-    char   m_progTried[kProgSlots] = { 0 }; ///< guards each slot so a failed compile is only ever attempted once
+    GLuint m_prog[PROG_SLOTS] = { 0 };      ///< cached compute program per slot (0 = not yet built or build failed)
+    char   m_progTried[PROG_SLOTS] = { 0 }; ///< guards each slot so a failed compile is only ever attempted once
 
     // Per-kind resources (only allocated once a kind is actually requested).
     Canvas m_canvas[CFX_COUNT];         ///< per-kind splat canvas, for sims that scatter into an atomic accumulator

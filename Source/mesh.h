@@ -125,7 +125,7 @@ class Mesh
          * toFace)). */
         int fromFace, toFace; ///< One past the last triangle of this part in Mesh::triangles (end of the half-open
                               ///< range [fromFace, toFace)).
-        int materialIndex;    ///< Index into materialList, or -1 if no material is assigned.
+        int materialIndex;    ///< Index into m_materialList, or -1 if no material is assigned.
     };
 
 public:
@@ -144,7 +144,7 @@ public:
     /** @brief Assigns a single fallback texture to the whole mesh when the .obj file itself carried no texture
      * reference. @param filename Path to the image file to load and bind as material 0's texture. */
     void assignTexture( char *filename );
-    bool success() { return meshRead; } ///< @return true if readObj() successfully opened and parsed the .obj file.
+    bool success() { return m_meshRead; } ///< @return true if readObj() successfully opened and parsed the .obj file.
     /** @brief Generates spherical (theta/phi) texture coordinates for every vertex, replacing any existing texcoords,
      * when the .obj file supplied none. */
     void generateSphereTexCoords();
@@ -153,8 +153,8 @@ public:
     void generateCylinderTexCoords();
 
     // Number of vertices and number of faces
-    int numV() { return static_cast<int>( vertices.size() ); }  ///< @return Number of vertices in the mesh.
-    int numT() { return static_cast<int>( triangles.size() ); } ///< @return Number of triangular faces in the mesh.
+    int numV() { return static_cast<int>( m_vertices.size() ); }  ///< @return Number of vertices in the mesh.
+    int numT() { return static_cast<int>( m_triangles.size() ); } ///< @return Number of triangular faces in the mesh.
 
     /** @brief Minimum corner of the axis-aligned bounding box computed by computeBoundingBox(), in the mesh's own
      * object space. */
@@ -162,16 +162,16 @@ public:
                          ///< mesh's own object space.
 
 private:
-    std::vector<Vector3D> vertices;    ///< Parsed vertex positions ("v" lines).
-    std::vector<Vector3D> normals; ///< Parsed vertex normals ("vn" lines); empty if the file had none, in which case
-                                   ///< draw() disables lighting.
-    std::vector<Vector3D> textcoords;  ///< Parsed (or procedurally generated) texture coordinates ("vt" lines, or
-                                       ///< generateSphereTexCoords()/generateCylinderTexCoords()); z is unused, y is
-                                       ///< stored already flipped (1-v) for the usual image-space convention.
-    std::vector<Triangle> triangles;   ///< Triangulated faces; quads from the .obj file are split into two triangles
-                                       ///< here.
-    std::vector<TextureNode> textures; ///< Distinct texture images referenced by materialList, deduplicated by filename
-                                       ///< in getTextureNode().
+    std::vector<Vector3D> m_vertices;    ///< Parsed vertex positions ("v" lines).
+    std::vector<Vector3D> m_normals; ///< Parsed vertex normals ("vn" lines); empty if the file had none, in which case
+                                     ///< draw() disables lighting.
+    std::vector<Vector3D> m_textcoords;  ///< Parsed (or procedurally generated) texture coordinates ("vt" lines, or
+                                         ///< generateSphereTexCoords()/generateCylinderTexCoords()); z is unused, y is
+                                         ///< stored already flipped (1-v) for the usual image-space convention.
+    std::vector<Triangle> m_triangles;   ///< Triangulated faces; quads from the .obj file are split into two triangles
+                                         ///< here.
+    std::vector<TextureNode> m_textures; ///< Distinct texture images referenced by m_materialList, deduplicated by
+                                         ///< filename in getTextureNode().
     /** @brief Clears all parsed geometry, materials and texture data and resets the bounding box to its "empty"
      * (inverted) state; called by readObj() before re-parsing and by the destructor. */
     void clear();
@@ -180,16 +180,16 @@ private:
      * multiplier (repeat count) used when the coordinates were generated. */
     void correctTheta( float multp );
 
-    std::vector<MeshPartInfo *> meshPartInfo; ///< Heap-allocated per-material face runs (see MeshPartInfo), owned by
-                                              ///< this vector and freed in clear().
-    std::vector<MaterialNode *> materialList; ///< Heap-allocated materials parsed from the .mtl file (see
-                                              ///< MaterialNode), owned by this vector and freed in clear().
+    std::vector<MeshPartInfo *> m_meshPartInfo; ///< Heap-allocated per-material face runs (see MeshPartInfo), owned by
+                                                ///< this vector and freed in clear().
+    std::vector<MaterialNode *> m_materialList; ///< Heap-allocated materials parsed from the .mtl file (see
+                                                ///< MaterialNode), owned by this vector and freed in clear().
 
     /** @brief Parses an .obj file in two passes (first to count vertices/texcoords/faces for reserve(), second to
-     * actually fill vertices/normals/textcoords/triangles/meshPartInfo), loading any referenced .mtl via
+     * actually fill vertices/normals/textcoords/triangles/m_meshPartInfo), loading any referenced .mtl via
      * loadMaterials(). @param sFilename Path to the .obj file. */
     void readObj( const char *sFilename );
-    /** @brief Parses a Wavefront .mtl file into materialList (Ka/Kd/Ks/Ns/Tr/d/map_Kd directives). @param sFilename
+    /** @brief Parses a Wavefront .mtl file into m_materialList (Ka/Kd/Ks/Ns/Tr/d/map_Kd directives). @param sFilename
      * Path to the .mtl file. */
     void loadMaterials( const char *sFilename );
     /** @brief Recomputes bmin/bmax from the current vertex array. */
@@ -208,11 +208,11 @@ private:
      * resulting path. @param src Reference path whose directory is reused. @param newName Filename to append to that
      * directory. */
     void replaceFilename( char *tgt, const char *src, const char *newName );
-    bool meshRead;    ///< Whether readObj() successfully opened the .obj file (see success()).
-    bool objTexAvail; ///< Whether the .obj file itself defined materials/textures (via usemtl), set at the end of
-                      ///< readObj()/assignTexture(); gates whether
-                      ///< generateSphereTexCoords()/generateCylinderTexCoords()/assignTexture() are allowed to override
-                      ///< them.
+    bool m_meshRead;    ///< Whether readObj() successfully opened the .obj file (see success()).
+    bool m_objTexAvail; ///< Whether the .obj file itself defined materials/textures (via usemtl), set at the end of
+                        ///< readObj()/assignTexture(); gates whether
+                        ///< generateSphereTexCoords()/generateCylinderTexCoords()/assignTexture() are allowed to
+                        ///< override them.
 };
 
 #endif // MESH_H

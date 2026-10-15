@@ -78,9 +78,9 @@ void PresentPass::setup( int renderW, int renderH,
     if ( m_fboFinal == 0 )
         glGenFramebuffers( 1, &m_fboFinal );
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboFinal );
-    glFramebufferTexture2D( GL_FRAMEBUFFER, kAttach,
+    glFramebufferTexture2D( GL_FRAMEBUFFER, Attach,
                             GL_TEXTURE_2D, m_texFinal, 0 );
-    bool fboOk = fbStatusOk();
+    bool fbo_ok = fbStatusOk();
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
 
     if ( m_presentProgId == 0 )
@@ -144,7 +144,7 @@ void PresentPass::setup( int renderW, int renderH,
         m_presentNearFar2Uni = glGetUniformLocation( m_presentProgId, "nearFar2" );
     }
 
-    m_safetyReady = fboOk && ( m_presentProgId != 0 ) && ( m_presentTexUni >= 0 );
+    m_safetyReady = fbo_ok && ( m_presentProgId != 0 ) && ( m_presentTexUni >= 0 );
 
     // ---- Two-pass Gaussian bloom: quarter-res ping-pong + blur shader ----
     // On failure m_bloomReady stays false and Present.frag falls back to the
@@ -155,7 +155,7 @@ void PresentPass::setup( int renderW, int renderH,
     m_bloomH = renderH / 4;
     if ( m_bloomH < 8 )
         m_bloomH = 8;
-    bool bloomOk = true;
+    bool bloom_ok = true;
     for ( int i = 0; i < 2; ++i )
     {
         if ( m_texBloom[i] == 0 )
@@ -170,9 +170,9 @@ void PresentPass::setup( int renderW, int renderH,
         if ( m_fboBloom[i] == 0 )
             glGenFramebuffers( 1, &m_fboBloom[i] );
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboBloom[i] );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, kAttach,
+        glFramebufferTexture2D( GL_FRAMEBUFFER, Attach,
                                 GL_TEXTURE_2D, m_texBloom[i], 0 );
-        bloomOk = bloomOk && fbStatusOk();
+        bloom_ok = bloom_ok && fbStatusOk();
     }
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     glBindTexture( GL_TEXTURE_2D, 0 );
@@ -184,7 +184,7 @@ void PresentPass::setup( int renderW, int renderH,
         m_bloomDirUni = glGetUniformLocation( m_bloomProgId, "dir" );
         m_bloomThreshUni = glGetUniformLocation( m_bloomProgId, "threshold" );
     }
-    m_bloomReady = bloomOk && ( m_bloomProgId != 0 ) && ( m_bloomTexUni >= 0 );
+    m_bloomReady = bloom_ok && ( m_bloomProgId != 0 ) && ( m_bloomTexUni >= 0 );
 }
 
 /**
@@ -286,7 +286,7 @@ void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
         if ( m_histTex == 0 )
             glGenTextures( 1, &m_histTex );
         glBindTexture( GL_TEXTURE_2D_ARRAY, m_histTex );
-        glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, hw, hh, kHistLayers,
+        glTexImage3D( GL_TEXTURE_2D_ARRAY, 0, GL_RGBA8, hw, hh, HistLayers,
                       0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
         glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -322,8 +322,8 @@ void PresentPass::captureHistory( GLuint sourceTex, int renderW, int renderH,
     glBindFramebuffer( GL_READ_FRAMEBUFFER, 0 );
     glBindFramebuffer( GL_DRAW_FRAMEBUFFER, 0 );
 
-    m_histHead = ( m_histHead + 1 ) % kHistLayers;
-    if ( m_histCount < kHistLayers )
+    m_histHead = ( m_histHead + 1 ) % HistLayers;
+    if ( m_histCount < HistLayers )
         m_histCount++;
 }
 
@@ -335,7 +335,7 @@ float PresentPass::historyLayerBack( float secs ) const
         slots = m_histCount - 1;
     if ( slots < 1 )
         slots = 1;
-    int idx = ( m_histHead - slots + 2 * kHistLayers ) % kHistLayers;
+    int idx = ( m_histHead - slots + 2 * HistLayers ) % HistLayers;
     return float( idx );
 }
 
@@ -413,7 +413,7 @@ void PresentPass::run( const Inputs &in )
 {
     if ( !m_safetyReady || !in.fx )
         return;
-    const AudioFeatures &audioFx = *in.fx;
+    const AudioFeatures &audio_fx = *in.fx;
 
     // Frame-History-Ring: das frische Frame aufzeichnen, BEVOR irgendetwas
     // präsentiert wird - so speist auch ein laufender Rewind den Ring weiter
@@ -432,9 +432,9 @@ void PresentPass::run( const Inputs &in )
     float scale = m_lastSafetyScale;
     if ( ( ++m_safetyFrame % 3 ) == 0 )
     {
-        int maxDim = ( in.renderW > in.renderH ) ? in.renderW : in.renderH;
+        int max_dim = ( in.renderW > in.renderH ) ? in.renderW : in.renderH;
         int lvl = 0;
-        for ( int d = maxDim; d > 4; d >>= 1 )
+        for ( int d = max_dim; d > 4; d >>= 1 )
             lvl++; // a small (<=4 px) mip level
         int lw = 1, lh = 1;
         glGetTexLevelParameteriv( GL_TEXTURE_2D, lvl, GL_TEXTURE_WIDTH, &lw );
@@ -480,8 +480,8 @@ void PresentPass::run( const Inputs &in )
 
         if ( m_prevMeanLum < 0.f )
             m_prevMeanLum = mean;
-        float maxStep = 2.0f * m_safetyAccumDt; // <= 2.0 luma / second
-        float hi = m_prevMeanLum + maxStep;
+        float max_step = 2.0f * m_safetyAccumDt; // <= 2.0 luma / second
+        float hi = m_prevMeanLum + max_step;
         float clamped = ( mean > hi ) ? hi : mean; // only limit RISES
         scale = ( mean > 1e-4f ) ? ( clamped / mean ) : 1.f;
         if ( scale > 1.f )
@@ -490,8 +490,8 @@ void PresentPass::run( const Inputs &in )
         m_lastSafetyScale = scale;
         m_safetyAccumDt = 0.f;
         {
-            static const bool dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
-            if ( dbg )
+            static const bool Dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
+            if ( Dbg )
                 fprintf( stderr, "EXPO mean=%.4f prev=%.4f scale=%.3f\n",
                          mean, m_prevMeanLum, scale );
         }
@@ -594,9 +594,9 @@ void PresentPass::run( const Inputs &in )
         glDispatchCompute( 1, 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
         {
-            static const bool dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
+            static const bool Dbg = getenv( "KALEIDO_EXPOSURE_DEBUG" ) != 0;
             static int        n = 0;
-            if ( dbg && ( ++n % 3 ) == 0 )
+            if ( Dbg && ( ++n % 3 ) == 0 )
             {
                 glBindBuffer( GL_SHADER_STORAGE_BUFFER, m_autoExpBuf );
                 const float *r = (const float *)glMapBuffer( GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY );
@@ -661,9 +661,9 @@ void PresentPass::run( const Inputs &in )
     if ( m_presentUseBloomUni >= 0 )
         glUniform1f( m_presentUseBloomUni, m_bloomReady ? 1.f : 0.f );
     if ( m_presentSwellUni >= 0 )
-        glUniform1f( m_presentSwellUni, audioFx.swell );
+        glUniform1f( m_presentSwellUni, audio_fx.swell );
     if ( m_presentBarPhaseUni >= 0 )
-        glUniform1f( m_presentBarPhaseUni, audioFx.barPhase );
+        glUniform1f( m_presentBarPhaseUni, audio_fx.barPhase );
     if ( m_presentCamZoomUni >= 0 )
         glUniform1f( m_presentCamZoomUni, in.camZoom );
     if ( m_presentCamRotUni >= 0 )
@@ -679,9 +679,9 @@ void PresentPass::run( const Inputs &in )
     // Track-title reveal (phase 0..1 while active; 2 = off).
     if ( m_presentTitlePhaseUni >= 0 )
     {
-        const float kTitleDur = 8.f;
-        float       ph = ( m_titleTex != 0 && m_titleAge < kTitleDur )
-                             ? ( m_titleAge / kTitleDur )
+        const float TitleDur = 8.f;
+        float       ph = ( m_titleTex != 0 && m_titleAge < TitleDur )
+                             ? ( m_titleAge / TitleDur )
                              : 2.f;
         glUniform1f( m_presentTitlePhaseUni, ph );
         if ( ph < 1.f && m_presentTitleTexUni >= 0 )
@@ -730,13 +730,13 @@ void PresentPass::run( const Inputs &in )
         // The music-video PiP override takes priority when active (see
         // setArtistExternalTexture()) -- same corner slot, "instead of" the
         // photo rotation, not alongside it.
-        const GLuint artistTexToUse = m_artistExternalTex ? m_artistExternalTex : m_artistTex;
-        float        aa = ( artistTexToUse != 0 ) ? in.artistAlpha : 0.f;
+        const GLuint artist_tex_to_use = m_artistExternalTex ? m_artistExternalTex : m_artistTex;
+        float        aa = ( artist_tex_to_use != 0 ) ? in.artistAlpha : 0.f;
         glUniform1f( m_presentArtistAlphaUni, aa );
         if ( aa > 0.001f && m_presentArtistTexUni >= 0 )
         {
             glActiveTexture( GL_TEXTURE4 );
-            glBindTexture( GL_TEXTURE_2D, artistTexToUse );
+            glBindTexture( GL_TEXTURE_2D, artist_tex_to_use );
             glUniform1i( m_presentArtistTexUni, 4 );
             glActiveTexture( GL_TEXTURE0 );
             if ( m_presentArtistAspectUni >= 0 )
@@ -776,7 +776,7 @@ void PresentPass::run( const Inputs &in )
         if ( m_presentGradeUni >= 0 )
             glUniform4f( m_presentGradeUni, in.gradeModeA, in.gradeAmtA, in.gradeModeB, in.gradeAmtB );
         if ( m_presentDropUni >= 0 )
-            glUniform1f( m_presentDropUni, audioFx.dropPulse );
+            glUniform1f( m_presentDropUni, audio_fx.dropPulse );
     }
 
     // ---- Welle 2: Letterbox, Schockwelle, Palette, Zeilen-Slam, Parallaxe ----
@@ -816,11 +816,11 @@ void PresentPass::run( const Inputs &in )
     // VJ blackout ('b'): a slewed multiplier on the present brightness
     // scale — window, Spout output and recordings all fade together.
     {
-        float blackTarget = in.blackout ? 1.f : 0.f;
+        float black_target = in.blackout ? 1.f : 0.f;
         float step = in.dtWall * 3.0f; // ~0.35 s fade
         if ( step > 1.f )
             step = 1.f;
-        m_blackSmooth += ( blackTarget - m_blackSmooth ) * step;
+        m_blackSmooth += ( black_target - m_blackSmooth ) * step;
     }
     // The DJ-stop also dims the held picture slightly (sells the "gasp");
     // a detected FADE-OUT dims a touch too (the room lights come down
@@ -833,27 +833,27 @@ void PresentPass::run( const Inputs &in )
     // live mood-strength knob (deviations from neutral × moodStrength).
     float ms = in.moodStrength;
     if ( m_presentCentroidUni >= 0 )
-        glUniform1f( m_presentCentroidUni, 0.5f + ( audioFx.spectralCentroid - 0.5f ) * ms );
+        glUniform1f( m_presentCentroidUni, 0.5f + ( audio_fx.spectralCentroid - 0.5f ) * ms );
     if ( m_presentValenceUni >= 0 )
-        glUniform1f( m_presentValenceUni, 0.5f + ( audioFx.valence - 0.5f ) * ms );
+        glUniform1f( m_presentValenceUni, 0.5f + ( audio_fx.valence - 0.5f ) * ms );
     if ( m_presentArousalUni >= 0 )
-        glUniform1f( m_presentArousalUni, 0.5f + ( audioFx.arousal - 0.5f ) * ms );
+        glUniform1f( m_presentArousalUni, 0.5f + ( audio_fx.arousal - 0.5f ) * ms );
     if ( m_presentLevelUni >= 0 )
-        glUniform1f( m_presentLevelUni, audioFx.overallLevel * ms );
+        glUniform1f( m_presentLevelUni, audio_fx.overallLevel * ms );
     if ( m_presentFluxUni >= 0 )
-        glUniform1f( m_presentFluxUni, audioFx.spectralFlux * ms );
+        glUniform1f( m_presentFluxUni, audio_fx.spectralFlux * ms );
     if ( m_presentHueUni >= 0 )
-        glUniform1f( m_presentHueUni, audioFx.chromaHue * ms );
+        glUniform1f( m_presentHueUni, audio_fx.chromaHue * ms );
     if ( m_presentBeatUni >= 0 )
-        glUniform1f( m_presentBeatUni, audioFx.beatDecay );
+        glUniform1f( m_presentBeatUni, audio_fx.beatDecay );
     if ( m_presentDownbeatUni >= 0 )
-        glUniform1f( m_presentDownbeatUni, audioFx.downbeat );
+        glUniform1f( m_presentDownbeatUni, audio_fx.downbeat );
     if ( m_presentOnsetUni >= 0 )
-        glUniform1f( m_presentOnsetUni, audioFx.onsetStrength );
+        glUniform1f( m_presentOnsetUni, audio_fx.onsetStrength );
     // CAS sharpening compensates the upsample when renderScale < 1.
     {
-        GLint locSharp = glGetUniformLocation( m_presentProgId, "sharpen" );
-        GLint locTexel = glGetUniformLocation( m_presentProgId, "srcTexel" );
+        GLint loc_sharp = glGetUniformLocation( m_presentProgId, "sharpen" );
+        GLint loc_texel = glGetUniformLocation( m_presentProgId, "srcTexel" );
         float amt = ( in.renderScale < 0.999f )
                         ? clampf( ( 1.f - in.renderScale ) * 0.9f, 0.f, 0.45f )
                         : 0.f;
@@ -863,10 +863,10 @@ void PresentPass::run( const Inputs &in )
         // audioFx.roughness is gated, so speech/silence contributes nothing.
         amt = clampf( amt + in.fx->roughness * 0.15f * clampf( in.moodStrength, 0.f, 1.f ),
                       0.f, 0.5f );
-        if ( locSharp >= 0 )
-            glUniform1f( locSharp, amt );
-        if ( locTexel >= 0 )
-            glUniform2f( locTexel, 1.f / float( in.renderW ),
+        if ( loc_sharp >= 0 )
+            glUniform1f( loc_sharp, amt );
+        if ( loc_texel >= 0 )
+            glUniform2f( loc_texel, 1.f / float( in.renderW ),
                          1.f / float( in.renderH ) );
     }
     if ( m_presentTimeUni >= 0 )

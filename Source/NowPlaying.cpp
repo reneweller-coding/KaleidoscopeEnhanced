@@ -56,11 +56,11 @@ BOOL CALLBACK vlcEnumProc( HWND hwnd, LPARAM lp )
     if ( n <= 0 )
         return TRUE;
     std::wstring              s( buf, size_t( n ) );
-    static const std::wstring suffix = L" - VLC media player";
-    if ( s.size() > suffix.size()
-         && _wcsicmp( s.c_str() + ( s.size() - suffix.size() ), suffix.c_str() ) == 0 )
+    static const std::wstring Suffix = L" - VLC media player";
+    if ( s.size() > Suffix.size()
+         && _wcsicmp( s.c_str() + ( s.size() - Suffix.size() ), Suffix.c_str() ) == 0 )
     {
-        reinterpret_cast<VlcScan *>( lp )->text = s.substr( 0, s.size() - suffix.size() );
+        reinterpret_cast<VlcScan *>( lp )->text = s.substr( 0, s.size() - Suffix.size() );
         return FALSE; // found - stop enumerating
     }
     return TRUE;
@@ -154,8 +154,8 @@ double NowPlaying::positionNowSec() const
         return -1.0;
     if ( !tl.playing )
         return tl.positionSec;
-    const qint64 nowMs = QDateTime::currentMSecsSinceEpoch();
-    double       p = tl.positionSec + double( nowMs - tl.stampMs ) * 0.001 * tl.rate;
+    const qint64 now_ms = QDateTime::currentMSecsSinceEpoch();
+    double       p = tl.positionSec + double( now_ms - tl.stampMs ) * 0.001 * tl.rate;
     if ( tl.durationSec > 0.0 && p > tl.durationSec )
         p = tl.durationSec;
     return p;
@@ -191,11 +191,11 @@ void NowPlaying::threadFunc()
 
     // Laufende Basislinie für die Drift-Korrektur unten (bleibt auf DIESEM
     // Thread, kein Lock nötig - nur der veröffentlichte m_timeline braucht ihn).
-    Timeline prevTl;
-    QString  prevTitle;
-    qint64   trackChangeMs = 0;    // wann WIR den aktuellen Titel erkannt haben
-    bool     posConfirmed = false; // erst TRUE, sobald zwei Meldungen zueinander passen
-    Timeline candidate;            // erste (noch unbestätigte) Meldung des neuen Tracks
+    Timeline prev_tl;
+    QString  prev_title;
+    qint64   track_change_ms = 0;   // wann WIR den aktuellen Titel erkannt haben
+    bool     pos_confirmed = false; // erst TRUE, sobald zwei Meldungen zueinander passen
+    Timeline candidate;             // erste (noch unbestätigte) Meldung des neuen Tracks
 
     // Titel-Bestätigung (analog zur Positions-Bestätigung oben, aber bisher
     // NIE existiert): der publizierte Titel wechselt erst, wenn zwei
@@ -207,12 +207,12 @@ void NowPlaying::threadFunc()
     // geladen, Scroll auf 0 - und der NÄCHSTE Poll (SMTC korrigiert sich
     // von selbst) kehrte das wieder um: ein einzelner Ausreißer wurde so zu
     // ZWEI sichtbaren Sprüngen. Trifft nur das PUBLIZIERTE m_title/m_artist;
-    // istNeuerTrack/die Positions-Bestätigung unten bleiben unverändert auf
-    // dem rohen `t` (ein spuriges istNeuerTrack=true bei einem Titel-Blip
+    // ist_neuer_track/die Positions-Bestätigung unten bleiben unverändert auf
+    // dem rohen `t` (ein spuriges ist_neuer_track=true bei einem Titel-Blip
     // ist harmlos - es liefert höchstens kurz positionSec=-1, und der
     // Aufrufer fällt dafür schon auf seine eigene Uhr zurück).
-    QString pendingTitle, pendingArtist;
-    QString publishedTitle, publishedArtist;
+    QString pending_title, pending_artist;
+    QString published_title, published_artist;
 
     while ( m_running )
     {
@@ -235,10 +235,10 @@ void NowPlaying::threadFunc()
                     // nicht immer bei 0).
                     auto         tp = session.GetTimelineProperties();
                     auto         pi = session.GetPlaybackInfo();
-                    const double kTick = 1e-7;
-                    double       start = double( tp.StartTime().count() ) * kTick;
-                    tl.positionSec = double( tp.Position().count() ) * kTick - start;
-                    tl.durationSec = double( tp.EndTime().count() ) * kTick - start;
+                    const double Tick = 1e-7;
+                    double       start = double( tp.StartTime().count() ) * Tick;
+                    tl.positionSec = double( tp.Position().count() ) * Tick - start;
+                    tl.durationSec = double( tp.EndTime().count() ) * Tick - start;
                     tl.playing = ( pi.PlaybackStatus()
                                    == GlobalSystemMediaTransportControlsSessionPlaybackStatus::Playing );
                     tl.stampMs = QDateTime::currentMSecsSinceEpoch();
@@ -261,9 +261,9 @@ void NowPlaying::threadFunc()
         // Der ROHE SMTC-Wert dieses Polls bleibt unangetastet in `raw` -
         // `tl` ist die Version, die am Ende veröffentlicht wird.
         const Timeline raw = tl;
-        const bool     istNeuerTrack = !t.isEmpty() && ( t != prevTitle );
+        const bool     ist_neuer_track = !t.isEmpty() && ( t != prev_title );
 
-        if ( istNeuerTrack )
+        if ( ist_neuer_track )
         {
             // NEUER Track: SMTC liefert direkt nach einem Wechsel manchmal
             // noch 1-2 Polls lang die Position des VORHERIGEN Titels (das OS
@@ -276,12 +276,12 @@ void NowPlaying::threadFunc()
             // jede Meldung wird erst veröffentlicht, sobald sie von der
             // NÄCHSTEN bestätigt wird (siehe unten); bis dahin nutzt der
             // Aufrufer seine eigene lokale Uhr seit dem Wechsel (Position < 0).
-            trackChangeMs = raw.stampMs;
-            posConfirmed = false;
+            track_change_ms = raw.stampMs;
+            pos_confirmed = false;
             candidate = raw;
             tl.positionSec = -1.0;
         }
-        else if ( !posConfirmed && raw.positionSec >= 0.0 && candidate.positionSec >= 0.0 )
+        else if ( !pos_confirmed && raw.positionSec >= 0.0 && candidate.positionSec >= 0.0 )
         {
             // Gleitendes Fenster (nicht nur "1. vs. 2. Meldung"): passt DIESE
             // Meldung zu der VORHERIGEN (im Rahmen normaler Weiterspielzeit,
@@ -295,18 +295,18 @@ void NowPlaying::threadFunc()
             const double erwartet = candidate.positionSec
                                     + double( raw.stampMs - candidate.stampMs ) * 0.001;
             if ( std::fabs( raw.positionSec - erwartet ) < 0.6 )
-                posConfirmed = true;
+                pos_confirmed = true;
             else
             {
                 fprintf( stderr, "[NowPlaying] Settle: Meldung (%.1fs) passt nicht zur vorherigen "
                                  "(%.1fs erwartet) - noch %.1fs seit Trackwechsel, warte weiter\n",
-                         raw.positionSec, erwartet, double( raw.stampMs - trackChangeMs ) * 0.001 );
+                         raw.positionSec, erwartet, double( raw.stampMs - track_change_ms ) * 0.001 );
                 candidate = raw;
                 tl.positionSec = -1.0;
             }
         }
-        else if ( posConfirmed && prevTl.positionSec >= 0.0 && prevTl.playing
-                  && tl.playing == prevTl.playing )
+        else if ( pos_confirmed && prev_tl.positionSec >= 0.0 && prev_tl.playing
+                  && tl.playing == prev_tl.playing )
         {
             // MONOTONE Positions-Fortschreibung (bestätigter Track, laufend
             // unverändert): SMTC aktualisiert die Position oft nur alle paar
@@ -321,9 +321,9 @@ void NowPlaying::threadFunc()
             // ±15% Tempo-Anpassung gleitet die Anzeige unmerklich auf SMTCs
             // Zeitachse zu, statt zu springen. Nur ein echter Seek (>1.5s)
             // wird weiterhin sofort als Sprung übernommen (Rate zurück auf 1).
-            const double erwartet = prevTl.positionSec
-                                    + double( tl.stampMs - prevTl.stampMs ) * 0.001
-                                          * prevTl.rate;
+            const double erwartet = prev_tl.positionSec
+                                    + double( tl.stampMs - prev_tl.stampMs ) * 0.001
+                                          * prev_tl.rate;
             const double abweichung = tl.positionSec - erwartet;
             if ( std::fabs( abweichung ) < 1.5 )
             {
@@ -333,26 +333,26 @@ void NowPlaying::threadFunc()
             }
             // else: echter Seek - roher Wert + rate 1.0 (Default) bleiben.
         }
-        prevTl = tl;
-        prevTitle = t;
+        prev_tl = tl;
+        prev_title = t;
 
-        if ( t == pendingTitle && a == pendingArtist )
+        if ( t == pending_title && a == pending_artist )
         {
-            publishedTitle = t;
-            publishedArtist = a;
+            published_title = t;
+            published_artist = a;
         }
         else
         {
-            pendingTitle = t;
-            pendingArtist = a;
-            // publishedTitle/publishedArtist stay at the last CONFIRMED
+            pending_title = t;
+            pending_artist = a;
+            // published_title/published_artist stay at the last CONFIRMED
             // value this poll -- see the declaration comment above.
         }
 
         {
             QMutexLocker l( &m_mutex );
-            m_title = publishedTitle;
-            m_artist = publishedArtist;
+            m_title = published_title;
+            m_artist = published_artist;
             m_timeline = tl;
         }
 

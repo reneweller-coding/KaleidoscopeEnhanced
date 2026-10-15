@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Verify Strings.cpp's tables against the StrId enum.
+"""Verify Strings.cpp's tables against the StrIdE enum.
 
     python Tools/check_strings.py
 
@@ -42,7 +42,7 @@ TABLE = re.compile(r"^const char \*k([A-Z]+)\[S_COUNT\] = \{")
 def enum_order():
     text = io.open(HDR, encoding="utf-8").read()
     # S_COUNT is searched from the enum on: a comment above the enum may name it too
-    start = text.index("enum StrId")
+    start = text.index("enum StrIdE")
     body = text[start:text.index("S_COUNT", start)]
     out = []
     for m in re.finditer(r"\bS_[A-Z0-9_]+\b", body):

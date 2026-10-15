@@ -4,8 +4,8 @@
 Zwei Stellen in der Engine koppeln einen Enum an eine Tabelle von Strings, die
 in DERSELBEN Reihenfolge stehen muss:
 
-    EffectShader.cpp   enum AudioLoc { AL_PHASE, ... }  <->  kAudioLocNames[]
-    ExprEval.h/.cpp    enum Index    { V_TIME, ... }    <->  kVarNames[]
+    EffectShader.cpp   enum AudioLocE { AL_PHASE, ... }  <->  kAudioLocNames[]
+    ExprEval.h/.cpp    enum IndexE   { V_TIME, ... }    <->  kVarNames[]
 
 Fehlt in einer Seite ein Eintrag, verschiebt sich alles dahinter um eins: die
 Uniform `audioKick` bekaeme den Wert von `audioSnare`, die Formelvariable
@@ -69,15 +69,15 @@ def check(label, ids, names):
 
 def main():
     es = read("Source/EffectShader.cpp")
-    al = enum_ids(es, "enum AudioLoc {", "AL_", "AL_COUNT")
+    al = enum_ids(es, "enum AudioLocE {", "AL_", "AL_COUNT")
     an = table_strings(es, "kAudioLocNames[AL_COUNT] = {")
 
     eh = read("Source/ExprEval.h")
     ec = read("Source/ExprEval.cpp")
-    vi = enum_ids(eh, "enum Index {", "V_", "V_COUNT")
+    vi = enum_ids(eh, "enum IndexE {", "V_", "V_COUNT")
     vn = table_strings(ec, "kVarNames[ExprVars::V_COUNT] = {")
 
-    ok = check("AudioLoc / kAudioLocNames", al, an)
+    ok = check("AudioLocE / kAudioLocNames", al, an)
     ok = check("ExprVars / kVarNames", vi, vn) and ok
     return 0 if ok else 1
 

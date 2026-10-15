@@ -15,8 +15,8 @@
 
 // Global sampler units.  Units 0..11 are taken by the slideshow images and the
 // older sims (texSim 7, texFluid 8, texSmoke3D 9, texSSM 10, texPhysarum 11).
-/// Per-kind sampler name + texture unit table, indexed by CfxKind (see CfxTypes.h).
-const CfxInfo kCfxInfo[CFX_COUNT] = {
+/// Per-kind sampler name + texture unit table, indexed by CfxKindE (see CfxTypes.h).
+const CfxInfo CfxInfoTable[CFX_COUNT] = {
     { "texFlame", 12 },
     { "texParticles", 13 },
     { "texNBody", 14 },
@@ -42,12 +42,12 @@ namespace
 // optional extension, uint atomics are core.  256 keeps ~2 decimal digits of
 // colour precision and still allows ~16M accumulated units per pixel.
 /// @brief Fixed-point multiplier the splat shaders use before atomicAdd into a Canvas::ssbo.
-const float kSplatScale = 256.f;
+const float SplatScale = 256.f;
 
 // Splat canvases run at a fixed short side; they are smooth density fields, so
 // rendering them at display resolution buys nothing and costs a lot.
 /// @brief Fixed short-side width (texels) used for every splat Canvas, regardless of display resolution.
-const int kCanvasW = 1280;
+const int CanvasW = 1280;
 
 // Compute-program slots (index into ComputeFX::m_prog).
 /// @brief Indices into ComputeFX::m_prog / m_progTried, one per distinct .comp shader file.
@@ -117,7 +117,7 @@ ComputeFX::~ComputeFX()
     }
     freeField( m_nsPressure );
     freeField( m_mandelbrotField );
-    for ( int i = 0; i < kProgSlots; ++i )
+    for ( int i = 0; i < PROG_SLOTS; ++i )
         if ( m_prog[i] )
             glDeleteProgram( m_prog[i] );
 }
@@ -133,17 +133,17 @@ void ComputeFX::init()
     // unit at all, so retrying per frame would just fail identically forever.
     if ( m_ok )
         for ( int k = 0; k < CFX_COUNT; ++k )
-            if ( kCfxInfo[k].unit >= m_maxTexUnits )
+            if ( CfxInfoTable[k].unit >= m_maxTexUnits )
             {
                 m_dead[k] = true;
                 fprintf( stderr, "ComputeFX: %s disabled (needs unit %d)\n",
-                         kCfxInfo[k].sampler, kCfxInfo[k].unit );
+                         CfxInfoTable[k].sampler, CfxInfoTable[k].unit );
             }
 }
 
 GLuint ComputeFX::prog( int slot, const char *file )
 {
-    if ( slot < 0 || slot >= kProgSlots )
+    if ( slot < 0 || slot >= PROG_SLOTS )
         return 0;
     // m_progTried latches on the FIRST attempt regardless of outcome, so a
     // compile failure is reported once to stderr and then silently returns 0
@@ -298,12 +298,12 @@ void ComputeFX::freeField( Field &f )
 // 13 possible sims the resident set would otherwise grow to hundreds of MB.
 void ComputeFX::retireIdle( float now )
 {
-    const float kIdle = 25.f;
+    const float Idle = 25.f;
     for ( int k = 0; k < CFX_COUNT; ++k )
     {
-        if ( m_canvas[k].tex && now - m_canvas[k].lastUse > kIdle )
+        if ( m_canvas[k].tex && now - m_canvas[k].lastUse > Idle )
             freeCanvas( m_canvas[k] );
-        if ( m_field[k].tex[0] && now - m_field[k].lastUse > kIdle )
+        if ( m_field[k].tex[0] && now - m_field[k].lastUse > Idle )
         {
             freeField( m_field[k] );
             freeField( m_field2[k] );
@@ -369,13 +369,13 @@ GLuint ComputeFX::step( int k, const AudioFeatures &a, float dt, float t,
 }
 
 // Canvas geometry for the splat sims: fixed short side, display aspect kept.
-/// @brief Computes a splat Canvas's texel size: fixed kCanvasW short side, display aspect, clamped and rounded to whole
+/// @brief Computes a splat Canvas's texel size: fixed CanvasW short side, display aspect, clamped and rounded to whole
 /// 16-texel workgroups.
 static void canvasSize( int outW, int outH, int &w, int &h )
 {
-    w = kCanvasW;
+    w = CanvasW;
     float aspect = ( outW > 0 && outH > 0 ) ? float( outH ) / float( outW ) : 0.5625f;
-    h = int( kCanvasW * aspect + 0.5f );
+    h = int( CanvasW * aspect + 0.5f );
     if ( h < 360 )
         h = 360;
     if ( h > 1024 )
@@ -437,13 +437,13 @@ GLuint ComputeFX::stepParticles( const AudioFeatures &a, float dt, float t,
     // 2M particles covered every pixel twice over and the result read as flat
     // paint; at ~0.8 per pixel the individual streaks stay visible and the
     // convergence lines of the flow field are what lights up.
-    const int kParticles = 1280 * 1024;
+    const int Particles = 1280 * 1024;
     Canvas   &c = m_canvas[CFX_PARTICLES];
     int       w, h;
     canvasSize( 1920, 1080, w, h );
     if ( !ensureCanvas( c, w, h ) )
         return 0;
-    if ( !ensureBuffer( m_buf[CFX_PARTICLES], size_t( kParticles ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf[CFX_PARTICLES], size_t( Particles ) * 4 * sizeof( float ) ) )
         return 0;
 
     GLuint pi = prog( P_PART_INIT, "..\\Engine\\CfxParticleInit.comp" );
@@ -455,15 +455,15 @@ GLuint ComputeFX::stepParticles( const AudioFeatures &a, float dt, float t,
     {
         glUseProgram( pi );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_PARTICLES] );
-        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)kParticles );
-        glDispatchCompute( groups( kParticles, 256 ), 1, 1 );
+        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)Particles );
+        glDispatchCompute( groups( Particles, 256 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
         c.seeded = true;
     }
 
-    static float flow = 0.f, curlPhase = 0.f;
+    static float flow = 0.f, curl_phase = 0.f;
     flow += dt * ( 0.30f + 0.85f * a.overallLevel );
-    curlPhase += dt * ( 0.05f + 0.22f * a.spectralFlux );
+    curl_phase += dt * ( 0.05f + 0.22f * a.spectralFlux );
 
     clearAccum( c );
     glUseProgram( ps );
@@ -473,16 +473,16 @@ GLuint ComputeFX::stepParticles( const AudioFeatures &a, float dt, float t,
     glBindTexture( GL_TEXTURE_2D, srcImage );
     glUniform1i( glGetUniformLocation( ps, "texPhoto" ), 0 );
     glUniform2i( glGetUniformLocation( ps, "size" ), c.w, c.h );
-    glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)kParticles );
+    glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)Particles );
     glUniform1f( glGetUniformLocation( ps, "dt" ), dt );
     glUniform1f( glGetUniformLocation( ps, "flow" ), flow );
-    glUniform1f( glGetUniformLocation( ps, "curlPhase" ), curlPhase );
+    glUniform1f( glGetUniformLocation( ps, "curlPhase" ), curl_phase );
     glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick );
     glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
     glUniform1f( glGetUniformLocation( ps, "hue" ), a.chromaHue );
     glUniform1f( glGetUniformLocation( ps, "drop" ), a.dropPulse );
     glUniform1ui( glGetUniformLocation( ps, "frame" ), (GLuint)( t * 1000.f ) );
-    glDispatchCompute( groups( kParticles, 256 ), 1, 1 );
+    glDispatchCompute( groups( Particles, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     resolve( c, 0, 0.55f, 1.f, 0.86f );
@@ -499,16 +499,16 @@ GLuint ComputeFX::stepNBody( const AudioFeatures &a, float dt, float t )
     // canvas leaves 0.03 stars per pixel and looks like faint dust.  Forces are
     // evaluated against a 1/32 sample (2048 bodies) so quadrupling the star
     // count costs nothing — the sampled masses carry the compensating weight.
-    const int kBodies = 1 << 16; // 65,536
+    const int Bodies = 1 << 16; // 65,536
     Canvas   &c = m_canvas[CFX_NBODY];
     int       w, h;
     canvasSize( 1920, 1080, w, h );
     if ( !ensureCanvas( c, w, h ) )
         return 0;
     // pos.xyz + mass, vel.xyz + colour index
-    if ( !ensureBuffer( m_buf[CFX_NBODY], size_t( kBodies ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf[CFX_NBODY], size_t( Bodies ) * 4 * sizeof( float ) ) )
         return 0;
-    if ( !ensureBuffer( m_buf2[CFX_NBODY], size_t( kBodies ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf2[CFX_NBODY], size_t( Bodies ) * 4 * sizeof( float ) ) )
         return 0;
 
     GLuint pi = prog( P_NBODY_INIT, "..\\Engine\\CfxNBodyInit.comp" );
@@ -520,16 +520,16 @@ GLuint ComputeFX::stepNBody( const AudioFeatures &a, float dt, float t )
     // A merger is the whole arc of this scene — two discs approaching, tidal
     // tails, then the starburst.  Restarting every 12 s never let it play out.
     bool         reseed = !c.seeded || a.dropPulse > 0.85f;
-    static float lastSeed = -100.f;
-    if ( reseed && t - lastSeed > 45.f )
+    static float last_seed = -100.f;
+    if ( reseed && t - last_seed > 45.f )
     {
-        lastSeed = t;
+        last_seed = t;
         glUseProgram( pi );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_NBODY] );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_NBODY] );
-        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)kBodies );
+        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)Bodies );
         glUniform1ui( glGetUniformLocation( pi, "seed" ), (GLuint)( t * 977.f ) );
-        glDispatchCompute( groups( kBodies, 256 ), 1, 1 );
+        glDispatchCompute( groups( Bodies, 256 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
         c.seeded = true;
     }
@@ -540,13 +540,13 @@ GLuint ComputeFX::stepNBody( const AudioFeatures &a, float dt, float t )
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_NBODY] );
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_NBODY] );
     glUniform2i( glGetUniformLocation( ps, "size" ), c.w, c.h );
-    glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)kBodies );
+    glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)Bodies );
     glUniform1f( glGetUniformLocation( ps, "dt" ), dt * 0.60f );
     glUniform1f( glGetUniformLocation( ps, "bass" ), a.bassRel );
     glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick );
     glUniform1f( glGetUniformLocation( ps, "hue" ), a.chromaHue );
     glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
-    glDispatchCompute( groups( kBodies, 256 ), 1, 1 );
+    glDispatchCompute( groups( Bodies, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     resolve( c, 0, 1.3f, 1.f, 0.93f );
@@ -559,19 +559,19 @@ GLuint ComputeFX::stepNBody( const AudioFeatures &a, float dt, float t )
 
 GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
 {
-    const int kBoids = 1 << 17; // 131,072
-    const int kGrid = 128;      // 128x128 cells
-    const int kPerCell = 24;    // capacity per cell
+    const int Boids = 1 << 17; // 131,072
+    const int Grid = 128;      // 128x128 cells
+    const int PerCell = 24;    // capacity per cell
     Canvas   &c = m_canvas[CFX_BOIDS];
     int       w, h;
     canvasSize( 1920, 1080, w, h );
     if ( !ensureCanvas( c, w, h ) )
         return 0;
-    if ( !ensureBuffer( m_buf[CFX_BOIDS], size_t( kBoids ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf[CFX_BOIDS], size_t( Boids ) * 4 * sizeof( float ) ) )
         return 0;
-    // grid: [count, idx0..idx(kPerCell-1)] per cell
+    // grid: [count, idx0..idx(PerCell-1)] per cell
     if ( !ensureBuffer( m_buf2[CFX_BOIDS],
-                        size_t( kGrid ) * kGrid * ( kPerCell + 1 ) * sizeof( unsigned int ) ) )
+                        size_t( Grid ) * Grid * ( PerCell + 1 ) * sizeof( unsigned int ) ) )
         return 0;
 
     GLuint pi = prog( P_BOIDS_INIT, "..\\Engine\\CfxBoidsInit.comp" );
@@ -584,8 +584,8 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
     {
         glUseProgram( pi );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_BOIDS] );
-        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)kBoids );
-        glDispatchCompute( groups( kBoids, 256 ), 1, 1 );
+        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)Boids );
+        glDispatchCompute( groups( Boids, 256 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
         c.seeded = true;
     }
@@ -600,10 +600,10 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
     glUseProgram( pg );
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_BOIDS] );
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_BOIDS] );
-    glUniform1ui( glGetUniformLocation( pg, "count" ), (GLuint)kBoids );
-    glUniform1i( glGetUniformLocation( pg, "gridN" ), kGrid );
-    glUniform1i( glGetUniformLocation( pg, "perCell" ), kPerCell );
-    glDispatchCompute( groups( kBoids, 256 ), 1, 1 );
+    glUniform1ui( glGetUniformLocation( pg, "count" ), (GLuint)Boids );
+    glUniform1i( glGetUniformLocation( pg, "gridN" ), Grid );
+    glUniform1i( glGetUniformLocation( pg, "perCell" ), PerCell );
+    glDispatchCompute( groups( Boids, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     static float goal = 0.f;
@@ -615,9 +615,9 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_BOIDS] );
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_BOIDS] );
     glUniform2i( glGetUniformLocation( ps, "size" ), c.w, c.h );
-    glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)kBoids );
-    glUniform1i( glGetUniformLocation( ps, "gridN" ), kGrid );
-    glUniform1i( glGetUniformLocation( ps, "perCell" ), kPerCell );
+    glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)Boids );
+    glUniform1i( glGetUniformLocation( ps, "gridN" ), Grid );
+    glUniform1i( glGetUniformLocation( ps, "perCell" ), PerCell );
     glUniform1f( glGetUniformLocation( ps, "dt" ), dt );
     glUniform1f( glGetUniformLocation( ps, "goalPhase" ), goal );
     glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick );
@@ -625,7 +625,7 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
     glUniform1f( glGetUniformLocation( ps, "drop" ), a.dropPulse );
     glUniform1f( glGetUniformLocation( ps, "hue" ), a.chromaHue );
     glUniform1f( glGetUniformLocation( ps, "bright" ), a.spectralCentroid );
-    glDispatchCompute( groups( kBoids, 256 ), 1, 1 );
+    glDispatchCompute( groups( Boids, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     // Short trails: a flock must stay CRISP.  A long decay smears the density
@@ -645,11 +645,11 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
 
 GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
 {
-    const int kWalkers = 1 << 15; // 32,768
+    const int Walkers = 1 << 15; // 32,768
     Field    &f = m_field[CFX_CRYSTAL];
     if ( !ensureField( f, 1024, 576, GL_RGBA16F ) )
         return 0;
-    if ( !ensureBuffer( m_buf[CFX_CRYSTAL], size_t( kWalkers ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf[CFX_CRYSTAL], size_t( Walkers ) * 4 * sizeof( float ) ) )
         return 0;
 
     GLuint pseed = prog( P_CRYSTAL_SEED, "..\\Engine\\CfxCrystalSeed.comp" );
@@ -658,12 +658,12 @@ GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
         return 0;
 
     // Re-seed when the structure has had its run, or on a big drop.
-    static float lastSeed = -1000.f;
+    static float last_seed = -1000.f;
     if ( !f.seeded || a.dropPulse > 0.85f )
     {
-        if ( t - lastSeed > 30.f )
+        if ( t - last_seed > 30.f )
         {
-            lastSeed = t;
+            last_seed = t;
             glUseProgram( pseed );
             glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
             glUniform2i( glGetUniformLocation( pseed, "size" ), f.w, f.h );
@@ -679,7 +679,7 @@ GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
     glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F );
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_CRYSTAL] );
     glUniform2i( glGetUniformLocation( pstep, "size" ), f.w, f.h );
-    glUniform1ui( glGetUniformLocation( pstep, "count" ), (GLuint)kWalkers );
+    glUniform1ui( glGetUniformLocation( pstep, "count" ), (GLuint)Walkers );
     glUniform1ui( glGetUniformLocation( pstep, "frame" ), (GLuint)( t * 1000.f ) );
     glUniform1f( glGetUniformLocation( pstep, "now" ), t );
     glUniform1f( glGetUniformLocation( pstep, "hue" ), a.chromaHue );
@@ -691,7 +691,7 @@ GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
                  0.015f + 0.075f * a.overallLevel + 0.05f * a.onsetKick );
     glUniform1f( glGetUniformLocation( pstep, "drift" ),
                  0.55f + 0.8f * a.overallLevel );
-    glDispatchCompute( groups( kWalkers, 256 ), 1, 1 );
+    glDispatchCompute( groups( Walkers, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
 
     return f.tex[0];
@@ -703,13 +703,13 @@ GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
 
 GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
 {
-    const int kTips = 4096;
+    const int Tips = 4096;
     Canvas   &c = m_canvas[CFX_LIGHTNING];
     int       w, h;
     canvasSize( 1920, 1080, w, h );
     if ( !ensureCanvas( c, w, h ) )
         return 0;
-    if ( !ensureBuffer( m_buf[CFX_LIGHTNING], size_t( kTips ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf[CFX_LIGHTNING], size_t( Tips ) * 4 * sizeof( float ) ) )
         return 0;
     if ( !ensureBuffer( m_buf2[CFX_LIGHTNING], 4 * sizeof( unsigned int ) ) )
         return 0;
@@ -722,17 +722,17 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
     // A new bolt on every strong onset, and a fallback so quiet passages are
     // not left with an empty sky.  Cadence tightened (was 3.5s) so the storm
     // stays visibly alive even without percussive onsets.
-    static float lastBolt = -100.f;
+    static float last_bolt = -100.f;
     bool         strike = ( a.onsetKick > 0.55f || a.dropPulse > 0.6f )
-                          && ( t - lastBolt > 0.5f );
-    if ( !c.seeded || strike || t - lastBolt > 2.2f )
+                          && ( t - last_bolt > 0.5f );
+    if ( !c.seeded || strike || t - last_bolt > 2.2f )
     {
-        lastBolt = t;
+        last_bolt = t;
         c.seeded = true;
         glUseProgram( pseed );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_LIGHTNING] );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_LIGHTNING] );
-        glUniform1ui( glGetUniformLocation( pseed, "capacity" ), (GLuint)kTips );
+        glUniform1ui( glGetUniformLocation( pseed, "capacity" ), (GLuint)Tips );
         glUniform1ui( glGetUniformLocation( pseed, "seed" ), (GLuint)( t * 811.f ) );
         float sx = 0.5f + 0.42f * sinf( t * 2.7f ) * cosf( t * 1.3f );
         glUniform1f( glGetUniformLocation( pseed, "startX" ), sx );
@@ -743,7 +743,7 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
         // mit satter Reserve (Wander-Ineffizienz durch die Winkel-Drift
         // eingerechnet) IMMER bis zum unteren Rand, unabhaengig vom Pegel.
         glUniform1f( glGetUniformLocation( pseed, "life" ), 170.f + 70.f * a.overallLevel );
-        glDispatchCompute( groups( kTips, 128 ), 1, 1 );
+        glDispatchCompute( groups( Tips, 128 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
     }
 
@@ -753,7 +753,7 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_LIGHTNING] );
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_LIGHTNING] );
     glUniform2i( glGetUniformLocation( pstep, "size" ), c.w, c.h );
-    glUniform1ui( glGetUniformLocation( pstep, "capacity" ), (GLuint)kTips );
+    glUniform1ui( glGetUniformLocation( pstep, "capacity" ), (GLuint)Tips );
     glUniform1ui( glGetUniformLocation( pstep, "frame" ), (GLuint)( t * 1000.f ) );
     glUniform1f( glGetUniformLocation( pstep, "hue" ), a.chromaHue );
     glUniform1f( glGetUniformLocation( pstep, "level" ), a.overallLevel );
@@ -761,7 +761,7 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
                  0.030f + 0.055f * a.spectralCentroid );
     glUniform1f( glGetUniformLocation( pstep, "charge" ),
                  std::min( 1.f, a.onsetKick + 0.35f * a.overallLevel ) );
-    glDispatchCompute( groups( kTips, 128 ), 1, 1 );
+    glDispatchCompute( groups( Tips, 128 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     // Long afterglow: the eye keeps a bolt far longer than it exists.
@@ -778,8 +778,8 @@ GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
 {
     Field    &f = m_field[CFX_CAUSTICS];
     Canvas   &c = m_canvas[CFX_CAUSTICS];
-    const int wW = 512, wH = 288;
-    if ( !ensureField( f, wW, wH, GL_RGBA16F ) )
+    const int w_w = 512, w_h = 288;
+    if ( !ensureField( f, w_w, w_h, GL_RGBA16F ) )
         return 0;
     int w, h;
     canvasSize( 1920, 1080, w, h );
@@ -799,7 +799,7 @@ GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
         glUseProgram( pw );
         glBindImageTexture( 0, f.tex[cur], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F );
         glBindImageTexture( 1, f.tex[nxt], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
-        glUniform2i( glGetUniformLocation( pw, "size" ), wW, wH );
+        glUniform2i( glGetUniformLocation( pw, "size" ), w_w, w_h );
         glUniform1f( glGetUniformLocation( pw, "damp" ), 0.9965f );
         glUniform1f( glGetUniformLocation( pw, "speed" ), 0.30f );
         glUniform1f( glGetUniformLocation( pw, "kick" ), a.onsetKick );
@@ -821,7 +821,7 @@ GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
         }
         glUniform1f( glGetUniformLocation( pw, "dropAmp" ), amp );
         glUniform2f( glGetUniformLocation( pw, "dropPos" ), dx, dy );
-        glDispatchCompute( groups( wW, 16 ), groups( wH, 16 ), 1 );
+        glDispatchCompute( groups( w_w, 16 ), groups( w_h, 16 ), 1 );
         glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT );
         f.idx = nxt;
     }
@@ -831,12 +831,12 @@ GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
     glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 0, c.ssbo );
     glBindImageTexture( 1, f.tex[f.idx], 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA16F );
     glUniform2i( glGetUniformLocation( pp, "size" ), c.w, c.h );
-    glUniform2i( glGetUniformLocation( pp, "waveSize" ), wW, wH );
+    glUniform2i( glGetUniformLocation( pp, "waveSize" ), w_w, w_h );
     glUniform1f( glGetUniformLocation( pp, "depth" ), 0.55f + 0.35f * a.bassRel );
     glUniform1f( glGetUniformLocation( pp, "hue" ), a.chromaHue );
     glUniform1f( glGetUniformLocation( pp, "level" ), a.overallLevel );
     glUniform1f( glGetUniformLocation( pp, "disperse" ), 0.06f + 0.05f * a.spectralCentroid );
-    glDispatchCompute( groups( wW, 16 ), groups( wH, 16 ), 1 );
+    glDispatchCompute( groups( w_w, 16 ), groups( w_h, 16 ), 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     resolve( c, 0, 0.30f, 1.f, 0.35f );
@@ -913,7 +913,7 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     // 2) forward transform: rows then columns
-    auto fftPass = [&]( int axis, int inv )
+    auto fft_pass = [&]( int axis, int inv )
     {
         glUseProgram( pf );
         glUniform1i( glGetUniformLocation( pf, "N" ), N );
@@ -922,8 +922,8 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
         glDispatchCompute( N, 1, 1 ); // one workgroup per line
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
     };
-    fftPass( 0, 0 );
-    fftPass( 1, 0 );
+    fft_pass( 0, 0 );
+    fft_pass( 1, 0 );
 
     // 3) the mask: 32 audio bands mapped onto the radius (= spatial frequency)
     glUseProgram( pm );
@@ -936,8 +936,8 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     // 4) inverse transform
-    fftPass( 1, 1 );
-    fftPass( 0, 1 );
+    fft_pass( 1, 1 );
+    fft_pass( 0, 1 );
 
     // 5) back into a texture
     glUseProgram( ps );
@@ -1020,7 +1020,7 @@ GLuint ComputeFX::stepErosion( const AudioFeatures &a, float dt, float t )
     // 8k droplets x 64 steps x a 3x3 kernel rewrote every texel ~18 times per
     // frame and sanded the whole landscape flat within seconds.  2k keeps it
     // near one touch per texel per frame, which carves instead of polishing.
-    const int kDrops = 1 << 11; // 2,048 droplets per frame
+    const int Drops = 1 << 11; // 2,048 droplets per frame
     Field    &f = m_field[CFX_EROSION];
     if ( !ensureField( f, 512, 512, GL_RGBA16F ) )
         return 0;
@@ -1034,10 +1034,10 @@ GLuint ComputeFX::stepErosion( const AudioFeatures &a, float dt, float t )
     // it does in nature: it grinds the mountains down to a plain, and the scene
     // goes dead.  Re-raising the land every ~14 s turns that into the point of
     // the effect — peaks appear, the drainage network cuts in, repeat.
-    static float lastSeed = -1000.f;
-    if ( ( !f.seeded || a.dropPulse > 0.85f ) && t - lastSeed > 14.f )
+    static float last_seed = -1000.f;
+    if ( ( !f.seeded || a.dropPulse > 0.85f ) && t - last_seed > 14.f )
     {
-        lastSeed = t;
+        last_seed = t;
         glUseProgram( pseed );
         glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
         glUniform2i( glGetUniformLocation( pseed, "size" ), f.w, f.h );
@@ -1050,12 +1050,12 @@ GLuint ComputeFX::stepErosion( const AudioFeatures &a, float dt, float t )
     glUseProgram( pstep );
     glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_READ_WRITE, GL_RGBA16F );
     glUniform2i( glGetUniformLocation( pstep, "size" ), f.w, f.h );
-    glUniform1ui( glGetUniformLocation( pstep, "count" ), (GLuint)kDrops );
+    glUniform1ui( glGetUniformLocation( pstep, "count" ), (GLuint)Drops );
     glUniform1ui( glGetUniformLocation( pstep, "frame" ), (GLuint)( t * 1000.f ) );
     glUniform1f( glGetUniformLocation( pstep, "rain" ), 0.5f + 1.6f * a.overallLevel );
     glUniform1f( glGetUniformLocation( pstep, "capacityK" ),
                  2.2f + 2.5f * a.onsetKick );
-    glDispatchCompute( groups( kDrops, 256 ), 1, 1 );
+    glDispatchCompute( groups( Drops, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
 
     return f.tex[0];
@@ -1090,8 +1090,8 @@ GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
     if ( !ensureField( prs, W, H, GL_RGBA16F ) )
         return 0;
 
-    static float jetPhase = 0.f;
-    jetPhase += dt * ( 0.35f + 1.1f * a.overallLevel );
+    static float jet_phase = 0.f;
+    jet_phase += dt * ( 0.35f + 1.1f * a.overallLevel );
 
     // ---- 1) advect velocity + dye, apply forces ----
     {
@@ -1111,11 +1111,11 @@ GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
         glUniform1f( glGetUniformLocation( pa, "kick" ), a.onsetKick );
         glUniform1f( glGetUniformLocation( pa, "level" ), a.overallLevel );
         glUniform1f( glGetUniformLocation( pa, "hue" ), a.chromaHue );
-        float jx = 0.5f + 0.32f * sinf( jetPhase * 0.7f );
-        float jy = 0.5f + 0.26f * cosf( jetPhase * 0.53f );
+        float jx = 0.5f + 0.32f * sinf( jet_phase * 0.7f );
+        float jy = 0.5f + 0.26f * cosf( jet_phase * 0.53f );
         glUniform2f( glGetUniformLocation( pa, "jetPos" ), jx, jy );
         glUniform2f( glGetUniformLocation( pa, "jetDir" ),
-                     cosf( jetPhase * 1.7f ), sinf( jetPhase * 1.7f ) );
+                     cosf( jet_phase * 1.7f ), sinf( jet_phase * 1.7f ) );
         glUniform1f( glGetUniformLocation( pa, "jetAmp" ),
                      0.010f + 0.055f * a.onsetKick + 0.020f * a.overallLevel );
         glDispatchCompute( groups( W, 16 ), groups( H, 16 ), 1 );
@@ -1168,8 +1168,8 @@ GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
 // kinds.
 GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
 {
-    const int kParts = 1 << 16; // 65,536
-    const int kGrid = 96, kPerCell = 32;
+    const int Parts = 1 << 16; // 65,536
+    const int Grid = 96, PerCell = 32;
     Canvas   &c = m_canvas[CFX_METAL];
     // A DELIBERATELY small canvas.  Screen-space fluid needs the particle
     // discs to overlap into a continuous density field; at 1280x720 the same
@@ -1177,10 +1177,10 @@ GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
     // surface from it.  640x360 quadruples the density per pixel.
     if ( !ensureCanvas( c, 640, 360 ) )
         return 0;
-    if ( !ensureBuffer( m_buf[CFX_METAL], size_t( kParts ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf[CFX_METAL], size_t( Parts ) * 4 * sizeof( float ) ) )
         return 0;
     if ( !ensureBuffer( m_buf2[CFX_METAL],
-                        size_t( kGrid ) * kGrid * ( kPerCell + 1 ) * sizeof( unsigned int ) ) )
+                        size_t( Grid ) * Grid * ( PerCell + 1 ) * sizeof( unsigned int ) ) )
         return 0;
 
     GLuint pi = prog( P_PART_INIT, "..\\Engine\\CfxParticleInit.comp" );
@@ -1192,8 +1192,8 @@ GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
     {
         glUseProgram( pi );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_METAL] );
-        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)kParts );
-        glDispatchCompute( groups( kParts, 256 ), 1, 1 );
+        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)Parts );
+        glDispatchCompute( groups( Parts, 256 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
         c.seeded = true;
     }
@@ -1215,15 +1215,15 @@ GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_METAL] );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_METAL] );
         glUniform2i( glGetUniformLocation( ps, "size" ), c.w, c.h );
-        glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)kParts );
-        glUniform1i( glGetUniformLocation( ps, "gridN" ), kGrid );
-        glUniform1i( glGetUniformLocation( ps, "perCell" ), kPerCell );
+        glUniform1ui( glGetUniformLocation( ps, "count" ), (GLuint)Parts );
+        glUniform1i( glGetUniformLocation( ps, "gridN" ), Grid );
+        glUniform1i( glGetUniformLocation( ps, "perCell" ), PerCell );
         glUniform1f( glGetUniformLocation( ps, "dt" ), 0.55f );
         glUniform1f( glGetUniformLocation( ps, "kick" ), a.onsetKick );
         glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
         glUniform1f( glGetUniformLocation( ps, "swirl" ), swirl );
         glUniform1i( glGetUniformLocation( ps, "buildGrid" ), pass );
-        glDispatchCompute( groups( kParts, 256 ), 1, 1 );
+        glDispatchCompute( groups( Parts, 256 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
     }
 
@@ -1239,15 +1239,15 @@ GLuint ComputeFX::stepShards( const AudioFeatures &a, float dt, float t,
                               GLuint srcImage )
 {
     const int gx = 48, gy = 27;
-    const int kShards = gx * gy;
+    const int Shards = gx * gy;
     Canvas   &c = m_canvas[CFX_SHARDS];
     int       w, h;
     canvasSize( 1920, 1080, w, h );
     if ( !ensureCanvas( c, w, h ) )
         return 0;
-    if ( !ensureBuffer( m_buf[CFX_SHARDS], size_t( kShards ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf[CFX_SHARDS], size_t( Shards ) * 4 * sizeof( float ) ) )
         return 0;
-    if ( !ensureBuffer( m_buf2[CFX_SHARDS], size_t( kShards ) * 4 * sizeof( float ) ) )
+    if ( !ensureBuffer( m_buf2[CFX_SHARDS], size_t( Shards ) * 4 * sizeof( float ) ) )
         return 0;
 
     GLuint pi = prog( P_SHARD_INIT, "..\\Engine\\CfxShardInit.comp" );
@@ -1257,21 +1257,21 @@ GLuint ComputeFX::stepShards( const AudioFeatures &a, float dt, float t,
 
     // Every strong transient blows the picture apart again; between bursts the
     // spring pulls every shard home and it re-assembles.
-    static float lastBurst = -100.f;
+    static float last_burst = -100.f;
     bool         burst = ( a.onsetKick > 0.62f || a.dropPulse > 0.6f )
-                         && ( t - lastBurst > 3.2f );
+                         && ( t - last_burst > 3.2f );
     if ( !c.seeded || burst )
     {
-        lastBurst = t;
+        last_burst = t;
         c.seeded = true;
         glUseProgram( pi );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 1, m_buf[CFX_SHARDS] );
         glBindBufferBase( GL_SHADER_STORAGE_BUFFER, 2, m_buf2[CFX_SHARDS] );
-        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)kShards );
+        glUniform1ui( glGetUniformLocation( pi, "count" ), (GLuint)Shards );
         glUniform1ui( glGetUniformLocation( pi, "seed" ), (GLuint)( t * 733.f ) + 1u );
         glUniform1f( glGetUniformLocation( pi, "burst" ),
                      0.10f + 0.16f * a.onsetKick + 0.18f * a.dropPulse );
-        glDispatchCompute( groups( kShards, 256 ), 1, 1 );
+        glDispatchCompute( groups( Shards, 256 ), 1, 1 );
         glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
     }
 
@@ -1290,7 +1290,7 @@ GLuint ComputeFX::stepShards( const AudioFeatures &a, float dt, float t,
     glUniform1f( glGetUniformLocation( ps, "damp" ), 0.985f );
     glUniform1f( glGetUniformLocation( ps, "gravity" ), 0.35f );
     glUniform1f( glGetUniformLocation( ps, "level" ), a.overallLevel );
-    glDispatchCompute( groups( kShards, 256 ), 1, 1 );
+    glDispatchCompute( groups( Shards, 256 ), 1, 1 );
     glMemoryBarrier( GL_SHADER_STORAGE_BARRIER_BIT );
 
     resolve( c, 0, 1.0f, 1.f, 0.0f );
@@ -1377,13 +1377,13 @@ struct MbTarget
 {
     double re, im;
 };
-const MbTarget kMbTargets[] = {
+const MbTarget MbTargets[] = {
     { -0.7453983606667815, 0.1125046349959942 }, // "seahorse valley" spiral
     { -0.235125, 0.827215 },                     // mini-Mandelbrot approach
     { -1.7490597277748394, 0.0000005996817 },    // deep filament off the main cusp
     { -0.16070135, -1.0375665 },                 // dendrite cluster
 };
-const int kMbTargetCount = int( sizeof( kMbTargets ) / sizeof( kMbTargets[0] ) );
+const int MbTargetCount = int( sizeof( MbTargets ) / sizeof( MbTargets[0] ) );
 
 inline void dsSplit( double v, float &hi, float &lo )
 {
@@ -1394,7 +1394,7 @@ inline void dsSplit( double v, float &hi, float &lo )
 
 GLuint ComputeFX::stepMandelbrot( const AudioFeatures &a, float dt, float t, int outW, int outH )
 {
-    // Deliberately NOT a registered CfxKind/kCfxInfo entry (unlike every
+    // Deliberately NOT a registered CfxKindE/CfxInfoTable entry (unlike every
     // other sim in this file): units 0-31 are already fully claimed by
     // existing features on a 32-texture-unit GPU (the common NVIDIA fragment-
     // stage cap), and ComputeFX::init()'s kind-gating pre-emptively kills any
@@ -1414,40 +1414,40 @@ GLuint ComputeFX::stepMandelbrot( const AudioFeatures &a, float dt, float t, int
         return 0;
 
     // Log-zoom depth: an integrated accumulator, audio modulates the RATE
-    // (never time*audio directly -- V7). Resets to kMinZoomLog (NOT 0 -- the
+    // (never time*audio directly -- V7). Resets to MinZoomLog (NOT 0 -- the
     // hand-picked targets sit at real boundary filaments, so a truly wide
-    // zoomLog=0 view shows mostly the flat exterior "lake" around them; a
+    // zoom_log=0 view shows mostly the flat exterior "lake" around them; a
     // small starting depth skips straight to filled boundary detail, which
     // is what "screen-filling" actually wants) and advances to the next
     // target once double-single precision runs out.
-    static float zoomLog = 3.5f;
-    static int   targetSel = 0;
-    const float  kMinZoomLog = 3.5f;
-    const float  kMaxZoomLog = 19.0f; // e^19 =~ 1.8e-9 window -- inside ds precision headroom
-    zoomLog += dt * ( 0.16f + 0.30f * a.overallLevel );
-    if ( zoomLog > kMaxZoomLog )
+    static float zoom_log = 3.5f;
+    static int   target_sel = 0;
+    const float  MinZoomLog = 3.5f;
+    const float  MaxZoomLog = 19.0f; // e^19 =~ 1.8e-9 window -- inside ds precision headroom
+    zoom_log += dt * ( 0.16f + 0.30f * a.overallLevel );
+    if ( zoom_log > MaxZoomLog )
     {
-        zoomLog = kMinZoomLog;
-        targetSel = ( targetSel + 1 ) % kMbTargetCount;
+        zoom_log = MinZoomLog;
+        target_sel = ( target_sel + 1 ) % MbTargetCount;
     }
-    const float zoomScale = expf( -zoomLog );
+    const float zoom_scale = expf( -zoom_log );
 
-    float cxHi, cxLo, cyHi, cyLo;
-    dsSplit( kMbTargets[targetSel].re, cxHi, cxLo );
-    dsSplit( kMbTargets[targetSel].im, cyHi, cyLo );
+    float cx_hi, cx_lo, cy_hi, cy_lo;
+    dsSplit( MbTargets[target_sel].re, cx_hi, cx_lo );
+    dsSplit( MbTargets[target_sel].im, cy_hi, cy_lo );
 
-    int maxIter = int( 90.0f + zoomLog * 14.0f );
-    if ( maxIter > 620 )
-        maxIter = 620;
+    int max_iter = int( 90.0f + zoom_log * 14.0f );
+    if ( max_iter > 620 )
+        max_iter = 620;
 
     glUseProgram( p );
     glBindImageTexture( 0, f.tex[0], 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_RGBA16F );
     glUniform2i( glGetUniformLocation( p, "size" ), f.w, f.h );
-    glUniform2f( glGetUniformLocation( p, "centerHi" ), cxHi, cyHi );
-    glUniform2f( glGetUniformLocation( p, "centerLo" ), cxLo, cyLo );
-    glUniform1f( glGetUniformLocation( p, "zoomScale" ), zoomScale );
-    glUniform1i( glGetUniformLocation( p, "maxIter" ), maxIter );
-    glUniform1f( glGetUniformLocation( p, "rot" ), zoomLog * 0.05f + a.spectralCentroid * 0.3f );
+    glUniform2f( glGetUniformLocation( p, "centerHi" ), cx_hi, cy_hi );
+    glUniform2f( glGetUniformLocation( p, "centerLo" ), cx_lo, cy_lo );
+    glUniform1f( glGetUniformLocation( p, "zoomScale" ), zoom_scale );
+    glUniform1i( glGetUniformLocation( p, "maxIter" ), max_iter );
+    glUniform1f( glGetUniformLocation( p, "rot" ), zoom_log * 0.05f + a.spectralCentroid * 0.3f );
     glDispatchCompute( groups( f.w, 16 ), groups( f.h, 16 ), 1 );
     glMemoryBarrier( GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT );
 

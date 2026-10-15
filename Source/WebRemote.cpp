@@ -24,14 +24,14 @@
 /// broadcasts. Bound with ShareAddress so several Kaleidoscope instances on
 /// the SAME PC can all listen here and each answer for itself (Windows
 /// delivers a copy of every broadcast datagram to every bound socket).
-static const quint16 kDiscoveryPort = 45677;
+static const quint16 DiscoveryPort = 45677;
 /// The request payload the app broadcasts; anything else on the port is ignored.
 static const char *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
 
 /// How long a kept-alive connection may sit idle before the server drops it.
 /// Long enough to span the page's 2 s polling cadence many times over, short
 /// enough that a phone that walked out of the room doesn't hold a socket.
-static const int kKeepAliveIdleMs = 30000;
+static const int KeepAliveIdleMs = 30000;
 
 /// Escapes a string for embedding inside a JSON double-quoted string literal
 /// (backslash, quote, and control characters). Every JSON string this file
@@ -366,9 +366,9 @@ try{const t=localStorage.getItem('krTab');
 static QByteArray buildPage()
 {
     QString page = QString::fromUtf8( kPageTemplate );
-    auto    sub = [&page]( const char *token, StrId id )
+    auto    sub = [&page]( const char *token, StrIdE id )
     {
-        page.replace( QLatin1String( token ), QString::fromUtf8( Strings::T( id ) ) );
+        page.replace( QLatin1String( token ), QString::fromUtf8( Strings::uiText( id ) ) );
     };
     sub( "@@TITLE@@", S_WR_TITLE );
     sub( "@@H1@@", S_WR_H1 );
@@ -427,9 +427,9 @@ static QByteArray buildPage()
     // Strings.cpp, none of them contain a quote/backslash.
     page.replace( QLatin1String( "@@LYRICSARR@@" ),
                   QString( "['%1','%2','%3']" )
-                      .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_OFF ) ) )
-                      .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_SCROLL ) ) )
-                      .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_KARAOKE ) ) ) );
+                      .arg( QString::fromUtf8( Strings::uiText( S_WR_LYRICS_OFF ) ) )
+                      .arg( QString::fromUtf8( Strings::uiText( S_WR_LYRICS_SCROLL ) ) )
+                      .arg( QString::fromUtf8( Strings::uiText( S_WR_LYRICS_KARAOKE ) ) ) );
     return page.toUtf8();
 }
 
@@ -454,18 +454,18 @@ WebRemote::WebRemote( GLwidget *widget, int port )
     // reply that carries port 0 is harmless (the app would just fail to
     // connect, same as today), and it costs nothing to still answer.
     m_discoverySocket = new QUdpSocket( this );
-    if ( m_discoverySocket->bind( QHostAddress::AnyIPv4, kDiscoveryPort,
+    if ( m_discoverySocket->bind( QHostAddress::AnyIPv4, DiscoveryPort,
                                   QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint ) )
     {
         QObject::connect( m_discoverySocket, &QUdpSocket::readyRead,
                           this, [this]()
         { handleDiscovery(); } );
-        fprintf( stderr, "WEB REMOTE: LAN auto-discovery listening on UDP %d\n", kDiscoveryPort );
+        fprintf( stderr, "WEB REMOTE: LAN auto-discovery listening on UDP %d\n", DiscoveryPort );
     }
     else
         fprintf( stderr, "WEB REMOTE: could not bind discovery UDP %d (%s) "
                          "- the phone app will need the address typed in manually.\n",
-                 kDiscoveryPort, m_discoverySocket->errorString().toLocal8Bit().constData() );
+                 DiscoveryPort, m_discoverySocket->errorString().toLocal8Bit().constData() );
 }
 
 int WebRemote::bindFreePort( int preferred )
@@ -500,8 +500,8 @@ void WebRemote::handleDiscovery()
         QByteArray buf;
         buf.resize( int( m_discoverySocket->pendingDatagramSize() ) );
         QHostAddress sender;
-        quint16      senderPort;
-        m_discoverySocket->readDatagram( buf.data(), buf.size(), &sender, &senderPort );
+        quint16      sender_port;
+        m_discoverySocket->readDatagram( buf.data(), buf.size(), &sender, &sender_port );
 
         if ( buf != kDiscoveryMagic )
             continue; // stray traffic on the port - not our protocol
@@ -515,20 +515,20 @@ void WebRemote::handleDiscovery()
         if ( m_httpPort == 0 )
             continue;
 
-        QString           activeConfig;
+        QString           active_config;
         const int         active = m_widget->remoteActiveConfig();
         const QStringList cfgs = m_widget->remoteConfigNames();
         if ( active >= 0 && active < cfgs.size() )
-            activeConfig = cfgs[active];
+            active_config = cfgs[active];
 
         const QByteArray reply = QString(
                                      "{\"name\":\"%1\",\"port\":%2,\"pid\":\"%3\",\"config\":\"%4\"}" )
                                      .arg( jsonEscape( QSysInfo::machineHostName() ) )
                                      .arg( m_httpPort )
                                      .arg( QCoreApplication::applicationPid() )
-                                     .arg( jsonEscape( activeConfig ) )
+                                     .arg( jsonEscape( active_config ) )
                                      .toUtf8();
-        m_discoverySocket->writeDatagram( reply, sender, senderPort );
+        m_discoverySocket->writeDatagram( reply, sender, sender_port );
     }
 }
 
@@ -554,7 +554,7 @@ void WebRemote::handleConnection()
         // would sit in the server forever now that nothing closes it.
         QTimer *idle = new QTimer( sock );
         idle->setSingleShot( true );
-        idle->setInterval( kKeepAliveIdleMs );
+        idle->setInterval( KeepAliveIdleMs );
         QObject::connect( idle, &QTimer::timeout, sock, [sock]()
         { sock->disconnectFromHost(); } );
         idle->start();
@@ -563,14 +563,14 @@ void WebRemote::handleConnection()
         {
             idle->start(); // re-arm: this connection is alive
             buf->append( sock->readAll() );
-            int hdrEnd;
-            while ( ( hdrEnd = buf->indexOf( "\r\n\r\n" ) ) >= 0 )
+            int hdr_end;
+            while ( ( hdr_end = buf->indexOf( "\r\n\r\n" ) ) >= 0 )
             {
-                const QByteArray req = buf->left( hdrEnd + 4 );
-                buf->remove( 0, hdrEnd + 4 );
+                const QByteArray req = buf->left( hdr_end + 4 );
+                buf->remove( 0, hdr_end + 4 );
                 // HTTP/1.1 keeps the connection open unless the client says otherwise.
-                const bool              closeAfter = req.contains( "Connection: close" )
-                                                     || req.contains( "connection: close" );
+                const bool              close_after = req.contains( "Connection: close" )
+                                                      || req.contains( "connection: close" );
                 const int               eol = req.indexOf( "\r\n" );
                 const QList<QByteArray> parts = req.left( eol < 0 ? req.size() : eol ).split( ' ' );
                 // Default response for an unmatched GET path (or a non-GET request): 200 OK with an
@@ -762,10 +762,10 @@ void WebRemote::handleConnection()
                 QByteArray resp = "HTTP/1.1 200 OK\r\nContent-Type: " + ctype
                                   + "\r\nContent-Length: " + QByteArray::number( body.size() )
                                   + ( cacheable ? "\r\nCache-Control: max-age=30" : "" )
-                                  + ( closeAfter ? "\r\nConnection: close" : "\r\nConnection: keep-alive" ) + "\r\n\r\n"
-                                  + body;
+                                  + ( close_after ? "\r\nConnection: close" : "\r\nConnection: keep-alive" )
+                                  + "\r\n\r\n" + body;
                 sock->write( resp );
-                if ( closeAfter )
+                if ( close_after )
                 {
                     sock->disconnectFromHost();
                     return;

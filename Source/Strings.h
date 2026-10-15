@@ -22,7 +22,7 @@
 // one more parallel array, extend T()'s switch.
 //
 // The CURRENT language is process-wide global state (like RenderPipeline's
-// s_reactivity etc.) -- there is only ever one active language per running
+// M_Reactivity etc.) -- there is only ever one active language per running
 // process, so this needs no instance. Persisted as the "language" key in
 // kaleidoscope_settings.ini ("de"/"en"); callers (main.cpp, SetupWindow)
 // own reading/writing that key and call setLanguage() with the result --
@@ -30,7 +30,7 @@
 
 /** @brief A supported UI language; the value doubles as the index of that language's string table. German is the
  * default/fallback. */
-enum class Lang
+enum class LangE
 {
     DE = 0,
     EN = 1
@@ -43,7 +43,7 @@ enum class Lang
  * QString::arg() format strings (the comment beside each shows the
  * placeholders). The last enumerator is the table length, not a string.
  */
-enum StrId
+enum StrIdE
 {
     // ---- glwidget.cpp: help overlay ('h') ----
     S_HELP_TITLE,
@@ -287,13 +287,13 @@ enum StrId
 namespace Strings
 {
 /** @brief Sets the process-wide current language; callers own reading it from the "language" ini key. */
-void setLanguage( Lang lang );
+void setLanguage( LangE lang );
 /** @brief The current language (Lang::DE until setLanguage() is called). */
-Lang language();
+LangE language();
 /** @brief Parses "de"/"en" (case-insensitive; anything else -> DE) as stored in kaleidoscope_settings.ini. */
-Lang fromCode( const char *code );
+LangE fromCode( const char *code );
 /** @brief The ini-stored code for a language ("de"/"en"). */
-const char *toCode( Lang lang );
+const char *toCode( LangE lang );
 /** @brief Looks up @p id in the CURRENT language's table. @return A UTF-8 string literal; never null. */
-const char *T( StrId id );
+const char *uiText( StrIdE id );
 }

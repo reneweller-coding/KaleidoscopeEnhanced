@@ -38,9 +38,9 @@
  * @param id String table entry to look up.
  * @return The UTF-8 text of @p id in the current language.
  */
-static QString S( StrId id )
+static QString uiString( StrIdE id )
 {
-    return QString::fromUtf8( Strings::T( id ) );
+    return QString::fromUtf8( Strings::uiText( id ) );
 }
 
 // ---- extra-content packs ---------------------------------------------------
@@ -55,12 +55,12 @@ namespace
  * @brief One downloadable extra-content pack: where it lives on GitHub (release tag + asset file), where it unpacks to,
  * and how to tell it is installed.
  *
- * Instances live only in the kPacks table; see the note above it on why a
+ * Instances live only in the Packs table; see the note above it on why a
  * tag and filename are all that is needed.
  */
 struct PackDef
 {
-    StrId       label; ///< user-facing name of the pack (checkbox text and progress messages)
+    StrIdE      label; ///< user-facing name of the pack (checkbox text and progress messages)
     const char *tag;   ///< release tag the asset hangs off
     const char *file;  ///< asset filename
     const char *dir;   ///< target folder, relative to the install root
@@ -70,7 +70,7 @@ struct PackDef
 
 /// The four packs offered by the "extra content" group, in the order of SetupWindow::m_packBox: the photo library, then
 /// the three 3D-model packs (ships, stations, objects), which all unpack into the Models folder.
-const PackDef kPacks[4] = {
+const PackDef Packs[4] = {
     { S_SETUP_PACK_IMAGES, "images-v2", "KaleidoscopeImages.zip", "Images", ".jpg", 593LL * 1024 * 1024 },
     { S_SETUP_PACK_SHIPS, "models-v2", "KaleidoscopeModels-ships.zip", "Models", ".glb", 715LL * 1024 * 1024 },
     { S_SETUP_PACK_STATIONS, "models-v2", "KaleidoscopeModels-stations.zip", "Models", ".glb", 259LL * 1024 * 1024 },
@@ -191,11 +191,11 @@ QStringList SetupWindow::discoverConfigNames()
 {
     QStringList   names;
     const QString root = findRootDir();
-    QDir          cfgDir( QDir( root + "/Presets" ).exists() ? root + "/Presets"
-                                                             : root + "/Configurations" );
-    for ( const QString &fn : cfgDir.entryList( QStringList() << "*.xml", QDir::Files, QDir::Name ) )
+    QDir          cfg_dir( QDir( root + "/Presets" ).exists() ? root + "/Presets"
+                                                              : root + "/Configurations" );
+    for ( const QString &fn : cfg_dir.entryList( QStringList() << "*.xml", QDir::Files, QDir::Name ) )
     {
-        QFile f( cfgDir.absoluteFilePath( fn ) );
+        QFile f( cfg_dir.absoluteFilePath( fn ) );
         if ( !f.open( QIODevice::ReadOnly ) )
             continue;
         QXmlStreamReader xml( &f );
@@ -242,13 +242,13 @@ SetupWindow::SetupWindow()
     m_status->setStyleSheet( "color: #4a4;" );
     m_outerLayout->addWidget( m_status );
 
-    auto *btnRow = new QHBoxLayout();
+    auto *btn_row = new QHBoxLayout();
     m_saveBtn = new QPushButton();
     m_closeBtn = new QPushButton();
-    btnRow->addStretch( 1 );
-    btnRow->addWidget( m_saveBtn );
-    btnRow->addWidget( m_closeBtn );
-    m_outerLayout->addLayout( btnRow );
+    btn_row->addStretch( 1 );
+    btn_row->addWidget( m_saveBtn );
+    btn_row->addWidget( m_closeBtn );
+    m_outerLayout->addLayout( btn_row );
 
     QObject::connect( m_saveBtn, &QPushButton::clicked, this, [this]()
     { saveToIni(); } );
@@ -262,9 +262,9 @@ SetupWindow::SetupWindow()
 
 void SetupWindow::retranslateChrome()
 {
-    setWindowTitle( S( S_SETUP_WINDOW_TITLE ) );
-    m_saveBtn->setText( S( S_SETUP_SAVE ) );
-    m_closeBtn->setText( S( S_SETUP_CLOSE ) );
+    setWindowTitle( uiString( S_SETUP_WINDOW_TITLE ) );
+    m_saveBtn->setText( uiString( S_SETUP_SAVE ) );
+    m_closeBtn->setText( uiString( S_SETUP_CLOSE ) );
 }
 
 void SetupWindow::buildContent()
@@ -278,11 +278,11 @@ void SetupWindow::buildContent()
     auto *root = new QVBoxLayout( m_content );
 
     // ---- Sprache / Language ----
-    auto *gLang = new QGroupBox( S( S_SETUP_GROUP_LANGUAGE ) );
-    auto *fLang = new QFormLayout( gLang );
+    auto *g_lang = new QGroupBox( uiString( S_SETUP_GROUP_LANGUAGE ) );
+    auto *f_lang = new QFormLayout( g_lang );
     m_language = new QComboBox();
-    m_language->addItem( S( S_SETUP_LANG_DE ), Strings::toCode( Lang::DE ) );
-    m_language->addItem( S( S_SETUP_LANG_EN ), Strings::toCode( Lang::EN ) );
+    m_language->addItem( uiString( S_SETUP_LANG_DE ), Strings::toCode( LangE::DE ) );
+    m_language->addItem( uiString( S_SETUP_LANG_EN ), Strings::toCode( LangE::EN ) );
     // Connected AFTER population (so adding the first two items doesn't fire
     // this): flipping the language re-saves (so the new choice itself and
     // anything else already edited isn't lost), rebuilds this whole form in
@@ -305,81 +305,81 @@ void SetupWindow::buildContent()
             loadFromIni();
         } );
     } );
-    fLang->addRow( S( S_SETUP_LANGUAGE_LABEL ), m_language );
-    root->addWidget( gLang );
+    f_lang->addRow( uiString( S_SETUP_LANGUAGE_LABEL ), m_language );
+    root->addWidget( g_lang );
 
     // ---- Start ----
-    auto *gStart = new QGroupBox( S( S_SETUP_GROUP_START ) );
-    auto *fStart = new QFormLayout( gStart );
+    auto *g_start = new QGroupBox( uiString( S_SETUP_GROUP_START ) );
+    auto *f_start = new QFormLayout( g_start );
     m_startConfig = new QComboBox();
-    m_startConfig->addItem( S( S_SETUP_LASTUSED ), QString() );
+    m_startConfig->addItem( uiString( S_SETUP_LASTUSED ), QString() );
     for ( const QString &n : discoverConfigNames() )
         m_startConfig->addItem( n, n );
-    fStart->addRow( S( S_SETUP_STARTCONFIG ), m_startConfig );
+    f_start->addRow( uiString( S_SETUP_STARTCONFIG ), m_startConfig );
     m_remotePort = new QSpinBox();
     m_remotePort->setRange( 0, 65535 );
-    m_remotePort->setSpecialValueText( S( S_SETUP_REMOTEPORT_OFF ) );
-    fStart->addRow( S( S_SETUP_REMOTEPORT ), m_remotePort );
+    m_remotePort->setSpecialValueText( uiString( S_SETUP_REMOTEPORT_OFF ) );
+    f_start->addRow( uiString( S_SETUP_REMOTEPORT ), m_remotePort );
 
     // Photo source. Empty means "whatever the preset says", which is the
     // bundled Images folder -- deliberately NOT a path written into the presets,
     // because Tools/make_genre_configs.py regenerates those and would wipe it.
     m_imageDir = new QLineEdit();
-    m_imageDir->setPlaceholderText( S( S_SETUP_IMAGEDIR_DEFAULT ) );
-    m_imageDir->setToolTip( S( S_SETUP_IMAGEDIR_HINT ) );
-    auto *imgRow = new QWidget();
-    auto *imgLay = new QHBoxLayout( imgRow );
-    imgLay->setContentsMargins( 0, 0, 0, 0 );
-    imgLay->addWidget( m_imageDir, 1 );
-    auto *imgPick = new QPushButton( S( S_SETUP_IMAGEDIR_PICK ) );
-    imgLay->addWidget( imgPick );
-    connect( imgPick, &QPushButton::clicked, this, [this]()
+    m_imageDir->setPlaceholderText( uiString( S_SETUP_IMAGEDIR_DEFAULT ) );
+    m_imageDir->setToolTip( uiString( S_SETUP_IMAGEDIR_HINT ) );
+    auto *img_row = new QWidget();
+    auto *img_lay = new QHBoxLayout( img_row );
+    img_lay->setContentsMargins( 0, 0, 0, 0 );
+    img_lay->addWidget( m_imageDir, 1 );
+    auto *img_pick = new QPushButton( uiString( S_SETUP_IMAGEDIR_PICK ) );
+    img_lay->addWidget( img_pick );
+    connect( img_pick, &QPushButton::clicked, this, [this]()
     {
         const QString d = QFileDialog::getExistingDirectory(
-            this, S( S_SETUP_IMAGEDIR ), m_imageDir->text().trimmed() );
+            this, uiString( S_SETUP_IMAGEDIR ), m_imageDir->text().trimmed() );
         if ( !d.isEmpty() )
             m_imageDir->setText( QDir::toNativeSeparators( d ) );
     } );
-    fStart->addRow( S( S_SETUP_IMAGEDIR ), imgRow );
-    root->addWidget( gStart );
+    f_start->addRow( uiString( S_SETUP_IMAGEDIR ), img_row );
+    root->addWidget( g_start );
 
     // ---- Zusatzinhalte / extra content ----
     // Sits directly under the photo-folder row on purpose: the row above says
     // WHERE the pictures come from, this one puts pictures there.
-    auto *gPacks = new QGroupBox( S( S_SETUP_GROUP_PACKS ) );
-    auto *vPacks = new QVBoxLayout( gPacks );
-    auto *packHint = new QLabel( S( S_SETUP_PACKS_HINT ) );
-    packHint->setWordWrap( true );
-    vPacks->addWidget( packHint );
+    auto *g_packs = new QGroupBox( uiString( S_SETUP_GROUP_PACKS ) );
+    auto *v_packs = new QVBoxLayout( g_packs );
+    auto *pack_hint = new QLabel( uiString( S_SETUP_PACKS_HINT ) );
+    pack_hint->setWordWrap( true );
+    v_packs->addWidget( pack_hint );
     for ( int i = 0; i < 4; ++i )
     {
         auto *row = new QWidget();
         auto *rl = new QHBoxLayout( row );
         rl->setContentsMargins( 0, 0, 0, 0 );
-        m_packBox[i] = new QCheckBox( S( kPacks[i].label ) + "  —  "
-                                      + humanSize( kPacks[i].bytes ) );
+        m_packBox[i] = new QCheckBox( uiString( Packs[i].label ) + "  —  "
+                                      + humanSize( Packs[i].bytes ) );
         m_packState[i] = new QLabel();
         rl->addWidget( m_packBox[i] );
         rl->addWidget( m_packState[i], 1 );
-        vPacks->addWidget( row );
+        v_packs->addWidget( row );
         QObject::connect( m_packBox[i], &QCheckBox::toggled, this,
                           [this]( bool )
         { updatePackButton(); } );
     }
-    auto *packBtnRow = new QWidget();
-    auto *pbl = new QHBoxLayout( packBtnRow );
+    auto *pack_btn_row = new QWidget();
+    auto *pbl = new QHBoxLayout( pack_btn_row );
     pbl->setContentsMargins( 0, 0, 0, 0 );
-    m_packGet = new QPushButton( S( S_SETUP_PACK_GET ) );
+    m_packGet = new QPushButton( uiString( S_SETUP_PACK_GET ) );
     pbl->addWidget( m_packGet );
     pbl->addStretch( 1 );
-    vPacks->addWidget( packBtnRow );
+    v_packs->addWidget( pack_btn_row );
     m_packProgress = new QProgressBar();
     m_packProgress->setRange( 0, 100 );
     m_packProgress->setVisible( false );
-    vPacks->addWidget( m_packProgress );
+    v_packs->addWidget( m_packProgress );
     m_packStatus = new QLabel();
     m_packStatus->setWordWrap( true );
-    vPacks->addWidget( m_packStatus );
+    v_packs->addWidget( m_packStatus );
     QObject::connect( m_packGet, &QPushButton::clicked, this, [this]()
     {
         // One button, two jobs: while a download runs it is the only way out,
@@ -392,87 +392,87 @@ void SetupWindow::buildContent()
         startPackDownloads();
     } );
     refreshPackStates();
-    root->addWidget( gPacks );
+    root->addWidget( g_packs );
 
     // ---- Optionale Online-Extras ----
-    auto *gOnline = new QGroupBox( S( S_SETUP_GROUP_ONLINE ) );
-    auto *fOnline = new QFormLayout( gOnline );
+    auto *g_online = new QGroupBox( uiString( S_SETUP_GROUP_ONLINE ) );
+    auto *f_online = new QFormLayout( g_online );
     m_lyricsMode = new QComboBox();
-    m_lyricsMode->addItem( S( S_WR_LYRICS_OFF ) );
-    m_lyricsMode->addItem( S( S_WR_LYRICS_SCROLL ) );
-    m_lyricsMode->addItem( S( S_WR_LYRICS_KARAOKE ) );
-    fOnline->addRow( S( S_SETUP_LYRICSMODE_LABEL ), m_lyricsMode );
-    m_lyricsKinetic = new QCheckBox( S( S_SETUP_LYRICS_KINETIC ) );
-    fOnline->addRow( QString(), m_lyricsKinetic );
-    m_artistImages = new QCheckBox( S( S_SETUP_ARTISTIMAGES ) );
-    fOnline->addRow( QString(), m_artistImages );
-    m_videoEnabled = new QCheckBox( S( S_SETUP_VIDEO ) );
-    fOnline->addRow( QString(), m_videoEnabled );
-    auto *videoHint = new QLabel( S( S_SETUP_VIDEO_HINT ) );
-    videoHint->setWordWrap( true );
-    videoHint->setStyleSheet( "color: #888; font-size: 11px;" );
-    fOnline->addRow( QString(), videoHint );
+    m_lyricsMode->addItem( uiString( S_WR_LYRICS_OFF ) );
+    m_lyricsMode->addItem( uiString( S_WR_LYRICS_SCROLL ) );
+    m_lyricsMode->addItem( uiString( S_WR_LYRICS_KARAOKE ) );
+    f_online->addRow( uiString( S_SETUP_LYRICSMODE_LABEL ), m_lyricsMode );
+    m_lyricsKinetic = new QCheckBox( uiString( S_SETUP_LYRICS_KINETIC ) );
+    f_online->addRow( QString(), m_lyricsKinetic );
+    m_artistImages = new QCheckBox( uiString( S_SETUP_ARTISTIMAGES ) );
+    f_online->addRow( QString(), m_artistImages );
+    m_videoEnabled = new QCheckBox( uiString( S_SETUP_VIDEO ) );
+    f_online->addRow( QString(), m_videoEnabled );
+    auto *video_hint = new QLabel( uiString( S_SETUP_VIDEO_HINT ) );
+    video_hint->setWordWrap( true );
+    video_hint->setStyleSheet( "color: #888; font-size: 11px;" );
+    f_online->addRow( QString(), video_hint );
     // Update check: belongs with the other opt-in internet features rather
     // than with the picture/sound tuning below.
-    m_updateCheck = new QCheckBox( S( S_SETUP_UPDATECHECK ) );
-    fOnline->addRow( QString(), m_updateCheck );
-    auto *updHint = new QLabel( S( S_SETUP_UPDATECHECK_HINT ) );
-    updHint->setWordWrap( true );
-    updHint->setStyleSheet( "color: #888; font-size: 11px;" );
-    fOnline->addRow( QString(), updHint );
-    root->addWidget( gOnline );
+    m_updateCheck = new QCheckBox( uiString( S_SETUP_UPDATECHECK ) );
+    f_online->addRow( QString(), m_updateCheck );
+    auto *upd_hint = new QLabel( uiString( S_SETUP_UPDATECHECK_HINT ) );
+    upd_hint->setWordWrap( true );
+    upd_hint->setStyleSheet( "color: #888; font-size: 11px;" );
+    f_online->addRow( QString(), upd_hint );
+    root->addWidget( g_online );
 
     // ---- Verhalten ----
-    auto *gBehav = new QGroupBox( S( S_SETUP_GROUP_BEHAVIOR ) );
-    auto *fBehav = new QFormLayout( gBehav );
-    m_autoConfig = new QCheckBox( S( S_SETUP_AUTOCONFIG ) );
-    fBehav->addRow( QString(), m_autoConfig );
-    m_autoScale = new QCheckBox( S( S_SETUP_AUTOSCALE ) );
-    fBehav->addRow( QString(), m_autoScale );
-    m_nowPlaying = new QCheckBox( S( S_SETUP_NOWPLAYING ) );
-    fBehav->addRow( QString(), m_nowPlaying );
-    m_lightShow = new QCheckBox( S( S_SETUP_LIGHTSHOW ) );
-    fBehav->addRow( QString(), m_lightShow );
-    root->addWidget( gBehav );
+    auto *g_behav = new QGroupBox( uiString( S_SETUP_GROUP_BEHAVIOR ) );
+    auto *f_behav = new QFormLayout( g_behav );
+    m_autoConfig = new QCheckBox( uiString( S_SETUP_AUTOCONFIG ) );
+    f_behav->addRow( QString(), m_autoConfig );
+    m_autoScale = new QCheckBox( uiString( S_SETUP_AUTOSCALE ) );
+    f_behav->addRow( QString(), m_autoScale );
+    m_nowPlaying = new QCheckBox( uiString( S_SETUP_NOWPLAYING ) );
+    f_behav->addRow( QString(), m_nowPlaying );
+    m_lightShow = new QCheckBox( uiString( S_SETUP_LIGHTSHOW ) );
+    f_behav->addRow( QString(), m_lightShow );
+    root->addWidget( g_behav );
 
     // ---- Bild/Ton-Feintuning ----
-    auto *gTune = new QGroupBox( S( S_SETUP_GROUP_TUNE ) );
-    auto *fTune = new QFormLayout( gTune );
+    auto *g_tune = new QGroupBox( uiString( S_SETUP_GROUP_TUNE ) );
+    auto *f_tune = new QFormLayout( g_tune );
     m_reactivity = new QDoubleSpinBox();
     m_reactivity->setRange( 0.0, 3.0 );
     m_reactivity->setSingleStep( 0.05 );
     m_reactivity->setDecimals( 2 );
-    fTune->addRow( S( S_SETUP_REACTIVITY ), m_reactivity );
+    f_tune->addRow( uiString( S_SETUP_REACTIVITY ), m_reactivity );
     m_trails = new QDoubleSpinBox();
     m_trails->setRange( 0.0, 0.95 );
     m_trails->setSingleStep( 0.05 );
     m_trails->setDecimals( 2 );
-    fTune->addRow( S( S_SETUP_TRAILS ), m_trails );
+    f_tune->addRow( uiString( S_SETUP_TRAILS ), m_trails );
     m_mood = new QDoubleSpinBox();
     m_mood->setRange( 0.0, 2.5 );
     m_mood->setSingleStep( 0.05 );
     m_mood->setDecimals( 2 );
-    fTune->addRow( S( S_SETUP_MOOD ), m_mood );
+    f_tune->addRow( uiString( S_SETUP_MOOD ), m_mood );
     m_latencyMs = new QSpinBox();
     m_latencyMs->setRange( 0, 250 );
-    m_latencyMs->setSuffix( S( S_SETUP_MS_SUFFIX ) );
-    fTune->addRow( S( S_SETUP_LATENCY ), m_latencyMs );
+    m_latencyMs->setSuffix( uiString( S_SETUP_MS_SUFFIX ) );
+    f_tune->addRow( uiString( S_SETUP_LATENCY ), m_latencyMs );
     m_renderScale = new QDoubleSpinBox();
     m_renderScale->setRange( 0.25, 2.0 );
     m_renderScale->setSingleStep( 0.05 );
     m_renderScale->setDecimals( 2 );
-    fTune->addRow( S( S_SETUP_RENDERSCALE ), m_renderScale );
+    f_tune->addRow( uiString( S_SETUP_RENDERSCALE ), m_renderScale );
     m_stereoMode = new QComboBox();
-    m_stereoMode->addItem( S( S_SETUP_STEREO_OFF ) );
-    m_stereoMode->addItem( S( S_SETUP_STEREO_SBS ) );
-    m_stereoMode->addItem( S( S_SETUP_STEREO_TB ) );
-    m_stereoMode->addItem( S( S_SETUP_STEREO_ANA ) );
-    fTune->addRow( S( S_SETUP_STEREOMODE ), m_stereoMode );
+    m_stereoMode->addItem( uiString( S_SETUP_STEREO_OFF ) );
+    m_stereoMode->addItem( uiString( S_SETUP_STEREO_SBS ) );
+    m_stereoMode->addItem( uiString( S_SETUP_STEREO_TB ) );
+    m_stereoMode->addItem( uiString( S_SETUP_STEREO_ANA ) );
+    f_tune->addRow( uiString( S_SETUP_STEREOMODE ), m_stereoMode );
     m_stereoDepth = new QDoubleSpinBox();
     m_stereoDepth->setRange( 0.0, 2.0 );
     m_stereoDepth->setSingleStep( 0.05 );
     m_stereoDepth->setDecimals( 2 );
-    fTune->addRow( S( S_SETUP_STEREODEPTH ), m_stereoDepth );
+    f_tune->addRow( uiString( S_SETUP_STEREODEPTH ), m_stereoDepth );
 
     // Recording codec. Stored as a NAME, not an index, so the ini stays
     // readable and the Recorder can read it without knowing this order.
@@ -480,55 +480,55 @@ void SetupWindow::buildContent()
     m_videoCodec->addItem( "H.264", "h264" );
     m_videoCodec->addItem( "HEVC (H.265)", "hevc" );
     m_videoCodec->addItem( "AV1", "av1" );
-    fTune->addRow( S( S_SETUP_VIDEOCODEC ), m_videoCodec );
+    f_tune->addRow( uiString( S_SETUP_VIDEOCODEC ), m_videoCodec );
     // Each hint goes directly under the control it explains. They used to be
     // appended in a block at the end, which put the codec explanation four rows
     // below the codec combo with the frame-rate and anti-aliasing rows in
     // between -- unreadable, and it read as if the hint belonged to whatever
     // happened to sit above it.
-    auto *codecHint = new QLabel( S( S_SETUP_CODEC_HINT ) );
-    codecHint->setWordWrap( true );
-    fTune->addRow( QString(), codecHint );
+    auto *codec_hint = new QLabel( uiString( S_SETUP_CODEC_HINT ) );
+    codec_hint->setWordWrap( true );
+    f_tune->addRow( QString(), codec_hint );
 
     m_ssaa = new QComboBox();
     m_ssaa->addItem( "1x", 1.0 );
     m_ssaa->addItem( "1.5x", 1.5 );
     m_ssaa->addItem( "2x", 2.0 );
-    fTune->addRow( S( S_SETUP_SSAA ), m_ssaa );
-    auto *ssaaHint = new QLabel( S( S_SETUP_SSAA_HINT ) );
-    ssaaHint->setWordWrap( true );
-    fTune->addRow( QString(), ssaaHint );
+    f_tune->addRow( uiString( S_SETUP_SSAA ), m_ssaa );
+    auto *ssaa_hint = new QLabel( uiString( S_SETUP_SSAA_HINT ) );
+    ssaa_hint->setWordWrap( true );
+    f_tune->addRow( QString(), ssaa_hint );
 
     m_recFps = new QComboBox();
     m_recFps->addItem( "30 fps", 30 );
     m_recFps->addItem( "60 fps", 60 );
-    fTune->addRow( S( S_SETUP_RECFPS ), m_recFps );
+    f_tune->addRow( uiString( S_SETUP_RECFPS ), m_recFps );
 
-    m_motionBlur = new QCheckBox( S( S_SETUP_MOTIONBLUR ) );
-    fTune->addRow( QString(), m_motionBlur );
-    auto *mbHint = new QLabel( S( S_SETUP_MOTIONBLUR_HINT ) );
-    mbHint->setWordWrap( true );
-    fTune->addRow( QString(), mbHint );
+    m_motionBlur = new QCheckBox( uiString( S_SETUP_MOTIONBLUR ) );
+    f_tune->addRow( QString(), m_motionBlur );
+    auto *mb_hint = new QLabel( uiString( S_SETUP_MOTIONBLUR_HINT ) );
+    mb_hint->setWordWrap( true );
+    f_tune->addRow( QString(), mb_hint );
 
     // Debug switch last: it is not a picture/sound setting like the rest of
     // this group, and nobody should trip over it while adjusting recordings.
-    m_showHidden = new QCheckBox( S( S_SETUP_SHOWHIDDEN ) );
-    fTune->addRow( QString(), m_showHidden );
-    auto *shHint = new QLabel( S( S_SETUP_SHOWHIDDEN_HINT ) );
-    shHint->setWordWrap( true );
-    fTune->addRow( QString(), shHint );
+    m_showHidden = new QCheckBox( uiString( S_SETUP_SHOWHIDDEN ) );
+    f_tune->addRow( QString(), m_showHidden );
+    auto *sh_hint = new QLabel( uiString( S_SETUP_SHOWHIDDEN_HINT ) );
+    sh_hint->setWordWrap( true );
+    f_tune->addRow( QString(), sh_hint );
 
     m_oscPort = new QSpinBox();
     m_oscPort->setRange( 0, 65535 );
     m_oscPort->setSpecialValueText( "0" );
-    fTune->addRow( S( S_SETUP_OSCPORT ), m_oscPort );
+    f_tune->addRow( uiString( S_SETUP_OSCPORT ), m_oscPort );
     m_oscHost = new QLineEdit();
     m_oscHost->setPlaceholderText( "127.0.0.1" );
-    fTune->addRow( S( S_SETUP_OSCHOST ), m_oscHost );
-    auto *oscHint = new QLabel( S( S_SETUP_OSC_HINT ) );
-    oscHint->setWordWrap( true );
-    fTune->addRow( QString(), oscHint );
-    root->addWidget( gTune );
+    f_tune->addRow( uiString( S_SETUP_OSCHOST ), m_oscHost );
+    auto *osc_hint = new QLabel( uiString( S_SETUP_OSC_HINT ) );
+    osc_hint->setWordWrap( true );
+    f_tune->addRow( QString(), osc_hint );
+    root->addWidget( g_tune );
 
     root->addStretch( 1 );
     m_scrollArea->setWidget( m_content );
@@ -543,11 +543,11 @@ void SetupWindow::loadFromIni()
     // buildContent(), or by the language-change handler itself) -- just
     // sync the combo's selection to it WITHOUT re-firing that handler.
     m_language->blockSignals( true );
-    m_language->setCurrentIndex( Strings::language() == Lang::EN ? 1 : 0 );
+    m_language->setCurrentIndex( Strings::language() == LangE::EN ? 1 : 0 );
     m_language->blockSignals( false );
 
-    const QString startCfg = s.value( "activeConfig", QString() ).toString();
-    int           idx = startCfg.isEmpty() ? 0 : m_startConfig->findData( startCfg );
+    const QString start_cfg = s.value( "activeConfig", QString() ).toString();
+    int           idx = start_cfg.isEmpty() ? 0 : m_startConfig->findData( start_cfg );
     m_startConfig->setCurrentIndex( idx >= 0 ? idx : 0 );
     m_remotePort->setValue( s.value( "remotePort", 8080 ).toInt() );
     m_imageDir->setText( s.value( "imageDirectory", QString() ).toString() );
@@ -592,7 +592,7 @@ void SetupWindow::loadFromIni()
     }
 
     if ( !QFile::exists( path ) )
-        m_status->setText( S( S_SETUP_NO_SETTINGS_YET ) );
+        m_status->setText( uiString( S_SETUP_NO_SETTINGS_YET ) );
 }
 
 void SetupWindow::saveToIni()
@@ -639,12 +639,12 @@ void SetupWindow::saveToIni()
     if ( s.status() == QSettings::NoError )
     {
         m_status->setStyleSheet( "color: #4a4;" );
-        m_status->setText( S( S_SETUP_SAVED_OK ) );
+        m_status->setText( uiString( S_SETUP_SAVED_OK ) );
     }
     else
     {
         m_status->setStyleSheet( "color: #d55;" );
-        m_status->setText( S( S_SETUP_SAVE_FAILED ) + settingsPath() );
+        m_status->setText( uiString( S_SETUP_SAVE_FAILED ) + settingsPath() );
     }
     QTimer::singleShot( 4000, this, [this]()
     { if( m_status ) m_status->setText( " " ); } );
@@ -660,7 +660,7 @@ void SetupWindow::refreshPackStates()
     {
         if ( !m_packBox[i] )
             continue;
-        const int n = installedCount( root, kPacks[i] );
+        const int n = installedCount( root, Packs[i] );
         // Tick what is MISSING. Running the tool a second time should not
         // propose re-downloading two gigabytes the machine already has, which
         // is the whole reason the default is derived from disk rather than
@@ -670,7 +670,7 @@ void SetupWindow::refreshPackStates()
         m_packState[i]->setText(
             n > 0 ? QString( "(%1 %2, %3)" )
                         .arg( n )
-                        .arg( QString( kPacks[i].ext ).mid( 1 ).toUpper(), S( S_SETUP_PACK_INSTALLED ) )
+                        .arg( QString( Packs[i].ext ).mid( 1 ).toUpper(), uiString( S_SETUP_PACK_INSTALLED ) )
                   : QString() );
         m_packState[i]->setStyleSheet( n > 0 ? "color: #4a4;" : QString() );
     }
@@ -684,13 +684,13 @@ void SetupWindow::updatePackButton()
     qint64 total = 0;
     for ( int i = 0; i < 4; ++i )
         if ( m_packBox[i] && m_packBox[i]->isChecked() )
-            total += kPacks[i].bytes;
+            total += Packs[i].bytes;
     // The size belongs ON the button. Two gigabytes is a real commitment on a
     // metered line, and a button that only says "Download and install" hides
     // exactly the fact the user needs before pressing it.
     m_packGet->setText( total > 0
-                            ? S( S_SETUP_PACK_GET ) + "  (" + humanSize( total ) + ")"
-                            : S( S_SETUP_PACK_GET ) );
+                            ? uiString( S_SETUP_PACK_GET ) + "  (" + humanSize( total ) + ")"
+                            : uiString( S_SETUP_PACK_GET ) );
     m_packGet->setEnabled( total > 0 );
 }
 
@@ -704,7 +704,7 @@ void SetupWindow::startPackDownloads()
         if ( m_packBox[i] && m_packBox[i]->isChecked() )
         {
             todo << i;
-            need += kPacks[i].bytes;
+            need += Packs[i].bytes;
         }
     if ( todo.isEmpty() )
         return;
@@ -715,16 +715,16 @@ void SetupWindow::startPackDownloads()
     // halfway through a 700 MB download wastes the whole download.
     const QStorageInfo si( root );
     if ( si.isValid() && si.bytesAvailable() > 0
-         && si.bytesAvailable() < need + kPacks[todo.first()].bytes )
+         && si.bytesAvailable() < need + Packs[todo.first()].bytes )
     {
         m_packStatus->setStyleSheet( "color: #d55;" );
-        m_packStatus->setText( S( S_SETUP_PACK_NOSPACE ) );
+        m_packStatus->setText( uiString( S_SETUP_PACK_NOSPACE ) );
         return;
     }
 
     m_packBusy = true;
     m_packCancel = false;
-    m_packGet->setText( S( S_SETUP_PACK_CANCEL ) );
+    m_packGet->setText( uiString( S_SETUP_PACK_CANCEL ) );
     m_packProgress->setVisible( true );
     m_packProgress->setValue( 0 );
     m_packStatus->setStyleSheet( QString() );
@@ -744,7 +744,7 @@ void SetupWindow::startPackDownloads()
     {
         if ( m_packCancel )
             break;
-        const PackDef &p = kPacks[idx];
+        const PackDef &p = Packs[idx];
         const QString  dest = root + "/" + p.dir;
         const QString  tmp = QDir( QStandardPaths::writableLocation( QStandardPaths::TempLocation ) )
                                  .filePath( QString( "kaleido_%1" ).arg( p.file ) );
@@ -775,7 +775,7 @@ void SetupWindow::startPackDownloads()
             const int pct = total > 0 ? int( got * 100 / total ) : 0;
             m_packProgress->setValue( pct );
             m_packStatus->setText( QString( "%1 %2 (%3/%4) — %5 / %6" )
-                                       .arg( S( S_SETUP_PACK_DOWNLOADING ), S( p.label ) )
+                                       .arg( uiString( S_SETUP_PACK_DOWNLOADING ), uiString( p.label ) )
                                        .arg( done + 1 )
                                        .arg( todo.size() )
                                        .arg( humanSize( got ), humanSize( total > 0 ? total : p.bytes ) ) );
@@ -798,8 +798,8 @@ void SetupWindow::startPackDownloads()
         out.write( reply->readAll() );
         out.close();
 
-        const bool    netOk = ( reply->error() == QNetworkReply::NoError );
-        const QString netErr = reply->errorString();
+        const bool    net_ok = ( reply->error() == QNetworkReply::NoError );
+        const QString net_err = reply->errorString();
         reply->deleteLater();
 
         if ( m_packCancel )
@@ -807,24 +807,24 @@ void SetupWindow::startPackDownloads()
             QFile::remove( tmp );
             break;
         }
-        if ( !netOk )
+        if ( !net_ok )
         {
-            failure = netErr;
+            failure = net_err;
             QFile::remove( tmp );
             break;
         }
 
-        m_packStatus->setText( S( S_SETUP_PACK_EXTRACTING ) + " " + S( p.label ) + " ..." );
+        m_packStatus->setText( uiString( S_SETUP_PACK_EXTRACTING ) + " " + uiString( p.label ) + " ..." );
         m_packProgress->setRange( 0, 0 ); // busy: tar reports no progress
         QCoreApplication::processEvents();
 
-        QString    exErr;
-        const bool ok = extractZip( tmp, dest, &exErr );
+        QString    ex_err;
+        const bool ok = extractZip( tmp, dest, &ex_err );
         QFile::remove( tmp );
         m_packProgress->setRange( 0, 100 );
         if ( !ok )
         {
-            failure = exErr;
+            failure = ex_err;
             break;
         }
         ++done;
@@ -839,17 +839,17 @@ void SetupWindow::startPackDownloads()
     if ( !failure.isEmpty() )
     {
         m_packStatus->setStyleSheet( "color: #d55;" );
-        m_packStatus->setText( S( S_SETUP_PACK_FAILED ) + " " + failure );
+        m_packStatus->setText( uiString( S_SETUP_PACK_FAILED ) + " " + failure );
     }
     else if ( m_packCancel )
     {
         m_packStatus->setStyleSheet( QString() );
-        m_packStatus->setText( S( S_SETUP_PACK_CANCELLED ) );
+        m_packStatus->setText( uiString( S_SETUP_PACK_CANCELLED ) );
     }
     else
     {
         m_packStatus->setStyleSheet( "color: #4a4;" );
-        m_packStatus->setText( S( S_SETUP_PACK_DONE ) );
+        m_packStatus->setText( uiString( S_SETUP_PACK_DONE ) );
     }
     // Re-derive from disk rather than assuming: a partial run must show what
     // actually landed, not what was asked for.

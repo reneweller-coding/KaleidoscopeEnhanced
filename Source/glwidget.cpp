@@ -50,21 +50,21 @@
 #endif
 
 // Start configuration requested on the command line (-c <name>); empty = default.
-QString GLwidget::s_startConfig;
-int     GLwidget::s_remotePort = 8080; // on by default (LAN-only, auto-discovered); -t 0 disables
-bool    GLwidget::s_remotePortFromCli = false;
-bool    GLwidget::s_batchRender = false;
+QString GLwidget::M_StartConfig;
+int     GLwidget::M_RemotePort = 8080; // on by default (LAN-only, auto-discovered); -t 0 disables
+bool    GLwidget::M_RemotePortFromCli = false;
+bool    GLwidget::M_BatchRender = false;
 
 namespace
 {
 
 /// What a key press meant to a scrolling overlay menu.
-enum class MenuKey
+enum class MenuKeyE
 {
-    None,
-    Moved,
-    Accept,
-    Cancel
+    NONE,
+    MOVED,
+    ACCEPT,
+    CANCEL
 };
 
 /**
@@ -74,28 +74,28 @@ enum class MenuKey
  * drift apart: both had a nine-entry ceiling because selection was bound to
  * the digit keys, and both are now driven by a cursor instead.
  *
- * Returns MenuKey::None for anything it does not consume, so the caller falls
+ * Returns MenuKeyE::None for anything it does not consume, so the caller falls
  * through to the normal handler and the digit shortcuts keep working.
  */
-MenuKey menuNavKey( int key, int &cursor, int count )
+MenuKeyE menuNavKey( int key, int &cursor, int count )
 {
     if ( count <= 0 )
-        return MenuKey::None;
+        return MenuKeyE::NONE;
     switch ( key )
     {
-        case Qt::Key_Up: cursor = ( cursor - 1 + count ) % count; return MenuKey::Moved;
-        case Qt::Key_Down: cursor = ( cursor + 1 ) % count; return MenuKey::Moved;
-        case Qt::Key_PageUp: cursor = std::max( 0, cursor - 5 ); return MenuKey::Moved;
-        case Qt::Key_PageDown: cursor = std::min( count - 1, cursor + 5 ); return MenuKey::Moved;
-        case Qt::Key_Home: cursor = 0; return MenuKey::Moved;
-        case Qt::Key_End: cursor = count - 1; return MenuKey::Moved;
+        case Qt::Key_Up: cursor = ( cursor - 1 + count ) % count; return MenuKeyE::MOVED;
+        case Qt::Key_Down: cursor = ( cursor + 1 ) % count; return MenuKeyE::MOVED;
+        case Qt::Key_PageUp: cursor = std::max( 0, cursor - 5 ); return MenuKeyE::MOVED;
+        case Qt::Key_PageDown: cursor = std::min( count - 1, cursor + 5 ); return MenuKeyE::MOVED;
+        case Qt::Key_Home: cursor = 0; return MenuKeyE::MOVED;
+        case Qt::Key_End: cursor = count - 1; return MenuKeyE::MOVED;
         case Qt::Key_Return:
-        case Qt::Key_Enter: return MenuKey::Accept;
+        case Qt::Key_Enter: return MenuKeyE::ACCEPT;
         // Escape quits the app everywhere else; inside a menu it has to mean
         // "never mind, close this" instead.
         case Qt::Key_Escape:
-        case Qt::Key_Back: return MenuKey::Cancel; // remote "Back"
-        default: return MenuKey::None;
+        case Qt::Key_Back: return MenuKeyE::CANCEL; // remote "Back"
+        default: return MenuKeyE::NONE;
     }
 }
 
@@ -270,9 +270,9 @@ QString GLwidget::cueTrackKey() const
     // KALEIDO_FAKE_TRACK=artist|title macht das Cue-Gedaechtnis offline
     // pruefbar: es gibt dann keinen SMTC-Titel, aber einen festen Schluessel
     // und die Laufzeit als Position.
-    static const QString fake = qEnvironmentVariable( "KALEIDO_FAKE_TRACK" );
-    if ( !fake.isEmpty() )
-        return fake;
+    static const QString Fake = qEnvironmentVariable( "KALEIDO_FAKE_TRACK" );
+    if ( !Fake.isEmpty() )
+        return Fake;
     if ( !m_nowPlaying )
         return QString();
     const QString title = m_nowPlaying->title().trimmed();
@@ -283,8 +283,8 @@ QString GLwidget::cueTrackKey() const
 
 double GLwidget::cuePosSec() const
 {
-    static const bool fake = !qEnvironmentVariable( "KALEIDO_FAKE_TRACK" ).isEmpty();
-    if ( fake )
+    static const bool Fake = !qEnvironmentVariable( "KALEIDO_FAKE_TRACK" ).isEmpty();
+    if ( Fake )
         return m_fpsTimer.elapsed() / 1000.0;
     return m_nowPlaying ? m_nowPlaying->positionNowSec() : -1.0;
 }
@@ -359,8 +359,8 @@ QByteArray GLwidget::remoteSnapshot()
     m_snapWantedUntil = m_fpsTimer.elapsed() + 10000;
     return m_snapJpg;
 }
-bool                     GLwidget::s_autoRecord = false;
-std::atomic<MidiInput *> GLwidget::s_midiOpened{ nullptr };
+bool                     GLwidget::M_AutoRecord = false;
+std::atomic<MidiInput *> GLwidget::M_MidiOpened{ nullptr };
 
 void GLwidget::traverseConfigurations( const QString &dirname, std::vector<Configuration *> &configurationList )
 {
@@ -421,8 +421,8 @@ GLwidget::GLwidget( QWidget *parent )
 
     // Embedded web remote (CLI -t <port>): phone page with the same harmless
     // controls as the keyboard.  Parented to this widget; main-thread events.
-    if ( s_remotePort > 0 )
-        new WebRemote( this, s_remotePort );
+    if ( M_RemotePort > 0 )
+        new WebRemote( this, M_RemotePort );
 
     // Score cues from a generator (CueReceiver.h): OFF unless cuePort says otherwise.  Same
     // arrangement as the web remote -- a child QObject with a socket on the main thread, so a
@@ -483,12 +483,12 @@ GLwidget::GLwidget( QWidget *parent )
     // menu and the web remote can reach Komplett and the Test* benches without
     // a command line. Off by default: they are a reference and an inspection
     // bench, not something to land on while enjoying the show.
-    bool showHidden = false;
+    bool show_hidden = false;
     {
-        const QString iniPath =
+        const QString ini_path =
             Platform::assetPath( "..\\kaleidoscope_settings.ini" );
-        QSettings s( iniPath, QSettings::IniFormat );
-        showHidden = s.value( "showHiddenPresets", false ).toBool();
+        QSettings s( ini_path, QSettings::IniFormat );
+        show_hidden = s.value( "showHiddenPresets", false ).toBool();
         // Named ABSOLUTELY, and once. The path is relative to the WORKING
         // DIRECTORY: run from Release/ that is the repository root, run from the
         // packaged bin/ it is the package root. An older copy left beside the exe
@@ -496,8 +496,8 @@ GLwidget::GLwidget( QWidget *parent )
         // not to work. Same reasoning as the "Photo source: ..." line below --
         // with more than one candidate, say which one won.
         fprintf( stderr, "Settings: %s%s\n",
-                 QFileInfo( iniPath ).absoluteFilePath().toLocal8Bit().constData(),
-                 QFileInfo( iniPath ).exists() ? "" : " (missing - using defaults)" );
+                 QFileInfo( ini_path ).absoluteFilePath().toLocal8Bit().constData(),
+                 QFileInfo( ini_path ).exists() ? "" : " (missing - using defaults)" );
     }
     // A preset built entirely from geom="mesh" scenes has nothing left once
     // the optional model pack is absent, and RenderPipeline would fall back
@@ -529,7 +529,7 @@ GLwidget::GLwidget( QWidget *parent )
         }
     }
 
-    for ( size_t i = showHidden ? 0 : m_configurationList.size(); i-- > 0; )
+    for ( size_t i = show_hidden ? 0 : m_configurationList.size(); i-- > 0; )
         if ( m_configurationList[i]->isHidden() )
         {
             fprintf( stderr, "Configuration '%s' is hidden (selectable only via -c).\n",
@@ -566,14 +566,14 @@ GLwidget::GLwidget( QWidget *parent )
     // -c searches the hidden list too: that is the dev/CI door into the
     // Komplett master and the Test* benches.
     m_actConfiguration = m_configurationList[0];
-    if ( !s_startConfig.isEmpty() )
+    if ( !M_StartConfig.isEmpty() )
     {
         bool found = false;
         for ( const auto *lst : { &m_configurationList, &m_hiddenConfigurations } )
         {
             for ( Configuration *c : *lst )
                 if ( c->getConfigurationName()
-                         .compare( s_startConfig, Qt::CaseInsensitive )
+                         .compare( M_StartConfig, Qt::CaseInsensitive )
                      == 0 )
                 {
                     m_actConfiguration = c;
@@ -585,7 +585,7 @@ GLwidget::GLwidget( QWidget *parent )
         }
         if ( !found )
             fprintf( stderr, "Configuration '%s' not found - using default.\n",
-                     s_startConfig.toLocal8Bit().constData() );
+                     M_StartConfig.toLocal8Bit().constData() );
     }
 
     resetRotation();
@@ -698,7 +698,7 @@ void GLwidget::initializeGL()
     // Complete every fixed sampler unit ONCE, before anything draws.
     //
     // The engine parcels its texture units out statically: photos on 0-2, the
-    // sims on 7-11, the compute effects on 12-27 (kCfxInfo), spectrum on 28,
+    // sims on 7-11, the compute effects on 12-27 (CfxInfoTable), spectrum on 28,
     // shadow maps on 31/32. Every shader's sampler uniforms point at those
     // units from its first frame -- but the textures only appear once their
     // producer has run, and a draw is validated against every declared sampler,
@@ -741,7 +741,7 @@ void GLwidget::initializeGL()
     //
     // Only the ACTIVE preset's, and only if the command line said nothing:
     // -w/-x are the explicit instruction and outrank a file named in XML.
-    if ( AudioAnalyzer::s_offlineWav.isEmpty()
+    if ( AudioAnalyzer::M_OfflineWav.isEmpty()
          && m_actConfiguration && !m_actConfiguration->audioFile().isEmpty() )
     {
         const QString wav =
@@ -761,10 +761,10 @@ void GLwidget::initializeGL()
         }
         else
         {
-            AudioAnalyzer::s_offlineWav = wav;
+            AudioAnalyzer::M_OfflineWav = wav;
             fprintf( stderr, "AUDIO: preset '%s' supplies its own track: %s\n",
                      m_actConfiguration->getConfigurationName().toLocal8Bit().constData(),
-                     AudioAnalyzer::s_offlineWav.toLocal8Bit().constData() );
+                     AudioAnalyzer::M_OfflineWav.toLocal8Bit().constData() );
         }
     }
 
@@ -796,8 +796,8 @@ void GLwidget::initializeGL()
                 QByteArray md = qgetenv( "KALEIDO_LYRICS_MODE" );
                 m_lyricsMode = md.isEmpty() ? 2 : qBound( 0, md.toInt(), 2 );
                 m_trackStartMs = 0;
-                QByteArray durEnv = qgetenv( "KALEIDO_VIDEO_TEST_DURATION" );
-                double     dur = durEnv.isEmpty() ? -1.0 : durEnv.toDouble();
+                QByteArray dur_env = qgetenv( "KALEIDO_VIDEO_TEST_DURATION" );
+                double     dur = dur_env.isEmpty() ? -1.0 : dur_env.toDouble();
                 m_trackMedia->requestTrack( parts[0], parts[1], dur );
                 fprintf( stderr, "[Lyrics] TESTMODUS: %s - %s (Modus %d)\n",
                          parts[0].toLocal8Bit().constData(),
@@ -818,7 +818,7 @@ void GLwidget::initializeGL()
             if ( mi->start() )
             {
                 fprintf( stderr, "MIDI input: %s\n", mi->deviceName().toLocal8Bit().constData() );
-                s_midiOpened.store( mi );
+                M_MidiOpened.store( mi );
             }
             else
                 delete mi;
@@ -854,11 +854,11 @@ void GLwidget::initializeGL()
     // climbing 1.0 -> 2.0 in 0.05 steps would be 20 visible resolution changes
     // over half a minute. Start AT the requested quality and let the adaptive
     // scaler walk it back only if the machine cannot hold the target rate.
-    if ( !RenderPipeline::s_renderScaleFromCli
+    if ( !RenderPipeline::M_RenderScaleFromCli
          && RenderPipeline::renderScaleMax() > RenderPipeline::renderScale() )
         RenderPipeline::setRenderScale( RenderPipeline::renderScaleMax() );
 
-    m_autoScaleMax = RenderPipeline::s_renderScaleFromCli
+    m_autoScaleMax = RenderPipeline::M_RenderScaleFromCli
                          ? RenderPipeline::renderScale()
                          : RenderPipeline::renderScaleMax();
 
@@ -876,22 +876,22 @@ void GLwidget::initializeGL()
     // m_globaltime, and AudioConditioner::update takes the same dt for the
     // audioPhase/audioAdvance accumulators), so motion speed is wall-clock based
     // and identical at any frame rate.
-    int refreshMs = 16;
+    int refresh_ms = 16;
     if ( QScreen *sc = screen() )
     {
         const qreal hz = sc->refreshRate();
-        if ( hz > 20.0 )                    // ignore bogus/unknown values
-            refreshMs = int( 1000.0 / hz ); // 60 Hz -> 16, 144 Hz -> 6, 240 Hz -> 4
+        if ( hz > 20.0 )                     // ignore bogus/unknown values
+            refresh_ms = int( 1000.0 / hz ); // 60 Hz -> 16, 144 Hz -> 6, 240 Hz -> 4
     }
-    if ( refreshMs < 1 )
-        refreshMs = 1;
-    m_displayHz = ( refreshMs > 0 ) ? 1000.0f / float( refreshMs ) : 60.0f;
+    if ( refresh_ms < 1 )
+        refresh_ms = 1;
+    m_displayHz = ( refresh_ms > 0 ) ? 1000.0f / float( refresh_ms ) : 60.0f;
     fprintf( stderr, "Render timer: %d ms (%.1f Hz display)\n",
-             refreshMs, screen() ? screen()->refreshRate() : 0.0 );
-    startTimer( refreshMs );
+             refresh_ms, screen() ? screen()->refreshRate() : 0.0 );
+    startTimer( refresh_ms );
 
     // CLI -r: begin recording straight away (for testing / debugging).
-    if ( s_autoRecord )
+    if ( M_AutoRecord )
         m_recorder.toggle();
 
     // glEnable(GL_MULTISAMPLE); //rwrwforeground
@@ -946,37 +946,37 @@ void GLwidget::paintGL()
     // ist bis heute Handarbeit -- eine Schaetzung, die nie jemand
     // nachgemessen hat.  Hier faellt die Wahrheit nebenbei ab: Frame-Zeit,
     // der gerade aktiven Szene zugeschlagen, am Ende als JSON ausgegeben.
-    static const bool costLog = qEnvironmentVariableIsSet( "KALEIDO_COST_LOG" );
+    static const bool CostLog = qEnvironmentVariableIsSet( "KALEIDO_COST_LOG" );
     // KALEIDO_FRAME_LOG=<ms>: report every frame that took longer than <ms>
     // (default 25).  A stutter is ONE long frame; the per-second fps average
     // hides it (a single 200 ms frame among 100 still reads as ~95 fps), so
     // this logs the outliers with their wall-clock offset from the start and
     // what the lazy warm-up did in that same frame -- which is what turns
     // "it stutters after start" into a named cause.
-    static const bool   frameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
-    static const double frameLimit = frameLog
+    static const bool   FrameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
+    static const double FrameLimit = FrameLog
                                          ? std::max( 1.0, qEnvironmentVariable( "KALEIDO_FRAME_LOG" ).toDouble() )
                                          : 0.0;
-    const qint64        frameT0 = ( costLog || frameLog ) ? m_fpsTimer.nsecsElapsed() : 0;
-    const qint64        costT0 = frameT0;
+    const qint64        frame_t0 = ( CostLog || FrameLog ) ? m_fpsTimer.nsecsElapsed() : 0;
+    const qint64        cost_t0 = frame_t0;
 
     // KALEIDO_GPU_TIMING=1: the GPU time of each frame.  With vsync the fps
     // stop at the panel's rate (120 here) and hide how much headroom a scene
     // has -- or how far a slower GPU is from it.  A ring of four queries is
     // read three frames late, so the readback never waits for the GPU.
-    static const bool gpuTiming = qEnvironmentVariableIsSet( "KALEIDO_GPU_TIMING" );
-    static GLuint     gpuQ[4] = { 0, 0, 0, 0 };
-    static int        gpuFrame = 0;
-    static double     gpuSum = 0.0, gpuMax = 0.0;
-    static int        gpuN = 0;
-    static qint64     gpuLast = 0;
-    const bool        gpuOn = gpuTiming && glGenQueries && glBeginQuery && glEndQuery && glGetQueryObjectuiv;
-    if ( gpuOn )
+    static const bool GpuTiming = qEnvironmentVariableIsSet( "KALEIDO_GPU_TIMING" );
+    static GLuint     gpu_q[4] = { 0, 0, 0, 0 };
+    static int        gpu_frame = 0;
+    static double     gpu_sum = 0.0, gpu_max = 0.0;
+    static int        gpu_n = 0;
+    static qint64     gpu_last = 0;
+    const bool        gpu_on = GpuTiming && glGenQueries && glBeginQuery && glEndQuery && glGetQueryObjectuiv;
+    if ( gpu_on )
     {
-        if ( !gpuQ[0] )
-            glGenQueries( 4, gpuQ );
-        const GLuint old = gpuQ[( gpuFrame + 1 ) & 3]; // issued three frames ago
-        if ( gpuFrame >= 3 )
+        if ( !gpu_q[0] )
+            glGenQueries( 4, gpu_q );
+        const GLuint old = gpu_q[( gpu_frame + 1 ) & 3]; // issued three frames ago
+        if ( gpu_frame >= 3 )
         {
             GLuint ready = 0;
             glGetQueryObjectuiv( old, 0x8867 /* GL_QUERY_RESULT_AVAILABLE */, &ready );
@@ -985,43 +985,43 @@ void GLwidget::paintGL()
                 GLuint ns = 0;
                 glGetQueryObjectuiv( old, GL_QUERY_RESULT, &ns );
                 const double ms = ns * 1e-6;
-                gpuSum += ms;
-                gpuN++;
-                if ( ms > gpuMax )
-                    gpuMax = ms;
+                gpu_sum += ms;
+                gpu_n++;
+                if ( ms > gpu_max )
+                    gpu_max = ms;
             }
         }
-        glBeginQuery( 0x88BF /* GL_TIME_ELAPSED */, gpuQ[gpuFrame & 3] );
+        glBeginQuery( 0x88BF /* GL_TIME_ELAPSED */, gpu_q[gpu_frame & 3] );
     }
 
     draw();
 
-    if ( gpuOn )
+    if ( gpu_on )
     {
         glEndQuery( 0x88BF );
-        ++gpuFrame;
+        ++gpu_frame;
         const qint64 t = m_fpsTimer.elapsed();
-        if ( t - gpuLast >= 1000 && gpuN > 0 )
+        if ( t - gpu_last >= 1000 && gpu_n > 0 )
         {
             fprintf( stderr, "[gpu] %.2f ms avg  %.2f ms max  %dx%d  renderScale %.2f\n",
-                     gpuSum / gpuN, gpuMax, m_width, m_height, RenderPipeline::renderScale() );
-            gpuSum = gpuMax = 0.0;
-            gpuN = 0;
-            gpuLast = t;
+                     gpu_sum / gpu_n, gpu_max, m_width, m_height, RenderPipeline::renderScale() );
+            gpu_sum = gpu_max = 0.0;
+            gpu_n = 0;
+            gpu_last = t;
         }
     }
 
-    if ( frameLog )
+    if ( FrameLog )
     {
-        const double ms = ( m_fpsTimer.nsecsElapsed() - frameT0 ) * 1e-6;
+        const double ms = ( m_fpsTimer.nsecsElapsed() - frame_t0 ) * 1e-6;
         // The time between two frames, too: a stall in the buffer swap or outside
         // paintGL (another process holding the GPU) does not show in the frame's own time.
-        static qint64 prevT0 = 0;
-        const double  gap = prevT0 > 0 ? ( frameT0 - prevT0 ) * 1e-6 : 0.0;
-        prevT0 = frameT0;
-        if ( gap > 2.0 * frameLimit )
+        static qint64 prev_t0 = 0;
+        const double  gap = prev_t0 > 0 ? ( frame_t0 - prev_t0 ) * 1e-6 : 0.0;
+        prev_t0 = frame_t0;
+        if ( gap > 2.0 * FrameLimit )
             fprintf( stderr, "[gap] t=%7.2fs  %8.1f ms since the last frame\n", m_fpsTimer.elapsed() / 1000.0, gap );
-        if ( ms > frameLimit )
+        if ( ms > FrameLimit )
             fprintf( stderr, "[frame] t=%7.2fs  %8.1f ms  warm=%s\n",
                      m_fpsTimer.elapsed() / 1000.0, ms,
                      RenderPipeline::lastWarmLabel().isEmpty()
@@ -1029,7 +1029,7 @@ void GLwidget::paintGL()
                          : RenderPipeline::lastWarmLabel().toLocal8Bit().constData() );
     }
 
-    if ( costLog && m_actConfiguration && m_actConfiguration->m_renderPipeline )
+    if ( CostLog && m_actConfiguration && m_actConfiguration->m_renderPipeline )
     {
         RenderPipeline   *rp = m_actConfiguration->m_renderPipeline;
         const QStringList nm = rp->sceneNames();
@@ -1043,7 +1043,7 @@ void GLwidget::paintGL()
                 c.cover += cov;
                 c.coverN++;
             }
-            c.ms += ( m_fpsTimer.nsecsElapsed() - costT0 ) * 1e-6;
+            c.ms += ( m_fpsTimer.nsecsElapsed() - cost_t0 ) * 1e-6;
             c.frames++;
         }
     }
@@ -1071,8 +1071,8 @@ void GLwidget::paintGL()
         // trades one for the other and persists the result to the settings file.
         // Without this pairing a "slow" report is unattributable: a scale pinned
         // at its 0.35 floor and a genuinely expensive frame look identical.
-        static const bool fpsLog = qEnvironmentVariableIsSet( "KALEIDO_FPS_LOG" );
-        if ( fpsLog )
+        static const bool FpsLog = qEnvironmentVariableIsSet( "KALEIDO_FPS_LOG" );
+        if ( FpsLog )
             fprintf( stderr, "[fps] %d fps  renderScale %.2f\n",
                      m_fpsValue, RenderPipeline::renderScale() );
     }
@@ -1117,13 +1117,13 @@ void GLwidget::draw()
             m_sweepReview = true;
             rp->setReviewMode( true );
         }
-        const qint64 nowMs = m_fpsTimer.elapsed();
-        if ( m_fxSweepNextMs < 0 || nowMs >= m_fxSweepNextMs )
+        const qint64 now_ms = m_fpsTimer.elapsed();
+        if ( m_fxSweepNextMs < 0 || now_ms >= m_fxSweepNextMs )
         {
             if ( m_fxSweepIdx < names.size() )
             {
                 fprintf( stderr, "[fxsweep] %3d/%d  t=%.1fs  %s\n", m_fxSweepIdx,
-                         int( names.size() ), nowMs * 0.001,
+                         int( names.size() ), now_ms * 0.001,
                          names[m_fxSweepIdx].toLocal8Bit().constData() );
                 rp->forceFx( m_fxSweepIdx );
                 m_fxSweepIdx++;
@@ -1133,7 +1133,7 @@ void GLwidget::draw()
                 fprintf( stderr, "[fxsweep] finished after %d fx\n", m_fxSweepIdx );
                 m_fxSweepIdx++;
             }
-            m_fxSweepNextMs = nowMs + qint64( fxSweepSeconds() ) * 1000;
+            m_fxSweepNextMs = now_ms + qint64( fxSweepSeconds() ) * 1000;
         }
     }
 
@@ -1162,19 +1162,19 @@ void GLwidget::draw()
             m_sweepReview = true;
             rp->setReviewMode( true );
         }
-        const qint64 nowMs = m_fpsTimer.elapsed();
+        const qint64 now_ms = m_fpsTimer.elapsed();
         const int    secs = sweepSeconds();
 
-        if ( m_sweepNextMs < 0 || nowMs >= m_sweepNextMs )
+        if ( m_sweepNextMs < 0 || now_ms >= m_sweepNextMs )
         {
             if ( m_sweepIdx < names.size() )
             {
                 fprintf( stderr, "[sweep] %3d/%d  t=%.1fs  %s\n", m_sweepIdx,
-                         int( names.size() ), nowMs * 0.001,
+                         int( names.size() ), now_ms * 0.001,
                          names[m_sweepIdx].toLocal8Bit().constData() );
                 rp->forceScene( m_sweepIdx );
                 m_sweepWant = m_sweepIdx;
-                m_sweepJumpMs = nowMs;
+                m_sweepJumpMs = now_ms;
                 m_sweepRetried = false;
                 m_sweepIdx++;
             }
@@ -1183,7 +1183,7 @@ void GLwidget::draw()
                 fprintf( stderr, "[sweep] finished after %d scenes\n", m_sweepIdx );
                 m_sweepIdx++; // report once, then idle
             }
-            m_sweepNextMs = nowMs + qint64( secs ) * 1000;
+            m_sweepNextMs = now_ms + qint64( secs ) * 1000;
         }
 
         // The scheduler keeps its own counsel -- a musical trigger can cut away
@@ -1197,7 +1197,7 @@ void GLwidget::draw()
         if ( act != m_sweepShown )
         {
             m_sweepShown = act;
-            fprintf( stderr, "[shown] t=%.1fs  %3d  %s\n", nowMs * 0.001, act,
+            fprintf( stderr, "[shown] t=%.1fs  %3d  %s\n", now_ms * 0.001, act,
                      ( act >= 0 && act < names.size() )
                          ? names[act].toLocal8Bit().constData()
                          : "?" );
@@ -1206,7 +1206,7 @@ void GLwidget::draw()
         // actTexture() still reports the OUTGOING scene, so retrying earlier
         // would cancel the fade it is waiting on and never converge.
         if ( !m_sweepRetried && m_sweepWant >= 0 && act != m_sweepWant
-             && nowMs - m_sweepJumpMs > 3000 )
+             && now_ms - m_sweepJumpMs > 3000 )
         {
             m_sweepRetried = true;
             fprintf( stderr, "[sweep] retry %d (scheduler cut to %d)\n", m_sweepWant, act );
@@ -1234,7 +1234,7 @@ void GLwidget::draw()
     // Batch render (-x): once the offline WAV has been fully analysed, stop
     // the recording (which kicks off the detached ffmpeg mux) and quit —
     // unattended WAV-to-video rendering.
-    if ( s_batchRender && !m_batchStopping && m_audioAnalyzer
+    if ( M_BatchRender && !m_batchStopping && m_audioAnalyzer
          && m_audioAnalyzer->isFinished() )
     {
         m_batchStopping = true;
@@ -1266,7 +1266,7 @@ void GLwidget::draw()
     m_actConfiguration->m_renderPipeline->setDefaultFBO( defaultFramebufferObject() );
 
     m_actConfiguration->m_renderPipeline->tickCues( cueTrackKey(), cuePosSec() );
-    m_actConfiguration->m_renderPipeline->paint( m_RotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
+    m_actConfiguration->m_renderPipeline->paint( m_rotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
 
     // Capture the clean frame (before any overlay is drawn) while recording
     // or while the instant-replay ring is armed.
@@ -1275,7 +1275,7 @@ void GLwidget::draw()
     // Web-remote live preview: while the phone page polls /api/snapshot,
     // refresh a small JPEG of the output ~1x per second (sync read, but rare
     // and only while someone is actually looking at the page).
-    if ( s_remotePort > 0 && m_fpsTimer.elapsed() < m_snapWantedUntil
+    if ( M_RemotePort > 0 && m_fpsTimer.elapsed() < m_snapWantedUntil
          && m_fpsTimer.elapsed() - m_snapLast > 900 && m_width > 1 && m_height > 1 )
     {
         m_snapLast = m_fpsTimer.elapsed();
@@ -1300,8 +1300,8 @@ void GLwidget::draw()
         RenderPipeline *rp = m_actConfiguration ? m_actConfiguration->m_renderPipeline : nullptr;
         if ( rp && !rp->sceneTransitioning() && !RenderPipeline::blackout() )
         {
-            const int sceneIdx = rp->activeSceneIndex();
-            if ( sceneIdx >= 0 )
+            const int scene_idx = rp->activeSceneIndex();
+            if ( scene_idx >= 0 )
             {
                 QImage     thumb = img.mirrored( false, true )
                                        .scaledToHeight( 120, Qt::SmoothTransformation );
@@ -1309,9 +1309,9 @@ void GLwidget::draw()
                 QBuffer    tbuf( &tjpg );
                 tbuf.open( QIODevice::WriteOnly );
                 thumb.save( &tbuf, "JPG", 65 );
-                if ( sceneIdx >= int( m_sceneThumbs.size() ) )
-                    m_sceneThumbs.resize( sceneIdx + 1 );
-                m_sceneThumbs[sceneIdx] = tjpg;
+                if ( scene_idx >= int( m_sceneThumbs.size() ) )
+                    m_sceneThumbs.resize( scene_idx + 1 );
+                m_sceneThumbs[scene_idx] = tjpg;
 
                 // Persist to disk too, so a scene browsed in a PAST session
                 // already has a thumbnail on the very first /api/thumb
@@ -1320,10 +1320,10 @@ void GLwidget::draw()
                 // land on it again. Keyed by config+scene NAME (stable
                 // across restarts), not index (isn't).
                 const QStringList names = rp->sceneNames();
-                if ( sceneIdx < names.size() )
+                if ( scene_idx < names.size() )
                 {
                     const QString path = thumbCachePath(
-                        m_actConfiguration->getConfigurationName(), names[sceneIdx] );
+                        m_actConfiguration->getConfigurationName(), names[scene_idx] );
                     QDir().mkpath( QFileInfo( path ).absolutePath() );
                     QFile f( path );
                     if ( f.open( QIODevice::WriteOnly ) )
@@ -1334,7 +1334,7 @@ void GLwidget::draw()
     }
 
     // Config cross-fade: draw the captured previous frame on top, fading out.
-    float fadeAlpha = 0.f;
+    float fade_alpha = 0.f;
     if ( m_fadeStart >= 0 )
     {
         const qint64 dur = 700; // fade length (ms)
@@ -1345,23 +1345,23 @@ void GLwidget::draw()
             m_fadePixmap = QPixmap();
         }
         else
-            fadeAlpha = 1.f - float( el ) / float( dur );
+            fade_alpha = 1.f - float( el ) / float( dur );
     }
 
     // Now-playing TITLE REVEAL: on a track change the title is handed to the
     // engine, which weaves it through the picture in the present pass (the
     // text unfolds out of a kaleidoscopic swirl — replaces the old QPainter
     // lower third).  Toggle stays on key 'p'.
-    float npAlpha = 0.f; // the QPainter lower third is retired (reveal instead)
+    float np_alpha = 0.f; // the QPainter lower third is retired (reveal instead)
     if ( m_nowPlaying && m_showNowPlaying )
     {
-        QString npTitle = m_nowPlaying->title();
-        if ( !npTitle.isEmpty() && npTitle != m_lastNpTitle )
+        QString np_title = m_nowPlaying->title();
+        if ( !np_title.isEmpty() && np_title != m_lastNpTitle )
         {
-            m_lastNpTitle = npTitle;
+            m_lastNpTitle = np_title;
             m_npShownAt = m_fpsTimer.elapsed();
             if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
-                m_actConfiguration->m_renderPipeline->showTitle( npTitle,
+                m_actConfiguration->m_renderPipeline->showTitle( np_title,
                                                                  m_nowPlaying->artist() );
             // Trackwechsel: Lyrics + Künstlerbilder für den neuen Titel holen
             // (nur wenn ein Modus aktiv ist - sonst keine Netz-Anfragen).
@@ -1378,10 +1378,10 @@ void GLwidget::draw()
                 // that's the slot it takes over. Passing <=0 when it's off
                 // makes requestTrack() skip the video gate entirely (see
                 // TrackMedia.h), no separate flag needed there.
-                const double durSec = ( m_artistShow && m_videoEnabled )
-                                          ? m_nowPlaying->timeline().durationSec
-                                          : -1.0;
-                m_trackMedia->requestTrack( m_nowPlaying->artist(), npTitle, durSec );
+                const double dur_sec = ( m_artistShow && m_videoEnabled )
+                                           ? m_nowPlaying->timeline().durationSec
+                                           : -1.0;
+                m_trackMedia->requestTrack( m_nowPlaying->artist(), np_title, dur_sec );
             }
         }
     }
@@ -1393,10 +1393,10 @@ void GLwidget::draw()
     // Demo/test hook: KALEIDO_TITLE_TEST=1 fires one reveal a few seconds in
     // (lets the reveal be tuned without a real media session running).
     {
-        static bool titleTest = qEnvironmentVariableIsSet( "KALEIDO_TITLE_TEST" );
-        if ( titleTest && m_fpsTimer.elapsed() > 3000 )
+        static bool title_test = qEnvironmentVariableIsSet( "KALEIDO_TITLE_TEST" );
+        if ( title_test && m_fpsTimer.elapsed() > 3000 )
         {
-            titleTest = false;
+            title_test = false;
             if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
                 m_actConfiguration->m_renderPipeline->showTitle( "Neon Cathedral",
                                                                  "The Prisms" );
@@ -1408,13 +1408,13 @@ void GLwidget::draw()
     // normal render path is pure GL (no QPainter/GL state interaction).
     if ( m_showSelectConfigurationMenu || m_showFeatureOverlay || m_showHelp
          || m_showAudioMenu || m_showShaderInfo || m_recorder.recording()
-         || fadeAlpha > 0.f || npAlpha > 0.f || m_osd.isOpen() )
+         || fade_alpha > 0.f || np_alpha > 0.f || m_osd.isOpen() )
     {
         QPainter painter( this );
         // painter.setRenderHint(QPainter::Antialiasing);
-        if ( fadeAlpha > 0.f )
+        if ( fade_alpha > 0.f )
         {
-            painter.setOpacity( fadeAlpha );
+            painter.setOpacity( fade_alpha );
             painter.drawPixmap( rect(), m_fadePixmap );
             painter.setOpacity( 1.0 );
         }
@@ -1450,7 +1450,7 @@ void GLwidget::draw()
             painter.setPen( QColor( 255, 255, 255 ) );
             painter.setFont( QFont( "Consolas", 12, QFont::Bold ) );
             painter.drawText( width() - 126, 39,
-                              QString::fromUtf8( Strings::T( S_REC_FMT ) ).arg( m_recorder.frameCount() ) );
+                              QString::fromUtf8( Strings::uiText( S_REC_FMT ) ).arg( m_recorder.frameCount() ) );
         }
         m_osd.draw( &painter, width(), height() ); // last: on top of everything
         painter.end();
@@ -1486,7 +1486,7 @@ void GLwidget::draw()
 void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
 {
     const QVector<int> hits = configMenuMatches();
-    const int          nrConfigurations = hits.size();
+    const int          nr_configurations = hits.size();
 
     // Sized from height(), NOT m_height: m_height is in DEVICE pixels
     // (height() * devicePixelRatio) while QPainter works in logical ones, so
@@ -1499,95 +1499,95 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
     painter->setFont( font );
     QFontMetrics fm( painter->font() );
 
-    const int lineH = fm.lineSpacing();
-    const int padY = lineH / 2;
+    const int line_h = fm.lineSpacing();
+    const int pad_y = line_h / 2;
     // Leave room for the title and the key hint, and never fill the screen.
-    const int maxRows = std::max( 3, int( ( height() * 0.72 - 4 * lineH ) / lineH ) );
-    const int visible = std::max( 0, std::min( nrConfigurations, maxRows ) );
-    if ( nrConfigurations > 0 )
-        menuScroll( m_configMenuCursor, m_configMenuTop, nrConfigurations, visible );
+    const int max_rows = std::max( 3, int( ( height() * 0.72 - 4 * line_h ) / line_h ) );
+    const int visible = std::max( 0, std::min( nr_configurations, max_rows ) );
+    if ( nr_configurations > 0 )
+        menuScroll( m_configMenuCursor, m_configMenuTop, nr_configurations, visible );
     else
         m_configMenuCursor = m_configMenuTop = 0;
 
-    const QString title = QString::fromUtf8( Strings::T( S_MENU_CONFIG_TITLE ) )
+    const QString title = QString::fromUtf8( Strings::uiText( S_MENU_CONFIG_TITLE ) )
                           + ( m_configMenuFilter.isEmpty()
                                   ? QString()
                                   : QString( "   \"%1\"" ).arg( m_configMenuFilter ) );
-    const QString hint = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT ) );
+    const QString hint = QString::fromUtf8( Strings::uiText( S_MENU_NAV_HINT ) );
 
-    int maxTextW = std::max( fm.horizontalAdvance( title ), fm.horizontalAdvance( hint ) );
+    int max_text_w = std::max( fm.horizontalAdvance( title ), fm.horizontalAdvance( hint ) );
     for ( int i = 0; i < int( m_configurationList.size() ); ++i )
-        maxTextW = std::max( maxTextW, fm.horizontalAdvance(
-                                           m_configurationList[i]->getConfigurationName() ) );
+        max_text_w = std::max( max_text_w, fm.horizontalAdvance(
+                                               m_configurationList[i]->getConfigurationName() ) );
 
-    const int boxW = std::min( width() - 40, maxTextW + 96 );
-    const int boxH = ( std::max( visible, 1 ) + 3 ) * lineH + 2 * padY;
-    const int boxX = ( width() - boxW ) / 2;
-    const int boxY = ( height() - boxH ) / 2;
+    const int box_w = std::min( width() - 40, max_text_w + 96 );
+    const int box_h = ( std::max( visible, 1 ) + 3 ) * line_h + 2 * pad_y;
+    const int box_x = ( width() - box_w ) / 2;
+    const int box_y = ( height() - box_h ) / 2;
 
     painter->setPen( QColor( 210, 210, 210, 170 ) );
     painter->setBrush( QColor( 18, 18, 22, 210 ) );
-    painter->drawRect( QRect( boxX, boxY, boxW, boxH ) );
+    painter->drawRect( QRect( box_x, box_y, box_w, box_h ) );
 
-    int y = boxY + padY + lineH;
+    int y = box_y + pad_y + line_h;
     painter->setPen( QColor( 150, 200, 245, 235 ) );
-    painter->drawText( boxX + ( boxW - fm.horizontalAdvance( title ) ) / 2, y, title );
-    const int firstRowY = y + lineH / 2;
+    painter->drawText( box_x + ( box_w - fm.horizontalAdvance( title ) ) / 2, y, title );
+    const int first_row_y = y + line_h / 2;
 
     // Remember where the rows landed so a click can be mapped back to one
     // without repeating any of this arithmetic.
-    m_configMenuHit.box = QRect( boxX, boxY, boxW, boxH );
-    m_configMenuHit.rowY0 = firstRowY + lineH - fm.ascent() - 2;
-    m_configMenuHit.rowH = lineH;
+    m_configMenuHit.box = QRect( box_x, box_y, box_w, box_h );
+    m_configMenuHit.rowY0 = first_row_y + line_h - fm.ascent() - 2;
+    m_configMenuHit.rowH = line_h;
     m_configMenuHit.rows = visible;
     m_configMenuHit.top = m_configMenuTop;
 
-    y = firstRowY;
+    y = first_row_y;
     for ( int row = 0; row < visible; ++row )
     {
         const int i = m_configMenuTop + row;
-        y += lineH;
+        y += line_h;
 
-        const bool isCursor = ( i == m_configMenuCursor );
-        const bool isActive = ( m_configurationList[hits[i]] == m_actConfiguration );
+        const bool is_cursor = ( i == m_configMenuCursor );
+        const bool is_active = ( m_configurationList[hits[i]] == m_actConfiguration );
 
-        if ( isCursor )
+        if ( is_cursor )
         {
             painter->setPen( Qt::NoPen );
             painter->setBrush( QColor( 70, 120, 190, 190 ) );
-            painter->drawRect( QRect( boxX + 6, y - fm.ascent() - 2, boxW - 12, lineH ) );
+            painter->drawRect( QRect( box_x + 6, y - fm.ascent() - 2, box_w - 12, line_h ) );
         }
 
         // The running preset gets a dot, the cursor gets the bar. No row
         // numbers: they only ever existed to announce the digit shortcuts,
         // which are gone.
-        const QString mark = isActive ? QString::fromUtf8( "\xE2\x97\x8F " ) : QString( "   " );
+        const QString mark = is_active ? QString::fromUtf8( "\xE2\x97\x8F " ) : QString( "   " );
         const QString text = mark + m_configurationList[hits[i]]->getConfigurationName();
 
-        if ( isCursor )
+        if ( is_cursor )
             painter->setPen( QColor( 255, 255, 255, 255 ) );
-        else if ( isActive )
+        else if ( is_active )
             painter->setPen( QColor( 150, 200, 245, 235 ) );
         else
             painter->setPen( QColor( 205, 205, 210, 210 ) );
-        painter->drawText( boxX + 34, y, text );
+        painter->drawText( box_x + 34, y, text );
     }
 
     if ( visible == 0 )
     {
-        y = firstRowY + lineH;
+        y = first_row_y + line_h;
         painter->setPen( QColor( 200, 150, 150, 220 ) );
-        painter->drawText( boxX + 34, y, QString::fromUtf8( Strings::T( S_MENU_NO_MATCH ) ) );
+        painter->drawText( box_x + 34, y, QString::fromUtf8( Strings::uiText( S_MENU_NO_MATCH ) ) );
     }
 
     // Only claim there is more when there actually is.
     painter->setPen( QColor( 150, 150, 155, 200 ) );
     painter->setBrush( Qt::NoBrush );
     if ( m_configMenuTop > 0 )
-        painter->drawText( boxX + boxW - 30, firstRowY,
+        painter->drawText( box_x + box_w - 30, first_row_y,
                            QString::fromUtf8( "\xE2\x96\xB2" ) );
-    if ( m_configMenuTop + visible < nrConfigurations )
-        painter->drawText( boxX + boxW - 30, y + lineH / 2,
+    if ( m_configMenuTop + visible < nr_configurations )
+        painter->drawText( box_x + box_w - 30, y + line_h / 2,
                            QString::fromUtf8( "\xE2\x96\xBC" ) );
 
     QFont hf = font;
@@ -1595,8 +1595,8 @@ void GLwidget::showSelectConfigurationsMenu( QPainter *painter )
     painter->setFont( hf );
     QFontMetrics hfm( hf );
     painter->setPen( QColor( 165, 165, 172, 215 ) );
-    painter->drawText( boxX + ( boxW - hfm.horizontalAdvance( hint ) ) / 2,
-                       boxY + boxH - padY - hfm.descent(), hint );
+    painter->drawText( box_x + ( box_w - hfm.horizontalAdvance( hint ) ) / 2,
+                       box_y + box_h - pad_y - hfm.descent(), hint );
 }
 
 /// Settings file shared with RenderPipeline (next to the Presets folder).
@@ -1622,8 +1622,8 @@ void GLwidget::applyQualityProfile()
              qPrintable( renderer ) );
     if ( !low )
         return;
-    if ( EffectShader::s_chainScale > 0.5f )
-        EffectShader::s_chainScale = 0.5f; // RenderPipeline saves the ini's own value, not this
+    if ( EffectShader::M_ChainScale > 0.5f )
+        EffectShader::M_ChainScale = 0.5f; // RenderPipeline saves the ini's own value, not this
     if ( !m_autoScale )
     {
         m_autoScale = true;
@@ -1646,11 +1646,11 @@ void GLwidget::loadUiSettings()
         m_midiMap[i] = s.value( QString( "midiMap%1" ).arg( i ), m_midiMap[i] ).toInt();
     RenderPipeline::setLightShow( s.value( "lightShow", RenderPipeline::lightShow() ).toBool() );
     // A persisted active config is the default start config, unless -c overrode it.
-    if ( s_startConfig.isEmpty() )
-        s_startConfig = s.value( "activeConfig", QString() ).toString();
+    if ( M_StartConfig.isEmpty() )
+        M_StartConfig = s.value( "activeConfig", QString() ).toString();
     // Same "CLI wins" precedence for the web-remote port.
-    if ( !s_remotePortFromCli )
-        s_remotePort = s.value( "remotePort", s_remotePort ).toInt();
+    if ( !M_RemotePortFromCli )
+        M_RemotePort = s.value( "remotePort", M_RemotePort ).toInt();
     // OSC analysis output (TouchDesigner/Resolume/...): off unless configured.
     m_osc.configure( s.value( "oscHost", "127.0.0.1" ).toString(),
                      s.value( "oscPort", 0 ).toInt() );
@@ -1679,7 +1679,7 @@ void GLwidget::saveUiSettings()
     for ( int i = 0; i < MIDI_TARGETS; ++i )
         s.setValue( QString( "midiMap%1" ).arg( i ), m_midiMap[i] );
     s.setValue( "lightShow", RenderPipeline::lightShow() );
-    s.setValue( "remotePort", s_remotePort );
+    s.setValue( "remotePort", M_RemotePort );
     s.setValue( "cuePort", m_cuePort );
     s.setValue( "cueBind", m_cueBind );
     s.setValue( "language", Strings::toCode( Strings::language() ) );
@@ -1774,7 +1774,7 @@ void GLwidget::updateAdaptiveScale()
     if ( m_fpsValue <= 0 || now - m_lastScaleAdjust < 1500 ) // settle ~1.5 s between steps
         return;
 
-    const float minScale = 0.35f;
+    const float min_scale = 0.35f;
     float       scale = RenderPipeline::renderScale();
     float       next = scale;
 
@@ -1789,7 +1789,7 @@ void GLwidget::updateAdaptiveScale()
     const float target = ( m_displayHz > 20.f )
                              ? ( m_displayHz < 72.f ? m_displayHz : 72.f )
                              : 60.f;
-    if ( m_fpsValue < 0.75f * target && scale > minScale )
+    if ( m_fpsValue < 0.75f * target && scale > min_scale )
         next = scale - 0.10f; // struggling -> coarser, recover FPS
     else if ( m_fpsValue > 0.95f * target && scale < m_autoScaleMax )
         next = scale + ( scale >= 1.0f ? 0.10f : 0.05f ); // headroom -> finer
@@ -1798,8 +1798,8 @@ void GLwidget::updateAdaptiveScale()
                                                           // it the steps are diminishing returns and fewer resolution
                                                           // changes read better.
 
-    if ( next < minScale )
-        next = minScale;
+    if ( next < min_scale )
+        next = min_scale;
     if ( next > m_autoScaleMax )
         next = m_autoScaleMax;
 
@@ -1874,10 +1874,10 @@ void GLwidget::resetRotation()
     {
         for(int j = 0; j < i; j++)
         {
-            m_RotationMatrix[i*4+j] = m_RotationMatrix[j*4+i]= 0.0;
+            m_rotationMatrix[i*4+j] = m_rotationMatrix[j*4+i]= 0.0;
         }
     }
-    m_RotationMatrix[0] = m_RotationMatrix[5] = m_RotationMatrix[10] = m_RotationMatrix[15] = 1.0;*/
+    m_rotationMatrix[0] = m_rotationMatrix[5] = m_rotationMatrix[10] = m_rotationMatrix[15] = 1.0;*/
 }
 
 /**
@@ -1987,8 +1987,8 @@ void GLwidget::mouseMoveEvent( QMouseEvent *e /*the event*/ )
         glLoadIdentity();
         glRotatef(0.5*dx,0.0, 1.0, 0.0);
         glRotatef(0.5*dy,1.0, 0.0, 0.0);
-        glMultMatrixf(m_RotationMatrix);
-        glGetFloatv(GL_MODELVIEW_MATRIX,m_RotationMatrix);
+        glMultMatrixf(m_rotationMatrix);
+        glGetFloatv(GL_MODELVIEW_MATRIX,m_rotationMatrix);
         glPopMatrix();
     }
     m_lastPos = e->pos();
@@ -2031,15 +2031,15 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
     // nach denen das Offline-Screening den ganzen Katalog sortiert -- hier
     // live, damit man eine Shader-Aenderung ansieht statt sie zu rendern,
     // zu extrahieren und dann anzusehen.
-    float picStd = 0.f, picMot = 0.f;
+    float pic_std = 0.f, pic_mot = 0.f;
     if ( m_actConfiguration && m_actConfiguration->m_renderPipeline )
     {
-        picStd = m_actConfiguration->m_renderPipeline->liveStructure();
-        picMot = m_actConfiguration->m_renderPipeline->liveMotion();
+        pic_std = m_actConfiguration->m_renderPipeline->liveStructure();
+        pic_mot = m_actConfiguration->m_renderPipeline->liveMotion();
     }
-    const Row picRows[] = {
-        { "BILD Struktur", picStd },
-        { "BILD Bewegung", picMot * 8.f }, // x8: sonst klebt der Balken am Rand
+    const Row pic_rows[] = {
+        { "BILD Struktur", pic_std },
+        { "BILD Bewegung", pic_mot * 8.f }, // x8: sonst klebt der Balken am Rand
     };
     const int n = int( sizeof( rows ) / sizeof( rows[0] ) );
     const int x = 24, y0 = 66, lh = 22, bw = 130, bh = 12;
@@ -2048,19 +2048,19 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
     painter->fillRect( x - 14, 14, 360, ( n + 3 ) * lh + 68, QColor( 0, 0, 0, 160 ) );
     painter->setFont( QFont( "Consolas", 12, QFont::Bold ) );
     painter->setPen( QColor( 120, 200, 255 ) );
-    painter->drawText( x, 34, QString::fromUtf8( Strings::T( S_FEATURE_TITLE_FMT ) ).arg( m_fpsValue ) );
+    painter->drawText( x, 34, QString::fromUtf8( Strings::uiText( S_FEATURE_TITLE_FMT ) ).arg( m_fpsValue ) );
 
     // Live-tunable look knobs (hotkeys).
     painter->setFont( QFont( "Consolas", 10 ) );
     painter->setPen( QColor( 170, 205, 170 ) );
     painter->drawText( x, 54,
-                       QString::fromUtf8( Strings::T( S_FEATURE_STATUS_FMT ) )
+                       QString::fromUtf8( Strings::uiText( S_FEATURE_STATUS_FMT ) )
                            .arg( RenderPipeline::reactivity(), 0, 'f', 1 )
                            .arg( RenderPipeline::trails(), 0, 'f', 2 )
                            .arg( RenderPipeline::mood(), 0, 'f', 1 )
-                           .arg( m_autoConfig ? Strings::T( S_ON ) : Strings::T( S_OFF ) )
+                           .arg( m_autoConfig ? Strings::uiText( S_ON ) : Strings::uiText( S_OFF ) )
                            .arg( RenderPipeline::renderScale(), 0, 'f', 2 )
-                           .arg( m_autoScale ? Strings::T( S_ON ) : Strings::T( S_OFF ) ) );
+                           .arg( m_autoScale ? Strings::uiText( S_ON ) : Strings::uiText( S_OFF ) ) );
 
     painter->setFont( QFont( "Consolas", 11 ) );
     for ( int i = 0; i < n; ++i )
@@ -2076,9 +2076,9 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
         int bx = x + 150;
         painter->fillRect( bx, ry - 11, bw, bh, QColor( 40, 45, 60 ) );
         // musicPresence bar turns amber when it drops (speech / non-music mode).
-        QColor barCol = ( i == 0 && f.musicPresence < 0.5f ) ? QColor( 255, 170, 60 )
-                                                             : QColor( 90, 170, 255 );
-        painter->fillRect( bx, ry - 11, int( bw * v ), bh, barCol );
+        QColor bar_col = ( i == 0 && f.musicPresence < 0.5f ) ? QColor( 255, 170, 60 )
+                                                              : QColor( 90, 170, 255 );
+        painter->fillRect( bx, ry - 11, int( bw * v ), bh, bar_col );
         painter->setPen( QColor( 255, 255, 255 ) );
         QString txt = ( i == 3 ) ? QString::number( bpm, 'f', 0 )
                                  : QString::number( rows[i].val, 'f', 2 );
@@ -2088,25 +2088,25 @@ void GLwidget::drawFeatureOverlay( QPainter *painter, const AudioFeatures &f )
     // Und darunter, abgesetzt: was das BILD tut.  Gruen, sobald die Szene
     // ueber dem 10-%-Quantil des Katalogs liegt (0.045) -- rot darunter,
     // weil das die Schwelle ist, ab der eine Szene im Screening auffaellt.
-    const int pn = int( sizeof( picRows ) / sizeof( picRows[0] ) );
+    const int pn = int( sizeof( pic_rows ) / sizeof( pic_rows[0] ) );
     for ( int i = 0; i < pn; ++i )
     {
         int   ry = y0 + ( n + 1 + i ) * lh;
-        float v = picRows[i].val;
+        float v = pic_rows[i].val;
         if ( v < 0.f )
             v = 0.f;
         if ( v > 1.f )
             v = 1.f;
         painter->setPen( QColor( 205, 214, 230 ) );
-        painter->drawText( x, ry, QString( picRows[i].name ) );
+        painter->drawText( x, ry, QString( pic_rows[i].name ) );
         int bx = x + 150;
         painter->fillRect( bx, ry - 11, bw, bh, QColor( 40, 45, 60 ) );
-        const bool thin = ( i == 0 ) ? ( picStd < 0.045f ) : ( picMot < 0.0025f );
+        const bool thin = ( i == 0 ) ? ( pic_std < 0.045f ) : ( pic_mot < 0.0025f );
         painter->fillRect( bx, ry - 11, int( bw * v ), bh,
                            thin ? QColor( 230, 90, 80 ) : QColor( 110, 210, 130 ) );
         painter->setPen( QColor( 255, 255, 255 ) );
         painter->drawText( bx + bw + 8, ry,
-                           QString::number( i == 0 ? picStd : picMot, 'f', 4 ) );
+                           QString::number( i == 0 ? pic_std : pic_mot, 'f', 4 ) );
     }
 }
 
@@ -2115,9 +2115,9 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
     struct Line
     {
         const char *key;
-        StrId       desc;
+        StrIdE      desc;
     };
-    static const Line lines[] = {
+    static const Line Lines[] = {
         { "h", S_HELP_H },
         { "Enter", S_HELP_MENU },
         { "⏭ ⏯ ⏹", S_HELP_MEDIA },
@@ -2152,29 +2152,29 @@ void GLwidget::drawHelpOverlay( QPainter *painter )
         { "s", S_HELP_S },
         { "Esc / q", S_HELP_ESC },
     };
-    const int n = int( sizeof( lines ) / sizeof( lines[0] ) );
+    const int n = int( sizeof( Lines ) / sizeof( Lines[0] ) );
 
     // A bit wider than the English text alone would need -- several German
     // descriptions run noticeably longer (e.g. "aktuellen Look + Zustand
     // als Standard speichern").
-    const int boxW = 480, lh = 26;
-    const int boxH = lh * ( n + 1 ) + 24;
-    const int x0 = ( width() - boxW ) / 2;
-    const int y0 = ( height() - boxH ) / 2;
+    const int box_w = 480, lh = 26;
+    const int box_h = lh * ( n + 1 ) + 24;
+    const int x0 = ( width() - box_w ) / 2;
+    const int y0 = ( height() - box_h ) / 2;
 
-    painter->fillRect( x0, y0, boxW, boxH, QColor( 0, 0, 0, 190 ) );
+    painter->fillRect( x0, y0, box_w, box_h, QColor( 0, 0, 0, 190 ) );
     painter->setPen( QColor( 120, 200, 255 ) );
     painter->setFont( QFont( "Consolas", 14, QFont::Bold ) );
-    painter->drawText( x0 + 20, y0 + 32, QString::fromUtf8( Strings::T( S_HELP_TITLE ) ) );
+    painter->drawText( x0 + 20, y0 + 32, QString::fromUtf8( Strings::uiText( S_HELP_TITLE ) ) );
 
     painter->setFont( QFont( "Consolas", 12 ) );
     for ( int i = 0; i < n; ++i )
     {
         int ry = y0 + 32 + ( i + 1 ) * lh;
         painter->setPen( QColor( 150, 230, 150 ) );
-        painter->drawText( x0 + 24, ry, QString( lines[i].key ) );
+        painter->drawText( x0 + 24, ry, QString( Lines[i].key ) );
         painter->setPen( QColor( 210, 218, 232 ) );
-        painter->drawText( x0 + 150, ry, QString::fromUtf8( Strings::T( lines[i].desc ) ) );
+        painter->drawText( x0 + 150, ry, QString::fromUtf8( Strings::uiText( Lines[i].desc ) ) );
     }
 }
 
@@ -2187,7 +2187,7 @@ static const char *kMidiTargetNames[] =
 void GLwidget::applyMidi()
 {
     if ( !m_midi )
-        m_midi = s_midiOpened.exchange( nullptr ); // opened meanwhile by the start thread
+        m_midi = M_MidiOpened.exchange( nullptr ); // opened meanwhile by the start thread
     if ( !m_midi )
         return;
     std::vector<MidiInput::Event> evs = m_midi->drain();
@@ -2196,14 +2196,14 @@ void GLwidget::applyMidi()
         // ---- MIDI LEARN: bind the incoming controller to the current target ----
         if ( m_midiLearn >= 0 )
         {
-            bool wantsNote = ( m_midiLearn == MIDI_NEXT || m_midiLearn == MIDI_TAP
-                               || m_midiLearn == MIDI_BLACKOUT );
-            if ( ( wantsNote && e.type == 0x90 ) || ( !wantsNote && e.type == 0xB0 ) )
+            bool wants_note = ( m_midiLearn == MIDI_NEXT || m_midiLearn == MIDI_TAP
+                                || m_midiLearn == MIDI_BLACKOUT );
+            if ( ( wants_note && e.type == 0x90 ) || ( !wants_note && e.type == 0xB0 ) )
             {
                 m_midiMap[m_midiLearn] = e.data1;
                 fprintf( stderr, "MIDI learn: %s -> %s %d\n",
                          kMidiTargetNames[m_midiLearn],
-                         wantsNote ? "note" : "CC", e.data1 );
+                         wants_note ? "note" : "CC", e.data1 );
                 m_midiLearn++; // advance to next target
                 if ( m_midiLearn >= MIDI_TARGETS )
                 {
@@ -2270,7 +2270,7 @@ static bool extractPalette( const QImage &src, float *palA, float *palB )
         return false;
     QImage img = src.scaled( 24, 24, Qt::IgnoreAspectRatio, Qt::FastTransformation )
                      .convertToFormat( QImage::Format_RGB32 );
-    double wSum[12] = {}, rSum[12] = {}, gSum[12] = {}, bSum[12] = {};
+    double w_sum[12] = {}, r_sum[12] = {}, g_sum[12] = {}, b_sum[12] = {};
     for ( int y = 0; y < img.height(); ++y )
         for ( int x = 0; x < img.width(); ++x )
         {
@@ -2281,34 +2281,34 @@ static bool extractPalette( const QImage &src, float *palA, float *palB )
                 continue;
             int    bkt = int( h * 12.f ) % 12;
             double w = double( s ) * double( v );
-            wSum[bkt] += w;
-            rSum[bkt] += w * c.redF();
-            gSum[bkt] += w * c.greenF();
-            bSum[bkt] += w * c.blueF();
+            w_sum[bkt] += w;
+            r_sum[bkt] += w * c.redF();
+            g_sum[bkt] += w * c.greenF();
+            b_sum[bkt] += w * c.blueF();
         }
     int best = 0;
     for ( int k = 1; k < 12; ++k )
-        if ( wSum[k] > wSum[best] )
+        if ( w_sum[k] > w_sum[best] )
             best = k;
     // Mindestens ~4% der Pixel muessen farbig auf den Sieger einzahlen.
-    if ( wSum[best] < 24.0 * 24.0 * 0.04 * 0.25 )
+    if ( w_sum[best] < 24.0 * 24.0 * 0.04 * 0.25 )
         return false;
-    palA[0] = float( rSum[best] / wSum[best] );
-    palA[1] = float( gSum[best] / wSum[best] );
-    palA[2] = float( bSum[best] / wSum[best] );
+    palA[0] = float( r_sum[best] / w_sum[best] );
+    palA[1] = float( g_sum[best] / w_sum[best] );
+    palA[2] = float( b_sum[best] / w_sum[best] );
     int second = -1;
     for ( int k = 0; k < 12; ++k )
     {
         int dc = abs( k - best );
         dc = ( dc > 6 ) ? 12 - dc : dc;
-        if ( dc >= 2 && ( second < 0 || wSum[k] > wSum[second] ) && wSum[k] > 1.0 )
+        if ( dc >= 2 && ( second < 0 || w_sum[k] > w_sum[second] ) && w_sum[k] > 1.0 )
             second = k;
     }
     if ( second >= 0 )
     {
-        palB[0] = float( rSum[second] / wSum[second] );
-        palB[1] = float( gSum[second] / wSum[second] );
-        palB[2] = float( bSum[second] / wSum[second] );
+        palB[0] = float( r_sum[second] / w_sum[second] );
+        palB[1] = float( g_sum[second] / w_sum[second] );
+        palB[2] = float( b_sum[second] / w_sum[second] );
     }
     else
         for ( int k = 0; k < 3; ++k )
@@ -2333,14 +2333,14 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     // (GPU-Last, adaptive Render-Skalierung, Compute-Sims), ruckelt das
     // Scroll-Smoothing sonst, weil der Slew-Schritt nicht zur tatsächlich
     // vergangenen Zeit passt. Erster Aufruf / lange Aussetzer werden geklemmt.
-    const qint64 nowMs = m_fpsTimer.elapsed();
+    const qint64 now_ms = m_fpsTimer.elapsed();
     float        dt = ( m_overlayLastMs < 0 ) ? ( 1.f / 60.f )
-                                              : float( nowMs - m_overlayLastMs ) * 0.001f;
+                                              : float( now_ms - m_overlayLastMs ) * 0.001f;
     if ( dt < 0.f )
         dt = 0.f;
     if ( dt > 0.25f )
         dt = 0.25f;
-    m_overlayLastMs = nowMs;
+    m_overlayLastMs = now_ms;
 
     auto slew = []( float cur, float target, float rate, float dt )
     {
@@ -2397,17 +2397,17 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     }
     else if ( pos - m_posSmooth > 1.5 )
     {
-        const qint64 pllNow = m_fpsTimer.elapsed();
+        const qint64 pll_now = m_fpsTimer.elapsed();
         double       erwartet = m_fwdJumpRef
                                 + ( m_fwdJumpSince >= 0
-                                        ? double( pllNow - m_fwdJumpSince ) * 0.001
+                                        ? double( pll_now - m_fwdJumpSince ) * 0.001
                                         : 0.0 );
         if ( m_fwdJumpSince < 0 || fabs( pos - erwartet ) > 1.0 )
         {
-            m_fwdJumpSince = pllNow; // (neuer) Vorwärts-Kandidat
+            m_fwdJumpSince = pll_now; // (neuer) Vorwärts-Kandidat
             m_fwdJumpRef = pos;
         }
-        else if ( pllNow - m_fwdJumpSince > 400 )
+        else if ( pll_now - m_fwdJumpSince > 400 )
         {
             // Forensic trail for the NEXT reported "jump": earlier rounds only
             // logged a resulting BACKWARD line-index flip (see below), which
@@ -2420,7 +2420,7 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
             // in kaleidoscope.log instead of just this one already-fixed kind.
             fprintf( stderr, "[Lyrics] PLL-Sprung VORWAERTS: posSmooth %.3f -> %.3f "
                              "(nach %.0fms Bestaetigung)\n",
-                     m_posSmooth, pos, double( pllNow - ( m_fwdJumpSince ) ) );
+                     m_posSmooth, pos, double( pll_now - ( m_fwdJumpSince ) ) );
             m_posSmooth = pos; // 0.4s konsistent: echter Seek
             m_fwdJumpSince = -1;
         }
@@ -2430,24 +2430,24 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     }
     else if ( pos - m_posSmooth < -1.5 )
     {
-        const qint64 pllNow = m_fpsTimer.elapsed();
+        const qint64 pll_now = m_fpsTimer.elapsed();
         double       erwartet = m_backJumpRef
                                 + ( m_backJumpSince >= 0
-                                        ? double( pllNow - m_backJumpSince ) * 0.001
+                                        ? double( pll_now - m_backJumpSince ) * 0.001
                                         : 0.0 );
         if ( m_backJumpSince < 0 || fabs( pos - erwartet ) > 1.0 )
         {
-            m_backJumpSince = pllNow; // (neuer) Rückwärts-Kandidat
+            m_backJumpSince = pll_now; // (neuer) Rückwärts-Kandidat
             m_backJumpRef = pos;
         }
-        else if ( pllNow - m_backJumpSince > 2000 )
+        else if ( pll_now - m_backJumpSince > 2000 )
         {
             // See the matching forward-snap log above for why this is
             // unconditional now (was previously silent, unlike the resulting
             // backward line-index flip below).
             fprintf( stderr, "[Lyrics] PLL-Sprung RUECKWAERTS: posSmooth %.3f -> %.3f "
                              "(nach %.0fms Bestaetigung)\n",
-                     m_posSmooth, pos, double( pllNow - ( m_backJumpSince ) ) );
+                     m_posSmooth, pos, double( pll_now - ( m_backJumpSince ) ) );
             m_posSmooth = pos; // 2s konsistent: echter Seek
             m_backJumpSince = -1;
         }
@@ -2487,7 +2487,7 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         }
     }
 
-    bool lyricsOn = ( m_lyricsMode > 0 ) && m_trackMedia->hasLyrics();
+    bool lyrics_on = ( m_lyricsMode > 0 ) && m_trackMedia->hasLyrics();
     // Laengere textlose Pausen (Intro, Solo, Outro): Lyrics sanft ausblenden
     // statt eine tote/alte Zeile stehenzulassen.  Nutzt den Karaoke-
     // Zeilenindex vom LETZTEN Frame (kontinuierlicher Zustand, 16ms alt -
@@ -2496,18 +2496,18 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     // der VORHERIGEN (zuletzt aktiven) Zeile, nicht auf der kommenden - eine
     // erste Fassung nahm faelschlich lines[i].t0 als Luecken-Ende und fand
     // dadurch nie eine Luecke (durch eine Zeilen-Simulation aufgedeckt).
-    if ( lyricsOn && m_trackMedia->syncedLyrics() )
+    if ( lyrics_on && m_trackMedia->syncedLyrics() )
     {
         const auto &lines = m_trackMedia->lines();
         int         n = int( lines.size() );
         if ( n > 0 )
         {
             int  i = ( m_karaokeLine >= 0 && m_karaokeLine < n ) ? m_karaokeLine : 0;
-            bool inLongGap = false;
+            bool in_long_gap = false;
             if ( pos < lines[i].t0 )
             {
                 // Intro (nur bei i==0 stabil): vor der allerersten Zeile.
-                inLongGap = ( lines[i].t0 > 9.f ) && ( pos < lines[i].t0 - 2.f );
+                in_long_gap = ( lines[i].t0 > 9.f ) && ( pos < lines[i].t0 - 2.f );
             }
             else if ( lines[i].text.isEmpty() && pos < lines[i].t1 )
             {
@@ -2516,29 +2516,29 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
                 // nicht nur Intro/Outro. i steht hier bereits stabil auf dem
                 // Marker (die Hysterese-Suche unten haelt es dort), darum
                 // reicht dessen eigene Spanne als Luecke.
-                inLongGap = ( lines[i].t1 - lines[i].t0 > 9.f )
-                            && ( pos > lines[i].t0 + 2.f )
-                            && ( pos < lines[i].t1 - 2.f );
+                in_long_gap = ( lines[i].t1 - lines[i].t0 > 9.f )
+                              && ( pos > lines[i].t0 + 2.f )
+                              && ( pos < lines[i].t1 - 2.f );
             }
             else if ( pos >= lines[i].t1 )
             {
-                bool hasNext = ( i + 1 < n );
-                if ( hasNext )
+                bool has_next = ( i + 1 < n );
+                if ( has_next )
                 {
-                    float gapEnd = lines[i + 1].t0;
-                    inLongGap = ( gapEnd - lines[i].t1 > 9.f )
-                                && ( pos > lines[i].t1 + 2.f )
-                                && ( pos < gapEnd - 2.f );
+                    float gap_end = lines[i + 1].t0;
+                    in_long_gap = ( gap_end - lines[i].t1 > 9.f )
+                                  && ( pos > lines[i].t1 + 2.f )
+                                  && ( pos < gap_end - 2.f );
                 }
                 else
-                    inLongGap = pos > lines[i].t1 + 2.f; // Outro: unbegrenzt
+                    in_long_gap = pos > lines[i].t1 + 2.f; // Outro: unbegrenzt
             }
-            if ( inLongGap )
-                lyricsOn = false;
+            if ( in_long_gap )
+                lyrics_on = false;
         }
     }
-    m_lyricsAlphaSm = slew( m_lyricsAlphaSm, lyricsOn ? 1.f : 0.f, 1.5f, dt );
-    if ( lyricsOn || m_lyricsAlphaSm > 0.001f )
+    m_lyricsAlphaSm = slew( m_lyricsAlphaSm, lyrics_on ? 1.f : 0.f, 1.5f, dt );
+    if ( lyrics_on || m_lyricsAlphaSm > 0.001f )
     {
         const auto   &lines = m_trackMedia->lines();
         const QImage &img = m_trackMedia->lyricsImage();
@@ -2549,13 +2549,13 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         // alle anderen Zeilen sichtbar verkleinern. lyricsUScale traegt die
         // Differenz in den Shader (Present.frag rechnet die Sample-Koordinate
         // damit zurueck auf die tatsaechliche Texturbreite).
-        const int nomW = TrackMedia::lyricsNominalTexWidth();
+        const int nom_w = TrackMedia::lyricsNominalTexWidth();
         o.lyricsAspect = img.isNull() ? 1.f
-                                      : float( nomW ) / float( img.height() );
+                                      : float( nom_w ) / float( img.height() );
         o.lyricsUScale = ( img.isNull() || img.width() <= 0 ) ? 1.f
-                                                              : float( nomW ) / float( img.width() );
+                                                              : float( nom_w ) / float( img.width() );
 
-        float targetV = m_scrollVSm;
+        float target_v = m_scrollVSm;
         if ( m_trackMedia->syncedLyrics() )
         {
             // Aktive Zeile suchen (Cache + Vorwärts-/Rückwärtsscan für Seeks).
@@ -2597,17 +2597,17 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
             if ( m_lyricsKinetic && m_lineChangeMs >= 0 )
                 o.lyricsLineAge = float( m_fpsTimer.elapsed() - m_lineChangeMs ) * 0.001f;
 
-            const auto &L = lines[i];
-            float       lineFrac = 0.f;
-            if ( L.t1 > L.t0 )
-                lineFrac = float( ( pos - L.t0 ) / ( L.t1 - L.t0 ) );
-            lineFrac = std::min( std::max( lineFrac, 0.f ), 1.f );
+            const auto &l = lines[i];
+            float       line_frac = 0.f;
+            if ( l.t1 > l.t0 )
+                line_frac = float( ( pos - l.t0 ) / ( l.t1 - l.t0 ) );
+            line_frac = std::min( std::max( line_frac, 0.f ), 1.f );
 
             // Scroll-Ziel: Zentrum gleitet kontinuierlich zur nächsten Zeile.
-            float c0 = 0.5f * ( L.v0 + L.v1 );
+            float c0 = 0.5f * ( l.v0 + l.v1 );
             float c1 = ( i + 1 < n ) ? 0.5f * ( lines[i + 1].v0 + lines[i + 1].v1 )
                                      : c0;
-            targetV = c0 + ( c1 - c0 ) * lineFrac;
+            target_v = c0 + ( c1 - c0 ) * line_frac;
 
             // Highlight IMMER auf der (hysterese-stabilen) aktiven Zeile -
             // frueher war es an "pos >= t0" gebunden, wodurch ein winziger
@@ -2616,16 +2616,16 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
             // zurueck ("Huepfen"), obwohl gar nichts scrollte.
             if ( m_lyricsMode == 2 )
             {
-                o.lyricsHlV0 = L.v0;
-                o.lyricsHlV1 = L.v1;
-                o.lyricsHlProg = lineFrac; // bereits auf 0..1 geklemmt
+                o.lyricsHlV0 = l.v0;
+                o.lyricsHlV1 = l.v1;
+                o.lyricsHlProg = line_frac; // bereits auf 0..1 geklemmt
             }
 
             // Marquee: die gerade gelesene Zeile (beide Modi -- L ist auch im
             // reinen Scroll die per Hysterese stabile "aktive" Zeile) wird,
             // falls sie beim Rendern nicht ins Fenster passte (L.overflowU),
             // statt abgeschnitten horizontal durchgescrollt -- gekoppelt an
-            // lineFrac (0..1 durch die Sing-Dauer DIESER Zeile, oben schon
+            // line_frac (0..1 durch die Sing-Dauer DIESER Zeile, oben schon
             // berechnet) statt an eine feste px/s-Geschwindigkeit: die ersten
             // 30% steht der Text still (Lesezeit fuer den Anfang), von 30%
             // bis 90% scrollt er (mit Ease-in/out) bis ganz ans Ende, die
@@ -2634,15 +2634,15 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
             // (die typischerweise laenger klingen) bekommen automatisch mehr
             // Zeit zum Scrollen als kurze, statt einer fuer alle gleich
             // schnellen, unabhaengig von der Zeilendauer wirkenden Animation.
-            o.lyricsFocusV0 = L.v0;
-            o.lyricsFocusV1 = L.v1;
-            if ( L.overflowU > 0.f )
+            o.lyricsFocusV0 = l.v0;
+            o.lyricsFocusV1 = l.v1;
+            if ( l.overflowU > 0.f )
             {
-                const float startFrac = 0.30f, endFrac = 0.90f;
-                float       sp = ( lineFrac - startFrac ) / ( endFrac - startFrac );
+                const float start_frac = 0.30f, end_frac = 0.90f;
+                float       sp = ( line_frac - start_frac ) / ( end_frac - start_frac );
                 sp = std::min( std::max( sp, 0.f ), 1.f );
                 const float eased = sp * sp * ( 3.f - 2.f * sp ); // smoothstep
-                o.lyricsScrollU = L.overflowU * eased;
+                o.lyricsScrollU = l.overflowU * eased;
             }
         }
         else
@@ -2650,10 +2650,10 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
             // Unsynchronisiert: gleichmäßig über die Songdauer scrollen;
             // ohne Dauer mit fester, gemächlicher Geschwindigkeit.
             if ( dur > 10.0 )
-                targetV = float( pos / dur );
+                target_v = float( pos / dur );
             else
-                targetV = float( pos * 0.008 );
-            targetV = std::min( std::max( targetV, 0.f ), 1.f );
+                target_v = float( pos * 0.008 );
+            target_v = std::min( std::max( target_v, 0.f ), 1.f );
         }
 
         // Immer weich nachziehen statt zu teleportieren - auch bei einem
@@ -2661,46 +2661,46 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         // NowPlaying nicht abgefangene Korrektur) mit deutlich höherer Rate,
         // damit es "schnell aufholt" statt zu schneiden. Ein Sprung über die
         // halbe Textur braucht damit ~0.2s statt eines Einzelframe-Cuts.
-        const bool bigGap = fabsf( targetV - m_scrollVSm ) > 0.08f;
+        const bool big_gap = fabsf( target_v - m_scrollVSm ) > 0.08f;
         // Edge-triggered (once per episode, not every frame of a ~0.2-0.5s
         // catch-up): this is the "visible but not instant" jump candidate --
         // a real seek looks exactly like this by design, but so would any
-        // OTHER cause that displaces targetV by more than a normal single-
+        // OTHER cause that displaces target_v by more than a normal single-
         // line step (see the two PLL-snap logs above and the RUECKWAERTS/
         // VORWAERTS(>1) line-index log for the other candidates).
-        static bool s_wasBigGap = false;
-        if ( bigGap && !s_wasBigGap )
+        static bool was_big_gap = false;
+        if ( big_gap && !was_big_gap )
             fprintf( stderr, "[Lyrics] Scroll-Sprung: targetV=%.4f scrollV=%.4f "
                              "(delta=%.4f) karaokeLine=%d pos=%.3f\n",
-                     targetV, m_scrollVSm, targetV - m_scrollVSm, m_karaokeLine, pos );
-        s_wasBigGap = bigGap;
+                     target_v, m_scrollVSm, target_v - m_scrollVSm, m_karaokeLine, pos );
+        was_big_gap = big_gap;
 
-        float rate = bigGap ? 2.5f : 0.10f;
-        m_scrollVSm = slew( m_scrollVSm, targetV, rate, dt );
+        float rate = big_gap ? 2.5f : 0.10f;
+        m_scrollVSm = slew( m_scrollVSm, target_v, rate, dt );
         o.lyricsScrollV = m_scrollVSm;
     }
 
     // ---- Künstlerbilder: Rotation, alle ~45 s für ~14 s eingeblendet ----
     // (weicht dem Musikvideo-PiP unten, falls für den Song eins bereit ist —
     // gleicher Eck-Slot, siehe setArtistExternalTexture()).
-    bool  artistOn = m_artistShow
-                     && !( m_videoEnabled && m_trackMedia->videoReady() )
-                     && m_trackMedia->imageCount() > 0;
-    float artistTarget = 0.f;
-    if ( artistOn )
+    bool  artist_on = m_artistShow
+                      && !( m_videoEnabled && m_trackMedia->videoReady() )
+                      && m_trackMedia->imageCount() > 0;
+    float artist_target = 0.f;
+    if ( artist_on )
     {
         // Bei großen Sammlungen (bis 50 Bilder) rotiert es flotter, damit
         // über einen Abend auch wirklich viele Bilder drankommen.
         const bool   viele = m_trackMedia->imageCount() >= 10;
-        const qint64 cycleMs = viele ? 26000 : 45000;
-        const qint64 showMs = viele ? 12000 : 14000;
-        const qint64 fadeMs = 2200;
+        const qint64 cycle_ms = viele ? 26000 : 45000;
+        const qint64 show_ms = viele ? 12000 : 14000;
+        const qint64 fade_ms = 2200;
         qint64       t = m_fpsTimer.elapsed() - m_trackStartMs;
         if ( t < 0 )
             t = 0;
-        qint64 ph = t % cycleMs;
-        int    cy = int( t / cycleMs );
-        if ( ph < showMs )
+        qint64 ph = t % cycle_ms;
+        int    cy = int( t / cycle_ms );
+        if ( ph < show_ms )
         {
             int idx = cy % m_trackMedia->imageCount();
             if ( idx != m_artistIdxUploaded
@@ -2714,12 +2714,12 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
                 // Song bekommt organisch die Farbwelt seines Kuenstlers.
                 m_palValid = extractPalette( img, m_palA, m_palB );
             }
-            float in = std::min( 1.f, float( ph ) / float( fadeMs ) );
-            float out = std::min( 1.f, float( showMs - ph ) / float( fadeMs ) );
-            artistTarget = std::min( in, out );
+            float in = std::min( 1.f, float( ph ) / float( fade_ms ) );
+            float out = std::min( 1.f, float( show_ms - ph ) / float( fade_ms ) );
+            artist_target = std::min( in, out );
         }
     }
-    m_artistAlphaSm = slew( m_artistAlphaSm, artistTarget, 1.2f, dt );
+    m_artistAlphaSm = slew( m_artistAlphaSm, artist_target, 1.2f, dt );
     // Cover-Palette: sehr langsam einblenden (0.3/s) - die Farbwelt eines
     // Songs soll sich etablieren, nicht aufpoppen.  Unabhaengig davon, ob
     // das Bild selbst gerade sichtbar ist.
@@ -2747,8 +2747,8 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
     // Song-Position statt einer eigenen Uhr — ein Video, das kürzer ist als
     // der Song, loopt einfach (siehe VideoPiP::videoPipLoad()'s Infinite-
     // Loop-Setting) und bleibt trotzdem an der richtigen Stelle.
-    bool videoOn = m_artistShow && m_videoEnabled && m_trackMedia->videoReady();
-    if ( videoOn )
+    bool video_on = m_artistShow && m_videoEnabled && m_trackMedia->videoReady();
+    if ( video_on )
     {
         if ( m_trackMedia->videoPath() != m_videoPathLoaded )
         {
@@ -2764,9 +2764,9 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         // 400ms tolerance: don't hard-seek on every tiny position nudge (same
         // lesson as the lyrics scroll above) -- only a real jump snaps it.
         videoPipSeek( (long long)( pos * 1000.0 ), 400 );
-        const bool songIsPlaying = m_lyricsTest
-                                   || ( m_nowPlaying && m_nowPlaying->timeline().playing );
-        videoPipSetPlaying( songIsPlaying );
+        const bool song_is_playing = m_lyricsTest
+                                     || ( m_nowPlaying && m_nowPlaying->timeline().playing );
+        videoPipSetPlaying( song_is_playing );
     }
     else if ( !m_videoPathLoaded.isEmpty() )
     {
@@ -2774,11 +2774,11 @@ void GLwidget::updateTrackOverlays( RenderPipeline *fs )
         m_videoPathLoaded.clear();
     }
     // Nur der Einblend-Ramp ist geglättet; das Ausblenden ist absichtlich
-    // hart (kein slew auf dem Lesezugriff unten) — sobald videoOn false wird,
+    // hart (kein slew auf dem Lesezugriff unten) — sobald video_on false wird,
     // löscht videoPipRelease() gerade dessen GL-Textur, ein weiches Ausfaden
     // würde also eine bereits gelöschte Textur zu binden versuchen.
-    m_videoAlphaSm = slew( m_videoAlphaSm, videoOn ? 1.f : 0.f, 1.2f, dt );
-    if ( videoOn && m_videoAlphaSm > 0.001f )
+    m_videoAlphaSm = slew( m_videoAlphaSm, video_on ? 1.f : 0.f, 1.2f, dt );
+    if ( video_on && m_videoAlphaSm > 0.001f )
     {
         unsigned int       vw = 0, vh = 0;
         const unsigned int vtex = videoPipFrame( &vw, &vh );
@@ -2804,10 +2804,10 @@ void GLwidget::requestCurrentTrackMedia()
 {
     if ( !m_trackMedia || !m_nowPlaying || m_nowPlaying->title().isEmpty() )
         return;
-    const double durSec = ( m_artistShow && m_videoEnabled )
-                              ? m_nowPlaying->timeline().durationSec
-                              : -1.0;
-    m_trackMedia->requestTrack( m_nowPlaying->artist(), m_nowPlaying->title(), durSec );
+    const double dur_sec = ( m_artistShow && m_videoEnabled )
+                               ? m_nowPlaying->timeline().durationSec
+                               : -1.0;
+    m_trackMedia->requestTrack( m_nowPlaying->artist(), m_nowPlaying->title(), dur_sec );
 }
 
 void GLwidget::setArtistImagesEnabled( bool on )
@@ -2867,7 +2867,7 @@ QVector<int> GLwidget::audioMenuMatches() const
     // Row 0 is the default-output entry; it stays visible while nothing is
     // typed, and matches on its own label once something is.
     if ( f.isEmpty()
-         || QString::fromUtf8( Strings::T( S_AUDIOMENU_DEFAULT_OUTPUT ) )
+         || QString::fromUtf8( Strings::uiText( S_AUDIOMENU_DEFAULT_OUTPUT ) )
                 .contains( f, Qt::CaseInsensitive ) )
         out.append( 0 );
     if ( m_audioAnalyzer )
@@ -2913,42 +2913,42 @@ void GLwidget::drawAudioMenu( QPainter *painter )
     const int          lh = 26;
 
     // Leave room for the title and the key hint, and never fill the screen.
-    const int maxRows = std::max( 3, int( ( height() * 0.72 - 4 * lh ) / lh ) );
-    const int visible = std::max( 0, std::min( total, maxRows ) );
+    const int max_rows = std::max( 3, int( ( height() * 0.72 - 4 * lh ) / lh ) );
+    const int visible = std::max( 0, std::min( total, max_rows ) );
     if ( total > 0 )
         menuScroll( m_audioMenuCursor, m_audioMenuTop, total, visible );
     else
         m_audioMenuCursor = m_audioMenuTop = 0;
 
-    const QString hint = QString::fromUtf8( Strings::T( S_MENU_NAV_HINT ) );
+    const QString hint = QString::fromUtf8( Strings::uiText( S_MENU_NAV_HINT ) );
 
     painter->setFont( QFont( "Consolas", 12 ) );
     QFontMetrics fm( painter->font() );
-    int          textW = fm.horizontalAdvance( hint );
+    int          text_w = fm.horizontalAdvance( hint );
     for ( int i = 0; i < devs.size(); ++i )
     {
-        const QString tag = QString::fromUtf8( devs[i].isCapture ? Strings::T( S_AUDIOMENU_INPUT_TAG )
-                                                                 : Strings::T( S_AUDIOMENU_OUTPUT_TAG ) );
-        textW = std::max( textW, fm.horizontalAdvance( devs[i].name + tag ) );
+        const QString tag = QString::fromUtf8( devs[i].isCapture ? Strings::uiText( S_AUDIOMENU_INPUT_TAG )
+                                                                 : Strings::uiText( S_AUDIOMENU_OUTPUT_TAG ) );
+        text_w = std::max( text_w, fm.horizontalAdvance( devs[i].name + tag ) );
     }
 
-    const int boxW = std::min( width() - 40, std::max( 580, textW + 70 ) );
-    const int boxH = lh * ( std::max( visible, 1 ) + 2 ) + 44;
-    const int x0 = ( width() - boxW ) / 2;
-    const int y0 = ( height() - boxH ) / 2;
+    const int box_w = std::min( width() - 40, std::max( 580, text_w + 70 ) );
+    const int box_h = lh * ( std::max( visible, 1 ) + 2 ) + 44;
+    const int x0 = ( width() - box_w ) / 2;
+    const int y0 = ( height() - box_h ) / 2;
 
-    painter->fillRect( x0, y0, boxW, boxH, QColor( 0, 0, 0, 200 ) );
+    painter->fillRect( x0, y0, box_w, box_h, QColor( 0, 0, 0, 200 ) );
     painter->setPen( QColor( 120, 200, 255 ) );
     painter->setFont( QFont( "Consolas", 14, QFont::Bold ) );
     painter->drawText( x0 + 20, y0 + 32,
-                       QString::fromUtf8( Strings::T( S_AUDIOMENU_TITLE ) )
+                       QString::fromUtf8( Strings::uiText( S_AUDIOMENU_TITLE ) )
                            + ( m_audioMenuFilter.isEmpty()
                                    ? QString()
                                    : QString( "   \"%1\"" ).arg( m_audioMenuFilter ) ) );
 
     painter->setFont( QFont( "Consolas", 12 ) );
 
-    m_audioMenuHit.box = QRect( x0, y0, boxW, boxH );
+    m_audioMenuHit.box = QRect( x0, y0, box_w, box_h );
     m_audioMenuHit.rowY0 = y0 + 32 + lh - fm.ascent() - 3;
     m_audioMenuHit.rowH = lh;
     m_audioMenuHit.rows = visible;
@@ -2965,21 +2965,21 @@ void GLwidget::drawAudioMenu( QPainter *painter )
         bool    active = false;
         if ( i == 0 )
         {
-            label = QString::fromUtf8( Strings::T( S_AUDIOMENU_DEFAULT_OUTPUT ) );
+            label = QString::fromUtf8( Strings::uiText( S_AUDIOMENU_DEFAULT_OUTPUT ) );
             active = current.isEmpty();
         }
         else
         {
             const AudioDevice &d = devs[i - 1];
             label = d.name
-                    + QString::fromUtf8( d.isCapture ? Strings::T( S_AUDIOMENU_INPUT_TAG )
-                                                     : Strings::T( S_AUDIOMENU_OUTPUT_TAG ) );
+                    + QString::fromUtf8( d.isCapture ? Strings::uiText( S_AUDIOMENU_INPUT_TAG )
+                                                     : Strings::uiText( S_AUDIOMENU_OUTPUT_TAG ) );
             active = !current.isEmpty() && current == d.name;
         }
 
         if ( m_audioMenuTop + row == m_audioMenuCursor )
         {
-            painter->fillRect( QRect( x0 + 6, ry - fm.ascent() - 3, boxW - 12, lh ),
+            painter->fillRect( QRect( x0 + 6, ry - fm.ascent() - 3, box_w - 12, lh ),
                                QColor( 70, 120, 190, 190 ) );
             painter->setPen( QColor( 255, 255, 255 ) );
         }
@@ -2997,22 +2997,22 @@ void GLwidget::drawAudioMenu( QPainter *painter )
     {
         painter->setPen( QColor( 200, 150, 150, 220 ) );
         painter->drawText( x0 + 24, y0 + 32 + lh,
-                           QString::fromUtf8( Strings::T( S_MENU_NO_MATCH ) ) );
+                           QString::fromUtf8( Strings::uiText( S_MENU_NO_MATCH ) ) );
     }
 
     painter->setPen( QColor( 150, 150, 155, 200 ) );
     if ( m_audioMenuTop > 0 )
-        painter->drawText( x0 + boxW - 28, y0 + 32 + lh,
+        painter->drawText( x0 + box_w - 28, y0 + 32 + lh,
                            QString::fromUtf8( "\xE2\x96\xB2" ) );
     if ( m_audioMenuTop + visible < total )
-        painter->drawText( x0 + boxW - 28, y0 + 32 + visible * lh,
+        painter->drawText( x0 + box_w - 28, y0 + 32 + visible * lh,
                            QString::fromUtf8( "\xE2\x96\xBC" ) );
 
     painter->setFont( QFont( "Consolas", 10 ) );
     QFontMetrics hfm( painter->font() );
     painter->setPen( QColor( 165, 165, 172, 215 ) );
-    painter->drawText( x0 + ( boxW - hfm.horizontalAdvance( hint ) ) / 2,
-                       y0 + boxH - 12, hint );
+    painter->drawText( x0 + ( box_w - hfm.horizontalAdvance( hint ) ) / 2,
+                       y0 + box_h - 12, hint );
 }
 
 void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
@@ -3023,7 +3023,7 @@ void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
         a = 0;
     if ( a > 255 )
         a = 255;
-    int bgA = int( alpha * 150.f + 0.5f );
+    int bg_a = int( alpha * 150.f + 0.5f );
 
     QFont        tf( "Segoe UI", 20, QFont::Bold );
     QFont        af( "Segoe UI", 14 );
@@ -3033,7 +3033,7 @@ void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
     const int    x = 40;
     const int    y = height() - h - 50;
 
-    painter->fillRect( x, y, w, h, QColor( 0, 0, 0, bgA ) );     // backdrop
+    painter->fillRect( x, y, w, h, QColor( 0, 0, 0, bg_a ) );    // backdrop
     painter->fillRect( x, y, 5, h, QColor( 120, 200, 255, a ) ); // accent bar
 
     painter->setFont( tf );
@@ -3051,15 +3051,15 @@ void GLwidget::drawNowPlaying( QPainter *painter, const QString &title,
 namespace
 {
 
-QString osdT( StrId id )
+QString osdT( StrIdE id )
 {
-    return QString::fromUtf8( Strings::T( id ) );
+    return QString::fromUtf8( Strings::uiText( id ) );
 }
 
-OsdItem osdSub( StrId id, std::function<std::vector<OsdItem>()> kids )
+OsdItem osdSub( StrIdE id, std::function<std::vector<OsdItem>()> kids )
 {
     OsdItem it;
-    it.kind = OsdItem::Submenu;
+    it.kind = OsdItem::SUBMENU;
     it.label = osdT( id );
     it.children = std::move( kids );
     return it;
@@ -3067,7 +3067,7 @@ OsdItem osdSub( StrId id, std::function<std::vector<OsdItem>()> kids )
 OsdItem osdAct( const QString &label, std::function<void()> fn, bool closeAfter = false, bool confirm = false )
 {
     OsdItem it;
-    it.kind = OsdItem::Action;
+    it.kind = OsdItem::ACTION;
     it.label = label;
     it.action = std::move( fn );
     it.closeAfter = closeAfter;
@@ -3075,30 +3075,30 @@ OsdItem osdAct( const QString &label, std::function<void()> fn, bool closeAfter 
         it.doneText = osdT( S_OSD_DONE );
     return it;
 }
-OsdItem osdToggle( StrId id, std::function<bool()> get, std::function<void( bool )> set )
+OsdItem osdToggle( StrIdE id, std::function<bool()> get, std::function<void( bool )> set )
 {
     OsdItem it;
-    it.kind = OsdItem::Toggle;
+    it.kind = OsdItem::TOGGLE;
     it.label = osdT( id );
     it.getB = std::move( get );
     it.setB = std::move( set );
     return it;
 }
-OsdItem osdChoice( StrId id, const QStringList &opts, std::function<int()> get, std::function<void( int )> set )
+OsdItem osdChoice( StrIdE id, const QStringList &opts, std::function<int()> get, std::function<void( int )> set )
 {
     OsdItem it;
-    it.kind = OsdItem::Choice;
+    it.kind = OsdItem::CHOICE;
     it.label = osdT( id );
     it.options = opts;
     it.getI = std::move( get );
     it.setI = std::move( set );
     return it;
 }
-OsdItem osdSlider( StrId id, float lo, float hi, float step, std::function<float()> get,
+OsdItem osdSlider( StrIdE id, float lo, float hi, float step, std::function<float()> get,
                    std::function<void( float )> set, std::function<QString( float )> fmt = {} )
 {
     OsdItem it;
-    it.kind = OsdItem::Slider;
+    it.kind = OsdItem::SLIDER;
     it.label = osdT( id );
     it.lo = lo;
     it.hi = hi;
@@ -3154,7 +3154,7 @@ std::vector<OsdItem> GLwidget::osdAudioSourceItems()
     QList<AudioDevice>   devs;
     if ( m_audioAnalyzer )
         devs = m_audioAnalyzer->devices();
-    auto currentRow = [this]() -> int
+    auto current_row = [this]() -> int
     {
         if ( !m_audioAnalyzer )
             return 0;
@@ -3167,16 +3167,16 @@ std::vector<OsdItem> GLwidget::osdAudioSourceItems()
     };
     OsdItem def = osdAct( osdT( S_AUDIOMENU_DEFAULT_OUTPUT ), [this]
     { selectAudioDevice( 0 ); }, false, true );
-    def.checked = [currentRow]
-    { return currentRow() == 0; };
+    def.checked = [current_row]
+    { return current_row() == 0; };
     v.push_back( def );
     for ( int i = 0; i < devs.size(); ++i )
     {
         const QString tag = osdT( devs[i].isCapture ? S_AUDIOMENU_INPUT_TAG : S_AUDIOMENU_OUTPUT_TAG );
         OsdItem       it = osdAct( devs[i].name + tag, [this, i]
         { selectAudioDevice( i + 1 ); }, false, true );
-        it.checked = [currentRow, i]
-        { return currentRow() == i + 1; };
+        it.checked = [current_row, i]
+        { return current_row() == i + 1; };
         v.push_back( it );
     }
     return v;
@@ -3365,9 +3365,9 @@ std::vector<OsdItem> GLwidget::osdRootItems()
         // found whichever one is active.
         v.push_back( osdChoice( S_OSD_LANGUAGE, { QString::fromUtf8( "Deutsch" ), QString( "English" ) },
                                 []
-        { return Strings::language() == Lang::EN ? 1 : 0; },
+        { return Strings::language() == LangE::EN ? 1 : 0; },
                                 [this]( int i )
-        { Strings::setLanguage( i == 1 ? Lang::EN : Lang::DE ); m_osd.requestRebuild(); } ) );
+        { Strings::setLanguage( i == 1 ? LangE::EN : LangE::DE ); m_osd.requestRebuild(); } ) );
         v.push_back( osdAct( osdT( S_OSD_SAVEDEFAULTS ), [this]
         { saveAllSettings(); }, false, true ) );
         if ( updateAvailable() )
@@ -3406,16 +3406,16 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         const QVector<int> hits = configMenuMatches();
         switch ( menuNavKey( event->key(), m_configMenuCursor, hits.size() ) )
         {
-            case MenuKey::Moved:
+            case MenuKeyE::MOVED:
                 return;
-            case MenuKey::Accept:
+            case MenuKeyE::ACCEPT:
                 m_showSelectConfigurationMenu = false;
                 if ( m_configMenuCursor >= 0 && m_configMenuCursor < hits.size()
                      && m_configurationList[hits[m_configMenuCursor]] != m_actConfiguration )
                     switchConfig( m_configurationList[hits[m_configMenuCursor]] );
                 m_configMenuFilter.clear();
                 return;
-            case MenuKey::Cancel:
+            case MenuKeyE::CANCEL:
                 // Esc peels one layer at a time: clear the filter first, close
                 // second. Closing straight away would throw away the typing
                 // with no way to see what was matched.
@@ -3427,7 +3427,7 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
                 else
                     m_showSelectConfigurationMenu = false;
                 return;
-            case MenuKey::None:
+            case MenuKeyE::NONE:
                 break;
         }
         // '0' still closes -- but only while nothing is typed, after which it
@@ -3452,15 +3452,15 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         const QVector<int> hits = audioMenuMatches();
         switch ( menuNavKey( event->key(), m_audioMenuCursor, hits.size() ) )
         {
-            case MenuKey::Moved:
+            case MenuKeyE::MOVED:
                 return;
-            case MenuKey::Accept:
+            case MenuKeyE::ACCEPT:
                 m_showAudioMenu = false;
                 if ( m_audioMenuCursor >= 0 && m_audioMenuCursor < hits.size() )
                     selectAudioDevice( hits[m_audioMenuCursor] );
                 m_audioMenuFilter.clear();
                 return;
-            case MenuKey::Cancel:
+            case MenuKeyE::CANCEL:
                 if ( !m_audioMenuFilter.isEmpty() )
                 {
                     m_audioMenuFilter.clear();
@@ -3469,7 +3469,7 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
                 else
                     m_showAudioMenu = false;
                 return;
-            case MenuKey::None:
+            case MenuKeyE::NONE:
                 break;
         }
         // 'd' closes while nothing is typed; after that it is just a letter,
@@ -3582,8 +3582,8 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
                 break;
             }
             setLyricsModeValue( ( m_lyricsMode + 1 ) % 3 );
-            static const char *kLyricsNames[] = { "AUS", "Scroll", "Karaoke" };
-            fprintf( stderr, "Lyrics: %s\n", kLyricsNames[m_lyricsMode] );
+            static const char *LyricsNames[] = { "AUS", "Scroll", "Karaoke" };
+            fprintf( stderr, "Lyrics: %s\n", LyricsNames[m_lyricsMode] );
             break;
         }
 
@@ -3688,9 +3688,9 @@ void GLwidget::keyPressEvent( QKeyEvent *event )
         case Qt::Key_Z:
         {
             RenderPipeline::cycleStereo();
-            static const char *kStereoNames[] =
+            static const char *StereoNames[] =
                 { "AUS", "Side-by-Side", "Top-Bottom", "Anaglyph (rot/cyan)" };
-            fprintf( stderr, "Stereo: %s\n", kStereoNames[RenderPipeline::stereoMode() & 3] );
+            fprintf( stderr, "Stereo: %s\n", StereoNames[RenderPipeline::stereoMode() & 3] );
             break;
         }
         case Qt::Key_C:

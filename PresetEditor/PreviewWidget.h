@@ -95,21 +95,21 @@ public:
      * Drone = no transients, slow swells, audioAmbient = 1.
      * Lets an author check how a shader responds to each kind of music.
      */
-    enum MusicMode
+    enum MusicModeE
     {
-        Beat = 0,
-        Drone = 1
+        BEAT = 0,
+        DRONE = 1
     };
     /**
      * @brief Switch the synthetic audio profile and repaint.
      * @param m New profile (Beat or Drone).
      */
-    void setMusicMode( MusicMode m )
+    void setMusicMode( MusicModeE m )
     {
         m_mode = m;
         update();
     }
-    MusicMode musicMode() const { return m_mode; } ///< @return The currently selected synthetic audio profile.
+    MusicModeE musicMode() const { return m_mode; } ///< @return The currently selected synthetic audio profile.
 
     /**
      * @brief Install a REAL audio preview: a feature timeline precomputed by the actual AudioAnalyzer from a WAV.
@@ -338,7 +338,7 @@ private:
 
     QString m_imageDir; ///< Directory to load tex0/tex1 sample images from; empty means the procedural fallback.
     bool    m_imagesDirty = true; ///< Set by setImageDirectory(); consumed (and cleared) by loadImages() in paintGL().
-    MusicMode m_mode = Beat;        ///< Currently selected synthetic audio profile.
+    MusicModeE m_mode = BEAT;        ///< Currently selected synthetic audio profile.
 
     QOpenGLShaderProgram *m_texProg = nullptr;  ///< Compiled texture (pass-1) shader program (type="normal" path only).
     QOpenGLShaderProgram *m_combProg = nullptr; ///< Compiled combine (pass-2) shader program.
@@ -351,7 +351,7 @@ private:
     ComputeFXPreview m_cfx;                    ///< Compute-FX dispatch wrapper for the 2D texture-shader path.
     bool m_cfxReady = false; ///< Whether m_cfx.init() has run yet (deferred until a shader first declares a compute-FX
                              ///< sampler).
-    unsigned int m_cfxMask = 0; ///< Bitmask of CfxKind values (1u << k) that m_texProg declares samplers for.
+    unsigned int m_cfxMask = 0; ///< Bitmask of CfxKindE values (1u << k) that m_texProg declares samplers for.
     float m_cfxPrevTime = -1.f; ///< Last real wall-clock time (seconds) compute-FX sims were stepped at; < 0 means "not
                                 ///< yet stepped".
     QOpenGLFramebufferObject *m_fbo = nullptr; ///< Pass-1 (texture-shader) render target, resized to match the widget

@@ -47,19 +47,19 @@ public:
     static double frequ( void );
 
 private:
-    unsigned long long int m_time_stamp; ///< Timestamp (counter ticks) captured by the last start().
+    unsigned long long int m_timeStamp; ///< Timestamp (counter ticks) captured by the last start().
 
-    static bool   M_Use_High_Frequ;   ///< True once checkFrequency() found a usable high-frequency counter.
+    static bool   M_UseHighFrequ;     ///< True once checkFrequency() found a usable high-frequency counter.
     static double M_GHz;              ///< Measured counter frequency in GHz (or a fallback of 0.001 if unavailable).
     static bool   M_FrequencyChecked; ///< Guards checkFrequency() so it only runs once, on first construction.
 
     /**
      * @brief Reads the raw hardware counter value.
-     * @return Current QueryPerformanceCounter tick count. Meaning depends on M_Use_High_Frequ.
+     * @return Current QueryPerformanceCounter tick count. Meaning depends on M_UseHighFrequ.
      */
     static long long unsigned int getTimeStamp( void );
     /**
-     * @brief Determines the CPU/counter frequency once and caches it in M_GHz / M_Use_High_Frequ.
+     * @brief Determines the CPU/counter frequency once and caches it in M_GHz / M_UseHighFrequ.
      */
     static void checkFrequency( void );
 };

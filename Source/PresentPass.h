@@ -306,7 +306,7 @@ private:
      */
     void updateFinalTexture( int w, int h, GLenum internalFmt, GLenum fmt, GLenum type );
 
-    static const GLenum kAttach = GL_COLOR_ATTACHMENT0; ///< Color attachment point used by every FBO in this class.
+    static const GLenum Attach = GL_COLOR_ATTACHMENT0; ///< Color attachment point used by every FBO in this class.
 
     // ---- Finaler FBO + Present-Programm ----
     GLuint m_fboFinal = 0;              ///< Final intermediate FBO (targetFbo()).
@@ -409,15 +409,15 @@ private:
      * @return Layer index into the history-ring array texture.
      */
     float            historyLayerBack( float secs ) const; // Sek. zurück -> Layer-Index
-    static const int kHistLayers = 96; ///< Number of ring layers: ~3.2 s of history at the fixed 30 Hz capture cadence.
+    static const int HistLayers = 96; ///< Number of ring layers: ~3.2 s of history at the fixed 30 Hz capture cadence.
     GLuint           m_histTex = 0;                        ///< GL_TEXTURE_2D_ARRAY holding the ring's frames.
     GLuint m_histFboDst = 0; ///< Blit destination FBO, re-attached to the current ring layer of m_histTex before each
                              ///< capture.
     GLuint m_histFboSrc = 0; ///< Blit source FBO, attached to the fresh frame texture being captured.
     /** @brief Ring texture width (render width / 3, floor 32); a change reallocates the array texture. */
     int m_histW = 0, m_histH = 0;      ///< Ring texture height (render height / 3, floor 32).
-    int m_histHead = 0;                ///< Next write slot (ring head), 0..kHistLayers-1.
-    int m_histCount = 0; ///< Number of filled slots so far (<= kHistLayers); bounds how far back historyLayerBack() may
+    int m_histHead = 0;                ///< Next write slot (ring head), 0..HistLayers-1.
+    int m_histCount = 0; ///< Number of filled slots so far (<= HistLayers); bounds how far back historyLayerBack() may
                          ///< reach.
     float m_histAccum = 0.f; ///< Wall-clock seconds accumulated since the last capture; a capture happens once it
                              ///< reaches 1/30 s.

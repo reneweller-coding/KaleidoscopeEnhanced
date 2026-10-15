@@ -38,8 +38,8 @@ namespace
 {
 
 // RPN op codes (>= 0).  Negative codes in Op.code mean:
-//   OP_CONST (-1): push Op.value;  OP_VAR (-2): push vars[(int)Op.value].
-/** @brief Operator/function opcodes stored in a non-negative Op::code (see OP_CONST/OP_VAR for the two negative "push"
+//   OpConst (-1): push Op.value;  OpVar (-2): push vars[(int)Op.value].
+/** @brief Operator/function opcodes stored in a non-negative Op::code (see OpConst/OpVar for the two negative "push"
  * codes). F_SIN..F_SIGN are unary, F_MIN..F_ATAN2 binary, F_CLAMP/F_MIX ternary — see the arity table in compile()'s
  * stack-depth sanity check and the dispatch in eval(). */
 enum
@@ -68,8 +68,8 @@ enum
     F_CLAMP,
     F_MIX
 };
-const int OP_CONST = -1; ///< Op::code sentinel: push Op::value onto the eval stack as a literal constant.
-const int OP_VAR = -2;   ///< Op::code sentinel: push vars[(int)Op::value] onto the eval stack.
+const int OpConst = -1; ///< Op::code sentinel: push Op::value onto the eval stack as a literal constant.
+const int OpVar = -2;   ///< Op::code sentinel: push vars[(int)Op::value] onto the eval stack.
 
 /** @brief One entry in the function table: source-text name, its opcode, and its argument count (used both to consume
  * the right number of comma-separated args and by compile()'s stack-depth sanity check). */
@@ -80,17 +80,17 @@ struct FuncDef
     int         arity;
 };
 /** @brief All formula-language built-in functions, matched by name during tokenising. */
-const FuncDef kFuncs[] = { { "sin", F_SIN, 1 },     { "cos", F_COS, 1 },     { "tan", F_TAN, 1 },
-                           { "abs", F_ABS, 1 },     { "sqrt", F_SQRT, 1 },   { "exp", F_EXP, 1 },
-                           { "log", F_LOG, 1 },     { "floor", F_FLOOR, 1 }, { "fract", F_FRACT, 1 },
-                           { "tanh", F_TANH, 1 },   { "sign", F_SIGN, 1 },   { "min", F_MIN, 2 },
-                           { "max", F_MAX, 2 },     { "pow", F_POWF, 2 },    { "atan2", F_ATAN2, 2 },
-                           { "clamp", F_CLAMP, 3 }, { "mix", F_MIX, 3 } };
+const FuncDef Funcs[] = { { "sin", F_SIN, 1 },     { "cos", F_COS, 1 },     { "tan", F_TAN, 1 },
+                          { "abs", F_ABS, 1 },     { "sqrt", F_SQRT, 1 },   { "exp", F_EXP, 1 },
+                          { "log", F_LOG, 1 },     { "floor", F_FLOOR, 1 }, { "fract", F_FRACT, 1 },
+                          { "tanh", F_TANH, 1 },   { "sign", F_SIGN, 1 },   { "min", F_MIN, 2 },
+                          { "max", F_MAX, 2 },     { "pow", F_POWF, 2 },    { "atan2", F_ATAN2, 2 },
+                          { "clamp", F_CLAMP, 3 }, { "mix", F_MIX, 3 } };
 
 /** @brief One lexical token produced by compile()'s tokeniser and consumed by its shunting-yard pass. */
 struct Token
 {
-    enum Kind
+    enum KindE
     {
         NUM,
         VAR,
@@ -102,7 +102,7 @@ struct Token
     } kind;          ///< Which of the token forms this is.
     float num = 0.f; ///< Literal value, valid only when kind == NUM.
     int   idx = 0;   // var index / func table index / op char
-                     ///< Meaning depends on kind: ExprVars index (VAR), kFuncs table index (FUNC), or the operator
+                     ///< Meaning depends on kind: ExprVars index (VAR), Funcs table index (FUNC), or the operator
                      ///< character — including the synthetic 'n' for unary minus (OP).
 };
 
@@ -149,7 +149,7 @@ bool rightAssoc( int opChar )
  *  1. Tokenise: scans @p formula into NUM/VAR/FUNC/OP/LPAREN/RPAREN/COMMA
  *     tokens. A '-' is classified as unary (op char 'n') rather than binary
  *     subtraction whenever it does NOT immediately follow a value-producing
- *     token (prevWasValue) — i.e. at the start of the expression, after '(',
+ *     token (prev_was_value) — i.e. at the start of the expression, after '(',
  *     another operator, or a comma.
  *  2. Shunting-yard: converts the infix token stream to RPN in m_prog,
  *     popping lower-or-equal precedence operators before pushing a new one
@@ -188,7 +188,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
 
     // ---- Tokenise ----
     std::vector<Token> toks;
-    bool               prevWasValue = false; // for unary-minus detection
+    bool               prev_was_value = false; // for unary-minus detection
     int                i = 0;
     while ( i < n )
     {
@@ -208,7 +208,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             t.num = v;
             toks.push_back( t );
             i = int( end - s );
-            prevWasValue = true;
+            prev_was_value = true;
             continue;
         }
         if ( ( ch >= 'a' && ch <= 'z' ) || ( ch >= 'A' && ch <= 'Z' ) || ch == '_' )
@@ -222,8 +222,8 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             i = j;
 
             int fidx = -1;
-            for ( size_t f = 0; f < sizeof( kFuncs ) / sizeof( kFuncs[0] ); ++f )
-                if ( ident == kFuncs[f].name )
+            for ( size_t f = 0; f < sizeof( Funcs ) / sizeof( Funcs[0] ); ++f )
+                if ( ident == Funcs[f].name )
                 {
                     fidx = (int)f;
                     break;
@@ -234,7 +234,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
                 t.kind = Token::FUNC;
                 t.idx = fidx;
                 toks.push_back( t );
-                prevWasValue = false;
+                prev_was_value = false;
                 continue;
             }
             int vidx = -1;
@@ -250,7 +250,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             t.kind = Token::VAR;
             t.idx = vidx;
             toks.push_back( t );
-            prevWasValue = true;
+            prev_was_value = true;
             continue;
         }
         if ( ch == '(' )
@@ -258,7 +258,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             Token t;
             t.kind = Token::LPAREN;
             toks.push_back( t );
-            prevWasValue = false;
+            prev_was_value = false;
             ++i;
             continue;
         }
@@ -267,7 +267,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             Token t;
             t.kind = Token::RPAREN;
             toks.push_back( t );
-            prevWasValue = true;
+            prev_was_value = true;
             ++i;
             continue;
         }
@@ -276,7 +276,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             Token t;
             t.kind = Token::COMMA;
             toks.push_back( t );
-            prevWasValue = false;
+            prev_was_value = false;
             ++i;
             continue;
         }
@@ -284,9 +284,9 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
         {
             Token t;
             t.kind = Token::OP;
-            t.idx = ( ch == '-' && !prevWasValue ) ? 'n' : ch; // unary minus
+            t.idx = ( ch == '-' && !prev_was_value ) ? 'n' : ch; // unary minus
             toks.push_back( t );
-            prevWasValue = false;
+            prev_was_value = false;
             ++i;
             continue;
         }
@@ -295,12 +295,12 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
 
     // ---- Shunting-yard ----
     std::vector<Token> stack;
-    auto               popOpToProg = [&]( const Token &t )
+    auto               pop_op_to_prog = [&]( const Token &t )
     {
         Op op;
         if ( t.kind == Token::FUNC )
         {
-            op.code = kFuncs[t.idx].code;
+            op.code = Funcs[t.idx].code;
             op.value = 0.f;
         }
         else
@@ -326,13 +326,13 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
         {
             case Token::NUM:
             {
-                Op o{ OP_CONST, t.num };
+                Op o{ OpConst, t.num };
                 m_prog.push_back( o );
                 break;
             }
             case Token::VAR:
             {
-                Op o{ OP_VAR, (float)t.idx };
+                Op o{ OpVar, (float)t.idx };
                 m_prog.push_back( o );
                 break;
             }
@@ -341,7 +341,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             case Token::COMMA:
                 while ( !stack.empty() && stack.back().kind != Token::LPAREN )
                 {
-                    popOpToProg( stack.back() );
+                    pop_op_to_prog( stack.back() );
                     stack.pop_back();
                 }
                 if ( stack.empty() )
@@ -353,7 +353,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
                              || ( precedence( stack.back().idx ) == precedence( t.idx )
                                   && !rightAssoc( t.idx ) ) ) )
                 {
-                    popOpToProg( stack.back() );
+                    pop_op_to_prog( stack.back() );
                     stack.pop_back();
                 }
                 stack.push_back( t );
@@ -361,7 +361,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
             case Token::RPAREN:
                 while ( !stack.empty() && stack.back().kind != Token::LPAREN )
                 {
-                    popOpToProg( stack.back() );
+                    pop_op_to_prog( stack.back() );
                     stack.pop_back();
                 }
                 if ( stack.empty() )
@@ -369,7 +369,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
                 stack.pop_back(); // the '('
                 if ( !stack.empty() && stack.back().kind == Token::FUNC )
                 {
-                    popOpToProg( stack.back() );
+                    pop_op_to_prog( stack.back() );
                     stack.pop_back();
                 }
                 break;
@@ -379,7 +379,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
     {
         if ( stack.back().kind == Token::LPAREN )
             return fail( "unbalanced '('" );
-        popOpToProg( stack.back() );
+        pop_op_to_prog( stack.back() );
         stack.pop_back();
     }
 
@@ -387,7 +387,7 @@ bool ExprProgram::compile( const std::string &formula, const std::string &contex
     int depth = 0;
     for ( const Op &op : m_prog )
     {
-        if ( op.code == OP_CONST || op.code == OP_VAR )
+        if ( op.code == OpConst || op.code == OpVar )
         {
             ++depth;
             continue;
@@ -436,13 +436,13 @@ float ExprProgram::eval( const float *vars ) const
 
     for ( const Op &op : m_prog )
     {
-        if ( op.code == OP_CONST )
+        if ( op.code == OpConst )
         {
             if ( sp < 32 )
                 st[sp++] = op.value;
             continue;
         }
-        if ( op.code == OP_VAR )
+        if ( op.code == OpVar )
         {
             if ( sp < 32 )
                 st[sp++] = vars[(int)op.value];

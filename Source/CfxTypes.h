@@ -14,12 +14,12 @@
  *
  * One value per independent compute-shader sim owned by ComputeFX (fractal
  * flames, particle advection, N-body gravity, and so on). Adding a new sim
- * only requires a new entry here, a matching row in kCfxInfo (ComputeFX.cpp)
+ * only requires a new entry here, a matching row in CfxInfoTable (ComputeFX.cpp)
  * giving it a sampler name and texture unit, and a stepXxx() function in
  * ComputeFX — nothing else in the engine needs to change. CFX_COUNT is not a
  * real kind; it is the sentinel used to size per-kind arrays.
  */
-enum CfxKind
+enum CfxKindE
 {
     CFX_FLAME = 0, ///< fractal flames (IFS + atomic density histogram)
     CFX_PARTICLES, ///< millions of particles advected through a flow field
@@ -43,14 +43,14 @@ enum CfxKind
 /**
  * @brief The sampler name and texture unit a compute-FX kind publishes on.
  *
- * Each CfxKind gets exactly one entry: the uniform name an effect shader
+ * Each CfxKindE gets exactly one entry: the uniform name an effect shader
  * must declare to opt into reading that sim's output, and the global texture
- * unit ComputeFX binds its result texture to. The table itself (kCfxInfo) is
- * defined in ComputeFX.cpp, indexed by CfxKind.
+ * unit ComputeFX binds its result texture to. The table itself (CfxInfoTable) is
+ * defined in ComputeFX.cpp, indexed by CfxKindE.
  */
 struct CfxInfo
 {
     const char *sampler; ///< uniform name an effect declares to request this sim
     int         unit;    ///< global texture unit it is published on
 };
-extern const CfxInfo kCfxInfo[CFX_COUNT]; ///< per-kind sampler/unit table, defined in ComputeFX.cpp
+extern const CfxInfo CfxInfoTable[CFX_COUNT]; ///< per-kind sampler/unit table, defined in ComputeFX.cpp

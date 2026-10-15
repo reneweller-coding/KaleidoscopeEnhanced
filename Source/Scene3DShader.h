@@ -25,7 +25,7 @@
 //   mesh    real .glb/.obj model  opaque, depth-tested (attrA.xyz=pos/.w=U,
 //                                 attrB.xyz=normal/.w=V -- see MeshImport.h);
 //                                 its material, if any, samples "texMeshMaterial"
-//                                 (sampler2DArray, unit kMeshMaterialTexUnit)
+//                                 (sampler2DArray, unit MeshMaterialTexUnit)
 //
 // The CURRENT IMAGE is available to every scene: the host binds it on unit 0
 // before the effect pass and setUniforms() points "tex0" at it — a fragment
@@ -154,7 +154,7 @@ public:
     void setShadowExtent( float e )
     {
         m_shadowExtent = e;
-    } ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::kShadowExtent).
+    } ///< @param e Half-width of the shadow-map light box for this scene (overrides EffectShader::ShadowExtent).
     void setModelPath( const std::string &path )
     {
         m_modelPath = path;
@@ -202,7 +202,7 @@ public:
     // 0.5); geom="indirect" generators never see it themselves -- it reaches
     // them indirectly, via the shared IndirectClamp.comp pass capping the
     // drawn vertex count to maxVertices*budget (see runGenerator()).
-    static float s_cubeBudget; ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd/half, ...);
+    static float M_CubeBudget; ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd/half, ...);
                                ///< GEOM_CUBES reads it as the `cubeBudget` uniform, geom="indirect" scenes get it via
                                ///< IndirectClamp.comp's `budget` uniform instead.
 
@@ -240,7 +240,7 @@ private:
      * Selected from the preset's geom= string in the constructor; see the file-level comment
      * and buildGeometry()'s per-branch comments for the exact vertex counts and layout.
      */
-    enum GeomKind
+    enum GeomKindE
     {
         GEOM_POINTS = 0,
         GEOM_CUBES = 1,
@@ -264,7 +264,7 @@ private:
     GLuint m_genProg = 0;     ///< The scene's generator compute program built from m_compFilename (0 = none / compile
                               ///< failed); dispatched by runGenerator().
     GLuint m_cmdBuf = 0; ///< GL_DRAW_INDIRECT_BUFFER holding one DrawArraysIndirectCommand; its vertex count is written
-                         ///< on the GPU by the generator and clamped by s_clampProg, and never read back by the CPU.
+                         ///< on the GPU by the generator and clamped by M_ClampProg, and never read back by the CPU.
     bool m_genTried = false;  ///< True once setupIndirect() has run; compilation is attempted exactly once and the
                               ///< outcome cached in m_genProg.
     int m_meshCapacity = 0;   ///< Vertices the GEOM_INDIRECT VBO can hold (600000, 8 floats each); uploaded to the
@@ -298,9 +298,9 @@ private:
      *
      * A SEPARATE cache from that one is required (not a reuse of m_exprs' own
      * ExprEntry::loc/progId fields): m_uniforms/m_exprs are inherited from EffectShader and are
-     * ALSO resolved every frame against m_sh_prog_id by applyAudioFeatures() for the fragment
+     * ALSO resolved every frame against m_shProgId by applyAudioFeatures() for the fragment
      * stage of this very scene, so a single shared progId-tagged cache slot per entry would
-     * thrash between the two programs every frame (m_sh_prog_id, then m_genProg, then back) and
+     * thrash between the two programs every frame (m_shProgId, then m_genProg, then back) and
      * never actually hit.
      */
     struct GenLocCache
@@ -319,7 +319,7 @@ private:
               /**< `audioMid`: mid band level. */ audioChroma = -1,
               /**< `audioChroma`: float[12] pitch-class energies. */ audioSpectrum =
                   -1; ///< `audioSpectrum`:
-                      ///< float[AudioFeatures::kSpectrumBands]
+                      ///< float[AudioFeatures::SpectrumBands]
                       ///< band spectrum.
         GLint texSpectro = -1,
               /**< `texSpectro`: spectrogram history sampler (always unit 28). */ spectroHead = -1,
@@ -385,13 +385,13 @@ private:
                                    ///< behaviour); set via setGenPassCount().
     unsigned int m_frameIndex = 0; ///< Running frame counter uploaded to the generator as `frameIndex`; incremented
                                    ///< once per runGenerator() call.
-    AudioFeatures m_lastAudio;                                  ///< this scene's features, for the generator
-    float         m_lastTime = 0.f;                             ///< raw time from setUniforms, ditto
-    float         m_shadowExtent = EffectShader::kShadowExtent; ///< This scene's shadow-map light box half-width (see
-                                                                ///< setShadowExtent()/shadowExtent()).
+    AudioFeatures m_lastAudio;                                 ///< this scene's features, for the generator
+    float         m_lastTime = 0.f;                            ///< raw time from setUniforms, ditto
+    float         m_shadowExtent = EffectShader::ShadowExtent; ///< This scene's shadow-map light box half-width (see
+                                                               ///< setShadowExtent()/shadowExtent()).
     // The counter-clamp pass is identical for every indirect scene, so it is
     // compiled once for the process.
-    static GLuint s_clampProg; ///< Shared "IndirectClamp.comp" program that clamps a generator's overflowed vertex
+    static GLuint M_ClampProg; ///< Shared "IndirectClamp.comp" program that clamps a generator's overflowed vertex
                                ///< counter back into range; compiled once for the whole process.
 
     // Optional pipeline stages, named after the fragment shader
@@ -407,7 +407,7 @@ private:
      * offset, all held constant for the whole activation so nothing flickers. */
     void rollVariation();
 
-    int m_geomKind = GEOM_POINTS; ///< This instance's GeomKind, fixed at construction from the preset's geom=
+    int m_geomKind = GEOM_POINTS; ///< This instance's GeomKindE, fixed at construction from the preset's geom=
                                   ///< attribute.
     GLuint m_vbo = 0; ///< Vertex buffer holding this scene's geometry (host-built for most kinds; GPU-filled every
                       ///< frame for GEOM_INDIRECT).
@@ -438,8 +438,8 @@ private:
     // kHighestUnitUsed constant this bumped from 35 to 36. Fixed rather than
     // auto-assigned: every mesh scene needs the SAME unit reserved, the same
     // way texSpectro is always unit 28.
-    static const int kMeshMaterialTexUnit = 36; ///< Fixed texture unit for `texMeshMaterial` (model 1's material
-                                                ///< array); see the comment above for why it is fixed and this high.
+    static const int MeshMaterialTexUnit = 36; ///< Fixed texture unit for `texMeshMaterial` (model 1's material
+                                               ///< array); see the comment above for why it is fixed and this high.
 
     // ---- optional SECOND model (config attribute model2=) ----
     // For scenes that stage two objects against each other -- a ship coming
@@ -479,7 +479,7 @@ private:
     GLint            m_mesh2VertexCountUni = -1;    ///< Location of the `mesh2VertexCount` uniform.
     GLint            m_meshMaterial2Uni = -1;       ///< Location of the `texMeshMaterial2` uniform.
     GLint            m_meshMaterial2LayersUni = -1; ///< Location of the `texMeshMaterialLayers2` uniform.
-    static const int kMeshMaterial2TexUnit = 37;    ///< One past kMeshMaterialTexUnit; see that constant for why a high
+    static const int MeshMaterial2TexUnit = 37;     ///< One past MeshMaterialTexUnit; see that constant for why a high
                                                     ///< fixed unit is safe here.
     // A GEOM_MESH scene's VBO holds the loaded model's own vertices FIRST,
     // then a big enclosing "sky shell" (see buildGeometry()) so the object
@@ -521,9 +521,9 @@ private:
                                   ///< (and model 2, if any) follow from this index on. Uploaded as `meshVertexCount`; 0
                                   ///< while no mesh is resident.
     GLint            m_meshVertexCountUni = -1; ///< Location of the `meshVertexCount` uniform (GEOM_MESH only).
-    static const int kSkyShellRadius = 190; ///< World-space radius of the sky shell; must clear the largest scaled-up
-                                            ///< mesh (see each geom="mesh" .vert's kModelScale) and stay under
-                                            ///< kSceneFar (220).
+    static const int SkyShellRadius = 190; ///< World-space radius of the sky shell; must clear the largest scaled-up
+                                           ///< mesh (see each geom="mesh" .vert's kModelScale) and stay under
+                                           ///< SceneFar (220).
     GLint m_projUni = -1;                       ///< Location of the `projM` (projection * camera-rig) matrix uniform.
     GLint m_eyeUni = -1;                        ///< Location of the `eyeOff` stereo eye-offset uniform.
     // CAMERA RIG (formula layer, no shader edits): <expr> entries named

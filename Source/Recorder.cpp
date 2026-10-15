@@ -200,16 +200,16 @@ static QStringList computeVideoCodecArgs()
         // add a startup delay on machines with no hardware encoder -- exactly
         // the ones that can least afford it. libx265/libsvtav1 get no such pass:
         // plenty of ffmpeg builds ship without them.
-        const bool assumePresent = ( qstrcmp( c.name, "libx264" ) == 0 );
-        const bool isSoftware = assumePresent
-                                || qstrcmp( c.name, "libx265" ) == 0
-                                || qstrcmp( c.name, "libsvtav1" ) == 0;
-        if ( assumePresent || probeEncoder( c.name, c.args ) )
+        const bool assume_present = ( qstrcmp( c.name, "libx264" ) == 0 );
+        const bool is_software = assume_present
+                                 || qstrcmp( c.name, "libx265" ) == 0
+                                 || qstrcmp( c.name, "libsvtav1" ) == 0;
+        if ( assume_present || probeEncoder( c.name, c.args ) )
         {
             cached = c.args;
             cached << "-pix_fmt" << "yuv420p";
             fprintf( stderr, "[recorder] video encoder: %s (%s)\n",
-                     c.name, isSoftware ? "CPU, no hardware encoder found" : "hardware" );
+                     c.name, is_software ? "CPU, no hardware encoder found" : "hardware" );
             return cached;
         }
     }
@@ -222,13 +222,13 @@ static QStringList computeVideoCodecArgs()
                  qPrintable( fam ) );
         for ( const Candidate &c : codecFamily( "h264" ) )
         {
-            const bool assumePresent = ( qstrcmp( c.name, "libx264" ) == 0 );
-            if ( assumePresent || probeEncoder( c.name, c.args ) )
+            const bool assume_present = ( qstrcmp( c.name, "libx264" ) == 0 );
+            if ( assume_present || probeEncoder( c.name, c.args ) )
             {
                 cached = c.args;
                 cached << "-pix_fmt" << "yuv420p";
                 fprintf( stderr, "[recorder] video encoder: %s (%s)\n",
-                         c.name, assumePresent ? "CPU" : "hardware" );
+                         c.name, assume_present ? "CPU" : "hardware" );
                 return cached;
             }
         }
@@ -531,24 +531,24 @@ bool Recorder::ensureBlurTargets( int w, int h )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    GLint prevFbo = 0;
-    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
+    GLint prev_fbo = 0;
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prev_fbo );
 
     if ( m_mbAccumFbo == 0 )
         glGenFramebuffers( 1, &m_mbAccumFbo );
     glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbAccumTex, 0 );
-    const bool okA = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
+    const bool ok_a = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
 
     if ( m_mbResolveFbo == 0 )
         glGenFramebuffers( 1, &m_mbResolveFbo );
     glBindFramebuffer( GL_FRAMEBUFFER, m_mbResolveFbo );
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbResolveTex, 0 );
-    const bool okB = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
+    const bool ok_b = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
 
-    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prevFbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prev_fbo );
 
-    m_mbReady = okA && okB;
+    m_mbReady = ok_a && ok_b;
     if ( !m_mbReady )
     {
         fputs( "[recorder] motion blur: framebuffer incomplete - disabled, "
@@ -561,7 +561,7 @@ bool Recorder::ensureBlurTargets( int w, int h )
     glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
     glClearColor( 0.f, 0.f, 0.f, 0.f );
     glClear( GL_COLOR_BUFFER_BIT );
-    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prevFbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prev_fbo );
     m_mbCount = 0;
     fprintf( stderr, "[recorder] motion blur: %dx%d accumulation active\n", w, h );
     return true;
@@ -569,8 +569,8 @@ bool Recorder::ensureBlurTargets( int w, int h )
 
 void Recorder::accumulateFrame( int w, int h )
 {
-    GLint prevFbo = 0;
-    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
+    GLint prev_fbo = 0;
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prev_fbo );
 
     // Grab the rendered frame as a texture. No shader, no extra pass.
     glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
@@ -594,7 +594,7 @@ void Recorder::accumulateFrame( int w, int h )
     glBindVertexArray( 0 );
     glDisable( GL_BLEND );
 
-    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prevFbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prev_fbo );
     glViewport( 0, 0, w, h );
     ++m_mbCount;
 }
@@ -731,8 +731,8 @@ static double recordFps()
         // KALEIDO_RECORD_FPS schlaegt die ini -- fuer Messlaeufe, die 60 fps
         // brauchen (das Strobe-Mass aliast bei 30), ohne die Einstellung
         // des Nutzers anzufassen.
-        const int envFps = qEnvironmentVariableIntValue( "KALEIDO_RECORD_FPS" );
-        const int v = ( envFps > 0 ) ? envFps : st.value( "recordFps", 30 ).toInt();
+        const int env_fps = qEnvironmentVariableIntValue( "KALEIDO_RECORD_FPS" );
+        const int v = ( env_fps > 0 ) ? env_fps : st.value( "recordFps", 30 ).toInt();
         fps = ( v >= 45 ) ? 60.0 : 30.0; // only these two are offered
     }
     return fps;
@@ -1118,21 +1118,21 @@ void Recorder::saveReplay()
         lf.close();
     }
 
-    bool haveAudio = m_audio
-                     && m_audio->dumpReplayWav( dir + "/audio.wav", total + 0.5f );
+    bool have_audio = m_audio
+                      && m_audio->dumpReplayWav( dir + "/audio.wav", total + 0.5f );
 
     QStringList args;
     args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << ( dir + "/frames.txt" );
-    if ( haveAudio )
+    if ( have_audio )
     {
         // Der Audio-Ring hält MEHR als das Video: Anfang so trimmen, dass
         // beide Enden bündig liegen (ffmpeg -ss auf dem WAV-Input).
-        float wavLen = total + 0.5f;
-        args << "-ss" << QString::number( std::max( 0.f, wavLen - total ), 'f', 2 )
+        float wav_len = total + 0.5f;
+        args << "-ss" << QString::number( std::max( 0.f, wav_len - total ), 'f', 2 )
              << "-i" << ( dir + "/audio.wav" );
     }
     args << videoCodecArgs();
-    if ( haveAudio )
+    if ( have_audio )
         args << "-c:a" << "aac";
     args << "-shortest" << ( dir + "/replay.mp4" );
     QProcess::startDetached( "ffmpeg", args );
@@ -1186,8 +1186,8 @@ void Recorder::captureFrame( int w, int h )
     // With motion blur on, the readback must see the AVERAGE of the interval,
     // not the single frame that happened to land on the deadline. resolveBlur()
     // leaves its result bound as the read framebuffer for exactly this.
-    GLint prevRead = 0;
-    glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &prevRead );
+    GLint prev_read = 0;
+    glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &prev_read );
     const bool blurred = ( m_mbReady && m_mbCount > 0 );
     if ( blurred )
         resolveBlur( w, h );
@@ -1195,7 +1195,7 @@ void Recorder::captureFrame( int w, int h )
     asyncCapture( dur, false, w, h ); // PBO-Pfad: kein GPU->CPU-Stall
 
     if ( blurred )
-        glBindFramebuffer( GL_READ_FRAMEBUFFER, (GLuint)prevRead );
+        glBindFramebuffer( GL_READ_FRAMEBUFFER, (GLuint)prev_read );
 }
 
 // Finalisieren: WAV schließen, concat-Liste + make_video.bat schreiben und
@@ -1265,7 +1265,7 @@ void Recorder::finishRecording()
         m_audio->stopRecording(); // flusht + schließt das WAV
 
     QStringList args;
-    QString     batCmd;
+    QString     bat_cmd;
 
     if ( !m_pipeFallback && !m_videoPath.isEmpty() )
     {
@@ -1276,16 +1276,16 @@ void Recorder::finishRecording()
              << "-i" << ( m_recDir + "/audio.wav" )
              << "-c:v" << "copy" << "-c:a" << "aac"
              << "-shortest" << ( m_recDir + "/kaleidoscope.mp4" );
-        batCmd = "@echo off\r\ncd /d \"%~dp0\"\r\n"
-                 "ffmpeg -y -i video.mp4 -i audio.wav -c:v copy -c:a aac "
-                 "-shortest kaleidoscope.mp4\r\npause\r\n";
+        bat_cmd = "@echo off\r\ncd /d \"%~dp0\"\r\n"
+                  "ffmpeg -y -i video.mp4 -i audio.wav -c:v copy -c:a aac "
+                  "-shortest kaleidoscope.mp4\r\npause\r\n";
     }
     else
     {
         // Fallback: ffmpeg was not available when the recording started, so the
         // frames went to disk as JPEGs and this is the old concat mux.
-        QString listPath = m_recDir + "/frames.txt";
-        QFile   lf( listPath );
+        QString list_path = m_recDir + "/frames.txt";
+        QFile   lf( list_path );
         if ( lf.open( QIODevice::WriteOnly | QIODevice::Text ) )
         {
             QByteArray data = m_recConcat.toLocal8Bit();
@@ -1294,22 +1294,22 @@ void Recorder::finishRecording()
             lf.write( data );
             lf.close();
         }
-        args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
+        args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << list_path
              << "-i" << ( m_recDir + "/audio.wav" )
              << videoCodecArgs() << "-c:a" << "aac"
              << "-shortest" << ( m_recDir + "/kaleidoscope.mp4" );
         // Mirror whatever the probe actually selected, so the manual fallback is
         // not silently slower than the automatic mux beside it.
-        batCmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
-                          "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
-                          "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
-                     .arg( videoCodecArgs().join( ' ' ) );
+        bat_cmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
+                           "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
+                           "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
+                      .arg( videoCodecArgs().join( ' ' ) );
     }
 
     QFile bf( m_recDir + "/make_video.bat" );
     if ( bf.open( QIODevice::WriteOnly | QIODevice::Text ) )
     {
-        bf.write( batCmd.toLocal8Bit() );
+        bf.write( bat_cmd.toLocal8Bit() );
         bf.close();
     }
 

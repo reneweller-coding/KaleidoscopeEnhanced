@@ -77,7 +77,7 @@ NanoTimer::NanoTimer( void )
 
 void NanoTimer::start( void )
 {
-    m_time_stamp = getTimeStamp();
+    m_timeStamp = getTimeStamp();
 }
 
 
@@ -91,12 +91,12 @@ void NanoTimer::start( void )
 double NanoTimer::elapsed( void ) const
 {
     unsigned long long int now = getTimeStamp();
-    // printf ( "%llu\t%llu\n", now, m_time_stamp );
-    if ( M_Use_High_Frequ )
-        return static_cast<double>( now - m_time_stamp ) / ( M_GHz * 1000000.0 );
+    // printf ( "%llu\t%llu\n", now, m_timeStamp );
+    if ( M_UseHighFrequ )
+        return static_cast<double>( now - m_timeStamp ) / ( M_GHz * 1000000.0 );
     else
     {
-        return static_cast<double>( now - m_time_stamp );
+        return static_cast<double>( now - m_timeStamp );
     }
 }
 
@@ -107,7 +107,7 @@ double NanoTimer::elapsed( void ) const
  *
  * Should be used only internally by this class,
  * because the meaning of the return value is different depending on whether
- * @a M_Use_High_Frequ is true or not.
+ * @a M_UseHighFrequ is true or not.
  *
  * @return Raw QueryPerformanceCounter tick count.
  *
@@ -163,7 +163,7 @@ long long unsigned int NanoTimer::getTimeStamp( void )
 void NanoTimer::checkFrequency( void )
 {
     M_GHz = 0.001;
-    M_Use_High_Frequ = false;
+    M_UseHighFrequ = false;
 
 #ifdef _WIN32
     LARGE_INTEGER hz;
@@ -173,16 +173,16 @@ void NanoTimer::checkFrequency( void )
     else
     {
         M_GHz = hz.QuadPart / 1.0E9;
-        M_Use_High_Frequ = true;
+        M_UseHighFrequ = true;
     }
 #else
     // getTimeStamp() returns nanoseconds above, so the tick rate is exactly
     // 1e9 Hz = 1 GHz. No probing needed and none possible to get wrong.
     M_GHz = 1.0;
-    M_Use_High_Frequ = true;
+    M_UseHighFrequ = true;
 #endif
 
-    if ( M_Use_High_Frequ )
+    if ( M_UseHighFrequ )
         printf( "col::NanoTimer: found %lf GHz\n", M_GHz );
     else
     {
@@ -206,7 +206,7 @@ void NanoTimer::checkFrequency( void )
 
 bool NanoTimer::usesHighFrequ( void )
 {
-    return M_Use_High_Frequ;
+    return M_UseHighFrequ;
 }
 
 
@@ -225,7 +225,7 @@ double NanoTimer::frequ( void )
 }
 
 
-bool   NanoTimer::M_Use_High_Frequ = false;   ///< Definition of NanoTimer::M_Use_High_Frequ.
+bool   NanoTimer::M_UseHighFrequ = false;     ///< Definition of NanoTimer::M_UseHighFrequ.
 double NanoTimer::M_GHz = 0.001;              ///< Definition of NanoTimer::M_GHz.
 bool   NanoTimer::M_FrequencyChecked = false; ///< Definition of NanoTimer::M_FrequencyChecked.
 
@@ -241,27 +241,27 @@ bool   NanoTimer::M_FrequencyChecked = false; ///< Definition of NanoTimer::M_Fr
  */
 QImage prepareImage( const QImage &image )
 {
-    GLint maxSize = 1024;
+    GLint max_size = 1024;
 
     // convert image into a useful format
-    QImage convertedImage = image.convertToFormat( QImage::Format_ARGB32 ).rgbSwapped().
-                            // Flip vertically: QImage's row 0 is the TOP of the picture, but GL
-                            // samples texture (s,t)=(0,0) at the BOTTOM-left texel. Without this
-                            // every background photo went in upside down -- which is exactly what
-                            // the app showed, while PresetEditor's own loader (PreviewWidget::
-                            // makeTexture, which has always mirrored here) rendered them the right
-                            // way up. That mismatch is why probe/catalogue renders looked correct
-                            // and only the real app was wrong.
-                            mirrored( false, true )
-                                .
-                            // IgnoreAspectRatio is deliberate and stays: scenes sample this with
-                            // their own UVs, so the texture must be FILLED -- letterboxing would put
-                            // black bars into every kaleidoscope fold. SmoothTransformation is the
-                            // correction: Qt's default is FastTransformation, which on the 4:1
-                            // downscale a 4096 photo needs throws away fifteen of every sixteen
-                            // pixels. On a star field that does not just soften, it makes points
-                            // appear and vanish as the sampling moves -- measured edge contrast is
-                            // HIGHER with the fast filter, which is aliasing rather than sharpness.
-                            scaled( maxSize, maxSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
-    return convertedImage;
+    QImage converted_image = image.convertToFormat( QImage::Format_ARGB32 ).rgbSwapped().
+                             // Flip vertically: QImage's row 0 is the TOP of the picture, but GL
+                             // samples texture (s,t)=(0,0) at the BOTTOM-left texel. Without this
+                             // every background photo went in upside down -- which is exactly what
+                             // the app showed, while PresetEditor's own loader (PreviewWidget::
+                             // makeTexture, which has always mirrored here) rendered them the right
+                             // way up. That mismatch is why probe/catalogue renders looked correct
+                             // and only the real app was wrong.
+                             mirrored( false, true )
+                                 .
+                             // IgnoreAspectRatio is deliberate and stays: scenes sample this with
+                             // their own UVs, so the texture must be FILLED -- letterboxing would put
+                             // black bars into every kaleidoscope fold. SmoothTransformation is the
+                             // correction: Qt's default is FastTransformation, which on the 4:1
+                             // downscale a 4096 photo needs throws away fifteen of every sixteen
+                             // pixels. On a star field that does not just soften, it makes points
+                             // appear and vanish as the sampling moves -- measured edge contrast is
+                             // HIGHER with the fast filter, which is aliasing rather than sharpness.
+                             scaled( max_size, max_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
+    return converted_image;
 }

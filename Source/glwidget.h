@@ -66,8 +66,8 @@ struct MenuHit
  */
 class GLwidget : public QOpenGLWidget
 {
-    static const GLdouble SV_TRANSZ; ///< Unused legacy trackball constant (start view translation-Z).
-    static const GLdouble PV_TRANSZ; ///< Unused legacy trackball constant (projection view translation-Z).
+    static const GLdouble StartViewTransZ; ///< Unused legacy trackball constant (start view translation-Z).
+    static const GLdouble ProjViewTransZ;  ///< Unused legacy trackball constant (projection view translation-Z).
 
     Q_OBJECT
 
@@ -90,23 +90,23 @@ public:
 
     /// Start configuration name (CLI -c \<name\>); empty = first config. Set from
     /// main() before the widget is constructed, so it must be public.
-    static QString s_startConfig;
+    static QString M_StartConfig;
 
     /// CLI -r: start recording immediately on launch (used for testing/debugging).
-    static bool s_autoRecord;
+    static bool M_AutoRecord;
 
     /// CLI -t \<port\>: start the embedded web remote on this port (0 = off).
     /// Defaults to 8080 (on); a PERSISTED port (see loadUiSettings()) only
-    /// applies if s_remotePortFromCli stays false, same "-c wins" precedence
-    /// as s_startConfig.
-    static int s_remotePort;
+    /// applies if M_RemotePortFromCli stays false, same "-c wins" precedence
+    /// as M_StartConfig.
+    static int M_RemotePort;
     /// Set true by parsecommandline() when -t was actually passed, so a
     /// persisted remotePort setting doesn't override an explicit CLI choice.
-    static bool s_remotePortFromCli;
+    static bool M_RemotePortFromCli;
 
     /// CLI -x \<wav\>: batch render — record the offline WAV deterministically,
     /// then auto-quit once it ends (the mp4 mux continues detached).
-    static bool s_batchRender;
+    static bool M_BatchRender;
 
     // ---- Web-remote hooks (same harmless controls as the keyboard) ----
     /**
@@ -486,9 +486,9 @@ protected:
     /// knobs (reactivity/trails/mood/latency) and mapped notes to tap-tempo,
     /// blackout, or next-effect.
     void       applyMidi();
-    MidiInput *m_midi = nullptr; ///< Optional MIDI controller input; taken over from s_midiOpened once its start thread
+    MidiInput *m_midi = nullptr; ///< Optional MIDI controller input; taken over from M_MidiOpened once its start thread
                                  ///< opened a device.
-    static std::atomic<MidiInput *> s_midiOpened; ///< Handed over by the MIDI start thread (initializeGL) when a device
+    static std::atomic<MidiInput *> M_MidiOpened; ///< Handed over by the MIDI start thread (initializeGL) when a device
                                                   ///< is open.
     OscSender     m_osc; ///< OSC/UDP output of the analysis (mood, beats, bands); off unless oscPort is set.
     QElapsedTimer m_oscClock;                     ///< Wall clock for OscSender's rate limiting.
@@ -646,8 +646,8 @@ protected:
     /** @return The sweep interval in seconds, 0 when KALEIDO_SCENE_SWEEP is unset. */
     static int sweepSeconds()
     {
-        static const int s = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" );
-        return s;
+        static const int Sweep = qEnvironmentVariableIntValue( "KALEIDO_SCENE_SWEEP" );
+        return Sweep;
     }
     /** @return Whether a catalogue sweep is running (review mode, not normal playback). */
     static bool sweepActive() { return sweepSeconds() > 0; }
@@ -672,8 +672,8 @@ protected:
      * at a known moment.  Holds the scene still and walks the FX instead. */
     static int fxSweepSeconds()
     {
-        static const int s = qEnvironmentVariableIntValue( "KALEIDO_FX_SWEEP" );
-        return s;
+        static const int Sweep = qEnvironmentVariableIntValue( "KALEIDO_FX_SWEEP" );
+        return Sweep;
     }
     int    m_fxSweepIdx = 0;       ///< Next FX index the sweep will jump to.
     qint64 m_fxSweepNextMs = -1;   ///< Deadline for the next FX jump; -1 = not started.
@@ -697,7 +697,7 @@ protected:
                                                       ///< indexed by digit keys / menu / web remote.
 
     // some variables for trackball
-    float m_RotationMatrix[16]; //!< global rotation Matrix
+    float m_rotationMatrix[16]; //!< global rotation Matrix
     float m_xTrans, /**< Global X translation handed to RenderPipeline::paint() for the legacy mesh preview path (0; the
                        trackball code that moved it is commented out). */
         m_yTrans,   /**< Global Y translation for the legacy mesh preview path (0; trackball code commented out). */

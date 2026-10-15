@@ -16,7 +16,7 @@
  *
  * KNOWN LIMITATION, NOT YET ROOT-CAUSED: a scene that opts into the shadow map
  * or OIT -- meaning Scene3DShader::draw() is called MORE than once per frame,
- * with EffectShader::s_shadowPass / s_oitPass toggled between calls -- comes
+ * with EffectShader::M_ShadowPass / M_OitPass toggled between calls -- comes
  * back with part or all of its geometry missing (confirmed on ShadowForest,
  * PillarHall, CathedralGlass).  It is not a compile failure, not a missing
  * per-activation parameter (both were real, separate bugs found and fixed
@@ -171,7 +171,7 @@ private:
      * @brief Recompute the sun-style directional light's view-projection matrix for time @p t.
      *
      * Ported from RenderPipeline::updateLightMatrix; writes the shared
-     * EffectShader::s_lightDir / s_lightM statics the shadow pass and the
+     * EffectShader::M_LightDir / M_LightM statics the shadow pass and the
      * main draw both read.
      * @param t Scene time in seconds, driving the light's slow orbital sweep.
      */
@@ -219,9 +219,9 @@ private:
     int m_fboW = 0, m_fboH = 0; ///< Height #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels (see
                                 ///< #m_fboW).
 
-    static const int kShadowSize = 2048; ///< Shadow-map texture width/height in texels.
-    /// Depth-only framebuffer object for the shadow pass (GL name, owned; 0 until ensureShadowMap() ran), kShadowSize x
-    /// kShadowSize.
+    static const int ShadowSize = 2048; ///< Shadow-map texture width/height in texels.
+    /// Depth-only framebuffer object for the shadow pass (GL name, owned; 0 until ensureShadowMap() ran), ShadowSize x
+    /// ShadowSize.
     unsigned m_shadowFbo = 0, m_shadowTex = 0; ///< Depth texture attachment of #m_shadowFbo (GL name, owned), sampled
                                                ///< with hardware PCF comparison by the main draw.
 

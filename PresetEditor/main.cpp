@@ -155,10 +155,10 @@ int main( int argc, char *argv[] )
     if ( args.value( 0 ) == "--validate" )
     {
         QCoreApplication app( argc, argv );
-        const QString    cfgDir = presetsDir( findRoot() );
+        const QString    cfg_dir = presetsDir( findRoot() );
         Preset           komplett;
         QString          err;
-        if ( !Preset::load( cfgDir + "/Komplett.xml", komplett, &err ) )
+        if ( !Preset::load( cfg_dir + "/Komplett.xml", komplett, &err ) )
         {
             fprintf( stderr, "validate: cannot load Komplett.xml: %s\n", qPrintable( err ) );
             return 1;
@@ -168,11 +168,11 @@ int main( int argc, char *argv[] )
         if ( args.size() >= 2 )
             paths << args[1];
         else
-            for ( const QString &f : QDir( cfgDir ).entryList( { "*.xml" }, QDir::Files, QDir::Name ) )
+            for ( const QString &f : QDir( cfg_dir ).entryList( { "*.xml" }, QDir::Files, QDir::Name ) )
                 if ( f != "Komplett.xml" )
-                    paths << ( cfgDir + "/" + f );
+                    paths << ( cfg_dir + "/" + f );
 
-        int gaps = 0, checkedFiles = 0;
+        int gaps = 0, checked_files = 0;
         for ( const QString &path : paths )
         {
             Preset p;
@@ -181,7 +181,7 @@ int main( int argc, char *argv[] )
                 fprintf( stderr, "validate: %s: %s\n", qPrintable( path ), qPrintable( err ) );
                 continue;
             }
-            ++checkedFiles;
+            ++checked_files;
             for ( const PresetEntry &e : p.entries )
             {
                 const PresetEntry *ref = nullptr;
@@ -232,9 +232,9 @@ int main( int argc, char *argv[] )
             }
         }
         if ( gaps )
-            fprintf( stderr, "VALIDATE: %d missing param(s) across %d file(s)\n", gaps, checkedFiles );
+            fprintf( stderr, "VALIDATE: %d missing param(s) across %d file(s)\n", gaps, checked_files );
         else
-            fprintf( stderr, "VALIDATE: all %d file(s) complete vs. Komplett.xml\n", checkedFiles );
+            fprintf( stderr, "VALIDATE: all %d file(s) complete vs. Komplett.xml\n", checked_files );
         return gaps ? 1 : 0;
     }
 
@@ -317,7 +317,7 @@ int main( int argc, char *argv[] )
             return 255;
         }
         QOpenGLExtraFunctions *gl = ctx.extraFunctions();
-        auto                   readAll = []( const QString &path, QByteArray &out )
+        auto                   read_all = []( const QString &path, QByteArray &out )
         {
             QFile f( path );
             if ( !f.open( QIODevice::ReadOnly ) )
@@ -325,7 +325,7 @@ int main( int argc, char *argv[] )
             out = f.readAll();
             return true;
         };
-        auto shaderLog = [gl]( GLuint s )
+        auto shader_log = [gl]( GLuint s )
         {
             GLint n = 0;
             gl->glGetShaderiv( s, GL_INFO_LOG_LENGTH, &n );
@@ -346,17 +346,17 @@ int main( int argc, char *argv[] )
             if ( !ok )
             {
                 if ( log )
-                    *log = shaderLog( s );
+                    *log = shader_log( s );
                 gl->glDeleteShader( s );
                 return 0;
             }
             return s;
         };
         // The app's shared fullscreen vertex shader, for the link check.
-        QByteArray vsSrc;
-        GLuint     fsVert = 0;
-        if ( readAll( root + "/Engine/Fullscreen.vert", vsSrc ) )
-            fsVert = compile( GL_VERTEX_SHADER, vsSrc, nullptr );
+        QByteArray vs_src;
+        GLuint     fs_vert = 0;
+        if ( read_all( root + "/Engine/Fullscreen.vert", vs_src ) )
+            fs_vert = compile( GL_VERTEX_SHADER, vs_src, nullptr );
 
         int failed = 0, done = 0;
         for ( const QString &f : files )
@@ -379,7 +379,7 @@ int main( int argc, char *argv[] )
             else
                 continue;
             QByteArray src;
-            if ( !readAll( path, src ) )
+            if ( !read_all( path, src ) )
             {
                 fprintf( stderr, "COMPILE FAIL %s\n  cannot read\n", qPrintable( f ) );
                 ++failed;
@@ -390,10 +390,10 @@ int main( int argc, char *argv[] )
             GLuint        s = compile( type, src, &log );
             const QString rel = QDir( root ).relativeFilePath( path ).replace( '\\', '/' );
             const bool    fullscreen = type == GL_FRAGMENT_SHADER && !rel.startsWith( "Scene3D/", Qt::CaseInsensitive );
-            if ( s && fullscreen && fsVert )
+            if ( s && fullscreen && fs_vert )
             {
                 GLuint prog = gl->glCreateProgram();
-                gl->glAttachShader( prog, fsVert );
+                gl->glAttachShader( prog, fs_vert );
                 gl->glAttachShader( prog, s );
                 gl->glLinkProgram( prog );
                 GLint ok = 0;
@@ -460,23 +460,23 @@ int main( int argc, char *argv[] )
         } );
         const int W = args.value( 4, "960" ).toInt();
         const int H = args.value( 5, "600" ).toInt();
-        auto      flagValue = [&]( const QString &flag ) -> QString
+        auto      flag_value = [&]( const QString &flag ) -> QString
         {
             int i = args.indexOf( flag );
             return ( i >= 0 && i + 1 < args.size() ) ? args[i + 1] : QString();
         };
-        const QString geom = flagValue( "--geom" );
+        const QString geom = flag_value( "--geom" );
         // --images <dir>: bind real photos as tex0/tex1 instead of the
         // colourful procedural test card.  Essential for catalogue renders:
         // with the test card every imgPalette scene LOOKS rainbow-coloured
         // even though in the app it inherits the current photo's palette.
-        const QString imgDir = flagValue( "--images" );
-        if ( !imgDir.isEmpty() )
-            w->setImageDirectory( imgDir );
+        const QString img_dir = flag_value( "--images" );
+        if ( !img_dir.isEmpty() )
+            w->setImageDirectory( img_dir );
         if ( !geom.isEmpty() )
             w->setTextureShader( args[1], "scene3d", geom,
-                                 flagValue( "--stateBytes" ).toInt(),
-                                 flagValue( "--shadowExtent" ).toDouble() );
+                                 flag_value( "--stateBytes" ).toInt(),
+                                 flag_value( "--shadowExtent" ).toDouble() );
         else
             w->setTextureShader( args[1] );
         w->setCombineShader( args[2] );
@@ -486,11 +486,11 @@ int main( int argc, char *argv[] )
         // MID-transition frame of a Transitions/ shader; without it the
         // combine runs at the overlay's pinned interpolation=1.0 and a
         // transition would just show the untouched reference scene.
-        const QString transArg = flagValue( "--trans" );
-        if ( !transArg.isEmpty() )
-            w->setTransTest( 0, transArg.toFloat() );
+        const QString trans_arg = flag_value( "--trans" );
+        if ( !trans_arg.isEmpty() )
+            w->setTransTest( 0, trans_arg.toFloat() );
         if ( args.contains( "drone" ) )
-            w->setMusicMode( PreviewWidget::Drone );
+            w->setMusicMode( PreviewWidget::DRONE );
         QVector<PreviewWidget::ParamOverride> overrides;
         for ( int i = 0; i < args.size(); ++i )
         {
@@ -515,9 +515,9 @@ int main( int argc, char *argv[] )
         }
         if ( !exprs.isEmpty() )
             w->setSceneExprs( exprs );
-        const QString timeArg = flagValue( "--time" );
-        if ( !timeArg.isEmpty() )
-            w->setFixedTime( timeArg.toFloat() );
+        const QString time_arg = flag_value( "--time" );
+        if ( !time_arg.isEmpty() )
+            w->setFixedTime( time_arg.toFloat() );
         w->resize( W ? W : 960, H ? H : 600 );
         w->show();
         const QString out = args[3];
@@ -585,10 +585,10 @@ int main( int argc, char *argv[] )
                         sum += ( c.red() + c.green() + c.blue() ) / 3.0;
                         ++n;
                     }
-                const double avgLuma = n ? sum / n : 0.0;
-                const bool   ok = avgLuma > 3.0; // solid black averages ~0
+                const double avg_luma = n ? sum / n : 0.0;
+                const bool   ok = avg_luma > 3.0; // solid black averages ~0
                 fprintf( stderr, "cfxcheck %-20s avgLuma=%6.2f  %s\n",
-                         qPrintable( name ), avgLuma, ok ? "OK" : "FAIL (looks black)" );
+                         qPrintable( name ), avg_luma, ok ? "OK" : "FAIL (looks black)" );
                 if ( !ok )
                     ++state->fails;
                 ++state->idx;
@@ -617,10 +617,10 @@ int main( int argc, char *argv[] )
         // slot (the interfaces are identical: tex0/tex1/interpolation).
         // Optional --core restricts the run to the 28 split-out FxPlain
         // styles (the fast CI set); default is the full folder.
-        QStringList transFiles = QDir( root + "/Transitions" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
-        QTimer::singleShot( 800, [w, transFiles]()
+        QStringList trans_files = QDir( root + "/Transitions" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
+        QTimer::singleShot( 800, [w, trans_files]()
         {
-            auto meanDiff = []( const QImage &ia, const QImage &ib ) -> double
+            auto mean_diff = []( const QImage &ia, const QImage &ib ) -> double
             {
                 QImage    x = ia.convertToFormat( QImage::Format_RGB888 );
                 QImage    y = ib.convertToFormat( QImage::Format_RGB888 );
@@ -639,51 +639,51 @@ int main( int argc, char *argv[] )
             // Endpoint truth from the linear Crossfade: exact scene A at
             // d=0 and exact scene B at d=1, for every transition.
             w->setTransTest( 0, 0.f );
-            QImage refA = w->grabFramebuffer();
+            QImage ref_a = w->grabFramebuffer();
             w->setTransTest( 0, 1.f );
-            QImage refB = w->grabFramebuffer();
+            QImage ref_b = w->grabFramebuffer();
             int    fails = 0;
             fprintf( stderr, "TRANSCHECK  %d transition(s)  (endpoints <= 1.5/255; jump = maxStep/medianStep <= 6)\n",
-                     (int)transFiles.size() );
-            for ( const QString &tf : transFiles )
+                     (int)trans_files.size() );
+            for ( const QString &tf : trans_files )
             {
                 // Folder-qualified: a bare name would resolve through the
                 // preview's Scene2D-first search order, and Scene2D carries
                 // a VoronoiShatter.frag SCENE that shadows the transition.
                 w->setCombineShader( "Transitions/" + tf );
                 QImage              prev;
-                std::vector<double> stepDiffs;
-                double              endA = 0.0, endB = 0.0, maxStep = 0.0;
+                std::vector<double> step_diffs;
+                double              end_a = 0.0, end_b = 0.0, max_step = 0.0;
                 for ( int i = 0; i <= steps; ++i )
                 {
                     w->setTransTest( 0, float( i ) / steps );
                     QImage f = w->grabFramebuffer();
                     if ( i == 0 )
-                        endA = meanDiff( f, refA );
+                        end_a = mean_diff( f, ref_a );
                     if ( i == steps )
-                        endB = meanDiff( f, refB );
+                        end_b = mean_diff( f, ref_b );
                     if ( i > 0 )
                     {
-                        double d = meanDiff( f, prev );
-                        stepDiffs.push_back( d );
-                        if ( d > maxStep )
-                            maxStep = d;
+                        double d = mean_diff( f, prev );
+                        step_diffs.push_back( d );
+                        if ( d > max_step )
+                            max_step = d;
                     }
                     prev = f;
                 }
-                std::sort( stepDiffs.begin(), stepDiffs.end() );
-                double med = stepDiffs[stepDiffs.size() / 2];
-                double jump = ( med > 0.05 ) ? maxStep / med : 0.0;
-                bool   ok = endA <= 1.5 && endB <= 1.5 && jump <= 6.0;
+                std::sort( step_diffs.begin(), step_diffs.end() );
+                double med = step_diffs[step_diffs.size() / 2];
+                double jump = ( med > 0.05 ) ? max_step / med : 0.0;
+                bool   ok = end_a <= 1.5 && end_b <= 1.5 && jump <= 6.0;
                 if ( !ok )
                     ++fails;
                 fprintf( stderr, "%-38s endA %5.2f  endB %5.2f  maxStep %6.2f  jump %5.1fx  %s\n",
-                         qPrintable( tf ), endA, endB, maxStep, jump, ok ? "OK" : "FAIL" );
+                         qPrintable( tf ), end_a, end_b, max_step, jump, ok ? "OK" : "FAIL" );
             }
             if ( fails )
                 fprintf( stderr, "TRANSCHECK: %d transition(s) FAILED\n", fails );
             else
-                fprintf( stderr, "TRANSCHECK: all %d transitions OK\n", (int)transFiles.size() );
+                fprintf( stderr, "TRANSCHECK: all %d transitions OK\n", (int)trans_files.size() );
             qApp->exit( fails ? 1 : 0 );
         } );
         return app.exec();
@@ -722,7 +722,7 @@ int main( int argc, char *argv[] )
         // "drone": the synthetic profile without transients, so what remains
         // of flick is the transition's own clock-driven motion.
         if ( args.contains( "drone" ) )
-            w->setMusicMode( PreviewWidget::Drone );
+            w->setMusicMode( PreviewWidget::DRONE );
         // --scene Blit.frag: a STILL photo as scene A, so flick is the
         // transition's motion alone and not the scene's own movement
         // leaking through wherever a wipe shows more of it than a mix does.
@@ -743,23 +743,23 @@ int main( int argc, char *argv[] )
             if ( xf.open( QIODevice::ReadOnly ) )
             {
                 const QString            src = QString::fromUtf8( xf.readAll() );
-                const QRegularExpression reEntry( "<TransitionShader\\b([^>]*)>(.*?)</TransitionShader>",
-                                                  QRegularExpression::DotMatchesEverythingOption );
-                const QRegularExpression reFile( "file=\"([^\"]+)\"" );
-                const QRegularExpression reFloat(
+                const QRegularExpression re_entry( "<TransitionShader\\b([^>]*)>(.*?)</TransitionShader>",
+                                                   QRegularExpression::DotMatchesEverythingOption );
+                const QRegularExpression re_file( "file=\"([^\"]+)\"" );
+                const QRegularExpression re_float(
                     "<float\\s+name=\"([^\"]+)\"\\s+minValue=\"([^\"]+)\"\\s+maxValue=\"([^\"]+)\"" );
-                auto it = reEntry.globalMatch( src );
+                auto it = re_entry.globalMatch( src );
                 while ( it.hasNext() )
                 {
                     const auto m = it.next();
-                    const auto fm = reFile.match( m.captured( 1 ) );
+                    const auto fm = re_file.match( m.captured( 1 ) );
                     if ( !fm.hasMatch() )
                         continue;
                     QString f = fm.captured( 1 );
                     f.replace( '\\', '/' );
                     Entry e;
                     e.file = f.section( '/', -1, -1, QString::SectionSkipEmpty );
-                    auto pit = reFloat.globalMatch( m.captured( 2 ) );
+                    auto pit = re_float.globalMatch( m.captured( 2 ) );
                     while ( pit.hasNext() )
                     {
                         const auto  pm = pit.next();
@@ -771,14 +771,14 @@ int main( int argc, char *argv[] )
             }
         }
         const int     steps = std::max( 8, flag( "--steps" ).isEmpty() ? 40 : flag( "--steps" ).toInt() );
-        const QString outPath = flag( "--out" );
+        const QString out_path = flag( "--out" );
         // --flicktime 8.0 samples ON the preview's kick (envelope peak), which
         // is how a kick-coupled transition shows itself; default is between beats.
-        const float flickT = flag( "--flicktime" ).isEmpty() ? 8.25f : flag( "--flicktime" ).toFloat();
+        const float flick_t = flag( "--flicktime" ).isEmpty() ? 8.25f : flag( "--flicktime" ).toFloat();
 
-        QTimer::singleShot( 800, [w, entries, steps, outPath, flickT]()
+        QTimer::singleShot( 800, [w, entries, steps, out_path, flick_t]()
         {
-            auto meanDiff = []( const QImage &ia, const QImage &ib ) -> double
+            auto mean_diff = []( const QImage &ia, const QImage &ib ) -> double
             {
                 QImage    x = ia.convertToFormat( QImage::Format_RGB888 );
                 QImage    y = ib.convertToFormat( QImage::Format_RGB888 );
@@ -793,7 +793,7 @@ int main( int argc, char *argv[] )
                 }
                 return s / ( double( x.height() ) * bytes );
             };
-            auto meanLuma = []( const QImage &ia ) -> double
+            auto mean_luma = []( const QImage &ia ) -> double
             {
                 QImage x = ia.convertToFormat( QImage::Format_RGB888 );
                 double s = 0.0;
@@ -807,7 +807,7 @@ int main( int argc, char *argv[] )
                 return n ? s / n : 0.0;
             };
             const float ds[3] = { 0.25f, 0.5f, 0.75f };
-            auto        clockFlicker = [&]( double out3[3] )
+            auto        clock_flicker = [&]( double out3[3] )
             {
                 for ( int k = 0; k < 3; ++k )
                 {
@@ -817,16 +817,16 @@ int main( int argc, char *argv[] )
                     // envelope is at its peak and falls by a third in one
                     // frame, which reads as "flicker" in every kick-coupled
                     // transition and says nothing about its speed.
-                    w->setFixedTime( flickT );
+                    w->setFixedTime( flick_t );
                     QImage a = w->grabFramebuffer();
-                    w->setFixedTime( flickT + 1.f / 30.f );
+                    w->setFixedTime( flick_t + 1.f / 30.f );
                     QImage b = w->grabFramebuffer();
-                    out3[k] = meanDiff( a, b );
+                    out3[k] = mean_diff( a, b );
                 }
                 w->setFixedTime( 8.f );
             };
 
-            FILE *out = outPath.isEmpty() ? stdout : std::fopen( qPrintable( outPath ), "w" );
+            FILE *out = out_path.isEmpty() ? stdout : std::fopen( qPrintable( out_path ), "w" );
             if ( !out )
                 out = stdout;
             std::fprintf( out, "name\ttv\tcore80\tpeak\tflick\tflash\tsteps\n" );
@@ -835,7 +835,7 @@ int main( int argc, char *argv[] )
             double base[3] = { 0.0, 0.0, 0.0 };
             w->setParamOverrides( {} );
             w->setCombineShader( "Transitions/Crossfade.frag" );
-            clockFlicker( base );
+            clock_flicker( base );
 
             for ( const Entry &e : *entries )
             {
@@ -844,19 +844,19 @@ int main( int argc, char *argv[] )
                 w->setFixedTime( 8.f );
                 std::vector<double> st;
                 QImage              prev;
-                double              lumaA = 0.0, lumaB = 0.0, lumaMax = 0.0;
+                double              luma_a = 0.0, luma_b = 0.0, luma_max = 0.0;
                 for ( int i = 0; i <= steps; ++i )
                 {
                     w->setTransTest( 0, float( i ) / steps );
                     QImage       f = w->grabFramebuffer();
-                    const double l = meanLuma( f );
+                    const double l = mean_luma( f );
                     if ( i == 0 )
-                        lumaA = l;
+                        luma_a = l;
                     if ( i == steps )
-                        lumaB = l;
-                    lumaMax = std::max( lumaMax, l );
+                        luma_b = l;
+                    luma_max = std::max( luma_max, l );
                     if ( i > 0 )
-                        st.push_back( meanDiff( f, prev ) );
+                        st.push_back( mean_diff( f, prev ) );
                     prev = f;
                 }
                 double tv = 0.0, mx = 0.0;
@@ -881,7 +881,7 @@ int main( int argc, char *argv[] )
                     }
                 }
                 double fl[3];
-                clockFlicker( fl );
+                clock_flicker( fl );
                 double flick = 0.0;
                 for ( int k = 0; k < 3; ++k )
                     flick = std::max( flick, fl[k] - base[k] );
@@ -891,7 +891,7 @@ int main( int argc, char *argv[] )
                 std::fprintf( out, "%s\t%.2f\t%.3f\t%.3f\t%.2f\t%.1f\t%s\n",
                               qPrintable( e.file ), tv, tv > 0.05 ? double( best ) / steps : 1.0,
                               tv > 0.05 ? mx / tv : 0.0, flick,
-                              lumaMax - std::max( lumaA, lumaB ), qPrintable( list ) );
+                              luma_max - std::max( luma_a, luma_b ), qPrintable( list ) );
                 std::fflush( out );
             }
             if ( out != stdout )

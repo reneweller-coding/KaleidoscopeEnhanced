@@ -1,0 +1,45 @@
+# Naming after the CGVR programming guidelines (cgvr.informatik.uni-bremen.de/progr/guidelines.shtml).
+# Run it through Tools/cgvr_tidy.py, which builds the compile database from the .vcxproj files.
+# Where the guidelines name no rule (parameters, global and file-static variables, the fields of plain
+# data structs, macros, namespaces) no style is set, so nothing is renamed there.
+---
+Checks: '-*,readability-identifier-naming'
+HeaderFilterRegex: '.*[\\/](Source|PresetEditor|SetupTool)[\\/].*'
+CheckOptions:
+  # Classes, structs and unions: MyCoolClass.
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.UnionCase: CamelCase
+  # Enum types end in E; their members are written like defines: COL_TRUE.
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.EnumSuffix: E
+  readability-identifier-naming.EnumConstantCase: UPPER_CASE
+  readability-identifier-naming.ScopedEnumConstantCase: UPPER_CASE
+  # Typedefs, type aliases and template type parameters end in T: SomeThingT, <MyTypeT>.
+  readability-identifier-naming.TypedefCase: CamelCase
+  readability-identifier-naming.TypedefSuffix: T
+  readability-identifier-naming.TypeAliasCase: CamelCase
+  readability-identifier-naming.TypeAliasSuffix: T
+  readability-identifier-naming.TypeTemplateParameterCase: CamelCase
+  readability-identifier-naming.TypeTemplateParameterSuffix: T
+  # Methods and functions: calcSomeCoolValue().
+  readability-identifier-naming.MethodCase: camelBack
+  readability-identifier-naming.FunctionCase: camelBack
+  readability-identifier-naming.IgnoreMainLikeFunctions: true
+  # Instance variables of a class: m_var; class variables: M_ClassVar.
+  readability-identifier-naming.PrivateMemberPrefix: m_
+  readability-identifier-naming.PrivateMemberCase: camelBack
+  readability-identifier-naming.ProtectedMemberPrefix: m_
+  readability-identifier-naming.ProtectedMemberCase: camelBack
+  readability-identifier-naming.ClassMemberPrefix: M_
+  readability-identifier-naming.ClassMemberCase: CamelCase
+  # Constants: const int MaxNum = 10.
+  readability-identifier-naming.GlobalConstantCase: CamelCase
+  readability-identifier-naming.StaticConstantCase: CamelCase
+  readability-identifier-naming.ClassConstantCase: CamelCase
+  readability-identifier-naming.ConstexprVariableCase: CamelCase
+  # Local variables: mylocalvar or my_local_var.
+  readability-identifier-naming.LocalVariableCase: lower_case
+  readability-identifier-naming.LocalConstantCase: lower_case
+  readability-identifier-naming.LocalPointerCase: lower_case
+  readability-identifier-naming.LocalConstantPointerCase: lower_case

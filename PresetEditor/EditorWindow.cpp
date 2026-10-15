@@ -105,63 +105,63 @@ EditorWindow::EditorWindow( const QString &projectRoot, QWidget *parent )
     QVBoxLayout *pl = new QVBoxLayout( panel );
 
     // Preview selection
-    QGroupBox   *gSel = new QGroupBox( "Preview  (keys: [ ] texture · , . combine · m music)" );
-    QFormLayout *fSel = new QFormLayout( gSel );
+    QGroupBox   *g_sel = new QGroupBox( "Preview  (keys: [ ] texture · , . combine · m music)" );
+    QFormLayout *f_sel = new QFormLayout( g_sel );
     m_texCombo = new QComboBox();
     m_combCombo = new QComboBox();
-    fSel->addRow( "Texture shader", m_texCombo );
-    fSel->addRow( "Combine shader", m_combCombo );
-    QComboBox *musicCombo = new QComboBox();
-    musicCombo->addItems( { "Beat (120 BPM kicks)", "Drone (ambient swells)" } );
-    fSel->addRow( "Music", musicCombo );
-    m_musicCombo = musicCombo;
+    f_sel->addRow( "Texture shader", m_texCombo );
+    f_sel->addRow( "Combine shader", m_combCombo );
+    QComboBox *music_combo = new QComboBox();
+    music_combo->addItems( { "Beat (120 BPM kicks)", "Drone (ambient swells)" } );
+    f_sel->addRow( "Music", music_combo );
+    m_musicCombo = music_combo;
     // REAL audio preview: a WAV is analysed by the actual AudioAnalyzer and
     // its feature timeline (+ the sound, looped) drives the preview.
-    QPushButton *bWav = new QPushButton( "Audio-WAV…  (w)" );
-    fSel->addRow( "Real audio", bWav );
-    pl->addWidget( gSel );
+    QPushButton *b_wav = new QPushButton( "Audio-WAV…  (w)" );
+    f_sel->addRow( "Real audio", b_wav );
+    pl->addWidget( g_sel );
 
     // Live sliders for the previewed shaders' per-activation parameters
     // (ranges from Komplett.xml; values override the preview defaults).
     m_paramBox = new QGroupBox( "Shader-Parameter (Preview)" );
     QVBoxLayout *pv = new QVBoxLayout( m_paramBox );
-    QWidget     *pfHost = new QWidget();
-    m_paramForm = new QFormLayout( pfHost );
+    QWidget     *pf_host = new QWidget();
+    m_paramForm = new QFormLayout( pf_host );
     m_paramForm->setContentsMargins( 0, 0, 0, 0 );
-    pv->addWidget( pfHost );
-    QHBoxLayout *pBtns = new QHBoxLayout();
-    QPushButton *bDice = new QPushButton( "Würfeln" );
-    QPushButton *bFreeze = new QPushButton( "Als Festwerte in gewählten Eintrag" );
-    bDice->setToolTip( "Alle Parameter-Slider zufällig setzen" );
-    bFreeze->setToolTip( "Die aktuellen Slider-Werte als min=max-Parameter in den in der "
-                         "Tabelle gewählten Preset-Eintrag schreiben" );
-    pBtns->addWidget( bDice );
-    pBtns->addWidget( bFreeze );
-    pv->addLayout( pBtns );
+    pv->addWidget( pf_host );
+    QHBoxLayout *p_btns = new QHBoxLayout();
+    QPushButton *b_dice = new QPushButton( "Würfeln" );
+    QPushButton *b_freeze = new QPushButton( "Als Festwerte in gewählten Eintrag" );
+    b_dice->setToolTip( "Alle Parameter-Slider zufällig setzen" );
+    b_freeze->setToolTip( "Die aktuellen Slider-Werte als min=max-Parameter in den in der "
+                          "Tabelle gewählten Preset-Eintrag schreiben" );
+    p_btns->addWidget( b_dice );
+    p_btns->addWidget( b_freeze );
+    pv->addLayout( p_btns );
     // Transition test bench: sweep the currently selected combine/transition
     // shader's interpolation back and forth in slow motion (~10 s round
     // trip).  Since the Transitions/ split the combine combo lists the
     // transition shaders too, so any of them can be inspected here.
-    QHBoxLayout *tBench = new QHBoxLayout();
+    QHBoxLayout *t_bench = new QHBoxLayout();
     m_transCheck = new QCheckBox( "Übergangs-Zeitlupe" );
     m_transCheck->setToolTip( "Überblendung des gewählten Combine-/Transition-"
                               "Shaders in Zeitlupe hin- und herfahren. "
                               "Headless-Prüfung aller Transitions: PresetEditor --transcheck" );
-    tBench->addWidget( m_transCheck );
-    tBench->addStretch( 1 );
-    pv->addLayout( tBench );
-    auto applyBench = [this]
+    t_bench->addWidget( m_transCheck );
+    t_bench->addStretch( 1 );
+    pv->addLayout( t_bench );
+    auto apply_bench = [this]
     {
         m_preview->setTransTest( m_transCheck->isChecked() ? 0 : -1 );
     };
-    connect( m_transCheck, &QCheckBox::toggled, this, applyBench );
+    connect( m_transCheck, &QCheckBox::toggled, this, apply_bench );
     pl->addWidget( m_paramBox );
-    connect( bDice, &QPushButton::clicked, this, &EditorWindow::randomizeParams );
-    connect( bFreeze, &QPushButton::clicked, this, &EditorWindow::freezeParamsIntoEntry );
+    connect( b_dice, &QPushButton::clicked, this, &EditorWindow::randomizeParams );
+    connect( b_freeze, &QPushButton::clicked, this, &EditorWindow::freezeParamsIntoEntry );
 
     // Add-to-preset
-    QGroupBox   *gAdd = new QGroupBox( "Add current shader to preset" );
-    QFormLayout *fAdd = new QFormLayout( gAdd );
+    QGroupBox   *g_add = new QGroupBox( "Add current shader to preset" );
+    QFormLayout *f_add = new QFormLayout( g_add );
     m_typeCombo = new QComboBox();
     m_typeCombo->addItems( { "normal", "KaleidoscopeBase", "scene3d" } );
     // scene3d-only fields (geom is required by the engine; stateBytes/
@@ -183,37 +183,37 @@ EditorWindow::EditorWindow( const QString &projectRoot, QWidget *parent )
     m_prob->setSingleStep( 0.05 );
     m_prob->setValue( 0.5 );
     m_complex = mkSpin( 1, 20, 1 );
-    fAdd->addRow( "Type (texture)", m_typeCombo );
-    fAdd->addRow( "Geom (scene3d)", m_geomCombo );
-    fAdd->addRow( "stateBytes (scene3d)", m_stateBytesSpin );
-    fAdd->addRow( "shadowExtent (scene3d)", m_shadowExtentSpin );
-    fAdd->addRow( "minTimeSolo", m_minSolo );
-    fAdd->addRow( "maxTimeSolo", m_maxSolo );
-    fAdd->addRow( "minTimeInterpolation", m_minInterp );
-    fAdd->addRow( "maxTimeInterpolation", m_maxInterp );
-    fAdd->addRow( "probability", m_prob );
-    fAdd->addRow( "complexity", m_complex );
-    QHBoxLayout *addBtns = new QHBoxLayout();
-    QPushButton *bAddTex = new QPushButton( "Add texture effect  (a)" );
-    QPushButton *bAddComb = new QPushButton( "Add combine  (c)" );
-    addBtns->addWidget( bAddTex );
-    addBtns->addWidget( bAddComb );
-    fAdd->addRow( addBtns );
-    pl->addWidget( gAdd );
+    f_add->addRow( "Type (texture)", m_typeCombo );
+    f_add->addRow( "Geom (scene3d)", m_geomCombo );
+    f_add->addRow( "stateBytes (scene3d)", m_stateBytesSpin );
+    f_add->addRow( "shadowExtent (scene3d)", m_shadowExtentSpin );
+    f_add->addRow( "minTimeSolo", m_minSolo );
+    f_add->addRow( "maxTimeSolo", m_maxSolo );
+    f_add->addRow( "minTimeInterpolation", m_minInterp );
+    f_add->addRow( "maxTimeInterpolation", m_maxInterp );
+    f_add->addRow( "probability", m_prob );
+    f_add->addRow( "complexity", m_complex );
+    QHBoxLayout *add_btns = new QHBoxLayout();
+    QPushButton *b_add_tex = new QPushButton( "Add texture effect  (a)" );
+    QPushButton *b_add_comb = new QPushButton( "Add combine  (c)" );
+    add_btns->addWidget( b_add_tex );
+    add_btns->addWidget( b_add_comb );
+    f_add->addRow( add_btns );
+    pl->addWidget( g_add );
 
     // Preset contents table
-    QGroupBox   *gTab = new QGroupBox( "Preset contents" );
-    QVBoxLayout *vTab = new QVBoxLayout( gTab );
+    QGroupBox   *g_tab = new QGroupBox( "Preset contents" );
+    QVBoxLayout *v_tab = new QVBoxLayout( g_tab );
     m_table = new QTableWidget( 0, 10 );
     m_table->setHorizontalHeaderLabels(
         { "Kind", "File", "Type", "Geom", "SoloMin", "SoloMax", "IntMin", "IntMax", "Prob", "Cplx" } );
     m_table->horizontalHeader()->setSectionResizeMode( 1, QHeaderView::Stretch );
     m_table->setSelectionBehavior( QAbstractItemView::SelectRows );
     m_table->setEditTriggers( QAbstractItemView::NoEditTriggers );
-    vTab->addWidget( m_table );
-    QPushButton *bRemove = new QPushButton( "Remove selected  (Del)" );
-    vTab->addWidget( bRemove );
-    pl->addWidget( gTab, 1 );
+    v_tab->addWidget( m_table );
+    QPushButton *b_remove = new QPushButton( "Remove selected  (Del)" );
+    v_tab->addWidget( b_remove );
+    pl->addWidget( g_tab, 1 );
 
     // Per-entry parameter range editor: lets the SELECTED table row deviate
     // from Komplett.xml's default range deliberately (different min/max per
@@ -227,47 +227,47 @@ EditorWindow::EditorWindow( const QString &projectRoot, QWidget *parent )
     m_rangeHint->setWordWrap( true );
     m_rangeHint->setStyleSheet( "color: #888;" );
     rv->addWidget( m_rangeHint );
-    QWidget *rfHost = new QWidget();
-    m_rangeForm = new QFormLayout( rfHost );
+    QWidget *rf_host = new QWidget();
+    m_rangeForm = new QFormLayout( rf_host );
     m_rangeForm->setContentsMargins( 0, 0, 0, 0 );
-    rv->addWidget( rfHost );
+    rv->addWidget( rf_host );
     pl->addWidget( m_rangeBox );
 
     // Preset metadata + file actions
-    QGroupBox   *gMeta = new QGroupBox( "Preset" );
-    QFormLayout *fMeta = new QFormLayout( gMeta );
+    QGroupBox   *g_meta = new QGroupBox( "Preset" );
+    QFormLayout *f_meta = new QFormLayout( g_meta );
     m_nameEdit = new QLineEdit( "MyPreset" );
     m_imgDirEdit = new QLineEdit();
-    QPushButton *bBrowse = new QPushButton( "…" );
-    QHBoxLayout *imgRow = new QHBoxLayout();
-    imgRow->addWidget( m_imgDirEdit );
-    imgRow->addWidget( bBrowse );
+    QPushButton *b_browse = new QPushButton( "…" );
+    QHBoxLayout *img_row = new QHBoxLayout();
+    img_row->addWidget( m_imgDirEdit );
+    img_row->addWidget( b_browse );
     m_gSoloMin = mkSpin( 0, 100000, 10 );
     m_gSoloMax = mkSpin( 0, 100000, 40 );
     m_gInterpMin = mkSpin( 0, 100000, 20 );
     m_gInterpMax = mkSpin( 0, 100000, 80 );
-    fMeta->addRow( "Name", m_nameEdit );
+    f_meta->addRow( "Name", m_nameEdit );
     m_hiddenCheck = new QCheckBox( tr( "verborgen (hidden) – nicht im Hauptprogramm wählbar" ) );
     m_hiddenCheck->setToolTip( tr( "Schreibt hidden=\"true\" in die XML: das Hauptprogramm "
                                    "zeigt dieses Preset weder im Menü noch auf den Zifferntasten "
                                    "oder in der Web-Fernbedienung. Nur -c <Name> lädt es noch — "
                                    "gedacht für Master-/Referenz-Presets wie Komplett und die "
                                    "Test*-Prüfstände." ) );
-    fMeta->addRow( "", m_hiddenCheck );
-    fMeta->addRow( "ImageDirectory", imgRow );
-    fMeta->addRow( "timeTextureSoloMin", m_gSoloMin );
-    fMeta->addRow( "timeTextureSoloMax", m_gSoloMax );
-    fMeta->addRow( "timeTextureInterpolationMin", m_gInterpMin );
-    fMeta->addRow( "timeTextureInterpolationMax", m_gInterpMax );
-    QHBoxLayout *fileBtns = new QHBoxLayout();
-    QPushButton *bNew = new QPushButton( "New" );
-    QPushButton *bOpen = new QPushButton( "Open…" );
-    QPushButton *bSave = new QPushButton( "Save" );
-    fileBtns->addWidget( bNew );
-    fileBtns->addWidget( bOpen );
-    fileBtns->addWidget( bSave );
-    fMeta->addRow( fileBtns );
-    pl->addWidget( gMeta );
+    f_meta->addRow( "", m_hiddenCheck );
+    f_meta->addRow( "ImageDirectory", img_row );
+    f_meta->addRow( "timeTextureSoloMin", m_gSoloMin );
+    f_meta->addRow( "timeTextureSoloMax", m_gSoloMax );
+    f_meta->addRow( "timeTextureInterpolationMin", m_gInterpMin );
+    f_meta->addRow( "timeTextureInterpolationMax", m_gInterpMax );
+    QHBoxLayout *file_btns = new QHBoxLayout();
+    QPushButton *b_new = new QPushButton( "New" );
+    QPushButton *b_open = new QPushButton( "Open…" );
+    QPushButton *b_save = new QPushButton( "Save" );
+    file_btns->addWidget( b_new );
+    file_btns->addWidget( b_open );
+    file_btns->addWidget( b_save );
+    f_meta->addRow( file_btns );
+    pl->addWidget( g_meta );
 
     QScrollArea *scroll = new QScrollArea();
     scroll->setWidget( panel );
@@ -306,19 +306,19 @@ EditorWindow::EditorWindow( const QString &projectRoot, QWidget *parent )
         if ( isScene3D( m_texCombo->currentText() ) )
             pushPreviewTexture();
     } );
-    connect( musicCombo, &QComboBox::currentIndexChanged, this, [this]( int i )
+    connect( music_combo, &QComboBox::currentIndexChanged, this, [this]( int i )
     {
-        m_preview->setMusicMode( i == 1 ? PreviewWidget::Drone : PreviewWidget::Beat );
+        m_preview->setMusicMode( i == 1 ? PreviewWidget::DRONE : PreviewWidget::BEAT );
     } );
-    connect( bAddTex, &QPushButton::clicked, this, &EditorWindow::addTextureEntry );
-    connect( bAddComb, &QPushButton::clicked, this, &EditorWindow::addCombineEntry );
-    connect( bRemove, &QPushButton::clicked, this, &EditorWindow::removeSelectedEntry );
+    connect( b_add_tex, &QPushButton::clicked, this, &EditorWindow::addTextureEntry );
+    connect( b_add_comb, &QPushButton::clicked, this, &EditorWindow::addCombineEntry );
+    connect( b_remove, &QPushButton::clicked, this, &EditorWindow::removeSelectedEntry );
     connect( m_table, &QTableWidget::itemSelectionChanged, this, &EditorWindow::onTableSelectionChanged );
-    connect( bNew, &QPushButton::clicked, this, &EditorWindow::newPreset );
-    connect( bOpen, &QPushButton::clicked, this, &EditorWindow::openPreset );
-    connect( bSave, &QPushButton::clicked, this, &EditorWindow::savePreset );
-    connect( bBrowse, &QPushButton::clicked, this, &EditorWindow::browseImageDir );
-    connect( bWav, &QPushButton::clicked, this, &EditorWindow::loadAudioWav );
+    connect( b_new, &QPushButton::clicked, this, &EditorWindow::newPreset );
+    connect( b_open, &QPushButton::clicked, this, &EditorWindow::openPreset );
+    connect( b_save, &QPushButton::clicked, this, &EditorWindow::savePreset );
+    connect( b_browse, &QPushButton::clicked, this, &EditorWindow::browseImageDir );
+    connect( b_wav, &QPushButton::clicked, this, &EditorWindow::loadAudioWav );
 
     m_exprTimer = new QTimer( this );
     connect( m_exprTimer, &QTimer::timeout, this, &EditorWindow::tickExprValues );
@@ -344,15 +344,15 @@ void EditorWindow::scanShaders()
     // share the combine combo: the preview drives both through the same
     // tex0/tex1/interpolation slot.
     const QStringList scenes = QDir( m_root + "/Scene2D" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
-    const QStringList scenes3D = QDir( m_root + "/Scene3D" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
+    const QStringList scenes_3d = QDir( m_root + "/Scene3D" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
     const QStringList combines = QDir( m_root + "/FX" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
     const QStringList trans = QDir( m_root + "/Transitions" ).entryList( { "*.frag" }, QDir::Files, QDir::Name );
-    m_scene3DFiles = scenes3D;
+    m_scene3DFiles = scenes_3d;
     m_texCombo->blockSignals( true );
     m_combCombo->blockSignals( true );
     for ( const QString &f : scenes )
         m_texCombo->addItem( f );
-    for ( const QString &f : scenes3D )
+    for ( const QString &f : scenes_3d )
         m_texCombo->addItem( f );
     for ( const QString &f : combines )
         m_combCombo->addItem( f );
@@ -431,17 +431,17 @@ static QVector<KomplettParam> komplettParamsFor( const QString &root, const QStr
     if ( !f.open( QIODevice::ReadOnly ) )
         return out;
     const QString      xml = QString::fromUtf8( f.readAll() );
-    QRegularExpression entryRe(
+    QRegularExpression entry_re(
         QString(
             "<(?:Texture|Combine)Shader\\b[^>]*file=\"\\.\\.\\\\\\\\(?:\\w+\\\\\\\\)?%1\"[^>]*>(.*?)</(?:Texture|Combine)Shader>" )
             .arg( QRegularExpression::escape( frag ) ),
         QRegularExpression::DotMatchesEverythingOption );
-    const QRegularExpressionMatch em = entryRe.match( xml );
+    const QRegularExpressionMatch em = entry_re.match( xml );
     if ( !em.hasMatch() )
         return out;
-    QRegularExpression paramRe(
+    QRegularExpression param_re(
         "<(int|float)\\s+name=\"(\\w+)\"\\s+minValue=\"([\\d\\.\\-]+)\"\\s+maxValue=\"([\\d\\.\\-]+)\"" );
-    QRegularExpressionMatchIterator it = paramRe.globalMatch( em.captured( 1 ) );
+    QRegularExpressionMatchIterator it = param_re.globalMatch( em.captured( 1 ) );
     while ( it.hasNext() )
     {
         const QRegularExpressionMatch m = it.next();
@@ -465,12 +465,12 @@ void EditorWindow::rebuildParamSliders()
     // entry's own saved range instead of Komplett.xml's default -- so tuning
     // a range in the panel below is immediately visible here, not just after
     // a save+reload.
-    const int          selRow = m_table->currentRow();
-    const PresetEntry *sel = ( selRow >= 0 && selRow < m_preset.entries.size() )
-                                 ? &m_preset.entries[selRow]
+    const int          sel_row = m_table->currentRow();
+    const PresetEntry *sel = ( sel_row >= 0 && sel_row < m_preset.entries.size() )
+                                 ? &m_preset.entries[sel_row]
                                  : nullptr;
 
-    auto addFor = [this, sel]( const QString &frag, const QString &prefix, bool fromComb )
+    auto add_for = [this, sel]( const QString &frag, const QString &prefix, bool fromComb )
     {
         const PresetEntry *e = ( sel && sel->isCombine == fromComb && sel->file == frag ) ? sel : nullptr;
         for ( const KomplettParam &kp : komplettParamsFor( m_root, frag ) )
@@ -499,8 +499,8 @@ void EditorWindow::rebuildParamSliders()
             { pushParamOverrides(); } );
         }
     };
-    addFor( m_texCombo->currentText(), "", false );
-    addFor( m_combCombo->currentText(), "C: ", true );
+    add_for( m_texCombo->currentText(), "", false );
+    add_for( m_combCombo->currentText(), "C: ", true );
     m_paramBox->setVisible( !m_sliders.isEmpty() );
     pushParamOverrides();
 }
@@ -534,11 +534,11 @@ void EditorWindow::freezeParamsIntoEntry()
         return;
     }
     PresetEntry  &e = m_preset.entries[row];
-    const QString texFile = m_texCombo->currentText();
-    const QString combFile = m_combCombo->currentText();
-    const bool    matchesTex = ( !e.isCombine && e.file == texFile );
-    const bool    matchesComb = ( e.isCombine && e.file == combFile );
-    if ( !matchesTex && !matchesComb )
+    const QString tex_file = m_texCombo->currentText();
+    const QString comb_file = m_combCombo->currentText();
+    const bool    matches_tex = ( !e.isCombine && e.file == tex_file );
+    const bool    matches_comb = ( e.isCombine && e.file == comb_file );
+    if ( !matches_tex && !matches_comb )
     {
         m_status->setText( "Festwerte: der gewählte Eintrag ("
                            + e.file + ") passt nicht zum Preview-Shader" );
@@ -742,7 +742,7 @@ static QStringList shaderSourceFiles( const QString &root, const PresetEntry &e 
  * @param e Entry whose shader source(s) to scan.
  * @param covered Parameter names already covered by an existing row in the range editor (skipped even if otherwise
  * dormant).
- * @return Sorted list of declared `uniform float` names that are not in the host-supplied set (kHost), not already
+ * @return Sorted list of declared `uniform float` names that are not in the host-supplied set (Host), not already
  * covered, and not an audio* uniform.
  *
  * All scalar float uniforms the entry's shaders DECLARE that the host never
@@ -756,7 +756,7 @@ static QStringList dormantFloatUniforms( const QString &root, const PresetEntry 
     // Host-supplied names (kAudioLocNames in EffectShader.cpp + the fixed
     // engine set).  Anything here is uploaded every frame by the engine and
     // gets its mapping row from the AUDIO section (audio*) or nowhere.
-    static const QSet<QString> kHost = {
+    static const QSet<QString> Host = {
         "audioPhase", "audioAdvance", "audioBeat", "audioLevel", "sides",
         "audioFlip", "audioCentroid", "audioFlux", "audioSubBass", "audioBass",
         "audioLowMid", "audioMid", "audioUpperMid", "audioHigh", "audioRolloff",
@@ -780,7 +780,7 @@ static QStringList dormantFloatUniforms( const QString &root, const PresetEntry 
         // (an override would BREAK stereo), power by the KaleidoscopeBase
         // class, genPass by the Scene3D generator loop
         "eyeOff", "power", "genPass" };
-    static const QRegularExpression decl( "\\buniform\\s+float\\s+(\\w+)\\s*;" );
+    static const QRegularExpression Decl( "\\buniform\\s+float\\s+(\\w+)\\s*;" );
     QSet<QString>                   found;
     for ( const QString &fp : shaderSourceFiles( root, e ) )
     {
@@ -788,11 +788,11 @@ static QStringList dormantFloatUniforms( const QString &root, const PresetEntry 
         if ( !f.open( QIODevice::ReadOnly ) )
             continue;
         const QString src = QString::fromUtf8( f.readAll() );
-        auto          it = decl.globalMatch( src );
+        auto          it = Decl.globalMatch( src );
         while ( it.hasNext() )
         {
             const QString u = it.next().captured( 1 );
-            if ( !kHost.contains( u ) && !covered.contains( u )
+            if ( !Host.contains( u ) && !covered.contains( u )
                  && !u.startsWith( "audio" ) )
                 found.insert( u );
         }
@@ -811,22 +811,22 @@ static QStringList dormantFloatUniforms( const QString &root, const PresetEntry 
  */
 static QStringList usedAudioUniforms( const QString &root, const PresetEntry &e )
 {
-    static const QSet<QString> kNonScalar = {
+    static const QSet<QString> NonScalar = {
         "audioSpectrum", "audioWave", "audioChroma", "audioMelody",
         "audioStereoBandL", "audioStereoBandR" };
     QSet<QString>                   found;
-    static const QRegularExpression re( "\\baudio[A-Z]\\w*" );
+    static const QRegularExpression Re( "\\baudio[A-Z]\\w*" );
     for ( const QString &fp : shaderSourceFiles( root, e ) )
     {
         QFile f( fp );
         if ( !f.open( QIODevice::ReadOnly ) )
             continue;
         const QString src = QString::fromUtf8( f.readAll() );
-        auto          it = re.globalMatch( src );
+        auto          it = Re.globalMatch( src );
         while ( it.hasNext() )
         {
             const QString u = it.next().captured( 0 );
-            if ( !kNonScalar.contains( u ) )
+            if ( !NonScalar.contains( u ) )
                 found.insert( u );
         }
     }
@@ -952,12 +952,12 @@ void EditorWindow::rebuildRangeEditor()
     {
         // scene3d gets the projM rig; every OTHER texture scene gets the 2D
         // rig (RenderPipeline's Rig2D transform pass).  Combines get neither.
-        static const char *kRig3[8] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly",
-                                        "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
-        static const char *kRig2[8] = { "rig2Roll", "rig2Zoom", "rig2X", "rig2Y",
-                                        "rig2RollV", "rig2ZoomV", "rig2XV", "rig2YV" };
-        const bool         is3D = entry.type.compare( "scene3d", Qt::CaseInsensitive ) == 0;
-        const char *const *rig = is3D ? kRig3 : kRig2;
+        static const char *Rig3[8] = { "rigPitch", "rigYaw", "rigRoll", "rigDolly",
+                                       "rigPitchV", "rigYawV", "rigRollV", "rigDollyV" };
+        static const char *Rig2[8] = { "rig2Roll", "rig2Zoom", "rig2X", "rig2Y",
+                                       "rig2RollV", "rig2ZoomV", "rig2XV", "rig2YV" };
+        const bool         is_3d = entry.type.compare( "scene3d", Qt::CaseInsensitive ) == 0;
+        const char *const *rig = is_3d ? Rig3 : Rig2;
         if ( !entry.isCombine )
             for ( int ri = 0; ri < 8; ++ri )
             {
@@ -1010,7 +1010,7 @@ void EditorWindow::rebuildRangeEditor()
     // Pushes the entry's SAVED formula layer (own exprs first, then Komplett
     // defaults it hasn't overridden) into the preview, so the rendered image
     // follows the committed formulas -- incl. audio-mapping overrides.
-    auto pushSceneExprs = [this, row]()
+    auto push_scene_exprs = [this, row]()
     {
         if ( row < 0 || row >= m_preset.entries.size() )
         {
@@ -1035,9 +1035,9 @@ void EditorWindow::rebuildRangeEditor()
 
     // Writes (or creates) the named param in m_preset.entries[row], then
     // refreshes the preview sliders so the new band is immediately visible.
-    auto writeParam = [this, row, pushSceneExprs]( const QString &name, const QString &kind,
-                                                   const QString &minV, const QString &maxV,
-                                                   const QString &prob, const QString &formula )
+    auto write_param = [this, row, push_scene_exprs]( const QString &name, const QString &kind,
+                                                      const QString &minV, const QString &maxV,
+                                                      const QString &prob, const QString &formula )
     {
         if ( row < 0 || row >= m_preset.entries.size() )
             return;
@@ -1070,13 +1070,13 @@ void EditorWindow::rebuildRangeEditor()
         else if ( kind == "expr" )
             t->formula = formula;
         rebuildParamSliders();
-        pushSceneExprs();
+        push_scene_exprs();
     };
 
     // Removes the named param again -- an audio-mapping row cleared back to
     // empty means "raw engine value", which is the ABSENCE of the override,
     // not an override with an empty formula.
-    auto removeParam = [this, row, pushSceneExprs]( const QString &name, const QString &kind )
+    auto remove_param = [this, row, push_scene_exprs]( const QString &name, const QString &kind )
     {
         if ( row < 0 || row >= m_preset.entries.size() )
             return;
@@ -1088,32 +1088,32 @@ void EditorWindow::rebuildRangeEditor()
                 break;
             }
         rebuildParamSliders();
-        pushSceneExprs();
+        push_scene_exprs();
     };
 
-    bool audioHeaderDone = false, exprHeaderDone = false;
+    bool audio_header_done = false, expr_header_done = false;
     for ( const Row &r : combined )
     {
         const ShaderParam &p = r.param;
-        const bool         isAudioMap = ( p.kind == "expr" && p.name.startsWith( "audio" ) );
-        if ( isAudioMap && !audioHeaderDone )
+        const bool         is_audio_map = ( p.kind == "expr" && p.name.startsWith( "audio" ) );
+        if ( is_audio_map && !audio_header_done )
         {
-            audioHeaderDone = true;
+            audio_header_done = true;
             QLabel *head = new QLabel( tr( "<b>Audio-Mapping</b>" ) );
             QLabel *hint = new QLabel( tr( "leer = Standardwert der Engine" ) );
             hint->setStyleSheet( "color: #888;" );
             m_rangeForm->addRow( head, hint );
         }
-        else if ( p.kind == "expr" && !isAudioMap && !exprHeaderDone )
+        else if ( p.kind == "expr" && !is_audio_map && !expr_header_done )
         {
-            exprHeaderDone = true;
+            expr_header_done = true;
             QLabel *head = new QLabel( tr( "<b>Formel-Mapping</b>" ) );
             QLabel *hint = new QLabel( tr( "Formel ersetzt den Zufallswert; leer = Zufallswert aus Bereich" ) );
             hint->setStyleSheet( "color: #888;" );
             m_rangeForm->addRow( head, hint );
         }
         QLabel *label = new QLabel( p.name + "  [" + p.kind + "]" );
-        if ( isAudioMap )
+        if ( is_audio_map )
             label->setToolTip( tr( "Audio-Uniform, die dieser Shader liest. Formel ersetzt "
                                    "den rohen Engine-Wert pro Szene (z.B. \"0.5*kick+0.5*snare\" "
                                    "oder eine Konstante). Leeren = Standard." ) );
@@ -1129,26 +1129,26 @@ void EditorWindow::rebuildRangeEditor()
             prob->setValue( p.probability.isEmpty() ? 0.5 : p.probability.toDouble() );
             connect( prob, QOverload<double>::of( &QDoubleSpinBox::valueChanged ), this,
                      [=]( double v )
-            { writeParam( p.name, "bool", {}, {}, QString::number( v, 'f', 2 ), {} ); } );
+            { write_param( p.name, "bool", {}, {}, QString::number( v, 'f', 2 ), {} ); } );
             m_rangeForm->addRow( label, prob );
         }
         else if ( p.kind == "int" || p.kind == "float" )
         {
-            const bool      isInt = ( p.kind == "int" );
+            const bool      is_int = ( p.kind == "int" );
             QDoubleSpinBox *lo = new QDoubleSpinBox(), *hi = new QDoubleSpinBox();
             for ( QDoubleSpinBox *s : { lo, hi } )
             {
                 s->setRange( -1.0e6, 1.0e6 );
-                s->setDecimals( isInt ? 0 : 4 );
-                s->setSingleStep( isInt ? 1.0 : 0.01 );
+                s->setDecimals( is_int ? 0 : 4 );
+                s->setSingleStep( is_int ? 1.0 : 0.01 );
             }
             lo->setValue( p.minValue.toDouble() );
             hi->setValue( p.maxValue.toDouble() );
-            auto fmt = [isInt]( double v )
-            { return isInt ? QString::number( int( v ) )
-                           : QString::number( v, 'f', 4 ); };
+            auto fmt = [is_int]( double v )
+            { return is_int ? QString::number( int( v ) )
+                            : QString::number( v, 'f', 4 ); };
             auto apply = [=]
-            { writeParam( p.name, p.kind, fmt( lo->value() ), fmt( hi->value() ), {}, {} ); };
+            { write_param( p.name, p.kind, fmt( lo->value() ), fmt( hi->value() ), {}, {} ); };
             connect( lo, QOverload<double>::of( &QDoubleSpinBox::valueChanged ), this, apply );
             connect( hi, QOverload<double>::of( &QDoubleSpinBox::valueChanged ), this, apply );
             QWidget     *host = new QWidget();
@@ -1167,15 +1167,15 @@ void EditorWindow::rebuildRangeEditor()
             // requires Komplett-declared exprs to be PRESENT in every preset
             // entry, so clearing such a row restores the default instead of
             // removing the param.
-            QString defFormula;
-            if ( !isAudioMap )
+            QString def_formula;
+            if ( !is_audio_map )
                 for ( const ShaderParam &kp : defaultParamsFor( entry.file ) )
                     if ( kp.kind == "expr" && kp.name == p.name )
                     {
-                        defFormula = kp.formula;
+                        def_formula = kp.formula;
                         break;
                     }
-            if ( isAudioMap )
+            if ( is_audio_map )
             {
                 // Show WHAT the raw engine value would be as the placeholder:
                 // for most uniforms the identically-named formula variable
@@ -1185,16 +1185,16 @@ void EditorWindow::rebuildRangeEditor()
                 edit->setPlaceholderText( iv.isEmpty() ? tr( "Engine-Rohwert" )
                                                        : iv + tr( "   (Engine-Rohwert)" ) );
             }
-            else if ( defFormula.isEmpty() )
+            else if ( def_formula.isEmpty() )
             {
                 // Distinguish: rig channel / ranged param (empty = the usual
                 // random roll) / dormant uniform (empty = GLSL 0.0).
-                bool hasRange = false;
+                bool has_range = false;
                 for ( const Row &r2 : combined )
                     if ( r2.param.name == p.name
                          && ( r2.param.kind == "float" || r2.param.kind == "int" ) )
                     {
-                        hasRange = true;
+                        has_range = true;
                         break;
                     }
                 if ( p.name.startsWith( "rig" ) )
@@ -1202,21 +1202,21 @@ void EditorWindow::rebuildRangeEditor()
                                                   ? tr( "Rate, wird integriert – z.B. 0.1*swell   (leer = Rig aus)" )
                                                   : tr( "z.B. 0.05*sin(0.2*phase)   (leer = Rig aus)" ) );
                 else
-                    edit->setPlaceholderText( hasRange
+                    edit->setPlaceholderText( has_range
                                                   ? tr( "z.B. 1.0 + 0.5*kick   (leer = Zufallswert aus Bereich)" )
                                                   : tr( "z.B. 0.5*swell   (leer = 0.0, Uniform ungenutzt)" ) );
             }
             connect( edit, &QLineEdit::editingFinished, this, [=]
             {
                 if ( !edit->text().trimmed().isEmpty() )
-                    writeParam( p.name, "expr", {}, {}, {}, edit->text() );
-                else if ( !defFormula.isEmpty() )
+                    write_param( p.name, "expr", {}, {}, {}, edit->text() );
+                else if ( !def_formula.isEmpty() )
                 { // Komplett declares this formula: restore the default
-                    edit->setText( defFormula );
-                    writeParam( p.name, "expr", {}, {}, {}, defFormula );
+                    edit->setText( def_formula );
+                    write_param( p.name, "expr", {}, {}, {}, def_formula );
                 }
                 else
-                    removeParam( p.name, "expr" ); // absence = engine default
+                    remove_param( p.name, "expr" ); // absence = engine default
             } );
             // Variable picker: ExprEval.h documents ~38 audio-derived names
             // (bassRel, chromaHue, beatPhase, seed1, ...) but nothing in the
@@ -1225,37 +1225,37 @@ void EditorWindow::rebuildRangeEditor()
             // cursor (formulas are combinations like "chromaHue + seed1*1.5",
             // not single tokens), then resets to the placeholder so it can be
             // used again for the next variable in the same formula.
-            QComboBox *varPick = new QComboBox();
-            varPick->addItem( tr( "Variable einfügen…" ) );
+            QComboBox *var_pick = new QComboBox();
+            var_pick->addItem( tr( "Variable einfügen…" ) );
             const char *const *names = ExprVars::names();
             for ( int i = 0; i < ExprVars::V_COUNT; ++i )
-                varPick->addItem( names[i] );
-            connect( varPick, QOverload<int>::of( &QComboBox::currentIndexChanged ), this,
+                var_pick->addItem( names[i] );
+            connect( var_pick, QOverload<int>::of( &QComboBox::currentIndexChanged ), this,
                      [=]( int idx )
             {
                 if ( idx <= 0 )
                     return;
-                edit->insert( varPick->itemText( idx ) );
+                edit->insert( var_pick->itemText( idx ) );
                 edit->setFocus();
-                varPick->setCurrentIndex( 0 );
-                writeParam( p.name, "expr", {}, {}, {}, edit->text() );
+                var_pick->setCurrentIndex( 0 );
+                write_param( p.name, "expr", {}, {}, {}, edit->text() );
             } );
             // Live readout: shows what the formula currently evaluates to
             // (against the synthesized audio state -- see
             // PreviewWidget::evalExpr()) and turns red instead of quietly
             // evaluating to 0 on a typo. Recompiled on every keystroke, kept
-            // separate from the writeParam() commit on editingFinished so a
+            // separate from the write_param() commit on editingFinished so a
             // half-typed formula isn't written into the preset yet.
-            QLabel *valueLbl = new QLabel();
-            valueLbl->setMinimumWidth( 64 );
-            valueLbl->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
-            const int rowIdx = m_exprRows.size();
-            m_exprRows.push_back( { edit, valueLbl, nullptr } );
-            auto recompile = [this, rowIdx]()
+            QLabel *value_lbl = new QLabel();
+            value_lbl->setMinimumWidth( 64 );
+            value_lbl->setAlignment( Qt::AlignRight | Qt::AlignVCenter );
+            const int row_idx = m_exprRows.size();
+            m_exprRows.push_back( { edit, value_lbl, nullptr } );
+            auto recompile = [this, row_idx]()
             {
-                if ( rowIdx >= m_exprRows.size() )
+                if ( row_idx >= m_exprRows.size() )
                     return; // stale (panel rebuilt meanwhile)
-                ExprRow &er = m_exprRows[rowIdx];
+                ExprRow &er = m_exprRows[row_idx];
                 if ( er.edit->text().trimmed().isEmpty() )
                 { // empty = "raw engine value", a valid state -- never red
                     er.edit->setStyleSheet( QString() );
@@ -1280,12 +1280,12 @@ void EditorWindow::rebuildRangeEditor()
             QHBoxLayout *hl = new QHBoxLayout( host );
             hl->setContentsMargins( 0, 0, 0, 0 );
             hl->addWidget( edit, 1 );
-            hl->addWidget( varPick );
-            hl->addWidget( valueLbl );
+            hl->addWidget( var_pick );
+            hl->addWidget( value_lbl );
             m_rangeForm->addRow( label, host );
         }
     }
-    pushSceneExprs(); // preview follows the entry's saved formula layer
+    push_scene_exprs(); // preview follows the entry's saved formula layer
 }
 
 // Re-evaluate every currently-valid `<expr>` row against the animated
@@ -1345,9 +1345,9 @@ void EditorWindow::uiToMeta()
 
 void EditorWindow::newPreset()
 {
-    Preset keepDir;
-    keepDir.imageDirectory = m_imgDirEdit->text();
-    m_preset = keepDir;
+    Preset keep_dir;
+    keep_dir.imageDirectory = m_imgDirEdit->text();
+    m_preset = keep_dir;
     metaToUi();
     m_status->setText( "new preset" );
 }

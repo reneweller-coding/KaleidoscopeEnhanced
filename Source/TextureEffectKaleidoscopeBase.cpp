@@ -265,8 +265,8 @@ void TextureEffectKaleidoscopeBase::setUniforms( float time, float interpolation
 
             m_power = (float)( m_powerMin + ( ( (float)rand() / (float)RAND_MAX ) * ( m_powerMax - m_powerMin ) ) );
             m_powerRotationAllowed = false;
-            float pTp = ( (float)rand() / (float)RAND_MAX );
-            if ( pTp < m_powerProbability )
+            float p_tp = ( (float)rand() / (float)RAND_MAX );
+            if ( p_tp < m_powerProbability )
             {
                 m_powerRotationAllowed = false;
             }
@@ -313,10 +313,10 @@ void TextureEffectKaleidoscopeBase::initUniforms( int width, int height )
 {
     EffectShader::initUniforms( width, height );
 
-    m_interpolationRotationUni = glGetUniformLocation( m_sh_prog_id, "interpolationRotation" );
-    // m_sidesUni = glGetUniformLocation( m_sh_prog_id, "sides" );
-    // m_speedUni = glGetUniformLocation( m_sh_prog_id, "speed" );
-    m_powerUni = glGetUniformLocation( m_sh_prog_id, "power" );
+    m_interpolationRotationUni = glGetUniformLocation( m_shProgId, "interpolationRotation" );
+    // m_sidesUni = glGetUniformLocation( m_shProgId, "sides" );
+    // m_speedUni = glGetUniformLocation( m_shProgId, "speed" );
+    m_powerUni = glGetUniformLocation( m_shProgId, "power" );
 
     checkGLErrors( "loadShader 2" );
 }
@@ -338,8 +338,8 @@ void TextureEffectKaleidoscopeBase::resetParameters()
         m_speed = (float)EPSILON;
     m_speedAct = m_speed;
 
-    float pR = ( (float)rand() / (float)RAND_MAX );
-    if ( pR > 0.4 )
+    float p_r = ( (float)rand() / (float)RAND_MAX );
+    if ( p_r > 0.4 )
         m_interpolationRotation = 0.0;
     else
         m_interpolationRotation = (float)( M_PI / 4.0 );

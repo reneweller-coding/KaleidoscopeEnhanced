@@ -27,7 +27,7 @@ namespace ExprVars
 {
 /** @brief Index of each audio/time feature exposed to formulas; also the layout of the `vars` array passed to
  * ExprProgram::eval(). */
-enum Index
+enum IndexE
 {
     V_TIME,
     V_BASS,
@@ -121,12 +121,12 @@ public:
     bool valid() const { return m_ok; } ///< @return True if the last compile() call succeeded.
 
 private:
-    /// One RPN instruction: code<0 means push const (OP_CONST, value=the constant) or push var (OP_VAR, value=the
+    /// One RPN instruction: code<0 means push const (OpConst, value=the constant) or push var (OpVar, value=the
     /// ExprVars index as a float); code>=0 is an operator/function opcode consuming its operands off the stack.
     struct Op
     {
-        int   code;  /**< OP_CONST, OP_VAR, or an operator/function opcode. */
-        float value; /**< The constant, or the ExprVars index for OP_VAR; unused for operators. */
+        int   code;  /**< OpConst, OpVar, or an operator/function opcode. */
+        float value; /**< The constant, or the ExprVars index for OpVar; unused for operators. */
     };
     std::vector<Op> m_prog; ///< The compiled program, in RPN (postfix) order, as produced by compile()'s shunting-yard
                             ///< pass.

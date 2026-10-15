@@ -18,42 +18,42 @@
 #include <vector>
 
 /** @brief The section categories `/phos/section` can name, in the generator's own order. */
-enum class CueSection : int
+enum class CueSectionE : int
 {
-    Intro = 0, ///< the opening atmosphere
-    Groove,    ///< the first core
-    Build,     ///< a buildup towards a drop
-    Drop,      ///< a core
-    Break,     ///< a breakdown
-    Outro,     ///< the closing bars
-    Pdb,       ///< pre-drop break: the last bar of a buildup
-    Cut,       ///< the first beats of a breakdown, everything but the reverb tail gone
-    Count
+    INTRO = 0, ///< the opening atmosphere
+    GROOVE,    ///< the first core
+    BUILD,     ///< a buildup towards a drop
+    DROP,      ///< a core
+    BREAK,     ///< a breakdown
+    OUTRO,     ///< the closing bars
+    PDB,       ///< pre-drop break: the last bar of a buildup
+    CUT,       ///< the first beats of a breakdown, everything but the reverb tail gone
+    COUNT
 };
-/** @brief Display names, indexed by CueSection; also what arrives on the wire. */
-extern const char *const kCueSectionNames[static_cast<int>( CueSection::Count )];
+/** @brief Display names, indexed by CueSectionE; also what arrives on the wire. */
+extern const char *const CueSectionNames[static_cast<int>( CueSectionE::COUNT )];
 
 /** @brief One decoded OSC message. */
 struct ScoreCue
 {
     /** @brief Which of the five messages this is. */
-    enum class Kind : int
+    enum class KindE : int
     {
-        Beat = 0,
-        Bar,
-        Section,
-        Key,
-        Drop,
-        Unknown
+        BEAT = 0,
+        BAR,
+        SECTION,
+        KEY,
+        DROP,
+        UNKNOWN
     };
 
-    Kind  kind = Kind::Unknown; ///< what arrived
-    int   index = 0;            ///< beat or bar number, for Kind::Beat and Kind::Bar
-    int   section = -1;         ///< CueSection, or -1 when the name is not one we know
-    float energy = 0.f;         ///< 0..1 on the generator's energy arc, for Kind::Section
-    int   keyPc = -1;           ///< pitch class 0..11 of the key, or -1
-    char  text[40] = {};        ///< the string argument as it arrived ("Drop", "F# Phrygian")
-    bool  drop = false;         ///< a section that lands as a drop as well (a dialect's Return, Drop or PEAK)
+    KindE kind = KindE::UNKNOWN; ///< what arrived
+    int   index = 0;             ///< beat or bar number, for Kind::Beat and Kind::Bar
+    int   section = -1;          ///< CueSectionE, or -1 when the name is not one we know
+    float energy = 0.f;          ///< 0..1 on the generator's energy arc, for Kind::Section
+    int   keyPc = -1;            ///< pitch class 0..11 of the key, or -1
+    char  text[40] = {};         ///< the string argument as it arrived ("Drop", "F# Phrygian")
+    bool  drop = false;          ///< a section that lands as a drop as well (a dialect's Return, Drop or PEAK)
 };
 
 /**
@@ -85,7 +85,7 @@ int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out );
  * @brief What the generator has said, as the render loop needs it: counters, not messages.
  *
  * One per process (the scheduler that reads it is per configuration, but the socket is not), the
- * same shape RenderPipeline::setLightShow() and s_pinned already use for global state.
+ * same shape RenderPipeline::setLightShow() and M_Pinned already use for global state.
  */
 class ScoreCues
 {
@@ -98,13 +98,13 @@ public:
         bool  section = false;  ///< a `/phos/section` landed
         bool  drop = false;     ///< a `/phos/drop` landed
         float energy = 0.f;     ///< the energy of the section that is playing
-        int   sectionType = -1; ///< CueSection of that section, or -1
+        int   sectionType = -1; ///< CueSectionE of that section, or -1
         int   keyPc = -1;       ///< pitch class of the key, or -1
         int   bar = -1;         ///< the last bar number that arrived
     };
 
     /** @brief How long after the last datagram the cues are still taken as live. */
-    static const float kLiveSecs;
+    static const float LiveSecs;
 
     /** @brief The one instance. */
     static ScoreCues &instance();

@@ -97,7 +97,7 @@ private:
      *  what is actually on disk every time the window opens.
      *  @{ */
     QCheckBox *m_packBox[4] = { nullptr, nullptr, nullptr, nullptr }; ///< One per pack (same order as SetupWindow.cpp's
-                                                                      ///< kPacks table): ticked = download it.
+                                                                      ///< Packs table): ticked = download it.
                                                                       ///< Default-ticked only when nothing of that kind
                                                                       ///< is on disk yet; disabled while a download
                                                                       ///< runs.

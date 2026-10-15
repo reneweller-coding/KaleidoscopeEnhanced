@@ -29,7 +29,7 @@
  *  - `-x <wav>`      batch render: combines `-w` + auto-record + auto-quit, used to
  *                    deterministically render a WAV to an mp4 and exit (no separate
  *                    "batch mode" branch here -- GLwidget itself drives the auto-quit
- *                    once s_batchRender is set).
+ *                    once M_BatchRender is set).
  *  - `-i <sender>`   Spout INPUT: use a live Spout sender's video as the source image
  *                    instead of photos ("any" = whichever sender is active).
  *  - `-v <path>`     native VIDEO source image (a file or a folder of videos); `-i`
@@ -251,15 +251,15 @@ void parsecommandline( int argc, char *argv[] )
                 // Photo source for this run only; outranks both the ini
                 // setting and the preset's own ImageDirectory attribute.
                 case 'f':
-                    RenderPipeline::s_imageDirCli =
+                    RenderPipeline::M_ImageDirCli =
                         QString::fromLocal8Bit( argv[1] );
                     break;
                 case 'b': fullscreen = !fullscreen; break;
                 case 's':
                     RenderPipeline::setRenderScale( (float)atof( argv[1] ) );
-                    RenderPipeline::s_renderScaleFromCli = true;
+                    RenderPipeline::M_RenderScaleFromCli = true;
                     break;
-                case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
+                case 'c': GLwidget::M_StartConfig = QString::fromLocal8Bit( argv[1] ); break;
                 case 'm':
                     monitorIndex = atoi( argv[1] );
                     fullscreen = true;
@@ -267,7 +267,7 @@ void parsecommandline( int argc, char *argv[] )
                 case 'l': logToFile = true; break;
                 // Score-cue self test: no window, no audio, an exit code (CueReceiver.h).
                 case 'q': cueSelfTest = true; break;
-                case 'r': GLwidget::s_autoRecord = true; break;
+                case 'r': GLwidget::M_AutoRecord = true; break;
                 // Score cues from a file, timed by the offline WAV (-w / -x).
                 case 'k':
                     if ( ScoreCueFile::instance().load( QString::fromLocal8Bit( argv[1] ) ) < 0 )
@@ -276,44 +276,44 @@ void parsecommandline( int argc, char *argv[] )
                 // Offline analysis: feed this WAV through the analyzer instead of
                 // capturing live audio (deterministic classifier testing).
                 case 'w':
-                    AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
+                    AudioAnalyzer::M_OfflineWav = QString::fromLocal8Bit( argv[1] );
                     // KALEIDO_OFFLINE_FAST drops the real-time pacing, which only makes
                     // sense for a measurement run -- nobody watches a WAV played at
                     // 100x. So it also means "quit when the file ends", which lets a
                     // sweep over dozens of tracks time itself instead of guessing a
                     // timeout per track. Unlike -x this does NOT start a recording.
                     if ( qEnvironmentVariableIsSet( "KALEIDO_OFFLINE_FAST" ) )
-                        GLwidget::s_batchRender = true;
+                        GLwidget::M_BatchRender = true;
                     break;
                 // Spout output: publish the displayed frame to other apps.
-                case 'o': RenderPipeline::s_spoutEnabled = true; break;
+                case 'o': RenderPipeline::M_SpoutEnabled = true; break;
                 // Embedded web remote (phone control page).
                 case 't':
-                    GLwidget::s_remotePort = atoi( argv[1] );
-                    GLwidget::s_remotePortFromCli = true;
+                    GLwidget::M_RemotePort = atoi( argv[1] );
+                    GLwidget::M_RemotePortFromCli = true;
                     break;
                 // Batch render: offline WAV + auto-record + auto-quit at the end.
                 case 'x':
-                    AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
-                    GLwidget::s_autoRecord = true;
-                    GLwidget::s_batchRender = true;
+                    AudioAnalyzer::M_OfflineWav = QString::fromLocal8Bit( argv[1] );
+                    GLwidget::M_AutoRecord = true;
+                    GLwidget::M_BatchRender = true;
                     break;
                 // Spout INPUT: a live sender replaces the photos as source image.
                 case 'i':
-                    RenderPipeline::s_spoutInEnabled = true;
-                    RenderPipeline::s_spoutInSender = QString::fromLocal8Bit( argv[1] );
+                    RenderPipeline::M_SpoutInEnabled = true;
+                    RenderPipeline::M_SpoutInSender = QString::fromLocal8Bit( argv[1] );
                     break;
                 // Native VIDEO input: a file, or a directory played in turn.
                 // Same slot as -i; Spout wins if both are given.
                 case 'v':
-                    RenderPipeline::s_videoPath = QString::fromLocal8Bit( argv[1] );
+                    RenderPipeline::M_VideoPath = QString::fromLocal8Bit( argv[1] );
                     break;
                 // Stereoscopic output: sbs (side-by-side), tb (top-bottom),
                 // ana (red-cyan anaglyph); anything else = off.
                 case '3':
                 {
                     QString m3 = QString::fromLocal8Bit( argv[1] ).toLower();
-                    RenderPipeline::s_stereoMode = ( m3 == "sbs" )              ? 1
+                    RenderPipeline::M_StereoMode = ( m3 == "sbs" )              ? 1
                                                    : ( m3 == "tb" )             ? 2
                                                    : ( m3.startsWith( "ana" ) ) ? 3
                                                                                 : 0;
@@ -380,11 +380,11 @@ int main( int argc, char *argv[] )
     // die belegt werden sollte.  Nur fuer Messlaeufe gedacht, im Betrieb nicht
     // gesetzt und damit weiterhin uhrgeseedet.
     {
-        const char *seedEnv = getenv( "KALEIDO_SEED" );
-        srand( seedEnv ? (unsigned)strtoul( seedEnv, nullptr, 10 )
-                       : (unsigned)std::chrono::high_resolution_clock::now()
-                             .time_since_epoch()
-                             .count() );
+        const char *seed_env = getenv( "KALEIDO_SEED" );
+        srand( seed_env ? (unsigned)strtoul( seed_env, nullptr, 10 )
+                        : (unsigned)std::chrono::high_resolution_clock::now()
+                              .time_since_epoch()
+                              .count() );
     }
 
     // The photo source used to be resolved here, from the Windows "My Pictures"
@@ -441,7 +441,7 @@ int main( int argc, char *argv[] )
     if ( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) )
         fmt.setSwapInterval( 0 );
     QSurfaceFormat::setDefaultFormat( fmt );
-    EffectShader::s_chainRunner = true; // chain labs as passes (Engine/ChainPass); the editor keeps the uber-shaders
+    EffectShader::M_ChainRunner = true; // chain labs as passes (Engine/ChainPass); the editor keeps the uber-shaders
 
     // The normal windowed-app path: build the Qt application and its single top-level
     // window, then either show it windowed or on the chosen fullscreen monitor.
@@ -472,11 +472,11 @@ int main( int argc, char *argv[] )
     // Set it comfortably above the intended run length: it should only ever
     // fire when whoever started this run is already gone.
     {
-        const int maxSecs = qEnvironmentVariableIntValue( "KALEIDO_MAX_RUNTIME_SECS" );
-        if ( maxSecs > 0 )
+        const int max_secs = qEnvironmentVariableIntValue( "KALEIDO_MAX_RUNTIME_SECS" );
+        if ( max_secs > 0 )
         {
-            fprintf( stderr, "[watchdog] this run ends itself after %d s\n", maxSecs );
-            QTimer::singleShot( maxSecs * 1000, &app, &QCoreApplication::quit );
+            fprintf( stderr, "[watchdog] this run ends itself after %d s\n", max_secs );
+            QTimer::singleShot( max_secs * 1000, &app, &QCoreApplication::quit );
         }
     }
     app.setOverrideCursor( Qt::BlankCursor );

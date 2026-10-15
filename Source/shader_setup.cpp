@@ -25,21 +25,21 @@
  */
 void printShaderInfoLog( GLuint sh_id )
 {
-    GLint   infologLength = 0, status;
-    GLsizei charsWritten = 0;
-    char   *infoLog;
+    GLint   infolog_length = 0, status;
+    GLsizei chars_written = 0;
+    char   *info_log;
 
     glGetShaderiv( sh_id, GL_COMPILE_STATUS, &status );
     fprintf( stderr, "Compilation: %s\n", status ? "OK" : "FAILED!" );
 
-    glGetShaderiv( sh_id, GL_INFO_LOG_LENGTH, &infologLength );
-    if ( infologLength > 0 )
+    glGetShaderiv( sh_id, GL_INFO_LOG_LENGTH, &infolog_length );
+    if ( infolog_length > 0 )
     {
-        infoLog = (char *)malloc( infologLength );
-        glGetShaderInfoLog( sh_id, infologLength, &charsWritten, infoLog );
-        if ( strlen( infoLog ) > 0 )
-            fprintf( stderr, "InfoLog: %s\n", infoLog );
-        free( infoLog );
+        info_log = (char *)malloc( infolog_length );
+        glGetShaderInfoLog( sh_id, infolog_length, &chars_written, info_log );
+        if ( strlen( info_log ) > 0 )
+            fprintf( stderr, "InfoLog: %s\n", info_log );
+        free( info_log );
     }
 }
 
@@ -49,21 +49,21 @@ void printShaderInfoLog( GLuint sh_id )
  */
 void printProgramInfoLog( GLuint prog_id )
 {
-    GLint   infologLength = 0, status;
-    GLsizei charsWritten = 0;
-    char   *infoLog;
+    GLint   infolog_length = 0, status;
+    GLsizei chars_written = 0;
+    char   *info_log;
 
     glGetProgramiv( prog_id, GL_LINK_STATUS, &status );
     fprintf( stderr, "Linking: %s\n", status ? "OK" : "FAILED!" );
 
-    glGetProgramiv( prog_id, GL_INFO_LOG_LENGTH, &infologLength );
-    if ( infologLength > 0 )
+    glGetProgramiv( prog_id, GL_INFO_LOG_LENGTH, &infolog_length );
+    if ( infolog_length > 0 )
     {
-        infoLog = (char *)malloc( infologLength );
-        glGetProgramInfoLog( prog_id, infologLength, &charsWritten, infoLog );
-        if ( strlen( infoLog ) > 0 )
-            fprintf( stderr, "InfoLog: %s\n", infoLog );
-        free( infoLog );
+        info_log = (char *)malloc( infolog_length );
+        glGetProgramInfoLog( prog_id, infolog_length, &chars_written, info_log );
+        if ( strlen( info_log ) > 0 )
+            fprintf( stderr, "InfoLog: %s\n", info_log );
+        free( info_log );
     }
 }
 
@@ -214,8 +214,8 @@ static std::string progKey( const char *tag, const char *a, const char *b,
  *  and guessing at it. */
 static bool cacheOff()
 {
-    static const bool off = ( getenv( "KALEIDO_NO_SHADER_CACHE" ) != 0 );
-    return off;
+    static const bool Off = ( getenv( "KALEIDO_NO_SHADER_CACHE" ) != 0 );
+    return Off;
 }
 
 /** @brief Cache lookup. Also re-binds, because the builders leave the program
@@ -352,10 +352,10 @@ static bool parallelCompile()
     }
     if ( has )
     {
-        typedef void( APIENTRY * MaxThreadsFn )( GLuint );
-        MaxThreadsFn fn = (MaxThreadsFn)glcoreProc( "glMaxShaderCompilerThreadsKHR" );
+        typedef void( APIENTRY * MaxThreadsFnT )( GLuint );
+        MaxThreadsFnT fn = (MaxThreadsFnT)glcoreProc( "glMaxShaderCompilerThreadsKHR" );
         if ( !fn )
-            fn = (MaxThreadsFn)glcoreProc( "glMaxShaderCompilerThreadsARB" );
+            fn = (MaxThreadsFnT)glcoreProc( "glMaxShaderCompilerThreadsARB" );
         if ( fn )
             fn( 0xFFFFFFFFu ); // as many threads as the driver likes
         s_parallel = 1;
@@ -395,10 +395,10 @@ static std::map<std::string, int> s_variantFailed; ///< variant keys whose build
 static GLuint collectPrebuild( const PrebuildJob &j )
 {
     GLint        linked = 0;
-    const double tL0 = nowMs();
+    const double t_l0 = nowMs();
     glGetProgramiv( j.prog, GL_LINK_STATUS, &linked );
-    if ( getenv( "KALEIDO_SPEC_LOG" ) && nowMs() - tL0 > 5.0 )
-        fprintf( stderr, "SPEC link status took %.1f ms\n", nowMs() - tL0 );
+    if ( getenv( "KALEIDO_SPEC_LOG" ) && nowMs() - t_l0 > 5.0 )
+        fprintf( stderr, "SPEC link status took %.1f ms\n", nowMs() - t_l0 );
     if ( !linked && j.key.compare( 0, 4, "FSV|" ) == 0 )
     {
         // a variant has no blocking twin that would log it later: log it now

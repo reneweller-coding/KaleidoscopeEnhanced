@@ -152,8 +152,8 @@ void GpuSims::setupReactionDiffusion()
         m_rdInjectUni = glGetUniformLocation( m_rdProgId, "inject" );
     }
 
-    bool rdOk = ( m_rdProgId != 0 ) && ( m_rdPrevUni >= 0 );
-    for ( int i = 0; i < 2 && rdOk; ++i )
+    bool rd_ok = ( m_rdProgId != 0 ) && ( m_rdPrevUni >= 0 );
+    for ( int i = 0; i < 2 && rd_ok; ++i )
     {
         if ( m_texRD[i] == 0 )
             glGenTextures( 1, &m_texRD[i] );
@@ -162,20 +162,20 @@ void GpuSims::setupReactionDiffusion()
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kRDSize, kRDSize, 0,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, RDSize, RDSize, 0,
                       GL_RGBA, GL_FLOAT, NULL );
         if ( m_fboRD[i] == 0 )
             glGenFramebuffers( 1, &m_fboRD[i] );
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboRD[i] );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, kAttach,
+        glFramebufferTexture2D( GL_FRAMEBUFFER, Attach,
                                 GL_TEXTURE_2D, m_texRD[i], 0 );
         if ( !fbStatusOk() )
-            rdOk = false;
+            rd_ok = false;
     }
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    m_rdReady = rdOk;
+    m_rdReady = rd_ok;
     m_rdSeeded = false; // first step writes the seed pattern
     glErrCheck( "setupReactionDiffusion()" );
 }
@@ -213,12 +213,12 @@ void GpuSims::setupFluid()
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kFluidSize, kFluidSize, 0,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, FluidSize, FluidSize, 0,
                       GL_RGBA, GL_FLOAT, NULL );
         if ( m_fboFluid[i] == 0 )
             glGenFramebuffers( 1, &m_fboFluid[i] );
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboFluid[i] );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, kAttach,
+        glFramebufferTexture2D( GL_FRAMEBUFFER, Attach,
                                 GL_TEXTURE_2D, m_texFluid[i], 0 );
         if ( !fbStatusOk() )
             ok = false;
@@ -247,7 +247,7 @@ void GpuSims::stepFluid( const AudioFeatures &audio, const Frame &f )
     const int prev = 1 - m_fluidIdx;
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboFluid[cur] );
-    glViewport( 0, 0, kFluidSize, kFluidSize );
+    glViewport( 0, 0, FluidSize, FluidSize );
     glUseProgram( m_fluidProgId );
 
     glActiveTexture( GL_TEXTURE0 );
@@ -267,7 +267,7 @@ void GpuSims::stepFluid( const AudioFeatures &audio, const Frame &f )
     if ( m_fluidInterpUni >= 0 )
         glUniform1f( m_fluidInterpUni, f.dyeInterp );
     if ( m_fluidResUni >= 0 )
-        glUniform2f( m_fluidResUni, (float)kFluidSize, (float)kFluidSize );
+        glUniform2f( m_fluidResUni, (float)FluidSize, (float)FluidSize );
     if ( m_fluidSeedUni >= 0 )
         glUniform1f( m_fluidSeedUni, m_fluidSeeded ? 0.f : 1.f );
     // Flow field evolution rides the integrated phase (jump-free); the
@@ -328,12 +328,12 @@ void GpuSims::setupSmoke3D()
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kSmoke3DW, kSmoke3DH, 0,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, Smoke3DW, Smoke3DH, 0,
                       GL_RGBA, GL_FLOAT, NULL );
         if ( m_fboSmoke3D[i] == 0 )
             glGenFramebuffers( 1, &m_fboSmoke3D[i] );
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboSmoke3D[i] );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, kAttach,
+        glFramebufferTexture2D( GL_FRAMEBUFFER, Attach,
                                 GL_TEXTURE_2D, m_texSmoke3D[i], 0 );
         if ( !fbStatusOk() )
             ok = false;
@@ -363,14 +363,14 @@ void GpuSims::stepSmoke3DPass( const AudioFeatures &audio, const Frame &f, float
     const int prev = 1 - m_smoke3DIdx;
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboSmoke3D[cur] );
-    glViewport( 0, 0, kSmoke3DW, kSmoke3DH );
+    glViewport( 0, 0, Smoke3DW, Smoke3DH );
     glUseProgram( m_smoke3DProgId );
 
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, m_texSmoke3D[prev] );
     glUniform1i( m_smoke3DPrevUni, 0 );
     if ( m_smoke3DResUni >= 0 )
-        glUniform2f( m_smoke3DResUni, (float)kSmoke3DW, (float)kSmoke3DH );
+        glUniform2f( m_smoke3DResUni, (float)Smoke3DW, (float)Smoke3DH );
     if ( m_smoke3DSeedUni >= 0 )
         glUniform1f( m_smoke3DSeedUni, m_smoke3DSeeded ? 0.f : 1.f );
     if ( m_smoke3DSubUni >= 0 )
@@ -481,12 +481,12 @@ void GpuSims::setupPhysarum()
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kPhysAgentsSide, kPhysAgentsSide,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, PhysAgentsSide, PhysAgentsSide,
                       0, GL_RGBA, GL_FLOAT, NULL );
         if ( m_fboPhysAgents[i] == 0 )
             glGenFramebuffers( 1, &m_fboPhysAgents[i] );
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysAgents[i] );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, kAttach,
+        glFramebufferTexture2D( GL_FRAMEBUFFER, Attach,
                                 GL_TEXTURE_2D, m_texPhysAgents[i], 0 );
         if ( !fbStatusOk() )
             ok = false;
@@ -498,12 +498,12 @@ void GpuSims::setupPhysarum()
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, kPhysTrailSize, kPhysTrailSize,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, PhysTrailSize, PhysTrailSize,
                       0, GL_RGBA, GL_FLOAT, NULL );
         if ( m_fboPhysTrail[i] == 0 )
             glGenFramebuffers( 1, &m_fboPhysTrail[i] );
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[i] );
-        glFramebufferTexture2D( GL_FRAMEBUFFER, kAttach,
+        glFramebufferTexture2D( GL_FRAMEBUFFER, Attach,
                                 GL_TEXTURE_2D, m_texPhysTrail[i], 0 );
         if ( !fbStatusOk() )
             ok = false;
@@ -518,12 +518,12 @@ void GpuSims::setupPhysarum()
     if ( ok && m_physVBO == 0 )
     {
         std::vector<float> v;
-        v.reserve( size_t( kPhysAgentsSide ) * kPhysAgentsSide * 2 );
-        for ( int y = 0; y < kPhysAgentsSide; ++y )
-            for ( int x = 0; x < kPhysAgentsSide; ++x )
+        v.reserve( size_t( PhysAgentsSide ) * PhysAgentsSide * 2 );
+        for ( int y = 0; y < PhysAgentsSide; ++y )
+            for ( int x = 0; x < PhysAgentsSide; ++x )
             {
-                v.push_back( ( x + 0.5f ) / float( kPhysAgentsSide ) );
-                v.push_back( ( y + 0.5f ) / float( kPhysAgentsSide ) );
+                v.push_back( ( x + 0.5f ) / float( PhysAgentsSide ) );
+                v.push_back( ( y + 0.5f ) / float( PhysAgentsSide ) );
             }
         glGenBuffers( 1, &m_physVBO );
         glBindBuffer( GL_ARRAY_BUFFER, m_physVBO );
@@ -565,23 +565,23 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
     if ( !m_physReady )
         return;
 
-    const int aCur = m_physAgentIdx, aPrev = 1 - m_physAgentIdx;
-    const int tCur = m_physTrailIdx, tPrev = 1 - m_physTrailIdx;
+    const int a_cur = m_physAgentIdx, a_prev = 1 - m_physAgentIdx;
+    const int t_cur = m_physTrailIdx, t_prev = 1 - m_physTrailIdx;
 
     // ---- 1) Agent update ----
-    glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysAgents[aCur] );
-    glViewport( 0, 0, kPhysAgentsSide, kPhysAgentsSide );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysAgents[a_cur] );
+    glViewport( 0, 0, PhysAgentsSide, PhysAgentsSide );
     glUseProgram( m_physAgentProgId );
     glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, m_texPhysAgents[aPrev] );
+    glBindTexture( GL_TEXTURE_2D, m_texPhysAgents[a_prev] );
     glActiveTexture( GL_TEXTURE1 );
-    glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
+    glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[t_prev] );
     glUniform1i( m_physAgentTexUni, 0 );
     if ( m_physAgentTrailUni >= 0 )
         glUniform1i( m_physAgentTrailUni, 1 );
     if ( m_physAgentResUni >= 0 )
         glUniform2f( m_physAgentResUni,
-                     (float)kPhysAgentsSide, (float)kPhysAgentsSide );
+                     (float)PhysAgentsSide, (float)PhysAgentsSide );
     if ( m_physAgentSeedUni >= 0 )
         glUniform1f( m_physAgentSeedUni, m_physSeeded ? 0.f : 1.f );
     if ( m_physAgentTimeUni >= 0 )
@@ -606,11 +606,11 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
     drawFullscreen();
 
     // ---- 2) Deposit: 65k points into the CURRENT trail (additive) ----
-    glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[tPrev] );
-    glViewport( 0, 0, kPhysTrailSize, kPhysTrailSize );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[t_prev] );
+    glViewport( 0, 0, PhysTrailSize, PhysTrailSize );
     glUseProgram( m_physDepositProgId );
     glActiveTexture( GL_TEXTURE0 );
-    glBindTexture( GL_TEXTURE_2D, m_texPhysAgents[aCur] );
+    glBindTexture( GL_TEXTURE_2D, m_texPhysAgents[a_cur] );
     if ( m_physDepAgentsUni >= 0 )
         glUniform1i( m_physDepAgentsUni, 0 );
     if ( m_physDepAmtUni >= 0 )
@@ -620,61 +620,61 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
     glBlendFunc( GL_ONE, GL_ONE );
     glEnable( GL_VERTEX_PROGRAM_POINT_SIZE );
     glBindVertexArray( m_physDepVAO );
-    glDrawArrays( GL_POINTS, 0, kPhysAgentsSide * kPhysAgentsSide );
+    glDrawArrays( GL_POINTS, 0, PhysAgentsSide * PhysAgentsSide );
     glBindVertexArray( 0 );
     glDisable( GL_VERTEX_PROGRAM_POINT_SIZE );
     glDisable( GL_BLEND );
 
     // ---- 3) Diffuse + evaporate into the other trail buffer ----
-    const float difDecay = 0.94f + 0.02f * audio.ambientFactor;
+    const float dif_decay = 0.94f + 0.02f * audio.ambientFactor;
     if ( m_physDiffuseCompId )
     {
         // Compute path: identical kernel, image store instead of an FBO pass.
         glUseProgram( m_physDiffuseCompId );
         glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
+        glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[t_prev] );
         if ( m_physDifCTrailUni >= 0 )
             glUniform1i( m_physDifCTrailUni, 0 );
         if ( m_physDifCResUni >= 0 )
             glUniform2f( m_physDifCResUni,
-                         (float)kPhysTrailSize, (float)kPhysTrailSize );
+                         (float)PhysTrailSize, (float)PhysTrailSize );
         if ( m_physDifCDecayUni >= 0 )
-            glUniform1f( m_physDifCDecayUni, difDecay );
-        glBindImageTexture( 0, m_texPhysTrail[tCur], 0, GL_FALSE, 0,
+            glUniform1f( m_physDifCDecayUni, dif_decay );
+        glBindImageTexture( 0, m_texPhysTrail[t_cur], 0, GL_FALSE, 0,
                             GL_WRITE_ONLY, GL_RGBA16F );
-        glDispatchCompute( GLuint( kPhysTrailSize / 16 ), GLuint( kPhysTrailSize / 16 ), 1 );
+        glDispatchCompute( GLuint( PhysTrailSize / 16 ), GLuint( PhysTrailSize / 16 ), 1 );
         // The written trail is next SAMPLED (agents/display) and rendered
         // INTO by the deposit pass — fence both kinds of downstream access.
         glMemoryBarrier( GL_TEXTURE_FETCH_BARRIER_BIT | GL_FRAMEBUFFER_BARRIER_BIT );
     }
     else
     {
-        glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[tCur] );
+        glBindFramebuffer( GL_FRAMEBUFFER, m_fboPhysTrail[t_cur] );
         glUseProgram( m_physDiffuseProgId );
         glActiveTexture( GL_TEXTURE0 );
-        glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[tPrev] );
+        glBindTexture( GL_TEXTURE_2D, m_texPhysTrail[t_prev] );
         if ( m_physDifTrailUni >= 0 )
             glUniform1i( m_physDifTrailUni, 0 );
         if ( m_physDifResUni >= 0 )
             glUniform2f( m_physDifResUni,
-                         (float)kPhysTrailSize, (float)kPhysTrailSize );
+                         (float)PhysTrailSize, (float)PhysTrailSize );
         if ( m_physDifDecayUni >= 0 )
-            glUniform1f( m_physDifDecayUni, difDecay );
+            glUniform1f( m_physDifDecayUni, dif_decay );
         drawFullscreen();
     }
 
     glBindTexture( GL_TEXTURE_2D, 0 );
     m_physSeeded = true;
-    m_physAgentIdx = aPrev;
-    m_physTrailIdx = tPrev;
+    m_physAgentIdx = a_prev;
+    m_physTrailIdx = t_prev;
 }
 
 /**
- * @brief Accumulates one row/column of the self-similarity matrix roughly every kSSMStride seconds.
+ * @brief Accumulates one row/column of the self-similarity matrix roughly every SSMStride seconds.
  *
  * Parameters are documented in GpuSims.h (`a` sources the chroma/spectrum
  * feature vector, `dt` paces the accumulation).
- * Accumulate the self-similarity matrix: every kSSMStride seconds push one
+ * Accumulate the self-similarity matrix: every SSMStride seconds push one
  * feature vector (12 chroma bins + 8 coarse spectral-shape dims, unit-
  * normalised) into the ring and fill its row+column with sharpened cosine
  * similarity.  CPU-only and cheap, so it runs EVERY frame regardless of what
@@ -684,11 +684,11 @@ void GpuSims::stepPhysarum( const AudioFeatures &audio, const Frame &f )
 void GpuSims::stepSSM( const AudioFeatures &a, float dt )
 {
     m_ssmAccum += dt;
-    if ( m_ssmAccum < kSSMStride )
+    if ( m_ssmAccum < SSMStride )
         return;
-    m_ssmAccum = fmodf( m_ssmAccum, kSSMStride );
+    m_ssmAccum = fmodf( m_ssmAccum, SSMStride );
 
-    float v[kSSMDims];
+    float v[SSMDims];
     for ( int i = 0; i < 12; ++i )
         v[i] = a.chroma[i];
     // Coarse spectral shape: 32 bands averaged down to 8 (weighted a touch
@@ -701,29 +701,29 @@ void GpuSims::stepSSM( const AudioFeatures &a, float dt )
         v[12 + i] = s * 0.125f;
     }
     float n2 = 0.f;
-    for ( int i = 0; i < kSSMDims; ++i )
+    for ( int i = 0; i < SSMDims; ++i )
         n2 += v[i] * v[i];
     if ( n2 < 1e-8f )
         return; // silence: keep the last written entry
     float inv = 1.f / sqrtf( n2 );
-    for ( int i = 0; i < kSSMDims; ++i )
+    for ( int i = 0; i < SSMDims; ++i )
         v[i] *= inv;
 
     const int h = m_ssmHead;
     memcpy( m_ssmVecs[h], v, sizeof( v ) );
-    for ( int j = 0; j < kSSMSize; ++j )
+    for ( int j = 0; j < SSMSize; ++j )
     {
         float d = 0.f;
-        for ( int i = 0; i < kSSMDims; ++i )
+        for ( int i = 0; i < SSMDims; ++i )
             d += v[i] * m_ssmVecs[j][i];
         d = ( d < 0.f ) ? 0.f : d;
         d = d * d * d; // sharpen: only real similarity stays bright
         unsigned char byte = (unsigned char)( d * 255.f + 0.5f );
-        m_ssmData[h * kSSMSize + j] = byte; // row
-        m_ssmData[j * kSSMSize + h] = byte; // column (symmetric)
+        m_ssmData[h * SSMSize + j] = byte; // row
+        m_ssmData[j * SSMSize + h] = byte; // column (symmetric)
     }
-    m_ssmHead = ( h + 1 ) % kSSMSize;
-    if ( m_ssmCount < kSSMSize )
+    m_ssmHead = ( h + 1 ) % SSMSize;
+    if ( m_ssmCount < SSMSize )
         ++m_ssmCount;
     m_ssmDirty = true;
 }
@@ -741,13 +741,13 @@ void GpuSims::stepSpectro( const AudioFeatures &a, float dt )
 {
     m_spectroAccum += dt;
     int rows = 0;
-    while ( m_spectroAccum >= kSpectroStride && rows < 8 )
+    while ( m_spectroAccum >= SpectroStride && rows < 8 )
     {
-        m_spectroAccum -= kSpectroStride;
+        m_spectroAccum -= SpectroStride;
         ++rows;
 
-        unsigned char *dst = m_spectroData + size_t( m_spectroHead ) * kSpectroW;
-        for ( int i = 0; i < kSpectroW; ++i )
+        unsigned char *dst = m_spectroData + size_t( m_spectroHead ) * SpectroW;
+        for ( int i = 0; i < SpectroW; ++i )
         {
             // The bands are already self-normalised 0..1; the mild curve lifts
             // the quiet ones so the far end of the history does not flatten.
@@ -757,13 +757,13 @@ void GpuSims::stepSpectro( const AudioFeatures &a, float dt )
                 v = 1.f;
             dst[i] = (unsigned char)( v * 255.f + 0.5f );
         }
-        m_spectroHead = ( m_spectroHead + 1 ) % kSpectroH;
-        if ( m_spectroCount < kSpectroH )
+        m_spectroHead = ( m_spectroHead + 1 ) % SpectroH;
+        if ( m_spectroCount < SpectroH )
             ++m_spectroCount;
-        if ( m_spectroPend < kSpectroH )
+        if ( m_spectroPend < SpectroH )
             ++m_spectroPend;
     }
-    if ( m_spectroAccum > kSpectroStride * 8.f )
+    if ( m_spectroAccum > SpectroStride * 8.f )
         m_spectroAccum = 0.f; // a long stall: resync rather than catch up
 }
 
@@ -782,14 +782,14 @@ void GpuSims::stepReactionDiffusion( const AudioFeatures &audio )
     const int prev = 1 - m_rdIdx;
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboRD[cur] );
-    glViewport( 0, 0, kRDSize, kRDSize );
+    glViewport( 0, 0, RDSize, RDSize );
     glUseProgram( m_rdProgId );
 
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, m_texRD[prev] );
     glUniform1i( m_rdPrevUni, 0 );
     if ( m_rdResUni >= 0 )
-        glUniform2f( m_rdResUni, (float)kRDSize, (float)kRDSize );
+        glUniform2f( m_rdResUni, (float)RDSize, (float)RDSize );
     if ( m_rdSeedUni >= 0 )
         glUniform1f( m_rdSeedUni, m_rdSeeded ? 0.f : 1.f );
 
@@ -800,15 +800,15 @@ void GpuSims::stepReactionDiffusion( const AudioFeatures &audio )
     // FEED rate — sudden extra feed reads as cell division (mitosis bursts).
     // Both stay clamped inside the stable valley around the old fixed point
     // (F=0.0545, k=0.062) so the simulation can neither die out nor explode.
-    float rdKill = 0.0660f - 0.0070f * audio.spectralCentroid;
-    float rdFeed = 0.0500f + 0.0120f * audio.swell
-                   + 0.0160f * audio.beatDecay;
-    rdKill = std::min( std::max( rdKill, 0.058f ), 0.066f );
-    rdFeed = std::min( std::max( rdFeed, 0.035f ), 0.070f );
+    float rd_kill = 0.0660f - 0.0070f * audio.spectralCentroid;
+    float rd_feed = 0.0500f + 0.0120f * audio.swell
+                    + 0.0160f * audio.beatDecay;
+    rd_kill = std::min( std::max( rd_kill, 0.058f ), 0.066f );
+    rd_feed = std::min( std::max( rd_feed, 0.035f ), 0.070f );
     if ( m_rdFeedUni >= 0 )
-        glUniform1f( m_rdFeedUni, rdFeed );
+        glUniform1f( m_rdFeedUni, rd_feed );
     if ( m_rdKillUni >= 0 )
-        glUniform1f( m_rdKillUni, rdKill );
+        glUniform1f( m_rdKillUni, rd_kill );
     // Onsets / beats inject fresh reagent so the field blossoms with the music.
     float inject = ( audio.onsetStrength > 0.2f || audio.beatDecay > 0.3f ) ? 1.f : 0.f;
     if ( m_rdInjectUni >= 0 )
@@ -833,7 +833,7 @@ void GpuSims::bindSSMTexture()
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_R8, kSSMSize, kSSMSize, 0,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_R8, SSMSize, SSMSize, 0,
                       GL_RED, GL_UNSIGNED_BYTE, NULL );
     }
     glActiveTexture( GL_TEXTURE10 );
@@ -841,7 +841,7 @@ void GpuSims::bindSSMTexture()
     if ( m_ssmDirty )
     {
         glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-        glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, kSSMSize, kSSMSize,
+        glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, SSMSize, SSMSize,
                          GL_RED, GL_UNSIGNED_BYTE, m_ssmData );
         glPixelStorei( GL_UNPACK_ALIGNMENT, 4 );
         m_ssmDirty = false;
@@ -855,7 +855,7 @@ void GpuSims::bindSSMTexture()
  * @brief Lazily creates the spectrogram texture (unit 28) and uploads only the rows written since the last upload.
  *
  * A freshly-created texture uploads the whole ring (m_spectroPend forced to
- * kSpectroH). Otherwise only the pending run of rows is uploaded, split
+ * SpectroH). Otherwise only the pending run of rows is uploaded, split
  * into two glTexSubImage2D calls when that run straddles the ring's wrap
  * (i.e. the newest rows are physically split between the end and the
  * start of m_spectroData).
@@ -872,33 +872,33 @@ void GpuSims::bindSpectroTexture()
         // highest across the seam.  T = time: repeats, because it is a ring.
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glTexImage2D( GL_TEXTURE_2D, 0, GL_R8, kSpectroW, kSpectroH, 0,
+        glTexImage2D( GL_TEXTURE_2D, 0, GL_R8, SpectroW, SpectroH, 0,
                       GL_RED, GL_UNSIGNED_BYTE, NULL );
-        m_spectroPend = kSpectroH; // fresh texture: upload the whole ring
+        m_spectroPend = SpectroH; // fresh texture: upload the whole ring
     }
     glActiveTexture( GL_TEXTURE28 );
     glBindTexture( GL_TEXTURE_2D, m_texSpectro );
     if ( m_spectroPend > 0 )
     {
         glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-        if ( m_spectroPend >= kSpectroH )
+        if ( m_spectroPend >= SpectroH )
         {
-            glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, kSpectroW, kSpectroH,
+            glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, SpectroW, SpectroH,
                              GL_RED, GL_UNSIGNED_BYTE, m_spectroData );
         }
         else
         {
             // Only the rows written since the last upload; the block can
             // straddle the ring's wrap, so it may need two uploads.
-            int first = ( m_spectroHead - m_spectroPend + kSpectroH ) % kSpectroH;
-            int run = ( first + m_spectroPend > kSpectroH )
-                          ? kSpectroH - first
+            int first = ( m_spectroHead - m_spectroPend + SpectroH ) % SpectroH;
+            int run = ( first + m_spectroPend > SpectroH )
+                          ? SpectroH - first
                           : m_spectroPend;
-            glTexSubImage2D( GL_TEXTURE_2D, 0, 0, first, kSpectroW, run,
+            glTexSubImage2D( GL_TEXTURE_2D, 0, 0, first, SpectroW, run,
                              GL_RED, GL_UNSIGNED_BYTE,
-                             m_spectroData + size_t( first ) * kSpectroW );
+                             m_spectroData + size_t( first ) * SpectroW );
             if ( run < m_spectroPend )
-                glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, kSpectroW,
+                glTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, SpectroW,
                                  m_spectroPend - run, GL_RED, GL_UNSIGNED_BYTE,
                                  m_spectroData );
         }

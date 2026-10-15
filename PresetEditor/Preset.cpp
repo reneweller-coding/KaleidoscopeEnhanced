@@ -105,14 +105,14 @@ bool Preset::load( const QString &path, Preset &out, QString *err )
     out.timeTextureInterpolationMin = root.attribute( "timeTextureInterpolationMin" ).toInt();
     out.timeTextureInterpolationMax = root.attribute( "timeTextureInterpolationMax" ).toInt();
     {
-        static const QStringList known = { "ImageDirectory", "ConfigurationName", "hidden",
+        static const QStringList Known = { "ImageDirectory", "ConfigurationName", "hidden",
                                            "timeTextureSoloMin", "timeTextureSoloMax",
                                            "timeTextureInterpolationMin", "timeTextureInterpolationMax" };
         const QDomNamedNodeMap   attrs = root.attributes();
         for ( int a = 0; a < attrs.count(); ++a )
         {
             const QDomAttr at = attrs.item( a ).toAttr();
-            if ( !known.contains( at.name() ) )
+            if ( !Known.contains( at.name() ) )
                 out.extraAttrs.push_back( { at.name(), at.value() } );
         }
     }
@@ -121,7 +121,7 @@ bool Preset::load( const QString &path, Preset &out, QString *err )
     // `<TransitionShader>` element into a PresetEntry and append it, tagging
     // the kind flags so all three element kinds share the exact same
     // field-parsing logic below.
-    auto readList = [&]( const QString &tag, bool combine, bool transition )
+    auto read_list = [&]( const QString &tag, bool combine, bool transition )
     {
         QDomNodeList list = root.elementsByTagName( tag );
         for ( int i = 0; i < list.count(); ++i )
@@ -144,7 +144,7 @@ bool Preset::load( const QString &path, Preset &out, QString *err )
             e.stateBytes = el.attribute( "stateBytes" ).toInt();
             e.shadowExtent = el.attribute( "shadowExtent" ).toDouble();
             {
-                static const QStringList known = { "file",
+                static const QStringList Known = { "file",
                                                    "type",
                                                    "minTimeSolo",
                                                    "maxTimeSolo",
@@ -160,7 +160,7 @@ bool Preset::load( const QString &path, Preset &out, QString *err )
                 for ( int a = 0; a < attrs.count(); ++a )
                 {
                     const QDomAttr at = attrs.item( a ).toAttr();
-                    if ( !known.contains( at.name() ) )
+                    if ( !Known.contains( at.name() ) )
                         e.extraAttrs.push_back( { at.name(), at.value() } );
                 }
             }
@@ -168,9 +168,9 @@ bool Preset::load( const QString &path, Preset &out, QString *err )
             out.entries.push_back( e );
         }
     };
-    readList( "TextureShader", false, false );
-    readList( "CombineShader", true, false );
-    readList( "TransitionShader", false, true );
+    read_list( "TextureShader", false, false );
+    read_list( "CombineShader", true, false );
+    read_list( "TransitionShader", false, true );
     return true;
 }
 
@@ -203,7 +203,7 @@ bool Preset::save( const QString &path, QString *err ) const
     // Local lambda: write one `<TextureShader>`/`<CombineShader>` element and its
     // param children; shared by both passes below so texture and combine
     // entries serialize identically save for the element tag name.
-    auto writeEntry = [&]( const PresetEntry &e )
+    auto write_entry = [&]( const PresetEntry &e )
     {
         w.writeStartElement( e.isTransition ? "TransitionShader"
                                             : ( e.isCombine ? "CombineShader" : "TextureShader" ) );
@@ -264,13 +264,13 @@ bool Preset::save( const QString &path, QString *err ) const
     // main app's grouping.
     for ( const PresetEntry &e : entries )
         if ( !e.isCombine && !e.isTransition )
-            writeEntry( e );
+            write_entry( e );
     for ( const PresetEntry &e : entries )
         if ( e.isCombine )
-            writeEntry( e );
+            write_entry( e );
     for ( const PresetEntry &e : entries )
         if ( e.isTransition )
-            writeEntry( e );
+            write_entry( e );
 
     w.writeEndElement(); // configuration
     w.writeEndDocument();

@@ -52,37 +52,37 @@ static unsigned int maxSides = 14; ///< Legacy range width of the kaleidoscope m
 #endif
 
 // Live-tunable look parameters (shared across all configs, set by hotkeys).
-float RenderPipeline::s_reactivity = 1.0f;
-float RenderPipeline::s_trailAmount = 0.6f;
-bool  RenderPipeline::s_calmMotion = true;
-float RenderPipeline::s_moodStrength = 1.0f;
-float RenderPipeline::s_renderScale = 1.0f;
-float RenderPipeline::s_renderScaleMax = 1.0f; // no supersampling unless asked for
-bool  RenderPipeline::s_renderScaleFromCli = false;
-float RenderPipeline::s_lightShow = 0.0f;     // corner lamps / light-show OFF by default
-bool  RenderPipeline::s_spoutEnabled = false; // Spout sender (CLI -o)
-float RenderPipeline::s_latencyLead = 0.05f;  // display-phase lead vs. heard audio
-int   RenderPipeline::s_stereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
-float RenderPipeline::s_stereoDepth = 1.0f;   // disparity strength
-bool  RenderPipeline::s_blackout = false;     // VJ blackout ('b')
-float RenderPipeline::s_chainScaleIni = 1.f;
-bool  RenderPipeline::s_freeze = false; // VJ freeze ('e'); a comparison run (KALEIDO_FREEZE_TIME) engages it after the
+float RenderPipeline::M_Reactivity = 1.0f;
+float RenderPipeline::M_TrailAmount = 0.6f;
+bool  RenderPipeline::M_CalmMotion = true;
+float RenderPipeline::M_MoodStrength = 1.0f;
+float RenderPipeline::M_RenderScale = 1.0f;
+float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked for
+bool  RenderPipeline::M_RenderScaleFromCli = false;
+float RenderPipeline::M_LightShow = 0.0f;     // corner lamps / light-show OFF by default
+bool  RenderPipeline::M_SpoutEnabled = false; // Spout sender (CLI -o)
+float RenderPipeline::M_LatencyLead = 0.05f;  // display-phase lead vs. heard audio
+int   RenderPipeline::M_StereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
+float RenderPipeline::M_StereoDepth = 1.0f;   // disparity strength
+bool  RenderPipeline::M_Blackout = false;     // VJ blackout ('b')
+float RenderPipeline::M_ChainScaleIni = 1.f;
+bool  RenderPipeline::M_Freeze = false; // VJ freeze ('e'); a comparison run (KALEIDO_FREEZE_TIME) engages it after the
                                         // fade-in
 float RenderPipeline::freezeTime()
 {
-    static const float t = qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" )
-                               ? qEnvironmentVariable( "KALEIDO_FREEZE_TIME" ).toFloat()
-                               : -1.f;
-    return t;
+    static const float FreezeTime = qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" )
+                                        ? qEnvironmentVariable( "KALEIDO_FREEZE_TIME" ).toFloat()
+                                        : -1.f;
+    return FreezeTime;
 }
-bool                  RenderPipeline::s_pinned = false;         // VJ pin ('u')
-QHash<QString, float> RenderPipeline::s_taste;                  // taste learning (skip/favourite)
-bool                  RenderPipeline::s_spoutInEnabled = false; // Spout input (CLI -i)
-QString               RenderPipeline::s_spoutInSender;
-QString               RenderPipeline::s_videoPath;    // native video input (CLI -v)
-QString               RenderPipeline::s_warmLabel;    // what the lazy warm-up did this frame (KALEIDO_FRAME_LOG)
-QString               RenderPipeline::s_imageDirCli;  // photo source override (CLI -f)
-QString               RenderPipeline::s_imageDirUser; // photo source override (ini)
+bool                  RenderPipeline::M_Pinned = false;         // VJ pin ('u')
+QHash<QString, float> RenderPipeline::M_Taste;                  // taste learning (skip/favourite)
+bool                  RenderPipeline::M_SpoutInEnabled = false; // Spout input (CLI -i)
+QString               RenderPipeline::M_SpoutInSender;
+QString               RenderPipeline::M_VideoPath;    // native video input (CLI -v)
+QString               RenderPipeline::M_WarmLabel;    // what the lazy warm-up did this frame (KALEIDO_FRAME_LOG)
+QString               RenderPipeline::M_ImageDirCli;  // photo source override (CLI -f)
+QString               RenderPipeline::M_ImageDirUser; // photo source override (ini)
 
 /**
  * @brief Path of the shared settings INI (kaleidoscope_settings.ini).
@@ -99,14 +99,14 @@ static QString settingsFilePath()
 void RenderPipeline::loadSettings()
 {
     QSettings s( settingsFilePath(), QSettings::IniFormat );
-    s_reactivity = clampParam( s.value( "reactivity", s_reactivity ).toFloat(), 0.f, 3.0f );
-    s_trailAmount = clampParam( s.value( "trails", s_trailAmount ).toFloat(), 0.f, 0.95f );
+    M_Reactivity = clampParam( s.value( "reactivity", M_Reactivity ).toFloat(), 0.f, 3.0f );
+    M_TrailAmount = clampParam( s.value( "trails", M_TrailAmount ).toFloat(), 0.f, 0.95f );
     // calmMotion (default ON): no beat-driven motion of the whole frame in
     // the host -- the virtual camera (punch/shake/sway/gate-weave/drift), the
     // drop rewind and break scrub, the bass shockwave and the trail layer's
     // beat warp are all off.  Set calmMotion=false in the ini for the old look.
-    s_calmMotion = s.value( "calmMotion", s_calmMotion ).toBool();
-    s_moodStrength = clampParam( s.value( "mood", s_moodStrength ).toFloat(), 0.f, 2.5f );
+    M_CalmMotion = s.value( "calmMotion", M_CalmMotion ).toBool();
+    M_MoodStrength = clampParam( s.value( "mood", M_MoodStrength ).toFloat(), 0.f, 2.5f );
     // Probing hook: the mood grade rotates the WHOLE frame by the key the
     // music is in, so a probe of one scene or one transition is judged
     // through a constant tint -- a blueprint came back wine-red.  The
@@ -114,45 +114,45 @@ void RenderPipeline::loadSettings()
     // KALEIDO_MOOD does it for a scripted probe, WITHOUT touching the
     // user's ini.  Unset, nothing changes.
     if ( qEnvironmentVariableIsSet( "KALEIDO_MOOD" ) )
-        s_moodStrength = clampParam( qEnvironmentVariable( "KALEIDO_MOOD" ).toFloat(), 0.f, 2.5f );
-    s_latencyLead = clampParam( s.value( "latencyLead", s_latencyLead ).toFloat(), 0.f, 0.25f );
-    s_stereoMode = s.value( "stereoMode", s_stereoMode ).toInt() & 3;
+        M_MoodStrength = clampParam( qEnvironmentVariable( "KALEIDO_MOOD" ).toFloat(), 0.f, 2.5f );
+    M_LatencyLead = clampParam( s.value( "latencyLead", M_LatencyLead ).toFloat(), 0.f, 0.25f );
+    M_StereoMode = s.value( "stereoMode", M_StereoMode ).toInt() & 3;
     // Photo source. Empty (the shipped default) means "whatever the preset
     // says", which is the bundled Images/ folder -- see init().
-    s_imageDirUser = s.value( "imageDirectory", s_imageDirUser ).toString().trimmed();
-    s_stereoDepth = clampParam( s.value( "stereoDepth", s_stereoDepth ).toFloat(), 0.f, 2.f );
-    setRenderScale( s.value( "renderScale", s_renderScale ).toFloat() ); // clamps internally
-    setRenderScaleMax( s.value( "renderScaleMax", s_renderScaleMax ).toFloat() );
+    M_ImageDirUser = s.value( "imageDirectory", M_ImageDirUser ).toString().trimmed();
+    M_StereoDepth = clampParam( s.value( "stereoDepth", M_StereoDepth ).toFloat(), 0.f, 2.f );
+    setRenderScale( s.value( "renderScale", M_RenderScale ).toFloat() ); // clamps internally
+    setRenderScaleMax( s.value( "renderScaleMax", M_RenderScaleMax ).toFloat() );
     // The chain labs' coordinate grid relative to the frame: 0.5 computes a
     // quarter of the chain (for weak GPUs), read back bilinearly.
-    EffectShader::s_chainScale = clampParam( s.value( "chainScale", EffectShader::s_chainScale ).toFloat(), 0.5f, 1.f );
-    s_chainScaleIni = EffectShader::s_chainScale; // the quality profile may lower the session's value
-    EffectShader::s_chainSS = s.value( "chainSupersample", true ).toBool();
+    EffectShader::M_ChainScale = clampParam( s.value( "chainScale", EffectShader::M_ChainScale ).toFloat(), 0.5f, 1.f );
+    M_ChainScaleIni = EffectShader::M_ChainScale; // the quality profile may lower the session's value
+    EffectShader::M_ChainSS = s.value( "chainSupersample", true ).toBool();
     if ( qEnvironmentVariableIsSet( "KALEIDO_CHAIN_SCALE" ) )
-        EffectShader::s_chainScale = clampParam( qEnvironmentVariable( "KALEIDO_CHAIN_SCALE" ).toFloat(), 0.5f, 1.f );
+        EffectShader::M_ChainScale = clampParam( qEnvironmentVariable( "KALEIDO_CHAIN_SCALE" ).toFloat(), 0.5f, 1.f );
 
     // Taste learning: PER-PRESET per-shader selection-weight factors (keys
     // "<Preset>/<file>"), decayed toward 1.0 a little on every start so old
     // skips/favourites slowly lose their grip.
-    s_marked.clear();
+    M_Marked.clear();
     s.beginGroup( "marked" );
     for ( const QString &k : s.allKeys() )
         if ( s.value( k, false ).toBool() )
-            s_marked.insert( k );
+            M_Marked.insert( k );
     s.endGroup();
 
     // Cue memory: [cues] <track>/<sekunde> = <Szene>.  A favourite pressed while
     // a track is identified remembers WHERE it was pressed; the next time the
     // same track reaches that point, that scene comes back.  The visualiser
     // learns a favourite picture per song, one press at a time.
-    s_cues.clear();
+    M_Cues.clear();
     s.beginGroup( "cues" );
     for ( const QString &k : s.allKeys() )
     {
         const int slash = k.lastIndexOf( QChar( '/' ) );
         if ( slash <= 0 )
             continue;
-        s_cues[k.left( slash )].append( qMakePair( k.mid( slash + 1 ).toDouble(), s.value( k ).toString() ) );
+        M_Cues[k.left( slash )].append( qMakePair( k.mid( slash + 1 ).toDouble(), s.value( k ).toString() ) );
     }
     s.endGroup();
 
@@ -162,19 +162,19 @@ void RenderPipeline::loadSettings()
         float v = clampParam( s.value( k, 1.f ).toFloat(), 0.3f, 2.5f );
         v = 1.f + ( v - 1.f ) * 0.97f;
         if ( fabsf( v - 1.f ) > 0.01f )
-            s_taste[k] = v;
+            M_Taste[k] = v;
     }
     s.endGroup();
-    // The chain labs' taste per class (EffectShader::s_classTaste), fading
+    // The chain labs' taste per class (EffectShader::M_ClassTaste), fading
     // toward neutral by the same 3 % per start: an old like slowly wears off.
-    EffectShader::s_classTaste.clear();
+    EffectShader::M_ClassTaste.clear();
     s.beginGroup( "classTaste" );
     for ( const QString &k : s.allKeys() ) // recursive: knob/class
     {
         float v = clampParam( s.value( k, 1.f ).toFloat(), 0.6f, 1.6f );
         v = 1.f + ( v - 1.f ) * 0.97f;
         if ( fabsf( v - 1.f ) > 0.01f )
-            EffectShader::s_classTaste[k.toStdString()] = v;
+            EffectShader::M_ClassTaste[k.toStdString()] = v;
     }
     s.endGroup();
 }
@@ -194,15 +194,15 @@ static QString tasteBase( const char *fragPath )
 
 float RenderPipeline::tasteFor( const char *fragPath ) const
 {
-    auto it = s_taste.constFind( m_presetName + "/" + tasteBase( fragPath ) );
-    return ( it == s_taste.constEnd() ) ? 1.f : it.value();
+    auto it = M_Taste.constFind( m_presetName + "/" + tasteBase( fragPath ) );
+    return ( it == M_Taste.constEnd() ) ? 1.f : it.value();
 }
 
 void RenderPipeline::bumpTaste( const char *fragPath, float mul )
 {
     QString key = m_presetName + "/" + tasteBase( fragPath );
-    float   v = clampParam( ( s_taste.value( key, 1.f ) ) * mul, 0.3f, 2.5f );
-    s_taste[key] = v;
+    float   v = clampParam( ( M_Taste.value( key, 1.f ) ) * mul, 0.3f, 2.5f );
+    M_Taste[key] = v;
     // Persist immediately (rare events; losing them to a crash would defeat
     // the learning).
     QSettings s( settingsFilePath(), QSettings::IniFormat );
@@ -230,24 +230,24 @@ static void bumpClassTaste( EffectShader *e, float mul )
 void RenderPipeline::saveSettings()
 {
     QSettings s( settingsFilePath(), QSettings::IniFormat );
-    s.setValue( "reactivity", s_reactivity );
-    s.setValue( "trails", s_trailAmount );
-    s.setValue( "calmMotion", s_calmMotion );
-    s.setValue( "mood", s_moodStrength );
-    s.setValue( "latencyLead", s_latencyLead );
-    s.setValue( "stereoMode", s_stereoMode );
-    s.setValue( "stereoDepth", s_stereoDepth );
-    s.setValue( "renderScale", s_renderScale );
-    s.setValue( "renderScaleMax", s_renderScaleMax );
-    s.setValue( "chainScale", s_chainScaleIni );
-    s.setValue( "chainSupersample", EffectShader::s_chainSS );
+    s.setValue( "reactivity", M_Reactivity );
+    s.setValue( "trails", M_TrailAmount );
+    s.setValue( "calmMotion", M_CalmMotion );
+    s.setValue( "mood", M_MoodStrength );
+    s.setValue( "latencyLead", M_LatencyLead );
+    s.setValue( "stereoMode", M_StereoMode );
+    s.setValue( "stereoDepth", M_StereoDepth );
+    s.setValue( "renderScale", M_RenderScale );
+    s.setValue( "renderScaleMax", M_RenderScaleMax );
+    s.setValue( "chainScale", M_ChainScaleIni );
+    s.setValue( "chainSupersample", EffectShader::M_ChainSS );
     // Written back even when empty, so the key is visible in the file for
     // anyone who wants to point the visualizer at their own pictures without
     // hunting through documentation for its name.
-    s.setValue( "imageDirectory", s_imageDirUser );
+    s.setValue( "imageDirectory", M_ImageDirUser );
     s.sync();
     fprintf( stderr, "Saved settings: react=%.2f trails=%.2f mood=%.2f lead=%.0fms scale=%.2f\n",
-             s_reactivity, s_trailAmount, s_moodStrength, s_latencyLead * 1000.f, s_renderScale );
+             M_Reactivity, M_TrailAmount, M_MoodStrength, M_LatencyLead * 1000.f, M_RenderScale );
 }
 
 
@@ -256,7 +256,7 @@ void RenderPipeline::saveSettings()
  * @param f Value to round.
  * @return floor(f) if the fractional part is below 0.5, else ceil(f).
  */
-float ROUND( float f )
+float roundHalfUp( float f )
 {
     if ( f - floor( f ) < 0.5 )
         return floor( f );
@@ -277,11 +277,11 @@ float ROUND( float f )
  */
 static float slewToward( float cur, float target, float rate, float dt )
 {
-    float maxStep = rate * dt;
+    float max_step = rate * dt;
     if ( target > cur )
-        return ( target - cur < maxStep ) ? target : cur + maxStep;
+        return ( target - cur < max_step ) ? target : cur + max_step;
     else
-        return ( cur - target < maxStep ) ? target : cur - maxStep;
+        return ( cur - target < max_step ) ? target : cur - max_step;
 }
 
 
@@ -289,7 +289,7 @@ static float slewToward( float cur, float target, float rate, float dt )
 // Constructor
 RenderPipeline::RenderPipeline()
     : m_mesh( 0 ),
-      m_npot_supported( false ),
+      m_npotSupported( false ),
       m_width( 100 ),
       m_height( 100 ),
       m_texInternalFormat( GL_RGBA8 ),
@@ -352,8 +352,8 @@ void RenderPipeline::init( const QString &directory, unsigned int timeTextureSol
     // ImageDirectory attribute -- which ships as "..\\Images", the folder the
     // bundled photo library unpacks into, resolved against the executable's
     // working directory exactly like the shader paths are.
-    m_imageDirectory = !s_imageDirCli.isEmpty()    ? s_imageDirCli
-                       : !s_imageDirUser.isEmpty() ? s_imageDirUser
+    m_imageDirectory = !M_ImageDirCli.isEmpty()    ? M_ImageDirCli
+                       : !M_ImageDirUser.isEmpty() ? M_ImageDirUser
                                                    : directory;
 
     m_timeTextureSoloMin = timeTextureSoloMin;
@@ -412,8 +412,8 @@ void RenderPipeline::start( int width, int height )
     // Name the LAYER the directory came from, not just the path: with three
     // possible sources a bare path leaves the reader guessing which one won,
     // and a typo in the ini looks exactly like a missing photo pack.
-    const char *src = !s_imageDirCli.isEmpty()    ? "command line -f"
-                      : !s_imageDirUser.isEmpty() ? "imageDirectory in kaleidoscope_settings.ini"
+    const char *src = !M_ImageDirCli.isEmpty()    ? "command line -f"
+                      : !M_ImageDirUser.isEmpty() ? "imageDirectory in kaleidoscope_settings.ini"
                                                   : "preset default";
     printf( "Nr of images: %d\n", (int)m_imageList.size() );
     if ( m_imageList.isEmpty() )
@@ -435,8 +435,8 @@ void RenderPipeline::start( int width, int height )
         int                                entries = 0;
         const std::vector<EffectShader *> *lists[3] =
             { &m_effectTextures, &m_effectFx, &m_effectTransitions };
-        for ( int L = 0; L < 3; ++L )
-            for ( EffectShader *e : *lists[L] )
+        for ( int l = 0; l < 3; ++l )
+            for ( EffectShader *e : *lists[l] )
             {
                 ++entries;
                 if ( e->fragmentName() )
@@ -631,7 +631,7 @@ void RenderPipeline::cleanTextures()
 void RenderPipeline::cleanShaderPrograms()
 {
     // Shared: every configuration builds the same OverlayBlend program.
-    shaderProgramRelease( m_sh_prog_id_fx );
+    shaderProgramRelease( m_shProgIdFx );
 
 
     for ( unsigned int i = 0; i < m_effectTextures.size(); i++ )
@@ -681,19 +681,19 @@ void RenderPipeline::reinit( int width, int height )
     // cleanTextures();
 
     // width/height arrive as the DISPLAY (window) resolution.  Render the pipeline
-    // at s_renderScale × that; only the final present pass upscales to the display.
+    // at M_RenderScale × that; only the final present pass upscales to the display.
     m_displayW = width;
     m_displayH = height;
-    m_width = (int)( width * s_renderScale + 0.5f );
+    m_width = (int)( width * M_RenderScale + 0.5f );
     if ( m_width < 16 )
         m_width = 16;
-    m_height = (int)( height * s_renderScale + 0.5f );
+    m_height = (int)( height * M_RenderScale + 0.5f );
     if ( m_height < 16 )
         m_height = 16;
 
     m_nrTextureUploads = 0;
     /*	const GLubyte *extstr = glGetString(GL_EXTENSIONS);
-        m_npot_supported = (NULL != strstr(reinterpret_cast<const char *>(extstr),"GL_ARB_texture_non_power_of_two"));
+        m_npotSupported = (NULL != strstr(reinterpret_cast<const char *>(extstr),"GL_ARB_texture_non_power_of_two"));
 
         // check whether we can actually load textures of that size on the GPU
         glTexImage2D( GL_PROXY_TEXTURE_2D, 0, m_texInternalFormat,
@@ -712,7 +712,7 @@ void RenderPipeline::reinit( int width, int height )
         {
             fprintf( stderr, "texture size is  %u x %u x RGBA\n", m_width, m_height );
 
-            if ( m_npot_supported )
+            if ( m_npotSupported )
                 fputs( "NPOT textures are OK.\n", stderr );
             else
             {
@@ -771,13 +771,13 @@ void RenderPipeline::resize( int width, int height )
     if ( width <= 0 || height <= 0 )
         return;
 
-    // width/height = display resolution; render at s_renderScale × that.
+    // width/height = display resolution; render at M_RenderScale × that.
     m_displayW = width;
     m_displayH = height;
-    m_width = (int)( width * s_renderScale + 0.5f );
+    m_width = (int)( width * M_RenderScale + 0.5f );
     if ( m_width < 16 )
         m_width = 16;
-    m_height = (int)( height * s_renderScale + 0.5f );
+    m_height = (int)( height * M_RenderScale + 0.5f );
     if ( m_height < 16 )
         m_height = 16;
 
@@ -836,7 +836,7 @@ void RenderPipeline::setupSafety()
     m_present.setup( m_width, m_height, m_texInternalFormat, m_texFormat, m_texType );
 
     // ---- Feedback / trails ping-pong buffers (mipmapped: present reads them) ----
-    bool trailOk = true;
+    bool trail_ok = true;
     for ( int i = 0; i < 2; ++i )
     {
         if ( m_texTrail[i] == 0 )
@@ -855,7 +855,7 @@ void RenderPipeline::setupSafety()
         glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint,
                                 GL_TEXTURE_2D, m_texTrail[i], 0 );
         if ( !checkFramebufferStatus() )
-            trailOk = false;
+            trail_ok = false;
     }
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     glBindTexture( GL_TEXTURE_2D, 0 );
@@ -887,7 +887,7 @@ void RenderPipeline::setupSafety()
         m_stereoMixResUni = glGetUniformLocation( m_stereoMixProgId, "resolution" );
         m_stereoMixWUni = glGetUniformLocation( m_stereoMixProgId, "interpolation" );
     }
-    m_feedbackReady = m_present.ready() && trailOk && ( m_trailProgId != 0 )
+    m_feedbackReady = m_present.ready() && trail_ok && ( m_trailProgId != 0 )
                       && ( m_trailCurUni >= 0 ) && ( m_trailPrevUni >= 0 );
 
     checkGLErrors( "setupSafety()" );
@@ -933,34 +933,34 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
     // screen for ~8s anyway. Floors at ~55% of the nominal size (still
     // legible); eliding stays as the last resort for the rare title that
     // doesn't fit even there.
-    const int maxW = W - int( 80 * S );
-    auto      fitFont = [&]( const char *family, int nominalPt, bool bold, const QString &text ) -> QFont
+    const int max_w = W - int( 80 * S );
+    auto      fit_font = [&]( const char *family, int nominalPt, bool bold, const QString &text ) -> QFont
     {
-        const int minPt = int( nominalPt * 0.55f );
+        const int min_pt = int( nominalPt * 0.55f );
         QFont     f( family, nominalPt, bold ? QFont::Bold : QFont::Normal );
-        while ( f.pointSize() > minPt && QFontMetrics( f ).horizontalAdvance( text ) > maxW )
+        while ( f.pointSize() > min_pt && QFontMetrics( f ).horizontalAdvance( text ) > max_w )
             f.setPointSize( f.pointSize() - 1 );
         return f;
     };
-    QFont   ft = fitFont( "Segoe UI", int( 52 * S ), true, title );
-    QFont   fa = fitFont( "Segoe UI", int( 26 * S ), false, artist );
+    QFont   ft = fit_font( "Segoe UI", int( 52 * S ), true, title );
+    QFont   fa = fit_font( "Segoe UI", int( 26 * S ), false, artist );
     QString t = title, a = artist;
-    if ( QFontMetrics( ft ).horizontalAdvance( t ) > maxW )
-        t = QFontMetrics( ft ).elidedText( t, Qt::ElideRight, maxW );
-    if ( QFontMetrics( fa ).horizontalAdvance( a ) > maxW )
-        a = QFontMetrics( fa ).elidedText( a, Qt::ElideRight, maxW );
+    if ( QFontMetrics( ft ).horizontalAdvance( t ) > max_w )
+        t = QFontMetrics( ft ).elidedText( t, Qt::ElideRight, max_w );
+    if ( QFontMetrics( fa ).horizontalAdvance( a ) > max_w )
+        a = QFontMetrics( fa ).elidedText( a, Qt::ElideRight, max_w );
 
-    const QRect rT( int( 40 * S ), int( 24 * S ), W - int( 80 * S ), int( 132 * S ) );
-    const QRect rA( int( 40 * S ), int( 156 * S ), W - int( 80 * S ), int( 68 * S ) );
+    const QRect r_t( int( 40 * S ), int( 24 * S ), W - int( 80 * S ), int( 132 * S ) );
+    const QRect r_a( int( 40 * S ), int( 156 * S ), W - int( 80 * S ), int( 68 * S ) );
     p.setFont( ft );
     p.setPen( QColor( 0, 0, 0, 150 ) );
     for ( int dy = -2; dy <= 2; ++dy )
         for ( int dx = -2; dx <= 2; ++dx )
             if ( dx != 0 || dy != 0 )
-                p.drawText( rT.translated( int( dx * S ), int( dy * S ) ),
+                p.drawText( r_t.translated( int( dx * S ), int( dy * S ) ),
                             Qt::AlignHCenter | Qt::AlignVCenter, t );
     p.setPen( QColor( 255, 255, 255, 235 ) );
-    p.drawText( rT, Qt::AlignHCenter | Qt::AlignVCenter, t );
+    p.drawText( r_t, Qt::AlignHCenter | Qt::AlignVCenter, t );
     if ( !a.isEmpty() )
     {
         p.setFont( fa );
@@ -968,10 +968,10 @@ void RenderPipeline::showTitle( const QString &title, const QString &artist )
         for ( int dy = -1; dy <= 1; ++dy )
             for ( int dx = -1; dx <= 1; ++dx )
                 if ( dx != 0 || dy != 0 )
-                    p.drawText( rA.translated( int( dx * S ), int( dy * S ) ),
+                    p.drawText( r_a.translated( int( dx * S ), int( dy * S ) ),
                                 Qt::AlignHCenter | Qt::AlignVCenter, a );
         p.setPen( QColor( 205, 218, 238, 225 ) );
-        p.drawText( rA, Qt::AlignHCenter | Qt::AlignVCenter, a );
+        p.drawText( r_a, Qt::AlignHCenter | Qt::AlignVCenter, a );
     }
     p.end();
     m_titlePending = img;
@@ -983,12 +983,12 @@ void RenderPipeline::requestSceneChange()
 {
     // Tell the user WHY nothing will happen instead of silently ignoring
     // the key (a pinned/frozen show swallowing 'n' looks like a bug).
-    if ( s_pinned )
+    if ( M_Pinned )
     {
         fprintf( stderr, "n: ignored - PIN is active (press 'u' to unpin)\n" );
         return;
     }
-    if ( s_freeze )
+    if ( M_Freeze )
     {
         fprintf( stderr, "n: ignored - FREEZE is active (press 'e' to unfreeze)\n" );
         return;
@@ -1010,8 +1010,8 @@ void RenderPipeline::compileAllShaders()
     // Timed separately from the rest of startup on purpose: the eager compile
     // shares this run with 977 photo loads and 238 mesh imports, and the total
     // says nothing about which of them costs what.
-    QElapsedTimer compileClock;
-    compileClock.start();
+    QElapsedTimer compile_clock;
+    compile_clock.start();
     for ( EffectShader *s : m_effectTextures )
     {
         fprintf( stderr, "COMPILEALL %s\n", s->fragmentName() );
@@ -1034,17 +1034,17 @@ void RenderPipeline::compileAllShaders()
     // actually is, next to how many entries name one. The two differ by
     // the 3D-model families, where one shader carries up to 29 scenes.
     int    progs = 0, reuses = 0;
-    double buildMs = 0.0;
-    shaderCacheStats( &progs, &reuses, &buildMs );
-    const double avg = progs ? buildMs / progs : 0.0;
+    double build_ms = 0.0;
+    shaderCacheStats( &progs, &reuses, &build_ms );
+    const double avg = progs ? build_ms / progs : 0.0;
     fprintf( stderr, "SHADERS: %d distinct programs, %d builds served from the cache\n",
              progs, reuses );
     fprintf( stderr, "SHADERS: %.0f ms compiling+linking (%.0f ms each), so the cache saved about %.0f ms\n",
-             buildMs, avg, avg * reuses );
+             build_ms, avg, avg * reuses );
     // The eager-build total for contrast: for a 3D-model scene it also imports
     // the .glb, which is the larger half. Naming it compile time would be wrong.
     fprintf( stderr, "SHADERS: eager build incl. mesh import took %lld ms\n",
-             (long long)compileClock.elapsed() );
+             (long long)compile_clock.elapsed() );
 }
 
 // Remote scene browser: list the preset's texture shaders (file basenames).
@@ -1095,7 +1095,7 @@ void RenderPipeline::forceFx( int idx )
 {
     if ( idx < 0 || idx >= (int)m_effectFx.size() )
         return;
-    if ( s_pinned || s_freeze )
+    if ( M_Pinned || M_Freeze )
         return; // same handbrakes as forceScene
     m_scheduler.forceFx( idx );
 }
@@ -1104,15 +1104,15 @@ void RenderPipeline::forceScene( int idx )
 {
     if ( idx < 0 || idx >= (int)m_effectTextures.size() )
         return;
-    if ( s_pinned || s_freeze )
+    if ( M_Pinned || M_Freeze )
         return;                  // same handbrakes as requestSceneChange
     EffectShader::noCarryOver(); // a scene picked by hand comes as it was rolled
     m_scheduler.forceScene( idx );
 }
 
 // Key 'f': the user LIKES what is on screen — persistent selection bonus.
-QSet<QString>                                 RenderPipeline::s_marked;
-QHash<QString, QList<QPair<double, QString>>> RenderPipeline::s_cues;
+QSet<QString>                                 RenderPipeline::M_Marked;
+QHash<QString, QList<QPair<double, QString>>> RenderPipeline::M_Cues;
 
 /**
  * @brief The settings-ini key for one marked scene.
@@ -1130,7 +1130,7 @@ bool RenderPipeline::currentSceneMarked() const
 {
     if ( m_scheduler.actTexture() >= m_effectTextures.size() )
         return false;
-    return s_marked.contains( tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() ) );
+    return M_Marked.contains( tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() ) );
 }
 
 bool RenderPipeline::toggleMarkCurrentScene()
@@ -1141,15 +1141,15 @@ bool RenderPipeline::toggleMarkCurrentScene()
     const QString base = tasteBase( frag );
 
     QSettings  s( settingsFilePath(), QSettings::IniFormat );
-    const bool nowMarked = !s_marked.contains( base );
-    if ( nowMarked )
+    const bool now_marked = !M_Marked.contains( base );
+    if ( now_marked )
     {
-        s_marked.insert( base );
+        M_Marked.insert( base );
         s.setValue( markKey( frag ), true );
     }
     else
     {
-        s_marked.remove( base );
+        M_Marked.remove( base );
         s.remove( markKey( frag ) );
     }
     // Persist immediately: an inspection pass is exactly the situation where
@@ -1157,13 +1157,13 @@ bool RenderPipeline::toggleMarkCurrentScene()
     s.sync();
     fprintf( stderr, "Mark: %s %s (%d marked)\n",
              base.toLocal8Bit().constData(),
-             nowMarked ? "SET" : "cleared", (int)s_marked.size() );
-    return nowMarked;
+             now_marked ? "SET" : "cleared", (int)M_Marked.size() );
+    return now_marked;
 }
 
 bool RenderPipeline::saveMarkedPreset( QString *outPath )
 {
-    if ( s_marked.isEmpty() )
+    if ( M_Marked.isEmpty() )
     {
         fprintf( stderr, "Marked preset: nothing marked\n" );
         return false;
@@ -1172,15 +1172,15 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     // Take the scenes' real nodes from the master catalogue. Synthesising tags
     // here would drop geom and every preset parameter -- the exact failure that
     // made a whole measurement campaign's probes meaningless earlier.
-    const QString cfgDir = Platform::presetsDir( QFileInfo( settingsFilePath() ).absolutePath() );
+    const QString cfg_dir = Platform::presetsDir( QFileInfo( settingsFilePath() ).absolutePath() );
     QDomDocument  master;
-    QFile         mf( cfgDir + "/Komplett.xml" );
-    QString       parseErr;
-    int           errLine = 0;
-    if ( !mf.open( QIODevice::ReadOnly ) || !master.setContent( &mf, &parseErr, &errLine ) )
+    QFile         mf( cfg_dir + "/Komplett.xml" );
+    QString       parse_err;
+    int           err_line = 0;
+    if ( !mf.open( QIODevice::ReadOnly ) || !master.setContent( &mf, &parse_err, &err_line ) )
     {
         fprintf( stderr, "Marked preset: cannot read Komplett.xml (%s, line %d)\n",
-                 parseErr.toLocal8Bit().constData(), errLine );
+                 parse_err.toLocal8Bit().constData(), err_line );
         return false;
     }
     mf.close();
@@ -1200,7 +1200,7 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     {
         QDomElement   el = texs.at( i ).toElement();
         const QString base = tasteBase( el.attribute( "file" ).toLocal8Bit().constData() );
-        if ( !s_marked.contains( base ) || written.contains( base ) )
+        if ( !M_Marked.contains( base ) || written.contains( base ) )
             continue;
         written.insert( base );
         QDomElement copy = out.importNode( el, true ).toElement();
@@ -1215,7 +1215,7 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     if ( written.isEmpty() )
     {
         fprintf( stderr, "Marked preset: none of the %d marked scenes are in Komplett.xml\n",
-                 (int)s_marked.size() );
+                 (int)M_Marked.size() );
         return false;
     }
 
@@ -1233,7 +1233,7 @@ bool RenderPipeline::saveMarkedPreset( QString *outPath )
     tr.setAttribute( "complexity", "1" );
     root.appendChild( tr );
 
-    const QString path = cfgDir + "/Marked.xml";
+    const QString path = cfg_dir + "/Marked.xml";
     QFile         f( path );
     if ( !f.open( QIODevice::WriteOnly | QIODevice::Text ) )
     {
@@ -1320,7 +1320,7 @@ void RenderPipeline::rememberCue( const QString &trackKey, double posSec )
         return;
     const QString key = cueKey( trackKey );
     const QString base = tasteBase( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
-    s_cues[key].append( qMakePair( posSec, base ) );
+    M_Cues[key].append( qMakePair( posSec, base ) );
     QSettings s( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
     s.setValue( QString( "cues/%1/%2" ).arg( key ).arg( (int)posSec ), base );
     fprintf( stderr, "CUE gemerkt: %s @ %.0f s -> %s\n", key.toUtf8().constData(), posSec, base.toUtf8().constData() );
@@ -1336,8 +1336,8 @@ void RenderPipeline::tickCues( const QString &trackKey, double posSec )
         m_cueTrack = key;
         m_cuesFired.clear();
     }
-    auto it = s_cues.constFind( key );
-    if ( it == s_cues.constEnd() )
+    auto it = M_Cues.constFind( key );
+    if ( it == M_Cues.constEnd() )
         return;
     for ( int k = 0; k < it->size(); ++k )
     {
@@ -1398,11 +1398,11 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
     // loaded when it is about to be seen, not because it exists.
     {
         bool warmed = false;
-        s_warmLabel.clear();
+        M_WarmLabel.clear();
         for ( EffectShader *s : m_effectTextures )
             if ( s->finishMeshWarmup() )
             {
-                s_warmLabel = QStringLiteral( "mesh " ) + QString::fromLocal8Bit( s->fragmentName() );
+                M_WarmLabel = QStringLiteral( "mesh " ) + QString::fromLocal8Bit( s->fragmentName() );
                 warmed = true;
                 break;
             }
@@ -1451,7 +1451,7 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
                     if ( !shaderPrebuildReady( s->fragmentFile() ) )
                         continue;        // still building in the background
                     s->ensureCompiled(); // cache hit: instant
-                    s_warmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
+                    M_WarmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
                     warmed = true;
                     break;
                 }
@@ -1462,7 +1462,7 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
                            && shaderPrebuildStart( s->fragmentFile() ) ) )
                 {
                     s->ensureCompiled(); // GLSL only; a mesh build defers itself
-                    s_warmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
+                    M_WarmLabel = QStringLiteral( "glsl " ) + QString::fromLocal8Bit( s->fragmentName() );
                     warmed = true;
                     break;
                 }
@@ -1475,7 +1475,7 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
                          && !shaderPrebuildReady( s->fragmentFile() ) )
                         continue;
                     s->ensureCompiled();
-                    s_warmLabel = QStringLiteral( "fx " ) + QString::fromLocal8Bit( s->fragmentName() );
+                    M_WarmLabel = QStringLiteral( "fx " ) + QString::fromLocal8Bit( s->fragmentName() );
                     break;
                 }
     }
@@ -1499,7 +1499,7 @@ void RenderPipeline::beginFrame( const AudioFeatures &audio )
 // ---------------------------------------------------------------------------
 void RenderPipeline::trimMeshResidency()
 {
-    static const int budget = []
+    static const int Budget = []
     {
         const int v = qEnvironmentVariableIntValue( "KALEIDO_MESH_BUDGET" );
         return v > 0 ? std::max( 4, v ) : 16;
@@ -1518,7 +1518,7 @@ void RenderPipeline::trimMeshResidency()
     for ( EffectShader *s : m_effectTextures )
         if ( s->meshResident() )
             ++resident;
-    while ( resident > budget )
+    while ( resident > Budget )
     {
         EffectShader *victim = nullptr;
         qint64        oldest = std::numeric_limits<qint64>::max();
@@ -1548,18 +1548,18 @@ void RenderPipeline::updateLiveInput()
     // its texture replaces BOTH image slots below (crossfades collapse to a
     // no-op on the image, every effect folds the LIVE picture).  No sender ->
     // m_liveTex stays 0 and the photos work as usual.
-    if ( s_spoutInEnabled )
+    if ( M_SpoutInEnabled )
     {
-        spoutInInit( s_spoutInSender.toLocal8Bit().constData() ); // idempotent
+        spoutInInit( M_SpoutInSender.toLocal8Bit().constData() ); // idempotent
         unsigned int lw = 0, lh = 0;
         m_liveTex = spoutInReceive( &lw, &lh );
     }
-    else if ( !s_videoPath.isEmpty() )
+    else if ( !M_VideoPath.isEmpty() )
     {
         // Same slot, same consequences: while a frame is available it replaces
         // both photo slots, so cross-fades collapse on the image and every
         // effect folds the moving picture instead of a still.
-        videoInInit( s_videoPath.toLocal8Bit().constData() ); // idempotent
+        videoInInit( M_VideoPath.toLocal8Bit().constData() ); // idempotent
         unsigned int lw = 0, lh = 0;
         m_liveTex = videoInFrame( &lw, &lh );
     }
@@ -1573,8 +1573,8 @@ void RenderPipeline::updateTimingScale( const AudioFeatures &audio )
     // so existing running timers complete at their original length.
     // When the audio is NOT music (speech / video / silence), musicPresence
     // pulls the scale back to the neutral 1.0 so scene timing behaves normally.
-    float effTimingScale = 1.0f + ( audio.timingScale - 1.0f ) * audio.musicPresence;
-    m_timingScale = 0.999f * m_timingScale + 0.001f * effTimingScale;
+    float eff_timing_scale = 1.0f + ( audio.timingScale - 1.0f ) * audio.musicPresence;
+    m_timingScale = 0.999f * m_timingScale + 0.001f * eff_timing_scale;
     // Guard against zero to avoid division-by-zero below.
     if ( m_timingScale < 0.05f )
         m_timingScale = 0.05f;
@@ -1582,30 +1582,30 @@ void RenderPipeline::updateTimingScale( const AudioFeatures &audio )
 
 RenderPipeline::FrameTiming RenderPipeline::readFrameClock()
 {
-    float timeSinceLastFrame = m_nanotimer.elapsed();
-    // if( timeSinceLastFrame > 20.0 )
-    // printf( "%f\n", timeSinceLastFrame );
+    float time_since_last_frame = m_nanotimer.elapsed();
+    // if( time_since_last_frame > 20.0 )
+    // printf( "%f\n", time_since_last_frame );
     m_nanotimer.start();
 
-    float timeSinceLastFrameSec = timeSinceLastFrame * 0.001;
+    float time_since_last_frame_sec = time_since_last_frame * 0.001;
     // Wall-clock frame time, immune to the freeze below (the blackout fade
     // must keep moving even over a frozen picture).
-    const float dtWall = timeSinceLastFrameSec;
+    const float dt_wall = time_since_last_frame_sec;
 
     // FPS-driven detail budget for the heavy cube scenes: below ~45 fps every
     // 2nd cube is dropped (uniform `cubeBudget`, hysteresis so it never
     // oscillates); above ~57 fps full detail returns.
-    if ( dtWall > 1e-4f && dtWall < 0.5f )
+    if ( dt_wall > 1e-4f && dt_wall < 0.5f )
     {
-        float fps = 1.f / dtWall;
+        float fps = 1.f / dt_wall;
         m_cubeFpsEma += 0.05f * ( fps - m_cubeFpsEma );
-        if ( m_cubeFpsEma < 45.f && Scene3DShader::s_cubeBudget > 0.75f )
-            Scene3DShader::s_cubeBudget = 0.5f;
-        else if ( m_cubeFpsEma > 57.f && Scene3DShader::s_cubeBudget < 0.75f )
-            Scene3DShader::s_cubeBudget = 1.f;
+        if ( m_cubeFpsEma < 45.f && Scene3DShader::M_CubeBudget > 0.75f )
+            Scene3DShader::M_CubeBudget = 0.5f;
+        else if ( m_cubeFpsEma > 57.f && Scene3DShader::M_CubeBudget < 0.75f )
+            Scene3DShader::M_CubeBudget = 1.f;
     }
 
-    return { timeSinceLastFrameSec, dtWall };
+    return { time_since_last_frame_sec, dt_wall };
 }
 
 void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float &timeSinceLastFrameSec, float dtWall )
@@ -1619,21 +1619,21 @@ void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float 
     // fade), then everything stands -- the global clock set to the given time.
     // The first 600 frames run on a fixed step of 1/120 s instead of the wall
     // clock, so every run integrates exactly the same (exposure, fades, slews).
-    if ( freezeTime() >= 0.f && !s_freeze )
+    if ( freezeTime() >= 0.f && !M_Freeze )
     {
         static int frames = 0;
         timeSinceLastFrameSec = 1.f / 120.f;
         if ( ++frames > 600 )
         {
-            s_freeze = true;
+            M_Freeze = true;
             m_globaltime = freezeTime();
             fprintf( stderr, "FREEZE engaged (comparison run, scene time %.2f)\n", freezeTime() );
         }
     }
-    EffectShader::s_frozen = s_freeze || freezeTime() >= 0.f; // the walk and the 3D flight never move in a comparison
+    EffectShader::M_Frozen = M_Freeze || freezeTime() >= 0.f; // the walk and the 3D flight never move in a comparison
                                                               // run
-    EffectShader::s_freezeTime = freezeTime();
-    if ( s_freeze )
+    EffectShader::M_FreezeTime = freezeTime();
+    if ( M_Freeze )
     {
         timeSinceLastFrameSec = 0.f;
         m_scheduler.rearmEffectClocks();
@@ -1641,7 +1641,7 @@ void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float 
     }
     // VJ PIN ('u'): keep the current effect/combine — re-arm only their
     // clocks (images keep rotating); forced cuts are suppressed below.
-    else if ( s_pinned )
+    else if ( M_Pinned )
         m_scheduler.rearmEffectClocks();
 
     // DJ-STOP dramaturgy: while the music holds its breath the PICTURE holds
@@ -1670,30 +1670,30 @@ void RenderPipeline::updateTitleReveal( const AudioFeatures &audio, float dtWall
         // within the pool is random so repeats stay varied.
         // KALEIDO_TITLE_STYLE=<n> forces one style (tuning aid).
         {
-            static const int calmPool[] = { 0, 1, 2, 4, 5, 9, 17, 20, 23, 24, 26 };
-            static const int aggroPool[] = { 7, 10, 11, 12, 13, 14, 21, 22, 25, 27, 29 };
-            static const int brightPool[] = { 3, 6, 8, 15, 18, 19, 24, 25, 28, 29 };
-            static const int darkPool[] = { 0, 2, 5, 16, 17, 20, 26, 27, 28 };
+            static const int CalmPool[] = { 0, 1, 2, 4, 5, 9, 17, 20, 23, 24, 26 };
+            static const int AggroPool[] = { 7, 10, 11, 12, 13, 14, 21, 22, 25, 27, 29 };
+            static const int BrightPool[] = { 3, 6, 8, 15, 18, 19, 24, 25, 28, 29 };
+            static const int DarkPool[] = { 0, 2, 5, 16, 17, 20, 26, 27, 28 };
             const int       *pool;
             int              n;
             if ( audio.ambientFactor > 0.55f || audio.arousal < 0.35f )
             {
-                pool = calmPool;
+                pool = CalmPool;
                 n = 11;
             }
             else if ( audio.arousal > 0.62f && audio.valence < 0.58f )
             {
-                pool = aggroPool;
+                pool = AggroPool;
                 n = 11;
             }
             else if ( audio.valence > 0.55f )
             {
-                pool = brightPool;
+                pool = BrightPool;
                 n = 10;
             }
             else
             {
-                pool = darkPool;
+                pool = DarkPool;
                 n = 9;
             }
             int        style = pool[qrand() % n];
@@ -1715,18 +1715,18 @@ AudioFeatures RenderPipeline::conditionAudio( const AudioFeatures &audio, float 
     // this function to the scheduling/render pipeline). update() must be
     // called exactly once per frame, in frame order -- every signal in there
     // is an integrator or a slew limiter.
-    AudioConditioner::Context acCtx;
-    acCtx.globalTime = m_globaltime;
-    acCtx.trailDepth3D = m_trailDepth3D;
-    acCtx.meshUp = m_meshUp;
-    acCtx.calm = s_calmMotion;
-    acCtx.reactivity = s_reactivity;
-    acCtx.latencyLead = s_latencyLead;
-    acCtx.ssmHead = m_sims.ssmHeadNorm();
-    acCtx.ssmFill = m_sims.ssmFillNorm();
-    acCtx.spectroHead = m_sims.spectroHeadNorm();
-    acCtx.spectroFill = m_sims.spectroFillNorm();
-    return m_audioConditioner.update( audio, timeSinceLastFrameSec, acCtx );
+    AudioConditioner::Context ac_ctx;
+    ac_ctx.globalTime = m_globaltime;
+    ac_ctx.trailDepth3D = m_trailDepth3D;
+    ac_ctx.meshUp = m_meshUp;
+    ac_ctx.calm = M_CalmMotion;
+    ac_ctx.reactivity = M_Reactivity;
+    ac_ctx.latencyLead = M_LatencyLead;
+    ac_ctx.ssmHead = m_sims.ssmHeadNorm();
+    ac_ctx.ssmFill = m_sims.ssmFillNorm();
+    ac_ctx.spectroHead = m_sims.spectroHeadNorm();
+    ac_ctx.spectroFill = m_sims.spectroFillNorm();
+    return m_audioConditioner.update( audio, timeSinceLastFrameSec, ac_ctx );
 }
 
 void RenderPipeline::updateImageState( float timeSinceLastFrameSec )
@@ -1819,37 +1819,37 @@ SceneScheduler::Tick RenderPipeline::buildSchedulerTick( const AudioFeatures &au
     // Trigger (Novelty/Section/Drop, Pin) + Effekt-Zustandsmaschine.  Der
     // Combine-Teil (tickFx) laeuft weiter NACH den Effekt-Passes, weil
     // erst dort m_trueStereoHold entsteht.
-    SceneScheduler::Tick schedTick;
-    schedTick.dt = timeSinceLastFrameSec;
-    schedTick.downbeatTick = m_audioConditioner.downbeatTick();
-    schedTick.gateSmooth = m_audioConditioner.gate();
-    schedTick.timingScale = m_timingScale;
-    schedTick.pinned = s_pinned;
-    schedTick.harmonicChange = audio.harmonicChange;
-    schedTick.musicPresence = audio.musicPresence;
-    schedTick.sectionCount = audio.sectionCount;
-    schedTick.sectionId = audio.sectionId;
-    schedTick.sectionKnown = audio.sectionKnown;
-    schedTick.dropCount = audio.dropCount + m_audioConditioner.fakeDropCount();
-    schedTick.rhythmStrength = audio.rhythmStrength;
-    schedTick.estimatedBPM = audio.estimatedBPM;
-    schedTick.logAttackTime = audio.logAttackTime;
-    schedTick.buildUp = audio.buildUp;
-    schedTick.phraseSecsLeft = m_audioConditioner.phraseSecsLeft();
+    SceneScheduler::Tick sched_tick;
+    sched_tick.dt = timeSinceLastFrameSec;
+    sched_tick.downbeatTick = m_audioConditioner.downbeatTick();
+    sched_tick.gateSmooth = m_audioConditioner.gate();
+    sched_tick.timingScale = m_timingScale;
+    sched_tick.pinned = M_Pinned;
+    sched_tick.harmonicChange = audio.harmonicChange;
+    sched_tick.musicPresence = audio.musicPresence;
+    sched_tick.sectionCount = audio.sectionCount;
+    sched_tick.sectionId = audio.sectionId;
+    sched_tick.sectionKnown = audio.sectionKnown;
+    sched_tick.dropCount = audio.dropCount + m_audioConditioner.fakeDropCount();
+    sched_tick.rhythmStrength = audio.rhythmStrength;
+    sched_tick.estimatedBPM = audio.estimatedBPM;
+    sched_tick.logAttackTime = audio.logAttackTime;
+    sched_tick.buildUp = audio.buildUp;
+    sched_tick.phraseSecsLeft = m_audioConditioner.phraseSecsLeft();
     // Score cues (CueReceiver.h): when a generator is telling us where the bars, the sections and
     // the drops ARE, the scheduler stops guessing them from the loudspeaker output. With no sender
-    // -- the normal case -- this call leaves schedTick byte for byte as it is above; the four fields
+    // -- the normal case -- this call leaves sched_tick byte for byte as it is above; the four fields
     // it touches when cues are live, and why it touches exactly those four, are in the header.
     // A cue file (-k) is a sender too: whatever of it the offline WAV has reached goes in first.
     ScoreCueFile::instance().feed();
-    applyScoreCues( ScoreCues::instance().drain( timeSinceLastFrameSec ), m_cueBridge, schedTick );
-    EffectShader::s_cueLive = m_cueBridge.wasLive; // the chain walk follows the same counters
-    EffectShader::s_cueSections = schedTick.sectionCount;
-    EffectShader::s_cueDrops = schedTick.dropCount;
-    m_scheduler.tick( schedTick );
+    applyScoreCues( ScoreCues::instance().drain( timeSinceLastFrameSec ), m_cueBridge, sched_tick );
+    EffectShader::M_CueLive = m_cueBridge.wasLive; // the chain walk follows the same counters
+    EffectShader::M_CueSections = sched_tick.sectionCount;
+    EffectShader::M_CueDrops = sched_tick.dropCount;
+    m_scheduler.tick( sched_tick );
 
 
-    return schedTick;
+    return sched_tick;
 }
 
 void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinceLastFrameSec,
@@ -1860,26 +1860,26 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
     // Überblendung, der einblendende), Frame-Kontext übergeben, laufen lassen.
     // GpuSims bindet die neuesten Felder auf die globalen Units 7-11/28.
     {
-        EffectShader   *aktE = m_effectTextures[m_scheduler.actTexture()];
-        EffectShader   *nxtE = m_effectTextures[m_scheduler.nextTexture()];
+        EffectShader   *akt_e = m_effectTextures[m_scheduler.actTexture()];
+        EffectShader   *nxt_e = m_effectTextures[m_scheduler.nextTexture()];
         const bool      fading = ( m_scheduler.texState() != 0 );
         GpuSims::Demand need;
-        need.rd = aktE->usesSim() || ( fading && nxtE->usesSim() );
-        need.fluid = aktE->usesFluid() || ( fading && nxtE->usesFluid() );
-        need.smoke3D = aktE->usesSmoke3D() || ( fading && nxtE->usesSmoke3D() );
-        need.physarum = aktE->usesPhysarum() || ( fading && nxtE->usesPhysarum() );
-        need.ssm = aktE->usesSSM() || ( fading && nxtE->usesSSM() );
-        need.spectro = aktE->usesSpectro() || ( fading && nxtE->usesSpectro() );
+        need.rd = akt_e->usesSim() || ( fading && nxt_e->usesSim() );
+        need.fluid = akt_e->usesFluid() || ( fading && nxt_e->usesFluid() );
+        need.smoke3D = akt_e->usesSmoke3D() || ( fading && nxt_e->usesSmoke3D() );
+        need.physarum = akt_e->usesPhysarum() || ( fading && nxt_e->usesPhysarum() );
+        need.ssm = akt_e->usesSSM() || ( fading && nxt_e->usesSSM() );
+        need.spectro = akt_e->usesSpectro() || ( fading && nxt_e->usesSpectro() );
 
-        GpuSims::Frame simFrame;
-        simFrame.globalTime = m_globaltime;
-        simFrame.audioAdvance = audioFx.audioAdvance;
-        simFrame.dyeTexA = m_liveTex ? m_liveTex : m_actTex;
-        simFrame.dyeTexB = m_liveTex ? m_liveTex : m_nextTex;
-        simFrame.dyeInterp = m_interpolationTexture;
-        simFrame.hold = s_freeze; // a frozen picture: the sims stand too
+        GpuSims::Frame sim_frame;
+        sim_frame.globalTime = m_globaltime;
+        sim_frame.audioAdvance = audioFx.audioAdvance;
+        sim_frame.dyeTexA = m_liveTex ? m_liveTex : m_actTex;
+        sim_frame.dyeTexB = m_liveTex ? m_liveTex : m_nextTex;
+        sim_frame.dyeInterp = m_interpolationTexture;
+        sim_frame.hold = M_Freeze; // a frozen picture: the sims stand too
 
-        m_sims.run( audio, timeSinceLastFrameSec, need, simFrame );
+        m_sims.run( audio, timeSinceLastFrameSec, need, sim_frame );
     }
 
 
@@ -1888,11 +1888,11 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
     // declaring the sampler, which sets one bit of cfxMask().  Only the kinds
     // actually on screen are stepped, and each publishes on its own unit.
     {
-        static bool cfxInit = false;
-        if ( !cfxInit )
+        static bool cfx_init = false;
+        if ( !cfx_init )
         {
             m_cfx.init();
-            cfxInit = true;
+            cfx_init = true;
         }
 
         unsigned int need = m_effectTextures[m_scheduler.actTexture()]->cfxMask();
@@ -1922,7 +1922,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
                 glActiveTexture( GL_TEXTURE0 );
                 // Frozen (VJ freeze, comparison run): no step -- ComputeFX would take
                 // dt 0 for 1/60 s and run on -- the last published state is bound again.
-                GLuint tex = ( s_freeze && m_cfxLast[k] )
+                GLuint tex = ( M_Freeze && m_cfxLast[k] )
                                  ? m_cfxLast[k]
                                  : m_cfx.step( k, audio, timeSinceLastFrameSec, m_globaltime, src, m_width, m_height );
                 m_cfxLast[k] = tex;
@@ -1931,7 +1931,7 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
                 // textures, which auto-unbinds them from the unit. The scene's
                 // sampler points here regardless, and a draw validates every
                 // declared sampler, so the unit must never be left empty.
-                glActiveTexture( GL_TEXTURE0 + kCfxInfo[k].unit );
+                glActiveTexture( GL_TEXTURE0 + CfxInfoTable[k].unit );
                 glBindTexture( GL_TEXTURE_2D, tex ? tex : glcoreDummyTex2D() );
             }
             glActiveTexture( GL_TEXTURE0 );
@@ -1957,17 +1957,17 @@ void RenderPipeline::stepSimulations( const AudioFeatures &audio, float timeSinc
     // already fully claimed on a 32-texture-unit GPU, so this sim gets its
     // own dedicated unit the same way texBake/texPrevFrame already do.
     {
-        bool wantMandelbrot = m_effectTextures[m_scheduler.actTexture()]->usesMandelbrot();
+        bool want_mandelbrot = m_effectTextures[m_scheduler.actTexture()]->usesMandelbrot();
         if ( m_scheduler.texState() != 0 )
-            wantMandelbrot |= m_effectTextures[m_scheduler.nextTexture()]->usesMandelbrot();
-        if ( wantMandelbrot )
+            want_mandelbrot |= m_effectTextures[m_scheduler.nextTexture()]->usesMandelbrot();
+        if ( want_mandelbrot )
         {
-            GLuint mbTex = m_cfx.stepMandelbrot( audio, timeSinceLastFrameSec,
-                                                 m_globaltime, m_width, m_height );
-            if ( mbTex )
+            GLuint mb_tex = m_cfx.stepMandelbrot( audio, timeSinceLastFrameSec,
+                                                  m_globaltime, m_width, m_height );
+            if ( mb_tex )
             {
                 glActiveTexture( GL_TEXTURE0 + 35 );
-                glBindTexture( GL_TEXTURE_2D, mbTex );
+                glBindTexture( GL_TEXTURE_2D, mb_tex );
                 glActiveTexture( GL_TEXTURE0 );
             }
         }
@@ -1995,14 +1995,14 @@ void RenderPipeline::updateTrueStereoState()
     // replaces the styled combine (no warp may cross the eye boundary).
     // While packed content is up, no combine cross-fade may start.
     {
-        const bool stereoOn = ( s_stereoMode == 1 || s_stereoMode == 2 );
-        const bool act3D = m_effectTextures[m_scheduler.actTexture()]->is3D();
-        const bool texSolo = ( m_scheduler.texState() == 0 );
-        const bool next3D = m_effectTextures[m_scheduler.nextTexture()]->is3D();
-        m_trueStereoHold = stereoOn && act3D && ( texSolo || next3D );
+        const bool stereo_on = ( M_StereoMode == 1 || M_StereoMode == 2 );
+        const bool act_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
+        const bool tex_solo = ( m_scheduler.texState() == 0 );
+        const bool next_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
+        m_trueStereoHold = stereo_on && act_3d && ( tex_solo || next_3d );
         m_trueStereoPacked = m_trueStereoHold
                              && m_scheduler.fxState() == 0;
-        m_trueStereoNow = m_trueStereoPacked && texSolo;
+        m_trueStereoNow = m_trueStereoPacked && tex_solo;
     }
 }
 
@@ -2016,7 +2016,7 @@ void RenderPipeline::renderSceneStereo( EffectShader *fx )
     glEnable( GL_SCISSOR_TEST );
     for ( int e = 0; e < 2; ++e ) // e 0 = left eye, 1 = right
     {
-        if ( s_stereoMode == 1 ) // SBS: left half = left eye
+        if ( M_StereoMode == 1 ) // SBS: left half = left eye
         {
             int hw = m_width / 2;
             glViewport( e * hw, 0, hw, m_height );
@@ -2028,7 +2028,7 @@ void RenderPipeline::renderSceneStereo( EffectShader *fx )
             glViewport( 0, e ? 0 : hh, m_width, hh );
             glScissor( 0, e ? 0 : hh, m_width, hh );
         }
-        s3->setEyeOffset( ( e ? 1.f : -1.f ) * 0.5f * s_stereoDepth );
+        s3->setEyeOffset( ( e ? 1.f : -1.f ) * 0.5f * M_StereoDepth );
         s3->draw();
     }
     s3->setEyeOffset( 0.f );
@@ -2045,14 +2045,14 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     // this at all (no geometric edges to smooth). True-stereo eye-packed
     // frames are excluded too: the scissored halves would each need their own
     // resolve, and the packed frame already halves the sampling rate per eye.
-    bool tex1Is3D = m_effectTextures[m_scheduler.actTexture()]->is3D();
-    bool msaaTex1 = tex1Is3D && !m_trueStereoPacked;
-    if ( msaaTex1 )
+    bool tex1_is_3d = m_effectTextures[m_scheduler.actTexture()]->is3D();
+    bool msaa_tex1 = tex1_is_3d && !m_trueStereoPacked;
+    if ( msaa_tex1 )
         ensureMsaaTargets( m_width, m_height );
-    msaaTex1 = msaaTex1 && m_msaaReady;
+    msaa_tex1 = msaa_tex1 && m_msaaReady;
 
     // Do the FBO Stuff
-    glBindFramebuffer( GL_FRAMEBUFFER, msaaTex1 ? m_msaaFbo : m_fboEffectTexture1 );
+    glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
 
     // glFramebufferTexture2D( GL_FRAMEBUFFER, m_attachmentpoint, GL_TEXTURE_2D, m_texIDFBOEffectTexture1, 0);
 
@@ -2066,13 +2066,13 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     m_lastAudioFx = audioFx;
     // The box is sized by the SCENE, because only it knows its own scale, and
     // the map's 2048 texels are spent across whatever this says.
-    EffectShader::s_shadowExtent =
+    EffectShader::M_ShadowExtent =
         m_effectTextures[m_scheduler.actTexture()]->shadowExtent();
     updateLightMatrix( m_globaltime );
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow() )
     {
         renderShadowPass( m_effectTextures[m_scheduler.actTexture()] );
-        glBindFramebuffer( GL_FRAMEBUFFER, msaaTex1 ? m_msaaFbo : m_fboEffectTexture1 );
+        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
     }
     // Second, independent shadow-casting light (studio-style two-light setup);
     // same scope as light 1 -- the active scene only, never the cross-fading
@@ -2081,11 +2081,11 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
     if ( m_effectTextures[m_scheduler.actTexture()]->usesShadow2() )
     {
         renderShadowPass2( m_effectTextures[m_scheduler.actTexture()] );
-        glBindFramebuffer( GL_FRAMEBUFFER, msaaTex1 ? m_msaaFbo : m_fboEffectTexture1 );
+        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex1 ? m_msaaFbo : m_fboEffectTexture1 );
     }
 
-    EffectShader::s_depthValid[0] = tex1Is3D ? 1.f : 0.f;
-    if ( EffectShader::s_depthValid[0] == 0.f )
+    EffectShader::M_DepthValid[0] = tex1_is_3d ? 1.f : 0.f;
+    if ( EffectShader::M_DepthValid[0] == 0.f )
     {
         glClearDepth( 1.0 );
         glClear( GL_DEPTH_BUFFER_BIT );
@@ -2101,7 +2101,7 @@ void RenderPipeline::renderActiveScenePass( const AudioFeatures &audioFx )
         m_effectTextures[m_scheduler.actTexture()]->draw();
 
 
-    if ( msaaTex1 )
+    if ( msaa_tex1 )
     {
         resolveMsaa( m_fboEffectTexture1, m_width, m_height );
         checkGLErrors( "resolveMsaa() 1" );
@@ -2133,20 +2133,20 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
     // Skip the "next" texture effect while NOT cross-fading: every combine weights
     // this output (tex1) by (1-interpolation), which is 0 at interpolation==1.0, so
     // it is invisible.  Saves a whole effect pass during the common solo periods.
-    EffectShader::s_depthValid[1] = 0.f;
+    EffectShader::M_DepthValid[1] = 0.f;
     if ( m_scheduler.texState() != 0 )
     {
-        bool tex2Is3D = m_effectTextures[m_scheduler.nextTexture()]->is3D();
-        bool msaaTex2 = tex2Is3D && !m_trueStereoPacked;
-        if ( msaaTex2 )
+        bool tex2_is_3d = m_effectTextures[m_scheduler.nextTexture()]->is3D();
+        bool msaa_tex2 = tex2_is_3d && !m_trueStereoPacked;
+        if ( msaa_tex2 )
             ensureMsaaTargets( m_width, m_height );
-        msaaTex2 = msaaTex2 && m_msaaReady;
+        msaa_tex2 = msaa_tex2 && m_msaaReady;
 
         // Do the FBO Stuff
-        glBindFramebuffer( GL_FRAMEBUFFER, msaaTex2 ? m_msaaFbo : m_fboEffectTexture2 );
+        glBindFramebuffer( GL_FRAMEBUFFER, msaa_tex2 ? m_msaaFbo : m_fboEffectTexture2 );
 
-        EffectShader::s_depthValid[1] = tex2Is3D ? 1.f : 0.f;
-        if ( EffectShader::s_depthValid[1] == 0.f )
+        EffectShader::M_DepthValid[1] = tex2_is_3d ? 1.f : 0.f;
+        if ( EffectShader::M_DepthValid[1] == 0.f )
         {
             glClearDepth( 1.0 );
             glClear( GL_DEPTH_BUFFER_BIT );
@@ -2161,7 +2161,7 @@ void RenderPipeline::renderNextScenePass( const AudioFeatures &audioFx )
             m_effectTextures[m_scheduler.nextTexture()]->draw();
 
 
-        if ( msaaTex2 )
+        if ( msaa_tex2 )
         {
             resolveMsaa( m_fboEffectTexture2, m_width, m_height );
             checkGLErrors( "resolveMsaa() 2" );
@@ -2178,28 +2178,28 @@ GLuint RenderPipeline::prepareFxInputs()
     // TRANSFORMED frame instead.  Never on eye-packed frames (warping a
     // packed stereo frame shears the two eyes against each other), and the
     // "next" slot only when its pass actually rendered this frame.
-    GLuint fxTex1 = m_texIDFBOEffectTexture1;
-    GLuint fxTex2 = m_texIDFBOEffectTexture2;
+    GLuint fx_tex1 = m_texIDFBOEffectTexture1;
+    GLuint fx_tex2 = m_texIDFBOEffectTexture2;
     if ( !m_trueStereoPacked )
     {
-        fxTex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
-                                m_texIDFBOEffectTexture1, 0 );
+        fx_tex1 = rig2Transform( m_effectTextures[m_scheduler.actTexture()],
+                                 m_texIDFBOEffectTexture1, 0 );
         if ( m_scheduler.texState() != 0 )
-            fxTex2 = rig2Transform( m_effectTextures[m_scheduler.nextTexture()],
-                                    m_texIDFBOEffectTexture2, 1 );
+            fx_tex2 = rig2Transform( m_effectTextures[m_scheduler.nextTexture()],
+                                     m_texIDFBOEffectTexture2, 1 );
         glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
         glViewport( 0, 0, m_width, m_height );
     }
 
     // The exposure measures the INCOMING scene during fades (see
     // PresentPass::Inputs::fadeMeasureTex for why the mix cannot work).
-    m_fadeInTex = ( m_scheduler.texState() != 0 ) ? fxTex2 : 0;
+    m_fadeInTex = ( m_scheduler.texState() != 0 ) ? fx_tex2 : 0;
 
     glActiveTexture( GL_TEXTURE3 );
-    glBindTexture( GL_TEXTURE_2D, fxTex1 );
+    glBindTexture( GL_TEXTURE_2D, fx_tex1 );
 
     glActiveTexture( GL_TEXTURE4 );
-    glBindTexture( GL_TEXTURE_2D, fxTex2 );
+    glBindTexture( GL_TEXTURE_2D, fx_tex2 );
 
     // The matching depth buffers.  Bound unconditionally: they are two texture
     // binds, and a shader that ignores them never declares the samplers.
@@ -2209,7 +2209,7 @@ GLuint RenderPipeline::prepareFxInputs()
     glBindTexture( GL_TEXTURE_2D, m_depthTexEffect2 );
     glActiveTexture( GL_TEXTURE0 );
 
-    return fxTex1;
+    return fx_tex1;
 }
 
 void RenderPipeline::renderStereoMixPass()
@@ -2237,7 +2237,7 @@ GLuint RenderPipeline::renderTransitionPass( const AudioFeatures &audioFx, GLuin
     // shader blends outgoing (tex0, unit 3) and incoming (tex1, unit 4)
     // scene into its own FBO.  While a scene plays solo the pass is
     // skipped entirely and the overlays read the scene frame directly.
-    GLuint sceneTex = fxTex1;
+    GLuint scene_tex = fxTex1;
     if ( m_scheduler.texState() != 0 && !m_effectTransitions.empty() )
     {
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboTransition );
@@ -2246,11 +2246,11 @@ GLuint RenderPipeline::renderTransitionPass( const AudioFeatures &audioFx, GLuin
         tr->setUniforms( m_globaltime, m_scheduler.texInterp(), 3, 4 );
         tr->applyAudioFeatures( audioFx );
         tr->draw();
-        sceneTex = m_texIDFBOTransition;
+        scene_tex = m_texIDFBOTransition;
         glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
     }
 
-    return sceneTex;
+    return scene_tex;
 }
 
 void RenderPipeline::renderOverlayPass( const AudioFeatures &audioFx, GLuint sceneTex )
@@ -2266,9 +2266,9 @@ void RenderPipeline::renderOverlayPass( const AudioFeatures &audioFx, GLuint sce
     // one glGenerateMipmap, the same the present pass already does every frame
     // for bloom.  Only while such an FX is on screen; afterwards the textures go
     // back to plain linear filtering, so no stale level is ever read.
-    const bool wantMips = m_effectFx[m_scheduler.actFx()]->usesSceneLod()
-                          || ( m_scheduler.fxState() != 0 && m_effectFx[m_scheduler.nextFx()]->usesSceneLod() );
-    if ( wantMips )
+    const bool want_mips = m_effectFx[m_scheduler.actFx()]->usesSceneLod()
+                           || ( m_scheduler.fxState() != 0 && m_effectFx[m_scheduler.nextFx()]->usesSceneLod() );
+    if ( want_mips )
     {
         glGenerateMipmap( GL_TEXTURE_2D );
         glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
@@ -2312,7 +2312,7 @@ void RenderPipeline::renderNextOverlayPass( const AudioFeatures &audioFx )
 
 void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
 {
-    const GLuint fxTex1 = prepareFxInputs();
+    const GLuint fx_tex1 = prepareFxInputs();
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_fboEffectFx1 );
 
@@ -2331,8 +2331,8 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
         // Order matters: the overlay reads the FINISHED scene, so the
         // transition has to have produced it first.
         glcoreDebugMark( "transition" );
-        const GLuint sceneTex = renderTransitionPass( audioFx, fxTex1 );
-        renderOverlayPass( audioFx, sceneTex );
+        const GLuint scene_tex = renderTransitionPass( audioFx, fx_tex1 );
+        renderOverlayPass( audioFx, scene_tex );
     }
 
     checkGLErrors( "createFx() 1" );
@@ -2348,13 +2348,13 @@ void RenderPipeline::renderFxStage( const AudioFeatures &audioFx )
 void RenderPipeline::renderFinalBlend()
 {
     // Now Use Final Rendering — into the safety FBO if active, else to the screen.
-    GLuint fxTarget = m_present.ready() ? m_present.targetFbo() : m_defaultFBO;
-    glBindFramebuffer( GL_FRAMEBUFFER, fxTarget );
+    GLuint fx_target = m_present.ready() ? m_present.targetFbo() : m_defaultFBO;
+    glBindFramebuffer( GL_FRAMEBUFFER, fx_target );
     checkFramebufferStatus();
 
     /*******************************************************************************/
 
-    glUseProgram( m_sh_prog_id_fx );
+    glUseProgram( m_shProgIdFx );
     // restore render destination to regular frame buffer
     glViewport( 0, 0, m_width, m_height );
 
@@ -2385,12 +2385,12 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
     // the result becomes the present source.  decay (→0 in non-music) controls the
     // trail length, longer in ambient passages.
     // -------------------------------------------------------------------------
-    GLuint presentSource = m_present.finalTex();
+    GLuint present_source = m_present.finalTex();
     if ( m_feedbackReady )
     {
         int   cur = m_trailIdx;
         int   prev = 1 - m_trailIdx;
-        float decay = s_trailAmount * ( 0.90f + 0.08f * audio.ambientFactor )
+        float decay = M_TrailAmount * ( 0.90f + 0.08f * audio.ambientFactor )
                       * audio.musicPresence;
         // A loaded model gets almost no feedback trail. The trail layer's warp
         // field deliberately rides the beat (ripple below), which on abstract
@@ -2432,41 +2432,41 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
             float dtf = timeSinceLastFrameSec;
             // calmMotion: the echo zoom keeps its steady drift but no beat pump.
             float zoom = 1.0f
-                         + ( 0.05f + ( s_calmMotion ? 0.f : 0.22f * m_audioConditioner.beatSmooth() )
+                         + ( 0.05f + ( M_CalmMotion ? 0.f : 0.22f * m_audioConditioner.beatSmooth() )
                              + 0.08f * audio.ambientFactor )
                                * dtf;
-            float rotA = 0.15f * sinf( m_globaltime * 0.02f ) * dtf;
-            float hueD = 0.10f * dtf;
+            float rot_a = 0.15f * sinf( m_globaltime * 0.02f ) * dtf;
+            float hue_d = 0.10f * dtf;
             // True stereo: the echo-warp would drag content across the eye
             // boundary of the packed frame — keep only the plain decay.
             if ( m_trueStereoPacked )
             {
                 zoom = 1.f;
-                rotA = 0.f;
-                hueD = 0.f;
+                rot_a = 0.f;
+                hue_d = 0.f;
             }
             if ( m_trailZoomUni >= 0 )
                 glUniform1f( m_trailZoomUni, zoom );
             if ( m_trailRotUni >= 0 )
-                glUniform1f( m_trailRotUni, rotA );
+                glUniform1f( m_trailRotUni, rot_a );
             if ( m_trailHueUni >= 0 )
-                glUniform1f( m_trailHueUni, hueD );
+                glUniform1f( m_trailHueUni, hue_d );
             // Depth-aware trails while a 3D scene is on screen (slewed so
             // cross-fades from/to 2D effects ease the behaviour in and out).
             {
-                bool sceneUp = m_effectTextures[m_scheduler.actTexture()]->is3D()
-                               || ( m_scheduler.texState() != 0
-                                    && m_effectTextures[m_scheduler.nextTexture()]->is3D() );
+                bool scene_up = m_effectTextures[m_scheduler.actTexture()]->is3D()
+                                || ( m_scheduler.texState() != 0
+                                     && m_effectTextures[m_scheduler.nextTexture()]->is3D() );
                 m_trailDepth3D = slewToward( m_trailDepth3D,
-                                             sceneUp ? 1.f : 0.f, 2.5f, dtWall );
+                                             scene_up ? 1.f : 0.f, 2.5f, dtWall );
                 // Same shape, but for loaded-model scenes only: drives the
                 // time-echo damping in the present pass (see EffectShader::
                 // isMeshScene). Slewed on the same ramp so a cross-fade eases
                 // it rather than switching it.
-                bool meshUp = m_effectTextures[m_scheduler.actTexture()]->isMeshScene()
-                              || ( m_scheduler.texState() != 0
-                                   && m_effectTextures[m_scheduler.nextTexture()]->isMeshScene() );
-                m_meshUp = slewToward( m_meshUp, meshUp ? 1.f : 0.f, 2.5f, dtWall );
+                bool mesh_up = m_effectTextures[m_scheduler.actTexture()]->isMeshScene()
+                               || ( m_scheduler.texState() != 0
+                                    && m_effectTextures[m_scheduler.nextTexture()]->isMeshScene() );
+                m_meshUp = slewToward( m_meshUp, mesh_up ? 1.f : 0.f, 2.5f, dtWall );
                 // Dev hook: KALEIDO_CALM=1 pins the damping to full on EVERY
                 // scene -- one switch that silences all beat-driven full-frame
                 // motion (camera punch/shake/sway, trail warp, time echo). Used
@@ -2490,7 +2490,7 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
                 m_warpFlowPhase += dtf * 0.55f;
                 // Displacement VELOCITIES (uv/s resp. rad/s), applied per
                 // frame; they accumulate through the feedback loop.
-                float rip = s_calmMotion
+                float rip = M_CalmMotion
                                 ? 0.f
                                 : ( 0.05f * m_audioConditioner.beatSmooth() + 0.10f * audioFx.dropPulse ) * dtf;
                 float swl = 0.25f * sinf( m_globaltime * 0.013f )
@@ -2500,7 +2500,7 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
                             * dtf;
                 // Scale with the trails knob (no trails -> no warp) and gate
                 // out of the packed true-stereo frames entirely.
-                float g = s_trailAmount * audio.musicPresence;
+                float g = M_TrailAmount * audio.musicPresence;
                 // Same damping as the trail decay above: no beat-warp field over
                 // a loaded model (see the m_meshUp comment there).
                 g *= 1.f - 0.85f * m_meshUp;
@@ -2520,11 +2520,11 @@ GLuint RenderPipeline::renderTrailsPass( const AudioFeatures &audio, const Audio
         }
         drawWindow();
 
-        presentSource = m_texTrail[cur];
+        present_source = m_texTrail[cur];
         m_trailIdx = prev; // swap for next frame
     }
 
-    return presentSource;
+    return present_source;
 }
 
 void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &audio, const AudioFeatures &audioFx,
@@ -2575,9 +2575,9 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         pin.camOffX = m_audioConditioner.camOffX();
         pin.camOffY = m_audioConditioner.camOffY();
         pin.stereoPacked = m_trueStereoPacked;
-        pin.stereoMode = s_stereoMode;
-        pin.stereoDepth = s_stereoDepth;
-        pin.blackout = s_blackout;
+        pin.stereoMode = M_StereoMode;
+        pin.stereoDepth = M_StereoDepth;
+        pin.blackout = M_Blackout;
         pin.breakSmooth = m_breakSmooth;
         pin.fadeOutEnv = audioFx.fadeOut;
         // REVIEW BENCH: neutral colour. The presets' key-following hue shift
@@ -2586,9 +2586,9 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         // for its whole loop -- the user-reported "everything stayed green".
         // A scene's colours cannot be judged through a constant grade, so the
         // review walk pins the mood grade to neutral.
-        pin.moodStrength = m_scheduler.reviewMode() ? 0.f : s_moodStrength;
-        pin.lightShow = s_lightShow;
-        pin.renderScale = s_renderScale;
+        pin.moodStrength = m_scheduler.reviewMode() ? 0.f : M_MoodStrength;
+        pin.lightShow = M_LightShow;
+        pin.renderScale = M_RenderScale;
         pin.lyricsAlpha = m_overlay.lyricsAlpha;
         pin.lyricsScrollV = m_overlay.lyricsScrollV;
         pin.lyricsAspect = m_overlay.lyricsAspect;
@@ -2649,8 +2649,8 @@ void RenderPipeline::runPresentPass( GLuint presentSource, const AudioFeatures &
         }
         pin.sceneDepthTex = m_depthTexEffect1;
         pin.depthPar = m_trailDepth3D;
-        pin.nearZ = EffectShader::kSceneNear;
-        pin.farZ = EffectShader::kSceneFar;
+        pin.nearZ = EffectShader::SceneNear;
+        pin.farZ = EffectShader::SceneFar;
         m_present.run( pin );
     }
 }
@@ -2663,23 +2663,23 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     updateTimingScale( audio );
 
     const FrameTiming ft = readFrameClock();
-    float             timeSinceLastFrameSec = ft.dt;
+    float             time_since_last_frame_sec = ft.dt;
     // A comparison run (KALEIDO_FREEZE_TIME): the wall-clock slews too (exposure,
     // title, trails) step 1/120 s per frame and stop with the freeze -- the
     // frame is final the moment it freezes, not ~20 s later.
-    const float dtWall = freezeTime() < 0.f ? ft.dtWall : ( s_freeze ? 0.f : 1.f / 120.f );
+    const float dt_wall = freezeTime() < 0.f ? ft.dtWall : ( M_Freeze ? 0.f : 1.f / 120.f );
     // A frame far beyond any real frame rate is a STALL (first-activation
     // shader compile + mesh load, a driver recompile, a suspend), not time the
     // viewer spent watching. Subtract it from the scheduler's wall clocks, or
     // the fade completes inside the frozen frame and the minimum solo is
     // already used up when the picture returns. 0.16 s stays on the books --
     // a legitimately slow frame's worth.
-    if ( dtWall > 0.4f )
-        m_scheduler.absorbHitch( dtWall - 0.16f );
-    applyTransportModifiers( audio, timeSinceLastFrameSec, dtWall );
-    updateTitleReveal( audio, dtWall );
+    if ( dt_wall > 0.4f )
+        m_scheduler.absorbHitch( dt_wall - 0.16f );
+    applyTransportModifiers( audio, time_since_last_frame_sec, dt_wall );
+    updateTitleReveal( audio, dt_wall );
 
-    const AudioFeatures audioFx = conditionAudio( audio, timeSinceLastFrameSec );
+    const AudioFeatures audio_fx = conditionAudio( audio, time_since_last_frame_sec );
 
     // KALEIDO_FEATURE_LOG=<datei>: eine CSV-Zeile je Frame mit den Groessen,
     // an denen Regie-Entscheidungen haengen.  Ohne das liess sich "trifft die
@@ -2699,19 +2699,20 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
         if ( flog )
         {
             static unsigned n = 0;
-            fprintf(
-                flog, "%.3f,%.4f,%.4f,%.3f,%.3f,%d,%.3f,%.3f,%.1f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.4f,%.4f\n",
-                m_globaltime, audio.dominantPitch, audio.deltaPitch, audio.buildUp, audio.dropPulse, audio.dropCount,
-                audioFx.barPhase, audioFx.beatPhase, 40.f + 160.f * audio.estimatedBPM, audio.sectionCount,
-                audio.sectionId, audio.musicPresence, audio.overallLevel, audioFx.swell, audio.spectralFlux,
-                audio.harmonicChange, audioFx.phrasePos, audioFx.phraseSecsLeft, audio.melodyPitch, audioFx.chromaHue );
+            fprintf( flog,
+                     "%.3f,%.4f,%.4f,%.3f,%.3f,%d,%.3f,%.3f,%.1f,%d,%d,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.2f,%.4f,%.4f\n",
+                     m_globaltime, audio.dominantPitch, audio.deltaPitch, audio.buildUp, audio.dropPulse,
+                     audio.dropCount, audio_fx.barPhase, audio_fx.beatPhase, 40.f + 160.f * audio.estimatedBPM,
+                     audio.sectionCount, audio.sectionId, audio.musicPresence, audio.overallLevel, audio_fx.swell,
+                     audio.spectralFlux, audio.harmonicChange, audio_fx.phrasePos, audio_fx.phraseSecsLeft,
+                     audio.melodyPitch, audio_fx.chromaHue );
             if ( ( ++n & 63u ) == 0 )
                 fflush( flog );
         }
     }
-    updateImageState( timeSinceLastFrameSec );
+    updateImageState( time_since_last_frame_sec );
 
-    const SceneScheduler::Tick schedTick = buildSchedulerTick( audio, timeSinceLastFrameSec );
+    const SceneScheduler::Tick sched_tick = buildSchedulerTick( audio, time_since_last_frame_sec );
 
     // Asynchronous mesh warm-up: while the fade's INCOMING scene is still
     // waiting for its model (worker thread, see Scene3DShader), hold the
@@ -2727,9 +2728,9 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
         if ( nx->meshWarmupPending() )
         {
             nx->requestMeshWarmup();
-            m_meshHoldSecs += dtWall;
+            m_meshHoldSecs += dt_wall;
             if ( m_meshHoldSecs < 5.f )
-                m_scheduler.absorbHitch( dtWall );
+                m_scheduler.absorbHitch( dt_wall );
         }
         else
             m_meshHoldSecs = 0.f;
@@ -2739,38 +2740,38 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
 
     // The one clock every shader reads. It advances AFTER the transport
     // modifiers above, so a freeze ('e') or a DJ-stop really does stop it.
-    m_globaltime += timeSinceLastFrameSec;
+    m_globaltime += time_since_last_frame_sec;
 
-    stepSimulations( audio, timeSinceLastFrameSec, audioFx );
+    stepSimulations( audio, time_since_last_frame_sec, audio_fx );
     bindSceneInputs();
     updateTrueStereoState();
 
-    renderActiveScenePass( audioFx );
-    renderNextScenePass( audioFx );
+    renderActiveScenePass( audio_fx );
+    renderNextScenePass( audio_fx );
     glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
     checkFramebufferStatus();
 
     // The combine half of the scheduler tick, deliberately AFTER both scene
     // passes: it needs m_trueStereoHold, which only exists once they ran.
-    m_scheduler.tickFx( schedTick, m_trueStereoHold );
+    m_scheduler.tickFx( sched_tick, m_trueStereoHold );
 
-    renderFxStage( audioFx );
+    renderFxStage( audio_fx );
     renderFinalBlend();
 
-    const GLuint presentSource =
-        renderTrailsPass( audio, audioFx, timeSinceLastFrameSec, dtWall );
+    const GLuint present_source =
+        renderTrailsPass( audio, audio_fx, time_since_last_frame_sec, dt_wall );
 
     // Spout output (-o): publish the displayed frame for OBS / Resolume etc.
     // (Needs the GL context, which is current here; texture-share via DX interop.)
-    if ( s_spoutEnabled )
+    if ( M_SpoutEnabled )
     {
         if ( !m_spoutStarted )
             m_spoutStarted = spoutOutInit( "Kaleidoscope" );
-        spoutOutSend( presentSource, m_width, m_height );
+        spoutOutSend( present_source, m_width, m_height );
     }
 
     glcoreDebugMark( "present" );
-    runPresentPass( presentSource, audio, audioFx, timeSinceLastFrameSec, dtWall );
+    runPresentPass( present_source, audio, audio_fx, time_since_last_frame_sec, dt_wall );
     checkGLErrors( "paint() 2" );
 }
 
@@ -2841,15 +2842,15 @@ GLuint RenderPipeline::rig2Transform( EffectShader *fx, GLuint srcTex, int slot 
         return srcTex;
 
     static GLuint prog = 0;
-    static GLint  uTex = -1, uRoll = -1, uZoom = -1, uPan = -1, uRes = -1;
+    static GLint  u_tex = -1, u_roll = -1, u_zoom = -1, u_pan = -1, u_res = -1;
     if ( prog == 0 )
     {
         prog = setShaders( "..\\standard.vert", "..\\Engine\\Rig2D.frag" );
-        uTex = glGetUniformLocation( prog, "tex" );
-        uRoll = glGetUniformLocation( prog, "rigRoll" );
-        uZoom = glGetUniformLocation( prog, "rigZoom" );
-        uPan = glGetUniformLocation( prog, "rigPan" );
-        uRes = glGetUniformLocation( prog, "resolution" );
+        u_tex = glGetUniformLocation( prog, "tex" );
+        u_roll = glGetUniformLocation( prog, "rigRoll" );
+        u_zoom = glGetUniformLocation( prog, "rigZoom" );
+        u_pan = glGetUniformLocation( prog, "rigPan" );
+        u_res = glGetUniformLocation( prog, "resolution" );
     }
     if ( prog == 0 )
         return srcTex; // compile failed: fail open
@@ -2887,16 +2888,16 @@ GLuint RenderPipeline::rig2Transform( EffectShader *fx, GLuint srcTex, int slot 
     glUseProgram( prog );
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, srcTex );
-    if ( uTex >= 0 )
-        glUniform1i( uTex, 0 );
-    if ( uRes >= 0 )
-        glUniform2f( uRes, float( m_width ), float( m_height ) );
-    if ( uRoll >= 0 )
-        glUniform1f( uRoll, rig[0] );
-    if ( uZoom >= 0 )
-        glUniform1f( uZoom, rig[1] );
-    if ( uPan >= 0 )
-        glUniform2f( uPan, rig[2], rig[3] );
+    if ( u_tex >= 0 )
+        glUniform1i( u_tex, 0 );
+    if ( u_res >= 0 )
+        glUniform2f( u_res, float( m_width ), float( m_height ) );
+    if ( u_roll >= 0 )
+        glUniform1f( u_roll, rig[0] );
+    if ( u_zoom >= 0 )
+        glUniform1f( u_zoom, rig[1] );
+    if ( u_pan >= 0 )
+        glUniform2f( u_pan, rig[2], rig[3] );
     glBindVertexArray( fullscreenVAO() );
     glDrawArrays( GL_TRIANGLES, 0, 3 );
     glBindVertexArray( 0 );
@@ -2907,18 +2908,18 @@ GLuint RenderPipeline::rig2Transform( EffectShader *fx, GLuint srcTex, int slot 
 void RenderPipeline::blitTexture( GLuint tex )
 {
     // Tiny dedicated blit program (fixed-function texturing is gone in core).
-    static GLuint blitProg = 0;
-    static GLint  blitTexUni = -1;
-    if ( blitProg == 0 )
+    static GLuint blit_prog = 0;
+    static GLint  blit_tex_uni = -1;
+    if ( blit_prog == 0 )
     {
-        blitProg = setShaders( "..\\standard.vert", "..\\Engine\\Blit.frag" );
-        blitTexUni = glGetUniformLocation( blitProg, "tex" );
+        blit_prog = setShaders( "..\\standard.vert", "..\\Engine\\Blit.frag" );
+        blit_tex_uni = glGetUniformLocation( blit_prog, "tex" );
     }
-    glUseProgram( blitProg );
+    glUseProgram( blit_prog );
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, tex );
-    if ( blitTexUni >= 0 )
-        glUniform1i( blitTexUni, 0 );
+    if ( blit_tex_uni >= 0 )
+        glUniform1i( blit_tex_uni, 0 );
     glBindVertexArray( fullscreenVAO() );
     glDrawArrays( GL_TRIANGLES, 0, 3 );
     glBindVertexArray( 0 );
@@ -2948,7 +2949,7 @@ bool RenderPipeline::ensureShadowMapGeneric( GLuint &fbo, GLuint &tex )
     glTexParameterfv( GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL );
-    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, kShadowSize, kShadowSize,
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, ShadowSize, ShadowSize,
                   0, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, NULL );
 
     glGenFramebuffers( 1, &fbo );
@@ -2988,7 +2989,7 @@ void RenderPipeline::updateLightMatrixGeneric( float t, float angleOffset, float
     // The ACTIVE scene's box, not the default: the map's resolution is spent
     // across it, so a small scene must get a small box or its shadows come out
     // in blocks a texel wide.
-    const float E = EffectShader::s_shadowExtent;
+    const float E = EffectShader::M_ShadowExtent;
 
     // Kept fairly high on purpose.  A low sun is more dramatic per shadow, but
     // shadow length goes as 1/tan(elevation) — at 37 degrees a tall object
@@ -3035,7 +3036,7 @@ void RenderPipeline::updateLightMatrixGeneric( float t, float angleOffset, float
     float       ex = lx * dist, ey = ly * dist, ez = lz * dist;
 
     // View matrix (column-major), rows s / t / -f, translated by -eye.
-    float V[16] = {
+    float view_matrix[16] = {
         sx, tx, -fx, 0.f,
         sy, ty, -fy, 0.f,
         sz, tz, -fz, 0.f,
@@ -3046,7 +3047,7 @@ void RenderPipeline::updateLightMatrixGeneric( float t, float angleOffset, float
     // Orthographic box: +-E across, and deep enough to hold the box from the
     // eye's distance.
     const float zn = 0.1f, zf = dist + E * 2.f;
-    float       P[16] = {
+    float       proj_matrix[16] = {
         1.f / E, 0.f, 0.f, 0.f,
         0.f, 1.f / E, 0.f, 0.f,
         0.f, 0.f, -2.f / ( zf - zn ), 0.f,
@@ -3058,7 +3059,7 @@ void RenderPipeline::updateLightMatrixGeneric( float t, float angleOffset, float
         {
             float sum = 0.f;
             for ( int k = 0; k < 4; ++k )
-                sum += P[k * 4 + r] * V[c * 4 + k];
+                sum += proj_matrix[k * 4 + r] * view_matrix[c * 4 + k];
             outM[c * 4 + r] = sum;
         }
 }
@@ -3072,7 +3073,7 @@ void RenderPipeline::renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLu
         return;
 
     glBindFramebuffer( GL_FRAMEBUFFER, fbo );
-    glViewport( 0, 0, kShadowSize, kShadowSize );
+    glViewport( 0, 0, ShadowSize, ShadowSize );
     glClearDepth( 1.0 );
     glClear( GL_DEPTH_BUFFER_BIT );
 
@@ -3199,12 +3200,12 @@ void RenderPipeline::renderOitPass( EffectShader *fx, GLuint depthTex, GLuint ta
     glBlendFunci( 0, GL_ONE, GL_ONE );
     glBlendFunci( 1, GL_ZERO, GL_ONE_MINUS_SRC_COLOR );
 
-    EffectShader::s_oitPass = 1.f;
+    EffectShader::M_OitPass = 1.f;
     fx->enableShader();
     fx->setUniforms( m_globaltime, m_interpolationTexture, 0, 1 );
     fx->applyAudioFeatures( m_lastAudioFx );
     fx->draw();
-    EffectShader::s_oitPass = 0.f;
+    EffectShader::M_OitPass = 0.f;
 
     glDepthMask( GL_TRUE );
     glDisable( GL_BLEND );
@@ -3313,9 +3314,9 @@ void RenderPipeline::ensureMsaaTargets( int w, int h )
             fputs( "MSAA: glTexImage2DMultisample unavailable -- 3D scenes render unaliased\n", stderr );
             return;
         }
-        GLint maxSamples = 0;
-        glGetIntegerv( GL_MAX_SAMPLES, &maxSamples );
-        m_msaaActualSamples = std::min( kMsaaSamples, maxSamples );
+        GLint max_samples = 0;
+        glGetIntegerv( GL_MAX_SAMPLES, &max_samples );
+        m_msaaActualSamples = std::min( MsaaSamples, max_samples );
         if ( m_msaaActualSamples < 2 )
         {
             fputs( "MSAA: GL_MAX_SAMPLES < 2 -- 3D scenes render unaliased\n", stderr );
@@ -3390,8 +3391,8 @@ void RenderPipeline::loadNewTexture( GLuint &texID )
     // set up texture
     setupTexture( texID, m_nextImage );
     // KALEIDO_FRAME_LOG: photo swaps in the same log as the long frames and gaps (is a stall a swap?)
-    static const bool frameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
-    if ( frameLog )
+    static const bool FrameLog = qEnvironmentVariableIsSet( "KALEIDO_FRAME_LOG" );
+    if ( FrameLog )
         fprintf( stderr, "[photo] swapped in %.1f ms\n", timer.elapsed() );
 
 
@@ -3681,38 +3682,38 @@ void RenderPipeline::initGLSL()
     // the numbers below disprove. Log both, and say plainly whether the highest
     // unit we hand out actually fits, so nobody has to guess again.
     {
-        GLint maxCombined = 0, maxFragment = 0;
-        glGetIntegerv( GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &maxCombined );
-        glGetIntegerv( GL_MAX_TEXTURE_IMAGE_UNITS, &maxFragment );
-        const int kHighestUnitUsed = 36; // Scene3DShader::kMeshMaterialTexUnit; see paint()
+        GLint max_combined = 0, max_fragment = 0;
+        glGetIntegerv( GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_combined );
+        glGetIntegerv( GL_MAX_TEXTURE_IMAGE_UNITS, &max_fragment );
+        const int HighestUnitUsed = 36; // Scene3DShader::MeshMaterialTexUnit; see paint()
         fprintf( stderr,
                  "GL texture units: %d combined (legal indices 0..%d), "
                  "%d per fragment stage; pipeline uses up to %d -> %s\n",
-                 maxCombined, maxCombined - 1, maxFragment, kHighestUnitUsed,
-                 ( kHighestUnitUsed < maxCombined ) ? "fits"
+                 max_combined, max_combined - 1, max_fragment, HighestUnitUsed,
+                 ( HighestUnitUsed < max_combined ) ? "fits"
                                                     : "OUT OF RANGE, bindings will be dropped" );
-        if ( kHighestUnitUsed >= maxCombined )
+        if ( HighestUnitUsed >= max_combined )
             fprintf( stderr,
                      "  WARNING: shadow map 2 (unit 32), texPrevFrame (34), the "
                      "Mandelbrot sim (35) and geom=\"mesh\"'s material array (36) "
                      "cannot bind on this GPU; those features will silently read "
                      "black. Re-map them below %d.\n",
-                     maxCombined );
+                     max_combined );
     }
 
     // load and compile shader — the final pass that blends the outgoing and
     // incoming OVERLAY outputs during a combine switch (a plain linear mix;
     // the styled variety lives in Transitions/ and fires on SCENE fades).
-    m_sh_prog_id_fx = setShaders( "standard.vert", "..\\Engine\\OverlayBlend.frag" );
+    m_shProgIdFx = setShaders( "standard.vert", "..\\Engine\\OverlayBlend.frag" );
     // Get location of the texture samplers and point vector for future use
-    m_texPointFxUni1 = glGetUniformLocation( m_sh_prog_id_fx, "tex0" );
-    m_texPointFxUni2 = glGetUniformLocation( m_sh_prog_id_fx, "tex1" );
-    m_texSizeRcpFxUni = glGetUniformLocation( m_sh_prog_id_fx, "resolution" );
-    m_timeFxUni = glGetUniformLocation( m_sh_prog_id_fx, "time" );
-    m_interpolationFxUni = glGetUniformLocation( m_sh_prog_id_fx, "interpolation" );
+    m_texPointFxUni1 = glGetUniformLocation( m_shProgIdFx, "tex0" );
+    m_texPointFxUni2 = glGetUniformLocation( m_shProgIdFx, "tex1" );
+    m_texSizeRcpFxUni = glGetUniformLocation( m_shProgIdFx, "resolution" );
+    m_timeFxUni = glGetUniformLocation( m_shProgIdFx, "time" );
+    m_interpolationFxUni = glGetUniformLocation( m_shProgIdFx, "interpolation" );
 
 
-    glUseProgram( m_sh_prog_id_fx );
+    glUseProgram( m_shProgIdFx );
 }
 
 
@@ -3728,16 +3729,16 @@ void RenderPipeline::checkGLErrors( const char *label )
     // for (KALEIDO_GL_DEBUG=1) -- e.g. while chasing exactly the kind of
     // silent failure a disabled check would otherwise hide (a null texture
     // upload, an unlinked shader program bound anyway, ...).
-    static const bool enabled = qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" );
-    if ( !enabled )
+    static const bool Enabled = qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" );
+    if ( !Enabled )
         return;
 
-    GLenum errCode = glGetError();
-    if ( errCode == GL_NO_ERROR )
+    GLenum err_code = glGetError();
+    if ( err_code == GL_NO_ERROR )
         return;
 
     fputs( "OpenGL ERROR: ", stderr );
-    fputs( (char *)gluErrorString( errCode ), stderr );
+    fputs( (char *)gluErrorString( err_code ), stderr );
     fputs( " (label: ", stderr );
     fputs( label, stderr );
     fputs( ")\n", stderr );
@@ -3750,8 +3751,8 @@ void RenderPipeline::checkGLErrors( const char *label )
 bool RenderPipeline::checkFramebufferStatus( void )
 {
     // Same KALEIDO_GL_DEBUG gate as checkGLErrors() -- see there for why.
-    static const bool enabled = qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" );
-    if ( !enabled )
+    static const bool Enabled = qEnvironmentVariableIsSet( "KALEIDO_GL_DEBUG" );
+    if ( !Enabled )
         return true;
 
     GLenum status;
@@ -3894,8 +3895,8 @@ void ImageLoader::run()
             tb *= 1.f - 0.25f * m_shader->m_moodAmbient.load();
             float ts = 0.20f + 0.50f * m_shader->m_moodArousal.load();
 
-            int   bestIdx = qrand() % n;
-            float bestScore = -1e9f;
+            int   best_idx = qrand() % n;
+            float best_score = -1e9f;
             for ( int k = 0; k < 5; ++k )
             {
                 int                 idx = qrand() % n;
@@ -3910,13 +3911,13 @@ void ImageLoader::run()
                     m_stats.insert( path, st );
                 }
                 float score = -( fabsf( st.first - tb ) + 0.7f * fabsf( st.second - ts ) );
-                if ( score > bestScore )
+                if ( score > best_score )
                 {
-                    bestScore = score;
-                    bestIdx = idx;
+                    best_score = score;
+                    best_idx = idx;
                 }
             }
-            m_shader->m_imageListIterator = m_shader->m_imageList.begin() + bestIdx;
+            m_shader->m_imageListIterator = m_shader->m_imageList.begin() + best_idx;
 
             m_shader->m_nextImage = prepareImage( loadImageOrFallback( *m_shader->m_imageListIterator ) );
             fprintf( stderr, "PHOTO %s\n", qPrintable( ( *m_shader->m_imageListIterator ) ) );

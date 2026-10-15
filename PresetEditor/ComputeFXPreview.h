@@ -38,8 +38,8 @@ public:
     void init();
 
     /**
-     * @brief Advance sim @p k by one frame and return the texture to bind on kCfxInfo[k].unit.
-     * @param k A CfxKind (see Source/CfxTypes.h) identifying which sim to step.
+     * @brief Advance sim @p k by one frame and return the texture to bind on CfxInfoTable[k].unit.
+     * @param k A CfxKindE (see Source/CfxTypes.h) identifying which sim to step.
      * @param a Current audio feature snapshot driving the sim's reactive parameters.
      * @param dt Elapsed wall-clock time in seconds since the sim's last step.
      * @param time Current wall-clock time in seconds (absolute, for phase accumulation).

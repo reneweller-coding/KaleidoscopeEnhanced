@@ -44,7 +44,7 @@ public:
      *
      * Only sets the vertex shader filename; the timing ranges (solo/interpolation),
      * fragment shader filename and rolled m_timeSolo/m_timeInterpolation are left
-     * untouched (m_sh_prog_id is still zeroed via its in-class initializer). Rarely
+     * untouched (m_shProgId is still zeroed via its in-class initializer). Rarely
      * used directly - most call sites go through one of the parameterized
      * constructors below.
      */
@@ -107,7 +107,7 @@ public:
     /// Tells every registered Uniform to (re)start its interpolation timer/state.
     void startInterpolators();
 
-    /// Deletes the compiled GL shader program (glDeleteProgram). Does not zero m_sh_prog_id.
+    /// Deletes the compiled GL shader program (glDeleteProgram). Does not zero m_shProgId.
     void cleanShaderPrograms(); // delete shaders
 
 
@@ -371,9 +371,9 @@ public:
     /// @return True if this effect's compiled fragment shader declares the "texPhysarum" sampler (Physarum trail map,
     /// unit 11). Cached after first query.
     bool usesPhysarum();
-    // Bit k set = this shader declares kCfxInfo[k].sampler (compute-FX sims).
-    /// @return Bitmask over CfxKind; bit k is set when this shader declares kCfxInfo[k]'s sampler uniform. Resolved
-    /// (and each found sampler's texture unit bound) once per compiled program.
+    // Bit k set = this shader declares CfxInfoTable[k].sampler (compute-FX sims).
+    /// @return Bitmask over CfxKindE; bit k is set when this shader declares CfxInfoTable[k]'s sampler uniform.
+    /// Resolved (and each found sampler's texture unit bound) once per compiled program.
     unsigned int cfxMask();
 
     // The fragment-shader file this effect uses (for the debug overlay).
@@ -438,19 +438,19 @@ public:
     // because the CONSUMER is the combine stage, which knows nothing about
     // scenes — and a copy of these numbers that drifts out of step with the
     // projection would silently distort every depth-based effect.
-    static constexpr float kSceneNear = 0.5f; ///< Shared 3D projection near clip plane, for linearising sampled depth
-                                              ///< in a combine-stage effect.
-    static constexpr float kSceneFar = 220.f; ///< Shared 3D projection far clip plane, for linearising sampled depth in
-                                              ///< a combine-stage effect.
+    static constexpr float SceneNear = 0.5f; ///< Shared 3D projection near clip plane, for linearising sampled depth
+                                             ///< in a combine-stage effect.
+    static constexpr float SceneFar = 220.f; ///< Shared 3D projection far clip plane, for linearising sampled depth in
+                                             ///< a combine-stage effect.
     // tan(55 degrees / 2).  Together with near/far and the aspect this is
     // everything needed to rebuild a view-space position from a depth sample,
     // which is what separates real screen-space occlusion from a fake one.
-    static constexpr float kSceneTanHalfFovY = 0.52056705f; ///< tan(55 deg / 2); with near/far and aspect, enough to
-                                                            ///< reconstruct a view-space position from a depth sample.
+    static constexpr float SceneTanHalfFovY = 0.52056705f; ///< tan(55 deg / 2); with near/far and aspect, enough to
+                                                           ///< reconstruct a view-space position from a depth sample.
 
     // Whether each texture-effect FBO's depth attachment holds real geometry
     // this frame (set by RenderPipeline; [0] = tex0's scene, [1] = tex1's).
-    static float s_depthValid[2]; ///< Per-slot (tex0/tex1) flag: whether that FBO's depth attachment holds real 3D
+    static float M_DepthValid[2]; ///< Per-slot (tex0/tex1) flag: whether that FBO's depth attachment holds real 3D
                                   ///< geometry this frame. Set by RenderPipeline.
 
     // ---- shadow mapping ----
@@ -461,44 +461,44 @@ public:
     // shadowPass is 1 it must project its world position with lightM instead,
     // and its fragment shader must return immediately.
     //
-    // lightM covers a fixed 2*kShadowExtent cube at the origin.  A scene that
+    // lightM covers a fixed 2*ShadowExtent cube at the origin.  A scene that
     // wants shadows keeps its geometry inside it — an automatically fitted box
     // would have to be refitted every frame from bounds the host never sees.
     // Default half-width of the light's box; a scene overrides it with the
     // shadowExtent attribute when its own scale differs.
-    static constexpr float kShadowExtent = 60.f; ///< Default half-width of the light's shadow box (a scene may override
-                                                 ///< via shadowExtent()).
-    /// @return The half-width of the shadow light's box for this scene; default is kShadowExtent, overridden by scenes
+    static constexpr float ShadowExtent = 60.f; ///< Default half-width of the light's shadow box (a scene may override
+                                                ///< via shadowExtent()).
+    /// @return The half-width of the shadow light's box for this scene; default is ShadowExtent, overridden by scenes
     /// whose own scale differs.
-    virtual float shadowExtent() const { return kShadowExtent; }
+    virtual float shadowExtent() const { return ShadowExtent; }
     /// Review span in seconds while a Test* preset is loaded, 0 outside it.
     /// sceneProgress normalises over the ROLLED solo span, which review mode
     /// then caps its display time below -- so a staged scene only ever showed
     /// the first third of its arc on the very bench meant to judge it.
     /// SceneScheduler::setReviewMode() owns this value.
-    static float s_reviewSolo;
+    static float M_ReviewSolo;
     /// True in the app (main.cpp): chain labs with Engine/ChainPass/Final_NAME.frag run as passes; the editor keeps the
     /// uber-shaders.
-    static bool s_chainRunner;
+    static bool M_ChainRunner;
     /// The 2D chain runner's resolution relative to the frame (ini "chainScale", 0.5..1; KALEIDO_CHAIN_SCALE):
     /// below 1 the chain passes run on a coarser grid and the lab's last pass reads them bilinearly (not across seams).
-    static float s_chainScale;
+    static float M_ChainScale;
     /// Supersampling of the sparkling chain classes (ini "chainSupersample", KALEIDO_CHAIN_SS=0 off): their chain
     /// passes run on a doubled grid and the last pass averages four photo samples; only at chainScale 1.
-    static bool s_chainSS;
+    static bool M_ChainSS;
     /// KALEIDO_FREEZE_TIME (set by RenderPipeline): the scene time every effect shows in a comparison run; < 0: off.
-    static float s_freezeTime;
+    static float M_FreezeTime;
     /// The host's VJ freeze this frame (set by RenderPipeline): the chain walk and the 3D chains' flight stand still.
-    static bool s_frozen;
+    static bool M_Frozen;
     /// Score cues live this frame (set by RenderPipeline, CueReceiver.h): the chain walk takes the
-    /// generator's section and drop counters (s_cueSections, s_cueDrops) instead of the analyser's.
-    static bool s_cueLive;
-    static int  s_cueSections; ///< The scheduler's section counter while s_cueLive.
-    static int  s_cueDrops;    ///< The scheduler's drop counter while s_cueLive.
+    /// generator's section and drop counters (M_CueSections, M_CueDrops) instead of the analyser's.
+    static bool M_CueLive;
+    static int  M_CueSections; ///< The scheduler's section counter while M_CueLive.
+    static int  M_CueDrops;    ///< The scheduler's drop counter while M_CueLive.
     /// Taste per chain class, classTasteKey() -> weight in [0.6, 1.6] (absent: 1).  Likes and skips
     /// of a chain lab weight the classes it showed; among three targets in the music's region the
     /// walk takes one with odds after these weights.  Shared by every lab; RenderPipeline loads and saves it.
-    static std::map<std::string, float> s_classTaste;
+    static std::map<std::string, float> M_ClassTaste;
     /// @brief The taste key of a chain class: "<stage knob>/<class name>" ('/' in the name made '_').
     /// @param knob Stage knob ("chainAP", "coreP", ...). @param cls Class name from "// @chainclasses".
     static std::string classTasteKey( const char *knob, const std::string &cls );
@@ -511,14 +511,14 @@ public:
     /// @return The changed entries (key, new weight), for the caller to persist; empty for anything but a chain lab
     /// that walks or shows a fixed chain.
     std::vector<std::pair<std::string, float>> bumpClassTaste( float mul );
-    static float s_shadowExtent; ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box),
+    static float M_ShadowExtent; ///< The ACTIVE scene's shadowExtent() (world units, half-width of the light box),
                                  ///< published by RenderPipeline so the shadow receivers and the light matrix use the
                                  ///< same box.
-    static float s_shadowPass;   ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass`
+    static float M_ShadowPass;   ///< 1 during light 1's depth-only pass, 0 otherwise; uploaded as the `shadowPass`
                                  ///< uniform.
-    static float s_lightM[16]; ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per
+    static float M_LightM[16]; ///< Light 1's view-projection matrix, column-major; uploaded as `lightM`, recomputed per
                                ///< frame by RenderPipeline::updateLightMatrix().
-    static float s_lightDir[3]; ///< Light 1's direction (unit vector towards the light); uploaded as `lightDir`.
+    static float M_LightDir[3]; ///< Light 1's direction (unit vector towards the light); uploaded as `lightDir`.
     /// @return True if this effect's compiled fragment shader declares the "texShadow" sampler (shadow map). Cached
     /// after first query.
     bool usesShadow();
@@ -531,10 +531,10 @@ public:
     // host cannot add that branch for a scene, since the depth pass IS the
     // scene's own vertex shader running with a different matrix bound. Reuses
     // shadowExtent/shadowTexel (same box, same map resolution as light 1).
-    static float s_shadowPass2;  ///< 1 during light 2's depth-only pass (kept separate from s_shadowPass so a shader's
+    static float M_ShadowPass2;  ///< 1 during light 2's depth-only pass (kept separate from M_ShadowPass so a shader's
                                  ///< .vert can tell which matrix to project with).
-    static float s_lightM2[16];  ///< Light 2's view-projection, column-major.
-    static float s_lightDir2[3]; ///< Light 2's direction.
+    static float M_LightM2[16];  ///< Light 2's view-projection, column-major.
+    static float M_LightDir2[3]; ///< Light 2's direction.
     /// @return True if this effect's compiled fragment shader declares the "texShadow2" sampler (second shadow map).
     /// Cached after first query.
     bool usesShadow2();
@@ -543,7 +543,7 @@ public:
     // Same shape of contract as the shadow pass.  oitPass is 0 for the scene's
     // opaque geometry and 1 for its transparent geometry, which is drawn into
     // an accumulation target instead of the frame.
-    static float s_oitPass; ///< 0 while rendering opaque geometry, 1 while rendering transparent geometry into the OIT
+    static float M_OitPass; ///< 0 while rendering opaque geometry, 1 while rendering transparent geometry into the OIT
                             ///< accumulation target.
     /// @return True if this effect's compiled fragment shader declares the "oitPass" uniform (order-independent
     /// transparency). Cached after first query.
@@ -557,7 +557,7 @@ public:
     // shader reads back as "texBake" (unit 33) -- e.g. a raymarcher pre-baking
     // its distance field so the per-pixel march samples a texture instead of
     // live-evaluating an expensive SDF at every step. Re-baked periodically
-    // (not every frame, see kBakeIntervalFrames) rather than once, so slowly
+    // (not every frame, see BakeIntervalFrames) rather than once, so slowly
     // audio-morphing parameters stay visibly reactive without paying the bake
     // cost 60 times a second.
     /// @return True if this effect's compiled fragment shader declares the "texBake" sampler. Cached after first query.
@@ -653,7 +653,7 @@ public:
 
     // ---- Mood tags (config attribute mood="dark,calm,...") ----
     /// Bitmask flags parsed from a preset's mood="..." config attribute.
-    enum MoodFlags
+    enum MoodFlagsE
     {
         MOOD_DARK = 1,
         MOOD_BRIGHT = 2,
@@ -663,11 +663,11 @@ public:
     void setMoodFlags( unsigned int f )
     {
         m_moodFlags = f;
-    } ///< Sets the MoodFlags bitmask parsed from this effect's config.
+    } ///< Sets the MoodFlagsE bitmask parsed from this effect's config.
     unsigned int moodFlags() const
     {
         return m_moodFlags;
-    } ///< @return The MoodFlags bitmask parsed from this effect's config (0 = untagged/neutral).
+    } ///< @return The MoodFlagsE bitmask parsed from this effect's config (0 = untagged/neutral).
     /**
      * @brief Transitions only: the shortest scene fade this transition may run in (seconds, 0 = no floor).
      *
@@ -707,7 +707,7 @@ protected:
     // for years, until addUniform()'s late-registration path started testing
     // it BEFORE the GL loader ran (garbage nonzero -> glGetUniformLocation
     // through a still-NULL glcore pointer -> instant 0xC0000005 at startup).
-    GLuint m_sh_prog_id = 0;  ///< Id of shader program. 0 until ensureCompiled() runs. In-class-initialized to avoid
+    GLuint m_shProgId = 0;    ///< Id of shader program. 0 until ensureCompiled() runs. In-class-initialized to avoid
                               ///< stale garbage being read by late addUniform() calls.
     GLint m_texPointUni1;     ///< Location of the `tex0` sampler uniform.
     GLint m_texPointUni2;     ///< Location of the `tex1` sampler uniform.
@@ -724,19 +724,19 @@ protected:
                                 ///< X.comp is a permanent soft-fail, not retried every frame).
     GLuint m_bakeTex = 0; ///< GL_TEXTURE_3D the compute shader writes and the fragment shader samples as "texBake"
                           ///< (unit 33).
-    int m_bakeFrame = 0;  ///< Frames since attach; modulo kBakeIntervalFrames decides whether THIS frame re-bakes.
+    int m_bakeFrame = 0;  ///< Frames since attach; modulo BakeIntervalFrames decides whether THIS frame re-bakes.
     AudioFeatures m_lastAudioForBake; ///< This frame's features, cached by applyAudioFeatures() so stepBake() -- called
                                       ///< from draw(), which takes no audio parameter -- has them.
-    static const int kBakeRes = 96;           ///< Cube resolution of the baked 3D texture (96^3 texels).
-    static const int kBakeIntervalFrames = 6; ///< Re-bake every N frames: amortizes the compute cost while keeping slow
-                                              ///< parameter drift (e.g. an audio-morphed fractal constant) visibly
-                                              ///< continuous rather than frozen.
+    static const int BakeRes = 96;           ///< Cube resolution of the baked 3D texture (96^3 texels).
+    static const int BakeIntervalFrames = 6; ///< Re-bake every N frames: amortizes the compute cost while keeping slow
+                                             ///< parameter drift (e.g. an audio-morphed fractal constant) visibly
+                                             ///< continuous rather than frozen.
     /** @brief Lazily compiles the companion X.comp (if present) and allocates the 3D texture backing "texBake".
      * Attempted once; soft-fails (usesBake() draws will silently see an all-zero field) if there is no companion file
      * or it fails to compile. */
     void ensureBakeProg();
     /**
-     * @brief Dispatches the bake compute program on the kBakeIntervalFrames cadence and binds the result to texture
+     * @brief Dispatches the bake compute program on the BakeIntervalFrames cadence and binds the result to texture
      * unit 33.
      * @param time Global shader time, passed through to the compute shader as "time".
      * @param audio This frame's audio features (see m_lastAudioForBake), for whatever audio-driven parameters the
@@ -814,7 +814,7 @@ protected:
         bool  fading[9] = {};                                   ///< Stage is fading to x1.
         int   lastSection = -1; ///< Last seen AudioFeatures::sectionCount (-1 = not yet).
         int   lastDrop = -1;                                    ///< Last seen AudioFeatures::dropCount.
-        bool  cueLive = false; ///< s_cueLive at the previous step (a switch re-adopts the counters).
+        bool  cueLive = false; ///< M_CueLive at the previous step (a switch re-adopts the counters).
         float energy = 0.5f;                                    ///< Slowly smoothed arousal (8 s).
         float energyFast = 0.5f; ///< Arousal smoothed over ~1 s: drives the walk's speed.
         float fluxS = 0.f;       ///< Spectral flux smoothed over ~0.5 s: bursts hurry a fade.
@@ -944,7 +944,7 @@ protected:
     bool opensAt( int s, float x ) const;
     /// @brief The nearest class of stage s without an opening (energy order), same sub-variant; x if there is none.
     float closedClass( int s, float x ) const;
-    /// @brief The taste weight (s_classTaste) of the class knob value x picks on walk stage s; 1 without one.
+    /// @brief The taste weight (M_ClassTaste) of the class knob value x picks on walk stage s; 1 without one.
     float  classTaste( int s, float x ) const;
     GLuint m_walkProg = 0; ///< Program the walk locations belong to.
     GLint  m_walkLoc[9] = { -1, -1, -1, -1, -1,
@@ -986,10 +986,10 @@ protected:
     struct AudioLocCache
     {
         GLuint progId = 0; /**< Program id the locations were resolved for; 0 = never resolved. */
-        GLint  L[96];      /**< Uniform location per AudioLoc enum value (index AL_*), -1 where the program lacks that
+        GLint  L[96];      /**< Uniform location per AudioLocE enum value (index AL_*), -1 where the program lacks that
                               uniform; only the first AL_COUNT entries are filled. */
     };
-    AudioLocCache m_audioLocs; ///< applyAudioFeatures()'s location cache; auto-refreshes when m_sh_prog_id changes
+    AudioLocCache m_audioLocs; ///< applyAudioFeatures()'s location cache; auto-refreshes when m_shProgId changes
                                ///< (recompile/hot reload).
 
     /// A scene's own "power" uniform (superellipse/distortion exponent, e.g.
@@ -1078,7 +1078,7 @@ public:
     }
 
 protected:
-    unsigned int m_moodFlags = 0; ///< MoodFlags bitmask parsed from the config's mood="..." attribute (0 =
+    unsigned int m_moodFlags = 0; ///< MoodFlagsE bitmask parsed from the config's mood="..." attribute (0 =
                                   ///< untagged/neutral); the scheduler matches it against the live mood.
     float m_minFade = 0.f; ///< Transitions: shortest fade this transition may run in (seconds); see setMinFade().
 

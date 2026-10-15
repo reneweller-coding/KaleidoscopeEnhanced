@@ -43,14 +43,14 @@ class EffectShader;
  * it runs two parallel Solo/Fade state machines (one for the texture/effect
  * slot, one for the combine slot), each beat-quantised to the next downbeat
  * with a timeout and a no-music escape hatch. Effect selection is
- * probability-weighted rejection sampling bounded by #kMaxSearch retries,
+ * probability-weighted rejection sampling bounded by #MaxSearch retries,
  * combining a shader-complexity budget, the @c useShader flag, and
  * moodAccept() (arousal-driven busyness target, mood-tag bonus/malus, and a
  * learned taste factor pulled through the tasteFor callback). It also tracks
  * musical triggers (harmonic novelty, section changes with a per-section
  * "song structure memory" so a repeated chorus replays its earlier look,
  * and EDM drops), a review mode that walks every scene alphabetically for a
- * fixed kReviewSoloSecs each, and a remote forceScene() jump that pre-empts everything
+ * fixed ReviewSoloSecs each, and a remote forceScene() jump that pre-empts everything
  * else. The render pipeline only ever reads the public accessors
  * (actTexture()/nextTexture()/texInterp()/...); it never touches the state
  * machine directly. The class is Qt-free (a RendererCore building block);
@@ -83,9 +83,9 @@ public:
      * scene's slow camera arcs and palette drifts complete at least once
      * before the walk moves on -- 8 s showed only the opening moment.
      */
-    static constexpr float kReviewSoloSecs = 25.f;
+    static constexpr float ReviewSoloSecs = 25.f;
 
-    /** @brief Enable/disable review mode (alphabetical walk, fixed kReviewSoloSecs per scene).
+    /** @brief Enable/disable review mode (alphabetical walk, fixed ReviewSoloSecs per scene).
      * @param on True to enter review mode, false to return to normal random selection.
      */
     void setReviewMode( bool on );
@@ -170,7 +170,7 @@ public:
      *  exactly that time from the books. */
     void absorbHitch( float secs )
     {
-        const auto d = std::chrono::duration_cast<Clock::duration>(
+        const auto d = std::chrono::duration_cast<ClockT::duration>(
             std::chrono::duration<float>( secs ) );
         m_clockEffectTexture += d;
         m_clockEffectFx += d;
@@ -252,17 +252,17 @@ public:
     } ///< Index of the transition shader rolled for the current/last scene fade.
 
 private:
-    using Clock = std::chrono::steady_clock; ///< Monotonic wall clock behind every Solo/Fade timer -- the same
-                                             ///< semantics as the QElapsedTimer this class replaced (never affected by
-                                             ///< system-time changes).
-    static void restart( Clock::time_point &tp ) { tp = Clock::now(); } ///< Reset a clock's reference point to now.
+    using ClockT = std::chrono::steady_clock; ///< Monotonic wall clock behind every Solo/Fade timer -- the same
+                                              ///< semantics as the QElapsedTimer this class replaced (never affected by
+                                              ///< system-time changes).
+    static void restart( ClockT::time_point &tp ) { tp = ClockT::now(); } ///< Reset a clock's reference point to now.
     /** @brief Elapsed wall time since a clock's reference point.
      * @param tp Reference time point captured by restart().
      * @return Seconds elapsed since @p tp.
      */
-    static float secsSince( const Clock::time_point &tp )
+    static float secsSince( const ClockT::time_point &tp )
     {
-        return std::chrono::duration<float>( Clock::now() - tp ).count();
+        return std::chrono::duration<float>( ClockT::now() - tp ).count();
     }
 
     /** @brief Probabilistic mood-based accept/reject test used by the rejection-sampling selection loops.
@@ -287,21 +287,22 @@ private:
     std::vector<EffectShader *> *m_transitions = nullptr; ///< Scene-transition shader list (not owned).
 
     // Auswahl-Zustand
-    unsigned int m_actTexture = 0;                         ///< Currently active effect/texture shader index.
-    unsigned int m_nextTexture = 0;                        ///< Effect/texture shader index being faded to.
-    unsigned int m_actFx = 0;                              ///< Currently active combine shader index.
-    unsigned int m_nextFx = 0;                             ///< Combine shader index being faded to.
+    unsigned int m_actTexture = 0;                           ///< Currently active effect/texture shader index.
+    unsigned int m_nextTexture = 0;                          ///< Effect/texture shader index being faded to.
+    unsigned int m_actFx = 0;                                ///< Currently active combine shader index.
+    unsigned int m_nextFx = 0;                               ///< Combine shader index being faded to.
     int          m_forcedNextFx = -1; ///< FX index forced by forceFx(); -1 = free choice. Consumed once.
-    int          m_texState = 0;                           ///< Effect state machine phase: 0 = Solo, 1 = Fade.
-    int          m_fxState = 0;                            ///< Combine state machine phase: 0 = Solo, 1 = Fade.
-    float        m_texInterp = 1.f;                        ///< Effect cross-fade blend factor.
-    float        m_fxInterp = 1.f;                         ///< Combine cross-fade blend factor.
+    int          m_texState = 0;                             ///< Effect state machine phase: 0 = Solo, 1 = Fade.
+    int          m_fxState = 0;                              ///< Combine state machine phase: 0 = Solo, 1 = Fade.
+    float        m_texInterp = 1.f;                          ///< Effect cross-fade blend factor.
+    float        m_fxInterp = 1.f;                           ///< Combine cross-fade blend factor.
     float        m_texFadeDur = 10.f; ///< Duration in seconds of the effect slot's CURRENT phase: the solo span while
                                ///< m_texState == 0, the fade span while m_texState == 1 (one dual-purpose field, as in
                                ///< the old inline code).
-    float             m_fxFadeDur = 10.f;                  ///< Current Solo *or* Fade duration for the combine slot.
-    Clock::time_point m_clockEffectTexture = Clock::now(); ///< Reference clock for the effect slot's Solo/Fade timing.
-    Clock::time_point m_clockEffectFx = Clock::now();      ///< Reference clock for the combine slot's Solo/Fade timing.
+    float              m_fxFadeDur = 10.f;                   ///< Current Solo *or* Fade duration for the combine slot.
+    ClockT::time_point m_clockEffectTexture = ClockT::now(); ///< Reference clock for the effect slot's Solo/Fade
+                                                             ///< timing.
+    ClockT::time_point m_clockEffectFx = ClockT::now(); ///< Reference clock for the combine slot's Solo/Fade timing.
     // Some pools (the FX/combine list, and Transitions/) are dominated by one
     // near-probability=1.0 "carrier" entry (FxPlain, Crossfade) plus a long
     // tail of rare accent shaders at probability ~0.002-0.08 each -- a
@@ -310,22 +311,22 @@ private:
     // whatever the last, unweighted candidate happened to be, defeating the
     // intended ~90% dominance). Raised well past where that simulation showed
     // exhaustion become negligible (<1% by 300 tries).
-    static const unsigned int kMaxSearch = 300; ///< Retry bound for every rejection-sampling selection loop.
+    static const unsigned int MaxSearch = 300; ///< Retry bound for every rejection-sampling selection loop.
     // Sum-of-complexities ceiling a candidate must stay under to be accepted
     // (busyness budget: don't stack two very busy layers at once). Complexity
     // values run 1..5 with a handful of scenes at 10; the OLD ceiling of 20
-    // (kComplexityBudget) / 12 (kComplexityBudgetInitial) meant a complexity=10
+    // (ComplexityBudget) / 12 (ComplexityBudgetInitial) meant a complexity=10
     // scene only ever passed when the three OTHER slots were all near their
     // minimum simultaneously -- effectively excluding it most of the time.
     // Raised so a complexity=10 candidate stays reachable alongside a normal
     // (non-minimal) combo, while an all-four-maxed-out combo is still capped.
-    static const unsigned int kComplexityBudget = 28; ///< Ceiling for the 4-term (act+next texture, act+next combine)
-                                                      ///< sum used by tick()/tickFx()'s normal picks and reset()'s
-                                                      ///< second (combine-inclusive) pick.
-    static const unsigned int kComplexityBudgetInitial = 17; ///< Ceiling for reset()'s first, texture-only (2-term)
-                                                             ///< pick, before the combine pair exists yet -- kept at
-                                                             ///< the same ratio to kComplexityBudget as the original
-                                                             ///< 12:20.
+    static const unsigned int ComplexityBudget = 28; ///< Ceiling for the 4-term (act+next texture, act+next combine)
+                                                     ///< sum used by tick()/tickFx()'s normal picks and reset()'s
+                                                     ///< second (combine-inclusive) pick.
+    static const unsigned int ComplexityBudgetInitial = 17; ///< Ceiling for reset()'s first, texture-only (2-term)
+                                                            ///< pick, before the combine pair exists yet -- kept at
+                                                            ///< the same ratio to ComplexityBudget as the original
+                                                            ///< 12:20.
 
     // Regie: Bogen auf den Drop
     float m_buildUpPrev = 0.f; ///< Last frame's buildUp, for the rising edge past 0.45.
@@ -384,18 +385,18 @@ private:
     // Recently shown scenes.  The random roll only ever excluded the scene
     // on screen, so any filter that narrowed the pool (the build-up rule
     // preferring staged scenes, the mood test) could bring one scene back
-    // every few minutes.  The last kRecentMax scenes (at most a third of the
+    // every few minutes.  The last RecentMax scenes (at most a third of the
     // preset) are refused during the first two thirds of the search; a
     // section replay and a manual pick bypass it -- those repeat on purpose.
-    static const unsigned int kRecentMax = 40; ///< Upper bound of the no-repeat window, in scenes (~15-40 min at the
-                                               ///< usual solo times).
-    std::vector<unsigned int> m_recentTex;     ///< Texture indices shown most recently, oldest first (see kRecentMax).
+    static const unsigned int RecentMax = 40; ///< Upper bound of the no-repeat window, in scenes (~15-40 min at the
+                                              ///< usual solo times).
+    std::vector<unsigned int> m_recentTex;    ///< Texture indices shown most recently, oldest first (see RecentMax).
     /** @brief True if texture @p idx is inside the current no-repeat window. */
     bool isRecentTexture( unsigned int idx ) const;
     /** @brief Append texture @p idx to the no-repeat window and trim it to its size. */
     void             noteTextureShown( unsigned int idx );
-    static const int kSectionMemorySpan = 24; ///< Max sectionCount distance for a replay (sections are >= ~12 s apart,
-                                              ///< so ~5+ min -- within one song, not across the set).
+    static const int SectionMemorySpan = 24; ///< Max sectionCount distance for a replay (sections are >= ~12 s apart,
+                                             ///< so ~5+ min -- within one song, not across the set).
     int m_pendingSectionStore = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none
                                       ///< pending).
     int m_pendingSectionRestore = -1; ///< Section id whose stored look should be restored at the next fade-start (-1 =

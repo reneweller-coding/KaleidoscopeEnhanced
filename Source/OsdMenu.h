@@ -24,16 +24,16 @@ class QPainter;
 struct OsdItem
 {
     /** @brief What a row does. */
-    enum Kind
+    enum KindE
     {
-        Submenu, ///< opens #children (built fresh every time it is entered)
-        Action,  ///< runs #action
-        Toggle,  ///< on/off via #getB / #setB
-        Choice,  ///< one of #options via #getI / #setI
-        Slider   ///< a number in [#lo, #hi] via #getF / #setF, #step per press
+        SUBMENU, ///< opens #children (built fresh every time it is entered)
+        ACTION,  ///< runs #action
+        TOGGLE,  ///< on/off via #getB / #setB
+        CHOICE,  ///< one of #options via #getI / #setI
+        SLIDER   ///< a number in [#lo, #hi] via #getF / #setF, #step per press
     };
 
-    Kind    kind = Action; ///< Row type.
+    KindE   kind = ACTION; ///< Row type.
     QString label;         ///< Text shown on the left.
 
     std::function<std::vector<OsdItem>()> children;           ///< Submenu: builds the rows of the level it opens.
@@ -110,7 +110,7 @@ public:
     void draw( QPainter *p, int w, int h );
 
     /** @brief Seconds without input after which the menu closes by itself. */
-    static constexpr int kIdleCloseSec = 20;
+    static constexpr int IdleCloseSec = 20;
 
 private:
     /** @brief One open level of the menu. */

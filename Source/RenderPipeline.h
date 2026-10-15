@@ -259,7 +259,7 @@ public:
     /** @brief Whether the scene currently on screen is marked (drives the on-screen indicator). */
     bool currentSceneMarked() const;
     /** @brief How many scenes are marked in total. */
-    int markedCount() const { return s_marked.size(); }
+    int markedCount() const { return M_Marked.size(); }
     /**
      * @brief Writes every marked scene to Presets/Marked.xml as a playable preset.
      *
@@ -292,19 +292,19 @@ public:
     // ---- Live-tunable look parameters (shared across all configs; set by hotkeys) ----
     static void adjustReactivity( float d )
     {
-        s_reactivity = clampParam( s_reactivity + d, 0.f, 3.0f );
+        M_Reactivity = clampParam( M_Reactivity + d, 0.f, 3.0f );
     } ///< @brief Adjusts the global audio-reactivity gain by @p d (clamped to [0, 3]).
     static void adjustTrails( float d )
     {
-        s_trailAmount = clampParam( s_trailAmount + d, 0.f, 0.95f );
+        M_TrailAmount = clampParam( M_TrailAmount + d, 0.f, 0.95f );
     } ///< @brief Adjusts the feedback-trail-length knob by @p d (clamped to [0, 0.95]).
     static void adjustMood( float d )
     {
-        s_moodStrength = clampParam( s_moodStrength + d, 0.f, 2.5f );
+        M_MoodStrength = clampParam( M_MoodStrength + d, 0.f, 2.5f );
     } ///< @brief Adjusts the global mood-grade strength by @p d (clamped to [0, 2.5]).
-    static float reactivity() { return s_reactivity; } ///< @brief Returns the current global audio-reactivity gain.
-    static float trails() { return s_trailAmount; }    ///< @brief Returns the current feedback-trail-length knob.
-    static float mood() { return s_moodStrength; }     ///< @brief Returns the current global mood-grade strength.
+    static float reactivity() { return M_Reactivity; } ///< @brief Returns the current global audio-reactivity gain.
+    static float trails() { return M_TrailAmount; }    ///< @brief Returns the current feedback-trail-length knob.
+    static float mood() { return M_MoodStrength; }     ///< @brief Returns the current global mood-grade strength.
 
     // Latency compensation: loopback capture + analysis + render + display add
     // up to ~40-80 ms, so phase-locked visuals land slightly AFTER the heard
@@ -313,30 +313,30 @@ public:
     // rhythm feel dominates.  Keys ; and ' adjust it in 10 ms steps.
     static void adjustLatency( float d )
     {
-        s_latencyLead = clampParam( s_latencyLead + d, 0.f, 0.25f );
+        M_LatencyLead = clampParam( M_LatencyLead + d, 0.f, 0.25f );
     } ///< @brief Adjusts the display-phase latency-compensation lead by @p d seconds (clamped to [0, 0.25]).
     static void setLatency( float v )
     {
-        s_latencyLead = clampParam( v, 0.f, 0.25f );
+        M_LatencyLead = clampParam( v, 0.f, 0.25f );
     } ///< @brief Sets the display-phase latency-compensation lead to @p v seconds (clamped to [0, 0.25]).
     static float latency()
     {
-        return s_latencyLead;
+        return M_LatencyLead;
     } ///< @brief Returns the current display-phase latency-compensation lead, in seconds.
 
     // Stage "lamps" (corner spotlight cones + haze/mirror-ball/gobo light show).
     // Off by default; toggled with key 'l' and persisted.
     static void toggleLightShow()
     {
-        s_lightShow = ( s_lightShow > 0.5f ) ? 0.f : 1.f;
+        M_LightShow = ( M_LightShow > 0.5f ) ? 0.f : 1.f;
     } ///< @brief Toggles the stage-lamps light show on/off (key 'l').
     static void setLightShow( bool on )
     {
-        s_lightShow = on ? 1.f : 0.f;
+        M_LightShow = on ? 1.f : 0.f;
     } ///< @brief Sets the stage-lamps light show on/off. @param on true to enable the corner-lamp light show.
     static bool lightShow()
     {
-        return s_lightShow > 0.5f;
+        return M_LightShow > 0.5f;
     } ///< @brief Returns whether the stage-lamps light show is currently on.
 
     // ---- Stereoscopic output (CLI -3 sbs|tb|ana; key 'z' cycles, c/m depth) --
@@ -346,41 +346,41 @@ public:
     // Side-by-side / top-bottom feed 3D projectors and HMD video viewers
     // (Virtual Desktop, Bigscreen, ...); red-cyan anaglyph works on any
     // screen.  No native OpenXR — deliberately a display-format feature.
-    static int   s_stereoMode;  ///< Stereoscopic output mode: 0 off, 1 SBS, 2 top-bottom, 3 anaglyph.
-    static float s_stereoDepth; ///< Stereo disparity strength, 0..2 (default 1).
+    static int   M_StereoMode;  ///< Stereoscopic output mode: 0 off, 1 SBS, 2 top-bottom, 3 anaglyph.
+    static float M_StereoDepth; ///< Stereo disparity strength, 0..2 (default 1).
     static void  cycleStereo()
     {
-        s_stereoMode = ( s_stereoMode + 1 ) & 3;
+        M_StereoMode = ( M_StereoMode + 1 ) & 3;
     } ///< @brief Cycles to the next stereoscopic output mode (key 'z').
-    static int  stereoMode() { return s_stereoMode; } ///< @brief Returns the current stereoscopic output mode.
+    static int  stereoMode() { return M_StereoMode; } ///< @brief Returns the current stereoscopic output mode.
     static void adjustStereoDepth( float d )
     {
-        s_stereoDepth = clampParam( s_stereoDepth + d, 0.f, 2.f );
+        M_StereoDepth = clampParam( M_StereoDepth + d, 0.f, 2.f );
     } ///< @brief Adjusts the stereo disparity strength by @p d (clamped to [0, 2]).
-    static float stereoDepth() { return s_stereoDepth; } ///< @brief Returns the current stereo disparity strength.
+    static float stereoDepth() { return M_StereoDepth; } ///< @brief Returns the current stereo disparity strength.
     /// @brief Sets the stereo disparity strength to an absolute value (clamped to [0, 2]) -- the web remote's slider,
     /// next to the keyboard's relative 'c'/'m'.
-    static void setStereoDepth( float v ) { s_stereoDepth = clampParam( v, 0.f, 2.f ); }
+    static void setStereoDepth( float v ) { M_StereoDepth = clampParam( v, 0.f, 2.f ); }
     /// @brief Selects a stereoscopic output mode directly (0 off, 1 SBS, 2 top-bottom, 3 anaglyph) -- the web remote
     /// picks one, the keyboard's 'z' cycles.
-    static void setStereoMode( int m ) { s_stereoMode = ( m < 0 ) ? 0 : ( m & 3 ); }
+    static void setStereoMode( int m ) { M_StereoMode = ( m < 0 ) ? 0 : ( m & 3 ); }
 
     // ---- VJ handbrakes ----
     // Blackout (key 'b'): fade the OUTPUT to black (window, Spout, recording —
     // it multiplies the present pass's brightness scale) and back.
     static void toggleBlackout()
     {
-        s_blackout = !s_blackout;
+        M_Blackout = !M_Blackout;
     } ///< @brief Toggles VJ blackout (fades the final output to/from black; key 'b').
-    static bool blackout() { return s_blackout; } ///< @brief Returns whether VJ blackout is currently engaged.
+    static bool blackout() { return M_Blackout; } ///< @brief Returns whether VJ blackout is currently engaged.
     // Freeze (key 'e'): hold the picture — the frame time is forced to 0 (all
     // phase integration and envelope motion stops) and the activation clocks
     // are re-armed so no scheduled switch fires behind the frozen image.
     static void toggleFreeze()
     {
-        s_freeze = !s_freeze;
+        M_Freeze = !M_Freeze;
     } ///< @brief Toggles VJ freeze (holds the picture by forcing frame time to 0; key 'e').
-    static bool frozen() { return s_freeze; } ///< @brief Returns whether VJ freeze is currently engaged.
+    static bool frozen() { return M_Freeze; } ///< @brief Returns whether VJ freeze is currently engaged.
     /**
      * @brief KALEIDO_FREEZE_TIME=SECONDS (comparison runs): the scene at that time, with silent audio,
      *        frozen once it has faded in (5 s) -- two runs with KALEIDO_SEED and KALEIDO_FIXED_PHOTO
@@ -393,27 +393,27 @@ public:
     // forced switches (section/drop/novelty) are suppressed until unpinned.
     static void togglePin()
     {
-        s_pinned = !s_pinned;
+        M_Pinned = !M_Pinned;
     } ///< @brief Toggles VJ pin (suppresses scheduled/forced effect and combine switches; key 'u').
-    static bool pinned() { return s_pinned; } ///< @brief Returns whether VJ pin is currently engaged.
+    static bool pinned() { return M_Pinned; } ///< @brief Returns whether VJ pin is currently engaged.
 
     // Spout output (CLI -o): publish the displayed frame as sender "Kaleidoscope".
-    static bool s_spoutEnabled; ///< Whether the Spout output sender ("Kaleidoscope") is enabled (CLI -o).
+    static bool M_SpoutEnabled; ///< Whether the Spout output sender ("Kaleidoscope") is enabled (CLI -o).
 
     /** Spout INPUT (CLI -i <sender|any>): a Spout sender's live texture (OBS,
      *  Resolume, a webcam through OBS, ...) replaces the photo as the source
      *  image of the whole pipeline — the audience becomes the mandala.  While
      *  no sender runs, the photos are the fallback. */
-    static bool s_spoutInEnabled; ///< Whether Spout input is enabled (CLI -i): a live sender texture replaces the photo
+    static bool M_SpoutInEnabled; ///< Whether Spout input is enabled (CLI -i): a live sender texture replaces the photo
                                   ///< source.
-    static QString s_spoutInSender; ///< Name of the Spout sender to receive from, or "any" (CLI -i argument).
+    static QString M_SpoutInSender; ///< Name of the Spout sender to receive from, or "any" (CLI -i argument).
     // Native video as an image source (CLI -v).  Feeds the same m_liveTex slot
     // as Spout does, so every effect gets moving footage without knowing.
     // Spout wins if both are given: it is the live feed, the file is not.
-    static QString s_videoPath; ///< Path to a video file used as a live image source (CLI -v); ignored if Spout input
+    static QString M_VideoPath; ///< Path to a video file used as a live image source (CLI -v); ignored if Spout input
                                 ///< is also enabled.
 
-    static QString s_warmLabel; ///< What the per-frame lazy warm-up did last frame; diagnostics only
+    static QString M_WarmLabel; ///< What the per-frame lazy warm-up did last frame; diagnostics only
                                 ///< (KALEIDO_FRAME_LOG).
 
     /**
@@ -427,7 +427,7 @@ public:
     QHash<EffectShader *, qint64> m_meshLastUse; ///< Last frame stamp at which a mesh scene was active or fading in.
     qint64                        m_meshUseClock = 0; ///< Monotonic frame counter behind m_meshLastUse.
     /// @return Label of the last warm-up step ("glsl <file>", "mesh <file>", "fx <file>" or empty). Diagnostics only.
-    static const QString &lastWarmLabel() { return s_warmLabel; }
+    static const QString &lastWarmLabel() { return M_WarmLabel; }
 
     /** @name Photo-source directory
      *  Where the background photos come from, resolved in init().  Three
@@ -440,8 +440,8 @@ public:
      *  their own pictures would silently lose that on the next regeneration,
      *  so the persistent per-user answer must live outside those files.
      *  @{ */
-    static QString s_imageDirCli;  ///< CLI `-f <dir>` photo-source override; empty when not given.
-    static QString s_imageDirUser; ///< `imageDirectory` from kaleidoscope_settings.ini; empty means "use the preset's".
+    static QString M_ImageDirCli;  ///< CLI `-f <dir>` photo-source override; empty when not given.
+    static QString M_ImageDirUser; ///< `imageDirectory` from kaleidoscope_settings.ini; empty means "use the preset's".
     /** @} */
 
     // Human-readable names of the currently active / cross-fading effects (debug overlay).
@@ -452,16 +452,16 @@ public:
     // Absolute setters (e.g. MIDI knobs map a 0..1 value to the full range).
     static void setReactivity( float v )
     {
-        s_reactivity = clampParam( v, 0.f, 3.0f );
+        M_Reactivity = clampParam( v, 0.f, 3.0f );
     } ///< @brief Sets the global audio-reactivity gain to an absolute value @p v (clamped to [0, 3]; e.g. from a MIDI
     ///< knob).
     static void setTrails( float v )
     {
-        s_trailAmount = clampParam( v, 0.f, 0.95f );
+        M_TrailAmount = clampParam( v, 0.f, 0.95f );
     } ///< @brief Sets the feedback-trail-length knob to an absolute value @p v (clamped to [0, 0.95]).
     static void setMood( float v )
     {
-        s_moodStrength = clampParam( v, 0.f, 2.5f );
+        M_MoodStrength = clampParam( v, 0.f, 2.5f );
     } ///< @brief Sets the global mood-grade strength to an absolute value @p v (clamped to [0, 2.5]).
 
     // Persist / restore the look parameters above (+ render scale) across runs.
@@ -652,10 +652,10 @@ private:
     Mesh *m_mesh; ///< Legacy OBJ mesh for the (currently unused) drawScene() preview path; see loadObj().
 
 
-    bool m_npot_supported; ///< non power of two textures supportet (or not) — set only inside the disabled NPOT-check
+    bool m_npotSupported;  ///< non power of two textures supportet (or not) — set only inside the disabled NPOT-check
                            ///< block in reinit(), so effectively unused in the current build.
-    unsigned int m_width;  ///< texture width — internal render width in pixels (= display width x s_renderScale).
-    unsigned int m_height; ///< texture height — internal render height in pixels (= display height x s_renderScale).
+    unsigned int m_width;  ///< texture width — internal render width in pixels (= display width x M_RenderScale).
+    unsigned int m_height; ///< texture height — internal render height in pixels (= display height x M_RenderScale).
 
     GLenum m_texInternalFormat; ///< Internal GL format used for the effect/combine FBO textures (GL_RGBA8).
     GLenum m_texFormat;         ///< GL pixel-transfer format matching m_texInternalFormat (GL_RGBA).
@@ -816,13 +816,13 @@ private:
                                   ///< by the combine stage as texDepth0/texDepth1, units 29/30).
 
     // ---- MSAA scratch target for 3D scene draws (see ensureMsaaTargets()) ----
-    static const int kMsaaSamples = 4; ///< Fixed sample count for the 3D-scene anti-aliasing pass; clamped down to
-                                       ///< GL_MAX_SAMPLES if the driver reports fewer.
+    static const int MsaaSamples = 4; ///< Fixed sample count for the 3D-scene anti-aliasing pass; clamped down to
+                                      ///< GL_MAX_SAMPLES if the driver reports fewer.
     GLuint m_msaaFbo = 0; ///< Shared multisample FBO, reused by whichever 3D scene (texture1's pass, then texture2's)
                           ///< is currently drawing.
-    GLuint m_msaaColorTex = 0;         ///< GL_TEXTURE_2D_MULTISAMPLE colour attachment (GL_RGBA8, matching
-                                       ///< m_texInternalFormat).
-    GLuint m_msaaDepthTex = 0;         ///< GL_TEXTURE_2D_MULTISAMPLE depth attachment.
+    GLuint m_msaaColorTex = 0;        ///< GL_TEXTURE_2D_MULTISAMPLE colour attachment (GL_RGBA8, matching
+                                      ///< m_texInternalFormat).
+    GLuint m_msaaDepthTex = 0;        ///< GL_TEXTURE_2D_MULTISAMPLE depth attachment.
     int    m_msaaW = 0,
            /**< Current width (pixels) of the MSAA scratch target; 0 = not yet created. */ m_msaaH =
                0;                ///< Current size
@@ -832,7 +832,7 @@ private:
                                  ///< ensureMsaaTargets()
                                  ///< reallocates on
                                  ///< mismatch.
-    int m_msaaActualSamples = 0; ///< Sample count actually used (<= kMsaaSamples, clamped to GL_MAX_SAMPLES); 0 = not
+    int m_msaaActualSamples = 0; ///< Sample count actually used (<= MsaaSamples, clamped to GL_MAX_SAMPLES); 0 = not
                                  ///< yet created.
     bool m_msaaTried = false; ///< True once creation has been attempted (attempted only once; glTexImage2DMultisample
                               ///< missing is a permanent soft-fail, not retried every frame).
@@ -843,8 +843,8 @@ private:
     // A single depth-only target, shared by whichever 3D scene wants it.
     // Created on first use: a scene opts in by declaring "texShadow", and most
     // never do.
-    static const int kShadowSize = 2048; ///< Width/height of the (square) shadow map, in texels.
-    GLuint           m_shadowFbo = 0;    ///< Depth-only FBO for the shadow map (created lazily by ensureShadowMap()).
+    static const int ShadowSize = 2048; ///< Width/height of the (square) shadow map, in texels.
+    GLuint           m_shadowFbo = 0;   ///< Depth-only FBO for the shadow map (created lazily by ensureShadowMap()).
     GLuint m_shadowTex = 0; ///< Depth texture backing m_shadowFbo; sampled with hardware percentage-closer filtering.
     // Second, independent shadow-casting light -- same shape of state, entirely
     // separate FBO/texture/matrix so it can move on its own path. A scene opts
@@ -879,7 +879,7 @@ private:
      * @param fbo Target shadow FBO (ensureShadowMapGeneric()'d first).
      * @param tex Depth texture backing @p fbo, bound to @p texUnit afterward.
      * @param texUnit Texture unit the shader-side sampler expects this light's map on (31 for light 1, 32 for light 2).
-     * @param passFlag EffectShader::s_shadowPass or s_shadowPass2 -- set to 1 for the draw, restored to 0 after, so the
+     * @param passFlag EffectShader::M_ShadowPass or M_ShadowPass2 -- set to 1 for the draw, restored to 0 after, so the
      * scene's own shaders know which light's depth pass this is.
      */
     // tex MUST be a reference, like fbo above it. It was passed by value, and
@@ -892,29 +892,29 @@ private:
     void renderShadowPassGeneric( EffectShader *fx, GLuint &fbo, GLuint &tex, int texUnit, float &passFlag );
     /** @brief Light 1 (the "sun"): lazily creates its shadow map. @return See ensureShadowMapGeneric(). */
     bool ensureShadowMap() { return ensureShadowMapGeneric( m_shadowFbo, m_shadowTex ); }
-    /** @brief Light 1 (the "sun"): recomputes EffectShader::s_lightM/s_lightDir. @param t Current global time in
+    /** @brief Light 1 (the "sun"): recomputes EffectShader::M_LightM/M_LightDir. @param t Current global time in
      * seconds. */
     void updateLightMatrix( float t )
     {
-        updateLightMatrixGeneric( t, 0.f, 0.f, EffectShader::s_lightM, EffectShader::s_lightDir );
+        updateLightMatrixGeneric( t, 0.f, 0.f, EffectShader::M_LightM, EffectShader::M_LightDir );
     }
     /** @brief Light 1 (the "sun"): renders @p fx into the shadow map. @param fx Scene to render. */
     void renderShadowPass( EffectShader *fx )
     {
-        renderShadowPassGeneric( fx, m_shadowFbo, m_shadowTex, 31, EffectShader::s_shadowPass );
+        renderShadowPassGeneric( fx, m_shadowFbo, m_shadowTex, 31, EffectShader::M_ShadowPass );
     }
     /** @brief Light 2 (cool rim/fill): lazily creates its shadow map. @return See ensureShadowMapGeneric(). */
     bool ensureShadowMap2() { return ensureShadowMapGeneric( m_shadowFbo2, m_shadowTex2 ); }
-    /** @brief Light 2 (cool rim/fill): recomputes EffectShader::s_lightM2/s_lightDir2, offset in phase and tilted
+    /** @brief Light 2 (cool rim/fill): recomputes EffectShader::M_LightM2/M_LightDir2, offset in phase and tilted
      * lower/cooler than light 1. @param t Current global time in seconds. */
     void updateLightMatrix2( float t )
     {
-        updateLightMatrixGeneric( t, 2.4f, 0.35f, EffectShader::s_lightM2, EffectShader::s_lightDir2 );
+        updateLightMatrixGeneric( t, 2.4f, 0.35f, EffectShader::M_LightM2, EffectShader::M_LightDir2 );
     }
     /** @brief Light 2 (cool rim/fill): renders @p fx into its shadow map. @param fx Scene to render. */
     void renderShadowPass2( EffectShader *fx )
     {
-        renderShadowPassGeneric( fx, m_shadowFbo2, m_shadowTex2, 32, EffectShader::s_shadowPass2 );
+        renderShadowPassGeneric( fx, m_shadowFbo2, m_shadowTex2, 32, EffectShader::M_ShadowPass2 );
     }
 
 
@@ -1035,7 +1035,7 @@ private:
      * occluded correctly. @param targetFbo Framebuffer to composite the resolved transparency back onto. */
     void renderOitPass( EffectShader *fx, GLuint depthTex, GLuint targetFbo );
     // FPS EMA for the cube-scene detail budget (see paint()).
-    float m_cubeFpsEma = 60.f; ///< Exponential moving average of the frame rate, driving Scene3DShader::s_cubeBudget
+    float m_cubeFpsEma = 60.f; ///< Exponential moving average of the frame rate, driving Scene3DShader::M_CubeBudget
                                ///< (drops detail below ~45 fps, restores it above ~57 fps).
     // TRUE-STEREO state (real per-eye rendering of a solo 3D scene):
     // hold = a 3D scene is solo while SBS/TB stereo is on (freezes combine
@@ -1087,19 +1087,19 @@ private:
                                          ///< AudioConditioner.
 
     // Live-tunable look parameters (static → one shared setting across all configs).
-    static float s_reactivity; ///< audio-motion master gain (default 1.0) — shared across all loaded configurations.
-    static float s_trailAmount;      ///< feedback trail length 0..0.95 (default 0.6).
-    static bool s_calmMotion; ///< settings key calmMotion (default true): no beat-driven whole-frame motion anywhere in
+    static float M_Reactivity; ///< audio-motion master gain (default 1.0) — shared across all loaded configurations.
+    static float M_TrailAmount;      ///< feedback trail length 0..0.95 (default 0.6).
+    static bool M_CalmMotion; ///< settings key calmMotion (default true): no beat-driven whole-frame motion anywhere in
                               ///< the host (virtual camera, rewind, shockwave, trail beat-warp). Rule V7d; Rene has
                               ///< gaming sickness.
-    static float s_moodStrength;     ///< global mood-grade strength (default 1.0).
-    static float s_lightShow;        ///< 0 = corner lamps/light-show off (default), 1 = on.
-    static float s_latencyLead;      ///< display-phase lead in seconds (default 0.05).
-    static bool  s_blackout; ///< VJ blackout target (smoothed per instance) — actual fade is smoothed in PresentPass.
-    static bool  s_freeze;           ///< VJ freeze: hold the picture — forces frame time to 0.
-    static float s_chainScaleIni; ///< chainScale as the ini has it (the session's value may be lowered by the quality
+    static float M_MoodStrength;     ///< global mood-grade strength (default 1.0).
+    static float M_LightShow;        ///< 0 = corner lamps/light-show off (default), 1 = on.
+    static float M_LatencyLead;      ///< display-phase lead in seconds (default 0.05).
+    static bool  M_Blackout; ///< VJ blackout target (smoothed per instance) — actual fade is smoothed in PresentPass.
+    static bool  M_Freeze;           ///< VJ freeze: hold the picture — forces frame time to 0.
+    static float M_ChainScaleIni; ///< chainScale as the ini has it (the session's value may be lowered by the quality
                                   ///< profile).
-    static bool s_pinned;            ///< VJ pin: no effect/combine switches.
+    static bool M_Pinned;            ///< VJ pin: no effect/combine switches.
     float m_breakSmooth = 0.f; ///< slewed DJ-stop hold (freezes motion) — dampens frame-time advance during a DJ stop.
 
     // ---- Taste learning (persistent, PER PRESET + shader FILE basename) ----
@@ -1110,15 +1110,15 @@ private:
     // 1.0 so old grudges fade.  Soft bias only — moodAccept keeps a floor,
     // no shader is ever excluded.  Storage is shared (static) across the
     // instances; the keys carry the preset namespace.
-    static QSet<QString> s_marked; ///< Base filenames ("Ocean.frag") of scenes marked for review; persisted under
+    static QSet<QString> M_Marked; ///< Base filenames ("Ocean.frag") of scenes marked for review; persisted under
                                    ///< [marked] in the settings ini.
-    static QHash<QString, float> s_taste; ///< Persistent per-"<Preset>/<file>" selection-weight factors, in [0.3, 2.5],
+    static QHash<QString, float> M_Taste; ///< Persistent per-"<Preset>/<file>" selection-weight factors, in [0.3, 2.5],
                                           ///< default 1.0; shared (static) across all instances, loaded/saved via
                                           ///< loadSettings()/bumpTaste().
-    static QHash<QString, QList<QPair<double, QString>>> s_cues; ///< Cue memory: track key -> (position in s, scene
+    static QHash<QString, QList<QPair<double, QString>>> M_Cues; ///< Cue memory: track key -> (position in s, scene
                                                                  ///< base file). Loaded from [cues] in the ini.
     QString   m_cueTrack;   ///< Track key the fired-set below belongs to; a new track resets it.
-    QSet<int> m_cuesFired;  ///< Cues (indices into s_cues[m_cueTrack]) already fired during this playback.
+    QSet<int> m_cuesFired;  ///< Cues (indices into M_Cues[m_cueTrack]) already fired during this playback.
     QString   m_presetName; ///< set by Configuration after load — this instance's preset name, namespacing its
                             ///< taste-learning keys; see setPresetName().
     /** @brief Looks up the persistent taste weight for a fragment file, namespaced by m_presetName. @param fragPath
@@ -1136,31 +1136,31 @@ private:
         return v < lo ? lo : ( v > hi ? hi : v );
     }
 
-    // Internal render resolution = display resolution × s_renderScale.  All the
+    // Internal render resolution = display resolution × M_RenderScale.  All the
     // expensive offscreen passes use m_width/m_height (= render res); only the final
     // present pass upscales to the display resolution (m_displayW/m_displayH).  Set
-    // s_renderScale < 1 to run smoothly on weak GPUs at high display resolutions.
+    // M_RenderScale < 1 to run smoothly on weak GPUs at high display resolutions.
     int          m_displayW = 100; ///< Display (window) width in pixels, as passed to reinit()/resize().
     int          m_displayH = 100; ///< Display (window) height in pixels, as passed to reinit()/resize().
-    static float s_renderScale; ///< 0.25 .. 2.0 (1.0 = native; set via -s) — internal render scale relative to display
+    static float M_RenderScale; ///< 0.25 .. 2.0 (1.0 = native; set via -s) — internal render scale relative to display
                                 ///< resolution.
 public:
     /**
      * @brief True only when -s was given on the command line.
      *
      * The adaptive controller is allowed to treat an EXPLICIT -s as a ceiling,
-     * but it must not treat the persisted s_renderScale that way: that value is
+     * but it must not treat the persisted M_RenderScale that way: that value is
      * whatever the controller itself last wrote, so using it as the ceiling makes
      * the adaptation one-way (see GLwidget::updateAdaptiveScale()).
      */
-    static bool  s_renderScaleFromCli;
-    static float s_renderScaleMax; ///< Ceiling the adaptive scaler may raise to (ini key renderScaleMax); >1.0
+    static bool  M_RenderScaleFromCli;
+    static float M_RenderScaleMax; ///< Ceiling the adaptive scaler may raise to (ini key renderScaleMax); >1.0
                                    ///< supersamples.
     /** @brief Sets the internal render scale (clamped to [0.25, 2.0]) used by every subsequent reinit()/resize().
      * @param s Desired render scale (1.0 = native display resolution). */
     static void setRenderScale( float s )
     {
-        s_renderScale = ( s < 0.25f ) ? 0.25f : ( s > 2.0f ? 2.0f : s );
+        M_RenderScale = ( s < 0.25f ) ? 0.25f : ( s > 2.0f ? 2.0f : s );
     }
 
     // Supersampling ceiling. Above 1.0 the scene is rendered larger than the
@@ -1173,12 +1173,12 @@ public:
      * @param s Ceiling, clamped to 0.5..2.0. */
     static void setRenderScaleMax( float s )
     {
-        s_renderScaleMax = ( s < 0.5f ) ? 0.5f : ( s > 2.0f ? 2.0f : s );
+        M_RenderScaleMax = ( s < 0.5f ) ? 0.5f : ( s > 2.0f ? 2.0f : s );
     }
     /** @brief The supersampling ceiling. @return Ceiling in 0.5..2.0; 1.0 means no supersampling. */
-    static float renderScaleMax() { return s_renderScaleMax; }
+    static float renderScaleMax() { return M_RenderScaleMax; }
     /** @brief Returns the current internal render scale. @return Render scale, 0.25..2.0. */
-    static float renderScale() { return s_renderScale; }
+    static float renderScale() { return M_RenderScale; }
 
 private:
     // GLSL vars
@@ -1191,16 +1191,16 @@ private:
 
 
     // Combination of FBOs
-    GLuint m_sh_prog_id_fx; ///< Legacy outer "combine of combines" shader program (FxPlain.frag): cross-fades the two
-                            ///< combine-effect outputs into the final present source.
-    GLuint m_texPointFxUni1;     ///< Uniform location of "tex0" in m_sh_prog_id_fx (bound to texture unit 5 =
+    GLuint m_shProgIdFx; ///< Legacy outer "combine of combines" shader program (FxPlain.frag): cross-fades the two
+                         ///< combine-effect outputs into the final present source.
+    GLuint m_texPointFxUni1;     ///< Uniform location of "tex0" in m_shProgIdFx (bound to texture unit 5 =
                                  ///< m_texIDFBOEffectFx1's output).
-    GLuint m_texPointFxUni2;     ///< Uniform location of "tex1" in m_sh_prog_id_fx (bound to texture unit 6 =
+    GLuint m_texPointFxUni2;     ///< Uniform location of "tex1" in m_shProgIdFx (bound to texture unit 6 =
                                  ///< m_texIDFBOEffectFx2's output).
-    GLuint m_texSizeRcpFxUni;    ///< Uniform location of "resolution" in m_sh_prog_id_fx.
-    GLuint m_timeFxUni;          ///< Uniform location of "time" in m_sh_prog_id_fx.
+    GLuint m_texSizeRcpFxUni;    ///< Uniform location of "resolution" in m_shProgIdFx.
+    GLuint m_timeFxUni;          ///< Uniform location of "time" in m_shProgIdFx.
     GLuint m_interpolationFxUni; ///< Uniform location of "interpolation" (fxTex1/fxTex2 cross-fade weight) in
-                                 ///< m_sh_prog_id_fx.
+                                 ///< m_shProgIdFx.
 
 
     float m_interpolationFx; ///< Between 0 and 1 — legacy combine-of-combines cross-fade weight; unused in the current

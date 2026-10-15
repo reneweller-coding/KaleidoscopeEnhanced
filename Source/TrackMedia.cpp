@@ -29,27 +29,27 @@
 
 // Lyrics-Textur: Breite fix, Zeilenhöhe fix - die Höhe wächst mit der
 // Zeilenzahl (gekappt, ~190 Zeilen reichen für jeden Songtext).
-static const int kLyrTexW = 1000; ///< Nominal (normally-visible) lyrics-texture width in pixels; the actual image can
-                                  ///< be wider (see renderLyricsImage()) but this fixed value is what the on-screen
-                                  ///< text size is scaled against.
-static const int kLyrLineH = 60;     ///< Fixed per-line height in pixels (also used as the top margin).
-static const int kLyrMaxH = 12000;   ///< Hard cap on the lyrics-texture height (~190 lines), so pathologically long
-                                     ///< lyrics can't blow up GPU memory.
-static const int kLyrMaxTexW = 6000; ///< Hard cap on the lyrics-texture width (well under any real GPU's
-                                     ///< GL_MAX_TEXTURE_SIZE) -- a single malformed/no-whitespace line from a scraped
-                                     ///< lyrics source must not be able to grow the canvas without bound; a line that
-                                     ///< still doesn't fit at this cap falls back to eliding, same as before this
-                                     ///< file's marquee change.
+static const int LyrTexW = 1000;    ///< Nominal (normally-visible) lyrics-texture width in pixels; the actual image can
+                                    ///< be wider (see renderLyricsImage()) but this fixed value is what the on-screen
+                                    ///< text size is scaled against.
+static const int LyrLineH = 60;     ///< Fixed per-line height in pixels (also used as the top margin).
+static const int LyrMaxH = 12000;   ///< Hard cap on the lyrics-texture height (~190 lines), so pathologically long
+                                    ///< lyrics can't blow up GPU memory.
+static const int LyrMaxTexW = 6000; ///< Hard cap on the lyrics-texture width (well under any real GPU's
+                                    ///< GL_MAX_TEXTURE_SIZE) -- a single malformed/no-whitespace line from a scraped
+                                    ///< lyrics source must not be able to grow the canvas without bound; a line that
+                                    ///< still doesn't fit at this cap falls back to eliding, same as before this
+                                    ///< file's marquee change.
 
 int TrackMedia::lyricsNominalTexWidth()
 {
-    return kLyrTexW;
+    return LyrTexW;
 }
 
 // Negativ-Cache ("nichts gefunden") verfällt nach 7 Tagen - vielleicht
 // trägt ja jemand die Lyrics nach.
-static const qint64 kNegCacheTtlSec = 7 * 24 * 3600; ///< TTL for a "lyrics not found" cache entry before the chain is
-                                                     ///< retried against the network.
+static const qint64 NegCacheTtlSec = 7 * 24 * 3600; ///< TTL for a "lyrics not found" cache entry before the chain is
+                                                    ///< retried against the network.
 
 /** @brief Hex-encodes the MD5 hash of a string (used to build cache file/dir names from arbitrary artist/title text).
  * @param s Input string (UTF-8 encoded before hashing). @return Lowercase hex MD5 digest. */
@@ -128,7 +128,7 @@ QString TrackMedia::artistCacheDir() const
  * empty title) returns early, anything else resets every per-track member,
  * bumps the three revision counters, and restarts the chains -- the
  * artist-image chain only if the artist is non-empty, the video chain only
- * if `durationSec` is known and within kVideoMaxDurationSec.
+ * if `durationSec` is known and within VideoMaxDurationSec.
  */
 void TrackMedia::requestTrack( const QString &artist, const QString &title, double durationSec )
 {
@@ -159,7 +159,7 @@ void TrackMedia::requestTrack( const QString &artist, const QString &title, doub
     lyricsFromCacheOrNet();
     if ( !m_artist.isEmpty() )
         imagesFromCacheOrNet();
-    if ( durationSec > 0.0 && durationSec <= double( kVideoMaxDurationSec ) )
+    if ( durationSec > 0.0 && durationSec <= double( VideoMaxDurationSec ) )
         videoFromCacheOrNet( durationSec );
 }
 
@@ -184,7 +184,7 @@ void TrackMedia::lyricsFromCacheOrNet()
                          o.value( "plain" ).toString(), "Cache" );
             return;
         }
-        if ( age < kNegCacheTtlSec )
+        if ( age < NegCacheTtlSec )
         {
             // Bekannt erfolglos, TTL läuft noch: Netz gar nicht erst fragen.
             m_lyricsPending = false;
@@ -202,7 +202,7 @@ void TrackMedia::lyricsFromCacheOrNet()
  * @param synced Synced lyrics text to persist (may be empty).
  * @param plain Plain lyrics text to persist (may be empty).
  * @param found Whether any lyrics were actually found; false writes a timestamped negative-cache entry (see
- * kNegCacheTtlSec).
+ * NegCacheTtlSec).
  */
 void TrackMedia::writeLyricsCache( const QString &synced, const QString &plain, bool found )
 {
@@ -347,7 +347,7 @@ void TrackMedia::tryNetease()
         r->deleteLater();
         if ( key != m_key )
             return;
-        qint64 songId = 0;
+        qint64 song_id = 0;
         if ( r->error() == QNetworkReply::NoError )
         {
             QJsonArray songs = QJsonDocument::fromJson( r->readAll() )
@@ -365,18 +365,18 @@ void TrackMedia::tryNetease()
                 if ( name.contains( m_title, Qt::CaseInsensitive )
                      || m_title.contains( name, Qt::CaseInsensitive ) )
                 {
-                    songId = qint64( s.value( "id" ).toDouble() );
+                    song_id = qint64( s.value( "id" ).toDouble() );
                     break;
                 }
             }
         }
-        if ( songId == 0 )
+        if ( song_id == 0 )
         {
             tryLyricsOvh();
             return;
         }
         QString        lurl = QString( "https://music.163.com/api/song/lyric?id=%1&lv=1&kv=1&tv=-1" )
-                                  .arg( songId );
+                                  .arg( song_id );
         QNetworkReply *r2 = get( lurl );
         QObject::connect( r2, &QNetworkReply::finished, r2, [this, r2, key]()
         {
@@ -394,9 +394,9 @@ void TrackMedia::tryNetease()
                 if ( !lrc.trimmed().isEmpty() )
                 {
                     // LRC mit Zeitstempeln? Sonst als Plain behandeln.
-                    bool hatSync = lrc.contains( QRegularExpression( "\\[\\d+:\\d{2}" ) );
-                    lyricsFound( hatSync ? lrc : QString(),
-                                 hatSync ? QString() : lrc, "NetEase" );
+                    bool hat_sync = lrc.contains( QRegularExpression( "\\[\\d+:\\d{2}" ) );
+                    lyricsFound( hat_sync ? lrc : QString(),
+                                 hat_sync ? QString() : lrc, "NetEase" );
                     return;
                 }
             }
@@ -449,7 +449,7 @@ void TrackMedia::tryLyricsOvh()
  */
 void TrackMedia::parseSynced( const QString &lrc )
 {
-    static const QRegularExpression reTime(
+    static const QRegularExpression ReTime(
         "\\[(\\d+):(\\d{2})(?:[.:](\\d{1,3}))?\\]" );
 
     for ( const QString &raw : lrc.split( '\n' ) )
@@ -459,7 +459,7 @@ void TrackMedia::parseSynced( const QString &lrc )
             continue;
         std::vector<double> times;
         int                 last = 0;
-        auto                it = reTime.globalMatch( line );
+        auto                it = ReTime.globalMatch( line );
         while ( it.hasNext() )
         {
             auto m = it.next();
@@ -521,7 +521,7 @@ void TrackMedia::parsePlain( const QString &plain )
 // (Stil wie der Titel-Reveal: weiß mit dunklem Halo, lesbar über allem).
 /**
  * @brief Renders every parsed lyric line into one tall transparent QImage (white text with a dark halo), truncating if
- * the real-line budget would exceed kLyrMaxH, and fills in each line's v0/v1 texture-V band.
+ * the real-line budget would exceed LyrMaxH, and fills in each line's v0/v1 texture-V band.
  *
  * Gap markers (empty text) never get a row of their own -- the texture
  * height budgets by the count of REAL (non-empty) lines, and a gap
@@ -530,9 +530,9 @@ void TrackMedia::parsePlain( const QString &plain )
  * fade-out takes over.
  *
  * Lines are no longer elided with "...": a line that fits within the
- * nominal (kLyrTexW) window is centred as before, but one that doesn't is
+ * nominal (LyrTexW) window is centred as before, but one that doesn't is
  * drawn LEFT-aligned at its FULL natural width, extending the canvas past
- * kLyrTexW just far enough to hold the single widest overflowing line (not
+ * LyrTexW just far enough to hold the single widest overflowing line (not
  * every line unconditionally, so a song with one long line doesn't shrink
  * every other line's apparent size -- see lyricsNominalTexWidth()). The
  * per-line overflowU records how far past the nominal window that line's
@@ -544,38 +544,38 @@ void TrackMedia::renderLyricsImage()
     // Gap markers (empty text, see parseSynced) carry timing only -- they
     // never get a row of their own, so the texture height budgets by REAL
     // line count, not m_lines.size().
-    int nReal = 0;
+    int n_real = 0;
     for ( const LyricLine &l : m_lines )
         if ( !l.text.isEmpty() )
-            ++nReal;
+            ++n_real;
 
-    int h = nReal * kLyrLineH + kLyrLineH;
-    if ( h > kLyrMaxH )
+    int h = n_real * LyrLineH + LyrLineH;
+    if ( h > LyrMaxH )
     {
         // Truncate once the REAL-line budget is exhausted; any gap markers
         // before the cutoff are kept (free -- they cost no row).
-        const int keepReal = ( kLyrMaxH - kLyrLineH ) / kLyrLineH;
+        const int keep_real = ( LyrMaxH - LyrLineH ) / LyrLineH;
         int       seen = 0;
         size_t    cut = m_lines.size();
         for ( size_t k = 0; k < m_lines.size(); ++k )
-            if ( !m_lines[k].text.isEmpty() && ++seen > keepReal )
+            if ( !m_lines[k].text.isEmpty() && ++seen > keep_real )
             {
                 cut = k;
                 break;
             }
         m_lines.resize( cut );
-        nReal = std::min( nReal, keepReal );
-        h = nReal * kLyrLineH + kLyrLineH;
+        n_real = std::min( n_real, keep_real );
+        h = n_real * LyrLineH + LyrLineH;
     }
 
     QFont        f( "Segoe UI", 26, QFont::Bold );
     QFontMetrics fm( f );
-    const int    boxW = kLyrTexW - 60;
+    const int    box_w = LyrTexW - 60;
 
     // First pass: measure every real line so the canvas can be widened just
     // enough for the single widest overflow, and each line already knows
     // whether it needs the left-aligned/full-width treatment below.
-    int texW = kLyrTexW;
+    int tex_w = LyrTexW;
     for ( LyricLine &l : m_lines )
     {
         if ( l.text.isEmpty() )
@@ -583,17 +583,17 @@ void TrackMedia::renderLyricsImage()
             l.overflowU = 0.f;
             continue;
         }
-        const int textW = fm.horizontalAdvance( l.text );
-        const int over = textW - boxW;
+        const int text_w = fm.horizontalAdvance( l.text );
+        const int over = text_w - box_w;
         if ( over > 0 )
         {
-            const int needW = std::min( 30 + textW + 30, kLyrMaxTexW );
-            if ( needW > texW )
-                texW = needW;
+            const int need_w = std::min( 30 + text_w + 30, LyrMaxTexW );
+            if ( need_w > tex_w )
+                tex_w = need_w;
         }
     }
 
-    QImage img( texW, h, QImage::Format_ARGB32 );
+    QImage img( tex_w, h, QImage::Format_ARGB32 );
     img.fill( Qt::transparent );
     QPainter p( &img );
     p.setRenderHint( QPainter::Antialiasing );
@@ -601,7 +601,7 @@ void TrackMedia::renderLyricsImage()
     p.setFont( f );
 
     int   row = 0;
-    float lastV0 = 0.f, lastV1 = 0.f;
+    float last_v0 = 0.f, last_v1 = 0.f;
     for ( size_t i = 0; i < m_lines.size(); ++i )
     {
         if ( m_lines[i].text.isEmpty() )
@@ -609,35 +609,35 @@ void TrackMedia::renderLyricsImage()
             // Instrumental marker: no row of its own -- visually "sticks" to
             // the last sung line (scroll/highlight stay put there) until the
             // long-pause fade-out in glwidget.cpp takes over.
-            m_lines[i].v0 = lastV0;
-            m_lines[i].v1 = lastV1;
+            m_lines[i].v0 = last_v0;
+            m_lines[i].v1 = last_v1;
             continue;
         }
-        const int     yTop = row * kLyrLineH + kLyrLineH / 2;
-        const int     textW = fm.horizontalAdvance( m_lines[i].text );
-        const int     over = textW - boxW;
+        const int     y_top = row * LyrLineH + LyrLineH / 2;
+        const int     text_w = fm.horizontalAdvance( m_lines[i].text );
+        const int     over = text_w - box_w;
         QRect         r;
         Qt::Alignment al;
         QString       t = m_lines[i].text;
-        if ( over > 0 && 30 + textW + 30 <= texW )
+        if ( over > 0 && 30 + text_w + 30 <= tex_w )
         {
             // Overflows, and fits within the (possibly capped) canvas: left-
             // aligned at its full natural width so the whole line actually
             // exists in the texture; the host scrolls it into view over time
             // instead of eliding it.
-            r = QRect( 30, yTop, textW, kLyrLineH );
+            r = QRect( 30, y_top, text_w, LyrLineH );
             al = Qt::AlignLeft | Qt::AlignVCenter;
-            m_lines[i].overflowU = float( over ) / float( texW );
+            m_lines[i].overflowU = float( over ) / float( tex_w );
         }
         else if ( over > 0 )
         {
-            // Overflows so far that even kLyrMaxTexW couldn't hold it whole
+            // Overflows so far that even LyrMaxTexW couldn't hold it whole
             // (a pathological/malformed source line) -- fall back to the old
             // elide-with-"..." behaviour, sized to what the capped canvas can
             // actually show, rather than growing the texture without bound.
-            const int availW = texW - 60;
-            t = fm.elidedText( t, Qt::ElideRight, availW );
-            r = QRect( 30, yTop, availW, kLyrLineH );
+            const int avail_w = tex_w - 60;
+            t = fm.elidedText( t, Qt::ElideRight, avail_w );
+            r = QRect( 30, y_top, avail_w, LyrLineH );
             al = Qt::AlignLeft | Qt::AlignVCenter;
             m_lines[i].overflowU = 0.f;
         }
@@ -645,7 +645,7 @@ void TrackMedia::renderLyricsImage()
         {
             // Fits: centred within the nominal (non-scrolling) window, same
             // as before.
-            r = QRect( 30, yTop, boxW, kLyrLineH );
+            r = QRect( 30, y_top, box_w, LyrLineH );
             al = Qt::AlignHCenter | Qt::AlignVCenter;
             m_lines[i].overflowU = 0.f;
         }
@@ -658,10 +658,10 @@ void TrackMedia::renderLyricsImage()
         p.setPen( QColor( 255, 255, 255, 235 ) );
         p.drawText( r, al, t );
 
-        m_lines[i].v0 = float( yTop ) / float( h );
-        m_lines[i].v1 = float( yTop + kLyrLineH ) / float( h );
-        lastV0 = m_lines[i].v0;
-        lastV1 = m_lines[i].v1;
+        m_lines[i].v0 = float( y_top ) / float( h );
+        m_lines[i].v1 = float( y_top + LyrLineH ) / float( h );
+        last_v0 = m_lines[i].v0;
+        last_v1 = m_lines[i].v1;
         ++row;
     }
     p.end();
@@ -715,7 +715,7 @@ void TrackMedia::imagesFromCacheOrNet()
     // Genug im Cache? Dann kein Netz.  Sonst (auch bei wenigen Treffern
     // eines früheren Laufs) alle Quellen anwerfen - Dedupe läuft über URLs,
     // doppelte DATEIEN entstehen dabei nicht, weil die URL-Liste pro Lauf
-    // frisch ist und der Cache-Bestand mitzählt (kMaxImages-Deckel).
+    // frisch ist und der Cache-Bestand mitzählt (MaxImages-Deckel).
     if ( m_imagePaths.size() >= 8 )
         return;
     fetchDeezer();
@@ -725,27 +725,27 @@ void TrackMedia::imagesFromCacheOrNet()
 
 /**
  * @brief Adds an image URL to the download queue unless it is empty, already seen, or the combined cached+queued count
- * has reached kMaxImages.
+ * has reached MaxImages.
  * @param url Image URL to enqueue.
  */
 void TrackMedia::enqueueImageUrl( const QString &url )
 {
     if ( url.isEmpty() || m_seenUrls.contains( url ) )
         return;
-    if ( int( m_imagePaths.size() ) + m_downloadQueue.size() >= kMaxImages )
+    if ( int( m_imagePaths.size() ) + m_downloadQueue.size() >= MaxImages )
         return;
     m_seenUrls << url;
     m_downloadQueue << url;
     startNextDownloads();
 }
 
-/** @brief Starts additional downloads from m_downloadQueue until kParallelDownloads are in flight; each completion
+/** @brief Starts additional downloads from m_downloadQueue until ParallelDownloads are in flight; each completion
  * decodes/validates (min width 200px), writes the JPEG to the artist cache dir, and recurses to keep the pipeline full.
  */
 void TrackMedia::startNextDownloads()
 {
     const QString key = m_key;
-    while ( m_activeDownloads < kParallelDownloads && !m_downloadQueue.isEmpty() )
+    while ( m_activeDownloads < ParallelDownloads && !m_downloadQueue.isEmpty() )
     {
         QString url = m_downloadQueue.takeFirst();
         m_activeDownloads++;
@@ -809,24 +809,24 @@ void TrackMedia::fetchDeezer()
         // Der ERSTE Suchtreffer ist oft ein Namensvetter ohne Foto
         // (Platzhalter tragen die MD5 des leeren Strings).  Also: unter den
         // Kandidaten den mit echtem Foto und den meisten Fans nehmen.
-        static const char *kEmptyMd5 = "d41d8cd98f00b204e9800998ecf8427e";
+        static const char *EmptyMd5 = "d41d8cd98f00b204e9800998ecf8427e";
         QJsonObject        artist;
-        double             bestFans = -1.0;
+        double             best_fans = -1.0;
         for ( const auto &v : data )
         {
             QJsonObject o = v.toObject();
-            bool        echtesFoto = !o.value( "picture_xl" ).toString().contains( kEmptyMd5 );
+            bool        echtes_foto = !o.value( "picture_xl" ).toString().contains( EmptyMd5 );
             double      fans = o.value( "nb_fan" ).toDouble()
-                               + ( echtesFoto ? 1e7 : 0.0 );
-            if ( fans > bestFans )
+                               + ( echtes_foto ? 1e7 : 0.0 );
+            if ( fans > best_fans )
             {
-                bestFans = fans;
+                best_fans = fans;
                 artist = o;
             }
         }
         QString pic = artist.value( "picture_xl" ).toString();
         qint64  id = qint64( artist.value( "id" ).toDouble() );
-        if ( !pic.contains( kEmptyMd5 ) )
+        if ( !pic.contains( EmptyMd5 ) )
             enqueueImageUrl( pic );
         if ( id <= 0 )
             return;
@@ -954,7 +954,7 @@ void TrackMedia::videoFromCacheOrNet( double durationSec )
         QJsonObject o = QJsonDocument::fromJson( neg.readAll() ).object();
         qint64      age = QDateTime::currentSecsSinceEpoch()
                           - qint64( o.value( "ts" ).toDouble() );
-        if ( age < kVideoNegCacheTtlSec )
+        if ( age < VideoNegCacheTtlSec )
             return; // bekannt kein Treffer, TTL laeuft noch
     }
 
@@ -978,7 +978,7 @@ void TrackMedia::startVideoSearch()
 
     m_ytdlpProc = new QProcess();
     const QString     query = QString( "ytsearch%1:%2 %3 official video" )
-                                  .arg( kVideoSearchCount )
+                                  .arg( VideoSearchCount )
                                   .arg( m_artist, m_title );
     const QStringList args = {
         query, "--skip-download", "--no-warnings",
@@ -1004,7 +1004,7 @@ void TrackMedia::startVideoSearch()
             return; // track has since moved on; a later replay searches again
 
         VideoCandidate best;
-        double         bestScore = 0.0;
+        double         best_score = 0.0;
         bool           found = false;
         for ( const QString &line : out.split( '\n', Qt::SkipEmptyParts ) )
         {
@@ -1017,10 +1017,10 @@ void TrackMedia::startVideoSearch()
             c.channel = f[2];
             c.duration = f[3].toDouble();
             const double s = scoreCandidate( c, artist, target );
-            if ( s > 0.0 && ( !found || s > bestScore ) )
+            if ( s > 0.0 && ( !found || s > best_score ) )
             {
                 best = c;
-                bestScore = s;
+                best_score = s;
                 found = true;
             }
         }
@@ -1050,9 +1050,9 @@ void TrackMedia::startVideoSearch()
     // Reject anything whose length doesn't plausibly match the actual track
     // -- a full album, a looped instrumental, or an unrelated video with the
     // same words in its title all tend to run far longer or shorter.
-    const double durDiff = std::fabs( c.duration - targetDurationSec );
-    const double durTolerance = std::max( 20.0, targetDurationSec * 0.15 );
-    if ( c.duration <= 0.0 || durDiff > durTolerance )
+    const double dur_diff = std::fabs( c.duration - targetDurationSec );
+    const double dur_tolerance = std::max( 20.0, targetDurationSec * 0.15 );
+    if ( c.duration <= 0.0 || dur_diff > dur_tolerance )
         return -1.0;
 
     const QString title = c.title.toLower();
@@ -1072,14 +1072,14 @@ void TrackMedia::startVideoSearch()
     // "Looks like the wrong KIND of video" signals -- lyric videos, audio
     // uploads, covers, live performances, remixes: never what "the official
     // music video" means, even if the title also happens to say "official".
-    static const char *kBadSignals[] = {
+    static const char *BadSignals[] = {
         "lyric", "audio only", "cover", "reaction", "live", "remix",
         "8d audio", "slowed", "sped up", "nightcore" };
-    for ( const char *bad : kBadSignals )
+    for ( const char *bad : BadSignals )
         if ( title.contains( bad ) )
             score -= 3.0;
 
-    score -= durDiff * 0.05; // tie-breaker: prefer the closer duration match
+    score -= dur_diff * 0.05; // tie-breaker: prefer the closer duration match
     return score;
 }
 
@@ -1087,9 +1087,9 @@ void TrackMedia::startVideoDownload( const QString &videoId )
 {
     const QString dir = videoCacheDir();
     QDir().mkpath( dir );
-    const QString tmpPath = dir + "\\video.tmp.mp4";
-    const QString finalPath = dir + "\\video.mp4";
-    QFile::remove( tmpPath ); // a stale leftover from a crashed prior attempt
+    const QString tmp_path = dir + "\\video.tmp.mp4";
+    const QString final_path = dir + "\\video.mp4";
+    QFile::remove( tmp_path ); // a stale leftover from a crashed prior attempt
 
     m_ytdlpProc = new QProcess();
     const QStringList args = {
@@ -1097,11 +1097,11 @@ void TrackMedia::startVideoDownload( const QString &videoId )
         "-f", "bestvideo[height<=720]+bestaudio/best[height<=720]",
         "--merge-output-format", "mp4",
         "--no-warnings",
-        "-o", tmpPath };
+        "-o", tmp_path };
     const QString key = m_key;
 
     QObject::connect( m_ytdlpProc, &QProcess::finished, m_ytdlpProc,
-                      [this, key, tmpPath, finalPath]( int exitCode, QProcess::ExitStatus status )
+                      [this, key, tmp_path, final_path]( int exitCode, QProcess::ExitStatus status )
     {
         if ( !m_ytdlpProc )
             return;
@@ -1110,14 +1110,14 @@ void TrackMedia::startVideoDownload( const QString &videoId )
         proc->deleteLater();
 
         const bool ok = ( status == QProcess::NormalExit && exitCode == 0
-                          && QFile::exists( tmpPath ) );
+                          && QFile::exists( tmp_path ) );
         if ( ok )
         {
-            QFile::remove( finalPath ); // defensive; single-flight makes a real race unlikely
-            QFile::rename( tmpPath, finalPath );
+            QFile::remove( final_path ); // defensive; single-flight makes a real race unlikely
+            QFile::rename( tmp_path, final_path );
             if ( key == m_key )
             {
-                m_videoPath = QFileInfo( finalPath ).absoluteFilePath();
+                m_videoPath = QFileInfo( final_path ).absoluteFilePath();
                 m_videoRevision++;
             }
             fprintf( stderr, "[Video] Musikvideo gespeichert fuer \"%s - %s\"\n",
@@ -1125,7 +1125,7 @@ void TrackMedia::startVideoDownload( const QString &videoId )
         }
         else
         {
-            QFile::remove( tmpPath );
+            QFile::remove( tmp_path );
             // KEIN Negativ-Cache hier: der Download ist gescheitert (Netz,
             // Format, geo-blockiert, ...), nicht "kein Video vorhanden" --
             // beim naechsten Mal (Song wiederholt sich) wird es erneut

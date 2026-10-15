@@ -945,7 +945,7 @@ The companion is `TestAlle`, the review bench that
 
 Three of its properties are **not** in the file. `Configuration.cpp` switches
 the scheduler into review mode for any preset whose name starts with `Test`,
-and review mode is what supplies the fixed span (`kReviewSoloSecs`, 25 s --
+and review mode is what supplies the fixed span (`ReviewSoloSecs`, 25 s --
 a full phrase at ~120 BPM, so a scene's slow arcs complete at least once;
 the original 8 s only ever showed a scene's opening moment), the short cut,
 and the walk
@@ -2879,7 +2879,7 @@ while its 10-second baselines are still climbing (0.67 in an intro groove,
 formula uses `progress`) and `pitch` (`audioPitch`/`audioMelody`/
 `audioDeltaPitch`) from the source — six staged scenes, seven pitch-driven —
 and the screening report tags flagged scenes with them.
-`Tools/check_enum_tables.py` (CI) keeps `AudioLoc`/`kAudioLocNames` and
+`Tools/check_enum_tables.py` (CI) keeps `AudioLocE`/`kAudioLocNames` and
 `ExprVars`/`kVarNames` the same length; both were extended by hand twice today,
 and a mismatch there is silent.
 
@@ -3900,7 +3900,7 @@ camera lowered and pitched down, with the plate widened, because a plate seen
 in perspective is a trapezoid and a frame is a rectangle: the far edge has to
 be wider than the frustum at that depth or the top corners stay black.
 
-The vertical field of view is 55 degrees (`kSceneTanHalfFovY` = 0.52), which
+The vertical field of view is 55 degrees (`SceneTanHalfFovY` = 0.52), which
 is what these distances were computed against.
 
 ### Two horizons

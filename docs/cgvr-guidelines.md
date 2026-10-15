@@ -35,6 +35,38 @@ readable, robust or maintainable; every such case is listed below with its reaso
 | Whole code base formatted | The `#if 0` block in `Source/Uniform.cpp` (the original Shader Maker `CUniform`, kept as reference) is untouched | clang-format does not format disabled code |
 | Generated files follow the guidelines | `Tools/scenegen/src/*.glsl` (the generator's sources) keep their own layout | `gen.py` and `make_chainpass.py` cut and patch that text with patterns written for it; their output is formatted when it is written |
 
+## Names (C++)
+
+`.clang-tidy` holds the rules (readability-identifier-naming); `python Tools/cgvr_rename.py --plan` lists what
+breaks them, `--apply` renames. clang-tidy finds every declaration and reference semantically; the new names are
+formed after the guidelines' examples, not clang-tidy's suggestions:
+
+| Kind | Rule | Example |
+|---|---|---|
+| Local variable | lower case, words joined by `_` | `applyBench` → `apply_bench`, `scenes3D` → `scenes_3d` |
+| Constant (global, static, class, `constexpr`, local named constant) | CamelCase like `MaxNum`, the old `k` dropped | `kWaveRing` → `WaveRing`, `static const bool dbg` → `Dbg` |
+| Instance variable | `m_` + camelCase | `vertices` → `m_vertices`, `m_sh_prog_id` → `m_shProgId` |
+| Class variable | `M_` + CamelCase | `s_frozen` → `M_Frozen` |
+| Enum type / member | suffix `E` / `ALL_CAPS` | `CueSection::Drop` → `CueSectionE::DROP` |
+| typedef, type alias, template type parameter | suffix `T` | `Clock` → `ClockT` |
+| Method, function | lowerCamelCase | `L1Norm` → `l1Norm`, `Strings::T` → `Strings::uiText` |
+
+A rename is refused when its new name already occurs where it could clash; those few got names by hand
+(`Tools/cgvr_rename.py`, `MANUAL`). References that clang-tidy cannot see -- an `#if` branch not compiled on Windows,
+a macro -- are searched in each variable's block; the one found (`Utils.cpp`, the non-Windows timer) was renamed by
+hand.
+
+### Deviations
+
+| Rule | Here | Why |
+|---|---|---|
+| Parameters, global and file-static variables, fields of plain data structs, namespaces | Not renamed | The guidelines give no rule for them |
+| Typedefs end in `T` | `GLchar`, `GLsizeiptr`, `GLintptr`, `GLDEBUGPROCKC` (`glcore.h`) stay | They are the OpenGL API's own names |
+| Classes are CamelCase | `Ui_MainWindow` stays | uic generates that name |
+| Local variables are lower case | `W`, `H`, `N`, `NB` stay where they are `const` | They are named constants (`const int W = 64`), and constants are written like `MaxNum` |
+| Global C functions carry a module prefix | Not applied | C++ here: namespaces (`Strings::`, `Platform::`) and class scope do that job |
+| — | `FxEffectKaleidoscope`, `FxEffectMulti`, `TextureEffect`, `TextureEffectTunnel`, `TextureEffectTunnelReverse` and the `#if 0` block in `Uniform.cpp` keep their old names | No build compiles them, so a rename could not be checked |
+
 ## Known state outside the guidelines
 
 - 223 of the 264 scenes that `gen.py` builds from `Tools/scenegen/src` differ from what `gen.py` produces today: the

@@ -42,7 +42,7 @@ struct AudioFeatures
 
     // ---- Fine-grained spectrum (for the analyzer effects) ----
     /** @brief Number of log-spaced bands in #spectrum. */
-    static const int kSpectrumBands = 32;
+    static const int SpectrumBands = 32;
     /**
      * @brief 32 log-spaced magnitude bands (~40 Hz .. 16 kHz) for the analyzer effects.
      *
@@ -50,11 +50,11 @@ struct AudioFeatures
      * many-bar spectrum analyzer instead of only the 6 coarse bands above.
      * Uploaded as `audioSpectrum[32]`.
      */
-    float spectrum[kSpectrumBands] = {};
+    float spectrum[SpectrumBands] = {};
 
     // ---- Time-domain waveform (for oscilloscope-style effects) ----
     /** @brief Number of points in #wave. */
-    static const int kWavePoints = 64;
+    static const int WavePoints = 64;
     /**
      * @brief Time-domain waveform for oscilloscope-style effects.
      *
@@ -63,7 +63,7 @@ struct AudioFeatures
      * reference so quiet passages still draw a visible wave.  Uploaded as
      * `audioWave[64]` — the missing MilkDrop ingredient.
      */
-    float wave[kWavePoints] = {};
+    float wave[WavePoints] = {};
 
     /**
      * @brief Relative band levels (MilkDrop bass/bass_att idiom).
@@ -527,13 +527,13 @@ struct AudioFeatures
 
     // ---- Melody history (host-filled ring, for MelodyScript) ----
     /** @brief Number of entries in #melody. */
-    static const int kMelodyLen = 96;
+    static const int MelodyLen = 96;
     /**
      * @brief dominantPitch sampled every ~80 ms; 96 entries ≈ 7.7 s of melody (host-filled ring).
      *
      * 0 = no clear pitch. Uploaded as audioMelody[96].
      */
-    float melody[kMelodyLen] = {};
+    float melody[MelodyLen] = {};
     float melodyHead = 0.f;  ///< #melody ring head as a 0..1 position (newest just behind it); uploaded as
                              ///< audioMelodyHead.
     float melodyPhase = 0.f; ///< 0..1 progress toward the next #melody sample (80 ms), so a scrolling trace can move

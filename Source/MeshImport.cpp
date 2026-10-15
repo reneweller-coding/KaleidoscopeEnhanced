@@ -104,9 +104,9 @@ void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
     // a halved normal map loses the fine relief it exists to carry. Still
     // capped, because three layers at 4096 would be 200 MB of texture per
     // scene, but capped higher than before.
-    const int maxSize = ( nrm.isNull() ? 2048 : 3072 );
-    w = std::min( w, maxSize );
-    h = std::min( h, maxSize );
+    const int max_size = ( nrm.isNull() ? 2048 : 3072 );
+    w = std::min( w, max_size );
+    h = std::min( h, max_size );
 
     auto prep = [&]( const QImage &img, QColor fallback ) -> QImage
     {
@@ -119,7 +119,7 @@ void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
         return img.convertToFormat( QImage::Format_RGBA8888 ).mirrored( false, true ).scaled( w, h );
     };
 
-    const QImage baseImg = prep( base, QColor( 255, 255, 255, 255 ) );
+    const QImage base_img = prep( base, QColor( 255, 255, 255, 255 ) );
     out.materialW = w;
     out.materialH = h;
     // Layer 0 base color, 1 metallic-roughness, 2 tangent-space normal. A
@@ -128,16 +128,16 @@ void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
     // hunting for what is present.
     out.materialLayers = nrm.isNull() ? ( mr.isNull() ? 1 : 2 ) : 3;
     out.materialRGBA.resize( size_t( out.materialLayers ) * size_t( w ) * size_t( h ) * 4 );
-    memcpy( out.materialRGBA.data(), baseImg.constBits(), size_t( w ) * size_t( h ) * 4 );
+    memcpy( out.materialRGBA.data(), base_img.constBits(), size_t( w ) * size_t( h ) * 4 );
     if ( out.materialLayers >= 2 )
     {
         // R unused (no AO map from either source format), G = roughness,
         // B = metallic -- the same channel order glTF's own
         // metallicRoughnessTexture uses, so one shader convention covers both
         // loaders' output.
-        const QImage mrImg = prep( mr, QColor( 255, 255, 0, 255 ) );
+        const QImage mr_img = prep( mr, QColor( 255, 255, 0, 255 ) );
         memcpy( out.materialRGBA.data() + size_t( w ) * size_t( h ) * 4,
-                mrImg.constBits(), size_t( w ) * size_t( h ) * 4 );
+                mr_img.constBits(), size_t( w ) * size_t( h ) * 4 );
     }
     if ( out.materialLayers == 3 )
     {
@@ -146,10 +146,10 @@ void packMaterialLayers( QImage base, QImage mr, QImage nrm, MeshAsset &out )
         // direction its green channel encodes, so G has to be inverted to
         // keep the map pointing the way it did before the flip. Getting this
         // wrong lights every dent as a bump.
-        QImage         nImg = prep( nrm, QColor( 128, 128, 255, 255 ) );
+        QImage         n_img = prep( nrm, QColor( 128, 128, 255, 255 ) );
         const size_t   plane = size_t( w ) * size_t( h ) * 4;
         unsigned char *dst = out.materialRGBA.data() + 2 * plane;
-        memcpy( dst, nImg.constBits(), plane );
+        memcpy( dst, n_img.constBits(), plane );
         for ( size_t i = 1; i < plane; i += 4 )
             dst[i] = (unsigned char)( 255 - dst[i] );
     }
@@ -174,13 +174,13 @@ QImage packObjRoughnessMetallic( const QImage &roughness, const QImage &metallic
     for ( int y = 0; y < h; ++y )
     {
         uchar       *row = out.scanLine( y );
-        const uchar *rRow = r.isNull() ? nullptr : r.constScanLine( y );
-        const uchar *mRow = m.isNull() ? nullptr : m.constScanLine( y );
+        const uchar *r_row = r.isNull() ? nullptr : r.constScanLine( y );
+        const uchar *m_row = m.isNull() ? nullptr : m.constScanLine( y );
         for ( int x = 0; x < w; ++x )
         {
             row[x * 4 + 0] = 255;
-            row[x * 4 + 1] = rRow ? rRow[x] : 255; // default: fully rough
-            row[x * 4 + 2] = mRow ? mRow[x] : 0;   // default: non-metal
+            row[x * 4 + 1] = r_row ? r_row[x] : 255; // default: fully rough
+            row[x * 4 + 2] = m_row ? m_row[x] : 0;   // default: non-metal
             row[x * 4 + 3] = 255;
         }
     }
@@ -200,8 +200,8 @@ bool loadGlb( const std::string &path, MeshAsset &out )
         return false;
     }
 
-    QImage baseColorImg, metalRoughImg, normalImg;
-    bool   haveMaterial = false;
+    QImage base_color_img, metal_rough_img, normal_img;
+    bool   have_material = false;
 
     for ( cgltf_size mi = 0; mi < data->meshes_count; ++mi )
     {
@@ -212,33 +212,33 @@ bool loadGlb( const std::string &path, MeshAsset &out )
             if ( prim.type != cgltf_primitive_type_triangles )
                 continue;
 
-            const cgltf_accessor *posAcc = nullptr, *normAcc = nullptr, *uvAcc = nullptr;
+            const cgltf_accessor *pos_acc = nullptr, *norm_acc = nullptr, *uv_acc = nullptr;
             for ( cgltf_size ai = 0; ai < prim.attributes_count; ++ai )
             {
                 const cgltf_attribute &a = prim.attributes[ai];
-                if ( a.type == cgltf_attribute_type_position && !posAcc )
-                    posAcc = a.data;
-                else if ( a.type == cgltf_attribute_type_normal && !normAcc )
-                    normAcc = a.data;
-                else if ( a.type == cgltf_attribute_type_texcoord && !uvAcc )
-                    uvAcc = a.data;
+                if ( a.type == cgltf_attribute_type_position && !pos_acc )
+                    pos_acc = a.data;
+                else if ( a.type == cgltf_attribute_type_normal && !norm_acc )
+                    norm_acc = a.data;
+                else if ( a.type == cgltf_attribute_type_texcoord && !uv_acc )
+                    uv_acc = a.data;
             }
-            if ( !posAcc )
+            if ( !pos_acc )
                 continue;
 
             // glTF's V runs top-down (v=0 at the image top); packMaterialLayers()
             // flips every texture vertically to match this app's bottom-up GL
             // upload convention, so V must flip too, or the two flips would
             // cancel out and the texture would land mirrored on the mesh.
-            auto pushVertex = [&]( cgltf_size vi )
+            auto push_vertex = [&]( cgltf_size vi )
             {
                 float p[3] = { 0, 0, 0 }, n[3] = { 0, 0, 1 }, uv[2] = { 0, 0 };
-                if ( posAcc && vi < posAcc->count )
-                    cgltf_accessor_read_float( posAcc, vi, p, 3 );
-                if ( normAcc && vi < normAcc->count )
-                    cgltf_accessor_read_float( normAcc, vi, n, 3 );
-                if ( uvAcc && vi < uvAcc->count )
-                    cgltf_accessor_read_float( uvAcc, vi, uv, 2 );
+                if ( pos_acc && vi < pos_acc->count )
+                    cgltf_accessor_read_float( pos_acc, vi, p, 3 );
+                if ( norm_acc && vi < norm_acc->count )
+                    cgltf_accessor_read_float( norm_acc, vi, n, 3 );
+                if ( uv_acc && vi < uv_acc->count )
+                    cgltf_accessor_read_float( uv_acc, vi, uv, 2 );
                 out.vertices.push_back( p[0] );
                 out.vertices.push_back( p[1] );
                 out.vertices.push_back( p[2] );
@@ -251,32 +251,32 @@ bool loadGlb( const std::string &path, MeshAsset &out )
 
             if ( prim.indices )
             {
-                const cgltf_size triCount = prim.indices->count / 3;
-                for ( cgltf_size t = 0; t < triCount; ++t )
+                const cgltf_size tri_count = prim.indices->count / 3;
+                for ( cgltf_size t = 0; t < tri_count; ++t )
                     for ( int k = 0; k < 3; ++k )
                     {
                         float idxf = 0.f;
                         cgltf_accessor_read_float( prim.indices, t * 3 + k, &idxf, 1 );
-                        pushVertex( cgltf_size( idxf + 0.5f ) );
+                        push_vertex( cgltf_size( idxf + 0.5f ) );
                     }
             }
             else
             {
-                const cgltf_size triCount = posAcc->count / 3;
-                for ( cgltf_size t = 0; t < triCount; ++t )
+                const cgltf_size tri_count = pos_acc->count / 3;
+                for ( cgltf_size t = 0; t < tri_count; ++t )
                     for ( int k = 0; k < 3; ++k )
-                        pushVertex( t * 3 + k );
+                        push_vertex( t * 3 + k );
             }
 
             // One material set per object (MVP scope, see MeshImport.h): the
             // first primitive that has one wins.
-            if ( !haveMaterial && prim.material && prim.material->has_pbr_metallic_roughness )
+            if ( !have_material && prim.material && prim.material->has_pbr_metallic_roughness )
             {
                 const cgltf_pbr_metallic_roughness &pbr = prim.material->pbr_metallic_roughness;
                 if ( pbr.base_color_texture.texture )
                 {
                     const cgltf_texture *t = pbr.base_color_texture.texture;
-                    baseColorImg = decodeGltfImage( t->has_webp ? t->webp_image : t->image, path );
+                    base_color_img = decodeGltfImage( t->has_webp ? t->webp_image : t->image, path );
                 }
                 // Only some assets ship one: the generator discards a normal map
                 // it judges unusable, and then the glb simply has no
@@ -284,14 +284,14 @@ bool loadGlb( const std::string &path, MeshAsset &out )
                 if ( prim.material->normal_texture.texture )
                 {
                     const cgltf_texture *nt = prim.material->normal_texture.texture;
-                    normalImg = decodeGltfImage( nt->has_webp ? nt->webp_image : nt->image, path );
+                    normal_img = decodeGltfImage( nt->has_webp ? nt->webp_image : nt->image, path );
                 }
                 if ( pbr.metallic_roughness_texture.texture )
                 {
                     const cgltf_texture *t = pbr.metallic_roughness_texture.texture;
-                    metalRoughImg = decodeGltfImage( t->has_webp ? t->webp_image : t->image, path );
+                    metal_rough_img = decodeGltfImage( t->has_webp ? t->webp_image : t->image, path );
                 }
-                haveMaterial = true;
+                have_material = true;
             }
         }
     }
@@ -299,8 +299,8 @@ bool loadGlb( const std::string &path, MeshAsset &out )
     cgltf_free( data );
     if ( out.vertices.empty() )
         return false;
-    if ( !baseColorImg.isNull() || !metalRoughImg.isNull() || !normalImg.isNull() )
-        packMaterialLayers( baseColorImg, metalRoughImg, normalImg, out );
+    if ( !base_color_img.isNull() || !metal_rough_img.isNull() || !normal_img.isNull() )
+        packMaterialLayers( base_color_img, metal_rough_img, normal_img, out );
 
     // KALEIDO_MESH_DUMP=1: dump the packed material layers to PNGs next to
     // the exe, so a wrong-looking mesh material can be diagnosed by eye
@@ -317,7 +317,7 @@ bool loadGlb( const std::string &path, MeshAsset &out )
         }
         fprintf( stderr, "KALEIDO_MESH_DUMP: %dx%d, %d layer(s), baseColorImg.isNull=%d metalRoughImg.isNull=%d\n",
                  out.materialW, out.materialH, out.materialLayers,
-                 (int)baseColorImg.isNull(), (int)metalRoughImg.isNull() );
+                 (int)base_color_img.isNull(), (int)metal_rough_img.isNull() );
     }
     return true;
 }
@@ -337,7 +337,7 @@ bool loadObj( const std::string &path, MeshAsset &out )
     // OBJ's V already runs bottom-up (v=0 at the image bottom) -- the SAME
     // direction packMaterialLayers()'s vertical flip produces, so unlike
     // glTF's loader above, this one does NOT flip V.
-    auto pushVertex = [&]( const tinyobj::index_t &idx )
+    auto push_vertex = [&]( const tinyobj::index_t &idx )
     {
         float px = 0, py = 0, pz = 0, nx = 0, ny = 0, nz = 1, u = 0, v = 0;
         if ( idx.vertex_index >= 0 )
@@ -369,16 +369,16 @@ bool loadObj( const std::string &path, MeshAsset &out )
 
     for ( const tinyobj::shape_t &shape : shapes )
         for ( const tinyobj::index_t &idx : shape.mesh.indices )
-            pushVertex( idx );
+            push_vertex( idx );
 
     if ( out.vertices.empty() )
         return false;
 
     if ( !materials.empty() )
     {
-        const QFileInfo objInfo( QString::fromStdString( path ) );
-        const QDir      dir = objInfo.absoluteDir();
-        auto            loadTex = [&]( const std::string &name ) -> QImage
+        const QFileInfo obj_info( QString::fromStdString( path ) );
+        const QDir      dir = obj_info.absoluteDir();
+        auto            load_tex = [&]( const std::string &name ) -> QImage
         {
             if ( name.empty() )
                 return QImage();
@@ -387,9 +387,9 @@ bool loadObj( const std::string &path, MeshAsset &out )
         // Same "first material with anything usable wins" MVP rule as loadGlb().
         for ( const tinyobj::material_t &mat : materials )
         {
-            QImage base = loadTex( mat.diffuse_texname );
-            QImage rough = loadTex( mat.roughness_texname );
-            QImage metal = loadTex( mat.metallic_texname );
+            QImage base = load_tex( mat.diffuse_texname );
+            QImage rough = load_tex( mat.roughness_texname );
+            QImage metal = load_tex( mat.metallic_texname );
             if ( base.isNull() && rough.isNull() && metal.isNull() )
                 continue;
             // OBJ has no normal-map convention this loader commits to, so the

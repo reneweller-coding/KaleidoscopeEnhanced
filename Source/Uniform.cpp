@@ -27,7 +27,7 @@ interpolator ramp timing.
  * @brief Stores the name and type; all data fields are left uninitialised until
  * setMinMax()/setInterpolator()/setProbability() and resetParameters() are called.
  */
-Uniform::Uniform( const std::string &name, baseType_e type )
+Uniform::Uniform( const std::string &name, BaseTypeE type )
 {
     m_name = name;
     m_type = type;

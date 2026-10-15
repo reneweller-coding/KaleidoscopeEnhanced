@@ -63,7 +63,7 @@ interpolation ("interpolator") state.
  * Since uniforms can be vectors and matrices, this defines the
  * type if the scalars stored in those vectors and matrices.
  */
-enum baseType_e
+enum BaseTypeE
 {
     BASE_TYPE_BAD = 0,           ///< Invalid/unset type; not otherwise used by Uniform's own logic.
     BASE_TYPE_BOOL, ///< Boolean uniform: rolled true/false per resetParameters() from a probability stored in
@@ -104,7 +104,7 @@ public:
      * @param name GLSL uniform variable name; looked up in the shader program by initUniform().
      * @param type Which scalar kind (and, for BASE_TYPE_INTERPOLATOR_FLOAT, which rolling behaviour) this uniform has.
      */
-    Uniform( const std::string &name, baseType_e type );
+    Uniform( const std::string &name, BaseTypeE type );
     /** @brief Virtual no-op destructor (no owned resources to release). */
     virtual ~Uniform( void );
 
@@ -230,44 +230,44 @@ private:
      * @internal
      *   - Must match for each basic type!
      */
-    typedef union dataUnit_u
+    typedef union DataUnitU
     {
         // GLfloat	_float	[ 16 ]; ///< up to mat4, in column major order!
         // GLint	_int	[ 4 ];  ///< up to ivec4 and bvec4
         float vf; ///< Value interpreted as a float (BASE_TYPE_FLOAT / BASE_TYPE_INTERPOLATOR_FLOAT, and re-used to
                   ///< stash the bool "true" probability / int threshold in some fields).
         int vi;   ///< Value interpreted as an int (BASE_TYPE_INT / BASE_TYPE_BOOL / BASE_TYPE_UNSIGNED_INT).
-    } dataUnit_t;
+    } DataUnitT;
 
 
-    std::string m_name;   ///< GLSL uniform variable name.
-    int m_type; ///< A baseType_e value (declared as plain int, historically "GL_xxx type identifier"); selects which
-                ///< branch of every method's type switch runs.
+    std::string m_name;  ///< GLSL uniform variable name.
+    int m_type;     ///< A BaseTypeE value (declared as plain int, historically "GL_xxx type identifier"); selects which
+                    ///< branch of every method's type switch runs.
     int m_location; ///< Cached GL uniform location from initUniform(); -1 (or uninitialised) means "not yet resolved /
                     ///< not found".
-    dataUnit_t m_data;    ///< The current, uploadable value: the rolled bool/int/float, or the live-ramping float for
-                          ///< BASE_TYPE_INTERPOLATOR_FLOAT.
-    dataUnit_t m_dataMin; ///< Lower bound of the randomisation range (bool: reused as the "true" probability
-                          ///< threshold); for BASE_TYPE_INTERPOLATOR_FLOAT, the currently-rolled ramp start value.
-    dataUnit_t m_dataMax; ///< Upper bound of the randomisation range; for BASE_TYPE_INTERPOLATOR_FLOAT, the
-                          ///< currently-rolled ramp end value.
+    DataUnitT m_data;    ///< The current, uploadable value: the rolled bool/int/float, or the live-ramping float for
+                         ///< BASE_TYPE_INTERPOLATOR_FLOAT.
+    DataUnitT m_dataMin; ///< Lower bound of the randomisation range (bool: reused as the "true" probability
+                         ///< threshold); for BASE_TYPE_INTERPOLATOR_FLOAT, the currently-rolled ramp start value.
+    DataUnitT m_dataMax; ///< Upper bound of the randomisation range; for BASE_TYPE_INTERPOLATOR_FLOAT, the
+                         ///< currently-rolled ramp end value.
 
 
     // Interpolator
-    dataUnit_t m_dataMinMin; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: lower bound from which the ramp-start value
-                             ///< (m_dataMin) is rolled.
-    dataUnit_t m_dataMinMax; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: upper bound from which the ramp-start value
-                             ///< (m_dataMin) is rolled.
+    DataUnitT m_dataMinMin; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: lower bound from which the ramp-start value
+                            ///< (m_dataMin) is rolled.
+    DataUnitT m_dataMinMax; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: upper bound from which the ramp-start value
+                            ///< (m_dataMin) is rolled.
 
-    dataUnit_t m_dataMaxMin; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: lower bound from which the ramp-end value
-                             ///< (m_dataMax) is rolled.
-    dataUnit_t m_dataMaxMax; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: upper bound from which the ramp-end value
-                             ///< (m_dataMax) is rolled.
+    DataUnitT m_dataMaxMin; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: lower bound from which the ramp-end value
+                            ///< (m_dataMax) is rolled.
+    DataUnitT m_dataMaxMax; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: upper bound from which the ramp-end value
+                            ///< (m_dataMax) is rolled.
 
-    dataUnit_t m_delta;     ///< BASE_TYPE_INTERPOLATOR_FLOAT only: per-millisecond increment applied to m_data.vf while
-                            ///< ramping, i.e. (max-min)/totalTime/1000.
-    dataUnit_t m_totalTime; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: ramp duration in seconds, as set by
-                            ///< setInterpolator()/resetParameters(float).
+    DataUnitT m_delta;     ///< BASE_TYPE_INTERPOLATOR_FLOAT only: per-millisecond increment applied to m_data.vf while
+                           ///< ramping, i.e. (max-min)/totalTime/1000.
+    DataUnitT m_totalTime; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: ramp duration in seconds, as set by
+                           ///< setInterpolator()/resetParameters(float).
 
     bool m_increasing; ///< BASE_TYPE_INTERPOLATOR_FLOAT only: whether setUniform() should currently be advancing the
                        ///< ramp (set true once the timer is (re-)armed).

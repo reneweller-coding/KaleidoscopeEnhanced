@@ -107,13 +107,13 @@ void trimCache( const QString &dir, qint64 limitBytes )
     std::vector<Item> bins;
     qint64            total = 0;
     int               removed = 0;
-    const QDateTime   weekAgo = QDateTime::currentDateTime().addDays( -7 );
+    const QDateTime   week_ago = QDateTime::currentDateTime().addDays( -7 );
     for ( QDirIterator it( dir, QDir::Files ); it.hasNext(); )
     {
         const QFileInfo fi( it.next() );
         const QString   ext = fi.suffix(), base = fi.absolutePath() + "/" + fi.completeBaseName();
         if ( ext == "tmp" || ( ext == "frag" && QFileInfo::exists( base + ".bin" ) )
-             || ( ext == "err" && fi.lastModified() < weekAgo ) )
+             || ( ext == "err" && fi.lastModified() < week_ago ) )
         {
             removed += QFile::remove( fi.absoluteFilePath() ) ? 1 : 0;
             continue;
