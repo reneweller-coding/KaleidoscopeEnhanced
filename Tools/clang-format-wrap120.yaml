@@ -1,0 +1,78 @@
+# Second pass of Tools/cgvr_format.py: the repository's .clang-format with a 120-column limit and comment
+# reflow.  It is applied only to the lines that are longer than 120 characters after the first pass.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 120
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4
+IndentCaseLabels: true
+NamespaceIndentation: None
+IndentPPDirectives: None
+BreakBeforeBraces: Allman
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
+LambdaBodyIndentation: OuterScope
+BreakTemplateDeclarations: Yes
+# Continuation lines start with the operator (1713 such breaks in the code against 126 after it).
+BreakBeforeBinaryOperators: NonAssignment
+SpaceBeforeParens: ControlStatements
+SpacesInParens: Custom
+SpacesInParensOptions:
+  InConditionalStatements: true
+  Other: true
+  InCStyleCasts: false
+  InEmptyParentheses: false
+  ExceptDoubleParentheses: false
+SpacesInSquareBrackets: false
+SpacesInAngles: Never
+SpaceAfterCStyleCast: false
+DerivePointerAlignment: false
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+AlignEscapedNewlines: Left
+BreakConstructorInitializers: BeforeColon
+PackConstructorInitializers: Never
+ConstructorInitializerIndentWidth: 4
+SortIncludes: Never
+SortUsingDeclarations: Never
+IncludeBlocks: Preserve
+InsertBraces: false
+RemoveBracesLLVM: false
+RemoveParentheses: Leave
+RemoveSemicolon: false
+QualifierAlignment: Leave
+FixNamespaceComments: false
+BreakStringLiterals: false
+ReflowComments: Always
+# A line that is long because of its trailing comment is shortened by wrapping the comment (continued in the
+# same column), not by breaking the declaration after its '='.
+PenaltyBreakComment: 5
+PenaltyBreakAssignment: 1000
+PenaltyExcessCharacter: 1000000
+MaxEmptyLinesToKeep: 4
+KeepEmptyLines:
+  AtEndOfFile: false
+  AtStartOfBlock: true
+  AtStartOfFile: true
+InsertNewlineAtEOF: true
+LineEnding: DeriveLF

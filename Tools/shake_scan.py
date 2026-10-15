@@ -21,23 +21,60 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FAST = r"audio(Kick|Beat|Onset|Snare|Hat|Bass|SubBass|Level|StereoL|StereoR|Stereo|Drop|BarPhase|BeatPhase|High|Flux|Mid|LowMid|UpperMid|Spectrum|Wave|Centroid|MelodyPitch|HarmChange)\b"
 FRAME_VAR = r"^\s*(vec[234]\s+|float\s+)?(p|uv|q|ro|rd|cam\w*|eye\w*|vp|zoom\w*|scale\w*|radius\w*|rad|r|rr|rot\w*|ang\w*|a|off\w*|cen\w*|shift\w*|sway\w*|roll\w*|yaw\w*|pitch\w*|fov\w*|tilt\w*)\s*(=|\+=|-=|\*=)"
 LIGHT_WORDS = r"\b(col|color|colour|light|glow|bright|lum|alpha|fog|tint|emis|halo|seam|lamp|flash|spark|ring\s*\*=|intensity|expos)\w*"
-COMMENT = re.compile(r"^\s*(//|\*|/\*)")
+# A line continues the statement above if that one ends in an open parenthesis, a comma or an operator, or if
+# it starts with an operator itself (the code breaks before operators: "    * jitter * spread;").
+CONT_END = re.compile(r"(\(|,|\+|-|\*|/|%|&&|\|\||\?|=|<|>|&|\||\^)\s*$")
+CONT_START = re.compile(r"^\s*(\)|\*|/|%|\+|-|&&|\|\||\?|:|==|!=|<=|>=|<|>|&|\||\^|\.)")
+CASE_LABEL = re.compile(r"^\s*(case\b.*|default\s*):\s*$")
 
-def strip_comment(line):
-    i = line.find("//")
-    return line if i < 0 else line[:i]
+
+def strip_comments(text):
+    """Removes // and /* */ comments, keeping every newline so that line numbers stay right."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        if text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+        elif text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            j = n if j < 0 else j + 2
+            out.append("\n" * text.count("\n", i, j))
+            i = j
+        else:
+            out.append(text[i])
+            i += 1
+    return "".join(out)
+
+
+def logical_lines(text):
+    """(first line number, code) per statement-like unit: comment-free lines with their continuations joined.
+
+    Line-based rules then see a statement whole however it is wrapped -- a frame variable and its audio factor
+    on different lines of one statement count the same as on one line.
+    """
+    units = []
+    for n, line in enumerate(strip_comments(text).split("\n"), 1):
+        if not line.strip():
+            continue
+        prev = units[-1][1] if units else ""
+        joins = (units and not line.lstrip().startswith("#") and not prev.lstrip().startswith("#")
+                 and not CASE_LABEL.match(prev)
+                 and (CONT_END.search(prev) or CONT_START.match(line)))
+        if joins:
+            units[-1] = (units[-1][0], prev.rstrip() + " " + line.strip())
+        else:
+            units.append((n, line))
+    return units
+
 
 def scan_shader(path):
     hits = collections.defaultdict(list)
     try:
-        lines = io.open(path, encoding="utf-8", errors="replace").read().split("\n")
+        text = io.open(path, encoding="utf-8", errors="replace").read().replace("\r", "")
     except OSError:
         return hits
     is_vert = path.endswith(".vert") or path.endswith(".comp") or path.endswith(".tese")
-    for n, raw in enumerate(lines, 1):
-        if COMMENT.match(raw):
-            continue
-        line = strip_comment(raw)
+    for n, line in logical_lines(text):
         if "uniform " in line or not line.strip():
             continue
         fast = re.search(FAST, line) is not None

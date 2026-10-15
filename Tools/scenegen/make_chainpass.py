@@ -120,7 +120,18 @@ class _DocFile:
     def write(self, text):
         sys.path.insert(0, os.path.join(ROOT, "Tools"))
         import doc_shaders
-        io.open(self.path, "w", encoding="utf-8", newline="\n").write(doc_shaders.annotate(text))
+        import cgvr_format
+        text = cgvr_format.format_text(doc_shaders.annotate(text), self.path)
+        io.open(self.path, "w", encoding="utf-8", newline="\n").write(text)
+
+
+def lab_source(rel):
+    """The chain lab Scene2D|FX/<name>.frag as gen.py assembles it, before Tools/cgvr_format.py lays it out.
+
+    The text surgery here (IMG_SS_OLD, the fin_main patterns, "void main()", "int orda(int i) {") is written
+    against that generated layout, so the labs are read from the generator and not from the formatted file."""
+    import gen
+    return gen.assemble(os.path.splitext(os.path.basename(rel))[0])[1]
 
 # The chain read in the lab's last pass.  On a coarser grid (chainScale < 1)
 # bilinear between the four nearest coordinates -- unless they straddle a seam
@@ -164,7 +175,7 @@ def write_final(rel, name, bake=0):
     """The lab's own last pass: its main as it is, the chain read from texChain.
     Only what main reaches is kept (the stage machinery is not), and the walk
     uniforms stay referenced: the app finds a lab's stages by their locations."""
-    lab = io.open(os.path.join(ROOT, rel), encoding="utf-8").read()
+    lab = lab_source(rel)
     body = strip_comments(lab)
     body = re.sub(r"#ifdef SPEC_.*?#endif\n", "", body, flags=re.S)
     items = [it for it in top_level_items(body) if not (it[0] == "pp" and it[2].startswith("#version"))]
@@ -303,7 +314,7 @@ def write_3d(base="ChainLab3D"):
     small variant per world through ShaderForge); Start3D -- one projection
     plane's chain input and time offset from the G-buffer; Final_ChainLab3D --
     colour (three chain coordinates), relief, light, rim and fog."""
-    lab = io.open(os.path.join(ROOT, "Scene2D", base + ".frag"), encoding="utf-8").read()
+    lab = lab_source("Scene2D/" + base + ".frag")
     slice_ = base == "ChainSlice3D"
     fieldF, normalF = ("fieldS", "normalS") if slice_ else ("fieldD", "normal3")
     body = strip_comments(lab)
@@ -487,7 +498,7 @@ def write_3d(base="ChainLab3D"):
         "the 3D lab's last pass: colour, relief, light and fog from the G-buffer"))
 
 def main():
-    lab = io.open(os.path.join(ROOT, "Scene2D", "ChainLab2D.frag"), encoding="utf-8").read()
+    lab = lab_source("Scene2D/ChainLab2D.frag")
     src2 = io.open(os.path.join(SG, "src", "ChainLab2D.glsl"), encoding="utf-8").read()
     body = strip_comments(lab)
     body = re.sub(r"#ifdef SPEC_.*?#endif\n", "", body, flags=re.S)   # the specialised copies are not needed

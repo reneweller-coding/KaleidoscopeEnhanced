@@ -1,0 +1,92 @@
+# Layout after the CGVR programming guidelines (cgvr.informatik.uni-bremen.de/progr/guidelines.shtml),
+# used for the C++ sources and the GLSL shaders alike (GLSL is formatted as C++).
+#
+# ColumnLimit 0 keeps every existing line break; Tools/cgvr_format.py wraps only the lines longer than
+# 120 characters, with Tools/clang-format-wrap120.yaml.  Run that script rather than clang-format alone.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+ColumnLimit: 0
+
+# 4 spaces per level, never tabs.
+IndentWidth: 4
+TabWidth: 4
+UseTab: Never
+ContinuationIndentWidth: 4
+AccessModifierOffset: -4
+IndentCaseLabels: true
+NamespaceIndentation: None
+IndentPPDirectives: None
+
+# Braces on lines of their own, vertically aligned; K&R is not allowed.
+BreakBeforeBraces: Allman
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
+AllowShortEnumsOnASingleLine: false
+AllowShortLambdasOnASingleLine: All
+LambdaBodyIndentation: OuterScope
+BreakTemplateDeclarations: Yes
+# Continuation lines start with the operator (1713 such breaks in the code against 126 after it).
+BreakBeforeBinaryOperators: NonAssignment
+
+# if ( a == b ), f( x ): spaces inside parentheses, a space before the parenthesis of a control statement only.
+SpaceBeforeParens: ControlStatements
+SpacesInParens: Custom
+SpacesInParensOptions:
+  InConditionalStatements: true
+  Other: true
+  InCStyleCasts: false
+  InEmptyParentheses: false
+  ExceptDoubleParentheses: false
+SpacesInSquareBrackets: false
+SpacesInAngles: Never
+SpaceAfterCStyleCast: false
+
+# The * and & belong to the variable name.
+DerivePointerAlignment: false
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+
+# Declarations and trailing comments aligned in columns.
+AlignConsecutiveDeclarations:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: false
+  AcrossComments: false
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 0
+AlignEscapedNewlines: Left
+
+# Constructor initialisers one per line, the colon leading (template.cpp).
+BreakConstructorInitializers: BeforeColon
+PackConstructorInitializers: Never
+ConstructorInitializerIndentWidth: 4
+
+# Formatting only: nothing that would change a token.
+SortIncludes: Never
+SortUsingDeclarations: Never
+IncludeBlocks: Preserve
+InsertBraces: false
+RemoveBracesLLVM: false
+RemoveParentheses: Leave
+RemoveSemicolon: false
+QualifierAlignment: Leave
+FixNamespaceComments: false
+BreakStringLiterals: false
+ReflowComments: IndentOnly
+
+# Keep the blank lines that separate sections (template.h uses up to four).
+MaxEmptyLinesToKeep: 4
+KeepEmptyLines:
+  AtEndOfFile: false
+  AtStartOfBlock: true
+  AtStartOfFile: true
+InsertNewlineAtEOF: true
+LineEnding: DeriveLF

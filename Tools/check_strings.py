@@ -35,7 +35,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HDR = os.path.join(ROOT, "Source", "Strings.h")
 SRC = os.path.join(ROOT, "Source", "Strings.cpp")
 
-ENTRY = re.compile(r"^\t/\* (S_[A-Z0-9_]+) \*/")
+ENTRY = re.compile(r"^\s*/\* (S_[A-Z0-9_]+) \*/")   # any indentation: the sources are indented with spaces
 TABLE = re.compile(r"^const char \*k([A-Z]+)\[S_COUNT\] = \{")
 
 

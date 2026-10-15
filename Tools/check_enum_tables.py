@@ -32,17 +32,26 @@ def strip_comments(src):
     return re.sub(r"//[^\n]*", "", src)
 
 
+def find_head(src, head):
+    """Ende des Kopfes `head` in src; Leerraum im Kopf passt auf beliebigen Leerraum (auch Zeilenumbruch vor `{`)."""
+    pattern = r"\s*".join(re.escape(part) for part in head.split())
+    m = re.search(pattern, src)
+    if not m:
+        raise ValueError("nicht gefunden: %s" % head)
+    return m.end()
+
+
 def enum_ids(src, head, prefix, count_name):
     """Bezeichner eines Enums in Deklarationsreihenfolge, ohne den Zaehler."""
-    i = src.index(head)
-    body = src[i + len(head):src.index("}", i)]
+    i = find_head(src, head)
+    body = src[i:src.index("}", i)]
     ids = re.findall(r"\b(%s[A-Z0-9_]*)\b" % prefix, strip_comments(body))
     return [x for x in ids if x != count_name]
 
 
 def table_strings(src, head):
-    i = src.index(head)
-    body = src[i + len(head):src.index("};", i)]
+    i = find_head(src, head)
+    body = src[i:src.index("};", i)]
     return re.findall(r'"([^"]*)"', strip_comments(body))
 
 
