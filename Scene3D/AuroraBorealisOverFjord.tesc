@@ -5,7 +5,7 @@
  * this scene's description.
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(vertices = 4) out;
+layout( vertices = 4 ) out;
 
 in vec3 vControlPos[];
 in vec2 vControlUV[];
@@ -13,14 +13,16 @@ in vec2 vControlUV[];
 out vec3 tcPos[];
 out vec2 tcUV[];
 
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     tcPos[gl_InvocationID] = vControlPos[gl_InvocationID];
     tcUV[gl_InvocationID] = vControlUV[gl_InvocationID];
 
-    if (gl_InvocationID == 0) {
+    if ( gl_InvocationID == 0 )
+    {
         float tessLevel = 16.0 + 8.0 * audioSwell;
         gl_TessLevelOuter[0] = tessLevel;
         gl_TessLevelOuter[1] = tessLevel;

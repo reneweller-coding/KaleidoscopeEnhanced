@@ -1,15 +1,15 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Magnetosphere.frag — a dark planet inside self-luminous plasma.
 // The field lines are emissive, not lit: a plasma tube glows on its own and
 // shading it like a solid would flatten it into wire.  The planet is the
 // opposite — nearly black, lit only by its star and by the field around it.
 
-in vec3  vObj;   ///< Object-space position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vObj;    ///< Object-space position (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vEnergy;
-in float vKind;       ///< 2 = planet, else the field line's shell fraction 0..1
+in float vKind; ///< 2 = planet, else the field line's shell fraction 0..1
 
 /**
  * @file Magnetosphere.frag
@@ -27,27 +27,29 @@ in float vKind;       ///< 2 = planet, else the field line's shell fraction 0..1
  * plasma brightness.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float shellsP;
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     glowP; ///< Glow / afterglow knob, 0..1.
+uniform float     shellsP;
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -55,49 +57,49 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
+    return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 n = normalize(vNormal);
-    vec3 V = normalize(vView);
-    vec3 L = normalize(vec3(0.72, 0.34, -0.60));
+    vec3 n = normalize( vNormal );
+    vec3 V = normalize( vView );
+    vec3 L = normalize( vec3( 0.72, 0.34, -0.60 ) );
 
     vec3 col;
 
-    if (vKind > 1.5)
+    if ( vKind > 1.5 )
     {
         // --- planet: the photo as its surface, lit hard from one side ---
-        vec2 uv = vec2(atan(vObj.z, vObj.x) / 6.2831853 + 0.5,
-                       clamp(vObj.y * 0.5 + 0.5, 0.0, 1.0));
-        vec3 surf = textureLod(tex0, fract(uv * vec2(1.0, 0.9)), 0.0).rgb;
-        surf = mix(vec3(dot(surf, vec3(0.333))), surf, 0.6) * 0.85;
+        vec2 uv = vec2( atan( vObj.z, vObj.x ) / 6.2831853 + 0.5,
+                        clamp( vObj.y * 0.5 + 0.5, 0.0, 1.0 ) );
+        vec3 surf = textureLod( tex0, fract( uv * vec2( 1.0, 0.9 ) ), 0.0 ).rgb;
+        surf = mix( vec3( dot( surf, vec3( 0.333 ) ) ), surf, 0.6 ) * 0.85;
 
-        float diff = max(dot(n, L), 0.0);
-        float wrap = 0.5 + 0.5 * dot(n, L);
-        col = surf * (0.10 + 1.05 * diff + 0.35 * wrap * wrap);
+        float diff = max( dot( n, L ), 0.0 );
+        float wrap = 0.5 + 0.5 * dot( n, L );
+        col = surf * ( 0.10 + 1.05 * diff + 0.35 * wrap * wrap );
 
         // Atmosphere: a cold ring at the limb, and aurora caps where the field
         // lines come down.
-        float limb = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 3.5);
-        col += vec3(0.25, 0.55, 1.0) * limb * (0.7 + 1.2 * audioLevel);
-        float polar = pow(abs(vObj.y), 6.0);
-        col += vec3(0.30, 1.0, 0.55) * polar
-             * (0.35 + 1.4 * audioHigh + 0.8 * audioKick) * (0.4 + glowP);
+        float limb = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 3.5 );
+        col += vec3( 0.25, 0.55, 1.0 ) * limb * ( 0.7 + 1.2 * audioLevel );
+        float polar = pow( abs( vObj.y ), 6.0 );
+        col += vec3( 0.30, 1.0, 0.55 ) * polar
+               * ( 0.35 + 1.4 * audioHigh + 0.8 * audioKick ) * ( 0.4 + glowP );
     }
     else
     {
@@ -105,28 +107,28 @@ void main()
         // Hue follows the SHELL the line belongs to — carried down from the
         // generator — so the spectrum is legible as colour: the tight inner
         // lines run hot, the far ones cold.
-        float shell = clamp(vKind, 0.0, 1.0);
-        float hue = fract(0.02 + 0.62 * shell + 0.06 * sin(audioChromaHue));
-        vec3 plasma = hue2rgb(hue);
+        float shell = clamp( vKind, 0.0, 1.0 );
+        float hue = fract( 0.02 + 0.62 * shell + 0.06 * sin( audioChromaHue ) );
+        vec3  plasma = hue2rgb( hue );
 
         // The tube's own curvature: brightest where it faces the eye, which is
         // what gives a glowing cylinder its core-and-halo look.
-        float face = clamp(dot(n, V), 0.0, 1.0);
-        float core = pow(face, 1.6);
+        float face = clamp( dot( n, V ), 0.0, 1.0 );
+        float core = pow( face, 1.6 );
 
         float e = vEnergy;
-        col = plasma * (0.06 + 2.6 * e) * (0.35 + 0.9 * core) * (0.45 + glowP);
+        col = plasma * ( 0.06 + 2.6 * e ) * ( 0.35 + 0.9 * core ) * ( 0.45 + glowP );
         // White-hot centre, kept in check: pushed harder it blows the inner
         // shells to white and the whole shell-to-hue mapping stops being
         // readable exactly where the energy is highest.
-        col += vec3(1.0) * pow(core, 6.0) * e * 0.5;
+        col += vec3( 1.0 ) * pow( core, 6.0 ) * e * 0.5;
 
         // A faint floor, so the shape of the field survives a silent bar.
-        col += plasma * 0.05 * (0.4 + 0.7 * audioAmbient);
+        col += plasma * 0.05 * ( 0.4 + 0.7 * audioAmbient );
     }
 
     col *= 1.0 + 0.22 * audioBeat + 0.18 * audioSubBass;
-    col = col / (1.0 + col * 0.24);
-    col *= 3.17;   // measured-dark lift (visual pass)
-    fragColor = vec4(col, interpolation);
+    col = col / ( 1.0 + col * 0.24 );
+    col *= 3.17; // measured-dark lift (visual pass)
+    fragColor = vec4( col, interpolation );
 }

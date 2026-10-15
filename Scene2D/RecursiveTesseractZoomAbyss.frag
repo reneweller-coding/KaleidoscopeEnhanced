@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file RecursiveTesseractZoomAbyss.frag
  * @brief RECURSIVE TESSERACT ZOOM ABYSS: Infinite recursive 4D hypercube dive.
@@ -14,45 +14,48 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> steers the recursive hypercube spectrum
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
-uniform float depthP;   ///< Depth knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
+uniform float depthP; ///< Depth knob, 0..1.
 uniform float wireP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// Overall level of the photo currently on the texture units, from a fixed 5-tap
@@ -61,27 +64,30 @@ vec3 imgPalette(float t) {
 /// with no readable hypercube structure. The probe rides the tex0/tex1 crossfade
 /// so the gain can never pop, and one number per frame moves exposure without
 /// touching local contrast.
-float photoLevel() {
-    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
-           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
-           + img(vec2(0.50, 0.50));
-    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+float photoLevel()
+{
+    vec3 s = img( vec2( 0.25, 0.25 ) ) + img( vec2( 0.75, 0.25 ) )
+             + img( vec2( 0.25, 0.75 ) ) + img( vec2( 0.75, 0.75 ) )
+             + img( vec2( 0.50, 0.50 ) );
+    return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
 /// 4D Box distance estimator
-float sdBox4D(vec4 p, vec4 b) {
-    vec4 d = abs(p) - b;
-    return min(max(max(d.x, d.y), max(d.z, d.w)), 0.0) + length(max(d, 0.0));
+float sdBox4D( vec4 p, vec4 b )
+{
+    vec4 d = abs( p ) - b;
+    return min( max( max( d.x, d.y ), max( d.z, d.w ) ), 0.0 ) + length( max( d, 0.0 ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float dpth = (depthP > 0.01) ? depthP : 1.0;
-    float wireW = (wireP > 0.01) ? wireP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float dpth = ( depthP > 0.01 ) ? depthP : 1.0;
+    float wireW = ( wireP > 0.01 ) ? wireP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // The dive only advanced on audioAdvance (~0.25 units/s on quiet material),
     // so the plunge was effectively frozen. Constant base rate + audio surge; the
@@ -90,9 +96,9 @@ void main() {
 
     // Logarithmic scale dive for infinite zoom through tesseract layers
     float zoomSpeed = t * 0.8;
-    float cellPhase = mod(zoomSpeed, 1.0);
+    float cellPhase = mod( zoomSpeed, 1.0 );
 
-    vec3 colAcc = vec3(0.0);
+    vec3  colAcc = vec3( 0.0 );
     float glowAcc = 0.0;
     float wSum = 0.0;
 
@@ -103,12 +109,14 @@ void main() {
     // big empty field. A step of 0.62 (factor 1.86) with more layers puts four to
     // five frames across the screen at once, which is the same infinite dive, just
     // actually filling it.
-    for (int k = 0; k < 9; k++) {
-        float kf = float(k);
-        float layerScale = exp((kf - cellPhase) * 0.62) * dpth;
-        float layerFade = smoothstep(0.0, 0.3, kf - cellPhase) * smoothstep(8.6, 6.0, kf - cellPhase);
+    for ( int k = 0; k < 9; k++ )
+    {
+        float kf = float( k );
+        float layerScale = exp( ( kf - cellPhase ) * 0.62 ) * dpth;
+        float layerFade = smoothstep( 0.0, 0.3, kf - cellPhase ) * smoothstep( 8.6, 6.0, kf - cellPhase );
 
-        if (layerFade <= 0.001) continue;
+        if ( layerFade <= 0.001 )
+            continue;
 
         vec2 pLayer = uv * layerScale;
 
@@ -121,24 +129,24 @@ void main() {
         float rotZW = t * 0.15 + audioPhase * 0.1 + 0.6 * audioSwell;
 
         // Project 2D screen into 4D tesseract coordinates
-        vec4 p4 = vec4(pLayer, sin(kf * 1.2 + t * 0.4), cos(kf * 1.2 + t * 0.4));
+        vec4 p4 = vec4( pLayer, sin( kf * 1.2 + t * 0.4 ), cos( kf * 1.2 + t * 0.4 ) );
 
         // 4D Rotations
-        float c1 = cos(rotXY), s1 = sin(rotXY);
-        p4.xy = vec2(c1 * p4.x - s1 * p4.y, s1 * p4.x + c1 * p4.y);
-        float c2 = cos(rotZW), s2 = sin(rotZW);
-        p4.zw = vec2(c2 * p4.z - s2 * p4.w, s2 * p4.z + c2 * p4.w);
+        float c1 = cos( rotXY ), s1 = sin( rotXY );
+        p4.xy = vec2( c1 * p4.x - s1 * p4.y, s1 * p4.x + c1 * p4.y );
+        float c2 = cos( rotZW ), s2 = sin( rotZW );
+        p4.zw = vec2( c2 * p4.z - s2 * p4.w, s2 * p4.z + c2 * p4.w );
 
         // Sub-bass swells the frame's half-extent. It is a plain per-frame
         // size parameter (no accumulated phase runs through it), so it can
         // breathe freely -- unlike the rotation angles above.
-        float frameR = 1.2 * (1.0 + 0.32 * audioSubBass);
+        float frameR = 1.2 * ( 1.0 + 0.32 * audioSubBass );
 
         // Compute distance to 4D wireframe edges
-        vec4 q = abs(p4);
-        float dOuter = max(max(q.x, q.y), max(q.z, q.w)) - frameR;
-        float dInner = max(max(q.x, q.y), max(q.z, q.w)) - (frameR - 0.15);
-        float dFrame = max(dOuter, -dInner);
+        vec4  q = abs( p4 );
+        float dOuter = max( max( q.x, q.y ), max( q.z, q.w ) ) - frameR;
+        float dInner = max( max( q.x, q.y ), max( q.z, q.w ) ) - ( frameR - 0.15 );
+        float dFrame = max( dOuter, -dInner );
 
         // 2D Projection edge distance for wireframe lines. The old
         // cornerDist = length(max(q2-1.2,0)) is the correct SDF for OUTSIDE
@@ -157,8 +165,8 @@ void main() {
         // Taken from the ROTATED p4.xy, not from raw pLayer: the 4D rotation
         // above only ever fed dFrame, which nothing consumes, so the whole
         // hyper-plane spin was invisible and no audio mapping on it could show.
-        vec2 q2 = abs(p4.xy);
-        float wire = min(abs(q2.x - frameR), abs(q2.y - frameR));
+        vec2  q2 = abs( p4.xy );
+        float wire = min( abs( q2.x - frameR ), abs( q2.y - frameR ) );
 
         // `wire` is measured in LAYER units and spans roughly 0..1.3, while the
         // old decay constant was 25*layerScale*0.15 = 0.4..3.8. exp() of that
@@ -169,33 +177,33 @@ void main() {
         // Converting to SCREEN units (pLayer = uv*layerScale, so screen distance
         // is wire/layerScale) gives a line of constant on-screen thickness, and a
         // decay constant matched to that range makes it an actual thin edge.
-        float wireScreen = wire / max(layerScale, 1e-4);
+        float wireScreen = wire / max( layerScale, 1e-4 );
         // 78 rather than 46: the layer count went from 6 to 9 above, so the same
         // line width would have put half again as much lit area on screen and the
         // capped glow sum would flatten out into a solid violet field. Thinner
         // lines, more of them -- which is what a receding hypercube stack is.
-        float edgeGlow = exp(-wireScreen * (78.0 / wireW)) * layerFade * glw;
+        float edgeGlow = exp( -wireScreen * ( 78.0 / wireW ) ) * layerFade * glw;
 
         // Sample texture inside the tesseract cell face
-        vec2 sampleUV = fract(pLayer * 0.25 + 0.5);
-        vec3 texCol = img(sampleUV);
-        vec3 palCol = imgPalette(kf * 0.2 + t * 0.1);
+        vec2 sampleUV = fract( pLayer * 0.25 + 0.5 );
+        vec3 texCol = img( sampleUV );
+        vec3 palCol = imgPalette( kf * 0.2 + t * 0.1 );
 
         // Depth shading: near cells bright, far cells sinking into the abyss.
         // Six equally-lit layers averaged to one flat mid-level.
         // (exponent rescaled with the smaller log step above so the dive still
         // fades over the same physical depth, not over the same layer index)
-        float depthShade = exp(-(kf - cellPhase) * 0.31);
+        float depthShade = exp( -( kf - cellPhase ) * 0.31 );
         // Deep layers are sampled at pLayer = uv * layerScale with layerScale up
         // to ~145, i.e. the photo tiles dozens of times across the frame and
         // aliases into its own average -- a flat wash that swamps the near
         // layers. Only the resolvable octaves carry a photo crop; the far ones
         // contribute the flat palette tone.
-        float resolvable = smoothstep(4.6, 1.6, kf - cellPhase);
-        vec3 cellCol = mix(palCol, texCol, 0.55 * resolvable);
+        float resolvable = smoothstep( 4.6, 1.6, kf - cellPhase );
+        vec3  cellCol = mix( palCol, texCol, 0.55 * resolvable );
         float w = layerFade * depthShade;
         colAcc += cellCol * w;
-        wSum   += w;
+        wSum += w;
 
         glowAcc += edgeGlow;
     }
@@ -203,26 +211,26 @@ void main() {
     // Weighted average rather than a raw sum: nine layers of a bright photo used
     // to stack straight past white (measured luma 0.823 at contrast 0.012 - one
     // flat wash). Normalising keeps the depth ordering while bounding exposure.
-    colAcc /= max(wSum, 1e-3);
-    colAcc *= 0.62 * clamp(0.40 / max(0.06, photoLevel()), 0.55, 1.70);
+    colAcc /= max( wSum, 1e-3 );
+    colAcc *= 0.62 * clamp( 0.40 / max( 0.06, photoLevel() ), 0.55, 1.70 );
 
     // Add glowing hypercube wireframe lines once, from the TOTAL glow
     // accumulated across layers (capped) rather than per-layer -- several
     // octaves' frames can still overlap near true wire crossings, and an
     // uncapped per-layer add let those crossings stack past white.
-    vec3 wireTint = min(vec3(1.3, 1.0, 1.8) * min(glowAcc, 1.2) * (1.0 + 2.0 * audioKick),
-                        vec3(1.0, 0.85, 1.0));
+    vec3 wireTint = min( vec3( 1.3, 1.0, 1.8 ) * min( glowAcc, 1.2 ) * ( 1.0 + 2.0 * audioKick ),
+                         vec3( 1.0, 0.85, 1.0 ) );
     colAcc += wireTint;
 
     // Portal dimension crossing flash (when cellPhase wraps around)
-    float portalFlash = pow(max(0.0, 1.0 - abs(cellPhase - 0.5) * 4.0), 4.0) * (0.4 + 1.2 * audioKick);
-    colAcc += min(imgPalette(0.7) * portalFlash, vec3(0.55));
+    float portalFlash = pow( max( 0.0, 1.0 - abs( cellPhase - 0.5 ) * 4.0 ), 4.0 ) * ( 0.4 + 1.2 * audioKick );
+    colAcc += min( imgPalette( 0.7 ) * portalFlash, vec3( 0.55 ) );
 
-    colAcc = pow(min(colAcc, vec3(1.0)), vec3(0.88));
+    colAcc = pow( min( colAcc, vec3( 1.0 ) ), vec3( 0.88 ) );
     // Soft knee on top of the hard cap: pow(x, 0.88) lifts the midtones, so a
     // wire crossing landing on an already-lit cell face still stacked flat
     // against the ceiling. The knee bends those crests over instead.
-    vec3 _catTone = clamp(colAcc, 0.0, 1.0);
-    _catTone /= 1.0 + 0.26 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    vec3 _catTone = clamp( colAcc, 0.0, 1.0 );
+    _catTone /= 1.0 + 0.26 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

@@ -1,7 +1,8 @@
 #version 430
 /**
  * @file IndirectClamp.comp
- * @brief Single-invocation pass that clamps a vertex generator's raw slot-reservation count into a safe, FPS-budgeted indirect draw count.
+ * @brief Single-invocation pass that clamps a vertex generator's raw slot-reservation count into a safe, FPS-budgeted
+ * indirect draw count.
  *
  * Operates on a DrawArraysIndirectCommand buffer (binding 1) with a fifth
  * slot appended for the generator's raw atomicAdd counter: cmd[0] (the count
@@ -33,14 +34,17 @@
 // reservation either fits entirely or starts at or beyond the end — no
 // half-written triangle can ever fall inside the clamped range, whichever of
 // the two clamps (hard capacity vs. soft budget) ends up smaller.
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+layout( local_size_x = 1, local_size_y = 1, local_size_z = 1 ) in;
 
 // DrawArraysIndirectCommand + our own counter:
 //   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
-layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float budget;   ///< 0..1, defaults to 1 (host omits it on old call sites)
+uniform uint  maxVertices; ///< Capacity of the vertex buffer (compute stage).
+uniform float budget;      ///< 0..1, defaults to 1 (host omits it on old call sites)
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -49,7 +53,7 @@ void main()
     // budgeted cutoff would draw two of its three vertices, reading whatever
     // garbage float sits just past them as the third -- a visible stray spike
     // rather than the mesh cleanly ending one triangle earlier.
-    uint budgeted = (uint(float(maxVertices) * budget) / 3u) * 3u;
-    cmd[0] = min(cmd[4], min(maxVertices, budgeted));
-    cmd[4] = 0u;            // armed for the next frame; the host never touches it
+    uint budgeted = ( uint( float( maxVertices ) * budget ) / 3u ) * 3u;
+    cmd[0] = min( cmd[4], min( maxVertices, budgeted ) );
+    cmd[4] = 0u; // armed for the next frame; the host never touches it
 }

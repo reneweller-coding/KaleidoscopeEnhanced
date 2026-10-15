@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file TapeHeadCrossfade.frag
  * @brief TRANSITION TAPE HEAD CROSSFADE: a splice runs across the playback
@@ -26,80 +26,83 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: angleP, wowP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float angleP;
 uniform float wowP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ang = clamp(angleP, 0.0, 1.0);
-    float wow = (wowP > 0.0) ? wowP : 1.0;
-    float hue = (hueP > 0.0) ? hueP : 0.0;
+    float ang = clamp( angleP, 0.0, 1.0 );
+    float wow = ( wowP > 0.0 ) ? wowP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
     // The tape runs left to right; the splice is cut at an angle across it.
-    float slant = mix(0.45, 1.25, ang);
+    float slant = mix( 0.45, 1.25, ang );
     float along = p.x + p.y * slant;
-    float halfW = (aspect + slant) * 0.5 + 0.05;
-    float splice = mix(-halfW - 0.05, halfW + 0.05, d);
+    float halfW = ( aspect + slant ) * 0.5 + 0.05;
+    float splice = mix( -halfW - 0.05, halfW + 0.05, d );
 
     // Wow and flutter: a slow speed error and a fast one, integrated into the
     // position.  It is a SPEED error, so what it moves is where the tape is.
     // Only a slow envelope may scale a DISPLACEMENT: a fast one on a position
     // is picture shimmer, not tape wow.
-    float amp = 0.020 * wow * arc * (0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0));
-    float shift = amp * (sin(audioAdvance * 0.20 + p.y * 0.6)
-                       + 0.35 * sin(audioAdvance * 1.35 + p.y * 2.1));
-    vec2 suv = clamp(uv + vec2(shift / aspect, 0.0), 0.0, 1.0);
+    float amp = 0.020 * wow * arc * ( 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
+    float shift = amp * ( sin( audioAdvance * 0.20 + p.y * 0.6 ) + 0.35 * sin( audioAdvance * 1.35 + p.y * 2.1 ) );
+    vec2  suv = clamp( uv + vec2( shift / aspect, 0.0 ), 0.0, 1.0 );
 
     // The join itself: narrow, and the two sides are exactly the two scenes.
-    float cross_ = smoothstep(splice + 0.045, splice - 0.045, along);
-    vec3 col = mix(texture(tex0, suv).rgb, texture(tex1, suv).rgb, cross_);
+    float cross_ = smoothstep( splice + 0.045, splice - 0.045, along );
+    vec3  col = mix( texture( tex0, suv ).rgb, texture( tex1, suv ).rgb, cross_ );
 
     // The splice tape is slightly opaque and leaves a thin line.
-    float join = exp(-pow((along - splice) / 0.030, 2.0));
+    float join = exp( -pow( ( along - splice ) / 0.030, 2.0 ) );
     col *= 1.0 - join * 0.35 * arc;
     // The head bump: the join lifts the tape off the head for an instant.
-    col += vec3(0.92, 0.90, 0.84) * join * arc
-         * (0.10 + 0.34 * clamp(audioHigh * 2.0, 0.0, 1.0)
-                 + 0.20 * clamp(audioSubBass, 0.0, 1.0));
+    col += vec3( 0.92, 0.90, 0.84 ) * join * arc
+           * ( 0.10 + 0.34 * clamp( audioHigh * 2.0, 0.0, 1.0 )
+               + 0.20 * clamp( audioSubBass, 0.0, 1.0 ) );
 
     // Oxide: the tape's own colour and its hiss.
-    vec3 oxide = mix(vec3(1.03, 0.99, 0.93), vec3(0.96, 0.99, 1.04), fract(hue * 0.159));
-    col *= mix(vec3(1.0), oxide, arc * (0.4 + 0.6 * clamp(audioMid * 2.0, 0.0, 1.0)));
-    float hiss = hash21(floor(uv * resolution.y * 0.6) + floor(audioAdvance * 6.0)) - 0.5;
-    col += vec3(hiss) * 0.035 * arc * (0.5 + 1.2 * clamp(audioFlux * 2.0, 0.0, 1.0));
+    vec3 oxide = mix( vec3( 1.03, 0.99, 0.93 ), vec3( 0.96, 0.99, 1.04 ), fract( hue * 0.159 ) );
+    col *= mix( vec3( 1.0 ), oxide, arc * ( 0.4 + 0.6 * clamp( audioMid * 2.0, 0.0, 1.0 ) ) );
+    float hiss = hash21( floor( uv * resolution.y * 0.6 ) + floor( audioAdvance * 6.0 ) ) - 0.5;
+    col += vec3( hiss ) * 0.035 * arc * ( 0.5 + 1.2 * clamp( audioFlux * 2.0, 0.0, 1.0 ) );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

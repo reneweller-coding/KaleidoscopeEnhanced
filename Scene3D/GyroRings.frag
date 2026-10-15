@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // GyroRings.frag — dark faces, luminous edges (depth-tested).
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol; ///< Colour (from the vertex stage).
 in vec3 vCorner;
 
 /**
@@ -30,15 +30,15 @@ void main()
     // Bevel band width follows SHARPNESS: dull -> a wide soft sheen along the
     // edges, harsh/bright -> a honed hairline.  The gain rises as the band
     // narrows so the two ends stay close in total emitted energy.
-    float shp = clamp(audioSharpness, 0.0, 1.0);
-    float lo  = 0.99 - (0.30 - 0.20 * shp);
+    float shp = clamp( audioSharpness, 0.0, 1.0 );
+    float lo = 0.99 - ( 0.30 - 0.20 * shp );
     float gain = 1.35 + 0.50 * shp;
 
-    vec3 a = abs(vCorner) * 2.0;
-    float e1 = smoothstep(lo, 0.99, a.x);
-    float e2 = smoothstep(lo, 0.99, a.y);
-    float e3 = smoothstep(lo, 0.99, a.z);
-    float edge = clamp(e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0);
-    vec3 col = vCol.rgb * (0.20 + gain * edge);
-    fragColor = vec4(col, 1.0);
+    vec3  a = abs( vCorner ) * 2.0;
+    float e1 = smoothstep( lo, 0.99, a.x );
+    float e2 = smoothstep( lo, 0.99, a.y );
+    float e3 = smoothstep( lo, 0.99, a.z );
+    float edge = clamp( e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0 );
+    vec3  col = vCol.rgb * ( 0.20 + gain * edge );
+    fragColor = vec4( col, 1.0 );
 }

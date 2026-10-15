@@ -1,17 +1,17 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Blueprint.frag — the body as a drafting drawing rather than a lit object.
 // Almost nothing here is shading: the surface is a dark wash and everything
 // legible is line work, which is what makes the look read as a print.
 
 flat in vec3 vEdgeMask;
-in float vKind;   ///< Element kind (from the vertex stage).
-in vec3  vBary;
-in vec3  vObj;   ///< Object-space position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in vec3  vView;   ///< View vector (from the vertex stage).
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vMorph;
+in float     vKind; ///< Element kind (from the vertex stage).
+in vec3      vBary;
+in vec3      vObj;    ///< Object-space position (from the vertex stage).
+in vec3      vNormal; ///< Surface normal (from the vertex stage).
+in vec3      vView;   ///< View vector (from the vertex stage).
+in vec2      vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float     vMorph;
 
 /**
  * @file Blueprint.frag
@@ -31,28 +31,29 @@ in float vMorph;
  * line thickness and glowP scales both wireframe and rim glow strength.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform sampler2D tex0;          ///< The current photo.
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2      resolution;    ///< Size of the render target in pixels.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
 uniform float lineP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 n = normalize(vNormal);
-    vec3 V = normalize(vView);
-    if (dot(n, V) < 0.0) n = -n;
+    vec3 n = normalize( vNormal );
+    vec3 V = normalize( vView );
+    if ( dot( n, V ) < 0.0 )
+        n = -n;
 
     // Paper.  Cyanotype blue, with a faint plate grid that stays put in SCREEN
     // space — a drawing's grid belongs to the sheet, not to the object.
@@ -62,22 +63,22 @@ void main()
     // down into blue -- pushing the sheet past 0.87 and making the whole plate
     // read as garish primary blue. Lifting the floor keeps the identical hue
     // and value while leaving headroom for that nudge.
-    vec3 paper = vec3(0.085, 0.155, 0.262) * (1.0 + 0.35 * audioAmbient);
-    vec2 sp = gl_FragCoord.xy / max(resolution.y, 1.0);
-    float plate = step(0.985, max(fract(sp.x * 26.0), fract(sp.y * 26.0)));
-    paper += vec3(0.05, 0.10, 0.16) * plate * 0.6;
+    vec3  paper = vec3( 0.085, 0.155, 0.262 ) * ( 1.0 + 0.35 * audioAmbient );
+    vec2  sp = gl_FragCoord.xy / max( resolution.y, 1.0 );
+    float plate = step( 0.985, max( fract( sp.x * 26.0 ), fract( sp.y * 26.0 ) ) );
+    paper += vec3( 0.05, 0.10, 0.16 ) * plate * 0.6;
 
-    vec3 ink = mix(vec3(0.55, 0.85, 1.0), vec3(1.0), 0.25 * audioHigh);
+    vec3 ink = mix( vec3( 0.55, 0.85, 1.0 ), vec3( 1.0 ), 0.25 * audioHigh );
 
-    if (vKind < 0.5)
+    if ( vKind < 0.5 )
     {
         // The sheet behind everything, with a vignette so it reads as paper
         // under a lamp rather than as a flat fill.
-        float vig = 1.0 - 0.55 * length(sp - vec2(0.5 * resolution.x / resolution.y, 0.5));
-        vec3 col = paper * vig;
+        float vig = 1.0 - 0.55 * length( sp - vec2( 0.5 * resolution.x / resolution.y, 0.5 ) );
+        vec3  col = paper * vig;
         col += ink * 0.02 * plate;
         col *= 1.0 + 0.10 * audioBeat;
-        fragColor = vec4(col / (1.0 + col * 0.22), interpolation);
+        fragColor = vec4( col / ( 1.0 + col * 0.22 ), interpolation );
         return;
     }
 
@@ -85,8 +86,8 @@ void main()
     // Same reasoning as the paper above: the facing term needs its own red and
     // green floor, otherwise the body wash is an even purer blue than the sheet
     // it sits on.
-    float facing = clamp(dot(n, V), 0.0, 1.0);
-    vec3 col = paper * 0.75 + vec3(0.035, 0.065, 0.10) * facing;
+    float facing = clamp( dot( n, V ), 0.0, 1.0 );
+    vec3  col = paper * 0.75 + vec3( 0.035, 0.065, 0.10 ) * facing;
 
     // ---- wireframe from the barycentric coordinates ----
     // fwidth turns "distance to the edge" into "distance in pixels", so the
@@ -96,41 +97,41 @@ void main()
     // Diagonals are pushed out of the running by raising their distance: the
     // grid splits each quad into two triangles, and drawing the shared
     // hypotenuse turns a clean lattice into a herringbone.
-    vec3 bary = vBary + (1.0 - vEdgeMask) * 10.0;
-    vec3 d = fwidth(vBary);
-    vec3 e = smoothstep(vec3(0.0), d * (1.4 + 2.6 * lineP), bary);
-    float wire = 1.0 - min(min(e.x, e.y), e.z);
+    vec3  bary = vBary + ( 1.0 - vEdgeMask ) * 10.0;
+    vec3  d = fwidth( vBary );
+    vec3  e = smoothstep( vec3( 0.0 ), d * ( 1.4 + 2.6 * lineP ), bary );
+    float wire = 1.0 - min( min( e.x, e.y ), e.z );
 
-    col += ink * wire * (0.16 + 0.28 * glowP) * (0.65 + 0.7 * audioLevel);
+    col += ink * wire * ( 0.16 + 0.28 * glowP ) * ( 0.65 + 0.7 * audioLevel );
 
     // ---- silhouette: the heavy outline of a technical drawing ----
-    float rim = pow(1.0 - facing, 3.0);
-    col += ink * rim * (0.35 + 0.7 * glowP);
+    float rim = pow( 1.0 - facing, 3.0 );
+    col += ink * rim * ( 0.35 + 0.7 * glowP );
 
     // ---- section lines every few units around the tube ----
     // Drawn on the parameter grid, so they follow the body through the morph
     // instead of sliding across it.
-    float sec = min(abs(fract(vUV.x * 24.0) - 0.5), abs(fract(vUV.y * 12.0) - 0.5));
-    col += vec3(0.35, 0.75, 1.0)
-         * smoothstep(0.5, 0.46, sec) * 0.28 * (0.5 + 0.8 * audioSubBass);
+    float sec = min( abs( fract( vUV.x * 24.0 ) - 0.5 ), abs( fract( vUV.y * 12.0 ) - 0.5 ) );
+    col += vec3( 0.35, 0.75, 1.0 )
+           * smoothstep( 0.5, 0.46, sec ) * 0.28 * ( 0.5 + 0.8 * audioSubBass );
 
     // A measuring sweep runs around the body on every kick, the way a plotter
     // would trace it.
-    float sweep = fract(vUV.x - time * 0.09);
-    col += vec3(0.9, 1.0, 0.75)
-         * pow(max(1.0 - abs(sweep - 0.5) * 22.0, 0.0), 2.0)
-         * (0.35 + 1.5 * audioKick);
+    float sweep = fract( vUV.x - time * 0.09 );
+    col += vec3( 0.9, 1.0, 0.75 )
+           * pow( max( 1.0 - abs( sweep - 0.5 ) * 22.0, 0.0 ), 2.0 )
+           * ( 0.35 + 1.5 * audioKick );
 
     // Bounded hue nudge — blueprints are blue, so this stays small.  It is a
     // rotation in the r/b plane, which preserves magnitude but not the r:b
     // RATIO, so it always costs saturation headroom in one direction; kept
     // tighter now that it is the last thing standing between the sheet and a
     // pure-primary blue.
-    float hr = 0.055 * sin(audioChromaHue);
-    col.rb = mat2(cos(hr), -sin(hr), sin(hr), cos(hr)) * col.rb;
+    float hr = 0.055 * sin( audioChromaHue );
+    col.rb = mat2( cos( hr ), -sin( hr ), sin( hr ), cos( hr ) ) * col.rb;
 
     col *= 1.0 + 0.16 * audioBeat;
-    col = col / (1.0 + col * 0.22);
-    col *= (0.85 + 0.30 * audioLevel + 0.35 * audioKick);
-    fragColor = vec4(col, interpolation);
+    col = col / ( 1.0 + col * 0.22 );
+    col *= ( 0.85 + 0.30 * audioLevel + 0.35 * audioKick );
+    fragColor = vec4( col, interpolation );
 }

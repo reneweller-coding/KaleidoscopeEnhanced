@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file QuantumWaveCollapse.frag
  * @brief TRANSITION QUANTUM WAVE COLLAPSE: Quantum state superposition & wavefunction
@@ -15,50 +15,54 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP      float quantum probability phase hue offset         (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float waveP;   ///< Wave knob.
+uniform float waveP; ///< Wave knob.
 uniform float collapseP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float wav = (waveP     > 0.0) ? waveP     : 1.0;
-    float clp = (collapseP > 0.0) ? collapseP : 1.0;
-    float spd = (speedP    > 0.0) ? speedP    : 1.0;
-    float hue = (hueP      > 0.0) ? hueP      : 0.0;
+void main()
+{
+    float wav = ( waveP > 0.0 ) ? waveP : 1.0;
+    float clp = ( collapseP > 0.0 ) ? collapseP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
-    vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float t = time * 0.0423 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
-    float tProg = clamp(interpolation, 0.0, 1.0);
-    float midTransition = sin(tProg * 3.14159265);
+    float t = time * 0.0423 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
+                                   // --transprofile); it spun many times that and read as frantic
+    float tProg = clamp( interpolation, 0.0, 1.0 );
+    float midTransition = sin( tProg * 3.14159265 );
 
     // Dual-state wavefunction superposition: psi = psi_1 + psi_2.
     // audioBass undulates the de Broglie wavenumber and the slit separation
@@ -66,33 +70,35 @@ void main() {
     // the -t*4.0 phase is untouched, so the wave drift rate stays
     // audio-independent -- and midTransition returns both to their base values
     // at the fade endpoints, where phaseDisp and the ring glow are zero.
-    float deBroglieK = 25.0 * wav;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float slitSep    = 0.3;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float psi1 = sin(length(p - vec2(slitSep, 0.0)) * deBroglieK - t * 4.0);
-    float psi2 = sin(length(p + vec2(slitSep, 0.0)) * deBroglieK - t * 4.0);
+    float deBroglieK = 25.0 * wav; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float slitSep = 0.3;           // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float psi1 = sin( length( p - vec2( slitSep, 0.0 ) ) * deBroglieK - t * 4.0 );
+    float psi2 = sin( length( p + vec2( slitSep, 0.0 ) ) * deBroglieK - t * 4.0 );
 
     // Probability density: |psi|^2 = (psi1 + psi2)^2
-    float probDensity = (psi1 + psi2) * 0.5;
+    float probDensity = ( psi1 + psi2 ) * 0.5;
     float interference = probDensity * probDensity;
 
     // Measurement collapse progression
-    float collapseThreshold = smoothstep(0.0, 1.0, pow(tProg, clp));
-    float measuredState = step(collapseThreshold, interference);
+    float collapseThreshold = smoothstep( 0.0, 1.0, pow( tProg, clp ) );
+    float measuredState = step( collapseThreshold, interference );
 
     // Quantum phase coordinate displacement
-    vec2 phaseDisp = vec2(psi1, psi2) * 0.03 * midTransition;
+    vec2 phaseDisp = vec2( psi1, psi2 ) * 0.03 * midTransition;
 
-    vec4 c1 = texture(tex1, fract(uv + phaseDisp));
-    vec4 c0 = texture(tex0, fract(uv - phaseDisp));
+    vec4 c1 = texture( tex1, fract( uv + phaseDisp ) );
+    vec4 c0 = texture( tex0, fract( uv - phaseDisp ) );
 
-    vec4 col = mix(c1, c0, tProg);
+    vec4 col = mix( c1, c0, tProg );
 
     // Glowing quantum phase rings
-    vec3 phaseColor = 0.5 + 0.5 * cos(vec3(0.0, 2.0, 4.0) + interference * 6.28 + audioPhase);
-    col.rgb += interference * phaseColor * midTransition * (1.2 + audioKick * 1.0);
+    vec3 phaseColor = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + interference * 6.28 + audioPhase );
+    col.rgb += interference * phaseColor * midTransition * ( 1.2 + audioKick * 1.0 );
 
-    if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
-    if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);
+    if ( audioChromaHue != 0.0 )
+        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+    if ( hue > 0.001 )
+        col.rgb = hueRot( col.rgb, hue * midTransition );
 
     fragColor = col;
 }

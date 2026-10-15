@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file DeepSeaHydrothermalChimneyPillar.frag
  * @brief DEEP SEA HYDROTHERMAL CHIMNEY PILLAR: an abyssal black-smoker VENT FIELD --
@@ -21,32 +21,34 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   specularP    float mineral crystal facet sheen gain       (0.8..2.5)
  */
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vCol;   ///< Colour (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vCol;    ///< Colour (from the vertex stage).
 in float vSmokerGlow;
 in float vBack;
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 
-uniform float specularP;   ///< Specular knob, 0..1.
+uniform float specularP; ///< Specular knob, 0..1.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-float h21(vec2 p)
+float h21( vec2 p )
 {
-    return fract(sin(dot(p, vec2(91.73, 47.31))) * 43758.5453);
+    return fract( sin( dot( p, vec2( 91.73, 47.31 ) ) ) * 43758.5453 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -54,7 +56,7 @@ void main()
 {
     vec3 col;
 
-    if (vBack > 0.5)
+    if ( vBack > 0.5 )
     {
         // ---- WATER COLUMN --------------------------------------------
         // The sheet already carries a very faint gradient; marine snow is added
@@ -67,19 +69,18 @@ void main()
         // STRUCTURE, so this is the black smokers' own sulfide plume drifting up
         // through the column: sparse (pow shapes it into wisps rather than fog)
         // and warm against the cold water, with enough amplitude to register.
-        vec2 pu = vUV * vec2(6.0, 3.2);
-        float plume = sin(pu.x * 1.7 + sin(pu.y * 2.3 - time * 0.06
-                                           - audioAdvance * 0.02) * 1.6)
-                    * sin(pu.y * 2.9 - time * 0.05
-                          + sin(pu.x * 1.1 + time * 0.03) * 1.3);
+        vec2  pu = vUV * vec2( 6.0, 3.2 );
+        float plume = sin( pu.x * 1.7 + sin( pu.y * 2.3 - time * 0.06 - audioAdvance * 0.02 ) * 1.6 )
+                      * sin( pu.y * 2.9 - time * 0.05
+                             + sin( pu.x * 1.1 + time * 0.03 ) * 1.3 );
         // A second, finer octave: one big lobe pattern leaves whole regions of
         // the column untouched, and a region a tile wide with nothing in it is
         // exactly what the occupancy scan calls empty.
-        float wisp = sin(pu.x * 5.3 - time * 0.09 + pu.y * 2.1)
-                   * sin(pu.y * 7.1 + time * 0.07 - pu.x * 1.7);
-        plume = pow(plume * 0.5 + 0.5, 2.0) * 0.72
-              + pow(wisp  * 0.5 + 0.5, 2.6) * 0.45;
-        col += vec3(0.20, 0.15, 0.11) * plume * (0.75 + 0.45 * audioSwell);
+        float wisp = sin( pu.x * 5.3 - time * 0.09 + pu.y * 2.1 )
+                     * sin( pu.y * 7.1 + time * 0.07 - pu.x * 1.7 );
+        plume = pow( plume * 0.5 + 0.5, 2.0 ) * 0.72
+                + pow( wisp * 0.5 + 0.5, 2.6 ) * 0.45;
+        col += vec3( 0.20, 0.15, 0.11 ) * plume * ( 0.75 + 0.45 * audioSwell );
 
         // Marine snow: fewer, larger, brighter flakes.  At the old 300 x 170
         // grid over a sheet 2.6 frames wide each speck was a third of a pixel
@@ -89,15 +90,15 @@ void main()
         // line, so half of them fell the wrong side of it.  104 x 58 with a
         // wider radius and a lower threshold puts a flake at ~3 px and roughly
         // doubles the count per tile, which clears the line with margin.
-        vec2 g  = vUV * vec2(104.0, 58.0)
-                + vec2(0.0, -time * 0.08 - audioAdvance * 0.03);
-        vec2 gi = floor(g);
-        vec2 gf = fract(g);
-        float on = step(0.74, h21(gi));
-        vec2  c  = vec2(h21(gi + 13.1), h21(gi + 27.7));
-        float d  = length(gf - c);
-        float speck = on * smoothstep(0.46, 0.04, d);
-        col += vec3(0.52, 0.66, 0.78) * speck * (0.40 + 0.24 * audioSwell);
+        vec2  g = vUV * vec2( 104.0, 58.0 )
+                  + vec2( 0.0, -time * 0.08 - audioAdvance * 0.03 );
+        vec2  gi = floor( g );
+        vec2  gf = fract( g );
+        float on = step( 0.74, h21( gi ) );
+        vec2  c = vec2( h21( gi + 13.1 ), h21( gi + 27.7 ) );
+        float d = length( gf - c );
+        float speck = on * smoothstep( 0.46, 0.04, d );
+        col += vec3( 0.52, 0.66, 0.78 ) * speck * ( 0.40 + 0.24 * audioSwell );
     }
     else
     {
@@ -112,25 +113,25 @@ void main()
         // FRONT takes that same visible half to mean 0.57 with a p10..p90
         // spread of 0.94: every tower now has a bright edge and a dark edge,
         // which is the local light/dark separation the picture was missing.
-        vec3 lightDir = normalize(vec3(-0.55, 0.62, -0.56));
-        float diff = max(0.0, dot(vNormal, lightDir));
+        vec3  lightDir = normalize( vec3( -0.55, 0.62, -0.56 ) );
+        float diff = max( 0.0, dot( vNormal, lightDir ) );
         // The eye direction has to flip with it, or the crystal sheen lands on
         // the far side of every tower.
-        float spec = pow(max(0.0, dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, -1.0))), 24.0)
-                   * (specularP > 0.01 ? specularP : 1.2);
+        float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, -1.0 ) ) ), 24.0 )
+                     * ( specularP > 0.01 ? specularP : 1.2 );
 
-        vec3 photo = img(vUV);
+        vec3 photo = img( vUV );
 
         // 0.4 + 0.6*diff was mostly ambient; 0.10 + 0.90*diff makes the
         // terminator a real step instead of a wash.
-        col  = vCol * (0.6 + 0.4 * photo) * (0.10 + 0.90 * diff);
-        col += vec3(0.95, 0.95, 1.0) * min(spec * (1.0 + 3.0 * audioKick), 1.0);
-        col += vec3(1.0, 0.55, 0.1) * min(vSmokerGlow * 2.2, 1.5);
-        col *= (0.85 + 0.35 * audioSwell);
-        col += vCol * (audioKick * 0.3);
+        col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.10 + 0.90 * diff );
+        col += vec3( 0.95, 0.95, 1.0 ) * min( spec * ( 1.0 + 3.0 * audioKick ), 1.0 );
+        col += vec3( 1.0, 0.55, 0.1 ) * min( vSmokerGlow * 2.2, 1.5 );
+        col *= ( 0.85 + 0.35 * audioSwell );
+        col += vCol * ( audioKick * 0.3 );
     }
 
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

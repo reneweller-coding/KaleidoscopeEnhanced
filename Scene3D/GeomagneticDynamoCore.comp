@@ -22,77 +22,92 @@
 // with min(cmd[4], maxVertices), so a generator that writes cmd[0] itself has
 // its count zeroed and draws nothing.
 // -----------------------------------------------------------------------
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
-layout(std430, binding = 0) buffer Verts { float verts[]; };
-layout(std430, binding = 1) buffer Cmd   { uint  cmd[];   };
+layout( std430, binding = 0 ) buffer Verts
+{
+    float verts[];
+};
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform uint  maxVertices;  ///< Capacity of the vertex buffer (compute stage).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;    ///< Bass band level, 0..1.
+uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float dynamoP;
 uniform float coriolisP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // generator has no `resolution`; the flux haze is laid out for 16:9 and the
 // vertex stage stretches x for the actual aspect.
 const float kTanY = 0.5206;
-const float kAsp  = 1.7778;
+const float kAsp = 1.7778;
 
-const uint COLS     = 160u;     ///< convective columns
-const uint PTS      = 96u;      ///< points along each column
-const uint CORE_PTS = 15360u;   ///< COLS * PTS
-const uint HAZE_PTS = 6144u;    ///< flux-fog motes filling the frustum
-const uint TOTAL    = 21504u;   ///< x 6 = 129024 vertices
+const uint COLS = 160u;       ///< convective columns
+const uint PTS = 96u;         ///< points along each column
+const uint CORE_PTS = 15360u; ///< COLS * PTS
+const uint HAZE_PTS = 6144u;  ///< flux-fog motes filling the frustum
+const uint TOTAL = 21504u;    ///< x 6 = 129024 vertices
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float p) {
-    p = fract(p * 0.1031);
+float hash11( float p )
+{
+    p = fract( p * 0.1031 );
     p *= p + 47.19;
     p *= p + p;
-    return fract(p);
+    return fract( p );
 }
 
 /// attrA = (centre.xyz, corner), attrB = (radius, phase, isHaze, spare).
 /// corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
 /// quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
 /// available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
-void writeVertex(uint slot, vec3 c, float radius, float phase, float isHaze, float corner)
+void writeVertex( uint slot, vec3 c, float radius, float phase, float isHaze, float corner )
 {
     uint o = slot * 8u;
-    verts[o + 0u] = c.x;     verts[o + 1u] = c.y;     verts[o + 2u] = c.z;
+    verts[o + 0u] = c.x;
+    verts[o + 1u] = c.y;
+    verts[o + 2u] = c.z;
     verts[o + 3u] = corner;
-    verts[o + 4u] = radius;  verts[o + 5u] = phase;   verts[o + 6u] = isHaze;
+    verts[o + 4u] = radius;
+    verts[o + 5u] = phase;
+    verts[o + 6u] = isHaze;
     verts[o + 7u] = 0.0;
 }
 
-void emitSprite(vec3 c, float radius, float phase, float isHaze)
+void emitSprite( vec3 c, float radius, float phase, float isHaze )
 {
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
-    writeVertex(base + 0u, c, radius, phase, isHaze, 0.0);
-    writeVertex(base + 1u, c, radius, phase, isHaze, 1.0);
-    writeVertex(base + 2u, c, radius, phase, isHaze, 2.0);
-    writeVertex(base + 3u, c, radius, phase, isHaze, 0.0);
-    writeVertex(base + 4u, c, radius, phase, isHaze, 2.0);
-    writeVertex(base + 5u, c, radius, phase, isHaze, 3.0);
+    writeVertex( base + 0u, c, radius, phase, isHaze, 0.0 );
+    writeVertex( base + 1u, c, radius, phase, isHaze, 1.0 );
+    writeVertex( base + 2u, c, radius, phase, isHaze, 2.0 );
+    writeVertex( base + 3u, c, radius, phase, isHaze, 0.0 );
+    writeVertex( base + 4u, c, radius, phase, isHaze, 2.0 );
+    writeVertex( base + 5u, c, radius, phase, isHaze, 3.0 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     uvec3 g = gl_GlobalInvocationID;
-    uint idx = g.x + 64u * (g.y + 64u * g.z);
-    if (idx >= TOTAL) return;
+    uint  idx = g.x + 64u * ( g.y + 64u * g.z );
+    if ( idx >= TOTAL )
+        return;
 
-    float t = time * 0.4 * (speedP > 0.0 ? speedP : 1.0) + audioAdvance * 0.2;
+    float t = time * 0.4 * ( speedP > 0.0 ? speedP : 1.0 ) + audioAdvance * 0.2;
 
-    if (idx >= CORE_PTS)
+    if ( idx >= CORE_PTS )
     {
         // ---- FLUX FOG -------------------------------------------------
         // Motes of dissolved field filling the mantle around the core, placed
@@ -100,60 +115,60 @@ void main() {
         // every depth.  Flagged isHaze = 1: the vertex stage leaves these out
         // of the camera's orbit, since a background layer must not swing with
         // the core it sits behind.
-        float hid = float(idx - CORE_PTS);
-        float g1 = hash11(hid * 1.27 + 0.3);
-        float g2 = hash11(hid * 3.11 + 7.9);
-        float g3 = hash11(hid * 5.73 + 2.5);
-        float g4 = hash11(hid * 8.17 + 11.1);
+        float hid = float( idx - CORE_PTS );
+        float g1 = hash11( hid * 1.27 + 0.3 );
+        float g2 = hash11( hid * 3.11 + 7.9 );
+        float g3 = hash11( hid * 5.73 + 2.5 );
+        float g4 = hash11( hid * 8.17 + 11.1 );
 
         float dzh = 12.0 + g3 * 78.0;
-        float hH  = dzh * kTanY;
-        float hW  = hH * kAsp;
+        float hH = dzh * kTanY;
+        float hW = hH * kAsp;
         // 2.0 fits the frustum exactly; 2.35 so the fog still reaches past all
         // four edges when the preset camera rig rolls and yaws the view.
         float open = 2.35;
         float ph = g1 * 6.2831853 + t * 0.10;
 
-        vec3 c = vec3((g1 - 0.5) * open * hW + 0.04 * hW * cos(ph),
-                      (g2 - 0.5) * open * hH + 0.04 * hH * sin(ph * 0.81),
-                      dzh);
+        vec3 c = vec3( ( g1 - 0.5 ) * open * hW + 0.04 * hW * cos( ph ),
+                       ( g2 - 0.5 ) * open * hH + 0.04 * hH * sin( ph * 0.81 ),
+                       dzh );
 
         // Sized as a fraction of the half-height at its own depth, so a mote
         // stays a legible speck however far back it sits.
-        float r = hH * 0.010 * (0.55 + 0.8 * g4);
-        emitSprite(c, r, fract(g2 * 3.0 + 0.15), 1.0);
+        float r = hH * 0.010 * ( 0.55 + 0.8 * g4 );
+        emitSprite( c, r, fract( g2 * 3.0 + 0.15 ), 1.0 );
         return;
     }
 
     // ---- HELICAL CONVECTIVE COLUMNS -----------------------------------
     uint  columnID = idx / PTS;
-    float aNorm = float(idx % PTS) / float(PTS);
-    float cf = float(columnID);
-    float pNorm = float(idx) / float(CORE_PTS);
+    float aNorm = float( idx % PTS ) / float( PTS );
+    float cf = float( columnID );
+    float pNorm = float( idx ) / float( CORE_PTS );
 
-    float dp = clamp((dynamoP > 0.0 ? dynamoP : 1.0), 0.5, 2.0);
-    float cp = clamp((coriolisP > 0.0 ? coriolisP : 1.0), 0.5, 2.0);
+    float dp = clamp( ( dynamoP > 0.0 ? dynamoP : 1.0 ), 0.5, 2.0 );
+    float cp = clamp( ( coriolisP > 0.0 ? coriolisP : 1.0 ), 0.5, 2.0 );
 
     // FOUR concentric shells rather than one thin annulus: the columns reach
     // out past the frame edges instead of huddling in the middle.
-    float ring     = mod(cf, 4.0);
-    float colAngle = cf * 2.39996323;        // golden angle -- no visible spokes
-    float rCore    = (0.50 + 0.85 * ring + 0.22 * sin(cf * 1.8)) * (0.75 + 0.35 * dp);
+    float ring = mod( cf, 4.0 );
+    float colAngle = cf * 2.39996323; // golden angle -- no visible spokes
+    float rCore = ( 0.50 + 0.85 * ring + 0.22 * sin( cf * 1.8 ) ) * ( 0.75 + 0.35 * dp );
 
     // The rotation axis is VERTICAL in frame, so the camera's yaw spins the
     // shell instead of ever turning the whole column field edge-on.
-    float axial = (aNorm - 0.5) * 5.8 * (0.78 + 0.40 * hash11(cf * 13.7));
+    float axial = ( aNorm - 0.5 ) * 5.8 * ( 0.78 + 0.40 * hash11( cf * 13.7 ) );
 
     float coriolisTheta = axial * 2.5 * cp + t * 2.0 + cf * 0.7;
-    float columnRadius  = (0.26 + 0.12 * sin(axial * 4.0 + t * 3.0)) * (0.8 + 0.5 * dp);
+    float columnRadius = ( 0.26 + 0.12 * sin( axial * 4.0 + t * 3.0 ) ) * ( 0.8 + 0.5 * dp );
 
     float spin = t * 0.3;
-    vec3 pos = vec3(cos(colAngle + spin) * rCore + cos(coriolisTheta) * columnRadius,
-                    axial,
-                    sin(colAngle + spin) * rCore + sin(coriolisTheta) * columnRadius);
+    vec3  pos = vec3( cos( colAngle + spin ) * rCore + cos( coriolisTheta ) * columnRadius,
+                      axial,
+                      sin( colAngle + spin ) * rCore + sin( coriolisTheta ) * columnRadius );
 
     // Flux blobs thicken with the low end and flare on kicks.
-    float r = 0.030 * (1.0 + 0.55 * audioBass + 0.90 * audioKick + 0.30 * audioHigh)
-                    * (1.0 + 0.25 * audioSwell);
-    emitSprite(pos, min(r, 0.075), pNorm, 0.0);
+    float r = 0.030 * ( 1.0 + 0.55 * audioBass + 0.90 * audioKick + 0.30 * audioHigh )
+              * ( 1.0 + 0.25 * audioSwell );
+    emitSprite( pos, min( r, 0.075 ), pNorm, 0.0 );
 }

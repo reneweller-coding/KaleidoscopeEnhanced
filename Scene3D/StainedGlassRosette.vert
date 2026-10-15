@@ -9,36 +9,38 @@
 // a light that pulses with the swell.  The glass mosaic + lead lines + god
 // rays all live in the fragment shader.  attrA.x = angle, attrA.y = radius.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec2  vPolar;      ///< angle, radius 0..1
-out vec2  vXY;         ///< cartesian, for the fragment's own polar re-map
+out vec2 vPolar; ///< angle, radius 0..1
+out vec2 vXY;    ///< cartesian, for the fragment's own polar re-map
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float u = attrA.x;                       // angle 0..1
-    float w = attrA.y;                       // radius 0..1
+    float u = attrA.x; // angle 0..1
+    float w = attrA.y; // radius 0..1
 
     float ang = u * 6.2831853 + time * 0.025 + audioAdvance * 0.03;
-    float R = w * 24.0 * (1.0 + 0.02 * audioSwell);
+    float R = w * 24.0 * ( 1.0 + 0.02 * audioSwell );
 
-    vec2 xy = vec2(cos(ang), sin(ang)) * R;
-    vec3 world = vec3(xy.x, xy.y, 0.0);
+    vec2 xy = vec2( cos( ang ), sin( ang ) ) * R;
+    vec3 world = vec3( xy.x, xy.y, 0.0 );
 
-    vec3 vp = world + vec3(0.0, 2.0, 40.0);
+    vec3 vp = world + vec3( 0.0, 2.0, 40.0 );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    vPolar = vec2(ang, w);
-    vXY    = xy;
+    vPolar = vec2( ang, w );
+    vXY = xy;
 }

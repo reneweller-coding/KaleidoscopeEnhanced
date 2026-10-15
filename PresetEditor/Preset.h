@@ -39,10 +39,10 @@
 inline QString presetsDir( const QString &root )
 {
     const QString cur = root + "/Presets";
-    if (QDir(cur).exists())
+    if ( QDir( cur ).exists() )
         return cur;
     const QString old = root + "/Configurations";
-    return QDir(old).exists() ? old : cur;
+    return QDir( old ).exists() ? old : cur;
 }
 
 /**
@@ -56,18 +56,21 @@ inline QString presetsDir( const QString &root )
  */
 struct ShaderParam
 {
-    QString kind;     ///< "bool" | "int" | "float" | "interpolator" | "expr"
-    QString name;     ///< Uniform/parameter name as declared in the shader.
-    QString probability;                 ///< bool: probability [0,1] the flag rolls true.
+    QString kind;        ///< "bool" | "int" | "float" | "interpolator" | "expr"
+    QString name;        ///< Uniform/parameter name as declared in the shader.
+    QString probability; ///< bool: probability [0,1] the flag rolls true.
     /// int / float: lower bound of the range the value is randomly rolled from (attribute text, kept verbatim).
-    QString minValue, maxValue;          ///< int / float: upper bound of the range the value is randomly rolled from (attribute text, kept verbatim).
-    /// interpolator: lower bound for the rolled ramp-START value (attribute text; the engine rolls the start in [minMin,minMax]).
-    QString minMin, maxMin, minMax, maxMax;  ///< interpolator: upper bound for the rolled ramp-END value (attribute text; the engine rolls the end in [maxMin,maxMax]).
+    QString minValue, maxValue; ///< int / float: upper bound of the range the value is randomly rolled from (attribute
+                                ///< text, kept verbatim).
+    /// interpolator: lower bound for the rolled ramp-START value (attribute text; the engine rolls the start in
+    /// [minMin,minMax]).
+    QString minMin, maxMin, minMax, maxMax; ///< interpolator: upper bound for the rolled ramp-END value (attribute
+                                            ///< text; the engine rolls the end in [maxMin,maxMax]).
     /** @var QString ShaderParam::maxMin
      *  interpolator: lower bound for the rolled ramp-END value (attribute text). */
     /** @var QString ShaderParam::minMax
      *  interpolator: upper bound for the rolled ramp-START value (attribute text). */
-    QString formula;                     ///< expr (formula layer): ExprEval source text; empty = engine/random default.
+    QString formula; ///< expr (formula layer): ExprEval source text; empty = engine/random default.
 };
 
 /**
@@ -84,8 +87,9 @@ struct ShaderParam
  */
 struct PresetEntry
 {
-    bool     isCombine = false;   ///< true = `<CombineShader>` (FX overlay pass); false = `<TextureShader>` (scene).
-    bool     isTransition = false;   ///< true = `<TransitionShader>` (scene-fade blend from Transitions/); mutually exclusive with isCombine.
+    bool isCombine = false;    ///< true = `<CombineShader>` (FX overlay pass); false = `<TextureShader>` (scene).
+    bool isTransition = false; ///< true = `<TransitionShader>` (scene-fade blend from Transitions/); mutually exclusive
+                               ///< with isCombine.
     /**
      * @brief Folder segment of the file= attribute ("Scene2D" | "Scene3D" | "FX").
      *
@@ -95,21 +99,27 @@ struct PresetEntry
      * checked one against the other's params.  Empty = infer from
      * isFX/type (pre-folder files round-trip unchanged).
      */
-    QString  folder;
-    QString  file;               ///< Bare filename, e.g. "Kaleidoscope.frag" (folder stripped; see #folder).
-    QString  type = "normal";    ///< "normal" | "KaleidoscopeBase" | "scene3d"
-    QString  geom;                ///< scene3d only: "points" | "cubes" | "ribbon" | ...
+    QString folder;
+    QString file;            ///< Bare filename, e.g. "Kaleidoscope.frag" (folder stripped; see #folder).
+    QString type = "normal"; ///< "normal" | "KaleidoscopeBase" | "scene3d"
+    QString geom;            ///< scene3d only: "points" | "cubes" | "ribbon" | ...
     // scene3d only, both optional (0 = attribute omitted, matching Configuration.cpp):
-    int      stateBytes   = 0;    ///< scene3d only: persistent generator state buffer size; 0 = attribute omitted.
-    double   shadowExtent = 0.0;  ///< scene3d only: shadow-box half-width; 0 = engine default.
-    /// Lower bound, in seconds, of the random solo duration this entry runs alone before interpolating to the next (0 is treated as the engine default 20).
-    int      minTimeSolo = 20, maxTimeSolo = 80;   ///< Upper bound, in seconds, of the random solo duration (the engine bumps it above minTimeSolo if not greater).
-    /// Lower bound, in seconds, of the random crossfade/interpolation duration into the next entry (0 is treated as the engine default 15).
-    int      minTimeInterpolation = 15, maxTimeInterpolation = 50;   ///< Upper bound, in seconds, of the random crossfade/interpolation duration (the engine bumps it above minTimeInterpolation if not greater).
-    double   probability = 0.5;   ///< Relative selection weight/probability when the engine picks this entry.
-    int      complexity = 1;      ///< Author-assigned complexity rating.
-    QString  mood;                ///< Optional mood tags ("dark,calm", ...) — passed through, not interpreted here.
-    QVector<ShaderParam> params;  ///< Per-activation parameter rows (bool/int/float/interpolator/expr) for this entry's shader.
+    int    stateBytes = 0;     ///< scene3d only: persistent generator state buffer size; 0 = attribute omitted.
+    double shadowExtent = 0.0; ///< scene3d only: shadow-box half-width; 0 = engine default.
+    /// Lower bound, in seconds, of the random solo duration this entry runs alone before interpolating to the next (0
+    /// is treated as the engine default 20).
+    int minTimeSolo = 20, maxTimeSolo = 80; ///< Upper bound, in seconds, of the random solo duration (the engine bumps
+                                            ///< it above minTimeSolo if not greater).
+    /// Lower bound, in seconds, of the random crossfade/interpolation duration into the next entry (0 is treated as the
+    /// engine default 15).
+    int minTimeInterpolation = 15, maxTimeInterpolation = 50; ///< Upper bound, in seconds, of the random
+                                                              ///< crossfade/interpolation duration (the engine bumps it
+                                                              ///< above minTimeInterpolation if not greater).
+    double               probability = 0.5; ///< Relative selection weight/probability when the engine picks this entry.
+    int                  complexity = 1;                      ///< Author-assigned complexity rating.
+    QString              mood;   ///< Optional mood tags ("dark,calm", ...) — passed through, not interpreted here.
+    QVector<ShaderParam> params; ///< Per-activation parameter rows (bool/int/float/interpolator/expr) for this entry's
+                                 ///< shader.
     /// Attributes this editor does not model (model=, model2=, instances=,
     /// minFade=, genPasses=, ...), written back verbatim on save. Before this
     /// existed, saving Komplett.xml from the editor stripped model= from every
@@ -128,8 +138,9 @@ struct PresetEntry
  */
 struct Preset
 {
-    QString name = "MyPreset";   ///< ConfigurationName attribute; also the on-disk filename stem when saved from the editor.
-    QString imageDirectory;      ///< ImageDirectory attribute: folder of photos this preset's scenes draw tex0/tex1 from.
+    QString name = "MyPreset"; ///< ConfigurationName attribute; also the on-disk filename stem when saved from the
+                               ///< editor.
+    QString imageDirectory;    ///< ImageDirectory attribute: folder of photos this preset's scenes draw tex0/tex1 from.
     /**
      * @brief hidden="true": the main app keeps this preset out of its user-facing selection.
      *
@@ -137,13 +148,18 @@ struct Preset
      * selection (menu, digit keys, web remote); only -c `<name>` reaches it.
      * Used for master/reference presets (Komplett) and Test* benches.
      */
-    bool    hidden = false;
-    /// Preset-wide lower bound of the texture solo duration in seconds (root attribute timeTextureSoloMin; 0 is treated as 10 by the engine).
-    int     timeTextureSoloMin = 10,  timeTextureSoloMax = 40;              ///< Preset-wide upper bound of the texture solo duration in seconds (root attribute timeTextureSoloMax).
+    bool hidden = false;
+    /// Preset-wide lower bound of the texture solo duration in seconds (root attribute timeTextureSoloMin; 0 is treated
+    /// as 10 by the engine).
+    int timeTextureSoloMin = 10, timeTextureSoloMax = 40; ///< Preset-wide upper bound of the texture solo duration in
+                                                          ///< seconds (root attribute timeTextureSoloMax).
     /// Preset-wide lower bound of the interpolation duration in seconds (root attribute timeTextureInterpolationMin).
-    int     timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80;  ///< Preset-wide upper bound of the interpolation duration in seconds (root attribute timeTextureInterpolationMax).
-    QVector<PresetEntry> entries;   ///< texture + combine, in insertion order
-    QVector<QPair<QString, QString>> extraAttrs;   ///< Root attributes not modelled above (AudioFile=, timeSceneFadeMin=, ...), written back verbatim.
+    int timeTextureInterpolationMin = 20, timeTextureInterpolationMax = 80; ///< Preset-wide upper bound of the
+                                                                            ///< interpolation duration in seconds (root
+                                                                            ///< attribute timeTextureInterpolationMax).
+    QVector<PresetEntry>             entries;                               ///< texture + combine, in insertion order
+    QVector<QPair<QString, QString>> extraAttrs; ///< Root attributes not modelled above (AudioFile=, timeSceneFadeMin=,
+                                                 ///< ...), written back verbatim.
 
     /**
      * @brief Load a preset from an XML file.
@@ -152,12 +168,12 @@ struct Preset
      * @param err Optional; filled with a human-readable message on failure.
      * @return true on success; false if the file couldn't be opened or failed to parse (see @p err).
      */
-    static bool load(const QString &path, Preset &out, QString *err = nullptr);
+    static bool load( const QString &path, Preset &out, QString *err = nullptr );
     /**
      * @brief Save this preset to an XML file.
      * @param path Filesystem path to write.
      * @param err Optional; filled with a human-readable message on failure.
      * @return true on success; false if the file couldn't be opened for writing.
      */
-    bool save(const QString &path, QString *err = nullptr) const;
+    bool save( const QString &path, QString *err = nullptr ) const;
 };

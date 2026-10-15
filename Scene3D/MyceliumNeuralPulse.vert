@@ -21,37 +21,40 @@
  */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = pulse
 // attrB.w   = branchLevel (Scene3DShader.cpp GEOM_INDIRECT, 8-float layout)
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioLowMid;
-uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 
-out vec3 vPos;   ///< Position (from the vertex stage).
+out vec3  vPos; ///< Position (from the vertex stage).
 out float vPulse;
 out float vLevel;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     vec3 worldP = attrA.xyz;
 
     // HARMONIC BREATH: pad/body warmth (150-500 Hz) inflates the mat; a thin
     // harmony lets it settle back.  Pure shape scale -- no time factor.
-    worldP *= 1.0 + 0.26 * clamp(audioLowMid, 0.0, 1.0);
+    worldP *= 1.0 + 0.26 * clamp( audioLowMid, 0.0, 1.0 );
 
     // DISSONANCE TANGLE: a smooth (C1-continuous) spatial field, so every
     // vertex of one hyphae ribbon moves together -- a per-vertex hash here
     // would tear the two-triangle ribbons apart.  Consonant harmony leaves
     // the network clean, rough clusters snarl it.
-    vec3 tangle = vec3(sin(worldP.y * 3.1 + worldP.z * 2.3),
-                       sin(worldP.z * 2.7 + worldP.x * 3.5),
-                       sin(worldP.x * 2.9 + worldP.y * 2.1));
-    worldP += tangle * (0.34 * clamp(audioRoughness, 0.0, 1.0));
+    vec3 tangle = vec3( sin( worldP.y * 3.1 + worldP.z * 2.3 ),
+                        sin( worldP.z * 2.7 + worldP.x * 3.5 ),
+                        sin( worldP.x * 2.9 + worldP.y * 2.1 ) );
+    worldP += tangle * ( 0.34 * clamp( audioRoughness, 0.0, 1.0 ) );
 
     vPos = worldP;
     vPulse = attrA.w;
@@ -59,16 +62,16 @@ void main() {
 
     // Stereoscopic 3D camera projection
     // ORBIT (user feedback): the camera circles the structure
-    vec3 vp = worldP;
+    vec3  vp = worldP;
     float oyaw = time * 0.12 + audioAdvance * 0.07;
-    float ocy = cos(oyaw), osy = sin(oyaw);
-    vp.xz = mat2(ocy, -osy, osy, ocy) * vp.xz;
-    float opit = -1.00 + 0.08 * sin(time * 0.11);   // look down onto the mycelium mat instead of into the tangle
-    float opc = cos(opit), ops = sin(opit);
-    vp.yz = mat2(opc, -ops, ops, opc) * vp.yz;
+    float ocy = cos( oyaw ), osy = sin( oyaw );
+    vp.xz = mat2( ocy, -osy, osy, ocy ) * vp.xz;
+    float opit = -1.00 + 0.08 * sin( time * 0.11 ); // look down onto the mycelium mat instead of into the tangle
+    float opc = cos( opit ), ops = sin( opit );
+    vp.yz = mat2( opc, -ops, ops, opc ) * vp.yz;
     vp.z += 6.5;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

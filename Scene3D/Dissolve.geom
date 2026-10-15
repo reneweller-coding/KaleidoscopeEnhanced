@@ -23,79 +23,88 @@
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(triangles) in;
+layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(triangle_strip, max_vertices = 4) out;
+layout( triangle_strip, max_vertices = 4 ) out;
 
-in  vec3  gPos[];
-in  vec3  gNormal[];
-in  vec2  gUV[];
-in  float gBg[];
+in vec3  gPos[];
+in vec3  gNormal[];
+in vec2  gUV[];
+in float gBg[];
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec2  vQuad;      ///< -1..1 across the splat, for the round falloff
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
-out float vLoose;     ///< 0 = home, 1 = fully dispersed
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vQuad;   ///< -1..1 across the splat, for the round falloff
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vPos;    ///< Position (from the vertex stage).
+out float vBg;     ///< Background flag (from the vertex stage).
+out float vLoose;  ///< 0 = home, 1 = fully dispersed
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
-uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec3  meshExtent; ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter; ///< Centre of the scene's mesh bounding box.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioDrop;    ///< Drop envelope: high after a detected drop, decaying.
 
-uniform float sizeP;   ///< Size knob, 0..1.
-uniform float looseP;    ///< how far the cloud travels
-uniform float grainP;    ///< splat size
+uniform float sizeP;  ///< Size knob, 0..1.
+uniform float looseP; ///< how far the cloud travels
+uniform float grainP; ///< splat size
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 12.9898 ) * 43758.5453 );
+}
 
 /// @brief Smooth 3D value noise, 0..1.
-float noise3(vec3 p)
+float noise3( vec3 p )
 {
-    vec3 i = floor(p), f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
+    vec3 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
     float n = i.x + i.y * 57.0 + i.z * 113.0;
-    return mix(mix(mix(hash11(n), hash11(n + 1.0), f.x),
-                   mix(hash11(n + 57.0), hash11(n + 58.0), f.x), f.y),
-               mix(mix(hash11(n + 113.0), hash11(n + 114.0), f.x),
-                   mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
+    return mix( mix( mix( hash11( n ), hash11( n + 1.0 ), f.x ),
+                     mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y ),
+                mix( mix( hash11( n + 113.0 ), hash11( n + 114.0 ), f.x ),
+                     mix( hash11( n + 170.0 ), hash11( n + 171.0 ), f.x ), f.y ),
+                f.z );
 }
 
 /// Curl of a noise field, by finite differences. Divergence-free, so the cloud
 /// stirs and folds rather than inflating -- which is the whole difference
 /// between "breathing" and "exploding".
-vec3 curl(vec3 p)
+vec3 curl( vec3 p )
 {
     const float e = 0.14;
-    float x1 = noise3(p + vec3(0.0, e, 0.0)) - noise3(p - vec3(0.0, e, 0.0));
-    float x2 = noise3(p + vec3(0.0, 0.0, e)) - noise3(p - vec3(0.0, 0.0, e));
-    float y1 = noise3(p + vec3(0.0, 0.0, e)) - noise3(p - vec3(0.0, 0.0, e));
-    float y2 = noise3(p + vec3(e, 0.0, 0.0)) - noise3(p - vec3(e, 0.0, 0.0));
-    float z1 = noise3(p + vec3(e, 0.0, 0.0)) - noise3(p - vec3(e, 0.0, 0.0));
-    float z2 = noise3(p + vec3(0.0, e, 0.0)) - noise3(p - vec3(0.0, e, 0.0));
-    return normalize(vec3(x1 - x2, y1 - y2, z1 - z2) + vec3(1e-5));
+    float       x1 = noise3( p + vec3( 0.0, e, 0.0 ) ) - noise3( p - vec3( 0.0, e, 0.0 ) );
+    float       x2 = noise3( p + vec3( 0.0, 0.0, e ) ) - noise3( p - vec3( 0.0, 0.0, e ) );
+    float       y1 = noise3( p + vec3( 0.0, 0.0, e ) ) - noise3( p - vec3( 0.0, 0.0, e ) );
+    float       y2 = noise3( p + vec3( e, 0.0, 0.0 ) ) - noise3( p - vec3( e, 0.0, 0.0 ) );
+    float       z1 = noise3( p + vec3( e, 0.0, 0.0 ) ) - noise3( p - vec3( e, 0.0, 0.0 ) );
+    float       z2 = noise3( p + vec3( 0.0, e, 0.0 ) ) - noise3( p - vec3( 0.0, e, 0.0 ) );
+    return normalize( vec3( x1 - x2, y1 - y2, z1 - z2 ) + vec3( 1e-5 ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    if( gBg[0] > 0.5 )
+    if ( gBg[0] > 0.5 )
     {
         // The shell passes through as an ordinary triangle.
-        for( int i = 0; i < 3; ++i )
+        for ( int i = 0; i < 3; ++i )
         {
-            vUV = gUV[i]; vQuad = vec2(0.0); vNormal = gNormal[i];
-            vPos = gPos[i]; vBg = 1.0; vLoose = 0.0;
-            vec3 vp = vec3(gPos[i].x - eyeOff, gPos[i].y, gPos[i].z);
-            gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+            vUV = gUV[i];
+            vQuad = vec2( 0.0 );
+            vNormal = gNormal[i];
+            vPos = gPos[i];
+            vBg = 1.0;
+            vLoose = 0.0;
+            vec3 vp = vec3( gPos[i].x - eyeOff, gPos[i].y, gPos[i].z );
+            gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
             gl_Position.z = gl_Position.w * 0.999999;
             EmitVertex();
         }
@@ -103,29 +112,30 @@ void main()
         return;
     }
 
-    float sz    = (sizeP > 0.01 ? sizeP : 1.0);
-    float loose = (looseP > 0.01 ? looseP : 1.0);
-    float grain = (grainP > 0.001 ? grainP : 1.0);
-    float fit   = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
+    float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+    float loose = ( looseP > 0.01 ? looseP : 1.0 );
+    float grain = ( grainP > 0.001 ? grainP : 1.0 );
+    float fit = 0.5 / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
 
-    vec3 mid = (gPos[0] + gPos[1] + gPos[2]) / 3.0;
-    vec3 nrm = normalize(gNormal[0] + gNormal[1] + gNormal[2] + vec3(1e-6));
-    float id = dot(floor(mid * 512.0), vec3(1.0, 37.0, 991.0));
+    vec3  mid = ( gPos[0] + gPos[1] + gPos[2] ) / 3.0;
+    vec3  nrm = normalize( gNormal[0] + gNormal[1] + gNormal[2] + vec3( 1e-6 ) );
+    float id = dot( floor( mid * 512.0 ), vec3( 1.0, 37.0, 991.0 ) );
 
     // How far out the cloud is, driven by the music: it breathes with the
     // swell and blows out on a drop.
-    float breathe = 0.5 - 0.5 * cos(time * 0.55 + audioAdvance * 0.20);
-    float open = clamp(breathe * (0.35 + 0.75 * audioSwell)
-                     + audioKick * 0.25 + audioDrop * 0.9, 0.0, 1.6);
+    float breathe = 0.5 - 0.5 * cos( time * 0.55 + audioAdvance * 0.20 );
+    float open = clamp( breathe * ( 0.35 + 0.75 * audioSwell )
+                            + audioKick * 0.25 + audioDrop * 0.9,
+                        0.0, 1.6 );
 
     // Each particle keeps its own scale of travel, so the cloud has depth
     // instead of moving as one shell.
-    float own = 0.35 + 1.15 * hash11(id * 1.37);
-    vec3 flow = curl(mid * 3.1 + vec3(0.0, time * 0.10, 0.0));
-    vec3 p = mid + flow * open * own * 0.42 * loose
-                 + nrm * open * own * 0.10;
+    float own = 0.35 + 1.15 * hash11( id * 1.37 );
+    vec3  flow = curl( mid * 3.1 + vec3( 0.0, time * 0.10, 0.0 ) );
+    vec3  p = mid + flow * open * own * 0.42 * loose
+              + nrm * open * own * 0.10;
 
-    vec3 world = (p - meshCenter) * (86.0 * sz * fit);
+    vec3 world = ( p - meshCenter ) * ( 86.0 * sz * fit );
     world.z += 82.0;
 
     // A camera-facing quad. Building it in VIEW space keeps every splat square
@@ -134,20 +144,20 @@ void main()
     // See Condensation.geom for the arithmetic: one splat per triangle means
     // ~100k of them, and a radius chosen by eye rather than by count turns
     // the cloud into a mass of overlapping balls instead of dust.
-    float r = (0.11 + 0.20 * hash11(id * 3.71)) * grain * (1.0 + 0.8 * open);
-    vec3 vp = vec3(world.x - eyeOff, world.y, world.z);
+    float r = ( 0.11 + 0.20 * hash11( id * 3.71 ) ) * grain * ( 1.0 + 0.8 * open );
+    vec3  vp = vec3( world.x - eyeOff, world.y, world.z );
 
-    vec2 corner[4] = vec2[4](vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(-1.0, 1.0), vec2(1.0, 1.0));
-    for( int i = 0; i < 4; ++i )
+    vec2 corner[4] = vec2[4]( vec2( -1.0, -1.0 ), vec2( 1.0, -1.0 ), vec2( -1.0, 1.0 ), vec2( 1.0, 1.0 ) );
+    for ( int i = 0; i < 4; ++i )
     {
-        vec3 q = vp + vec3(corner[i].x * r, corner[i].y * r, 0.0);
+        vec3 q = vp + vec3( corner[i].x * r, corner[i].y * r, 0.0 );
         vUV = gUV[0];
         vQuad = corner[i];
         vNormal = nrm;
-        vPos = vec3(q.x + eyeOff, q.y, q.z);
+        vPos = vec3( q.x + eyeOff, q.y, q.z );
         vBg = 0.0;
-        vLoose = clamp(open, 0.0, 1.0);
-        gl_Position = projM * vec4(q.x, q.y, -q.z, 1.0);
+        vLoose = clamp( open, 0.0, 1.0 );
+        gl_Position = projM * vec4( q.x, q.y, -q.z, 1.0 );
         EmitVertex();
     }
     EndPrimitive();

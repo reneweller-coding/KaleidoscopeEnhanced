@@ -17,31 +17,34 @@
 // inputs must be slow), speed of travel along the trajectories rides the
 // music's advance, velocity magnitude paints the colour.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
+uniform float sceneSeed;  ///< A random number fixed per activation.
 
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid;     ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -49,70 +52,76 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// One Euler step of the chosen system (sys 0..3).
-vec3 field(vec3 p, float sys)
+vec3 field( vec3 p, float sys )
 {
-    if (sys < 0.5)          // Lorenz (sigma 10, beta 8/3; rho breathes)
+    if ( sys < 0.5 ) // Lorenz (sigma 10, beta 8/3; rho breathes)
     {
         float rho = 26.0 + 6.0 * audioSwell;
-        return vec3(10.0 * (p.y - p.x),
-                    p.x * (rho - p.z) - p.y,
-                    p.x * p.y - 2.6667 * p.z);
+        return vec3( 10.0 * ( p.y - p.x ),
+                     p.x * ( rho - p.z ) - p.y,
+                     p.x * p.y - 2.6667 * p.z );
     }
-    else if (sys < 1.5)     // Thomas (cyclically symmetric, soft knots)
+    else if ( sys < 1.5 ) // Thomas (cyclically symmetric, soft knots)
     {
         float b = 0.19 + 0.05 * audioCentroid;
-        return vec3(sin(p.y) - b * p.x,
-                    sin(p.z) - b * p.y,
-                    sin(p.x) - b * p.z) * 6.0;
+        return vec3( sin( p.y ) - b * p.x,
+                     sin( p.z ) - b * p.y,
+                     sin( p.x ) - b * p.z )
+               * 6.0;
     }
-    else if (sys < 2.5)     // Aizawa (ribbed shell)
+    else if ( sys < 2.5 ) // Aizawa (ribbed shell)
     {
         float a = 0.95, b = 0.7, c = 0.6 + 0.1 * audioSwell;
         float d = 3.5, e = 0.25, f = 0.1;
-        return vec3((p.z - b) * p.x - d * p.y,
-                    d * p.x + (p.z - b) * p.y,
-                    c + a * p.z - p.z * p.z * p.z / 3.0
-                      - (p.x * p.x + p.y * p.y) * (1.0 + e * p.z)
-                      + f * p.z * p.x * p.x * p.x) * 1.6;
+        return vec3( ( p.z - b ) * p.x - d * p.y,
+                     d * p.x + ( p.z - b ) * p.y,
+                     c + a * p.z - p.z * p.z * p.z / 3.0
+                         - ( p.x * p.x + p.y * p.y ) * ( 1.0 + e * p.z )
+                         + f * p.z * p.x * p.x * p.x )
+               * 1.6;
     }
-    else                    // Halvorsen (looping bands)
+    else // Halvorsen (looping bands)
     {
         float a = 1.4 + 0.25 * audioSwell;
-        return vec3(-a * p.x - 4.0 * p.y - 4.0 * p.z - p.y * p.y,
-                    -a * p.y - 4.0 * p.z - 4.0 * p.x - p.z * p.z,
-                    -a * p.z - 4.0 * p.x - 4.0 * p.y - p.x * p.x) * 0.9;
+        return vec3( -a * p.x - 4.0 * p.y - 4.0 * p.z - p.y * p.y,
+                     -a * p.y - 4.0 * p.z - 4.0 * p.x - p.z * p.z,
+                     -a * p.z - 4.0 * p.x - 4.0 * p.y - p.x * p.x )
+               * 0.9;
     }
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float idx  = attrA.w;
+    float idx = attrA.w;
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     const float STEPS = 100.0;
-    float traj = floor(idx / STEPS);          // 0..599
-    float stp  = mod(idx, STEPS);             // 0..99 along the trajectory
+    float       traj = floor( idx / STEPS ); // 0..599
+    float       stp = mod( idx, STEPS );     // 0..99 along the trajectory
 
     // ---- TWO NESTED SHELLS ------------------------------------------
     // One attractor is a small knot in the middle of a black frame: at the
@@ -120,80 +129,87 @@ void main()
     // the picture.  9 of every 20 trajectories now draw a SECOND, larger,
     // counter-rotating copy of the SAME system a little further back, so the
     // scene reaches the edges without becoming anything other than what it is.
-    float outer = step(11.0, mod(traj, 20.0));   // 0 = core body, 1 = outer shell
+    float outer = step( 11.0, mod( traj, 20.0 ) ); // 0 = core body, 1 = outer shell
 
-    float sys = floor(mod(sceneSeed * 7.9, 4.0));
+    float sys = floor( mod( sceneSeed * 7.9, 4.0 ) );
 
     // Trajectory start: seeded cloud near the attractor; the whole cloud
     // slides slowly along the flow via the advance phase (the swarm keeps
     // travelling instead of freezing).
-    vec3 p = vec3(hash11(traj * 3.1) - 0.5,
-                  hash11(traj * 5.7) - 0.5,
-                  hash11(traj * 7.3) - 0.5) * 6.0;
-    if (sys < 0.5) p.z += 24.0;               // Lorenz sits high in z
+    vec3 p = vec3( hash11( traj * 3.1 ) - 0.5,
+                   hash11( traj * 5.7 ) - 0.5,
+                   hash11( traj * 7.3 ) - 0.5 )
+             * 6.0;
+    if ( sys < 0.5 )
+        p.z += 24.0; // Lorenz sits high in z
 
     float dt = 0.0045;
-    float lead = mod(audioAdvance * 2.0 + hash11(traj * 9.7) * STEPS, STEPS);
+    float lead = mod( audioAdvance * 2.0 + hash11( traj * 9.7 ) * STEPS, STEPS );
     float nSteps = stp + lead;
 
-    vec3 vel = vec3(0.0);
-    for (int i = 0; i < 200; ++i)
+    vec3 vel = vec3( 0.0 );
+    for ( int i = 0; i < 200; ++i )
     {
-        if (float(i) >= nSteps) break;
-        vel = field(p, sys);
-        p  += vel * dt;
+        if ( float( i ) >= nSteps )
+            break;
+        vel = field( p, sys );
+        p += vel * dt;
     }
 
     // Normalise the very different system scales into one view box.
     vec3 world = p;
-    if (sys < 0.5)      world = (p - vec3(0.0, 0.0, 25.0)) * 0.42;
-    else if (sys < 1.5) world = p * 2.4;
-    else if (sys < 2.5) world = p * 5.0;
-    else                world = p * 1.05;
+    if ( sys < 0.5 )
+        world = ( p - vec3( 0.0, 0.0, 25.0 ) ) * 0.42;
+    else if ( sys < 1.5 )
+        world = p * 2.4;
+    else if ( sys < 2.5 )
+        world = p * 5.0;
+    else
+        world = p * 1.05;
 
     // The outer shell is bigger and spins the other way, so the two bodies
     // slide through each other instead of moving as one rigid lump.
-    world *= mix(1.0, 2.15, outer);
+    world *= mix( 1.0, 2.15, outer );
 
-    float oa = time * 0.055 * mix(1.0, -1.6, outer);
-    world.xz = mat2(cos(oa), -sin(oa), sin(oa), cos(oa)) * world.xz;
-    float tilt = mix(0.35, -0.22, outer);
-    world.yz = mat2(cos(tilt), -sin(tilt), sin(tilt), cos(tilt)) * world.yz;
+    float oa = time * 0.055 * mix( 1.0, -1.6, outer );
+    world.xz = mat2( cos( oa ), -sin( oa ), sin( oa ), cos( oa ) ) * world.xz;
+    float tilt = mix( 0.35, -0.22, outer );
+    world.yz = mat2( cos( tilt ), -sin( tilt ), sin( tilt ), cos( tilt ) ) * world.yz;
 
     // ORBIT (user feedback): the camera circles the attractor
-    vec3 vp = world;
+    vec3  vp = world;
     float yaw = time * 0.16 + audioAdvance * 0.08;
-    float cy = cos(yaw), sy = sin(yaw);
-    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
-    float pit = 0.30 * sin(time * 0.12);
-    float pc2 = cos(pit), ps2 = sin(pit);
-    vp.yz = mat2(pc2, -ps2, ps2, pc2) * vp.yz;
+    float cy = cos( yaw ), sy = sin( yaw );
+    vp.xz = mat2( cy, -sy, sy, cy ) * vp.xz;
+    float pit = 0.30 * sin( time * 0.12 );
+    float pc2 = cos( pit ), ps2 = sin( pit );
+    vp.yz = mat2( pc2, -ps2, ps2, pc2 ) * vp.yz;
     // 20 instead of 30: at 30 units the attractor spanned 0.64 of the frame
     // height and barely a third of its width.  The outer shell sits a little
     // further back so it reads as being BEHIND the core body.
-    vp += vec3(0.0, 0.0, mix(20.0, 27.0, outer));
+    vp += vec3( 0.0, 0.0, mix( 20.0, 27.0, outer ) );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-    if (vp.z < 0.5)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.5 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
     // 130 instead of 95: at the old distance every sprite sat near the 1.5 px
     // floor and the strands never joined into ribbons of light.
-    gl_PointSize = clamp(130.0 * (0.5 + 0.5 * r4) * px / dist, 1.8, 14.0 * px);
+    gl_PointSize = clamp( 130.0 * ( 0.5 + 0.5 * r4 ) * px / dist, 1.8, 14.0 * px );
 
     // Velocity magnitude -> colour heat; the head of each trajectory glows.
-    float sp = clamp(length(vel) * 0.05, 0.0, 1.0);
-    float head = smoothstep(70.0, 99.0, stp);
-    vec3 col = imgPalette(0.30 * sp + traj * 0.0003) * 1.4;
-    col *= (0.35 + 0.85 * sp + 0.7 * head)
-         * (0.8 + 0.4 * audioSwell + 0.3 * audioKick + 0.9 * audioDrop);
-    col *= mix(1.0, 0.62, outer);       // the far shell reads as further away
+    float sp = clamp( length( vel ) * 0.05, 0.0, 1.0 );
+    float head = smoothstep( 70.0, 99.0, stp );
+    vec3  col = imgPalette( 0.30 * sp + traj * 0.0003 ) * 1.4;
+    col *= ( 0.35 + 0.85 * sp + 0.7 * head )
+           * ( 0.8 + 0.4 * audioSwell + 0.3 * audioKick + 0.9 * audioDrop );
+    col *= mix( 1.0, 0.62, outer ); // the far shell reads as further away
 
     // The sprites now cover several times the area they used to, so the same
     // per-point gain would blow the whole body out to flat white: the gain
     // comes down and the sum is capped as a TINTED vec3, not as a scalar.
-    vCol = vec4(min(col * 1.6, vec3(1.7)), 1.0);
+    vCol = vec4( min( col * 1.6, vec3( 1.7 ) ), 1.0 );
 }

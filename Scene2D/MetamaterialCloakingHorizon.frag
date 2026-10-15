@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MetamaterialCloakingHorizon.frag
  * @brief METAMATERIAL CLOAKING HORIZON: Transformation-optics invisibility cloaking shell.
@@ -18,25 +18,26 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   waveDensityP float optical wavefront fringe frequency     (6.0..20.0)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float cloakRadiusP;
 uniform float transScaleP;
@@ -44,78 +45,83 @@ uniform float causticP;
 uniform float waveDensityP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
+    vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.35 + audioAdvance * 0.3;
-    
-    float r = length(uv);
-    float theta = atan(uv.y, uv.x) + audioPhase * 0.3;
-    
+
+    float r = length( uv );
+    float theta = atan( uv.y, uv.x ) + audioPhase * 0.3;
+
     // Transformation optics cloaking parameters (Pendry-Schurig coordinate map)
-    float R1 = 0.25 * (cloakRadiusP > 0.01 ? cloakRadiusP : 1.0) * (1.0 + 0.3 * audioSwell); // Inner hidden core
-    float R2 = 0.65 * (transScaleP > 0.01 ? transScaleP : 1.0);                               // Outer cloaking shell
-    
-    vec2 transformedUv = uv;
+    float R1 = 0.25 * ( cloakRadiusP > 0.01 ? cloakRadiusP : 1.0 ) * ( 1.0 + 0.3 * audioSwell ); // Inner hidden core
+    float R2 = 0.65 * ( transScaleP > 0.01 ? transScaleP : 1.0 );                                // Outer cloaking shell
+
+    vec2  transformedUv = uv;
     float inCloakShell = 0.0;
-    
-    if (r < R2) {
-        if (r > R1) {
+
+    if ( r < R2 )
+    {
+        if ( r > R1 )
+        {
             // Transformation map: r' = R1 + r * (R2 - R1) / R2
-            float r_prime = R1 + (r - R1) * (R2 / (R2 - R1));
-            transformedUv = vec2(cos(theta), sin(theta)) * r_prime;
+            float r_prime = R1 + ( r - R1 ) * ( R2 / ( R2 - R1 ) );
+            transformedUv = vec2( cos( theta ), sin( theta ) ) * r_prime;
             inCloakShell = 1.0;
-        } else {
+        }
+        else
+        {
             // Inside the hidden core (isolated region)
-            transformedUv = uv * (R2 / max(R1, 0.01));
+            transformedUv = uv * ( R2 / max( R1, 0.01 ) );
         }
     }
-    
+
     // Wavefront propagation across transformed space
-    float waveFreq = (waveDensityP > 0.01 ? waveDensityP : 12.0);
-    float wavefronts = sin(transformedUv.x * waveFreq - t * 4.0) * 0.5 + 0.5;
-    
+    float waveFreq = ( waveDensityP > 0.01 ? waveDensityP : 12.0 );
+    float wavefronts = sin( transformedUv.x * waveFreq - t * 4.0 ) * 0.5 + 0.5;
+
     // Compressed boundary caustics (high gradient of transformation at R1 and R2)
-    float causticR1 = exp(-abs(r - R1) * 35.0) * (causticP > 0.01 ? causticP : 1.5) * (1.0 + 3.0 * audioKick);
-    float causticR2 = exp(-abs(r - R2) * 25.0) * (0.8 + 0.8 * audioMid);
-    
+    float causticR1 = exp( -abs( r - R1 ) * 35.0 ) * ( causticP > 0.01 ? causticP : 1.5 ) * ( 1.0 + 3.0 * audioKick );
+    float causticR2 = exp( -abs( r - R2 ) * 25.0 ) * ( 0.8 + 0.8 * audioMid );
+
     // Core concealment shadow & inner resonator modes
-    float inCore = smoothstep(R1 + 0.02, R1 - 0.02, r);
-    float coreMode = sin(theta * 8.0 + t * 2.0) * inCore * (0.4 + 1.2 * audioSubBass);
-    
+    float inCore = smoothstep( R1 + 0.02, R1 - 0.02, r );
+    float coreMode = sin( theta * 8.0 + t * 2.0 ) * inCore * ( 0.4 + 1.2 * audioSubBass );
+
     // Palette assignments
-    vec3 colWave = imgPalette(fract(transformedUv.x * 0.2 + t * 0.05 + audioCentroid));
-    vec3 colR1   = imgPalette(t * 0.1) * 2.2;
-    vec3 colR2   = imgPalette(fract(theta * 0.159 + 0.5)) * 1.5;
-    vec3 colCore = imgPalette(fract(r * 2.0 + audioPhase));
-    
+    vec3 colWave = imgPalette( fract( transformedUv.x * 0.2 + t * 0.05 + audioCentroid ) );
+    vec3 colR1 = imgPalette( t * 0.1 ) * 2.2;
+    vec3 colR2 = imgPalette( fract( theta * 0.159 + 0.5 ) ) * 1.5;
+    vec3 colCore = imgPalette( fract( r * 2.0 + audioPhase ) );
+
     // Sample background photo with transformation lensing
-    vec2 bgUv = fract(transformedUv * 0.5 + 0.5);
-    vec3 bg = img(bgUv);
-    
+    vec2 bgUv = fract( transformedUv * 0.5 + 0.5 );
+    vec3 bg = img( bgUv );
+
     vec3 col = bg * 0.55;
-    col += colWave * wavefronts * (0.6 + 0.4 * inCloakShell);
+    col += colWave * wavefronts * ( 0.6 + 0.4 * inCloakShell );
     col += colR1 * causticR1;
     col += colR2 * causticR2;
     col += colCore * coreMode * 1.5;
-    col += imgPalette(audioAdvance * 0.1) * (audioKick * 0.3);
-    
+    col += imgPalette( audioAdvance * 0.1 ) * ( audioKick * 0.3 );
+
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FxDepthField.frag
  * @brief FX DEPTH FIELD: physically based depth-of-field blur driven by the
@@ -29,87 +29,87 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // depthValid tells us whether each layer's depth is real geometry at all.  A 2D
 // effect leaves the far plane there, and blurring THAT would mean blurring the
 // whole frame uniformly — so those layers pass through untouched.
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2      resolution; ///< Size of the render target in pixels.
+uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;       ///< The current photo.
+uniform sampler2D tex1;       ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
-uniform vec2  depthValid;
-uniform vec2  nearFar;   ///< Near and far clip distances.
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthValid;
+uniform vec2      nearFar;       ///< Near and far clip distances.
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioBeat;    ///< Beat envelope, 0..1.
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass; ///< Sub-bass band level, 0..1.
+uniform float audioHigh;    ///< High band level, 0..1.
 
-uniform float focusP;       ///< preset: resting focal distance
-uniform float apertureP;    ///< preset: how fast things go soft
-uniform float bokehP;       ///< preset: highlight blooming in the blur
+uniform float focusP;    ///< preset: resting focal distance
+uniform float apertureP; ///< preset: how fast things go soft
+uniform float bokehP;    ///< preset: highlight blooming in the blur
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// A depth buffer is stored non-linearly — most of its precision sits near the
 /// camera.  Comparing raw values would put the whole scene in one bucket, so it
 /// has to be turned back into a distance first.
-float linearise(float d)
+float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
     float z = d * 2.0 - 1.0;
-    return (2.0 * n * f) / (f + n - z * (f - n));
+    return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
 /// 12-tap ring, golden-angle spaced.  A ring gathers a disc of confusion far
 /// more evenly than a box of the same tap count, which is what keeps the bokeh
 /// round instead of cross-shaped.
-vec3 blurAt(sampler2D src, sampler2D dep, vec2 uv, float focus, float valid)
+vec3 blurAt( sampler2D src, sampler2D dep, vec2 uv, float focus, float valid )
 {
-    vec3 c = texture(src, uv).rgb;
-    if (valid < 0.5)
+    vec3 c = texture( src, uv ).rgb;
+    if ( valid < 0.5 )
         return c;
 
-    float z = linearise(texture(dep, uv).r);
+    float z = linearise( texture( dep, uv ).r );
     // Circle of confusion, signed distance from the focal plane in metres,
     // normalised so that the aperture setting behaves the same at any depth.
-    float coc = abs(z - focus) / max(focus, 1.0);
-    coc = clamp(coc * (0.6 + 3.2 * apertureP) - 0.04, 0.0, 1.0);
+    float coc = abs( z - focus ) / max( focus, 1.0 );
+    coc = clamp( coc * ( 0.6 + 3.2 * apertureP ) - 0.04, 0.0, 1.0 );
 
     // Kept modest on purpose: 12 taps spread over a large disc stop reading as
     // a blur and start reading as twelve copies.  Wider bokeh needs more taps,
     // not a bigger radius.
     float radius = coc * 0.014;
-    if (radius < 0.0008)
+    if ( radius < 0.0008 )
         return c;
 
     // Rotate each pixel's tap pattern by a HASH, not by a smooth function of
     // uv.  Neighbouring pixels otherwise share almost the same twelve
     // directions, and the sampling turns into a visible weave rather than
     // averaging away.
-    float rot = fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453) * 6.2831853;
+    float rot = fract( sin( dot( uv, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ) * 6.2831853;
 
-    vec3 sum = c;
+    vec3  sum = c;
     float wsum = 1.0;
-    for (int i = 0; i < 12; ++i)
+    for ( int i = 0; i < 12; ++i )
     {
-        float a = float(i) * 2.3999632 + rot;
-        float r = sqrt((float(i) + 0.5) / 12.0) * radius;
-        vec2 o = vec2(cos(a), sin(a)) * r * vec2(1.0, resolution.x / resolution.y);
-        vec2 su = clamp(uv + o, vec2(0.001), vec2(0.999));
+        float a = float( i ) * 2.3999632 + rot;
+        float r = sqrt( ( float( i ) + 0.5 ) / 12.0 ) * radius;
+        vec2  o = vec2( cos( a ), sin( a ) ) * r * vec2( 1.0, resolution.x / resolution.y );
+        vec2  su = clamp( uv + o, vec2( 0.001 ), vec2( 0.999 ) );
 
-        vec3 s = texture(src, su).rgb;
-        float sz = linearise(texture(dep, su).r);
+        vec3  s = texture( src, su ).rgb;
+        float sz = linearise( texture( dep, su ).r );
 
         // Reject samples that are IN FOCUS and in front: a sharp foreground
         // object must not smear into a blurred background, which is the
         // artefact that gives cheap depth of field its halos.
-        float sc = clamp(abs(sz - focus) / max(focus, 1.0) * (0.6 + 3.2 * apertureP), 0.0, 1.0);
-        float w = (sz > z - 0.05) ? 1.0 : sc;
+        float sc = clamp( abs( sz - focus ) / max( focus, 1.0 ) * ( 0.6 + 3.2 * apertureP ), 0.0, 1.0 );
+        float w = ( sz > z - 0.05 ) ? 1.0 : sc;
 
         // Bright samples weigh more, which is what turns out-of-focus
         // highlights into visible bokeh discs instead of grey mush.
-        w *= 1.0 + bokehP * 2.5 * max(max(s.r, s.g), s.b);
+        w *= 1.0 + bokehP * 2.5 * max( max( s.r, s.g ), s.b );
 
         sum += s * w;
         wsum += w;
@@ -124,20 +124,20 @@ void main()
 
     // The focal plane rides the music.  audioSubBass pulls it in, the kick
     // snaps it back out — a rack focus on the beat.
-    float focus = focusP * (26.0 - 13.0 * audioSubBass + 7.0 * audioKick);
-    focus = clamp(focus, nearFar.x + 1.0, nearFar.y * 0.75);
+    float focus = focusP * ( 26.0 - 13.0 * audioSubBass + 7.0 * audioKick );
+    focus = clamp( focus, nearFar.x + 1.0, nearFar.y * 0.75 );
 
-    vec3 a = blurAt(tex0, texDepth0, uv, focus, depthValid.x);
-    vec3 b = blurAt(tex1, texDepth1, uv, focus, depthValid.y);
+    vec3 a = blurAt( tex0, texDepth0, uv, focus, depthValid.x );
+    vec3 b = blurAt( tex1, texDepth1, uv, focus, depthValid.y );
 
-    vec3 col = mix(b, a, clamp(interpolation, 0.0, 1.0));
+    vec3 col = mix( b, a, clamp( interpolation, 0.0, 1.0 ) );
 
     // A whisper of chromatic fringing in the strongly defocused corners, which
     // is what a fast lens actually does.
-    float edge = length(uv - 0.5) * 1.4;
-    col.r *= 1.0 + 0.05 * edge * (0.3 + apertureP);
-    col.b *= 1.0 - 0.04 * edge * (0.3 + apertureP);
+    float edge = length( uv - 0.5 ) * 1.4;
+    col.r *= 1.0 + 0.05 * edge * ( 0.3 + apertureP );
+    col.b *= 1.0 - 0.04 * edge * ( 0.3 + apertureP );
 
     col *= 1.0 + 0.10 * audioBeat;
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

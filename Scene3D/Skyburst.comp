@@ -10,7 +10,7 @@
 // The phase comes from audioAdvance, the host-integrated clock, so shells fire
 // on a musical grid without needing any event history to react to.
 // -----------------------------------------------------------------------
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
  * @file Skyburst.comp
@@ -36,33 +36,40 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * stage turns into the gradient, town glow, star field and ground.
  */
 
-layout(std430, binding = 0) buffer Verts { float verts[]; };
-layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+layout( std430, binding = 0 ) buffer Verts
+{
+    float verts[];
+};
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float sceneSeed;   ///< A random number fixed per activation.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
+uniform uint  maxVertices;     ///< Capacity of the vertex buffer (compute stage).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;       ///< A random number fixed per activation.
+uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                               ///< backwards).
+uniform float audioLevel;      ///< Overall loudness, 0..1.
+uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;    ///< Sub-bass band level, 0..1.
+uniform float audioHigh;       ///< High band level, 0..1.
+uniform float audioChroma[12]; ///< Pitch-class energies (12 values).
 
-uniform float burstP;       ///< preset: burst size
-uniform float trailP;       ///< preset: trail length
-uniform float rateP;        ///< preset: how often shells go up
+uniform float burstP; ///< preset: burst size
+uniform float trailP; ///< preset: trail length
+uniform float rateP;  ///< preset: how often shells go up
 
-const int SHELLS = 24;                ///< was 14: the sky has room for more
+const int SHELLS = 24; ///< was 14: the sky has room for more
 const int SPARKS = 480;
-const int TRAIL  = 6;                 ///< points per trail -> TRAIL-1 segments
+const int TRAIL = 6; ///< points per trail -> TRAIL-1 segments
 // The night sky itself, as real geometry.  Everything the old scene called
 // "sky" was only ever added ON TOP of spark fragments, so the actual
 // background stayed pure black and three quarters of the frame was empty.
 // A 48 x 24 lat-long dome costs 1,152 quads and fills every one of them.
-const uint SKY_AZ   = 48u;
-const uint SKY_EL   = 24u;
-const uint SKY_BASE = uint(SHELLS * SPARKS);
+const uint SKY_AZ = 48u;
+const uint SKY_EL = 24u;
+const uint SKY_BASE = uint( SHELLS * SPARKS );
 // THE DOME HAS TO FIT INSIDE THE FAR PLANE.  Scene3DShader::draw builds the
 // projection with far = 220 (EffectShader::kSceneFar), and the dome is centred
 // on the camera, so every one of its vertices sits at exactly SKY_R units of
@@ -72,7 +79,7 @@ const uint SKY_BASE = uint(SHELLS * SPARKS);
 // background even after this dome was added.  190 leaves ~30 units of margin
 // and still sits behind every spark (the furthest a shell's sparks reach from
 // the camera is about 170).
-const float SKY_R   = 190.0;
+const float SKY_R = 190.0;
 // How far below the horizon the dome reaches.  The view is pitched up by
 // 0.13 rad and the frustum's half-height is 0.52 rad, so the bottom edge of
 // the frame looks 0.39 rad BELOW horizontal; the dome has to reach past that
@@ -83,31 +90,39 @@ const float SKY_LOW = -0.55;
 // spread (v/k, about 8 units) — the sphere never opens, the sparks just rain
 // downward.  Slowing gravity is what buys the bloom its moment.
 const float GRAV = 3.4;
-const float BURST_AT = 0.30;          ///< fraction of the shell's life
+const float BURST_AT = 0.30; ///< fraction of the shell's life
 const float DRAG = 1.15;
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash1(float n) { return fract(sin(n * 91.3458) * 47453.5453); }
-vec2  hash2(float n) { return fract(sin(vec2(n * 91.3458, n * 47.1234)) * 43758.5453); }
+float hash1( float n )
+{
+    return fract( sin( n * 91.3458 ) * 47453.5453 );
+}
+vec2 hash2( float n )
+{
+    return fract( sin( vec2( n * 91.3458, n * 47.1234 ) ) * 43758.5453 );
+}
 
 /// Where a spark is at local time t after the burst.  Exponential drag, not a
 /// linear slowdown: a spark decelerates hardest immediately after the burst,
 /// which is what gives a firework its characteristic sudden bloom followed by a
 /// slow drift.
-vec3 sparkAt(vec3 burstPos, vec3 v, float t)
+vec3 sparkAt( vec3 burstPos, vec3 v, float t )
 {
     float k = DRAG;
-    float f = (1.0 - exp(-k * t)) / k;
-    return burstPos + v * f - vec3(0.0, 0.5 * GRAV * t * t, 0.0);
+    float f = ( 1.0 - exp( -k * t ) ) / k;
+    return burstPos + v * f - vec3( 0.0, 0.5 * GRAV * t * t, 0.0 );
 }
 
 /// kind: 0 = spark trail, 1 = sky dome.  It rides in the slot that used to be
 /// written as a constant zero, so the vertex layout is unchanged.
-void writeVertexK(uint slot, vec3 p, float age, float shellHue, float bright,
-                  float kind)
+void writeVertexK( uint slot, vec3 p, float age, float shellHue, float bright,
+                   float kind )
 {
     uint o = slot * 8u;
-    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 0u] = p.x;
+    verts[o + 1u] = p.y;
+    verts[o + 2u] = p.z;
     verts[o + 3u] = age;
     verts[o + 4u] = shellHue;
     verts[o + 5u] = bright;
@@ -116,169 +131,170 @@ void writeVertexK(uint slot, vec3 p, float age, float shellHue, float bright,
 }
 
 /// @brief Writes one vertex into the output buffer (compute stage).
-void writeVertex(uint slot, vec3 p, float age, float shellHue, float bright)
+void writeVertex( uint slot, vec3 p, float age, float shellHue, float bright )
 {
-    writeVertexK(slot, p, age, shellHue, bright, 0.0);
+    writeVertexK( slot, p, age, shellHue, bright, 0.0 );
 }
 
 /// A point on the dome from azimuth a and normalised height h (-1 .. 1).
-vec3 domeAt(float a, float h)
+vec3 domeAt( float a, float h )
 {
-    float rr = sqrt(max(1.0 - h * h, 0.0));
-    return vec3(SKY_R * rr * cos(a), SKY_R * h, SKY_R * rr * sin(a));
+    float rr = sqrt( max( 1.0 - h * h, 0.0 ) );
+    return vec3( SKY_R * rr * cos( a ), SKY_R * h, SKY_R * rr * sin( a ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;
-    uint id = g.x + 64u * (g.y + 64u * g.z);
-    if (id >= SKY_BASE + SKY_AZ * SKY_EL)
+    uint  id = g.x + 64u * ( g.y + 64u * g.z );
+    if ( id >= SKY_BASE + SKY_AZ * SKY_EL )
         return;
 
     // ---- the night sky ------------------------------------------------
-    if (id >= SKY_BASE)
+    if ( id >= SKY_BASE )
     {
-        uint q  = id - SKY_BASE;
-        float ia = float(q % SKY_AZ);
-        float ie = float(q / SKY_AZ);
+        uint  q = id - SKY_BASE;
+        float ia = float( q % SKY_AZ );
+        float ie = float( q / SKY_AZ );
 
-        float a0 = 6.2831853 * ia / float(SKY_AZ);
-        float a1 = 6.2831853 * (ia + 1.0) / float(SKY_AZ);
-        float f0 = ie / float(SKY_EL);
-        float f1 = (ie + 1.0) / float(SKY_EL);
-        float h0 = mix(SKY_LOW, 1.0, f0);
-        float h1 = mix(SKY_LOW, 1.0, f1);
+        float a0 = 6.2831853 * ia / float( SKY_AZ );
+        float a1 = 6.2831853 * ( ia + 1.0 ) / float( SKY_AZ );
+        float f0 = ie / float( SKY_EL );
+        float f1 = ( ie + 1.0 ) / float( SKY_EL );
+        float h0 = mix( SKY_LOW, 1.0, f0 );
+        float h1 = mix( SKY_LOW, 1.0, f1 );
 
-        uint base = atomicAdd(cmd[4], 6u);
-        if (base + 6u > maxVertices)
+        uint base = atomicAdd( cmd[4], 6u );
+        if ( base + 6u > maxVertices )
             return;
 
         // age carries the normalised elevation and hue the azimuth: the
         // fragment stage reads them back as the sky gradient's ramp and as the
         // coordinates of its star field.
-        vec3 p00 = domeAt(a0, h0), p10 = domeAt(a1, h0);
-        vec3 p01 = domeAt(a0, h1), p11 = domeAt(a1, h1);
-        float u0 = ia / float(SKY_AZ), u1 = (ia + 1.0) / float(SKY_AZ);
+        vec3  p00 = domeAt( a0, h0 ), p10 = domeAt( a1, h0 );
+        vec3  p01 = domeAt( a0, h1 ), p11 = domeAt( a1, h1 );
+        float u0 = ia / float( SKY_AZ ), u1 = ( ia + 1.0 ) / float( SKY_AZ );
 
-        writeVertexK(base + 0u, p00, f0, u0, 1.0, 1.0);
-        writeVertexK(base + 1u, p10, f0, u1, 1.0, 1.0);
-        writeVertexK(base + 2u, p11, f1, u1, 1.0, 1.0);
-        writeVertexK(base + 3u, p00, f0, u0, 1.0, 1.0);
-        writeVertexK(base + 4u, p11, f1, u1, 1.0, 1.0);
-        writeVertexK(base + 5u, p01, f1, u0, 1.0, 1.0);
+        writeVertexK( base + 0u, p00, f0, u0, 1.0, 1.0 );
+        writeVertexK( base + 1u, p10, f0, u1, 1.0, 1.0 );
+        writeVertexK( base + 2u, p11, f1, u1, 1.0, 1.0 );
+        writeVertexK( base + 3u, p00, f0, u0, 1.0, 1.0 );
+        writeVertexK( base + 4u, p11, f1, u1, 1.0, 1.0 );
+        writeVertexK( base + 5u, p01, f1, u0, 1.0, 1.0 );
         return;
     }
 
-    int shell = int(id) / SPARKS;
-    int spark = int(id) % SPARKS;
+    int shell = int( id ) / SPARKS;
+    int spark = int( id ) % SPARKS;
 
-    float sf = float(shell) + sceneSeed * 53.0;
-    vec2  sh = hash2(sf);
-    float sh2 = hash1(sf + 7.7);
+    float sf = float( shell ) + sceneSeed * 53.0;
+    vec2  sh = hash2( sf );
+    float sh2 = hash1( sf + 7.7 );
 
     // Each shell runs its own life cycle, offset so they do not all fire
     // together.  rateP sets how many lives pass per unit of the audio clock.
-    float rate = rateP * (0.055 + 0.02 * sh.x);
-    float life = fract(audioAdvance * rate + hash1(sf + 3.1));
-    if (life < 0.02)
-        return;                        // still on the ground
+    float rate = rateP * ( 0.055 + 0.02 * sh.x );
+    float life = fract( audioAdvance * rate + hash1( sf + 3.1 ) );
+    if ( life < 0.02 )
+        return; // still on the ground
 
     // ---- the mortar ----
     // Pads spread right across the field and shells burst at wildly different
     // heights: fourteen shells clustered in a 52-unit strip all bursting
     // between 10 and 17 units up put every firework into the same small patch
     // in the middle of the picture.
-    vec3 pad = vec3((sh.x - 0.5) * 130.0, 0.0, 18.0 + sh.y * 90.0);
-    float apex = 8.0 + 26.0 * sh2 * (1.0 + 0.4 * audioSubBass);
+    vec3  pad = vec3( ( sh.x - 0.5 ) * 130.0, 0.0, 18.0 + sh.y * 90.0 );
+    float apex = 8.0 + 26.0 * sh2 * ( 1.0 + 0.4 * audioSubBass );
     // Rise time is BURST_AT of the life; pick the launch speed that reaches the
     // apex exactly then, so the shell always bursts at the top of its arc.
     float riseT = BURST_AT;
     float v0 = apex / riseT + 0.5 * GRAV * riseT;
 
-    if (life < BURST_AT)
+    if ( life < BURST_AT )
     {
         // Still climbing: draw the mortar's own trail, a short bright streak.
-        if (spark >= 12)
-            return;                    // one thin trail, not 620 of them
+        if ( spark >= 12 )
+            return; // one thin trail, not 620 of them
         float t = life;
-        uint need = uint(TRAIL - 1) * 6u;
-        uint base = atomicAdd(cmd[4], need);
-        if (base + need > maxVertices)
+        uint  need = uint( TRAIL - 1 ) * 6u;
+        uint  base = atomicAdd( cmd[4], need );
+        if ( base + need > maxVertices )
             return;
 
-        float hue = fract(0.08 + 0.05 * sh2);
+        float hue = fract( 0.08 + 0.05 * sh2 );
         float dt = 0.012;
-        for (int s = 0; s < TRAIL - 1; ++s)
+        for ( int s = 0; s < TRAIL - 1; ++s )
         {
-            float t0 = max(t - float(s)     * dt, 0.0);
-            float t1 = max(t - float(s + 1) * dt, 0.0);
-            vec3 a = pad + vec3(0.0, v0 * t0 - 0.5 * GRAV * t0 * t0, 0.0);
-            vec3 b = pad + vec3(0.0, v0 * t1 - 0.5 * GRAV * t1 * t1, 0.0);
+            float t0 = max( t - float( s ) * dt, 0.0 );
+            float t1 = max( t - float( s + 1 ) * dt, 0.0 );
+            vec3  a = pad + vec3( 0.0, v0 * t0 - 0.5 * GRAV * t0 * t0, 0.0 );
+            vec3  b = pad + vec3( 0.0, v0 * t1 - 0.5 * GRAV * t1 * t1, 0.0 );
             // Screen-constant, like the burst trails below (see there).
-            float dm = max(length(a), 4.0);
+            float dm = max( length( a ), 4.0 );
             float w0 = 0.0030 * dm, w1 = 0.0022 * dm;
-            uint o = base + uint(s) * 6u;
-            float br = 1.0 - float(s) / float(TRAIL);
-            writeVertex(o + 0u, a - vec3(w0, 0, 0), 0.0, hue, br);
-            writeVertex(o + 1u, a + vec3(w0, 0, 0), 0.0, hue, br);
-            writeVertex(o + 2u, b + vec3(w1, 0, 0), 0.0, hue, br * 0.6);
-            writeVertex(o + 3u, a - vec3(w0, 0, 0), 0.0, hue, br);
-            writeVertex(o + 4u, b + vec3(w1, 0, 0), 0.0, hue, br * 0.6);
-            writeVertex(o + 5u, b - vec3(w1, 0, 0), 0.0, hue, br * 0.6);
+            uint  o = base + uint( s ) * 6u;
+            float br = 1.0 - float( s ) / float( TRAIL );
+            writeVertex( o + 0u, a - vec3( w0, 0, 0 ), 0.0, hue, br );
+            writeVertex( o + 1u, a + vec3( w0, 0, 0 ), 0.0, hue, br );
+            writeVertex( o + 2u, b + vec3( w1, 0, 0 ), 0.0, hue, br * 0.6 );
+            writeVertex( o + 3u, a - vec3( w0, 0, 0 ), 0.0, hue, br );
+            writeVertex( o + 4u, b + vec3( w1, 0, 0 ), 0.0, hue, br * 0.6 );
+            writeVertex( o + 5u, b - vec3( w1, 0, 0 ), 0.0, hue, br * 0.6 );
         }
         return;
     }
 
     // ---- after the burst ----
-    vec3 burstPos = pad + vec3(0.0, apex, 0.0);
-    float t = (life - BURST_AT) / (1.0 - BURST_AT) * 1.8;   // seconds since burst
+    vec3  burstPos = pad + vec3( 0.0, apex, 0.0 );
+    float t = ( life - BURST_AT ) / ( 1.0 - BURST_AT ) * 1.8; // seconds since burst
 
     // Spark direction: a Fibonacci sphere, which spreads points far more evenly
     // than random directions do — random ones clump and the shell looks moth
     // eaten.
-    float fi = (float(spark) + 0.5) / float(SPARKS);
-    float phi = acos(1.0 - 2.0 * fi);
-    float theta = 2.39996323 * float(spark);
-    vec3 dir = vec3(sin(phi) * cos(theta), cos(phi), sin(phi) * sin(theta));
+    float fi = ( float( spark ) + 0.5 ) / float( SPARKS );
+    float phi = acos( 1.0 - 2.0 * fi );
+    float theta = 2.39996323 * float( spark );
+    vec3  dir = vec3( sin( phi ) * cos( theta ), cos( phi ), sin( phi ) * sin( theta ) );
 
     // A little per-spark speed spread, so the shell has thickness rather than
     // being an infinitely thin shell of light.
-    float speed = burstP * (9.0 + 6.0 * hash1(float(spark) + sf))
-                * (1.0 + 0.25 * audioKick);
-    vec3 v = dir * speed;
+    float speed = burstP * ( 9.0 + 6.0 * hash1( float( spark ) + sf ) )
+                  * ( 1.0 + 0.25 * audioKick );
+    vec3  v = dir * speed;
 
     // Colour from the shell's own pitch class.
-    int band = int(mod(float(shell) * 5.0, 12.0));
-    float hue = fract(0.02 + float(band) / 12.0 + 0.35 * audioChroma[band] * 4.0);
+    int   band = int( mod( float( shell ) * 5.0, 12.0 ) );
+    float hue = fract( 0.02 + float( band ) / 12.0 + 0.35 * audioChroma[band] * 4.0 );
 
-    float fade = 1.0 - smoothstep(1.05, 1.8, t);
-    if (fade <= 0.002)
+    float fade = 1.0 - smoothstep( 1.05, 1.8, t );
+    if ( fade <= 0.002 )
         return;
 
-    uint need = uint(TRAIL - 1) * 6u;
-    uint base = atomicAdd(cmd[4], need);
-    if (base + need > maxVertices)
+    uint need = uint( TRAIL - 1 ) * 6u;
+    uint base = atomicAdd( cmd[4], need );
+    if ( base + need > maxVertices )
         return;
 
     float dt = trailP * 0.055;
-    for (int s = 0; s < TRAIL - 1; ++s)
+    for ( int s = 0; s < TRAIL - 1; ++s )
     {
-        float t0 = max(t - float(s)     * dt, 0.0);
-        float t1 = max(t - float(s + 1) * dt, 0.0);
-        vec3 a = sparkAt(burstPos, v, t0);
-        vec3 b = sparkAt(burstPos, v, t1);
+        float t0 = max( t - float( s ) * dt, 0.0 );
+        float t1 = max( t - float( s + 1 ) * dt, 0.0 );
+        vec3  a = sparkAt( burstPos, v, t0 );
+        vec3  b = sparkAt( burstPos, v, t1 );
 
-        vec3 seg = b - a;
-        float L = length(seg);
-        if (L < 1e-5) continue;
+        vec3  seg = b - a;
+        float L = length( seg );
+        if ( L < 1e-5 )
+            continue;
         // Widen across the segment, in whatever direction is perpendicular to
         // it and roughly horizontal — the trail is a screen-facing streak, and
         // at this scale nothing more careful is visible.
-        vec3 side = normalize(cross(seg / L, vec3(0.0, 0.0, 1.0)) + 1e-4);
+        vec3 side = normalize( cross( seg / L, vec3( 0.0, 0.0, 1.0 ) ) + 1e-4 );
 
-        float f0 = float(s)     / float(TRAIL - 1);
-        float f1 = float(s + 1) / float(TRAIL - 1);
+        float f0 = float( s ) / float( TRAIL - 1 );
+        float f1 = float( s + 1 ) / float( TRAIL - 1 );
         // SCREEN-CONSTANT STREAK WIDTH.  The half-width used to be a fixed
         // 0.035..0.085 WORLD units, which at the depths these shells burst at
         // (40..130) put the median trail at 0.6 px wide at 1080p.  The frame is
@@ -288,17 +304,17 @@ void main()
         // half-width by the spark's own distance from the eye keeps a streak
         // the same thickness on screen wherever its shell is; 0.0022 * dist
         // lands it at ~2.4 px at 1080p, and audioHigh still thickens it.
-        float dcam = max(length(a), 4.0);
-        float wq   = (0.0022 + 0.0019 * audioHigh) * dcam;
-        float w0 = wq * (1.0 - f0) * fade;
-        float w1 = wq * (1.0 - f1) * fade;
+        float dcam = max( length( a ), 4.0 );
+        float wq = ( 0.0022 + 0.0019 * audioHigh ) * dcam;
+        float w0 = wq * ( 1.0 - f0 ) * fade;
+        float w1 = wq * ( 1.0 - f1 ) * fade;
 
-        uint o = base + uint(s) * 6u;
-        writeVertex(o + 0u, a - side * w0, f0, hue, fade * (1.0 - f0));
-        writeVertex(o + 1u, a + side * w0, f0, hue, fade * (1.0 - f0));
-        writeVertex(o + 2u, b + side * w1, f1, hue, fade * (1.0 - f1));
-        writeVertex(o + 3u, a - side * w0, f0, hue, fade * (1.0 - f0));
-        writeVertex(o + 4u, b + side * w1, f1, hue, fade * (1.0 - f1));
-        writeVertex(o + 5u, b - side * w1, f1, hue, fade * (1.0 - f1));
+        uint o = base + uint( s ) * 6u;
+        writeVertex( o + 0u, a - side * w0, f0, hue, fade * ( 1.0 - f0 ) );
+        writeVertex( o + 1u, a + side * w0, f0, hue, fade * ( 1.0 - f0 ) );
+        writeVertex( o + 2u, b + side * w1, f1, hue, fade * ( 1.0 - f1 ) );
+        writeVertex( o + 3u, a - side * w0, f0, hue, fade * ( 1.0 - f0 ) );
+        writeVertex( o + 4u, b + side * w1, f1, hue, fade * ( 1.0 - f1 ) );
+        writeVertex( o + 5u, b - side * w1, f1, hue, fade * ( 1.0 - f1 ) );
     }
 }

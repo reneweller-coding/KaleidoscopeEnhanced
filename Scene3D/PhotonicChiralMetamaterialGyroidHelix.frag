@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PhotonicChiralMetamaterialGyroidHelix.frag
  * @brief PHOTONIC CHIRAL METAMATERIAL GYROID HELIX: 3D chiral metamaterial micro-helix array.
@@ -16,26 +16,27 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   chiralGlowP  float circular dichroism pulse luminance(0.8..2.5)
  */
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 in float vRibbonID;
-in vec3 vCol;   ///< Colour (from the vertex stage).
+in vec3  vCol; ///< Colour (from the vertex stage).
 in float vChiralPulse;
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float chiralGlowP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -46,23 +47,23 @@ void main()
     // lets one helix light its own patch of the picture.
     // Thresholds retuned for the 4.5x quad (was 2.8x) so the metal stays the
     // same apparent width while the bloom reaches much further.
-    float s    = abs(vSide);
-    float core = pow(max(0.0, 1.0 - s / 0.22), 2.2);
-    float edge = exp(-abs(s - 0.185) * 34.0);
-    float halo = exp(-s * 1.5) * 0.20;
+    float s = abs( vSide );
+    float core = pow( max( 0.0, 1.0 - s / 0.22 ), 2.2 );
+    float edge = exp( -abs( s - 0.185 ) * 34.0 );
+    float halo = exp( -s * 1.5 ) * 0.20;
 
-    vec3 photo = img(vUV);
+    vec3 photo = img( vUV );
 
-    vec3 col = vCol * (0.6 + 0.4 * photo) * core * 1.3;
-    col += vec3(0.95, 0.95, 1.0) * vChiralPulse * (chiralGlowP > 0.01 ? chiralGlowP : 1.4)
-         * 2.2 * (core + 0.30 * halo);
+    vec3 col = vCol * ( 0.6 + 0.4 * photo ) * core * 1.3;
+    col += vec3( 0.95, 0.95, 1.0 ) * vChiralPulse * ( chiralGlowP > 0.01 ? chiralGlowP : 1.4 )
+           * 2.2 * ( core + 0.30 * halo );
     col += vCol * edge * 1.4;
-    col += vCol * halo * (0.85 + 0.55 * audioSwell);
-    col *= (0.85 + 0.35 * audioSwell);
-    col += vCol * (audioKick * 0.3) * (core + halo);
+    col += vCol * halo * ( 0.85 + 0.55 * audioSwell );
+    col *= ( 0.85 + 0.35 * audioSwell );
+    col += vCol * ( audioKick * 0.3 ) * ( core + halo );
 
     // Additive geometry: cap the tinted vec3, then soft-knee it
-    col = min(col, vec3(1.5));
-    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col = min( col, vec3( 1.5 ) );
+    col /= 1.0 + 0.45 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

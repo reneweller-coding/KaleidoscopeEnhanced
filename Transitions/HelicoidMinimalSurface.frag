@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file HelicoidMinimalSurface.frag
  * @brief TRANSITION HELICOID MINIMAL SURFACE: Ruled helicoid minimal surface screw transition.
@@ -15,90 +15,97 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP   float minimal surface hue offset       (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float pitchP;   ///< Pitch knob, 0..1.
+uniform float pitchP; ///< Pitch knob, 0..1.
 uniform float screwP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c);
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float ptc = (pitchP > 0.0) ? pitchP : 1.0;
-    float scr = (screwP > 0.0) ? screwP : 1.0;
-    float spd = (speedP > 0.0) ? speedP : 1.0;
-    float hue = (hueP   > 0.0) ? hueP   : 0.0;
+void main()
+{
+    float ptc = ( pitchP > 0.0 ) ? pitchP : 1.0;
+    float scr = ( screwP > 0.0 ) ? screwP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
-    vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float t = time * 0.1875 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
-    float tProg = clamp(interpolation, 0.0, 1.0);
-    float midTransition = sin(tProg * 3.14159265);
+    float t = time * 0.1875 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
+                                   // --transprofile); it spun many times that and read as frantic
+    float tProg = clamp( interpolation, 0.0, 1.0 );
+    float midTransition = sin( tProg * 3.14159265 );
 
-    float r = length(p);
-    float theta = atan(p.y, p.x);
+    float r = length( p );
+    float theta = atan( p.y, p.x );
 
     // Helicoid minimal surface coordinate: z = c * theta + rotation.
     // audioBass undulates the helical pitch dz/dtheta.  It is applied to the
     // SPATIAL theta term only — never to the t term — so the screw rate stays
     // audio-independent (anti-flicker).  midTransition returns the pitch to its
     // base value at both fade endpoints, where the ramp wipe is blended out.
-    float pitchMod = 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float helicoidZ = (theta * pitchMod + tProg * 6.2831853 * scr + t * 0.8) / 3.14159265 * ptc;
-    float rampPhase = fract(helicoidZ);
-    float rampDist = min(rampPhase, 1.0 - rampPhase);
+    float pitchMod = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float helicoidZ = ( theta * pitchMod + tProg * 6.2831853 * scr + t * 0.8 ) / 3.14159265 * ptc;
+    float rampPhase = fract( helicoidZ );
+    float rampDist = min( rampPhase, 1.0 - rampPhase );
 
     // Helical screw coordinate warp; audioBass breathes the radial extent of
     // the screw.  The angle already carries midTransition and warpUV is blended
     // in by midTransition, so both endpoints are exact.
-    float screwRadius = 0.9;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float warpAngle = (1.0 - smoothstep(0.0, screwRadius, r)) * midTransition * 3.14159265;
-    vec2 pWarp = rot2D(warpAngle) * p;
-    vec2 warpUV = (pWarp * resolution.y + 0.5 * resolution) / resolution;
+    float screwRadius = 0.9; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float warpAngle = ( 1.0 - smoothstep( 0.0, screwRadius, r ) ) * midTransition * 3.14159265;
+    vec2  pWarp = rot2D( warpAngle ) * p;
+    vec2  warpUV = ( pWarp * resolution.y + 0.5 * resolution ) / resolution;
 
-    vec4 c1 = texture(tex1, fract(mix(uv, warpUV, midTransition)));
-    vec4 c0 = texture(tex0, fract(mix(warpUV, uv, 1.0 - midTransition)));
+    vec4 c1 = texture( tex1, fract( mix( uv, warpUV, midTransition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( warpUV, uv, 1.0 - midTransition ) ) );
 
-    float wipeMask = smoothstep(0.4, 0.6, rampPhase);
-    vec4 col = mix(c1, c0, mix(tProg, wipeMask, midTransition * 0.7));
+    float wipeMask = smoothstep( 0.4, 0.6, rampPhase );
+    vec4  col = mix( c1, c0, mix( tProg, wipeMask, midTransition * 0.7 ) );
 
     // Glowing helicoid ruling lines
-    float rulingGlow = exp(-rampDist * 20.0) * midTransition;
-    col.rgb += rulingGlow * vec3(1.0, 0.85, 0.3) * (1.3 + audioKick * 1.0);
+    float rulingGlow = exp( -rampDist * 20.0 ) * midTransition;
+    col.rgb += rulingGlow * vec3( 1.0, 0.85, 0.3 ) * ( 1.3 + audioKick * 1.0 );
 
-    if (audioChromaHue != 0.0) col.rgb = hueRot(col.rgb, audioChromaHue * midTransition);
-    if (hue > 0.001) col.rgb = hueRot(col.rgb, hue * midTransition);
+    if ( audioChromaHue != 0.0 )
+        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+    if ( hue > 0.001 )
+        col.rgb = hueRot( col.rgb, hue * midTransition );
 
     fragColor = col;
 }

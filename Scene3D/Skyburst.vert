@@ -6,22 +6,23 @@
  */
 // Skyburst.vert — sparks arrive finished; place them under a night sky.
 
-in vec4 attrA;      ///< xyz = world position, w = age along the trail / sky elevation
-in vec4 attrB;      ///< x = shell hue / sky azimuth, y = brightness, z = kind
+in vec4 attrA; ///< xyz = world position, w = age along the trail / sky elevation
+in vec4 attrB; ///< x = shell hue / sky azimuth, y = brightness, z = kind
 
-out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vWorld; ///< World position (from the vertex stage).
 out float vAge;
 out float vHue;
 out float vBright;
-out float vDist;   ///< Distance (from the vertex stage).
-out float vKind;    ///< 0 = spark trail, 1 = sky dome
+out float vDist; ///< Distance (from the vertex stage).
+out float vKind; ///< 0 = spark trail, 1 = sky dome
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;   ///< Camera height knob, 0..1.
+uniform float camHP; ///< Camera height knob, 0..1.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -31,17 +32,17 @@ void main()
     // Look slightly upward, because that is where fireworks are.  A rotation in
     // view space, the same way GrassField tilts down.
     const float PITCH = -0.13;
-    vec3 vp = vec3(p.x - eyeOff, p.y - camHP, p.z);
-    float cs = cos(PITCH), sn = sin(PITCH);
-    vp = vec3(vp.x, vp.y * cs + vp.z * sn, -vp.y * sn + vp.z * cs);
+    vec3        vp = vec3( p.x - eyeOff, p.y - camHP, p.z );
+    float       cs = cos( PITCH ), sn = sin( PITCH );
+    vp = vec3( vp.x, vp.y * cs + vp.z * sn, -vp.y * sn + vp.z * cs );
 
-    vWorld  = p;
-    vAge    = attrA.w;
-    vHue    = attrB.x;
+    vWorld = p;
+    vAge = attrA.w;
+    vHue = attrB.x;
     vBright = attrB.y;
-    vKind   = attrB.z;
-    vDist   = p.z;
+    vKind = attrB.z;
+    vDist = p.z;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

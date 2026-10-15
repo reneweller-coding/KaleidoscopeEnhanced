@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file TunnelPlain.frag
  * @brief A stripped-down mirrored-segment kaleidoscope tunnel: no base
@@ -24,58 +24,59 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *  - audioLowMid   -> WARMTH: 150-500 Hz harmonic body tints the walls from cool
  *                      steel toward warm amber (luminance-matched, no exposure change)
  */
-uniform vec2 resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float speed;
-uniform int sides;
-uniform float power;
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioFlip;
-uniform float audioAdvance;    ///< integrated, jump-free audio tunnel advance
-uniform float audioFlatness;   ///< 0=tonal .. 1=noise-like -> superellipse wedge shape
-uniform float audioHat;        ///< hi-hat/cymbal onset envelope -> rim shimmer
-uniform float audioLowMid;     ///< 150-500 Hz harmonic warmth -> wall colour
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     speed;
+uniform int       sides;
+uniform float     power;
+uniform float     audioBeat;  ///< Beat envelope, 0..1.
+uniform float     audioLevel; ///< Overall loudness, 0..1.
+uniform float     audioFlip;
+uniform float     audioAdvance;  ///< integrated, jump-free audio tunnel advance
+uniform float     audioFlatness; ///< 0=tonal .. 1=noise-like -> superellipse wedge shape
+uniform float     audioHat;      ///< hi-hat/cymbal onset envelope -> rim shimmer
+uniform float     audioLowMid;   ///< 150-500 Hz harmonic warmth -> wall colour
 
 
 vec2 clampQuadratic( vec2 p )
 {
-	vec2 uv = p;
-	int vorkomma = int(floor( p.x ));	
-	float nachkomma = fract(p.x);
-	
-	//scale
-	nachkomma *= resolution.y/resolution.x;
-	nachkomma += 0.5*(resolution.x-resolution.y)/resolution.x;
-	
-	if( vorkomma - (vorkomma / 2) * 2 == 0 )
-		uv.x = 1.0-nachkomma;
-	else
-		uv.x = nachkomma;
+    vec2  uv = p;
+    int   vorkomma = int( floor( p.x ) );
+    float nachkomma = fract( p.x );
+
+    // scale
+    nachkomma *= resolution.y / resolution.x;
+    nachkomma += 0.5 * ( resolution.x - resolution.y ) / resolution.x;
+
+    if ( vorkomma - ( vorkomma / 2 ) * 2 == 0 )
+        uv.x = 1.0 - nachkomma;
+    else
+        uv.x = nachkomma;
 
 
-	return uv;
+    return uv;
 }
 
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
 
     // normalize to the center
-	vec2 p;
+    vec2 p;
     p.x = gl_FragCoord.x;
     p.y = gl_FragCoord.y;
-	p.x /= resolution.y;
-	p.y /= resolution.y;
-	p.x -= 0.5*resolution.x/resolution.y;
-	p.y -= 0.5;
+    p.x /= resolution.y;
+    p.y /= resolution.y;
+    p.x -= 0.5 * resolution.x / resolution.y;
+    p.y -= 0.5;
 
-//Tunnel foreward    
+    // Tunnel foreward
     p = 3.0 * p;
-    
+
 
     // Spectral flatness reshapes the radial metric: a tonal, single-band
     // spectrum keeps the bore's cross-section taut and structured, a noise-like
@@ -83,36 +84,36 @@ void main() {
     // parameter -- it never touches 'time', so no phase can be remapped.
     // (Multiplicative on purpose: if 'power' is unset the behaviour is exactly
     // as before, no new division-by-zero case is introduced or removed.)
-    float powV = power * (0.80 + 0.40*clamp(audioFlatness, 0.0, 1.0));
-    float r = pow( pow(p.x*p.x,powV) + pow(p.y*p.y,powV), 1.0/(2.0*powV) );
+    float powV = power * ( 0.80 + 0.40 * clamp( audioFlatness, 0.0, 1.0 ) );
+    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
 
     // cartesian to polar coordinates
-    //float r = length(p);
-    float a = atan(p.y, p.x);
+    // float r = length(p);
+    float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5*float(sides);
+    float sidesK = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod(a, tau/sidesK);
-    a = abs(a - tau/sidesK/2.);
- 
-	vec2 uv;
-    uv.x = (speed * time + audioAdvance + .1/r);
-    uv.y = (a/3.1416);
- 
-    //uv = clampQuadratic( uv );  
-    
-    vec4 col = interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
-    col.rgb *= (1.0 + audioBeat * 0.2 + audioLevel * 0.2);
+    a = mod( a, tau / sidesK );
+    a = abs( a - tau / sidesK / 2. );
+
+    vec2 uv;
+    uv.x = ( speed * time + audioAdvance + .1 / r );
+    uv.y = ( a / 3.1416 );
+
+    // uv = clampQuadratic( uv );
+
+    vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+    col.rgb *= ( 1.0 + audioBeat * 0.2 + audioLevel * 0.2 );
 
     // Hats catch only the RIM of the tunnel mouth (large r), never the deep
     // centre, so the shimmer reads as light glancing off the near edge rather
     // than as a full-frame flash.
-    col.rgb *= 1.0 + 0.28*clamp(audioHat, 0.0, 1.0)*smoothstep(0.35, 1.30, r);
+    col.rgb *= 1.0 + 0.28 * clamp( audioHat, 0.0, 1.0 ) * smoothstep( 0.35, 1.30, r );
 
     // Low-mid harmonic body warms the walls from cool steel toward amber.
-    col.rgb *= mix(vec3(0.90, 0.96, 1.10), vec3(1.10, 1.00, 0.90),
-                   clamp(audioLowMid, 0.0, 1.0));
+    col.rgb *= mix( vec3( 0.90, 0.96, 1.10 ), vec3( 1.10, 1.00, 0.90 ),
+                    clamp( audioLowMid, 0.0, 1.0 ) );
 
-    fragColor = clamp(col, 0.0, 1.0);
+    fragColor = clamp( col, 0.0, 1.0 );
 }

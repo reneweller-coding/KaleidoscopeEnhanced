@@ -18,102 +18,108 @@
 // in heavy water with glowing cyan Cherenkov radiation and magnetic deflection.
 //   attrA.x = particle ID, attrA.y = seed, attrA.zw = track params
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioSpread;      ///< narrow spectrum = collimated, wide = fanned out
-uniform float audioRoughness;   ///< sensory dissonance -> track scatter
-uniform float audioHat;         ///< hi-hat / cymbal onset envelope
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioSpread;    ///< narrow spectrum = collimated, wide = fanned out
+uniform float audioRoughness; ///< sensory dissonance -> track scatter
+uniform float audioHat;       ///< hi-hat / cymbal onset envelope
 
 uniform float cascadeP;
 uniform float fieldP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
+out vec2 vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float pi   = attrA.x; // particle index 0..59999
-    vec4 seeds = attrB;
+void main()
+{
+    float pi = attrA.x; // particle index 0..59999
+    vec4  seeds = attrB;
 
-    float csc = (cascadeP > 0.0) ? cascadeP : 1.0;
-    float fld = (fieldP   > 0.0) ? fieldP   : 1.0;
-    float spd = (speedP   > 0.0) ? speedP   : 1.0;
-    float hue = (hueP     > 0.0) ? hueP     : 0.0;
+    float csc = ( cascadeP > 0.0 ) ? cascadeP : 1.0;
+    float fld = ( fieldP > 0.0 ) ? fieldP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Shower generation cycle
-    float cycle = fract(seeds.x + time * 0.4 * spd + audioAdvance * 0.2);
+    float cycle = fract( seeds.x + time * 0.4 * spd + audioAdvance * 0.2 );
     float sDist = cycle * 12.0 * csc;
 
     // Cone opening angle — the SPECTRAL spread sets the shower's spatial
     // spread: a narrow, pure spectrum collimates the cascade into a tight
     // pencil beam, a rich broadband one fans it out across the tank.
     float coneAngle = seeds.y * 6.2831853;
-    float spread = (0.25 + 0.5 * seeds.z) * cycle * (0.75 + 0.55 * audioSpread);
+    float spread = ( 0.25 + 0.5 * seeds.z ) * cycle * ( 0.75 + 0.55 * audioSpread );
 
     // Magnetic field Lorentz curvature (helical spiral track)
-    float charge = (seeds.w > 0.5) ? 1.0 : -1.0;
+    float charge = ( seeds.w > 0.5 ) ? 1.0 : -1.0;
     float lorentzAngle = coneAngle + cycle * 4.0 * fld * charge;
 
     vec3 worldP = vec3(
-        cos(lorentzAngle) * spread * 6.0,
-        sin(lorentzAngle) * spread * 6.0,
-        sDist - 6.0
-    );
+        cos( lorentzAngle ) * spread * 6.0,
+        sin( lorentzAngle ) * spread * 6.0,
+        sDist - 6.0 );
 
     // Dissonant clusters scatter the tracks off their clean helical paths —
     // consonant harmony lets every particle ride its Lorentz spiral cleanly.
     float jitter = audioRoughness * 0.55;
-    worldP.xy += vec2(sin(seeds.x * 91.7 + cycle * 17.0),
-                      cos(seeds.y * 73.3 + cycle * 13.0)) * jitter * spread * 3.0;
+    worldP.xy += vec2( sin( seeds.x * 91.7 + cycle * 17.0 ),
+                       cos( seeds.y * 73.3 + cycle * 13.0 ) )
+                 * jitter * spread * 3.0;
 
     // Kick shockwave explosion
-    worldP += normalize(worldP + vec3(0.001)) * audioKick * 2.0 * exp(-cycle * 3.0);
+    worldP += normalize( worldP + vec3( 0.001 ) ) * audioKick * 2.0 * exp( -cycle * 3.0 );
 
     // Camera space
-    vec3 camPos = vec3(0.0, 0.0, -10.0);
+    vec3 camPos = vec3( 0.0, 0.0, -10.0 );
     vec3 relP = worldP - camPos;
     relP.x -= eyeOff;
 
-    gl_Position = projM * vec4(relP.x, relP.y, -relP.z, 1.0);
+    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Point size attenuation — hi-hats/cymbals spark a scattered SUBSET of the
     // tracks into brief bright grains (bounded, so the frame cannot flood).
-    float hatSpark = min(audioHat, 1.0) * step(0.62, seeds.z) * (1.0 - cycle);
-    gl_PointSize = (7.0 + 12.0 * audioKick * (1.0 - cycle) + 4.5 * hatSpark)
-                 * (1.0 / max(gl_Position.w * 0.1, 0.5));
+    float hatSpark = min( audioHat, 1.0 ) * step( 0.62, seeds.z ) * ( 1.0 - cycle );
+    gl_PointSize = ( 7.0 + 12.0 * audioKick * ( 1.0 - cycle ) + 4.5 * hatSpark )
+                   * ( 1.0 / max( gl_Position.w * 0.1, 0.5 ) );
 
-    vUV = vec2(seeds.x, seeds.y);
+    vUV = vec2( seeds.x, seeds.y );
 
     // Pure Cherenkov cyan / ultraviolet electric color
-    vec3 cherenkovCyan = vec3(0.05, 0.85, 1.0);
-    vec3 cherenkovWhite = vec3(0.9, 0.98, 1.0);
-    vec3 col = mix(cherenkovCyan, cherenkovWhite, exp(-cycle * 4.0));
+    vec3 cherenkovCyan = vec3( 0.05, 0.85, 1.0 );
+    vec3 cherenkovWhite = vec3( 0.9, 0.98, 1.0 );
+    vec3 col = mix( cherenkovCyan, cherenkovWhite, exp( -cycle * 4.0 ) );
     // Cymbal hits also flash those sparked tracks toward pure white.
-    col = mix(col, cherenkovWhite, hatSpark * 0.35);
+    col = mix( col, cherenkovWhite, hatSpark * 0.35 );
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if ( audioChromaHue != 0.0 )
+        col = hueRot( col, audioChromaHue );
+    if ( hue > 0.001 )
+        col = hueRot( col, hue );
 
-    vCol = vec4(col * (1.0 + audioHigh * 1.2), 1.0 - cycle);
+    vCol = vec4( col * ( 1.0 + audioHigh * 1.2 ), 1.0 - cycle );
 }

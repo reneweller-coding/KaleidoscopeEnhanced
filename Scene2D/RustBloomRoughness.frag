@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file RustBloomRoughness.frag
  * @brief RUST BLOOM ROUGHNESS: a chrome plate of the photo that rusts with
@@ -20,56 +20,66 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: seedsP, pitP, hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioHarmChange;   ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;       ///< Seconds since this scene was activated.
+uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                               ///< backwards).
+uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
+uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;      ///< Overall loudness, 0..1.
+uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float seedsP;
 uniform float pitP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-/// @brief Smooth 2D value noise, 0..1.
-float noise2(vec2 p)
+float hash21( vec2 p )
 {
-    vec2 i = floor(p), f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
+/// @brief Smooth 2D value noise, 0..1.
+float noise2( vec2 p )
+{
+    vec2 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
+                mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec2 p)
+float fbm( vec2 p )
 {
     float v = 0.0, a = 0.5;
-    for (int i = 0; i < 5; ++i) { v += a * noise2(p); p = p * 2.03 + 5.0; a *= 0.5; }
+    for ( int i = 0; i < 5; ++i )
+    {
+        v += a * noise2( p );
+        p = p * 2.03 + 5.0;
+        a *= 0.5;
+    }
     return v;
 }
 
@@ -77,22 +87,23 @@ float fbm(vec2 p)
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
-    vec2 uv = gl_FragCoord.xy / resolution;
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
+    vec2  uv = gl_FragCoord.xy / resolution;
 
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float seeds = 2.0 + 3.0 * clamp(seedsP, 0.0, 1.0);
-    float pitting = 0.3 + 0.7 * clamp(pitP, 0.0, 1.0);
-    float rough = clamp(audioRoughness * 1.5, 0.0, 1.0);
-    float change = clamp(audioHarmChange, 0.0, 1.0);        // pulses on a harmony change, decays
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float seeds = 2.0 + 3.0 * clamp( seedsP, 0.0, 1.0 );
+    float pitting = 0.3 + 0.7 * clamp( pitP, 0.0, 1.0 );
+    float rough = clamp( audioRoughness * 1.5, 0.0, 1.0 );
+    float change = clamp( audioHarmChange, 0.0, 1.0 ); // pulses on a harmony change, decays
 
     // The chrome: the photo mirrored in a curved plate -- a reflection
     // that drifts slowly, with a bright environment highlight band.
-    vec2 ruv = uv + vec2(0.02 * sin(sceneAdvance * 0.2 + uv.y * 4.0), 0.015 * cos(sceneAdvance * 0.17 + uv.x * 5.0));
-    vec3 chrome = img(clamp(ruv, 0.0, 1.0));
-    float band = pow(0.5 + 0.5 * sin(p.y * 5.0 + p.x * 1.5 - sceneAdvance * 0.3), 8.0);
-    chrome = chrome * 0.9 + vec3(1.0) * band * (0.35 + 0.8 * audioKick);
-    chrome = mix(chrome, chrome * imgPalette(hue * 0.159 + 0.5) * 1.5, 0.2);
+    vec2 ruv = uv
+               + vec2( 0.02 * sin( sceneAdvance * 0.2 + uv.y * 4.0 ), 0.015 * cos( sceneAdvance * 0.17 + uv.x * 5.0 ) );
+    vec3  chrome = img( clamp( ruv, 0.0, 1.0 ) );
+    float band = pow( 0.5 + 0.5 * sin( p.y * 5.0 + p.x * 1.5 - sceneAdvance * 0.3 ), 8.0 );
+    chrome = chrome * 0.9 + vec3( 1.0 ) * band * ( 0.35 + 0.8 * audioKick );
+    chrome = mix( chrome, chrome * imgPalette( hue * 0.159 + 0.5 ) * 1.5, 0.2 );
 
     // Rust: blooms from seed points; the bloom radius grows with the
     // roughness; the front is ragged by noise.  The polish sweep -- a wave
@@ -100,37 +111,38 @@ void main()
     // rust field is multiplied by (1 - sweep), and the sweep position runs
     // on the scene clock, its strength on the change envelope.
     float rust = 0.0;
-    for (int i = 0; i < 5; ++i)
+    for ( int i = 0; i < 5; ++i )
     {
-        if (float(i) >= seeds) break;
-        float fi = float(i);
-        vec2 c = vec2((hash21(vec2(fi, 1.0)) - 0.5) * aspect, (hash21(vec2(fi, 2.0)) - 0.5)) * 0.9;
-        float rr = length(p - c);
-        float ragged = fbm(p * 6.0 + fi * 3.0) * 0.25;
-        float reachR = 0.05 + 0.75 * rough * (0.7 + 0.3 * hash21(vec2(fi, 3.0)));
-        rust = max(rust, smoothstep(reachR, reachR - 0.15 - ragged * 0.4, rr + ragged));
+        if ( float( i ) >= seeds )
+            break;
+        float fi = float( i );
+        vec2  c = vec2( ( hash21( vec2( fi, 1.0 ) ) - 0.5 ) * aspect, ( hash21( vec2( fi, 2.0 ) ) - 0.5 ) ) * 0.9;
+        float rr = length( p - c );
+        float ragged = fbm( p * 6.0 + fi * 3.0 ) * 0.25;
+        float reachR = 0.05 + 0.75 * rough * ( 0.7 + 0.3 * hash21( vec2( fi, 3.0 ) ) );
+        rust = max( rust, smoothstep( reachR, reachR - 0.15 - ragged * 0.4, rr + ragged ) );
     }
     // Pitting inside the rust: fine noise.
-    float pits = fbm(p * 25.0) * pitting;
-    rust = clamp(rust * (0.7 + 0.5 * pits), 0.0, 1.0);
+    float pits = fbm( p * 25.0 ) * pitting;
+    rust = clamp( rust * ( 0.7 + 0.5 * pits ), 0.0, 1.0 );
     // The polish sweep: a band travelling left to right whose height is
     // the change envelope; behind the band the plate is clean.
-    float sweepX = fract(sceneAdvance * 0.25 + sceneTime * 0.05) * (aspect + 0.6) - aspect * 0.5 - 0.3;
-    float sweep = smoothstep(0.25, 0.0, abs(p.x - sweepX)) * change;
-    float cleaned = smoothstep(0.0, 0.3, sweepX - p.x) * change;
-    rust *= 1.0 - clamp(sweep + cleaned, 0.0, 1.0);
+    float sweepX = fract( sceneAdvance * 0.25 + sceneTime * 0.05 ) * ( aspect + 0.6 ) - aspect * 0.5 - 0.3;
+    float sweep = smoothstep( 0.25, 0.0, abs( p.x - sweepX ) ) * change;
+    float cleaned = smoothstep( 0.0, 0.3, sweepX - p.x ) * change;
+    rust *= 1.0 - clamp( sweep + cleaned, 0.0, 1.0 );
     // Rust colour: layered oranges and browns from the palette and noise.
-    vec3 rustA = mix(vec3(0.55, 0.22, 0.06), imgPalette(hue * 0.159 + 0.05), 0.3);
-    vec3 rustB = mix(vec3(0.25, 0.1, 0.04), imgPalette(hue * 0.159 + 0.1) * 0.5, 0.3);
-    vec3 rustCol = mix(rustA, rustB, pits) * (0.8 + 0.4 * fbm(p * 12.0 + 1.0));
-    vec3 col = mix(chrome, rustCol, rust);
+    vec3 rustA = mix( vec3( 0.55, 0.22, 0.06 ), imgPalette( hue * 0.159 + 0.05 ), 0.3 );
+    vec3 rustB = mix( vec3( 0.25, 0.1, 0.04 ), imgPalette( hue * 0.159 + 0.1 ) * 0.5, 0.3 );
+    vec3 rustCol = mix( rustA, rustB, pits ) * ( 0.8 + 0.4 * fbm( p * 12.0 + 1.0 ) );
+    vec3 col = mix( chrome, rustCol, rust );
     // The rust front glows faintly (fresh oxide) and the polish band shines.
-    float front = rust * (1.0 - rust) * 4.0;
-    col += vec3(0.9, 0.5, 0.2) * front * 0.15;
-    col += vec3(1.0) * sweep * 0.5;
+    float front = rust * ( 1.0 - rust ) * 4.0;
+    col += vec3( 0.9, 0.5, 0.2 ) * front * 0.15;
+    col += vec3( 1.0 ) * sweep * 0.5;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

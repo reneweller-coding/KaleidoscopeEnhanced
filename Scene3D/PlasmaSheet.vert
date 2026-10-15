@@ -8,18 +8,20 @@
 // rippling with two slow interference trains; the classic MilkDrop plasma
 // lives in the fragment shader.  attrA.x/.y span the sheet.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioBass;   ///< Bass band level, 0..1.
+uniform float audioBass;    ///< Bass band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vH;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -27,24 +29,24 @@ void main()
 {
     float u = attrA.x, w = attrA.y;
 
-    float x = (u - 0.5) * 70.0;
-    float y = (w - 0.5) * 40.0;
+    float x = ( u - 0.5 ) * 70.0;
+    float y = ( w - 0.5 ) * 40.0;
 
     float ph = time * 0.55 + audioAdvance * 0.5;
-    float h = sin(x * 0.14 + y * 0.09 + ph)        * 2.0
-            + sin(x * 0.07 - y * 0.15 + ph * 0.7)  * 2.6;
-    h *= (0.5 + 0.9 * audioBass + 0.4 * audioSwell);
+    float h = sin( x * 0.14 + y * 0.09 + ph ) * 2.0
+              + sin( x * 0.07 - y * 0.15 + ph * 0.7 ) * 2.6;
+    h *= ( 0.5 + 0.9 * audioBass + 0.4 * audioSwell );
 
     // Sheet leans back gently like a projection canvas.
     float tilt = 0.35;
-    vec3 vp = vec3(x,
-                   y * cos(tilt) + h * 0.8,
-                   y * sin(tilt) + 42.0 + h * 0.4);
+    vec3  vp = vec3( x,
+                     y * cos( tilt ) + h * 0.8,
+                     y * sin( tilt ) + 42.0 + h * 0.4 );
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
 
-    vUV = vec2(u, w);
-    vH  = h;
+    vUV = vec2( u, w );
+    vH = h;
 }

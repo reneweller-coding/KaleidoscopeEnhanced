@@ -23,7 +23,8 @@
  * file loops.  Idempotent: calling it again with the same path does nothing.
  * Returns false if the path holds nothing playable.
  * @param path A single video file, or a directory containing one or more video files.
- * @return true if playback was started (or was already running on this exact path); false if nothing playable was found at path.
+ * @return true if playback was started (or was already running on this exact path); false if nothing playable was found
+ * at path.
  */
 bool videoInInit( const char *path );
 

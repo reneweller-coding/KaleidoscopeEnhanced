@@ -1,12 +1,13 @@
 //=============================================================================
 /** @file:		uniform.cpp
- * @brief Implements Uniform: value rolling (resetParameters), GL upload (setUniform/setGLValueScaled), and the interpolator ramp timing.
+ * @brief Implements Uniform: value rolling (resetParameters), GL upload (setUniform/setGLValueScaled), and the
+interpolator ramp timing.
  *
  * Implements CUniform.
  *
-	@internal
-	created:	2007-11-21
-	last mod:	2008-03-30
+    @internal
+    created:	2007-11-21
+    last mod:	2008-03-30
 
     Shader Maker - a cross-platform GLSL editor.
     Copyright (C) 2007-2008 Markus Kramer
@@ -20,25 +21,27 @@
 #include "uniform.h"
 #include "shader_setup.h"
 
-#include<GL/GLU.h>
+#include <GL/GLU.h>
 
 /**
- * @brief Stores the name and type; all data fields are left uninitialised until setMinMax()/setInterpolator()/setProbability() and resetParameters() are called.
+ * @brief Stores the name and type; all data fields are left uninitialised until
+ * setMinMax()/setInterpolator()/setProbability() and resetParameters() are called.
  */
 Uniform::Uniform( const std::string &name, baseType_e type )
 {
-	m_name = name;
-	m_type = type;
+    m_name = name;
+    m_type = type;
 }
 
 
 /** @brief No-op (no owned resources). */
-Uniform::~Uniform(  )
+Uniform::~Uniform()
 {
 }
 
 /**
- * @brief Rolls a fresh random value for the current type (or fresh interpolator bounds), using whatever m_totalTime is already set.
+ * @brief Rolls a fresh random value for the current type (or fresh interpolator bounds), using whatever m_totalTime is
+ * already set.
  *
  * BASE_TYPE_INT guards against `minValue == maxValue` (range == 0), which
  * used to crash with an integer division by zero in `rand() % range`; it now
@@ -55,73 +58,77 @@ Uniform::~Uniform(  )
 // Messlaeufe; ohne die Variable wird gewuerfelt wie immer.
 static float roll01( const std::string &name )
 {
-	static int mode = -1;                  // 0 wuerfeln, 1 min, 2 max, 3 alt, 4 mid
-	static std::string names;              // ",a,b," oder leer = alle
-	if( mode < 0 )
-	{
-		const char *e = getenv( "KALEIDO_PARAM_CORNER" );
-		std::string m = e ? e : "";
-		const size_t colon = m.find( ':' );
-		if( colon != std::string::npos )
-		{
-			names = "," + m.substr( colon + 1 ) + ",";
-			m = m.substr( 0, colon );
-		}
-		mode = ( m == "min" ) ? 1 : ( m == "max" ) ? 2 : ( m == "alt" ) ? 3 : ( m == "mid" ) ? 4 : 0;
-	}
-	if( mode == 0 )
-		return (float) rand() / (float) RAND_MAX;
-	if( !names.empty() && names.find( "," + name + "," ) == std::string::npos )
-		return 0.5f;                       // nicht ausgewaehlt: Mitte
-	static unsigned k = 0;
-	switch( mode )
-	{
-		case 1:  return 0.f;
-		case 2:  return 1.f;
-		case 3:  return ( ( k++ & 1u ) ? 1.f : 0.f );   // abwechselnd je Parameter
-		default: return 0.5f;
-	}
+    static int         mode = -1; // 0 wuerfeln, 1 min, 2 max, 3 alt, 4 mid
+    static std::string names;     // ",a,b," oder leer = alle
+    if ( mode < 0 )
+    {
+        const char  *e = getenv( "KALEIDO_PARAM_CORNER" );
+        std::string  m = e ? e : "";
+        const size_t colon = m.find( ':' );
+        if ( colon != std::string::npos )
+        {
+            names = "," + m.substr( colon + 1 ) + ",";
+            m = m.substr( 0, colon );
+        }
+        mode = ( m == "min" ) ? 1 : ( m == "max" ) ? 2
+                                : ( m == "alt" )   ? 3
+                                : ( m == "mid" )   ? 4
+                                                   : 0;
+    }
+    if ( mode == 0 )
+        return (float)rand() / (float)RAND_MAX;
+    if ( !names.empty() && names.find( "," + name + "," ) == std::string::npos )
+        return 0.5f; // nicht ausgewaehlt: Mitte
+    static unsigned k = 0;
+    switch ( mode )
+    {
+        case 1: return 0.f;
+        case 2: return 1.f;
+        case 3: return ( ( k++ & 1u ) ? 1.f : 0.f ); // abwechselnd je Parameter
+        default: return 0.5f;
+    }
 }
 
 void Uniform::resetParameters()
 {
-	if( m_type == BASE_TYPE_FLOAT )
-	{
-		m_data.vf = (float) (m_dataMin.vf + roll01( m_name ) * (m_dataMax.vf - m_dataMin.vf));
-	}
-	else if( m_type == BASE_TYPE_BOOL )
-	{
-		float des = (float) (rand()) / (float) RAND_MAX;
+    if ( m_type == BASE_TYPE_FLOAT )
+    {
+        m_data.vf = (float)( m_dataMin.vf + roll01( m_name ) * ( m_dataMax.vf - m_dataMin.vf ) );
+    }
+    else if ( m_type == BASE_TYPE_BOOL )
+    {
+        float des = (float)( rand() ) / (float)RAND_MAX;
 
-		if( des > m_dataMin.vf )
-			m_data.vi = 1;
-		else 
-			m_data.vi = 0;
-	}
-	else if( m_type == BASE_TYPE_INT )
-	{
-		// Guard: an <int> with minValue == maxValue used to crash with an
-		// integer division by zero (rand() % 0).
-		int range = m_dataMax.vi - m_dataMin.vi;
-		m_data.vi = (range > 0) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
-	}
-	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
-	{
-		//Warning double use of m_dataMax/Min.vf
-		m_dataMin.vf = (float) (m_dataMinMin.vf + roll01( m_name ) * (m_dataMinMax.vf - m_dataMinMin.vf));
-		m_dataMax.vf = (float) (m_dataMaxMin.vf + roll01( m_name ) * (m_dataMaxMax.vf - m_dataMaxMin.vf));
+        if ( des > m_dataMin.vf )
+            m_data.vi = 1;
+        else
+            m_data.vi = 0;
+    }
+    else if ( m_type == BASE_TYPE_INT )
+    {
+        // Guard: an <int> with minValue == maxValue used to crash with an
+        // integer division by zero (rand() % 0).
+        int range = m_dataMax.vi - m_dataMin.vi;
+        m_data.vi = ( range > 0 ) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
+    }
+    else if ( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
+    {
+        // Warning double use of m_dataMax/Min.vf
+        m_dataMin.vf = (float)( m_dataMinMin.vf + roll01( m_name ) * ( m_dataMinMax.vf - m_dataMinMin.vf ) );
+        m_dataMax.vf = (float)( m_dataMaxMin.vf + roll01( m_name ) * ( m_dataMaxMax.vf - m_dataMaxMin.vf ) );
 
-		m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
-		
-		m_data.vf = m_dataMin.vf;
+        m_delta.vf = ( m_dataMax.vf - m_dataMin.vf ) / m_totalTime.vf * 0.001f; // time in sec delta in msec
 
-		m_increasing = false;
-		m_initTimer = false;
-	}
+        m_data.vf = m_dataMin.vf;
+
+        m_increasing = false;
+        m_initTimer = false;
+    }
 }
 
 /**
- * @brief Like resetParameters(), but for BASE_TYPE_INTERPOLATOR_FLOAT also overrides the ramp duration with @p time before rolling new min/max bounds.
+ * @brief Like resetParameters(), but for BASE_TYPE_INTERPOLATOR_FLOAT also overrides the ramp duration with @p time
+ * before rolling new min/max bounds.
  *
  * @p time is the new ramp duration in seconds; the other types ignore it and
  * behave exactly like resetParameters() (the parameter is documented on the
@@ -135,65 +142,67 @@ void Uniform::resetParameters()
  */
 void Uniform::resetParameters( float time )
 {
-	if( m_type == BASE_TYPE_FLOAT )
-	{
-		m_data.vf = (float) (m_dataMin.vf + roll01( m_name ) * (m_dataMax.vf - m_dataMin.vf));
-	}
-	else if( m_type == BASE_TYPE_BOOL )
-	{
-		float des = (float) (rand()) / (float) RAND_MAX;
+    if ( m_type == BASE_TYPE_FLOAT )
+    {
+        m_data.vf = (float)( m_dataMin.vf + roll01( m_name ) * ( m_dataMax.vf - m_dataMin.vf ) );
+    }
+    else if ( m_type == BASE_TYPE_BOOL )
+    {
+        float des = (float)( rand() ) / (float)RAND_MAX;
 
-		if( des > m_dataMin.vf )
-			m_data.vi = 1;
-		else 
-			m_data.vi = 0;
-	}
-	else if( m_type == BASE_TYPE_INT )
-	{
-		// Guard: an <int> with minValue == maxValue used to crash with an
-		// integer division by zero (rand() % 0).
-		int range = m_dataMax.vi - m_dataMin.vi;
-		m_data.vi = (range > 0) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
-	}
-	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
-	{
-		//Warning double use of m_dataMax/Min.vf
-		m_dataMin.vf = (float) (m_dataMinMin.vf + roll01( m_name ) * (m_dataMinMax.vf - m_dataMinMin.vf));
-		m_dataMax.vf = (float) (m_dataMaxMin.vf + roll01( m_name ) * (m_dataMaxMax.vf - m_dataMaxMin.vf));
+        if ( des > m_dataMin.vf )
+            m_data.vi = 1;
+        else
+            m_data.vi = 0;
+    }
+    else if ( m_type == BASE_TYPE_INT )
+    {
+        // Guard: an <int> with minValue == maxValue used to crash with an
+        // integer division by zero (rand() % 0).
+        int range = m_dataMax.vi - m_dataMin.vi;
+        m_data.vi = ( range > 0 ) ? m_dataMin.vi + (int)( roll01( m_name ) * 0.999f * range ) : m_dataMin.vi;
+    }
+    else if ( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
+    {
+        // Warning double use of m_dataMax/Min.vf
+        m_dataMin.vf = (float)( m_dataMinMin.vf + roll01( m_name ) * ( m_dataMinMax.vf - m_dataMinMin.vf ) );
+        m_dataMax.vf = (float)( m_dataMaxMin.vf + roll01( m_name ) * ( m_dataMaxMax.vf - m_dataMaxMin.vf ) );
 
-		m_totalTime.vf = time;
+        m_totalTime.vf = time;
 
-		//m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
-		
-		//m_data.vf = m_dataMin.vf;
+        // m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
 
-		m_increasing = false;
-		m_initTimer = false;
-	}
+        // m_data.vf = m_dataMin.vf;
+
+        m_increasing = false;
+        m_initTimer = false;
+    }
 }
 
 /** @brief Looks up and caches m_location for m_name in the given linked GL program. */
 void Uniform::initUniform( unsigned int sh_prog_id )
 {
 
-	const char* name = m_name.c_str();
+    const char *name = m_name.c_str();
 
-	m_location = glGetUniformLocation( sh_prog_id, name );
+    m_location = glGetUniformLocation( sh_prog_id, name );
 }
 
-/** @brief Arms the ramp: the next setUniform() call will (re-)start the wall clock and recompute m_delta/m_data from the current m_dataMin/m_dataMax before advancing. No-op for non-interpolator types. */
+/** @brief Arms the ramp: the next setUniform() call will (re-)start the wall clock and recompute m_delta/m_data from
+ * the current m_dataMin/m_dataMax before advancing. No-op for non-interpolator types. */
 void Uniform::startInterpolator()
 {
-	if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
-	{
-		m_initTimer = true;
-		m_increasing = false;
-	}
+    if ( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
+    {
+        m_initTimer = true;
+        m_increasing = false;
+    }
 }
 
 
 /**
- * @brief Uploads the current value to the cached GL location; for BASE_TYPE_INTERPOLATOR_FLOAT this is also where the ramp is timed and advanced.
+ * @brief Uploads the current value to the cached GL location; for BASE_TYPE_INTERPOLATOR_FLOAT this is also where the
+ * ramp is timed and advanced.
  *
  * Interpolator timing: m_delta.vf is expressed as "value change per
  * millisecond" (computed as (max-min)/totalTime, i.e. per-second, times
@@ -206,47 +215,47 @@ void Uniform::startInterpolator()
  */
 void Uniform::setUniform()
 {
-	if( m_type == BASE_TYPE_BOOL )
-		glUniform1i( m_location, m_data.vi );
-	
-	else if( m_type == BASE_TYPE_FLOAT )
-		glUniform1f( m_location, m_data.vf );
-	
-	else if( m_type == BASE_TYPE_INT )
-		glUniform1i( m_location, m_data.vi );
-	
-	else if( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
-	{
-		if( m_initTimer )
-		{
-			m_time.start();
-			//m_initTimer = true;	
-			m_delta.vf = (m_dataMax.vf - m_dataMin.vf) / m_totalTime.vf * 0.001f; //time in sec delta in msec
-			
-			m_data.vf = m_dataMin.vf;
+    if ( m_type == BASE_TYPE_BOOL )
+        glUniform1i( m_location, m_data.vi );
 
-			m_increasing = true;
-			m_initTimer = false;
+    else if ( m_type == BASE_TYPE_FLOAT )
+        glUniform1f( m_location, m_data.vf );
 
-		}
-		if( m_increasing )
-		{
-			m_data.vf += m_delta.vf * ( (float) m_time.elapsed() );
+    else if ( m_type == BASE_TYPE_INT )
+        glUniform1i( m_location, m_data.vi );
 
-			//decrease value after half of the time
-			/*if( m_increasing && ( m_data.vf > m_dataMax.vf ) )
-			{
-				m_increasing = false;
-				m_delta.vf = -m_delta.vf;
-			}*/
+    else if ( m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
+    {
+        if ( m_initTimer )
+        {
+            m_time.start();
+            // m_initTimer = true;
+            m_delta.vf = ( m_dataMax.vf - m_dataMin.vf ) / m_totalTime.vf * 0.001f; // time in sec delta in msec
 
-			m_time.start();
+            m_data.vf = m_dataMin.vf;
 
-			glUniform1f( m_location, m_data.vf );
+            m_increasing = true;
+            m_initTimer = false;
+        }
+        if ( m_increasing )
+        {
+            m_data.vf += m_delta.vf * ( (float)m_time.elapsed() );
 
-			printf( "Speed: %f (Min: %f)(Max: %f)(Delta: %f)(Time: %f)\n", m_data.vf, m_dataMin.vf, m_dataMax.vf, m_delta.vf, m_totalTime.vf ); 
-		}
-	}
+            // decrease value after half of the time
+            /*if( m_increasing && ( m_data.vf > m_dataMax.vf ) )
+            {
+                m_increasing = false;
+                m_delta.vf = -m_delta.vf;
+            }*/
+
+            m_time.start();
+
+            glUniform1f( m_location, m_data.vf );
+
+            printf( "Speed: %f (Min: %f)(Max: %f)(Delta: %f)(Time: %f)\n", m_data.vf, m_dataMin.vf, m_dataMax.vf,
+                    m_delta.vf, m_totalTime.vf );
+        }
+    }
 }
 
 
@@ -257,19 +266,21 @@ void Uniform::setUniform()
 // Call after setUniform() to modulate the uploaded float value.
 // ---------------------------------------------------------------------------
 /**
- * @brief Re-uploads m_data.vf * @p scale to the GL location, without altering the stored value — a non-destructive way to layer audio reactivity on top of the rolled/ramped base value.
+ * @brief Re-uploads m_data.vf * @p scale to the GL location, without altering the stored value — a non-destructive way
+ * to layer audio reactivity on top of the rolled/ramped base value.
  *
  * The multiplier applies to this upload only; float and interpolator-float
  * uniforms are affected, int/bool uniforms are left alone (the parameter is
  * documented on the declaration in Uniform.h).
  */
-void Uniform::setGLValueScaled(float scale)
+void Uniform::setGLValueScaled( float scale )
 {
-	if (m_location < 0) return;
+    if ( m_location < 0 )
+        return;
 
-	if (m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT)
-		glUniform1f(m_location, m_data.vf * scale);
-	// int / bool uniforms are not scaled
+    if ( m_type == BASE_TYPE_FLOAT || m_type == BASE_TYPE_INTERPOLATOR_FLOAT )
+        glUniform1f( m_location, m_data.vf * scale );
+    // int / bool uniforms are not scaled
 }
 
 

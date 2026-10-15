@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // AuroraVeil.frag — translucent curtain: bright lower hem, airy top.
-in vec4  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file AuroraVeil.frag
@@ -19,7 +19,7 @@ in float vSide;   ///< Which side of a strip (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float hem  = exp(-(vSide + 1.0) * (vSide + 1.0) * 1.4);
-    float body = exp(-vSide * vSide * 0.9) * 0.16;
-    fragColor = vec4(vCol.rgb * (hem + body), 1.0);
+    float hem = exp( -( vSide + 1.0 ) * ( vSide + 1.0 ) * 1.4 );
+    float body = exp( -vSide * vSide * 0.9 ) * 0.16;
+    fragColor = vec4( vCol.rgb * ( hem + body ), 1.0 );
 }

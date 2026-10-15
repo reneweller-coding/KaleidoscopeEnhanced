@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
 /**
  * @file LaserSpireArray.frag
@@ -29,35 +29,37 @@ in vec3  gWorld;
 in vec4  gCol;
 in float gBeam;
 
-uniform float audioUpperMid;   ///< 2-6 kHz metallic / industrial edge
+uniform float audioUpperMid; ///< 2-6 kHz metallic / industrial edge
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    if (gBeam > 0.5) {
+void main()
+{
+    if ( gBeam > 0.5 )
+    {
         // Laser beam emission
         fragColor = gCol;
         return;
     }
 
-    vec3 n = normalize(gNormal);
-    vec3 lightDir = normalize(vec3(0.5, 0.8, -0.6));
-    float diff = max(dot(n, lightDir), 0.0) * 0.7 + 0.3;
+    vec3  n = normalize( gNormal );
+    vec3  lightDir = normalize( vec3( 0.5, 0.8, -0.6 ) );
+    float diff = max( dot( n, lightDir ), 0.0 ) * 0.7 + 0.3;
 
     // Specular highlight — the industrial 2-6 kHz band decides how metallic
     // the crystal reads: dull/warm gives a broad matte sheen, scraping-bright
     // gives a hard chrome glint.  Gain drops as the highlight widens, so the
     // total specular energy stays put.
-    float mtl = clamp(audioUpperMid, 0.0, 1.0);
-    vec3 viewDir = normalize(-gWorld);
-    vec3 refl = reflect(-lightDir, n);
-    float spec = pow(max(dot(viewDir, refl), 0.0), mix(8.0, 48.0, mtl))
-               * mix(0.5, 1.0, mtl);
+    float mtl = clamp( audioUpperMid, 0.0, 1.0 );
+    vec3  viewDir = normalize( -gWorld );
+    vec3  refl = reflect( -lightDir, n );
+    float spec = pow( max( dot( viewDir, refl ), 0.0 ), mix( 8.0, 48.0, mtl ) )
+                 * mix( 0.5, 1.0, mtl );
 
-    vec3 col = gCol.rgb * diff + spec * vec3(1.0, 1.0, 1.0);
+    vec3 col = gCol.rgb * diff + spec * vec3( 1.0, 1.0, 1.0 );
 
     // Height energy glow
-    col += gCol.rgb * smoothstep(-4.0, 15.0, gWorld.y) * 0.8;
+    col += gCol.rgb * smoothstep( -4.0, 15.0, gWorld.y ) * 0.8;
 
-    col /= 1.0 + 0.60 * max(col.r, max(col.g, col.b));   // over-bright tail (final review)
-    fragColor = vec4(col, 1.0);
+    col /= 1.0 + 0.60 * max( col.r, max( col.g, col.b ) ); // over-bright tail (final review)
+    fragColor = vec4( col, 1.0 );
 }

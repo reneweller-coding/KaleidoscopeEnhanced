@@ -1,9 +1,9 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3 vWorldPos;   ///< World position (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+in vec3  vWorldPos; ///< World position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 in float vIndex;
 in float vDust;
 
@@ -24,32 +24,34 @@ in float vDust;
  * vertex shader's torus radius/link count/rotation speed.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float torusP;
 uniform float linkP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -57,58 +59,60 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float hue = (hueP > 0.0) ? hueP : 0.0;
+void main()
+{
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Photo texture mapping onto cube faces
-    vec3 photo = img(vTexCoord);
+    vec3 photo = img( vTexCoord );
 
     // Villarceau topological phase palette
-    vec3 torusColor = imgPalette(vIndex + audioPhase * 0.159);
+    vec3 torusColor = imgPalette( vIndex + audioPhase * 0.159 );
 
     // Diffuse + Specular lighting. A second, dimmer fill from the opposite side
     // keeps the away-facing cube faces from going dead black: vNormal is an
     // axis-aligned CUBE FACE normal, so with one key light three of the six
     // faces returned diff == 0 exactly and rendered as holes in the surface.
-    vec3 lightDir = normalize(vec3(0.5, 0.9, -0.6));
-    vec3 fillDir  = normalize(vec3(-0.6, -0.3, 0.75));
-    float diff = max(dot(vNormal, lightDir), 0.0)
-               + 0.42 * max(dot(vNormal, fillDir), 0.0);
-    float spec = pow(max(dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, 1.0)), 0.0), 16.0);
+    vec3  lightDir = normalize( vec3( 0.5, 0.9, -0.6 ) );
+    vec3  fillDir = normalize( vec3( -0.6, -0.3, 0.75 ) );
+    float diff = max( dot( vNormal, lightDir ), 0.0 )
+                 + 0.42 * max( dot( vNormal, fillDir ), 0.0 );
+    float spec = pow( max( dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 16.0 );
 
     vec3 col;
 
-    if (vDust > 0.5)
+    if ( vDust > 0.5 )
     {
         // 4D DUST: the same palette, far dimmer and unlit -- a background
         // layer that fills the frame without lifting it toward grey.
         // Per-mote brightness spread so the dust field carries its own contrast
         // instead of being one uniform sub-threshold level.
-        float mote = 0.55 + 0.75 * fract(vIndex * 37.13);
-        col = mix(torusColor, photo, 0.30) * (0.16 + 0.09 * audioSwell) * mote;
+        float mote = 0.55 + 0.75 * fract( vIndex * 37.13 );
+        col = mix( torusColor, photo, 0.30 ) * ( 0.16 + 0.09 * audioSwell ) * mote;
     }
     else
     {
-        col = mix(photo, torusColor, 0.45);
-        col = col * (0.26 + 0.80 * diff)
-            + vec3(1.0, 0.95, 0.8) * min(spec * (1.0 + audioKick * 2.0), 1.1);
+        col = mix( photo, torusColor, 0.45 );
+        col = col * ( 0.26 + 0.80 * diff )
+              + vec3( 1.0, 0.95, 0.8 ) * min( spec * ( 1.0 + audioKick * 2.0 ), 1.1 );
 
         // Distance fog.
         // This used length(vWorldPos) -- the distance from the TORUS's own
@@ -118,15 +122,17 @@ void main() {
         // the 0.02 background colour regardless of depth. The camera sits 9
         // units back along +z (see the .vert), so that is where depth is
         // measured from, and only beyond the object's own radius.
-        float camDist = length(vec3(vWorldPos.xy, vWorldPos.z + 9.0));
-        col = mix(col, vec3(0.03, 0.045, 0.09),
-                  1.0 - exp(-max(camDist - 5.5, 0.0) * 0.075));
+        float camDist = length( vec3( vWorldPos.xy, vWorldPos.z + 9.0 ) );
+        col = mix( col, vec3( 0.03, 0.045, 0.09 ),
+                   1.0 - exp( -max( camDist - 5.5, 0.0 ) * 0.075 ) );
     }
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if ( audioChromaHue != 0.0 )
+        if ( hue > 0.001 )
+            col = hueRot( col, hue );
 
     // Soft knee: a big specular face on a swollen cube must not clip the
     // picture to flat white on every kick.
-    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.30 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

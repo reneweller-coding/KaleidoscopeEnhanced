@@ -24,22 +24,22 @@
 // fullscreen vert provides no texcoords, the engine's Fullscreen.vert does —
 // gl_FragCoord works identically under both.
 uniform sampler2D tex;
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float rigRoll;
-uniform float rigZoom;
-uniform vec2  rigPan;
-out vec4 fragColor;   ///< The pixel's colour (output).
+uniform vec2      resolution; ///< Size of the render target in pixels.
+uniform float     rigRoll;
+uniform float     rigZoom;
+uniform vec2      rigPan;
+out vec4          fragColor; ///< The pixel's colour (output).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 p = gl_FragCoord.xy / resolution - 0.5;
-    float s = sin(-rigRoll), c = cos(-rigRoll);
-    p = mat2(c, -s, s, c) * p;
-    p /= max(1.0 + rigZoom, 0.05);
+    vec2  p = gl_FragCoord.xy / resolution - 0.5;
+    float s = sin( -rigRoll ), c = cos( -rigRoll );
+    p = mat2( c, -s, s, c ) * p;
+    p /= max( 1.0 + rigZoom, 0.05 );
     p += 0.5 - rigPan;
     // Mirror fold, IDENTITY inside [0,1] (p=0 -> 0, p=1 -> 1) and seamlessly
     // mirrored beyond -- the plain abs(fract(...)) form would flip the frame.
-    p = 1.0 - abs(fract(p * 0.5) * 2.0 - 1.0);
-    fragColor = texture(tex, p);
+    p = 1.0 - abs( fract( p * 0.5 ) * 2.0 - 1.0 );
+    fragColor = texture( tex, p );
 }

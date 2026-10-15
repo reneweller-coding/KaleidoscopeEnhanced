@@ -11,31 +11,34 @@
 //   audioSwell      -> vortex radius expansion
 //   audioChromaHue  -> particle color spectrum shift
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
+uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
 uniform float audioBeatDecay;
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioKick;          ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;         ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;         ///< Overall loudness, 0..1.
+uniform float audioAdvance;       ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                  ///< backwards).
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -43,24 +46,26 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The vortex is a tube around the VIEW axis, with the camera inside it.
@@ -71,50 +76,50 @@ void main() {
     // the vp.z < 0.3 test). What survived was a sparse, dark arc -- measured luma
     // 0.011 on a mostly black frame, which is not the "vortex surrounding the
     // camera" the header describes.
-    float radius = (1.6 + r1 * r1 * 13.5) * (1.0 + 0.22 * audioSwell);
-    float angle  = r2 * 6.2831853 + time * (0.30 + r3 * 0.5) + audioAdvance * 0.4;
+    float radius = ( 1.6 + r1 * r1 * 13.5 ) * ( 1.0 + 0.22 * audioSwell );
+    float angle = r2 * 6.2831853 + time * ( 0.30 + r3 * 0.5 ) + audioAdvance * 0.4;
 
     // Radial kick explosion impulse
-    float impulse = audioKick * exp(-abs(r1 - 0.5) * 4.0) * 2.6;
+    float impulse = audioKick * exp( -abs( r1 - 0.5 ) * 4.0 ) * 2.6;
     radius += impulse;
 
     // Streaming down the tube. Each particle wraps individually at the far end,
     // where its own alpha has already faded to zero, so no frame-wide jump.
     const float Z_LEN = 74.0;
-    float zDrift = fract(r4 + time * 0.045 + audioAdvance * 0.05) * Z_LEN + 0.7;
+    float       zDrift = fract( r4 + time * 0.045 + audioAdvance * 0.05 ) * Z_LEN + 0.7;
 
     vec3 world = vec3(
-        cos(angle) * radius,
-        sin(angle) * radius + (r3 - 0.5) * 3.0,
-        zDrift
-    );
+        cos( angle ) * radius,
+        sin( angle ) * radius + ( r3 - 0.5 ) * 3.0,
+        zDrift );
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    if (vp.z < 0.3) {
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.3 )
+    {
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
     }
 
     // Dynamic point size scaling for full-screen coverage
     float px = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(180.0 * (0.5 + 0.8 * r4) * px / dist, 2.0, 24.0 * px)
-                 * (1.0 + 0.8 * audioKick);
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( 180.0 * ( 0.5 + 0.8 * r4 ) * px / dist, 2.0, 24.0 * px )
+                   * ( 1.0 + 0.8 * audioKick );
 
     // Dynamic particle color spectrum. Depth tint keeps near sparks hot and the
     // far end of the tube cool, so the swarm has real range instead of one tone.
-    vec3 baseCol = imgPalette(0.30 * r2) * 1.4;
-    baseCol = hueRot(baseCol, audioChromaHue + r3 * 1.5);
-    float near = exp(-vp.z * 0.055);
+    vec3 baseCol = imgPalette( 0.30 * r2 ) * 1.4;
+    baseCol = hueRot( baseCol, audioChromaHue + r3 * 1.5 );
+    float near = exp( -vp.z * 0.055 );
     baseCol *= 0.40 + 1.25 * near;
 
     // Fade in at the mouth and out at the far end: the far fade is what hides the
     // per-particle wrap of zDrift.
-    float alpha = smoothstep(0.0, 5.0, vp.z)
-                * clamp(1.0 - vp.z / Z_LEN, 0.0, 1.0)
-                * (0.6 + 0.4 * audioLevel);
-    vCol = vec4(baseCol * (2.0 + audioKick * 1.6), alpha);
+    float alpha = smoothstep( 0.0, 5.0, vp.z )
+                  * clamp( 1.0 - vp.z / Z_LEN, 0.0, 1.0 )
+                  * ( 0.6 + 0.4 * audioLevel );
+    vCol = vec4( baseCol * ( 2.0 + audioKick * 1.6 ), alpha );
 }

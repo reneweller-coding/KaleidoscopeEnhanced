@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file HubStation.frag
  * @brief GEOM="MESH" STATION FAMILY: civilian/trade hubs (cargo docks,
@@ -18,79 +18,91 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform sampler2DArray texMeshMaterial;   ///< The mesh's material textures (albedo, roughness, normal ...).
-uniform int texMeshMaterialLayers;   ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
+uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float busyP;
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vPos;   ///< Position (from the vertex stage).
-in float vBg;   ///< Background flag (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vPos;    ///< Position (from the vertex stage).
+in float vBg;     ///< Background flag (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// Cheap per-cell hash for the docking-light speckle -- a fixed grid in UV
 /// space, not tied to any particular mesh's UV layout details.
-float hash21(vec2 p) {
-    p = fract(p * vec2(123.34, 456.21));
-    p += dot(p, p + 78.233);
-    return fract(p.x * p.y);
+float hash21( vec2 p )
+{
+    p = fract( p * vec2( 123.34, 456.21 ) );
+    p += dot( p, p + 78.233 );
+    return fract( p.x * p.y );
 }
 
 // ---- Sky shell: shared hash/noise/fbm + a busy starfield ----
 /// @brief Pseudo-random number 0..1 from a 3D point.
-float hash13(vec3 p) {
-    p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
+float hash13( vec3 p )
+{
+    p = fract( p * 0.3183099 + vec3( 0.71, 0.113, 0.419 ) );
     p *= 17.0;
-    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+    return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
 }
 /// @brief Smooth 3D value noise, 0..1.
-float noise3(vec3 x) {
-    vec3 i = floor(x), f = fract(x);
-    f = f * f * (3.0 - 2.0 * f);
-    float n000 = hash13(i + vec3(0.0,0.0,0.0)), n100 = hash13(i + vec3(1.0,0.0,0.0));
-    float n010 = hash13(i + vec3(0.0,1.0,0.0)), n110 = hash13(i + vec3(1.0,1.0,0.0));
-    float n001 = hash13(i + vec3(0.0,0.0,1.0)), n101 = hash13(i + vec3(1.0,0.0,1.0));
-    float n011 = hash13(i + vec3(0.0,1.0,1.0)), n111 = hash13(i + vec3(1.0,1.0,1.0));
-    return mix(mix(mix(n000,n100,f.x), mix(n010,n110,f.x), f.y),
-               mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
+float noise3( vec3 x )
+{
+    vec3 i = floor( x ), f = fract( x );
+    f = f * f * ( 3.0 - 2.0 * f );
+    float n000 = hash13( i + vec3( 0.0, 0.0, 0.0 ) ), n100 = hash13( i + vec3( 1.0, 0.0, 0.0 ) );
+    float n010 = hash13( i + vec3( 0.0, 1.0, 0.0 ) ), n110 = hash13( i + vec3( 1.0, 1.0, 0.0 ) );
+    float n001 = hash13( i + vec3( 0.0, 0.0, 1.0 ) ), n101 = hash13( i + vec3( 1.0, 0.0, 1.0 ) );
+    float n011 = hash13( i + vec3( 0.0, 1.0, 1.0 ) ), n111 = hash13( i + vec3( 1.0, 1.0, 1.0 ) );
+    return mix( mix( mix( n000, n100, f.x ), mix( n010, n110, f.x ), f.y ),
+                mix( mix( n001, n101, f.x ), mix( n011, n111, f.x ), f.y ), f.z );
 }
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec3 p) {
+float fbm( vec3 p )
+{
     float v = 0.0, a = 0.5;
-    for (int i = 0; i < 5; i++) { v += a * noise3(p); p = p * 2.03 + 7.1; a *= 0.5; }
+    for ( int i = 0; i < 5; i++ )
+    {
+        v += a * noise3( p );
+        p = p * 2.03 + 7.1;
+        a *= 0.5;
+    }
     return v;
 }
 /// @brief Star field brightness for a direction.
-float starsField(vec3 dir, float density) {
-    float h = hash13(floor(dir * 500.0));
-    return smoothstep(1.0 - density, 1.0, h);
+float starsField( vec3 dir, float density )
+{
+    float h = hash13( floor( dir * 500.0 ) );
+    return smoothstep( 1.0 - density, 1.0, h );
 }
 /// @brief The sky colour for a direction.
-vec3 renderSky(vec3 dir)
+vec3 renderSky( vec3 dir )
 {
     // A busy starfield with faint warm nebula wisps -- open space near a
     // populated hub, not deep uninhabited void.
-    float wisp = fbm(dir * 2.0 + vec3(time * 0.003, 0.0, 0.0));
+    float wisp = fbm( dir * 2.0 + vec3( time * 0.003, 0.0, 0.0 ) );
     // The wisps were gated so tightly that most of the sky stayed at zero.
     // A populated hub should sit in visibly lit space, so there is now a
     // floor under them rather than pure black between.
-    vec3 col = vec3(0.030, 0.026, 0.034)
-             + vec3(0.20, 0.14, 0.09) * smoothstep(0.28, 0.70, wisp)
-      * (0.80 + 0.30 * audioKick + 0.15 * audioSwell);   // beat lives in the sky now
-    return col + vec3(1.0, 0.97, 0.9) * starsField(dir, 0.0022);
+    vec3 col = vec3( 0.030, 0.026, 0.034 )
+               + vec3( 0.20, 0.14, 0.09 ) * smoothstep( 0.28, 0.70, wisp )
+                     * ( 0.80 + 0.30 * audioKick + 0.15 * audioSwell ); // beat lives in the sky now
+    return col + vec3( 1.0, 0.97, 0.9 ) * starsField( dir, 0.0022 );
 }
 
 // ---- normal mapping ------------------------------------------------------
@@ -103,69 +115,72 @@ vec3 renderSky(vec3 dir)
 /// and it costs nothing in the vertex stage and no change to the buffer layout.
 /// A model WITHOUT a normal map has materialLayers < 3 and this returns the
 /// interpolated normal untouched, so every scene works either way.
-mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
+mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
 {
-    vec3 dp1 = dFdx(p),  dp2 = dFdy(p);
-    vec2 du1 = dFdx(uv), du2 = dFdy(uv);
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * du1.x + dp1perp * du2.x;
-    vec3 B = dp2perp * du1.y + dp1perp * du2.y;
-    float inv = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-12));
-    return mat3(T * inv, B * inv, N);
+    vec3  dp1 = dFdx( p ), dp2 = dFdy( p );
+    vec2  du1 = dFdx( uv ), du2 = dFdy( uv );
+    vec3  dp2perp = cross( dp2, N );
+    vec3  dp1perp = cross( N, dp1 );
+    vec3  T = dp2perp * du1.x + dp1perp * du2.x;
+    vec3  B = dp2perp * du1.y + dp1perp * du2.y;
+    float inv = inversesqrt( max( max( dot( T, T ), dot( B, B ) ), 1e-12 ) );
+    return mat3( T * inv, B * inv, N );
 }
 
 /// @brief The normal tilted by the material's normal map.
-vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength)
+vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength )
 {
-    if (layers < 3) return n;
-    vec3 m = texture(tex, vec3(uv, 2.0)).rgb * 2.0 - 1.0;
+    if ( layers < 3 )
+        return n;
+    vec3 m = texture( tex, vec3( uv, 2.0 ) ).rgb * 2.0 - 1.0;
     // A degenerate tap (an all-black texel from a failed decode) would
     // normalize to garbage and pit the whole surface.
-    if (dot(m, m) < 1e-4) return n;
+    if ( dot( m, m ) < 1e-4 )
+        return n;
     m.xy *= strength;
-    return normalize(cotangentFrame(n, wpos, uv) * normalize(m));
+    return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    if (vBg > 0.5)
+    if ( vBg > 0.5 )
     {
-        fragColor = vec4(renderSky(normalize(vPos)), 1.0);
+        fragColor = vec4( renderSky( normalize( vPos ) ), 1.0 );
         return;
     }
 
-    float hue = (hueP > 0.01 ? hueP : 0.0);
-    float bp  = (busyP > 0.01 ? busyP : 1.0);
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
+    float bp = ( busyP > 0.01 ? busyP : 1.0 );
 
-    vec4 base = texture(texMeshMaterial, vec3(vUV, 0.0));
-    if (base.a < 0.1) discard;
+    vec4 base = texture( texMeshMaterial, vec3( vUV, 0.0 ) );
+    if ( base.a < 0.1 )
+        discard;
     float roughness = 0.6, metallic = 0.25;
-    if (texMeshMaterialLayers >= 2)
+    if ( texMeshMaterialLayers >= 2 )
     {
-        vec4 mr = texture(texMeshMaterial, vec3(vUV, 1.0));
+        vec4 mr = texture( texMeshMaterial, vec3( vUV, 1.0 ) );
         roughness = mr.g;
-        metallic  = mr.b;
+        metallic = mr.b;
     }
 
-    vec3 n = normalize(vNormal);
+    vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
-    n = perturbNormal(texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0);
-    vec3 viewDir = normalize(-vPos);
+    n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
+    vec3 viewDir = normalize( -vPos );
 
-    vec3 lightDir = normalize(vec3(0.4, 0.6, -0.5));
-    float diff = max(dot(n, lightDir), 0.0);
-    float fill = 0.55 + 0.45 * dot(n, vec3(0.0, 1.0, 0.0));
+    vec3  lightDir = normalize( vec3( 0.4, 0.6, -0.5 ) );
+    float diff = max( dot( n, lightDir ), 0.0 );
+    float fill = 0.55 + 0.45 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3 halfV = normalize(lightDir + viewDir);
-    float spec = pow(max(dot(n, halfV), 0.0), mix(40.0, 6.0, roughness));
-    vec3 specColor = mix(vec3(1.0, 0.95, 0.85), base.rgb, metallic);
+    vec3  halfV = normalize( lightDir + viewDir );
+    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 40.0, 6.0, roughness ) );
+    vec3  specColor = mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic );
 
     // Brighter overall than the other families -- this is a lit,
     // populated hub, not deep infrastructure or a warship.
-    vec3 col = base.rgb * (0.6 + diff * (1.3 + 0.4 * audioSwell) + fill * 0.4);
-    col += specColor * spec * (0.5 + 0.55 * (1.0 - roughness));
+    vec3 col = base.rgb * ( 0.6 + diff * ( 1.3 + 0.4 * audioSwell ) + fill * 0.4 );
+    col += specColor * spec * ( 0.5 + 0.55 * ( 1.0 - roughness ) );
 
     // Docking-light speckle: many small twinkling points across a coarse UV
     // grid, gated to the hull's darker patches (structure/shadow, not the
@@ -175,23 +190,24 @@ void main()
     // would light ~49% of all cells at once -- read as a uniform wash
     // instead of scattered points (found by rendering). 0.12 keeps even the
     // busiest instance under ~17%.
-    float lumaCell = dot(base.rgb, vec3(0.299, 0.587, 0.114));
-    vec2 grid = vUV * 40.0;
-    vec2 cell = floor(grid);
-    float r = hash21(cell);
-    float lit = step(1.0 - 0.12 * bp, r);
-    float twinkle = 0.5 + 0.5 * sin(time * (2.0 + r * 6.0) + r * 30.0);
-    float darkMask = 1.0 - smoothstep(0.15, 0.45, lumaCell);
+    float lumaCell = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
+    vec2  grid = vUV * 40.0;
+    vec2  cell = floor( grid );
+    float r = hash21( cell );
+    float lit = step( 1.0 - 0.12 * bp, r );
+    float twinkle = 0.5 + 0.5 * sin( time * ( 2.0 + r * 6.0 ) + r * 30.0 );
+    float darkMask = 1.0 - smoothstep( 0.15, 0.45, lumaCell );
     // Fixed warm amber -- the starfield outside now carries the color
     // variety, not a photo-tinted hull.
-    col += vec3(1.0, 0.75, 0.4) * lit * darkMask * twinkle * (0.5 + 0.4 * audioSwell + 0.4 * audioKick);
+    col += vec3( 1.0, 0.75, 0.4 ) * lit * darkMask * twinkle * ( 0.5 + 0.4 * audioSwell + 0.4 * audioKick );
 
-    float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 4.0);
-    col += vec3(1.0, 0.8, 0.5) * fresnel * (0.08 + 0.15 * audioSwell);
+    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    col += vec3( 1.0, 0.8, 0.5 ) * fresnel * ( 0.08 + 0.15 * audioSwell );
 
-    if (hue > 0.001) col = hueRot(col, 0.15 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

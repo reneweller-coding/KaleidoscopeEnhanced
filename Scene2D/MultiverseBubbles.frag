@@ -1,10 +1,10 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MultiverseBubbles.frag
- * @brief MULTIVERSE BUBBLES: Floating in the higher-dimensional 'bulk', we see 
- * countless other universes drifting like massive, glowing bubbles. When they 
- * collide, catastrophic flashes of energy bridge the voids between them, syncing 
+ * @brief MULTIVERSE BUBBLES: Floating in the higher-dimensional 'bulk', we see
+ * countless other universes drifting like massive, glowing bubbles. When they
+ * collide, catastrophic flashes of energy bridge the voids between them, syncing
  * to the audio kicks.
  *   audioAdvance -> slow drift through the bulk
  *   audioKick    -> flashes when universes bump into each other
@@ -17,173 +17,192 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float bubbleP;
 uniform float bulkP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Smooth value noise.
-float noise(vec3 p) {
-    vec3 i = floor(p);
-    vec3 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
+float noise( vec3 p )
+{
+    vec3 i = floor( p );
+    vec3 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
     float n = i.x + i.y * 57.0 + i.z * 113.0;
     return mix(
-        mix(mix(hash11(n + 0.0), hash11(n + 1.0), f.x),
-            mix(hash11(n + 57.0), hash11(n + 58.0), f.x), f.y),
-        mix(mix(hash11(n + 113.0), hash11(n + 114.0), f.x),
-            mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
+        mix( mix( hash11( n + 0.0 ), hash11( n + 1.0 ), f.x ),
+             mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y ),
+        mix( mix( hash11( n + 113.0 ), hash11( n + 114.0 ), f.x ),
+             mix( hash11( n + 170.0 ), hash11( n + 171.0 ), f.x ), f.y ),
+        f.z );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec3 p) {
+float fbm( vec3 p )
+{
     float f = 0.0, a = 0.5;
-    for(int i = 0; i < 5; i++) { f += a * noise(p); p *= 2.0; a *= 0.5; }
+    for ( int i = 0; i < 5; i++ )
+    {
+        f += a * noise( p );
+        p *= 2.0;
+        a *= 0.5;
+    }
     return f;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float bp = (bubbleP > 0.01 ? bubbleP : 1.0);
-    float bkp = (bulkP > 0.01 ? bulkP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float bp = ( bubbleP > 0.01 ? bubbleP : 1.0 );
+    float bkp = ( bulkP > 0.01 ? bulkP : 1.0 );
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float drift = time * 0.1 + audioAdvance * 0.2;
-    vec3 ro = vec3(drift, 0.0, drift);
-    
+    vec3  ro = vec3( drift, 0.0, drift );
+
     // Smooth camera rotation
-    float rot = sin(time * 0.1) * 0.2;
-    mat2 rotM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
-    vec2 ruv = rotM * uv;
-    vec3 rd = normalize(vec3(ruv, 1.0));
-    
-    vec3 col = vec3(0.0);
-    
-    vec3 bulkColor = imgPalette(0.1); // Deep, weird color for the bulk
-    vec3 bubbleColor = imgPalette(0.8 + audioCentroid * 0.1); // Bright edge of universes
-    
+    float rot = sin( time * 0.1 ) * 0.2;
+    mat2  rotM = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
+    vec2  ruv = rotM * uv;
+    vec3  rd = normalize( vec3( ruv, 1.0 ) );
+
+    vec3 col = vec3( 0.0 );
+
+    vec3 bulkColor = imgPalette( 0.1 );                         // Deep, weird color for the bulk
+    vec3 bubbleColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Bright edge of universes
+
     // Background bulk (higher dimensional fluid/fog)
-    float bulkFog = fbm(vec3(uv * 2.0, drift * 0.5));
-    col += bulkColor * bulkFog * 0.5 * bkp * (1.0 + audioSwell);
-    
+    float bulkFog = fbm( vec3( uv * 2.0, drift * 0.5 ) );
+    col += bulkColor * bulkFog * 0.5 * bkp * ( 1.0 + audioSwell );
+
     // Raymarching spheres (Universes)
     float d = 0.0;
-    vec3 p;
+    vec3  p;
     float densityAccum = 0.0;
-    
+
     // Domain repetition for bubbles
     float cellSize = 3.0 / bp;
-    
-    for (int i = 0; i < 40; ++i) {
+
+    for ( int i = 0; i < 40; ++i )
+    {
         p = ro + rd * d;
-        
+
         vec3 cellP = p / cellSize;
-        vec3 iCell = floor(cellP);
-        vec3 fCell = fract(cellP) - 0.5; // -0.5 to 0.5
-        
+        vec3 iCell = floor( cellP );
+        vec3 fCell = fract( cellP ) - 0.5; // -0.5 to 0.5
+
         // Direkter fract(sin(dot))-Hash: hash11 mit Riesenargument kollabiert
         // auf der GPU (Praezision), das Blasenfeld war entartet.
-        float cellHash = fract(sin(dot(iCell, vec3(12.9898, 78.233, 37.719))) * 43758.5453);
-        
+        float cellHash = fract( sin( dot( iCell, vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+
         // Randomize bubble position within cell
         vec3 offset = vec3(
-            hash11(cellHash) - 0.5,
-            hash11(cellHash + 1.0) - 0.5,
-            hash11(cellHash + 2.0) - 0.5
-        ) * 0.5;
-        
+                          hash11( cellHash ) - 0.5,
+                          hash11( cellHash + 1.0 ) - 0.5,
+                          hash11( cellHash + 2.0 ) - 0.5 )
+                      * 0.5;
+
         // Random radius
-        float radius = 0.2 + 0.3 * hash11(cellHash + 3.0);
-        
+        float radius = 0.2 + 0.3 * hash11( cellHash + 3.0 );
+
         // Calculate distance to this sphere
-        vec3 localP = fCell - offset;
-        float distToCenter = length(localP);
+        vec3  localP = fCell - offset;
+        float distToCenter = length( localP );
         float distToSphere = distToCenter - radius;
-        
+
         // We only render the *surface* of the bubble (the membrane)
-        float membrane = abs(distToSphere);
-        
-        if (membrane < 0.09) {
-            float alpha = smoothstep(0.09, 0.0, membrane) * 0.28;
-            
+        float membrane = abs( distToSphere );
+
+        if ( membrane < 0.09 )
+        {
+            float alpha = smoothstep( 0.09, 0.0, membrane ) * 0.28;
+
             // Inside the bubble is another universe (different fbm pattern)
-            float inside = fbm(p * 5.0 + cellHash * 100.0);
-            
+            float inside = fbm( p * 5.0 + cellHash * 100.0 );
+
             // The membrane glows
-            vec3 localCol = bubbleColor * (0.5 + inside * 0.5);
-            
+            vec3 localCol = bubbleColor * ( 0.5 + inside * 0.5 );
+
             // Universes bumping into each other causing flashes
             // We use cellHash to trigger random flashes
             // Sanftes Aufglimmen statt 5-Hz-Strobo.
-            float collision = pow(0.5 + 0.5 * sin(time * (0.6 + cellHash * 1.5) + cellHash * 40.0), 8.0);
-            localCol += bubbleColor * collision * (0.5 + audioKick * 2.0) * bkp;
-            
+            float collision = pow( 0.5 + 0.5 * sin( time * ( 0.6 + cellHash * 1.5 ) + cellHash * 40.0 ), 8.0 );
+            localCol += bubbleColor * collision * ( 0.5 + audioKick * 2.0 ) * bkp;
+
             // Fresnel effect for the bubble (brighter on edges)
             // We approximate normal based on localP
-            vec3 normal = normalize(localP);
-            float fresnel = 1.0 - max(0.0, dot(normal, -rd));
-            fresnel = pow(fresnel, 3.0);
-            
-            localCol += vec3(1.0) * fresnel * (1.0 + audioSwell);
-            
-            col += localCol * alpha * (1.0 - densityAccum);
+            vec3  normal = normalize( localP );
+            float fresnel = 1.0 - max( 0.0, dot( normal, -rd ) );
+            fresnel = pow( fresnel, 3.0 );
+
+            localCol += vec3( 1.0 ) * fresnel * ( 1.0 + audioSwell );
+
+            col += localCol * alpha * ( 1.0 - densityAccum );
             densityAccum += alpha;
-            
-            if (densityAccum > 0.95) break;
+
+            if ( densityAccum > 0.95 )
+                break;
         }
-        
+
         // Advance ray
         // Safe step size to not miss thin membranes
-        d += max(0.02, abs(distToSphere) * 0.5); 
-        if (d > 15.0) break;
+        d += max( 0.02, abs( distToSphere ) * 0.5 );
+        if ( d > 15.0 )
+            break;
     }
 
-    if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

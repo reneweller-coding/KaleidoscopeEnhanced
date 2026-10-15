@@ -13,78 +13,82 @@
  * synthwave grid horizon onto that shell.
  */
 
-in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
+in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky
+               ///< direction").
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP;   ///< Size knob, 0..1.
-uniform float spinP;   ///< Spin knob, 0..1.
+uniform float sizeP; ///< Size knob, 0..1.
+uniform float spinP; ///< Spin knob, 0..1.
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocalPos;    ///< object space, pre-scale -- the spectrum bars live in THIS space so they stay painted on the device instead of sliding across it as it turns
-out vec3  vObjNormal;   ///< object space normal, for picking out the flat front panel
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec2 vUV;         ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3 vNormal;     ///< Surface normal (from the vertex stage).
+out vec3 vPos;        ///< Position (from the vertex stage).
+out vec3 vLocalPos;   ///< object space, pre-scale -- the spectrum bars live in THIS space so they stay painted on the
+                      ///< device instead of sliding across it as it turns
+out vec3  vObjNormal; ///< object space normal, for picking out the flat front panel
+out float vBg;        ///< Background flag (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 world, n;
     bool isBg = gl_VertexID >= meshVertexCount;
-    if( !isBg )
+    if ( !isBg )
     {
-        float sz = (sizeP > 0.01 ? sizeP : 1.0);
-        vec3 local = attrA.xyz * (30.0 * sz);
+        float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+        vec3  local = attrA.xyz * ( 30.0 * sz );
 
         // Showroom turntable: one clean axis, constant rate. The music
         // nudges the rate a little, but never enough to read as a jump.
-        float sp = (spinP > 0.01 ? spinP : 1.0);
+        float sp = ( spinP > 0.01 ? spinP : 1.0 );
         // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        float rotY = time * 0.32 * sp;
-        const float tiltX = 0.16;                 // a hair from above, so it isn't seen edge-on
-        float cy = cos(rotY), sy = sin(rotY);
-        float cx = cos(tiltX), sx = sin(tiltX);
-        mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
-        mat3 rotXMat = mat3(1.0, 0.0, 0.0,   0.0, cx, sx,   0.0, -sx, cx);
-        mat3 rotMat = rotXMat * rotYMat;
+        float       rotY = time * 0.32 * sp;
+        const float tiltX = 0.16; // a hair from above, so it isn't seen edge-on
+        float       cy = cos( rotY ), sy = sin( rotY );
+        float       cx = cos( tiltX ), sx = sin( tiltX );
+        mat3        rotYMat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        mat3        rotXMat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3        rotMat = rotXMat * rotYMat;
 
         world = rotMat * local;
         world.z += 78.0;
-        n = normalize(rotMat * attrB.xyz);
-        vUV = vec2(attrA.w, attrB.w);
-        vLocalPos  = attrA.xyz;
+        n = normalize( rotMat * attrB.xyz );
+        vUV = vec2( attrA.w, attrB.w );
+        vLocalPos = attrA.xyz;
         vObjNormal = attrB.xyz;
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
-        vUV = vec2(0.0);
-        vLocalPos  = vec3(0.0);
-        vObjNormal = vec3(0.0);
+        vUV = vec2( 0.0 );
+        vLocalPos = vec3( 0.0 );
+        vObjNormal = vec3( 0.0 );
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     // The shell is a CUBE of half-side kSkyShellRadius, so its corners sit
     // sqrt(3) times further out than its faces -- past kSceneFar, which
     // clipped visible wedges out of the sky. Pinning shell depth just inside
     // the far plane is the standard skybox fix: no far-plane clipping however
     // big the shell is, and it can never occlude the object in front of it.
-    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

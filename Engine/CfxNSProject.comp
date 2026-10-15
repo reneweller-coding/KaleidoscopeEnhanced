@@ -1,7 +1,8 @@
 #version 430
 /**
  * @file CfxNSProject.comp
- * @brief Step 4 (final) of the Navier-Stokes solve: subtracts the pressure gradient to make velocity divergence-free, and publishes the display frame.
+ * @brief Step 4 (final) of the Navier-Stokes solve: subtracts the pressure gradient to make velocity divergence-free,
+ * and publishes the display frame.
  *
  * Reads the converged pressure from the last CfxNSJacobi.comp iteration
  * (binding 1) and the dye texture from CfxNSAdvect.comp (binding 2), corrects
@@ -18,32 +19,39 @@
 // velocities, and this pass writes velocity in place — a confinement term
 // added here would read a mixture of old and new values depending on
 // scheduling.  It belongs in its own pass; the solve is correct without it.
-layout(local_size_x = 16, local_size_y = 16) in;
+layout( local_size_x = 16, local_size_y = 16 ) in;
 
-layout(rgba16f, binding = 0) uniform image2D velIO;
-layout(rgba16f, binding = 1) readonly uniform image2D prsSrc;
-layout(rgba16f, binding = 2) readonly uniform image2D dyeSrc;
-layout(rgba16f, binding = 3) writeonly uniform image2D imgOut;
+layout( rgba16f, binding = 0 ) uniform image2D velIO;
+layout( rgba16f, binding = 1 ) readonly uniform image2D prsSrc;
+layout( rgba16f, binding = 2 ) readonly uniform image2D dyeSrc;
+layout( rgba16f, binding = 3 ) writeonly uniform image2D imgOut;
 
-uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform ivec2 size; ///< Size of the simulation grid in cells.
 
-float pAt(ivec2 q) { return imageLoad(prsSrc, clamp(q, ivec2(0), size - ivec2(1))).g; }
+float pAt( ivec2 q )
+{
+    return imageLoad( prsSrc, clamp( q, ivec2( 0 ), size - ivec2( 1 ) ) ).g;
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
-    if (p.x >= size.x || p.y >= size.y) return;
+    ivec2 p = ivec2( gl_GlobalInvocationID.xy );
+    if ( p.x >= size.x || p.y >= size.y )
+        return;
 
-    vec2 v = imageLoad(velIO, p).rg;
-    v -= 0.5 * vec2(pAt(p + ivec2(1, 0)) - pAt(p - ivec2(1, 0)),
-                    pAt(p + ivec2(0, 1)) - pAt(p - ivec2(0, 1)));
+    vec2 v = imageLoad( velIO, p ).rg;
+    v -= 0.5
+         * vec2( pAt( p + ivec2( 1, 0 ) ) - pAt( p - ivec2( 1, 0 ) ),
+                 pAt( p + ivec2( 0, 1 ) ) - pAt( p - ivec2( 0, 1 ) ) );
 
-    if (p.x <= 1 || p.x >= size.x - 2) v.x = 0.0;
-    if (p.y <= 1 || p.y >= size.y - 2) v.y = 0.0;
+    if ( p.x <= 1 || p.x >= size.x - 2 )
+        v.x = 0.0;
+    if ( p.y <= 1 || p.y >= size.y - 2 )
+        v.y = 0.0;
 
-    imageStore(velIO, p, vec4(v, 0.0, 1.0));
+    imageStore( velIO, p, vec4( v, 0.0, 1.0 ) );
 
-    vec4 d = imageLoad(dyeSrc, p);
-    imageStore(imgOut, p, vec4(d.rgb, length(v) * 6.0));
+    vec4 d = imageLoad( dyeSrc, p );
+    imageStore( imgOut, p, vec4( d.rgb, length( v ) * 6.0 ) );
 }

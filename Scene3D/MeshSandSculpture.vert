@@ -8,84 +8,95 @@
  * closes toward the end so it stands whole again.  It turns slowly on the
  * scene clock.  No camera motion.
  */
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;       ///< Seconds since this scene was activated.
 uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
-uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
-uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
+uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
-uniform float sizeP;   ///< Size knob, 0..1.
+uniform float sizeP; ///< Size knob, 0..1.
 uniform float erodeP;
 
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec3 vObj;   ///< Object-space position (from the vertex stage).
-out vec3 vPos;   ///< Position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vObj;    ///< Object-space position (from the vertex stage).
+out vec3  vPos;    ///< Position (from the vertex stage).
+out float vBg;     ///< Background flag (from the vertex stage).
 out float vErode;
 
 /// @brief Pseudo-random number 0..1 from a 3D point.
-float hash31(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
-/// @brief Smooth 3D value noise, 0..1.
-float noise3(vec3 p)
+float hash31( vec3 p )
 {
-    vec3 i = floor(p), f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    float n000 = hash31(i), n100 = hash31(i + vec3(1, 0, 0)), n010 = hash31(i + vec3(0, 1, 0)), n110 = hash31(i + vec3(1, 1, 0));
-    float n001 = hash31(i + vec3(0, 0, 1)), n101 = hash31(i + vec3(1, 0, 1)), n011 = hash31(i + vec3(0, 1, 1)), n111 = hash31(i + vec3(1, 1, 1));
-    return mix(mix(mix(n000, n100, f.x), mix(n010, n110, f.x), f.y), mix(mix(n001, n101, f.x), mix(n011, n111, f.x), f.y), f.z);
+    return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
+}
+/// @brief Smooth 3D value noise, 0..1.
+float noise3( vec3 p )
+{
+    vec3 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    float n000 = hash31( i ), n100 = hash31( i + vec3( 1, 0, 0 ) ), n010 = hash31( i + vec3( 0, 1, 0 ) ),
+          n110 = hash31( i + vec3( 1, 1, 0 ) );
+    float n001 = hash31( i + vec3( 0, 0, 1 ) ), n101 = hash31( i + vec3( 1, 0, 1 ) ),
+          n011 = hash31( i + vec3( 0, 1, 1 ) ), n111 = hash31( i + vec3( 1, 1, 1 ) );
+    return mix( mix( mix( n000, n100, f.x ), mix( n010, n110, f.x ), f.y ),
+                mix( mix( n001, n101, f.x ), mix( n011, n111, f.x ), f.y ), f.z );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     bool isBg = gl_VertexID >= meshVertexCount;
-    if (isBg)
+    if ( isBg )
     {
         vec3 w = attrA.xyz;
-        vNormal = normalize(attrB.xyz);
-        vPos = w; vObj = w; vUV = vec2(0.0); vBg = 1.0; vErode = 0.0;
-        vec3 vp = vec3(w.x - eyeOff, w.y, w.z);
-        gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+        vNormal = normalize( attrB.xyz );
+        vPos = w;
+        vObj = w;
+        vUV = vec2( 0.0 );
+        vBg = 1.0;
+        vErode = 0.0;
+        vec3 vp = vec3( w.x - eyeOff, w.y, w.z );
+        gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
         gl_Position.z = gl_Position.w * 0.999999;
         return;
     }
-    vec3 p = attrA.xyz - meshCenter;
-    vec3 n = normalize(attrB.xyz);
-    float rad = max(length(meshExtent), 1e-4);
+    vec3  p = attrA.xyz - meshCenter;
+    vec3  n = normalize( attrB.xyz );
+    float rad = max( length( meshExtent ), 1e-4 );
     p /= rad;
     vObj = p;
     // Erosion: roughness (slow) times the arc allowance, times a wind-side
     // noise (the windward side erodes more).
-    float prog = clamp(sceneProgress, 0.0, 1.0);
-    float allow = smoothstep(0.0, 0.3, prog) * (1.0 - smoothstep(0.7, 1.0, prog));
-    float rough = clamp(audioRoughness * 1.5, 0.0, 1.0);
-    float windSide = 0.5 + 0.5 * dot(n, normalize(vec3(-0.7, 0.2, -0.4)));
-    float field = noise3(p * 4.0 + sceneAdvance * 0.02) * 0.7 + noise3(p * 9.0) * 0.3;
-    float erode = (0.05 + 0.25 * clamp(erodeP, 0.0, 1.0)) * rough * allow * (0.3 + 0.7 * windSide) * field;
+    float prog = clamp( sceneProgress, 0.0, 1.0 );
+    float allow = smoothstep( 0.0, 0.3, prog ) * ( 1.0 - smoothstep( 0.7, 1.0, prog ) );
+    float rough = clamp( audioRoughness * 1.5, 0.0, 1.0 );
+    float windSide = 0.5 + 0.5 * dot( n, normalize( vec3( -0.7, 0.2, -0.4 ) ) );
+    float field = noise3( p * 4.0 + sceneAdvance * 0.02 ) * 0.7 + noise3( p * 9.0 ) * 0.3;
+    float erode = ( 0.05 + 0.25 * clamp( erodeP, 0.0, 1.0 ) ) * rough * allow * ( 0.3 + 0.7 * windSide ) * field;
     p -= n * erode;
     vErode = erode / 0.3;
     float ry = sceneAdvance * 0.08 + sceneTime * 0.02;
     float rx = 0.2;
-    mat3 RY = mat3(cos(ry), 0.0, -sin(ry), 0.0, 1.0, 0.0, sin(ry), 0.0, cos(ry));
-    mat3 RX = mat3(1.0, 0.0, 0.0, 0.0, cos(rx), sin(rx), 0.0, -sin(rx), cos(rx));
+    mat3  RY = mat3( cos( ry ), 0.0, -sin( ry ), 0.0, 1.0, 0.0, sin( ry ), 0.0, cos( ry ) );
+    mat3  RX = mat3( 1.0, 0.0, 0.0, 0.0, cos( rx ), sin( rx ), 0.0, -sin( rx ), cos( rx ) );
     p = RX * RY * p;
     n = RX * RY * n;
-    float size = 6.0 * (sizeP > 0.05 ? sizeP : 1.0);
-    vec3 world = p * size + vec3(0.0, -0.5, 12.0);
-    vUV = vec2(attrA.w, attrB.w);
+    float size = 6.0 * ( sizeP > 0.05 ? sizeP : 1.0 );
+    vec3  world = p * size + vec3( 0.0, -0.5, 12.0 );
+    vUV = vec2( attrA.w, attrB.w );
     vNormal = n;
     vPos = world;
     vBg = 0.0;
-    vec3 vp = vec3(world.x - eyeOff, world.y, world.z);
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    vec3 vp = vec3( world.x - eyeOff, world.y, world.z );
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

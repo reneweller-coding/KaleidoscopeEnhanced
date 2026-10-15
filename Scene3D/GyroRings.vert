@@ -26,29 +26,30 @@
 // breathes the whole instrument, the downbeat sends a soft glint around
 // each ring.  Harmonic clockwork.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioSpread;   ///< Spectral spread, 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioBarPhase;  ///< Position within the current bar, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSpread;    ///< Spectral spread, 0..1.
 uniform float audioDownbeat;
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 out vec3 vCorner;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -58,17 +59,19 @@ void main()
 
     // Ring r holds 80 + r*60 cubes: 80,140,200,260,320,380 -> 1380 used.
     float ring = 0.0, node = idx, count = 80.0;
-    for (int i = 0; i < 6; ++i)
+    for ( int i = 0; i < 6; ++i )
     {
-        if (node < count) break;
+        if ( node < count )
+            break;
         node -= count;
         ring += 1.0;
         count += 60.0;
     }
-    if (ring > 5.5)
+    if ( ring > 5.5 )
     {
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
-        vCol = vec4(0.0); vCorner = attrA.xyz;
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
+        vCol = vec4( 0.0 );
+        vCorner = attrA.xyz;
         return;
     }
 
@@ -76,41 +79,41 @@ void main()
     // tight around the hub, rich wide harmonics spread them into a broad
     // gyroscope.  R feeds no integrated phase (ang's time term is
     // independent of it), so this is a safe static shape parameter.
-    float R = (6.0 + ring * 3.6) * (1.0 + 0.06 * audioBass)
-            * (0.86 + 0.30 * clamp(audioSpread, 0.0, 1.0));
-    float ang = (node / count) * 6.2831853
-              + time * (0.22 - ring * 0.028) * ((mod(ring, 2.0) < 0.5) ? 1.0 : -1.0);
+    float R = ( 6.0 + ring * 3.6 ) * ( 1.0 + 0.06 * audioBass )
+              * ( 0.86 + 0.30 * clamp( audioSpread, 0.0, 1.0 ) );
+    float ang = ( node / count ) * 6.2831853
+                + time * ( 0.22 - ring * 0.028 ) * ( ( mod( ring, 2.0 ) < 0.5 ) ? 1.0 : -1.0 );
 
-    vec3 p = vec3(cos(ang) * R, 0.0, sin(ang) * R);
+    vec3 p = vec3( cos( ang ) * R, 0.0, sin( ang ) * R );
 
     // Each ring's plane is tilted differently and precesses slowly.
     float tiltA = ring * 0.55;
-    float prec  = time * (0.05 + ring * 0.012);
-    p.yz = mat2(cos(tiltA), -sin(tiltA), sin(tiltA), cos(tiltA)) * p.yz;
-    p.xy = mat2(cos(prec), -sin(prec), sin(prec), cos(prec)) * p.xy;
+    float prec = time * ( 0.05 + ring * 0.012 );
+    p.yz = mat2( cos( tiltA ), -sin( tiltA ), sin( tiltA ), cos( tiltA ) ) * p.yz;
+    p.xy = mat2( cos( prec ), -sin( prec ), sin( prec ), cos( prec ) ) * p.xy;
 
     // Soft glint travels around each ring once per bar (wrapped distance),
     // and the DOWNBEAT accent is what gives it its punch: on the bar's "1"
     // the falloff widens so the glint blooms along the ring.  Its peak
     // amplitude is trimmed at the same time (see the col *= below), so the
     // accent buys roughly +35% integrated energy and no more.
-    float dbt = clamp(audioDownbeat, 0.0, 1.0);
-    float gd = mod(node / count - audioBarPhase + 1.0, 1.0);
-    float glint = exp(-min(gd, 1.0 - gd) * (10.5 - 4.0 * dbt));
+    float dbt = clamp( audioDownbeat, 0.0, 1.0 );
+    float gd = mod( node / count - audioBarPhase + 1.0, 1.0 );
+    float glint = exp( -min( gd, 1.0 - gd ) * ( 10.5 - 4.0 * dbt ) );
 
     float s = 0.9 - ring * 0.06;
-    vec3 world = p + attrA.xyz * s;
+    vec3  world = p + attrA.xyz * s;
 
-    vec3 vp = world + vec3(0.0, 0.0, 36.0);
+    vec3 vp = world + vec3( 0.0, 0.0, 36.0 );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
 
-    vec3 col = hueRot(vec3(0.35, 0.7, 0.95),
-                      audioChromaHue + ring * 0.55);
-    col *= (0.45 + 0.35 * audioSwell + (0.95 - 0.15 * dbt) * glint);
-    col *= clamp(1.0 - vp.z / 90.0, 0.15, 1.0);
+    vec3 col = hueRot( vec3( 0.35, 0.7, 0.95 ),
+                       audioChromaHue + ring * 0.55 );
+    col *= ( 0.45 + 0.35 * audioSwell + ( 0.95 - 0.15 * dbt ) * glint );
+    col *= clamp( 1.0 - vp.z / 90.0, 0.15, 1.0 );
 
-    vCol    = vec4(col * 1.5, 1.0);
+    vCol = vec4( col * 1.5, 1.0 );
     vCorner = attrA.xyz;
 }

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SolarMagnetoPlasmaLoop.frag
  * @brief SOLAR MAGNETO PLASMA LOOP: Twisted magnetic helical coronal loops emerging
@@ -14,114 +14,120 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> steers the extreme solar flare hydrogen/helium spectrum
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float loopCountP;
 uniform float flareIntensityP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float nLoops = (loopCountP > 1.0) ? loopCountP : 3.0;
-    float flareInt = (flareIntensityP > 0.01) ? flareIntensityP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float nLoops = ( loopCountP > 1.0 ) ? loopCountP : 3.0;
+    float flareInt = ( flareIntensityP > 0.01 ) ? flareIntensityP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Boiling solar surface granulation background
-    float granNoise = sin(uv.x * 20.0 + t * 2.0) * cos(uv.y * 20.0 - t * 1.5);
-    float gran = smoothstep(-0.4, 0.8, granNoise) * (0.6 + 0.4 * audioSubBass);
+    float granNoise = sin( uv.x * 20.0 + t * 2.0 ) * cos( uv.y * 20.0 - t * 1.5 );
+    float gran = smoothstep( -0.4, 0.8, granNoise ) * ( 0.6 + 0.4 * audioSubBass );
 
-    vec3 loopAcc = vec3(0.0);
+    vec3  loopAcc = vec3( 0.0 );
     float flareAcc = 0.0;
 
     // Accumulate across multiple magnetic coronal loops
-    int numL = int(clamp(nLoops, 2.0, 5.0));
-    for (int k = 0; k < 4; k++) {
-        if (k >= numL) break;
-        float kf = float(k);
+    int numL = int( clamp( nLoops, 2.0, 5.0 ) );
+    for ( int k = 0; k < 4; k++ )
+    {
+        if ( k >= numL )
+            break;
+        float kf = float( k );
 
         // Parametric semi-circular coronal loop arc centered at bottom
-        float arcRadius = 0.55 + kf * 0.25 + 0.1 * sin(audioSwell * 2.5 + kf);
-        vec2 arcCenter = vec2((kf - 1.5) * 0.35 + sin(t * 0.4 + kf) * 0.15, -0.4);
+        float arcRadius = 0.55 + kf * 0.25 + 0.1 * sin( audioSwell * 2.5 + kf );
+        vec2  arcCenter = vec2( ( kf - 1.5 ) * 0.35 + sin( t * 0.4 + kf ) * 0.15, -0.4 );
 
-        vec2 rel = uv - arcCenter;
-        float rArc = length(rel);
-        float aArc = atan(rel.y, rel.x);
+        vec2  rel = uv - arcCenter;
+        float rArc = length( rel );
+        float aArc = atan( rel.y, rel.x );
 
         // Distance to the coronal loop tube
-        float dLoop = abs(rArc - arcRadius) - 0.03;
+        float dLoop = abs( rArc - arcRadius ) - 0.03;
 
         // Helical magnetic twisting along the loop arc
-        float helixTwist = sin(aArc * 16.0 + rArc * 12.0 - t * 5.0 + kf);
-        float loopFilament = exp(-abs(dLoop + helixTwist * 0.02) * (24.0 + 12.0 * audioCentroid));
+        float helixTwist = sin( aArc * 16.0 + rArc * 12.0 - t * 5.0 + kf );
+        float loopFilament = exp( -abs( dLoop + helixTwist * 0.02 ) * ( 24.0 + 12.0 * audioCentroid ) );
 
         // Reconnection flare at the apex of the loop (aArc near pi/2)
-        float apexDist = length(rel - vec2(0.0, arcRadius));
-        float flareNode = exp(-apexDist * 14.0) * (1.0 + 3.0 * audioKick) * flareInt;
+        float apexDist = length( rel - vec2( 0.0, arcRadius ) );
+        float flareNode = exp( -apexDist * 14.0 ) * ( 1.0 + 3.0 * audioKick ) * flareInt;
         flareAcc += flareNode;
 
         // Color gradient of loop (golden hydrogen alpha to extreme ultraviolet core)
-        vec3 loopCol = mix(vec3(1.8, 1.2, 0.2), vec3(1.9, 0.3, 0.8), clamp(rel.y / arcRadius, 0.0, 1.0));
-        loopCol = mix(loopCol, imgPalette(kf * 0.25 + 0.1), 0.35);
+        vec3 loopCol = mix( vec3( 1.8, 1.2, 0.2 ), vec3( 1.9, 0.3, 0.8 ), clamp( rel.y / arcRadius, 0.0, 1.0 ) );
+        loopCol = mix( loopCol, imgPalette( kf * 0.25 + 0.1 ), 0.35 );
 
-        loopAcc += (loopCol * loopFilament + vec3(1.9, 1.8, 1.4) * flareNode) * glw;
+        loopAcc += ( loopCol * loopFilament + vec3( 1.9, 1.8, 1.4 ) * flareNode ) * glw;
     }
 
     // Sample distorted background photo
-    vec2 sampleUV = fract(uv * 0.4 + vec2(t * 0.05, gran * 0.05) + 0.5);
-    vec3 texCol = img(sampleUV);
+    vec2 sampleUV = fract( uv * 0.4 + vec2( t * 0.05, gran * 0.05 ) + 0.5 );
+    vec3 texCol = img( sampleUV );
 
     // Photosphere surface base
-    vec3 photosphereCol = mix(vec3(1.6, 0.8, 0.1), vec3(1.2, 0.2, 0.1), gran);
-    vec3 baseCol = mix(photosphereCol, texCol, 0.35);
+    vec3 photosphereCol = mix( vec3( 1.6, 0.8, 0.1 ), vec3( 1.2, 0.2, 0.1 ), gran );
+    vec3 baseCol = mix( photosphereCol, texCol, 0.35 );
 
     vec3 finalCol = baseCol * 0.4 + loopAcc;
 
     // Global coronal halo flare
-    float coronalGlow = exp(-length(uv + vec2(0.0, 0.4)) * 3.0) * (0.8 + 1.5 * audioKick);
-    finalCol += imgPalette(0.85) * coronalGlow;
+    float coronalGlow = exp( -length( uv + vec2( 0.0, 0.4 ) ) * 3.0 ) * ( 0.8 + 1.5 * audioKick );
+    finalCol += imgPalette( 0.85 ) * coronalGlow;
 
-    finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    finalCol = pow( finalCol, vec3( 0.88 ) );
+    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
 }

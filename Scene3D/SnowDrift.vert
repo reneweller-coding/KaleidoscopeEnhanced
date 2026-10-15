@@ -25,29 +25,30 @@
 // on its own pendulum, a faint ground glow catches them as they land.
 // The music only leans on the wind and the sparkle — never shakes it.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioFlatness;
 uniform float audioSharpness;
-uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -57,19 +58,19 @@ void main()
 
     // Fall forever (looped column), each flake at its own speed.
     const float H = 60.0;
-    float speed = 1.4 + 2.2 * r4;
-    float y = 28.0 - mod(r2 * H + time * speed, H);
+    float       speed = 1.4 + 2.2 * r4;
+    float       y = 28.0 - mod( r2 * H + time * speed, H );
 
     // Pendulum sway + a slow wind field that leans with the music.
-    float sway = sin(time * (0.7 + r3 * 0.8) + r1 * 40.0)
-               * (0.8 + 1.4 * r3);
-    float wind = sin(time * 0.11) * (2.0 + 4.0 * audioSwell);
+    float sway = sin( time * ( 0.7 + r3 * 0.8 ) + r1 * 40.0 )
+                 * ( 0.8 + 1.4 * r3 );
+    float wind = sin( time * 0.11 ) * ( 2.0 + 4.0 * audioSwell );
 
     // SPECTRAL FLATNESS opens the curtain: a held tone keeps the flakes in a
     // narrow near column, broadband noise spreads them wide across the view.
     // The factor only ever grows from 1.0 -- narrowing would crowd the
     // additive sprites together and brighten the frame.
-    float curtain = 120.0 * (1.0 + 0.38 * clamp(audioFlatness, 0.0, 1.0));
+    float curtain = 120.0 * ( 1.0 + 0.38 * clamp( audioFlatness, 0.0, 1.0 ) );
 
     // Depth distribution biased hard toward the camera.
     // With a flat 8..88 spread, four flakes in five sat past 40 units, where the
@@ -79,58 +80,59 @@ void main()
     // reported: perfectly filled, and perfectly featureless. Squaring r3 keeps
     // the same depth range but puts most of the flakes near enough to read
     // individually, with the far ones still there as haze behind them.
-    vec3 world = vec3((r1 - 0.5) * curtain + sway + wind * (28.0 - y) * 0.02,
-                      y,
-                      3.5 + r3 * r3 * 74.0);
+    vec3 world = vec3( ( r1 - 0.5 ) * curtain + sway + wind * ( 28.0 - y ) * 0.02,
+                       y,
+                       3.5 + r3 * r3 * 74.0 );
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
 
     // Vertex 0 is the MOON: without a single anchor object the flakes read
     // as a starfield on black (exactly what the probe recording showed).
-    if (gl_VertexID == 0) {
-        vec3 mw = vec3(10.5, 15.0, 34.0);
+    if ( gl_VertexID == 0 )
+    {
+        vec3 mw = vec3( 10.5, 15.0, 34.0 );
         mw.x -= eyeOff;
-        gl_Position = projM * vec4(mw.x, mw.y, -mw.z, 1.0);
+        gl_Position = projM * vec4( mw.x, mw.y, -mw.z, 1.0 );
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
         gl_PointSize = 190.0 * px;
-        vec3 moonC = mix(vec3(0.72, 0.82, 1.00), vec3(1.00, 0.93, 0.78),
-                         clamp(audioMode, 0.0, 1.0));
-        vCol = vec4(moonC * (0.85 + 0.15 * audioSwell), 2.0);
+        vec3 moonC = mix( vec3( 0.72, 0.82, 1.00 ), vec3( 1.00, 0.93, 0.78 ),
+                          clamp( audioMode, 0.0, 1.0 ) );
+        vCol = vec4( moonC * ( 0.85 + 0.15 * audioSwell ), 2.0 );
         return;
     }
     // Ceiling raised from 13 px: it was clipping the near flakes back down to
     // the same apparent size as the mid-field ones, which flattened out the very
     // depth cue the new distribution creates.
-    gl_PointSize = clamp(290.0 * (0.30 + 0.85 * r4) * px / dist,
-                         2.5, 48.0 * px);
+    gl_PointSize = clamp( 290.0 * ( 0.30 + 0.85 * r4 ) * px / dist,
+                          2.5, 48.0 * px );
 
     // Cold moonlit white with the faintest key tint; flakes glint gently
     // as they tumble; a soft glow near the ground plane.
     // SHARPNESS deepens the tumble-glint into a hard twinkle without adding
     // energy: as the swing grows the mean drops by the same amount, so a
     // bright harsh mix sparkles more but never reads brighter.
-    float shp    = clamp(audioSharpness, 0.0, 1.0);
-    float glint  = (0.70 - 0.22 * shp)
-                 + (0.30 + 0.22 * shp) * sin(time * (1.3 + r2 * 2.0) + r1 * 30.0);
-    float ground = exp(-abs(y + 26.0) * 0.12) * 0.8;
+    float shp = clamp( audioSharpness, 0.0, 1.0 );
+    float glint = ( 0.70 - 0.22 * shp )
+                  + ( 0.30 + 0.22 * shp ) * sin( time * ( 1.3 + r2 * 2.0 ) + r1 * 30.0 );
+    float ground = exp( -abs( y + 26.0 ) * 0.12 ) * 0.8;
     // MODE sets the moonlight's temperature: cold blue in minor, warm in
     // major.  Luminance-matched against the original moonlit white.
-    vec3 moonlit = mix(vec3(0.70, 0.82, 1.00), vec3(1.00, 0.92, 0.76),
-                       clamp(audioMode, 0.0, 1.0));
-    vec3 col = hueRot(moonlit, audioChromaHue * 0.15);
-    col *= (0.42 + 0.40 * r4) * glint
-         * (0.7 + 0.35 * audioSwell + 0.2 * audioLevel)
-         * (1.0 + ground)
-         // Steeper depth falloff: near flakes now carry the picture, the far
-         // field stays a dim haze behind them. That separation IS the contrast.
-         * clamp(1.30 - vp.z / 58.0, 0.15, 1.35);
-    vCol = vec4(min(col * 4.0, vec3(2.8)), 1.0);
+    vec3 moonlit = mix( vec3( 0.70, 0.82, 1.00 ), vec3( 1.00, 0.92, 0.76 ),
+                        clamp( audioMode, 0.0, 1.0 ) );
+    vec3 col = hueRot( moonlit, audioChromaHue * 0.15 );
+    col *= ( 0.42 + 0.40 * r4 ) * glint
+           * ( 0.7 + 0.35 * audioSwell + 0.2 * audioLevel )
+           * ( 1.0 + ground )
+           // Steeper depth falloff: near flakes now carry the picture, the far
+           // field stays a dim haze behind them. That separation IS the contrast.
+           * clamp( 1.30 - vp.z / 58.0, 0.15, 1.35 );
+    vCol = vec4( min( col * 4.0, vec3( 2.8 ) ), 1.0 );
 }

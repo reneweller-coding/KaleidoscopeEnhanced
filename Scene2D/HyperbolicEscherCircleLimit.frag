@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file HyperbolicEscherCircleLimit.frag
  * @brief HYPERBOLIC ESCHER CIRCLE LIMIT: Conformal Poincaré disk tessellation
@@ -14,135 +14,151 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the generative and texture-driven palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP;  ///< Speed knob, 0..1.
 uniform float pSidesP; ///< e.g. 5, 7 or 8-fold hyperbolic symmetry
 uniform float curveP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// Complex arithmetic helpers
-vec2 cMul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
-vec2 cDiv(vec2 a, vec2 b) { return vec2(dot(a, b), a.y * b.x - a.x * b.y) / dot(b, b); }
-vec2 cInv(vec2 z) { return vec2(z.x, -z.y) / dot(z, z); }
+vec2 cMul( vec2 a, vec2 b )
+{
+    return vec2( a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x );
+}
+vec2 cDiv( vec2 a, vec2 b )
+{
+    return vec2( dot( a, b ), a.y * b.x - a.x * b.y ) / dot( b, b );
+}
+vec2 cInv( vec2 z )
+{
+    return vec2( z.x, -z.y ) / dot( z, z );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float crv = (curveP > 0.01) ? curveP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
-    float sides = (pSidesP > 1.0) ? pSidesP : 7.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float crv = ( curveP > 0.01 ) ? curveP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
+    float sides = ( pSidesP > 1.0 ) ? pSidesP : 7.0;
 
     // Hyperbolic space drift & translation
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
     float rotAngle = t * 0.15 + audioPhase * 0.1;
-    float cs = cos(rotAngle), sn = sin(rotAngle);
-    vec2 z = mat2(cs, -sn, sn, cs) * uv * (1.45 + 0.15 * sin(audioSwell * 2.0));
+    float cs = cos( rotAngle ), sn = sin( rotAngle );
+    vec2  z = mat2( cs, -sn, sn, cs ) * uv * ( 1.45 + 0.15 * sin( audioSwell * 2.0 ) );
 
     // Möbius translation: z -> (z - a) / (1 - conj(a)*z)
-    vec2 aMob = 0.45 * vec2(sin(t * 0.4), cos(t * 0.31)) * (0.8 + 0.4 * audioSubBass);
-    z = cDiv(z - aMob, vec2(1.0, 0.0) - cMul(vec2(aMob.x, -aMob.y), z));
+    vec2 aMob = 0.45 * vec2( sin( t * 0.4 ), cos( t * 0.31 ) ) * ( 0.8 + 0.4 * audioSubBass );
+    z = cDiv( z - aMob, vec2( 1.0, 0.0 ) - cMul( vec2( aMob.x, -aMob.y ), z ) );
 
     // Fullscreen seamless tiling via repeated circle inversions
     float foldCount = 0.0;
     float minEdgeDist = 1e5;
     float segAngle = 3.14159265 / sides;
 
-    for (int i = 0; i < 9; i++) {
+    for ( int i = 0; i < 9; i++ )
+    {
         // Fold across radial mirror planes
-        float ang = atan(z.y, z.x);
-        float r = length(z);
-        ang = mod(ang + segAngle, 2.0 * segAngle) - segAngle;
-        ang = abs(ang);
-        z = vec2(cos(ang), sin(ang)) * r;
+        float ang = atan( z.y, z.x );
+        float r = length( z );
+        ang = mod( ang + segAngle, 2.0 * segAngle ) - segAngle;
+        ang = abs( ang );
+        z = vec2( cos( ang ), sin( ang ) ) * r;
 
         // Hyperbolic circle mirror inversion (circle centered at (xc, 0) with radius rc)
-        float xc = cos(segAngle) / sin(segAngle); // characteristic circle center
-        float rc = sqrt(max(0.01, xc * xc - 1.0)) * crv;
-        vec2 center = vec2(xc, 0.0);
-        vec2 diff = z - center;
-        float d2 = dot(diff, diff);
+        float xc = cos( segAngle ) / sin( segAngle ); // characteristic circle center
+        float rc = sqrt( max( 0.01, xc * xc - 1.0 ) ) * crv;
+        vec2  center = vec2( xc, 0.0 );
+        vec2  diff = z - center;
+        float d2 = dot( diff, diff );
 
-        if (d2 < rc * rc) {
-            z = center + diff * (rc * rc / max(0.0001, d2));
+        if ( d2 < rc * rc )
+        {
+            z = center + diff * ( rc * rc / max( 0.0001, d2 ) );
             foldCount += 1.0;
         }
 
-        minEdgeDist = min(minEdgeDist, abs(length(diff) - rc));
-        minEdgeDist = min(minEdgeDist, abs(z.y));
+        minEdgeDist = min( minEdgeDist, abs( length( diff ) - rc ) );
+        minEdgeDist = min( minEdgeDist, abs( z.y ) );
     }
 
     // Dynamic texture lookup mapped on the folded hyperbolic domain
-    vec2 sampleUV = fract(z * 0.5 + 0.5);
-    vec3 texSample = img(sampleUV);
+    vec2 sampleUV = fract( z * 0.5 + 0.5 );
+    vec3 texSample = img( sampleUV );
 
     // Color generation based on iteration depth and edge glow
-    float pattern = sin(z.x * 12.0 + t) * cos(z.y * 12.0 - t);
-    float glow = exp(-minEdgeDist * (35.0 + 15.0 * audioCentroid)) * glw * (1.0 + 2.0 * audioKick);
+    float pattern = sin( z.x * 12.0 + t ) * cos( z.y * 12.0 - t );
+    float glow = exp( -minEdgeDist * ( 35.0 + 15.0 * audioCentroid ) ) * glw * ( 1.0 + 2.0 * audioKick );
 
-    vec3 colA = imgPalette(foldCount * 0.12 + pattern * 0.08);
-    vec3 colB = imgPalette(foldCount * 0.12 + 0.5);
-    vec3 col = mix(colA, colB, 0.5 + 0.5 * pattern);
+    vec3 colA = imgPalette( foldCount * 0.12 + pattern * 0.08 );
+    vec3 colB = imgPalette( foldCount * 0.12 + 0.5 );
+    vec3 col = mix( colA, colB, 0.5 + 0.5 * pattern );
 
-    col += vec3(1.2, 0.9, 1.5) * glow;
-    col = mix(col, texSample, 0.35 + 0.15 * audioValence);
+    col += vec3( 1.2, 0.9, 1.5 ) * glow;
+    col = mix( col, texSample, 0.35 + 0.15 * audioValence );
 
     // Chromatic aberration at high energy
-    float ca = 0.015 * (audioKick + audioFlux);
-    vec3 colR = imgPalette(foldCount * 0.12 + ca);
-    vec3 colB2 = imgPalette(foldCount * 0.12 - ca);
-    col.r = mix(col.r, colR.r, 0.4);
-    col.b = mix(col.b, colB2.b, 0.4);
+    float ca = 0.015 * ( audioKick + audioFlux );
+    vec3  colR = imgPalette( foldCount * 0.12 + ca );
+    vec3  colB2 = imgPalette( foldCount * 0.12 - ca );
+    col.r = mix( col.r, colR.r, 0.4 );
+    col.b = mix( col.b, colB2.b, 0.4 );
 
     // Edge vignette & tone mapping
-    float vig = 1.0 - smoothstep(0.8, 1.4, length(uv));
+    float vig = 1.0 - smoothstep( 0.8, 1.4, length( uv ) );
     col *= vig;
-    col = pow(col, vec3(0.85));
+    col = pow( col, vec3( 0.85 ) );
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

@@ -10,90 +10,97 @@
  * that speeds up on every kick reads as a glitch, not as music.
  */
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
 uniform int   meshInstances;   ///< Number of mesh instances.
-uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
-uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
+uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
-uniform float sizeP;   ///< Size knob, 0..1.
+uniform float sizeP; ///< Size knob, 0..1.
 uniform float rateP;
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocal;   ///< Object-space position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vPos;    ///< Position (from the vertex stage).
+out vec3  vLocal;  ///< Object-space position (from the vertex stage).
+out float vBg;     ///< Background flag (from the vertex stage).
 out float vInst;
-out vec2  vCentre;   ///< the gear's centre in world xy, for the meshing-point sparks
+out vec2  vCentre; ///< the gear's centre in world xy, for the meshing-point sparks
 
 const float kDist = 58.0;
-const float kR    = 9.0;
+const float kR = 9.0;
 
-vec2 gearCentre(int i)
+vec2 gearCentre( int i )
 {
-    float fi = float(i) - 3.0;
-    return vec2(fi * 15.8, (mod(float(i), 2.0) < 0.5 ? 4.5 : -4.5));
+    float fi = float( i ) - 3.0;
+    return vec2( fi * 15.8, ( mod( float( i ), 2.0 ) < 0.5 ? 4.5 : -4.5 ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    int inst = gl_InstanceID;
+    int  inst = gl_InstanceID;
     bool isBg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
-    vInst = float(inst);
-    vCentre = gearCentre(inst);
-    if (!isBg)
+    vInst = float( inst );
+    vCentre = gearCentre( inst );
+    if ( !isBg )
     {
-        float sz = kR * (sizeP > 0.01 ? sizeP : 1.0);
-        vec3 c  = attrA.xyz - meshCenter;
-        vec3 e  = meshExtent;
-        float mx = max(e.x, max(e.y, e.z));
-        vec3 local = c / mx * sz;
-        vec3 nl = attrB.xyz;
+        float sz = kR * ( sizeP > 0.01 ? sizeP : 1.0 );
+        vec3  c = attrA.xyz - meshCenter;
+        vec3  e = meshExtent;
+        float mx = max( e.x, max( e.y, e.z ) );
+        vec3  local = c / mx * sz;
+        vec3  nl = attrB.xyz;
 
         // Axis to the camera: the thinnest extent.
         mat3 toZ;
-        if (e.y <= e.x && e.y <= e.z)      toZ = mat3(1.0, 0.0, 0.0,   0.0, 0.0, 1.0,   0.0, -1.0, 0.0);
-        else if (e.x <= e.y && e.x <= e.z) toZ = mat3(0.0, 0.0, 1.0,   0.0, 1.0, 0.0,   -1.0, 0.0, 0.0);
-        else                               toZ = mat3(1.0);
+        if ( e.y <= e.x && e.y <= e.z )
+            toZ = mat3( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.0, 0.0 );
+        else if ( e.x <= e.y && e.x <= e.z )
+            toZ = mat3( 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0 );
+        else
+            toZ = mat3( 1.0 );
 
-        float dir = (mod(float(inst), 2.0) < 0.5) ? 1.0 : -1.0;
-        float ang = dir * time * 0.45 * (rateP > 0.01 ? rateP : 1.0) + float(inst) * 0.13;
-        float ca = cos(ang), sa = sin(ang);
-        mat3 spin = mat3(ca, sa, 0.0,   -sa, ca, 0.0,   0.0, 0.0, 1.0);
-        mat3 M = spin * toZ;
+        float dir = ( mod( float( inst ), 2.0 ) < 0.5 ) ? 1.0 : -1.0;
+        float ang = dir * time * 0.45 * ( rateP > 0.01 ? rateP : 1.0 ) + float( inst ) * 0.13;
+        float ca = cos( ang ), sa = sin( ang );
+        mat3  spin = mat3( ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0 );
+        mat3  M = spin * toZ;
 
-        world = M * local + vec3(vCentre, kDist);
-        n = normalize(M * nl);
-        vUV = vec2(attrA.w, attrB.w);
-        vLocal = toZ * (c / e);
+        world = M * local + vec3( vCentre, kDist );
+        n = normalize( M * nl );
+        vUV = vec2( attrA.w, attrB.w );
+        vLocal = toZ * ( c / e );
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
-        vUV = vec2(0.0);
-        vLocal = vec3(0.0);
-        if (inst > 0)
+        vUV = vec2( 0.0 );
+        vLocal = vec3( 0.0 );
+        if ( inst > 0 )
         {
-            gl_Position = vec4(0.0, 0.0, 2.0, 1.0);
-            vNormal = n; vPos = world; vBg = 1.0;
+            gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );
+            vNormal = n;
+            vPos = world;
+            vBg = 1.0;
             return;
         }
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

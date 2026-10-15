@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vColor;
-in vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+in vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
 
 /**
  * @file CryovolcanicIceGeysers.frag
@@ -17,17 +17,19 @@ in vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
  * interpolation) and shapes the edge falloff.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec3 photo = (interpolation * texture(tex0, vTexCoord) + (1.0 - interpolation) * texture(tex1, vTexCoord)).rgb;
-    float edge = exp(-abs(vTexCoord.x - 0.5) * 6.0);
+void main()
+{
+    vec3  photo = ( interpolation * texture( tex0, vTexCoord ) + ( 1.0 - interpolation ) * texture( tex1, vTexCoord ) )
+                      .rgb;
+    float edge = exp( -abs( vTexCoord.x - 0.5 ) * 6.0 );
 
-    vec3 col = mix(vColor.rgb * 0.5, photo * 1.3, 0.6);
+    vec3 col = mix( vColor.rgb * 0.5, photo * 1.3, 0.6 );
     col += edge * vColor.rgb * 1.6;
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

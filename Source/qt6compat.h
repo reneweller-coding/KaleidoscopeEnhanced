@@ -16,7 +16,7 @@
 // is automatically seeded (qsrand becomes a no-op).
 // ---------------------------------------------------------------------------
 
-#include <cstdlib>                    // RAND_MAX
+#include <cstdlib> // RAND_MAX
 #include <QtCore/QRandomGenerator>
 
 /**
@@ -28,7 +28,7 @@
  */
 inline int qrand()
 {
-    return int(QRandomGenerator::global()->bounded(quint32(RAND_MAX) + 1));
+    return int( QRandomGenerator::global()->bounded( quint32( RAND_MAX ) + 1 ) );
 }
 
 /**
@@ -37,7 +37,7 @@ inline int qrand()
  * Its unnamed seed parameter is ignored: QRandomGenerator::global() is
  * auto-seeded by the engine, so there is nothing to seed here.
  */
-inline void qsrand(unsigned int /*seed*/)
+inline void qsrand( unsigned int /*seed*/ )
 {
     // QRandomGenerator::global() is seeded by the engine; nothing to do.
 }

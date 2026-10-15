@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file HyperspaceGridToroidTube.frag
  * @brief HYPERSPACE GRID TOROID TUBE: High-speed 3D flight within the curved lumen
@@ -14,127 +14,134 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the luminous neon grid palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float gridFreqP;
-uniform float radiusP;   ///< Radius knob, 0..1.
+uniform float radiusP; ///< Radius knob, 0..1.
 uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// Distance estimator inside curved Toroid tube
-float mapToroidTube(vec3 p, float rMajor, float rMinor, out vec2 uvCoord) {
-    float r = length(p.xy);
-    float aMajor = atan(p.y, p.x);
-    float aMinor = atan(p.z, r - rMajor);
+float mapToroidTube( vec3 p, float rMajor, float rMinor, out vec2 uvCoord )
+{
+    float r = length( p.xy );
+    float aMajor = atan( p.y, p.x );
+    float aMinor = atan( p.z, r - rMajor );
 
-    uvCoord = vec2(aMajor, aMinor);
+    uvCoord = vec2( aMajor, aMinor );
 
     // Inverted distance to inner wall of torus
-    float dWall = rMinor - length(vec2(r - rMajor, p.z));
+    float dWall = rMinor - length( vec2( r - rMajor, p.z ) );
     return dWall;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float gFreq = (gridFreqP > 0.01) ? gridFreqP : 1.0;
-    float rMod = (radiusP > 0.01) ? radiusP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float gFreq = ( gridFreqP > 0.01 ) ? gridFreqP : 1.0;
+    float rMod = ( radiusP > 0.01 ) ? radiusP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.228 * spd + audioAdvance * 0.228 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     float rMajor = 3.5 * rMod;
-    float rMinor = 1.15 * (1.0 + 0.15 * sin(audioSwell * 2.5) + 0.1 * audioSubBass);
+    float rMinor = 1.15 * ( 1.0 + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
 
     // Camera ride coordinate inside toroid
     float aCam = t * 0.7;
-    vec3 ro = vec3(cos(aCam) * rMajor, sin(aCam) * rMajor, 0.0);
-    vec3 ta = vec3(cos(aCam + 0.1) * rMajor, sin(aCam + 0.1) * rMajor, 0.0);
+    vec3  ro = vec3( cos( aCam ) * rMajor, sin( aCam ) * rMajor, 0.0 );
+    vec3  ta = vec3( cos( aCam + 0.1 ) * rMajor, sin( aCam + 0.1 ) * rMajor, 0.0 );
 
-    vec3 T = normalize(ta - ro);
-    vec3 up = vec3(0.0, 0.0, 1.0);
-    vec3 right = normalize(cross(T, up));
+    vec3 T = normalize( ta - ro );
+    vec3 up = vec3( 0.0, 0.0, 1.0 );
+    vec3 right = normalize( cross( T, up ) );
 
-    vec3 rd = normalize(uv.x * right + uv.y * up + (1.25 + 0.2 * sin(audioSwell * 2.0)) * T);
+    vec3 rd = normalize( uv.x * right + uv.y * up + ( 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) * T );
 
     // Raymarching to hit inner toroid wall
     float totDist = 0.0;
-    vec2 hitUV = vec2(0.0);
-    vec3 hitCol = vec3(0.0);
+    vec2  hitUV = vec2( 0.0 );
+    vec3  hitCol = vec3( 0.0 );
 
-    for (int i = 0; i < 44; i++) {
-        vec3 p = ro + rd * totDist;
-        vec2 curUV;
-        float d = mapToroidTube(p, rMajor, rMinor, curUV);
+    for ( int i = 0; i < 44; i++ )
+    {
+        vec3  p = ro + rd * totDist;
+        vec2  curUV;
+        float d = mapToroidTube( p, rMajor, rMinor, curUV );
 
-        if (d < 0.005 || totDist > 8.0) {
+        if ( d < 0.005 || totDist > 8.0 )
+        {
             hitUV = curUV;
             break;
         }
 
-        totDist += max(0.02, d * 0.7);
+        totDist += max( 0.02, d * 0.7 );
     }
 
     // Kinetic polygon grid lines on toroid wall. Brightness scales only the
     // wall-space term -- the t*3.0 scroll offset stays outside the factor so a
     // changing tessellation frequency cannot remap the accumulated scroll phase.
     float tess = 1.0 + 0.4 * audioCentroid;
-    vec2 gridP_UV = hitUV * vec2(16.0 * gFreq * tess, 12.0 * gFreq * tess) + vec2(t * 3.0, 0.0);
-    vec2 gridFract = abs(fract(gridP_UV - 0.5) - 0.5);
-    float gridLine = smoothstep(0.08, 0.0, min(gridFract.x, gridFract.y));
+    vec2  gridP_UV = hitUV * vec2( 16.0 * gFreq * tess, 12.0 * gFreq * tess ) + vec2( t * 3.0, 0.0 );
+    vec2  gridFract = abs( fract( gridP_UV - 0.5 ) - 0.5 );
+    float gridLine = smoothstep( 0.08, 0.0, min( gridFract.x, gridFract.y ) );
 
     // Sample slideshow texture on toroid coordinates
-    vec2 sampleUV = fract(hitUV / 6.2831853 + 0.5);
-    vec3 texCol = img(sampleUV);
-    vec3 palCol = imgPalette(hitUV.x / 6.2831853 + t * 0.05);
+    vec2 sampleUV = fract( hitUV / 6.2831853 + 0.5 );
+    vec3 texCol = img( sampleUV );
+    vec3 palCol = imgPalette( hitUV.x / 6.2831853 + t * 0.05 );
 
-    vec3 wallBase = mix(texCol, palCol, 0.45);
-    vec3 gridCol = vec3(1.3, 1.1, 1.8) * gridLine * (1.0 + 2.5 * audioKick) * glw;
+    vec3 wallBase = mix( texCol, palCol, 0.45 );
+    vec3 gridCol = vec3( 1.3, 1.1, 1.8 ) * gridLine * ( 1.0 + 2.5 * audioKick ) * glw;
 
     hitCol = wallBase * 0.5 + gridCol;
 
     // Atmospheric depth fog
-    float depthFog = 1.0 - exp(-totDist * 0.25);
-    hitCol = mix(hitCol, imgPalette(0.8) * 0.35, depthFog);
+    float depthFog = 1.0 - exp( -totDist * 0.25 );
+    hitCol = mix( hitCol, imgPalette( 0.8 ) * 0.35, depthFog );
 
-    hitCol = pow(hitCol, vec3(0.88));
-    fragColor = vec4(clamp(hitCol, 0.0, 1.0), 1.0);
+    hitCol = pow( hitCol, vec3( 0.88 ) );
+    fragColor = vec4( clamp( hitCol, 0.0, 1.0 ), 1.0 );
 }

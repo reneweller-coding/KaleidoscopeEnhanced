@@ -23,33 +23,37 @@
 // the whole cloud kneaded by slow sine winds and turning around its axis;
 // hue drifts with the music's key.  Nothing here ever hurries.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioFlatness;
 uniform float audioRolloff;
-uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -63,54 +67,56 @@ void main()
     // knot field flattens toward a disc, with energy reaching into the highs
     // it stands up into a column.  (Neutral rolloff ~0.5 reproduces the
     // original 0.55 flattening factor.)
-    float vExt = 0.36 + 0.40 * clamp(audioRolloff, 0.0, 1.0);   // 0.36 .. 0.76
-    float knot = floor(attrA.w / 1500.0);
-    vec3 Ck = vec3(hash11(knot * 3.1 + 0.7) - 0.5,
-                   (hash11(knot * 5.3 + 1.9) - 0.5) * vExt,
-                   hash11(knot * 7.7 + 3.2) - 0.5) * 44.0;
+    float vExt = 0.36 + 0.40 * clamp( audioRolloff, 0.0, 1.0 ); // 0.36 .. 0.76
+    float knot = floor( attrA.w / 1500.0 );
+    vec3  Ck = vec3( hash11( knot * 3.1 + 0.7 ) - 0.5,
+                     ( hash11( knot * 5.3 + 1.9 ) - 0.5 ) * vExt,
+                     hash11( knot * 7.7 + 3.2 ) - 0.5 )
+               * 44.0;
 
     // FLATNESS condenses or disperses each knot: a held tone (flatness -> 0)
     // pulls the gas into tight clumps, broadband noise (-> 1) blows them out
     // into diffuse fog.  Dispersing only ever thins the additive overlap, so
     // the wide end cannot brighten the frame.
-    float clump = 9.0 * (0.92 + 0.50 * clamp(audioFlatness, 0.0, 1.0));
-    vec3 world = Ck + (vec3(r1 + r2, r2 + r3, r3 + r4) - 1.0) * clump;
+    float clump = 9.0 * ( 0.92 + 0.50 * clamp( audioFlatness, 0.0, 1.0 ) );
+    vec3  world = Ck + ( vec3( r1 + r2, r2 + r3, r3 + r4 ) - 1.0 ) * clump;
 
     // Slow sine winds knead the cloud; the whole nebula rotates.
     float ph = time * 0.06;
-    world.x += sin(world.y * 0.10 + ph * 2.0) * 2.5;
-    world.y += sin(world.z * 0.09 + ph * 1.6) * 1.8;
-    world.z += sin(world.x * 0.08 + ph * 1.2) * 2.2;
+    world.x += sin( world.y * 0.10 + ph * 2.0 ) * 2.5;
+    world.y += sin( world.z * 0.09 + ph * 1.6 ) * 1.8;
+    world.z += sin( world.x * 0.08 + ph * 1.2 ) * 2.2;
     float ra = time * 0.025;
-    world.xz = mat2(cos(ra), -sin(ra), sin(ra), cos(ra)) * world.xz;
+    world.xz = mat2( cos( ra ), -sin( ra ), sin( ra ), cos( ra ) ) * world.xz;
 
-    vec3 vp = world + vec3(0.0, 0.0, 46.0);
+    vec3 vp = world + vec3( 0.0, 0.0, 46.0 );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(160.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 22.0 * px);
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( 160.0 * ( 0.4 + 0.8 * r4 ) * px / dist, 1.5, 22.0 * px );
 
     // Two colour families blend across the cloud (emission vs reflection
     // nebula); a few hot young stars pierce through.
-    vec3 emis = hueRot(vec3(0.85, 0.30, 0.45), audioChromaHue * 0.6);
-    vec3 refl = hueRot(vec3(0.25, 0.45, 0.90), audioChromaHue * 0.6);
+    vec3 emis = hueRot( vec3( 0.85, 0.30, 0.45 ), audioChromaHue * 0.6 );
+    vec3 refl = hueRot( vec3( 0.25, 0.45, 0.90 ), audioChromaHue * 0.6 );
     // MODE tips the balance between the two families: a major key warms the
     // cloud toward the emission pinks, a minor key cools it toward the blue
     // reflection nebula.  A pure re-weighting of the existing mix -- both
     // families sit at the same brightness, so nothing is gained here.
-    float mixK = clamp(hash11(knot * 9.9 + 0.3)
-                       + (0.5 - clamp(audioMode, 0.0, 1.0)) * 0.5, 0.0, 1.0);
-    vec3 col  = mix(emis, refl, mixK);
-    if (r4 > 0.985)
-        col = vec3(0.95, 0.97, 1.0) * 2.2;   // embedded stars
-    col *= (0.22 + 0.30 * r3)
-         * (0.7 + 0.45 * audioSwell + 0.3 * audioLevel)
-         * (0.85 + 0.3 * audioCentroid)
-         * clamp(1.0 - vp.z / 110.0, 0.0, 1.0);
-    vCol = vec4(col * 3.2, 1.0);
+    float mixK = clamp( hash11( knot * 9.9 + 0.3 )
+                            + ( 0.5 - clamp( audioMode, 0.0, 1.0 ) ) * 0.5,
+                        0.0, 1.0 );
+    vec3  col = mix( emis, refl, mixK );
+    if ( r4 > 0.985 )
+        col = vec3( 0.95, 0.97, 1.0 ) * 2.2; // embedded stars
+    col *= ( 0.22 + 0.30 * r3 )
+           * ( 0.7 + 0.45 * audioSwell + 0.3 * audioLevel )
+           * ( 0.85 + 0.3 * audioCentroid )
+           * clamp( 1.0 - vp.z / 110.0, 0.0, 1.0 );
+    vCol = vec4( col * 3.2, 1.0 );
 }

@@ -7,11 +7,11 @@
 // stands for.  Getting this the usual way round — key light, specular, a bit of
 // ambient — produces coloured plastic.
 // -----------------------------------------------------------------------
-layout(location = 0) out vec4 outAccum;
-layout(location = 1) out vec4 outReveal;
+layout( location = 0 ) out vec4 outAccum;
+layout( location = 1 ) out vec4 outReveal;
 
-in vec3  vObj;   ///< Object-space position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vObj;    ///< Object-space position (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
 in float vLevel;
@@ -37,29 +37,31 @@ in float vLevel;
  * pane belongs to and how bright its assigned spectrum band is.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float oitPass;   ///< Order-independent transparency pass flag.
-uniform vec2  nearFar;   ///< Near and far clip distances.
+uniform sampler2D tex0;          ///< The current photo.
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     oitPass;       ///< Order-independent transparency pass flag.
+uniform vec2      nearFar;       ///< Near and far clip distances.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     hueP;         ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -67,84 +69,85 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
+    return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 n = normalize(vNormal);
-    vec3 V = normalize(vView);
-    if (dot(n, V) < 0.0) n = -n;
+    vec3 n = normalize( vNormal );
+    vec3 V = normalize( vView );
+    if ( dot( n, V ) < 0.0 )
+        n = -n;
 
-    float rad = length(vObj.xy);
-    float ang = atan(vObj.y, vObj.x);
+    float rad = length( vObj.xy );
+    float ang = atan( vObj.y, vObj.x );
 
-    if (oitPass < 0.5)
+    if ( oitPass < 0.5 )
     {
         // ---- stone tracery ----
-        vec3 L = normalize(vec3(0.35, 0.55, 0.75));
-        float diff = max(dot(n, L), 0.0);
-        vec3 stone = vec3(0.13, 0.125, 0.135);
-        vec3 col = stone * (0.55 + 1.1 * diff);
+        vec3  L = normalize( vec3( 0.35, 0.55, 0.75 ) );
+        float diff = max( dot( n, L ), 0.0 );
+        vec3  stone = vec3( 0.13, 0.125, 0.135 );
+        vec3  col = stone * ( 0.55 + 1.1 * diff );
         // Lead darkens toward the rim so the window has a weight to it.
-        col *= 1.0 - 0.35 * clamp(rad / 4.2, 0.0, 1.0);
+        col *= 1.0 - 0.35 * clamp( rad / 4.2, 0.0, 1.0 );
         col += stone * 0.9 * audioAmbient;
-        col = col / (1.0 + col * 0.3);
-        outAccum  = vec4(col, interpolation);
-        outReveal = vec4(0.0);
+        col = col / ( 1.0 + col * 0.3 );
+        outAccum = vec4( col, interpolation );
+        outReveal = vec4( 0.0 );
         return;
     }
 
     // ---- glass ----
     // vKind is 1, 2 or 3 for the three wheels, 4 for the oculus.
-    bool isEye = (vKind > 3.5);
-    float layer = isEye ? 0.0 : clamp(vKind - 1.0, 0.0, 2.0);
+    bool  isEye = ( vKind > 3.5 );
+    float layer = isEye ? 0.0 : clamp( vKind - 1.0, 0.0, 2.0 );
     float front = 1.0 - 0.30 * layer;
 
     // Hue runs around the wheel and steps out with the ring, which is how a real
     // rose window is laid out: a colour per petal, a value per course.
-    float hue = fract(0.62 * hueP + ang / 6.2831853 + 0.11 * floor(rad / 0.72)
-                      + 0.07 * layer + 0.06 * sin(audioChromaHue));
-    vec3 tint = hue2rgb(hue);
+    float hue = fract( 0.62 * hueP + ang / 6.2831853 + 0.11 * floor( rad / 0.72 )
+                       + 0.07 * layer + 0.06 * sin( audioChromaHue ) );
+    vec3  tint = hue2rgb( hue );
     // Deep-glass saturation: the photo arc alone hands back pastel, and the
     // window recorded as near-monochrome silver.  Push the chroma hard (the
     // clamp keeps it legal), then only a whisper of the warm white-wash.
-    float tl = dot(tint, vec3(0.333));
-    tint = clamp(mix(vec3(tl), tint, 2.3), 0.0, 1.0);
-    tint = mix(tint, vec3(1.0, 0.93, 0.78), 0.04 * layer);
+    float tl = dot( tint, vec3( 0.333 ) );
+    tint = clamp( mix( vec3( tl ), tint, 2.3 ), 0.0, 1.0 );
+    tint = mix( tint, vec3( 1.0, 0.93, 0.78 ), 0.04 * layer );
 
-    float lit = (0.30 + 1.65 * vLevel) * front;
-    vec3 col = tint * lit * (0.55 + 0.9 * glowP)
-             * (0.75 + 0.55 * audioLevel + 0.45 * audioKick);
+    float lit = ( 0.30 + 1.65 * vLevel ) * front;
+    vec3  col = tint * lit * ( 0.55 + 0.9 * glowP )
+                * ( 0.75 + 0.55 * audioLevel + 0.45 * audioKick );
 
     // The oculus stays open, so the ring around it has to do its work: it burns
     // brightest at its inner edge and falls away outward, which reads as light
     // pouring through the hole rather than as a hole.
-    float eye = isEye ? (1.0 - smoothstep(0.55, 1.30, rad))
-                      : (1.0 - smoothstep(1.30, 2.20, rad)) * 0.30;
+    float eye = isEye ? ( 1.0 - smoothstep( 0.55, 1.30, rad ) )
+                      : ( 1.0 - smoothstep( 1.30, 2.20, rad ) ) * 0.30;
     // Keep the glow tinted rather than white: a warm light poured over every
     // pane at full strength washes the colour out of the window, and the colour
     // is the only thing a rose window is for.
-    col += mix(vec3(1.0, 0.88, 0.62), tint, 0.72) * eye
-         * (0.55 + 0.9 * glowP) * (0.85 + 1.5 * audioKick + 0.5 * audioLevel);
+    col += mix( vec3( 1.0, 0.88, 0.62 ), tint, 0.72 ) * eye
+           * ( 0.55 + 0.9 * glowP ) * ( 0.85 + 1.5 * audioKick + 0.5 * audioLevel );
 
     // A faint sheen so the pane is a surface and not a hole in the wall.
-    vec3 L = normalize(vec3(0.35, 0.55, 0.75));
-    vec3 H = normalize(L + V);
-    col += vec3(1.0) * pow(max(dot(n, H), 0.0), 60.0) * (0.25 + 1.1 * audioHigh);
+    vec3 L = normalize( vec3( 0.35, 0.55, 0.75 ) );
+    vec3 H = normalize( L + V );
+    col += vec3( 1.0 ) * pow( max( dot( n, H ), 0.0 ), 60.0 ) * ( 0.25 + 1.1 * audioHigh );
     col += tint * 0.30 * audioAmbient;
     col *= 1.0 + 0.20 * audioBeat + 0.14 * audioSubBass;
 
@@ -154,23 +157,24 @@ void main()
     // +Inf, and the resolve's inf guard paints it black.  The symptom is the
     // opposite of the cause: the BRIGHTEST part of the image is the part that
     // goes dark, which is why the oculus kept coming out as a hole.
-    col = col / (1.0 + col * 0.22);
+    col = col / ( 1.0 + col * 0.22 );
 
     // Loud panes go denser as well as brighter, so a band that comes in reads
     // as glass filling with colour rather than as a lamp behind it.
-    float alpha = clamp((0.28 + 0.42 * vLevel) * (1.0 - 0.24 * layer)
-                        + (isEye ? 0.20 : 0.0), 0.0, 0.90);
+    float alpha = clamp( ( 0.28 + 0.42 * vLevel ) * ( 1.0 - 0.24 * layer )
+                             + ( isEye ? 0.20 : 0.0 ),
+                         0.0, 0.90 );
 
     float zn = nearFar.x, zf = nearFar.y;
     float ndc = gl_FragCoord.z * 2.0 - 1.0;
-    float z = (2.0 * zn * zf) / (zf + zn - ndc * (zf - zn));
+    float z = ( 2.0 * zn * zf ) / ( zf + zn - ndc * ( zf - zn ) );
 
     // The paper's 3e3 ceiling assumes low-dynamic-range colour.  A few hundred
     // leaves the same relative ordering between near and far layers with an
     // order of magnitude of headroom against fp16.
-    float w = alpha * max(1e-2, 2.5e2 * pow(1.0 - z / zf, 3.0));
-    w = clamp(w, 1e-2, 2.5e2);
+    float w = alpha * max( 1e-2, 2.5e2 * pow( 1.0 - z / zf, 3.0 ) );
+    w = clamp( w, 1e-2, 2.5e2 );
 
-    outAccum  = vec4(col * alpha, alpha) * w;
-    outReveal = vec4(alpha);
+    outAccum = vec4( col * alpha, alpha ) * w;
+    outReveal = vec4( alpha );
 }

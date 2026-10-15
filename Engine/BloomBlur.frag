@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file BloomBlur.frag
  * @brief One pass of the two-pass Gaussian bloom (quarter-resolution).
@@ -11,15 +11,15 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  */
 
 uniform sampler2D tex;
-uniform vec2  resolution;   ///< TARGET (bloom buffer) resolution
-uniform vec2  dir;          ///< blur direction in target pixels
-uniform float threshold;    ///< >0 -> bright-pass extract (first pass only)
+uniform vec2      resolution; ///< TARGET (bloom buffer) resolution
+uniform vec2      dir;        ///< blur direction in target pixels
+uniform float     threshold;  ///< >0 -> bright-pass extract (first pass only)
 
-vec3 tap(vec2 uv)
+vec3 tap( vec2 uv )
 {
-    vec3 c = texture(tex, uv).rgb;
-    if (threshold > 0.0)
-        c = max(c - threshold, vec3(0.0)) * 1.6;
+    vec3 c = texture( tex, uv ).rgb;
+    if ( threshold > 0.0 )
+        c = max( c - threshold, vec3( 0.0 ) ) * 1.6;
     return c;
 }
 
@@ -30,15 +30,15 @@ void main()
     vec2 px = dir / resolution;
 
     // 9-tap Gaussian (sigma ~2), unrolled for GLSL 1.10/1.20 compatibility.
-    vec3 c = tap(uv) * 0.227027;
-    c += tap(uv + px * 1.0) * 0.1945946;
-    c += tap(uv - px * 1.0) * 0.1945946;
-    c += tap(uv + px * 2.0) * 0.1216216;
-    c += tap(uv - px * 2.0) * 0.1216216;
-    c += tap(uv + px * 3.0) * 0.0540540;
-    c += tap(uv - px * 3.0) * 0.0540540;
-    c += tap(uv + px * 4.0) * 0.0162162;
-    c += tap(uv - px * 4.0) * 0.0162162;
+    vec3 c = tap( uv ) * 0.227027;
+    c += tap( uv + px * 1.0 ) * 0.1945946;
+    c += tap( uv - px * 1.0 ) * 0.1945946;
+    c += tap( uv + px * 2.0 ) * 0.1216216;
+    c += tap( uv - px * 2.0 ) * 0.1216216;
+    c += tap( uv + px * 3.0 ) * 0.0540540;
+    c += tap( uv - px * 3.0 ) * 0.0540540;
+    c += tap( uv + px * 4.0 ) * 0.0162162;
+    c += tap( uv - px * 4.0 ) * 0.0162162;
 
-    fragColor = vec4(c, 1.0);
+    fragColor = vec4( c, 1.0 );
 }

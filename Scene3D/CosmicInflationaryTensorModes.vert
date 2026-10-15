@@ -8,43 +8,45 @@
 in vec4 attrA; ///< xy = Cell UV [0,1], z = 0, w = Cell index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec3 vCol;   ///< Colour (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vCol;    ///< Colour (from the vertex stage).
 out float vGravWavePhase;
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float tensorScaleP;
 uniform float gwFreqP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -57,26 +59,26 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Primordial tensor metric perturbations: h_+ and h_x polarizations
-    float kGW = (gwFreqP > 0.01 ? gwFreqP : 8.0);
-    float wavePhase = (uv.x + uv.y) * kGW - t * 3.0;
+    float kGW = ( gwFreqP > 0.01 ? gwFreqP : 8.0 );
+    float wavePhase = ( uv.x + uv.y ) * kGW - t * 3.0;
     vGravWavePhase = wavePhase;
 
     // + polarization (stretching x while compressing y) & x polarization (45-degree shear)
-    float hPlus  = cos(wavePhase) * (uv.x * uv.x - uv.y * uv.y) * 0.15;
-    float hCross = sin(wavePhase + audioPhase * 0.5) * (2.0 * uv.x * uv.y) * 0.15;
+    float hPlus = cos( wavePhase ) * ( uv.x * uv.x - uv.y * uv.y ) * 0.15;
+    float hCross = sin( wavePhase + audioPhase * 0.5 ) * ( 2.0 * uv.x * uv.y ) * 0.15;
 
-    float tScale = (tensorScaleP > 0.01 ? tensorScaleP : 1.2) * (0.85 + 0.35 * audioSwell);
-    float zWarp = (hPlus + hCross) * tScale;
+    float tScale = ( tensorScaleP > 0.01 ? tensorScaleP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
+    float zWarp = ( hPlus + hCross ) * tScale;
 
     // Space metric expansion background
-    vec3 worldPos = vec3(uv.x * 3.0, uv.y * 3.0, zWarp);
+    vec3 worldPos = vec3( uv.x * 3.0, uv.y * 3.0, zWarp );
 
     // Metric curvature normal
-    float dHdx = cos(wavePhase) * uv.x * 0.4;
-    float dHdy = sin(wavePhase) * uv.y * 0.4;
-    vNormal = normalize(vec3(-dHdx, -dHdy, 1.0));
+    float dHdx = cos( wavePhase ) * uv.x * 0.4;
+    float dHdy = sin( wavePhase ) * uv.y * 0.4;
+    vNormal = normalize( vec3( -dHdx, -dHdy, 1.0 ) );
 
-    vCol = imgPalette(fract(wavePhase * 0.159 + length(uv) * 0.25 + audioCentroid));
+    vCol = imgPalette( fract( wavePhase * 0.159 + length( uv ) * 0.25 + audioCentroid ) );
 
     // Camera Transform (V3)
     // Tilt FIRST, then push away.  The old order rotated the already-pushed
@@ -84,13 +86,13 @@ void main()
     // and left it sitting in the lower half of the frame with black above.
     // Tilting about the plate's own centre keeps it on the view axis, and at
     // this distance it then fills the frame (reported: "bildschirmfuellender").
-    vec3 vp = worldPos;
+    vec3  vp = worldPos;
     float tilt = 0.55;
-    float c = cos(tilt), s = sin(tilt);
-    vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
+    float c = cos( tilt ), s = sin( tilt );
+    vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );
     vp.z += 4.0;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

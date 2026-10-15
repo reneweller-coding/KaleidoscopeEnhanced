@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PlasmaLightningGlobe.frag
  * @brief PLASMA LIGHTNING GLOBE: Dielectric breakdown plasma globe with dozens of snaking,
@@ -17,34 +17,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP     float plasma ionization color shift           (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;  ///< Sub-bass band level, 0..1.
+uniform float audioBass;     ///< Bass band level, 0..1.
+uniform float audioMid;      ///< Mid band level, 0..1.
+uniform float audioHigh;     ///< High band level, 0..1.
+uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float arcP;
-uniform float branchP;   ///< Branching knob, 0..1.
+uniform float branchP; ///< Branching knob, 0..1.
 uniform float glassP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -52,103 +54,109 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) {
-    p = fract(p * vec2(234.34, 435.12));
-    p += dot(p, p + 56.45);
-    return fract(p.x * p.y);
+float hash21( vec2 p )
+{
+    p = fract( p * vec2( 234.34, 435.12 ) );
+    p += dot( p, p + 56.45 );
+    return fract( p.x * p.y );
 }
 
 /// @brief Smooth value noise.
-float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+float noise( vec2 p )
+{
+    vec2 i = floor( p );
+    vec2 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
+                mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float arc = (arcP    > 0.0) ? arcP    : 1.0;
-    float brn = (branchP > 0.0) ? branchP : 1.0;
-    float gls = (glassP  > 0.0) ? glassP  : 1.0;
-    float hue = (hueP    > 0.0) ? hueP    : 0.0;
+void main()
+{
+    float arc = ( arcP > 0.0 ) ? arcP : 1.0;
+    float brn = ( branchP > 0.0 ) ? branchP : 1.0;
+    float gls = ( glassP > 0.0 ) ? glassP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
-    float r = length(uv);
-    float a = atan(uv.y, uv.x);
+    float r = length( uv );
+    float a = atan( uv.y, uv.x );
 
     // Glass sphere boundary at r = 0.48
     float glassR = 0.48;
-    float insideGlass = step(r, glassR);
+    float insideGlass = step( r, glassR );
 
     // Spherical glass refraction
-    float glassZ = sqrt(max(glassR * glassR - r * r, 0.0));
-    vec2 refrUV = st + (uv / max(r, 0.01)) * (1.0 - glassZ / glassR) * 0.08 * gls;
-    vec3 photo = img(clamp(refrUV, 0.0, 1.0));
+    float glassZ = sqrt( max( glassR * glassR - r * r, 0.0 ) );
+    vec2  refrUV = st + ( uv / max( r, 0.01 ) ) * ( 1.0 - glassZ / glassR ) * 0.08 * gls;
+    vec3  photo = img( clamp( refrUV, 0.0, 1.0 ) );
 
     // Central high-voltage graphite electrode core at r = 0.08
-    float coreDist = length(uv);
-    float coreGlow = (0.005 / (coreDist * coreDist + 0.001)) * (1.0 + audioKick * 2.0);
-    vec3 coreColor = vec3(0.9, 0.3, 1.0) * coreGlow;
+    float coreDist = length( uv );
+    float coreGlow = ( 0.005 / ( coreDist * coreDist + 0.001 ) ) * ( 1.0 + audioKick * 2.0 );
+    vec3  coreColor = vec3( 0.9, 0.3, 1.0 ) * coreGlow;
 
     // Snaking plasma filaments
-    vec3 filamentCol = vec3(0.0);
-    int numArcs = int(8.0 * arc);
+    vec3 filamentCol = vec3( 0.0 );
+    int  numArcs = int( 8.0 * arc );
 
     float t = time * 2.5 + audioAdvance * 1.5;
 
-    for (int i = 0; i < 8; ++i) {
-        float fi = float(i);
-        float baseAngle = (fi / 8.0) * 6.2831853 + sin(t * 0.3 + fi) * 0.4;
+    for ( int i = 0; i < 8; ++i )
+    {
+        float fi = float( i );
+        float baseAngle = ( fi / 8.0 ) * 6.2831853 + sin( t * 0.3 + fi ) * 0.4;
 
         // Tendril path with dielectric breakdown noise
         float arcRadius = r / glassR;
-        float wiggle = (noise(vec2(arcRadius * 8.0 * brn, t + fi * 10.0)) - 0.5) * 0.35 * arcRadius;
+        float wiggle = ( noise( vec2( arcRadius * 8.0 * brn, t + fi * 10.0 ) ) - 0.5 ) * 0.35 * arcRadius;
         float targetAngle = baseAngle + wiggle;
 
-        float angleDist = abs(mod(a - targetAngle + 3.14159, 6.28318) - 3.14159);
+        float angleDist = abs( mod( a - targetAngle + 3.14159, 6.28318 ) - 3.14159 );
         float distToArc = angleDist * r;
 
-        float arcGlow = (0.0012 / (distToArc * distToArc + 0.0001)) * step(0.06, r) * step(r, glassR);
+        float arcGlow = ( 0.0012 / ( distToArc * distToArc + 0.0001 ) ) * step( 0.06, r ) * step( r, glassR );
 
         // Neon magenta/electric cyan ionization gradient
-        vec3 aCol = imgPalette(0.30 * arcRadius) * 1.5;
+        vec3 aCol = imgPalette( 0.30 * arcRadius ) * 1.5;
         filamentCol += aCol * arcGlow;
     }
 
     // Glass rim glow and touch point flares
-    float glassRim = abs(r - glassR);
-    float rimGlow = (0.0015 / (glassRim * glassRim + 0.00015)) * (0.8 + 0.4 * audioSwell);
-    vec3 rimCol = vec3(0.3, 0.7, 1.0) * rimGlow;
+    float glassRim = abs( r - glassR );
+    float rimGlow = ( 0.0015 / ( glassRim * glassRim + 0.00015 ) ) * ( 0.8 + 0.4 * audioSwell );
+    vec3  rimCol = vec3( 0.3, 0.7, 1.0 ) * rimGlow;
 
     // Combine visualizer
-    vec3 col = photo * 0.25 + coreColor + filamentCol * (1.0 + audioHigh * 2.0 + audioKick * 2.0) + rimCol;
+    vec3 col = photo * 0.25 + coreColor + filamentCol * ( 1.0 + audioHigh * 2.0 + audioKick * 2.0 ) + rimCol;
 
-    if (hue > 0.001) col = hueRot(col, hue);
+    if ( hue > 0.001 )
+        col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (col) * 0.7;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    vec3 _catTone = ( col ) * 0.7;
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

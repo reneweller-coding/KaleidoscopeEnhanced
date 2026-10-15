@@ -9,36 +9,39 @@
 //   attrA.x = t along ribbon, attrA.y = side (-1/+1), attrA.w = ribbon index
 //   attrB   = per-ribbon seeds
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioHigh;      ///< High band level, 0..1.
 
 uniform float fiberP;
-uniform float radiusP;   ///< Radius knob, 0..1.
-uniform float widthP;   ///< Width knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float radiusP; ///< Radius knob, 0..1.
+uniform float widthP;  ///< Width knob, 0..1.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-out vec4  vCol;   ///< Colour (from the vertex stage).
-out float vSide;   ///< Which side of a strip (from the vertex stage).
-out float vLength;
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioValence;  ///< Mood valence: 0 dark .. 1 bright.
+out vec4          vCol;          ///< Colour (from the vertex stage).
+out float         vSide;         ///< Which side of a strip (from the vertex stage).
+out float         vLength;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -46,83 +49,85 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float t    = attrA.x; // 0..1 along circular ribbon
+void main()
+{
+    float t = attrA.x;    // 0..1 along circular ribbon
     float side = attrA.y; // -1..+1
-    float ri   = attrA.w; // 0..19
+    float ri = attrA.w;   // 0..19
 
-    float fbr = (fiberP  > 0.0) ? fiberP  : 1.0;
-    float rad = (radiusP > 0.0) ? radiusP : 1.0;
-    float wid = (widthP  > 0.0) ? widthP  : 1.0;
-    float hue = (hueP    > 0.0) ? hueP    : 0.0;
+    float fbr = ( fiberP > 0.0 ) ? fiberP : 1.0;
+    float rad = ( radiusP > 0.0 ) ? radiusP : 1.0;
+    float wid = ( widthP > 0.0 ) ? widthP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float theta = t * 6.2831853;
-    float phi = (ri / 20.0) * 6.2831853 * fbr + time * 0.4 + audioAdvance * 0.1;
+    float phi = ( ri / 20.0 ) * 6.2831853 * fbr + time * 0.4 + audioAdvance * 0.1;
 
     // 4D Hopf fibration parameterization on S^3
-    float eta = 0.785398 + 0.3 * sin(time * 0.5 + ri * 0.4); // pi/4
-    vec4 q = vec4(
-        cos(eta) * cos(theta + phi),
-        cos(eta) * sin(theta + phi),
-        sin(eta) * cos(theta - phi),
-        sin(eta) * sin(theta - phi)
-    );
+    float eta = 0.785398 + 0.3 * sin( time * 0.5 + ri * 0.4 ); // pi/4
+    vec4  q = vec4(
+        cos( eta ) * cos( theta + phi ),
+        cos( eta ) * sin( theta + phi ),
+        sin( eta ) * cos( theta - phi ),
+        sin( eta ) * sin( theta - phi ) );
 
     // Stereographic projection from S^3 to R^3: (x, y, z) / (1 - w)
-    float denom = max(1.0 - q.w * 0.8, 0.2);
-    vec3 centerPos = (q.xyz / denom) * (3.5 * rad + audioSwell * 1.5);
+    float denom = max( 1.0 - q.w * 0.8, 0.2 );
+    vec3  centerPos = ( q.xyz / denom ) * ( 3.5 * rad + audioSwell * 1.5 );
 
     // Dynamic kick burst
-    centerPos += normalize(centerPos) * audioSwell * 0.8;
+    centerPos += normalize( centerPos ) * audioSwell * 0.8;
 
     // Ribbon normal and tangent vectors
     float thetaNext = theta + 0.05;
-    vec4 qNext = vec4(
-        cos(eta) * cos(thetaNext + phi),
-        cos(eta) * sin(thetaNext + phi),
-        sin(eta) * cos(thetaNext - phi),
-        sin(eta) * sin(thetaNext - phi)
-    );
-    vec3 centerNext = (qNext.xyz / max(1.0 - qNext.w * 0.8, 0.2)) * (3.5 * rad + audioSwell * 1.5);
+    vec4  qNext = vec4(
+        cos( eta ) * cos( thetaNext + phi ),
+        cos( eta ) * sin( thetaNext + phi ),
+        sin( eta ) * cos( thetaNext - phi ),
+        sin( eta ) * sin( thetaNext - phi ) );
+    vec3 centerNext = ( qNext.xyz / max( 1.0 - qNext.w * 0.8, 0.2 ) ) * ( 3.5 * rad + audioSwell * 1.5 );
 
-    vec3 tangent = normalize(centerNext - centerPos);
-    vec3 binormal = normalize(cross(tangent, normalize(centerPos)));
+    vec3 tangent = normalize( centerNext - centerPos );
+    vec3 binormal = normalize( cross( tangent, normalize( centerPos ) ) );
 
-    float ribbonWidth = (0.28 * wid) * (1.0 + 0.3 * audioKick);
-    vec3 worldP = centerPos + binormal * (side * ribbonWidth);
+    float ribbonWidth = ( 0.28 * wid ) * ( 1.0 + 0.3 * audioKick );
+    vec3  worldP = centerPos + binormal * ( side * ribbonWidth );
 
     // Camera space
-    vec3 camPos = vec3(0.0, 0.0, -10.0);
+    vec3 camPos = vec3( 0.0, 0.0, -10.0 );
     vec3 relP = worldP - camPos;
     relP.x -= eyeOff;
 
-    gl_Position = projM * vec4(relP.x, relP.y, -relP.z, 1.0);
+    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vSide = side;
     vLength = t;
 
     // Hopf fiber iridescence palette
-    vec3 col = imgPalette((ri * 0.35 + theta * 0.5 + time * 0.5) * 0.159);
+    vec3 col = imgPalette( ( ri * 0.35 + theta * 0.5 + time * 0.5 ) * 0.159 );
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if ( audioChromaHue != 0.0 )
+        if ( hue > 0.001 )
+            col = hueRot( col, hue );
 
-    vCol = vec4(col * (0.9 + 0.5 * audioHigh), 1.0);
+    vCol = vec4( col * ( 0.9 + 0.5 * audioHigh ), 1.0 );
 }

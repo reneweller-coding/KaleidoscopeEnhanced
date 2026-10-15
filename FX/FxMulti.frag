@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FxMulti.frag
  * @brief FX MULTI: mirrored tile grid -- the scene repeats into a "copies" x
@@ -7,78 +7,79 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioPhase -> per-activation continuous grid spin (spinP)
  *   audioSwell -> the whole grid looms slightly closer on loudness swells
  */
-uniform vec2 resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float copies;
-uniform int rot;
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     copies;
+uniform int       rot;
 
-uniform float audioPhase;      ///< slow jump-free rotation of the tile grid
-uniform float audioSwell;      ///< slow loudness swell -> the grid looms closer
+uniform float audioPhase; ///< slow jump-free rotation of the tile grid
+uniform float audioSwell; ///< slow loudness swell -> the grid looms closer
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float spinP;           ///< grid spin speed (0 -> static, like the original)
+uniform float spinP; ///< grid spin speed (0 -> static, like the original)
 
 vec2 clampQuadratic( vec2 p )
 {
-	vec2 uv = p;
-	int vorkomma = int(floor( p.x ));	
-	float nachkomma = fract(p.x);
-	
-	//scale
-	nachkomma *= resolution.y/resolution.x;
-	nachkomma += 0.5*(resolution.x-resolution.y)/resolution.x;
-	
-	if( vorkomma - (vorkomma / 2) * 2 == 0 )
-		uv.x = 1.0-nachkomma;
-	else
-		uv.x = nachkomma;
+    vec2  uv = p;
+    int   vorkomma = int( floor( p.x ) );
+    float nachkomma = fract( p.x );
+
+    // scale
+    nachkomma *= resolution.y / resolution.x;
+    nachkomma += 0.5 * ( resolution.x - resolution.y ) / resolution.x;
+
+    if ( vorkomma - ( vorkomma / 2 ) * 2 == 0 )
+        uv.x = 1.0 - nachkomma;
+    else
+        uv.x = nachkomma;
 
 
-	return uv;
+    return uv;
 }
 
 
 vec2 rotate( vec2 p, float amount )
 {
     // a rotation
-    vec2 cst = vec2( cos(amount), sin(amount) );
-    mat2 rot = mat2(cst.x,-cst.y,cst.y,cst.x);
-    return rot*p;
+    vec2 cst = vec2( cos( amount ), sin( amount ) );
+    mat2 rot = mat2( cst.x, -cst.y, cst.y, cst.x );
+    return rot * p;
 }
 
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
 
     // normalize to the center
-	vec2 p;
+    vec2 p;
     p.x = gl_FragCoord.x;
     p.y = gl_FragCoord.y;
-	p.x /= resolution.y;
-	p.y /= resolution.y;
-	
-	p.x -= 0.5*resolution.x/resolution.y;
-	p.y -= 0.5;
-	
-	// The tile grid looms slightly closer with the slow loudness swell.
-	float cop = copies * (1.0 - 0.06 * audioSwell);
-	p.y = p.y * cop;
-	p.x = p.x * cop;
+    p.x /= resolution.y;
+    p.y /= resolution.y;
+
+    p.x -= 0.5 * resolution.x / resolution.y;
+    p.y -= 0.5;
+
+    // The tile grid looms slightly closer with the slow loudness swell.
+    float cop = copies * ( 1.0 - 0.06 * audioSwell );
+    p.y = p.y * cop;
+    p.x = p.x * cop;
 
 
-	if( rot > 0 )
-		p = rotate( p, 3.14159265359 / 4.0 );
+    if ( rot > 0 )
+        p = rotate( p, 3.14159265359 / 4.0 );
 
-	// Per-activation: slow continuous jump-free spin of the whole grid.
-	if( spinP > 0.001 )
-		p = rotate( p, audioPhase * spinP + time * 0.01 * spinP );
+    // Per-activation: slow continuous jump-free spin of the whole grid.
+    if ( spinP > 0.001 )
+        p = rotate( p, audioPhase * spinP + time * 0.01 * spinP );
 
-	p = clampQuadratic( p );
-	
-	//GL_MIRRORED_REPEAT in Software to get uniform tiles
-		
-    fragColor = interpolation * texture(tex0,p) + (1.0-interpolation)*texture(tex1, p);
+    p = clampQuadratic( p );
+
+    // GL_MIRRORED_REPEAT in Software to get uniform tiles
+
+    fragColor = interpolation * texture( tex0, p ) + ( 1.0 - interpolation ) * texture( tex1, p );
 }

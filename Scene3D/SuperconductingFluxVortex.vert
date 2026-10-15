@@ -15,50 +15,52 @@
  */
 // SuperconductingFluxVortex.vert
 
-layout(location = 0) in vec4 attrA; ///< xyz = pos (or haze seeds), w = vortexID / -1
-layout(location = 1) in vec4 attrB; ///< x = seed, y = u, zw = uv
+layout( location = 0 ) in vec4 attrA; ///< xyz = pos (or haze seeds), w = vortexID / -1
+layout( location = 1 ) in vec4 attrB; ///< x = seed, y = u, zw = uv
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 out vec4  vColor;
-out vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vHaze;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     vTexCoord = attrB.zw;
 
     // Superconducting quantum colors: Cyan (Flux line), Electric Violet
     // (Cooper pairs), Neon Emerald (expelled Meissner field)
-    vec3 fluxCyan     = vec3(0.0, 0.9, 1.0);
-    vec3 cooperViolet = vec3(0.7, 0.15, 1.0);
-    vec3 meissnerGreen= vec3(0.1, 1.0, 0.5);
+    vec3 fluxCyan = vec3( 0.0, 0.9, 1.0 );
+    vec3 cooperViolet = vec3( 0.7, 0.15, 1.0 );
+    vec3 meissnerGreen = vec3( 0.1, 1.0, 0.5 );
 
     vec3 vp;
 
-    if (attrA.w < -0.5)
+    if ( attrA.w < -0.5 )
     {
         // ---- MEISSNER HAZE ---------------------------------------------
         // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
         const float kTanY = 0.5206;
-        float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+        float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
         float hx = attrA.x, hy = attrA.y, hz = attrA.z, hs = attrB.x;
 
@@ -70,40 +72,40 @@ void main() {
         // 2.0 would fit the frustum exactly; 2.3 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.3;
-        vec3 c = vec3((hx - 0.5) * open * dz * kTanY * aspect + 1.8 * cos(ph),
-                      (hy - 0.5) * open * dz * kTanY          + 1.8 * sin(ph * 0.79),
-                      dz);
+        vec3  c = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 1.8 * cos( ph ),
+                        ( hy - 0.5 ) * open * dz * kTanY + 1.8 * sin( ph * 0.79 ),
+                        dz );
 
         // A mote must stay a legible blob at any distance: the size grows with
         // depth so its ON-SCREEN size stays roughly constant.
-        float sz = (0.030 + 0.045 * hs) * dz;
+        float sz = ( 0.030 + 0.045 * hs ) * dz;
         vec2  corner = attrB.zw * 2.0 - 1.0;
-        vp = c + vec3(corner * sz, 0.0);
+        vp = c + vec3( corner * sz, 0.0 );
 
-        float b = fract(hs * 7.31 + hx * 3.17);
-        vec3 hcol = mix(vec3(0.0, 0.55, 0.85), meissnerGreen, hs);
-        hcol *= (0.07 + 0.16 * b) * (0.75 + 0.5 * audioSwell)
-              * clamp(1.0 - dz / 135.0, 0.0, 1.0);
+        float b = fract( hs * 7.31 + hx * 3.17 );
+        vec3  hcol = mix( vec3( 0.0, 0.55, 0.85 ), meissnerGreen, hs );
+        hcol *= ( 0.07 + 0.16 * b ) * ( 0.75 + 0.5 * audioSwell )
+                * clamp( 1.0 - dz / 135.0, 0.0, 1.0 );
 
-        vColor = vec4(min(hcol, vec3(1.0)), 1.0);
-        vHaze  = 1.0;
+        vColor = vec4( min( hcol, vec3( 1.0 ) ), 1.0 );
+        vHaze = 1.0;
     }
     else
     {
         // ---- FLUX-TUBE RIBBON ------------------------------------------
-        vec3 pos = attrA.xyz;
+        vec3  pos = attrA.xyz;
         float vortexID = attrA.w;
 
         // 3D rotation of superconductor slab
         float rotY = time * 0.25 + audioPhase * 0.1;
-        float cy = cos(rotY), sy = sin(rotY);
-        pos.xz = vec2(pos.x * cy - pos.z * sy, pos.x * sy + pos.z * cy);
+        float cy = cos( rotY ), sy = sin( rotY );
+        pos.xz = vec2( pos.x * cy - pos.z * sy, pos.x * sy + pos.z * cy );
 
-        vec3 col = mix(fluxCyan, cooperViolet, sin(vortexID * 0.3 + time) * 0.5 + 0.5);
-        col = mix(col, meissnerGreen, exp(-abs(pos.z) * 0.35) * (0.5 + 1.0 * audioKick));
+        vec3 col = mix( fluxCyan, cooperViolet, sin( vortexID * 0.3 + time ) * 0.5 + 0.5 );
+        col = mix( col, meissnerGreen, exp( -abs( pos.z ) * 0.35 ) * ( 0.5 + 1.0 * audioKick ) );
 
-        vColor = vec4(min(col * (0.8 + 0.6 * audioLevel), vec3(1.35)), 1.0);
-        vHaze  = 0.0;
+        vColor = vec4( min( col * ( 0.8 + 0.6 * audioLevel ), vec3( 1.35 ) ), 1.0 );
+        vHaze = 0.0;
 
         // Camera pulled back to hold the widened slab, and to keep its near
         // edge clear of the eye plane while the slab turns edge-on.
@@ -113,8 +115,8 @@ void main() {
 
     // Stereo 3D camera projection
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

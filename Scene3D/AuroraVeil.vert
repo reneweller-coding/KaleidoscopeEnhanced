@@ -20,80 +20,82 @@
 // wave amplitude, everything drifts, nothing jumps.
 // attrA.x = along the curtain, attrA.y = vertical extent, attrA.w = veil.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioMode;       ///< 0 = minor/cold, 1 = major/warm (slow, ~3 s)
-uniform float audioFlatness;   ///< 0 = one held band, 1 = broadband noise
-uniform float audioRolloff;    ///< where 85 % of the energy sits
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioMode;      ///< 0 = minor/cold, 1 = major/warm (slow, ~3 s)
+uniform float audioFlatness;  ///< 0 = one held band, 1 = broadband noise
+uniform float audioRolloff;   ///< where 85 % of the energy sits
 
-out vec4  vCol;   ///< Colour (from the vertex stage).
-out float vSide;   ///< Which side of a strip (from the vertex stage).
+out vec4  vCol;  ///< Colour (from the vertex stage).
+out float vSide; ///< Which side of a strip (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float t  = attrA.x;                      // along the curtain
-    float sd = attrA.y;                      // -1 bottom .. +1 top
+    float t = attrA.x;  // along the curtain
+    float sd = attrA.y; // -1 bottom .. +1 top
     float vi = attrA.w;
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z;
 
     // Each veil is a slow serpentine line across the sky; veils spread
     // well apart in x and depth so they never pile up into a white wall.
-    float amp = (3.0 + 5.0 * r2) * (0.6 + 0.9 * audioSwell);
+    float amp = ( 3.0 + 5.0 * r2 ) * ( 0.6 + 0.9 * audioSwell );
     // Measured motion 0.011 (bottom 5% of the catalogue). Real aurorae are
     // slow, but a visualiser veil may breathe: double the serpentine pace.
-    float ph  = time * (0.35 + 0.14 * r3) + audioAdvance * 0.30;   // round 2: 0.22 still measured at the static line
-    float x   = (t - 0.5) * 65.0 + (r1 - 0.5) * 85.0;
-    float z   = 30.0 + vi * 4.5
-              + sin(t * 4.0 + ph * 3.0 + r1 * 9.0) * amp
-              + sin(t * 9.0 - ph * 2.0 + r2 * 7.0) * amp * 0.4;
+    float ph = time * ( 0.35 + 0.14 * r3 ) + audioAdvance * 0.30; // round 2: 0.22 still measured at the static line
+    float x = ( t - 0.5 ) * 65.0 + ( r1 - 0.5 ) * 85.0;
+    float z = 30.0 + vi * 4.5
+              + sin( t * 4.0 + ph * 3.0 + r1 * 9.0 ) * amp
+              + sin( t * 9.0 - ph * 2.0 + r2 * 7.0 ) * amp * 0.4;
 
     // Curtain hangs from ~high sky down; lower edge shimmers a little.
     float top = 26.0 + 6.0 * r3;
-    float y   = 6.0 + sd * 0.5 * top + top * 0.5;
-    x += sin(y * 0.10 + ph * 2.0) * 2.0 * (0.5 - 0.5 * sd);
+    float y = 6.0 + sd * 0.5 * top + top * 0.5;
+    x += sin( y * 0.10 + ph * 2.0 ) * 2.0 * ( 0.5 - 0.5 * sd );
 
-    vec3 vp = vec3(x, y - 8.0, z);
+    vec3 vp = vec3( x, y - 8.0, z );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Aurora gradient: green skirts to violet crowns, keyed to the music.
     // A minor key keeps the sky cold (jade skirt, cold violet crown); a major
     // key warms both ends toward spring-green and rose.
-    vec3 low  = mix(vec3(0.10, 0.85, 0.35), vec3(0.32, 0.92, 0.42), audioMode);
-    vec3 high = mix(vec3(0.45, 0.20, 0.80), vec3(0.82, 0.34, 0.58), audioMode);
+    vec3 low = mix( vec3( 0.10, 0.85, 0.35 ), vec3( 0.32, 0.92, 0.42 ), audioMode );
+    vec3 high = mix( vec3( 0.45, 0.20, 0.80 ), vec3( 0.82, 0.34, 0.58 ), audioMode );
 
     // Spectral rolloff lifts or drops the boundary between skirt and crown:
     // bass-heavy passages keep the colour low on the curtain, bright ones push
     // the violet crown all the way down.
-    float grad = clamp(sd * 0.5 + 0.5 + (audioRolloff - 0.45) * 0.55, 0.0, 1.0);
-    vec3 col  = hueRot(mix(low, high, grad), audioChromaHue * 0.5);
+    float grad = clamp( sd * 0.5 + 0.5 + ( audioRolloff - 0.45 ) * 0.55, 0.0, 1.0 );
+    vec3  col = hueRot( mix( low, high, grad ), audioChromaHue * 0.5 );
 
     // Ray structure: a tonal, single-band sky draws crisp vertical rays; a
     // noise-like spectrum smears them into one diffuse veil.  Only the ray
     // CONTRAST moves — the mean stays at 0.55, so exposure is untouched.
-    float rayDepth = 0.45 * (1.0 - 0.65 * audioFlatness);
-    col *= (0.5 + 0.5 * audioLevel + 0.5 * audioSwell)
-         * (0.55 + rayDepth * sin(t * 17.0 + ph * 5.0));   // slow ray structure
+    float rayDepth = 0.45 * ( 1.0 - 0.65 * audioFlatness );
+    col *= ( 0.5 + 0.5 * audioLevel + 0.5 * audioSwell )
+           * ( 0.55 + rayDepth * sin( t * 17.0 + ph * 5.0 ) ); // slow ray structure
 
-    vCol  = vec4(col * 0.40, 1.0);
+    vCol = vec4( col * 0.40, 1.0 );
     vSide = sd;
 }

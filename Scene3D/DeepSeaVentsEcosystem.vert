@@ -17,40 +17,43 @@
  */
 // attrA.xyz = world pos (baked by the compute generator), attrA.w = species
 // attrB.w   = bioGlow (Scene3DShader.cpp GEOM_INDIRECT, 8-float vertex layout)
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioPhase;        ///< pre-integrated motion accumulator
-uniform float audioLowMid;       ///< 150-500 Hz harmonic warmth = vent heat
-uniform float audioRoughness;    ///< sensory dissonance = plume turbulence
+uniform mat4  projM;          ///< Projection matrix.
+uniform float eyeOff;         ///< Stereo eye offset (0 in mono).
+uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioPhase;     ///< pre-integrated motion accumulator
+uniform float audioLowMid;    ///< 150-500 Hz harmonic warmth = vent heat
+uniform float audioRoughness; ///< sensory dissonance = plume turbulence
 
-out vec3 vPos;   ///< Position (from the vertex stage).
+out vec3  vPos; ///< Position (from the vertex stage).
 out float vSpecies;
 out float vBioGlow;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     vec3 worldP = attrA.xyz;
 
     // The vent's HEAT: harmonic warmth in the low mids drives the convection,
     // billowing the smoker column outward; a thin, hollow mix lets it collapse
     // back toward a narrow thread rising off the chimney.
-    worldP.xz *= 1.0 + 0.35 * clamp(audioLowMid, 0.0, 1.0);
+    worldP.xz *= 1.0 + 0.35 * clamp( audioLowMid, 0.0, 1.0 );
 
     // Sensory dissonance shakes the plume into turbulent eddies -- consonant
     // harmony lets the streamers rise in smooth laminar ribbons.  The shimmer
     // rides audioPhase (pre-integrated), never `time` scaled by audio.
     // (The noise is seeded from the UNMODULATED generator position, so the
     // heat bloom above cannot drag the eddy pattern around underneath it.)
-    vec3 seedP = attrA.xyz;
-    float turb = clamp(audioRoughness, 0.0, 1.0) * 0.25;
-    worldP += vec3(sin(audioPhase * 2.3 + seedP.y * 3.1 + seedP.x * 1.7),
-                   sin(audioPhase * 1.7 + seedP.z * 2.6),
-                   cos(audioPhase * 2.0 + seedP.y * 2.4 + seedP.z * 1.3)) * turb;
+    vec3  seedP = attrA.xyz;
+    float turb = clamp( audioRoughness, 0.0, 1.0 ) * 0.25;
+    worldP += vec3( sin( audioPhase * 2.3 + seedP.y * 3.1 + seedP.x * 1.7 ),
+                    sin( audioPhase * 1.7 + seedP.z * 2.6 ),
+                    cos( audioPhase * 2.0 + seedP.y * 2.4 + seedP.z * 1.3 ) )
+              * turb;
 
     vPos = worldP;
     vSpecies = attrA.w;
@@ -61,6 +64,6 @@ void main() {
     vp.z += 5.2;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

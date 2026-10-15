@@ -13,75 +13,81 @@
  * instead of one, and the whole shell is stretched horizontally in view space
  * to match a 16:9 frame.
  */
-layout(location = 0) in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-layout(location = 1) in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+layout( location = 0 ) in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g.
+                                      ///< position or u/v and an index).
+layout( location = 1 ) in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element
+                                      ///< seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float dodecaP;
 uniform float loomP;
-uniform float widthP;   ///< Width knob, 0..1.
+uniform float widthP; ///< Width knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3 vWorldPos;   ///< World position (from the vertex stage).
-out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out vec3  vWorldPos; ///< World position (from the vertex stage).
+out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vRibbonIndex;
 
 /// The 20 vertices of a regular dodecahedron: the cube (+-1,+-1,+-1) plus the
 /// three cyclic rectangle families (0, +-1/phi, +-phi).  All lie on a sphere of
 /// radius sqrt(3), so one scale factor normalises the lot.
-vec3 dodecaVertex(int i)
+vec3 dodecaVertex( int i )
 {
     const float PHI = 1.6180339887;
     const float IPH = 0.6180339887;
-    if (i < 8)
-        return vec3(float(i & 1) * 2.0 - 1.0,
-                    float((i >> 1) & 1) * 2.0 - 1.0,
-                    float((i >> 2) & 1) * 2.0 - 1.0);
+    if ( i < 8 )
+        return vec3( float( i & 1 ) * 2.0 - 1.0,
+                     float( ( i >> 1 ) & 1 ) * 2.0 - 1.0,
+                     float( ( i >> 2 ) & 1 ) * 2.0 - 1.0 );
 
-    int   j   = i - 8;          // 0..11
-    int   fam = j / 4;          // 0, 1, 2
-    float a   = float(j & 1) * 2.0 - 1.0;
-    float b   = float((j >> 1) & 1) * 2.0 - 1.0;
-    if (fam == 0) return vec3(0.0,     a * IPH, b * PHI);
-    if (fam == 1) return vec3(a * IPH, b * PHI, 0.0);
-    return               vec3(a * PHI, 0.0,     b * IPH);
+    int   j = i - 8;   // 0..11
+    int   fam = j / 4; // 0, 1, 2
+    float a = float( j & 1 ) * 2.0 - 1.0;
+    float b = float( ( j >> 1 ) & 1 ) * 2.0 - 1.0;
+    if ( fam == 0 )
+        return vec3( 0.0, a * IPH, b * PHI );
+    if ( fam == 1 )
+        return vec3( a * IPH, b * PHI, 0.0 );
+    return vec3( a * PHI, 0.0, b * IPH );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float ddc = (dodecaP > 0.0) ? dodecaP : 1.0;
-    float lmp = (loomP   > 0.0) ? loomP   : 1.0;
-    float wdp = (widthP  > 0.0) ? widthP  : 1.0;
+void main()
+{
+    float ddc = ( dodecaP > 0.0 ) ? dodecaP : 1.0;
+    float lmp = ( loomP > 0.0 ) ? loomP : 1.0;
+    float wdp = ( widthP > 0.0 ) ? widthP : 1.0;
 
     // dodecaP is still the size knob, but remapped into a band that always
     // fills the frame -- its old low end left the loom at 12% of frame width.
-    float sz = 0.68 + 0.21 * ddc;          // 0.785 .. 1.10 over dodecaP 0.5..2.0
+    float sz = 0.68 + 0.21 * ddc; // 0.785 .. 1.10 over dodecaP 0.5..2.0
 
     // GEOM_RIBBON packs the ribbon index into attrA.w; attrB.x is a random
     // hash01 in [0,1), so int(attrB.x) was always 0 and all 20 ribbons
     // collapsed onto ribbon 0 (see Scene3DShader::buildGeometry).
-    int ribbonIdx = int(attrA.w);
-    float s = attrA.x;       // [0, 1] along ribbon
-    float side = attrA.y;    // -1 or +1 for ribbon width
-    vRibbonIndex = float(ribbonIdx) / 20.0;
-    vTexCoord = vec2(s * 4.0, side * 0.5 + 0.5);
+    int   ribbonIdx = int( attrA.w );
+    float s = attrA.x;    // [0, 1] along ribbon
+    float side = attrA.y; // -1 or +1 for ribbon width
+    vRibbonIndex = float( ribbonIdx ) / 20.0;
+    vTexCoord = vec2( s * 4.0, side * 0.5 + 0.5 );
 
     float t = time * 0.4 + audioAdvance * 0.2;
 
@@ -90,36 +96,36 @@ void main() {
     // ONE KNOT PER DODECAHEDRON VERTEX: each strand weaves around its own axis
     // out on the shell, which is both what fills the frame and what finally
     // makes the scene literally dodecahedral.
-    vec3 axis = dodecaVertex(ribbonIdx) * 0.57735027;   // / sqrt(3) -> unit
-    vec3 upv  = (abs(axis.y) > 0.9) ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
-    vec3 e1   = normalize(cross(axis, upv));
-    vec3 e2   = cross(axis, e1);
+    vec3 axis = dodecaVertex( ribbonIdx ) * 0.57735027; // / sqrt(3) -> unit
+    vec3 upv = ( abs( axis.y ) > 0.9 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 1.0, 0.0 );
+    vec3 e1 = normalize( cross( axis, upv ) );
+    vec3 e2 = cross( axis, e1 );
 
     // theta drifts along the strand, so the extra windings weave a shell
     // instead of retracing the same closed curve three times.
-    float theta = float(ribbonIdx) * 0.314159265 + s * 2.4;
+    float theta = float( ribbonIdx ) * 0.314159265 + s * 2.4;
     float u = s * 6.2831853 * 3.0 * lmp + t * 0.5;
 
-    float R  = 2.50 * sz;    // distance of the knot's centre from the origin
-    float lr = 1.05 * sz;    // the knot's own radius
+    float R = 2.50 * sz;  // distance of the knot's centre from the origin
+    float lr = 1.05 * sz; // the knot's own radius
 
     // Hyperbolic dodecahedron geodesic curve, now in the knot's own frame.
-    vec3 local = e1   * (sin(u * 2.0 + theta) * lr)
-               + e2   * (cos(u * 3.0 + theta * PHI) * lr)
-               + axis * (sin(u + theta * 2.0) * lr * 0.7);
+    vec3 local = e1 * ( sin( u * 2.0 + theta ) * lr )
+                 + e2 * ( cos( u * 3.0 + theta * PHI ) * lr )
+                 + axis * ( sin( u + theta * 2.0 ) * lr * 0.7 );
     vec3 p0 = axis * R + local;
 
     // The tumble angles are needed BEFORE the ribbon is widened -- see below.
     float lyaw = time * 0.18 + audioAdvance * 0.07;
-    float lcy = cos(lyaw), lsy = sin(lyaw);
-    float lpit = 0.4 * sin(time * 0.13);
-    float lpc = cos(lpit), lps = sin(lpit);
+    float lcy = cos( lyaw ), lsy = sin( lyaw );
+    float lpit = 0.4 * sin( time * 0.13 );
+    float lpc = cos( lpit ), lps = sin( lpit );
 
     // The camera's forward direction expressed in WORLD space, i.e. view-space
     // +z carried back through the inverse of the tumble applied below.
-    vec3 fwd = vec3(0.0, 0.0, 1.0);
-    fwd.yz = mat2(lpc, lps, -lps, lpc) * fwd.yz;     // undo pitch
-    fwd.xz = mat2(lcy, lsy, -lsy, lcy) * fwd.xz;     // undo yaw
+    vec3 fwd = vec3( 0.0, 0.0, 1.0 );
+    fwd.yz = mat2( lpc, lps, -lps, lpc ) * fwd.yz; // undo pitch
+    fwd.xz = mat2( lcy, lsy, -lsy, lcy ) * fwd.xz; // undo yaw
 
     // Tangent and binormal for ribbon width.
     // The binormal used to be cross(tangent, worldUp), which always comes out
@@ -131,27 +137,27 @@ void main() {
     // was therefore never drawn, which is why a shell that spans the frame
     // measured occ 0.17 at luma 0.011. Crossing with the view direction instead
     // guarantees the ribbon is always presented flat to the lens.
-    vec3 tangent = normalize(e1   * ( 2.0 * cos(u * 2.0 + theta))
-                           + e2   * (-3.0 * sin(u * 3.0 + theta * PHI))
-                           + axis * ( 0.7 * cos(u + theta * 2.0)));
-    vec3 bn = cross(tangent, fwd);
-    float bl = length(bn);
+    vec3  tangent = normalize( e1 * ( 2.0 * cos( u * 2.0 + theta ) )
+                               + e2 * ( -3.0 * sin( u * 3.0 + theta * PHI ) )
+                               + axis * ( 0.7 * cos( u + theta * 2.0 ) ) );
+    vec3  bn = cross( tangent, fwd );
+    float bl = length( bn );
     // Degenerate only when the strand runs straight at the lens, where any
     // perpendicular is as good as another.
-    vec3 binormal = (bl > 1e-4) ? bn / bl
-                                : normalize(cross(tangent, vec3(1.0, 0.0, 0.0)));
+    vec3 binormal = ( bl > 1e-4 ) ? bn / bl
+                                  : normalize( cross( tangent, vec3( 1.0, 0.0, 0.0 ) ) );
 
-    float ribbonWidth = (0.115 + 0.045 * sin(s * 15.0 + t * 3.0)) * wdp
-                      * (1.0 + audioKick * 0.7);
-    vec3 worldPos = p0 + binormal * (side * ribbonWidth);
+    float ribbonWidth = ( 0.115 + 0.045 * sin( s * 15.0 + t * 3.0 ) ) * wdp
+                        * ( 1.0 + audioKick * 0.7 );
+    vec3  worldPos = p0 + binormal * ( side * ribbonWidth );
     vWorldPos = worldPos;
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
     // 3-axis tumble (user feedback: static view was dull)
     vec3 vp = worldPos;
-    vp.xz = mat2(lcy, -lsy, lsy, lcy) * vp.xz;
-    vp.yz = mat2(lpc, -lps, lps, lpc) * vp.yz;
+    vp.xz = mat2( lcy, -lsy, lsy, lcy ) * vp.xz;
+    vp.yz = mat2( lpc, -lps, lps, lpc ) * vp.yz;
     vp.z += 6.2;
 
     // A 16:9 frame is 1.78x wider than it is tall, so a spherical shell that
@@ -161,11 +167,11 @@ void main() {
     vp.x *= 1.35;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Anything that ends up behind the near plane would smear a wedge of
     // garbage across the frame; drop it instead.
-    if (vp.z < 0.55)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.55 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel; ///< Overall loudness, 0..1.
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // CrystalGrowth.frag — faceted gem faces with luminous edges (depth-tested);
 // a drop blows the edges out into a blinding sparkle.
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-in vec4 vCol;   ///< Colour (from the vertex stage).
-in vec3 vCorner;
+uniform float audioDrop; ///< Drop envelope: high after a detected drop, decaying.
+in vec4       vCol;      ///< Colour (from the vertex stage).
+in vec3       vCorner;
 
 /**
  * @file CrystalGrowth.frag
@@ -26,12 +26,12 @@ in vec3 vCorner;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 a = abs(vCorner) * 2.0;
-    float e1 = smoothstep(0.78, 0.99, a.x);
-    float e2 = smoothstep(0.78, 0.99, a.y);
-    float e3 = smoothstep(0.78, 0.99, a.z);
-    float edge = clamp(e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0);
-    vec3 col = vCol.rgb * (0.16 + (1.6 + 2.0 * audioDrop) * edge);
-    col *= (0.85 + 0.30 * audioLevel + 0.35 * audioKick);
-    fragColor = vec4(col, 1.0);
+    vec3  a = abs( vCorner ) * 2.0;
+    float e1 = smoothstep( 0.78, 0.99, a.x );
+    float e2 = smoothstep( 0.78, 0.99, a.y );
+    float e3 = smoothstep( 0.78, 0.99, a.z );
+    float edge = clamp( e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0 );
+    vec3  col = vCol.rgb * ( 0.16 + ( 1.6 + 2.0 * audioDrop ) * edge );
+    col *= ( 0.85 + 0.30 * audioLevel + 0.35 * audioKick );
+    fragColor = vec4( col, 1.0 );
 }

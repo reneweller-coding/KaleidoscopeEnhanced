@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file KleinQuarticHyperbolicCurve.frag
  * @brief KLEIN QUARTIC HYPERBOLIC CURVE: Riemann surface of genus 3 with maximal
@@ -18,34 +18,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP      float sacred geometry chromatic hue offset    (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float genusP;
 uniform float heptagonP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -53,36 +55,39 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c);
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float gns = (genusP    > 0.0) ? genusP    : 1.0;
-    float hpt = (heptagonP > 0.0) ? heptagonP : 1.0;
-    float spd = (speedP    > 0.0) ? speedP    : 1.0;
-    float hue = (hueP      > 0.0) ? hueP      : 0.0;
+void main()
+{
+    float gns = ( genusP > 0.0 ) ? genusP : 1.0;
+    float hpt = ( heptagonP > 0.0 ) ? heptagonP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
     float t = time * 0.3 * spd + audioAdvance * 0.15;
@@ -90,8 +95,8 @@ void main() {
     // Poincaré disk coordinate normalization
     // Kick-Zoom raus: 15% Vollbild-Pump pro Schlag war das "Hektische";
     // der Swell atmet langsam statt zu springen.
-    vec2 z = uv * (2.8 / gns) * (1.0 - 0.06 * audioSwell);
-    z = rot2D(t * 0.25) * z;
+    vec2 z = uv * ( 2.8 / gns ) * ( 1.0 - 0.06 * audioSwell );
+    z = rot2D( t * 0.25 ) * z;
 
     float edgeDist = 1.0;
     float reflections = 0.0;
@@ -99,56 +104,61 @@ void main() {
     // 7-fold hyperbolic Coxeter reflection lines
     float angle7 = 6.2831853 / 7.0;
 
-    for (int iter = 0; iter < 5; ++iter) {
+    for ( int iter = 0; iter < 5; ++iter )
+    {
         // 7-fold angular folding
-        float a = atan(z.y, z.x);
-        float r = length(z);
-        a = mod(a, angle7) - angle7 * 0.5;
-        z = vec2(cos(a), sin(a)) * r;
+        float a = atan( z.y, z.x );
+        float r = length( z );
+        a = mod( a, angle7 ) - angle7 * 0.5;
+        z = vec2( cos( a ), sin( a ) ) * r;
 
         // Hyperbolic circle inversion centered on geodesic boundary
-        vec2 circleCenter = vec2(1.2 * hpt, 0.0);
+        vec2  circleCenter = vec2( 1.2 * hpt, 0.0 );
         float circleRadius = 0.65;
-        vec2 diff = z - circleCenter;
-        float d2 = dot(diff, diff);
+        vec2  diff = z - circleCenter;
+        float d2 = dot( diff, diff );
 
-        if (d2 < circleRadius * circleRadius) {
-            z = circleCenter + diff * (circleRadius * circleRadius / max(d2, 1e-4));
+        if ( d2 < circleRadius * circleRadius )
+        {
+            z = circleCenter + diff * ( circleRadius * circleRadius / max( d2, 1e-4 ) );
             reflections += 1.0;
         }
 
         // Boundary sphere inversion
-        float r2 = dot(z, z);
-        if (r2 > 1.0) {
+        float r2 = dot( z, z );
+        if ( r2 > 1.0 )
+        {
             z /= r2;
             reflections += 1.0;
         }
 
-        edgeDist = min(edgeDist, abs(sin(a * 7.0)));
+        edgeDist = min( edgeDist, abs( sin( a * 7.0 ) ) );
     }
 
     // Photo texture mapping into folded Klein heptagonal domains
-    vec2 photoUV = fract(z * 0.5 + 0.5);
-    vec3 photo = img(photoUV);
+    vec2 photoUV = fract( z * 0.5 + 0.5 );
+    vec3 photo = img( photoUV );
 
     // PSL(2,7) symmetry group color palette
-    vec3 groupColor = imgPalette((reflections * 0.5 + audioPhase) * 0.159);
+    vec3 groupColor = imgPalette( ( reflections * 0.5 + audioPhase ) * 0.159 );
 
     // Glowing automorphism reflection lines
     // Kick 3.0 + high 1.5 turned crescendos into one full-frame flash
     // (the largest single-frame luma jump in the whole catalogue's scan).
-    float lineGlow = exp(-edgeDist * 25.0) * (1.0 + min(audioKick * 0.6 + audioHigh * 0.25, 0.8));
+    float lineGlow = exp( -edgeDist * 25.0 ) * ( 1.0 + min( audioKick * 0.6 + audioHigh * 0.25, 0.8 ) );
 
     // Combine visualizer
-    vec3 col = mix(photo * 0.85, groupColor, 0.45 + 0.2 * audioSwell);
-    col += lineGlow * vec3(1.0, 0.9, 0.4) * 1.5;
+    vec3 col = mix( photo * 0.85, groupColor, 0.45 + 0.2 * audioSwell );
+    col += lineGlow * vec3( 1.0, 0.9, 0.4 ) * 1.5;
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if ( audioChromaHue != 0.0 )
+        if ( hue > 0.001 )
+            col = hueRot( col, hue );
 
     // Poincaré disk boundary vignette
-    float diskR = length(uv);
-    float diskVig = smoothstep(1.35, 0.3, diskR);
+    float diskR = length( uv );
+    float diskVig = smoothstep( 1.35, 0.3, diskR );
     col *= diskVig;
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

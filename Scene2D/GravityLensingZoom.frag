@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file GravityLensingZoom.frag
  * @brief GRAVITY LENSING ZOOM: an endless zoom into the photo through a
@@ -19,83 +19,88 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: zoomP (fall rate), massP (base mass), hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float zoomP;   ///< Zoom knob, 0..1.
+uniform float zoomP; ///< Zoom knob, 0..1.
 uniform float massP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    const float L = 1.6;                       // zoom period in log-radius
-    float zoom = sceneAdvance * 0.2 * (zoomP > 0.05 ? zoomP : 1.0) + sceneTime * 0.03;
-    float m = floor(zoom / L);
-    float zf = zoom - m * L;
+    float       hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    const float L = 1.6; // zoom period in log-radius
+    float       zoom = sceneAdvance * 0.2 * ( zoomP > 0.05 ? zoomP : 1.0 ) + sceneTime * 0.03;
+    float       m = floor( zoom / L );
+    float       zf = zoom - m * L;
 
     // Picture space: the pixel scaled by the zoom.  Lenses sit at fixed
     // places per period; we handle the current period and its neighbours.
-    vec2 q = p * exp(-zf);                     // shrink as we fall in
+    vec2 q = p * exp( -zf ); // shrink as we fall in
     // Small masses: the Einstein radius must stay well below the lens
     // spacing, or the whole picture collapses into one deflection.
-    float mass = (0.006 + 0.008 * clamp(massP, 0.0, 1.0)) * (1.0 + 0.6 * clamp(audioSwell, 0.0, 1.0));
+    float mass = ( 0.006 + 0.008 * clamp( massP, 0.0, 1.0 ) ) * ( 1.0 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
 
-    vec2 uvq = q;
+    vec2  uvq = q;
     float ringGlow = 0.0, arcGlow = 0.0;
-    for (int k = -1; k <= 2; ++k)
+    for ( int k = -1; k <= 2; ++k )
     {
-        float per = m + float(k);
+        float per = m + float( k );
         // One lens per period, on a ring of radius exp(-... ) scaled to this
         // period: they line up along the fall like beads.
-        float scale = exp(-float(k) * L);
-        float ang = hash11(per * 3.7) * 6.2831853;
-        vec2 c = vec2(cos(ang), sin(ang)) * 0.25 * scale;
-        float thetaE2 = mass * scale * scale;          // Einstein radius^2 at this scale
-        vec2 d = uvq - c;
-        float dd = max(dot(d, d), 1e-6);
+        float scale = exp( -float( k ) * L );
+        float ang = hash11( per * 3.7 ) * 6.2831853;
+        vec2  c = vec2( cos( ang ), sin( ang ) ) * 0.25 * scale;
+        float thetaE2 = mass * scale * scale; // Einstein radius^2 at this scale
+        vec2  d = uvq - c;
+        float dd = max( dot( d, d ), 1e-6 );
         // Point-mass deflection: the source position is the image minus
         // thetaE^2 * d / |d|^2.
         uvq -= thetaE2 * d / dd;
-        float thetaE = sqrt(thetaE2);
-        float rr = sqrt(dd);
-        ringGlow += exp(-abs(rr - thetaE) / (thetaE * 0.25 + 1e-4)) * scale;
-        arcGlow  += exp(-abs(rr - thetaE * 1.6) / (thetaE * 0.4 + 1e-4)) * scale * 0.4;
+        float thetaE = sqrt( thetaE2 );
+        float rr = sqrt( dd );
+        ringGlow += exp( -abs( rr - thetaE ) / ( thetaE * 0.25 + 1e-4 ) ) * scale;
+        arcGlow += exp( -abs( rr - thetaE * 1.6 ) / ( thetaE * 0.4 + 1e-4 ) ) * scale * 0.4;
     }
 
     // Endless zoom by layered copies of the photo: copy k has size
@@ -106,19 +111,19 @@ void main()
     // the log-radius period EQUAL to the zoom period L, so the wrap of the
     // zoom is exact -- a period of anything else flickered at every wrap.
     // The lensed coordinates go in, so the rings bend the tunnel.
-    float lr = log(length(uvq) + 1e-4);
-    float an = atan(uvq.y, uvq.x) * 0.15915494;
-    vec2 uv = vec2(fract(an * 2.0 + lr / L), fract(lr / L));
-    vec3 tex = img(uv);
-    vec3 col = tex * (0.45 + 0.4 * audioLevel) * mix(vec3(1.0), imgPalette(hue * 0.159 + 0.6) * 1.6, 0.25);
+    float lr = log( length( uvq ) + 1e-4 );
+    float an = atan( uvq.y, uvq.x ) * 0.15915494;
+    vec2  uv = vec2( fract( an * 2.0 + lr / L ), fract( lr / L ) );
+    vec3  tex = img( uv );
+    vec3  col = tex * ( 0.45 + 0.4 * audioLevel ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.6 ) * 1.6, 0.25 );
     // Depth: the far centre darkens (fog rises with distance, correct sign).
-    col *= smoothstep(0.0, 0.3, length(p)) * (1.0 - 0.3 * smoothstep(0.6, 1.1, length(p)));
+    col *= smoothstep( 0.0, 0.3, length( p ) ) * ( 1.0 - 0.3 * smoothstep( 0.6, 1.1, length( p ) ) );
 
-    col += imgPalette(hue * 0.159 + 0.9) * ringGlow * (1.2 + 2.0 * audioBass);
-    col += imgPalette(hue * 0.159 + 0.5) * arcGlow * (0.8 + 2.0 * audioKick);
-    col *= 1.0 - 0.45 * smoothstep(0.55, 1.1, length(p));
+    col += imgPalette( hue * 0.159 + 0.9 ) * ringGlow * ( 1.2 + 2.0 * audioBass );
+    col += imgPalette( hue * 0.159 + 0.5 ) * arcGlow * ( 0.8 + 2.0 * audioKick );
+    col *= 1.0 - 0.45 * smoothstep( 0.55, 1.1, length( p ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

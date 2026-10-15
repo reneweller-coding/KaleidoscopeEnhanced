@@ -1,6 +1,7 @@
 /**
  * @file WebRemote.h
- * @brief Embedded HTTP web-remote server: scene browser, force-scene API, snapshot/replay/blackout/favourite/skip controls, and LAN auto-discovery.
+ * @brief Embedded HTTP web-remote server: scene browser, force-scene API, snapshot/replay/blackout/favourite/skip
+ * controls, and LAN auto-discovery.
  */
 // WebRemote.h
 // ---------------------------------------------------------------------------
@@ -34,7 +35,8 @@ class QTcpServer;
 class QUdpSocket;
 
 /**
- * @brief Embedded single-page HTTP remote control for the visualizer (scene browser, force-scene, snapshot, replay, blackout, favourite, live parameters).
+ * @brief Embedded single-page HTTP remote control for the visualizer (scene browser, force-scene, snapshot, replay,
+ * blackout, favourite, live parameters).
  *
  * Listens on a TCP port (CLI `-t <port>`) and serves one self-contained HTML/CSS/JS page plus a
  * small set of GET-only JSON/JPEG API endpoints under /api/. All request handling runs on the
@@ -46,45 +48,50 @@ class QUdpSocket;
 class WebRemote : public QObject
 {
 public:
-	/**
-	 * @brief Creates the QTcpServer, listens on @p port (or the next few free ports if that one's taken), and starts the UDP discovery responder alongside it.
-	 * @param widget The GLwidget this remote controls and queries; also used as the QObject parent for lifetime management.
-	 * @param port Preferred TCP port to listen on (all interfaces), typically from the CLI -t flag (default 8080).
-	 */
-	WebRemote( GLwidget *widget, int port );
+    /**
+     * @brief Creates the QTcpServer, listens on @p port (or the next few free ports if that one's taken), and starts
+     * the UDP discovery responder alongside it.
+     * @param widget The GLwidget this remote controls and queries; also used as the QObject parent for lifetime
+     * management.
+     * @param port Preferred TCP port to listen on (all interfaces), typically from the CLI -t flag (default 8080).
+     */
+    WebRemote( GLwidget *widget, int port );
 
 private:
-	/**
-	 * @brief Accepts pending TCP connections and wires up one-shot request handling for each.
-	 *
-	 * For every new connection, reads the request on the first readyRead, parses the request
-	 * line, dispatches "/" and the GET /api/ routes by calling into GLwidget / RenderPipeline,
-	 * writes a single HTTP/1.1 response, and closes the connection (no keep-alive, no chunked
-	 * request bodies).
-	 */
-	void handleConnection();
+    /**
+     * @brief Accepts pending TCP connections and wires up one-shot request handling for each.
+     *
+     * For every new connection, reads the request on the first readyRead, parses the request
+     * line, dispatches "/" and the GET /api/ routes by calling into GLwidget / RenderPipeline,
+     * writes a single HTTP/1.1 response, and closes the connection (no keep-alive, no chunked
+     * request bodies).
+     */
+    void handleConnection();
 
-	/**
-	 * @brief Answers pending LAN discovery broadcasts on m_discoverySocket with this instance's host/port/active-preset.
-	 *
-	 * Ignores any datagram that isn't exactly the expected magic request (stray traffic on the
-	 * discovery port). Replies are sent unicast straight back to the sender's address/port, so
-	 * the requester needs no separate listening socket beyond the one it broadcast from.
-	 */
-	void handleDiscovery();
+    /**
+     * @brief Answers pending LAN discovery broadcasts on m_discoverySocket with this instance's
+     * host/port/active-preset.
+     *
+     * Ignores any datagram that isn't exactly the expected magic request (stray traffic on the
+     * discovery port). Replies are sent unicast straight back to the sender's address/port, so
+     * the requester needs no separate listening socket beyond the one it broadcast from.
+     */
+    void handleDiscovery();
 
-	/**
-	 * @brief Binds m_server to the first free TCP port starting at @p preferred.
-	 *
-	 * Tries preferred..preferred+19; if those are refused as protected (Windows
-	 * excluded port ranges), preferred+10000..+10019, then any OS-chosen port.
-	 * @param preferred The requested port; tried first.
-	 * @return The port actually bound, or 0 if none of the attempted ports were free.
-	 */
-	int bindFreePort( int preferred );
+    /**
+     * @brief Binds m_server to the first free TCP port starting at @p preferred.
+     *
+     * Tries preferred..preferred+19; if those are refused as protected (Windows
+     * excluded port ranges), preferred+10000..+10019, then any OS-chosen port.
+     * @param preferred The requested port; tried first.
+     * @return The port actually bound, or 0 if none of the attempted ports were free.
+     */
+    int bindFreePort( int preferred );
 
-	GLwidget   *m_widget          = nullptr;   ///< The visualizer widget this remote controls and queries; not owned.
-	QTcpServer *m_server          = nullptr;   ///< The listening TCP server; a child QObject, so it is destroyed automatically with this.
-	QUdpSocket *m_discoverySocket = nullptr;   ///< LAN discovery responder; a child QObject, destroyed automatically with this.
-	int         m_httpPort        = 0;         ///< The port m_server actually ended up listening on (may differ from the requested one).
+    GLwidget   *m_widget = nullptr;          ///< The visualizer widget this remote controls and queries; not owned.
+    QTcpServer *m_server = nullptr; ///< The listening TCP server; a child QObject, so it is destroyed automatically
+                                    ///< with this.
+    QUdpSocket *m_discoverySocket = nullptr; ///< LAN discovery responder; a child QObject, destroyed automatically with
+                                             ///< this.
+    int m_httpPort = 0; ///< The port m_server actually ended up listening on (may differ from the requested one).
 };

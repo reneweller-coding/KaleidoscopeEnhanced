@@ -1,6 +1,7 @@
 /**
  * @file ShaderWorker.h
- * @brief A thread with its own GL context (sharing objects with the main one) that compiles and links fragment programs off the render thread.
+ * @brief A thread with its own GL context (sharing objects with the main one) that compiles and links fragment programs
+ * off the render thread.
  *
  * GL_KHR_parallel_shader_compile was not enough: on the NVIDIA driver the
  * build reported itself complete, and the first GL_LINK_STATUS query on the

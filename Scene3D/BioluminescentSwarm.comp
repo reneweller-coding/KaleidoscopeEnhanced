@@ -18,24 +18,31 @@
 
 // BioluminescentSwarm.comp — GPU Compute Simulation of 12,000 bioluminescent
 // creatures exhibiting emergent flocking and murmuration vortices in 3D.
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
-layout(std430, binding = 0) buffer Verts { float verts[]; };
-layout(std430, binding = 1) buffer Cmd   { uint  cmd[]; };
+layout( std430, binding = 0 ) buffer Verts
+{
+    float verts[];
+};
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float sceneSeed;   ///< A random number fixed per activation.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform uint  maxVertices;       ///< Capacity of the vertex buffer (compute stage).
+uniform float time;              ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;         ///< A random number fixed per activation.
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioLevel;        ///< Overall loudness, 0..1.
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;      ///< Sub-bass band level, 0..1.
+uniform float audioHigh;         ///< High band level, 0..1.
+uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
 uniform float swarmP;
-uniform float speedP;   ///< Speed knob, 0..1.
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
 
 const int CREATURES = 64 * 64; ///< 4096 boid creatures, each emitted as a 3D faceted diamond (6 vertices)
 // Marine snow: 1,600 soft camera-facing motes hanging in the water BEHIND the
@@ -44,113 +51,127 @@ const int CREATURES = 64 * 64; ///< 4096 boid creatures, each emitted as a 3D fa
 // left the top and bottom of the picture black.  Only the seeds are made
 // here; BioluminescentSwarm.vert places them across the frustum, because it
 // is the stage that knows the aspect ratio.  glow = -1 is the marker.
-const uint SNOW      = 1600u;
-const uint SNOW_BASE = uint(CREATURES);
+const uint SNOW = 1600u;
+const uint SNOW_BASE = uint( CREATURES );
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash1(float n) { return fract(sin(n * 123.456) * 43758.5453); }
+float hash1( float n )
+{
+    return fract( sin( n * 123.456 ) * 43758.5453 );
+}
 /// @brief Pseudo-random vec3 (each 0..1) from a float.
-vec3  hash3(float n) { return fract(sin(vec3(n * 91.34, n * 47.12, n * 73.56)) * 43758.5453); }
+vec3 hash3( float n )
+{
+    return fract( sin( vec3( n * 91.34, n * 47.12, n * 73.56 ) ) * 43758.5453 );
+}
 
 /// @brief Writes one vertex into the output buffer (compute stage).
-void writeVertex(uint slot, vec3 p, vec3 n, float hue, float glow) {
+void writeVertex( uint slot, vec3 p, vec3 n, float hue, float glow )
+{
     uint o = slot * 8u;
-    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 0u] = p.x;
+    verts[o + 1u] = p.y;
+    verts[o + 2u] = p.z;
     verts[o + 3u] = hue;
-    verts[o + 4u] = n.x;  verts[o + 5u] = n.y;  verts[o + 6u] = n.z;
+    verts[o + 4u] = n.x;
+    verts[o + 5u] = n.y;
+    verts[o + 6u] = n.z;
     verts[o + 7u] = glow;
 }
 
-void emitBoid(vec3 center, vec3 forward, float size, float hue, float glow) {
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+void emitBoid( vec3 center, vec3 forward, float size, float hue, float glow )
+{
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
-    vec3 up = vec3(0.0, 1.0, 0.0);
-    vec3 right = normalize(cross(forward, up));
-    up = cross(right, forward);
+    vec3 up = vec3( 0.0, 1.0, 0.0 );
+    vec3 right = normalize( cross( forward, up ) );
+    up = cross( right, forward );
 
-    vec3 tip   = center + forward * (size * 1.5);
-    vec3 tail  = center - forward * (size * 0.8);
-    vec3 leftP = center - right * (size * 0.6);
-    vec3 rgtP  = center + right * (size * 0.6);
-    vec3 topP  = center + up * (size * 0.5);
+    vec3 tip = center + forward * ( size * 1.5 );
+    vec3 tail = center - forward * ( size * 0.8 );
+    vec3 leftP = center - right * ( size * 0.6 );
+    vec3 rgtP = center + right * ( size * 0.6 );
+    vec3 topP = center + up * ( size * 0.5 );
 
     // Two triangles forming a 3D winged creature
-    vec3 n1 = normalize(cross(tip - leftP, topP - leftP));
-    vec3 n2 = normalize(cross(rgtP - tip, topP - rgtP));
+    vec3 n1 = normalize( cross( tip - leftP, topP - leftP ) );
+    vec3 n2 = normalize( cross( rgtP - tip, topP - rgtP ) );
 
-    writeVertex(base + 0u, tip,   n1, hue, glow);
-    writeVertex(base + 1u, leftP, n1, hue, glow);
-    writeVertex(base + 2u, topP,  n1, hue, glow);
+    writeVertex( base + 0u, tip, n1, hue, glow );
+    writeVertex( base + 1u, leftP, n1, hue, glow );
+    writeVertex( base + 2u, topP, n1, hue, glow );
 
-    writeVertex(base + 3u, tip,   n2, hue, glow);
-    writeVertex(base + 4u, topP,  n2, hue, glow);
-    writeVertex(base + 5u, rgtP,  n2, hue, glow);
+    writeVertex( base + 3u, tip, n2, hue, glow );
+    writeVertex( base + 4u, topP, n2, hue, glow );
+    writeVertex( base + 5u, rgtP, n2, hue, glow );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     uvec3 g = gl_GlobalInvocationID;
-    uint id = g.x + 64u * (g.y + 64u * g.z);
-    if (id >= SNOW_BASE + SNOW) return;
+    uint  id = g.x + 64u * ( g.y + 64u * g.z );
+    if ( id >= SNOW_BASE + SNOW )
+        return;
 
     // ---- MARINE SNOW --------------------------------------------------
-    if (id >= SNOW_BASE)
+    if ( id >= SNOW_BASE )
     {
-        float fh = float(id - SNOW_BASE);
-        vec3  hs3 = hash3(fh + 17.0);
-        float hs  = hash1(fh * 3.191 + 2.29);
+        float fh = float( id - SNOW_BASE );
+        vec3  hs3 = hash3( fh + 17.0 );
+        float hs = hash1( fh * 3.191 + 2.29 );
 
-        uint sbase = atomicAdd(cmd[4], 6u);
-        if (sbase + 6u > maxVertices) return;
+        uint sbase = atomicAdd( cmd[4], 6u );
+        if ( sbase + 6u > maxVertices )
+            return;
 
-        vec2 cn[6] = vec2[6](vec2(0.0, 0.0), vec2(1.0, 0.0), vec2(0.0, 1.0),
-                             vec2(1.0, 0.0), vec2(1.0, 1.0), vec2(0.0, 1.0));
-        for (uint k = 0u; k < 6u; ++k)
-            writeVertex(sbase + k, hs3, vec3(cn[k], hs), hash1(fh * 1.7 + 0.9), -1.0);
+        vec2 cn[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 0.0, 1.0 ),
+                              vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 1.0 ) );
+        for ( uint k = 0u; k < 6u; ++k )
+            writeVertex( sbase + k, hs3, vec3( cn[k], hs ), hash1( fh * 1.7 + 0.9 ), -1.0 );
         return;
     }
 
-    float i = float(id);
-    vec3 seed = hash3(i);
+    float i = float( id );
+    vec3  seed = hash3( i );
 
-    float swm = (swarmP > 0.0) ? swarmP : 1.0;
-    float spd = (speedP > 0.0) ? speedP : 1.0;
-    float glw = (glowP  > 0.0) ? glowP  : 1.0;
+    float swm = ( swarmP > 0.0 ) ? swarmP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float glw = ( glowP > 0.0 ) ? glowP : 1.0;
 
     // Swarm dynamics: Emergent double-torus murmuration
-    float orbitRadius = (8.0 + seed.x * 16.0) * swm;
-    float orbitSpeed  = (0.4 + 0.3 * seed.y) * spd;
+    float orbitRadius = ( 8.0 + seed.x * 16.0 ) * swm;
+    float orbitSpeed = ( 0.4 + 0.3 * seed.y ) * spd;
     float angle = seed.z * 6.2831853 + time * orbitSpeed + audioAdvance * 0.2;
 
     // 3D Toroidal flow equations
-    float phi = seed.x * 6.2831853 + sin(time * 0.5 + seed.y * 3.0) * 1.5;
-    float torusR = 3.5 + 1.5 * sin(time * 0.8 + seed.z * 6.28);
+    float phi = seed.x * 6.2831853 + sin( time * 0.5 + seed.y * 3.0 ) * 1.5;
+    float torusR = 3.5 + 1.5 * sin( time * 0.8 + seed.z * 6.28 );
 
     // The murmuration was only +-7.5 units tall against a camera whose frame
     // is 29 units tall at that distance, so it read as a thin band with black
     // above and below it.  A real murmuration towers.
     vec3 boidPos = vec3(
-        (orbitRadius + torusR * cos(phi)) * cos(angle),
-        torusR * sin(phi) * 1.9 + sin(angle * 2.0) * 6.0,
-        (orbitRadius + torusR * cos(phi)) * sin(angle)
-    );
+        ( orbitRadius + torusR * cos( phi ) ) * cos( angle ),
+        torusR * sin( phi ) * 1.9 + sin( angle * 2.0 ) * 6.0,
+        ( orbitRadius + torusR * cos( phi ) ) * sin( angle ) );
 
     // Sudden scatter reaction on audioKick
-    vec3 scatterDir = normalize(seed - 0.5);
+    vec3 scatterDir = normalize( seed - 0.5 );
     boidPos += scatterDir * audioKick * 4.0;
 
     // Velocity / Forward facing tangent
-    vec3 forward = normalize(vec3(
-        -sin(angle) * (orbitRadius + torusR * cos(phi)),
-        cos(angle * 2.0) * 2.0,
-        cos(angle) * (orbitRadius + torusR * cos(phi))
-    ));
+    vec3 forward = normalize( vec3(
+        -sin( angle ) * ( orbitRadius + torusR * cos( phi ) ),
+        cos( angle * 2.0 ) * 2.0,
+        cos( angle ) * ( orbitRadius + torusR * cos( phi ) ) ) );
 
     // Audio-reactive bioluminescent emission waves
-    int band = int(clamp(seed.x * 31.0, 0.0, 31.0));
+    int   band = int( clamp( seed.x * 31.0, 0.0, 31.0 ) );
     float specPulse = audioSpectrum[band];
-    float boidHue = fract(seed.x * 0.4 + time * 0.05 + audioAdvance * 0.02);
+    float boidHue = fract( seed.x * 0.4 + time * 0.05 + audioAdvance * 0.02 );
 
     // Individual bioluminescent FLASH: sharp attack, exponential decay, on each
     // creature's own slow cycle. Without it every creature sat at the same
@@ -159,14 +180,14 @@ void main() {
     // cycle is per-creature, so nothing here is a full-field brightness change;
     // the rate is a constant coefficient on `time`, so it is anti-flicker safe.
     float flashRate = 0.11 + 0.17 * seed.z;
-    float flashPh = fract(seed.y * 7.31 + time * flashRate + audioAdvance * 0.05);
-    float flash = exp(-flashPh * 5.5) * 2.4;
+    float flashPh = fract( seed.y * 7.31 + time * flashRate + audioAdvance * 0.05 );
+    float flash = exp( -flashPh * 5.5 ) * 2.4;
 
-    float glowAmp = (0.55 + flash + specPulse * 2.0 + audioKick * 1.5) * glw;
+    float glowAmp = ( 0.55 + flash + specPulse * 2.0 + audioKick * 1.5 ) * glw;
 
     // Bigger creatures: at the 28-unit camera distance a 0.25-unit diamond is a
     // handful of pixels, so the swarm read as dust rather than as animals.
-    float boidSize = 0.40 * (0.8 + 0.4 * seed.y);
+    float boidSize = 0.40 * ( 0.8 + 0.4 * seed.y );
 
-    emitBoid(boidPos, forward, boidSize, boidHue, glowAmp);
+    emitBoid( boidPos, forward, boidSize, boidHue, glowAmp );
 }

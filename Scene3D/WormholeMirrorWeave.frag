@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec3  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file WormholeMirrorWeave.frag
@@ -14,11 +14,12 @@ in float vSide;   ///< Which side of a strip (from the vertex stage).
  */
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float glow = exp(-vSide * vSide * 3.0);
-    vec3 col = vCol * glow;
+void main()
+{
+    float glow = exp( -vSide * vSide * 3.0 );
+    vec3  col = vCol * glow;
 
     vec3 _catTone = col * 0.8;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

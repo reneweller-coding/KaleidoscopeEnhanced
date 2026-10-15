@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file KluverFormConstants.frag
  * @brief KLUVER FORM CONSTANTS: the four geometric hallucination forms --
@@ -19,97 +19,99 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: densP (stripe density), twistP, hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;    ///< Seconds since this scene was activated.
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 uniform float audioArousal;
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float densP;   ///< Density knob, 0..1.
-uniform float twistP;   ///< Twist knob, 0..1.
+uniform float densP;  ///< Density knob, 0..1.
+uniform float twistP; ///< Twist knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float dens = 6.0 + 8.0 * clamp(densP, 0.0, 1.0);
-    float twist = 0.5 + 2.0 * clamp(twistP, 0.0, 1.0);
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float dens = 6.0 + 8.0 * clamp( densP, 0.0, 1.0 );
+    float twist = 0.5 + 2.0 * clamp( twistP, 0.0, 1.0 );
     float flow = sceneAdvance * 0.5 + sceneTime * 0.08;
 
     // Retinal coordinates: log-polar (the cortical map).
-    float r = max(length(p), 1e-3);
-    float th = atan(p.y, p.x);
-    float lr = log(r);
+    float r = max( length( p ), 1e-3 );
+    float th = atan( p.y, p.x );
+    float lr = log( r );
     // The four form constants as phase fields (each periodic in lr/th):
     //   tunnel:  stripes in lr (concentric rings) flowing inward
     //   spiral:  stripes in lr + twist*th
     //   lattice: a checker of lr and th
     //   cobweb:  radial spokes and rings together
-    float tunnel  = sin(lr * dens - flow);
-    float spiral  = sin(lr * dens + th * twist * 3.0 - flow);
-    float lattice = sin(lr * dens - flow) * sin(th * 8.0 + flow * 0.3);
-    float cobweb  = max(sin(th * 12.0), sin(lr * dens * 0.7 - flow * 0.7));
+    float tunnel = sin( lr * dens - flow );
+    float spiral = sin( lr * dens + th * twist * 3.0 - flow );
+    float lattice = sin( lr * dens - flow ) * sin( th * 8.0 + flow * 0.3 );
+    float cobweb = max( sin( th * 12.0 ), sin( lr * dens * 0.7 - flow * 0.7 ) );
     // Blend weights: arousal picks the family (calm -> tunnel/cobweb,
     // excited -> spiral/lattice), drifting on the scene clock; all four
     // weights stay positive and sum to one.
-    float ar = clamp(audioArousal, 0.0, 1.0);
-    float d1 = 0.5 + 0.5 * sin(sceneAdvance * 0.1 + sceneTime * 0.02);
-    float d2 = 0.5 + 0.5 * sin(sceneAdvance * 0.07 + 1.7);
-    vec4 w = vec4((1.0 - ar) * (0.4 + 0.6 * d1),
-                  ar * (0.4 + 0.6 * d2),
-                  ar * (0.4 + 0.6 * (1.0 - d1)),
-                  (1.0 - ar) * (0.4 + 0.6 * (1.0 - d2)));
+    float ar = clamp( audioArousal, 0.0, 1.0 );
+    float d1 = 0.5 + 0.5 * sin( sceneAdvance * 0.1 + sceneTime * 0.02 );
+    float d2 = 0.5 + 0.5 * sin( sceneAdvance * 0.07 + 1.7 );
+    vec4  w = vec4( ( 1.0 - ar ) * ( 0.4 + 0.6 * d1 ),
+                    ar * ( 0.4 + 0.6 * d2 ),
+                    ar * ( 0.4 + 0.6 * ( 1.0 - d1 ) ),
+                    ( 1.0 - ar ) * ( 0.4 + 0.6 * ( 1.0 - d2 ) ) );
     w += 0.08;
-    w /= (w.x + w.y + w.z + w.w);
+    w /= ( w.x + w.y + w.z + w.w );
     float field = w.x * tunnel + w.y * spiral + w.z * lattice + w.w * cobweb;
     // Stripes: the field thresholded softly; contrast on the swell.
-    float contrast = 0.35 + 0.5 * clamp(audioSwell, 0.0, 1.0);
-    float stripe = smoothstep(-0.2, 0.2, field);
+    float contrast = 0.35 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
+    float stripe = smoothstep( -0.2, 0.2, field );
     // Colour: the photo sampled by the field phase and the angle.
-    vec2 suv = vec2(fract(lr * 0.15 - flow * 0.02), fract(th / 6.2831853 + 0.5));
-    vec3 photo = img(suv);
-    vec3 palA = imgPalette(hue * 0.159 + 0.0);
-    vec3 palB = imgPalette(hue * 0.159 + 0.5);
-    vec3 col = mix(palA * 0.4, photo * 1.2 + palB * 0.2, stripe);
-    col = mix(vec3(dot(col, vec3(0.333))), col, 0.7 + 0.3 * contrast);
+    vec2 suv = vec2( fract( lr * 0.15 - flow * 0.02 ), fract( th / 6.2831853 + 0.5 ) );
+    vec3 photo = img( suv );
+    vec3 palA = imgPalette( hue * 0.159 + 0.0 );
+    vec3 palB = imgPalette( hue * 0.159 + 0.5 );
+    vec3 col = mix( palA * 0.4, photo * 1.2 + palB * 0.2, stripe );
+    col = mix( vec3( dot( col, vec3( 0.333 ) ) ), col, 0.7 + 0.3 * contrast );
     col *= 0.6 + 0.8 * contrast * stripe + 0.3;
     // The stripe edges glow on the kick.
-    float edge = exp(-abs(field) * 6.0);
-    col += imgPalette(hue * 0.159 + 0.9) * edge * (0.1 + 0.7 * audioKick);
+    float edge = exp( -abs( field ) * 6.0 );
+    col += imgPalette( hue * 0.159 + 0.9 ) * edge * ( 0.1 + 0.7 * audioKick );
     // Central fovea: bright, soft.
-    col += palB * exp(-r * 4.0) * 0.4;
+    col += palB * exp( -r * 4.0 ) * 0.4;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

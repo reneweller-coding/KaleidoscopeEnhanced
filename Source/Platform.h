@@ -28,7 +28,8 @@
 #include <string>
 
 
-namespace Platform {
+namespace Platform
+{
 
 /**
  * @brief Normalises an asset path's separators for the host filesystem.
@@ -47,12 +48,13 @@ namespace Platform {
 inline std::string assetPath( const std::string &p )
 {
 #ifdef _WIN32
-	return p;
+    return p;
 #else
-	std::string s = p;
-	for( char &c : s )
-		if( c == '\\' ) c = '/';
-	return s;
+    std::string s = p;
+    for ( char &c : s )
+        if ( c == '\\' )
+            c = '/';
+    return s;
 #endif
 }
 
@@ -70,13 +72,15 @@ inline std::string assetPath( const std::string &p )
  */
 inline int iCaseCmp( const char *a, const char *b )
 {
-	for( ;; ++a, ++b )
-	{
-		const unsigned char ca = (unsigned char)( *a >= 'A' && *a <= 'Z' ? *a + 32 : *a );
-		const unsigned char cb = (unsigned char)( *b >= 'A' && *b <= 'Z' ? *b + 32 : *b );
-		if( ca != cb ) return int( ca ) - int( cb );
-		if( !ca )      return 0;
-	}
+    for ( ;; ++a, ++b )
+    {
+        const unsigned char ca = (unsigned char)( *a >= 'A' && *a <= 'Z' ? *a + 32 : *a );
+        const unsigned char cb = (unsigned char)( *b >= 'A' && *b <= 'Z' ? *b + 32 : *b );
+        if ( ca != cb )
+            return int( ca ) - int( cb );
+        if ( !ca )
+            return 0;
+    }
 }
 /**
  * @brief Resolves an OpenGL entry point by name.

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PhysarumGalaxy.frag
  * @brief PHYSARUM GALAXY: the slime-mould simulation's trail map, wrapped
@@ -19,104 +19,109 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: tiltP (globe tilt), gainP (trail light), hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texPhysarum;   ///< trail map (R/G = species pheromone), unit 11
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float tiltP; ///< Tilt knob, 0..1.
 uniform float gainP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float tilt = (tiltP > 0.001) ? tiltP : 0.5;
-    float gain = (gainP > 0.05) ? gainP : 1.0;
-    float hue  = (hueP > 0.001) ? hueP : 0.0;
+    float tilt = ( tiltP > 0.001 ) ? tiltP : 0.5;
+    float gain = ( gainP > 0.05 ) ? gainP : 1.0;
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
 
     // Background: deep field of the photo, very dim, plus fixed stars.
-    vec3 col = img(clamp(p * 0.3 + 0.5, 0.0, 1.0)) * 0.03;
-    vec2 g = floor(p * 60.0);
-    float hs = hash11(dot(g, vec2(1.0, 57.0)));
-    col += vec3(0.8, 0.85, 1.0) * step(0.975, hs) * 0.4 * exp(-length(fract(p * 60.0) - 0.5) * 10.0);
+    vec3  col = img( clamp( p * 0.3 + 0.5, 0.0, 1.0 ) ) * 0.03;
+    vec2  g = floor( p * 60.0 );
+    float hs = hash11( dot( g, vec2( 1.0, 57.0 ) ) );
+    col += vec3( 0.8, 0.85, 1.0 ) * step( 0.975, hs ) * 0.4 * exp( -length( fract( p * 60.0 ) - 0.5 ) * 10.0 );
 
     // The globe: radius breathes with the swell.
     float R = 0.62 + 0.06 * audioSwell;
-    float r2 = dot(p, p) / (R * R);
-    if (r2 < 1.0)
+    float r2 = dot( p, p ) / ( R * R );
+    if ( r2 < 1.0 )
     {
         // Sphere point, tilted and turning.
-        vec3 n = vec3(p / R, sqrt(1.0 - r2));
-        float ct = cos(tilt), st = sin(tilt);
-        n = vec3(n.x, ct * n.y - st * n.z, st * n.y + ct * n.z);
+        vec3  n = vec3( p / R, sqrt( 1.0 - r2 ) );
+        float ct = cos( tilt ), st = sin( tilt );
+        n = vec3( n.x, ct * n.y - st * n.z, st * n.y + ct * n.z );
         float spin = sceneAdvance * 0.08;
-        float cs = cos(spin), sn = sin(spin);
-        n = vec3(cs * n.x - sn * n.z, n.y, sn * n.x + cs * n.z);
+        float cs = cos( spin ), sn = sin( spin );
+        n = vec3( cs * n.x - sn * n.z, n.y, sn * n.x + cs * n.z );
         // Equirectangular lookup into the trail map (it wraps).
-        vec2 suv = vec2(atan(n.z, n.x) * 0.15915494 + 0.5, asin(clamp(n.y, -1.0, 1.0)) * 0.3183099 + 0.5);
-        vec2 tr = texture(texPhysarum, suv).rg;
+        vec2 suv = vec2( atan( n.z, n.x ) * 0.15915494 + 0.5, asin( clamp( n.y, -1.0, 1.0 ) ) * 0.3183099 + 0.5 );
+        vec2 tr = texture( texPhysarum, suv ).rg;
 
         // Kick shockwave: a ring of extra light running outward from the
         // core along whatever veins it crosses.
-        float ring = exp(-abs(length(p) - (0.05 + 0.7 * (1.0 - audioKick))) * 25.0) * audioKick;
+        float ring = exp( -abs( length( p ) - ( 0.05 + 0.7 * ( 1.0 - audioKick ) ) ) * 25.0 ) * audioKick;
 
         // Two species: warm streams and a cold web; the centroid decides
         // which one carries the light.
-        float wA = 1.0 - 0.6 * clamp(audioCentroid, 0.0, 1.0);
-        float wB = 0.4 + 0.6 * clamp(audioCentroid, 0.0, 1.0);
-        vec3 warm = imgPalette(hue * 0.159 + 0.05) * 1.3;
-        vec3 cold = imgPalette(hue * 0.159 + 0.55);
-        float a = smoothstep(0.03, 0.9, tr.r), b = smoothstep(0.03, 0.9, tr.g);
-        vec3 veins = warm * a * wA + cold * b * wB;
-        veins *= gain * (0.6 + 0.6 * audioLevel) * (1.0 + 2.0 * ring);
+        float wA = 1.0 - 0.6 * clamp( audioCentroid, 0.0, 1.0 );
+        float wB = 0.4 + 0.6 * clamp( audioCentroid, 0.0, 1.0 );
+        vec3  warm = imgPalette( hue * 0.159 + 0.05 ) * 1.3;
+        vec3  cold = imgPalette( hue * 0.159 + 0.55 );
+        float a = smoothstep( 0.03, 0.9, tr.r ), b = smoothstep( 0.03, 0.9, tr.g );
+        vec3  veins = warm * a * wA + cold * b * wB;
+        veins *= gain * ( 0.6 + 0.6 * audioLevel ) * ( 1.0 + 2.0 * ring );
 
         // Dust lanes: where trails are faint the disc darkens.
-        float dust = 1.0 - 0.6 * (1.0 - smoothstep(0.0, 0.25, tr.r + tr.g));
+        float dust = 1.0 - 0.6 * ( 1.0 - smoothstep( 0.0, 0.25, tr.r + tr.g ) );
         // Limb darkening + core glow.
-        float limb = pow(max(n.z, 0.0), 0.6);
-        float core = exp(-dot(p, p) * 12.0) * (0.4 + 1.2 * audioBass);
-        vec3 disc = veins * limb * dust + warm * core * 0.6;
-        col = mix(col, disc, smoothstep(1.0, 0.97, r2));
+        float limb = pow( max( n.z, 0.0 ), 0.6 );
+        float core = exp( -dot( p, p ) * 12.0 ) * ( 0.4 + 1.2 * audioBass );
+        vec3  disc = veins * limb * dust + warm * core * 0.6;
+        col = mix( col, disc, smoothstep( 1.0, 0.97, r2 ) );
     }
     // Halo around the globe.
-    float halo = exp(-max(sqrt(dot(p, p)) - R, 0.0) * 9.0) * (0.15 + 0.35 * audioSwell);
-    col += imgPalette(hue * 0.159 + 0.3) * halo * float(r2 >= 0.97);
+    float halo = exp( -max( sqrt( dot( p, p ) ) - R, 0.0 ) * 9.0 ) * ( 0.15 + 0.35 * audioSwell );
+    col += imgPalette( hue * 0.159 + 0.3 ) * halo * float( r2 >= 0.97 );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

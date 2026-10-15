@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // FireflyField.frag — soft glowing point (additive blending).
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol; ///< Colour (from the vertex stage).
 
 /**
  * @file FireflyField.frag
@@ -18,9 +18,9 @@ in vec4 vCol;   ///< Colour (from the vertex stage).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;
-    float a = exp(-dot(d, d) * 9.0);
+    float a = exp( -dot( d, d ) * 9.0 );
     // Gain trimmed from 1.8: the lamps are now several times wider and cover
     // the whole frame, so the same total light no longer has to come out of
     // a blown-out core (the old peak clipped to flat over-saturated green).
-    fragColor = vec4(vCol.rgb * a * 1.25, 1.0);
+    fragColor = vec4( vCol.rgb * a * 1.25, 1.0 );
 }

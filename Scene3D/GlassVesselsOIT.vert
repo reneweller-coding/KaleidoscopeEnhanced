@@ -6,48 +6,57 @@
  * xy and z sign.  Opaque pass draws the wall and shelf, the OIT pass the
  * glass; the other half collapses behind the near plane.  No camera motion.
  */
-layout(location = 0) in vec4 attrA;   ///< xyz = position, w = vessel id
-layout(location = 1) in vec4 attrB;   ///< x = height t, y = kind (-1 wall, -2 shelf, 0/1 glass by nz sign), zw = normal xy or uv
+layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = vessel id
+layout( location = 1 ) in vec4 attrB; ///< x = height t, y = kind (-1 wall, -2 shelf, 0/1 glass by nz sign), zw = normal
+                                      ///< xy or uv
 
 uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float oitPass;   ///< Order-independent transparency pass flag.
+uniform float eyeOff;  ///< Stereo eye offset (0 in mono).
+uniform float time;    ///< Seconds since the program started (never reset; see sceneTime).
+uniform float oitPass; ///< Order-independent transparency pass flag.
 
-out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
-out vec3 vWorld;   ///< World position (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out float vKind;   ///< Element kind (from the vertex stage).
+out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
+out vec3  vWorld;    ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vKind;     ///< Element kind (from the vertex stage).
 out float vT;
-out float vId;   ///< Instance or element id (from the vertex stage).
+out float vId; ///< Instance or element id (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float kind = attrB.y;
-    bool isOpaque = kind < -0.5;
-    bool wantGlass = oitPass > 0.5;
-    if (isOpaque == wantGlass)
+    bool  isOpaque = kind < -0.5;
+    bool  wantGlass = oitPass > 0.5;
+    if ( isOpaque == wantGlass )
     {
-        gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
-        vTexCoord = vec2(0.0); vWorld = vec3(0.0); vNormal = vec3(0.0, 0.0, 1.0); vKind = kind; vT = 0.0; vId = 0.0;
+        gl_Position = vec4( 0.0, 0.0, -2.0, 1.0 );
+        vTexCoord = vec2( 0.0 );
+        vWorld = vec3( 0.0 );
+        vNormal = vec3( 0.0, 0.0, 1.0 );
+        vKind = kind;
+        vT = 0.0;
+        vId = 0.0;
         return;
     }
     vec3 vp = attrA.xyz;
-    vWorld = vp; vKind = kind; vT = attrB.x; vId = attrA.w;
-    if (isOpaque)
+    vWorld = vp;
+    vKind = kind;
+    vT = attrB.x;
+    vId = attrA.w;
+    if ( isOpaque )
     {
         vTexCoord = attrB.zw;
-        vNormal = (kind < -1.5) ? vec3(0.0, 1.0, 0.0) : vec3(0.0, 0.0, -1.0);
+        vNormal = ( kind < -1.5 ) ? vec3( 0.0, 1.0, 0.0 ) : vec3( 0.0, 0.0, -1.0 );
     }
     else
     {
-        vec2 nxy = attrB.zw;
-        float nz = sqrt(max(1.0 - dot(nxy, nxy), 0.0)) * (kind > 0.5 ? -1.0 : 1.0);
-        vNormal = vec3(nxy, nz);
-        vTexCoord = vec2(0.0);
+        vec2  nxy = attrB.zw;
+        float nz = sqrt( max( 1.0 - dot( nxy, nxy ), 0.0 ) ) * ( kind > 0.5 ? -1.0 : 1.0 );
+        vNormal = vec3( nxy, nz );
+        vTexCoord = vec2( 0.0 );
     }
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

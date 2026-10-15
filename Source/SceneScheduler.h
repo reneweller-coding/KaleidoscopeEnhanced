@@ -59,293 +59,376 @@ class EffectShader;
 class SceneScheduler
 {
 public:
-	/** @brief Bind the effect/FX/transition lists to iterate (ownership stays with the caller).
-	 * @param textures Pointer to the pipeline's effect-shader list (the "texture" slot).
-	 * @param fxShaders Pointer to the pipeline's FX/overlay-shader list.
-	 * @param transitions Pointer to the pipeline's scene-transition shader list
-	 *        (Transitions/ — one shader per blend style, rolled per fade).
-	 */
-	void attach( std::vector<EffectShader *> *textures,
-	             std::vector<EffectShader *> *fxShaders,
-	             std::vector<EffectShader *> *transitions )
-	{ m_textures = textures; m_fxShaders = fxShaders; m_transitions = transitions; }
+    /** @brief Bind the effect/FX/transition lists to iterate (ownership stays with the caller).
+     * @param textures Pointer to the pipeline's effect-shader list (the "texture" slot).
+     * @param fxShaders Pointer to the pipeline's FX/overlay-shader list.
+     * @param transitions Pointer to the pipeline's scene-transition shader list
+     *        (Transitions/ — one shader per blend style, rolled per fade).
+     */
+    void attach( std::vector<EffectShader *> *textures,
+                 std::vector<EffectShader *> *fxShaders,
+                 std::vector<EffectShader *> *transitions )
+    {
+        m_textures = textures;
+        m_fxShaders = fxShaders;
+        m_transitions = transitions;
+    }
 
-	/** @brief Roll the initial act/next scene and combine picks and (re)start both clocks (the old start() block). */
-	void reset();
+    /** @brief Roll the initial act/next scene and combine picks and (re)start both clocks (the old start() block). */
+    void reset();
 
-	// ---- Konfiguration / Zustand von außen ----
-	/** Review bench pacing: how long each scene holds in review mode
-	 * (Test* presets). 25 s is a full musical phrase at ~120 BPM, so a
-	 * scene's slow camera arcs and palette drifts complete at least once
-	 * before the walk moves on -- 8 s showed only the opening moment.
-	 */
-	static constexpr float kReviewSoloSecs = 25.f;
+    // ---- Konfiguration / Zustand von außen ----
+    /** Review bench pacing: how long each scene holds in review mode
+     * (Test* presets). 25 s is a full musical phrase at ~120 BPM, so a
+     * scene's slow camera arcs and palette drifts complete at least once
+     * before the walk moves on -- 8 s showed only the opening moment.
+     */
+    static constexpr float kReviewSoloSecs = 25.f;
 
-	/** @brief Enable/disable review mode (alphabetical walk, fixed kReviewSoloSecs per scene).
-	 * @param on True to enter review mode, false to return to normal random selection.
-	 */
-	void setReviewMode( bool on );
-	/** @brief Preset-wide floor on every natural scene fade (seconds, 0 = none).
-	 * A preset that sets it (Ambient, SpaceAmbient) also never hard-cuts on a
-	 * detected drop: the whole point of such a preset is that nothing snaps.
-	 * @param secs Floor in seconds; values <= 0 disable it.
-	 */
-	void setSceneFadeMin( float secs ) { m_sceneFadeMin = secs > 0.f ? secs : 0.f; }
-	bool reviewMode() const         { return m_reviewMode; }   ///< True while stepping the alphabetical Test*-preset review order.
-	/** @brief Snapshot the current mood values used by moodAccept()'s busyness/tag bias.
-	 * @param arousal Arousal 0..1 (drives the target shader-complexity/busyness).
-	 * @param valence Valence 0..1 (drives the bright/dark mood-tag bonus).
-	 * @param ambient Ambient level 0..1 (drives the calm/aggressive mood-tag bonus).
-	 */
-	void setMood( float arousal, float valence, float ambient )
-	{ m_lastArousal = arousal; m_lastValence = valence; m_lastAmbient = ambient; }
-	/** Gelerntes Taste (Skip-Malus/Favoriten-Bonus): Faktor je Fragment-Pfad.
-	 *  Persistenz macht der Aufrufer; ohne Callback zählt alles als 1.0. */
-	/** @brief Install the learned-taste callback (skip-malus / favourite-bonus per fragment path).
-	 * @param f Callback mapping a fragment path to a taste multiplier; persistence is the caller's job. Without a callback every shader counts as 1.0.
-	 */
-	void setTasteCallback( std::function<float(const char *)> f ) { m_tasteFor = std::move(f); }
+    /** @brief Enable/disable review mode (alphabetical walk, fixed kReviewSoloSecs per scene).
+     * @param on True to enter review mode, false to return to normal random selection.
+     */
+    void setReviewMode( bool on );
+    /** @brief Preset-wide floor on every natural scene fade (seconds, 0 = none).
+     * A preset that sets it (Ambient, SpaceAmbient) also never hard-cuts on a
+     * detected drop: the whole point of such a preset is that nothing snaps.
+     * @param secs Floor in seconds; values <= 0 disable it.
+     */
+    void setSceneFadeMin( float secs ) { m_sceneFadeMin = secs > 0.f ? secs : 0.f; }
+    bool reviewMode() const
+    {
+        return m_reviewMode;
+    } ///< True while stepping the alphabetical Test*-preset review order.
+    /** @brief Snapshot the current mood values used by moodAccept()'s busyness/tag bias.
+     * @param arousal Arousal 0..1 (drives the target shader-complexity/busyness).
+     * @param valence Valence 0..1 (drives the bright/dark mood-tag bonus).
+     * @param ambient Ambient level 0..1 (drives the calm/aggressive mood-tag bonus).
+     */
+    void setMood( float arousal, float valence, float ambient )
+    {
+        m_lastArousal = arousal;
+        m_lastValence = valence;
+        m_lastAmbient = ambient;
+    }
+    /** Gelerntes Taste (Skip-Malus/Favoriten-Bonus): Faktor je Fragment-Pfad.
+     *  Persistenz macht der Aufrufer; ohne Callback zählt alles als 1.0. */
+    /** @brief Install the learned-taste callback (skip-malus / favourite-bonus per fragment path).
+     * @param f Callback mapping a fragment path to a taste multiplier; persistence is the caller's job. Without a
+     * callback every shader counts as 1.0.
+     */
+    void setTasteCallback( std::function<float( const char * )> f ) { m_tasteFor = std::move( f ); }
 
-	// ---- VJ / Remote ----
-	/** @brief Request an early cut on the next tick (manual 'n' or remote request).
-	 * @param alsoFx If true, also force the FX slot to change (not just the effect).
-	 */
-	void requestChange( bool alsoFx )
-	{ m_forceEffectChange = true; m_forceIsManual = true; if( alsoFx ) m_forceFxChange = true; }
-	/** @brief Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
-	 * @param idx Index into the attached texture/effect list to jump to; out-of-range or a missing attach() is silently ignored.
-	 */
-	void forceScene( int idx );
-	/** @brief Force the next combine-effect (overlay) to @p idx, bypassing the
-	 *         complexity budget, mood and mesh-calm filters.
-	 * @param idx Index into fxNames(); ignored if out of range.
-	 *
-	 * For measuring FX the way KALEIDO_SCENE_SWEEP measures scenes: an
-	 * overlay that does nothing is a real failure class (43 silent FX and
-	 * transitions were once found at one go), and the random picker cannot
-	 * be relied on to show a given one at a known moment. */
-	void forceFx( int idx );
-	/** Solo-Alter des aktuellen Effekts (Skip-Malus-Fenster, !status etc.). */
-	float actElapsedSec() const { return secsSince( m_clockEffectTexture ); }   ///< Seconds since the current effect went solo (used for the skip-malus window, !status, etc.).
-	/** Freeze/Pin: Effekt-/Combine-Uhren re-armen, damit hinter dem
-	 *  gehaltenen Bild kein Wechsel "fällig" wird. */
-	/** @brief Re-arm both effect/combine clocks so no change is "due" the moment a freeze/pin lifts. */
-	void rearmEffectClocks() { restart( m_clockEffectTexture ); restart( m_clockEffectFx ); }
-	/** @brief Subtract a frame hitch from the running Solo/Fade clocks.
-	 *
-	 *  Both slots time themselves on wall clocks, which is right for music but
-	 *  wrong across a STALL: a mesh scene's first activation compiles its
-	 *  shader and loads its model synchronously, and a multi-second freeze
-	 *  then counts as elapsed show time. The fade "completes" inside the
-	 *  frozen frame (the scene pops instead of blending), the 2-second
-	 *  minimum solo is already spent when the picture unfreezes, and a queued
-	 *  trigger cuts away a scene the viewer saw for well under a second --
-	 *  both reported, both worst in the first minutes while the working set
-	 *  is cold. Shifting the reference points forward by the stall removes
-	 *  exactly that time from the books. */
-	void absorbHitch( float secs )
-	{
-		const auto d = std::chrono::duration_cast<Clock::duration>(
-			std::chrono::duration<float>( secs ) );
-		m_clockEffectTexture += d;
-		m_clockEffectFx      += d;
-	}
+    // ---- VJ / Remote ----
+    /** @brief Request an early cut on the next tick (manual 'n' or remote request).
+     * @param alsoFx If true, also force the FX slot to change (not just the effect).
+     */
+    void requestChange( bool alsoFx )
+    {
+        m_forceEffectChange = true;
+        m_forceIsManual = true;
+        if ( alsoFx )
+            m_forceFxChange = true;
+    }
+    /** @brief Jump directly to a given effect index, pre-empting the normal selection (remote scene browser).
+     * @param idx Index into the attached texture/effect list to jump to; out-of-range or a missing attach() is silently
+     * ignored.
+     */
+    void forceScene( int idx );
+    /** @brief Force the next combine-effect (overlay) to @p idx, bypassing the
+     *         complexity budget, mood and mesh-calm filters.
+     * @param idx Index into fxNames(); ignored if out of range.
+     *
+     * For measuring FX the way KALEIDO_SCENE_SWEEP measures scenes: an
+     * overlay that does nothing is a real failure class (43 silent FX and
+     * transitions were once found at one go), and the random picker cannot
+     * be relied on to show a given one at a known moment. */
+    void forceFx( int idx );
+    /** Solo-Alter des aktuellen Effekts (Skip-Malus-Fenster, !status etc.). */
+    float actElapsedSec() const
+    {
+        return secsSince( m_clockEffectTexture );
+    } ///< Seconds since the current effect went solo (used for the skip-malus window, !status, etc.).
+    /** Freeze/Pin: Effekt-/Combine-Uhren re-armen, damit hinter dem
+     *  gehaltenen Bild kein Wechsel "fällig" wird. */
+    /** @brief Re-arm both effect/combine clocks so no change is "due" the moment a freeze/pin lifts. */
+    void rearmEffectClocks()
+    {
+        restart( m_clockEffectTexture );
+        restart( m_clockEffectFx );
+    }
+    /** @brief Subtract a frame hitch from the running Solo/Fade clocks.
+     *
+     *  Both slots time themselves on wall clocks, which is right for music but
+     *  wrong across a STALL: a mesh scene's first activation compiles its
+     *  shader and loads its model synchronously, and a multi-second freeze
+     *  then counts as elapsed show time. The fade "completes" inside the
+     *  frozen frame (the scene pops instead of blending), the 2-second
+     *  minimum solo is already spent when the picture unfreezes, and a queued
+     *  trigger cuts away a scene the viewer saw for well under a second --
+     *  both reported, both worst in the first minutes while the working set
+     *  is cold. Shifting the reference points forward by the stall removes
+     *  exactly that time from the books. */
+    void absorbHitch( float secs )
+    {
+        const auto d = std::chrono::duration_cast<Clock::duration>(
+            std::chrono::duration<float>( secs ) );
+        m_clockEffectTexture += d;
+        m_clockEffectFx += d;
+    }
 
-	/** @brief Per-frame inputs consumed by tick()/tickFx(). */
-	struct Tick
-	{
-		float dt            = 0.f;    ///< timeSinceLastFrameSec (break-skaliert)
-		bool  downbeatTick  = false;  ///< True on the frame a downbeat lands (quantises pending changes).
-		float gateSmooth    = 0.f;    ///< Smoothed music-presence gate; below 0.25 triggers the no-music escape.
-		float timingScale   = 1.f;    ///< Divides fade/solo durations (e.g. break-time stretch).
-		bool  pinned        = false;  ///< VJ pin ('u'): suppresses every forced cut while held.
-		// Trigger
-		float harmonicChange = 0.f;   ///< Harmonic/key-change novelty strength (combined with musicPresence to force a cut).
-		float musicPresence  = 0.f;   ///< Gates the novelty trigger; no forced cuts from silence.
-		int   sectionCount   = 0;     ///< Running count of detected song sections; a rising edge signals a section change.
-		int   sectionId      = -1;    ///< Identity of the current section (looked up in the song-structure memory). A recycled LRU slot index -- never treat "id seen before" as "section returning" without #sectionKnown.
-		bool  sectionKnown   = false; ///< True only if the analyzer RECOGNISED the section by fingerprint; false for a newly stored one (even when its id slot was recycled from an older section).
-		int   dropCount      = 0;     ///< Running count of detected EDM drops; a rising edge triggers a drop cut.
-		// Übergangs-Timing
-		float rhythmStrength = 0.f;   ///< Beat confidence 0..1; above 0.55 lets the 4-beat cross-fade duration kick in.
-		float estimatedBPM   = 0.f;   ///< Estimated tempo, used to compute the 4-beat cross-fade duration.
-		float logAttackTime  = 0.f;   ///< Articulation (staccato vs. legato); shortens the cross-fade for staccato material.
-		// Regie: Bogen auf den Drop
-		float buildUp        = 0.f;   ///< Build-up tension 0..1 (analyzer); a rising edge past 0.45 arms the drop-synchronous arc.
-		float phraseSecsLeft = 0.f;   ///< Seconds to the next 8-bar boundary = the predicted drop; 0 when the tempo is unknown.
-	};
+    /** @brief Per-frame inputs consumed by tick()/tickFx(). */
+    struct Tick
+    {
+        float dt = 0.f;             ///< timeSinceLastFrameSec (break-skaliert)
+        bool  downbeatTick = false; ///< True on the frame a downbeat lands (quantises pending changes).
+        float gateSmooth = 0.f;     ///< Smoothed music-presence gate; below 0.25 triggers the no-music escape.
+        float timingScale = 1.f;    ///< Divides fade/solo durations (e.g. break-time stretch).
+        bool  pinned = false;       ///< VJ pin ('u'): suppresses every forced cut while held.
+        // Trigger
+        float harmonicChange = 0.f; ///< Harmonic/key-change novelty strength (combined with musicPresence to force a
+                                    ///< cut).
+        float musicPresence = 0.f;  ///< Gates the novelty trigger; no forced cuts from silence.
+        int   sectionCount = 0; ///< Running count of detected song sections; a rising edge signals a section change.
+        int   sectionId = -1; ///< Identity of the current section (looked up in the song-structure memory). A recycled
+                              ///< LRU slot index -- never treat "id seen before" as "section returning" without
+                              ///< #sectionKnown.
+        bool sectionKnown = false;  ///< True only if the analyzer RECOGNISED the section by fingerprint; false for a
+                                    ///< newly stored one (even when its id slot was recycled from an older section).
+        int dropCount = 0;          ///< Running count of detected EDM drops; a rising edge triggers a drop cut.
+        // Übergangs-Timing
+        float rhythmStrength = 0.f; ///< Beat confidence 0..1; above 0.55 lets the 4-beat cross-fade duration kick in.
+        float estimatedBPM = 0.f;   ///< Estimated tempo, used to compute the 4-beat cross-fade duration.
+        float logAttackTime = 0.f;  ///< Articulation (staccato vs. legato); shortens the cross-fade for staccato
+                                    ///< material.
+        // Regie: Bogen auf den Drop
+        float buildUp = 0.f; ///< Build-up tension 0..1 (analyzer); a rising edge past 0.45 arms the drop-synchronous
+                             ///< arc.
+        float phraseSecsLeft = 0.f; ///< Seconds to the next 8-bar boundary = the predicted drop; 0 when the tempo is
+                                    ///< unknown.
+    };
 
-	/** @brief Evaluate musical triggers and advance the effect (texture) Solo/Fade state machine. Runs before the effect passes.
-	 * @param t Frame inputs (timing, triggers, gate).
-	 */
-	void tick( const Tick &t );
-	/** @brief Advance the combine Solo/Fade state machine. Runs after the effect passes, at the point trueStereoHold is known.
-	 * @param t Frame inputs (timing, triggers, gate).
-	 * @param trueStereoHold True while an eye-packed true-stereo 3D frame must not enter a combine cross-fade; freezes combine switching until it lifts.
-	 */
-	void tickFx( const Tick &t, bool trueStereoHold );
+    /** @brief Evaluate musical triggers and advance the effect (texture) Solo/Fade state machine. Runs before the
+     * effect passes.
+     * @param t Frame inputs (timing, triggers, gate).
+     */
+    void tick( const Tick &t );
+    /** @brief Advance the combine Solo/Fade state machine. Runs after the effect passes, at the point trueStereoHold is
+     * known.
+     * @param t Frame inputs (timing, triggers, gate).
+     * @param trueStereoHold True while an eye-packed true-stereo 3D frame must not enter a combine cross-fade; freezes
+     * combine switching until it lifts.
+     */
+    void tickFx( const Tick &t, bool trueStereoHold );
 
-	// ---- Abfragen der Pipeline ----
-	unsigned int actTexture()  const { return m_actTexture; }    ///< Index of the currently active (solo or fade-from) effect/texture shader.
-	unsigned int nextTexture() const { return m_nextTexture; }   ///< Index of the effect/texture shader being faded to (or picked for next).
-	unsigned int actFx()  const { return m_actFx; }    ///< Index of the currently active combine shader.
-	unsigned int nextFx() const { return m_nextFx; }   ///< Index of the combine shader being faded to (or picked for next).
-	int   texState()   const { return m_texState; }    ///< Effect state machine phase: 0 = Solo (one scene on screen), 1 = Fade (cross-fading actTexture() -> nextTexture()).
-	int   fxState()  const { return m_fxState; }   ///< Combine state machine phase: 0 = Solo, 1 = Fade.
-	float texInterp()  const { return m_texInterp; }   ///< Effect cross-fade blend factor: 1 while solo, then runs 1 -> 0 over the fade (weight of the outgoing actTexture()); the transition shaders receive it as their progress uniform.
-	float fxInterp() const { return m_fxInterp; }  ///< Combine cross-fade blend factor, 1 -> 0 over the fade.
-	unsigned int actTransition() const { return m_actTransition; }   ///< Index of the transition shader rolled for the current/last scene fade.
+    // ---- Abfragen der Pipeline ----
+    unsigned int actTexture() const
+    {
+        return m_actTexture;
+    } ///< Index of the currently active (solo or fade-from) effect/texture shader.
+    unsigned int nextTexture() const
+    {
+        return m_nextTexture;
+    } ///< Index of the effect/texture shader being faded to (or picked for next).
+    unsigned int actFx() const { return m_actFx; } ///< Index of the currently active combine shader.
+    unsigned int nextFx() const
+    {
+        return m_nextFx;
+    } ///< Index of the combine shader being faded to (or picked for next).
+    int texState() const
+    {
+        return m_texState;
+    } ///< Effect state machine phase: 0 = Solo (one scene on screen), 1 = Fade (cross-fading actTexture() ->
+    ///< nextTexture()).
+    int   fxState() const { return m_fxState; } ///< Combine state machine phase: 0 = Solo, 1 = Fade.
+    float texInterp() const
+    {
+        return m_texInterp;
+    } ///< Effect cross-fade blend factor: 1 while solo, then runs 1 -> 0 over the fade (weight of the outgoing
+    ///< actTexture()); the transition shaders receive it as their progress uniform.
+    float        fxInterp() const { return m_fxInterp; } ///< Combine cross-fade blend factor, 1 -> 0 over the fade.
+    unsigned int actTransition() const
+    {
+        return m_actTransition;
+    } ///< Index of the transition shader rolled for the current/last scene fade.
 
 private:
-	using Clock = std::chrono::steady_clock;   ///< Monotonic wall clock behind every Solo/Fade timer -- the same semantics as the QElapsedTimer this class replaced (never affected by system-time changes).
-	static void  restart( Clock::time_point &tp ) { tp = Clock::now(); }   ///< Reset a clock's reference point to now.
-	/** @brief Elapsed wall time since a clock's reference point.
-	 * @param tp Reference time point captured by restart().
-	 * @return Seconds elapsed since @p tp.
-	 */
-	static float secsSince( const Clock::time_point &tp )
-	{ return std::chrono::duration<float>( Clock::now() - tp ).count(); }
+    using Clock = std::chrono::steady_clock; ///< Monotonic wall clock behind every Solo/Fade timer -- the same
+                                             ///< semantics as the QElapsedTimer this class replaced (never affected by
+                                             ///< system-time changes).
+    static void restart( Clock::time_point &tp ) { tp = Clock::now(); } ///< Reset a clock's reference point to now.
+    /** @brief Elapsed wall time since a clock's reference point.
+     * @param tp Reference time point captured by restart().
+     * @return Seconds elapsed since @p tp.
+     */
+    static float secsSince( const Clock::time_point &tp )
+    {
+        return std::chrono::duration<float>( Clock::now() - tp ).count();
+    }
 
-	/** @brief Probabilistic mood-based accept/reject test used by the rejection-sampling selection loops.
-	 * @param s Candidate effect or combine shader to evaluate.
-	 * @return True if the candidate is accepted (weighted random roll), false to keep searching.
-	 */
-	bool  moodAccept( EffectShader *s ) const;
-	/** @brief Look up the learned-taste multiplier for a fragment path via the taste callback.
-	 * @param frag Fragment shader path to look up.
-	 * @return Taste multiplier (1.0 if no callback is installed).
-	 */
-	float tasteOf( const char *frag ) const { return m_tasteFor ? m_tasteFor( frag ) : 1.f; }
+    /** @brief Probabilistic mood-based accept/reject test used by the rejection-sampling selection loops.
+     * @param s Candidate effect or combine shader to evaluate.
+     * @return True if the candidate is accepted (weighted random roll), false to keep searching.
+     */
+    bool moodAccept( EffectShader *s ) const;
+    /** @brief Look up the learned-taste multiplier for a fragment path via the taste callback.
+     * @param frag Fragment shader path to look up.
+     * @return Taste multiplier (1.0 if no callback is installed).
+     */
+    float tasteOf( const char *frag ) const { return m_tasteFor ? m_tasteFor( frag ) : 1.f; }
 
-	/** @brief Find a registered transition by fragment basename (e.g. "Shatter.frag").
-	 * @param basename File name without path to look for.
-	 * @return Index into the transition list, or -1 if absent/empty.
-	 */
-	int findTransition( const char *basename ) const;
+    /** @brief Find a registered transition by fragment basename (e.g. "Shatter.frag").
+     * @param basename File name without path to look for.
+     * @return Index into the transition list, or -1 if absent/empty.
+     */
+    int findTransition( const char *basename ) const;
 
-	std::vector<EffectShader *> *m_textures    = nullptr;   ///< Effect/texture shader list (not owned).
-	std::vector<EffectShader *> *m_fxShaders    = nullptr;   ///< FX/overlay shader list (not owned).
-	std::vector<EffectShader *> *m_transitions = nullptr;   ///< Scene-transition shader list (not owned).
+    std::vector<EffectShader *> *m_textures = nullptr;    ///< Effect/texture shader list (not owned).
+    std::vector<EffectShader *> *m_fxShaders = nullptr;   ///< FX/overlay shader list (not owned).
+    std::vector<EffectShader *> *m_transitions = nullptr; ///< Scene-transition shader list (not owned).
 
-	// Auswahl-Zustand
-	unsigned int m_actTexture  = 0;   ///< Currently active effect/texture shader index.
-	unsigned int m_nextTexture = 0;   ///< Effect/texture shader index being faded to.
-	unsigned int m_actFx  = 0;   ///< Currently active combine shader index.
-	unsigned int m_nextFx = 0;   ///< Combine shader index being faded to.
-	int m_forcedNextFx = -1;     ///< FX index forced by forceFx(); -1 = free choice. Consumed once.
-	int   m_texState   = 0;    ///< Effect state machine phase: 0 = Solo, 1 = Fade.
-	int   m_fxState  = 0;    ///< Combine state machine phase: 0 = Solo, 1 = Fade.
-	float m_texInterp  = 1.f;  ///< Effect cross-fade blend factor.
-	float m_fxInterp = 1.f;  ///< Combine cross-fade blend factor.
-	float m_texFadeDur  = 10.f;   ///< Duration in seconds of the effect slot's CURRENT phase: the solo span while m_texState == 0, the fade span while m_texState == 1 (one dual-purpose field, as in the old inline code).
-	float m_fxFadeDur = 10.f;   ///< Current Solo *or* Fade duration for the combine slot.
-	Clock::time_point m_clockEffectTexture = Clock::now();   ///< Reference clock for the effect slot's Solo/Fade timing.
-	Clock::time_point m_clockEffectFx = Clock::now();   ///< Reference clock for the combine slot's Solo/Fade timing.
-	// Some pools (the FX/combine list, and Transitions/) are dominated by one
-	// near-probability=1.0 "carrier" entry (FxPlain, Crossfade) plus a long
-	// tail of rare accent shaders at probability ~0.002-0.08 each -- a
-	// simulation against Komplett.xml's real numbers showed 100 tries left
-	// ~10-40% of picks exhausting the search entirely (falling back to
-	// whatever the last, unweighted candidate happened to be, defeating the
-	// intended ~90% dominance). Raised well past where that simulation showed
-	// exhaustion become negligible (<1% by 300 tries).
-	static const unsigned int kMaxSearch = 300;   ///< Retry bound for every rejection-sampling selection loop.
-	// Sum-of-complexities ceiling a candidate must stay under to be accepted
-	// (busyness budget: don't stack two very busy layers at once). Complexity
-	// values run 1..5 with a handful of scenes at 10; the OLD ceiling of 20
-	// (kComplexityBudget) / 12 (kComplexityBudgetInitial) meant a complexity=10
-	// scene only ever passed when the three OTHER slots were all near their
-	// minimum simultaneously -- effectively excluding it most of the time.
-	// Raised so a complexity=10 candidate stays reachable alongside a normal
-	// (non-minimal) combo, while an all-four-maxed-out combo is still capped.
-	static const unsigned int kComplexityBudget        = 28;   ///< Ceiling for the 4-term (act+next texture, act+next combine) sum used by tick()/tickFx()'s normal picks and reset()'s second (combine-inclusive) pick.
-	static const unsigned int kComplexityBudgetInitial  = 17;  ///< Ceiling for reset()'s first, texture-only (2-term) pick, before the combine pair exists yet -- kept at the same ratio to kComplexityBudget as the original 12:20.
+    // Auswahl-Zustand
+    unsigned int m_actTexture = 0;                         ///< Currently active effect/texture shader index.
+    unsigned int m_nextTexture = 0;                        ///< Effect/texture shader index being faded to.
+    unsigned int m_actFx = 0;                              ///< Currently active combine shader index.
+    unsigned int m_nextFx = 0;                             ///< Combine shader index being faded to.
+    int          m_forcedNextFx = -1; ///< FX index forced by forceFx(); -1 = free choice. Consumed once.
+    int          m_texState = 0;                           ///< Effect state machine phase: 0 = Solo, 1 = Fade.
+    int          m_fxState = 0;                            ///< Combine state machine phase: 0 = Solo, 1 = Fade.
+    float        m_texInterp = 1.f;                        ///< Effect cross-fade blend factor.
+    float        m_fxInterp = 1.f;                         ///< Combine cross-fade blend factor.
+    float        m_texFadeDur = 10.f; ///< Duration in seconds of the effect slot's CURRENT phase: the solo span while
+                               ///< m_texState == 0, the fade span while m_texState == 1 (one dual-purpose field, as in
+                               ///< the old inline code).
+    float             m_fxFadeDur = 10.f;                  ///< Current Solo *or* Fade duration for the combine slot.
+    Clock::time_point m_clockEffectTexture = Clock::now(); ///< Reference clock for the effect slot's Solo/Fade timing.
+    Clock::time_point m_clockEffectFx = Clock::now();      ///< Reference clock for the combine slot's Solo/Fade timing.
+    // Some pools (the FX/combine list, and Transitions/) are dominated by one
+    // near-probability=1.0 "carrier" entry (FxPlain, Crossfade) plus a long
+    // tail of rare accent shaders at probability ~0.002-0.08 each -- a
+    // simulation against Komplett.xml's real numbers showed 100 tries left
+    // ~10-40% of picks exhausting the search entirely (falling back to
+    // whatever the last, unweighted candidate happened to be, defeating the
+    // intended ~90% dominance). Raised well past where that simulation showed
+    // exhaustion become negligible (<1% by 300 tries).
+    static const unsigned int kMaxSearch = 300; ///< Retry bound for every rejection-sampling selection loop.
+    // Sum-of-complexities ceiling a candidate must stay under to be accepted
+    // (busyness budget: don't stack two very busy layers at once). Complexity
+    // values run 1..5 with a handful of scenes at 10; the OLD ceiling of 20
+    // (kComplexityBudget) / 12 (kComplexityBudgetInitial) meant a complexity=10
+    // scene only ever passed when the three OTHER slots were all near their
+    // minimum simultaneously -- effectively excluding it most of the time.
+    // Raised so a complexity=10 candidate stays reachable alongside a normal
+    // (non-minimal) combo, while an all-four-maxed-out combo is still capped.
+    static const unsigned int kComplexityBudget = 28; ///< Ceiling for the 4-term (act+next texture, act+next combine)
+                                                      ///< sum used by tick()/tickFx()'s normal picks and reset()'s
+                                                      ///< second (combine-inclusive) pick.
+    static const unsigned int kComplexityBudgetInitial = 17; ///< Ceiling for reset()'s first, texture-only (2-term)
+                                                             ///< pick, before the combine pair exists yet -- kept at
+                                                             ///< the same ratio to kComplexityBudget as the original
+                                                             ///< 12:20.
 
-	// Regie: Bogen auf den Drop
-	float m_buildUpPrev  = 0.f;    ///< Last frame's buildUp, for the rising edge past 0.45.
-	float m_arcCooldown  = 0.f;    ///< Seconds until the next arc re-timing is allowed (20 s).
-	float m_regieWarm    = 0.f;    ///< Seconds since start; the arc regie ignores build-ups in the first 20 s (analyzer baselines still settling).
+    // Regie: Bogen auf den Drop
+    float m_buildUpPrev = 0.f; ///< Last frame's buildUp, for the rising edge past 0.45.
+    float m_arcCooldown = 0.f; ///< Seconds until the next arc re-timing is allowed (20 s).
+    float m_regieWarm = 0.f;   ///< Seconds since start; the arc regie ignores build-ups in the first 20 s (analyzer
+                               ///< baselines still settling).
 
-	// Erzwungene Wechsel + Beat-Quantisierung
-	bool  m_forceEffectChange   = false;   ///< Set by requestChange()/forceScene()/triggers; consumed at the next Solo-phase check.
-	// A MANUAL cut (key 'n', remote) may fire after a brief 0.6 s solo; a
-	// musical TRIGGER (section/novelty/drop) must respect a longer minimum
-	// solo, otherwise a trigger landing right after a fade completes cuts the
-	// freshly faded-in scene away again after 0.6 s -- the reported
-	// "a scene flashes in for a fraction of a second and is replaced".
-	bool  m_forceIsManual       = false;   ///< The pending m_forceEffectChange came from requestChange()/forceScene() (short min solo), not from a musical trigger.
-	bool  m_forceFxChange  = false;   ///< Set by requestChange(alsoFx)/triggers; consumed at the next FX Solo-phase check.
-	int   m_forcedNextTexture   = -1;      ///< Remote direct-jump target index (-1 = none); wins over review mode and random pick.
-	bool  m_pendingEffectChange = false;   ///< True while an effect change is due but waiting on beat quantisation.
-	bool  m_pendingEffectForced = false;   ///< True if the pending effect change was manual/forced (fires immediately, skips the downbeat wait).
-	float m_pendingEffectAge    = 0.f;     ///< Seconds the pending effect change has been waiting (timeout escape at 2.5 s).
-	bool  m_pendingFxChange = false;  ///< True while a combine change is due but waiting on beat quantisation.
-	bool  m_pendingFxForced = false;  ///< True if the pending combine change was manual/forced.
-	float m_pendingFxAge    = 0.f;    ///< Seconds the pending combine change has been waiting.
+    // Erzwungene Wechsel + Beat-Quantisierung
+    bool m_forceEffectChange = false; ///< Set by requestChange()/forceScene()/triggers; consumed at the next Solo-phase
+                                      ///< check.
+    // A MANUAL cut (key 'n', remote) may fire after a brief 0.6 s solo; a
+    // musical TRIGGER (section/novelty/drop) must respect a longer minimum
+    // solo, otherwise a trigger landing right after a fade completes cuts the
+    // freshly faded-in scene away again after 0.6 s -- the reported
+    // "a scene flashes in for a fraction of a second and is replaced".
+    bool m_forceIsManual = false; ///< The pending m_forceEffectChange came from requestChange()/forceScene() (short min
+                                  ///< solo), not from a musical trigger.
+    bool m_forceFxChange = false; ///< Set by requestChange(alsoFx)/triggers; consumed at the next FX Solo-phase check.
+    int  m_forcedNextTexture = -1; ///< Remote direct-jump target index (-1 = none); wins over review mode and random
+                                   ///< pick.
+    bool m_pendingEffectChange = false; ///< True while an effect change is due but waiting on beat quantisation.
+    bool m_pendingEffectForced = false; ///< True if the pending effect change was manual/forced (fires immediately,
+                                        ///< skips the downbeat wait).
+    float m_pendingEffectAge = 0.f; ///< Seconds the pending effect change has been waiting (timeout escape at 2.5 s).
+    bool  m_pendingFxChange = false;    ///< True while a combine change is due but waiting on beat quantisation.
+    bool  m_pendingFxForced = false;    ///< True if the pending combine change was manual/forced.
+    float m_pendingFxAge = 0.f;         ///< Seconds the pending combine change has been waiting.
 
-	// Trigger-Buchhaltung
-	float m_noveltyCooldown  = 0.f;   ///< Seconds until another harmonic-novelty/section trigger is allowed to fire (rate limit).
-	int   m_lastSectionCount = 0;     ///< Last seen Tick::sectionCount, to detect the rising edge of a new section.
-	int   m_lastDropCount    = 0;     ///< Last seen Tick::dropCount, to detect the rising edge of a new drop.
-	// Ein Drop hat den Wechsel ausgelöst: beim Feuern wird daraus ein HARTER
-	// Schnitt (Musikvideo-Look) oder der Shatter-Übergang statt des normalen
-	// Crossfades.
-	bool  m_dropCutPending   = false;   ///< A drop triggered the pending change: when it fires, use a hard cut or the shatter transition instead of a normal cross-fade.
+    // Trigger-Buchhaltung
+    float m_noveltyCooldown = 0.f; ///< Seconds until another harmonic-novelty/section trigger is allowed to fire (rate
+                                   ///< limit).
+    int m_lastSectionCount = 0;    ///< Last seen Tick::sectionCount, to detect the rising edge of a new section.
+    int m_lastDropCount = 0;       ///< Last seen Tick::dropCount, to detect the rising edge of a new drop.
+    // Ein Drop hat den Wechsel ausgelöst: beim Feuern wird daraus ein HARTER
+    // Schnitt (Musikvideo-Look) oder der Shatter-Übergang statt des normalen
+    // Crossfades.
+    bool m_dropCutPending = false; ///< A drop triggered the pending change: when it fires, use a hard cut or the
+                                   ///< shatter transition instead of a normal cross-fade.
 
-	// Song-Struktur-Gedächtnis.  Keyed by the analyzer's section id, which
-	// is a RECYCLED 8-slot LRU index: a new section of a later song inherits
-	// an id some earlier, unrelated section once carried.  These maps are
-	// never cleared (there is no track-change signal), so a replay decision
-	// must ALSO require Tick::sectionKnown and a fresh m_sectionStamp --
-	// without both, after the first ~8 sections of a session every id was
-	// "known" and the scheduler replayed the same handful of scenes for the
-	// rest of the evening (the reported "always the same 10-20 scenes").
-	std::map<int, unsigned int>       m_sectionEffect;    ///< Section id -> effect/texture index last played during that section.
-	std::map<int, unsigned int>       m_sectionFx;   ///< Section id -> combine index last played during that section.
-	std::map<int, std::vector<float>> m_sectionParams;    ///< Section id -> snapshotted shader parameters to restore on replay.
-	std::map<int, int>                m_sectionStamp;     ///< Section id -> Tick::sectionCount at store time (staleness guard: no replay across songs).
+    // Song-Struktur-Gedächtnis.  Keyed by the analyzer's section id, which
+    // is a RECYCLED 8-slot LRU index: a new section of a later song inherits
+    // an id some earlier, unrelated section once carried.  These maps are
+    // never cleared (there is no track-change signal), so a replay decision
+    // must ALSO require Tick::sectionKnown and a fresh m_sectionStamp --
+    // without both, after the first ~8 sections of a session every id was
+    // "known" and the scheduler replayed the same handful of scenes for the
+    // rest of the evening (the reported "always the same 10-20 scenes").
+    std::map<int, unsigned int> m_sectionEffect;       ///< Section id -> effect/texture index last played during that
+                                                       ///< section.
+    std::map<int, unsigned int>       m_sectionFx;     ///< Section id -> combine index last played during that section.
+    std::map<int, std::vector<float>> m_sectionParams; ///< Section id -> snapshotted shader parameters to restore on
+                                                       ///< replay.
+    std::map<int, int> m_sectionStamp; ///< Section id -> Tick::sectionCount at store time (staleness guard: no replay
+                                       ///< across songs).
 
-	// Recently shown scenes.  The random roll only ever excluded the scene
-	// on screen, so any filter that narrowed the pool (the build-up rule
-	// preferring staged scenes, the mood test) could bring one scene back
-	// every few minutes.  The last kRecentMax scenes (at most a third of the
-	// preset) are refused during the first two thirds of the search; a
-	// section replay and a manual pick bypass it -- those repeat on purpose.
-	static const unsigned int kRecentMax = 40;   ///< Upper bound of the no-repeat window, in scenes (~15-40 min at the usual solo times).
-	std::vector<unsigned int>         m_recentTex;        ///< Texture indices shown most recently, oldest first (see kRecentMax).
-	/** @brief True if texture @p idx is inside the current no-repeat window. */
-	bool isRecentTexture( unsigned int idx ) const;
-	/** @brief Append texture @p idx to the no-repeat window and trim it to its size. */
-	void noteTextureShown( unsigned int idx );
-	static const int kSectionMemorySpan = 24;   ///< Max sectionCount distance for a replay (sections are >= ~12 s apart, so ~5+ min -- within one song, not across the set).
-	int   m_pendingSectionStore   = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none pending).
-	int   m_pendingSectionRestore = -1;   ///< Section id whose stored look should be restored at the next fade-start (-1 = none pending).
-	// A recurring section's replay target arriving WHILE a fade is already in
-	// flight must not overwrite m_nextTexture/m_nextFx directly -- the render
-	// pipeline reads nextTexture()/nextFx() fresh every frame, so that would
-	// silently swap the incoming scene under an already-rolled transition
-	// (the reported "jump to a completely different scene right after a
-	// switch"). Deferred here instead and applied at the next fade-END, the
-	// same mid-fade-safe pattern forceScene() already uses via m_forcedNextTexture.
-	int   m_pendingSectionNext    = -1;   ///< Deferred effect-slot replay target texture index (-1 = none pending).
-	int   m_pendingSectionNextId  = -1;   ///< Section id owning m_pendingSectionNext, so its stored params still get restored at that fade's start.
-	int   m_pendingSectionNextFx  = -1;   ///< Deferred combine-slot replay target index (-1 = none pending).
+    // Recently shown scenes.  The random roll only ever excluded the scene
+    // on screen, so any filter that narrowed the pool (the build-up rule
+    // preferring staged scenes, the mood test) could bring one scene back
+    // every few minutes.  The last kRecentMax scenes (at most a third of the
+    // preset) are refused during the first two thirds of the search; a
+    // section replay and a manual pick bypass it -- those repeat on purpose.
+    static const unsigned int kRecentMax = 40; ///< Upper bound of the no-repeat window, in scenes (~15-40 min at the
+                                               ///< usual solo times).
+    std::vector<unsigned int> m_recentTex;     ///< Texture indices shown most recently, oldest first (see kRecentMax).
+    /** @brief True if texture @p idx is inside the current no-repeat window. */
+    bool isRecentTexture( unsigned int idx ) const;
+    /** @brief Append texture @p idx to the no-repeat window and trim it to its size. */
+    void             noteTextureShown( unsigned int idx );
+    static const int kSectionMemorySpan = 24; ///< Max sectionCount distance for a replay (sections are >= ~12 s apart,
+                                              ///< so ~5+ min -- within one song, not across the set).
+    int m_pendingSectionStore = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none
+                                      ///< pending).
+    int m_pendingSectionRestore = -1; ///< Section id whose stored look should be restored at the next fade-start (-1 =
+                                      ///< none pending).
+    // A recurring section's replay target arriving WHILE a fade is already in
+    // flight must not overwrite m_nextTexture/m_nextFx directly -- the render
+    // pipeline reads nextTexture()/nextFx() fresh every frame, so that would
+    // silently swap the incoming scene under an already-rolled transition
+    // (the reported "jump to a completely different scene right after a
+    // switch"). Deferred here instead and applied at the next fade-END, the
+    // same mid-fade-safe pattern forceScene() already uses via m_forcedNextTexture.
+    int m_pendingSectionNext = -1;   ///< Deferred effect-slot replay target texture index (-1 = none pending).
+    int m_pendingSectionNextId = -1; ///< Section id owning m_pendingSectionNext, so its stored params still get
+                                     ///< restored at that fade's start.
+    int m_pendingSectionNextFx = -1; ///< Deferred combine-slot replay target index (-1 = none pending).
 
-	// Review-Modus
-	bool  m_reviewMode = false;             ///< True while walking scenes alphabetically instead of picking randomly.
-	float m_sceneFadeMin = 0.f;             ///< Preset-wide floor on natural scene fades (seconds); 0 = none. See setSceneFadeMin().
-	std::vector<int> m_reviewOrder;         ///< Texture indices sorted alphabetically by fragment basename (built lazily).
-	int   m_reviewPos  = 0;                 ///< Current position within m_reviewOrder.
+    // Review-Modus
+    bool  m_reviewMode = false;       ///< True while walking scenes alphabetically instead of picking randomly.
+    float m_sceneFadeMin = 0.f;       ///< Preset-wide floor on natural scene fades (seconds); 0 = none. See
+                                      ///< setSceneFadeMin().
+    std::vector<int> m_reviewOrder;   ///< Texture indices sorted alphabetically by fragment basename (built lazily).
+    int              m_reviewPos = 0; ///< Current position within m_reviewOrder.
 
-	// Übergangs-Auswahl (ein Shader pro Fade, aus Transitions/)
-	unsigned int m_actTransition = 0;   ///< Transition shader rolled for the effect slot's current/last fade.
+    // Übergangs-Auswahl (ein Shader pro Fade, aus Transitions/)
+    unsigned int m_actTransition = 0; ///< Transition shader rolled for the effect slot's current/last fade.
 
-	// Mood-Snapshot für moodAccept
-	float m_lastArousal = 0.5f;   ///< Last mood arousal snapshot (0..1) from setMood().
-	float m_lastValence = 0.5f;   ///< Last mood valence snapshot (0..1) from setMood().
-	float m_lastAmbient = 0.f;    ///< Last mood ambient-level snapshot (0..1) from setMood().
+    // Mood-Snapshot für moodAccept
+    float m_lastArousal = 0.5f; ///< Last mood arousal snapshot (0..1) from setMood().
+    float m_lastValence = 0.5f; ///< Last mood valence snapshot (0..1) from setMood().
+    float m_lastAmbient = 0.f;  ///< Last mood ambient-level snapshot (0..1) from setMood().
 
-	std::function<float(const char *)> m_tasteFor;   ///< Learned-taste callback (fragment path -> multiplier); unset means neutral 1.0 for everything.
+    std::function<float( const char * )> m_tasteFor; ///< Learned-taste callback (fragment path -> multiplier); unset
+                                                     ///< means neutral 1.0 for everything.
 };
 
 #endif

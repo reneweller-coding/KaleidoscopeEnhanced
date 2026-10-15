@@ -1,7 +1,8 @@
 #version 430
 /**
  * @file CfxHistogram.comp
- * @brief Builds a 256-bin luminance histogram of the rendered frame and derives a percentile-based auto-exposure gain from it.
+ * @brief Builds a 256-bin luminance histogram of the rendered frame and derives a percentile-based auto-exposure gain
+ * from it.
  *
  * Standalone pass used by PresentPass's GPU percentile auto-exposure step
  * (see Source/PresentPass.cpp), not chained to another CfxHistogram sibling.
@@ -28,7 +29,7 @@
 // frame per histogram would cost a full GPU sync; here it stays on the GPU
 // and the result lands in a 4-float buffer the present pass reads.
 // -----------------------------------------------------------------------
-layout(local_size_x = 16, local_size_y = 16) in;
+layout( local_size_x = 16, local_size_y = 16 ) in;
 
 // Binding 3, matching what PresentPass binds and what Present.frag reads.
 // This said 0 for as long as the pass existed, so every frame's exposure went
@@ -37,14 +38,20 @@ layout(local_size_x = 16, local_size_y = 16) in;
 // values the C++ side uploads once. The startup line said "Auto-exposure:
 // histogram (GPU)" throughout and the gain never left 1.0: the pass was a
 // no-op that also scribbled 16 bytes into a stranger's buffer every frame.
-layout(std430, binding = 3) buffer Result { float exposureOut; float p50; float p98; float pad; };
+layout( std430, binding = 3 ) buffer Result
+{
+    float exposureOut;
+    float p50;
+    float p98;
+    float pad;
+};
 uniform sampler2D texFrame;
-uniform ivec2 size;   ///< Size of the simulation grid in cells.
-uniform float target;      ///< where the median should sit
-uniform float maxGain;
-uniform float slew;        ///< how fast the exposure may move (per frame)
-uniform float smoothK;     ///< EMA weight for the percentiles this frame (dt/tau)
-uniform float slewDown;    ///< like slew, but for DARKENING -- may be faster
+uniform ivec2     size;   ///< Size of the simulation grid in cells.
+uniform float     target; ///< where the median should sit
+uniform float     maxGain;
+uniform float     slew;     ///< how fast the exposure may move (per frame)
+uniform float     smoothK;  ///< EMA weight for the percentiles this frame (dt/tau)
+uniform float     slewDown; ///< like slew, but for DARKENING -- may be faster
 
 shared uint hist[256];
 
@@ -52,40 +59,52 @@ shared uint hist[256];
 void main()
 {
     uint lid = gl_LocalInvocationIndex;
-    if (lid < 256u) hist[lid] = 0u;
+    if ( lid < 256u )
+        hist[lid] = 0u;
     barrier();
 
     // Each invocation walks a strided set of pixels: 16x16 threads cover the
     // frame in a grid, sampling roughly 1 in 16 pixels, which is plenty for a
     // 256-bin histogram and costs almost nothing.
-    ivec2 base = ivec2(gl_LocalInvocationID.xy);
-    for (int y = base.y; y < size.y; y += 16 * 4)
-    for (int x = base.x; x < size.x; x += 16 * 4)
-    {
-        vec3 c = texelFetch(texFrame, ivec2(x, y), 0).rgb;
-        float l = dot(c, vec3(0.299, 0.587, 0.114));
-        uint b = uint(clamp(sqrt(max(l, 0.0)), 0.0, 0.999) * 256.0);
-        atomicAdd(hist[b], 1u);
-    }
+    ivec2 base = ivec2( gl_LocalInvocationID.xy );
+    for ( int y = base.y; y < size.y; y += 16 * 4 )
+        for ( int x = base.x; x < size.x; x += 16 * 4 )
+        {
+            vec3  c = texelFetch( texFrame, ivec2( x, y ), 0 ).rgb;
+            float l = dot( c, vec3( 0.299, 0.587, 0.114 ) );
+            uint  b = uint( clamp( sqrt( max( l, 0.0 ) ), 0.0, 0.999 ) * 256.0 );
+            atomicAdd( hist[b], 1u );
+        }
     barrier();
 
-    if (lid != 0u) return;
+    if ( lid != 0u )
+        return;
 
     uint total = 0u;
-    for (int i = 0; i < 256; ++i) total += hist[i];
-    if (total == 0u) return;
+    for ( int i = 0; i < 256; ++i )
+        total += hist[i];
+    if ( total == 0u )
+        return;
 
-    uint acc = 0u;
+    uint  acc = 0u;
     float m50 = 0.5, m98 = 1.0;
-    bool got50 = false;
-    for (int i = 0; i < 256; ++i)
+    bool  got50 = false;
+    for ( int i = 0; i < 256; ++i )
     {
         acc += hist[i];
-        float f = float(acc) / float(total);
-        float v = float(i) / 256.0;
-        v = v * v;                                  // undo the sqrt binning
-        if (!got50 && f >= 0.50) { m50 = v; got50 = true; }
-        if (f >= 0.98) { m98 = v; break; }
+        float f = float( acc ) / float( total );
+        float v = float( i ) / 256.0;
+        v = v * v; // undo the sqrt binning
+        if ( !got50 && f >= 0.50 )
+        {
+            m50 = v;
+            got50 = true;
+        }
+        if ( f >= 0.98 )
+        {
+            m98 = v;
+            break;
+        }
     }
 
     // The percentiles are SMOOTHED before anything is derived from them.
@@ -97,15 +116,16 @@ void main()
     // smoothing the measurement (about 1.75 s standing, near-instant during a
     // scene fade, set by the host through smoothK) keeps flashes in the
     // picture where they belong instead of in the exposure.
-    float s50 = (p50 > 0.0) ? mix(p50, m50, smoothK) : m50;
-    float s98 = (p98 > 0.0) ? mix(p98, m98, smoothK) : m98;
+    float s50 = ( p50 > 0.0 ) ? mix( p50, m50, smoothK ) : m50;
+    float s98 = ( p98 > 0.0 ) ? mix( p98, m98, smoothK ) : m98;
 
     // Aim the MEDIAN at the target, but never so hard that the 98th
     // percentile clips: highlights win the argument.
-    float want = (s50 > 1e-4) ? clamp(target / s50, 1.0 / maxGain, maxGain) : 1.0;
-    if (s98 * want > 1.0) want = min(want, 1.0 / max(s98, 1e-4));
+    float want = ( s50 > 1e-4 ) ? clamp( target / s50, 1.0 / maxGain, maxGain ) : 1.0;
+    if ( s98 * want > 1.0 )
+        want = min( want, 1.0 / max( s98, 1e-4 ) );
 
-    float prev = (exposureOut > 0.0) ? exposureOut : 1.0;
+    float prev = ( exposureOut > 0.0 ) ? exposureOut : 1.0;
     // Fast attack, slow release -- the classic exposure asymmetry, and the
     // direction matters here: when a BRIGHT scene fades in over a dark one,
     // the gain is still pinned high from the dark scene and every frame it
@@ -113,7 +133,7 @@ void main()
     // visible drop. Downward correction therefore moves faster than upward.
     // It cannot pump: want is computed from the SMOOTHED percentiles above,
     // so in a standing scene it barely moves in the first place.
-    exposureOut = prev + clamp(want - prev, -slewDown, slew);
+    exposureOut = prev + clamp( want - prev, -slewDown, slew );
     p50 = s50;
     p98 = s98;
 }

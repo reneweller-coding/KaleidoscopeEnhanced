@@ -10,26 +10,28 @@
  * stays readable while it changes.
  */
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
-uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sizeP;   ///< Size knob, 0..1.
-uniform float spinP;   ///< Spin knob, 0..1.
+uniform float sizeP; ///< Size knob, 0..1.
+uniform float spinP; ///< Spin knob, 0..1.
 
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec3  vPos;      ///< Position (from the vertex stage).
+out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
+out float vBg;       ///< Background flag (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -37,10 +39,10 @@ void main()
     vec3 world, n;
     bool isBg = gl_VertexID >= meshVertexCount;
 
-    if( !isBg )
+    if ( !isBg )
     {
-        float sz = (sizeP > 0.01 ? sizeP : 1.0);
-        vec3 p = attrA.xyz - meshCenter;
+        float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+        vec3  p = attrA.xyz - meshCenter;
 
         // Two framings, picked by the model's own shape. A flat pierced panel
         // (lattice, medallion) IS a window: fill the frame with it, its in-plane
@@ -53,46 +55,47 @@ void main()
         // sized so the whole silhouette stays inside the 55-degree frustum at
         // z=74 (half-height 38.5) with margin. The blend runs on flatness, so
         // a model between the two archetypes gets something in between.
-        float fitBox    = 0.5 / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
-        float fitSphere = 1.0 / max(length(meshExtent), 1e-5);
-        float flat_     = min(min(meshExtent.x, meshExtent.y), meshExtent.z)
-                        / max(max(meshExtent.x, meshExtent.y), meshExtent.z);
-        float chunky = smoothstep(0.16, 0.30, flat_);
-        float scale  = mix(96.0 * fitBox, 31.0 * fitSphere, chunky);
+        float fitBox = 0.5 / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
+        float fitSphere = 1.0 / max( length( meshExtent ), 1e-5 );
+        float flat_ = min( min( meshExtent.x, meshExtent.y ), meshExtent.z )
+                      / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
+        float chunky = smoothstep( 0.16, 0.30, flat_ );
+        float scale = mix( 96.0 * fitBox, 31.0 * fitSphere, chunky );
 
         // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        float rotY = time * 0.16 * spinP;
-        float cy = cos(rotY), sy = sin(rotY);
-        mat3 spin = mat3(cy, 0.0, -sy,  0.0, 1.0, 0.0,  sy, 0.0, cy);
+        float       rotY = time * 0.16 * spinP;
+        float       cy = cos( rotY ), sy = sin( rotY );
+        mat3        spin = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
         const float tiltX = 0.10;
-        float cx = cos(tiltX), sx = sin(tiltX);
-        mat3 tilt = mat3(1.0, 0.0, 0.0,  0.0, cx, sx,  0.0, -sx, cx);
-        mat3 rot = tilt * spin;
+        float       cx = cos( tiltX ), sx = sin( tiltX );
+        mat3        tilt = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3        rot = tilt * spin;
 
         // No swell pulse on the SIZE any more: together with the (now
         // removed) camera dolly-on-swell it read as the object wobbling
         // in time (reported twice). The beat lives in the rim flare.
-        world = rot * (p * (scale * sz));
+        world = rot * ( p * ( scale * sz ) );
         world.z += 74.0;
-        n = normalize(rot * attrB.xyz);
+        n = normalize( rot * attrB.xyz );
         vLocalPos = p;
         vBg = 0.0;
     }
     else
     {
         world = attrA.xyz;
-        n = normalize(attrB.xyz);
-        vLocalPos = vec3(0.0);
+        n = normalize( attrB.xyz );
+        vLocalPos = vec3( 0.0 );
         vBg = 1.0;
     }
 
     vNormal = n;
     vPos = world;
 
-    vec3 vp = vec3(world.x - eyeOff, world.y, world.z);
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
-    if( isBg ) gl_Position.z = gl_Position.w * 0.999999;
+    vec3 vp = vec3( world.x - eyeOff, world.y, world.z );
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 }

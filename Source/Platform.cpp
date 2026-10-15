@@ -11,32 +11,33 @@
 
 #include <dlfcn.h>
 
-#if defined(__APPLE__)
-	// macOS has no glX. Entry points live in the OpenGL framework and are
-	// resolved with dlsym against the already-loaded image -- RTLD_DEFAULT
-	// searches everything the process has open, which includes the framework
-	// once Qt has created a context.
-	#include <cstddef>
+#if defined( __APPLE__ )
+// macOS has no glX. Entry points live in the OpenGL framework and are
+// resolved with dlsym against the already-loaded image -- RTLD_DEFAULT
+// searches everything the process has open, which includes the framework
+// once Qt has created a context.
+#include <cstddef>
 #else
-	#include <GL/glx.h>
+#include <GL/glx.h>
 #endif
 
-namespace Platform {
+namespace Platform
+{
 
 void *glProcAddress( const char *name )
 {
-#if defined(__APPLE__)
-	return dlsym( RTLD_DEFAULT, name );
+#if defined( __APPLE__ )
+    return dlsym( RTLD_DEFAULT, name );
 #else
-	// glXGetProcAddress returns a pointer for names the driver knows even when
-	// the extension is absent from the current context, so callers must still
-	// check the GL version/extension string -- which glcore already does. The
-	// dlsym fallback covers implementations where the GLX entry point itself
-	// is missing (some software rasterisers).
-	void *p = (void *) glXGetProcAddress( (const GLubyte *) name );
-	if( !p )
-		p = dlsym( RTLD_DEFAULT, name );
-	return p;
+    // glXGetProcAddress returns a pointer for names the driver knows even when
+    // the extension is absent from the current context, so callers must still
+    // check the GL version/extension string -- which glcore already does. The
+    // dlsym fallback covers implementations where the GLX entry point itself
+    // is missing (some software rasterisers).
+    void *p = (void *)glXGetProcAddress( (const GLubyte *)name );
+    if ( !p )
+        p = dlsym( RTLD_DEFAULT, name );
+    return p;
 #endif
 }
 

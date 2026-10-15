@@ -21,49 +21,47 @@
 class NanoTimer
 {
 public:
+    NanoTimer(); ///< Constructs the timer, lazily checking the counter frequency once, and calls start().
 
-	NanoTimer(); ///< Constructs the timer, lazily checking the counter frequency once, and calls start().
+    /**
+     * @brief Resets the timer's reference point to the current time.
+     */
+    void start( void );
+    /**
+     * @brief Returns the time elapsed since the last start() call.
+     * @return Elapsed time in nanoseconds (scaled by the measured counter frequency
+     *         when a high-frequency counter is in use, otherwise raw counter ticks).
+     */
+    double elapsed( void ) const;
 
-	/**
-	 * @brief Resets the timer's reference point to the current time.
-	 */
-	void start( void );
-	/**
-	 * @brief Returns the time elapsed since the last start() call.
-	 * @return Elapsed time in nanoseconds (scaled by the measured counter frequency
-	 *         when a high-frequency counter is in use, otherwise raw counter ticks).
-	 */
-	double elapsed( void ) const;
-
-	/**
-	 * @brief Reports whether the high-frequency hardware counter is being used.
-	 * @return True if QueryPerformanceFrequency succeeded; valid only after the first
-	 *         NanoTimer has been constructed.
-	 */
-	static bool usesHighFrequ( void );
-	/**
-	 * @brief Returns the measured counter frequency.
-	 * @return Frequency in GHz; valid only when usesHighFrequ() is true.
-	 */
-	static double frequ( void );
+    /**
+     * @brief Reports whether the high-frequency hardware counter is being used.
+     * @return True if QueryPerformanceFrequency succeeded; valid only after the first
+     *         NanoTimer has been constructed.
+     */
+    static bool usesHighFrequ( void );
+    /**
+     * @brief Returns the measured counter frequency.
+     * @return Frequency in GHz; valid only when usesHighFrequ() is true.
+     */
+    static double frequ( void );
 
 private:
+    unsigned long long int m_time_stamp; ///< Timestamp (counter ticks) captured by the last start().
 
-	unsigned long long int m_time_stamp; ///< Timestamp (counter ticks) captured by the last start().
+    static bool   M_Use_High_Frequ;   ///< True once checkFrequency() found a usable high-frequency counter.
+    static double M_GHz;              ///< Measured counter frequency in GHz (or a fallback of 0.001 if unavailable).
+    static bool   M_FrequencyChecked; ///< Guards checkFrequency() so it only runs once, on first construction.
 
-	static bool		M_Use_High_Frequ;		///< True once checkFrequency() found a usable high-frequency counter.
-	static double	M_GHz;					///< Measured counter frequency in GHz (or a fallback of 0.001 if unavailable).
-	static bool		M_FrequencyChecked;		///< Guards checkFrequency() so it only runs once, on first construction.
-
-	/**
-	 * @brief Reads the raw hardware counter value.
-	 * @return Current QueryPerformanceCounter tick count. Meaning depends on M_Use_High_Frequ.
-	 */
-	static long long unsigned int getTimeStamp( void );
-	/**
-	 * @brief Determines the CPU/counter frequency once and caches it in M_GHz / M_Use_High_Frequ.
-	 */
-	static void checkFrequency( void );
+    /**
+     * @brief Reads the raw hardware counter value.
+     * @return Current QueryPerformanceCounter tick count. Meaning depends on M_Use_High_Frequ.
+     */
+    static long long unsigned int getTimeStamp( void );
+    /**
+     * @brief Determines the CPU/counter frequency once and caches it in M_GHz / M_Use_High_Frequ.
+     */
+    static void checkFrequency( void );
 };
 
 /**
@@ -74,6 +72,6 @@ private:
  * @param image Source image to convert.
  * @return A new QImage ready to be uploaded as a texture.
  */
-QImage prepareImage( const QImage &image);
+QImage prepareImage( const QImage &image );
 
 #endif

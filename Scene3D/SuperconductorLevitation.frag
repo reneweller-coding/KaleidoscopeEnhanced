@@ -1,10 +1,10 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol;      ///< Colour (from the vertex stage).
 in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vWorldPos;   ///< World position (from the vertex stage).
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3 vWorldPos; ///< World position (from the vertex stage).
+in vec2 vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 
 /**
  * @file SuperconductorLevitation.frag
@@ -21,33 +21,34 @@ in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex sta
  * produced.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     // Lighting for metallic superconductor tiles
-    vec3 lightDir = normalize(vec3(0.6, 0.9, -0.4));
-    vec3 n = normalize(vNormal);
-    float diff = max(dot(n, lightDir), 0.0) * 0.7 + 0.3;
+    vec3  lightDir = normalize( vec3( 0.6, 0.9, -0.4 ) );
+    vec3  n = normalize( vNormal );
+    float diff = max( dot( n, lightDir ), 0.0 ) * 0.7 + 0.3;
 
     // Specular highlight
-    vec3 viewDir = normalize(-vWorldPos);
-    vec3 refl = reflect(-lightDir, n);
-    float spec = pow(max(dot(viewDir, refl), 0.0), 32.0) * 0.8;
+    vec3  viewDir = normalize( -vWorldPos );
+    vec3  refl = reflect( -lightDir, n );
+    float spec = pow( max( dot( viewDir, refl ), 0.0 ), 32.0 ) * 0.8;
 
     // Grid edge trim on tile
-    vec2 edge = smoothstep(0.42, 0.48, abs(vUV - 0.5));
-    float edgeGlow = max(edge.x, edge.y);
+    vec2  edge = smoothstep( 0.42, 0.48, abs( vUV - 0.5 ) );
+    float edgeGlow = max( edge.x, edge.y );
 
     // Sample texture on top face
-    vec3 photo = (interpolation * texture(tex0, vUV) + (1.0 - interpolation) * texture(tex1, vUV)).rgb;
+    vec3 photo = ( interpolation * texture( tex0, vUV ) + ( 1.0 - interpolation ) * texture( tex1, vUV ) ).rgb;
 
-    vec3 col = vCol.rgb * diff + spec * vec3(1.0, 1.0, 1.0);
-    col += photo * 0.3 * step(0.8, n.y);
+    vec3 col = vCol.rgb * diff + spec * vec3( 1.0, 1.0, 1.0 );
+    col += photo * 0.3 * step( 0.8, n.y );
     col += edgeGlow * vCol.rgb * 1.5;
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

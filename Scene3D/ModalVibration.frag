@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
 /**
  * @file ModalVibration.frag
@@ -22,61 +22,65 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform sampler2DArray texMeshMaterial;   ///< The mesh's material textures (albedo, roughness, normal ...).
-uniform int texMeshMaterialLayers;   ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
+uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float tintP;   ///< Tint knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP; ///< Tint knob, 0..1.
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in vec3  vPos;   ///< Position (from the vertex stage).
-in vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
+in vec3  vPos;      ///< Position (from the vertex stage).
+in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 in float vAmp;
-in float vBg;   ///< Background flag (from the vertex stage).
+in float vBg; ///< Background flag (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    const vec3 k = vec3(0.57735);
-    float ca = cos(a);
-    return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
+    const vec3 k = vec3( 0.57735 );
+    float      ca = cos( a );
+    return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 12.9898 ) * 43758.5453 );
+}
 
 /// @brief Star field brightness for a direction.
-float starsField(vec3 dir, float density)
+float starsField( vec3 dir, float density )
 {
-    vec3 g = floor(dir * 190.0);
-    float h = hash11(dot(g, vec3(1.0, 57.0, 113.0)));
-    return step(1.0 - density, h) * (0.35 + 0.65 * hash11(h * 31.7));
+    vec3  g = floor( dir * 190.0 );
+    float h = hash11( dot( g, vec3( 1.0, 57.0, 113.0 ) ) );
+    return step( 1.0 - density, h ) * ( 0.35 + 0.65 * hash11( h * 31.7 ) );
 }
 
 /// AUTO-EXPOSURE against the material's own average (coarsest mip = average).
 /// Base-colour luma across this asset set runs 0.14..0.67; a fixed gain cannot
 /// serve both ends.
-float materialExposure(sampler2DArray tex)
+float materialExposure( sampler2DArray tex )
 {
-    vec3 avg = textureLod(tex, vec3(0.5, 0.5, 0.0), 20.0).rgb;
-    float l = dot(avg, vec3(0.299, 0.587, 0.114));
-    return clamp(0.20 / max(l, 0.02), 0.30, 2.0);
+    vec3  avg = textureLod( tex, vec3( 0.5, 0.5, 0.0 ), 20.0 ).rgb;
+    float l = dot( avg, vec3( 0.299, 0.587, 0.114 ) );
+    return clamp( 0.20 / max( l, 0.02 ), 0.30, 2.0 );
 }
 
 /// A dark chamber with a faint standing-wave field on the walls -- the room the
 /// object is being sounded in, not a landscape.
-vec3 renderSky(vec3 dir, vec3 tint)
+vec3 renderSky( vec3 dir, vec3 tint )
 {
-    float band = 0.5 + 0.5 * sin(dir.y * 22.0 + time * 0.6 + audioAdvance * 0.3);
-    band = pow(band, 6.0);
-    vec3 col = vec3(0.020, 0.021, 0.028) + tint * band * 0.06 * (0.4 + 0.6 * audioSwell);
-    col += vec3(1.0) * starsField(dir, 0.0010);
+    float band = 0.5 + 0.5 * sin( dir.y * 22.0 + time * 0.6 + audioAdvance * 0.3 );
+    band = pow( band, 6.0 );
+    vec3 col = vec3( 0.020, 0.021, 0.028 ) + tint * band * 0.06 * ( 0.4 + 0.6 * audioSwell );
+    col += vec3( 1.0 ) * starsField( dir, 0.0010 );
     return col;
 }
 
@@ -90,78 +94,81 @@ vec3 renderSky(vec3 dir, vec3 tint)
 /// and it costs nothing in the vertex stage and no change to the buffer layout.
 /// A model WITHOUT a normal map has materialLayers < 3 and this returns the
 /// interpolated normal untouched, so every scene works either way.
-mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
+mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
 {
-    vec3 dp1 = dFdx(p),  dp2 = dFdy(p);
-    vec2 du1 = dFdx(uv), du2 = dFdy(uv);
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * du1.x + dp1perp * du2.x;
-    vec3 B = dp2perp * du1.y + dp1perp * du2.y;
-    float inv = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-12));
-    return mat3(T * inv, B * inv, N);
+    vec3  dp1 = dFdx( p ), dp2 = dFdy( p );
+    vec2  du1 = dFdx( uv ), du2 = dFdy( uv );
+    vec3  dp2perp = cross( dp2, N );
+    vec3  dp1perp = cross( N, dp1 );
+    vec3  T = dp2perp * du1.x + dp1perp * du2.x;
+    vec3  B = dp2perp * du1.y + dp1perp * du2.y;
+    float inv = inversesqrt( max( max( dot( T, T ), dot( B, B ) ), 1e-12 ) );
+    return mat3( T * inv, B * inv, N );
 }
 
 /// @brief The normal tilted by the material's normal map.
-vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength)
+vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength )
 {
-    if (layers < 3) return n;
-    vec3 m = texture(tex, vec3(uv, 2.0)).rgb * 2.0 - 1.0;
+    if ( layers < 3 )
+        return n;
+    vec3 m = texture( tex, vec3( uv, 2.0 ) ).rgb * 2.0 - 1.0;
     // A degenerate tap (an all-black texel from a failed decode) would
     // normalize to garbage and pit the whole surface.
-    if (dot(m, m) < 1e-4) return n;
+    if ( dot( m, m ) < 1e-4 )
+        return n;
     m.xy *= strength;
-    return normalize(cotangentFrame(n, wpos, uv) * normalize(m));
+    return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float hue = (hueP > 0.01 ? hueP : 0.0);
-    vec3 tint = hueRot(vec3(1.0, 0.55, 0.18), tintP);
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
+    vec3  tint = hueRot( vec3( 1.0, 0.55, 0.18 ), tintP );
 
-    if( vBg > 0.5 )
+    if ( vBg > 0.5 )
     {
-        fragColor = vec4(renderSky(normalize(vPos), tint), 1.0);
+        fragColor = vec4( renderSky( normalize( vPos ), tint ), 1.0 );
         return;
     }
 
-    vec3 n = normalize(vNormal);
+    vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
-    n = perturbNormal(texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0);
-    vec3 viewDir = normalize(-vPos);
+    n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
+    vec3 viewDir = normalize( -vPos );
 
-    vec3 base = vec3(0.5);
-    if( texMeshMaterialLayers > 0 )
-        base = texture(texMeshMaterial, vec3(vUV, 0.0)).rgb * materialExposure(texMeshMaterial);
+    vec3 base = vec3( 0.5 );
+    if ( texMeshMaterialLayers > 0 )
+        base = texture( texMeshMaterial, vec3( vUV, 0.0 ) ).rgb * materialExposure( texMeshMaterial );
 
-    float lam = max(dot(n, normalize(vec3(-0.35, 0.72, -0.6))), 0.0);
-    vec3 col = base * (0.30 + 1.25 * lam);
+    float lam = max( dot( n, normalize( vec3( -0.35, 0.72, -0.6 ) ) ), 0.0 );
+    vec3  col = base * ( 0.30 + 1.25 * lam );
 
     // Crests and troughs. Signed, so the two phases of the standing wave get
     // different colours and the wave is seen travelling rather than pulsing.
-    float a = clamp(vAmp, -1.5, 1.5);
-    vec3 hot  = tint;
-    vec3 cold = hueRot(tint, 3.0);
-    col += hot  * max( a, 0.0) * (0.55 + 0.9 * audioSwell);
-    col += cold * max(-a, 0.0) * (0.35 + 0.6 * audioSwell);
+    float a = clamp( vAmp, -1.5, 1.5 );
+    vec3  hot = tint;
+    vec3  cold = hueRot( tint, 3.0 );
+    col += hot * max( a, 0.0 ) * ( 0.55 + 0.9 * audioSwell );
+    col += cold * max( -a, 0.0 ) * ( 0.35 + 0.6 * audioSwell );
 
     // Nodal lines: where the surface is NOT moving. Inking them is what turns a
     // wobble into a visible mode pattern -- it is the sand figure on a Chladni
     // plate, and the eye reads the geometry from the still lines, not the
     // moving ones. fwidth keeps them a constant width on screen.
-    float w = max(fwidth(a) * 2.4, 1e-4);
-    float node = 1.0 - smoothstep(0.0, w, abs(a));
-    col = mix(col, col * 0.10, node * 0.95);
-    col += tint * node * audioKick * 0.9;      // the strike lights them briefly
+    float w = max( fwidth( a ) * 2.4, 1e-4 );
+    float node = 1.0 - smoothstep( 0.0, w, abs( a ) );
+    col = mix( col, col * 0.10, node * 0.95 );
+    col += tint * node * audioKick * 0.9; // the strike lights them briefly
 
     // A rim so the silhouette survives against the dark chamber.
-    float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
-    col += tint * rim * (0.30 + 0.5 * audioSwell);
+    float rim = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 3.0 );
+    col += tint * rim * ( 0.30 + 0.5 * audioSwell );
 
-    if( hue > 0.001 ) col = hueRot(col, 0.12 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

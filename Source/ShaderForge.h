@@ -27,9 +27,9 @@
 #include "glcore.h"
 
 /// @brief Finds the helper and the cache (GL context current). @return True if programs can be forged.
-bool   shaderForgeInit();
+bool shaderForgeInit();
 /// @return True once shaderForgeInit() found a helper and a cache directory.
-bool   shaderForgeAvailable();
+bool shaderForgeAvailable();
 /**
  * @brief Starts the helper process now (no-op if it runs or the forge is off).
  *
@@ -38,7 +38,7 @@ bool   shaderForgeAvailable();
  * into the preset load, not into the lab's first frames, and apps whose
  * presets never forge do not start it at all.
  */
-void   shaderForgeStartHelper();
+void shaderForgeStartHelper();
 /**
  * @brief The program for this fragment source (with the shared fullscreen vertex shader).
  *

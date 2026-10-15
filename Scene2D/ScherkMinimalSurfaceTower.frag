@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file ScherkMinimalSurfaceTower.frag
  * @brief SCHERK MINIMAL SURFACE TOWER: Raymarched infinite minimal surface towers
@@ -18,34 +18,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP    float structural chromatic hue offset       (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float saddleP;
 uniform float towerP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -53,55 +55,59 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c);
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
 }
 
 /// Scherk's Second Minimal Surface distance estimation
-float scherkSDF(vec3 p, float scale, float thickness) {
+float scherkSDF( vec3 p, float scale, float thickness )
+{
     vec3 q = p * scale;
     // Scherk equation: exp(q.z) * cos(q.x) - cos(q.y) = 0
-    float f = exp(sin(q.z)) * cos(q.x) - cos(q.y);
-    return (abs(f) - thickness) / (scale * (1.0 + abs(f) * 0.5));
+    float f = exp( sin( q.z ) ) * cos( q.x ) - cos( q.y );
+    return ( abs( f ) - thickness ) / ( scale * ( 1.0 + abs( f ) * 0.5 ) );
 }
 
 /// @brief Surface normal of the distance field by central differences.
-vec3 calcNormal(vec3 p, float scale, float thickness) {
+vec3 calcNormal( vec3 p, float scale, float thickness )
+{
     float eps = 0.005;
-    vec2 h = vec2(eps, 0.0);
-    return normalize(vec3(
-        scherkSDF(p + h.xyy, scale, thickness) - scherkSDF(p - h.xyy, scale, thickness),
-        scherkSDF(p + h.yxy, scale, thickness) - scherkSDF(p - h.yxy, scale, thickness),
-        scherkSDF(p + h.yyx, scale, thickness) - scherkSDF(p - h.yyx, scale, thickness)
-    ));
+    vec2  h = vec2( eps, 0.0 );
+    return normalize( vec3(
+        scherkSDF( p + h.xyy, scale, thickness ) - scherkSDF( p - h.xyy, scale, thickness ),
+        scherkSDF( p + h.yxy, scale, thickness ) - scherkSDF( p - h.yxy, scale, thickness ),
+        scherkSDF( p + h.yyx, scale, thickness ) - scherkSDF( p - h.yyx, scale, thickness ) ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float sdl = (saddleP > 0.0) ? saddleP : 1.0;
-    float twr = (towerP  > 0.0) ? towerP  : 1.0;
-    float spd = (speedP  > 0.0) ? speedP  : 1.0;
-    float hue = (hueP    > 0.0) ? hueP    : 0.0;
+void main()
+{
+    float sdl = ( saddleP > 0.0 ) ? saddleP : 1.0;
+    float twr = ( towerP > 0.0 ) ? towerP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
     float t = time * 0.3 * spd + audioAdvance * 0.15;
@@ -109,32 +115,35 @@ void main() {
     // Smooth winding camera trajectory. The old 12.5-unit orbit radius left the
     // 2.2-unit column subtending barely a fifth of the frame; closing in and
     // widening the column is what actually fills the picture.
-    vec3 ro = vec3(sin(t * 0.45) * 7.4, 2.4 * sin(t * 0.27) + 1.5, cos(t * 0.45) * 7.4);
-    vec3 lookTarget = vec3(0.0, 0.9 * sin(t * 0.31), 0.0);
+    vec3 ro = vec3( sin( t * 0.45 ) * 7.4, 2.4 * sin( t * 0.27 ) + 1.5, cos( t * 0.45 ) * 7.4 );
+    vec3 lookTarget = vec3( 0.0, 0.9 * sin( t * 0.31 ), 0.0 );
 
-    vec3 ww = normalize(lookTarget - ro);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
+    vec3 ww = normalize( lookTarget - ro );
+    vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 vv = cross( uu, ww );
 
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.25 * ww);
+    vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.25 * ww );
 
     float scale = 1.7 * twr;
-    float thickness = (0.13 + 0.04 * sin(t) + 0.05 * audioBass) * sdl;
+    float thickness = ( 0.13 + 0.04 * sin( t ) + 0.05 * audioBass ) * sdl;
 
     float dO = 0.0;
     float hitDist = -1.0;
-    float minDS = 1e5;                    // closest approach of a MISS ray
-    vec3 p = vec3(0.0);   // guarded by hitDist, but the compiler cannot see that
-    for (int i = 0; i < 72; ++i) {
+    float minDS = 1e5;     // closest approach of a MISS ray
+    vec3  p = vec3( 0.0 ); // guarded by hitDist, but the compiler cannot see that
+    for ( int i = 0; i < 72; ++i )
+    {
         p = ro + rd * dO;
         // bound the infinite Scherk field to a COLUMN -> an actual tower
-        float dS = max(scherkSDF(p, scale, thickness), length(p.xz) - 3.1);
-        minDS = min(minDS, dS);
-        if (dS < 0.003) {
+        float dS = max( scherkSDF( p, scale, thickness ), length( p.xz ) - 3.1 );
+        minDS = min( minDS, dS );
+        if ( dS < 0.003 )
+        {
             hitDist = dO;
             break;
         }
-        if (dO > 26.0) break;
+        if ( dO > 26.0 )
+            break;
         dO += dS * 0.65;
     }
 
@@ -143,12 +152,12 @@ void main() {
     // most rays miss).  Level breathes it, phase spins its colour.
     // Backdrop: a vertical sky gradient over the photo so the field behind the
     // tower carries its own light/dark structure rather than one dim flat tone.
-    float sky = 0.30 + 0.55 * pow(1.0 - st.y, 1.4);
-    vec3 col = img(clamp(vec2(st.x, 1.0 - st.y * 0.85), 0.0, 1.0)) * (0.34 + 0.34 * sky)
-             + imgPalette(0.42) * sky * 0.30
-             + vec3(0.03, 0.045, 0.09);
-    vec3 halo = imgPalette((minDS * 6.0 + audioPhase) * 0.159)
-                * exp(-minDS * 3.5) * (0.5 + 0.5 * audioLevel);
+    float sky = 0.30 + 0.55 * pow( 1.0 - st.y, 1.4 );
+    vec3  col = img( clamp( vec2( st.x, 1.0 - st.y * 0.85 ), 0.0, 1.0 ) ) * ( 0.34 + 0.34 * sky )
+                + imgPalette( 0.42 ) * sky * 0.30
+                + vec3( 0.03, 0.045, 0.09 );
+    vec3  halo = imgPalette( ( minDS * 6.0 + audioPhase ) * 0.159 )
+                 * exp( -minDS * 3.5 ) * ( 0.5 + 0.5 * audioLevel );
     col += halo * 0.75;
 
     // ---- distant tower forest -------------------------------------------
@@ -159,43 +168,48 @@ void main() {
     // towers receding into the haze -- the scene's own geometry, spread wide,
     // at the cost of two extra field evaluations rather than a second march.
     float forest = 0.0;
-    for (int j = 0; j < 2; ++j) {
-        float fz = 15.0 + float(j) * 14.0;
+    for ( int j = 0; j < 2; ++j )
+    {
+        float fz = 15.0 + float( j ) * 14.0;
         vec3  fp = ro + rd * fz;
-        float fs = scale * (0.50 - 0.16 * float(j));
-        float ff = exp(sin(fp.z * fs)) * cos(fp.x * fs) - cos(fp.y * fs);
-        forest += smoothstep(0.80, 0.05, abs(ff)) * (0.62 - 0.24 * float(j));
+        float fs = scale * ( 0.50 - 0.16 * float( j ) );
+        float ff = exp( sin( fp.z * fs ) ) * cos( fp.x * fs ) - cos( fp.y * fs );
+        forest += smoothstep( 0.80, 0.05, abs( ff ) ) * ( 0.62 - 0.24 * float( j ) );
     }
-    forest = min(forest, 1.0);
-    col += imgPalette(0.42 + audioPhase * 0.05) * forest * (0.13 + 0.07 * audioLevel);
+    forest = min( forest, 1.0 );
+    col += imgPalette( 0.42 + audioPhase * 0.05 ) * forest * ( 0.13 + 0.07 * audioLevel );
 
-    if (hitDist > 0.0) {
-        vec3 n = calcNormal(p, scale, thickness);
-        vec3 lightDir = normalize(vec3(0.4, 0.9, -0.5));
-        vec3 fillDir  = normalize(ro - p);            // camera fill light
-        float diff = max(dot(n, lightDir), 0.0) * 0.75
-                   + max(dot(n, fillDir), 0.0) * 0.55 + 0.16;
-        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 32.0);
+    if ( hitDist > 0.0 )
+    {
+        vec3  n = calcNormal( p, scale, thickness );
+        vec3  lightDir = normalize( vec3( 0.4, 0.9, -0.5 ) );
+        vec3  fillDir = normalize( ro - p ); // camera fill light
+        float diff = max( dot( n, lightDir ), 0.0 ) * 0.75
+                     + max( dot( n, fillDir ), 0.0 ) * 0.55 + 0.16;
+        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 32.0 );
 
         // UV coordinates on saddle surface
-        vec2 photoUV = fract(vec2(p.x * 0.2 + p.z * 0.1, p.y * 0.2 + dot(p.xy, n.yx) * 0.1));
-        vec3 photo = img(photoUV);
+        vec2 photoUV = fract( vec2( p.x * 0.2 + p.z * 0.1, p.y * 0.2 + dot( p.xy, n.yx ) * 0.1 ) );
+        vec3 photo = img( photoUV );
 
         // Iridescent structural color
-        vec3 irid = imgPalette((dot(p, vec3(0.35)) + audioPhase) * 0.159);
+        vec3 irid = imgPalette( ( dot( p, vec3( 0.35 ) ) + audioPhase ) * 0.159 );
 
-        col = mix(photo * 0.95, irid, 0.45);
-        col = col * (0.22 + 0.95 * diff) + spec * vec3(1.0, 0.95, 0.85);
+        col = mix( photo * 0.95, irid, 0.45 );
+        col = col * ( 0.22 + 0.95 * diff ) + spec * vec3( 1.0, 0.95, 0.85 );
 
         // Caustic edge glow on kick
-        float edge = smoothstep(thickness * 0.7, thickness, abs(exp(sin(p.z * scale)) * cos(p.x * scale) - cos(p.y * scale)));
-        col += edge * vec3(0.3, 0.85, 1.0) * (1.0 + audioKick * 2.5);
+        float edge = smoothstep( thickness * 0.7, thickness,
+                                 abs( exp( sin( p.z * scale ) ) * cos( p.x * scale ) - cos( p.y * scale ) ) );
+        col += edge * vec3( 0.3, 0.85, 1.0 ) * ( 1.0 + audioKick * 2.5 );
 
         // Distance fog
-        col = mix(col, vec3(0.02, 0.03, 0.07), 1.0 - exp(-hitDist * 0.18));
+        col = mix( col, vec3( 0.02, 0.03, 0.07 ), 1.0 - exp( -hitDist * 0.18 ) );
     }
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if ( audioChromaHue != 0.0 )
+        if ( hue > 0.001 )
+            col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
@@ -205,6 +219,6 @@ void main() {
     // neighbouring values are far enough apart to read as structure. The knee
     // alone already guarantees the highlights cannot clip.
     vec3 _catTone = col;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

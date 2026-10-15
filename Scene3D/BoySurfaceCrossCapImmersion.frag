@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file BoySurfaceCrossCapImmersion.frag
  * @brief BOY SURFACE CROSS-CAP IMMERSION: 3D non-orientable immersion of the real projective
@@ -22,49 +22,51 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   fresnelP  float double-sided edge rim glow              (0.8..2.5)
  */
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vCol;   ///< Colour (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vCol;    ///< Colour (from the vertex stage).
 in float vTriplePoint;
 in float vDim;
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float fresnelP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 lightDir = normalize(vec3(0.5, 0.6, 0.7));
-    float diff = max(0.0, abs(dot(vNormal, lightDir)));
-    float fresnel = pow(1.0 - abs(dot(vNormal, vec3(0.0, 0.0, 1.0))), 2.5) * (fresnelP > 0.01 ? fresnelP : 1.2);
-    
-    vec3 photo = img(vUV);
-    
-    vec3 col = vCol * (0.6 + 0.4 * photo) * (0.5 + 0.5 * diff);
+    vec3  lightDir = normalize( vec3( 0.5, 0.6, 0.7 ) );
+    float diff = max( 0.0, abs( dot( vNormal, lightDir ) ) );
+    float fresnel = pow( 1.0 - abs( dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ) ), 2.5 )
+                    * ( fresnelP > 0.01 ? fresnelP : 1.2 );
+
+    vec3 photo = img( vUV );
+
+    vec3 col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.5 + 0.5 * diff );
     col += vCol * fresnel * 1.6;
-    col += vec3(0.95, 0.95, 1.0) * vTriplePoint * 2.2;
-    col *= (0.85 + 0.35 * audioSwell);
-    col += vCol * (audioKick * 0.3);
+    col += vec3( 0.95, 0.95, 1.0 ) * vTriplePoint * 2.2;
+    col *= ( 0.85 + 0.35 * audioSwell );
+    col += vCol * ( audioKick * 0.3 );
 
     // Per-shell / dust brightness (hero 1.0, mid 0.62, outer 0.36, motes ~0.3)
     col *= vDim;
 
     // Highlight rolloff: transparent below 0.7, hard-limited above it, so more
     // nested geometry can never push the frame into clipping.
-    float m = max(col.r, max(col.g, col.b));
-    col *= 1.0 / (1.0 + max(0.0, m - 0.7));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    float m = max( col.r, max( col.g, col.b ) );
+    col *= 1.0 / ( 1.0 + max( 0.0, m - 0.7 ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

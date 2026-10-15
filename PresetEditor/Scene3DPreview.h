@@ -92,13 +92,18 @@ public:
      * @param stateBytes Persistent-state buffer size in bytes for compute-driven generators (0 = none).
      * @param shadowExtent Shadow-map world-space half-extent; > 0 overrides the scene's own default.
      * @param log Receives the compiler/linker output (empty on a clean compile).
-     * @return False only if nothing could be built at all (bad path); true otherwise, even if @p log holds compiler warnings/errors.
+     * @return False only if nothing could be built at all (bad path); true otherwise, even if @p log holds compiler
+     * warnings/errors.
      */
     bool setShader( const QString &fragPathRelative, const QString &geom,
-                     int stateBytes, double shadowExtent, QString &log );
-    /// Destroys the currently owned Scene3DShader, if any (leaves every other GL resource — FBOs, shadow map, OIT targets — allocated for reuse).
+                    int stateBytes, double shadowExtent, QString &log );
+    /// Destroys the currently owned Scene3DShader, if any (leaves every other GL resource — FBOs, shadow map, OIT
+    /// targets — allocated for reuse).
     void clear();
-    bool active() const { return m_scene != nullptr; }   ///< @return True while a scene is currently loaded (i.e. render() has something to draw).
+    bool active() const
+    {
+        return m_scene != nullptr;
+    } ///< @return True while a scene is currently loaded (i.e. render() has something to draw).
 
     /**
      * @brief Register a per-activation `<float>` range the way Configuration.cpp does for the shipped app.
@@ -145,8 +150,10 @@ public:
      * @param features Audio feature snapshot applied via Scene3DShader::applyAudioFeatures().
      * @param tex0 Sample-image texture bound on unit 0.
      * @param tex1 Sample-image texture bound on unit 1.
-     * @param outColorTex Out: colour texture of the rendered frame (bind unit 0 to sample it, same as any other effect pass).
-     * @param outDepthTex Out: depth texture of the rendered frame (for a depth-reading combine's texDepth0); both outputs are 0 when no scene is loaded.
+     * @param outColorTex Out: colour texture of the rendered frame (bind unit 0 to sample it, same as any other effect
+     * pass).
+     * @param outDepthTex Out: depth texture of the rendered frame (for a depth-reading combine's texDepth0); both
+     * outputs are 0 when no scene is loaded.
      */
     void render( int w, int h, float time, float interpolation,
                  const AudioFeatures &features,
@@ -185,40 +192,56 @@ private:
      * @brief Lazily allocate the OIT accumulation/revealage targets (and the resolve program) if @p w x @p h changed.
      * @param w Target framebuffer width in pixels.
      * @param h Target framebuffer height in pixels.
-     * @return True once the OIT targets are ready; false if glBlendFunci/glDrawBuffers/glClearBufferfv are unavailable, or the FBO came back incomplete.
+     * @return True once the OIT targets are ready; false if glBlendFunci/glDrawBuffers/glClearBufferfv are unavailable,
+     * or the FBO came back incomplete.
      */
     bool ensureOitTargets( int w, int h );
     /**
-     * @brief Render the scene's transparent geometry into the OIT accumulation targets, then resolve/composite it back onto m_fbo.
+     * @brief Render the scene's transparent geometry into the OIT accumulation targets, then resolve/composite it back
+     * onto m_fbo.
      * @param time Scene time in seconds.
      * @param interpolation Cross-fade progress passed to Scene3DShader::setUniforms().
      * @param features Audio feature snapshot passed to Scene3DShader::applyAudioFeatures().
      */
     void renderOitPass( float time, float interpolation, const AudioFeatures &features );
 
-    Scene3DShader *m_scene = nullptr;   ///< Currently loaded scene, owned; null until the first successful setShader().
-    bool m_glReady = false;             ///< Whether ensureGL() has successfully loaded the glcore function pointers.
+    Scene3DShader *m_scene = nullptr; ///< Currently loaded scene, owned; null until the first successful setShader().
+    bool           m_glReady = false; ///< Whether ensureGL() has successfully loaded the glcore function pointers.
 
-    /// Main render target's framebuffer object (GL name, owned; 0 until ensureFbo() first ran); the scene's colour and depth are drawn into it.
-    unsigned m_fbo = 0, m_colorTex = 0, m_depthTex = 0;   ///< Depth texture attachment of #m_fbo (GL name, owned); handed out as render()'s outDepthTex.
+    /// Main render target's framebuffer object (GL name, owned; 0 until ensureFbo() first ran); the scene's colour and
+    /// depth are drawn into it.
+    unsigned m_fbo = 0, m_colorTex = 0, m_depthTex = 0; ///< Depth texture attachment of #m_fbo (GL name, owned); handed
+                                                        ///< out as render()'s outDepthTex.
     /** @var unsigned Scene3DPreview::m_colorTex
-     *  Colour texture attachment of #m_fbo (GL name, owned); handed out as render()'s outColorTex and the target of the OIT resolve. */
+     *  Colour texture attachment of #m_fbo (GL name, owned); handed out as render()'s outColorTex and the target of the
+     * OIT resolve. */
     /// Width #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels; ensureFbo() reallocates when it differs.
-    int m_fboW = 0, m_fboH = 0;   ///< Height #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels (see #m_fboW).
+    int m_fboW = 0, m_fboH = 0; ///< Height #m_fbo/#m_colorTex/#m_depthTex were last allocated at, in pixels (see
+                                ///< #m_fboW).
 
-    static const int kShadowSize = 2048;   ///< Shadow-map texture width/height in texels.
-    /// Depth-only framebuffer object for the shadow pass (GL name, owned; 0 until ensureShadowMap() ran), kShadowSize x kShadowSize.
-    unsigned m_shadowFbo = 0, m_shadowTex = 0;   ///< Depth texture attachment of #m_shadowFbo (GL name, owned), sampled with hardware PCF comparison by the main draw.
+    static const int kShadowSize = 2048; ///< Shadow-map texture width/height in texels.
+    /// Depth-only framebuffer object for the shadow pass (GL name, owned; 0 until ensureShadowMap() ran), kShadowSize x
+    /// kShadowSize.
+    unsigned m_shadowFbo = 0, m_shadowTex = 0; ///< Depth texture attachment of #m_shadowFbo (GL name, owned), sampled
+                                               ///< with hardware PCF comparison by the main draw.
 
-    /// Order-independent-transparency framebuffer object (GL name, owned; 0 until ensureOitTargets() ran) with #m_oitAccum and #m_oitReveal attached.
-    unsigned m_oitFbo = 0, m_oitAccum = 0, m_oitReveal = 0, m_oitResolveProg = 0;   ///< Program (GL name, owned) built from Engine/OitResolve.frag that composites accumulation and revealage back onto #m_fbo; 0 until first needed.
+    /// Order-independent-transparency framebuffer object (GL name, owned; 0 until ensureOitTargets() ran) with
+    /// #m_oitAccum and #m_oitReveal attached.
+    unsigned m_oitFbo = 0, m_oitAccum = 0, m_oitReveal = 0, m_oitResolveProg = 0; ///< Program (GL name, owned) built
+                                                                                  ///< from Engine/OitResolve.frag that
+                                                                                  ///< composites accumulation and
+                                                                                  ///< revealage back onto #m_fbo; 0
+                                                                                  ///< until first needed.
     /** @var unsigned Scene3DPreview::m_oitAccum
-     *  Weighted-colour accumulation texture (GL name, owned) the OIT pass blends into; bound as texAccum by the resolve. */
+     *  Weighted-colour accumulation texture (GL name, owned) the OIT pass blends into; bound as texAccum by the
+     * resolve. */
     /** @var unsigned Scene3DPreview::m_oitReveal
-     *  Revealage (transmittance) texture (GL name, owned) the OIT pass multiplies into; bound as texReveal by the resolve. */
+     *  Revealage (transmittance) texture (GL name, owned) the OIT pass multiplies into; bound as texReveal by the
+     * resolve. */
     /// Width the OIT targets were last allocated at, in pixels; ensureOitTargets() reallocates when it differs.
-    int m_oitW = 0, m_oitH = 0;   ///< Height the OIT targets were last allocated at, in pixels (see #m_oitW).
+    int m_oitW = 0, m_oitH = 0; ///< Height the OIT targets were last allocated at, in pixels (see #m_oitW).
 
-    /// Vertex array object of this class's own fullscreen quad (GL name, owned; lazily created), used only by the OIT resolve so PreviewWidget's Qt-side quad is never touched from here.
-    unsigned m_quadVao = 0, m_quadVbo = 0;   ///< Vertex buffer (NDC positions) backing #m_quadVao (GL name, owned).
+    /// Vertex array object of this class's own fullscreen quad (GL name, owned; lazily created), used only by the OIT
+    /// resolve so PreviewWidget's Qt-side quad is never touched from here.
+    unsigned m_quadVao = 0, m_quadVbo = 0; ///< Vertex buffer (NDC positions) backing #m_quadVao (GL name, owned).
 };

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FractalBloom.frag
  * @brief Adapted from kishimisu's GLSL-tutorial fractal (2023) —
@@ -15,48 +15,57 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *     onsets brighten the bloom; centroid/valence grade the palette.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioPhase; ///< Rotation phase driven by the music (integrated, never jumps).
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float iterZoomP;   ///< per-iteration zoom (0 -> 1.5; 1.3 = airy, 1.8 = dense)
-uniform float ringFreqP;   ///< ring frequency     (0 -> 8.0; 5 = broad, 12 = filigree)
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float iterZoomP;     ///< per-iteration zoom (0 -> 1.5; 1.3 = airy, 1.8 = dense)
+uniform float ringFreqP;     ///< ring frequency     (0 -> 8.0; 5 = broad, 12 = filigree)
+uniform float audioBeat;     ///< Beat envelope, 0..1.
+uniform float audioOnset;    ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
 
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
 
 /// @brief 2D rotation matrix.
-mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+mat2 rot( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
 
 /// IMG-PALETTE (house standard): colours come from a rotating arc in the
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
-vec3 palette(float t)
+vec3 palette( float t )
 {
-    return imgPalette(t);
+    return imgPalette( t );
 }
 
 
@@ -65,42 +74,42 @@ vec3 palette(float t)
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = (2.0 * gl_FragCoord.xy - resolution) / resolution.y;
-    uv = rot(audioPhase * 0.2) * uv;             // gentle jump-free spin
+    vec2 uv = ( 2.0 * gl_FragCoord.xy - resolution ) / resolution.y;
+    uv = rot( audioPhase * 0.2 ) * uv; // gentle jump-free spin
     vec2  uv0 = uv;
-    float T   = time + audioPhase * 0.3;
+    float T = time + audioPhase * 0.3;
 
     // Per-activation fractal character (constant during the scene):
-    float iterZoom = (iterZoomP <= 0.01) ? 1.5 : iterZoomP;
-    float ringFreq = (ringFreqP <= 0.01) ? 8.0 : ringFreqP;
+    float iterZoom = ( iterZoomP <= 0.01 ) ? 1.5 : iterZoomP;
+    float ringFreq = ( ringFreqP <= 0.01 ) ? 8.0 : ringFreqP;
 
-    vec3 col = vec3(0.0);
-    for (int i = 0; i < 4; i++)
+    vec3 col = vec3( 0.0 );
+    for ( int i = 0; i < 4; i++ )
     {
-        uv = fract(uv * iterZoom) - 0.5;
-        float d = length(uv) * exp(-length(uv0));
-        vec3  c = palette(length(uv0) + float(i) * 0.4 + T * 0.4);
+        uv = fract( uv * iterZoom ) - 0.5;
+        float d = length( uv ) * exp( -length( uv0 ) );
+        vec3  c = palette( length( uv0 ) + float( i ) * 0.4 + T * 0.4 );
 
         // The picture tiles into each fractal cell (a drifting crop, so the
         // fractal is coloured by the ever-changing image).
-        vec3 pic = img(fract(uv + 0.5 + 0.12 * vec2(cos(T * 0.1), sin(T * 0.08))));
-        c *= mix(vec3(1.0), pic * 1.7, 0.6);
+        vec3 pic = img( fract( uv + 0.5 + 0.12 * vec2( cos( T * 0.1 ), sin( T * 0.08 ) ) ) );
+        c *= mix( vec3( 1.0 ), pic * 1.7, 0.6 );
 
-        d = sin(d * ringFreq + T) / ringFreq;
-        d = abs(d);
-        d = pow(0.01 / d, 1.2);
+        d = sin( d * ringFreq + T ) / ringFreq;
+        d = abs( d );
+        d = pow( 0.01 / d, 1.2 );
         col += c * d;
     }
 
-    col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset;   // beat glow
+    col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset; // beat glow
 
     // Mood grade.
-    col *= mix(vec3(0.75, 0.85, 1.20), vec3(1.25, 1.05, 0.75), audioCentroid);
-    float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
+    col *= mix( vec3( 0.75, 0.85, 1.20 ), vec3( 1.25, 1.05, 0.75 ), audioCentroid );
+    float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( lum ), col, 0.6 + 0.6 * audioValence );
 
     // Faint image backdrop so the picture reads even in the dark gaps.
-    col += img(uv0 * 0.5 + 0.5) * 0.05 * (0.4 + 0.6 * audioLevel);
+    col += img( uv0 * 0.5 + 0.5 ) * 0.05 * ( 0.4 + 0.6 * audioLevel );
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

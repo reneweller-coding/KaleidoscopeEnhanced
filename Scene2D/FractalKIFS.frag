@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FractalKIFS.frag
  * @brief Kaleidoscopic Iterated Function System (fold + rotate + scale): the source
@@ -15,44 +15,53 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioLevel/Flux -> overall exposure
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioBeat;     ///< Beat envelope, 0..1.
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 uniform float audioMode;     ///< 0 = minor/dark .. 1 = major/bright
 uniform float audioPitch;    ///< 0..1
 uniform float audioArousal;
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
-mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+mat2 rot( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
 
 
 /// IMG-PALETTE (house standard): colours come from a rotating arc in the
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// USER-FEEDBACK-REDESIGN: the old fold/rotate/scale parametrisation was
@@ -63,19 +72,19 @@ vec3 imgPalette(float t)
 /// folded coordinate.
 void main()
 {
-    vec2 p = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / resolution.y;
 
-    float zoom = (2.4 - 0.7 * audioPitch) * (1.0 + 0.22 * sin(time * 0.07));
+    float zoom = ( 2.4 - 0.7 * audioPitch ) * ( 1.0 + 0.22 * sin( time * 0.07 ) );
     p *= zoom;
     // 0.25 rather than 0.4 on the rotation phase: at 0.4 the lace slid ~0.9 px
     // per frame, and a structure this fine turns that into visible boiling.
-    p  = rot(audioPhase * 0.25 + time * 0.08) * p;
+    p = rot( audioPhase * 0.25 + time * 0.08 ) * p;
 
     // Per-mood fractal character: mode bends the c-vector, arousal tightens it.
     // Kraeftigerer Eigen-Morph: mit 0.03 Amplitude stand die Form
     // praktisch still ("wirkt wie ein Bild, das gedreht wird").
-    vec2 c = vec2(0.84 + 0.22 * audioMode + 0.10 * sin(time * 0.11),
-                  0.60 + 0.14 * audioArousal + 0.06 * cos(time * 0.09));
+    vec2 c = vec2( 0.84 + 0.22 * audioMode + 0.10 * sin( time * 0.11 ),
+                   0.60 + 0.14 * audioArousal + 0.06 * cos( time * 0.09 ) );
 
     // ---- WHY THIS LOOP WAS REWRITTEN ------------------------------------
     // The old version SUMMED exp(-5.0*|fp.y|) + 0.7*exp(-5.0*|fp.x|) over 11
@@ -103,17 +112,17 @@ void main()
     // everywhere instead of collapsing to hairlines wherever the map expands;
     // (3) six generations, not eleven, so the curves stay about 8 px apart at
     // 1080p. 1x and 4x supersampled renders now measure the same contrast.
-    vec2  fp   = p;
-    float dsc  = 1.0;        // accumulated |Jacobian| of the folds so far
-    float tn   = 1e9;        // axis trap, screen-space
-    float trn  = 1e9;        // ring trap, screen-space
-    for (int i = 0; i < 6; i++)
+    vec2  fp = p;
+    float dsc = 1.0; // accumulated |Jacobian| of the folds so far
+    float tn = 1e9;  // axis trap, screen-space
+    float trn = 1e9; // ring trap, screen-space
+    for ( int i = 0; i < 6; i++ )
     {
-        float dd = max(dot(fp, fp), 1e-6);
-        fp  = abs(fp) / dd - c;
-        dsc = min(dsc / dd, 1e10);
-        tn  = min(tn,  abs(fp.y) / dsc);
-        trn = min(trn, abs(length(fp) - 0.85) / dsc);
+        float dd = max( dot( fp, fp ), 1e-6 );
+        fp = abs( fp ) / dd - c;
+        dsc = min( dsc / dd, 1e10 );
+        tn = min( tn, abs( fp.y ) / dsc );
+        trn = min( trn, abs( length( fp ) - 0.85 ) / dsc );
     }
     // Lace half-width as a fixed fraction of frame HEIGHT (1/150), so the
     // filigree is ~7 px at 1080p -- thick enough to survive the ~6x downscale
@@ -122,25 +131,25 @@ void main()
     tn /= w;
     trn /= w;
 
-    float lace  = exp(-tn)       + 0.7 * exp(-trn);         // the curves
-    float halo  = exp(-tn / 2.2) + 0.7 * exp(-trn / 2.2);   // their near field
-    float spark = exp(-tn / 0.45);                          // white hot cores
+    float lace = exp( -tn ) + 0.7 * exp( -trn );             // the curves
+    float halo = exp( -tn / 2.2 ) + 0.7 * exp( -trn / 2.2 ); // their near field
+    float spark = exp( -tn / 0.45 );                         // white hot cores
 
     // The picture, shattered through the folded coordinate -- gated on `halo`
     // so the photo lives ON the lace and the field between the curves stays
     // dark. Written flat (the old pic*0.26) it was a full-frame pedestal that
     // became the modal luma bucket and swallowed everything else.
-    vec3 pic = img(fract(fp * 0.22 + 0.5));
-    vec3 lit = imgPalette(0.30 * audioValence + clamp(tn * 0.02, 0.0, 2.0)) * 1.5;
+    vec3 pic = img( fract( fp * 0.22 + 0.5 ) );
+    vec3 lit = imgPalette( 0.30 * audioValence + clamp( tn * 0.02, 0.0, 2.0 ) ) * 1.5;
 
-    vec3 col = pic * (0.03 + 0.16 * halo)
-             + lit * lace * (0.60 + 0.20 * audioBeat)
-             + vec3(0.9) * spark * 0.26;                    // white sparkle core
+    vec3 col = pic * ( 0.03 + 0.16 * halo )
+               + lit * lace * ( 0.60 + 0.20 * audioBeat )
+               + vec3( 0.9 ) * spark * 0.26; // white sparkle core
     // The old audio gain swung from 0.87 in silence to 1.49 at full level,
     // which dragged the quiet passages below the contrast floor. Narrower now.
-    col *= 0.55 * (0.95 + 0.35 * audioLevel + 0.15 * audioCentroid);
-    col *= (1.0 + 0.2 * audioFlux);
+    col *= 0.55 * ( 0.95 + 0.35 * audioLevel + 0.15 * audioCentroid );
+    col *= ( 1.0 + 0.2 * audioFlux );
 
-    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.30 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

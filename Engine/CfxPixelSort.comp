@@ -25,14 +25,14 @@
 // -----------------------------------------------------------------------
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(local_size_x = 256) in;
+layout( local_size_x = 256 ) in;
 
-layout(rgba16f, binding = 0) writeonly uniform image2D imgOut;
+layout( rgba16f, binding = 0 ) writeonly uniform image2D imgOut;
 uniform sampler2D texSrc;
 
-uniform ivec2 size;   ///< Size of the simulation grid in cells.
-uniform float bias;        ///< rotates the sort key so the melt direction drifts
-uniform int   reverse;     ///< 1 = bright-to-dark
+uniform ivec2 size;    ///< Size of the simulation grid in cells.
+uniform float bias;    ///< rotates the sort key so the melt direction drifts
+uniform int   reverse; ///< 1 = bright-to-dark
 
 shared uint hist[256];
 shared uint ofs[256];
@@ -40,41 +40,48 @@ shared uint ofs[256];
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    int y = int(gl_WorkGroupID.x);
-    if (y >= size.y) return;
+    int y = int( gl_WorkGroupID.x );
+    if ( y >= size.y )
+        return;
     uint lid = gl_LocalInvocationID.x;
 
     hist[lid] = 0u;
     barrier();
 
     // --- histogram ---
-    for (int x = int(lid); x < size.x; x += 256)
+    for ( int x = int( lid ); x < size.x; x += 256 )
     {
-        vec3 c = texture(texSrc, (vec2(x, y) + 0.5) / vec2(size)).rgb;
-        float l = fract(dot(c, vec3(0.299, 0.587, 0.114)) + bias);
-        uint b = uint(clamp(l, 0.0, 0.999) * 256.0);
-        if (reverse == 1) b = 255u - b;
-        atomicAdd(hist[b], 1u);
+        vec3  c = texture( texSrc, ( vec2( x, y ) + 0.5 ) / vec2( size ) ).rgb;
+        float l = fract( dot( c, vec3( 0.299, 0.587, 0.114 ) ) + bias );
+        uint  b = uint( clamp( l, 0.0, 0.999 ) * 256.0 );
+        if ( reverse == 1 )
+            b = 255u - b;
+        atomicAdd( hist[b], 1u );
     }
     barrier();
 
     // --- exclusive prefix sum (256 entries: one thread is plenty) ---
-    if (lid == 0u)
+    if ( lid == 0u )
     {
         uint run = 0u;
-        for (int i = 0; i < 256; ++i) { ofs[i] = run; run += hist[i]; }
+        for ( int i = 0; i < 256; ++i )
+        {
+            ofs[i] = run;
+            run += hist[i];
+        }
     }
     barrier();
 
     // --- scatter ---
-    for (int x = int(lid); x < size.x; x += 256)
+    for ( int x = int( lid ); x < size.x; x += 256 )
     {
-        vec3 c = texture(texSrc, (vec2(x, y) + 0.5) / vec2(size)).rgb;
-        float l = fract(dot(c, vec3(0.299, 0.587, 0.114)) + bias);
-        uint b = uint(clamp(l, 0.0, 0.999) * 256.0);
-        if (reverse == 1) b = 255u - b;
-        uint pos = atomicAdd(ofs[b], 1u);
-        if (pos < uint(size.x))
-            imageStore(imgOut, ivec2(int(pos), y), vec4(c, 1.0));
+        vec3  c = texture( texSrc, ( vec2( x, y ) + 0.5 ) / vec2( size ) ).rgb;
+        float l = fract( dot( c, vec3( 0.299, 0.587, 0.114 ) ) + bias );
+        uint  b = uint( clamp( l, 0.0, 0.999 ) * 256.0 );
+        if ( reverse == 1 )
+            b = 255u - b;
+        uint pos = atomicAdd( ofs[b], 1u );
+        if ( pos < uint( size.x ) )
+            imageStore( imgOut, ivec2( int( pos ), y ), vec4( c, 1.0 ) );
     }
 }

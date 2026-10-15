@@ -1,18 +1,19 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // KaleidoDome.frag — a 10-sector kaleidoscope rosette of the current image
 // spinning across the dome; kicks bloom the centre, the bar phase breathes
 // the fold radius.
-uniform sampler2D tex0;   ///< The current photo.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float sceneSeed;   ///< A random number fixed per activation.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform sampler2D tex0;         ///< The current photo.
+uniform float     time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     sceneSeed;    ///< A random number fixed per activation.
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;        ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vR;
 
 /**
@@ -28,47 +29,50 @@ in float vR;
  */
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-vec2 mfold(vec2 uv) { return abs(fract(uv * 0.5) * 2.0 - 1.0); }
+vec2 mfold( vec2 uv )
+{
+    return abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Rosette: fold the dome angle into 8/10/12/14 mirrored sectors (rolled
     // per activation), spin with the music; the radius breathes with the swell.
-    float ang = atan(vUV.y, vUV.x) + time * 0.06 + audioAdvance * 0.30;
-    float sector = 6.2831853 / (8.0 + 2.0 * floor(sceneSeed * 3.999));
-    ang = abs(mod(ang, sector * 2.0) - sector);
+    float ang = atan( vUV.y, vUV.x ) + time * 0.06 + audioAdvance * 0.30;
+    float sector = 6.2831853 / ( 8.0 + 2.0 * floor( sceneSeed * 3.999 ) );
+    ang = abs( mod( ang, sector * 2.0 ) - sector );
 
-    float r = vR * (1.15 + 0.20 * audioSwell) + 0.06 * time
-            + 0.20 * audioAdvance;
+    float r = vR * ( 1.15 + 0.20 * audioSwell ) + 0.06 * time
+              + 0.20 * audioAdvance;
 
     // Map the folded angle ACROSS the sector to one texture axis and the
     // radius to the other — every wedge shows a real 2D crop of the image.
     // (The old dir(ang)*r sampling collapsed each wedge onto a thin ray
     // through the texture: the image smeared into long radial streaks.)
-    vec2 crop = vec2(sceneSeed * 3.7, sceneSeed * 7.3);
-    vec2 uv = vec2(ang / sector * 1.6 + crop.x,
-                   r * 0.9 + crop.y);
-    vec3 col = texture(tex0, mfold(uv)).rgb;
+    vec2 crop = vec2( sceneSeed * 3.7, sceneSeed * 7.3 );
+    vec2 uv = vec2( ang / sector * 1.6 + crop.x,
+                    r * 0.9 + crop.y );
+    vec3 col = texture( tex0, mfold( uv ) ).rgb;
 
     // Centre bloom on the kick, whole-sky flash on a drop.
-    float centre = exp(-vR * 2.2);
+    float centre = exp( -vR * 2.2 );
     col *= 0.80 + 0.9 * centre * audioKick + 1.1 * audioDrop
-         + 0.25 * audioSwell;
+           + 0.25 * audioSwell;
 
     // Sector seams glow softly in the key colour.
-    float seam = exp(-abs(ang - sector * 0.5) * 24.0);
-    col += hueRot(vec3(0.35, 0.5, 0.7), audioChromaHue) * seam * 0.30;
+    float seam = exp( -abs( ang - sector * 0.5 ) * 24.0 );
+    col += hueRot( vec3( 0.35, 0.5, 0.7 ), audioChromaHue ) * seam * 0.30;
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (col * 1.30) * 0.55;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    vec3 _catTone = ( col * 1.30 ) * 0.55;
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

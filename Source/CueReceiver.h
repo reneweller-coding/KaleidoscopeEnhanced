@@ -36,10 +36,10 @@
  * **The family's dialects (02.10.2026).** The other generators of the family say the same things in their own words,
  * and decodeScoreCue() understands them too: Totality (`/tot/beat i f`, `/tot/bar i`, `/tot/block s`, `/tot/op s`,
  * `/tot/key s` -- a Camelot label such as "8A"), Parhelion (`/parh/...`, the same five), Ephemeris (`/eph/beat i f`,
- * `/eph/phase s i`, `/eph/key s`, `/eph/conjunction i f`) and Noctuary (`/noct/bar i`, `/noct/key s`, `/noct/scene s f`).
- * A block, a phase or a scene becomes a section of the table above (a Return, a Drop, a PEAK lands as a drop as well),
- * a bar line is a bar line (Ephemeris has none: its every fourth beat is one), an operation or a conjunction keeps the
- * cues alive without moving anything.
+ * `/eph/phase s i`, `/eph/key s`, `/eph/conjunction i f`) and Noctuary (`/noct/bar i`, `/noct/key s`, `/noct/scene s
+ * f`). A block, a phase or a scene becomes a section of the table above (a Return, a Drop, a PEAK lands as a drop as
+ * well), a bar line is a bar line (Ephemeris has none: its every fourth beat is one), an operation or a conjunction
+ * keeps the cues alive without moving anything.
  *
  * **Or from a file (02.10.2026).** A rendered track has its cues written down beside it, so a batch
  * render (`-x track.wav -k track.cues.tsv`) can be steered by them as a live set is by the socket:
@@ -71,15 +71,15 @@ class QUdpSocket;
 /** @brief The section categories `/phos/section` can name, in the generator's own order. */
 enum class CueSection : int
 {
-	Intro = 0,   ///< the opening atmosphere
-	Groove,      ///< the first core
-	Build,       ///< a buildup towards a drop
-	Drop,        ///< a core
-	Break,       ///< a breakdown
-	Outro,       ///< the closing bars
-	Pdb,         ///< pre-drop break: the last bar of a buildup
-	Cut,         ///< the first beats of a breakdown, everything but the reverb tail gone
-	Count
+    Intro = 0, ///< the opening atmosphere
+    Groove,    ///< the first core
+    Build,     ///< a buildup towards a drop
+    Drop,      ///< a core
+    Break,     ///< a breakdown
+    Outro,     ///< the closing bars
+    Pdb,       ///< pre-drop break: the last bar of a buildup
+    Cut,       ///< the first beats of a breakdown, everything but the reverb tail gone
+    Count
 };
 /** @brief Display names, indexed by CueSection; also what arrives on the wire. */
 extern const char *const kCueSectionNames[static_cast<int>( CueSection::Count )];
@@ -87,16 +87,24 @@ extern const char *const kCueSectionNames[static_cast<int>( CueSection::Count )]
 /** @brief One decoded OSC message. */
 struct ScoreCue
 {
-	/** @brief Which of the five messages this is. */
-	enum class Kind : int { Beat = 0, Bar, Section, Key, Drop, Unknown };
+    /** @brief Which of the five messages this is. */
+    enum class Kind : int
+    {
+        Beat = 0,
+        Bar,
+        Section,
+        Key,
+        Drop,
+        Unknown
+    };
 
-	Kind  kind    = Kind::Unknown;   ///< what arrived
-	int   index   = 0;               ///< beat or bar number, for Kind::Beat and Kind::Bar
-	int   section = -1;              ///< CueSection, or -1 when the name is not one we know
-	float energy  = 0.f;             ///< 0..1 on the generator's energy arc, for Kind::Section
-	int   keyPc   = -1;              ///< pitch class 0..11 of the key, or -1
-	char  text[40] = {};             ///< the string argument as it arrived ("Drop", "F# Phrygian")
-	bool  drop    = false;           ///< a section that lands as a drop as well (a dialect's Return, Drop or PEAK)
+    Kind  kind = Kind::Unknown; ///< what arrived
+    int   index = 0;            ///< beat or bar number, for Kind::Beat and Kind::Bar
+    int   section = -1;         ///< CueSection, or -1 when the name is not one we know
+    float energy = 0.f;         ///< 0..1 on the generator's energy arc, for Kind::Section
+    int   keyPc = -1;           ///< pitch class 0..11 of the key, or -1
+    char  text[40] = {};        ///< the string argument as it arrived ("Drop", "F# Phrygian")
+    bool  drop = false;         ///< a section that lands as a drop as well (a dialect's Return, Drop or PEAK)
 };
 
 /**
@@ -133,57 +141,57 @@ int parseScoreCueLine( const char *line, double &seconds, ScoreCue &out );
 class ScoreCues
 {
 public:
-	/** @brief One frame's worth of cue state, taken off the accumulator. */
-	struct Frame
-	{
-		bool  live        = false;   ///< a cue arrived recently enough to steer the scheduler
-		bool  downbeat    = false;   ///< a `/phos/bar` landed since the previous frame
-		bool  section     = false;   ///< a `/phos/section` landed
-		bool  drop        = false;   ///< a `/phos/drop` landed
-		float energy      = 0.f;     ///< the energy of the section that is playing
-		int   sectionType = -1;      ///< CueSection of that section, or -1
-		int   keyPc       = -1;      ///< pitch class of the key, or -1
-		int   bar         = -1;      ///< the last bar number that arrived
-	};
+    /** @brief One frame's worth of cue state, taken off the accumulator. */
+    struct Frame
+    {
+        bool  live = false;     ///< a cue arrived recently enough to steer the scheduler
+        bool  downbeat = false; ///< a `/phos/bar` landed since the previous frame
+        bool  section = false;  ///< a `/phos/section` landed
+        bool  drop = false;     ///< a `/phos/drop` landed
+        float energy = 0.f;     ///< the energy of the section that is playing
+        int   sectionType = -1; ///< CueSection of that section, or -1
+        int   keyPc = -1;       ///< pitch class of the key, or -1
+        int   bar = -1;         ///< the last bar number that arrived
+    };
 
-	/** @brief How long after the last datagram the cues are still taken as live. */
-	static const float kLiveSecs;
+    /** @brief How long after the last datagram the cues are still taken as live. */
+    static const float kLiveSecs;
 
-	/** @brief The one instance. */
-	static ScoreCues &instance();
+    /** @brief The one instance. */
+    static ScoreCues &instance();
 
-	/** @brief Takes one decoded message (main thread). @param c The cue. */
-	void apply( const ScoreCue &c );
+    /** @brief Takes one decoded message (main thread). @param c The cue. */
+    void apply( const ScoreCue &c );
 
-	/**
-	 * @brief Reads and clears one frame's worth of events, and ages the live flag.
-	 * @param dtSec Wall-clock seconds since the previous call.
-	 * @return What the scheduler should be told this frame.
-	 */
-	Frame drain( float dtSec );
+    /**
+     * @brief Reads and clears one frame's worth of events, and ages the live flag.
+     * @param dtSec Wall-clock seconds since the previous call.
+     * @return What the scheduler should be told this frame.
+     */
+    Frame drain( float dtSec );
 
-	/** @brief Datagrams accepted since the program started (for the remote's status page). */
-	int accepted() const { return m_accepted; }
-	/** @brief Datagrams that arrived on the port but were not one of the five messages. */
-	int rejected() const { return m_rejected; }
-	/** @brief Counts a datagram that did not decode; it changes no state and is not an error. */
-	void noteRejected() { m_rejected++; }
-	/** @brief Forgets everything (used by the self test, so one check cannot leak into the next). */
-	void reset();
+    /** @brief Datagrams accepted since the program started (for the remote's status page). */
+    int accepted() const { return m_accepted; }
+    /** @brief Datagrams that arrived on the port but were not one of the five messages. */
+    int rejected() const { return m_rejected; }
+    /** @brief Counts a datagram that did not decode; it changes no state and is not an error. */
+    void noteRejected() { m_rejected++; }
+    /** @brief Forgets everything (used by the self test, so one check cannot leak into the next). */
+    void reset();
 
 private:
-	ScoreCues() {}
+    ScoreCues() {}
 
-	float m_silence     = 1.0e6f;   ///< seconds since the last accepted datagram
-	bool  m_bar         = false;    ///< a bar arrived since the last drain()
-	bool  m_section     = false;    ///< @copydoc m_bar
-	bool  m_drop        = false;    ///< @copydoc m_bar
-	float m_energy      = 0.f;      ///< the last section's energy
-	int   m_sectionType = -1;       ///< the last section's type
-	int   m_keyPc       = -1;       ///< the last key
-	int   m_barIndex    = -1;       ///< the last bar number
-	int   m_accepted    = 0;        ///< @copydoc accepted
-	int   m_rejected    = 0;        ///< @copydoc rejected
+    float m_silence = 1.0e6f; ///< seconds since the last accepted datagram
+    bool  m_bar = false;      ///< a bar arrived since the last drain()
+    bool  m_section = false;  ///< @copydoc m_bar
+    bool  m_drop = false;     ///< @copydoc m_bar
+    float m_energy = 0.f;     ///< the last section's energy
+    int   m_sectionType = -1; ///< the last section's type
+    int   m_keyPc = -1;       ///< the last key
+    int   m_barIndex = -1;    ///< the last bar number
+    int   m_accepted = 0;     ///< @copydoc accepted
+    int   m_rejected = 0;     ///< @copydoc rejected
 };
 
 /**
@@ -197,44 +205,44 @@ private:
 class ScoreCueFile
 {
 public:
-	/** @brief The one instance. */
-	static ScoreCueFile &instance();
+    /** @brief The one instance. */
+    static ScoreCueFile &instance();
 
-	/**
-	 * @brief Reads a cue file and replaces whatever was loaded.
-	 * @param path The file.
-	 * @return The number of cues read, or -1 when the file cannot be opened or has a line that is
-	 *         not a cue (it names the line on stderr).
-	 */
-	int load( const QString &path );
+    /**
+     * @brief Reads a cue file and replaces whatever was loaded.
+     * @param path The file.
+     * @return The number of cues read, or -1 when the file cannot be opened or has a line that is
+     *         not a cue (it names the line on stderr).
+     */
+    int load( const QString &path );
 
-	/** @brief Whether a file with at least one cue is loaded. */
-	bool active() const { return !m_cues.empty(); }
+    /** @brief Whether a file with at least one cue is loaded. */
+    bool active() const { return !m_cues.empty(); }
 
-	/** @brief The WAV's position, in seconds (any thread). @param seconds Played so far. */
-	void setClock( double seconds ) { m_clock.store( seconds, std::memory_order_relaxed ); }
+    /** @brief The WAV's position, in seconds (any thread). @param seconds Played so far. */
+    void setClock( double seconds ) { m_clock.store( seconds, std::memory_order_relaxed ); }
 
-	/**
-	 * @brief Hands every cue up to the clock to ScoreCues (main thread).
-	 * @return How many went in this time.
-	 */
-	int feed();
+    /**
+     * @brief Hands every cue up to the clock to ScoreCues (main thread).
+     * @return How many went in this time.
+     */
+    int feed();
 
-	/** @brief Forgets the file and the clock (used by the self test). */
-	void reset();
+    /** @brief Forgets the file and the clock (used by the self test). */
+    void reset();
 
 private:
-	ScoreCueFile() {}
+    ScoreCueFile() {}
 
-	/** @brief One line of the file. */
-	struct Timed
-	{
-		double   seconds = 0.0;   ///< when, from the start of the WAV
-		ScoreCue cue;             ///< what
-	};
-	std::vector<Timed>  m_cues;              ///< the file's cues, sorted by time (stable: file order within a time)
-	size_t              m_next  = 0;         ///< the first cue not yet handed over
-	std::atomic<double> m_clock { -1.0 };    ///< the WAV's position; below zero until it plays
+    /** @brief One line of the file. */
+    struct Timed
+    {
+        double   seconds = 0.0; ///< when, from the start of the WAV
+        ScoreCue cue;           ///< what
+    };
+    std::vector<Timed>  m_cues;          ///< the file's cues, sorted by time (stable: file order within a time)
+    size_t              m_next = 0;      ///< the first cue not yet handed over
+    std::atomic<double> m_clock{ -1.0 }; ///< the WAV's position; below zero until it plays
 };
 
 /**
@@ -246,11 +254,11 @@ private:
  */
 struct ScoreCueBridge
 {
-	int  sections     = 0;       ///< sections handed over while the cues are live
-	int  drops        = 0;       ///< drops handed over while the cues are live
-	int  lastSections = 0;       ///< what was handed over last frame, from whichever source
-	int  lastDrops    = 0;       ///< @copydoc lastSections
-	bool wasLive      = false;   ///< whether the previous frame was cue-driven
+    int  sections = 0;     ///< sections handed over while the cues are live
+    int  drops = 0;        ///< drops handed over while the cues are live
+    int  lastSections = 0; ///< what was handed over last frame, from whichever source
+    int  lastDrops = 0;    ///< @copydoc lastSections
+    bool wasLive = false;  ///< whether the previous frame was cue-driven
 };
 
 /**
@@ -286,23 +294,23 @@ void applyScoreCues( const ScoreCues::Frame &cue, ScoreCueBridge &bridge, SceneS
 class CueReceiver : public QObject
 {
 public:
-	/**
-	 * @brief Binds `<bindAddress>:<port>` and starts listening.
-	 * @param parent      Owner (the GL widget), for Qt's parent/child destruction.
-	 * @param bindAddress Interface to listen on; "0.0.0.0" for any, "127.0.0.1" for this machine only.
-	 * @param port        UDP port; nothing is bound when it is 0 or out of range.
-	 */
-	CueReceiver( QObject *parent, const QString &bindAddress, int port );
+    /**
+     * @brief Binds `<bindAddress>:<port>` and starts listening.
+     * @param parent      Owner (the GL widget), for Qt's parent/child destruction.
+     * @param bindAddress Interface to listen on; "0.0.0.0" for any, "127.0.0.1" for this machine only.
+     * @param port        UDP port; nothing is bound when it is 0 or out of range.
+     */
+    CueReceiver( QObject *parent, const QString &bindAddress, int port );
 
-	/** @brief Whether the socket is bound and listening. */
-	bool listening() const { return m_listening; }
+    /** @brief Whether the socket is bound and listening. */
+    bool listening() const { return m_listening; }
 
 private:
-	/** @brief Reads every pending datagram and hands what decodes to ScoreCues. */
-	void handleDatagrams();
+    /** @brief Reads every pending datagram and hands what decodes to ScoreCues. */
+    void handleDatagrams();
 
-	QUdpSocket *m_socket    = nullptr;   ///< the bound socket, a child of this object
-	bool        m_listening = false;     ///< @copydoc listening
+    QUdpSocket *m_socket = nullptr;  ///< the bound socket, a child of this object
+    bool        m_listening = false; ///< @copydoc listening
 };
 
 /**

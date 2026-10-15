@@ -6,71 +6,81 @@
  */
 
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
-layout(std430, binding = 0) buffer Verts { float verts[]; };
-layout(std430, binding = 1) buffer Cmd   { uint cmd[];   };
+layout( std430, binding = 0 ) buffer Verts
+{
+    float verts[];
+};
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform uint  maxVertices; ///< Capacity of the vertex buffer (compute stage).
+uniform float time;        ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float geyserP;
 uniform float plumeP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float p) {
-    p = fract(p * 0.1031);
+float hash11( float p )
+{
+    p = fract( p * 0.1031 );
     p *= p + 33.33;
     p *= p + p;
-    return fract(p);
+    return fract( p );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     uvec3 g = gl_GlobalInvocationID;
-    uint gid = g.x + 64u * (g.y + 64u * g.z);
-    if (gid >= 4096u) return;
+    uint  gid = g.x + 64u * ( g.y + 64u * g.z );
+    if ( gid >= 4096u )
+        return;
 
-    float gys = (geyserP > 0.0) ? geyserP : 1.0;
-    float plm = (plumeP  > 0.0) ? plumeP  : 1.0;
-    float spd = (speedP  > 0.0) ? speedP  : 1.0;
+    float gys = ( geyserP > 0.0 ) ? geyserP : 1.0;
+    float plm = ( plumeP > 0.0 ) ? plumeP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
-    float fGid = float(gid);
+    float fGid = float( gid );
 
-    float plumeID = floor(fGid / 64.0); // 64 geysers
-    float segID = mod(fGid, 64.0);       // 64 segments per plume
+    float plumeID = floor( fGid / 64.0 ); // 64 geysers
+    float segID = mod( fGid, 64.0 );      // 64 segments per plume
 
     float u1 = segID / 64.0;
-    float u2 = (segID + 1.0) / 64.0;
+    float u2 = ( segID + 1.0 ) / 64.0;
 
     // Linear ground vent positions along ice fractures
-    float ventX = (hash11(plumeID) - 0.5) * 10.0;
-    float ventZ = (hash11(plumeID * 2.3) - 0.5) * 8.0;
+    float ventX = ( hash11( plumeID ) - 0.5 ) * 10.0;
+    float ventZ = ( hash11( plumeID * 2.3 ) - 0.5 ) * 8.0;
 
     // Plume altitude: y in [0, 6]
-    float y1 = u1 * 6.0 * gys * (1.0 + 0.3 * audioBass);
-    float y2 = u2 * 6.0 * gys * (1.0 + 0.3 * audioBass);
+    float y1 = u1 * 6.0 * gys * ( 1.0 + 0.3 * audioBass );
+    float y2 = u2 * 6.0 * gys * ( 1.0 + 0.3 * audioBass );
 
     // Lateral plume dispersion in vacuum
-    float spread1 = pow(u1, 1.5) * 1.8 * plm + sin(u1 * 10.0 - t * 3.0) * 0.2;
-    float spread2 = pow(u2, 1.5) * 1.8 * plm + sin(u2 * 10.0 - t * 3.0) * 0.2;
+    float spread1 = pow( u1, 1.5 ) * 1.8 * plm + sin( u1 * 10.0 - t * 3.0 ) * 0.2;
+    float spread2 = pow( u2, 1.5 ) * 1.8 * plm + sin( u2 * 10.0 - t * 3.0 ) * 0.2;
 
     float angle1 = plumeID * 1.5 + u1 * 4.0 + t;
     float angle2 = plumeID * 1.5 + u2 * 4.0 + t;
@@ -79,34 +89,35 @@ void main() {
     float kickErupt1 = audioKick * 2.0 * u1;
     float kickErupt2 = audioKick * 2.0 * u2;
 
-    vec3 pA = vec3(ventX + cos(angle1) * spread1, y1 + kickErupt1 - 2.5, ventZ + sin(angle1) * spread1);
-    vec3 pB = vec3(ventX + cos(angle2) * spread2, y2 + kickErupt2 - 2.5, ventZ + sin(angle2) * spread2);
+    vec3 pA = vec3( ventX + cos( angle1 ) * spread1, y1 + kickErupt1 - 2.5, ventZ + sin( angle1 ) * spread1 );
+    vec3 pB = vec3( ventX + cos( angle2 ) * spread2, y2 + kickErupt2 - 2.5, ventZ + sin( angle2 ) * spread2 );
 
-    vec3 forward = normalize(pB - pA);
-    vec3 binormal = normalize(vec3(-forward.z, 0.0, forward.x));
-    float ribbonWidth = (0.02 + 0.04 * u1) * (1.0 + audioHigh * 0.5);
+    vec3  forward = normalize( pB - pA );
+    vec3  binormal = normalize( vec3( -forward.z, 0.0, forward.x ) );
+    float ribbonWidth = ( 0.02 + 0.04 * u1 ) * ( 1.0 + audioHigh * 0.5 );
 
     vec3 v0 = pA - binormal * ribbonWidth;
     vec3 v1 = pA + binormal * ribbonWidth;
     vec3 v2 = pB - binormal * ribbonWidth;
     vec3 v3 = pB + binormal * ribbonWidth;
 
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
-    vec3 pList[6] = vec3[6](v0, v1, v2,  v1, v3, v2);
+    vec3 pList[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
     vec2 uvList[6] = vec2[6](
-        vec2(0.0, u1), vec2(1.0, u1), vec2(0.0, u2),
-        vec2(1.0, u1), vec2(1.0, u2), vec2(0.0, u2)
-    );
+        vec2( 0.0, u1 ), vec2( 1.0, u1 ), vec2( 0.0, u2 ),
+        vec2( 1.0, u1 ), vec2( 1.0, u2 ), vec2( 0.0, u2 ) );
 
-    for (uint i = 0u; i < 6u; ++i) {
-        uint off = (base + i) * 8u;
+    for ( uint i = 0u; i < 6u; ++i )
+    {
+        uint off = ( base + i ) * 8u;
         verts[off + 0u] = pList[i].x;
         verts[off + 1u] = pList[i].y;
         verts[off + 2u] = pList[i].z;
         verts[off + 3u] = plumeID;
-        verts[off + 4u] = hash11(plumeID);
+        verts[off + 4u] = hash11( plumeID );
         verts[off + 5u] = u1;
         verts[off + 6u] = uvList[i].x;
         verts[off + 7u] = uvList[i].y;

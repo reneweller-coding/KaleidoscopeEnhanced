@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file RisographDrumOffset.frag
  * @brief TRANSITION RISOGRAPH DRUM OFFSET: the scene is printed as a two-colour
@@ -25,120 +25,130 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: inkP, misregP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float inkP;
 uniform float misregP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-/// @brief Smooth 2D value noise, 0..1.
-float noise2(vec2 p)
+float hash21( vec2 p )
 {
-    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
+/// @brief Smooth 2D value noise, 0..1.
+float noise2( vec2 p )
+{
+    vec2 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
+                mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ink    = clamp(inkP,    0.0, 1.0);
-    float mis    = (misregP > 0.0) ? misregP : 1.0;
-    float hue    = (hueP    > 0.0) ? hueP    : 0.0;
+    float ink = clamp( inkP, 0.0, 1.0 );
+    float mis = ( misregP > 0.0 ) ? misregP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d = clamp(1.0 - interpolation, 0.0, 1.0);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
     // The print itself only exists in the middle of the turn: at both ends the
     // untouched scene has to come through exactly.
-    float sep  = smoothstep(0.0, 0.26, d) * (1.0 - smoothstep(0.74, 1.0, d));
-    float swap = smoothstep(0.34, 0.66, d);
+    float sep = smoothstep( 0.0, 0.26, d ) * ( 1.0 - smoothstep( 0.74, 1.0, d ) );
+    float swap = smoothstep( 0.34, 0.66, d );
 
     // Which sheet is on the drums right now.
-    vec3 baseHere = mix(texture(tex0, uv).rgb, texture(tex1, uv).rgb, swap);
+    vec3 baseHere = mix( texture( tex0, uv ).rgb, texture( tex1, uv ).rgb, swap );
 
     // The two drums run out of register along a fixed axis, opening widest in
     // the middle of the pass.  Only audioSwell touches this -- a fast envelope
     // on a pixel offset would read as jitter, not as a printing press.
-    float ang = (hue > 0.001 ? hue : 1.05) + audioChromaHue * 0.5;
-    vec2  axis = rot2D(ang) * vec2(1.0, 0.0);
-    float off  = 0.0075 * mis * sep * (0.75 + 0.5 * clamp(audioSwell, 0.0, 1.0));
-    vec2  offA =  axis * off / vec2(aspect, 1.0);
-    vec2  offB = -axis * off / vec2(aspect, 1.0);
+    float ang = ( hue > 0.001 ? hue : 1.05 ) + audioChromaHue * 0.5;
+    vec2  axis = rot2D( ang ) * vec2( 1.0, 0.0 );
+    float off = 0.0075 * mis * sep * ( 0.75 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
+    vec2  offA = axis * off / vec2( aspect, 1.0 );
+    vec2  offB = -axis * off / vec2( aspect, 1.0 );
 
-    vec3 sA = mix(texture(tex0, clamp(uv + offA, 0.0, 1.0)).rgb,
-                  texture(tex1, clamp(uv + offA, 0.0, 1.0)).rgb, swap);
-    vec3 sB = mix(texture(tex0, clamp(uv + offB, 0.0, 1.0)).rgb,
-                  texture(tex1, clamp(uv + offB, 0.0, 1.0)).rgb, swap);
+    vec3 sA = mix( texture( tex0, clamp( uv + offA, 0.0, 1.0 ) ).rgb,
+                   texture( tex1, clamp( uv + offA, 0.0, 1.0 ) ).rgb, swap );
+    vec3 sB = mix( texture( tex0, clamp( uv + offB, 0.0, 1.0 ) ).rgb,
+                   texture( tex1, clamp( uv + offB, 0.0, 1.0 ) ).rgb, swap );
 
     // A duotone separates by CHANNEL: each ink carries the light its own
     // complementary channel is missing.  Picking two arbitrary wheel colours
     // and asking both to carry everything is what turned the sheet neutral --
     // the two densities came out equal and the inks cancelled.
-    vec3 ink1 = vec3(1.00, 0.24, 0.56);      // pink drum: takes out green
-    vec3 ink2 = vec3(0.00, 0.42, 0.80);      // blue drum: takes out red
+    vec3 ink1 = vec3( 1.00, 0.24, 0.56 ); // pink drum: takes out green
+    vec3 ink2 = vec3( 0.00, 0.42, 0.80 ); // blue drum: takes out red
 
     // Separation: an ink's density is how much light it has to take out of its
     // own complementary channel.
     // Two solid ink layers on top of each other take a dark picture down to
     // nothing, so the density is capped: a riso keeps paper showing through
     // even in its solids, and that is what carries the colour.
-    float a1 = clamp(1.20 * (1.0 - sA.g), 0.0, 0.88);
-    float a2 = clamp(1.20 * (1.0 - sB.r), 0.0, 0.88);
+    float a1 = clamp( 1.20 * ( 1.0 - sA.g ), 0.0, 0.88 );
+    float a2 = clamp( 1.20 * ( 1.0 - sB.r ), 0.0, 0.88 );
 
     // Paper, then ink on ink: multiplicative, the way a press actually works.
-    vec3 paper = vec3(0.95, 0.94, 0.90);
-    float fibre = noise2(p * 380.0) * 0.5 + noise2(p * 90.0) * 0.5;
-    paper *= 0.90 + 0.16 * fibre * (0.6 + 0.9 * clamp(audioFlux * 2.0, 0.0, 1.0));
+    vec3  paper = vec3( 0.95, 0.94, 0.90 );
+    float fibre = noise2( p * 380.0 ) * 0.5 + noise2( p * 90.0 ) * 0.5;
+    paper *= 0.90 + 0.16 * fibre * ( 0.6 + 0.9 * clamp( audioFlux * 2.0, 0.0, 1.0 ) );
 
     // Paper is the white point: a print can never be brighter than its stock.
     // Lifting the sheet with a gain instead blew every highlight in the picture
     // to pure white, and the highlights are what the eye reads first.
-    vec3 printed = paper * mix(vec3(1.0), ink1, a1) * mix(vec3(1.0), ink2, a2);
+    vec3 printed = paper * mix( vec3( 1.0 ), ink1, a1 ) * mix( vec3( 1.0 ), ink2, a2 );
     // The drum pair itself is what varies per activation, so the whole sheet
     // turns on the wheel rather than the separation changing meaning.
-    printed = hueRot(printed, ink * 6.2831853 + audioChromaHue * 0.8);
+    printed = hueRot( printed, ink * 6.2831853 + audioChromaHue * 0.8 );
 
     // Roller streaks: faint horizontal bands from an uneven drum.
-    float streak = noise2(vec2(p.y * 26.0, 3.7)) - 0.5;
-    printed *= 1.0 + streak * 0.12 * (0.4 + 0.8 * clamp(audioHigh * 2.0, 0.0, 1.0));
+    float streak = noise2( vec2( p.y * 26.0, 3.7 ) ) - 0.5;
+    printed *= 1.0 + streak * 0.12 * ( 0.4 + 0.8 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
 
     // The ink wells up at the edge of a solid, leaving a darker margin.
-    float dens = max(a1, a2);
-    float wellUp = clamp(fwidth(dens) * 9.0, 0.0, 1.0);
+    float dens = max( a1, a2 );
+    float wellUp = clamp( fwidth( dens ) * 9.0, 0.0, 1.0 );
     printed *= 1.0 - 0.30 * wellUp;
 
-    vec3 col = mix(baseHere, printed, sep);
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    vec3 col = mix( baseHere, printed, sep );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

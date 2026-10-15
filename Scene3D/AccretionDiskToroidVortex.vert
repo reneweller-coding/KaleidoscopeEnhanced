@@ -4,103 +4,108 @@
  * @brief Vertex stage companion to AccretionDiskToroidVortex.frag -- see that file's header for
  * this scene's description.
  */
-layout(location = 0) in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-layout(location = 1) in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+layout( location = 0 ) in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g.
+                                      ///< position or u/v and an index).
+layout( location = 1 ) in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element
+                                      ///< seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioRoughness; ///< Roughness (dissonance) of the sound, 0..1.
 uniform float audioBassRel;
 
 uniform float toroidP;
 uniform float iscoP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3 vWorldPos;   ///< World position (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out vec3  vWorldPos; ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vDoppler;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float trd = (toroidP > 0.0) ? toroidP : 1.0;
-    float isc = (iscoP   > 0.0) ? iscoP   : 1.0;
-    float spd = (speedP  > 0.0) ? speedP  : 1.0;
+void main()
+{
+    float trd = ( toroidP > 0.0 ) ? toroidP : 1.0;
+    float isc = ( iscoP > 0.0 ) ? iscoP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     // 220x120 grid coordinates in [-1, 1]
     // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
     // this shader's math assumes a centred [-1,1] domain, so remap it here
     // (otherwise everything lands in one quadrant, off to the side).
-    vec2 gridUV = attrA.xy * 2.0 - 1.0;   // [-1,1]
+    vec2 gridUV = attrA.xy * 2.0 - 1.0; // [-1,1]
     vTexCoord = gridUV * 0.5 + 0.5;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // Convert Cartesian grid to polar accretion disk coords (r, theta)
-    float r = length(gridUV) * 4.5 * trd;
-    float theta = atan(gridUV.y, gridUV.x);
+    float r = length( gridUV ) * 4.5 * trd;
+    float theta = atan( gridUV.y, gridUV.x );
 
     // Inner ISCO boundary plunge (r < 1.0 drops rapidly into singularity)
     float iscoRadius = 1.2 * isc;
-    float iscoPlunge = smoothstep(iscoRadius, iscoRadius * 0.4, r) * -2.5;
+    float iscoPlunge = smoothstep( iscoRadius, iscoRadius * 0.4, r ) * -2.5;
 
     // Keplerian rotation velocity: v_phi ~ 1 / sqrt(r)
-    float omega = (1.5 / max(sqrt(r), 0.5)) * t;
+    float omega = ( 1.5 / max( sqrt( r ), 0.5 ) ) * t;
     float spiralTheta = theta - omega;
 
     // Toroidal disk height profile: bass thickens the torus, and audioBassRel
     // ("as loud as usual right now") adds a mix-independent low-end punch on
     // top so quiet productions still breathe.
-    float bassPunch = clamp(audioBassRel - 1.0, -1.0, 1.0);
-    float diskHeight = exp(-abs(r - 2.5) * 1.2) * (0.8 + 0.4 * sin(spiralTheta * 3.0 + t))
-                     * (1.0 + 0.4 * audioBass + 0.30 * bassPunch);
+    float bassPunch = clamp( audioBassRel - 1.0, -1.0, 1.0 );
+    float diskHeight = exp( -abs( r - 2.5 ) * 1.2 ) * ( 0.8 + 0.4 * sin( spiralTheta * 3.0 + t ) )
+                       * ( 1.0 + 0.4 * audioBass + 0.30 * bassPunch );
 
     // Sensory dissonance churns the smooth spiral density waves into ragged
     // convective turbulence; a consonant passage lets the torus lie flat.
     float turb = 0.20 + 0.55 * audioRoughness;
-    diskHeight += sin(r * 5.3 + spiralTheta * 4.0) * cos(spiralTheta * 2.0 - r * 3.1)
-                * 0.50 * turb * exp(-abs(r - 2.5) * 0.9);
+    diskHeight += sin( r * 5.3 + spiralTheta * 4.0 ) * cos( spiralTheta * 2.0 - r * 3.1 )
+                  * 0.50 * turb * exp( -abs( r - 2.5 ) * 0.9 );
 
     diskHeight += iscoPlunge;
 
-    vec3 pos = vec3(gridUV.x * 3.5, diskHeight, gridUV.y * 3.5);
+    vec3 pos = vec3( gridUV.x * 3.5, diskHeight, gridUV.y * 3.5 );
     vWorldPos = pos;
 
-    // Relativistic Doppler beaming factor: approaching side (x > 0) is blue-shifted, receding side (x < 0) is red-shifted
-    vDoppler = clamp(gridUV.x * (0.8 / max(sqrt(r), 0.6)), -1.0, 1.0);
+    // Relativistic Doppler beaming factor: approaching side (x > 0) is blue-shifted, receding side (x < 0) is
+    // red-shifted
+    vDoppler = clamp( gridUV.x * ( 0.8 / max( sqrt( r ), 0.6 ) ), -1.0, 1.0 );
 
     // Surface normal estimation
-    vNormal = normalize(vec3(-gridUV.x * 0.3, 1.0, -gridUV.y * 0.3));
+    vNormal = normalize( vec3( -gridUV.x * 0.3, 1.0, -gridUV.y * 0.3 ) );
 
     // Camera: slow ORBIT around the central hole, then pitch DOWN onto the
     // disk (negative tilt — the old +0.45 tipped it into a ceiling) and push
     // away along +z; projM expects NEGATIVE view-space z (clip-w = -z_view).
-    vec3 vp = pos;
+    vec3  vp = pos;
     float yaw = time * 0.10 * spd + audioAdvance * 0.06;
-    float cy = cos(yaw), sy = sin(yaw);
-    vp.xz = mat2(cy, -sy, sy, cy) * vp.xz;
+    float cy = cos( yaw ), sy = sin( yaw );
+    vp.xz = mat2( cy, -sy, sy, cy ) * vp.xz;
     vp.y -= 1.1;
     float camTilt = -0.55;
-    float cosT = cos(camTilt), sinT = sin(camTilt);
-    vp = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
+    float cosT = cos( camTilt ), sinT = sin( camTilt );
+    vp = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
     vp.z += 7.5;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

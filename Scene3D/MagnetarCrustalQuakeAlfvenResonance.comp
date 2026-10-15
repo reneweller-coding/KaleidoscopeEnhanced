@@ -1,6 +1,6 @@
 #version 430
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
  * @file MagnetarCrustalQuakeAlfvenResonance.comp
@@ -24,62 +24,75 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * 2.6 at the crust, where it caps) and the panel is held dark.
  */
 
-layout(std430, binding = 0) buffer Verts {
+layout( std430, binding = 0 ) buffer Verts
+{
     float verts[]; // 8 floats/vertex: attrA.xyzw (pos, e1), attrB.xyzw (kind, pad, pad, e2)
 };
 
 // DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
-layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform uint  maxVertices;  ///< Capacity of the vertex buffer (compute stage).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;    ///< Bass band level, 0..1.
+uniform float audioMid;     ///< Mid band level, 0..1.
+uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-const uint kLoops   = 160u;
-const uint kSegs    = 64u;
-const uint kLoopInv = kLoops * kSegs;   ///< 10240 ribbon quads = 61440 verts
-const uint kSpecks  = 1200u;
-const uint kHaze    = 1u;
+const uint kLoops = 160u;
+const uint kSegs = 64u;
+const uint kLoopInv = kLoops * kSegs; ///< 10240 ribbon quads = 61440 verts
+const uint kSpecks = 1200u;
+const uint kHaze = 1u;
 
 // Camera constants -- MUST stay in sync with the .vert, which tilts BEFORE it
 // translates.  The far field is laid out in frustum coordinates and rotated
 // back into world space with viewToWorld().
-const float kTilt   = 0.55;
-const float kCamZ   = 4.5;
-const float kTanY   = 0.5206;   ///< tan(55 deg / 2), the engine's scene FOV
+const float kTilt = 0.55;
+const float kCamZ = 4.5;
+const float kTanY = 0.5206; ///< tan(55 deg / 2), the engine's scene FOV
 const float kAspect = 1.78;
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float p) {
-    p = fract(p * 0.1031);
+float hash11( float p )
+{
+    p = fract( p * 0.1031 );
     p *= p + 47.19;
     p *= p + p;
-    return fract(p);
+    return fract( p );
 }
 
 /// @brief Writes one vertex into the output buffer (compute stage).
-void writeVertex(uint slot, vec3 p, float e1, float e2, float kind) {
+void writeVertex( uint slot, vec3 p, float e1, float e2, float kind )
+{
     uint o = slot * 8u;
-    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 0u] = p.x;
+    verts[o + 1u] = p.y;
+    verts[o + 2u] = p.z;
     verts[o + 3u] = e1;
-    verts[o + 4u] = kind; verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 4u] = kind;
+    verts[o + 5u] = 0.0;
+    verts[o + 6u] = 0.0;
     verts[o + 7u] = e2;
 }
 
 /// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
-void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness, float kind) {
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness, float kind )
+{
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
-    vec3 dir = pB - pA;
-    float len = length(dir);
-    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3  dir = pB - pA;
+    float len = length( dir );
+    dir = ( len > 1e-5 ) ? dir / len : vec3( 0.0, 1.0, 0.0 );
 
     // The ribbon has to be widened ACROSS THE SCREEN.  Crossing dir with world
     // UP -- as this did -- always lands the side vector in the XZ plane, and
@@ -87,76 +100,83 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness, float ki
     // x came out very nearly edge-on to the camera and drew a sliver instead of
     // the ribbon it asked for.  Crossing with the VIEW AXIS faces them all at
     // the lens.  (kTilt is the .vert's fixed tilt, applied before the push.)
-    vec3 viewAxis = vec3(0.0, sin(kTilt), cos(kTilt));
-    vec3 side = cross(dir, viewAxis);
-    float sl = length(side);
-    side = (sl > 1e-4) ? side * (thickness / sl) : vec3(thickness, 0.0, 0.0);
+    vec3  viewAxis = vec3( 0.0, sin( kTilt ), cos( kTilt ) );
+    vec3  side = cross( dir, viewAxis );
+    float sl = length( side );
+    side = ( sl > 1e-4 ) ? side * ( thickness / sl ) : vec3( thickness, 0.0, 0.0 );
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
-    writeVertex(base + 0u, a0, e1, e2, kind);
-    writeVertex(base + 1u, a1, e1, e2, kind);
-    writeVertex(base + 2u, b0, e1, e2, kind);
-    writeVertex(base + 3u, a1, e1, e2, kind);
-    writeVertex(base + 4u, b1, e1, e2, kind);
-    writeVertex(base + 5u, b0, e1, e2, kind);
+    writeVertex( base + 0u, a0, e1, e2, kind );
+    writeVertex( base + 1u, a1, e1, e2, kind );
+    writeVertex( base + 2u, b0, e1, e2, kind );
+    writeVertex( base + 3u, a1, e1, e2, kind );
+    writeVertex( base + 4u, b1, e1, e2, kind );
+    writeVertex( base + 5u, b0, e1, e2, kind );
 }
 
 /// Flat billboard with constant e1/e2 (the far-field X-ray specks).
-void emitQuad(vec3 c, vec3 ax, vec3 ay, float e1, float e2, float kind) {
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+void emitQuad( vec3 c, vec3 ax, vec3 ay, float e1, float e2, float kind )
+{
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
     vec3 p00 = c - ax - ay, p10 = c + ax - ay;
     vec3 p11 = c + ax + ay, p01 = c - ax + ay;
-    writeVertex(base + 0u, p00, e1, e2, kind);
-    writeVertex(base + 1u, p10, e1, e2, kind);
-    writeVertex(base + 2u, p11, e1, e2, kind);
-    writeVertex(base + 3u, p00, e1, e2, kind);
-    writeVertex(base + 4u, p11, e1, e2, kind);
-    writeVertex(base + 5u, p01, e1, e2, kind);
+    writeVertex( base + 0u, p00, e1, e2, kind );
+    writeVertex( base + 1u, p10, e1, e2, kind );
+    writeVertex( base + 2u, p11, e1, e2, kind );
+    writeVertex( base + 3u, p00, e1, e2, kind );
+    writeVertex( base + 4u, p11, e1, e2, kind );
+    writeVertex( base + 5u, p01, e1, e2, kind );
 }
 
 /// Plasma-haze panel: e1/e2 carry a 0..1 panel u/v so the fragment stage can
 /// paint a gradient across it instead of a flat wash.
-void emitHazePanel(vec3 c, vec3 ax, vec3 ay) {
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+void emitHazePanel( vec3 c, vec3 ax, vec3 ay )
+{
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
     vec3 p00 = c - ax - ay, p10 = c + ax - ay;
     vec3 p11 = c + ax + ay, p01 = c - ax + ay;
-    writeVertex(base + 0u, p00, 0.0, 0.0, 2.0);
-    writeVertex(base + 1u, p10, 1.0, 0.0, 2.0);
-    writeVertex(base + 2u, p11, 1.0, 1.0, 2.0);
-    writeVertex(base + 3u, p00, 0.0, 0.0, 2.0);
-    writeVertex(base + 4u, p11, 1.0, 1.0, 2.0);
-    writeVertex(base + 5u, p01, 0.0, 1.0, 2.0);
+    writeVertex( base + 0u, p00, 0.0, 0.0, 2.0 );
+    writeVertex( base + 1u, p10, 1.0, 0.0, 2.0 );
+    writeVertex( base + 2u, p11, 1.0, 1.0, 2.0 );
+    writeVertex( base + 3u, p00, 0.0, 0.0, 2.0 );
+    writeVertex( base + 4u, p11, 1.0, 1.0, 2.0 );
+    writeVertex( base + 5u, p01, 0.0, 1.0, 2.0 );
 }
 
 /// Undo the .vert's fixed tilt: a point/direction given in view space (before
 /// the vert's +kCamZ push) mapped back to the world value that lands on it.
-vec3 viewToWorld(vec3 vp) {
-    float c = cos(kTilt), s = sin(kTilt);
-    return vec3(vp.x, vp.y * c + vp.z * s, -vp.y * s + vp.z * c);
+vec3 viewToWorld( vec3 vp )
+{
+    float c = cos( kTilt ), s = sin( kTilt );
+    return vec3( vp.x, vp.y * c + vp.z * s, -vp.y * s + vp.z * c );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     uvec3 g = gl_GlobalInvocationID;
-    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    uint  idx = g.x + 64u * ( g.y + 64u * g.z );
 
     // Rate = constant * absolute time + the pre-integrated audio accumulator,
     // never audio * time (anti-flicker rule).
     float t = time * 0.45 + audioAdvance * 0.4;
 
-    if (idx < kLoopInv) {
+    if ( idx < kLoopInv )
+    {
         uint loopIdx = idx / kSegs;
-        uint segIdx  = idx % kSegs;
+        uint segIdx = idx % kSegs;
 
-        float seed  = hash11(float(loopIdx) * 29.13);
-        float seed2 = hash11(float(loopIdx) * 11.71 + 4.31);
+        float seed = hash11( float( loopIdx ) * 29.13 );
+        float seed2 = hash11( float( loopIdx ) * 11.71 + 4.31 );
 
-        float s0 = float(segIdx)      / float(kSegs);
-        float s1 = float(segIdx + 1u) / float(kSegs);
+        float s0 = float( segIdx ) / float( kSegs );
+        float s1 = float( segIdx + 1u ) / float( kSegs );
 
         float theta0 = s0 * 3.14159265;
         float theta1 = s1 * 3.14159265;
@@ -168,30 +188,30 @@ void main() {
         // now belong to the outer magnetosphere, which is what reaches the
         // frame edges.
         const float Rstar = 0.30;
-        float Lsh = 0.60 + pow(seed, 0.45) * 4.20;
-        float sh0 = sin(theta0), sh1 = sin(theta1);
-        float r0 = Rstar + (Lsh - Rstar) * sh0 * sh0;
-        float r1 = Rstar + (Lsh - Rstar) * sh1 * sh1;
+        float       Lsh = 0.60 + pow( seed, 0.45 ) * 4.20;
+        float       sh0 = sin( theta0 ), sh1 = sin( theta1 );
+        float       r0 = Rstar + ( Lsh - Rstar ) * sh0 * sh0;
+        float       r1 = Rstar + ( Lsh - Rstar ) * sh1 * sh1;
 
         // Twisted magnetosphere: the field shears in azimuth with latitude, so
         // the loops read as a spiral burst rather than a flat paper fan.
-        float twist = 0.90 * sin(t * 0.23 + seed2 * 6.2831853);
-        float phi0  = seed * 6.2831853 + t * 0.8 + twist * cos(theta0);
-        float phi1  = seed * 6.2831853 + t * 0.8 + twist * cos(theta1);
+        float twist = 0.90 * sin( t * 0.23 + seed2 * 6.2831853 );
+        float phi0 = seed * 6.2831853 + t * 0.8 + twist * cos( theta0 );
+        float phi1 = seed * 6.2831853 + t * 0.8 + twist * cos( theta1 );
 
         // High-frequency torsional shear Alfven wave ripple along the loop;
         // the amplitude scales with the shell so outer loops ripple visibly.
-        float amp = 0.05 * (0.4 + 0.35 * Lsh);
-        float aw0 = sin(s0 * 24.0 - t * 6.0 + seed * 5.0) * amp;
-        float aw1 = sin(s1 * 24.0 - t * 6.0 + seed * 5.0) * amp;
+        float amp = 0.05 * ( 0.4 + 0.35 * Lsh );
+        float aw0 = sin( s0 * 24.0 - t * 6.0 + seed * 5.0 ) * amp;
+        float aw1 = sin( s1 * 24.0 - t * 6.0 + seed * 5.0 ) * amp;
 
         float q0 = r0 + aw0, q1 = r1 + aw1;
-        vec3 p0 = vec3(q0 * sh0 * cos(phi0), q0 * sh0 * sin(phi0), q0 * cos(theta0));
-        vec3 p1 = vec3(q1 * sh1 * cos(phi1), q1 * sh1 * sin(phi1), q1 * cos(theta1));
+        vec3  p0 = vec3( q0 * sh0 * cos( phi0 ), q0 * sh0 * sin( phi0 ), q0 * cos( theta0 ) );
+        vec3  p1 = vec3( q1 * sh1 * cos( phi1 ), q1 * sh1 * sin( phi1 ), q1 * cos( theta1 ) );
 
         // Crustal quake rupture flash (near footpoints where theta ~ 0 or pi)
-        float footpoint = max(exp(-theta0 * theta0 * 8.0),
-                              exp(-pow(theta0 - 3.14159, 2.0) * 8.0));
+        float footpoint = max( exp( -theta0 * theta0 * 8.0 ),
+                               exp( -pow( theta0 - 3.14159, 2.0 ) * 8.0 ) );
 
         // The frame is now COVERED in field lines, and this pass is opaque and
         // depth-tested (not additive), so per-fragment luminance IS the picture
@@ -206,56 +226,58 @@ void main() {
         // covering a third of it.  A 0.22..1.57 ramp, against a haze held down
         // in the modal bucket, keeps the inner shells, the outer shells and the
         // background three buckets apart at the DIMMEST preset setting.
-        float glow = (0.16 + 2.50 * exp(-r0 * 0.66) + footpoint * 2.70)
-                   * (1.0 + 2.0 * audioKick);
-        glow = min(glow, 2.6);
+        float glow = ( 0.16 + 2.50 * exp( -r0 * 0.66 ) + footpoint * 2.70 )
+                     * ( 1.0 + 2.0 * audioKick );
+        glow = min( glow, 2.6 );
 
         // Ribbon width grows with radius: a constant 0.02 turned the outer
         // field lines into sub-pixel hairs that measured as empty frame.
-        float thick = (0.008 + 0.011 * r0) * (1.0 + 0.6 * footpoint)
-                    * (1.0 + 0.3 * audioSwell);
+        float thick = ( 0.008 + 0.011 * r0 ) * ( 1.0 + 0.6 * footpoint )
+                      * ( 1.0 + 0.3 * audioSwell );
 
-        emitSegment(p0, p1, s0, glow, thick, 0.0);
+        emitSegment( p0, p1, s0, glow, thick, 0.0 );
         return;
     }
 
     uint sIdx = idx - kLoopInv;
 
-    if (sIdx < kSpecks) {
-        float h  = float(sIdx);
-        float r1 = hash11(h * 1.37 + 0.11);
-        float r2 = hash11(h * 2.71 + 5.37);
-        float r3 = hash11(h * 4.19 + 9.71);
-        float r4 = hash11(h * 7.53 + 3.29);
+    if ( sIdx < kSpecks )
+    {
+        float h = float( sIdx );
+        float r1 = hash11( h * 1.37 + 0.11 );
+        float r2 = hash11( h * 2.71 + 5.37 );
+        float r3 = hash11( h * 4.19 + 9.71 );
+        float r4 = hash11( h * 7.53 + 3.29 );
 
         // FRUSTUM placement: uniform in screen u/v at a random depth, so the
         // distant X-ray sources stay evenly spread over the whole frame.
         float D = 8.0 + r3 * r3 * 20.0;
-        float u = (r1 * 2.0 - 1.0) * 1.05 + 0.04 * sin(t * 0.21 + r4 * 6.2831853);
-        float v = (r2 * 2.0 - 1.0) * 1.05 + 0.03 * cos(t * 0.17 + r1 * 6.2831853);
+        float u = ( r1 * 2.0 - 1.0 ) * 1.05 + 0.04 * sin( t * 0.21 + r4 * 6.2831853 );
+        float v = ( r2 * 2.0 - 1.0 ) * 1.05 + 0.03 * cos( t * 0.17 + r1 * 6.2831853 );
 
-        vec3  c  = viewToWorld(vec3(u * D * kTanY * kAspect, v * D * kTanY, D - kCamZ));
+        vec3 c = viewToWorld( vec3( u * D * kTanY * kAspect, v * D * kTanY, D - kCamZ ) );
         // At 0.0024..0.0056 a speck came out about 5 px across at 1080p, which
         // the catalogue's ~6x measuring downscale averages away completely.
-        float sz = D * (0.0040 + 0.0055 * r4);
-        vec3  ax = vec3(sz, 0.0, 0.0);
-        vec3  ay = viewToWorld(vec3(0.0, sz, 0.0));
+        float sz = D * ( 0.0040 + 0.0055 * r4 );
+        vec3  ax = vec3( sz, 0.0, 0.0 );
+        vec3  ay = viewToWorld( vec3( 0.0, sz, 0.0 ) );
 
-        float tw  = 0.55 + 0.45 * sin(t * (0.9 + 1.8 * r4) + r1 * 6.2831853);
-        float bri = (0.20 + 0.70 * r4 * r4) * tw * (0.75 + 0.55 * audioHigh);
-        emitQuad(c, ax, ay, r2, bri, 1.0);
+        float tw = 0.55 + 0.45 * sin( t * ( 0.9 + 1.8 * r4 ) + r1 * 6.2831853 );
+        float bri = ( 0.20 + 0.70 * r4 * r4 ) * tw * ( 0.75 + 0.55 * audioHigh );
+        emitQuad( c, ax, ay, r2, bri, 1.0 );
         return;
     }
 
-    if (sIdx < kSpecks + kHaze) {
+    if ( sIdx < kSpecks + kHaze )
+    {
         // One oversized panel far behind everything, exactly view-aligned, so
         // no tile of the frame is ever bare clear colour.  34, not 26: this
         // pass is OPAQUE and depth-tested, and the speck field reaches D = 28 --
         // a closer panel would simply hide its far half.
         float D = 34.0;
-        vec3 c  = viewToWorld(vec3(0.0, 0.0, D - kCamZ));
-        vec3 ax = vec3(D * kTanY * kAspect * 1.45, 0.0, 0.0);
-        vec3 ay = viewToWorld(vec3(0.0, D * kTanY * 1.45, 0.0));
-        emitHazePanel(c, ax, ay);
+        vec3  c = viewToWorld( vec3( 0.0, 0.0, D - kCamZ ) );
+        vec3  ax = vec3( D * kTanY * kAspect * 1.45, 0.0, 0.0 );
+        vec3  ay = viewToWorld( vec3( 0.0, D * kTanY * 1.45, 0.0 ) );
+        emitHazePanel( c, ax, ay );
     }
 }

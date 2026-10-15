@@ -29,26 +29,30 @@
 // depth -- so the water spans the picture edge to edge at every distance, and
 // the curtain carries the sky, the moon and the drizzle above the horizon.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel; ///< Overall loudness, 0..1.
+uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioZCR;
 uniform float audioHat;
 
-out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vWorld; ///< World position (from the vertex stage).
 out float vSlope;
-out float vDist;   ///< Distance (from the vertex stage).
+out float vDist; ///< Distance (from the vertex stage).
 out float vSky;
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -57,20 +61,20 @@ void main()
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     const float kTanY = 0.5206;
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
-    float halfA  = kTanY * aspect;          // tan of the horizontal half-FOV
+    float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
+    float       halfA = kTanY * aspect; // tan of the horizontal half-FOV
 
     // Row 87 of 120 is the shoreline between water and sky curtain.  The two
     // halves MEET there -- same depth, same height -- so the row of cells that
     // straddles the split is an ordinary quad and not a stretched seam.
     const float T = 0.725;
 
-    float eye = 7.0;                        // the camera floats this high
+    float eye = 7.0; // the camera floats this high
     float z, y;
     float slope = 0.0;
-    float sky   = 0.0;
+    float sky = 0.0;
 
-    if (w < T)
+    if ( w < T )
     {
         // ---- THE WATER ----------------------------------------------
         // Depth grows with the SQUARE of the row index: a linear sheet spends
@@ -83,7 +87,7 @@ void main()
 
         // 2.0 would fit the frame exactly; 2.25 keeps water under all four
         // corners while the preset camera rig rolls and yaws the view.
-        float x = (u - 0.5) * 2.25 * z * halfA;
+        float x = ( u - 0.5 ) * 2.25 * z * halfA;
 
         // Eighteen raindrop sites on staggered cycles; each ring expands and
         // dies away smoothly.  The sites are scattered across the FRUSTUM --
@@ -92,28 +96,28 @@ void main()
         // covers a quarter of the screen.  The rings themselves keep their
         // honest world size, so a far one simply reads as a smaller ring.
         float h = 0.0;
-        for (int i = 0; i < 18; ++i)
+        for ( int i = 0; i < 18; ++i )
         {
-            float fi    = float(i);
-            float cycle = 3.6 + hash11(fi * 3.3) * 4.6;
-            float ph    = hash11(fi * 7.7);
-            float t01   = fract(time / cycle + ph);
-            float ep    = floor(time / cycle + ph);       // which drop
+            float fi = float( i );
+            float cycle = 3.6 + hash11( fi * 3.3 ) * 4.6;
+            float ph = hash11( fi * 7.7 );
+            float t01 = fract( time / cycle + ph );
+            float ep = floor( time / cycle + ph ); // which drop
 
-            float cz = 10.0 + hash11(fi * 9.1 + ep) * 90.0;
-            float cx = (hash11(fi * 1.7 + ep) - 0.5) * 1.90 * cz * halfA;
+            float cz = 10.0 + hash11( fi * 9.1 + ep ) * 90.0;
+            float cx = ( hash11( fi * 1.7 + ep ) - 0.5 ) * 1.90 * cz * halfA;
 
-            float d     = length(vec2(x, z) - vec2(cx, cz));
+            float d = length( vec2( x, z ) - vec2( cx, cz ) );
             float ringR = t01 * 42.0;
-            float wave  = sin((d - ringR) * 0.9)
-                        * exp(-abs(d - ringR) * 0.28)
-                        * (1.0 - t01) * 0.8;
-            h     += wave;
+            float wave = sin( ( d - ringR ) * 0.9 )
+                         * exp( -abs( d - ringR ) * 0.28 )
+                         * ( 1.0 - t01 ) * 0.8;
+            h += wave;
             slope += wave * 0.9;
         }
         // Hi-hats and cymbals ARE the drizzle: every hat onset makes the drops
         // land harder, so the rings bite deeper into the surface.
-        h *= 0.8 + 0.5 * audioLevel + 0.40 * clamp(audioHat, 0.0, 1.0);
+        h *= 0.8 + 0.5 * audioLevel + 0.40 * clamp( audioHat, 0.0, 1.0 );
 
         // Angular coordinate across the frame: the swell and the chop are
         // written against it so their wavelength stays roughly constant ON
@@ -122,26 +126,26 @@ void main()
         float ax = x / z;
 
         // A faint standing swell keeps the far water alive.
-        h += sin(ax * 9.0 + time * 0.5) * sin(z * 0.06 + time * 0.4) * 0.25
-           * (1.0 + audioSwell);
+        h += sin( ax * 9.0 + time * 0.5 ) * sin( z * 0.06 + time * 0.4 ) * 0.25
+             * ( 1.0 + audioSwell );
 
         // WIND CHOP: broadband, noisy material (high zero-crossing rate) frets
         // the whole surface into a fine grain; a held tone or drone leaves it
         // glassy.  Only the AMPLITUDE is audio-driven -- the wavelength and the
         // time coefficient are constants, so the accumulated phase never jumps.
-        float zr   = clamp(audioZCR, 0.0, 1.0);
-        float chop = sin(ax * 26.0 + z * 0.08 + time * 0.9)
-                   * sin(ax * 17.0 - z * 0.13 - time * 0.7);
-        h     += chop * 0.45 * zr;
+        float zr = clamp( audioZCR, 0.0, 1.0 );
+        float chop = sin( ax * 26.0 + z * 0.08 + time * 0.9 )
+                     * sin( ax * 17.0 - z * 0.13 - time * 0.7 );
+        h += chop * 0.45 * zr;
         slope += chop * 0.26 * zr;
 
         // Calm the last few rows so the surface meets the sky curtain exactly.
-        float join = 1.0 - smoothstep(0.92, 1.0, wa);
-        h     *= join;
+        float join = 1.0 - smoothstep( 0.92, 1.0, wa );
+        h *= join;
         slope *= join;
 
         y = -eye + h;
-        vWorld = vec3(x, y, z);
+        vWorld = vec3( x, y, z );
     }
     else
     {
@@ -149,21 +153,21 @@ void main()
         // Rises out of the water's far edge and leans back, covering
         // everything above the horizon.  At sk = 0 it sits exactly where the
         // last row of water sits, so the sheet is continuous.
-        float sk = (w - T) / (1.0 - T);
-        z = mix(150.0, 195.0, sk);
-        y = -eye + sk * 130.0;          // top edge lands ~20% above the frame
+        float sk = ( w - T ) / ( 1.0 - T );
+        z = mix( 150.0, 195.0, sk );
+        y = -eye + sk * 130.0; // top edge lands ~20% above the frame
 
-        float x = (u - 0.5) * 2.25 * z * halfA;
-        sky    = 1.0;
-        vWorld = vec3(x, y, z);
+        float x = ( u - 0.5 ) * 2.25 * z * halfA;
+        sky = 1.0;
+        vWorld = vec3( x, y, z );
     }
 
-    vec3 vp = vec3(vWorld.x, y, z);
+    vec3 vp = vec3( vWorld.x, y, z );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vSlope = slope;
-    vDist  = z;
-    vSky   = sky;
+    vDist = z;
+    vSky = sky;
 }

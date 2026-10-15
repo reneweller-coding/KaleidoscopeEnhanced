@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MarangoniConvectionTearsOfWine.frag
  * @brief MARANGONI CONVECTION TEARS OF WINE: Solutal Marangoni effect on glass surfaces.
@@ -18,25 +18,26 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   meniscusP    float capillary meniscus thickness scale        (0.4..1.8)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float tearCountP;
 uniform float climbSpeedP;
@@ -44,89 +45,94 @@ uniform float wineSheenP;
 uniform float meniscusP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Tints a colour toward the house palette at t, keeping its brightness.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
+    vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.35 + audioAdvance * 0.3;
-    
+
     // Climbing film meniscus front located near y = 0.25
-    float vClimb = (climbSpeedP > 0.01 ? climbSpeedP : 1.2);
-    float meniscusY = 0.25 + sin(uv.x * 6.0 + t * 0.5) * 0.05;
-    
+    float vClimb = ( climbSpeedP > 0.01 ? climbSpeedP : 1.2 );
+    float meniscusY = 0.25 + sin( uv.x * 6.0 + t * 0.5 ) * 0.05;
+
     // Capillary instability bead rim at top of climbing film
-    float nTears = (tearCountP > 1.0 ? tearCountP : 7.0);
+    float nTears = ( tearCountP > 1.0 ? tearCountP : 7.0 );
     float beadPhase = uv.x * nTears * 3.14159265;
-    float beads = pow(sin(beadPhase) * 0.5 + 0.5, 3.0) * exp(-abs(uv.y - meniscusY) * 20.0);
-    
+    float beads = pow( sin( beadPhase ) * 0.5 + 0.5, 3.0 ) * exp( -abs( uv.y - meniscusY ) * 20.0 );
+
     // Cascading descending droplet tear rivulets below meniscus
     float tearRivulet = 0.0;
-    for (float i = 0.0; i < 7.0; i += 1.0) {
-        if (i >= nTears) break;
-        
-        float tearX = (i - (nTears - 1.0) * 0.5) * (0.8 / nTears);
-        float dropY = meniscusY - fract(t * 0.8 * vClimb + i * 0.37) * 0.8;
-        
+    for ( float i = 0.0; i < 7.0; i += 1.0 )
+    {
+        if ( i >= nTears )
+            break;
+
+        float tearX = ( i - ( nTears - 1.0 ) * 0.5 ) * ( 0.8 / nTears );
+        float dropY = meniscusY - fract( t * 0.8 * vClimb + i * 0.37 ) * 0.8;
+
         // Droplet tear profile
-        float dDrop = length(vec2(uv.x - tearX, uv.y - dropY));
-        float dropCore = exp(-dDrop * dDrop * 120.0);
-        
+        float dDrop = length( vec2( uv.x - tearX, uv.y - dropY ) );
+        float dropCore = exp( -dDrop * dDrop * 120.0 );
+
         // Rivulet trail
-        float inTrail = exp(-abs(uv.x - tearX) * 45.0) * smoothstep(dropY, meniscusY, uv.y) * smoothstep(-0.6, dropY, uv.y);
+        float inTrail = exp( -abs( uv.x - tearX ) * 45.0 ) * smoothstep( dropY, meniscusY, uv.y )
+                        * smoothstep( -0.6, dropY, uv.y );
         tearRivulet += dropCore * 2.0 + inTrail * 0.6;
     }
-    
+
     // Bulk wine liquid pool at bottom (y < -0.4)
-    float bulkPool = smoothstep(-0.35, -0.5, uv.y);
-    
+    float bulkPool = smoothstep( -0.35, -0.5, uv.y );
+
     // Capillary ripples on climbing film
-    float ripples = sin(uv.y * 25.0 - t * 4.0 + audioPhase) * (0.6 + 0.8 * audioMid);
-    
+    float ripples = sin( uv.y * 25.0 - t * 4.0 + audioPhase ) * ( 0.6 + 0.8 * audioMid );
+
     // Pinch-off flash on kick
-    float pinchFlash = beads * (1.0 + 3.5 * audioKick) * (wineSheenP > 0.01 ? wineSheenP : 1.3);
-    
+    float pinchFlash = beads * ( 1.0 + 3.5 * audioKick ) * ( wineSheenP > 0.01 ? wineSheenP : 1.3 );
+
     // Ruby red wine color palette
-    vec3 wineRuby  = vec3(0.55, 0.04, 0.12);
-    vec3 wineGlass = vec3(0.9, 0.2, 0.35);
-    vec3 wineSheen = vec3(1.0, 0.95, 0.9);
-    
-    vec3 colWine = palTint(mix(wineRuby, wineGlass, clamp(uv.y + 0.5, 0.0, 1.0)), uv.x * 0.2 + audioCentroid, 0.26);
-    
+    vec3 wineRuby = vec3( 0.55, 0.04, 0.12 );
+    vec3 wineGlass = vec3( 0.9, 0.2, 0.35 );
+    vec3 wineSheen = vec3( 1.0, 0.95, 0.9 );
+
+    vec3 colWine = palTint( mix( wineRuby, wineGlass, clamp( uv.y + 0.5, 0.0, 1.0 ) ), uv.x * 0.2 + audioCentroid,
+                            0.26 );
+
     // Background photo sampling
     vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img(bgUv) * 0.25;
-    
+    vec3 bg = img( bgUv ) * 0.25;
+
     vec3 col = bg;
     col += colWine * bulkPool * 1.5;
-    col += colWine * tearRivulet * (0.8 + 0.4 * audioSwell) * 1.6;
+    col += colWine * tearRivulet * ( 0.8 + 0.4 * audioSwell ) * 1.6;
     col += colWine * beads * 1.8;
     col += wineSheen * pinchFlash * 2.2;
-    col += colWine * abs(ripples) * smoothstep(meniscusY, -0.4, uv.y) * 0.6;
-    col += colWine * (audioKick * 0.35);
-    
+    col += colWine * abs( ripples ) * smoothstep( meniscusY, -0.4, uv.y ) * 0.6;
+    col += colWine * ( audioKick * 0.35 );
+
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

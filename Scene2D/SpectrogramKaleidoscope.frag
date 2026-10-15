@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SpectrogramKaleidoscope.frag
  * @brief SPECTROGRAM KALEIDOSCOPE: the mirrored motif is not a photo but
@@ -19,88 +19,90 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: sidesP (fold count), spanP (seconds shown), hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texSpectro;    ///< 32 bands (x) x history ring (y), unit 28
-uniform float spectroHead;       ///< ring write position, 0..1
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     spectroHead;   ///< ring write position, 0..1
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float sidesP;
 uniform float spanP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// Spectrogram value for band b (0..1) at age (0 = now, 1 = 20 s ago).
-float spec(float b, float age)
+float spec( float b, float age )
 {
-    float x = (floor(b * 32.0) + 0.5) / 32.0;
-    float y = fract(spectroHead - age);
-    return texture(texSpectro, vec2(x, y)).r;
+    float x = ( floor( b * 32.0 ) + 0.5 ) / 32.0;
+    float y = fract( spectroHead - age );
+    return texture( texSpectro, vec2( x, y ) ).r;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float n   = floor((sidesP > 1.5 ? sidesP : 8.0) + 0.5);
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float span = 0.4 + 0.6 * clamp(spanP, 0.0, 1.0);     // fraction of the 20 s shown
+    float n = floor( ( sidesP > 1.5 ? sidesP : 8.0 ) + 0.5 );
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float span = 0.4 + 0.6 * clamp( spanP, 0.0, 1.0 ); // fraction of the 20 s shown
 
-    float r = length(p);
-    float a = atan(p.y, p.x) + sceneAdvance * 0.1;
+    float r = length( p );
+    float a = atan( p.y, p.x ) + sceneAdvance * 0.1;
     float sector = 6.2831853 / n;
-    float loc = mod(a, sector);
-    float mir = abs(loc - sector * 0.5);                  // 0 .. sector/2
+    float loc = mod( a, sector );
+    float mir = abs( loc - sector * 0.5 ); // 0 .. sector/2
 
     // Band runs around the wedge, age runs outward.
-    float band = mir / (sector * 0.5);
-    float age  = clamp(r / 0.95, 0.0, 1.0) * span;
-    float s0 = spec(band, age);
+    float band = mir / ( sector * 0.5 );
+    float age = clamp( r / 0.95, 0.0, 1.0 ) * span;
+    float s0 = spec( band, age );
     // A second, finer reading one band over for texture.
-    float s1 = spec(band + 0.5 / 32.0, age + 0.01 * span);
-    float e = clamp(s0 * 1.5, 0.0, 1.0);
+    float s1 = spec( band + 0.5 / 32.0, age + 0.01 * span );
+    float e = clamp( s0 * 1.5, 0.0, 1.0 );
 
     // Colour: band hue from the palette, brightness the spectrogram; bright
     // notes get a white core.
-    vec3 bandCol = imgPalette(hue * 0.159 + band * 0.7);
-    vec3 col = bandCol * (0.08 + 1.4 * e * e) + vec3(1.0) * pow(e, 4.0) * 0.6;
-    col += bandCol * abs(s0 - s1) * 2.0;                  // edges of the notes
+    vec3 bandCol = imgPalette( hue * 0.159 + band * 0.7 );
+    vec3 col = bandCol * ( 0.08 + 1.4 * e * e ) + vec3( 1.0 ) * pow( e, 4.0 ) * 0.6;
+    col += bandCol * abs( s0 - s1 ) * 2.0; // edges of the notes
     // Seams of the mirror.
-    float seam = exp(-min(loc, sector - loc) * 50.0) * 0.2;
-    col += imgPalette(hue * 0.159 + 0.9) * seam;
+    float seam = exp( -min( loc, sector - loc ) * 50.0 ) * 0.2;
+    col += imgPalette( hue * 0.159 + 0.9 ) * seam;
     // Rim glow on the swell, centre flash on the kick, fade at the edge.
-    col += imgPalette(hue * 0.159 + 0.5) * exp(-abs(r - 0.9) * 12.0) * 0.4 * clamp(audioSwell, 0.0, 1.0);
-    col *= 1.0 + 0.5 * audioKick * exp(-r * 5.0);
-    col *= (0.75 + 0.5 * audioLevel) * (1.0 - 0.5 * smoothstep(0.8, 1.15, r));
+    col += imgPalette( hue * 0.159 + 0.5 ) * exp( -abs( r - 0.9 ) * 12.0 ) * 0.4 * clamp( audioSwell, 0.0, 1.0 );
+    col *= 1.0 + 0.5 * audioKick * exp( -r * 5.0 );
+    col *= ( 0.75 + 0.5 * audioLevel ) * ( 1.0 - 0.5 * smoothstep( 0.8, 1.15, r ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

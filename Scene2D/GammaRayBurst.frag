@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file GammaRayBurst.frag
  * @brief GAMMA RAY BURST: The most powerful explosion in the universe. We are
@@ -17,156 +17,172 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float beamP;
 uniform float shockP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Smooth value noise.
-float noise(vec3 p) {
-    vec3 i = floor(p);
-    vec3 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
+float noise( vec3 p )
+{
+    vec3 i = floor( p );
+    vec3 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
     float n = i.x + i.y * 57.0 + i.z * 113.0;
     return mix(
-        mix(mix(hash11(n + 0.0), hash11(n + 1.0), f.x),
-            mix(hash11(n + 57.0), hash11(n + 58.0), f.x), f.y),
-        mix(mix(hash11(n + 113.0), hash11(n + 114.0), f.x),
-            mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
+        mix( mix( hash11( n + 0.0 ), hash11( n + 1.0 ), f.x ),
+             mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y ),
+        mix( mix( hash11( n + 113.0 ), hash11( n + 114.0 ), f.x ),
+             mix( hash11( n + 170.0 ), hash11( n + 171.0 ), f.x ), f.y ),
+        f.z );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec3 p) {
+float fbm( vec3 p )
+{
     float f = 0.0, a = 0.5;
-    for(int i = 0; i < 5; i++) { f += a * noise(p); p *= 2.0; a *= 0.5; }
+    for ( int i = 0; i < 5; i++ )
+    {
+        f += a * noise( p );
+        p *= 2.0;
+        a *= 0.5;
+    }
     return f;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float bp = (beamP > 0.01 ? beamP : 1.0);
-    float sp = (shockP > 0.01 ? shockP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float bp = ( beamP > 0.01 ? beamP : 1.0 );
+    float sp = ( shockP > 0.01 ? shockP : 1.0 );
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // We are looking directly at the center
-    float dist = length(uv);
-    float angle = atan(uv.y, uv.x);
+    float dist = length( uv );
+    float angle = atan( uv.y, uv.x );
 
-    vec3 col = vec3(0.0);
-    vec3 beamColor = imgPalette(0.8 + audioCentroid * 0.1); // Blinding, hot energy
-    vec3 shockColor = imgPalette(0.2); // Outer ejected material
+    vec3 col = vec3( 0.0 );
+    vec3 beamColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Blinding, hot energy
+    vec3 shockColor = imgPalette( 0.2 );                      // Outer ejected material
 
     // 1. The Central Beam (Gamma Ray Jet)
     // The jet is extremely focused, coming straight at the camera.
     // We create a perspective illusion of a tunnel of light.
 
     // Wobbly, relativistic distortion of the beam
-    float beamWobble = fbm(vec3(angle * 2.0, time * 2.0, 0.0)) * 0.05;
+    float beamWobble = fbm( vec3( angle * 2.0, time * 2.0, 0.0 ) ) * 0.05;
     float distDistort = dist + beamWobble;
 
     // The core of the beam is infinitely bright and tiny
     float beamCoreRadius = 0.05 / bp;
-    float core = exp(-distDistort * (50.0 * bp));
+    float core = exp( -distDistort * ( 50.0 * bp ) );
 
     // Relativistic particles shooting outwards from the center (Z-axis illusion)
     // Map 2D to a 3D cylindrical tunnel
-    float tunnelZ = 1.0 / max(distDistort, 0.001);
-    float tunnelU = angle * 2.0; // wrap around
-    float tunnelV = tunnelZ - (time * 10.0 + audioAdvance * 20.0); // rushing towards us
+    float tunnelZ = 1.0 / max( distDistort, 0.001 );
+    float tunnelU = angle * 2.0;                                     // wrap around
+    float tunnelV = tunnelZ - ( time * 10.0 + audioAdvance * 20.0 ); // rushing towards us
 
     // High frequency noise for the chaotic plasma
-    float plasma = fbm(vec3(tunnelU * 5.0, tunnelV * 2.0, time));
-    float plasmaStrands = step(0.7, plasma);
+    float plasma = fbm( vec3( tunnelU * 5.0, tunnelV * 2.0, time ) );
+    float plasmaStrands = step( 0.7, plasma );
 
     // Combine core and plasma
-    float beamIntensity = core + (plasmaStrands * exp(-distDistort * 10.0));
+    float beamIntensity = core + ( plasmaStrands * exp( -distDistort * 10.0 ) );
 
     // Audio Kick triggers catastrophic spikes in the beam
-    float kickSpike = step(0.9, hash11(floor(time * 4.00))) * audioKick * 10.0;   // was 15 Hz
-    beamIntensity *= (1.0 + kickSpike);
+    float kickSpike = step( 0.9, hash11( floor( time * 4.00 ) ) ) * audioKick * 10.0; // was 15 Hz
+    beamIntensity *= ( 1.0 + kickSpike );
 
-    col += beamColor * beamIntensity * (1.25 + audioSwell * 2.0);
+    col += beamColor * beamIntensity * ( 1.25 + audioSwell * 2.0 );
 
     // 2. Surrounding Accretion Disk / Dying Star Remnant
     // The material being violently ripped apart and blown away laterally
-    if (dist > 0.1) {
+    if ( dist > 0.1 )
+    {
         // Shockwave rings expanding outwards
         float expandSpeed = time * 2.0 + audioAdvance * 3.0;
-        float rings = sin(dist * 50.0 - expandSpeed);
-        float ringMask = smoothstep(0.9, 1.0, rings);
+        float rings = sin( dist * 50.0 - expandSpeed );
+        float ringMask = smoothstep( 0.9, 1.0, rings );
 
         // Break rings into turbulent debris
-        float debris = fbm(vec3(angle * 10.0, dist * 5.0, time * 2.0));
+        float debris = fbm( vec3( angle * 10.0, dist * 5.0, time * 2.0 ) );
         float ejecta = ringMask * debris * sp;
 
         // Ejecta gets destroyed/fades as it gets pushed further out
-        float ejectaFade = exp(-(dist - 0.1) * 5.0);
+        float ejectaFade = exp( -( dist - 0.1 ) * 5.0 );
 
-        col += shockColor * ejecta * ejectaFade * (1.0 + audioKick * 3.0) * (0.5 + audioSwell);
+        col += shockColor * ejecta * ejectaFade * ( 1.0 + audioKick * 3.0 ) * ( 0.5 + audioSwell );
 
         // A massive lateral shockwave (equatorial plane of the star)
         // We approximate it by creating a bright horizontal line that is distorted
-        float lateral = abs(uv.y + fbm(vec3(uv.x * 5.0, time, 0.0)) * 0.1);
-        float lateralWave = exp(-lateral * 20.0) * exp(-abs(uv.x) * 2.0);
-        col += beamColor * lateralWave * sp * (1.0 + audioKick * 5.0);
+        float lateral = abs( uv.y + fbm( vec3( uv.x * 5.0, time, 0.0 ) ) * 0.1 );
+        float lateralWave = exp( -lateral * 20.0 ) * exp( -abs( uv.x ) * 2.0 );
+        col += beamColor * lateralWave * sp * ( 1.0 + audioKick * 5.0 );
     }
 
     // 3. Glare and Lens effects (the energy is overwhelming)
     // Massive radial glare rays
-    float rays = fbm(vec3(angle * 20.0, time * 0.5, 0.0));
-    float raysMask = smoothstep(0.6, 0.9, rays) * exp(-dist * 3.0);
-    col += beamColor * raysMask * 0.5 * (1.0 + audioKick * 2.0);
+    float rays = fbm( vec3( angle * 20.0, time * 0.5, 0.0 ) );
+    float raysMask = smoothstep( 0.6, 0.9, rays ) * exp( -dist * 3.0 );
+    col += beamColor * raysMask * 0.5 * ( 1.0 + audioKick * 2.0 );
 
     // Overall blinding haze
-    float haze = exp(-dist * 1.35);
-    col += beamColor * haze * 0.85 * (1.0 + audioSwell);
+    float haze = exp( -dist * 1.35 );
+    col += beamColor * haze * 0.85 * ( 1.0 + audioSwell );
 
-    if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

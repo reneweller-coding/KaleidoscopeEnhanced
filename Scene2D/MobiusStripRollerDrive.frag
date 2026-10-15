@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MobiusStripRollerDrive.frag
  * @brief MOBIUS STRIP ROLLER DRIVE: High-velocity 3D roller coaster ride along a
@@ -14,52 +14,56 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> steers the continuous non-orientable rainbow palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float stripWidthP;
-uniform float radiusP;   ///< Radius knob, 0..1.
+uniform float radiusP; ///< Radius knob, 0..1.
 uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// Parametric Möbius Strip surface point: r(u, v)
-vec3 mobiusPoint(float u, float v, float rBase, float w) {
+vec3 mobiusPoint( float u, float v, float rBase, float w )
+{
     float uHalf = u * 0.5;
-    float rad = rBase + v * w * cos(uHalf);
-    return vec3(rad * cos(u), rad * sin(u), v * w * sin(uHalf));
+    float rad = rBase + v * w * cos( uHalf );
+    return vec3( rad * cos( u ), rad * sin( u ), v * w * sin( uHalf ) );
 }
 
 /// Signed distance to the Möbius RIBBON.
@@ -78,14 +82,15 @@ vec3 mobiusPoint(float u, float v, float rBase, float w) {
 /// So build the real surface instead. At angle u the ribbon is a segment of
 /// half-width halfW through the centre circle, rotated by u/2 in the local
 /// (radial, z) plane.
-float mobiusSDF(vec3 p, float rB, float halfW, float thick,
-                out float along, out float uOut) {
-    float u  = atan(p.y, p.x);
-    float rr = length(p.xy) - rB;   // radial offset from the centre circle
+float mobiusSDF( vec3 p, float rB, float halfW, float thick,
+                 out float along, out float uOut )
+{
+    float u = atan( p.y, p.x );
+    float rr = length( p.xy ) - rB; // radial offset from the centre circle
     float zz = p.z;
-    float c  = cos(u * 0.5), s = sin(u * 0.5);
+    float c = cos( u * 0.5 ), s = sin( u * 0.5 );
 
-    along       =  rr * c + zz * s; // coordinate across the ribbon's width
+    along = rr * c + zz * s;         // coordinate across the ribbon's width
     float across = -rr * s + zz * c; // signed offset off the ribbon's face
     uOut = u;
 
@@ -95,18 +100,19 @@ float mobiusSDF(vec3 p, float rB, float halfW, float thick,
     // about its centre, so the flipped segment coincides with itself and the
     // half-twist closes up seamlessly. It also keeps the estimate continuous
     // across the atan() branch cut at u = +-pi, where c and s change sign.
-    vec2 q = vec2(max(abs(along) - halfW, 0.0), across);
-    return (length(q) - thick) * 0.6;   // 0.6: Lipschitz safety for the twist
+    vec2 q = vec2( max( abs( along ) - halfW, 0.0 ), across );
+    return ( length( q ) - thick ) * 0.6; // 0.6: Lipschitz safety for the twist
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float rB = (radiusP > 0.01) ? radiusP : 2.2;
-    float sW = (stripWidthP > 0.01) ? stripWidthP : 0.65;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float rB = ( radiusP > 0.01 ) ? radiusP : 2.2;
+    float sW = ( stripWidthP > 0.01 ) ? stripWidthP : 0.65;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // Steady base rate from `time` plus the pre-integrated audio advance, the
     // same split the rest of the Scene2D family uses. `spd` is a per-activation
@@ -122,15 +128,15 @@ void main() {
     // the ribbon's face normal, tilting with uCam/2 -- the half-twist. (The
     // strip's width axis falls out as `right` below, since cross(T, N) is
     // exactly it.)
-    float ch = cos(uCam * 0.5), sh = sin(uCam * 0.5);
-    vec3 trackPos = vec3(rB * cos(uCam), rB * sin(uCam), 0.0);
-    vec3 T        = vec3(-sin(uCam), cos(uCam), 0.0);
-    vec3 N        = vec3(-cos(uCam) * sh, -sin(uCam) * sh, ch);
+    float ch = cos( uCam * 0.5 ), sh = sin( uCam * 0.5 );
+    vec3  trackPos = vec3( rB * cos( uCam ), rB * sin( uCam ), 0.0 );
+    vec3  T = vec3( -sin( uCam ), cos( uCam ), 0.0 );
+    vec3  N = vec3( -cos( uCam ) * sh, -sin( uCam ) * sh, ch );
 
     // Strip width breathes with sub-bass. Note the camera clearance below is
     // measured along N, perpendicular to the face, so widening the ribbon
     // cannot pull the surface toward the camera.
-    float halfW = sW * (1.0 + 0.25 * audioSubBass);
+    float       halfW = sW * ( 1.0 + 0.25 * audioSubBass );
     const float thick = 0.035;
 
     // Chase-cam: ride ABOVE the ribbon's face and look ALONG the tangent, so
@@ -143,25 +149,26 @@ void main() {
     // magnitude inside the march's 12.0 distance budget, so the offset can
     // never overshoot the far plane and blank the scene.
     float camH = 0.35 + 0.70 * sW;
-    vec3 ro    = trackPos + N * camH;
+    vec3  ro = trackPos + N * camH;
 
-    vec3 fwd   = normalize(T - N * 0.20);   // slight downward tilt onto the strip
-    vec3 right = normalize(cross(fwd, N));
-    vec3 up    = cross(right, fwd);
+    vec3 fwd = normalize( T - N * 0.20 ); // slight downward tilt onto the strip
+    vec3 right = normalize( cross( fwd, N ) );
+    vec3 up = cross( right, fwd );
 
-    vec3 rd = normalize(uv.x * right + uv.y * up + (1.25 + 0.2 * sin(audioSwell * 2.0)) * fwd);
+    vec3 rd = normalize( uv.x * right + uv.y * up + ( 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) * fwd );
 
     // Raymarching through Möbius strip ribbon
     float totDist = 0.0;
     float minTrackDist = 1e4;
-    vec3 hitCol = vec3(0.0);
-    bool hit = false;
+    vec3  hitCol = vec3( 0.0 );
+    bool  hit = false;
 
-    for (int i = 0; i < 48; i++) {
+    for ( int i = 0; i < 48; i++ )
+    {
         vec3 p = ro + rd * totDist;
 
         float along, uRaw;
-        float dRibbon = mobiusSDF(p, rB, halfW, thick, along, uRaw);
+        float dRibbon = mobiusSDF( p, rB, halfW, thick, along, uRaw );
 
         // abs(), and never the camera sample at i == 0. minTrackDist was
         // min'd over the SIGNED distance, so any ray that crossed into the
@@ -169,46 +176,49 @@ void main() {
         // 1.0 -- that was the near-white wedge. And a closest-approach
         // distance is ~0 by construction on every ray that hit, so it is only
         // a meaningful signal on rays that MISSED (see the hit test below).
-        if (i > 0) minTrackDist = min(minTrackDist, abs(dRibbon));
+        if ( i > 0 )
+            minTrackDist = min( minTrackDist, abs( dRibbon ) );
 
-        if (dRibbon < 0.004) {
+        if ( dRibbon < 0.004 )
+        {
             hit = true;
             // Orientation flip determination (after one 2pi revolution, side is inverted)
-            float cycle = floor(uCam / 6.2831853);
-            bool inverted = (mod(cycle, 2.0) == 1.0);
+            float cycle = floor( uCam / 6.2831853 );
+            bool  inverted = ( mod( cycle, 2.0 ) == 1.0 );
 
-            float uWrap = mod(uRaw, 6.2831853);
+            float uWrap = mod( uRaw, 6.2831853 );
             // Texture runs ALONG the track and ACROSS the strip's width, so the
             // photo now actually wraps the ribbon instead of being sliced by a
             // world-space z plane.
-            vec2 sampleUV = fract(vec2(uWrap / 6.2831853 * 2.0,
-                                       along / (2.0 * halfW) + 0.5));
-            vec3 texCol = img(sampleUV);
-            vec3 palCol = imgPalette(uWrap / 6.2831853 + (inverted ? 0.5 : 0.0));
+            vec2 sampleUV = fract( vec2( uWrap / 6.2831853 * 2.0,
+                                         along / ( 2.0 * halfW ) + 0.5 ) );
+            vec3 texCol = img( sampleUV );
+            vec3 palCol = imgPalette( uWrap / 6.2831853 + ( inverted ? 0.5 : 0.0 ) );
 
             // Depth fog: without it the strip reads as one evenly lit slab
             // rather than a ribbon running away from the camera.
-            float fog = exp(-totDist * 0.16);
-            hitCol = mix(texCol, palCol, 0.5) * (0.20 + 0.95 * fog);
+            float fog = exp( -totDist * 0.16 );
+            hitCol = mix( texCol, palCol, 0.5 ) * ( 0.20 + 0.95 * fog );
             break;
         }
 
         // Far plane: fall through to the background, rather than shading the
         // miss with ribbon texture as if it were a hit.
-        if (totDist > 12.0) break;
+        if ( totDist > 12.0 )
+            break;
 
-        totDist += max(0.004, dRibbon * 0.8);
+        totDist += max( 0.004, dRibbon * 0.8 );
     }
 
     // Glowing laser track rails -- silhouette haloes along the strip's edges,
     // on the rays that missed it.
-    float railGlow = hit ? 0.0 : exp(-max(minTrackDist, 0.0) * (24.0 + 12.0 * audioCentroid)) * glw;
-    vec3 railTint = vec3(1.3, 1.1, 1.8) * railGlow * (1.0 + 2.5 * audioKick);
+    float railGlow = hit ? 0.0 : exp( -max( minTrackDist, 0.0 ) * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
+    vec3  railTint = vec3( 1.3, 1.1, 1.8 ) * railGlow * ( 1.0 + 2.5 * audioKick );
 
-    vec3 bgCol = imgPalette(length(uv) * 0.4 + 0.2) * (0.2 + 0.15 * audioLevel);
-    vec3 finalCol = mix(bgCol, hitCol, clamp(length(hitCol), 0.0, 1.0));
+    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3 finalCol = mix( bgCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
     finalCol += railTint;
 
-    finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    finalCol = pow( finalCol, vec3( 0.88 ) );
+    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
 }

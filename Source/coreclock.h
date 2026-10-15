@@ -24,20 +24,25 @@
 class WallClock
 {
 public:
-	WallClock() : m_t0( std::chrono::steady_clock::now() ) {} ///< Constructs the clock, starting it immediately.
-	void start()   { m_t0 = std::chrono::steady_clock::now(); } ///< Resets the reference point to now.
-	void restart() { start(); } ///< Alias for start(), matching QElapsedTimer's API.
-	/**
-	 * @brief Milliseconds since start() - wie QElapsedTimer::elapsed().
-	 * @return Elapsed time in milliseconds since the last start()/restart().
-	 */
-	long long elapsed() const
-	{
-		return std::chrono::duration_cast<std::chrono::milliseconds>(
-		           std::chrono::steady_clock::now() - m_t0 ).count();
-	}
+    WallClock()
+        : m_t0( std::chrono::steady_clock::now() )
+    {
+    } ///< Constructs the clock, starting it immediately.
+    void start() { m_t0 = std::chrono::steady_clock::now(); } ///< Resets the reference point to now.
+    void restart() { start(); }                               ///< Alias for start(), matching QElapsedTimer's API.
+    /**
+     * @brief Milliseconds since start() - wie QElapsedTimer::elapsed().
+     * @return Elapsed time in milliseconds since the last start()/restart().
+     */
+    long long elapsed() const
+    {
+        return std::chrono::duration_cast<std::chrono::milliseconds>(
+                   std::chrono::steady_clock::now() - m_t0 )
+            .count();
+    }
+
 private:
-	std::chrono::steady_clock::time_point m_t0; ///< Reference time point set by the constructor / start() / restart().
+    std::chrono::steady_clock::time_point m_t0; ///< Reference time point set by the constructor / start() / restart().
 };
 
 #endif

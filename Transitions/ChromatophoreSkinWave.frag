@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file ChromatophoreSkinWave.frag
  * @brief TRANSITION CHROMATOPHORE SKIN WAVE: the picture changes the way
@@ -26,103 +26,108 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: densityP, waveP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float densityP;   ///< Density knob, 0..1.
-uniform float waveP;   ///< Wave knob.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float densityP; ///< Density knob, 0..1.
+uniform float waveP;    ///< Wave knob.
+uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float dens = 13.0 + floor(clamp(densityP, 0.0, 1.0) * 15.0);   // rolled ONCE
-    float wav  = (waveP > 0.0) ? waveP : 1.0;
-    float hue  = (hueP  > 0.0) ? hueP  : 0.0;
+    float dens = 13.0 + floor( clamp( densityP, 0.0, 1.0 ) * 15.0 ); // rolled ONCE
+    float wav = ( waveP > 0.0 ) ? waveP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
     // The travelling band of activation.
-    float k = 4.1 / wav;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    vec2  wdir = normalize(vec2(0.82, 0.34));
-    float act = 0.5 + 0.5 * sin(dot(p, wdir) * k - audioAdvance * 0.09);
+    float k = 4.1 / wav; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    vec2  wdir = normalize( vec2( 0.82, 0.34 ) );
+    float act = 0.5 + 0.5 * sin( dot( p, wdir ) * k - audioAdvance * 0.09 );
 
-    vec3 skin = texture(tex0, uv).rgb;
+    vec3 skin = texture( tex0, uv ).rgb;
 
     float cell = 1.0 / dens;
-    vec2  gi = floor(p / cell);
+    vec2  gi = floor( p / cell );
 
-    float best = 0.0;              // how far into a sac this pixel is
-    vec3  pigment = vec3(0.0);
+    float best = 0.0; // how far into a sac this pixel is
+    vec3  pigment = vec3( 0.0 );
     float irid = 0.0;
-    for (int j = -1; j <= 1; ++j)
-    for (int i = -1; i <= 1; ++i)
-    {
-        vec2 id = gi + vec2(float(i), float(j));
-        vec2 jit = vec2(hash21(id + 1.7), hash21(id + 6.3)) - 0.5;
-        vec2 c = (id + 0.5 + jit * 0.72) * cell;
-        // Each sac opens a little before or after its neighbours, and the wave
-        // decides by how much.  The opening itself is one smooth ramp.
-        float own = hash21(id + 14.9);
-        float when = 0.34 * own + 0.30 * (1.0 - act);
-        float open = smoothstep(when, when + 0.42, d)
-                   * (0.75 + 0.35 * clamp(audioSwell, 0.0, 1.0));
-        // A relaxed sac is a small dark point; a pulled-open one is wide.
-        // Closed means closed: a relaxed sac has no radius at all at the
-        // start of the turn, or the first frame is already a mosaic.
-        float r = cell * (0.10 + 0.78 * clamp(open, 0.0, 1.0))
-                * smoothstep(0.0, 0.05, d);
-        // A radius of exactly zero would make the smoothstep below a
-        // smoothstep(0, 0, x) -- a division by zero, and the sac swallows the
-        // whole frame instead of vanishing.  A closed sac is simply skipped.
-        if (r <= 1e-5) continue;
-        float dist = length(p - c);
-        // Round and soft-edged, always.
-        float ins = smoothstep(r, r * 0.72, dist);
-        if (ins > best)
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
         {
-            best = ins;
-            // The pigment the sac holds: sampled once, at the sac's centre.
-            vec2 cuv = clamp(c / vec2(aspect, 1.0) + 0.5, 0.0, 1.0);
-            pigment = textureLod(tex1, cuv, 0.0).rgb;
-            irid = hash21(id + 27.1);
+            vec2 id = gi + vec2( float( i ), float( j ) );
+            vec2 jit = vec2( hash21( id + 1.7 ), hash21( id + 6.3 ) ) - 0.5;
+            vec2 c = ( id + 0.5 + jit * 0.72 ) * cell;
+            // Each sac opens a little before or after its neighbours, and the wave
+            // decides by how much.  The opening itself is one smooth ramp.
+            float own = hash21( id + 14.9 );
+            float when = 0.34 * own + 0.30 * ( 1.0 - act );
+            float open = smoothstep( when, when + 0.42, d )
+                         * ( 0.75 + 0.35 * clamp( audioSwell, 0.0, 1.0 ) );
+            // A relaxed sac is a small dark point; a pulled-open one is wide.
+            // Closed means closed: a relaxed sac has no radius at all at the
+            // start of the turn, or the first frame is already a mosaic.
+            float r = cell * ( 0.10 + 0.78 * clamp( open, 0.0, 1.0 ) )
+                      * smoothstep( 0.0, 0.05, d );
+            // A radius of exactly zero would make the smoothstep below a
+            // smoothstep(0, 0, x) -- a division by zero, and the sac swallows the
+            // whole frame instead of vanishing.  A closed sac is simply skipped.
+            if ( r <= 1e-5 )
+                continue;
+            float dist = length( p - c );
+            // Round and soft-edged, always.
+            float ins = smoothstep( r, r * 0.72, dist );
+            if ( ins > best )
+            {
+                best = ins;
+                // The pigment the sac holds: sampled once, at the sac's centre.
+                vec2 cuv = clamp( c / vec2( aspect, 1.0 ) + 0.5, 0.0, 1.0 );
+                pigment = textureLod( tex1, cuv, 0.0 ).rgb;
+                irid = hash21( id + 27.1 );
+            }
         }
-    }
 
     // Iridophores under the sacs: a thin structural sheen.
-    vec3 sheen = mix(vec3(0.55, 0.85, 0.95), vec3(0.95, 0.75, 0.55), irid);
-    vec3 sac = pigment * (0.88 + 0.26 * irid);
-    sac += sheen * (0.05 + 0.20 * clamp(audioHigh * 2.0, 0.0, 1.0)) * arc * (1.0 - irid * 0.5);
+    vec3 sheen = mix( vec3( 0.55, 0.85, 0.95 ), vec3( 0.95, 0.75, 0.55 ), irid );
+    vec3 sac = pigment * ( 0.88 + 0.26 * irid );
+    sac += sheen * ( 0.05 + 0.20 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) * arc * ( 1.0 - irid * 0.5 );
 
-    vec3 col = mix(skin, sac, best);
+    vec3 col = mix( skin, sac, best );
     // The sacs cannot tile the plane, so the last of the skin goes at the end.
-    col = mix(col, texture(tex1, uv).rgb, smoothstep(0.86, 1.0, d));
+    col = mix( col, texture( tex1, uv ).rgb, smoothstep( 0.86, 1.0, d ) );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

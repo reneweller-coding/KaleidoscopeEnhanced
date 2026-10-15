@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // KelpForest.frag — soft blade: bright midrib, translucent edges.
-in vec4  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file KelpForest.frag
@@ -18,8 +18,8 @@ in float vSide;   ///< Which side of a strip (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float d    = abs(vSide);
-    float body = exp(-d * d * 2.2);
-    float rib  = exp(-d * d * 30.0) * 0.5;
-    fragColor = vec4(vCol.rgb * (body + rib), 1.0);
+    float d = abs( vSide );
+    float body = exp( -d * d * 2.2 );
+    float rib = exp( -d * d * 30.0 ) * 0.5;
+    fragColor = vec4( vCol.rgb * ( body + rib ), 1.0 );
 }

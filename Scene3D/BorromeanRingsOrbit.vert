@@ -6,44 +6,57 @@
  * packed xy and z sign.  The opaque pass draws the wall, the OIT pass the
  * rings; the other half collapses behind the near plane.  No camera motion.
  */
-layout(location = 0) in vec4 attrA;   ///< xyz = position, w = ring id
-layout(location = 1) in vec4 attrB;   ///< x = along (0..1), y = kind (-1 wall, 0/1 ring by nz sign), zw = normal xy / uv
+layout( location = 0 ) in vec4 attrA; ///< xyz = position, w = ring id
+layout( location = 1 ) in vec4 attrB; ///< x = along (0..1), y = kind (-1 wall, 0/1 ring by nz sign), zw = normal xy /
+                                      ///< uv
 
 uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float oitPass;   ///< Order-independent transparency pass flag.
+uniform float eyeOff;  ///< Stereo eye offset (0 in mono).
+uniform float time;    ///< Seconds since the program started (never reset; see sceneTime).
+uniform float oitPass; ///< Order-independent transparency pass flag.
 
-out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
-out vec3 vWorld;   ///< World position (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out float vKind;   ///< Element kind (from the vertex stage).
+out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
+out vec3  vWorld;    ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out float vKind;     ///< Element kind (from the vertex stage).
 out float vAlong;
-out float vId;   ///< Instance or element id (from the vertex stage).
+out float vId; ///< Instance or element id (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float kind = attrB.y;
-    bool isWall = kind < -0.5;
-    bool wantRings = oitPass > 0.5;
-    if (isWall == wantRings)
+    bool  isWall = kind < -0.5;
+    bool  wantRings = oitPass > 0.5;
+    if ( isWall == wantRings )
     {
-        gl_Position = vec4(0.0, 0.0, -2.0, 1.0);
-        vTexCoord = vec2(0.0); vWorld = vec3(0.0); vNormal = vec3(0.0, 0.0, 1.0); vKind = kind; vAlong = 0.0; vId = 0.0;
+        gl_Position = vec4( 0.0, 0.0, -2.0, 1.0 );
+        vTexCoord = vec2( 0.0 );
+        vWorld = vec3( 0.0 );
+        vNormal = vec3( 0.0, 0.0, 1.0 );
+        vKind = kind;
+        vAlong = 0.0;
+        vId = 0.0;
         return;
     }
     vec3 vp = attrA.xyz;
-    vWorld = vp; vKind = kind; vAlong = attrB.x; vId = attrA.w;
-    if (isWall) { vTexCoord = attrB.zw; vNormal = vec3(0.0, 0.0, -1.0); }
+    vWorld = vp;
+    vKind = kind;
+    vAlong = attrB.x;
+    vId = attrA.w;
+    if ( isWall )
+    {
+        vTexCoord = attrB.zw;
+        vNormal = vec3( 0.0, 0.0, -1.0 );
+    }
     else
     {
-        vec2 nxy = attrB.zw;
-        float nz = sqrt(max(1.0 - dot(nxy, nxy), 0.0)) * (kind > 0.5 ? -1.0 : 1.0);
-        vNormal = vec3(nxy, nz);
-        vTexCoord = vec2(0.0);
+        vec2  nxy = attrB.zw;
+        float nz = sqrt( max( 1.0 - dot( nxy, nxy ), 0.0 ) ) * ( kind > 0.5 ? -1.0 : 1.0 );
+        vNormal = vec3( nxy, nz );
+        vTexCoord = vec2( 0.0 );
     }
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

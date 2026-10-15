@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SpectrogramTunnel.frag
  * @brief SPECTROGRAM TUNNEL: the tunnel IS the music.  The host's scrolling
@@ -24,118 +24,120 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: twistP (wall twist per unit depth), speedP (drift),
  *                         glowP (relief light), hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform sampler2D texSpectro;   ///< 32 bands across (x), ~20 s history down (y), ring
-uniform float spectroHead;      ///< T coordinate of "now", continuous
-uniform float spectroFill;      ///< 0..1 how much history exists yet
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texSpectro;    ///< 32 bands across (x), ~20 s history down (y), ring
+uniform float     spectroHead;   ///< T coordinate of "now", continuous
+uniform float     spectroFill;   ///< 0..1 how much history exists yet
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
-uniform float audioMelodyPitch;   ///< Pitch of the melody, 0..1 over the tracked range.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioBarPhase;    ///< Position within the current bar, 0..1.
+uniform float audioMelodyPitch; ///< Pitch of the melody, 0..1 over the tracked range.
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float twistP;   ///< Twist knob, 0..1.
-uniform float speedP;   ///< Speed knob, 0..1.
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float twistP; ///< Twist knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// Spectrogram energy at band b (0..1 across the 32 bands) and age (0 = now,
 /// 1 = the oldest row).  The head trails the write position on purpose; we
 /// never sample closer than that.
-float spec(float b, float age)
+float spec( float b, float age )
 {
-    float x = clamp(b, 0.0, 1.0) * (31.0 / 32.0) + 0.5 / 32.0;
-    float y = fract(spectroHead - age);
-    return texture(texSpectro, vec2(x, y)).r;
+    float x = clamp( b, 0.0, 1.0 ) * ( 31.0 / 32.0 ) + 0.5 / 32.0;
+    float y = fract( spectroHead - age );
+    return texture( texSpectro, vec2( x, y ) ).r;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float tw  = (twistP > 0.001) ? twistP : 0.6;
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
-    float hue = (hueP > 0.001) ? hueP : 0.0;
+    float tw = ( twistP > 0.001 ) ? twistP : 0.6;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
 
     // Gentle roll of the whole tube with the bar; the kick breathes it.
-    float roll = sceneAdvance * 0.08;              // a slow steady roll, no bar sway (V7d)
-    float ca = cos(roll), sa = sin(roll);
-    p = vec2(ca * p.x - sa * p.y, sa * p.x + ca * p.y);
-    float r = length(p);
-    float theta = atan(p.y, p.x);                    // -pi..pi
+    float roll = sceneAdvance * 0.08; // a slow steady roll, no bar sway (V7d)
+    float ca = cos( roll ), sa = sin( roll );
+    p = vec2( ca * p.x - sa * p.y, sa * p.x + ca * p.y );
+    float r = length( p );
+    float theta = atan( p.y, p.x ); // -pi..pi
 
     // Classic tube: depth is 1/r.  The near end (large r) is "now".
-    float depth = 0.22 / max(r, 0.02);               // 0.2 .. ~11
+    float depth = 0.22 / max( r, 0.02 ); // 0.2 .. ~11
     // Frequency runs AROUND the tube, mirrored: |theta|/pi is 0 at the right
     // (treble) ... no -- bass belongs on top and bottom, so measure from the
     // horizontal: 0 at the sides, 1 at top/bottom.
-    float band = abs(sin(theta));                    // 0 sides .. 1 top/bottom
-    band = 1.0 - band;                               // treble sides, bass top/bottom
+    float band = abs( sin( theta ) ); // 0 sides .. 1 top/bottom
+    band = 1.0 - band;                // treble sides, bass top/bottom
     // Twist the wall along the depth so the bands spiral.
     float twist = tw * depth * 0.08 + sceneAdvance * 0.05;
-    band = fract(band * 0.5 + twist * 0.15) * 2.0;
-    band = band > 1.0 ? 2.0 - band : band;           // keep the mirror
+    band = fract( band * 0.5 + twist * 0.15 ) * 2.0;
+    band = band > 1.0 ? 2.0 - band : band; // keep the mirror
 
     // History along the tunnel: eight seconds of the ~20-second ring, with a
     // slow forward drift on top of the spectrogram's own sliding.
     float age = depth * 0.045 * spd + sceneAdvance * 0.01;
-    float e   = spec(band, age);
-    float e2  = spec(band, age + 0.01);
-    float eNear = spec(band, max(age - 0.01, 0.0));
-    e = clamp(e * 1.4, 0.0, 1.0) * min(spectroFill * 4.0, 1.0);
+    float e = spec( band, age );
+    float e2 = spec( band, age + 0.01 );
+    float eNear = spec( band, max( age - 0.01, 0.0 ) );
+    e = clamp( e * 1.4, 0.0, 1.0 ) * min( spectroFill * 4.0, 1.0 );
 
     // Relief: a note is a bump.  Bumps catch light from the tunnel axis.
-    float relief = (e2 - eNear) * 6.0;               // slope along depth
-    float lit = clamp(0.45 + 0.55 * relief, 0.0, 1.5);
+    float relief = ( e2 - eNear ) * 6.0; // slope along depth
+    float lit = clamp( 0.45 + 0.55 * relief, 0.0, 1.5 );
 
     // Wall colour: the band picks the palette position, energy the brightness.
-    vec3 wall = imgPalette(hue * 0.159 + band * 0.45) * (0.30 + 1.6 * e * glw) * lit;
+    vec3 wall = imgPalette( hue * 0.159 + band * 0.45 ) * ( 0.30 + 1.6 * e * glw ) * lit;
     // Grid of faint band lines so the wall reads as a tube even in silence.
-    float lines = 0.5 + 0.5 * cos(band * 32.0 * 3.14159265);
-    wall += imgPalette(hue * 0.159 + 0.5) * 0.18 * pow(lines, 6.0);
+    float lines = 0.5 + 0.5 * cos( band * 32.0 * 3.14159265 );
+    wall += imgPalette( hue * 0.159 + 0.5 ) * 0.18 * pow( lines, 6.0 );
 
     // Melody ring: a bright ring travelling at the melody's band.
-    float mb = clamp(audioMelodyPitch, 0.0, 1.0);
-    float ring = exp(-abs(band - mb) * 18.0) * exp(-abs(fract(age * 6.0) - 0.5) * 6.0);
-    wall += imgPalette(hue * 0.159 + 0.85) * ring * 0.8 * (0.5 + audioLevel);
+    float mb = clamp( audioMelodyPitch, 0.0, 1.0 );
+    float ring = exp( -abs( band - mb ) * 18.0 ) * exp( -abs( fract( age * 6.0 ) - 0.5 ) * 6.0 );
+    wall += imgPalette( hue * 0.159 + 0.85 ) * ring * 0.8 * ( 0.5 + audioLevel );
 
     // Depth fog toward the far end (correct sign: far = fogged).
-    float fog = 1.0 - exp(-depth * (0.05 + 0.08 * audioSwell));
-    vec3 fogCol = imgPalette(hue * 0.159 + 0.2) * 0.08;
-    vec3 col = mix(wall, fogCol, clamp(fog, 0.0, 0.80));
+    float fog = 1.0 - exp( -depth * ( 0.05 + 0.08 * audioSwell ) );
+    vec3  fogCol = imgPalette( hue * 0.159 + 0.2 ) * 0.08;
+    vec3  col = mix( wall, fogCol, clamp( fog, 0.0, 0.80 ) );
 
     // A soft core glow at the vanishing point.
-    col += imgPalette(hue * 0.159 + 0.7) * 0.25 * exp(-r * 18.0) * (0.6 + 0.8 * audioLevel);
+    col += imgPalette( hue * 0.159 + 0.7 ) * 0.25 * exp( -r * 18.0 ) * ( 0.6 + 0.8 * audioLevel );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

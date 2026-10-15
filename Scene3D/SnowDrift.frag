@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // SnowDrift.frag — soft glowing point (additive blending).
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol; ///< Colour (from the vertex stage).
 
 /**
  * @file SnowDrift.frag
@@ -26,20 +26,21 @@ in vec4 vCol;   ///< Colour (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  d = gl_PointCoord - 0.5;
+    vec2 d = gl_PointCoord - 0.5;
     // vCol.a == 2.0 marks the moon sprite: a soft-edged DISC with a halo,
     // not a gaussian point.
-    if (vCol.a > 1.5) {
-        float r = length(d);
-        float disc = smoothstep(0.34, 0.28, r);
-        float halo = exp(-r * r * 9.0) * 0.30;
-        fragColor = vec4(vCol.rgb * (disc + halo), 1.0);
+    if ( vCol.a > 1.5 )
+    {
+        float r = length( d );
+        float disc = smoothstep( 0.34, 0.28, r );
+        float halo = exp( -r * r * 9.0 ) * 0.30;
+        fragColor = vec4( vCol.rgb * ( disc + halo ), 1.0 );
         return;
     }
     // Tighter Gaussian: at 9.0 the sprite was a soft blob out to its own edge,
     // so overlapping flakes smeared into a continuous veil. A crisper core
     // keeps each flake a distinct point of light with dark between them.
-    float a = exp(-dot(d, d) * 15.0);
+    float a = exp( -dot( d, d ) * 15.0 );
     // Additive pass: cap the tinted vector.
-    fragColor = vec4(min(vCol.rgb * a * 2.4, vec3(1.0)), 1.0);
+    fragColor = vec4( min( vCol.rgb * a * 2.4, vec3( 1.0 ) ), 1.0 );
 }

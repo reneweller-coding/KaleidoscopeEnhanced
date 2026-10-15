@@ -34,30 +34,31 @@
 // scaled by their own depth), which is what keeps the field even across the
 // picture at every distance, and no lamp is ever drawn below ~2.6 px.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioBeatPhase;   ///< Position within the current beat, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBeatPhase; ///< Position within the current beat, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioArousal;   ///< overall intensity -> flash synchrony
 uniform float audioSpread;    ///< narrow .. wide spectrum -> swarm dispersion
 uniform float audioMode;      ///< 0 = minor / cool, 1 = major / warm
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -67,12 +68,12 @@ void main()
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     const float kTanY = 0.5206;
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+    float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // Spectral spread runs the swarm's DEPTH: a narrow, pure spectrum keeps
     // the fireflies in a close shallow cloud, a rich broadband one lets the
     // meadow run far back into the night.
-    float spr  = clamp(audioSpread, 0.0, 1.0);
+    float spr = clamp( audioSpread, 0.0, 1.0 );
     float deep = 42.0 + 62.0 * spr;
 
     // Home position in FRUSTUM coordinates: x and y scaled by the firefly's
@@ -80,68 +81,67 @@ void main()
     // eight units away or ninety.  2.0 would fit the frustum exactly; 2.25 so
     // the field still reaches past all four edges when the preset camera rig
     // rolls and yaws the view, and spread only ever opens it further.
-    float dz    = 7.5 + pow(r3, 1.35) * deep;
+    float dz = 7.5 + pow( r3, 1.35 ) * deep;
     float halfH = dz * kTanY;
     float halfW = halfH * aspect;
-    float open  = 2.25 + 0.30 * spr;
+    float open = 2.25 + 0.30 * spr;
 
     // Vertical bias: still a MEADOW, so the lamps crowd the lower half and
     // thin out toward the top of the night, but they reach both edges.
-    float fy = pow(r2, 0.78);
+    float fy = pow( r2, 0.78 );
 
-    vec3 home = vec3((r1 - 0.5) * open * halfW,
-                     (1.05 - 2.30 * fy) * halfH,
-                     dz);
+    vec3 home = vec3( ( r1 - 0.5 ) * open * halfW,
+                      ( 1.05 - 2.30 * fy ) * halfH,
+                      dz );
     // Wander scaled with depth, so the drift reads the same at every distance.
     float wob = 0.9 + 0.055 * dz;
-    vec3 world = home
-               + vec3(sin(time * 0.23 + r4 * 40.0) * 1.1 * wob,
-                      sin(time * 0.31 + r1 * 40.0) * 0.55 * wob,
-                      sin(time * 0.19 + r2 * 40.0) * 2.5);
+    vec3  world = home
+                  + vec3( sin( time * 0.23 + r4 * 40.0 ) * 1.1 * wob,
+                          sin( time * 0.31 + r1 * 40.0 ) * 0.55 * wob,
+                          sin( time * 0.19 + r2 * 40.0 ) * 2.5 );
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
     // Blink: own slow rhythm + a soft synchrony wave sweeping in x with
     // the beat phase — smooth envelopes only, no strobing.
-    float own  = 0.5 + 0.5 * sin(time * (0.8 + r2 * 1.4) + r3 * 40.0);
-    float sync = 0.5 + 0.5 * sin(6.2831853 * audioBeatPhase
-                                 - world.x * 0.05);
+    float own = 0.5 + 0.5 * sin( time * ( 0.8 + r2 * 1.4 ) + r3 * 40.0 );
+    float sync = 0.5 + 0.5 * sin( 6.2831853 * audioBeatPhase - world.x * 0.05 );
     // Arousal decides how hard the swarm LOCKS: a calm passage leaves every
     // firefly on its own rhythm, an intense one pulls the entire meadow into
     // a single sweeping synchronous wave (real fireflies do exactly this).
-    float syncW = 0.25 + 0.55 * clamp(audioArousal, 0.0, 1.0);
+    float syncW = 0.25 + 0.55 * clamp( audioArousal, 0.0, 1.0 );
     // The squared envelope left most of the meadow sitting at zero; 1.6 keeps
     // the soft breathing blink but lets an unlit lamp stay faintly present.
-    float blink = pow(own * (1.0 - syncW) + sync * syncW, 1.6);
+    float blink = pow( own * ( 1.0 - syncW ) + sync * syncW, 1.6 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
     // A lamp must stay a legible speck at any distance -- below roughly two
     // and a half pixels an additive sprite averages away to nothing and the
     // far half of the meadow reads as black again.
-    gl_PointSize = clamp(235.0 * (0.4 + 0.7 * r4) * px / dist,
-                         2.6, max(15.0 * px, 2.6))
-                 * (0.72 + 0.36 * blink);
+    gl_PointSize = clamp( 235.0 * ( 0.4 + 0.7 * r4 ) * px / dist,
+                          2.6, max( 15.0 * px, 2.6 ) )
+                   * ( 0.72 + 0.36 * blink );
 
     // Warm green-gold, a rare cool one — and the musical mode sets the night's
     // temperature: a minor key cools every lamp toward blue-green, a major key
     // warms them back to the classic green-gold.
-    vec3 warm = (r1 > 0.94) ? vec3(0.50, 0.75, 0.90) : vec3(0.75, 0.90, 0.25);
-    vec3 cool = (r1 > 0.94) ? vec3(0.38, 0.68, 1.00) : vec3(0.34, 0.84, 0.58);
-    vec3 col = mix(cool, warm, clamp(audioMode, 0.0, 1.0));
-    col = hueRot(col, audioChromaHue * 0.2);
+    vec3 warm = ( r1 > 0.94 ) ? vec3( 0.50, 0.75, 0.90 ) : vec3( 0.75, 0.90, 0.25 );
+    vec3 cool = ( r1 > 0.94 ) ? vec3( 0.38, 0.68, 1.00 ) : vec3( 0.34, 0.84, 0.58 );
+    vec3 col = mix( cool, warm, clamp( audioMode, 0.0, 1.0 ) );
+    col = hueRot( col, audioChromaHue * 0.2 );
     // A resting lamp keeps a low ember instead of going out completely, and
     // the haze fade reaches past the back of the field (at 100 the far third
     // of the meadow was multiplied to zero).
-    col *= (0.015 + 1.75 * blink) * (0.65 + 0.4 * audioSwell + 0.25 * audioLevel)
-         * clamp(1.0 - vp.z / 165.0, 0.0, 1.0);
+    col *= ( 0.015 + 1.75 * blink ) * ( 0.65 + 0.4 * audioSwell + 0.25 * audioLevel )
+           * clamp( 1.0 - vp.z / 165.0, 0.0, 1.0 );
     // Cap the TINTED vec3, not the scalar feeding it: the green-gold lamp
     // colour runs past 1.0 in its own channels, and pooled sprites clipped to
     // flat over-saturated green.
-    vCol = vec4(min(col * 3.0, vec3(2.4)), 1.0);
+    vCol = vec4( min( col * 3.0, vec3( 2.4 ) ), 1.0 );
 }

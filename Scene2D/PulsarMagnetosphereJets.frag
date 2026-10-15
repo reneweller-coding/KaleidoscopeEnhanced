@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PulsarMagnetosphereJets.frag
  * @brief PULSAR MAGNETOSPHERE JETS: Rapidly spinning millisecond pulsar with twisted
@@ -17,34 +17,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP     float synchrotron radiation hue offset        (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSubBass;  ///< Sub-bass band level, 0..1.
+uniform float audioBass;     ///< Bass band level, 0..1.
+uniform float audioMid;      ///< Mid band level, 0..1.
+uniform float audioHigh;     ///< High band level, 0..1.
+uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float spinP;   ///< Spin knob, 0..1.
+uniform float spinP; ///< Spin knob, 0..1.
 uniform float beamP;
 uniform float fieldP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -52,73 +54,77 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c);
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float spn = (spinP  > 0.0) ? spinP  : 1.0;
-    float bm  = (beamP  > 0.0) ? beamP  : 1.0;
-    float fld = (fieldP > 0.0) ? fieldP : 1.0;
-    float hue = (hueP   > 0.0) ? hueP   : 0.0;
+void main()
+{
+    float spn = ( spinP > 0.0 ) ? spinP : 1.0;
+    float bm = ( beamP > 0.0 ) ? beamP : 1.0;
+    float fld = ( fieldP > 0.0 ) ? fieldP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
-    float r = length(uv);
-    float a = atan(uv.y, uv.x);
+    float r = length( uv );
+    float a = atan( uv.y, uv.x );
 
     // Pulsar rotation angle
     float rotAngle = time * 3.0 * spn + audioAdvance * 0.8;
 
     // Relativistic polar lighthouse beam (sweeping across screen)
-    vec2 beamDir1 = vec2(cos(rotAngle), sin(rotAngle));
+    vec2 beamDir1 = vec2( cos( rotAngle ), sin( rotAngle ) );
     vec2 beamDir2 = -beamDir1;
 
-    float dot1 = max(dot(normalize(uv), beamDir1), 0.0);
-    float dot2 = max(dot(normalize(uv), beamDir2), 0.0);
-    float beamPass = pow(max(dot1, dot2), 24.0) * bm * (1.0 + audioKick * 3.5);
+    float dot1 = max( dot( normalize( uv ), beamDir1 ), 0.0 );
+    float dot2 = max( dot( normalize( uv ), beamDir2 ), 0.0 );
+    float beamPass = pow( max( dot1, dot2 ), 24.0 ) * bm * ( 1.0 + audioKick * 3.5 );
 
-    vec3 beamCol = imgPalette(0.25 * beamPass) * 1.4 * beamPass * 3.0;
+    vec3 beamCol = imgPalette( 0.25 * beamPass ) * 1.4 * beamPass * 3.0;
 
     // Dipole magnetic field lines (r = R0 * sin^2(theta))
     float magTheta = a - rotAngle;
-    float dipoleField = abs(r - 0.5 * pow(sin(magTheta * fld), 2.0));
-    float fieldGlow = (0.002 / (dipoleField * dipoleField + 0.0003)) * (0.8 + 0.4 * audioSwell);
-    vec3 fieldCol = vec3(0.8, 0.2, 1.0) * fieldGlow;
+    float dipoleField = abs( r - 0.5 * pow( sin( magTheta * fld ), 2.0 ) );
+    float fieldGlow = ( 0.002 / ( dipoleField * dipoleField + 0.0003 ) ) * ( 0.8 + 0.4 * audioSwell );
+    vec3  fieldCol = vec3( 0.8, 0.2, 1.0 ) * fieldGlow;
 
     // Neutron star central core (radius ~ 0.06)
-    float coreDist = length(uv);
-    float coreGlow = (0.008 / (coreDist * coreDist + 0.001)) * (1.0 + audioKick * 2.0);
-    vec3 coreCol = vec3(1.0, 1.0, 1.0) * coreGlow;
+    float coreDist = length( uv );
+    float coreGlow = ( 0.008 / ( coreDist * coreDist + 0.001 ) ) * ( 1.0 + audioKick * 2.0 );
+    vec3  coreCol = vec3( 1.0, 1.0, 1.0 ) * coreGlow;
 
     // Warped background photo
-    vec2 photoUV = st + normalize(uv) * (0.04 / (r + 0.1)) * (1.0 + audioSubBass);
-    vec3 photo = img(clamp(photoUV, 0.0, 1.0));
+    vec2 photoUV = st + normalize( uv ) * ( 0.04 / ( r + 0.1 ) ) * ( 1.0 + audioSubBass );
+    vec3 photo = img( clamp( photoUV, 0.0, 1.0 ) );
 
     // Combine pulsar visualizer
     vec3 col = photo * 0.3 + fieldCol + beamCol + coreCol;
 
-    if (hue > 0.001) col = hueRot(col, hue);
+    if ( hue > 0.001 )
+        col = hueRot( col, hue );
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

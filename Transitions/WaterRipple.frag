@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file WaterRipple.frag
  * @brief Water ripple: concentric waves radiate from the centre and carry
@@ -10,42 +10,45 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * interpolation: 1 = old scene fully visible .. 0 = new scene.
  * Extracted from the former FxPlain.frag 28-style library.
  */
-uniform vec2 resolution;   ///< Size of the render target in pixels.
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Mixes two RGBA values with a clamped weight.
-vec4 blend4(vec4 a, vec4 b, float w) { return mix(a, b, clamp(w, 0.0, 1.0)); }
+vec4 blend4( vec4 a, vec4 b, float w )
+{
+    return mix( a, b, clamp( w, 0.0, 1.0 ) );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  p   = gl_FragCoord.xy / resolution;
-    float d   = 1.0 - interpolation;          // transition progress 0..1
+    vec2  p = gl_FragCoord.xy / resolution;
+    float d = 1.0 - interpolation; // transition progress 0..1
     // No beat surge any more: pushing the progress forward on every beat
     // made the geometry jump in time with the music (speed pass 14.09.2026).
-    float mid = sin(PI * d);                  // 0 at both ends, 1 mid-transition
+    float mid = sin( PI * d ); // 0 at both ends, 1 mid-transition
     // mid follows the progress only: a rotation, zoom or push that breathes with
     // the music is what the no-shake rule forbids, however slow the envelope.
     float aspect = resolution.x / resolution.y;
-    vec2  cc  = p - 0.5;                      // centred, aspect-corrected
+    vec2  cc = p - 0.5; // centred, aspect-corrected
     cc.x *= aspect;
-    float r   = length(cc) / 0.95;
-    vec2  p0 = p, p1 = p;                     // sample coords old / new
-    float w1 = d;                             // weight of the NEW scene
-    float dark = 1.0;                         // optional dip factor
+    float r = length( cc ) / 0.95;
+    vec2  p0 = p, p1 = p; // sample coords old / new
+    float w1 = d;         // weight of the NEW scene
+    float dark = 1.0;     // optional dip factor
 
-    vec2  dir = cc / max(length(cc), 1e-4);
-    float rip = mid * 0.025 * sin(r * 38.0 - d * 14.0);
-    vec2  pr  = p + vec2(dir.x / aspect, dir.y) * rip;
-    p0 = clamp(pr, 0.0, 1.0);
+    vec2  dir = cc / max( length( cc ), 1e-4 );
+    float rip = mid * 0.025 * sin( r * 38.0 - d * 14.0 );
+    vec2  pr = p + vec2( dir.x / aspect, dir.y ) * rip;
+    p0 = clamp( pr, 0.0, 1.0 );
     p1 = p0;
 
-    vec4 c0 = texture(tex0, p0);
-    vec4 c1 = texture(tex1, p1);
-    fragColor = blend4(c0, c1, w1) * dark;
+    vec4 c0 = texture( tex0, p0 );
+    vec4 c1 = texture( tex1, p1 );
+    fragColor = blend4( c0, c1, w1 ) * dark;
 }

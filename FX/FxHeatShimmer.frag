@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FxHeatShimmer.frag
  * @brief FX HEAT SHIMMER: refraction of the scene through turbulent heated
@@ -35,120 +35,120 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // The channels are sampled at slightly different offsets.  Dispersion is real —
 // the bending depends on wavelength — and it is what stops the shimmer from
 // reading as a plain wobble.
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2      resolution; ///< Size of the render target in pixels.
+uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;       ///< The current photo.
+uniform sampler2D tex1;       ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
-uniform vec2  depthValid;
-uniform vec2  nearFar;   ///< Near and far clip distances.
-uniform float tanHalfFov;
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthValid;
+uniform vec2      nearFar; ///< Near and far clip distances.
+uniform float     tanHalfFov;
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float heatP;        ///< preset: how strongly the air bends
-uniform float scaleP;       ///< preset: cell size of the turbulence
-uniform float splitP;       ///< preset: chromatic dispersion
+uniform float heatP;  ///< preset: how strongly the air bends
+uniform float scaleP; ///< preset: cell size of the turbulence
+uniform float splitP; ///< preset: chromatic dispersion
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p)
+float hash21( vec2 p )
 {
-    p = fract(p * vec2(123.34, 456.21));
-    p += dot(p, p + 45.32);
-    return fract(p.x * p.y);
+    p = fract( p * vec2( 123.34, 456.21 ) );
+    p += dot( p, p + 45.32 );
+    return fract( p.x * p.y );
 }
 
 /// @brief Value noise with a seed.
-float vnoise(vec2 x)
+float vnoise( vec2 x )
 {
-    vec2 i = floor(x), f = fract(x);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i + vec2(0, 0)), hash21(i + vec2(1, 0)), f.x),
-               mix(hash21(i + vec2(0, 1)), hash21(i + vec2(1, 1)), f.x), f.y);
+    vec2 i = floor( x ), f = fract( x );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i + vec2( 0, 0 ) ), hash21( i + vec2( 1, 0 ) ), f.x ),
+                mix( hash21( i + vec2( 0, 1 ) ), hash21( i + vec2( 1, 1 ) ), f.x ), f.y );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec2 p)
+float fbm( vec2 p )
 {
-    return 0.58 * vnoise(p) + 0.28 * vnoise(p * 2.07) + 0.14 * vnoise(p * 4.13);
+    return 0.58 * vnoise( p ) + 0.28 * vnoise( p * 2.07 ) + 0.14 * vnoise( p * 4.13 );
 }
 
 /// @brief Depth buffer value to linear distance.
-float linearise(float d)
+float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
     float z = d * 2.0 - 1.0;
-    return (2.0 * n * f) / (f + n - z * (f - n));
+    return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = gl_FragCoord.xy / resolution;
-    float aspect = resolution.x / max(resolution.y, 1.0);
+    vec2  uv = gl_FragCoord.xy / resolution;
+    float aspect = resolution.x / max( resolution.y, 1.0 );
 
     // Rising air.  The phase advances with plain time at a fixed rate; scaling
     // absolute time by a live audio value would jump the whole field every time
     // the level moved, which reads as a flicker rather than as heat.
-    float sc = mix(5.0, 22.0, clamp(scaleP, 0.0, 1.0));
-    vec2 q = vec2(uv.x * aspect, uv.y) * sc;
-    vec2 drift = vec2(time * 0.06, -time * 0.31);
+    float sc = mix( 5.0, 22.0, clamp( scaleP, 0.0, 1.0 ) );
+    vec2  q = vec2( uv.x * aspect, uv.y ) * sc;
+    vec2  drift = vec2( time * 0.06, -time * 0.31 );
 
     // The gradient of the field, by central difference.  This is the whole
     // technique: bend along the slope, not along the value.
     float e = 0.035;
-    float n1 = fbm(q + drift + vec2(e, 0.0));
-    float n2 = fbm(q + drift - vec2(e, 0.0));
-    float n3 = fbm(q + drift + vec2(0.0, e));
-    float n4 = fbm(q + drift - vec2(0.0, e));
-    vec2 grad = vec2(n1 - n2, n3 - n4) / (2.0 * e);
+    float n1 = fbm( q + drift + vec2( e, 0.0 ) );
+    float n2 = fbm( q + drift - vec2( e, 0.0 ) );
+    float n3 = fbm( q + drift + vec2( 0.0, e ) );
+    float n4 = fbm( q + drift - vec2( 0.0, e ) );
+    vec2  grad = vec2( n1 - n2, n3 - n4 ) / ( 2.0 * e );
 
-    vec3 base = texture(tex0, uv).rgb;
-    float lum = dot(base, vec3(0.299, 0.587, 0.114));
+    vec3  base = texture( tex0, uv ).rgb;
+    float lum = dot( base, vec3( 0.299, 0.587, 0.114 ) );
 
     float airPath = 1.0;
-    if (depthValid.x > 0.5)
+    if ( depthValid.x > 0.5 )
     {
-        float z = linearise(texture(texDepth0, uv).r);
+        float z = linearise( texture( texDepth0, uv ).r );
         // More air in the way means more accumulated bending, up to a point.
-        airPath = clamp(z / 40.0, 0.15, 1.6);
+        airPath = clamp( z / 40.0, 0.15, 1.6 );
     }
 
-    float amt = (0.0016 + 0.0075 * clamp(heatP, 0.0, 2.0))
-              * (0.35 + 1.1 * lum) * airPath
-              * (0.55 + 0.9 * audioLevel + 0.7 * audioKick + 0.4 * audioSubBass);
+    float amt = ( 0.0016 + 0.0075 * clamp( heatP, 0.0, 2.0 ) )
+                * ( 0.35 + 1.1 * lum ) * airPath
+                * ( 0.55 + 0.9 * audioLevel + 0.7 * audioKick + 0.4 * audioSubBass );
 
-    vec2 off = grad * amt;
-    float split = amt * (0.25 + 0.9 * clamp(splitP, 0.0, 1.5));
+    vec2  off = grad * amt;
+    float split = amt * ( 0.25 + 0.9 * clamp( splitP, 0.0, 1.5 ) );
 
     // Sample each channel at its own displacement.
     vec3 a;
-    a.r = texture(tex0, uv + off * (1.0 + split)).r;
-    a.g = texture(tex0, uv + off).g;
-    a.b = texture(tex0, uv + off * (1.0 - split)).b;
+    a.r = texture( tex0, uv + off * ( 1.0 + split ) ).r;
+    a.g = texture( tex0, uv + off ).g;
+    a.b = texture( tex0, uv + off * ( 1.0 - split ) ).b;
 
     vec3 b;
-    b.r = texture(tex1, uv + off * (1.0 + split)).r;
-    b.g = texture(tex1, uv + off).g;
-    b.b = texture(tex1, uv + off * (1.0 - split)).b;
+    b.r = texture( tex1, uv + off * ( 1.0 + split ) ).r;
+    b.g = texture( tex1, uv + off ).g;
+    b.b = texture( tex1, uv + off * ( 1.0 - split ) ).b;
 
-    vec3 col = mix(b, a, clamp(interpolation, 0.0, 1.0));
+    vec3 col = mix( b, a, clamp( interpolation, 0.0, 1.0 ) );
 
     // A faint heat bloom where the air is worked hardest, so the distortion is
     // visible even across flat areas that have no detail to displace.
-    float shimmer = clamp(length(grad) * 0.30, 0.0, 1.0);
-    col += vec3(1.0, 0.72, 0.45) * shimmer * lum * (0.10 + 0.30 * clamp(heatP, 0.0, 2.0))
-         * (0.4 + 1.0 * audioHigh);
+    float shimmer = clamp( length( grad ) * 0.30, 0.0, 1.0 );
+    col += vec3( 1.0, 0.72, 0.45 ) * shimmer * lum * ( 0.10 + 0.30 * clamp( heatP, 0.0, 2.0 ) )
+           * ( 0.4 + 1.0 * audioHigh );
 
     col *= 1.0 + 0.10 * audioBeat;
-    col = col / (1.0 + col * 0.12);
-    fragColor = vec4(col, 1.0);
+    col = col / ( 1.0 + col * 0.12 );
+    fragColor = vec4( col, 1.0 );
 }

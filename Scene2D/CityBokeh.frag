@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file CityBokeh.frag
  * @brief CITY LIGHTS BOKEH: a night city seen through a defocused lens — layers of
@@ -19,118 +19,124 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP     float global hue rotation        (0 -> none; 0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float densityP;   ///< Density knob, 0..1.
-uniform float sizeP;   ///< Size knob, 0..1.
+uniform float densityP; ///< Density knob, 0..1.
+uniform float sizeP;    ///< Size knob, 0..1.
 uniform float driftP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 img( vec2 uv )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p)
+float hash21( vec2 p )
 {
-    p = fract(p * vec2(123.34, 345.45));
-    p += dot(p, p + 34.345);
-    return fract(p.x * p.y);
+    p = fract( p * vec2( 123.34, 345.45 ) );
+    p += dot( p, p + 34.345 );
+    return fract( p.x * p.y );
 }
 
 /// One depth layer of bokeh discs; returns accumulated light.
-vec3 bokehLayer(vec2 p, float scale, float drift, float size, float layerSeed)
+vec3 bokehLayer( vec2 p, float scale, float drift, float size, float layerSeed )
 {
-    vec3 acc = vec3(0.0);
-    vec2 q = p * scale + vec2(drift, 0.0);
-    vec2 base = floor(q);
+    vec3 acc = vec3( 0.0 );
+    vec2 q = p * scale + vec2( drift, 0.0 );
+    vec2 base = floor( q );
     // 3x3 neighbourhood so big discs cross cell borders seamlessly.
-    for (int yy = -1; yy <= 1; yy++)
-    for (int xx = -1; xx <= 1; xx++)
-    {
-        vec2  cell = base + vec2(float(xx), float(yy));
-        float h    = hash21(cell + layerSeed);
-        if (h < 0.45) continue;                       // sparse: not every cell lit
-        vec2  pos  = cell + vec2(hash21(cell + 1.7 + layerSeed),
-                                 hash21(cell + 3.9 + layerSeed));
-        float r    = size * (0.22 + 0.30 * hash21(cell + 5.3 + layerSeed));
-        // Kick pulse: a hashed ~third of the lights breathes up with the
-        // (slew-limited) kick envelope — city windows flickering to the beat.
-        float kickSel = step(0.66, hash21(cell + 9.1 + layerSeed));
-        r *= 1.0 + 0.35 * audioKick * kickSel;
-        float d    = length(q - pos);
-        // Soft-edged disc with a brighter rim (real bokeh has edge bias).
-        float disc = smoothstep(r, r * 0.82, d);
-        float rim  = smoothstep(r, r * 0.90, d) - smoothstep(r * 0.90, r * 0.70, d);
-        // Colour from the IMAGE at the light's (stable) position.
-        vec3 lc = img(fract(pos * 0.13 + 0.31));
-        lc = lc * (0.35 + 0.65 * hash21(cell + 7.7)) + vec3(0.25, 0.18, 0.08);
-        acc += lc * (disc * 0.85 + rim * 0.5)
-             * (0.55 + 0.45 * audioKick * kickSel);
-    }
+    for ( int yy = -1; yy <= 1; yy++ )
+        for ( int xx = -1; xx <= 1; xx++ )
+        {
+            vec2  cell = base + vec2( float( xx ), float( yy ) );
+            float h = hash21( cell + layerSeed );
+            if ( h < 0.45 )
+                continue; // sparse: not every cell lit
+            vec2  pos = cell + vec2( hash21( cell + 1.7 + layerSeed ), hash21( cell + 3.9 + layerSeed ) );
+            float r = size * ( 0.22 + 0.30 * hash21( cell + 5.3 + layerSeed ) );
+            // Kick pulse: a hashed ~third of the lights breathes up with the
+            // (slew-limited) kick envelope — city windows flickering to the beat.
+            float kickSel = step( 0.66, hash21( cell + 9.1 + layerSeed ) );
+            r *= 1.0 + 0.35 * audioKick * kickSel;
+            float d = length( q - pos );
+            // Soft-edged disc with a brighter rim (real bokeh has edge bias).
+            float disc = smoothstep( r, r * 0.82, d );
+            float rim = smoothstep( r, r * 0.90, d ) - smoothstep( r * 0.90, r * 0.70, d );
+            // Colour from the IMAGE at the light's (stable) position.
+            vec3 lc = img( fract( pos * 0.13 + 0.31 ) );
+            lc = lc * ( 0.35 + 0.65 * hash21( cell + 7.7 ) ) + vec3( 0.25, 0.18, 0.08 );
+            acc += lc * ( disc * 0.85 + rim * 0.5 )
+                   * ( 0.55 + 0.45 * audioKick * kickSel );
+        }
     return acc;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float dens  = (densityP > 0.0) ? densityP : 1.0;
-    float bsize = (sizeP    > 0.0) ? sizeP    : 1.0;
-    float dspd  = (driftP   > 0.0) ? driftP   : 1.0;
+    float dens = ( densityP > 0.0 ) ? densityP : 1.0;
+    float bsize = ( sizeP > 0.0 ) ? sizeP : 1.0;
+    float dspd = ( driftP > 0.0 ) ? driftP : 1.0;
 
-    vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Focus breathing: the swell softens & swells the whole field.
     float breathe = 1.0 + 0.18 * audioSwell;
 
     // Background: the image heavily defocused (mip-ish via tiny offsets),
     // darkened to a night ambience with a horizon gradient.
-    vec3 bg = vec3(0.0);
-    for (int i = 0; i < 4; i++)
+    vec3 bg = vec3( 0.0 );
+    for ( int i = 0; i < 4; i++ )
     {
-        vec2 o = vec2(hash21(vec2(float(i), 1.0)) - 0.5,
-                      hash21(vec2(float(i), 2.0)) - 0.5) * 0.05;
-        bg += img(p * 0.4 + 0.5 + o).rgb;
+        vec2 o = vec2( hash21( vec2( float( i ), 1.0 ) ) - 0.5,
+                       hash21( vec2( float( i ), 2.0 ) ) - 0.5 )
+                 * 0.05;
+        bg += img( p * 0.4 + 0.5 + o ).rgb;
     }
     bg *= 0.25;
-    bg = bg * vec3(0.10, 0.10, 0.16) + vec3(0.010, 0.012, 0.03);
-    bg *= 1.0 - 0.35 * (p.y + 0.5);
+    bg = bg * vec3( 0.10, 0.10, 0.16 ) + vec3( 0.010, 0.012, 0.03 );
+    bg *= 1.0 - 0.35 * ( p.y + 0.5 );
 
     // Three parallax layers: far (small, slow) -> near (large, fast).
     float t = time * 0.03 * dspd + audioAdvance * 0.10;
-    vec3 col = bg;
-    col += bokehLayer(p * breathe, 7.0 * dens,  t * 0.6, 0.9 * bsize, 11.0) * 0.35;
-    col += bokehLayer(p * breathe, 4.5 * dens,  t * 1.0, 1.1 * bsize, 23.0) * 0.55;
-    col += bokehLayer(p * breathe, 2.6 * dens,  t * 1.7, 1.4 * bsize, 47.0) * 0.80;
+    vec3  col = bg;
+    col += bokehLayer( p * breathe, 7.0 * dens, t * 0.6, 0.9 * bsize, 11.0 ) * 0.35;
+    col += bokehLayer( p * breathe, 4.5 * dens, t * 1.0, 1.1 * bsize, 23.0 ) * 0.55;
+    col += bokehLayer( p * breathe, 2.6 * dens, t * 1.7, 1.4 * bsize, 47.0 ) * 0.80;
 
-    col = hueRot(col, hueP);
+    col = hueRot( col, hueP );
 
     // City temperature: bright material -> warm sodium glow, dark -> cool blue.
-    col *= mix(vec3(0.72, 0.82, 1.20), vec3(1.25, 1.02, 0.70), audioCentroid);
-    float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(lum), col, 0.6 + 0.55 * audioValence);
+    col *= mix( vec3( 0.72, 0.82, 1.20 ), vec3( 1.25, 1.02, 0.70 ), audioCentroid );
+    float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( lum ), col, 0.6 + 0.55 * audioValence );
     col *= 0.85 + 0.4 * audioLevel;
 
     // Vignette.
-    col *= 1.0 - 0.35 * dot(p, p);
+    col *= 1.0 - 0.35 * dot( p, p );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

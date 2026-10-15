@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file Hologram.frag
  * @brief GEOM="MESH" FAMILY: any loaded model re-read as a sci-fi holotable
@@ -26,103 +26,108 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float tintP;   ///< Tint knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP; ///< Tint knob, 0..1.
 uniform float scanP;
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in vec3  vPos;   ///< Position (from the vertex stage).
-in vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
+in vec3  vPos;      ///< Position (from the vertex stage).
+in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 in vec3  vBary;
-in float vBg;   ///< Background flag (from the vertex stage).
+in float vBg; ///< Background flag (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief HSV (all 0..1) to RGB.
-vec3 hsv2rgb(vec3 c) {
-    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
-    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
-    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+vec3 hsv2rgb( vec3 c )
+{
+    vec4 K = vec4( 1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0 );
+    vec3 p = abs( fract( c.xxx + K.xyz ) * 6.0 - K.www );
+    return c.z * mix( K.xxx, clamp( p - K.xxx, 0.0, 1.0 ), c.y );
 }
 /// @brief Pseudo-random number 0..1 from a 3D point.
-float hash13(vec3 p) {
-    p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
+float hash13( vec3 p )
+{
+    p = fract( p * 0.3183099 + vec3( 0.71, 0.113, 0.419 ) );
     p *= 17.0;
-    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+    return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
 }
 /// @brief Smooth 3D value noise, 0..1.
-float noise3(vec3 x) {
-    vec3 i = floor(x), f = fract(x);
-    f = f * f * (3.0 - 2.0 * f);
-    float n000 = hash13(i + vec3(0.0,0.0,0.0)), n100 = hash13(i + vec3(1.0,0.0,0.0));
-    float n010 = hash13(i + vec3(0.0,1.0,0.0)), n110 = hash13(i + vec3(1.0,1.0,0.0));
-    float n001 = hash13(i + vec3(0.0,0.0,1.0)), n101 = hash13(i + vec3(1.0,0.0,1.0));
-    float n011 = hash13(i + vec3(0.0,1.0,1.0)), n111 = hash13(i + vec3(1.0,1.0,1.0));
-    return mix(mix(mix(n000,n100,f.x), mix(n010,n110,f.x), f.y),
-               mix(mix(n001,n101,f.x), mix(n011,n111,f.x), f.y), f.z);
+float noise3( vec3 x )
+{
+    vec3 i = floor( x ), f = fract( x );
+    f = f * f * ( 3.0 - 2.0 * f );
+    float n000 = hash13( i + vec3( 0.0, 0.0, 0.0 ) ), n100 = hash13( i + vec3( 1.0, 0.0, 0.0 ) );
+    float n010 = hash13( i + vec3( 0.0, 1.0, 0.0 ) ), n110 = hash13( i + vec3( 1.0, 1.0, 0.0 ) );
+    float n001 = hash13( i + vec3( 0.0, 0.0, 1.0 ) ), n101 = hash13( i + vec3( 1.0, 0.0, 1.0 ) );
+    float n011 = hash13( i + vec3( 0.0, 1.0, 1.0 ) ), n111 = hash13( i + vec3( 1.0, 1.0, 1.0 ) );
+    return mix( mix( mix( n000, n100, f.x ), mix( n010, n110, f.x ), f.y ),
+                mix( mix( n001, n101, f.x ), mix( n011, n111, f.x ), f.y ), f.z );
 }
 
 /// 4x4 ordered (Bayer) threshold. An ordered pattern beats a random one here:
 /// white noise makes the fill crawl and sparkle between frames, while a fixed
 /// screen-space matrix holds still, so the hologram reads as a steady mesh of
 /// dots rather than television static.
-float bayer4(vec2 p)
+float bayer4( vec2 p )
 {
-    int x = int(mod(p.x, 4.0)), y = int(mod(p.y, 4.0));
+    int x = int( mod( p.x, 4.0 ) ), y = int( mod( p.y, 4.0 ) );
     int i = x + y * 4;
-    int m[16] = int[16]( 0,  8,  2, 10,
-                        12,  4, 14,  6,
-                         3, 11,  1,  9,
-                        15,  7, 13,  5);
-    return (float(m[i]) + 0.5) / 16.0;
+    int m[16] = int[16]( 0, 8, 2, 10,
+                         12, 4, 14, 6,
+                         3, 11, 1, 9,
+                         15, 7, 13, 5 );
+    return ( float( m[i] ) + 0.5 ) / 16.0;
 }
 
 // ---- Sky shell: the holotable's room. Near-black, with a cold pool of
 /// light on the deck below the projection and a faint tech grid, so the
 /// hologram has somewhere to stand. ----
-vec3 renderSky(vec3 dir, vec3 tint)
+vec3 renderSky( vec3 dir, vec3 tint )
 {
-    vec3 col = vec3(0.008, 0.010, 0.016) * (1.0 - dir.y * 0.4);
-    if (dir.y < -0.02)
+    vec3 col = vec3( 0.008, 0.010, 0.016 ) * ( 1.0 - dir.y * 0.4 );
+    if ( dir.y < -0.02 )
     {
         float t = -1.0 / dir.y;
-        vec2 g = dir.xz * t;
-        vec2 cell = abs(fract(g * 0.5) - 0.5);
-        float line = 1.0 - smoothstep(0.0, 0.06, min(cell.x, cell.y));
-        float fade = exp(-t * 0.09);
+        vec2  g = dir.xz * t;
+        vec2  cell = abs( fract( g * 0.5 ) - 0.5 );
+        float line = 1.0 - smoothstep( 0.0, 0.06, min( cell.x, cell.y ) );
+        float fade = exp( -t * 0.09 );
         col += tint * line * fade * 0.22;
-        col += tint * 0.10 * pow(max(1.0 - t * 0.06, 0.0), 2.0) * (0.6 + 0.5 * audioSwell);
+        col += tint * 0.10 * pow( max( 1.0 - t * 0.06, 0.0 ), 2.0 ) * ( 0.6 + 0.5 * audioSwell );
     }
-    col += vec3(0.6, 0.7, 0.8) * step(0.9985, hash13(floor(dir * 300.0))) * 0.25;
+    col += vec3( 0.6, 0.7, 0.8 ) * step( 0.9985, hash13( floor( dir * 300.0 ) ) ) * 0.25;
     return col;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 tint = hsv2rgb(vec3(tintP / 6.2831853, 0.62, 1.0));
+    vec3 tint = hsv2rgb( vec3( tintP / 6.2831853, 0.62, 1.0 ) );
 
-    if (vBg > 0.5)
+    if ( vBg > 0.5 )
     {
-        fragColor = vec4(renderSky(normalize(vPos), tint), 1.0);
+        fragColor = vec4( renderSky( normalize( vPos ), tint ), 1.0 );
         return;
     }
 
-    float hue = (hueP > 0.01 ? hueP : 0.0);
-    float sc  = (scanP > 0.01 ? scanP : 1.0);
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
+    float sc = ( scanP > 0.01 ? scanP : 1.0 );
 
-    vec3 n = normalize(vNormal);
-    vec3 viewDir = normalize(-vPos);
+    vec3 n = normalize( vNormal );
+    vec3 viewDir = normalize( -vPos );
 
     // Silhouette glow: a projection is brightest where the surface turns
     // away, because that is where the most of it lies along the sight line.
@@ -130,7 +135,7 @@ void main()
     // as a full-surface wash on a detailed one, because a finely modelled hull
     // presents grazing micro-facets everywhere -- which is exactly how the
     // projection filled in solid once the models gained detail.
-    float fresnel = pow(1.0 - max(dot(n, viewDir), 0.0), 4.5);
+    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.5 );
 
     // Wireframe: distance to the nearest triangle edge, in a width that
     // stays constant on screen thanks to the derivative.
@@ -143,9 +148,9 @@ void main()
     // a triangle is actually big enough to read as a wire. That makes the
     // effect self-adjusting across meshes of very different density instead
     // of needing a hand-tuned constant per model.
-    float d = min(min(vBary.x, vBary.y), vBary.z);
-    float fw = fwidth(d);
-    float wire = (1.0 - smoothstep(0.0, fw * 1.6, d)) * smoothstep(0.30, 0.09, fw);
+    float d = min( min( vBary.x, vBary.y ), vBary.z );
+    float fw = fwidth( d );
+    float wire = ( 1.0 - smoothstep( 0.0, fw * 1.6, d ) ) * smoothstep( 0.30, 0.09, fw );
 
     // ...but on a DENSE mesh that gate is always shut, and then there is no
     // structure at all. These models were 14k faces when the wire was written;
@@ -154,23 +159,23 @@ void main()
     // identify. So the structure also comes from a lattice in OBJECT space,
     // whose spacing is a property of the model's own coordinates and therefore
     // says the same thing however finely the model happens to be tessellated.
-    vec3 lp   = vLocalPos * (13.0 * sc);
-    vec3 cell = abs(fract(lp) - 0.5);
-    vec3 lw   = fwidth(lp) * 1.2;
-    vec3 line = vec3(1.0) - smoothstep(vec3(0.0), lw, cell);
+    vec3 lp = vLocalPos * ( 13.0 * sc );
+    vec3 cell = abs( fract( lp ) - 0.5 );
+    vec3 lw = fwidth( lp ) * 1.2;
+    vec3 line = vec3( 1.0 ) - smoothstep( vec3( 0.0 ), lw, cell );
     // Only where two of the three planes nearly meet, so it reads as a grid
     // drawn ON the surface rather than as three overlapping stripe sets.
-    float lattice = clamp(max(max(line.x, line.y), line.z), 0.0, 1.0)
-                  * smoothstep(0.9, 0.4, max(max(lw.x, lw.y), lw.z));
+    float lattice = clamp( max( max( line.x, line.y ), line.z ), 0.0, 1.0 )
+                    * smoothstep( 0.9, 0.4, max( max( lw.x, lw.y ), lw.z ) );
 
     // Scanlines travelling up the object in OBJECT space, so they climb the
     // model itself rather than sliding across the screen.
-    float scan = 0.5 + 0.5 * sin((vLocalPos.y * 90.0 * sc) - time * 3.0 - audioAdvance * 1.5);
-    scan = pow(scan, 3.0);
+    float scan = 0.5 + 0.5 * sin( ( vLocalPos.y * 90.0 * sc ) - time * 3.0 - audioAdvance * 1.5 );
+    scan = pow( scan, 3.0 );
 
     // A slow bright sweep, like the projector refreshing a slice at a time.
-    float sweep = fract(vLocalPos.y * 0.9 - time * 0.14 - audioAdvance * 0.08);
-    float sweepBand = smoothstep(0.0, 0.03, sweep) * (1.0 - smoothstep(0.03, 0.10, sweep));
+    float sweep = fract( vLocalPos.y * 0.9 - time * 0.14 - audioAdvance * 0.08 );
+    float sweepBand = smoothstep( 0.0, 0.03, sweep ) * ( 1.0 - smoothstep( 0.03, 0.10, sweep ) );
 
     // How solid this fragment is. Everything above is a reason to KEEP a
     // fragment; the dither below decides which of the weak ones survive.
@@ -179,37 +184,39 @@ void main()
     // that each look reasonable on their own pushed alpha over 1 across the
     // whole surface, nothing was discarded, and the hologram rendered as a
     // solid glowing lump.
-    float alpha = 0.04                       // faint body fill, so the volume reads
-                + wire * 0.85                // triangle edges, on a mesh coarse enough to have them
-                + lattice * 0.70             // object-space grid: the structure on dense meshes
-                + fresnel * 0.30             // silhouette
-                + scan * 0.10                // scanline banding
-                + sweepBand * 0.60;          // refresh sweep
+    float alpha = 0.04                // faint body fill, so the volume reads
+                  + wire * 0.85       // triangle edges, on a mesh coarse enough to have them
+                  + lattice * 0.70    // object-space grid: the structure on dense meshes
+                  + fresnel * 0.30    // silhouette
+                  + scan * 0.10       // scanline banding
+                  + sweepBand * 0.60; // refresh sweep
     // Thin where the surface faces us square on. A projection has no
     // substance of its own: what you see is how much of it lies along the
     // sight line, so a face-on panel should be nearly absent and only the
     // turning-away parts should hold. Without this the flat sides of a boxy
     // hull fill in and the whole thing reads as a painted solid.
-    alpha *= mix(0.38, 1.0, sqrt(fresnel));
-    alpha *= (0.70 + 0.30 * audioSwell + 0.40 * audioKick);
+    alpha *= mix( 0.38, 1.0, sqrt( fresnel ) );
+    alpha *= ( 0.70 + 0.30 * audioSwell + 0.40 * audioKick );
 
     // Interference: horizontal noise bands that thin the projection out.
-    float interf = noise3(vec3(vLocalPos.y * 40.0, time * 2.2, 0.0));
-    alpha *= mix(0.55, 1.0, smoothstep(0.25, 0.6, interf));
+    float interf = noise3( vec3( vLocalPos.y * 40.0, time * 2.2, 0.0 ) );
+    alpha *= mix( 0.55, 1.0, smoothstep( 0.25, 0.6, interf ) );
 
-    if (alpha < bayer4(gl_FragCoord.xy)) discard;
+    if ( alpha < bayer4( gl_FragCoord.xy ) )
+        discard;
 
     // Colour: the tint everywhere, pushed toward white at the brightest
     // features so the wire and sweep read as overdriven rather than just
     // more saturated.
-    float hot = clamp(wire * 0.8 + lattice * 0.7 + sweepBand * 0.9 + fresnel * 0.4, 0.0, 1.0);
-    vec3 col = mix(tint, vec3(1.0), hot * 0.55);
-    col *= 0.55 + 1.25 * clamp(alpha, 0.0, 1.4);
-    col += tint * fresnel * (0.4 + 0.7 * audioSwell);
+    float hot = clamp( wire * 0.8 + lattice * 0.7 + sweepBand * 0.9 + fresnel * 0.4, 0.0, 1.0 );
+    vec3  col = mix( tint, vec3( 1.0 ), hot * 0.55 );
+    col *= 0.55 + 1.25 * clamp( alpha, 0.0, 1.4 );
+    col += tint * fresnel * ( 0.4 + 0.7 * audioSwell );
 
-    if (hue > 0.001) col = hueRot(col, 0.12 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

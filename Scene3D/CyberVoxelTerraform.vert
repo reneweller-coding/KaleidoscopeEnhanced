@@ -8,60 +8,62 @@
 // (Scene3DShader.cpp GEOM_CUBES) — no per-face normal is supplied, so it is
 // looked up from which 6-vertex face group (gl_VertexID % 36) this vertex
 // belongs to, matching the CPU-side face winding order (-Z,+Z,-X,+X,+Y,-Y).
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
 const vec3 CUBE_FACE_NORMALS[6] = vec3[6](
-    vec3( 0.0,  0.0, -1.0), vec3( 0.0,  0.0,  1.0),
-    vec3(-1.0,  0.0,  0.0), vec3( 1.0,  0.0,  0.0),
-    vec3( 0.0,  1.0,  0.0), vec3( 0.0, -1.0,  0.0)
-);
+    vec3( 0.0, 0.0, -1.0 ), vec3( 0.0, 0.0, 1.0 ),
+    vec3( -1.0, 0.0, 0.0 ), vec3( 1.0, 0.0, 0.0 ),
+    vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, -1.0, 0.0 ) );
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;    ///< Bass band level, 0..1.
+uniform float audioMid;     ///< Mid band level, 0..1.
+uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-out vec3 vPos;   ///< Position (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vPos;    ///< Position (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vHeight;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     // 70x70 grid coordinates
     float cubeID = attrA.w;
-    float gridX = mod(cubeID, 70.0);
-    float gridZ = floor(cubeID / 70.0);
+    float gridX = mod( cubeID, 70.0 );
+    float gridZ = floor( cubeID / 70.0 );
 
-    vec2 gridUV = (vec2(gridX, gridZ) - vec2(35.0)) / 35.0;
-    float dist = length(gridUV);
+    vec2  gridUV = ( vec2( gridX, gridZ ) - vec2( 35.0 ) ) / 35.0;
+    float dist = length( gridUV );
 
     // Audio-reactive cyber voxel elevation
     float t = time * 0.4 + audioAdvance * 0.2;
-    float ripple = sin(dist * 12.0 - t * 3.0) * cos(dist * 6.0 + t);
-    float pyramid = max(1.0 - max(abs(gridUV.x), abs(gridUV.y)) * 1.4, 0.0);
+    float ripple = sin( dist * 12.0 - t * 3.0 ) * cos( dist * 6.0 + t );
+    float pyramid = max( 1.0 - max( abs( gridUV.x ), abs( gridUV.y ) ) * 1.4, 0.0 );
 
     // Kick shockwave ripple
-    float shockwave = exp(-abs(dist - fract(time * 0.8) * 1.5) * 8.0) * audioKick * 2.0;
+    float shockwave = exp( -abs( dist - fract( time * 0.8 ) * 1.5 ) * 8.0 ) * audioKick * 2.0;
 
-    float height = (pyramid * 1.8 + ripple * 0.6 + shockwave) * (0.8 + 0.6 * audioBass);
+    float height = ( pyramid * 1.8 + ripple * 0.6 + shockwave ) * ( 0.8 + 0.6 * audioBass );
 
     // Position of cube instance
-    vec3 cubeCenter = vec3(gridUV.x * 5.0, height - 1.2, gridUV.y * 5.0);
+    vec3 cubeCenter = vec3( gridUV.x * 5.0, height - 1.2, gridUV.y * 5.0 );
 
     // Local vertex of the cube (scaled)
-    vec3 localPos = attrA.xyz * vec3(0.06, 0.06 + height * 0.15, 0.06);
+    vec3 localPos = attrA.xyz * vec3( 0.06, 0.06 + height * 0.15, 0.06 );
     vec3 pos = cubeCenter + localPos;
 
     vPos = pos;
-    vNormal = CUBE_FACE_NORMALS[int(mod(float(gl_VertexID), 36.0)) / 6];
+    vNormal = CUBE_FACE_NORMALS[int( mod( float( gl_VertexID ), 36.0 ) ) / 6];
     vUV = gridUV * 0.5 + 0.5;
     vHeight = height;
 
@@ -69,12 +71,12 @@ void main() {
     vec3 vp = pos;
     // Camera tilted down towards voxel landscape
     float tiltAngle = 0.45;
-    float cosT = cos(tiltAngle), sinT = sin(tiltAngle);
-    vec3 rotatedVP = vec3(vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT);
+    float cosT = cos( tiltAngle ), sinT = sin( tiltAngle );
+    vec3  rotatedVP = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
 
     rotatedVP.z += 6.5;
     rotatedVP.x -= eyeOff;
 
-    gl_Position = projM * vec4(rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0);
+    gl_Position = projM * vec4( rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

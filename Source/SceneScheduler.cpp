@@ -23,8 +23,8 @@
  */
 void SceneScheduler::setReviewMode( bool on )
 {
-	m_reviewMode = on;
-	EffectShader::s_reviewSolo = on ? kReviewSoloSecs : 0.f;
+    m_reviewMode = on;
+    EffectShader::s_reviewSolo = on ? kReviewSoloSecs : 0.f;
 }
 
 // Basename eines Fragment-Pfads, case-insensitiver Vergleich (Review-Sortierung).
@@ -34,12 +34,13 @@ void SceneScheduler::setReviewMode( bool on )
  */
 static const char *fragBase( const char *p )
 {
-	if( !p ) return "?";
-	const char *b = p;
-	for( const char *c = p; *c; ++c )
-		if( *c == '\\' || *c == '/' )
-			b = c + 1;
-	return b;
+    if ( !p )
+        return "?";
+    const char *b = p;
+    for ( const char *c = p; *c; ++c )
+        if ( *c == '\\' || *c == '/' )
+            b = c + 1;
+    return b;
 }
 
 /** @brief Which review BLOCK a scene belongs to: the flat scenes first, the
@@ -54,7 +55,7 @@ static const char *fragBase( const char *p )
  */
 static int reviewBlock( const char *p )
 {
-	return ( p && ( strstr( p, "Scene3D" ) || strstr( p, "scene3d" ) ) ) ? 1 : 0;
+    return ( p && ( strstr( p, "Scene3D" ) || strstr( p, "scene3d" ) ) ) ? 1 : 0;
 }
 
 /** @brief Case-insensitive "basename of a < basename of b" comparator for the review-mode sort.
@@ -64,17 +65,19 @@ static int reviewBlock( const char *p )
  */
 static bool baseLess( const char *a, const char *b )
 {
-	const int ba = reviewBlock( a ), bb = reviewBlock( b );
-	if( ba != bb )
-		return ba < bb;
-	const char *x = fragBase( a ), *y = fragBase( b );
-	while( *x && *y )
-	{
-		int cx = std::tolower( (unsigned char)*x ), cy = std::tolower( (unsigned char)*y );
-		if( cx != cy ) return cx < cy;
-		++x; ++y;
-	}
-	return *y != 0;
+    const int ba = reviewBlock( a ), bb = reviewBlock( b );
+    if ( ba != bb )
+        return ba < bb;
+    const char *x = fragBase( a ), *y = fragBase( b );
+    while ( *x && *y )
+    {
+        int cx = std::tolower( (unsigned char)*x ), cy = std::tolower( (unsigned char)*y );
+        if ( cx != cy )
+            return cx < cy;
+        ++x;
+        ++y;
+    }
+    return *y != 0;
 }
 
 /**
@@ -90,77 +93,74 @@ static bool baseLess( const char *a, const char *b )
  */
 void SceneScheduler::reset()
 {
-	// Initiale Zufallswahl - exakt der alte start()-Block (inkl. der etwas
-	// anderen Komplexitätsbudgets 12 bzw. 20 der Erst-Wahl).
-	for( unsigned int i = 0; i < kMaxSearch; i++ )
-	{
-		m_actTexture = rand() % m_textures->size();
-		if( (*m_textures)[m_actTexture]->useShader() )
-			break;
-	}
-	// A new preset has new indices: the old window means nothing here.
-	m_recentTex.clear();
-	noteTextureShown( m_actTexture );
+    // Initiale Zufallswahl - exakt der alte start()-Block (inkl. der etwas
+    // anderen Komplexitätsbudgets 12 bzw. 20 der Erst-Wahl).
+    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    {
+        m_actTexture = rand() % m_textures->size();
+        if ( ( *m_textures )[m_actTexture]->useShader() )
+            break;
+    }
+    // A new preset has new indices: the old window means nothing here.
+    m_recentTex.clear();
+    noteTextureShown( m_actTexture );
 
-	for( unsigned int i = 0; i < kMaxSearch; i++ )
-	{
-		m_nextTexture = rand() % m_textures->size();
-		if( m_nextTexture != m_actTexture &&
-			(( (*m_textures)[m_actTexture]->getComplexity() +
-			(*m_textures)[m_nextTexture]->getComplexity() ) < kComplexityBudgetInitial )
-			&& (*m_textures)[m_nextTexture]->useShader()
-			)
-			break;
-	}
-	if( m_nextTexture == m_actTexture )
-	{
-		m_nextTexture += 1;
-		if( m_nextTexture == m_textures->size() )
-			m_nextTexture = 0;
-	}
+    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    {
+        m_nextTexture = rand() % m_textures->size();
+        if ( m_nextTexture != m_actTexture
+             && ( ( ( *m_textures )[m_actTexture]->getComplexity() + ( *m_textures )[m_nextTexture]->getComplexity() )
+                  < kComplexityBudgetInitial )
+             && ( *m_textures )[m_nextTexture]->useShader() )
+            break;
+    }
+    if ( m_nextTexture == m_actTexture )
+    {
+        m_nextTexture += 1;
+        if ( m_nextTexture == m_textures->size() )
+            m_nextTexture = 0;
+    }
 
-	// KALEIDO_SEED: the first scene rolls its own seeded stream too.  It does not
-	// pass through resetParameters() otherwise, and keeps the rolls made while
-	// loading -- from the global stream, which depends on how many presets were
-	// loaded before it (another hidden preset in the folder changed the roll).
-	static const bool seeded = getenv( "KALEIDO_SEED" ) != nullptr;
-	if( seeded )
-		(*m_textures)[m_actTexture]->resetParameters();
-	m_texFadeDur = (float) ((*m_textures)[m_actTexture]->getTimeSolo());
+    // KALEIDO_SEED: the first scene rolls its own seeded stream too.  It does not
+    // pass through resetParameters() otherwise, and keeps the rolls made while
+    // loading -- from the global stream, which depends on how many presets were
+    // loaded before it (another hidden preset in the folder changed the roll).
+    static const bool seeded = getenv( "KALEIDO_SEED" ) != nullptr;
+    if ( seeded )
+        ( *m_textures )[m_actTexture]->resetParameters();
+    m_texFadeDur = (float)( ( *m_textures )[m_actTexture]->getTimeSolo() );
 
-	for( unsigned int i = 0; i < kMaxSearch; i++ )
-	{
-		m_actFx = rand() % m_fxShaders->size();
-		if( (*m_fxShaders)[m_actFx]->useShader() )
-			break;
-	}
-	// NOTE: unlike the texture pick above, this deliberately does NOT exclude
-	// m_nextFx == m_actFx -- see the long comment on the identical pick in
-	// tickFx()'s fade-end for why forbidding a dominant-probability FX (e.g.
-	// FxPlain at probability=1.0) from following itself mathematically caps
-	// it at ~50%, regardless of its configured probability.
-	for( unsigned int i = 0; i < kMaxSearch; i++ )
-	{
-		m_nextFx = rand() % m_fxShaders->size();
-		if( (( (*m_textures)[m_actTexture]->getComplexity() +
-			(*m_textures)[m_nextTexture]->getComplexity() +
-			(*m_fxShaders)[m_actFx]->getComplexity() +
-			(*m_fxShaders)[m_nextFx]->getComplexity() ) < kComplexityBudget )
-			&& (*m_fxShaders)[m_nextFx]->useShader()
-			)
-			break;
-	}
+    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    {
+        m_actFx = rand() % m_fxShaders->size();
+        if ( ( *m_fxShaders )[m_actFx]->useShader() )
+            break;
+    }
+    // NOTE: unlike the texture pick above, this deliberately does NOT exclude
+    // m_nextFx == m_actFx -- see the long comment on the identical pick in
+    // tickFx()'s fade-end for why forbidding a dominant-probability FX (e.g.
+    // FxPlain at probability=1.0) from following itself mathematically caps
+    // it at ~50%, regardless of its configured probability.
+    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+    {
+        m_nextFx = rand() % m_fxShaders->size();
+        if ( ( ( ( *m_textures )[m_actTexture]->getComplexity() + ( *m_textures )[m_nextTexture]->getComplexity()
+                 + ( *m_fxShaders )[m_actFx]->getComplexity() + ( *m_fxShaders )[m_nextFx]->getComplexity() )
+               < kComplexityBudget )
+             && ( *m_fxShaders )[m_nextFx]->useShader() )
+            break;
+    }
 
-	if( seeded )
-		(*m_fxShaders)[m_actFx]->resetParameters();
-	m_fxFadeDur = (float) ((*m_fxShaders)[m_actFx]->getTimeSolo());
+    if ( seeded )
+        ( *m_fxShaders )[m_actFx]->resetParameters();
+    m_fxFadeDur = (float)( ( *m_fxShaders )[m_actFx]->getTimeSolo() );
 
-	m_texState  = 0;
-	m_fxState = 0;
-	m_texInterp  = 1.f;
-	m_fxInterp = 1.f;
-	restart( m_clockEffectTexture );
-	restart( m_clockEffectFx );
+    m_texState = 0;
+    m_fxState = 0;
+    m_texInterp = 1.f;
+    m_fxInterp = 1.f;
+    restart( m_clockEffectTexture );
+    restart( m_clockEffectFx );
 }
 
 // Remote-Szenen-Browser: DIREKT zu Szene idx springen (gleicher Sofort-Pfad
@@ -182,17 +182,17 @@ void SceneScheduler::reset()
  */
 void SceneScheduler::forceScene( int idx )
 {
-	if( !m_textures || idx < 0 || idx >= (int)m_textures->size() )
-		return;
-	if( m_texState == 0 )
-	{
-		m_nextTexture       = idx;
-		m_forcedNextTexture = -1;
-	}
-	else
-		m_forcedNextTexture = idx;
-	m_forceEffectChange = true;
-	m_forceIsManual     = true;
+    if ( !m_textures || idx < 0 || idx >= (int)m_textures->size() )
+        return;
+    if ( m_texState == 0 )
+    {
+        m_nextTexture = idx;
+        m_forcedNextTexture = -1;
+    }
+    else
+        m_forcedNextTexture = idx;
+    m_forceEffectChange = true;
+    m_forceIsManual = true;
 }
 
 /**
@@ -206,10 +206,10 @@ void SceneScheduler::forceScene( int idx )
  */
 void SceneScheduler::forceFx( int idx )
 {
-	if( !m_fxShaders || idx < 0 || idx >= (int)m_fxShaders->size() )
-		return;
-	m_forcedNextFx  = idx;
-	m_forceFxChange = true;
+    if ( !m_fxShaders || idx < 0 || idx >= (int)m_fxShaders->size() )
+        return;
+    m_forcedNextFx = idx;
+    m_forceFxChange = true;
 }
 
 /**
@@ -227,24 +227,36 @@ void SceneScheduler::forceFx( int idx )
  * calm until someone reads it and adds it here -- the safe direction.
  * Deliberately absent: FxLens (displaces even if statically) and
  * FxOilPaintFlow (its brush field flows over time).
- * @param fragPath Fragment-shader path of the FX candidate (EffectShader::fragmentName(); any directory prefix, either separator) -- only its basename is compared. nullptr yields false.
+ * @param fragPath Fragment-shader path of the FX candidate (EffectShader::fragmentName(); any directory prefix, either
+ * separator) -- only its basename is compared. nullptr yields false.
  * @return True if the basename is on the calm allow-list, false for every other or unknown FX.
  */
 static bool isMeshCalmFx( const char *fragPath )
 {
-	if( !fragPath ) return false;
-	const char *base = fragPath;
-	for( const char *q = fragPath; *q; ++q )
-		if( *q == '\\' || *q == '/' ) base = q + 1;
-	static const char *calm[] = {
-		"FxPlain.frag", "FxGrey.frag", "FxDarkRed.frag",
-		"FxAmbientOcclusion.frag", "FxDepthField.frag", "FxDepthFog.frag",
-		"FxEdgeInk.frag", "FxRimLight.frag", "FxSunShafts.frag",
-		"FxLichtenstein.frag", "FxOilPaint.frag", "FxHexagon.frag",
-	};
-	for( const char *c : calm )
-		if( strcmp( base, c ) == 0 ) return true;
-	return false;
+    if ( !fragPath )
+        return false;
+    const char *base = fragPath;
+    for ( const char *q = fragPath; *q; ++q )
+        if ( *q == '\\' || *q == '/' )
+            base = q + 1;
+    static const char *calm[] = {
+        "FxPlain.frag",
+        "FxGrey.frag",
+        "FxDarkRed.frag",
+        "FxAmbientOcclusion.frag",
+        "FxDepthField.frag",
+        "FxDepthFog.frag",
+        "FxEdgeInk.frag",
+        "FxRimLight.frag",
+        "FxSunShafts.frag",
+        "FxLichtenstein.frag",
+        "FxOilPaint.frag",
+        "FxHexagon.frag",
+    };
+    for ( const char *c : calm )
+        if ( strcmp( base, c ) == 0 )
+            return true;
+    return false;
 }
 
 /**
@@ -258,19 +270,21 @@ static bool isMeshCalmFx( const char *fragPath )
  */
 int SceneScheduler::findTransition( const char *basename ) const
 {
-	if( !m_transitions || !basename )
-		return -1;
-	for( unsigned int i = 0; i < m_transitions->size(); i++ )
-	{
-		const char *frag = (*m_transitions)[i]->fragmentName();
-		if( !frag ) continue;
-		const char *b = frag;
-		for( const char *p = frag; *p; ++p )
-			if( *p == '\\' || *p == '/' ) b = p + 1;
-		if( strcmp( b, basename ) == 0 )
-			return (int) i;
-	}
-	return -1;
+    if ( !m_transitions || !basename )
+        return -1;
+    for ( unsigned int i = 0; i < m_transitions->size(); i++ )
+    {
+        const char *frag = ( *m_transitions )[i]->fragmentName();
+        if ( !frag )
+            continue;
+        const char *b = frag;
+        for ( const char *p = frag; *p; ++p )
+            if ( *p == '\\' || *p == '/' )
+                b = p + 1;
+        if ( strcmp( b, basename ) == 0 )
+            return (int)i;
+    }
+    return -1;
 }
 
 /**
@@ -283,17 +297,18 @@ int SceneScheduler::findTransition( const char *basename ) const
  */
 bool SceneScheduler::isRecentTexture( unsigned int idx ) const
 {
-	// By SHADER, not by entry: a mesh family registers one entry per model
-	// (ShipFlyby 29, Hologram 26, ...), and "ShipFlyby again, other ship"
-	// is still ShipFlyby again -- the probe run showed it nine times in
-	// twelve minutes while every single entry was inside the window.
-	const std::vector<EffectShader *> &tex = *m_textures;
-	if( idx >= tex.size() ) return false;
-	const char *name = fragBase( tex[idx]->fragmentName() );
-	for( unsigned int r : m_recentTex )
-		if( r < tex.size() && ( r == idx || strcmp( fragBase( tex[r]->fragmentName() ), name ) == 0 ) )
-			return true;
-	return false;
+    // By SHADER, not by entry: a mesh family registers one entry per model
+    // (ShipFlyby 29, Hologram 26, ...), and "ShipFlyby again, other ship"
+    // is still ShipFlyby again -- the probe run showed it nine times in
+    // twelve minutes while every single entry was inside the window.
+    const std::vector<EffectShader *> &tex = *m_textures;
+    if ( idx >= tex.size() )
+        return false;
+    const char *name = fragBase( tex[idx]->fragmentName() );
+    for ( unsigned int r : m_recentTex )
+        if ( r < tex.size() && ( r == idx || strcmp( fragBase( tex[r]->fragmentName() ), name ) == 0 ) )
+            return true;
+    return false;
 }
 
 /**
@@ -302,11 +317,12 @@ bool SceneScheduler::isRecentTexture( unsigned int idx ) const
  */
 void SceneScheduler::noteTextureShown( unsigned int idx )
 {
-	m_recentTex.push_back( idx );
-	size_t cap = m_textures ? m_textures->size() / 3 : 0;
-	if( cap > kRecentMax ) cap = kRecentMax;
-	while( m_recentTex.size() > cap )
-		m_recentTex.erase( m_recentTex.begin() );
+    m_recentTex.push_back( idx );
+    size_t cap = m_textures ? m_textures->size() / 3 : 0;
+    if ( cap > kRecentMax )
+        cap = kRecentMax;
+    while ( m_recentTex.size() > cap )
+        m_recentTex.erase( m_recentTex.begin() );
 }
 
 // Mood-basierter Auswahl-Bias - zwei Komponenten:
@@ -330,33 +346,35 @@ void SceneScheduler::noteTextureShown( unsigned int idx )
  */
 bool SceneScheduler::moodAccept( EffectShader *s ) const
 {
-	float target = 1.f + m_lastArousal * 9.f;               // desired busyness 1..10
-	float diff   = fabsf(float(s->getComplexity()) - target) / 9.f;
-	float accept = 1.f - 0.6f * diff;                       // closer match -> likelier
+    float target = 1.f + m_lastArousal * 9.f; // desired busyness 1..10
+    float diff = fabsf( float( s->getComplexity() ) - target ) / 9.f;
+    float accept = 1.f - 0.6f * diff; // closer match -> likelier
 
-	// Learned taste (skip-malus / favourite-bonus, persistent beim Aufrufer).
-	accept *= tasteOf( s->fragmentName() );
+    // Learned taste (skip-malus / favourite-bonus, persistent beim Aufrufer).
+    accept *= tasteOf( s->fragmentName() );
 
-	unsigned int f = s->moodFlags();
-	if (f)
-	{
-		float bonus = 0.f;
-		if (f & EffectShader::MOOD_BRIGHT)
-			bonus += (m_lastValence - 0.5f) * 0.8f;
-		if (f & EffectShader::MOOD_DARK)
-			bonus += (0.5f - m_lastValence) * 0.8f;
-		if (f & EffectShader::MOOD_AGGRESSIVE)
-			bonus += (m_lastArousal - 0.5f) * 0.8f + (0.3f - m_lastAmbient) * 0.4f;
-		if (f & EffectShader::MOOD_CALM)
-			bonus += (0.5f - m_lastArousal) * 0.6f + (m_lastAmbient - 0.3f) * 0.6f;
-		accept += bonus;
-	}
-	// Floor keeps every shader reachable (never a hard exclusion); a disliked
-	// shader gets a lower floor, but never zero.
-	float floorv = 0.15f * std::min( tasteOf( s->fragmentName() ), 1.f );
-	if (floorv < 0.05f) floorv = 0.05f;
-	if (accept < floorv) accept = floorv;
-	return (float(rand()) / float(RAND_MAX)) < accept;
+    unsigned int f = s->moodFlags();
+    if ( f )
+    {
+        float bonus = 0.f;
+        if ( f & EffectShader::MOOD_BRIGHT )
+            bonus += ( m_lastValence - 0.5f ) * 0.8f;
+        if ( f & EffectShader::MOOD_DARK )
+            bonus += ( 0.5f - m_lastValence ) * 0.8f;
+        if ( f & EffectShader::MOOD_AGGRESSIVE )
+            bonus += ( m_lastArousal - 0.5f ) * 0.8f + ( 0.3f - m_lastAmbient ) * 0.4f;
+        if ( f & EffectShader::MOOD_CALM )
+            bonus += ( 0.5f - m_lastArousal ) * 0.6f + ( m_lastAmbient - 0.3f ) * 0.6f;
+        accept += bonus;
+    }
+    // Floor keeps every shader reachable (never a hard exclusion); a disliked
+    // shader gets a lower floor, but never zero.
+    float floorv = 0.15f * std::min( tasteOf( s->fragmentName() ), 1.f );
+    if ( floorv < 0.05f )
+        floorv = 0.05f;
+    if ( accept < floorv )
+        accept = floorv;
+    return ( float( rand() ) / float( RAND_MAX ) ) < accept;
 }
 
 /**
@@ -387,496 +405,501 @@ bool SceneScheduler::moodAccept( EffectShader *s ) const
  */
 void SceneScheduler::tick( const Tick &t )
 {
-	std::vector<EffectShader *> &tex  = *m_textures;
-	std::vector<EffectShader *> &comb = *m_fxShaders;
+    std::vector<EffectShader *> &tex = *m_textures;
+    std::vector<EffectShader *> &comb = *m_fxShaders;
 
-	// Musical novelty: a strong harmonic / section change (a drop, a key
-	// change) forces an early cross-fade - rate-limited, only while music
-	// actually plays.
-	// A trigger that lands WHILE a cross-fade is already running must not
-	// queue a SECOND change: the fade in flight already is the scene change
-	// the music asked for.  Forcing another one made the freshly faded-in
-	// scene get cut away again after the 0.6 s minimum solo -- the reported
-	// "scene flashes in for a fraction of a second and is replaced".
-	const bool midFade = ( m_texState != 0 );
+    // Musical novelty: a strong harmonic / section change (a drop, a key
+    // change) forces an early cross-fade - rate-limited, only while music
+    // actually plays.
+    // A trigger that lands WHILE a cross-fade is already running must not
+    // queue a SECOND change: the fade in flight already is the scene change
+    // the music asked for.  Forcing another one made the freshly faded-in
+    // scene get cut away again after the 0.6 s minimum solo -- the reported
+    // "scene flashes in for a fraction of a second and is replaced".
+    const bool midFade = ( m_texState != 0 );
 
-	m_noveltyCooldown -= t.dt;
-	if( !m_reviewMode && m_noveltyCooldown <= 0.f &&
-	    t.harmonicChange * t.musicPresence > 0.5f )
-	{
-		if( !midFade )
-			m_forceEffectChange = true;
-		m_noveltyCooldown = 8.0f;   // at most one musical cut every ~8 s
-	}
-	// REGIE: den Bogen auf den Drop legen.  Steigt die Spannung (buildUp
-	// ueber 0.45, steigende Flanke) und laeuft gerade eine INSZENIERTE Szene
-	// (sceneProgress / rig-progress), wird ihr Fortschritt so gebogen, dass
-	// der Hoehepunkt auf der naechsten 8-Takt-Grenze landet -- dort faellt
-	// in Tanzmusik der Drop.  Assemblys letztes Stueck setzt sich dann auf
-	// dem Schlag, statt irgendwann.  Stetig (kein Ruecksprung), nur wenn die
-	// Vorhersage in 4..45 s liegt, hoechstens alle 20 s.
-	m_arcCooldown -= t.dt;
-	m_regieWarm   += t.dt;
-	// Nach einem Drop kommt der Groove zurueck, und der Analyzer liest genau
-	// diese Rueckkehr als Aufbau (Flanken 238/243 s hinter einem Sprung bei
-	// 222 s auf DMT).  Ein Bogen fuer einen Drop, der schon vorbei ist, ist
-	// keiner: 15 s Ruhe nach jedem Drop.
-	if( t.dropCount != m_lastDropCount )
-		m_arcCooldown = ( m_arcCooldown > 15.f ) ? m_arcCooldown : 15.f;
-	// Die ersten 20 s liest der Analyzer JEDEN Groove als Aufbau (seine
-	// 10-s-Baselines klettern noch: buildUp 0,67 im Intro, 0,43 im echten
-	// Aufbau).  Der Analyzer selbst schont sein Drop-Arming genauso.
-	if( !m_reviewMode && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
-	    && m_arcCooldown <= 0.f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f
-	    && m_actTexture < tex.size() && tex[m_actTexture]->usesProgress() )
-	{
-		tex[m_actTexture]->setClimaxIn( t.phraseSecsLeft );
-		m_arcCooldown = 20.f;
-		fprintf( stderr, "REGIE: Bogen auf den Drop in %.1f s (%s)\n",
-		         t.phraseSecsLeft, tex[m_actTexture]->fragmentName() );
-	}
-	m_buildUpPrev = t.buildUp;
+    m_noveltyCooldown -= t.dt;
+    if ( !m_reviewMode && m_noveltyCooldown <= 0.f && t.harmonicChange * t.musicPresence > 0.5f )
+    {
+        if ( !midFade )
+            m_forceEffectChange = true;
+        m_noveltyCooldown = 8.0f; // at most one musical cut every ~8 s
+    }
+    // REGIE: den Bogen auf den Drop legen.  Steigt die Spannung (buildUp
+    // ueber 0.45, steigende Flanke) und laeuft gerade eine INSZENIERTE Szene
+    // (sceneProgress / rig-progress), wird ihr Fortschritt so gebogen, dass
+    // der Hoehepunkt auf der naechsten 8-Takt-Grenze landet -- dort faellt
+    // in Tanzmusik der Drop.  Assemblys letztes Stueck setzt sich dann auf
+    // dem Schlag, statt irgendwann.  Stetig (kein Ruecksprung), nur wenn die
+    // Vorhersage in 4..45 s liegt, hoechstens alle 20 s.
+    m_arcCooldown -= t.dt;
+    m_regieWarm += t.dt;
+    // Nach einem Drop kommt der Groove zurueck, und der Analyzer liest genau
+    // diese Rueckkehr als Aufbau (Flanken 238/243 s hinter einem Sprung bei
+    // 222 s auf DMT).  Ein Bogen fuer einen Drop, der schon vorbei ist, ist
+    // keiner: 15 s Ruhe nach jedem Drop.
+    if ( t.dropCount != m_lastDropCount )
+        m_arcCooldown = ( m_arcCooldown > 15.f ) ? m_arcCooldown : 15.f;
+    // Die ersten 20 s liest der Analyzer JEDEN Groove als Aufbau (seine
+    // 10-s-Baselines klettern noch: buildUp 0,67 im Intro, 0,43 im echten
+    // Aufbau).  Der Analyzer selbst schont sein Drop-Arming genauso.
+    if ( !m_reviewMode && m_regieWarm > 20.f && t.buildUp > 0.45f && m_buildUpPrev <= 0.45f
+         && m_arcCooldown <= 0.f && t.phraseSecsLeft >= 4.f && t.phraseSecsLeft <= 45.f
+         && m_actTexture < tex.size() && tex[m_actTexture]->usesProgress() )
+    {
+        tex[m_actTexture]->setClimaxIn( t.phraseSecsLeft );
+        m_arcCooldown = 20.f;
+        fprintf( stderr, "REGIE: Bogen auf den Drop in %.1f s (%s)\n",
+                 t.phraseSecsLeft, tex[m_actTexture]->fragmentName() );
+    }
+    m_buildUpPrev = t.buildUp;
 
-	// SECTION change (Strophe -> Refrain -> Bridge) + Song-Struktur-Gedächtnis:
-	// eine WIEDERKEHRENDE Section (Refrain #2 = Refrain #1) spielt Shader,
-	// Combine und exakte Parameter von damals; eine NEUE rollt frisch und ihr
-	// Look wird nach dem Wechsel unter der id gespeichert.
-	if( !m_reviewMode && t.sectionCount == m_lastSectionCount + 1 )
-	{
-		int  id = t.sectionId;
-		auto it = m_sectionEffect.find( id );
-		// "Known" needs all three: the analyzer RECOGNISED the section by
-		// fingerprint (the id alone is a recycled LRU slot and says nothing),
-		// we have a look stored under that id, and that look is fresh (stored
-		// within this song, not inherited from a set played an hour ago).
-		auto st = m_sectionStamp.find( id );
-		bool fresh = st != m_sectionStamp.end()
-		             && ( t.sectionCount - st->second ) <= kSectionMemorySpan;
-		bool known = t.sectionKnown && (id >= 0) && it != m_sectionEffect.end()
-		             && it->second < tex.size() && fresh;
-		fprintf( stderr, "SCHED section id=%d %s%s -> %s\n", id,
-		         t.sectionKnown ? "recognised" : "new",
-		         ( t.sectionKnown && !known ) ? " (no fresh memory)" : "",
-		         known ? "replay" : "fresh roll" );
-		if( known && it->second == m_actTexture )
-		{
-			// Der richtige Shader ist bereits auf dem Schirm.  Frueher wurden
-			// hier SOFORT die gespeicherten Parameter draufgesetzt - ein
-			// harter, unueberblendeter Sprung auf einen komplett anderen Look
-			// mitten im laufenden Bild.  Visuelle Kontinuitaet schlaegt
-			// Replay-Treue: der aktuelle Look bleibt einfach stehen.
-		}
-		else
-		{
-			if( known )
-			{
-				auto ic = m_sectionFx.find( id );
-				int  fxTarget = ( ic != m_sectionFx.end()
-				                   && ic->second < comb.size()
-				                   && ic->second != m_actFx )
-				                 ? (int) ic->second : -1;
+    // SECTION change (Strophe -> Refrain -> Bridge) + Song-Struktur-Gedächtnis:
+    // eine WIEDERKEHRENDE Section (Refrain #2 = Refrain #1) spielt Shader,
+    // Combine und exakte Parameter von damals; eine NEUE rollt frisch und ihr
+    // Look wird nach dem Wechsel unter der id gespeichert.
+    if ( !m_reviewMode && t.sectionCount == m_lastSectionCount + 1 )
+    {
+        int  id = t.sectionId;
+        auto it = m_sectionEffect.find( id );
+        // "Known" needs all three: the analyzer RECOGNISED the section by
+        // fingerprint (the id alone is a recycled LRU slot and says nothing),
+        // we have a look stored under that id, and that look is fresh (stored
+        // within this song, not inherited from a set played an hour ago).
+        auto st = m_sectionStamp.find( id );
+        bool fresh = st != m_sectionStamp.end()
+                     && ( t.sectionCount - st->second ) <= kSectionMemorySpan;
+        bool known = t.sectionKnown && ( id >= 0 ) && it != m_sectionEffect.end()
+                     && it->second < tex.size() && fresh;
+        fprintf( stderr, "SCHED section id=%d %s%s -> %s\n", id,
+                 t.sectionKnown ? "recognised" : "new",
+                 ( t.sectionKnown && !known ) ? " (no fresh memory)" : "",
+                 known ? "replay" : "fresh roll" );
+        if ( known && it->second == m_actTexture )
+        {
+            // Der richtige Shader ist bereits auf dem Schirm.  Frueher wurden
+            // hier SOFORT die gespeicherten Parameter draufgesetzt - ein
+            // harter, unueberblendeter Sprung auf einen komplett anderen Look
+            // mitten im laufenden Bild.  Visuelle Kontinuitaet schlaegt
+            // Replay-Treue: der aktuelle Look bleibt einfach stehen.
+        }
+        else
+        {
+            if ( known )
+            {
+                auto ic = m_sectionFx.find( id );
+                int  fxTarget = ( ic != m_sectionFx.end()
+                                  && ic->second < comb.size()
+                                  && ic->second != m_actFx )
+                                    ? (int)ic->second
+                                    : -1;
 
-				// Texture/scene slot and combine/FX slot are TWO INDEPENDENT
-				// state machines with their own Solo/Fade timing (tick() vs
-				// tickFx()) -- each retarget must be guarded by ITS OWN state,
-				// not the other one's. Retargeting m_nextTexture while
-				// m_texState==1 (or m_nextFx while m_fxState==1) makes the
-				// already-visible, currently-blending fade silently swap to a
-				// DIFFERENT destination than the one it was rolled for -- the
-				// reported "jump to a completely different scene/effect right
-				// after a switch" (this exact bug previously existed for BOTH
-				// slots sharing one m_texState guard, which incorrectly let a
-				// mid-fade COMBINE retarget through whenever the unrelated
-				// TEXTURE slot happened to be idle at that moment).
-				if( !midFade )
-				{
-					m_nextTexture           = it->second;   // replay that section's shader
-					m_pendingSectionRestore = id;           //   ... with its exact params
-				}
-				else
-				{
-					// Mid-fade: becomes the target of the NEXT change (applied at
-					// this fade's end), but does NOT force that change early --
-					// the scene now fading in gets its full solo first.
-					m_pendingSectionNext   = (int) it->second;
-					m_pendingSectionNextId = id;
-				}
+                // Texture/scene slot and combine/FX slot are TWO INDEPENDENT
+                // state machines with their own Solo/Fade timing (tick() vs
+                // tickFx()) -- each retarget must be guarded by ITS OWN state,
+                // not the other one's. Retargeting m_nextTexture while
+                // m_texState==1 (or m_nextFx while m_fxState==1) makes the
+                // already-visible, currently-blending fade silently swap to a
+                // DIFFERENT destination than the one it was rolled for -- the
+                // reported "jump to a completely different scene/effect right
+                // after a switch" (this exact bug previously existed for BOTH
+                // slots sharing one m_texState guard, which incorrectly let a
+                // mid-fade COMBINE retarget through whenever the unrelated
+                // TEXTURE slot happened to be idle at that moment).
+                if ( !midFade )
+                {
+                    m_nextTexture = it->second;   // replay that section's shader
+                    m_pendingSectionRestore = id; //   ... with its exact params
+                }
+                else
+                {
+                    // Mid-fade: becomes the target of the NEXT change (applied at
+                    // this fade's end), but does NOT force that change early --
+                    // the scene now fading in gets its full solo first.
+                    m_pendingSectionNext = (int)it->second;
+                    m_pendingSectionNextId = id;
+                }
 
-				if( fxTarget >= 0 )
-				{
-					if( m_fxState == 0 )
-					{
-						m_nextFx        = fxTarget;
-						m_forceFxChange = true;
-					}
-					else
-					{
-						m_pendingSectionNextFx = fxTarget;
-						m_forceFxChange        = true;   // consumed once tickFx() is back in Solo, by which point the deferred m_nextFx has already been applied at its fade-end
-					}
-				}
-			}
-			else
-			{
-				m_pendingSectionStore = id;             // remember the new look
-				// A stale deferred replay (from a section that is over now)
-				// must not surface at the next fade-end.
-				m_pendingSectionNext   = -1;
-				m_pendingSectionNextId = -1;
-				if( (t.sectionCount & 1) == 0 )
-					m_forceFxChange = true;        // bigger scenery change
-			}
-			if( !midFade )
-				m_forceEffectChange = true;
-		}
-		m_noveltyCooldown = 8.0f;     // hold off the harmonic hook right after
-	}
-	m_lastSectionCount = t.sectionCount;
+                if ( fxTarget >= 0 )
+                {
+                    if ( m_fxState == 0 )
+                    {
+                        m_nextFx = fxTarget;
+                        m_forceFxChange = true;
+                    }
+                    else
+                    {
+                        m_pendingSectionNextFx = fxTarget;
+                        m_forceFxChange = true; // consumed once tickFx() is back in Solo, by which point the deferred
+                                                // m_nextFx has already been applied at its fade-end
+                    }
+                }
+            }
+            else
+            {
+                m_pendingSectionStore = id; // remember the new look
+                // A stale deferred replay (from a section that is over now)
+                // must not surface at the next fade-end.
+                m_pendingSectionNext = -1;
+                m_pendingSectionNextId = -1;
+                if ( ( t.sectionCount & 1 ) == 0 )
+                    m_forceFxChange = true; // bigger scenery change
+            }
+            if ( !midFade )
+                m_forceEffectChange = true;
+        }
+        m_noveltyCooldown = 8.0f; // hold off the harmonic hook right after
+    }
+    m_lastSectionCount = t.sectionCount;
 
-	// DROP: immediate scene cut (still beat-quantised by the pending machinery,
-	// but a drop IS a downbeat-scale accent).
-	if( !m_reviewMode && t.dropCount == m_lastDropCount + 1 )
-	{
-		if( midFade )
-		{
-			// The change is already under way: land it ON the drop as a hard
-			// cut (finish the running fade within ~0.15 s) instead of queuing
-			// a second cut right behind it.
-			float ts = secsSince( m_clockEffectTexture );
-			if( m_sceneFadeMin <= 0.f && m_texFadeDur > ts + 0.15f )
-				m_texFadeDur = ts + 0.15f;
-		}
-		else
-		{
-			m_forceEffectChange = true;
-			m_dropCutPending    = true;
-		}
-		m_noveltyCooldown = 8.0f;
-	}
-	m_lastDropCount = t.dropCount;
+    // DROP: immediate scene cut (still beat-quantised by the pending machinery,
+    // but a drop IS a downbeat-scale accent).
+    if ( !m_reviewMode && t.dropCount == m_lastDropCount + 1 )
+    {
+        if ( midFade )
+        {
+            // The change is already under way: land it ON the drop as a hard
+            // cut (finish the running fade within ~0.15 s) instead of queuing
+            // a second cut right behind it.
+            float ts = secsSince( m_clockEffectTexture );
+            if ( m_sceneFadeMin <= 0.f && m_texFadeDur > ts + 0.15f )
+                m_texFadeDur = ts + 0.15f;
+        }
+        else
+        {
+            m_forceEffectChange = true;
+            m_dropCutPending = true;
+        }
+        m_noveltyCooldown = 8.0f;
+    }
+    m_lastDropCount = t.dropCount;
 
-	// VJ PIN ('u'): suppress every forced cut while the current look is held.
-	if( t.pinned )
-	{
-		m_forceEffectChange  = false;
-		m_forceIsManual      = false;
-		m_forceFxChange = false;
-		m_dropCutPending     = false;
-		// A pending section store/restore must not attach to some LATER,
-		// unrelated switch after unpinning - drop it.
-		m_pendingSectionStore   = -1;
-		m_pendingSectionRestore = -1;
-		m_pendingSectionNext    = -1;
-		m_pendingSectionNextId  = -1;
-		m_pendingSectionNextFx  = -1;
-	}
+    // VJ PIN ('u'): suppress every forced cut while the current look is held.
+    if ( t.pinned )
+    {
+        m_forceEffectChange = false;
+        m_forceIsManual = false;
+        m_forceFxChange = false;
+        m_dropCutPending = false;
+        // A pending section store/restore must not attach to some LATER,
+        // unrelated switch after unpinning - drop it.
+        m_pendingSectionStore = -1;
+        m_pendingSectionRestore = -1;
+        m_pendingSectionNext = -1;
+        m_pendingSectionNextId = -1;
+        m_pendingSectionNextFx = -1;
+    }
 
-	// A chain lab walking with the music takes the music's cues itself: a new
-	// section, a drop or a harmonic change walks its chain on (EffectShader::
-	// stepChainWalk) instead of cutting the scene away, so one lab can carry a
-	// whole set.  A manual change ('n', the remote) still goes through, and the
-	// entry's solo time still ends the scene.
-	if( m_texState == 0 && m_actTexture < tex.size() && tex[m_actTexture]->walksWithMusic()
-	    && !m_forceIsManual )
-	{
-		m_forceEffectChange = false;
-		m_dropCutPending    = false;
-	}
+    // A chain lab walking with the music takes the music's cues itself: a new
+    // section, a drop or a harmonic change walks its chain on (EffectShader::
+    // stepChainWalk) instead of cutting the scene away, so one lab can carry a
+    // whole set.  A manual change ('n', the remote) still goes through, and the
+    // entry's solo time still ends the scene.
+    if ( m_texState == 0 && m_actTexture < tex.size() && tex[m_actTexture]->walksWithMusic()
+         && !m_forceIsManual )
+    {
+        m_forceEffectChange = false;
+        m_dropCutPending = false;
+    }
 
-	// ---- Effekt-Zustandsmaschine: Solo ----
-	if( m_texState == 0 )
-	{
-		m_texInterp = 1.0;
+    // ---- Effekt-Zustandsmaschine: Solo ----
+    if ( m_texState == 0 )
+    {
+        m_texInterp = 1.0;
 
-		float ts = secsSince( m_clockEffectTexture );
+        float ts = secsSince( m_clockEffectTexture );
 
-		// REVIEW MODE: a fixed span per scene, regardless of config/music
-		// pacing -- long enough to actually judge a scene's motion, which is
-		// why it is a named constant rather than a number buried here.
-		if( m_reviewMode && m_texFadeDur > kReviewSoloSecs )
-			m_texFadeDur = kReviewSoloSecs;
+        // REVIEW MODE: a fixed span per scene, regardless of config/music
+        // pacing -- long enough to actually judge a scene's motion, which is
+        // why it is a named constant rather than a number buried here.
+        if ( m_reviewMode && m_texFadeDur > kReviewSoloSecs )
+            m_texFadeDur = kReviewSoloSecs;
 
-		// End the solo early on a manual ('n') or trigger-driven request, but
-		// only after a minimum so cuts never come back-to-back.  A human
-		// pressing 'n' gets 0.6 s; a musical trigger (section/novelty/drop)
-		// landing right after a fade completed must let the new scene stand
-		// for a real shot first -- 0.6 s read as "flashes in, gets replaced".
-		bool  forced  = m_forceEffectChange;
-		float minSolo = m_forceIsManual ? 0.6f : 2.0f;
-		if( ts > m_texFadeDur || (forced && ts > minSolo) )
-		{
-			m_forceEffectChange   = false;
-			m_forceIsManual       = false;
-			m_pendingEffectChange = true;
-			m_pendingEffectForced = m_pendingEffectForced || forced;
-		}
+        // End the solo early on a manual ('n') or trigger-driven request, but
+        // only after a minimum so cuts never come back-to-back.  A human
+        // pressing 'n' gets 0.6 s; a musical trigger (section/novelty/drop)
+        // landing right after a fade completed must let the new scene stand
+        // for a real shot first -- 0.6 s read as "flashes in, gets replaced".
+        bool  forced = m_forceEffectChange;
+        float minSolo = m_forceIsManual ? 0.6f : 2.0f;
+        if ( ts > m_texFadeDur || ( forced && ts > minSolo ) )
+        {
+            m_forceEffectChange = false;
+            m_forceIsManual = false;
+            m_pendingEffectChange = true;
+            m_pendingEffectForced = m_pendingEffectForced || forced;
+        }
 
-		// Beat-quantised: a due change is held PENDING until the next downbeat
-		// lands.  Timeout + no-music escape; a MANUAL cut fires immediately.
-		if( m_pendingEffectChange )
-		{
-			m_pendingEffectAge += t.dt;
-			if( m_pendingEffectForced || m_reviewMode || t.downbeatTick
-			    || m_pendingEffectAge > 2.5f || t.gateSmooth < 0.25f )
-			{
-				bool forcedGo         = m_pendingEffectForced;
-				m_pendingEffectChange = false;
-				m_pendingEffectForced = false;
-				m_pendingEffectAge    = 0.f;
+        // Beat-quantised: a due change is held PENDING until the next downbeat
+        // lands.  Timeout + no-music escape; a MANUAL cut fires immediately.
+        if ( m_pendingEffectChange )
+        {
+            m_pendingEffectAge += t.dt;
+            if ( m_pendingEffectForced || m_reviewMode || t.downbeatTick
+                 || m_pendingEffectAge > 2.5f || t.gateSmooth < 0.25f )
+            {
+                bool forcedGo = m_pendingEffectForced;
+                m_pendingEffectChange = false;
+                m_pendingEffectForced = false;
+                m_pendingEffectAge = 0.f;
 
-				m_texState = 1;
+                m_texState = 1;
 
-				// Roll the TRANSITION for this fade: probability-weighted
-				// rejection sampling over the registered Transitions/ shaders,
-				// mood-biased like every other slot (Crossfade carries
-				// probability 1.0 in the presets, so the classic linear mix
-				// stays the most common).  Portal needs REAL depth on both
-				// sides - without two 3D scenes it falls back to ZoomThrough.
-				if( m_transitions && !m_transitions->empty() )
-				{
-					std::vector<EffectShader *> &tr = *m_transitions;
-					for( unsigned int i = 0; i < kMaxSearch; i++ )
-					{
-						m_actTransition = rand() % tr.size();
-						if( tr[m_actTransition]->useShader()
-						    && moodAccept( tr[m_actTransition] ) )
-							break;
-					}
-					if( findTransition( "Portal.frag" ) == (int) m_actTransition
-					    && !( tex[m_actTexture]->is3D()
-					       && tex[m_nextTexture]->is3D() ) )
-					{
-						int zoom = findTransition( "ZoomThrough.frag" );
-						if( zoom < 0 ) zoom = findTransition( "Crossfade.frag" );
-						if( zoom >= 0 ) m_actTransition = (unsigned int) zoom;
-					}
-					// Dev-Haken: KALEIDO_TRANS_STYLE erzwingt einen Uebergang
-					// (Proben einzelner Uebergaenge ohne Wuerfel-Glueck) -
-					// Dateiname ("Shatter.frag") oder Listen-Index.
-					if( const char *fs = getenv( "KALEIDO_TRANS_STYLE" ) )
-					{
-						int idx = findTransition( fs );
-						if( idx < 0 && fs[0] >= '0' && fs[0] <= '9' )
-							idx = atoi( fs ) % (int) tr.size();
-						if( idx >= 0 ) m_actTransition = (unsigned int) idx;
-					}
-					// Per-activation variety: re-roll the transition's own
-					// <float>/<interpolator> params for THIS fade.
-					tr[m_actTransition]->resetParameters();
-					tr[m_actTransition]->startInterpolators();
-				}
+                // Roll the TRANSITION for this fade: probability-weighted
+                // rejection sampling over the registered Transitions/ shaders,
+                // mood-biased like every other slot (Crossfade carries
+                // probability 1.0 in the presets, so the classic linear mix
+                // stays the most common).  Portal needs REAL depth on both
+                // sides - without two 3D scenes it falls back to ZoomThrough.
+                if ( m_transitions && !m_transitions->empty() )
+                {
+                    std::vector<EffectShader *> &tr = *m_transitions;
+                    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+                    {
+                        m_actTransition = rand() % tr.size();
+                        if ( tr[m_actTransition]->useShader()
+                             && moodAccept( tr[m_actTransition] ) )
+                            break;
+                    }
+                    if ( findTransition( "Portal.frag" ) == (int)m_actTransition
+                         && !( tex[m_actTexture]->is3D()
+                               && tex[m_nextTexture]->is3D() ) )
+                    {
+                        int zoom = findTransition( "ZoomThrough.frag" );
+                        if ( zoom < 0 )
+                            zoom = findTransition( "Crossfade.frag" );
+                        if ( zoom >= 0 )
+                            m_actTransition = (unsigned int)zoom;
+                    }
+                    // Dev-Haken: KALEIDO_TRANS_STYLE erzwingt einen Uebergang
+                    // (Proben einzelner Uebergaenge ohne Wuerfel-Glueck) -
+                    // Dateiname ("Shatter.frag") oder Listen-Index.
+                    if ( const char *fs = getenv( "KALEIDO_TRANS_STYLE" ) )
+                    {
+                        int idx = findTransition( fs );
+                        if ( idx < 0 && fs[0] >= '0' && fs[0] <= '9' )
+                            idx = atoi( fs ) % (int)tr.size();
+                        if ( idx >= 0 )
+                            m_actTransition = (unsigned int)idx;
+                    }
+                    // Per-activation variety: re-roll the transition's own
+                    // <float>/<interpolator> params for THIS fade.
+                    tr[m_actTransition]->resetParameters();
+                    tr[m_actTransition]->startInterpolators();
+                }
 
-				unsigned int timeAct  = tex[m_actTexture]->getTimeInterpolation();
-				unsigned int timeNext = tex[m_nextTexture]->getTimeInterpolation();
+                unsigned int timeAct = tex[m_actTexture]->getTimeInterpolation();
+                unsigned int timeNext = tex[m_nextTexture]->getTimeInterpolation();
 
-				// Manual cut -> short snappy cross-fade; natural change ->
-				// config time, or exactly 4 BEATS with a confident rhythm
-				// (never longer than the config asked for).
-				{
-					float cfgT = (float) (std::min( timeAct, timeNext)) / t.timingScale;
-					if( !forcedGo && t.rhythmStrength > 0.55f
-					    && t.estimatedBPM > 0.004f )
-					{
-						float fourBeats = 4.f * 60.f / (40.f + 160.f * t.estimatedBPM);
-						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
-					}
-					// ARTICULATION: staccato material gets snappier cross-fades,
-					// legato keeps the full dissolve.
-					cfgT *= 1.f - 0.35f * t.logAttackTime;
-					m_texFadeDur = (forcedGo || m_reviewMode) ? 0.8f : cfgT;
+                // Manual cut -> short snappy cross-fade; natural change ->
+                // config time, or exactly 4 BEATS with a confident rhythm
+                // (never longer than the config asked for).
+                {
+                    float cfgT = (float)( std::min( timeAct, timeNext ) ) / t.timingScale;
+                    if ( !forcedGo && t.rhythmStrength > 0.55f
+                         && t.estimatedBPM > 0.004f )
+                    {
+                        float fourBeats = 4.f * 60.f / ( 40.f + 160.f * t.estimatedBPM );
+                        cfgT = fminf( fmaxf( fourBeats, 1.2f ), cfgT );
+                    }
+                    // ARTICULATION: staccato material gets snappier cross-fades,
+                    // legato keeps the full dissolve.
+                    cfgT *= 1.f - 0.35f * t.logAttackTime;
+                    m_texFadeDur = ( forcedGo || m_reviewMode ) ? 0.8f : cfgT;
 
-					// FLOORS (never for a manual cut or the review bench).
-					// The four-beat clamp suits a cross-fade; a transition that
-					// sweeps rings and spirals across the frame changes the
-					// picture many times as much over the same progress and read
-					// as "very, very fast" at two seconds (user, 14.09.2026).
-					// Each transition carries its own measured floor (minFade);
-					// a calm preset adds one for every fade (timeSceneFadeMin).
-					float floorT = 0.f;
-					if( !forcedGo && !m_reviewMode )
-					{
-						floorT = m_sceneFadeMin;
-						if( m_transitions && m_actTransition < m_transitions->size() )
-							floorT = fmaxf( floorT, (*m_transitions)[m_actTransition]->minFade() );
-						m_texFadeDur = fmaxf( m_texFadeDur, floorT );
-					}
-					// KALEIDO_FADE_LOG: one line per scene fade -- which transition,
-					// how long, and what the floor was -- to verify the floors in a
-					// real run instead of trusting the arithmetic.
-					static const bool fadeLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
-					if( fadeLog )
-						fprintf( stderr, "FADE %s via %s: %.2f s (beat/config %.2f, floor %.2f)\n",
-						         tex[m_nextTexture]->fragmentName(),
-						         ( m_transitions && m_actTransition < m_transitions->size() )
-						             ? (*m_transitions)[m_actTransition]->fragmentName() : "-",
-						         m_texFadeDur, cfgT, floorT );
-				}
+                    // FLOORS (never for a manual cut or the review bench).
+                    // The four-beat clamp suits a cross-fade; a transition that
+                    // sweeps rings and spirals across the frame changes the
+                    // picture many times as much over the same progress and read
+                    // as "very, very fast" at two seconds (user, 14.09.2026).
+                    // Each transition carries its own measured floor (minFade);
+                    // a calm preset adds one for every fade (timeSceneFadeMin).
+                    float floorT = 0.f;
+                    if ( !forcedGo && !m_reviewMode )
+                    {
+                        floorT = m_sceneFadeMin;
+                        if ( m_transitions && m_actTransition < m_transitions->size() )
+                            floorT = fmaxf( floorT, ( *m_transitions )[m_actTransition]->minFade() );
+                        m_texFadeDur = fmaxf( m_texFadeDur, floorT );
+                    }
+                    // KALEIDO_FADE_LOG: one line per scene fade -- which transition,
+                    // how long, and what the floor was -- to verify the floors in a
+                    // real run instead of trusting the arithmetic.
+                    static const bool fadeLog = getenv( "KALEIDO_FADE_LOG" ) != nullptr;
+                    if ( fadeLog )
+                        fprintf( stderr, "FADE %s via %s: %.2f s (beat/config %.2f, floor %.2f)\n",
+                                 tex[m_nextTexture]->fragmentName(),
+                                 ( m_transitions && m_actTransition < m_transitions->size() )
+                                     ? ( *m_transitions )[m_actTransition]->fragmentName()
+                                     : "-",
+                                 m_texFadeDur, cfgT, floorT );
+                }
 
-				// Drop-Dramaturgie: der Wechsel kam von einem erkannten DROP.
-				// Musikvideo-Schnitt statt Dissolve - haelfte hart (2-3 Frames),
-				// haelfte als Shatter (die alte Szene zerbirst auf den Hit).
-				// NACH der Dauer-Berechnung, damit nichts sie ueberschreibt.
-				if( m_dropCutPending && !m_reviewMode && m_sceneFadeMin > 0.f )
-					m_dropCutPending = false;   // a calm preset never snaps on a drop
-				if( m_dropCutPending && !m_reviewMode )
-				{
-					m_dropCutPending = false;
-					int cross   = findTransition( "Crossfade.frag" );
-					int shatter = findTransition( "Shatter.frag" );
-					if( ( rand() % 2 || shatter < 0 ) && cross >= 0 )
-					{
-						m_actTransition = (unsigned int) cross;
-						m_texFadeDur    = 0.15f;
-					}
-					else if( shatter >= 0 )
-					{
-						m_actTransition = (unsigned int) shatter;
-						m_texFadeDur    = 0.7f;
-					}
-				}
+                // Drop-Dramaturgie: der Wechsel kam von einem erkannten DROP.
+                // Musikvideo-Schnitt statt Dissolve - haelfte hart (2-3 Frames),
+                // haelfte als Shatter (die alte Szene zerbirst auf den Hit).
+                // NACH der Dauer-Berechnung, damit nichts sie ueberschreibt.
+                if ( m_dropCutPending && !m_reviewMode && m_sceneFadeMin > 0.f )
+                    m_dropCutPending = false; // a calm preset never snaps on a drop
+                if ( m_dropCutPending && !m_reviewMode )
+                {
+                    m_dropCutPending = false;
+                    int cross = findTransition( "Crossfade.frag" );
+                    int shatter = findTransition( "Shatter.frag" );
+                    if ( ( rand() % 2 || shatter < 0 ) && cross >= 0 )
+                    {
+                        m_actTransition = (unsigned int)cross;
+                        m_texFadeDur = 0.15f;
+                    }
+                    else if ( shatter >= 0 )
+                    {
+                        m_actTransition = (unsigned int)shatter;
+                        m_texFadeDur = 0.7f;
+                    }
+                }
 
-				tex[m_nextTexture]->startInterpolators();
+                tex[m_nextTexture]->startInterpolators();
 
-				// Song-Struktur-Gedaechtnis: die gespeicherten Parameter der
-				// wiederkehrenden Section JETZT setzen - der Effekt blendet
-				// dann bereits MIT dem gespeicherten Look ein.  (Frueher
-				// passierte das erst am FADE-ENDE: die Szene blendete mit
-				// frisch gewuerfelten Parametern ein und sprang im Moment des
-				// Abschlusses hart auf den gespeicherten Look um - der vom
-				// User gemeldete "Sprung zu einem komplett anderen Bild
-				// direkt nach dem Szenenwechsel".)
-				if( m_pendingSectionRestore >= 0 )
-				{
-					auto ip = m_sectionParams.find( m_pendingSectionRestore );
-					if( ip != m_sectionParams.end() )
-						tex[m_nextTexture]->restoreParameters( ip->second );
-					m_pendingSectionRestore = -1;
-				}
+                // Song-Struktur-Gedaechtnis: die gespeicherten Parameter der
+                // wiederkehrenden Section JETZT setzen - der Effekt blendet
+                // dann bereits MIT dem gespeicherten Look ein.  (Frueher
+                // passierte das erst am FADE-ENDE: die Szene blendete mit
+                // frisch gewuerfelten Parametern ein und sprang im Moment des
+                // Abschlusses hart auf den gespeicherten Look um - der vom
+                // User gemeldete "Sprung zu einem komplett anderen Bild
+                // direkt nach dem Szenenwechsel".)
+                if ( m_pendingSectionRestore >= 0 )
+                {
+                    auto ip = m_sectionParams.find( m_pendingSectionRestore );
+                    if ( ip != m_sectionParams.end() )
+                        tex[m_nextTexture]->restoreParameters( ip->second );
+                    m_pendingSectionRestore = -1;
+                }
 
-				restart( m_clockEffectTexture );
-			}
-		}
-	}
-	// ---- Effekt-Zustandsmaschine: Fade läuft ----
-	else
-	{
-		float ts = secsSince( m_clockEffectTexture );
+                restart( m_clockEffectTexture );
+            }
+        }
+    }
+    // ---- Effekt-Zustandsmaschine: Fade läuft ----
+    else
+    {
+        float ts = secsSince( m_clockEffectTexture );
 
-		m_texInterp = (1 - ts / m_texFadeDur);
+        m_texInterp = ( 1 - ts / m_texFadeDur );
 
-		if( ts > m_texFadeDur )
-		{
-			m_texState = 0;
+        if ( ts > m_texFadeDur )
+        {
+            m_texState = 0;
 
-			tex[m_actTexture]->resetParameters();
-			m_actTexture = m_nextTexture;
-			noteTextureShown( m_actTexture );
+            tex[m_actTexture]->resetParameters();
+            m_actTexture = m_nextTexture;
+            noteTextureShown( m_actTexture );
 
-			// Song-Struktur-Gedaechtnis: das RESTORE passiert inzwischen am
-			// FADE-START (s.o., der Effekt blendet mit dem gespeicherten Look
-			// ein); hier am Abschluss wird nur noch der Look einer NEUEN
-			// Section gespeichert (dafuer muessen die finalen Parameter
-			// feststehen - Fade-Ende ist der richtige Moment).
-			if( m_pendingSectionStore >= 0 )
-			{
-				m_sectionEffect[m_pendingSectionStore]  = m_actTexture;
-				m_sectionFx[m_pendingSectionStore] =
-					(m_fxState != 0) ? m_nextFx : m_actFx;
-				m_sectionParams[m_pendingSectionStore]  =
-					tex[m_actTexture]->snapshotParameters();
-				m_sectionStamp[m_pendingSectionStore]   = t.sectionCount;
-				m_pendingSectionStore = -1;
-			}
+            // Song-Struktur-Gedaechtnis: das RESTORE passiert inzwischen am
+            // FADE-START (s.o., der Effekt blendet mit dem gespeicherten Look
+            // ein); hier am Abschluss wird nur noch der Look einer NEUEN
+            // Section gespeichert (dafuer muessen die finalen Parameter
+            // feststehen - Fade-Ende ist der richtige Moment).
+            if ( m_pendingSectionStore >= 0 )
+            {
+                m_sectionEffect[m_pendingSectionStore] = m_actTexture;
+                m_sectionFx[m_pendingSectionStore] =
+                    ( m_fxState != 0 ) ? m_nextFx : m_actFx;
+                m_sectionParams[m_pendingSectionStore] =
+                    tex[m_actTexture]->snapshotParameters();
+                m_sectionStamp[m_pendingSectionStore] = t.sectionCount;
+                m_pendingSectionStore = -1;
+            }
 
-			// Remote-Direktsprung gewinnt gegen ALLES (auch Review).
-			if( m_forcedNextTexture >= 0
-			    && m_forcedNextTexture < (int)tex.size() )
-			{
-				m_nextTexture       = m_forcedNextTexture;
-				m_forcedNextTexture = -1;
-				// A remote jump supersedes a deferred section replay too --
-				// it must not surface later at some unrelated fade-end.
-				m_pendingSectionNext   = -1;
-				m_pendingSectionNextId = -1;
-				fprintf( stderr, "Forced: %s\n", tex[m_nextTexture]->fragmentName() );
-				// Resume the review walk AFTER the scene that was jumped to.
-				for( unsigned int k = 0; k < m_reviewOrder.size(); ++k )
-					if( m_reviewOrder[k] == (int)m_nextTexture )
-					{ m_reviewPos = ( k + 1 ) % (int)m_reviewOrder.size(); break; }
-			}
-			else if( m_reviewMode && !tex.empty() )
-			{
-				// REVIEW MODE: step strictly alphabetically (built lazily).
-				if( m_reviewOrder.size() != tex.size() )
-				{
-					m_reviewOrder.clear();
-					for( unsigned int k = 0; k < tex.size(); ++k )
-						m_reviewOrder.push_back( (int)k );
-					std::sort( m_reviewOrder.begin(), m_reviewOrder.end(),
-					           [&tex]( int a, int b )
-					           { return baseLess( tex[a]->fragmentName(),
-					                              tex[b]->fragmentName() ); } );
-					m_reviewPos = 0;
-				}
-				m_nextTexture = m_reviewOrder[ m_reviewPos % m_reviewOrder.size() ];
-				m_reviewPos = ( m_reviewPos + 1 ) % (int)m_reviewOrder.size();
-				fprintf( stderr, "Review: %s\n", tex[m_nextTexture]->fragmentName() );
-			}
-			else if( m_pendingSectionNext >= 0
-			         && (unsigned)m_pendingSectionNext < tex.size() )
-			{
-				// A section-repeat retarget that arrived mid-fade earlier:
-				// apply it now, at a safe (Solo-just-ended) point, instead of
-				// where it originally landed.
-				m_nextTexture           = (unsigned) m_pendingSectionNext;
-				m_pendingSectionRestore = m_pendingSectionNextId;
-				m_pendingSectionNext    = -1;
-				m_pendingSectionNextId  = -1;
-			}
-			else
-			for( unsigned int i = 0; i < kMaxSearch; i++ )
-			{
-				m_nextTexture = rand() % tex.size();
-				// Nothing shown in the last kRecentMax scenes, unless the
-				// search is running dry (a small preset, a narrow filter).
-				if( i < kMaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
-					continue;
-				// Keine Vorliebe fuer INSZENIERTE Szenen (sceneProgress) bei
-				// steigender Spannung mehr (29.09.2026).  Die Regel sollte deren
-				// Hoehepunkt auf den Drop legen, zog aber genau die Szenen nach
-				// vorn, die im Programm eher die ruhigen, langweiligen sind --
-				// 51 % aller Wechsel bei 12 % des Katalogs.  Laeuft zufaellig
-				// eine inszenierte Szene, biegt setClimaxIn() ihren Bogen
-				// weiterhin auf den Drop; ausgesucht wird sie dafuer nicht.
-				if( m_nextTexture != m_actTexture &&
-					(( tex[m_actTexture]->getComplexity() +
-					tex[m_nextTexture]->getComplexity() +
-					comb[m_actFx]->getComplexity() +
-					comb[m_nextFx]->getComplexity() ) < kComplexityBudget )
-					&& tex[m_nextTexture]->useShader()
-					&& moodAccept( tex[m_nextTexture] )
-					)
-					break;
-			}
+            // Remote-Direktsprung gewinnt gegen ALLES (auch Review).
+            if ( m_forcedNextTexture >= 0
+                 && m_forcedNextTexture < (int)tex.size() )
+            {
+                m_nextTexture = m_forcedNextTexture;
+                m_forcedNextTexture = -1;
+                // A remote jump supersedes a deferred section replay too --
+                // it must not surface later at some unrelated fade-end.
+                m_pendingSectionNext = -1;
+                m_pendingSectionNextId = -1;
+                fprintf( stderr, "Forced: %s\n", tex[m_nextTexture]->fragmentName() );
+                // Resume the review walk AFTER the scene that was jumped to.
+                for ( unsigned int k = 0; k < m_reviewOrder.size(); ++k )
+                    if ( m_reviewOrder[k] == (int)m_nextTexture )
+                    {
+                        m_reviewPos = ( k + 1 ) % (int)m_reviewOrder.size();
+                        break;
+                    }
+            }
+            else if ( m_reviewMode && !tex.empty() )
+            {
+                // REVIEW MODE: step strictly alphabetically (built lazily).
+                if ( m_reviewOrder.size() != tex.size() )
+                {
+                    m_reviewOrder.clear();
+                    for ( unsigned int k = 0; k < tex.size(); ++k )
+                        m_reviewOrder.push_back( (int)k );
+                    std::sort( m_reviewOrder.begin(), m_reviewOrder.end(),
+                               [&tex]( int a, int b )
+                    { return baseLess( tex[a]->fragmentName(),
+                                       tex[b]->fragmentName() ); } );
+                    m_reviewPos = 0;
+                }
+                m_nextTexture = m_reviewOrder[m_reviewPos % m_reviewOrder.size()];
+                m_reviewPos = ( m_reviewPos + 1 ) % (int)m_reviewOrder.size();
+                fprintf( stderr, "Review: %s\n", tex[m_nextTexture]->fragmentName() );
+            }
+            else if ( m_pendingSectionNext >= 0
+                      && (unsigned)m_pendingSectionNext < tex.size() )
+            {
+                // A section-repeat retarget that arrived mid-fade earlier:
+                // apply it now, at a safe (Solo-just-ended) point, instead of
+                // where it originally landed.
+                m_nextTexture = (unsigned)m_pendingSectionNext;
+                m_pendingSectionRestore = m_pendingSectionNextId;
+                m_pendingSectionNext = -1;
+                m_pendingSectionNextId = -1;
+            }
+            else
+                for ( unsigned int i = 0; i < kMaxSearch; i++ )
+                {
+                    m_nextTexture = rand() % tex.size();
+                    // Nothing shown in the last kRecentMax scenes, unless the
+                    // search is running dry (a small preset, a narrow filter).
+                    if ( i < kMaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
+                        continue;
+                    // Keine Vorliebe fuer INSZENIERTE Szenen (sceneProgress) bei
+                    // steigender Spannung mehr (29.09.2026).  Die Regel sollte deren
+                    // Hoehepunkt auf den Drop legen, zog aber genau die Szenen nach
+                    // vorn, die im Programm eher die ruhigen, langweiligen sind --
+                    // 51 % aller Wechsel bei 12 % des Katalogs.  Laeuft zufaellig
+                    // eine inszenierte Szene, biegt setClimaxIn() ihren Bogen
+                    // weiterhin auf den Drop; ausgesucht wird sie dafuer nicht.
+                    if ( m_nextTexture != m_actTexture
+                         && ( ( tex[m_actTexture]->getComplexity() + tex[m_nextTexture]->getComplexity()
+                                + comb[m_actFx]->getComplexity() + comb[m_nextFx]->getComplexity() )
+                              < kComplexityBudget )
+                         && tex[m_nextTexture]->useShader() && moodAccept( tex[m_nextTexture] ) )
+                        break;
+                }
 
-			if( m_nextTexture == m_actTexture )
-			{
-				m_nextTexture += 1;
-				if( m_nextTexture == tex.size() )
-					m_nextTexture = 0;
-			}
+            if ( m_nextTexture == m_actTexture )
+            {
+                m_nextTexture += 1;
+                if ( m_nextTexture == tex.size() )
+                    m_nextTexture = 0;
+            }
 
-			m_texInterp = 1.0;
+            m_texInterp = 1.0;
 
-			// A chain lab walking with the music sets its own pace (its walk runs in
-			// music time), so its stay is not shortened by the music's timing scale:
-			// at 2.6 a 3-minute lab would have ended after 70 s.
-			m_texFadeDur = (float) (tex[m_actTexture]->getTimeSolo())
-			             / ( tex[m_actTexture]->walksWithMusic() ? 1.f : t.timingScale );
+            // A chain lab walking with the music sets its own pace (its walk runs in
+            // music time), so its stay is not shortened by the music's timing scale:
+            // at 2.6 a 3-minute lab would have ended after 70 s.
+            m_texFadeDur = (float)( tex[m_actTexture]->getTimeSolo() )
+                           / ( tex[m_actTexture]->walksWithMusic() ? 1.f : t.timingScale );
 
-			restart( m_clockEffectTexture );
-		}
-	}
+            restart( m_clockEffectTexture );
+        }
+    }
 }
 
 /**
@@ -895,161 +918,160 @@ void SceneScheduler::tick( const Tick &t )
  */
 void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
 {
-	std::vector<EffectShader *> &tex  = *m_textures;
-	std::vector<EffectShader *> &comb = *m_fxShaders;
+    std::vector<EffectShader *> &tex = *m_textures;
+    std::vector<EffectShader *> &comb = *m_fxShaders;
 
-	// ---- Combine-Zustandsmaschine: Solo ----
-	if( m_fxState == 0 )
-	{
-		m_fxInterp = 1.0;
+    // ---- Combine-Zustandsmaschine: Solo ----
+    if ( m_fxState == 0 )
+    {
+        m_fxInterp = 1.0;
 
-		float ts = secsSince( m_clockEffectFx );
-		bool forcedC = m_forceFxChange;
-		// The true-stereo hold freezes combine switching: an eye-packed 3D
-		// frame must not enter a combine cross-fade (the pending change fires
-		// as soon as the hold lifts).
-		if( !trueStereoHold
-		    && (ts > m_fxFadeDur || (forcedC && ts > 0.6f)) )
-		{
-			m_forceFxChange   = false;
-			m_pendingFxChange = true;
-			m_pendingFxForced = m_pendingFxForced || forcedC;
-		}
+        float ts = secsSince( m_clockEffectFx );
+        bool  forcedC = m_forceFxChange;
+        // The true-stereo hold freezes combine switching: an eye-packed 3D
+        // frame must not enter a combine cross-fade (the pending change fires
+        // as soon as the hold lifts).
+        if ( !trueStereoHold
+             && ( ts > m_fxFadeDur || ( forcedC && ts > 0.6f ) ) )
+        {
+            m_forceFxChange = false;
+            m_pendingFxChange = true;
+            m_pendingFxForced = m_pendingFxForced || forcedC;
+        }
 
-		// Beat-quantised, like the texture-effect change (manual cuts fire
-		// immediately here too).
-		if( m_pendingFxChange && !trueStereoHold )
-		{
-			m_pendingFxAge += t.dt;
-			if( m_pendingFxForced || t.downbeatTick
-			    || m_pendingFxAge > 2.5f || t.gateSmooth < 0.25f )
-			{
-				bool forcedGo          = m_pendingFxForced;
-				m_pendingFxChange = false;
-				m_pendingFxForced = false;
-				m_pendingFxAge    = 0.f;
+        // Beat-quantised, like the texture-effect change (manual cuts fire
+        // immediately here too).
+        if ( m_pendingFxChange && !trueStereoHold )
+        {
+            m_pendingFxAge += t.dt;
+            if ( m_pendingFxForced || t.downbeatTick
+                 || m_pendingFxAge > 2.5f || t.gateSmooth < 0.25f )
+            {
+                bool forcedGo = m_pendingFxForced;
+                m_pendingFxChange = false;
+                m_pendingFxForced = false;
+                m_pendingFxAge = 0.f;
 
-				m_fxState = 1;
+                m_fxState = 1;
 
-				unsigned int timeAct  = comb[m_actFx]->getTimeInterpolation();
-				unsigned int timeNext = comb[m_nextFx]->getTimeInterpolation();
+                unsigned int timeAct = comb[m_actFx]->getTimeInterpolation();
+                unsigned int timeNext = comb[m_nextFx]->getTimeInterpolation();
 
-				{
-					float cfgT = (float) (std::min( timeAct, timeNext)) / t.timingScale;
-					if( !forcedGo && t.rhythmStrength > 0.55f
-					    && t.estimatedBPM > 0.004f )
-					{
-						float fourBeats = 4.f * 60.f / (40.f + 160.f * t.estimatedBPM);
-						cfgT = fminf(fmaxf(fourBeats, 1.2f), cfgT);
-					}
-					cfgT *= 1.f - 0.35f * t.logAttackTime;
-					m_fxFadeDur = forcedGo ? 0.8f : cfgT;
-				}
+                {
+                    float cfgT = (float)( std::min( timeAct, timeNext ) ) / t.timingScale;
+                    if ( !forcedGo && t.rhythmStrength > 0.55f
+                         && t.estimatedBPM > 0.004f )
+                    {
+                        float fourBeats = 4.f * 60.f / ( 40.f + 160.f * t.estimatedBPM );
+                        cfgT = fminf( fmaxf( fourBeats, 1.2f ), cfgT );
+                    }
+                    cfgT *= 1.f - 0.35f * t.logAttackTime;
+                    m_fxFadeDur = forcedGo ? 0.8f : cfgT;
+                }
 
-				comb[m_nextFx]->startInterpolators();
+                comb[m_nextFx]->startInterpolators();
 
-				restart( m_clockEffectFx );
-			}
-		}
-	}
-	// ---- Combine-Zustandsmaschine: Fade läuft ----
-	else
-	{
-		float ts = secsSince( m_clockEffectFx );
+                restart( m_clockEffectFx );
+            }
+        }
+    }
+    // ---- Combine-Zustandsmaschine: Fade läuft ----
+    else
+    {
+        float ts = secsSince( m_clockEffectFx );
 
-		m_fxInterp = (1 - ts / m_fxFadeDur);
+        m_fxInterp = ( 1 - ts / m_fxFadeDur );
 
-		if( ts > m_fxFadeDur )
-		{
-			m_fxState = 0;
+        if ( ts > m_fxFadeDur )
+        {
+            m_fxState = 0;
 
-			comb[m_actFx]->resetParameters();
-			m_actFx = m_nextFx;
+            comb[m_actFx]->resetParameters();
+            m_actFx = m_nextFx;
 
-			if( m_pendingSectionNextFx >= 0
-			    && (unsigned)m_pendingSectionNextFx < comb.size() )
-			{
-				// A section-repeat combine retarget that arrived mid-fade
-				// earlier (see tick()): apply it now, at a safe point.
-				m_nextFx               = (unsigned) m_pendingSectionNextFx;
-				m_pendingSectionNextFx = -1;
-			}
-			else
-			{   // braces added: the calm-FX filter declares a local, and the old
-			    // brace-less else made only its first statement the else branch
-			// Deliberately NOT excluding m_nextFx == m_actFx here (unlike the
-			// texture pick's equivalent loop): a preset FX pool is typically
-			// dominated by one near-probability=1.0 "carrier" (FxPlain here,
-			// probability=1.00, vs the other ~28 at 0.002-0.006 each) plus a
-			// long tail of rare accent overlays. Forbidding a candidate from
-			// following ITSELF turns "act -> exclude self -> pick next" into a
-			// two-state Markov chain where leaving the dominant candidate is
-			// mandatory and returning to it is merely LIKELY: solving that
-			// chain's stationary distribution caps the dominant candidate at
-			// ~50% NO MATTER HOW HIGH its configured probability is (verified
-			// empirically: removing the exclusion took a simulation using
-			// Komplett.xml's real FX probabilities from 44% actual Plain share
-			// up to 88%, matching its ~89% theoretical probability-weighted
-			// share). A "fade" that lands back on the same FX is visually a
-			// no-op blend anyway -- it just re-rolls that FX's own <float>/
-			// <expr> parameters and resets its solo timer, exactly like
-			// letting it simply continue.
-			// Over a loaded model only CALM overlays are admissible (see
-			// isMeshCalmFx above) -- the rejection loop simply demands it, so the
-			// accent variety survives: a model can still get godrays, a halftone,
-			// a colour grade, just nothing that displaces the frame.
-			const bool meshCalmNeeded =
-			       tex[m_actTexture]->isMeshScene()
-			    || ( m_texState != 0 && tex[m_nextTexture]->isMeshScene() );
-			// forceFx() bypasses every acceptance test below -- the whole point
-			// of an FX sweep is to see the one that was ASKED for, including
-			// the ones the budget or the mesh-calm rule would normally veto.
-			if( m_forcedNextFx >= 0 && m_forcedNextFx < (int)comb.size() )
-			{
-				m_nextFx       = (unsigned int) m_forcedNextFx;
-				m_forcedNextFx = -1;
-			}
-			else {
-			for( unsigned int i = 0; i < kMaxSearch; i++ )
-			{
-				m_nextFx = rand() % comb.size();
-				if( (( tex[m_actTexture]->getComplexity() +
-					tex[m_nextTexture]->getComplexity() +
-					comb[m_actFx]->getComplexity() +
-					comb[m_nextFx]->getComplexity() ) < kComplexityBudget )
-					&& comb[m_nextFx]->useShader()
-					&& moodAccept( comb[m_nextFx] )
-					&& ( !meshCalmNeeded
-					     || isMeshCalmFx( comb[m_nextFx]->fragmentName() ) )
-					)
-					break;
-			}
-			// Unlucky rolls on a mesh scene fall back to the pass-through --
-			// never to a warping overlay.
-			if( meshCalmNeeded && !isMeshCalmFx( comb[m_nextFx]->fragmentName() ) )
-			{
-				for( unsigned int i = 0; i < comb.size(); i++ )
-				{
-					const char *frag = comb[i]->fragmentName();
-					if( !frag ) continue;
-					const char *base = frag;
-					for( const char *q = frag; *q; ++q )
-						if( *q == '\\' || *q == '/' ) base = q + 1;
-					if( strcmp( base, "FxPlain.frag" ) == 0 )
-					{
-						m_nextFx = i;
-						break;
-					}
-				}
-			}
-			}   // Ende: keine erzwungene FX-Wahl
-			}
+            if ( m_pendingSectionNextFx >= 0
+                 && (unsigned)m_pendingSectionNextFx < comb.size() )
+            {
+                // A section-repeat combine retarget that arrived mid-fade
+                // earlier (see tick()): apply it now, at a safe point.
+                m_nextFx = (unsigned)m_pendingSectionNextFx;
+                m_pendingSectionNextFx = -1;
+            }
+            else
+            { // braces added: the calm-FX filter declares a local, and the old
+                // brace-less else made only its first statement the else branch
+                // Deliberately NOT excluding m_nextFx == m_actFx here (unlike the
+                // texture pick's equivalent loop): a preset FX pool is typically
+                // dominated by one near-probability=1.0 "carrier" (FxPlain here,
+                // probability=1.00, vs the other ~28 at 0.002-0.006 each) plus a
+                // long tail of rare accent overlays. Forbidding a candidate from
+                // following ITSELF turns "act -> exclude self -> pick next" into a
+                // two-state Markov chain where leaving the dominant candidate is
+                // mandatory and returning to it is merely LIKELY: solving that
+                // chain's stationary distribution caps the dominant candidate at
+                // ~50% NO MATTER HOW HIGH its configured probability is (verified
+                // empirically: removing the exclusion took a simulation using
+                // Komplett.xml's real FX probabilities from 44% actual Plain share
+                // up to 88%, matching its ~89% theoretical probability-weighted
+                // share). A "fade" that lands back on the same FX is visually a
+                // no-op blend anyway -- it just re-rolls that FX's own <float>/
+                // <expr> parameters and resets its solo timer, exactly like
+                // letting it simply continue.
+                // Over a loaded model only CALM overlays are admissible (see
+                // isMeshCalmFx above) -- the rejection loop simply demands it, so the
+                // accent variety survives: a model can still get godrays, a halftone,
+                // a colour grade, just nothing that displaces the frame.
+                const bool meshCalmNeeded =
+                    tex[m_actTexture]->isMeshScene()
+                    || ( m_texState != 0 && tex[m_nextTexture]->isMeshScene() );
+                // forceFx() bypasses every acceptance test below -- the whole point
+                // of an FX sweep is to see the one that was ASKED for, including
+                // the ones the budget or the mesh-calm rule would normally veto.
+                if ( m_forcedNextFx >= 0 && m_forcedNextFx < (int)comb.size() )
+                {
+                    m_nextFx = (unsigned int)m_forcedNextFx;
+                    m_forcedNextFx = -1;
+                }
+                else
+                {
+                    for ( unsigned int i = 0; i < kMaxSearch; i++ )
+                    {
+                        m_nextFx = rand() % comb.size();
+                        if ( ( ( tex[m_actTexture]->getComplexity() + tex[m_nextTexture]->getComplexity()
+                                 + comb[m_actFx]->getComplexity() + comb[m_nextFx]->getComplexity() )
+                               < kComplexityBudget )
+                             && comb[m_nextFx]->useShader() && moodAccept( comb[m_nextFx] )
+                             && ( !meshCalmNeeded || isMeshCalmFx( comb[m_nextFx]->fragmentName() ) ) )
+                            break;
+                    }
+                    // Unlucky rolls on a mesh scene fall back to the pass-through --
+                    // never to a warping overlay.
+                    if ( meshCalmNeeded && !isMeshCalmFx( comb[m_nextFx]->fragmentName() ) )
+                    {
+                        for ( unsigned int i = 0; i < comb.size(); i++ )
+                        {
+                            const char *frag = comb[i]->fragmentName();
+                            if ( !frag )
+                                continue;
+                            const char *base = frag;
+                            for ( const char *q = frag; *q; ++q )
+                                if ( *q == '\\' || *q == '/' )
+                                    base = q + 1;
+                            if ( strcmp( base, "FxPlain.frag" ) == 0 )
+                            {
+                                m_nextFx = i;
+                                break;
+                            }
+                        }
+                    }
+                } // Ende: keine erzwungene FX-Wahl
+            }
 
-			m_fxInterp = 1.0;
+            m_fxInterp = 1.0;
 
-			m_fxFadeDur = (float) (comb[m_actFx]->getTimeSolo()) / t.timingScale;
+            m_fxFadeDur = (float)( comb[m_actFx]->getTimeSolo() ) / t.timingScale;
 
-			restart( m_clockEffectFx );
-		}
-	}
+            restart( m_clockEffectFx );
+        }
+    }
 }

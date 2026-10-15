@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file DewettingFilmRupture.frag
  * @brief TRANSITION DEWETTING FILM RUPTURE: the outgoing scene is a thin film
@@ -26,99 +26,107 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: sitesP, rimP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float sitesP;
 uniform float rimP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float sites = 3.0 + floor(clamp(sitesP, 0.0, 1.0) * 4.0);   // rolled ONCE
-    float rimW  = (rimP > 0.0) ? rimP : 1.0;
-    float hue   = (hueP > 0.0) ? hueP : 0.0;
+    float sites = 3.0 + floor( clamp( sitesP, 0.0, 1.0 ) * 4.0 ); // rolled ONCE
+    float rimW = ( rimP > 0.0 ) ? rimP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
     // Rupture rate: the flux hurries the holes along but never reverses them.
-    float rate = 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float rate = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     // The nucleation field: a jittered grid, which is what sites look like once
     // they have repelled each other into place.
     float cell = 0.62 / sites;
     vec2  g = p / cell;
-    vec2  gi = floor(g);
+    vec2  gi = floor( g );
 
-    float best = 1e9;          // distance to the nearest hole EDGE
+    float best = 1e9; // distance to the nearest hole EDGE
     float bestR = 0.0;
-    for (int j = -1; j <= 1; ++j)
-    for (int i = -1; i <= 1; ++i)
-    {
-        vec2 id = gi + vec2(float(i), float(j));
-        vec2 jitter = vec2(hash21(id + 3.1), hash21(id + 9.7)) - 0.5;
-        vec2 c = (id + 0.5 + jitter * 0.8) * cell;
-        float t0 = hash21(id + 21.3) * 0.55;                  // its moment, fixed
-        float grow = smoothstep(t0, t0 + 0.70 / rate, d);
-        // Holes open and keep opening; late in the turn they overlap and the
-        // ligaments between them are gone.
-        float r = cell * 1.15 * grow;
-        float dist = length(p - c) - r;
-        if (dist < best) { best = dist; bestR = r; }
-    }
+    for ( int j = -1; j <= 1; ++j )
+        for ( int i = -1; i <= 1; ++i )
+        {
+            vec2  id = gi + vec2( float( i ), float( j ) );
+            vec2  jitter = vec2( hash21( id + 3.1 ), hash21( id + 9.7 ) ) - 0.5;
+            vec2  c = ( id + 0.5 + jitter * 0.8 ) * cell;
+            float t0 = hash21( id + 21.3 ) * 0.55; // its moment, fixed
+            float grow = smoothstep( t0, t0 + 0.70 / rate, d );
+            // Holes open and keep opening; late in the turn they overlap and the
+            // ligaments between them are gone.
+            float r = cell * 1.15 * grow;
+            float dist = length( p - c ) - r;
+            if ( dist < best )
+            {
+                best = dist;
+                bestR = r;
+            }
+        }
 
     // The film survives outside every hole.
-    float film = smoothstep(-0.004, 0.006, best);
-    film = mix(1.0, film, smoothstep(0.0, 0.04, d));       // unbroken at the start
-    film = mix(film, 0.0, smoothstep(0.88, 1.0, d));          // nothing left at the end
+    float film = smoothstep( -0.004, 0.006, best );
+    film = mix( 1.0, film, smoothstep( 0.0, 0.04, d ) ); // unbroken at the start
+    film = mix( film, 0.0, smoothstep( 0.88, 1.0, d ) ); // nothing left at the end
 
     // The rim: material swept up at the hole's edge, thicker as the hole grows.
-    float rw = (0.012 + 0.016 * clamp(audioSwell, 0.0, 1.0)) * rimW
-             * (0.4 + 1.6 * clamp(bestR / max(cell, 1e-3), 0.0, 1.0));
-    float rim = exp(-pow(max(best, 0.0) / max(rw, 1e-4), 2.0)) * film;
+    float rw = ( 0.012 + 0.016 * clamp( audioSwell, 0.0, 1.0 ) ) * rimW
+               * ( 0.4 + 1.6 * clamp( bestR / max( cell, 1e-3 ), 0.0, 1.0 ) );
+    float rim = exp( -pow( max( best, 0.0 ) / max( rw, 1e-4 ), 2.0 ) ) * film;
 
-    vec3 sub = texture(tex1, uv).rgb;
+    vec3 sub = texture( tex1, uv ).rgb;
     // The film is thin: it carries its own picture and a little of the substrate.
-    vec3 flm = mix(texture(tex0, uv).rgb, sub, 0.12 * arc);
+    vec3 flm = mix( texture( tex0, uv ).rgb, sub, 0.12 * arc );
     // Where the rim has piled up, the film is thicker, so less shows through.
-    flm = mix(flm, texture(tex0, uv).rgb, rim);
+    flm = mix( flm, texture( tex0, uv ).rgb, rim );
 
-    vec3 col = mix(sub, flm, film);
-    col += vec3(0.92, 0.95, 1.0) * rim * arc
-         * (0.10 + 0.28 * clamp(audioHigh * 2.0, 0.0, 1.0));
+    vec3 col = mix( sub, flm, film );
+    col += vec3( 0.92, 0.95, 1.0 ) * rim * arc
+           * ( 0.10 + 0.28 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
     // A ligament snapping: the thinnest surviving film flashes.
-    float ligament = film * smoothstep(0.030, 0.004, best) * (1.0 - rim);
-    col += vec3(1.0, 0.94, 0.86) * ligament * arc * 0.30 * clamp(audioKick, 0.0, 1.0);
+    float ligament = film * smoothstep( 0.030, 0.004, best ) * ( 1.0 - rim );
+    col += vec3( 1.0, 0.94, 0.86 ) * ligament * arc * 0.30 * clamp( audioKick, 0.0, 1.0 );
     // A hole's floor is wet: it keeps a faint sheen of the film's colour.
-    col += mix(vec3(0.5), texture(tex0, uv).rgb, 0.5)
-         * (1.0 - film) * exp(-max(-best, 0.0) * 26.0) * 0.14 * arc;
+    col += mix( vec3( 0.5 ), texture( tex0, uv ).rgb, 0.5 )
+           * ( 1.0 - film ) * exp( -max( -best, 0.0 ) * 26.0 ) * 0.14 * arc;
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

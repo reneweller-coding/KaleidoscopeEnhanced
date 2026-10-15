@@ -19,33 +19,34 @@
 // faceted into terraces.
 // -----------------------------------------------------------------------
 
-in vec4 attrA;      ///< xy = u/v across the sheet, w = cell index
-in vec4 attrB;      ///< per-cell hashes
+in vec4 attrA; ///< xy = u/v across the sheet, w = cell index
+in vec4 attrB; ///< per-cell hashes
 
 out vec2  vUv;
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out float vHeight;
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform sampler2D tex0;         ///< The current photo.
+uniform mat4      projM;        ///< Projection matrix.
+uniform float     eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float     time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;     ///< Sub-bass band level, 0..1.
 
-uniform float reliefP;      ///< preset: height of the relief
-uniform float scrollP;      ///< preset: how fast the sheet drifts
-uniform float camDistP;   ///< Camera distance knob, 0..1.
-uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float reliefP;  ///< preset: height of the relief
+uniform float scrollP;  ///< preset: how fast the sheet drifts
+uniform float camDistP; ///< Camera distance knob, 0..1.
+uniform float tiltP;    ///< Tilt knob, 0..1.
 
 /// @brief Luminance of the photo at a coordinate.
-float lum(vec2 uv)
+float lum( vec2 uv )
 {
-    return dot(texture(tex0, clamp(uv, vec2(0.001), vec2(0.999))).rgb,
-               vec3(0.299, 0.587, 0.114));
+    return dot( texture( tex0, clamp( uv, vec2( 0.001 ), vec2( 0.999 ) ) ).rgb,
+                vec3( 0.299, 0.587, 0.114 ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -54,48 +55,49 @@ void main()
     vec2 uv = attrA.xy;
 
     // A slow pan across the source, so a still photograph still moves.
-    vec2 pan = vec2(audioAdvance * 0.012 * clamp(scrollP, 0.0, 2.0), 0.0);
-    vec2 suv = fract(uv + pan);
+    vec2 pan = vec2( audioAdvance * 0.012 * clamp( scrollP, 0.0, 2.0 ), 0.0 );
+    vec2 suv = fract( uv + pan );
 
-    float h = lum(suv);
+    float h = lum( suv );
     // Bass lifts the whole sheet, the kick punches it: the relief breathes with
     // the low end rather than only with the picture.
-    float amp = clamp(reliefP, 0.0, 3.0) * (0.55 + 0.55 * audioSubBass + 0.5 * audioKick);
-    float y = (h - 0.45) * amp;
+    float amp = clamp( reliefP, 0.0, 3.0 ) * ( 0.55 + 0.55 * audioSubBass + 0.5 * audioKick );
+    float y = ( h - 0.45 ) * amp;
 
     // Two texels, not one: an 8-bit source quantises smaller differences into
     // terraces and the relief comes out stepped.
-    vec2 e = vec2(2.0 / 1024.0, 0.0);
-    float hx = lum(suv + e.xy) - lum(suv - e.xy);
-    float hy = lum(suv + e.yx) - lum(suv - e.yx);
+    vec2  e = vec2( 2.0 / 1024.0, 0.0 );
+    float hx = lum( suv + e.xy ) - lum( suv - e.xy );
+    float hy = lum( suv + e.yx ) - lum( suv - e.yx );
 
     // The sheet is 10 x 6 world units, so a unit of uv is 10 (or 6) units of x
     // (or z) — the tangents have to carry that or the normal is wrong by the
     // aspect ratio.
-    vec3 tx = vec3(10.0 * 2.0 * e.x, hx * amp, 0.0);
-    vec3 tz = vec3(0.0, hy * amp, 6.0 * 2.0 * e.x);
-    vec3 n = normalize(cross(tz, tx));
-    if (n.y < 0.0) n = -n;
+    vec3 tx = vec3( 10.0 * 2.0 * e.x, hx * amp, 0.0 );
+    vec3 tz = vec3( 0.0, hy * amp, 6.0 * 2.0 * e.x );
+    vec3 n = normalize( cross( tz, tx ) );
+    if ( n.y < 0.0 )
+        n = -n;
 
-    vec3 p = vec3((uv.x - 0.5) * 10.0, y, (uv.y - 0.5) * 6.0);
+    vec3 p = vec3( ( uv.x - 0.5 ) * 10.0, y, ( uv.y - 0.5 ) * 6.0 );
 
-    float ta = clamp(tiltP, 0.0, 1.4);
-    mat3 tilt = mat3(1.0, 0.0, 0.0,
-                     0.0, cos(ta), sin(ta),
-                     0.0, -sin(ta), cos(ta));
-    float ya = 0.22 * sin(audioAdvance * 0.03);
-    mat3 yaw = mat3(cos(ya), 0.0, -sin(ya), 0.0, 1.0, 0.0, sin(ya), 0.0, cos(ya));
-    mat3 rot = yaw * tilt;
+    float ta = clamp( tiltP, 0.0, 1.4 );
+    mat3  tilt = mat3( 1.0, 0.0, 0.0,
+                       0.0, cos( ta ), sin( ta ),
+                       0.0, -sin( ta ), cos( ta ) );
+    float ya = 0.22 * sin( audioAdvance * 0.03 );
+    mat3  yaw = mat3( cos( ya ), 0.0, -sin( ya ), 0.0, 1.0, 0.0, sin( ya ), 0.0, cos( ya ) );
+    mat3  rot = yaw * tilt;
 
-    vec3 pw = rot * p;
-    float dist = camDistP * (1.0 - 0.04 * audioLevel);
-    vec3 vp = vec3(pw.x - eyeOff, pw.y, pw.z + dist);
+    vec3  pw = rot * p;
+    float dist = camDistP * ( 1.0 - 0.04 * audioLevel );
+    vec3  vp = vec3( pw.x - eyeOff, pw.y, pw.z + dist );
 
-    vUv     = suv;
+    vUv = suv;
     vNormal = rot * n;
-    vView   = normalize(-vp);
+    vView = normalize( -vp );
     vHeight = h;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

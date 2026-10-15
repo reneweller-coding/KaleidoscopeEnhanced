@@ -79,7 +79,7 @@
 // here keeps the guard in place for whatever arrives transitively.
 using namespace std;
 
-bool fullscreen = false;	///< Whether to start the window in fullscreen mode (`-b`, or implied by `-m`).
+bool fullscreen = false;  ///< Whether to start the window in fullscreen mode (`-b`, or implied by `-m`).
 int  monitorIndex = -1;   ///< `-m <n>`: target monitor for fullscreen (-1 = auto).
 bool logToFile = false;   ///< -l: redirect stderr to a rotating log file (kiosk).
 bool cueSelfTest = false; ///< -q: run the score-cue self test and exit instead of opening a window.
@@ -98,69 +98,69 @@ bool cueSelfTest = false; ///< -q: run the score-cue self test and exit instead 
  */
 void commandlineerror( char *cmd, char *parm )
 {
-	if ( cmd )
-		fprintf(stderr, "Offending option: %s\n", cmd );
-	if ( parm )
-		fprintf(stderr, "with first parameter: %s\n", parm );
+    if ( cmd )
+        fprintf( stderr, "Offending option: %s\n", cmd );
+    if ( parm )
+        fprintf( stderr, "with first parameter: %s\n", parm );
 
-	fprintf(stderr, "\n\nUsage: Kaleidoscope [options]\n"
-	"Options:\n"
-	"-b            start in fullscreen (uses the 2nd monitor if present)\n"
-	"-s <factor>   internal render scale 0.25..2.0 (lower = faster on weak GPUs)\n"
-	"-c <name>     start with this configuration (e.g. darkambient, normal)\n"
-	"-m <index>    fullscreen on monitor <index> (0-based; implies -b)\n"
-	"-l            log to kaleidoscope.log instead of the console (kiosk)\n"
-	"-r            start recording (visuals + music -> mp4) immediately\n"
-	"-w <wav>      offline: analyze this WAV instead of live audio (testing)\n"
-	"-o            Spout output: publish the frame as sender 'Kaleidoscope'\n"
-	"              (for OBS / Resolume / any Spout receiver)\n"
-	"-t <port>     web remote port (phone control page); ON by default at 8080,\n"
-	"              auto-discovered by the Kaleidoscope Remote app - '-t 0' disables\n"
-	"-x <wav>      batch render: record this WAV deterministically to an mp4\n"
-	"              (recordings\\rec_*), then exit automatically\n"
-	"-k <file>     score cues for the -w/-x WAV: one line per OSC cue,\n"
-	"              tab-separated: seconds, /phos/bar|beat|section|key|drop, args\n"
-	"-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"
-	"              webcam via OBS, ...) replaces the photos as source image\n"
-	"              ('any' = whichever sender is active; photos while none runs)\n"
-	"-v <path>     native VIDEO as source image: a file (looped) or a folder\n"
-	"              of videos played in turn, replacing the photos.  Uses the\n"
-	"              system's own codecs; -i wins if both are given\n"
-	"-3 <mode>     stereoscopic output: sbs (side-by-side, 3D projectors and\n"
-	"              HMD video viewers), tb (top-bottom), ana (red-cyan glasses)\n"
-	"-f <dir>      photo folder for this run (searched recursively).  Normally\n"
-	"              the bundled Images folder; set 'imageDirectory' in\n"
-	"              kaleidoscope_settings.ini to change it permanently\n"
-	"-h            this help menu\n"
-	"Keys (while running):\n"
-	"0             toggle the configuration-select menu\n"
-	"1-9           switch configuration\n"
-	"i             toggle the live audio-feature overlay (incl. FPS)\n"
-	"n             advance to the next effect\n"
-	"[ ]           reactivity  - less / more audio-driven motion\n"
-	", .           trails      - shorter / longer feedback trails\n"
-	"- =           mood        - weaker / stronger colour grading\n"
-	"; '           latency     - visuals earlier / later vs. the heard beat\n"
-	"k             save current look settings as the startup default\n"
-	"s             save a PNG screenshot\n"
-	"j             MIDI learn - bind knobs/pads to the controls (cycles targets)\n"
-	"y             arm the instant-replay buffer (rolling ~30 s)\n"
-	"x             save the instant replay as replays\\replay_*\\replay.mp4\n"
-	"b             BLACKOUT - soft fade to black and back (VJ)\n"
-	"e             FREEZE   - hold the picture (VJ)\n"
-	"t             tap tempo - tap the beat to override tempo detection\n"
-	"u             pin/unpin the current effect (no automatic switches)\n"
-	"f             favourite the current effect (persistent selection bonus;\n"
-	"              skipping a fresh effect with 'n' learns a malus)\n"
-	"z             cycle stereoscopic mode (off / SBS / top-bottom / anaglyph)\n"
-	"c / m         stereo depth - weaker / stronger\n"
-	"Esc / q       quit\n"
-	"\n");
+    fprintf( stderr, "\n\nUsage: Kaleidoscope [options]\n"
+                     "Options:\n"
+                     "-b            start in fullscreen (uses the 2nd monitor if present)\n"
+                     "-s <factor>   internal render scale 0.25..2.0 (lower = faster on weak GPUs)\n"
+                     "-c <name>     start with this configuration (e.g. darkambient, normal)\n"
+                     "-m <index>    fullscreen on monitor <index> (0-based; implies -b)\n"
+                     "-l            log to kaleidoscope.log instead of the console (kiosk)\n"
+                     "-r            start recording (visuals + music -> mp4) immediately\n"
+                     "-w <wav>      offline: analyze this WAV instead of live audio (testing)\n"
+                     "-o            Spout output: publish the frame as sender 'Kaleidoscope'\n"
+                     "              (for OBS / Resolume / any Spout receiver)\n"
+                     "-t <port>     web remote port (phone control page); ON by default at 8080,\n"
+                     "              auto-discovered by the Kaleidoscope Remote app - '-t 0' disables\n"
+                     "-x <wav>      batch render: record this WAV deterministically to an mp4\n"
+                     "              (recordings\\rec_*), then exit automatically\n"
+                     "-k <file>     score cues for the -w/-x WAV: one line per OSC cue,\n"
+                     "              tab-separated: seconds, /phos/bar|beat|section|key|drop, args\n"
+                     "-i <sender>   Spout INPUT: the sender's live video (OBS, Resolume, a\n"
+                     "              webcam via OBS, ...) replaces the photos as source image\n"
+                     "              ('any' = whichever sender is active; photos while none runs)\n"
+                     "-v <path>     native VIDEO as source image: a file (looped) or a folder\n"
+                     "              of videos played in turn, replacing the photos.  Uses the\n"
+                     "              system's own codecs; -i wins if both are given\n"
+                     "-3 <mode>     stereoscopic output: sbs (side-by-side, 3D projectors and\n"
+                     "              HMD video viewers), tb (top-bottom), ana (red-cyan glasses)\n"
+                     "-f <dir>      photo folder for this run (searched recursively).  Normally\n"
+                     "              the bundled Images folder; set 'imageDirectory' in\n"
+                     "              kaleidoscope_settings.ini to change it permanently\n"
+                     "-h            this help menu\n"
+                     "Keys (while running):\n"
+                     "0             toggle the configuration-select menu\n"
+                     "1-9           switch configuration\n"
+                     "i             toggle the live audio-feature overlay (incl. FPS)\n"
+                     "n             advance to the next effect\n"
+                     "[ ]           reactivity  - less / more audio-driven motion\n"
+                     ", .           trails      - shorter / longer feedback trails\n"
+                     "- =           mood        - weaker / stronger colour grading\n"
+                     "; '           latency     - visuals earlier / later vs. the heard beat\n"
+                     "k             save current look settings as the startup default\n"
+                     "s             save a PNG screenshot\n"
+                     "j             MIDI learn - bind knobs/pads to the controls (cycles targets)\n"
+                     "y             arm the instant-replay buffer (rolling ~30 s)\n"
+                     "x             save the instant replay as replays\\replay_*\\replay.mp4\n"
+                     "b             BLACKOUT - soft fade to black and back (VJ)\n"
+                     "e             FREEZE   - hold the picture (VJ)\n"
+                     "t             tap tempo - tap the beat to override tempo detection\n"
+                     "u             pin/unpin the current effect (no automatic switches)\n"
+                     "f             favourite the current effect (persistent selection bonus;\n"
+                     "              skipping a fresh effect with 'n' learns a malus)\n"
+                     "z             cycle stereoscopic mode (off / SBS / top-bottom / anaglyph)\n"
+                     "c / m         stereo depth - weaker / stronger\n"
+                     "Esc / q       quit\n"
+                     "\n" );
 
-	if ( cmd )
-		exit(-1);				// problem occured
-	else
-		exit(0);				// was option -h
+    if ( cmd )
+        exit( -1 ); // problem occured
+    else
+        exit( 0 ); // was option -h
 }
 
 
@@ -178,157 +178,166 @@ void commandlineerror( char *cmd, char *parm )
  */
 void parsecommandline( int argc, char *argv[] )
 {
-	/* valid option characters; last char MUST be 0 ! */
-	// A switch must be listed HERE as well as handled in the switch below —
-	// the table is what makes it valid at all, and a case with no entry here is
-	// rejected before it is ever reached.
-	char optionchar[] =   { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 'q', 'k', 0 };
-	int musthaveparam[] = {  0 ,  0,   1,   1,   1,   0,   0,   1,   0,   1,   1,   1,   1,   1,   1,   0,   1,  0 };
+    /* valid option characters; last char MUST be 0 ! */
+    // A switch must be listed HERE as well as handled in the switch below —
+    // the table is what makes it valid at all, and a case with no entry here is
+    // rejected before it is ever reached.
+    char optionchar[] = { 'h', 'b', 's', 'c', 'm', 'l', 'r', 'w', 'o', 't', 'x', 'i', '3', 'v', 'f', 'q', 'k', 0 };
+    int  musthaveparam[] = { 0, 0, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0 };
 
-	int nopts;
-	int mhp[256];
-	int isopt[256];
-	char optchar;
+    int  nopts;
+    int  mhp[256];
+    int  isopt[256];
+    char optchar;
 
-	nopts = (int) strlen(optionchar);
-	if ( nopts > 50 )
-	{
-		fprintf(stderr, "\n\nparsecommandline: the option-chars string "
-				"seems to be\nVERY long (%d bytes) !\n\n", nopts );
-		exit(-1);
-	}
+    nopts = (int)strlen( optionchar );
+    if ( nopts > 50 )
+    {
+        fprintf( stderr, "\n\nparsecommandline: the option-chars string "
+                         "seems to be\nVERY long (%d bytes) !\n\n",
+                 nopts );
+        exit( -1 );
+    }
 
-	fill_n( isopt, 256, 0 );
-	fill_n( mhp, 256, 0 );
-	for ( int i = 0; i < nopts; i ++ )
-	{
-		if ( isopt[static_cast<int>(optionchar[i])] )
-		{
-			fprintf(stderr, "\n\nparsecommandline: Bug: option character '%c'"
-					" is specified twice in the\n"
-							"option character array !\n\n", optionchar[i] );
-			exit(-1);
-		}
-		isopt[ static_cast<int>(optionchar[i]) ] = 1;
-		mhp[ static_cast<int>(optionchar[i])] = musthaveparam[i];
-	}
+    fill_n( isopt, 256, 0 );
+    fill_n( mhp, 256, 0 );
+    for ( int i = 0; i < nopts; i++ )
+    {
+        if ( isopt[static_cast<int>( optionchar[i] )] )
+        {
+            fprintf( stderr, "\n\nparsecommandline: Bug: option character '%c'"
+                             " is specified twice in the\n"
+                             "option character array !\n\n",
+                     optionchar[i] );
+            exit( -1 );
+        }
+        isopt[static_cast<int>( optionchar[i] )] = 1;
+        mhp[static_cast<int>( optionchar[i] )] = musthaveparam[i];
+    }
 
-	++argv; --argc;
-	while ( argc > 0 )
-	{
-		if ( argv[0][0] == '-' )
-		{
-			optchar = argv[0][1];
+    ++argv;
+    --argc;
+    while ( argc > 0 )
+    {
+        if ( argv[0][0] == '-' )
+        {
+            optchar = argv[0][1];
 
-			if ( ! isopt[static_cast<int>(optchar)] )
-			{
-				fprintf(stderr, "\nIs not a valid command line option\n");
-				commandlineerror( argv[0], NULL );
-			}
-			for ( int i = 0; i < mhp[static_cast<int>(optchar)]; i ++ )
-				if ( ! argv[1+i] || argv[1+i][0] == '-' )
-				{
-					fprintf(stderr, "\nCommand line option -%c must "
-							"have %d parameter(s)\n",
-							argv[0][1], mhp[static_cast<int>(optchar)] );
-					commandlineerror( argv[0], NULL );
-					argv += 1 + i;
-					argc -= 1 + i;
-					continue;
-				}
+            if ( !isopt[static_cast<int>( optchar )] )
+            {
+                fprintf( stderr, "\nIs not a valid command line option\n" );
+                commandlineerror( argv[0], NULL );
+            }
+            for ( int i = 0; i < mhp[static_cast<int>( optchar )]; i++ )
+                if ( !argv[1 + i] || argv[1 + i][0] == '-' )
+                {
+                    fprintf( stderr, "\nCommand line option -%c must "
+                                     "have %d parameter(s)\n",
+                             argv[0][1], mhp[static_cast<int>( optchar )] );
+                    commandlineerror( argv[0], NULL );
+                    argv += 1 + i;
+                    argc -= 1 + i;
+                    continue;
+                }
 
-			// Dispatch on the option letter: each case applies its effect directly to
-			// the relevant static field (RenderPipeline/GLwidget/AudioAnalyzer) or
-			// global; see the CLI-contract list in the file-level @brief above for
-			// what each flag means.
-			switch ( optchar )
-			{
-				case 'h': commandlineerror( NULL, NULL);  break;
-				//case 'b': benchmark = true; break;
-				// Photo source for this run only; outranks both the ini
-				// setting and the preset's own ImageDirectory attribute.
-				case 'f': RenderPipeline::s_imageDirCli =
-				              QString::fromLocal8Bit( argv[1] ); break;
-				case 'b': fullscreen = !fullscreen; break;
-				case 's': RenderPipeline::setRenderScale( (float) atof( argv[1] ) );
-				          RenderPipeline::s_renderScaleFromCli = true; break;
-				case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
-				case 'm': monitorIndex = atoi( argv[1] ); fullscreen = true; break;
-				case 'l': logToFile = true; break;
-				// Score-cue self test: no window, no audio, an exit code (CueReceiver.h).
-				case 'q': cueSelfTest = true; break;
-				case 'r': GLwidget::s_autoRecord = true; break;
-				// Score cues from a file, timed by the offline WAV (-w / -x).
-				case 'k':
-					if( ScoreCueFile::instance().load( QString::fromLocal8Bit( argv[1] ) ) < 0 )
-						exit( -1 );
-					break;
-				// Offline analysis: feed this WAV through the analyzer instead of
-				// capturing live audio (deterministic classifier testing).
-				case 'w':
-					AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
-					// KALEIDO_OFFLINE_FAST drops the real-time pacing, which only makes
-					// sense for a measurement run -- nobody watches a WAV played at
-					// 100x. So it also means "quit when the file ends", which lets a
-					// sweep over dozens of tracks time itself instead of guessing a
-					// timeout per track. Unlike -x this does NOT start a recording.
-					if( qEnvironmentVariableIsSet( "KALEIDO_OFFLINE_FAST" ) )
-						GLwidget::s_batchRender = true;
-					break;
-				// Spout output: publish the displayed frame to other apps.
-				case 'o': RenderPipeline::s_spoutEnabled = true; break;
-				// Embedded web remote (phone control page).
-				case 't':
-					GLwidget::s_remotePort = atoi( argv[1] );
-					GLwidget::s_remotePortFromCli = true;
-					break;
-				// Batch render: offline WAV + auto-record + auto-quit at the end.
-				case 'x':
-					AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
-					GLwidget::s_autoRecord  = true;
-					GLwidget::s_batchRender = true;
-					break;
-				// Spout INPUT: a live sender replaces the photos as source image.
-				case 'i':
-					RenderPipeline::s_spoutInEnabled = true;
-					RenderPipeline::s_spoutInSender  = QString::fromLocal8Bit( argv[1] );
-					break;
-				// Native VIDEO input: a file, or a directory played in turn.
-				// Same slot as -i; Spout wins if both are given.
-				case 'v':
-					RenderPipeline::s_videoPath = QString::fromLocal8Bit( argv[1] );
-					break;
-				// Stereoscopic output: sbs (side-by-side), tb (top-bottom),
-				// ana (red-cyan anaglyph); anything else = off.
-				case '3':
-				{
-					QString m3 = QString::fromLocal8Bit( argv[1] ).toLower();
-					RenderPipeline::s_stereoMode = (m3 == "sbs") ? 1
-					                           : (m3 == "tb")  ? 2
-					                           : (m3.startsWith("ana")) ? 3 : 0;
-					break;
-				}
+            // Dispatch on the option letter: each case applies its effect directly to
+            // the relevant static field (RenderPipeline/GLwidget/AudioAnalyzer) or
+            // global; see the CLI-contract list in the file-level @brief above for
+            // what each flag means.
+            switch ( optchar )
+            {
+                case 'h': commandlineerror( NULL, NULL ); break;
+                // case 'b': benchmark = true; break;
+                // Photo source for this run only; outranks both the ini
+                // setting and the preset's own ImageDirectory attribute.
+                case 'f':
+                    RenderPipeline::s_imageDirCli =
+                        QString::fromLocal8Bit( argv[1] );
+                    break;
+                case 'b': fullscreen = !fullscreen; break;
+                case 's':
+                    RenderPipeline::setRenderScale( (float)atof( argv[1] ) );
+                    RenderPipeline::s_renderScaleFromCli = true;
+                    break;
+                case 'c': GLwidget::s_startConfig = QString::fromLocal8Bit( argv[1] ); break;
+                case 'm':
+                    monitorIndex = atoi( argv[1] );
+                    fullscreen = true;
+                    break;
+                case 'l': logToFile = true; break;
+                // Score-cue self test: no window, no audio, an exit code (CueReceiver.h).
+                case 'q': cueSelfTest = true; break;
+                case 'r': GLwidget::s_autoRecord = true; break;
+                // Score cues from a file, timed by the offline WAV (-w / -x).
+                case 'k':
+                    if ( ScoreCueFile::instance().load( QString::fromLocal8Bit( argv[1] ) ) < 0 )
+                        exit( -1 );
+                    break;
+                // Offline analysis: feed this WAV through the analyzer instead of
+                // capturing live audio (deterministic classifier testing).
+                case 'w':
+                    AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
+                    // KALEIDO_OFFLINE_FAST drops the real-time pacing, which only makes
+                    // sense for a measurement run -- nobody watches a WAV played at
+                    // 100x. So it also means "quit when the file ends", which lets a
+                    // sweep over dozens of tracks time itself instead of guessing a
+                    // timeout per track. Unlike -x this does NOT start a recording.
+                    if ( qEnvironmentVariableIsSet( "KALEIDO_OFFLINE_FAST" ) )
+                        GLwidget::s_batchRender = true;
+                    break;
+                // Spout output: publish the displayed frame to other apps.
+                case 'o': RenderPipeline::s_spoutEnabled = true; break;
+                // Embedded web remote (phone control page).
+                case 't':
+                    GLwidget::s_remotePort = atoi( argv[1] );
+                    GLwidget::s_remotePortFromCli = true;
+                    break;
+                // Batch render: offline WAV + auto-record + auto-quit at the end.
+                case 'x':
+                    AudioAnalyzer::s_offlineWav = QString::fromLocal8Bit( argv[1] );
+                    GLwidget::s_autoRecord = true;
+                    GLwidget::s_batchRender = true;
+                    break;
+                // Spout INPUT: a live sender replaces the photos as source image.
+                case 'i':
+                    RenderPipeline::s_spoutInEnabled = true;
+                    RenderPipeline::s_spoutInSender = QString::fromLocal8Bit( argv[1] );
+                    break;
+                // Native VIDEO input: a file, or a directory played in turn.
+                // Same slot as -i; Spout wins if both are given.
+                case 'v':
+                    RenderPipeline::s_videoPath = QString::fromLocal8Bit( argv[1] );
+                    break;
+                // Stereoscopic output: sbs (side-by-side), tb (top-bottom),
+                // ana (red-cyan anaglyph); anything else = off.
+                case '3':
+                {
+                    QString m3 = QString::fromLocal8Bit( argv[1] ).toLower();
+                    RenderPipeline::s_stereoMode = ( m3 == "sbs" )              ? 1
+                                                   : ( m3 == "tb" )             ? 2
+                                                   : ( m3.startsWith( "ana" ) ) ? 3
+                                                                                : 0;
+                    break;
+                }
 
 
-				default: fprintf(stderr, "\nBug in parsecommandline !\n");
-						 commandlineerror( argv[0], NULL );
-			}
+                default:
+                    fprintf( stderr, "\nBug in parsecommandline !\n" );
+                    commandlineerror( argv[0], NULL );
+            }
 
-			argv += 1 + mhp[static_cast<int>(optchar)];
-			argc -= 1 + mhp[static_cast<int>(optchar)];
-		}
-		else
-		{
-			/* command line arg doesn't start with '-' */
-			fprintf(stderr, "\nThis is not a valid command line option\n");
-			commandlineerror( argv[0], NULL );
-			/* or, load file instead .. */
-		}
-	}
+            argv += 1 + mhp[static_cast<int>( optchar )];
+            argc -= 1 + mhp[static_cast<int>( optchar )];
+        }
+        else
+        {
+            /* command line arg doesn't start with '-' */
+            fprintf( stderr, "\nThis is not a valid command line option\n" );
+            commandlineerror( argv[0], NULL );
+            /* or, load file instead .. */
+        }
+    }
 }
-
-
-
 
 
 
@@ -348,168 +357,169 @@ void parsecommandline( int argc, char *argv[] )
  * @param argv Argument vector.
  * @return Qt event-loop exit code (from QApplication::exec()).
  */
-int main(int argc, char *argv[])
+int main( int argc, char *argv[] )
 {
-	// A ShaderForge helper run (this executable started by itself, ShaderForge.h): build one program and end.
-	if( shaderForgeIsCommand( argc, argv ) )
-		return shaderForgeMain( argc, argv );
+    // A ShaderForge helper run (this executable started by itself, ShaderForge.h): build one program and end.
+    if ( shaderForgeIsCommand( argc, argv ) )
+        return shaderForgeMain( argc, argv );
 
-	// Seed the C-runtime RNG for THIS (main/render) thread. rand() was never
-	// seeded anywhere in this codebase, so it always started from the C
-	// runtime's fixed default state -- every launch replayed the exact same
-	// "random" sequence of scene/transition/mood-accept picks. Across
-	// repeated sessions this reads as "only a subset of the preset ever gets
-	// used", since the reachable variety was bounded by how long a single
-	// sitting ran, not by the preset's actual size.
-	// NOTE: MSVC's rand()/srand() keep PER-THREAD state (verified
-	// empirically), so this does NOT seed rand() on other threads --
-	// AudioAnalyzer's capture thread seeds itself separately in ::run().
-	// KALEIDO_SEED pinnt den Zufall auf einen festen Wert.  Ohne das ist ein
-	// Vorher/Nachher-Vergleich zweier Laeufe wertlos: die Szenen wuerfeln ihre
-	// Parameter und Seeds pro Lauf neu, und unveraenderte Kontrollszenen
-	// schwankten in der Messung um den Faktor zwei -- mehr als die Wirkung,
-	// die belegt werden sollte.  Nur fuer Messlaeufe gedacht, im Betrieb nicht
-	// gesetzt und damit weiterhin uhrgeseedet.
-	{
-		const char *seedEnv = getenv( "KALEIDO_SEED" );
-		srand( seedEnv ? (unsigned) strtoul( seedEnv, nullptr, 10 )
-		               : (unsigned) std::chrono::high_resolution_clock::now()
-		                              .time_since_epoch().count() );
-	}
+    // Seed the C-runtime RNG for THIS (main/render) thread. rand() was never
+    // seeded anywhere in this codebase, so it always started from the C
+    // runtime's fixed default state -- every launch replayed the exact same
+    // "random" sequence of scene/transition/mood-accept picks. Across
+    // repeated sessions this reads as "only a subset of the preset ever gets
+    // used", since the reachable variety was bounded by how long a single
+    // sitting ran, not by the preset's actual size.
+    // NOTE: MSVC's rand()/srand() keep PER-THREAD state (verified
+    // empirically), so this does NOT seed rand() on other threads --
+    // AudioAnalyzer's capture thread seeds itself separately in ::run().
+    // KALEIDO_SEED pinnt den Zufall auf einen festen Wert.  Ohne das ist ein
+    // Vorher/Nachher-Vergleich zweier Laeufe wertlos: die Szenen wuerfeln ihre
+    // Parameter und Seeds pro Lauf neu, und unveraenderte Kontrollszenen
+    // schwankten in der Messung um den Faktor zwei -- mehr als die Wirkung,
+    // die belegt werden sollte.  Nur fuer Messlaeufe gedacht, im Betrieb nicht
+    // gesetzt und damit weiterhin uhrgeseedet.
+    {
+        const char *seedEnv = getenv( "KALEIDO_SEED" );
+        srand( seedEnv ? (unsigned)strtoul( seedEnv, nullptr, 10 )
+                       : (unsigned)std::chrono::high_resolution_clock::now()
+                             .time_since_epoch()
+                             .count() );
+    }
 
-	// The photo source used to be resolved here, from the Windows "My Pictures"
-	// folder into a global -- which NOTHING ever read: RenderPipeline takes its
-	// directory from the preset's ImageDirectory attribute, and the -f flag that
-	// would have overridden the global was commented out. So the lookup ran on
-	// every start and its result was discarded. The three real layers now live
-	// together in RenderPipeline::init() (CLI -f > ini > preset), with the
-	// preset default pointing at the bundled Images folder. Someone's Pictures
-	// folder is no longer a sensible guess for a visualizer's source material
-	// anyway -- it is full of holiday snaps and screenshots.
-	//
-	// Restore saved look settings first, so explicit command-line flags (e.g. -s)
-	// still take precedence over the persisted values.
-	RenderPipeline::loadSettings();
+    // The photo source used to be resolved here, from the Windows "My Pictures"
+    // folder into a global -- which NOTHING ever read: RenderPipeline takes its
+    // directory from the preset's ImageDirectory attribute, and the -f flag that
+    // would have overridden the global was commented out. So the lookup ran on
+    // every start and its result was discarded. The three real layers now live
+    // together in RenderPipeline::init() (CLI -f > ini > preset), with the
+    // preset default pointing at the bundled Images folder. Someone's Pictures
+    // folder is no longer a sensible guess for a visualizer's source material
+    // anyway -- it is full of holiday snaps and screenshots.
+    //
+    // Restore saved look settings first, so explicit command-line flags (e.g. -s)
+    // still take precedence over the persisted values.
+    RenderPipeline::loadSettings();
 
-	// Parse command line options; may itself exit() the process (see
-	// commandlineerror()/parsecommandline() above) for -h or invalid input.
-	parsecommandline( argc, argv );
+    // Parse command line options; may itself exit() the process (see
+    // commandlineerror()/parsecommandline() above) for -h or invalid input.
+    parsecommandline( argc, argv );
 
-	// Kiosk logging: send stderr (shader status, device reconnects, errors) to a
-	// file so an unattended installation stays diagnosable.  Keep one previous
-	// session as kaleidoscope.log.1 so the file can't grow without bound.
-	if( logToFile )
-	{
-		remove( "kaleidoscope.log.1" );
-		rename( "kaleidoscope.log", "kaleidoscope.log.1" );
-		if( freopen( "kaleidoscope.log", "w", stderr ) )
-		{
-			time_t t = time( NULL );
-			fprintf( stderr, "=== Kaleidoscope log started %s", ctime( &t ) );
-			setvbuf( stderr, NULL, _IONBF, 0 );   // unbuffered: nothing lost on a hard kill
-		}
-	}
+    // Kiosk logging: send stderr (shader status, device reconnects, errors) to a
+    // file so an unattended installation stays diagnosable.  Keep one previous
+    // session as kaleidoscope.log.1 so the file can't grow without bound.
+    if ( logToFile )
+    {
+        remove( "kaleidoscope.log.1" );
+        rename( "kaleidoscope.log", "kaleidoscope.log.1" );
+        if ( freopen( "kaleidoscope.log", "w", stderr ) )
+        {
+            time_t t = time( NULL );
+            fprintf( stderr, "=== Kaleidoscope log started %s", ctime( &t ) );
+            setvbuf( stderr, NULL, _IONBF, 0 ); // unbuffered: nothing lost on a hard kill
+        }
+    }
 
-	// OpenGL 4.3 CORE profile: the fixed-function remnants are gone, all
-	// shaders are GLSL 330 core, and 4.3 unlocks compute shaders for the
-	// GPU simulations.
-	QSurfaceFormat fmt;
-	fmt.setVersion( 4, 3 );
+    // OpenGL 4.3 CORE profile: the fixed-function remnants are gone, all
+    // shaders are GLSL 330 core, and 4.3 unlocks compute shaders for the
+    // GPU simulations.
+    QSurfaceFormat fmt;
+    fmt.setVersion( 4, 3 );
 #ifdef __APPLE__
-	// macOS froze OpenGL at 4.1 core and deprecated it there. Asking for 4.3
-	// yields no context at all, so the program would not start; 4.1 does.
-	// The cost is the compute-shader effects -- glcore reports the missing
-	// entry points and the engine takes its documented fragment fallbacks,
-	// the same route as any GPU without compute. Everything else runs.
-	fmt.setVersion( 4, 1 );
+    // macOS froze OpenGL at 4.1 core and deprecated it there. Asking for 4.3
+    // yields no context at all, so the program would not start; 4.1 does.
+    // The cost is the compute-shader effects -- glcore reports the missing
+    // entry points and the engine takes its documented fragment fallbacks,
+    // the same route as any GPU without compute. Everything else runs.
+    fmt.setVersion( 4, 1 );
 #endif
-	fmt.setProfile( QSurfaceFormat::CoreProfile );
-	fmt.setRenderableType( QSurfaceFormat::OpenGL );
-	fmt.setSwapBehavior( QSurfaceFormat::DoubleBuffer );
-	fmt.setDepthBufferSize( 24 );
-	// KALEIDO_NO_VSYNC=1: measure without the panel's frame cap (see KALEIDO_GPU_TIMING).
-	if( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) )
-		fmt.setSwapInterval( 0 );
-	QSurfaceFormat::setDefaultFormat( fmt );
-	EffectShader::s_chainRunner = true;   // chain labs as passes (Engine/ChainPass); the editor keeps the uber-shaders
+    fmt.setProfile( QSurfaceFormat::CoreProfile );
+    fmt.setRenderableType( QSurfaceFormat::OpenGL );
+    fmt.setSwapBehavior( QSurfaceFormat::DoubleBuffer );
+    fmt.setDepthBufferSize( 24 );
+    // KALEIDO_NO_VSYNC=1: measure without the panel's frame cap (see KALEIDO_GPU_TIMING).
+    if ( qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) )
+        fmt.setSwapInterval( 0 );
+    QSurfaceFormat::setDefaultFormat( fmt );
+    EffectShader::s_chainRunner = true; // chain labs as passes (Engine/ChainPass); the editor keeps the uber-shaders
 
-	// The normal windowed-app path: build the Qt application and its single top-level
-	// window, then either show it windowed or on the chosen fullscreen monitor.
-	QApplication app(argc, argv);
-	// Ohne dies fragt Qt bei der ALLERERSTEN Netzwerk-Anfrage (Lyrics-/
-	// Künstlerbild-Abruf in TrackMedia, ausgelöst synchron aus paintGL() bei
-	// jedem Trackwechsel) unter Windows per WinHttpGetProxyForUrl SYNCHRON
-	// auf dem aufrufenden Thread nach einem System-Proxy (WPAD-Autoerkennung)
-	// - das kann mehrere Sekunden blockieren und friert damit den GUI/Render-
-	// Thread ein (reproduziert als Hänger 4-9s nach Start, CPU-Zeit-Plateau,
-	// Fenster reagiert nicht mehr). Die App braucht keinen System-Proxy.
-	QNetworkProxy::setApplicationProxy( QNetworkProxy::NoProxy );
+    // The normal windowed-app path: build the Qt application and its single top-level
+    // window, then either show it windowed or on the chosen fullscreen monitor.
+    QApplication app( argc, argv );
+    // Ohne dies fragt Qt bei der ALLERERSTEN Netzwerk-Anfrage (Lyrics-/
+    // Künstlerbild-Abruf in TrackMedia, ausgelöst synchron aus paintGL() bei
+    // jedem Trackwechsel) unter Windows per WinHttpGetProxyForUrl SYNCHRON
+    // auf dem aufrufenden Thread nach einem System-Proxy (WPAD-Autoerkennung)
+    // - das kann mehrere Sekunden blockieren und friert damit den GUI/Render-
+    // Thread ein (reproduziert als Hänger 4-9s nach Start, CPU-Zeit-Plateau,
+    // Fenster reagiert nicht mehr). Die App braucht keinen System-Proxy.
+    QNetworkProxy::setApplicationProxy( QNetworkProxy::NoProxy );
 
-	// -q: the score-cue self test.  It needs the Qt event loop (it binds a real socket and feeds it
-	// real datagrams) but nothing else -- no window, no GL context, no audio device -- so it runs
-	// here, after QApplication exists and before anything is shown, and ends the process with its
-	// own exit code.  That is what makes it usable from CI beside the other static checks.
-	if( cueSelfTest )
-		return runCueSelfTest();
+    // -q: the score-cue self test.  It needs the Qt event loop (it binds a real socket and feeds it
+    // real datagrams) but nothing else -- no window, no GL context, no audio device -- so it runs
+    // here, after QApplication exists and before anything is shown, and ends the process with its
+    // own exit code.  That is what makes it usable from CI beside the other static checks.
+    if ( cueSelfTest )
+        return runCueSelfTest();
 
-	// A dead man's switch for batch runs.  A catalogue render or a screening
-	// pass is started by a script that is supposed to stop it again -- but if
-	// that script is killed (a tool run hitting its time limit, a cancelled
-	// job, a crash), the window it started keeps rendering FOR EVER: it holds
-	// a GPU at full tilt and gigabytes of video memory on a machine somebody
-	// else is trying to work on, and nothing is left that knows to stop it.
-	// KALEIDO_MAX_RUNTIME_SECS makes the process responsible for its own end.
-	// Set it comfortably above the intended run length: it should only ever
-	// fire when whoever started this run is already gone.
-	{
-		const int maxSecs = qEnvironmentVariableIntValue( "KALEIDO_MAX_RUNTIME_SECS" );
-		if( maxSecs > 0 )
-		{
-			fprintf( stderr, "[watchdog] this run ends itself after %d s\n", maxSecs );
-			QTimer::singleShot( maxSecs * 1000, &app, &QCoreApplication::quit );
-		}
-	}
-	app.setOverrideCursor(Qt::BlankCursor);
-	// Stack statt new-ohne-delete: so läuft ~QMyWindow/~GLwidget (Recorder-
-	// Finalisierung, GL-Cleanup mit aktuellem Kontext) GARANTIERT VOR
-	// ~QApplication.  Der frühere Leak ließ die Widgets erst irgendwo im
-	// App-Teardown sterben — Nährboden für Exit-Asserts der Debug-Qt
-	// ("Must construct a QGuiApplication before a QPixmap" & Co.).
-	QMyWindow window( NULL );
-	QObject::connect(&window , SIGNAL(signalQuitApp()), &app, SLOT(quit()));
-	app.setWindowIcon(QIcon(QString("icon.ico")));   // multi-res: Qt picks the best size per context
-	if (!fullscreen)
-	{
-		window.resize(1920, 1080);
-		// A batch run must not steal the machine from the person using it.
-		// KALEIDO_NO_ACTIVATE shows the window without taking the keyboard
-		// focus and puts it at the BOTTOM of the window stack, so a catalogue
-		// pass no longer pops a 1920x1080 window over somebody's work once per
-		// scene.  It still renders and still records: the frames come from the
-		// framebuffer, not from what is on screen.
-		if( qEnvironmentVariableIsSet( "KALEIDO_NO_ACTIVATE" ) )
-		{
-			window.setAttribute( Qt::WA_ShowWithoutActivating );
-			window.setWindowFlag( Qt::WindowDoesNotAcceptFocus, true );
-			window.show();
-			window.lower();
-		}
-		else
-			window.show();
-	}
-	else
-	{
-		// Pick the target monitor: -m <index> if valid, else the 2nd screen if
-		// present, otherwise the primary.
-		const QList<QScreen*> screens = QGuiApplication::screens();
-		int idx = monitorIndex;
-		if( idx < 0 || idx >= screens.size() )
-			idx = (screens.size() > 1) ? 1 : 0;
-		QScreen *target = screens.at(idx);
-		window.setGeometry( target->geometry() );
-		window.setFocus();
-	    window.showFullScreen();
-	}
+    // A dead man's switch for batch runs.  A catalogue render or a screening
+    // pass is started by a script that is supposed to stop it again -- but if
+    // that script is killed (a tool run hitting its time limit, a cancelled
+    // job, a crash), the window it started keeps rendering FOR EVER: it holds
+    // a GPU at full tilt and gigabytes of video memory on a machine somebody
+    // else is trying to work on, and nothing is left that knows to stop it.
+    // KALEIDO_MAX_RUNTIME_SECS makes the process responsible for its own end.
+    // Set it comfortably above the intended run length: it should only ever
+    // fire when whoever started this run is already gone.
+    {
+        const int maxSecs = qEnvironmentVariableIntValue( "KALEIDO_MAX_RUNTIME_SECS" );
+        if ( maxSecs > 0 )
+        {
+            fprintf( stderr, "[watchdog] this run ends itself after %d s\n", maxSecs );
+            QTimer::singleShot( maxSecs * 1000, &app, &QCoreApplication::quit );
+        }
+    }
+    app.setOverrideCursor( Qt::BlankCursor );
+    // Stack statt new-ohne-delete: so läuft ~QMyWindow/~GLwidget (Recorder-
+    // Finalisierung, GL-Cleanup mit aktuellem Kontext) GARANTIERT VOR
+    // ~QApplication.  Der frühere Leak ließ die Widgets erst irgendwo im
+    // App-Teardown sterben — Nährboden für Exit-Asserts der Debug-Qt
+    // ("Must construct a QGuiApplication before a QPixmap" & Co.).
+    QMyWindow window( NULL );
+    QObject::connect( &window, SIGNAL( signalQuitApp() ), &app, SLOT( quit() ) );
+    app.setWindowIcon( QIcon( QString( "icon.ico" ) ) ); // multi-res: Qt picks the best size per context
+    if ( !fullscreen )
+    {
+        window.resize( 1920, 1080 );
+        // A batch run must not steal the machine from the person using it.
+        // KALEIDO_NO_ACTIVATE shows the window without taking the keyboard
+        // focus and puts it at the BOTTOM of the window stack, so a catalogue
+        // pass no longer pops a 1920x1080 window over somebody's work once per
+        // scene.  It still renders and still records: the frames come from the
+        // framebuffer, not from what is on screen.
+        if ( qEnvironmentVariableIsSet( "KALEIDO_NO_ACTIVATE" ) )
+        {
+            window.setAttribute( Qt::WA_ShowWithoutActivating );
+            window.setWindowFlag( Qt::WindowDoesNotAcceptFocus, true );
+            window.show();
+            window.lower();
+        }
+        else
+            window.show();
+    }
+    else
+    {
+        // Pick the target monitor: -m <index> if valid, else the 2nd screen if
+        // present, otherwise the primary.
+        const QList<QScreen *> screens = QGuiApplication::screens();
+        int                    idx = monitorIndex;
+        if ( idx < 0 || idx >= screens.size() )
+            idx = ( screens.size() > 1 ) ? 1 : 0;
+        QScreen *target = screens.at( idx );
+        window.setGeometry( target->geometry() );
+        window.setFocus();
+        window.showFullScreen();
+    }
 
-	return app.exec();
+    return app.exec();
 }

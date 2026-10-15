@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file LeafVeinPerfusion.frag
  * @brief TRANSITION LEAF VEIN PERFUSION: dye enters at the petiole and runs
@@ -25,59 +25,63 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: veinsP, bleedP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float veinsP;
 uniform float bleedP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// Distance to a segment, and how far along the segment the closest point lies.
-float segDist(vec2 p, vec2 a, vec2 b, out float t)
+float segDist( vec2 p, vec2 a, vec2 b, out float t )
 {
     vec2 ab = b - a;
-    t = clamp(dot(p - a, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
-    return length(p - (a + ab * t));
+    t = clamp( dot( p - a, ab ) / max( dot( ab, ab ), 1e-6 ), 0.0, 1.0 );
+    return length( p - ( a + ab * t ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float nSec  = 4.0 + floor(clamp(veinsP, 0.0, 1.0) * 5.0);   // rolled ONCE
-    float bleed = (bleedP > 0.0) ? bleedP : 1.0;
-    float hue   = (hueP   > 0.0) ? hueP   : 0.0;
+    float nSec = 4.0 + floor( clamp( veinsP, 0.0, 1.0 ) * 5.0 ); // rolled ONCE
+    float bleed = ( bleedP > 0.0 ) ? bleedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
     // The petiole is at the left, the midrib runs to the tip.
-    vec2 base = vec2(-aspect * 0.5 - 0.05, -0.06);
-    vec2 tip  = vec2(aspect * 0.5 + 0.05,  0.06);
+    vec2 base = vec2( -aspect * 0.5 - 0.05, -0.06 );
+    vec2 tip = vec2( aspect * 0.5 + 0.05, 0.06 );
 
     // Murray's law: radius goes with the cube root of the flow, so each order
     // is thinner than its parent by a fixed ratio.
@@ -87,76 +91,89 @@ void main()
     float wMain = 0.055, wSec = wMain * 0.63, wTer = wSec * 0.63;
 
     float t;
-    float dMain = segDist(p, base, tip, t);
-    float pathMain = t;                       // 0 at the petiole, 1 at the tip
-    float best = dMain / wMain;               // distance in units of that vein's width
+    float dMain = segDist( p, base, tip, t );
+    float pathMain = t;         // 0 at the petiole, 1 at the tip
+    float best = dMain / wMain; // distance in units of that vein's width
     float path = pathMain;
     float order = 0.0;
 
-    for (int i = 0; i < 9; ++i)
+    for ( int i = 0; i < 9; ++i )
     {
-        if (float(i) >= nSec) break;
-        float fi = float(i);
-        float u = (fi + 0.5) / nSec;                       // where it leaves the midrib
-        vec2 a = mix(base, tip, u);
-        float side = (mod(fi, 2.0) < 0.5) ? 1.0 : -1.0;
-        float lean = 0.55 + 0.30 * hash11(fi * 3.3);
+        if ( float( i ) >= nSec )
+            break;
+        float fi = float( i );
+        float u = ( fi + 0.5 ) / nSec; // where it leaves the midrib
+        vec2  a = mix( base, tip, u );
+        float side = ( mod( fi, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
+        float lean = 0.55 + 0.30 * hash11( fi * 3.3 );
         // Secondaries sweep forward, the way a pinnate leaf's do.
-        vec2 b = a + vec2(0.30 + 0.16 * hash11(fi * 5.1), side * (0.34 + 0.16 * hash11(fi * 7.9)))
-                   * vec2(1.0, lean);
+        vec2  b = a
+                  + vec2( 0.30 + 0.16 * hash11( fi * 5.1 ), side * ( 0.34 + 0.16 * hash11( fi * 7.9 ) ) )
+                        * vec2( 1.0, lean );
         float ts;
-        float ds = segDist(p, a, b, ts) / wSec;
-        if (ds < best) { best = ds; path = u + ts * 0.55; order = 1.0; }
+        float ds = segDist( p, a, b, ts ) / wSec;
+        if ( ds < best )
+        {
+            best = ds;
+            path = u + ts * 0.55;
+            order = 1.0;
+        }
 
         // Tertiaries between the secondaries, hanging off this one.
-        for (int k = 0; k < 3; ++k)
+        for ( int k = 0; k < 3; ++k )
         {
-            float fk = float(k);
-            float v = (fk + 0.5) / 3.0;
-            vec2 a2 = mix(a, b, v);
-            float sd = (mod(fk + fi, 2.0) < 0.5) ? 1.0 : -1.0;
-            vec2 b2 = a2 + vec2(0.10 + 0.06 * hash11(fi * 2.1 + fk),
-                                sd * (0.11 + 0.05 * hash11(fi * 9.3 + fk)));
+            float fk = float( k );
+            float v = ( fk + 0.5 ) / 3.0;
+            vec2  a2 = mix( a, b, v );
+            float sd = ( mod( fk + fi, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
+            vec2  b2 = a2
+                       + vec2( 0.10 + 0.06 * hash11( fi * 2.1 + fk ), sd * ( 0.11 + 0.05 * hash11( fi * 9.3 + fk ) ) );
             float tt;
-            float dt = segDist(p, a2, b2, tt) / wTer;
-            if (dt < best) { best = dt; path = u + v * 0.55 + tt * 0.22; order = 2.0; }
+            float dt = segDist( p, a2, b2, tt ) / wTer;
+            if ( dt < best )
+            {
+                best = dt;
+                path = u + v * 0.55 + tt * 0.22;
+                order = 2.0;
+            }
         }
     }
 
     // One front crossing the PATH LENGTHS, not the distances.  Only a SLOW
     // envelope may touch where the front is: a fast one scales a position, and
     // a scaled position runs backwards the moment the envelope drops.
-    float speed = 1.05;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float front = d * (1.25 * speed) - 0.06;
-    float filled = smoothstep(front + 0.10, front - 0.10, path);
+    float speed = 1.05; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float front = d * ( 1.25 * speed ) - 0.06;
+    float filled = smoothstep( front + 0.10, front - 0.10, path );
 
     // The vein itself, and the dye bleeding out of it into the blade.
-    float vein = smoothstep(1.30, 0.70, best);
-    float spread = 2.9 * bleed * d * d;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float vein = smoothstep( 1.30, 0.70, best );
+    float spread = 2.9 * bleed * d * d; // constant: an envelope on a scale re-lays the whole pattern (speed
+                                        // pass 14.09.2026)
     // The bass is audible in the light the filled network gives off, not in
     // where that network has got to.
-    float pressure = 0.75 + 0.5 * clamp(audioBass, 0.0, 1.0);
-    float lamina = smoothstep(1.0 + spread * 9.0, 0.9, best);
+    float pressure = 0.75 + 0.5 * clamp( audioBass, 0.0, 1.0 );
+    float lamina = smoothstep( 1.0 + spread * 9.0, 0.9, best );
 
-    float wet = clamp(max(vein, lamina * 0.92) * filled, 0.0, 1.0);
+    float wet = clamp( max( vein, lamina * 0.92 ) * filled, 0.0, 1.0 );
     // By the end the whole blade has taken the dye.
-    wet = mix(wet, 1.0, smoothstep(0.84, 1.0, d));
+    wet = mix( wet, 1.0, smoothstep( 0.84, 1.0, d ) );
 
-    vec3 col = mix(texture(tex0, uv).rgb, texture(tex1, uv).rgb, wet);
+    vec3 col = mix( texture( tex0, uv ).rgb, texture( tex1, uv ).rgb, wet );
 
     // A filled vein is glossy, and it is darker than the blade around it.
-    vec3 sheen = mix(vec3(0.75, 0.95, 0.80), vec3(0.95, 0.85, 0.70), fract(hue * 0.159));
+    vec3 sheen = mix( vec3( 0.75, 0.95, 0.80 ), vec3( 0.95, 0.85, 0.70 ), fract( hue * 0.159 ) );
     // A dye-filled vein is DARKER than the blade, and that contrast is what
     // draws the network.
-    col *= 1.0 - vein * filled * 0.62 * arc * (1.0 - 0.35 * order);
+    col *= 1.0 - vein * filled * 0.62 * arc * ( 1.0 - 0.35 * order );
     // An empty vein is visible too, just faintly: the leaf has its skeleton
     // before the dye arrives.
-    col *= 1.0 - vein * (1.0 - filled) * 0.20 * arc;
+    col *= 1.0 - vein * ( 1.0 - filled ) * 0.20 * arc;
     col += sheen * vein * filled * arc * pressure
-         * (0.06 + 0.22 * clamp(audioHigh * 2.0, 0.0, 1.0) + 0.10 * clamp(audioKick, 0.0, 1.0));
+           * ( 0.06 + 0.22 * clamp( audioHigh * 2.0, 0.0, 1.0 ) + 0.10 * clamp( audioKick, 0.0, 1.0 ) );
     // The advancing front is a little brighter than what it leaves behind.
-    float edge = exp(-pow((path - front) / 0.06, 2.0)) * vein;
+    float edge = exp( -pow( ( path - front ) / 0.06, 2.0 ) ) * vein;
     col += sheen * edge * arc * 0.22;
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

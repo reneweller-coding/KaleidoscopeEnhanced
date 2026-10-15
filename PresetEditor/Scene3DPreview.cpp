@@ -5,7 +5,7 @@
  *        shadow -> main -> OIT render sequence. See Scene3DPreview.h for why
  *        this file stands alone.
  */
-#include "../Source/glcore.h"      // MUST be the first GL-touching include (see .h)
+#include "../Source/glcore.h" // MUST be the first GL-touching include (see .h)
 #include "Scene3DPreview.h"
 
 #include "../Source/Scene3DShader.h"
@@ -37,33 +37,44 @@
 GLuint fullscreenVAO()
 {
     static GLuint vao = 0;
-    if( vao == 0 )
+    if ( vao == 0 )
         glGenVertexArrays( 1, &vao );
     return vao;
 }
 
-Scene3DPreview::Scene3DPreview() {}
+Scene3DPreview::Scene3DPreview()
+{
+}
 
 Scene3DPreview::~Scene3DPreview()
 {
     clear();
-    if( m_fbo )        glDeleteFramebuffers( 1, &m_fbo );
-    if( m_colorTex )   glDeleteTextures( 1, &m_colorTex );
-    if( m_depthTex )   glDeleteTextures( 1, &m_depthTex );
-    if( m_shadowFbo )  glDeleteFramebuffers( 1, &m_shadowFbo );
-    if( m_shadowTex )  glDeleteTextures( 1, &m_shadowTex );
-    if( m_oitFbo )     glDeleteFramebuffers( 1, &m_oitFbo );
-    if( m_oitAccum )   glDeleteTextures( 1, &m_oitAccum );
-    if( m_oitReveal )  glDeleteTextures( 1, &m_oitReveal );
-    if( m_quadVao )    glDeleteVertexArrays( 1, &m_quadVao );
+    if ( m_fbo )
+        glDeleteFramebuffers( 1, &m_fbo );
+    if ( m_colorTex )
+        glDeleteTextures( 1, &m_colorTex );
+    if ( m_depthTex )
+        glDeleteTextures( 1, &m_depthTex );
+    if ( m_shadowFbo )
+        glDeleteFramebuffers( 1, &m_shadowFbo );
+    if ( m_shadowTex )
+        glDeleteTextures( 1, &m_shadowTex );
+    if ( m_oitFbo )
+        glDeleteFramebuffers( 1, &m_oitFbo );
+    if ( m_oitAccum )
+        glDeleteTextures( 1, &m_oitAccum );
+    if ( m_oitReveal )
+        glDeleteTextures( 1, &m_oitReveal );
+    if ( m_quadVao )
+        glDeleteVertexArrays( 1, &m_quadVao );
 }
 
 bool Scene3DPreview::ensureGL()
 {
-    if( m_glReady )
+    if ( m_glReady )
         return true;
     m_glReady = glcoreInit() != 0;
-    if( !m_glReady )
+    if ( !m_glReady )
         fputs( "Scene3DPreview: glcoreInit() failed - some GL 4.3 entry points missing\n", stderr );
     return m_glReady;
 }
@@ -76,19 +87,19 @@ void Scene3DPreview::clear()
 
 void Scene3DPreview::addFloatRange( const QString &name, float lo, float hi )
 {
-    if( m_scene )
+    if ( m_scene )
         m_scene->addUniform( name.toStdString(), lo, hi );
 }
 
 void Scene3DPreview::addIntRange( const QString &name, int lo, int hi )
 {
-    if( m_scene )
+    if ( m_scene )
         m_scene->addUniform( name.toStdString(), lo, hi );
 }
 
 void Scene3DPreview::addExpr( const QString &name, const QString &formula )
 {
-    if( m_scene )
+    if ( m_scene )
         m_scene->addExpression( name.toStdString(), formula.toStdString() );
 }
 
@@ -100,7 +111,8 @@ void Scene3DPreview::addExpr( const QString &name, const QString &formula )
  * string-returning alternative -- this is the least invasive way to surface
  * it in the editor's UI without changing that shared, shipped code path.
  * @param body Callable to run with stderr redirected (typically a shader compile/link call).
- * @return Everything @p body wrote to stderr while redirected, trimmed; empty on a clean run or if the redirect/restore failed.
+ * @return Everything @p body wrote to stderr while redirected, trimmed; empty on a clean run or if the redirect/restore
+ * failed.
  */
 static QString captureStderr( const std::function<void()> &body )
 {
@@ -125,24 +137,24 @@ static QString captureStderr( const std::function<void()> &body )
     fflush( stderr );
 
     QString log;
-    if( redirected && savedFd != -1 )
+    if ( redirected && savedFd != -1 )
     {
-        _dup2( savedFd, _fileno( stderr ) );   // restore the ORIGINAL stderr target
+        _dup2( savedFd, _fileno( stderr ) ); // restore the ORIGINAL stderr target
         QFile f( QString::fromLocal8Bit( tmpPath ) );
-        if( f.open( QIODevice::ReadOnly | QIODevice::Text ) )
+        if ( f.open( QIODevice::ReadOnly | QIODevice::Text ) )
             log = QString::fromLocal8Bit( f.readAll() ).trimmed();
         f.remove();
     }
-    if( savedFd != -1 )
+    if ( savedFd != -1 )
         _close( savedFd );
     return log;
 }
 
 bool Scene3DPreview::setShader( const QString &fragPathRelative, const QString &geom,
-                                 int stateBytes, double shadowExtent, QString &log )
+                                int stateBytes, double shadowExtent, QString &log )
 {
     clear();
-    if( !ensureGL() )
+    if ( !ensureGL() )
     {
         log = "glcore init failed";
         return false;
@@ -150,15 +162,18 @@ bool Scene3DPreview::setShader( const QString &fragPathRelative, const QString &
 
     Scene3DShader *scene = new Scene3DShader(
         fragPathRelative.toStdString(), geom.toStdString(), 0, 0, 0, 0 );
-    if( stateBytes > 0 )   scene->setStateBytes( stateBytes );
-    if( shadowExtent > 0 ) scene->setShadowExtent( float(shadowExtent) );
+    if ( stateBytes > 0 )
+        scene->setStateBytes( stateBytes );
+    if ( shadowExtent > 0 )
+        scene->setShadowExtent( float( shadowExtent ) );
     // width/height are irrelevant here: Scene3DShader's initUniforms() never
     // allocates anything sized by them (that is the effect FBO's job, owned by
     // the host) - it only records them for the perspective aspect ratio, which
     // ensureFbo() re-derives itself from the widget size every frame anyway.
     scene->prepare( 16, 16 );
 
-    log = captureStderr( [&]{ scene->ensureCompiled(); } );
+    log = captureStderr( [&]
+    { scene->ensureCompiled(); } );
 
     m_scene = scene;
     return true;
@@ -173,7 +188,7 @@ bool Scene3DPreview::setShader( const QString &fragPathRelative, const QString &
  */
 static unsigned ensureQuadVao( unsigned &vao )
 {
-    if( vao == 0 )
+    if ( vao == 0 )
         glGenVertexArrays( 1, &vao );
     return vao;
 }
@@ -185,7 +200,7 @@ static unsigned ensureQuadVao( unsigned &vao )
 static bool checkFbo()
 {
     GLenum s = glCheckFramebufferStatus( GL_FRAMEBUFFER );
-    if( s == GL_FRAMEBUFFER_COMPLETE )
+    if ( s == GL_FRAMEBUFFER_COMPLETE )
         return true;
     fprintf( stderr, "Scene3DPreview: framebuffer incomplete (0x%x)\n", s );
     return false;
@@ -193,13 +208,17 @@ static bool checkFbo()
 
 void Scene3DPreview::ensureFbo( int w, int h )
 {
-    if( m_fbo != 0 && m_fboW == w && m_fboH == h )
+    if ( m_fbo != 0 && m_fboW == w && m_fboH == h )
         return;
-    m_fboW = w; m_fboH = h;
+    m_fboW = w;
+    m_fboH = h;
 
-    if( m_fbo == 0 ) glGenFramebuffers( 1, &m_fbo );
-    if( m_colorTex == 0 ) glGenTextures( 1, &m_colorTex );
-    if( m_depthTex == 0 ) glGenTextures( 1, &m_depthTex );
+    if ( m_fbo == 0 )
+        glGenFramebuffers( 1, &m_fbo );
+    if ( m_colorTex == 0 )
+        glGenTextures( 1, &m_colorTex );
+    if ( m_depthTex == 0 )
+        glGenTextures( 1, &m_depthTex );
 
     glBindTexture( GL_TEXTURE_2D, m_colorTex );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
@@ -237,7 +256,7 @@ void Scene3DPreview::ensureFbo( int w, int h )
 // FBO bookkeeping. ----
 bool Scene3DPreview::ensureShadowMap()
 {
-    if( m_shadowFbo != 0 )
+    if ( m_shadowFbo != 0 )
         return true;
 
     glGenTextures( 1, &m_shadowTex );
@@ -262,7 +281,7 @@ bool Scene3DPreview::ensureShadowMap()
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    if( !ok )
+    if ( !ok )
     {
         fputs( "Scene3DPreview: shadow map FBO incomplete\n", stderr );
         glDeleteFramebuffers( 1, &m_shadowFbo );
@@ -281,54 +300,60 @@ bool Scene3DPreview::ensureShadowMap()
 void Scene3DPreview::updateLightMatrix( float t )
 {
     const float E = EffectShader::s_shadowExtent;
-    float a = t * 0.06f;
-    float lx = 0.42f * sinf( a );
-    float ly = 1.15f + 0.16f * sinf( a * 0.43f );
-    float lz = -0.42f * cosf( a ) - 0.18f;
-    float ln = sqrtf( lx * lx + ly * ly + lz * lz );
-    lx /= ln; ly /= ln; lz /= ln;
+    float       a = t * 0.06f;
+    float       lx = 0.42f * sinf( a );
+    float       ly = 1.15f + 0.16f * sinf( a * 0.43f );
+    float       lz = -0.42f * cosf( a ) - 0.18f;
+    float       ln = sqrtf( lx * lx + ly * ly + lz * lz );
+    lx /= ln;
+    ly /= ln;
+    lz /= ln;
     EffectShader::s_lightDir[0] = lx;
     EffectShader::s_lightDir[1] = ly;
     EffectShader::s_lightDir[2] = lz;
 
     float fx = -lx, fy = -ly, fz = -lz;
     float ux = 0.f, uy = 1.f, uz = 0.f;
-    if( fabsf( fy ) > 0.98f ) { ux = 1.f; uy = 0.f; }
+    if ( fabsf( fy ) > 0.98f )
+    {
+        ux = 1.f;
+        uy = 0.f;
+    }
     float sx = fy * uz - fz * uy;
     float sy = fz * ux - fx * uz;
     float sz = fx * uy - fy * ux;
     float sn = sqrtf( sx * sx + sy * sy + sz * sz );
-    sx /= sn; sy /= sn; sz /= sn;
+    sx /= sn;
+    sy /= sn;
+    sz /= sn;
     float tx = sy * fz - sz * fy;
     float ty = sz * fx - sx * fz;
     float tz = sx * fy - sy * fx;
 
     const float dist = E * 2.f;
-    float ex = lx * dist, ey = ly * dist, ez = lz * dist;
+    float       ex = lx * dist, ey = ly * dist, ez = lz * dist;
 
     float V[16] = {
-         sx,  tx, -fx, 0.f,
-         sy,  ty, -fy, 0.f,
-         sz,  tz, -fz, 0.f,
+        sx, tx, -fx, 0.f,
+        sy, ty, -fy, 0.f,
+        sz, tz, -fz, 0.f,
         -( sx * ex + sy * ey + sz * ez ),
         -( tx * ex + ty * ey + tz * ez ),
-          ( fx * ex + fy * ey + fz * ez ), 1.f
-    };
+        ( fx * ex + fy * ey + fz * ez ), 1.f };
 
     const float zn = 0.1f, zf = dist + E * 2.f;
-    float P[16] = {
-        1.f / E, 0.f,     0.f,                        0.f,
-        0.f,     1.f / E, 0.f,                        0.f,
-        0.f,     0.f,    -2.f / ( zf - zn ),           0.f,
-        0.f,     0.f,    -( zf + zn ) / ( zf - zn ),   1.f
-    };
+    float       P[16] = {
+        1.f / E, 0.f, 0.f, 0.f,
+        0.f, 1.f / E, 0.f, 0.f,
+        0.f, 0.f, -2.f / ( zf - zn ), 0.f,
+        0.f, 0.f, -( zf + zn ) / ( zf - zn ), 1.f };
 
     float *M = EffectShader::s_lightM;
-    for( int c = 0; c < 4; ++c )
-        for( int r = 0; r < 4; ++r )
+    for ( int c = 0; c < 4; ++c )
+        for ( int r = 0; r < 4; ++r )
         {
             float sum = 0.f;
-            for( int k = 0; k < 4; ++k )
+            for ( int k = 0; k < 4; ++k )
                 sum += P[k * 4 + r] * V[c * 4 + k];
             M[c * 4 + r] = sum;
         }
@@ -336,7 +361,7 @@ void Scene3DPreview::updateLightMatrix( float t )
 
 void Scene3DPreview::renderShadowPass( float time, float interpolation, const AudioFeatures &features )
 {
-    if( !ensureShadowMap() )
+    if ( !ensureShadowMap() )
         return;
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_shadowFbo );
@@ -373,13 +398,15 @@ void Scene3DPreview::renderShadowPass( float time, float interpolation, const Au
 // ---- OIT: ported from RenderPipeline::ensureOitTargets/renderOitPass ----
 bool Scene3DPreview::ensureOitTargets( int w, int h )
 {
-    if( m_oitFbo != 0 && m_oitW == w && m_oitH == h )
+    if ( m_oitFbo != 0 && m_oitW == w && m_oitH == h )
         return true;
-    if( !glBlendFunci || !glDrawBuffers || !glClearBufferfv )
+    if ( !glBlendFunci || !glDrawBuffers || !glClearBufferfv )
         return false;
-    m_oitW = w; m_oitH = h;
+    m_oitW = w;
+    m_oitH = h;
 
-    if( m_oitAccum == 0 )  glGenTextures( 1, &m_oitAccum );
+    if ( m_oitAccum == 0 )
+        glGenTextures( 1, &m_oitAccum );
     glBindTexture( GL_TEXTURE_2D, m_oitAccum );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
@@ -387,7 +414,8 @@ bool Scene3DPreview::ensureOitTargets( int w, int h )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, nullptr );
 
-    if( m_oitReveal == 0 ) glGenTextures( 1, &m_oitReveal );
+    if ( m_oitReveal == 0 )
+        glGenTextures( 1, &m_oitReveal );
     glBindTexture( GL_TEXTURE_2D, m_oitReveal );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST );
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST );
@@ -395,7 +423,8 @@ bool Scene3DPreview::ensureOitTargets( int w, int h )
     glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     glTexImage2D( GL_TEXTURE_2D, 0, GL_R16F, w, h, 0, GL_RED, GL_FLOAT, nullptr );
 
-    if( m_oitFbo == 0 ) glGenFramebuffers( 1, &m_oitFbo );
+    if ( m_oitFbo == 0 )
+        glGenFramebuffers( 1, &m_oitFbo );
     glBindFramebuffer( GL_FRAMEBUFFER, m_oitFbo );
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_oitAccum, 0 );
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_oitReveal, 0 );
@@ -405,10 +434,10 @@ bool Scene3DPreview::ensureOitTargets( int w, int h )
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );
     glBindTexture( GL_TEXTURE_2D, 0 );
 
-    if( ok && m_oitResolveProg == 0 )
+    if ( ok && m_oitResolveProg == 0 )
         m_oitResolveProg = setShaders( "..\\standard.vert", "..\\Engine\\OitResolve.frag" );
 
-    if( !ok )
+    if ( !ok )
     {
         fputs( "Scene3DPreview: OIT targets incomplete\n", stderr );
         glDeleteFramebuffers( 1, &m_oitFbo );
@@ -421,14 +450,14 @@ bool Scene3DPreview::ensureOitTargets( int w, int h )
 
 void Scene3DPreview::renderOitPass( float time, float interpolation, const AudioFeatures &features )
 {
-    if( !ensureOitTargets( m_fboW, m_fboH ) )
+    if ( !ensureOitTargets( m_fboW, m_fboH ) )
         return;
 
     glBindFramebuffer( GL_FRAMEBUFFER, m_oitFbo );
     glFramebufferTexture2D( GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTex, 0 );
 
     const GLfloat zero[4] = { 0.f, 0.f, 0.f, 0.f };
-    const GLfloat one[4]  = { 1.f, 1.f, 1.f, 1.f };
+    const GLfloat one[4] = { 1.f, 1.f, 1.f, 1.f };
     glClearBufferfv( GL_COLOR, 0, zero );
     glClearBufferfv( GL_COLOR, 1, one );
 
@@ -452,7 +481,7 @@ void Scene3DPreview::renderOitPass( float time, float interpolation, const Audio
     // ---- resolve: composite the accumulated transparency back over m_fbo ----
     glBindFramebuffer( GL_FRAMEBUFFER, m_fbo );
     glViewport( 0, 0, m_fboW, m_fboH );
-    if( m_oitResolveProg == 0 )
+    if ( m_oitResolveProg == 0 )
         return;
     glUseProgram( m_oitResolveProg );
     glActiveTexture( GL_TEXTURE0 );
@@ -463,9 +492,12 @@ void Scene3DPreview::renderOitPass( float time, float interpolation, const Audio
     GLint l0 = glGetUniformLocation( m_oitResolveProg, "texAccum" );
     GLint l1 = glGetUniformLocation( m_oitResolveProg, "texReveal" );
     GLint lr = glGetUniformLocation( m_oitResolveProg, "resolution" );
-    if( l0 >= 0 ) glUniform1i( l0, 0 );
-    if( l1 >= 0 ) glUniform1i( l1, 1 );
-    if( lr >= 0 ) glUniform2f( lr, float(m_fboW), float(m_fboH) );
+    if ( l0 >= 0 )
+        glUniform1i( l0, 0 );
+    if ( l1 >= 0 )
+        glUniform1i( l1, 1 );
+    if ( lr >= 0 )
+        glUniform2f( lr, float( m_fboW ), float( m_fboH ) );
 
     glEnable( GL_BLEND );
     glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
@@ -476,28 +508,30 @@ void Scene3DPreview::renderOitPass( float time, float interpolation, const Audio
 }
 
 void Scene3DPreview::render( int w, int h, float time, float interpolation,
-                              const AudioFeatures &features,
-                              unsigned tex0, unsigned tex1,
-                              unsigned &outColorTex, unsigned &outDepthTex )
+                             const AudioFeatures &features,
+                             unsigned tex0, unsigned tex1,
+                             unsigned &outColorTex, unsigned &outDepthTex )
 {
-    if( !m_scene )
+    if ( !m_scene )
     {
         outColorTex = outDepthTex = 0;
         return;
     }
     ensureFbo( w, h );
 
-    glActiveTexture( GL_TEXTURE0 ); glBindTexture( GL_TEXTURE_2D, tex0 );
-    glActiveTexture( GL_TEXTURE1 ); glBindTexture( GL_TEXTURE_2D, tex1 );
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, tex0 );
+    glActiveTexture( GL_TEXTURE1 );
+    glBindTexture( GL_TEXTURE_2D, tex1 );
     glActiveTexture( GL_TEXTURE0 );
 
     // Same broadcast the main host uses (EffectShader::s_shadowExtent/s_light*):
     // the box is sized by THIS scene, because only it knows its own scale.
     EffectShader::s_shadowExtent = m_scene->shadowExtent();
     updateLightMatrix( time );
-    if( m_scene->usesShadow() )
+    if ( m_scene->usesShadow() )
         renderShadowPass( time, interpolation, features );
-    EffectShader::s_depthValid[0] = 1.f;   // this pass IS a 3D scene, always
+    EffectShader::s_depthValid[0] = 1.f; // this pass IS a 3D scene, always
 
     // Bound and viewport-set unconditionally, whether or not the shadow pass
     // just ran -- it leaves both the framebuffer and viewport pointed at its
@@ -514,7 +548,7 @@ void Scene3DPreview::render( int w, int h, float time, float interpolation,
     m_scene->draw();
     glDisable( GL_DEPTH_TEST );
 
-    if( m_scene->usesOit() )
+    if ( m_scene->usesOit() )
         renderOitPass( time, interpolation, features );
 
     glBindFramebuffer( GL_FRAMEBUFFER, 0 );

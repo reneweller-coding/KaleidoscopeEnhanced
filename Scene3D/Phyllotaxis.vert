@@ -31,88 +31,90 @@
 // is the flicker budget (outer sweep ≈ n·dδ/dt): amplitude × frequency is
 // kept ≤ ~5e-6 rad/s so the rim glides instead of spinning.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioSpread;   ///< Spectral spread, 0..1.
+uniform float audioBarPhase;  ///< Position within the current bar, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSpread;    ///< Spectral spread, 0..1.
 uniform float audioRolloff;
-uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
-uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
+uniform float sceneSeed; ///< A random number fixed per activation.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float n  = attrA.w;                      // floret index
+    float n = attrA.w; // floret index
     float r4 = attrB.w;
 
-    const float GA = 2.39996323;             // golden angle in radians
+    const float GA = 2.39996323; // golden angle in radians
     // Divergence angle: golden + per-activation family offset + slow live
     // drift.  amp·freq ≈ (1.6e-4 + 1.4e-4·swell)·0.017 ≤ 5.1e-6 rad/s →
     // outer floret (n=60000) sweeps ≤ 0.31 rad/s.  (swell is a slow
     // envelope, so its amplitude contribution is drift-rate-safe too.)
-    float div = GA + (sceneSeed - 0.5) * 0.006
-              + (1.6e-4 + 1.4e-4 * audioSwell)
-              * sin(time * 0.017 + sceneSeed * 6.2831853);
+    float div = GA + ( sceneSeed - 0.5 ) * 0.006
+                + ( 1.6e-4 + 1.4e-4 * audioSwell )
+                      * sin( time * 0.017 + sceneSeed * 6.2831853 );
     float th = n * div + time * 0.02;
-    float fr = sqrt(n / 60000.0);            // 0 centre .. 1 rim
+    float fr = sqrt( n / 60000.0 ); // 0 centre .. 1 rim
     // SPECTRAL SPREAD opens the head: a narrow spectrum keeps the florets
     // packed tight, rich wide harmonics push the whole disc outward.  The
     // factor only ever grows from 1.0 -- shrinking would concentrate 60k
     // additive sprites into a smaller disc and brighten the frame.
-    float R  = fr * 24.0 * (1.0 + 0.03 * audioBass)
-             * (1.0 + 0.30 * clamp(audioSpread, 0.0, 1.0));
+    float R = fr * 24.0 * ( 1.0 + 0.03 * audioBass )
+              * ( 1.0 + 0.30 * clamp( audioSpread, 0.0, 1.0 ) );
 
     // Gentle dome; it breathes with the swell, and ROLLOFF sets its resting
     // height -- bass-heavy music presses the head flat, energy reaching up
     // into the highs lifts the crown.  (Neutral rolloff 0.5 -> factor 1.0.)
-    float dome = (1.0 - fr * fr) * (4.0 + 3.0 * audioSwell)
-               * (0.72 + 0.56 * clamp(audioRolloff, 0.0, 1.0));
+    float dome = ( 1.0 - fr * fr ) * ( 4.0 + 3.0 * audioSwell )
+                 * ( 0.72 + 0.56 * clamp( audioRolloff, 0.0, 1.0 ) );
 
-    vec2 p = vec2(cos(th), sin(th)) * R;
+    vec2  p = vec2( cos( th ), sin( th ) ) * R;
     float tilt = 0.65;
-    vec3 world = vec3(p.x, p.y * cos(tilt) + dome * 0.7,
-                      p.y * sin(tilt));
+    vec3  world = vec3( p.x, p.y * cos( tilt ) + dome * 0.7,
+                        p.y * sin( tilt ) );
 
-    vec3 vp = world + vec3(0.0, -3.0, 36.0);
+    vec3 vp = world + vec3( 0.0, -3.0, 36.0 );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(320.0 * (0.5 + 0.6 * r4) * px / dist, 3.0, 40.0 * px);   // sprite sweep round 3: fewer-bigger
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( 320.0 * ( 0.5 + 0.6 * r4 ) * px / dist, 3.0, 40.0 * px ); // sprite sweep round 3:
+                                                                                    // fewer-bigger
 
     // A soft ring of light rolls from the centre to the rim once per bar;
     // floret hue winds slowly along the spiral.
-    float ring = exp(-abs(fr - audioBarPhase) * 7.0);
+    float ring = exp( -abs( fr - audioBarPhase ) * 7.0 );
     // MODE sets the head's temperature before the key's hue wind is applied:
     // a minor key cools the sunflower to a blue-violet seed head, a major key
     // restores its warm gold.  The two ends are luminance-matched.
-    vec3 seedCol = mix(vec3(0.45, 0.55, 0.95), vec3(0.95, 0.65, 0.20),
-                       clamp(audioMode, 0.0, 1.0));
-    vec3 col = hueRot(seedCol, audioChromaHue + fr * 0.35);
-    col *= (0.40 + 0.50 * r4 + 1.4 * ring)
-         * (0.8 + 0.4 * audioSwell);
-    vCol = vec4(col * 0.60, 1.0);
+    vec3 seedCol = mix( vec3( 0.45, 0.55, 0.95 ), vec3( 0.95, 0.65, 0.20 ),
+                        clamp( audioMode, 0.0, 1.0 ) );
+    vec3 col = hueRot( seedCol, audioChromaHue + fr * 0.35 );
+    col *= ( 0.40 + 0.50 * r4 + 1.4 * ring )
+           * ( 0.8 + 0.4 * audioSwell );
+    vCol = vec4( col * 0.60, 1.0 );
 }

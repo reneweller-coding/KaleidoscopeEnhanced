@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file OctagrammicMirrorVault.frag
  * @brief OCTAGRAMMIC MIRROR VAULT: 8-pointed star ({8/3}-octagram) kinetic origami
@@ -14,70 +14,75 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the luminous star polygon palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
-uniform float foldP;   ///< Fold knob, 0..1.
-uniform float depthP;   ///< Depth knob, 0..1.
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
+uniform float foldP;  ///< Fold knob, 0..1.
+uniform float depthP; ///< Depth knob, 0..1.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// 2D 8-Pointed star polygon SDF
-float sdOctagram(vec2 p, float r, float m) {
+float sdOctagram( vec2 p, float r, float m )
+{
     // 8-Fold symmetry
-    float a = atan(p.y, p.x);
-    float l = length(p);
+    float a = atan( p.y, p.x );
+    float l = length( p );
     float seg = 3.14159265 / 4.0;
-    a = mod(a + seg * 0.5, seg) - seg * 0.5;
-    a = abs(a);
-    vec2 q = vec2(cos(a), sin(a)) * l;
+    a = mod( a + seg * 0.5, seg ) - seg * 0.5;
+    a = abs( a );
+    vec2 q = vec2( cos( a ), sin( a ) ) * l;
 
     // Star point facet lines
-    vec2 n = normalize(vec2(m, 1.0));
-    return dot(q - vec2(r, 0.0), n);
+    vec2 n = normalize( vec2( m, 1.0 ) );
+    return dot( q - vec2( r, 0.0 ), n );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float fld = (foldP > 0.01) ? foldP : 1.0;
-    float dpth = (depthP > 0.01) ? depthP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float fld = ( foldP > 0.01 ) ? foldP : 1.0;
+    float dpth = ( depthP > 0.01 ) ? depthP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
@@ -85,45 +90,47 @@ void main() {
 
     // Dome rotation & breathing
     float rotA = t * 0.2 + audioPhase * 0.1;
-    float cs = cos(rotA), sn = sin(rotA);
-    vec2 p = mat2(cs, -sn, sn, cs) * uv;
+    float cs = cos( rotA ), sn = sin( rotA );
+    vec2  p = mat2( cs, -sn, sn, cs ) * uv;
 
-    vec3 colAcc = vec3(0.0);
+    vec3  colAcc = vec3( 0.0 );
     float totalWeight = 0.0;
 
     // Accumulate across 5 nested star polygon vault shells
-    for (int k = 0; k < 5; k++) {
-        float kf = float(k);
+    for ( int k = 0; k < 5; k++ )
+    {
+        float kf = float( k );
         // Sub-bass breathes the whole shell stack open: starScale is the
         // octagram's circumradius, i.e. the dome's aperture.
-        float starScale = (0.5 + kf * 0.45) * dpth * (1.0 + 0.15 * sin(audioSwell * 2.5 + kf)) * (1.0 + 0.32 * audioSubBass);
+        float starScale = ( 0.5 + kf * 0.45 ) * dpth * ( 1.0 + 0.15 * sin( audioSwell * 2.5 + kf ) )
+                          * ( 1.0 + 0.32 * audioSubBass );
 
         // Facet fold sharpness
-        float mSharp = (0.7 + 0.3 * sin(t * 0.5 + kf) + 0.2 * audioFlux) * fld;
-        float dStar = sdOctagram(p, starScale, mSharp);
+        float mSharp = ( 0.7 + 0.3 * sin( t * 0.5 + kf ) + 0.2 * audioFlux ) * fld;
+        float dStar = sdOctagram( p, starScale, mSharp );
 
-        float edgeGlow = exp(-abs(dStar) * (25.0 + 12.0 * audioCentroid)) * glw;
+        float edgeGlow = exp( -abs( dStar ) * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
 
         // Sample texture mapped on star facet coordinate
-        vec2 sampleUV = fract(p * (0.4 + kf * 0.1) + 0.5);
-        vec3 texCol = img(sampleUV);
-        vec3 palCol = imgPalette(kf * 0.2 + t * 0.05);
+        vec2 sampleUV = fract( p * ( 0.4 + kf * 0.1 ) + 0.5 );
+        vec3 texCol = img( sampleUV );
+        vec3 palCol = imgPalette( kf * 0.2 + t * 0.05 );
 
-        vec3 starCol = mix(texCol, palCol, 0.5);
-        starCol += vec3(1.4, 1.1, 1.7) * edgeGlow * (1.0 + 2.5 * audioKick);
+        vec3 starCol = mix( texCol, palCol, 0.5 );
+        starCol += vec3( 1.4, 1.1, 1.7 ) * edgeGlow * ( 1.0 + 2.5 * audioKick );
 
-        float w = 1.0 / (1.0 + kf * 0.4);
+        float w = 1.0 / ( 1.0 + kf * 0.4 );
         colAcc += starCol * w;
         totalWeight += w;
     }
 
-    vec3 finalCol = colAcc / max(0.001, totalWeight);
+    vec3 finalCol = colAcc / max( 0.001, totalWeight );
 
     // Central infinite light funnel flare
-    float rCenter = length(uv);
-    float funnelBloom = exp(-rCenter * 6.0) * (1.2 + 2.5 * audioKick);
-    finalCol += imgPalette(0.8) * funnelBloom;
+    float rCenter = length( uv );
+    float funnelBloom = exp( -rCenter * 6.0 ) * ( 1.2 + 2.5 * audioKick );
+    finalCol += imgPalette( 0.8 ) * funnelBloom;
 
-    finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    finalCol = pow( finalCol, vec3( 0.88 ) );
+    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
 }

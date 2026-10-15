@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PrismaticCrystalChamber.frag
  * @brief PRISMATIC CRYSTAL CHAMBER: 100% viewport-filling infinity mirror room
@@ -8,34 +8,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * chromatic dispersion, diamond facet sparkling, and kaleidoscopic symmetry.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float facetP;
 uniform float dispersionP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -43,118 +45,128 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) {
-    p = fract(p * vec2(123.34, 345.45));
-    p += dot(p, p + 34.345);
-    return fract(p.x * p.y);
+float hash21( vec2 p )
+{
+    p = fract( p * vec2( 123.34, 345.45 ) );
+    p += dot( p, p + 34.345 );
+    return fract( p.x * p.y );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float fct  = (facetP      > 0.0) ? facetP      : 1.0;
-    float disp = (dispersionP > 0.0) ? dispersionP : 1.0;
-    float spd  = (speedP      > 0.0) ? speedP      : 1.0;
-    float hue  = (hueP        > 0.0) ? hueP        : 0.0;
+void main()
+{
+    float fct = ( facetP > 0.0 ) ? facetP : 1.0;
+    float disp = ( dispersionP > 0.0 ) ? dispersionP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.3 * spd + audioAdvance * 0.2;
 
     // Ray setup inside crystal mirror room
-    vec3 ro = vec3(sin(t * 0.5) * 0.8, cos(t * 0.4) * 0.6, -2.5);
-    vec3 rd = normalize(vec3(uv, 1.4));
+    vec3 ro = vec3( sin( t * 0.5 ) * 0.8, cos( t * 0.4 ) * 0.6, -2.5 );
+    vec3 rd = normalize( vec3( uv, 1.4 ) );
 
     // Dynamic rotation of crystal chamber mirrors
     float rotAngle = t * 0.4 + audioPhase * 0.15;
-    float cr = cos(rotAngle), sr = sin(rotAngle);
-    rd.xy = vec2(rd.x * cr - rd.y * sr, rd.x * sr + rd.y * cr);
+    float cr = cos( rotAngle ), sr = sin( rotAngle );
+    rd.xy = vec2( rd.x * cr - rd.y * sr, rd.x * sr + rd.y * cr );
 
-    vec3 col = vec3(0.0);
-    vec3 curP = ro;
-    vec3 curDir = rd;
+    vec3  col = vec3( 0.0 );
+    vec3  curP = ro;
+    vec3  curDir = rd;
     float throughput = 1.0;
 
     // Multi-bounce crystal reflection trace
-    for (int bounce = 0; bounce < 4; ++bounce) {
+    for ( int bounce = 0; bounce < 4; ++bounce )
+    {
         // Intersect bounding crystal facet box / polyhedron
-        vec3 boxSize = vec3(1.4, 1.4, 1.4) * (1.0 + 0.2 * sin(audioAdvance * 0.1));
-        vec3 t1 = (-boxSize - curP) / curDir;
-        vec3 t2 = ( boxSize - curP) / curDir;
-        vec3 tMax = max(t1, t2);
-        float dist = min(min(tMax.x, tMax.y), tMax.z);
+        vec3  boxSize = vec3( 1.4, 1.4, 1.4 ) * ( 1.0 + 0.2 * sin( audioAdvance * 0.1 ) );
+        vec3  t1 = ( -boxSize - curP ) / curDir;
+        vec3  t2 = ( boxSize - curP ) / curDir;
+        vec3  tMax = max( t1, t2 );
+        float dist = min( min( tMax.x, tMax.y ), tMax.z );
 
         curP += curDir * dist;
 
         // Facet normal calculation
-        vec3 normal = vec3(0.0);
-        if (abs(curP.x - boxSize.x) < 1e-3) normal = vec3(-1.0, 0.0, 0.0);
-        else if (abs(curP.x + boxSize.x) < 1e-3) normal = vec3(1.0, 0.0, 0.0);
-        else if (abs(curP.y - boxSize.y) < 1e-3) normal = vec3(0.0, -1.0, 0.0);
-        else if (abs(curP.y + boxSize.y) < 1e-3) normal = vec3(0.0, 1.0, 0.0);
-        else if (abs(curP.z - boxSize.z) < 1e-3) normal = vec3(0.0, 0.0, -1.0);
-        else normal = vec3(0.0, 0.0, 1.0);
+        vec3 normal = vec3( 0.0 );
+        if ( abs( curP.x - boxSize.x ) < 1e-3 )
+            normal = vec3( -1.0, 0.0, 0.0 );
+        else if ( abs( curP.x + boxSize.x ) < 1e-3 )
+            normal = vec3( 1.0, 0.0, 0.0 );
+        else if ( abs( curP.y - boxSize.y ) < 1e-3 )
+            normal = vec3( 0.0, -1.0, 0.0 );
+        else if ( abs( curP.y + boxSize.y ) < 1e-3 )
+            normal = vec3( 0.0, 1.0, 0.0 );
+        else if ( abs( curP.z - boxSize.z ) < 1e-3 )
+            normal = vec3( 0.0, 0.0, -1.0 );
+        else
+            normal = vec3( 0.0, 0.0, 1.0 );
 
         // Facet bevel displacement
-        vec2 facetUV = (normal.x != 0.0) ? curP.yz : ((normal.y != 0.0) ? curP.xz : curP.xy);
+        vec2 facetUV = ( normal.x != 0.0 ) ? curP.yz : ( ( normal.y != 0.0 ) ? curP.xz : curP.xy );
         facetUV *= 2.5 * fct;
-        vec2 facetCell = floor(facetUV);
-        vec2 facetF = fract(facetUV) - vec2(0.5);
+        vec2 facetCell = floor( facetUV );
+        vec2 facetF = fract( facetUV ) - vec2( 0.5 );
 
         // Perturb normal along crystal facet bevels
-        normal = normalize(normal + vec3(facetF * 0.4, 0.0));
+        normal = normalize( normal + vec3( facetF * 0.4, 0.0 ) );
 
         // Sample photo with chromatic dispersion (RGB channel offset)
-        vec2 sampleUV = facetUV * 0.25 + vec2(0.5) + vec2(float(bounce) * 0.1);
-        float dispAmt = 0.02 * disp * (1.0 + 0.5 * audioKick);
+        vec2  sampleUV = facetUV * 0.25 + vec2( 0.5 ) + vec2( float( bounce ) * 0.1 );
+        float dispAmt = 0.02 * disp * ( 1.0 + 0.5 * audioKick );
 
-        vec3 photoR = img(fract(sampleUV + vec2(dispAmt, 0.0)));
-        vec3 photoG = img(fract(sampleUV));
-        vec3 photoB = img(fract(sampleUV - vec2(dispAmt, 0.0)));
-        vec3 photoSample = vec3(photoR.r, photoG.g, photoB.b);
+        vec3 photoR = img( fract( sampleUV + vec2( dispAmt, 0.0 ) ) );
+        vec3 photoG = img( fract( sampleUV ) );
+        vec3 photoB = img( fract( sampleUV - vec2( dispAmt, 0.0 ) ) );
+        vec3 photoSample = vec3( photoR.r, photoG.g, photoB.b );
 
         // Dichroic glass transmission & reflection color
-        vec3 dichroicCol = imgPalette((float(bounce) * 1.5 + audioPhase) * 0.159);
+        vec3 dichroicCol = imgPalette( ( float( bounce ) * 1.5 + audioPhase ) * 0.159 );
 
         // Sparkling diamond glints on facet vertices
-        float glintHash = hash21(facetCell + float(bounce) * 17.0);
-        float glint = pow(max(dot(reflect(curDir, normal), normalize(vec3(0.5, 0.8, -0.6))), 0.0), 48.0);
-        glint *= (1.0 + 1.2 * audioHigh * glintHash);   // ohne Blink-Gate
+        float glintHash = hash21( facetCell + float( bounce ) * 17.0 );
+        float glint = pow( max( dot( reflect( curDir, normal ), normalize( vec3( 0.5, 0.8, -0.6 ) ) ), 0.0 ), 48.0 );
+        glint *= ( 1.0 + 1.2 * audioHigh * glintHash ); // ohne Blink-Gate
 
         // KANTEN-FADE: wenn ein Bounce von einer Wand zur Nachbarwand
         // wechselt, springt sein Foto-Ausschnitt -- nahe der Kante wird der
         // Beitrag deshalb ausgeblendet, aus dem harten Texturwechsel wird
         // eine Ueberblendung.
-        vec3 an = abs(curP) / boxSize;
-        float second = max(min(an.x, an.y), min(max(an.x, an.y), an.z));
-        float edgeW = smoothstep(1.0, 0.86, second);
-        col += (photoSample * dichroicCol * 1.4 + vec3(1.0) * glint * 2.0)
-             * throughput * edgeW;
+        vec3  an = abs( curP ) / boxSize;
+        float second = max( min( an.x, an.y ), min( max( an.x, an.y ), an.z ) );
+        float edgeW = smoothstep( 1.0, 0.86, second );
+        col += ( photoSample * dichroicCol * 1.4 + vec3( 1.0 ) * glint * 2.0 )
+               * throughput * edgeW;
 
         // Next bounce reflection
-        curDir = reflect(curDir, normal);
+        curDir = reflect( curDir, normal );
         throughput *= 0.65;
     }
 
-    col = hueRot(col, hue);   // chromaHue handled inside imgPalette
-    col = pow(col, vec3(0.88)); // Contrast boost
-    col += vec3(0.03, 0.02, 0.06) * audioSwell;
+    col = hueRot( col, hue );       // chromaHue handled inside imgPalette
+    col = pow( col, vec3( 0.88 ) ); // Contrast boost
+    col += vec3( 0.03, 0.02, 0.06 ) * audioSwell;
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file LorenzAttractorHyperLoom.frag
  * @brief LORENZ ATTRACTOR HYPER LOOM: High-density chaotic Lorenz attractor trajectory
@@ -14,55 +14,59 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the chaotic attractor rainbow palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float rhoP;
 uniform float trailP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float rMod = (rhoP > 0.01) ? rhoP : 1.0;
-    float trl = (trailP > 0.01) ? trailP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float rMod = ( rhoP > 0.01 ) ? rhoP : 1.0;
+    float trl = ( trailP > 0.01 ) ? trailP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
@@ -71,12 +75,12 @@ void main() {
     // Lorenz parameters: sigma = 10, beta = 8/3, rho modulated by audio
     float sigma = 10.0;
     float beta = 2.666666;
-    float rho = (28.0 + 8.0 * sin(t * 0.4) + 6.0 * audioCentroid) * rMod;
+    float rho = ( 28.0 + 8.0 * sin( t * 0.4 ) + 6.0 * audioCentroid ) * rMod;
 
     // 3D Point projected onto 2D screen coordinate frame
     float rotA = t * 0.2 + audioPhase * 0.1;
-    float cs = cos(rotA), sn = sin(rotA);
-    vec2 pRot = mat2(cs, -sn, sn, cs) * uv * (35.0 + 5.0 * sin(audioSwell * 2.0));
+    float cs = cos( rotA ), sn = sin( rotA );
+    vec2  pRot = mat2( cs, -sn, sn, cs ) * uv * ( 35.0 + 5.0 * sin( audioSwell * 2.0 ) );
 
     // Integrated trajectory point simulation (multi-step RK2 integration),
     // seeded from a FIXED point shared by every pixel -- not the pixel's own
@@ -84,49 +88,50 @@ void main() {
     // every pixel trivially starting AT distance zero from itself (which let
     // the angle-only lobePhase background dominate the whole frame with a
     // generic pinwheel instead of the intended attractor-wing glow).
-    vec3 pLorenz = vec3(1.0, 1.0, 25.0);
+    vec3  pLorenz = vec3( 1.0, 1.0, 25.0 );
     float minDist = 1e5;
     float energyAcc = 0.0;
 
     float dt = 0.012 * trl;
 
-    for (int i = 0; i < 24; i++) {
+    for ( int i = 0; i < 24; i++ )
+    {
         // Lorenz ODE derivatives
-        float dx = sigma * (pLorenz.y - pLorenz.x);
-        float dy = pLorenz.x * (rho - pLorenz.z) - pLorenz.y;
+        float dx = sigma * ( pLorenz.y - pLorenz.x );
+        float dy = pLorenz.x * ( rho - pLorenz.z ) - pLorenz.y;
         float dz = pLorenz.x * pLorenz.y - beta * pLorenz.z;
 
-        pLorenz += vec3(dx, dy, dz) * dt;
+        pLorenz += vec3( dx, dy, dz ) * dt;
 
         // Project 3D Lorenz attractor onto screen plane. Sub-bass widens the
         // projection, driving the two fixed-point lobes apart on screen; done
         // here rather than on beta so the ODE integration itself stays at its
         // tuned, stable parameters.
-        vec2 pProj = pLorenz.xy * (1.0 + 0.35 * audioSubBass) - vec2(0.0, 5.0);
-        float d = length(pRot - pProj);
-        minDist = min(minDist, d);
-        energyAcc += exp(-d * 0.4);
+        vec2  pProj = pLorenz.xy * ( 1.0 + 0.35 * audioSubBass ) - vec2( 0.0, 5.0 );
+        float d = length( pRot - pProj );
+        minDist = min( minDist, d );
+        energyAcc += exp( -d * 0.4 );
     }
 
     // Dynamic texture sample mapped on attractor coordinates
-    vec2 sampleUV = fract(pRot * 0.05 + 0.5);
-    vec3 texCol = img(sampleUV);
+    vec2 sampleUV = fract( pRot * 0.05 + 0.5 );
+    vec3 texCol = img( sampleUV );
 
     // Glowing trajectory ribbon lines
-    float lineGlow = exp(-minDist * (1.2 + 0.8 * audioCentroid)) * glw;
+    float lineGlow = exp( -minDist * ( 1.2 + 0.8 * audioCentroid ) ) * glw;
 
     // Palette mixing across Lorenz lobes
-    float lobePhase = atan(pRot.y, pRot.x) / 6.2831853 + length(pRot) * 0.02;
-    vec3 palA = imgPalette(lobePhase + t * 0.05);
-    vec3 palB = imgPalette(lobePhase + 0.5);
-    vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(energyAcc * 0.3));
+    float lobePhase = atan( pRot.y, pRot.x ) / 6.2831853 + length( pRot ) * 0.02;
+    vec3  palA = imgPalette( lobePhase + t * 0.05 );
+    vec3  palB = imgPalette( lobePhase + 0.5 );
+    vec3  col = mix( palA, palB, 0.5 + 0.5 * sin( energyAcc * 0.3 ) );
 
-    col = mix(col, texCol, 0.35 + 0.15 * audioValence);
+    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
 
     // Add glowing attractor wings and kick flashes
-    vec3 wingTint = vec3(1.3, 1.1, 1.8) * (lineGlow + energyAcc * 0.05) * (1.0 + 2.5 * audioKick);
+    vec3 wingTint = vec3( 1.3, 1.1, 1.8 ) * ( lineGlow + energyAcc * 0.05 ) * ( 1.0 + 2.5 * audioKick );
     col += wingTint;
 
-    col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col = pow( col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

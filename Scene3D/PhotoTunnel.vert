@@ -10,48 +10,50 @@
 // feel comes from the scrolling texture + the weaving tunnel path, so the
 // connected mesh never tears.  attrA.xy = u (angle) / w (length).
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;    ///< Bass band level, 0..1.
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 
 out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vDist;   ///< Distance (from the vertex stage).
+out float vDist; ///< Distance (from the vertex stage).
 out float vAng;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float u = attrA.x;                     // around the tube
-    float w = attrA.y;                     // along the tube
+    float u = attrA.x; // around the tube
+    float w = attrA.y; // along the tube
 
-    float z   = 1.5 + w * 150.0;
+    float z = 1.5 + w * 150.0;
     float ang = u * 6.2831853;
 
     // Kick pressure wave runs away from the camera; bass breathes the tube.
-    float pulse = exp(-abs(z - (3.0 + 40.0 * fract(time * 0.4))) * 0.10)
-                * audioKick;
-    float r = 10.0 * (1.0 + 0.10 * audioSwell)
-            * (1.0 - 0.10 * pulse);
+    float pulse = exp( -abs( z - ( 3.0 + 40.0 * fract( time * 0.4 ) ) ) * 0.10 )
+                  * audioKick;
+    float r = 10.0 * ( 1.0 + 0.10 * audioSwell )
+              * ( 1.0 - 0.10 * pulse );
 
     // The tunnel itself weaves — that is the "steering".
-    vec2 path = vec2(6.0 * sin(z * 0.045 + time * 0.30),
-                     4.0 * sin(z * 0.034 + time * 0.23 + 2.0));
+    vec2 path = vec2( 6.0 * sin( z * 0.045 + time * 0.30 ),
+                      4.0 * sin( z * 0.034 + time * 0.23 + 2.0 ) );
 
-    vec3 vp = vec3(cos(ang) * r + path.x, sin(ang) * r + path.y, z);
+    vec3 vp = vec3( cos( ang ) * r + path.x, sin( ang ) * r + path.y, z );
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.06 * gl_Position.w;
 
-    vUV   = vec2(u, w);
+    vUV = vec2( u, w );
     vDist = z;
-    vAng  = ang;
+    vAng = ang;
 }

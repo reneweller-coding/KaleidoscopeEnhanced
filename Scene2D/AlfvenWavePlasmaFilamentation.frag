@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file AlfvenWavePlasmaFilamentation.frag
  * @brief ALFVÉN WAVE PLASMA FILAMENTATION: Torsional shear Alfvén waves in solar coronal flux tubes.
@@ -18,25 +18,26 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   phaseMixP      float phase-mixing shear gradient strength    (0.5..2.2)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float filamentCountP;
 uniform float alfvenSpeedP;
@@ -44,72 +45,74 @@ uniform float jouleHeatP;
 uniform float phaseMixP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Tints a colour toward the house palette at t, keeping its brightness.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
+    vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.45 + audioAdvance * 0.4;
-    
+
     // Magnetic guide field aligned along Y-axis
-    float vA = (alfvenSpeedP > 0.01 ? alfvenSpeedP : 1.3);
-    float nFil = (filamentCountP > 1.0 ? filamentCountP : 6.0);
-    
+    float vA = ( alfvenSpeedP > 0.01 ? alfvenSpeedP : 1.3 );
+    float nFil = ( filamentCountP > 1.0 ? filamentCountP : 6.0 );
+
     // Torsional shear Alfvén wave displacement: delta B_x(x, y, t)
-    float kMix = (phaseMixP > 0.01 ? phaseMixP : 1.2);
-    float alfvenPhase = uv.y * 12.0 - t * 4.0 * vA + sin(uv.x * nFil * 3.14159265 * kMix) * 2.0;
-    
-    float waveAmp = sin(alfvenPhase + audioPhase * 0.3) * 0.12;
+    float kMix = ( phaseMixP > 0.01 ? phaseMixP : 1.2 );
+    float alfvenPhase = uv.y * 12.0 - t * 4.0 * vA + sin( uv.x * nFil * 3.14159265 * kMix ) * 2.0;
+
+    float waveAmp = sin( alfvenPhase + audioPhase * 0.3 ) * 0.12;
     float dx = uv.x + waveAmp;
-    
+
     // Filamentary current sheets: j_z = d(delta B_x)/dy
-    float filId = floor(dx * nFil);
-    float localFilX = fract(dx * nFil) - 0.5;
-    float currentSheet = exp(-localFilX * localFilX * 35.0);
-    
+    float filId = floor( dx * nFil );
+    float localFilX = fract( dx * nFil ) - 0.5;
+    float currentSheet = exp( -localFilX * localFilX * 35.0 );
+
     // Phase-mixing Joule dissipation heating
-    float jouleHeating = pow(abs(cos(alfvenPhase)), 2.5) * currentSheet;
-    jouleHeating *= (1.0 + 3.5 * audioKick) * (jouleHeatP > 0.01 ? jouleHeatP : 1.3);
-    
+    float jouleHeating = pow( abs( cos( alfvenPhase ) ), 2.5 ) * currentSheet;
+    jouleHeating *= ( 1.0 + 3.5 * audioKick ) * ( jouleHeatP > 0.01 ? jouleHeatP : 1.3 );
+
     // Coronal EUV plasma colors
-    vec3 coronalEUV = vec3(0.1, 0.9, 0.7);
-    vec3 flareAmber  = vec3(1.0, 0.45, 0.1);
-    vec3 heatWhite   = vec3(1.0, 0.95, 0.9);
-    
-    vec3 colCorona = palTint(mix(coronalEUV, flareAmber, clamp(jouleHeating, 0.0, 1.0)), uv.y * 0.2 + audioCentroid, 0.26);
-    
+    vec3 coronalEUV = vec3( 0.1, 0.9, 0.7 );
+    vec3 flareAmber = vec3( 1.0, 0.45, 0.1 );
+    vec3 heatWhite = vec3( 1.0, 0.95, 0.9 );
+
+    vec3 colCorona = palTint( mix( coronalEUV, flareAmber, clamp( jouleHeating, 0.0, 1.0 ) ),
+                              uv.y * 0.2 + audioCentroid, 0.26 );
+
     // Background photo sampling
     vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img(bgUv) * 0.25;
-    
+    vec3 bg = img( bgUv ) * 0.25;
+
     vec3 col = bg;
-    col += colCorona * currentSheet * (0.8 + 0.4 * audioSwell) * 1.6;
+    col += colCorona * currentSheet * ( 0.8 + 0.4 * audioSwell ) * 1.6;
     col += heatWhite * jouleHeating * 2.4;
-    col += colCorona * abs(waveAmp * 5.0) * 1.2;
-    col += colCorona * (audioKick * 0.35);
-    
+    col += colCorona * abs( waveAmp * 5.0 ) * 1.2;
+    col += colCorona * ( audioKick * 0.35 );
+
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

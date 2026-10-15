@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file NeuralConnectomeGlow.frag
  * @brief Fragment stage for NeuralConnectomeGlow: deep tissue dark with
@@ -13,89 +13,95 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Audio Reactivity: audioSpectrum[32] -> spike brightness per axon;
  *                   audioKick -> soma flash; audioSwell -> tissue light; audioLevel.
  */
-in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
-in vec3  vWorld;   ///< World position (from the vertex stage).
-in float vKind;   ///< Element kind (from the vertex stage).
+in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in float vKind;     ///< Element kind (from the vertex stage).
 in float vBand;
-in float vId;   ///< Instance or element id (from the vertex stage).
+in float vId; ///< Instance or element id (from the vertex stage).
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D tex0;              ///< The current photo.
+uniform sampler2D tex1;              ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;     ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     sceneAdvance;      ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float     sceneTime;         ///< Seconds since this scene was activated.
+uniform float     audioSpectrum[32]; ///< Spectrum bands, 0..1.
+uniform float     audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float     audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     audioLevel;        ///< Overall loudness, 0..1.
+uniform float     audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                     ///< backwards).
+uniform float audioValence;          ///< Mood valence: 0 dark .. 1 bright.
+uniform float hueP;                  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float tissue = 0.7 + 0.6 * clamp(audioSwell, 0.0, 1.0);
-    int band = int(clamp(vBand, 0.0, 31.0));
-    float e = clamp(audioSpectrum[band] * 1.6, 0.0, 1.0);
-    vec3 cellCol = mix(vec3(0.5, 0.8, 1.0), imgPalette(hue * 0.159 + float(band) / 32.0), 0.5);
-    vec3 col;
-    if (vKind < -0.5)
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float tissue = 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
+    int   band = int( clamp( vBand, 0.0, 31.0 ) );
+    float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
+    vec3  cellCol = mix( vec3( 0.5, 0.8, 1.0 ), imgPalette( hue * 0.159 + float( band ) / 32.0 ), 0.5 );
+    vec3  col;
+    if ( vKind < -0.5 )
     {
         vec2 uv = vTexCoord;
-        col = img(uv) * imgPalette(hue * 0.159 + 0.6) * 0.25 * tissue + vec3(0.02, 0.02, 0.04);
-        fragColor = vec4(col, 1.0);
+        col = img( uv ) * imgPalette( hue * 0.159 + 0.6 ) * 0.25 * tissue + vec3( 0.02, 0.02, 0.04 );
+        fragColor = vec4( col, 1.0 );
         return;
     }
-    if (vKind < 0.5)
+    if ( vKind < 0.5 )
     {
         // Soma: round, glowing, flashing on the kick.
-        vec2 d = (vTexCoord - 0.5) * 2.0;
-        float r = length(d);
-        if (r > 1.0) discard;
-        float sh = sqrt(1.0 - r * r);
-        col = cellCol * (0.5 + 0.9 * sh) * (1.0 + 0.8 * e) * tissue;
-        col += cellCol * exp(-r * r * 3.0) * audioKick * 1.2;
+        vec2  d = ( vTexCoord - 0.5 ) * 2.0;
+        float r = length( d );
+        if ( r > 1.0 )
+            discard;
+        float sh = sqrt( 1.0 - r * r );
+        col = cellCol * ( 0.5 + 0.9 * sh ) * ( 1.0 + 0.8 * e ) * tissue;
+        col += cellCol * exp( -r * r * 3.0 ) * audioKick * 1.2;
     }
-    else if (vKind < 1.5)
+    else if ( vKind < 1.5 )
     {
         // Dendrite: faint fibre.
-        col = cellCol * 0.5 * tissue * (0.7 + 0.6 * e);
+        col = cellCol * 0.5 * tissue * ( 0.7 + 0.6 * e );
     }
     else
     {
         // Axon: the fibre, and the spike travelling along it (uv.x = along).
         float clock = sceneAdvance * 0.8 + sceneTime * 0.2;
-        float ph = fract(clock * (0.4 + 0.3 * hash11(vId * 3.3)) + hash11(vId * 5.1));
-        float pulse = exp(-pow((vTexCoord.x - ph) * 14.0, 2.0));
-        float pulse2 = exp(-pow((vTexCoord.x - fract(ph + 0.5)) * 14.0, 2.0)) * 0.5;
-        col = cellCol * 0.55 * tissue + cellCol * (pulse + pulse2) * (0.8 + 1.6 * e) * 2.5;
+        float ph = fract( clock * ( 0.4 + 0.3 * hash11( vId * 3.3 ) ) + hash11( vId * 5.1 ) );
+        float pulse = exp( -pow( ( vTexCoord.x - ph ) * 14.0, 2.0 ) );
+        float pulse2 = exp( -pow( ( vTexCoord.x - fract( ph + 0.5 ) ) * 14.0, 2.0 ) ) * 0.5;
+        col = cellCol * 0.55 * tissue + cellCol * ( pulse + pulse2 ) * ( 0.8 + 1.6 * e ) * 2.5;
     }
-    float fog = 1.0 - exp(-max(vWorld.z - 6.0, 0.0) * 0.05);
-    col = mix(col, vec3(0.01, 0.01, 0.02), clamp(fog, 0.0, 0.7));
+    float fog = 1.0 - exp( -max( vWorld.z - 6.0, 0.0 ) * 0.05 );
+    col = mix( col, vec3( 0.01, 0.01, 0.02 ), clamp( fog, 0.0, 0.7 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

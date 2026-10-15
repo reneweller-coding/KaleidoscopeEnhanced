@@ -1,6 +1,7 @@
 /**
  * @file MeshImport.h
- * @brief Loads a static 3D model (.glb/.gltf via cgltf, .obj via tinyobjloader) into the vertex/material layout Scene3DShader's geom="mesh" kind expects.
+ * @brief Loads a static 3D model (.glb/.gltf via cgltf, .obj via tinyobjloader) into the vertex/material layout
+ * Scene3DShader's geom="mesh" kind expects.
  */
 #pragma once
 // Source/MeshImport.h
@@ -32,21 +33,26 @@
 #include <vector>
 
 /**
- * @brief Host-side result of loading a mesh file: flattened geometry plus (optionally) its packed material texture layers, ready for Scene3DShader::buildGeometry() to upload.
+ * @brief Host-side result of loading a mesh file: flattened geometry plus (optionally) its packed material texture
+ * layers, ready for Scene3DShader::buildGeometry() to upload.
  */
 struct MeshAsset
 {
-	std::vector<float> vertices;      ///< 8 floats/vertex (attrA.xyzw, attrB.xyzw), GL_TRIANGLES, non-indexed.
-	int  materialLayers = 0;          ///< 0 = none, 1 = base color, 2 = + metallic-roughness, 3 = + tangent-space normal (layer index is fixed, so a shader tests the count).
-	int  materialW = 0;                ///< Width, in texels, shared by every material layer.
-	int  materialH = 0;                ///< Height, in texels, shared by every material layer.
-	std::vector<unsigned char> materialRGBA;   ///< materialLayers * materialW * materialH * 4 bytes, layer 0 first.
+    std::vector<float> vertices;              ///< 8 floats/vertex (attrA.xyzw, attrB.xyzw), GL_TRIANGLES, non-indexed.
+    int materialLayers = 0; ///< 0 = none, 1 = base color, 2 = + metallic-roughness, 3 = + tangent-space normal (layer
+                            ///< index is fixed, so a shader tests the count).
+    int                        materialW = 0; ///< Width, in texels, shared by every material layer.
+    int                        materialH = 0; ///< Height, in texels, shared by every material layer.
+    std::vector<unsigned char> materialRGBA;  ///< materialLayers * materialW * materialH * 4 bytes, layer 0 first.
 };
 
 /**
  * @brief Loads a mesh file into host memory.
- * @param path Filesystem path to a .glb/.gltf or .obj file, resolved exactly like every other asset path this codebase already opens directly (no extra base-directory logic).
- * @param out Filled with flattened vertex data and, if the source had one, a packed material texture. Left empty on failure.
- * @return true if at least one triangle was loaded; false leaves `out` empty so the caller can fail soft (an empty-VBO scene simply draws nothing, matching every other geom kind's convention).
+ * @param path Filesystem path to a .glb/.gltf or .obj file, resolved exactly like every other asset path this codebase
+ * already opens directly (no extra base-directory logic).
+ * @param out Filled with flattened vertex data and, if the source had one, a packed material texture. Left empty on
+ * failure.
+ * @return true if at least one triangle was loaded; false leaves `out` empty so the caller can fail soft (an empty-VBO
+ * scene simply draws nothing, matching every other geom kind's convention).
  */
 bool loadMeshAsset( const std::string &path, MeshAsset &out );

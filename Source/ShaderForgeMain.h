@@ -13,8 +13,9 @@ bool shaderForgeIsCommand( int argc, char *argv[] );
  *
  * @code
  *   --forge FRAG OUT.bin TARGETS VERT   build, warm-draw into TARGETS RGBA32F targets, write the binary
- *   --forge-serve                       the same for every line "FRAG\tOUT.bin\tTARGETS\tVERT" on stdin (the app's helper)
+ *   --forge-serve                       the same for every line "FRAG\tOUT.bin\tTARGETS\tVERT" on stdin (the app's
+ * helper)
  *   --forgeload BIN [TARGETS]           time loading a binary and its first draw (diagnosis)
  * @endcode
  */
-int  shaderForgeMain( int argc, char *argv[] );
+int shaderForgeMain( int argc, char *argv[] );

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PageTurnFolio.frag
  * @brief TRANSITION PAGE TURN FOLIO: the outgoing scene is a sheet of paper
@@ -27,136 +27,148 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: tiltP, stiffP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float tiltP;   ///< Tilt knob, 0..1.
+uniform float tiltP; ///< Tilt knob, 0..1.
 uniform float stiffP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tlt   = clamp(tiltP,  0.0, 1.0);
-    float stiff = (stiffP > 0.0) ? stiffP : 1.0;
-    float hue   = (hueP   > 0.0) ? hueP   : 0.0;
+    float tlt = clamp( tiltP, 0.0, 1.0 );
+    float stiff = ( stiffP > 0.0 ) ? stiffP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);   // 0 = old sheet, 1 = new scene
-    float arc = sin(d * PI);                            // exactly 0 at both ends
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 ); // 0 = old sheet, 1 = new scene
+    float arc = sin( d * PI );                        // exactly 0 at both ends
 
     // The sheet's own frame: the fold line runs along q.y, the turn along q.x.
-    float tilt = mix(-0.38, 0.38, tlt);
-    mat2  toQ  = rot2D(-tilt), toP = rot2D(tilt);
-    vec2  q    = toQ * p;
-    float halfW = 0.5 * (aspect * abs(cos(tilt)) + abs(sin(tilt))) + 0.03;
+    float tilt = mix( -0.38, 0.38, tlt );
+    mat2  toQ = rot2D( -tilt ), toP = rot2D( tilt );
+    vec2  q = toQ * p;
+    float halfW = 0.5 * ( aspect * abs( cos( tilt ) ) + abs( sin( tilt ) ) ) + 0.03;
 
     // Radius: stiff paper wraps wide, and the roll tightens as more sheet is
     // taken up.  No audio at all on the radius: even the slow swell made the
     // roll breathe in and out while the page was turning.
-    float radius = mix(0.46, 0.13, d) * stiff;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float radius = mix( 0.46, 0.13, d ) * stiff; // constant: an envelope on a scale re-lays the whole pattern (speed
+                                                 // pass 14.09.2026)
     // The fold sweeps far enough past both edges that the roll is off-screen at
     // both ends of the transition -- that is what makes the endpoints exact.
-    float cx = mix(halfW + 0.05, -halfW - 2.0 * 0.46 * stiff - 0.20, d);
-    float sheetLen = max(0.0, halfW - cx);              // material already lifted
+    float cx = mix( halfW + 0.05, -halfW - 2.0 * 0.46 * stiff - 0.20, d );
+    float sheetLen = max( 0.0, halfW - cx ); // material already lifted
 
-    vec3 paper = mix(vec3(0.94, 0.92, 0.87), vec3(0.97, 0.94, 0.83),
-                     clamp(audioMid * 2.0, 0.0, 1.0));
+    vec3 paper = mix( vec3( 0.94, 0.92, 0.87 ), vec3( 0.97, 0.94, 0.83 ),
+                      clamp( audioMid * 2.0, 0.0, 1.0 ) );
 
-    vec3 col;
-    float w = (q.x - cx - radius) / max(radius, 1e-4);   // -1 .. 1 across the roll
+    vec3  col;
+    float w = ( q.x - cx - radius ) / max( radius, 1e-4 ); // -1 .. 1 across the roll
 
-    if (q.x < cx)
+    if ( q.x < cx )
     {
         // Still flat on the table: the outgoing scene, untouched.
-        col = texture(tex0, uv).rgb;
+        col = texture( tex0, uv ).rgb;
     }
-    else if (w <= 1.0)
+    else if ( w <= 1.0 )
     {
         // Inside the roll band.  The horizontal offset is the sine of the wrap
         // angle; the angle gives both the arc length and the surface normal.
-        float phi = asin(clamp(w, -1.0, 1.0));           // -PI/2 .. PI/2
-        float s   = radius * (phi + PI * 0.5);           // arc length from the fold
+        float phi = asin( clamp( w, -1.0, 1.0 ) ); // -PI/2 .. PI/2
+        float s = radius * ( phi + PI * 0.5 );     // arc length from the fold
 
-        if (s > sheetLen)
+        if ( s > sheetLen )
         {
             // Past the free edge: the sheet does not reach here any more.
-            vec3 under = texture(tex1, uv).rgb;
-            col = under * (1.0 - 0.45 * arc);
+            vec3 under = texture( tex1, uv ).rgb;
+            col = under * ( 1.0 - 0.45 * arc );
         }
         else
         {
             // Sample the sheet at the page position that wrapped to here.
-            vec2 pageQ  = vec2(cx + s, q.y);
-            vec2 pageUv = (toP * pageQ) / vec2(aspect, 1.0) + 0.5;
-            vec3 sheet  = texture(tex0, clamp(pageUv, 0.0, 1.0)).rgb;
+            vec2 pageQ = vec2( cx + s, q.y );
+            vec2 pageUv = ( toP * pageQ ) / vec2( aspect, 1.0 ) + 0.5;
+            vec3 sheet = texture( tex0, clamp( pageUv, 0.0, 1.0 ) ).rgb;
 
             // Shading from the cylinder's own normal, light from the upper left.
-            vec2  n   = vec2(sin(phi), cos(phi));
-            vec2  lig = normalize(vec2(-0.5, 1.0));
-            float lam = clamp(dot(n, lig), 0.0, 1.0);
+            vec2  n = vec2( sin( phi ), cos( phi ) );
+            vec2  lig = normalize( vec2( -0.5, 1.0 ) );
+            float lam = clamp( dot( n, lig ), 0.0, 1.0 );
             float shade = 0.34 + 0.66 * lam;
-            float spec  = exp(-pow((dot(n, lig) - 0.96) / 0.10, 2.0));
+            float spec = exp( -pow( ( dot( n, lig ) - 0.96 ) / 0.10, 2.0 ) );
 
             // Thin paper: a little of what lies behind bleeds through, most of
             // it where the sheet is turned edge-on to the light.
-            vec3  behind = texture(tex1, clamp(uv, 0.0, 1.0)).rgb;
-            float through = 0.22 * pow(clamp(abs(w), 0.0, 1.0), 1.5);
-            vec3  face = mix(sheet, mix(behind, paper, 0.45), through);
+            vec3  behind = texture( tex1, clamp( uv, 0.0, 1.0 ) ).rgb;
+            float through = 0.22 * pow( clamp( abs( w ), 0.0, 1.0 ), 1.5 );
+            vec3  face = mix( sheet, mix( behind, paper, 0.45 ), through );
 
             col = face * shade;
-            col += paper * spec * (0.08 + 0.24 * clamp(audioKick, 0.0, 1.0));
+            col += paper * spec * ( 0.08 + 0.24 * clamp( audioKick, 0.0, 1.0 ) );
             // The free edge catches the light as a thin bright line.
-            float edge = smoothstep(0.030, 0.0, sheetLen - s);
-            col += paper * edge * (0.12 + 0.34 * clamp(audioHigh * 2.0, 0.0, 1.0));
+            float edge = smoothstep( 0.030, 0.0, sheetLen - s );
+            col += paper * edge * ( 0.12 + 0.34 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
             // Paper tooth, so the roll is not a plastic tube.
-            col *= 0.94 + 0.12 * hash21(floor(pageUv * resolution.y * 0.5));
+            col *= 0.94 + 0.12 * hash21( floor( pageUv * resolution.y * 0.5 ) );
         }
     }
     else
     {
         // Uncovered: the incoming scene, with the roll's shadow falling on it.
-        vec3 under = texture(tex1, uv).rgb;
-        float dist = (q.x - cx - 2.0 * radius);
-        float sh   = 0.55 * exp(-dist * 7.0) * arc;
-        col = under * (1.0 - sh);
+        vec3  under = texture( tex1, uv ).rgb;
+        float dist = ( q.x - cx - 2.0 * radius );
+        float sh = 0.55 * exp( -dist * 7.0 ) * arc;
+        col = under * ( 1.0 - sh );
     }
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue * arc * 0.5);
-    if (hue > 0.001)           col = hueRot(col, hue * arc * 0.5);
+    if ( audioChromaHue != 0.0 )
+        col = hueRot( col, audioChromaHue * arc * 0.5 );
+    if ( hue > 0.001 )
+        col = hueRot( col, hue * arc * 0.5 );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

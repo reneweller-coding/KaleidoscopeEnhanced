@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file LiebLatticeFlatBandLocalization.frag
  * @brief LIEB LATTICE FLAT BAND LOCALIZATION: 2D line-centered square Lieb lattice with a strictly
@@ -18,25 +18,26 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   sublatticeP  float A/B/C sublattice energy offset contrast   (0.4..1.8)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float gridPitchP;
 uniform float abFluxP;
@@ -44,75 +45,76 @@ uniform float cageGlowP;
 uniform float sublatticeP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
+    vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.4 + audioAdvance * 0.35;
-    
+
     // Lieb lattice geometry: Corner site (A) and two edge sites (B, C) per unit cell
-    float pitch = (gridPitchP > 0.01 ? gridPitchP : 4.5);
-    vec2 p = uv * pitch;
-    vec2 cell = floor(p);
-    vec2 f = fract(p) - 0.5;
-    
+    float pitch = ( gridPitchP > 0.01 ? gridPitchP : 4.5 );
+    vec2  p = uv * pitch;
+    vec2  cell = floor( p );
+    vec2  f = fract( p ) - 0.5;
+
     // 3 sublattices:
     // A: corner (0,0) -> f near (-0.5, -0.5)
     // B: horizontal edge (0.5, 0) -> f near (0, -0.5)
     // C: vertical edge (0, 0.5) -> f near (-0.5, 0)
-    float siteA = exp(-dot(f + vec2(0.5), f + vec2(0.5)) * 35.0);
-    float siteB = exp(-dot(f + vec2(0.0, 0.5), f + vec2(0.0, 0.5)) * 35.0);
-    float siteC = exp(-dot(f + vec2(0.5, 0.0), f + vec2(0.5, 0.0)) * 35.0);
-    
+    float siteA = exp( -dot( f + vec2( 0.5 ), f + vec2( 0.5 ) ) * 35.0 );
+    float siteB = exp( -dot( f + vec2( 0.0, 0.5 ), f + vec2( 0.0, 0.5 ) ) * 35.0 );
+    float siteC = exp( -dot( f + vec2( 0.5, 0.0 ), f + vec2( 0.5, 0.0 ) ) * 35.0 );
+
     // Compact Localized State (CLS) loop on 4 edge sites with alternating phases (+1, -1, +1, -1)
-    float loopDist = abs(max(abs(f.x), abs(f.y)) - 0.25);
-    float clsLoop = exp(-loopDist * loopDist * 60.0);
-    
+    float loopDist = abs( max( abs( f.x ), abs( f.y ) ) - 0.25 );
+    float clsLoop = exp( -loopDist * loopDist * 60.0 );
+
     // Aharonov-Bohm synthetic flux phase
-    float phiAB = (abFluxP > 0.01 ? abFluxP : 1.2) * audioPhase;
-    float cagePhase = sin(t * 3.0 + length(cell) * 0.5 + phiAB) * 0.5 + 0.5;
-    
+    float phiAB = ( abFluxP > 0.01 ? abFluxP : 1.2 ) * audioPhase;
+    float cagePhase = sin( t * 3.0 + length( cell ) * 0.5 + phiAB ) * 0.5 + 0.5;
+
     // Flat-band localized state wavepacket
-    float flatBandState = clsLoop * cagePhase * (0.85 + 0.35 * audioSwell);
-    
+    float flatBandState = clsLoop * cagePhase * ( 0.85 + 0.35 * audioSwell );
+
     // Excitation flash on kick
-    float exFlash = (siteA + siteB + siteC) * (1.0 + 3.5 * audioKick) * (cageGlowP > 0.01 ? cageGlowP : 1.3);
-    
+    float exFlash = ( siteA + siteB + siteC ) * ( 1.0 + 3.5 * audioKick ) * ( cageGlowP > 0.01 ? cageGlowP : 1.3 );
+
     // Inter-site hopping bonds
-    float bondH = exp(-abs(f.y + 0.5) * 40.0) * smoothstep(0.5, 0.0, abs(f.x));
-    float bondV = exp(-abs(f.x + 0.5) * 40.0) * smoothstep(0.5, 0.0, abs(f.y));
-    
+    float bondH = exp( -abs( f.y + 0.5 ) * 40.0 ) * smoothstep( 0.5, 0.0, abs( f.x ) );
+    float bondV = exp( -abs( f.x + 0.5 ) * 40.0 ) * smoothstep( 0.5, 0.0, abs( f.y ) );
+
     // Palette assignment
-    float palAngle = fract(length(cell) * 0.08 + t * 0.05 + audioCentroid);
-    vec3 colFlat = imgPalette(palAngle);
-    vec3 colBond = imgPalette(fract(palAngle + 0.5)) * 1.5;
-    
+    float palAngle = fract( length( cell ) * 0.08 + t * 0.05 + audioCentroid );
+    vec3  colFlat = imgPalette( palAngle );
+    vec3  colBond = imgPalette( fract( palAngle + 0.5 ) ) * 1.5;
+
     // Background photo sampling
     vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img(bgUv) * 0.25;
-    
+    vec3 bg = img( bgUv ) * 0.25;
+
     vec3 col = bg;
-    col += colBond * (bondH + bondV) * 0.8;
-    col += colFlat * (siteA * 0.5 + siteB + siteC) * 1.6;
+    col += colBond * ( bondH + bondV ) * 0.8;
+    col += colFlat * ( siteA * 0.5 + siteB + siteC ) * 1.6;
     col += colFlat * flatBandState * 2.2;
-    col += vec3(0.95, 0.95, 1.0) * exFlash * 1.8;
-    col += colFlat * (audioKick * 0.35);
-    
+    col += vec3( 0.95, 0.95, 1.0 ) * exFlash * 1.8;
+    col += colFlat * ( audioKick * 0.35 );
+
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

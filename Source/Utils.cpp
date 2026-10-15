@@ -14,7 +14,7 @@
 #endif
 #include <stdio.h>
 
-#include "glcore.h"        // GL types / functions (GLint, glGetIntegerv, ...)
+#include "glcore.h" // GL types / functions (GLint, glGetIntegerv, ...)
 #include <GL/gl.h>
 #include "Utils.h"
 
@@ -61,11 +61,11 @@
  *
  **/
 
-NanoTimer::NanoTimer(void)
+NanoTimer::NanoTimer( void )
 {
-	if ( ! M_FrequencyChecked )
-		checkFrequency();
-	start();
+    if ( !M_FrequencyChecked )
+        checkFrequency();
+    start();
 }
 
 
@@ -77,7 +77,7 @@ NanoTimer::NanoTimer(void)
 
 void NanoTimer::start( void )
 {
-	m_time_stamp = getTimeStamp();
+    m_time_stamp = getTimeStamp();
 }
 
 
@@ -90,13 +90,13 @@ void NanoTimer::start( void )
 
 double NanoTimer::elapsed( void ) const
 {
-	unsigned long long int now = getTimeStamp();
-    //printf ( "%llu\t%llu\n", now, m_time_stamp );
-	if ( M_Use_High_Frequ )
-		return static_cast<double>(now - m_time_stamp) / ( M_GHz * 1000000.0 );
-	else
+    unsigned long long int now = getTimeStamp();
+    // printf ( "%llu\t%llu\n", now, m_time_stamp );
+    if ( M_Use_High_Frequ )
+        return static_cast<double>( now - m_time_stamp ) / ( M_GHz * 1000000.0 );
+    else
     {
-		return static_cast<double>(now - m_time_stamp);
+        return static_cast<double>( now - m_time_stamp );
     }
 }
 
@@ -120,17 +120,18 @@ double NanoTimer::elapsed( void ) const
 long long unsigned int NanoTimer::getTimeStamp( void )
 {
 #ifdef _WIN32
-	LARGE_INTEGER stamp;
-	QueryPerformanceCounter( &stamp );
-	return stamp.QuadPart;
+    LARGE_INTEGER stamp;
+    QueryPerformanceCounter( &stamp );
+    return stamp.QuadPart;
 #else
-	// steady_clock is the POSIX counterpart of QPC: monotonic and, on both
-	// Linux and macOS, nanosecond-resolution -- so checkFrequency() below
-	// reports exactly 1 GHz worth of ticks and the arithmetic elsewhere is
-	// unchanged.
-	return (long long unsigned int)
-		std::chrono::duration_cast<std::chrono::nanoseconds>(
-			std::chrono::steady_clock::now().time_since_epoch() ).count();
+    // steady_clock is the POSIX counterpart of QPC: monotonic and, on both
+    // Linux and macOS, nanosecond-resolution -- so checkFrequency() below
+    // reports exactly 1 GHz worth of ticks and the arithmetic elsewhere is
+    // unchanged.
+    return (long long unsigned int)
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+               std::chrono::steady_clock::now().time_since_epoch() )
+            .count();
 #endif
 }
 
@@ -161,36 +162,36 @@ long long unsigned int NanoTimer::getTimeStamp( void )
 
 void NanoTimer::checkFrequency( void )
 {
-	M_GHz = 0.001;
-	M_Use_High_Frequ = false;
+    M_GHz = 0.001;
+    M_Use_High_Frequ = false;
 
 #ifdef _WIN32
-	LARGE_INTEGER hz;
-	bool use_high_frequ = QueryPerformanceFrequency( &hz );
-	if ( ! use_high_frequ )
-		printf("col::NanoTimer: Can't use high-frequency counter!\n");
-	else
-	{
-		M_GHz = hz.QuadPart / 1.0E9;
-		M_Use_High_Frequ = true;
-	}
+    LARGE_INTEGER hz;
+    bool          use_high_frequ = QueryPerformanceFrequency( &hz );
+    if ( !use_high_frequ )
+        printf( "col::NanoTimer: Can't use high-frequency counter!\n" );
+    else
+    {
+        M_GHz = hz.QuadPart / 1.0E9;
+        M_Use_High_Frequ = true;
+    }
 #else
-	// getTimeStamp() returns nanoseconds above, so the tick rate is exactly
-	// 1e9 Hz = 1 GHz. No probing needed and none possible to get wrong.
-	M_GHz = 1.0;
-	M_Use_High_Frequ = true;
+    // getTimeStamp() returns nanoseconds above, so the tick rate is exactly
+    // 1e9 Hz = 1 GHz. No probing needed and none possible to get wrong.
+    M_GHz = 1.0;
+    M_Use_High_Frequ = true;
 #endif
 
-	if ( M_Use_High_Frequ )
-		printf("col::NanoTimer: found %lf GHz\n", M_GHz );
-	else
-	{
-		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-		printf("col::NanoTimer: will be bogus !!");
-		printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-	}
+    if ( M_Use_High_Frequ )
+        printf( "col::NanoTimer: found %lf GHz\n", M_GHz );
+    else
+    {
+        printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" );
+        printf( "col::NanoTimer: will be bogus !!" );
+        printf( "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" );
+    }
 
-	M_FrequencyChecked = true;
+    M_FrequencyChecked = true;
 }
 
 
@@ -205,7 +206,7 @@ void NanoTimer::checkFrequency( void )
 
 bool NanoTimer::usesHighFrequ( void )
 {
-	return M_Use_High_Frequ;
+    return M_Use_High_Frequ;
 }
 
 
@@ -220,13 +221,13 @@ bool NanoTimer::usesHighFrequ( void )
 
 double NanoTimer::frequ( void )
 {
-	return M_GHz;
+    return M_GHz;
 }
 
 
-bool	NanoTimer::M_Use_High_Frequ		= false;	///< Definition of NanoTimer::M_Use_High_Frequ.
-double	NanoTimer::M_GHz				= 0.001;	///< Definition of NanoTimer::M_GHz.
-bool	NanoTimer::M_FrequencyChecked	= false;	///< Definition of NanoTimer::M_FrequencyChecked.
+bool   NanoTimer::M_Use_High_Frequ = false;   ///< Definition of NanoTimer::M_Use_High_Frequ.
+double NanoTimer::M_GHz = 0.001;              ///< Definition of NanoTimer::M_GHz.
+bool   NanoTimer::M_FrequencyChecked = false; ///< Definition of NanoTimer::M_FrequencyChecked.
 
 
 
@@ -240,28 +241,27 @@ bool	NanoTimer::M_FrequencyChecked	= false;	///< Definition of NanoTimer::M_Freq
  */
 QImage prepareImage( const QImage &image )
 {
-	GLint maxSize = 1024;
+    GLint maxSize = 1024;
 
-	// convert image into a useful format
-	QImage convertedImage = image.
-		convertToFormat( QImage::Format_ARGB32 ).
-		rgbSwapped().
-		// Flip vertically: QImage's row 0 is the TOP of the picture, but GL
-		// samples texture (s,t)=(0,0) at the BOTTOM-left texel. Without this
-		// every background photo went in upside down -- which is exactly what
-		// the app showed, while PresetEditor's own loader (PreviewWidget::
-		// makeTexture, which has always mirrored here) rendered them the right
-		// way up. That mismatch is why probe/catalogue renders looked correct
-		// and only the real app was wrong.
-		mirrored( false, true ).
-		// IgnoreAspectRatio is deliberate and stays: scenes sample this with
-		// their own UVs, so the texture must be FILLED -- letterboxing would put
-		// black bars into every kaleidoscope fold. SmoothTransformation is the
-		// correction: Qt's default is FastTransformation, which on the 4:1
-		// downscale a 4096 photo needs throws away fifteen of every sixteen
-		// pixels. On a star field that does not just soften, it makes points
-		// appear and vanish as the sampling moves -- measured edge contrast is
-		// HIGHER with the fast filter, which is aliasing rather than sharpness.
-		scaled( maxSize, maxSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
-	return convertedImage;
+    // convert image into a useful format
+    QImage convertedImage = image.convertToFormat( QImage::Format_ARGB32 ).rgbSwapped().
+                            // Flip vertically: QImage's row 0 is the TOP of the picture, but GL
+                            // samples texture (s,t)=(0,0) at the BOTTOM-left texel. Without this
+                            // every background photo went in upside down -- which is exactly what
+                            // the app showed, while PresetEditor's own loader (PreviewWidget::
+                            // makeTexture, which has always mirrored here) rendered them the right
+                            // way up. That mismatch is why probe/catalogue renders looked correct
+                            // and only the real app was wrong.
+                            mirrored( false, true )
+                                .
+                            // IgnoreAspectRatio is deliberate and stays: scenes sample this with
+                            // their own UVs, so the texture must be FILLED -- letterboxing would put
+                            // black bars into every kaleidoscope fold. SmoothTransformation is the
+                            // correction: Qt's default is FastTransformation, which on the 4:1
+                            // downscale a 4096 photo needs throws away fifteen of every sixteen
+                            // pixels. On a star field that does not just soften, it makes points
+                            // appear and vanish as the sampling moves -- measured edge contrast is
+                            // HIGHER with the fast filter, which is aliasing rather than sharpness.
+                            scaled( maxSize, maxSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
+    return convertedImage;
 }

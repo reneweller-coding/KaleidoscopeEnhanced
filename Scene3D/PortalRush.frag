@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // PortalRush.frag — soft-edged glowing gate band (additive blending).
-in vec4  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file PortalRush.frag
@@ -20,6 +20,6 @@ in float vSide;   ///< Which side of a strip (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float glow = exp(-vSide * vSide * 3.0);
-    fragColor = vec4(vCol.rgb * glow, 1.0);
+    float glow = exp( -vSide * vSide * 3.0 );
+    fragColor = vec4( vCol.rgb * glow, 1.0 );
 }

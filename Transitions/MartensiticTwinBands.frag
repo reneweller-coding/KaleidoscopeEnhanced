@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MartensiticTwinBands.frag
  * @brief TRANSITION MARTENSITIC TWIN BANDS: a shear transformation runs through
@@ -25,110 +25,119 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: bandsP, shearP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float bandsP;
 uniform float shearP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float bandsN = 5.0 + floor(clamp(bandsP, 0.0, 1.0) * 6.0);   // rolled ONCE per activation
-    float shear  = (shearP > 0.0) ? shearP : 1.0;
-    float hue    = (hueP   > 0.0) ? hueP   : 0.0;
+    float bandsN = 5.0 + floor( clamp( bandsP, 0.0, 1.0 ) * 6.0 ); // rolled ONCE per activation
+    float shear = ( shearP > 0.0 ) ? shearP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
     // Two habit planes, crossing the way real twins do.
-    float grow = 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float cover = 0.0;       // how much of this pixel has transformed
-    float edge  = 0.0;       // how close it is to a twin boundary
-    float fresh = 0.0;       // how newly this band nucleated
-    vec2  shiftSum = vec2(0.0);
+    float grow = 1.0;  // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float cover = 0.0; // how much of this pixel has transformed
+    float edge = 0.0;  // how close it is to a twin boundary
+    float fresh = 0.0; // how newly this band nucleated
+    vec2  shiftSum = vec2( 0.0 );
 
-    for (int j = 0; j < 2; ++j)
+    for ( int j = 0; j < 2; ++j )
     {
-        float aj = (j == 0) ? 0.62 : -0.74;
-        vec2  q = rot2D(aj) * p;
-        float sp = 1.35 / bandsN;                       // band spacing
-        float idx = floor(q.y / sp);
-        for (int k = -1; k <= 1; ++k)
+        float aj = ( j == 0 ) ? 0.62 : -0.74;
+        vec2  q = rot2D( aj ) * p;
+        float sp = 1.35 / bandsN; // band spacing
+        float idx = floor( q.y / sp );
+        for ( int k = -1; k <= 1; ++k )
         {
-            float id = idx + float(k);
-            float seed = hash11(id * 7.31 + float(j) * 53.7);
+            float id = idx + float( k );
+            float seed = hash11( id * 7.31 + float( j ) * 53.7 );
             // Each band has its own nucleation moment, fixed for the activation.
             float t0 = seed * 0.62;
-            float g = smoothstep(t0, t0 + 0.42 / grow, d);
-            if (g <= 0.0) continue;
+            float g = smoothstep( t0, t0 + 0.42 / grow, d );
+            if ( g <= 0.0 )
+                continue;
             // A lens: widest in the middle, tapering to its tips.
-            float centre = (id + 0.5) * sp;
+            float centre = ( id + 0.5 ) * sp;
             float halfW = sp * 0.52 * g;
-            float along = clamp(q.x / 1.3, -1.0, 1.0);
-            float lens = halfW * sqrt(max(0.0, 1.0 - along * along * 0.55));
-            float dist = abs(q.y - centre);
-            float inBand = smoothstep(lens, lens * 0.82, dist);
-            cover = max(cover, inBand);
-            edge  = max(edge, exp(-pow((dist - lens) / (sp * 0.09), 2.0)) * g);
-            fresh = max(fresh, inBand * (1.0 - smoothstep(t0, t0 + 0.16, d)));
+            float along = clamp( q.x / 1.3, -1.0, 1.0 );
+            float lens = halfW * sqrt( max( 0.0, 1.0 - along * along * 0.55 ) );
+            float dist = abs( q.y - centre );
+            float inBand = smoothstep( lens, lens * 0.82, dist );
+            cover = max( cover, inBand );
+            edge = max( edge, exp( -pow( ( dist - lens ) / ( sp * 0.09 ), 2.0 ) ) * g );
+            fresh = max( fresh, inBand * ( 1.0 - smoothstep( t0, t0 + 0.16, d ) ) );
             // The transformation strain is FIXED: a band that has formed does
             // not go on shearing, it only gets wider.
-            vec2 dir = rot2D(-aj) * vec2(1.0, 0.0);
-            shiftSum += dir * inBand * 0.028 * shear * (j == 0 ? 1.0 : -1.0);
+            vec2 dir = rot2D( -aj ) * vec2( 1.0, 0.0 );
+            shiftSum += dir * inBand * 0.028 * shear * ( j == 0 ? 1.0 : -1.0 );
         }
     }
-    cover = clamp(cover, 0.0, 1.0);
+    cover = clamp( cover, 0.0, 1.0 );
     // By the end the bands have consumed the parent phase completely.
-    cover = mix(cover, 1.0, smoothstep(0.82, 1.0, d));
+    cover = mix( cover, 1.0, smoothstep( 0.82, 1.0, d ) );
 
     // The transformation strain is accommodated once the twins have taken the
     // whole frame -- and it has to be, or the last frame is the incoming scene
     // shifted sideways instead of the incoming scene.
-    shiftSum *= 1.0 - smoothstep(0.78, 1.0, d);
-    vec2 sheared = clamp(uv + shiftSum / vec2(aspect, 1.0), 0.0, 1.0);
-    vec3 parent = texture(tex0, uv).rgb;
-    vec3 twin   = texture(tex1, sheared).rgb;
+    shiftSum *= 1.0 - smoothstep( 0.78, 1.0, d );
+    vec2 sheared = clamp( uv + shiftSum / vec2( aspect, 1.0 ), 0.0, 1.0 );
+    vec3 parent = texture( tex0, uv ).rgb;
+    vec3 twin = texture( tex1, sheared ).rgb;
 
     // Temper colour: the transformed phase reflects a little differently.
-    vec3 temper = mix(vec3(1.02, 0.99, 0.95), vec3(0.95, 0.98, 1.05),
-                      clamp(audioMid * 2.0, 0.0, 1.0));
-    temper = mix(temper, temper.gbr, fract(hue * 0.159) * 0.5);
+    vec3 temper = mix( vec3( 1.02, 0.99, 0.95 ), vec3( 0.95, 0.98, 1.05 ),
+                       clamp( audioMid * 2.0, 0.0, 1.0 ) );
+    temper = mix( temper, temper.gbr, fract( hue * 0.159 ) * 0.5 );
 
-    vec3 col = mix(parent, twin * mix(vec3(1.0), temper, arc), cover);
+    vec3 col = mix( parent, twin * mix( vec3( 1.0 ), temper, arc ), cover );
     // The twin boundaries glint.
-    col += vec3(0.90, 0.92, 1.0) * edge * arc
-         * (0.06 + 0.20 * clamp(audioHigh * 2.0, 0.0, 1.0));
+    col += vec3( 0.90, 0.92, 1.0 ) * edge * arc
+           * ( 0.06 + 0.20 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
     // A band that has just snapped into place carries the light of the event.
-    col += vec3(1.0, 0.96, 0.88) * fresh * arc * 0.35 * clamp(audioKick, 0.0, 1.0);
+    col += vec3( 1.0, 0.96, 0.88 ) * fresh * arc * 0.35 * clamp( audioKick, 0.0, 1.0 );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

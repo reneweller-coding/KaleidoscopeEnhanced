@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file ChromaKaleidoscope.frag
  * @brief CHROMA KALEIDOSCOPE: twelve mirror segments, one per pitch class.
@@ -20,106 +20,109 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: fifthsP (chromatic or fifths order), zoomP, hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
-uniform float audioMelodyPitch;   ///< Pitch of the melody, 0..1 over the tracked range.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioChroma[12];  ///< Pitch-class energies (12 values).
+uniform float audioMelodyPitch; ///< Pitch of the melody, 0..1 over the tracked range.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBeat;        ///< Beat envelope, 0..1.
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float fifthsP;
-uniform float zoomP;   ///< Zoom knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float zoomP; ///< Zoom knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// Circular distance between two positions on a 12-ring.
-float ringDist(float a, float b)
+float ringDist( float a, float b )
 {
-    float d = abs(a - b);
-    return min(d, 12.0 - d);
+    float d = abs( a - b );
+    return min( d, 12.0 - d );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    bool fifths = fifthsP > 0.5;
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float zoom = (zoomP > 0.05 ? zoomP : 1.0);
+    bool  fifths = fifthsP > 0.5;
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float zoom = ( zoomP > 0.05 ? zoomP : 1.0 );
 
-    float r = length(p);
-    float a = atan(p.y, p.x) + sceneAdvance * 0.12;
+    float       r = length( p );
+    float       a = atan( p.y, p.x ) + sceneAdvance * 0.12;
     const float sector = 6.2831853 / 12.0;
-    float ang  = mod(a, 6.2831853);
-    float k    = floor(ang / sector);             // wedge index (spatial)
-    float loc  = mod(ang, sector);
-    float mir  = abs(loc - sector * 0.5);         // mirrored inside the wedge
+    float       ang = mod( a, 6.2831853 );
+    float       k = floor( ang / sector ); // wedge index (spatial)
+    float       loc = mod( ang, sector );
+    float       mir = abs( loc - sector * 0.5 ); // mirrored inside the wedge
 
     // Which pitch class this wedge shows.
-    float pc = fifths ? mod(k * 7.0, 12.0) : k;
+    float pc = fifths ? mod( k * 7.0, 12.0 ) : k;
     // Normalise by the loudest class so the chord always burns at full
     // brightness whatever the absolute chroma level.
     float maxc = 1e-3;
-    for (int i = 0; i < 12; ++i) maxc = max(maxc, audioChroma[i]);
-    float e  = clamp(audioChroma[int(pc)] / maxc, 0.0, 1.0);
+    for ( int i = 0; i < 12; ++i )
+        maxc = max( maxc, audioChroma[i] );
+    float e = clamp( audioChroma[int( pc )] / maxc, 0.0, 1.0 );
 
     // The melody's halo: a smooth kernel over ring distance, so the halo
     // crossfades between wedges as the pitch glides.
-    float mp = clamp(audioMelodyPitch, 0.0, 0.9999) * 12.0;
-    float mpos = fifths ? mod(mp * 7.0, 12.0) : mp;      // where that class sits on the ring
-    float halo = exp(-pow(ringDist(mpos, k + 0.5), 2.0) * 1.6);
+    float mp = clamp( audioMelodyPitch, 0.0, 0.9999 ) * 12.0;
+    float mpos = fifths ? mod( mp * 7.0, 12.0 ) : mp; // where that class sits on the ring
+    float halo = exp( -pow( ringDist( mpos, k + 0.5 ), 2.0 ) * 1.6 );
 
     // Photo folded into the wedge, sampled in log-polar so the zoom is
     // endless.
-    vec2 q = r * vec2(cos(mir), sin(mir)) * zoom;
-    float lr = log(length(q) + 0.3) * 0.9 + sceneAdvance * 0.06;
-    float an = atan(q.y, q.x) * 0.15915494;
-    vec2 uv = vec2(fract(an * 2.0 + lr * 0.3), fract(lr * 0.6));
-    vec3 tex = img(uv);
+    vec2  q = r * vec2( cos( mir ), sin( mir ) ) * zoom;
+    float lr = log( length( q ) + 0.3 ) * 0.9 + sceneAdvance * 0.06;
+    float an = atan( q.y, q.x ) * 0.15915494;
+    vec2  uv = vec2( fract( an * 2.0 + lr * 0.3 ), fract( lr * 0.6 ) );
+    vec3  tex = img( uv );
 
     // Wedge tint from the palette, keyed by the pitch class so the same note
     // is always the same colour family.
-    vec3 tint = imgPalette(hue * 0.159 + pc / 12.0);
-    float bright = (0.3 + 1.1 * e * e + 0.5 * halo) * (1.0 + 0.2 * audioBeat);
-    vec3 col = mix(tex, tex * tint * 1.8, 0.6) * bright * (0.9 + 0.4 * audioLevel);
+    vec3  tint = imgPalette( hue * 0.159 + pc / 12.0 );
+    float bright = ( 0.3 + 1.1 * e * e + 0.5 * halo ) * ( 1.0 + 0.2 * audioBeat );
+    vec3  col = mix( tex, tex * tint * 1.8, 0.6 ) * bright * ( 0.9 + 0.4 * audioLevel );
 
     // Wedge seams; the kick pulses a ring inward.
-    float seam = exp(-min(loc, sector - loc) * 50.0) * 0.25;
-    col += imgPalette(hue * 0.159 + 0.85) * seam * (0.5 + e);
+    float seam = exp( -min( loc, sector - loc ) * 50.0 ) * 0.25;
+    col += imgPalette( hue * 0.159 + 0.85 ) * seam * ( 0.5 + e );
     float ringR = 0.55 - 0.3 * audioKick;
-    col += tint * exp(-abs(r - ringR) * 20.0) * 0.5 * audioKick;
+    col += tint * exp( -abs( r - ringR ) * 20.0 ) * 0.5 * audioKick;
     // The ring itself, dark centre so the wedges read.
-    col *= smoothstep(0.02, 0.12, r);
+    col *= smoothstep( 0.02, 0.12, r );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

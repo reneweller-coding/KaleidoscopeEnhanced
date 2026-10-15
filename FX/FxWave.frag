@@ -1,65 +1,66 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FxWave.frag
  * @brief FX WAVE: a soft radial ripple offsets the scene's UVs outward from the
  * centre and blends the displaced copy back with the original.
  */
-uniform vec2 resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioAdvance; ///< music advances the ring wave
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioAdvance;  ///< music advances the ring wave
+uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main(void)
+void main( void )
 {
 
-	vec2 uv;
+    vec2 uv;
     uv.x = gl_FragCoord.x;
     uv.y = gl_FragCoord.y;
-	uv.x /= resolution.x;
-	uv.y /= resolution.y;
+    uv.x /= resolution.x;
+    uv.y /= resolution.y;
 
 
-	//vec2 uv = 0.5*gl_FragCoord.xy / resolution.xy;
+    // vec2 uv = 0.5*gl_FragCoord.xy / resolution.xy;
 
-	//float d = length(uv);
-	//vec2 st = uv;// + 0.2*vec2(cos(0.071*time+d),sin(0.073*time-d));
-	//vec2 st = uv + 0.02*vec2(cos(0.071*time+d),sin(0.073*time-d));
+    // float d = length(uv);
+    // vec2 st = uv;// + 0.2*vec2(cos(0.071*time+d),sin(0.073*time-d));
+    // vec2 st = uv + 0.02*vec2(cos(0.071*time+d),sin(0.073*time-d));
 
-    //vec3 col = interpolation * texture(tex0, st) + (1.0-interpolation)*texture(tex1, st).xyz;
-    //float w = col.x;
-	//vec3 col2 = 1.0-(interpolation * texture(tex0, 0.2*offset*uv + 0.1*offset*col.xy) + (1.0-interpolation)*texture(tex1, 0.2*offset*uv + 0.1*offset*col.xy)).xyz;
-	//col *= w*2.0;
-	
-	//col = 0.5*(col+col2);
-	//col *= 1.0 + 2.0*d;
-	//col *= d;
-	//fragColor = vec4(col,1.0);
+    // vec3 col = interpolation * texture(tex0, st) + (1.0-interpolation)*texture(tex1, st).xyz;
+    // float w = col.x;
+    // vec3 col2 = 1.0-(interpolation * texture(tex0, 0.2*offset*uv + 0.1*offset*col.xy) +
+    // (1.0-interpolation)*texture(tex1, 0.2*offset*uv + 0.1*offset*col.xy)).xyz; col *= w*2.0;
 
-	float offset = 0.2; //0.1
-	float speed = 0.5;
-	
-	
-	
-	vec4 col = interpolation * texture(tex0, uv) + (1.0-interpolation)*texture(tex1, uv);  
-  
-	
-	vec2 p = uv;
-	
-  float len = length(p);
-  vec2 uv1 = p + offset * ((p/len)*cos(len*12.0-speed*(time + 0.4*audioAdvance)*4.0)*0.03*(1.0+0.8*audioSwell));
-  vec4 col2 = interpolation * texture(tex0, uv1) + (1.0-interpolation)*texture(tex1, uv1); 
-  
-  
-	col = 0.5*(col+col2);
-	fragColor = col;
-	
-	
+    // col = 0.5*(col+col2);
+    // col *= 1.0 + 2.0*d;
+    // col *= d;
+    // fragColor = vec4(col,1.0);
+
+    float offset = 0.2; // 0.1
+    float speed = 0.5;
+
+
+
+    vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+
+
+    vec2 p = uv;
+
+    float len = length( p );
+    vec2  uv1 = p
+                + offset
+                      * ( ( p / len ) * cos( len * 12.0 - speed * ( time + 0.4 * audioAdvance ) * 4.0 ) * 0.03
+                          * ( 1.0 + 0.8 * audioSwell ) );
+    vec4  col2 = interpolation * texture( tex0, uv1 ) + ( 1.0 - interpolation ) * texture( tex1, uv1 );
+
+
+    col = 0.5 * ( col + col2 );
+    fragColor = col;
 }

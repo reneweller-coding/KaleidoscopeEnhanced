@@ -11,33 +11,37 @@
 // 60k points: 20 % membrane, 15 % nucleus, 20 % mitochondria,
 // 20 % filaments, 25 % vesicles.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -49,109 +53,115 @@ void main()
     float glow = 1.0;
 
     // Kick pressure wave rippling out from the nucleus.
-    float kickR = 8.0 + 34.0 * fract(time * 0.6);
+    float kickR = 8.0 + 34.0 * fract( time * 0.6 );
 
-    if (r1 < 0.20)
+    if ( r1 < 0.20 )
     {
         // ---- Membrane: the breathing wall of the world. ----
         float th = r2 * 6.2831853;
-        float ph = acos(2.0 * r3 - 1.0);
-        vec3 n = vec3(sin(ph) * cos(th), cos(ph), sin(ph) * sin(th));
-        float R = 42.0 * (1.0 + 0.05 * audioBass)
-                + sin(th * 8.0 + time * 0.6) * 0.9
-                + sin(ph * 11.0 - time * 0.5) * 0.9;
+        float ph = acos( 2.0 * r3 - 1.0 );
+        vec3  n = vec3( sin( ph ) * cos( th ), cos( ph ), sin( ph ) * sin( th ) );
+        float R = 42.0 * ( 1.0 + 0.05 * audioBass )
+                  + sin( th * 8.0 + time * 0.6 ) * 0.9
+                  + sin( ph * 11.0 - time * 0.5 ) * 0.9;
         world = n * R;
-        col = hueRot(vec3(0.20, 0.70, 0.65), audioChromaHue * 0.4);
+        col = hueRot( vec3( 0.20, 0.70, 0.65 ), audioChromaHue * 0.4 );
         glow = 0.45 + 0.35 * r4 + 0.30 * audioBass;
     }
-    else if (r1 < 0.35)
+    else if ( r1 < 0.35 )
     {
         // ---- Nucleus: a heart of light with a dense nucleolus. ----
         float th = r2 * 6.2831853;
-        float ph = acos(2.0 * r3 - 1.0);
-        float rr = (r4 < 0.3) ? 2.2 * pow(fract(r4 * 10.0), 0.5)
-                              : 5.5 + 2.2 * pow(fract(r4 * 7.0), 2.0);
-        rr *= 1.0 + 0.12 * audioBass + 0.05 * sin(time * 2.2);
-        world = vec3(sin(ph) * cos(th), cos(ph), sin(ph) * sin(th)) * rr;
-        col = hueRot(vec3(0.85, 0.45, 0.80), audioChromaHue * 0.5);
-        glow = (0.5 + 0.5 * audioLevel) * (1.4 - rr * 0.12);
+        float ph = acos( 2.0 * r3 - 1.0 );
+        float rr = ( r4 < 0.3 ) ? 2.2 * pow( fract( r4 * 10.0 ), 0.5 )
+                                : 5.5 + 2.2 * pow( fract( r4 * 7.0 ), 2.0 );
+        rr *= 1.0 + 0.12 * audioBass + 0.05 * sin( time * 2.2 );
+        world = vec3( sin( ph ) * cos( th ), cos( ph ), sin( ph ) * sin( th ) ) * rr;
+        col = hueRot( vec3( 0.85, 0.45, 0.80 ), audioChromaHue * 0.5 );
+        glow = ( 0.5 + 0.5 * audioLevel ) * ( 1.4 - rr * 0.12 );
     }
-    else if (r1 < 0.55)
+    else if ( r1 < 0.55 )
     {
         // ---- Mitochondria: 9 glowing capsules adrift in the cytoplasm.
-        float m  = floor((r1 - 0.35) * 45.0);
-        vec3 Cm = vec3(hash11(m * 3.1) - 0.5,
-                       (hash11(m * 5.7) - 0.5) * 0.7,
-                       hash11(m * 7.9) - 0.5) * 52.0;
-        Cm += vec3(sin(time * 0.13 + m * 2.0),
-                   sin(time * 0.17 + m * 4.0),
-                   sin(time * 0.11 + m * 6.0)) * 2.5;
+        float m = floor( ( r1 - 0.35 ) * 45.0 );
+        vec3  Cm = vec3( hash11( m * 3.1 ) - 0.5,
+                         ( hash11( m * 5.7 ) - 0.5 ) * 0.7,
+                         hash11( m * 7.9 ) - 0.5 )
+                   * 52.0;
+        Cm += vec3( sin( time * 0.13 + m * 2.0 ),
+                    sin( time * 0.17 + m * 4.0 ),
+                    sin( time * 0.11 + m * 6.0 ) )
+              * 2.5;
         // Capsule: cylinder with hemispheric caps, seeded orientation.
-        float ax = hash11(m * 9.3) * 6.2831853;
-        vec3 A = vec3(cos(ax), 0.35 * sin(ax * 2.0), sin(ax));
-        float u = (r2 - 0.5) * 2.0;
+        float ax = hash11( m * 9.3 ) * 6.2831853;
+        vec3  A = vec3( cos( ax ), 0.35 * sin( ax * 2.0 ), sin( ax ) );
+        float u = ( r2 - 0.5 ) * 2.0;
         float th = r3 * 6.2831853;
-        vec3 side = normalize(cross(A, vec3(0.0, 1.0, 0.0)));
-        vec3 up2  = cross(side, A);
+        vec3  side = normalize( cross( A, vec3( 0.0, 1.0, 0.0 ) ) );
+        vec3  up2 = cross( side, A );
         world = Cm + A * u * 3.2
-              + (side * cos(th) + up2 * sin(th)) * 1.3
-                * sqrt(max(0.0, 1.0 - abs(u) * abs(u) * 0.6));
-        col = hueRot(vec3(1.0, 0.55, 0.20), audioChromaHue * 0.3);
+                + ( side * cos( th ) + up2 * sin( th ) ) * 1.3
+                      * sqrt( max( 0.0, 1.0 - abs( u ) * abs( u ) * 0.6 ) );
+        col = hueRot( vec3( 1.0, 0.55, 0.20 ), audioChromaHue * 0.3 );
         glow = 0.35 + 0.7 * audioLevel + 0.5 * audioSwell;
     }
-    else if (r1 < 0.75)
+    else if ( r1 < 0.75 )
     {
         // ---- Cytoskeleton filaments: taut light-fibres. ----
-        float f = floor((r1 - 0.55) * 90.0);       // 18 fibres
-        vec3 P0 = vec3(hash11(f * 2.1) - 0.5, hash11(f * 4.3) - 0.5,
-                       hash11(f * 6.5) - 0.5) * 60.0;
-        vec3 P1 = vec3(hash11(f * 8.7) - 0.5, hash11(f * 10.9) - 0.5,
-                       hash11(f * 12.1) - 0.5) * 60.0;
+        float f = floor( ( r1 - 0.55 ) * 90.0 ); // 18 fibres
+        vec3  P0 = vec3( hash11( f * 2.1 ) - 0.5, hash11( f * 4.3 ) - 0.5,
+                         hash11( f * 6.5 ) - 0.5 )
+                   * 60.0;
+        vec3  P1 = vec3( hash11( f * 8.7 ) - 0.5, hash11( f * 10.9 ) - 0.5,
+                         hash11( f * 12.1 ) - 0.5 )
+                   * 60.0;
         float u = r2;
-        world = mix(P0, P1, u);
-        world += vec3(sin(u * 9.0 + time * 0.8 + f),
-                      cos(u * 7.0 + time * 0.6 + f),
-                      sin(u * 8.0 - time * 0.7)) * 0.8;
-        col = hueRot(vec3(0.35, 0.85, 0.80), audioChromaHue * 0.4);
-        glow = (0.22 + 0.30 * r4)
-             * (0.7 + 0.6 * sin(u * 30.0 - time * 3.0 + f));  // transport!
+        world = mix( P0, P1, u );
+        world += vec3( sin( u * 9.0 + time * 0.8 + f ),
+                       cos( u * 7.0 + time * 0.6 + f ),
+                       sin( u * 8.0 - time * 0.7 ) )
+                 * 0.8;
+        col = hueRot( vec3( 0.35, 0.85, 0.80 ), audioChromaHue * 0.4 );
+        glow = ( 0.22 + 0.30 * r4 )
+               * ( 0.7 + 0.6 * sin( u * 30.0 - time * 3.0 + f ) ); // transport!
     }
     else
     {
         // ---- Vesicles: drifting bubbles that sparkle on onsets. ----
-        vec3 P = vec3(r2 - 0.5, (r3 - 0.5) * 0.8, r4 - 0.5) * 66.0;
-        P += vec3(sin(time * 0.19 + r4 * 40.0),
-                  sin(time * 0.23 + r2 * 40.0),
-                  sin(time * 0.15 + r3 * 40.0)) * 2.0;
+        vec3 P = vec3( r2 - 0.5, ( r3 - 0.5 ) * 0.8, r4 - 0.5 ) * 66.0;
+        P += vec3( sin( time * 0.19 + r4 * 40.0 ),
+                   sin( time * 0.23 + r2 * 40.0 ),
+                   sin( time * 0.15 + r3 * 40.0 ) )
+             * 2.0;
         world = P;
-        col = hueRot(vec3(0.55, 0.75, 1.0), audioChromaHue * 0.5 + r2);
-        float spark = (fract(r3 * 23.0) > 0.75) ? audioOnset : 0.0;
+        col = hueRot( vec3( 0.55, 0.75, 1.0 ), audioChromaHue * 0.5 + r2 );
+        float spark = ( fract( r3 * 23.0 ) > 0.75 ) ? audioOnset : 0.0;
         glow = 0.18 + 0.25 * r4 + 1.4 * spark;
     }
 
     // Kick pressure wave brightens whatever shell it passes.
-    glow *= 1.0 + (0.6 * audioKick + 1.4 * audioDrop)
-                  * exp(-abs(length(world) - kickR) * 0.15);
+    glow *= 1.0 + ( 0.6 * audioKick + 1.4 * audioDrop ) * exp( -abs( length( world ) - kickR ) * 0.15 );
 
     // Camera drifts through the cytoplasm on a slow loop.
-    float ca  = time * 0.05;
-    vec3 camP = vec3(cos(ca) * 17.0, sin(time * 0.04) * 8.0, sin(ca) * 17.0);
-    vec3 fwd  = normalize(-camP + vec3(0.0, 0.0, 0.001));
-    vec3 rgt  = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
-    vec3 up   = cross(rgt, fwd);
-    vec3 rel  = world - camP;
-    vec3 vp   = vec3(dot(rel, rgt), dot(rel, up), dot(rel, fwd));
+    float ca = time * 0.05;
+    vec3  camP = vec3( cos( ca ) * 17.0, sin( time * 0.04 ) * 8.0, sin( ca ) * 17.0 );
+    vec3  fwd = normalize( -camP + vec3( 0.0, 0.0, 0.001 ) );
+    vec3  rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3  up = cross( rgt, fwd );
+    vec3  rel = world - camP;
+    vec3  vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(260.0 * (0.4 + 0.8 * r4) * px / dist, 2.0, 30.0 * px);   // sprite sweep: organelles were 2-px dust
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( 260.0 * ( 0.4 + 0.8 * r4 ) * px / dist, 2.0, 30.0 * px ); // sprite sweep: organelles were
+                                                                                    // 2-px dust
 
-    col *= glow * clamp(1.0 - vp.z / 110.0, 0.0, 1.0);
-    vCol = vec4(col * 1.8, 1.0);
+    col *= glow * clamp( 1.0 - vp.z / 110.0, 0.0, 1.0 );
+    vCol = vec4( col * 1.8, 1.0 );
 }

@@ -42,6 +42,6 @@
 #include <vector>
 #include <stack>
 
-#include "qt6compat.h"   // qrand()/qsrand() shims for Qt6
+#include "qt6compat.h" // qrand()/qsrand() shims for Qt6
 
 #endif

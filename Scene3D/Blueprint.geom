@@ -18,31 +18,32 @@
 // barycentric coordinate, and its smallest component is the distance to the
 // nearest edge.  The fragment shader draws a line where that distance is small.
 // -----------------------------------------------------------------------
-layout(triangles) in;
+layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(triangle_strip, max_vertices = 3) out;
+layout( triangle_strip, max_vertices = 3 ) out;
 
-in  vec3  gObj[];
-in  vec2  gUV[];
-in  float gCell[];
-in  float gMorph[];
+in vec3  gObj[];
+in vec2  gUV[];
+in float gCell[];
+in float gMorph[];
 
-flat out vec3 vEdgeMask;    ///< 1 = a real quad edge, 0 = the mesh's diagonal
-out float vKind;            ///< 0 = paper backdrop, 1 = the body
-out vec3  vBary;
-out vec3  vObj;   ///< Object-space position (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vView;   ///< View vector (from the vertex stage).
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out float vMorph;
+flat out vec3 vEdgeMask; ///< 1 = a real quad edge, 0 = the mesh's diagonal
+out float     vKind;     ///< 0 = paper backdrop, 1 = the body
+out vec3      vBary;
+out vec3      vObj;    ///< Object-space position (from the vertex stage).
+out vec3      vNormal; ///< Surface normal (from the vertex stage).
+out vec3      vView;   ///< View vector (from the vertex stage).
+out vec2      vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out float     vMorph;
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camDistP;   ///< Camera distance knob, 0..1.
+uniform float camDistP; ///< Camera distance knob, 0..1.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -52,17 +53,26 @@ void main()
     // of its own — so cell 0's first triangle becomes a FULLSCREEN triangle in
     // clip space instead.  Three vertices is exactly what a full-screen
     // triangle needs, which is why this fits where a quad backdrop would not.
-    if (gCell[0] < 0.5 && gUV[1].y < 0.0001)
+    if ( gCell[0] < 0.5 && gUV[1].y < 0.0001 )
     {
-        vEdgeMask = vec3(0.0); vKind = 0.0; vBary = vec3(1.0);
-        vNormal = vec3(0.0, 0.0, 1.0); vView = vec3(0.0, 0.0, 1.0);
+        vEdgeMask = vec3( 0.0 );
+        vKind = 0.0;
+        vBary = vec3( 1.0 );
+        vNormal = vec3( 0.0, 0.0, 1.0 );
+        vView = vec3( 0.0, 0.0, 1.0 );
         vMorph = gMorph[0];
-        vObj = vec3(-1.0, -1.0, 0.0); vUV = vec2(-1.0, -1.0);
-        gl_Position = vec4(-1.0, -1.0, 0.9999, 1.0); EmitVertex();
-        vObj = vec3( 3.0, -1.0, 0.0); vUV = vec2( 3.0, -1.0);
-        gl_Position = vec4( 3.0, -1.0, 0.9999, 1.0); EmitVertex();
-        vObj = vec3(-1.0,  3.0, 0.0); vUV = vec2(-1.0,  3.0);
-        gl_Position = vec4(-1.0,  3.0, 0.9999, 1.0); EmitVertex();
+        vObj = vec3( -1.0, -1.0, 0.0 );
+        vUV = vec2( -1.0, -1.0 );
+        gl_Position = vec4( -1.0, -1.0, 0.9999, 1.0 );
+        EmitVertex();
+        vObj = vec3( 3.0, -1.0, 0.0 );
+        vUV = vec2( 3.0, -1.0 );
+        gl_Position = vec4( 3.0, -1.0, 0.9999, 1.0 );
+        EmitVertex();
+        vObj = vec3( -1.0, 3.0, 0.0 );
+        vUV = vec2( -1.0, 3.0 );
+        gl_Position = vec4( -1.0, 3.0, 0.9999, 1.0 );
+        EmitVertex();
         EndPrimitive();
         return;
     }
@@ -75,42 +85,42 @@ void main()
     // herringbone that advertises the triangulation.  A diagonal is the edge
     // whose endpoints differ in BOTH parameters.
     vec3 mask;
-    for (int i = 0; i < 3; ++i)
+    for ( int i = 0; i < 3; ++i )
     {
-        vec2 d = abs(gUV[(i + 1) % 3] - gUV[(i + 2) % 3]);
-        mask[i] = (d.x > 1e-6 && d.y > 1e-6) ? 0.0 : 1.0;
+        vec2 d = abs( gUV[( i + 1 ) % 3] - gUV[( i + 2 ) % 3] );
+        mask[i] = ( d.x > 1e-6 && d.y > 1e-6 ) ? 0.0 : 1.0;
     }
     vEdgeMask = mask;
     vKind = 1.0;
     // Flat face normal: this is a technical drawing, so facets are the point.
-    vec3 fn = normalize(cross(b - a, c - a));
+    vec3 fn = normalize( cross( b - a, c - a ) );
 
     // Was driven by audioAdvance alone -- near-static whenever the music
     // is calm (measured motion 0.011). A slow constant turn keeps the
     // drawing alive; the music still adds on top.
-    float ya = time * 0.22 + audioAdvance * 0.14;   // round 2: 0.08 rad/s did not register
-    float pa = 0.34 * sin(audioAdvance * 0.08);
-    mat3 yaw   = mat3(cos(ya), 0.0, -sin(ya), 0.0, 1.0, 0.0, sin(ya), 0.0, cos(ya));
-    mat3 pitch = mat3(1.0, 0.0, 0.0, 0.0, cos(pa), sin(pa), 0.0, -sin(pa), cos(pa));
-    mat3 rot = yaw * pitch;
+    float ya = time * 0.22 + audioAdvance * 0.14; // round 2: 0.08 rad/s did not register
+    float pa = 0.34 * sin( audioAdvance * 0.08 );
+    mat3  yaw = mat3( cos( ya ), 0.0, -sin( ya ), 0.0, 1.0, 0.0, sin( ya ), 0.0, cos( ya ) );
+    mat3  pitch = mat3( 1.0, 0.0, 0.0, 0.0, cos( pa ), sin( pa ), 0.0, -sin( pa ), cos( pa ) );
+    mat3  rot = yaw * pitch;
 
-    float dist = camDistP * (1.0 - 0.04 * audioLevel);
-    vec3 corner[3] = vec3[3](a, b, c);
-    vec3 bary[3] = vec3[3](vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0));
+    float dist = camDistP * ( 1.0 - 0.04 * audioLevel );
+    vec3  corner[3] = vec3[3]( a, b, c );
+    vec3  bary[3] = vec3[3]( vec3( 1.0, 0.0, 0.0 ), vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, 0.0, 1.0 ) );
 
-    for (int i = 0; i < 3; ++i)
+    for ( int i = 0; i < 3; ++i )
     {
         vec3 pw = rot * corner[i];
-        vec3 vp = vec3(pw.x - eyeOff, pw.y, pw.z + dist);
+        vec3 vp = vec3( pw.x - eyeOff, pw.y, pw.z + dist );
 
-        vBary   = bary[i];
-        vObj    = corner[i];
+        vBary = bary[i];
+        vObj = corner[i];
         vNormal = rot * fn;
-        vView   = normalize(-vp);
-        vUV     = gUV[i];
-        vMorph  = gMorph[i];
+        vView = normalize( -vp );
+        vUV = gUV[i];
+        vMorph = gMorph[i];
 
-        gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+        gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
         EmitVertex();
     }

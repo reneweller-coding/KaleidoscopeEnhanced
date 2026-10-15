@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file GalaxyMergerNBody.frag
  * @brief Fragment stage for GalaxyMergerNBody: soft star dots, two glowing
@@ -11,72 +11,77 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Audio Reactivity: audioKick flashes the stars; audioBass swells the cores.
  */
 in vec4  vColor;
-in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
-in float vDepth;   ///< Depth (from the vertex stage).
-in float vKind;   ///< Element kind (from the vertex stage).
+in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
+in float vDepth;    ///< Depth (from the vertex stage).
+in float vKind;     ///< Element kind (from the vertex stage).
 in float vSpeed;
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float     audioBass;      ///< Bass band level, 0..1.
+uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                  ///< backwards).
+uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 col;
-    if (vKind < 0.0)
+    if ( vKind < 0.0 )
     {
-        vec3 deep = imgPalette(0.55) * 0.05 * (1.0 + 0.5 * audioSwell);
+        vec3 deep = imgPalette( 0.55 ) * 0.05 * ( 1.0 + 0.5 * audioSwell );
         // Distant stars: a hashed star field (the photo's bright patches read
         // as blobs, not stars).
-        vec2 su = vTexCoord * vec2(240.0, 140.0);
-        vec2 cell = floor(su); vec2 f = fract(su) - 0.5;
-        float hs = fract(sin(dot(cell, vec2(127.1, 311.7))) * 43758.5453);
-        float star = step(0.986, hs) * exp(-dot(f, f) * 9.0) * (0.5 + 0.5 * fract(hs * 57.0));
-        col = deep + vec3(star);
+        vec2  su = vTexCoord * vec2( 240.0, 140.0 );
+        vec2  cell = floor( su );
+        vec2  f = fract( su ) - 0.5;
+        float hs = fract( sin( dot( cell, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+        float star = step( 0.986, hs ) * exp( -dot( f, f ) * 9.0 ) * ( 0.5 + 0.5 * fract( hs * 57.0 ) );
+        col = deep + vec3( star );
     }
-    else if (vKind > 1.5)
+    else if ( vKind > 1.5 )
     {
-        vec2 d = vTexCoord - 0.5;
-        float r = length(d) * 2.0;
-        float core = exp(-r * r * 12.0);
-        float halo = exp(-r * 2.8) * (0.5 + 0.7 * audioBass);
+        vec2  d = vTexCoord - 0.5;
+        float r = length( d ) * 2.0;
+        float core = exp( -r * r * 12.0 );
+        float halo = exp( -r * 2.8 ) * ( 0.5 + 0.7 * audioBass );
         float a = core + halo;
-        if (a < 0.03) discard;
-        col = mix(imgPalette(0.9), vec3(1.0, 0.95, 0.85), 0.5) * (core * 1.8 + halo * 0.8);
+        if ( a < 0.03 )
+            discard;
+        col = mix( imgPalette( 0.9 ), vec3( 1.0, 0.95, 0.85 ), 0.5 ) * ( core * 1.8 + halo * 0.8 );
     }
     else
     {
-        vec2 d = vTexCoord - 0.5;
-        float r = length(d) * 2.0;
-        float a = exp(-r * r * 4.0) - 0.02;
-        if (a < 0.04) discard;
-        col = vColor.rgb * (a * 2.0) * (1.0 + 0.6 * audioKick);
-        col += vColor.rgb * clamp(vSpeed * 0.3, 0.0, 0.6) * a;   // the streams run hot
-        col *= clamp(1.5 - vDepth * 0.07, 0.35, 1.0);
+        vec2  d = vTexCoord - 0.5;
+        float r = length( d ) * 2.0;
+        float a = exp( -r * r * 4.0 ) - 0.02;
+        if ( a < 0.04 )
+            discard;
+        col = vColor.rgb * ( a * 2.0 ) * ( 1.0 + 0.6 * audioKick );
+        col += vColor.rgb * clamp( vSpeed * 0.3, 0.0, 0.6 ) * a; // the streams run hot
+        col *= clamp( 1.5 - vDepth * 0.07, 0.35, 1.0 );
     }
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

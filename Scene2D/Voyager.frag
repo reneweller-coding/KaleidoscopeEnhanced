@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file Voyager.frag
  * @brief Adapted from "Voyager" by \@kishimisu (2024) — https://www.shadertoy.com/view/M33XDH
@@ -17,60 +17,64 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *     audioPhase, never time*audio (anti-flicker).
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;   ///< integrated forward travel (jump-free)
-uniform float audioPhase;     ///< integrated rotation (jump-free)
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioAdvance;  ///< integrated forward travel (jump-free)
+uniform float audioPhase;    ///< integrated rotation (jump-free)
+uniform float audioBeat;     ///< Beat envelope, 0..1.
+uniform float audioBass;     ///< Bass band level, 0..1.
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioOnset;    ///< Onset envelope (any instrument), 0..1.
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
 // Per-activation variety (re-rolled by the engine each activation; 0 = default):
-uniform int   kSides;      ///< >=2: fold the image KALEIDOSCOPICALLY with this many
-                           // mirror segments (0 = the original simple abs-fold)
-uniform float travelMul;   ///< flight-speed multiplier      (0 -> 1.0)
-uniform float cellH;       ///< corridor cell height         (0 -> 2.0)
+uniform int kSides;      ///< >=2: fold the image KALEIDOSCOPICALLY with this many
+                         // mirror segments (0 = the original simple abs-fold)
+uniform float travelMul; ///< flight-speed multiplier      (0 -> 1.0)
+uniform float cellH;     ///< corridor cell height         (0 -> 2.0)
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
 
 /// n-fold kaleidoscopic mirror fold of a centred coordinate.
-vec2 kaleido(vec2 p, float sides)
+vec2 kaleido( vec2 p, float sides )
 {
-    float a   = atan(p.y, p.x);
-    float r   = length(p);
+    float a = atan( p.y, p.x );
+    float r = length( p );
     float seg = PI / sides;
-    a = mod(a + PI, 2.0 * seg) - seg;
-    a = abs(a);
-    return vec2(cos(a), sin(a)) * r;
+    a = mod( a + PI, 2.0 * seg ) - seg;
+    a = abs( a );
+    return vec2( cos( a ), sin( a ) ) * r;
 }
 
 /// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
 /// palette comes from the image and keeps changing over time + with the harmony.
-vec3 imgPal(float x)
+vec3 imgPal( float x )
 {
-    vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
-                                      sin(time * 0.033 + audioPhase * 0.09));
-    return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
+    vec2 cc = vec2( 0.5 )
+              + 0.32 * vec2( cos( time * 0.045 + audioPhase * 0.12 ), sin( time * 0.033 + audioPhase * 0.09 ) );
+    return img( fract( cc + 0.24 * vec2( cos( x ), sin( x * 1.31 ) ) ) );
 }
 
 /// Hue rotation around the luminance axis (keeps brightness + saturation).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -78,86 +82,83 @@ void main()
 {
     vec2 R = resolution;
     // Mirror-folded, aspect-normalised screen coordinate (the kaleidoscopic fold).
-    vec2 u = abs(gl_FragCoord.xy + gl_FragCoord.xy - R) / R.y;
+    vec2 u = abs( gl_FragCoord.xy + gl_FragCoord.xy - R ) / R.y;
 
     // Source image sampled through a fold: either the original simple mirror
     // fold, or (per-activation) a true n-segment kaleidoscopic fold of the
     // picture — the image becomes a radiating rosette woven into the light field.
     vec2 iuv;
-    if (kSides >= 2)
+    if ( kSides >= 2 )
     {
         // Slowly spinning n-segment rosette (jump-free: time + integrated phase).
         float ka = time * 0.02 + audioPhase * 0.04;
-        vec2  kp = (gl_FragCoord.xy - 0.5 * R) / R.y;
-        kp  = mat2(cos(ka), sin(ka), -sin(ka), cos(ka)) * kp;
-        iuv = kaleido(kp, float(kSides)) * 0.8 + 0.5;
+        vec2  kp = ( gl_FragCoord.xy - 0.5 * R ) / R.y;
+        kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
+        iuv = kaleido( kp, float( kSides ) ) * 0.8 + 0.5;
     }
     else
-        iuv = vec2(u.x * R.y / R.x, u.y);
-    vec3  pic    = img(fract(iuv));
-    float picLum = dot(pic, vec3(0.299, 0.587, 0.114));
+        iuv = vec2( u.x * R.y / R.x, u.y );
+    vec3  pic = img( fract( iuv ) );
+    float picLum = dot( pic, vec3( 0.299, 0.587, 0.114 ) );
 
-    float T    = time;                        // rotation clock
-    float tm   = (travelMul <= 0.01) ? 1.0 : travelMul;   // constant per activation
-    float trav = (time + audioAdvance * 4.0) * tm;        // forward travel (jump-free)
+    float T = time;                                     // rotation clock
+    float tm = ( travelMul <= 0.01 ) ? 1.0 : travelMul; // constant per activation
+    float trav = ( time + audioAdvance * 4.0 ) * tm;    // forward travel (jump-free)
     // Corridor cell height: per-activation base, BREATHING with the slow swell
     // and (slew-limited) bass — the research's "modulate the fold constants":
     // the whole repeating world gently expands with the music's energy.
-    float ch = ((cellH <= 0.01) ? 2.0 : cellH)
-             * (1.0 + 0.20 * audioSwell + 0.08 * audioBass);
-    vec3  f  = vec3(0.2, ch, 0.2);            // cell size
+    float ch = ( ( cellH <= 0.01 ) ? 2.0 : cellH )
+               * ( 1.0 + 0.20 * audioSwell + 0.08 * audioBass );
+    vec3  f = vec3( 0.2, ch, 0.2 ); // cell size
 
     // Ray direction: the folded coord, rotated slowly over time (+ gentle audio).
-    float a    = T / 16.0 + audioPhase * 0.10;
-    vec4  c4   = cos(a + vec4(0.0, 33.0, 11.0, 0.0));
-    mat2  rotM = mat2(c4.x, c4.y, c4.z, c4.w);
-    vec3  dir  = normalize(vec3(u * rotM, 1.0));
+    float a = T / 16.0 + audioPhase * 0.10;
+    vec4  c4 = cos( a + vec4( 0.0, 33.0, 11.0, 0.0 ) );
+    mat2  rotM = mat2( c4.x, c4.y, c4.z, c4.w );
+    vec3  dir = normalize( vec3( u * rotM, 1.0 ) );
 
     // Beats / onsets brighten the light field (slew-limited upstream -> no strobe).
-    float glow = 0.07 * (1.0 + 0.6 * audioBeat + 0.4 * audioOnset + 0.3 * audioBass);
+    float glow = 0.07 * ( 1.0 + 0.6 * audioBeat + 0.4 * audioOnset + 0.3 * audioBass );
 
-    vec4  O = vec4(0.0);
+    vec4  O = vec4( 0.0 );
     float t = 0.0;
-    for (int i = 0; i < 50; i++)
+    for ( int i = 0; i < 50; i++ )
     {
         vec3 q = t * dir;
         vec3 p = q;
         p.z += trav;
-        float n = sin(p.z) * cos(p.x * 1.4 + T / 4.0) * cos(p.z * 1.2 - T * 0.5) * 0.5 + 0.5;
-        p.y += 1.0 + q.z * sin(T / 6.0) * 0.2 - n;
-        p = mod(p, f + f) - f;
-        float d  = length(p) - 0.1;
+        float n = sin( p.z ) * cos( p.x * 1.4 + T / 4.0 ) * cos( p.z * 1.2 - T * 0.5 ) * 0.5 + 0.5;
+        p.y += 1.0 + q.z * sin( T / 6.0 ) * 0.2 - n;
+        p = mod( p, f + f ) - f;
+        float d = length( p ) - 0.1;
         t += d;
         float dd = d + 1.0;
-        vec4  pal = 1.0 + cos( length(q) * 0.14
-                             + length(u) * 3.0
-                             - T
-                             - picLum * 2.0
-                             + vec4(0.0, 1.0, 2.0, 0.0) );
-        O += glow * pow(n, 5.0) / dd * pal;
+        vec4  pal = 1.0 + cos( length( q ) * 0.14 + length( u ) * 3.0 - T - picLum * 2.0 + vec4( 0.0, 1.0, 2.0, 0.0 ) );
+        O += glow * pow( n, 5.0 ) / dd * pal;
     }
 
     vec3 col = O.rgb;
 
     // Mood grade: warm/cool by centroid, saturation by valence.
-    col *= mix(vec3(0.70, 0.85, 1.25), vec3(1.30, 1.05, 0.70), audioCentroid);
-    float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
+    col *= mix( vec3( 0.70, 0.85, 1.25 ), vec3( 1.30, 1.05, 0.70 ), audioCentroid );
+    float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( lum ), col, 0.6 + 0.6 * audioValence );
 
     // Image-driven colour: a drifting crop of the picture (keyed by the effect's
     // brightness + screen position) modulates the palette, so the colours come
     // from the image and keep changing (like the kaleidoscope folding crops).
-    float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
-                 + length(gl_FragCoord.xy / resolution - 0.5) * 4.0), vec3(0.333));
-    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+    float himg = dot( imgPal( dot( col, vec3( 0.333 ) ) * 6.0
+                              + length( gl_FragCoord.xy / resolution - 0.5 ) * 4.0 ),
+                      vec3( 0.333 ) );
+    col = hueRot( col, ( himg - 0.5 ) * 3.0 + time * 0.05 );
 
     // The folded picture itself shimmers through as a kaleidoscopic rosette
     // (squared -> only its bright parts, so the depth is preserved).  In the
     // true-kaleido variants the rosette is the point, so it gets more weight.
-    float rosW = (kSides >= 2) ? 0.28 : 0.10;
-    col += pic * pic * rosW * (0.5 + 0.5 * audioLevel);
+    float rosW = ( kSides >= 2 ) ? 0.28 : 0.10;
+    col += pic * pic * rosW * ( 0.5 + 0.5 * audioLevel );
 
     col *= 0.9 + 0.5 * audioLevel;
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

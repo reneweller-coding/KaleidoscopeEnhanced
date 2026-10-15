@@ -20,29 +20,32 @@
 // flight happened off-screen; each one now starts just inside the top-left of
 // its OWN depth's frustum and crosses the full diagonal.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioAdvance;       ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                  ///< backwards).
+uniform float     audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -50,33 +53,36 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 
 /// House tint: bend a colour toward the photo palette while keeping its
 /// luminance -- the identity look survives, only the hue follows the photos.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -94,65 +100,65 @@ void main()
     // the meteors' flight paths evenly spread over the picture at every
     // distance instead of bunching into one corner of a black frame.
     const float kTanY = 0.5206;
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+    float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
-    if (idx < 28000.0)
+    if ( idx < 28000.0 )
     {
         // ---- Meteors with long particle trails. ----
-        float m  = floor(idx / 500.0);               // meteor 0..55
-        float h1 = hash11(m * 3.3 + 0.21);
-        float h2 = hash11(m * 7.7 + 1.87);
-        float h3 = hash11(m * 5.9 + 3.11);
+        float m = floor( idx / 500.0 ); // meteor 0..55
+        float h1 = hash11( m * 3.3 + 0.21 );
+        float h2 = hash11( m * 7.7 + 1.87 );
+        float h3 = hash11( m * 5.9 + 3.11 );
 
         // Cycle: each meteor streaks, then waits; music advances the clock.
-        float u = fract((time + audioAdvance * 1.4) * (0.14 + 0.10 * h3)
-                        + h1 * 9.0);
+        float u = fract( ( time + audioAdvance * 1.4 ) * ( 0.14 + 0.10 * h3 )
+                         + h1 * 9.0 );
 
         // Enter just inside the top-left of this meteor's own frustum slice
         // and cross the full diagonal; every length below is measured in that
         // slice's half-width / half-height, so a far meteor sweeps exactly as
         // much of the PICTURE as a near one.
         float dz0 = 45.0 + h3 * 90.0;
-        float hw  = kTanY * aspect * dz0;
-        float hh  = kTanY * dz0;
-        vec3  start = vec3(-0.85 * hw, 0.80 * hh, dz0);
-        vec3  dir   = normalize(vec3( 0.82 + 0.14 * h2,
+        float hw = kTanY * aspect * dz0;
+        float hh = kTanY * dz0;
+        vec3  start = vec3( -0.85 * hw, 0.80 * hh, dz0 );
+        vec3  dir = normalize( vec3( 0.82 + 0.14 * h2,
                                      -0.50 - 0.22 * h2,
-                                      0.06 * (h3 - 0.5)));
+                                     0.06 * ( h3 - 0.5 ) ) );
         float flight = u * 1.9 * hw;
 
-        float t = r1;                                // 0 head .. 1 tail end
-        world = start + dir * (flight - t * (0.11 + 0.07 * h2) * dz0);
-        world += vec3(r2 - 0.5, r3 - 0.5, r4 - 0.5)
-               * (0.25 + 2.2 * t * t) * (0.4 + dz0 / 70.0);
+        float t = r1; // 0 head .. 1 tail end
+        world = start + dir * ( flight - t * ( 0.11 + 0.07 * h2 ) * dz0 );
+        world += vec3( r2 - 0.5, r3 - 0.5, r4 - 0.5 )
+                 * ( 0.25 + 2.2 * t * t ) * ( 0.4 + dz0 / 70.0 );
 
         // Bright while streaking mid-flight, invisible while waiting.
-        float alive = smoothstep(0.02, 0.10, u) * (1.0 - smoothstep(0.60, 0.80, u));
-        float head  = exp(-t * 4.5);
-        col = palTint(mix(vec3(1.0, 0.85, 0.55), vec3(0.35, 0.55, 1.0), t), 0.30 * t, 0.22);
-        col *= alive * (0.40 + 0.90 * head)
-             * (1.0 + 0.6 * audioOnset + 2.2 * audioDrop);
+        float alive = smoothstep( 0.02, 0.10, u ) * ( 1.0 - smoothstep( 0.60, 0.80, u ) );
+        float head = exp( -t * 4.5 );
+        col = palTint( mix( vec3( 1.0, 0.85, 0.55 ), vec3( 0.35, 0.55, 1.0 ), t ), 0.30 * t, 0.22 );
+        col *= alive * ( 0.40 + 0.90 * head )
+               * ( 1.0 + 0.6 * audioOnset + 2.2 * audioDrop );
 
-        sizeBase = 297.2 * (0.7 + 1.3 * head);
-        sizeCap  = 47.6;
-        sizeMin  = 1.5;
-        sizeJit  = 0.4 + 0.8 * r4;
+        sizeBase = 297.2 * ( 0.7 + 1.3 * head );
+        sizeCap = 47.6;
+        sizeMin = 1.5;
+        sizeJit = 0.4 + 0.8 * r4;
     }
-    else if (r4 < 0.30)
+    else if ( r4 < 0.30 )
     {
         // ---- Milky haze: the dim stuff BETWEEN the stars. ----
         // A speck must stay legible at any distance -- below ~2.5 px an
         // additive sprite averages away to nothing and the far field reads
         // as black again, which is exactly what the old star dome did.
         float dz = 22.0 + r3 * 130.0;
-        float open = 2.3;      // 2.0 fits the frustum exactly; 2.3 covers the rig's roll
-        world = vec3((r1 - 0.5) * open * dz * kTanY * aspect,
-                     (r2 - 0.5) * open * dz * kTanY,
-                     dz);
-        float tw = 0.85 + 0.15 * sin(time * (0.4 + r3 * 0.9) + r1 * 40.0);
-        col = palTint(vec3(0.55, 0.62, 0.90), 0.62, 0.35)
-            * (0.075 + 0.115 * r1) * tw * (0.8 + 0.4 * audioSwell)
-            * clamp(1.0 - dz / 190.0, 0.0, 1.0);
+        float open = 2.3; // 2.0 fits the frustum exactly; 2.3 covers the rig's roll
+        world = vec3( ( r1 - 0.5 ) * open * dz * kTanY * aspect,
+                      ( r2 - 0.5 ) * open * dz * kTanY,
+                      dz );
+        float tw = 0.85 + 0.15 * sin( time * ( 0.4 + r3 * 0.9 ) + r1 * 40.0 );
+        col = palTint( vec3( 0.55, 0.62, 0.90 ), 0.62, 0.35 )
+              * ( 0.075 + 0.115 * r1 ) * tw * ( 0.8 + 0.4 * audioSwell )
+              * clamp( 1.0 - dz / 190.0, 0.0, 1.0 );
 
         // The size term below divides by depth, which is right for a STAR (a
         // real object that gets smaller with distance) and wrong for a haze
@@ -160,39 +166,39 @@ void main()
         // the field collapses onto the minimum-size floor and stops being
         // haze.  Folding dz back into the jitter cancels that division.
         sizeBase = 26.7;
-        sizeCap  = 47.6;
-        sizeMin  = 3.0;
-        sizeJit  = (0.5 + 1.3 * r1) * dz;
+        sizeCap = 47.6;
+        sizeMin = 3.0;
+        sizeJit = ( 0.5 + 1.3 * r1 ) * dz;
     }
     else
     {
         // ---- Star field, spread across the frustum at every depth. ----
         float dz = 20.0 + r3 * r3 * 150.0;
         float open = 2.3;
-        world = vec3((r1 - 0.5) * open * dz * kTanY * aspect,
-                     (r2 - 0.5) * open * dz * kTanY,
-                     dz);
-        float tw = 0.75 + 0.25 * sin(time * (1.0 + r3 * 3.0) + r4 * 40.0);
-        col = vec3(0.75, 0.8, 0.95) * (0.30 + 0.70 * r4) * tw
-            * (0.8 + 0.4 * audioSwell);
+        world = vec3( ( r1 - 0.5 ) * open * dz * kTanY * aspect,
+                      ( r2 - 0.5 ) * open * dz * kTanY,
+                      dz );
+        float tw = 0.75 + 0.25 * sin( time * ( 1.0 + r3 * 3.0 ) + r4 * 40.0 );
+        col = vec3( 0.75, 0.8, 0.95 ) * ( 0.30 + 0.70 * r4 ) * tw
+              * ( 0.8 + 0.4 * audioSwell );
 
         sizeBase = 297.2;
-        sizeCap  = 47.6;
-        sizeMin  = 1.8;
-        sizeJit  = 0.4 + 0.8 * r4;
+        sizeCap = 47.6;
+        sizeMin = 1.8;
+        sizeJit = 0.4 + 0.8 * r4;
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.04 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(sizeBase * sizeJit * px / dist,
-                         sizeMin, max(sizeCap * px, sizeMin));
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( sizeBase * sizeJit * px / dist,
+                          sizeMin, max( sizeCap * px, sizeMin ) );
     // Cap the TINTED colour, not the scalar that fed it.
-    vCol = vec4(min(col * 3.0, vec3(3.4)), 1.0);
+    vCol = vec4( min( col * 3.0, vec3( 3.4 ) ), 1.0 );
 }

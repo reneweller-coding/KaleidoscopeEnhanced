@@ -1,12 +1,12 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel; ///< Overall loudness, 0..1.
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // RollerCoaster.frag — glowing structure: bright core, soft halo.
-in vec4  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file RollerCoaster.frag
@@ -27,8 +27,8 @@ in float vSide;   ///< Which side of a strip (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float d    = abs(vSide);
-    float core = exp(-d * d * 12.0);
-    float halo = exp(-d * d * 2.5) * 0.30;
-    fragColor = vec4(vCol.rgb * (core + halo) * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
+    float d = abs( vSide );
+    float core = exp( -d * d * 12.0 );
+    float halo = exp( -d * d * 2.5 ) * 0.30;
+    fragColor = vec4( vCol.rgb * ( core + halo ) * ( 0.85 + 0.30 * audioLevel + 0.35 * audioKick ), 1.0 );
 }

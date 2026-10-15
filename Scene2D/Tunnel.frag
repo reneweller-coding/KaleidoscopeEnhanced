@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file Tunnel.frag
  * @brief The classic forward-scrolling mirrored-segment kaleidoscope tunnel:
@@ -27,74 +27,75 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *  - audioRolloff   -> WALL COLOUR TEMPERATURE: bass-bound music tints the tunnel
  *                      cold blue, energy reaching into the highs warms it amber
  */
-uniform vec2 resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float interpolationRotation;
-uniform float speedTunnel;
-uniform float speed;
-uniform int sides;
-uniform float power;
-uniform int rotate;
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     interpolationRotation;
+uniform float     speedTunnel;
+uniform float     speed;
+uniform int       sides;
+uniform float     power;
+uniform int       rotate;
 // Audio reactivity: 0=silence, 1=loud beat.  Decays between beats.
-uniform float audioBeat;       ///< beat pulse decay 0..1
-uniform float audioSwell;   ///< slow envelope, the calm replacement for the fast one (V7d)
-uniform float audioLevel;      ///< smoothed loudness 0..1
-uniform float audioFlip;       ///< rotation direction: +1 or -1
-uniform float audioCentroid;   ///< tonal brightness 0..1  (0=dark drone, 1=bright shimmer)
-uniform float audioFlux;       ///< spectral flux 0..1     (how fast spectrum changes)
-uniform float audioPhase;      ///< integrated audio rotation phase (radians, jump-free)
-uniform float audioAdvance;    ///< integrated audio tunnel advance (jump-free)
-uniform float audioValence;    ///< mood pleasantness 0..1 (low=tense/dark, high=happy)
-uniform float audioSpread;     ///< 0=narrow spectrum .. 1=wide -> throat depth compression
-uniform float audioRoughness;  ///< 0=consonant .. 1=dissonant -> wall ripple
-uniform float audioRolloff;    ///< 0=bass-bound .. 1=reaching into the highs -> wall colour
+uniform float audioBeat;      ///< beat pulse decay 0..1
+uniform float audioSwell;     ///< slow envelope, the calm replacement for the fast one (V7d)
+uniform float audioLevel;     ///< smoothed loudness 0..1
+uniform float audioFlip;      ///< rotation direction: +1 or -1
+uniform float audioCentroid;  ///< tonal brightness 0..1  (0=dark drone, 1=bright shimmer)
+uniform float audioFlux;      ///< spectral flux 0..1     (how fast spectrum changes)
+uniform float audioPhase;     ///< integrated audio rotation phase (radians, jump-free)
+uniform float audioAdvance;   ///< integrated audio tunnel advance (jump-free)
+uniform float audioValence;   ///< mood pleasantness 0..1 (low=tense/dark, high=happy)
+uniform float audioSpread;    ///< 0=narrow spectrum .. 1=wide -> throat depth compression
+uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> wall ripple
+uniform float audioRolloff;   ///< 0=bass-bound .. 1=reaching into the highs -> wall colour
 
 const float M_PI = 3.141592653589793;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
 
     // normalize to the center
-	vec2 p;
+    vec2 p;
     p.x = gl_FragCoord.x;
     p.y = gl_FragCoord.y;
-	p.x /= resolution.y;
-	p.y /= resolution.y;
-	p.x -= 0.5*resolution.x/resolution.y;
-	p.y -= 0.5;
+    p.x /= resolution.y;
+    p.y /= resolution.y;
+    p.x -= 0.5 * resolution.x / resolution.y;
+    p.y -= 0.5;
 
-//Tunnel foreward    
+    // Tunnel foreward
     p = 4.0 * p;
-   
-    float angle = 0.0; 
-    if( rotate > 0 )
-       angle = M_PI*0.25;
-    
+
+    float angle = 0.0;
+    if ( rotate > 0 )
+        angle = M_PI * 0.25;
+
     // a rotation
-    //vec2 cst = vec2( cos(interpolationRotation), sin(interpolationRotation) );
-    vec2 cst = vec2( cos(angle), sin(angle) );
-    mat2 rot = mat2(cst.x,-cst.y,cst.y,cst.x);
-    p = rot*p;
-//rwrwtest
+    // vec2 cst = vec2( cos(interpolationRotation), sin(interpolationRotation) );
+    vec2 cst = vec2( cos( angle ), sin( angle ) );
+    mat2 rot = mat2( cst.x, -cst.y, cst.y, cst.x );
+    p = rot * p;
+    // rwrwtest
 
     // power was never registered in any preset (always 0, GL's unset-uniform
     // default) -- 1.0/(2.0*power) divided by zero, sending r to infinity for
     // every pixel. 1.0 reproduces the plain Euclidean length() case.
-    float powV = (power > 0.01) ? power : 1.0;
-    float r = pow( pow(p.x*p.x,powV) + pow(p.y*p.y,powV), 1.0/(2.0*powV) );
+    float powV = ( power > 0.01 ) ? power : 1.0;
+    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
 
     // cartesian to polar coordinates
-    //float r = length(p);
-    float a = atan(p.y, p.x);
+    // float r = length(p);
+    float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5*float(sides);
+    float sidesK = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod(a, tau/sidesK);
-    a = abs(a - tau/sidesK/2.);
+    a = mod( a, tau / sidesK );
+    a = abs( a - tau / sidesK / 2. );
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
 
     // Spectral spread sets how steeply perspective compresses the wall toward
@@ -102,23 +103,23 @@ void main() {
     // shallow, a wide one packs it into a deep throat.  This scales only the
     // radial term, which is ADDED to the scroll -- 'time' keeps its own,
     // untouched coefficient, so no accumulated phase is ever remapped.
-    float throat = 0.10 * (0.80 + 0.40*clamp(audioSpread, 0.0, 1.0));
+    float throat = 0.10 * ( 0.80 + 0.40 * clamp( audioSpread, 0.0, 1.0 ) );
 
-	vec2 uv;
-    uv.x = (speedTunnel*time + audioAdvance + throat/r);
+    vec2 uv;
+    uv.x = ( speedTunnel * time + audioAdvance + throat / r );
     // Dissonance buckles the wall: a purely radial ripple on the angular
     // coordinate, so consonant passages keep the wedges dead straight.
-    uv.y = (a/M_PI) + 0.030*clamp(audioRoughness, 0.0, 1.0)*sin(r*7.5);
+    uv.y = ( a / M_PI ) + 0.030 * clamp( audioRoughness, 0.0, 1.0 ) * sin( r * 7.5 );
 
-    vec4 col = interpolation * texture(tex0,uv) + (1.0-interpolation)*texture(tex1,uv);
+    vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
 
     // --- Beat: a VERY subtle radial breath only ---
     // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
     // accent now lives in the gentle corner spotlights of the final present pass.
-    float zoom    = 1.0 + audioSwell * 0.04;
-    vec2 uvZoomed = (uv - 0.5) / zoom + 0.5;
-    vec4 colZoomed = interpolation * texture(tex0,uvZoomed) + (1.0-interpolation)*texture(tex1,uvZoomed);
-    col = mix(col, colZoomed, audioBeat * 0.18);
+    float zoom = 1.0 + audioSwell * 0.04;
+    vec2  uvZoomed = ( uv - 0.5 ) / zoom + 0.5;
+    vec4  colZoomed = interpolation * texture( tex0, uvZoomed ) + ( 1.0 - interpolation ) * texture( tex1, uvZoomed );
+    col = mix( col, colZoomed, audioBeat * 0.18 );
 
     // --- Spectral Centroid: colour temperature tint ---
     // Low centroid (dark drone) → cool blue-violet tint, reduced brightness
@@ -132,8 +133,8 @@ void main() {
     // spectral rolloff: bass-bound music makes it a cold blue shaft, energy
     // reaching into the highs warms it to amber.  Luminance-matched, so this
     // recolours without changing the exposure the present pass then grades.
-    col.rgb *= mix(vec3(0.86, 0.94, 1.14), vec3(1.12, 1.00, 0.86),
-                   clamp(audioRolloff, 0.0, 1.0));
+    col.rgb *= mix( vec3( 0.86, 0.94, 1.14 ), vec3( 1.12, 1.00, 0.86 ),
+                    clamp( audioRolloff, 0.0, 1.0 ) );
 
-    fragColor = clamp(col, 0.0, 1.0);
+    fragColor = clamp( col, 0.0, 1.0 );
 }

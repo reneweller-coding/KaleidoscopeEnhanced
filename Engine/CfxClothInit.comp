@@ -13,18 +13,19 @@
 // position, A unused.  Keeping the cloth on a GRID means the display can
 // shade it directly as a surface — no scatter needed for rendering, only
 // for the physics.
-layout(local_size_x = 16, local_size_y = 16) in;
+layout( local_size_x = 16, local_size_y = 16 ) in;
 
-layout(rgba16f, binding = 0) writeonly uniform image2D imgCur;
-layout(rgba16f, binding = 1) writeonly uniform image2D imgPrev;
+layout( rgba16f, binding = 0 ) writeonly uniform image2D imgCur;
+layout( rgba16f, binding = 1 ) writeonly uniform image2D imgPrev;
 
-uniform ivec2 size;   ///< Size of the simulation grid in cells.
+uniform ivec2 size; ///< Size of the simulation grid in cells.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    ivec2 p = ivec2(gl_GlobalInvocationID.xy);
-    if (p.x >= size.x || p.y >= size.y) return;
-    imageStore(imgCur,  p, vec4(0.0, 0.0, 0.0, 1.0));
-    imageStore(imgPrev, p, vec4(0.0, 0.0, 0.0, 1.0));
+    ivec2 p = ivec2( gl_GlobalInvocationID.xy );
+    if ( p.x >= size.x || p.y >= size.y )
+        return;
+    imageStore( imgCur, p, vec4( 0.0, 0.0, 0.0, 1.0 ) );
+    imageStore( imgPrev, p, vec4( 0.0, 0.0, 0.0, 1.0 ) );
 }

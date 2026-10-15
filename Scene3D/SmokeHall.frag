@@ -10,13 +10,13 @@
 // through, and they bend correctly around the pillars because the shadow map
 // already knows about the pillars.
 // -----------------------------------------------------------------------
-layout(location = 0) out vec4 outAccum;
-layout(location = 1) out vec4 outReveal;
+layout( location = 0 ) out vec4 outAccum;
+layout( location = 1 ) out vec4 outReveal;
 
-in vec3  vObj;   ///< Object-space position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vObj;    ///< Object-space position (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
-in vec3  vWorld;   ///< World position (from the vertex stage).
+in vec3  vWorld;  ///< World position (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
 in float vExtra;
 
@@ -40,36 +40,38 @@ in float vExtra;
  * slice's shadow pattern.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D       tex0; ///< The current photo.
 uniform sampler2DShadow texShadow;
-uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
-uniform vec3  lightDir;
-uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
-uniform float shadowTexel;
-uniform float shadowExtent;
-uniform float oitPass;   ///< Order-independent transparency pass flag.
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  nearFar;   ///< Near and far clip distances.
+uniform mat4            lightM; ///< Light view-projection matrix (shadow map).
+uniform vec3            lightDir;
+uniform float           shadowPass; ///< 1 during the shadow map's depth-only pass.
+uniform float           shadowTexel;
+uniform float           shadowExtent;
+uniform float           oitPass;       ///< Order-independent transparency pass flag.
+uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2            nearFar;       ///< Near and far clip distances.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
 
-uniform float densityP;   ///< Density knob, 0..1.
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     densityP;     ///< Density knob, 0..1.
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     hueP;         ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioValence; ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -77,90 +79,91 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
+    return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
 /// @brief Pseudo-random number 0..1 from a 3D point.
-float hash13(vec3 p)
+float hash13( vec3 p )
 {
-    p = fract(p * 0.3183099 + vec3(0.71, 0.113, 0.419));
+    p = fract( p * 0.3183099 + vec3( 0.71, 0.113, 0.419 ) );
     p *= 17.0;
-    return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+    return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
 }
 
 /// @brief Value noise with a seed.
-float vnoise(vec3 x)
+float vnoise( vec3 x )
 {
-    vec3 i = floor(x), f = fract(x);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(mix(hash13(i + vec3(0, 0, 0)), hash13(i + vec3(1, 0, 0)), f.x),
-                   mix(hash13(i + vec3(0, 1, 0)), hash13(i + vec3(1, 1, 0)), f.x), f.y),
-               mix(mix(hash13(i + vec3(0, 0, 1)), hash13(i + vec3(1, 0, 1)), f.x),
-                   mix(hash13(i + vec3(0, 1, 1)), hash13(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+    vec3 i = floor( x ), f = fract( x );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( mix( hash13( i + vec3( 0, 0, 0 ) ), hash13( i + vec3( 1, 0, 0 ) ), f.x ),
+                     mix( hash13( i + vec3( 0, 1, 0 ) ), hash13( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
+                mix( mix( hash13( i + vec3( 0, 0, 1 ) ), hash13( i + vec3( 1, 0, 1 ) ), f.x ),
+                     mix( hash13( i + vec3( 0, 1, 1 ) ), hash13( i + vec3( 1, 1, 1 ) ), f.x ), f.y ),
+                f.z );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec3 p)
+float fbm( vec3 p )
 {
-    return 0.55 * vnoise(p) + 0.28 * vnoise(p * 2.03) + 0.17 * vnoise(p * 4.11);
+    return 0.55 * vnoise( p ) + 0.28 * vnoise( p * 2.03 ) + 0.17 * vnoise( p * 4.11 );
 }
 
 /// @brief Shadow factor from the shadow map at a world position.
-float shadowAt(vec3 world, float ndl)
+float shadowAt( vec3 world, float ndl )
 {
-    float lift = (2.0 * shadowExtent * shadowTexel) * 2.0 / max(ndl, 0.20);
-    vec4 lp = lightM * vec4(world + vec3(0.0, lift, 0.0), 1.0);
-    vec3 proj = lp.xyz / lp.w * 0.5 + 0.5;
-    if (proj.z > 1.0 || any(lessThan(proj.xy, vec2(0.0))) ||
-        any(greaterThan(proj.xy, vec2(1.0))))
+    float lift = ( 2.0 * shadowExtent * shadowTexel ) * 2.0 / max( ndl, 0.20 );
+    vec4  lp = lightM * vec4( world + vec3( 0.0, lift, 0.0 ), 1.0 );
+    vec3  proj = lp.xyz / lp.w * 0.5 + 0.5;
+    if ( proj.z > 1.0 || any( lessThan( proj.xy, vec2( 0.0 ) ) ) || any( greaterThan( proj.xy, vec2( 1.0 ) ) ) )
         return 1.0;
-    float bias = 0.0008 + 0.0030 * (1.0 - ndl);
+    float bias = 0.0008 + 0.0030 * ( 1.0 - ndl );
     float s = 0.0;
     // A wider kernel than the other shadowed scenes use.  The box has to be big
     // enough to hold the whole hall, which spends texels fast, and a shaft's
     // edge crossing the volume magnifies every step in the map into a visible
     // staircase — a soft edge is also what a real shaft has.
     float r = shadowTexel * 2.6;
-    for (int y = -1; y <= 1; ++y)
-        for (int x = -1; x <= 1; ++x)
-            s += texture(texShadow,
-                         vec3(proj.xy + vec2(float(x), float(y)) * r, proj.z - bias));
+    for ( int y = -1; y <= 1; ++y )
+        for ( int x = -1; x <= 1; ++x )
+            s += texture( texShadow,
+                          vec3( proj.xy + vec2( float( x ), float( y ) ) * r, proj.z - bias ) );
     return s / 9.0;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    if (shadowPass > 0.5)
+    if ( shadowPass > 0.5 )
     {
-        outAccum = vec4(0.0);
-        outReveal = vec4(0.0);
+        outAccum = vec4( 0.0 );
+        outReveal = vec4( 0.0 );
         return;
     }
 
-    vec3 L = normalize(lightDir);
+    vec3 L = normalize( lightDir );
 
-    if (oitPass < 0.5)
+    if ( oitPass < 0.5 )
     {
         // ---- the hall ----
-        vec3 n = normalize(vNormal);
-        vec3 V = normalize(vView);
-        if (dot(n, V) < 0.0) n = -n;
+        vec3 n = normalize( vNormal );
+        vec3 V = normalize( vView );
+        if ( dot( n, V ) < 0.0 )
+            n = -n;
 
-        float ndl = max(dot(n, L), 0.0);
-        float sh = mix(0.30, 1.0, shadowAt(vWorld, ndl));
+        float ndl = max( dot( n, L ), 0.0 );
+        float sh = mix( 0.30, 1.0, shadowAt( vWorld, ndl ) );
 
         // Floor, pillar and beam are the same stone at different values; the
         // floor is darker so the shafts landing on it have something to read
@@ -169,23 +172,23 @@ void main()
         // The floor is the second half of the effect: the same beams that stripe
         // the smoke also stripe the ground, and those two patterns are the same
         // pattern seen twice.  It has to be bright enough to show them.
-        vec3 stone = mix(vec3(0.30, 0.29, 0.30),
-                         vec3(0.38, 0.36, 0.34), step(0.5, mat));
-        vec3 col = stone * (0.30 + 1.60 * ndl * sh);
-        col += stone * 0.70 * (0.4 + 0.8 * audioAmbient);
+        vec3 stone = mix( vec3( 0.30, 0.29, 0.30 ),
+                          vec3( 0.38, 0.36, 0.34 ), step( 0.5, mat ) );
+        vec3 col = stone * ( 0.30 + 1.60 * ndl * sh );
+        col += stone * 0.70 * ( 0.4 + 0.8 * audioAmbient );
 
         // A cold bounce so the shadowed sides are not simply flat black.
-        col += stone * vec3(0.30, 0.42, 0.62) * max(-dot(n, L) * 0.4 + 0.35, 0.0) * 0.5;
+        col += stone * vec3( 0.30, 0.42, 0.62 ) * max( -dot( n, L ) * 0.4 + 0.35, 0.0 ) * 0.5;
 
         // Downward-facing surfaces — the undersides of the beams — are lit only
         // by what comes back up off the floor.  Without this term they are the
         // darkest thing in the frame and they sit right across the top of it.
-        col += stone * vec3(0.85, 0.80, 0.68) * max(-dot(n, L), 0.0) * 0.55
-             * (0.4 + 0.7 * audioLevel);
+        col += stone * vec3( 0.85, 0.80, 0.68 ) * max( -dot( n, L ), 0.0 ) * 0.55
+               * ( 0.4 + 0.7 * audioLevel );
         col *= 1.0 + 0.12 * audioBeat;
-        col = col / (1.0 + col * 0.30);
-        outAccum  = vec4(col, interpolation);
-        outReveal = vec4(0.0);
+        col = col / ( 1.0 + col * 0.30 );
+        outAccum = vec4( col, interpolation );
+        outReveal = vec4( 0.0 );
         return;
     }
 
@@ -193,54 +196,54 @@ void main()
     // The smoke lives inside the colonnade and nowhere else.  Without this the
     // slabs carry haze out past the pillars and past the edge of the shadow box,
     // and the frame turns into an even grey with the architecture buried in it.
-    if (abs(vWorld.x) > 15.0 || vWorld.y < -0.2 || vWorld.y > 11.8)
+    if ( abs( vWorld.x ) > 15.0 || vWorld.y < -0.2 || vWorld.y > 11.8 )
         discard;
 
     // Drift rises and rolls down the hall.  It rides audioAdvance, never
     // absolute time scaled by a live level, or the whole volume would jump
     // every time the music got louder.
-    vec3 q = vWorld * 0.36 + vec3(0.0, -audioAdvance * 0.22, -audioAdvance * 0.10);
-    float d = fbm(q);
-    d = smoothstep(0.42, 0.92, d);
+    vec3  q = vWorld * 0.36 + vec3( 0.0, -audioAdvance * 0.22, -audioAdvance * 0.10 );
+    float d = fbm( q );
+    d = smoothstep( 0.42, 0.92, d );
 
     // Denser low down, but only gently: the shafts are BORN at the roof slots,
     // so smoke that has already thinned to nothing by mid-height leaves the beams
     // with nothing to be visible in.  An earlier exponent of 0.22 put barely a
     // sixth of the density up at the ceiling, which is precisely where the effect
     // was supposed to start.
-    float hFall = exp(-max(vWorld.y, 0.0) * 0.10);
-    float far = 1.0 - smoothstep(0.75, 1.0, vExtra);
-    float dens = d * hFall * far * clamp(densityP, 0.2, 2.0)
-               * (0.55 + 0.45 * audioLevel);
+    float hFall = exp( -max( vWorld.y, 0.0 ) * 0.10 );
+    float far = 1.0 - smoothstep( 0.75, 1.0, vExtra );
+    float dens = d * hFall * far * clamp( densityP, 0.2, 2.0 )
+                 * ( 0.55 + 0.45 * audioLevel );
 
-    if (dens < 0.004)
+    if ( dens < 0.004 )
         discard;
 
     // The only thing that lights the smoke: does the beam reach this slice?
-    float lit = shadowAt(vWorld, 1.0);
+    float lit = shadowAt( vWorld, 1.0 );
 
-    float hue = fract(0.10 + 0.30 * hueP + 0.05 * vWorld.y
-                      + 0.05 * sin(audioChromaHue));
-    vec3 beam = mix(vec3(1.0, 0.94, 0.80), hue2rgb(hue), 0.30);
+    float hue = fract( 0.10 + 0.30 * hueP + 0.05 * vWorld.y
+                       + 0.05 * sin( audioChromaHue ) );
+    vec3  beam = mix( vec3( 1.0, 0.94, 0.80 ), hue2rgb( hue ), 0.30 );
 
     // Contrast is the whole effect.  What makes a shaft is the RATIO between
     // smoke that the beam reaches and smoke it does not; raising the ambient to
     // keep the unlit smoke "visible" is the surest way to erase it.
-    vec3 col = beam * lit * (0.85 + 1.30 * glowP)
-             * (0.6 + 0.8 * audioKick + 0.35 * audioSubBass);
-    col += vec3(0.030, 0.036, 0.055) * (0.6 + 1.0 * audioAmbient);
+    vec3 col = beam * lit * ( 0.85 + 1.30 * glowP )
+               * ( 0.6 + 0.8 * audioKick + 0.35 * audioSubBass );
+    col += vec3( 0.030, 0.036, 0.055 ) * ( 0.6 + 1.0 * audioAmbient );
 
     // Tone-map before accumulating: fifty-six slices into an RGBA16F target
     // with a weight in the hundreds is exactly the case that overflows half
     // precision and comes back as black.
-    col = col / (1.0 + col * 0.30);
+    col = col / ( 1.0 + col * 0.30 );
 
     // Per-SLICE opacity, and there are fifty-six of them.  The number that
     // matters is the product: (1 - a)^56 is the light left at the far end, so
     // a = 0.035 leaves about 13% and reads as thick smoke, while the 0.16 this
     // started at leaves 10^-9 — the volume goes fully opaque a few slices in and
     // its average colour simply replaces the frame.
-    float alpha = clamp(dens * 0.030, 0.0, 0.070);
+    float alpha = clamp( dens * 0.030, 0.0, 0.070 );
 
     // A FLAT weight, unlike every other OIT scene here — and this is the whole
     // reason the shafts read.  The depth-falling weight exists to make nearer
@@ -252,6 +255,6 @@ void main()
     // there should be beams.
     float w = alpha * 40.0;
 
-    outAccum  = vec4(col * alpha, alpha) * w;
-    outReveal = vec4(alpha);
+    outAccum = vec4( col * alpha, alpha ) * w;
+    outReveal = vec4( alpha );
 }

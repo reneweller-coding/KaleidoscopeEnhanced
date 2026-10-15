@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file GeothermalFumaroleMineralSpires.frag
  * @brief GEOTHERMAL FUMAROLE MINERAL SPIRES: Deep-sea hydrothermal vent chimneys and volcanic
@@ -19,70 +19,72 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   specularP   float mineral crystal facet sheen gain        (0.8..2.5)
  */
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vCol;   ///< Colour (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vCol;    ///< Colour (from the vertex stage).
 in float vVentGlow;
 in float vBack;
 in float vFog;
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float ventGlowP;
-uniform float specularP;   ///< Specular knob, 0..1.
+uniform float specularP; ///< Specular knob, 0..1.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 photo = img(vUV);
+    vec3 photo = img( vUV );
 
     // ---- FAR STEAM CURTAIN -------------------------------------------
     // Flat, unlit, deliberately dim: it only lifts the sky off pure black
     // and gives the receding chimneys an atmosphere to fade into.
-    if (vBack > 0.5)
+    if ( vBack > 0.5 )
     {
-        float pg  = dot(photo, vec3(0.3333));
-        vec3  bg  = vCol * (0.72 + 0.55 * pg);
+        float pg = dot( photo, vec3( 0.3333 ) );
+        vec3  bg = vCol * ( 0.72 + 0.55 * pg );
         bg += vCol * audioKick * 0.25;
         // Ceiling raised from 0.55: this curtain is the only layer covering the
         // whole frame, and it was sitting under the level at which a tile counts
         // as carrying content at all.
-        fragColor = vec4(clamp(bg, 0.0, 0.68), 1.0);
+        fragColor = vec4( clamp( bg, 0.0, 0.68 ), 1.0 );
         return;
     }
 
-    vec3 lightDir = normalize(vec3(0.4, 0.6, 0.7));
-    float diff = max(0.0, dot(vNormal, lightDir));
-    float spec = pow(max(0.0, dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, 1.0))), 24.0) * (specularP > 0.01 ? specularP : 1.2);
+    vec3  lightDir = normalize( vec3( 0.4, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, lightDir ) );
+    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
+                 * ( specularP > 0.01 ? specularP : 1.2 );
 
-    vec3 col = vCol * (0.6 + 0.4 * photo) * (0.42 + 0.62 * diff);
-    col += vec3(0.95, 0.95, 1.0) * min(spec * (1.0 + 3.0 * audioKick), 1.4);
-    col += vec3(1.0, 0.6, 0.1) * min(vVentGlow * (ventGlowP > 0.01 ? ventGlowP : 1.3) * 2.2, 2.6);
-    col *= (0.85 + 0.35 * audioSwell);
-    col += vCol * (audioKick * 0.3);
+    vec3 col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.42 + 0.62 * diff );
+    col += vec3( 0.95, 0.95, 1.0 ) * min( spec * ( 1.0 + 3.0 * audioKick ), 1.4 );
+    col += vec3( 1.0, 0.6, 0.1 ) * min( vVentGlow * ( ventGlowP > 0.01 ? ventGlowP : 1.3 ) * 2.2, 2.6 );
+    col *= ( 0.85 + 0.35 * audioSwell );
+    col += vCol * ( audioKick * 0.3 );
 
     // Distance haze: the far rows sink into the same mineral steam the
     // curtain is made of, so the field reads as depth instead of as small
     // dark cut-outs on black.
-    vec3 hazeCol = vec3(0.20, 0.145, 0.095) * (0.85 + 0.35 * audioSwell);
-    col = mix(col, hazeCol, vFog * 0.72);
+    vec3 hazeCol = vec3( 0.20, 0.145, 0.095 ) * ( 0.85 + 0.35 * audioSwell );
+    col = mix( col, hazeCol, vFog * 0.72 );
 
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    col /= 1.0 + 0.45 * max(col.r, max(col.g, col.b));   // sulphur terraces clipped flat yellow
-    float _gfLum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(_gfLum), col, 0.80);
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    col /= 1.0 + 0.45 * max( col.r, max( col.g, col.b ) ); // sulphur terraces clipped flat yellow
+    float _gfLum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( _gfLum ), col, 0.80 );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

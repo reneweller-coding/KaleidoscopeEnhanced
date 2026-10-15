@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MeshSandSculpture.frag
  * @brief MESH SAND SCULPTURE: wet sand -- warm, grainy, with round glints of
@@ -17,103 +17,109 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: sizeP, erodeP, hueP.
  */
-uniform sampler2DArray texMeshMaterial;   ///< The mesh's material textures (albedo, roughness, normal ...).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2DArray texMeshMaterial; ///< The mesh's material textures (albedo, roughness, normal ...).
+uniform sampler2D      tex0;            ///< The current photo.
+uniform sampler2D      tex1;            ///< The next photo (cross-faded in by interpolation).
+uniform float          interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vObj;   ///< Object-space position (from the vertex stage).
-in vec3 vPos;   ///< Position (from the vertex stage).
-in float vBg;   ///< Background flag (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vObj;    ///< Object-space position (from the vertex stage).
+in vec3  vPos;    ///< Position (from the vertex stage).
+in float vBg;     ///< Background flag (from the vertex stage).
 in float vErode;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a 3D point.
-float hash31(vec3 p) { return fract(sin(dot(p, vec3(127.1, 311.7, 74.7))) * 43758.5453); }
+float hash31( vec3 p )
+{
+    return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float sun = 0.6 + 0.7 * clamp(audioSwell, 0.0, 1.0);
-    if (vBg > 0.5)
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float sun = 0.6 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
+    if ( vBg > 0.5 )
     {
         // Beach: the photo as sky above, sand below the horizon.
-        vec3 d = normalize(vPos);
+        vec3 d = normalize( vPos );
         vec3 col;
-        if (d.y > -0.05)
+        if ( d.y > -0.05 )
         {
-            vec2 uv = clamp(vec2(d.x / max(d.z, 0.2) * 0.4 + 0.5, d.y * 1.2 + 0.4), 0.0, 1.0);
-            col = img(uv) * mix(vec3(0.8, 0.9, 1.0), imgPalette(hue * 0.159 + 0.6), 0.3) * sun;
-            col += vec3(1.0, 0.9, 0.7) * exp(-length(d.xy - vec2(0.3, 0.35)) * 5.0) * sun * 0.6;
+            vec2 uv = clamp( vec2( d.x / max( d.z, 0.2 ) * 0.4 + 0.5, d.y * 1.2 + 0.4 ), 0.0, 1.0 );
+            col = img( uv ) * mix( vec3( 0.8, 0.9, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 ) * sun;
+            col += vec3( 1.0, 0.9, 0.7 ) * exp( -length( d.xy - vec2( 0.3, 0.35 ) ) * 5.0 ) * sun * 0.6;
         }
         else
         {
-            vec3 sand = vec3(0.85, 0.75, 0.55) * mix(vec3(1.0), imgPalette(hue * 0.159 + 0.1) * 1.5, 0.2);
-            col = sand * (0.5 + 0.5 * sun) * (0.7 + 0.3 * smoothstep(-0.6, -0.05, d.y));
-            col *= 0.9 + 0.1 * hash31(floor(d * 300.0));
+            vec3 sand = vec3( 0.85, 0.75, 0.55 ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.1 ) * 1.5, 0.2 );
+            col = sand * ( 0.5 + 0.5 * sun ) * ( 0.7 + 0.3 * smoothstep( -0.6, -0.05, d.y ) );
+            col *= 0.9 + 0.1 * hash31( floor( d * 300.0 ) );
         }
-        fragColor = vec4(col, 1.0);
+        fragColor = vec4( col, 1.0 );
         return;
     }
-    vec3 n = normalize(vNormal);
-    vec3 L = normalize(vec3(0.5, 0.75, -0.55));
+    vec3 n = normalize( vNormal );
+    vec3 L = normalize( vec3( 0.5, 0.75, -0.55 ) );
     // Wrap lighting: robust against the model's normal orientation.
-    float diff = clamp(dot(n, L) * 0.5 + 0.5, 0.0, 1.0);
+    float diff = clamp( dot( n, L ) * 0.5 + 0.5, 0.0, 1.0 );
     // Wet sand dark and warm, dry (eroded) sand pale.
-    vec3 wet = vec3(0.55, 0.42, 0.28) * mix(vec3(1.0), imgPalette(hue * 0.159 + 0.1) * 1.6, 0.2);
-    vec3 dry = vec3(0.9, 0.82, 0.65);
-    float e = clamp(vErode, 0.0, 1.0);
-    vec3 sand = mix(wet, dry, e * 0.8);
+    vec3  wet = vec3( 0.55, 0.42, 0.28 ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.1 ) * 1.6, 0.2 );
+    vec3  dry = vec3( 0.9, 0.82, 0.65 );
+    float e = clamp( vErode, 0.0, 1.0 );
+    vec3  sand = mix( wet, dry, e * 0.8 );
     // Grain: fine noise, plus round glints of quartz on the treble.
-    float grain = hash31(floor(vObj * 220.0));
+    float grain = hash31( floor( vObj * 220.0 ) );
     sand *= 0.85 + 0.3 * grain;
-    vec3 gc = floor(vObj * 60.0);
-    vec3 gf = fract(vObj * 60.0) - 0.5;
-    vec3 goff = vec3(hash31(gc + 1.0), hash31(gc + 2.0), hash31(gc + 3.0)) - 0.5;
-    float glint = smoothstep(0.2, 0.05, length(gf - goff * 0.5)) * step(0.9, hash31(gc)) * (0.2 + 1.2 * clamp(audioHigh * 2.0, 0.0, 1.0));
-    vec3 col = sand * (0.45 + 1.0 * diff) * sun;
-    col += vec3(1.0, 0.97, 0.9) * glint * diff;
+    vec3  gc = floor( vObj * 60.0 );
+    vec3  gf = fract( vObj * 60.0 ) - 0.5;
+    vec3  goff = vec3( hash31( gc + 1.0 ), hash31( gc + 2.0 ), hash31( gc + 3.0 ) ) - 0.5;
+    float glint = smoothstep( 0.2, 0.05, length( gf - goff * 0.5 ) ) * step( 0.9, hash31( gc ) )
+                  * ( 0.2 + 1.2 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
+    vec3  col = sand * ( 0.45 + 1.0 * diff ) * sun;
+    col += vec3( 1.0, 0.97, 0.9 ) * glint * diff;
     // A hint of sky reflection in the wet sand.
-    vec3 V = normalize(-vPos);
-    float fres = pow(1.0 - max(dot(n, V), 0.0), 4.0) * (1.0 - e);
-    col += mix(vec3(0.7, 0.8, 1.0), imgPalette(hue * 0.159 + 0.6), 0.4) * fres * 0.3 * sun;
+    vec3  V = normalize( -vPos );
+    float fres = pow( 1.0 - max( dot( n, V ), 0.0 ), 4.0 ) * ( 1.0 - e );
+    col += mix( vec3( 0.7, 0.8, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.4 ) * fres * 0.3 * sun;
     // Blown sand on the kick: round grains streaming leeward (light only).
-    vec3 wp = vObj + vec3(sceneAdvance * 0.4, 0.0, 0.0);
-    vec3 wc = floor(wp * 40.0);
-    vec3 wf = fract(wp * 40.0) - 0.5;
-    float blown = smoothstep(0.25, 0.08, length(wf)) * step(0.93, hash31(wc)) * audioKick;
+    vec3  wp = vObj + vec3( sceneAdvance * 0.4, 0.0, 0.0 );
+    vec3  wc = floor( wp * 40.0 );
+    vec3  wf = fract( wp * 40.0 ) - 0.5;
+    float blown = smoothstep( 0.25, 0.08, length( wf ) ) * step( 0.93, hash31( wc ) ) * audioKick;
     col += dry * blown * 0.8;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

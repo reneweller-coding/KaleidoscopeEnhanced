@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // VolumetricFire.frag — companion to VolumetricFire.vert.  Samples the live
 // GPU fire/smoke simulation (Blend/Smoke3DSim.frag, R=temperature,
 // G=density) at this depth-slice billboard's atlas cell and maps it through
@@ -10,12 +10,13 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // blending or depth sorting needed, so slice draw order never matters.
 
 uniform sampler2D texSmoke3D;
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 in vec2  vAtlasUV;
 in float vHeightFrac;
@@ -39,8 +40,9 @@ in float vGlow;
  */
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -48,101 +50,106 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 
 /// House tint: bend a colour toward the photo palette while keeping its
 /// luminance -- the identity look survives, only the hue follows the photos.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float time;      ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick; ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-float fhash(vec2 p) {
-    return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+float fhash( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-float fnoise(vec2 p) {
-    vec2 i = floor(p), f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(fhash(i), fhash(i + vec2(1, 0)), f.x),
-               mix(fhash(i + vec2(0, 1)), fhash(i + vec2(1, 1)), f.x), f.y);
+float fnoise( vec2 p )
+{
+    vec2 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( fhash( i ), fhash( i + vec2( 1, 0 ) ), f.x ),
+                mix( fhash( i + vec2( 0, 1 ) ), fhash( i + vec2( 1, 1 ) ), f.x ), f.y );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec4  sim  = texture(texSmoke3D, vAtlasUV);
+    vec4  sim = texture( texSmoke3D, vAtlasUV );
     float temp = sim.r;
     float dens = sim.g;
 
     // FALLBACK: when the smoke sim texture is absent/black (probe renders,
     // sim unit disabled), synthesize a procedural flame so the scene NEVER
     // shows an empty frame.  Four atlas taps decide whether the sim lives.
-    float simAlive = texture(texSmoke3D, vec2(0.1, 0.6)).r
-                   + texture(texSmoke3D, vec2(0.5, 0.4)).r
-                   + texture(texSmoke3D, vec2(0.9, 0.6)).r
-                   + texture(texSmoke3D, vec2(0.3, 0.2)).g;
-    if (simAlive < 0.01)
+    float simAlive = texture( texSmoke3D, vec2( 0.1, 0.6 ) ).r
+                     + texture( texSmoke3D, vec2( 0.5, 0.4 ) ).r
+                     + texture( texSmoke3D, vec2( 0.9, 0.6 ) ).r
+                     + texture( texSmoke3D, vec2( 0.3, 0.2 ) ).g;
+    if ( simAlive < 0.01 )
     {
-        float lx = fract(vAtlasUV.x * 5.0);        // local slice x (0..1)
-        float v  = vHeightFrac;
-        float flick = fnoise(vec2(lx * 4.0, v * 5.0 - time * 2.2))
-                    * 0.65 + fnoise(vec2(lx * 9.0 + 7.0, v * 11.0 - time * 4.0)) * 0.35;
-        float core = 1.0 - abs(lx - 0.5) * (3.2 + 4.6 * v);   // narrowing tongue
-        temp = clamp(core, 0.0, 1.0) * (1.0 - v * 0.8) * (0.85 + 0.75 * flick)
-             * (1.1 + 0.5 * audioKick);
+        float lx = fract( vAtlasUV.x * 5.0 ); // local slice x (0..1)
+        float v = vHeightFrac;
+        float flick = fnoise( vec2( lx * 4.0, v * 5.0 - time * 2.2 ) )
+                          * 0.65
+                      + fnoise( vec2( lx * 9.0 + 7.0, v * 11.0 - time * 4.0 ) ) * 0.35;
+        float core = 1.0 - abs( lx - 0.5 ) * ( 3.2 + 4.6 * v ); // narrowing tongue
+        temp = clamp( core, 0.0, 1.0 ) * ( 1.0 - v * 0.8 ) * ( 0.85 + 0.75 * flick )
+               * ( 1.1 + 0.5 * audioKick );
         // 20 slices ADD, so each contributes a twentieth of the column
-        temp = max(temp - 0.18, 0.0) * 0.26;
+        temp = max( temp - 0.18, 0.0 ) * 0.26;
         // The smoke plume above the flame tip: a much wider, slower column
         // than the tongue, so the upper half of the frame is haze rather than
         // black.  Bounded -- 20 slices sum into it.
-        float plume = fnoise(vec2(lx * 3.0 + 3.1, v * 3.2 - time * 1.05));
-        float wide  = clamp(1.0 - abs(lx - 0.5) * (2.1 + 1.1 * v), 0.0, 1.0);
-        dens = clamp(temp * 0.5
-                   + plume * wide * 0.30 * smoothstep(0.04, 0.45, v),
-                     0.0, 0.45);
+        float plume = fnoise( vec2( lx * 3.0 + 3.1, v * 3.2 - time * 1.05 ) );
+        float wide = clamp( 1.0 - abs( lx - 0.5 ) * ( 2.1 + 1.1 * v ), 0.0, 1.0 );
+        dens = clamp( temp * 0.5
+                          + plume * wide * 0.30 * smoothstep( 0.04, 0.45, v ),
+                      0.0, 0.45 );
     }
 
     // Fire ramp: ember -> flame -> white-hot core.
-    vec3 fire = palTint(mix(vec3(0.09, 0.01, 0.0), vec3(1.0, 0.35, 0.03), clamp(temp * 1.1, 0.0, 1.0)), 0.06 * clamp(temp * 1.1, 0.0, 1.0), 0.18);
-    fire      = mix(fire, vec3(1.0, 0.85, 0.35), clamp((temp - 0.55) * 1.6, 0.0, 1.0));
-    fire      = mix(fire, vec3(1.3, 1.25, 1.05), clamp((temp - 1.15) * 2.0, 0.0, 1.0));
+    vec3 fire = palTint( mix( vec3( 0.09, 0.01, 0.0 ), vec3( 1.0, 0.35, 0.03 ), clamp( temp * 1.1, 0.0, 1.0 ) ),
+                         0.06 * clamp( temp * 1.1, 0.0, 1.0 ), 0.18 );
+    fire = mix( fire, vec3( 1.0, 0.85, 0.35 ), clamp( ( temp - 0.55 ) * 1.6, 0.0, 1.0 ) );
+    fire = mix( fire, vec3( 1.3, 1.25, 1.05 ), clamp( ( temp - 1.15 ) * 2.0, 0.0, 1.0 ) );
 
-    vec3 col = fire * clamp(temp, 0.0, 1.6);
+    vec3 col = fire * clamp( temp, 0.0, 1.6 );
     // vHue (audioChromaHue) carries a large per-activation offset (up to a
     // full turn) by design elsewhere in the engine -- sin() bounds it to a
     // small +-tint wobble instead of a wide hue swing, so this stays looking
     // like FIRE rather than randomly drifting green/blue/purple.
-    col = hueRot(col, sin(vHue) * 0.07);
+    col = hueRot( col, sin( vHue ) * 0.07 );
 
     // Crackling sparks: tiny white-hot pops flickering inside the hot core
     // (hash-gated per screen cell -> lively, not a uniform glow).
-    vec2  cell = floor(gl_FragCoord.xy / 3.0);
-    float spark = step(0.985, fract(sin(dot(cell, vec2(12.9898, 78.233))
-                                        + floor(vHeightFrac * 40.0)) * 43758.5453));
-    col += vec3(1.3, 1.1, 0.8) * spark * clamp(temp - 0.5, 0.0, 1.0) * 2.0;
+    vec2  cell = floor( gl_FragCoord.xy / 3.0 );
+    float spark = step( 0.985, fract( sin( dot( cell, vec2( 12.9898, 78.233 ) )
+                                           + floor( vHeightFrac * 40.0 ) )
+                                      * 43758.5453 ) );
+    col += vec3( 1.3, 1.1, 0.8 ) * spark * clamp( temp - 0.5, 0.0, 1.0 ) * 2.0;
 
-    float bright = clamp(temp * 1.15, 0.0, 3.2) * vGlow;
-    vec3 outc = col * bright;
+    float bright = clamp( temp * 1.15, 0.0, 3.2 ) * vGlow;
+    vec3  outc = col * bright;
 
     // Smoke haze: only where density lingers after the heat has cooled away
     // (the rising column above the visible flame tip).  It is added OUTSIDE
@@ -150,11 +157,11 @@ void main()
     // then multiplied a density-scaled colour made the plume vanish
     // quadratically, which is why everything above the flame tip used to read
     // as dead black.  Capped, because 20 depth slices sum into every pixel.
-    float haze = min(clamp(dens - temp * 0.35, 0.0, 1.0), 0.5);
-    outc += vec3(0.17, 0.15, 0.16) * haze * 0.30 * (0.8 + 0.25 * min(vGlow, 2.0));
+    float haze = min( clamp( dens - temp * 0.35, 0.0, 1.0 ), 0.5 );
+    outc += vec3( 0.17, 0.15, 0.16 ) * haze * 0.30 * ( 0.8 + 0.25 * min( vGlow, 2.0 ) );
 
     // Per-slice soft knee: five fires overlapping used to be able to stack
     // their white-hot cores into a flat blown-out patch.
-    outc /= 1.0 + 0.28 * max(outc.r, max(outc.g, outc.b));
-    fragColor = vec4(outc, 1.0);
+    outc /= 1.0 + 0.28 * max( outc.r, max( outc.g, outc.b ) );
+    fragColor = vec4( outc, 1.0 );
 }

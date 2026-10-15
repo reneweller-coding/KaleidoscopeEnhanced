@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file Snowfall.frag
  * @brief A blizzard of four depth-layered flake sheets falling in front of a
@@ -27,29 +27,31 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // together while the layers still drift past each other.
 // -----------------------------------------------------------------------
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float densityP;     ///< preset: flakes per layer
-uniform float windP;        ///< preset: gust strength
-uniform float depthP;   ///< Depth knob, 0..1.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioValence;       ///< preset: how much the photo recedes
+uniform float     densityP;     ///< preset: flakes per layer
+uniform float     windP;        ///< preset: gust strength
+uniform float     depthP;       ///< Depth knob, 0..1.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioValence; ///< preset: how much the photo recedes
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -57,115 +59,118 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 
 /// House tint: bend a colour toward the photo palette while keeping its
 /// luminance -- the identity look survives, only the hue follows the photos.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float p) { return fract(sin(p * 127.1) * 43758.5453); }
-/// @brief Pseudo-random number 0..1 from a 2D point.
-vec2  hash21(float p)
+float hash11( float p )
 {
-    return fract(sin(vec2(p * 127.1, p * 311.7)) * 43758.5453);
+    return fract( sin( p * 127.1 ) * 43758.5453 );
+}
+/// @brief Pseudo-random number 0..1 from a 2D point.
+vec2 hash21( float p )
+{
+    return fract( sin( vec2( p * 127.1, p * 311.7 ) ) * 43758.5453 );
 }
 
 /// One sheet of flakes.  Returns coverage; 'soft' is how out of focus it is.
-float layer(vec2 uv, float aspect, float cells, float speed, float soft, float seed)
+float layer( vec2 uv, float aspect, float cells, float speed, float soft, float seed )
 {
     // The shared wind field.  It is a function of HEIGHT, so a gust travels
     // down the frame rather than shifting everything at once.
-    float wind = windP * (0.35 * sin(audioAdvance * 0.5 + uv.y * 2.2)
-                        + 0.20 * sin(audioAdvance * 0.9 + uv.y * 5.1))
-               * (0.6 + 0.9 * audioSubBass + 0.5 * audioKick);
+    float wind = windP
+                 * ( 0.35 * sin( audioAdvance * 0.5 + uv.y * 2.2 ) + 0.20 * sin( audioAdvance * 0.9 + uv.y * 5.1 ) )
+                 * ( 0.6 + 0.9 * audioSubBass + 0.5 * audioKick );
 
-    vec2 p = vec2(uv.x * aspect, uv.y);
+    vec2 p = vec2( uv.x * aspect, uv.y );
     // Falling: the phase comes from audioAdvance, so gusts change the drift
     // without the fall speed ever jumping.
     p.y += audioAdvance * speed * 0.06 + time * speed * 0.010;
     p.x += wind * speed * 0.35;
 
     vec2 gp = p * cells;
-    vec2 gi = floor(gp);
-    vec2 gf = fract(gp);
+    vec2 gi = floor( gp );
+    vec2 gf = fract( gp );
 
     float acc = 0.0;
     // Three cells across is enough: a flake never reaches further than one
     // cell from its own, and sampling more only costs.
-    for (int y = -1; y <= 1; ++y)
-        for (int x = -1; x <= 1; ++x)
+    for ( int y = -1; y <= 1; ++y )
+        for ( int x = -1; x <= 1; ++x )
         {
-            vec2 o = vec2(float(x), float(y));
-            vec2 h = hash21(dot(gi + o, vec2(41.0, 289.0)) + seed);
+            vec2 o = vec2( float( x ), float( y ) );
+            vec2 h = hash21( dot( gi + o, vec2( 41.0, 289.0 ) ) + seed );
 
             // Not every cell carries a flake, or the storm is a regular grid.
-            if (h.x > 0.30 + 0.62 * densityP)
+            if ( h.x > 0.30 + 0.62 * densityP )
                 continue;
 
             // A slow sway, different per flake — snow does not fall straight.
-            vec2 c = o + h + 0.16 * vec2(sin(audioAdvance * 1.4 + h.y * 31.0),
-                                          0.0);
-            float d = length((c - gf) * vec2(1.0, 1.0));
+            vec2  c = o + h + 0.16 * vec2( sin( audioAdvance * 1.4 + h.y * 31.0 ), 0.0 );
+            float d = length( ( c - gf ) * vec2( 1.0, 1.0 ) );
 
-            float r = (0.05 + 0.16 * h.y) * (1.0 + 0.5 * soft);
+            float r = ( 0.05 + 0.16 * h.y ) * ( 1.0 + 0.5 * soft );
             // The blur IS the depth cue: near flakes get a wide, soft falloff,
             // far ones a tight one.
-            acc += smoothstep(r, r * (0.15 + 0.7 * soft), d);
+            acc += smoothstep( r, r * ( 0.15 + 0.7 * soft ), d );
         }
-    return clamp(acc, 0.0, 1.0);
+    return clamp( acc, 0.0, 1.0 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = gl_FragCoord.xy / resolution;
-    float aspect = resolution.x / max(resolution.y, 1.0);
+    vec2  uv = gl_FragCoord.xy / resolution;
+    float aspect = resolution.x / max( resolution.y, 1.0 );
 
     // The photo behind the storm: darkened and cooled, because that is what
     // heavy snowfall does to everything behind it.
-    vec3 photo = texture(tex0, uv * (1.0 - 0.04 * depthP) + 0.02 * depthP).rgb;
-    vec3 haze = palTint(mix(vec3(0.10, 0.13, 0.19), vec3(0.42, 0.48, 0.58),
-                    0.25 + 0.45 * audioAmbient), 0.20, 0.22);
-    vec3 col = mix(photo * 0.55, haze, 0.30 + 0.40 * depthP);
+    vec3 photo = texture( tex0, uv * ( 1.0 - 0.04 * depthP ) + 0.02 * depthP ).rgb;
+    vec3 haze = palTint( mix( vec3( 0.10, 0.13, 0.19 ), vec3( 0.42, 0.48, 0.58 ),
+                              0.25 + 0.45 * audioAmbient ),
+                         0.20, 0.22 );
+    vec3 col = mix( photo * 0.55, haze, 0.30 + 0.40 * depthP );
 
     // Flake tint: white, nudged a little by the harmony so the storm belongs
     // to the same picture as everything else.
-    vec3 flake = mix(vec3(1.0), vec3(0.85, 0.92, 1.0), 0.5)
-               * (0.85 + 0.3 * audioLevel);
-    float hr = 0.06 * sin(audioChromaHue);
-    flake.rb = mat2(cos(hr), -sin(hr), sin(hr), cos(hr)) * flake.rb;
+    vec3  flake = mix( vec3( 1.0 ), vec3( 0.85, 0.92, 1.0 ), 0.5 )
+                  * ( 0.85 + 0.3 * audioLevel );
+    float hr = 0.06 * sin( audioChromaHue );
+    flake.rb = mat2( cos( hr ), -sin( hr ), sin( hr ), cos( hr ) ) * flake.rb;
 
     // Far to near.  Each layer is composited OVER the ones behind it, so the
     // near flakes actually hide the far ones instead of adding to them.
-    float l4 = layer(uv, aspect, 26.0, 0.35, 0.15, 11.0);
-    col = mix(col, flake * 0.75, l4 * 0.55);
+    float l4 = layer( uv, aspect, 26.0, 0.35, 0.15, 11.0 );
+    col = mix( col, flake * 0.75, l4 * 0.55 );
 
-    float l3 = layer(uv, aspect, 17.0, 0.60, 0.35, 37.0);
-    col = mix(col, flake * 0.85, l3 * 0.70);
+    float l3 = layer( uv, aspect, 17.0, 0.60, 0.35, 37.0 );
+    col = mix( col, flake * 0.85, l3 * 0.70 );
 
-    float l2 = layer(uv, aspect, 10.0, 1.00, 0.65, 71.0);
-    col = mix(col, flake * 0.95, l2 * 0.80);
+    float l2 = layer( uv, aspect, 10.0, 1.00, 0.65, 71.0 );
+    col = mix( col, flake * 0.95, l2 * 0.80 );
 
-    float l1 = layer(uv, aspect,  5.5, 1.65, 1.00, 103.0);
-    col = mix(col, flake, l1 * 0.85);
+    float l1 = layer( uv, aspect, 5.5, 1.65, 1.00, 103.0 );
+    col = mix( col, flake, l1 * 0.85 );
 
     // Treble makes the whole storm sparkle — ice catching light.
-    col += flake * (l1 + l2) * 0.10 * audioHigh;
+    col += flake * ( l1 + l2 ) * 0.10 * audioHigh;
 
     col *= 1.0 + 0.14 * audioBeat;
-    col = col / (1.0 + col * 0.16);
-    fragColor = vec4(col, interpolation);
+    col = col / ( 1.0 + col * 0.16 );
+    fragColor = vec4( col, interpolation );
 }

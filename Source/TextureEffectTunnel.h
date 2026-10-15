@@ -25,44 +25,45 @@
 class TextureEffectTunnel : public TextureEffectKaleidoscopeBase
 {
 public:
-	/**
-	 * @brief Construct with solo/interpolation timing ranges; fragment shader is fixed to Tunnel.frag.
-	 * @param minTimeSolo Minimum seconds this effect stays solo once activated.
-	 * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
-	 * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
-	 * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
-	 */
-	TextureEffectTunnel( unsigned int  minTimeSolo, unsigned int  maxTimeSolo, unsigned int  minTimeInterpolation, unsigned int  maxTimeInterpolation );
-	/// Destructor. No extra cleanup beyond the base class.
-	~TextureEffectTunnel();
+    /**
+     * @brief Construct with solo/interpolation timing ranges; fragment shader is fixed to Tunnel.frag.
+     * @param minTimeSolo Minimum seconds this effect stays solo once activated.
+     * @param maxTimeSolo Maximum seconds this effect stays solo once activated.
+     * @param minTimeInterpolation Minimum seconds spent cross-fading into/out of this effect.
+     * @param maxTimeInterpolation Maximum seconds spent cross-fading into/out of this effect.
+     */
+    TextureEffectTunnel( unsigned int minTimeSolo, unsigned int maxTimeSolo, unsigned int minTimeInterpolation,
+                         unsigned int maxTimeInterpolation );
+    /// Destructor. No extra cleanup beyond the base class.
+    ~TextureEffectTunnel();
 
-	/**
-	 * @brief Resolves the `speedTunnel` uniform location after chaining to TextureEffectKaleidoscopeBase::initUniforms().
-	 * @param width Render target width in pixels.
-	 * @param height Render target height in pixels.
-	 */
-	virtual void initUniforms(int width, int height); // initialize GLSL - shader programs
-	/**
-	 * @brief Uploads `speedTunnel` after chaining to TextureEffectKaleidoscopeBase::setUniforms().
-	 * @param time Absolute animation time in seconds.
-	 * @param interpolation Current cross-fade weight.
-	 * @param texLoc1 Texture unit bound to the `tex0` sampler.
-	 * @param texLoc2 Texture unit bound to the `tex1` sampler.
-	 */
-	virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
-	/**
-	 * @brief Re-rolls the tunnel scroll speed and forces m_powerRotationAllowed off, after chaining to the base class.
-	 */
-	virtual void resetParameters();
+    /**
+     * @brief Resolves the `speedTunnel` uniform location after chaining to
+     * TextureEffectKaleidoscopeBase::initUniforms().
+     * @param width Render target width in pixels.
+     * @param height Render target height in pixels.
+     */
+    virtual void initUniforms( int width, int height ); // initialize GLSL - shader programs
+    /**
+     * @brief Uploads `speedTunnel` after chaining to TextureEffectKaleidoscopeBase::setUniforms().
+     * @param time Absolute animation time in seconds.
+     * @param interpolation Current cross-fade weight.
+     * @param texLoc1 Texture unit bound to the `tex0` sampler.
+     * @param texLoc2 Texture unit bound to the `tex1` sampler.
+     */
+    virtual void setUniforms( float time, float interpolation, GLint texLoc1, GLint texLoc2 ); // setting uniforms
+    /**
+     * @brief Re-rolls the tunnel scroll speed and forces m_powerRotationAllowed off, after chaining to the base class.
+     */
+    virtual void resetParameters();
 
 protected:
-
-    GLint		m_speedTunnelUni; ///< Location of the `speedTunnel` uniform.
-    float			m_speedTunnel; ///< Rolled forward scroll speed, re-rolled by resetParameters().
-    float			m_speedTunnelAct; ///< Active scroll speed value uploaded via `speedTunnel` (currently always equal to m_speedTunnel).
-    float			m_speedTunnelMin; ///< Lower bound for rolling m_speedTunnel.
-    float			m_speedTunnelMax; ///< Upper bound for rolling m_speedTunnel.
-
+    GLint m_speedTunnelUni; ///< Location of the `speedTunnel` uniform.
+    float m_speedTunnel;    ///< Rolled forward scroll speed, re-rolled by resetParameters().
+    float m_speedTunnelAct; ///< Active scroll speed value uploaded via `speedTunnel` (currently always equal to
+                            ///< m_speedTunnel).
+    float m_speedTunnelMin; ///< Lower bound for rolling m_speedTunnel.
+    float m_speedTunnelMax; ///< Upper bound for rolling m_speedTunnel.
 };
 
 

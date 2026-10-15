@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SpaceStationPromenade.frag
  * @brief SPACE STATION PROMENADE: The camera wanders through the grand, high-tech
@@ -16,85 +16,101 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 // Beide zaehlen ab DIESER Aktivierung statt ab Programmstart.
-uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float archP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p)  { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Signed distance to a box of half size b.
-float sdBox(vec3 p, vec3 b) {
-    vec3 q = abs(p) - b;
-    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+float sdBox( vec3 p, vec3 b )
+{
+    vec3 q = abs( p ) - b;
+    return length( max( q, 0.0 ) ) + min( max( q.x, max( q.y, q.z ) ), 0.0 );
 }
 
 /// Distance to a cylinder oriented along Z
-float sdCylinder(vec3 p, float r) {
-    return length(p.xy) - r;
+float sdCylinder( vec3 p, float r )
+{
+    return length( p.xy ) - r;
 }
 
 float hitMat = 0.0;
 float hitGlow = 0.0;
 
 /// @brief The scene's distance field: distance from p to the nearest surface.
-float map(vec3 p, float ap) {
+float map( vec3 p, float ap )
+{
     float d = 1e10;
     float mat = 0.0;
     float glow = 0.0;
 
     // The main promenade tube (rotating cylinder)
     float r = 5.0;
-    float tube = r - length(p.xy);
+    float tube = r - length( p.xy );
 
     // We want the interior.
-    if (tube < d) { d = tube; mat = 1.0; }
+    if ( tube < d )
+    {
+        d = tube;
+        mat = 1.0;
+    }
 
     // Repetition along Z for ribs and windows
-    float pz = mod(p.z, 4.0) - 2.0;
-    float zId = floor(p.z / 4.0);
+    float pz = mod( p.z, 4.0 ) - 2.0;
+    float zId = floor( p.z / 4.0 );
 
     // Circular ribs.  The whole map is an INTERIOR field -- `tube` above is
     // `r - length(p.xy)`, the gap from a point inside the cylinder out to its
@@ -105,36 +121,50 @@ float map(vec3 p, float ap) {
     // shaded the entire frame with the dark rib albedo from the camera's own
     // position -- a flat sheet instead of a corridor, for a quarter of every
     // 4-unit z period.  Radial term flipped to match `tube`.
-    float rib = max((r - 0.2) - length(p.xy), abs(pz) - 0.5);
+    float rib = max( ( r - 0.2 ) - length( p.xy ), abs( pz ) - 0.5 );
 
-    if (rib < d) { d = rib; mat = 2.0; }
-
-    // Angular repetition for interior structures
-    float a = atan(p.y, p.x);
-    float sector = floor(a / (3.14159 / 4.0));
-    float sa = a - sector * (3.14159 / 4.0) - (3.14159 / 8.0);
-
-    vec2 polarP = length(p.xy) * vec2(cos(sa), sin(sa));
-    vec3 localP = vec3(polarP.x, polarP.y, pz);
-
-    // Pillars/structures on the walls
-    float pillar = sdBox(localP - vec3(r, 0.0, 0.0), vec3(0.5, 0.5, 1.0));
-
-    // Cut out windows from the main tube (when not on a rib and in certain sectors)
-    float windowCut = sdBox(localP - vec3(r, 0.0, 0.0), vec3(0.5, 1.5, 1.0));
-    if (mod(sector, 2.0) == 0.0) {
-        // Cut window
-        tube = max(tube, -windowCut);
-        d = min(tube, rib);
-        if (d == tube) mat = 1.0;
+    if ( rib < d )
+    {
+        d = rib;
+        mat = 2.0;
     }
 
-    if (pillar < d) { d = pillar; mat = 3.0; glow = 1.0; }
+    // Angular repetition for interior structures
+    float a = atan( p.y, p.x );
+    float sector = floor( a / ( 3.14159 / 4.0 ) );
+    float sa = a - sector * ( 3.14159 / 4.0 ) - ( 3.14159 / 8.0 );
+
+    vec2 polarP = length( p.xy ) * vec2( cos( sa ), sin( sa ) );
+    vec3 localP = vec3( polarP.x, polarP.y, pz );
+
+    // Pillars/structures on the walls
+    float pillar = sdBox( localP - vec3( r, 0.0, 0.0 ), vec3( 0.5, 0.5, 1.0 ) );
+
+    // Cut out windows from the main tube (when not on a rib and in certain sectors)
+    float windowCut = sdBox( localP - vec3( r, 0.0, 0.0 ), vec3( 0.5, 1.5, 1.0 ) );
+    if ( mod( sector, 2.0 ) == 0.0 )
+    {
+        // Cut window
+        tube = max( tube, -windowCut );
+        d = min( tube, rib );
+        if ( d == tube )
+            mat = 1.0;
+    }
+
+    if ( pillar < d )
+    {
+        d = pillar;
+        mat = 3.0;
+        glow = 1.0;
+    }
 
     // Floating neon signs/holograms in the center
-    float signBox = sdBox(vec3(p.x, p.y + 2.0, pz), vec3(0.1, 1.0, 0.8));
-    if (hash11(zId) > 0.5 && signBox < d) {
-        d = signBox; mat = 4.0; glow = 2.0;
+    float signBox = sdBox( vec3( p.x, p.y + 2.0, pz ), vec3( 0.1, 1.0, 0.8 ) );
+    if ( hash11( zId ) > 0.5 && signBox < d )
+    {
+        d = signBox;
+        mat = 4.0;
+        glow = 2.0;
     }
 
     hitMat = mat;
@@ -147,23 +177,23 @@ float map(vec3 p, float ap) {
 }
 
 /// @brief Surface normal of the distance field by central differences.
-vec3 calcNormal(vec3 p, float ap) {
-    vec2 e = vec2(0.02, 0.0);
-    return normalize(vec3(
-        map(p + e.xyy, ap) - map(p - e.xyy, ap),
-        map(p + e.yxy, ap) - map(p - e.yxy, ap),
-        map(p + e.yyx, ap) - map(p - e.yyx, ap)
-    ));
+vec3 calcNormal( vec3 p, float ap )
+{
+    vec2 e = vec2( 0.02, 0.0 );
+    return normalize( vec3(
+        map( p + e.xyy, ap ) - map( p - e.xyy, ap ),
+        map( p + e.yxy, ap ) - map( p - e.yxy, ap ),
+        map( p + e.yyx, ap ) - map( p - e.yyx, ap ) ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ap = (archP > 0.01 ? archP : 1.0);
-    float gp = (glowP > 0.01 ? glowP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float ap = ( archP > 0.01 ? archP : 1.0 );
+    float gp = ( glowP > 0.01 ? glowP : 1.0 );
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Die Flugstrecke ist die Koordinate, mit der das Rauschfeld
     // abgetastet wird -- sie MUSS pro Auftritt bei 0 anfangen.  Mit
@@ -175,78 +205,94 @@ void main()
 
     // Camera rotating inside the station
     float camRoll = time * 0.1;
-    vec3 ro = vec3(2.0 * cos(camRoll), 2.0 * sin(camRoll), drift);
-    vec3 ta = ro + vec3(-0.5 * cos(camRoll), -0.5 * sin(camRoll), 1.0);
+    vec3  ro = vec3( 2.0 * cos( camRoll ), 2.0 * sin( camRoll ), drift );
+    vec3  ta = ro + vec3( -0.5 * cos( camRoll ), -0.5 * sin( camRoll ), 1.0 );
 
-    vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
+    vec3 ww = normalize( ta - ro );
+    vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 vv = cross( uu, ww );
 
-    float roll = 0.2 * sin(time * 0.3) + audioPhase * 0.1;
-    vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
-    vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
+    float roll = 0.2 * sin( time * 0.3 ) + audioPhase * 0.1;
+    vec2  ruv = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * uv;
+    vec3  rd = normalize( ruv.x * uu + ruv.y * vv + 1.2 * ww );
 
     float d = 0.0;
-    vec3 p;
+    vec3  p;
     float m = 0.0;
     float g = 0.0;
-    int steps = 0;
+    int   steps = 0;
 
-    for (int i = 0; i < 80; ++i) {
+    for ( int i = 0; i < 80; ++i )
+    {
         p = ro + rd * d;
-        float ds = map(p, ap);
+        float ds = map( p, ap );
         m = hitMat;
         g = hitGlow;
         steps = i;
-        if (ds < 0.01 * (1.0 + d * 0.05)) break;
+        if ( ds < 0.01 * ( 1.0 + d * 0.05 ) )
+            break;
         d += ds * 0.8;
-        if (d > 80.0) { m = 0.0; break; } // look out window
+        if ( d > 80.0 )
+        {
+            m = 0.0;
+            break;
+        } // look out window
     }
 
-    vec3 col = vec3(0.0);
+    vec3 col = vec3( 0.0 );
 
-    vec3 signColor1 = imgPalette(0.3);
-    vec3 signColor2 = imgPalette(0.8 + audioKick * 0.1);
+    vec3 signColor1 = imgPalette( 0.3 );
+    vec3 signColor2 = imgPalette( 0.8 + audioKick * 0.1 );
 
-    if (m > 0.5 && d < 80.0) {
-        vec3 n = calcNormal(p, ap);
+    if ( m > 0.5 && d < 80.0 )
+    {
+        vec3 n = calcNormal( p, ap );
 
         // Interior light (from center)
-        vec3 lightDir = normalize(vec3(0.0, 0.0, p.z) - p);
-        float dif = max(dot(n, lightDir), 0.0);
+        vec3  lightDir = normalize( vec3( 0.0, 0.0, p.z ) - p );
+        float dif = max( dot( n, lightDir ), 0.0 );
 
-        vec3 albedo = vec3(0.2);
-        if (m == 1.0) albedo = vec3(0.6, 0.65, 0.7); // white panels
-        if (m == 2.0) albedo = vec3(0.3, 0.3, 0.35); // dark ribs
+        vec3 albedo = vec3( 0.2 );
+        if ( m == 1.0 )
+            albedo = vec3( 0.6, 0.65, 0.7 ); // white panels
+        if ( m == 2.0 )
+            albedo = vec3( 0.3, 0.3, 0.35 ); // dark ribs
 
-        col = albedo * (0.5 + dif * (1.5 + audioSwell));
+        col = albedo * ( 0.5 + dif * ( 1.5 + audioSwell ) );
 
         // Glows
-        if (g == 1.0) {
-            float strip = step(0.8, fract(p.z * 2.0));
-            col += signColor1 * strip * gp * (1.0 + audioKick * 2.0);
+        if ( g == 1.0 )
+        {
+            float strip = step( 0.8, fract( p.z * 2.0 ) );
+            col += signColor1 * strip * gp * ( 1.0 + audioKick * 2.0 );
         }
-        else if (m == 4.0 && g == 2.0) { // Hologram signs
-            float flicker = step(0.1, hash11(floor(time * 8.0 + p.z)));   // was 20 Hz -- over the noise-strobe budget
-            float scanline = sin(p.y * 100.0 - time * 10.0) * 0.5 + 0.5;
-            vec3 sc = mix(signColor1, signColor2, hash11(floor(p.z)));
-            col = sc * flicker * scanline * gp * (2.0 + audioKick * 3.0);
+        else if ( m == 4.0 && g == 2.0 )
+        {                                                                     // Hologram signs
+            float flicker = step( 0.1, hash11( floor( time * 8.0 + p.z ) ) ); // was 20 Hz -- over the noise-strobe
+                                                                              // budget
+            float scanline = sin( p.y * 100.0 - time * 10.0 ) * 0.5 + 0.5;
+            vec3  sc = mix( signColor1, signColor2, hash11( floor( p.z ) ) );
+            col = sc * flicker * scanline * gp * ( 2.0 + audioKick * 3.0 );
         }
 
-        col *= clamp(1.0 - float(steps) * 0.01, 0.1, 1.0);
-    } else {
+        col *= clamp( 1.0 - float( steps ) * 0.01, 0.1, 1.0 );
+    }
+    else
+    {
         // Outside window (starfield)
-        vec3 bgCol = vec3(0.0);
-        for (int i = 0; i < 2; ++i) {
-            float sc = 50.0 + 50.0 * float(i);
-            vec3 st = rd * sc;
-            vec3 cell = floor(st);
-            vec3 f = fract(st) - 0.5;
-            if (hash11(dot(cell, vec3(12.3, 45.6, 78.9))) > 0.98) {
-                bgCol += mix(signColor1, vec3(1.0), hash11(cell.x)) * exp(-length(f) * length(f) * 400.0);
+        vec3 bgCol = vec3( 0.0 );
+        for ( int i = 0; i < 2; ++i )
+        {
+            float sc = 50.0 + 50.0 * float( i );
+            vec3  st = rd * sc;
+            vec3  cell = floor( st );
+            vec3  f = fract( st ) - 0.5;
+            if ( hash11( dot( cell, vec3( 12.3, 45.6, 78.9 ) ) ) > 0.98 )
+            {
+                bgCol += mix( signColor1, vec3( 1.0 ), hash11( cell.x ) ) * exp( -length( f ) * length( f ) * 400.0 );
             }
         }
-        col = bgCol * (0.8 + audioSwell * 0.6);
+        col = bgCol * ( 0.8 + audioSwell * 0.6 );
     }
 
     // Atmospheric haze inside.  The corridor is marched out to d = 80, but the
@@ -257,13 +303,15 @@ void main()
     // frame difference is near zero, so the sign flicker became a 45x outlier.
     // 0.012 puts the half-distance at 58 units, i.e. the depth actually being
     // marched, and keeps the far end hazy without erasing the near end.
-    if (d < 80.0) {
-        col = mix(col, vec3(0.03, 0.04, 0.06), 1.0 - exp(-d * 0.012));
+    if ( d < 80.0 )
+    {
+        col = mix( col, vec3( 0.03, 0.04, 0.06 ), 1.0 - exp( -d * 0.012 ) );
     }
 
-    if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

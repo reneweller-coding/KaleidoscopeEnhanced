@@ -22,87 +22,89 @@
  *                     star.  The gain is scaled inversely to the lobe width,
  *                     so widening cannot brighten the (un-tonemapped) frame
  */
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;    ///< Bass band level, 0..1.
+uniform float audioMid;     ///< Mid band level, 0..1.
+uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioSpread;   ///< Spectral spread, 0..1.
-uniform float audioBuildUp;   ///< Build-up toward a drop, 0..1.
+uniform float audioSpread;  ///< Spectral spread, 0..1.
+uniform float audioBuildUp; ///< Build-up toward a drop, 0..1.
 uniform float audioSharpness;
 
-out vec3 vPos;   ///< Position (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vPos;    ///< Position (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vQuadID;
 out float vGlint;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 cornerUV = attrA.xy;
+void main()
+{
+    vec2  cornerUV = attrA.xy;
     float quadID = attrA.w;
-    vec4 seed = attrB;
+    vec4  seed = attrB;
 
     // Orbital radius and spherical orbital mechanics.  `r` is FROZEN: it
     // feeds orbitSpeed, which multiplies absolute `time`, so making it
     // audio-reactive would remap the whole accumulated orbital phase in one
     // frame (the project-wide anti-flicker rule).
     float r = 1.8 + seed.x * 3.5;
-    float orbitSpeed = 0.3 / sqrt(r);
+    float orbitSpeed = 0.3 / sqrt( r );
     float phi = seed.y * 6.28318 + time * orbitSpeed + audioAdvance * 0.1;
-    float theta = (seed.z - 0.5) * 2.2 + 0.3 * sin(time * 0.2 + seed.w * 6.28);
+    float theta = ( seed.z - 0.5 ) * 2.2 + 0.3 * sin( time * 0.2 + seed.w * 6.28 );
 
     // FLEET DISPERSION rides on a separate DISPLAY radius instead, which
     // touches no integrated phase: a narrow spectrum draws the armada into a
     // tight formation, rich harmonics scatter it out to the far orbits.
-    float rDisp = r * (0.84 + 0.36 * clamp(audioSpread, 0.0, 1.0));
+    float rDisp = r * ( 0.84 + 0.36 * clamp( audioSpread, 0.0, 1.0 ) );
 
     // Quad center in 3D orbit
     vec3 center = vec3(
-        rDisp * cos(phi) * cos(theta),
-        rDisp * sin(theta),
-        rDisp * sin(phi) * cos(theta)
-    );
+        rDisp * cos( phi ) * cos( theta ),
+        rDisp * sin( theta ),
+        rDisp * sin( phi ) * cos( theta ) );
 
     // Sail orientation vectors (tacking into the solar wind from origin)
-    vec3 sailNormal = normalize(center);
-    vec3 tangentX = normalize(cross(sailNormal, vec3(0.0, 1.0, 0.0)));
-    vec3 tangentY = cross(tangentX, sailNormal);
+    vec3 sailNormal = normalize( center );
+    vec3 tangentX = normalize( cross( sailNormal, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 tangentY = cross( tangentX, sailNormal );
 
     // Audio-reactive sail pitching & waving.  A rising EDM build makes the
     // fleet TACK HARDER -- the swing amplitude grows toward the drop, so the
     // sails flash edge-on more and more.  Amplitude only: the swing's time
     // coefficient stays a constant.
-    float pitchAngle = (0.2 + 0.3 * audioSwell + 0.45 * clamp(audioBuildUp, 0.0, 1.0))
-                     * sin(time * 2.0 + seed.x * 10.0);
-    float cp = cos(pitchAngle), sp = sin(pitchAngle);
-    sailNormal = normalize(sailNormal * cp + tangentY * sp);
-    tangentY = cross(tangentX, sailNormal);
+    float pitchAngle = ( 0.2 + 0.3 * audioSwell + 0.45 * clamp( audioBuildUp, 0.0, 1.0 ) )
+                       * sin( time * 2.0 + seed.x * 10.0 );
+    float cp = cos( pitchAngle ), sp = sin( pitchAngle );
+    sailNormal = normalize( sailNormal * cp + tangentY * sp );
+    tangentY = cross( tangentX, sailNormal );
 
     // Sail size and local vertex extrusion
-    float sailSize = (0.12 + 0.06 * seed.w) * (1.0 + 0.3 * audioKick);
-    vec2 localOffset = (cornerUV - vec2(0.5)) * sailSize;
-    vec3 pos = center + tangentX * localOffset.x + tangentY * localOffset.y;
+    float sailSize = ( 0.12 + 0.06 * seed.w ) * ( 1.0 + 0.3 * audioKick );
+    vec2  localOffset = ( cornerUV - vec2( 0.5 ) ) * sailSize;
+    vec3  pos = center + tangentX * localOffset.x + tangentY * localOffset.y;
 
     // Specular solar glint aligned with camera
-    vec3 viewDir = normalize(vec3(0.0, 0.0, 6.5) - center);
-    vec3 lightDir = normalize(center); // Light comes from central star at origin
-    vec3 halfVec = normalize(lightDir + viewDir);
+    vec3 viewDir = normalize( vec3( 0.0, 0.0, 6.5 ) - center );
+    vec3 lightDir = normalize( center ); // Light comes from central star at origin
+    vec3 halfVec = normalize( lightDir + viewDir );
     // SHARPNESS sets the glint's lobe: dull material -> a broad soft sheen
     // over the foil, harsh bright material -> a hard narrow star.  This scene
     // has no tonemap in the .frag, so the gain is scaled DOWN as the lobe
     // widens; a broad glint must not integrate to a brighter frame.
-    float shp   = clamp(audioSharpness, 0.0, 1.0);
-    float glint = pow(max(dot(sailNormal, halfVec), 0.0), mix(12.0, 64.0, shp))
-                * (0.35 + 0.75 * shp);
+    float shp = clamp( audioSharpness, 0.0, 1.0 );
+    float glint = pow( max( dot( sailNormal, halfVec ), 0.0 ), mix( 12.0, 64.0, shp ) )
+                  * ( 0.35 + 0.75 * shp );
 
     vPos = pos;
     vNormal = sailNormal;
@@ -115,6 +117,6 @@ void main() {
     vp.z += 6.5;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

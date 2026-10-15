@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MagnetohydrodynamicSolarGranulation.frag
  * @brief MAGNETOHYDRODYNAMIC SOLAR GRANULATION: Solar photosphere turbulent thermal convection.
@@ -18,25 +18,26 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   pmodeP        float acoustic p-mode oscillation amplitude   (0.4..1.8)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
 uniform float granuleScaleP;
 uniform float laneWidthP;
@@ -44,107 +45,115 @@ uniform float flareP;
 uniform float pmodeP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Tints a colour toward the house palette at t, keeping its brightness.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 
-vec2 hash2(vec2 p) {
-    return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))) * 43758.5453);
+vec2 hash2( vec2 p )
+{
+    return fract( sin( vec2( dot( p, vec2( 127.1, 311.7 ) ), dot( p, vec2( 269.5, 183.3 ) ) ) ) * 43758.5453 );
 }
 
 /// 2D Voronoi cell with F1 and F2 distances
-vec3 voronoi(vec2 p, float t) {
-    vec2 n = floor(p);
-    vec2 f = fract(p);
+vec3 voronoi( vec2 p, float t )
+{
+    vec2  n = floor( p );
+    vec2  f = fract( p );
     float m_dist = 8.0;
     float m_dist2 = 8.0;
-    vec2 m_point = vec2(0.0);
-    
-    for (int j = -1; j <= 1; j++) {
-        for (int i = -1; i <= 1; i++) {
-            vec2 g = vec2(float(i), float(j));
-            vec2 o = hash2(n + g);
-            o = 0.5 + 0.4 * sin(t * 0.5 + 6.2831 * o);
-            vec2 r = g + o - f;
-            float d = dot(r, r);
-            if (d < m_dist) {
+    vec2  m_point = vec2( 0.0 );
+
+    for ( int j = -1; j <= 1; j++ )
+    {
+        for ( int i = -1; i <= 1; i++ )
+        {
+            vec2 g = vec2( float( i ), float( j ) );
+            vec2 o = hash2( n + g );
+            o = 0.5 + 0.4 * sin( t * 0.5 + 6.2831 * o );
+            vec2  r = g + o - f;
+            float d = dot( r, r );
+            if ( d < m_dist )
+            {
                 m_dist2 = m_dist;
                 m_dist = d;
                 m_point = r;
-            } else if (d < m_dist2) {
+            }
+            else if ( d < m_dist2 )
+            {
                 m_dist2 = d;
             }
         }
     }
-    return vec3(sqrt(m_dist), sqrt(m_dist2), length(m_point));
+    return vec3( sqrt( m_dist ), sqrt( m_dist2 ), length( m_point ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / min(resolution.x, resolution.y);
+    vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.35 + audioAdvance * 0.35;
-    
-    float scale = (granuleScaleP > 0.01 ? granuleScaleP : 3.8);
-    vec2 p = uv * scale;
-    
+
+    float scale = ( granuleScaleP > 0.01 ? granuleScaleP : 3.8 );
+    vec2  p = uv * scale;
+
     // Photospheric acoustic p-mode waves
-    float pmode = sin(p.x * 6.0 + p.y * 5.0 - t * 3.0) * (pmodeP > 0.01 ? pmodeP : 0.8) * 0.15;
-    p += pmode * (0.5 + 0.5 * audioSwell);
-    
+    float pmode = sin( p.x * 6.0 + p.y * 5.0 - t * 3.0 ) * ( pmodeP > 0.01 ? pmodeP : 0.8 ) * 0.15;
+    p += pmode * ( 0.5 + 0.5 * audioSwell );
+
     // Multi-scale Voronoi granulation
-    vec3 v1 = voronoi(p, t);
-    vec3 v2 = voronoi(p * 2.2 + 5.0, t * 1.3);
-    
+    vec3 v1 = voronoi( p, t );
+    vec3 v2 = voronoi( p * 2.2 + 5.0, t * 1.3 );
+
     // Convective granule profile: convex dome inside cell, steep drop at lanes
     float d1 = v1.x;
     float d2 = v1.y;
-    float laneWidth = (laneWidthP > 0.01 ? laneWidthP : 1.2);
-    float lane = clamp((d2 - d1) * (4.0 / laneWidth), 0.0, 1.0);
-    
+    float laneWidth = ( laneWidthP > 0.01 ? laneWidthP : 1.2 );
+    float lane = clamp( ( d2 - d1 ) * ( 4.0 / laneWidth ), 0.0, 1.0 );
+
     // Hot rising granule center vs cold sinking intergranular lanes
-    float granuleHeat = sqrt(max(0.001, 1.0 - d1 * 2.0)) * lane;
-    granuleHeat += (1.0 - v2.x) * 0.25; // Sub-granular detail
-    
+    float granuleHeat = sqrt( max( 0.001, 1.0 - d1 * 2.0 ) ) * lane;
+    granuleHeat += ( 1.0 - v2.x ) * 0.25; // Sub-granular detail
+
     // Magnetic micro-flares localized in intergranular lanes. flareActive can
     // reach flareP's full 2.5, and raising THAT to the fourth power before a
     // kick multiplies it again put this term near 500 -- the single biggest
     // reason the photosphere clipped to a flat white sheet. The base is
     // saturated before the power, and the result is bounded afterwards.
-    float flareActive = (1.0 - lane) * (flareP > 0.01 ? min(flareP, 2.5) : 1.5);
-    float microFlare = min(pow(min(flareActive, 1.25), 4.0) * (1.0 + 4.0 * audioKick), 2.2);
-    
+    float flareActive = ( 1.0 - lane ) * ( flareP > 0.01 ? min( flareP, 2.5 ) : 1.5 );
+    float microFlare = min( pow( min( flareActive, 1.25 ), 4.0 ) * ( 1.0 + 4.0 * audioKick ), 2.2 );
+
     // Color synthesis: Incandescent solar plasma identity tinted with photo palette
-    vec3 hotPlasma = vec3(1.0, 0.9, 0.6);
-    vec3 amberLobe = vec3(1.0, 0.45, 0.05);
-    vec3 darkLane  = vec3(0.12, 0.03, 0.01);
-    
-    vec3 plasmaCol = palTint(mix(amberLobe, hotPlasma, granuleHeat), granuleHeat * 0.3, 0.25);
-    vec3 laneCol   = palTint(darkLane, 0.1, 0.2);
-    vec3 flareCol  = palTint(vec3(0.9, 0.95, 1.0), audioCentroid, 0.22);
-    
+    vec3 hotPlasma = vec3( 1.0, 0.9, 0.6 );
+    vec3 amberLobe = vec3( 1.0, 0.45, 0.05 );
+    vec3 darkLane = vec3( 0.12, 0.03, 0.01 );
+
+    vec3 plasmaCol = palTint( mix( amberLobe, hotPlasma, granuleHeat ), granuleHeat * 0.3, 0.25 );
+    vec3 laneCol = palTint( darkLane, 0.1, 0.2 );
+    vec3 flareCol = palTint( vec3( 0.9, 0.95, 1.0 ), audioCentroid, 0.22 );
+
     // Background photo sampling
     vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img(bgUv) * 0.25;
-    
+    vec3 bg = img( bgUv ) * 0.25;
+
     vec3 col = bg;
 
     // Granule shading is driven by granuleHeat, not laid on flat: `lane` is at
@@ -154,12 +163,12 @@ void main()
     // structure. Weighting it by the convective heat profile keeps the rising
     // cell cores hot and lets their shoulders fall away, which is both darker
     // overall and higher in real contrast.
-    float heatMask = clamp(granuleHeat, 0.0, 1.4);
-    col += mix(laneCol, plasmaCol * (0.12 + 0.48 * heatMask), lane) * (0.85 + 0.45 * audioSwell);
-    col += min(flareCol * microFlare * 1.1, vec3(0.95));
-    col += plasmaCol * (audioKick * 0.22);
+    float heatMask = clamp( granuleHeat, 0.0, 1.4 );
+    col += mix( laneCol, plasmaCol * ( 0.12 + 0.48 * heatMask ), lane ) * ( 0.85 + 0.45 * audioSwell );
+    col += min( flareCol * microFlare * 1.1, vec3( 0.95 ) );
+    col += plasmaCol * ( audioKick * 0.22 );
 
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

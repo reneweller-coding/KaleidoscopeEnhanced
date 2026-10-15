@@ -15,29 +15,31 @@
  * model by its own depth, so the flight never ends and never jumps.
  */
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;   ///< Half size of the scene's mesh bounding box.
-uniform vec3  meshCenter;   ///< Centre of the scene's mesh bounding box.
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;      ///< Half size of the scene's mesh bounding box.
+uniform vec3  meshCenter;      ///< Centre of the scene's mesh bounding box.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float sceneProgress;   ///< 0 at activation -> 1 at the end of the solo span
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float sceneProgress; ///< 0 at activation -> 1 at the end of the solo span
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sizeP;      ///< how large the landscape is
-uniform float speedP;     ///< flight speed
-uniform float heightP;    ///< relief exaggeration
+uniform float sizeP;   ///< how large the landscape is
+uniform float speedP;  ///< flight speed
+uniform float heightP; ///< relief exaggeration
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out float vDist;          ///< distance ahead, for the haze
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vPos;    ///< Position (from the vertex stage).
+out float vDist;   ///< distance ahead, for the haze
+out float vBg;     ///< Background flag (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -45,21 +47,31 @@ void main()
     vec3 world, n;
     bool isBg = gl_VertexID >= meshVertexCount;
 
-    if( !isBg )
+    if ( !isBg )
     {
-        float sz  = (sizeP > 0.01 ? sizeP : 1.0);
-        float spd = (speedP > 0.01 ? speedP : 1.0);
-        float hgt = (heightP > 0.01 ? heightP : 1.0);
+        float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+        float spd = ( speedP > 0.01 ? speedP : 1.0 );
+        float hgt = ( heightP > 0.01 ? heightP : 1.0 );
 
         vec3 p = attrA.xyz - meshCenter;
-        vec3 nrm = normalize(attrB.xyz);
+        vec3 nrm = normalize( attrB.xyz );
 
         // Lay the model's LONGEST axis along the flight direction, whichever
         // axis that happens to be, so every asset gives a long run of terrain
         // instead of a wall to fly into.
         vec3 e = meshExtent;
-        if( e.x >= e.y && e.x >= e.z )      { p = vec3(p.z, p.y, p.x);  nrm = vec3(nrm.z, nrm.y, nrm.x);  e = vec3(e.z, e.y, e.x); }
-        else if( e.y >= e.x && e.y >= e.z ) { p = vec3(p.x, p.z, p.y);  nrm = vec3(nrm.x, nrm.z, nrm.y);  e = vec3(e.x, e.z, e.y); }
+        if ( e.x >= e.y && e.x >= e.z )
+        {
+            p = vec3( p.z, p.y, p.x );
+            nrm = vec3( nrm.z, nrm.y, nrm.x );
+            e = vec3( e.z, e.y, e.x );
+        }
+        else if ( e.y >= e.x && e.y >= e.z )
+        {
+            p = vec3( p.x, p.z, p.y );
+            nrm = vec3( nrm.x, nrm.z, nrm.y );
+            e = vec3( e.x, e.z, e.y );
+        }
 
         // Flatten: relief is a fraction of the ground scale, or the
         // "landscape" is a wall. Real terrain is far wider than it is tall.
@@ -70,12 +82,12 @@ void main()
         // plane. What survived was a sliver, and the haze finished it off --
         // the render was a coloured fog with a sun in it. The visible span is
         // now deliberately 12..212.
-        float groundX = 195.0 * sz;      // across the frame
-        float groundZ = 300.0 * sz;      // half-length along the flight
-        float relief  = 36.0 * sz * hgt;
-        vec3 q = vec3(p.x / max(e.x, 1e-4) * groundX,
-                      p.y / max(e.y, 1e-4) * relief,
-                      p.z / max(e.z, 1e-4) * groundZ);
+        float groundX = 195.0 * sz; // across the frame
+        float groundZ = 300.0 * sz; // half-length along the flight
+        float relief = 36.0 * sz * hgt;
+        vec3  q = vec3( p.x / max( e.x, 1e-4 ) * groundX,
+                        p.y / max( e.y, 1e-4 ) * relief,
+                        p.z / max( e.z, 1e-4 ) * groundZ );
 
         // ONE crossing per scene, not a wrap. Wrapping the coordinate with
         // mod() tore the mesh: any triangle straddling the seam had its
@@ -93,7 +105,7 @@ void main()
         // sceneProgress alone. The advance top-up both jerked the ground on
         // every kick AND could push travel past the bounded range that keeps
         // the visible window covered -- sceneProgress is bounded by design.
-        float travel = mix(-groundZ, groundZ - 200.0, clamp(sceneProgress, 0.0, 1.0));
+        float travel = mix( -groundZ, groundZ - 200.0, clamp( sceneProgress, 0.0, 1.0 ) );
         q.z -= travel;
 
         // Low and close. At 26 units up the ridges collapsed into a band along
@@ -101,7 +113,7 @@ void main()
         // horizon high and lets the near ground fill the shot.
         q.y -= relief * 0.30 + 9.0;
         world = q;
-        world.z += 12.0;                  // 12 .. 212, inside kSceneFar
+        world.z += 12.0; // 12 .. 212, inside kSceneFar
 
         // Camera clearance. Ridges reach relief*0.7 - 9 units ABOVE the
         // camera line, and at the near edge (z=12, frustum half-height ~6)
@@ -118,25 +130,25 @@ void main()
         // Sinking every near vertex by the SAME amount keeps the relief's
         // shape intact -- nothing can fold -- while the whole near field
         // dips under the eye; the far ridgeline keeps its height.
-        float nearF = smoothstep(110.0, 20.0, world.z);
-        world.y -= nearF * (max(relief * 0.70 - 9.0, 0.0) + 4.0);
+        float nearF = smoothstep( 110.0, 20.0, world.z );
+        world.y -= nearF * ( max( relief * 0.70 - 9.0, 0.0 ) + 4.0 );
 
         // The non-uniform squash changes the normals too: a normal transforms
         // by the INVERSE TRANSPOSE, which for a pure scale means dividing by
         // each factor instead of multiplying. Getting this backwards would
         // light the flattened terrain as though it were still a round object.
-        n = normalize(vec3(nrm.x * max(e.x, 1e-4) / groundX,
-                           nrm.y * max(e.y, 1e-4) / relief,
-                           nrm.z * max(e.z, 1e-4) / groundZ));
-        vUV = vec2(attrA.w, attrB.w);
+        n = normalize( vec3( nrm.x * max( e.x, 1e-4 ) / groundX,
+                             nrm.y * max( e.y, 1e-4 ) / relief,
+                             nrm.z * max( e.z, 1e-4 ) / groundZ ) );
+        vUV = vec2( attrA.w, attrB.w );
         vDist = world.z;
         vBg = 0.0;
     }
     else
     {
         world = attrA.xyz;
-        n = normalize(attrB.xyz);
-        vUV = vec2(0.0);
+        n = normalize( attrB.xyz );
+        vUV = vec2( 0.0 );
         vDist = 1e6;
         vBg = 1.0;
     }
@@ -144,7 +156,8 @@ void main()
     vNormal = n;
     vPos = world;
 
-    vec3 vp = vec3(world.x - eyeOff, world.y, world.z);
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
-    if( isBg ) gl_Position.z = gl_Position.w * 0.999999;
+    vec3 vp = vec3( world.x - eyeOff, world.y, world.z );
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 }

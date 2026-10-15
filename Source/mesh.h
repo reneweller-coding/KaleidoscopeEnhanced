@@ -1,6 +1,7 @@
 /**
  * @file mesh.h
- * @brief Legacy Wavefront .obj mesh loader/renderer (fixed-function immediate-mode GL): parses vertices/normals/texcoords/faces and per-face materials, and can draw the result with glBegin/glEnd.
+ * @brief Legacy Wavefront .obj mesh loader/renderer (fixed-function immediate-mode GL): parses
+ * vertices/normals/texcoords/faces and per-face materials, and can draw the result with glBegin/glEnd.
  */
 #ifndef MESH_H
 #define MESH_H
@@ -22,116 +23,196 @@
  * externally-authored, static, textured/lit meshes via the classic immediate-mode (glBegin/
  * glVertex3f/glMaterialfv) pipeline, unrelated to that generic-vertex-layout / GLSL system.
  */
-class Mesh {
-	/** @brief One triangulated face: parallel index triples into the mesh's vertex, texcoord and normal arrays. */
-	struct Triangle 
-	{
-		/** @brief Copies three vertex/texcoord/normal index triples into this triangle. @param vi Pointer to 3 vertex indices. @param ti Pointer to 3 texture-coordinate indices. @param ni Pointer to 3 normal indices. */
-		Triangle( int *vi, int *ti, int *ni) 
-		  { memcpy(v,vi,3*sizeof(int)); memcpy(t,ti,3*sizeof(int)); memcpy(n,ni,3*sizeof(int)); }
-		int v[3];	///< Indices of the three corner vertices into Mesh::vertices (0-based; the .obj's 1-based "f" indices are already converted).
-		int t[3];	///< Indices of the three texture coordinates into Mesh::textcoords (0-based).
-		int n[3];	///< Indices of the three normals into Mesh::normals (0-based; unused when the file had no normals).
-	};
+class Mesh
+{
+    /** @brief One triangulated face: parallel index triples into the mesh's vertex, texcoord and normal arrays. */
+    struct Triangle
+    {
+        /** @brief Copies three vertex/texcoord/normal index triples into this triangle. @param vi Pointer to 3 vertex
+         * indices. @param ti Pointer to 3 texture-coordinate indices. @param ni Pointer to 3 normal indices. */
+        Triangle( int *vi, int *ti, int *ni )
+        {
+            memcpy( v, vi, 3 * sizeof( int ) );
+            memcpy( t, ti, 3 * sizeof( int ) );
+            memcpy( n, ni, 3 * sizeof( int ) );
+        }
+        int v[3]; ///< Indices of the three corner vertices into Mesh::vertices (0-based; the .obj's 1-based "f" indices
+                  ///< are already converted).
+        int t[3]; ///< Indices of the three texture coordinates into Mesh::textcoords (0-based).
+        int n[3]; ///< Indices of the three normals into Mesh::normals (0-based; unused when the file had no normals).
+    };
 
-	/** @brief Phong-style material parsed from a .mtl file (ambient/diffuse/specular colors, shininess, alpha) plus an optional diffuse-texture reference. */
-	struct MaterialNode
-	{
-		/** @brief Default-constructs an untextured, fully opaque material. */
-		MaterialNode() { alpha = 1.0; textureIndex = -1; }
-		/** @brief Constructs a material bound to a texture, with black ambient/diffuse/specular until set. @param texIdx Index into the mesh's TextureNode list. */
-		MaterialNode(int texIdx) : textureIndex(texIdx) {
-			setAmbientColor(); setDiffuseColor(); setSpecularColor(); }
-		void setAmbientColor( float r = 0, float g = 0, float b = 0) { ambient[0] = r; ambient[1] = g; ambient[2] = b; }   ///< Sets the ambient RGB color (defaults to black).
-		void setDiffuseColor( float r = 0, float g = 0, float b = 0) { diffuse[0] = r; diffuse[1] = g; diffuse[2] = b; }   ///< Sets the diffuse RGB color (defaults to black).
-		void setSpecularColor( float r = 0, float g = 0, float b = 0) { specular[0] = r; specular[1] = g; specular[2] = b; }   ///< Sets the specular RGB color (defaults to black).
-		char m_name[1024];   ///< Material name, as given after "newmtl" in the .mtl file.
-		float shininess;   ///< Specular exponent ("Ns" in the .mtl file).
-		float ambient[3];   ///< Ambient RGB reflectance ("Ka").
-		float diffuse[3];   ///< Diffuse RGB reflectance ("Kd").
-		float specular[3];   ///< Specular RGB reflectance ("Ks").
-		float alpha;   ///< Opacity, from "Tr"/"d" in the .mtl file (1 = opaque).
-		int textureIndex; ///< Index of this material's diffuse texture ("map_Kd") in Mesh::textures, or -1 if the material is untextured.
-	};
+    /** @brief Phong-style material parsed from a .mtl file (ambient/diffuse/specular colors, shininess, alpha) plus an
+     * optional diffuse-texture reference. */
+    struct MaterialNode
+    {
+        /** @brief Default-constructs an untextured, fully opaque material. */
+        MaterialNode()
+        {
+            alpha = 1.0;
+            textureIndex = -1;
+        }
+        /** @brief Constructs a material bound to a texture, with black ambient/diffuse/specular until set. @param
+         * texIdx Index into the mesh's TextureNode list. */
+        MaterialNode( int texIdx )
+            : textureIndex( texIdx )
+        {
+            setAmbientColor();
+            setDiffuseColor();
+            setSpecularColor();
+        }
+        void setAmbientColor( float r = 0, float g = 0, float b = 0 )
+        {
+            ambient[0] = r;
+            ambient[1] = g;
+            ambient[2] = b;
+        } ///< Sets the ambient RGB color (defaults to black).
+        void setDiffuseColor( float r = 0, float g = 0, float b = 0 )
+        {
+            diffuse[0] = r;
+            diffuse[1] = g;
+            diffuse[2] = b;
+        } ///< Sets the diffuse RGB color (defaults to black).
+        void setSpecularColor( float r = 0, float g = 0, float b = 0 )
+        {
+            specular[0] = r;
+            specular[1] = g;
+            specular[2] = b;
+        } ///< Sets the specular RGB color (defaults to black).
+        char  m_name[1024]; ///< Material name, as given after "newmtl" in the .mtl file.
+        float shininess;    ///< Specular exponent ("Ns" in the .mtl file).
+        float ambient[3];   ///< Ambient RGB reflectance ("Ka").
+        float diffuse[3];   ///< Diffuse RGB reflectance ("Kd").
+        float specular[3];  ///< Specular RGB reflectance ("Ks").
+        float alpha;        ///< Opacity, from "Tr"/"d" in the .mtl file (1 = opaque).
+        int   textureIndex; ///< Index of this material's diffuse texture ("map_Kd") in Mesh::textures, or -1 if the
+                            ///< material is untextured.
+    };
 
-	/** @brief One loaded (or pending-load) diffuse texture image and its GL texture object. */
-	struct TextureNode
-	{
-		/** @brief Constructs an empty, unloaded texture node. */
-		TextureNode() { qImageTexture = 0; textureId = 0; texname[0] = '\0'; }
-		/** @brief Frees the owned QImage, if one was allocated. */
-		~TextureNode() { delete qImageTexture; }
-		QImage *qImageTexture;   ///< Heap-allocated pixel data, loaded lazily by loadTextureImages()/assignTexture(); null until then.
-		GLuint textureId;   ///< GL texture object created by loadTexture(); 0 until loaded.
-		char texname[256];   ///< Resolved filename this texture was (or will be) loaded from.
-	};
- 
-	/** @brief One contiguous run of triangles (a face range) sharing the same material, produced while parsing "usemtl" groups in the .obj file. */
-	struct MeshPartInfo
-	{
-		/** @brief Constructs an empty/invalid part (no face range, no material). */
-		MeshPartInfo() { fromFace = toFace = materialIndex = -1; }
-		/** @brief Constructs a part covering [from,to) with no material assigned yet. @param from Index of the first face in this part. @param to Index one past the last face in this part. */
-		MeshPartInfo(int from, int to) : fromFace(from), toFace(to), materialIndex(-1) { }
-		/** @brief Index of the first triangle of this part in Mesh::triangles (start of the half-open range [fromFace, toFace)). */
-		int fromFace, toFace;   ///< One past the last triangle of this part in Mesh::triangles (end of the half-open range [fromFace, toFace)).
-		int materialIndex;   ///< Index into materialList, or -1 if no material is assigned.
-	};
+    /** @brief One loaded (or pending-load) diffuse texture image and its GL texture object. */
+    struct TextureNode
+    {
+        /** @brief Constructs an empty, unloaded texture node. */
+        TextureNode()
+        {
+            qImageTexture = 0;
+            textureId = 0;
+            texname[0] = '\0';
+        }
+        /** @brief Frees the owned QImage, if one was allocated. */
+        ~TextureNode() { delete qImageTexture; }
+        QImage *qImageTexture; ///< Heap-allocated pixel data, loaded lazily by loadTextureImages()/assignTexture();
+                               ///< null until then.
+        GLuint textureId;      ///< GL texture object created by loadTexture(); 0 until loaded.
+        char   texname[256];   ///< Resolved filename this texture was (or will be) loaded from.
+    };
+
+    /** @brief One contiguous run of triangles (a face range) sharing the same material, produced while parsing "usemtl"
+     * groups in the .obj file. */
+    struct MeshPartInfo
+    {
+        /** @brief Constructs an empty/invalid part (no face range, no material). */
+        MeshPartInfo() { fromFace = toFace = materialIndex = -1; }
+        /** @brief Constructs a part covering [from,to) with no material assigned yet. @param from Index of the first
+         * face in this part. @param to Index one past the last face in this part. */
+        MeshPartInfo( int from, int to )
+            : fromFace( from ),
+              toFace( to ),
+              materialIndex( -1 )
+        {
+        }
+        /** @brief Index of the first triangle of this part in Mesh::triangles (start of the half-open range [fromFace,
+         * toFace)). */
+        int fromFace, toFace; ///< One past the last triangle of this part in Mesh::triangles (end of the half-open
+                              ///< range [fromFace, toFace)).
+        int materialIndex;    ///< Index into materialList, or -1 if no material is assigned.
+    };
 
 public:
-	/** @brief Loads and parses an .obj file (and its referenced .mtl, if any) immediately. @param filename Path to the .obj file to read; see success() to check whether it parsed. */
-	Mesh(const char *filename) { readObj(filename); }  
-	/** @brief Frees all parsed geometry, materials and texture nodes. */
-	~Mesh() { clear(); }
+    /** @brief Loads and parses an .obj file (and its referenced .mtl, if any) immediately. @param filename Path to the
+     * .obj file to read; see success() to check whether it parsed. */
+    Mesh( const char *filename ) { readObj( filename ); }
+    /** @brief Frees all parsed geometry, materials and texture nodes. */
+    ~Mesh() { clear(); }
 
-	/** @brief Draws the mesh with legacy fixed-function OpenGL (glBegin/glEnd), switching material state (and lighting on/off, based on whether normals were loaded) once per MeshPartInfo run. */
-	void draw();
-	/** @brief Loads the pixel data (and creates the GL texture object) for every TextureNode that was referenced by a material but not yet loaded. */
-	void loadTextureImages();
-	/** @brief Assigns a single fallback texture to the whole mesh when the .obj file itself carried no texture reference. @param filename Path to the image file to load and bind as material 0's texture. */
-	void assignTexture(char *filename);
-	bool success() { return meshRead; }   ///< @return true if readObj() successfully opened and parsed the .obj file.
-	/** @brief Generates spherical (theta/phi) texture coordinates for every vertex, replacing any existing texcoords, when the .obj file supplied none. */
-	void generateSphereTexCoords();
-	/** @brief Generates cylindrical (theta/height) texture coordinates for every vertex, replacing any existing texcoords, when the .obj file supplied none. */
-	void generateCylinderTexCoords();
+    /** @brief Draws the mesh with legacy fixed-function OpenGL (glBegin/glEnd), switching material state (and lighting
+     * on/off, based on whether normals were loaded) once per MeshPartInfo run. */
+    void draw();
+    /** @brief Loads the pixel data (and creates the GL texture object) for every TextureNode that was referenced by a
+     * material but not yet loaded. */
+    void loadTextureImages();
+    /** @brief Assigns a single fallback texture to the whole mesh when the .obj file itself carried no texture
+     * reference. @param filename Path to the image file to load and bind as material 0's texture. */
+    void assignTexture( char *filename );
+    bool success() { return meshRead; } ///< @return true if readObj() successfully opened and parsed the .obj file.
+    /** @brief Generates spherical (theta/phi) texture coordinates for every vertex, replacing any existing texcoords,
+     * when the .obj file supplied none. */
+    void generateSphereTexCoords();
+    /** @brief Generates cylindrical (theta/height) texture coordinates for every vertex, replacing any existing
+     * texcoords, when the .obj file supplied none. */
+    void generateCylinderTexCoords();
 
-	//Number of vertices and number of faces
-	int numV() { return static_cast<int>(vertices.size()); }   ///< @return Number of vertices in the mesh.
-	int numT() { return static_cast<int>(triangles.size()); }   ///< @return Number of triangular faces in the mesh.
+    // Number of vertices and number of faces
+    int numV() { return static_cast<int>( vertices.size() ); }  ///< @return Number of vertices in the mesh.
+    int numT() { return static_cast<int>( triangles.size() ); } ///< @return Number of triangular faces in the mesh.
 
-	/** @brief Minimum corner of the axis-aligned bounding box computed by computeBoundingBox(), in the mesh's own object space. */
-	Vector3D bmin, bmax;  ///< Maximum corner of the axis-aligned bounding box computed by computeBoundingBox(), in the mesh's own object space.
+    /** @brief Minimum corner of the axis-aligned bounding box computed by computeBoundingBox(), in the mesh's own
+     * object space. */
+    Vector3D bmin, bmax; ///< Maximum corner of the axis-aligned bounding box computed by computeBoundingBox(), in the
+                         ///< mesh's own object space.
 
 private:
+    std::vector<Vector3D> vertices;    ///< Parsed vertex positions ("v" lines).
+    std::vector<Vector3D> normals; ///< Parsed vertex normals ("vn" lines); empty if the file had none, in which case
+                                   ///< draw() disables lighting.
+    std::vector<Vector3D> textcoords;  ///< Parsed (or procedurally generated) texture coordinates ("vt" lines, or
+                                       ///< generateSphereTexCoords()/generateCylinderTexCoords()); z is unused, y is
+                                       ///< stored already flipped (1-v) for the usual image-space convention.
+    std::vector<Triangle> triangles;   ///< Triangulated faces; quads from the .obj file are split into two triangles
+                                       ///< here.
+    std::vector<TextureNode> textures; ///< Distinct texture images referenced by materialList, deduplicated by filename
+                                       ///< in getTextureNode().
+    /** @brief Clears all parsed geometry, materials and texture data and resets the bounding box to its "empty"
+     * (inverted) state; called by readObj() before re-parsing and by the destructor. */
+    void clear();
+    /** @brief Duplicates/shifts texcoord.x by @p multp for triangles that straddle the theta=0/1 seam of a
+     * sphere/cylinder mapping, so they don't wrap the texture across the whole surface. @param multp The theta
+     * multiplier (repeat count) used when the coordinates were generated. */
+    void correctTheta( float multp );
 
-	std::vector<Vector3D> vertices;   ///< Parsed vertex positions ("v" lines).
-	std::vector<Vector3D> normals;   ///< Parsed vertex normals ("vn" lines); empty if the file had none, in which case draw() disables lighting.
-	std::vector<Vector3D> textcoords;   ///< Parsed (or procedurally generated) texture coordinates ("vt" lines, or generateSphereTexCoords()/generateCylinderTexCoords()); z is unused, y is stored already flipped (1-v) for the usual image-space convention.
-	std::vector<Triangle> triangles;   ///< Triangulated faces; quads from the .obj file are split into two triangles here.
-	std::vector<TextureNode> textures;   ///< Distinct texture images referenced by materialList, deduplicated by filename in getTextureNode().
-	/** @brief Clears all parsed geometry, materials and texture data and resets the bounding box to its "empty" (inverted) state; called by readObj() before re-parsing and by the destructor. */
-	void clear();
-	/** @brief Duplicates/shifts texcoord.x by @p multp for triangles that straddle the theta=0/1 seam of a sphere/cylinder mapping, so they don't wrap the texture across the whole surface. @param multp The theta multiplier (repeat count) used when the coordinates were generated. */
-	void correctTheta(float multp);
+    std::vector<MeshPartInfo *> meshPartInfo; ///< Heap-allocated per-material face runs (see MeshPartInfo), owned by
+                                              ///< this vector and freed in clear().
+    std::vector<MaterialNode *> materialList; ///< Heap-allocated materials parsed from the .mtl file (see
+                                              ///< MaterialNode), owned by this vector and freed in clear().
 
-	std::vector<MeshPartInfo*> meshPartInfo;   ///< Heap-allocated per-material face runs (see MeshPartInfo), owned by this vector and freed in clear().
-	std::vector<MaterialNode*> materialList;   ///< Heap-allocated materials parsed from the .mtl file (see MaterialNode), owned by this vector and freed in clear().
-
-	/** @brief Parses an .obj file in two passes (first to count vertices/texcoords/faces for reserve(), second to actually fill vertices/normals/textcoords/triangles/meshPartInfo), loading any referenced .mtl via loadMaterials(). @param sFilename Path to the .obj file. */
-	void readObj( const char* sFilename);
-	/** @brief Parses a Wavefront .mtl file into materialList (Ka/Kd/Ks/Ns/Tr/d/map_Kd directives). @param sFilename Path to the .mtl file. */
-	void loadMaterials( const char* sFilename);
-	/** @brief Recomputes bmin/bmax from the current vertex array. */
-	void computeBoundingBox();
-	/** @brief Loads an image file into a QImage (converted to RGB32 with channels swapped for GL) and uploads it as a GL_RGB8 2D texture with linear filtering and repeat wrapping. @param qimg Output image storage to fill. @param textureId Output GL texture name (created here). @param filename Path to the image file to load. @return true if the image loaded successfully. */
-	bool loadTexture(QImage &qimg, GLuint &textureId, const char *filename);
-	/** @brief Finds the TextureNode for a given filename, creating (and appending) an unloaded one if it doesn't exist yet. @param filename Resolved texture filename to look up/register. @return Index of the texture node in the textures vector. */
-	int getTextureNode(char *filename);
-	/** @brief Builds a sibling filename by taking the directory of @p src and appending @p newName, replicating the common "texture/material path is relative to the .obj file" convention. @param tgt Output buffer receiving the resulting path. @param src Reference path whose directory is reused. @param newName Filename to append to that directory. */
-	void replaceFilename(char *tgt, const char *src, const char *newName);
-	bool meshRead;   ///< Whether readObj() successfully opened the .obj file (see success()).
-	bool objTexAvail;   ///< Whether the .obj file itself defined materials/textures (via usemtl), set at the end of readObj()/assignTexture(); gates whether generateSphereTexCoords()/generateCylinderTexCoords()/assignTexture() are allowed to override them.
+    /** @brief Parses an .obj file in two passes (first to count vertices/texcoords/faces for reserve(), second to
+     * actually fill vertices/normals/textcoords/triangles/meshPartInfo), loading any referenced .mtl via
+     * loadMaterials(). @param sFilename Path to the .obj file. */
+    void readObj( const char *sFilename );
+    /** @brief Parses a Wavefront .mtl file into materialList (Ka/Kd/Ks/Ns/Tr/d/map_Kd directives). @param sFilename
+     * Path to the .mtl file. */
+    void loadMaterials( const char *sFilename );
+    /** @brief Recomputes bmin/bmax from the current vertex array. */
+    void computeBoundingBox();
+    /** @brief Loads an image file into a QImage (converted to RGB32 with channels swapped for GL) and uploads it as a
+     * GL_RGB8 2D texture with linear filtering and repeat wrapping. @param qimg Output image storage to fill. @param
+     * textureId Output GL texture name (created here). @param filename Path to the image file to load. @return true if
+     * the image loaded successfully. */
+    bool loadTexture( QImage &qimg, GLuint &textureId, const char *filename );
+    /** @brief Finds the TextureNode for a given filename, creating (and appending) an unloaded one if it doesn't exist
+     * yet. @param filename Resolved texture filename to look up/register. @return Index of the texture node in the
+     * textures vector. */
+    int getTextureNode( char *filename );
+    /** @brief Builds a sibling filename by taking the directory of @p src and appending @p newName, replicating the
+     * common "texture/material path is relative to the .obj file" convention. @param tgt Output buffer receiving the
+     * resulting path. @param src Reference path whose directory is reused. @param newName Filename to append to that
+     * directory. */
+    void replaceFilename( char *tgt, const char *src, const char *newName );
+    bool meshRead;    ///< Whether readObj() successfully opened the .obj file (see success()).
+    bool objTexAvail; ///< Whether the .obj file itself defined materials/textures (via usemtl), set at the end of
+                      ///< readObj()/assignTexture(); gates whether
+                      ///< generateSphereTexCoords()/generateCylinderTexCoords()/assignTexture() are allowed to override
+                      ///< them.
 };
 
 #endif // MESH_H

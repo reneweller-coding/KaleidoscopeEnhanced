@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file DepthPortalRecursion.frag
  * @brief DEPTH PORTAL RECURSION: a Droste zoom built from the engine's own
@@ -23,126 +23,128 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Feedback safety (V10): the previous frame is decayed AND its luminance is
  * soft-knee'd before re-injection, so the loop converges instead of blooming.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform sampler2D texPrevFrame;   ///< last frame's fully composited image (unit 34)
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texPrevFrame;  ///< last frame's fully composited image (unit 34)
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
-uniform float audioMelodyPitch;   ///< Pitch of the melody, 0..1 over the tracked range.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioBeat;        ///< Beat envelope, 0..1.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioBarPhase;    ///< Position within the current bar, 0..1.
+uniform float audioMelodyPitch; ///< Pitch of the melody, 0..1 over the tracked range.
 uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float portalP;
-uniform float twistP;   ///< Twist knob, 0..1.
+uniform float twistP; ///< Twist knob, 0..1.
 uniform float decayP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    const vec3 k = vec3(0.57735);
-    float ca = cos(a);
-    return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
+    const vec3 k = vec3( 0.57735 );
+    float      ca = cos( a );
+    return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
 /// Signed distance to a rounded rectangle (the portal outline).
-float sdRoundBox(vec2 p, vec2 b, float r)
+float sdRoundBox( vec2 p, vec2 b, float r )
 {
-    vec2 q = abs(p) - b + r;
-    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+    vec2 q = abs( p ) - b + r;
+    return length( max( q, 0.0 ) ) + min( max( q.x, q.y ), 0.0 ) - r;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 uv  = gl_FragCoord.xy / resolution;
-    vec2 p   = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  uv = gl_FragCoord.xy / resolution;
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float por = (portalP > 0.01) ? portalP : 0.66;
-    float tw  = (twistP > 0.001) ? twistP : 0.12;
-    float dec = (decayP > 0.5) ? decayP : 0.93;
-    float hue = (hueP > 0.001) ? hueP : 0.0;
+    float por = ( portalP > 0.01 ) ? portalP : 0.66;
+    float tw = ( twistP > 0.001 ) ? twistP : 0.12;
+    float dec = ( decayP > 0.5 ) ? decayP : 0.93;
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
 
     // The portal wanders on a slow ellipse on the scene clock (a bar-driven
     // wander swayed the whole recursion, V7d), and its aspect follows the
     // slow swell: builds stand the portal up.
-    vec2  cen  = vec2(0.10 * cos(sceneAdvance * 0.2), 0.06 * sin(sceneAdvance * 0.13));
-    float asp  = mix(1.2, 0.85, clamp(audioSwell, 0.0, 1.0));
-    vec2  hsz = por * vec2(asp, 1.0 / asp) * 0.5;
+    vec2  cen = vec2( 0.10 * cos( sceneAdvance * 0.2 ), 0.06 * sin( sceneAdvance * 0.13 ) );
+    float asp = mix( 1.2, 0.85, clamp( audioSwell, 0.0, 1.0 ) );
+    vec2  hsz = por * vec2( asp, 1.0 / asp ) * 0.5;
 
     vec2 q = p - cen;
 
-    float d = sdRoundBox(q, hsz, 0.18 * por);
-    float inside = 1.0 - smoothstep(-0.004, 0.004, d);
+    float d = sdRoundBox( q, hsz, 0.18 * por );
+    float inside = 1.0 - smoothstep( -0.004, 0.004, d );
 
     // Inside the portal: the previous frame, shrunk by the portal size and
     // turned by twistP -- plus a continuous inward drift, so the nesting
     // moves deeper at a rate the music sets (sceneAdvance: no jump on
     // activation, no run-away after an hour).
-    float scale = por * 1.0;                       // portal covers `por` of the frame
-    float ang   = tw + 0.25 * sin(sceneAdvance * 0.7);
-    float ca = cos(ang), sa = sin(ang);
-    vec2  pr = vec2(ca * q.x - sa * q.y, sa * q.x + ca * q.y) / scale;
+    float scale = por * 1.0; // portal covers `por` of the frame
+    float ang = tw + 0.25 * sin( sceneAdvance * 0.7 );
+    float ca = cos( ang ), sa = sin( ang );
+    vec2  pr = vec2( ca * q.x - sa * q.y, sa * q.x + ca * q.y ) / scale;
     // Drift: sample slightly further out than the pure Droste mapping, so
     // each frame the content appears to come toward the viewer.
-    pr *= 1.0 + 0.045 + 0.015 * audioSwell;      // steady recursion rate (a per-frame level here jittered the zoom)
-    vec2  puv = pr / vec2(aspect, 1.0) + 0.5;
-    vec3  prev = texture(texPrevFrame, clamp(puv, 0.0, 1.0)).rgb;
+    pr *= 1.0 + 0.045 + 0.015 * audioSwell; // steady recursion rate (a per-frame level here jittered the zoom)
+    vec2 puv = pr / vec2( aspect, 1.0 ) + 0.5;
+    vec3 prev = texture( texPrevFrame, clamp( puv, 0.0, 1.0 ) ).rgb;
     // Each level shifts hue a little: depth reads as a spectral gradient.
-    prev = hueRot(prev, 0.35 + 0.45 * audioSwell);
+    prev = hueRot( prev, 0.35 + 0.45 * audioSwell );
     // Converge: decay, and soft-knee the luminance so bright rims cannot
     // pile up level after level.
-    float pl = dot(prev, vec3(0.299, 0.587, 0.114));
-    prev *= dec * (1.0 - 0.25 * smoothstep(0.55, 1.0, pl));
+    float pl = dot( prev, vec3( 0.299, 0.587, 0.114 ) );
+    prev *= dec * ( 1.0 - 0.25 * smoothstep( 0.55, 1.0, pl ) );
     // Outside the frame the previous image has nothing: fade to dark blue.
-    float outside = smoothstep(0.0, 0.03, max(abs(puv.x - 0.5), abs(puv.y - 0.5)) - 0.47);
-    prev = mix(prev, vec3(0.02, 0.02, 0.05), outside);
+    float outside = smoothstep( 0.0, 0.03, max( abs( puv.x - 0.5 ), abs( puv.y - 0.5 ) ) - 0.47 );
+    prev = mix( prev, vec3( 0.02, 0.02, 0.05 ), outside );
 
     // Outside the portal: the photo, pulled toward the portal like a tunnel
     // mouth, so the eye is led to the recursion.
-    float pull = 0.18 / (1.0 + 4.0 * max(d, 0.0));
-    vec2  ouv  = (q * (1.0 - pull)) / vec2(aspect, 1.0) + 0.5;
-    vec3  fresh = img(clamp(ouv, 0.0, 1.0));
-    vec3  tint  = imgPalette(hue * 0.159 + 0.15);
-    fresh = mix(fresh, fresh * tint * 1.6, 0.35);
-    float vign = 1.0 - 0.55 * smoothstep(0.35, 0.95, length(p));
+    float pull = 0.18 / ( 1.0 + 4.0 * max( d, 0.0 ) );
+    vec2  ouv = ( q * ( 1.0 - pull ) ) / vec2( aspect, 1.0 ) + 0.5;
+    vec3  fresh = img( clamp( ouv, 0.0, 1.0 ) );
+    vec3  tint = imgPalette( hue * 0.159 + 0.15 );
+    fresh = mix( fresh, fresh * tint * 1.6, 0.35 );
+    float vign = 1.0 - 0.55 * smoothstep( 0.35, 0.95, length( p ) );
     fresh *= vign;
 
     // The rim: a glowing frame that flashes on the beat.  Because the rim is
     // part of what the next frame will show inside the portal, the flash
     // travels inward -- one level per frame -- without any extra code.
-    float rim = exp(-abs(d) * 45.0);
-    vec3  rimCol = imgPalette(hue * 0.159 + 0.6) * (0.9 + 2.2 * audioBeat);
+    float rim = exp( -abs( d ) * 45.0 );
+    vec3  rimCol = imgPalette( hue * 0.159 + 0.6 ) * ( 0.9 + 2.2 * audioBeat );
 
-    vec3 col = mix(fresh, prev, inside);
+    vec3 col = mix( fresh, prev, inside );
     col += rimCol * rim * 0.9;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

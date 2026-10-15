@@ -1,10 +1,10 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec3 vWorldPos;   ///< World position (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vWorldPos; ///< World position (from the vertex stage).
+in vec3  vNormal;   ///< Surface normal (from the vertex stage).
 in float vChainPhase;
-in vec2 vQuadUV;
+in vec2  vQuadUV;
 
 /**
  * @file BioluminescentSiphonophoreChain.frag
@@ -26,92 +26,99 @@ in vec2 vQuadUV;
  * tone-mapping step so loud audio compresses instead of clipping to white.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float chainP;
 uniform float pulseP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float hue = (hueP > 0.0) ? hueP : 0.0;
+void main()
+{
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Sprite profile
-    vec2 pt = vQuadUV;   // quad-local [-1,1]; see .vert
-    float r2 = dot(pt, pt);
-    if (r2 > 1.0) discard;
-    float glow = exp(-r2 * 3.5);
+    vec2  pt = vQuadUV; // quad-local [-1,1]; see .vert
+    float r2 = dot( pt, pt );
+    if ( r2 > 1.0 )
+        discard;
+    float glow = exp( -r2 * 3.5 );
 
     // Photo texture mapping from world coords
-    vec2 photoUV = fract(vWorldPos.xy * 0.25 + 0.5);
-    vec3 photo = img(photoUV);
+    vec2 photoUV = fract( vWorldPos.xy * 0.25 + 0.5 );
+    vec3 photo = img( photoUV );
 
     // Bioluminescent siphonophore cyan & seafoam green palette
-    vec3 bioCyan = vec3(0.1, 0.9, 1.0);
-    vec3 bioGreen = vec3(0.1, 1.0, 0.6);
-    vec3 chainColor = mix(bioCyan, bioGreen, sin(vChainPhase * 12.56 + audioPhase) * 0.5 + 0.5);
+    vec3 bioCyan = vec3( 0.1, 0.9, 1.0 );
+    vec3 bioGreen = vec3( 0.1, 1.0, 0.6 );
+    vec3 chainColor = mix( bioCyan, bioGreen, sin( vChainPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
 
     vec3 col;
-    if (vNormal.z < 0.0)
+    if ( vNormal.z < 0.0 )
     {
         // ---- MARINE SNOW ---------------------------------------------
         // Cold detritus drifting between the colonies: it gives the water its
         // texture without ever competing with a nectophore for brightness.
-        vec3 silt = mix(vec3(0.30, 0.44, 0.55), photo, 0.35);
-        col = silt * glow * (0.30 + 0.22 * audioSwell + 0.18 * audioHigh);
+        vec3 silt = mix( vec3( 0.30, 0.44, 0.55 ), photo, 0.35 );
+        col = silt * glow * ( 0.30 + 0.22 * audioSwell + 0.18 * audioHigh );
     }
     else
     {
         // Action potential pulse wave racing along the chain
-        float actionPotential = pow(abs(sin(vChainPhase * 25.0 - time * 6.0)), 8.0);
+        float actionPotential = pow( abs( sin( vChainPhase * 25.0 - time * 6.0 ) ), 8.0 );
 
-        col = mix(photo, chainColor, 0.6) * glow;
+        col = mix( photo, chainColor, 0.6 ) * glow;
         // Capped: the bloom is fifteen colonies now, and an uncapped pulse on a
         // loud beat would blow every one of them out at once.
-        col += vec3(1.0, 0.98, 0.9) * glow
-             * min(actionPotential * (2.0 + audioKick * 3.0), 2.4);
+        col += vec3( 1.0, 0.98, 0.9 ) * glow
+               * min( actionPotential * ( 2.0 + audioKick * 3.0 ), 2.4 );
     }
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue);
-    if (hue > 0.001) col = hueRot(col, hue);
+    if ( audioChromaHue != 0.0 )
+        col = hueRot( col, audioChromaHue );
+    if ( hue > 0.001 )
+        col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (col * 2.8) * 0.55;
+    vec3 _catTone = ( col * 2.8 ) * 0.55;
     // Ceiling just under the knee's clipping point (1.47 in -> 0.97 out): the
     // action potential now races along fifteen colonies spread over the whole
     // frame, so its hot core must stay a bright flash and not a white hole.
-    _catTone = min(_catTone, vec3(1.40));
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, glow);
+    _catTone = min( _catTone, vec3( 1.40 ) );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, glow );
 }

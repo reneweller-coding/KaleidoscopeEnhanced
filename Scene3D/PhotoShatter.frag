@@ -1,11 +1,11 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoShatter.frag — plain image shards with a hot edge while flying.
-uniform sampler2D tex0;   ///< The current photo.
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform sampler2D tex0;           ///< The current photo.
+uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 in float vLight;
 
 /**
@@ -19,24 +19,24 @@ in float vLight;
  */
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 col = texture(tex0, vUV).rgb * vLight;
+    vec3 col = texture( tex0, vUV ).rgb * vLight;
 
     // Hot fracture edges, strongest during the blast.
-    vec2  cellUV = fract(vUV * vec2(75.0, 40.0));
-    vec2  b      = min(cellUV, 1.0 - cellUV);
-    float edge   = 1.0 - smoothstep(0.0, 0.10, min(b.x, b.y));
-    col += hueRot(vec3(1.0, 0.55, 0.20), audioChromaHue)
-         * edge * (0.15 + 1.6 * audioDrop);
+    vec2  cellUV = fract( vUV * vec2( 75.0, 40.0 ) );
+    vec2  b = min( cellUV, 1.0 - cellUV );
+    float edge = 1.0 - smoothstep( 0.0, 0.10, min( b.x, b.y ) );
+    col += hueRot( vec3( 1.0, 0.55, 0.20 ), audioChromaHue )
+           * edge * ( 0.15 + 1.6 * audioDrop );
 
-    fragColor = vec4(col * 1.15, 1.0);
+    fragColor = vec4( col * 1.15, 1.0 );
 }

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FxRimLight.frag
  * @brief FX RIM LIGHT: relights the scene from behind using a surface
@@ -34,94 +34,95 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // interior pixel they agree.  At a silhouette one of them crosses the gap and
 // the other stays on the near surface, so the near surface wins and its normal
 // stays correct right up to the last pixel of the edge.
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2      resolution; ///< Size of the render target in pixels.
+uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;       ///< The current photo.
+uniform sampler2D tex1;       ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
-uniform vec2  depthValid;
-uniform vec2  nearFar;   ///< Near and far clip distances.
-uniform float tanHalfFov;
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthValid;
+uniform vec2      nearFar; ///< Near and far clip distances.
+uniform float     tanHalfFov;
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 uniform float dayPhase;
 
-uniform float rimP;         ///< preset: rim strength
-uniform float sharpP;       ///< preset: how tight the rim band is
-uniform float fillP;        ///< preset: opposing fill light
+uniform float rimP;   ///< preset: rim strength
+uniform float sharpP; ///< preset: how tight the rim band is
+uniform float fillP;  ///< preset: opposing fill light
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+    return clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
 /// @brief Depth buffer value to linear distance.
-float linearise(float d)
+float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
     float z = d * 2.0 - 1.0;
-    return (2.0 * n * f) / (f + n - z * (f - n));
+    return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
-vec3 viewPos(vec2 uv, float z)
+vec3 viewPos( vec2 uv, float z )
 {
-    vec2 ndc = uv * 2.0 - 1.0;
-    float aspect = resolution.x / max(resolution.y, 1.0);
-    return vec3(ndc.x * tanHalfFov * aspect, ndc.y * tanHalfFov, -1.0) * z;
+    vec2  ndc = uv * 2.0 - 1.0;
+    float aspect = resolution.x / max( resolution.y, 1.0 );
+    return vec3( ndc.x * tanHalfFov * aspect, ndc.y * tanHalfFov, -1.0 ) * z;
 }
 
-vec3 lit(sampler2D src, sampler2D dep, vec2 uv, float valid, vec2 px,
-         vec3 keyDir, vec3 keyCol, vec3 fillDir, vec3 fillCol, float sharp)
+vec3 lit( sampler2D src, sampler2D dep, vec2 uv, float valid, vec2 px,
+          vec3 keyDir, vec3 keyCol, vec3 fillDir, vec3 fillCol, float sharp )
 {
-    vec3 c = texture(src, uv).rgb;
-    if (valid < 0.5)
+    vec3 c = texture( src, uv ).rgb;
+    if ( valid < 0.5 )
         return c;
 
-    float zc = linearise(texture(dep, uv).r);
+    float zc = linearise( texture( dep, uv ).r );
     // Nothing there: the far plane is sky, and relighting sky produces a bright
     // frame edge where the geometry simply stops.
-    if (zc > nearFar.y * 0.94)
+    if ( zc > nearFar.y * 0.94 )
         return c;
 
-    float zr = linearise(texture(dep, uv + vec2(px.x, 0.0)).r);
-    float zl = linearise(texture(dep, uv - vec2(px.x, 0.0)).r);
-    float zu = linearise(texture(dep, uv + vec2(0.0, px.y)).r);
-    float zd = linearise(texture(dep, uv - vec2(0.0, px.y)).r);
+    float zr = linearise( texture( dep, uv + vec2( px.x, 0.0 ) ).r );
+    float zl = linearise( texture( dep, uv - vec2( px.x, 0.0 ) ).r );
+    float zu = linearise( texture( dep, uv + vec2( 0.0, px.y ) ).r );
+    float zd = linearise( texture( dep, uv - vec2( 0.0, px.y ) ).r );
 
-    vec3 P = viewPos(uv, zc);
+    vec3 P = viewPos( uv, zc );
 
     // Keep the difference that stays on this surface.
-    vec3 dx = (abs(zr - zc) < abs(zc - zl))
-            ? viewPos(uv + vec2(px.x, 0.0), zr) - P
-            : P - viewPos(uv - vec2(px.x, 0.0), zl);
-    vec3 dy = (abs(zu - zc) < abs(zc - zd))
-            ? viewPos(uv + vec2(0.0, px.y), zu) - P
-            : P - viewPos(uv - vec2(0.0, px.y), zd);
+    vec3 dx = ( abs( zr - zc ) < abs( zc - zl ) )
+                  ? viewPos( uv + vec2( px.x, 0.0 ), zr ) - P
+                  : P - viewPos( uv - vec2( px.x, 0.0 ), zl );
+    vec3 dy = ( abs( zu - zc ) < abs( zc - zd ) )
+                  ? viewPos( uv + vec2( 0.0, px.y ), zu ) - P
+                  : P - viewPos( uv - vec2( 0.0, px.y ), zd );
 
-    vec3 N = normalize(cross(dx, dy));
-    vec3 V = normalize(-P);
-    if (dot(N, V) < 0.0) N = -N;
+    vec3 N = normalize( cross( dx, dy ) );
+    vec3 V = normalize( -P );
+    if ( dot( N, V ) < 0.0 )
+        N = -N;
 
     // The rim: grazing angles only, tightened by the preset.
-    float fres = pow(1.0 - clamp(dot(N, V), 0.0, 1.0), mix(1.6, 6.0, clamp(sharp, 0.0, 1.0)));
+    float fres = pow( 1.0 - clamp( dot( N, V ), 0.0, 1.0 ), mix( 1.6, 6.0, clamp( sharp, 0.0, 1.0 ) ) );
     // Back-lit, so the rim only appears where the key is actually behind the
     // surface — a rim that ignores the light direction is just an outline.
-    float back = clamp(dot(N, keyDir) * 0.5 + 0.5, 0.0, 1.0);
+    float back = clamp( dot( N, keyDir ) * 0.5 + 0.5, 0.0, 1.0 );
 
     vec3 col = c;
-    col += keyCol * fres * back * (0.8 + 2.2 * rimP)
-         * (0.55 + 0.9 * audioKick + 0.35 * audioLevel);
-    col += fillCol * max(dot(N, fillDir), 0.0) * (0.25 * fillP)
-         * (0.5 + 0.6 * audioAmbient);
+    col += keyCol * fres * back * ( 0.8 + 2.2 * rimP )
+           * ( 0.55 + 0.9 * audioKick + 0.35 * audioLevel );
+    col += fillCol * max( dot( N, fillDir ), 0.0 ) * ( 0.25 * fillP )
+           * ( 0.5 + 0.6 * audioAmbient );
     return col;
 }
 
@@ -134,20 +135,20 @@ void main()
     // The key swings slowly, and behind the subject: a rim light lives roughly
     // opposite the camera, so the direction is mostly +z in view space.
     float a = time * 0.11 + 6.2831853 * dayPhase * 0.25;
-    vec3 keyDir  = normalize(vec3(0.75 * sin(a), 0.30 + 0.25 * cos(a * 0.7), 0.75));
-    vec3 fillDir = normalize(vec3(-0.6, -0.25, 0.35));
+    vec3  keyDir = normalize( vec3( 0.75 * sin( a ), 0.30 + 0.25 * cos( a * 0.7 ), 0.75 ) );
+    vec3  fillDir = normalize( vec3( -0.6, -0.25, 0.35 ) );
 
-    vec3 keyCol = hue2rgb(fract(0.55 + 0.30 * sin(audioChromaHue) + 0.08 * sin(a)));
-    keyCol = mix(keyCol, vec3(1.0), 0.30);
-    vec3 fillCol = mix(vec3(0.25, 0.35, 0.55), hue2rgb(fract(0.12 + 0.2 * sin(a))), 0.35);
+    vec3 keyCol = hue2rgb( fract( 0.55 + 0.30 * sin( audioChromaHue ) + 0.08 * sin( a ) ) );
+    keyCol = mix( keyCol, vec3( 1.0 ), 0.30 );
+    vec3 fillCol = mix( vec3( 0.25, 0.35, 0.55 ), hue2rgb( fract( 0.12 + 0.2 * sin( a ) ) ), 0.35 );
 
-    float sharp = clamp(sharpP, 0.0, 1.0);
-    vec3 A = lit(tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, fillDir, fillCol, sharp);
-    vec3 B = lit(tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, fillDir, fillCol, sharp);
-    vec3 col = mix(B, A, clamp(interpolation, 0.0, 1.0));
+    float sharp = clamp( sharpP, 0.0, 1.0 );
+    vec3  A = lit( tex0, texDepth0, uv, depthValid.x, px, keyDir, keyCol, fillDir, fillCol, sharp );
+    vec3  B = lit( tex1, texDepth1, uv, depthValid.y, px, keyDir, keyCol, fillDir, fillCol, sharp );
+    vec3  col = mix( B, A, clamp( interpolation, 0.0, 1.0 ) );
 
     col *= 1.0 + 0.12 * audioBeat + 0.10 * audioSubBass;
     col += keyCol * 0.04 * audioHigh;
-    col = col / (1.0 + col * 0.16);
-    fragColor = vec4(col, 1.0);
+    col = col / ( 1.0 + col * 0.16 );
+    fragColor = vec4( col, 1.0 );
 }

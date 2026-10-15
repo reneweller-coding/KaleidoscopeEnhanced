@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec4  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 in float vLength;
 
 /**
@@ -19,15 +19,16 @@ in float vLength;
  */
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     // Additive glowing ribbon edges & center stripe
-    float edge = 1.0 - abs(vSide);
-    float glow = pow(edge, 1.8) * 1.5;
+    float edge = 1.0 - abs( vSide );
+    float glow = pow( edge, 1.8 ) * 1.5;
 
     // Glowing dashed lane divider in center
-    float centerLine = smoothstep(0.12, 0.0, abs(vSide)) * step(0.35, fract(vLength * 120.0));
+    float centerLine = smoothstep( 0.12, 0.0, abs( vSide ) ) * step( 0.35, fract( vLength * 120.0 ) );
     glow += centerLine * 2.0;
 
     vec3 col = vCol.rgb * glow;
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

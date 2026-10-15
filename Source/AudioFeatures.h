@@ -1,11 +1,13 @@
 /**
  * @file AudioFeatures.h
- * @brief Plain-old-data snapshot of every real-time audio-analysis feature, shared between AudioAnalyzer and the render-side shaders.
+ * @brief Plain-old-data snapshot of every real-time audio-analysis feature, shared between AudioAnalyzer and the
+ * render-side shaders.
  */
 #pragma once
 
 /**
- * @brief Snapshot of all real-time audio-analysis results, produced by AudioAnalyzer and consumed by RenderPipeline / EffectShader.
+ * @brief Snapshot of all real-time audio-analysis results, produced by AudioAnalyzer and consumed by RenderPipeline /
+ * EffectShader.
  *
  * All float fields normalised to [0, 1] (unless the field's comment says
  * otherwise). Access is protected by AudioAnalyzer's QMutex — always obtain a
@@ -28,15 +30,15 @@
 struct AudioFeatures
 {
     // ---- 6-Band energies (dB-normalised, smoothed) ----
-    float subBassLevel  = 0.f;   ///< 20-60 Hz   - physical weight / darkness
-    float bassLevel     = 0.f;   ///< 60-150 Hz  - drone body / beat energy
-    float lowMidLevel   = 0.f;   ///< 150-500 Hz - harmonic warmth
-    float midLevel      = 0.f;   ///< 500-2k Hz  - texture / melody
-    float upperMidLevel = 0.f;   ///< 2k-6k Hz   - metallic / industrial
-    float highLevel     = 0.f;   ///< 6k+ Hz     - air / shimmer
+    float subBassLevel = 0.f;  ///< 20-60 Hz   - physical weight / darkness
+    float bassLevel = 0.f;     ///< 60-150 Hz  - drone body / beat energy
+    float lowMidLevel = 0.f;   ///< 150-500 Hz - harmonic warmth
+    float midLevel = 0.f;      ///< 500-2k Hz  - texture / melody
+    float upperMidLevel = 0.f; ///< 2k-6k Hz   - metallic / industrial
+    float highLevel = 0.f;     ///< 6k+ Hz     - air / shimmer
 
     // ---- Overall amplitude ----
-    float overallLevel  = 0.f;   ///< Weighted mix of all 6 bands (bass-heavy weighting).
+    float overallLevel = 0.f; ///< Weighted mix of all 6 bands (bass-heavy weighting).
 
     // ---- Fine-grained spectrum (for the analyzer effects) ----
     /** @brief Number of log-spaced bands in #spectrum. */
@@ -69,9 +71,9 @@ struct AudioFeatures
      * Instant / slow-average ratio per register, ~1.0 = as loud as usual,
      * clamped 0..2.5.  Uploaded as audioBassRel / audioMidRel / audioTrebRel.
      */
-    float bassRel = 1.f;   ///< Bass register instant/slow-average ratio.
-    float midRel  = 1.f;   ///< Mid register instant/slow-average ratio.
-    float trebRel = 1.f;   ///< Treble register instant/slow-average ratio.
+    float bassRel = 1.f; ///< Bass register instant/slow-average ratio.
+    float midRel = 1.f;  ///< Mid register instant/slow-average ratio.
+    float trebRel = 1.f; ///< Treble register instant/slow-average ratio.
 
     /**
      * @brief Day/night cycle phase (host wall-clock, NOT audio-derived).
@@ -83,15 +85,15 @@ struct AudioFeatures
     float dayPhase = 0.f;
 
     // ---- Beat / onset detection ----
-    bool  isBeat        = false; ///< True for one update cycle on each detected kick.
-    float beatStrength  = 0.f;   ///< 0..1 onset magnitude vs. background.
+    bool  isBeat = false;     ///< True for one update cycle on each detected kick.
+    float beatStrength = 0.f; ///< 0..1 onset magnitude vs. background.
     /**
      * @brief Smooth 0..1 decay after a beat (use in shaders for a sustained pop).
      *
      * Also boosted by full-spectrum onsets, so it pulses on snares/claps/melodic
      * hits, not only kicks.
      */
-    float beatDecay     = 0.f;
+    float beatDecay = 0.f;
 
     /**
      * @brief Full-spectrum onset detector (spectral-flux peak picking).
@@ -114,7 +116,7 @@ struct AudioFeatures
      * Fires on a sustained near-silence followed by the first onset/energy.
      * The host uses it to trigger a clean, fresh scene transition.
      */
-    bool  trackChange = false;
+    bool trackChange = false;
 
     /**
      * @brief Music-mode classifier: 0 = clearly beat-driven, 1 = pure ambient/drone.
@@ -129,7 +131,7 @@ struct AudioFeatures
      * High when a new drone layer enters / existing layer fades. Near zero for
      * a perfectly static held drone. Primary motion driver in ambient mode.
      */
-    float spectralFlux     = 0.f;
+    float spectralFlux = 0.f;
 
     /**
      * @brief Tonal brightness 0..1 on a log frequency axis.
@@ -141,9 +143,9 @@ struct AudioFeatures
     float spectralCentroid = 0.5f;
 
     // ---- Beat-triggered discrete changes ----
-    int   beatSidesHint = 6;    ///< Target kaleidoscope symmetry (changes on beats).
-    float smoothedSides = 6.f;  ///< Host-smoothed symmetry → steps gradually, no snap.
-    float audioFlip     = 1.f;  ///< Rotation direction ±1 (flips on strong beats).
+    int   beatSidesHint = 6;   ///< Target kaleidoscope symmetry (changes on beats).
+    float smoothedSides = 6.f; ///< Host-smoothed symmetry → steps gradually, no snap.
+    float audioFlip = 1.f;     ///< Rotation direction ±1 (flips on strong beats).
 
     // ---- Derived motion helpers ----
     // NOTE: there used to be a speedScale here too (a multiplier meant for
@@ -155,7 +157,9 @@ struct AudioFeatures
     // way to make motion audio-reactive is the pre-integrated, continuous
     // audioPhase/audioAdvance uniforms computed once per frame in
     // RenderPipeline::paint() -- see [[audio-reactive-phase-constraint]].
-    float powerScale  = 1.f;   ///< Multiplier for a scene's own "power" (superellipse/distortion exponent) uniform -- safe to scale live since it's a plain per-frame shape parameter, not time-integrated. Applied via EffectShader::applyAudioFeatures()'s Uniform::setGLValueScaled().
+    float powerScale = 1.f; ///< Multiplier for a scene's own "power" (superellipse/distortion exponent) uniform -- safe
+                            ///< to scale live since it's a plain per-frame shape parameter, not time-integrated.
+                            ///< Applied via EffectShader::applyAudioFeatures()'s Uniform::setGLValueScaled().
 
     // ---- Timbral texture features (from paper: spectrum + temporal groups) ----
 
@@ -270,9 +274,9 @@ struct AudioFeatures
      * right on the other, so the stereo image becomes visible. (Mono audio
      * mirrors L=R.)
      */
-    float stereoLowL  = 0.f, stereoMidL = 0.f, stereoHighL = 0.f;   ///< Left-channel  low/mid/high band energies.
+    float stereoLowL = 0.f, stereoMidL = 0.f, stereoHighL = 0.f; ///< Left-channel  low/mid/high band energies.
     /** @brief Right-channel low band energy (AGC-normalised 0..1); the counterpart of stereoLowL. */
-    float stereoLowR  = 0.f, stereoMidR = 0.f, stereoHighR = 0.f;   ///< Right-channel low/mid/high band energies.
+    float stereoLowR = 0.f, stereoMidR = 0.f, stereoHighR = 0.f; ///< Right-channel low/mid/high band energies.
     /** @var AudioFeatures::stereoMidL
      *  @brief Left-channel mid band energy (AGC-normalised 0..1); the counterpart of stereoMidR. */
     /** @var AudioFeatures::stereoMidR
@@ -338,7 +342,8 @@ struct AudioFeatures
     float musicalMode = 0.5f;
 
     /**
-     * @brief Harmonic "colour" of the music — the circular mean of the 12-bin chroma vector mapped onto the colour wheel (0..1).
+     * @brief Harmonic "colour" of the music — the circular mean of the 12-bin chroma vector mapped onto the colour
+     * wheel (0..1).
      *
      * A song's key/harmony therefore drives a consistent global hue shift →
      * "see the harmony as colour".  The analyzer's raw value is 0..1; the
@@ -395,8 +400,8 @@ struct AudioFeatures
      * early, SHORT cross-fade to the next shader. Rate-limited in the
      * analyzer (at least ~12 s between triggers).
      */
-    int   sectionCount   = 0;
-    float sectionNovelty = 0.f;   ///< The continuous novelty score behind #sectionCount (~0 steady .. ~1 big change).
+    int   sectionCount = 0;
+    float sectionNovelty = 0.f; ///< The continuous novelty score behind #sectionCount (~0 steady .. ~1 big change).
     /**
      * @brief Song-structure memory: id of the CURRENT section.
      *
@@ -411,14 +416,14 @@ struct AudioFeatures
      * The id alone therefore cannot tell "returning" from "new" -- use
      * #sectionKnown for that.
      */
-    int   sectionId      = -1;
+    int sectionId = -1;
     /**
      * @brief True if the current section was RECOGNISED (fingerprint
      * matched a stored print), false if it was stored as a new section --
      * including the case where it landed in a recycled #sectionId slot.
      * Valid from the same trigger that bumps #sectionCount.
      */
-    bool  sectionKnown   = false;
+    bool sectionKnown = false;
 
     /**
      * @brief Instrument-separated onsets: full-spectrum onset split into three band groups of the 32-band flux.
@@ -430,9 +435,9 @@ struct AudioFeatures
      * shaders can pulse per INSTRUMENT: kick -> zoom, snare -> flash, hats ->
      * shimmer (crossmodal-correspondence mapping).
      */
-    float onsetKick  = 0.f;   ///< Kick/bass-drum onset envelope (~40..180 Hz group).
-    float onsetSnare = 0.f;   ///< Snare/claps/vocal-hit onset envelope (mid group).
-    float onsetHat   = 0.f;   ///< Hi-hat/cymbal onset envelope (high group).
+    float onsetKick = 0.f;  ///< Kick/bass-drum onset envelope (~40..180 Hz group).
+    float onsetSnare = 0.f; ///< Snare/claps/vocal-hit onset envelope (mid group).
+    float onsetHat = 0.f;   ///< Hi-hat/cymbal onset envelope (high group).
 
     /**
      * @brief Build-up tension, 0..1 (EDM dramaturgy).
@@ -458,7 +463,7 @@ struct AudioFeatures
      * between polls — same pattern as #sectionCount. The host reacts with an
      * immediate quantised scene cut + camera hit.
      */
-    int   dropCount = 0;
+    int dropCount = 0;
 
     /**
      * @brief 1 while the music "holds its breath" (DJ-STOP dramaturgy).
@@ -489,7 +494,8 @@ struct AudioFeatures
     float swell = 0.f;
 
     /**
-     * @brief Continuous 0..1 position within the BAR (4 beats), from the host's beat-phase PLL + downbeat sync (host-filled).
+     * @brief Continuous 0..1 position within the BAR (4 beats), from the host's beat-phase PLL + downbeat sync
+     * (host-filled).
      *
      * For slow, in-tempo movement (per-bar sweeps) between the fast beat
      * pulse and minute-scale drift. Uploaded as `audioBarPhase`.
@@ -528,8 +534,10 @@ struct AudioFeatures
      * 0 = no clear pitch. Uploaded as audioMelody[96].
      */
     float melody[kMelodyLen] = {};
-    float melodyHead = 0.f;   ///< #melody ring head as a 0..1 position (newest just behind it); uploaded as audioMelodyHead.
-    float melodyPhase = 0.f;  ///< 0..1 progress toward the next #melody sample (80 ms), so a scrolling trace can move smoothly between samples; uploaded as audioMelodyPhase.
+    float melodyHead = 0.f;  ///< #melody ring head as a 0..1 position (newest just behind it); uploaded as
+                             ///< audioMelodyHead.
+    float melodyPhase = 0.f; ///< 0..1 progress toward the next #melody sample (80 ms), so a scrolling trace can move
+                             ///< smoothly between samples; uploaded as audioMelodyPhase.
 
     /**
      * @brief Self-similarity matrix bookkeeping (host-filled).
@@ -537,8 +545,8 @@ struct AudioFeatures
      * The host keeps a ring of feature-vector history and a byte similarity
      * matrix ("texSSM", unit 10).
      */
-    float ssmHead = 0.f;   ///< Ring head as a 0..1 texture coordinate (shaders unwrap the ring with it).
-    float ssmFill = 0.f;   ///< How much of the window is populated yet (0..1).
+    float ssmHead = 0.f; ///< Ring head as a 0..1 texture coordinate (shaders unwrap the ring with it).
+    float ssmFill = 0.f; ///< How much of the window is populated yet (0..1).
 
     /**
      * @brief Scrolling spectrogram history bookkeeping (host-filled).
@@ -546,8 +554,8 @@ struct AudioFeatures
      * A scrolling spectrogram ("texSpectro", unit 28): 32 log-spaced bands
      * across, ~20 s of history down, written as a ring in the T axis.
      */
-    float spectroHead = 0.f;   ///< Ring head as a 0..1 texture coordinate (the newest row sits just BELOW it).
-    float spectroFill = 0.f;   ///< How much of the window is populated.
+    float spectroHead = 0.f; ///< Ring head as a 0..1 texture coordinate (the newest row sits just BELOW it).
+    float spectroFill = 0.f; ///< How much of the window is populated.
 
     /**
      * @brief Host-integrated motion phases.
@@ -561,6 +569,6 @@ struct AudioFeatures
      * these continuous accumulators, which the shaders simply add to their
      * phase.
      */
-    float audioRotPhase = 0.f;   ///< Accumulated rotation angle (radians).
-    float audioAdvance  = 0.f;   ///< Accumulated tunnel forward offset (uv units).
+    float audioRotPhase = 0.f; ///< Accumulated rotation angle (radians).
+    float audioAdvance = 0.f;  ///< Accumulated tunnel forward offset (uv units).
 };

@@ -19,32 +19,35 @@
 // broil, and the far sky layer keeps the gaps between the billows off pure
 // black.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioSnare;   ///< Snare envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     audioSnare;     ///< Snare envelope, 0..1.
+uniform float     audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float     audioBass;      ///< Bass band level, 0..1.
+uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     audioLevel;     ///< Overall loudness, 0..1.
+uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                  ///< backwards).
+uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -52,49 +55,52 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 
 /// House tint: bend a colour toward the photo palette while keeping its
 /// luminance -- the identity look survives, only the hue follows the photos.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// Strike envelope of bolt b: its own slow clock arms it, the flash decays
 /// fast; audio (snare/drop) multiplies whatever is armed RIGHT NOW.
-float boltEnv(float b)
+float boltEnv( float b )
 {
-    float cyc = fract(time * (0.10 + 0.07 * hash11(b * 3.3))
-                      + hash11(b * 7.7) * 9.0);
+    float cyc = fract( time * ( 0.10 + 0.07 * hash11( b * 3.3 ) )
+                       + hash11( b * 7.7 ) * 9.0 );
     // Between full strikes, a faint "leader" keeps flickering inside the
     // cloud so the storm never goes fully dark.
-    float leader = 0.10 + 0.08 * sin(time * (5.0 + hash11(b * 9.1) * 4.0)
-                                     + b * 2.7);
-    return max(exp(-cyc * 14.0), leader);
+    float leader = 0.10 + 0.08 * sin( time * ( 5.0 + hash11( b * 9.1 ) * 4.0 ) + b * 2.7 );
+    return max( exp( -cyc * 14.0 ), leader );
 }
 
 /// Bolt b's jagged column: position at height h (0 top .. 1 ground).
-vec3 boltPos(float b, float h)
+vec3 boltPos( float b, float h )
 {
-    vec2 start = vec2((hash11(b * 1.9) - 0.5) * 110.0,
-                      (hash11(b * 5.1) - 0.5) * 110.0);
-    float seg  = floor(h * 22.0);
-    vec2 jag = vec2(hash11(b * 13.7 + seg * 1.31) - 0.5,
-                    hash11(b * 17.3 + seg * 2.17) - 0.5) * 26.0 * h;
-    return vec3(start.x + jag.x, 34.0 - h * 58.0, start.y + jag.y);
+    vec2  start = vec2( ( hash11( b * 1.9 ) - 0.5 ) * 110.0,
+                        ( hash11( b * 5.1 ) - 0.5 ) * 110.0 );
+    float seg = floor( h * 22.0 );
+    vec2  jag = vec2( hash11( b * 13.7 + seg * 1.31 ) - 0.5,
+                      hash11( b * 17.3 + seg * 2.17 ) - 0.5 )
+                * 26.0 * h;
+    return vec3( start.x + jag.x, 34.0 - h * 58.0, start.y + jag.y );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -104,75 +110,78 @@ void main()
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     const float kTanY = 0.5206;
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+    float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
-    vec3  world = vec3(0.0);
-    vec3  vpView = vec3(0.0);
-    bool  inView = false;          // layer already given in view space
+    vec3  world = vec3( 0.0 );
+    vec3  vpView = vec3( 0.0 );
+    bool  inView = false; // layer already given in view space
     vec3  col;
     float glow = 1.0;
     float sizeBase = 155.0, sizeMin = 1.5, sizeCap = 22.0, fadeD = 190.0;
 
-    if (r1 < 0.52)
+    if ( r1 < 0.52 )
     {
         // ---- Cloud mass: clumpy billows, kneaded slowly, bottom heavy.
-        float knot = floor(r2 * 32.0);
-        vec3 Ck = vec3((hash11(knot * 3.1) - 0.5) * 105.0,
-                       20.0 + hash11(knot * 5.3) * 20.0,
-                       (hash11(knot * 7.7) - 0.5) * 105.0);
-        world = Ck + (vec3(r3, fract(r2 * 31.0), r4) - 0.5) * 30.0;
-        world.x += sin(world.y * 0.08 + time * 0.10) * 4.0;
-        world.z += sin(world.x * 0.06 + time * 0.08) * 4.0;
+        float knot = floor( r2 * 32.0 );
+        vec3  Ck = vec3( ( hash11( knot * 3.1 ) - 0.5 ) * 105.0,
+                         20.0 + hash11( knot * 5.3 ) * 20.0,
+                         ( hash11( knot * 7.7 ) - 0.5 ) * 105.0 );
+        world = Ck + ( vec3( r3, fract( r2 * 31.0 ), r4 ) - 0.5 ) * 30.0;
+        world.x += sin( world.y * 0.08 + time * 0.10 ) * 4.0;
+        world.z += sin( world.x * 0.06 + time * 0.08 ) * 4.0;
 
         // Lit from inside by "its" bolt; otherwise near-black broil.  The
         // 0.016 falloff washed the flash evenly over the whole cloud, which
         // is what made the storm read FLAT -- 0.034 keeps the discharge a
         // bright core inside dark billows.
-        float b   = mod(knot, 12.0);
-        float lit = boltEnv(b) * (0.55 + 1.8 * audioSnare + 1.2 * audioKick
-                                  + 3.0 * audioDrop);
-        float d   = length(world.xz - boltPos(b, 0.2).xz);
-        col = mix(vec3(0.15, 0.18, 0.27),
-                  vec3(0.85, 0.88, 1.0), clamp(lit * exp(-d * 0.034), 0.0, 1.0));
+        float b = mod( knot, 12.0 );
+        float lit = boltEnv( b ) * ( 0.55 + 1.8 * audioSnare + 1.2 * audioKick + 3.0 * audioDrop );
+        float d = length( world.xz - boltPos( b, 0.2 ).xz );
+        col = mix( vec3( 0.15, 0.18, 0.27 ),
+                   vec3( 0.85, 0.88, 1.0 ), clamp( lit * exp( -d * 0.034 ), 0.0, 1.0 ) );
         // Cold rim light on the cloud TOPS: vertical structure the flat
         // uniform broil never had.
-        col += vec3(0.09, 0.12, 0.19) * smoothstep(26.0, 44.0, world.y);
-        glow = (0.95 + 0.45 * r4 + 0.4 * audioBass * (22.0 / max(world.y, 8.0)))
-             * 0.42;   // wide sprites carry far more energy each -- see below
+        col += vec3( 0.09, 0.12, 0.19 ) * smoothstep( 26.0, 44.0, world.y );
+        glow = ( 0.95 + 0.45 * r4 + 0.4 * audioBass * ( 22.0 / max( world.y, 8.0 ) ) )
+               * 0.42; // wide sprites carry far more energy each -- see below
         // Billows have to FUSE, not speckle: several times the old width, and
         // never below the ~2.6 px an additive sprite needs to stay legible.
-        sizeBase = 430.0; sizeMin = 2.6; sizeCap = 55.0;
+        sizeBase = 430.0;
+        sizeMin = 2.6;
+        sizeCap = 55.0;
     }
-    else if (r1 < 0.77)
+    else if ( r1 < 0.77 )
     {
         // ---- The bolts: 12 jagged columns with branches. ----
-        float b = floor((r1 - 0.52) * 48.0);       // 0..11
+        float b = floor( ( r1 - 0.52 ) * 48.0 ); // 0..11
         float h = r2;
-        world = boltPos(b, h);
-        if (r3 > 0.72)                             // side branch
+        world = boltPos( b, h );
+        if ( r3 > 0.72 ) // side branch
         {
-            float bh = fract(r3 * 13.0);
-            world = boltPos(b, h * 0.6 + 0.1)
-                  + vec3(hash11(b * 23.1 + floor(bh * 8.0)) - 0.5,
-                         -bh * 0.4,
-                         hash11(b * 29.7 + floor(bh * 8.0)) - 0.5) * 22.0 * bh;
+            float bh = fract( r3 * 13.0 );
+            world = boltPos( b, h * 0.6 + 0.1 )
+                    + vec3( hash11( b * 23.1 + floor( bh * 8.0 ) ) - 0.5,
+                            -bh * 0.4,
+                            hash11( b * 29.7 + floor( bh * 8.0 ) ) - 0.5 )
+                          * 22.0 * bh;
         }
-        float env = boltEnv(b) * (0.55 + 1.8 * audioSnare + 1.2 * audioKick
-                                  + 3.0 * audioDrop);
-        col  = vec3(0.80, 0.85, 1.0);
-        glow = env * (0.8 + 0.4 * r4) * 3.0;
+        float env = boltEnv( b ) * ( 0.55 + 1.8 * audioSnare + 1.2 * audioKick + 3.0 * audioDrop );
+        col = vec3( 0.80, 0.85, 1.0 );
+        glow = env * ( 0.8 + 0.4 * r4 ) * 3.0;
     }
-    else if (r1 < 0.88)
+    else if ( r1 < 0.88 )
     {
         // ---- Rain sheets under the cloud. ----
-        float fall = fract(r2 * 7.0 + time * (0.5 + 0.3 * r3));
-        world = vec3((r3 - 0.5) * 150.0,
-                     18.0 - fall * 44.0,
-                     (r4 - 0.5) * 150.0);
-        col  = vec3(0.35, 0.45, 0.60);
-        glow = (0.16 + 0.22 * audioLevel + 0.28 * audioSwell)
-             * (0.4 + 0.6 * fract(r2 * 17.0));
-        sizeBase = 210.0; sizeMin = 2.2; sizeCap = 24.0;
+        float fall = fract( r2 * 7.0 + time * ( 0.5 + 0.3 * r3 ) );
+        world = vec3( ( r3 - 0.5 ) * 150.0,
+                      18.0 - fall * 44.0,
+                      ( r4 - 0.5 ) * 150.0 );
+        col = vec3( 0.35, 0.45, 0.60 );
+        glow = ( 0.16 + 0.22 * audioLevel + 0.28 * audioSwell )
+               * ( 0.4 + 0.6 * fract( r2 * 17.0 ) );
+        sizeBase = 210.0;
+        sizeMin = 2.2;
+        sizeCap = 24.0;
     }
     else
     {
@@ -185,48 +194,51 @@ void main()
         float hz = 96.0 + 92.0 * r3;
         // 2.0 would fit the frustum exactly; 2.35 so the sheet still reaches
         // past all four edges when the preset camera rig rolls the view.
-        vpView = vec3((r2 - 0.5) * 2.35 * kTanY * aspect * hz,
-                      (r4 - 0.5) * 2.35 * kTanY * hz,
-                      hz);
-        float b   = floor(fract(r2 * 6.13 + r4 * 2.71) * 12.0);
-        float env = boltEnv(b) * (0.45 + 1.4 * audioSnare + 2.2 * audioDrop);
-        col  = mix(vec3(0.10, 0.12, 0.20), vec3(0.60, 0.64, 0.88),
-                   clamp(env * 0.45, 0.0, 1.0));
+        vpView = vec3( ( r2 - 0.5 ) * 2.35 * kTanY * aspect * hz,
+                       ( r4 - 0.5 ) * 2.35 * kTanY * hz,
+                       hz );
+        float b = floor( fract( r2 * 6.13 + r4 * 2.71 ) * 12.0 );
+        float env = boltEnv( b ) * ( 0.45 + 1.4 * audioSnare + 2.2 * audioDrop );
+        col = mix( vec3( 0.10, 0.12, 0.20 ), vec3( 0.60, 0.64, 0.88 ),
+                   clamp( env * 0.45, 0.0, 1.0 ) );
         glow = 0.30 + 0.28 * r4;
-        sizeBase = 2200.0; sizeMin = 3.5; sizeCap = 46.0; fadeD = 900.0;
+        sizeBase = 2200.0;
+        sizeMin = 3.5;
+        sizeCap = 46.0;
+        fadeD = 900.0;
     }
 
     // Low camera looking up into the storm, drifting slowly.
-    float ca  = time * 0.03;
-    vec3 camP = vec3(cos(ca) * 40.0, -14.0, sin(ca) * 40.0);
-    vec3 fwd  = normalize(vec3(0.0, 14.0, 0.0) - camP);
-    vec3 rgt  = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
-    vec3 up   = cross(rgt, fwd);
+    float ca = time * 0.03;
+    vec3  camP = vec3( cos( ca ) * 40.0, -14.0, sin( ca ) * 40.0 );
+    vec3  fwd = normalize( vec3( 0.0, 14.0, 0.0 ) - camP );
+    vec3  rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3  up = cross( rgt, fwd );
 
     vec3 vp;
-    if (inView)
+    if ( inView )
     {
         vp = vpView;
     }
     else
     {
         vec3 rel = world - camP;
-        vp = vec3(dot(rel, rgt), dot(rel, up), dot(rel, fwd));
+        vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
     }
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(sizeBase * (0.4 + 0.8 * r4) * px / dist,
-                         sizeMin, max(sizeCap * px, sizeMin));
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          sizeMin, max( sizeCap * px, sizeMin ) );
 
-    col *= glow * clamp(1.0 - vp.z / fadeD, 0.0, 1.0);
+    col *= glow * clamp( 1.0 - vp.z / fadeD, 0.0, 1.0 );
     // Cap the TINTED vec3, not the scalar feeding it: the flash colours run
     // past 1.0 per channel on their own.
-    vCol = vec4(min(palTint(col, 0.25 * r1, 0.18) * 3.0, vec3(3.2)), 1.0);
+    vCol = vec4( min( palTint( col, 0.25 * r1, 0.18 ) * 3.0, vec3( 3.2 ) ), 1.0 );
 }

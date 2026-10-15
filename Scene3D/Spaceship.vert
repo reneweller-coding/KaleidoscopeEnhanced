@@ -10,28 +10,30 @@
  * nebula onto it.
  */
 
-in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
+in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky
+               ///< direction").
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec3 vPos;   ///< Position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vPos;    ///< Position (from the vertex stage).
+out float vBg;     ///< Background flag (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 world, n;
     bool isBg = gl_VertexID >= meshVertexCount;
-    if( !isBg )
+    if ( !isBg )
     {
         // The generator's "game" export is NORMALIZED to roughly a unit
         // bounding box (measured directly: ~1.0 on its longest axis),
@@ -40,7 +42,7 @@ void main()
         // coordinates. Scale up to a size that reads clearly against this
         // scene's ~90-unit camera distance.
         const float kModelScale = 35.0;
-        vec3 local = attrA.xyz * kModelScale;
+        vec3        local = attrA.xyz * kModelScale;
 
         // Slow tumble + yaw so a single static asset still reads as alive;
         // audio only adds a small kick-driven bob -- this is one hero
@@ -52,39 +54,40 @@ void main()
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
         float rotY = time * 0.45;
-        float rotX = sin(time * 0.07) * 0.2;
-        float cy = cos(rotY), sy = sin(rotY);
-        float cx = cos(rotX), sx = sin(rotX);
-        mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
-        mat3 rotXMat = mat3(1.0, 0.0, 0.0,   0.0, cx, sx,   0.0, -sx, cx);
-        mat3 rotMat = rotYMat * rotXMat;
+        float rotX = sin( time * 0.07 ) * 0.2;
+        float cy = cos( rotY ), sy = sin( rotY );
+        float cx = cos( rotX ), sx = sin( rotX );
+        mat3  rotYMat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        mat3  rotXMat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3  rotMat = rotYMat * rotXMat;
 
         world = rotMat * local;
-        world.z += 90.0;                                 // push out in front of the camera
+        world.z += 90.0; // push out in front of the camera
         // The slow drift stays; the +2*audioKick hop does not. A hull jerking
         // in time reads as a glitch, not as reactivity (reported) -- the beat
         // belongs to the engine glow and the background, not the ship's mass.
-        world.y += 4.0 * sin(time * 0.2);
-        n = normalize(rotMat * attrB.xyz);
-        vUV = vec2(attrA.w, attrB.w);
+        world.y += 4.0 * sin( time * 0.2 );
+        n = normalize( rotMat * attrB.xyz );
+        vUV = vec2( attrA.w, attrB.w );
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
-        vUV = vec2(0.0);
+        vUV = vec2( 0.0 );
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     // The shell is a CUBE of half-side kSkyShellRadius, so its corners sit
     // sqrt(3) times further out than its faces -- past kSceneFar, which
     // clipped visible wedges out of the sky. Pinning shell depth just inside
     // the far plane is the standard skybox fix: no far-plane clipping however
     // big the shell is, and it can never occlude the object in front of it.
-    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

@@ -1,13 +1,13 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // NeuralAxonSynapseCloud.frag
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform vec2  resolution;     ///< Size of the render target in pixels.
+uniform float time;           ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec4 vColor;
+in vec4  vColor;
 in float vSize;
 
 /**
@@ -25,28 +25,31 @@ in float vSize;
  */
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float hue = (hueP > 0.0) ? hueP : 0.0;
+void main()
+{
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Soft Gaussian point sprite circle
-    vec2 circCoord = gl_PointCoord * 2.0 - 1.0;
-    float distSq = dot(circCoord, circCoord);
-    if (distSq > 1.0) discard;
+    vec2  circCoord = gl_PointCoord * 2.0 - 1.0;
+    float distSq = dot( circCoord, circCoord );
+    if ( distSq > 1.0 )
+        discard;
 
-    float alpha = exp(-distSq * 5.0);
-    vec3 col = vColor.rgb * alpha * 2.0;   // measured luma 0.028: was *0.80
+    float alpha = exp( -distSq * 5.0 );
+    vec3  col = vColor.rgb * alpha * 2.0; // measured luma 0.028: was *0.80
 
-    col = hueRot(col, audioChromaHue + hue);
+    col = hueRot( col, audioChromaHue + hue );
     // Cap the TINTED colour, not the scalar that fed it: hueRot can push a
     // single channel above the value that went in.
-    col *= 1.9;   // measured-dark lift round 2
-    col *= 1.9;   // measured-dark lift round 2
-    fragColor = vec4(min(max(col, vec3(0.0)), vec3(1.35)), alpha);
+    col *= 1.9; // measured-dark lift round 2
+    col *= 1.9; // measured-dark lift round 2
+    fragColor = vec4( min( max( col, vec3( 0.0 ) ), vec3( 1.35 ) ), alpha );
 }

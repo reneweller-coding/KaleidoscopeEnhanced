@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file ForaminiferaSpiralShells.frag
  * @brief FORAMINIFERA SPIRAL SHELLS: the chambered shells of forams --
@@ -19,109 +19,124 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: countP, ratioP (chamber growth ratio), hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
+uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float sceneTime;       ///< Seconds since this scene was activated.
 uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioChroma[12];   ///< Pitch-class energies (12 values).
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                               ///< backwards).
+uniform float audioChroma[12]; ///< Pitch-class energies (12 values).
+uniform float audioHigh;       ///< High band level, 0..1.
+uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;      ///< Overall loudness, 0..1.
+uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float countP;
 uniform float ratioP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    int nShells = 3 + int(clamp(countP, 0.0, 1.0) * 3.0);
-    float ratio = 1.12 + 0.1 * clamp(ratioP, 0.0, 1.0);
-    float light = 0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0);
-    float prog = clamp(sceneProgress, 0.0, 1.0);
-    vec2 drift = vec2(sceneAdvance * 0.004, sceneAdvance * 0.002);
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    int   nShells = 3 + int( clamp( countP, 0.0, 1.0 ) * 3.0 );
+    float ratio = 1.12 + 0.1 * clamp( ratioP, 0.0, 1.0 );
+    float light = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
+    float prog = clamp( sceneProgress, 0.0, 1.0 );
+    vec2  drift = vec2( sceneAdvance * 0.004, sceneAdvance * 0.002 );
 
     // Microscope field: the photo dark and blurred as the slide.
-    vec3 col = (interpolation * textureLod(tex0, gl_FragCoord.xy / resolution, 3.0) + (1.0 - interpolation) * textureLod(tex1, gl_FragCoord.xy / resolution, 3.0)).rgb;
-    col *= imgPalette(hue * 0.159 + 0.6) * 0.35 * light;
-    col *= 0.7 + 0.3 * (1.0 - length(p) * 0.8);
+    vec3 col = ( interpolation * textureLod( tex0, gl_FragCoord.xy / resolution, 3.0 )
+                 + ( 1.0 - interpolation ) * textureLod( tex1, gl_FragCoord.xy / resolution, 3.0 ) )
+                   .rgb;
+    col *= imgPalette( hue * 0.159 + 0.6 ) * 0.35 * light;
+    col *= 0.7 + 0.3 * ( 1.0 - length( p ) * 0.8 );
 
-    for (int s = 0; s < 6; ++s)
+    for ( int s = 0; s < 6; ++s )
     {
-        if (s >= nShells) break;
-        float fs = float(s);
-        vec2 c = vec2((hash11(fs * 3.7) - 0.5) * aspect * 0.85, (hash11(fs * 5.3) - 0.5) * 0.85) + drift * (0.5 + hash11(fs * 2.1));
-        float scale = 0.02 + 0.015 * hash11(fs * 7.9);
-        float twist = hash11(fs * 9.1) * 6.28;
-        float sense = (hash11(fs * 11.3) > 0.5) ? 1.0 : -1.0;
+        if ( s >= nShells )
+            break;
+        float     fs = float( s );
+        vec2      c = vec2( ( hash11( fs * 3.7 ) - 0.5 ) * aspect * 0.85, ( hash11( fs * 5.3 ) - 0.5 ) * 0.85 )
+                      + drift * ( 0.5 + hash11( fs * 2.1 ) );
+        float     scale = 0.02 + 0.015 * hash11( fs * 7.9 );
+        float     twist = hash11( fs * 9.1 ) * 6.28;
+        float     sense = ( hash11( fs * 11.3 ) > 0.5 ) ? 1.0 : -1.0;
         const int N = 22;
-        float growth = prog * float(N) * (0.8 + 0.4 * hash11(fs * 4.4));
+        float     growth = prog * float( N ) * ( 0.8 + 0.4 * hash11( fs * 4.4 ) );
         // Chambers along a logarithmic spiral; chamber i has centre at
         // angle i*step, radius scale*ratio^i, size proportional; the last
         // chamber inflates with the fractional part of growth.
-        for (int i = 0; i < N; ++i)
+        for ( int i = 0; i < N; ++i )
         {
-            float fi = float(i);
-            if (fi > growth) break;
-            float inflate = clamp(growth - fi, 0.0, 1.0);
-            inflate = smoothstep(0.0, 1.0, inflate);
+            float fi = float( i );
+            if ( fi > growth )
+                break;
+            float inflate = clamp( growth - fi, 0.0, 1.0 );
+            inflate = smoothstep( 0.0, 1.0, inflate );
             float ang = twist + sense * fi * 0.55;
-            float rad = scale * pow(ratio, fi) * 3.0;
-            vec2 cc = c + vec2(cos(ang), sin(ang)) * rad;
-            float sz = scale * pow(ratio, fi) * 1.15 * inflate;
-            float d = length(p - cc);
-            float cham = smoothstep(sz, sz * 0.9, d);
+            float rad = scale * pow( ratio, fi ) * 3.0;
+            vec2  cc = c + vec2( cos( ang ), sin( ang ) ) * rad;
+            float sz = scale * pow( ratio, fi ) * 1.15 * inflate;
+            float d = length( p - cc );
+            float cham = smoothstep( sz, sz * 0.9, d );
             // Calcite wall: the photo, pale, tinted by the chroma class i mod 12.
-            int k = int(mod(fi, 12.0));
-            float e = clamp(audioChroma[k] * 1.5, 0.0, 1.0);
-            vec3 wall = mix(img(fract(cc * 0.5 + 0.5)) * 1.3, vec3(0.9, 0.88, 0.8), 0.5);
-            wall = mix(wall, wall * imgPalette(hue * 0.159 + float(k) / 12.0) * 1.7, 0.3 + 0.4 * e);
-            float shade = 0.55 + 0.6 * sqrt(max(1.0 - d * d / max(sz * sz, 1e-6), 0.0));
-            vec3 chamCol = wall * shade * light;
+            int   k = int( mod( fi, 12.0 ) );
+            float e = clamp( audioChroma[k] * 1.5, 0.0, 1.0 );
+            vec3  wall = mix( img( fract( cc * 0.5 + 0.5 ) ) * 1.3, vec3( 0.9, 0.88, 0.8 ), 0.5 );
+            wall = mix( wall, wall * imgPalette( hue * 0.159 + float( k ) / 12.0 ) * 1.7, 0.3 + 0.4 * e );
+            float shade = 0.55 + 0.6 * sqrt( max( 1.0 - d * d / max( sz * sz, 1e-6 ), 0.0 ) );
+            vec3  chamCol = wall * shade * light;
             // Suture line: a dark rim.
-            chamCol *= 1.0 - 0.5 * smoothstep(sz * 0.8, sz, d);
+            chamCol *= 1.0 - 0.5 * smoothstep( sz * 0.8, sz, d );
             // Pores: round glints on the treble.
-            vec2 pu = (p - cc) / max(sz, 1e-4) * 6.0; vec2 pc = floor(pu); vec2 pf = fract(pu) - 0.5;
-            float pore = smoothstep(0.25, 0.1, length(pf)) * step(0.7, hash21(pc + fi));
-            chamCol += vec3(1.0) * pore * clamp(audioHigh * 2.0, 0.0, 1.0) * 0.5;
-            col = mix(col, chamCol, cham);
+            vec2  pu = ( p - cc ) / max( sz, 1e-4 ) * 6.0;
+            vec2  pc = floor( pu );
+            vec2  pf = fract( pu ) - 0.5;
+            float pore = smoothstep( 0.25, 0.1, length( pf ) ) * step( 0.7, hash21( pc + fi ) );
+            chamCol += vec3( 1.0 ) * pore * clamp( audioHigh * 2.0, 0.0, 1.0 ) * 0.5;
+            col = mix( col, chamCol, cham );
         }
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

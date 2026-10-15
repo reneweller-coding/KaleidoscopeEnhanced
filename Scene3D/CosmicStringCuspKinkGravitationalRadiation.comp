@@ -1,6 +1,6 @@
 #version 430
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
  * @file CosmicStringCuspKinkGravitationalRadiation.comp
@@ -21,21 +21,26 @@ layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
  * coordinate across the cord (-1..+1), attrB.w = cusp glow.
  */
 
-layout(std430, binding = 0) buffer Verts {
+layout( std430, binding = 0 ) buffer Verts
+{
     float verts[]; // 8 floats per vertex: attrA.xyzw, attrB.xyzw
 };
 
 // DrawArraysIndirectCommand: [0] count, [1] instanceCount, [2] first, [3] baseInstance, [4] rawCount
-layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform uint  maxVertices;  ///< Capacity of the vertex buffer (compute stage).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;    ///< Bass band level, 0..1.
+uniform float audioMid;     ///< Mid band level, 0..1.
+uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 // Preset params (the generator gets the scene's <float> uniforms by name).
@@ -44,37 +49,45 @@ uniform float lensingP;
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // layout aspect is a shade wider than 16:9 so the outer column of loops still
 // reaches the edge of a wider display.
-const float kTanY   = 0.5206;
+const float kTanY = 0.5206;
 const float kAspect = 1.85;
 
 const uint LOOPS = 160u;
-const uint SEGS  = 64u;
+const uint SEGS = 64u;
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float p) {
-    p = fract(p * 0.1031);
+float hash11( float p )
+{
+    p = fract( p * 0.1031 );
     p *= p + 47.19;
     p *= p + p;
-    return fract(p);
+    return fract( p );
 }
 
 /// @brief Writes one vertex into the output buffer (compute stage).
-void writeVertex(uint slot, vec3 p, float e1, float eSide, float e2) {
+void writeVertex( uint slot, vec3 p, float e1, float eSide, float e2 )
+{
     uint o = slot * 8u;
-    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 0u] = p.x;
+    verts[o + 1u] = p.y;
+    verts[o + 2u] = p.z;
     verts[o + 3u] = e1;
-    verts[o + 4u] = eSide; verts[o + 5u] = 0.0; verts[o + 6u] = 0.0;
+    verts[o + 4u] = eSide;
+    verts[o + 5u] = 0.0;
+    verts[o + 6u] = 0.0;
     verts[o + 7u] = e2;
 }
 
 /// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
-void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
+{
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
-    vec3 dir = pB - pA;
-    float len = length(dir);
-    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3  dir = pB - pA;
+    float len = length( dir );
+    dir = ( len > 1e-5 ) ? dir / len : vec3( 0.0, 1.0, 0.0 );
 
     // BILLBOARD against the view ray rather than against a fixed world up.
     // With a hardcoded up vector any stretch of string that happened to run
@@ -82,57 +95,59 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     // and the cord vanished into a zero-width sliver for as long as it stayed
     // that way.  Positions are already in view space, so the eye is at the
     // origin and the view ray is simply the midpoint direction.
-    vec3 mid  = 0.5 * (pA + pB);
-    vec3 look = (length(mid) > 1e-4) ? normalize(mid) : vec3(0.0, 0.0, 1.0);
-    vec3 side = cross(dir, look);
-    float sl  = length(side);
+    vec3  mid = 0.5 * ( pA + pB );
+    vec3  look = ( length( mid ) > 1e-4 ) ? normalize( mid ) : vec3( 0.0, 0.0, 1.0 );
+    vec3  side = cross( dir, look );
+    float sl = length( side );
     // Degenerate only when the cord points exactly at the eye; any stable
     // perpendicular will do there, and the segment is end-on anyway.
-    side = (sl > 1e-4) ? (side / sl) : normalize(cross(dir, vec3(0.0, 1.0, 0.0)) + vec3(1e-3));
+    side = ( sl > 1e-4 ) ? ( side / sl ) : normalize( cross( dir, vec3( 0.0, 1.0, 0.0 ) ) + vec3( 1e-3 ) );
     side *= thickness;
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
-    writeVertex(base + 0u, a0, e1, -1.0, e2);
-    writeVertex(base + 1u, a1, e1,  1.0, e2);
-    writeVertex(base + 2u, b0, e1, -1.0, e2);
-    writeVertex(base + 3u, a1, e1,  1.0, e2);
-    writeVertex(base + 4u, b1, e1,  1.0, e2);
-    writeVertex(base + 5u, b0, e1, -1.0, e2);
+    writeVertex( base + 0u, a0, e1, -1.0, e2 );
+    writeVertex( base + 1u, a1, e1, 1.0, e2 );
+    writeVertex( base + 2u, b0, e1, -1.0, e2 );
+    writeVertex( base + 3u, a1, e1, 1.0, e2 );
+    writeVertex( base + 4u, b1, e1, 1.0, e2 );
+    writeVertex( base + 5u, b0, e1, -1.0, e2 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     uvec3 g = gl_GlobalInvocationID;
-    uint idx = g.x + 64u * (g.y + 64u * g.z);
+    uint  idx = g.x + 64u * ( g.y + 64u * g.z );
 
     uint loopIdx = idx / SEGS;
-    uint segIdx  = idx % SEGS;
-    if (loopIdx >= LOOPS) return;
+    uint segIdx = idx % SEGS;
+    if ( loopIdx >= LOOPS )
+        return;
 
     float t = time * 0.45 + audioAdvance * 0.4;
-    float fl = float(loopIdx);
-    float seed = hash11(fl * 33.71);
+    float fl = float( loopIdx );
+    float seed = hash11( fl * 33.71 );
 
     // ---- Where this loop hangs in the network ------------------------
     // Stratified 16 x 10 over the frame, jittered, then drifting slowly.
     uint  ix = loopIdx % 16u;
-    uint  iy = loopIdx / 16u;                    // 0 .. 9
-    float hx = hash11(fl *  7.13 + 1.7);
-    float hy = hash11(fl *  3.97 + 5.3);
-    float hz = hash11(fl * 11.31 + 9.1);
+    uint  iy = loopIdx / 16u; // 0 .. 9
+    float hx = hash11( fl * 7.13 + 1.7 );
+    float hy = hash11( fl * 3.97 + 5.3 );
+    float hz = hash11( fl * 11.31 + 9.1 );
 
-    float sx = ((float(ix) + 0.5) / 16.0 - 0.5) * 2.0 * 1.06 + (hx - 0.5) * 0.09;
-    float sy = ((float(iy) + 0.5) / 10.0 - 0.5) * 2.0 * 1.06 + (hy - 0.5) * 0.14;
+    float sx = ( ( float( ix ) + 0.5 ) / 16.0 - 0.5 ) * 2.0 * 1.06 + ( hx - 0.5 ) * 0.09;
+    float sy = ( ( float( iy ) + 0.5 ) / 10.0 - 0.5 ) * 2.0 * 1.06 + ( hy - 0.5 ) * 0.14;
     float dph = time * 0.09 + fl * 1.31;
-    sx += cos(dph)        * 0.035;
-    sy += sin(dph * 0.83) * 0.050;
+    sx += cos( dph ) * 0.035;
+    sy += sin( dph * 0.83 ) * 0.050;
 
-    float D     = 4.5 + hz * 19.0;               // depth 4.5 .. 23.5
-    float halfH = kTanY * D;                     // frustum half-height there
-    vec3  ctr   = vec3(sx * halfH * kAspect, sy * halfH, D);
+    float D = 4.5 + hz * 19.0; // depth 4.5 .. 23.5
+    float halfH = kTanY * D;   // frustum half-height there
+    vec3  ctr = vec3( sx * halfH * kAspect, sy * halfH, D );
 
-    float s0 = float(segIdx) / float(SEGS);
-    float s1 = float(segIdx + 1u) / float(SEGS);
+    float s0 = float( segIdx ) / float( SEGS );
+    float s1 = float( segIdx + 1u ) / float( SEGS );
 
     float phi0 = s0 * 6.2831853;
     float phi1 = s1 * 6.2831853;
@@ -144,7 +159,7 @@ void main() {
     // so a loop twenty units away is drawn the same size as one four units
     // away and the network reads as a network rather than as a perspective
     // funnel of specks.
-    float rLoop = (0.09 + 0.06 * seed) * halfH;
+    float rLoop = ( 0.09 + 0.06 * seed ) * halfH;
 
     // Right and left-moving wave modes producing cusps.  A per-loop
     // phase offset on the left-mover staggers the loops' breathing:
@@ -152,34 +167,38 @@ void main() {
     // cos(phi)*cos(omega*t), so twice per period the whole ensemble
     // collapsed to a point and the scene went black.
     float phaseL = seed * 6.2831853;
-    vec3 a0 = vec3(cos(phi0 - t * omega), sin(phi0 - t * omega), sin(2.0 * (phi0 - t * omega)) * 0.5) * rLoop;
-    vec3 b0 = vec3(cos(phi0 + t * omega + phaseL), sin(phi0 + t * omega + phaseL), cos(2.0 * (phi0 + t * omega + phaseL)) * 0.5) * rLoop;
-    vec3 p0 = ctr + 0.5 * (a0 + b0);
+    vec3 a0 = vec3( cos( phi0 - t * omega ), sin( phi0 - t * omega ), sin( 2.0 * ( phi0 - t * omega ) ) * 0.5 ) * rLoop;
+    vec3  b0 = vec3( cos( phi0 + t * omega + phaseL ), sin( phi0 + t * omega + phaseL ),
+                     cos( 2.0 * ( phi0 + t * omega + phaseL ) ) * 0.5 )
+               * rLoop;
+    vec3  p0 = ctr + 0.5 * ( a0 + b0 );
 
-    vec3 a1 = vec3(cos(phi1 - t * omega), sin(phi1 - t * omega), sin(2.0 * (phi1 - t * omega)) * 0.5) * rLoop;
-    vec3 b1 = vec3(cos(phi1 + t * omega + phaseL), sin(phi1 + t * omega + phaseL), cos(2.0 * (phi1 + t * omega + phaseL)) * 0.5) * rLoop;
-    vec3 p1 = ctr + 0.5 * (a1 + b1);
+    vec3 a1 = vec3( cos( phi1 - t * omega ), sin( phi1 - t * omega ), sin( 2.0 * ( phi1 - t * omega ) ) * 0.5 ) * rLoop;
+    vec3 b1 = vec3( cos( phi1 + t * omega + phaseL ), sin( phi1 + t * omega + phaseL ),
+                    cos( 2.0 * ( phi1 + t * omega + phaseL ) ) * 0.5 )
+              * rLoop;
+    vec3 p1 = ctr + 0.5 * ( a1 + b1 );
 
     // Relativistic cusp velocity ~ |dx/dt| -> c.  Normalised by the loop's
     // own radius: now that rLoop scales with depth, an unnormalised speed
     // would saturate isCusp to 1.0 for every distant loop and the whole far
     // half of the network would burn at full cusp brightness.
-    float cuspSpeed = length(0.5 * (a0 - b0)) / max(rLoop, 1e-4);
-    float isCusp = pow(clamp(cuspSpeed * 1.2, 0.0, 1.0), 4.0);
+    float cuspSpeed = length( 0.5 * ( a0 - b0 ) ) / max( rLoop, 1e-4 );
+    float isCusp = pow( clamp( cuspSpeed * 1.2, 0.0, 1.0 ), 4.0 );
 
     // Depth cue: the far network is a touch dimmer, never black.
-    float dfade = clamp(1.0 - (D - 4.5) / 34.0, 0.40, 1.0);
+    float dfade = clamp( 1.0 - ( D - 4.5 ) / 34.0, 0.40, 1.0 );
 
-    float cuspFlash = (1.0 + isCusp * 4.0) * (1.0 + 3.0 * audioKick) * dfade;
+    float cuspFlash = ( 1.0 + isCusp * 4.0 ) * ( 1.0 + 3.0 * audioKick ) * dfade;
 
     // Cord thickness as a screen fraction, so no cord ever thins below a
     // handful of pixels at the back of the volume.  This pass is OPAQUE and
     // depth-tested (see Scene3DShader::draw, GEOM_INDIRECT), so the cord has
     // to be a solid lit cord -- a wide faint halo quad would just punch dim
     // rectangles through every loop behind it.
-    float lens  = (lensingP > 0.01) ? lensingP : 1.2;
-    float thick = (0.011 + 0.008 * isCusp) * halfH
-                * (0.85 + 0.25 * lens) * (1.0 + 0.3 * audioSwell);
+    float lens = ( lensingP > 0.01 ) ? lensingP : 1.2;
+    float thick = ( 0.011 + 0.008 * isCusp ) * halfH
+                  * ( 0.85 + 0.25 * lens ) * ( 1.0 + 0.3 * audioSwell );
 
-    emitSegment(p0, p1, s0, cuspFlash, thick);
+    emitSegment( p0, p1, s0, cuspFlash, thick );
 }

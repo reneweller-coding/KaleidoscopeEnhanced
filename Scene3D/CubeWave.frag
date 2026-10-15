@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // CubeWave.frag — dark faces, neon edges (Tron look).  Depth-tested opaque.
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol; ///< Colour (from the vertex stage).
 in vec3 vCorner;
 
 /**
@@ -20,12 +20,12 @@ in vec3 vCorner;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 a = abs(vCorner) * 2.0;                 // 0..1 toward each face
-    float e1 = smoothstep(0.86, 0.99, a.x);
-    float e2 = smoothstep(0.86, 0.99, a.y);
-    float e3 = smoothstep(0.86, 0.99, a.z);
-    float edge = clamp(e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0);
-    vec3 col = vCol.rgb * (0.10 + 1.6 * edge);
-    col *= 2.35;   // measured-dark lift (visual pass)
-    fragColor = vec4(col, 1.0);
+    vec3  a = abs( vCorner ) * 2.0; // 0..1 toward each face
+    float e1 = smoothstep( 0.86, 0.99, a.x );
+    float e2 = smoothstep( 0.86, 0.99, a.y );
+    float e3 = smoothstep( 0.86, 0.99, a.z );
+    float edge = clamp( e1 * e2 + e2 * e3 + e1 * e3, 0.0, 1.0 );
+    vec3  col = vCol.rgb * ( 0.10 + 1.6 * edge );
+    col *= 2.35; // measured-dark lift (visual pass)
+    fragColor = vec4( col, 1.0 );
 }

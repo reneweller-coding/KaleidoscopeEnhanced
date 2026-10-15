@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file VoronoiPulse.frag
  * @brief The source image SHATTERED into a kaleidoscopic stained-glass mosaic.  The
@@ -16,124 +16,140 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioLevel    -> overall brightness
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioSwell;     ///< slow loudness swell -> shard field breathes
+uniform float audioBeat;     ///< Beat envelope, 0..1.
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;    ///< slow loudness swell -> shard field breathes
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP;         ///< mirror fold count (0 -> 4; 3..8)
-uniform float scaleP;         ///< shard density     (0 -> 3.0; 2.2 = big shards, 4.5 = fine)
+uniform int   sidesP; ///< mirror fold count (0 -> 4; 3..8)
+uniform float scaleP; ///< shard density     (0 -> 3.0; 2.2 = big shards, 4.5 = fine)
 uniform float driftP;
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioAdvance;         ///< shard drift speed multiplier (0 -> 1.0)
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< shard drift speed multiplier (0 -> 1.0)
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
-mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+mat2 rot( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
 
 
 /// IMG-PALETTE (house standard): colours come from a rotating arc in the
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
-vec2 hash22(vec2 p)
+vec2 hash22( vec2 p )
 {
-    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
-    return fract(sin(p) * 43758.5453);
+    p = vec2( dot( p, vec2( 127.1, 311.7 ) ), dot( p, vec2( 269.5, 183.3 ) ) );
+    return fract( sin( p ) * 43758.5453 );
 }
 
 /// n-fold kaleidoscopic fold of a centred coordinate (mirror wedges).
-vec2 kaleido(vec2 p, float sides)
+vec2 kaleido( vec2 p, float sides )
 {
-    float a   = atan(p.y, p.x);
-    float r   = length(p);
+    float a = atan( p.y, p.x );
+    float r = length( p );
     float seg = PI / sides;
-    a = mod(a + PI, 2.0 * seg) - seg;   // into one wedge
-    a = abs(a);                          // mirror the wedge
-    return vec2(cos(a), sin(a)) * r;
+    a = mod( a + PI, 2.0 * seg ) - seg; // into one wedge
+    a = abs( a );                       // mirror the wedge
+    return vec2( cos( a ), sin( a ) ) * r;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
-    vec2 p  = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / resolution.y;
 
     // Whole mosaic rotates slowly (jump-free) and gives a tiny beat "breath".
-    p = rot(audioPhase * 0.18 + time * 0.015) * p;
+    p = rot( audioPhase * 0.18 + time * 0.015 ) * p;
     p *= 1.0 - 0.02 * audioSwell;
 
     // Kaleidoscopic symmetry: fixed per activation (never audio-stepped).
-    vec2  fp = kaleido(p, float((sidesP >= 2) ? sidesP : 4));
+    vec2 fp = kaleido( p, float( ( sidesP >= 2 ) ? sidesP : 4 ) );
 
     // Voronoi shards on the folded plane.  The grid scale is CONSTANT during a
     // scene (driving it from the detected pitch made the whole mosaic
     // reorganise itself whenever the melody moved -> flicker); only the slow
     // swell breathes it a little.
-    float scale = ((scaleP <= 0.01) ? 3.0 : scaleP) * (1.0 + 0.05 * audioSwell);
-    vec2  g  = fp * scale;
-    vec2  gi = floor(g);
-    vec2  gf = fract(g);
+    float scale = ( ( scaleP <= 0.01 ) ? 3.0 : scaleP ) * ( 1.0 + 0.05 * audioSwell );
+    vec2  g = fp * scale;
+    vec2  gi = floor( g );
+    vec2  gf = fract( g );
 
     // Shard drift: phase is time + the INTEGRATED audio phase (the old
     // time * audioFlux term remapped every cell's phase each block -> jitter).
-    float driftV = (driftP <= 0.01) ? 1.0 : driftP;
-    float dph    = (time * 0.10 + audioPhase * 0.25) * driftV;
+    float driftV = ( driftP <= 0.01 ) ? 1.0 : driftP;
+    float dph = ( time * 0.10 + audioPhase * 0.25 ) * driftV;
 
     float d1 = 8.0, d2 = 8.0;
-    vec2  rel = vec2(0.0);
-    for (int y = -1; y <= 1; y++)
-    for (int x = -1; x <= 1; x++)
-    {
-        vec2  o   = vec2(float(x), float(y));
-        vec2  rnd = hash22(gi + o);
-        vec2  c   = o + 0.5 + 0.30 * sin(dph + 6.2831 * rnd);
-        vec2  diff = c - gf;
-        float dd   = length(diff);
-        if (dd < d1) { d2 = d1; d1 = dd; rel = diff; }
-        else if (dd < d2) { d2 = dd; }
-    }
+    vec2  rel = vec2( 0.0 );
+    for ( int y = -1; y <= 1; y++ )
+        for ( int x = -1; x <= 1; x++ )
+        {
+            vec2  o = vec2( float( x ), float( y ) );
+            vec2  rnd = hash22( gi + o );
+            vec2  c = o + 0.5 + 0.30 * sin( dph + 6.2831 * rnd );
+            vec2  diff = c - gf;
+            float dd = length( diff );
+            if ( dd < d1 )
+            {
+                d2 = d1;
+                d1 = dd;
+                rel = diff;
+            }
+            else if ( dd < d2 )
+            {
+                d2 = dd;
+            }
+        }
 
-    float seam = 1.0 - smoothstep(0.0, 0.06, d2 - d1);   // 1 on the seam
+    float seam = 1.0 - smoothstep( 0.0, 0.06, d2 - d1 ); // 1 on the seam
 
     // The picture, folded kaleidoscopically, gently refracted by each shard's
     // lens (a small, steady bulge — no violent beat spike).
     vec2 baseUV = fp * 0.6 + 0.5;
-    vec2 iuv    = baseUV + rel * 0.12;
-    vec3 pic    = img(fract(iuv));
+    vec2 iuv = baseUV + rel * 0.12;
+    vec3 pic = img( fract( iuv ) );
 
-    vec3 col = pic * (0.55 + 0.8 * audioLevel) * (1.0 + 0.15 * audioBeat);
+    vec3 col = pic * ( 0.55 + 0.8 * audioLevel ) * ( 1.0 + 0.15 * audioBeat );
 
     // Backlit seams: warm/cool by valence, glowing softly (not a hard flare).
-    vec3 seamCol = imgPalette(0.30 * audioValence) * 1.5;
-    col = mix(col, seamCol * (0.6 + 0.7 * audioBeat + 0.3 * audioCentroid),
-              seam * (0.30 + 0.25 * audioBeat));
+    vec3 seamCol = imgPalette( 0.30 * audioValence ) * 1.5;
+    col = mix( col, seamCol * ( 0.6 + 0.7 * audioBeat + 0.3 * audioCentroid ),
+               seam * ( 0.30 + 0.25 * audioBeat ) );
 
     // Jewel vignette.
-    col *= 1.0 - 0.30 * dot(p, p);
+    col *= 1.0 - 0.30 * dot( p, p );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

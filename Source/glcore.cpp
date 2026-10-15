@@ -17,95 +17,96 @@
  * @brief Defines the storage (zero-initialized) for one loaded GL function pointer.
  * @param name Name of the GL function whose `glcore_<name>` pointer is defined.
  */
-#define GLC_DEF(name) PFN_##name glcore_##name = 0;
+#define GLC_DEF( name ) PFN_##name glcore_##name = 0;
 
 /// @name Storage for every GL function pointer declared in glcore.h; see there for grouping.
 ///@{
-GLC_DEF(glActiveTexture)
-GLC_DEF(glGenBuffers)
-GLC_DEF(glBindBuffer)
-GLC_DEF(glBufferData)
-GLC_DEF(glBufferSubData)
-GLC_DEF(glDeleteBuffers)
-GLC_DEF(glMapBuffer)
-GLC_DEF(glUnmapBuffer)
-GLC_DEF(glGenVertexArrays)
-GLC_DEF(glBindVertexArray)
-GLC_DEF(glDeleteVertexArrays)
-GLC_DEF(glEnableVertexAttribArray)
-GLC_DEF(glDisableVertexAttribArray)
-GLC_DEF(glVertexAttribPointer)
-GLC_DEF(glGetAttribLocation)
-GLC_DEF(glCreateShader)
-GLC_DEF(glDeleteShader)
-GLC_DEF(glShaderSource)
-GLC_DEF(glCompileShader)
-GLC_DEF(glGetShaderiv)
-GLC_DEF(glGetShaderInfoLog)
-GLC_DEF(glCreateProgram)
-GLC_DEF(glDeleteProgram)
-GLC_DEF(glAttachShader)
-GLC_DEF(glDetachShader)
-GLC_DEF(glLinkProgram)
-GLC_DEF(glGetProgramiv)
-GLC_DEF(glGetProgramInfoLog)
-GLC_DEF(glUseProgram)
-GLC_DEF(glGetUniformLocation)
-GLC_DEF(glUniform1i)
-GLC_DEF(glUniform2i)
-GLC_DEF(glUniform1ui)
-GLC_DEF(glUniform1f)
-GLC_DEF(glUniform2f)
-GLC_DEF(glUniform3f)
-GLC_DEF(glUniform4f)
-GLC_DEF(glUniform1fv)
-GLC_DEF(glUniform1iv)
-GLC_DEF(glUniform2fv)
-GLC_DEF(glUniform3fv)
-GLC_DEF(glUniformMatrix4fv)
-GLC_DEF(glGenFramebuffers)
-GLC_DEF(glBindFramebuffer)
-GLC_DEF(glDeleteFramebuffers)
-GLC_DEF(glFramebufferTexture2D)
-GLC_DEF(glCheckFramebufferStatus)
-GLC_DEF(glGenRenderbuffers)
-GLC_DEF(glBindRenderbuffer)
-GLC_DEF(glDeleteRenderbuffers)
-GLC_DEF(glRenderbufferStorage)
-GLC_DEF(glFramebufferRenderbuffer)
-GLC_DEF(glGenerateMipmap)
-GLC_DEF(glGetStringi)
-GLC_DEF(glDebugMessageCallback)
-GLC_DEF(glDebugMessageControl)
-GLC_DEF(glDispatchCompute)
-GLC_DEF(glDispatchComputeIndirect)
-GLC_DEF(glBindImageTexture)
-GLC_DEF(glMemoryBarrier)
-GLC_DEF(glBindBufferBase)
-GLC_DEF(glClearBufferData)
-GLC_DEF(glDrawArraysIndirect)
-GLC_DEF(glDrawArraysInstanced)
-GLC_DEF(glPatchParameteri)
-GLC_DEF(glGenQueries)
-GLC_DEF(glDeleteQueries)
-GLC_DEF(glBeginQuery)
-GLC_DEF(glEndQuery)
-GLC_DEF(glGetQueryObjectuiv)
-GLC_DEF(glProgramBinary)
-GLC_DEF(glBlendFunci)
-GLC_DEF(glDrawBuffers)
-GLC_DEF(glClearBufferfv)
-GLC_DEF(glTexImage3D)
-GLC_DEF(glFramebufferTextureLayer)
-GLC_DEF(glBlitFramebuffer)
-GLC_DEF(glTexImage2DMultisample)
+GLC_DEF( glActiveTexture )
+GLC_DEF( glGenBuffers )
+GLC_DEF( glBindBuffer )
+GLC_DEF( glBufferData )
+GLC_DEF( glBufferSubData )
+GLC_DEF( glDeleteBuffers )
+GLC_DEF( glMapBuffer )
+GLC_DEF( glUnmapBuffer )
+GLC_DEF( glGenVertexArrays )
+GLC_DEF( glBindVertexArray )
+GLC_DEF( glDeleteVertexArrays )
+GLC_DEF( glEnableVertexAttribArray )
+GLC_DEF( glDisableVertexAttribArray )
+GLC_DEF( glVertexAttribPointer )
+GLC_DEF( glGetAttribLocation )
+GLC_DEF( glCreateShader )
+GLC_DEF( glDeleteShader )
+GLC_DEF( glShaderSource )
+GLC_DEF( glCompileShader )
+GLC_DEF( glGetShaderiv )
+GLC_DEF( glGetShaderInfoLog )
+GLC_DEF( glCreateProgram )
+GLC_DEF( glDeleteProgram )
+GLC_DEF( glAttachShader )
+GLC_DEF( glDetachShader )
+GLC_DEF( glLinkProgram )
+GLC_DEF( glGetProgramiv )
+GLC_DEF( glGetProgramInfoLog )
+GLC_DEF( glUseProgram )
+GLC_DEF( glGetUniformLocation )
+GLC_DEF( glUniform1i )
+GLC_DEF( glUniform2i )
+GLC_DEF( glUniform1ui )
+GLC_DEF( glUniform1f )
+GLC_DEF( glUniform2f )
+GLC_DEF( glUniform3f )
+GLC_DEF( glUniform4f )
+GLC_DEF( glUniform1fv )
+GLC_DEF( glUniform1iv )
+GLC_DEF( glUniform2fv )
+GLC_DEF( glUniform3fv )
+GLC_DEF( glUniformMatrix4fv )
+GLC_DEF( glGenFramebuffers )
+GLC_DEF( glBindFramebuffer )
+GLC_DEF( glDeleteFramebuffers )
+GLC_DEF( glFramebufferTexture2D )
+GLC_DEF( glCheckFramebufferStatus )
+GLC_DEF( glGenRenderbuffers )
+GLC_DEF( glBindRenderbuffer )
+GLC_DEF( glDeleteRenderbuffers )
+GLC_DEF( glRenderbufferStorage )
+GLC_DEF( glFramebufferRenderbuffer )
+GLC_DEF( glGenerateMipmap )
+GLC_DEF( glGetStringi )
+GLC_DEF( glDebugMessageCallback )
+GLC_DEF( glDebugMessageControl )
+GLC_DEF( glDispatchCompute )
+GLC_DEF( glDispatchComputeIndirect )
+GLC_DEF( glBindImageTexture )
+GLC_DEF( glMemoryBarrier )
+GLC_DEF( glBindBufferBase )
+GLC_DEF( glClearBufferData )
+GLC_DEF( glDrawArraysIndirect )
+GLC_DEF( glDrawArraysInstanced )
+GLC_DEF( glPatchParameteri )
+GLC_DEF( glGenQueries )
+GLC_DEF( glDeleteQueries )
+GLC_DEF( glBeginQuery )
+GLC_DEF( glEndQuery )
+GLC_DEF( glGetQueryObjectuiv )
+GLC_DEF( glProgramBinary )
+GLC_DEF( glBlendFunci )
+GLC_DEF( glDrawBuffers )
+GLC_DEF( glClearBufferfv )
+GLC_DEF( glTexImage3D )
+GLC_DEF( glFramebufferTextureLayer )
+GLC_DEF( glBlitFramebuffer )
+GLC_DEF( glTexImage2DMultisample )
 ///@}
 
 #undef GLC_DEF
 
-int glcoreHasCompute = 0; ///< Definition of glcoreHasCompute; set by glcoreInit() once the compute pointers are resolved.
-int glcoreHasTess    = 0; ///< Definition of glcoreHasTess; set by glcoreInit() once glPatchParameteri is resolved.
-int glcoreHasDebug   = 0; ///< Definition of glcoreHasDebug; set by glcoreInit().
+int glcoreHasCompute = 0; ///< Definition of glcoreHasCompute; set by glcoreInit() once the compute pointers are
+                          ///< resolved.
+int glcoreHasTess = 0;    ///< Definition of glcoreHasTess; set by glcoreInit() once glPatchParameteri is resolved.
+int glcoreHasDebug = 0;   ///< Definition of glcoreHasDebug; set by glcoreInit().
 
 /**
  * @brief Resolves a single GL entry point by name.
@@ -134,14 +135,20 @@ int glcoreHasDebug   = 0; ///< Definition of glcoreHasDebug; set by glcoreInit()
 // ---------------------------------------------------------------------------
 
 // ---- Stand-in textures, see glcore.h for the why -------------------------
-/** @brief Lazily created 1x1 black GL_TEXTURE_2D bound to sampler2D units a scene left unassigned; 0 until glcoreDummyTex2D() first runs. Lives for the process (never deleted). */
-static GLuint s_dummy2D = 0, s_dummy2DArray = 0, s_dummyShadow = 0;   ///< Lazily created 1x1 GL_DEPTH_COMPONENT24 texture filled with 1.0 (far plane) in compare mode, so an unassigned sampler2DShadow reads "nothing occludes"; 0 until glcoreDummyShadow() first runs.
+/** @brief Lazily created 1x1 black GL_TEXTURE_2D bound to sampler2D units a scene left unassigned; 0 until
+ * glcoreDummyTex2D() first runs. Lives for the process (never deleted). */
+static GLuint s_dummy2D = 0, s_dummy2DArray = 0, s_dummyShadow = 0; ///< Lazily created 1x1 GL_DEPTH_COMPONENT24 texture
+                                                                    ///< filled with 1.0 (far plane) in compare mode, so
+                                                                    ///< an unassigned sampler2DShadow reads "nothing
+                                                                    ///< occludes"; 0 until glcoreDummyShadow() first
+                                                                    ///< runs.
 /** @var s_dummy2DArray
- *  @brief Lazily created 1x1x1 black GL_TEXTURE_2D_ARRAY for unassigned sampler2DArray units; stays 0 when glTexImage3D is unavailable or until glcoreDummyTex2DArray() first runs. */
+ *  @brief Lazily created 1x1x1 black GL_TEXTURE_2D_ARRAY for unassigned sampler2DArray units; stays 0 when glTexImage3D
+ * is unavailable or until glcoreDummyTex2DArray() first runs. */
 
 GLuint glcoreDummyTex2D()
 {
-    if( s_dummy2D == 0 )
+    if ( s_dummy2D == 0 )
     {
         const unsigned char black[4] = { 0, 0, 0, 255 };
         glGenTextures( 1, &s_dummy2D );
@@ -159,7 +166,7 @@ GLuint glcoreDummyTex2D()
 
 GLuint glcoreDummyTex2DArray()
 {
-    if( s_dummy2DArray == 0 && glcore_glTexImage3D )
+    if ( s_dummy2DArray == 0 && glcore_glTexImage3D )
     {
         const unsigned char black[4] = { 0, 0, 0, 255 };
         glGenTextures( 1, &s_dummy2DArray );
@@ -177,7 +184,7 @@ GLuint glcoreDummyTex2DArray()
 
 GLuint glcoreDummyShadow()
 {
-    if( s_dummyShadow == 0 )
+    if ( s_dummyShadow == 0 )
     {
         // 1.0 = the far plane, so every depth comparison passes and a lookup
         // reads as 'nothing occludes'. A zeroed texture would do the opposite
@@ -209,7 +216,8 @@ static std::map<unsigned, std::string> s_progNames;
 
 void glcoreNameProgram( unsigned prog, const char *name )
 {
-    if( prog && name ) s_progNames[prog] = name;
+    if ( prog && name )
+        s_progNames[prog] = name;
 }
 
 const char *glcoreDebugProgramName( unsigned prog )
@@ -218,11 +226,17 @@ const char *glcoreDebugProgramName( unsigned prog )
     return ( it == s_progNames.end() ) ? "?" : it->second.c_str();
 }
 
-static const char *s_debugMark = "?";   ///< Label of the render station last announced via glcoreDebugMark(), printed as `at=` by glcDebugCb(); points at a string literal the caller keeps alive, "?" when none was set.
-void glcoreDebugMark( const char *station ) { s_debugMark = station ? station : "?"; }
+static const char *s_debugMark = "?"; ///< Label of the render station last announced via glcoreDebugMark(), printed as
+                                      ///< `at=` by glcDebugCb(); points at a string literal the caller keeps alive, "?"
+                                      ///< when none was set.
+void glcoreDebugMark( const char *station )
+{
+    s_debugMark = station ? station : "?";
+}
 
 /**
- * @brief KHR_debug callback: prints every non-notification driver message to stderr with severity, station, message id and the bound program's shader file.
+ * @brief KHR_debug callback: prints every non-notification driver message to stderr with severity, station, message id
+ * and the bound program's shader file.
  *
  * Runs synchronously inside the offending GL call (GL_DEBUG_OUTPUT_SYNCHRONOUS),
  * so a breakpoint here lands on the culprit. Notifications are dropped; the
@@ -233,26 +247,27 @@ void glcoreDebugMark( const char *station ) { s_debugMark = station ? station : 
  * @param message Driver-supplied text (may be null).
  */
 static void APIENTRY glcDebugCb( GLenum /*source*/, GLenum type, GLuint id,
-                                 GLenum severity, GLsizei /*length*/,
+                                 GLenum        severity, GLsizei /*length*/,
                                  const GLchar *message, const void * /*user*/ )
 {
-    if( severity == GL_DEBUG_SEVERITY_NOTIFICATION )
+    if ( severity == GL_DEBUG_SEVERITY_NOTIFICATION )
         return;
-    const char *sev = ( severity == GL_DEBUG_SEVERITY_HIGH )   ? "high"
-                    : ( severity == GL_DEBUG_SEVERITY_MEDIUM ) ? "medium" : "low";
+    const char *sev = ( severity == GL_DEBUG_SEVERITY_HIGH )     ? "high"
+                      : ( severity == GL_DEBUG_SEVERITY_MEDIUM ) ? "medium"
+                                                                 : "low";
     // The bound program is what turns "some shader does X" into a file name:
     // glcoreDebugProgramName() is filled in by the engine as it compiles.
     GLint prog = 0;
     glGetIntegerv( GL_CURRENT_PROGRAM, &prog );
     fprintf( stderr, "GLDEBUG [%s%s] at=%s id=%u prog=%d(%s): %s\n",
              ( type == GL_DEBUG_TYPE_ERROR ) ? "ERROR/" : "", sev, s_debugMark,
-             (unsigned) id, (int) prog, glcoreDebugProgramName( (unsigned) prog ),
+             (unsigned)id, (int)prog, glcoreDebugProgramName( (unsigned)prog ),
              message ? message : "(no message)" );
 }
 
 void glcoreEnableDebugOutput()
 {
-    if( !glcoreHasDebug )
+    if ( !glcoreHasDebug )
     {
         fprintf( stderr, "GLDEBUG: KHR_debug not available on this driver\n" );
         return;
@@ -274,21 +289,25 @@ void glcoreEnableDebugOutput()
  * @param name Exact GL function name, e.g. "glGenBuffers".
  * @return The function pointer, or null if the driver does not provide it.
  */
-static void *glcGet(const char *name);
-void *glcoreProc( const char *name ) { return glcGet( name ); }
-static void *glcGet(const char *name)
+static void *glcGet( const char *name );
+void        *glcoreProc( const char *name )
+{
+    return glcGet( name );
+}
+static void *glcGet( const char *name )
 {
 #ifndef _WIN32
     // glX / dlsym; see Platform.cpp. The wgl path below is untouched.
-    return Platform::glProcAddress(name);
+    return Platform::glProcAddress( name );
 #else
-    void *p = (void *)wglGetProcAddress(name);
+    void *p = (void *)wglGetProcAddress( name );
     // wgl returns small sentinel values for failure on some drivers.
-    if (p == 0 || p == (void*)1 || p == (void*)2 || p == (void*)3 || p == (void*)-1)
+    if ( p == 0 || p == (void *)1 || p == (void *)2 || p == (void *)3 || p == (void *)-1 )
     {
         static HMODULE gl32 = 0;
-        if (!gl32) gl32 = LoadLibraryA("opengl32.dll");
-        p = gl32 ? (void *)GetProcAddress(gl32, name) : 0;
+        if ( !gl32 )
+            gl32 = LoadLibraryA( "opengl32.dll" );
+        p = gl32 ? (void *)GetProcAddress( gl32, name ) : 0;
     }
     return p;
 #endif
@@ -296,11 +315,13 @@ static void *glcGet(const char *name)
 
 /**
  * @def GLC_LOAD(name)
- * @brief Local to glcoreInit(): resolves the REQUIRED entry point @p name into its `glcore_<name>` pointer; a miss logs "MISSING" and clears the function's `ok` flag.
+ * @brief Local to glcoreInit(): resolves the REQUIRED entry point @p name into its `glcore_<name>` pointer; a miss logs
+ * "MISSING" and clears the function's `ok` flag.
  */
 /**
  * @def GLC_LOAD_OPT(name)
- * @brief Local to glcoreInit(): resolves the OPTIONAL entry point @p name (compute, tessellation, OIT blending, history ring); a miss only logs "not available" and leaves the pointer null for the feature flags to test.
+ * @brief Local to glcoreInit(): resolves the OPTIONAL entry point @p name (compute, tessellation, OIT blending, history
+ * ring); a miss only logs "not available" and leaves the pointer null for the feature flags to test.
  */
 /**
  * @brief Resolves every declared GL function pointer, with the GL context current.
@@ -314,114 +335,123 @@ static void *glcGet(const char *name)
  * which optional subsystems are available.
  * @return Non-zero (true) if every required entry point resolved, zero otherwise.
  */
-int glcoreInit(void)
+int glcoreInit( void )
 {
     int ok = 1;
-#define GLC_LOAD(name) \
-    glcore_##name = (PFN_##name)glcGet(#name); \
-    if (!glcore_##name) { fprintf(stderr, "glcore: MISSING %s\n", #name); ok = 0; }
-#define GLC_LOAD_OPT(name) \
-    glcore_##name = (PFN_##name)glcGet(#name); \
-    if (!glcore_##name) fprintf(stderr, "glcore: optional %s not available\n", #name);
+#define GLC_LOAD( name )                                  \
+    glcore_##name = (PFN_##name)glcGet( #name );          \
+    if ( !glcore_##name )                                 \
+    {                                                     \
+        fprintf( stderr, "glcore: MISSING %s\n", #name ); \
+        ok = 0;                                           \
+    }
+#define GLC_LOAD_OPT( name )                     \
+    glcore_##name = (PFN_##name)glcGet( #name ); \
+    if ( !glcore_##name )                        \
+        fprintf( stderr, "glcore: optional %s not available\n", #name );
 
-    GLC_LOAD(glActiveTexture)
-    GLC_LOAD(glGenBuffers)
-    GLC_LOAD(glBindBuffer)
-    GLC_LOAD(glBufferData)
-    GLC_LOAD(glBufferSubData)
-    GLC_LOAD(glDeleteBuffers)
-    GLC_LOAD(glMapBuffer)
-    GLC_LOAD(glUnmapBuffer)
-    GLC_LOAD(glGenVertexArrays)
-    GLC_LOAD(glBindVertexArray)
-    GLC_LOAD(glDeleteVertexArrays)
-    GLC_LOAD(glEnableVertexAttribArray)
-    GLC_LOAD(glDisableVertexAttribArray)
-    GLC_LOAD(glVertexAttribPointer)
-    GLC_LOAD(glGetAttribLocation)
-    GLC_LOAD(glCreateShader)
-    GLC_LOAD(glDeleteShader)
-    GLC_LOAD(glShaderSource)
-    GLC_LOAD(glCompileShader)
-    GLC_LOAD(glGetShaderiv)
-    GLC_LOAD(glGetShaderInfoLog)
-    GLC_LOAD(glCreateProgram)
-    GLC_LOAD(glDeleteProgram)
-    GLC_LOAD(glAttachShader)
-    GLC_LOAD(glDetachShader)
-    GLC_LOAD(glLinkProgram)
-    GLC_LOAD(glGetProgramiv)
-    GLC_LOAD(glGetProgramInfoLog)
-    GLC_LOAD(glUseProgram)
-    GLC_LOAD(glGetUniformLocation)
-    GLC_LOAD(glUniform1i)
-    GLC_LOAD(glUniform2i)
-    GLC_LOAD(glUniform1ui)
-    GLC_LOAD(glUniform1f)
-    GLC_LOAD(glUniform2f)
-    GLC_LOAD(glUniform3f)
-    GLC_LOAD(glUniform4f)
-    GLC_LOAD(glUniform1fv)
-    GLC_LOAD(glUniform1iv)
-    GLC_LOAD(glUniform2fv)
-    GLC_LOAD(glUniform3fv)
-    GLC_LOAD(glUniformMatrix4fv)
-    GLC_LOAD(glGenFramebuffers)
-    GLC_LOAD(glBindFramebuffer)
-    GLC_LOAD(glDeleteFramebuffers)
-    GLC_LOAD(glFramebufferTexture2D)
-    GLC_LOAD(glCheckFramebufferStatus)
-    GLC_LOAD(glGenRenderbuffers)
-    GLC_LOAD(glBindRenderbuffer)
-    GLC_LOAD(glDeleteRenderbuffers)
-    GLC_LOAD(glRenderbufferStorage)
-    GLC_LOAD(glFramebufferRenderbuffer)
-    GLC_LOAD(glGenerateMipmap)
-    GLC_LOAD(glGetStringi)
+    GLC_LOAD( glActiveTexture )
+    GLC_LOAD( glGenBuffers )
+    GLC_LOAD( glBindBuffer )
+    GLC_LOAD( glBufferData )
+    GLC_LOAD( glBufferSubData )
+    GLC_LOAD( glDeleteBuffers )
+    GLC_LOAD( glMapBuffer )
+    GLC_LOAD( glUnmapBuffer )
+    GLC_LOAD( glGenVertexArrays )
+    GLC_LOAD( glBindVertexArray )
+    GLC_LOAD( glDeleteVertexArrays )
+    GLC_LOAD( glEnableVertexAttribArray )
+    GLC_LOAD( glDisableVertexAttribArray )
+    GLC_LOAD( glVertexAttribPointer )
+    GLC_LOAD( glGetAttribLocation )
+    GLC_LOAD( glCreateShader )
+    GLC_LOAD( glDeleteShader )
+    GLC_LOAD( glShaderSource )
+    GLC_LOAD( glCompileShader )
+    GLC_LOAD( glGetShaderiv )
+    GLC_LOAD( glGetShaderInfoLog )
+    GLC_LOAD( glCreateProgram )
+    GLC_LOAD( glDeleteProgram )
+    GLC_LOAD( glAttachShader )
+    GLC_LOAD( glDetachShader )
+    GLC_LOAD( glLinkProgram )
+    GLC_LOAD( glGetProgramiv )
+    GLC_LOAD( glGetProgramInfoLog )
+    GLC_LOAD( glUseProgram )
+    GLC_LOAD( glGetUniformLocation )
+    GLC_LOAD( glUniform1i )
+    GLC_LOAD( glUniform2i )
+    GLC_LOAD( glUniform1ui )
+    GLC_LOAD( glUniform1f )
+    GLC_LOAD( glUniform2f )
+    GLC_LOAD( glUniform3f )
+    GLC_LOAD( glUniform4f )
+    GLC_LOAD( glUniform1fv )
+    GLC_LOAD( glUniform1iv )
+    GLC_LOAD( glUniform2fv )
+    GLC_LOAD( glUniform3fv )
+    GLC_LOAD( glUniformMatrix4fv )
+    GLC_LOAD( glGenFramebuffers )
+    GLC_LOAD( glBindFramebuffer )
+    GLC_LOAD( glDeleteFramebuffers )
+    GLC_LOAD( glFramebufferTexture2D )
+    GLC_LOAD( glCheckFramebufferStatus )
+    GLC_LOAD( glGenRenderbuffers )
+    GLC_LOAD( glBindRenderbuffer )
+    GLC_LOAD( glDeleteRenderbuffers )
+    GLC_LOAD( glRenderbufferStorage )
+    GLC_LOAD( glFramebufferRenderbuffer )
+    GLC_LOAD( glGenerateMipmap )
+    GLC_LOAD( glGetStringi )
     // Compute (GL 4.3): required for the compute-shader path, but the app
     // still RUNS without it (fragment ping-pong fallbacks stay in place).
-    GLC_LOAD_OPT(glDebugMessageCallback)
-    GLC_LOAD_OPT(glDebugMessageControl)
-    GLC_LOAD_OPT(glDispatchCompute)
-    GLC_LOAD_OPT(glDispatchComputeIndirect)
-    GLC_LOAD_OPT(glBindImageTexture)
-    GLC_LOAD_OPT(glMemoryBarrier)
-    GLC_LOAD_OPT(glBindBufferBase)
-    GLC_LOAD_OPT(glClearBufferData)
-    GLC_LOAD_OPT(glDrawArraysIndirect)
+    GLC_LOAD_OPT( glDebugMessageCallback )
+    GLC_LOAD_OPT( glDebugMessageControl )
+    GLC_LOAD_OPT( glDispatchCompute )
+    GLC_LOAD_OPT( glDispatchComputeIndirect )
+    GLC_LOAD_OPT( glBindImageTexture )
+    GLC_LOAD_OPT( glMemoryBarrier )
+    GLC_LOAD_OPT( glBindBufferBase )
+    GLC_LOAD_OPT( glClearBufferData )
+    GLC_LOAD_OPT( glDrawArraysIndirect )
     // Optional, not mandatory: only geom="mesh" scenes that ask for
     // instances="N" need it, and Scene3DShader falls back to a plain
     // glDrawArrays when the pointer is null.
-    GLC_LOAD_OPT(glDrawArraysInstanced)
+    GLC_LOAD_OPT( glDrawArraysInstanced )
     // Occlusion queries -- nur fuer die Abdeckungsmessung
     // (KALEIDO_COVER_LOG).  Optional: ohne sie laeuft alles weiter,
     // nur die Messung entfaellt.
-    GLC_LOAD_OPT(glGenQueries)
-    GLC_LOAD_OPT(glDeleteQueries)
-    GLC_LOAD_OPT(glBeginQuery)
-    GLC_LOAD_OPT(glEndQuery)
-    GLC_LOAD_OPT(glGetQueryObjectuiv)
-    GLC_LOAD_OPT(glProgramBinary)
-    GLC_LOAD_OPT(glPatchParameteri)
-    GLC_LOAD_OPT(glBlendFunci)
-    GLC_LOAD_OPT(glDrawBuffers)
-    GLC_LOAD_OPT(glClearBufferfv)
+    GLC_LOAD_OPT( glGenQueries )
+    GLC_LOAD_OPT( glDeleteQueries )
+    GLC_LOAD_OPT( glBeginQuery )
+    GLC_LOAD_OPT( glEndQuery )
+    GLC_LOAD_OPT( glGetQueryObjectuiv )
+    GLC_LOAD_OPT( glProgramBinary )
+    GLC_LOAD_OPT( glPatchParameteri )
+    GLC_LOAD_OPT( glBlendFunci )
+    GLC_LOAD_OPT( glDrawBuffers )
+    GLC_LOAD_OPT( glClearBufferfv )
     // Frame-History-Ring (optional: ohne sie bleiben Echo/Rewind einfach aus)
-    GLC_LOAD_OPT(glTexImage3D)
-    GLC_LOAD_OPT(glFramebufferTextureLayer)
-    GLC_LOAD_OPT(glBlitFramebuffer)
+    GLC_LOAD_OPT( glTexImage3D )
+    GLC_LOAD_OPT( glFramebufferTextureLayer )
+    GLC_LOAD_OPT( glBlitFramebuffer )
     // MSAA for 3D scenes (optional: without it, scenes just render unaliased
     // as before -- see RenderPipeline::ensureMsaaTargets()).
-    GLC_LOAD_OPT(glTexImage2DMultisample)
+    GLC_LOAD_OPT( glTexImage2DMultisample )
 
     glcoreHasCompute = ( glcore_glDispatchCompute && glcore_glBindImageTexture
-                      && glcore_glMemoryBarrier   && glcore_glBindBufferBase
-                      && glcore_glClearBufferData ) ? 1 : 0;
+                         && glcore_glMemoryBarrier && glcore_glBindBufferBase
+                         && glcore_glClearBufferData )
+                           ? 1
+                           : 0;
     // Geometry shaders need no extra entry point (core since 3.2); only
     // tessellation adds one, so glPatchParameteri is the whole test.
     glcoreHasTess = ( glcore_glPatchParameteri != 0 ) ? 1 : 0;
     glcoreHasDebug = ( glcore_glDebugMessageCallback
-                    && glcore_glDebugMessageControl ) ? 1 : 0;
+                       && glcore_glDebugMessageControl )
+                         ? 1
+                         : 0;
 
     fprintf( stderr, "glcore: compute pipeline %s, tessellation %s\n",
              glcoreHasCompute ? "available" : "NOT available (fragment fallbacks)",

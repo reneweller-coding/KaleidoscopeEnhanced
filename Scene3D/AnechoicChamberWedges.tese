@@ -10,48 +10,55 @@
  * the bands light the tips.  No camera motion.
  */
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(quads, fractional_odd_spacing, ccw) in;
+layout( quads, fractional_odd_spacing, ccw ) in;
 
-in  vec2 tcUV[];
-in  vec4 tcSeed[];
+in vec2 tcUV[];
+in vec4 tcSeed[];
 
-out vec3  vWorld;   ///< World position (from the vertex stage).
+out vec3  vWorld; ///< World position (from the vertex stage).
 out vec2  vSurfUV;
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out float vWedge;
 out float vHeight;
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-const vec2 EXTENT = vec2(24.0, 14.0);
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
+const vec2    EXTENT = vec2( 24.0, 14.0 );
 
 uniform float wedgeP;
 
-float tri(float x) { return 1.0 - abs(fract(x) * 2.0 - 1.0); }     // 0..1..0 triangle wave
+float tri( float x )
+{
+    return 1.0 - abs( fract( x ) * 2.0 - 1.0 );
+} // 0..1..0 triangle wave
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uvA = mix(tcUV[0], tcUV[1], gl_TessCoord.x);
-    vec2 uvB = mix(tcUV[3], tcUV[2], gl_TessCoord.x);
-    vec2 uv  = mix(uvA, uvB, gl_TessCoord.y);
-    float cols = 12.0 + 8.0 * clamp(wedgeP, 0.0, 1.0);
+    vec2  uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2  uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2  uv = mix( uvA, uvB, gl_TessCoord.y );
+    float cols = 12.0 + 8.0 * clamp( wedgeP, 0.0, 1.0 );
     float rows = cols * EXTENT.y / EXTENT.x;
-    vec2 g = vec2(uv.x * cols, uv.y * rows);
+    vec2  g = vec2( uv.x * cols, uv.y * rows );
     // Wedge height: a pyramid in each cell (min of the two triangle waves).
-    float hx = tri(g.x), hy = tri(g.y);
-    float h = min(hx, hy) * 1.6;
-    vec3 p = vec3((uv.x - 0.5) * EXTENT.x, (uv.y - 0.5) * EXTENT.y, 11.0 - h);
+    float hx = tri( g.x ), hy = tri( g.y );
+    float h = min( hx, hy ) * 1.6;
+    vec3  p = vec3( ( uv.x - 0.5 ) * EXTENT.x, ( uv.y - 0.5 ) * EXTENT.y, 11.0 - h );
     // Normal from the pyramid face: the gradient of min(tri, tri).
-    vec2 cellF = fract(g) - 0.5;
+    vec2 cellF = fract( g ) - 0.5;
     vec3 n;
-    if (abs(cellF.x) > abs(cellF.y)) n = normalize(vec3(sign(cellF.x) * 1.6 * cols / EXTENT.x * 2.0, 0.0, 1.0));
-    else                             n = normalize(vec3(0.0, sign(cellF.y) * 1.6 * rows / EXTENT.y * 2.0, 1.0));
-    n.z = -n.z;                                                    // faces the camera (-z)
-    vWorld = p; vSurfUV = uv; vNormal = n;
-    vWedge = floor(g.x) + floor(g.y) * cols;
+    if ( abs( cellF.x ) > abs( cellF.y ) )
+        n = normalize( vec3( sign( cellF.x ) * 1.6 * cols / EXTENT.x * 2.0, 0.0, 1.0 ) );
+    else
+        n = normalize( vec3( 0.0, sign( cellF.y ) * 1.6 * rows / EXTENT.y * 2.0, 1.0 ) );
+    n.z = -n.z; // faces the camera (-z)
+    vWorld = p;
+    vSurfUV = uv;
+    vNormal = n;
+    vWedge = floor( g.x ) + floor( g.y ) * cols;
     vHeight = h / 1.6;
-    vec3 vp = vec3(p.x - eyeOff, p.y, p.z);
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    vec3 vp = vec3( p.x - eyeOff, p.y, p.z );
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

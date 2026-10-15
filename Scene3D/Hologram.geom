@@ -20,49 +20,57 @@
 // shading and leave the silhouette intact, which reads as a texture
 // artefact instead of a broken projection.
 // -----------------------------------------------------------------------
-layout(triangles) in;
+layout( triangles ) in;
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(triangle_strip, max_vertices = 3) out;
+layout( triangle_strip, max_vertices = 3 ) out;
 
-in  vec3  gPos[];
-in  vec3  gNormal[];
-in  vec2  gUV[];
-in  float gBg[];
+in vec3  gPos[];
+in vec3  gNormal[];
+in vec2  gUV[];
+in float gBg[];
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
+out vec3  vPos;      ///< Position (from the vertex stage).
+out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 out vec3  vBary;
-out float vBg;   ///< Background flag (from the vertex stage).
+out float vBg; ///< Background flag (from the vertex stage).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP;   ///< Size knob, 0..1.
-uniform float spinP;   ///< Spin knob, 0..1.
+uniform float sizeP; ///< Size knob, 0..1.
+uniform float spinP; ///< Spin knob, 0..1.
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 12.9898 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // The sky shell passes through untouched -- glitching the room around
     // the projection would say the ROOM is the hologram.
-    if (gBg[0] > 0.5)
+    if ( gBg[0] > 0.5 )
     {
-        for (int i = 0; i < 3; ++i)
+        for ( int i = 0; i < 3; ++i )
         {
             vec3 w = gPos[i];
-            vUV = vec2(0.0); vNormal = gNormal[i]; vPos = w;
-            vLocalPos = vec3(0.0); vBary = vec3(1.0); vBg = 1.0;
-            vec3 vp = vec3(w.x - eyeOff, w.y, w.z);
-            gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+            vUV = vec2( 0.0 );
+            vNormal = gNormal[i];
+            vPos = w;
+            vLocalPos = vec3( 0.0 );
+            vBary = vec3( 1.0 );
+            vBg = 1.0;
+            vec3 vp = vec3( w.x - eyeOff, w.y, w.z );
+            gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
             gl_Position.x += eyeOff * 0.045 * gl_Position.w;
             // Pin the shell just inside the far plane -- its cube corners
             // otherwise reach sqrt(3) * kSkyShellRadius and get clipped,
@@ -74,28 +82,28 @@ void main()
         return;
     }
 
-    float sz = (sizeP > 0.01 ? sizeP : 1.0);
-    float sp = (spinP > 0.01 ? spinP : 1.0);
+    float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+    float sp = ( spinP > 0.01 ? spinP : 1.0 );
 
-    float rotY = (time * 0.20 + audioAdvance * 0.10) * sp;
-    float cy = cos(rotY), sy = sin(rotY);
-    mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
+    float       rotY = ( time * 0.20 + audioAdvance * 0.10 ) * sp;
+    float       cy = cos( rotY ), sy = sin( rotY );
+    mat3        rotYMat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
     const float tiltX = 0.20;
-    float cx = cos(tiltX), sx = sin(tiltX);
-    mat3 rotXMat = mat3(1.0, 0.0, 0.0,   0.0, cx, sx,   0.0, -sx, cx);
-    mat3 rotMat = rotXMat * rotYMat;
+    float       cx = cos( tiltX ), sx = sin( tiltX );
+    mat3        rotXMat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+    mat3        rotMat = rotXMat * rotYMat;
 
     // One horizontal band per ~1/14 of object height. Only strong beats
     // trigger a dropout, and only some bands take part -- a glitch on every
     // beat stops reading as a fault and just becomes the animation.
-    float bandId = floor((gPos[0].y + 0.5) * 14.0);
-    float bandRnd = hash11(bandId * 3.7 + floor(time * 3.0) * 11.0);
-    float fire = step(0.62, audioKick) * step(0.72, bandRnd);
-    float slip = (bandRnd - 0.5) * 2.0 * fire * 0.09;
+    float bandId = floor( ( gPos[0].y + 0.5 ) * 14.0 );
+    float bandRnd = hash11( bandId * 3.7 + floor( time * 3.0 ) * 11.0 );
+    float fire = step( 0.62, audioKick ) * step( 0.72, bandRnd );
+    float slip = ( bandRnd - 0.5 ) * 2.0 * fire * 0.09;
 
-    vec3 bary[3] = vec3[3](vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0));
+    vec3 bary[3] = vec3[3]( vec3( 1.0, 0.0, 0.0 ), vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, 0.0, 1.0 ) );
 
-    for (int i = 0; i < 3; ++i)
+    for ( int i = 0; i < 3; ++i )
     {
         vec3 p = gPos[i];
         p.x += slip;
@@ -104,18 +112,18 @@ void main()
         // on a dark floor. Size also drives brightness here, because the wire
         // is gated on how big a triangle lands on screen (see the .frag): a
         // small projection is a dim one, so the two faults had one cause.
-        vec3 w = rotMat * (p * (48.0 * sz));
+        vec3 w = rotMat * ( p * ( 48.0 * sz ) );
         w.z += 76.0;
 
-        vUV       = gUV[i];
-        vNormal   = normalize(rotMat * gNormal[i]);
-        vPos      = w;
+        vUV = gUV[i];
+        vNormal = normalize( rotMat * gNormal[i] );
+        vPos = w;
         vLocalPos = gPos[i];
-        vBary     = bary[i];
-        vBg       = 0.0;
+        vBary = bary[i];
+        vBg = 0.0;
 
-        vec3 vp = vec3(w.x - eyeOff, w.y, w.z);
-        gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+        vec3 vp = vec3( w.x - eyeOff, w.y, w.z );
+        gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
         EmitVertex();
     }

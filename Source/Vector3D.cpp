@@ -19,27 +19,46 @@
 
 /// @brief Default-constructs the zero vector (0,0,0).
 Vector3D::Vector3D()
-{ x=y=z=0; }
+{
+    x = y = z = 0;
+}
 
 /// @brief Copy-constructs from another Vector3D.
-Vector3D::Vector3D(const Vector3D& b)
-{ x=b.x; y=b.y; z=b.z; }
+Vector3D::Vector3D( const Vector3D &b )
+{
+    x = b.x;
+    y = b.y;
+    z = b.z;
+}
 
 /// @brief Projects a homogeneous Vector4D into 3D space (divides x,y,z by w).
-Vector3D::Vector3D(const Vector4D& b)
-{ x=b.x/b.w; y=b.y/b.w; z=b.z/b.w; }
+Vector3D::Vector3D( const Vector4D &b )
+{
+    x = b.x / b.w;
+    y = b.y / b.w;
+    z = b.z / b.w;
+}
 
 /// @brief Constructs a vector from explicit x, y, z coordinates.
-Vector3D::Vector3D(float X, float Y, float Z)
-{ x=X; y=Y; z=Z; }
+Vector3D::Vector3D( float X, float Y, float Z )
+{
+    x = X;
+    y = Y;
+    z = Z;
+}
 
 /// @brief Constructs a vector from a pointer to 3 consecutive floats.
-Vector3D::Vector3D(float* xyz)
-{ x=xyz[0]; y=xyz[1]; z=xyz[2]; }
+Vector3D::Vector3D( float *xyz )
+{
+    x = xyz[0];
+    y = xyz[1];
+    z = xyz[2];
+}
 
 /// @brief Destructor (no-op; the class owns no dynamic resources).
 Vector3D::~Vector3D()
-{}
+{
+}
 
 /**
  * @brief Computes the reflection of this vector about normal @p n.
@@ -51,12 +70,12 @@ Vector3D::~Vector3D()
  * normal is assumed normalized; the calling vector is left unmodified (the
  * parameter and return value are documented on the declaration in Vector3D.h).
  */
-Vector3D Vector3D::reflected(const Vector3D& n) const
+Vector3D Vector3D::reflected( const Vector3D &n ) const
 {
 #ifndef CG_EXERCISE_10_3
-  return (2*((*this)*n)*n - (*this));
+    return ( 2 * ( ( *this ) * n ) * n - ( *this ) );
 #else
-  cerr << "the reflect-method is disabled for this assignment" << endl;
+    cerr << "the reflect-method is disabled for this assignment" << endl;
 #endif
 }
 
@@ -71,15 +90,15 @@ Vector3D Vector3D::reflected(const Vector3D& n) const
  * of indices of refraction (incident / transmitted medium); the parameters and
  * return value are documented on the declaration in Vector3D.h.
  */
-Vector3D Vector3D::refracted(const Vector3D& n, float eta, bool& totalInternalReflection) const
+Vector3D Vector3D::refracted( const Vector3D &n, float eta, bool &totalInternalReflection ) const
 {
 #ifndef CG_EXERCISE_10_3
-  Vector3D nn= (((*this) * n) > 0) ? -n : n;
-  Vector3D tmp= ((*this) - nn * (nn*(*this))) * eta;
-  float length= 1 - (tmp*tmp);
-  totalInternalReflection = (length < 0);
-  return ((length < 0) ? (*this) : nn * -sqrt(length) + tmp);
+    Vector3D nn = ( ( ( *this ) * n ) > 0 ) ? -n : n;
+    Vector3D tmp = ( ( *this ) - nn * ( nn * ( *this ) ) ) * eta;
+    float    length = 1 - ( tmp * tmp );
+    totalInternalReflection = ( length < 0 );
+    return ( ( length < 0 ) ? ( *this ) : nn * -sqrt( length ) + tmp );
 #else
-  cerr << "the refract-method is disabled for this assignment" << endl;
+    cerr << "the refract-method is disabled for this assignment" << endl;
 #endif
 }

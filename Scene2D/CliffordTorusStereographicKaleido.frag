@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file CliffordTorusStereographicKaleido.frag
  * @brief CLIFFORD TORUS STEREOGRAPHIC KALEIDO: 4D Clifford Torus (S1 x S1 in S3)
@@ -14,110 +14,115 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the stereographic torus rainbow palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float ringDensityP;
-uniform float twistP;   ///< Twist knob, 0..1.
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float twistP; ///< Twist knob, 0..1.
+uniform float glowP;  ///< Glow / afterglow knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// 4D isoclinic rotation of a 4-vector (p.x, p.y, p.z, p.w)
-vec4 rotate4D(vec4 p, float a1, float a2) {
-    float c1 = cos(a1), s1 = sin(a1);
-    float c2 = cos(a2), s2 = sin(a2);
-    vec4 q = p;
-    q.xy = vec2(c1 * p.x - s1 * p.y, s1 * p.x + c1 * p.y);
-    q.zw = vec2(c2 * p.z - s2 * p.w, s2 * p.z + c2 * p.w);
+vec4 rotate4D( vec4 p, float a1, float a2 )
+{
+    float c1 = cos( a1 ), s1 = sin( a1 );
+    float c2 = cos( a2 ), s2 = sin( a2 );
+    vec4  q = p;
+    q.xy = vec2( c1 * p.x - s1 * p.y, s1 * p.x + c1 * p.y );
+    q.zw = vec2( c2 * p.z - s2 * p.w, s2 * p.z + c2 * p.w );
     return q;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float rDens = (ringDensityP > 0.01) ? ringDensityP : 1.0;
-    float twst = (twistP > 0.01) ? twistP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float rDens = ( ringDensityP > 0.01 ) ? ringDensityP : 1.0;
+    float twst = ( twistP > 0.01 ) ? twistP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Inverse stereographic projection of 2D screen coordinate uv to S3 4D hypersphere
-    float r2 = dot(uv, uv);
-    vec4 p4 = vec4(2.0 * uv.x, 2.0 * uv.y, r2 - 1.0, 0.5 * sin(t * 0.5)) / (r2 + 1.0);
-    p4 = normalize(p4);
+    float r2 = dot( uv, uv );
+    vec4  p4 = vec4( 2.0 * uv.x, 2.0 * uv.y, r2 - 1.0, 0.5 * sin( t * 0.5 ) ) / ( r2 + 1.0 );
+    p4 = normalize( p4 );
 
     // Apply 4D rotations
     float rot1 = t * 0.35 + audioPhase * 0.1;
     float rot2 = t * 0.25 + audioSwell * 0.4;
-    p4 = rotate4D(p4, rot1, rot2);
+    p4 = rotate4D( p4, rot1, rot2 );
 
     // Clifford Torus parameterization in 4D: (cos(u)/sqrt(2), sin(u)/sqrt(2), cos(v)/sqrt(2), sin(v)/sqrt(2))
-    float u = atan(p4.y, p4.x);
-    float v = atan(p4.w, p4.z);
+    float u = atan( p4.y, p4.x );
+    float v = atan( p4.w, p4.z );
 
     // Distance to Clifford Torus surface in S3: |p4.x^2 + p4.y^2 - R2|.
     // R2 = 0.5 is the canonical (equal-radius) torus; sub-bass breathes that
     // major radius. dot(p4.xy,p4.xy) spans 0..1 for the normalized p4, so the
     // swollen radius stays inside the hypersphere.
-    float torusR2 = 0.5 * (1.0 + 0.30 * audioSubBass);
-    float dClifford = abs(dot(p4.xy, p4.xy) - torusR2);
+    float torusR2 = 0.5 * ( 1.0 + 0.30 * audioSubBass );
+    float dClifford = abs( dot( p4.xy, p4.xy ) - torusR2 );
 
     // Villarceau nested circular streamlines
-    float villarceau1 = sin((u + v) * 4.0 * rDens + t * 2.0 * twst);
-    float villarceau2 = sin((u - v) * 4.0 * rDens - t * 2.0 * twst);
-    float vGrid = abs(villarceau1 * villarceau2);
+    float villarceau1 = sin( ( u + v ) * 4.0 * rDens + t * 2.0 * twst );
+    float villarceau2 = sin( ( u - v ) * 4.0 * rDens - t * 2.0 * twst );
+    float vGrid = abs( villarceau1 * villarceau2 );
 
     // Sample texture mapped onto (u, v) toroidal coordinates
-    vec2 sampleUV = fract(vec2(u / 6.2831853 + 0.5, v / 6.2831853 + 0.5));
-    vec3 texCol = img(sampleUV);
+    vec2 sampleUV = fract( vec2( u / 6.2831853 + 0.5, v / 6.2831853 + 0.5 ) );
+    vec3 texCol = img( sampleUV );
 
     // Luminous Villarceau streamlines
-    float ringGlow = exp(-vGrid * (16.0 + 10.0 * audioCentroid)) * glw;
-    float surfaceGlow = exp(-dClifford * 20.0);
+    float ringGlow = exp( -vGrid * ( 16.0 + 10.0 * audioCentroid ) ) * glw;
+    float surfaceGlow = exp( -dClifford * 20.0 );
 
     // Color palette blending
-    vec3 palA = imgPalette((u + v) / 6.2831853 + t * 0.05);
-    vec3 palB = imgPalette((u - v) / 6.2831853 + 0.5);
-    vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(u * 2.0));
+    vec3 palA = imgPalette( ( u + v ) / 6.2831853 + t * 0.05 );
+    vec3 palB = imgPalette( ( u - v ) / 6.2831853 + 0.5 );
+    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( u * 2.0 ) );
 
-    col = mix(col, texCol, 0.35 + 0.15 * audioValence);
+    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
     // The ray gaps used to read as a flat pale wash because this base
     // palette/photo mix sat near the tonemap ceiling across the frame, so it
     // is held back to give the rays something darker to stand against. 0.6
@@ -136,16 +141,17 @@ void main() {
     // Gate the rings by proximity to the torus surface -- they live ON it, so
     // the lit band visibly travels outward as sub-bass swells torusR2. Pure
     // attenuation (max factor 1.0), so it cannot re-open the clipping problem.
-    vec3 ringTint = vec3(1.0, 0.85, 1.3) * min(ringGlow * (1.0 + 2.0 * audioKick), 0.5) * (0.55 + 0.45 * surfaceGlow);
-    float nodeFlash = min(exp(-vGrid * 40.0) * audioKick * 2.0, 0.6);
-    col += ringTint + vec3(1.2, 1.1, 1.4) * nodeFlash;
+    vec3  ringTint = vec3( 1.0, 0.85, 1.3 ) * min( ringGlow * ( 1.0 + 2.0 * audioKick ), 0.5 )
+                     * ( 0.55 + 0.45 * surfaceGlow );
+    float nodeFlash = min( exp( -vGrid * 40.0 ) * audioKick * 2.0, 0.6 );
+    col += ringTint + vec3( 1.2, 1.1, 1.4 ) * nodeFlash;
 
     // Center focal bloom
-    float centerBloom = min(exp(-r2 * 4.0) * (0.6 + 1.2 * audioLevel), 0.6);
-    col += imgPalette(0.85) * centerBloom;
+    float centerBloom = min( exp( -r2 * 4.0 ) * ( 0.6 + 1.2 * audioLevel ), 0.6 );
+    col += imgPalette( 0.85 ) * centerBloom;
 
-    col = pow(col, vec3(0.88));
-    vec3 _catTone = clamp(col, 0.0, 1.0);
-    _catTone /= 1.0 + 0.85 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    col = pow( col, vec3( 0.88 ) );
+    vec3 _catTone = clamp( col, 0.0, 1.0 );
+    _catTone /= 1.0 + 0.85 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

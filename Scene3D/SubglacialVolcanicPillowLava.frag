@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SubglacialVolcanicPillowLava.frag
  * @brief SUBGLACIAL VOLCANIC PILLOW LAVA: 220x120 heightfield grid of basaltic pillow lava
@@ -16,74 +16,77 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   crustGlowP   float glassy basalt crust specular sheen   (0.6..2.0)
  */
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vCol;   ///< Colour (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vCol;    ///< Colour (from the vertex stage).
 in float vHeat;
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float lavaHeatP;
 uniform float crustGlowP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Tints a colour toward the house palette at t, keeping its brightness.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 lightDir = normalize(vec3(0.4, 0.6, 0.7));
-    float diff = max(0.0, dot(vNormal, lightDir));
-    float spec = pow(max(0.0, dot(reflect(-lightDir, vNormal), vec3(0.0, 0.0, 1.0))), 16.0) * (crustGlowP > 0.01 ? crustGlowP : 1.0);
+    vec3  lightDir = normalize( vec3( 0.4, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, lightDir ) );
+    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 16.0 )
+                 * ( crustGlowP > 0.01 ? crustGlowP : 1.0 );
 
     // Molten lava fissure color
-    vec3 hotLava = vec3(1.0, 0.4, 0.05);
-    vec3 lavaCol = palTint(hotLava, vHeat * 0.3 + audioCentroid, 0.22);
+    vec3 hotLava = vec3( 1.0, 0.4, 0.05 );
+    vec3 lavaCol = palTint( hotLava, vHeat * 0.3 + audioCentroid, 0.22 );
 
-    vec3 photo = img(vUV);
+    vec3 photo = img( vUV );
 
     // Dark glassy quench crust -- the old palette-bright crust plus a
     // white specular read as cow-hide spots, not subglacial basalt.
-    vec3 crust = vCol * 0.20 * (0.55 + 0.45 * photo) * (0.35 + 0.65 * diff);
-    crust = mix(crust, vec3(0.05, 0.07, 0.10), 0.35);
+    vec3 crust = vCol * 0.20 * ( 0.55 + 0.45 * photo ) * ( 0.35 + 0.65 * diff );
+    crust = mix( crust, vec3( 0.05, 0.07, 0.10 ), 0.35 );
     vec3 col = crust;
-    col += vec3(0.55, 0.75, 1.0) * spec * 0.35;
-    col += lavaCol * vHeat * (lavaHeatP > 0.01 ? lavaHeatP : 1.5) * 3.2;
-    col *= (0.85 + 0.35 * audioSwell);
-    col += lavaCol * (audioKick * 0.35);
+    col += vec3( 0.55, 0.75, 1.0 ) * spec * 0.35;
+    col += lavaCol * vHeat * ( lavaHeatP > 0.01 ? lavaHeatP : 1.5 ) * 3.2;
+    col *= ( 0.85 + 0.35 * audioSwell );
+    col += lavaCol * ( audioKick * 0.35 );
 
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

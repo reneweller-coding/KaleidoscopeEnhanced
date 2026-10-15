@@ -24,7 +24,8 @@
 #include <QtCore/QString>
 #include <QtCore/QDir>
 
-namespace Platform {
+namespace Platform
+{
 
 /**
  * @brief Normalises a QString path's separators for the host filesystem.
@@ -34,11 +35,11 @@ namespace Platform {
 inline QString assetPath( const QString &p )
 {
 #ifdef _WIN32
-	return p;
+    return p;
 #else
-	QString s = p;
-	s.replace( QLatin1Char( '\\' ), QLatin1Char( '/' ) );
-	return s;
+    QString s = p;
+    s.replace( QLatin1Char( '\\' ), QLatin1Char( '/' ) );
+    return s;
 #endif
 }
 
@@ -55,11 +56,11 @@ inline QString assetPath( const QString &p )
  */
 inline QString presetsDir( const QString &root )
 {
-	const QString cur = assetPath( root + "/Presets" );
-	if( QDir( cur ).exists() )
-		return cur;
-	const QString old = assetPath( root + "/Configurations" );
-	return QDir( old ).exists() ? old : cur;
+    const QString cur = assetPath( root + "/Presets" );
+    if ( QDir( cur ).exists() )
+        return cur;
+    const QString old = assetPath( root + "/Configurations" );
+    return QDir( old ).exists() ? old : cur;
 }
 
 } // namespace Platform

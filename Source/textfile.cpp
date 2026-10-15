@@ -33,41 +33,41 @@
  */
 char *textFileRead( const char *fn )
 {
-	FILE *fp;
-	char *content = NULL;
+    FILE *fp;
+    char *content = NULL;
 
-	int count=0;
+    int count = 0;
 
-	if ( fn != NULL )
-	{
-		// Every shader in the catalogue arrives here with Windows separators,
-		// from the C++ call sites ("..\\Engine\\CfxFlame.comp") and from the
-		// preset XML alike. assetPath() is a pass-through on Windows and
-		// rewrites the separators elsewhere -- one place, rather than
-		// rewriting 831 generated catalogue entries that both platforms share.
+    if ( fn != NULL )
+    {
+        // Every shader in the catalogue arrives here with Windows separators,
+        // from the C++ call sites ("..\\Engine\\CfxFlame.comp") and from the
+        // preset XML alike. assetPath() is a pass-through on Windows and
+        // rewrites the separators elsewhere -- one place, rather than
+        // rewriting 831 generated catalogue entries that both platforms share.
 #ifdef _WIN32
-		fp = fopen(fn,"rt");
+        fp = fopen( fn, "rt" );
 #else
-		const std::string fnHost = Platform::assetPath( fn );
-		fp = fopen(fnHost.c_str(),"rt");
+        const std::string fnHost = Platform::assetPath( fn );
+        fp = fopen( fnHost.c_str(), "rt" );
 #endif
 
-		if (fp != NULL)
-		{
-			fseek(fp, 0, SEEK_END);
-			count = ftell(fp);
-			rewind(fp);
+        if ( fp != NULL )
+        {
+            fseek( fp, 0, SEEK_END );
+            count = ftell( fp );
+            rewind( fp );
 
-			if (count > 0)
-			{
-				content = (char *)malloc(sizeof(char) * (count+1));
-				count = static_cast<int>(fread(content,sizeof(char),count,fp));
-				content[count] = '\0';
-			}
-			fclose(fp);
-		}
-	}
-	return content;
+            if ( count > 0 )
+            {
+                content = (char *)malloc( sizeof( char ) * ( count + 1 ) );
+                count = static_cast<int>( fread( content, sizeof( char ), count, fp ) );
+                content[count] = '\0';
+            }
+            fclose( fp );
+        }
+    }
+    return content;
 }
 
 
@@ -81,26 +81,19 @@ char *textFileRead( const char *fn )
  */
 int textFileWrite( const char *fn, const char *s )
 {
-	FILE *fp;
-	int status = 0;
+    FILE *fp;
+    int   status = 0;
 
-	if ( fn != NULL )
-	{
-		fp = fopen(fn,"w");
+    if ( fn != NULL )
+    {
+        fp = fopen( fn, "w" );
 
-		if (fp != NULL)
-		{
-			if ( fwrite(s,sizeof(char),strlen(s),fp) == strlen(s) )
-				status = 1;
-			fclose(fp);
-		}
-	}
-	return(status);
+        if ( fp != NULL )
+        {
+            if ( fwrite( s, sizeof( char ), strlen( s ), fp ) == strlen( s ) )
+                status = 1;
+            fclose( fp );
+        }
+    }
+    return ( status );
 }
-
-
-
-
-
-
-

@@ -10,31 +10,36 @@
 // past.  A DROP is a major outburst that floods the whole tail.
 // 60k points: 10 % nucleus, 15 % jets, 55 % tails, 20 % stars.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -43,93 +48,91 @@ void main()
 
     // The comet flies down -Z; the camera holds formation beside it.  The
     // tail sweeps LATERALLY across the frame so it stays visible.
-    vec3 tailDir = normalize(vec3(0.80, 0.28, 0.55));
+    vec3 tailDir = normalize( vec3( 0.80, 0.28, 0.55 ) );
 
     vec3  world;
     vec3  col;
     float glow = 1.0;
 
-    if (r1 < 0.10)
+    if ( r1 < 0.10 )
     {
         // ---- Nucleus: lumpy tumbling snowball. ----
         float th = r2 * 6.2831853;
-        float ph = acos(2.0 * r3 - 1.0);
-        vec3 n = vec3(sin(ph) * cos(th), cos(ph), sin(ph) * sin(th));
-        float lump = 0.75 + 0.45 * hash11(floor(th * 3.0) * 9.0
-                                          + floor(ph * 3.0));
+        float ph = acos( 2.0 * r3 - 1.0 );
+        vec3  n = vec3( sin( ph ) * cos( th ), cos( ph ), sin( ph ) * sin( th ) );
+        float lump = 0.75 + 0.45 * hash11( floor( th * 3.0 ) * 9.0 + floor( ph * 3.0 ) );
         float ra = time * 0.15;
-        n.xy = mat2(cos(ra), -sin(ra), sin(ra), cos(ra)) * n.xy;
+        n.xy = mat2( cos( ra ), -sin( ra ), sin( ra ), cos( ra ) ) * n.xy;
         world = n * 3.2 * lump;
-        float lit = clamp(dot(n, -tailDir), 0.1, 1.0);
-        col = vec3(0.80, 0.88, 0.95) * (0.25 + 0.9 * lit);
+        float lit = clamp( dot( n, -tailDir ), 0.1, 1.0 );
+        col = vec3( 0.80, 0.88, 0.95 ) * ( 0.25 + 0.9 * lit );
         glow = 0.9;
     }
-    else if (r1 < 0.25)
+    else if ( r1 < 0.25 )
     {
         // ---- Geysers: 4 vents blasting on the kick. ----
-        float v   = floor(r2 * 4.0);
+        float v = floor( r2 * 4.0 );
         float ang = v * 1.57 + 0.7;
-        vec3 vent = vec3(cos(ang) * 2.6, sin(ang) * 2.6, 0.0);
-        float d = fract(r3 * 9.0 + time * (0.25 + 0.15 * r4));
-        world = vent + normalize(vent + vec3(0.0, 0.0, -0.4))
-                       * d * (4.0 + 3.0 * r4)
-              + (vec3(r4, fract(r2 * 7.0), r3) - 0.5) * d * 2.0;
-        col  = vec3(0.7, 0.85, 1.0);
-        glow = (0.10 + 1.4 * audioKick + 2.0 * audioDrop)
-             * (1.0 - d) * 1.2;
+        vec3  vent = vec3( cos( ang ) * 2.6, sin( ang ) * 2.6, 0.0 );
+        float d = fract( r3 * 9.0 + time * ( 0.25 + 0.15 * r4 ) );
+        world = vent + normalize( vent + vec3( 0.0, 0.0, -0.4 ) ) * d * ( 4.0 + 3.0 * r4 )
+                + ( vec3( r4, fract( r2 * 7.0 ), r3 ) - 0.5 ) * d * 2.0;
+        col = vec3( 0.7, 0.85, 1.0 );
+        glow = ( 0.10 + 1.4 * audioKick + 2.0 * audioDrop )
+               * ( 1.0 - d ) * 1.2;
     }
-    else if (r1 < 0.80)
+    else if ( r1 < 0.80 )
     {
         // ---- The tails. ----
-        float s = pow(r2, 1.6);                     // 0 head .. 1 far tail
+        float s = pow( r2, 1.6 ); // 0 head .. 1 far tail
         float d = s * 130.0;
-        bool ion = (r3 < 0.4);
-        vec3 spread = (vec3(fract(r3 * 13.0), fract(r4 * 17.0),
-                            fract(r2 * 23.0)) - 0.5)
-                    * (1.5 + d * (ion ? 0.10 : 0.22));
-        vec3 curve = ion ? vec3(0.0)
-                         : vec3(0.9, 0.45, 0.0) * d * d * 0.0035;
+        bool  ion = ( r3 < 0.4 );
+        vec3  spread = ( vec3( fract( r3 * 13.0 ), fract( r4 * 17.0 ),
+                               fract( r2 * 23.0 ) )
+                         - 0.5 )
+                       * ( 1.5 + d * ( ion ? 0.10 : 0.22 ) );
+        vec3  curve = ion ? vec3( 0.0 )
+                          : vec3( 0.9, 0.45, 0.0 ) * d * d * 0.0035;
         world = tailDir * d + spread + curve;
-        world.x += sin(d * 0.15 + time * 0.7) * (ion ? 0.8 : 0.3);
+        world.x += sin( d * 0.15 + time * 0.7 ) * ( ion ? 0.8 : 0.3 );
 
-        col = ion ? hueRot(vec3(0.25, 0.55, 1.0), audioChromaHue * 0.3)
-                  : vec3(0.85, 0.82, 0.75);
-        glow = (0.45 + 0.5 * audioSwell + 1.6 * audioDrop)
-             * exp(-s * 1.6) * (0.4 + 0.6 * r4) * 1.9;
+        col = ion ? hueRot( vec3( 0.25, 0.55, 1.0 ), audioChromaHue * 0.3 )
+                  : vec3( 0.85, 0.82, 0.75 );
+        glow = ( 0.45 + 0.5 * audioSwell + 1.6 * audioDrop )
+               * exp( -s * 1.6 ) * ( 0.4 + 0.6 * r4 ) * 1.9;
     }
     else
     {
         // ---- Stars streaming past (they carry the sense of speed). ----
         float L = 240.0;
-        float z = mod(r2 * L + time * 14.0 + audioAdvance * 30.0, L) - 60.0;
+        float z = mod( r2 * L + time * 14.0 + audioAdvance * 30.0, L ) - 60.0;
         float ang = r3 * 6.2831853;
-        float rad = 14.0 + 60.0 * pow(r4, 1.5);
-        world = vec3(cos(ang) * rad, sin(ang) * rad, z);
-        col  = vec3(0.8, 0.84, 1.0);
-        glow = (0.15 + 0.4 * fract(r2 * 31.0)) *
-               smoothstep(-55.0, -20.0, z) * smoothstep(180.0, 100.0, z);
+        float rad = 14.0 + 60.0 * pow( r4, 1.5 );
+        world = vec3( cos( ang ) * rad, sin( ang ) * rad, z );
+        col = vec3( 0.8, 0.84, 1.0 );
+        glow = ( 0.15 + 0.4 * fract( r2 * 31.0 ) ) * smoothstep( -55.0, -20.0, z ) * smoothstep( 180.0, 100.0, z );
     }
 
     // Camera beside and slightly above the nucleus, gently breathing.
-    vec3 camP = vec3(10.0 + sin(time * 0.10) * 2.0,
-                     6.0 + sin(time * 0.13) * 1.5,
-                     -14.0);
-    vec3 fwd  = normalize(vec3(0.0, 0.0, 8.0) - camP);
-    vec3 rgt  = normalize(cross(fwd, vec3(0.0, 1.0, 0.0)));
-    vec3 up   = cross(rgt, fwd);
-    vec3 rel  = world - camP;
-    vec3 vp   = vec3(dot(rel, rgt), dot(rel, up), dot(rel, fwd));
+    vec3 camP = vec3( 10.0 + sin( time * 0.10 ) * 2.0,
+                      6.0 + sin( time * 0.13 ) * 1.5,
+                      -14.0 );
+    vec3 fwd = normalize( vec3( 0.0, 0.0, 8.0 ) - camP );
+    vec3 rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 up = cross( rgt, fwd );
+    vec3 rel = world - camP;
+    vec3 vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(105.0 * (0.4 + 0.8 * r4) * px / dist, 1.5, 15.0 * px);
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( 105.0 * ( 0.4 + 0.8 * r4 ) * px / dist, 1.5, 15.0 * px );
 
-    col *= glow * clamp(1.0 - vp.z / 180.0, 0.0, 1.0);
-    vCol = vec4(col * 2.8, 1.0);
+    col *= glow * clamp( 1.0 - vp.z / 180.0, 0.0, 1.0 );
+    vCol = vec4( col * 2.8, 1.0 );
 }

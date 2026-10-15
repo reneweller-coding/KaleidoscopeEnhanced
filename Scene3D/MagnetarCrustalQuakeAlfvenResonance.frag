@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file MagnetarCrustalQuakeAlfvenResonance.frag
  * @brief MAGNETAR CRUSTAL QUAKE ALFVÉN RESONANCE: Crustal fracture and global seismic oscillations
@@ -21,71 +21,75 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   fireballP   float trapped pair plasma fireball / far-haze intensity (0.6..2.2)
  */
 
-in vec3 vPos;   ///< Position (from the vertex stage).
-in float vDepth;   ///< Depth (from the vertex stage).
+in vec3  vPos;   ///< Position (from the vertex stage).
+in float vDepth; ///< Depth (from the vertex stage).
 in float vGlow;
-in float vKind;   ///< 0 = field line, 1 = far X-ray speck, 2 = plasma haze panel
+in float vKind; ///< 0 = field line, 1 = far X-ray speck, 2 = plasma haze panel
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float quakeGlowP;
 uniform float fireballP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Tints a colour toward the house palette at t, keeping its brightness.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     // Magnetar high-energy violet-white / amber flare identity. Held to 0.66
     // saturation rather than 0.74: the photo modulation below used to multiply
     // the three channels by DIFFERENT factors, which pushed the field lines
     // past 0.8 saturation over a third of the frame.
-    vec3 magnetarCol = vec3(0.62, 0.32, 0.95);
+    vec3 magnetarCol = vec3( 0.62, 0.32, 0.95 );
 
-    if (vKind > 1.5) {
+    if ( vKind > 1.5 )
+    {
         // TRAPPED PAIR-PLASMA HAZE: one panel far behind the magnetosphere,
         // carrying a 0..1 panel u/v in vDepth/vGlow, so the corners of the
         // frame read as magnetospheric plasma instead of dead clear colour.
-        vec2 uv = vec2(vDepth, vGlow);
-        float a  = audioAdvance * 0.05;
-        float n1 = sin(uv.x * 4.7 + a * 1.1) * sin(uv.y * 3.3 - a * 0.8);
-        float n2 = sin(uv.x * 10.3 - a * 0.6 + 1.9) * sin(uv.y * 7.7 + a * 0.9);
-        float fb = clamp(0.55 + 0.30 * n1 + 0.15 * n2, 0.0, 1.0);
+        vec2  uv = vec2( vDepth, vGlow );
+        float a = audioAdvance * 0.05;
+        float n1 = sin( uv.x * 4.7 + a * 1.1 ) * sin( uv.y * 3.3 - a * 0.8 );
+        float n2 = sin( uv.x * 10.3 - a * 0.6 + 1.9 ) * sin( uv.y * 7.7 + a * 0.9 );
+        float fb = clamp( 0.55 + 0.30 * n1 + 0.15 * n2, 0.0, 1.0 );
 
-        vec3 hazeCol = palTint(vec3(0.34, 0.20, 0.56), uv.x * 0.3 + audioCentroid, 0.35);
-        float rad = length((uv - 0.5) * vec2(1.7, 1.0));
-        float pool = mix(1.0, 0.62, smoothstep(0.25, 1.05, rad));
+        vec3  hazeCol = palTint( vec3( 0.34, 0.20, 0.56 ), uv.x * 0.3 + audioCentroid, 0.35 );
+        float rad = length( ( uv - 0.5 ) * vec2( 1.7, 1.0 ) );
+        float pool = mix( 1.0, 0.62, smoothstep( 0.25, 1.05, rad ) );
 
         // HELD DOWN ON PURPOSE, and this is the opposite of what it looks like.
         // The occupancy metric compares every pixel against the frame's own
@@ -96,33 +100,34 @@ void main() {
         // field lines and cancelled them out: the frame measured 96% empty.
         // Its job is to be a plausible plasma-lit sky, not to fill anything;
         // the field lines and the X-ray specks do the filling.
-        float amp = (fireballP > 0.01 ? fireballP : 1.2) * 0.05;
-        vec3 hz = hazeCol * (0.35 + 0.65 * fb) * pool * amp * (0.85 + 0.4 * audioSwell);
+        float amp = ( fireballP > 0.01 ? fireballP : 1.2 ) * 0.05;
+        vec3  hz = hazeCol * ( 0.35 + 0.65 * fb ) * pool * amp * ( 0.85 + 0.4 * audioSwell );
         // Cap the FINAL tinted colour, not just the scalar feeding it.
-        fragColor = vec4(min(hz, vec3(0.09)), 1.0);
+        fragColor = vec4( min( hz, vec3( 0.09 ) ), 1.0 );
         return;
     }
 
-    if (vKind > 0.5) {
+    if ( vKind > 0.5 )
+    {
         // Distant X-ray point sources: tiny, bounded, spread across the frustum.
-        vec3 sc = palTint(vec3(0.72, 0.60, 1.0), vDepth + audioCentroid * 0.4, 0.45);
-        fragColor = vec4(min(sc * vGlow * 0.55, vec3(0.70)), 1.0);
+        vec3 sc = palTint( vec3( 0.72, 0.60, 1.0 ), vDepth + audioCentroid * 0.4, 0.45 );
+        fragColor = vec4( min( sc * vGlow * 0.55, vec3( 0.70 ) ), 1.0 );
         return;
     }
 
-    vec3 flareCol    = palTint(magnetarCol, vDepth * 0.4 + audioCentroid, 0.25);
+    vec3 flareCol = palTint( magnetarCol, vDepth * 0.4 + audioCentroid, 0.25 );
 
     // The magnetosphere now spans tens of world units, so the photo texture is
     // sampled in a SCREEN-relative frame -- a fixed world scale wrapped the
     // picture dozens of times across the outer field lines.
-    vec2 photoUv = fract(vPos.xy * 0.11 + 0.5);
+    vec2 photoUv = fract( vPos.xy * 0.11 + 0.5 );
     // The photo modulates BRIGHTNESS only. Multiplying the flare colour by the
     // photo's three channels separately stretched its channel ratios and drove
     // the field lines past 0.8 saturation; the photo's HUE already reaches this
     // scene through palTint above, which is where it belongs.
-    float photoL = dot(img(photoUv), vec3(0.299, 0.587, 0.114));
+    float photoL = dot( img( photoUv ), vec3( 0.299, 0.587, 0.114 ) );
 
-    vec3 col = flareCol * (0.6 + 0.4 * photoL) * vGlow;
+    vec3 col = flareCol * ( 0.6 + 0.4 * photoL ) * vGlow;
 
     // quakeGlowP spans 0.8..2.5 in the preset and the verification render came
     // back sitting at the BOTTOM of it: luma 0.162, contrast 0.078. Contrast in
@@ -133,15 +138,15 @@ void main() {
     // dim end without pushing the loud end any brighter: the bottom roughly
     // doubles while the top actually comes down, which keeps luma inside range
     // at both ends instead of trading one failure for the other.
-    float qg    = (quakeGlowP > 0.01 ? quakeGlowP : 1.2);
-    float qGain = 1.30 + 0.40 * clamp((qg - 0.8) / 1.7, 0.0, 1.0);
-    col *= qGain * (0.85 + 0.35 * audioSwell);
+    float qg = ( quakeGlowP > 0.01 ? quakeGlowP : 1.2 );
+    float qGain = 1.30 + 0.40 * clamp( ( qg - 0.8 ) / 1.7, 0.0, 1.0 );
+    col *= qGain * ( 0.85 + 0.35 * audioSwell );
     // Gated on the crust flare so a kick lights the rupture, not the whole
     // (now frame-filling) magnetosphere at once.
-    col += vec3(1.0, 0.95, 0.9) * min(audioKick * 0.35, 0.4)
-         * smoothstep(0.6, 1.4, vGlow);
+    col += vec3( 1.0, 0.95, 0.9 ) * min( audioKick * 0.35, 0.4 )
+           * smoothstep( 0.6, 1.4, vGlow );
 
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

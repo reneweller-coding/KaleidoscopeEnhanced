@@ -24,64 +24,67 @@
  * Scene3DShader::runGenerator(), so audioSnare / audioTrebRel have to be
  * applied here on the baked geometry instead.
  */
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSnare;   ///< Snare envelope, 0..1.
 uniform float audioTrebRel;
 
-out vec3 vPos;   ///< Position (from the vertex stage).
+out vec3  vPos; ///< Position (from the vertex stage).
 out float vHeat;
 out float vBoltID;
 out float vGain;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     vec3 worldP = attrA.xyz;
     // Generator-side brightness class: the draw is opaque, so the faint
     // families (surface creep, corona) have to be dimmed here rather than by
     // drawing less of them.  Old bakes carried 0 in this slot -- treat that as
     // a full-strength stroke so a stale buffer never renders black.
-    vGain = (attrB.x > 0.001) ? attrB.x : 1.0;
+    vGain = ( attrB.x > 0.001 ) ? attrB.x : 1.0;
 
     // RETURN STROKE on the backbeat: a snare/clap flares the whole discharge
     // tree outward as its channel ionises.
-    float sn = clamp(audioSnare, 0.0, 1.0);
+    float sn = clamp( audioSnare, 0.0, 1.0 );
     worldP.xz *= 1.0 + 0.30 * sn;
 
     // STEPPED-LEADER WANDER driven by the treble register's instant/slow
     // ratio (~1.0 = as loud as usual, so this self-normalises to any mix).
     // A SMOOTH spatial field, not a per-vertex hash -- a hash here would tear
     // the two-triangle bolt ribbons apart.
-    float tp = clamp(audioTrebRel - 1.0, -1.0, 1.0);
-    vec3 wob = vec3(sin(worldP.y * 5.3 + worldP.z * 3.1),
-                    sin(worldP.z * 4.7 + worldP.x * 5.9),
-                    sin(worldP.x * 4.1 + worldP.y * 6.3));
-    worldP += wob * (0.22 * tp);
+    float tp = clamp( audioTrebRel - 1.0, -1.0, 1.0 );
+    vec3  wob = vec3( sin( worldP.y * 5.3 + worldP.z * 3.1 ),
+                      sin( worldP.z * 4.7 + worldP.x * 5.9 ),
+                      sin( worldP.x * 4.1 + worldP.y * 6.3 ) );
+    worldP += wob * ( 0.22 * tp );
 
     vPos = worldP;
     // The stroke also drives the channel's ionisation heat.  Bounded, and the
     // .frag's tonemap still caps whatever comes out of it.
-    vHeat = attrA.w * (1.0 + 0.55 * sn);
+    vHeat = attrA.w * ( 1.0 + 0.55 * sn );
     vBoltID = attrB.w;
 
     // Stereoscopic 3D camera projection
     // ORBIT (user feedback): the camera circles the structure
-    vec3 vp = worldP;
+    vec3  vp = worldP;
     float oyaw = time * 0.15 + audioAdvance * 0.07;
-    float ocy = cos(oyaw), osy = sin(oyaw);
-    vp.xz = mat2(ocy, -osy, osy, ocy) * vp.xz;
-    float opit = -0.12 + 0.10 * sin(time * 0.11);
-    float opc = cos(opit), ops = sin(opit);
-    vp.yz = mat2(opc, -ops, ops, opc) * vp.yz;
+    float ocy = cos( oyaw ), osy = sin( oyaw );
+    vp.xz = mat2( ocy, -osy, osy, ocy ) * vp.xz;
+    float opit = -0.12 + 0.10 * sin( time * 0.11 );
+    float opc = cos( opit ), ops = sin( opit );
+    vp.yz = mat2( opc, -ops, ops, opc ) * vp.yz;
     vp.z += 6.5;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

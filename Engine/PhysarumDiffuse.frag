@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PhysarumDiffuse.frag
  * @brief Trail-map relaxation: 3x3 mean blur (pheromone diffusion) x decay
@@ -8,8 +8,8 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  */
 
 uniform sampler2D texTrail;
-uniform vec2  resolution;      ///< trail-map size
-uniform float decay;
+uniform vec2      resolution; ///< trail-map size
+uniform float     decay;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -17,11 +17,11 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
     vec2 px = 1.0 / resolution;
 
-    vec2 sum = vec2(0.0);
-    for (int y = -1; y <= 1; ++y)
-        for (int x = -1; x <= 1; ++x)
-            sum += texture(texTrail, fract(uv + vec2(float(x), float(y)) * px)).rg;
+    vec2 sum = vec2( 0.0 );
+    for ( int y = -1; y <= 1; ++y )
+        for ( int x = -1; x <= 1; ++x )
+            sum += texture( texTrail, fract( uv + vec2( float( x ), float( y ) ) * px ) ).rg;
     sum /= 9.0;
 
-    fragColor = vec4(sum * decay, 0.0, 1.0);
+    fragColor = vec4( sum * decay, 0.0, 1.0 );
 }

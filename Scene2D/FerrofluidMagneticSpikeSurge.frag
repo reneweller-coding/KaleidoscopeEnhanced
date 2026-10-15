@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FerrofluidMagneticSpikeSurge.frag
  * @brief FERROFLUID MAGNETIC SPIKE SURGE: Liquid metal ferrofluid Rosensweig normal-field
@@ -14,106 +14,111 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the mirror chrome / dark obsidian / gold spectrum
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float spikeDensityP;
 uniform float spikeHeightP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// Rosensweig magnetic spike height function
-float ferroHeight(vec2 p, float t, float sDens, float sHeight) {
+float ferroHeight( vec2 p, float t, float sDens, float sHeight )
+{
     // Two ends of the same lattice scale: brightness subdivides the Rosensweig
     // pattern into more, finer cones, sub-bass widens each fluid pool cell.
-    vec2 pGrid = p * (6.0 * sDens) * (1.0 + 0.25 * audioCentroid) / (1.0 + 0.35 * audioSubBass);
-    vec2 gridFract = fract(pGrid) - 0.5;
-    float rSpike = length(gridFract);
+    vec2  pGrid = p * ( 6.0 * sDens ) * ( 1.0 + 0.25 * audioCentroid ) / ( 1.0 + 0.35 * audioSubBass );
+    vec2  gridFract = fract( pGrid ) - 0.5;
+    float rSpike = length( gridFract );
 
     // Conical spike profile with magnetic modulation. A narrower cone base over
     // the same tip height is a steeper, sharper magnetic needle.
-    float cone = max(0.0, 0.45 * (1.0 - 0.25 * audioCentroid) - rSpike);
-    float pulse = sin(p.x * 2.0 + t * 3.0) * cos(p.y * 2.0 - t * 2.5);
+    float cone = max( 0.0, 0.45 * ( 1.0 - 0.25 * audioCentroid ) - rSpike );
+    float pulse = sin( p.x * 2.0 + t * 3.0 ) * cos( p.y * 2.0 - t * 2.5 );
 
-    return cone * (1.2 + 0.8 * pulse + 1.2 * audioBass) * sHeight * (1.0 + 0.4 * audioSubBass);
+    return cone * ( 1.2 + 0.8 * pulse + 1.2 * audioBass ) * sHeight * ( 1.0 + 0.4 * audioSubBass );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float sDens = (spikeDensityP > 0.01) ? spikeDensityP : 1.0;
-    float sH = (spikeHeightP > 0.01) ? spikeHeightP : 1.2;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float sDens = ( spikeDensityP > 0.01 ) ? spikeDensityP : 1.0;
+    float sH = ( spikeHeightP > 0.01 ) ? spikeHeightP : 1.2;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Evaluate ferrofluid height field
-    float h = ferroHeight(uv, t, sDens, sH);
+    float h = ferroHeight( uv, t, sDens, sH );
 
     // Normal gradient for liquid chrome specular lighting
     float eps = 0.01;
-    float hX = ferroHeight(uv + vec2(eps, 0.0), t, sDens, sH);
-    float hY = ferroHeight(uv + vec2(0.0, eps), t, sDens, sH);
-    vec3 normal = normalize(vec3((hX - h) * 4.0, (hY - h) * 4.0, eps));
+    float hX = ferroHeight( uv + vec2( eps, 0.0 ), t, sDens, sH );
+    float hY = ferroHeight( uv + vec2( 0.0, eps ), t, sDens, sH );
+    vec3  normal = normalize( vec3( ( hX - h ) * 4.0, ( hY - h ) * 4.0, eps ) );
 
     // Dynamic light direction
-    vec3 lightDir = normalize(vec3(cos(t * 0.5), sin(t * 0.5), 1.2));
-    float diff = max(0.0, dot(normal, lightDir));
-    float spec = pow(max(0.0, dot(normal, normalize(lightDir + vec3(0,0,1)))), 32.0);
+    vec3  lightDir = normalize( vec3( cos( t * 0.5 ), sin( t * 0.5 ), 1.2 ) );
+    float diff = max( 0.0, dot( normal, lightDir ) );
+    float spec = pow( max( 0.0, dot( normal, normalize( lightDir + vec3( 0, 0, 1 ) ) ) ), 32.0 );
 
     // Sample distorted background photo in chrome reflection
-    vec2 reflectUV = fract(uv * 0.4 + normal.xy * 0.15 + 0.5);
-    vec3 texCol = img(reflectUV);
+    vec2 reflectUV = fract( uv * 0.4 + normal.xy * 0.15 + 0.5 );
+    vec3 texCol = img( reflectUV );
 
     // Obsidian liquid ferrofluid base
-    vec3 palObsidian = imgPalette(h * 0.5 + 0.1);
-    vec3 liquidBase = mix(vec3(0.04, 0.04, 0.06), palObsidian, 0.35);
+    vec3 palObsidian = imgPalette( h * 0.5 + 0.1 );
+    vec3 liquidBase = mix( vec3( 0.04, 0.04, 0.06 ), palObsidian, 0.35 );
 
-    vec3 col = mix(liquidBase, texCol, 0.35) * (0.6 + 0.4 * diff);
+    vec3 col = mix( liquidBase, texCol, 0.35 ) * ( 0.6 + 0.4 * diff );
 
     // Add chrome specular glints & spike tip flashes
-    vec3 chromeSpec = vec3(1.5, 1.4, 1.7) * spec * (1.0 + 3.0 * audioKick) * glw;
-    float spikeTipGlow = exp(-abs(h - 0.4) * 15.0) * (1.0 + 2.5 * audioKick);
+    vec3  chromeSpec = vec3( 1.5, 1.4, 1.7 ) * spec * ( 1.0 + 3.0 * audioKick ) * glw;
+    float spikeTipGlow = exp( -abs( h - 0.4 ) * 15.0 ) * ( 1.0 + 2.5 * audioKick );
 
-    col += chromeSpec + vec3(1.6, 1.2, 0.4) * spikeTipGlow * 0.6;
+    col += chromeSpec + vec3( 1.6, 1.2, 0.4 ) * spikeTipGlow * 0.6;
 
-    col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col = pow( col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

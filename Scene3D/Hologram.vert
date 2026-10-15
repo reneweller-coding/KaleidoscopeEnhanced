@@ -9,10 +9,11 @@
  * therefore happen in Hologram.geom.
  */
 
-in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
+in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky
+               ///< direction").
 
-uniform int meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform int meshVertexCount; ///< Vertices of the scene's mesh.
 
 out vec3  gPos;
 out vec3  gNormal;
@@ -22,8 +23,8 @@ out float gBg;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    gPos    = attrA.xyz;
+    gPos = attrA.xyz;
     gNormal = attrB.xyz;
-    gUV     = vec2(attrA.w, attrB.w);
-    gBg     = (gl_VertexID >= meshVertexCount) ? 1.0 : 0.0;
+    gUV = vec2( attrA.w, attrB.w );
+    gBg = ( gl_VertexID >= meshVertexCount ) ? 1.0 : 0.0;
 }

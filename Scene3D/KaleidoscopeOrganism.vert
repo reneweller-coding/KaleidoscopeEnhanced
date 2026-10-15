@@ -9,40 +9,41 @@
 // turns the whole thing slowly so the kaleidoscope symmetry reads as real 3D
 // volume rather than a flat rosette.
 
-in vec4 attrA;      ///< xyz = object position, w = branch age (1 = oldest)
-in vec4 attrB;      ///< xyz = normal, w = radial depth 0..1
+in vec4 attrA; ///< xyz = object position, w = branch age (1 = oldest)
+in vec4 attrB; ///< xyz = normal, w = radial depth 0..1
 
-out vec3  vObj;   ///< Object-space position (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vObj;    ///< Object-space position (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out float vAge;
-out float vDepth;   ///< Depth (from the vertex stage).
+out float vDepth; ///< Depth (from the vertex stage).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camDistP;   ///< Camera distance knob, 0..1.
+uniform float camDistP; ///< Camera distance knob, 0..1.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 p = attrA.xyz;      // already framed + mirror-replicated by the generator
+    vec3 p = attrA.xyz; // already framed + mirror-replicated by the generator
 
     float ya = audioAdvance * 0.06;
-    mat3 yaw = mat3(cos(ya), 0.0, -sin(ya), 0.0, 1.0, 0.0, sin(ya), 0.0, cos(ya));
+    mat3  yaw = mat3( cos( ya ), 0.0, -sin( ya ), 0.0, 1.0, 0.0, sin( ya ), 0.0, cos( ya ) );
 
-    vec3 pw = yaw * p;
-    float dist = camDistP * (1.0 - 0.04 * audioLevel);
-    vec3 vp = vec3(pw.x - eyeOff, pw.y, pw.z + dist);
+    vec3  pw = yaw * p;
+    float dist = camDistP * ( 1.0 - 0.04 * audioLevel );
+    vec3  vp = vec3( pw.x - eyeOff, pw.y, pw.z + dist );
 
-    vObj    = p;
+    vObj = p;
     vNormal = yaw * attrB.xyz;
-    vView   = normalize(-vp);
-    vAge    = attrA.w;
-    vDepth  = attrB.w;
+    vView = normalize( -vp );
+    vAge = attrA.w;
+    vDepth = attrB.w;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

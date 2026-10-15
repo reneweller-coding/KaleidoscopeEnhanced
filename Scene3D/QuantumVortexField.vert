@@ -8,25 +8,27 @@
 in vec4 attrA; ///< xyz = world pos, w = hue
 in vec4 attrB; ///< xyz = normal, w = glow
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform mat4  projM;              ///< Projection matrix.
+uniform float eyeOff;             ///< Stereo eye offset (0 in mono).
+uniform float time;               ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance;       ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                  ///< backwards).
+uniform float     audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float     hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec3 vWorld;   ///< World position (from the vertex stage).
+out vec4 vCol;    ///< Colour (from the vertex stage).
+out vec3 vNormal; ///< Surface normal (from the vertex stage).
+out vec3 vWorld;  ///< World position (from the vertex stage).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -34,54 +36,57 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec3 worldP = attrA.xyz;
+void main()
+{
+    vec3  worldP = attrA.xyz;
     float hue = attrA.w;
-    vec3 norm = attrB.xyz;
+    vec3  norm = attrB.xyz;
     float glow = attrB.w;
 
     // Orbiting Camera
     float camAngle = time * 0.15 + audioAdvance * 0.05;
     float camDist = 26.0 - audioSwell * 5.0;
-    vec3 camPos = vec3(sin(camAngle) * camDist, 14.0 + 3.0 * sin(time * 0.2), cos(camAngle) * camDist);
-    vec3 lookTarget = vec3(0.0, 0.0, 0.0);
+    vec3  camPos = vec3( sin( camAngle ) * camDist, 14.0 + 3.0 * sin( time * 0.2 ), cos( camAngle ) * camDist );
+    vec3  lookTarget = vec3( 0.0, 0.0, 0.0 );
 
-    vec3 ww = normalize(lookTarget - camPos);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
+    vec3 ww = normalize( lookTarget - camPos );
+    vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 vv = cross( uu, ww );
 
     vec3 relP = worldP - camPos;
-    vec3 viewP = vec3(dot(relP, uu), dot(relP, vv), dot(relP, ww));
+    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
 
     viewP.x -= eyeOff;
-    gl_Position = projM * vec4(viewP.x, viewP.y, -viewP.z, 1.0);
+    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Quantum flux ribbon color: Cyan, Violet, Gold
-    vec3 fluxCol = imgPalette(0.30 * hue) * 1.4;
-    fluxCol = mix(fluxCol, vec3(1.0, 0.8, 0.2), 0.28 * (sin(hue * 6.28 + time) * 0.5 + 0.5));
+    vec3 fluxCol = imgPalette( 0.30 * hue ) * 1.4;
+    fluxCol = mix( fluxCol, vec3( 1.0, 0.8, 0.2 ), 0.28 * ( sin( hue * 6.28 + time ) * 0.5 + 0.5 ) );
 
-    float h = (hueP > 0.0) ? hueP : 0.0;
-    if (h > 0.001) fluxCol = hueRot(fluxCol, h);
+    float h = ( hueP > 0.0 ) ? hueP : 0.0;
+    if ( h > 0.001 )
+        fluxCol = hueRot( fluxCol, h );
 
-    vCol = vec4(fluxCol * glow, 1.0);
+    vCol = vec4( fluxCol * glow, 1.0 );
     vNormal = norm;
     vWorld = worldP;
 }

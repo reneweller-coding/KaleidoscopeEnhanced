@@ -13,28 +13,29 @@
  * except the bit under the ship anyway.
  */
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;   ///< half-extents of the loaded model, object space
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;      ///< half-extents of the loaded model, object space
 uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
 
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sizeP;   ///< Size knob, 0..1.
-uniform float shakeP;    ///< how hard the airframe judders once it bites
+uniform float sizeP;  ///< Size knob, 0..1.
+uniform float shakeP; ///< how hard the airframe judders once it bites
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
-out float vEntry;        ///< 0 before contact, 1 deep in the glow -- drives the heating
+out vec3  vPos;      ///< Position (from the vertex stage).
+out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
+out float vBg;       ///< Background flag (from the vertex stage).
+out float vEntry;    ///< 0 before contact, 1 deep in the glow -- drives the heating
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -46,12 +47,12 @@ void main()
     // Nothing happens for the first fifth: the ship is still in vacuum, and
     // the shot needs that beat of calm or the entry has nothing to contrast
     // against.
-    float entry = smoothstep(0.20, 0.95, t);
+    float entry = smoothstep( 0.20, 0.95, t );
     vEntry = entry;
 
-    if( !isBg )
+    if ( !isBg )
     {
-        float sz = (sizeP > 0.01 ? sizeP : 1.0);
+        float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         // Put the hull's LONGEST axis on +Z, which is the nose direction the
         // attitude matrices below are written for: with the nose on +Z, a
         // rotation about X is pitch and a rotation about Z is roll. The
@@ -65,64 +66,65 @@ void main()
         // its winding.
         vec3 e = meshExtent;
         vec3 p = attrA.xyz, nrm = attrB.xyz;
-        if( e.x >= e.y && e.x >= e.z )        // longest on X: rotate about Y
+        if ( e.x >= e.y && e.x >= e.z ) // longest on X: rotate about Y
         {
-            p   = vec3(-p.z,   p.y,   p.x);
-            nrm = vec3(-nrm.z, nrm.y, nrm.x);
+            p = vec3( -p.z, p.y, p.x );
+            nrm = vec3( -nrm.z, nrm.y, nrm.x );
         }
-        else if( e.y >= e.x && e.y >= e.z )   // longest on Y: rotate about X
+        else if ( e.y >= e.x && e.y >= e.z ) // longest on Y: rotate about X
         {
-            p   = vec3(p.x,    -p.z,   p.y);
-            nrm = vec3(nrm.x,  -nrm.z, nrm.y);
+            p = vec3( p.x, -p.z, p.y );
+            nrm = vec3( nrm.x, -nrm.z, nrm.y );
         }
         // longest already on Z: already nose-forward.
 
         // Pitch nose-down as it commits to the descent, then flare slightly
         // at the end -- the classic entry attitude, belly to the airflow.
-        float pitch = -0.10 - 0.55 * entry + 0.18 * smoothstep(0.75, 1.0, t);
-        float cp = cos(pitch), sp2 = sin(pitch);
-        mat3 pitchM = mat3(1.0, 0.0, 0.0,  0.0, cp, sp2,  0.0, -sp2, cp);
+        float pitch = -0.10 - 0.55 * entry + 0.18 * smoothstep( 0.75, 1.0, t );
+        float cp = cos( pitch ), sp2 = sin( pitch );
+        mat3  pitchM = mat3( 1.0, 0.0, 0.0, 0.0, cp, sp2, 0.0, -sp2, cp );
 
         // A slow roll, so we see the lit belly rather than a flat profile.
-        float roll = 0.35 + 0.25 * sin(t * 3.0);
-        float cr = cos(roll), sr = sin(roll);
-        mat3 rollM = mat3(cr, sr, 0.0,  -sr, cr, 0.0,  0.0, 0.0, 1.0);
-        mat3 rotM = pitchM * rollM;
+        float roll = 0.35 + 0.25 * sin( t * 3.0 );
+        float cr = cos( roll ), sr = sin( roll );
+        mat3  rollM = mat3( cr, sr, 0.0, -sr, cr, 0.0, 0.0, 0.0, 1.0 );
+        mat3  rotM = pitchM * rollM;
 
-        vec3 local = rotM * (p * (46.0 * sz));
+        vec3 local = rotM * ( p * ( 46.0 * sz ) );
 
         // Airframe judder once the atmosphere bites: high frequency, small
         // amplitude, and gated on `entry` so the vacuum part stays glassy.
-        float shake = 0.0;   // airframe judder removed (V7d): the buffeting is light and heat now
+        float shake = 0.0; // airframe judder removed (V7d): the buffeting is light and heat now
         // Three mutually prime rates so the shake never settles into a buzz.
         // They were 47/53/41, which put the fastest at 8.44 Hz -- past the hard
         // 8 Hz ceiling, and this displaces the WHOLE airframe rather than a
         // detail, so the 4 Hz geometry limit is the one it is really pushing.
-        vec3 jitter = vec3(sin(time * 37.0), sin(time * 43.0 + 1.7), sin(time * 31.0 + 3.1))
-                    * 0.55 * shake * (0.6 + 0.8 * audioKick);
+        vec3 jitter = vec3( sin( time * 37.0 ), sin( time * 43.0 + 1.7 ), sin( time * 31.0 + 3.1 ) )
+                      * 0.55 * shake * ( 0.6 + 0.8 * audioKick );
 
         world = local + jitter;
         // Comes down and toward us as it descends.
         world.x += -18.0 + 26.0 * entry;
-        world.y +=  26.0 - 40.0 * entry;
+        world.y += 26.0 - 40.0 * entry;
         world.z += 140.0 - 62.0 * entry;
-        n = normalize(rotM * nrm);
-        vUV = vec2(attrA.w, attrB.w);
+        n = normalize( rotM * nrm );
+        vUV = vec2( attrA.w, attrB.w );
         vLocalPos = p;
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
-        vUV = vec2(0.0);
-        vLocalPos = vec3(0.0);
+        vUV = vec2( 0.0 );
+        vLocalPos = vec3( 0.0 );
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

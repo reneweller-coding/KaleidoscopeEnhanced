@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file QuasarRelativisticJet.frag
  * @brief QUASAR RELATIVISTIC JET: Raymarched look down the magnetic confinement
@@ -18,34 +18,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP         float spectral synchrotron hue offset   (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float jetP;
 uniform float collimationP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -53,112 +55,119 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c);
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float jet = (jetP         > 0.0) ? jetP         : 1.0;
-    float col = (collimationP > 0.0) ? collimationP : 1.0;
-    float spd = (speedP       > 0.0) ? speedP       : 1.0;
-    float hue = (hueP         > 0.0) ? hueP         : 0.0;
+void main()
+{
+    float jet = ( jetP > 0.0 ) ? jetP : 1.0;
+    float col = ( collimationP > 0.0 ) ? collimationP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // Raymarching camera down the relativistic jet axis
-    vec3 ro = vec3(0.0, 0.0, -3.0);
-    vec3 rd = normalize(vec3(uv, 1.2));
+    vec3 ro = vec3( 0.0, 0.0, -3.0 );
+    vec3 rd = normalize( vec3( uv, 1.2 ) );
 
     // Slight camera bank/swirl
-    rd.xy = rot2D(sin(t * 0.3) * 0.3 + audioPhase * 0.5) * rd.xy;
+    rd.xy = rot2D( sin( t * 0.3 ) * 0.3 + audioPhase * 0.5 ) * rd.xy;
 
-    vec3 p = ro;
+    vec3  p = ro;
     float accumDensity = 0.0;
     float shockDiamonds = 0.0;
     float photoWeight = 0.0;
-    vec2 sampledCoord = vec2(0.0);
+    vec2  sampledCoord = vec2( 0.0 );
 
     float stepSize = 0.08;
-    for (int i = 0; i < 40; ++i) {
+    for ( int i = 0; i < 40; ++i )
+    {
         p += rd * stepSize;
         // Side view: the old march looked straight down the jet axis and
         // the beam recorded as a concentric glow ball.  Tilt the axis ~62
         // degrees across the frame and mirror it (bipolar lobes).
-        vec3 pj = vec3(p.x, p.y * 0.469 - p.z * 0.883, p.y * 0.883 + p.z * 0.469);
+        vec3  pj = vec3( p.x, p.y * 0.469 - p.z * 0.883, p.y * 0.883 + p.z * 0.469 );
         float z = pj.y * 1.25;
-        float r = length(vec2(pj.x, pj.z));
+        float r = length( vec2( pj.x, pj.z ) );
 
         // Magnetic funnel envelope, opening away from the core BOTH ways
-        float funnelR = (0.16 + 0.30 * pow(abs(z) * 1.5 + 0.10, 0.65)) / col;
-        funnelR += 0.08 * sin(z * 4.0 - t * 6.0) * (1.0 + audioKick);
+        float funnelR = ( 0.16 + 0.30 * pow( abs( z ) * 1.5 + 0.10, 0.65 ) ) / col;
+        funnelR += 0.08 * sin( z * 4.0 - t * 6.0 ) * ( 1.0 + audioKick );
 
         // Helical magnetic field lines
-        float angle = atan(p.y, p.x) + z * 2.5 * col - t * 4.0;
-        float helix = abs(sin(angle * 4.0));
+        float angle = atan( p.y, p.x ) + z * 2.5 * col - t * 4.0;
+        float helix = abs( sin( angle * 4.0 ) );
 
         // Synchrotron plasma sheath density
-        float sheathDist = abs(r - funnelR);
-        float density = exp(-sheathDist * 16.0) * (1.0 + helix * 1.2);
+        float sheathDist = abs( r - funnelR );
+        float density = exp( -sheathDist * 16.0 ) * ( 1.0 + helix * 1.2 );
 
         // Shock diamonds: periodic supersonic compression nodes along z
-        float diamondZ = sin(abs(z) * 6.0 - t * 8.0);
-        float diamond = exp(-abs(diamondZ) * 8.0) * exp(-r * 8.0);
-        shockDiamonds += diamond * (1.5 + audioKick * 3.0);
+        float diamondZ = sin( abs( z ) * 6.0 - t * 8.0 );
+        float diamond = exp( -abs( diamondZ ) * 8.0 ) * exp( -r * 8.0 );
+        shockDiamonds += diamond * ( 1.5 + audioKick * 3.0 );
         // Luminous beam core so the jet reads as a BEAM, not a haze.
-        accumDensity += exp(-r * 10.0) * 0.55 * stepSize * (1.0 + 0.6 * audioLevel);
+        accumDensity += exp( -r * 10.0 ) * 0.55 * stepSize * ( 1.0 + 0.6 * audioLevel );
 
         accumDensity += density * stepSize;
 
         // Sample coordinates along magnetic sheath for photo mapping
-        if (sheathDist < 0.15 && photoWeight < 1.0) {
-            sampledCoord = vec2(angle * 0.15915, z * 0.2 + t * 0.1);
+        if ( sheathDist < 0.15 && photoWeight < 1.0 )
+        {
+            sampledCoord = vec2( angle * 0.15915, z * 0.2 + t * 0.1 );
             photoWeight += 0.2;
         }
     }
 
-    vec3 photo = img(fract(sampledCoord + 0.5));
+    vec3 photo = img( fract( sampledCoord + 0.5 ) );
 
     // Core relativistic beam color (Cherenkov electric blue / violet / white)
-    vec3 beamColor = imgPalette(0.25 * shockDiamonds) * 1.3;
-    beamColor = mix(beamColor, vec3(1.0, 0.3, 0.8), sin(t + accumDensity * 2.0) * 0.5 + 0.5);
+    vec3 beamColor = imgPalette( 0.25 * shockDiamonds ) * 1.3;
+    beamColor = mix( beamColor, vec3( 1.0, 0.3, 0.8 ), sin( t + accumDensity * 2.0 ) * 0.5 + 0.5 );
 
     // Combine visualizer
-    vec3 finalCol = mix(photo * 0.9, beamColor, clamp(accumDensity * 1.5 * jet, 0.0, 1.0));
-    finalCol += shockDiamonds * vec3(1.0, 0.95, 0.85) * (1.2 + audioKick * 2.0);
-    finalCol += exp(-length(uv) * 12.0) * vec3(1.0, 0.9, 0.6) * (1.5 + audioSubBass * 2.0);
+    vec3 finalCol = mix( photo * 0.9, beamColor, clamp( accumDensity * 1.5 * jet, 0.0, 1.0 ) );
+    finalCol += shockDiamonds * vec3( 1.0, 0.95, 0.85 ) * ( 1.2 + audioKick * 2.0 );
+    finalCol += exp( -length( uv ) * 12.0 ) * vec3( 1.0, 0.9, 0.6 ) * ( 1.5 + audioSubBass * 2.0 );
 
-    if (audioChromaHue != 0.0) finalCol = hueRot(finalCol, audioChromaHue);
-    if (hue > 0.001) finalCol = hueRot(finalCol, hue);
+    if ( audioChromaHue != 0.0 )
+        finalCol = hueRot( finalCol, audioChromaHue );
+    if ( hue > 0.001 )
+        finalCol = hueRot( finalCol, hue );
 
     // Vignette
-    float vig = smoothstep(1.3, 0.3, length(uv));
+    float vig = smoothstep( 1.3, 0.3, length( uv ) );
     finalCol *= vig;
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (finalCol) * 0.3;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    vec3 _catTone = ( finalCol ) * 0.3;
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

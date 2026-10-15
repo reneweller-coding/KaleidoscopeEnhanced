@@ -1,6 +1,7 @@
 /**
  * @file SpoutIn.h
- * @brief Facade for receiving a texture from another application via the Spout GPU texture-sharing protocol, for use as an image source.
+ * @brief Facade for receiving a texture from another application via the Spout GPU texture-sharing protocol, for use as
+ * an image source.
  */
 // SpoutIn.h
 // ---------------------------------------------------------------------------
@@ -22,7 +23,7 @@
  * @param senderName The Spout sender to bind to, or "any"/"" to receive from the currently active sender.
  * @return true once a Spout receiver object exists (construction itself has no failure path here).
  */
-bool spoutInInit( const char *senderName );   // "any"/"" = the active sender
+bool spoutInInit( const char *senderName ); // "any"/"" = the active sender
 
 /**
  * @brief Polls the bound sender for a new frame into an internally-owned GL texture.
@@ -32,7 +33,8 @@ bool spoutInInit( const char *senderName );   // "any"/"" = the active sender
  * width/height receive the sender size.
  * @param width Receives the sender's current width in pixels (only written when a nonzero texture id is returned).
  * @param height Receives the sender's current height in pixels (only written when a nonzero texture id is returned).
- * @return The GL texture id holding the latest received frame, or 0 if there is no active sender, or the sender just (re)connected/resized (the texture becomes valid again from the next frame on).
+ * @return The GL texture id holding the latest received frame, or 0 if there is no active sender, or the sender just
+ * (re)connected/resized (the texture becomes valid again from the next frame on).
  */
 unsigned int spoutInReceive( unsigned int *width, unsigned int *height );
 

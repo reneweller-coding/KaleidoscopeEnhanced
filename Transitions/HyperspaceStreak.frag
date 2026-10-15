@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file HyperspaceStreak.frag
  * @brief TRANSITION HYPERSPACE STREAK: Relativistic warp speed streak transition.
@@ -16,73 +16,78 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP    float Cherenkov warp hue offset      (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float warpP;
 uniform float streakP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float wrp = (warpP   > 0.0) ? warpP   : 1.0;
-    float str = (streakP > 0.0) ? streakP : 1.0;
-    float spd = (speedP  > 0.0) ? speedP  : 1.0;
-    float hue = (hueP    > 0.0) ? hueP    : 0.0;
+void main()
+{
+    float wrp = ( warpP > 0.0 ) ? warpP : 1.0;
+    float str = ( streakP > 0.0 ) ? streakP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec2 uv = gl_FragCoord.xy / resolution.xy;
-    vec2 p = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float t = time * 0.3869 * spd;   // clock rate measured down to about 1.2/255 of change per frame (PresetEditor --transprofile); it spun many times that and read as frantic
-    float tProg = clamp(interpolation, 0.0, 1.0);
-    float midTransition = sin(tProg * 3.14159265);
+    float t = time * 0.3869 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
+                                   // --transprofile); it spun many times that and read as frantic
+    float tProg = clamp( interpolation, 0.0, 1.0 );
+    float midTransition = sin( tProg * 3.14159265 );
 
-    float r = length(p);
-    float angle = atan(p.y, p.x);
+    float r = length( p );
+    float angle = atan( p.y, p.x );
 
     // Multi-tap radial warp stretch
-    float stretchFactor = midTransition * 0.35 * wrp * (1.0 + audioSwell * 0.7);
+    float stretchFactor = midTransition * 0.35 * wrp * ( 1.0 + audioSwell * 0.7 );
 
-    vec3 c1Acc = vec3(0.0);
-    vec3 c0Acc = vec3(0.0);
+    vec3 c1Acc = vec3( 0.0 );
+    vec3 c0Acc = vec3( 0.0 );
 
-    for (int i = 0; i < 8; ++i) {
-        float fi = float(i) / 8.0;
-        vec2 sampleP = p * (1.0 - fi * stretchFactor);
-        vec2 sampleUV = (sampleP * resolution.y + 0.5 * resolution) / resolution;
+    for ( int i = 0; i < 8; ++i )
+    {
+        float fi = float( i ) / 8.0;
+        vec2  sampleP = p * ( 1.0 - fi * stretchFactor );
+        vec2  sampleUV = ( sampleP * resolution.y + 0.5 * resolution ) / resolution;
 
-        c1Acc += texture(tex1, fract(sampleUV)).rgb;
-        c0Acc += texture(tex0, fract(sampleUV)).rgb;
+        c1Acc += texture( tex1, fract( sampleUV ) ).rgb;
+        c0Acc += texture( tex0, fract( sampleUV ) ).rgb;
     }
 
     vec3 c1 = c1Acc / 8.0;
     vec3 c0 = c0Acc / 8.0;
 
-    vec3 col = mix(c1, c0, tProg);
+    vec3 col = mix( c1, c0, tProg );
 
     // Radial hyperspace star streaks -- calibrated so the scene stays
     // readable underneath (the old 1.5+kick*3.5 gain whited it out) and
@@ -92,18 +97,20 @@ void main() {
     // profile change (thinner, crisper rays), never a brightness boost, and the
     // t phase inside the sine is left alone.  midTransition returns the
     // exponent to exactly 12.0 at both fade endpoints.
-    float streakSharp = 12.0 * (1.0 + audioSwell * 0.9 * midTransition);
-    float rayStreak = pow(max(0.0, sin(angle * 40.0 * str + t * 4.0)), streakSharp) * midTransition;
-    vec3 streakCyan = vec3(0.3, 0.9, 1.0);
-    float sceneLum = dot(col, vec3(0.333));
-    col += rayStreak * streakCyan * (0.2 + 0.5 * sceneLum) * (0.6 + audioKick * 0.6);
+    float streakSharp = 12.0 * ( 1.0 + audioSwell * 0.9 * midTransition );
+    float rayStreak = pow( max( 0.0, sin( angle * 40.0 * str + t * 4.0 ) ), streakSharp ) * midTransition;
+    vec3  streakCyan = vec3( 0.3, 0.9, 1.0 );
+    float sceneLum = dot( col, vec3( 0.333 ) );
+    col += rayStreak * streakCyan * ( 0.2 + 0.5 * sceneLum ) * ( 0.6 + audioKick * 0.6 );
 
     // Center arrival flash on kick
-    float centerFlash = exp(-r * 8.0) * midTransition * (0.25 + audioKick * 0.35);
-    col += centerFlash * vec3(1.0, 0.98, 0.9);
+    float centerFlash = exp( -r * 8.0 ) * midTransition * ( 0.25 + audioKick * 0.35 );
+    col += centerFlash * vec3( 1.0, 0.98, 0.9 );
 
-    if (audioChromaHue != 0.0) col = hueRot(col, audioChromaHue * midTransition);
-    if (hue > 0.001) col = hueRot(col, hue * midTransition);
+    if ( audioChromaHue != 0.0 )
+        col = hueRot( col, audioChromaHue * midTransition );
+    if ( hue > 0.001 )
+        col = hueRot( col, hue * midTransition );
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

@@ -14,43 +14,44 @@
 // is to be laid out in FRUSTUM coordinates -- x and y scaled by depth -- so
 // it covers the picture evenly however far away it is.
 
-in vec4 attrA;      ///< xyz = position (or dust seeds), w = band energy / dust size
-in vec4 attrB;      ///< xyz = normal (or quad corner), w = band 0..1, -1 = dust
+in vec4 attrA; ///< xyz = position (or dust seeds), w = band energy / dust size
+in vec4 attrB; ///< xyz = normal (or quad corner), w = band 0..1, -1 = dust
 
-out vec3  vWorld;   ///< World position (from the vertex stage).
-out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec3  vWorld;  ///< World position (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vView;   ///< View vector (from the vertex stage).
 out float vEnergy;
 out float vBand;
-out float vDist;   ///< Distance (from the vertex stage).
+out float vDist; ///< Distance (from the vertex stage).
 out vec2  vQuad;
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
 uniform float audioLevel;   ///< Overall loudness, 0..1.
 
-uniform float camHP;   ///< Camera height knob, 0..1.
+uniform float camHP; ///< Camera height knob, 0..1.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // The camera drifts off the bundle's axis and back, so the weave is seen
     // from inside and from beside it in turn.
-    float ox = 1.9 * sin(audioAdvance * 0.045);
-    float oy = 1.4 * cos(audioAdvance * 0.031);
+    float ox = 1.9 * sin( audioAdvance * 0.045 );
+    float oy = 1.4 * cos( audioAdvance * 0.031 );
 
     vec3 p;
     vec3 vp;
 
-    if (attrB.w < -0.5)
+    if ( attrB.w < -0.5 )
     {
         // ---- DUST ------------------------------------------------------
         // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
         const float kTanY = 0.5206;
-        float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+        float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
         float hx = attrA.x, hy = attrA.y, hz = attrA.z, hs = attrA.w;
 
@@ -67,38 +68,38 @@ void main()
         // 2.0 would fit the frustum exactly; 2.3 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.3;
-        vec3 c = vec3((hx - 0.5) * open * dz * kTanY * aspect + 6.0 * cos(ph),
-                      (hy - 0.5) * open * dz * kTanY          + 6.0 * sin(ph * 0.79),
-                      dz);
+        vec3  c = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 6.0 * cos( ph ),
+                        ( hy - 0.5 ) * open * dz * kTanY + 6.0 * sin( ph * 0.79 ),
+                        dz );
         // Grows with depth so its ON-SCREEN size stays roughly constant; below
         // about 2.5 px a mote averages away and the far field reads black.
-        float sz = (0.026 + 0.040 * hs) * dz;
+        float sz = ( 0.026 + 0.040 * hs ) * dz;
 
         vQuad = attrB.xy;
-        p  = c + vec3((attrB.xy * 2.0 - 1.0) * sz, 0.0);
-        vp = vec3(p.x - ox - eyeOff, p.y - oy - camHP, p.z);
+        p = c + vec3( ( attrB.xy * 2.0 - 1.0 ) * sz, 0.0 );
+        vp = vec3( p.x - ox - eyeOff, p.y - oy - camHP, p.z );
 
-        vNormal = vec3(0.0, 0.0, 1.0);
-        vEnergy = fract(hs * 7.31 + hx * 3.17);   // per-mote brightness seed
-        vDist   = 0.0;                            // dust runs its own fade
+        vNormal = vec3( 0.0, 0.0, 1.0 );
+        vEnergy = fract( hs * 7.31 + hx * 3.17 ); // per-mote brightness seed
+        vDist = 0.0;                              // dust runs its own fade
     }
     else
     {
-        p  = attrA.xyz;
-        vp = vec3(p.x - ox - eyeOff, p.y - oy - camHP, p.z);
+        p = attrA.xyz;
+        vp = vec3( p.x - ox - eyeOff, p.y - oy - camHP, p.z );
 
-        vQuad   = vec2(0.5);
+        vQuad = vec2( 0.5 );
         vNormal = attrB.xyz;
         vEnergy = attrA.w;
-        vDist   = p.z;
+        vDist = p.z;
     }
 
-    vWorld  = p;
-    vView   = normalize(-vp);
-    vBand   = attrB.w;
+    vWorld = p;
+    vView = normalize( -vp );
+    vBand = attrB.w;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

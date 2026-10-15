@@ -10,12 +10,12 @@
  * `vUV` (0..1 over the screen) is provided for the few passes that want it.
  */
 
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2 vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 p = vec2(float((gl_VertexID << 1) & 2), float(gl_VertexID & 2));
+    vec2 p = vec2( float( ( gl_VertexID << 1 ) & 2 ), float( gl_VertexID & 2 ) );
     vUV = p;
-    gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
+    gl_Position = vec4( p * 2.0 - 1.0, 0.0, 1.0 );
 }

@@ -46,17 +46,18 @@ public:
      * @param srcImage Source colour texture the sim may sample/seed from.
      * @param outW Output texture width in pixels.
      * @param outH Output texture height in pixels.
-     * @return The result texture to bind, or 0 when the sim is unavailable or failed -- caller then binds nothing, same contract as ComputeFX::step().
+     * @return The result texture to bind, or 0 when the sim is unavailable or failed -- caller then binds nothing, same
+     * contract as ComputeFX::step().
      */
-    unsigned int step(int k, const AudioFeatures &a, float dt, float time,
-                       unsigned int srcImage, int outW, int outH);
+    unsigned int step( int k, const AudioFeatures &a, float dt, float time,
+                       unsigned int srcImage, int outW, int outH );
 
     /**
      * @brief Free a sim's GPU memory when it has not been on screen for a while.
      * @param now Current wall-clock time in seconds, compared against each sim's last-used timestamp.
      */
-    void retireIdle(float now);
+    void retireIdle( float now );
 
 private:
-    ComputeFX *m_impl;   ///< Owned ComputeFX instance; all calls above forward to it.
+    ComputeFX *m_impl; ///< Owned ComputeFX instance; all calls above forward to it.
 };

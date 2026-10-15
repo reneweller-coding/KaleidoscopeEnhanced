@@ -23,42 +23,44 @@
  * underwater column onto that shell.
  */
 
-in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky direction").
+in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction (reused as "sky
+               ///< direction").
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float sizeP;   ///< Size knob, 0..1.
-uniform float deformP;   ///< which of the four modes above
-uniform float ampP;      ///< deformation amplitude
-uniform float freqP;     ///< deformation rate
+uniform float deformP; ///< which of the four modes above
+uniform float ampP;    ///< deformation amplitude
+uniform float freqP;   ///< deformation rate
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec3  vPos;      ///< Position (from the vertex stage).
+out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
+out float vBg;       ///< Background flag (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 world, n;
     bool isBg = gl_VertexID >= meshVertexCount;
-    if( !isBg )
+    if ( !isBg )
     {
-        float sz = (sizeP > 0.01 ? sizeP : 1.0);
-        float amp = (ampP  > 0.01 ? ampP  : 1.0);
-        float frq = (freqP > 0.01 ? freqP : 1.0);
-        int   mode = int(deformP + 0.5);
+        float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+        float amp = ( ampP > 0.01 ? ampP : 1.0 );
+        float frq = ( freqP > 0.01 ? freqP : 1.0 );
+        int   mode = int( deformP + 0.5 );
 
-        vec3 p = attrA.xyz;                 // ~[-0.5, 0.5]
+        vec3 p = attrA.xyz; // ~[-0.5, 0.5]
         vec3 nrm = attrB.xyz;
 
         // One shared phase, so a body's wave and its own limbs stay in step.
@@ -69,45 +71,45 @@ void main()
         float phase = time * 1.7 * frq;
         // The music makes the stroke deeper, not faster -- speed changes
         // read as the animation glitching, depth reads as effort.
-        float drive = amp * (0.75 + 0.45 * audioSwell + 0.35 * audioKick);
+        float drive = amp * ( 0.75 + 0.45 * audioSwell + 0.35 * audioKick );
 
-        if (mode == 0)
+        if ( mode == 0 )
         {
             // BELL PULSE. The bell (upper body) squashes radially while
             // stretching along its axis, roughly conserving volume, which is
             // what makes a real medusa look like it is pushing water rather
             // than just inflating. Tentacles hang below and lag behind by an
             // amount proportional to how far down they are.
-            float pulse = sin(phase);
-            float bell = smoothstep(-0.05, 0.35, p.y);
+            float pulse = sin( phase );
+            float bell = smoothstep( -0.05, 0.35, p.y );
             float squash = 1.0 + 0.20 * pulse * drive * bell;
             float stretch = 1.0 - 0.14 * pulse * drive * bell;
             p.xz *= squash;
-            p.y  *= stretch;
+            p.y *= stretch;
 
-            float below = max(-p.y - 0.02, 0.0);
-            float lagged = sin(phase - below * 5.5);
-            p.xz += vec2(lagged, lagged * 0.6) * 0.16 * drive * below;
+            float below = max( -p.y - 0.02, 0.0 );
+            float lagged = sin( phase - below * 5.5 );
+            p.xz += vec2( lagged, lagged * 0.6 ) * 0.16 * drive * below;
         }
-        else if (mode == 1)
+        else if ( mode == 1 )
         {
             // WING FLAP. Amplitude grows toward the wingtips and the phase
             // is delayed with distance from the spine, so the stroke rolls
             // outward along the wing instead of the whole plane hinging.
-            float span = abs(p.x) * 2.0;
-            float flap = sin(phase - span * 1.7);
-            p.y += flap * 0.26 * drive * pow(span, 1.6);
+            float span = abs( p.x ) * 2.0;
+            float flap = sin( phase - span * 1.7 );
+            p.y += flap * 0.26 * drive * pow( span, 1.6 );
             // The body dips slightly opposite the wings, as a counterweight.
-            p.y -= sin(phase) * 0.03 * drive * (1.0 - span);
+            p.y -= sin( phase ) * 0.03 * drive * ( 1.0 - span );
         }
-        else if (mode == 2)
+        else if ( mode == 2 )
         {
             // BODY UNDULATION. A wave travelling from head to tail; the
             // head barely moves, the tail sweeps. Long axis is z.
-            float along = p.z + 0.5;                   // 0 at the head, 1 at the tail
-            float wave = sin(phase - along * 4.2);
-            p.x += wave * 0.18 * drive * pow(along, 1.8);
-            p.y += cos(phase - along * 4.2) * 0.04 * drive * pow(along, 2.0);
+            float along = p.z + 0.5; // 0 at the head, 1 at the tail
+            float wave = sin( phase - along * 4.2 );
+            p.x += wave * 0.18 * drive * pow( along, 1.8 );
+            p.y += cos( phase - along * 4.2 ) * 0.04 * drive * pow( along, 2.0 );
         }
         else
         {
@@ -115,62 +117,63 @@ void main()
             // mantle, plus a per-strand wave below: hashing on the angle
             // around the axis gives neighbouring tentacles their own phase,
             // so they writhe independently instead of moving as one skirt.
-            float below = max(-p.y + 0.1, 0.0);
-            float strand = atan(p.z, p.x);
-            float w = sin(phase * 1.3 - below * 4.0 + strand * 2.0);
-            p.xz += vec2(cos(strand), sin(strand)) * w * 0.13 * drive * below;
+            float below = max( -p.y + 0.1, 0.0 );
+            float strand = atan( p.z, p.x );
+            float w = sin( phase * 1.3 - below * 4.0 + strand * 2.0 );
+            p.xz += vec2( cos( strand ), sin( strand ) ) * w * 0.13 * drive * below;
 
-            float twist = sin(phase * 0.6) * 0.25 * drive * (p.y + 0.5);
-            float ct = cos(twist), st = sin(twist);
-            p.xz = mat2(ct, st, -st, ct) * p.xz;
-            nrm.xz = mat2(ct, st, -st, ct) * nrm.xz;
+            float twist = sin( phase * 0.6 ) * 0.25 * drive * ( p.y + 0.5 );
+            float ct = cos( twist ), st = sin( twist );
+            p.xz = mat2( ct, st, -st, ct ) * p.xz;
+            nrm.xz = mat2( ct, st, -st, ct ) * nrm.xz;
         }
 
-        vec3 local = p * (30.0 * sz);
+        vec3 local = p * ( 30.0 * sz );
 
         // A slow drift so the animal is seen from several sides, and a lazy
         // vertical glide -- it is swimming, not mounted on a turntable.
-        float rotY = time * 0.17;
-        float cy = cos(rotY), sy = sin(rotY);
-        mat3 rotYMat = mat3(cy, 0.0, -sy,   0.0, 1.0, 0.0,   sy, 0.0, cy);
+        float       rotY = time * 0.17;
+        float       cy = cos( rotY ), sy = sin( rotY );
+        mat3        rotYMat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
         const float tiltX = 0.12;
-        float cx = cos(tiltX), sx = sin(tiltX);
-        mat3 rotXMat = mat3(1.0, 0.0, 0.0,   0.0, cx, sx,   0.0, -sx, cx);
-        mat3 rotMat = rotXMat * rotYMat;
+        float       cx = cos( tiltX ), sx = sin( tiltX );
+        mat3        rotXMat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3        rotMat = rotXMat * rotYMat;
 
         world = rotMat * local;
         world.z += 85.0;
         // The slow swim-drift stays; the kick hop goes (reported pattern).
         // The creature's musical life is its STROKE amplitude above, which
         // already swells with the music -- organic, not spasmodic.
-        world.y += 3.0 * sin(time * 0.17);
+        world.y += 3.0 * sin( time * 0.17 );
 
         // Deforming the position leaves the normal stale. Rebuilding it
         // properly would need the deformation's Jacobian; for these smooth,
         // low-frequency bends the visible error is small, so the normal is
         // only carried through the rigid part of the transform.
-        n = normalize(rotMat * nrm);
-        vUV = vec2(attrA.w, attrB.w);
+        n = normalize( rotMat * nrm );
+        vUV = vec2( attrA.w, attrB.w );
         vLocalPos = attrA.xyz;
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
-        vUV = vec2(0.0);
-        vLocalPos = vec3(0.0);
+        vUV = vec2( 0.0 );
+        vLocalPos = vec3( 0.0 );
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     // The shell is a CUBE of half-side kSkyShellRadius, so its corners sit
     // sqrt(3) times further out than its faces -- past kSceneFar, which
     // clipped visible wedges out of the sky. Pinning shell depth just inside
     // the far plane is the standard skybox fix: no far-plane clipping however
     // big the shell is, and it can never occlude the object in front of it.
-    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

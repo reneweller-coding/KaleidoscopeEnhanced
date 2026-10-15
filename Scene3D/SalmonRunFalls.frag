@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SalmonRunFalls.frag
  * @brief SALMON RUN FALLS (fragment): the step in the river where the
@@ -16,158 +16,179 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioBass  -> the pool's depth colour (slow)
  *   audioLevel -> brightness
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float fishP;
 uniform float chuteP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-in vec2  vTexCoord;   ///< Texture coordinate (from the vertex stage).
-in vec3  vWorld;   ///< World position (from the vertex stage).
-in float vKind;   ///< Element kind (from the vertex stage).
+in vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in float vKind;     ///< Element kind (from the vertex stage).
 in float vAux;
-in float vId;   ///< Instance or element id (from the vertex stage).
+in float vId; ///< Instance or element id (from the vertex stage).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-/// @brief Smooth 2D value noise, 0..1.
-float noise2(vec2 p)
+float hash21( vec2 p )
 {
-    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
+/// @brief Smooth 2D value noise, 0..1.
+float noise2( vec2 p )
+{
+    vec2 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
+                mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 5; ++i) { v += a * noise2(p); p = p * 2.02 + 4.9; a *= 0.5; } return v; }
+float fbm( vec2 p )
+{
+    float v = 0.0, a = 0.5;
+    for ( int i = 0; i < 5; ++i )
+    {
+        v += a * noise2( p );
+        p = p * 2.02 + 4.9;
+        a *= 0.5;
+    }
+    return v;
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    vec2 uv = vTexCoord;
-    float flow = 0.5 + 0.7 * clamp(audioSwell, 0.0, 1.0);
-    float hi = clamp(audioHigh * 2.0, 0.0, 1.0);
-    float bass = clamp(audioBass, 0.0, 1.0);
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    vec2  uv = vTexCoord;
+    float flow = 0.5 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
+    float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
+    float bass = clamp( audioBass, 0.0, 1.0 );
     float clock = sceneAdvance * 0.9 + sceneTime * 0.18;
-    vec3 col;
+    vec3  col;
 
-    if (vKind < -1.5)
+    if ( vKind < -1.5 )
     {
         // The pool: dark green water churning at the foot of the falls.
-        vec2 puv = clamp(vec2(vWorld.x * 0.04 + 0.5, vWorld.z * 0.05), 0.0, 1.0);
-        col = img(puv) * mix(vec3(0.2, 0.35, 0.3), imgPalette(hue * 0.159 + 0.45), 0.3);
+        vec2 puv = clamp( vec2( vWorld.x * 0.04 + 0.5, vWorld.z * 0.05 ), 0.0, 1.0 );
+        col = img( puv ) * mix( vec3( 0.2, 0.35, 0.3 ), imgPalette( hue * 0.159 + 0.45 ), 0.3 );
         col *= 0.45 + 0.4 * bass;
-        float churn = fbm(vec2(vWorld.x * 0.9, vWorld.z * 1.2 + clock * 0.8));
+        float churn = fbm( vec2( vWorld.x * 0.9, vWorld.z * 1.2 + clock * 0.8 ) );
         // Foam: thickest right under the chutes, and the kick lights it.
-        float foam = smoothstep(0.4, 0.8, churn) * smoothstep(3.0, 7.5, vWorld.z) * flow;
-        col = mix(col, vec3(0.92, 0.96, 1.0), clamp(foam, 0.0, 0.9));
-        col += vec3(1.0) * foam * (0.1 + 0.7 * audioKick);
+        float foam = smoothstep( 0.4, 0.8, churn ) * smoothstep( 3.0, 7.5, vWorld.z ) * flow;
+        col = mix( col, vec3( 0.92, 0.96, 1.0 ), clamp( foam, 0.0, 0.9 ) );
+        col += vec3( 1.0 ) * foam * ( 0.1 + 0.7 * audioKick );
         // Streaky surface wash flowing toward the camera.
-        col *= 0.8 + 0.35 * fbm(vec2(vWorld.x * 2.0, vWorld.z * 0.6 - clock * 1.4));
+        col *= 0.8 + 0.35 * fbm( vec2( vWorld.x * 2.0, vWorld.z * 0.6 - clock * 1.4 ) );
     }
-    else if (vKind < -0.5)
+    else if ( vKind < -0.5 )
     {
         // Forest and sky above the falls.
-        col = img(uv) * mix(vec3(0.35, 0.5, 0.35), imgPalette(hue * 0.159 + 0.35), 0.3);
-        col = mix(col * 0.9, img(uv) * vec3(0.8, 0.88, 1.0) * 1.3, smoothstep(0.55, 0.95, uv.y));
-        col *= 0.6 + 0.6 * clamp(audioSwell, 0.0, 1.0);
+        col = img( uv ) * mix( vec3( 0.35, 0.5, 0.35 ), imgPalette( hue * 0.159 + 0.35 ), 0.3 );
+        col = mix( col * 0.9, img( uv ) * vec3( 0.8, 0.88, 1.0 ) * 1.3, smoothstep( 0.55, 0.95, uv.y ) );
+        col *= 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     }
-    else if (vKind > 3.5)
+    else if ( vKind > 3.5 )
     {
         // The ledge rock: wet, dark, with the photo as its stone.
-        col = img(clamp(vec2(uv.x, uv.y * 0.4 + 0.1), 0.0, 1.0))
-            * mix(vec3(0.3, 0.28, 0.25), imgPalette(hue * 0.159 + 0.1), 0.25);
-        col *= 0.5 + 0.55 * fbm(vec2(uv.x * 30.0, uv.y * 14.0));
+        col = img( clamp( vec2( uv.x, uv.y * 0.4 + 0.1 ), 0.0, 1.0 ) )
+              * mix( vec3( 0.3, 0.28, 0.25 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 );
+        col *= 0.5 + 0.55 * fbm( vec2( uv.x * 30.0, uv.y * 14.0 ) );
         // Wet sheen near the lip.
-        col *= 0.7 + 0.7 * smoothstep(0.55, 1.0, uv.y);
-        col += vec3(0.7, 0.8, 0.85) * smoothstep(0.9, 1.0, uv.y) * 0.3 * flow;
+        col *= 0.7 + 0.7 * smoothstep( 0.55, 1.0, uv.y );
+        col += vec3( 0.7, 0.8, 0.85 ) * smoothstep( 0.9, 1.0, uv.y ) * 0.3 * flow;
     }
-    else if (vKind > 2.5)
+    else if ( vKind > 2.5 )
     {
         // A spray droplet: round, bright, fading as it falls back.
-        vec2 d = (uv - 0.5) * 2.0;
-        float r = length(d);
-        if (r > 1.0) discard;
-        float life = 4.0 * vAux * (1.0 - vAux);
-        col = vec3(0.95, 0.98, 1.0) * (0.4 + 1.1 * life) * (1.0 - r * r * 0.6) * (0.5 + 0.9 * hi) * flow;
+        vec2  d = ( uv - 0.5 ) * 2.0;
+        float r = length( d );
+        if ( r > 1.0 )
+            discard;
+        float life = 4.0 * vAux * ( 1.0 - vAux );
+        col = vec3( 0.95, 0.98, 1.0 ) * ( 0.4 + 1.1 * life ) * ( 1.0 - r * r * 0.6 ) * ( 0.5 + 0.9 * hi ) * flow;
     }
-    else if (vKind > 1.5)
+    else if ( vKind > 1.5 )
     {
         // A chute: a sheet of white water with streaks running down it and
         // a glassy top where it leaves the lip.
-        float across = abs(uv.x - 0.5) * 2.0;
+        float across = abs( uv.x - 0.5 ) * 2.0;
         float down = 1.0 - uv.y;
-        float streak = 0.5 + 0.5 * sin(uv.x * 90.0 + fbm(vec2(uv.x * 8.0, uv.y * 6.0 - clock * 2.2)) * 8.0);
-        float white = smoothstep(0.1, 0.8, down);
-        col = mix(mix(vec3(0.45, 0.6, 0.68), imgPalette(hue * 0.159 + 0.5), 0.3), vec3(0.95, 0.98, 1.0), white);
+        float streak = 0.5 + 0.5 * sin( uv.x * 90.0 + fbm( vec2( uv.x * 8.0, uv.y * 6.0 - clock * 2.2 ) ) * 8.0 );
+        float white = smoothstep( 0.1, 0.8, down );
+        col = mix( mix( vec3( 0.45, 0.6, 0.68 ), imgPalette( hue * 0.159 + 0.5 ), 0.3 ), vec3( 0.95, 0.98, 1.0 ),
+                   white );
         col *= 0.55 + 0.55 * streak + 0.35 * white;
-        col *= smoothstep(1.05, 0.55, across);                          // soft edges
+        col *= smoothstep( 1.05, 0.55, across ); // soft edges
         col *= 0.5 + 0.8 * flow;
-        col += vec3(1.0) * smoothstep(0.92, 1.0, uv.y) * 0.5 * flow;    // the glassy lip
+        col += vec3( 1.0 ) * smoothstep( 0.92, 1.0, uv.y ) * 0.5 * flow; // the glassy lip
     }
-    else if (vKind > 0.5)
+    else if ( vKind > 0.5 )
     {
         // A salmon tail.
-        vec2 d = (uv - 0.5) * 2.0;
-        if (abs(d.y) > 0.35 + 0.65 * (0.5 + 0.5 * d.x)) discard;
-        col = mix(vec3(0.45, 0.4, 0.42), imgPalette(hue * 0.159 + 0.05), 0.3);
-        col *= 0.5 + 0.7 * clamp(audioSwell, 0.0, 1.0);
+        vec2 d = ( uv - 0.5 ) * 2.0;
+        if ( abs( d.y ) > 0.35 + 0.65 * ( 0.5 + 0.5 * d.x ) )
+            discard;
+        col = mix( vec3( 0.45, 0.4, 0.42 ), imgPalette( hue * 0.159 + 0.05 ), 0.3 );
+        col *= 0.5 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     }
     else
     {
         // A salmon: silver flank, dark back, the red spawning stripe that
         // catches the light at the top of the arc.
-        vec2 d = (uv - 0.5) * 2.0;
-        float body = 1.0 - abs(d.x) * 0.9;
-        if (abs(d.y) > body * 0.85) discard;
-        col = mix(vec3(0.68, 0.7, 0.72), imgPalette(hue * 0.159 + 0.55), 0.2);
-        col *= 0.5 + 0.7 * (1.0 - abs(d.y) / max(body, 1e-3));
-        col = mix(col, col * vec3(0.3, 0.35, 0.4), smoothstep(0.1, 0.75, d.y));
+        vec2  d = ( uv - 0.5 ) * 2.0;
+        float body = 1.0 - abs( d.x ) * 0.9;
+        if ( abs( d.y ) > body * 0.85 )
+            discard;
+        col = mix( vec3( 0.68, 0.7, 0.72 ), imgPalette( hue * 0.159 + 0.55 ), 0.2 );
+        col *= 0.5 + 0.7 * ( 1.0 - abs( d.y ) / max( body, 1e-3 ) );
+        col = mix( col, col * vec3( 0.3, 0.35, 0.4 ), smoothstep( 0.1, 0.75, d.y ) );
         // The stripe.
-        col = mix(col, mix(vec3(0.75, 0.18, 0.14), imgPalette(hue * 0.159 + 0.02), 0.3),
-                  smoothstep(0.45, 0.0, abs(d.y + 0.1)) * 0.7);
+        col = mix( col, mix( vec3( 0.75, 0.18, 0.14 ), imgPalette( hue * 0.159 + 0.02 ), 0.3 ),
+                   smoothstep( 0.45, 0.0, abs( d.y + 0.1 ) ) * 0.7 );
         // Wet highlight, strongest at the top of the leap.
-        float top = 4.0 * vAux * (1.0 - vAux);
-        col += vec3(1.0, 0.98, 0.9) * smoothstep(0.5, 0.0, abs(d.y - 0.3)) * (0.2 + 0.7 * top) * 0.8;
-        col *= 0.6 + 0.7 * clamp(audioSwell, 0.0, 1.0);
+        float top = 4.0 * vAux * ( 1.0 - vAux );
+        col += vec3( 1.0, 0.98, 0.9 ) * smoothstep( 0.5, 0.0, abs( d.y - 0.3 ) ) * ( 0.2 + 0.7 * top ) * 0.8;
+        col *= 0.6 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     }
     // Mist over everything, thicker near the falls.
-    float mist = smoothstep(4.0, 9.0, vWorld.z) * (0.2 + 0.3 * flow);
-    vec3 mistCol = mix(vec3(0.8, 0.85, 0.88), imgPalette(hue * 0.159 + 0.55), 0.25) * (0.6 + 0.5 * clamp(audioSwell, 0.0, 1.0));
-    col = mix(col, mistCol, clamp(mist, 0.0, 0.6) * step(-1.5, vKind));
+    float mist = smoothstep( 4.0, 9.0, vWorld.z ) * ( 0.2 + 0.3 * flow );
+    vec3  mistCol = mix( vec3( 0.8, 0.85, 0.88 ), imgPalette( hue * 0.159 + 0.55 ), 0.25 )
+                    * ( 0.6 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
+    col = mix( col, mistCol, clamp( mist, 0.0, 0.6 ) * step( -1.5, vKind ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

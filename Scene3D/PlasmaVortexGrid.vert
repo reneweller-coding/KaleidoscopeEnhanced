@@ -10,39 +10,42 @@
 //   attrB    = per-cell seeds
 // True stereo: eyeOff shifts view; convergence re-centres after proj.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioSpectrum[32];   ///< Spectrum bands, 0..1.
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioKick;         ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSubBass;      ///< Sub-bass band level, 0..1.
+uniform float audioBass;         ///< Bass band level, 0..1.
+uniform float audioHigh;         ///< High band level, 0..1.
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioDrop;         ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 
-uniform float depthP;   ///< Depth knob, 0..1.
-uniform float rippleP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     depthP; ///< Depth knob, 0..1.
+uniform float     rippleP;
+uniform float     glowP;          ///< Glow / afterglow knob, 0..1.
+uniform float     hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform sampler2D tex0;           ///< The current photo.
+uniform sampler2D tex1;           ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation;  ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-out vec3 vWorld;   ///< World position (from the vertex stage).
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3 vWorld; ///< World position (from the vertex stage).
+out vec2 vUV;    ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec4 vCol;   ///< Colour (from the vertex stage).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -50,37 +53,39 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     float u = attrA.x;
     float v = attrA.y;
 
-    float dpth = (depthP  > 0.0) ? depthP  : 1.0;
-    float rpl  = (rippleP > 0.0) ? rippleP : 1.0;
-    float glw  = (glowP   > 0.0) ? glowP   : 1.0;
-    float hue  = (hueP    > 0.0) ? hueP    : 0.0;
+    float dpth = ( depthP > 0.0 ) ? depthP : 1.0;
+    float rpl = ( rippleP > 0.0 ) ? rippleP : 1.0;
+    float glw = ( glowP > 0.0 ) ? glowP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Convert u,v to radial coordinates centered on grid
-    float x = (u - 0.5) * 80.0;
-    float z = (v - 0.5) * 80.0;
-    float r = sqrt(x * x + z * z);
-    float a = atan(z, x);
+    float x = ( u - 0.5 ) * 80.0;
+    float z = ( v - 0.5 ) * 80.0;
+    float r = sqrt( x * x + z * z );
+    float a = atan( z, x );
 
     // Vortex swirl as a TRAVELING SPIRAL WAVE: rigid base rotation plus a
     // bounded radial wave.  The old cumulative differential twist sheared
@@ -88,52 +93,53 @@ void main() {
     // mesh tore into the hard glitch shards the user reported.
     float T = time * 1.5 + audioAdvance * 2.0;
     float twistedA = a + 0.35 * T
-                   + 1.6 * sin(r * 0.22 - T * 0.30) * (4.0 / (r * 0.3 + 3.0));
+                     + 1.6 * sin( r * 0.22 - T * 0.30 ) * ( 4.0 / ( r * 0.3 + 3.0 ) );
 
     // Gravitational funnel depth
-    float funnel = - (18.0 * dpth) / (r * 0.25 + 1.2) - audioSubBass * 4.0;
+    float funnel = -( 18.0 * dpth ) / ( r * 0.25 + 1.2 ) - audioSubBass * 4.0;
 
     // Bessel wave ripples propagating outwards
-    float ripplePhase = r * (0.6 * rpl) - time * 4.0 - audioAdvance * 2.0;
-    int band = int(clamp(r / 40.0 * 31.0, 0.0, 31.0));
-    float waveH = sin(ripplePhase) * (1.5 + audioSpectrum[band] * 2.5);
+    float ripplePhase = r * ( 0.6 * rpl ) - time * 4.0 - audioAdvance * 2.0;
+    int   band = int( clamp( r / 40.0 * 31.0, 0.0, 31.0 ) );
+    float waveH = sin( ripplePhase ) * ( 1.5 + audioSpectrum[band] * 2.5 );
 
     // Shockwave tsunami from audioKick
-    float shock = sin(r * 0.8 - fract(time * 2.0) * 20.0) * exp(-r * 0.08) * audioKick * 3.5;
+    float shock = sin( r * 0.8 - fract( time * 2.0 ) * 20.0 ) * exp( -r * 0.08 ) * audioKick * 3.5;
 
     float finalH = funnel + waveH + shock;
 
     // Swirled x, z coordinates
-    float swirledX = cos(twistedA) * r;
-    float swirledZ = sin(twistedA) * r;
+    float swirledX = cos( twistedA ) * r;
+    float swirledZ = sin( twistedA ) * r;
 
-    vec3 worldP = vec3(swirledX, finalH, swirledZ);
+    vec3 worldP = vec3( swirledX, finalH, swirledZ );
 
     // Camera banking around and looking into the funnel
     float camAngle = time * 0.15 + audioAdvance * 0.05;
     float camDist = 32.0 - audioSwell * 6.0;
-    vec3 camPos = vec3(sin(camAngle) * camDist, 18.0 + 4.0 * sin(time * 0.2), cos(camAngle) * camDist);
-    vec3 lookTarget = vec3(0.0, -6.0, 0.0);
+    vec3  camPos = vec3( sin( camAngle ) * camDist, 18.0 + 4.0 * sin( time * 0.2 ), cos( camAngle ) * camDist );
+    vec3  lookTarget = vec3( 0.0, -6.0, 0.0 );
 
-    vec3 ww = normalize(lookTarget - camPos);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
+    vec3 ww = normalize( lookTarget - camPos );
+    vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 vv = cross( uu, ww );
 
     vec3 relP = worldP - camPos;
-    vec3 viewP = vec3(dot(relP, uu), dot(relP, vv), dot(relP, ww));
+    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
 
     viewP.x -= eyeOff;
-    gl_Position = projM * vec4(viewP.x, viewP.y, -viewP.z, 1.0);
+    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vWorld = worldP;
     vUV = attrA.xy;
 
     // Color gradient from fiery center to electric violet rim
-    vec3 vortexCol = imgPalette(0.35 * clamp(r / 35.0, 0.0, 1.0)) * 1.4;
-    vortexCol = mix(vortexCol, vec3(0.9, 0.1, 1.0), sin(twistedA * 3.0) * 0.5 + 0.5);
+    vec3 vortexCol = imgPalette( 0.35 * clamp( r / 35.0, 0.0, 1.0 ) ) * 1.4;
+    vortexCol = mix( vortexCol, vec3( 0.9, 0.1, 1.0 ), sin( twistedA * 3.0 ) * 0.5 + 0.5 );
 
-    if (hue > 0.001) vortexCol = hueRot(vortexCol, hue);
+    if ( hue > 0.001 )
+        vortexCol = hueRot( vortexCol, hue );
 
-    vCol = vec4(vortexCol * glw, 1.0);
+    vCol = vec4( vortexCol * glw, 1.0 );
 }

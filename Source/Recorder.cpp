@@ -17,8 +17,8 @@
 #include <QtCore/QSettings>
 #include <QtCore/QStringList>
 
-#include "glcore.h"        // Core-Profile-Einsprungpunkte (PBO-Funktionen)
-#include "shader_setup.h"  // setShaders() fuer den Akkumulations-Pass
+#include "glcore.h"       // Core-Profile-Einsprungpunkte (PBO-Funktionen)
+#include "shader_setup.h" // setShaders() fuer den Akkumulations-Pass
 #include "Recorder.h"
 #include "PlatformQt.h"
 #include "AudioAnalyzer.h"
@@ -49,26 +49,31 @@
  */
 static bool probeEncoder( const QString &enc, const QStringList &encArgs )
 {
-    QProcess p;
+    QProcess    p;
     QStringList a;
     a << "-hide_banner" << "-loglevel" << "error"
       << "-f" << "lavfi" << "-i" << "nullsrc=s=256x256:d=0.2"
       << encArgs << "-pix_fmt" << "yuv420p" << "-f" << "null" << "-";
     p.start( "ffmpeg", a );
-    if( !p.waitForFinished( 15000 ) )
+    if ( !p.waitForFinished( 15000 ) )
     {
         p.kill();
         p.waitForFinished( 2000 );
         return false;
     }
     const bool ok = ( p.exitStatus() == QProcess::NormalExit && p.exitCode() == 0 );
-    if( !ok )
+    if ( !ok )
         fprintf( stderr, "[recorder]   %s unavailable\n", qPrintable( enc ) );
     return ok;
 }
 
-/** @brief One ffmpeg encoder to try: its name (as listed by `ffmpeg -encoders`) and the complete video-codec argument list that selects it. */
-struct Candidate { const char *name; /**< ffmpeg encoder name, e.g. "h264_nvenc"; also matched against KALEIDO_VIDEO_ENCODER. */ QStringList args; /**< "-c:v" plus the vendor-specific preset and rate-control flags for this encoder. */ };
+/** @brief One ffmpeg encoder to try: its name (as listed by `ffmpeg -encoders`) and the complete video-codec argument
+ * list that selects it. */
+struct Candidate
+{
+    const char *name; /**< ffmpeg encoder name, e.g. "h264_nvenc"; also matched against KALEIDO_VIDEO_ENCODER. */
+    QStringList args; /**< "-c:v" plus the vendor-specific preset and rate-control flags for this encoder. */
+};
 
 /**
  * @brief The ordered list of encoder candidates for one output codec family.
@@ -88,19 +93,16 @@ struct Candidate { const char *name; /**< ffmpeg encoder name, e.g. "h264_nvenc"
  */
 static QList<Candidate> codecFamily( const QString &fam )
 {
-    if( fam == "hevc" )
+    if ( fam == "hevc" )
         return {
-            { "hevc_nvenc", { "-c:v", "hevc_nvenc", "-preset", "p5", "-cq", "20",
-                              "-tag:v", "hvc1" } },
-            { "hevc_amf",   { "-c:v", "hevc_amf", "-quality", "balanced",
-                              "-rc", "cqp", "-qp_i", "20", "-qp_p", "20",
-                              "-tag:v", "hvc1" } },
-            { "hevc_qsv",   { "-c:v", "hevc_qsv", "-preset", "medium",
-                              "-global_quality", "20", "-tag:v", "hvc1" } },
-            { "libx265",    { "-c:v", "libx265", "-preset", "medium", "-crf", "20",
-                              "-tag:v", "hvc1" } },
+            { "hevc_nvenc", { "-c:v", "hevc_nvenc", "-preset", "p5", "-cq", "20", "-tag:v", "hvc1" } },
+            { "hevc_amf",
+              { "-c:v", "hevc_amf", "-quality", "balanced", "-rc", "cqp", "-qp_i", "20", "-qp_p", "20", "-tag:v",
+                "hvc1" } },
+            { "hevc_qsv", { "-c:v", "hevc_qsv", "-preset", "medium", "-global_quality", "20", "-tag:v", "hvc1" } },
+            { "libx265", { "-c:v", "libx265", "-preset", "medium", "-crf", "20", "-tag:v", "hvc1" } },
         };
-    if( fam == "av1" )
+    if ( fam == "av1" )
         return {
             // AV1's quality scale runs 0..63, not 0..51 like h264/hevc, and NVENC
             // needs an explicit rate control with -b:v 0 or it targets a bitrate
@@ -112,21 +114,16 @@ static QList<Candidate> codecFamily( const QString &fam )
             // cq 25 is the point that matches h264's quality at roughly half the
             // size. Note HEVC beats every AV1 point here on BOTH axes, so on
             // NVIDIA hardware av1 is a compatibility choice, not a quality one.
-            { "av1_nvenc",  { "-c:v", "av1_nvenc", "-preset", "p5",
-                              "-rc", "vbr", "-cq", "25", "-b:v", "0" } },
-            { "av1_amf",    { "-c:v", "av1_amf", "-quality", "balanced",
-                              "-rc", "cqp", "-qp_i", "20", "-qp_p", "20" } },
-            { "av1_qsv",    { "-c:v", "av1_qsv", "-preset", "medium",
-                              "-global_quality", "25" } },
-            { "libsvtav1",  { "-c:v", "libsvtav1", "-preset", "8", "-crf", "30" } },
+            { "av1_nvenc", { "-c:v", "av1_nvenc", "-preset", "p5", "-rc", "vbr", "-cq", "25", "-b:v", "0" } },
+            { "av1_amf", { "-c:v", "av1_amf", "-quality", "balanced", "-rc", "cqp", "-qp_i", "20", "-qp_p", "20" } },
+            { "av1_qsv", { "-c:v", "av1_qsv", "-preset", "medium", "-global_quality", "25" } },
+            { "libsvtav1", { "-c:v", "libsvtav1", "-preset", "8", "-crf", "30" } },
         };
     return {
         { "h264_nvenc", { "-c:v", "h264_nvenc", "-preset", "p5", "-cq", "20" } },
-        { "h264_amf",   { "-c:v", "h264_amf", "-quality", "balanced",
-                          "-rc", "cqp", "-qp_i", "20", "-qp_p", "20" } },
-        { "h264_qsv",   { "-c:v", "h264_qsv", "-preset", "medium",
-                          "-global_quality", "20" } },
-        { "libx264",    { "-c:v", "libx264", "-preset", "medium", "-crf", "20" } },
+        { "h264_amf", { "-c:v", "h264_amf", "-quality", "balanced", "-rc", "cqp", "-qp_i", "20", "-qp_p", "20" } },
+        { "h264_qsv", { "-c:v", "h264_qsv", "-preset", "medium", "-global_quality", "20" } },
+        { "libx264", { "-c:v", "libx264", "-preset", "medium", "-crf", "20" } },
     };
 }
 
@@ -143,7 +140,7 @@ static QList<Candidate> codecFamily( const QString &fam )
 static QString wantedCodecFamily()
 {
     QString fam = qEnvironmentVariable( "KALEIDO_VIDEO_CODEC" ).trimmed().toLower();
-    if( fam.isEmpty() )
+    if ( fam.isEmpty() )
     {
         // Same file the rest of the app uses (see RenderPipeline::loadSettings
         // and the SetupTool), read directly so the Recorder stays free of
@@ -151,8 +148,10 @@ static QString wantedCodecFamily()
         QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
         fam = st.value( "videoCodec", "h264" ).toString().trimmed().toLower();
     }
-    if( fam == "h265" ) fam = "hevc";
-    if( fam != "hevc" && fam != "av1" ) fam = "h264";
+    if ( fam == "h265" )
+        fam = "hevc";
+    if ( fam != "hevc" && fam != "av1" )
+        fam = "h264";
     return fam;
 }
 
@@ -168,8 +167,8 @@ static QString wantedCodecFamily()
  */
 static QStringList computeVideoCodecArgs()
 {
-    QStringList cached;
-    const QString fam = wantedCodecFamily();
+    QStringList            cached;
+    const QString          fam = wantedCodecFamily();
     const QList<Candidate> candidates = codecFamily( fam );
 
     // Escape hatch: KALEIDO_VIDEO_ENCODER=hevc_nvenc (or any encoder name in
@@ -177,12 +176,12 @@ static QStringList computeVideoCodecArgs()
     // unsupported pick falls through to the normal order rather than producing
     // a broken recording.
     const QString forced = qEnvironmentVariable( "KALEIDO_VIDEO_ENCODER" ).trimmed();
-    if( !forced.isEmpty() )
+    if ( !forced.isEmpty() )
     {
-        for( const QString &f : { QString("h264"), QString("hevc"), QString("av1") } )
-            for( const Candidate &c : codecFamily( f ) )
-                if( forced.compare( QLatin1String( c.name ), Qt::CaseInsensitive ) == 0
-                    && probeEncoder( c.name, c.args ) )
+        for ( const QString &f : { QString( "h264" ), QString( "hevc" ), QString( "av1" ) } )
+            for ( const Candidate &c : codecFamily( f ) )
+                if ( forced.compare( QLatin1String( c.name ), Qt::CaseInsensitive ) == 0
+                     && probeEncoder( c.name, c.args ) )
                 {
                     cached = c.args;
                     cached << "-pix_fmt" << "yuv420p";
@@ -194,7 +193,7 @@ static QStringList computeVideoCodecArgs()
                  qPrintable( forced ) );
     }
 
-    for( const Candidate &c : candidates )
+    for ( const Candidate &c : candidates )
     {
         // libx264 is the h264 family's last entry and is assumed present rather
         // than probed: if ffmpeg exists at all it has it, and probing would only
@@ -203,9 +202,9 @@ static QStringList computeVideoCodecArgs()
         // plenty of ffmpeg builds ship without them.
         const bool assumePresent = ( qstrcmp( c.name, "libx264" ) == 0 );
         const bool isSoftware = assumePresent
-                             || qstrcmp( c.name, "libx265" ) == 0
-                             || qstrcmp( c.name, "libsvtav1" ) == 0;
-        if( assumePresent || probeEncoder( c.name, c.args ) )
+                                || qstrcmp( c.name, "libx265" ) == 0
+                                || qstrcmp( c.name, "libsvtav1" ) == 0;
+        if ( assumePresent || probeEncoder( c.name, c.args ) )
         {
             cached = c.args;
             cached << "-pix_fmt" << "yuv420p";
@@ -217,14 +216,14 @@ static QStringList computeVideoCodecArgs()
 
     // The requested family is not available on this machine at all. Fall back to
     // h264 rather than failing the recording -- a bigger file beats no file.
-    if( fam != "h264" )
+    if ( fam != "h264" )
     {
         fprintf( stderr, "[recorder] no %s encoder available here - falling back to h264\n",
                  qPrintable( fam ) );
-        for( const Candidate &c : codecFamily( "h264" ) )
+        for ( const Candidate &c : codecFamily( "h264" ) )
         {
             const bool assumePresent = ( qstrcmp( c.name, "libx264" ) == 0 );
-            if( assumePresent || probeEncoder( c.name, c.args ) )
+            if ( assumePresent || probeEncoder( c.name, c.args ) )
             {
                 cached = c.args;
                 cached << "-pix_fmt" << "yuv420p";
@@ -235,7 +234,7 @@ static QStringList computeVideoCodecArgs()
         }
     }
 
-    cached << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p";   // unreachable, kept safe
+    cached << "-c:v" << "libx264" << "-pix_fmt" << "yuv420p"; // unreachable, kept safe
     return cached;
 }
 
@@ -250,8 +249,10 @@ static QStringList computeVideoCodecArgs()
 // blocking behaviour we want if a recording is somehow stopped before the warm
 // probe finished -- the GL thread waits for the running probe instead of
 // starting a second one.
-static std::once_flag g_codecOnce;   ///< Guards the one-time encoder probe behind videoCodecArgs() (see the comment above for why call_once and not a plain "is it cached" check).
-static QStringList    g_codecArgs;   ///< Process-wide cached result of computeVideoCodecArgs(); valid once g_codecOnce has fired.
+static std::once_flag g_codecOnce; ///< Guards the one-time encoder probe behind videoCodecArgs() (see the comment above
+                                   ///< for why call_once and not a plain "is it cached" check).
+static QStringList g_codecArgs; ///< Process-wide cached result of computeVideoCodecArgs(); valid once g_codecOnce has
+                                ///< fired.
 
 /**
  * @brief Owner of the warm encoder-probe thread that joins it on destruction.
@@ -264,10 +265,15 @@ static QStringList    g_codecArgs;   ///< Process-wide cached result of computeV
  */
 struct ProbeThread
 {
-    std::thread t;   ///< The probe thread started by warmVideoEncoderProbe(); not joinable while no probe has been started.
-    ~ProbeThread() { if( t.joinable() ) t.join(); }
+    std::thread t; ///< The probe thread started by warmVideoEncoderProbe(); not joinable while no probe has been
+                   ///< started.
+    ~ProbeThread()
+    {
+        if ( t.joinable() )
+            t.join();
+    }
 };
-static ProbeThread g_codecProbe;   ///< The single process-wide warm probe thread (see ProbeThread).
+static ProbeThread g_codecProbe; ///< The single process-wide warm probe thread (see ProbeThread).
 
 /**
  * @brief The video-codec arguments for this process, probing on first call and cached thereafter.
@@ -278,7 +284,8 @@ static ProbeThread g_codecProbe;   ///< The single process-wide warm probe threa
  */
 static QStringList videoCodecArgs()
 {
-    std::call_once( g_codecOnce, []{ g_codecArgs = computeVideoCodecArgs(); } );
+    std::call_once( g_codecOnce, []
+    { g_codecArgs = computeVideoCodecArgs(); } );
     return g_codecArgs;
 }
 
@@ -290,8 +297,10 @@ static QStringList videoCodecArgs()
  */
 static void warmVideoEncoderProbe()
 {
-    if( g_codecProbe.t.joinable() ) return;       // already warming
-    g_codecProbe.t = std::thread( []{ videoCodecArgs(); } );
+    if ( g_codecProbe.t.joinable() )
+        return; // already warming
+    g_codecProbe.t = std::thread( []
+    { videoCodecArgs(); } );
 }
 
 /**
@@ -304,27 +313,29 @@ static void warmVideoEncoderProbe()
  */
 static void joinVideoEncoderProbe()
 {
-    if( g_codecProbe.t.joinable() ) g_codecProbe.t.join();
+    if ( g_codecProbe.t.joinable() )
+        g_codecProbe.t.join();
 }
 
 
 #ifndef GL_PIXEL_PACK_BUFFER
-#define GL_PIXEL_PACK_BUFFER 0x88EB   ///< Buffer target for glReadPixels-into-a-buffer (PBO readback), for GL headers that predate it.
+#define GL_PIXEL_PACK_BUFFER \
+    0x88EB ///< Buffer target for glReadPixels-into-a-buffer (PBO readback), for GL headers that predate it.
 #endif
 #ifndef GL_STREAM_READ
-#define GL_STREAM_READ 0x88E1   ///< Usage hint for the readback PBOs: written once by the GPU, read once by the CPU.
+#define GL_STREAM_READ 0x88E1 ///< Usage hint for the readback PBOs: written once by the GPU, read once by the CPU.
 #endif
 
 Recorder::Recorder()
 {
-	m_clock.start();
+    m_clock.start();
 }
 
 Recorder::~Recorder()
 {
-	// shutdown() sollte vorher gelaufen sein (finalisiert mit lebendem
-	// AudioAnalyzer). Falls nicht: wenigstens den Worker sauber beenden.
-	shutdown();
+    // shutdown() sollte vorher gelaufen sein (finalisiert mit lebendem
+    // AudioAnalyzer). Falls nicht: wenigstens den Worker sauber beenden.
+    shutdown();
 }
 
 /**
@@ -340,34 +351,36 @@ Recorder::~Recorder()
  */
 void Recorder::shutdown()
 {
-	if( m_recording )
-	{
-		m_recording = false;
-		finishRecording();
-	}
-	else if( !m_threads.empty() )
-	{
-		{
-			std::lock_guard<std::mutex> lk( m_mx );
-			m_quit = true;
-		}
-		m_cv.notify_all();
-		for( std::thread &t : m_threads ) if( t.joinable() ) t.join();
-		m_threads.clear();
-	}
-	// Safety net. finishRecording() normally joins the pipe thread; if control
-	// ever reaches here with it still running, joining beats ~thread()'s
-	// std::terminate().
-	if( m_pipeThread.joinable() )
-	{
-		{
-			std::lock_guard<std::mutex> lk( m_pipeMx );
-			m_pipeQuit = true;
-		}
-		m_pipeCv.notify_all();
-		m_pipeThread.join();
-	}
-	m_audio = nullptr;
+    if ( m_recording )
+    {
+        m_recording = false;
+        finishRecording();
+    }
+    else if ( !m_threads.empty() )
+    {
+        {
+            std::lock_guard<std::mutex> lk( m_mx );
+            m_quit = true;
+        }
+        m_cv.notify_all();
+        for ( std::thread &t : m_threads )
+            if ( t.joinable() )
+                t.join();
+        m_threads.clear();
+    }
+    // Safety net. finishRecording() normally joins the pipe thread; if control
+    // ever reaches here with it still running, joining beats ~thread()'s
+    // std::terminate().
+    if ( m_pipeThread.joinable() )
+    {
+        {
+            std::lock_guard<std::mutex> lk( m_pipeMx );
+            m_pipeQuit = true;
+        }
+        m_pipeCv.notify_all();
+        m_pipeThread.join();
+    }
+    m_audio = nullptr;
 }
 
 /**
@@ -382,53 +395,53 @@ void Recorder::shutdown()
  */
 void Recorder::toggle()
 {
-	if( !m_recording )
-	{
-		// Millisecond resolution: two short-lived recordings (e.g. back-to-back
-		// verify.ps1 probes) starting in the same wall-clock SECOND used to
-		// compute the identical rec_YYYYMMDD_HHMMSS name; QDir().mkpath() on an
-		// already-existing directory is a silent no-op, so the second run's
-		// frames landed in the first run's folder, numbered from 0 and
-		// overwriting/interleaving with the first scene's frames.
-		QString ts = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss_zzz");
-		m_recDir = QString("recordings/rec_%1").arg(ts);
-		QDir().mkpath( m_recDir );
-		m_recFrame = 0;
-		m_recConcat.clear();
-		m_recCarryDur  = 0.f;
-		m_recLastFrame = nowMs();
-		m_recDue       = 0.0;   // re-armed on the first captured frame
-		if( m_audio )
-			m_audio->startRecording( m_recDir + "/audio.wav" );
-		// Encoder-Worker starten (EIN Thread -> Frames bleiben in Reihenfolge).
-		ensureWorker();
-		warmVideoEncoderProbe();   // Codec-Probe jetzt, nicht erst beim Stoppen
+    if ( !m_recording )
+    {
+        // Millisecond resolution: two short-lived recordings (e.g. back-to-back
+        // verify.ps1 probes) starting in the same wall-clock SECOND used to
+        // compute the identical rec_YYYYMMDD_HHMMSS name; QDir().mkpath() on an
+        // already-existing directory is a silent no-op, so the second run's
+        // frames landed in the first run's folder, numbered from 0 and
+        // overwriting/interleaving with the first scene's frames.
+        QString ts = QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss_zzz" );
+        m_recDir = QString( "recordings/rec_%1" ).arg( ts );
+        QDir().mkpath( m_recDir );
+        m_recFrame = 0;
+        m_recConcat.clear();
+        m_recCarryDur = 0.f;
+        m_recLastFrame = nowMs();
+        m_recDue = 0.0; // re-armed on the first captured frame
+        if ( m_audio )
+            m_audio->startRecording( m_recDir + "/audio.wav" );
+        // Encoder-Worker starten (EIN Thread -> Frames bleiben in Reihenfolge).
+        ensureWorker();
+        warmVideoEncoderProbe(); // Codec-Probe jetzt, nicht erst beim Stoppen
 
-		{
-			QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
-			m_mbWanted = st.value( "motionBlur", false ).toBool();
-		}
-		m_mbCount = 0;
+        {
+            QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
+            m_mbWanted = st.value( "motionBlur", false ).toBool();
+        }
+        m_mbCount = 0;
 
-		// Raw-Pipe-Schreiber: nimmt ab jetzt die Aufnahme-Frames entgegen.
-		m_pipeQuit     = false;
-		m_pipeFallback = false;
-		m_pipeW = m_pipeH = 0;
-		m_pipeOwed = 0.0;
-		m_videoPath.clear();
-		if( !m_pipeThread.joinable() )
-			m_pipeThread = std::thread( &Recorder::pipeWriter, this );
-		m_recording = true;
-		fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
-	}
-	else
-	{
-		m_recording = false;
-		finishRecording();
-		// Der Worker bedient auch den Replay-Ring — bei Bedarf neu starten.
-		if( m_replayArmed )
-			ensureWorker();
-	}
+        // Raw-Pipe-Schreiber: nimmt ab jetzt die Aufnahme-Frames entgegen.
+        m_pipeQuit = false;
+        m_pipeFallback = false;
+        m_pipeW = m_pipeH = 0;
+        m_pipeOwed = 0.0;
+        m_videoPath.clear();
+        if ( !m_pipeThread.joinable() )
+            m_pipeThread = std::thread( &Recorder::pipeWriter, this );
+        m_recording = true;
+        fprintf( stderr, "REC start -> %s\n", m_recDir.toLocal8Bit().constData() );
+    }
+    else
+    {
+        m_recording = false;
+        finishRecording();
+        // Der Worker bedient auch den Replay-Ring — bei Bedarf neu starten.
+        if ( m_replayArmed )
+            ensureWorker();
+    }
 }
 
 /**
@@ -440,168 +453,179 @@ void Recorder::toggle()
  */
 void Recorder::toggleReplayArm()
 {
-	m_replayArmed = !m_replayArmed;
-	if( m_replayArmed )
-	{
-		ensureWorker();
-		warmVideoEncoderProbe();   // ein Replay-Save muxt ebenfalls
-		m_repLastFrame = 0;
-	}
-	fprintf( stderr, "Instant-Replay-Puffer: %s\n", m_replayArmed ? "AN" : "AUS" );
+    m_replayArmed = !m_replayArmed;
+    if ( m_replayArmed )
+    {
+        ensureWorker();
+        warmVideoEncoderProbe(); // ein Replay-Save muxt ebenfalls
+        m_repLastFrame = 0;
+    }
+    fprintf( stderr, "Instant-Replay-Puffer: %s\n", m_replayArmed ? "AN" : "AUS" );
 }
 
 void Recorder::captureIfDue( int w, int h )
 {
-	if( m_recording )
-	{
-		// Sum EVERY rendered frame, not only the ones that get captured --
-		// that is the whole point. captureFrame() decides when the interval
-		// is over and reads the average back.
-		if( m_mbWanted && ensureBlurTargets( w, h ) )
-			accumulateFrame( w, h );
-		captureFrame( w, h );
-	}
-	else if( m_replayArmed )
-		captureReplayFrame( w, h );
+    if ( m_recording )
+    {
+        // Sum EVERY rendered frame, not only the ones that get captured --
+        // that is the whole point. captureFrame() decides when the interval
+        // is over and reads the average back.
+        if ( m_mbWanted && ensureBlurTargets( w, h ) )
+            accumulateFrame( w, h );
+        captureFrame( w, h );
+    }
+    else if ( m_replayArmed )
+        captureReplayFrame( w, h );
 }
 
 bool Recorder::ensureBlurTargets( int w, int h )
 {
-	if( m_mbReady && m_mbW == w && m_mbH == h )
-		return true;
-	if( m_mbTried && !m_mbReady )
-		return false;                 // soft-failed once; do not retry per frame
+    if ( m_mbReady && m_mbW == w && m_mbH == h )
+        return true;
+    if ( m_mbTried && !m_mbReady )
+        return false; // soft-failed once; do not retry per frame
 
-	m_mbTried = true;
-	if( m_mbProg == 0 )
-	{
-		m_mbProg     = setShaders( "..\\standard.vert", "..\\Engine\\Accumulate.frag" );
-		m_mbTexUni   = glGetUniformLocation( m_mbProg, "tex" );
-		m_mbScaleUni = glGetUniformLocation( m_mbProg, "scale" );
-	}
-	if( m_mbProg == 0 )
-	{
-		fputs( "[recorder] motion blur: accumulate program failed - disabled\n", stderr );
-		return false;
-	}
+    m_mbTried = true;
+    if ( m_mbProg == 0 )
+    {
+        m_mbProg = setShaders( "..\\standard.vert", "..\\Engine\\Accumulate.frag" );
+        m_mbTexUni = glGetUniformLocation( m_mbProg, "tex" );
+        m_mbScaleUni = glGetUniformLocation( m_mbProg, "scale" );
+    }
+    if ( m_mbProg == 0 )
+    {
+        fputs( "[recorder] motion blur: accumulate program failed - disabled\n", stderr );
+        return false;
+    }
 
-	m_mbW = w; m_mbH = h;
+    m_mbW = w;
+    m_mbH = h;
 
-	// Source copy: plain RGBA8, filled by glCopyTexSubImage2D so no shader is
-	// needed just to get the rendered frame into something samplable.
-	if( m_mbSrcTex == 0 ) glGenTextures( 1, &m_mbSrcTex );
-	glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    // Source copy: plain RGBA8, filled by glCopyTexSubImage2D so no shader is
+    // needed just to get the rendered frame into something samplable.
+    if ( m_mbSrcTex == 0 )
+        glGenTextures( 1, &m_mbSrcTex );
+    glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
-	if( m_mbAccumTex == 0 ) glGenTextures( 1, &m_mbAccumTex );
-	glBindTexture( GL_TEXTURE_2D, m_mbAccumTex );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, NULL );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    if ( m_mbAccumTex == 0 )
+        glGenTextures( 1, &m_mbAccumTex );
+    glBindTexture( GL_TEXTURE_2D, m_mbAccumTex );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_FLOAT, NULL );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
 
-	if( m_mbResolveTex == 0 ) glGenTextures( 1, &m_mbResolveTex );
-	glBindTexture( GL_TEXTURE_2D, m_mbResolveTex );
-	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
-	glBindTexture( GL_TEXTURE_2D, 0 );
+    if ( m_mbResolveTex == 0 )
+        glGenTextures( 1, &m_mbResolveTex );
+    glBindTexture( GL_TEXTURE_2D, m_mbResolveTex );
+    glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+    glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+    glBindTexture( GL_TEXTURE_2D, 0 );
 
-	GLint prevFbo = 0;
-	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
+    GLint prevFbo = 0;
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
 
-	if( m_mbAccumFbo == 0 ) glGenFramebuffers( 1, &m_mbAccumFbo );
-	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
-	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbAccumTex, 0 );
-	const bool okA = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
+    if ( m_mbAccumFbo == 0 )
+        glGenFramebuffers( 1, &m_mbAccumFbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbAccumTex, 0 );
+    const bool okA = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
 
-	if( m_mbResolveFbo == 0 ) glGenFramebuffers( 1, &m_mbResolveFbo );
-	glBindFramebuffer( GL_FRAMEBUFFER, m_mbResolveFbo );
-	glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbResolveTex, 0 );
-	const bool okB = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
+    if ( m_mbResolveFbo == 0 )
+        glGenFramebuffers( 1, &m_mbResolveFbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_mbResolveFbo );
+    glFramebufferTexture2D( GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_mbResolveTex, 0 );
+    const bool okB = ( glCheckFramebufferStatus( GL_FRAMEBUFFER ) == GL_FRAMEBUFFER_COMPLETE );
 
-	glBindFramebuffer( GL_FRAMEBUFFER, (GLuint) prevFbo );
+    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prevFbo );
 
-	m_mbReady = okA && okB;
-	if( !m_mbReady )
-	{
-		fputs( "[recorder] motion blur: framebuffer incomplete - disabled, "
-		       "recording continues without it\n", stderr );
-		return false;
-	}
-	// Start each size fresh, or the first captured frame would average in
-	// whatever the previous resolution left behind.
-	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
-	glClearColor( 0.f, 0.f, 0.f, 0.f );
-	glClear( GL_COLOR_BUFFER_BIT );
-	glBindFramebuffer( GL_FRAMEBUFFER, (GLuint) prevFbo );
-	m_mbCount = 0;
-	fprintf( stderr, "[recorder] motion blur: %dx%d accumulation active\n", w, h );
-	return true;
+    m_mbReady = okA && okB;
+    if ( !m_mbReady )
+    {
+        fputs( "[recorder] motion blur: framebuffer incomplete - disabled, "
+               "recording continues without it\n",
+               stderr );
+        return false;
+    }
+    // Start each size fresh, or the first captured frame would average in
+    // whatever the previous resolution left behind.
+    glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+    glClearColor( 0.f, 0.f, 0.f, 0.f );
+    glClear( GL_COLOR_BUFFER_BIT );
+    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prevFbo );
+    m_mbCount = 0;
+    fprintf( stderr, "[recorder] motion blur: %dx%d accumulation active\n", w, h );
+    return true;
 }
 
 void Recorder::accumulateFrame( int w, int h )
 {
-	GLint prevFbo = 0;
-	glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
+    GLint prevFbo = 0;
+    glGetIntegerv( GL_FRAMEBUFFER_BINDING, &prevFbo );
 
-	// Grab the rendered frame as a texture. No shader, no extra pass.
-	glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
-	glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, w, h );
+    // Grab the rendered frame as a texture. No shader, no extra pass.
+    glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
+    glCopyTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, 0, 0, w, h );
 
-	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
-	glViewport( 0, 0, w, h );
-	glEnable( GL_BLEND );
-	glBlendFunc( GL_ONE, GL_ONE );          // sum, divided later by the real count
-	glDisable( GL_DEPTH_TEST );
-	glUseProgram( m_mbProg );
-	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
-	if( m_mbTexUni   >= 0 ) glUniform1i( m_mbTexUni, 0 );
-	if( m_mbScaleUni >= 0 ) glUniform1f( m_mbScaleUni, 1.f );
-	extern GLuint fullscreenVAO();
-	glBindVertexArray( fullscreenVAO() );
-	glDrawArrays( GL_TRIANGLES, 0, 3 );
-	glBindVertexArray( 0 );
-	glDisable( GL_BLEND );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+    glViewport( 0, 0, w, h );
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_ONE, GL_ONE ); // sum, divided later by the real count
+    glDisable( GL_DEPTH_TEST );
+    glUseProgram( m_mbProg );
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, m_mbSrcTex );
+    if ( m_mbTexUni >= 0 )
+        glUniform1i( m_mbTexUni, 0 );
+    if ( m_mbScaleUni >= 0 )
+        glUniform1f( m_mbScaleUni, 1.f );
+    extern GLuint fullscreenVAO();
+    glBindVertexArray( fullscreenVAO() );
+    glDrawArrays( GL_TRIANGLES, 0, 3 );
+    glBindVertexArray( 0 );
+    glDisable( GL_BLEND );
 
-	glBindFramebuffer( GL_FRAMEBUFFER, (GLuint) prevFbo );
-	glViewport( 0, 0, w, h );
-	++m_mbCount;
+    glBindFramebuffer( GL_FRAMEBUFFER, (GLuint)prevFbo );
+    glViewport( 0, 0, w, h );
+    ++m_mbCount;
 }
 
 void Recorder::resolveBlur( int w, int h )
 {
-	glBindFramebuffer( GL_FRAMEBUFFER, m_mbResolveFbo );
-	glViewport( 0, 0, w, h );
-	glDisable( GL_BLEND );
-	glUseProgram( m_mbProg );
-	glActiveTexture( GL_TEXTURE0 );
-	glBindTexture( GL_TEXTURE_2D, m_mbAccumTex );
-	if( m_mbTexUni   >= 0 ) glUniform1i( m_mbTexUni, 0 );
-	// Divide by the frames that ACTUALLY went in, not the nominal ratio: a
-	// dropped or extra render frame then changes the blur length, never the
-	// exposure.
-	if( m_mbScaleUni >= 0 ) glUniform1f( m_mbScaleUni, 1.f / float( m_mbCount > 0 ? m_mbCount : 1 ) );
-	extern GLuint fullscreenVAO();
-	glBindVertexArray( fullscreenVAO() );
-	glDrawArrays( GL_TRIANGLES, 0, 3 );
-	glBindVertexArray( 0 );
+    glBindFramebuffer( GL_FRAMEBUFFER, m_mbResolveFbo );
+    glViewport( 0, 0, w, h );
+    glDisable( GL_BLEND );
+    glUseProgram( m_mbProg );
+    glActiveTexture( GL_TEXTURE0 );
+    glBindTexture( GL_TEXTURE_2D, m_mbAccumTex );
+    if ( m_mbTexUni >= 0 )
+        glUniform1i( m_mbTexUni, 0 );
+    // Divide by the frames that ACTUALLY went in, not the nominal ratio: a
+    // dropped or extra render frame then changes the blur length, never the
+    // exposure.
+    if ( m_mbScaleUni >= 0 )
+        glUniform1f( m_mbScaleUni, 1.f / float( m_mbCount > 0 ? m_mbCount : 1 ) );
+    extern GLuint fullscreenVAO();
+    glBindVertexArray( fullscreenVAO() );
+    glDrawArrays( GL_TRIANGLES, 0, 3 );
+    glBindVertexArray( 0 );
 
-	// Clear for the next interval; the resolve FBO stays bound so the caller's
-	// readback reads the averaged frame.
-	glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
-	glClearColor( 0.f, 0.f, 0.f, 0.f );
-	glClear( GL_COLOR_BUFFER_BIT );
-	m_mbCount = 0;
-	glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mbResolveFbo );
+    // Clear for the next interval; the resolve FBO stays bound so the caller's
+    // readback reads the averaged frame.
+    glBindFramebuffer( GL_FRAMEBUFFER, m_mbAccumFbo );
+    glClearColor( 0.f, 0.f, 0.f, 0.f );
+    glClear( GL_COLOR_BUFFER_BIT );
+    m_mbCount = 0;
+    glBindFramebuffer( GL_READ_FRAMEBUFFER, m_mbResolveFbo );
 }
 
 // Encoder-Worker: spiegelt, skaliert und JPEG-encodiert die Frames abseits
@@ -621,61 +645,65 @@ void Recorder::resolveBlur( int w, int h )
  */
 void Recorder::worker()
 {
-	for(;;)
-	{
-		RecJob job;
-		{
-			std::unique_lock<std::mutex> lk( m_mx );
-			m_cv.wait( lk, [this]{ return m_quit || !m_queue.empty(); } );
-			if( m_queue.empty() )
-			{
-				if( m_quit ) return;      // erst beenden, wenn alles geschrieben ist
-				continue;
-			}
-			job = std::move( m_queue.front() );
-			m_queue.pop_front();
-		}
-		// This pool now serves the REPLAY ring (and recording only on the ffmpeg
-		// fallback path). The 720 px cap belongs here: the ring holds ~30 s of
-		// frames in RAM, so its size is the constraint. Recordings go through
-		// the raw pipe instead and keep their full resolution.
-		int h = job.img.height();
-		QImage out = job.img.mirrored( false, true )               // GL ist bottom-up
-		                // FastTransformation, not Smooth: this is a 1080->720 downscale
-	                // that is then JPEG-encoded at quality 80-85, where the
-	                // difference is not visible, and Smooth was a large share of
-	                // the per-frame encode cost.
-	                .scaledToHeight( h > 720 ? 720 : h, Qt::FastTransformation );
+    for ( ;; )
+    {
+        RecJob job;
+        {
+            std::unique_lock<std::mutex> lk( m_mx );
+            m_cv.wait( lk, [this]
+            { return m_quit || !m_queue.empty(); } );
+            if ( m_queue.empty() )
+            {
+                if ( m_quit )
+                    return; // erst beenden, wenn alles geschrieben ist
+                continue;
+            }
+            job = std::move( m_queue.front() );
+            m_queue.pop_front();
+        }
+        // This pool now serves the REPLAY ring (and recording only on the ffmpeg
+        // fallback path). The 720 px cap belongs here: the ring holds ~30 s of
+        // frames in RAM, so its size is the constraint. Recordings go through
+        // the raw pipe instead and keep their full resolution.
+        int    h = job.img.height();
+        QImage out = job.img.mirrored( false, true ) // GL ist bottom-up
+                                                     // FastTransformation, not Smooth: this is a 1080->720 downscale
+                         // that is then JPEG-encoded at quality 80-85, where the
+                         // difference is not visible, and Smooth was a large share of
+                         // the per-frame encode cost.
+                         .scaledToHeight( h > 720 ? 720 : h, Qt::FastTransformation );
 
-		if( job.path.isEmpty() )
-		{
-			// Replay-Ring-Job: in den Speicher encodieren, ~30 s Historie halten.
-			QByteArray jpg;
-			QBuffer buf( &jpg );
-			buf.open( QIODevice::WriteOnly );
-			out.save( &buf, "JPG", 80 );
-			std::lock_guard<std::mutex> rl( m_replayMx );
-			// Recording jobs are order-independent (their index is in the path),
-			// but this ring IS the replay timeline, so with a pool the frames
-			// have to go back in `seq` order. They arrive nearly sorted, so the
-			// scan from the back is O(1) in practice.
-			{
-				auto it = m_replayFrames.end();
-				while( it != m_replayFrames.begin() && (it - 1)->seq > job.seq ) --it;
-				m_replayFrames.insert( it, ReplayFrame{ jpg, job.dur, job.seq } );
-			}
-			float total = 0.f;
-			for( const ReplayFrame &r : m_replayFrames ) total += r.dur;
-			while( total > 31.f && m_replayFrames.size() > 1 )
-			{
-				total -= m_replayFrames.front().dur;
-				m_replayFrames.pop_front();
-			}
-			continue;
-		}
+        if ( job.path.isEmpty() )
+        {
+            // Replay-Ring-Job: in den Speicher encodieren, ~30 s Historie halten.
+            QByteArray jpg;
+            QBuffer    buf( &jpg );
+            buf.open( QIODevice::WriteOnly );
+            out.save( &buf, "JPG", 80 );
+            std::lock_guard<std::mutex> rl( m_replayMx );
+            // Recording jobs are order-independent (their index is in the path),
+            // but this ring IS the replay timeline, so with a pool the frames
+            // have to go back in `seq` order. They arrive nearly sorted, so the
+            // scan from the back is O(1) in practice.
+            {
+                auto it = m_replayFrames.end();
+                while ( it != m_replayFrames.begin() && ( it - 1 )->seq > job.seq )
+                    --it;
+                m_replayFrames.insert( it, ReplayFrame{ jpg, job.dur, job.seq } );
+            }
+            float total = 0.f;
+            for ( const ReplayFrame &r : m_replayFrames )
+                total += r.dur;
+            while ( total > 31.f && m_replayFrames.size() > 1 )
+            {
+                total -= m_replayFrames.front().dur;
+                m_replayFrames.pop_front();
+            }
+            continue;
+        }
 
-		out.save( job.path, "JPG", 85 );
-	}
+        out.save( job.path, "JPG", 85 );
+    }
 }
 
 /**
@@ -697,7 +725,7 @@ void Recorder::worker()
 static double recordFps()
 {
     static double fps = 0.0;
-    if( fps == 0.0 )
+    if ( fps == 0.0 )
     {
         QSettings st( Platform::assetPath( "..\\kaleidoscope_settings.ini" ), QSettings::IniFormat );
         // KALEIDO_RECORD_FPS schlaegt die ini -- fuer Messlaeufe, die 60 fps
@@ -705,7 +733,7 @@ static double recordFps()
         // des Nutzers anzufassen.
         const int envFps = qEnvironmentVariableIntValue( "KALEIDO_RECORD_FPS" );
         const int v = ( envFps > 0 ) ? envFps : st.value( "recordFps", 30 ).toInt();
-        fps = ( v >= 45 ) ? 60.0 : 30.0;     // only these two are offered
+        fps = ( v >= 45 ) ? 60.0 : 30.0; // only these two are offered
     }
     return fps;
 }
@@ -725,34 +753,34 @@ static double recordFps()
  */
 bool Recorder::startVideoPipe( int w, int h )
 {
-	m_pipeW = w;
-	m_pipeH = h;
-	m_videoPath = m_recDir + "/video.mp4";
+    m_pipeW = w;
+    m_pipeH = h;
+    m_videoPath = m_recDir + "/video.mp4";
 
-	QStringList a;
-	a << "-y" << "-hide_banner" << "-loglevel" << "error"
-	  << "-f" << "rawvideo"
-	  << "-pixel_format" << "rgba"
-	  << "-video_size" << QString( "%1x%2" ).arg( w ).arg( h )
-	  << "-framerate" << QString::number( recordFps() )
-	  << "-i" << "-"
-	  << videoCodecArgs()
-	  << m_videoPath;
+    QStringList a;
+    a << "-y" << "-hide_banner" << "-loglevel" << "error"
+      << "-f" << "rawvideo"
+      << "-pixel_format" << "rgba"
+      << "-video_size" << QString( "%1x%2" ).arg( w ).arg( h )
+      << "-framerate" << QString::number( recordFps() )
+      << "-i" << "-"
+      << videoCodecArgs()
+      << m_videoPath;
 
-	m_ff = new QProcess();
-	m_ff->setProcessChannelMode( QProcess::ForwardedErrorChannel );
-	m_ff->start( "ffmpeg", a );
-	if( !m_ff->waitForStarted( 10000 ) )
-	{
-		fprintf( stderr, "[recorder] could not start ffmpeg for the raw video pipe - "
-		                 "falling back to writing JPEG frames.\n" );
-		delete m_ff;
-		m_ff = nullptr;
-		return false;
-	}
-	fprintf( stderr, "[recorder] raw pipe: %dx%d @ %.0f fps, encoded once (no JPEG stage)\n",
-	         w, h, recordFps() );
-	return true;
+    m_ff = new QProcess();
+    m_ff->setProcessChannelMode( QProcess::ForwardedErrorChannel );
+    m_ff->start( "ffmpeg", a );
+    if ( !m_ff->waitForStarted( 10000 ) )
+    {
+        fprintf( stderr, "[recorder] could not start ffmpeg for the raw video pipe - "
+                         "falling back to writing JPEG frames.\n" );
+        delete m_ff;
+        m_ff = nullptr;
+        return false;
+    }
+    fprintf( stderr, "[recorder] raw pipe: %dx%d @ %.0f fps, encoded once (no JPEG stage)\n",
+             w, h, recordFps() );
+    return true;
 }
 
 /**
@@ -770,117 +798,124 @@ bool Recorder::startVideoPipe( int w, int h )
  */
 void Recorder::pipeWriter()
 {
-	bool tried = false;
-	for(;;)
-	{
-		RecJob job;
-		{
-			std::unique_lock<std::mutex> lk( m_pipeMx );
-			m_pipeCv.wait( lk, [this]{ return m_pipeQuit || !m_pipeQueue.empty(); } );
-			if( m_pipeQueue.empty() )
-			{
-				if( m_pipeQuit ) break;
-				continue;
-			}
-			job = std::move( m_pipeQueue.front() );
-			m_pipeQueue.pop_front();
-		}
+    bool tried = false;
+    for ( ;; )
+    {
+        RecJob job;
+        {
+            std::unique_lock<std::mutex> lk( m_pipeMx );
+            m_pipeCv.wait( lk, [this]
+            { return m_pipeQuit || !m_pipeQueue.empty(); } );
+            if ( m_pipeQueue.empty() )
+            {
+                if ( m_pipeQuit )
+                    break;
+                continue;
+            }
+            job = std::move( m_pipeQueue.front() );
+            m_pipeQueue.pop_front();
+        }
 
-		if( !tried )
-		{
-			tried = true;
-			m_pipeFallback = !startVideoPipe( job.img.width(), job.img.height() );
-		}
-		if( m_pipeFallback )
-		{
-			// Hand it to the JPEG pool: that path is unchanged and still
-			// leaves frames + make_video.bat for a manual mux.
-			//
-			// This WAITS for room rather than dropping. Dropping here would be
-			// wrong twice over: the pool queue would otherwise grow unbounded
-			// with full-resolution images, and asyncCapture() has already
-			// written this frame's line into frames.txt, so a frame discarded
-			// at this point would leave the concat list pointing at a JPEG that
-			// never gets written -- which fails the whole mux. Blocking instead
-			// pushes the backpressure up to the bounded pipe queue, where the
-			// GL thread drops with the carry/concat accounting intact.
-			// No deadlock: finishRecording() joins this thread BEFORE it stops
-			// the pool, so the pool is always still draining.
-			for(;;)
-			{
-				{
-					std::lock_guard<std::mutex> lk( m_mx );
-					if( m_queue.size() < 6 * m_threads.size() + 2 )
-					{
-						m_queue.push_back( std::move( job ) );
-						break;
-					}
-				}
-				std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
-			}
-			m_cv.notify_one();
-			continue;
-		}
+        if ( !tried )
+        {
+            tried = true;
+            m_pipeFallback = !startVideoPipe( job.img.width(), job.img.height() );
+        }
+        if ( m_pipeFallback )
+        {
+            // Hand it to the JPEG pool: that path is unchanged and still
+            // leaves frames + make_video.bat for a manual mux.
+            //
+            // This WAITS for room rather than dropping. Dropping here would be
+            // wrong twice over: the pool queue would otherwise grow unbounded
+            // with full-resolution images, and asyncCapture() has already
+            // written this frame's line into frames.txt, so a frame discarded
+            // at this point would leave the concat list pointing at a JPEG that
+            // never gets written -- which fails the whole mux. Blocking instead
+            // pushes the backpressure up to the bounded pipe queue, where the
+            // GL thread drops with the carry/concat accounting intact.
+            // No deadlock: finishRecording() joins this thread BEFORE it stops
+            // the pool, so the pool is always still draining.
+            for ( ;; )
+            {
+                {
+                    std::lock_guard<std::mutex> lk( m_mx );
+                    if ( m_queue.size() < 6 * m_threads.size() + 2 )
+                    {
+                        m_queue.push_back( std::move( job ) );
+                        break;
+                    }
+                }
+                std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
+            }
+            m_cv.notify_one();
+            continue;
+        }
 
-		QImage src = job.img;
-		if( src.width() != m_pipeW || src.height() != m_pipeH )
-			src = src.scaled( m_pipeW, m_pipeH, Qt::IgnoreAspectRatio, Qt::FastTransformation );
+        QImage src = job.img;
+        if ( src.width() != m_pipeW || src.height() != m_pipeH )
+            src = src.scaled( m_pipeW, m_pipeH, Qt::IgnoreAspectRatio, Qt::FastTransformation );
 
-		// Flip bottom-up into the scratch buffer. This replaces QImage::mirrored(),
-		// which allocated a whole image per frame.
-		const int stride = m_pipeW * 4;
-		const size_t bytes = size_t( stride ) * size_t( m_pipeH );
-		if( m_pipeBuf.size() != bytes ) m_pipeBuf.resize( bytes );
-		for( int y = 0; y < m_pipeH; ++y )
-			memcpy( m_pipeBuf.data() + size_t( y ) * stride,
-			        src.constScanLine( m_pipeH - 1 - y ), stride );
+        // Flip bottom-up into the scratch buffer. This replaces QImage::mirrored(),
+        // which allocated a whole image per frame.
+        const int    stride = m_pipeW * 4;
+        const size_t bytes = size_t( stride ) * size_t( m_pipeH );
+        if ( m_pipeBuf.size() != bytes )
+            m_pipeBuf.resize( bytes );
+        for ( int y = 0; y < m_pipeH; ++y )
+            memcpy( m_pipeBuf.data() + size_t( y ) * stride,
+                    src.constScanLine( m_pipeH - 1 - y ), stride );
 
-		// Measured duration -> whole output frames. The debt carries the
-		// fraction forward, so rounding never accumulates into drift.
-		m_pipeOwed += double( job.dur ) * recordFps();
-		int n = int( m_pipeOwed + 0.5 );
-		if( n < 1 ) n = 1;
-		if( n > 8 ) n = 8;          // a long stall must not spool out a huge run
-		m_pipeOwed -= n;
+        // Measured duration -> whole output frames. The debt carries the
+        // fraction forward, so rounding never accumulates into drift.
+        m_pipeOwed += double( job.dur ) * recordFps();
+        int n = int( m_pipeOwed + 0.5 );
+        if ( n < 1 )
+            n = 1;
+        if ( n > 8 )
+            n = 8; // a long stall must not spool out a huge run
+        m_pipeOwed -= n;
 
-		for( int k = 0; k < n; ++k )
-		{
-			m_ff->write( (const char*)m_pipeBuf.data(), qint64( bytes ) );
-			// Backpressure: without this the QProcess write buffer grows without
-			// bound whenever the encoder is briefly slower than the capture.
-			while( m_ff->bytesToWrite() > qint64( 64 ) * 1024 * 1024 )
-				if( !m_ff->waitForBytesWritten( 5000 ) ) break;
-		}
-	}
+        for ( int k = 0; k < n; ++k )
+        {
+            m_ff->write( (const char *)m_pipeBuf.data(), qint64( bytes ) );
+            // Backpressure: without this the QProcess write buffer grows without
+            // bound whenever the encoder is briefly slower than the capture.
+            while ( m_ff->bytesToWrite() > qint64( 64 ) * 1024 * 1024 )
+                if ( !m_ff->waitForBytesWritten( 5000 ) )
+                    break;
+        }
+    }
 
-	if( m_ff )
-	{
-		m_ff->closeWriteChannel();          // EOF -> ffmpeg finalises the file
-		if( !m_ff->waitForFinished( 60000 ) )
-		{
-			fprintf( stderr, "[recorder] ffmpeg did not finish in time - killing it; "
-			                 "the video may be truncated.\n" );
-			m_ff->kill();
-			m_ff->waitForFinished( 5000 );
-		}
-		delete m_ff;
-		m_ff = nullptr;
-	}
+    if ( m_ff )
+    {
+        m_ff->closeWriteChannel(); // EOF -> ffmpeg finalises the file
+        if ( !m_ff->waitForFinished( 60000 ) )
+        {
+            fprintf( stderr, "[recorder] ffmpeg did not finish in time - killing it; "
+                             "the video may be truncated.\n" );
+            m_ff->kill();
+            m_ff->waitForFinished( 5000 );
+        }
+        delete m_ff;
+        m_ff = nullptr;
+    }
 }
 
 void Recorder::ensureWorker()
 {
-	if( !m_threads.empty() )
-		return;
-	m_quit = false;
-	// One encoder thread could not keep up with the 30 fps cap (measured ~11 fps
-	// sustained, near-identical for every scene). Leave two cores for the GL and
-	// audio threads; the pool is small on purpose, encoding is memory-bound.
-	unsigned hw = std::thread::hardware_concurrency();
-	unsigned n  = ( hw > 4u ) ? ( hw - 2u ) : 2u;
-	if( n > 6u ) n = 6u;
-	for( unsigned i = 0; i < n; ++i )
-		m_threads.emplace_back( &Recorder::worker, this );
+    if ( !m_threads.empty() )
+        return;
+    m_quit = false;
+    // One encoder thread could not keep up with the 30 fps cap (measured ~11 fps
+    // sustained, near-identical for every scene). Leave two cores for the GL and
+    // audio threads; the pool is small on purpose, encoding is memory-bound.
+    unsigned hw = std::thread::hardware_concurrency();
+    unsigned n = ( hw > 4u ) ? ( hw - 2u ) : 2u;
+    if ( n > 6u )
+        n = 6u;
+    for ( unsigned i = 0; i < n; ++i )
+        m_threads.emplace_back( &Recorder::worker, this );
 }
 
 // Instant Replay: ~15 fps in den rollenden Ring, solange scharf (und nicht
@@ -895,21 +930,23 @@ void Recorder::ensureWorker()
  */
 void Recorder::captureReplayFrame( int w, int h )
 {
-	qint64 now = nowMs();
-	if( now - m_repLastFrame < 66 )
-		return;
-	float dur = (m_repLastFrame == 0) ? (1.f/15.f) : float(now - m_repLastFrame) / 1000.f;
-	if( dur > 0.5f ) dur = 0.5f;                 // Lücken klemmen (Pause, 1. Frame)
-	m_repLastFrame = now;
+    qint64 now = nowMs();
+    if ( now - m_repLastFrame < 66 )
+        return;
+    float dur = ( m_repLastFrame == 0 ) ? ( 1.f / 15.f ) : float( now - m_repLastFrame ) / 1000.f;
+    if ( dur > 0.5f )
+        dur = 0.5f; // Lücken klemmen (Pause, 1. Frame)
+    m_repLastFrame = now;
 
-	asyncCapture( dur, true, w, h );
+    asyncCapture( dur, true, w, h );
 }
 
 // PBO-doppelt-gepufferter Async-Readback — siehe Header-Kommentar. Stellt den
 // glReadPixels DIESES Frames in PBO[cur] ein (kehrt sofort zurück) und
 // konsumiert den fertigen Transfer des VORHERIGEN Frames aus PBO[prev].
 /**
- * @brief Issue this frame's async PBO readback and consume the previous frame's completed transfer into the encoder queue.
+ * @brief Issue this frame's async PBO readback and consume the previous frame's completed transfer into the encoder
+ * queue.
  *
  * This is the core of the "one frame of latency, zero GPU->CPU stall"
  * design: glReadPixels into PBO[cur] with a NULL client pointer queues a
@@ -933,97 +970,100 @@ void Recorder::captureReplayFrame( int w, int h )
  */
 void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
 {
-	if( w < 2 || h < 2 ) return;
+    if ( w < 2 || h < 2 )
+        return;
 
-	if( m_pbo[0] == 0 )
-		glGenBuffers( 2, m_pbo );
+    if ( m_pbo[0] == 0 )
+        glGenBuffers( 2, m_pbo );
 
-	const int cur  = m_pboIdx;
-	const int prev = 1 - m_pboIdx;
+    const int cur = m_pboIdx;
+    const int prev = 1 - m_pboIdx;
 
-	// 1. Readback dieses Frames einreihen (Orphaning passt die Größe bei
-	//    Auflösungswechseln an)
-	glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[cur] );
-	glBufferData( GL_PIXEL_PACK_BUFFER, (GLsizeiptr)w * h * 4, NULL, GL_STREAM_READ );
-	glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
-	m_pboMeta[cur].pending = true;
-	m_pboMeta[cur].replay  = toReplay;
-	m_pboMeta[cur].dur     = dur;
-	m_pboMeta[cur].w       = w;
-	m_pboMeta[cur].h       = h;
+    // 1. Readback dieses Frames einreihen (Orphaning passt die Größe bei
+    //    Auflösungswechseln an)
+    glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[cur] );
+    glBufferData( GL_PIXEL_PACK_BUFFER, (GLsizeiptr)w * h * 4, NULL, GL_STREAM_READ );
+    glReadPixels( 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, 0 );
+    m_pboMeta[cur].pending = true;
+    m_pboMeta[cur].replay = toReplay;
+    m_pboMeta[cur].dur = dur;
+    m_pboMeta[cur].w = w;
+    m_pboMeta[cur].h = h;
 
-	// 2. Daten des vorherigen Frames konsumieren (DMA ist längst fertig)
-	PboMeta &pm = m_pboMeta[prev];
-	if( pm.pending )
-	{
-		pm.pending = false;
-		glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[prev] );
-		void *ptr = glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY );
-		if( ptr )
-		{
-			QImage img( (const uchar*)ptr, pm.w, pm.h, QImage::Format_RGBA8888 );
-			bool queued = false;
-			QString fn;
-			if( !pm.replay )
-				fn = QString("%1/frame_%2.jpg").arg(m_recDir).arg(m_recFrame, 6, 10, QChar('0'));
-			if( pm.replay )
-			{
-				std::lock_guard<std::mutex> lk( m_mx );
-				// Bound scales with the pool so the extra threads actually have
-				// work in flight. A full queue still drops the frame (never
-				// stalls the GL thread) but now it is counted, not silent.
-				if( m_queue.size() < 6 * m_threads.size() + 2 )
-				{
-					m_queue.push_back( RecJob{ img.copy(), fn, pm.dur + m_repCarryDur, m_seq++ } );
-					queued = true;
-				}
-				else
-				{
-					++m_dropped;   // encoder saturated; frame discarded, never a GL stall
-				}
-			}
-			else
-			{
-				// Recording frames go to the raw pipe, which has its own single
-				// writer (order matters on a stream). The bound is smaller than
-				// the pool's: there is no per-frame encode to hide latency
-				// behind, and each pending frame is a full uncompressed image.
-				std::lock_guard<std::mutex> lk( m_pipeMx );
-				if( m_pipeQueue.size() < 8 )
-				{
-					m_pipeQueue.push_back( RecJob{ img.copy(), fn, pm.dur + m_recCarryDur, m_seq++ } );
-					queued = true;
-				}
-				else
-				{
-					++m_dropped;
-				}
-			}
-			glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
-			if( queued )
-			{
-				if( pm.replay )
-				{
-					m_cv.notify_one();
-					m_repCarryDur = 0.f;
-				}
-				else
-				{
-					m_pipeCv.notify_one();
-					m_recConcat += QString("file 'frame_%1.jpg'\nduration %2\n")
-					               .arg(m_recFrame, 6, 10, QChar('0'))
-					               .arg(pm.dur + m_recCarryDur, 0, 'f', 4);
-					m_recCarryDur = 0.f;
-					m_recFrame++;
-				}
-			}
-			else if( pm.replay ) m_repCarryDur += pm.dur;
-			else                 m_recCarryDur += pm.dur;
-		}
-	}
-	glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+    // 2. Daten des vorherigen Frames konsumieren (DMA ist längst fertig)
+    PboMeta &pm = m_pboMeta[prev];
+    if ( pm.pending )
+    {
+        pm.pending = false;
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, m_pbo[prev] );
+        void *ptr = glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY );
+        if ( ptr )
+        {
+            QImage  img( (const uchar *)ptr, pm.w, pm.h, QImage::Format_RGBA8888 );
+            bool    queued = false;
+            QString fn;
+            if ( !pm.replay )
+                fn = QString( "%1/frame_%2.jpg" ).arg( m_recDir ).arg( m_recFrame, 6, 10, QChar( '0' ) );
+            if ( pm.replay )
+            {
+                std::lock_guard<std::mutex> lk( m_mx );
+                // Bound scales with the pool so the extra threads actually have
+                // work in flight. A full queue still drops the frame (never
+                // stalls the GL thread) but now it is counted, not silent.
+                if ( m_queue.size() < 6 * m_threads.size() + 2 )
+                {
+                    m_queue.push_back( RecJob{ img.copy(), fn, pm.dur + m_repCarryDur, m_seq++ } );
+                    queued = true;
+                }
+                else
+                {
+                    ++m_dropped; // encoder saturated; frame discarded, never a GL stall
+                }
+            }
+            else
+            {
+                // Recording frames go to the raw pipe, which has its own single
+                // writer (order matters on a stream). The bound is smaller than
+                // the pool's: there is no per-frame encode to hide latency
+                // behind, and each pending frame is a full uncompressed image.
+                std::lock_guard<std::mutex> lk( m_pipeMx );
+                if ( m_pipeQueue.size() < 8 )
+                {
+                    m_pipeQueue.push_back( RecJob{ img.copy(), fn, pm.dur + m_recCarryDur, m_seq++ } );
+                    queued = true;
+                }
+                else
+                {
+                    ++m_dropped;
+                }
+            }
+            glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
+            if ( queued )
+            {
+                if ( pm.replay )
+                {
+                    m_cv.notify_one();
+                    m_repCarryDur = 0.f;
+                }
+                else
+                {
+                    m_pipeCv.notify_one();
+                    m_recConcat += QString( "file 'frame_%1.jpg'\nduration %2\n" )
+                                       .arg( m_recFrame, 6, 10, QChar( '0' ) )
+                                       .arg( pm.dur + m_recCarryDur, 0, 'f', 4 );
+                    m_recCarryDur = 0.f;
+                    m_recFrame++;
+                }
+            }
+            else if ( pm.replay )
+                m_repCarryDur += pm.dur;
+            else
+                m_recCarryDur += pm.dur;
+        }
+    }
+    glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
 
-	m_pboIdx = prev;
+    m_pboIdx = prev;
 }
 
 // Replay-Ring (Frames + rollendes Audio) speichern und wie eine Aufnahme muxen.
@@ -1041,57 +1081,65 @@ void Recorder::asyncCapture( float dur, bool toReplay, int w, int h )
  */
 void Recorder::saveReplay()
 {
-	std::deque<ReplayFrame> frames;
-	{
-		std::lock_guard<std::mutex> rl( m_replayMx );
-		frames = m_replayFrames;
-	}
-	if( frames.size() < 15 )
-	{
-		fprintf( stderr, "REPLAY: noch nichts im Puffer (mit 'y' aktivieren, dann etwas warten)\n" );
-		return;
-	}
+    std::deque<ReplayFrame> frames;
+    {
+        std::lock_guard<std::mutex> rl( m_replayMx );
+        frames = m_replayFrames;
+    }
+    if ( frames.size() < 15 )
+    {
+        fprintf( stderr, "REPLAY: noch nichts im Puffer (mit 'y' aktivieren, dann etwas warten)\n" );
+        return;
+    }
 
-	QString ts  = QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss");
-	QString dir = QString("replays/replay_%1").arg(ts);
-	QDir().mkpath( dir );
+    QString ts = QDateTime::currentDateTime().toString( "yyyyMMdd_hhmmss" );
+    QString dir = QString( "replays/replay_%1" ).arg( ts );
+    QDir().mkpath( dir );
 
-	QString concat;
-	float total = 0.f;
-	for( int i = 0; i < (int)frames.size(); ++i )
-	{
-		QString fn = QString("frame_%1.jpg").arg(i, 6, 10, QChar('0'));
-		QFile f( dir + "/" + fn );
-		if( f.open(QIODevice::WriteOnly) ) { f.write( frames[i].jpg ); f.close(); }
-		concat += QString("file '%1'\nduration %2\n").arg(fn).arg(frames[i].dur, 0, 'f', 4);
-		total  += frames[i].dur;
-	}
-	concat += QString("file 'frame_%1.jpg'\n").arg((int)frames.size()-1, 6, 10, QChar('0'));
-	QFile lf( dir + "/frames.txt" );
-	if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
-	{ lf.write( concat.toLocal8Bit() ); lf.close(); }
+    QString concat;
+    float   total = 0.f;
+    for ( int i = 0; i < (int)frames.size(); ++i )
+    {
+        QString fn = QString( "frame_%1.jpg" ).arg( i, 6, 10, QChar( '0' ) );
+        QFile   f( dir + "/" + fn );
+        if ( f.open( QIODevice::WriteOnly ) )
+        {
+            f.write( frames[i].jpg );
+            f.close();
+        }
+        concat += QString( "file '%1'\nduration %2\n" ).arg( fn ).arg( frames[i].dur, 0, 'f', 4 );
+        total += frames[i].dur;
+    }
+    concat += QString( "file 'frame_%1.jpg'\n" ).arg( (int)frames.size() - 1, 6, 10, QChar( '0' ) );
+    QFile lf( dir + "/frames.txt" );
+    if ( lf.open( QIODevice::WriteOnly | QIODevice::Text ) )
+    {
+        lf.write( concat.toLocal8Bit() );
+        lf.close();
+    }
 
-	bool haveAudio = m_audio
-	              && m_audio->dumpReplayWav( dir + "/audio.wav", total + 0.5f );
+    bool haveAudio = m_audio
+                     && m_audio->dumpReplayWav( dir + "/audio.wav", total + 0.5f );
 
-	QStringList args;
-	args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << (dir + "/frames.txt");
-	if( haveAudio )
-	{
-		// Der Audio-Ring hält MEHR als das Video: Anfang so trimmen, dass
-		// beide Enden bündig liegen (ffmpeg -ss auf dem WAV-Input).
-		float wavLen = total + 0.5f;
-		args << "-ss" << QString::number( std::max(0.f, wavLen - total), 'f', 2 )
-		     << "-i" << (dir + "/audio.wav");
-	}
-	args << videoCodecArgs();
-	if( haveAudio ) args << "-c:a" << "aac";
-	args << "-shortest" << (dir + "/replay.mp4");
-	QProcess::startDetached( "ffmpeg", args );
-	joinVideoEncoderProbe();
+    QStringList args;
+    args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << ( dir + "/frames.txt" );
+    if ( haveAudio )
+    {
+        // Der Audio-Ring hält MEHR als das Video: Anfang so trimmen, dass
+        // beide Enden bündig liegen (ffmpeg -ss auf dem WAV-Input).
+        float wavLen = total + 0.5f;
+        args << "-ss" << QString::number( std::max( 0.f, wavLen - total ), 'f', 2 )
+             << "-i" << ( dir + "/audio.wav" );
+    }
+    args << videoCodecArgs();
+    if ( haveAudio )
+        args << "-c:a" << "aac";
+    args << "-shortest" << ( dir + "/replay.mp4" );
+    QProcess::startDetached( "ffmpeg", args );
+    joinVideoEncoderProbe();
 
-	fprintf( stderr, "REPLAY: %d Frames (%.1f s) -> %s (mux replay.mp4)\n",
-	         (int)frames.size(), total, dir.toLocal8Bit().constData() );
+    fprintf( stderr, "REPLAY: %d Frames (%.1f s) -> %s (mux replay.mp4)\n",
+             (int)frames.size(), total, dir.toLocal8Bit().constData() );
 }
 
 // Das frisch gerenderte Bild (sauber, vor jedem Overlay) mit ~30 fps erfassen
@@ -1108,50 +1156,53 @@ void Recorder::saveReplay()
  */
 void Recorder::captureFrame( int w, int h )
 {
-	qint64 now = nowMs();
+    qint64 now = nowMs();
 
-	// Fixed 30 fps DEADLINE, advanced by exactly one period -- not a
-	// "has 33 ms passed since the last capture?" test.
-	//
-	// That test beats against the render rate. The renderer is driven by a
-	// 16.67 ms timer, so frames arrive at 16.7, 33.4, 50.1, 66.8 ms... and a
-	// gate that resets its reference to `now` on every capture alternates
-	// between taking every 2nd and every 3rd frame as the jitter crosses the
-	// 33 ms boundary. Measured result: ~23 fps written while the renderer was
-	// comfortably doing 60 and the encoder was dropping nothing -- the
-	// shortfall was pure aliasing, not cost.
-	//
-	// Advancing a deadline by a constant period removes the beat: at 60 fps it
-	// takes exactly every second frame. The resync guard keeps a long stall
-	// (scene load, shader compile) from queueing a burst of catch-up frames.
-	if( m_recDue == 0.0 )
-		m_recDue = double( now );
-	if( double( now ) < m_recDue )
-		return;
-	m_recDue += 1000.0 / recordFps();
-	if( m_recDue < double( now ) - 200.0 )
-		m_recDue = double( now );
+    // Fixed 30 fps DEADLINE, advanced by exactly one period -- not a
+    // "has 33 ms passed since the last capture?" test.
+    //
+    // That test beats against the render rate. The renderer is driven by a
+    // 16.67 ms timer, so frames arrive at 16.7, 33.4, 50.1, 66.8 ms... and a
+    // gate that resets its reference to `now` on every capture alternates
+    // between taking every 2nd and every 3rd frame as the jitter crosses the
+    // 33 ms boundary. Measured result: ~23 fps written while the renderer was
+    // comfortably doing 60 and the encoder was dropping nothing -- the
+    // shortfall was pure aliasing, not cost.
+    //
+    // Advancing a deadline by a constant period removes the beat: at 60 fps it
+    // takes exactly every second frame. The resync guard keeps a long stall
+    // (scene load, shader compile) from queueing a burst of catch-up frames.
+    if ( m_recDue == 0.0 )
+        m_recDue = double( now );
+    if ( double( now ) < m_recDue )
+        return;
+    m_recDue += 1000.0 / recordFps();
+    if ( m_recDue < double( now ) - 200.0 )
+        m_recDue = double( now );
 
-	float dur = (m_recFrame == 0) ? (1.0f/30.0f) : float(now - m_recLastFrame) / 1000.f;
-	m_recLastFrame = now;
+    float dur = ( m_recFrame == 0 ) ? ( 1.0f / 30.0f ) : float( now - m_recLastFrame ) / 1000.f;
+    m_recLastFrame = now;
 
-	// With motion blur on, the readback must see the AVERAGE of the interval,
-	// not the single frame that happened to land on the deadline. resolveBlur()
-	// leaves its result bound as the read framebuffer for exactly this.
-	GLint prevRead = 0;
-	glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &prevRead );
-	const bool blurred = ( m_mbReady && m_mbCount > 0 );
-	if( blurred ) resolveBlur( w, h );
+    // With motion blur on, the readback must see the AVERAGE of the interval,
+    // not the single frame that happened to land on the deadline. resolveBlur()
+    // leaves its result bound as the read framebuffer for exactly this.
+    GLint prevRead = 0;
+    glGetIntegerv( GL_READ_FRAMEBUFFER_BINDING, &prevRead );
+    const bool blurred = ( m_mbReady && m_mbCount > 0 );
+    if ( blurred )
+        resolveBlur( w, h );
 
-	asyncCapture( dur, false, w, h );    // PBO-Pfad: kein GPU->CPU-Stall
+    asyncCapture( dur, false, w, h ); // PBO-Pfad: kein GPU->CPU-Stall
 
-	if( blurred ) glBindFramebuffer( GL_READ_FRAMEBUFFER, (GLuint) prevRead );
+    if ( blurred )
+        glBindFramebuffer( GL_READ_FRAMEBUFFER, (GLuint)prevRead );
 }
 
 // Finalisieren: WAV schließen, concat-Liste + make_video.bat schreiben und
 // ffmpeg detacht die Frames + Audio zu kaleidoscope.mp4 muxen lassen.
 /**
- * @brief Finalise a recording: drop any in-flight PBO frame, drain and stop the worker, close the audio WAV, write the concat list and a fallback batch file, and launch a detached ffmpeg mux.
+ * @brief Finalise a recording: drop any in-flight PBO frame, drain and stop the worker, close the audio WAV, write the
+ * concat list and a fallback batch file, and launch a detached ffmpeg mux.
  *
  * Order matters here:
  *  1. Both m_pboMeta[] pending flags are cleared FIRST so a frame that was
@@ -1171,102 +1222,104 @@ void Recorder::captureFrame( int w, int h )
  */
 void Recorder::finishRecording()
 {
-	// Zuerst jeden In-Flight-PBO-Frame verwerfen: er darf nicht als
-	// verirrter Recording-Job konsumiert werden, nachdem frames.txt final ist.
-	m_pboMeta[0].pending = false;
-	m_pboMeta[1].pending = false;
-	if( m_dropped )
-		fprintf( stderr, "[recorder] %llu frame(s) dropped: the encoder could not keep "
-		                 "up. Pacing stays correct (the dropped time is carried into the "
-		                 "next frame's duration), but the capture rate was below the "
-		                 "%.0f fps cap.\n",
-		         (unsigned long long) m_dropped, recordFps() );
-	m_dropped = 0;
+    // Zuerst jeden In-Flight-PBO-Frame verwerfen: er darf nicht als
+    // verirrter Recording-Job konsumiert werden, nachdem frames.txt final ist.
+    m_pboMeta[0].pending = false;
+    m_pboMeta[1].pending = false;
+    if ( m_dropped )
+        fprintf( stderr, "[recorder] %llu frame(s) dropped: the encoder could not keep "
+                         "up. Pacing stays correct (the dropped time is carried into the "
+                         "next frame's duration), but the capture rate was below the "
+                         "%.0f fps cap.\n",
+                 (unsigned long long)m_dropped, recordFps() );
+    m_dropped = 0;
 
-	// Raw-Pipe zuerst schließen: der Thread schreibt die Restframes, sendet
-	// ffmpeg EOF und wartet, bis die Videodatei fertig geschrieben ist.
-	if( m_pipeThread.joinable() )
-	{
-		{
-			std::lock_guard<std::mutex> lk( m_pipeMx );
-			m_pipeQuit = true;
-		}
-		m_pipeCv.notify_all();
-		m_pipeThread.join();
-	}
+    // Raw-Pipe zuerst schließen: der Thread schreibt die Restframes, sendet
+    // ffmpeg EOF und wartet, bis die Videodatei fertig geschrieben ist.
+    if ( m_pipeThread.joinable() )
+    {
+        {
+            std::lock_guard<std::mutex> lk( m_pipeMx );
+            m_pipeQuit = true;
+        }
+        m_pipeCv.notify_all();
+        m_pipeThread.join();
+    }
 
-	// Worker drainen + beenden (er endet erst bei leerer Queue, jeder
-	// eingereihte Frame wird also noch geschrieben, bevor der Mux startet).
-	if( !m_threads.empty() )
-	{
-		{
-			std::lock_guard<std::mutex> lk( m_mx );
-			m_quit = true;
-		}
-		m_cv.notify_all();
-		for( std::thread &t : m_threads ) if( t.joinable() ) t.join();
-		m_threads.clear();
-	}
+    // Worker drainen + beenden (er endet erst bei leerer Queue, jeder
+    // eingereihte Frame wird also noch geschrieben, bevor der Mux startet).
+    if ( !m_threads.empty() )
+    {
+        {
+            std::lock_guard<std::mutex> lk( m_mx );
+            m_quit = true;
+        }
+        m_cv.notify_all();
+        for ( std::thread &t : m_threads )
+            if ( t.joinable() )
+                t.join();
+        m_threads.clear();
+    }
 
-	if( m_audio )
-		m_audio->stopRecording();      // flusht + schließt das WAV
+    if ( m_audio )
+        m_audio->stopRecording(); // flusht + schließt das WAV
 
-	QStringList args;
-	QString batCmd;
+    QStringList args;
+    QString     batCmd;
 
-	if( !m_pipeFallback && !m_videoPath.isEmpty() )
-	{
-		// The picture is already encoded. All that is left is putting it in a
-		// container next to the audio -- the video stream is COPIED, never
-		// touched again, which is the whole point of the pipe.
-		args << "-y" << "-i" << m_videoPath
-		     << "-i" << (m_recDir + "/audio.wav")
-		     << "-c:v" << "copy" << "-c:a" << "aac"
-		     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
-		batCmd = "@echo off\r\ncd /d \"%~dp0\"\r\n"
-		         "ffmpeg -y -i video.mp4 -i audio.wav -c:v copy -c:a aac "
-		         "-shortest kaleidoscope.mp4\r\npause\r\n";
-	}
-	else
-	{
-		// Fallback: ffmpeg was not available when the recording started, so the
-		// frames went to disk as JPEGs and this is the old concat mux.
-		QString listPath = m_recDir + "/frames.txt";
-		QFile lf( listPath );
-		if( lf.open(QIODevice::WriteOnly | QIODevice::Text) )
-		{
-			QByteArray data = m_recConcat.toLocal8Bit();
-			if( m_recFrame > 0 )   // concat-Demuxer will den letzten Eintrag doppelt, ohne Dauer
-				data += QString("file 'frame_%1.jpg'\n").arg(m_recFrame-1, 6, 10, QChar('0')).toLocal8Bit();
-			lf.write( data );
-			lf.close();
-		}
-		args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
-		     << "-i" << (m_recDir + "/audio.wav")
-		     << videoCodecArgs() << "-c:a" << "aac"
-		     << "-shortest" << (m_recDir + "/kaleidoscope.mp4");
-		// Mirror whatever the probe actually selected, so the manual fallback is
-		// not silently slower than the automatic mux beside it.
-		batCmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
-		                  "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
-		                  "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
-		         .arg( videoCodecArgs().join( ' ' ) );
-	}
+    if ( !m_pipeFallback && !m_videoPath.isEmpty() )
+    {
+        // The picture is already encoded. All that is left is putting it in a
+        // container next to the audio -- the video stream is COPIED, never
+        // touched again, which is the whole point of the pipe.
+        args << "-y" << "-i" << m_videoPath
+             << "-i" << ( m_recDir + "/audio.wav" )
+             << "-c:v" << "copy" << "-c:a" << "aac"
+             << "-shortest" << ( m_recDir + "/kaleidoscope.mp4" );
+        batCmd = "@echo off\r\ncd /d \"%~dp0\"\r\n"
+                 "ffmpeg -y -i video.mp4 -i audio.wav -c:v copy -c:a aac "
+                 "-shortest kaleidoscope.mp4\r\npause\r\n";
+    }
+    else
+    {
+        // Fallback: ffmpeg was not available when the recording started, so the
+        // frames went to disk as JPEGs and this is the old concat mux.
+        QString listPath = m_recDir + "/frames.txt";
+        QFile   lf( listPath );
+        if ( lf.open( QIODevice::WriteOnly | QIODevice::Text ) )
+        {
+            QByteArray data = m_recConcat.toLocal8Bit();
+            if ( m_recFrame > 0 ) // concat-Demuxer will den letzten Eintrag doppelt, ohne Dauer
+                data += QString( "file 'frame_%1.jpg'\n" ).arg( m_recFrame - 1, 6, 10, QChar( '0' ) ).toLocal8Bit();
+            lf.write( data );
+            lf.close();
+        }
+        args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << listPath
+             << "-i" << ( m_recDir + "/audio.wav" )
+             << videoCodecArgs() << "-c:a" << "aac"
+             << "-shortest" << ( m_recDir + "/kaleidoscope.mp4" );
+        // Mirror whatever the probe actually selected, so the manual fallback is
+        // not silently slower than the automatic mux beside it.
+        batCmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
+                          "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
+                          "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
+                     .arg( videoCodecArgs().join( ' ' ) );
+    }
 
-	QFile bf( m_recDir + "/make_video.bat" );
-	if( bf.open(QIODevice::WriteOnly | QIODevice::Text) )
-	{
-		bf.write( batCmd.toLocal8Bit() );
-		bf.close();
-	}
+    QFile bf( m_recDir + "/make_video.bat" );
+    if ( bf.open( QIODevice::WriteOnly | QIODevice::Text ) )
+    {
+        bf.write( batCmd.toLocal8Bit() );
+        bf.close();
+    }
 
-	// Sofort automatisch muxen (detacht; ffmpeg ist auf dem PATH).
-	// make_video.bat bleibt als Fallback liegen.
-	QProcess::startDetached( "ffmpeg", args );
-	joinVideoEncoderProbe();
+    // Sofort automatisch muxen (detacht; ffmpeg ist auf dem PATH).
+    // make_video.bat bleibt als Fallback liegen.
+    QProcess::startDetached( "ffmpeg", args );
+    joinVideoEncoderProbe();
 
-	fprintf( stderr, "REC stop: %d frames %s -> %s (muxing kaleidoscope.mp4)\n",
-	         m_recFrame,
-	         m_pipeFallback ? "(JPEG fallback)" : "(raw pipe, single encode)",
-	         m_recDir.toLocal8Bit().constData() );
+    fprintf( stderr, "REC stop: %d frames %s -> %s (muxing kaleidoscope.mp4)\n",
+             m_recFrame,
+             m_pipeFallback ? "(JPEG fallback)" : "(raw pipe, single encode)",
+             m_recDir.toLocal8Bit().constData() );
 }

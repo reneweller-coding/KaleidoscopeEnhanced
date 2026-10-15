@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SelfSimilarity.frag
  * @brief The SONG'S STRUCTURE as the image: the host maintains a self-similarity
@@ -20,97 +20,105 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * the picture grows with the song — intentional dramaturgy, not a bug.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform sampler2D texSSM;      ///< 256x256 similarity bytes (ring in both axes)
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texSSM;        ///< 256x256 similarity bytes (ring in both axes)
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float ssmHead;         ///< ring head as 0..1 texture coordinate
-uniform float ssmFill;         ///< 0..1 how much history exists yet
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float ssmHead;        ///< ring head as 0..1 texture coordinate
+uniform float ssmFill;        ///< 0..1 how much history exists yet
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
 
 // Per-activation variety:
-uniform int   sidesP;          ///< kaleido fold (0/1 off; 2..8)
-uniform float zoomP;           ///< matrix zoom (0 -> 1.0; 0.7..1.6)
+uniform int   sidesP; ///< kaleido fold (0/1 off; 2..8)
+uniform float zoomP;  ///< matrix zoom (0 -> 1.0; 0.7..1.6)
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
-mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
-/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
-vec3 imgPal(float x)
+mat2 rot( float a )
 {
-    vec2 cc = vec2(0.5) + 0.30 * vec2(cos(time * 0.041 + audioPhase * 0.10),
-                                      sin(time * 0.029 + audioPhase * 0.08));
-    return img(fract(cc + 0.22 * vec2(cos(x), sin(x * 1.37))));
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
+/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
+vec3 imgPal( float x )
+{
+    vec2 cc = vec2( 0.5 )
+              + 0.30 * vec2( cos( time * 0.041 + audioPhase * 0.10 ), sin( time * 0.029 + audioPhase * 0.08 ) );
+    return img( fract( cc + 0.22 * vec2( cos( x ), sin( x * 1.37 ) ) ) );
 }
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Kaleidoscope fold of the coordinate with the given mirrors.
-vec2 kaleido(vec2 p, float sides)
+vec2 kaleido( vec2 p, float sides )
 {
-    float a   = atan(p.y, p.x);
-    float r   = length(p);
+    float a = atan( p.y, p.x );
+    float r = length( p );
     float seg = PI / sides;
-    a = mod(a + PI, 2.0 * seg) - seg;
-    a = abs(a);
-    return vec2(cos(a), sin(a)) * r;
+    a = mod( a + PI, 2.0 * seg ) - seg;
+    a = abs( a );
+    return vec2( cos( a ), sin( a ) ) * r;
 }
 
 /// Sample the matrix in HISTORY coordinates: h = 0 is the oldest stored
 /// moment, h = 1 is now.  The ring texture repeats, so head-unwrapping is a
 /// simple add (wrap mode GL_REPEAT does the mod).
-float ssm(vec2 h)
+float ssm( vec2 h )
 {
-    return texture(texSSM, h + vec2(ssmHead)).r;
+    return texture( texSSM, h + vec2( ssmHead ) ).r;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = gl_FragCoord.xy / resolution;
-    float zoomV = (zoomP <= 0.01) ? 1.0 : zoomP;
+    vec2  uv = gl_FragCoord.xy / resolution;
+    float zoomV = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
 
     // Matrix coordinates: either the flat scrolling plot or a kaleido fold.
     vec2 h;
-    if (sidesP >= 2)
+    if ( sidesP >= 2 )
     {
-        vec2 cp = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-        cp = rot(time * 0.012 + audioPhase * 0.04) * cp;
-        h = kaleido(cp, float(sidesP)) * 0.75 * zoomV;
+        vec2 cp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
+        cp = rot( time * 0.012 + audioPhase * 0.04 ) * cp;
+        h = kaleido( cp, float( sidesP ) ) * 0.75 * zoomV;
     }
     else
     {
-        h = (uv - 0.5) * zoomV + 0.5;
+        h = ( uv - 0.5 ) * zoomV + 0.5;
     }
 
     // s: similarity of moment h.x with moment h.y.
-    float s = ssm(h);
+    float s = ssm( h );
 
     // Multi-scale accent: a coarser sample adds the big section blocks on
     // top of the fine repetition stripes.
-    float sBig = ssm(floor(h * 32.0) / 32.0 + 1.0 / 64.0);
+    float sBig = ssm( floor( h * 32.0 ) / 32.0 + 1.0 / 64.0 );
     float v = s * 0.75 + sBig * 0.45;
 
     // Diagonal "now" beam: cells comparing a moment with itself.
-    float dDiag = abs(fract(h.x - h.y + 0.5) - 0.5);   // 0 on the diagonal
-    float diag  = exp(-dDiag * 70.0) * (0.35 + 0.8 * audioBeat);
+    float dDiag = abs( fract( h.x - h.y + 0.5 ) - 0.5 ); // 0 on the diagonal
+    float diag = exp( -dDiag * 70.0 ) * ( 0.35 + 0.8 * audioBeat );
 
     // Stain the structure with the image; keep dissimilar cells near-black.
     // Bounded hue nudge.  audioChromaHue * 0.6 is a 0..3.8 rad sweep, which
@@ -118,18 +126,18 @@ void main()
     // on the way -- and a clipped negative channel IS a fully saturated pixel,
     // which is what the scan flagged.  The house model nudges around the
     // scene's own hue instead of sweeping through every hue there is.
-    vec3 stain = imgPal(v * 4.0 + h.x * 2.0) * 1.5;
-    stain = hueRot(stain, 0.22 * sin(audioChromaHue));
-    vec3 col = stain * pow(v, 1.35) * (0.85 + 0.5 * audioSwell);
+    vec3 stain = imgPal( v * 4.0 + h.x * 2.0 ) * 1.5;
+    stain = hueRot( stain, 0.22 * sin( audioChromaHue ) );
+    vec3 col = stain * pow( v, 1.35 ) * ( 0.85 + 0.5 * audioSwell );
 
     // Bright stripe cores glow, but stay below burn-out so uniformly
     // self-similar passages (loops) keep their fine grid readable.
-    col += vec3(0.9, 0.95, 1.0) * pow(v, 4.0) * 0.30;
+    col += vec3( 0.9, 0.95, 1.0 ) * pow( v, 4.0 ) * 0.30;
 
     // The now-beam and a soft vignette of the raw image below everything.
     // Same bounded rotation as the stain: a full-range one turned the warm
     // beam into an arbitrary primary as the key slewed.
-    col += hueRot(vec3(1.0, 0.80, 0.48), 0.22 * sin(audioChromaHue)) * diag;
+    col += hueRot( vec3( 1.0, 0.80, 0.48 ), 0.22 * sin( audioChromaHue ) ) * diag;
 
     // The picture bed under the matrix.  The unfilled-history darkness this
     // file's header describes is deliberate dramaturgy, but at a flat 0.10 the
@@ -137,10 +145,10 @@ void main()
     // calm.  ssmFill is exactly the signal for this: while there is little
     // history the picture carries the frame, and it recedes to its original
     // whisper as the matrix fills in and takes over.
-    col += img(uv) * (0.11 + 0.27 * (1.0 - clamp(ssmFill, 0.0, 1.0)));
+    col += img( uv ) * ( 0.11 + 0.27 * ( 1.0 - clamp( ssmFill, 0.0, 1.0 ) ) );
 
     col *= 1.0 + 0.15 * audioOnset + 0.9 * audioDrop;
     col *= 0.9 + 0.3 * audioLevel;
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

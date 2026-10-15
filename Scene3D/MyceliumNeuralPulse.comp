@@ -1,56 +1,69 @@
 #version 430
 /// Layout qualifiers of this stage (work-group size, or the primitive in or out).
-layout(local_size_x = 4, local_size_y = 4, local_size_z = 4) in;
+layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 /**
  * @file MyceliumNeuralPulse.comp
  * @brief Compute shader generating 3D branching fungal hyphae network with bio-electric pulse conduction
  */
 
-layout(std430, binding = 0) buffer Verts {
+layout( std430, binding = 0 ) buffer Verts
+{
     float verts[]; // 8 floats per vertex: attrA.xyzw (pos, pulse), attrB.xyzw (pad, branchLevel)
 };
 
 // DrawArraysIndirectCommand + our own counter:
 //   [0] count  [1] instanceCount  [2] first  [3] baseInstance  [4] rawCount
-layout(std430, binding = 1) buffer Cmd { uint cmd[]; };
+layout( std430, binding = 1 ) buffer Cmd
+{
+    uint cmd[];
+};
 
-uniform uint  maxVertices;   ///< Capacity of the vertex buffer (compute stage).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform uint  maxVertices;  ///< Capacity of the vertex buffer (compute stage).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;    ///< Bass band level, 0..1.
+uniform float audioMid;     ///< Mid band level, 0..1.
+uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float p) {
-    p = fract(p * 0.1031);
+float hash11( float p )
+{
+    p = fract( p * 0.1031 );
     p *= p + 53.17;
     p *= p + p;
-    return fract(p);
+    return fract( p );
 }
 
 /// @brief Writes one vertex into the output buffer (compute stage).
-void writeVertex(uint slot, vec3 p, float e1, float e2) {
+void writeVertex( uint slot, vec3 p, float e1, float e2 )
+{
     uint o = slot * 8u;
-    verts[o + 0u] = p.x;  verts[o + 1u] = p.y;  verts[o + 2u] = p.z;
+    verts[o + 0u] = p.x;
+    verts[o + 1u] = p.y;
+    verts[o + 2u] = p.z;
     verts[o + 3u] = e1;
-    verts[o + 4u] = 0.0;  verts[o + 5u] = 0.0;  verts[o + 6u] = 0.0;
+    verts[o + 4u] = 0.0;
+    verts[o + 5u] = 0.0;
+    verts[o + 6u] = 0.0;
     verts[o + 7u] = e2;
 }
 
 /// A hyphae segment is a line from parent to child node; GL_TRIANGLES needs a
 /// real triangle, so it is emitted as a thin two-triangle ribbon.
-void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
-    uint base = atomicAdd(cmd[4], 6u);
-    if (base + 6u > maxVertices) return;
+void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
+{
+    uint base = atomicAdd( cmd[4], 6u );
+    if ( base + 6u > maxVertices )
+        return;
 
-    vec3 dir = pB - pA;
-    float len = length(dir);
-    dir = (len > 1e-5) ? dir / len : vec3(0.0, 1.0, 0.0);
+    vec3  dir = pB - pA;
+    float len = length( dir );
+    dir = ( len > 1e-5 ) ? dir / len : vec3( 0.0, 1.0, 0.0 );
     // Widen the ribbon ACROSS THE SCREEN, not along the view axis.
     // The old `cross(dir, worldUp)` (with a (1,0,0) fallback for near-vertical
     // segments) always returns a vector with y == 0, i.e. one lying in the xz
@@ -66,61 +79,64 @@ void emitSegment(vec3 pA, vec3 pB, float e1, float e2, float thickness) {
     // `audioAdvance` are both uploaded to compute generators, so the two
     // stages cannot drift apart.
     float oyaw = time * 0.12 + audioAdvance * 0.07;
-    float ocy = cos(oyaw), osy = sin(oyaw);
-    float opit = -0.25 + 0.10 * sin(time * 0.11);
-    float opc = cos(opit), ops = sin(opit);
-    vec3 viewAxis = vec3(0.0, 0.0, 1.0);
-    viewAxis.yz = mat2(opc, ops, -ops, opc) * viewAxis.yz;   // undo pitch
-    viewAxis.xz = mat2(ocy, osy, -osy, ocy) * viewAxis.xz;   // undo yaw
+    float ocy = cos( oyaw ), osy = sin( oyaw );
+    float opit = -0.25 + 0.10 * sin( time * 0.11 );
+    float opc = cos( opit ), ops = sin( opit );
+    vec3  viewAxis = vec3( 0.0, 0.0, 1.0 );
+    viewAxis.yz = mat2( opc, ops, -ops, opc ) * viewAxis.yz; // undo pitch
+    viewAxis.xz = mat2( ocy, osy, -osy, ocy ) * viewAxis.xz; // undo yaw
 
-    vec3 side = cross(dir, viewAxis);
-    float sl = length(side);
+    vec3  side = cross( dir, viewAxis );
+    float sl = length( side );
     // Degenerate only when the segment runs straight at the lens, where any
     // perpendicular is equally good.
-    side = (sl > 1e-4) ? side * (thickness / sl)
-                       : normalize(cross(dir, vec3(1.0, 0.0, 0.0))) * thickness;
+    side = ( sl > 1e-4 ) ? side * ( thickness / sl )
+                         : normalize( cross( dir, vec3( 1.0, 0.0, 0.0 ) ) ) * thickness;
 
     vec3 a0 = pA - side, a1 = pA + side, b0 = pB - side, b1 = pB + side;
-    writeVertex(base + 0u, a0, e1, e2);
-    writeVertex(base + 1u, a1, e1, e2);
-    writeVertex(base + 2u, b0, e1, e2);
-    writeVertex(base + 3u, a1, e1, e2);
-    writeVertex(base + 4u, b1, e1, e2);
-    writeVertex(base + 5u, b0, e1, e2);
+    writeVertex( base + 0u, a0, e1, e2 );
+    writeVertex( base + 1u, a1, e1, e2 );
+    writeVertex( base + 2u, b0, e1, e2 );
+    writeVertex( base + 3u, a1, e1, e2 );
+    writeVertex( base + 4u, b1, e1, e2 );
+    writeVertex( base + 5u, b0, e1, e2 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    uvec3 g = gl_GlobalInvocationID;
-    uint id = g.x + 64u * (g.y + 64u * g.z);
+void main()
+{
+    uvec3      g = gl_GlobalInvocationID;
+    uint       id = g.x + 64u * ( g.y + 64u * g.z );
     const uint TOTAL_HYPHAE = 4096u;
-    if (id >= TOTAL_HYPHAE) return;
+    if ( id >= TOTAL_HYPHAE )
+        return;
 
-    float seed = float(id);
-    float parentSeed = floor(seed / 3.0); // Branching hierarchy
+    float seed = float( id );
+    float parentSeed = floor( seed / 3.0 ); // Branching hierarchy
 
     // Root cluster node
-    float treeAngle = hash11(parentSeed) * 6.2831853;
-    float treeRadius = pow(hash11(parentSeed + 50.0), 0.5) * 2.8;
-    float treeHeight = (hash11(parentSeed + 100.0) - 0.5) * 1.5;
+    float treeAngle = hash11( parentSeed ) * 6.2831853;
+    float treeRadius = pow( hash11( parentSeed + 50.0 ), 0.5 ) * 2.8;
+    float treeHeight = ( hash11( parentSeed + 100.0 ) - 0.5 ) * 1.5;
 
-    vec3 parentPos = vec3(treeRadius * cos(treeAngle), treeHeight, treeRadius * sin(treeAngle));
+    vec3 parentPos = vec3( treeRadius * cos( treeAngle ), treeHeight, treeRadius * sin( treeAngle ) );
 
     // Branch growth direction
-    float branchAngle = hash11(seed + 10.0) * 6.2831853;
-    float branchPitch = (hash11(seed + 20.0) - 0.5) * 1.2;
-    float branchLen = 0.3 + 0.3 * hash11(seed + 30.0);
+    float branchAngle = hash11( seed + 10.0 ) * 6.2831853;
+    float branchPitch = ( hash11( seed + 20.0 ) - 0.5 ) * 1.2;
+    float branchLen = 0.3 + 0.3 * hash11( seed + 30.0 );
 
-    vec3 branchDir = vec3(cos(branchAngle) * cos(branchPitch), sin(branchPitch), sin(branchAngle) * cos(branchPitch));
+    vec3 branchDir = vec3( cos( branchAngle ) * cos( branchPitch ), sin( branchPitch ),
+                           sin( branchAngle ) * cos( branchPitch ) );
     vec3 childPos = parentPos + branchDir * branchLen;
 
     // Bio-electric action potential pulse traveling along hyphae
-    float distFromCenter = length(parentPos);
+    float distFromCenter = length( parentPos );
     float pulseSpeed = 4.0;
-    float pulse = exp(-abs(distFromCenter - mod(time * pulseSpeed + audioAdvance * 2.0, 3.5)) * 6.0);
-    pulse *= (1.0 + audioKick * 3.0);
+    float pulse = exp( -abs( distFromCenter - mod( time * pulseSpeed + audioAdvance * 2.0, 3.5 ) ) * 6.0 );
+    pulse *= ( 1.0 + audioKick * 3.0 );
 
-    float branchLevel = mod(seed, 4.0) / 4.0;
+    float branchLevel = mod( seed, 4.0 ) / 4.0;
 
-    emitSegment(parentPos, childPos, pulse, branchLevel, 0.015);
+    emitSegment( parentPos, childPos, pulse, branchLevel, 0.015 );
 }

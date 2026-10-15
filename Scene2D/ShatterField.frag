@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file ShatterField.frag
  * @brief The photo blown apart into 1300 rigid shards (posed upstream in
@@ -18,28 +18,30 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // its own patch of the photo wherever it currently is; this pass only grades
 // the result and lights the cracks.
 
-uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D texShards;     ///< <- requests the shatter sim
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float voidP;             ///< how dark the gaps between shards go
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     voidP;        ///< how dark the gaps between shards go
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -47,13 +49,13 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -62,39 +64,39 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
     vec2 px = 1.0 / resolution;
 
-    vec4 s = texture(texShards, uv);
-    vec3 col = s.rgb;
-    float cover = clamp(s.a, 0.0, 1.0);
+    vec4  s = texture( texShards, uv );
+    vec3  col = s.rgb;
+    float cover = clamp( s.a, 0.0, 1.0 );
 
     // The gaps: where no shard is, the frame falls away into near-black with
     // just a memory of the photo, which is what sells the pieces as SOLID.
-    vec3 bg = texture(tex0, uv).rgb;
-    bg *= bg * (0.10 - 0.07 * voidP);
+    vec3 bg = texture( tex0, uv ).rgb;
+    bg *= bg * ( 0.10 - 0.07 * voidP );
     // Harder shard/void decision: the soft 0.05..0.35 ramp blended every
     // shard into its neighbours, which is what made the field read as
     // fine noise rather than as broken glass.
-    col = mix(bg * 0.35, col, smoothstep(0.28, 0.52, cover));
+    col = mix( bg * 0.35, col, smoothstep( 0.28, 0.52, cover ) );
 
     // Rim light on the shard edges: the gradient of the coverage mask marks
     // every break line, and a hard specular there reads as glass.
-    float cx = texture(texShards, uv + vec2(px.x * 1.5, 0.0)).a
-             - texture(texShards, uv - vec2(px.x * 1.5, 0.0)).a;
-    float cy = texture(texShards, uv + vec2(0.0, px.y * 1.5)).a
-             - texture(texShards, uv - vec2(0.0, px.y * 1.5)).a;
-    float edge = clamp(length(vec2(cx, cy)) * 5.0, 0.0, 1.0);
+    float cx = texture( texShards, uv + vec2( px.x * 1.5, 0.0 ) ).a
+               - texture( texShards, uv - vec2( px.x * 1.5, 0.0 ) ).a;
+    float cy = texture( texShards, uv + vec2( 0.0, px.y * 1.5 ) ).a
+               - texture( texShards, uv - vec2( 0.0, px.y * 1.5 ) ).a;
+    float edge = clamp( length( vec2( cx, cy ) ) * 5.0, 0.0, 1.0 );
 
-    vec3 tint = imgPalette(0.0) * 1.35;
-    col += tint * edge * (0.35 + 0.9 * glowP) * (0.6 + 1.6 * audioKick);
-    col += vec3(0.9, 0.95, 1.0) * edge * audioHigh * 0.5;
+    vec3 tint = imgPalette( 0.0 ) * 1.35;
+    col += tint * edge * ( 0.35 + 0.9 * glowP ) * ( 0.6 + 1.6 * audioKick );
+    col += vec3( 0.9, 0.95, 1.0 ) * edge * audioHigh * 0.5;
 
     // A drop flashes the whole break pattern.
     col += tint * edge * audioDrop * 1.2;
 
     col *= 1.0 + 0.15 * audioBeat;
-    col = col / (1.0 + col * 0.28);
+    col = col / ( 1.0 + col * 0.28 );
     // The shards measured as fine noise: without a floor under the
     // photo term and a stronger edge, no individual shard reads.
-    col = col * 1.7 + pow(max(col, 0.0), vec3(0.75)) * 0.35;
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(col, interpolation);
+    col = col * 1.7 + pow( max( col, 0.0 ), vec3( 0.75 ) ) * 0.35;
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( col, interpolation );
 }

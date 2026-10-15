@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file HyperbolicTilingPolyhedralFlight.frag
  * @brief HYPERBOLIC TILING POLYHEDRAL FLIGHT: 3D Raymarching flight through
@@ -14,50 +14,54 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the luminous stained-glass arch palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float curveP;
 uniform float strutP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// Distance estimator for hyperbolic dodecahedral honeycomb cell
-float mapHyperbolic(vec3 p, float crv, float strutWidth, float period,
-                    out float cellID) {
+float mapHyperbolic( vec3 p, float crv, float strutWidth, float period,
+                     out float cellID )
+{
     // Hyperbolic space repetition via reflection planes
     vec3 q = p;
 
@@ -68,45 +72,49 @@ float mapHyperbolic(vec3 p, float crv, float strutWidth, float period,
     // fliegt mit time*k aus ihr heraus, und nach zwei Minuten
     // Laufzeit trifft kein Strahl mehr etwas: gemessen sd 0.19 bei
     // Uhr 0 gegen 0.0005 bei Uhr 3600.
-    q.y = mod(q.y + 0.5 * period, period) - 0.5 * period;
+    q.y = mod( q.y + 0.5 * period, period ) - 0.5 * period;
     cellID = 0.0;
 
     // Repeated polyhedral mirror foldings ({5,3,4} dodecahedral honeycomb generators)
-    for (int i = 0; i < 5; i++) {
-        q = abs(q);
+    for ( int i = 0; i < 5; i++ )
+    {
+        q = abs( q );
         // Golden ratio plane fold: x*phi + y/phi
         float phi = 1.6180339887;
-        vec3 n1 = normalize(vec3(phi, 1.0 / phi, 0.0));
-        float d1 = dot(q, n1);
-        if (d1 > 1.25 * crv) {
-            q -= 2.0 * (d1 - 1.25 * crv) * n1;
+        vec3  n1 = normalize( vec3( phi, 1.0 / phi, 0.0 ) );
+        float d1 = dot( q, n1 );
+        if ( d1 > 1.25 * crv )
+        {
+            q -= 2.0 * ( d1 - 1.25 * crv ) * n1;
             cellID += 1.0;
         }
 
-        vec3 n2 = normalize(vec3(0.0, phi, 1.0 / phi));
-        float d2 = dot(q, n2);
-        if (d2 > 1.25 * crv) {
-            q -= 2.0 * (d2 - 1.25 * crv) * n2;
+        vec3  n2 = normalize( vec3( 0.0, phi, 1.0 / phi ) );
+        float d2 = dot( q, n2 );
+        if ( d2 > 1.25 * crv )
+        {
+            q -= 2.0 * ( d2 - 1.25 * crv ) * n2;
             cellID += 2.0;
         }
     }
 
     // Distance to polyhedral edges (struts)
-    float dStruts = length(vec2(length(q.xy) - 1.2 * crv, q.z)) - strutWidth;
-    float dStruts2 = length(vec2(length(q.yz) - 1.2 * crv, q.x)) - strutWidth;
-    float dStruts3 = length(vec2(length(q.zx) - 1.2 * crv, q.y)) - strutWidth;
+    float dStruts = length( vec2( length( q.xy ) - 1.2 * crv, q.z ) ) - strutWidth;
+    float dStruts2 = length( vec2( length( q.yz ) - 1.2 * crv, q.x ) ) - strutWidth;
+    float dStruts3 = length( vec2( length( q.zx ) - 1.2 * crv, q.y ) ) - strutWidth;
 
-    return min(min(dStruts, dStruts2), dStruts3);
+    return min( min( dStruts, dStruts2 ), dStruts3 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float crv = (curveP > 0.01) ? curveP : 1.0;
-    float strt = (strutP > 0.01) ? strutP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float crv = ( curveP > 0.01 ) ? curveP : 1.0;
+    float strt = ( strutP > 0.01 ) ? strutP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
@@ -120,70 +128,67 @@ void main() {
     // Die Periode haengt an crv, NICHT an crvB: sonst verschoebe der Subbass
     // den Wickelpunkt und das Bild spraenge im Takt der Musik.
     float period = 4.0 * crv;
-    vec3 ro = vec3(
-        sin(t * 0.4) * 0.9,
-        mod(t * 1.1, period),
-        cos(t * 0.35) * 0.9
-    );
+    vec3  ro = vec3(
+        sin( t * 0.4 ) * 0.9,
+        mod( t * 1.1, period ),
+        cos( t * 0.35 ) * 0.9 );
 
-    vec3 ta = ro + vec3(
-        cos(t * 0.4) * 0.6,
-        1.5,
-        -sin(t * 0.35) * 0.6
-    );
+    vec3 ta = ro + vec3( cos( t * 0.4 ) * 0.6, 1.5, -sin( t * 0.35 ) * 0.6 );
 
-    vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(sin(t * 0.2), 0.0, cos(t * 0.2))));
-    vec3 vv = cross(uu, ww);
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + (1.25 + 0.2 * sin(audioSwell)) * ww);
+    vec3 ww = normalize( ta - ro );
+    vec3 uu = normalize( cross( ww, vec3( sin( t * 0.2 ), 0.0, cos( t * 0.2 ) ) ) );
+    vec3 vv = cross( uu, ww );
+    vec3 rd = normalize( uv.x * uu + uv.y * vv + ( 1.25 + 0.2 * sin( audioSwell ) ) * ww );
 
-    float strutWidth = (0.04 + 0.02 * audioLevel) * strt;
+    float strutWidth = ( 0.04 + 0.02 * audioLevel ) * strt;
 
     // Sub-bass widens the curvature radius that sets both the reflection-plane
     // offset and the strut ring radius, so the whole H^3 cell -- the cathedral
     // vault the camera flies through -- breathes outward on drones. Strut width
     // stays fixed, so the DE keeps its conservative step size.
-    float crvB = crv * (1.0 + 0.3 * audioSubBass);
+    float crvB = crv * ( 1.0 + 0.3 * audioSubBass );
 
     // Raymarching through hyperbolic space
     float totDist = 0.0;
     float minD = 1e4;
     float hitCell = 0.0;
-    vec3 hitCol = vec3(0.0);
-    bool hit = false;
+    vec3  hitCol = vec3( 0.0 );
+    bool  hit = false;
 
-    for (int i = 0; i < 56; i++) {
-        vec3 p = ro + rd * totDist;
+    for ( int i = 0; i < 56; i++ )
+    {
+        vec3  p = ro + rd * totDist;
         float curCell;
-        float d = mapHyperbolic(p, crvB, strutWidth, period, curCell);
-        minD = min(minD, abs(d));
+        float d = mapHyperbolic( p, crvB, strutWidth, period, curCell );
+        minD = min( minD, abs( d ) );
 
         // Running out of corridor is a MISS: the ray met nothing, so it must
         // fall through to the background.  Sharing this branch with the real
         // surface test shaded empty space as if it were a wall, which is what
         // painted the far distance in flat sheets.
-        if (totDist > 10.0)
+        if ( totDist > 10.0 )
             break;
 
-        if (abs(d) < 0.003) {
-            hit     = true;
+        if ( abs( d ) < 0.003 )
+        {
+            hit = true;
             hitCell = curCell;
-            vec2 sampleUV = fract(p.xz * 0.3 + 0.5);
-            vec3 texCol = img(sampleUV);
-            vec3 pal = imgPalette(hitCell * 0.15 + t * 0.1);
-            hitCol = mix(texCol, pal, 0.55) * (0.7 + 0.5 * (1.0 - d));
+            vec2 sampleUV = fract( p.xz * 0.3 + 0.5 );
+            vec3 texCol = img( sampleUV );
+            vec3 pal = imgPalette( hitCell * 0.15 + t * 0.1 );
+            hitCol = mix( texCol, pal, 0.55 ) * ( 0.7 + 0.5 * ( 1.0 - d ) );
             break;
         }
 
-        totDist += max(0.015, d * 0.7);
+        totDist += max( 0.015, d * 0.7 );
     }
 
     // Glowing cathedral arch ribs
-    float ribGlow = exp(-minD * (28.0 + 14.0 * audioCentroid)) * glw;
-    vec3 glowTint = vec3(1.4, 1.1, 1.7) * ribGlow * (1.0 + 2.5 * audioKick);
+    float ribGlow = exp( -minD * ( 28.0 + 14.0 * audioCentroid ) ) * glw;
+    vec3  glowTint = vec3( 1.4, 1.1, 1.7 ) * ribGlow * ( 1.0 + 2.5 * audioKick );
 
     // Background stained glass atmosphere
-    vec3 bgCol = imgPalette(length(uv) * 0.3 + 0.4) * (0.2 + 0.15 * audioLevel);
+    vec3 bgCol = imgPalette( length( uv ) * 0.3 + 0.4 ) * ( 0.2 + 0.15 * audioLevel );
 
     vec3 finalCol = hit ? hitCol : bgCol;
     finalCol += glowTint;
@@ -192,9 +197,9 @@ void main() {
     // march that runs to 10, so nearly the whole corridor was mixed into the
     // constant below and the frame measured a median spatial sd of 0.004.
     // 0.08 puts the half-distance at 8.7, i.e. the depth actually marched.
-    float fog = 1.0 - exp(-totDist * 0.08);
-    finalCol = mix(finalCol, imgPalette(0.8) * 0.35, fog);
+    float fog = 1.0 - exp( -totDist * 0.08 );
+    finalCol = mix( finalCol, imgPalette( 0.8 ) * 0.35, fog );
 
-    finalCol = pow(finalCol, vec3(0.88));
-    fragColor = vec4(clamp(finalCol, 0.0, 1.0), 1.0);
+    finalCol = pow( finalCol, vec3( 0.88 ) );
+    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
 }

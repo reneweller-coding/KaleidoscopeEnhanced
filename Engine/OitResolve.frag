@@ -1,7 +1,8 @@
 #version 330 core
 /**
  * @file OitResolve.frag
- * @brief Resolves weighted-blended order-independent transparency: combines the colour-accumulation and reveal buffers into one final image.
+ * @brief Resolves weighted-blended order-independent transparency: combines the colour-accumulation and reveal buffers
+ * into one final image.
  *
  * Fullscreen fragment pass reading two textures written earlier by a
  * transparent-geometry accumulation pass: texAccum (RGBA16F sum of
@@ -13,7 +14,7 @@
  * operations are commutative, the result never depends on draw order, so no
  * depth sorting of transparent geometry is needed.
  */
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // -----------------------------------------------------------------------
 // Weighted-blended OIT never sorts anything.  Each transparent fragment adds
 // its premultiplied colour into an accumulation buffer, scaled by a weight that
@@ -27,35 +28,35 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // similar depths are averaged rather than composited in sequence — invisible
 // for glass and smoke, wrong for a stack of opaque cards, which is exactly the
 // trade this technique exists to make.
-uniform sampler2D texAccum;     ///< RGBA16F: sum of colour*alpha*w, and sum of alpha*w
-uniform sampler2D texReveal;    ///< R16F: product of (1 - alpha)
-uniform vec2 resolution;   ///< Size of the render target in pixels.
+uniform sampler2D texAccum;   ///< RGBA16F: sum of colour*alpha*w, and sum of alpha*w
+uniform sampler2D texReveal;  ///< R16F: product of (1 - alpha)
+uniform vec2      resolution; ///< Size of the render target in pixels.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
 
-    float reveal = texture(texReveal, uv).r;
+    float reveal = texture( texReveal, uv ).r;
     // Nothing covered this pixel: leave the frame exactly as it was.  Testing
     // against a hair below 1 rather than == 1 keeps float noise from drawing a
     // faint veil across the whole image.
-    if (reveal > 0.9999)
+    if ( reveal > 0.9999 )
         discard;
 
-    vec4 acc = texture(texAccum, uv);
+    vec4 acc = texture( texAccum, uv );
 
     // Guard the divide.  The weights fall off steeply with depth, so a distant
     // layer can push the accumulated weight down to a denormal — and dividing
     // by that produces infinities that show up as white confetti.
-    float w = max(acc.a, 1e-5);
-    vec3 col = acc.rgb / w;
+    float w = max( acc.a, 1e-5 );
+    vec3  col = acc.rgb / w;
 
     // isinf/isnan are cheap insurance here: one bad pixel in an additive buffer
     // survives every later stage, including the photosensitivity limiter, which
     // reasons about averages and not about single blown texels.
-    if (any(isinf(col)) || any(isnan(col)))
-        col = vec3(0.0);
+    if ( any( isinf( col ) ) || any( isnan( col ) ) )
+        col = vec3( 0.0 );
 
-    fragColor = vec4(col, 1.0 - reveal);
+    fragColor = vec4( col, 1.0 - reveal );
 }

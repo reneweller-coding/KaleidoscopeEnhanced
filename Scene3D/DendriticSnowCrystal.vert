@@ -4,20 +4,22 @@
  * @brief attrA.xyz = world pos, attrA.w = iceRefract
  * attrB.w = flakeSector (GEOM_INDIRECT, 8-float layout)
  */
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform mat4  projM;     ///< Projection matrix.
+uniform float eyeOff;    ///< Stereo eye offset (0 in mono).
+uniform float time;      ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick; ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-out vec3 vPos;   ///< Position (from the vertex stage).
+out vec3  vPos; ///< Position (from the vertex stage).
 out float vRefract;
 out float vSector;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     vec3 worldP = attrA.xyz;
     vPos = worldP;
     vRefract = attrA.w;
@@ -28,6 +30,6 @@ void main() {
     vp.z += 6.5;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

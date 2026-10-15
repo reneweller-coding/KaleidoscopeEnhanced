@@ -7,31 +7,33 @@
 
 // attrA.xyz = world pos, attrA.w = fluxIdx
 // attrB.x   = isHaze, attrB.w = fieldEnergy
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-out vec3 vPos;   ///< Position (from the vertex stage).
+out vec3  vPos; ///< Position (from the vertex stage).
 out float vFluxIdx;
 out float vEnergy;
 out float vHaze;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
+void main()
+{
     vec3 worldP = attrA.xyz;
     vPos = worldP;
     vFluxIdx = attrA.w;
     vEnergy = attrB.w;
     vHaze = attrB.x;
 
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
-    vec3 vp = worldP;
+    float aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
+    vec3  vp = worldP;
 
-    if (vHaze > 0.5)
+    if ( vHaze > 0.5 )
     {
         // The ejecta haze is already laid out in frustum coordinates for 16:9;
         // it must not swing with the object it sits behind, only stretch for
@@ -48,8 +50,8 @@ void main() {
         // the occupancy metric.  (kViewAxis in the .comp is the same either
         // way: it depends on the rotation, not on the translation.)
         float tilt = 0.55;
-        float c = cos(tilt), s = sin(tilt);
-        vp = vec3(vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c);
+        float c = cos( tilt ), s = sin( tilt );
+        vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );
         // 6.6, not the old 4.8: the jets now flare to 3.3 units and run 4.4
         // along their axis, and the tilt folds both into the view depth -- at
         // 4.8 the head of the downward jet crossed the near plane and was
@@ -58,8 +60,8 @@ void main() {
     }
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

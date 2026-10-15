@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file CyberpunkSynthGridHighwayFly.frag
  * @brief CYBERPUNK SYNTH GRID HIGHWAY FLY: High-velocity 3D flight across an
@@ -14,80 +14,85 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the retrowave magenta/cyan/sunset palette
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
-uniform float heightP;   ///< Height knob, 0..1.
+uniform float speedP;  ///< Speed knob, 0..1.
+uniform float heightP; ///< Height knob, 0..1.
 uniform float gridDensityP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// Procedural mountain height function reacting to audio bass
-float terrainHeight(vec2 p, float t, float hMult) {
+float terrainHeight( vec2 p, float t, float hMult )
+{
     float h = 0.0;
     // Flat highway in center: |p.x| < 1.0
-    float highwayMask = smoothstep(0.8, 2.5, abs(p.x));
+    float highwayMask = smoothstep( 0.8, 2.5, abs( p.x ) );
 
     // Mountain ridges on sides
-    float n1 = sin(p.x * 0.8 + t * 0.2) * cos(p.y * 0.6);
-    float n2 = sin(p.x * 1.6 - p.y * 1.2) * 0.5;
-    float n3 = abs(sin(p.x * 3.2 + p.y * 2.5)) * 0.25;
+    float n1 = sin( p.x * 0.8 + t * 0.2 ) * cos( p.y * 0.6 );
+    float n2 = sin( p.x * 1.6 - p.y * 1.2 ) * 0.5;
+    float n3 = abs( sin( p.x * 3.2 + p.y * 2.5 ) ) * 0.25;
 
-    h = (n1 + n2 + n3) * (1.2 + 1.5 * audioBass) * hMult * highwayMask;
+    h = ( n1 + n2 + n3 ) * ( 1.2 + 1.5 * audioBass ) * hMult * highwayMask;
     return h;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
-    float hM = (heightP > 0.01) ? heightP : 1.0;
-    float gDens = (gridDensityP > 0.01) ? gridDensityP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
+    float hM = ( heightP > 0.01 ) ? heightP : 1.0;
+    float gDens = ( gridDensityP > 0.01 ) ? gridDensityP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // Steady base rate + musical push. audioAdvance alone barely moves on
     // quiet material -- the reported "the scene stands still, nobody flies".
     float t = time * 0.40 * spd + audioAdvance * 0.35 * spd;
 
     // Camera setup: low hovering perspective above cyber highway
-    vec3 ro = vec3(sin(t * 0.3) * 0.4, 0.8 + 0.2 * sin(audioSwell * 2.0), t * 4.0);
-    vec3 rd = normalize(vec3(uv.x, uv.y - 0.15, 1.2));
+    vec3 ro = vec3( sin( t * 0.3 ) * 0.4, 0.8 + 0.2 * sin( audioSwell * 2.0 ), t * 4.0 );
+    vec3 rd = normalize( vec3( uv.x, uv.y - 0.15, 1.2 ) );
 
-    vec3 col = vec3(0.0);
+    vec3 col = vec3( 0.0 );
 
     // March the terrain for EVERY ray.  Splitting sky and ground at rd.y == 0
     // cut every mountain off flat at the horizon line (reported): a ridge that
@@ -95,76 +100,87 @@ void main() {
     // never asked about the terrain at all.  Now the sky is drawn only where
     // the march misses, so the ridges stand in front of the sun.
     float tGround = 0.0;
-    vec3 pGround = ro;
-    bool hitGround = false;
-    for (int i = 0; i < 72; i++) {
+    vec3  pGround = ro;
+    bool  hitGround = false;
+    for ( int i = 0; i < 72; i++ )
+    {
         pGround = ro + rd * tGround;
-        float h = terrainHeight(pGround.xz, t, hM);
+        float h = terrainHeight( pGround.xz, t, hM );
         float d = pGround.y - h;
-        if (d < 0.01 * (1.0 + tGround * 0.1)) { hitGround = true; break; }
-        if (tGround > 40.0) break;
-        tGround += max(0.04, d * 0.55);
+        if ( d < 0.01 * ( 1.0 + tGround * 0.1 ) )
+        {
+            hitGround = true;
+            break;
+        }
+        if ( tGround > 40.0 )
+            break;
+        tGround += max( 0.04, d * 0.55 );
     }
 
     // Horizon sun and sky rendering, only where no ridge is in the way
-    if (!hitGround) {
+    if ( !hitGround )
+    {
         // Giant synth sun on horizon
-        vec2 sunUV = uv - vec2(0.0, 0.05);
-        float dSun = length(sunUV);
+        vec2  sunUV = uv - vec2( 0.0, 0.05 );
+        float dSun = length( sunUV );
 
-        if (dSun < 0.45) {
+        if ( dSun < 0.45 )
+        {
             // Horizontal laser blinds scanlines in sun
-            float scanlines = cos(sunUV.y * 60.0 - t * 4.0);
-            float sunMask = smoothstep(0.45, 0.43, dSun) * step(0.0, scanlines + (sunUV.y + 0.2) * 2.0);
+            float scanlines = cos( sunUV.y * 60.0 - t * 4.0 );
+            float sunMask = smoothstep( 0.45, 0.43, dSun ) * step( 0.0, scanlines + ( sunUV.y + 0.2 ) * 2.0 );
 
             // Sun color gradient (yellow to hot magenta)
-            vec3 sunCol = mix(vec3(1.5, 1.2, 0.2), vec3(1.8, 0.2, 0.9), clamp((sunUV.y + 0.4) / 0.8, 0.0, 1.0));
-            col += sunCol * sunMask * (1.0 + 1.5 * audioKick);
+            vec3 sunCol = mix( vec3( 1.5, 1.2, 0.2 ), vec3( 1.8, 0.2, 0.9 ),
+                               clamp( ( sunUV.y + 0.4 ) / 0.8, 0.0, 1.0 ) );
+            col += sunCol * sunMask * ( 1.0 + 1.5 * audioKick );
         }
 
         // Sky synth grid
-        float skyGrid = abs(sin(rd.x * 20.0 / max(0.05, rd.y))) * abs(sin(1.0 / max(0.05, rd.y) * 8.0 - t * 2.0));
-        col += imgPalette(0.8) * smoothstep(0.9, 1.0, skyGrid) * 0.25 * audioHigh;
+        float skyGrid = abs( sin( rd.x * 20.0 / max( 0.05, rd.y ) ) )
+                        * abs( sin( 1.0 / max( 0.05, rd.y ) * 8.0 - t * 2.0 ) );
+        col += imgPalette( 0.8 ) * smoothstep( 0.9, 1.0, skyGrid ) * 0.25 * audioHigh;
 
         // Sky gradient
-        col += mix(imgPalette(0.3) * 0.2, imgPalette(0.75) * 0.6, clamp(rd.y * 2.0, 0.0, 1.0));
+        col += mix( imgPalette( 0.3 ) * 0.2, imgPalette( 0.75 ) * 0.6, clamp( rd.y * 2.0, 0.0, 1.0 ) );
     }
 
     // The terrain, wherever the march reached it
-    if (hitGround) {
+    if ( hitGround )
+    {
         // Compute neon wireframe grid lines on terrain
-        vec2 gridCoord = pGround.xz * (2.0 * gDens);
-        vec2 gridFract = abs(fract(gridCoord - 0.5) - 0.5);
+        vec2 gridCoord = pGround.xz * ( 2.0 * gDens );
+        vec2 gridFract = abs( fract( gridCoord - 0.5 ) - 0.5 );
         // Bright tonal content pulls the smoothstep edge in, so the neon grid
         // resolves to hard hairlines instead of soft fat bands.
-        float lineWidth = 0.06 * (1.0 - 0.35 * audioCentroid) * (1.0 + 0.05 * tGround);
-        float lineDist = min(gridFract.x, gridFract.y);
-        float gridLine = smoothstep(lineWidth, 0.0, lineDist);
+        float lineWidth = 0.06 * ( 1.0 - 0.35 * audioCentroid ) * ( 1.0 + 0.05 * tGround );
+        float lineDist = min( gridFract.x, gridFract.y );
+        float gridLine = smoothstep( lineWidth, 0.0, lineDist );
 
         // Highway center laser stripes
-        float centerStripe = smoothstep(0.08, 0.0, abs(pGround.x)) *
-                             smoothstep(0.3, 0.0, abs(fract(pGround.z * 0.5 - t * 2.0) - 0.5));
+        float centerStripe = smoothstep( 0.08, 0.0, abs( pGround.x ) )
+                             * smoothstep( 0.3, 0.0, abs( fract( pGround.z * 0.5 - t * 2.0 ) - 0.5 ) );
 
         // Sample texture on terrain
-        vec2 sampleUV = fract(pGround.xz * 0.1);
-        vec3 texCol = img(sampleUV);
+        vec2 sampleUV = fract( pGround.xz * 0.1 );
+        vec3 texCol = img( sampleUV );
 
         // Cyber grid colors (cyan wireframe, magenta terrain, gold stripes)
-        vec3 terrainBase = imgPalette(pGround.y * 0.3 + 0.1) * 0.3;
-        vec3 wireCol = vec3(0.2, 1.4, 1.8) * (1.0 + 2.0 * audioKick) * glw;
-        vec3 stripeCol = vec3(1.8, 1.4, 0.2) * (1.5 + 3.0 * audioKick);
+        vec3 terrainBase = imgPalette( pGround.y * 0.3 + 0.1 ) * 0.3;
+        vec3 wireCol = vec3( 0.2, 1.4, 1.8 ) * ( 1.0 + 2.0 * audioKick ) * glw;
+        vec3 stripeCol = vec3( 1.8, 1.4, 0.2 ) * ( 1.5 + 3.0 * audioKick );
 
-        vec3 groundCol = mix(terrainBase, texCol, 0.3);
+        vec3 groundCol = mix( terrainBase, texCol, 0.3 );
         groundCol += wireCol * gridLine;
         groundCol += stripeCol * centerStripe;
 
         // Depth fog on terrain
-        float depthFog = 1.0 - exp(-tGround * 0.08);
-        groundCol = mix(groundCol, imgPalette(0.7) * 0.5, depthFog);
+        float depthFog = 1.0 - exp( -tGround * 0.08 );
+        groundCol = mix( groundCol, imgPalette( 0.7 ) * 0.5, depthFog );
 
         col = groundCol;
     }
 
-    col = pow(col, vec3(0.88));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col = pow( col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

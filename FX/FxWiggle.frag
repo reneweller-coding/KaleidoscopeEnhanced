@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file FxWiggle.frag
  * @brief FX WIGGLE: hand-drawn "boil" -- the frame-to-frame line wobble of
@@ -33,94 +33,95 @@ out vec4 fragColor;   ///< The pixel's colour (output).
 // `floor(time * rate)` with a rate that moves does not speed the boil up — it
 // makes the step index jump backwards and forwards, and the drawing stutters at
 // random.  The music changes how FAR the line moves, never how often.
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
+uniform vec2      resolution; ///< Size of the render target in pixels.
+uniform float     time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;       ///< The current photo.
+uniform sampler2D tex1;       ///< The next photo (cross-faded in by interpolation).
 uniform sampler2D texDepth0;
 uniform sampler2D texDepth1;
-uniform vec2  depthValid;
-uniform vec2  nearFar;   ///< Near and far clip distances.
-uniform float tanHalfFov;
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      depthValid;
+uniform vec2      nearFar; ///< Near and far clip distances.
+uniform float     tanHalfFov;
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float wiggleP;      ///< preset: how far the line moves
-uniform float holdP;        ///< preset: holds per second (the "on twos" rate)
-uniform float grainP;       ///< preset: paper grain
+uniform float wiggleP; ///< preset: how far the line moves
+uniform float holdP;   ///< preset: holds per second (the "on twos" rate)
+uniform float grainP;  ///< preset: paper grain
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
+    return clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
 /// @brief Pseudo-random number 0..1 from a 3D point.
-float hash31(vec3 p)
+float hash31( vec3 p )
 {
-    p = fract(p * 0.1031);
-    p += dot(p, p.yzx + 33.33);
-    return fract((p.x + p.y) * p.z);
+    p = fract( p * 0.1031 );
+    p += dot( p, p.yzx + 33.33 );
+    return fract( ( p.x + p.y ) * p.z );
 }
 
-float vnoise3(vec3 x)
+float vnoise3( vec3 x )
 {
-    vec3 i = floor(x), f = fract(x);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(mix(hash31(i + vec3(0, 0, 0)), hash31(i + vec3(1, 0, 0)), f.x),
-                   mix(hash31(i + vec3(0, 1, 0)), hash31(i + vec3(1, 1, 0)), f.x), f.y),
-               mix(mix(hash31(i + vec3(0, 0, 1)), hash31(i + vec3(1, 0, 1)), f.x),
-                   mix(hash31(i + vec3(0, 1, 1)), hash31(i + vec3(1, 1, 1)), f.x), f.y), f.z);
+    vec3 i = floor( x ), f = fract( x );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( mix( hash31( i + vec3( 0, 0, 0 ) ), hash31( i + vec3( 1, 0, 0 ) ), f.x ),
+                     mix( hash31( i + vec3( 0, 1, 0 ) ), hash31( i + vec3( 1, 1, 0 ) ), f.x ), f.y ),
+                mix( mix( hash31( i + vec3( 0, 0, 1 ) ), hash31( i + vec3( 1, 0, 1 ) ), f.x ),
+                     mix( hash31( i + vec3( 0, 1, 1 ) ), hash31( i + vec3( 1, 1, 1 ) ), f.x ), f.y ),
+                f.z );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = gl_FragCoord.xy / resolution;
-    float aspect = resolution.x / max(resolution.y, 1.0);
+    vec2  uv = gl_FragCoord.xy / resolution;
+    float aspect = resolution.x / max( resolution.y, 1.0 );
 
     // The hold.  A fixed rate, quantised — see the note at the top on why this
     // must not follow the music.
-    float rate = mix(6.0, 14.0, clamp(holdP, 0.0, 1.0));
-    float hold = floor(time * rate);
+    float rate = mix( 6.0, 14.0, clamp( holdP, 0.0, 1.0 ) );
+    float hold = floor( time * rate );
 
     // A low-frequency field, re-seeded on every hold, so the whole drawing
     // shifts as one rather than dissolving into per-pixel noise.
-    vec2 q = vec2(uv.x * aspect, uv.y) * 3.2;
-    float nx = vnoise3(vec3(q, hold * 1.7)) - 0.5;
-    float ny = vnoise3(vec3(q + 17.3, hold * 1.7 + 4.1)) - 0.5;
+    vec2  q = vec2( uv.x * aspect, uv.y ) * 3.2;
+    float nx = vnoise3( vec3( q, hold * 1.7 ) ) - 0.5;
+    float ny = vnoise3( vec3( q + 17.3, hold * 1.7 + 4.1 ) ) - 0.5;
 
     // A second, coarser field gives the whole frame a slight drift, which is the
     // registration error of the paper on the pegs.
-    float rx = hash31(vec3(hold, 3.0, 7.0)) - 0.5;
-    float ry = hash31(vec3(hold, 11.0, 2.0)) - 0.5;
+    float rx = hash31( vec3( hold, 3.0, 7.0 ) ) - 0.5;
+    float ry = hash31( vec3( hold, 11.0, 2.0 ) ) - 0.5;
 
-    float amp = (0.0022 + 0.0075 * clamp(wiggleP, 0.0, 2.0))
-              * (0.55 + 0.9 * audioLevel + 0.6 * audioKick);
-    vec2 off = (vec2(nx, ny) * 1.0 + vec2(rx, ry) * 0.35) * amp;
+    float amp = ( 0.0022 + 0.0075 * clamp( wiggleP, 0.0, 2.0 ) )
+                * ( 0.55 + 0.9 * audioLevel + 0.6 * audioKick );
+    vec2  off = ( vec2( nx, ny ) * 1.0 + vec2( rx, ry ) * 0.35 ) * amp;
 
-    vec3 a = texture(tex0, uv + off).rgb;
-    vec3 b = texture(tex1, uv + off).rgb;
-    vec3 col = mix(b, a, clamp(interpolation, 0.0, 1.0));
+    vec3 a = texture( tex0, uv + off ).rgb;
+    vec3 b = texture( tex1, uv + off ).rgb;
+    vec3 col = mix( b, a, clamp( interpolation, 0.0, 1.0 ) );
 
     // Paper grain, also held: grain that changes every frame is television snow.
-    float g = hash31(vec3(floor(gl_FragCoord.xy * 0.5), hold));
-    col *= 1.0 - clamp(grainP, 0.0, 1.0) * 0.16 * (g - 0.35);
+    float g = hash31( vec3( floor( gl_FragCoord.xy * 0.5 ), hold ) );
+    col *= 1.0 - clamp( grainP, 0.0, 1.0 ) * 0.16 * ( g - 0.35 );
 
     // A thin held vignette, as if the drawing were lit unevenly on the stand.
-    vec2 c = (uv - 0.5) * vec2(aspect, 1.0);
-    float vig = 1.0 - 0.28 * dot(c, c) * (0.7 + 0.5 * clamp(grainP, 0.0, 1.0));
+    vec2  c = ( uv - 0.5 ) * vec2( aspect, 1.0 );
+    float vig = 1.0 - 0.28 * dot( c, c ) * ( 0.7 + 0.5 * clamp( grainP, 0.0, 1.0 ) );
     col *= vig;
 
     col *= 1.0 + 0.14 * audioBeat + 0.10 * audioSubBass;
-    col += hue2rgb(fract(0.10 + 0.15 * sin(audioChromaHue))) * 0.04 * audioHigh;
-    col = col / (1.0 + col * 0.10);
-    fragColor = vec4(col, 1.0);
+    col += hue2rgb( fract( 0.10 + 0.15 * sin( audioChromaHue ) ) ) * 0.04 * audioHigh;
+    col = col / ( 1.0 + col * 0.10 );
+    fragColor = vec4( col, 1.0 );
 }

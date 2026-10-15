@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Tornado.frag — soft glowing point (additive blending).
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol; ///< Colour (from the vertex stage).
 
 /**
  * @file Tornado.frag
@@ -19,6 +19,6 @@ in vec4 vCol;   ///< Colour (from the vertex stage).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;
-    float a = exp(-dot(d, d) * 10.0);
-    fragColor = vec4(vCol.rgb * a, 1.0);
+    float a = exp( -dot( d, d ) * 10.0 );
+    fragColor = vec4( vCol.rgb * a, 1.0 );
 }

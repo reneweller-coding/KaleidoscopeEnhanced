@@ -11,60 +11,64 @@
  * become a far-field dust mote placed in FRUSTUM coordinates, so the corners
  * the donut can never reach still carry something.
  */
-layout(location = 0) in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-layout(location = 1) in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+layout( location = 0 ) in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g.
+                                      ///< position or u/v and an index).
+layout( location = 1 ) in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element
+                                      ///< seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float torusP;
 uniform float linkP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-out vec3 vWorldPos;   ///< World position (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+out vec3  vWorldPos; ///< World position (from the vertex stage).
+out vec3  vNormal;   ///< Surface normal (from the vertex stage).
+out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vIndex;
 out float vDust;
 
 /// @brief Pseudo-random number 0..1 from two values and a seed.
-float hsh(float a, float b)
+float hsh( float a, float b )
 {
-    return fract(sin(a * 91.73 + b * 47.31) * 43758.5453);
+    return fract( sin( a * 91.73 + b * 47.31 ) * 43758.5453 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float trs = (torusP > 0.0) ? torusP : 1.0;
-    float lnk = (linkP  > 0.0) ? linkP  : 1.0;
-    float spd = (speedP > 0.0) ? speedP : 1.0;
+void main()
+{
+    float trs = ( torusP > 0.0 ) ? torusP : 1.0;
+    float lnk = ( linkP > 0.0 ) ? linkP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     const float kTanY = 0.5206;
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+    float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // The engine draws NON-instanced (glDrawArrays), so gl_InstanceID is
     // always 0 -- every unit would collapse onto one spot.  Scene3DShader
     // packs the per-unit index into attrA.w instead (see buildGeometry).
-    int cubeIndex = int(attrA.w);
-    float ci = float(cubeIndex);
+    int   cubeIndex = int( attrA.w );
+    float ci = float( cubeIndex );
     vIndex = ci / 4900.0;
 
     // Cube corner local vertex
@@ -76,17 +80,17 @@ void main() {
 
     vec3 vp;
 
-    if (hsh(ci, 2.13) < 0.14)
+    if ( hsh( ci, 2.13 ) < 0.14 )
     {
         // ---- 4D DUST -------------------------------------------------
         // A seventh of the units, scattered through the frustum from behind
         // the torus out to the far dark.  Placed in FRUSTUM coordinates -- x
         // and y scaled by depth -- so the field stays even across the picture
         // however deep a mote sits.
-        float d1 = hsh(ci, 5.31);
-        float d2 = hsh(ci, 9.77);
-        float d3 = hsh(ci, 13.9);
-        float d4 = hsh(ci, 21.4);
+        float d1 = hsh( ci, 5.31 );
+        float d2 = hsh( ci, 9.77 );
+        float d3 = hsh( ci, 13.9 );
+        float d4 = hsh( ci, 21.4 );
 
         float dz = 14.0 + d3 * 74.0;
         // 2.0 would fit the frustum exactly; 2.4 so the field still reaches
@@ -96,11 +100,11 @@ void main() {
 
         // A mote sized as a fraction of its own depth stays a legible ~4 px
         // speck at any distance; below that it averages away to nothing.
-        float dScale = dz * 0.0042 * (0.60 + 0.80 * d4) * (1.0 + 0.25 * audioSwell);
+        float dScale = dz * 0.0042 * ( 0.60 + 0.80 * d4 ) * ( 1.0 + 0.25 * audioSwell );
 
-        vec3 centre = vec3((d1 - 0.5) * open * dz * kTanY * aspect + 0.9 * cos(ph),
-                           (d2 - 0.5) * open * dz * kTanY          + 0.9 * sin(ph * 0.83),
-                           dz);
+        vec3 centre = vec3( ( d1 - 0.5 ) * open * dz * kTanY * aspect + 0.9 * cos( ph ),
+                            ( d2 - 0.5 ) * open * dz * kTanY + 0.9 * sin( ph * 0.83 ),
+                            dz );
         vWorldPos = centre;
         vDust = 1.0;
 
@@ -110,39 +114,39 @@ void main() {
     {
         // ---- THE STEREOGRAPHIC TORUS ---------------------------------
         // 4D Clifford Torus parameters: (u, v) on S3
-        float u = float(cubeIndex % 70) / 70.0 * 6.2831853;
-        float v = float(cubeIndex / 70) / 70.0 * 6.2831853;
+        float u = float( cubeIndex % 70 ) / 70.0 * 6.2831853;
+        float v = float( cubeIndex / 70 ) / 70.0 * 6.2831853;
 
         // 4D coordinates on S3: (cos u, sin u, cos v, sin v) / sqrt(2)
         float rot4D = t * 0.5 * lnk;
-        vec4 p4D = vec4(cos(u), sin(u), cos(v + rot4D), sin(v + rot4D)) * 0.7071;
+        vec4  p4D = vec4( cos( u ), sin( u ), cos( v + rot4D ), sin( v + rot4D ) ) * 0.7071;
 
         // Stereographic projection from 4D to 3D: P_3D = (x, y, z) / (1 - w)
-        float denom = max(1.0 - p4D.w * 0.65, 0.2);
+        float denom = max( 1.0 - p4D.w * 0.65, 0.2 );
         // The stereographic blow-up already multiplies the radius by up to
         // 1.85 and the camera sits 9 units back, so the overall scale is a
         // BOUNDED function of torusP: at the top of its 0.5..2.0 range the
         // outer rim reaches 7.1 and still clears the near plane, instead of
         // 13.7 -- which would have put half the donut behind the lens.
-        float sizeK = 3.0 * (0.72 + 0.28 * clamp(trs, 0.5, 2.0));
-        vec3 torusCenter = p4D.xyz / denom * sizeK;
+        float sizeK = 3.0 * ( 0.72 + 0.28 * clamp( trs, 0.5, 2.0 ) );
+        vec3  torusCenter = p4D.xyz / denom * sizeK;
 
         // Cube size: big enough that neighbouring units on the 70 x 70 lattice
         // OVERLAP into a continuous surface.
-        float cubeScale = (0.145 + 0.045 * sin(u * 3.0 + t * 2.0))
-                        * (1.0 + min(audioKick * 0.8, 1.0));
+        float cubeScale = ( 0.145 + 0.045 * sin( u * 3.0 + t * 2.0 ) )
+                          * ( 1.0 + min( audioKick * 0.8, 1.0 ) );
         vWorldPos = torusCenter + cubeCorner * cubeScale;
         vDust = 0.0;
 
         vp = vWorldPos;
-        vp.z += 7.2;   // outside the torus, close enough to fill
+        vp.z += 7.2; // outside the torus, close enough to fill
     }
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

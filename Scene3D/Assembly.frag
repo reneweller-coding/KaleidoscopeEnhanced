@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
 /**
  * @file Assembly.frag
@@ -24,81 +24,85 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: hueP float palette offset (0..6.28).
  */
 
-uniform sampler2DArray texMeshMaterial;   ///< The mesh's material textures (albedo, roughness, normal ...).
-uniform int texMeshMaterialLayers;   ///< Number of layers in texMeshMaterial.
+uniform sampler2DArray texMeshMaterial;       ///< The mesh's material textures (albedo, roughness, normal ...).
+uniform int            texMeshMaterialLayers; ///< Number of layers in texMeshMaterial.
 
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
+uniform float time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioKick;     ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
 
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float tintP;   ///< Tint knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float tintP; ///< Tint knob, 0..1.
 
-in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in vec3  vPos;   ///< Position (from the vertex stage).
-in float vBg;   ///< Background flag (from the vertex stage).
+in vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vPos;    ///< Position (from the vertex stage).
+in float vBg;     ///< Background flag (from the vertex stage).
 in float vSeat;
 in float vLand;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    const vec3 k = vec3(0.57735);
-    float ca = cos(a);
-    return c * ca + cross(k, c) * sin(a) + k * dot(k, c) * (1.0 - ca);
+    const vec3 k = vec3( 0.57735 );
+    float      ca = cos( a );
+    return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 12.9898) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 12.9898 ) * 43758.5453 );
+}
 
 /// @brief Star field brightness for a direction.
-float starsField(vec3 dir, float density)
+float starsField( vec3 dir, float density )
 {
-    vec3 g = floor(dir * 200.0);
-    float h = hash11(dot(g, vec3(1.0, 57.0, 113.0)));
-    return step(1.0 - density, h) * (0.35 + 0.65 * hash11(h * 31.7));
+    vec3  g = floor( dir * 200.0 );
+    float h = hash11( dot( g, vec3( 1.0, 57.0, 113.0 ) ) );
+    return step( 1.0 - density, h ) * ( 0.35 + 0.65 * hash11( h * 31.7 ) );
 }
 
 /// A 4x4 ordered dither: the pieces in flight are made see-through by DISCARDING
 /// fragments rather than by blending, because discarded fragments write no depth
 /// and the result stays correct whatever order the chunks happen to be drawn in.
-float bayer4(vec2 p)
+float bayer4( vec2 p )
 {
-    int x = int(mod(p.x, 4.0)), y = int(mod(p.y, 4.0));
-    int i = y * 4 + x;
-    float m[16] = float[16](0.0, 8.0, 2.0,10.0, 12.0, 4.0,14.0, 6.0,
-                            3.0,11.0, 1.0, 9.0, 15.0, 7.0,13.0, 5.0);
-    return (m[i] + 0.5) / 16.0;
+    int   x = int( mod( p.x, 4.0 ) ), y = int( mod( p.y, 4.0 ) );
+    int   i = y * 4 + x;
+    float m[16] = float[16]( 0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0,
+                             3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0 );
+    return ( m[i] + 0.5 ) / 16.0;
 }
 
 /// @brief Exposure that brings the material's average brightness to a common level.
-float materialExposure(sampler2DArray tex)
+float materialExposure( sampler2DArray tex )
 {
-    vec3 avg = textureLod(tex, vec3(0.5, 0.5, 0.0), 20.0).rgb;
-    float l = dot(avg, vec3(0.299, 0.587, 0.114));
-    return clamp(0.20 / max(l, 0.02), 0.30, 2.0);
+    vec3  avg = textureLod( tex, vec3( 0.5, 0.5, 0.0 ), 20.0 ).rgb;
+    float l = dot( avg, vec3( 0.299, 0.587, 0.114 ) );
+    return clamp( 0.20 / max( l, 0.02 ), 0.30, 2.0 );
 }
 
 /// An empty volume with a far light: the pieces have to arrive FROM somewhere,
 /// and a busy backdrop would hide them on the way in.
-vec3 renderSky(vec3 dir, vec3 tint)
+vec3 renderSky( vec3 dir, vec3 tint )
 {
-    float h = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);
+    float h = clamp( dir.y * 0.5 + 0.5, 0.0, 1.0 );
     // Same floor as the sibling Dissolve: for the first third of the scene
     // the pieces are still far out and the sky IS the picture, and at
     // 0.014..0.030 that picture measured luma 0.004 and was flagged empty
     // in every screening window.  Dark is the intent; invisible is not.
-    vec3 col = mix(vec3(0.030, 0.034, 0.048), vec3(0.062, 0.058, 0.086), h);
-    float d = max(dot(dir, normalize(vec3(-0.4, 0.5, 0.76))), 0.0);
+    vec3  col = mix( vec3( 0.030, 0.034, 0.048 ), vec3( 0.062, 0.058, 0.086 ), h );
+    float d = max( dot( dir, normalize( vec3( -0.4, 0.5, 0.76 ) ) ), 0.0 );
     // The beat lives HERE now. The hulls hold still (their kick hops and
     // the camera's swell-dolly are gone), so the backgrounds carry the
     // music: a kick pulse on the dominant glow, sized to read clearly
     // without breaking the temporal budget's full-frame brightness cap.
-    col += tint * pow(d, 40.0) * 0.55 * (0.70 + 0.60 * audioKick);   // the yard floodlight answers the beat
-    col += vec3(1.0) * starsField(dir, 0.0016);
+    col += tint * pow( d, 40.0 ) * 0.55 * ( 0.70 + 0.60 * audioKick ); // the yard floodlight answers the beat
+    col += vec3( 1.0 ) * starsField( dir, 0.0016 );
     return col;
 }
 
@@ -112,80 +116,84 @@ vec3 renderSky(vec3 dir, vec3 tint)
 /// and it costs nothing in the vertex stage and no change to the buffer layout.
 /// A model WITHOUT a normal map has materialLayers < 3 and this returns the
 /// interpolated normal untouched, so every scene works either way.
-mat3 cotangentFrame(vec3 N, vec3 p, vec2 uv)
+mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
 {
-    vec3 dp1 = dFdx(p),  dp2 = dFdy(p);
-    vec2 du1 = dFdx(uv), du2 = dFdy(uv);
-    vec3 dp2perp = cross(dp2, N);
-    vec3 dp1perp = cross(N, dp1);
-    vec3 T = dp2perp * du1.x + dp1perp * du2.x;
-    vec3 B = dp2perp * du1.y + dp1perp * du2.y;
-    float inv = inversesqrt(max(max(dot(T, T), dot(B, B)), 1e-12));
-    return mat3(T * inv, B * inv, N);
+    vec3  dp1 = dFdx( p ), dp2 = dFdy( p );
+    vec2  du1 = dFdx( uv ), du2 = dFdy( uv );
+    vec3  dp2perp = cross( dp2, N );
+    vec3  dp1perp = cross( N, dp1 );
+    vec3  T = dp2perp * du1.x + dp1perp * du2.x;
+    vec3  B = dp2perp * du1.y + dp1perp * du2.y;
+    float inv = inversesqrt( max( max( dot( T, T ), dot( B, B ) ), 1e-12 ) );
+    return mat3( T * inv, B * inv, N );
 }
 
 /// @brief The normal tilted by the material's normal map.
-vec3 perturbNormal(sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength)
+vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength )
 {
-    if (layers < 3) return n;
-    vec3 m = texture(tex, vec3(uv, 2.0)).rgb * 2.0 - 1.0;
+    if ( layers < 3 )
+        return n;
+    vec3 m = texture( tex, vec3( uv, 2.0 ) ).rgb * 2.0 - 1.0;
     // A degenerate tap (an all-black texel from a failed decode) would
     // normalize to garbage and pit the whole surface.
-    if (dot(m, m) < 1e-4) return n;
+    if ( dot( m, m ) < 1e-4 )
+        return n;
     m.xy *= strength;
-    return normalize(cotangentFrame(n, wpos, uv) * normalize(m));
+    return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float hue = (hueP > 0.01 ? hueP : 0.0);
-    vec3 tint = hueRot(vec3(1.0, 0.52, 0.20), tintP);
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
+    vec3  tint = hueRot( vec3( 1.0, 0.52, 0.20 ), tintP );
 
-    if( vBg > 0.5 )
+    if ( vBg > 0.5 )
     {
-        fragColor = vec4(renderSky(normalize(vPos), tint), 1.0);
+        fragColor = vec4( renderSky( normalize( vPos ), tint ), 1.0 );
         return;
     }
 
-    float seat = clamp(vSeat, 0.0, 1.0);
+    float seat = clamp( vSeat, 0.0, 1.0 );
 
     // In flight: thinned out by the dither, so the cloud reads as a swarm with
     // depth rather than as a solid mass of debris.
     float solidity = 0.30 + 0.70 * seat;
-    if( solidity < bayer4(gl_FragCoord.xy) ) discard;
+    if ( solidity < bayer4( gl_FragCoord.xy ) )
+        discard;
 
-    vec3 n = normalize(vNormal);
+    vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
-    n = perturbNormal(texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0);
-    vec3 viewDir = normalize(-vPos);
+    n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
+    vec3 viewDir = normalize( -vPos );
 
-    vec3 base = vec3(0.5);
-    if( texMeshMaterialLayers > 0 )
-        base = texture(texMeshMaterial, vec3(vUV, 0.0)).rgb * materialExposure(texMeshMaterial);
+    vec3 base = vec3( 0.5 );
+    if ( texMeshMaterialLayers > 0 )
+        base = texture( texMeshMaterial, vec3( vUV, 0.0 ) ).rgb * materialExposure( texMeshMaterial );
 
-    float lam = max(dot(n, normalize(vec3(-0.4, 0.72, -0.55))), 0.0);
-    vec3 col = base * (0.22 + 1.15 * lam) * (0.45 + 0.55 * seat);
+    float lam = max( dot( n, normalize( vec3( -0.4, 0.72, -0.55 ) ) ), 0.0 );
+    vec3  col = base * ( 0.22 + 1.15 * lam ) * ( 0.45 + 0.55 * seat );
 
     // Heat, strongest just before a piece lands: it fades as the piece seats,
     // so the arrival has a visible last moment instead of simply stopping.
-    float heat = (1.0 - seat) * (0.55 + 0.9 * audioSwell);
-    col += tint * heat * (0.8 + 1.4 * pow(seat, 2.0));
+    float heat = ( 1.0 - seat ) * ( 0.55 + 0.9 * audioSwell );
+    col += tint * heat * ( 0.8 + 1.4 * pow( seat, 2.0 ) );
 
     // The flare AT the moment of seating.  Computed in the geometry stage on
     // the flight's own clock, where it can actually END: the old form here,
     // a window in `seat` closing at 1.02, never closed because seat is
     // clamped to 1 -- so the flash stayed on and painted every finished
     // object a flat orange with no shading.
-    float landing = clamp(vLand, 0.0, 1.0);
-    col += tint * landing * (1.2 + 2.2 * audioKick);
+    float landing = clamp( vLand, 0.0, 1.0 );
+    col += tint * landing * ( 1.2 + 2.2 * audioKick );
 
-    float rim = pow(1.0 - max(dot(n, viewDir), 0.0), 3.0);
-    col += tint * rim * (0.22 + 0.45 * audioSwell) * seat;
+    float rim = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 3.0 );
+    col += tint * rim * ( 0.22 + 0.45 * audioSwell ) * seat;
 
-    if( hue > 0.001 ) col = hueRot(col, 0.12 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

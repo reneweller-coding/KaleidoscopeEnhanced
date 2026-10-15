@@ -1,16 +1,16 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // MetaSculpt.frag — wet, heavy, subsurface-lit material for the metaball body.
 // The generator maintains no triangle winding (its normals come from the field
 // gradient, which is the more accurate source anyway), so the normal is flipped
 // toward the eye here rather than trusted for facing.
 
-in vec3  vObj;   ///< Object-space position (from the vertex stage).
+in vec3  vObj;      ///< Object-space position (from the vertex stage).
 in vec3  vNormal;   ///< Surface normal (from the vertex stage).
-in vec3  vView;   ///< View vector (from the vertex stage).
-in vec3  vWorld;   ///< World position (from the vertex stage).
-in float vStrength;      ///< 0..1 thickness probe from the generator
-in float vKind;          ///< 0 = isosurface, 1 = far-field backdrop panel
+in vec3  vView;     ///< View vector (from the vertex stage).
+in vec3  vWorld;    ///< World position (from the vertex stage).
+in float vStrength; ///< 0..1 thickness probe from the generator
+in float vKind;     ///< 0 = isosurface, 1 = far-field backdrop panel
 
 /**
  * @file MetaSculpt.frag
@@ -30,33 +30,35 @@ in float vKind;          ///< 0 = isosurface, 1 = far-field backdrop panel
  * audioAmbient sets its brightness and audioAdvance drifts its bands.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D       tex0; ///< The current photo.
 uniform sampler2DShadow texShadow;
-uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
-uniform vec3  lightDir;
-uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
-uniform float shadowTexel;
-uniform float shadowExtent;
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform mat4            lightM; ///< Light view-projection matrix (shadow map).
+uniform vec3            lightDir;
+uniform float           shadowPass; ///< 1 during the shadow map's depth-only pass.
+uniform float           shadowTexel;
+uniform float           shadowExtent;
+uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float glossP;
-uniform float isoP;
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     glossP;
+uniform float     isoP;
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -64,132 +66,134 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
+    return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
 /// @brief Shadow factor from the shadow map at a world position.
-float shadowAt(vec3 world, vec3 n, float ndl)
+float shadowAt( vec3 world, vec3 n, float ndl )
 {
-    float lift = (2.0 * shadowExtent * shadowTexel) * 2.2 / max(ndl, 0.15);
-    vec4 lp = lightM * vec4(world + n * lift, 1.0);
-    vec3 proj = lp.xyz / lp.w * 0.5 + 0.5;
-    if (proj.z > 1.0)
+    float lift = ( 2.0 * shadowExtent * shadowTexel ) * 2.2 / max( ndl, 0.15 );
+    vec4  lp = lightM * vec4( world + n * lift, 1.0 );
+    vec3  proj = lp.xyz / lp.w * 0.5 + 0.5;
+    if ( proj.z > 1.0 )
         return 1.0;
     // The body now reaches out past the light box (shadowExtent 2.8), and a
     // sampler2DShadow clamps to its edge texel outside [0,1] -- which paints a
     // hard band of borrowed shadow down the sides.  Anything outside the map
     // is simply unshadowed.
-    if (any(lessThan(proj.xy, vec2(0.0))) || any(greaterThan(proj.xy, vec2(1.0))))
+    if ( any( lessThan( proj.xy, vec2( 0.0 ) ) ) || any( greaterThan( proj.xy, vec2( 1.0 ) ) ) )
         return 1.0;
-    float bias = 0.0006 + 0.0030 * (1.0 - ndl);
+    float bias = 0.0006 + 0.0030 * ( 1.0 - ndl );
     float s = 0.0;
     float r = shadowTexel * 1.6;
-    for (int y = -1; y <= 1; ++y)
-        for (int x = -1; x <= 1; ++x)
-            s += texture(texShadow,
-                         vec3(proj.xy + vec2(float(x), float(y)) * r, proj.z - bias));
+    for ( int y = -1; y <= 1; ++y )
+        for ( int x = -1; x <= 1; ++x )
+            s += texture( texShadow,
+                          vec3( proj.xy + vec2( float( x ), float( y ) ) * r, proj.z - bias ) );
     return s / 9.0;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    if (shadowPass > 0.5)
+    if ( shadowPass > 0.5 )
     {
-        fragColor = vec4(0.0);
+        fragColor = vec4( 0.0 );
         return;
     }
 
-    if (vKind > 0.5)
+    if ( vKind > 0.5 )
     {
         // FAR-FIELD BACKDROP: a slow, bounded nebula wash built from the same
         // photo-arc palette the body uses, so the margins of the frame read as
         // atmosphere the sculpture hangs in rather than as dead clear colour.
-        vec2 uv = clamp(vObj.xy, 0.0, 1.0);
-        float a  = audioAdvance * 0.05;
-        float n1 = sin(uv.x * 4.3 + a * 1.1) * sin(uv.y * 3.1 - a * 0.8);
-        float n2 = sin(uv.x * 9.7 - a * 0.6 + 1.9) * sin(uv.y * 7.3 + a * 0.9);
-        float fb = clamp(0.55 + 0.30 * n1 + 0.15 * n2, 0.0, 1.0);
+        vec2  uv = clamp( vObj.xy, 0.0, 1.0 );
+        float a = audioAdvance * 0.05;
+        float n1 = sin( uv.x * 4.3 + a * 1.1 ) * sin( uv.y * 3.1 - a * 0.8 );
+        float n2 = sin( uv.x * 9.7 - a * 0.6 + 1.9 ) * sin( uv.y * 7.3 + a * 0.9 );
+        float fb = clamp( 0.55 + 0.30 * n1 + 0.15 * n2, 0.0, 1.0 );
 
-        vec3 bg = imgPalette(fract(0.31 + 0.22 * fb + 0.10 * uv.x));
+        vec3 bg = imgPalette( fract( 0.31 + 0.22 * fb + 0.10 * uv.x ) );
         // A soft pool of light behind the body, never a hard vignette.
-        float rad = length((uv - 0.5) * vec2(1.7, 1.0));
-        float vig = mix(1.0, 0.62, smoothstep(0.25, 1.05, rad));
+        float rad = length( ( uv - 0.5 ) * vec2( 1.7, 1.0 ) );
+        float vig = mix( 1.0, 0.62, smoothstep( 0.25, 1.05, rad ) );
 
         // Levels chosen so even the darkest corner of the wash sits above the
         // step at which a tile stops registering as carrying anything -- a
         // backdrop that measures as black is no backdrop at all.
-        vec3 bcol = bg * (0.16 + 0.22 * fb) * vig * (0.80 + 0.45 * audioAmbient);
-        bcol += imgPalette(fract(0.62 + 0.30 * uv.y)) * 0.050
-              * (0.5 + min(audioLevel, 1.0));
+        vec3 bcol = bg * ( 0.16 + 0.22 * fb ) * vig * ( 0.80 + 0.45 * audioAmbient );
+        bcol += imgPalette( fract( 0.62 + 0.30 * uv.y ) ) * 0.050
+                * ( 0.5 + min( audioLevel, 1.0 ) );
         // Cap the FINAL tinted colour: the palette can already exceed 1.0 per
         // channel before any of this is applied.
-        fragColor = vec4(min(bcol, vec3(0.30)), interpolation);
+        fragColor = vec4( min( bcol, vec3( 0.30 ) ), interpolation );
         return;
     }
 
-    vec3 n = normalize(vNormal);
-    vec3 V = normalize(vView);
-    if (dot(n, V) < 0.0) n = -n;
+    vec3 n = normalize( vNormal );
+    vec3 V = normalize( vView );
+    if ( dot( n, V ) < 0.0 )
+        n = -n;
 
-    vec3 L  = normalize(lightDir);
-    vec3 L2 = normalize(vec3(-0.72, -0.2, -0.55));
+    vec3 L = normalize( lightDir );
+    vec3 L2 = normalize( vec3( -0.72, -0.2, -0.55 ) );
 
     // Colour by how much body sits behind the surface: the thin necks where two
     // lobes have just merged come out a different hue from the fat centres, so
     // the topology of the body is readable at a glance.
-    float depth = clamp(vStrength * 2.2, 0.0, 1.0);
-    float hue = fract(0.58 + 0.26 * depth + 0.20 * length(vObj)
-                      + 0.07 * sin(audioChromaHue));
-    vec3 base = mix(vec3(0.09, 0.10, 0.16), hue2rgb(hue), 0.70);
+    float depth = clamp( vStrength * 2.2, 0.0, 1.0 );
+    float hue = fract( 0.58 + 0.26 * depth + 0.20 * length( vObj )
+                       + 0.07 * sin( audioChromaHue ) );
+    vec3  base = mix( vec3( 0.09, 0.10, 0.16 ), hue2rgb( hue ), 0.70 );
 
-    float diff = max(dot(n, L), 0.0);
-    float wrap = 0.5 + 0.5 * dot(n, L);
+    float diff = max( dot( n, L ), 0.0 );
+    float wrap = 0.5 + 0.5 * dot( n, L );
 
     // A metaball body folds back on itself constantly, so the lobes shadow one
     // another — the effect that most distinguishes a solid from a silhouette.
-    float shadow = shadowAt(vWorld, n, diff);
+    float shadow = shadowAt( vWorld, n, diff );
 
-    vec3 col = base * (0.18 + 0.90 * diff * shadow + 0.50 * wrap * wrap);
-    col += base * vec3(0.5, 0.65, 1.0) * max(dot(n, L2), 0.0) * 0.5;
+    vec3 col = base * ( 0.18 + 0.90 * diff * shadow + 0.50 * wrap * wrap );
+    col += base * vec3( 0.5, 0.65, 1.0 ) * max( dot( n, L2 ), 0.0 ) * 0.5;
 
     // Subsurface: thin parts glow through.  1 - depth is exactly "how close to
     // the surface of the field this is", which is the cheapest honest measure
     // of thickness available here.
-    float thin = pow(1.0 - depth, 2.2);
-    col += hue2rgb(fract(hue + 0.08)) * thin
-         * (0.35 + 0.8 * audioAmbient + 0.7 * audioSubBass);
+    float thin = pow( 1.0 - depth, 2.2 );
+    col += hue2rgb( fract( hue + 0.08 ) ) * thin
+           * ( 0.35 + 0.8 * audioAmbient + 0.7 * audioSubBass );
 
     // Environment mirror + Fresnel, which is what makes it read as wet.
-    vec3 R = reflect(-V, n);
-    vec2 envUV = vec2(atan(R.x, R.z) / 6.2831853 + 0.5,
-                      clamp(R.y * 0.5 + 0.5, 0.0, 1.0));
-    vec3 env = textureLod(tex0, fract(envUV), 0.0).rgb;
-    env = mix(vec3(dot(env, vec3(0.333))), env, 0.7);
-    float fres = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 4.0);
-    col = mix(col, env * (0.55 + 0.8 * glossP), fres * (0.35 + 0.45 * glossP));
+    vec3 R = reflect( -V, n );
+    vec2 envUV = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
+                       clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
+    vec3 env = textureLod( tex0, fract( envUV ), 0.0 ).rgb;
+    env = mix( vec3( dot( env, vec3( 0.333 ) ) ), env, 0.7 );
+    float fres = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 4.0 );
+    col = mix( col, env * ( 0.55 + 0.8 * glossP ), fres * ( 0.35 + 0.45 * glossP ) );
 
-    vec3 H = normalize(L + V);
-    col += min(vec3(1.0, 0.96, 0.9) * pow(max(dot(n, H), 0.0), 45.0 + 300.0 * glossP)
-             * shadow * (0.9 + 2.2 * audioHigh), vec3(1.5));
+    vec3 H = normalize( L + V );
+    col += min( vec3( 1.0, 0.96, 0.9 ) * pow( max( dot( n, H ), 0.0 ), 45.0 + 300.0 * glossP )
+                    * shadow * ( 0.9 + 2.2 * audioHigh ),
+                vec3( 1.5 ) );
 
     // Rim, so the silhouette survives against the black background.
-    col += hue2rgb(fract(hue + 0.5)) * pow(fres, 1.7)
-         * (0.35 + 0.9 * audioLevel + 0.6 * audioKick);
+    col += hue2rgb( fract( hue + 0.5 ) ) * pow( fres, 1.7 )
+           * ( 0.35 + 0.9 * audioLevel + 0.6 * audioKick );
 
     col *= 1.0 + 0.20 * audioBeat;
-    col = col / (1.0 + col * 0.27);
-    fragColor = vec4(col, interpolation);
+    col = col / ( 1.0 + col * 0.27 );
+    fragColor = vec4( col, interpolation );
 }

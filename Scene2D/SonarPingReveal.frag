@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SonarPingReveal.frag
  * @brief SONAR PING REVEAL: a bat's cave, or a submarine's sea -- the
@@ -19,97 +19,109 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: rateP, fadeP, hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float rateP;
 uniform float fadeP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
-    vec2 uv = gl_FragCoord.xy / resolution;
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
+    vec2  uv = gl_FragCoord.xy / resolution;
 
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float rate = 0.35 + 0.45 * clamp(rateP, 0.0, 1.0);
-    float fadeLen = 0.25 + 0.45 * clamp(fadeP, 0.0, 1.0);
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float rate = 0.35 + 0.45 * clamp( rateP, 0.0, 1.0 );
+    float fadeLen = 0.25 + 0.45 * clamp( fadeP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.6 + sceneTime * 0.12;
-    float r = length(p);
-    float a = atan(p.y, p.x);
+    float r = length( p );
+    float a = atan( p.y, p.x );
 
     // The scene: the photo, but only where echoes have lit it.
-    vec3 photo = img(uv);
-    photo = mix(photo, photo * imgPalette(hue * 0.159 + 0.5) * 1.6, 0.25);
+    vec3 photo = img( uv );
+    photo = mix( photo, photo * imgPalette( hue * 0.159 + 0.5 ) * 1.6, 0.25 );
     // Echo detail: the edges of the photo return stronger (the treble).
-    vec2 e = vec2(1.5) / resolution;
-    float edge = length(vec2(dot(img(uv + vec2(e.x, 0.0)) - img(uv - vec2(e.x, 0.0)), vec3(0.333)), dot(img(uv + vec2(0.0, e.y)) - img(uv - vec2(0.0, e.y)), vec3(0.333)))) * 5.0;
-    edge = clamp(edge, 0.0, 1.0) * clamp(audioHigh * 2.0, 0.0, 1.0);
+    vec2  e = vec2( 1.5 ) / resolution;
+    float edge = length( vec2( dot( img( uv + vec2( e.x, 0.0 ) ) - img( uv - vec2( e.x, 0.0 ) ), vec3( 0.333 ) ),
+                               dot( img( uv + vec2( 0.0, e.y ) ) - img( uv - vec2( 0.0, e.y ) ), vec3( 0.333 ) ) ) )
+                 * 5.0;
+    edge = clamp( edge, 0.0, 1.0 ) * clamp( audioHigh * 2.0, 0.0, 1.0 );
 
     // Pings: several rings in flight at once, each on its own phase; a
     // ring lights the photo at its front and leaves a fading wake behind.
-    float lit = 0.0; float front = 0.0;
-    for (int k = 0; k < 5; ++k)
+    float lit = 0.0;
+    float front = 0.0;
+    for ( int k = 0; k < 5; ++k )
     {
-        float fk = float(k);
-        float ph = fract(clock * rate + fk * 0.2);
-        float rr = ph * 1.2;                                   // ring radius
-        float behind = rr - r;                                 // >0 inside the ring (already passed)
-        float wake = exp(-max(behind, 0.0) / fadeLen) * step(0.0, behind);
-        float ringLine = exp(-abs(behind) * 40.0);
+        float fk = float( k );
+        float ph = fract( clock * rate + fk * 0.2 );
+        float rr = ph * 1.2;   // ring radius
+        float behind = rr - r; // >0 inside the ring (already passed)
+        float wake = exp( -max( behind, 0.0 ) / fadeLen ) * step( 0.0, behind );
+        float ringLine = exp( -abs( behind ) * 40.0 );
         // Angular texture on the ring: the echo is not uniform.
-        float angMod = 0.8 + 0.2 * sin(a * 12.0 + fk * 2.0 + clock);
-        lit = max(lit, wake * angMod * (1.0 - smoothstep(0.85, 1.0, ph)));
-        front += ringLine * (1.0 - smoothstep(0.85, 1.0, ph));
+        float angMod = 0.8 + 0.2 * sin( a * 12.0 + fk * 2.0 + clock );
+        lit = max( lit, wake * angMod * ( 1.0 - smoothstep( 0.85, 1.0, ph ) ) );
+        front += ringLine * ( 1.0 - smoothstep( 0.85, 1.0, ph ) );
     }
     // The kick ping: an extra bright ring that leaves the centre with the kick.
-    float kickRing = exp(-abs(r - fract(clock * rate * 2.0) * 1.2) * 30.0) * audioKick;
-    vec3 ringCol = mix(vec3(0.4, 1.0, 0.7), imgPalette(hue * 0.159 + 0.35), 0.4);
-    vec3 col = photo * lit * 1.2 + photo * edge * lit * 0.8;
+    float kickRing = exp( -abs( r - fract( clock * rate * 2.0 ) * 1.2 ) * 30.0 ) * audioKick;
+    vec3  ringCol = mix( vec3( 0.4, 1.0, 0.7 ), imgPalette( hue * 0.159 + 0.35 ), 0.4 );
+    vec3  col = photo * lit * 1.2 + photo * edge * lit * 0.8;
     col += ringCol * front * 0.6 + ringCol * kickRing * 1.5;
     // The emitter at the centre hums with the bass; a faint grid of the sonar display.
-    col += ringCol * exp(-r * 12.0) * (0.3 + 1.0 * clamp(audioBass, 0.0, 1.0));
-    float grid = smoothstep(0.003, 0.0, abs(fract(r * 5.0) - 0.5) - 0.49) * 0.06 + smoothstep(0.003, 0.0, abs(fract(a * 1.909) - 0.5) - 0.49) * 0.04 * step(0.1, r);
+    col += ringCol * exp( -r * 12.0 ) * ( 0.3 + 1.0 * clamp( audioBass, 0.0, 1.0 ) );
+    float grid = smoothstep( 0.003, 0.0, abs( fract( r * 5.0 ) - 0.5 ) - 0.49 ) * 0.06
+                 + smoothstep( 0.003, 0.0, abs( fract( a * 1.909 ) - 0.5 ) - 0.49 ) * 0.04 * step( 0.1, r );
     col += ringCol * grid;
     col += ringCol * 0.015;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

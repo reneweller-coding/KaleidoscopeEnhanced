@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // ShadowForest.frag — the ground is the canvas and the trunks are the brush.
 // The ground gets a bright, warm direct term so every shadow crossing it reads
 // hard; the trunks get almost none, so they stay as silhouettes and do not
 // compete with the pattern they are casting.
 
-in vec3  vObj;   ///< Object-space position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vObj;    ///< Object-space position (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vView;   ///< View vector (from the vertex stage).
-in vec3  vWorld;   ///< World position (from the vertex stage).
+in vec3  vWorld;  ///< World position (from the vertex stage).
 in float vKind;   ///< Element kind (from the vertex stage).
 in float vVar;
 
@@ -30,34 +30,36 @@ in float vVar;
  * varies bark tone between trunks.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
+uniform sampler2D       tex0; ///< The current photo.
 uniform sampler2DShadow texShadow;
-uniform mat4  lightM;   ///< Light view-projection matrix (shadow map).
-uniform vec3  lightDir;
-uniform float shadowPass;   ///< 1 during the shadow map's depth-only pass.
-uniform float shadowTexel;
-uniform float shadowExtent;
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform mat4            lightM; ///< Light view-projection matrix (shadow map).
+uniform vec3            lightDir;
+uniform float           shadowPass; ///< 1 during the shadow map's depth-only pass.
+uniform float           shadowTexel;
+uniform float           shadowExtent;
+uniform float           interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float           time;          ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-uniform float mistP;
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     glowP; ///< Glow / afterglow knob, 0..1.
+uniform float     hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float     mistP;
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -65,52 +67,52 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
+    return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
 /// @brief Shadow factor from the shadow map at a world position.
-float shadowAt(vec3 world, vec3 n, float ndl)
+float shadowAt( vec3 world, vec3 n, float ndl )
 {
-    float lift = (2.0 * shadowExtent * shadowTexel) * 2.2 / max(ndl, 0.15);
-    vec4 lp = lightM * vec4(world + n * lift, 1.0);
-    vec3 proj = lp.xyz / lp.w * 0.5 + 0.5;
-    if (proj.z > 1.0 || any(lessThan(proj.xy, vec2(0.0))) ||
-        any(greaterThan(proj.xy, vec2(1.0))))
+    float lift = ( 2.0 * shadowExtent * shadowTexel ) * 2.2 / max( ndl, 0.15 );
+    vec4  lp = lightM * vec4( world + n * lift, 1.0 );
+    vec3  proj = lp.xyz / lp.w * 0.5 + 0.5;
+    if ( proj.z > 1.0 || any( lessThan( proj.xy, vec2( 0.0 ) ) ) || any( greaterThan( proj.xy, vec2( 1.0 ) ) ) )
         return 1.0;
-    float bias = 0.0006 + 0.0030 * (1.0 - ndl);
+    float bias = 0.0006 + 0.0030 * ( 1.0 - ndl );
     float s = 0.0;
     float r = shadowTexel * 1.6;
-    for (int y = -1; y <= 1; ++y)
-        for (int x = -1; x <= 1; ++x)
-            s += texture(texShadow,
-                         vec3(proj.xy + vec2(float(x), float(y)) * r, proj.z - bias));
+    for ( int y = -1; y <= 1; ++y )
+        for ( int x = -1; x <= 1; ++x )
+            s += texture( texShadow,
+                          vec3( proj.xy + vec2( float( x ), float( y ) ) * r, proj.z - bias ) );
     return s / 9.0;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    if (shadowPass > 0.5)
+    if ( shadowPass > 0.5 )
     {
-        fragColor = vec4(0.0);
+        fragColor = vec4( 0.0 );
         return;
     }
 
-    vec3 n = normalize(vNormal);
-    vec3 V = normalize(vView);
-    if (dot(n, V) < 0.0) n = -n;
+    vec3 n = normalize( vNormal );
+    vec3 V = normalize( vView );
+    if ( dot( n, V ) < 0.0 )
+        n = -n;
 
     // The sun vector, guarded.  EVERY warm term in this shader is gated on it:
     // the ground's direct light, the trunks' direct light, and the trunk rim --
@@ -121,20 +123,20 @@ void main()
     // lightDir normalises to NaN, and max(NaN, 0.0) collapses every one of
     // those terms at once. Falling back to a fixed high sun costs nothing when
     // lightDir is good and keeps the stand lit when it is not.
-    float lLen = length(lightDir);
-    vec3  L    = (lLen > 1e-4) ? lightDir / lLen : normalize(vec3(0.33, 0.90, -0.28));
-    float ndl  = max(dot(n, L), 0.0);
-    float sh   = clamp(shadowAt(vWorld, n, ndl), 0.0, 1.0);
+    float lLen = length( lightDir );
+    vec3  L = ( lLen > 1e-4 ) ? lightDir / lLen : normalize( vec3( 0.33, 0.90, -0.28 ) );
+    float ndl = max( dot( n, L ), 0.0 );
+    float sh = clamp( shadowAt( vWorld, n, ndl ), 0.0, 1.0 );
 
-    float hue = fract(0.09 + 0.16 * hueP + 0.04 * sin(audioChromaHue));
-    vec3 sun = mix(vec3(1.0, 0.86, 0.62), hue2rgb(hue), 0.28);
-    vec3 sky = vec3(0.26, 0.36, 0.52);
+    float hue = fract( 0.09 + 0.16 * hueP + 0.04 * sin( audioChromaHue ) );
+    vec3  sun = mix( vec3( 1.0, 0.86, 0.62 ), hue2rgb( hue ), 0.28 );
+    vec3  sky = vec3( 0.26, 0.36, 0.52 );
 
     vec3 col;
-    if (vKind < 0.5)
+    if ( vKind < 0.5 )
     {
         // ---- forest floor ----
-        vec3 ground = vec3(0.30, 0.27, 0.22);
+        vec3 ground = vec3( 0.30, 0.27, 0.22 );
 
         // Canopy dapple: broad pools of light and shade drifting across the
         // floor. A stand of 64 thin poles casts almost nothing across an open
@@ -145,10 +147,10 @@ void main()
         // is. The drift is a constant coefficient on `time` (~0.7 world units
         // per second across a ~9-unit pattern, about 0.08 Hz) -- a slow crawl,
         // far inside the temporal budget.
-        vec2 gp = vWorld.xz * 0.42 + vec2(time * 0.30, audioAdvance * 0.06);
-        float d1 = sin(gp.x * 1.7 + sin(gp.y * 1.1) * 1.6);
-        float d2 = sin(gp.y * 2.3 - sin(gp.x * 1.4) * 1.9);
-        float dapple = smoothstep(0.18, 0.84, 0.5 + 0.5 * d1 * d2);
+        vec2  gp = vWorld.xz * 0.42 + vec2( time * 0.30, audioAdvance * 0.06 );
+        float d1 = sin( gp.x * 1.7 + sin( gp.y * 1.1 ) * 1.6 );
+        float d2 = sin( gp.y * 2.3 - sin( gp.x * 1.4 ) * 1.9 );
+        float dapple = smoothstep( 0.18, 0.84, 0.5 + 0.5 * d1 * d2 );
 
         // The dapple has to ride the SKY term, not only the direct one. In the
         // measured probe the direct term was zero over the entire floor: fit
@@ -158,35 +160,35 @@ void main()
         // changes nothing at all. Riding the sky term is the better model
         // regardless -- a canopy occludes the sky dome exactly as it occludes
         // the sun, and shaded forest floor is blue because of it.
-        col  = ground * sky * (0.55 + 0.5 * audioAmbient) * (0.40 + 1.05 * dapple);
-        col += ground * mix(sky, sun, 0.55) * dapple * (1.85 + 0.45 * audioLevel);
+        col = ground * sky * ( 0.55 + 0.5 * audioAmbient ) * ( 0.40 + 1.05 * dapple );
+        col += ground * mix( sky, sun, 0.55 ) * dapple * ( 1.85 + 0.45 * audioLevel );
 
         // The real shadow map still darkens whatever it covers, on top of that.
-        col += ground * sun * ndl * sh * (1.7 + 0.5 * audioLevel)
-             * (0.26 + 1.30 * dapple);
+        col += ground * sun * ndl * sh * ( 1.7 + 0.5 * audioLevel )
+               * ( 0.26 + 1.30 * dapple );
         // Cap the TINTED vec3, not a scalar: `sun` and `sky` both exceed 1.0 in
         // a channel once the palette warms them, so a scalar cap would let a
         // single channel run away on a bright pool.
-        col = min(col, vec3(1.15));
+        col = min( col, vec3( 1.15 ) );
         // The litter breaks the plane up so the shadows have something to lie on.
-        float grain = fract(sin(dot(floor(vWorld.xz * 6.0), vec2(12.99, 78.23)))
-                            * 43758.5453);
+        float grain = fract( sin( dot( floor( vWorld.xz * 6.0 ), vec2( 12.99, 78.23 ) ) )
+                             * 43758.5453 );
         col *= 0.93 + 0.14 * grain;
     }
     else
     {
         // ---- trunks ----
-        vec3 bark = mix(vec3(0.13, 0.11, 0.10), vec3(0.22, 0.18, 0.15), vVar);
+        vec3 bark = mix( vec3( 0.13, 0.11, 0.10 ), vec3( 0.22, 0.18, 0.15 ), vVar );
         col = bark * sky * 0.55;
         col += bark * sun * ndl * sh * 0.85;
         // A rim off the sun side so the silhouettes separate from each other.
-        float rim = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 2.6);
-        col += sun * rim * max(dot(n, L) * 0.5 + 0.5, 0.0)
-             * (0.30 + 0.7 * glowP) * (0.5 + 1.0 * audioKick);
+        float rim = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 2.6 );
+        col += sun * rim * max( dot( n, L ) * 0.5 + 0.5, 0.0 )
+               * ( 0.30 + 0.7 * glowP ) * ( 0.5 + 1.0 * audioKick );
     }
 
     // Depth haze: the stand has to fade or the far trunks pile into a black wall.
-    float dist = length(vec3(vWorld.x, vWorld.y - 1.0, vWorld.z + 7.0));
+    float dist = length( vec3( vWorld.x, vWorld.y - 1.0, vWorld.z + 7.0 ) );
     // At 0.035/unit and a 0.92 ceiling, the far two thirds of the floor was
     // 50-90% replaced by one constant air colour -- the haze was doing more to
     // flatten the picture than the shadows were doing to structure it.
@@ -196,12 +198,12 @@ void main()
     // 0.018/0.42 lifts the floor's own luma std from 0.072 to 0.088 with no
     // change in exposure -- and the stand still fades out at the back, which
     // is all the haze was ever there to do.
-    float haze = 1.0 - exp(-dist * 0.018 * clamp(mistP, 0.2, 2.0));
-    vec3 air = mix(sky * 0.55, sun * 0.5, 0.35) * (0.6 + 0.6 * audioAmbient);
-    col = mix(col, air, clamp(haze, 0.0, 0.42));
+    float haze = 1.0 - exp( -dist * 0.018 * clamp( mistP, 0.2, 2.0 ) );
+    vec3  air = mix( sky * 0.55, sun * 0.5, 0.35 ) * ( 0.6 + 0.6 * audioAmbient );
+    col = mix( col, air, clamp( haze, 0.0, 0.42 ) );
 
     col *= 1.0 + 0.16 * audioBeat + 0.12 * audioSubBass;
     col += sun * 0.05 * audioHigh;
-    col = col / (1.0 + col * 0.30);
-    fragColor = vec4(col, interpolation);
+    col = col / ( 1.0 + col * 0.30 );
+    fragColor = vec4( col, interpolation );
 }

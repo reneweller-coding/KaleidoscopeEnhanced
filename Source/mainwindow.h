@@ -23,69 +23,71 @@ QT_BEGIN_NAMESPACE
 class Ui_MainWindow
 {
 public:
-    QAction *actionExit;
-    QAction *actionOpenModel;
-    QAction *actionReload;
-    QWidget *centralwidget;
+    QAction     *actionExit;
+    QAction     *actionOpenModel;
+    QAction     *actionReload;
+    QWidget     *centralwidget;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *hboxLayout;
-    GLwidget *widget;
+    GLwidget    *widget;
 
-    void setupUi(QMainWindow *MainWindow)
+    void setupUi( QMainWindow *MainWindow )
     {
-        if (MainWindow->objectName().isEmpty())
-            MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(702, 680);
-        actionExit = new QAction(MainWindow);
-        actionExit->setObjectName("actionExit");
-        actionOpenModel = new QAction(MainWindow);
-        actionOpenModel->setObjectName("actionOpenModel");
-        actionReload = new QAction(MainWindow);
-        actionReload->setObjectName("actionReload");
-        centralwidget = new QWidget(MainWindow);
-        centralwidget->setObjectName("centralwidget");
-        verticalLayout = new QVBoxLayout(centralwidget);
-        verticalLayout->setSpacing(0);
-        verticalLayout->setContentsMargins(0, 0, 0, 0);
-        verticalLayout->setObjectName("verticalLayout");
+        if ( MainWindow->objectName().isEmpty() )
+            MainWindow->setObjectName( "MainWindow" );
+        MainWindow->resize( 702, 680 );
+        actionExit = new QAction( MainWindow );
+        actionExit->setObjectName( "actionExit" );
+        actionOpenModel = new QAction( MainWindow );
+        actionOpenModel->setObjectName( "actionOpenModel" );
+        actionReload = new QAction( MainWindow );
+        actionReload->setObjectName( "actionReload" );
+        centralwidget = new QWidget( MainWindow );
+        centralwidget->setObjectName( "centralwidget" );
+        verticalLayout = new QVBoxLayout( centralwidget );
+        verticalLayout->setSpacing( 0 );
+        verticalLayout->setContentsMargins( 0, 0, 0, 0 );
+        verticalLayout->setObjectName( "verticalLayout" );
         hboxLayout = new QHBoxLayout();
-        hboxLayout->setSpacing(0);
+        hboxLayout->setSpacing( 0 );
 #ifndef Q_OS_MAC
-        hboxLayout->setContentsMargins(0, 0, 0, 0);
+        hboxLayout->setContentsMargins( 0, 0, 0, 0 );
 #endif
-        hboxLayout->setObjectName("hboxLayout");
-        widget = new GLwidget(centralwidget);
-        widget->setObjectName("widget");
-        QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
-        sizePolicy.setHorizontalStretch(0);
-        sizePolicy.setVerticalStretch(0);
-        sizePolicy.setHeightForWidth(widget->sizePolicy().hasHeightForWidth());
-        widget->setSizePolicy(sizePolicy);
+        hboxLayout->setObjectName( "hboxLayout" );
+        widget = new GLwidget( centralwidget );
+        widget->setObjectName( "widget" );
+        QSizePolicy sizePolicy( QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding );
+        sizePolicy.setHorizontalStretch( 0 );
+        sizePolicy.setVerticalStretch( 0 );
+        sizePolicy.setHeightForWidth( widget->sizePolicy().hasHeightForWidth() );
+        widget->setSizePolicy( sizePolicy );
 
-        hboxLayout->addWidget(widget);
+        hboxLayout->addWidget( widget );
 
 
-        verticalLayout->addLayout(hboxLayout);
+        verticalLayout->addLayout( hboxLayout );
 
-        MainWindow->setCentralWidget(centralwidget);
+        MainWindow->setCentralWidget( centralwidget );
 
-        retranslateUi(MainWindow);
+        retranslateUi( MainWindow );
 
-        QMetaObject::connectSlotsByName(MainWindow);
+        QMetaObject::connectSlotsByName( MainWindow );
     } // setupUi
 
-    void retranslateUi(QMainWindow *MainWindow)
+    void retranslateUi( QMainWindow *MainWindow )
     {
-        MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "MainWindow", nullptr));
-        actionExit->setText(QCoreApplication::translate("MainWindow", "Exit", nullptr));
-        actionOpenModel->setText(QCoreApplication::translate("MainWindow", "Open Model", nullptr));
-        actionReload->setText(QCoreApplication::translate("MainWindow", "Reload", nullptr));
+        MainWindow->setWindowTitle( QCoreApplication::translate( "MainWindow", "MainWindow", nullptr ) );
+        actionExit->setText( QCoreApplication::translate( "MainWindow", "Exit", nullptr ) );
+        actionOpenModel->setText( QCoreApplication::translate( "MainWindow", "Open Model", nullptr ) );
+        actionReload->setText( QCoreApplication::translate( "MainWindow", "Reload", nullptr ) );
     } // retranslateUi
-
 };
 
-namespace Ui {
-    class MainWindow: public Ui_MainWindow {};
+namespace Ui
+{
+class MainWindow : public Ui_MainWindow
+{
+};
 } // namespace Ui
 
 QT_END_NAMESPACE

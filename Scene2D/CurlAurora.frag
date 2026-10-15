@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file CurlAurora.frag
  * @brief Flowing aurora curtains (domain-warped value noise) driven by mood.
@@ -12,26 +12,28 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * The source image breathes through as subtle texture.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
+uniform float audioBeat;     ///< Beat envelope, 0..1.
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioFlux;     ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioSubBass;  ///< Sub-bass band level, 0..1.
 uniform float audioArousal;
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -39,44 +41,44 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p)
+float hash21( vec2 p )
 {
-    p = fract(p * vec2(123.34, 345.45));
-    p += dot(p, p + 34.345);
-    return fract(p.x * p.y);
+    p = fract( p * vec2( 123.34, 345.45 ) );
+    p += dot( p, p + 34.345 );
+    return fract( p.x * p.y );
 }
 
 /// @brief Value noise with a seed.
-float vnoise(vec2 p)
+float vnoise( vec2 p )
 {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    float a = hash21(i);
-    float b = hash21(i + vec2(1.0, 0.0));
-    float c = hash21(i + vec2(0.0, 1.0));
-    float d = hash21(i + vec2(1.0, 1.0));
-    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    vec2 i = floor( p );
+    vec2 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    float a = hash21( i );
+    float b = hash21( i + vec2( 1.0, 0.0 ) );
+    float c = hash21( i + vec2( 0.0, 1.0 ) );
+    float d = hash21( i + vec2( 1.0, 1.0 ) );
+    return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec2 p)
+float fbm( vec2 p )
 {
     float s = 0.0;
     float a = 0.5;
-    for (int i = 0; i < 5; i++)
+    for ( int i = 0; i < 5; i++ )
     {
-        s += a * vnoise(p);
+        s += a * vnoise( p );
         p *= 2.02;
         a *= 0.5;
     }
@@ -86,36 +88,36 @@ float fbm(vec2 p)
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uv = gl_FragCoord.xy / resolution.xy;                       // 0..1
-    vec2 p  = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y; // centred, aspect
+    vec2 uv = gl_FragCoord.xy / resolution.xy;                         // 0..1
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / resolution.y; // centred, aspect
 
     // Horizontal drift = smooth base time + jump-free audio phase/advance.
     float t = time * 0.05 + audioPhase * 0.30 + audioAdvance * 2.0;
 
-    vec2 q = vec2(p.x * 1.5 + t, p.y * 0.8);
-    float warp    = fbm(q * 1.5 + vec2(0.0, time * 0.05));
-    float ribbons = fbm(vec2(q.x * 2.0 + warp * 1.5, q.y * 3.0 - time * 0.10));
+    vec2  q = vec2( p.x * 1.5 + t, p.y * 0.8 );
+    float warp = fbm( q * 1.5 + vec2( 0.0, time * 0.05 ) );
+    float ribbons = fbm( vec2( q.x * 2.0 + warp * 1.5, q.y * 3.0 - time * 0.10 ) );
 
     // Curtains hang from the top; brighter where ribbons are dense.
-    float curtain = smoothstep(-0.6, 0.8, p.y) * (0.5 + 0.5 * ribbons);
-    float glow    = pow(curtain, 1.4 - 0.6 * audioArousal)
-                  * (1.15 + 1.1 * audioLevel + 0.7 * audioSubBass);
+    float curtain = smoothstep( -0.6, 0.8, p.y ) * ( 0.5 + 0.5 * ribbons );
+    float glow = pow( curtain, 1.4 - 0.6 * audioArousal )
+                 * ( 1.15 + 1.1 * audioLevel + 0.7 * audioSubBass );
 
     // Palette: valence warm<->cool, centroid lifts toward pale-blue tips.
-    vec3 cool = vec3(0.10, 0.85, 0.70);   // teal / green
-    vec3 warm = vec3(0.95, 0.35, 0.75);   // magenta / pink
-    vec3 tip  = vec3(0.65, 0.95, 1.05);   // pale blue
-    vec3 base = mix(cool, warm, audioValence);
-    vec3 col  = mix(base, tip, smoothstep(0.2, 0.9, curtain) * audioCentroid);
+    vec3 cool = vec3( 0.10, 0.85, 0.70 ); // teal / green
+    vec3 warm = vec3( 0.95, 0.35, 0.75 ); // magenta / pink
+    vec3 tip = vec3( 0.65, 0.95, 1.05 );  // pale blue
+    vec3 base = mix( cool, warm, audioValence );
+    vec3 col = mix( base, tip, smoothstep( 0.2, 0.9, curtain ) * audioCentroid );
     col *= glow;
 
     // Let the source image show through as gentle texture.
-    vec4 img = interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv);
-    col = mix(col, col * (0.4 + 1.2 * img.rgb), 0.35);
+    vec4 img = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
+    col = mix( col, col * ( 0.4 + 1.2 * img.rgb ), 0.35 );
 
     // Beat shimmer + flux brightening (both slew-limited host-side).
-    col += vec3(0.15, 0.18, 0.25) * audioBeat;
-    col *= (1.0 + 0.25 * audioFlux);
+    col += vec3( 0.15, 0.18, 0.25 ) * audioBeat;
+    col *= ( 1.0 + 0.25 * audioFlux );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

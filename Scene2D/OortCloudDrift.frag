@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file OortCloudDrift.frag
  * @brief OORT CLOUD DRIFT: the million-year fall from the Oort cloud to the
@@ -19,104 +19,114 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: zoomP (fall rate), densP (body density), hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-uniform float zoomP;   ///< Zoom knob, 0..1.
-uniform float densP;   ///< Density knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float zoomP; ///< Zoom knob, 0..1.
+uniform float densP; ///< Density knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 /// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
-vec2  hash22(vec2 p) { return vec2(hash21(p), hash21(p + 19.7)); }
+vec2 hash22( vec2 p )
+{
+    return vec2( hash21( p ), hash21( p + 19.7 ) );
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 p = (gl_FragCoord.xy / resolution - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float hue  = (hueP > 0.001) ? hueP : 0.0;
-    float dens = 0.5 + 0.5 * clamp(densP, 0.0, 1.0);
-    const float L = 1.0;                                  // log-radius period of the shells
-    float zoom = sceneAdvance * 0.22 * (zoomP > 0.05 ? zoomP : 1.0) + sceneTime * 0.03;
+    float       hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float       dens = 0.5 + 0.5 * clamp( densP, 0.0, 1.0 );
+    const float L = 1.0; // log-radius period of the shells
+    float       zoom = sceneAdvance * 0.22 * ( zoomP > 0.05 ? zoomP : 1.0 ) + sceneTime * 0.03;
 
-    float r = length(p);
-    float th = atan(p.y, p.x);
+    float r = length( p );
+    float th = atan( p.y, p.x );
     // Log-polar with the zoom: the pattern is periodic in rho with period L,
     // so the wrap of the zoom is a symmetry.
-    float rho = log(r + 1e-5) - zoom;
+    float rho = log( r + 1e-5 ) - zoom;
 
     // Cells in (rho, theta): each holds one body, offset randomly.  Three
     // layers of cell scale for depth.
-    vec3 col = vec3(0.0);
-    float onset = clamp(audioOnset, 0.0, 1.0);
-    for (int layer = 0; layer < 3; ++layer)
+    vec3  col = vec3( 0.0 );
+    float onset = clamp( audioOnset, 0.0, 1.0 );
+    for ( int layer = 0; layer < 3; ++layer )
     {
-        float sc = 6.0 * pow(1.7, float(layer));           // cells per unit rho
-        float ang = 5.0 * pow(1.7, float(layer));           // cells per radian
-        vec2 c = vec2(rho * sc, th * ang);
+        float sc = 6.0 * pow( 1.7, float( layer ) );  // cells per unit rho
+        float ang = 5.0 * pow( 1.7, float( layer ) ); // cells per radian
+        vec2  c = vec2( rho * sc, th * ang );
         // Neighbouring cells so bodies can cross cell borders.
-        for (int dx = -1; dx <= 1; ++dx)
-        for (int dy = -1; dy <= 1; ++dy)
-        {
-            vec2 cell = floor(c) + vec2(float(dx), float(dy));
-            // Periodicity in rho: wrap the cell index so the zoom loops.
-            vec2 key = vec2(mod(cell.x, L * sc), mod(cell.y, 6.2831853 * ang));
-            vec2 h = hash22(key + float(layer) * 31.0);
-            if (h.x > dens) continue;
-            vec2 centre = cell + 0.5 + (hash22(key + 7.0) - 0.5) * 0.8;
-            vec2 d = (c - centre) * vec2(1.0, 1.0);
-            float dist = length(d);
-            float size = 0.05 + 0.12 * h.y;
-            float body = exp(-dist * dist / (size * size)) ;
-            vec3 ice = imgPalette(hue * 0.159 + 0.55 + 0.3 * h.y) * (0.5 + 0.5 * h.x / dens);
-            col += ice * body * (0.5 + 0.5 * audioHigh) * (0.6 + 0.4 * float(layer)) * 0.9;
-            // Comet tail: points away from the Sun (toward +rho), lit by the
-            // onset for bodies whose hash puts them in this onset's family.
-            float family = step(0.6, hash21(key + 3.3));
-            float tail = exp(-max(d.x, 0.0) * 1.2) * exp(-abs(d.y) * 6.0) * step(0.0, d.x) * (1.0 - smoothstep(0.0, 2.5, d.x));
-            col += imgPalette(hue * 0.159 + 0.1) * tail * onset * family * 1.4;
-        }
+        for ( int dx = -1; dx <= 1; ++dx )
+            for ( int dy = -1; dy <= 1; ++dy )
+            {
+                vec2 cell = floor( c ) + vec2( float( dx ), float( dy ) );
+                // Periodicity in rho: wrap the cell index so the zoom loops.
+                vec2 key = vec2( mod( cell.x, L * sc ), mod( cell.y, 6.2831853 * ang ) );
+                vec2 h = hash22( key + float( layer ) * 31.0 );
+                if ( h.x > dens )
+                    continue;
+                vec2  centre = cell + 0.5 + ( hash22( key + 7.0 ) - 0.5 ) * 0.8;
+                vec2  d = ( c - centre ) * vec2( 1.0, 1.0 );
+                float dist = length( d );
+                float size = 0.05 + 0.12 * h.y;
+                float body = exp( -dist * dist / ( size * size ) );
+                vec3  ice = imgPalette( hue * 0.159 + 0.55 + 0.3 * h.y ) * ( 0.5 + 0.5 * h.x / dens );
+                col += ice * body * ( 0.5 + 0.5 * audioHigh ) * ( 0.6 + 0.4 * float( layer ) ) * 0.9;
+                // Comet tail: points away from the Sun (toward +rho), lit by the
+                // onset for bodies whose hash puts them in this onset's family.
+                float family = step( 0.6, hash21( key + 3.3 ) );
+                float tail = exp( -max( d.x, 0.0 ) * 1.2 ) * exp( -abs( d.y ) * 6.0 ) * step( 0.0, d.x )
+                             * ( 1.0 - smoothstep( 0.0, 2.5, d.x ) );
+                col += imgPalette( hue * 0.159 + 0.1 ) * tail * onset * family * 1.4;
+            }
     }
 
     // Dust haze thickening toward the plane, the Sun at the centre.
-    float haze = 0.03 + 0.06 * clamp(audioSwell, 0.0, 1.0);
-    col += imgPalette(hue * 0.159 + 0.7) * haze * exp(-abs(p.y) * 3.0);
-    float sun = exp(-r * 9.0) * (0.8 + 1.2 * audioLevel) + exp(-r * 2.5) * 0.25;
-    col += mix(imgPalette(hue * 0.159 + 0.95), vec3(1.0, 0.9, 0.7), 0.5) * sun;
-    col *= 1.0 - 0.35 * smoothstep(0.6, 1.1, r);
+    float haze = 0.03 + 0.06 * clamp( audioSwell, 0.0, 1.0 );
+    col += imgPalette( hue * 0.159 + 0.7 ) * haze * exp( -abs( p.y ) * 3.0 );
+    float sun = exp( -r * 9.0 ) * ( 0.8 + 1.2 * audioLevel ) + exp( -r * 2.5 ) * 0.25;
+    col += mix( imgPalette( hue * 0.159 + 0.95 ), vec3( 1.0, 0.9, 0.7 ), 0.5 ) * sun;
+    col *= 1.0 - 0.35 * smoothstep( 0.6, 1.1, r );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

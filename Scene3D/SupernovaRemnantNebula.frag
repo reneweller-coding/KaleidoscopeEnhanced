@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
 in vec4 vColor;
-in vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
+in vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
 
 /**
  * @file SupernovaRemnantNebula.frag
@@ -18,18 +18,20 @@ in vec2 vTexCoord;   ///< Texture coordinate (from the vertex stage).
  * vColor.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec3 photo = (interpolation * texture(tex0, vTexCoord) + (1.0 - interpolation) * texture(tex1, vTexCoord)).rgb;
-    float filamentEdge = exp(-abs(vTexCoord.x - 0.5) * 8.0);
+void main()
+{
+    vec3  photo = ( interpolation * texture( tex0, vTexCoord ) + ( 1.0 - interpolation ) * texture( tex1, vTexCoord ) )
+                      .rgb;
+    float filamentEdge = exp( -abs( vTexCoord.x - 0.5 ) * 8.0 );
 
-    vec3 col = mix(vColor.rgb * 0.85, photo * 1.1, 0.30);
+    vec3 col = mix( vColor.rgb * 0.85, photo * 1.1, 0.30 );
     col += filamentEdge * vColor.rgb * 1.8;
 
-    col *= 1.90;   // measured-dark lift (visual pass, round 2: photo was washing the rays white)
-    fragColor = vec4(col, 1.0);
+    col *= 1.90; // measured-dark lift (visual pass, round 2: photo was washing the rays white)
+    fragColor = vec4( col, 1.0 );
 }

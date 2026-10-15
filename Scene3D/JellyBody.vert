@@ -19,79 +19,81 @@
 // SpectralOrb; the complement scene: impulse response instead of
 // continuous spectral drive.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float sceneSeed;   ///< A random number fixed per activation.
+uniform mat4  projM;        ///< Projection matrix.
+uniform float eyeOff;       ///< Stereo eye offset (0 in mono).
+uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float sceneSeed;    ///< A random number fixed per activation.
 
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSnare;   ///< Snare envelope, 0..1.
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSnare; ///< Snare envelope, 0..1.
 uniform float audioHat;
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
 out vec3  vNorm;
-out vec3  vView;   ///< View vector (from the vertex stage).
+out vec3  vView; ///< View vector (from the vertex stage).
 out float vDefo;
 out float vHue;
 
 /// Damped modal displacement at direction d.  The envelopes decay host-side;
 /// cos(w*time) runs free — amplitude-gated ringing, no phase remapping.
-float modes(vec3 d, float th, float ph)
+float modes( vec3 d, float th, float ph )
 {
     float x = d.x, y = d.y, z = d.z;
-    float sp = sin(ph);
+    float sp = sin( ph );
     float s = 0.0;
 
     // KICK: l=2 squash (Y20) + a tumbling l=2 partner, slow fat wobble.
-    float ringK = cos(time * 9.0)  * 0.65 + cos(time * 6.2 + 1.3) * 0.35;
-    s += audioKick * 0.16 * ringK * (3.0 * z * z - 1.0) * 0.5;
-    s += audioKick * 0.09 * cos(time * 7.4 + 0.7) * (x * x - y * y);
+    float ringK = cos( time * 9.0 ) * 0.65 + cos( time * 6.2 + 1.3 ) * 0.35;
+    s += audioKick * 0.16 * ringK * ( 3.0 * z * z - 1.0 ) * 0.5;
+    s += audioKick * 0.09 * cos( time * 7.4 + 0.7 ) * ( x * x - y * y );
 
     // SNARE: l=3 flex, faster ring.
-    float ringS = cos(time * 16.0 + sceneSeed * 6.28);
-    s += audioSnare * 0.11 * ringS * cos(3.0 * th) * sp * sp * sp;
-    s += audioSnare * 0.07 * cos(time * 19.0 + 2.1) * (2.5 * z * z - 1.5) * z;
+    float ringS = cos( time * 16.0 + sceneSeed * 6.28 );
+    s += audioSnare * 0.11 * ringS * cos( 3.0 * th ) * sp * sp * sp;
+    s += audioSnare * 0.07 * cos( time * 19.0 + 2.1 ) * ( 2.5 * z * z - 1.5 ) * z;
 
     // HAT: fine shimmer, high order, quick ring.
     // Hat shimmer. Was cos(time*31) = 4.9 Hz -- the one temporal-budget
     // warning in the catalogue, and precisely the fast trembling the house
     // rules forbid. 18 rad/s = 2.9 Hz keeps the nervous-hat character
     // inside the full-frame budget.
-    s += audioHat * 0.040 * cos(time * 18.0) * cos(8.0 * th + 1.7) * pow(sp, 6.0);
-    s += audioHat * 0.030 * cos(time * 17.0 + 0.9) * cos((10.5) * ph - 0.785);
+    s += audioHat * 0.040 * cos( time * 18.0 ) * cos( 8.0 * th + 1.7 ) * pow( sp, 6.0 );
+    s += audioHat * 0.030 * cos( time * 17.0 + 0.9 ) * cos( ( 10.5 ) * ph - 0.785 );
 
     // Resting breath so the body never looks dead.
-    s += 0.020 * sin(time * 1.1 + sceneSeed * 6.28) * (0.6 + 0.4 * audioSwell);
+    s += 0.020 * sin( time * 1.1 + sceneSeed * 6.28 ) * ( 0.6 + 0.4 * audioSwell );
 
     return s;
 }
 
-vec3 jellyPoint(float u, float v)
+vec3 jellyPoint( float u, float v )
 {
     float th = u * 6.2831853;
     float ph = v * 3.1415927;
-    vec3 d = vec3(sin(ph) * cos(th), cos(ph), sin(ph) * sin(th));
+    vec3  d = vec3( sin( ph ) * cos( th ), cos( ph ), sin( ph ) * sin( th ) );
 
     float ra = time * 0.06;
-    d.xz = mat2(cos(ra), -sin(ra), sin(ra), cos(ra)) * d.xz;
-    float th2 = atan(d.z, d.x);
-    float ph2 = acos(clamp(d.y, -1.0, 1.0));
+    d.xz = mat2( cos( ra ), -sin( ra ), sin( ra ), cos( ra ) ) * d.xz;
+    float th2 = atan( d.z, d.x );
+    float ph2 = acos( clamp( d.y, -1.0, 1.0 ) );
 
-    float defo = modes(d, th2, ph2);
-    vec3 p = d * 8.5 * (1.0 + defo);
+    float defo = modes( d, th2, ph2 );
+    vec3  p = d * 8.5 * ( 1.0 + defo );
 
     // Volume-preserving squash-and-stretch on the kick: as it flattens in
     // y it bulges in xz (the classic animation principle, physically the
     // incompressibility of a jelly).
-    float sq = 1.0 - 0.16 * audioKick * cos(time * 9.0);
-    p.y  *= sq;
-    p.xz /= sqrt(sq);
+    float sq = 1.0 - 0.16 * audioKick * cos( time * 9.0 );
+    p.y *= sq;
+    p.xz /= sqrt( sq );
 
     return p;
 }
@@ -99,12 +101,12 @@ vec3 jellyPoint(float u, float v)
 
 /// 3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the
 /// body's own y-spin, so the pattern is seen from ever-new angles.
-vec3 tumble(vec3 q)
+vec3 tumble( vec3 q )
 {
     float tx = time * 0.19 + audioAdvance * 0.05;
     float tz = time * 0.13;
-    q.yz = mat2(cos(tx), -sin(tx), sin(tx), cos(tx)) * q.yz;
-    q.xy = mat2(cos(tz), -sin(tz), sin(tz), cos(tz)) * q.xy;
+    q.yz = mat2( cos( tx ), -sin( tx ), sin( tx ), cos( tx ) ) * q.yz;
+    q.xy = mat2( cos( tz ), -sin( tz ), sin( tz ), cos( tz ) ) * q.xy;
     return q;
 }
 
@@ -113,24 +115,24 @@ void main()
 {
     float u = attrA.x, v = attrA.y;
 
-    vec3 p  = jellyPoint(u, v);
+    vec3 p = jellyPoint( u, v );
     // dU x dV points outward for this (theta, phi-from-north) mapping.
-    vec3 pu = jellyPoint(u + 0.004, v);
-    vec3 pv = jellyPoint(u, v + 0.004);
-    vec3 nrm = normalize(cross(pu - p, pv - p));
-    p   = tumble(p);
-    nrm = tumble(nrm);
+    vec3 pu = jellyPoint( u + 0.004, v );
+    vec3 pv = jellyPoint( u, v + 0.004 );
+    vec3 nrm = normalize( cross( pu - p, pv - p ) );
+    p = tumble( p );
+    nrm = tumble( nrm );
 
-    vec3 vp = p + vec3(0.0, 0.0, 27.0);
+    vec3 vp = p + vec3( 0.0, 0.0, 27.0 );
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
 
     vNorm = nrm;
     // Camera sits at MODEL-space (0,0,-27): vertices are shifted +27 in z
     // and the projection looks down -z — the +27 version put the "eye"
     // BEHIND the body and blew the fresnel term up to 4x (flat white blob).
-    vView = normalize(vec3(0.0, 0.0, -27.0) - p);
-    vDefo = clamp(abs(length(p) / 8.5 - 1.0) * 5.0, 0.0, 1.0);
-    vHue  = audioChromaHue;
+    vView = normalize( vec3( 0.0, 0.0, -27.0 ) - p );
+    vDefo = clamp( abs( length( p ) / 8.5 - 1.0 ) * 5.0, 0.0, 1.0 );
+    vHue = audioChromaHue;
 }

@@ -20,44 +20,46 @@
  * scheduler gave the scene, not a fixed wall-clock duration.
  */
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;    ///< half-extents of model 1 (the station)
-uniform vec3  meshExtent2;   ///< half-extents of model 2 (the ship)
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;      ///< half-extents of model 1 (the station)
+uniform vec3  meshExtent2;     ///< half-extents of model 2 (the ship)
 uniform int   mesh2VertexCount;
-uniform float sceneProgress;   ///< Progress through this scene's solo time, 0..1.
+uniform float sceneProgress; ///< Progress through this scene's solo time, 0..1.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                            ///< backwards).
+uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-uniform float sizeP;        ///< station scale
-uniform float shipScaleP;   ///< ship size AS A FRACTION of the station
-uniform float spinP;        ///< station spin (0 for a non-rotating hull)
+uniform float sizeP;      ///< station scale
+uniform float shipScaleP; ///< ship size AS A FRACTION of the station
+uniform float spinP;      ///< station spin (0 for a non-rotating hull)
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
-out float vShip;      ///< 1 on the ship, 0 on the station -- the frag stage lights them differently
-out float vApproach;  ///< 0 far out, 1 docked; drives thruster and floodlight intensity
+out vec3  vPos;      ///< Position (from the vertex stage).
+out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
+out float vBg;       ///< Background flag (from the vertex stage).
+out float vShip;     ///< 1 on the ship, 0 on the station -- the frag stage lights them differently
+out float vApproach; ///< 0 far out, 1 docked; drives thruster and floodlight intensity
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 world, n;
-    bool isStation = gl_VertexID <  meshVertexCount;
-    bool isShip    = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
-    bool isBg      = gl_VertexID >= mesh2VertexCount;
+    bool isStation = gl_VertexID < meshVertexCount;
+    bool isShip = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
+    bool isBg = gl_VertexID >= mesh2VertexCount;
 
-    float sz  = (sizeP > 0.01 ? sizeP : 1.0);
-    float t   = sceneProgress;
-    float ease = 1.0 - pow(1.0 - t, 3.0);      // fast approach, gentle arrival
+    float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+    float t = sceneProgress;
+    float ease = 1.0 - pow( 1.0 - t, 3.0 ); // fast approach, gentle arrival
 
     vApproach = ease;
     vShip = isShip ? 1.0 : 0.0;
@@ -70,34 +72,34 @@ void main()
     // some screen size. The ship still reads as roughly a fifth of the
     // station on screen while being nowhere near that fraction in world
     // units, which is what sells the difference without hiding the subject.
-    if( isStation )
+    if ( isStation )
     {
-        vec3 local = attrA.xyz * (90.0 * sz);
+        vec3 local = attrA.xyz * ( 90.0 * sz );
         // A station may rotate about its own axis (spin gravity) but never
         // tumbles -- see the station families for the reasoning.
-        float sp = (spinP > 0.001 ? spinP : 0.0);
+        float sp = ( spinP > 0.001 ? spinP : 0.0 );
         // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        float rot = time * 0.11 * sp;
-        float cr = cos(rot), sr = sin(rot);
-        mat3 spinM = mat3(cr, sr, 0.0,  -sr, cr, 0.0,  0.0, 0.0, 1.0);
+        float       rot = time * 0.11 * sp;
+        float       cr = cos( rot ), sr = sin( rot );
+        mat3        spinM = mat3( cr, sr, 0.0, -sr, cr, 0.0, 0.0, 0.0, 1.0 );
         const float tiltX = 0.35;
-        float cx = cos(tiltX), sx = sin(tiltX);
-        mat3 tiltM = mat3(1.0, 0.0, 0.0,  0.0, cx, sx,  0.0, -sx, cx);
-        mat3 rotM = tiltM * spinM;
+        float       cx = cos( tiltX ), sx = sin( tiltX );
+        mat3        tiltM = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3        rotM = tiltM * spinM;
 
         world = rotM * local;
         world.x += 10.0;
         world.z += 150.0;
-        n = normalize(rotM * attrB.xyz);
-        vUV = vec2(attrA.w, attrB.w);
+        n = normalize( rotM * attrB.xyz );
+        vUV = vec2( attrA.w, attrB.w );
         vLocalPos = attrA.xyz;
     }
-    else if( isShip )
+    else if ( isShip )
     {
-        float shs = (shipScaleP > 0.001 ? shipScaleP : 0.26);
+        float shs = ( shipScaleP > 0.001 ? shipScaleP : 0.26 );
         // Put the hull's LONGEST axis along the direction of travel. This used
         // to be hardcoded as "the nose is +Z", which was true of the asset set
         // it was written against and false for the one that replaced it: three
@@ -112,18 +114,18 @@ void main()
         // station it is approaching.
         vec3 e = meshExtent2;
         vec3 p = attrA.xyz, nrm = attrB.xyz;
-        if( e.z >= e.x && e.z >= e.y )        // nose on +Z: rotate about Y
+        if ( e.z >= e.x && e.z >= e.y ) // nose on +Z: rotate about Y
         {
-            p   = vec3(p.z,   p.y,   -p.x);
-            nrm = vec3(nrm.z, nrm.y, -nrm.x);
+            p = vec3( p.z, p.y, -p.x );
+            nrm = vec3( nrm.z, nrm.y, -nrm.x );
         }
-        else if( e.y >= e.x && e.y >= e.z )   // nose on +Y: rotate about Z
+        else if ( e.y >= e.x && e.y >= e.z ) // nose on +Y: rotate about Z
         {
-            p   = vec3(p.y,   -p.x,   p.z);
-            nrm = vec3(nrm.y, -nrm.x, nrm.z);
+            p = vec3( p.y, -p.x, p.z );
+            nrm = vec3( nrm.y, -nrm.x, nrm.z );
         }
         // longest already on X: already pointing along travel, leave it alone.
-        vec3 local = p * (90.0 * sz * shs);
+        vec3 local = p * ( 90.0 * sz * shs );
 
         // Approach path: in from the lower left and further out, curving up
         // to the station's dock side. Kept as a straight-ish lerp with an
@@ -137,37 +139,38 @@ void main()
         // half of the approach plays with nothing on screen. An earlier
         // version started at z=300 and the ship was invisible until it had
         // already almost arrived.
-        vec3 start = vec3(-150.0, -58.0, 196.0);
+        vec3 start = vec3( -150.0, -58.0, 196.0 );
         // The dock sits on the station's NEAR face (the station spans roughly
         // z 106..194 at this scale), not its centre -- that keeps the ship
         // closer to the camera at the end of the run, where it needs the
         // screen size most.
-        vec3 dock  = vec3( -38.0,  -6.0, 124.0);
-        world = mix(start, dock, ease);
-        world.y += 9.0 * sin(ease * 3.14159) * (1.0 - ease * 0.5);   // arc over
+        vec3 dock = vec3( -38.0, -6.0, 124.0 );
+        world = mix( start, dock, ease );
+        world.y += 9.0 * sin( ease * 3.14159 ) * ( 1.0 - ease * 0.5 ); // arc over
 
         // Yaw to face travel, flattening out as it arrives.
-        float yaw = -0.5 * (1.0 - ease);
-        float cy = cos(yaw), sy = sin(yaw);
-        mat3 yawM = mat3(cy, 0.0, -sy,  0.0, 1.0, 0.0,  sy, 0.0, cy);
+        float yaw = -0.5 * ( 1.0 - ease );
+        float cy = cos( yaw ), sy = sin( yaw );
+        mat3  yawM = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
         world += yawM * local;
-        n = normalize(yawM * nrm);
-        vUV = vec2(attrA.w, attrB.w);
+        n = normalize( yawM * nrm );
+        vUV = vec2( attrA.w, attrB.w );
         vLocalPos = p;
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
-        vUV = vec2(0.0);
-        vLocalPos = vec3(0.0);
+        vUV = vec2( 0.0 );
+        vLocalPos = vec3( 0.0 );
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

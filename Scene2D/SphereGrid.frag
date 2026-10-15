@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SphereGrid.frag
  * @brief Adapted from an untitled \@kishimisu raymarch (CC BY-NC-SA 4.0): a fly-through
@@ -12,72 +12,78 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * (forward travel via audioAdvance; beats brighten; centroid/valence grade).
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioAdvance;  ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                             ///< backwards).
+uniform float audioPhase;    ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioBeat;     ///< Beat envelope, 0..1.
+uniform float audioOnset;    ///< Onset envelope (any instrument), 0..1.
+uniform float audioLevel;    ///< Overall loudness, 0..1.
+uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid; ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform float spacingP;   ///< lattice fold spacing (0 -> 4.0; 3 = dense, 6 = sparse)
+uniform float spacingP; ///< lattice fold spacing (0 -> 4.0; 3 = dense, 6 = sparse)
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
 
 /// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
 /// palette varies with depth and the crop window moves over time + with the
 /// harmony (audioPhase) — the effect is coloured by the ever-changing image.
-vec3 imgPal(float x)
+vec3 imgPal( float x )
 {
-    vec2 cc  = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
-                                       sin(time * 0.033 + audioPhase * 0.09));
-    vec2 iuv = cc + 0.24 * vec2(cos(x), sin(x * 1.31));
-    return img(fract(iuv));
+    vec2 cc = vec2( 0.5 )
+              + 0.32 * vec2( cos( time * 0.045 + audioPhase * 0.12 ), sin( time * 0.033 + audioPhase * 0.09 ) );
+    vec2 iuv = cc + 0.24 * vec2( cos( x ), sin( x * 1.31 ) );
+    return img( fract( iuv ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  n    = resolution;
-    float s    = time * 0.34 - 1.0;
-    float sAdv = s + audioAdvance * 2.0;                 // forward scroll (jump-free)
+    vec2  n = resolution;
+    float s = time * 0.34 - 1.0;
+    float sAdv = s + audioAdvance * 2.0; // forward scroll (jump-free)
 
-    float fov = mix(1.0, 2.0, sin(s + 3.14159) * 0.5 + 0.5);
-    vec3  t   = normalize(vec3((2.0 * gl_FragCoord.xy - n) / n.y * fov, 1.0));
-    vec3  r   = vec3(0.0), a;
+    float fov = mix( 1.0, 2.0, sin( s + 3.14159 ) * 0.5 + 0.5 );
+    vec3  t = normalize( vec3( ( 2.0 * gl_FragCoord.xy - n ) / n.y * fov, 1.0 ) );
+    vec3  r = vec3( 0.0 ), a;
     // Fold spacing: per-activation base, BREATHING with the slow swell (the
     // research's "modulate the fold constants" — the whole sphere lattice
     // gently expands as the music builds; slow signal, so no jumps).
-    float sp = ((spacingP <= 0.01) ? 4.0 : spacingP) * (1.0 + 0.10 * audioSwell);
+    float sp = ( ( spacingP <= 0.01 ) ? 4.0 : spacingP ) * ( 1.0 + 0.10 * audioSwell );
     float d = 0.0, l = 1.0;
-    for (int i = 0; i < 200; i++)
+    for ( int i = 0; i < 200; i++ )
     {
-        if (!(d < 150.0 && l > 0.001)) break;
+        if ( !( d < 150.0 && l > 0.001 ) )
+            break;
         a = r + d * t;
         a.z += sAdv;
-        d += l = length(mod(a + sp * 0.5, sp) - sp * 0.5) - step(1.0, abs(a.y)) + 0.001;
+        d += l = length( mod( a + sp * 0.5, sp ) - sp * 0.5 ) - step( 1.0, abs( a.y ) ) + 0.001;
     }
 
-    float fov2 = mix(1.0, 2.3, sin(s) * 0.5 + 0.5);
-    vec3  base = cos(fov2 * vec3(1.02, 1.04, 1.06) * d + s) * 0.5 + 0.5;
-    base *= 0.35 + 1.4 * imgPal(d * 0.15);               // image crop drives colour
-    vec3  col = mix(base, vec3(1.0), clamp(d * 0.008, 0.0, 1.0));   // fog to white
+    float fov2 = mix( 1.0, 2.3, sin( s ) * 0.5 + 0.5 );
+    vec3  base = cos( fov2 * vec3( 1.02, 1.04, 1.06 ) * d + s ) * 0.5 + 0.5;
+    base *= 0.35 + 1.4 * imgPal( d * 0.15 );                           // image crop drives colour
+    vec3 col = mix( base, vec3( 1.0 ), clamp( d * 0.008, 0.0, 1.0 ) ); // fog to white
 
     col *= 1.0 + 0.4 * audioBeat + 0.3 * audioOnset;
-    col *= mix(vec3(0.75, 0.85, 1.20), vec3(1.25, 1.05, 0.75), audioCentroid);
-    float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
+    col *= mix( vec3( 0.75, 0.85, 1.20 ), vec3( 1.25, 1.05, 0.75 ), audioCentroid );
+    float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( lum ), col, 0.6 + 0.6 * audioValence );
 
-    col /= 1.0 + 0.85 * max(col.r, max(col.g, col.b));   // over-bright tail (final review)
-    fragColor = vec4(col, 1.0);
+    col /= 1.0 + 0.85 * max( col.r, max( col.g, col.b ) ); // over-bright tail (final review)
+    fragColor = vec4( col, 1.0 );
 }

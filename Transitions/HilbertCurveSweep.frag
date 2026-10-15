@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file HilbertCurveSweep.frag
  * @brief TRANSITION HILBERT CURVE SWEEP: a space-filling curve walks the frame
@@ -25,46 +25,53 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: orderP, edgeP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float orderP;   ///< Order of the chain's four stages (one of 24), 0..1.
+uniform float orderP; ///< Order of the chain's four stages (one of 24), 0..1.
 uniform float edgeP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// The distance along the Hilbert curve of the cell (x, y) in an n x n grid.
 /// Walks down the orders: read the quadrant, add the quadrant's share of the
 /// curve, then rotate the frame the way the construction does.
-uint hilbertIndex(uint n, uint x, uint y)
+uint hilbertIndex( uint n, uint x, uint y )
 {
     uint rx, ry, dd = 0u;
-    for (uint s = n / 2u; s > 0u; s /= 2u)
+    for ( uint s = n / 2u; s > 0u; s /= 2u )
     {
-        rx = ((x & s) > 0u) ? 1u : 0u;
-        ry = ((y & s) > 0u) ? 1u : 0u;
-        dd += s * s * ((3u * rx) ^ ry);
-        if (ry == 0u)
+        rx = ( ( x & s ) > 0u ) ? 1u : 0u;
+        ry = ( ( y & s ) > 0u ) ? 1u : 0u;
+        dd += s * s * ( ( 3u * rx ) ^ ry );
+        if ( ry == 0u )
         {
-            if (rx == 1u) { x = n - 1u - x; y = n - 1u - y; }
-            uint t = x; x = y; y = t;
+            if ( rx == 1u )
+            {
+                x = n - 1u - x;
+                y = n - 1u - y;
+            }
+            uint t = x;
+            x = y;
+            y = t;
         }
     }
     return dd;
@@ -73,49 +80,48 @@ uint hilbertIndex(uint n, uint x, uint y)
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ord  = clamp(orderP, 0.0, 1.0);
-    float edgeW = (edgeP > 0.0) ? edgeP : 1.0;
-    float hue  = (hueP  > 0.0) ? hueP  : 0.0;
+    float ord = clamp( orderP, 0.0, 1.0 );
+    float edgeW = ( edgeP > 0.0 ) ? edgeP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec2 uv = gl_FragCoord.xy / resolution;
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
     // Order 4..6, i.e. a 16, 32 or 64 cell grid.  Chosen ONCE per activation --
     // changing it mid-turn would renumber every cell at once.
-    uint order = uint(4.0 + floor(ord * 2.99));
-    uint n = 1u << order;
-    float fn = float(n);
+    uint  order = uint( 4.0 + floor( ord * 2.99 ) );
+    uint  n = 1u << order;
+    float fn = float( n );
 
-    vec2 g = clamp(uv, 0.0, 0.9999) * fn;
-    uvec2 cell = uvec2(g);
-    vec2 f = fract(g);
+    vec2  g = clamp( uv, 0.0, 0.9999 ) * fn;
+    uvec2 cell = uvec2( g );
+    vec2  f = fract( g );
 
-    uint idx = hilbertIndex(n, cell.x, cell.y);
+    uint  idx = hilbertIndex( n, cell.x, cell.y );
     float total = fn * fn;
 
     // Within a cell, the curve runs through it, so the front should cross a
     // cell smoothly rather than flipping it whole.  The diagonal of the cell is
     // a good enough stand-in for the curve's own path through it.
-    float sub = clamp((f.x + f.y) * 0.5, 0.0, 1.0);
-    float pos = (float(idx) + sub) / total;
+    float sub = clamp( ( f.x + f.y ) * 0.5, 0.0, 1.0 );
+    float pos = ( float( idx ) + sub ) / total;
 
     // The front, with a soft edge a couple of cells wide.
-    float w = (1.6 * edgeW) / total * fn;          // in units of the whole curve
-    float front = d * (1.0 + 2.0 * w) - w + audioAdvance * 0.0004;
-    float taken = smoothstep(front + w, front - w, pos);
+    float w = ( 1.6 * edgeW ) / total * fn; // in units of the whole curve
+    float front = d * ( 1.0 + 2.0 * w ) - w + audioAdvance * 0.0004;
+    float taken = smoothstep( front + w, front - w, pos );
 
-    vec3 col = mix(texture(tex0, uv).rgb, texture(tex1, uv).rgb, taken);
+    vec3 col = mix( texture( tex0, uv ).rgb, texture( tex1, uv ).rgb, taken );
 
     // The advancing front carries a little light.
-    float band = exp(-pow((pos - front) / max(w, 1e-4), 2.0)) * arc;
-    vec3 glow = mix(vec3(0.85, 0.92, 1.0), vec3(1.0, 0.92, 0.82), fract(hue * 0.159));
-    col += glow * band * (0.10 + 0.30 * clamp(audioHigh * 2.0, 0.0, 1.0)
-                               + 0.16 * clamp(audioKick, 0.0, 1.0));
+    float band = exp( -pow( ( pos - front ) / max( w, 1e-4 ), 2.0 ) ) * arc;
+    vec3  glow = mix( vec3( 0.85, 0.92, 1.0 ), vec3( 1.0, 0.92, 0.82 ), fract( hue * 0.159 ) );
+    col += glow * band * ( 0.10 + 0.30 * clamp( audioHigh * 2.0, 0.0, 1.0 ) + 0.16 * clamp( audioKick, 0.0, 1.0 ) );
     // And the cell grid shows faintly while the curve is working.
-    float grid = smoothstep(0.035, 0.0, min(min(f.x, 1.0 - f.x), min(f.y, 1.0 - f.y)));
+    float grid = smoothstep( 0.035, 0.0, min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) ) );
     col *= 1.0 - grid * 0.16 * arc;
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

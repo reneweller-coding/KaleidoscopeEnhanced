@@ -1,11 +1,11 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel; ///< Overall loudness, 0..1.
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // MeteorStorm.frag — soft glowing point (additive blending).
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol; ///< Colour (from the vertex stage).
 
 /**
  * @file MeteorStorm.frag
@@ -25,6 +25,6 @@ in vec4 vCol;   ///< Colour (from the vertex stage).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;
-    float a = exp(-dot(d, d) * 10.0);
-    fragColor = vec4(vCol.rgb * a * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
+    float a = exp( -dot( d, d ) * 10.0 );
+    fragColor = vec4( vCol.rgb * a * ( 0.85 + 0.30 * audioLevel + 0.35 * audioKick ), 1.0 );
 }

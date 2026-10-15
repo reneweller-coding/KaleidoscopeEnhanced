@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file Schlieren.frag
  * @brief KNIFE-EDGE SCHLIEREN OPTICS over the live GPU fluid: the classic
@@ -21,56 +21,64 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * carries the picture's colours through the optics.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform sampler2D texFluid;    ///< fluid dye state (RGB), sim-stepped by host
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform sampler2D texFluid;      ///< fluid dye state (RGB), sim-stepped by host
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
-uniform float audioLevel;   ///< Overall loudness, 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioOnset;     ///< Onset envelope (any instrument), 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
 
 // Per-activation variety:
-uniform int   sidesP;          ///< kaleido fold (0/1 off; 2..8)
-uniform float strengthP;       ///< schlieren gain      (0 -> 1.0; 0.6..1.8)
-uniform float rainbowP;        ///< 0 knife-edge mono .. 1 colour-filter mode
+uniform int   sidesP;    ///< kaleido fold (0/1 off; 2..8)
+uniform float strengthP; ///< schlieren gain      (0 -> 1.0; 0.6..1.8)
+uniform float rainbowP;  ///< 0 knife-edge mono .. 1 colour-filter mode
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
-mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+mat2 rot( float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
+/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
+/// @brief Rotates a colour's hue by an angle (about the grey axis).
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 /// @brief Kaleidoscope fold of the coordinate with the given mirrors.
-vec2 kaleido(vec2 p, float sides)
+vec2 kaleido( vec2 p, float sides )
 {
-    float a   = atan(p.y, p.x);
-    float r   = length(p);
+    float a = atan( p.y, p.x );
+    float r = length( p );
     float seg = PI / sides;
-    a = mod(a + PI, 2.0 * seg) - seg;
-    a = abs(a);
-    return vec2(cos(a), sin(a)) * r;
+    a = mod( a + PI, 2.0 * seg ) - seg;
+    a = abs( a );
+    return vec2( cos( a ), sin( a ) ) * r;
 }
 
-float dens(vec2 uv)
+float dens( vec2 uv )
 {
-    vec3 d = texture(texFluid, uv).rgb;
-    return dot(d, vec3(0.299, 0.587, 0.114));
+    vec3 d = texture( texFluid, uv ).rgb;
+    return dot( d, vec3( 0.299, 0.587, 0.114 ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -80,55 +88,54 @@ void main()
 
     // Field coordinates (optionally kaleido-folded, slowly turning).
     vec2 fuv;
-    if (sidesP >= 2)
+    if ( sidesP >= 2 )
     {
-        vec2 cp = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-        cp = rot(time * 0.014 + audioPhase * 0.05) * cp;
-        fuv = kaleido(cp, float(sidesP)) * 0.8 + 0.5;
+        vec2 cp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
+        cp = rot( time * 0.014 + audioPhase * 0.05 ) * cp;
+        fuv = kaleido( cp, float( sidesP ) ) * 0.8 + 0.5;
     }
     else
         fuv = uv;
 
     // Smoothed density gradient (the refraction field).
-    vec2 px = vec2(2.0) / vec2(512.0);      // fluid sim grid is 512^2
-    float gx = dens(fuv + vec2(px.x, 0.0)) - dens(fuv - vec2(px.x, 0.0));
-    float gy = dens(fuv + vec2(0.0, px.y)) - dens(fuv - vec2(0.0, px.y));
-    vec2  grad = vec2(gx, gy);
-    float gmag = length(grad);
+    vec2  px = vec2( 2.0 ) / vec2( 512.0 ); // fluid sim grid is 512^2
+    float gx = dens( fuv + vec2( px.x, 0.0 ) ) - dens( fuv - vec2( px.x, 0.0 ) );
+    float gy = dens( fuv + vec2( 0.0, px.y ) ) - dens( fuv - vec2( 0.0, px.y ) );
+    vec2  grad = vec2( gx, gy );
+    float gmag = length( grad );
 
-    float gain = ((strengthP <= 0.01) ? 1.0 : strengthP)
-               * (14.0 + 10.0 * audioSwell + 8.0 * audioBass);
+    float gain = ( ( strengthP <= 0.01 ) ? 1.0 : strengthP )
+                 * ( 14.0 + 10.0 * audioSwell + 8.0 * audioBass );
 
     // ---- Knife-edge channel: gradient projected on a slowly turning edge.
     float edgeAng = time * 0.05 + audioPhase * 0.10;
-    vec2  knife = vec2(cos(edgeAng), sin(edgeAng));
-    float schlier = 0.5 + dot(grad, knife) * gain;
+    vec2  knife = vec2( cos( edgeAng ), sin( edgeAng ) );
+    float schlier = 0.5 + dot( grad, knife ) * gain;
 
     // ---- Rainbow-filter channel: direction -> hue, magnitude -> saturation.
-    float dirAng = atan(grad.y, grad.x);
-    vec3  rain = hueRot(vec3(1.0, 0.25, 0.15),
-                        dirAng + audioChromaHue * 6.2831853 * 0.15915);
-    rain *= clamp(gmag * gain * 1.6, 0.0, 1.0);
+    float dirAng = atan( grad.y, grad.x );
+    vec3  rain = hueRot( vec3( 1.0, 0.25, 0.15 ),
+                         dirAng + audioChromaHue * 6.2831853 * 0.15915 );
+    rain *= clamp( gmag * gain * 1.6, 0.0, 1.0 );
 
     // The photo seen THROUGH the flow (heat-haze refraction).
-    vec3 pic = img(fract(uv + grad * (2.2 + 1.5 * audioSwell)));
+    vec3 pic = img( fract( uv + grad * ( 2.2 + 1.5 * audioSwell ) ) );
 
     // Compose: dim refracted picture below, schlieren streaks on top.
-    float mono = clamp(schlier, 0.0, 1.0);
+    float mono = clamp( schlier, 0.0, 1.0 );
     // Contrast curve around the mid-grey (knife edge sits at 0.5).
-    mono = mono * mono * (3.0 - 2.0 * mono);
-    vec3 knifeCol = vec3(mono) * mix(vec3(1.0, 0.98, 0.92),
-                                     vec3(0.85, 0.92, 1.05), audioCentroid);
+    mono = mono * mono * ( 3.0 - 2.0 * mono );
+    vec3 knifeCol = vec3( mono ) * mix( vec3( 1.0, 0.98, 0.92 ), vec3( 0.85, 0.92, 1.05 ), audioCentroid );
 
-    float rb = clamp((rainbowP <= 0.01) ? 0.35 : rainbowP, 0.0, 1.0);
-    vec3 optics = mix(knifeCol, rain + vec3(0.18), rb);
+    float rb = clamp( ( rainbowP <= 0.01 ) ? 0.35 : rainbowP, 0.0, 1.0 );
+    vec3  optics = mix( knifeCol, rain + vec3( 0.18 ), rb );
 
-    vec3 col = pic * (0.30 + 0.25 * audioLevel);
-    col += optics * (0.75 + 0.35 * audioOnset);
+    vec3 col = pic * ( 0.30 + 0.25 * audioLevel );
+    col += optics * ( 0.75 + 0.35 * audioOnset );
     // Strong fronts flash with the music.
-    col += hueRot(vec3(0.9, 0.6, 0.2), audioChromaHue)
-         * clamp(gmag * gain - 0.6, 0.0, 1.0) * (0.4 + 1.2 * audioDrop);
+    col += hueRot( vec3( 0.9, 0.6, 0.2 ), audioChromaHue )
+           * clamp( gmag * gain - 0.6, 0.0, 1.0 ) * ( 0.4 + 1.2 * audioDrop );
 
-    col /= 1.0 + 0.55 * max(col.r, max(col.g, col.b));   // over-bright tail (final review)
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.55 * max( col.r, max( col.g, col.b ) ); // over-bright tail (final review)
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

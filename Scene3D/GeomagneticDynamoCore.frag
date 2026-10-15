@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file GeomagneticDynamoCore.frag
  * @brief GEOMAGNETIC DYNAMO CORE: the flux-tube strings of a planetary dynamo -
@@ -11,95 +11,101 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   (opaque sprite strings, source-level gains)
  */
 
-in vec3 vWorldPos;   ///< World position (from the vertex stage).
+in vec3  vWorldPos; ///< World position (from the vertex stage).
 in float vDynamoPhase;
 in float vHaze;
-in vec2 vQuadUV;
+in vec2  vQuadUV;
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float dynamoP;
 uniform float coriolisP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float hue = (hueP > 0.0) ? hueP : 0.0;
+void main()
+{
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Sprite profile
-    vec2 pt = vQuadUV;   // quad-local [-1,1]; see .vert
-    float r2 = dot(pt, pt);
-    if (r2 > 1.0) discard;
+    vec2  pt = vQuadUV; // quad-local [-1,1]; see .vert
+    float r2 = dot( pt, pt );
+    if ( r2 > 1.0 )
+        discard;
     // These sprites are OPAQUE (geom="indirect" draws depth-tested, unblended),
     // so a steep falloff does not add up into a glow -- it just leaves a dark
     // occluding rim.  A gentle profile keeps each blob a solid speck.
-    float glow = exp(-r2 * 2.0);
+    float glow = exp( -r2 * 2.0 );
 
     // Photo texture mapping from world coords
-    vec2 photoUV = fract(vWorldPos.xy * 0.25 + 0.5);
-    vec3 photo = img(photoUV);
+    vec2 photoUV = fract( vWorldPos.xy * 0.25 + 0.5 );
+    vec3 photo = img( photoUV );
 
     // Molten iron dynamo gold & electric magnetic cyan palette
-    vec3 ironGold = vec3(1.0, 0.75, 0.2);
-    vec3 fieldCyan = vec3(0.1, 0.9, 1.0);
-    vec3 coreColor = mix(ironGold, fieldCyan, sin(vDynamoPhase * 12.56 + audioPhase) * 0.5 + 0.5);
+    vec3 ironGold = vec3( 1.0, 0.75, 0.2 );
+    vec3 fieldCyan = vec3( 0.1, 0.9, 1.0 );
+    vec3 coreColor = mix( ironGold, fieldCyan, sin( vDynamoPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
 
     vec3 col;
-    if (vHaze > 0.5)
+    if ( vHaze > 0.5 )
     {
         // Dissolved field: the same palette, far dimmer, no hot core -- a
         // background layer that carries the empty corners without lifting the
         // picture toward grey.
-        photoUV = fract(vWorldPos.xy / max(vWorldPos.z, 1.0) * 0.7 + 0.5);
-        photo = img(photoUV);
-        col = mix(coreColor, photo, 0.35) * glow
-            * (0.075 + 0.055 * audioSwell + 0.045 * audioKick);
+        photoUV = fract( vWorldPos.xy / max( vWorldPos.z, 1.0 ) * 0.7 + 0.5 );
+        photo = img( photoUV );
+        col = mix( coreColor, photo, 0.35 ) * glow
+              * ( 0.075 + 0.055 * audioSwell + 0.045 * audioKick );
     }
     else
     {
-        col = mix(photo, coreColor, 0.6) * glow;
+        col = mix( photo, coreColor, 0.6 ) * glow;
         // Hot core TINTED by the palette (the white additive term drowned the
         // gold/cyan; metric scan: saturation 0.00).
-        col += glow * mix(coreColor, vec3(1.0, 0.98, 0.85), 0.35)
-                   * min(0.35 + audioKick * 0.55, 1.0);
+        col += glow * mix( coreColor, vec3( 1.0, 0.98, 0.85 ), 0.35 )
+               * min( 0.35 + audioKick * 0.55, 1.0 );
     }
 
-    if (hue > 0.001) col = hueRot(col, hue);
+    if ( hue > 0.001 )
+        col = hueRot( col, hue );
 
     // Soft-knee exposure — hot audio compresses instead of clipping the whole
     // frame to white.  The old (col * 0.9) * 0.55 pre-gain was a leftover from
     // an earlier exposure pass: it halved an already sparse picture and was
     // most of why this scene measured at luma 0.013.
     vec3 _catTone = col;
-    _catTone /= 1.0 + 0.42 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    _catTone /= 1.0 + 0.42 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file AizawaAttractorSphereVortex.frag
  * @brief AIZAWA ATTRACTOR SPHERE VORTEX: 3D Aizawa attractor forming a rotating spherical
@@ -14,45 +14,48 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   audioChromaHue-> rotates the luminous celestial sphere spectrum
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 // Per-activation variety
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float sphereRadP;
 uniform float vortexP;
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
+uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t) {
+vec3 imgPalette( float t )
+{
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// Overall level of the photo currently bound, from a fixed 5-tap grid. The
@@ -60,35 +63,38 @@ vec3 imgPalette(float t) {
 /// to near-white; a bright photo left the shell and funnel flares no headroom.
 /// The probe rides the tex0/tex1 crossfade so the gain can never pop, and one
 /// number for the whole frame rescales exposure without touching contrast.
-float photoLevel() {
-    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
-           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
-           + img(vec2(0.50, 0.50));
-    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+float photoLevel()
+{
+    vec3 s = img( vec2( 0.25, 0.25 ) ) + img( vec2( 0.75, 0.25 ) )
+             + img( vec2( 0.25, 0.75 ) ) + img( vec2( 0.75, 0.75 ) )
+             + img( vec2( 0.50, 0.50 ) );
+    return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
 // Aizawa system parameters: a=0.95, b=0.7, c=0.6, d=3.5, e=0.25, f=0.1
 const float AIZ_A = 0.95, AIZ_B = 0.7, AIZ_C = 0.6, AIZ_D = 3.5, AIZ_E = 0.25, AIZ_F = 0.1;
 
-vec3 aizawaDeriv(vec3 q) {
+vec3 aizawaDeriv( vec3 q )
+{
     float r2xy = q.x * q.x + q.y * q.y;
     return vec3(
-        (q.z - AIZ_B) * q.x - AIZ_D * q.y,
-        AIZ_D * q.x + (q.z - AIZ_B) * q.y,
-        AIZ_C + AIZ_A * q.z - (q.z * q.z * q.z) / 3.0
-              - r2xy * (1.0 + AIZ_E * q.z) + AIZ_F * q.z * (q.x * q.x * q.x));
+        ( q.z - AIZ_B ) * q.x - AIZ_D * q.y,
+        AIZ_D * q.x + ( q.z - AIZ_B ) * q.y,
+        AIZ_C + AIZ_A * q.z - ( q.z * q.z * q.z ) / 3.0
+            - r2xy * ( 1.0 + AIZ_E * q.z ) + AIZ_F * q.z * ( q.x * q.x * q.x ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / min(resolution.x, resolution.y);
+void main()
+{
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
-    float spd = (speedP > 0.01) ? speedP : 1.0;
+    float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     // Sub-bass swells the shell's apparent radius. Applied to the view scale
     // (a static per-frame shape factor), never to anything multiplied by time.
-    float sRad = ((sphereRadP > 0.01) ? sphereRadP : 1.0) * (1.0 + 0.35 * audioSubBass);
-    float vrtx = (vortexP > 0.01) ? vortexP : 1.0;
-    float glw = (glowP > 0.01) ? glowP : 1.0;
+    float sRad = ( ( sphereRadP > 0.01 ) ? sphereRadP : 1.0 ) * ( 1.0 + 0.35 * audioSubBass );
+    float vrtx = ( vortexP > 0.01 ) ? vortexP : 1.0;
+    float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
@@ -98,23 +104,24 @@ void main() {
     // attractor (|xy| reaches ~1.3) fills the frame height instead of sitting
     // as a small motif on a large dead field.
     float rotA = t * 0.2 + audioPhase * 0.1;
-    float cs = cos(rotA), sn = sin(rotA);
-    vec2 pRot = mat2(cs, -sn, sn, cs) * uv * (3.2 / sRad);
+    float cs = cos( rotA ), sn = sin( rotA );
+    vec2  pRot = mat2( cs, -sn, sn, cs ) * uv * ( 3.2 / sRad );
 
     // Multi-step numerical RK2 integration along Aizawa sphere attractor.
     // Seeded from a FIXED point shared by every pixel -- not the pixel's own
     // position -- so the traced curve is one real spatial trajectory instead
     // of every pixel trivially starting AT distance zero from itself (which
     // washed the whole frame out to a near-uniform glow).
-    vec3 pAiz = vec3(0.1, 0.05, 0.5 + 0.3 * sin(t * 0.4));
+    vec3  pAiz = vec3( 0.1, 0.05, 0.5 + 0.3 * sin( t * 0.4 ) );
     float minDist = 1e5;
     float vortexEnergy = 0.0;
 
     // Clamped so no preset value of vortexP can push the step past the point
     // where the d=3.5 rotation term stops integrating cleanly.
-    float dt = clamp(0.07 * vrtx, 0.04, 0.095);
+    float dt = clamp( 0.07 * vrtx, 0.04, 0.095 );
 
-    for (int i = 0; i < 72; i++) {
+    for ( int i = 0; i < 72; i++ )
+    {
         // Midpoint RK2. The loop previously ran plain Euler over 28 steps of
         // dt=0.018 -- 0.5 time units total, far short of the transient, so the
         // "sphere shell" never left the seed's immediate neighbourhood: it was
@@ -122,16 +129,17 @@ void main() {
         // pumps radius into the d=3.5 rotation term, so simply integrating
         // longer would have blown the orbit up; RK2's error is O(dt^3) per
         // step, which keeps the traced curve on the real attractor.
-        vec3 k1 = aizawaDeriv(pAiz);
-        vec3 k2 = aizawaDeriv(pAiz + k1 * (dt * 0.5));
+        vec3 k1 = aizawaDeriv( pAiz );
+        vec3 k2 = aizawaDeriv( pAiz + k1 * ( dt * 0.5 ) );
         pAiz += k2 * dt;
 
-        float dDist = length(pRot - pAiz.xy);
-        minDist = min(minDist, dDist);
+        float dDist = length( pRot - pAiz.xy );
+        minDist = min( minDist, dDist );
 
         // Core axial tornado energy
-        if (abs(pAiz.x) < 0.3 && abs(pAiz.y) < 0.3) {
-            vortexEnergy += exp(-dDist * 8.0);
+        if ( abs( pAiz.x ) < 0.3 && abs( pAiz.y ) < 0.3 )
+        {
+            vortexEnergy += exp( -dDist * 8.0 );
         }
     }
 
@@ -140,59 +148,60 @@ void main() {
     // axis every step qualified, the sum reached ~28 and the tinted vector hit
     // ~48 at the centre -- the white flood that ate the frame. Normalise by
     // the step budget and cap so the funnel stays a core, not a haze.
-    vortexEnergy = clamp(vortexEnergy * 0.09, 0.0, 1.1);
+    vortexEnergy = clamp( vortexEnergy * 0.09, 0.0, 1.1 );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract(pRot * 0.2 + 0.5);
-    vec3 texCol = img(sampleUV);
+    vec2 sampleUV = fract( pRot * 0.2 + 0.5 );
+    vec3 texCol = img( sampleUV );
 
     // Glowing trajectory ribbon lines. The old 4.5 falloff still returned 0.1
     // a half-unit off the curve, so the "ribbons" were a broad soft haze with
     // no edge anywhere; a tighter exponent turns them back into lines.
-    float lineGlow = exp(-minDist * (11.0 + 6.0 * audioCentroid)) * glw;
+    float lineGlow = exp( -minDist * ( 11.0 + 6.0 * audioCentroid ) ) * glw;
     // Light RUNNING along the ribbon: a triple bright pulse chases the curve's
     // angular phase, so the shell reads as circulating energy, not a still.
-    float runPhase = atan(pRot.y, pRot.x) * 3.0 - t * 2.4 - audioPhase * 0.6;
-    lineGlow *= 0.7 + 0.5 * pow(0.5 + 0.5 * sin(runPhase), 3.0);
+    float runPhase = atan( pRot.y, pRot.x ) * 3.0 - t * 2.4 - audioPhase * 0.6;
+    lineGlow *= 0.7 + 0.5 * pow( 0.5 + 0.5 * sin( runPhase ), 3.0 );
 
     // ORBITING BEACONS: five point lights on inclined elliptical orbits around
     // the shell -- the "rotating lights". Each has its own angular speed, the
     // pack follows the music (audioPhase), and a depth cue dims/blurs a light
     // on the far side of its orbit so the circling reads as 3D.
-    vec3 beaconCol = vec3(0.0);
-    for (int j = 0; j < 5; j++) {
-        float fj  = float(j);
-        float ang = t * (1.1 + 0.23 * fj) + fj * 2.51 + audioPhase * 0.3;
-        float rad = 0.85 + 0.18 * sin(fj * 1.7 + t * 0.4);
-        vec2  lp  = vec2(cos(ang), sin(ang) * 0.42) * rad;
-        float depth = 0.55 + 0.45 * sin(ang + fj);
-        float d     = length(pRot - lp);
-        float spark = exp(-d * (26.0 - 10.0 * depth));
-        beaconCol += imgPalette(0.15 + 0.2 * fj) * spark * depth
-                   * (0.8 + 1.6 * audioLevel);
+    vec3 beaconCol = vec3( 0.0 );
+    for ( int j = 0; j < 5; j++ )
+    {
+        float fj = float( j );
+        float ang = t * ( 1.1 + 0.23 * fj ) + fj * 2.51 + audioPhase * 0.3;
+        float rad = 0.85 + 0.18 * sin( fj * 1.7 + t * 0.4 );
+        vec2  lp = vec2( cos( ang ), sin( ang ) * 0.42 ) * rad;
+        float depth = 0.55 + 0.45 * sin( ang + fj );
+        float d = length( pRot - lp );
+        float spark = exp( -d * ( 26.0 - 10.0 * depth ) );
+        beaconCol += imgPalette( 0.15 + 0.2 * fj ) * spark * depth
+                     * ( 0.8 + 1.6 * audioLevel );
     }
 
     // Palette mixing across Aizawa sphere
-    float phase = atan(pRot.y, pRot.x) / 6.2831853 + length(pRot) * 0.15;
-    vec3 palA = imgPalette(phase + t * 0.05);
-    vec3 palB = imgPalette(phase + 0.5);
-    vec3 col = mix(palA, palB, 0.5 + 0.5 * sin(vortexEnergy * 0.5));
+    float phase = atan( pRot.y, pRot.x ) / 6.2831853 + length( pRot ) * 0.15;
+    vec3  palA = imgPalette( phase + t * 0.05 );
+    vec3  palB = imgPalette( phase + 0.5 );
+    vec3  col = mix( palA, palB, 0.5 + 0.5 * sin( vortexEnergy * 0.5 ) );
 
-    col = mix(col, texCol, 0.35 + 0.15 * audioValence);
+    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
 
     // Hold the celestial backdrop to a fixed dark level so the shell and the
     // funnel are what carries the light, whatever photo happens to be bound.
-    col *= clamp(0.20 / max(0.05, photoLevel()), 0.20, 2.4);
+    col *= clamp( 0.20 / max( 0.05, photoLevel() ), 0.20, 2.4 );
 
     // Add glowing spherical shell and central tornado flares. Both tint
     // constants exceed 1.0 per channel, so the TINTED vectors are capped --
     // capping the scalars alone still let the colour run past white.
-    vec3 sphereTint = min(vec3(1.3, 1.1, 1.8) * lineGlow * (1.0 + 2.5 * audioKick), vec3(1.2));
-    vec3 tornadoTint = min(vec3(1.7, 1.4, 0.5) * vortexEnergy * (1.0 + 3.0 * audioKick), vec3(1.4));
-    col += sphereTint + tornadoTint + min(beaconCol, vec3(1.2));
+    vec3 sphereTint = min( vec3( 1.3, 1.1, 1.8 ) * lineGlow * ( 1.0 + 2.5 * audioKick ), vec3( 1.2 ) );
+    vec3 tornadoTint = min( vec3( 1.7, 1.4, 0.5 ) * vortexEnergy * ( 1.0 + 3.0 * audioKick ), vec3( 1.4 ) );
+    col += sphereTint + tornadoTint + min( beaconCol, vec3( 1.2 ) );
 
-    col = pow(col, vec3(0.88));
-    vec3 _catTone = clamp(col, 0.0, 1.0);
-    _catTone /= 1.0 + 0.32 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    col = pow( col, vec3( 0.88 ) );
+    vec3 _catTone = clamp( col, 0.0, 1.0 );
+    _catTone /= 1.0 + 0.32 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

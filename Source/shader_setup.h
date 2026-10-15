@@ -1,31 +1,34 @@
 /**
  * @file shader_setup.h
- * @brief Low-level GLSL shader compile/link helpers shared across the engine: builds fragment-only, vertex+fragment, full-pipeline (with optional tessellation/geometry stages) and compute programs from source files.
+ * @brief Low-level GLSL shader compile/link helpers shared across the engine: builds fragment-only, vertex+fragment,
+ * full-pipeline (with optional tessellation/geometry stages) and compute programs from source files.
  */
-#if defined(__linux__) || defined(__APPLE__)
+#if defined( __linux__ ) || defined( __APPLE__ )
 // glcore.h already selects the platform's GL header and defines APIENTRY,
 // the same service it performs for the WIN32 arm below. What stood here was
 // <gl.h>/<glut.h> from the GLee-and-GLUT era, before glcore existed: paths
 // that resolve on no current system, in a branch that had never been built.
 #include "glcore.h"
-#elif defined(WIN32)
+#elif defined( WIN32 )
 #include "glcore.h"
 #include <GL/gl.h>
 #endif
 #include <string>
 
 /**
- * @brief Builds a "classic" fragment-only effect program: the single shared fullscreen vertex shader plus the given fragment shader.
+ * @brief Builds a "classic" fragment-only effect program: the single shared fullscreen vertex shader plus the given
+ * fragment shader.
  *
  * Used by the ordinary 2D/fullscreen effects, which have no per-scene vertex logic — the same
  * compiled vertex shader (Engine\\Fullscreen.vert) is attached to every one of these programs.
  * Exits the process on a missing shader file (fatal by design: a broken install should fail loud
  * at startup rather than run with a black effect).
- * @param vert_source Unused; kept for signature symmetry with setShadersVF() — the shared fullscreen vertex shader is used regardless of what is passed here.
+ * @param vert_source Unused; kept for signature symmetry with setShadersVF() — the shared fullscreen vertex shader is
+ * used regardless of what is passed here.
  * @param frag_source Path to the fragment shader source file.
  * @return The linked, currently-bound (glUseProgram already called) program id.
  */
-GLuint setShaders( const char *vert_source, const char * frag_source );
+GLuint setShaders( const char *vert_source, const char *frag_source );
 /**
  * @brief Background build of a setShaders() program (driver-parallel compile, see shader_setup.cpp).
  *
@@ -35,21 +38,23 @@ GLuint setShaders( const char *vert_source, const char * frag_source );
  * @return False when the driver cannot compile in the background (then nothing changed).
  */
 bool shaderPrebuildStart( const char *frag_source );
-int  shaderPrebuildPoll();          ///< Collects finished background builds; returns how many are still running.
-bool shaderPrebuildReady( const char *frag_source );   ///< True if setShaders() for this file would be a cache hit.
+int  shaderPrebuildPoll(); ///< Collects finished background builds; returns how many are still running.
+bool shaderPrebuildReady( const char *frag_source ); ///< True if setShaders() for this file would be a cache hit.
 // Specialised variants (chain labs): the fragment file with `defines` inserted
 // after its #version line, built in the background like shaderPrebuildStart().
 /// @brief Starts the variant's background build (no-op if built or building). False without background compile.
-bool   shaderVariantStart( const char *frag_source, const std::string &defines );
-/// @brief The variant's program once built, with a reference taken (release with shaderProgramRelease()); 0 while building.
+bool shaderVariantStart( const char *frag_source, const std::string &defines );
+/// @brief The variant's program once built, with a reference taken (release with shaderProgramRelease()); 0 while
+/// building.
 GLuint shaderVariantTake( const char *frag_source, const std::string &defines );
 /// @brief True if the variant's build failed (its log is printed once).
-bool   shaderVariantFailed( const char *frag_source, const std::string &defines );
+bool shaderVariantFailed( const char *frag_source, const std::string &defines );
 /// @brief Builds a fullscreen program from fragment TEXT now (blocking; cached by text). 0 on failure (logged).
 GLuint shaderBuildFromText( const std::string &fragText );
 // Vertex+fragment pair (3D scenes) — actually attaches the vertex shader.
 /**
- * @brief Builds a vertex+fragment program where the vertex shader is actually the caller's own file, not the shared fullscreen one.
+ * @brief Builds a vertex+fragment program where the vertex shader is actually the caller's own file, not the shared
+ * fullscreen one.
  *
  * Used by the real 3D scenes (Scene3DShader), whose vertex shader builds the world-space geometry
  * itself. Exits the process on a missing shader file, same as setShaders().
@@ -69,7 +74,8 @@ GLuint setShadersVF( const char *vert_source, const char *frag_source );
  * @param tese_source Path to the tessellation evaluation shader source file, or NULL/nonexistent to omit the stage.
  * @param geom_source Path to the geometry shader source file, or NULL/nonexistent to omit the stage.
  * @param frag_source Path to the (required) fragment shader source file.
- * @return The linked, currently-bound (glUseProgram already called) program id, or 0 if an optional stage's file existed but failed to compile, or if linking failed.
+ * @return The linked, currently-bound (glUseProgram already called) program id, or 0 if an optional stage's file
+ * existed but failed to compile, or if linking failed.
  */
 GLuint setShadersPipeline( const char *vert_source, const char *tesc_source,
                            const char *tese_source, const char *geom_source,
@@ -128,7 +134,8 @@ void shaderCacheStats( int *programs, int *reuses, double *buildMs );
 /**
  * @brief Builds a GL 4.3 compute-shader program from a single source file.
  * @param comp_source Path to the compute shader source file.
- * @return The linked, currently-bound (glUseProgram already called) program id, or 0 if compute entry points aren't loaded, the file is missing, or compile/link fails — callers are expected to fall back to a non-compute path rather than treat 0 as fatal.
+ * @return The linked, currently-bound (glUseProgram already called) program id, or 0 if compute entry points aren't
+ * loaded, the file is missing, or compile/link fails — callers are expected to fall back to a non-compute path rather
+ * than treat 0 as fatal.
  */
 GLuint setComputeShader( const char *comp_source );
-

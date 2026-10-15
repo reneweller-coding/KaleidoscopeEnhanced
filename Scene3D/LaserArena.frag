@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // LaserArena.frag — razor core inside a wide fog halo across the beam.
-in vec4  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file LaserArena.frag
@@ -29,9 +29,9 @@ in float vSide;   ///< Which side of a strip (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float d    = abs(vSide);
-    float core = exp(-d * d * 22.0);
-    float halo = exp(-d * d * 1.2) * 0.20;
+    float d = abs( vSide );
+    float core = exp( -d * d * 22.0 );
+    float halo = exp( -d * d * 1.2 ) * 0.20;
 
     // The beam colour arrives from the vertex stage at 0.80..1.00 saturation
     // for EVERY hue in this scene's range, and since the halo covers the whole
@@ -50,11 +50,11 @@ void main()
     // saturation further (the sum of vectors all with min/max >= r keeps
     // min/max >= r), so no pixel in the frame can reach 0.8 any more.
     vec3  beam = vCol.rgb;
-    float lum  = dot(beam, vec3(0.2126, 0.7152, 0.0722));
-    float mxc  = max(beam.r, max(beam.g, beam.b));
+    float lum = dot( beam, vec3( 0.2126, 0.7152, 0.0722 ) );
+    float mxc = max( beam.r, max( beam.g, beam.b ) );
 
-    vec3 fogCol  = mix(beam, vec3(lum), 0.70);
-    vec3 coreCol = mix(beam, vec3(mxc), 0.35);
+    vec3 fogCol = mix( beam, vec3( lum ), 0.70 );
+    vec3 coreCol = mix( beam, vec3( mxc ), 0.35 );
 
-    fragColor = vec4(coreCol * core + fogCol * halo, 1.0);
+    fragColor = vec4( coreCol * core + fogCol * halo, 1.0 );
 }

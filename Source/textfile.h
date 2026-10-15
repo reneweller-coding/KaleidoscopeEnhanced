@@ -27,4 +27,3 @@ char *textFileRead( const char *fn );
  *         @p fn or a file that could not be opened).
  */
 int textFileWrite( const char *fn, const char *s );
-

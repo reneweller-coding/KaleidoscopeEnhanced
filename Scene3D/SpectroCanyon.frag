@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // SpectroCanyon.frag — rock lit from a low sun, with the loud parts of the
 // spectrum glowing from inside the stone.  The emission is keyed to the SAME
 // value that built the terrain, so a peak is both a peak and a light.
 
-in vec3  vWorld;   ///< World position (from the vertex stage).
-in vec3  vNormal;   ///< Surface normal (from the vertex stage).
+in vec3  vWorld;  ///< World position (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in float vEnergy;
 in float vFreq;
-in float vDist;   ///< Distance (from the vertex stage).
+in float vDist; ///< Distance (from the vertex stage).
 
 /**
  * @file SpectroCanyon.frag
@@ -28,28 +28,30 @@ in float vDist;   ///< Distance (from the vertex stage).
  * frequency band, and the far end fades into a photo-tinted haze.
  */
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHigh;   ///< High band level, 0..1.
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioBeat;      ///< Beat envelope, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHigh;      ///< High band level, 0..1.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music is, 0..1.
 
-uniform float camHP;   ///< Camera height knob, 0..1.
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
-uniform float heightP;   ///< Height knob, 0..1.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
+uniform float     camHP;        ///< Camera height knob, 0..1.
+uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
+uniform float     heightP;      ///< Height knob, 0..1.
+uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
+uniform float     audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -57,68 +59,68 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief A hue as a colour (the house palette).
-vec3 hue2rgb(float h)
+vec3 hue2rgb( float h )
 {
-    return imgPalette(h) * 1.35;   // photo-arc palette (house standard), was HSV rainbow
+    return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 n = normalize(vNormal);
-    vec3 V = normalize(vec3(0.0, camHP, 0.0) - vWorld);
-    vec3 L = normalize(vec3(-0.55, 0.28, -0.78));
+    vec3 n = normalize( vNormal );
+    vec3 V = normalize( vec3( 0.0, camHP, 0.0 ) - vWorld );
+    vec3 L = normalize( vec3( -0.55, 0.28, -0.78 ) );
 
-    float diff = max(dot(n, L), 0.0);
-    float wrap = 0.5 + 0.5 * dot(n, L);
+    float diff = max( dot( n, L ), 0.0 );
+    float wrap = 0.5 + 0.5 * dot( n, L );
 
     // Rock: dark and cool, banded by height so the strata read.
-    float strata = 0.5 + 0.5 * sin(vWorld.y * 0.55 + 1.7);
-    vec3 rock = mix(vec3(0.055, 0.060, 0.085), vec3(0.15, 0.13, 0.14), strata);
+    float strata = 0.5 + 0.5 * sin( vWorld.y * 0.55 + 1.7 );
+    vec3  rock = mix( vec3( 0.055, 0.060, 0.085 ), vec3( 0.15, 0.13, 0.14 ), strata );
 
-    vec3 col = rock * (0.22 + 0.85 * diff + 0.45 * wrap * wrap);
+    vec3 col = rock * ( 0.22 + 0.85 * diff + 0.45 * wrap * wrap );
 
     // Sky bounce from above, so the flat floor is not as dark as the walls.
-    col += rock * vec3(0.35, 0.45, 0.75) * max(n.y, 0.0) * (0.45 + 0.5 * audioAmbient);
+    col += rock * vec3( 0.35, 0.45, 0.75 ) * max( n.y, 0.0 ) * ( 0.45 + 0.5 * audioAmbient );
 
     // Emission: hue follows the band, brightness follows its energy.  Low bands
     // glow deep red, the top of the spectrum near-white — the canyon is a
     // spectrum analyser you can fly through.
-    float hue = fract(0.02 + 0.42 * vFreq + 0.06 * sin(audioChromaHue));
-    vec3 fire = mix(hue2rgb(hue), vec3(1.0), 0.25 * vFreq);
-    float e = clamp(vEnergy * 1.25 - 0.12, 0.0, 1.0);
-    col += fire * pow(e, 2.0) * (0.9 + 2.4 * glowP) * (0.7 + 0.8 * audioLevel);
+    float hue = fract( 0.02 + 0.42 * vFreq + 0.06 * sin( audioChromaHue ) );
+    vec3  fire = mix( hue2rgb( hue ), vec3( 1.0 ), 0.25 * vFreq );
+    float e = clamp( vEnergy * 1.25 - 0.12, 0.0, 1.0 );
+    col += fire * pow( e, 2.0 ) * ( 0.9 + 2.4 * glowP ) * ( 0.7 + 0.8 * audioLevel );
 
     // The crests catch a rim of the same colour, which is what keeps the far
     // ridges legible once the haze takes their body.
-    float fres = pow(1.0 - clamp(dot(n, V), 0.0, 1.0), 3.0);
-    col += fire * fres * e * (0.5 + 1.2 * audioKick);
+    float fres = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 3.0 );
+    col += fire * fres * e * ( 0.5 + 1.2 * audioKick );
 
     // Specular glint off wet stone, sharpened by the treble.
-    vec3 H = normalize(L + V);
-    col += vec3(0.85, 0.90, 1.0) * pow(max(dot(n, H), 0.0), 45.0)
-         * (0.4 + 2.0 * audioHigh);
+    vec3 H = normalize( L + V );
+    col += vec3( 0.85, 0.90, 1.0 ) * pow( max( dot( n, H ), 0.0 ), 45.0 )
+           * ( 0.4 + 2.0 * audioHigh );
 
     // Haze toward the far end of the history, tinted by the slideshow photo so
     // the canyon sits under a sky rather than in a void.
-    vec2 skyUV = vec2(vWorld.x / 300.0 + 0.5 + time * 0.003, 0.72);
-    vec3 sky = textureLod(tex0, fract(skyUV), 0.0).rgb;
-    sky = mix(vec3(dot(sky, vec3(0.333))), sky, 0.55) * 0.45 + vec3(0.03, 0.04, 0.07);
-    float haze = clamp(vDist / 200.0, 0.0, 1.0);
-    col = mix(col, sky, pow(haze, 1.4));
+    vec2 skyUV = vec2( vWorld.x / 300.0 + 0.5 + time * 0.003, 0.72 );
+    vec3 sky = textureLod( tex0, fract( skyUV ), 0.0 ).rgb;
+    sky = mix( vec3( dot( sky, vec3( 0.333 ) ) ), sky, 0.55 ) * 0.45 + vec3( 0.03, 0.04, 0.07 );
+    float haze = clamp( vDist / 200.0, 0.0, 1.0 );
+    col = mix( col, sky, pow( haze, 1.4 ) );
 
     col *= 1.0 + 0.18 * audioBeat + 0.20 * audioSubBass;
-    col = col / (1.0 + col * 0.28);
-    col *= (0.85 + 0.30 * audioLevel + 0.35 * audioKick);
-    fragColor = vec4(col, interpolation);
+    col = col / ( 1.0 + col * 0.28 );
+    col *= ( 0.85 + 0.30 * audioLevel + 0.35 * audioKick );
+    fragColor = vec4( col, interpolation );
 }

@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file Metamorph.frag
  * @brief The music-type ADAPTIVE effect: cross-fades between two personalities using
@@ -17,181 +17,196 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * jump-free motion (audioPhase/audioAdvance, never time*audio).
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAmbient;   ///< 0 = beat music .. 1 = drone (slow classifier)
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioBeat;   ///< Beat envelope, 0..1.
-uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
-uniform float audioBeatPhase; ///< continuous beat phase -> tempo-locked ring waves
-uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioSpectrum[32];   ///< 32 log bands -> the lattice becomes an analyzer
-uniform float audioKick;      ///< instrument-separated onsets: kick -> ring waves,
-uniform float audioSnare;     ///< snare -> lattice flash,
-uniform float audioHat;       ///< hats -> spectrum-wheel shimmer
+uniform float audioAmbient;      ///< 0 = beat music .. 1 = drone (slow classifier)
+uniform float audioPhase;        ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                 ///< backwards).
+uniform float audioBeat;         ///< Beat envelope, 0..1.
+uniform float audioOnset;        ///< Onset envelope (any instrument), 0..1.
+uniform float audioBeatPhase;    ///< continuous beat phase -> tempo-locked ring waves
+uniform float audioBarPhase;     ///< Position within the current bar, 0..1.
+uniform float audioSwell;        ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;        ///< Overall loudness, 0..1.
+uniform float audioCentroid;     ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioSpectrum[32]; ///< 32 log bands -> the lattice becomes an analyzer
+uniform float audioKick;         ///< instrument-separated onsets: kick -> ring waves,
+uniform float audioSnare;        ///< snare -> lattice flash,
+uniform float audioHat;          ///< hats -> spectrum-wheel shimmer
 
 // Per-activation variety (re-rolled each activation; 0 = default):
-uniform int   sidesP;         ///< mirror fold count   (0 -> 6; 4..9)
-uniform float latticeP;       ///< beat-shard density  (0 -> 3.0; 2 = large, 4.5 = fine)
-uniform float warpAmtP;       ///< drone warp amount   (0 -> 0.22; 0.15..0.35)
-uniform float swirlP;         ///< drone spiral amount (0 -> none; up to ~0.7)
+uniform int   sidesP;   ///< mirror fold count   (0 -> 6; 4..9)
+uniform float latticeP; ///< beat-shard density  (0 -> 3.0; 2 = large, 4.5 = fine)
+uniform float warpAmtP; ///< drone warp amount   (0 -> 0.22; 0.15..0.35)
+uniform float swirlP;   ///< drone spiral amount (0 -> none; up to ~0.7)
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
-mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+mat2 rot( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
+}
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) { return (interpolation * texture(tex0, uv)
-                          + (1.0 - interpolation) * texture(tex1, uv)).rgb; }
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv )
+             + ( 1.0 - interpolation ) * texture( tex1, uv ) )
+        .rgb;
+}
 
 /// @brief A colour of the photo along a slowly wandering arc (palette lookup).
-vec3 imgPal(float x)
+vec3 imgPal( float x )
 {
-    vec2 cc = vec2(0.5) + 0.32 * vec2(cos(time * 0.045 + audioPhase * 0.12),
-                                      sin(time * 0.033 + audioPhase * 0.09));
-    return img(fract(cc + 0.24 * vec2(cos(x), sin(x * 1.31))));
+    vec2 cc = vec2( 0.5 )
+              + 0.32 * vec2( cos( time * 0.045 + audioPhase * 0.12 ), sin( time * 0.033 + audioPhase * 0.09 ) );
+    return img( fract( cc + 0.24 * vec2( cos( x ), sin( x * 1.31 ) ) ) );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p)
+float hash21( vec2 p )
 {
-    p = fract(p * vec2(123.34, 345.45));
-    p += dot(p, p + 34.345);
-    return fract(p.x * p.y);
+    p = fract( p * vec2( 123.34, 345.45 ) );
+    p += dot( p, p + 34.345 );
+    return fract( p.x * p.y );
 }
 /// @brief Value noise with a seed.
-float vnoise(vec2 p)
+float vnoise( vec2 p )
 {
-    vec2 i = floor(p), f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    float a = hash21(i), b = hash21(i + vec2(1.0, 0.0));
-    float c = hash21(i + vec2(0.0, 1.0)), d = hash21(i + vec2(1.0, 1.0));
-    return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    vec2 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    float a = hash21( i ), b = hash21( i + vec2( 1.0, 0.0 ) );
+    float c = hash21( i + vec2( 0.0, 1.0 ) ), d = hash21( i + vec2( 1.0, 1.0 ) );
+    return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec2 p)
+float fbm( vec2 p )
 {
     float s = 0.0, a = 0.5;
-    for (int i = 0; i < 4; i++) { s += a * vnoise(p); p = p * 2.03 + vec2(1.7, 9.2); a *= 0.5; }
+    for ( int i = 0; i < 4; i++ )
+    {
+        s += a * vnoise( p );
+        p = p * 2.03 + vec2( 1.7, 9.2 );
+        a *= 0.5;
+    }
     return s;
 }
 
 /// @brief Kaleidoscope fold of the coordinate with the given mirrors.
-vec2 kaleido(vec2 p, float sides)
+vec2 kaleido( vec2 p, float sides )
 {
-    float a   = atan(p.y, p.x);
-    float r   = length(p);
+    float a = atan( p.y, p.x );
+    float r = length( p );
     float seg = PI / sides;
-    a = mod(a + PI, 2.0 * seg) - seg;
-    a = abs(a);
-    return vec2(cos(a), sin(a)) * r;
+    a = mod( a + PI, 2.0 * seg ) - seg;
+    a = abs( a );
+    return vec2( cos( a ), sin( a ) ) * r;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
-    vec2 p  = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    p = rot(audioPhase * 0.15 + time * 0.015) * p;
+    vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
+    p = rot( audioPhase * 0.15 + time * 0.015 ) * p;
 
     // Per-activation character (constant during the scene):
-    float sidesV   = float((sidesP >= 3) ? sidesP : 6);
-    float latticeV = (latticeP <= 0.01) ? 3.0  : latticeP;
-    float warpAmtV = (warpAmtP <= 0.001) ? 0.22 : warpAmtP;
+    float sidesV = float( ( sidesP >= 3 ) ? sidesP : 6 );
+    float latticeV = ( latticeP <= 0.01 ) ? 3.0 : latticeP;
+    float warpAmtV = ( warpAmtP <= 0.001 ) ? 0.22 : warpAmtP;
 
     // ---------- BEAT personality: angular mirrored shards ----------
     vec3 beatCol;
     {
-        vec2 fp = kaleido(p, sidesV);
+        vec2 fp = kaleido( p, sidesV );
         // Angular folding: hard abs() creases give crisp, spiky geometry.
         vec2 q = fp * latticeV;
-        q = abs(fract(q) - 0.5);
-        float crease = min(q.x, q.y);
-        float edges  = smoothstep(0.10, 0.02, crease);          // sharp lattice lines
+        q = abs( fract( q ) - 0.5 );
+        float crease = min( q.x, q.y );
+        float edges = smoothstep( 0.10, 0.02, crease ); // sharp lattice lines
 
-        vec2 iuv = fp * 0.6 + 0.5 + (q - 0.25) * 0.15;
-        vec3 pic = img(fract(iuv));
+        vec2 iuv = fp * 0.6 + 0.5 + ( q - 0.25 ) * 0.15;
+        vec3 pic = img( fract( iuv ) );
 
         // Bar-phase highlight sweeping the wedges; beat pops the whole lattice.
-        float ang  = atan(p.y, p.x) / (2.0 * PI) + 0.5;
-        float swp  = 0.5 + 0.5 * cos((ang - audioBarPhase) * 2.0 * PI);
+        float ang = atan( p.y, p.x ) / ( 2.0 * PI ) + 0.5;
+        float swp = 0.5 + 0.5 * cos( ( ang - audioBarPhase ) * 2.0 * PI );
         swp = swp * swp;
 
         // Spectrum wheel: each direction follows its own frequency band, so
         // the lattice doubles as a circular analyzer (mirrored, 0 = bass at
         // the sweep origin).  Slew-limited bands -> shimmer, not strobe.
-        float wf  = ang * 64.0;
-        float binf = (mod(wf, 64.0) < 32.0) ? mod(wf, 64.0) : (63.0 - mod(wf, 64.0));
-        float amp  = audioSpectrum[int(clamp(binf, 0.0, 31.0))];
+        float wf = ang * 64.0;
+        float binf = ( mod( wf, 64.0 ) < 32.0 ) ? mod( wf, 64.0 ) : ( 63.0 - mod( wf, 64.0 ) );
+        float amp = audioSpectrum[int( clamp( binf, 0.0, 31.0 ) )];
 
         // Tempo-locked ring waves radiating from the centre (continuous
         // beat phase -> they travel smoothly and land ON the beat).
-        float ring = cos(6.2831 * (length(p) * 0.9 - audioBeatPhase));
+        float ring = cos( 6.2831 * ( length( p ) * 0.9 - audioBeatPhase ) );
         ring = ring * ring * audioBeat;
 
         // Instrument-separated accents: the SNARE flashes the lattice edges,
         // the KICK powers the travelling rings, HATS shimmer the spectrum
         // wheel (crossmodal: impact->flash, boom->wave, sizzle->sparkle).
-        beatCol = pic * (0.55 + 0.55 * audioBeat + 0.25 * audioOnset);
-        beatCol += edges * imgPal(crease * 8.0)
-                 * (0.5 + 1.0 * audioBeat + 0.9 * audioSnare) * 1.4;
+        beatCol = pic * ( 0.55 + 0.55 * audioBeat + 0.25 * audioOnset );
+        beatCol += edges * imgPal( crease * 8.0 )
+                   * ( 0.5 + 1.0 * audioBeat + 0.9 * audioSnare ) * 1.4;
         beatCol *= 0.75 + 0.5 * swp;
-        beatCol *= 0.85 + 0.35 * amp + 0.10 * audioHat;   // spectrum wheel
-        beatCol += beatCol * ring * (0.15 + 0.45 * audioKick);  // tempo rings
+        beatCol *= 0.85 + 0.35 * amp + 0.10 * audioHat;          // spectrum wheel
+        beatCol += beatCol * ring * ( 0.15 + 0.45 * audioKick ); // tempo rings
     }
 
     // ---------- DRONE personality: soft breathing clouds ----------
     vec3 droneCol;
     {
         // Looming: the slow swell gently expands the view (loudness -> approach).
-        vec2 dp = p / (1.0 + 0.10 * audioSwell);
+        vec2 dp = p / ( 1.0 + 0.10 * audioSwell );
         // Per-activation spiral: the clouds wind slowly around the centre.
-        if (swirlP > 0.001)
+        if ( swirlP > 0.001 )
         {
-            float sa = swirlP * length(dp) * 1.4 + audioPhase * 0.06;
-            dp = rot(sa) * dp;
+            float sa = swirlP * length( dp ) * 1.4 + audioPhase * 0.06;
+            dp = rot( sa ) * dp;
         }
         float t = time * 0.02 + audioAdvance * 0.15;
-        vec2 warp = vec2(fbm(dp * 1.6 + vec2(0.0, t)),
-                         fbm(dp * 1.6 + vec2(5.2, t * 1.1)));
-        vec2 iuv = dp * 0.55 + 0.5 + (warp - 0.5) * warpAmtV;  // round, curved flow
-        vec3 pic = img(fract(iuv));
+        vec2  warp = vec2( fbm( dp * 1.6 + vec2( 0.0, t ) ),
+                           fbm( dp * 1.6 + vec2( 5.2, t * 1.1 ) ) );
+        vec2  iuv = dp * 0.55 + 0.5 + ( warp - 0.5 ) * warpAmtV; // round, curved flow
+        vec3  pic = img( fract( iuv ) );
 
-        float glow = fbm(dp * 2.2 + warp * 2.0 - t);
-        droneCol = pic * (0.55 + 0.45 * glow + 0.35 * audioSwell);
-        droneCol += imgPal(glow * 3.0 + 0.5 * sin(audioBarPhase * 6.2831))
-                  * glow * glow * (0.25 + 0.45 * audioSwell);
+        float glow = fbm( dp * 2.2 + warp * 2.0 - t );
+        droneCol = pic * ( 0.55 + 0.45 * glow + 0.35 * audioSwell );
+        droneCol += imgPal( glow * 3.0 + 0.5 * sin( audioBarPhase * 6.2831 ) )
+                    * glow * glow * ( 0.25 + 0.45 * audioSwell );
     }
 
     // ---------- Cross-fade by the (slow) music-type classifier ----------
-    vec3 col = mix(beatCol, droneCol, clamp(audioAmbient, 0.0, 1.0));
+    vec3 col = mix( beatCol, droneCol, clamp( audioAmbient, 0.0, 1.0 ) );
 
     // Mood grade + image-driven hue variance.
-    col *= mix(vec3(0.75, 0.85, 1.20), vec3(1.25, 1.05, 0.75), audioCentroid);
-    float lum = dot(col, vec3(0.299, 0.587, 0.114));
-    col = mix(vec3(lum), col, 0.6 + 0.6 * audioValence);
-    float himg = dot(imgPal(dot(col, vec3(0.333)) * 6.0
-                 + length(uv - 0.5) * 4.0), vec3(0.333));
-    col = hueRot(col, (himg - 0.5) * 3.0 + time * 0.05);
+    col *= mix( vec3( 0.75, 0.85, 1.20 ), vec3( 1.25, 1.05, 0.75 ), audioCentroid );
+    float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( lum ), col, 0.6 + 0.6 * audioValence );
+    float himg = dot( imgPal( dot( col, vec3( 0.333 ) ) * 6.0
+                              + length( uv - 0.5 ) * 4.0 ),
+                      vec3( 0.333 ) );
+    col = hueRot( col, ( himg - 0.5 ) * 3.0 + time * 0.05 );
 
     col *= 0.9 + 0.4 * audioLevel;
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

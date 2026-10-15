@@ -1,10 +1,10 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file BeyondTheEdge.frag
- * @brief BEYOND THE EDGE: Looking past the absolute edge of the observable 
- * universe into the Cosmic Microwave Background and the true unknown. The CMB 
- * ripples gently in ancient patterns, while audio kicks create massive, glowing 
+ * @brief BEYOND THE EDGE: Looking past the absolute edge of the observable
+ * universe into the Cosmic Microwave Background and the true unknown. The CMB
+ * ripples gently in ancient patterns, while audio kicks create massive, glowing
  * anomalies that tear through the cosmic horizon.
  *   audioAdvance -> slow panning across the cosmic horizon
  *   audioKick    -> massive, glowing anomalies piercing the CMB
@@ -17,78 +17,92 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float cmbP;
 uniform float anomalyP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Smooth value noise.
-float noise(vec3 p) {
-    vec3 i = floor(p);
-    vec3 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
+float noise( vec3 p )
+{
+    vec3 i = floor( p );
+    vec3 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
     float n = i.x + i.y * 57.0 + i.z * 113.0;
     return mix(
-        mix(mix(hash11(n + 0.0), hash11(n + 1.0), f.x),
-            mix(hash11(n + 57.0), hash11(n + 58.0), f.x), f.y),
-        mix(mix(hash11(n + 113.0), hash11(n + 114.0), f.x),
-            mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
+        mix( mix( hash11( n + 0.0 ), hash11( n + 1.0 ), f.x ),
+             mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y ),
+        mix( mix( hash11( n + 113.0 ), hash11( n + 114.0 ), f.x ),
+             mix( hash11( n + 170.0 ), hash11( n + 171.0 ), f.x ), f.y ),
+        f.z );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec3 p) {
+float fbm( vec3 p )
+{
     float f = 0.0, a = 0.5;
-    for(int i = 0; i < 6; i++) { f += a * noise(p); p *= 2.0; a *= 0.5; }
+    for ( int i = 0; i < 6; i++ )
+    {
+        f += a * noise( p );
+        p *= 2.0;
+        a *= 0.5;
+    }
     return f;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float cp = (cmbP > 0.01 ? cmbP : 1.0);
-    float ap = (anomalyP > 0.01 ? anomalyP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float cp = ( cmbP > 0.01 ? cmbP : 1.0 );
+    float ap = ( anomalyP > 0.01 ? anomalyP : 1.0 );
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Zoom OUT far enough that the edge of the observable universe actually
     // fits on screen: before, the sphere overfilled the frame and the scene
@@ -98,71 +112,76 @@ void main()
     // Slow drift across the sky
     float drift = time * 0.05 + audioAdvance * 0.1;
 
-    float dist = length(uv);
-    vec3 col;
+    float dist = length( uv );
+    vec3  col;
 
-    if (dist > 1.0) {
+    if ( dist > 1.0 )
+    {
         // THE VOID beyond the edge: near-black, with a faint breathing mist
         // so "outside" reads as a place, not as dead letterbox.
-        float mist = fbm(vec3(uv * 2.0, drift * 0.6));
-        col = imgPalette(0.72) * mist * 0.10 * smoothstep(2.4, 1.02, dist);
-    } else {
+        float mist = fbm( vec3( uv * 2.0, drift * 0.6 ) );
+        col = imgPalette( 0.72 ) * mist * 0.10 * smoothstep( 2.4, 1.02, dist );
+    }
+    else
+    {
         // Spherical coordinates on the universe-sphere
-        float z = sqrt(1.0 - dist * dist);
-        vec3 p3 = vec3(uv.x, uv.y, z);
+        float z = sqrt( 1.0 - dist * dist );
+        vec3  p3 = vec3( uv.x, uv.y, z );
 
         // Two-axis rotation so the poles travel too
         float rot = drift;
-        mat2 rotM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
+        mat2  rotM = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
         p3.xz = rotM * p3.xz;
         float rot2 = drift * 0.37;
-        p3.yz = mat2(cos(rot2), -sin(rot2), sin(rot2), cos(rot2)) * p3.yz;
+        p3.yz = mat2( cos( rot2 ), -sin( rot2 ), sin( rot2 ), cos( rot2 ) ) * p3.yz;
 
         // CMB with DOMAIN WARP: the flow-like curl patterns of the real map,
         // instead of the flat contour mush of plain fbm.
-        vec3 warp = vec3(fbm(p3 * 2.0 + drift * 0.3),
-                         fbm(p3 * 2.0 + 4.7),
-                         fbm(p3 * 2.0 + 9.1));
-        float cmbBase = fbm(p3 * 3.0 + (warp - 0.5) * 1.8);
-        float cmbDetail = fbm(p3 * 15.0 + (warp - 0.5) * 2.5);
-        float cmb = mix(cmbBase, cmbDetail, 0.3) * cp;
+        vec3  warp = vec3( fbm( p3 * 2.0 + drift * 0.3 ),
+                           fbm( p3 * 2.0 + 4.7 ),
+                           fbm( p3 * 2.0 + 9.1 ) );
+        float cmbBase = fbm( p3 * 3.0 + ( warp - 0.5 ) * 1.8 );
+        float cmbDetail = fbm( p3 * 15.0 + ( warp - 0.5 ) * 2.5 );
+        float cmb = mix( cmbBase, cmbDetail, 0.3 ) * cp;
 
-        vec3 cmbColor = imgPalette(cmb * 0.8 + 0.1);
-        col = cmbColor * (0.35 + audioSwell * 0.3);
+        vec3 cmbColor = imgPalette( cmb * 0.8 + 0.1 );
+        col = cmbColor * ( 0.35 + audioSwell * 0.3 );
 
         // Hot filaments: the brightest temperature ridges glow.
-        float fil = smoothstep(0.52, 0.72, cmb);
-        col += imgPalette(0.9) * fil * (0.35 + 0.5 * audioLevel);
+        float fil = smoothstep( 0.52, 0.72, cmb );
+        col += imgPalette( 0.9 ) * fil * ( 0.35 + 0.5 * audioLevel );
 
         // Anomalies: persistent hotspot cells that IGNITE on kicks. The old
         // trigger resampled at 5 Hz (floor(time * 4.00)) and strobed; selection
         // now drifts on the slow clock, the envelope is the kick itself.
-        vec3 cellP = p3 * 4.0;
-        vec3 iCell = floor(cellP);
-        float cellHash = hash11(iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9);
-        if (cellHash > 0.6) {
-            vec3 center = iCell + vec3(0.5);
-            float dToCenter = length(cellP - center);
-            float trigger = step(0.5, hash11(cellHash * 10.0 + floor(drift * 2.0)));
+        vec3  cellP = p3 * 4.0;
+        vec3  iCell = floor( cellP );
+        float cellHash = hash11( iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9 );
+        if ( cellHash > 0.6 )
+        {
+            vec3  center = iCell + vec3( 0.5 );
+            float dToCenter = length( cellP - center );
+            float trigger = step( 0.5, hash11( cellHash * 10.0 + floor( drift * 2.0 ) ) );
             float flash = trigger * audioKick * 3.5 * ap;
-            float fracture = fbm(p3 * 20.0 + drift * 3.0);
-            float mask = smoothstep(0.45, 0.0, dToCenter) * fracture;
-            vec3 anomalyCol = imgPalette(0.9 + audioCentroid * 0.1);
-            col += anomalyCol * mask * flash * (1.0 + audioSwell);
-            col += anomalyCol * exp(-dToCenter * 5.0) * flash * 0.4;
+            float fracture = fbm( p3 * 20.0 + drift * 3.0 );
+            float mask = smoothstep( 0.45, 0.0, dToCenter ) * fracture;
+            vec3  anomalyCol = imgPalette( 0.9 + audioCentroid * 0.1 );
+            col += anomalyCol * mask * flash * ( 1.0 + audioSwell );
+            col += anomalyCol * exp( -dToCenter * 5.0 ) * flash * 0.4;
         }
     }
 
     // THE EDGE itself: a luminous horizon ring on both sides of dist = 1,
     // breathing with the swell and flaring on kicks -- the scene's subject,
     // finally visible.
-    float rim = exp(-abs(dist - 1.0) * (16.0 - 6.0 * audioSwell));
-    col += imgPalette(0.15) * rim * (0.4 + 0.5 * audioSwell + 0.6 * audioKick);
+    float rim = exp( -abs( dist - 1.0 ) * ( 16.0 - 6.0 * audioSwell ) );
+    col += imgPalette( 0.15 ) * rim * ( 0.4 + 0.5 * audioSwell + 0.6 * audioKick );
 
-    if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

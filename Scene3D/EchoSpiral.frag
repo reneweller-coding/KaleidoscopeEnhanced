@@ -1,8 +1,8 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // EchoSpiral.frag — wide soft band with a luminous centre line.
-in vec4  vCol;   ///< Colour (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec4  vCol;  ///< Colour (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 
 /**
  * @file EchoSpiral.frag
@@ -21,13 +21,13 @@ in float vSide;   ///< Which side of a strip (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float d    = abs(vSide);
-    float core = exp(-d * d * 8.0);
-    float halo = exp(-d * d * 1.8) * 0.35;
+    float d = abs( vSide );
+    float core = exp( -d * d * 8.0 );
+    float halo = exp( -d * d * 1.8 ) * 0.35;
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = (vCol.rgb * (core + halo)) * 0.6;
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    _catTone *= 2.57;   // measured-dark lift (visual pass)
-    fragColor = vec4(_catTone, 1.0);
+    vec3 _catTone = ( vCol.rgb * ( core + halo ) ) * 0.6;
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    _catTone *= 2.57; // measured-dark lift (visual pass)
+    fragColor = vec4( _catTone, 1.0 );
 }

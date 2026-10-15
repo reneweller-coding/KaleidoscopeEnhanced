@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file XenobiologicalBioship.frag
  * @brief XENOBIOLOGICAL BIOSHIP: The camera flies through the grotesque, pulsing
@@ -16,87 +16,105 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float fleshP;
 uniform float veinP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Smooth value noise.
-float noise(vec3 p) {
-    vec3 i = floor(p);
-    vec3 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
+float noise( vec3 p )
+{
+    vec3 i = floor( p );
+    vec3 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
     float n = i.x + i.y * 57.0 + i.z * 113.0;
     return mix(
-        mix(mix(hash11(n + 0.0), hash11(n + 1.0), f.x),
-            mix(hash11(n + 57.0), hash11(n + 58.0), f.x), f.y),
-        mix(mix(hash11(n + 113.0), hash11(n + 114.0), f.x),
-            mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
+        mix( mix( hash11( n + 0.0 ), hash11( n + 1.0 ), f.x ),
+             mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y ),
+        mix( mix( hash11( n + 113.0 ), hash11( n + 114.0 ), f.x ),
+             mix( hash11( n + 170.0 ), hash11( n + 171.0 ), f.x ), f.y ),
+        f.z );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec3 p) {
+float fbm( vec3 p )
+{
     float f = 0.0, a = 0.5;
-    for(int i = 0; i < 4; i++) { f += a * noise(p); p *= 2.0; a *= 0.5; }
+    for ( int i = 0; i < 4; i++ )
+    {
+        f += a * noise( p );
+        p *= 2.0;
+        a *= 0.5;
+    }
     return f;
 }
 
 /// Organic voronoi for fleshy veins
-float voronoi(vec3 p) {
-    vec3 i = floor(p);
-    vec3 f = fract(p);
+float voronoi( vec3 p )
+{
+    vec3  i = floor( p );
+    vec3  f = fract( p );
     float minDist = 1.0;
-    for (int z = -1; z <= 1; z++) {
-        for (int y = -1; y <= 1; y++) {
-            for (int x = -1; x <= 1; x++) {
-                vec3 neighbor = vec3(float(x), float(y), float(z));
+    for ( int z = -1; z <= 1; z++ )
+    {
+        for ( int y = -1; y <= 1; y++ )
+        {
+            for ( int x = -1; x <= 1; x++ )
+            {
+                vec3 neighbor = vec3( float( x ), float( y ), float( z ) );
                 vec3 point = vec3(
-                    hash11(dot(i + neighbor, vec3(1.0, 57.0, 113.0))),
-                    hash11(dot(i + neighbor, vec3(57.0, 113.0, 1.0))),
-                    hash11(dot(i + neighbor, vec3(113.0, 1.0, 57.0)))
-                );
-                vec3 diff = neighbor + point - f;
-                float dist = length(diff);
-                if (dist < minDist) minDist = dist;
+                    hash11( dot( i + neighbor, vec3( 1.0, 57.0, 113.0 ) ) ),
+                    hash11( dot( i + neighbor, vec3( 57.0, 113.0, 1.0 ) ) ),
+                    hash11( dot( i + neighbor, vec3( 113.0, 1.0, 57.0 ) ) ) );
+                vec3  diff = neighbor + point - f;
+                float dist = length( diff );
+                if ( dist < minDist )
+                    minDist = dist;
             }
         }
     }
@@ -106,26 +124,30 @@ float voronoi(vec3 p) {
 float hitGlow = 0.0;
 
 /// @brief The scene's distance field: distance from p to the nearest surface.
-float map(vec3 p, float fp) {
+float map( vec3 p, float fp )
+{
     // Breathing contraction of the tunnel
-    float breath = sin(p.z * 0.5 - time * 2.0 + audioPhase) * 0.5 * audioLevel;
+    float breath = sin( p.z * 0.5 - time * 2.0 + audioPhase ) * 0.5 * audioLevel;
 
     // Main tunnel
-    float d = 4.0 - length(p.xy) - breath;
+    float d = 4.0 - length( p.xy ) - breath;
 
     // Organic, uneven fleshy surface
-    float n1 = fbm(p * 1.5 * fp);
+    float n1 = fbm( p * 1.5 * fp );
     d -= n1 * 1.5;
 
     // Deep veins carving into the flesh
-    float v = voronoi(p * 2.0);
-    float vein = smoothstep(0.1, 0.0, v); // Inverse distance to cell centers for ridges
+    float v = voronoi( p * 2.0 );
+    float vein = smoothstep( 0.1, 0.0, v ); // Inverse distance to cell centers for ridges
     d += vein * 0.8;
 
     // Check if we hit a vein for glowing
-    if (d < 0.1 && v < 0.15) {
-        hitGlow = smoothstep(0.15, 0.0, v);
-    } else {
+    if ( d < 0.1 && v < 0.15 )
+    {
+        hitGlow = smoothstep( 0.15, 0.0, v );
+    }
+    else
+    {
         hitGlow = 0.0;
     }
 
@@ -133,86 +155,91 @@ float map(vec3 p, float fp) {
 }
 
 /// @brief Surface normal of the distance field by central differences.
-vec3 calcNormal(vec3 p, float fp) {
-    vec2 e = vec2(0.05, 0.0);
-    return normalize(vec3(
-        map(p + e.xyy, fp) - map(p - e.xyy, fp),
-        map(p + e.yxy, fp) - map(p - e.yxy, fp),
-        map(p + e.yyx, fp) - map(p - e.yyx, fp)
-    ));
+vec3 calcNormal( vec3 p, float fp )
+{
+    vec2 e = vec2( 0.05, 0.0 );
+    return normalize( vec3(
+        map( p + e.xyy, fp ) - map( p - e.xyy, fp ),
+        map( p + e.yxy, fp ) - map( p - e.yxy, fp ),
+        map( p + e.yyx, fp ) - map( p - e.yyx, fp ) ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float fp = (fleshP > 0.01 ? fleshP : 1.0);
-    float vp = (veinP > 0.01 ? veinP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float fp = ( fleshP > 0.01 ? fleshP : 1.0 );
+    float vp = ( veinP > 0.01 ? veinP : 1.0 );
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float drift = time * 3.0 + audioAdvance * 12.0;
 
-    vec3 ro = vec3(0.5 * sin(time * 0.5), 0.5 * cos(time * 0.6), drift);
+    vec3 ro = vec3( 0.5 * sin( time * 0.5 ), 0.5 * cos( time * 0.6 ), drift );
 
     // Spasmodic camera shake on kick
-    ro.x += (hash11(time * 20.0) - 0.5) * audioKick * 0.3;
-    ro.y += (hash11(time * 20.0 + 1.0) - 0.5) * audioKick * 0.3;
+    ro.x += ( hash11( time * 20.0 ) - 0.5 ) * audioKick * 0.3;
+    ro.y += ( hash11( time * 20.0 + 1.0 ) - 0.5 ) * audioKick * 0.3;
 
-    vec3 ta = ro + vec3(sin(time * 0.2) * 0.5, cos(time * 0.3) * 0.5, 1.0);
+    vec3 ta = ro + vec3( sin( time * 0.2 ) * 0.5, cos( time * 0.3 ) * 0.5, 1.0 );
 
-    vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
+    vec3 ww = normalize( ta - ro );
+    vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 vv = cross( uu, ww );
 
-    float roll = 0.2 * sin(time * 0.4);
-    vec2 ruv = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * uv;
-    vec3 rd = normalize(ruv.x * uu + ruv.y * vv + 1.2 * ww);
+    float roll = 0.2 * sin( time * 0.4 );
+    vec2  ruv = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * uv;
+    vec3  rd = normalize( ruv.x * uu + ruv.y * vv + 1.2 * ww );
 
     float d = 0.0;
-    vec3 p;
+    vec3  p;
     float g = 0.0;
-    int steps = 0;
+    int   steps = 0;
 
-    for (int i = 0; i < 70; ++i) {
+    for ( int i = 0; i < 70; ++i )
+    {
         p = ro + rd * d;
-        float ds = map(p, fp);
+        float ds = map( p, fp );
         g = hitGlow;
         steps = i;
-        if (ds < 0.02 * (1.0 + d * 0.05)) break;
+        if ( ds < 0.02 * ( 1.0 + d * 0.05 ) )
+            break;
         d += ds * 0.7;
-        if (d > 50.0) break;
+        if ( d > 50.0 )
+            break;
     }
 
-    vec3 col = vec3(0.0);
+    vec3 col = vec3( 0.0 );
 
-    vec3 fleshColor = mix(vec3(0.3, 0.05, 0.05), vec3(0.4, 0.1, 0.1), fbm(p * 5.0)); // Dark red meat
-    vec3 veinColor = imgPalette(0.6 + audioCentroid * 0.2); // Bioluminescent fluids
+    vec3 fleshColor = mix( vec3( 0.3, 0.05, 0.05 ), vec3( 0.4, 0.1, 0.1 ), fbm( p * 5.0 ) ); // Dark red meat
+    vec3 veinColor = imgPalette( 0.6 + audioCentroid * 0.2 );                                // Bioluminescent fluids
 
-    if (d < 50.0) {
-        vec3 n = calcNormal(p, fp);
+    if ( d < 50.0 )
+    {
+        vec3 n = calcNormal( p, fp );
 
         // Spot light from "headlamp" / biological luminescence ahead
-        vec3 lightDir = normalize(vec3(0.0, 0.0, p.z + 5.0) - p);
-        float dif = max(dot(n, lightDir), 0.0);
+        vec3  lightDir = normalize( vec3( 0.0, 0.0, p.z + 5.0 ) - p );
+        float dif = max( dot( n, lightDir ), 0.0 );
 
         // SSS (Subsurface scattering fake)
-        float sss = exp(-length(p - ro) * 0.1) * (0.5 + 0.5 * dot(n, -rd));
+        float sss = exp( -length( p - ro ) * 0.1 ) * ( 0.5 + 0.5 * dot( n, -rd ) );
 
-        col = fleshColor * (0.1 + dif * (0.5 + audioSwell * 0.5));
-        col += vec3(0.6, 0.2, 0.2) * sss * (1.0 + audioSwell);
+        col = fleshColor * ( 0.1 + dif * ( 0.5 + audioSwell * 0.5 ) );
+        col += vec3( 0.6, 0.2, 0.2 ) * sss * ( 1.0 + audioSwell );
 
         // Wet specularity (slime)
-        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 32.0);
-        col += vec3(0.5, 0.6, 0.6) * spec * (0.5 + fbm(p * 10.0));
+        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 32.0 );
+        col += vec3( 0.5, 0.6, 0.6 ) * spec * ( 0.5 + fbm( p * 10.0 ) );
 
         // Glowing veins
-        if (g > 0.0) {
-            float pulse = sin(p.z * 5.0 - time * 10.0) * 0.5 + 0.5;
-            col += veinColor * g * pulse * vp * (1.0 + audioKick * 3.0);
+        if ( g > 0.0 )
+        {
+            float pulse = sin( p.z * 5.0 - time * 10.0 ) * 0.5 + 0.5;
+            col += veinColor * g * pulse * vp * ( 1.0 + audioKick * 3.0 );
         }
 
-        col *= clamp(1.0 - float(steps) * 0.015, 0.1, 1.0);
+        col *= clamp( 1.0 - float( steps ) * 0.015, 0.1, 1.0 );
     }
 
     // Internal biological fog / fluids.  The march runs to 50, but the rate
@@ -221,11 +248,12 @@ void main()
     // the catalogue's 10th percentile (0.045; median 0.12).  0.028 puts the
     // half-distance at half the marched depth, which is what "fluid-filled"
     // should look like without dissolving the anatomy into a flat wash.
-    col = mix(col, vec3(0.05, 0.01, 0.01), 1.0 - exp(-d * 0.028));
+    col = mix( col, vec3( 0.05, 0.01, 0.01 ), 1.0 - exp( -d * 0.028 ) );
 
-    if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

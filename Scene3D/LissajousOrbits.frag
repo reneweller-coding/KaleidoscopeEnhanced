@@ -1,7 +1,7 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // LissajousOrbits.frag — soft glowing point (additive blending).
-in vec4 vCol;   ///< Colour (from the vertex stage).
+in vec4 vCol; ///< Colour (from the vertex stage).
 
 /**
  * @file LissajousOrbits.frag
@@ -20,9 +20,9 @@ in vec4 vCol;   ///< Colour (from the vertex stage).
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;
-    float a = exp(-dot(d, d) * 10.0);
+    float a = exp( -dot( d, d ) * 10.0 );
     // Blending is additive, so a single sprite is capped here: overlapping
     // trace cores still sum, but no one sprite can drive a pixel to white on
     // its own.
-    fragColor = vec4(min(vCol.rgb * a, vec3(0.9)), 1.0);
+    fragColor = vec4( min( vCol.rgb * a, vec3( 0.9 ) ), 1.0 );
 }

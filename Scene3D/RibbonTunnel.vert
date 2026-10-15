@@ -14,98 +14,100 @@
 //   attrB   = per-ribbon seeds
 // True stereo: eyeOff shifts the view; convergence re-centres after proj.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioBarPhase;   ///< Position within the current bar, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioBarPhase;  ///< Position within the current bar, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
-out vec4  vCol;   ///< Colour (from the vertex stage).
-out float vSide;   ///< Which side of a strip (from the vertex stage).
+out vec4  vCol;  ///< Colour (from the vertex stage).
+out float vSide; ///< Which side of a strip (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float t    = attrA.x;                     // 0..1 along the tube
-    float side = attrA.y;                     // ribbon cross direction
-    float ri   = attrA.w;
+    float t = attrA.x;    // 0..1 along the tube
+    float side = attrA.y; // ribbon cross direction
+    float ri = attrA.w;
 
     const float L = 160.0;
-    float camZ = time * 5.5 + audioAdvance * 14.0;   // noticeably faster flight
-    float z    = mod(t * L - camZ, L);        // 0..L ahead of the camera
+    float       camZ = time * 5.5 + audioAdvance * 14.0; // noticeably faster flight
+    float       z = mod( t * L - camZ, L );              // 0..L ahead of the camera
 
     // The tube centre weaves HARD through ABSOLUTE space — the slalom curve
     // scrolls past the camera (a weave over relative z is a frozen shape:
     // that static look was exactly the old scene's problem).
     // Long, sweeping curves (the fast weave shook the frame nervously).
     float zAbs = z + camZ;
-    vec2 cw = vec2(sin(zAbs * 0.020 + 1.3), cos(zAbs * 0.016)) * 9.0
-            + vec2(sin(zAbs * 0.007), cos(zAbs * 0.006 + 2.0)) * 6.0;
+    vec2  cw = vec2( sin( zAbs * 0.020 + 1.3 ), cos( zAbs * 0.016 ) ) * 9.0
+               + vec2( sin( zAbs * 0.007 ), cos( zAbs * 0.006 + 2.0 ) ) * 6.0;
 
     // Ribbon angle around the tube: per-ribbon slot + twist along z + a
     // smooth per-bar swing.
     float ang = ri / 20.0 * 6.2831853
-              + z * 0.035
-              + 0.5 * sin(6.2831853 * audioBarPhase)
-              + time * 0.05 + attrB.x * 6.2831853;
+                + z * 0.035
+                + 0.5 * sin( 6.2831853 * audioBarPhase )
+                + time * 0.05 + attrB.x * 6.2831853;
 
     // NESTED radii: one shared radius drew all 20 ribbons onto a single tube
     // wall, which left the vanishing point and the four corners of the frame
     // empty (the scan measured a third of the picture black).  A golden-ratio
     // spread gives every ribbon its own shell, from a tight one that carries
     // the centre of the view out to wide ones that sweep the edges.
-    float rmul = 0.42 + 1.35 * fract(ri * 0.6180339);
+    float rmul = 0.42 + 1.35 * fract( ri * 0.6180339 );
 
     // Radius: swell breathes it, the kick bulges the tunnel just ahead.
-    float rad = 6.0 * rmul * (1.0 + 0.10 * audioSwell)
-              + 0.0;
+    float rad = 6.0 * rmul * ( 1.0 + 0.10 * audioSwell )
+                + 0.0;
 
-    vec2 c2 = cw + vec2(cos(ang), sin(ang)) * rad;
-    vec2 tangent = vec2(-sin(ang), cos(ang));
-    c2 += tangent * side * (0.35 + 0.25 * attrB.y) * (0.6 + 0.5 * rmul);
+    vec2 c2 = cw + vec2( cos( ang ), sin( ang ) ) * rad;
+    vec2 tangent = vec2( -sin( ang ), cos( ang ) );
+    c2 += tangent * side * ( 0.35 + 0.25 * attrB.y ) * ( 0.6 + 0.5 * rmul );
 
     // Camera rides the SAME weave slightly ahead of its own position (it
     // flies inside the slalom) and rolls into the curves.
     float camA = camZ + 2.0;
-    vec2 camW = vec2(sin(camA * 0.020 + 1.3), cos(camA * 0.016)) * 9.0
-              + vec2(sin(camA * 0.007), cos(camA * 0.006 + 2.0)) * 6.0;
-    vec3 vp = vec3(c2.x - camW.x, c2.y - camW.y, z);
-    float roll = 0.14 * cos(camA * 0.020 + 1.3);          // gentle bank
-    vp.xy = mat2(cos(roll), -sin(roll), sin(roll), cos(roll)) * vp.xy;
+    vec2  camW = vec2( sin( camA * 0.020 + 1.3 ), cos( camA * 0.016 ) ) * 9.0
+                 + vec2( sin( camA * 0.007 ), cos( camA * 0.006 + 2.0 ) ) * 6.0;
+    vec3  vp = vec3( c2.x - camW.x, c2.y - camW.y, z );
+    float roll = 0.14 * cos( camA * 0.020 + 1.3 ); // gentle bank
+    vp.xy = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * vp.xy;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
-    gl_Position.x += eyeOff * 0.06 * gl_Position.w;   // converge ~20 units out
-    if (z < 0.6)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);      // behind camera: clipped
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
+    gl_Position.x += eyeOff * 0.06 * gl_Position.w; // converge ~20 units out
+    if ( z < 0.6 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 ); // behind camera: clipped
 
     // Neon colour per ribbon, key-hue drift, distance fog + kick highlight.
     // Bounded hue spread (was a full-circle rainbow across the ribbons)
-    vec3 col = hueRot(vec3(0.2, 0.7, 1.0),
-                      attrB.z * 0.9 + sin(audioChromaHue) * 0.5);
-    float kickGlow = audioKick * exp(-abs(z - 14.0) * 0.10);
-    col *= (0.5 + 0.5 * attrB.w)
-         * (1.0 + 1.5 * kickGlow + 1.2 * audioDrop);
+    vec3  col = hueRot( vec3( 0.2, 0.7, 1.0 ),
+                        attrB.z * 0.9 + sin( audioChromaHue ) * 0.5 );
+    float kickGlow = audioKick * exp( -abs( z - 14.0 ) * 0.10 );
+    col *= ( 0.5 + 0.5 * attrB.w )
+           * ( 1.0 + 1.5 * kickGlow + 1.2 * audioDrop );
     // A touch less fog than the old 0.020: with the ribbons spread over nested
     // shells, the far half of the tunnel is what carries the frame's edges,
     // and at 0.020 it had faded to nothing before it got there.
-    float fog = exp(-z * 0.016);
-    vCol  = vec4(col * fog * 1.15, 1.0);
+    float fog = exp( -z * 0.016 );
+    vCol = vec4( col * fog * 1.15, 1.0 );
     vSide = side;
 }

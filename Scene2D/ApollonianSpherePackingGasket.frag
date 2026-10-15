@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file ApollonianSpherePackingGasket.frag
  * @brief APOLLONIAN SPHERE PACKING GASKET: Raymarched infinite 3D Apollonian sphere
@@ -18,34 +18,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP     float jewel reflection hue offset            (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float gasketP;
 uniform float fractalP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -53,49 +55,54 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief 2D rotation matrix.
-mat2 rot2D(float a) {
-    float c = cos(a), s = sin(a);
-    return mat2(c, -s, s, c);
+mat2 rot2D( float a )
+{
+    float c = cos( a ), s = sin( a );
+    return mat2( c, -s, s, c );
 }
 
 /// 3D Apollonian sphere packing distance estimator
 /// Soft-max, used to carve a smooth clearance bubble around the camera out
 /// of the distance field: the flight can never clip through geometry -- a
 /// would-be collision becomes a soft bulge sliding past the lens.
-float smax(float a, float b, float k) {
-    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
-    return mix(a, b, h) + k * h * (1.0 - h);
+float smax( float a, float b, float k )
+{
+    float h = clamp( 0.5 - 0.5 * ( a - b ) / k, 0.0, 1.0 );
+    return mix( a, b, h ) + k * h * ( 1.0 - h );
 }
 
-float apollonianSDF(vec3 p, float gsk, float frc, out float trap) {
+float apollonianSDF( vec3 p, float gsk, float frc, out float trap )
+{
     float scale = 1.0;
     trap = 1e5;
 
-    for (int i = 0; i < 7; ++i) {
-        p = -1.0 + 2.0 * fract(0.5 * p + 0.5);
+    for ( int i = 0; i < 7; ++i )
+    {
+        p = -1.0 + 2.0 * fract( 0.5 * p + 0.5 );
 
-        float r2 = dot(p, p);
-        trap = min(trap, r2);
+        float r2 = dot( p, p );
+        trap = min( trap, r2 );
 
         // Sphere inversion: r2_min / r2
-        float k = max((1.2 * frc) / r2, 1.0);
+        float k = max( ( 1.2 * frc ) / r2, 1.0 );
         p *= k;
         scale *= k;
     }
@@ -103,13 +110,14 @@ float apollonianSDF(vec3 p, float gsk, float frc, out float trap) {
     // Sphere-foam cut: the tangent-sphere reading needs the classic
     // plane cut |p.y|/scale; the old cylinder cut length(p.xy) rendered as
     // tube spaghetti that averaged into featureless gravel on screen.
-    return 0.25 * abs(p.y) / scale;
+    return 0.25 * abs( p.y ) / scale;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float gsk = (gasketP  > 0.0) ? gasketP  : 1.0;
-    float frc = (fractalP > 0.0) ? fractalP : 1.0;
+void main()
+{
+    float gsk = ( gasketP > 0.0 ) ? gasketP : 1.0;
+    float frc = ( fractalP > 0.0 ) ? fractalP : 1.0;
     // The inversion radius is 1.2*frc (squared). The cell edges of the fold
     // sit at r2 >= 2, so up to frc = 1.67 they are never inverted and stay
     // open foam-free corridors -- which is where the camera flies (below).
@@ -118,11 +126,11 @@ void main() {
     // (the estimator's ceiling) to 0.000. Remap the preset range 0.5..2.0
     // onto 0.5..1.5 instead of clamping, so the full range still varies
     // the density.
-    frc = 0.5 + (frc - 0.5) * (1.0 / 1.5);
-    float spd = (speedP   > 0.0) ? speedP   : 1.0;
-    float hue = (hueP     > 0.0) ? hueP     : 0.0;
+    frc = 0.5 + ( frc - 0.5 ) * ( 1.0 / 1.5 );
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
     float t = time * 0.22 * spd + audioAdvance * 0.12;
@@ -141,10 +149,10 @@ void main() {
     // excursion (the cut plane is y = 0 in fold space). Worst case along
     // this course: 0.15 at the top of the range, never inside the bubble's
     // reach of the foam.
-    vec3 ro = vec3(1.0 + 0.25 * sin(t * 0.5), 1.0 + 0.12 * sin(t * 0.33), t * 0.55 * gsk) / gsk;
-    vec3 rd = normalize(vec3(uv, 1.35));   // was 1.35 - 0.20*audioKick: FOV jumped on every kick
-    rd.yz = rot2D(0.22 * sin(t * 0.27)) * rd.yz;
-    rd.xz = rot2D(t * 0.15) * rd.xz;
+    vec3 ro = vec3( 1.0 + 0.25 * sin( t * 0.5 ), 1.0 + 0.12 * sin( t * 0.33 ), t * 0.55 * gsk ) / gsk;
+    vec3 rd = normalize( vec3( uv, 1.35 ) ); // was 1.35 - 0.20*audioKick: FOV jumped on every kick
+    rd.yz = rot2D( 0.22 * sin( t * 0.27 ) ) * rd.yz;
+    rd.xz = rot2D( t * 0.15 ) * rd.xz;
 
     // (The old discrete "walk free" loop teleported the camera in 0.3-unit
     // jumps whenever the corridor closed -- replaced by the smax clearance
@@ -153,40 +161,45 @@ void main() {
     float hitDist = -1.0;
     float trapMin = 1e5;
     int   steps = 0;
-    vec3 hitP = vec3(0.0);   // guarded by hitDist, but the compiler cannot see that
+    vec3  hitP = vec3( 0.0 ); // guarded by hitDist, but the compiler cannot see that
 
-    for (int i = 0; i < 90; ++i) {
-        vec3 p = ro + rd * dO;
+    for ( int i = 0; i < 90; ++i )
+    {
+        vec3  p = ro + rd * dO;
         float curTrap;
-        float dS = apollonianSDF(p * gsk, gsk, frc, curTrap);
-        dS = smax(dS, 0.38 - length(p - ro), 0.12);   // camera clearance bubble
-        trapMin = min(trapMin, curTrap);
+        float dS = apollonianSDF( p * gsk, gsk, frc, curTrap );
+        dS = smax( dS, 0.38 - length( p - ro ), 0.12 ); // camera clearance bubble
+        trapMin = min( trapMin, curTrap );
         steps = i;
 
-        if (dS < 0.0008 + 0.0012 * dO) {
+        if ( dS < 0.0008 + 0.0012 * dO )
+        {
             hitDist = dO;
             hitP = p;
             break;
         }
-        if (dO > 9.0) break;
+        if ( dO > 9.0 )
+            break;
         dO += dS * 0.85;
     }
 
-    vec3 deep = imgPalette(0.62) * 0.06 + vec3(0.01, 0.012, 0.03);
+    vec3 deep = imgPalette( 0.62 ) * 0.06 + vec3( 0.01, 0.012, 0.03 );
     vec3 col = deep;
 
-    if (hitDist > 0.0) {
-        vec2 e = vec2(0.0015, 0.0);
+    if ( hitDist > 0.0 )
+    {
+        vec2  e = vec2( 0.0015, 0.0 );
         float tU;
-        vec3 n = normalize(vec3(
-            apollonianSDF((hitP + e.xyy) * gsk, gsk, frc, tU) - apollonianSDF((hitP - e.xyy) * gsk, gsk, frc, tU),
-            apollonianSDF((hitP + e.yxy) * gsk, gsk, frc, tU) - apollonianSDF((hitP - e.yxy) * gsk, gsk, frc, tU),
-            apollonianSDF((hitP + e.yyx) * gsk, gsk, frc, tU) - apollonianSDF((hitP - e.yyx) * gsk, gsk, frc, tU)
-        ));
+        vec3  n = normalize( vec3( apollonianSDF( ( hitP + e.xyy ) * gsk, gsk, frc, tU )
+                                       - apollonianSDF( ( hitP - e.xyy ) * gsk, gsk, frc, tU ),
+                                   apollonianSDF( ( hitP + e.yxy ) * gsk, gsk, frc, tU )
+                                       - apollonianSDF( ( hitP - e.yxy ) * gsk, gsk, frc, tU ),
+                                   apollonianSDF( ( hitP + e.yyx ) * gsk, gsk, frc, tU )
+                                       - apollonianSDF( ( hitP - e.yyx ) * gsk, gsk, frc, tU ) ) );
 
-        vec3 lightDir = normalize(vec3(0.4, 0.85, -0.45));
-        float diff = max(dot(n, lightDir), 0.0);
-        float spec = pow(max(dot(reflect(-lightDir, n), -rd), 0.0), 48.0);
+        vec3  lightDir = normalize( vec3( 0.4, 0.85, -0.45 ) );
+        float diff = max( dot( n, lightDir ), 0.0 );
+        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 48.0 );
 
         // Jewel colour from the ORBIT TRAP (constant per sphere, so each
         // sphere reads as one gem) -- no per-pixel photo hash, which is what
@@ -196,22 +209,24 @@ void main() {
         // every big sphere. floor() gives one gem tone per trap class -- flat
         // colour per sphere, stripes gone; the tiny advance drift shifts all
         // gems together, never spatially.
-        float gemClass = floor(trapMin * 5.0) * 0.2;
-        vec3 jewel = imgPalette(fract(gemClass * 0.83 + 0.02 * audioAdvance));
-        jewel = mix(jewel, img(n.xy * 0.25 + 0.5), 0.22);
+        float gemClass = floor( trapMin * 5.0 ) * 0.2;
+        vec3  jewel = imgPalette( fract( gemClass * 0.83 + 0.02 * audioAdvance ) );
+        jewel = mix( jewel, img( n.xy * 0.25 + 0.5 ), 0.22 );
 
         // Iteration-count occlusion: crevices between kissing spheres darken.
-        float ao = clamp(1.0 - float(steps) * 0.011, 0.25, 1.0);
-        float rim = pow(1.0 - max(dot(n, -rd), 0.0), 3.0);
+        float ao = clamp( 1.0 - float( steps ) * 0.011, 0.25, 1.0 );
+        float rim = pow( 1.0 - max( dot( n, -rd ), 0.0 ), 3.0 );
 
-        col = jewel * (0.38 + 1.25 * diff) * ao;
-        col += spec * vec3(1.0, 0.96, 0.88) * (0.8 + 1.6 * audioKick);
+        col = jewel * ( 0.38 + 1.25 * diff ) * ao;
+        col += spec * vec3( 1.0, 0.96, 0.88 ) * ( 0.8 + 1.6 * audioKick );
         col += jewel * rim * 0.55;
 
-        col = mix(col, deep, 1.0 - exp(-hitDist * 0.30));
+        col = mix( col, deep, 1.0 - exp( -hitDist * 0.30 ) );
     }
 
-    if (audioChromaHue != 0.0)     if (hue > 0.001) col = hueRot(col, hue);
+    if ( audioChromaHue != 0.0 )
+        if ( hue > 0.001 )
+            col = hueRot( col, hue );
 
-    fragColor = vec4(col, 1.0);
+    fragColor = vec4( col, 1.0 );
 }

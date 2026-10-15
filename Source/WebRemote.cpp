@@ -1,6 +1,7 @@
 /**
  * @file WebRemote.cpp
- * @brief Implementation of WebRemote: the embedded phone-remote HTML/JS page and its GET-only JSON/JPEG /api/ endpoints.
+ * @brief Implementation of WebRemote: the embedded phone-remote HTML/JS page and its GET-only JSON/JPEG /api/
+ * endpoints.
  */
 // WebRemote.cpp — see WebRemote.h.
 #include "WebRemote.h"
@@ -23,9 +24,9 @@
 /// broadcasts. Bound with ShareAddress so several Kaleidoscope instances on
 /// the SAME PC can all listen here and each answer for itself (Windows
 /// delivers a copy of every broadcast datagram to every bound socket).
-static const quint16 kDiscoveryPort  = 45677;
+static const quint16 kDiscoveryPort = 45677;
 /// The request payload the app broadcasts; anything else on the port is ignored.
-static const char   *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
+static const char *kDiscoveryMagic = "KALEIDO_DISCOVER_V1";
 
 /// How long a kept-alive connection may sit idle before the server drops it.
 /// Long enough to span the page's 2 s polling cadence many times over, short
@@ -41,25 +42,25 @@ static const int kKeepAliveIdleMs = 30000;
 /// .json() throws, the Android app's JSONObject parse throws).
 static QString jsonEscape( const QString &s )
 {
-	QString out;
-	out.reserve( s.size() + 8 );
-	for( QChar c : s )
-	{
-		switch( c.unicode() )
-		{
-			case '"':  out += "\\\""; break;
-			case '\\': out += "\\\\"; break;
-			case '\n': out += "\\n";  break;
-			case '\r': out += "\\r";  break;
-			case '\t': out += "\\t";  break;
-			default:
-				if( c.unicode() < 0x20 )
-					out += QString( "\\u%1" ).arg( int(c.unicode()), 4, 16, QChar('0') );
-				else
-					out += c;
-		}
-	}
-	return out;
+    QString out;
+    out.reserve( s.size() + 8 );
+    for ( QChar c : s )
+    {
+        switch ( c.unicode() )
+        {
+            case '"': out += "\\\""; break;
+            case '\\': out += "\\\\"; break;
+            case '\n': out += "\\n"; break;
+            case '\r': out += "\\r"; break;
+            case '\t': out += "\\t"; break;
+            default:
+                if ( c.unicode() < 0x20 )
+                    out += QString( "\\u%1" ).arg( int( c.unicode() ), 4, 16, QChar( '0' ) );
+                else
+                    out += c;
+        }
+    }
+    return out;
 }
 
 /**
@@ -364,382 +365,413 @@ try{const t=localStorage.getItem('krTab');
  */
 static QByteArray buildPage()
 {
-	QString page = QString::fromUtf8( kPageTemplate );
-	auto sub = [&page]( const char *token, StrId id )
-	{
-		page.replace( QLatin1String( token ), QString::fromUtf8( Strings::T( id ) ) );
-	};
-	sub( "@@TITLE@@",        S_WR_TITLE );
-	sub( "@@H1@@",           S_WR_H1 );
-	sub( "@@NEXT@@",         S_WR_NEXT );
-	sub( "@@BLACKOUT@@",     S_WR_BLACKOUT );
-	sub( "@@FAVORITE@@",     S_WR_FAVORITE );
-	sub( "@@MARK@@",         S_WR_MARK );
-	sub( "@@SAVEMARKED@@",   S_WR_SAVEMARKED );
-	sub( "@@REPLAYBUF@@",    S_WR_REPLAY_BUFFER );
-	sub( "@@REPLAYSAVE@@",   S_WR_REPLAY_SAVE );
-	sub( "@@REACTIVITY@@",   S_WR_REACTIVITY );
-	sub( "@@TRAILS@@",       S_WR_TRAILS );
-	sub( "@@MOOD@@",         S_WR_MOOD );
-	sub( "@@LATENCY@@",      S_WR_LATENCY );
-	sub( "@@LIGHTSHOW@@",    S_WR_LIGHTSHOW );
-	sub( "@@AUTOPRESET@@",   S_WR_AUTOPRESET );
-	sub( "@@AUTOSCALE@@",    S_WR_AUTOSCALE );
-	sub( "@@TITLEREVEAL@@",  S_WR_TITLEREVEAL );
-	sub( "@@ARTISTIMAGES@@", S_WR_ARTISTIMAGES );
-	sub( "@@VIDEO@@",        S_WR_VIDEO );
-	sub( "@@SCENEBROWSER@@", S_WR_SCENEBROWSER );
-	sub( "@@TABLIVE@@",      S_WR_TAB_LIVE );
-	sub( "@@TABPRESETS@@",   S_WR_TAB_PRESETS );
-	sub( "@@TABCAPTURE@@",   S_WR_TAB_CAPTURE );
-	sub( "@@TABDISPLAY@@",   S_WR_TAB_DISPLAY );
-	sub( "@@TABIMAGE@@",     S_WR_TAB_IMAGE );
-	sub( "@@TABINFO@@",      S_WR_TAB_INFO );
-	sub( "@@FREEZE@@",       S_WR_FREEZE );
-	sub( "@@PIN@@",          S_WR_PIN );
-	sub( "@@TAPTEMPO@@",     S_WR_TAPTEMPO );
-	// @@RECORDSTART@@ appears twice (initial button text + the JS that swaps
-	// the label live), same unlimited-replace reasoning as @@LYRICSPREFIX@@.
-	sub( "@@RECORDSTART@@",  S_WR_RECORD_START );
-	sub( "@@RECORDSTOP@@",   S_WR_RECORD_STOP );
-	sub( "@@SCREENSHOT@@",   S_WR_SCREENSHOT );
-	sub( "@@SHADERNAMES@@",  S_WR_SHADERNAMES );
-	sub( "@@FEATUREOVERLAY@@", S_WR_FEATUREOVERLAY );
-	sub( "@@STEREOMODE@@",   S_WR_STEREOMODE );
-	sub( "@@STEREODEPTH@@",  S_WR_STEREODEPTH );
-	sub( "@@RENDERSCALE@@",  S_WR_RENDERSCALE );
-	sub( "@@SAVEDEFAULTS@@", S_WR_SAVEDEFAULTS );
-	sub( "@@ACTIVEPRESET@@", S_WR_ACTIVE_PRESET );
-	sub( "@@NOTHINGPLAYING@@", S_WR_NOTHING_PLAYING );
-	sub( "@@FPS@@",          S_WR_FPS );
-	sub( "@@RECORDINGNOW@@", S_WR_RECORDING_NOW );
-	sub( "@@VERSION@@",      S_WR_VERSION );
-	// appears twice (initial button text + the JS that appends the version)
-	sub( "@@INSTALLUPDATE@@", S_WR_INSTALLUPDATE );
-	sub( "@@UPDATEHINT@@",   S_WR_UPDATEHINT );
-	// @@LYRICSPREFIX@@ appears twice (the initial button text and the JS
-	// template literal) -- QString::replace() with no count limit handles
-	// both occurrences from one call, same as every sub() above.
-	sub( "@@LYRICSPREFIX@@", S_WR_LYRICS_PREFIX );
-	// The JS array literal: these three words are our OWN fixed translation
-	// strings (never user data), so no JS-string escaping is needed -- see
-	// Strings.cpp, none of them contain a quote/backslash.
-	page.replace( QLatin1String( "@@LYRICSARR@@" ),
-	              QString( "['%1','%2','%3']" )
-	                  .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_OFF ) ) )
-	                  .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_SCROLL ) ) )
-	                  .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_KARAOKE ) ) ) );
-	return page.toUtf8();
+    QString page = QString::fromUtf8( kPageTemplate );
+    auto    sub = [&page]( const char *token, StrId id )
+    {
+        page.replace( QLatin1String( token ), QString::fromUtf8( Strings::T( id ) ) );
+    };
+    sub( "@@TITLE@@", S_WR_TITLE );
+    sub( "@@H1@@", S_WR_H1 );
+    sub( "@@NEXT@@", S_WR_NEXT );
+    sub( "@@BLACKOUT@@", S_WR_BLACKOUT );
+    sub( "@@FAVORITE@@", S_WR_FAVORITE );
+    sub( "@@MARK@@", S_WR_MARK );
+    sub( "@@SAVEMARKED@@", S_WR_SAVEMARKED );
+    sub( "@@REPLAYBUF@@", S_WR_REPLAY_BUFFER );
+    sub( "@@REPLAYSAVE@@", S_WR_REPLAY_SAVE );
+    sub( "@@REACTIVITY@@", S_WR_REACTIVITY );
+    sub( "@@TRAILS@@", S_WR_TRAILS );
+    sub( "@@MOOD@@", S_WR_MOOD );
+    sub( "@@LATENCY@@", S_WR_LATENCY );
+    sub( "@@LIGHTSHOW@@", S_WR_LIGHTSHOW );
+    sub( "@@AUTOPRESET@@", S_WR_AUTOPRESET );
+    sub( "@@AUTOSCALE@@", S_WR_AUTOSCALE );
+    sub( "@@TITLEREVEAL@@", S_WR_TITLEREVEAL );
+    sub( "@@ARTISTIMAGES@@", S_WR_ARTISTIMAGES );
+    sub( "@@VIDEO@@", S_WR_VIDEO );
+    sub( "@@SCENEBROWSER@@", S_WR_SCENEBROWSER );
+    sub( "@@TABLIVE@@", S_WR_TAB_LIVE );
+    sub( "@@TABPRESETS@@", S_WR_TAB_PRESETS );
+    sub( "@@TABCAPTURE@@", S_WR_TAB_CAPTURE );
+    sub( "@@TABDISPLAY@@", S_WR_TAB_DISPLAY );
+    sub( "@@TABIMAGE@@", S_WR_TAB_IMAGE );
+    sub( "@@TABINFO@@", S_WR_TAB_INFO );
+    sub( "@@FREEZE@@", S_WR_FREEZE );
+    sub( "@@PIN@@", S_WR_PIN );
+    sub( "@@TAPTEMPO@@", S_WR_TAPTEMPO );
+    // @@RECORDSTART@@ appears twice (initial button text + the JS that swaps
+    // the label live), same unlimited-replace reasoning as @@LYRICSPREFIX@@.
+    sub( "@@RECORDSTART@@", S_WR_RECORD_START );
+    sub( "@@RECORDSTOP@@", S_WR_RECORD_STOP );
+    sub( "@@SCREENSHOT@@", S_WR_SCREENSHOT );
+    sub( "@@SHADERNAMES@@", S_WR_SHADERNAMES );
+    sub( "@@FEATUREOVERLAY@@", S_WR_FEATUREOVERLAY );
+    sub( "@@STEREOMODE@@", S_WR_STEREOMODE );
+    sub( "@@STEREODEPTH@@", S_WR_STEREODEPTH );
+    sub( "@@RENDERSCALE@@", S_WR_RENDERSCALE );
+    sub( "@@SAVEDEFAULTS@@", S_WR_SAVEDEFAULTS );
+    sub( "@@ACTIVEPRESET@@", S_WR_ACTIVE_PRESET );
+    sub( "@@NOTHINGPLAYING@@", S_WR_NOTHING_PLAYING );
+    sub( "@@FPS@@", S_WR_FPS );
+    sub( "@@RECORDINGNOW@@", S_WR_RECORDING_NOW );
+    sub( "@@VERSION@@", S_WR_VERSION );
+    // appears twice (initial button text + the JS that appends the version)
+    sub( "@@INSTALLUPDATE@@", S_WR_INSTALLUPDATE );
+    sub( "@@UPDATEHINT@@", S_WR_UPDATEHINT );
+    // @@LYRICSPREFIX@@ appears twice (the initial button text and the JS
+    // template literal) -- QString::replace() with no count limit handles
+    // both occurrences from one call, same as every sub() above.
+    sub( "@@LYRICSPREFIX@@", S_WR_LYRICS_PREFIX );
+    // The JS array literal: these three words are our OWN fixed translation
+    // strings (never user data), so no JS-string escaping is needed -- see
+    // Strings.cpp, none of them contain a quote/backslash.
+    page.replace( QLatin1String( "@@LYRICSARR@@" ),
+                  QString( "['%1','%2','%3']" )
+                      .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_OFF ) ) )
+                      .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_SCROLL ) ) )
+                      .arg( QString::fromUtf8( Strings::T( S_WR_LYRICS_KARAOKE ) ) ) );
+    return page.toUtf8();
 }
 
 WebRemote::WebRemote( GLwidget *widget, int port )
-	: QObject( widget ), m_widget( widget )
+    : QObject( widget ),
+      m_widget( widget )
 {
-	m_server = new QTcpServer( this );
-	QObject::connect( m_server, &QTcpServer::newConnection,
-	                  this, [this]() { handleConnection(); } );
+    m_server = new QTcpServer( this );
+    QObject::connect( m_server, &QTcpServer::newConnection,
+                      this, [this]()
+    { handleConnection(); } );
 
-	m_httpPort = bindFreePort( port );
-	if( m_httpPort )
-		fprintf( stderr, "WEB REMOTE: http://<this-pc>:%d/\n", m_httpPort );
-	else
-		fprintf( stderr, "WEB REMOTE: could not find a free port near %d (%s)\n",
-		         port, m_server->errorString().toLocal8Bit().constData() );
+    m_httpPort = bindFreePort( port );
+    if ( m_httpPort )
+        fprintf( stderr, "WEB REMOTE: http://<this-pc>:%d/\n", m_httpPort );
+    else
+        fprintf( stderr, "WEB REMOTE: could not find a free port near %d (%s)\n",
+                 port, m_server->errorString().toLocal8Bit().constData() );
 
-	// LAN auto-discovery, so the Android app never needs a typed IP. Runs
-	// independently of whether the HTTP bind above succeeded — a discovery
-	// reply that carries port 0 is harmless (the app would just fail to
-	// connect, same as today), and it costs nothing to still answer.
-	m_discoverySocket = new QUdpSocket( this );
-	if( m_discoverySocket->bind( QHostAddress::AnyIPv4, kDiscoveryPort,
-	                              QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint ) )
-	{
-		QObject::connect( m_discoverySocket, &QUdpSocket::readyRead,
-		                  this, [this]() { handleDiscovery(); } );
-		fprintf( stderr, "WEB REMOTE: LAN auto-discovery listening on UDP %d\n", kDiscoveryPort );
-	}
-	else
-		fprintf( stderr, "WEB REMOTE: could not bind discovery UDP %d (%s) "
-		         "- the phone app will need the address typed in manually.\n",
-		         kDiscoveryPort, m_discoverySocket->errorString().toLocal8Bit().constData() );
+    // LAN auto-discovery, so the Android app never needs a typed IP. Runs
+    // independently of whether the HTTP bind above succeeded — a discovery
+    // reply that carries port 0 is harmless (the app would just fail to
+    // connect, same as today), and it costs nothing to still answer.
+    m_discoverySocket = new QUdpSocket( this );
+    if ( m_discoverySocket->bind( QHostAddress::AnyIPv4, kDiscoveryPort,
+                                  QUdpSocket::ShareAddress | QUdpSocket::ReuseAddressHint ) )
+    {
+        QObject::connect( m_discoverySocket, &QUdpSocket::readyRead,
+                          this, [this]()
+        { handleDiscovery(); } );
+        fprintf( stderr, "WEB REMOTE: LAN auto-discovery listening on UDP %d\n", kDiscoveryPort );
+    }
+    else
+        fprintf( stderr, "WEB REMOTE: could not bind discovery UDP %d (%s) "
+                         "- the phone app will need the address typed in manually.\n",
+                 kDiscoveryPort, m_discoverySocket->errorString().toLocal8Bit().constData() );
 }
 
 int WebRemote::bindFreePort( int preferred )
 {
-	// A handful of instances on one PC is the realistic ceiling; beyond that
-	// something else is wrong and failing loudly (port 0 => the log message
-	// above) is more useful than silently trying dozens of ports.
-	for( int p = preferred; p < preferred + 20; ++p )
-		if( m_server->listen( QHostAddress::Any, quint16(p) ) )
-			return p;
-	// Windows can reserve whole port blocks (Hyper-V / WinNAT "excluded port
-	// ranges", e.g. 7498-8665 on the dev machine), and then EVERY port near
-	// the default fails with "The address is protected" -- the remote was
-	// simply dead.  Fall back to a block far away, and finally to any port
-	// the OS hands out; LAN discovery advertises m_httpPort, so the phone app
-	// still finds the instance, and the log line names the port for a browser.
-	if( m_server->serverError() == QAbstractSocket::SocketAccessError )
-	{
-		for( int p = preferred + 10000; p < preferred + 10020 && p < 65536; ++p )
-			if( m_server->listen( QHostAddress::Any, quint16(p) ) )
-				return p;
-		if( m_server->listen( QHostAddress::Any, 0 ) )
-			return int( m_server->serverPort() );
-	}
-	return 0;
+    // A handful of instances on one PC is the realistic ceiling; beyond that
+    // something else is wrong and failing loudly (port 0 => the log message
+    // above) is more useful than silently trying dozens of ports.
+    for ( int p = preferred; p < preferred + 20; ++p )
+        if ( m_server->listen( QHostAddress::Any, quint16( p ) ) )
+            return p;
+    // Windows can reserve whole port blocks (Hyper-V / WinNAT "excluded port
+    // ranges", e.g. 7498-8665 on the dev machine), and then EVERY port near
+    // the default fails with "The address is protected" -- the remote was
+    // simply dead.  Fall back to a block far away, and finally to any port
+    // the OS hands out; LAN discovery advertises m_httpPort, so the phone app
+    // still finds the instance, and the log line names the port for a browser.
+    if ( m_server->serverError() == QAbstractSocket::SocketAccessError )
+    {
+        for ( int p = preferred + 10000; p < preferred + 10020 && p < 65536; ++p )
+            if ( m_server->listen( QHostAddress::Any, quint16( p ) ) )
+                return p;
+        if ( m_server->listen( QHostAddress::Any, 0 ) )
+            return int( m_server->serverPort() );
+    }
+    return 0;
 }
 
 void WebRemote::handleDiscovery()
 {
-	while( m_discoverySocket->hasPendingDatagrams() )
-	{
-		QByteArray buf;
-		buf.resize( int( m_discoverySocket->pendingDatagramSize() ) );
-		QHostAddress sender;
-		quint16      senderPort;
-		m_discoverySocket->readDatagram( buf.data(), buf.size(), &sender, &senderPort );
+    while ( m_discoverySocket->hasPendingDatagrams() )
+    {
+        QByteArray buf;
+        buf.resize( int( m_discoverySocket->pendingDatagramSize() ) );
+        QHostAddress sender;
+        quint16      senderPort;
+        m_discoverySocket->readDatagram( buf.data(), buf.size(), &sender, &senderPort );
 
-		if( buf != kDiscoveryMagic )
-			continue;   // stray traffic on the port - not our protocol
+        if ( buf != kDiscoveryMagic )
+            continue; // stray traffic on the port - not our protocol
 
-		// Don't advertise an instance nobody could actually connect to: the
-		// app would auto-pick it (by identity, or as the sole result) and
-		// loop forever redialling a port that was never open. Silence here
-		// just makes this instance invisible to discovery, same as if its
-		// UDP reply never arrived at all -- the app's normal "none found"
-		// fallback (last known address / manual entry) takes over.
-		if( m_httpPort == 0 )
-			continue;
+        // Don't advertise an instance nobody could actually connect to: the
+        // app would auto-pick it (by identity, or as the sole result) and
+        // loop forever redialling a port that was never open. Silence here
+        // just makes this instance invisible to discovery, same as if its
+        // UDP reply never arrived at all -- the app's normal "none found"
+        // fallback (last known address / manual entry) takes over.
+        if ( m_httpPort == 0 )
+            continue;
 
-		QString activeConfig;
-		const int active = m_widget->remoteActiveConfig();
-		const QStringList cfgs = m_widget->remoteConfigNames();
-		if( active >= 0 && active < cfgs.size() )
-			activeConfig = cfgs[active];
+        QString           activeConfig;
+        const int         active = m_widget->remoteActiveConfig();
+        const QStringList cfgs = m_widget->remoteConfigNames();
+        if ( active >= 0 && active < cfgs.size() )
+            activeConfig = cfgs[active];
 
-		const QByteArray reply = QString(
-		    "{\"name\":\"%1\",\"port\":%2,\"pid\":\"%3\",\"config\":\"%4\"}" )
-		        .arg( jsonEscape( QSysInfo::machineHostName() ) )
-		        .arg( m_httpPort )
-		        .arg( QCoreApplication::applicationPid() )
-		        .arg( jsonEscape( activeConfig ) ).toUtf8();
-		m_discoverySocket->writeDatagram( reply, sender, senderPort );
-	}
+        const QByteArray reply = QString(
+                                     "{\"name\":\"%1\",\"port\":%2,\"pid\":\"%3\",\"config\":\"%4\"}" )
+                                     .arg( jsonEscape( QSysInfo::machineHostName() ) )
+                                     .arg( m_httpPort )
+                                     .arg( QCoreApplication::applicationPid() )
+                                     .arg( jsonEscape( activeConfig ) )
+                                     .toUtf8();
+        m_discoverySocket->writeDatagram( reply, sender, senderPort );
+    }
 }
 
 void WebRemote::handleConnection()
 {
-	while( QTcpSocket *sock = m_server->nextPendingConnection() )
-	{
-		// HTTP/1.1 keep-alive: the page fires a burst of small GETs (state,
-		// snapshot, and one per visible scene thumbnail). Closing after each
-		// one forced a fresh TCP handshake per request -- barely noticeable on
-		// localhost, but a full extra round trip each time over the WiFi link
-		// a phone actually uses. The connection is now reused until the client
-		// drops it or it goes idle.
-		//
-		// That means a socket can carry SEVERAL requests, so the old
-		// "readAll() is exactly one request" assumption no longer holds:
-		// bytes are accumulated per connection and every COMPLETE request in
-		// the buffer is answered in turn. GET has no body, so end-of-headers
-		// (CRLFCRLF) is end-of-request.
-		auto buf = std::make_shared<QByteArray>();
+    while ( QTcpSocket *sock = m_server->nextPendingConnection() )
+    {
+        // HTTP/1.1 keep-alive: the page fires a burst of small GETs (state,
+        // snapshot, and one per visible scene thumbnail). Closing after each
+        // one forced a fresh TCP handshake per request -- barely noticeable on
+        // localhost, but a full extra round trip each time over the WiFi link
+        // a phone actually uses. The connection is now reused until the client
+        // drops it or it goes idle.
+        //
+        // That means a socket can carry SEVERAL requests, so the old
+        // "readAll() is exactly one request" assumption no longer holds:
+        // bytes are accumulated per connection and every COMPLETE request in
+        // the buffer is answered in turn. GET has no body, so end-of-headers
+        // (CRLFCRLF) is end-of-request.
+        auto buf = std::make_shared<QByteArray>();
 
-		// Without this an abandoned connection (phone locked, app swiped away)
-		// would sit in the server forever now that nothing closes it.
-		QTimer *idle = new QTimer( sock );
-		idle->setSingleShot( true );
-		idle->setInterval( kKeepAliveIdleMs );
-		QObject::connect( idle, &QTimer::timeout, sock, [sock]() { sock->disconnectFromHost(); } );
-		idle->start();
+        // Without this an abandoned connection (phone locked, app swiped away)
+        // would sit in the server forever now that nothing closes it.
+        QTimer *idle = new QTimer( sock );
+        idle->setSingleShot( true );
+        idle->setInterval( kKeepAliveIdleMs );
+        QObject::connect( idle, &QTimer::timeout, sock, [sock]()
+        { sock->disconnectFromHost(); } );
+        idle->start();
 
-		QObject::connect( sock, &QTcpSocket::readyRead, sock, [this, sock, buf, idle]()
-		{
-		  idle->start();                      // re-arm: this connection is alive
-		  buf->append( sock->readAll() );
-		  int hdrEnd;
-		  while( ( hdrEnd = buf->indexOf( "\r\n\r\n" ) ) >= 0 )
-		  {
-			const QByteArray req = buf->left( hdrEnd + 4 );
-			buf->remove( 0, hdrEnd + 4 );
-			// HTTP/1.1 keeps the connection open unless the client says otherwise.
-			const bool closeAfter = req.contains( "Connection: close" )
-			                     || req.contains( "connection: close" );
-			const int eol = req.indexOf( "\r\n" );
-			const QList<QByteArray> parts = req.left( eol < 0 ? req.size() : eol ).split( ' ' );
-			// Default response for an unmatched GET path (or a non-GET request): 200 OK with an
-			// empty JSON object, rather than a 404 — the page's polling fetches never hit this.
-			QByteArray body = "{}";
-			QByteArray ctype = "application/json";
-			bool cacheable = false;   // only /api/thumb hits (a real JPEG) sets this
+        QObject::connect( sock, &QTcpSocket::readyRead, sock, [this, sock, buf, idle]()
+        {
+            idle->start(); // re-arm: this connection is alive
+            buf->append( sock->readAll() );
+            int hdrEnd;
+            while ( ( hdrEnd = buf->indexOf( "\r\n\r\n" ) ) >= 0 )
+            {
+                const QByteArray req = buf->left( hdrEnd + 4 );
+                buf->remove( 0, hdrEnd + 4 );
+                // HTTP/1.1 keeps the connection open unless the client says otherwise.
+                const bool              closeAfter = req.contains( "Connection: close" )
+                                                     || req.contains( "connection: close" );
+                const int               eol = req.indexOf( "\r\n" );
+                const QList<QByteArray> parts = req.left( eol < 0 ? req.size() : eol ).split( ' ' );
+                // Default response for an unmatched GET path (or a non-GET request): 200 OK with an
+                // empty JSON object, rather than a 404 — the page's polling fetches never hit this.
+                QByteArray body = "{}";
+                QByteArray ctype = "application/json";
+                bool       cacheable = false; // only /api/thumb hits (a real JPEG) sets this
 
-			// GET-only dispatch: the request line's method/target, then one branch per route.
-			// Every branch either fills body/ctype for the response below, or (for the
-			// fire-and-forget action routes) just calls straight into GLwidget/RenderPipeline
-			// and leaves body as the default "{}" acknowledgement.
-			if( parts.size() >= 2 && parts[0] == "GET" )
-			{
-				const QUrl url = QUrl::fromEncoded( parts[1] );
-				const QString path = url.path();
-				const QUrlQuery q( url );
+                // GET-only dispatch: the request line's method/target, then one branch per route.
+                // Every branch either fills body/ctype for the response below, or (for the
+                // fire-and-forget action routes) just calls straight into GLwidget/RenderPipeline
+                // and leaves body as the default "{}" acknowledgement.
+                if ( parts.size() >= 2 && parts[0] == "GET" )
+                {
+                    const QUrl      url = QUrl::fromEncoded( parts[1] );
+                    const QString   path = url.path();
+                    const QUrlQuery q( url );
 
-				if( path == "/" )
-				{
-					body = buildPage();
-					ctype = "text/html; charset=utf-8";
-				}
-				else if( path == "/api/state" )
-				{
-					QStringList cfgs;
-					for( const QString &n : m_widget->remoteConfigNames() )
-						cfgs << ("\"" + jsonEscape( n ) + "\"");
-					// QString::arg() only reaches %99, and more importantly
-					// re-scans the WHOLE string for the lowest-numbered marker
-					// on every call -- a %1 appearing inside an already-
-					// substituted value would be eaten by the next arg(). Built
-					// by concatenation instead now that the state carries this
-					// many fields.
-					auto num = []( double v ) { return QString::number( v ); };
-					auto flag = []( bool b )  { return QString( b ? "1" : "0" ); };
-					body = ( "{\"reactivity\":"   + num( RenderPipeline::reactivity() )
-					       + ",\"trails\":"       + num( RenderPipeline::trails() )
-					       + ",\"mood\":"         + num( RenderPipeline::mood() )
-					       + ",\"latency\":"      + num( RenderPipeline::latency() )
-					       + ",\"lightShow\":"    + flag( RenderPipeline::lightShow() )
-					       + ",\"autoConfig\":"   + flag( m_widget->autoConfigEnabled() )
-					       + ",\"active\":"       + QString::number( m_widget->remoteActiveConfig() )
-					       + ",\"activeName\":\"" + jsonEscape( m_widget->remoteActiveConfigName() ) + "\""
-					       + ",\"blackout\":"     + flag( RenderPipeline::blackout() )
-					       + ",\"replayArmed\":"  + flag( m_widget->remoteReplayArmed() )
-					       + ",\"fps\":"          + QString::number( m_widget->fpsValue() )
-					       + ",\"renderScale\":"  + num( RenderPipeline::renderScale() )
-					       + ",\"autoScale\":"    + flag( m_widget->autoScaleEnabled() )
-					       + ",\"nowPlaying\":"   + flag( m_widget->nowPlayingEnabled() )
-					       + ",\"lyricsMode\":"   + QString::number( m_widget->lyricsModeValue() )
-					       + ",\"artistImages\":" + flag( m_widget->artistImagesEnabled() )
-					       + ",\"videoEnabled\":" + flag( m_widget->videoPipEnabled() )
-					       // second wave: the remaining keyboard functions
-					       + ",\"recording\":"    + flag( m_widget->remoteRecording() )
-					       + ",\"frozen\":"       + flag( RenderPipeline::frozen() )
-					       + ",\"pinned\":"       + flag( RenderPipeline::pinned() )
-					       + ",\"shaderInfo\":"   + flag( m_widget->shaderInfoVisible() )
-					       + ",\"featureOverlay\":" + flag( m_widget->featureOverlayVisible() )
-					       + ",\"stereoMode\":"   + QString::number( RenderPipeline::stereoMode() )
-					       + ",\"stereoDepth\":"  + num( RenderPipeline::stereoDepth() )
-					       + ",\"shaders\":\""    + jsonEscape( m_widget->remoteShaderInfo() ) + "\""
-				       + ",\"appVersion\":\"" + jsonEscape( m_widget->appVersion() ) + "\""
-				       + ",\"updateCheck\":"  + flag( m_widget->updateCheckEnabled() )
-				       + ",\"updateAvail\":"  + flag( m_widget->updateAvailable() )
-				       + ",\"updateVersion\":\"" + jsonEscape( m_widget->updateVersion() ) + "\""
-				       + ",\"updateStatus\":\""  + jsonEscape( m_widget->updateStatus() ) + "\""
-					       + ",\"configs\":["     + cfgs.join( "," ) + "]}" ).toUtf8();
-				}
-				else if( path == "/api/snapshot" )
-				{
-					body  = m_widget->remoteSnapshot();
-					ctype = "image/jpeg";
-					if( body.isEmpty() ) { body = "{}"; ctype = "application/json"; }
-				}
-				else if( path == "/api/next" )
-					m_widget->remoteNextEffect();
-				else if( path == "/api/scenes" )
-				{
-					QStringList names;
-					for( const QString &n : m_widget->remoteSceneNames() )
-						names << ("\"" + jsonEscape( n ) + "\"");
-					body = ("{\"scenes\":[" + names.join( "," ) + "]}").toUtf8();
-				}
-				else if( path == "/api/force" )
-					m_widget->remoteForceScene( q.queryItemValue( "i" ).toInt() );
-				else if( path == "/api/thumb" )
-				{
-					body = m_widget->remoteThumb( q.queryItemValue( "i" ).toInt() );
-					ctype = "image/jpeg";
-					if( body.isEmpty() ) { body = "{}"; ctype = "application/json"; }
-					else cacheable = true;   // a real JPEG: safe for the browser to cache (see below)
-				}
-				else if( path == "/api/fav" )
-					m_widget->remoteFavorite();
-				else if( path == "/api/mark" )
-					m_widget->remoteToggleMark();
-				else if( path == "/api/savemarked" )
-					m_widget->remoteSaveMarked();
-				else if( path == "/api/replay" )
-					m_widget->remoteSaveReplay();
-				else if( path == "/api/config" )
-					m_widget->remoteSelectConfig( q.queryItemValue( "i" ).toInt() );
-				else if( path == "/api/set" )
-				{
-					const QString k = q.queryItemValue( "k" );
-					const float   v = q.queryItemValue( "v" ).toFloat();
-					if      ( k == "reactivity" ) RenderPipeline::setReactivity( v );
-					else if ( k == "trails"     ) RenderPipeline::setTrails( v );
-					else if ( k == "mood"       ) RenderPipeline::setMood( v );
-					else if ( k == "latency"    ) RenderPipeline::setLatency( v );
-					else if ( k == "stereodepth") RenderPipeline::setStereoDepth( v );
-					else if ( k == "renderscale") RenderPipeline::setRenderScale( v );
-					else if ( k == "stereomode" ) RenderPipeline::setStereoMode( int(v) );
-					else if ( k == "lyricsmode" ) m_widget->setLyricsModeValue( int(v) );
-				}
-				else if( path == "/api/tap" )
-					m_widget->remoteTapTempo();
-				else if( path == "/api/screenshot" )
-				{
-					const QString fn = m_widget->remoteScreenshot();
-					body = ( "{\"file\":\"" + jsonEscape( fn ) + "\"}" ).toUtf8();
-				}
-				else if( path == "/api/savedefaults" )
-					m_widget->remoteSaveDefaults();
-				// Explicit user action only -- the check itself never downloads.
-				else if( path == "/api/installupdate" )
-					m_widget->remoteInstallUpdate();
-				else if( path == "/api/toggle" )
-				{
-					const QString k = q.queryItemValue( "k" );
-					if      ( k == "lightshow"  ) RenderPipeline::toggleLightShow();
-					else if ( k == "blackout"   ) RenderPipeline::toggleBlackout();
-					else if ( k == "replayarm"  ) m_widget->remoteToggleReplayArm();
-					else if ( k == "record"     ) m_widget->remoteToggleRecord();
-					else if ( k == "freeze"     ) RenderPipeline::toggleFreeze();
-					else if ( k == "pin"        ) RenderPipeline::togglePin();
-					else if ( k == "stereo"     ) RenderPipeline::cycleStereo();
-					else if ( k == "shaderinfo" )
-						m_widget->setShaderInfoVisible( !m_widget->shaderInfoVisible() );
-					else if ( k == "features" )
-						m_widget->setFeatureOverlayVisible( !m_widget->featureOverlayVisible() );
-					else if ( k == "autoconfig" )
-						m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );
-					else if ( k == "autoscale" )
-						m_widget->setAutoScaleEnabled( !m_widget->autoScaleEnabled() );
-					else if ( k == "nowplaying" )
-						m_widget->setNowPlayingEnabled( !m_widget->nowPlayingEnabled() );
-					else if ( k == "artistimages" )
-						m_widget->setArtistImagesEnabled( !m_widget->artistImagesEnabled() );
-					else if ( k == "video" )
-						m_widget->setVideoPipEnabled( !m_widget->videoPipEnabled() );
-					else if ( k == "lyrics" )   // cycles: off -> scroll -> karaoke -> off
-						m_widget->setLyricsModeValue( ( m_widget->lyricsModeValue() + 1 ) % 3 );
-				}
-			}
+                    if ( path == "/" )
+                    {
+                        body = buildPage();
+                        ctype = "text/html; charset=utf-8";
+                    }
+                    else if ( path == "/api/state" )
+                    {
+                        QStringList cfgs;
+                        for ( const QString &n : m_widget->remoteConfigNames() )
+                            cfgs << ( "\"" + jsonEscape( n ) + "\"" );
+                        // QString::arg() only reaches %99, and more importantly
+                        // re-scans the WHOLE string for the lowest-numbered marker
+                        // on every call -- a %1 appearing inside an already-
+                        // substituted value would be eaten by the next arg(). Built
+                        // by concatenation instead now that the state carries this
+                        // many fields.
+                        auto num = []( double v )
+                        { return QString::number( v ); };
+                        auto flag = []( bool b )
+                        { return QString( b ? "1" : "0" ); };
+                        body = ( "{\"reactivity\":" + num( RenderPipeline::reactivity() )
+                                 + ",\"trails\":" + num( RenderPipeline::trails() )
+                                 + ",\"mood\":" + num( RenderPipeline::mood() )
+                                 + ",\"latency\":" + num( RenderPipeline::latency() )
+                                 + ",\"lightShow\":" + flag( RenderPipeline::lightShow() )
+                                 + ",\"autoConfig\":" + flag( m_widget->autoConfigEnabled() )
+                                 + ",\"active\":" + QString::number( m_widget->remoteActiveConfig() )
+                                 + ",\"activeName\":\"" + jsonEscape( m_widget->remoteActiveConfigName() ) + "\""
+                                 + ",\"blackout\":" + flag( RenderPipeline::blackout() )
+                                 + ",\"replayArmed\":" + flag( m_widget->remoteReplayArmed() )
+                                 + ",\"fps\":" + QString::number( m_widget->fpsValue() )
+                                 + ",\"renderScale\":" + num( RenderPipeline::renderScale() )
+                                 + ",\"autoScale\":" + flag( m_widget->autoScaleEnabled() )
+                                 + ",\"nowPlaying\":" + flag( m_widget->nowPlayingEnabled() )
+                                 + ",\"lyricsMode\":" + QString::number( m_widget->lyricsModeValue() )
+                                 + ",\"artistImages\":" + flag( m_widget->artistImagesEnabled() )
+                                 + ",\"videoEnabled\":" + flag( m_widget->videoPipEnabled() )
+                                 // second wave: the remaining keyboard functions
+                                 + ",\"recording\":" + flag( m_widget->remoteRecording() )
+                                 + ",\"frozen\":" + flag( RenderPipeline::frozen() )
+                                 + ",\"pinned\":" + flag( RenderPipeline::pinned() )
+                                 + ",\"shaderInfo\":" + flag( m_widget->shaderInfoVisible() )
+                                 + ",\"featureOverlay\":" + flag( m_widget->featureOverlayVisible() )
+                                 + ",\"stereoMode\":" + QString::number( RenderPipeline::stereoMode() )
+                                 + ",\"stereoDepth\":" + num( RenderPipeline::stereoDepth() )
+                                 + ",\"shaders\":\"" + jsonEscape( m_widget->remoteShaderInfo() ) + "\""
+                                 + ",\"appVersion\":\"" + jsonEscape( m_widget->appVersion() ) + "\""
+                                 + ",\"updateCheck\":" + flag( m_widget->updateCheckEnabled() )
+                                 + ",\"updateAvail\":" + flag( m_widget->updateAvailable() )
+                                 + ",\"updateVersion\":\"" + jsonEscape( m_widget->updateVersion() ) + "\""
+                                 + ",\"updateStatus\":\"" + jsonEscape( m_widget->updateStatus() ) + "\""
+                                 + ",\"configs\":[" + cfgs.join( "," ) + "]}" )
+                                   .toUtf8();
+                    }
+                    else if ( path == "/api/snapshot" )
+                    {
+                        body = m_widget->remoteSnapshot();
+                        ctype = "image/jpeg";
+                        if ( body.isEmpty() )
+                        {
+                            body = "{}";
+                            ctype = "application/json";
+                        }
+                    }
+                    else if ( path == "/api/next" )
+                        m_widget->remoteNextEffect();
+                    else if ( path == "/api/scenes" )
+                    {
+                        QStringList names;
+                        for ( const QString &n : m_widget->remoteSceneNames() )
+                            names << ( "\"" + jsonEscape( n ) + "\"" );
+                        body = ( "{\"scenes\":[" + names.join( "," ) + "]}" ).toUtf8();
+                    }
+                    else if ( path == "/api/force" )
+                        m_widget->remoteForceScene( q.queryItemValue( "i" ).toInt() );
+                    else if ( path == "/api/thumb" )
+                    {
+                        body = m_widget->remoteThumb( q.queryItemValue( "i" ).toInt() );
+                        ctype = "image/jpeg";
+                        if ( body.isEmpty() )
+                        {
+                            body = "{}";
+                            ctype = "application/json";
+                        }
+                        else
+                            cacheable = true; // a real JPEG: safe for the browser to cache (see below)
+                    }
+                    else if ( path == "/api/fav" )
+                        m_widget->remoteFavorite();
+                    else if ( path == "/api/mark" )
+                        m_widget->remoteToggleMark();
+                    else if ( path == "/api/savemarked" )
+                        m_widget->remoteSaveMarked();
+                    else if ( path == "/api/replay" )
+                        m_widget->remoteSaveReplay();
+                    else if ( path == "/api/config" )
+                        m_widget->remoteSelectConfig( q.queryItemValue( "i" ).toInt() );
+                    else if ( path == "/api/set" )
+                    {
+                        const QString k = q.queryItemValue( "k" );
+                        const float   v = q.queryItemValue( "v" ).toFloat();
+                        if ( k == "reactivity" )
+                            RenderPipeline::setReactivity( v );
+                        else if ( k == "trails" )
+                            RenderPipeline::setTrails( v );
+                        else if ( k == "mood" )
+                            RenderPipeline::setMood( v );
+                        else if ( k == "latency" )
+                            RenderPipeline::setLatency( v );
+                        else if ( k == "stereodepth" )
+                            RenderPipeline::setStereoDepth( v );
+                        else if ( k == "renderscale" )
+                            RenderPipeline::setRenderScale( v );
+                        else if ( k == "stereomode" )
+                            RenderPipeline::setStereoMode( int( v ) );
+                        else if ( k == "lyricsmode" )
+                            m_widget->setLyricsModeValue( int( v ) );
+                    }
+                    else if ( path == "/api/tap" )
+                        m_widget->remoteTapTempo();
+                    else if ( path == "/api/screenshot" )
+                    {
+                        const QString fn = m_widget->remoteScreenshot();
+                        body = ( "{\"file\":\"" + jsonEscape( fn ) + "\"}" ).toUtf8();
+                    }
+                    else if ( path == "/api/savedefaults" )
+                        m_widget->remoteSaveDefaults();
+                    // Explicit user action only -- the check itself never downloads.
+                    else if ( path == "/api/installupdate" )
+                        m_widget->remoteInstallUpdate();
+                    else if ( path == "/api/toggle" )
+                    {
+                        const QString k = q.queryItemValue( "k" );
+                        if ( k == "lightshow" )
+                            RenderPipeline::toggleLightShow();
+                        else if ( k == "blackout" )
+                            RenderPipeline::toggleBlackout();
+                        else if ( k == "replayarm" )
+                            m_widget->remoteToggleReplayArm();
+                        else if ( k == "record" )
+                            m_widget->remoteToggleRecord();
+                        else if ( k == "freeze" )
+                            RenderPipeline::toggleFreeze();
+                        else if ( k == "pin" )
+                            RenderPipeline::togglePin();
+                        else if ( k == "stereo" )
+                            RenderPipeline::cycleStereo();
+                        else if ( k == "shaderinfo" )
+                            m_widget->setShaderInfoVisible( !m_widget->shaderInfoVisible() );
+                        else if ( k == "features" )
+                            m_widget->setFeatureOverlayVisible( !m_widget->featureOverlayVisible() );
+                        else if ( k == "autoconfig" )
+                            m_widget->setAutoConfigEnabled( !m_widget->autoConfigEnabled() );
+                        else if ( k == "autoscale" )
+                            m_widget->setAutoScaleEnabled( !m_widget->autoScaleEnabled() );
+                        else if ( k == "nowplaying" )
+                            m_widget->setNowPlayingEnabled( !m_widget->nowPlayingEnabled() );
+                        else if ( k == "artistimages" )
+                            m_widget->setArtistImagesEnabled( !m_widget->artistImagesEnabled() );
+                        else if ( k == "video" )
+                            m_widget->setVideoPipEnabled( !m_widget->videoPipEnabled() );
+                        else if ( k == "lyrics" ) // cycles: off -> scroll -> karaoke -> off
+                            m_widget->setLyricsModeValue( ( m_widget->lyricsModeValue() + 1 ) % 3 );
+                    }
+                }
 
-			// A scene thumbnail is near-static (the active scene's is the only one that can
-			// ever change, and only once per session-visit) -- a short max-age lets the
-			// browser skip the round trip on a quick close/reopen of the scene browser
-			// instead of re-fetching all of them from scratch every time.
-			QByteArray resp = "HTTP/1.1 200 OK\r\nContent-Type: " + ctype +
-			                  "\r\nContent-Length: " + QByteArray::number( body.size() ) +
-			                  ( cacheable ? "\r\nCache-Control: max-age=30" : "" ) +
-			                  ( closeAfter ? "\r\nConnection: close"
-			                               : "\r\nConnection: keep-alive" ) +
-			                  "\r\n\r\n" + body;
-			sock->write( resp );
-			if( closeAfter )
-			{
-				sock->disconnectFromHost();
-				return;
-			}
-		  }
-		} );
-		QObject::connect( sock, &QTcpSocket::disconnected, sock, &QObject::deleteLater );
-	}
+                // A scene thumbnail is near-static (the active scene's is the only one that can
+                // ever change, and only once per session-visit) -- a short max-age lets the
+                // browser skip the round trip on a quick close/reopen of the scene browser
+                // instead of re-fetching all of them from scratch every time.
+                QByteArray resp = "HTTP/1.1 200 OK\r\nContent-Type: " + ctype
+                                  + "\r\nContent-Length: " + QByteArray::number( body.size() )
+                                  + ( cacheable ? "\r\nCache-Control: max-age=30" : "" )
+                                  + ( closeAfter ? "\r\nConnection: close" : "\r\nConnection: keep-alive" ) + "\r\n\r\n"
+                                  + body;
+                sock->write( resp );
+                if ( closeAfter )
+                {
+                    sock->disconnectFromHost();
+                    return;
+                }
+            }
+        } );
+        QObject::connect( sock, &QTcpSocket::disconnected, sock, &QObject::deleteLater );
+    }
 }

@@ -8,49 +8,51 @@
 in vec4 attrA; ///< xyz = cube corner (-0.5..0.5), w = cube index
 in vec4 attrB; ///< 4 seeds in [0,1)
 
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec3 vCol;   ///< Colour (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vCol;    ///< Colour (from the vertex stage).
 out float vQuasiShell;
-out vec3 vLocalPos;   ///< Object-space position (from the vertex stage).
+out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
+uniform mat4  projM;  ///< Projection matrix.
+uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float quasiScaleP;
 uniform float cubeSizeP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 corner = attrA.xyz;
+    vec3  corner = attrA.xyz;
     float cIndex = attrA.w;
     vLocalPos = corner;
 
@@ -66,7 +68,7 @@ void main()
     // never drew at all.  That, not the exposure, is why the frame measured
     // occ 0.18 on a mostly black picture.
     const float totalCubes = 4900.0;
-    float seed = cIndex / totalCubes;
+    float       seed = cIndex / totalCubes;
 
     // TRUE cut-and-project quasicrystal, replacing the golden-angle ball
     // (which recorded as formless mush -- a random ball has no lattice order
@@ -76,64 +78,72 @@ void main()
     // window survive.  The survivors form an aperiodic icosahedral lattice
     // with visible 5-fold axes -- which is what the scene's name promises.
     float nn = cIndex;
-    float d0 = mod(nn, 4.0) - 1.5;  nn = floor(nn / 4.0);
-    float d1 = mod(nn, 4.0) - 1.5;  nn = floor(nn / 4.0);
-    float d2 = mod(nn, 4.0) - 1.5;  nn = floor(nn / 4.0);
-    float d3 = mod(nn, 4.0) - 1.5;  nn = floor(nn / 4.0);
-    float d4 = mod(nn, 4.0) - 1.5;  nn = floor(nn / 4.0);
-    float d5 = mod(nn, 4.0) - 1.5;
+    float d0 = mod( nn, 4.0 ) - 1.5;
+    nn = floor( nn / 4.0 );
+    float d1 = mod( nn, 4.0 ) - 1.5;
+    nn = floor( nn / 4.0 );
+    float d2 = mod( nn, 4.0 ) - 1.5;
+    nn = floor( nn / 4.0 );
+    float d3 = mod( nn, 4.0 ) - 1.5;
+    nn = floor( nn / 4.0 );
+    float d4 = mod( nn, 4.0 ) - 1.5;
+    nn = floor( nn / 4.0 );
+    float d5 = mod( nn, 4.0 ) - 1.5;
 
-    vec3 e0 = normalize(vec3(0.0,  1.0,  tau));
-    vec3 e1 = normalize(vec3(0.0, -1.0,  tau));
-    vec3 e2 = normalize(vec3( 1.0,  tau,  0.0));
-    vec3 e3 = normalize(vec3(-1.0,  tau,  0.0));
-    vec3 e4 = normalize(vec3( tau,  0.0,  1.0));
-    vec3 e5 = normalize(vec3( tau,  0.0, -1.0));
+    vec3  e0 = normalize( vec3( 0.0, 1.0, tau ) );
+    vec3  e1 = normalize( vec3( 0.0, -1.0, tau ) );
+    vec3  e2 = normalize( vec3( 1.0, tau, 0.0 ) );
+    vec3  e3 = normalize( vec3( -1.0, tau, 0.0 ) );
+    vec3  e4 = normalize( vec3( tau, 0.0, 1.0 ) );
+    vec3  e5 = normalize( vec3( tau, 0.0, -1.0 ) );
     float sig = -1.0 / tau;
-    vec3 f0 = normalize(vec3(0.0,  1.0,  sig));
-    vec3 f1 = normalize(vec3(0.0, -1.0,  sig));
-    vec3 f2 = normalize(vec3( 1.0,  sig,  0.0));
-    vec3 f3 = normalize(vec3(-1.0,  sig,  0.0));
-    vec3 f4 = normalize(vec3( sig,  0.0,  1.0));
-    vec3 f5 = normalize(vec3( sig,  0.0, -1.0));
+    vec3  f0 = normalize( vec3( 0.0, 1.0, sig ) );
+    vec3  f1 = normalize( vec3( 0.0, -1.0, sig ) );
+    vec3  f2 = normalize( vec3( 1.0, sig, 0.0 ) );
+    vec3  f3 = normalize( vec3( -1.0, sig, 0.0 ) );
+    vec3  f4 = normalize( vec3( sig, 0.0, 1.0 ) );
+    vec3  f5 = normalize( vec3( sig, 0.0, -1.0 ) );
 
-    vec3 par  = d0*e0 + d1*e1 + d2*e2 + d3*e3 + d4*e4 + d5*e5;
-    vec3 perp = d0*f0 + d1*f1 + d2*f2 + d3*f3 + d4*f4 + d5*f5;
+    vec3 par = d0 * e0 + d1 * e1 + d2 * e2 + d3 * e3 + d4 * e4 + d5 * e5;
+    vec3 perp = d0 * f0 + d1 * f1 + d2 * f2 + d3 * f3 + d4 * f4 + d5 * f5;
 
     float win = 1.40;
-    if (cIndex >= 4096.0 || dot(perp, perp) > win * win) {
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
-        vCol = vec3(0.0); vNormal = vec3(0.0, 0.0, 1.0);
-        vLocalPos = corner; vQuasiShell = 0.0;
+    if ( cIndex >= 4096.0 || dot( perp, perp ) > win * win )
+    {
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
+        vCol = vec3( 0.0 );
+        vNormal = vec3( 0.0, 0.0, 1.0 );
+        vLocalPos = corner;
+        vQuasiShell = 0.0;
         return;
     }
 
-    float spread = (quasiScaleP > 0.01 ? (0.66 + 0.14 * quasiScaleP) : 0.78);
-    vec3 quasiPos = par * spread;
-    vQuasiShell = length(quasiPos);
+    float spread = ( quasiScaleP > 0.01 ? ( 0.66 + 0.14 * quasiScaleP ) : 0.78 );
+    vec3  quasiPos = par * spread;
+    vQuasiShell = length( quasiPos );
 
     // Rhombohedral rhombohedron cube scaling.  Spread over the full lattice the
     // rhombs also have to be big enough to read: as a bare multiple of
     // cubeSizeP the small end (0.03 -> 0.051) was a 10-pixel speck, so the
     // preset now sets an offset above a floor that always reads.
-    float sz = (cubeSizeP > 0.001 ? (0.10 + 0.85 * cubeSizeP) : 0.16)
-             * (1.0 + 0.3 * audioSwell);
-    vec3 cubePos = quasiPos + corner * sz;
+    float sz = ( cubeSizeP > 0.001 ? ( 0.10 + 0.85 * cubeSizeP ) : 0.16 )
+               * ( 1.0 + 0.3 * audioSwell );
+    vec3  cubePos = quasiPos + corner * sz;
 
-    vNormal = normalize(corner);
+    vNormal = normalize( corner );
     // Perp-space coordinate as the palette key: constant per cube (no
     // whole-lattice flicker -- the old raw audioCentroid term repainted
     // every cube every analysis block), aperiodically varied across the
     // lattice, and physically meaningful (it IS the 6D phase).
-    vCol = imgPalette(fract(0.13 + vQuasiShell * 0.22
-                            + dot(perp, vec3(0.171, 0.223, 0.281))));
+    vCol = imgPalette( fract( 0.13 + vQuasiShell * 0.22
+                              + dot( perp, vec3( 0.171, 0.223, 0.281 ) ) ) );
 
     // Camera Transform (V3)
     vec3 vp = cubePos;
 
     // 3D rotation
-    float c = cos(t * 0.2), s = sin(t * 0.2);
-    vp = vec3(vp.x * c - vp.z * s, vp.y, vp.x * s + vp.z * c);
+    float c = cos( t * 0.2 ), s = sin( t * 0.2 );
+    vp = vec3( vp.x * c - vp.z * s, vp.y, vp.x * s + vp.z * c );
     vp.z += 6.6;
 
     // A 16:9 frame is 1.78x wider than it is tall, so a spherical lattice that
@@ -143,10 +153,10 @@ void main()
     vp.x *= 1.42;
     vp.x -= eyeOff;
 
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     // The lattice now reaches within a couple of units of the lens; anything
     // that crosses the near plane would smear a wedge across the frame.
-    if (vp.z < 0.5)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.5 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

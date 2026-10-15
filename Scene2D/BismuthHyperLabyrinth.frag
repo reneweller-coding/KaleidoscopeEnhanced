@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file BismuthHyperLabyrinth.frag
  * @brief BISMUTH HYPER LABYRINTH: Raymarched infinite 3D/4D hopper crystal maze
@@ -8,34 +8,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * reflections, holographic audio equalizer pulses, and photo texturing.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float zoomP;   ///< Zoom knob, 0..1.
+uniform float zoomP; ///< Zoom knob, 0..1.
 uniform float stepP;
-uniform float speedP;   ///< Speed knob, 0..1.
+uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
@@ -43,86 +45,95 @@ vec3 img(vec2 uv) {
 /// CURRENT slideshow image, so every activation inherits a fresh palette from
 /// the photos; the arc follows the musical key (audioChromaHue is circular-
 /// slewed = jump-free) with a slow advance drift, valence shapes saturation.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// Thin-film interference optical spectrum
-vec3 thinFilmColor(float thickness) {
+vec3 thinFilmColor( float thickness )
+{
     // Iridescent banding from arc positions in the photo (house standard)
     // instead of the full HSV wheel.
-    return imgPalette(thickness * 1.5) * 1.35;
+    return imgPalette( thickness * 1.5 ) * 1.35;
 }
 
 /// Bismuth hopper crystal distance function
 /// Soft-max, used to carve a smooth clearance bubble around the camera out
 /// of the distance field: the flight can never clip through geometry -- a
 /// would-be collision becomes a soft bulge sliding past the lens.
-float smax(float a, float b, float k) {
-    float h = clamp(0.5 - 0.5 * (a - b) / k, 0.0, 1.0);
-    return mix(a, b, h) + k * h * (1.0 - h);
+float smax( float a, float b, float k )
+{
+    float h = clamp( 0.5 - 0.5 * ( a - b ) / k, 0.0, 1.0 );
+    return mix( a, b, h ) + k * h * ( 1.0 - h );
 }
 
-float mapBismuth(vec3 p, out vec3 outUVW, float stepScale) {
-    vec3 z = p;
+float mapBismuth( vec3 p, out vec3 outUVW, float stepScale )
+{
+    vec3  z = p;
     float scale = 1.0;
 
     // Repetition & domain folding
-    z = mod(z + 2.0, 4.0) - 2.0;
+    z = mod( z + 2.0, 4.0 ) - 2.0;
 
-    for (int i = 0; i < 4; ++i) {
-        z = abs(z);
-        if (z.x < z.y) z.xy = z.yx;
-        if (z.x < z.z) z.xz = z.zx;
-        if (z.y < z.z) z.yz = z.zy;
+    for ( int i = 0; i < 4; ++i )
+    {
+        z = abs( z );
+        if ( z.x < z.y )
+            z.xy = z.yx;
+        if ( z.x < z.z )
+            z.xz = z.zx;
+        if ( z.y < z.z )
+            z.yz = z.zy;
 
         // Concentric 90-degree stepped terraces
         z.x -= 0.65 * stepScale;
         z.y -= 0.45 * stepScale;
 
-        float s = 1.6 + 0.2 * sin(audioAdvance * 0.1);
+        float s = 1.6 + 0.2 * sin( audioAdvance * 0.1 );
         z *= s;
         scale *= s;
     }
 
     outUVW = z / scale;
     // Box frame distance
-    vec3 d = abs(z) - vec3(0.6, 0.6, 0.6);
-    float box = min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+    vec3  d = abs( z ) - vec3( 0.6, 0.6, 0.6 );
+    float box = min( max( d.x, max( d.y, d.z ) ), 0.0 ) + length( max( d, 0.0 ) );
     return box / scale;
 }
 
 /// @brief Surface normal of the distance field by central differences.
-vec3 calcNormal(vec3 p, float stepScale) {
-    vec2 e = vec2(0.002, 0.0);
+vec3 calcNormal( vec3 p, float stepScale )
+{
+    vec2 e = vec2( 0.002, 0.0 );
     vec3 dummy;
-    return normalize(vec3(
-        mapBismuth(p + e.xyy, dummy, stepScale) - mapBismuth(p - e.xyy, dummy, stepScale),
-        mapBismuth(p + e.yxy, dummy, stepScale) - mapBismuth(p - e.yxy, dummy, stepScale),
-        mapBismuth(p + e.yyx, dummy, stepScale) - mapBismuth(p - e.yyx, dummy, stepScale)
-    ));
+    return normalize( vec3(
+        mapBismuth( p + e.xyy, dummy, stepScale ) - mapBismuth( p - e.xyy, dummy, stepScale ),
+        mapBismuth( p + e.yxy, dummy, stepScale ) - mapBismuth( p - e.yxy, dummy, stepScale ),
+        mapBismuth( p + e.yyx, dummy, stepScale ) - mapBismuth( p - e.yyx, dummy, stepScale ) ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float zm  = (zoomP  > 0.0) ? zoomP  : 1.0;
-    float stp = (stepP  > 0.0) ? stepP  : 1.0;
-    float spd = (speedP > 0.0) ? speedP : 1.0;
-    float hue = (hueP   > 0.0) ? hueP   : 0.0;
+void main()
+{
+    float zm = ( zoomP > 0.0 ) ? zoomP : 1.0;
+    float stp = ( stepP > 0.0 ) ? stepP : 1.0;
+    float spd = ( speedP > 0.0 ) ? speedP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Smooth forward camera flight through crystal corridors.  The old path
     // oscillated AROUND the origin (+-1.5/1.2), but a numeric probe of
@@ -132,33 +143,35 @@ void main() {
     // keeps the camera clear for the shader's whole stepP/audioBass range,
     // bar the rare graze at stepP's extreme high end.
     float t = time * 0.18 * spd + audioAdvance * 0.09;
-    vec3 ro = vec3(1.7 + cos(t * 0.4) * 0.3, 1.7 + sin(t * 0.3) * 0.24, t * 2.0);
-    vec3 ta = ro + vec3(sin(t * 0.4 + 0.3), cos(t * 0.3 + 0.2), 2.0);
-    vec3 ww = normalize(ta - ro);
-    vec3 uu = normalize(cross(ww, vec3(0.0, 1.0, 0.0)));
-    vec3 vv = cross(uu, ww);
-    vec3 rd = normalize(uv.x * uu + uv.y * vv + 1.2 * zm * ww);
+    vec3  ro = vec3( 1.7 + cos( t * 0.4 ) * 0.3, 1.7 + sin( t * 0.3 ) * 0.24, t * 2.0 );
+    vec3  ta = ro + vec3( sin( t * 0.4 + 0.3 ), cos( t * 0.3 + 0.2 ), 2.0 );
+    vec3  ww = normalize( ta - ro );
+    vec3  uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3  vv = cross( uu, ww );
+    vec3  rd = normalize( uv.x * uu + uv.y * vv + 1.2 * zm * ww );
 
     // (The old discrete "walk free" loop jumped the camera 0.35 units at a
     // time whenever the terraces closed over it -- replaced by the smax
     // clearance bubble in the march below, continuous by construction.)
     float totalDist = 0.0;
     float minDist = 1000.0;
-    vec3 hitUVW = vec3(0.0);
-    int hitSteps = 0;
+    vec3  hitUVW = vec3( 0.0 );
+    int   hitSteps = 0;
     // The 0.15*audioBass breathing moved the WALLS of the labyrinth;
     // a numeric probe showed the open channel closing over the camera on
     // bass swells (the recording's flat-grey frame is the inside of a
     // terrace).  The music now drives light and colour, never the walls.
     float stepScale = stp;
 
-    for (int i = 0; i < 80; ++i) {
-        vec3 p = ro + rd * totalDist;
-        vec3 uvw;
-        float d = mapBismuth(p, uvw, stepScale);
-        d = smax(d, 0.50 - length(p - ro), 0.18);   // camera clearance bubble
-        minDist = min(minDist, d);
-        if (d < 0.003 || totalDist > 20.0) {
+    for ( int i = 0; i < 80; ++i )
+    {
+        vec3  p = ro + rd * totalDist;
+        vec3  uvw;
+        float d = mapBismuth( p, uvw, stepScale );
+        d = smax( d, 0.50 - length( p - ro ), 0.18 ); // camera clearance bubble
+        minDist = min( minDist, d );
+        if ( d < 0.003 || totalDist > 20.0 )
+        {
             hitUVW = uvw;
             hitSteps = i;
             break;
@@ -166,56 +179,59 @@ void main() {
         totalDist += d * 0.75;
     }
 
-    vec3 col = vec3(0.0);
+    vec3 col = vec3( 0.0 );
 
-    if (totalDist < 20.0) {
+    if ( totalDist < 20.0 )
+    {
         vec3 p = ro + rd * totalDist;
-        vec3 n = calcNormal(p, stepScale);
-        vec3 lightDir = normalize(vec3(0.6, 0.8, -0.5));
+        vec3 n = calcNormal( p, stepScale );
+        vec3 lightDir = normalize( vec3( 0.6, 0.8, -0.5 ) );
 
         // Metallic specular & Fresnel
-        float diff = max(dot(n, lightDir), 0.0);
-        vec3 ref = reflect(rd, n);
-        float spec = pow(max(dot(ref, lightDir), 0.0), 32.0);
-        float fresnel = pow(1.0 - max(dot(-rd, n), 0.0), 3.0);
+        float diff = max( dot( n, lightDir ), 0.0 );
+        vec3  ref = reflect( rd, n );
+        float spec = pow( max( dot( ref, lightDir ), 0.0 ), 32.0 );
+        float fresnel = pow( 1.0 - max( dot( -rd, n ), 0.0 ), 3.0 );
 
         // Thin-film interference oxidation layers
-        float filmThickness = dot(hitUVW, vec3(1.2, 2.5, 3.8)) + audioPhase * 0.2;
-        vec3 filmCol = thinFilmColor(filmThickness);
+        float filmThickness = dot( hitUVW, vec3( 1.2, 2.5, 3.8 ) ) + audioPhase * 0.2;
+        vec3  filmCol = thinFilmColor( filmThickness );
 
         // Terrace photo projection
         vec2 terraceUV = hitUVW.xy * 0.5 + 0.5;
-        vec3 photoCol = img(fract(terraceUV));
+        vec3 photoCol = img( fract( terraceUV ) );
 
         // Stepped laser resonance pulses on kick
-        float terraceRing = sin(length(hitUVW) * 20.0 - time * 6.0);
-        float laserGlow = exp(-abs(terraceRing) * 4.0) * audioKick * 2.5;
+        float terraceRing = sin( length( hitUVW ) * 20.0 - time * 6.0 );
+        float laserGlow = exp( -abs( terraceRing ) * 4.0 ) * audioKick * 2.5;
 
         // Combine metallic bismuth shading
-        vec3 metalAlbedo = mix(vec3(0.85, 0.88, 0.92), filmCol, 0.75) * photoCol;
-        col = metalAlbedo * (diff * 0.6 + 0.3) + vec3(1.0) * spec * 0.8 + filmCol * fresnel * 1.2;
-        col += vec3(0.2, 0.8, 1.0) * laserGlow;
+        vec3 metalAlbedo = mix( vec3( 0.85, 0.88, 0.92 ), filmCol, 0.75 ) * photoCol;
+        col = metalAlbedo * ( diff * 0.6 + 0.3 ) + vec3( 1.0 ) * spec * 0.8 + filmCol * fresnel * 1.2;
+        col += vec3( 0.2, 0.8, 1.0 ) * laserGlow;
 
         // Ambient occlusion from raymarching steps
-        float ao = clamp(1.0 - float(hitSteps) / 80.0, 0.0, 1.0);
+        float ao = clamp( 1.0 - float( hitSteps ) / 80.0, 0.0, 1.0 );
         col *= ao;
 
         // Volumetric crystal depth fog.  At 0.12 the corridor (totalDist
         // 10..20) sat in 70-90% fog -- THE reason the probe was near-black.
-        col = mix(col, vec3(0.02, 0.01, 0.05), 1.0 - exp(-totalDist * 0.045));
-    } else {
+        col = mix( col, vec3( 0.02, 0.01, 0.05 ), 1.0 - exp( -totalDist * 0.045 ) );
+    }
+    else
+    {
         // Glow at distance
-        col = vec3(0.02, 0.01, 0.05) + vec3(0.1, 0.3, 0.6) * exp(-minDist * 8.0);
+        col = vec3( 0.02, 0.01, 0.05 ) + vec3( 0.1, 0.3, 0.6 ) * exp( -minDist * 8.0 );
     }
 
-    col = hueRot(col, 0.25 * sin(hue));   // bounded: full rotation broke the bismuth identity
-    col = pow(col, vec3(0.9)); // Vibrance boost
+    col = hueRot( col, 0.25 * sin( hue ) ); // bounded: full rotation broke the bismuth identity
+    col = pow( col, vec3( 0.9 ) );          // Vibrance boost
 
     // Headlight: the corridors carried no near light at all and probed
     // near-black front to back.
-    col *= 1.0 + 1.5 * exp(-totalDist * 0.30);
+    col *= 1.0 + 1.5 * exp( -totalDist * 0.30 );
     // Headlight: the corridors carried no near light at all and probed
     // near-black front to back.
-    col *= 1.0 + 1.5 * exp(-totalDist * 0.30);
-    fragColor = vec4(col, 1.0);
+    col *= 1.0 + 1.5 * exp( -totalDist * 0.30 );
+    fragColor = vec4( col, 1.0 );
 }

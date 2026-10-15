@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PrismaticRainbowCloud.frag
  * @brief PRISMATIC RAINBOW CLOUD: Polar stratospheric nacreous (mother-of-pearl) clouds
@@ -17,34 +17,36 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP     float iridescent pastel spectrum offset       (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
 
-uniform float densityP;   ///< Density knob, 0..1.
-uniform float waveP;   ///< Wave knob.
+uniform float densityP; ///< Density knob, 0..1.
+uniform float waveP;    ///< Wave knob.
 uniform float rayP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
@@ -52,21 +54,22 @@ vec3 img(vec2 uv) {
 /// activation inherits a fresh palette from the photos, and the arc follows
 /// the musical key (chromaHue is circular-slewed = jump-free) with a slow
 /// advance drift.  Valence shapes saturation toward the mood.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// Overall level of the photo currently on the texture units, from a fixed
@@ -75,127 +78,137 @@ vec3 hueRot(vec3 c, float a) {
 /// the sparkles no headroom at all. The probe rides the tex0/tex1 crossfade, so
 /// the gain it feeds can never pop, and being one number for the whole frame it
 /// rescales exposure without touching local contrast.
-float photoLevel() {
-    vec3 s = img(vec2(0.25, 0.25)) + img(vec2(0.75, 0.25))
-           + img(vec2(0.25, 0.75)) + img(vec2(0.75, 0.75))
-           + img(vec2(0.50, 0.50));
-    return dot(s * 0.2, vec3(0.299, 0.587, 0.114));
+float photoLevel()
+{
+    vec3 s = img( vec2( 0.25, 0.25 ) ) + img( vec2( 0.75, 0.25 ) )
+             + img( vec2( 0.25, 0.75 ) ) + img( vec2( 0.75, 0.75 ) )
+             + img( vec2( 0.50, 0.50 ) );
+    return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) {
-    p = fract(p * vec2(219.78, 483.12));
-    p += dot(p, p + 67.21);
-    return fract(p.x * p.y);
+float hash21( vec2 p )
+{
+    p = fract( p * vec2( 219.78, 483.12 ) );
+    p += dot( p, p + 67.21 );
+    return fract( p.x * p.y );
 }
 
 /// @brief Smooth value noise.
-float noise(vec2 p) {
-    vec2 i = floor(p);
-    vec2 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+float noise( vec2 p )
+{
+    vec2 i = floor( p );
+    vec2 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
+                mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec2 p) {
+float fbm( vec2 p )
+{
     float v = 0.0;
     float a = 0.5;
-    mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
-    for (int i = 0; i < 5; ++i) {
-        v += a * noise(p);
-        p = rot * p * 2.0 + vec2(20.0);
+    mat2  rot = mat2( 0.8, 0.6, -0.6, 0.8 );
+    for ( int i = 0; i < 5; ++i )
+    {
+        v += a * noise( p );
+        p = rot * p * 2.0 + vec2( 20.0 );
         a *= 0.5;
     }
     return v;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    float den = (densityP > 0.0) ? densityP : 1.0;
-    float wav = (waveP    > 0.0) ? waveP    : 1.0;
-    float ry  = (rayP     > 0.0) ? rayP     : 1.0;
-    float hue = (hueP     > 0.0) ? hueP     : 0.0;
+void main()
+{
+    float den = ( densityP > 0.0 ) ? densityP : 1.0;
+    float wav = ( waveP > 0.0 ) ? waveP : 1.0;
+    float ry = ( rayP > 0.0 ) ? rayP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     vec2 st = gl_FragCoord.xy / resolution;
 
     float t = time * 0.2 + audioAdvance * 0.15;
 
     // Atmospheric gravity wave distortion
     vec2 waveUV = uv;
-    waveUV.x += sin(uv.y * 6.0 * wav + t) * 0.05 * (1.0 + audioBass * 0.5);
-    waveUV.y += cos(uv.x * 4.0 * wav - t * 0.8) * 0.04;
+    waveUV.x += sin( uv.y * 6.0 * wav + t ) * 0.05 * ( 1.0 + audioBass * 0.5 );
+    waveUV.y += cos( uv.x * 4.0 * wav - t * 0.8 ) * 0.04;
 
     // Multi-octave polar stratospheric cloud wisps
-    float n1 = fbm(waveUV * 3.0 + vec2(t * 0.5, -t * 0.2));
-    float n2 = fbm(waveUV * 6.0 - vec2(t * 0.3, t * 0.4));
-    float cloudDensity = smoothstep(0.30, 0.80, (n1 * 0.65 + n2 * 0.35) * den) * (0.8 + 0.4 * audioSwell);
+    float n1 = fbm( waveUV * 3.0 + vec2( t * 0.5, -t * 0.2 ) );
+    float n2 = fbm( waveUV * 6.0 - vec2( t * 0.3, t * 0.4 ) );
+    float cloudDensity = smoothstep( 0.30, 0.80, ( n1 * 0.65 + n2 * 0.35 ) * den ) * ( 0.8 + 0.4 * audioSwell );
 
     // Mie / Optical diffraction: Thin-film thickness variation produces pastel iridescent rainbow bands
     float opticalThickness = n1 * 12.0 + n2 * 6.0 + audioPhase * 2.0;
-    float filmPh = fract(opticalThickness * 0.159);
-    vec3 filmSpec = clamp(vec3(abs(filmPh * 6.0 - 3.0) - 1.0,
-                               2.0 - abs(filmPh * 6.0 - 2.0),
-                               2.0 - abs(filmPh * 6.0 - 4.0)), 0.0, 1.0);
+    float filmPh = fract( opticalThickness * 0.159 );
+    vec3  filmSpec = clamp( vec3( abs( filmPh * 6.0 - 3.0 ) - 1.0,
+                                  2.0 - abs( filmPh * 6.0 - 2.0 ),
+                                  2.0 - abs( filmPh * 6.0 - 4.0 ) ),
+                            0.0, 1.0 );
     // Real thin-film bands, photo-arc inflected; the old 35% white-wash
     // erased every band into pastel-white.
-    vec3 iridColor = mix(imgPalette(filmPh), filmSpec, 0.45);
-    iridColor = mix(iridColor, vec3(1.0, 0.95, 0.9), 0.20);
+    vec3 iridColor = mix( imgPalette( filmPh ), filmSpec, 0.45 );
+    iridColor = mix( iridColor, vec3( 1.0, 0.95, 0.9 ), 0.20 );
 
     // Crepuscular god rays from low horizon twilight sun
-    vec2 sunPos = vec2(0.3, -0.4);
-    vec2 toSun = uv - sunPos;
-    float sunDist = length(toSun);
-    float sunAngle = atan(toSun.y, toSun.x);
-    float godRay = (0.5 + 0.5 * sin(sunAngle * 18.0 + t * 0.5)) * exp(-sunDist * 1.5) * ry;
+    vec2  sunPos = vec2( 0.3, -0.4 );
+    vec2  toSun = uv - sunPos;
+    float sunDist = length( toSun );
+    float sunAngle = atan( toSun.y, toSun.x );
+    float godRay = ( 0.5 + 0.5 * sin( sunAngle * 18.0 + t * 0.5 ) ) * exp( -sunDist * 1.5 ) * ry;
     // rayP alone reaches 2.2 and a kick trebles it, so the TINTED vector
     // carries the cap; bounding the scalar would have left the tint free.
-    vec3 rayColor = min(vec3(1.0, 0.85, 0.6) * godRay * (1.0 + audioKick * 2.0), vec3(1.05));
+    vec3 rayColor = min( vec3( 1.0, 0.85, 0.6 ) * godRay * ( 1.0 + audioKick * 2.0 ), vec3( 1.05 ) );
 
     // Hold the sheet back to a fixed exposure: both the cirrus layer and the
     // iridescence are photo samples, so a light photo used to pin the whole sky
     // near 1.0 with nothing left for the rays.
-    float expGain = clamp(0.30 / max(0.05, photoLevel()), 0.30, 2.4);
+    float expGain = clamp( 0.30 / max( 0.05, photoLevel() ), 0.30, 2.4 );
 
     // Twilight deep blue to violet background sky
-    vec3 skyColor = mix(vec3(0.02, 0.05, 0.15), vec3(0.12, 0.08, 0.22), st.y);
+    vec3 skyColor = mix( vec3( 0.02, 0.05, 0.15 ), vec3( 0.12, 0.08, 0.22 ), st.y );
 
     // Input photo blend as high-altitude cirrus texture
-    vec3 photo = img(st);
+    vec3 photo = img( st );
     // Photo only as texture INSIDE the clouds -- flooding the whole sky
     // with it recorded as a white frame with debris.
     skyColor += photo * expGain * 0.14 * cloudDensity;
 
     // Combine nacreous cloud shading
-    float nacLum = dot(iridColor, vec3(0.333));
-    vec3 nacSat = clamp(mix(vec3(nacLum), iridColor, 1.7), 0.0, 1.0);
-    vec3 nacreous = nacSat * expGain * cloudDensity * 2.3;
-    vec3 col = mix(skyColor, nacreous, clamp(cloudDensity * 1.2, 0.0, 1.0));
-    col += rayColor * 0.5 * clamp(cloudDensity * 2.2, 0.0, 1.0);   // rays only THROUGH clouds
+    float nacLum = dot( iridColor, vec3( 0.333 ) );
+    vec3  nacSat = clamp( mix( vec3( nacLum ), iridColor, 1.7 ), 0.0, 1.0 );
+    vec3  nacreous = nacSat * expGain * cloudDensity * 2.3;
+    vec3  col = mix( skyColor, nacreous, clamp( cloudDensity * 1.2, 0.0, 1.0 ) );
+    col += rayColor * 0.5 * clamp( cloudDensity * 2.2, 0.0, 1.0 ); // rays only THROUGH clouds
 
     // Lens sparkle on beats
-    if (audioHigh > 0.4) {
+    if ( audioHigh > 0.4 )
+    {
         // Runde Funken statt aufgehellter uv-Zellen: floor(uv*40) leuchtet
         // ein ganzes ~48-px-QUADRAT auf.
-        vec2 kg = uv * 40.0;
-        vec2 kid = floor(kg);
-        vec2 kf = fract(kg) - 0.5;
-        float sparkle = hash21(kid + floor(time * 4.00));
-        if (sparkle > 0.97 && cloudDensity > 0.3) {
-            vec2 kp = (vec2(fract(sparkle * 7.3), fract(sparkle * 13.7)) - 0.5) * 0.7;
-            float kd = dot(kf - kp, kf - kp);
-            col += min(vec3(1.2, 1.1, 1.0) * audioHigh * 1.5, vec3(0.85))
-                 * exp(-kd * 55.0);
+        vec2  kg = uv * 40.0;
+        vec2  kid = floor( kg );
+        vec2  kf = fract( kg ) - 0.5;
+        float sparkle = hash21( kid + floor( time * 4.00 ) );
+        if ( sparkle > 0.97 && cloudDensity > 0.3 )
+        {
+            vec2  kp = ( vec2( fract( sparkle * 7.3 ), fract( sparkle * 13.7 ) ) - 0.5 ) * 0.7;
+            float kd = dot( kf - kp, kf - kp );
+            col += min( vec3( 1.2, 1.1, 1.0 ) * audioHigh * 1.5, vec3( 0.85 ) )
+                   * exp( -kd * 55.0 );
         }
     }
 
-    if (hue > 0.001) col = hueRot(col, hue);
+    if ( hue > 0.001 )
+        col = hueRot( col, hue );
 
     // Soft-knee exposure so a thick, sunlit cloud bank compresses instead of
     // clipping the whole stratosphere to paper white.
-    vec3 _catTone = clamp(col, 0.0, 1.0);
-    _catTone /= 1.0 + 0.30 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(_catTone, 1.0);
+    vec3 _catTone = clamp( col, 0.0, 1.0 );
+    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( _catTone, 1.0 );
 }

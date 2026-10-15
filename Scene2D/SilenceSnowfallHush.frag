@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file SilenceSnowfallHush.frag
  * @brief SILENCE SNOWFALL HUSH: a quiet street at night (the photo), snow
@@ -17,116 +17,140 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *
  * Per-activation variety: flakeP, lampsP, hueP.
  */
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float sceneTime;   ///< Seconds since this scene was activated.
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float sceneTime;      ///< Seconds since this scene was activated.
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
 uniform float flakeP;
 uniform float lampsP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
-/// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-/// @brief Smooth value noise.
-float noise(vec2 p)
+float hash11( float n )
 {
-    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1, 0)), f.x), mix(hash21(i + vec2(0, 1)), hash21(i + vec2(1, 1)), f.x), f.y);
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
+/// @brief Pseudo-random number 0..1 from a 2D point.
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
+/// @brief Smooth value noise.
+float noise( vec2 p )
+{
+    vec2 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i ), hash21( i + vec2( 1, 0 ) ), f.x ),
+                mix( hash21( i + vec2( 0, 1 ) ), hash21( i + vec2( 1, 1 ) ), f.x ), f.y );
 }
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec2 p) { float v = 0.0, a = 0.5; for (int i = 0; i < 4; ++i) { v += a * noise(p); p *= 2.03; a *= 0.5; } return v; }
+float fbm( vec2 p )
+{
+    float v = 0.0, a = 0.5;
+    for ( int i = 0; i < 4; ++i )
+    {
+        v += a * noise( p );
+        p *= 2.03;
+        a *= 0.5;
+    }
+    return v;
+}
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     float aspect = resolution.x / resolution.y;
-    vec2 uv = gl_FragCoord.xy / resolution;
-    vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  uv = gl_FragCoord.xy / resolution;
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float hue = (hueP > 0.001) ? hueP : 0.0;
-    float flakeSize = 0.7 + 0.6 * clamp(flakeP, 0.0, 1.0);
-    float lamps = 2.0 + floor(clamp(lampsP, 0.0, 1.0) * 3.0);
-    float quiet = 1.0 - clamp(audioSwell, 0.0, 1.0);                    // the hush
-    float cover = smoothstep(0.1, 0.9, quiet);
+    float hue = ( hueP > 0.001 ) ? hueP : 0.0;
+    float flakeSize = 0.7 + 0.6 * clamp( flakeP, 0.0, 1.0 );
+    float lamps = 2.0 + floor( clamp( lampsP, 0.0, 1.0 ) * 3.0 );
+    float quiet = 1.0 - clamp( audioSwell, 0.0, 1.0 ); // the hush
+    float cover = smoothstep( 0.1, 0.9, quiet );
     float fall = sceneAdvance * 0.35 + sceneTime * 0.07;
 
     // The street: the photo at night, cooled and desaturated as the hush deepens.
-    vec3 photo = img(uv);
-    float lum = dot(photo, vec3(0.299, 0.587, 0.114));
-    vec3 street = mix(photo, vec3(lum), 0.3 + 0.5 * cover) * mix(vec3(0.9, 0.85, 0.8), vec3(0.75, 0.85, 1.05), cover);
-    street *= 0.35 + 0.25 * (1.0 - cover);
+    vec3  photo = img( uv );
+    float lum = dot( photo, vec3( 0.299, 0.587, 0.114 ) );
+    vec3  street = mix( photo, vec3( lum ), 0.3 + 0.5 * cover )
+                   * mix( vec3( 0.9, 0.85, 0.8 ), vec3( 0.75, 0.85, 1.05 ), cover );
+    street *= 0.35 + 0.25 * ( 1.0 - cover );
     // Snow cover: settles on the bright upward-facing parts (a luminance
     // test stands in for horizontal surfaces) and in a noise pattern that
     // grows with the cover.
-    float n = fbm(p * 6.0 + vec2(3.1, 7.7));
-    float up = smoothstep(0.35, 0.65, lum);
-    float snowMask = smoothstep(0.0, 0.5, cover * (0.5 + 0.5 * n) + up * cover * 0.6 - 0.25);
-    vec3 snowCol = vec3(0.92, 0.94, 1.0) * (0.5 + 0.5 * n);
-    vec3 col = mix(street, snowCol * (0.6 + 0.4 * cover), snowMask * 0.85);
-    // Street lamps: warm halos in the upper half, brighter in the hush (snow scatters light), a faint flicker on the kick.
-    for (int i = 0; i < 5; ++i)
+    float n = fbm( p * 6.0 + vec2( 3.1, 7.7 ) );
+    float up = smoothstep( 0.35, 0.65, lum );
+    float snowMask = smoothstep( 0.0, 0.5, cover * ( 0.5 + 0.5 * n ) + up * cover * 0.6 - 0.25 );
+    vec3  snowCol = vec3( 0.92, 0.94, 1.0 ) * ( 0.5 + 0.5 * n );
+    vec3  col = mix( street, snowCol * ( 0.6 + 0.4 * cover ), snowMask * 0.85 );
+    // Street lamps: warm halos in the upper half, brighter in the hush (snow scatters light), a faint flicker on the
+    // kick.
+    for ( int i = 0; i < 5; ++i )
     {
-        if (float(i) >= lamps) break;
-        float fi = float(i);
-        vec2 lp = vec2((hash11(fi * 3.7 + 1.0) - 0.5) * aspect * 0.9, 0.05 + 0.3 * hash11(fi * 5.1 + 2.0));
-        float d = length(p - lp);
-        vec3 lc = mix(vec3(1.0, 0.8, 0.5), imgPalette(hue * 0.159 + fi * 0.2) * 1.3, 0.35);
-        float flick = 1.0 - 0.08 * audioKick * step(0.5, hash11(fi * 9.3));
-        col += lc * (smoothstep(0.02, 0.008, d) * 1.5 + exp(-d * 6.0) * (0.15 + 0.45 * cover)) * flick;
+        if ( float( i ) >= lamps )
+            break;
+        float fi = float( i );
+        vec2  lp = vec2( ( hash11( fi * 3.7 + 1.0 ) - 0.5 ) * aspect * 0.9, 0.05 + 0.3 * hash11( fi * 5.1 + 2.0 ) );
+        float d = length( p - lp );
+        vec3  lc = mix( vec3( 1.0, 0.8, 0.5 ), imgPalette( hue * 0.159 + fi * 0.2 ) * 1.3, 0.35 );
+        float flick = 1.0 - 0.08 * audioKick * step( 0.5, hash11( fi * 9.3 ) );
+        col += lc * ( smoothstep( 0.02, 0.008, d ) * 1.5 + exp( -d * 6.0 ) * ( 0.15 + 0.45 * cover ) ) * flick;
         // The post.
-        col = mix(col, vec3(0.05), smoothstep(0.006, 0.003, abs(p.x - lp.x)) * step(p.y, lp.y - 0.02) * step(-0.5, p.y) * 0.8);
+        col = mix( col, vec3( 0.05 ),
+                   smoothstep( 0.006, 0.003, abs( p.x - lp.x ) ) * step( p.y, lp.y - 0.02 ) * step( -0.5, p.y ) * 0.8 );
     }
     // The flakes: three layers of round jittered dots falling on the clock,
     // drifting sideways slowly; their density is the hush.
-    for (int layer = 0; layer < 3; ++layer)
+    for ( int layer = 0; layer < 3; ++layer )
     {
-        float fl = float(layer);
+        float fl = float( layer );
         float scale = 14.0 + fl * 10.0;
         float speed = 0.6 - fl * 0.12;
-        vec2 g = vec2(p.x + sin(fall * 0.7 + fl) * 0.05, p.y + fall * speed) * scale + fl * 31.0;
-        vec2 c = floor(g);
-        vec2 f = fract(g) - 0.5;
-        vec2 jit = vec2(hash21(c + 1.3), hash21(c + 5.9)) - 0.5;
-        float r = length(f - jit * 0.7);
-        float sz = (0.16 - fl * 0.03) * flakeSize;
-        float flake = smoothstep(sz, sz * 0.4, r);
-        float present = smoothstep(1.0 - 0.7 * cover - 0.05, 1.0 - 0.7 * cover + 0.05, hash21(c + 9.1));
-        col += vec3(0.95, 0.97, 1.0) * flake * present * (0.7 - fl * 0.15);
+        vec2  g = vec2( p.x + sin( fall * 0.7 + fl ) * 0.05, p.y + fall * speed ) * scale + fl * 31.0;
+        vec2  c = floor( g );
+        vec2  f = fract( g ) - 0.5;
+        vec2  jit = vec2( hash21( c + 1.3 ), hash21( c + 5.9 ) ) - 0.5;
+        float r = length( f - jit * 0.7 );
+        float sz = ( 0.16 - fl * 0.03 ) * flakeSize;
+        float flake = smoothstep( sz, sz * 0.4, r );
+        float present = smoothstep( 1.0 - 0.7 * cover - 0.05, 1.0 - 0.7 * cover + 0.05, hash21( c + 9.1 ) );
+        col += vec3( 0.95, 0.97, 1.0 ) * flake * present * ( 0.7 - fl * 0.15 );
     }
     // The hush: a soft vignette and a cool bloom as the cover grows.
-    col *= 0.85 + 0.15 * (1.0 - length(p) * 0.7);
-    col += vec3(0.05, 0.07, 0.1) * cover;
+    col *= 0.85 + 0.15 * ( 1.0 - length( p ) * 0.7 );
+    col += vec3( 0.05, 0.07, 0.1 ) * cover;
     col *= 0.8 + 0.4 * audioLevel;
 
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

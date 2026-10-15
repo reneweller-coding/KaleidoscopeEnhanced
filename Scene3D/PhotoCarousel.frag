@@ -1,14 +1,14 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // PhotoCarousel.frag — each card is a seeded crop of the current image with
 // a thin glowing frame; the frame colour follows the music's key.
-uniform sampler2D tex0;   ///< The current photo.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform sampler2D tex0;           ///< The current photo.
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec4  vSeed;   ///< Per-instance random seed (from the vertex stage).
+in vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
 in float vGlow;
 
 /**
@@ -23,11 +23,11 @@ in float vGlow;
  */
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -35,16 +35,16 @@ void main()
 {
     // Seeded crop window: 40 % of the image, anywhere.
     vec2 crop = vSeed.xy * 0.6;
-    vec3 col  = texture(tex0, crop + vUV * 0.4).rgb;
+    vec3 col = texture( tex0, crop + vUV * 0.4 ).rgb;
 
     // Thin glowing frame around the card edge.
-    vec2  b     = min(vUV, 1.0 - vUV);
-    float frame = 1.0 - smoothstep(0.03, 0.07, min(b.x, b.y));
-    vec3  fCol  = hueRot(vec3(0.9, 0.6, 0.2),
-                         audioChromaHue + vSeed.z * 2.0);
-    col = mix(col, fCol * (0.8 + 1.4 * audioKick), frame);
+    vec2  b = min( vUV, 1.0 - vUV );
+    float frame = 1.0 - smoothstep( 0.03, 0.07, min( b.x, b.y ) );
+    vec3  fCol = hueRot( vec3( 0.9, 0.6, 0.2 ),
+                         audioChromaHue + vSeed.z * 2.0 );
+    col = mix( col, fCol * ( 0.8 + 1.4 * audioKick ), frame );
 
-    col *= (0.75 + 0.45 * vGlow) * (1.0 + 0.8 * audioDrop);
+    col *= ( 0.75 + 0.45 * vGlow ) * ( 1.0 + 0.8 * audioDrop );
 
-    fragColor = vec4(col * 1.15, 1.0);
+    fragColor = vec4( col * 1.15, 1.0 );
 }

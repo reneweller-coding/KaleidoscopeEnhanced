@@ -1,6 +1,8 @@
 /**
  * @file VideoPiP.h
- * @brief A second, independent Qt6Multimedia video decoder for the music-video picture-in-picture overlay (see TrackMedia's video cache) -- deliberately separate from VideoIn's single global instance, since that one REPLACES the photo source, while this one plays ALONGSIDE it in a screen corner.
+ * @brief A second, independent Qt6Multimedia video decoder for the music-video picture-in-picture overlay (see
+ * TrackMedia's video cache) -- deliberately separate from VideoIn's single global instance, since that one REPLACES the
+ * photo source, while this one plays ALONGSIDE it in a screen corner.
  */
 #ifndef VIDEOPIP_H
 #define VIDEOPIP_H
@@ -19,7 +21,8 @@
 bool videoPipLoad( const char *path );
 
 /**
- * @brief Seeks the PiP video to an absolute position, if it differs from the current one by more than a small tolerance.
+ * @brief Seeks the PiP video to an absolute position, if it differs from the current one by more than a small
+ * tolerance.
  *
  * Cheap to call every frame: a no-op unless the drift actually exceeds the tolerance, so the
  * caller doesn't need its own throttling logic.

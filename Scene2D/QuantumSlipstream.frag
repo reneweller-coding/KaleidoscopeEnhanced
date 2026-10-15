@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file QuantumSlipstream.frag
  * @brief QUANTUM SLIPSTREAM: An intense, high-speed journey through a warp tunnel.
@@ -16,102 +16,106 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float twistP;   ///< Twist knob, 0..1.
+uniform float twistP; ///< Twist knob, 0..1.
 uniform float energyP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tp = (twistP > 0.01 ? twistP : 1.0);
-    float ep = (energyP > 0.01 ? energyP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float tp = ( twistP > 0.01 ? twistP : 1.0 );
+    float ep = ( energyP > 0.01 ? energyP : 1.0 );
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
     // Normalize coordinates centered at 0
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution.xy) / resolution.y;
-    
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / resolution.y;
+
     // Polar coordinates
-    float r = length(uv);
-    float a = atan(uv.y, uv.x);
-    
+    float r = length( uv );
+    float a = atan( uv.y, uv.x );
+
     // Warp speed
     // Halbiert: time*5 + advance*20 war der gemeldete Extremflug.
     float z = time * 2.0 + audioAdvance * 6.0;
-    
+
     // Tunnel twisting
-    float twist = a + r * 2.0 * tp * sin(time * 0.2 + audioPhase) + z * 0.1;
-    
+    float twist = a + r * 2.0 * tp * sin( time * 0.2 + audioPhase ) + z * 0.1;
+
     // Create energy bands by sampling sine waves with different frequencies
-    float band1 = sin(twist * 5.0 + z * 2.0);
-    float band2 = sin(twist * 8.0 - z * 1.5);
-    float band3 = sin(a * 12.0 + z * 3.0 + audioKick * 5.0); // high freq on kick
-    
+    float band1 = sin( twist * 5.0 + z * 2.0 );
+    float band2 = sin( twist * 8.0 - z * 1.5 );
+    float band3 = sin( a * 12.0 + z * 3.0 + audioKick * 5.0 ); // high freq on kick
+
     // Interference pattern
     float pattern = band1 * band2 + band3 * 0.5;
-    pattern = smoothstep(0.2, 0.8, abs(pattern));
-    
+    pattern = smoothstep( 0.2, 0.8, abs( pattern ) );
+
     // Distance from center determines intensity (creating a tunnel effect)
     float tunnelWidth = 0.3 + 0.2 * audioSwell;
-    float intensity = tunnelWidth / (r + 0.05);
-    
+    float intensity = tunnelWidth / ( r + 0.05 );
+
     // Color mapping based on polar angle and time
-    vec3 col1 = imgPalette(0.2 + audioCentroid * 0.2);
-    vec3 col2 = imgPalette(0.8 + audioKick * 0.1);
-    
-    vec3 col = mix(col1, col2, sin(twist * 3.0) * 0.5 + 0.5);
-    
+    vec3 col1 = imgPalette( 0.2 + audioCentroid * 0.2 );
+    vec3 col2 = imgPalette( 0.8 + audioKick * 0.1 );
+
+    vec3 col = mix( col1, col2, sin( twist * 3.0 ) * 0.5 + 0.5 );
+
     // Apply pattern and intensity
     col *= pattern * intensity * intensity * ep;
-    
-    // Flash effect on kick
-    col += col2 * (audioKick * 1.5) * (1.0 / (r * 10.0 + 1.0));
-    
-    // Add some noise/particles flying past
-    float particleNoise = fract(sin(dot(vec2(a, 1.0 / r + z), vec2(12.9898, 78.233))) * 43758.5453);
-    float particles = step(0.98, particleNoise);
-    col += col1 * particles * 5.0 * (1.0 + audioKick);
 
-    if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
+    // Flash effect on kick
+    col += col2 * ( audioKick * 1.5 ) * ( 1.0 / ( r * 10.0 + 1.0 ) );
+
+    // Add some noise/particles flying past
+    float particleNoise = fract( sin( dot( vec2( a, 1.0 / r + z ), vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+    float particles = step( 0.98, particleNoise );
+    col += col1 * particles * 5.0 * ( 1.0 + audioKick );
+
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

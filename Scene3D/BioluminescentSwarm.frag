@@ -1,11 +1,11 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 
-in vec4 vCol;   ///< Colour (from the vertex stage).
-in vec3 vNormal;   ///< Surface normal (from the vertex stage).
-in vec3 vWorld;   ///< World position (from the vertex stage).
-in vec2 vQuad;      ///< marine-snow mote's quad coordinate
-in float vSnow;     ///< 0 = creature, 1 = marine snow
+in vec4  vCol;    ///< Colour (from the vertex stage).
+in vec3  vNormal; ///< Surface normal (from the vertex stage).
+in vec3  vWorld;  ///< World position (from the vertex stage).
+in vec2  vQuad;   ///< marine-snow mote's quad coordinate
+in float vSnow;   ///< 0 = creature, 1 = marine snow
 
 /**
  * @file BioluminescentSwarm.frag
@@ -26,8 +26,9 @@ in float vSnow;     ///< 0 = creature, 1 = marine snow
  */
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
-void main() {
-    if (vSnow > 0.5)
+void main()
+{
+    if ( vSnow > 0.5 )
     {
         // ---- MARINE SNOW -----------------------------------------------
         // A soft round mote.  This pass is drawn OPAQUE and depth-tested
@@ -35,30 +36,31 @@ void main() {
         // would punch a hole in whatever is behind it -- hence the discard on
         // the faded rim rather than drawing it black.
         vec2  d = vQuad * 2.0 - 1.0;
-        float a = exp(-dot(d, d) * 2.6);
-        if (a < 0.10) discard;
-        fragColor = vec4(min(vCol.rgb * a, vec3(1.0)), 1.0);
+        float a = exp( -dot( d, d ) * 2.6 );
+        if ( a < 0.10 )
+            discard;
+        fragColor = vec4( min( vCol.rgb * a, vec3( 1.0 ) ), 1.0 );
         return;
     }
 
-    vec3 n = normalize(vNormal);
-    vec3 lightDir = normalize(vec3(0.5, 0.8, -0.6));
-    float diff = max(dot(n, lightDir), 0.0) * 0.5 + 0.5;
+    vec3  n = normalize( vNormal );
+    vec3  lightDir = normalize( vec3( 0.5, 0.8, -0.6 ) );
+    float diff = max( dot( n, lightDir ), 0.0 ) * 0.5 + 0.5;
 
     // Specular highlight
-    vec3 viewDir = normalize(-vWorld);
-    vec3 refl = reflect(-lightDir, n);
-    float spec = pow(max(dot(viewDir, refl), 0.0), 16.0);
+    vec3  viewDir = normalize( -vWorld );
+    vec3  refl = reflect( -lightDir, n );
+    float spec = pow( max( dot( viewDir, refl ), 0.0 ), 16.0 );
 
     // Near creatures burn far hotter than the far side of the murmuration; the
     // camera orbits at ~28 units, so this is a real per-fragment depth cue and
     // it is what gives the swarm range instead of one uniform dim tone.
-    float camDist = length(vWorld);
-    float nearGain = 0.45 + 1.35 * exp(-max(camDist - 8.0, 0.0) * 0.055);
+    float camDist = length( vWorld );
+    float nearGain = 0.45 + 1.35 * exp( -max( camDist - 8.0, 0.0 ) * 0.055 );
 
-    vec3 col = vCol.rgb * diff * nearGain + min(spec, 1.0) * vec3(1.0, 1.0, 1.0);
+    vec3 col = vCol.rgb * diff * nearGain + min( spec, 1.0 ) * vec3( 1.0, 1.0, 1.0 );
     // Additive pass: cap the tinted vector, not just a scalar.
-    col = min(col, vec3(1.6));
-    col /= 1.0 + 0.30 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col = min( col, vec3( 1.6 ) );
+    col /= 1.0 + 0.30 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

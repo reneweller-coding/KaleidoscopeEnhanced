@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file RecrystallisationGrainGrowth.frag
  * @brief TRANSITION RECRYSTALLISATION GRAIN GROWTH: strain-free grains of the
@@ -25,111 +25,126 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: nucleiP, rateP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float nucleiP;
 uniform float rateP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float hash21( vec2 p )
+{
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float nuclei = 3.0 + floor(clamp(nucleiP, 0.0, 1.0) * 4.0);   // rolled ONCE
-    float rate   = (rateP > 0.0) ? rateP : 1.0;
-    float hue    = (hueP  > 0.0) ? hueP  : 0.0;
+    float nuclei = 3.0 + floor( clamp( nucleiP, 0.0, 1.0 ) * 4.0 ); // rolled ONCE
+    float rate = ( rateP > 0.0 ) ? rateP : 1.0;
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
-    vec2  p  = (uv - 0.5) * vec2(aspect, 1.0);
+    vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
-    float temp = rate * 1.0;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float temp = rate * 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     float cell = 0.70 / nuclei;
-    vec2  gi = floor(p / cell);
+    vec2  gi = floor( p / cell );
 
-    float w1 = 1e9, w2 = 1e9;      // nearest and second-nearest weighted distance
-    vec2  bestId = vec2(0.0);
+    float w1 = 1e9, w2 = 1e9; // nearest and second-nearest weighted distance
+    vec2  bestId = vec2( 0.0 );
     float bestBirth = 0.0;
-    for (int j = -2; j <= 2; ++j)
-    for (int i = -2; i <= 2; ++i)
-    {
-        vec2 id = gi + vec2(float(i), float(j));
-        vec2 jit = vec2(hash21(id + 2.7), hash21(id + 8.9)) - 0.5;
-        vec2 c = (id + 0.5 + jit * 0.85) * cell;
-        float birth = hash21(id + 17.1) * 0.38;                 // its moment, fixed
-        // Fast enough that the grains IMPINGE well before the end: a grain
-        // structure is polygonal because neighbours meet, and grains that
-        // never meet stay circles and read as bubbles.
-        float v = cell * (2.40 + 1.20 * hash21(id + 29.3)) * temp;
-        // Fast growth AND a bounded reach: once neighbours have met, the frame
-        // is completely tiled, so anything past that is invisible anyway -- but
-        // a grain that outgrows the search loop ends at a CELL boundary, which
-        // is very visible.  Two cells is inside what the loop looks at.
-        float reach = min(v * max(0.0, d - birth), cell * 2.0);
-        // Whoever gets here first owns the pixel.
-        float w = length(p - c) - reach;
-        if (w < w1) { w2 = w1; w1 = w; bestId = id; bestBirth = birth; }
-        else if (w < w2) { w2 = w; }
-    }
+    for ( int j = -2; j <= 2; ++j )
+        for ( int i = -2; i <= 2; ++i )
+        {
+            vec2  id = gi + vec2( float( i ), float( j ) );
+            vec2  jit = vec2( hash21( id + 2.7 ), hash21( id + 8.9 ) ) - 0.5;
+            vec2  c = ( id + 0.5 + jit * 0.85 ) * cell;
+            float birth = hash21( id + 17.1 ) * 0.38; // its moment, fixed
+            // Fast enough that the grains IMPINGE well before the end: a grain
+            // structure is polygonal because neighbours meet, and grains that
+            // never meet stay circles and read as bubbles.
+            float v = cell * ( 2.40 + 1.20 * hash21( id + 29.3 ) ) * temp;
+            // Fast growth AND a bounded reach: once neighbours have met, the frame
+            // is completely tiled, so anything past that is invisible anyway -- but
+            // a grain that outgrows the search loop ends at a CELL boundary, which
+            // is very visible.  Two cells is inside what the loop looks at.
+            float reach = min( v * max( 0.0, d - birth ), cell * 2.0 );
+            // Whoever gets here first owns the pixel.
+            float w = length( p - c ) - reach;
+            if ( w < w1 )
+            {
+                w2 = w1;
+                w1 = w;
+                bestId = id;
+                bestBirth = birth;
+            }
+            else if ( w < w2 )
+            {
+                w2 = w;
+            }
+        }
 
     // Transformed where a grain has actually arrived.
-    float grain = smoothstep(0.004, -0.004, w1);
-    grain = mix(grain, 1.0, smoothstep(0.88, 1.0, d));
+    float grain = smoothstep( 0.004, -0.004, w1 );
+    grain = mix( grain, 1.0, smoothstep( 0.88, 1.0, d ) );
 
     // The parent phase is deformed: smeared along its slip direction.
-    vec2 slip = vec2(0.94, 0.34) * 0.012 * arc;
-    vec3 parent = (texture(tex0, clamp(uv + slip, 0.0, 1.0)).rgb
-                 + texture(tex0, clamp(uv - slip, 0.0, 1.0)).rgb
-                 + texture(tex0, uv).rgb) / 3.0;
-    parent *= mix(1.0, 0.92, arc);
+    vec2 slip = vec2( 0.94, 0.34 ) * 0.012 * arc;
+    vec3 parent = ( texture( tex0, clamp( uv + slip, 0.0, 1.0 ) ).rgb
+                    + texture( tex0, clamp( uv - slip, 0.0, 1.0 ) ).rgb
+                    + texture( tex0, uv ).rgb )
+                  / 3.0;
+    parent *= mix( 1.0, 0.92, arc );
 
     // A grain's orientation shows as a small, steady tint.
-    float orient = hash21(bestId + 41.7);
-    vec3 fresh = texture(tex1, uv).rgb;
-    fresh = hueRot(fresh, (orient - 0.5) * 0.34 * arc + hue * 0.05 * arc);
-    fresh *= mix(1.0, 0.94 + 0.14 * orient, arc);
+    float orient = hash21( bestId + 41.7 );
+    vec3  fresh = texture( tex1, uv ).rgb;
+    fresh = hueRot( fresh, ( orient - 0.5 ) * 0.34 * arc + hue * 0.05 * arc );
+    fresh *= mix( 1.0, 0.94 + 0.14 * orient, arc );
 
-    vec3 col = mix(parent, fresh, grain);
+    vec3 col = mix( parent, fresh, grain );
 
     // The boundary between two grains: where the two nearest agree.
-    float bnd = exp(-pow((w2 - w1) / (cell * 0.13), 2.0)) * grain;
+    float bnd = exp( -pow( ( w2 - w1 ) / ( cell * 0.13 ), 2.0 ) ) * grain;
     col *= 1.0 - bnd * 0.62 * arc;
-    col += vec3(0.88, 0.92, 1.0) * bnd * arc
-         * (0.05 + 0.20 * clamp(audioHigh * 2.0, 0.0, 1.0) + 0.14 * clamp(audioKick, 0.0, 1.0));
+    col += vec3( 0.88, 0.92, 1.0 ) * bnd * arc
+           * ( 0.05 + 0.20 * clamp( audioHigh * 2.0, 0.0, 1.0 ) + 0.14 * clamp( audioKick, 0.0, 1.0 ) );
     // The moving front itself carries a little light.
-    float front = exp(-pow(w1 / (cell * 0.10), 2.0)) * (1.0 - smoothstep(0.88, 1.0, d));
-    col += vec3(1.0, 0.95, 0.86) * front * arc * 0.16;
+    float front = exp( -pow( w1 / ( cell * 0.10 ), 2.0 ) ) * ( 1.0 - smoothstep( 0.88, 1.0, d ) );
+    col += vec3( 1.0, 0.95, 0.86 ) * front * arc * 0.16;
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

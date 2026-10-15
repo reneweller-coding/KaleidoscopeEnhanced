@@ -1,6 +1,7 @@
 /**
  * @file Configuration.cpp
- * @brief Implements Configuration: XML parsing of Presets/ *.xml presets into RenderPipeline/EffectShader objects, uniform-range/formula registration, and the legacy shader-path remap.
+ * @brief Implements Configuration: XML parsing of Presets/ *.xml presets into RenderPipeline/EffectShader objects,
+ * uniform-range/formula registration, and the legacy shader-path remap.
  */
 #include <float.h>
 
@@ -28,7 +29,7 @@
 
 
 
-#include<GL/GLU.h>
+#include <GL/GLU.h>
 
 /**
  * @brief Constructs a Configuration by parsing @p configurationFile and initializing its RenderPipeline.
@@ -41,18 +42,19 @@
  */
 Configuration::Configuration( const QString &configurationFile )
 {
-	m_renderPipeline = new RenderPipeline();
-	readConfiguration( configurationFile );
-	// Namespace for the per-preset taste learning (skip-malus / favourite).
-	m_renderPipeline->setPresetName( m_configurationName );
-	m_renderPipeline->init( m_imageDirectory, m_timeTextureSoloMin, m_timeTextureSoloMax, m_timeTextureInterpolationMin, m_timeTextureInterpolationMax );
+    m_renderPipeline = new RenderPipeline();
+    readConfiguration( configurationFile );
+    // Namespace for the per-preset taste learning (skip-malus / favourite).
+    m_renderPipeline->setPresetName( m_configurationName );
+    m_renderPipeline->init( m_imageDirectory, m_timeTextureSoloMin, m_timeTextureSoloMax, m_timeTextureInterpolationMin,
+                            m_timeTextureInterpolationMax );
 }
 
 
 /** @brief Deletes the owned RenderPipeline. */
-Configuration::~Configuration( )
+Configuration::~Configuration()
 {
-	delete m_renderPipeline;
+    delete m_renderPipeline;
 }
 
 /**
@@ -62,14 +64,14 @@ Configuration::~Configuration( )
  */
 void Configuration::start( int width, int height )
 {
-	m_renderPipeline->start( width, height );
+    m_renderPipeline->start( width, height );
 }
 
 
 /** @brief Forwards to RenderPipeline::stop(). */
 void Configuration::stop()
 {
-	m_renderPipeline->stop();
+    m_renderPipeline->stop();
 }
 
 
@@ -85,8 +87,12 @@ void Configuration::stop()
 //
 // The table is loaded once from the same directory the presets come from, so
 // the packaged build finds it exactly like everything else.
-static QMap<QString, QList<QPair<QString, QString>>> s_rigTable;   ///< Rig name -> its (uniform name, formula) expression pairs, exactly as `<expr name= formula=>` lists them in rigs.xml; process-wide, filled once by loadRigTable().
-static bool s_rigLoaded = false;   ///< Guards loadRigTable() so the table is read at most once per process (also set when rigs.xml is missing, so a missing table is reported once, not per scene).
+static QMap<QString, QList<QPair<QString, QString>>> s_rigTable; ///< Rig name -> its (uniform name, formula) expression
+                                                                 ///< pairs, exactly as `<expr name= formula=>` lists
+                                                                 ///< them in rigs.xml; process-wide, filled once by
+                                                                 ///< loadRigTable().
+static bool s_rigLoaded = false; ///< Guards loadRigTable() so the table is read at most once per process (also set when
+                                 ///< rigs.xml is missing, so a missing table is reported once, not per scene).
 
 /**
  * @brief Loads Presets/rigs.xml into #s_rigTable on the first call; every later call is a no-op.
@@ -99,33 +105,39 @@ static bool s_rigLoaded = false;   ///< Guards loadRigTable() so the table is re
  */
 static void loadRigTable( const QString &cfgDir )
 {
-	if( s_rigLoaded ) return;
-	s_rigLoaded = true;
-	QFile f( cfgDir + "/rigs.xml" );
-	if( !f.open( QIODevice::ReadOnly ) )
-		return;                       // no table: <rig> entries then warn below
-	QDomDocument doc;
-	if( !doc.setContent( &f ) ) { f.close(); return; }
-	f.close();
-	QDomNodeList rigs = doc.documentElement().elementsByTagName( "rig" );
-	for( int i = 0; i < rigs.count(); ++i )
-	{
-		QDomElement r = rigs.at( i ).toElement();
-		QList<QPair<QString, QString>> exprs;
-		QDomNodeList es = r.elementsByTagName( "expr" );
-		for( int k = 0; k < es.count(); ++k )
-		{
-			QDomElement e = es.at( k ).toElement();
-			exprs.append( qMakePair( e.attribute( "name" ),
-			                         e.attribute( "formula" ) ) );
-		}
-		s_rigTable.insert( r.attribute( "name" ), exprs );
-	}
-	fprintf( stderr, "Rig-Vorlagen geladen: %d\n", int( s_rigTable.size() ) );
+    if ( s_rigLoaded )
+        return;
+    s_rigLoaded = true;
+    QFile f( cfgDir + "/rigs.xml" );
+    if ( !f.open( QIODevice::ReadOnly ) )
+        return; // no table: <rig> entries then warn below
+    QDomDocument doc;
+    if ( !doc.setContent( &f ) )
+    {
+        f.close();
+        return;
+    }
+    f.close();
+    QDomNodeList rigs = doc.documentElement().elementsByTagName( "rig" );
+    for ( int i = 0; i < rigs.count(); ++i )
+    {
+        QDomElement                    r = rigs.at( i ).toElement();
+        QList<QPair<QString, QString>> exprs;
+        QDomNodeList                   es = r.elementsByTagName( "expr" );
+        for ( int k = 0; k < es.count(); ++k )
+        {
+            QDomElement e = es.at( k ).toElement();
+            exprs.append( qMakePair( e.attribute( "name" ),
+                                     e.attribute( "formula" ) ) );
+        }
+        s_rigTable.insert( r.attribute( "name" ), exprs );
+    }
+    fprintf( stderr, "Rig-Vorlagen geladen: %d\n", int( s_rigTable.size() ) );
 }
 
 /**
- * @brief Walks the direct child elements of a TextureShader/CombineShader XML node and registers each declared uniform (or expression) on @p shader.
+ * @brief Walks the direct child elements of a TextureShader/CombineShader XML node and registers each declared uniform
+ * (or expression) on @p shader.
  *
  * Recognised child tags: `<interpolator>` (min/max-of-min/max ramping range,
  * see Uniform's BASE_TYPE_INTERPOLATOR_FLOAT), `<bool>` (probability of being
@@ -139,81 +151,82 @@ static void loadRigTable( const QString &cfgDir )
  */
 void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
 {
-	//get all data for the element, by looping through all child elements
-	QDomNode pEntries = el.firstChild();
-	while( !pEntries.isNull() )
-	{
-		QDomElement peData = pEntries.toElement();
-		QString tagNam = peData.tagName();
+    // get all data for the element, by looping through all child elements
+    QDomNode pEntries = el.firstChild();
+    while ( !pEntries.isNull() )
+    {
+        QDomElement peData = pEntries.toElement();
+        QString     tagNam = peData.tagName();
 
-		std::string name = peData.attribute("name").toStdString();
+        std::string name = peData.attribute( "name" ).toStdString();
 
-		if(tagNam == "interpolator") 
-		{
-			float minMin = peData.attribute("minMin").toFloat();
-			float maxMin = peData.attribute("maxMin").toFloat();
-			float minMax = peData.attribute("minMax").toFloat();
-			float maxMax = peData.attribute("maxMax").toFloat();
-			 
-			shader->addUniformInterpolator( name, minMin, minMax, maxMin, maxMax );
-		}
-		else if(tagNam == "bool") 
-		{ 
-			float probability = peData.attribute("probability").toFloat();
-			shader->addUniform( name, probability );
-		}
-		else if(tagNam == "float") 
-		{ 
-			float minValueF = peData.attribute("minValue").toFloat();
-			float maxValueF = peData.attribute("maxValue").toFloat();
-			shader->addUniform( name, minValueF, maxValueF );
-		}
-		else if(tagNam == "int")
-		{
-			int minValueI = peData.attribute("minValue").toInt();
-			int maxValueI = peData.attribute("maxValue").toInt();
-			shader->addUniform( name, minValueI, maxValueI );
-		}
-		else if(tagNam == "expr")
-		{
-			// FORMULA LAYER: per-frame expression evaluated against the live
-			// audio features, uploaded as the float uniform `name` (overrides
-			// a <float> of the same name — see EffectShader::addExpression).
-			shader->addExpression( name, peData.attribute("formula").toStdString() );
-		}
-		else if(tagNam == "rig")
-		{
-			// <rig preset="mesh-18"/> expands to the same addExpression calls
-			// the formulas would have made -- see loadRigTable above.
-			const QString preset = peData.attribute( "preset" );
-			auto it = s_rigTable.constFind( preset );
-			if( it == s_rigTable.constEnd() )
-			{
-				// LOUD on purpose. A silently ignored rig leaves the camera
-				// frozen, which is precisely the failure this table exists to
-				// make visible -- and a frozen camera looks like a design
-				// choice, not like a missing entry.
-				fprintf( stderr, "Rig-Vorlage '%s' nicht in rigs.xml - "
-				                 "die Kamera dieser Szene steht STILL.\n",
-				         preset.toLocal8Bit().constData() );
-			}
-			else
-			{
-				for( const auto &pr : *it )
-					shader->addExpression( pr.first.toStdString(),
-					                       pr.second.toStdString() );
-			}
-		}
+        if ( tagNam == "interpolator" )
+        {
+            float minMin = peData.attribute( "minMin" ).toFloat();
+            float maxMin = peData.attribute( "maxMin" ).toFloat();
+            float minMax = peData.attribute( "minMax" ).toFloat();
+            float maxMax = peData.attribute( "maxMax" ).toFloat();
 
-		pEntries = pEntries.nextSibling();
-	}
+            shader->addUniformInterpolator( name, minMin, minMax, maxMin, maxMax );
+        }
+        else if ( tagNam == "bool" )
+        {
+            float probability = peData.attribute( "probability" ).toFloat();
+            shader->addUniform( name, probability );
+        }
+        else if ( tagNam == "float" )
+        {
+            float minValueF = peData.attribute( "minValue" ).toFloat();
+            float maxValueF = peData.attribute( "maxValue" ).toFloat();
+            shader->addUniform( name, minValueF, maxValueF );
+        }
+        else if ( tagNam == "int" )
+        {
+            int minValueI = peData.attribute( "minValue" ).toInt();
+            int maxValueI = peData.attribute( "maxValue" ).toInt();
+            shader->addUniform( name, minValueI, maxValueI );
+        }
+        else if ( tagNam == "expr" )
+        {
+            // FORMULA LAYER: per-frame expression evaluated against the live
+            // audio features, uploaded as the float uniform `name` (overrides
+            // a <float> of the same name — see EffectShader::addExpression).
+            shader->addExpression( name, peData.attribute( "formula" ).toStdString() );
+        }
+        else if ( tagNam == "rig" )
+        {
+            // <rig preset="mesh-18"/> expands to the same addExpression calls
+            // the formulas would have made -- see loadRigTable above.
+            const QString preset = peData.attribute( "preset" );
+            auto          it = s_rigTable.constFind( preset );
+            if ( it == s_rigTable.constEnd() )
+            {
+                // LOUD on purpose. A silently ignored rig leaves the camera
+                // frozen, which is precisely the failure this table exists to
+                // make visible -- and a frozen camera looks like a design
+                // choice, not like a missing entry.
+                fprintf( stderr, "Rig-Vorlage '%s' nicht in rigs.xml - "
+                                 "die Kamera dieser Szene steht STILL.\n",
+                         preset.toLocal8Bit().constData() );
+            }
+            else
+            {
+                for ( const auto &pr : *it )
+                    shader->addExpression( pr.first.toStdString(),
+                                           pr.second.toStdString() );
+            }
+        }
+
+        pEntries = pEntries.nextSibling();
+    }
 }
 
 
 /**
  * @brief Rewrites a shader `file` path from the pre-2026-08 folder layout to the current one, if needed.
  * @param p Shader file path as read from a preset's `file` attribute (either legacy or current layout).
- * @return The path with legacy `Scene/`, `Combine/CombineX` and `Blend/` segments remapped to `Scene2D/`, `FX/FxX` and `Engine/` respectively; unchanged (idempotent) if already in the new layout.
+ * @return The path with legacy `Scene/`, `Combine/CombineX` and `Blend/` segments remapped to `Scene2D/`, `FX/FxX` and
+ * `Engine/` respectively; unchanged (idempotent) if already in the new layout.
  *
  * Pre-2026-08 layout fallback: old presets on disk may still reference
  * Scene/, Combine/CombineX and Blend/ paths; map them to the new layout
@@ -226,20 +239,40 @@ void Configuration::addUniforms( EffectShader *shader, QDomElement &el )
  */
 static QString mapLegacyShaderPath( QString p )
 {
-	p.replace( "\\Scen" "e\\", "\\Scene2D\\" );
-	p.replace( "/Scen" "e/", "/Scene2D/" );
-	p.replace( "\\Blen" "d\\", "\\Engine\\" );
-	p.replace( "/Blen" "d/", "/Engine/" );
-	p.replace( "\\Combin" "e\\Combin" "e", "\\FX\\Fx" );
-	p.replace( "/Combin" "e/Combin" "e", "/FX/Fx" );
-	p.replace( "\\Combin" "e\\", "\\FX\\" );
-	p.replace( "/Combin" "e/", "/FX/" );
-	return p;
+    p.replace( "\\Scen"
+               "e\\",
+               "\\Scene2D\\" );
+    p.replace( "/Scen"
+               "e/",
+               "/Scene2D/" );
+    p.replace( "\\Blen"
+               "d\\",
+               "\\Engine\\" );
+    p.replace( "/Blen"
+               "d/",
+               "/Engine/" );
+    p.replace( "\\Combin"
+               "e\\Combin"
+               "e",
+               "\\FX\\Fx" );
+    p.replace( "/Combin"
+               "e/Combin"
+               "e",
+               "/FX/Fx" );
+    p.replace( "\\Combin"
+               "e\\",
+               "\\FX\\" );
+    p.replace( "/Combin"
+               "e/",
+               "/FX/" );
+    return p;
 }
 
 /**
- * @brief Parses the preset XML file into m_renderPipeline: root-level metadata/timing, then every TextureShader and CombineShader entry.
- * @param filenameIn Path to the Presets/ *.xml preset file to parse, as written in Windows style; mapped through Platform::assetPath() (identity on Windows) before opening.
+ * @brief Parses the preset XML file into m_renderPipeline: root-level metadata/timing, then every TextureShader and
+ * CombineShader entry.
+ * @param filenameIn Path to the Presets/ *.xml preset file to parse, as written in Windows style; mapped through
+ * Platform::assetPath() (identity on Windows) before opening.
  *
  * Loads @p filenameIn into a QDomDocument and reads the root element's
  * attributes (ImageDirectory, ConfigurationName, hidden, and the preset-wide
@@ -259,301 +292,334 @@ static QString mapLegacyShaderPath( QString p )
  */
 void Configuration::readConfiguration( const QString &filenameIn )
 {
-	// Same reason as loadMeshAsset(): the paths are written Windows-style and
-	// shared. Identity under _WIN32.
-	const QString filename = QString::fromStdString(
-		Platform::assetPath( filenameIn.toStdString() ) );
-	// The rig table lives beside the presets; resolve it from the first preset
-	// we are handed rather than from a compiled-in path, so the packaged build
-	// finds it the same way it finds everything else.
-	loadRigTable( QFileInfo( filename ).absolutePath() );
-	QFile* file = new QFile( filename );
-	if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
-	{
-		printf( "Error on loading %s\n!", qPrintable(filename) );
+    // Same reason as loadMeshAsset(): the paths are written Windows-style and
+    // shared. Identity under _WIN32.
+    const QString filename = QString::fromStdString(
+        Platform::assetPath( filenameIn.toStdString() ) );
+    // The rig table lives beside the presets; resolve it from the first preset
+    // we are handed rather than from a compiled-in path, so the packaged build
+    // finds it the same way it finds everything else.
+    loadRigTable( QFileInfo( filename ).absolutePath() );
+    QFile *file = new QFile( filename );
+    if ( !file->open( QIODevice::ReadOnly | QIODevice::Text ) )
+    {
+        printf( "Error on loading %s\n!", qPrintable( filename ) );
         exit( 0 );
     }
- 
+
     /* QDomDocument takes any QIODevice. as well as QString buffer*/
-    QDomDocument doc("filename"); 
-    if (!doc.setContent(file)) 
-    {          
-    	return;      
-	}      
- 
-    //Get the root element
-    QDomElement docElem = doc.documentElement(); 
- 
+    QDomDocument doc( "filename" );
+    if ( !doc.setContent( file ) )
+    {
+        return;
+    }
+
+    // Get the root element
+    QDomElement docElem = doc.documentElement();
+
     // you could check the root tag name here if it matters
-	QString rootTag = docElem.tagName(); //
- 
-
-	m_imageDirectory = docElem.attribute("ImageDirectory");
-	m_configurationName = docElem.attribute("ConfigurationName");
-	m_hidden = docElem.attribute("hidden").compare("true", Qt::CaseInsensitive) == 0;
-	// Only read here; GLwidget decides whether to use it, because the audio
-	// thread is a process-wide thing that starts once and every preset gets
-	// parsed at launch, active or not.
-	m_audioFile = docElem.attribute( "AudioFile" );
-
-	// REVIEW MODE for the Test* presets: scenes run ALPHABETICALLY, 8 s
-	// each, and 'n' steps to the next in order — a systematic viewing
-	// bench, not a show.  Only presets whose name starts with "Test".
-	m_renderPipeline->setReviewMode( m_configurationName.startsWith( "Test" ) );
-
-	// Optional floor on every natural scene fade (seconds). Set by the calm
-	// presets (Ambient, SpaceAmbient): with a beat in the music the scheduler
-	// otherwise clamps fades to four beats, which is not what a calm preset is for.
-	m_renderPipeline->setSceneFadeMin( docElem.attribute( "timeSceneFadeMin" ).toFloat() );
-
-	// Image-cycling times: optional (music steering paces the show anyway);
-	// absent/0 falls back to the long-standing baseline.
-	// The two-step fallback below distinguishes "attribute wasn't given at
-	// all" from "author set min but left max unset/invalid": if min ended up
-	// at its baseline (attribute absent), max also gets its baseline
-	// (min,max) pair; but if the author explicitly customised min, an
-	// unset/too-small max is nudged to just min+1 rather than silently
-	// jumping to the unrelated wide baseline max.
-	m_timeTextureSoloMin = docElem.attribute( "timeTextureSoloMin" ).toUInt();
-	m_timeTextureSoloMax = docElem.attribute( "timeTextureSoloMax" ).toUInt();
-	if( m_timeTextureSoloMin == 0 ) m_timeTextureSoloMin = 10;
-	if( m_timeTextureSoloMax <= m_timeTextureSoloMin ) m_timeTextureSoloMax = (m_timeTextureSoloMin == 10) ? 40 : m_timeTextureSoloMin + 1;
-	m_timeTextureInterpolationMin = docElem.attribute( "timeTextureInterpolationMin" ).toUInt();
-	m_timeTextureInterpolationMax = docElem.attribute( "timeTextureInterpolationMax" ).toUInt();
-	if( m_timeTextureInterpolationMin == 0 ) m_timeTextureInterpolationMin = 20;
-	if( m_timeTextureInterpolationMax <= m_timeTextureInterpolationMin ) m_timeTextureInterpolationMax = (m_timeTextureInterpolationMin == 20) ? 80 : m_timeTextureInterpolationMin + 1;
+    QString rootTag = docElem.tagName(); //
 
 
-	// get the node's interested in, this time only caring about person's
-	QDomNodeList nodeList = docElem.elementsByTagName("TextureShader");
+    m_imageDirectory = docElem.attribute( "ImageDirectory" );
+    m_configurationName = docElem.attribute( "ConfigurationName" );
+    m_hidden = docElem.attribute( "hidden" ).compare( "true", Qt::CaseInsensitive ) == 0;
+    // Only read here; GLwidget decides whether to use it, because the audio
+    // thread is a process-wide thing that starts once and every preset gets
+    // parsed at launch, active or not.
+    m_audioFile = docElem.attribute( "AudioFile" );
 
-	//Check the TextureShaders
-	for(int i = 0; i < nodeList.count(); i++)
+    // REVIEW MODE for the Test* presets: scenes run ALPHABETICALLY, 8 s
+    // each, and 'n' steps to the next in order — a systematic viewing
+    // bench, not a show.  Only presets whose name starts with "Test".
+    m_renderPipeline->setReviewMode( m_configurationName.startsWith( "Test" ) );
+
+    // Optional floor on every natural scene fade (seconds). Set by the calm
+    // presets (Ambient, SpaceAmbient): with a beat in the music the scheduler
+    // otherwise clamps fades to four beats, which is not what a calm preset is for.
+    m_renderPipeline->setSceneFadeMin( docElem.attribute( "timeSceneFadeMin" ).toFloat() );
+
+    // Image-cycling times: optional (music steering paces the show anyway);
+    // absent/0 falls back to the long-standing baseline.
+    // The two-step fallback below distinguishes "attribute wasn't given at
+    // all" from "author set min but left max unset/invalid": if min ended up
+    // at its baseline (attribute absent), max also gets its baseline
+    // (min,max) pair; but if the author explicitly customised min, an
+    // unset/too-small max is nudged to just min+1 rather than silently
+    // jumping to the unrelated wide baseline max.
+    m_timeTextureSoloMin = docElem.attribute( "timeTextureSoloMin" ).toUInt();
+    m_timeTextureSoloMax = docElem.attribute( "timeTextureSoloMax" ).toUInt();
+    if ( m_timeTextureSoloMin == 0 )
+        m_timeTextureSoloMin = 10;
+    if ( m_timeTextureSoloMax <= m_timeTextureSoloMin )
+        m_timeTextureSoloMax = ( m_timeTextureSoloMin == 10 ) ? 40 : m_timeTextureSoloMin + 1;
+    m_timeTextureInterpolationMin = docElem.attribute( "timeTextureInterpolationMin" ).toUInt();
+    m_timeTextureInterpolationMax = docElem.attribute( "timeTextureInterpolationMax" ).toUInt();
+    if ( m_timeTextureInterpolationMin == 0 )
+        m_timeTextureInterpolationMin = 20;
+    if ( m_timeTextureInterpolationMax <= m_timeTextureInterpolationMin )
+        m_timeTextureInterpolationMax = ( m_timeTextureInterpolationMin == 20 ) ? 80
+                                                                                : m_timeTextureInterpolationMin + 1;
+
+
+    // get the node's interested in, this time only caring about person's
+    QDomNodeList nodeList = docElem.elementsByTagName( "TextureShader" );
+
+    // Check the TextureShaders
+    for ( int i = 0; i < nodeList.count(); i++ )
     {
-		// get the current one as QDomElement
-    	QDomElement el = nodeList.at(i).toElement();
+        // get the current one as QDomElement
+        QDomElement el = nodeList.at( i ).toElement();
 
-		// The per-entry times are OPTIONAL since the timing became music-driven
-		// (timingScale/beat-quantisation/section cuts steer the pacing): absent
-		// or 0 falls back to a sensible baseline that mainly matters as the
-		// no-music (speech/silence) pacing.
-		unsigned int minTimeSolo = el.attribute("minTimeSolo").toUInt();
-		unsigned int maxTimeSolo = el.attribute("maxTimeSolo").toUInt();
-		if( minTimeSolo == 0 ) minTimeSolo = 20;
-		if( maxTimeSolo <= minTimeSolo ) maxTimeSolo = (minTimeSolo == 20) ? 90 : minTimeSolo + 1;
+        // The per-entry times are OPTIONAL since the timing became music-driven
+        // (timingScale/beat-quantisation/section cuts steer the pacing): absent
+        // or 0 falls back to a sensible baseline that mainly matters as the
+        // no-music (speech/silence) pacing.
+        unsigned int minTimeSolo = el.attribute( "minTimeSolo" ).toUInt();
+        unsigned int maxTimeSolo = el.attribute( "maxTimeSolo" ).toUInt();
+        if ( minTimeSolo == 0 )
+            minTimeSolo = 20;
+        if ( maxTimeSolo <= minTimeSolo )
+            maxTimeSolo = ( minTimeSolo == 20 ) ? 90 : minTimeSolo + 1;
 
-		unsigned int minTimeInterpolation = el.attribute("minTimeInterpolation").toUInt();
-		unsigned int maxTimeInterpolation = el.attribute("maxTimeInterpolation").toUInt();
-		if( minTimeInterpolation == 0 ) minTimeInterpolation = 15;
-		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 15) ? 50 : minTimeInterpolation + 1;
+        unsigned int minTimeInterpolation = el.attribute( "minTimeInterpolation" ).toUInt();
+        unsigned int maxTimeInterpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
+        if ( minTimeInterpolation == 0 )
+            minTimeInterpolation = 15;
+        if ( maxTimeInterpolation <= minTimeInterpolation )
+            maxTimeInterpolation = ( minTimeInterpolation == 15 ) ? 50 : minTimeInterpolation + 1;
 
-		QString shaderFile = mapLegacyShaderPath( el.attribute("file") );
+        QString shaderFile = mapLegacyShaderPath( el.attribute( "file" ) );
 
-		QString type = el.attribute("type");
+        QString type = el.attribute( "type" );
 
-		// OPTIONAL MODEL PACK. geom="mesh" scenes need a .glb that does not
-		// ship with the program -- the models are a separate download, because
-		// together they outweigh everything else in the repository many times
-		// over. A scene whose model is absent is skipped ENTIRELY here rather
-		// than registered and left to fail later: Scene3DShader fails soft to
-		// empty geometry, which would put a scene in the rotation that renders
-		// nothing at all. Silently having fewer scenes is the correct
-		// behaviour; a black one every few minutes is not.
-		if( el.attribute("geom") == "mesh" )
-		{
-			// assetPath(), because this decides whether the scene EXISTS. The XML
-			// writes Windows separators; without normalising, every mesh scene
-			// looks absent off Windows and all 238 of them vanish -- with the
-			// perfectly plausible message that the model pack is not installed.
-			const QString m1 = Platform::assetPath( el.attribute("model") );
-			const QString m2 = Platform::assetPath( el.attribute("model2") );
-			if( ( !m1.isEmpty() && !QFileInfo::exists( m1 ) ) ||
-			    ( !m2.isEmpty() && !QFileInfo::exists( m2 ) ) )
-			{
-				m_skippedMeshScenes++;
-				continue;
-			}
-		}
+        // OPTIONAL MODEL PACK. geom="mesh" scenes need a .glb that does not
+        // ship with the program -- the models are a separate download, because
+        // together they outweigh everything else in the repository many times
+        // over. A scene whose model is absent is skipped ENTIRELY here rather
+        // than registered and left to fail later: Scene3DShader fails soft to
+        // empty geometry, which would put a scene in the rotation that renders
+        // nothing at all. Silently having fewer scenes is the correct
+        // behaviour; a black one every few minutes is not.
+        if ( el.attribute( "geom" ) == "mesh" )
+        {
+            // assetPath(), because this decides whether the scene EXISTS. The XML
+            // writes Windows separators; without normalising, every mesh scene
+            // looks absent off Windows and all 238 of them vanish -- with the
+            // perfectly plausible message that the model pack is not installed.
+            const QString m1 = Platform::assetPath( el.attribute( "model" ) );
+            const QString m2 = Platform::assetPath( el.attribute( "model2" ) );
+            if ( ( !m1.isEmpty() && !QFileInfo::exists( m1 ) ) || ( !m2.isEmpty() && !QFileInfo::exists( m2 ) ) )
+            {
+                m_skippedMeshScenes++;
+                continue;
+            }
+        }
 
-		float probability = el.attribute("probability").toFloat();
-		unsigned int complexity = el.attribute("complexity").toFloat();
+        float        probability = el.attribute( "probability" ).toFloat();
+        unsigned int complexity = el.attribute( "complexity" ).toFloat();
 
-		// Optional mood tags (comma list: dark, bright, calm, aggressive) for
-		// the mood-biased shader selection; untagged shaders stay neutral.
-		QString mood = el.attribute("mood");
-		unsigned int moodFlags = 0;
-		if (mood.contains("dark"))       moodFlags |= EffectShader::MOOD_DARK;
-		if (mood.contains("bright"))     moodFlags |= EffectShader::MOOD_BRIGHT;
-		if (mood.contains("calm"))       moodFlags |= EffectShader::MOOD_CALM;
-		if (mood.contains("aggressive")) moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+        // Optional mood tags (comma list: dark, bright, calm, aggressive) for
+        // the mood-biased shader selection; untagged shaders stay neutral.
+        QString      mood = el.attribute( "mood" );
+        unsigned int moodFlags = 0;
+        if ( mood.contains( "dark" ) )
+            moodFlags |= EffectShader::MOOD_DARK;
+        if ( mood.contains( "bright" ) )
+            moodFlags |= EffectShader::MOOD_BRIGHT;
+        if ( mood.contains( "calm" ) )
+            moodFlags |= EffectShader::MOOD_CALM;
+        if ( mood.contains( "aggressive" ) )
+            moodFlags |= EffectShader::MOOD_AGGRESSIVE;
 
-		if( type == "normal" )
-		{
-			EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+        if ( type == "normal" )
+        {
+            EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo,
+                                                     minTimeInterpolation, maxTimeInterpolation );
 
-			addUniforms( shader, el );
-			shader->setComplexity( complexity );
-			shader->setProbability( probability );
-			shader->setMoodFlags( moodFlags );
-			shader->setGradeModes( el.attribute("grade").toStdString() );   // grade="fade,grey,sepia": rolled per activation, applied by Present.frag
-			m_renderPipeline->addTextureShader( shader );
-			m_loadedScenes++;
+            addUniforms( shader, el );
+            shader->setComplexity( complexity );
+            shader->setProbability( probability );
+            shader->setMoodFlags( moodFlags );
+            shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
+                                                                            // activation, applied by Present.frag
+            m_renderPipeline->addTextureShader( shader );
+            m_loadedScenes++;
+        }
+        else if ( type == "KaleidoscopeBase" )
+        {
+            TextureEffectKaleidoscopeBase *shader = new TextureEffectKaleidoscopeBase(
+                shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
 
-		}
-		else if( type == "KaleidoscopeBase" )
-		{
-			TextureEffectKaleidoscopeBase *shader = new TextureEffectKaleidoscopeBase( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+            addUniforms( shader, el );
+            shader->setComplexity( complexity );
+            shader->setProbability( probability );
+            shader->setMoodFlags( moodFlags );
+            shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
+                                                                            // activation, applied by Present.frag
+            m_renderPipeline->addTextureShader( shader );
+            m_loadedScenes++;
+        }
+        else if ( type == "scene3d" )
+        {
+            // REAL 3D scene: Scene3D\<X>.frag + matching .vert, procedural
+            // geometry chosen by geom="points|cubes|ribbon".
+            Scene3DShader *shader = new Scene3DShader( shaderFile.toStdString(), el.attribute( "geom" ).toStdString(),
+                                                       minTimeSolo, maxTimeSolo, minTimeInterpolation,
+                                                       maxTimeInterpolation );
 
-			addUniforms( shader, el );
-			shader->setComplexity( complexity );
-			shader->setProbability( probability );
-			shader->setMoodFlags( moodFlags );
-			shader->setGradeModes( el.attribute("grade").toStdString() );   // grade="fade,grey,sepia": rolled per activation, applied by Present.frag
-			m_renderPipeline->addTextureShader( shader );
-			m_loadedScenes++;
-		}
-		else if( type == "scene3d" )
-		{
-			// REAL 3D scene: Scene3D\<X>.frag + matching .vert, procedural
-			// geometry chosen by geom="points|cubes|ribbon".
-			Scene3DShader *shader = new Scene3DShader( shaderFile.toStdString(),
-				el.attribute("geom").toStdString(),
-				minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+            // Optional: half-width of the light's shadow box, in world units.
+            // Only the scene knows its own scale, and the shadow map's
+            // resolution is spent across whatever this says — a 120-unit box
+            // gives a 3-unit object about 50 texels, which is unusable.
+            // instances="N": draw the loaded mesh N times in one call, so one
+            // model can be a formation. Only geom="mesh" reads it.
+            if ( el.hasAttribute( "instances" ) )
+                shader->setMeshInstances( el.attribute( "instances" ).toInt() );
+            if ( el.hasAttribute( "shadowExtent" ) )
+                shader->setShadowExtent( el.attribute( "shadowExtent" ).toFloat() );
+            // Persistent generator state, in bytes.  Only a scene that
+            // accumulates something across frames needs it.
+            if ( el.hasAttribute( "stateBytes" ) )
+                shader->setStateBytes( el.attribute( "stateBytes" ).toInt() );
+            // Multi-stage compute generator (clear/splat/integrate/mesh, ...):
+            // how many genPass=0..N-1 dispatches to run, barrier between each.
+            // Only scenes whose generator pipeline needs more than "advance,
+            // then mesh" declare this.
+            if ( el.hasAttribute( "genPasses" ) )
+                shader->setGenPassCount( el.attribute( "genPasses" ).toInt() );
+            // geom="mesh" only: path to the .glb/.gltf/.obj this scene loads
+            // instead of building procedural geometry.
+            if ( el.hasAttribute( "model" ) )
+                shader->setModelPath( el.attribute( "model" ).toStdString() );
+            // Optional SECOND mesh, for scenes staging two objects against
+            // each other (a ship coming alongside a station).
+            if ( el.hasAttribute( "model2" ) )
+                shader->setModelPath2( el.attribute( "model2" ).toStdString() );
 
-			// Optional: half-width of the light's shadow box, in world units.
-			// Only the scene knows its own scale, and the shadow map's
-			// resolution is spent across whatever this says — a 120-unit box
-			// gives a 3-unit object about 50 texels, which is unusable.
-			// instances="N": draw the loaded mesh N times in one call, so one
-			// model can be a formation. Only geom="mesh" reads it.
-			if( el.hasAttribute("instances") )
-				shader->setMeshInstances( el.attribute("instances").toInt() );
-			if( el.hasAttribute("shadowExtent") )
-				shader->setShadowExtent( el.attribute("shadowExtent").toFloat() );
-			// Persistent generator state, in bytes.  Only a scene that
-			// accumulates something across frames needs it.
-			if( el.hasAttribute("stateBytes") )
-				shader->setStateBytes( el.attribute("stateBytes").toInt() );
-			// Multi-stage compute generator (clear/splat/integrate/mesh, ...):
-			// how many genPass=0..N-1 dispatches to run, barrier between each.
-			// Only scenes whose generator pipeline needs more than "advance,
-			// then mesh" declare this.
-			if( el.hasAttribute("genPasses") )
-				shader->setGenPassCount( el.attribute("genPasses").toInt() );
-			// geom="mesh" only: path to the .glb/.gltf/.obj this scene loads
-			// instead of building procedural geometry.
-			if( el.hasAttribute("model") )
-				shader->setModelPath( el.attribute("model").toStdString() );
-			// Optional SECOND mesh, for scenes staging two objects against
-			// each other (a ship coming alongside a station).
-			if( el.hasAttribute("model2") )
-				shader->setModelPath2( el.attribute("model2").toStdString() );
+            addUniforms( shader, el );
+            shader->setComplexity( complexity );
+            shader->setProbability( probability );
+            shader->setMoodFlags( moodFlags );
+            shader->setGradeModes( el.attribute( "grade" ).toStdString() ); // grade="fade,grey,sepia": rolled per
+                                                                            // activation, applied by Present.frag
+            m_renderPipeline->addTextureShader( shader );
+            m_loadedScenes++;
+        }
+    }
 
-			addUniforms( shader, el );
-			shader->setComplexity( complexity );
-			shader->setProbability( probability );
-			shader->setMoodFlags( moodFlags );
-			shader->setGradeModes( el.attribute("grade").toStdString() );   // grade="fade,grey,sepia": rolled per activation, applied by Present.frag
-			m_renderPipeline->addTextureShader( shader );
-			m_loadedScenes++;
-		}
-     }
 
-	
-	// get the node's interested in, this time only caring about person's
-	nodeList = docElem.elementsByTagName("CombineShader");
+    // get the node's interested in, this time only caring about person's
+    nodeList = docElem.elementsByTagName( "CombineShader" );
 
-	//Check the TextureShaders
-	for(int i = 0; i < nodeList.count(); i++)
+    // Check the TextureShaders
+    for ( int i = 0; i < nodeList.count(); i++ )
     {
-		// get the current one as QDomElement
-    	QDomElement el = nodeList.at(i).toElement();
+        // get the current one as QDomElement
+        QDomElement el = nodeList.at( i ).toElement();
 
-		// Times optional here too (see the TextureShader loop above).
-		unsigned int minTimeSolo = el.attribute("minTimeSolo").toUInt();
-		unsigned int maxTimeSolo = el.attribute("maxTimeSolo").toUInt();
-		if( minTimeSolo == 0 ) minTimeSolo = 30;
-		if( maxTimeSolo <= minTimeSolo ) maxTimeSolo = (minTimeSolo == 30) ? 120 : minTimeSolo + 1;
+        // Times optional here too (see the TextureShader loop above).
+        unsigned int minTimeSolo = el.attribute( "minTimeSolo" ).toUInt();
+        unsigned int maxTimeSolo = el.attribute( "maxTimeSolo" ).toUInt();
+        if ( minTimeSolo == 0 )
+            minTimeSolo = 30;
+        if ( maxTimeSolo <= minTimeSolo )
+            maxTimeSolo = ( minTimeSolo == 30 ) ? 120 : minTimeSolo + 1;
 
-		unsigned int minTimeInterpolation = el.attribute("minTimeInterpolation").toUInt();
-		unsigned int maxTimeInterpolation = el.attribute("maxTimeInterpolation").toUInt();
-		if( minTimeInterpolation == 0 ) minTimeInterpolation = 20;
-		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 20) ? 60 : minTimeInterpolation + 1;
+        unsigned int minTimeInterpolation = el.attribute( "minTimeInterpolation" ).toUInt();
+        unsigned int maxTimeInterpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
+        if ( minTimeInterpolation == 0 )
+            minTimeInterpolation = 20;
+        if ( maxTimeInterpolation <= minTimeInterpolation )
+            maxTimeInterpolation = ( minTimeInterpolation == 20 ) ? 60 : minTimeInterpolation + 1;
 
-		QString shaderFile = mapLegacyShaderPath( el.attribute("file") );
+        QString shaderFile = mapLegacyShaderPath( el.attribute( "file" ) );
 
-		float probability = el.attribute("probability").toFloat();
-		unsigned int complexity = el.attribute("complexity").toFloat();
+        float        probability = el.attribute( "probability" ).toFloat();
+        unsigned int complexity = el.attribute( "complexity" ).toFloat();
 
-		QString type = el.attribute("type");
+        QString type = el.attribute( "type" );
 
-		QString mood = el.attribute("mood");
-		unsigned int moodFlags = 0;
-		if (mood.contains("dark"))       moodFlags |= EffectShader::MOOD_DARK;
-		if (mood.contains("bright"))     moodFlags |= EffectShader::MOOD_BRIGHT;
-		if (mood.contains("calm"))       moodFlags |= EffectShader::MOOD_CALM;
-		if (mood.contains("aggressive")) moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+        QString      mood = el.attribute( "mood" );
+        unsigned int moodFlags = 0;
+        if ( mood.contains( "dark" ) )
+            moodFlags |= EffectShader::MOOD_DARK;
+        if ( mood.contains( "bright" ) )
+            moodFlags |= EffectShader::MOOD_BRIGHT;
+        if ( mood.contains( "calm" ) )
+            moodFlags |= EffectShader::MOOD_CALM;
+        if ( mood.contains( "aggressive" ) )
+            moodFlags |= EffectShader::MOOD_AGGRESSIVE;
 
-		if( type == "normal" )
-		{
-			EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+        if ( type == "normal" )
+        {
+            EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo,
+                                                     minTimeInterpolation, maxTimeInterpolation );
 
-			addUniforms( shader, el );
-			shader->setComplexity( complexity );
-			shader->setProbability( probability );
-			shader->setMoodFlags( moodFlags );
-			m_renderPipeline->addFxShader( shader );
-		}
-     }
+            addUniforms( shader, el );
+            shader->setComplexity( complexity );
+            shader->setProbability( probability );
+            shader->setMoodFlags( moodFlags );
+            m_renderPipeline->addFxShader( shader );
+        }
+    }
 
-	// Scene-transition shaders (Transitions/): same attribute set as the
-	// combine entries, but they feed the dedicated transition pass that
-	// blends outgoing/incoming scene during a fade.  One is rolled per fade
-	// (probability + mood weighted); absent entries fall back to the plain
-	// Crossfade inside RenderPipeline::start().
-	nodeList = docElem.elementsByTagName("TransitionShader");
+    // Scene-transition shaders (Transitions/): same attribute set as the
+    // combine entries, but they feed the dedicated transition pass that
+    // blends outgoing/incoming scene during a fade.  One is rolled per fade
+    // (probability + mood weighted); absent entries fall back to the plain
+    // Crossfade inside RenderPipeline::start().
+    nodeList = docElem.elementsByTagName( "TransitionShader" );
 
-	for(int i = 0; i < nodeList.count(); i++)
+    for ( int i = 0; i < nodeList.count(); i++ )
     {
-    	QDomElement el = nodeList.at(i).toElement();
+        QDomElement el = nodeList.at( i ).toElement();
 
-		unsigned int minTimeSolo = el.attribute("minTimeSolo").toUInt();
-		unsigned int maxTimeSolo = el.attribute("maxTimeSolo").toUInt();
-		if( minTimeSolo == 0 ) minTimeSolo = 30;
-		if( maxTimeSolo <= minTimeSolo ) maxTimeSolo = (minTimeSolo == 30) ? 120 : minTimeSolo + 1;
+        unsigned int minTimeSolo = el.attribute( "minTimeSolo" ).toUInt();
+        unsigned int maxTimeSolo = el.attribute( "maxTimeSolo" ).toUInt();
+        if ( minTimeSolo == 0 )
+            minTimeSolo = 30;
+        if ( maxTimeSolo <= minTimeSolo )
+            maxTimeSolo = ( minTimeSolo == 30 ) ? 120 : minTimeSolo + 1;
 
-		unsigned int minTimeInterpolation = el.attribute("minTimeInterpolation").toUInt();
-		unsigned int maxTimeInterpolation = el.attribute("maxTimeInterpolation").toUInt();
-		if( minTimeInterpolation == 0 ) minTimeInterpolation = 20;
-		if( maxTimeInterpolation <= minTimeInterpolation ) maxTimeInterpolation = (minTimeInterpolation == 20) ? 60 : minTimeInterpolation + 1;
+        unsigned int minTimeInterpolation = el.attribute( "minTimeInterpolation" ).toUInt();
+        unsigned int maxTimeInterpolation = el.attribute( "maxTimeInterpolation" ).toUInt();
+        if ( minTimeInterpolation == 0 )
+            minTimeInterpolation = 20;
+        if ( maxTimeInterpolation <= minTimeInterpolation )
+            maxTimeInterpolation = ( minTimeInterpolation == 20 ) ? 60 : minTimeInterpolation + 1;
 
-		QString shaderFile = mapLegacyShaderPath( el.attribute("file") );
+        QString shaderFile = mapLegacyShaderPath( el.attribute( "file" ) );
 
-		float probability = el.attribute("probability").toFloat();
-		unsigned int complexity = el.attribute("complexity").toFloat();
+        float        probability = el.attribute( "probability" ).toFloat();
+        unsigned int complexity = el.attribute( "complexity" ).toFloat();
 
-		QString type = el.attribute("type");
+        QString type = el.attribute( "type" );
 
-		QString mood = el.attribute("mood");
-		unsigned int moodFlags = 0;
-		if (mood.contains("dark"))       moodFlags |= EffectShader::MOOD_DARK;
-		if (mood.contains("bright"))     moodFlags |= EffectShader::MOOD_BRIGHT;
-		if (mood.contains("calm"))       moodFlags |= EffectShader::MOOD_CALM;
-		if (mood.contains("aggressive")) moodFlags |= EffectShader::MOOD_AGGRESSIVE;
+        QString      mood = el.attribute( "mood" );
+        unsigned int moodFlags = 0;
+        if ( mood.contains( "dark" ) )
+            moodFlags |= EffectShader::MOOD_DARK;
+        if ( mood.contains( "bright" ) )
+            moodFlags |= EffectShader::MOOD_BRIGHT;
+        if ( mood.contains( "calm" ) )
+            moodFlags |= EffectShader::MOOD_CALM;
+        if ( mood.contains( "aggressive" ) )
+            moodFlags |= EffectShader::MOOD_AGGRESSIVE;
 
-		if( type == "normal" )
-		{
-			EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo, minTimeInterpolation, maxTimeInterpolation );
+        if ( type == "normal" )
+        {
+            EffectShader *shader = new EffectShader( shaderFile.toStdString(), minTimeSolo, maxTimeSolo,
+                                                     minTimeInterpolation, maxTimeInterpolation );
 
-			addUniforms( shader, el );
-			shader->setComplexity( complexity );
-			shader->setProbability( probability );
-			shader->setMoodFlags( moodFlags );
-			// Measured floor on the fade this transition runs in; see
-			// EffectShader::setMinFade().
-			shader->setMinFade( el.attribute( "minFade" ).toFloat() );
-			m_renderPipeline->addTransitionShader( shader );
-		}
-     }
-
+            addUniforms( shader, el );
+            shader->setComplexity( complexity );
+            shader->setProbability( probability );
+            shader->setMoodFlags( moodFlags );
+            // Measured floor on the fade this transition runs in; see
+            // EffectShader::setMinFade().
+            shader->setMinFade( el.attribute( "minFade" ).toFloat() );
+            m_renderPipeline->addTransitionShader( shader );
+        }
+    }
 }

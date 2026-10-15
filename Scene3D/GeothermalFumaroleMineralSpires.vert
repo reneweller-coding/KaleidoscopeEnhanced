@@ -17,60 +17,62 @@
 in vec4 attrA; ///< xy = global grid UV [0,1], z = 0, w = cell index
 in vec4 attrB; ///< 4 per-cell seeds in [0,1)
 
-out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-out vec3 vNormal;   ///< Surface normal (from the vertex stage).
-out vec3 vCol;   ///< Colour (from the vertex stage).
+out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec3  vNormal; ///< Surface normal (from the vertex stage).
+out vec3  vCol;    ///< Colour (from the vertex stage).
 out float vVentGlow;
-out float vBack;   ///< 1.0 on the far steam curtain, 0.0 on the spires
-out float vFog;    ///< 0..1 distance haze weight
+out float vBack; ///< 1.0 on the far steam curtain, 0.0 on the spires
+out float vFog;  ///< 0..1 distance haze weight
 
-uniform mat4 projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 uniform float spireScaleP;
 uniform float gasP;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Tints a colour toward the house palette at t, keeping its brightness.
-vec3 palTint(vec3 c, float t, float k)
+vec3 palTint( vec3 c, float t, float k )
 {
-    vec3 tp = imgPalette(t);
-    tp *= dot(c, vec3(0.3333)) / max(dot(tp, vec3(0.3333)), 1e-3);
-    return mix(c, tp, k);
+    vec3 tp = imgPalette( t );
+    tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
+    return mix( c, tp, k );
 }
 
 /// @brief Pseudo-random number 0..1 from two values and a seed.
-float hsh(float a, float b, float s)
+float hsh( float a, float b, float s )
 {
-    return fract(sin(a * 91.73 + b * 47.31 + s) * 43758.5453);
+    return fract( sin( a * 91.73 + b * 47.31 + s ) * 43758.5453 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -78,7 +80,7 @@ void main()
 {
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     const float kTanY = 0.5206;
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+    float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
     // 2.0 would fit the frustum exactly; 2.3 so the field still reaches past
     // all four edges when the preset camera rig rolls and yaws the view.
     const float kOpen = 2.3;
@@ -92,7 +94,7 @@ void main()
     float t = time * 0.55 + audioAdvance * 0.3;
 
     // Sulfide mineral / sulfur yellow / chalcopyrite palette.
-    vec3 sulfurYellow = vec3(0.9, 0.75, 0.15);
+    vec3 sulfurYellow = vec3( 0.9, 0.75, 0.15 );
 
     vec3 vp;
 
@@ -101,7 +103,7 @@ void main()
     // triangles would stretch between the two layers.
     const float kBackV = 0.125;
 
-    if (attrA.y < kBackV)
+    if ( attrA.y < kBackV )
     {
         // ---- FAR VENT-STEAM CURTAIN ----------------------------------
         // A single full-frustum sheet of mineral haze far behind the field.
@@ -112,113 +114,113 @@ void main()
         float gv = attrA.y / kBackV;
 
         float dz = 112.0;
-        vp = vec3((gu - 0.5) * kOpen * dz * kTanY * aspect,
-                  (gv - 0.5) * kOpen * dz * kTanY,
-                  dz);
+        vp = vec3( ( gu - 0.5 ) * kOpen * dz * kTanY * aspect,
+                   ( gv - 0.5 ) * kOpen * dz * kTanY,
+                   dz );
 
-        vUV       = vec2(gu, gv);
-        vNormal   = vec3(0.0, 0.0, 1.0);
+        vUV = vec2( gu, gv );
+        vNormal = vec3( 0.0, 0.0, 1.0 );
         vVentGlow = 0.0;
-        vFog      = 1.0;
+        vFog = 1.0;
 
         // Warm sulfurous ground haze low in the frame, cooling to almost
         // nothing at the top of the sky.
-        float band = pow(clamp(1.0 - gv, 0.0, 1.0), 1.4);
+        float band = pow( clamp( 1.0 - gv, 0.0, 1.0 ), 1.4 );
         // Roll rates up (~0.25 Hz, far inside the 3 Hz full-field budget) and the
         // roll's own SWING widened: the curtain is the only layer covering the
         // whole frame, and at 0.75..1.20 of a ~0.11 base it varied by less than
         // one 1/16 luma step, so every tile it filled scored as empty. It now
         // carries both a readable level and readable internal contrast.
-        float roll = 0.5 + 0.5 * sin(gu * 9.0 + t * 2.4)
-                              * cos(gv * 5.0 - t * 1.7);
-        vec3 haze  = palTint(mix(vec3(0.24, 0.20, 0.30),
-                                 vec3(0.60, 0.37, 0.13), band),
-                             gu * 0.4 + audioCentroid, 0.35);
-        vCol = haze * (0.22 + 0.30 * band) * (0.55 + 0.90 * roll)
-                    * (0.85 + 0.30 * audioSwell);
+        float roll = 0.5 + 0.5 * sin( gu * 9.0 + t * 2.4 ) * cos( gv * 5.0 - t * 1.7 );
+        vec3  haze = palTint( mix( vec3( 0.24, 0.20, 0.30 ),
+                                   vec3( 0.60, 0.37, 0.13 ), band ),
+                              gu * 0.4 + audioCentroid, 0.35 );
+        vCol = haze * ( 0.22 + 0.30 * band ) * ( 0.55 + 0.90 * roll )
+               * ( 0.85 + 0.30 * audioSwell );
     }
     else
     {
         // ---- THE SPIRE FIELD -----------------------------------------
         vBack = 0.0;
-        float sv = (attrA.y - kBackV) / (1.0 - kBackV);
+        float sv = ( attrA.y - kBackV ) / ( 1.0 - kBackV );
 
-        const float NS = 11.0;   // chimneys across the u axis (220 / 11 = 20 cells each)
-        const float MS = 7.0;    // depth rows down the v axis
-        float fu = attrA.x * NS;
-        float ci = floor(min(fu, NS - 1e-4));
-        float lu = fu - ci;                      // 0..1 around the chimney
-        float fv = sv * MS;
-        float ri = floor(min(fv, MS - 1e-4));
-        float lv = fv - ri;                      // 0..1 base -> apex
+        const float NS = 11.0; // chimneys across the u axis (220 / 11 = 20 cells each)
+        const float MS = 7.0;  // depth rows down the v axis
+        float       fu = attrA.x * NS;
+        float       ci = floor( min( fu, NS - 1e-4 ) );
+        float       lu = fu - ci; // 0..1 around the chimney
+        float       fv = sv * MS;
+        float       ri = floor( min( fv, MS - 1e-4 ) );
+        float       lv = fv - ri; // 0..1 base -> apex
 
-        float h1 = hsh(ci + 1.7, ri + 0.3, 0.41);
-        float h2 = hsh(ci + 0.9, ri + 2.1, 1.83);
-        float h3 = hsh(ci + 3.3, ri + 1.5, 3.07);
-        float h4 = hsh(ci + 2.4, ri + 4.7, 5.11);
+        float h1 = hsh( ci + 1.7, ri + 0.3, 0.41 );
+        float h2 = hsh( ci + 0.9, ri + 2.1, 1.83 );
+        float h3 = hsh( ci + 3.3, ri + 1.5, 3.07 );
+        float h4 = hsh( ci + 2.4, ri + 4.7, 5.11 );
 
         // Depth ladder: the rows march away from the camera, so the field has
         // a real foreground / far distance instead of one flat wall.
-        float rowF = (ri + 0.5) / MS;
-        float dz   = 14.0 + 68.5 * pow(rowF, 1.7) + 3.0 * (h3 - 0.5);   // was 8.5 +-2.5: the front spires filled and clipped the frame
+        float rowF = ( ri + 0.5 ) / MS;
+        float dz = 14.0 + 68.5 * pow( rowF, 1.7 ) + 3.0 * ( h3 - 0.5 ); // was 8.5 +-2.5: the front spires filled and
+                                                                        // clipped the frame
         float halfH = dz * kTanY;
         float halfW = halfH * aspect;
 
         // Columns, staggered every other row so the rows never line up into
         // visible lanes.
-        float colF = fract((ci + 0.5) / NS + 0.5 / NS * mod(ri, 2.0)
-                           + (h1 - 0.5) * 0.6 / NS);
+        float colF = fract( ( ci + 0.5 ) / NS + 0.5 / NS * mod( ri, 2.0 )
+                            + ( h1 - 0.5 ) * 0.6 / NS );
 
         // SWELL widens the chimney girth (and, with it, the precipitate
         // density read in the fragment stage).
-        float sScale = (spireScaleP > 0.01 ? spireScaleP : 1.0);
-        float towerH = (0.95 + 1.0 * h2) * halfH;
-        float towerR = towerH * (0.10 + 0.07 * h4) * sScale
-                              * (0.85 + 0.30 * audioSwell);
+        float sScale = ( spireScaleP > 0.01 ? spireScaleP : 1.0 );
+        float towerH = ( 0.95 + 1.0 * h2 ) * halfH;
+        float towerR = towerH * ( 0.10 + 0.07 * h4 ) * sScale
+                       * ( 0.85 + 0.30 * audioSwell );
 
         float ang = lu * 6.2831853;
 
         // Tapered chimney with a porous mineral crust; the crust ripples
         // upward as the hydrothermal fluid ascends (advance-driven, so the
         // rate follows the music without ever remapping absolute time).
-        float taper = mix(1.0, 0.16, pow(lv, 0.85));
+        float taper = mix( 1.0, 0.16, pow( lv, 0.85 ) );
         // Hydrothermal fluid ascending inside the crust: the ruffle now visibly
         // travels UP the chimney (the lv term dominates the phase) instead of
         // creeping at a tenth of that rate.
-        float ruff  = sin(ang * 8.0 + t * 1.5) * cos(lv * 9.0 - t * 2.6) * 0.13
-                    + sin(ang * 3.0 - t * 0.9) * 0.06;
-        float rad   = towerR * (taper + ruff * (0.35 + 0.65 * taper));
+        float ruff = sin( ang * 8.0 + t * 1.5 ) * cos( lv * 9.0 - t * 2.6 ) * 0.13
+                     + sin( ang * 3.0 - t * 0.9 ) * 0.06;
+        float rad = towerR * ( taper + ruff * ( 0.35 + 0.65 * taper ) );
 
         // Slow plume sway, strongest at the apex.
         float swayPh = h1 * 6.2831853 + t * 0.45;
-        vec2  sway   = vec2(sin(swayPh), cos(swayPh * 0.73))
-                     * (towerH * 0.10 * pow(lv, 2.0));
+        vec2  sway = vec2( sin( swayPh ), cos( swayPh * 0.73 ) )
+                     * ( towerH * 0.10 * pow( lv, 2.0 ) );
 
-        vec3 world = vec3(rad * cos(ang) + sway.x,
-                          lv * towerH    + sway.y * 0.25,
-                          rad * sin(ang));
+        vec3 world = vec3( rad * cos( ang ) + sway.x,
+                           lv * towerH + sway.y * 0.25,
+                           rad * sin( ang ) );
 
         // Base just under the bottom edge, so every chimney grows up out of
         // frame-bottom and the tops scatter over the whole picture height.
-        vp = vec3((colF - 0.5) * kOpen * halfW + world.x,
-                  -1.06 * halfH + world.y,
-                  dz + world.z);
+        vp = vec3( ( colF - 0.5 ) * kOpen * halfW + world.x,
+                   -1.06 * halfH + world.y,
+                   dz + world.z );
 
         // Superheated hydrothermal vent glow at the chimney apex.
-        float atApex = smoothstep(0.68, 0.98, lv);
-        vVentGlow = atApex * (1.0 + 3.0 * audioKick) * (gasP > 0.01 ? gasP : 1.2)
-                  * (0.55 + 0.75 * h4);
+        float atApex = smoothstep( 0.68, 0.98, lv );
+        vVentGlow = atApex * ( 1.0 + 3.0 * audioKick ) * ( gasP > 0.01 ? gasP : 1.2 )
+                    * ( 0.55 + 0.75 * h4 );
 
-        vNormal = normalize(vec3(cos(ang), 0.45 + 0.5 * (1.0 - taper), sin(ang)));
-        vUV     = fract(vec2(lu + h1, lv * 0.8 + h2));
-        vCol    = palTint(sulfurYellow * (0.75 + 0.5 * h4),
-                          lv * 0.3 + h1 * 0.2 + audioCentroid, 0.25);
-        vFog    = clamp((dz - 12.0) / 86.0, 0.0, 1.0);
+        vNormal = normalize( vec3( cos( ang ), 0.45 + 0.5 * ( 1.0 - taper ), sin( ang ) ) );
+        vUV = fract( vec2( lu + h1, lv * 0.8 + h2 ) );
+        vCol = palTint( sulfurYellow * ( 0.75 + 0.5 * h4 ),
+                        lv * 0.3 + h1 * 0.2 + audioCentroid, 0.25 );
+        vFog = clamp( ( dz - 12.0 ) / 86.0, 0.0, 1.0 );
     }
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

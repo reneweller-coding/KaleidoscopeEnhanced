@@ -17,40 +17,40 @@
  * the travel direction and the ship flies nose-first.
  */
 
-in vec4 attrA;   ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
-in vec4 attrB;   ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.
+in vec4 attrA; ///< mesh: xyz = object-space position, w = U.  shell: xyz = world-space position on the shell.
+in vec4 attrB; ///< mesh: xyz = object-space normal,   w = V.  shell: xyz = outward direction.
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform int   meshVertexCount;   ///< Vertices of the scene's mesh.
-uniform vec3  meshExtent;   ///< half-extents of model 1, object space
-uniform float sceneProgress;      ///< 0 at activation -> 1 at the end of the solo span
+uniform mat4  projM;           ///< Projection matrix.
+uniform float eyeOff;          ///< Stereo eye offset (0 in mono).
+uniform float time;            ///< Seconds since the program started (never reset; see sceneTime).
+uniform int   meshVertexCount; ///< Vertices of the scene's mesh.
+uniform vec3  meshExtent;      ///< half-extents of model 1, object space
+uniform float sceneProgress;   ///< 0 at activation -> 1 at the end of the solo span
 
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
-uniform float sizeP;      ///< ship scale; >1 overflows the frame at closest approach
-uniform float travelP;    ///< how far it sweeps sideways
-uniform float approachP;  ///< how much closer it comes at mid-pass
-uniform float bankP;      ///< roll into the pass
+uniform float sizeP;     ///< ship scale; >1 overflows the frame at closest approach
+uniform float travelP;   ///< how far it sweeps sideways
+uniform float approachP; ///< how much closer it comes at mid-pass
+uniform float bankP;     ///< roll into the pass
 
-out vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+out vec2  vUV;       ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec3  vNormal;   ///< Surface normal (from the vertex stage).
-out vec3  vPos;   ///< Position (from the vertex stage).
-out vec3  vLocalPos;   ///< Object-space position (from the vertex stage).
-out float vBg;   ///< Background flag (from the vertex stage).
+out vec3  vPos;      ///< Position (from the vertex stage).
+out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
+out float vBg;       ///< Background flag (from the vertex stage).
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 world, n;
     bool isBg = gl_VertexID >= meshVertexCount;
-    if( !isBg )
+    if ( !isBg )
     {
-        float sz  = (sizeP     > 0.01 ? sizeP     : 1.0);
-        float trv = (travelP   > 0.01 ? travelP   : 1.0);
-        float app = (approachP > 0.01 ? approachP : 1.0);
+        float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
+        float trv = ( travelP > 0.01 ? travelP : 1.0 );
+        float app = ( approachP > 0.01 ? approachP : 1.0 );
 
         // Put the hull's LONGEST axis along the direction of travel. This used
         // to be hardcoded as "the nose is +Z", which was true of the asset set
@@ -64,29 +64,29 @@ void main()
         // reverses the winding.
         vec3 e = meshExtent;
         vec3 p = attrA.xyz, nrm = attrB.xyz;
-        if( e.z >= e.x && e.z >= e.y )        // nose on +Z: rotate about Y
+        if ( e.z >= e.x && e.z >= e.y ) // nose on +Z: rotate about Y
         {
-            p   = vec3(p.z,   p.y,   -p.x);
-            nrm = vec3(nrm.z, nrm.y, -nrm.x);
+            p = vec3( p.z, p.y, -p.x );
+            nrm = vec3( nrm.z, nrm.y, -nrm.x );
         }
-        else if( e.y >= e.x && e.y >= e.z )   // nose on +Y: rotate about Z
+        else if ( e.y >= e.x && e.y >= e.z ) // nose on +Y: rotate about Z
         {
-            p   = vec3(p.y,   -p.x,   p.z);
-            nrm = vec3(nrm.y, -nrm.x, nrm.z);
+            p = vec3( p.y, -p.x, p.z );
+            nrm = vec3( nrm.y, -nrm.x, nrm.z );
         }
         // longest already on X: already pointing along travel, leave it alone.
 
-        vec3 local = p * (90.0 * sz);
+        vec3 local = p * ( 90.0 * sz );
 
         float t = sceneProgress;
-        float c = t * 2.0 - 1.0;             // -1 .. +1, 0 at closest approach
+        float c = t * 2.0 - 1.0; // -1 .. +1, 0 at closest approach
 
         // Sideways sweep, wide enough that the hull is fully off-frame at
         // both ends even at the largest sizeP.
         float x = c * 150.0 * trv;
         // Nearest at mid-pass. A parabola rather than a sine so the ship is
         // still visibly receding at the very ends instead of hanging there.
-        float z = 150.0 - app * 78.0 * (1.0 - c * c);
+        float z = 150.0 - app * 78.0 * ( 1.0 - c * c );
 
         // Bank into the pass and pitch a touch nose-up, so we get a three-
         // quarter view of the hull rather than a flat broadside.
@@ -97,13 +97,13 @@ void main()
         // into a pitch -- the ship nosed up and down through the pass and held
         // a fixed bank, instead of leaning into it. Both were object-space
         // rotations either way, which is why it looked plausible and wrong.
-        float bank  = -c * 0.22 * bankP;      // about the nose axis, X
-        float pitch =  0.06;                  // about the beam axis, Z
-        float cb = cos(bank),  sb = sin(bank);
-        float cp = cos(pitch), sp2 = sin(pitch);
-        mat3 bankM  = mat3(1.0, 0.0, 0.0,  0.0, cb, sb,   0.0, -sb, cb);
-        mat3 pitchM = mat3(cp, sp2, 0.0,  -sp2, cp, 0.0,  0.0, 0.0, 1.0);
-        mat3 rotM = pitchM * bankM;
+        float bank = -c * 0.22 * bankP; // about the nose axis, X
+        float pitch = 0.06;             // about the beam axis, Z
+        float cb = cos( bank ), sb = sin( bank );
+        float cp = cos( pitch ), sp2 = sin( pitch );
+        mat3  bankM = mat3( 1.0, 0.0, 0.0, 0.0, cb, sb, 0.0, -sb, cb );
+        mat3  pitchM = mat3( cp, sp2, 0.0, -sp2, cp, 0.0, 0.0, 0.0, 1.0 );
+        mat3  rotM = pitchM * bankM;
 
         world = rotM * local;
         world.x += x;
@@ -112,25 +112,26 @@ void main()
         // beat -- a thousand-ton ship in vacuum does not hop (reported). The
         // music stays on the ENGINES: the frag flares the drives on the kick.
         world.y += -8.0;
-        n = normalize(rotM * nrm);
-        vUV = vec2(attrA.w, attrB.w);
+        n = normalize( rotM * nrm );
+        vUV = vec2( attrA.w, attrB.w );
         vLocalPos = p;
     }
     else
     {
         world = attrA.xyz;
         n = attrB.xyz;
-        vUV = vec2(0.0);
-        vLocalPos = vec3(0.0);
+        vUV = vec2( 0.0 );
+        vLocalPos = vec3( 0.0 );
     }
 
     vec3 vp = world;
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     // Shell cube corners reach sqrt(3)*radius, past the far plane; pin their
     // depth just inside it (see Tools/SHADER_AUTHORING.md's mesh section).
-    if (isBg) gl_Position.z = gl_Position.w * 0.999999;
+    if ( isBg )
+        gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;

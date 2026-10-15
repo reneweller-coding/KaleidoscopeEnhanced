@@ -1,9 +1,9 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file RogueWanderer.frag
- * @brief ROGUE WANDERER: An icy, dark planet drifting entirely without a star 
- * in the cold depths of interstellar space. It is illuminated only by intensely 
+ * @brief ROGUE WANDERER: An icy, dark planet drifting entirely without a star
+ * in the cold depths of interstellar space. It is illuminated only by intensely
  * glowing volcanic fissures that pulse to the beat.
  *   audioAdvance -> slow rotation of the rogue planet
  *   audioKick    -> volcanic eruptions and fissure flashes
@@ -16,76 +16,93 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   hueP float palette offset (0..6.28)
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;     ///< Overall loudness, 0..1.
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float iceP;
 uniform float magmaP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  pc  = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float pg  = dot(pc, vec3(0.333));
-    return mix(vec3(pg), pc, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  pc = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float pg = dot( pc, vec3( 0.333 ) );
+    return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a) {
-    vec3 k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+vec3 hueRot( vec3 c, float a )
+{
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from a float.
-float hash11(float n) { return fract(sin(n * 127.1) * 43758.5453); }
+float hash11( float n )
+{
+    return fract( sin( n * 127.1 ) * 43758.5453 );
+}
 
 /// @brief Smooth value noise.
-float noise(vec3 p) {
-    vec3 i = floor(p);
-    vec3 f = fract(p);
-    f = f * f * (3.0 - 2.0 * f);
+float noise( vec3 p )
+{
+    vec3 i = floor( p );
+    vec3 f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
     float n = i.x + i.y * 57.0 + i.z * 113.0;
     return mix(
-        mix(mix(hash11(n + 0.0), hash11(n + 1.0), f.x),
-            mix(hash11(n + 57.0), hash11(n + 58.0), f.x), f.y),
-        mix(mix(hash11(n + 113.0), hash11(n + 114.0), f.x),
-            mix(hash11(n + 170.0), hash11(n + 171.0), f.x), f.y), f.z);
+        mix( mix( hash11( n + 0.0 ), hash11( n + 1.0 ), f.x ),
+             mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y ),
+        mix( mix( hash11( n + 113.0 ), hash11( n + 114.0 ), f.x ),
+             mix( hash11( n + 170.0 ), hash11( n + 171.0 ), f.x ), f.y ),
+        f.z );
 }
 
 /// @brief Fractal noise: octaves of value noise.
-float fbm(vec3 p) {
+float fbm( vec3 p )
+{
     float f = 0.0, a = 0.5;
-    for(int i = 0; i < 5; i++) { f += a * noise(p); p *= 2.0; a *= 0.5; }
+    for ( int i = 0; i < 5; i++ )
+    {
+        f += a * noise( p );
+        p *= 2.0;
+        a *= 0.5;
+    }
     return f;
 }
 
 /// Ridged noise for sharp ice cracks
-float ridged(vec3 p) {
+float ridged( vec3 p )
+{
     float f = 0.0, a = 0.5;
-    for(int i = 0; i < 4; i++) { 
-        f += a * (1.0 - abs(noise(p) * 2.0 - 1.0)); 
-        p *= 2.0; a *= 0.5; 
+    for ( int i = 0; i < 4; i++ )
+    {
+        f += a * ( 1.0 - abs( noise( p ) * 2.0 - 1.0 ) );
+        p *= 2.0;
+        a *= 0.5;
     }
     return f;
 }
@@ -93,95 +110,99 @@ float ridged(vec3 p) {
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ip = (iceP > 0.01 ? iceP : 1.0);
-    float mp = (magmaP > 0.01 ? magmaP : 1.0);
-    float hue = (hueP > 0.01 ? hueP : 0.0);
+    float ip = ( iceP > 0.01 ? iceP : 1.0 );
+    float mp = ( magmaP > 0.01 ? magmaP : 1.0 );
+    float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
-    vec2 uv = (gl_FragCoord.xy - 0.5 * resolution) / resolution.y;
-    
-    vec3 col = vec3(0.0);
-    vec3 iceColor = vec3(0.02, 0.05, 0.1); // Deep, dark, frozen blue
-    vec3 magmaColor = max(imgPalette(0.8 + audioCentroid * 0.1), vec3(0.60, 0.24, 0.08)); // Hot glowing fissures
-    
+    vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
+
+    vec3 col = vec3( 0.0 );
+    vec3 iceColor = vec3( 0.02, 0.05, 0.1 ); // Deep, dark, frozen blue
+    vec3 magmaColor = max( imgPalette( 0.8 + audioCentroid * 0.1 ), vec3( 0.60, 0.24, 0.08 ) ); // Hot glowing fissures
+
     // Planet parameters
-    vec2 planetCenter = vec2(0.0);
+    vec2  planetCenter = vec2( 0.0 );
     float planetRad = 0.8;
-    float dist = length(uv - planetCenter);
-    
+    float dist = length( uv - planetCenter );
+
     // Slow rotation
     float rot = time * 0.05 + audioAdvance * 0.2;
-    mat2 rotM = mat2(cos(rot), -sin(rot), sin(rot), cos(rot));
-    
+    mat2  rotM = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
+
     // Deep space background (extremely sparse/dark)
-    if (dist > planetRad) {
+    if ( dist > planetRad )
+    {
         // Runde, gejitterte Sterne: ganze floor()-Zellen aufzuhellen ergibt
         // QUADRATE (der wiederholt gemeldete "Riesenpixel"-Fehler).
-        vec2 sgrid = uv * 55.0;
-        vec2 sid = floor(sgrid);
-        vec2 sfr = fract(sgrid) - 0.5;
-        float sh = fract(sin(dot(sid, vec2(12.9898, 78.233))) * 43758.5453);
-        if (sh > 0.90) {
-            vec2 spos = (vec2(fract(sh * 7.31), fract(sh * 13.7)) - 0.5) * 0.8;
-            float sd2 = dot(sfr - spos, sfr - spos);
-            float stw = 0.7 + 0.3 * sin(time * (1.0 + 2.0 * fract(sh * 29.0)) + sh * 40.0);
-            col += vec3(1.0) * exp(-sd2 * 250.0) * stw * (0.35 + audioSwell * 0.3);
+        vec2  sgrid = uv * 55.0;
+        vec2  sid = floor( sgrid );
+        vec2  sfr = fract( sgrid ) - 0.5;
+        float sh = fract( sin( dot( sid, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+        if ( sh > 0.90 )
+        {
+            vec2  spos = ( vec2( fract( sh * 7.31 ), fract( sh * 13.7 ) ) - 0.5 ) * 0.8;
+            float sd2 = dot( sfr - spos, sfr - spos );
+            float stw = 0.7 + 0.3 * sin( time * ( 1.0 + 2.0 * fract( sh * 29.0 ) ) + sh * 40.0 );
+            col += vec3( 1.0 ) * exp( -sd2 * 250.0 ) * stw * ( 0.35 + audioSwell * 0.3 );
         }
-        
+
         // Faint outgassing from the planet hitting the vacuum
-        float atmos = exp(-(dist - planetRad) * 15.0);
-        float gasNoise = fbm(vec3(rotM * uv * 10.0, time * 0.1));
-        col += magmaColor * atmos * gasNoise * 0.2 * (0.5 + audioSwell);
-    } 
-    else {
+        float atmos = exp( -( dist - planetRad ) * 15.0 );
+        float gasNoise = fbm( vec3( rotM * uv * 10.0, time * 0.1 ) );
+        col += magmaColor * atmos * gasNoise * 0.2 * ( 0.5 + audioSwell );
+    }
+    else
+    {
         // We are on the planet surface
         // Map 2D to 3D sphere
-        float z = sqrt(max(0.0, planetRad * planetRad - dist * dist));
-        vec3 p3 = vec3(uv.x, uv.y, z);
-        
+        float z = sqrt( max( 0.0, planetRad * planetRad - dist * dist ) );
+        vec3  p3 = vec3( uv.x, uv.y, z );
+
         // Apply rotation
-        p3.xz = mat2(cos(rot), -sin(rot), sin(rot), cos(rot)) * p3.xz;
-        p3.yz = mat2(cos(0.2), -sin(0.2), sin(0.2), cos(0.2)) * p3.yz; // static tilt
-        
+        p3.xz = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) ) * p3.xz;
+        p3.yz = mat2( cos( 0.2 ), -sin( 0.2 ), sin( 0.2 ), cos( 0.2 ) ) * p3.yz; // static tilt
+
         // Generate ice surface
-        float surfaceNoise = fbm(p3 * 4.0 * ip);
-        
+        float surfaceNoise = fbm( p3 * 4.0 * ip );
+
         // Generate deep cracks/fissures (we use ridged noise inverted)
         // High values are the bottom of the cracks
-        float cracks = ridged(p3 * 5.0);
-        cracks = smoothstep(0.7, 0.9, cracks); // only show the deepest cuts
-        
+        float cracks = ridged( p3 * 5.0 );
+        cracks = smoothstep( 0.7, 0.9, cracks ); // only show the deepest cuts
+
         // Add secondary smaller cracks
-        float smallCracks = ridged(p3 * 15.0);
-        smallCracks = smoothstep(0.8, 1.0, smallCracks) * 0.5;
-        
-        float totalCracks = max(cracks, smallCracks);
-        
+        float smallCracks = ridged( p3 * 15.0 );
+        smallCracks = smoothstep( 0.8, 1.0, smallCracks ) * 0.5;
+
+        float totalCracks = max( cracks, smallCracks );
+
         // Magma pulsing through the cracks
         // Flowing noise inside the cracks
-        float magmaFlow = fbm(vec3(p3 * 20.0 + vec3(0.0, time + audioAdvance, 0.0)));
-        float magmaGlow = totalCracks * (0.2 + magmaFlow * 0.8) * mp;
-        
+        float magmaFlow = fbm( vec3( p3 * 20.0 + vec3( 0.0, time + audioAdvance, 0.0 ) ) );
+        float magmaGlow = totalCracks * ( 0.2 + magmaFlow * 0.8 ) * mp;
+
         // Kicks cause eruptions/flashes in the magma
-        float eruption = step(0.9, hash11(floor(p3.x * 5.0) + floor(time * 4.00)));
-        magmaGlow *= (1.0 + eruption * audioKick * 5.0);
-        
+        float eruption = step( 0.9, hash11( floor( p3.x * 5.0 ) + floor( time * 4.00 ) ) );
+        magmaGlow *= ( 1.0 + eruption * audioKick * 5.0 );
+
         // Subsurface scattering (ice glowing from the magma underneath)
-        float subsurface = smoothstep(0.5, 0.8, ridged(p3 * 5.0)) * 0.5;
-        
+        float subsurface = smoothstep( 0.5, 0.8, ridged( p3 * 5.0 ) ) * 0.5;
+
         // Combine surface
-        vec3 surfaceCol = mix(iceColor * (0.5 + surfaceNoise * 0.5), magmaColor, magmaGlow);
-        surfaceCol += magmaColor * subsurface * (0.5 + audioSwell) * mp;
-        
+        vec3 surfaceCol = mix( iceColor * ( 0.5 + surfaceNoise * 0.5 ), magmaColor, magmaGlow );
+        surfaceCol += magmaColor * subsurface * ( 0.5 + audioSwell ) * mp;
+
         // Limb darkening (it's dark space, no sun, only internal light)
-        float limb = smoothstep(planetRad, planetRad * 0.5, dist);
-        
+        float limb = smoothstep( planetRad, planetRad * 0.5, dist );
+
         col += surfaceCol * limb;
     }
 
-    if (hue > 0.001) col = hueRot(col, 0.2 * sin(hue));
+    if ( hue > 0.001 )
+        col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max(col, 0.0);
-    _catTone /= 1.0 + 0.35 * max(_catTone.r, max(_catTone.g, _catTone.b));
-    fragColor = vec4(clamp(_catTone, 0.0, 1.0), 1.0);
+    vec3 _catTone = max( col, 0.0 );
+    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
 }

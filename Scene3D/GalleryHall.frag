@@ -1,19 +1,19 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel; ///< Overall loudness, 0..1.
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // GalleryHall.frag — gold-framed image crops under warm gallery light;
 // ceiling strips are soft white bars.
-uniform sampler2D tex0;   ///< The current photo.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioDrop;   ///< Drop envelope: high after a detected drop, decaying.
+uniform sampler2D tex0;           ///< The current photo.
+uniform float     audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float     audioDrop;      ///< Drop envelope: high after a detected drop, decaying.
 
 in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in vec4  vSeed;   ///< Per-instance random seed (from the vertex stage).
+in vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
 in float vLight;
-in float vKind;   ///< Element kind (from the vertex stage).
+in float vKind; ///< Element kind (from the vertex stage).
 
 /**
  * @file GalleryHall.frag
@@ -31,40 +31,41 @@ in float vKind;   ///< Element kind (from the vertex stage).
  */
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     vec3 col;
-    if (vKind < 0.5)
+    if ( vKind < 0.5 )
     {
         // Seeded crop of the image inside a gold frame.
         vec2 crop = vSeed.xy * 0.5;
-        col = texture(tex0, crop + vUV * 0.5).rgb;
+        col = texture( tex0, crop + vUV * 0.5 ).rgb;
 
-        vec2  b     = min(vUV, 1.0 - vUV);
-        float frame = 1.0 - smoothstep(0.045, 0.09, min(b.x, b.y));
-        vec3  gold  = hueRot(vec3(0.85, 0.62, 0.22),
-                             audioChromaHue * 0.3) * 0.9;
-        col = mix(col, gold, frame);
+        vec2  b = min( vUV, 1.0 - vUV );
+        float frame = 1.0 - smoothstep( 0.045, 0.09, min( b.x, b.y ) );
+        vec3  gold = hueRot( vec3( 0.85, 0.62, 0.22 ),
+                             audioChromaHue * 0.3 )
+                     * 0.9;
+        col = mix( col, gold, frame );
 
         // Warm spotlight falls from above.
-        col *= vLight * mix(1.15, 0.75, vUV.y) * vec3(1.06, 1.0, 0.9);
+        col *= vLight * mix( 1.15, 0.75, vUV.y ) * vec3( 1.06, 1.0, 0.9 );
     }
     else
     {
         // Ceiling light strip: soft-edged white bar.
-        vec2  b    = min(vUV, 1.0 - vUV);
-        float body = smoothstep(0.0, 0.25, min(b.x, b.y));
-        col = vec3(1.0, 0.97, 0.9) * body * vLight;
+        vec2  b = min( vUV, 1.0 - vUV );
+        float body = smoothstep( 0.0, 0.25, min( b.x, b.y ) );
+        col = vec3( 1.0, 0.97, 0.9 ) * body * vLight;
     }
 
     col *= 1.0 + 0.7 * audioDrop;
-    fragColor = vec4(col * 1.8 * (0.85 + 0.30 * audioLevel + 0.35 * audioKick), 1.0);
+    fragColor = vec4( col * 1.8 * ( 0.85 + 0.30 * audioLevel + 0.35 * audioKick ), 1.0 );
 }

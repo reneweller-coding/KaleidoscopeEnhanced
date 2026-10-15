@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file WaveFunctionCollapseTiles.frag
  * @brief TRANSITION WAVE FUNCTION COLLAPSE TILES: the frame is a grid of tiles
@@ -26,110 +26,116 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  * Per-activation variety: tilesP, seedsP, hueP.
  */
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioSwell;   ///< slow loudness swell: the only envelope allowed to shape geometry
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioPhase;     ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioSwell;     ///< slow loudness swell: the only envelope allowed to shape geometry
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 0..1.
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioSubBass;   ///< Sub-bass band level, 0..1.
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioMid;   ///< Mid band level, 0..1.
-uniform float audioHigh;   ///< High band level, 0..1.
-uniform float audioFlux;   ///< Spectral flux (how fast the spectrum changes), 0..1.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioMid;       ///< Mid band level, 0..1.
+uniform float audioHigh;      ///< High band level, 0..1.
+uniform float audioFlux;      ///< Spectral flux (how fast the spectrum changes), 0..1.
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
 uniform float tilesP;
 uniform float seedsP;
-uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
+uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979;   ///< Pi.
+const float PI = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
-float hash21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-/// @brief Smooth 2D value noise, 0..1.
-float noise2(vec2 p)
+float hash21( vec2 p )
 {
-    vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-    return mix(mix(hash21(i), hash21(i + vec2(1.0, 0.0)), f.x),
-               mix(hash21(i + vec2(0.0, 1.0)), hash21(i + vec2(1.0, 1.0)), f.x), f.y);
+    return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+}
+/// @brief Smooth 2D value noise, 0..1.
+float noise2( vec2 p )
+{
+    vec2 i = floor( p ), f = fract( p );
+    f = f * f * ( 3.0 - 2.0 * f );
+    return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
+                mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tiles = 10.0 + floor(clamp(tilesP, 0.0, 1.0) * 14.0);   // rolled ONCE
-    float seeds = 2.0 + floor(clamp(seedsP, 0.0, 1.0) * 3.0);     // rolled ONCE
-    float hue   = (hueP > 0.0) ? hueP : 0.0;
+    float tiles = 10.0 + floor( clamp( tilesP, 0.0, 1.0 ) * 14.0 ); // rolled ONCE
+    float seeds = 2.0 + floor( clamp( seedsP, 0.0, 1.0 ) * 3.0 );   // rolled ONCE
+    float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
 
-    float d   = clamp(1.0 - interpolation, 0.0, 1.0);
-    float arc = sin(d * PI);
+    float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
+    float arc = sin( d * PI );
 
-    float nx = tiles;   // constant: ny below is floored, so any envelope here stepped the grid
-    float ny = max(3.0, floor(nx / aspect));
-    vec2  grid = vec2(floor(nx), ny);
+    float nx = tiles; // constant: ny below is floored, so any envelope here stepped the grid
+    float ny = max( 3.0, floor( nx / aspect ) );
+    vec2  grid = vec2( floor( nx ), ny );
     vec2  g = uv * grid;
-    vec2  gi = floor(g);
-    vec2  gf = fract(g);
-    vec2  tileUv = (gi + 0.5) / grid;
+    vec2  gi = floor( g );
+    vec2  gf = fract( g );
+    vec2  tileUv = ( gi + 0.5 ) / grid;
 
     // Certainty spreads from a handful of seeds: a tile settles because its
     // neighbours did, so what matters is the distance to the nearest seed.
     float near = 1e9;
-    for (int i = 0; i < 5; ++i)
+    for ( int i = 0; i < 5; ++i )
     {
-        if (float(i) >= seeds) break;
-        float fi = float(i);
-        vec2 sd = vec2(hash21(vec2(fi, 1.7)), hash21(vec2(fi, 9.3)));
-        near = min(near, length((tileUv - sd) * vec2(aspect, 1.0)));
+        if ( float( i ) >= seeds )
+            break;
+        float fi = float( i );
+        vec2  sd = vec2( hash21( vec2( fi, 1.7 ) ), hash21( vec2( fi, 9.3 ) ) );
+        near = min( near, length( ( tileUv - sd ) * vec2( aspect, 1.0 ) ) );
     }
-    float rate = 1.1;   // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float rate = 1.1; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     // Each tile also has its own small hesitation, so the front is ragged.
-    float when = near / (1.35 * rate) + hash21(gi + 21.1) * 0.10;
-    float settled = smoothstep(when, when + 0.16, d);
+    float when = near / ( 1.35 * rate ) + hash21( gi + 21.1 ) * 0.10;
+    float settled = smoothstep( when, when + 0.16, d );
 
     // In superposition the tile is the AVERAGE of its candidates.  The offsets
     // vary smoothly across the grid, so neighbouring tiles are choosing between
     // compatible pictures rather than unrelated ones.
-    vec3 sup = vec3(0.0);
+    vec3  sup = vec3( 0.0 );
     float wsum = 0.0;
-    for (int k = 0; k < 5; ++k)
+    for ( int k = 0; k < 5; ++k )
     {
-        float fk = float(k);
+        float fk = float( k );
         float a = 6.2831853 * fk / 5.0;
-        vec2 dir = vec2(cos(a), sin(a));
-        float amp = 0.10 * (0.4 + 0.9 * noise2(gi * 0.35 + fk * 3.1));
-        vec2 cand = clamp(uv + dir * amp * (1.0 - settled), 0.0, 1.0);
-        float w = 1.0 / (1.0 + fk);
-        sup += textureLod(tex1, cand, 0.0).rgb * w;
+        vec2  dir = vec2( cos( a ), sin( a ) );
+        float amp = 0.10 * ( 0.4 + 0.9 * noise2( gi * 0.35 + fk * 3.1 ) );
+        vec2  cand = clamp( uv + dir * amp * ( 1.0 - settled ), 0.0, 1.0 );
+        float w = 1.0 / ( 1.0 + fk );
+        sup += textureLod( tex1, cand, 0.0 ).rgb * w;
         wsum += w;
     }
     sup /= wsum;
 
-    vec3 definite = textureLod(tex1, uv, 0.0).rgb;
-    vec3 tile = mix(sup, definite, settled);
+    vec3 definite = textureLod( tex1, uv, 0.0 ).rgb;
+    vec3 tile = mix( sup, definite, settled );
 
     // Before anything has reached a tile it is still showing the old picture.
-    float touched = smoothstep(0.0, 0.20, d) * smoothstep(when - 0.22, when, d);
-    vec3 col = mix(texture(tex0, uv).rgb, tile, clamp(touched, 0.0, 1.0));
-    col = mix(col, definite, smoothstep(0.90, 1.0, d));
+    float touched = smoothstep( 0.0, 0.20, d ) * smoothstep( when - 0.22, when, d );
+    vec3  col = mix( texture( tex0, uv ).rgb, tile, clamp( touched, 0.0, 1.0 ) );
+    col = mix( col, definite, smoothstep( 0.90, 1.0, d ) );
 
     // The moment a tile settles it flashes, and the grid shows while it works.
-    float snap = exp(-pow((d - when) / 0.05, 2.0));
-    vec3 glow = mix(vec3(0.86, 0.92, 1.0), vec3(1.0, 0.94, 0.84), fract(hue * 0.159));
-    col += glow * snap * arc * (0.06 + 0.26 * clamp(audioHigh * 2.0, 0.0, 1.0));
-    float edge = smoothstep(0.05, 0.0, min(min(gf.x, 1.0 - gf.x), min(gf.y, 1.0 - gf.y)));
-    col *= 1.0 - edge * 0.22 * arc * (1.0 - settled);
-    col += glow * edge * arc * 0.05 * clamp(audioKick, 0.0, 1.0);
+    float snap = exp( -pow( ( d - when ) / 0.05, 2.0 ) );
+    vec3  glow = mix( vec3( 0.86, 0.92, 1.0 ), vec3( 1.0, 0.94, 0.84 ), fract( hue * 0.159 ) );
+    col += glow * snap * arc * ( 0.06 + 0.26 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
+    float edge = smoothstep( 0.05, 0.0, min( min( gf.x, 1.0 - gf.x ), min( gf.y, 1.0 - gf.y ) ) );
+    col *= 1.0 - edge * 0.22 * arc * ( 1.0 - settled );
+    col += glow * edge * arc * 0.05 * clamp( audioKick, 0.0, 1.0 );
 
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

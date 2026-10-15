@@ -38,37 +38,39 @@
 // bass breathes the tube.  Harmonic and endless — the curves close on
 // themselves.
 
-in vec4 attrA;   ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an index).
-in vec4 attrB;   ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
+in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage's header; e.g. position or u/v and an
+               ///< index).
+in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-uniform mat4  projM;   ///< Projection matrix.
-uniform float eyeOff;   ///< Stereo eye offset (0 in mono).
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform float sceneSeed;   ///< A random number fixed per activation.
-uniform vec2  resolution;   ///< Size of the render target in pixels.
+uniform mat4  projM;      ///< Projection matrix.
+uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
+uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
+uniform float sceneSeed;  ///< A random number fixed per activation.
+uniform vec2  resolution; ///< Size of the render target in pixels.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioBass;   ///< Bass band level, 0..1.
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioBass;      ///< Bass band level, 0..1.
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioMidRel;
-uniform float audioSpread;   ///< Spectral spread, 0..1.
+uniform float audioSpread; ///< Spectral spread, 0..1.
 uniform float audioMode;   ///< Mode of the music: 0 minor .. 1 major.
 
-out vec4 vCol;   ///< Colour (from the vertex stage).
+out vec4 vCol; ///< Colour (from the vertex stage).
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
-vec3 hueRot(vec3 c, float a)
+vec3 hueRot( vec3 c, float a )
 {
-    vec3  k = vec3(0.57735026919);
-    float cs = cos(a), sn = sin(a);
-    return c * cs + cross(k, c) * sn + k * dot(k, c) * (1.0 - cs);
+    vec3  k = vec3( 0.57735026919 );
+    float cs = cos( a ), sn = sin( a );
+    return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
 /// @brief Pseudo-random number 0..1 from two values and a seed.
-float hsh(float a, float b, float s)
+float hsh( float a, float b, float s )
 {
-    return fract(sin(a * 91.73 + b * 47.31 + s) * 43758.5453);
+    return fract( sin( a * 91.73 + b * 47.31 + s ) * 43758.5453 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -76,34 +78,34 @@ void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    float mmaj = clamp(audioMode, 0.0, 1.0);
-    float spr  = clamp(audioSpread, 0.0, 1.0);
+    float mmaj = clamp( audioMode, 0.0, 1.0 );
+    float spr = clamp( audioSpread, 0.0, 1.0 );
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     // Placing the embers in FRUSTUM coordinates rather than in a fixed world
     // box is what keeps the field even across the picture at every depth.
     const float kTanY = 0.5206;
-    float aspect = (resolution.y > 0.5) ? resolution.x / resolution.y : 1.7778;
+    float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // MODE sets the base temperature the hue sweep runs from: minor cools
     // everything to blue, major restores the warm ember orange.  The two
     // endpoints are luminance-matched.
-    vec3 baseCol = mix(vec3(0.30, 0.50, 0.95), vec3(0.95, 0.45, 0.25), mmaj);
+    vec3 baseCol = mix( vec3( 0.30, 0.50, 0.95 ), vec3( 0.95, 0.45, 0.25 ), mmaj );
 
     vec3  vp;
     vec3  col;
     float sizeBase, sizeCap, sizeMin;
 
-    if (r1 < 0.16)
+    if ( r1 < 0.16 )
     {
         // ---- EMBER HAZE ----------------------------------------------
         // Sparks shed by the knots, spread evenly over the frustum from just
         // in front of the camera out to the far dark.  A background layer:
         // clearly dimmer than the curves, but bright enough that no tile of
         // the picture is ever empty.
-        float hx = hsh(r2, r3, 0.41);
-        float hy = hsh(r3, r4, 1.83);
-        float hz = hsh(r4, r2, 3.07);
+        float hx = hsh( r2, r3, 0.41 );
+        float hy = hsh( r3, r4, 1.83 );
+        float hz = hsh( r4, r2, 3.07 );
 
         float dz = 14.0 + hz * 76.0;
         float ph = r2 * 6.2831853 + time * 0.08 + audioAdvance * 0.06;
@@ -113,21 +115,21 @@ void main()
         // and yaws the view (every Scene3D preset carries one), and spectral
         // spread only ever opens it further.
         float open = 2.25 + 0.35 * spr;
-        vp = vec3((hx - 0.5) * open * dz * kTanY * aspect + 2.4 * cos(ph),
-                  (hy - 0.5) * open * dz * kTanY          + 2.4 * sin(ph * 0.79),
-                  dz);
+        vp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 2.4 * cos( ph ),
+                   ( hy - 0.5 ) * open * dz * kTanY + 2.4 * sin( ph * 0.79 ),
+                   dz );
 
-        col = hueRot(baseCol, audioChromaHue * 0.5);
-        col *= (0.28 + 0.40 * r3) * (0.75 + 0.5 * audioSwell)
-             * clamp(1.0 - dz / 145.0, 0.0, 1.0);
+        col = hueRot( baseCol, audioChromaHue * 0.5 );
+        col *= ( 0.28 + 0.40 * r3 ) * ( 0.75 + 0.5 * audioSwell )
+               * clamp( 1.0 - dz / 145.0, 0.0, 1.0 );
         // An ember has to stay a legible speck at any distance -- below
         // roughly two and a half pixels an additive sprite averages away to
         // nothing and the far half of the field reads as black again.
         sizeBase = 84.0;
-        sizeCap  = 9.0;
-        sizeMin  = 2.6;
+        sizeCap = 9.0;
+        sizeMin = 2.6;
 
-        vCol = vec4(col * 4.4, 1.0);
+        vCol = vec4( col * 4.4, 1.0 );
     }
     else
     {
@@ -135,75 +137,80 @@ void main()
         // r1 doubles as the layer selector and, rescaled inside its band, as
         // the position along that layer's closed curve -- so both curves stay
         // evenly populated end to end.
-        bool  outer = (r1 < 0.46);
-        float u = outer ? (r1 - 0.16) / 0.30 : (r1 - 0.46) / 0.54;
+        bool  outer = ( r1 < 0.46 );
+        float u = outer ? ( r1 - 0.16 ) / 0.30 : ( r1 - 0.46 ) / 0.54;
 
         // Position along the closed curve; particles FLOW along it.  The outer
         // knot streams a little slower, so the two never lock together.
-        float s = u * 6.2831853 + time * (outer ? 0.068 : 0.10)
-                + audioAdvance * (outer ? 0.15 : 0.22);
+        float s = u * 6.2831853 + time * ( outer ? 0.068 : 0.10 )
+                  + audioAdvance * ( outer ? 0.15 : 0.22 );
 
         // Knot family rolled per activation: (2,3), (3,4), (2,5) or (3,5).
-        float kv = floor(sceneSeed * 3.999);
-        float p = (kv < 0.5 || kv > 1.5 && kv < 2.5) ? 2.0 : 3.0;
-        float q = (kv < 0.5) ? 3.0 : (kv < 1.5) ? 4.0 : 5.0;
+        float kv = floor( sceneSeed * 3.999 );
+        float p = ( kv < 0.5 || kv > 1.5 && kv < 2.5 ) ? 2.0 : 3.0;
+        float q = ( kv < 0.5 ) ? 3.0 : ( kv < 1.5 ) ? 4.0
+                                                    : 5.0;
         // The outer knot takes the neighbouring family, so the two read as a
         // pair rather than as one curve drawn twice.
-        if (outer) { p += 1.0; q = (q > 4.5) ? 3.0 : q + 1.0; }
+        if ( outer )
+        {
+            p += 1.0;
+            q = ( q > 4.5 ) ? 3.0 : q + 1.0;
+        }
 
-        float R  = outer ? 24.0 : 13.5;
-        float rr = outer ?  8.0 :  5.2;
-        vec3 C = vec3((R + rr * cos(q * s)) * cos(p * s),
-                      (R + rr * cos(q * s)) * sin(p * s),
-                      rr * sin(q * s));
+        float R = outer ? 24.0 : 13.5;
+        float rr = outer ? 8.0 : 5.2;
+        vec3  C = vec3( ( R + rr * cos( q * s ) ) * cos( p * s ),
+                        ( R + rr * cos( q * s ) ) * sin( p * s ),
+                        rr * sin( q * s ) );
 
         // Tube thickness around the curve (cheap frame from neighbours).  On
         // top of the bass breath, the MID register's instant/slow ratio
         // punches it: ~1.0 means "as loud as usual right now", so this
         // self-normalises to any mix.  Bounded well away from collapsing the
         // tube to zero.
-        float mp   = clamp(audioMidRel - 1.0, -0.8, 1.2);
-        float tube = (0.5 + 1.1 * r2) * (1.0 + 0.35 * audioBass + 0.30 * mp)
-                   * (outer ? 1.9 : 1.0);
+        float mp = clamp( audioMidRel - 1.0, -0.8, 1.2 );
+        float tube = ( 0.5 + 1.1 * r2 ) * ( 1.0 + 0.35 * audioBass + 0.30 * mp )
+                     * ( outer ? 1.9 : 1.0 );
 
         float a2 = r3 * 6.2831853;
-        vec3 off = vec3(cos(a2 + s), sin(a2 + s * 0.7), cos(a2 * 1.3 - s)) * tube;
+        vec3  off = vec3( cos( a2 + s ), sin( a2 + s * 0.7 ), cos( a2 * 1.3 - s ) ) * tube;
 
         // SPECTRAL SPREAD sets how far the particles drift off the curve: a
         // narrow spectrum keeps one clean drawn line, rich harmonics blur it
         // into a haze.  (Neutral spread 0.5 reproduces the original factor.)
-        vec3 world = C + off * (0.38 + 0.30 * spr);
+        vec3 world = C + off * ( 0.38 + 0.30 * spr );
 
         // Slow two-axis tumble; the outer knot turns the other way, so the
         // pair is never simultaneously edge-on to the camera.
-        float ra = time * (outer ? -0.045 : 0.07);
-        float rb = time * (outer ?  0.031 : 0.043);
-        world.xz = mat2(cos(ra), -sin(ra), sin(ra), cos(ra)) * world.xz;
-        world.yz = mat2(cos(rb), -sin(rb), sin(rb), cos(rb)) * world.yz;
+        float ra = time * ( outer ? -0.045 : 0.07 );
+        float rb = time * ( outer ? 0.031 : 0.043 );
+        world.xz = mat2( cos( ra ), -sin( ra ), sin( ra ), cos( ra ) ) * world.xz;
+        world.yz = mat2( cos( rb ), -sin( rb ), sin( rb ), cos( rb ) ) * world.yz;
 
-        vp = world + vec3(0.0, 0.0, outer ? 52.0 : 31.0);
+        vp = world + vec3( 0.0, 0.0, outer ? 52.0 : 31.0 );
 
         // Hue runs along the knot; the flow makes it stream forever.
-        col = hueRot(baseCol, audioChromaHue + s * 0.8);
-        col *= (0.45 + 0.55 * r3) * (0.75 + 0.5 * audioSwell)
-             * (outer ? 0.55 : 1.0)
-             * clamp(1.0 - vp.z / 135.0, 0.0, 1.0);
+        col = hueRot( baseCol, audioChromaHue + s * 0.8 );
+        col *= ( 0.45 + 0.55 * r3 ) * ( 0.75 + 0.5 * audioSwell )
+               * ( outer ? 0.55 : 1.0 )
+               * clamp( 1.0 - vp.z / 135.0, 0.0, 1.0 );
 
         sizeBase = outer ? 140.0 : 95.0;
-        sizeCap  = outer ?  12.0 : 14.0;
-        sizeMin  = 1.5;
+        sizeCap = outer ? 12.0 : 14.0;
+        sizeMin = 1.5;
 
-        vCol = vec4(col * 4.4, 1.0);
+        vCol = vec4( col * 4.4, 1.0 );
     }
 
     vp.x -= eyeOff;
-    gl_Position = projM * vec4(vp.x, vp.y, -vp.z, 1.0);
+    gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-    if (vp.z < 0.4)
-        gl_Position = vec4(0.0, 0.0, -3.0, 1.0);
+    if ( vp.z < 0.4 )
+        gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    float px   = resolution.y / 1080.0;
-    float dist = max(vp.z, 0.5);
-    gl_PointSize = clamp(sizeBase * (0.4 + 0.8 * r4) * px / dist,
-                         sizeMin, max(sizeCap * px, sizeMin));
+    float px = resolution.y / 1080.0;
+    float dist = max( vp.z, 0.5 );
+    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          sizeMin, max( sizeCap * px, sizeMin ) );
 }

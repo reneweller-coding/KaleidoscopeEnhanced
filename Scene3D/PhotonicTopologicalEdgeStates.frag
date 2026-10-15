@@ -1,5 +1,5 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 /**
  * @file PhotonicTopologicalEdgeStates.frag
  * @brief PHOTONIC TOPOLOGICAL EDGE STATES: 3D ribbon lattice of coupled optical waveguides.
@@ -16,61 +16,63 @@ out vec4 fragColor;   ///< The pixel's colour (output).
  *   glowP        float waveguide cladding luminance         (0.8..2.5)
  */
 
-in vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
-in float vSide;   ///< Which side of a strip (from the vertex stage).
+in vec2  vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
+in float vSide; ///< Which side of a strip (from the vertex stage).
 in float vRibbonID;
-in vec3 vCol;   ///< Colour (from the vertex stage).
+in vec3  vCol; ///< Colour (from the vertex stage).
 in float vPulse;
 
-uniform vec2  resolution;   ///< Size of the render target in pixels.
-uniform float time;   ///< Seconds since the program started (never reset; see sceneTime).
-uniform sampler2D tex0;   ///< The current photo.
-uniform sampler2D tex1;   ///< The next photo (cross-faded in by interpolation).
-uniform float interpolation;   ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
+uniform vec2      resolution;    ///< Size of the render target in pixels.
+uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
+uniform sampler2D tex0;          ///< The current photo.
+uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
+uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs backwards).
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                              ///< backwards).
+uniform float audioKick;      ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-uniform float glowP;   ///< Glow / afterglow knob, 0..1.
+uniform float glowP; ///< Glow / afterglow knob, 0..1.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
-vec3 img(vec2 uv) {
-    return (interpolation * texture(tex0, uv) + (1.0 - interpolation) * texture(tex1, uv)).rgb;
+vec3 img( vec2 uv )
+{
+    return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 /// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
-vec3 imgPalette(float t)
+vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
-    float rad = 0.16 + 0.08 * sin(audioAdvance * 0.013);
-    vec3  col = img(clamp(vec2(0.5) + rad * vec2(cos(ang), sin(ang)), 0.0, 1.0));
-    float g   = dot(col, vec3(0.333));
-    return mix(vec3(g), col, 0.55 + 0.45 * audioValence);
+    float rad = 0.16 + 0.08 * sin( audioAdvance * 0.013 );
+    vec3  col = img( clamp( vec2( 0.5 ) + rad * vec2( cos( ang ), sin( ang ) ), 0.0, 1.0 ) );
+    float g = dot( col, vec3( 0.333 ) );
+    return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     // Waveguide core profile across ribbon side (-1 to +1)
-    float coreFalloff = 1.0 - abs(vSide);
-    float coreGlow = pow(coreFalloff, 2.5);
-    float edgeRim = exp(-abs(abs(vSide) - 0.9) * 15.0);
-    
+    float coreFalloff = 1.0 - abs( vSide );
+    float coreGlow = pow( coreFalloff, 2.5 );
+    float edgeRim = exp( -abs( abs( vSide ) - 0.9 ) * 15.0 );
+
     // Sample background photo mapped along waveguide ribbon length
-    vec2 photoUv = fract(vec2(vUV.x * 2.0, vUV.y));
-    vec3 photoSample = img(photoUv);
-    
+    vec2 photoUv = fract( vec2( vUV.x * 2.0, vUV.y ) );
+    vec3 photoSample = img( photoUv );
+
     // Combine vertex color, photo, and laser pulse
-    vec3 col = vCol * (0.6 + 0.4 * photoSample);
-    col += vCol * coreGlow * (glowP > 0.01 ? glowP : 1.2) * (0.8 + 0.4 * audioSwell);
-    col += vec3(0.9, 0.95, 1.0) * vPulse * 2.5;
+    vec3 col = vCol * ( 0.6 + 0.4 * photoSample );
+    col += vCol * coreGlow * ( glowP > 0.01 ? glowP : 1.2 ) * ( 0.8 + 0.4 * audioSwell );
+    col += vec3( 0.9, 0.95, 1.0 ) * vPulse * 2.5;
     col += vCol * edgeRim * 1.5;
-    col += vCol * (audioKick * 0.3);
-    
+    col += vCol * ( audioKick * 0.3 );
+
     // Soft knee compression
-    col /= 1.0 + 0.35 * max(col.r, max(col.g, col.b));
-    fragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+    col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
+    fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

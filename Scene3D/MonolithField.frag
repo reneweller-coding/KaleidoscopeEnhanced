@@ -1,13 +1,13 @@
 #version 330 core
-out vec4 fragColor;   ///< The pixel's colour (output).
+out vec4 fragColor; ///< The pixel's colour (output).
 // Frag-side music pulse (added by the deaf-scene pass: reactivity
 // measured ~0 -- the vert-side coupling barely moved any pixels).
-uniform float audioLevel;   ///< Overall loudness, 0..1.
-uniform float audioKick;   ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioLevel; ///< Overall loudness, 0..1.
+uniform float audioKick;  ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 // MonolithField.frag — near-black slab faces; the EDGES are the glyphs:
 // segmented luminous runes running up the corners.
-in vec4 vCol;   ///< Colour (from the vertex stage).
-in vec3 vCorner;
+in vec4  vCol; ///< Colour (from the vertex stage).
+in vec3  vCorner;
 in float vFlat;
 
 /**
@@ -33,26 +33,27 @@ void main()
 {
     float pulse = 0.85 + 0.30 * audioLevel + 0.35 * audioKick;
 
-    if (vFlat > 0.5)
+    if ( vFlat > 0.5 )
     {
         // Ground slabs and sky dust: plain solids, no glyphs.
-        fragColor = vec4(clamp(vCol.rgb * pulse, 0.0, 1.0), 1.0);
+        fragColor = vec4( clamp( vCol.rgb * pulse, 0.0, 1.0 ), 1.0 );
         return;
     }
 
-    vec3 a = abs(vCorner) * 2.0;
-    float e1 = smoothstep(0.82, 0.99, a.x);
-    float e2 = smoothstep(0.82, 0.99, a.y);
-    float e3 = smoothstep(0.82, 0.99, a.z);
-    float edge = clamp(e1 * e3 + e1 * e2 + e2 * e3, 0.0, 1.0);
+    vec3  a = abs( vCorner ) * 2.0;
+    float e1 = smoothstep( 0.82, 0.99, a.x );
+    float e2 = smoothstep( 0.82, 0.99, a.y );
+    float e3 = smoothstep( 0.82, 0.99, a.z );
+    float edge = clamp( e1 * e3 + e1 * e2 + e2 * e3, 0.0, 1.0 );
 
     // Glyph segmentation: dashes along the vertical edges.
-    float dash = step(0.35, fract(vCorner.y * 9.0));
+    float dash = step( 0.35, fract( vCorner.y * 9.0 ) );
     // The face floor was 0.10, which left a slab reading as a hole in the
     // picture rather than as a dark solid standing in front of the sky.  It is
     // still far below the glyphs, so the identity ("near-black slabs, luminous
     // runes") is unchanged.
-    float face = 0.22 + 0.10 * (0.5 - vCorner.y);
-    fragColor = vec4(clamp(vCol.rgb * (face + 1.7 * edge * dash) * pulse,
-                           0.0, 1.0), 1.0);
+    float face = 0.22 + 0.10 * ( 0.5 - vCorner.y );
+    fragColor = vec4( clamp( vCol.rgb * ( face + 1.7 * edge * dash ) * pulse,
+                             0.0, 1.0 ),
+                      1.0 );
 }
