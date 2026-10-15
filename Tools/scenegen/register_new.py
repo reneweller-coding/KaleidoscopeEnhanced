@@ -28,7 +28,7 @@ for name, mood, cx in SCENES:
         s = s[:st] + s[en:]
         print("alter Eintrag entfernt:", name)
     src = io.open(frag, encoding="utf-8").read()
-    params = [m for m in re.findall(r"uniform float (\w+P);", src) if m != "hueP"]
+    params = [m for m in re.findall(r"uniform\s+float\s+(\w+P)\s*;", src) if m != "hueP"]
     lines = ['  <TextureShader file="..' + BS * 2 + 'Scene2D' + BS * 2 + name + '.frag" type="normal" mood="%s" probability="0.45" complexity="%d">' % (mood, cx),
              '    <rig preset="flat"/>']
     for q in params:

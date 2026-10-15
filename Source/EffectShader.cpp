@@ -2778,6 +2778,83 @@ std::string EffectShader::specDefines( const float *x0, const float *x1, const b
     return out;
 }
 
+/**
+ * @brief Whether a shader source calls a function whose first argument starts with the given text.
+ *
+ * Spaces between the name, the parenthesis and the argument do not matter: the shaders are laid out after
+ * the CGVR guidelines (`textureLod( tex0, uv, lod )`), and a search for the characters "textureLod(tex0"
+ * would depend on that layout.
+ * @param text The shader source.
+ * @param fn   Function name, e.g. "textureLod".
+ * @param arg  Start of the first argument, e.g. "tex0".
+ * @return True if such a call occurs anywhere in @p text (comments included, as before).
+ */
+static bool callsWithFirstArg( const std::string &text, const char *fn, const char *arg )
+{
+    const size_t fn_len = strlen( fn );
+    const size_t arg_len = strlen( arg );
+    for ( size_t p = text.find( fn ); p != std::string::npos; p = text.find( fn, p + 1 ) )
+    {
+        size_t q = p + fn_len;
+        while ( q < text.size() && isspace( static_cast<unsigned char>( text[q] ) ) )
+            ++q;
+        if ( q >= text.size() || text[q] != '(' )
+            continue;
+        ++q;
+        while ( q < text.size() && isspace( static_cast<unsigned char>( text[q] ) ) )
+            ++q;
+        if ( text.compare( q, arg_len, arg ) == 0 )
+            return true;
+    }
+    return false;
+}
+
+/**
+ * @brief The values of every `return N` in the body of a shader function, in source order.
+ *
+ * Reads "int permCode( int i ) { if ( i == 0 ) return 228; ... }" however the definition is wrapped.
+ * @param text The shader source.
+ * @param fn   Function name, e.g. "permCode".
+ * @return The returned integers; empty if @p text defines no such function.
+ */
+static std::vector<int> returnedValues( const std::string &text, const char *fn )
+{
+    std::vector<int> values;
+    const size_t     fn_len = strlen( fn );
+    for ( size_t p = text.find( fn ); p != std::string::npos; p = text.find( fn, p + 1 ) )
+    {
+        if ( p > 0 && ( isalnum( static_cast<unsigned char>( text[p - 1] ) ) || text[p - 1] == '_' ) )
+            continue;
+        size_t q = p + fn_len;
+        while ( q < text.size() && isspace( static_cast<unsigned char>( text[q] ) ) )
+            ++q;
+        if ( q >= text.size() || text[q] != '(' )
+            continue;
+        const size_t close = text.find( ')', q );
+        if ( close == std::string::npos )
+            return values;
+        size_t open = close + 1;
+        while ( open < text.size() && isspace( static_cast<unsigned char>( text[open] ) ) )
+            ++open;
+        if ( open >= text.size() || text[open] != '{' )
+            continue; // a call or a prototype, not the definition
+        int    depth = 0;
+        size_t end = open;
+        for ( ; end < text.size(); ++end )
+        {
+            if ( text[end] == '{' )
+                ++depth;
+            else if ( text[end] == '}' && --depth == 0 )
+                break;
+        }
+        const std::string body = text.substr( open, end - open );
+        for ( size_t c = 0; ( c = body.find( "return ", c ) ) != std::string::npos; c += 7 )
+            values.push_back( atoi( body.c_str() + c + 7 ) );
+        return values;
+    }
+    return values;
+}
+
 void EffectShader::parseChainSource()
 {
     if ( m_chainParsed < 0 )
@@ -2817,12 +2894,6 @@ void EffectShader::parseChainSource()
                     }
                     m_chainClasses[rest.substr( 0, sp )] = names;
                     m_chainParsed = 1;
-                }
-                // "int permCode(int i) { if (i == 0) return 228; ... }": the 24 stage orders
-                if ( line.compare( 0, 21, "int permCode(int i) {" ) == 0 && m_permCodes.empty() )
-                {
-                    for ( size_t c = 0; ( c = line.find( "return ", c ) ) != std::string::npos; c += 7 )
-                        m_permCodes.push_back( atoi( line.c_str() + c + 7 ) );
                 }
                 // "// @chainord chainAP 11|5|20|...": position -> branch (for the specialised variants)
                 static const std::string Otag = "// @chainord ";
@@ -2878,6 +2949,8 @@ void EffectShader::parseChainSource()
                     }
                 }
             }
+            // "int permCode( int i ) { if ( i == 0 ) return 228; ... }": the 24 stage orders
+            m_permCodes = returnedValues( text, "permCode" );
         }
     }
 }
@@ -3183,7 +3256,7 @@ bool EffectShader::usesSceneLod()
         if ( m_fragmentShaderFilename )
             if ( char *src = textFileRead( m_fragmentShaderFilename ) )
             {
-                m_usesSceneLod = strstr( src, "textureLod(tex0" ) ? 1 : 0;
+                m_usesSceneLod = callsWithFirstArg( src, "textureLod", "tex0" ) ? 1 : 0;
                 free( src );
             }
     }

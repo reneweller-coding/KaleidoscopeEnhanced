@@ -35,6 +35,24 @@ readable, robust or maintainable; every such case is listed below with its reaso
 | Whole code base formatted | The `#if 0` block in `Source/Uniform.cpp` (the original Shader Maker `CUniform`, kept as reference) is untouched | clang-format does not format disabled code |
 | Generated files follow the guidelines | `Tools/scenegen/src/*.glsl` (the generator's sources) keep their own layout | `gen.py` and `make_chainpass.py` cut and patch that text with patterns written for it; their output is formatted when it is written |
 
+## Text the app and the tools read out of the shaders
+
+Same tokens are not enough where a program searches the shader *text*. These contracts hold for any layout:
+
+| Who | Reads | How |
+|---|---|---|
+| `EffectShader::parseChainSource()` | `// @chainclasses`, `// @chainord`, `// @chainss`, `// @chainopening` | whole comment lines, never wrapped (`cgvr_format.py`) |
+| `EffectShader::parseChainSource()` | `int permCode( int i ) { ... return N; ... }` | `returnedValues()`: the definition however it is wrapped |
+| `EffectShader::parseChainSource()` | `const float chainAP = 0.4752;` (frozen likes) | lines starting with `const float `; these names mirror the knob uniforms and are not renamed |
+| `EffectShader::usesSceneLod()` | a `textureLod( tex0, ... )` call | `callsWithFirstArg()`: spaces between name, parenthesis and argument do not matter |
+| `EffectShader` constructor | `// @chainbake`, `// @chain3d` | substring of a comment line |
+| `Tools/scenegen/register_new.py` | `uniform float <knob>P;` | `uniform\s+float\s+(\w+P)\s*;` |
+| `Tools/scenegen/make_chainpass.py` | the chain labs' functions and statements | reads the labs from `gen.assemble()`, i.e. before formatting |
+
+Until 16.10.2026 the `permCode` and `textureLod(tex0` searches compared exact characters; the reformat of commit
+33492b88 broke both (the chain labs lost their 24 stage orders, 302 shaders their scene mip levels) until they were
+made layout-independent.
+
 ## Names (C++)
 
 `.clang-tidy` holds the rules (readability-identifier-naming); `python Tools/cgvr_rename.py --plan` lists what
