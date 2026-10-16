@@ -122,8 +122,8 @@ void main()
     v1 *= 1.0 - gone;
     v2 *= 1.0 - gone;
     v3 *= 1.0 - gone;
-    vec3 veinC = black ? vec3( 0.9, 0.88, 0.85 ) : vec3( 0.45, 0.42, 0.38 );
-    col = mix( col, veinC, clamp( v2 + v3, 0.0, 1.0 ) * ( 1.0 - blur * 0.6 ) );
+    vec3 vein_c = black ? vec3( 0.9, 0.88, 0.85 ) : vec3( 0.45, 0.42, 0.38 );
+    col = mix( col, vein_c, clamp( v2 + v3, 0.0, 1.0 ) * ( 1.0 - blur * 0.6 ) );
     // The main vein carries inlaid gold.
     vec3 gold = vec3( 1.0, 0.75, 0.3 );
     gold = mix( gold, gold * imgPalette( 0.12 + hueP * 0.159 ) * 1.3, 0.1 );
@@ -147,7 +147,7 @@ void main()
               + vec3( 0.9, 0.88, 0.85 ) * exp( -length( p - vec2( 0.0, 0.55 ) ) * 5.0 ) * 0.4 * ( 0.6 + 0.6 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

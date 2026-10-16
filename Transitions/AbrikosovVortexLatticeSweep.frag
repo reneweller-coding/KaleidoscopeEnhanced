@@ -70,26 +70,26 @@ void main()
 
     float t = time * 0.2727 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Triangular Abrikosov lattice coordinates
-    vec2  hexP = p * 16.0 * vrt;
-    float h1 = sin( hexP.x + t );
-    float h2 = sin( -0.5 * hexP.x + 0.866 * hexP.y - t );
-    float h3 = sin( -0.5 * hexP.x - 0.866 * hexP.y - t );
+    vec2  hex_p = p * 16.0 * vrt;
+    float h1 = sin( hex_p.x + t );
+    float h2 = sin( -0.5 * hex_p.x + 0.866 * hex_p.y - t );
+    float h3 = sin( -0.5 * hex_p.x - 0.866 * hex_p.y - t );
 
     // Ginzburg-Landau order parameter approximation: |psi|^2 -> 0 in vortex cores
-    float orderParam = clamp( ( h1 * h1 + h2 * h2 + h3 * h3 ) / 1.5, 0.0, 1.0 );
-    float vortexCore = 1.0 - orderParam;
+    float order_param = clamp( ( h1 * h1 + h2 * h2 + h3 * h3 ) / 1.5, 0.0, 1.0 );
+    float vortex_core = 1.0 - order_param;
 
     // 2pi phase winding displacement around vortex cores
-    float phaseAngle = atan( h2, h1 );
-    vec2  vortexDisp = vec2( cos( phaseAngle ), sin( phaseAngle ) ) * vortexCore * 0.04 * midTransition
-                       * ( 1.0 + audioSwell * 0.7 );
+    float phase_angle = atan( h2, h1 );
+    vec2  vortex_disp = vec2( cos( phase_angle ), sin( phase_angle ) ) * vortex_core * 0.04 * mid_transition
+                        * ( 1.0 + audioSwell * 0.7 );
 
-    vec4 c1 = texture( tex1, fract( uv + vortexDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - vortexDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + vortex_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - vortex_disp ) );
 
     // Sweep front. `swp` used to multiply the front's POSITION, so it also set
     // where the sweep ends: at the bottom of sweepP's 0.5..2.0 registration the
@@ -101,20 +101,20 @@ void main()
     // pixel-exact for every sweepP.
     // Guarded because GLSL evaluates pow as exp2(y*log2(x)): pow(0.0, y) goes
     // through log2(0) = -inf and can return NaN on some drivers.
-    float sweepFront = mix( -1.2, 1.2, ( tProg > 0.0 ) ? pow( tProg, 1.0 / swp ) : 0.0 );
-    float distToFront = p.x - sweepFront;
-    float wipeMask = smoothstep( -0.04, 0.04, distToFront );
+    float sweep_front = mix( -1.2, 1.2, ( t_prog > 0.0 ) ? pow( t_prog, 1.0 / swp ) : 0.0 );
+    float dist_to_front = p.x - sweep_front;
+    float wipe_mask = smoothstep( -0.04, 0.04, dist_to_front );
 
-    vec4 col = mix( c0, c1, wipeMask );
+    vec4 col = mix( c0, c1, wipe_mask );
 
     // Glowing magnetic flux cores (quantum vortex lines)
-    float coreGlow = pow( vortexCore, 3.0 ) * midTransition;
-    col.rgb += coreGlow * vec3( 0.2, 0.95, 1.0 ) * ( 1.5 + audioKick * 1.17 );
+    float core_glow = pow( vortex_core, 3.0 ) * mid_transition;
+    col.rgb += core_glow * vec3( 0.2, 0.95, 1.0 ) * ( 1.5 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

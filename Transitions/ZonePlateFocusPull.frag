@@ -50,7 +50,7 @@ uniform float zonesP;
 uniform float blurP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -88,7 +88,7 @@ void main()
     vec2  sc = vec2( 1.0 / aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     float r2 = dot( p, p );
 

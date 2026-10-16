@@ -106,8 +106,8 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float       hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float       cloudBase = 0.15 + 0.2 * clamp( heightP, 0.0, 1.0 );
-    float       seaBright = 0.4 + 0.6 * clamp( seaP, 0.0, 1.0 );
+    float       cloud_base = 0.15 + 0.2 * clamp( heightP, 0.0, 1.0 );
+    float       sea_bright = 0.4 + 0.6 * clamp( seaP, 0.0, 1.0 );
     float       strike = clamp( audioHarmChange * 1.6, 0.0, 1.0 );
     const float horizon = -0.12;
 
@@ -115,8 +115,8 @@ void main()
     // lengths follow the chroma classes.  The strike point wanders slowly.
     vec2  top = vec2( 0.35 * sin( sceneAdvance * 0.11 ), 0.42 );
     vec2  bottom = vec2( top.x + 0.1 * sin( sceneAdvance * 0.07 + 1.0 ), horizon );
-    float dBolt = 1e9;
-    dBolt = min( dBolt, segDist( p, top, bottom, 1.0 ) );
+    float d_bolt = 1e9;
+    d_bolt = min( d_bolt, segDist( p, top, bottom, 1.0 ) );
     for ( int k = 0; k < 12; ++k )
     {
         float fk = float( k );
@@ -125,11 +125,11 @@ void main()
         vec2  a = mix( top, bottom, s );
         float ang = ( hash11( fk * 3.7 ) - 0.5 ) * 2.4 + ( mod( fk, 2.0 ) < 0.5 ? 0.6 : -0.6 );
         vec2  b = a + vec2( sin( ang ), -abs( cos( ang ) ) * 0.6 ) * ( 0.05 + 0.35 * e );
-        dBolt = min( dBolt, segDist( p, a, b, fk + 2.0 ) + 0.002 * ( 1.0 - e ) );
+        d_bolt = min( d_bolt, segDist( p, a, b, fk + 2.0 ) + 0.002 * ( 1.0 - e ) );
     }
-    float core = exp( -dBolt * dBolt * 12000.0 );
-    float glow = exp( -dBolt * 18.0 );
-    vec3  boltCol = mix( vec3( 0.85, 0.9, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 );
+    float core = exp( -d_bolt * d_bolt * 12000.0 );
+    float glow = exp( -d_bolt * 18.0 );
+    vec3  bolt_col = mix( vec3( 0.85, 0.9, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 );
 
     vec3  col;
     float clouds = fbm( vec2( p.x * 2.0 + sceneAdvance * 0.02, p.y * 4.0 ) );
@@ -137,36 +137,36 @@ void main()
     {
         // Night sky: cloud deck lit from within by the strike and by distant
         // sheet lightning on the kick; stars above the deck.
-        float deck = smoothstep( cloudBase, cloudBase + 0.25, clouds + ( p.y - horizon ) * 0.4 );
+        float deck = smoothstep( cloud_base, cloud_base + 0.25, clouds + ( p.y - horizon ) * 0.4 );
         vec3  sky = imgPalette( hue * 0.159 + 0.62 ) * 0.05;
         vec2  cell = floor( p * 80.0 );
         vec2  f = fract( p * 80.0 ) - 0.5;
         sky += vec3( step( 0.985, hash21( cell ) ) * exp( -dot( f, f ) * 9.0 ) ) * 0.5 * ( 1.0 - deck );
-        vec3  cloudCol = imgPalette( hue * 0.159 + 0.55 ) * ( 0.08 + 0.15 * clamp( audioSwell, 0.0, 1.0 ) );
+        vec3  cloud_col = imgPalette( hue * 0.159 + 0.55 ) * ( 0.08 + 0.15 * clamp( audioSwell, 0.0, 1.0 ) );
         float lit = strike * exp( -length( p - top ) * 2.5 ) * 1.2 + audioKick * 0.35 * clouds;
-        cloudCol += vec3( 0.8, 0.85, 1.0 ) * lit * clouds;
-        col = mix( sky, cloudCol, deck );
-        col += boltCol * ( core * 5.0 + glow * 1.0 ) * strike;
+        cloud_col += vec3( 0.8, 0.85, 1.0 ) * lit * clouds;
+        col = mix( sky, cloud_col, deck );
+        col += bolt_col * ( core * 5.0 + glow * 1.0 ) * strike;
     }
     else
     {
         // Sea: the sky mirrored, broken by waves; the bolt mirrored too.
         vec2  pm = vec2( p.x, horizon - ( p.y - horizon ) );
         float wave = noise2( vec2( p.x * 30.0, p.y * 90.0 - sceneTime * 0.5 ) ) * 0.02;
-        float dRef = 1e9;
-        dRef = min( dRef, segDist( pm + vec2( wave, 0.0 ), top, bottom, 1.0 ) );
-        float coreR = exp( -dRef * dRef * 4000.0 );
-        float glowR = exp( -dRef * 12.0 );
-        vec3  sea = imgPalette( hue * 0.159 + 0.6 ) * 0.06 * seaBright;
-        sea += img( fract( vec2( p.x * 0.5 + 0.5, ( p.y - horizon ) * 2.0 ) ) ) * 0.05 * seaBright;
-        sea += boltCol * ( coreR * 1.2 + glowR * 0.4 ) * strike * seaBright;
-        sea += vec3( 0.8, 0.85, 1.0 ) * audioKick * 0.08 * seaBright;
+        float d_ref = 1e9;
+        d_ref = min( d_ref, segDist( pm + vec2( wave, 0.0 ), top, bottom, 1.0 ) );
+        float core_r = exp( -d_ref * d_ref * 4000.0 );
+        float glow_r = exp( -d_ref * 12.0 );
+        vec3  sea = imgPalette( hue * 0.159 + 0.6 ) * 0.06 * sea_bright;
+        sea += img( fract( vec2( p.x * 0.5 + 0.5, ( p.y - horizon ) * 2.0 ) ) ) * 0.05 * sea_bright;
+        sea += bolt_col * ( core_r * 1.2 + glow_r * 0.4 ) * strike * sea_bright;
+        sea += vec3( 0.8, 0.85, 1.0 ) * audioKick * 0.08 * sea_bright;
         // Darker toward the camera (the sea foreground).
         col = sea * ( 1.0 - 0.6 * smoothstep( horizon, -0.6, p.y ) );
     }
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

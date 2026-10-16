@@ -62,34 +62,34 @@ void main()
 
     float t = time * 0.1587 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Parametric standing wave field: eta(x,y,t) = cos(kx)*cos(ky)*cos(omega*t)
     vec2  q = p * 20.0 * fdy;
-    float modeX = cos( q.x ) * cos( q.y * grd );
-    float modeDiag = cos( 0.707 * ( q.x + q.y ) ) * cos( 0.707 * ( q.x - q.y ) );
+    float mode_x = cos( q.x ) * cos( q.y * grd );
+    float mode_diag = cos( 0.707 * ( q.x + q.y ) ) * cos( 0.707 * ( q.x - q.y ) );
 
-    float faradayWave = mix( modeX, modeDiag, sin( t * 1.5 ) * 0.5 + 0.5 ) * cos( t * 6.0 );
+    float faraday_wave = mix( mode_x, mode_diag, sin( t * 1.5 ) * 0.5 + 0.5 ) * cos( t * 6.0 );
 
     // Fluid heightfield normal vector
-    vec2 normalGrad = vec2( -sin( q.x ) * cos( q.y ), -cos( q.x ) * sin( q.y ) ) * faradayWave;
-    vec2 disp = normalGrad * 0.03 * midTransition * ( 1.0 + audioSwell * 0.8 );
+    vec2 normal_grad = vec2( -sin( q.x ) * cos( q.y ), -cos( q.x ) * sin( q.y ) ) * faraday_wave;
+    vec2 disp = normal_grad * 0.03 * mid_transition * ( 1.0 + audioSwell * 0.8 );
 
     vec4 c1 = texture( tex1, fract( uv + disp ) );
     vec4 c0 = texture( tex0, fract( uv - disp ) );
 
-    float blend = clamp( tProg + faradayWave * 0.3 * midTransition, 0.0, 1.0 );
+    float blend = clamp( t_prog + faraday_wave * 0.3 * mid_transition, 0.0, 1.0 );
     vec4  col = mix( c1, c0, blend );
 
     // Standing wave crest specular glints
-    float crestGlint = pow( max( 0.0, faradayWave ), 4.0 ) * midTransition;
-    col.rgb += crestGlint * vec3( 0.25, 0.9, 1.0 ) * ( 1.3 + audioKick * 1.0 );
+    float crest_glint = pow( max( 0.0, faraday_wave ), 4.0 ) * mid_transition;
+    col.rgb += crest_glint * vec3( 0.25, 0.9, 1.0 ) * ( 1.3 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

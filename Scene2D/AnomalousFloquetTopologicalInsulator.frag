@@ -76,41 +76,42 @@ void main()
 
     // Time-periodic circular optical drive: A(t) = A_0 * (cos(Omega*t), sin(Omega*t))
     float a0 = ( driveAmpP > 0.01 ? driveAmpP : 1.2 );
-    float driveAngle = t * 4.0 + audioPhase;
-    vec2  driveField = vec2( cos( driveAngle ), sin( driveAngle ) ) * ( 0.15 * a0 );
+    float drive_angle = t * 4.0 + audioPhase;
+    vec2  drive_field = vec2( cos( drive_angle ), sin( drive_angle ) ) * ( 0.15 * a0 );
 
     // Peierls phase substitution on hopping integrals: theta_ij = int A . dr
-    float peierls = dot( f, driveField ) * 12.0;
+    float peierls = dot( f, drive_field ) * 12.0;
 
     // Chiral Floquet edge modes running along sample boundary (r = 0.65)
     float r = length( uv );
-    float boundaryDist = abs( r - 0.65 );
-    float edgeMode = exp( -boundaryDist * 16.0 / max( gapWidthP > 0.01 ? gapWidthP : 1.0, 0.1 ) );
+    float boundary_dist = abs( r - 0.65 );
+    float edge_mode = exp( -boundary_dist * 16.0 / max( gapWidthP > 0.01 ? gapWidthP : 1.0, 0.1 ) );
 
     // Quasienergy chiral dispersion wave: epsilon(k) = v_F * k_parallel
     float theta = atan( uv.y, uv.x );
-    float chiralWave = sin( theta * 12.0 - t * 6.0 + peierls ) * 0.5 + 0.5;
+    float chiral_wave = sin( theta * 12.0 - t * 6.0 + peierls ) * 0.5 + 0.5;
 
     // Band inversion flash on kick
-    float topoFlash = exp( -boundaryDist * 25.0 ) * ( 1.0 + 4.0 * audioKick ) * ( edgeGlowP > 0.01 ? edgeGlowP : 1.3 );
+    float topo_flash = exp( -boundary_dist * 25.0 ) * ( 1.0 + 4.0 * audioKick )
+                       * ( edgeGlowP > 0.01 ? edgeGlowP : 1.3 );
 
     // Honeycomb node lattice sites
-    float nodeSite = exp( -dot( f, f ) * 25.0 );
+    float node_site = exp( -dot( f, f ) * 25.0 );
 
     // Palette assignment
-    float palAngle = fract( theta * 0.159 + r * 0.3 + audioCentroid );
-    vec3  colEdge = imgPalette( palAngle );
-    vec3  colBulk = imgPalette( fract( palAngle + 0.5 ) ) * 1.4;
+    float pal_angle = fract( theta * 0.159 + r * 0.3 + audioCentroid );
+    vec3  col_edge = imgPalette( pal_angle );
+    vec3  col_bulk = imgPalette( fract( pal_angle + 0.5 ) ) * 1.4;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colBulk * nodeSite * ( 0.8 + 0.4 * audioSwell );
-    col += colEdge * edgeMode * ( 0.6 + 0.4 * chiralWave ) * 2.2;
-    col += vec3( 0.95, 0.95, 1.0 ) * topoFlash * 2.0;
-    col += colEdge * ( audioKick * 0.35 );
+    col += col_bulk * node_site * ( 0.8 + 0.4 * audioSwell );
+    col += col_edge * edge_mode * ( 0.6 + 0.4 * chiral_wave ) * 2.2;
+    col += vec3( 0.95, 0.95, 1.0 ) * topo_flash * 2.0;
+    col += col_edge * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

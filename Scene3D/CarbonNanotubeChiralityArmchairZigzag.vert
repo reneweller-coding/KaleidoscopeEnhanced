@@ -55,13 +55,13 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
-    vUV = vec2( tCoord, side * 0.5 + 0.5 );
+    vRibbonID = r_index;
+    vUV = vec2( t_coord, side * 0.5 + 0.5 );
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
@@ -71,71 +71,71 @@ void main()
     // strands each; every tube is longer than the frame is wide and the tubes
     // are laid out on a FRUSTUM ladder (y scaled by the tube's own depth), so
     // the mat crosses the whole picture instead of sitting as one lone pipe.
-    float chiralAngle = ( chiralAngleP > 0.01 ? chiralAngleP : 0.52359877 ); // 30 deg default
-    float nStrands = 3.0;
-    float tubeI = floor( rIndex / nStrands ); // 0..6
-    float strandOffset = mod( rIndex, nStrands ) * ( 6.2831853 / nStrands );
+    float chiral_angle = ( chiralAngleP > 0.01 ? chiralAngleP : 0.52359877 ); // 30 deg default
+    float n_strands = 3.0;
+    float tube_i = floor( r_index / n_strands ); // 0..6
+    float strand_offset = mod( r_index, n_strands ) * ( 6.2831853 / n_strands );
 
     // Per-TUBE constants (attrB is per-ribbon, so the strands of one tube must
     // derive their shared numbers from the tube index alone).
-    float h1 = fract( sin( tubeI * 12.9898 + 4.13 ) * 43758.5453 );
-    float h2 = fract( sin( tubeI * 78.2330 + 1.77 ) * 43758.5453 );
-    float h3 = fract( sin( tubeI * 39.4250 + 9.31 ) * 43758.5453 );
+    float h1 = fract( sin( tube_i * 12.9898 + 4.13 ) * 43758.5453 );
+    float h2 = fract( sin( tube_i * 78.2330 + 1.77 ) * 43758.5453 );
+    float h3 = fract( sin( tube_i * 39.4250 + 9.31 ) * 43758.5453 );
 
-    const float kTanY = 0.5206; // 55 deg vertical FOV
+    const float TanY = 0.5206; // 55 deg vertical FOV
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     float dz = 5.0 + h3 * 2.6; // depth ladder
-    float halfH = dz * kTanY;
-    float halfW = halfH * aspect;
+    float half_h = dz * TanY;
+    float half_w = half_h * aspect;
 
     // Tube centre: one rung per tube up the frame, gently drifting
-    float cyN = ( ( tubeI + 0.5 ) / 7.0 ) * 2.0 - 1.0; // -0.857..0.857
-    vec3  cellC = vec3( ( h1 - 0.5 ) * 0.70 * halfW + 0.10 * halfW * sin( t * 0.40 + tubeI * 1.7 ),
-                        cyN * 1.02 * halfH + 0.07 * halfH * cos( t * 0.33 + tubeI * 2.3 ),
-                        dz );
+    float cy_n = ( ( tube_i + 0.5 ) / 7.0 ) * 2.0 - 1.0; // -0.857..0.857
+    vec3  cell_c = vec3( ( h1 - 0.5 ) * 0.70 * half_w + 0.10 * half_w * sin( t * 0.40 + tube_i * 1.7 ),
+                         cy_n * 1.02 * half_h + 0.07 * half_h * cos( t * 0.33 + tube_i * 2.3 ),
+                         dz );
 
     // Tube axis: mostly in the picture plane, slowly scissoring, slightly
     // tilted into depth so the mat reads as three-dimensional.
-    float ang = ( h2 - 0.5 ) * 1.10 + 0.13 * sin( t * 0.23 + tubeI * 1.9 );
+    float ang = ( h2 - 0.5 ) * 1.10 + 0.13 * sin( t * 0.23 + tube_i * 1.9 );
     float tilt = ( h3 - 0.5 ) * 0.50;
     vec3  A = normalize( vec3( cos( ang ), sin( ang ), tilt ) );
     vec3  U = normalize( cross( A, vec3( 0.0, 0.0, 1.0 ) ) );
     vec3  V = cross( A, U );
 
-    float tubeR = halfH * 0.155 * clamp( ( tubeRadiusP > 0.01 ? tubeRadiusP : 0.75 ) / 0.75, 0.6, 1.5 );
-    float tubeL = 2.7 * halfW; // longer than the frame
-    float sAxis = ( tCoord - 0.5 ) * tubeL;
+    float tube_r = half_h * 0.155 * clamp( ( tubeRadiusP > 0.01 ? tubeRadiusP : 0.75 ) / 0.75, 0.6, 1.5 );
+    float tube_l = 2.7 * half_w; // longer than the frame
+    float s_axis = ( t_coord - 0.5 ) * tube_l;
 
     // Helical winding at the chiral angle theta_c (0 = zigzag, 30 deg = armchair)
-    float phi = sAxis * tan( chiralAngle ) * 2.2 + strandOffset + t * 1.5;
+    float phi = s_axis * tan( chiral_angle ) * 2.2 + strand_offset + t * 1.5;
 
     // Hexagonal sp2 carbon bond corrugation ripples
-    float hexRipples = sin( sAxis * 9.0 ) * cos( phi * 6.0 ) * 0.045 * tubeR;
-    float currentR = tubeR + hexRipples;
+    float hex_ripples = sin( s_axis * 9.0 ) * cos( phi * 6.0 ) * 0.045 * tube_r;
+    float current_r = tube_r + hex_ripples;
 
-    vec3 centerLocal = vec3( cos( phi ) * currentR, sin( phi ) * currentR, sAxis );
+    vec3 center_local = vec3( cos( phi ) * current_r, sin( phi ) * current_r, s_axis );
 
-    vec3 tangent = normalize( vec3( -sin( phi ) * tan( chiralAngle ) * 2.2 * tubeR,
-                                    cos( phi ) * tan( chiralAngle ) * 2.2 * tubeR, 1.0 ) );
+    vec3 tangent = normalize( vec3( -sin( phi ) * tan( chiral_angle ) * 2.2 * tube_r,
+                                    cos( phi ) * tan( chiral_angle ) * 2.2 * tube_r, 1.0 ) );
     vec3 binormal = normalize( cross( tangent, vec3( cos( phi ), sin( phi ), 0.0 ) ) );
 
     // The quad is ~2.6x the sp2 wall: the fragment stage paints the inner
     // third as the wall and the rest as its metallic sheen, which is screen
     // coverage for free (no extra geometry).
     float width = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.045 )
-                  * clamp( tubeR / 0.75, 0.35, 1.6 ) * 2.6 * ( 1.0 + 0.3 * audioSwell );
-    vec3  local = centerLocal + binormal * ( side * width );
+                  * clamp( tube_r / 0.75, 0.35, 1.6 ) * 2.6 * ( 1.0 + 0.3 * audioSwell );
+    vec3  local = center_local + binormal * ( side * width );
 
     // Ballistic pi-electron conduction pulse along nanotube axis
-    float pulse = exp( -abs( fract( tCoord * 4.0 - t * 3.0 + rIndex * 0.125 ) - 0.5 ) * 16.0 )
+    float pulse = exp( -abs( fract( t_coord * 4.0 - t * 3.0 + r_index * 0.125 ) - 0.5 ) * 16.0 )
                   * ( 1.0 + 3.0 * audioKick );
     vConductPulse = pulse;
 
-    vCol = imgPalette( fract( rIndex * 0.125 + tCoord * 0.3 + audioCentroid ) );
+    vCol = imgPalette( fract( r_index * 0.125 + t_coord * 0.3 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = cellC + U * local.x + V * local.y + A * local.z;
+    vec3 vp = cell_c + U * local.x + V * local.y + A * local.z;
     vp.z = max( vp.z, 0.9 );
     vp.x -= eyeOff;
 

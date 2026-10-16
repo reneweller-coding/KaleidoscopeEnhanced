@@ -88,9 +88,9 @@ void main()
         vec3  wax = mix( vec3( 0.85, 0.7, 0.35 ), photo, 0.5 );
         vec3  honey = mix( vec3( 0.9, 0.55, 0.1 ), imgPalette( hue * 0.159 + 0.08 ), 0.35 )
                       * ( 0.7 + 0.9 * clamp( audioBass, 0.0, 1.0 ) );
-        vec3  cellCol = ( h < 0.45 ) ? wax * ( 0.7 + 0.3 * ( 1.0 - edge ) )
-                                     : honey * ( 0.6 + 0.6 * ( 1.0 - edge * edge ) );
-        col = mix( cellCol, vec3( 0.45, 0.35, 0.15 ), wall );
+        vec3  cell_col = ( h < 0.45 ) ? wax * ( 0.7 + 0.3 * ( 1.0 - edge ) )
+                                      : honey * ( 0.6 + 0.6 * ( 1.0 - edge * edge ) );
+        col = mix( cell_col, vec3( 0.45, 0.35, 0.15 ), wall );
         float light = 0.55 + 0.6 * exp( -pow( ( vTexCoord.x - 0.5 - 0.35 * sweep ) * 2.5, 2.0 ) );
         col *= light;
         col += vec3( 1.0, 0.95, 0.8 ) * step( 0.45, h ) * smoothstep( 0.35, 0.15, edge )
@@ -108,9 +108,9 @@ void main()
     float stripes = 0.5 + 0.5 * sin( d.x * 9.0 );
     vec3  bee = mix( vec3( 0.95, 0.75, 0.15 ), vec3( 0.12, 0.08, 0.03 ), smoothstep( 0.4, 0.6, stripes ) );
     bee = mix( bee, vec3( 0.1, 0.08, 0.05 ), smoothstep( 0.55, 0.8, d.x ) ); // the head
-    float inBody = smoothstep( 1.0, 0.9, body );
-    vec3  wingCol = vec3( 0.85, 0.9, 1.0 ) * 0.5;
-    col = mix( wingCol, bee, inBody );
+    float in_body = smoothstep( 1.0, 0.9, body );
+    vec3  wing_col = vec3( 0.85, 0.9, 1.0 ) * 0.5;
+    col = mix( wing_col, bee, in_body );
     if ( vKind < 0.5 )
     {
         // The dancer: glowing on the waggle run, flashing on the kick.
@@ -120,7 +120,7 @@ void main()
         col *= 0.8;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

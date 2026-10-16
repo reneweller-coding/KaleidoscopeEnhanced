@@ -49,7 +49,7 @@ void main()
     float h3 = hash11( jelly * 7.9 + 2.39 );
 
     // Jelly drifts slowly, bobbing upward; each has its own beat phase.
-    vec3  Cj = vec3( ( h1 - 0.5 ) * 70.0 + 6.0 * sin( time * 0.11 + h2 * 6.0 ),
+    vec3  cj = vec3( ( h1 - 0.5 ) * 70.0 + 6.0 * sin( time * 0.11 + h2 * 6.0 ),
                      ( h2 - 0.5 ) * 34.0 + 4.0 * sin( time * 0.07 + h3 * 6.0 ),
                      22.0 + h3 * 55.0 );
     float pulse = sin( 6.2831853 * audioBeatPhase + h1 * 6.2831853 );
@@ -64,7 +64,7 @@ void main()
         float th = r2 * 6.2831853;
         float ph = r3 * 1.45; // 0 = top
         float R = bell * ( 1.0 + 0.16 * pulse );
-        world = Cj
+        world = cj
                 + vec3( sin( ph ) * cos( th ) * R, cos( ph ) * R * ( 0.75 - 0.10 * pulse ), sin( ph ) * sin( th ) * R );
         glow = 0.9 + 0.35 * pulse;
     }
@@ -76,7 +76,7 @@ void main()
         float ang = strand * 6.2831853;
         float sway = sin( t * 5.0 - time * 1.6 + strand * 9.0 )
                      * ( 0.6 + 1.8 * t );
-        world = Cj
+        world = cj
                 + vec3( cos( ang ) * bell * 0.7 + sway, -( 0.5 + t * ( 9.0 + 5.0 * h3 ) ) - 1.2 * pulse * t,
                         sin( ang ) * bell * 0.7 + sway * 0.6 );
         glow = ( 1.0 - 0.6 * t ) * ( 0.7 + 0.25 * pulse );

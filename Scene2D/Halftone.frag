@@ -90,26 +90,26 @@ void main()
     vec2  s2 = vec2( -slip * 0.6, slip * 0.8 );
     vec2  s3 = vec2( slip * 0.3, -slip * 0.9 );
 
-    vec3 rgbC = texture( tex0, uv + s1 ).rgb;
-    vec3 rgbM = texture( tex0, uv + s2 ).rgb;
-    vec3 rgbY = texture( tex0, uv + s3 ).rgb;
-    vec3 rgbK = texture( tex0, uv ).rgb;
+    vec3 rgb_c = texture( tex0, uv + s1 ).rgb;
+    vec3 rgb_m = texture( tex0, uv + s2 ).rgb;
+    vec3 rgb_y = texture( tex0, uv + s3 ).rgb;
+    vec3 rgb_k = texture( tex0, uv ).rgb;
 
     // RGB -> CMYK.  K is pulled out first (under-colour removal), which is what
     // gives print its deep blacks instead of a muddy three-ink overlap.
-    float kC = 1.0 - max( max( rgbK.r, rgbK.g ), rgbK.b );
+    float k_c = 1.0 - max( max( rgb_k.r, rgb_k.g ), rgb_k.b );
     // inkP runs to 1.0, so the old expression reached 1.65 — every separation
     // clamped to full value across most of the picture, which is the second
     // half of the black-frame problem above.  Bounded to a range a press could
     // actually hold.
     float ink = clamp( 0.55 + 0.55 * inkP, 0.40, 1.10 );
-    float c = ( 1.0 - rgbC.r - kC ) / max( 1.0 - kC, 1e-3 );
-    float m = ( 1.0 - rgbM.g - kC ) / max( 1.0 - kC, 1e-3 );
-    float y = ( 1.0 - rgbY.b - kC ) / max( 1.0 - kC, 1e-3 );
+    float c = ( 1.0 - rgb_c.r - k_c ) / max( 1.0 - k_c, 1e-3 );
+    float m = ( 1.0 - rgb_m.g - k_c ) / max( 1.0 - k_c, 1e-3 );
+    float y = ( 1.0 - rgb_y.b - k_c ) / max( 1.0 - k_c, 1e-3 );
     c = clamp( c * ink, 0.0, 1.0 );
     m = clamp( m * ink, 0.0, 1.0 );
     y = clamp( y * ink, 0.0, 1.0 );
-    float k = clamp( kC * ink, 0.0, 1.0 );
+    float k = clamp( k_c * ink, 0.0, 1.0 );
 
     // The classic screen angles, drifting very slowly so the moire never
     // settles into one fixed pattern.

@@ -75,12 +75,12 @@ void main()
 {
     float wp = ( warpP > 0.01 ? warpP : 1.0 );
     float glw = ( glowP > 0.01 ? glowP : 1.0 );
-    float spP = ( speedP > 0.01 ? speedP : 1.0 );
+    float sp_p = ( speedP > 0.01 ? speedP : 1.0 );
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float t = time * 0.5 * spP + audioAdvance * 1.5;
+    float t = time * 0.5 * sp_p + audioAdvance * 1.5;
 
     // Polar coordinates
     vec2  p = uv;
@@ -89,16 +89,16 @@ void main()
 
     // Base tunnel distortion.  The denominator can reach exactly zero when
     // r->0 and the sine term hits -1 simultaneously (0.1 - 0.1); a max()
-    // floor keeps tunnelZ from spiking to a huge, unstable value at that
+    // floor keeps tunnel_z from spiking to a huge, unstable value at that
     // coincidence -- the measured cause of this scene's one-frame jump=256
     // luma spike.
-    float tunnelZ = 1.0 / max( r + 0.1 + 0.1 * sin( t * 0.2 + audioSwell * 0.5 ), 0.06 );
+    float tunnel_z = 1.0 / max( r + 0.1 + 0.1 * sin( t * 0.2 + audioSwell * 0.5 ), 0.06 );
 
     // Create the twisting effect
-    float tw = a + tunnelZ * ( 0.5 * wp ) + audioPhase * 0.5 + t * 0.1;
+    float tw = a + tunnel_z * ( 0.5 * wp ) + audioPhase * 0.5 + t * 0.1;
 
     // Ray coordinate in the tunnel
-    vec2 tu = vec2( tw, tunnelZ - t );
+    vec2 tu = vec2( tw, tunnel_z - t );
 
     // Sample "exotic energy" patterns using sine waves and palettes
     float energy = sin( tu.x * 6.0 ) * cos( tu.y * 3.0 );
@@ -133,7 +133,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

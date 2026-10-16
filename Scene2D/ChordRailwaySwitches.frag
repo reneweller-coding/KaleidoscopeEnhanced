@@ -63,8 +63,8 @@ float hash11( float n )
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-const float kTrackGap = 0.13;
-const float kYardLen = 2.6; ///< yard length along the track axis
+const float TrackGap = 0.13;
+const float YardLen = 2.6; ///< yard length along the track axis
 
 /// The track a train is on at yard position s: its route is a list of
 /// track indices, changing at the crossovers (every 0.2 along s) with an
@@ -79,7 +79,7 @@ float routeLateral( float s, float routeSeed )
     if ( abs( t1 - t0 ) > 1.0 )
         t1 = t0 + sign( t1 - t0 );            // only to a neighbour
     float blend = smoothstep( 0.55, 1.0, f ); // the S-curve at the end of the segment
-    return ( mix( t0, t1, blend ) - 2.0 ) * kTrackGap;
+    return ( mix( t0, t1, blend ) - 2.0 ) * TrackGap;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -97,18 +97,18 @@ void main()
     // Yard axes: the track axis runs diagonally (bottom-left to top-right).
     vec2  axis = normalize( vec2( 1.0, 0.42 ) );
     vec2  nrm = vec2( -axis.y, axis.x );
-    float s = dot( p, axis ) + kYardLen * 0.5; // 0 .. kYardLen across the screen
-    float t = dot( p, nrm );                   // lateral
+    float s = dot( p, axis ) + YardLen * 0.5; // 0 .. YardLen across the screen
+    float t = dot( p, nrm );                  // lateral
     // The landscape: the photo as fields, a little desaturated, day light.
     vec3 col = img( gl_FragCoord.xy / resolution ) * mix( vec3( 0.7 ), imgPalette( hue * 0.159 + 0.3 ), 0.3 ) * day;
     // The ballast bed across the five tracks.
-    float bed = smoothstep( kTrackGap * 2.8, kTrackGap * 2.5, abs( t ) );
+    float bed = smoothstep( TrackGap * 2.8, TrackGap * 2.5, abs( t ) );
     col = mix( col, vec3( 0.42, 0.4, 0.38 ) * day * ( 0.85 + 0.15 * sin( s * 300.0 ) * sin( t * 250.0 ) ), bed * 0.85 );
     // Tracks: five, with sleepers and two rails each; every track glows in the colour of the class of the nearest
     // crossover.
     for ( int k = 0; k < 5; ++k )
     {
-        float ty = ( float( k ) - 2.0 ) * kTrackGap;
+        float ty = ( float( k ) - 2.0 ) * TrackGap;
         float dt = abs( t - ty );
         float sleepers = step( dt, 0.03 ) * pow( 0.5 + 0.5 * cos( s * 120.0 ), 8.0 );
         col = mix( col, vec3( 0.3, 0.22, 0.15 ) * day, sleepers * 0.9 );
@@ -122,8 +122,8 @@ void main()
         float e = clamp( audioChroma[c] * 1.5, 0.0, 1.0 );
         vec3  cc = imgPalette( hue * 0.159 + float( c ) / 12.0 ) * 1.4 + 0.15;
         // The crossover: a diagonal rail pair between two neighbouring tracks (which ones: by c).
-        float ta = ( mod( float( c ), 4.0 ) - 2.0 ) * kTrackGap;
-        float tb = ta + kTrackGap;
+        float ta = ( mod( float( c ), 4.0 ) - 2.0 ) * TrackGap;
+        float tb = ta + TrackGap;
         float u = clamp( ( s - sc + 0.06 ) / 0.12, 0.0, 1.0 );
         float ys = mix( ta, tb, smoothstep( 0.0, 1.0, u ) );
         float within = step( sc - 0.06, s ) * step( s, sc + 0.06 );
@@ -131,12 +131,12 @@ void main()
         col = mix( col, vec3( 0.75, 0.75, 0.8 ) * day, xrail );
         // The blade: a short bright rail at the start of the crossover, leaning over with the class (gentle).
         float lean = 0.3 + 0.7 * smoothstep( 0.15, 0.6, e );
-        float bladeT = ta + lean * 0.035;
-        float blade = smoothstep( 0.005, 0.002, abs( t - bladeT ) ) * step( sc - 0.06, s ) * step( s, sc - 0.02 );
+        float blade_t = ta + lean * 0.035;
+        float blade = smoothstep( 0.005, 0.002, abs( t - blade_t ) ) * step( sc - 0.06, s ) * step( s, sc - 0.02 );
         col = mix( col, cc * 0.9, blade );
         // The signal: a post beside the bed with a lamp lit by the class.
-        vec2  sp = vec2( sc - kYardLen * 0.5, kTrackGap * 3.0 );
-        vec2  sq = vec2( s - kYardLen * 0.5, t ) - sp;
+        vec2  sp = vec2( sc - YardLen * 0.5, TrackGap * 3.0 );
+        vec2  sq = vec2( s - YardLen * 0.5, t ) - sp;
         float post = smoothstep( 0.006, 0.003, abs( sq.x ) ) * step( 0.0, sq.y ) * step( sq.y, 0.08 );
         col = mix( col, vec3( 0.2 ) * day, post );
         float lamp = smoothstep( 0.02, 0.014, length( sq - vec2( 0.0, 0.09 ) ) );
@@ -155,7 +155,7 @@ void main()
             break;
         float fn = float( n );
         float speed = 0.6 + 0.3 * hash11( fn * 7.1 + routeSeed );
-        float head = fract( clock * speed + fn / trains ) * ( kYardLen + 0.6 ) - 0.3; // head position along s
+        float head = fract( clock * speed + fn / trains ) * ( YardLen + 0.6 ) - 0.3; // head position along s
         float seed = routeSeed + fn * 11.0;
         for ( int w = 0; w < 5; ++w )
         {
@@ -178,8 +178,9 @@ void main()
             // Headlamps on the locomotive, bright on the kick, a beam ahead.
             if ( w == 0 )
             {
-                float lampD = length( wq - vec2( 0.035, 0.0 ) );
-                col += vec3( 1.0, 0.95, 0.8 ) * ( smoothstep( 0.008, 0.003, lampD ) * 1.5 + exp( -lampD * 25.0 ) * 0.6 )
+                float lamp_d = length( wq - vec2( 0.035, 0.0 ) );
+                col += vec3( 1.0, 0.95, 0.8 )
+                       * ( smoothstep( 0.008, 0.003, lamp_d ) * 1.5 + exp( -lamp_d * 25.0 ) * 0.6 )
                        * ( 0.4 + 1.2 * audioKick );
                 float beam = smoothstep( 0.03, 0.0, abs( wq.y ) ) * step( 0.03, wq.x ) * exp( -( wq.x - 0.03 ) * 8.0 );
                 col += vec3( 1.0, 0.95, 0.8 ) * beam * 0.35 * ( 0.4 + 0.8 * audioKick );
@@ -188,7 +189,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -56,9 +56,9 @@ void main()
         return;
     }
 
-    const float SEGS = 70.0;
-    float       b = floor( idx / SEGS );     // branch 0..69
-    float       s = mod( idx, SEGS ) / SEGS; // 0 root .. 1 tip
+    const float Segs = 70.0;
+    float       b = floor( idx / Segs );     // branch 0..69
+    float       s = mod( idx, Segs ) / Segs; // 0 root .. 1 tip
 
     float h1 = hash11( b * 3.1 + 0.4 );
     float h2 = hash11( b * 5.7 + 1.9 );
@@ -86,8 +86,8 @@ void main()
     // S-curve that grows more pronounced toward the tip (organic, not a
     // straight spike).
     vec3  dir0 = normalize( vec3( h1 - 0.5, 0.35 + 0.55 * h2, h3 - 0.5 ) );
-    float branchLen = 7.5 + 5.5 * h4; // slightly shorter so full bloom stays in frame
-    vec3  along = dir0 * s * branchLen;
+    float branch_len = 7.5 + 5.5 * h4; // slightly shorter so full bloom stays in frame
+    vec3  along = dir0 * s * branch_len;
     vec3  perp = normalize( cross( dir0, vec3( 0.0, 1.0, 0.0 ) + vec3( 0.001 ) ) );
     vec3  up2 = cross( perp, dir0 );
     float curve = sin( s * 3.0 + h1 * 6.28 ) * s * s * 1.6;
@@ -103,7 +103,7 @@ void main()
     float thick = mix( 1.0, 0.12, s );
     vec3  c = attrA.xyz;
     vec3  facet = perp * c.x * thick + up2 * c.y * thick
-                  + dir0 * c.z * ( branchLen / SEGS ) * 0.65;
+                  + dir0 * c.z * ( branch_len / Segs ) * 0.65;
     world += facet;
 
     // Origin in the LOWER third of the frame (the cluster grows upward, so

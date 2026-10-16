@@ -72,11 +72,11 @@ void main()
     // 3-fold tetrahedral symmetry with heptagonal warping
     float r7 = 1.0 + 0.25 * sin( 7.0 * u + t * 0.8 ) * ( heptagonP > 0.01 ? heptagonP : 1.0 );
 
-    vec3 worldPos = vec3(
-                        cu * ( 1.0 + 0.4 * cv ) * r7,
-                        su * ( 1.0 + 0.4 * cv ) * r7,
-                        sv * 0.7 + 0.2 * sin( 3.0 * u + t * 0.5 ) )
-                    * scale;
+    vec3 world_pos = vec3(
+                         cu * ( 1.0 + 0.4 * cv ) * r7,
+                         su * ( 1.0 + 0.4 * cv ) * r7,
+                         sv * 0.7 + 0.2 * sin( 3.0 * u + t * 0.5 ) )
+                     * scale;
 
     // Surface normal
     vNormal = normalize( vec3( cu * cv, su * cv, sv ) );
@@ -84,7 +84,7 @@ void main()
     vCol = imgPalette( fract( attrA.w * 0.0416 + attrA.x * 0.2 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // 3D rotation
     float c = cos( t * 0.2 ), s = sin( t * 0.2 );

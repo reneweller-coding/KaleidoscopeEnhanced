@@ -183,7 +183,7 @@ float shipSDF( vec3 p, out float part )
 void main()
 {
     float cld = ( cloudP > 0.01 ? cloudP : 0.9 );
-    float shpS = ( shipP > 0.01 ? shipP : 1.0 );
+    float shp_s = ( shipP > 0.01 ? shipP : 1.0 );
     float glw = ( glowP > 0.01 ? glowP : 1.0 );
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
@@ -215,10 +215,10 @@ void main()
     // world recorded as a dark disc with a thread of crescent.
     vec3 sun = normalize( vec3( -0.52, 0.44, -0.73 ) );
 
-    vec3 oceanTint = imgPalette( 0.58 );
-    oceanTint = mix( vec3( 0.06, 0.20, 0.44 ), oceanTint, 0.40 );
-    vec3 airTint = imgPalette( 0.66 );
-    airTint = mix( vec3( 0.35, 0.58, 1.0 ), airTint, 0.35 );
+    vec3 ocean_tint = imgPalette( 0.58 );
+    ocean_tint = mix( vec3( 0.06, 0.20, 0.44 ), ocean_tint, 0.40 );
+    vec3 air_tint = imgPalette( 0.66 );
+    air_tint = mix( vec3( 0.35, 0.58, 1.0 ), air_tint, 0.35 );
 
     // ---------------- starfield ----------------
     vec3 col = vec3( 0.004, 0.006, 0.013 );
@@ -241,14 +241,14 @@ void main()
     vec3        pc = vec3( 0.0, -0.28, 0.0 ); // planet centre, set low in frame
     vec3        pro = ro - pc;
 
-    float tHit = iSphere( pro, rd, R );
-    float tCloud = iSphere( pro, rd, R * 1.022 );
-    float planetDepth = 1e9;
+    float t_hit = iSphere( pro, rd, R );
+    float t_cloud = iSphere( pro, rd, R * 1.022 );
+    float planet_depth = 1e9;
 
-    if ( tHit > 0.0 )
+    if ( t_hit > 0.0 )
     {
-        planetDepth = tHit;
-        vec3  sp = normalize( pro + rd * tHit ); // surface normal
+        planet_depth = t_hit;
+        vec3  sp = normalize( pro + rd * t_hit ); // surface normal
         float lam = dot( sp, sun );
         float day = smoothstep( -0.09, 0.20, lam ); // soft terminator
 
@@ -261,9 +261,9 @@ void main()
         float land = smoothstep( 0.50, 0.58, cont );
         float shore = smoothstep( 0.47, 0.52, cont ) * ( 1.0 - land );
 
-        vec3 landCol = mix( vec3( 0.16, 0.22, 0.10 ), vec3( 0.34, 0.30, 0.18 ),
-                            fbm3( rot * 7.0, 4 ) );
-        vec3 surf = mix( oceanTint, landCol, land );
+        vec3 land_col = mix( vec3( 0.16, 0.22, 0.10 ), vec3( 0.34, 0.30, 0.18 ),
+                             fbm3( rot * 7.0, 4 ) );
+        vec3 surf = mix( ocean_tint, land_col, land );
         surf = mix( surf, vec3( 0.35, 0.55, 0.62 ), shore * 0.7 );
 
         // Ice caps, blended by latitude.
@@ -279,19 +279,19 @@ void main()
 
         // --- night side: city lights on land, and only on land ---
         float night = 1.0 - day;
-        float cityMask = land * smoothstep( 0.55, 0.80, fbm3( rot * 12.0, 4 ) );
-        pcol += vec3( 1.0, 0.80, 0.45 ) * cityMask * night
+        float city_mask = land * smoothstep( 0.55, 0.80, fbm3( rot * 12.0, 4 ) );
+        pcol += vec3( 1.0, 0.80, 0.45 ) * city_mask * night
                 * ( 0.55 + 0.35 * audioLevel ) * glw;
-        pcol += oceanTint * night * 0.020; // faint earthshine
+        pcol += ocean_tint * night * 0.020; // faint earthshine
 
         col = pcol;
     }
 
     // --- the cloud shell: a SEPARATE sphere above the surface, domain-warped
     //     and advected, so the weather deforms instead of scrolling past ---
-    if ( tCloud > 0.0 && tCloud < planetDepth + 1.0 )
+    if ( t_cloud > 0.0 && t_cloud < planet_depth + 1.0 )
     {
-        vec3  cp = normalize( pro + rd * tCloud );
+        vec3  cp = normalize( pro + rd * t_cloud );
         float lam = dot( cp, sun );
         float day = smoothstep( -0.12, 0.22, lam );
 
@@ -318,14 +318,14 @@ void main()
         float limb = smoothstep( 0.0, 0.25, dot( cp, -rd ) );
         cover *= limb;
 
-        vec3 cloudLit = mix( vec3( 0.55, 0.60, 0.70 ), vec3( 1.0, 0.98, 0.95 ),
-                             smoothstep( 0.0, 0.6, lam ) );
-        vec3 cloudCol = cloudLit * ( 0.10 + 1.0 * max( lam, 0.0 ) ) * day;
-        cloudCol += airTint * 0.05 * ( 1.0 - day );
+        vec3 cloud_lit = mix( vec3( 0.55, 0.60, 0.70 ), vec3( 1.0, 0.98, 0.95 ),
+                              smoothstep( 0.0, 0.6, lam ) );
+        vec3 cloud_col = cloud_lit * ( 0.10 + 1.0 * max( lam, 0.0 ) ) * day;
+        cloud_col += air_tint * 0.05 * ( 1.0 - day );
 
-        col = mix( col, cloudCol, clamp( cover, 0.0, 1.0 ) );
-        if ( planetDepth > 1e8 )
-            planetDepth = tCloud;
+        col = mix( col, cloud_col, clamp( cover, 0.0, 1.0 ) );
+        if ( planet_depth > 1e8 )
+            planet_depth = t_cloud;
     }
 
     // --- atmosphere: a rim that brightens toward the terminator ---
@@ -337,13 +337,13 @@ void main()
         {
             float ta = -b - sqrt( h );
             float tb = -b + sqrt( h );
-            float seg = max( 0.0, min( tb, planetDepth ) - max( ta, 0.0 ) );
+            float seg = max( 0.0, min( tb, planet_depth ) - max( ta, 0.0 ) );
             float dens = seg / ( R * 0.42 );
             vec3  mp = normalize( pro + rd * max( ta, 0.0 ) );
             float lam = max( dot( mp, sun ), 0.0 );
             // Forward scattering: the limb glows most where the sun is behind it.
             float scat = pow( lam, 1.3 ) * ( 0.55 + 0.45 * audioSwell );
-            col += airTint * dens * scat * 0.55;
+            col += air_tint * dens * scat * 0.55;
             col += vec3( 1.0, 0.72, 0.48 ) * dens * pow( lam, 6.0 ) * 0.30; // sunset band
         }
     }
@@ -351,22 +351,22 @@ void main()
     // ---------------- the cruiser, in the foreground ----------------
     {
         // Ship space: it crosses the frame at a slight angle, ahead of us.
-        float sYaw = 0.42 + 0.06 * sin( t * 0.44 );
-        float cs = cos( sYaw ), sn = sin( sYaw );
+        float s_yaw = 0.42 + 0.06 * sin( t * 0.44 );
+        float cs = cos( s_yaw ), sn = sin( s_yaw );
         // The cruiser rides in the FOREGROUND: small against a world in
         // absolute terms, large in frame because it is close to the lens.
-        vec3  shipPos = ro + fwd * ( 1.18 + 0.10 * sin( t * 0.27 ) )
-                        + rgt * ( -0.20 + 0.07 * sin( t * 0.51 ) )
-                        + upv * ( 0.20 + 0.05 * sin( t * 0.39 ) );
-        float k = 0.050 * max( shpS, 0.3 ); // ship size in planet radii
-        float sScale = 1.0 / k;
+        vec3  ship_pos = ro + fwd * ( 1.18 + 0.10 * sin( t * 0.27 ) )
+                         + rgt * ( -0.20 + 0.07 * sin( t * 0.51 ) )
+                         + upv * ( 0.20 + 0.05 * sin( t * 0.39 ) );
+        float k = 0.050 * max( shp_s, 0.3 ); // ship size in planet radii
+        float s_scale = 1.0 / k;
 
-        vec3 lro = ( ro - shipPos ) * sScale;
+        vec3 lro = ( ro - ship_pos ) * s_scale;
         vec3 lrd = rd;
         lro.xz = mat2( cs, -sn, sn, cs ) * lro.xz;
         lrd.xz = mat2( cs, -sn, sn, cs ) * lrd.xz;
 
-        float d = 0.0, part = 0.0, hitPart = -1.0;
+        float d = 0.0, part = 0.0, hit_part = -1.0;
         vec3  hp = vec3( 0.0 );
         int   steps = 0;
         for ( int i = 0; i < 80; ++i )
@@ -376,7 +376,7 @@ void main()
             steps = i;
             if ( ds < 0.006 * ( 1.0 + d * 0.2 ) )
             {
-                hitPart = part;
+                hit_part = part;
                 hp = p;
                 break;
             }
@@ -385,7 +385,7 @@ void main()
                 break;
         }
 
-        if ( hitPart >= 0.0 && d / sScale < planetDepth )
+        if ( hit_part >= 0.0 && d / s_scale < planet_depth )
         {
             vec2  e = vec2( 0.010, 0.0 );
             float u;
@@ -408,13 +408,13 @@ void main()
 
             vec3 scol = albedo * ( 0.20 + 1.65 * dif );
             // Planet bounce: the world below throws light up onto the hull.
-            float upFace = max( -n.y, 0.0 );
-            scol += mix( oceanTint, airTint, 0.5 ) * albedo * upFace * 0.55;
+            float up_face = max( -n.y, 0.0 );
+            scol += mix( ocean_tint, air_tint, 0.5 ) * albedo * up_face * 0.55;
             scol += vec3( 0.7, 0.82, 1.0 ) * fres * 0.28;
             scol *= clamp( 1.0 - float( steps ) * 0.007, 0.4, 1.0 );
 
             // Windows on the spine/tower.
-            if ( hitPart > 0.5 && hitPart < 1.5 )
+            if ( hit_part > 0.5 && hit_part < 1.5 )
             {
                 vec2  wc = floor( vec2( hp.z * 3.4, hp.y * 4.6 ) );
                 vec2  wf = fract( vec2( hp.z * 3.4, hp.y * 4.6 ) );
@@ -424,7 +424,7 @@ void main()
                 scol += vec3( 1.0, 0.92, 0.72 ) * win * 0.75 * glw;
             }
             // Engine block: emissive.
-            if ( hitPart > 1.5 )
+            if ( hit_part > 1.5 )
             {
                 float r = length( hp.xy - vec2( 0.0, 0.10 ) ) / 1.7;
                 float core = pow( clamp( 1.0 - r, 0.0, 1.0 ), 1.5 );
@@ -433,8 +433,8 @@ void main()
             }
             // Navigation strobe.
             float strobe = pow( max( 0.0, 1.0 - abs( fract( audioBeatPhase ) - 0.05 ) * 10.0 ), 3.0 );
-            float atTop = smoothstep( 0.85, 1.15, hp.y );
-            scol += vec3( 1.0, 0.32, 0.28 ) * atTop * strobe * 0.8 * glw;
+            float at_top = smoothstep( 0.85, 1.15, hp.y );
+            scol += vec3( 1.0, 0.32, 0.28 ) * at_top * strobe * 0.8 * glw;
 
             col = scol;
         }
@@ -443,7 +443,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.20 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.40 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.40 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

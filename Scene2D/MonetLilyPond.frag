@@ -128,12 +128,12 @@ vec3 scene( vec2 p )
     // wavering across the pond.
     float y = p.y;
     float wob = fbm( vec2( p.x * 1.5 + g_T * 0.01, y * 6.0 ) );
-    vec3  skyR = mix( vec3( 0.68, 0.72, 0.9 ), vec3( 0.85, 0.75, 0.88 ), wob ) * ( 0.85 + 0.3 * g_swell );
+    vec3  sky_r = mix( vec3( 0.68, 0.72, 0.9 ), vec3( 0.85, 0.75, 0.88 ), wob ) * ( 0.85 + 0.3 * g_swell );
     vec3  deep = mix( vec3( 0.2, 0.3, 0.45 ), vec3( 0.3, 0.45, 0.4 ), fbm( p * 2.0 + 5.0 ) );
     // Willow reflections: long drooping green-blue streaks from the top.
     float willow = smoothstep( 0.42, 0.68, fbm( vec2( p.x * 5.0, y * 0.6 + g_T * 0.003 ) ) )
                    * smoothstep( -0.35, 0.35, y );
-    vec3  water = mix( skyR, deep, smoothstep( 0.35, 0.65, wob ) * 0.7 );
+    vec3  water = mix( sky_r, deep, smoothstep( 0.35, 0.65, wob ) * 0.7 );
     water = mix( water, mix( vec3( 0.15, 0.35, 0.3 ), vec3( 0.3, 0.45, 0.2 ), wob ), willow * 0.85 );
     // Warm light of the sky caught in the ripples.
     water = mix( water, vec3( 0.95, 0.8, 0.6 ),
@@ -179,7 +179,7 @@ void main()
         float fl = float( L );
         vec2  g = p / ( sz * ( 1.0 - 0.3 * fl ) ) + fl * 17.0;
         vec2  gi = floor( g );
-        float bestD = 9.0;
+        float best_d = 9.0;
         vec3  bc = vec3( 0.0 );
         for ( int j = -1; j <= 1; ++j )
             for ( int i = -1; i <= 1; ++i )
@@ -191,9 +191,9 @@ void main()
                 d = mat2( cos( ang ), -sin( ang ), sin( ang ), cos( ang ) ) * d;
                 float e = length( d * vec2( 0.55, 1.6 ) ); // a horizontal dab
                 e += 0.25 * noise2( d * 3.0 + c );         // bristly edge
-                if ( e < bestD )
+                if ( e < best_d )
                 {
-                    bestD = e;
+                    best_d = e;
                     bc = scene( ( ctr - fl * 17.0 ) * sz * ( 1.0 - 0.3 * fl ) );
                     // Broken colour: each stroke leans a little warmer, cooler,
                     // lighter or darker than its neighbours, as Monet laid them.
@@ -202,7 +202,7 @@ void main()
                     bc += jit * vec3( 0.12, 0.08, 0.12 );
                 }
             }
-        float a = smoothstep( 0.95, 0.75, bestD ) * ( L == 0 ? 1.0 : 0.75 );
+        float a = smoothstep( 0.95, 0.75, best_d ) * ( L == 0 ? 1.0 : 0.75 );
         // Bristle streaks inside each stroke.
         float bristle = 0.9 + 0.1 * sin( g.y * 25.0 + noise2( g * 2.0 ) * 3.0 );
         col = mix( col, bc * bristle, a );
@@ -214,7 +214,7 @@ void main()
     // Canvas weave under the thin places.
     col *= 0.95 + 0.05 * sin( gl_FragCoord.x * 1.3 ) * sin( gl_FragCoord.y * 1.3 );
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone * 1.1, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone * 1.1, 0.0, 1.0 ), 1.0 );
 }

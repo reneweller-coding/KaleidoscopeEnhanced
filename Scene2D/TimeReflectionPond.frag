@@ -75,7 +75,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nSrc = 3 + int( clamp( sourcesP, 0.0, 1.0 ) * 4.0 );
+    int   n_src = 3 + int( clamp( sourcesP, 0.0, 1.0 ) * 4.0 );
     float k = 40.0 + 40.0 * ( 1.0 - clamp( wavelenP, 0.0, 1.0 ) );
     float amp = 0.004 + 0.012 * clamp( audioSwell, 0.0, 1.0 );
     float drop = clamp( audioDrop, 0.0, 1.0 );
@@ -85,7 +85,7 @@ void main()
     // from the clock and a reversal term that is a smooth pulse.
     float clock = sceneAdvance * 0.6 + sceneTime * 0.12;
     float reversal = sin( clamp( drop, 0.0, 1.0 ) * 3.14159 ); // 0 -> 1 -> 0 over the drop
-    float tEff = clock - reversal * 2.2;                       // the waves run back while it rises
+    float t_eff = clock - reversal * 2.2;                      // the waves run back while it rises
 
     // Height field: rings from sources, each with its own age since its
     // last ring (periodic on the clock), damped with distance.
@@ -93,12 +93,12 @@ void main()
     vec2  grad = vec2( 0.0 );
     for ( int i = 0; i < 7; ++i )
     {
-        if ( i >= nSrc )
+        if ( i >= n_src )
             break;
         float fi = float( i );
         vec2  c = vec2( ( hash11( fi * 3.7 ) - 0.5 ) * aspect * 0.9, ( hash11( fi * 5.3 ) - 0.5 ) * 0.9 );
         float d = length( p - c );
-        float phase = d * k - tEff * 6.0 + hash11( fi * 7.1 ) * 6.28;
+        float phase = d * k - t_eff * 6.0 + hash11( fi * 7.1 ) * 6.28;
         float env = exp( -d * 1.8 );
         float w = sin( phase ) * env;
         h += w * amp;
@@ -107,23 +107,23 @@ void main()
     // Refraction: look through the surface to the floor (the photo).
     vec2 uv = gl_FragCoord.xy / resolution;
     vec2 refr = uv - grad * 0.5;
-    vec3 floorCol = img( clamp( refr, 0.0, 1.0 ) );
-    floorCol = mix( floorCol, floorCol * imgPalette( hue * 0.159 + 0.55 ) * 1.5, 0.25 );
+    vec3 floor_col = img( clamp( refr, 0.0, 1.0 ) );
+    floor_col = mix( floor_col, floor_col * imgPalette( hue * 0.159 + 0.55 ) * 1.5, 0.25 );
     // Water tint and depth.
     vec3 water = mix( vec3( 0.1, 0.3, 0.35 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 );
-    vec3 col = mix( floorCol, water, 0.25 );
+    vec3 col = mix( floor_col, water, 0.25 );
     // Sky reflection along the slope, glints on the treble.
     float slope = length( grad );
     float glint = pow( clamp( slope * 8.0, 0.0, 1.0 ), 3.0 );
     col += vec3( 0.9, 0.95, 1.0 ) * glint * ( 0.2 + 0.8 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
     // Caustics: the floor brightens where the surface focuses light.
-    col += floorCol * clamp( -h * 40.0, 0.0, 1.0 ) * 0.5;
+    col += floor_col * clamp( -h * 40.0, 0.0, 1.0 ) * 0.5;
     // The reversal tints the whole pond for its moment.
     col = mix( col, col * imgPalette( hue * 0.159 + 0.9 ) * 1.6, reversal * 0.35 );
     // The sources: round pebbles where the rings begin.
     for ( int i = 0; i < 7; ++i )
     {
-        if ( i >= nSrc )
+        if ( i >= n_src )
             break;
         float fi = float( i );
         vec2  c = vec2( ( hash11( fi * 3.7 ) - 0.5 ) * aspect * 0.9, ( hash11( fi * 5.3 ) - 0.5 ) * 0.9 );
@@ -131,7 +131,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

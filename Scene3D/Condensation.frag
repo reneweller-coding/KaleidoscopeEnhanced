@@ -191,24 +191,24 @@ void main()
     // fell from 38 to 7 across the resolve, because the gas glow carried the
     // whole image and the surface term arriving in its place was a third as
     // strong. A reveal that dims as it reveals reads as the scene ending.
-    vec3 gasCol = base * 0.55 + tint * 0.55;
-    vec3 surfCol = base * ( 0.50 + 2.10 * lam );
-    vec3 col = mix( gasCol, surfCol, formed );
+    vec3 gas_col = base * 0.55 + tint * 0.55;
+    vec3 surf_col = base * ( 0.50 + 2.10 * lam );
+    vec3 col = mix( gas_col, surf_col, formed );
 
     col += tint * ( 1.0 - formed ) * ( 0.25 + 0.75 * audioSwell );
     col += tint * audioKick * 0.35 * ( 1.0 - 0.6 * formed );
 
     // A rim on the finished body, so the silhouette is legible against the
     // remains of its own cloud.
-    vec3  viewDir = normalize( -vPos );
-    float rim = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 3.0 );
+    vec3  view_dir = normalize( -vPos );
+    float rim = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 3.0 );
     col += tint * rim * formed * ( 0.45 + 0.6 * audioSwell );
     col *= 0.55 + 0.45 * fall;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

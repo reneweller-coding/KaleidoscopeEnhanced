@@ -95,12 +95,12 @@ void main()
     // Width: the stereo balance magnitude is fast; the swell is the slow
     // envelope we are allowed, so the width follows the swell and the
     // balance only leans the slot left or right (slowly, scaled down).
-    float widthBase = 0.12 + 0.2 * clamp( widthP, 0.0, 1.0 );
-    float width = widthBase + 0.3 * clamp( audioSwell, 0.0, 1.0 );
+    float width_base = 0.12 + 0.2 * clamp( widthP, 0.0, 1.0 );
+    float width = width_base + 0.3 * clamp( audioSwell, 0.0, 1.0 );
     float lean = 0.15 * clamp( audioStereo, -1.0, 1.0 );
     float depth = 0.6 + 0.6 * clamp( depthP, 0.0, 1.0 );
     float sun = 0.6 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
-    float lL = clamp( audioStereoL * 1.5, 0.0, 1.0 ), lR = clamp( audioStereoR * 1.5, 0.0, 1.0 );
+    float l_l = clamp( audioStereoL * 1.5, 0.0, 1.0 ), l_r = clamp( audioStereoR * 1.5, 0.0, 1.0 );
 
     // The canyon: looking up-and-forward; the walls are two surfaces
     // whose gap narrows with height (perspective) and with the width; the
@@ -109,26 +109,26 @@ void main()
     float gap = width * ( 0.35 + 0.65 * h ) * ( 1.0 + 0.3 * fbm( vec2( h * 3.0, 1.0 ) ) );
     float centre = lean * h + 0.06 * sin( h * 6.0 ) * depth;
     float dl = p.x - ( centre - gap ), dr = ( centre + gap ) - p.x;
-    float inSlot = step( 0.0, dl ) * step( 0.0, dr );
+    float in_slot = step( 0.0, dl ) * step( 0.0, dr );
     // Sky in the slot, brightest at the top.
     vec3 sky = mix( vec3( 0.5, 0.7, 1.0 ), vec3( 1.0, 0.95, 0.85 ), smoothstep( 0.6, 1.0, h ) ) * sun;
     sky = mix( sky, sky * imgPalette( hue * 0.159 + 0.6 ) * 1.4, 0.15 );
     // Walls: sandstone from the photo, banded, lit from above; left wall by L, right by R.
-    float side = step( p.x, centre );                           // 1 = left wall
-    float wallDist = side * ( -dl ) + ( 1.0 - side ) * ( -dr ); // distance into the wall
-    vec2  wuv = vec2( side * ( 0.5 - wallDist * 0.6 ) + ( 1.0 - side ) * ( 0.5 + wallDist * 0.6 ), h * 0.9 );
+    float side = step( p.x, centre );                            // 1 = left wall
+    float wall_dist = side * ( -dl ) + ( 1.0 - side ) * ( -dr ); // distance into the wall
+    vec2  wuv = vec2( side * ( 0.5 - wall_dist * 0.6 ) + ( 1.0 - side ) * ( 0.5 + wall_dist * 0.6 ), h * 0.9 );
     vec3  rock = img( clamp( wuv, 0.0, 1.0 ) ) * 1.1;
     rock = mix( rock, rock * imgPalette( hue * 0.159 + 0.08 ) * 1.6, 0.35 );
     float bands = 0.8 + 0.2 * sin( h * 40.0 + fbm( vec2( p.x * 3.0, h * 8.0 ) ) * 6.0 );
     rock *= bands;
-    float fromSlot = clamp( wallDist / 0.6, 0.0, 1.0 );
-    float light = ( 0.25 + 0.75 * h ) * ( 1.0 - 0.6 * fromSlot ) * sun;
-    light *= 0.7 + 0.5 * ( side * lL + ( 1.0 - side ) * lR );
+    float from_slot = clamp( wall_dist / 0.6, 0.0, 1.0 );
+    float light = ( 0.25 + 0.75 * h ) * ( 1.0 - 0.6 * from_slot ) * sun;
+    light *= 0.7 + 0.5 * ( side * l_l + ( 1.0 - side ) * l_r );
     // Warm bounce light low in the canyon.
     rock = mix( rock * light, rock * vec3( 1.1, 0.7, 0.4 ) * 0.5 * sun, ( 1.0 - h ) * 0.3 );
-    vec3 col = mix( rock, sky, inSlot );
+    vec3 col = mix( rock, sky, in_slot );
     // Sun shafts through the slot, and dust motes (round) flashing on the kick.
-    float shaft = inSlot * pow( 0.5 + 0.5 * sin( p.x * 30.0 + h * 5.0 + sceneAdvance * 0.3 ), 8.0 ) * 0.25 * sun;
+    float shaft = in_slot * pow( 0.5 + 0.5 * sin( p.x * 30.0 + h * 5.0 + sceneAdvance * 0.3 ), 8.0 ) * 0.25 * sun;
     col += vec3( 1.0, 0.95, 0.8 ) * shaft;
     vec2  mu = ( p + vec2( 0.0, -sceneAdvance * 0.15 ) ) * 40.0;
     vec2  mc = floor( mu );
@@ -138,7 +138,7 @@ void main()
     col += vec3( 1.0, 0.95, 0.8 ) * motes * ( 0.15 + 0.8 * audioKick ) * sun;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -30,40 +30,40 @@ out float vBeamID;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ribbonID = attrA.w;
-    float tAlong = attrA.x * 6.2831853; // Angle around storage ring
+    float ribbon_id = attrA.w;
+    float t_along = attrA.x * 6.2831853; // Angle around storage ring
 
     // Storage ring radius
     float R0 = 3.2;
 
     // Periodic undulator wiggling magnets
     float wiggles = 24.0;
-    float wiggleAmp = ( 0.15 + 0.1 * audioBass ) * sin( tAlong * wiggles );
+    float wiggle_amp = ( 0.15 + 0.1 * audioBass ) * sin( t_along * wiggles );
 
-    float ringAngle = tAlong + time * 0.5 + audioAdvance * 0.3;
-    float r = R0 + wiggleAmp;
+    float ring_angle = t_along + time * 0.5 + audioAdvance * 0.3;
+    float r = R0 + wiggle_amp;
 
     // Electron orbit coordinates
-    vec3 orbitCenter = vec3( r * cos( ringAngle ), sin( tAlong * 3.0 + ribbonID ) * 0.2, r * sin( ringAngle ) );
+    vec3 orbit_center = vec3( r * cos( ring_angle ), sin( t_along * 3.0 + ribbon_id ) * 0.2, r * sin( ring_angle ) );
 
     // Relativistic synchrotron radiation beam emission
-    float radiation = abs( cos( tAlong * wiggles ) ) * ( 1.0 + audioKick * 0.7 );
+    float radiation = abs( cos( t_along * wiggles ) ) * ( 1.0 + audioKick * 0.7 );
 
     // Ribbon cross-section width
-    vec3 tangent = normalize( vec3( -sin( ringAngle ), 0.0, cos( ringAngle ) ) );
+    vec3 tangent = normalize( vec3( -sin( ring_angle ), 0.0, cos( ring_angle ) ) );
     vec3 normal = vec3( 0.0, 1.0, 0.0 );
 
     float width = ( 0.05 + 0.03 * radiation ) * ( 1.0 + audioSwell * 0.5 );
-    vec3  pos = orbitCenter + normal * ( attrA.y * 0.5 ) * width;
+    vec3  pos = orbit_center + normal * ( attrA.y * 0.5 ) * width;
 
     // Half the ribbons are TANGENTIAL RADIATION JETS: light thrown off
     // along the tangent wherever the beam is bent — that IS synchrotron
     // radiation, and it is what ties the picture to the name.
-    if ( ribbonID >= 10.0 )
+    if ( ribbon_id >= 10.0 )
     {
-        float srcA = ( ribbonID - 10.0 ) * 0.628318 + time * 0.5 + audioAdvance * 0.3;
-        vec3  src = vec3( R0 * cos( srcA ), 0.0, R0 * sin( srcA ) );
-        vec3  jt = normalize( vec3( -sin( srcA ), 0.0, cos( srcA ) ) );
+        float src_a = ( ribbon_id - 10.0 ) * 0.628318 + time * 0.5 + audioAdvance * 0.3;
+        vec3  src = vec3( R0 * cos( src_a ), 0.0, R0 * sin( src_a ) );
+        vec3  jt = normalize( vec3( -sin( src_a ), 0.0, cos( src_a ) ) );
         float lt = attrA.x;
         pos = src + jt * lt * 3.4;
         pos.y += ( attrA.y * 0.5 ) * ( 0.04 + lt * 0.45 ); // the fan opens up
@@ -73,7 +73,7 @@ void main()
     vPos = pos;
     vUV = vec2( attrA.x, attrA.y * 0.5 + 0.5 );
     vRadiation = radiation;
-    vBeamID = ribbonID / 20.0;
+    vBeamID = ribbon_id / 20.0;
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;

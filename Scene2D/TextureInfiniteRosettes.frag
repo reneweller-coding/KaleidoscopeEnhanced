@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -255,8 +255,8 @@ void main()
                       * vec2( sin( 0.013 * sceneTime + h * 6.28 ), cos( 0.011 * sceneTime + h * 4.0 ) );
     vec2  uv = win + lp * z;
     // Mip footprint without the atan spike.
-    float fwA = length( fwidth( vec2( cos( a ), sin( a ) ) ) );
-    float fw = max( fwidth( u ), fwA ) * z * 1024.0;
+    float fw_a = length( fwidth( vec2( cos( a ), sin( a ) ) ) );
+    float fw = max( fwidth( u ), fw_a ) * z * 1024.0;
     vec3  ph = imgLod( uv, clamp( log2( max( fw, 1.0 ) ), 0.0, 9.0 ) );
     float m = luma( imgLod( win, 7.0 ) );
     vec3  col = max( ( ph - m ) * 1.4 + m, 0.0 );

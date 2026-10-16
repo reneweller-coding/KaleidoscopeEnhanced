@@ -111,7 +111,7 @@ void main()
     vec3 cam = vec3( 0.0, 0.55, travel );
     vec3 dir = normalize( vec3( p.x, p.y - 0.22, 1.2 ) );
 
-    float t = 0.05, hitT = -1.0;
+    float t = 0.05, hit_t = -1.0;
     vec3  pos = cam;
     for ( int i = 0; i < 56; ++i )
     {
@@ -120,7 +120,7 @@ void main()
         float dh = pos.y - h;
         if ( dh < 0.01 * t )
         {
-            hitT = t;
+            hit_t = t;
             break;
         }
         t += max( dh * 0.7, 0.03 );
@@ -128,17 +128,17 @@ void main()
             break;
     }
 
-    vec3 hotCol = imgPalette( hue * 0.159 + 0.05 ) * 1.5 + vec3( 0.6, 0.15, 0.0 );
-    vec3 ironCol = imgPalette( hue * 0.159 + 0.6 ) * 0.35;
-    vec3 skyCol = imgPalette( hue * 0.159 + 0.5 );
+    vec3 hot_col = imgPalette( hue * 0.159 + 0.05 ) * 1.5 + vec3( 0.6, 0.15, 0.0 );
+    vec3 iron_col = imgPalette( hue * 0.159 + 0.6 ) * 0.35;
+    vec3 sky_col = imgPalette( hue * 0.159 + 0.5 );
     vec3 col;
-    if ( hitT < 0.0 )
+    if ( hit_t < 0.0 )
     {
         // Sky: near-black with a magnetospheric glow over the horizon on the
         // swell, and the star's own hot corona line.
         float hz = smoothstep( -0.05, 0.4, dir.y );
-        col = skyCol * 0.04 * ( 1.0 - hz );
-        col += skyCol * exp( -max( dir.y, 0.0 ) * 8.0 ) * ( 0.15 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
+        col = sky_col * 0.04 * ( 1.0 - hz );
+        col += sky_col * exp( -max( dir.y, 0.0 ) * 8.0 ) * ( 0.15 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
         vec2 cell = floor( dir.xy * 120.0 / max( dir.z, 0.2 ) );
         vec2 f = fract( dir.xy * 120.0 / max( dir.z, 0.2 ) ) - 0.5;
         col += vec3( step( 0.988, hash21( cell ) ) * exp( -dot( f, f ) * 9.0 ) ) * 0.4 * hz;
@@ -150,15 +150,15 @@ void main()
         // Cracks glow with the sharpness; the quake flash runs along them.
         float heat = 0.3 + 1.2 * clamp( audioSharpness * 1.5, 0.0, 1.0 );
         float quake = audioKick * ( 0.5 + 0.5 * sin( pos.z * 3.0 - sceneTime * 12.0 ) );
-        vec3  plate = ironCol * ( 0.6 + 0.4 * v.x ) * ( 0.5 + 0.5 * audioLevel );
-        plate += hotCol * 0.08 * clamp( audioSubBass, 0.0, 1.0 ); // deep glow through the iron
+        vec3  plate = iron_col * ( 0.6 + 0.4 * v.x ) * ( 0.5 + 0.5 * audioLevel );
+        plate += hot_col * 0.08 * clamp( audioSubBass, 0.0, 1.0 ); // deep glow through the iron
         plate += img( fract( pos.xz * 0.3 ) ) * 0.06;
-        col = plate + hotCol * crack * ( heat + 1.5 * quake );
-        float fog = 1.0 - exp( -hitT * 0.09 );
-        col = mix( col, skyCol * 0.05, clamp( fog, 0.0, 0.95 ) );
+        col = plate + hot_col * crack * ( heat + 1.5 * quake );
+        float fog = 1.0 - exp( -hit_t * 0.09 );
+        col = mix( col, sky_col * 0.05, clamp( fog, 0.0, 0.95 ) );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

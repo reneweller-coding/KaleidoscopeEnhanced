@@ -21,7 +21,7 @@ out float vDist;   ///< Distance (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-const vec2    EXTENT = vec2( 220.0, 320.0 );
+const vec2    Extent = vec2( 220.0, 320.0 );
 
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;    ///< Seconds since this scene was activated.
@@ -46,10 +46,10 @@ vec3 gerstner( vec2 pos, vec2 dir, float amp, float len, float phase,
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
-    vec2 uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
-    vec2 uv = mix( uvA, uvB, gl_TessCoord.y );
-    vec3 p = vec3( ( uv.x - 0.5 ) * EXTENT.x, 0.0, uv.y * EXTENT.y + 2.0 );
+    vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2 uv_b = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2 uv = mix( uv_a, uv_b, gl_TessCoord.y );
+    vec3 p = vec3( ( uv.x - 0.5 ) * Extent.x, 0.0, uv.y * Extent.y + 2.0 );
 
     vec3 tanX = vec3( 1.0, 0.0, 0.0 );
     vec3 tanZ = vec3( 0.0, 0.0, 1.0 );
@@ -58,14 +58,14 @@ void main()
     float swell = swellP * ( 0.8 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
     float choppy = choppyP;
     float clock = sceneAdvance * 0.7 + sceneTime * 0.25;
-    float windDir = 0.55 + 0.20 * sin( clock * 0.017 );
+    float wind_dir = 0.55 + 0.20 * sin( clock * 0.017 );
     float amp = 1.4 * swell;
     float len = 55.0;
     float rot = 0.0;
     vec3  disp = vec3( 0.0 );
     for ( int i = 0; i < 6; ++i )
     {
-        float a = windDir + rot;
+        float a = wind_dir + rot;
         vec2  dir = vec2( cos( a ), sin( a ) );
         float speed = sqrt( 6.2831853 / len );
         disp += gerstner( p.xz, dir, amp, len, clock * speed * 3.2, choppy, tanX, tanZ );

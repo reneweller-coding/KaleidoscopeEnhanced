@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -284,8 +284,8 @@ void main()
     // depending on the flow direction relative to the light.
     vec2  L = normalize( vec2( cos( 0.3 ), sin( 0.3 ) ) );
     float face = pow( abs( dot( dir, L ) ), 2.0 );
-    float bandC = smoothstep( 0.3, 0.7, band );
-    float sheen = pow( face, 1.5 ) * ( 0.25 + 1.2 * bandC ) * ( 0.5 + 0.7 * smoothstep( 0.0, 1.5, speed ) );
+    float band_c = smoothstep( 0.3, 0.7, band );
+    float sheen = pow( face, 1.5 ) * ( 0.25 + 1.2 * band_c ) * ( 0.5 + 0.7 * smoothstep( 0.0, 1.5, speed ) );
     // Pearly iridescence varying with the flake angle.
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  pearl = hsv2rgb(
@@ -299,7 +299,7 @@ void main()
                + mix( pearl, dye * 1.3 + 0.2, 0.3 * clamp( dyeP, 0.0, 1.0 ) ) * sheen * ( 0.8 + 0.6 * swell );
     // Glitter: individual flakes catching the light, round points.
     vec2  gq = q * 90.0, gi = floor( gq );
-    float gl = step( 0.985, hash21( gi ) ) * smoothstep( 0.35, 0.0, length( fract( gq ) - 0.5 ) ) * face * bandC;
+    float gl = step( 0.985, hash21( gi ) ) * smoothstep( 0.35, 0.0, length( fract( gq ) - 0.5 ) ) * face * band_c;
     col += vec3( 1.0 ) * gl * ( 0.2 + 1.0 * hi );
     finish( col );
 }

@@ -59,14 +59,14 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float day = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
-    vec3  iceBlue = mix( vec3( 0.55, 0.8, 1.0 ), imgPalette( hue * 0.159 + 0.55 ), 0.3 );
+    vec3  ice_blue = mix( vec3( 0.55, 0.8, 1.0 ), imgPalette( hue * 0.159 + 0.55 ), 0.3 );
     vec3  col;
     if ( vKind < -1.5 )
     {
         // The sea: dark grey-green, the cliff reflected faintly, swell lines.
         vec2 uv = vTexCoord;
         col = mix( vec3( 0.08, 0.14, 0.18 ), vec3( 0.2, 0.3, 0.35 ), uv.y ) * day;
-        col += iceBlue * 0.25 * smoothstep( 0.6, 1.0, uv.y ) * ( 0.5 + 0.5 * bass );
+        col += ice_blue * 0.25 * smoothstep( 0.6, 1.0, uv.y ) * ( 0.5 + 0.5 * bass );
         col *= 0.9 + 0.1 * sin( uv.y * 80.0 + uv.x * 10.0 + sceneAdvance * 1.5 );
         fragColor = vec4( col, 1.0 );
         return;
@@ -85,8 +85,8 @@ void main()
         // from within by the bass, brighter at the top, the waterline dark.
         vec2 uv = vTexCoord;
         vec3 photo = img( fract( uv * vec2( 4.0, 1.0 ) ) );
-        col = mix( iceBlue, photo * 1.3, 0.4 ) * ( 0.4 + 0.6 * uv.y ) * day;
-        col += iceBlue * 0.35 * bass * ( 1.0 - uv.y );
+        col = mix( ice_blue, photo * 1.3, 0.4 ) * ( 0.4 + 0.6 * uv.y ) * day;
+        col += ice_blue * 0.35 * bass * ( 1.0 - uv.y );
         // Crevasses: smooth vertical fissures (no cell blocks, rule V8e).
         float fiss = sin( uv.x * 140.0 + 3.0 * sin( uv.y * 9.0 + uv.x * 20.0 ) ) * 0.5 + 0.5;
         float crev = smoothstep( 0.75, 0.95, fiss ) * smoothstep( 0.05, 0.3, uv.y );
@@ -109,12 +109,12 @@ void main()
     }
     // A slab: photo ice, bright fresh faces, blue underside.
     vec3 photo = img( vTexCoord );
-    col = mix( iceBlue * 1.1, photo * 1.3, 0.45 ) * day;
+    col = mix( ice_blue * 1.1, photo * 1.3, 0.45 ) * day;
     col *= 0.7 + 0.3 * vTexCoord.y;
-    col += iceBlue * 0.2 * bass;
+    col += ice_blue * 0.2 * bass;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

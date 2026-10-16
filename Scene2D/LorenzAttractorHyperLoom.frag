@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float rMod = ( rhoP > 0.01 ) ? rhoP : 1.0;
+    float r_mod = ( rhoP > 0.01 ) ? rhoP : 1.0;
     float trl = ( trailP > 0.01 ) ? trailP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -75,62 +75,62 @@ void main()
     // Lorenz parameters: sigma = 10, beta = 8/3, rho modulated by audio
     float sigma = 10.0;
     float beta = 2.666666;
-    float rho = ( 28.0 + 8.0 * sin( t * 0.4 ) + 6.0 * audioCentroid ) * rMod;
+    float rho = ( 28.0 + 8.0 * sin( t * 0.4 ) + 6.0 * audioCentroid ) * r_mod;
 
     // 3D Point projected onto 2D screen coordinate frame
-    float rotA = t * 0.2 + audioPhase * 0.1;
-    float cs = cos( rotA ), sn = sin( rotA );
-    vec2  pRot = mat2( cs, -sn, sn, cs ) * uv * ( 35.0 + 5.0 * sin( audioSwell * 2.0 ) );
+    float rot_a = t * 0.2 + audioPhase * 0.1;
+    float cs = cos( rot_a ), sn = sin( rot_a );
+    vec2  p_rot = mat2( cs, -sn, sn, cs ) * uv * ( 35.0 + 5.0 * sin( audioSwell * 2.0 ) );
 
     // Integrated trajectory point simulation (multi-step RK2 integration),
     // seeded from a FIXED point shared by every pixel -- not the pixel's own
     // position -- so the traced curve is one real spatial path instead of
     // every pixel trivially starting AT distance zero from itself (which let
-    // the angle-only lobePhase background dominate the whole frame with a
+    // the angle-only lobe_phase background dominate the whole frame with a
     // generic pinwheel instead of the intended attractor-wing glow).
-    vec3  pLorenz = vec3( 1.0, 1.0, 25.0 );
-    float minDist = 1e5;
-    float energyAcc = 0.0;
+    vec3  p_lorenz = vec3( 1.0, 1.0, 25.0 );
+    float min_dist = 1e5;
+    float energy_acc = 0.0;
 
     float dt = 0.012 * trl;
 
     for ( int i = 0; i < 24; i++ )
     {
         // Lorenz ODE derivatives
-        float dx = sigma * ( pLorenz.y - pLorenz.x );
-        float dy = pLorenz.x * ( rho - pLorenz.z ) - pLorenz.y;
-        float dz = pLorenz.x * pLorenz.y - beta * pLorenz.z;
+        float dx = sigma * ( p_lorenz.y - p_lorenz.x );
+        float dy = p_lorenz.x * ( rho - p_lorenz.z ) - p_lorenz.y;
+        float dz = p_lorenz.x * p_lorenz.y - beta * p_lorenz.z;
 
-        pLorenz += vec3( dx, dy, dz ) * dt;
+        p_lorenz += vec3( dx, dy, dz ) * dt;
 
         // Project 3D Lorenz attractor onto screen plane. Sub-bass widens the
         // projection, driving the two fixed-point lobes apart on screen; done
         // here rather than on beta so the ODE integration itself stays at its
         // tuned, stable parameters.
-        vec2  pProj = pLorenz.xy * ( 1.0 + 0.35 * audioSubBass ) - vec2( 0.0, 5.0 );
-        float d = length( pRot - pProj );
-        minDist = min( minDist, d );
-        energyAcc += exp( -d * 0.4 );
+        vec2  p_proj = p_lorenz.xy * ( 1.0 + 0.35 * audioSubBass ) - vec2( 0.0, 5.0 );
+        float d = length( p_rot - p_proj );
+        min_dist = min( min_dist, d );
+        energy_acc += exp( -d * 0.4 );
     }
 
     // Dynamic texture sample mapped on attractor coordinates
-    vec2 sampleUV = fract( pRot * 0.05 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_rot * 0.05 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing trajectory ribbon lines
-    float lineGlow = exp( -minDist * ( 1.2 + 0.8 * audioCentroid ) ) * glw;
+    float line_glow = exp( -min_dist * ( 1.2 + 0.8 * audioCentroid ) ) * glw;
 
     // Palette mixing across Lorenz lobes
-    float lobePhase = atan( pRot.y, pRot.x ) / 6.2831853 + length( pRot ) * 0.02;
-    vec3  palA = imgPalette( lobePhase + t * 0.05 );
-    vec3  palB = imgPalette( lobePhase + 0.5 );
-    vec3  col = mix( palA, palB, 0.5 + 0.5 * sin( energyAcc * 0.3 ) );
+    float lobe_phase = atan( p_rot.y, p_rot.x ) / 6.2831853 + length( p_rot ) * 0.02;
+    vec3  pal_a = imgPalette( lobe_phase + t * 0.05 );
+    vec3  pal_b = imgPalette( lobe_phase + 0.5 );
+    vec3  col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( energy_acc * 0.3 ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing attractor wings and kick flashes
-    vec3 wingTint = vec3( 1.3, 1.1, 1.8 ) * ( lineGlow + energyAcc * 0.05 ) * ( 1.0 + 2.5 * audioKick );
-    col += wingTint;
+    vec3 wing_tint = vec3( 1.3, 1.1, 1.8 ) * ( line_glow + energy_acc * 0.05 ) * ( 1.0 + 2.5 * audioKick );
+    col += wing_tint;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

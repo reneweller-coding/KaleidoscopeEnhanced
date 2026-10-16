@@ -83,16 +83,16 @@ void main()
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float clock = sceneAdvance * 0.45 + sceneTime * 0.09;
 
-    float baseY = -0.36, topY = 0.4;
+    float base_y = -0.36, top_y = 0.4;
     // The hall behind: the photo, dark, with the haze veiling it.
     vec3 col = img( uv ) * mix( vec3( 0.14 ), imgPalette( hue * 0.159 + 0.62 ) * 0.3, 0.5 );
     col *= 0.4 + 0.35 * haze;
     // Haze body: a soft drifting fog that the beams will light.
     float fog = 0.55 + 0.45 * noise2( p * 2.6 + vec2( clock * 0.2, clock * 0.06 ) );
     // The hand: crosses the row steadily, a round palm with three fingers.
-    float handX = ( 0.5 + 0.42 * sin( clock * 0.33 ) ) * aspect - aspect * 0.5;
-    float handY = -0.02 + 0.05 * sin( clock * 0.7 );
-    vec2  hand = vec2( handX, handY );
+    float hand_x = ( 0.5 + 0.42 * sin( clock * 0.33 ) ) * aspect - aspect * 0.5;
+    float hand_y = -0.02 + 0.05 * sin( clock * 0.7 );
+    vec2  hand = vec2( hand_x, hand_y );
 
     // The beams.
     for ( int i = 0; i < 12; ++i )
@@ -102,13 +102,13 @@ void main()
         float e = clamp( audioChroma[i] * 1.6, 0.0, 1.0 );
         vec3  bc = imgPalette( hue * 0.159 + fi / 12.0 ) * 1.6 + 0.18;
         float dx = abs( p.x - bx );
-        float within = step( baseY, p.y ) * step( p.y, topY );
+        float within = step( base_y, p.y ) * step( p.y, top_y );
         // Is this beam interrupted, and where?  A smooth window, so a beam
         // never switches on or off between frames.
         float touch = smoothstep( 0.075, 0.02, abs( hand.x - bx ) );
-        float cutY = hand.y;
+        float cut_y = hand.y;
         // Above the cut the beam is dark while the hand blocks it.
-        float blocked = touch * smoothstep( cutY - 0.02, cutY + 0.02, p.y );
+        float blocked = touch * smoothstep( cut_y - 0.02, cut_y + 0.02, p.y );
         float alive = 1.0 - 0.85 * blocked;
         // The beam: a thin core and a wider glow in the haze.
         float core = smoothstep( 0.006, 0.0015, dx ) * within * alive;
@@ -117,7 +117,7 @@ void main()
         col += bc * glow * ( 0.2 + 0.9 * e ) * 0.9;
         // The contact bloom: where the hand cuts the beam, a bright blob
         // plus a splash of scattered light around it.
-        vec2  cq = p - vec2( bx, cutY );
+        vec2  cq = p - vec2( bx, cut_y );
         float bloom = exp( -length( cq * vec2( 1.0, 1.2 ) ) * 16.0 ) * touch;
         col += bc * bloom * ( 0.6 + 1.4 * e ) * 1.6;
         col += bc * exp( -length( cq ) * 5.0 ) * touch * ( 0.1 + 0.5 * e ) * haze * 0.6;
@@ -129,12 +129,12 @@ void main()
         float mote = smoothstep( 0.2, 0.06, length( f - jit * 0.7 ) ) * step( 0.86, hash21( c ) );
         col += bc * mote * touch * hi * exp( -length( cq ) * 7.0 ) * 2.0;
         // The emitter dot at the base and its reflection in the mirror strip.
-        col += bc * exp( -length( p - vec2( bx, baseY ) ) * 40.0 ) * ( 0.3 + 0.8 * e );
-        col += bc * exp( -length( p - vec2( bx, topY ) ) * 46.0 ) * ( 0.15 + 0.5 * e );
+        col += bc * exp( -length( p - vec2( bx, base_y ) ) * 40.0 ) * ( 0.3 + 0.8 * e );
+        col += bc * exp( -length( p - vec2( bx, top_y ) ) * 46.0 ) * ( 0.15 + 0.5 * e );
     }
     // The emitter bar and the mirror strip: two dark rails the beams end on.
-    float bar = smoothstep( 0.035, 0.025, abs( p.y - baseY + 0.02 ) );
-    float mirror = smoothstep( 0.02, 0.014, abs( p.y - topY - 0.015 ) );
+    float bar = smoothstep( 0.035, 0.025, abs( p.y - base_y + 0.02 ) );
+    float mirror = smoothstep( 0.02, 0.014, abs( p.y - top_y - 0.015 ) );
     vec3  metal = mix( vec3( 0.12, 0.12, 0.14 ), imgPalette( hue * 0.159 + 0.05 ) * 0.3, 0.4 );
     col = mix( col, metal, bar );
     col = mix( col, metal * 1.3, mirror );
@@ -146,13 +146,13 @@ void main()
     float fingers = 1e9;
     for ( int k = -1; k <= 1; ++k )
         fingers = min( fingers, length( ( p - hand - vec2( float( k ) * 0.032, 0.075 ) ) * vec2( 2.4, 1.0 ) ) - 0.03 );
-    float handD = min( palm, fingers );
-    float inHand = smoothstep( 0.006, -0.006, handD );
-    col = mix( col, vec3( 0.04, 0.04, 0.05 ), inHand );
-    col += vec3( 0.9, 0.95, 1.0 ) * smoothstep( 0.012, 0.0, abs( handD ) ) * ( 0.15 + 0.5 * hi );
+    float hand_d = min( palm, fingers );
+    float in_hand = smoothstep( 0.006, -0.006, hand_d );
+    col = mix( col, vec3( 0.04, 0.04, 0.05 ), in_hand );
+    col += vec3( 0.9, 0.95, 1.0 ) * smoothstep( 0.012, 0.0, abs( hand_d ) ) * ( 0.15 + 0.5 * hi );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

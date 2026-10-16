@@ -47,10 +47,10 @@ void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    const float COLS = 40.0, ROWS = 30.0;
+    const float Cols = 40.0, Rows = 30.0;
     float       person = floor( attrA.w / 50.0 ); // 0..1199
-    float       col = mod( person, COLS );
-    float       row = floor( person / COLS );
+    float       col = mod( person, Cols );
+    float       row = floor( person / Cols );
 
     // ORGANIC crowd placement: the grid is only the seed — every person
     // stands off it by a big personal offset, drifts toward loose CLUSTERS
@@ -58,14 +58,14 @@ void main()
     // has their own height.  No more rank-and-file rows.
     float jx = ( hash11( person * 11.3 + 0.7 ) - 0.5 ) * 2.6;
     float jz = ( hash11( person * 17.9 + 2.1 ) - 0.5 ) * 4.2;
-    float clusterA = hash11( floor( person / 7.0 ) * 5.3 ) * 6.2831853;
-    jx += cos( clusterA ) * 0.9;
-    jz += sin( clusterA ) * 1.4;
+    float cluster_a = hash11( floor( person / 7.0 ) * 5.3 ) * 6.2831853;
+    jx += cos( cluster_a ) * 0.9;
+    jz += sin( cluster_a ) * 1.4;
     float hgt = 0.85 + 0.35 * hash11( person * 23.7 ); // body height variance
     // ROOM-FILLING: wider spread, front rows reach past the frame edges,
     // rear rows recede far beyond the fog line, and the terrain undulates
     // (a festival field, not a cut plane).
-    vec3 base = vec3( ( col - COLS * 0.5 + 0.5 ) * 2.0 + jx,
+    vec3 base = vec3( ( col - Cols * 0.5 + 0.5 ) * 2.0 + jx,
                       -9.0 + row * 0.24
                           + 0.9 * sin( col * 0.31 ) * sin( row * 0.22 ),
                       4.0 + row * 3.4 + jz );
@@ -77,17 +77,17 @@ void main()
     // The wave travels by DISTANCE from the stage (not by grid row), so it
     // rolls organically through the jittered crowd.
     float wave = 0.5 + 0.5 * sin( 6.2831853 * audioBeatPhase - base.z * 0.085 + ph * 0.3 );
-    float armRaise = clamp( 0.15 + 0.55 * wave + 0.5 * audioOnset
-                                + 0.3 * audioDrop,
-                            0.0, 1.0 );
+    float arm_raise = clamp( 0.15 + 0.55 * wave + 0.5 * audioOnset
+                                 + 0.3 * audioDrop,
+                             0.0, 1.0 );
     float jump = 0.35 * audioKick * ( 0.5 + 0.5 * sin( ph + time * 3.0 ) );
 
     vec3  world;
     vec3  col3;
     float rim;
 
-    float beamK = 0.0;
-    vec3  beamCol = vec3( 0.0 );
+    float beam_k = 0.0;
+    vec3  beam_col = vec3( 0.0 );
     if ( r1 > 0.97 )
     {
         // ---- Stage light beams sweeping the sky over the crowd. ----
@@ -99,9 +99,9 @@ void main()
                       1.8 + a * 10.5 + ( r4 - 0.5 ) * 0.4,
                       24.0 - a * 10.0 );
         rim = 1.0;
-        beamK = 1.0;
-        beamCol = hueRot( vec3( 0.35, 0.75, 1.0 ), audioChromaHue + beam * 1.1 )
-                  * ( 0.5 + 0.5 * a ) * ( 0.8 + 0.8 * audioSwell + 1.2 * audioDrop );
+        beam_k = 1.0;
+        beam_col = hueRot( vec3( 0.35, 0.75, 1.0 ), audioChromaHue + beam * 1.1 )
+                   * ( 0.5 + 0.5 * a ) * ( 0.8 + 0.8 * audioSwell + 1.2 * audioDrop );
     }
     else if ( r1 < 0.45 )
     {
@@ -116,11 +116,11 @@ void main()
         // ---- Arms: left/right streaks rising from shoulder height. ----
         float side = ( r1 < 0.72 ) ? -1.0 : 1.0;
         float a = r2; // 0 shoulder .. 1 hand
-        float shoulderY = 1.35 * hgt;
-        float handY = mix( shoulderY, 2.55 * hgt, armRaise );
-        float spread = mix( 0.32, 0.10, armRaise ) * side;
+        float shoulder_y = 1.35 * hgt;
+        float hand_y = mix( shoulder_y, 2.55 * hgt, arm_raise );
+        float spread = mix( 0.32, 0.10, arm_raise ) * side;
         world = base
-                + vec3( spread * ( 1.0 - 0.3 * a ) + ( r3 - 0.5 ) * 0.05, mix( shoulderY, handY, a ) + jump,
+                + vec3( spread * ( 1.0 - 0.3 * a ) + ( r3 - 0.5 ) * 0.05, mix( shoulder_y, hand_y, a ) + jump,
                         ( r4 - 0.5 ) * 0.08 );
         rim = 0.6 + 0.4 * a;
     }
@@ -139,10 +139,10 @@ void main()
     // Silhouette body, rim-lit by the stage backlight — every person wears
     // a PERSONAL hue shift (similar family, individual shade), so the crowd
     // reads as thousands of individuals instead of stamped clones.
-    float personalHue = ( hash11( person * 31.7 ) - 0.5 ) * 1.4;
-    vec3  backlight = hueRot( vec3( 1.0, 0.55, 0.20 ), audioChromaHue + personalHue );
-    vec3  shirt = hueRot( vec3( 0.09, 0.06, 0.08 ), personalHue * 2.0 );
-    col3 = mix( shirt, backlight, rim * ( 0.6 + 0.5 * armRaise ) );
+    float personal_hue = ( hash11( person * 31.7 ) - 0.5 ) * 1.4;
+    vec3  backlight = hueRot( vec3( 1.0, 0.55, 0.20 ), audioChromaHue + personal_hue );
+    vec3  shirt = hueRot( vec3( 0.09, 0.06, 0.08 ), personal_hue * 2.0 );
+    col3 = mix( shirt, backlight, rim * ( 0.6 + 0.5 * arm_raise ) );
     col3 *= ( 0.7 + 0.7 * audioSwell + 1.1 * audioDrop )
             * clamp( 1.0 - vp.z / 130.0, 0.10, 1.0 );
 

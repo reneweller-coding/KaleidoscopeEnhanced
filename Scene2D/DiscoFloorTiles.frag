@@ -91,8 +91,8 @@ vec3 floorGlow( vec2 w )
     float grout = smoothstep( 0.0, 0.06, min( min( tf.x, 1.0 - tf.x ), min( tf.y, 1.0 - tf.y ) ) );
     // Equaliser: the column (x) picks the band, the row counted from the
     // camera end (z) is the level the band must reach.
-    float colIdx = mod( ti.x + 16.0, 32.0 );
-    int   band = int( colIdx );
+    float col_idx = mod( ti.x + 16.0, 32.0 );
+    int   band = int( col_idx );
     float e = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
     float row = mod( ti.y, 8.0 );
     float eq = smoothstep( row / 8.0 - 0.05, row / 8.0 + 0.05, e );
@@ -101,8 +101,8 @@ vec3 floorGlow( vec2 w )
     // Tile colour: a disco floor is gel colours by nature (documented
     // rainbow identity, V8b) -- a hue per column group, nudged by the
     // photo's key so each activation has its own colour scheme.
-    vec3  photoC = imgPalette( g_hue * 0.159 + 0.2 );
-    float h = g_hue * 0.159 + mod( ti.x, 6.0 ) / 6.0 + dot( photoC, vec3( 0.1 ) );
+    vec3  photo_c = imgPalette( g_hue * 0.159 + 0.2 );
+    float h = g_hue * 0.159 + mod( ti.x, 6.0 ) / 6.0 + dot( photo_c, vec3( 0.1 ) );
     vec3  c = hsv( h, 0.85, 1.0 );
     // Diffuser: brighter in the middle of each tile.
     float diff = 0.7 + 0.3 * ( 1.0 - length( tf - 0.5 ) * 1.4 );
@@ -123,10 +123,10 @@ void main()
 
     vec3        ro = vec3( 0.3, 1.6, g_drift );
     vec3        rd = normalize( vec3( p.x, p.y - 0.46, 1.0 ) );
-    const float CEIL = 3.4;
+    const float Ceil = 3.4;
 
     vec3  col = vec3( 0.0 );
-    float tHit = 40.0;
+    float t_hit = 40.0;
     if ( rd.y < 0.0 )
     {
         float t = -ro.y / rd.y;
@@ -134,37 +134,37 @@ void main()
         col = floorGlow( w.xz ) * exp( -t * 0.06 );
         // Glass sheen: the room's darkness reflected, faint highlight.
         col += vec3( 0.02 ) * pow( 1.0 + rd.y, 8.0 );
-        tHit = t;
+        t_hit = t;
     }
     else
     {
         // Mirror ceiling: the floor seen again overhead, darker.
-        float t = ( CEIL - ro.y ) / rd.y;
+        float t = ( Ceil - ro.y ) / rd.y;
         vec3  w = ro + rd * t;
-        float t2 = t + CEIL / rd.y; // ray continues down to the floor image
+        float t2 = t + Ceil / rd.y; // ray continues down to the floor image
         vec3  w2 = ro + rd * t2;
         col = floorGlow( vec2( w2.x, w2.z ) ) * 0.6 * exp( -t2 * 0.05 );
         vec2 pan = fract( w.xz * 0.5 );
         col *= smoothstep( 0.0, 0.03, min( min( pan.x, 1.0 - pan.x ), min( pan.y, 1.0 - pan.y ) ) );
-        tHit = t;
+        t_hit = t;
     }
 
     // Haze: the glow of the floor hanging in the air above it.
-    vec3  hazeC = floorGlow( vec2( ro.x + rd.x * 6.0, ro.z + 6.0 ) ) * 0.0;
+    vec3  haze_c = floorGlow( vec2( ro.x + rd.x * 6.0, ro.z + 6.0 ) ) * 0.0;
     float hz = 0.0;
     for ( int i = 0; i < 10; ++i )
     {
-        float tt = ( float( i ) + 0.5 ) / 10.0 * min( tHit, 18.0 );
+        float tt = ( float( i ) + 0.5 ) / 10.0 * min( t_hit, 18.0 );
         vec3  x = ro + rd * tt;
         float h = exp( -x.y * 1.6 );
         vec3  below = floorGlow( x.xz );
-        hazeC += below * h * 0.1;
+        haze_c += below * h * 0.1;
         hz += h * 0.1;
     }
-    col += hazeC * ( 0.25 + 0.5 * swell ) * 0.6;
+    col += haze_c * ( 0.25 + 0.5 * swell ) * 0.6;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

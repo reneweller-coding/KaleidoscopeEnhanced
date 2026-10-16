@@ -133,7 +133,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -287,9 +287,9 @@ void main()
     // goes both ways).
     float len = 0.006 + 0.01 * clamp( streakP, 0.0, 1.0 );
     float th0 = director( p );
-    vec2  dirF = vec2( cos( th0 ), sin( th0 ) );
+    vec2  dir_f = vec2( cos( th0 ), sin( th0 ) );
     vec2  a = p, b = p;
-    vec2  da = dirF, db = -dirF;
+    vec2  da = dir_f, db = -dir_f;
     float acc = 0.0;
     for ( int i = 0; i < 12; ++i )
     {
@@ -312,10 +312,10 @@ void main()
     // Crossed polarisers: brightness sin^2(2 theta), interference hue by angle.
     float bright = pow( sin( 2.0 * th0 ), 2.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  polC = hsv2rgb( vec3( fract( th0 / 3.14159 + mix( 0.55, 0.05, mode ) ), 0.75, 1.0 ) );
+    vec3  pol_c = hsv2rgb( vec3( fract( th0 / 3.14159 + mix( 0.55, 0.05, mode ) ), 0.75, 1.0 ) );
     vec3  ph = imgLod( p * 0.3 + 0.5, 5.0 );
-    vec3  photoC = glowColour( ph, p * 0.5 + 0.3 * vec2( cos( 2.0 * th0 ), sin( 2.0 * th0 ) ), hueP * 0.159 );
-    vec3  c = mix( polC, photoC, 0.6 * ( 1.0 - clamp( paletteP, 0.0, 1.0 ) ) );
+    vec3  photo_c = glowColour( ph, p * 0.5 + 0.3 * vec2( cos( 2.0 * th0 ), sin( 2.0 * th0 ) ), hueP * 0.159 );
+    vec3  c = mix( pol_c, photo_c, 0.6 * ( 1.0 - clamp( paletteP, 0.0, 1.0 ) ) );
     vec3  col = c * ( 0.12 + 0.95 * bright ) * ( 0.45 + 0.75 * rods ) * ( 0.7 + 0.6 * swell );
     // Defect cores: bright points where the order breaks down.
     for ( int k = 0; k < 10; ++k )

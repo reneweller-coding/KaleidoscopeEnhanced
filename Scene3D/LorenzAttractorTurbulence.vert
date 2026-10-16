@@ -56,31 +56,31 @@ void main()
 {
     float t = attrA.x;
     float side = attrA.y;
-    float ribbonID = attrA.w;
+    float ribbon_id = attrA.w;
     float seed = attrB.x;
 
     // Evaluate point and tangent
     float dt = 0.01;
-    vec3  pA = evalAttractor( t - dt, ribbonID, seed );
-    vec3  pB = evalAttractor( t + dt, ribbonID, seed );
-    vec3  p = evalAttractor( t, ribbonID, seed );
+    vec3  p_a = evalAttractor( t - dt, ribbon_id, seed );
+    vec3  p_b = evalAttractor( t + dt, ribbon_id, seed );
+    vec3  p = evalAttractor( t, ribbon_id, seed );
 
-    vec3  dir = normalize( pB - pA );
-    float speed = length( pB - pA ) / ( 2.0 * dt );
+    vec3  dir = normalize( p_b - p_a );
+    float speed = length( p_b - p_a ) / ( 2.0 * dt );
 
     // Compute ribbon side vector perpendicular to tangent and camera
-    vec3 upRef = vec3( 0.0, 1.0, 0.0 );
-    if ( abs( dot( dir, upRef ) ) > 0.95 )
-        upRef = vec3( 1.0, 0.0, 0.0 );
-    vec3 sideVec = normalize( cross( dir, upRef ) );
+    vec3 up_ref = vec3( 0.0, 1.0, 0.0 );
+    if ( abs( dot( dir, up_ref ) ) > 0.95 )
+        up_ref = vec3( 1.0, 0.0, 0.0 );
+    vec3 side_vec = normalize( cross( dir, up_ref ) );
 
     // Dynamic ribbon width (thicker on beats and high velocity)
     float width = ( 0.05 + 0.04 * audioKick + 0.03 * sin( t * 20.0 - time * 6.0 ) ) * ( 0.8 + 0.4 * audioSwell );
-    vec3  pos = p + sideVec * ( side * width );
+    vec3  pos = p + side_vec * ( side * width );
 
     vPos = pos;
     vT = t;
-    vRibbonID = ribbonID;
+    vRibbonID = ribbon_id;
     vVelocity = speed;
     vSide = side;
 

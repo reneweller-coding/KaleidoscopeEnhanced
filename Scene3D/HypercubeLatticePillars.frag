@@ -75,14 +75,14 @@ void main()
     vec3 photo = img( fract( vTexCoord ) );
 
     // Sci-fi neon edge line on cube corners
-    vec2  edgeDist = abs( vTexCoord - vec2( 0.5 ) ) * 2.0;
-    float maxEdge = max( edgeDist.x, edgeDist.y );
-    float neonLine = smoothstep( 0.85, 0.98, maxEdge );
+    vec2  edge_dist = abs( vTexCoord - vec2( 0.5 ) ) * 2.0;
+    float max_edge = max( edge_dist.x, edge_dist.y );
+    float neon_line = smoothstep( 0.85, 0.98, max_edge );
 
-    vec3 darkMonolith = vec3( 0.05, 0.06, 0.08 ) * photo;
-    vec3 neonCol = vColor.rgb * ( 1.5 + 1.5 * audioHigh );
+    vec3 dark_monolith = vec3( 0.05, 0.06, 0.08 ) * photo;
+    vec3 neon_col = vColor.rgb * ( 1.5 + 1.5 * audioHigh );
 
-    vec3 col = mix( darkMonolith, neonCol, neonLine );
+    vec3 col = mix( dark_monolith, neon_col, neon_line );
     col += vec3( 1.0 ) * spec * ( 0.8 + 1.2 * audioKick );
 
     col = hueRot( col, audioChromaHue + hue );

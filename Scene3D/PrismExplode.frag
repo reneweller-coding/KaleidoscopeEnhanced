@@ -133,35 +133,35 @@ void main()
                    * ( 0.35 + 0.85 * vWedge )
                    * ( 0.7 + 0.9 * audioKick + 0.4 * audioSubBass );
     float A = 1.52;
-    float nR = A + 0.0045 / ( 0.65 * 0.65 );
-    float nG = A + 0.0045 / ( 0.55 * 0.55 );
-    float nB = A + 0.0045 / ( 0.45 * 0.45 );
+    float n_r = A + 0.0045 / ( 0.65 * 0.65 );
+    float n_g = A + 0.0045 / ( 0.55 * 0.55 );
+    float n_b = A + 0.0045 / ( 0.45 * 0.45 );
     // Re-centre on green and amplify, so green passes straight and red and blue
     // fan out either side of it — which is what the eye reads as dispersion.
-    float kR = 1.0 + ( nR - nG ) * 150.0 * spread;
-    float kG = 1.0;
-    float kB = 1.0 + ( nB - nG ) * 150.0 * spread;
+    float k_r = 1.0 + ( n_r - n_g ) * 150.0 * spread;
+    float k_g = 1.0;
+    float k_b = 1.0 + ( n_b - n_g ) * 150.0 * spread;
 
     vec3 I = -V;
-    vec3 rR = refract( I, n, 1.0 / ( nG * kR ) );
-    vec3 rG = refract( I, n, 1.0 / ( nG * kG ) );
-    vec3 rB = refract( I, n, 1.0 / ( nG * kB ) );
+    vec3 r_r = refract( I, n, 1.0 / ( n_g * k_r ) );
+    vec3 r_g = refract( I, n, 1.0 / ( n_g * k_g ) );
+    vec3 r_b = refract( I, n, 1.0 / ( n_g * k_b ) );
 
     // Total internal reflection returns a zero vector; fall back to the mirror
     // direction so a shard at a grazing angle turns reflective instead of black,
     // which is also what real glass does.
     vec3 mir = reflect( I, n );
-    if ( dot( rR, rR ) < 1e-6 )
-        rR = mir;
-    if ( dot( rG, rG ) < 1e-6 )
-        rG = mir;
-    if ( dot( rB, rB ) < 1e-6 )
-        rB = mir;
+    if ( dot( r_r, r_r ) < 1e-6 )
+        r_r = mir;
+    if ( dot( r_g, r_g ) < 1e-6 )
+        r_g = mir;
+    if ( dot( r_b, r_b ) < 1e-6 )
+        r_b = mir;
 
     vec3 col;
-    col.r = environment( normalize( rR ), hueBase ).r;
-    col.g = environment( normalize( rG ), hueBase ).g;
-    col.b = environment( normalize( rB ), hueBase ).b;
+    col.r = environment( normalize( r_r ), hueBase ).r;
+    col.g = environment( normalize( r_g ), hueBase ).g;
+    col.b = environment( normalize( r_b ), hueBase ).b;
 
     // Fresnel: glass is a mirror at grazing incidence and a window head-on.
     float f = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 4.0 );

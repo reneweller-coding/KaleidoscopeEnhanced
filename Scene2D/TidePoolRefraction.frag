@@ -106,7 +106,7 @@ void main()
     float ang = atan( p.y, p.x );
     float rr = length( p );
     float edge = ( 0.3 + 0.05 * tide ) * ( 1.0 + 0.16 * sin( ang * 3.0 + 0.7 ) + 0.1 * sin( ang * 5.0 - 1.3 ) );
-    float inPool = smoothstep( edge + 0.012, edge - 0.012, rr );
+    float in_pool = smoothstep( edge + 0.012, edge - 0.012, rr );
     float depth = smoothstep( edge, 0.0, rr ) * ( 0.55 + 0.45 * tide ); // deeper in the middle
 
     // The rock around the pool: the photo, dry above the waterline, wet
@@ -127,18 +127,19 @@ void main()
     // ripple field displaces the sample point; the deeper the water, the
     // stronger the displacement -- which is what makes the middle sway
     // most and the rim stay put.
-    vec2  rippleUV = p * 9.0;
-    float w1 = fbm( rippleUV + vec2( clock * 0.35, clock * 0.2 ) );
-    float w2 = fbm( rippleUV * 1.7 - vec2( clock * 0.28, clock * 0.16 ) );
+    vec2  ripple_uv = p * 9.0;
+    float w1 = fbm( ripple_uv + vec2( clock * 0.35, clock * 0.2 ) );
+    float w2 = fbm( ripple_uv * 1.7 - vec2( clock * 0.28, clock * 0.16 ) );
     vec2  disp = vec2( w1 - 0.5, w2 - 0.5 ) * ( 0.05 * rip ) * depth;
     vec2  fl = p + disp;
     // The pool floor: sand and rock from the photo, cooler and greener.
-    vec3 floorCol = img( clamp( fl * 1.1 + 0.5, 0.0, 1.0 ) )
-                    * mix( vec3( 0.35, 0.55, 0.5 ), imgPalette( hue * 0.159 + 0.45 ), 0.35 );
-    floorCol *= 0.7 + 0.5 * fbm( fl * 22.0 );
+    vec3 floor_col = img( clamp( fl * 1.1 + 0.5, 0.0, 1.0 ) )
+                     * mix( vec3( 0.35, 0.55, 0.5 ), imgPalette( hue * 0.159 + 0.45 ), 0.35 );
+    floor_col *= 0.7 + 0.5 * fbm( fl * 22.0 );
     // Weed: dark fronds waving with the same displacement.
     float weed = smoothstep( 0.55, 0.8, fbm( fl * 7.0 + vec2( 0.0, clock * 0.1 ) ) );
-    floorCol = mix( floorCol, mix( vec3( 0.1, 0.22, 0.12 ), imgPalette( hue * 0.159 + 0.32 ) * 0.3, 0.4 ), weed * 0.7 );
+    floor_col = mix( floor_col, mix( vec3( 0.1, 0.22, 0.12 ), imgPalette( hue * 0.159 + 0.32 ) * 0.3, 0.4 ),
+                     weed * 0.7 );
     // Anemones: discs with a ring of round tentacle tips, one chroma class
     // each; the kick pulls them in a little (smooth, never a snap).
     for ( int i = 0; i < 9; ++i )
@@ -151,11 +152,11 @@ void main()
         float e = clamp( audioChroma[cls] * 1.6, 0.0, 1.0 );
         vec3  ac = imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.5 + 0.15;
         float contract = 1.0 - 0.25 * smoothstep( 0.05, 0.6, audioKick );
-        float baseR = ( 0.035 + 0.025 * hash11( fi * 7.7 ) ) * contract;
+        float base_r = ( 0.035 + 0.025 * hash11( fi * 7.7 ) ) * contract;
         vec2  q = fl - c;
         float d = length( q );
-        float disc = smoothstep( baseR, baseR * 0.6, d );
-        floorCol = mix( floorCol, ac * ( 0.5 + 0.7 * e ), disc * 0.9 );
+        float disc = smoothstep( base_r, base_r * 0.6, d );
+        floor_col = mix( floor_col, ac * ( 0.5 + 0.7 * e ), disc * 0.9 );
         // Tentacles: round tips on a ring, waving with the ripple.
         float ta = atan( q.y, q.x );
         float tips = 0.0;
@@ -163,23 +164,23 @@ void main()
         {
             float fk = float( k );
             float a2 = fk / 12.0 * 6.2831853 + hash11( fi ) * 6.28;
-            float len = baseR * ( 1.5 + 0.35 * sin( clock * 1.3 + fk + fi ) );
+            float len = base_r * ( 1.5 + 0.35 * sin( clock * 1.3 + fk + fi ) );
             vec2  tp = c + vec2( cos( a2 ), sin( a2 ) ) * len;
-            tips = max( tips, smoothstep( baseR * 0.32, baseR * 0.12, length( fl - tp ) ) );
+            tips = max( tips, smoothstep( base_r * 0.32, base_r * 0.12, length( fl - tp ) ) );
         }
-        floorCol += ac * tips * ( 0.4 + 0.9 * e ) * 0.9;
+        floor_col += ac * tips * ( 0.4 + 0.9 * e ) * 0.9;
     }
     // Water colour and depth shading over the floor.
-    vec3 water = mix( floorCol, mix( vec3( 0.1, 0.32, 0.35 ), imgPalette( hue * 0.159 + 0.5 ) * 0.35, 0.4 ),
+    vec3 water = mix( floor_col, mix( vec3( 0.1, 0.32, 0.35 ), imgPalette( hue * 0.159 + 0.5 ) * 0.35, 0.4 ),
                       depth * 0.55 );
     // Caustics: the sun's net on the floor, moving on the clock.
     float ca = fbm( fl * 13.0 + vec2( clock * 0.4, -clock * 0.3 ) );
     float caustic = pow( smoothstep( 0.45, 0.85, ca ), 2.0 );
     water += mix( vec3( 1.0, 0.97, 0.85 ), imgPalette( hue * 0.159 + 0.1 ), 0.3 ) * caustic * ( 0.35 + 0.3 * depth )
              * 0.9;
-    col = mix( col, water, inPool );
+    col = mix( col, water, in_pool );
     // The surface: sky reflection near the rim, glitter on the treble.
-    float sheen = smoothstep( 0.3, 0.9, w1 ) * inPool;
+    float sheen = smoothstep( 0.3, 0.9, w1 ) * in_pool;
     col += mix( vec3( 0.7, 0.85, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 ) * sheen * 0.22;
     vec2  gg = p * 120.0;
     vec2  gc = floor( gg );
@@ -187,13 +188,13 @@ void main()
     vec2  gj = vec2( hash21( gc + 3.3 ), hash21( gc + 9.7 ) ) - 0.5;
     float glint = smoothstep( 0.22, 0.07, length( gf - gj * 0.7 ) )
                   * step( 0.93, hash21( gc + floor( clock * 2.0 ) * 0.0 ) );
-    col += vec3( 1.0 ) * glint * inPool * hi * 0.8;
+    col += vec3( 1.0 ) * glint * in_pool * hi * 0.8;
     // The waterline: a bright meniscus right at the rim.
     col += mix( vec3( 0.9, 0.95, 1.0 ), imgPalette( hue * 0.159 + 0.55 ), 0.3 )
            * smoothstep( 0.014, 0.0, abs( rr - edge ) ) * ( 0.3 + 0.4 * tide );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

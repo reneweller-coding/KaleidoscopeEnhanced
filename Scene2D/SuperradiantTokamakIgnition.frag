@@ -76,35 +76,35 @@ void main()
     // Helical magnetic field lines & plasma filaments
     float filament1 = sin( theta * 6.0 - phi * 18.0 - time * 6.0 );
     float filament2 = cos( theta * 12.0 + phi * 12.0 + time * 4.0 );
-    float plasmaCore = exp( -abs( filament1 ) * 6.0 ) + exp( -abs( filament2 ) * 6.0 );
+    float plasma_core = exp( -abs( filament1 ) * 6.0 ) + exp( -abs( filament2 ) * 6.0 );
 
     // Alfvén wave turbulence ripples
-    float alfvenWave = sin( r * 20.0 - time * 10.0 + sin( theta * 4.0 ) * 2.0 );
-    float turbulence = exp( -abs( alfvenWave ) * 8.0 ) * ( 0.6 + 0.8 * audioHigh );
+    float alfven_wave = sin( r * 20.0 - time * 10.0 + sin( theta * 4.0 ) * 2.0 );
+    float turbulence = exp( -abs( alfven_wave ) * 8.0 ) * ( 0.6 + 0.8 * audioHigh );
 
     // Photo texture advected by helical plasma vorticity
     // The V coordinate must wrap with phi too: theta carries q*phi, so it is
     // split into the radial part and a q*phi/(2pi) term that fract() closes.
-    float thetaR = ( 1.0 / ( r + 0.1 ) ) * ( 1.2 + 0.4 * audioBass );
-    vec2  plasmaUV = vec2( phi / 6.28318 + 0.5, fract( thetaR * 0.15 + q_safety * phi / 6.28318 ) );
-    plasmaUV += vec2( filament1, filament2 ) * 0.04 * ( 1.0 + 1.5 * audioKick );
-    vec3 photoPlasma = img( fract( plasmaUV ) );
+    float theta_r = ( 1.0 / ( r + 0.1 ) ) * ( 1.2 + 0.4 * audioBass );
+    vec2  plasma_uv = vec2( phi / 6.28318 + 0.5, fract( theta_r * 0.15 + q_safety * phi / 6.28318 ) );
+    plasma_uv += vec2( filament1, filament2 ) * 0.04 * ( 1.0 + 1.5 * audioKick );
+    vec3 photo_plasma = img( fract( plasma_uv ) );
 
     // Thermonuclear fusion temperatures: Ultra-hot deuterium-tritium plasma core (100M Kelvin)
-    vec3 plasmaHot = vec3( 0.9, 0.95, 1.0 ) * 3.0;    // Blinding white-hot core
-    vec3 plasmaViolet = vec3( 0.7, 0.15, 1.0 ) * 2.2; // High-energy Bremsstrahlung
-    vec3 plasmaCyan = vec3( 0.1, 0.8, 1.0 ) * 2.0;    // Cyclotron radiation
-    vec3 divertorGlow = vec3( 1.0, 0.35, 0.05 );      // Glowing hot tungsten divertor tiles
+    vec3 plasma_hot = vec3( 0.9, 0.95, 1.0 ) * 3.0;    // Blinding white-hot core
+    vec3 plasma_violet = vec3( 0.7, 0.15, 1.0 ) * 2.2; // High-energy Bremsstrahlung
+    vec3 plasma_cyan = vec3( 0.1, 0.8, 1.0 ) * 2.0;    // Cyclotron radiation
+    vec3 divertor_glow = vec3( 1.0, 0.35, 0.05 );      // Glowing hot tungsten divertor tiles
 
-    vec3 plasmaEmission = mix( plasmaCyan, plasmaViolet, sin( theta * 2.0 ) * 0.5 + 0.5 );
-    plasmaEmission = mix( plasmaEmission, plasmaHot, clamp( plasmaCore * 0.6 - 0.2, 0.0, 1.0 ) );
+    vec3 plasma_emission = mix( plasma_cyan, plasma_violet, sin( theta * 2.0 ) * 0.5 + 0.5 );
+    plasma_emission = mix( plasma_emission, plasma_hot, clamp( plasma_core * 0.6 - 0.2, 0.0, 1.0 ) );
 
     // Thermonuclear ignition flash on kick
-    float ignitionFlash = exp( -r * 3.0 ) * ( audioKick * 2.8 + audioSubBass * 1.5 );
+    float ignition_flash = exp( -r * 3.0 ) * ( audioKick * 2.8 + audioSubBass * 1.5 );
 
-    vec3 col = photoPlasma * ( plasmaEmission * 0.8 + divertorGlow * 0.3 ) * pls;
-    col += plasmaEmission * ( plasmaCore * 1.2 + turbulence * 0.8 );
-    col += vec3( 1.0, 0.98, 0.95 ) * ignitionFlash;
+    vec3 col = photo_plasma * ( plasma_emission * 0.8 + divertor_glow * 0.3 ) * pls;
+    col += plasma_emission * ( plasma_core * 1.2 + turbulence * 0.8 );
+    col += vec3( 1.0, 0.98, 0.95 ) * ignition_flash;
 
     // Toroidal chamber wall vignetting
     col *= smoothstep( 0.0, 0.12, r );
@@ -115,7 +115,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.45;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.45;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

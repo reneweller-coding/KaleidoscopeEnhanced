@@ -54,8 +54,8 @@ float noise3( vec3 p )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
-    if ( isBg )
+    bool is_bg = gl_VertexID >= meshVertexCount;
+    if ( is_bg )
     {
         vec3 w = attrA.xyz;
         vNormal = normalize( attrB.xyz );
@@ -79,9 +79,9 @@ void main()
     float prog = clamp( sceneProgress, 0.0, 1.0 );
     float allow = smoothstep( 0.0, 0.3, prog ) * ( 1.0 - smoothstep( 0.7, 1.0, prog ) );
     float rough = clamp( audioRoughness * 1.5, 0.0, 1.0 );
-    float windSide = 0.5 + 0.5 * dot( n, normalize( vec3( -0.7, 0.2, -0.4 ) ) );
+    float wind_side = 0.5 + 0.5 * dot( n, normalize( vec3( -0.7, 0.2, -0.4 ) ) );
     float field = noise3( p * 4.0 + sceneAdvance * 0.02 ) * 0.7 + noise3( p * 9.0 ) * 0.3;
-    float erode = ( 0.05 + 0.25 * clamp( erodeP, 0.0, 1.0 ) ) * rough * allow * ( 0.3 + 0.7 * windSide ) * field;
+    float erode = ( 0.05 + 0.25 * clamp( erodeP, 0.0, 1.0 ) ) * rough * allow * ( 0.3 + 0.7 * wind_side ) * field;
     p -= n * erode;
     vErode = erode / 0.3;
     float ry = sceneAdvance * 0.08 + sceneTime * 0.02;

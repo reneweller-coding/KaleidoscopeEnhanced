@@ -105,29 +105,29 @@ void main()
     vec3  rd = normalize( vec3( uv, 1.25 ) );
     rd.xz = vec2( rd.x * cos( yaw ) - rd.z * sin( yaw ), rd.x * sin( yaw ) + rd.z * cos( yaw ) );
 
-    float dO = 0.02;
-    float hitDist = -1.0;
+    float d_o = 0.02;
+    float hit_dist = -1.0;
     vec3  p = ro;
     for ( int i = 0; i < 64; ++i )
     {
-        p = ro + rd * dO;
-        float dS = chamber( p * scl, size ) / scl;
+        p = ro + rd * d_o;
+        float d_s = chamber( p * scl, size ) / scl;
         // Kamera-Clearance-Blase: der Skriptpfad kreuzt Kammerwaende, und
         // ohne Blase steckte das Auge zeitweise IN der Geometrie
         // ("Eindringen in das Objekt / Kollision mit Kamera").
-        dS = max( dS, 0.5 - dO );
-        if ( dS < 0.004 )
+        d_s = max( d_s, 0.5 - d_o );
+        if ( d_s < 0.004 )
         {
-            hitDist = dO;
+            hit_dist = d_o;
             break;
         }
-        if ( dO > 14.0 )
+        if ( d_o > 14.0 )
             break;
-        dO += dS * 0.85;
+        d_o += d_s * 0.85;
     }
 
     vec3 col = vec3( 0.02, 0.03, 0.05 );
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
         vec2 e = vec2( 0.006, 0.0 );
         vec3 n = normalize( vec3(
@@ -139,15 +139,15 @@ void main()
         vec3 a = abs( q );
 
         // Photo on the mirror faces, projected per face orientation.
-        vec2 photoUV = fract( vec2( dot( p.xy, n.yx ) * 0.22 + 0.5, p.z * 0.22 + 0.5 ) );
-        vec3 photo = img( photoUV );
+        vec2 photo_uv = fract( vec2( dot( p.xy, n.yx ) * 0.22 + 0.5, p.z * 0.22 + 0.5 ) );
+        vec3 photo = img( photo_uv );
 
         // Edge seams: octahedron faces meet where one coordinate crosses 0.
         float edge = exp( -min( a.x, min( a.y, a.z ) ) * ( 14.0 + 8.0 * audioHigh ) );
         vec3  neon = imgPalette( 0.35 + 0.25 * sin( p.z * 0.7 ) );
 
         // Headlamp: rooms ahead fall into darkness = labyrinth depth.
-        float atten = exp( -hitDist * 0.30 ) * ( 1.5 + 0.6 * audioLevel );
+        float atten = exp( -hit_dist * 0.30 ) * ( 1.5 + 0.6 * audioLevel );
         float diff = max( dot( n, normalize( ro - p ) ), 0.0 ) * atten + 0.10;
 
         col = photo * diff * ( 0.9 + 0.4 * audioLevel );

@@ -94,7 +94,7 @@ void main()
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
-    float bandW = 0.8 + 0.5 * clamp( ringsP, 0.0, 1.0 );
+    float band_w = 0.8 + 0.5 * clamp( ringsP, 0.0, 1.0 );
 
     // The spring's centre, a little off the middle; its outline wobbles.
     vec2  c = p - vec2( -0.08, 0.02 );
@@ -107,7 +107,7 @@ void main()
     float reach = rr - 0.06 * fingers * smoothstep( 0.2, 0.34, rr );
 
     // The bands, from the deep blue centre outward.
-    float s = reach / bandW;
+    float s = reach / band_w;
     vec3  deep = vec3( 0.0, 0.12, 0.42 ) * ( 0.9 + 0.4 * bass );
     vec3  turq = vec3( 0.1, 0.62, 0.72 );
     vec3  green = vec3( 0.45, 0.62, 0.2 );
@@ -136,8 +136,8 @@ void main()
 
     // The pool's water: depth gradient and the sun's glitter on ripples.
     float water = 1.0 - smoothstep( 0.14, 0.2, s );
-    float depthC = smoothstep( 0.15, 0.0, s );
-    col = mix( col, col * vec3( 0.7, 0.85, 1.1 ), depthC * 0.5 );
+    float depth_c = smoothstep( 0.15, 0.0, s );
+    col = mix( col, col * vec3( 0.7, 0.85, 1.1 ), depth_c * 0.5 );
     {
         vec2  g = p * 110.0 + vec2( T * 0.2, T * 0.13 ), gi = floor( g ), gf = fract( g );
         vec2  gc = 0.25 + 0.5 * vec2( hash21( gi ), hash21( gi + 3.0 ) );
@@ -162,7 +162,7 @@ void main()
     col = mix( col, vec3( 0.95, 0.96, 0.98 ), clamp( veil, 0.0, 0.85 ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

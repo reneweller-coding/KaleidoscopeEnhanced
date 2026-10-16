@@ -93,7 +93,7 @@ void main()
     float prog = clamp( sceneProgress, 0.0, 1.0 );
     float clock = sceneAdvance * 0.8 + sceneTime * 0.16;
 
-    float topY = 0.42, pegBot = -0.05, binBot = -0.44;
+    float top_y = 0.42, peg_bot = -0.05, bin_bot = -0.44;
     float pitch = aspect * 0.9 / ( rows + 1.0 );
 
     // The case: the photo behind glass, a dark board with a lit face.
@@ -107,7 +107,7 @@ void main()
         float fr = float( r );
         if ( fr >= rows )
             break;
-        float y = topY - 0.06 - ( fr + 0.5 ) * ( topY - 0.06 - pegBot ) / rows;
+        float y = top_y - 0.06 - ( fr + 0.5 ) * ( top_y - 0.06 - peg_bot ) / rows;
         float n = fr + 1.0;
         for ( int k = 0; k < 13; ++k )
         {
@@ -127,35 +127,35 @@ void main()
 
     // The bins and their heaps: the binomial curve builds over the arc.
     float bins = rows + 1.0;
-    float binI = floor( ( p.x + bins * pitch * 0.5 ) / pitch );
-    float binF = fract( ( p.x + bins * pitch * 0.5 ) / pitch );
-    if ( binI >= 0.0 && binI < bins && p.y < pegBot )
+    float bin_i = floor( ( p.x + bins * pitch * 0.5 ) / pitch );
+    float bin_f = fract( ( p.x + bins * pitch * 0.5 ) / pitch );
+    if ( bin_i >= 0.0 && bin_i < bins && p.y < peg_bot )
     {
         // The binomial weight for this bin, normalised to its peak.
-        float k = binI;
+        float k = bin_i;
         float mean = ( bins - 1.0 ) * 0.5;
         float sigma = sqrt( rows ) * 0.5;
         float w = exp( -pow( ( k - mean ) / max( sigma, 0.3 ), 2.0 ) * 0.5 );
-        float heap = w * ( pegBot - binBot ) * 0.92 * smoothstep( 0.0, 1.0, prog );
-        float inHeap = step( binBot, p.y ) * step( p.y, binBot + heap );
+        float heap = w * ( peg_bot - bin_bot ) * 0.92 * smoothstep( 0.0, 1.0, prog );
+        float in_heap = step( bin_bot, p.y ) * step( p.y, bin_bot + heap );
         int   band = int( mod( k * 2.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-        vec3  beadCol = imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.35 + 0.15;
+        vec3  bead_col = imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.35 + 0.15;
         // The heap is made of beads, so it must read as round grains.
         vec2  hg = p * 90.0;
         vec2  hc = floor( hg ), hf = fract( hg ) - 0.5;
         vec2  hj = vec2( hash21( hc + 1.7 ), hash21( hc + 6.3 ) ) - 0.5;
         float pack = smoothstep( 0.42, 0.18, length( hf - hj * 0.6 ) );
-        vec3  heapCol = beadCol * ( 0.45 + 0.6 * pack ) * ( 0.7 + 0.6 * e );
-        heapCol += vec3( 1.0 ) * smoothstep( 0.2, 0.05, length( hf - hj * 0.6 + vec2( 0.12, -0.12 ) ) )
-                   * ( 0.15 + 0.5 * hi ) * 0.5;
-        col = mix( col, heapCol * lamp, inHeap );
+        vec3  heap_col = bead_col * ( 0.45 + 0.6 * pack ) * ( 0.7 + 0.6 * e );
+        heap_col += vec3( 1.0 ) * smoothstep( 0.2, 0.05, length( hf - hj * 0.6 + vec2( 0.12, -0.12 ) ) )
+                    * ( 0.15 + 0.5 * hi ) * 0.5;
+        col = mix( col, heap_col * lamp, in_heap );
         // The bin walls.
-        float wall = smoothstep( 0.012, 0.006, min( binF, 1.0 - binF ) * pitch ) * step( p.y, pegBot );
+        float wall = smoothstep( 0.012, 0.006, min( bin_f, 1.0 - bin_f ) * pitch ) * step( p.y, peg_bot );
         col = mix( col, vec3( 0.5, 0.5, 0.54 ) * lamp * 0.8, wall );
         // The bin that just received a bead lights on the kick.
         float recent = step( 0.86, hash21( vec2( k, floor( clock * 1.4 ) ) ) );
-        col += beadCol * inHeap * recent * audioKick * 0.5;
+        col += bead_col * in_heap * recent * audioKick * 0.5;
     }
 
     // The beads in flight.  Each falls on its own phase; its path is a
@@ -168,7 +168,7 @@ void main()
             break;
         float ph = fract( clock * ( 0.22 + 0.1 * hash11( fi * 3.7 ) ) + hash11( fi * 5.9 ) );
         // Down the board over the phase.
-        float y = mix( topY, pegBot - 0.02, ph );
+        float y = mix( top_y, peg_bot - 0.02, ph );
         // The walk: at each row the bead goes left or right; the position
         // is the running sum, interpolated smoothly between rows.
         float t = ph * rows;
@@ -198,13 +198,13 @@ void main()
         col += bc * exp( -d * 45.0 ) * ( 0.1 + 0.3 * e );
     }
     // The hopper at the top and the case frame.
-    float hopper = step( abs( p.x ), 0.055 + ( topY - p.y ) * 0.35 ) * step( topY - 0.06, p.y ) * step( p.y, 0.47 );
+    float hopper = step( abs( p.x ), 0.055 + ( top_y - p.y ) * 0.35 ) * step( top_y - 0.06, p.y ) * step( p.y, 0.47 );
     col = mix( col, vec3( 0.45, 0.45, 0.48 ) * lamp, hopper * 0.85 );
     float frame = smoothstep( 0.012, 0.0, abs( max( abs( p.x ) - aspect * 0.46, abs( p.y ) - 0.47 ) ) );
     col = mix( col, mix( vec3( 0.35, 0.26, 0.16 ), imgPalette( hue * 0.159 + 0.08 ), 0.25 ) * lamp, frame );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

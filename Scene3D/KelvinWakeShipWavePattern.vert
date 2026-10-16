@@ -71,32 +71,32 @@ void main()
     float y = uv.y * 2.8;
 
     // Divergent wave system (echelon waves)
-    float thetaKelvin = 0.3398369; // 19.47 degrees in radians
-    float wakeCone = abs( x ) - max( 0.0, -y ) * tan( thetaKelvin );
+    float theta_kelvin = 0.3398369; // 19.47 degrees in radians
+    float wake_cone = abs( x ) - max( 0.0, -y ) * tan( theta_kelvin );
 
     // Transverse and divergent wave phases
-    float kTrans = 12.0 * ( waveScaleP > 0.01 ? waveScaleP : 1.0 );
-    float transWave = cos( y * kTrans - t * 4.0 ) * exp( -abs( x ) * 2.0 );
+    float k_trans = 12.0 * ( waveScaleP > 0.01 ? waveScaleP : 1.0 );
+    float trans_wave = cos( y * k_trans - t * 4.0 ) * exp( -abs( x ) * 2.0 );
 
-    float kDiv = 18.0;
-    float divWave = cos( ( abs( x ) * 2.0 + y ) * kDiv - t * 6.0 ) * smoothstep( 0.1, -0.1, wakeCone );
+    float k_div = 18.0;
+    float div_wave = cos( ( abs( x ) * 2.0 + y ) * k_div - t * 6.0 ) * smoothstep( 0.1, -0.1, wake_cone );
 
-    float totalWaveHeight = ( transWave * 0.4 + divWave * 0.6 ) * 0.22 * ( 0.85 + 0.35 * audioSwell );
+    float total_wave_height = ( trans_wave * 0.4 + div_wave * 0.6 ) * 0.22 * ( 0.85 + 0.35 * audioSwell );
 
-    vec3 worldPos = vec3( x, y, totalWaveHeight );
+    vec3 world_pos = vec3( x, y, total_wave_height );
 
     // Wave crest spray / foam illumination
-    float crest = pow( clamp( totalWaveHeight * 4.0 + 0.3, 0.0, 1.0 ), 3.0 );
+    float crest = pow( clamp( total_wave_height * 4.0 + 0.3, 0.0, 1.0 ), 3.0 );
     vCrestGlow = crest * ( 1.0 + 3.0 * audioKick );
 
     // Approximate surface normal
-    float dHdx = -sin( ( abs( x ) * 2.0 + y ) * kDiv - t * 6.0 ) * 0.3;
-    float dHdy = -sin( y * kTrans - t * 4.0 ) * 0.2;
-    vNormal = normalize( vec3( -dHdx, -dHdy, 1.0 ) );
+    float d_hdx = -sin( ( abs( x ) * 2.0 + y ) * k_div - t * 6.0 ) * 0.3;
+    float d_hdy = -sin( y * k_trans - t * 4.0 ) * 0.2;
+    vNormal = normalize( vec3( -d_hdx, -d_hdy, 1.0 ) );
 
     // Ocean blue palette
-    vec3 oceanBlue = vec3( 0.08, 0.45, 0.75 );
-    vCol = palTint( oceanBlue, attrA.y * 0.3 + audioCentroid, 0.25 );
+    vec3 ocean_blue = vec3( 0.08, 0.45, 0.75 );
+    vCol = palTint( ocean_blue, attrA.y * 0.3 + audioCentroid, 0.25 );
 
     // Camera Transform (V3)
     // Tilt FIRST, then push away.  The old order rotated the already-pushed
@@ -104,7 +104,7 @@ void main()
     // and left it sitting in the lower half of the frame with black above.
     // Tilting about the plate's own centre keeps it on the view axis, and at
     // this distance it then fills the frame (reported: "bildschirmfuellender").
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.65;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

@@ -70,16 +70,16 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float dens = 14.0 + 10.0 * clamp( densP, 0.0, 1.0 );
-    float threadLen = 0.12 + 0.12 * clamp( threadP, 0.0, 1.0 );
+    float thread_len = 0.12 + 0.12 * clamp( threadP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.3 + sceneTime * 0.06;
-    float waterY = -0.25;
+    float water_y = -0.25;
     vec3  glow = mix( vec3( 0.3, 0.9, 0.7 ), imgPalette( hue * 0.159 + 0.4 ), 0.25 );
 
     // Mirror below the water line.
-    float inWater = step( p.y, waterY );
+    float in_water = step( p.y, water_y );
     vec2  q = p;
-    if ( inWater > 0.5 )
-        q.y = 2.0 * waterY - p.y + 0.004 * sin( p.x * 50.0 + clock * 2.0 );
+    if ( in_water > 0.5 )
+        q.y = 2.0 * water_y - p.y + 0.004 * sin( p.x * 50.0 + clock * 2.0 );
     // The cave rock: the photo very dark and wet.
     vec3 col = img( vec2( q.x / aspect + 0.5, q.y + 0.5 ) ) * imgPalette( hue * 0.159 + 0.55 ) * 0.14;
     // Glow-worms: a jittered grid on the ceiling (y above 0.05); each cell
@@ -96,28 +96,28 @@ void main()
         float h = hash21( c );
         if ( h < 0.35 )
             continue; // not every cell has a worm
-        vec2  wormPos = ( c + 0.5 + ( vec2( hash21( c + 3.1 ), hash21( c + 7.7 ) ) - 0.5 ) * 0.7 ) / dens;
+        vec2  worm_pos = ( c + 0.5 + ( vec2( hash21( c + 3.1 ), hash21( c + 7.7 ) ) - 0.5 ) * 0.7 ) / dens;
         int   band = int( mod( h * 97.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-        vec2  d = q - wormPos;
+        vec2  d = q - worm_pos;
         // The worm: a round glow.
         float worm = smoothstep( 0.012, 0.004, length( d ) );
         col += glow * ( worm * ( 0.9 + 1.2 * e ) + exp( -length( d ) * 25.0 ) * ( 0.3 + 0.8 * e ) );
-        // The thread: hangs down threadLen, swaying gently; beads along it.
-        float len = threadLen * ( 0.6 + 0.8 * hash21( c + 5.5 ) );
+        // The thread: hangs down thread_len, swaying gently; beads along it.
+        float len = thread_len * ( 0.6 + 0.8 * hash21( c + 5.5 ) );
         float sway = 0.006 * sin( clock * 1.2 + h * 6.28 ) * ( -d.y / len );
-        float onThread = step( -len, d.y ) * step( d.y, 0.0 );
-        float thread = smoothstep( 0.0025, 0.0006, abs( d.x - sway ) ) * onThread;
+        float on_thread = step( -len, d.y ) * step( d.y, 0.0 );
+        float thread = smoothstep( 0.0025, 0.0006, abs( d.x - sway ) ) * on_thread;
         col += glow * thread * 0.45 * ( 0.5 + 0.5 * e );
-        float beadPh = fract( -d.y / len * ( 5.0 + 4.0 * hash21( c + 9.9 ) ) );
+        float bead_ph = fract( -d.y / len * ( 5.0 + 4.0 * hash21( c + 9.9 ) ) );
         float bead = smoothstep(
                          0.006, 0.002,
-                         length( vec2( d.x - sway, ( beadPh - 0.5 ) * len / ( 5.0 + 4.0 * hash21( c + 9.9 ) ) ) ) )
-                     * onThread;
+                         length( vec2( d.x - sway, ( bead_ph - 0.5 ) * len / ( 5.0 + 4.0 * hash21( c + 9.9 ) ) ) ) )
+                     * on_thread;
         col += ( glow * 0.6 + 0.4 ) * bead * ( 0.3 + 1.2 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) * ( 0.5 + 0.5 * e );
     }
     // The water: mirrored image darkened and blued; drip rings on the kick.
-    if ( inWater > 0.5 )
+    if ( in_water > 0.5 )
     {
         col *= vec3( 0.5, 0.65, 0.75 ) * 0.75;
         for ( int k = 0; k < 4; ++k )
@@ -125,14 +125,14 @@ void main()
             float fk = float( k );
             float ph = fract( clock * ( 0.4 + 0.2 * hash21( vec2( fk, 1.0 ) ) ) + hash21( vec2( fk, 2.0 ) ) );
             vec2  c = vec2( ( hash21( vec2( fk, 3.0 ) ) - 0.5 ) * aspect,
-                            waterY - 0.05 - hash21( vec2( fk, 4.0 ) ) * 0.3 );
+                            water_y - 0.05 - hash21( vec2( fk, 4.0 ) ) * 0.3 );
             float rr = length( ( p - c ) * vec2( 1.0, 4.0 ) );
             col += glow * exp( -abs( rr - ph * 0.3 ) * 50.0 ) * ( 1.0 - ph ) * ( 0.15 + 0.6 * audioKick ) * 0.6;
         }
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

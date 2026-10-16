@@ -65,7 +65,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float zm = ( zoomP > 0.01 ) ? zoomP : 1.0;
-    float fShp = ( finSharpP > 0.01 ) ? finSharpP : 1.0;
+    float f_shp = ( finSharpP > 0.01 ) ? finSharpP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
@@ -77,7 +77,7 @@ void main()
     // one flat grey plane (catalogue review 29.09.2026).  (-1.1436, 0.0876)
     // was picked by measuring: at 10x and 100x about 30-45 % of the view is
     // interior and the escape counts spread widely -- detail all the way in.
-    vec2 cCenter = vec2( -1.1436, 0.0876 );
+    vec2 c_center = vec2( -1.1436, 0.0876 );
     // Zoom cycle. exp(mod(t * 0.65, 5.5)) snapped from e^5.5 (245x) back to
     // e^0 every ~8.5 s -- a hard cut. A raised cosine over the same period
     // dives in and eases back out instead: continuous in value AND velocity
@@ -86,11 +86,11 @@ void main()
     // drones. It multiplies the exp() RESULT, not its t-driven exponent --
     // scaling the exponent would jump the whole dive position in one frame.
     float zc = 0.5 - 0.5 * cos( 6.2831853 * fract( t * 0.65 / 5.5 ) ); // 0..1..0
-    float zoomLevel = exp( zc * 5.5 ) * ( 2.2 * zm ) * ( 1.0 + 0.12 * audioSwell );
-    vec2  c = cCenter + uv / zoomLevel;
+    float zoom_level = exp( zc * 5.5 ) * ( 2.2 * zm ) * ( 1.0 + 0.12 * audioSwell );
+    vec2  c = c_center + uv / zoom_level;
 
     vec2  z = c;
-    float iterCount = 0.0;
+    float iter_count = 0.0;
     float trap = 1e5;
 
     // Tricorn loop: z = conj(z)^2 + c = (x - iy)^2 + c = (x^2 - y^2 - 2ixy) + c
@@ -103,45 +103,45 @@ void main()
 
         if ( r2 > 16.0 )
         {
-            iterCount = float( i ) - log2( max( 1.0, log2( r2 ) ) );
+            iter_count = float( i ) - log2( max( 1.0, log2( r2 ) ) );
             break;
         }
     }
 
-    if ( iterCount == 0.0 )
-        iterCount = 48.0;
+    if ( iter_count == 0.0 )
+        iter_count = 48.0;
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( z * 0.25 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( z * 0.25 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing dragon fin serrations
-    float finGlow = exp( -trap * ( 20.0 + 10.0 * audioCentroid ) * fShp ) * glw;
+    float fin_glow = exp( -trap * ( 20.0 + 10.0 * audioCentroid ) * f_shp ) * glw;
 
     // Metallic antimatter palette
-    vec3 palA = imgPalette( iterCount * 0.04 + trap * 0.2 );
-    vec3 palB = imgPalette( iterCount * 0.04 + 0.5 );
-    vec3 tricornCol = mix( palA, palB, 0.5 + 0.5 * sin( iterCount * 0.8 + t ) );
+    vec3 pal_a = imgPalette( iter_count * 0.04 + trap * 0.2 );
+    vec3 pal_b = imgPalette( iter_count * 0.04 + 0.5 );
+    vec3 tricorn_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( iter_count * 0.8 + t ) );
 
     // The interior is not a flat fill: its orbit trap draws scales.
-    float inside = step( 47.5, iterCount );
-    vec3  innerCol = imgPalette( 0.55 + trap * 0.6 ) * ( 0.25 + 0.9 * exp( -trap * 3.0 ) );
-    tricornCol = mix( tricornCol, innerCol, inside );
+    float inside = step( 47.5, iter_count );
+    vec3  inner_col = imgPalette( 0.55 + trap * 0.6 ) * ( 0.25 + 0.9 * exp( -trap * 3.0 ) );
+    tricorn_col = mix( tricorn_col, inner_col, inside );
     // Photo only as a light texture: grey photos made the whole sea grey.
-    float tg = dot( tricornCol, vec3( 0.333 ) );
-    tricornCol = mix( vec3( tg ), tricornCol, 1.6 ); // richer colour
-    tricornCol = mix( tricornCol, texCol * tricornCol * 2.0, 0.2 + 0.1 * audioValence );
+    float tg = dot( tricorn_col, vec3( 0.333 ) );
+    tricorn_col = mix( vec3( tg ), tricorn_col, 1.6 ); // richer colour
+    tricorn_col = mix( tricorn_col, tex_col * tricorn_col * 2.0, 0.2 + 0.1 * audioValence );
 
     // Add glowing fin serration highlights and kick flash
-    vec3 finTint = vec3( 1.1, 1.4, 1.9 ) * finGlow * ( 1.0 + 2.5 * audioKick );
-    tricornCol += finTint;
+    vec3 fin_tint = vec3( 1.1, 1.4, 1.9 ) * fin_glow * ( 1.0 + 2.5 * audioKick );
+    tricorn_col += fin_tint;
 
     // Core antimatter singularity bloom
-    float coreBloom = exp( -trap * 4.0 ) * ( 0.8 + 1.8 * audioKick );
-    tricornCol += imgPalette( 0.85 ) * coreBloom;
+    float core_bloom = exp( -trap * 4.0 ) * ( 0.8 + 1.8 * audioKick );
+    tricorn_col += imgPalette( 0.85 ) * core_bloom;
 
-    tricornCol = pow( tricornCol, vec3( 0.88 ) );
-    tricornCol /= 1.0 + 0.45 * max( tricornCol.r, max( tricornCol.g, tricornCol.b ) ); // peak knee: tame local glare,
-                                                                                       // keep midtones
-    fragColor = vec4( clamp( tricornCol, 0.0, 1.0 ), 1.0 );
+    tricorn_col = pow( tricorn_col, vec3( 0.88 ) );
+    tricorn_col /= 1.0 + 0.45 * max( tricorn_col.r, max( tricorn_col.g, tricorn_col.b ) ); // peak knee: tame local
+                                                                                           // glare, keep midtones
+    fragColor = vec4( clamp( tricorn_col, 0.0, 1.0 ), 1.0 );
 }

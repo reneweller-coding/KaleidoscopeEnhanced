@@ -66,9 +66,9 @@ vec3 hueRot( vec3 c, float a )
 vec4 hexLattice( vec2 p )
 {
     vec2 s = vec2( 1.0, 1.7320508 );
-    vec4 hC = floor( vec4( p, p - vec2( 0.5, 1.0 ) ) / s.xyxy ) + 0.5;
-    vec4 h = vec4( p - hC.xy * s, p - ( hC.zw + 0.5 ) * s );
-    return ( dot( h.xy, h.xy ) < dot( h.zw, h.zw ) ) ? vec4( h.xy, hC.xy ) : vec4( h.zw, hC.zw + vec2( 0.5, 0.5 ) );
+    vec4 h_c = floor( vec4( p, p - vec2( 0.5, 1.0 ) ) / s.xyxy ) + 0.5;
+    vec4 h = vec4( p - h_c.xy * s, p - ( h_c.zw + 0.5 ) * s );
+    return ( dot( h.xy, h.xy ) < dot( h.zw, h.zw ) ) ? vec4( h.xy, h_c.xy ) : vec4( h.zw, h_c.zw + vec2( 0.5, 0.5 ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -86,46 +86,46 @@ void main()
     // Honeycomb coordinates
     vec2 p = uv * 14.0 * lat;
     vec4 h = hexLattice( p );
-    vec2 localPos = h.xy;
-    vec2 cellCenter = h.zw;
+    vec2 local_pos = h.xy;
+    vec2 cell_center = h.zw;
 
     // Carbon-carbon covalent bond lines
-    float hexEdge = abs( length( localPos ) - 0.5 );
-    float bondLine = smoothstep( 0.08, 0.02, hexEdge );
+    float hex_edge = abs( length( local_pos ) - 0.5 );
+    float bond_line = smoothstep( 0.08, 0.02, hex_edge );
 
     // Atomic carbon nuclei at honeycomb vertices
-    float nucleus = exp( -dot( localPos, localPos ) * 35.0 );
+    float nucleus = exp( -dot( local_pos, local_pos ) * 35.0 );
 
     // Dirac cone electronic wave dispersion: E(k) = +/- hbar * v_F * |k - K|
-    float kDist = length( cellCenter * 0.2 );
-    float diracEnergy = abs( sin( kDist * 4.0 - t * 2.0 ) );
+    float k_dist = length( cell_center * 0.2 );
+    float dirac_energy = abs( sin( k_dist * 4.0 - t * 2.0 ) );
 
     // Spectrum band excitation per carbon ring
-    float cellHash = fract( sin( dot( cellCenter, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
-    int   bandIdx = int( clamp( cellHash * 31.0, 0.0, 31.0 ) );
-    float bandEnergy = audioSpectrum[bandIdx];
+    float cell_hash = fract( sin( dot( cell_center, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+    int   band_idx = int( clamp( cell_hash * 31.0, 0.0, 31.0 ) );
+    float band_energy = audioSpectrum[band_idx];
 
     // Plasmonic wavepacket traveling across the sheet
     // USER-FEEDBACK: two CROSSING wavefronts + an expanding kick ring —
     // the plasmons visibly travel and collide instead of one static stripe.
     float w1 = pow( 0.5 + 0.5 * sin( dot( p, normalize( vec2( 1.0, 0.5 ) ) ) - time * 6.0 ), 8.0 );
     float w2 = pow( 0.5 + 0.5 * sin( dot( p, normalize( vec2( -0.6, 1.0 ) ) ) - time * 4.6 - audioPhase ), 8.0 );
-    float ringR = fract( time * 0.45 + audioAdvance * 0.2 ) * 1.5;
-    float ring = pow( max( 0.0, 1.0 - abs( length( uv ) - ringR ) * 6.0 ), 2.0 )
+    float ring_r = fract( time * 0.45 + audioAdvance * 0.2 ) * 1.5;
+    float ring = pow( max( 0.0, 1.0 - abs( length( uv ) - ring_r ) * 6.0 ), 2.0 )
                  * ( 0.4 + 1.6 * audioKick );
-    float plasmonWave = ( w1 + w2 * 0.8 ) * ( 1.0 + 1.2 * audioKick );
+    float plasmon_wave = ( w1 + w2 * 0.8 ) * ( 1.0 + 1.2 * audioKick );
 
     // Photo projection on electronic density of states
-    vec2 photoUV = cellCenter * 0.08 + vec2( 0.5 );
-    vec3 photoCol = img( fract( photoUV ) );
+    vec2 photo_uv = cell_center * 0.08 + vec2( 0.5 );
+    vec3 photo_col = img( fract( photo_uv ) );
 
     // Quantum colors: Graphene carbon grey + neon cyan/amber Dirac plasmons
-    vec3 carbonBase = vec3( 0.06, 0.08, 0.12 ) * photoCol;
-    vec3 bondNeon = vec3( 0.0, 0.85, 1.0 ) * ( 0.6 + 1.5 * diracEnergy );
-    vec3 plasmonCol = imgPalette( 0.12 ) * plasmonWave * 2.6 * pls + imgPalette( 0.55 ) * ring * 2.0;
-    vec3 nucleusGlow = vec3( 1.0, 0.9, 0.4 ) * nucleus * ( 1.0 + 2.0 * bandEnergy );
+    vec3 carbon_base = vec3( 0.06, 0.08, 0.12 ) * photo_col;
+    vec3 bond_neon = vec3( 0.0, 0.85, 1.0 ) * ( 0.6 + 1.5 * dirac_energy );
+    vec3 plasmon_col = imgPalette( 0.12 ) * plasmon_wave * 2.6 * pls + imgPalette( 0.55 ) * ring * 2.0;
+    vec3 nucleus_glow = vec3( 1.0, 0.9, 0.4 ) * nucleus * ( 1.0 + 2.0 * band_energy );
 
-    vec3 col = carbonBase + bondNeon * bondLine * 1.8 + plasmonCol + nucleusGlow;
+    vec3 col = carbon_base + bond_neon * bond_line * 1.8 + plasmon_col + nucleus_glow;
     col += vec3( 0.3, 0.8, 1.0 ) * audioKick * exp( -length( uv ) * 3.5 ) * 1.5; // Quantum Hall pulse
 
     col = hueRot( col, hue ); // chromaHue handled inside imgPalette

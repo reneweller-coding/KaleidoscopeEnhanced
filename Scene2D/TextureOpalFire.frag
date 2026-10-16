@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -266,13 +266,13 @@ void main()
     float gdir = h * 6.2831853;
     vec2  gv = vec2( cos( gdir ), sin( gdir ) );
     // The turning stone: a tilt direction; a patch flashes when its grating faces it.
-    float tT = 0.05 * sceneTime + 0.35 * audioAdvance;
-    vec2  tilt = vec2( cos( tT ), sin( tT * 0.77 ) );
+    float t_t = 0.05 * sceneTime + 0.35 * audioAdvance;
+    vec2  tilt = vec2( cos( t_t ), sin( t_t * 0.77 ) );
     float align = dot( gv, normalize( tilt + 1e-4 ) ) * 0.5 + 0.5;
     float width = 0.12 + 0.25 * clamp( audioSpread, 0.0, 1.0 );
     float flash = smoothstep( 1.0 - width, 1.0, align ) + 0.25 * smoothstep( 1.0 - width * 2.5, 1.0, align );
-    float hueShift = hash21( id + 3.0 ) + 0.35 * dot( p, tilt ) + 0.35 * fbm3( w * 0.8 + tT ) + hueP * 0.159;
-    vec3  fire = spectral( hueShift + 0.3 * align );
+    float hue_shift = hash21( id + 3.0 ) + 0.35 * dot( p, tilt ) + 0.35 * fbm3( w * 0.8 + t_t ) + hueP * 0.159;
+    vec3  fire = spectral( hue_shift + 0.3 * align );
     // Striations across each patch along its grating.
     float stri = 0.88 + 0.12 * sin( dot( w, gv.yx * vec2( 1.0, -1.0 ) ) * 45.0 + h * 10.0 );
     stri *= 0.5 + 0.7 * smoothstep( 0.25, 0.75, fbm3( w * 1.3 + h * 9.0 ) ); // patchy inside

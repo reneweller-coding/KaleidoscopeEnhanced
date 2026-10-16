@@ -46,8 +46,8 @@ void main()
     // cycle.  Fully spread, tracks of every age coexist: a bright vertex,
     // helical arcs mid-flight, fading ends.  Kick gain on the speed is
     // moderate for the same reason (x1.5 blew everything off-screen).
-    float tCollision = fract( time * 0.8 + audioAdvance * 0.3 + seed );
-    float burstSpeed = ( 2.0 + 3.0 * seed2 ) * ( 1.0 + audioKick * 0.5 );
+    float t_collision = fract( time * 0.8 + audioAdvance * 0.3 + seed );
+    float burst_speed = ( 2.0 + 3.0 * seed2 ) * ( 1.0 + audioKick * 0.5 );
 
     // Initial ejection direction (isotropic spherical spray)
     float theta = acos( seed2 * 2.0 - 1.0 );
@@ -56,15 +56,15 @@ void main()
 
     // Magnetic solenoid field curvature: helical Lorentz force trajectory
     float charge = ( seed > 0.5 ) ? 1.0 : -1.0;
-    float bField = ( 1.5 + audioBass * 2.0 ) * charge;
+    float b_field = ( 1.5 + audioBass * 2.0 ) * charge;
 
-    float r = tCollision * burstSpeed;
-    float helixAngle = phi + r * bField;
+    float r = t_collision * burst_speed;
+    float helix_angle = phi + r * b_field;
 
-    vec3 pos = vec3( r * cos( helixAngle ), r * sin( helixAngle ), dir.z * r * 2.0 );
+    vec3 pos = vec3( r * cos( helix_angle ), r * sin( helix_angle ), dir.z * r * 2.0 );
 
     vPos = pos;
-    vEnergy = ( 1.0 - tCollision ) * ( 1.0 + audioKick * 2.0 );
+    vEnergy = ( 1.0 - t_collision ) * ( 1.0 + audioKick * 2.0 );
     vSpecies = seed;
 
     // Stereoscopic 3D camera projection

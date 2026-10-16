@@ -56,37 +56,37 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  worldP = attrA.xyz;
+    vec3  world_p = attrA.xyz;
     float hue = attrA.w;
     vec3  norm = attrB.xyz;
     float glow = attrB.w;
 
     // Orbiting Camera
-    float camAngle = time * 0.15 + audioAdvance * 0.05;
-    float camDist = 26.0 - audioSwell * 5.0;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 14.0 + 3.0 * sin( time * 0.2 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0, 0.0, 0.0 );
+    float cam_angle = time * 0.15 + audioAdvance * 0.05;
+    float cam_dist = 26.0 - audioSwell * 5.0;
+    vec3  cam_pos = vec3( sin( cam_angle ) * cam_dist, 14.0 + 3.0 * sin( time * 0.2 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0, 0.0, 0.0 );
 
-    vec3 ww = normalize( lookTarget - camPos );
+    vec3 ww = normalize( look_target - cam_pos );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    vec3 relP = worldP - camPos;
-    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
+    vec3 rel_p = world_p - cam_pos;
+    vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
 
-    viewP.x -= eyeOff;
-    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+    view_p.x -= eyeOff;
+    gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Quantum flux ribbon color: Cyan, Violet, Gold
-    vec3 fluxCol = imgPalette( 0.30 * hue ) * 1.4;
-    fluxCol = mix( fluxCol, vec3( 1.0, 0.8, 0.2 ), 0.28 * ( sin( hue * 6.28 + time ) * 0.5 + 0.5 ) );
+    vec3 flux_col = imgPalette( 0.30 * hue ) * 1.4;
+    flux_col = mix( flux_col, vec3( 1.0, 0.8, 0.2 ), 0.28 * ( sin( hue * 6.28 + time ) * 0.5 + 0.5 ) );
 
     float h = ( hueP > 0.0 ) ? hueP : 0.0;
     if ( h > 0.001 )
-        fluxCol = hueRot( fluxCol, h );
+        flux_col = hueRot( flux_col, h );
 
-    vCol = vec4( fluxCol * glow, 1.0 );
+    vCol = vec4( flux_col * glow, 1.0 );
     vNormal = norm;
-    vWorld = worldP;
+    vWorld = world_p;
 }

@@ -100,15 +100,15 @@ void main()
     rd.xy = rot2D( sin( t * 0.3 ) * 0.3 + audioPhase * 0.5 ) * rd.xy;
 
     vec3  p = ro;
-    float accumDensity = 0.0;
-    float shockDiamonds = 0.0;
-    float photoWeight = 0.0;
-    vec2  sampledCoord = vec2( 0.0 );
+    float accum_density = 0.0;
+    float shock_diamonds = 0.0;
+    float photo_weight = 0.0;
+    vec2  sampled_coord = vec2( 0.0 );
 
-    float stepSize = 0.08;
+    float step_size = 0.08;
     for ( int i = 0; i < 40; ++i )
     {
-        p += rd * stepSize;
+        p += rd * step_size;
         // Side view: the old march looked straight down the jet axis and
         // the beam recorded as a concentric glow ball.  Tilt the axis ~62
         // degrees across the frame and mirror it (bipolar lobes).
@@ -117,57 +117,57 @@ void main()
         float r = length( vec2( pj.x, pj.z ) );
 
         // Magnetic funnel envelope, opening away from the core BOTH ways
-        float funnelR = ( 0.16 + 0.30 * pow( abs( z ) * 1.5 + 0.10, 0.65 ) ) / col;
-        funnelR += 0.08 * sin( z * 4.0 - t * 6.0 ) * ( 1.0 + audioKick );
+        float funnel_r = ( 0.16 + 0.30 * pow( abs( z ) * 1.5 + 0.10, 0.65 ) ) / col;
+        funnel_r += 0.08 * sin( z * 4.0 - t * 6.0 ) * ( 1.0 + audioKick );
 
         // Helical magnetic field lines
         float angle = atan( p.y, p.x ) + z * 2.5 * col - t * 4.0;
         float helix = abs( sin( angle * 4.0 ) );
 
         // Synchrotron plasma sheath density
-        float sheathDist = abs( r - funnelR );
-        float density = exp( -sheathDist * 16.0 ) * ( 1.0 + helix * 1.2 );
+        float sheath_dist = abs( r - funnel_r );
+        float density = exp( -sheath_dist * 16.0 ) * ( 1.0 + helix * 1.2 );
 
         // Shock diamonds: periodic supersonic compression nodes along z
-        float diamondZ = sin( abs( z ) * 6.0 - t * 8.0 );
-        float diamond = exp( -abs( diamondZ ) * 8.0 ) * exp( -r * 8.0 );
-        shockDiamonds += diamond * ( 1.5 + audioKick * 3.0 );
+        float diamond_z = sin( abs( z ) * 6.0 - t * 8.0 );
+        float diamond = exp( -abs( diamond_z ) * 8.0 ) * exp( -r * 8.0 );
+        shock_diamonds += diamond * ( 1.5 + audioKick * 3.0 );
         // Luminous beam core so the jet reads as a BEAM, not a haze.
-        accumDensity += exp( -r * 10.0 ) * 0.55 * stepSize * ( 1.0 + 0.6 * audioLevel );
+        accum_density += exp( -r * 10.0 ) * 0.55 * step_size * ( 1.0 + 0.6 * audioLevel );
 
-        accumDensity += density * stepSize;
+        accum_density += density * step_size;
 
         // Sample coordinates along magnetic sheath for photo mapping
-        if ( sheathDist < 0.15 && photoWeight < 1.0 )
+        if ( sheath_dist < 0.15 && photo_weight < 1.0 )
         {
-            sampledCoord = vec2( angle * 0.15915, z * 0.2 + t * 0.1 );
-            photoWeight += 0.2;
+            sampled_coord = vec2( angle * 0.15915, z * 0.2 + t * 0.1 );
+            photo_weight += 0.2;
         }
     }
 
-    vec3 photo = img( fract( sampledCoord + 0.5 ) );
+    vec3 photo = img( fract( sampled_coord + 0.5 ) );
 
     // Core relativistic beam color (Cherenkov electric blue / violet / white)
-    vec3 beamColor = imgPalette( 0.25 * shockDiamonds ) * 1.3;
-    beamColor = mix( beamColor, vec3( 1.0, 0.3, 0.8 ), sin( t + accumDensity * 2.0 ) * 0.5 + 0.5 );
+    vec3 beam_color = imgPalette( 0.25 * shock_diamonds ) * 1.3;
+    beam_color = mix( beam_color, vec3( 1.0, 0.3, 0.8 ), sin( t + accum_density * 2.0 ) * 0.5 + 0.5 );
 
     // Combine visualizer
-    vec3 finalCol = mix( photo * 0.9, beamColor, clamp( accumDensity * 1.5 * jet, 0.0, 1.0 ) );
-    finalCol += shockDiamonds * vec3( 1.0, 0.95, 0.85 ) * ( 1.2 + audioKick * 2.0 );
-    finalCol += exp( -length( uv ) * 12.0 ) * vec3( 1.0, 0.9, 0.6 ) * ( 1.5 + audioSubBass * 2.0 );
+    vec3 final_col = mix( photo * 0.9, beam_color, clamp( accum_density * 1.5 * jet, 0.0, 1.0 ) );
+    final_col += shock_diamonds * vec3( 1.0, 0.95, 0.85 ) * ( 1.2 + audioKick * 2.0 );
+    final_col += exp( -length( uv ) * 12.0 ) * vec3( 1.0, 0.9, 0.6 ) * ( 1.5 + audioSubBass * 2.0 );
 
     if ( audioChromaHue != 0.0 )
-        finalCol = hueRot( finalCol, audioChromaHue );
+        final_col = hueRot( final_col, audioChromaHue );
     if ( hue > 0.001 )
-        finalCol = hueRot( finalCol, hue );
+        final_col = hueRot( final_col, hue );
 
     // Vignette
     float vig = smoothstep( 1.3, 0.3, length( uv ) );
-    finalCol *= vig;
+    final_col *= vig;
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( finalCol ) * 0.3;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( final_col ) * 0.3;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

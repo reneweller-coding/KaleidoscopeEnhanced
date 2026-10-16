@@ -54,49 +54,49 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
-    vUV = vec2( tCoord, side * 0.5 + 0.5 );
+    vRibbonID = r_index;
+    vUV = vec2( t_coord, side * 0.5 + 0.5 );
 
     float t = time * 0.35 + audioAdvance * 0.3;
-    float vSpeed = ( edgeSpeedP > 0.01 ? edgeSpeedP : 1.2 );
+    float v_speed = ( edgeSpeedP > 0.01 ? edgeSpeedP : 1.2 );
 
     // Nested concentric chiral edge states for different Landau levels (nu = 1, 2, 3, ...)
-    float landauLevel = rIndex + 1.0;
-    float baseR = ( 0.4 + landauLevel * 0.22 ) * ( landauRadiusP > 0.01 ? landauRadiusP : 1.0 );
+    float landau_level = r_index + 1.0;
+    float base_r = ( 0.4 + landau_level * 0.22 ) * ( landauRadiusP > 0.01 ? landauRadiusP : 1.0 );
 
     // Chiral perimeter trajectory around 2D electron gas island
-    float perimeterAngle = tCoord * 6.2831853 + t * vSpeed * ( 1.0 / sqrt( landauLevel ) );
+    float perimeter_angle = t_coord * 6.2831853 + t * v_speed * ( 1.0 / sqrt( landau_level ) );
 
     // Mesoscopic boundary oscillations (skipping orbits along boundary)
-    float skipWaves = sin( tCoord * 24.0 * landauLevel - t * 4.0 ) * 0.04;
-    float currentR = baseR + skipWaves;
+    float skip_waves = sin( t_coord * 24.0 * landau_level - t * 4.0 ) * 0.04;
+    float current_r = base_r + skip_waves;
 
-    float zLayer = ( landauLevel - 3.0 ) * 0.15 + sin( perimeterAngle * 3.0 + t * 0.5 ) * 0.08;
+    float z_layer = ( landau_level - 3.0 ) * 0.15 + sin( perimeter_angle * 3.0 + t * 0.5 ) * 0.08;
 
-    vec3 centerPos = vec3(
-        cos( perimeterAngle ) * currentR,
-        sin( perimeterAngle ) * currentR,
-        zLayer );
+    vec3 center_pos = vec3(
+        cos( perimeter_angle ) * current_r,
+        sin( perimeter_angle ) * current_r,
+        z_layer );
 
-    vec3 tangent = normalize( vec3( -sin( perimeterAngle ), cos( perimeterAngle ), 0.0 ) );
+    vec3 tangent = normalize( vec3( -sin( perimeter_angle ), cos( perimeter_angle ), 0.0 ) );
     vec3 binormal = normalize( cross( tangent, vec3( 0.0, 0.0, 1.0 ) ) );
 
     float width = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.045 ) * ( 1.0 + 0.3 * audioSwell );
-    vec3  worldPos = centerPos + binormal * ( side * width );
+    vec3  world_pos = center_pos + binormal * ( side * width );
 
     // Chiral 1D ballistic electron wavepacket flash
-    float pulse = exp( -abs( fract( tCoord * 4.0 - t * 2.0 * vSpeed ) - 0.5 ) * 16.0 ) * ( 1.0 + 3.0 * audioKick );
+    float pulse = exp( -abs( fract( t_coord * 4.0 - t * 2.0 * v_speed ) - 0.5 ) * 16.0 ) * ( 1.0 + 3.0 * audioKick );
     vChiralPulse = pulse;
 
-    vCol = imgPalette( fract( rIndex * 0.15 + tCoord * 0.2 + audioCentroid ) );
+    vCol = imgPalette( fract( r_index * 0.15 + t_coord * 0.2 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 4.5;
     vp.x -= eyeOff;
 

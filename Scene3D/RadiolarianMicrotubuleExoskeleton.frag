@@ -64,17 +64,17 @@ vec3 palTint( vec3 c, float t, float k )
 void main()
 {
     // Glass opal silica color
-    vec3 opalSilica = vec3( 0.75, 0.9, 1.0 );
-    vec3 silicaCol = palTint( opalSilica, vRadius * 0.3 + audioCentroid, 0.22 );
+    vec3 opal_silica = vec3( 0.75, 0.9, 1.0 );
+    vec3 silica_col = palTint( opal_silica, vRadius * 0.3 + audioCentroid, 0.22 );
 
     // 0.25 was tuned for one skeleton on the origin; the bloom now spans the
     // whole frustum and that rate tiled the slide eight times over.
-    vec2 photoUv = fract( vPos.xy * 0.045 + 0.5 );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vPos.xy * 0.045 + 0.5 );
+    vec3 photo_sample = img( photo_uv );
 
-    vec3 col = silicaCol * ( 0.6 + 0.4 * photoSample ) * vGlow;
+    vec3 col = silica_col * ( 0.6 + 0.4 * photo_sample ) * vGlow;
     col *= ( silicaGlowP > 0.01 ? silicaGlowP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
-    col += silicaCol * ( audioKick * 0.35 );
+    col += silica_col * ( audioKick * 0.35 );
 
     // Thin-film opal dispersion across the strut: opalP was declared and then
     // never read, so the documented iridescence simply did not exist.  Banded
@@ -88,8 +88,8 @@ void main()
     // ~18 units, and the vert stage adds 4.8 to reach view depth.  Lit
     // identically, near and far skeletons read as one flat sheet -- and the
     // many added struts would sum too bright.
-    float viewD = max( vPos.z + 4.8, 1.0 );
-    col *= clamp( 5.5 / viewD, 0.28, 1.0 );
+    float view_d = max( vPos.z + 4.8, 1.0 );
+    col *= clamp( 5.5 / view_d, 0.28, 1.0 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

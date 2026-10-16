@@ -94,14 +94,14 @@ float fbm( vec2 p )
 float karst( float x, float L )
 {
     float h = -1.0;
-    float cellW = 0.16 + 0.05 * L;
-    float ci = floor( x / cellW );
+    float cell_w = 0.16 + 0.05 * L;
+    float ci = floor( x / cell_w );
     for ( int k = -2; k <= 2; ++k )
     {
         float c = ci + float( k );
-        float cx = ( c + 0.3 + 0.4 * hash11( c * 1.7 + L * 13.0 ) ) * cellW;
+        float cx = ( c + 0.3 + 0.4 * hash11( c * 1.7 + L * 13.0 ) ) * cell_w;
         float ht = 0.08 + 0.2 * hash11( c * 3.1 + L * 7.0 );
-        float w = cellW * ( 0.35 + 0.25 * hash11( c * 5.3 + L ) );
+        float w = cell_w * ( 0.35 + 0.25 * hash11( c * 5.3 + L ) );
         float dx = ( x - cx ) / w;
         // A steep dome: sides nearly vertical low down, rounded on top.
         float ex = 1.6 + 1.6 * hash11( c * 9.7 + L * 3.0 );
@@ -121,29 +121,29 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.5;
-    int   nR = 4 + int( clamp( rangesP, 0.0, 1.0 ) * 2.99 );
-    float mistAmt = 0.6 + 0.6 * clamp( mistP, 0.0, 1.0 );
+    int   n_r = 4 + int( clamp( rangesP, 0.0, 1.0 ) * 2.99 );
+    float mist_amt = 0.6 + 0.6 * clamp( mistP, 0.0, 1.0 );
 
     float water = -0.2;
     vec3  tint = mix( vec3( 1.0 ), imgPalette( 0.08 + hue * 0.159 ) * 1.3, 0.12 );
-    vec2  sunP = vec2( 0.28, 0.2 );
+    vec2  sun_p = vec2( 0.28, 0.2 );
 
     // Dawn sky: pale peach at the horizon, soft blue above, sun behind mist.
     vec3 sky = mix( vec3( 1.0, 0.86, 0.72 ), vec3( 0.62, 0.72, 0.85 ), smoothstep( 0.0, 0.45, p.y ) );
-    sky += vec3( 1.0, 0.85, 0.6 ) * exp( -length( p - sunP ) * 3.5 ) * ( 0.35 + 0.35 * swell );
-    sky += vec3( 1.0, 0.95, 0.85 ) * smoothstep( 0.05, 0.035, length( p - sunP ) ) * 0.5;
+    sky += vec3( 1.0, 0.85, 0.6 ) * exp( -length( p - sun_p ) * 3.5 ) * ( 0.35 + 0.35 * swell );
+    sky += vec3( 1.0, 0.95, 0.85 ) * smoothstep( 0.05, 0.035, length( p - sun_p ) ) * 0.5;
 
     // Draw one pixel of the landscape at screen point q (used for the view
     // and, mirrored, for the river).
     vec3  col = sky;
-    vec3  mistC = mix( vec3( 0.95, 0.9, 0.86 ), vec3( 1.0, 0.88, 0.75 ), exp( -abs( p.x - sunP.x ) * 2.0 ) );
-    float depthNear = 1.0;
+    vec3  mist_c = mix( vec3( 0.95, 0.9, 0.86 ), vec3( 1.0, 0.88, 0.75 ), exp( -abs( p.x - sun_p.x ) * 2.0 ) );
+    float depth_near = 1.0;
     for ( int L = 0; L < 6; ++L )
     {
-        if ( L >= nR )
+        if ( L >= n_r )
             break;
         float fl = float( L );
-        float t = fl / float( nR - 1 );      // 0 far .. 1 near
+        float t = fl / float( n_r - 1 );     // 0 far .. 1 near
         float base = water + 0.2 - 0.18 * t; // ranges stack downward as they come near
         float scale = 0.55 + 0.9 * t;
         float h = karst( p.x / scale + fl * 3.7, fl ) * scale;
@@ -151,17 +151,17 @@ void main()
         {
             // Rock: dark green-grey near, paler blue-grey far; lit on the sun side.
             vec3  rock = mix( vec3( 0.66, 0.72, 0.82 ), vec3( 0.2, 0.3, 0.22 ), t );
-            float side = smoothstep( -0.05, 0.05, ( p.x - sunP.x ) * -1.0 );
+            float side = smoothstep( -0.05, 0.05, ( p.x - sun_p.x ) * -1.0 );
             rock *= 0.85 + 0.25 * side * ( 1.0 - t * 0.5 );
             // Vegetation texture on the near ranges.
             rock *= 1.0 - 0.25 * t * fbm( p * vec2( 60.0, 40.0 ) + fl );
             // Limestone cliffs: vertical streaks and pale bare rock between the green.
             float cliff = fbm( vec2( p.x * 28.0 + fl * 9.0, p.y * 5.0 ) );
-            rock = mix( rock, mix( vec3( 0.55, 0.55, 0.5 ), mistC, 1.0 - t ),
+            rock = mix( rock, mix( vec3( 0.55, 0.55, 0.5 ), mist_c, 1.0 - t ),
                         smoothstep( 0.55, 0.75, cliff ) * 0.45 * t );
             rock *= 0.85 + 0.3 * smoothstep( 0.0, 0.25, p.y - base );
             // Aerial perspective toward the mist colour.
-            rock = mix( rock, mistC, ( 1.0 - t ) * 0.55 );
+            rock = mix( rock, mist_c, ( 1.0 - t ) * 0.55 );
             col = rock;
         }
         // Mist lying at the foot of this range (drifting).
@@ -169,7 +169,7 @@ void main()
         float mb = smoothstep( 0.07, 0.0, abs( p.y - my ) - 0.01 )
                    * smoothstep( 0.35, 0.75,
                                  fbm( vec2( p.x * 3.0 + T * 0.01 * ( 1.0 + fl * 0.3 ) + fl * 5.0, p.y * 8.0 ) ) );
-        col = mix( col, mistC, clamp( mb * mistAmt * ( 0.6 + 0.4 * ( 1.0 - t ) ), 0.0, 1.0 ) );
+        col = mix( col, mist_c, clamp( mb * mist_amt * ( 0.6 + 0.4 * ( 1.0 - t ) ), 0.0, 1.0 ) );
     }
     col *= tint;
 
@@ -182,13 +182,13 @@ void main()
         vec2  rp = vec2( p.x + rip * 0.004 * ( 1.0 + d * 8.0 ), water + d );
         // Recompute the landscape at the mirrored point.
         vec3 rc = mix( vec3( 1.0, 0.86, 0.72 ), vec3( 0.62, 0.72, 0.85 ), smoothstep( 0.0, 0.45, rp.y ) );
-        rc += vec3( 1.0, 0.85, 0.6 ) * exp( -length( rp - sunP ) * 3.5 ) * ( 0.35 + 0.35 * swell );
+        rc += vec3( 1.0, 0.85, 0.6 ) * exp( -length( rp - sun_p ) * 3.5 ) * ( 0.35 + 0.35 * swell );
         for ( int L = 0; L < 6; ++L )
         {
-            if ( L >= nR )
+            if ( L >= n_r )
                 break;
             float fl = float( L );
-            float t = fl / float( nR - 1 );
+            float t = fl / float( n_r - 1 );
             float base = water + 0.2 - 0.18 * t;
             float scale = 0.55 + 0.9 * t;
             // Each range mirrors about its own foot: a far range's reflection
@@ -198,12 +198,12 @@ void main()
             if ( base - ( water - d ) < h )
             {
                 vec3 rock = mix( vec3( 0.66, 0.72, 0.82 ), vec3( 0.2, 0.3, 0.22 ), t );
-                rock = mix( rock, mistC, ( 1.0 - t ) * 0.55 );
+                rock = mix( rock, mist_c, ( 1.0 - t ) * 0.55 );
                 rc = rock;
             }
         }
         rc *= tint * vec3( 0.8, 0.86, 0.9 );
-        rc += vec3( 1.0 ) * pow( max( rip, 0.0 ), 3.0 ) * 0.4 * exp( -abs( p.x - sunP.x ) * 3.0 );
+        rc += vec3( 1.0 ) * pow( max( rip, 0.0 ), 3.0 ) * 0.4 * exp( -abs( p.x - sun_p.x ) * 3.0 );
         col = rc;
         // Banks: a dark line of reeds along the water's edge.
         col = mix( col, vec3( 0.08, 0.12, 0.08 ),
@@ -230,7 +230,7 @@ void main()
     }
 
     col *= 0.92 + 0.16 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

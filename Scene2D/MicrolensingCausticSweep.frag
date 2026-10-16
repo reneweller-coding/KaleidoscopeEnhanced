@@ -71,10 +71,10 @@ vec3 sourceAt( vec2 s, float hue )
     float hs = hash21( cell );
     vec2  off = vec2( hash21( cell + 3.1 ), hash21( cell + 7.7 ) ) - 0.5;
     float star = smoothstep( 0.24, 0.03, length( f - off * 0.6 ) ) * step( 0.93, hs );
-    vec3  starCol = mix( vec3( 1.0 ), imgPalette( hue * 0.159 + hash21( cell + 1.1 ) * 0.5 ), 0.35 )
-                    * ( 0.5 + 0.9 * hash21( cell + 9.9 ) );
+    vec3  star_col = mix( vec3( 1.0 ), imgPalette( hue * 0.159 + hash21( cell + 1.1 ) * 0.5 ), 0.35 )
+                     * ( 0.5 + 0.9 * hash21( cell + 9.9 ) );
     vec3  neb = img( fract( s * 0.25 + 0.5 ) ) * imgPalette( hue * 0.159 + 0.6 ) * 0.5;
-    return starCol * star * 1.5 + neb;
+    return star_col * star * 1.5 + neb;
 }
 
 /// The lens map: image position -> source position, two point masses.
@@ -119,12 +119,12 @@ void main()
     {
         vec2  c = ( k == 0 ) ? c1 : c2;
         float r = length( p - c );
-        float thetaE = sqrt( mass );
-        col *= smoothstep( thetaE * 0.25, thetaE * 0.4, r );
-        col += imgPalette( hue * 0.159 + 0.1 ) * exp( -abs( r - thetaE ) * 30.0 ) * ( 0.15 + 0.8 * audioKick );
+        float theta_e = sqrt( mass );
+        col *= smoothstep( theta_e * 0.25, theta_e * 0.4, r );
+        col += imgPalette( hue * 0.159 + 0.1 ) * exp( -abs( r - theta_e ) * 30.0 ) * ( 0.15 + 0.8 * audioKick );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

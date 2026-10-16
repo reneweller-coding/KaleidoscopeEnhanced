@@ -82,9 +82,9 @@ float fbm( vec2 p )
 }
 
 // Where the moon hangs, in angular coordinates (radians off the view axis).
-const float kMoonX = 0.031;
-const float kMoonY = 0.055;
-const float kTanY = 0.5206; ///< tan(55 deg / 2) -- the scene projection
+const float MoonX = 0.031;
+const float MoonY = 0.055;
+const float TanY = 0.5206; ///< tan(55 deg / 2) -- the scene projection
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -95,20 +95,20 @@ void main()
     float d = max( vDist, 1.0 );
     float ax = vWorld.x / d;
     float ay = vWorld.y / d;
-    float sh = ay / kTanY; // 1.0 = top edge of the frame
+    float sh = ay / TanY; // 1.0 = top edge of the frame
 
     // The key's MODE sets the moon's warmth: cold blue-white when the harmony
     // is minor, warm amber when it is major.  Luminance-matched -- a tint,
     // not a gain.
-    vec3 moonCol = mix( vec3( 0.70, 0.80, 0.95 ), vec3( 0.95, 0.87, 0.68 ),
-                        clamp( audioMode, 0.0, 1.0 ) );
+    vec3 moon_col = mix( vec3( 0.70, 0.80, 0.95 ), vec3( 0.95, 0.87, 0.68 ),
+                         clamp( audioMode, 0.0, 1.0 ) );
 
     // The night sky's own gradient: a moonlit band along the horizon fading to
     // near-black overhead.  The water borrows it too — a pond is a mirror, and
     // the ink-dark version with nothing in it was most of why this scene read
     // as a motif stranded on black.
-    vec3 horizC = hueRot( vec3( 0.100, 0.135, 0.210 ), audioChromaHue * 0.3 );
-    vec3 zenC = hueRot( vec3( 0.016, 0.026, 0.055 ), audioChromaHue * 0.3 );
+    vec3 horiz_c = hueRot( vec3( 0.100, 0.135, 0.210 ), audioChromaHue * 0.3 );
+    vec3 zen_c = hueRot( vec3( 0.016, 0.026, 0.055 ), audioChromaHue * 0.3 );
 
     vec3  col;
     float veil; // drizzle strength here
@@ -117,12 +117,12 @@ void main()
     {
         // ---------------- THE SKY ----------------
         float g = clamp( sh, 0.0, 1.0 );
-        col = mix( horizC, zenC, sqrt( g ) );
+        col = mix( horiz_c, zen_c, sqrt( g ) );
 
         // Cloud shelves drifting past, lit from below by the moon.
         float cl = fbm( vec2( vWorld.x * 0.016 + time * 0.006, vWorld.y * 0.030 ) );
         cl = smoothstep( 0.34, 0.92, cl );
-        col += moonCol * min( cl * 0.13 * ( 1.0 - 0.55 * g ), 0.13 );
+        col += moon_col * min( cl * 0.13 * ( 1.0 - 0.55 * g ), 0.13 );
 
         // Stars, in the gaps the clouds leave.
         vec2  sp = vWorld.xy * 0.28;
@@ -136,9 +136,9 @@ void main()
                * ( 1.0 - 0.8 * cl );
 
         // The moon itself, low over the water: a soft halo and a small disc.
-        float md = length( vec2( ax - kMoonX, ay - kMoonY ) );
-        col += moonCol * min( exp( -md * md * 110.0 ) * 0.50, 0.50 );
-        col += moonCol * ( 1.0 - smoothstep( 0.025, 0.038, md ) ) * 0.70;
+        float md = length( vec2( ax - MoonX, ay - MoonY ) );
+        col += moon_col * min( exp( -md * md * 110.0 ) * 0.50, 0.50 );
+        col += moon_col * ( 1.0 - smoothstep( 0.025, 0.038, md ) ) * 0.70;
 
         veil = 1.0;
     }
@@ -153,15 +153,15 @@ void main()
 
         // ...lifted by the skylight it mirrors, strongest toward the horizon
         // where the surface is seen at a glancing angle.
-        col += horizC * ( 0.10 + 0.55 * horiz * horiz );
+        col += horiz_c * ( 0.10 + 0.55 * horiz * horiz );
 
         // Moon reflection lane.  Written in ANGULAR terms so it converges on
         // the moon at the horizon the way a real lane does, and widens as it
         // comes toward the camera instead of switching off there.
         float wide = 1.9 + 2.3 * horiz;
-        float lane = exp( -abs( ax - kMoonX ) * wide )
+        float lane = exp( -abs( ax - MoonX ) * wide )
                      * ( 0.40 + 0.60 * horiz );
-        col += moonCol * min( lane * ( 0.45 + 2.2 * abs( vSlope ) ) * 1.1, 0.75 );
+        col += moon_col * min( lane * ( 0.45 + 2.2 * abs( vSlope ) ) * 1.1, 0.75 );
 
         // Ring crests themselves catch a whisper of skylight everywhere.
         col += vec3( 0.30, 0.38, 0.48 ) * clamp( abs( vSlope ) * 1.2, 0.0, 1.0 )
@@ -189,7 +189,7 @@ void main()
                    // fractional bits the hash lives in, and the rain would fall
                    // into a visible repeating pattern.
                    * step( 0.42, hash21( vec2( ci, mod( floor( yc ), 64.0 ) ) ) );
-    col += moonCol * min( thread * ( 0.20 + 0.30 * hat ) * veil, 0.50 );
+    col += moon_col * min( thread * ( 0.20 + 0.30 * hat ) * veil, 0.50 );
 
     // Final exposure.  Every additive term above is individually capped with
     // min(), and the colour-tinted result is capped once more here: the moon

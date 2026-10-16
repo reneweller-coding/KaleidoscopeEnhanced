@@ -37,9 +37,9 @@ in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vInst;
 
-const float kDist = 42.0;
-const float kGround = -10.0;
-const float kSpacing = 4.6;
+const float Dist = 42.0;
+const float Ground = -10.0;
+const float Spacing = 4.6;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -135,7 +135,7 @@ vec3 renderSky( vec3 dir )
     if ( dir.y < -0.004 )
     {
         // The sounding board: spruce planks along the row.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.010 );
         float plank = smoothstep( 0.0, 0.03, abs( fract( P.z / 9.0 ) - 0.5 ) - 0.47 );
@@ -158,7 +158,7 @@ vec3 renderSky( vec3 dir )
         float ci = clamp( audioChroma[i] * 1.3, 0.0, 1.0 );
         if ( ci < 0.03 )
             continue;
-        vec3  d = normalize( vec3( ( float( i ) - 5.5 ) * kSpacing, kGround + 8.0, kDist ) );
+        vec3  d = normalize( vec3( ( float( i ) - 5.5 ) * Spacing, Ground + 8.0, Dist ) );
         float a = acos( clamp( dot( dir, d ), -1.0, 1.0 ) );
         float ring = pow( 0.5 + 0.5 * cos( a * 42.0 - sceneTime * 5.0 ), 6.0 );
         col += hsv2rgb( vec3( float( i ) / 12.0, 0.6, 1.0 ) ) * ring * exp( -a * 7.0 ) * ci * 0.55;
@@ -193,34 +193,34 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
-    vec3 lampDir = normalize( vec3( -0.3, 0.8, -0.5 ) );
-    vec3 col = alb * vec3( 1.0, 0.88, 0.7 ) * max( dot( n, lampDir ), 0.0 ) * ( 1.1 + 0.8 * swell );
+    vec3 lamp_dir = normalize( vec3( -0.3, 0.8, -0.5 ) );
+    vec3 col = alb * vec3( 1.0, 0.88, 0.7 ) * max( dot( n, lamp_dir ), 0.0 ) * ( 1.1 + 0.8 * swell );
     col += alb * vec3( 0.20, 0.20, 0.28 ) * ( 0.55 + 0.45 * n.y ) * 0.6;
     col += alb * 0.10;
 
-    vec3  halfV = normalize( lampDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 80.0, 8.0, roughness ) );
+    vec3  half_v = normalize( lamp_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 80.0, 8.0, roughness ) );
     col += mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic ) * spec * ( 0.4 + 0.6 * metallic );
 
     // The ring: the fork's own class colour, a standing wave along the tines.
     float tines = smoothstep( -0.1, 0.3, vLocal.y ) * smoothstep( 0.2, 0.6, metallic );
     float standing = 0.6 + 0.4 * cos( vLocal.y * 9.0 - time * 6.0 );
-    vec3  classCol = hsv2rgb( vec3( float( idx ) / 12.0, 0.55, 1.0 ) );
-    col += classCol * tines * speak * ( 0.6 + 0.6 * standing );
+    vec3  class_col = hsv2rgb( vec3( float( idx ) / 12.0, 0.55, 1.0 ) );
+    col += class_col * tines * speak * ( 0.6 + 0.6 * standing );
     // The mallet on the loudest fork.
     float strike = ( idx == loudest() ) ? kick : 0.0;
     col += vec3( 1.0, 0.95, 0.85 ) * tines * strike * 1.2;
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
-    col += classCol * fres * speak * 0.5;
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
+    col += class_col * fres * speak * 0.5;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.08 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

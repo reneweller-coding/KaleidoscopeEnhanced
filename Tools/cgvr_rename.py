@@ -37,7 +37,7 @@ import yaml
 
 sys.path.insert( 0, os.path.dirname( os.path.abspath( __file__ ) ) )
 import cgvr_tidy as tidy                                    # noqa: E402
-from cgvr_format import split_code_comments                 # noqa: E402
+from cgvr_format import split_code_comments, blank_code     # noqa: E402
 
 ROOT = tidy.ROOT
 MESSAGE = re.compile( r"invalid case style for (?P<cat>.+?) '(?P<name>\w+)'" )
@@ -204,31 +204,6 @@ def plan( groups ):
         accepted.append( ( f, off, g ) )
         new_targets[ ( f if g[ "cat" ] in LOCAL else "", n ) ] += 1
     return accepted, refused
-
-
-def blank_code( text ):
-    """text with comments and string/character literals replaced by spaces, length and newlines kept."""
-    out, i, n = list( text ), 0, len( text )
-    while i < n:
-        if text.startswith( "//", i ):
-            j = text.find( "\n", i )
-            j = n if j < 0 else j
-        elif text.startswith( "/*", i ):
-            j = text.find( "*/", i + 2 )
-            j = n if j < 0 else j + 2
-        elif text[ i ] in "\"'":
-            q, j = text[ i ], i + 1
-            while j < n and text[ j ] != q and text[ j ] != "\n":
-                j += 2 if text[ j ] == "\\" else 1
-            j = min( j + 1, n )
-        else:
-            i += 1
-            continue
-        for k in range( i, j ):
-            if out[ k ] != "\n":
-                out[ k ] = " "
-        i = j
-    return "".join( out )
 
 
 def enclosing_block( code, off ):

@@ -59,8 +59,8 @@ void main()
     // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
     // this shader's math assumes a centred [-1,1] domain, so remap it here
     // (otherwise everything lands in one quadrant, off to the side).
-    vec2 gridUV = attrA.xy * 2.0 - 1.0; // [-1,1]
-    vTexCoord = gridUV * 0.5 + 0.5;
+    vec2 grid_uv = attrA.xy * 2.0 - 1.0; // [-1,1]
+    vTexCoord = grid_uv * 0.5 + 0.5;
 
     float t = time * 0.35 * spd + audioAdvance * 0.18;
 
@@ -74,17 +74,17 @@ void main()
     // sand runs off all four edges of the frame.
     float depth01 = attrA.y; // 0 near .. 1 far
     float zw = mix( -4.5, 38.0, pow( depth01, 1.6 ) );
-    float halfW = mix( 5.0, 40.0, pow( depth01, 1.2 ) );
-    vec2  ground = vec2( gridUV.x * halfW, zw );
+    float half_w = mix( 5.0, 40.0, pow( depth01, 1.2 ) );
+    vec2  ground = vec2( grid_uv.x * half_w, zw );
 
     // Barchan crescent dune profile: crescent horns pointing downwind
     vec2  p = ground + vec2( t * 0.4, 0.0 );
-    float crescentY = p.y - sin( p.x * 2.0 ) * 0.4;
+    float crescent_y = p.y - sin( p.x * 2.0 ) * 0.4;
     // Distant dunes grow a little to hold their own against the perspective
     // squash, so the far field reads as a dune sea and not as a flat plain.
-    float farGain = 1.0 + 0.75 * depth01;
-    float duneHeight = max( 0.0, sin( p.x * 2.0 * dne ) * cos( crescentY * 2.0 ) )
-                       * 1.2 * farGain * ( 1.0 + 0.3 * audioBass );
+    float far_gain = 1.0 + 0.75 * depth01;
+    float dune_height = max( 0.0, sin( p.x * 2.0 * dne ) * cos( crescent_y * 2.0 ) )
+                        * 1.2 * far_gain * ( 1.0 + 0.3 * audioBass );
 
     // Wind saltation ripples along the windward slope.  The ZERO-CROSSING
     // RATE is the wind: a clean tone leaves the slip faces smooth, hissy
@@ -94,22 +94,22 @@ void main()
     // The ripples fade out with distance: at 35 cycles per unit the far rows
     // are far past what 120 grid rows can sample, and left in they would boil
     // into moire instead of grain.
-    float ripFade = exp( -max( zw, 0.0 ) * 0.16 );
-    float ripAmp = ( 0.70 + audioHigh * 0.8 + 1.10 * clamp( audioZCR, 0.0, 1.0 ) )
-                   * ripFade;
-    float ripPh = p.x * 35.0 * rpl + p.y * 15.0;
-    float ripples = sin( ripPh ) * 0.04 * ripAmp;
-    duneHeight += ripples;
+    float rip_fade = exp( -max( zw, 0.0 ) * 0.16 );
+    float rip_amp = ( 0.70 + audioHigh * 0.8 + 1.10 * clamp( audioZCR, 0.0, 1.0 ) )
+                    * rip_fade;
+    float rip_ph = p.x * 35.0 * rpl + p.y * 15.0;
+    float ripples = sin( rip_ph ) * 0.04 * rip_amp;
+    dune_height += ripples;
 
-    vec3 pos = vec3( ground.x, duneHeight - 0.5, ground.y );
+    vec3 pos = vec3( ground.x, dune_height - 0.5, ground.y );
     vWorldPos = pos;
 
     // Normal estimation.  The ripple slope goes in too, otherwise the grain
     // exists only in the silhouette -- from this near-overhead camera it has
     // to tilt the surface to be seen at all.
-    vNormal = normalize( vec3( -cos( p.x * 2.0 ) * 0.4 - 0.25 * ripAmp * cos( ripPh ),
+    vNormal = normalize( vec3( -cos( p.x * 2.0 ) * 0.4 - 0.25 * rip_amp * cos( rip_ph ),
                                1.0,
-                               -sin( crescentY * 2.0 ) * 0.4 ) );
+                               -sin( crescent_y * 2.0 ) * 0.4 ) );
 
     // Camera transform: this surface lies in the XZ plane, so pitch it down
     // first (otherwise it is seen edge-on), then push away along +z and negate
@@ -118,9 +118,9 @@ void main()
     // the top edge, so the dune sea covers the frame with no sky gap.
     vec3 vp = pos;
     vp.y -= 1.5;
-    float camTilt = -0.62;
-    float cosT = cos( camTilt ), sinT = sin( camTilt );
-    vp = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float cam_tilt = -0.62;
+    float cos_t = cos( cam_tilt ), sin_t = sin( cam_tilt );
+    vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
     vp.z += 7.0;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

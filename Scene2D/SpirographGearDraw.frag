@@ -171,8 +171,8 @@ void main()
 
     // The current figure and the two before it (fading).
     vec2  pen = vec2( 0.0 );
-    float gearR = 0.0, gearAng = 0.0;
-    vec2  gearC = vec2( 0.0 );
+    float gear_r = 0.0, gear_ang = 0.0;
+    vec2  gear_c = vec2( 0.0 );
     for ( int L = 2; L >= 0; --L )
     {
         float si = sheet - float( L );
@@ -196,33 +196,33 @@ void main()
         {
             float t = tMax;
             pen = hypo( t, R, r, d );
-            gearR = r;
-            gearC = ( R - r ) * vec2( cos( t ), sin( t ) );
-            gearAng = -( R - r ) / r * t;
+            gear_r = r;
+            gear_c = ( R - r ) * vec2( cos( t ), sin( t ) );
+            gear_ang = -( R - r ) / r * t;
         }
     }
 
     // The fixed ring: a translucent band with teeth on the inside.
     float rr = length( p );
-    float ringAng = atan( p.y, p.x );
-    float teethR = R + 0.006 * ( 0.5 + 0.5 * sign( sin( ringAng * 96.0 ) ) );
-    float ring = smoothstep( 0.002, 0.0, abs( rr - ( R + 0.04 ) ) - 0.035 ) * step( teethR, rr );
+    float ring_ang = atan( p.y, p.x );
+    float teeth_r = R + 0.006 * ( 0.5 + 0.5 * sign( sin( ring_ang * 96.0 ) ) );
+    float ring = smoothstep( 0.002, 0.0, abs( rr - ( R + 0.04 ) ) - 0.035 ) * step( teeth_r, rr );
     col += vec3( 0.5, 0.6, 0.8 ) * ring * 0.08;
-    col += vec3( 0.7, 0.8, 1.0 ) * exp( -abs( rr - teethR ) * 900.0 ) * 0.25 * ( 1.0 + hi );
+    col += vec3( 0.7, 0.8, 1.0 ) * exp( -abs( rr - teeth_r ) * 900.0 ) * 0.25 * ( 1.0 + hi );
 
     // The rolling gear: translucent disc, teeth on its rim, a few holes, the pen.
-    vec2  gq = p - gearC;
+    vec2  gq = p - gear_c;
     float gd = length( gq );
-    float ga = atan( gq.y, gq.x ) - gearAng;
-    float gTeeth = floor( 96.0 * gearR / R + 0.5 );
-    float gRim = gearR - 0.006 * ( 0.5 + 0.5 * sign( sin( ga * gTeeth ) ) );
-    float disc = smoothstep( 0.002, 0.0, gd - gRim );
+    float ga = atan( gq.y, gq.x ) - gear_ang;
+    float g_teeth = floor( 96.0 * gear_r / R + 0.5 );
+    float g_rim = gear_r - 0.006 * ( 0.5 + 0.5 * sign( sin( ga * g_teeth ) ) );
+    float disc = smoothstep( 0.002, 0.0, gd - g_rim );
     col = mix( col, col + vec3( 0.35, 0.5, 0.75 ) * 0.12, disc );
-    col += vec3( 0.7, 0.85, 1.0 ) * exp( -abs( gd - gRim ) * 900.0 ) * 0.35 * ( 1.0 + hi );
+    col += vec3( 0.7, 0.85, 1.0 ) * exp( -abs( gd - g_rim ) * 900.0 ) * 0.35 * ( 1.0 + hi );
     for ( int h = 0; h < 5; ++h )
     {
-        float hr = gearR * ( 0.25 + 0.14 * float( h ) );
-        vec2  hc = hr * vec2( cos( -gearAng + float( h ) * 1.3 ), sin( -gearAng + float( h ) * 1.3 ) );
+        float hr = gear_r * ( 0.25 + 0.14 * float( h ) );
+        vec2  hc = hr * vec2( cos( -gear_ang + float( h ) * 1.3 ), sin( -gear_ang + float( h ) * 1.3 ) );
         col += vec3( 0.6, 0.75, 1.0 ) * exp( -abs( length( gq - hc ) - 0.006 ) * 900.0 ) * 0.25 * disc;
     }
     float pd = length( p - pen );
@@ -230,7 +230,7 @@ void main()
     col += vec3( 1.0, 0.9, 0.8 ) * exp( -pd * 60.0 ) * 0.15 * ( 1.0 + kick );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

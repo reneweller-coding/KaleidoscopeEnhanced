@@ -64,10 +64,10 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float gFreq = ( gratingFreqP > 0.01 ) ? gratingFreqP : 1.0;
-    // Ganzzahlig gerundet: rBow multipliziert unten den atan-Winkel; jeder
+    float g_freq = ( gratingFreqP > 0.01 ) ? gratingFreqP : 1.0;
+    // Ganzzahlig gerundet: r_bow multipliziert unten den atan-Winkel; jeder
     // nicht-ganzzahlige Faktor reisst am Branch-Cut eine Kante auf.
-    float rBow = max( 1.0, floor( ( ( rainbowP > 0.01 ) ? rainbowP : 1.2 ) + 0.5 ) );
+    float r_bow = max( 1.0, floor( ( ( rainbowP > 0.01 ) ? rainbowP : 1.2 ) + 0.5 ) );
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -75,11 +75,11 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Rotation of holographic foil
-    float rotA = t * 0.15 + audioPhase * 0.1;
-    float cs = cos( rotA ), sn = sin( rotA );
+    float rot_a = t * 0.15 + audioPhase * 0.1;
+    float cs = cos( rot_a ), sn = sin( rot_a );
     vec2  p = mat2( cs, -sn, sn, cs ) * uv;
 
-    float k = ( 28.0 + 12.0 * audioCentroid ) * gFreq;
+    float k = ( 28.0 + 12.0 * audioCentroid ) * g_freq;
 
     // 3 Crossed plane waves under 120 degrees
     vec2 k1 = vec2( cos( 0.0 ), sin( 0.0 ) ) * k;
@@ -92,43 +92,43 @@ void main()
 
     // Hexagonal interference intensity: |w1 + w2 + w3|^2
     float interfer = ( w1 + w2 + w3 ) / 3.0;
-    float interferI = interfer * interfer;
+    float interfer_i = interfer * interfer;
 
     // Sub-bass dilates the radial coordinate the seal is etched in, so the whole
     // mandala swells outward on drones. Only the radius term is scaled -- the t
     // phase terms below stay untouched so the rings keep drifting smoothly.
     float r = length( uv );
-    float rBreath = r / ( 1.0 + 0.35 * audioSubBass );
+    float r_breath = r / ( 1.0 + 0.35 * audioSubBass );
 
     // Holographic rainbow dispersion across view angle & position
-    float foilAngle = atan( uv.y, uv.x ) + rBreath * 4.0 + t * 0.5;
-    vec3  foilRainbow = vec3(
-                            sin( foilAngle * rBow ),
-                            sin( foilAngle * rBow + 2.094 ),
-                            sin( foilAngle * rBow + 4.188 ) )
-                            * 0.5
-                        + 0.5;
+    float foil_angle = atan( uv.y, uv.x ) + r_breath * 4.0 + t * 0.5;
+    vec3  foil_rainbow = vec3(
+                             sin( foil_angle * r_bow ),
+                             sin( foil_angle * r_bow + 2.094 ),
+                             sin( foil_angle * r_bow + 4.188 ) )
+                             * 0.5
+                         + 0.5;
 
     // Micro-etched mandala rings
-    float rings = sin( rBreath * 35.0 - t * 4.0 );
-    float ringGlow = smoothstep( 0.8, 1.0, abs( rings ) );
+    float rings = sin( r_breath * 35.0 - t * 4.0 );
+    float ring_glow = smoothstep( 0.8, 1.0, abs( rings ) );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( p * 0.4 + vec2( interfer * 0.05 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p * 0.4 + vec2( interfer * 0.05 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Palette mixing
-    vec3 palBase = imgPalette( r * 0.5 + 0.2 );
-    vec3 baseCol = mix( texCol, palBase, 0.4 );
+    vec3 pal_base = imgPalette( r * 0.5 + 0.2 );
+    vec3 base_col = mix( tex_col, pal_base, 0.4 );
 
     // Add holographic rainbow interference & laser nodes
-    vec3 holoSparkle = foilRainbow * ( interferI * 1.8 + ringGlow * 0.8 ) * glw * ( 1.0 + 2.5 * audioKick );
-    vec3 finalCol = baseCol * 0.5 + holoSparkle;
+    vec3 holo_sparkle = foil_rainbow * ( interfer_i * 1.8 + ring_glow * 0.8 ) * glw * ( 1.0 + 2.5 * audioKick );
+    vec3 final_col = base_col * 0.5 + holo_sparkle;
 
     // Laser node peak flashes
-    float laserNode = pow( max( 0.0, interfer ), 8.0 ) * ( 1.5 + 3.0 * audioKick );
-    finalCol += vec3( 1.8, 1.7, 2.0 ) * laserNode;
+    float laser_node = pow( max( 0.0, interfer ), 8.0 ) * ( 1.5 + 3.0 * audioKick );
+    final_col += vec3( 1.8, 1.7, 2.0 ) * laser_node;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

@@ -164,9 +164,9 @@ void main()
     vec3  col = vec3( 0.0 );
 
     // Binary positions (orbiting each other)
-    float orbitSpeed = time * 0.5 + audioPhase;
-    vec3  p1 = vec3( cos( orbitSpeed ) * sep, 0.0, sin( orbitSpeed ) * sep );
-    vec3  p2 = vec3( -cos( orbitSpeed ) * sep, 0.0, -sin( orbitSpeed ) * sep );
+    float orbit_speed = time * 0.5 + audioPhase;
+    vec3  p1 = vec3( cos( orbit_speed ) * sep, 0.0, sin( orbit_speed ) * sep );
+    vec3  p2 = vec3( -cos( orbit_speed ) * sep, 0.0, -sin( orbit_speed ) * sep );
 
     vec3 c1 = imgPalette( 0.1 + audioCentroid * 0.2 ); // Blue/white giant
     vec3 c2 = imgPalette( 0.8 + audioKick * 0.1 );     // Red/orange dwarf
@@ -182,13 +182,13 @@ void main()
         float d2 = sdStar( p - p2, 0.6, time * 0.8 );
 
         // Plasma bridge connecting them
-        float lineDist = length( cross( p - p1, p2 - p1 ) ) / length( p2 - p1 );
-        float alongLine = dot( p - p1, p2 - p1 ) / length( p2 - p1 );
+        float line_dist = length( cross( p - p1, p2 - p1 ) ) / length( p2 - p1 );
+        float along_line = dot( p - p1, p2 - p1 ) / length( p2 - p1 );
         float plasma = 1e10;
 
-        if ( alongLine > 0.0 && alongLine < length( p2 - p1 ) )
+        if ( along_line > 0.0 && along_line < length( p2 - p1 ) )
         {
-            plasma = lineDist - 0.2;
+            plasma = line_dist - 0.2;
             plasma += fbm( p * 3.0 - vec3( time * 2.0 ) ) * 0.3; // turbulent flow
         }
 
@@ -202,16 +202,16 @@ void main()
             // Influence blending
             float w1 = 1.0 / ( length( p - p1 ) + 0.1 );
             float w2 = 1.0 / ( length( p - p2 ) + 0.1 );
-            vec3  localCol = mix( c1, c2, w2 / ( w1 + w2 ) );
+            vec3  local_col = mix( c1, c2, w2 / ( w1 + w2 ) );
 
             // Solar flares triggering on kick
             float flare = step( 0.9, hash11( floor( p.x * 5.0 ) + floor( time * 4.00 ) ) ); // was 10 Hz
-            localCol *= 1.0 + flare * audioKick * 3.0 * fp;
+            local_col *= 1.0 + flare * audioKick * 3.0 * fp;
 
             // Core brightness
-            localCol *= 1.5 + audioSwell * 2.0;
+            local_col *= 1.5 + audioSwell * 2.0;
 
-            col += localCol * alpha * 0.1;
+            col += local_col * alpha * 0.1;
         }
 
         // Coronal glow (volumetric)
@@ -231,7 +231,7 @@ void main()
     float nb = fbm3( rd * 2.0 + vec3( 0.0, 0.0, time * 0.02 ) );
     col += imgPalette( 0.35 + nb * 0.3 ) * nb * nb * 0.16 * ( 0.6 + 0.4 * audioSwell );
 
-    vec3 bgCol = vec3( 0.0 );
+    vec3 bg_col = vec3( 0.0 );
     for ( int i = 0; i < 3; ++i )
     {
         float sc = 40.0 + 45.0 * float( i );
@@ -256,16 +256,16 @@ void main()
                       * 0.4;
                 scol = mix( scol, vec3( 1.0 ), 0.5 );
             }
-            bgCol += scol * b2 * tw;
+            bg_col += scol * b2 * tw;
         }
     }
-    col += bgCol * ( 1.3 + audioSwell * 0.7 );
+    col += bg_col * ( 1.3 + audioSwell * 0.7 );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

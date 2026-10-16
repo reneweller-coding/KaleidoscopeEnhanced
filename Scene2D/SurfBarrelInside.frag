@@ -138,7 +138,7 @@ void main()
     float r = length( d );
     float a = atan( d.y, d.x ); // 0 right, pi/2 up
     // The opening: the lip hangs lower on the left, the face rises on the right.
-    float rOpen = 0.2 + 0.03 * sin( a + 0.5 ) + 0.02 * ( tubeNoise( a, 0.0, 1.0 ) - 0.5 );
+    float r_open = 0.2 + 0.03 * sin( a + 0.5 ) + 0.02 * ( tubeNoise( a, 0.0, 1.0 ) - 0.5 );
     float z = -log( max( r, 0.02 ) ) * 3.0; // depth into the tube (even in log radius)
     float spin = a + T * 0.25;              // the water rotating around the tube
 
@@ -162,13 +162,13 @@ void main()
     float foam = smoothstep( 0.6, 0.7, band );
     water = mix( water, vec3( 0.88, 0.97, 1.0 ) * ( 0.55 + 0.45 * thin ), foam * 0.55 );
     // Near the opening the water is lit brightest, a glassy rim.
-    water += vec3( 0.7, 0.95, 0.85 ) * exp( -( r - rOpen ) * 10.0 ) * 0.45;
+    water += vec3( 0.7, 0.95, 0.85 ) * exp( -( r - r_open ) * 10.0 ) * 0.45;
     // The opening's lower part is the sea surface ahead, bright with the sky.
-    float seaLine = c.y - 0.06 + 0.01 * sin( p.x * 20.0 + T * 0.5 );
-    float inOpen = smoothstep( rOpen + 0.006, rOpen - 0.004, r );
+    float sea_line = c.y - 0.06 + 0.01 * sin( p.x * 20.0 + T * 0.5 );
+    float in_open = smoothstep( r_open + 0.006, r_open - 0.004, r );
     vec3  sea = mix( vec3( 0.5, 0.8, 0.8 ), vec3( 0.9, 0.97, 1.0 ), noise2( vec2( p.x * 40.0, p.y * 90.0 - T ) ) );
-    outside = mix( outside, sea * 1.2, smoothstep( seaLine + 0.004, seaLine - 0.004, p.y ) );
-    vec3 col = mix( water, outside, inOpen );
+    outside = mix( outside, sea * 1.2, smoothstep( sea_line + 0.004, sea_line - 0.004, p.y ) );
+    vec3 col = mix( water, outside, in_open );
 
     // Spray and droplets hanging in the tube: round, glittering, drifting out.
     {
@@ -176,14 +176,14 @@ void main()
         vec2  gc = 0.25 + 0.5 * hash22( gi );
         float tw = 0.5 + 0.5 * sin( T * 3.0 + hash21( gi + 7.0 ) * 40.0 );
         float drop = smoothstep( 0.12, 0.0, length( gf - gc ) ) * step( 0.88, hash21( gi + 5.0 ) );
-        col += vec3( 1.0 ) * drop * tw * ( 0.2 + 0.9 * hi ) * smoothstep( rOpen, rOpen + 0.2, r )
+        col += vec3( 1.0 ) * drop * tw * ( 0.2 + 0.9 * hi ) * smoothstep( r_open, r_open + 0.2, r )
                * ( 0.4 + 0.6 * thin );
     }
     // A soft mist glows around the opening.
-    col += vec3( 0.9, 0.95, 0.9 ) * exp( -abs( r - rOpen ) * 18.0 ) * 0.25 * ( 0.7 + 0.5 * swell );
+    col += vec3( 0.9, 0.95, 0.9 ) * exp( -abs( r - r_open ) * 18.0 ) * 0.25 * ( 0.7 + 0.5 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

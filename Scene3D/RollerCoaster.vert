@@ -56,13 +56,13 @@ void main()
     float r1 = attrB.x, r2 = attrB.y;
 
     // Camera rides the track; the music is the throttle.
-    float sCam = time * 10.0 + audioAdvance * 26.0;
+    float s_cam = time * 10.0 + audioAdvance * 26.0;
 
-    vec3 camP = trackPos( sCam );
-    vec3 fwdT = normalize( trackPos( sCam + 2.5 ) - camP );
-    vec3 rgtC = normalize( cross( fwdT, vec3( 0.0, 1.0, 0.0 ) ) );
-    vec3 upC = cross( rgtC, fwdT );
-    camP += upC * 1.5;
+    vec3 cam_p = trackPos( s_cam );
+    vec3 fwd_t = normalize( trackPos( s_cam + 2.5 ) - cam_p );
+    vec3 rgt_c = normalize( cross( fwd_t, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 up_c = cross( rgt_c, fwd_t );
+    cam_p += up_c * 1.5;
 
     vec3  world;
     vec3  col;
@@ -71,7 +71,7 @@ void main()
     if ( ri < 2.0 )
     {
         // ---- Rails: the visible 80 units of track ahead. ----
-        float s = sCam + 1.2 + t * 80.0;
+        float s = s_cam + 1.2 + t * 80.0;
         vec3  P = trackPos( s );
         vec3  T = normalize( trackPos( s + 1.0 ) - P );
         vec3  R = normalize( cross( T, vec3( 0.0, 1.0, 0.0 ) ) );
@@ -85,7 +85,7 @@ void main()
     {
         // ---- Ties: crossbars every 2 track units. ----
         float k = floor( t * 40.0 ) + ( ( ri < 2.5 ) ? 0.0 : 0.5 );
-        float s = sCam + 1.2 + k * 2.0;
+        float s = s_cam + 1.2 + k * 2.0;
         vec3  P = trackPos( s );
         vec3  T = normalize( trackPos( s + 1.0 ) - P );
         vec3  R = normalize( cross( T, vec3( 0.0, 1.0, 0.0 ) ) );
@@ -98,16 +98,16 @@ void main()
         // ---- Neon arch gates every 12 units of track (they wrap ahead
         // once passed — the jump happens behind the camera, unseen). ----
         float a = ri - 4.0;
-        float sA = ( floor( sCam / 12.0 ) + a + 1.0 ) * 12.0;
-        vec3  P = trackPos( sA );
-        vec3  T = normalize( trackPos( sA + 1.0 ) - P );
+        float s_a = ( floor( s_cam / 12.0 ) + a + 1.0 ) * 12.0;
+        vec3  P = trackPos( s_a );
+        vec3  T = normalize( trackPos( s_a + 1.0 ) - P );
         vec3  R = normalize( cross( T, vec3( 0.0, 1.0, 0.0 ) ) );
         vec3  U = cross( R, T );
         float ang = t * 6.2831853;
         vec3  ring = R * cos( ang ) + U * sin( ang );
         world = P + U * 1.2 + ring * ( 5.5 + sd * 0.30 );
 
-        float dist = sA - sCam;                        // 0..96 ahead
+        float dist = s_a - s_cam;                      // 0..96 ahead
         float pass = exp( -abs( dist - 4.0 ) * 0.25 ); // the gate you pass
         col = hueRot( vec3( 1.0, 0.25, 0.65 ), audioChromaHue + a * 0.8 );
         bright = ( 0.45 + 1.6 * pass * audioKick + 1.4 * audioDrop
@@ -127,8 +127,8 @@ void main()
     }
 
     // View transform (camera basis).
-    vec3 rel = world - camP;
-    vec3 vp = vec3( dot( rel, rgtC ), dot( rel, upC ), dot( rel, fwdT ) );
+    vec3 rel = world - cam_p;
+    vec3 vp = vec3( dot( rel, rgt_c ), dot( rel, up_c ), dot( rel, fwd_t ) );
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

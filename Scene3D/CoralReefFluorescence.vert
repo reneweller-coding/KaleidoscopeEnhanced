@@ -29,8 +29,8 @@ out float vFluorescence;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 gridUV = attrA.xy;
-    vec2 p = gridUV * 12.0;
+    vec2 grid_uv = attrA.xy;
+    vec2 p = grid_uv * 12.0;
 
     float t = time * 0.4 + audioAdvance * 0.2;
 
@@ -40,37 +40,37 @@ void main()
     float polyp = sin( p.x * 12.0 ) * cos( p.y * 12.0 ) * 0.15;
 
     // Rhythmic underwater ocean current sea fan sway
-    float sway = sin( gridUV.x * 6.0 + t * 2.0 ) * 0.3 * ( 0.8 + 0.5 * audioBass );
+    float sway = sin( grid_uv.x * 6.0 + t * 2.0 ) * 0.3 * ( 0.8 + 0.5 * audioBass );
 
     float height = ( ridge1 + ridge2 + polyp + sway ) * ( 0.8 + 0.4 * audioSwell );
 
-    vec3 pos = vec3( ( gridUV.x - 0.5 ) * 6.0, height - 0.8, ( gridUV.y - 0.5 ) * 5.0 );
+    vec3 pos = vec3( ( grid_uv.x - 0.5 ) * 6.0, height - 0.8, ( grid_uv.y - 0.5 ) * 5.0 );
 
     // Dynamic normal calculation
     float eps = 0.05;
-    float hL = sin( ( p.x - eps ) * 2.0 + sin( p.y * 3.0 ) ) * cos( p.y * 2.0 );
-    float hR = sin( ( p.x + eps ) * 2.0 + sin( p.y * 3.0 ) ) * cos( p.y * 2.0 );
-    float hD = sin( p.x * 2.0 + sin( ( p.y - eps ) * 3.0 ) ) * cos( ( p.y - eps ) * 2.0 );
-    float hU = sin( p.x * 2.0 + sin( ( p.y + eps ) * 3.0 ) ) * cos( ( p.y + eps ) * 2.0 );
-    vec3  n = normalize( vec3( hL - hR, 2.0 * eps, hD - hU ) );
+    float h_l = sin( ( p.x - eps ) * 2.0 + sin( p.y * 3.0 ) ) * cos( p.y * 2.0 );
+    float h_r = sin( ( p.x + eps ) * 2.0 + sin( p.y * 3.0 ) ) * cos( p.y * 2.0 );
+    float h_d = sin( p.x * 2.0 + sin( ( p.y - eps ) * 3.0 ) ) * cos( ( p.y - eps ) * 2.0 );
+    float h_u = sin( p.x * 2.0 + sin( ( p.y + eps ) * 3.0 ) ) * cos( ( p.y + eps ) * 2.0 );
+    vec3  n = normalize( vec3( h_l - h_r, 2.0 * eps, h_d - h_u ) );
 
     // Ultraviolet fluorescence emission intensity
     float fluor = ( polyp * 3.0 + 0.5 ) * ( 1.0 + audioKick * 2.5 );
 
     vPos = pos;
     vNormal = n;
-    vUV = gridUV;
+    vUV = grid_uv;
     vFluorescence = fluor;
 
     // Stereoscopic 3D camera projection with downward tilt
     vec3  vp = pos;
     float tilt = 0.45;
-    float cosT = cos( tilt ), sinT = sin( tilt );
-    vec3  rotatedVP = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float cos_t = cos( tilt ), sin_t = sin( tilt );
+    vec3  rotated_vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
 
-    rotatedVP.z += 5.2;
-    rotatedVP.x -= eyeOff;
+    rotated_vp.z += 5.2;
+    rotated_vp.x -= eyeOff;
 
-    gl_Position = projM * vec4( rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0 );
+    gl_Position = projM * vec4( rotated_vp.x, rotated_vp.y, -rotated_vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

@@ -120,18 +120,18 @@ void main()
     gFw = normalize( vec3( 0.0, -0.06, 1.0 ) );
     gRt = normalize( cross( vec3( 0.0, 1.0, 0.0 ), gFw ) );
     gUp = cross( gFw, gRt );
-    float loopFade = smoothstep( 0.0, 0.06, u ) * smoothstep( 1.0, 0.94, u );
+    float loop_fade = smoothstep( 0.0, 0.06, u ) * smoothstep( 1.0, 0.94, u );
 
     // Night sky and the orange city glow on the horizon.
-    float hzY = 0.06 * 1.2; // looking down, the horizon sits above centre
-    gCol = mix( vec3( 0.03, 0.035, 0.06 ), vec3( 0.01, 0.012, 0.03 ), smoothstep( hzY, 0.5, p.y ) );
-    gCol += vec3( 0.4, 0.22, 0.1 ) * exp( -abs( p.y - hzY ) * 14.0 ) * ( 0.5 + 0.5 * noise2( vec2( p.x * 3.0, 1.0 ) ) )
+    float hz_y = 0.06 * 1.2; // looking down, the horizon sits above centre
+    gCol = mix( vec3( 0.03, 0.035, 0.06 ), vec3( 0.01, 0.012, 0.03 ), smoothstep( hz_y, 0.5, p.y ) );
+    gCol += vec3( 0.4, 0.22, 0.1 ) * exp( -abs( p.y - hz_y ) * 14.0 ) * ( 0.5 + 0.5 * noise2( vec2( p.x * 3.0, 1.0 ) ) )
             * ( 0.6 + 0.4 * gMist );
     // The dark ground with scattered town lights far away.
-    if ( p.y < hzY )
+    if ( p.y < hz_y )
     {
         // Scattered lights of the town: round points, smaller toward the horizon.
-        float dh = hzY - p.y;
+        float dh = hz_y - p.y;
         vec2  g = p * 160.0; // a fixed grid (no shear), dots shrink with distance
         vec2  gi = floor( g ), gf = fract( g );
         vec2  gc = 0.25 + 0.5 * vec2( hash21( gi + 1.0 ), hash21( gi + 2.0 ) );
@@ -141,7 +141,7 @@ void main()
         gCol += mix( vec3( 1.0, 0.7, 0.35 ), vec3( 0.9, 0.95, 1.0 ), step( 0.7, hash21( gi + 3.0 ) ) ) * tl * 0.45;
     }
 
-    float I = ( 0.7 + 0.5 * bass ) * loopFade;
+    float I = ( 0.7 + 0.5 * bass ) * loop_fade;
     vec3  white = vec3( 1.0, 0.95, 0.85 );
     // Runway: 3000 m long, 45 m wide; edge lights every 60 m, centre line every 30 m.
     for ( int i = 0; i < 50; ++i )
@@ -181,7 +181,7 @@ void main()
         // Sequenced flasher on each bar: fires as the rabbit passes.
         float ph = float( 30 - i ) / 30.0;
         float fl = exp( -pow( ( rabbit - ph ) * 40.0, 2.0 ) );
-        light( p, vec3( 0.0, 1.0, z ), vec3( 0.9, 0.95, 1.0 ), fl * ( 1.5 + 2.5 * kick ) * loopFade );
+        light( p, vec3( 0.0, 1.0, z ), vec3( 0.9, 0.95, 1.0 ), fl * ( 1.5 + 2.5 * kick ) * loop_fade );
     }
     // The windscreen frame: a thin dark border at the corners.
     vec3 col = gCol;
@@ -190,7 +190,7 @@ void main()
     col *= 1.0 - 0.8 * clamp( frame, 0.0, 1.0 );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

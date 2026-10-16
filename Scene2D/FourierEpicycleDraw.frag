@@ -106,29 +106,29 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     int   terms = 5 + int( clamp( termsP, 0.0, 1.0 ) * 6.0 );
-    float traceLen = 0.5 + 0.5 * clamp( traceP, 0.0, 1.0 );
+    float trace_len = 0.5 + 0.5 * clamp( traceP, 0.0, 1.0 );
     float t = fract( sceneAdvance * 0.12 + sceneTime * 0.025 );
     vec2  origin = vec2( -0.25, 0.0 );
 
     // Paper: the photo dim.
     vec3 col = img( gl_FragCoord.xy / resolution ) * imgPalette( hue * 0.159 + 0.6 ) * 0.45 + vec3( 0.04, 0.04, 0.05 );
 
-    // The trace: sample the pen path over the last traceLen of the cycle.
+    // The trace: sample the pen path over the last trace_len of the cycle.
     float trace = 0.0;
-    vec2  prev = origin + chainPos( t - traceLen, terms, 99 );
+    vec2  prev = origin + chainPos( t - trace_len, terms, 99 );
     for ( int s = 1; s <= 90; ++s )
     {
-        float ts = t - traceLen + traceLen * float( s ) / 90.0;
+        float ts = t - trace_len + trace_len * float( s ) / 90.0;
         vec2  q = origin + chainPos( ts, terms, 99 );
         float d = segDist( p, prev, q );
         float age = 1.0 - float( s ) / 90.0;
         trace = max( trace, smoothstep( 0.006, 0.002, d ) * ( 1.0 - age * 0.8 ) );
         prev = q;
     }
-    vec3 traceCol = imgPalette( hue * 0.159 + 0.2 ) * 1.6 + 0.2;
+    vec3 trace_col = imgPalette( hue * 0.159 + 0.2 ) * 1.6 + 0.2;
     // Where the trace runs, the photo shows through brighter (the drawn shape).
     col = mix( col, img( gl_FragCoord.xy / resolution ) * 1.3, trace * 0.5 );
-    col += traceCol * trace * 1.4;
+    col += trace_col * trace * 1.4;
 
     // The circles and the arms.
     vec2 c = origin;
@@ -148,11 +148,11 @@ void main()
     }
     // The pen: a bright round point at the chain's end, lit by the kick.
     float pen = smoothstep( 0.014, 0.006, length( p - c ) );
-    col += ( traceCol + 0.3 ) * pen * ( 1.0 + 2.0 * audioKick );
-    col += traceCol * exp( -length( p - c ) * 25.0 ) * ( 0.3 + 1.0 * audioKick );
+    col += ( trace_col + 0.3 ) * pen * ( 1.0 + 2.0 * audioKick );
+    col += trace_col * exp( -length( p - c ) * 25.0 ) * ( 0.3 + 1.0 * audioKick );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -37,7 +37,7 @@ uniform int       leftRight;
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
 
-const float scaletexture = 2.0; ///< 2.0
+const float Scaletexture = 2.0; ///< 2.0
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main( void )
@@ -47,7 +47,7 @@ void main( void )
     p.y /= resolution.y;
     // p.x -= 0.5*resolution.x/resolution.y;
     // p.y -= 0.5;
-    p *= scaletexture;
+    p *= Scaletexture;
     p -= 1.0;
 
     float speedl = speed;
@@ -64,17 +64,17 @@ void main( void )
     // center.x -= 0.5;//*resolution.x/resolution.y;
     // center.y -= 0.5;
 
-    float yPos = 0.0;
+    float y_pos = 0.0;
     if ( leftRight > 0 )
-        yPos = 1.0;
+        y_pos = 1.0;
 
 
-    vec2 mouse = vec2( 0.0, yPos ); // center;
+    vec2 mouse = vec2( 0.0, y_pos ); // center;
     // vec2 mouse = vec2( 0.15, 0.15 );//center;
 
 
     // vec2 m = -1.0 + scaletexture * mouse.xy;// / resolution.xy;
-    vec2 m = -1.0 + scaletexture * mouse.xy; // / resolution.xy;
+    vec2 m = -1.0 + Scaletexture * mouse.xy; // / resolution.xy;
 
 
     // mouse = vec2( 0.0, 0.0 );

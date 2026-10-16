@@ -84,7 +84,7 @@ vec3 spectral( float t )
 void main()
 {
     float freq = ( waveFreqP > 0.0 ) ? waveFreqP : 1.0;
-    float pSpd = ( phaseRotP > 0.0 ) ? phaseRotP : 1.0;
+    float p_spd = ( phaseRotP > 0.0 ) ? phaseRotP : 1.0;
     float glw = ( glowP > 0.0 ) ? glowP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
@@ -92,14 +92,14 @@ void main()
     vec2 st = gl_FragCoord.xy / resolution;
 
     // Center zoom & multi-scale rotation
-    float t = time * 0.2 * pSpd + audioAdvance * 0.15;
+    float t = time * 0.2 * p_spd + audioAdvance * 0.15;
     mat2  rot = mat2( cos( t * 0.3 ), -sin( t * 0.3 ), sin( t * 0.3 ), cos( t * 0.3 ) );
     vec2  z = rot * uv * ( 2.8 + 0.6 * sin( time * 0.1 ) - audioSwell * 0.4 );
 
     // Multi-pole quantum vortex singularities
     int   poles = 5;
     vec2  w = vec2( 0.0 );
-    float fieldAmp = 0.0;
+    float field_amp = 0.0;
 
     for ( int k = 0; k < poles; k++ )
     {
@@ -115,43 +115,43 @@ void main()
         w += term;
 
         // Wave amplitude accumulation
-        fieldAmp += sin( sqrt( d2 ) * 14.0 * freq - t * 3.0 - audioPhase * 4.0 ) / sqrt( d2 );
+        field_amp += sin( sqrt( d2 ) * 14.0 * freq - t * 3.0 - audioPhase * 4.0 ) / sqrt( d2 );
     }
 
     // Riemann surface phase angle & modulus
     float phase = atan( w.y, w.x );
     float mag = length( w );
-    float logMag = log( mag + 1.0 );
+    float log_mag = log( mag + 1.0 );
 
     // Interference grid fringes
-    float grid1 = sin( phase * 4.0 + logMag * 8.0 * freq + t * 2.0 );
-    float grid2 = cos( phase * 6.0 - logMag * 10.0 * freq - audioAdvance * 2.0 );
+    float grid1 = sin( phase * 4.0 + log_mag * 8.0 * freq + t * 2.0 );
+    float grid2 = cos( phase * 6.0 - log_mag * 10.0 * freq - audioAdvance * 2.0 );
     float interference = ( grid1 * grid2 ) * 0.5 + 0.5;
 
     // Optical chromatic dispersion mapping
-    float cR = sin( phase + logMag * 5.0 + 0.00 + audioKick * 1.2 );
-    float cG = sin( phase + logMag * 5.0 + 2.09 );
-    float cB = sin( phase + logMag * 5.0 + 4.18 + audioSubBass * 1.0 );
-    vec3  waveColor = vec3( cR, cG, cB ) * 0.5 + 0.5;
+    float c_r = sin( phase + log_mag * 5.0 + 0.00 + audioKick * 1.2 );
+    float c_g = sin( phase + log_mag * 5.0 + 2.09 );
+    float c_b = sin( phase + log_mag * 5.0 + 4.18 + audioSubBass * 1.0 );
+    vec3  wave_color = vec3( c_r, c_g, c_b ) * 0.5 + 0.5;
 
     // High-energy diffraction spectral rings
-    float rings = fract( mag * 0.35 * freq + fieldAmp * 0.08 + audioFlux * 0.3 );
-    vec3  fringeCol = spectral( rings + phase * 0.159 + time * 0.1 );
+    float rings = fract( mag * 0.35 * freq + field_amp * 0.08 + audioFlux * 0.3 );
+    vec3  fringe_col = spectral( rings + phase * 0.159 + time * 0.1 );
 
     // Sample active photo with holographic quantum distortion
-    vec2 photoUV = st + vec2( cR - cB, cG - cR ) * 0.04 * ( 1.0 + audioKick * 0.8 );
-    vec3 photo = img( clamp( photoUV, 0.0, 1.0 ) );
+    vec2 photo_uv = st + vec2( c_r - c_b, c_g - c_r ) * 0.04 * ( 1.0 + audioKick * 0.8 );
+    vec3 photo = img( clamp( photo_uv, 0.0, 1.0 ) );
 
     // Combine quantum layers
-    vec3 col = mix( waveColor, fringeCol, interference );
-    col = col * ( 0.8 + 0.8 * interference ) + fringeCol * pow( interference, 4.0 ) * glw * 1.5;
+    vec3 col = mix( wave_color, fringe_col, interference );
+    col = col * ( 0.8 + 0.8 * interference ) + fringe_col * pow( interference, 4.0 ) * glw * 1.5;
     col += photo * ( 0.3 + 0.4 * audioLevel );
 
     // Core state collapse flash on heavy beat
     if ( audioKick > 0.6 )
     {
-        float coreFlash = exp( -length( z ) * 3.0 ) * audioKick * 2.0;
-        col += vec3( 0.9, 0.95, 1.0 ) * coreFlash;
+        float core_flash = exp( -length( z ) * 3.0 ) * audioKick * 2.0;
+        col += vec3( 0.9, 0.95, 1.0 ) * core_flash;
     }
 
     // High-frequency quantum sparkle
@@ -165,8 +165,8 @@ void main()
         col = hueRot( col, hue );
 
     // Vignette
-    vec2  vUV = st * ( 1.0 - st.yx );
-    float vig = vUV.x * vUV.y * 15.0;
+    vec2  v_uv = st * ( 1.0 - st.yx );
+    float vig = v_uv.x * v_uv.y * 15.0;
     col *= clamp( pow( vig, 0.22 ), 0.0, 1.0 );
 
     col /= 1.0 + 0.55 * max( col.r, max( col.g, col.b ) ); // over-bright tail (final review)

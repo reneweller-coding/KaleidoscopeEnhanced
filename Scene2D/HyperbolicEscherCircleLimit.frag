@@ -94,30 +94,30 @@ void main()
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
-    float rotAngle = t * 0.15 + audioPhase * 0.1;
-    float cs = cos( rotAngle ), sn = sin( rotAngle );
+    float rot_angle = t * 0.15 + audioPhase * 0.1;
+    float cs = cos( rot_angle ), sn = sin( rot_angle );
     vec2  z = mat2( cs, -sn, sn, cs ) * uv * ( 1.45 + 0.15 * sin( audioSwell * 2.0 ) );
 
     // Möbius translation: z -> (z - a) / (1 - conj(a)*z)
-    vec2 aMob = 0.45 * vec2( sin( t * 0.4 ), cos( t * 0.31 ) ) * ( 0.8 + 0.4 * audioSubBass );
-    z = cDiv( z - aMob, vec2( 1.0, 0.0 ) - cMul( vec2( aMob.x, -aMob.y ), z ) );
+    vec2 a_mob = 0.45 * vec2( sin( t * 0.4 ), cos( t * 0.31 ) ) * ( 0.8 + 0.4 * audioSubBass );
+    z = cDiv( z - a_mob, vec2( 1.0, 0.0 ) - cMul( vec2( a_mob.x, -a_mob.y ), z ) );
 
     // Fullscreen seamless tiling via repeated circle inversions
-    float foldCount = 0.0;
-    float minEdgeDist = 1e5;
-    float segAngle = 3.14159265 / sides;
+    float fold_count = 0.0;
+    float min_edge_dist = 1e5;
+    float seg_angle = 3.14159265 / sides;
 
     for ( int i = 0; i < 9; i++ )
     {
         // Fold across radial mirror planes
         float ang = atan( z.y, z.x );
         float r = length( z );
-        ang = mod( ang + segAngle, 2.0 * segAngle ) - segAngle;
+        ang = mod( ang + seg_angle, 2.0 * seg_angle ) - seg_angle;
         ang = abs( ang );
         z = vec2( cos( ang ), sin( ang ) ) * r;
 
         // Hyperbolic circle mirror inversion (circle centered at (xc, 0) with radius rc)
-        float xc = cos( segAngle ) / sin( segAngle ); // characteristic circle center
+        float xc = cos( seg_angle ) / sin( seg_angle ); // characteristic circle center
         float rc = sqrt( max( 0.01, xc * xc - 1.0 ) ) * crv;
         vec2  center = vec2( xc, 0.0 );
         vec2  diff = z - center;
@@ -126,34 +126,34 @@ void main()
         if ( d2 < rc * rc )
         {
             z = center + diff * ( rc * rc / max( 0.0001, d2 ) );
-            foldCount += 1.0;
+            fold_count += 1.0;
         }
 
-        minEdgeDist = min( minEdgeDist, abs( length( diff ) - rc ) );
-        minEdgeDist = min( minEdgeDist, abs( z.y ) );
+        min_edge_dist = min( min_edge_dist, abs( length( diff ) - rc ) );
+        min_edge_dist = min( min_edge_dist, abs( z.y ) );
     }
 
     // Dynamic texture lookup mapped on the folded hyperbolic domain
-    vec2 sampleUV = fract( z * 0.5 + 0.5 );
-    vec3 texSample = img( sampleUV );
+    vec2 sample_uv = fract( z * 0.5 + 0.5 );
+    vec3 tex_sample = img( sample_uv );
 
     // Color generation based on iteration depth and edge glow
     float pattern = sin( z.x * 12.0 + t ) * cos( z.y * 12.0 - t );
-    float glow = exp( -minEdgeDist * ( 35.0 + 15.0 * audioCentroid ) ) * glw * ( 1.0 + 2.0 * audioKick );
+    float glow = exp( -min_edge_dist * ( 35.0 + 15.0 * audioCentroid ) ) * glw * ( 1.0 + 2.0 * audioKick );
 
-    vec3 colA = imgPalette( foldCount * 0.12 + pattern * 0.08 );
-    vec3 colB = imgPalette( foldCount * 0.12 + 0.5 );
-    vec3 col = mix( colA, colB, 0.5 + 0.5 * pattern );
+    vec3 col_a = imgPalette( fold_count * 0.12 + pattern * 0.08 );
+    vec3 col_b = imgPalette( fold_count * 0.12 + 0.5 );
+    vec3 col = mix( col_a, col_b, 0.5 + 0.5 * pattern );
 
     col += vec3( 1.2, 0.9, 1.5 ) * glow;
-    col = mix( col, texSample, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_sample, 0.35 + 0.15 * audioValence );
 
     // Chromatic aberration at high energy
     float ca = 0.015 * ( audioKick + audioFlux );
-    vec3  colR = imgPalette( foldCount * 0.12 + ca );
-    vec3  colB2 = imgPalette( foldCount * 0.12 - ca );
-    col.r = mix( col.r, colR.r, 0.4 );
-    col.b = mix( col.b, colB2.b, 0.4 );
+    vec3  col_r = imgPalette( fold_count * 0.12 + ca );
+    vec3  col_b2 = imgPalette( fold_count * 0.12 - ca );
+    col.r = mix( col.r, col_r.r, 0.4 );
+    col.b = mix( col.b, col_b2.b, 0.4 );
 
     // Edge vignette & tone mapping
     float vig = 1.0 - smoothstep( 0.8, 1.4, length( uv ) );

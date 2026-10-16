@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -328,18 +328,18 @@ void main()
                 if ( rr > 1.3 )
                     continue;
                 float alpha = smoothstep( 0.0, 0.05, life ) * smoothstep( 1.0, 0.6, life );
-                vec3  stainC = mix( vec3( 0.55, 0.35, 0.18 ), vec3( 0.55, 0.1, 0.2 ), mode );
-                stainC = mix( stainC, stainC * glowColour( imgLod( hash22( id + gen ), 4.0 ), id, hueP * 0.159 ) * 1.3,
-                              0.15 );
+                vec3  stain_c = mix( vec3( 0.55, 0.35, 0.18 ), vec3( 0.55, 0.1, 0.2 ), mode );
+                stain_c = mix(
+                    stain_c, stain_c * glowColour( imgLod( hash22( id + gen ), 4.0 ), id, hueP * 0.159 ) * 1.3, 0.15 );
                 // Each stain is a window onto the turning kaleidoscope (tinted by the drink).
-                stainC = mix( stainC, stainC * ( 0.4 + 1.3 * imgK( uv, 1.5 ) ), 0.6 );
+                stain_c = mix( stain_c, stain_c * ( 0.4 + 1.3 * imgK( uv, 1.5 ) ), 0.6 );
                 float sharp = 20.0 + 40.0 * clamp( ringP, 0.0, 1.0 );
-                float ringD = exp( -max( 1.0 - rr, 0.0 ) * sharp ) * step( rr, 1.0 );
+                float ring_d = exp( -max( 1.0 - rr, 0.0 ) * sharp ) * step( rr, 1.0 );
                 float fill = step( rr, 1.0 ) * 0.25;
-                float dens = ( fill + ringD * 0.8 ) * ( 0.6 + 0.6 * swell );
+                float dens = ( fill + ring_d * 0.8 ) * ( 0.6 + 0.6 * swell );
                 // Wet sheen while fresh.
                 float wet = ( 1.0 - smoothstep( 0.0, 0.2, life ) ) * step( rr, 1.0 );
-                col *= mix( vec3( 1.0 ), stainC, clamp( dens * alpha, 0.0, 1.0 ) );
+                col *= mix( vec3( 1.0 ), stain_c, clamp( dens * alpha, 0.0, 1.0 ) );
                 col += vec3( 1.0 ) * wet * alpha * ( 0.03 + 0.12 * kick )
                        * smoothstep( 0.4, 0.8, noise2( d * 10.0 + sceneTime ) );
             }

@@ -54,19 +54,19 @@ void main()
 
     // Magnetopause bow shock curve (parabolic shield facing supersonic solar wind)
     float r = length( p );
-    float bowCurve = -0.3 * ( p.x * p.x ) + 1.2;
+    float bow_curve = -0.3 * ( p.x * p.x ) + 1.2;
 
     // Magnetic dipole field line displacement
-    float dipoleField = sin( p.x * 3.0 + t ) * cos( p.y * 2.0 - t * 0.5 ) * ( 0.8 + 0.6 * audioBass );
+    float dipole_field = sin( p.x * 3.0 + t ) * cos( p.y * 2.0 - t * 0.5 ) * ( 0.8 + 0.6 * audioBass );
 
     // Auroral curtain oscillations (Kelvin-Helmholtz waves)
-    float khWave = sin( p.x * 6.0 - time * 6.0 ) * sin( p.y * 4.0 + audioPhase );
-    float auroraHeight = khWave * ( 0.5 + 1.0 * audioHigh ) * aur;
+    float kh_wave = sin( p.x * 6.0 - time * 6.0 ) * sin( p.y * 4.0 + audioPhase );
+    float aurora_height = kh_wave * ( 0.5 + 1.0 * audioHigh ) * aur;
 
     // Solar wind compression on kick
-    float solarSurge = exp( -abs( p.y - bowCurve ) * 2.0 ) * audioKick * 0.8 * bsp;
+    float solar_surge = exp( -abs( p.y - bow_curve ) * 2.0 ) * audioKick * 0.8 * bsp;
 
-    float z = ( dipoleField + auroraHeight + solarSurge ) * ( 0.7 + 0.3 * audioSwell );
+    float z = ( dipole_field + aurora_height + solar_surge ) * ( 0.7 + 0.3 * audioSwell );
     vHeight = z;
 
     vec3 pos = vec3( p.x, p.y * 0.8 - 0.2, z );
@@ -79,9 +79,9 @@ void main()
     // Auroral colors: Oxygen emerald (557.7nm) & Nitrogen crimson (630nm)
     vec3 emerald = vec3( 0.1, 1.0, 0.5 );
     vec3 crimson = vec3( 1.0, 0.1, 0.4 );
-    vec3 auroralCol = mix( emerald, crimson, sin( p.x * 2.0 + t ) * 0.5 + 0.5 );
+    vec3 auroral_col = mix( emerald, crimson, sin( p.x * 2.0 + t ) * 0.5 + 0.5 );
 
-    vColor = vec4( auroralCol * ( 0.8 + 1.2 * abs( z ) ), 1.0 );
+    vColor = vec4( auroral_col * ( 0.8 + 1.2 * abs( z ) ), 1.0 );
 
     // Stereo 3D camera projection
     vec3 vp = pos;

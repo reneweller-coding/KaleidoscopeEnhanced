@@ -45,19 +45,19 @@ out float vRocket;
 out vec4  vFlame; ///< xyz = the engines' world position, w = burn 0..1
 out float vClimb; ///< 0 on the pad, 1 at the top of the climb
 
-const float kDist = 84.0;    ///< the pad's distance from the camera
-const float kGround = -16.0; ///< ground height: the pad sits low so the sky above has room for the climb
+const float Dist = 84.0;    ///< the pad's distance from the camera
+const float Ground = -16.0; ///< ground height: the pad sits low so the sky above has room for the climb
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isPad = gl_VertexID < meshVertexCount;
-    bool isRocket = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
-    bool isBg = gl_VertexID >= mesh2VertexCount;
+    bool is_pad = gl_VertexID < meshVertexCount;
+    bool is_rocket = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
+    bool is_bg = gl_VertexID >= mesh2VertexCount;
 
     float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
-    float padH = 40.0 * sz; // the pad's full height in world units
-    float sPad = padH / ( 2.0 * meshExtent.y );
+    float pad_h = 40.0 * sz; // the pad's full height in world units
+    float s_pad = pad_h / ( 2.0 * meshExtent.y );
     float plat = ( platP > 0.001 ? platP : 0.30 );
 
     // Liftoff staging on the scene's own arc. Early enough that a scene the
@@ -72,37 +72,37 @@ void main()
 
     // The rocket's frame is needed by every branch: the pad and the shell
     // are lit by its engines.
-    float rocketH = padH * 0.87;
-    float sR = rocketH / ( 2.0 * meshExtent2.y );
-    float platY = kGround + padH * plat;
-    vec3  rocketBase = vec3( offP * meshExtent.x * sPad, platY, kDist + depthP * meshExtent.z * sPad );
-    vec3  basePos = rocketBase + vec3( climb * 0.5 * tilt, climb, 0.0 );
+    float rocket_h = pad_h * 0.87;
+    float s_r = rocket_h / ( 2.0 * meshExtent2.y );
+    float plat_y = Ground + pad_h * plat;
+    vec3  rocket_base = vec3( offP * meshExtent.x * s_pad, plat_y, Dist + depthP * meshExtent.z * s_pad );
+    vec3  base_pos = rocket_base + vec3( climb * 0.5 * tilt, climb, 0.0 );
     float ct = cos( tilt ), st = sin( tilt );
-    mat3  tiltM = mat3( ct, st, 0.0, -st, ct, 0.0, 0.0, 0.0, 1.0 );
+    mat3  tilt_m = mat3( ct, st, 0.0, -st, ct, 0.0, 0.0, 0.0, 1.0 );
 
-    vFlame = vec4( basePos, burn );
+    vFlame = vec4( base_pos, burn );
     vClimb = u;
-    vRocket = isRocket ? 1.0 : 0.0;
+    vRocket = is_rocket ? 1.0 : 0.0;
 
     vec3 world, n;
-    if ( isPad )
+    if ( is_pad )
     {
         // The generator builds a model facing ITS camera, the mesh's +Z,
         // which points away from ours: a half turn shows the pad's front.
-        const mat3 padYaw = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
-        vec3       c = padYaw * ( attrA.xyz - meshCenter );
-        world = c * sPad + vec3( 0.0, kGround + meshExtent.y * sPad, kDist );
-        n = normalize( padYaw * attrB.xyz );
+        const mat3 pad_yaw = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
+        vec3       c = pad_yaw * ( attrA.xyz - meshCenter );
+        world = c * s_pad + vec3( 0.0, Ground + meshExtent.y * s_pad, Dist );
+        n = normalize( pad_yaw * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
-    else if ( isRocket )
+    else if ( is_rocket )
     {
         vec3 c = attrA.xyz - meshCenter2;
-        vec3 local = c * sR;
-        local.y += meshExtent2.y * sR; // pivot at the base, on the platform
-        world = tiltM * local + basePos;
-        n = normalize( tiltM * attrB.xyz );
+        vec3 local = c * s_r;
+        local.y += meshExtent2.y * s_r; // pivot at the base, on the platform
+        world = tilt_m * local + base_pos;
+        n = normalize( tilt_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent2;
     }
@@ -119,10 +119,10 @@ void main()
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     // Shell depth pinned just inside the far plane (standard skybox fix).
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

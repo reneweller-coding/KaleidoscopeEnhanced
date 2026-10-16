@@ -79,9 +79,9 @@ void main()
     float slope = ( coneSlopeP > 0.01 ? coneSlopeP : 1.0 ) * ( 0.8 + 0.4 * sin( audioCentroid * 3.14 ) );
     float curv = ( curvP > 0.01 ? curvP : 1.0 );
 
-    float metricPhase = 0.0;
-    vec3  accCol = vec3( 0.0 );
-    float totalW = 0.0;
+    float metric_phase = 0.0;
+    vec3  acc_col = vec3( 0.0 );
+    float total_w = 0.0;
 
     float layers = 6.0;
     float density = ( densityP > 0.01 ? densityP : 2.0 );
@@ -99,23 +99,23 @@ void main()
         float decay = exp( -abs( hyp ) * curv * 2.5 );
 
         // Sample photo palette at hyperbolic phase coordinates
-        float palCoord = fract( hyp * 0.15 + i * 0.16 + t * 0.05 );
-        vec3  pal = imgPalette( palCoord );
+        float pal_coord = fract( hyp * 0.15 + i * 0.16 + t * 0.05 );
+        vec3  pal = imgPalette( pal_coord );
 
         float w = decay / ( i * 0.7 + 0.3 );
-        accCol += pal * ( cone * 0.7 + 0.3 ) * w;
-        totalW += w;
+        acc_col += pal * ( cone * 0.7 + 0.3 ) * w;
+        total_w += w;
     }
 
-    vec3 col = accCol / max( totalW, 0.001 );
+    vec3 col = acc_col / max( total_w, 0.001 );
 
     // Add central metamaterial core & singularity glow
     float core = exp( -r * 6.0 ) * ( 1.0 + 2.0 * audioKick );
     col += imgPalette( t * 0.1 ) * core * 1.5;
 
     // Background photo projection with subtle anisotropic warp
-    vec2 bgUv = fract( gl_FragCoord.xy / resolution + vec2( sin( p.y * 3.0 ), cos( p.x * 3.0 ) ) * 0.02 );
-    col = mix( img( bgUv ) * 0.35, col, 0.75 + 0.25 * audioSwell );
+    vec2 bg_uv = fract( gl_FragCoord.xy / resolution + vec2( sin( p.y * 3.0 ), cos( p.x * 3.0 ) ) * 0.02 );
+    col = mix( img( bg_uv ) * 0.35, col, 0.75 + 0.25 * audioSwell );
 
     // Kick accent
     col += imgPalette( audioCentroid ) * audioKick * 0.3;

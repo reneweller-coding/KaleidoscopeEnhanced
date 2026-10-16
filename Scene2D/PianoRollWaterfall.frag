@@ -80,29 +80,29 @@ void main()
     float keys = octaves * 12.0;
     float span = aspect * ( 0.85 + 0.12 * clamp( widthP, 0.0, 1.0 ) );
     float light = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
-    float keyTop = -0.28;
+    float key_top = -0.28;
 
     // The lid: the photo mirrored and dark above the keys (the piano's
     // polished lid), the stage light on it.
     vec3 col = img( vec2( p.x / aspect + 0.5, 0.9 - ( p.y + 0.5 ) * 0.4 ) ) * imgPalette( hue * 0.159 + 0.6 ) * 0.45
                    * light
                + 0.03;
-    col *= 0.5 + 0.5 * smoothstep( 0.5, keyTop, p.y );
+    col *= 0.5 + 0.5 * smoothstep( 0.5, key_top, p.y );
     // Key lanes on the lid: faint lines so the bars have a grid to fall along.
     col += vec3( 0.05 ) * pow( 0.5 + 0.5 * cos( ( p.x / span + 0.5 ) * keys * 6.2831853 ), 30.0 )
-           * step( abs( p.x ), span * 0.5 ) * step( keyTop, p.y );
+           * step( abs( p.x ), span * 0.5 ) * step( key_top, p.y );
     // The bars: for each screen row above the keys, the age of the sample
     // (rows nearer the keys are newer); the pitch gives the x position.
-    float ago = ( p.y - keyTop ) / ( 0.5 - keyTop ) * 90.0;
-    if ( p.y > keyTop && p.y < 0.5 )
+    float ago = ( p.y - key_top ) / ( 0.5 - key_top ) * 90.0;
+    if ( p.y > key_top && p.y < 0.5 )
     {
         float m = melodyAt( ago );
         // A bar exists where the melody value is non-zero: its x is the
         // pitch mapped onto the keys.
         float key = floor( m * keys ); // quantised to a key: bars, not a wavy line
         float x = ( ( key + 0.5 ) / keys - 0.5 ) * span;
-        float keyW = span / keys;
-        float bar = smoothstep( keyW * 0.5, keyW * 0.42, abs( p.x - x ) ) * step( 0.02, m );
+        float key_w = span / keys;
+        float bar = smoothstep( key_w * 0.5, key_w * 0.42, abs( p.x - x ) ) * step( 0.02, m );
         // The bar segments: brightness by the age (newest bright), colour
         // by the pitch class of the sample.
         int  cls = int( mod( floor( m * keys ), 12.0 ) );
@@ -111,7 +111,7 @@ void main()
         col += bc * exp( -abs( p.x - x ) * 12.0 ) * step( 0.02, m ) * 0.2 * ( 1.0 - ago / 96.0 );
     }
     // The keyboard: white and black keys; the sounding classes light.
-    if ( p.y <= keyTop && p.y > -0.5 )
+    if ( p.y <= key_top && p.y > -0.5 )
     {
         float kx = ( p.x / span + 0.5 ) * keys;
         float ki = floor( kx );
@@ -120,9 +120,9 @@ void main()
         bool  black = ( cls == 1 || cls == 3 || cls == 6 || cls == 8 || cls == 10 );
         float e = clamp( audioChroma[cls] * 1.5, 0.0, 1.0 );
         vec3  white = vec3( 0.92, 0.9, 0.85 ) * light;
-        vec3  blackKey = vec3( 0.08, 0.08, 0.09 );
-        float blackZone = step( keyTop - 0.13, p.y ); // black keys are short
-        vec3  key = ( black && blackZone > 0.5 ) ? blackKey : white;
+        vec3  black_key = vec3( 0.08, 0.08, 0.09 );
+        float black_zone = step( key_top - 0.13, p.y ); // black keys are short
+        vec3  key = ( black && black_zone > 0.5 ) ? black_key : white;
         float gap = smoothstep( 0.06, 0.0, min( kf, 1.0 - kf ) ) * 0.6;
         key *= 1.0 - gap;
         vec3 lit = imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.6 + 0.2;
@@ -133,11 +133,11 @@ void main()
         col *= 0.75 + 0.25 * smoothstep( -0.5, -0.45, p.y );
     }
     // The hammer line: a bright rule at the key top, flashing on the kick.
-    col += imgPalette( hue * 0.159 + 0.9 ) * smoothstep( 0.005, 0.0, abs( p.y - keyTop ) )
+    col += imgPalette( hue * 0.159 + 0.9 ) * smoothstep( 0.005, 0.0, abs( p.y - key_top ) )
            * step( abs( p.x ), span * 0.5 ) * ( 0.3 + 1.2 * audioKick );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

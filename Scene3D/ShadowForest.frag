@@ -123,8 +123,8 @@ void main()
     // lightDir normalises to NaN, and max(NaN, 0.0) collapses every one of
     // those terms at once. Falling back to a fixed high sun costs nothing when
     // lightDir is good and keeps the stand lit when it is not.
-    float lLen = length( lightDir );
-    vec3  L = ( lLen > 1e-4 ) ? lightDir / lLen : normalize( vec3( 0.33, 0.90, -0.28 ) );
+    float l_len = length( lightDir );
+    vec3  L = ( l_len > 1e-4 ) ? lightDir / l_len : normalize( vec3( 0.33, 0.90, -0.28 ) );
     float ndl = max( dot( n, L ), 0.0 );
     float sh = clamp( shadowAt( vWorld, n, ndl ), 0.0, 1.0 );
 

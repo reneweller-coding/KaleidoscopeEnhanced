@@ -43,9 +43,9 @@ out float vBg;     ///< Background flag (from the vertex stage).
 out float vMirror;
 out vec3  vAim; ///< the heliostat's aiming normal (world): its glass is the face that points this way
 
-const float kGround = -6.0;
-const vec3  kTowerFoot = vec3( 0.0, kGround, 170.0 );
-const float kTowerH = 70.0;
+const float Ground = -6.0;
+const vec3  TowerFoot = vec3( 0.0, Ground, 170.0 );
+const float TowerH = 70.0;
 
 vec3 sunDir()
 {
@@ -59,62 +59,62 @@ void main()
 {
     int  inst = gl_InstanceID;
     int  N = max( meshInstances, 1 );
-    bool isTower = gl_VertexID < meshVertexCount;
-    bool isMirror = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
-    bool isBg = gl_VertexID >= mesh2VertexCount;
+    bool is_tower = gl_VertexID < meshVertexCount;
+    bool is_mirror = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
+    bool is_bg = gl_VertexID >= mesh2VertexCount;
 
     float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
     vec3  world, n;
-    vMirror = isMirror ? 1.0 : 0.0;
+    vMirror = is_mirror ? 1.0 : 0.0;
     vAim = vec3( 0.0, 1.0, 0.0 );
 
-    if ( ( isTower || isBg ) && inst > 0 )
+    if ( ( is_tower || is_bg ) && inst > 0 )
     {
         gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );
         vNormal = vec3( 0.0, 1.0, 0.0 );
         vPos = vec3( 0.0 );
         vUV = vec2( 0.0 );
         vLocal = vec3( 0.0 );
-        vBg = isBg ? 1.0 : 0.0;
+        vBg = is_bg ? 1.0 : 0.0;
         return;
     }
 
-    if ( isTower )
+    if ( is_tower )
     {
-        float      szT = 0.5 * kTowerH * sz;
+        float      sz_t = 0.5 * TowerH * sz;
         vec3       c = attrA.xyz - meshCenter;
         float      mx = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
-        vec3       local = c / mx * szT;
-        const mat3 turnM = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
-        world = turnM * local + kTowerFoot + vec3( 0.0, meshExtent.y / mx * szT, 0.0 );
-        n = normalize( turnM * attrB.xyz );
+        vec3       local = c / mx * sz_t;
+        const mat3 turn_m = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
+        world = turn_m * local + TowerFoot + vec3( 0.0, meshExtent.y / mx * sz_t, 0.0 );
+        n = normalize( turn_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
-    else if ( isMirror )
+    else if ( is_mirror )
     {
         float k = float( inst );
         // The field: quasi-random angle over the near 220 degrees, radius
         // spread as sqrt for an even density, never inside the tower's ring.
         float a = ( fract( k * 0.6180340 ) - 0.5 ) * 3.8;
         float r = 26.0 + 118.0 * sqrt( fract( k * 0.7548777 + 0.31 ) );
-        vec3  pos = kTowerFoot + vec3( r * sin( a ), 0.0, -r * cos( a ) );
+        vec3  pos = TowerFoot + vec3( r * sin( a ), 0.0, -r * cos( a ) );
 
-        float szM = 2.2 * sz * ( mirrorP > 0.01 ? mirrorP : 1.0 );
+        float sz_m = 2.2 * sz * ( mirrorP > 0.01 ? mirrorP : 1.0 );
         vec3  c = attrA.xyz - meshCenter2;
         float mx = max( meshExtent2.x, max( meshExtent2.y, meshExtent2.z ) );
-        vec3  local = c / mx * szM;
+        vec3  local = c / mx * sz_m;
 
-        vec3 recv = kTowerFoot + vec3( 0.0, kTowerH * 0.82, 0.0 );
-        vec3 toRecv = normalize( recv - pos );
-        vec3 nrm = normalize( toRecv + sunDir() );
+        vec3 recv = TowerFoot + vec3( 0.0, TowerH * 0.82, 0.0 );
+        vec3 to_recv = normalize( recv - pos );
+        vec3 nrm = normalize( to_recv + sunDir() );
         vAim = nrm;
         vec3 right = normalize( cross( vec3( 0.0, 1.0, 0.0 ), nrm ) );
         vec3 up2 = cross( nrm, right );
-        mat3 aimM = mat3( right, up2, nrm );
+        mat3 aim_m = mat3( right, up2, nrm );
 
-        world = aimM * local + pos + vec3( 0.0, meshExtent2.y / mx * szM, 0.0 );
-        n = normalize( aimM * attrB.xyz );
+        world = aim_m * local + pos + vec3( 0.0, meshExtent2.y / mx * sz_m, 0.0 );
+        n = normalize( aim_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent2;
     }
@@ -130,10 +130,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

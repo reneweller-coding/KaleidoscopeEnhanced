@@ -42,7 +42,7 @@ uniform float     audioBuildUp;  ///< 0..1 EDM tension rising toward a climax ->
 uniform float     audioDownbeat; ///< decaying accent on the bar's "1" -> musical brightness accent
 uniform float     audioUpperMid; ///< 2k-6k Hz metallic/industrial edge -> chromatic fringe
 
-const float M_PI = 3.141592653589793;
+const float Pi = 3.141592653589793;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -62,7 +62,7 @@ void main()
 
     float angle = 0.0;
     if ( rotate > 0 )
-        angle = M_PI * 0.25;
+        angle = Pi * 0.25;
 
     // a rotation
     // vec2 cst = vec2( cos(interpolationRotation), sin(interpolationRotation) );
@@ -74,18 +74,18 @@ void main()
     // power was never registered in any preset (always 0, GL's unset-uniform
     // default) -- 1.0/(2.0*power) divided by zero, sending r to infinity for
     // every pixel. 1.0 reproduces the plain Euclidean length() case.
-    float powV = ( power > 0.01 ) ? power : 1.0;
-    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
+    float pow_v = ( power > 0.01 ) ? power : 1.0;
+    float r = pow( pow( p.x * p.x, pow_v ) + pow( p.y * p.y, pow_v ), 1.0 / ( 2.0 * pow_v ) );
 
     // cartesian to polar coordinates
     // float r = length(p);
     float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5 * float( sides );
+    float sides_k = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod( a, tau / sidesK );
-    a = abs( a - tau / sidesK / 2. );
+    a = mod( a, tau / sides_k );
+    a = abs( a - tau / sides_k / 2. );
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
 
     // A build-up TIGHTENS the throat: the radial term's weight grows, so
@@ -97,7 +97,7 @@ void main()
 
     vec2 uv;
     uv.x = ( speedTunnelAccel * time + audioAdvance + throat / r );
-    uv.y = ( a / M_PI );
+    uv.y = ( a / Pi );
 
     vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
 
@@ -107,10 +107,10 @@ void main()
     float fringe = 0.006 * clamp( audioUpperMid, 0.0, 1.0 );
     if ( fringe > 0.0001 )
     {
-        vec2 uvR = vec2( uv.x + fringe, uv.y );
-        vec2 uvB = vec2( uv.x - fringe, uv.y );
-        col.r = interpolation * texture( tex0, uvR ).r + ( 1.0 - interpolation ) * texture( tex1, uvR ).r;
-        col.b = interpolation * texture( tex0, uvB ).b + ( 1.0 - interpolation ) * texture( tex1, uvB ).b;
+        vec2 uv_r = vec2( uv.x + fringe, uv.y );
+        vec2 uv_b = vec2( uv.x - fringe, uv.y );
+        col.r = interpolation * texture( tex0, uv_r ).r + ( 1.0 - interpolation ) * texture( tex1, uv_r ).r;
+        col.b = interpolation * texture( tex0, uv_b ).b + ( 1.0 - interpolation ) * texture( tex1, uv_b ).b;
     }
 
     // Kicks pulse, and the bar's "1" lands a stronger, musically placed accent.

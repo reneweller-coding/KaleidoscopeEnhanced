@@ -149,13 +149,13 @@ void main()
     vec2  off = vec2( hash21( cell + 3.1 ), hash21( cell + 7.7 ) ) - 0.5;
     float sparkle = smoothstep( 0.18, 0.05, length( f - off * 0.5 ) ) * step( 0.93, hash21( cell ) )
                     * ( 0.15 + 0.9 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) * dom;
-    vec3  stoneCol = body * ( 0.45 + 0.6 * dome ) * light + play + vec3( 1.0 ) * sparkle;
+    vec3  stone_col = body * ( 0.45 + 0.6 * dome ) * light + play + vec3( 1.0 ) * sparkle;
     // Surface highlight of the cabochon.
-    stoneCol += vec3( 1.0 ) * pow( max( 1.0 - length( p - vec2( -0.2, 0.25 ) ) * 3.0, 0.0 ), 3.0 ) * 0.5 * light;
-    col = mix( col, stoneCol, stone );
+    stone_col += vec3( 1.0 ) * pow( max( 1.0 - length( p - vec2( -0.2, 0.25 ) ) * 3.0, 0.0 ), 3.0 ) * 0.5 * light;
+    col = mix( col, stone_col, stone );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

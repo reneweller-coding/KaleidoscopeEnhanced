@@ -70,14 +70,14 @@ void main()
     float r1 = cos( u );
     float r2 = sin( u );
 
-    float cScale = ( calabiScaleP > 0.01 ? calabiScaleP : 1.3 ) * ( 0.85 + 0.35 * audioSwell );
+    float c_scale = ( calabiScaleP > 0.01 ? calabiScaleP : 1.3 ) * ( 0.85 + 0.35 * audioSwell );
 
     // Toric and spheroidal complex folds
-    vec3 worldPos = vec3(
-                        r1 * cos( v ) + 0.3 * cos( phase ) * sin( v ),
-                        r1 * sin( v ) - 0.3 * cos( phase ) * cos( v ),
-                        r2 * cos( phase * 0.5 ) + 0.25 * sin( v * 3.0 ) )
-                    * ( cScale * 1.5 );
+    vec3 world_pos = vec3(
+                         r1 * cos( v ) + 0.3 * cos( phase ) * sin( v ),
+                         r1 * sin( v ) - 0.3 * cos( phase ) * cos( v ),
+                         r2 * cos( phase * 0.5 ) + 0.25 * sin( v * 3.0 ) )
+                     * ( c_scale * 1.5 );
 
     // Normal estimation
     vNormal = normalize( vec3( cos( u ) * cos( v ), cos( u ) * sin( v ), sin( u ) ) );
@@ -85,7 +85,7 @@ void main()
     vCol = imgPalette( fract( phase * 0.159 + v * 0.2 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // 3D rotation
     float c = cos( t * 0.15 ), s = sin( t * 0.15 );

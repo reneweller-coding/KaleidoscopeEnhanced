@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -239,8 +239,8 @@ void main()
     float T = 0.05 * sceneTime + 0.35 * audioAdvance;
     float nb = 4.0 + 5.0 * clamp( bandP, 0.0, 1.0 );
     vec3  col = vec3( 0.95, 0.94, 0.9 );
-    float bestZ = -1.0;
-    float fwG = fwidth( g.x ); // before the loop (continue below)
+    float best_z = -1.0;
+    float fw_g = fwidth( g.x ); // before the loop (continue below)
     // Arcs centred on the grid vertices; each covers a half or full disc;
     // the one with the highest priority at this crossing lies on top.
     for ( int j = 0; j <= 1; ++j )
@@ -261,9 +261,9 @@ void main()
                 continue;
             // Interlace: priority alternates with the angle, so arcs weave.
             float z = fract( h * 7.0 + 0.5 * step( 0.0, sin( ang * 2.0 + h * 9.0 ) ) );
-            if ( z < bestZ )
+            if ( z < best_z )
                 continue;
-            bestZ = z;
+            best_z = z;
             float bw = ( 0.7 + 0.6 * clamp( audioSpread, 0.0, 1.0 ) );
             float x = r / R * nb * bw - T * 2.0;
             float band = floor( x );
@@ -272,7 +272,7 @@ void main()
             pc = pc / max( max( pc.r, max( pc.g, pc.b ) ), 0.2 );
             vec3  fluo = hsv2rgb( vec3( fract( band * 0.13 + h * 0.5 + mix( 0.55, 0.0, mode ) ), 0.85, 1.0 ) );
             vec3  bc = mix( fluo, pc, clamp( photoP, 0.0, 1.0 ) * 0.6 );
-            float px = fwG / R * nb * bw * 1.2 + 1e-4;
+            float px = fw_g / R * nb * bw * 1.2 + 1e-4;
             float white = smoothstep( px * ( 1.0 + 2.0 * swell ), 0.0, min( fb, 1.0 - fb ) );
             col = mix( bc * ( 1.0 + 0.3 * kick ), vec3( 0.97 ), white * 0.9 );
             // Outline of the protractor.

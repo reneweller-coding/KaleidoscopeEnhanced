@@ -44,7 +44,7 @@ uniform float level;
 uniform float swirl;
 uniform int   buildGrid; ///< 1 = only bin into the grid, 0 = simulate + splat
 
-const float SCALE = 256.0;
+const float Scale = 256.0;
 
 void splat1( ivec2 ip, float w )
 {
@@ -53,7 +53,7 @@ void splat1( ivec2 ip, float w )
     uint i = uint( ip.y * size.x + ip.x ) * 4u;
     // Only the density channel matters: the display builds the metal surface
     // from the density field, exactly like screen-space fluid rendering.
-    atomicAdd( acc[i + 3u], uint( w * SCALE ) );
+    atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -309,15 +309,15 @@ void main()
     off += 0.5 * vec2( noise2( q * 3.0 ) - 0.5, 0.0 ) * rough;
     vec2 uv = p * 0.5 + 0.5 + off * str * 20.0;
     vec3 ph = imgK( uv, 0.5 + 1.5 * ( 1.0 - clamp( photoP, 0.0, 1.0 ) ) );
-    vec3 fireC = mix( vec3( 0.2, 0.45, 1.0 ), vec3( 1.0, 0.5, 0.12 ), mode );
-    vec3 col = ph * ( 0.8 + ( 0.2 + 0.4 * swell ) * exp( -fy * 3.0 ) * fireC );
+    vec3 fire_c = mix( vec3( 0.2, 0.45, 1.0 ), vec3( 1.0, 0.5, 0.12 ), mode );
+    vec3 col = ph * ( 0.8 + ( 0.2 + 0.4 * swell ) * exp( -fy * 3.0 ) * fire_c );
     // Flames: flickering tongues along the band's bottom.
     float fh = ( 0.12 + 0.2 * clamp( flameP, 0.0, 1.0 ) ) * ( 0.8 + 0.5 * bass );
     float tongue = 0.2
                    + 1.3 * pow( fbm3( vec2( p.x * 9.0 + band * 3.0, fy * 3.0 - T * 1.5 ) ), 2.0 )
                          * ( 0.6 + 0.8 * noise2( vec2( p.x * 30.0, T * 2.0 ) ) );
     float flame = smoothstep( fh * tongue, fh * tongue * 0.3, fy * bh );
-    vec3  fc = mix( fireC, vec3( 1.0, 0.9, 0.6 ), smoothstep( 0.5, 1.0, flame ) );
+    vec3  fc = mix( fire_c, vec3( 1.0, 0.9, 0.6 ), smoothstep( 0.5, 1.0, flame ) );
     col = mix( col, fc * ( 1.2 + 0.8 * bass ), flame * 0.9 );
     // Burner line.
     col *= 1.0 - 0.6 * smoothstep( 0.012, 0.0, fy * bh );

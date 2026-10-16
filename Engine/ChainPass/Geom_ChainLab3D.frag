@@ -564,7 +564,7 @@ int ordbo( int i )
     return 8;
 }
 uniform vec3 walkSpace, walkCore, walkBody;
-float        fieldK_0( vec3 p, float xs, float xc, float xb, int world )
+float        fieldK0( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
     int   ks = ordsp( pickStage( xs, 20 ) );
@@ -955,8 +955,8 @@ float        fieldK_0( vec3 p, float xs, float xc, float xb, int world )
 #elif SPEC_BO0 == 20
     {
         float rho = length( q.xy ),
-              Rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
-        d = max( max( rho - Rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
+              rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
+        d = max( max( rho - rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
     }
 #elif SPEC_BO0 == 21
     {
@@ -971,7 +971,7 @@ float        fieldK_0( vec3 p, float xs, float xc, float xb, int world )
 
     return d / gDR * 0.8;
 }
-float fieldK_1( vec3 p, float xs, float xc, float xb, int world )
+float fieldK1( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
     int   ks = ordsp( pickStage( xs, 20 ) );
@@ -1362,8 +1362,8 @@ float fieldK_1( vec3 p, float xs, float xc, float xb, int world )
 #elif SPEC_BO1 == 20
     {
         float rho = length( q.xy ),
-              Rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
-        d = max( max( rho - Rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
+              rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
+        d = max( max( rho - rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
     }
 #elif SPEC_BO1 == 21
     {
@@ -1391,14 +1391,14 @@ float field3( vec3 p )
         yb = walkBody.y;
         f = smoothstep( 0.0, 1.0, max( walkSpace.z, max( walkCore.z, walkBody.z ) ) );
     }
-    float d0 = fieldK_0( p, xs, xc, xb, 0 );
+    float d0 = fieldK0( p, xs, xc, xb, 0 );
 #if SPEC_SP0 == SPEC_SP1 && SPEC_CO0 == SPEC_CO1 && SPEC_BO0 == SPEC_BO1
     return d0;
 #else
     if ( f <= 0.0 )
         return d0;
     vec3  p0 = gP;
-    float d1 = fieldK_1( p, ys, yc, yb, 1 );
+    float d1 = fieldK1( p, ys, yc, yb, 1 );
     gP = mix( p0, gP, f );
     return mix( d0, d1, f );
 #endif

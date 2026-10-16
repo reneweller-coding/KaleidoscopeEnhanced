@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -284,8 +284,8 @@ void main()
     float n = 3.0; // fixed count (no jump)
     // The target opening of this level (per level index), so the path is deterministic.
     float tk = floor( hash11( L0 * 0.731 ) * n );
-    float tAng = rot0 + L0 * 1.3 + tk * 6.2831853 / n;
-    vec2  tc = spread * vec2( cos( tAng ), sin( tAng ) );
+    float t_ang = rot0 + L0 * 1.3 + tk * 6.2831853 / n;
+    vec2  tc = spread * vec2( cos( t_ang ), sin( t_ang ) );
     float s = pow( K, f ); // zoom
     // Zoom toward tc so that at f = 1 the opening frame equals the next level at f = 0.
     vec2  q = tc * ( 1.0 - 1.0 / s ) / ( 1.0 - 1.0 / K ) + p / s;
@@ -296,10 +296,10 @@ void main()
     for ( int i = 0; i < 4; ++i )
     {
         float lev = L0 + float( i );
-        float rotL = rot0 + lev * 1.3;
+        float rot_l = rot0 + lev * 1.3;
         float hole;
         vec2  local;
-        vec3  c = level( q, n, rotL, spread, openR, lev, hole, local );
+        vec3  c = level( q, n, rot_l, spread, openR, lev, hole, local );
         col += trans * ( 1.0 - hole ) * c;
         trans *= hole;
         if ( trans < 0.01 )

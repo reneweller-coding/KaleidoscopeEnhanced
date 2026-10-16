@@ -130,8 +130,8 @@ void main()
 
         // Two-axis rotation so the poles travel too
         float rot = drift;
-        mat2  rotM = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
-        p3.xz = rotM * p3.xz;
+        mat2  rot_m = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
+        p3.xz = rot_m * p3.xz;
         float rot2 = drift * 0.37;
         p3.yz = mat2( cos( rot2 ), -sin( rot2 ), sin( rot2 ), cos( rot2 ) ) * p3.yz;
 
@@ -140,12 +140,12 @@ void main()
         vec3  warp = vec3( fbm( p3 * 2.0 + drift * 0.3 ),
                            fbm( p3 * 2.0 + 4.7 ),
                            fbm( p3 * 2.0 + 9.1 ) );
-        float cmbBase = fbm( p3 * 3.0 + ( warp - 0.5 ) * 1.8 );
-        float cmbDetail = fbm( p3 * 15.0 + ( warp - 0.5 ) * 2.5 );
-        float cmb = mix( cmbBase, cmbDetail, 0.3 ) * cp;
+        float cmb_base = fbm( p3 * 3.0 + ( warp - 0.5 ) * 1.8 );
+        float cmb_detail = fbm( p3 * 15.0 + ( warp - 0.5 ) * 2.5 );
+        float cmb = mix( cmb_base, cmb_detail, 0.3 ) * cp;
 
-        vec3 cmbColor = imgPalette( cmb * 0.8 + 0.1 );
-        col = cmbColor * ( 0.35 + audioSwell * 0.3 );
+        vec3 cmb_color = imgPalette( cmb * 0.8 + 0.1 );
+        col = cmb_color * ( 0.35 + audioSwell * 0.3 );
 
         // Hot filaments: the brightest temperature ridges glow.
         float fil = smoothstep( 0.52, 0.72, cmb );
@@ -154,20 +154,20 @@ void main()
         // Anomalies: persistent hotspot cells that IGNITE on kicks. The old
         // trigger resampled at 5 Hz (floor(time * 4.00)) and strobed; selection
         // now drifts on the slow clock, the envelope is the kick itself.
-        vec3  cellP = p3 * 4.0;
-        vec3  iCell = floor( cellP );
-        float cellHash = hash11( iCell.x * 12.3 + iCell.y * 45.6 + iCell.z * 78.9 );
-        if ( cellHash > 0.6 )
+        vec3  cell_p = p3 * 4.0;
+        vec3  i_cell = floor( cell_p );
+        float cell_hash = hash11( i_cell.x * 12.3 + i_cell.y * 45.6 + i_cell.z * 78.9 );
+        if ( cell_hash > 0.6 )
         {
-            vec3  center = iCell + vec3( 0.5 );
-            float dToCenter = length( cellP - center );
-            float trigger = step( 0.5, hash11( cellHash * 10.0 + floor( drift * 2.0 ) ) );
+            vec3  center = i_cell + vec3( 0.5 );
+            float d_to_center = length( cell_p - center );
+            float trigger = step( 0.5, hash11( cell_hash * 10.0 + floor( drift * 2.0 ) ) );
             float flash = trigger * audioKick * 3.5 * ap;
             float fracture = fbm( p3 * 20.0 + drift * 3.0 );
-            float mask = smoothstep( 0.45, 0.0, dToCenter ) * fracture;
-            vec3  anomalyCol = imgPalette( 0.9 + audioCentroid * 0.1 );
-            col += anomalyCol * mask * flash * ( 1.0 + audioSwell );
-            col += anomalyCol * exp( -dToCenter * 5.0 ) * flash * 0.4;
+            float mask = smoothstep( 0.45, 0.0, d_to_center ) * fracture;
+            vec3  anomaly_col = imgPalette( 0.9 + audioCentroid * 0.1 );
+            col += anomaly_col * mask * flash * ( 1.0 + audioSwell );
+            col += anomaly_col * exp( -d_to_center * 5.0 ) * flash * 0.4;
         }
     }
 
@@ -181,7 +181,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

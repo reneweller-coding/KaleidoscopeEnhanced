@@ -136,7 +136,7 @@ void main()
     float snare = clamp( audioSnare, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
-    int   nD = 3 + int( clamp( drummersP, 0.0, 1.0 ) * 2.99 );
+    int   n_d = 3 + int( clamp( drummersP, 0.0, 1.0 ) * 2.99 );
 
     // Backdrop: deep red cloth with a warm glow behind the drums.
     vec3 back = mix( vec3( 0.55, 0.05, 0.04 ), imgPalette( 0.02 + hueP * 0.159 ) * 0.8, 0.2 );
@@ -152,11 +152,11 @@ void main()
     float figs = 1e9;
     for ( int k = 0; k < 5; ++k )
     {
-        if ( k >= nD )
+        if ( k >= n_d )
             break;
         float fk = float( k );
-        float x = ( fk - float( nD - 1 ) * 0.5 ) * ( aspect * 0.8 / float( nD ) );
-        float s = ( k == nD / 2 ) ? 0.4 : 0.33;
+        float x = ( fk - float( n_d - 1 ) * 0.5 ) * ( aspect * 0.8 / float( n_d ) );
+        float s = ( k == n_d / 2 ) ? 0.4 : 0.33;
         figs = min( figs, drummer( p - vec2( x, stage ), s, hash11( fk * 3.7 ) ) );
     }
     float fig = smoothstep( 0.003, -0.003, figs );
@@ -169,11 +169,11 @@ void main()
     // drums to the sides.  Skins face us, lit on the kick.
     for ( int k = 0; k < 5; ++k )
     {
-        if ( k >= nD )
+        if ( k >= n_d )
             break;
         float fk = float( k );
-        float x = ( fk - float( nD - 1 ) * 0.5 ) * ( aspect * 0.8 / float( nD ) );
-        bool  big = ( k == nD / 2 );
+        float x = ( fk - float( n_d - 1 ) * 0.5 ) * ( aspect * 0.8 / float( n_d ) );
+        bool  big = ( k == n_d / 2 );
         float r = big ? 0.15 : 0.085;
         vec2  dc = vec2( x, stage + ( big ? 0.16 : 0.1 ) );
         vec2  dq = ( p - dc ) / r;
@@ -188,10 +188,10 @@ void main()
             float skin = smoothstep( 0.02, -0.02, body + 0.12 );
             vec3  sc = vec3( 0.85, 0.75, 0.55 ) * ( 0.08 + 1.2 * kick * ( big ? 1.0 : 0.7 ) )
                        * ( 0.7 + 0.3 * ( 1.0 - length( dq ) ) );
-            vec3  rimC = vec3( 0.25, 0.1, 0.05 ); // the wooden shell edge / tacks
+            vec3  rim_c = vec3( 0.25, 0.1, 0.05 ); // the wooden shell edge / tacks
             float tacks = step( 0.8, fract( atan( dq.y, dq.x ) / 6.2831853 * 32.0 ) )
                           * smoothstep( 0.02, 0.0, abs( body + 0.06 ) );
-            vec3  dcol = mix( rimC * 0.4, sc, skin ) + vec3( 0.8, 0.7, 0.4 ) * tacks * 0.3;
+            vec3  dcol = mix( rim_c * 0.4, sc, skin ) + vec3( 0.8, 0.7, 0.4 ) * tacks * 0.3;
             col = mix( col, dcol, smoothstep( 0.02, -0.01, body ) );
         }
     }
@@ -214,7 +214,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

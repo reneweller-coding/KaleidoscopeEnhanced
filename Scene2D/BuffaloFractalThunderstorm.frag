@@ -78,7 +78,7 @@ void main()
     //
     // (-0.43, -0.99) had to go. The previous pass picked it by counting how
     // many DISTINCT iteration values survive at depth, which is the wrong
-    // test: it counts noise as detail. Measured properly -- mean |d iterCount|
+    // test: it counts noise as detail. Measured properly -- mean |d iter_count|
     // between ADJACENT PIXELS -- that neighbourhood scores 4 to 8 iterations
     // per pixel at every zoom in the cycle, and refining the sampling 8x
     // barely moves it (7.74 -> 5.62). The escape-time field there is a chaotic
@@ -94,8 +94,8 @@ void main()
     // the boundary stay in frame at every zoom this shader reaches. A 4x
     // supersampled render now measures the same contrast as a 1x one, which
     // is the proof the picture is no longer aliasing noise.
-    vec2 cCenter = vec2( -0.300, -1.100 ); // measured boundary anchor: interior fraction 0.35-0.42 across the whole
-                                           // zoom cycle (old centre sat in empty space -> bare iso-line bands)
+    vec2 c_center = vec2( -0.300, -1.100 ); // measured boundary anchor: interior fraction 0.35-0.42 across the whole
+                                            // zoom cycle (old centre sat in empty space -> bare iso-line bands)
     // Zoom cycle: 2.2x out to ~540x and back, one full breath every ~85 s at
     // speedP 1.0. A raised cosine dives in and eases back out -- continuous in
     // value AND velocity (the derivative vanishes at both turns), so there is
@@ -103,41 +103,41 @@ void main()
     // Sub-bass swells the horn cavity by tightening the visible c-window. It
     // multiplies the zoom OUTSIDE the exp(), so the running zoom phase itself
     // is never rescaled.
-    float zc = 0.5 - 0.5 * cos( 6.2831853 * fract( t * 0.65 / 5.5 ) );              // 0..1..0
-    float zoomLevel = exp( zc * 3.2 ) * ( 2.2 * zm ) * ( 1.0 + 0.12 * audioSwell ); // was exp(zc*5.5) = 245x: past ~30x
-                                                                                    // the boundary reads as bare
-                                                                                    // streaks
-    vec2 c = cCenter + uv / zoomLevel;
+    float zc = 0.5 - 0.5 * cos( 6.2831853 * fract( t * 0.65 / 5.5 ) );               // 0..1..0
+    float zoom_level = exp( zc * 3.2 ) * ( 2.2 * zm ) * ( 1.0 + 0.12 * audioSwell ); // was exp(zc*5.5) = 245x: past
+                                                                                     // ~30x the boundary reads as bare
+                                                                                     // streaks
+    vec2 c = c_center + uv / zoom_level;
 
     vec2  z = c;
-    float iterCount = 0.0;
+    float iter_count = 0.0;
     float trap = 1e5;
     float stripe = 0.0; // stripe-average colouring: real texture INSIDE the set
-    float sCount = 0.0;
+    float s_count = 0.0;
 
     // Buffalo iteration loop: z = (|Re(z)| + i|Im(z)|)^2 - |Re(z)| + c
     for ( int i = 0; i < 46; i++ )
     {
-        vec2 zAbs = abs( z );
-        z = vec2( zAbs.x * zAbs.x - zAbs.y * zAbs.y - zAbs.x, 2.0 * zAbs.x * zAbs.y ) + c;
+        vec2 z_abs = abs( z );
+        z = vec2( z_abs.x * z_abs.x - z_abs.y * z_abs.y - z_abs.x, 2.0 * z_abs.x * z_abs.y ) + c;
 
         float r2 = dot( z, z );
         trap = min( trap, abs( z.y ) + abs( z.x * 0.5 ) );
         // +1e-20 only guards the undefined atan(0,0); it changes nothing else.
         stripe += 0.5 + 0.5 * sin( 4.0 * atan( z.y, z.x + 1e-20 ) );
-        sCount += 1.0;
+        s_count += 1.0;
 
         if ( r2 > 16.0 )
         {
-            iterCount = float( i ) - log2( max( 1.0, log2( r2 ) ) );
+            iter_count = float( i ) - log2( max( 1.0, log2( r2 ) ) );
             break;
         }
     }
 
-    if ( iterCount == 0.0 )
-        iterCount = 46.0;
-    stripe /= max( sCount, 1.0 );
-    float interior = step( 45.99, iterCount ); // 1 = inside the set (cloud body)
+    if ( iter_count == 0.0 )
+        iter_count = 46.0;
+    stripe /= max( s_count, 1.0 );
+    float interior = step( 45.99, iter_count ); // 1 = inside the set (cloud body)
 
     // ---- LIGHT AND DARK --------------------------------------------------
     // The old picture had none: the palette/photo base was written flat over
@@ -150,7 +150,7 @@ void main()
     // bright storm ridges with dark lanes between them -- and the inside of
     // the set is a dark cloud body carrying its own turbulence, so the two
     // halves of the frame read as light structure against dark structure.
-    float band = 0.5 + 0.5 * sin( iterCount * 3.0 + t * 0.9 );
+    float band = 0.5 + 0.5 * sin( iter_count * 3.0 + t * 0.9 );
     float ridge = band * band;
 
     // Storm-cell turbulence for the cloud body. The interior of the set is
@@ -175,21 +175,21 @@ void main()
     float shade = mix( 0.06 + 1.58 * ridge, cloud, interior );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( z * 0.2 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( z * 0.2 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Electric thunderstorm palette
-    vec3 palA = imgPalette( iterCount * 0.05 + stripe * 0.35 );
-    vec3 palB = imgPalette( iterCount * 0.05 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( iterCount * 0.7 + t ) );
+    vec3 pal_a = imgPalette( iter_count * 0.05 + stripe * 0.35 );
+    vec3 pal_b = imgPalette( iter_count * 0.05 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( iter_count * 0.7 + t ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
     col *= shade;
 
     // Horn-cavity glow. `trap` never approaches zero at this centre (measured
     // p5 0.32 / p95 1.47), so the original exp(-trap*30) fired essentially
     // nowhere. Rescaling it to exp(-trap*3.0) over-corrected in the other
-    // direction: at depth `trap` is NARROWLY distributed (edgeGlow p5/p50/p95
+    // direction: at depth `trap` is NARROWLY distributed (edge_glow p5/p50/p95
     // 0.070/0.122/0.142), so a shallow exponent turns the horn glow into an
     // almost frame-wide additive PEDESTAL -- 45% of all light in the frame at
     // only half the spatial spread of the lit term, which flattens the
@@ -197,26 +197,26 @@ void main()
     // `shade` term cannot compensate (measured: 2.5x shade bought +17%
     // contrast). Subtracting a floor before a steep exponent turns the wash
     // back into a rim and moves the light budget into tighter, brighter cores.
-    float edgeGlow = exp( -max( trap - 0.36, 0.0 ) * ( 16.0 + 2.0 * audioCentroid ) ) * glw;
-    vec3  hornTint = min( vec3( 1.2, 1.1, 1.8 ) * edgeGlow * ( 0.50 + 0.8 * audioKick ),
-                          vec3( 0.42, 0.39, 0.63 ) );
+    float edge_glow = exp( -max( trap - 0.36, 0.0 ) * ( 16.0 + 2.0 * audioCentroid ) ) * glw;
+    vec3  horn_tint = min( vec3( 1.2, 1.1, 1.8 ) * edge_glow * ( 0.50 + 0.8 * audioKick ),
+                           vec3( 0.42, 0.39, 0.63 ) );
 
     // Lightning rides the CRESTS of the escape-time bands -- thin arcs that
     // follow the boundary contours, outside the set only. The previous
-    // formulation keyed on abs(sin(iterCount*1.5 + t*4)) with no spatial
+    // formulation keyed on abs(sin(iter_count*1.5 + t*4)) with no spatial
     // localisation at all, so entire iso-bands lit up together. It carries ~5x
     // the spatial spread per unit of mean brightness of any other term here,
     // so it is the cheapest place to buy contrast: narrowed and brightened.
-    float lightningGlow = smoothstep( 0.976, 1.0, band ) * ( 1.0 - interior )
-                          * lgt * ( 1.05 + 4.80 * audioKick );
-    vec3  lightTint = min( vec3( 1.7, 1.6, 2.0 ) * lightningGlow, vec3( 1.02, 0.96, 1.20 ) );
+    float lightning_glow = smoothstep( 0.976, 1.0, band ) * ( 1.0 - interior )
+                           * lgt * ( 1.05 + 4.80 * audioKick );
+    vec3  light_tint = min( vec3( 1.7, 1.6, 2.0 ) * lightning_glow, vec3( 1.02, 0.96, 1.20 ) );
 
-    col += hornTint + lightTint;
+    col += horn_tint + light_tint;
 
     // No gamma lift, and the house 0.30 soft knee instead of the old 0.9:
     // a 0.9 knee compresses a 1.0 highlight down to 0.53, which flattens the
     // very light/dark separation this rewrite exists to create.
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

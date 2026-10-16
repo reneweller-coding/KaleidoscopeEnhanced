@@ -128,18 +128,18 @@ void main()
     float T = sceneTime + sceneAdvance * 0.5;
     g_hs = clamp( ( heightP > 0.05 ) ? heightP : 1.0, 0.8, 1.3 );
     g_det = clamp( ( detailP > 0.05 ) ? detailP : 1.0, 0.8, 1.2 );
-    float camH = clamp( ( camHP > 0.1 ) ? camHP : 7.0, 5.0, 9.0 );
+    float cam_h = clamp( ( camHP > 0.1 ) ? camHP : 7.0, 5.0, 9.0 );
 
-    vec3 ro = vec3( 2.0 * sin( T * 0.01 ), camH + 7.0, -6.0 );
+    vec3 ro = vec3( 2.0 * sin( T * 0.01 ), cam_h + 7.0, -6.0 );
     vec3 ta = vec3( 0.0, 7.5, 30.0 );
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.5 * ww );
 
-    vec3 moonDir = normalize( vec3( -0.42, 0.21, 1.0 ) ); // low, in view
-    vec3 moonL = normalize( vec3( -0.5, 0.45, 0.8 ) );    // its light, a little higher for modelling
-    vec3 moonC = mix( vec3( 0.75, 0.85, 1.0 ), imgPalette( 0.6 + hue * 0.159 ), 0.12 ) * ( 0.8 + 0.4 * swell );
+    vec3 moon_dir = normalize( vec3( -0.42, 0.21, 1.0 ) ); // low, in view
+    vec3 moon_l = normalize( vec3( -0.5, 0.45, 0.8 ) );    // its light, a little higher for modelling
+    vec3 moon_c = mix( vec3( 0.75, 0.85, 1.0 ), imgPalette( 0.6 + hue * 0.159 ), 0.12 ) * ( 0.8 + 0.4 * swell );
 
     // Night sky: deep blue, stars (round), the moon with a halo.
     vec3 col = mix( vec3( 0.03, 0.05, 0.1 ), vec3( 0.08, 0.12, 0.22 ), smoothstep( 0.4, -0.05, rd.y ) );
@@ -150,9 +150,9 @@ void main()
         col += vec3( 0.85, 0.9, 1.0 ) * smoothstep( 0.14, 0.0, length( sf ) ) * step( 0.992, st )
                * smoothstep( 0.0, 0.15, rd.y );
     }
-    float md = acos( clamp( dot( rd, moonDir ), -1.0, 1.0 ) );
-    col += moonC * smoothstep( 0.024, 0.021, md ) * 1.8;
-    col += moonC * exp( -md * 10.0 ) * 0.3;
+    float md = acos( clamp( dot( rd, moon_dir ), -1.0, 1.0 ) );
+    col += moon_c * smoothstep( 0.024, 0.021, md ) * 1.8;
+    col += moon_c * exp( -md * 10.0 ) * 0.3;
 
     // March the terrain.
     float t = 1.0, hit = 0.0;
@@ -175,49 +175,49 @@ void main()
 
     if ( hit > 0.5 )
     {
-        float hT = terrain( p.xz, 6 );
+        float h_t = terrain( p.xz, 6 );
         vec3  c;
-        if ( hT < lake )
+        if ( h_t < lake )
         {
             // The lake mirrors the sky and the moon.
             vec3  R = reflect( rd, vec3( 0.0, 1.0, 0.0 ) );
-            float rm = acos( clamp( dot( R, moonDir ), -1.0, 1.0 ) );
-            c = vec3( 0.02, 0.04, 0.08 ) + moonC * ( smoothstep( 0.03, 0.02, rm ) * 1.0 + exp( -rm * 8.0 ) * 0.25 );
-            c += moonC * 0.06 * ( 0.5 + 0.5 * sin( p.x * 3.0 + p.z * 1.7 + T ) );
+            float rm = acos( clamp( dot( R, moon_dir ), -1.0, 1.0 ) );
+            c = vec3( 0.02, 0.04, 0.08 ) + moon_c * ( smoothstep( 0.03, 0.02, rm ) * 1.0 + exp( -rm * 8.0 ) * 0.25 );
+            c += moon_c * 0.06 * ( 0.5 + 0.5 * sin( p.x * 3.0 + p.z * 1.7 + T ) );
         }
         else
         {
             vec2  e = vec2( 0.08 + 0.004 * t, 0.0 );
             vec3  n = normalize( vec3( terrain( p.xz - e.xy, 6 ) - terrain( p.xz + e.xy, 6 ), 2.0 * e.x,
                                        terrain( p.xz - e.yx, 6 ) - terrain( p.xz + e.yx, 6 ) ) );
-            float dif = max( dot( n, moonL ), 0.0 );
-            float sN = smoothstep( 2.2, 4.2, hT + 3.0 * ( n.y - 0.7 ) );
+            float dif = max( dot( n, moon_l ), 0.0 );
+            float s_n = smoothstep( 2.2, 4.2, h_t + 3.0 * ( n.y - 0.7 ) );
             vec3  rock = vec3( 0.12, 0.12, 0.14 );
             vec3  snow = vec3( 0.85, 0.9, 1.0 );
-            vec3  alb = mix( rock, snow, sN * smoothstep( 0.45, 0.7, n.y ) );
-            c = alb * ( moonC * dif * 2.0 + vec3( 0.08, 0.1, 0.17 ) );
+            vec3  alb = mix( rock, snow, s_n * smoothstep( 0.45, 0.7, n.y ) );
+            c = alb * ( moon_c * dif * 2.0 + vec3( 0.08, 0.1, 0.17 ) );
             // Snow glints.
             // Round glints on the snow (jittered points, not grid cells).
             vec2  gg = p.xz * 40.0, gi = floor( gg ), gf = fract( gg );
             vec2  gc = 0.25 + 0.5 * vec2( hash21( gi + 1.3 ), hash21( gi + 4.7 ) );
             float glint = smoothstep( 0.2, 0.0, length( gf - gc ) ) * step( 0.97, hash21( gi ) );
-            c += vec3( 1.0 ) * glint * sN * ( 0.2 + 0.8 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) * dif;
+            c += vec3( 1.0 ) * glint * s_n * ( 0.2 + 0.8 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) * dif;
             // Warm valley light (a village?) with the bass.
-            c += vec3( 1.0, 0.6, 0.3 ) * smoothstep( 3.5, 2.3, hT ) * 0.05 * clamp( audioBass, 0.0, 1.0 );
+            c += vec3( 1.0, 0.6, 0.3 ) * smoothstep( 3.5, 2.3, h_t ) * 0.05 * clamp( audioBass, 0.0, 1.0 );
             // The nearest ridge on the kick.
-            c += moonC * sN * exp( -t * 0.08 ) * clamp( audioKick, 0.0, 1.0 ) * 0.3;
+            c += moon_c * s_n * exp( -t * 0.08 ) * clamp( audioKick, 0.0, 1.0 ) * 0.3;
         }
         // Night haze and low mist.
         float fog = 1.0 - exp( -t * 0.018 );
         c = mix( c, vec3( 0.1, 0.14, 0.25 ), fog );
         float mist = smoothstep( 4.0, 2.3, p.y )
                      * smoothstep( 0.4, 0.8, noise2( p.xz * 0.15 + vec2( T * 0.02, 0.0 ) ) );
-        c = mix( c, moonC * 0.35, mist * 0.6 );
+        c = mix( c, moon_c * 0.35, mist * 0.6 );
         col = c;
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( pow( _catTone, vec3( 0.9 ) ), 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( pow( cat_tone, vec3( 0.9 ) ), 0.0, 1.0 ), 1.0 );
 }

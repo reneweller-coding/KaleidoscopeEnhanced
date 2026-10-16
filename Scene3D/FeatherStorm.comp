@@ -57,7 +57,7 @@ uniform float countP; ///< preset: how many feathers
 uniform float swirlP; ///< preset: strength of the vortex
 uniform float sizeP;  ///< preset: feather length
 
-const int FEATHERS = 1100;
+const int Feathers = 1100;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( float n )
@@ -90,7 +90,7 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
 
-    int n = int( clamp( countP, 0.15, 1.0 ) * float( FEATHERS ) );
+    int n = int( clamp( countP, 0.15, 1.0 ) * float( Feathers ) );
     if ( id >= uint( n ) )
         return;
 

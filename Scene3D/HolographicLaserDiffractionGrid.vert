@@ -84,40 +84,40 @@ void main()
     float t = time * 0.4 * spd + audioAdvance * 0.15;
 
     // 3D cylindrical holographic array
-    float ringIdx = floor( qi / 300.0 ); // 10 rings
-    float slotIdx = mod( qi, 300.0 );
+    float ring_idx = floor( qi / 300.0 ); // 10 rings
+    float slot_idx = mod( qi, 300.0 );
 
-    float angle = ( slotIdx / 300.0 ) * 6.2831853 + time * 0.2 * ( ( mod( ringIdx, 2.0 ) > 0.5 ) ? 1.0 : -1.0 );
-    float radius = ( 4.0 + ringIdx * 1.5 ) * grt + audioSwell * 1.8;
-    float y = ( ringIdx - 5.0 ) * 1.6 * dpt + sin( angle * 4.0 + t ) * 0.6;
+    float angle = ( slot_idx / 300.0 ) * 6.2831853 + time * 0.2 * ( ( mod( ring_idx, 2.0 ) > 0.5 ) ? 1.0 : -1.0 );
+    float radius = ( 4.0 + ring_idx * 1.5 ) * grt + audioSwell * 1.8;
+    float y = ( ring_idx - 5.0 ) * 1.6 * dpt + sin( angle * 4.0 + t ) * 0.6;
 
-    vec3 centerPos = vec3( cos( angle ) * radius, y, sin( angle ) * radius );
+    vec3 center_pos = vec3( cos( angle ) * radius, y, sin( angle ) * radius );
 
     // Kick laser burst expansion
-    centerPos += normalize( centerPos ) * audioSwell * 0.9;
+    center_pos += normalize( center_pos ) * audioSwell * 0.9;
 
     // Card orientation: tangent to ring
     float yaw = angle + 1.5708;
-    mat3  rotY = mat3( cos( yaw ), 0.0, sin( yaw ), 0.0, 1.0, 0.0, -sin( yaw ), 0.0, cos( yaw ) );
+    mat3  rot_y = mat3( cos( yaw ), 0.0, sin( yaw ), 0.0, 1.0, 0.0, -sin( yaw ), 0.0, cos( yaw ) );
 
-    vec3 cardSize = vec3( 0.65, 0.65, 0.0 );
-    vec3 localPos = rotY * vec3( corner.x * cardSize.x, corner.y * cardSize.y, 0.0 );
-    vec3 worldP = centerPos + localPos;
+    vec3 card_size = vec3( 0.65, 0.65, 0.0 );
+    vec3 local_pos = rot_y * vec3( corner.x * card_size.x, corner.y * card_size.y, 0.0 );
+    vec3 world_p = center_pos + local_pos;
 
     // Camera space
-    vec3 camPos = vec3( 0.0, 3.0, -18.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 3.0, -18.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vUV = attrA.xy;
-    vNormal = rotY * vec3( 0.0, 0.0, 1.0 );
-    vWorldPos = worldP;
+    vNormal = rot_y * vec3( 0.0, 0.0, 1.0 );
+    vWorldPos = world_p;
 
     // Holographic laser diffraction palette (laser red, neon emerald, optical violet)
-    vec3 col = imgPalette( ( angle * 2.0 + ringIdx * 0.5 + audioPhase ) * 0.159 );
+    vec3 col = imgPalette( ( angle * 2.0 + ring_idx * 0.5 + audioPhase ) * 0.159 );
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )

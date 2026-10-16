@@ -108,7 +108,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nStrokes = 5 + int( clamp( strokesP, 0.0, 1.0 ) * 5.0 );
+    int   n_strokes = 5 + int( clamp( strokesP, 0.0, 1.0 ) * 5.0 );
     float width = ( 0.02 + 0.02 * clamp( widthP, 0.0, 1.0 ) ) * ( 0.7 + 0.7 * clamp( audioBass, 0.0, 1.0 ) );
     float bleed = 0.005 + 0.03 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -123,14 +123,14 @@ void main()
     // window, stays, and the whole page fades and starts again every cycle
     // (the fade is a slow crossfade, not a cut).
     float cycle = fract( clock );
-    float pageFade = smoothstep( 0.92, 1.0, cycle ); // the page washes out at the end of the cycle
-    float pageIn = smoothstep( 0.0, 0.03, cycle );
+    float page_fade = smoothstep( 0.92, 1.0, cycle ); // the page washes out at the end of the cycle
+    float page_in = smoothstep( 0.0, 0.03, cycle );
     for ( int i = 0; i < 10; ++i )
     {
-        if ( i >= nStrokes )
+        if ( i >= n_strokes )
             break;
         float fi = float( i );
-        float start = fi / float( nStrokes ) * 0.85;
+        float start = fi / float( n_strokes ) * 0.85;
         float drawn = clamp( ( cycle - start ) / 0.12, 0.0, 1.0 );
         if ( drawn <= 0.0 )
             continue;
@@ -143,23 +143,23 @@ void main()
         float body = smoothstep( w + bleed, w - 0.002, d );
         // Dry-brush fibre: streaks along the stroke where the treble is high.
         float fibre = 1.0 - hi * 0.6 * step( 0.5, fract( d * 120.0 + along * 40.0 ) ) * smoothstep( w * 0.4, w, d );
-        float density = body * fibre * ( 1.0 - pageFade ) * pageIn;
+        float density = body * fibre * ( 1.0 - page_fade ) * page_in;
         // The wet edge: the freshly drawn end is darker and glossy.
         float fresh = smoothstep( drawn - 0.08, drawn, along ) * step( drawn, 0.999 );
         col = mix( col, ink, density * ( 0.85 + 0.15 * fresh ) );
         col += vec3( 0.3, 0.3, 0.35 ) * fresh * body * 0.3;
     }
     // Ink splash on the kick: round drops near the current brush position.
-    float curStroke = floor( cycle * float( nStrokes ) / 0.85 );
-    vec2  splashC = vec2( ( hash11( curStroke * 7.3 + floor( clock ) * 3.1 ) - 0.5 ) * 1.2,
-                          ( hash11( curStroke * 7.3 + floor( clock ) * 3.1 + 1.0 ) - 0.5 ) * 0.8 );
-    vec2  su = ( p - splashC ) * 40.0;
+    float cur_stroke = floor( cycle * float( n_strokes ) / 0.85 );
+    vec2  splash_c = vec2( ( hash11( cur_stroke * 7.3 + floor( clock ) * 3.1 ) - 0.5 ) * 1.2,
+                           ( hash11( cur_stroke * 7.3 + floor( clock ) * 3.1 + 1.0 ) - 0.5 ) * 0.8 );
+    vec2  su = ( p - splash_c ) * 40.0;
     vec2  sc = floor( su );
     vec2  sf = fract( su ) - 0.5;
     vec2  so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
     float drops = smoothstep( 0.25, 0.1, length( sf - so * 0.6 ) ) * step( 0.9, hash21( sc ) )
-                  * exp( -length( p - splashC ) * 6.0 );
-    col = mix( col, ink, drops * audioKick * ( 1.0 - pageFade ) );
+                  * exp( -length( p - splash_c ) * 6.0 );
+    col = mix( col, ink, drops * audioKick * ( 1.0 - page_fade ) );
     // The red seal stamp in the corner.
     vec2  seal = p - vec2( aspect * 0.4, -0.38 );
     float stamp = step( abs( seal.x ), 0.05 ) * step( abs( seal.y ), 0.05 )
@@ -171,7 +171,7 @@ void main()
     col = mix( col, vec3( 0.75, 0.15, 0.1 ), stamp * 0.85 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

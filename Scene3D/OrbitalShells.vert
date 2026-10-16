@@ -66,9 +66,9 @@ void main()
         vec3  ring = vec3( cos( ang ) * R, 0.0, sin( ang ) * R );
 
         // Ring plane tilt + slow precession per shell.
-        float tiltA = 0.5 + shell * 0.45;
+        float tilt_a = 0.5 + shell * 0.45;
         float prec = time * ( 0.06 + shell * 0.017 ) + r3 * 0.0;
-        ring.yz = mat2( cos( tiltA ), -sin( tiltA ), sin( tiltA ), cos( tiltA ) ) * ring.yz;
+        ring.yz = mat2( cos( tilt_a ), -sin( tilt_a ), sin( tilt_a ), cos( tilt_a ) ) * ring.yz;
         ring.xz = mat2( cos( prec ), -sin( prec ), sin( prec ), cos( prec ) ) * ring.xz;
 
         world = ring + ( vec3( r3, r4, r2 ) - 0.5 ) * 0.9;

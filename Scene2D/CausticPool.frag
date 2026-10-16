@@ -65,7 +65,7 @@ void main()
                     vec3( 0.33 ) );
     vec2  refr = vec2( cx, cy ) * ( 0.020 + 0.050 * warpP ) * ( 1.0 + 0.6 * audioSubBass );
 
-    vec3 floorCol = texture( tex0, uv + refr ).rgb;
+    vec3 floor_col = texture( tex0, uv + refr ).rgb;
 
     // Caustic glow, slightly blurred so the net has body.  A sharp, incisive
     // mix (cymbals, bright transients) pulls the blur in so the net reads as a
@@ -110,11 +110,11 @@ void main()
     // fat harmonic pad makes the unlit areas visibly denser.
     vec3  water = mix( vec3( 0.16, 0.44, 0.74 ), vec3( 0.40, 0.76, 0.70 ),
                        clamp( audioRolloff, 0.0, 1.0 ) );
-    float depthT = 1.0 - clamp( dot( light, vec3( 0.4 ) ), 0.0, 1.0 );
-    float depthMix = ( 0.36 + 0.22 * clamp( audioLowMid, 0.0, 1.0 ) ) * depthT;
+    float depth_t = 1.0 - clamp( dot( light, vec3( 0.4 ) ), 0.0, 1.0 );
+    float depth_mix = ( 0.36 + 0.22 * clamp( audioLowMid, 0.0, 1.0 ) ) * depth_t;
     // Vertical depth gradient: the far end of the pool lies deeper.
-    depthMix = clamp( depthMix + 0.18 * ( 1.0 - uv.y ), 0.0, 0.9 );
-    vec3 col = floorCol * mix( vec3( 1.0 ), water, depthMix );
+    depth_mix = clamp( depth_mix + 0.18 * ( 1.0 - uv.y ), 0.0, 0.9 );
+    vec3 col = floor_col * mix( vec3( 1.0 ), water, depth_mix );
 
     // Multiplicative caustics: light REVEALS the floor, it does not sit on it.
     col *= 1.0 + light * ( 1.6 + 1.2 * audioLevel );

@@ -50,7 +50,7 @@ void main()
     {
         // ---- DUST ------------------------------------------------------
         // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-        const float kTanY = 0.5206;
+        const float TanY = 0.5206;
         float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
         float hx = attrA.x, hy = attrA.y, hz = attrA.z, hs = attrA.w;
@@ -68,8 +68,8 @@ void main()
         // 2.0 would fit the frustum exactly; 2.3 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.3;
-        vec3  c = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 6.0 * cos( ph ),
-                        ( hy - 0.5 ) * open * dz * kTanY + 6.0 * sin( ph * 0.79 ),
+        vec3  c = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 6.0 * cos( ph ),
+                        ( hy - 0.5 ) * open * dz * TanY + 6.0 * sin( ph * 0.79 ),
                         dz );
         // Grows with depth so its ON-SCREEN size stays roughly constant; below
         // about 2.5 px a mote averages away and the far field reads black.

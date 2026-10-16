@@ -45,7 +45,7 @@ out float vGain;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
+    vec3 world_p = attrA.xyz;
     // Generator-side brightness class: the draw is opaque, so the faint
     // families (surface creep, corona) have to be dimmed here rather than by
     // drawing less of them.  Old bakes carried 0 in this slot -- treat that as
@@ -55,19 +55,19 @@ void main()
     // RETURN STROKE on the backbeat: a snare/clap flares the whole discharge
     // tree outward as its channel ionises.
     float sn = clamp( audioSnare, 0.0, 1.0 );
-    worldP.xz *= 1.0 + 0.30 * sn;
+    world_p.xz *= 1.0 + 0.30 * sn;
 
     // STEPPED-LEADER WANDER driven by the treble register's instant/slow
     // ratio (~1.0 = as loud as usual, so this self-normalises to any mix).
     // A SMOOTH spatial field, not a per-vertex hash -- a hash here would tear
     // the two-triangle bolt ribbons apart.
     float tp = clamp( audioTrebRel - 1.0, -1.0, 1.0 );
-    vec3  wob = vec3( sin( worldP.y * 5.3 + worldP.z * 3.1 ),
-                      sin( worldP.z * 4.7 + worldP.x * 5.9 ),
-                      sin( worldP.x * 4.1 + worldP.y * 6.3 ) );
-    worldP += wob * ( 0.22 * tp );
+    vec3  wob = vec3( sin( world_p.y * 5.3 + world_p.z * 3.1 ),
+                      sin( world_p.z * 4.7 + world_p.x * 5.9 ),
+                      sin( world_p.x * 4.1 + world_p.y * 6.3 ) );
+    world_p += wob * ( 0.22 * tp );
 
-    vPos = worldP;
+    vPos = world_p;
     // The stroke also drives the channel's ionisation heat.  Bounded, and the
     // .frag's tonemap still caps whatever comes out of it.
     vHeat = attrA.w * ( 1.0 + 0.55 * sn );
@@ -75,7 +75,7 @@ void main()
 
     // Stereoscopic 3D camera projection
     // ORBIT (user feedback): the camera circles the structure
-    vec3  vp = worldP;
+    vec3  vp = world_p;
     float oyaw = time * 0.15 + audioAdvance * 0.07;
     float ocy = cos( oyaw ), osy = sin( oyaw );
     vp.xz = mat2( ocy, -osy, osy, ocy ) * vp.xz;

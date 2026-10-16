@@ -22,8 +22,8 @@ out float vGlow;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vDepth = attrA.w;
     vGlow = attrB.w;
 
@@ -33,12 +33,12 @@ void main()
     // whole ring tangle sat below the bottom edge of the frame.  The generator
     // now gives every ring its own axis (a far better tumble than one global
     // tilt), so this stage is a straight translation and the tangle stays
-    // centred.  kCam MUST match the constant of the same name in
+    // centred.  Cam MUST match the constant of the same name in
     // SuperfluidVortexRingPinchOff.comp, which lays the rings out in frustum
     // coordinates against it.
-    const float kCam = 4.5;
-    vec3        vp = worldP;
-    vp.z += kCam;
+    const float Cam = 4.5;
+    vec3        vp = world_p;
+    vp.z += Cam;
     vp.x -= eyeOff;
 
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

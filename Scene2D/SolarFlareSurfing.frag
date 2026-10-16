@@ -186,8 +186,8 @@ void main()
             break;
     }
 
-    vec3 colorBase = imgPalette( 0.1 + audioCentroid * 0.2 ); // deep red/orange
-    vec3 colorHot = imgPalette( 0.8 + audioKick * 0.1 );      // bright yellow/white
+    vec3 color_base = imgPalette( 0.1 + audioCentroid * 0.2 ); // deep red/orange
+    vec3 color_hot = imgPalette( 0.8 + audioKick * 0.1 );      // bright yellow/white
 
     vec3 col = vec3( 0.0 );
 
@@ -199,20 +199,20 @@ void main()
         float heat = smoothstep( -2.0, 3.0, p.y ) + ( 1.0 - max( dot( n, vec3( 0.0, 1.0, 0.0 ) ), 0.0 ) );
         heat += fbm( p * 1.0 ) * 0.5;
 
-        col = mix( colorBase, colorHot, clamp( heat, 0.0, 1.0 ) );
+        col = mix( color_base, color_hot, clamp( heat, 0.0, 1.0 ) );
 
         // Brighten peaks and flares
         col *= 1.0 + max( p.y, 0.0 ) * 0.5;
 
         // Audio kick explosion on the surface
         float flash = step( 0.9, hash11( floor( p.x * 2.0 ) + floor( p.z * 2.0 ) + floor( time * 4.00 ) ) );
-        col += colorHot * flash * audioKick * 3.0;
+        col += color_hot * flash * audioKick * 3.0;
     }
 
     // Volumetric corona (glow above surface)
     float corona = 0.0;
     vec3  cp = ro;
-    float stepSize = 100.0 / 30.0;
+    float step_size = 100.0 / 30.0;
     for ( int i = 0; i < 30; i++ )
     {
         if ( cp.y > -2.0 )
@@ -220,20 +220,20 @@ void main()
             float dens = exp( -max( cp.y + 2.0, 0.0 ) * 0.3 ) * ( 0.5 + audioSwell * 0.5 );
             // Turbulent corona
             dens *= 0.5 + 0.5 * fbm( cp * 0.2 - vec3( time * 2.0 ) );
-            corona += dens * stepSize * 0.05;
+            corona += dens * step_size * 0.05;
         }
-        cp += rd * stepSize;
+        cp += rd * step_size;
     }
-    col += mix( colorBase, colorHot, 0.5 ) * corona;
+    col += mix( color_base, color_hot, 0.5 ) * corona;
 
     // Fade to dark space/deep corona far away
-    col = mix( col, colorBase * 0.1, exp( -d * 0.02 ) );
+    col = mix( col, color_base * 0.1, exp( -d * 0.02 ) );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

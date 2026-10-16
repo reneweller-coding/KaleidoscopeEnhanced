@@ -26,8 +26,8 @@ void main()
     float glow = pow( edge, 1.8 ) * 1.5;
 
     // Glowing dashed lane divider in center
-    float centerLine = smoothstep( 0.12, 0.0, abs( vSide ) ) * step( 0.35, fract( vLength * 120.0 ) );
-    glow += centerLine * 2.0;
+    float center_line = smoothstep( 0.12, 0.0, abs( vSide ) ) * step( 0.35, fract( vLength * 120.0 ) );
+    glow += center_line * 2.0;
 
     vec3 col = vCol.rgb * glow;
     fragColor = vec4( col, 1.0 );

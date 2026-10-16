@@ -52,9 +52,9 @@ out float vBg;       ///< Background flag (from the vertex stage).
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
 
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         float g = ( gainP > 0.01 ? gainP : 1.0 );
@@ -110,11 +110,11 @@ void main()
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        float       rotY = time * 0.14 * spinP;
-        float       cy = cos( rotY ), sy = sin( rotY );
+        float       rot_y = time * 0.14 * spinP;
+        float       cy = cos( rot_y ), sy = sin( rot_y );
         mat3        spin = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        const float tiltX = 0.18;
-        float       cx = cos( tiltX ), sx = sin( tiltX );
+        const float tilt_x = 0.18;
+        float       cx = cos( tilt_x ), sx = sin( tilt_x );
         mat3        tilt = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
         mat3        rot = tilt * spin;
 
@@ -140,6 +140,6 @@ void main()
 
     vec3 vp = vec3( world.x - eyeOff, world.y, world.z );
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 }

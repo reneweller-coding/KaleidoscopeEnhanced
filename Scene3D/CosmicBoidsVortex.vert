@@ -85,13 +85,13 @@ void main()
 
     // Streaming down the tube. Each particle wraps individually at the far end,
     // where its own alpha has already faded to zero, so no frame-wide jump.
-    const float Z_LEN = 74.0;
-    float       zDrift = fract( r4 + time * 0.045 + audioAdvance * 0.05 ) * Z_LEN + 0.7;
+    const float ZLen = 74.0;
+    float       z_drift = fract( r4 + time * 0.045 + audioAdvance * 0.05 ) * ZLen + 0.7;
 
     vec3 world = vec3(
         cos( angle ) * radius,
         sin( angle ) * radius + ( r3 - 0.5 ) * 3.0,
-        zDrift );
+        z_drift );
 
     vec3 vp = world;
     vp.x -= eyeOff;
@@ -111,15 +111,15 @@ void main()
 
     // Dynamic particle color spectrum. Depth tint keeps near sparks hot and the
     // far end of the tube cool, so the swarm has real range instead of one tone.
-    vec3 baseCol = imgPalette( 0.30 * r2 ) * 1.4;
-    baseCol = hueRot( baseCol, audioChromaHue + r3 * 1.5 );
+    vec3 base_col = imgPalette( 0.30 * r2 ) * 1.4;
+    base_col = hueRot( base_col, audioChromaHue + r3 * 1.5 );
     float near = exp( -vp.z * 0.055 );
-    baseCol *= 0.40 + 1.25 * near;
+    base_col *= 0.40 + 1.25 * near;
 
     // Fade in at the mouth and out at the far end: the far fade is what hides the
-    // per-particle wrap of zDrift.
+    // per-particle wrap of z_drift.
     float alpha = smoothstep( 0.0, 5.0, vp.z )
-                  * clamp( 1.0 - vp.z / Z_LEN, 0.0, 1.0 )
+                  * clamp( 1.0 - vp.z / ZLen, 0.0, 1.0 )
                   * ( 0.6 + 0.4 * audioLevel );
-    vCol = vec4( baseCol * ( 2.0 + audioKick * 1.6 ), alpha );
+    vCol = vec4( base_col * ( 2.0 + audioKick * 1.6 ), alpha );
 }

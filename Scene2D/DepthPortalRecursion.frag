@@ -139,12 +139,12 @@ void main()
     // part of what the next frame will show inside the portal, the flash
     // travels inward -- one level per frame -- without any extra code.
     float rim = exp( -abs( d ) * 45.0 );
-    vec3  rimCol = imgPalette( hue * 0.159 + 0.6 ) * ( 0.9 + 2.2 * audioBeat );
+    vec3  rim_col = imgPalette( hue * 0.159 + 0.6 ) * ( 0.9 + 2.2 * audioBeat );
 
     vec3 col = mix( fresh, prev, inside );
-    col += rimCol * rim * 0.9;
+    col += rim_col * rim * 0.9;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

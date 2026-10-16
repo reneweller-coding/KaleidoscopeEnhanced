@@ -104,8 +104,8 @@ void main()
 
     // Mode clock: advances with the music, cross-fades over the last 25 %.
     float clockv = audioAdvance * 0.22 + sceneSeed * 8.0;
-    vec2  nmA = modePair( floor( clockv ) );
-    vec2  nmB = modePair( floor( clockv ) + 1.0 );
+    vec2  nm_a = modePair( floor( clockv ) );
+    vec2  nm_b = modePair( floor( clockv ) + 1.0 );
     float w = smoothstep( 0.75, 1.0, fract( clockv ) );
 
     // Grain home + kick scatter (decays with the kick envelope itself).
@@ -123,9 +123,9 @@ void main()
     {
         if ( float( i ) >= steps )
             break;
-        float FA = chladni( p, nmA ), FB = chladni( p, nmB );
+        float FA = chladni( p, nm_a ), FB = chladni( p, nm_b );
         float F = mix( FA, FB, w );
-        vec2  G = mix( chladniGrad( p, nmA ), chladniGrad( p, nmB ), w );
+        vec2  G = mix( chladniGrad( p, nm_a ), chladniGrad( p, nm_b ), w );
         float g2 = dot( G, G ) + 1e-4;
         // Newton-ish step toward F = 0, capped so grains never overshoot.
         vec2 stepv = G * ( F / g2 );
@@ -135,7 +135,7 @@ void main()
     p = clamp( p, 0.0, 1.0 );
 
     // Residual field at the grain -> vibration + brightness.
-    float Ff = mix( chladni( p, nmA ), chladni( p, nmB ), w );
+    float ff = mix( chladni( p, nm_a ), chladni( p, nm_b ), w );
 
     // Plate space: 26x26 units in xz, gently vibrating in y BETWEEN the
     // nodal lines. The flutter used to be sin(time*47) -- a FIXED 7.5 Hz that
@@ -148,7 +148,7 @@ void main()
     vec2  q = ( p - 0.5 ) * 26.0;
     float flutter = sin( audioBeatPhase * 6.2831853 * 2.0 ) * 0.75
                     + sin( time * 3.0 ) * 0.25;
-    float vib = Ff * flutter * ( 0.25 + 1.1 * audioLevel ) * 0.55;
+    float vib = ff * flutter * ( 0.25 + 1.1 * audioLevel ) * 0.55;
     vec3  world = vec3( q.x, vib + 0.15, q.y );
 
     // Slow orbit around the plate, camera looking down at a tilt.  The
@@ -165,10 +165,10 @@ void main()
     // Sand: warm off-white, brightest ON the nodal line (|F| small); the
     // scattered dust glows dimly too, so the whole plate reads as a surface
     // instead of thin lines floating in the void.
-    float onLine = exp( -abs( Ff ) * 6.0 );
+    float on_line = exp( -abs( ff ) * 6.0 );
     vec3  col = mix( hueRot( vec3( 0.16, 0.14, 0.19 ), audioChromaHue ),
                      vec3( 1.0, 0.94, 0.80 ),
-                     onLine );
+                     on_line );
     // The on-line/off-line RATIO used to be 0.50..1.30 on top of an already
     // 16:1 colour step.  Multiplied by the ~50:1 density ratio the descent
     // produces, the nodal line ran several hundred times over white and every
@@ -176,14 +176,14 @@ void main()
     // 0.75..1.05: the line is bright because it is DENSE, which is what makes
     // a real Chladni figure bright, and the surplus now lands on the dust
     // between the lines instead of in the bin.
-    col *= ( 0.75 + 0.30 * onLine ) * ( 0.75 + 0.5 * audioSwell + 0.9 * audioDrop );
+    col *= ( 0.75 + 0.30 * on_line ) * ( 0.75 + 0.5 * audioSwell + 0.9 * audioDrop );
 
     // Sprite footprint.  At the old 150/13 the plate grains came out 3-6 px
     // wide at 1080p -- below the ~6 px that survives the frame downscale, so
     // the figure averaged away toward black no matter how bright each grain
     // was.  240/20 puts a grain at 5-10 px, which the picture can actually
     // resolve.
-    float sizeBase = 240.0, sizeCap = 20.0, sizeMin = 2.0;
+    float size_base = 240.0, size_cap = 20.0, size_min = 2.0;
 
     // ---- AIRBORNE DUST ---------------------------------------------------
     // A square plate in a 16:9 frame can never reach the left and right edges:
@@ -199,7 +199,7 @@ void main()
     float lay = fract( r3 * 17.0 + r4 * 29.0 + 0.37 );
     if ( lay < 0.13 )
     {
-        const float kTanY = 0.5206;
+        const float TanY = 0.5206;
         float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
         // The grain's plate home is free to be reused as the mote's position:
         // this one is not on the plate any more.
@@ -213,8 +213,8 @@ void main()
         // 2.0 would fit the frustum exactly; 2.3 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.3;
-        vp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 1.1 * cos( ph ),
-                   ( hy - 0.5 ) * open * dz * kTanY + 1.1 * sin( ph * 0.83 ),
+        vp = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 1.1 * cos( ph ),
+                   ( hy - 0.5 ) * open * dz * TanY + 1.1 * sin( ph * 0.83 ),
                    dz );
         col = mix( hueRot( vec3( 0.16, 0.14, 0.19 ), audioChromaHue ),
                    vec3( 1.0, 0.94, 0.80 ), 0.40 )
@@ -224,9 +224,9 @@ void main()
               * clamp( 1.0 - dz / 120.0, 0.0, 1.0 );
         // A mote has to stay a legible speck: below ~3 px an additive sprite
         // averages away to nothing and the far field reads as black again.
-        sizeBase = 130.0;
-        sizeCap = 13.0;
-        sizeMin = 3.0;
+        size_base = 130.0;
+        size_cap = 13.0;
+        size_min = 3.0;
     }
 
     vp.x -= eyeOff;
@@ -237,8 +237,8 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.5 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.5 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
     // 3.0 -> 2.2: with the wider sprite each grain now covers ~4x the pixels,
     // so the same 3.0 would only have widened the saturated core instead of

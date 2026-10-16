@@ -99,7 +99,7 @@ float voronoi( vec3 p )
 {
     vec3  i = floor( p );
     vec3  f = fract( p );
-    float minDist = 1.0;
+    float min_dist = 1.0;
     for ( int z = -1; z <= 1; z++ )
     {
         for ( int y = -1; y <= 1; y++ )
@@ -113,12 +113,12 @@ float voronoi( vec3 p )
                     hash11( dot( i + neighbor, vec3( 113.0, 1.0, 57.0 ) ) ) );
                 vec3  diff = neighbor + point - f;
                 float dist = length( diff );
-                if ( dist < minDist )
-                    minDist = dist;
+                if ( dist < min_dist )
+                    min_dist = dist;
             }
         }
     }
-    return minDist;
+    return min_dist;
 }
 
 float hitGlow = 0.0;
@@ -211,32 +211,32 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 fleshColor = mix( vec3( 0.3, 0.05, 0.05 ), vec3( 0.4, 0.1, 0.1 ), fbm( p * 5.0 ) ); // Dark red meat
-    vec3 veinColor = imgPalette( 0.6 + audioCentroid * 0.2 );                                // Bioluminescent fluids
+    vec3 flesh_color = mix( vec3( 0.3, 0.05, 0.05 ), vec3( 0.4, 0.1, 0.1 ), fbm( p * 5.0 ) ); // Dark red meat
+    vec3 vein_color = imgPalette( 0.6 + audioCentroid * 0.2 );                                // Bioluminescent fluids
 
     if ( d < 50.0 )
     {
         vec3 n = calcNormal( p, fp );
 
         // Spot light from "headlamp" / biological luminescence ahead
-        vec3  lightDir = normalize( vec3( 0.0, 0.0, p.z + 5.0 ) - p );
-        float dif = max( dot( n, lightDir ), 0.0 );
+        vec3  light_dir = normalize( vec3( 0.0, 0.0, p.z + 5.0 ) - p );
+        float dif = max( dot( n, light_dir ), 0.0 );
 
         // SSS (Subsurface scattering fake)
         float sss = exp( -length( p - ro ) * 0.1 ) * ( 0.5 + 0.5 * dot( n, -rd ) );
 
-        col = fleshColor * ( 0.1 + dif * ( 0.5 + audioSwell * 0.5 ) );
+        col = flesh_color * ( 0.1 + dif * ( 0.5 + audioSwell * 0.5 ) );
         col += vec3( 0.6, 0.2, 0.2 ) * sss * ( 1.0 + audioSwell );
 
         // Wet specularity (slime)
-        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 32.0 );
+        float spec = pow( max( dot( reflect( -light_dir, n ), -rd ), 0.0 ), 32.0 );
         col += vec3( 0.5, 0.6, 0.6 ) * spec * ( 0.5 + fbm( p * 10.0 ) );
 
         // Glowing veins
         if ( g > 0.0 )
         {
             float pulse = sin( p.z * 5.0 - time * 10.0 ) * 0.5 + 0.5;
-            col += veinColor * g * pulse * vp * ( 1.0 + audioKick * 3.0 );
+            col += vein_color * g * pulse * vp * ( 1.0 + audioKick * 3.0 );
         }
 
         col *= clamp( 1.0 - float( steps ) * 0.015, 0.1, 1.0 );
@@ -253,7 +253,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

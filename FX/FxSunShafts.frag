@@ -53,7 +53,7 @@ uniform float shaftP;  ///< preset: shaft strength
 uniform float lengthP; ///< preset: how far the march reaches
 uniform float dustP;   ///< preset: haze density
 
-const int STEPS = 28;
+const int Steps = 28;
 
 /// @brief Depth buffer value to linear distance.
 float linearise( float d )
@@ -83,7 +83,7 @@ float shafts( sampler2D dep, vec2 uv, vec2 lightUV, float valid )
     if ( valid < 0.5 )
         return 0.0;
 
-    vec2 delta = ( lightUV - uv ) * ( lengthP * 0.85 ) / float( STEPS );
+    vec2 delta = ( lightUV - uv ) * ( lengthP * 0.85 ) / float( Steps );
 
     // Per-pixel dither on the start offset.  Without it every pixel samples the
     // same 28 depths and the shafts show as concentric rings.
@@ -93,7 +93,7 @@ float shafts( sampler2D dep, vec2 uv, vec2 lightUV, float valid )
     float acc = 0.0;
     float decay = 1.0;
 
-    for ( int i = 0; i < STEPS; ++i )
+    for ( int i = 0; i < Steps; ++i )
     {
         p += delta;
         vec2 sp = clamp( p, vec2( 0.002 ), vec2( 0.998 ) );
@@ -106,7 +106,7 @@ float shafts( sampler2D dep, vec2 uv, vec2 lightUV, float valid )
         acc += open * decay;
         decay *= 0.955 - 0.10 * dustP;
     }
-    return acc / float( STEPS );
+    return acc / float( Steps );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).

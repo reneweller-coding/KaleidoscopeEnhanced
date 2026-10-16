@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -248,8 +248,8 @@ void main()
     // Streets: bands along the cell borders, width varying per street.
     float wx = 0.07 + 0.04 * rough * ( hash11( gi.x * 1.3 ) - 0.5 ) * 2.0;
     float wy = 0.07 + 0.04 * rough * ( hash11( gi.y * 2.7 + 5.0 ) - 0.5 ) * 2.0;
-    float onV = step( f.x, wx ); // vertical street at the left edge
-    float onH = step( f.y, wy ); // horizontal street at the bottom edge
+    float on_v = step( f.x, wx ); // vertical street at the left edge
+    float on_h = step( f.y, wy ); // horizontal street at the bottom edge
     vec3  ground = mix( vec3( 0.5, 0.5, 0.52 ), vec3( 0.95, 0.94, 0.9 ), mode );
     vec3  col = ground;
     // Blocks in the squares.
@@ -275,12 +275,12 @@ void main()
     // Streets: yellow with traffic blocks.
     float T = 0.4 * sceneTime + 2.5 * audioAdvance;
     float dens = 0.3 + 0.5 * clamp( audioSpread, 0.0, 1.0 );
-    if ( onV > 0.5 || onH > 0.5 )
+    if ( on_v > 0.5 || on_h > 0.5 )
     {
         col = vec3( 0.95, 0.82, 0.12 );
         // Traffic along the street: small squares, moving.
-        float along = onV > 0.5 ? g.y : g.x;
-        float lane = onV > 0.5 ? gi.x : gi.y + 100.0;
+        float along = on_v > 0.5 ? g.y : g.x;
+        float lane = on_v > 0.5 ? gi.x : gi.y + 100.0;
         float dir = mod( lane, 2.0 ) < 0.5 ? 1.0 : -1.0;
         float x = along * 12.0 + dir * T * ( 0.6 + 0.6 * hash11( lane ) );
         float ci = floor( x );

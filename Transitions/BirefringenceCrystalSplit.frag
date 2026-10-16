@@ -63,21 +63,21 @@ void main()
 
     float t = time * 0.1771 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Optic axis orientation
-    float theta = tProg * 1.5707963 * ang + t * 0.3;
-    vec2  opticAxis = vec2( cos( theta ), sin( theta ) );
+    float theta = t_prog * 1.5707963 * ang + t * 0.3;
+    vec2  optic_axis = vec2( cos( theta ), sin( theta ) );
 
     // Ordinary ray (undeviated) vs Extraordinary ray (walk-off angle)
-    float walkOff = midTransition * 0.06 * brf * ( 1.0 + audioSwell * 0.8 );
+    float walk_off = mid_transition * 0.06 * brf * ( 1.0 + audioSwell * 0.8 );
     vec2  uv_o = uv;
-    vec2  uv_e = uv + opticAxis * walkOff;
+    vec2  uv_e = uv + optic_axis * walk_off;
 
     // Cross-polarizer interference color: I ~ sin^2(2*theta) * sin^2(pi*Delta_n*d / lambda)
-    float phaseDiff = dot( p, opticAxis ) * 20.0 * brf + t * 3.0;
-    vec3  isochromatic = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + phaseDiff + audioPhase );
+    float phase_diff = dot( p, optic_axis ) * 20.0 * brf + t * 3.0;
+    vec3  isochromatic = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + phase_diff + audioPhase );
 
     vec4 c1_o = texture( tex1, fract( uv_o ) );
     vec4 c1_e = texture( tex1, fract( uv_e ) );
@@ -88,19 +88,19 @@ void main()
     vec4 c1 = ( c1_o + c1_e ) * 0.5;
     vec4 c0 = ( c0_o + c0_e ) * 0.5;
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Polarization interference fringe highlights.  Square before pow:
     // pow() with a negative base is undefined in GLSL (NaN -> black frame),
     // and the old 1.4+kick*3 gain overexposed the fringes.
-    float sPhase = sin( phaseDiff );
-    float fringeIntensity = pow( sPhase * sPhase, 4.0 ) * midTransition;
-    col.rgb += fringeIntensity * isochromatic * ( 0.3 + audioKick * 0.3 );
+    float s_phase = sin( phase_diff );
+    float fringe_intensity = pow( s_phase * s_phase, 4.0 ) * mid_transition;
+    col.rgb += fringe_intensity * isochromatic * ( 0.3 + audioKick * 0.3 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

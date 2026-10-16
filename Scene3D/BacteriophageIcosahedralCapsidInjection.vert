@@ -87,11 +87,11 @@ mat2 rot2( float a )
 void main()
 {
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
     // 2.0 would fit the frustum exactly; 2.3 so the swarm still reaches past
     // all four edges when the preset camera rig rolls and yaws the view.
-    const float kOpen = 2.3;
+    const float Open = 2.3;
 
     // Base rate raised from 0.35. Everything here is geared far DOWN off this
     // clock, and the slowest thing of all -- the cytoplasm curtain -- is the one
@@ -101,16 +101,16 @@ void main()
     float t = time * 0.55 + audioAdvance * 0.3;
 
     // Viral protein / nucleic-acid fluorescence base colour.
-    vec3 proteinTeal = vec3( 0.42, 0.86, 0.74 );
+    vec3 protein_teal = vec3( 0.42, 0.86, 0.74 );
 
     vec3 vp;
 
     // 15 of the 120 grid rows go to the host-cytoplasm curtain; the split has
     // to land on a whole cell row or the boundary triangles would stretch
     // between the two layers.
-    const float kBackV = 0.125;
+    const float BackV = 0.125;
 
-    if ( attrA.y < kBackV )
+    if ( attrA.y < BackV )
     {
         // ---- HOST CYTOPLASM ------------------------------------------
         // A full-frustum sheet of granular cell interior far behind the
@@ -118,11 +118,11 @@ void main()
         // gives the receding phages something to fade into.
         vBack = 1.0;
         float gu = attrA.x;
-        float gv = attrA.y / kBackV;
+        float gv = attrA.y / BackV;
 
         float dz = 112.0;
-        vp = vec3( ( gu - 0.5 ) * kOpen * dz * kTanY * aspect,
-                   ( gv - 0.5 ) * kOpen * dz * kTanY,
+        vp = vec3( ( gu - 0.5 ) * Open * dz * TanY * aspect,
+                   ( gv - 0.5 ) * Open * dz * TanY,
                    dz );
 
         vUV = vec2( gu, gv );
@@ -150,7 +150,7 @@ void main()
     {
         // ---- THE PHAGE SWARM -----------------------------------------
         vBack = 0.0;
-        float sv = ( attrA.y - kBackV ) / ( 1.0 - kBackV );
+        float sv = ( attrA.y - BackV ) / ( 1.0 - BackV );
 
         const float NS = 11.0; // phages across the u axis (220 / 11 = 20 cells each)
         const float MS = 5.0;  // depth rows down the v axis (105 / 5 = 21 cells each)
@@ -172,62 +172,62 @@ void main()
         float u = uv.x * 3.14159265 + spin;
         float v = uv.y * 3.14159265;
 
-        float isHead = smoothstep( -0.2, 0.2, uv.y );
-        float headR = ( 0.7 + 0.15 * cos( u * 5.0 ) * sin( v * 5.0 ) ) * isHead;
+        float is_head = smoothstep( -0.2, 0.2, uv.y );
+        float head_r = ( 0.7 + 0.15 * cos( u * 5.0 ) * sin( v * 5.0 ) ) * is_head;
         float contract = ( tailContractP > 0.01 ? tailContractP : 1.0 ) * ( 1.0 + 0.3 * audioKick );
-        float tailR = ( 0.2 + 0.04 * sin( uv.y * 24.0 * contract ) ) * ( 1.0 - isHead );
-        float r = headR + tailR;
-        float zH = uv.y * 1.8;
-        vec3  body = vec3( r * cos( u ), r * sin( u ), zH );
+        float tail_r = ( 0.2 + 0.04 * sin( uv.y * 24.0 * contract ) ) * ( 1.0 - is_head );
+        float r = head_r + tail_r;
+        float z_h = uv.y * 1.8;
+        vec3  body = vec3( r * cos( u ), r * sin( u ), z_h );
 
         // Stand the body up (capsid up, baseplate down) and let each phage
         // hang at its own tilt, drifting as it hunts for the host.
         vec3  p = vec3( body.x, body.z, body.y );
-        float aZ = ( h1 - 0.5 ) * 1.5 + 0.28 * sin( t * 0.30 + h2 * 6.2831853 );
-        float aX = ( h2 - 0.5 ) * 0.9 + 0.22 * sin( t * 0.23 + h3 * 6.2831853 );
-        p.xy = rot2( aZ ) * p.xy;
-        p.yz = rot2( aX ) * p.yz;
+        float a_z = ( h1 - 0.5 ) * 1.5 + 0.28 * sin( t * 0.30 + h2 * 6.2831853 );
+        float a_x = ( h2 - 0.5 ) * 0.9 + 0.22 * sin( t * 0.23 + h3 * 6.2831853 );
+        p.xy = rot2( a_z ) * p.xy;
+        p.yz = rot2( a_x ) * p.yz;
 
         // Depth ladder + frustum placement.
-        float rowF = ( ri + 0.5 ) / MS;
-        float dz = 12.0 + 61.0 * pow( rowF, 1.6 ) + 2.0 * ( h3 - 0.5 ); // was 7.0 +-2: the front row drifted right into
-                                                                        // the lens
-        float halfH = dz * kTanY;
-        float halfW = halfH * aspect;
+        float row_f = ( ri + 0.5 ) / MS;
+        float dz = 12.0 + 61.0 * pow( row_f, 1.6 ) + 2.0 * ( h3 - 0.5 ); // was 7.0 +-2: the front row drifted right
+                                                                         // into the lens
+        float half_h = dz * TanY;
+        float half_w = half_h * aspect;
 
-        float colF = fract( ( ci + 0.5 ) / NS + 0.5 / NS * mod( ri, 2.0 )
-                            + ( h1 - 0.5 ) * 0.7 / NS );
-        float rowY = ( h2 - 0.5 ) * 0.85 / MS + ( mod( ci, 2.0 ) - 0.5 ) * 0.35 / MS;
+        float col_f = fract( ( ci + 0.5 ) / NS + 0.5 / NS * mod( ri, 2.0 )
+                             + ( h1 - 0.5 ) * 0.7 / NS );
+        float row_y = ( h2 - 0.5 ) * 0.85 / MS + ( mod( ci, 2.0 ) - 0.5 ) * 0.35 / MS;
 
         // SWELL widens the capsid; the whole phage is sized against its own
         // depth so near and far ones stay comparably legible on screen.
         float scale = ( phageScaleP > 0.01 ? phageScaleP : 1.2 ) * ( 0.85 + 0.35 * audioSwell )
-                      * halfH * 0.135 * ( 0.75 + 0.5 * h4 );
+                      * half_h * 0.135 * ( 0.75 + 0.5 * h4 );
 
         // Slow drift, so no phage ever hangs perfectly still.
         vec2 bob = vec2( sin( t * 0.21 + h1 * 6.2831853 ),
                          cos( t * 0.17 + h4 * 6.2831853 ) )
-                   * ( halfH * 0.05 );
+                   * ( half_h * 0.05 );
 
-        vp = vec3( ( colF - 0.5 ) * kOpen * halfW + p.x * scale + bob.x,
-                   ( ( rowF - 0.5 ) * 1.0 + rowY ) * kOpen * halfH + p.y * scale + bob.y,
+        vp = vec3( ( col_f - 0.5 ) * Open * half_w + p.x * scale + bob.x,
+                   ( ( row_f - 0.5 ) * 1.0 + row_y ) * Open * half_h + p.y * scale + bob.y,
                    dz + p.z * scale );
 
         // DNA genome injection flash at the baseplate (bottom tip).
-        float atBase = smoothstep( -0.6, -0.95, uv.y );
-        vInjectGlow = atBase * ( 1.0 + 3.5 * audioKick ) * ( 0.6 + 0.8 * h4 );
+        float at_base = smoothstep( -0.6, -0.95, uv.y );
+        vInjectGlow = at_base * ( 1.0 + 3.5 * audioKick ) * ( 0.6 + 0.8 * h4 );
 
-        vec3 n = normalize( vec3( cos( u ), sin( u ), isHead * 0.5 ) );
+        vec3 n = normalize( vec3( cos( u ), sin( u ), is_head * 0.5 ) );
         vec3 nn = vec3( n.x, n.z, n.y );
-        nn.xy = rot2( aZ ) * nn.xy;
-        nn.yz = rot2( aX ) * nn.yz;
+        nn.xy = rot2( a_z ) * nn.xy;
+        nn.yz = rot2( a_x ) * nn.yz;
         vNormal = normalize( nn );
 
         vUV = fract( vec2( lu + h1, lv * 0.8 + h2 ) );
-        vCol = palTint( proteinTeal * ( 0.8 + 0.4 * h3 ),
+        vCol = palTint( protein_teal * ( 0.8 + 0.4 * h3 ),
                         fract( uv.y * 0.3 + u * 0.159 + h1 * 0.31 ), 0.45 );
         // Depth dimming: without it the far rows stack into one teal wall.
-        vCol *= 1.0 - 0.72 * rowF;
+        vCol *= 1.0 - 0.72 * row_f;
         vFog = clamp( ( dz - 11.0 ) / 80.0, 0.0, 1.0 );
     }
 
@@ -239,6 +239,6 @@ void main()
     // Degenerate the boundary row: triangles spanning from the cytoplasm
     // sheet (dz 112) to the nearest phage row stretched into a full-frame
     // teal wall -- THE cyan curtain every colour fix failed to remove.
-    if ( abs( attrA.y - kBackV ) < 0.009 )
+    if ( abs( attrA.y - BackV ) < 0.009 )
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 }

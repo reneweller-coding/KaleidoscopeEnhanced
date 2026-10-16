@@ -20,8 +20,8 @@ uniform float sceneSeed;    ///< A random number fixed per activation.
 uniform float time;         ///< Seconds since the program started (never reset; see sceneTime).
 
 // Field size.  z runs ahead of the camera (the engine projects with -z).
-const float FIELD_W = 26.0;
-const float FIELD_D = 55.0;
+const float FieldW = 26.0;
+const float FieldD = 55.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -32,18 +32,18 @@ void main()
     // Blades are pushed toward the camera by squaring the depth hash.  With a
     // uniform spread the foreground — where each blade covers many pixels —
     // would look bald while the distance wastes thousands of sub-pixel blades.
-    float z = 0.6 + FIELD_D * h.x * h.x;
+    float z = 0.6 + FieldD * h.x * h.x;
 
     // Slow forward drift; wrapping in the field keeps the density constant.
     // The wrap has to happen BEFORE x is derived from z: a blade that wraps
     // from the far edge to the near one would otherwise keep the wide spread
     // it was given at the back, and the foreground stays bald.
-    z = mod( z - time * 0.9 - audioAdvance * 0.35 - 0.6, FIELD_D ) + 0.6;
+    z = mod( z - time * 0.9 - audioAdvance * 0.35 - 0.6, FieldD ) + 0.6;
 
     // Spread the blades in a cone that follows the view frustum, capped so the
     // far rows do not scatter into an empty plain.
-    float halfW = min( 0.95 * z + 1.0, FIELD_W );
-    float x = ( h.y - 0.5 ) * 2.0 * halfW;
+    float half_w = min( 0.95 * z + 1.0, FieldW );
+    float x = ( h.y - 0.5 ) * 2.0 * half_w;
 
     gRoot = vec3( x, 0.0, z );
     gRnd = h;

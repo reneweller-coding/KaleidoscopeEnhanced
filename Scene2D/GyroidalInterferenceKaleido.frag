@@ -93,36 +93,36 @@ void main()
     // Evaluate Gyroid surface 1 and surface 2. Sub-bass swells the TPMS wall
     // thickness itself, so the fluid channels carved between the two sheets
     // visibly breathe wider on drones instead of just glowing harder.
-    float thkB = thk * ( 1.0 + 0.4 * audioSubBass );
-    float g1 = sdGyroid( vec3( p1, t * 0.5 ), thkB, t );
-    float g2 = sdGyroid( vec3( p2, -t * 0.5 ), thkB, -t );
+    float thk_b = thk * ( 1.0 + 0.4 * audioSubBass );
+    float g1 = sdGyroid( vec3( p1, t * 0.5 ), thk_b, t );
+    float g2 = sdGyroid( vec3( p2, -t * 0.5 ), thk_b, -t );
 
     // Moiré interference field between both gyroids
     float moire = g1 * g2;
-    float dMoire = abs( moire );
+    float d_moire = abs( moire );
 
     // Sample texture mapped across warped gyroid coordinates
-    vec2 sampleUV = fract( p1 * 0.1 + vec2( g1 * 0.1, g2 * 0.1 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p1 * 0.1 + vec2( g1 * 0.1, g2 * 0.1 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing interference nodal bands
-    float bandGlow = exp( -dMoire * ( 15.0 + 10.0 * audioCentroid ) ) * glw;
-    float nodeFlash = smoothstep( 0.04, 0.0, abs( g1 ) + abs( g2 ) ) * ( 1.0 + 3.0 * audioKick );
+    float band_glow = exp( -d_moire * ( 15.0 + 10.0 * audioCentroid ) ) * glw;
+    float node_flash = smoothstep( 0.04, 0.0, abs( g1 ) + abs( g2 ) ) * ( 1.0 + 3.0 * audioKick );
 
     // Color palette mixing across gyroid phase fields
-    vec3 palA = imgPalette( g1 * 0.3 + t * 0.05 );
-    vec3 palB = imgPalette( g2 * 0.3 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( g1 * 4.0 - g2 * 4.0 ) );
+    vec3 pal_a = imgPalette( g1 * 0.3 + t * 0.05 );
+    vec3 pal_b = imgPalette( g2 * 0.3 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( g1 * 4.0 - g2 * 4.0 ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing moiré bands and kick flashes
-    vec3 bandTint = vec3( 1.3, 1.1, 1.8 ) * bandGlow * ( 1.0 + 2.5 * audioKick );
-    col += bandTint + vec3( 1.5, 1.4, 1.9 ) * nodeFlash;
+    vec3 band_tint = vec3( 1.3, 1.1, 1.8 ) * band_glow * ( 1.0 + 2.5 * audioKick );
+    col += band_tint + vec3( 1.5, 1.4, 1.9 ) * node_flash;
 
     // Center lotus bloom
-    float centerBloom = exp( -length( uv ) * 4.0 ) * ( 0.6 + 1.2 * audioLevel );
-    col += imgPalette( 0.85 ) * centerBloom;
+    float center_bloom = exp( -length( uv ) * 4.0 ) * ( 0.6 + 1.2 * audioLevel );
+    col += imgPalette( 0.85 ) * center_bloom;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

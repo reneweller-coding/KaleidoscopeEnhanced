@@ -177,9 +177,9 @@ void main()
 
     // Environment mirror + Fresnel, which is what makes it read as wet.
     vec3 R = reflect( -V, n );
-    vec2 envUV = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
-                       clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
-    vec3 env = textureLod( tex0, fract( envUV ), 0.0 ).rgb;
+    vec2 env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
+                        clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
+    vec3 env = textureLod( tex0, fract( env_uv ), 0.0 ).rgb;
     env = mix( vec3( dot( env, vec3( 0.333 ) ) ), env, 0.7 );
     float fres = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 4.0 );
     col = mix( col, env * ( 0.55 + 0.8 * glossP ), fres * ( 0.35 + 0.45 * glossP ) );

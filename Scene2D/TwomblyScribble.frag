@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -306,9 +306,9 @@ void main()
     vec3  chalk = mix( vec3( 0.92, 0.92, 0.9 ), vec3( 0.12, 0.12, 0.14 ), mode );
     vec3  col = board;
     float T = 0.1 * sceneTime + 0.6 * audioAdvance;
-    float nR = 3.0 + 4.0 * clamp( rowP, 0.0, 1.0 );
+    float n_r = 3.0 + 4.0 * clamp( rowP, 0.0, 1.0 );
     // Rows: y bands; within each, a looping line (a trochoid) advancing along x.
-    float yb = p.y * nR * 0.5 + 0.5;
+    float yb = p.y * n_r * 0.5 + 0.5;
     float ri = floor( yb );
     float ink = 0.0;
     for ( int k = -1; k <= 1; ++k )
@@ -318,7 +318,7 @@ void main()
             float fm = float( m );
             float r = ri + float( k );
             float h = hash11( r * 1.7 + 3.0 + fm * 11.0 );
-            float yc = ( r + 0.5 - 0.5 ) / ( nR * 0.5 ) + 0.03 * sin( p.x * 2.0 + h * 6.0 ) + ( fm - 0.5 ) * 0.04;
+            float yc = ( r + 0.5 - 0.5 ) / ( n_r * 0.5 ) + 0.03 * sin( p.x * 2.0 + h * 6.0 ) + ( fm - 0.5 ) * 0.04;
             // Loop size wanders along the line (the hand's rhythm).
             float R0 = ( 0.06 + 0.05 * clamp( audioSpread, 0.0, 1.0 ) ) * ( 0.7 + 0.6 * h );
             float tight = 0.5 + 1.2 * clamp( loopP, 0.0, 1.0 );

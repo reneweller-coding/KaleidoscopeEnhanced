@@ -80,30 +80,30 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nStars = 18 + int( clamp( countP, 0.0, 1.0 ) * 14.0 );
+    int   n_stars = 18 + int( clamp( countP, 0.0, 1.0 ) * 14.0 );
     float depth = 0.25 + 0.45 * clamp( depthP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.25 + sceneTime * 0.05;
-    float skyTop = 0.5, skyBot = -0.2; // the sky above y = skyBot
+    float sky_top = 0.5, sky_bot = -0.2; // the sky above y = sky_bot
 
     // Nebulosity: the photo soft and dim behind the stars.
-    vec2 nuv = vec2( p.x / aspect + 0.5, ( p.y - skyBot ) / ( skyTop - skyBot ) );
+    vec2 nuv = vec2( p.x / aspect + 0.5, ( p.y - sky_bot ) / ( sky_top - sky_bot ) );
     vec3 col = ( interpolation * textureLod( tex0, nuv, 3.0 ) + ( 1.0 - interpolation ) * textureLod( tex1, nuv, 3.0 ) )
                    .rgb;
     col *= imgPalette( hue * 0.159 + 0.6 ) * ( 0.35 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
-    col *= step( skyBot, p.y );
+    col *= step( sky_bot, p.y );
     // Faint round background stars.
     vec2 su = p * 90.0;
     vec2 sc = floor( su );
     vec2 sf = fract( su ) - 0.5;
     vec2 so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
     col += vec3( 0.7 ) * smoothstep( 0.14, 0.03, length( sf - so * 0.6 ) ) * step( 0.985, hash21( sc ) )
-           * step( skyBot, p.y );
+           * step( sky_bot, p.y );
 
     // The three featured hosts: indices from the tonal centre (slow).
     float sel = audioChromaHue / 6.2831853;
-    int   host0 = int( mod( floor( sel * float( nStars ) ), float( nStars ) ) );
-    int   host1 = int( mod( float( host0 ) + 7.0, float( nStars ) ) );
-    int   host2 = int( mod( float( host0 ) + 13.0, float( nStars ) ) );
+    int   host0 = int( mod( floor( sel * float( n_stars ) ), float( n_stars ) ) );
+    int   host1 = int( mod( float( host0 ) + 7.0, float( n_stars ) ) );
+    int   host2 = int( mod( float( host0 ) + 13.0, float( n_stars ) ) );
     float curves[3];
     curves[0] = 1.0;
     curves[1] = 1.0;
@@ -111,11 +111,11 @@ void main()
 
     for ( int i = 0; i < 32; ++i )
     {
-        if ( i >= nStars )
+        if ( i >= n_stars )
             break;
         float fi = float( i );
         vec2  sp = vec2( ( hash11( fi * 3.1 ) - 0.5 ) * aspect * 0.95,
-                         skyBot + 0.06 + hash11( fi * 5.7 ) * ( skyTop - skyBot - 0.1 ) );
+                         sky_bot + 0.06 + hash11( fi * 5.7 ) * ( sky_top - sky_bot - 0.1 ) );
         float period = 0.35 + 1.4 * hash11( fi * 7.3 );
         float phase = clock / period + hash11( fi * 9.1 );
         float halfW = 0.03 + 0.03 * hash11( fi * 11.3 );
@@ -141,22 +141,22 @@ void main()
             int slot = ( i == host0 ) ? 0 : ( ( i == host1 ) ? 1 : 2 );
             // The curve: brightness as a function of time offset along x.
             float x = ( p.x / aspect + 0.5 ); // 0..1 across
-            float tOff = ( x - 0.85 ) * 1.4;  // right edge = now
-            float ph = ( clock + tOff ) / period + hash11( fi * 9.1 );
+            float t_off = ( x - 0.85 ) * 1.4; // right edge = now
+            float ph = ( clock + t_off ) / period + hash11( fi * 9.1 );
             float c = 1.0 - transit( ph, halfW ) * depth * ( 0.6 + 0.4 * hash11( fi * 2.3 ) );
             curves[slot] = c;
         }
     }
     // Light-curve panel below the sky: three traces, each in its host's tint.
-    if ( p.y < skyBot )
+    if ( p.y < sky_bot )
     {
         vec3 panel = vec3( 0.02, 0.025, 0.04 ) + imgPalette( hue * 0.159 + 0.6 ) * 0.03;
         // Grid lines.
-        float grid = smoothstep( 0.003, 0.0, abs( fract( ( p.y - skyBot ) * 12.0 ) - 0.5 ) - 0.48 ) * 0.15;
+        float grid = smoothstep( 0.003, 0.0, abs( fract( ( p.y - sky_bot ) * 12.0 ) - 0.5 ) - 0.48 ) * 0.15;
         panel += vec3( grid );
         for ( int s = 0; s < 3; ++s )
         {
-            float base = skyBot - 0.09 - float( s ) * 0.11;
+            float base = sky_bot - 0.09 - float( s ) * 0.11;
             float yv = base + ( curves[s] - 1.0 ) * 0.16 + 0.04;
             float line = smoothstep( 0.006, 0.001, abs( p.y - yv ) );
             vec3  tc = imgPalette( hue * 0.159 + float( s ) * 0.33 + 0.1 ) * 1.4 + 0.3;
@@ -168,7 +168,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -255,18 +255,18 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec2  uv = p * 0.6 + 0.5;
-    vec3  wallTex = imgLod( uv, 1.0 );
+    vec3  wall_tex = imgLod( uv, 1.0 );
     float relief = texHeight( uv, 3.0, 0.4 );
     vec2  gr = texGrad( uv, 3.0 ) * 0.004 * ( 0.3 + clamp( wallP, 0.0, 1.0 ) );
-    vec3  col = wallTex * 0.03;
-    float nS = 2.0 + 3.0 * clamp( spotP, 0.0, 1.0 );
+    vec3  col = wall_tex * 0.03;
+    float n_s = 2.0 + 3.0 * clamp( spotP, 0.0, 1.0 );
     float T = 0.05 * sceneTime + 0.35 * audioAdvance;
     float R = 0.35 + 0.2 * clamp( audioSpread, 0.0, 1.0 );
     float sharp = clamp( focusP, 0.0, 1.0 );
     for ( int i = 0; i < 5; ++i )
     {
         float fi = float( i );
-        float on = smoothstep( fi - 0.5, fi + 0.5, nS - 0.5 );
+        float on = smoothstep( fi - 0.5, fi + 0.5, n_s - 0.5 );
         if ( on <= 0.0 )
             break;
         vec2  c = vec2( 0.7 * sin( T * ( 0.7 + 0.2 * fi ) + fi * 2.1 ),
@@ -284,7 +284,7 @@ void main()
         vec3  n = normalize( vec3( -gr, 1.0 ) );
         vec3  L = normalize( vec3( c - p, 0.8 ) );
         float lit = max( dot( n, L ), 0.0 );
-        col += lc * wallTex * disk * g * lit * ( 1.2 + 1.2 * bass ) * on;
+        col += lc * wall_tex * disk * g * lit * ( 1.2 + 1.2 * bass ) * on;
         col += lc * exp( -length( l ) * 2.0 ) * ( 0.03 + 0.1 * swell ) * on; // haze
     }
     finish( col );

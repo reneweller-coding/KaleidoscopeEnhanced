@@ -87,9 +87,9 @@ void main()
     vec3 V = normalize( vec3( 0.0, camHP, 0.0 ) - vWorld );
 
     // Sky: a low, cold gradient with the slideshow photo bleeding into it.
-    vec3 skyLo = vec3( 0.020, 0.028, 0.055 );
-    vec3 skyHi = vec3( 0.055, 0.075, 0.135 );
-    vec3 hazeCol = mix( skyLo, skyHi, 0.6 ) * ( 1.0 + 0.6 * audioAmbient );
+    vec3 sky_lo = vec3( 0.020, 0.028, 0.055 );
+    vec3 sky_hi = vec3( 0.055, 0.075, 0.135 );
+    vec3 haze_col = mix( sky_lo, sky_hi, 0.6 ) * ( 1.0 + 0.6 * audioAmbient );
 
     // Concrete, lit by almost nothing — a night city has no key light.
     vec3 wall = mix( vec3( 0.030, 0.033, 0.042 ), vec3( 0.070, 0.068, 0.075 ), vLot );
@@ -143,7 +143,7 @@ void main()
 
     // Rim from the sky, so silhouettes separate against the haze.
     float fres = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 3.0 );
-    col += skyHi * fres * 2.2;
+    col += sky_hi * fres * 2.2;
 
     // The tallest towers catch a wash of their own band's colour.
     col += hue2rgb( fract( 0.55 + 0.3 * vEnergy ) ) * vEnergy
@@ -152,7 +152,7 @@ void main()
 
     // Distance haze — the single strongest depth cue in a city at night.
     float haze = clamp( vDist / 210.0, 0.0, 1.0 );
-    col = mix( col, hazeCol, pow( haze, 1.25 ) );
+    col = mix( col, haze_col, pow( haze, 1.25 ) );
 
     col *= 1.0 + 0.16 * audioBeat;
     col = col / ( 1.0 + col * 0.30 );

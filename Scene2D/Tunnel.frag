@@ -52,7 +52,7 @@ uniform float audioSpread;    ///< 0=narrow spectrum .. 1=wide -> throat depth c
 uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> wall ripple
 uniform float audioRolloff;   ///< 0=bass-bound .. 1=reaching into the highs -> wall colour
 
-const float M_PI = 3.141592653589793;
+const float Pi = 3.141592653589793;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -72,7 +72,7 @@ void main()
 
     float angle = 0.0;
     if ( rotate > 0 )
-        angle = M_PI * 0.25;
+        angle = Pi * 0.25;
 
     // a rotation
     // vec2 cst = vec2( cos(interpolationRotation), sin(interpolationRotation) );
@@ -84,18 +84,18 @@ void main()
     // power was never registered in any preset (always 0, GL's unset-uniform
     // default) -- 1.0/(2.0*power) divided by zero, sending r to infinity for
     // every pixel. 1.0 reproduces the plain Euclidean length() case.
-    float powV = ( power > 0.01 ) ? power : 1.0;
-    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
+    float pow_v = ( power > 0.01 ) ? power : 1.0;
+    float r = pow( pow( p.x * p.x, pow_v ) + pow( p.y * p.y, pow_v ), 1.0 / ( 2.0 * pow_v ) );
 
     // cartesian to polar coordinates
     // float r = length(p);
     float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5 * float( sides );
+    float sides_k = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod( a, tau / sidesK );
-    a = abs( a - tau / sidesK / 2. );
+    a = mod( a, tau / sides_k );
+    a = abs( a - tau / sides_k / 2. );
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
 
     // Spectral spread sets how steeply perspective compresses the wall toward
@@ -109,7 +109,7 @@ void main()
     uv.x = ( speedTunnel * time + audioAdvance + throat / r );
     // Dissonance buckles the wall: a purely radial ripple on the angular
     // coordinate, so consonant passages keep the wedges dead straight.
-    uv.y = ( a / M_PI ) + 0.030 * clamp( audioRoughness, 0.0, 1.0 ) * sin( r * 7.5 );
+    uv.y = ( a / Pi ) + 0.030 * clamp( audioRoughness, 0.0, 1.0 ) * sin( r * 7.5 );
 
     vec4 col = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
 
@@ -117,9 +117,9 @@ void main()
     // The strong beat zoom/brightness flash was tiring on the eyes; the rhythmic
     // accent now lives in the gentle corner spotlights of the final present pass.
     float zoom = 1.0 + audioSwell * 0.04;
-    vec2  uvZoomed = ( uv - 0.5 ) / zoom + 0.5;
-    vec4  colZoomed = interpolation * texture( tex0, uvZoomed ) + ( 1.0 - interpolation ) * texture( tex1, uvZoomed );
-    col = mix( col, colZoomed, audioBeat * 0.18 );
+    vec2  uv_zoomed = ( uv - 0.5 ) / zoom + 0.5;
+    vec4 col_zoomed = interpolation * texture( tex0, uv_zoomed ) + ( 1.0 - interpolation ) * texture( tex1, uv_zoomed );
+    col = mix( col, col_zoomed, audioBeat * 0.18 );
 
     // --- Spectral Centroid: colour temperature tint ---
     // Low centroid (dark drone) → cool blue-violet tint, reduced brightness

@@ -69,40 +69,40 @@ void main()
 
     float t = time * 0.061 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                   // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
-    float rSchwarzschild = 0.25 * midTransition * mss;
-    float rPhotonRing = rSchwarzschild * 1.5;
+    float r_schwarzschild = 0.25 * mid_transition * mss;
+    float r_photon_ring = r_schwarzschild * 1.5;
 
     // Relativistic gravitational deflection: r' = r - r_s^2 / r.
     // audioBass drives the deflection depth.  r_s is itself scaled by
-    // midTransition, so the deflection is exactly zero at both fade endpoints —
-    // and warpUV is blended in by midTransition there on top of that.
-    float deflection = ( rSchwarzschild * rSchwarzschild ) / max( r * r, 0.001 ) * lns * ( 1.0 + audioSwell * 0.7 );
-    vec2  pLensed = p * ( 1.0 - deflection * 0.7 );
-    pLensed = rot2D( deflection * 1.2 + t * 0.3 ) * pLensed;
+    // mid_transition, so the deflection is exactly zero at both fade endpoints —
+    // and warp_uv is blended in by mid_transition there on top of that.
+    float deflection = ( r_schwarzschild * r_schwarzschild ) / max( r * r, 0.001 ) * lns * ( 1.0 + audioSwell * 0.7 );
+    vec2  p_lensed = p * ( 1.0 - deflection * 0.7 );
+    p_lensed = rot2D( deflection * 1.2 + t * 0.3 ) * p_lensed;
 
-    vec2 warpUV = ( pLensed * resolution.y + 0.5 * resolution ) / resolution;
+    vec2 warp_uv = ( p_lensed * resolution.y + 0.5 * resolution ) / resolution;
 
-    vec4 c1 = texture( tex1, fract( mix( uv, warpUV, midTransition ) ) );
-    vec4 c0 = texture( tex0, fract( mix( warpUV, uv, 1.0 - midTransition ) ) );
+    vec4 c1 = texture( tex1, fract( mix( uv, warp_uv, mid_transition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( warp_uv, uv, 1.0 - mid_transition ) ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Glowing Einstein photon ring
-    float photonRing = exp( -abs( r - rPhotonRing ) * 35.0 ) * midTransition;
-    col.rgb += photonRing * vec3( 0.2, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.0 );
+    float photon_ring = exp( -abs( r - r_photon_ring ) * 35.0 ) * mid_transition;
+    col.rgb += photon_ring * vec3( 0.2, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.0 );
 
     // Central event horizon shadow
-    float shadow = smoothstep( rSchwarzschild * 0.7, rSchwarzschild * 1.1, r );
-    col.rgb *= mix( 1.0, shadow, midTransition );
+    float shadow = smoothstep( r_schwarzschild * 0.7, r_schwarzschild * 1.1, r );
+    col.rgb *= mix( 1.0, shadow, mid_transition );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

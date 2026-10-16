@@ -68,10 +68,10 @@ void main()
     // Night sky reflection: the photo, dark and low-contrast, along the
     // reflected ray; a moon from the palette.
     vec3  R = reflect( -V, n );
-    vec2  skyUV = clamp( vec2( 0.5 + R.x * 0.4, 0.5 + R.y * 0.8 ), 0.0, 1.0 );
-    vec3  sky = img( skyUV ) * 0.6 * imgPalette( hue * 0.159 + 0.6 ) * 2.5 + imgPalette( hue * 0.159 + 0.6 ) * 0.15;
-    vec3  moonDir = normalize( vec3( 0.3, 0.35, 1.0 ) );
-    float moon = pow( max( dot( R, moonDir ), 0.0 ), 300.0 ) * 4.0 + pow( max( dot( R, moonDir ), 0.0 ), 20.0 ) * 0.8;
+    vec2  sky_uv = clamp( vec2( 0.5 + R.x * 0.4, 0.5 + R.y * 0.8 ), 0.0, 1.0 );
+    vec3  sky = img( sky_uv ) * 0.6 * imgPalette( hue * 0.159 + 0.6 ) * 2.5 + imgPalette( hue * 0.159 + 0.6 ) * 0.15;
+    vec3  moon_dir = normalize( vec3( 0.3, 0.35, 1.0 ) );
+    float moon = pow( max( dot( R, moon_dir ), 0.0 ), 300.0 ) * 4.0 + pow( max( dot( R, moon_dir ), 0.0 ), 20.0 ) * 0.8;
     sky += vec3( 1.0, 0.97, 0.9 ) * moon;
 
     // Water body: deep, dark, with a phosphorescent tint in the crests.
@@ -85,7 +85,7 @@ void main()
     float fog = 1.0 - exp( -vDist * 0.006 );
     col = mix( col, imgPalette( hue * 0.159 + 0.6 ) * 0.12, clamp( fog, 0.0, 0.85 ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

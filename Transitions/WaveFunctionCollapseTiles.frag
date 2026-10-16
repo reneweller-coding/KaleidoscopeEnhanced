@@ -50,7 +50,7 @@ uniform float tilesP;
 uniform float seedsP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -77,7 +77,7 @@ void main()
     vec2  uv = gl_FragCoord.xy / resolution;
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     float nx = tiles; // constant: ny below is floored, so any envelope here stepped the grid
     float ny = max( 3.0, floor( nx / aspect ) );
@@ -85,7 +85,7 @@ void main()
     vec2  g = uv * grid;
     vec2  gi = floor( g );
     vec2  gf = fract( g );
-    vec2  tileUv = ( gi + 0.5 ) / grid;
+    vec2  tile_uv = ( gi + 0.5 ) / grid;
 
     // Certainty spreads from a handful of seeds: a tile settles because its
     // neighbours did, so what matters is the distance to the nearest seed.
@@ -96,7 +96,7 @@ void main()
             break;
         float fi = float( i );
         vec2  sd = vec2( hash21( vec2( fi, 1.7 ) ), hash21( vec2( fi, 9.3 ) ) );
-        near = min( near, length( ( tileUv - sd ) * vec2( aspect, 1.0 ) ) );
+        near = min( near, length( ( tile_uv - sd ) * vec2( aspect, 1.0 ) ) );
     }
     float rate = 1.1; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     // Each tile also has its own small hesitation, so the front is ragged.

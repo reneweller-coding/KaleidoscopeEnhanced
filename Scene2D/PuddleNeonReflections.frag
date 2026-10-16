@@ -152,8 +152,8 @@ void main()
         // Wind ruffle: a slow horizontal smear that grows with distance.
         float ruffle = ( fbm( vec2( p.x * 7.0, p.y * 22.0 + clock * 0.6 ) ) - 0.5 ) * ( 0.02 + 0.12 * depth );
         // Rings: drops land on continuous phases and their rings expand.
-        float ringDisp = 0.0;
-        float ringLight = 0.0;
+        float ring_disp = 0.0;
+        float ring_light = 0.0;
         for ( int i = 0; i < 10; ++i )
         {
             float fi = float( i );
@@ -164,10 +164,10 @@ void main()
             float radius = ph * ( 0.18 + 0.1 * hash11( fi * 11.7 ) ); // never scaled by an envelope: a ring in flight
                                                                       // must not jump
             float ring = exp( -abs( d - radius ) * 55.0 ) * ( 1.0 - ph ) * smoothstep( 0.0, 0.08, ph );
-            ringDisp += ring * 0.035 * sign( d - radius );
-            ringLight += ring * ( 1.0 + 0.8 * audioKick );
+            ring_disp += ring * 0.035 * sign( d - radius );
+            ring_light += ring * ( 1.0 + 0.8 * audioKick );
         }
-        vec2 s = vec2( mirrored.x + ruffle + ringDisp, mirrored.y * ( 0.85 + 0.3 * depth ) + ringDisp * 0.4 );
+        vec2 s = vec2( mirrored.x + ruffle + ring_disp, mirrored.y * ( 0.85 + 0.3 * depth ) + ring_disp * 0.4 );
         vec3 refl = streetAbove( s, hue, signs, clock );
         // Wet asphalt under the reflection.
         vec3 road = img( clamp( vec2( uv.x, 0.1 + depth * 0.3 ), 0.0, 1.0 ) )
@@ -177,7 +177,7 @@ void main()
         float fres = exp( -depth * 3.4 );
         col = mix( road, refl * 0.95, 0.25 + 0.7 * fres );
         // The rings themselves catch the light.
-        col += vec3( 0.8, 0.85, 0.95 ) * ringLight * ( 0.35 + 0.5 * fres ) * 0.5;
+        col += vec3( 0.8, 0.85, 0.95 ) * ring_light * ( 0.35 + 0.5 * fres ) * 0.5;
         // Kerb line just below the horizon.
         col = mix( col, vec3( 0.3, 0.3, 0.33 ), smoothstep( 0.012, 0.0, abs( p.y - horizon + 0.012 ) ) * 0.5 );
         // Wet sparkle on the asphalt: round, jittered, on the treble.
@@ -204,7 +204,7 @@ void main()
     }
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

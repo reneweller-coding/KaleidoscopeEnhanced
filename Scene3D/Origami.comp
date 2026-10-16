@@ -69,13 +69,13 @@ uniform float foldP;  ///< preset: how deep the fold goes
 uniform float wavesP; ///< preset: fold waves across the sheet
 uniform float skewP;  ///< preset: crease angle, so how strong the zigzag is
 
-const int   NI = 28;      ///< columns (across the corrugation)
-const int   NJ = 16;      ///< rows
-const float CELL = 0.506; ///< panel side; sized so the sheet overruns the frame
+const int   Ni = 28;      ///< columns (across the corrugation)
+const int   Nj = 16;      ///< rows
+const float Cell = 0.506; ///< panel side; sized so the sheet overruns the frame
 
 float thetaAt( int i, float phase, float base, float amp, float waves )
 {
-    float u = float( i ) / float( NI );
+    float u = float( i ) / float( Ni );
     float w = 0.5 - 0.5 * cos( 6.2831853 * ( u * waves - phase ) );
     return base + amp * w;
 }
@@ -86,10 +86,10 @@ void cellDims( float th, float gam, out float H, out float S, out float L, out f
     float st = sin( th ), ct = cos( th );
     float sg = sin( gam ), tg = tan( gam );
     float den = sqrt( 1.0 + ct * ct * tg * tg );
-    H = CELL * st * sg;
-    S = CELL * ct * tg / den;
-    L = CELL * sqrt( max( 1.0 - st * st * sg * sg, 0.0 ) );
-    V = CELL / den;
+    H = Cell * st * sg;
+    S = Cell * ct * tg / den;
+    L = Cell * sqrt( max( 1.0 - st * st * sg * sg, 0.0 ) );
+    V = Cell / den;
 }
 
 vec3 vertexAt( int i, int j, float phase, float base, float amp, float waves, float gam )
@@ -134,11 +134,11 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= uint( NI * NJ ) )
+    if ( id >= uint( Ni * Nj ) )
         return;
 
-    int i = int( id ) % NI;
-    int j = int( id ) / NI;
+    int i = int( id ) % Ni;
+    int j = int( id ) / Ni;
 
     // The travelling fold rides on audioAdvance, never on absolute time scaled by
     // a live audio value — the latter jumps the phase every time the level moves
@@ -158,15 +158,15 @@ void main()
     // assumed, because the sheet contracts as it folds and a fixed offset would
     // let it drift out of frame.
     float span = 0.0;
-    for ( int k = 0; k < NI; ++k )
+    for ( int k = 0; k < Ni; ++k )
     {
         float H, S, L, V;
         cellDims( thetaAt( k, phase, base, amp, waves ), gam, H, S, L, V );
         span += V;
     }
-    float Hc, Sc, Lc, Vc;
-    cellDims( base + amp * 0.5, gam, Hc, Sc, Lc, Vc );
-    vec3 mid = vec3( span * 0.5, float( NJ ) * Lc * 0.5, 0.0 );
+    float hc, sc, lc, vc;
+    cellDims( base + amp * 0.5, gam, hc, sc, lc, vc );
+    vec3 mid = vec3( span * 0.5, float( Nj ) * lc * 0.5, 0.0 );
     p00 -= mid;
     p10 -= mid;
     p11 -= mid;
@@ -179,7 +179,7 @@ void main()
 
     float th = thetaAt( i, phase, base, amp, waves );
     float fold = clamp( th / 1.6, 0.0, 1.0 );
-    float across = float( i ) / float( NI );
+    float across = float( i ) / float( Ni );
 
     uint base_ = atomicAdd( cmd[4], 6u );
     if ( base_ + 6u > maxVertices )

@@ -33,8 +33,8 @@ void main()
 
     // A pass draws only its own half.  Collapsing the rest behind the near plane
     // is cheaper than a discard: the fragments are never generated at all.
-    bool wantGlass = ( oitPass > 0.5 );
-    if ( ( kind > 0.5 ) != wantGlass )
+    bool want_glass = ( oitPass > 0.5 );
+    if ( ( kind > 0.5 ) != want_glass )
     {
         gl_Position = vec4( 0.0, 0.0, -2.0, 1.0 );
         vObj = vec3( 0.0 );

@@ -90,12 +90,12 @@ void main()
     // Quantum phase chromatic mapping (complex phase angle to color).
     // Saturation is pushed past the house default because thousands of these
     // sprites accumulate additively — anything pale piles up to plain white.
-    vec3 phaseColor = imgPalette( ( vPhase + audioPhase ) * 0.159 );
-    phaseColor = mix( vec3( dot( phaseColor, vec3( 0.333 ) ) ), phaseColor, 1.5 );
+    vec3 phase_color = imgPalette( ( vPhase + audioPhase ) * 0.159 );
+    phase_color = mix( vec3( dot( phase_color, vec3( 0.333 ) ) ), phase_color, 1.5 );
 
     // Probability density intensity modulation (kick gain kept moderate for
     // the same reason: the old *2.5 burned the whole cloud to white).
-    vec3 col = phaseColor * ( 0.30 + 0.55 * vProb ) * ( 1.0 + audioKick * 1.1 ) * glw;
+    vec3 col = phase_color * ( 0.30 + 0.55 * vProb ) * ( 1.0 + audioKick * 1.1 ) * glw;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

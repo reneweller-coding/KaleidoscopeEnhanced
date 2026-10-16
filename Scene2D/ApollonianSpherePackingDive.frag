@@ -126,9 +126,9 @@ void main()
     // barely a third of the frame found any structure.
     // K sets the packing character (1.05..1.30 is the pretty band); sub-bass
     // breathes it very gently -- K shifts sphere sizes, not the camera.
-    float sphR = ( 1.08 + 0.10 * sc ) * ( 1.0 + 0.02 * audioSubBass );
+    float sph_r = ( 1.08 + 0.10 * sc ) * ( 1.0 + 0.02 * audioSubBass );
 
-    float diveProg = t * 0.6;
+    float dive_prog = t * 0.6;
     // The dive runs along a CELL EDGE of the period-2 lattice, not through
     // the cell interior. The old course, sin/cos weaving +-0.4 around the
     // z axis, was measured (NumPy port of mapApollonian, 12k samples along
@@ -143,103 +143,103 @@ void main()
     // radius the preset can produce. The weave stays in the x > 1, y > 1
     // quadrant on purpose: the opposite quadrant is solid around z = 0.5
     // mod 2, and a symmetric +-0.2 weave about the edge already dipped to
-    // -0.8. Worst case along this course is 0.58 (sphR 1.44, sub-bass
+    // -0.8. Worst case along this course is 0.58 (sph_r 1.44, sub-bass
     // fully up), comfortably outside the 0.40 bubble.
-    vec3 ro = vec3( 1.25 + 0.25 * sin( diveProg * 0.3 ),
-                    1.15 + 0.15 * cos( diveProg * 0.25 ),
-                    diveProg * 1.5 );
+    vec3 ro = vec3( 1.25 + 0.25 * sin( dive_prog * 0.3 ),
+                    1.15 + 0.15 * cos( dive_prog * 0.25 ),
+                    dive_prog * 1.5 );
     vec3 rd = normalize( vec3( uv, 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) );
 
-    float expGain = clamp( 0.22 / max( 0.05, photoLevel() ), 0.3, 1.4 );
+    float exp_gain = clamp( 0.22 / max( 0.05, photoLevel() ), 0.3, 1.4 );
 
     // Raymarching through Apollonian sphere packing
-    float totDist = 0.0;
-    float minD = 1e4;
-    float hitTrap = 0.0;
-    vec3  hitCol = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float min_d = 1e4;
+    float hit_trap = 0.0;
+    vec3  hit_col = vec3( 0.0 );
     bool  hit = false;
 
     for ( int i = 0; i < 52; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curTrap;
-        float d = mapApollonian( p, sphR, curTrap );
+        vec3  p = ro + rd * tot_dist;
+        float cur_trap;
+        float d = mapApollonian( p, sph_r, cur_trap );
         d = smax( d, 0.40 - length( p - ro ), 0.15 ); // camera clearance bubble
 
-        // minD drives the contact-ring glow, so it has to be a PER-PIXEL
+        // min_d drives the contact-ring glow, so it has to be a PER-PIXEL
         // signal. Sampling it at i == 0 samples the shared camera position,
         // which is the same point for every pixel on the screen: whenever the
-        // camera drifts near a surface, minD becomes a frame-wide CONSTANT and
+        // camera drifts near a surface, min_d becomes a frame-wide CONSTANT and
         // the glow floods the entire frame with one flat colour. Skip the
         // camera sample. Hit pixels are excluded below for the same reason --
-        // minD is ~0 by construction on any ray that converged, so it carries
+        // min_d is ~0 by construction on any ray that converged, so it carries
         // no edge information there, only a white-out.
         // Track the halo distance only past the camera's own clearance
         // bubble -- tracking it from step one painted a giant soft disc of
         // bubble-glow over the middle of every frame.
-        if ( totDist > 0.8 )
-            minD = min( minD, abs( d ) );
+        if ( tot_dist > 0.8 )
+            min_d = min( min_d, abs( d ) );
 
         // The old min step of 0.015 was five times the 0.003 hit threshold, so
         // a ray closing on a surface jumped clean over the convergence band.
         if ( abs( d ) < 0.004 )
         {
             hit = true;
-            hitTrap = curTrap;
+            hit_trap = cur_trap;
             break;
         }
         // Far termination is a MISS: painting it as a photo-textured hit was
         // what filled the frame with hard rectangular chips (fract() seams on
         // a flat far wall).
-        if ( totDist > 8.0 )
+        if ( tot_dist > 8.0 )
             break;
 
-        totDist += max( 0.002, d * 0.7 );
+        tot_dist += max( 0.002, d * 0.7 );
     }
 
     // Surface shading with a REAL normal: without one every facet was a flat
     // unlit patch and nothing on screen read as a sphere.
-    vec3 hitCol2 = vec3( 0.0 );
+    vec3 hit_col2 = vec3( 0.0 );
     if ( hit )
     {
-        vec3  p = ro + rd * totDist;
+        vec3  p = ro + rd * tot_dist;
         float tl;
         vec2  e = vec2( 0.006, 0.0 );
         vec3  n = normalize( vec3(
-            mapApollonian( p + e.xyy, sphR, tl ) - mapApollonian( p - e.xyy, sphR, tl ),
-            mapApollonian( p + e.yxy, sphR, tl ) - mapApollonian( p - e.yxy, sphR, tl ),
-            mapApollonian( p + e.yyx, sphR, tl ) - mapApollonian( p - e.yyx, sphR, tl ) ) );
-        vec3  lightDir = normalize( vec3( 0.5, 0.7, -0.4 ) );
-        float dif = max( dot( n, lightDir ), 0.0 );
-        vec3  hv = normalize( lightDir - rd );
+            mapApollonian( p + e.xyy, sph_r, tl ) - mapApollonian( p - e.xyy, sph_r, tl ),
+            mapApollonian( p + e.yxy, sph_r, tl ) - mapApollonian( p - e.yxy, sph_r, tl ),
+            mapApollonian( p + e.yyx, sph_r, tl ) - mapApollonian( p - e.yyx, sph_r, tl ) ) );
+        vec3  light_dir = normalize( vec3( 0.5, 0.7, -0.4 ) );
+        float dif = max( dot( n, light_dir ), 0.0 );
+        vec3  hv = normalize( light_dir - rd );
         float spec = pow( max( dot( n, hv ), 0.0 ), 24.0 );
         float fres = pow( 1.0 - max( dot( n, -rd ), 0.0 ), 3.0 );
         // Photo colour through the NORMAL (seam-free), palette from the trap.
-        vec3  base = mix( imgPalette( hitTrap * 0.25 + t * 0.05 ),
+        vec3  base = mix( imgPalette( hit_trap * 0.25 + t * 0.05 ),
                           img( n.xy * 0.25 + 0.5 ), 0.35 );
-        float fog = exp( -totDist * 0.28 );
-        hitCol2 = ( base * ( 0.38 + 1.05 * dif )
-                    + vec3( 1.0 ) * spec * 0.6
-                    + imgPalette( 0.7 ) * fres * 0.45 )
-                  * ( 0.25 + 0.85 * fog ) * expGain;
+        float fog = exp( -tot_dist * 0.28 );
+        hit_col2 = ( base * ( 0.38 + 1.05 * dif )
+                     + vec3( 1.0 ) * spec * 0.6
+                     + imgPalette( 0.7 ) * fres * 0.45 )
+                   * ( 0.25 + 0.85 * fog ) * exp_gain;
     }
-    hitCol = hitCol2;
+    hit_col = hit_col2;
 
     // Glowing spherical tangency contact rings -- silhouette haloes on the
     // rays that MISSED, which is the only place a closest-approach distance
     // means anything.
     // Steep falloff: at 26 the halo was a frame-flooding white field; at ~110
     // it is the thin bright tangency line the name promises.
-    float contactGlow = hit ? 0.0 : exp( -minD * ( 110.0 + 40.0 * audioCentroid ) ) * glw * 0.8;
-    vec3  glowTint = vec3( 1.3, 1.1, 1.8 ) * contactGlow * ( 1.0 + 2.5 * audioKick );
+    float contact_glow = hit ? 0.0 : exp( -min_d * ( 110.0 + 40.0 * audioCentroid ) ) * glw * 0.8;
+    vec3  glow_tint = vec3( 1.3, 1.1, 1.8 ) * contact_glow * ( 1.0 + 2.5 * audioKick );
 
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.10 + 0.08 * audioLevel ) * expGain;
-    // Composite on the hit flag, not on length(hitCol): with the exposure
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.10 + 0.08 * audioLevel ) * exp_gain;
+    // Composite on the hit flag, not on length(hit_col): with the exposure
     // gain holding a bright photo down, a legitimately dark wall has a short
     // colour vector and the old length() mask faded it into the background.
-    vec3 finalCol = mix( bgCol, hitCol, hit ? 1.0 : 0.0 );
-    finalCol += glowTint;
+    vec3 final_col = mix( bg_col, hit_col, hit ? 1.0 : 0.0 );
+    final_col += glow_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

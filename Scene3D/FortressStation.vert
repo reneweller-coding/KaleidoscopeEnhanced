@@ -55,8 +55,8 @@ mat3 axisSpin( float axis, float ang )
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
-    if ( !isBg )
+    bool is_bg = gl_VertexID >= meshVertexCount;
+    if ( !is_bg )
     {
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         vec3  local = attrA.xyz * ( 32.0 * sz );
@@ -66,18 +66,19 @@ void main()
         // hulls that HAVE such an axis get a non-zero spinP -- see
         // axisSpin() above. Kick adds a barely-there positional jolt, as if
         // a distant impact just rattled the structure.
-        const float rotY = 0.5, rotX = 0.12;
-        float       cy = cos( rotY ), sy = sin( rotY );
-        float       cx = cos( rotX ), sx = sin( rotX );
-        mat3        rotYMat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        mat3        rotXMat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
-        mat3 rotMat = rotYMat * rotXMat * axisSpin( spinAxisP, time * 0.08 * max( spinP, 0.0 ) ); // time alone: advance
-                                                                                                  // jerks on kicks
+        const float rot_y = 0.5, rot_x = 0.12;
+        float       cy = cos( rot_y ), sy = sin( rot_y );
+        float       cx = cos( rot_x ), sx = sin( rot_x );
+        mat3        rot_y_mat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        mat3        rot_x_mat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3 rot_mat = rot_y_mat * rot_x_mat * axisSpin( spinAxisP, time * 0.08 * max( spinP, 0.0 ) ); // time alone:
+                                                                                                       // advance jerks
+                                                                                                       // on kicks
 
-        world = rotMat * local;
+        world = rot_mat * local;
         world.z += 105.0;
         // (kick hull shake removed, V7d)   // rattle, not a bob
-        n = normalize( rotMat * attrB.xyz );
+        n = normalize( rot_mat * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
     }
     else
@@ -96,10 +97,10 @@ void main()
     // clipped visible wedges out of the sky. Pinning shell depth just inside
     // the far plane is the standard skybox fix: no far-plane clipping however
     // big the shell is, and it can never occlude the object in front of it.
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

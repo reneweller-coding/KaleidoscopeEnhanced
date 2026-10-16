@@ -53,24 +53,24 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Quantum circulation colors (deep ocean blue to electric cyan/emerald)
-    vec3 blueCirc = vec3( 0.05, 0.35, 1.0 );
-    vec3 greenCirc = vec3( 0.10, 1.00, 0.75 );
-    vec3 vortexCol = mix( blueCirc, greenCirc, fract( vRingID * 0.2 + time * 0.3 ) );
+    vec3 blue_circ = vec3( 0.05, 0.35, 1.0 );
+    vec3 green_circ = vec3( 0.10, 1.00, 0.75 );
+    vec3 vortex_col = mix( blue_circ, green_circ, fract( vRingID * 0.2 + time * 0.3 ) );
 
     // Circulation pulse wave
     float pulse = sin( vCirc * 10.0 - time * 8.0 ) * 0.5 + 0.5;
-    vec3  coreGlow = mix( vortexCol, vec3( 1.0 ), pulse * 0.7 );
+    vec3  core_glow = mix( vortex_col, vec3( 1.0 ), pulse * 0.7 );
 
     // Photo reflection mapping
-    vec2 photoUV = vPos.xy * 0.15 + 0.5;
-    vec3 photoCol = img( fract( photoUV ) );
+    vec2 photo_uv = vPos.xy * 0.15 + 0.5;
+    vec3 photo_col = img( fract( photo_uv ) );
 
-    vec3 col = ( coreGlow * 2.2 + photoCol * 0.4 ) * ( 0.8 + 1.2 * audioKick ) * vtx * glw;
+    vec3 col = ( core_glow * 2.2 + photo_col * 0.4 ) * ( 0.8 + 1.2 * audioKick ) * vtx * glw;
 
     col = hueRot( col, audioChromaHue + hue );
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

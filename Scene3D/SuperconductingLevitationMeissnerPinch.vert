@@ -69,8 +69,8 @@ vec3 imgPalette( float t )
 /// between two disjoint pieces.
 vec2 mpProfile( float p, float levGap )
 {
-    float magPart = smoothstep( 0.545, 0.72, p );
-    float platePart = 1.0 - smoothstep( 0.16, 0.24, p );
+    float mag_part = smoothstep( 0.545, 0.72, p );
+    float plate_part = 1.0 - smoothstep( 0.16, 0.24, p );
 
     float qp = clamp( p / 0.20, 0.0, 1.0 );           // plate rim -> disc edge
     float q = clamp( ( p - 0.20 ) / 0.32, 0.0, 1.0 ); // disc edge -> its centre
@@ -79,17 +79,17 @@ vec2 mpProfile( float p, float levGap )
     // The bowl (not a flat annulus) is deliberate: neighbouring plates overlap
     // in the array, and two coplanar plates would z-fight.  2.85 (not the disc's
     // own 1.15) is what makes the plates of adjacent assemblies actually meet.
-    float rPlate = mix( 2.85, 1.15, qp );
-    float hPlate = -0.34 - 0.20 * ( 1.0 - qp ) * ( 1.0 - qp );
+    float r_plate = mix( 2.85, 1.15, qp );
+    float h_plate = -0.34 - 0.20 * ( 1.0 - qp ) * ( 1.0 - qp );
 
-    float rDisc = mix( 1.15, 0.07, q );
-    float hDisc = -0.34 + 0.10 * q * q;
+    float r_disc = mix( 1.15, 0.07, q );
+    float h_disc = -0.34 + 0.10 * q * q;
 
-    float rMag = 0.52 * sin( m * 2.8902 + 0.12 );
-    float hMag = levGap - 0.18 + 0.46 * m;
+    float r_mag = 0.52 * sin( m * 2.8902 + 0.12 );
+    float h_mag = levGap - 0.18 + 0.46 * m;
 
-    return vec2( mix( mix( rDisc, rMag, magPart ), rPlate, platePart ),
-                 mix( mix( hDisc, hMag, magPart ), hPlate, platePart ) );
+    return vec2( mix( mix( r_disc, r_mag, mag_part ), r_plate, plate_part ),
+                 mix( mix( h_disc, h_mag, mag_part ), h_plate, plate_part ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -141,38 +141,38 @@ void main()
     float p = luv.y;
     vec2  pr = mpProfile( p, levGap );
     vec2  pr1 = mpProfile( p + 0.012, levGap );
-    vec2  dP = pr1 - pr;
+    vec2  d_p = pr1 - pr;
 
     // Azimuthal flux-pinning ripple: a rotating 6-fold standing wave. Without it
     // the object is a perfect solid of revolution, so spinning it about its own
     // axis would produce no visible change at all.
-    float discW = 1.0 - smoothstep( 0.34, 0.52, p );
-    float ripple = 0.055 * sin( u * 6.0 + t * 1.5 + h2 * 6.2831853 ) * discW;
+    float disc_w = 1.0 - smoothstep( 0.34, 0.52, p );
+    float ripple = 0.055 * sin( u * 6.0 + t * 1.5 + h2 * 6.2831853 ) * disc_w;
 
     // The trapped magnet precesses over its pinning sites -- real motion, not
     // just a brightness pulse.
-    float magPart = smoothstep( 0.545, 0.72, p );
+    float mag_part = smoothstep( 0.545, 0.72, p );
     float pa = t * 0.9 + h1 * 6.2831853;
-    vec3  prec = vec3( cos( pa ), 0.0, sin( pa ) ) * 0.09 * magPart;
+    vec3  prec = vec3( cos( pa ), 0.0, sin( pa ) ) * 0.09 * mag_part;
 
     // The eight assemblies sit on a 4 x 2 wall-grid facing the camera (with a
     // little depth jitter), so they span the frame instead of receding into a
     // floor whose horizon leaves the top half empty.  The staggered height is
     // deterministic as well as random: two neighbouring cold plates that landed
     // at the same height would overlap COPLANAR and z-fight.
-    float yStagger = 0.17 * ( mod( bx, 2.0 ) - 0.5 ) + 0.11 * ( mod( bz, 2.0 ) - 0.5 );
-    vec3  cellPos = vec3( ( bx - 1.5 ) * 2.40 + ( h1 - 0.5 ) * 0.30,
-                          ( bz - 0.5 ) * 2.60 + ( h3 - 0.5 ) * 0.24 + yStagger,
-                          ( h2 - 0.5 ) * 1.30 );
+    float y_stagger = 0.17 * ( mod( bx, 2.0 ) - 0.5 ) + 0.11 * ( mod( bz, 2.0 ) - 0.5 );
+    vec3  cell_pos = vec3( ( bx - 1.5 ) * 2.40 + ( h1 - 0.5 ) * 0.30,
+                           ( bz - 0.5 ) * 2.60 + ( h3 - 0.5 ) * 0.24 + y_stagger,
+                           ( h2 - 0.5 ) * 1.30 );
 
-    vec3 worldPos = cellPos
-                    + ( vec3( pr.x * cos( u ), pr.y + ripple, pr.x * sin( u ) ) + prec ) * scale;
+    vec3 world_pos = cell_pos
+                     + ( vec3( pr.x * cos( u ), pr.y + ripple, pr.x * sin( u ) ) + prec ) * scale;
 
     // Normal of the surface of revolution: cross(dAngle, dProfile) reduces to
     // (-cos*dh, dr, -sin*dh). Varies with BOTH angle and profile position -- the
     // old constant (0, +/-1, 0) made every lit term identical across each half of
     // the object, which is the other half of why the frame was flat.
-    vec3 nrm = vec3( -cos( u ) * dP.y, dP.x, -sin( u ) * dP.y );
+    vec3 nrm = vec3( -cos( u ) * d_p.y, d_p.x, -sin( u ) * d_p.y );
     // The profile runs rim -> centre, so dP.x is negative over most of it and
     // the raw cross product points INTO the body: the wide cold plate would be
     // lit from underneath and read as a flat dark disc.  These are single-sided
@@ -184,17 +184,17 @@ void main()
     // Curved magnetic flux expulsion pinch: hottest in the column that bridges
     // the gap, with a second ring on the YBCO disc's rim where the field wraps.
     float pinch = exp( -abs( p - 0.565 ) * 15.0 );
-    float rimGlow = exp( -abs( p - 0.210 ) * 24.0 );
-    vMeissnerGlow = ( pinch * 1.15 + rimGlow * 0.75 ) * ( 1.0 + 3.5 * audioKick );
+    float rim_glow = exp( -abs( p - 0.210 ) * 24.0 );
+    vMeissnerGlow = ( pinch * 1.15 + rim_glow * 0.75 ) * ( 1.0 + 3.5 * audioKick );
 
-    vCol = imgPalette( fract( pr.x * 0.3 + magPart * 0.5 + h1 * 0.37 + audioCentroid ) );
+    vCol = imgPalette( fract( pr.x * 0.3 + mag_part * 0.5 + h1 * 0.37 + audioCentroid ) );
 
     // Camera Transform (V3): tilt BEFORE the translate (after it, the fixed
     // tilt swings the scene centre down by sin(tilt)*4.5).  The sign is
     // NEGATIVE so the camera looks slightly DOWN on the array -- with the old
     // +0.55 the nearer assemblies rode up and the far ones sank, which reads
     // as looking up at the underside of the bed.
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = -0.52;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

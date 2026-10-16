@@ -76,7 +76,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float baseN = 22.0 + floor( clamp( tiersP, 0.0, 1.0 ) * 4.0 ) * 4.0; // once per activation
+    float base_n = 22.0 + floor( clamp( tiersP, 0.0, 1.0 ) * 4.0 ) * 4.0; // once per activation
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float turn = sceneAdvance * 0.02 + sceneTime * 0.006;
@@ -90,7 +90,7 @@ void main()
     float tier = floor( u + 20.0 );
     float tv = fract( u ); // 0 at the inner edge of a tier
     // Cells per tier: fewer toward the oculus (inner tiers), never below 6.
-    float n = max( 8.0, baseN + ( tier - 20.0 ) * 3.0 );
+    float n = max( 8.0, base_n + ( tier - 20.0 ) * 3.0 );
     float shift = mod( tier, 2.0 ) * 0.5; // alternate tiers interlock
     float ca = a / 6.2831853 * n + shift;
     float cell = floor( ca );
@@ -111,9 +111,9 @@ void main()
     vec2  tq = vec2( cx * 3.0, q.y * 3.5 );
     vec2  tc = floor( tq ), tf = fract( tq );
     float grout = smoothstep( 0.0, 0.08, min( min( tf.x, 1.0 - tf.x ), min( tf.y, 1.0 - tf.y ) ) );
-    vec2  photoUV = vec2( fract( cell / n + tc.x * 0.03 ),
-                          clamp( 0.2 + 0.6 * fract( tier * 0.13 ) + tc.y * 0.05, 0.0, 1.0 ) );
-    vec3  glaze = mix( img( photoUV ), imgPalette( hue * 0.159 + fract( tier * 0.21 + cell * 0.013 ) * 0.4 ), 0.45 );
+    vec2  photo_uv = vec2( fract( cell / n + tc.x * 0.03 ),
+                           clamp( 0.2 + 0.6 * fract( tier * 0.13 ) + tc.y * 0.05, 0.0, 1.0 ) );
+    vec3  glaze = mix( img( photo_uv ), imgPalette( hue * 0.159 + fract( tier * 0.21 + cell * 0.013 ) * 0.4 ), 0.45 );
     glaze *= 0.7 + 0.35 * hash21( tc + cell * 3.1 + tier * 17.0 );
     vec3 niche = glaze * grout * shade * 1.15;
 
@@ -122,19 +122,19 @@ void main()
     float ledge = exp( -tv * 30.0 ) + exp( -( 1.0 - tv ) * 45.0 );
     vec3  gold = mix( vec3( 1.0, 0.74, 0.32 ), imgPalette( hue * 0.159 + 0.08 ), 0.18 );
     float glint = pow( max( 0.0, sin( a * n * 0.5 + tier * 1.7 + sceneTime * 0.3 ) ), 24.0 ) * hi;
-    vec3  goldC = gold * ( rim * 0.9 + ledge * 0.45 ) * ( 0.45 + 0.9 * e ) + gold * glint * rim * 1.5;
+    vec3  gold_c = gold * ( rim * 0.9 + ledge * 0.45 ) * ( 0.45 + 0.9 * e ) + gold * glint * rim * 1.5;
 
     // The spandrels between neighbouring niches are small faceted plates of
     // their own: lit plaster with a gilded seam, never a black hole.
     float spand = clamp( d * 3.0, 0.0, 1.0 );
     vec3  plaster = mix( vec3( 0.72, 0.62, 0.5 ), imgPalette( hue * 0.159 + 0.3 ), 0.3 )
                     * ( 0.35 + 0.5 * ( 1.0 - q.y ) ) * ( 0.8 + 0.3 * spand );
-    vec3  col = mix( plaster, niche, inside ) + goldC;
+    vec3  col = mix( plaster, niche, inside ) + gold_c;
 
     // Depth toward the oculus: the vault darkens outward (away from the
     // light) and every tier is lit a little more near the centre.
-    float lightFall = exp( -r * 1.1 );
-    col *= 0.45 + 1.1 * lightFall;
+    float light_fall = exp( -r * 1.1 );
+    col *= 0.45 + 1.1 * light_fall;
 
     // The oculus: an eight-point star of sky.
     float sa = atan( p.y, p.x ) + turn;
@@ -146,7 +146,7 @@ void main()
     col += sky * exp( -r * 9.0 ) * ( 0.25 + 0.4 * swell );
 
     col *= 0.9 + 0.25 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -35,13 +35,13 @@ void main( void )
     float radius = size * 0.5 * ( 0.75 + 0.15 * audioBeat );
 
     // Current quad in pixels
-    vec2 quadPos = floor( gl_FragCoord.xy / size ) * size;
+    vec2 quad_pos = floor( gl_FragCoord.xy / size ) * size;
     // Normalized quad position
-    vec2 quad = quadPos / resolution.xy;
+    vec2 quad = quad_pos / resolution.xy;
     // Center of the quad
-    vec2 quadCenter = ( quadPos + size / 2.0 );
+    vec2 quad_center = ( quad_pos + size / 2.0 );
     // Distance to quad center
-    float dist = length( quadCenter - gl_FragCoord.xy );
+    float dist = length( quad_center - gl_FragCoord.xy );
 
     vec4 texel = interpolation * texture( tex0, quad ) + ( 1.0 - interpolation ) * texture( tex1, quad );
     if ( dist > radius )

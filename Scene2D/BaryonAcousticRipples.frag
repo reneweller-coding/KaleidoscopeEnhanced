@@ -94,7 +94,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nSeeds = 4 + int( clamp( seedsP, 0.0, 1.0 ) * 5.0 );
+    int   n_seeds = 4 + int( clamp( seedsP, 0.0, 1.0 ) * 5.0 );
     float horizon = ( 0.22 + 0.12 * clamp( scaleP, 0.0, 1.0 ) );
     // Expansion: the comoving pattern grows over the arc, drifting slowly.
     float expand = 1.0 + 0.9 * clamp( sceneProgress, 0.0, 1.0 );
@@ -103,10 +103,10 @@ void main()
     // Density field: the cosmic web (fbm) plus the BAO shells around seeds.
     float web = fbm( q * 4.0 + 3.0 );
     float shells = 0.0;
-    vec3  shellCol = vec3( 0.0 );
+    vec3  shell_col = vec3( 0.0 );
     for ( int i = 0; i < 9; ++i )
     {
-        if ( i >= nSeeds )
+        if ( i >= n_seeds )
             break;
         float fi = float( i );
         vec2  c = vec2( ( hash11( fi * 3.7 ) - 0.5 ) * 1.4, ( hash11( fi * 5.3 ) - 0.5 ) * 0.9 );
@@ -116,7 +116,7 @@ void main()
         int   band = int( mod( fi * 4.0 + 2.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
         shells += ring * ( 0.5 + 0.5 * e ) + core * 0.8;
-        shellCol += imgPalette( hue * 0.159 + fi * 0.11 ) * ring * e;
+        shell_col += imgPalette( hue * 0.159 + fi * 0.11 ) * ring * e;
     }
     float density = clamp( web * 0.9 + shells * 0.9, 0.0, 2.0 );
 
@@ -139,12 +139,12 @@ void main()
         col += gc * dot_ * ( 1.2 + 0.8 * hash21( cell + 2.2 ) );
     }
     // The shells themselves as a faint glow, and the web on the bass.
-    col += shellCol * 0.9;
+    col += shell_col * 0.9;
     col += imgPalette( hue * 0.159 + 0.6 ) * web * web * 0.6 * ( 0.4 + 0.6 * clamp( audioBass, 0.0, 1.0 ) );
     col += imgPalette( hue * 0.159 + 0.6 ) * 0.05;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

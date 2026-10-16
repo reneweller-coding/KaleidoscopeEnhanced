@@ -57,20 +57,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -79,7 +79,7 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint kBubbles = 6000u;
+    const uint Bubbles = 6000u;
     const vec3 hub = vec3( -3.2, 0.0, 9.0 );
     float      blades = floor( 3.0 + 2.0 * clamp( bladesP, 0.0, 1.0 ) );
     float      clock = sceneAdvance * 1.2 + sceneTime * 0.3;
@@ -115,7 +115,7 @@ void main()
     }
     float frac = ( densP > 0.01 ) ? densP : 1.0;
     float dens = clamp( frac, 0.3, 1.0 ) * ( 0.55 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) );
-    if ( id > uint( float( kBubbles ) * dens ) )
+    if ( id > uint( float( Bubbles ) * dens ) )
         return;
 
     float fid = float( id );
@@ -125,17 +125,17 @@ void main()
     // is a continuous phase; downstream travel is +x with the helical
     // wake (the tip vortex) and the bubble grows then collapses.
     float life = fract( clock * ( 0.35 + 0.15 * h.x ) + h.y );
-    float birthClock = clock - life / ( 0.35 + 0.15 * h.x );
+    float birth_clock = clock - life / ( 0.35 + 0.15 * h.x );
     float blade = floor( h.z * blades );
-    float birthA = birthClock * 2.0 + blade / blades * 6.2831853;
-    float rTip = 2.0 + 0.25 * h2.x;
+    float birth_a = birth_clock * 2.0 + blade / blades * 6.2831853;
+    float r_tip = 2.0 + 0.25 * h2.x;
     // Helical wake: the tip vortex screws downstream at the rotation rate.
-    float wakeA = birthA + life * 4.0 * ( 0.8 + 0.4 * h2.y );
+    float wake_a = birth_a + life * 4.0 * ( 0.8 + 0.4 * h2.y );
     float travel = life * 7.5;
     float spread = 1.0 + 0.6 * life;
     vec3  pos = hub
-                + vec3( travel, cos( wakeA ) * rTip * spread * ( 1.0 - 0.25 * life ),
-                        sin( wakeA ) * rTip * spread * ( 1.0 - 0.25 * life ) );
+                + vec3( travel, cos( wake_a ) * r_tip * spread * ( 1.0 - 0.25 * life ),
+                        sin( wake_a ) * r_tip * spread * ( 1.0 - 0.25 * life ) );
     pos += vec3( 0.0, ( h2.z - 0.5 ) * 0.4 * life, ( h.x - 0.5 ) * 0.4 * life );
     // Size: grows, then collapses near the end of life.
     float grow = smoothstep( 0.0, 0.25, life );

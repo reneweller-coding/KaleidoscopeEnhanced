@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -254,7 +254,7 @@ void main()
     // Ribs: rings along the depth.
     float rf = 2.0 + 3.0 * clamp( ribP, 0.0, 1.0 );
     float rib = 0.5 + 0.5 * cos( wz * rf * 6.2831853 / 3.0 );
-    float ribD = ( 0.3 + 0.5 * rough ) * pow( rib, 3.0 );
+    float rib_d = ( 0.3 + 0.5 * rough ) * pow( rib, 3.0 );
     float zoom = 0.3 + 0.4 * clamp( wallZoomP, 0.0, 1.0 );
     vec2  uv = vec2( a / 3.14159265, wz * zoom * 0.3 );
     float fw = max( length( fwidth( cs ) ) / 3.14159265, fwidth( z ) * zoom * 0.3 ) * 1024.0;
@@ -263,7 +263,7 @@ void main()
     vec3  col = mix( wall, wall * flesh * 1.3, 0.5 );
     // Headlamp we carry: the near wall bright, ribs shading.
     float lamp = exp( -z * ( 0.12 + 0.15 * swell ) );
-    col *= ( 0.35 + 0.8 * lamp ) * ( 1.0 - ribD * 0.6 );
+    col *= ( 0.35 + 0.8 * lamp ) * ( 1.0 - rib_d * 0.6 );
     // Wet glisten on the rib crests.
     float wet = pow( rib, 12.0 ) * ( 0.3 + 0.7 * noise2( vec2( a * 6.0, wz * 3.0 ) ) );
     col += mix( flesh, vec3( 1.0 ), 0.6 ) * wet * lamp * ( 0.25 + 0.8 * bass );

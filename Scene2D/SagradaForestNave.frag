@@ -82,10 +82,10 @@ float sdSeg( vec2 p, vec2 a, vec2 b )
 }
 
 // The nave (metres, eye at the origin): floor, vault, side walls, columns.
-const float FL = -1.6, VAULT = 5.0, HALFW = 2.4, COLX = 1.5, ZEND = 16.0;
+const float Fl = -1.6, VAULT = 5.0, HALFW = 2.4, COLX = 1.5, ZEND = 16.0;
 const float Z0 = 2.2, DZ = 1.7; // column depths
 const float F = 0.95;           ///< focal length
-const float VY = -0.16;         ///< horizon on screen (looking up)
+const float Vy = -0.16;         ///< horizon on screen (looking up)
 float       gE[4];              ///< band energies of the window families
 vec3        gSun;               ///< direction the sunlight travels
 
@@ -206,44 +206,44 @@ void main()
     gSun = normalize( vec3( -1.0, -0.55 - 0.1 * sin( T * 0.01 ), 0.35 * sin( T * 0.013 ) ) );
 
     // The view ray and the nave's surfaces.
-    vec3  rd = normalize( vec3( p.x, p.y - VY, F ) );
-    float tHit = 1e9;
+    vec3  rd = normalize( vec3( p.x, p.y - Vy, F ) );
+    float t_hit = 1e9;
     int   mat = 0;
     if ( rd.y > 0.0 )
     {
         float t = VAULT / rd.y;
-        if ( t < tHit )
+        if ( t < t_hit )
         {
-            tHit = t;
+            t_hit = t;
             mat = 1;
         }
     }
     if ( rd.y < 0.0 )
     {
-        float t = FL / rd.y;
-        if ( t < tHit )
+        float t = Fl / rd.y;
+        if ( t < t_hit )
         {
-            tHit = t;
+            t_hit = t;
             mat = 2;
         }
     }
     {
         float t = HALFW / abs( rd.x );
-        if ( t < tHit )
+        if ( t < t_hit )
         {
-            tHit = t;
+            t_hit = t;
             mat = 3;
         }
     }
     {
         float t = ZEND / rd.z;
-        if ( t < tHit )
+        if ( t < t_hit )
         {
-            tHit = t;
+            t_hit = t;
             mat = 4;
         }
     }
-    vec3 P = rd * tHit;
+    vec3 P = rd * t_hit;
 
     vec3 stone = vec3( 0.78, 0.74, 0.68 );
     vec3 amb = vec3( 0.1, 0.1, 0.11 );
@@ -260,7 +260,7 @@ void main()
         float bowl = 0.5 + 0.5 * cos( r * 6.2831853 );
         col = stone * ( 0.3 + 0.45 * bowl ) + vec3( 1.0, 0.97, 0.9 ) * star * 1.8;
         col += vec3( 1.0, 0.9, 0.7 ) * 0.15 * smoothstep( 0.3, 0.1, r );
-        col *= exp( -tHit * 0.04 );
+        col *= exp( -t_hit * 0.04 );
     }
     else if ( mat == 3 )
     {
@@ -277,11 +277,11 @@ void main()
         float ra = atan( rq.y, rq.x );
         float spokes = smoothstep( 0.1, 0.25, abs( fract( ra / 6.2831853 * 16.0 ) - 0.5 ) );
         float rings = smoothstep( 0.03, 0.06, abs( fract( rr * 3.0 ) - 0.5 ) );
-        float inRose = smoothstep( 1.25, 1.2, rr );
+        float in_rose = smoothstep( 1.25, 1.2, rr );
         vec3  rc = mix( famCol( 0 ), famCol( 3 ), 0.5 + 0.5 * sin( ra * 3.0 + rr * 4.0 ) );
         rc = mix( rc, famCol( 2 ), smoothstep( 0.35, 0.0, rr ) );
-        float eR = 0.25 * ( gE[0] + gE[1] + gE[2] + gE[3] );
-        col = stone * amb + rc * spokes * rings * inRose * ( 0.6 + 1.2 * eR );
+        float e_r = 0.25 * ( gE[0] + gE[1] + gE[2] + gE[3] );
+        col = stone * amb + rc * spokes * rings * in_rose * ( 0.6 + 1.2 * e_r );
     }
     else
     {
@@ -290,25 +290,25 @@ void main()
         float tile = 0.9 + 0.1 * noise2( P.xz * 3.0 );
         col = stone * amb * tile + stone * sunThrough( P ) * 1.5 * tile;
     }
-    col *= exp( -tHit * 0.02 );
+    col *= exp( -t_hit * 0.02 );
 
     // The columns: trunks rising and branching into the vault, drawn in
     // screen space from far to near.
-    float colT = 1e9;
+    float col_t = 1e9;
     float br = 0.3 + 0.4 * clamp( branchP, 0.0, 1.0 );
     for ( int k = 7; k >= 0; --k )
     {
         float z = Z0 + DZ * float( k );
-        if ( z > tHit )
+        if ( z > t_hit )
             continue;
         for ( int sgn = 0; sgn < 2; ++sgn )
         {
             float sx = sgn == 0 ? -1.0 : 1.0;
             // The world point in this column's plane.
-            vec2  w = vec2( p.x, p.y - VY ) * z / F;
+            vec2  w = vec2( p.x, p.y - Vy ) * z / F;
             vec2  cq = vec2( w.x - sx * COLX, w.y );
             float bh = 2.6; // where the trunk branches
-            float d = max( abs( cq.x ) - ( 0.13 - 0.02 * smoothstep( FL, bh, cq.y ) ), -( cq.y - FL ) );
+            float d = max( abs( cq.x ) - ( 0.13 - 0.02 * smoothstep( Fl, bh, cq.y ) ), -( cq.y - Fl ) );
             d = max( d, cq.y - bh - 0.1 );
             // Branches: two orders of arms spreading into the vault.
             vec2 b0 = vec2( 0.0, bh );
@@ -338,29 +338,29 @@ void main()
                 cc *= exp( -z * 0.02 );
                 col = mix( col, cc, cov );
                 if ( cov > 0.5 )
-                    colT = z;
+                    col_t = z;
             }
         }
     }
 
     // The shafts of coloured light in the haze, integrated along the view
     // ray up to whatever it hits.
-    float     tEnd = min( tHit, colT );
+    float     t_end = min( t_hit, col_t );
     vec3      shaft = vec3( 0.0 );
     const int NS = 20;
     float     jit = hash21( gl_FragCoord.xy + fract( T ) * 13.0 );
     for ( int i = 0; i < NS; ++i )
     {
-        float t = tEnd * ( float( i ) + jit ) / float( NS );
+        float t = t_end * ( float( i ) + jit ) / float( NS );
         vec3  S = rd * t;
         float dens = 0.6 + 0.4 * noise2( S.xz * 0.8 + vec2( T * 0.03, S.y * 0.5 ) );
         shaft += sunThrough( S ) * dens;
     }
-    shaft *= tEnd / float( NS ) * 0.07 * ( 0.6 + 0.8 * swell );
+    shaft *= t_end / float( NS ) * 0.07 * ( 0.6 + 0.8 * swell );
     col += shaft;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

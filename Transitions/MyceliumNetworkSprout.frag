@@ -69,20 +69,20 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.45 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
     float angle = atan( p.y, p.x );
 
     // Multi-angle branching hyphae lines.  audioBass widens the mycelial thread
     // network by softening the perpendicular falloff (peak unchanged, cords get
-    // thicker).  midTransition gates the widening back to the base thickness at
-    // both fade endpoints, where hyphaePattern's only consumers -- the cord
+    // thicker).  mid_transition gates the widening back to the base thickness at
+    // both fade endpoints, where hyphae_pattern's only consumers -- the cord
     // displacement and the bioluminescent glow -- are multiplied out anyway.
-    float threadWidth = 1.0 + audioSwell * 0.7 * midTransition;
+    float thread_width = 1.0 + audioSwell * 0.7 * mid_transition;
 
-    float hyphaePattern = 0.0;
+    float hyphae_pattern = 0.0;
     for ( int i = 0; i < 6; ++i )
     {
         float theta = float( i ) * 1.0471975 + sin( float( i ) * 3.7 + t * 0.5 ) * 0.2 * brn;
@@ -90,31 +90,31 @@ void main()
         float proj = dot( p, dir );
         float perp = abs( dot( p, vec2( -dir.y, dir.x ) ) );
 
-        float branch = exp( -perp * 45.0 * hyp / threadWidth ) * smoothstep( 0.0, 0.1, proj );
-        hyphaePattern = max( hyphaePattern, branch );
+        float branch = exp( -perp * 45.0 * hyp / thread_width ) * smoothstep( 0.0, 0.1, proj );
+        hyphae_pattern = max( hyphae_pattern, branch );
     }
 
     // Growth front moving outward
-    float growthRadius = tProg * 1.3;
-    float growthMask = smoothstep( growthRadius - 0.1, growthRadius + 0.1, r );
+    float growth_radius = t_prog * 1.3;
+    float growth_mask = smoothstep( growth_radius - 0.1, growth_radius + 0.1, r );
 
     // Coordinate displacement along hyphae cords
-    vec2 hyphaeDisp = vec2( sin( r * 20.0 + t ), cos( angle * 6.0 ) ) * 0.02 * hyphaePattern * midTransition;
+    vec2 hyphae_disp = vec2( sin( r * 20.0 + t ), cos( angle * 6.0 ) ) * 0.02 * hyphae_pattern * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + hyphaeDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - hyphaeDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + hyphae_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - hyphae_disp ) );
 
-    vec4 col = mix( c0, c1, growthMask );
+    vec4 col = mix( c0, c1, growth_mask );
 
     // Bioluminescent action-potential pulses along hyphae
     float pulse = sin( r * 30.0 - t * 8.0 ) * 0.5 + 0.5;
-    vec3  bioGreen = vec3( 0.2, 1.0, 0.5 );
-    col.rgb += hyphaePattern * pulse * bioGreen * midTransition * ( 1.5 + audioKick * 1.17 );
+    vec3  bio_green = vec3( 0.2, 1.0, 0.5 );
+    col.rgb += hyphae_pattern * pulse * bio_green * mid_transition * ( 1.5 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

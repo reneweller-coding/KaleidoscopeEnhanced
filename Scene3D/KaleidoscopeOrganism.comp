@@ -60,17 +60,17 @@ uniform float nfoldP; ///< preset: mirror-copy count around the Y axis (generato
                       // always arrive as float -- see runGenerator()'s setF() -- an
                       // `int` declaration here throws GL_INVALID_OPERATION on upload)
 
-const int   NODES = 1800;
-const int   WALKERS = 512;
-const int   SEEDS = 24;
-const int   SIDES = 6;
-const int   GRID = 38;
-const float GH = 2.6;                     ///< half extent of the hash grid
-const vec3  BASE = vec3( 0.0, 0.0, 0.0 ); // grows radially outward from the centre
+const int   Nodes = 1800;
+const int   Walkers = 512;
+const int   Seeds = 24;
+const int   Sides = 6;
+const int   Grid = 38;
+const float Gh = 2.6;                     ///< half extent of the hash grid
+const vec3  Base = vec3( 0.0, 0.0, 0.0 ); // grows radially outward from the centre
 
-const int OFF_NODES = 0;
-const int OFF_WALK = 4 * NODES;
-const int OFF_GRID = 4 * NODES + 4 * WALKERS;
+const int OffNodes = 0;
+const int OffWalk = 4 * Nodes;
+const int OffGrid = 4 * Nodes + 4 * Walkers;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( float n )
@@ -94,20 +94,20 @@ void setF( int i, float v )
 
 vec3 nodePos( int i )
 {
-    int o = OFF_NODES + i * 4;
+    int o = OffNodes + i * 4;
     return vec3( getF( o ), getF( o + 1 ), getF( o + 2 ) );
 }
 
 ivec3 cellCoord( vec3 p )
 {
-    return ivec3( floor( ( p + GH ) / ( 2.0 * GH ) * float( GRID ) ) );
+    return ivec3( floor( ( p + Gh ) / ( 2.0 * Gh ) * float( Grid ) ) );
 }
 
 int cellIndex( ivec3 c )
 {
-    if ( any( lessThan( c, ivec3( 0 ) ) ) || any( greaterThanEqual( c, ivec3( GRID ) ) ) )
+    if ( any( lessThan( c, ivec3( 0 ) ) ) || any( greaterThanEqual( c, ivec3( Grid ) ) ) )
         return -1;
-    return c.x + GRID * ( c.y + GRID * c.z );
+    return c.x + Grid * ( c.y + Grid * c.z );
 }
 
 /// @brief Writes one vertex into the output buffer (compute stage).
@@ -135,31 +135,31 @@ void main()
     // ---------------- pass 0: advance the organism (unchanged DLA rule) ----------------
     if ( genPass < 0.5 )
     {
-        bool needInit = ( nodeCount < uint( SEEDS ) ) || ( nodeCount > uint( NODES + 64 ) );
-        if ( needInit )
+        bool need_init = ( nodeCount < uint( Seeds ) ) || ( nodeCount > uint( Nodes + 64 ) );
+        if ( need_init )
         {
-            if ( id < uint( SEEDS ) )
+            if ( id < uint( Seeds ) )
             {
                 vec3 h = hash3( float( id ) * 7.13 + 1.7 + sceneSeed * 31.0 );
-                vec3 p = BASE + ( h - 0.5 ) * 0.28;
-                int  o = OFF_NODES + int( id ) * 4;
+                vec3 p = Base + ( h - 0.5 ) * 0.28;
+                int  o = OffNodes + int( id ) * 4;
                 setF( o, p.x );
                 setF( o + 1, p.y );
                 setF( o + 2, p.z );
                 setF( o + 3, -1.0 );
                 int c = cellIndex( cellCoord( p ) );
                 if ( c >= 0 )
-                    st[OFF_GRID + c] = id + 1u;
+                    st[OffGrid + c] = id + 1u;
                 if ( id == 0u )
                 {
-                    nodeCount = uint( SEEDS );
+                    nodeCount = uint( Seeds );
                     radiusQ = uint( 0.5 * 4096.0 );
                 }
             }
             return;
         }
 
-        if ( nodeCount == uint( SEEDS ) )
+        if ( nodeCount == uint( Seeds ) )
         {
             if ( id != 0u )
                 return;
@@ -173,15 +173,15 @@ void main()
                 vec3 pp = nodePos( pick );
                 vec3 dir = normalize( h - 0.5 + 1e-5 );
                 vec3 np = pp + dir * contact * 0.92;
-                int  o = OFF_NODES + int( cnt ) * 4;
+                int  o = OffNodes + int( cnt ) * 4;
                 setF( o, np.x );
                 setF( o + 1, np.y );
                 setF( o + 2, np.z );
                 setF( o + 3, float( pick ) );
                 int c = cellIndex( cellCoord( np ) );
                 if ( c >= 0 )
-                    st[OFF_GRID + c] = cnt + 1u;
-                rmax = max( rmax, distance( np, BASE ) );
+                    st[OffGrid + c] = cnt + 1u;
+                rmax = max( rmax, distance( np, Base ) );
                 ++cnt;
             }
             nodeCount = cnt;
@@ -189,28 +189,28 @@ void main()
             return;
         }
 
-        if ( id >= uint( WALKERS ) )
+        if ( id >= uint( Walkers ) )
             return;
 
         int count = int( nodeCount );
-        if ( count >= NODES )
+        if ( count >= Nodes )
             return;
 
-        int   wo = OFF_WALK + int( id ) * 4;
+        int   wo = OffWalk + int( id ) * 4;
         vec3  w = vec3( getF( wo ), getF( wo + 1 ), getF( wo + 2 ) );
         float seed = getF( wo + 3 );
 
-        float colonyR = float( radiusQ ) / 4096.0;
-        float spawnR = min( colonyR + 0.35, GH * 1.05 * clamp( reachP, 0.5, 1.6 ) );
-        float killR = spawnR * 1.6 + 0.6;
+        float colony_r = float( radiusQ ) / 4096.0;
+        float spawn_r = min( colony_r + 0.35, Gh * 1.05 * clamp( reachP, 0.5, 1.6 ) );
+        float kill_r = spawn_r * 1.6 + 0.6;
 
         // Radially symmetric attractor: aim straight at the centre (not
         // lifted, unlike CoralGrowth's floor-to-mid-height bias), so growth
         // spreads spherically outward -- what makes it look right once
         // pass 1 mirrors it into a kaleidoscope around the Y axis.
-        vec3 aim = BASE;
+        vec3 aim = Base;
 
-        if ( !( seed > 0.5 ) || distance( w, BASE ) > killR )
+        if ( !( seed > 0.5 ) || distance( w, Base ) > kill_r )
         {
             seed = hash1( float( id ) * 3.7 + float( frameIndex ) * 0.017
                           + sceneSeed * 91.0 )
@@ -219,7 +219,7 @@ void main()
             float th = h.x * 6.2831853;
             float cph = h.y * 2.0 - 1.0;
             float sph = sqrt( max( 1.0 - cph * cph, 0.0 ) );
-            w = BASE + vec3( sph * cos( th ), cph, sph * sin( th ) ) * spawnR;
+            w = Base + vec3( sph * cos( th ), cph, sph * sin( th ) ) * spawn_r;
         }
 
         vec3  r = hash3( seed * 31.7 + float( frameIndex ) * 0.311 ) - 0.5;
@@ -229,7 +229,7 @@ void main()
 
         ivec3 c0 = cellCoord( w );
         bool  touched = false;
-        int   hitNode = 0;
+        int   hit_node = 0;
         for ( int dz = -1; dz <= 1 && !touched; ++dz )
             for ( int dy = -1; dy <= 1 && !touched; ++dy )
                 for ( int dx = -1; dx <= 1 && !touched; ++dx )
@@ -237,7 +237,7 @@ void main()
                     int c = cellIndex( c0 + ivec3( dx, dy, dz ) );
                     if ( c < 0 )
                         continue;
-                    uint e = st[OFF_GRID + c];
+                    uint e = st[OffGrid + c];
                     if ( e == 0u )
                         continue;
                     int n = int( e ) - 1;
@@ -246,39 +246,39 @@ void main()
                     if ( distance( w, nodePos( n ) ) < contact )
                     {
                         touched = true;
-                        hitNode = n;
+                        hit_node = n;
                     }
                 }
 
         if ( touched )
         {
-            vec3 hp = nodePos( hitNode );
+            vec3 hp = nodePos( hit_node );
             vec3 out1 = normalize( w - hp + vec3( 1e-5, 1e-5, 1e-5 ) );
 
-            float pStick = clamp( 0.50 + 0.45 * audioKick + 0.15 * audioSubBass,
-                                  0.0, 0.97 );
-            if ( hash1( seed * 13.7 + float( frameIndex ) * 0.713 ) < pStick )
+            float p_stick = clamp( 0.50 + 0.45 * audioKick + 0.15 * audioSubBass,
+                                   0.0, 0.97 );
+            if ( hash1( seed * 13.7 + float( frameIndex ) * 0.713 ) < p_stick )
             {
                 vec3 np = hp + out1 * contact * 0.92;
                 uint slot = atomicAdd( nodeCount, 1u );
-                if ( slot < uint( NODES ) )
+                if ( slot < uint( Nodes ) )
                 {
-                    int o = OFF_NODES + int( slot ) * 4;
+                    int o = OffNodes + int( slot ) * 4;
                     setF( o, np.x );
                     setF( o + 1, np.y );
                     setF( o + 2, np.z );
-                    setF( o + 3, float( hitNode ) );
+                    setF( o + 3, float( hit_node ) );
                     int c = cellIndex( cellCoord( np ) );
                     if ( c >= 0 )
-                        st[OFF_GRID + c] = slot + 1u;
-                    atomicMax( radiusQ, uint( distance( np, BASE ) * 4096.0 ) );
+                        st[OffGrid + c] = slot + 1u;
+                    atomicMax( radiusQ, uint( distance( np, Base ) * 4096.0 ) );
                 }
                 else
                 {
                     atomicAdd( nodeCount, uint( -1 ) );
                 }
                 seed = 0.0;
-                w = BASE;
+                w = Base;
             }
             else
             {
@@ -294,16 +294,16 @@ void main()
     }
 
     // ---------------- pass 1: mesh the organism, NFOLD mirror-kaleidoscope ----------------
-    int count = int( min( nodeCount, uint( NODES ) ) );
+    int count = int( min( nodeCount, uint( Nodes ) ) );
     if ( id >= uint( count ) )
         return;
 
     int nfold = clamp( int( nfoldP ), 3, 8 );
 
-    float colonyR = float( radiusQ ) / 4096.0;
-    float sc = 2.0 / max( colonyR, 0.6 );
+    float colony_r = float( radiusQ ) / 4096.0;
+    float sc = 2.0 / max( colony_r, 0.6 );
 
-    int parent = int( getF( OFF_NODES + int( id ) * 4 + 3 ) );
+    int parent = int( getF( OffNodes + int( id ) * 4 + 3 ) );
     if ( parent >= count )
         return;
 
@@ -314,15 +314,15 @@ void main()
     if ( L < 1e-5 || L > 0.3 )
         return;
 
-    vec3 ea0 = ( a - BASE ) * sc;
-    vec3 eb0 = ( b - BASE ) * sc;
+    vec3 ea0 = ( a - Base ) * sc;
+    vec3 eb0 = ( b - Base ) * sc;
 
     float age = 1.0 - float( id ) / float( max( count, 1 ) );
     float r = clamp( thickP, 0.3, 2.5 ) * ( 0.020 + 0.026 * age ) * sc
               * ( 1.0 + 0.25 * audioKick );
-    float depth = clamp( length( a - BASE ) / max( colonyR, 0.6 ), 0.0, 1.0 );
+    float depth = clamp( length( a - Base ) / max( colony_r, 0.6 ), 0.0, 1.0 );
 
-    uint need = uint( SIDES ) * 6u * uint( nfold );
+    uint need = uint( Sides ) * 6u * uint( nfold );
     uint base = atomicAdd( cmd[4], need );
     if ( base + need > maxVertices )
         return;
@@ -347,11 +347,11 @@ void main()
         vec3 u = normalize( cross( dir, up ) );
         vec3 v = cross( dir, u );
 
-        uint wbase = base + uint( w ) * uint( SIDES ) * 6u;
-        for ( int s = 0; s < SIDES; ++s )
+        uint wbase = base + uint( w ) * uint( Sides ) * 6u;
+        for ( int s = 0; s < Sides; ++s )
         {
-            float t0 = 6.2831853 * float( s ) / float( SIDES );
-            float t1 = 6.2831853 * float( s + 1 ) / float( SIDES );
+            float t0 = 6.2831853 * float( s ) / float( Sides );
+            float t1 = 6.2831853 * float( s + 1 ) / float( Sides );
             vec3  n0 = u * cos( t0 ) + v * sin( t0 );
             vec3  n1 = u * cos( t1 ) + v * sin( t1 );
             vec3  A = eb + n0 * r * 1.15, B = eb + n1 * r * 1.15;

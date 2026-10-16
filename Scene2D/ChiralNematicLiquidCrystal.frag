@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float pFreq = ( pitchFreqP > 0.01 ) ? pitchFreqP : 1.0;
-    float dDens = ( defectDensityP > 0.01 ) ? defectDensityP : 1.0;
+    float p_freq = ( pitchFreqP > 0.01 ) ? pitchFreqP : 1.0;
+    float d_dens = ( defectDensityP > 0.01 ) ? defectDensityP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -73,55 +73,55 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Helical director twisting phase field (fingerprint texture with disclinations)
-    float basePitch = ( 12.0 + 8.0 * audioCentroid ) * pFreq;
+    float base_pitch = ( 12.0 + 8.0 * audioCentroid ) * p_freq;
 
     // Topological defect dislocation line at center
-    float aDefect = atan( uv.y, uv.x );
-    float rDefect = length( uv );
+    float a_defect = atan( uv.y, uv.x );
+    float r_defect = length( uv );
 
     // GANZZAHLIGE Windung: ein nicht-ganzzahliger atan-Koeffizient springt
     // am Branch-Cut (die gemeldete unstetige Kante links der Mitte).
-    float wind = max( 1.0, floor( 2.0 * dDens + 0.5 ) );
-    float helicalPhase = rDefect * basePitch + aDefect * wind - t * 3.0;
+    float wind = max( 1.0, floor( 2.0 * d_dens + 0.5 ) );
+    float helical_phase = r_defect * base_pitch + a_defect * wind - t * 3.0;
 
     // Second crossed helical director wave
-    float crossPitch = sin( uv.x * basePitch * 0.8 + t * 2.0 ) * cos( uv.y * basePitch * 0.8 - t * 2.0 );
+    float cross_pitch = sin( uv.x * base_pitch * 0.8 + t * 2.0 ) * cos( uv.y * base_pitch * 0.8 - t * 2.0 );
     // Elastic distortion amplitude of the domain texture -- sub-bass lets the
     // crossed director wave deform the fingerprint pattern further, i.e. a
     // softer (more elastic) crystal, without touching the pitch itself.
-    helicalPhase += crossPitch * 1.5 * ( 1.0 + 0.5 * audioSubBass );
+    helical_phase += cross_pitch * 1.5 * ( 1.0 + 0.5 * audioSubBass );
 
     // Bragg diffraction selective color reflection formula: lambda = 2 * n * p * cos(theta)
-    vec3 braggColor = vec3(
-                          sin( helicalPhase ),
-                          sin( helicalPhase + 2.094 ),
-                          sin( helicalPhase + 4.188 ) )
-                          * 0.5
-                      + 0.5;
+    vec3 bragg_color = vec3(
+                           sin( helical_phase ),
+                           sin( helical_phase + 2.094 ),
+                           sin( helical_phase + 4.188 ) )
+                           * 0.5
+                       + 0.5;
 
     // Disclination defect line glow
-    float defectLine = abs( sin( helicalPhase ) );
-    float lineGlow = smoothstep( 0.85, 1.0, defectLine ) * glw;
+    float defect_line = abs( sin( helical_phase ) );
+    float line_glow = smoothstep( 0.85, 1.0, defect_line ) * glw;
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + vec2( sin( helicalPhase ), cos( helicalPhase ) ) * 0.04 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + vec2( sin( helical_phase ), cos( helical_phase ) ) * 0.04 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Liquid crystal palette
-    vec3 palBase = imgPalette( rDefect * 0.5 + t * 0.05 );
-    vec3 lcBase = mix( texCol * 0.3, palBase, 0.45 );
+    vec3 pal_base = imgPalette( r_defect * 0.5 + t * 0.05 );
+    vec3 lc_base = mix( tex_col * 0.3, pal_base, 0.45 );
 
     // Add iridescent Bragg diffraction & defect flashes
-    vec3 braggTint = braggColor * ( 0.8 + 0.6 * defectLine ) * ( 1.0 + 2.5 * audioKick );
-    vec3 defectTint = vec3( 1.4, 1.3, 1.8 ) * lineGlow * ( 1.0 + 2.0 * audioKick );
+    vec3 bragg_tint = bragg_color * ( 0.8 + 0.6 * defect_line ) * ( 1.0 + 2.5 * audioKick );
+    vec3 defect_tint = vec3( 1.4, 1.3, 1.8 ) * line_glow * ( 1.0 + 2.0 * audioKick );
 
-    vec3 finalCol = lcBase + braggTint * 0.7 + defectTint * 0.4;
+    vec3 final_col = lc_base + bragg_tint * 0.7 + defect_tint * 0.4;
 
     // Center topological disclination core bloom
-    float coreBloom = exp( -rDefect * 6.0 ) * ( 0.8 + 1.8 * audioKick );
-    finalCol += imgPalette( 0.85 ) * coreBloom;
+    float core_bloom = exp( -r_defect * 6.0 ) * ( 0.8 + 1.8 * audioKick );
+    final_col += imgPalette( 0.85 ) * core_bloom;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    finalCol /= 1.0 + 0.60 * max( finalCol.r, max( finalCol.g, finalCol.b ) ); // over-bright tail (final review)
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    final_col /= 1.0 + 0.60 * max( final_col.r, max( final_col.g, final_col.b ) ); // over-bright tail (final review)
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

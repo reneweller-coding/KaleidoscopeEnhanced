@@ -53,8 +53,8 @@ void main()
     float lum = dot( beam, vec3( 0.2126, 0.7152, 0.0722 ) );
     float mxc = max( beam.r, max( beam.g, beam.b ) );
 
-    vec3 fogCol = mix( beam, vec3( lum ), 0.70 );
-    vec3 coreCol = mix( beam, vec3( mxc ), 0.35 );
+    vec3 fog_col = mix( beam, vec3( lum ), 0.70 );
+    vec3 core_col = mix( beam, vec3( mxc ), 0.35 );
 
-    fragColor = vec4( coreCol * core + fogCol * halo, 1.0 );
+    fragColor = vec4( core_col * core + fog_col * halo, 1.0 );
 }

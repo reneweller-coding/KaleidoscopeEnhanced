@@ -57,7 +57,7 @@ void main()
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // ---- FAR CORTICAL HAZE --------------------------------------------
@@ -72,8 +72,8 @@ void main()
         float dz = 11.0 + hz * 82.0;
         float ph = hx * 6.2831853 + time * 0.06 + audioAdvance * 0.05;
         float open = 2.3; // 2.0 fits the frustum exactly; 2.3 covers the rig's roll
-        vec3  hp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 1.5 * cos( ph ),
-                         ( hy - 0.5 ) * open * dz * kTanY + 1.5 * sin( ph * 0.79 ),
+        vec3  hp = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 1.5 * cos( ph ),
+                         ( hy - 0.5 ) * open * dz * TanY + 1.5 * sin( ph * 0.79 ),
                          dz );
 
         vec3 hcol = mix( vec3( 0.0, 0.85, 1.0 ), vec3( 0.7, 0.15, 1.0 ), hy );
@@ -101,45 +101,45 @@ void main()
 
     // Connectome cortical column coordinates.  Widened: at 2.2 units the ring
     // of clusters filled barely half the frame's width.
-    float clusterID = floor( id / 3000.0 ); // 20 cortical clusters
-    float clusterAngle = clusterID * ( 6.2831853 / 20.0 );
-    vec3  clusterCenter = vec3( cos( clusterAngle ), sin( clusterAngle ), sin( clusterID * 1.5 ) ) * ( 3.1 * neu );
+    float cluster_id = floor( id / 3000.0 ); // 20 cortical clusters
+    float cluster_angle = cluster_id * ( 6.2831853 / 20.0 );
+    vec3  cluster_center = vec3( cos( cluster_angle ), sin( cluster_angle ), sin( cluster_id * 1.5 ) ) * ( 3.1 * neu );
 
     // Dendritic branching within cluster
-    float inClusterID = mod( id, 3000.0 );
-    float branchAngle = inClusterID * 0.15 + t * 0.2;
-    float branchR = sqrt( inClusterID / 3000.0 ) * 2.1;
+    float in_cluster_id = mod( id, 3000.0 );
+    float branch_angle = in_cluster_id * 0.15 + t * 0.2;
+    float branch_r = sqrt( in_cluster_id / 3000.0 ) * 2.1;
 
-    vec3 localPos = vec3(
-        cos( branchAngle ) * branchR,
-        sin( branchAngle ) * branchR,
-        sin( inClusterID * 0.3 ) * 0.8 );
+    vec3 local_pos = vec3(
+        cos( branch_angle ) * branch_r,
+        sin( branch_angle ) * branch_r,
+        sin( in_cluster_id * 0.3 ) * 0.8 );
 
     // Axon action potential travel
-    float actionProg = fract( t * 1.5 + inClusterID * 0.005 );
-    float isSynapse = exp( -abs( actionProg - 0.5 ) * 20.0 );
+    float action_prog = fract( t * 1.5 + in_cluster_id * 0.005 );
+    float is_synapse = exp( -abs( action_prog - 0.5 ) * 20.0 );
 
     // Spectrum excitation per cluster
-    int   specIdx = int( clamp( clusterID * 1.5, 0.0, 31.0 ) );
-    float clusterEnergy = audioSpectrum[specIdx];
+    int   spec_idx = int( clamp( cluster_id * 1.5, 0.0, 31.0 ) );
+    float cluster_energy = audioSpectrum[spec_idx];
 
     // Global cognitive wave surge on kick
-    float cognitiveSurge = exp( -length( localPos ) * 2.0 ) * audioKick * 1.5 * pls;
+    float cognitive_surge = exp( -length( local_pos ) * 2.0 ) * audioKick * 1.5 * pls;
 
-    vec3 pos = clusterCenter + localPos * ( 1.0 + 0.3 * audioBass );
+    vec3 pos = cluster_center + local_pos * ( 1.0 + 0.3 * audioBass );
 
     // 3D rotation of connectome
-    float rotY = t * 0.3 + audioPhase * 0.1;
-    float cy = cos( rotY ), sy = sin( rotY );
+    float rot_y = t * 0.3 + audioPhase * 0.1;
+    float cy = cos( rot_y ), sy = sin( rot_y );
     pos.xz = vec2( pos.x * cy - pos.z * sy, pos.x * sy + pos.z * cy );
 
     // Synapse neurotransmitter colors: Cyan (GABA), Violet (Glutamate), Golden-Amber (Dopamine)
-    vec3 gabaCyan = vec3( 0.0, 0.85, 1.0 );
-    vec3 gluViolet = vec3( 0.7, 0.15, 1.0 );
-    vec3 dopaGold = vec3( 1.0, 0.85, 0.2 );
+    vec3 gaba_cyan = vec3( 0.0, 0.85, 1.0 );
+    vec3 glu_violet = vec3( 0.7, 0.15, 1.0 );
+    vec3 dopa_gold = vec3( 1.0, 0.85, 0.2 );
 
-    vec3 synCol = mix( gabaCyan, gluViolet, sin( id * 0.1 ) * 0.5 + 0.5 );
-    synCol = mix( synCol, dopaGold, isSynapse );
+    vec3 syn_col = mix( gaba_cyan, glu_violet, sin( id * 0.1 ) * 0.5 + 0.5 );
+    syn_col = mix( syn_col, dopa_gold, is_synapse );
 
     // Redesign after the white-out diagnosis: gain cuts alone can never fix
     // this scene — 60k sprites at up to 64 px meant >100x additive overdraw,
@@ -154,11 +154,11 @@ void main()
     // is the distance between a resting neuron and a firing one, so the peak is
     // lifted more than the floor. The hard cap still stops a kick taking the
     // whole connectome to white.
-    float brightness = min( 0.30 + 1.35 * isSynapse + 0.55 * clusterEnergy
-                                + 1.0 * cognitiveSurge,
+    float brightness = min( 0.30 + 1.35 * is_synapse + 0.55 * cluster_energy
+                                + 1.0 * cognitive_surge,
                             3.0 );
     // Cap the TINTED colour, not the scalar that fed it.
-    vColor = vec4( min( synCol * brightness, vec3( 2.2 ) ), 1.0 );
+    vColor = vec4( min( syn_col * brightness, vec3( 2.2 ) ), 1.0 );
 
     // Stereo 3D camera projection
     vec3 vp = pos;
@@ -169,7 +169,7 @@ void main()
 
     // Perspective point size — small on purpose: sprite AREA is what the
     // additive sum integrates, so radius is the real exposure control here.
-    float baseSize = ( 5.5 + 7.0 * isSynapse + 8.0 * cognitiveSurge );
-    gl_PointSize = clamp( baseSize * ( 6.5 / max( vp.z, 1.0 ) ), 2.2, 22.0 );
+    float base_size = ( 5.5 + 7.0 * is_synapse + 8.0 * cognitive_surge );
+    gl_PointSize = clamp( base_size * ( 6.5 / max( vp.z, 1.0 ) ), 2.2, 22.0 );
     vSize = gl_PointSize;
 }

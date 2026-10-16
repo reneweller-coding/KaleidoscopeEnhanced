@@ -125,7 +125,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -252,10 +252,10 @@ void main()
     float vein2 = exp( -abs( sin( wq.y * vd * 2.3 - wq.x * 0.7 + 3.0 * fbm3( wq * 2.0 + 5.0 ) ) ) / 0.02 ) * 0.5;
     float crackle = exp( -abs( fbm( wq * 6.0 ) - 0.5 ) / 0.012 ) * rough * 0.6;
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  veinC = mix( vec3( 0.95, 0.95, 0.97 ), vec3( 1.0, 0.78, 0.35 ), mode );
-    veinC = mix( veinC, glowColour( imgLod( uv, 5.0 ), p, hueP * 0.159 ), 0.15 );
+    vec3  vein_c = mix( vec3( 0.95, 0.95, 0.97 ), vec3( 1.0, 0.78, 0.35 ), mode );
+    vein_c = mix( vein_c, glowColour( imgLod( uv, 5.0 ), p, hueP * 0.159 ), 0.15 );
     vec3 col = body;
-    col = mix( col, veinC * ( 1.0 + 0.8 * kick * mode ), clamp( vein * 0.85 + vein2 * 0.4, 0.0, 1.0 ) );
+    col = mix( col, vein_c * ( 1.0 + 0.8 * kick * mode ), clamp( vein * 0.85 + vein2 * 0.4, 0.0, 1.0 ) );
     col = mix( col, col * 0.45, crackle );
     // Polish: a soft reflection band gliding over the stone.
     float pol = exp( -pow( dot( p, normalize( vec2( 1.0, 0.6 ) ) ) - 0.8 * sin( 0.03 * sceneTime ), 2.0 ) * 6.0 );

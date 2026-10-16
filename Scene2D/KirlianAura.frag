@@ -127,8 +127,8 @@ void main()
     }
     glow *= 1.6;
     // The print: dark, fading in on the swell; its edges glow directly.
-    float printIn = 0.08 + 0.3 * clamp( audioSwell, 0.0, 1.0 );
-    vec3  print = img( uv ) * printIn;
+    float print_in = 0.08 + 0.3 * clamp( audioSwell, 0.0, 1.0 );
+    vec3  print = img( uv ) * print_in;
     vec3  aura = mix( vec3( 0.35, 0.3, 1.0 ), vec3( 1.0, 0.55, 0.3 ), clamp( audioBass, 0.0, 1.0 ) * 0.6 );
     aura = mix( aura, imgPalette( hue * 0.159 + 0.7 ), 0.35 );
     vec3 col = print;
@@ -138,7 +138,7 @@ void main()
     col *= 0.94 + 0.06 * hash21( floor( gl_FragCoord.xy * 0.5 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -50,7 +50,7 @@ uniform float energyP;
 uniform float amountP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Luminance of the photo at a coordinate.
 float lum( vec3 c )
@@ -84,7 +84,7 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // What counts as energy: pure luminance edges, or colour changes too.
     float colourWeight = ew; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
@@ -92,22 +92,22 @@ void main()
     // Walk from the left edge to this pixel, accumulating how much of what we
     // passed was cheap enough to carve away.
     const int N = 20;
-    float     cheapLeft0 = 0.0, cheapLeft1 = 0.0, totalCheap0 = 0.0, totalCheap1 = 0.0;
+    float     cheap_left0 = 0.0, cheap_left1 = 0.0, total_cheap0 = 0.0, total_cheap1 = 0.0;
     for ( int i = 0; i < N; ++i )
     {
         float x = ( float( i ) + 0.5 ) / float( N );
         float c0 = 1.0 / ( 1.0 + 26.0 * columnEnergy( tex0, x, colourWeight ) );
         float c1 = 1.0 / ( 1.0 + 26.0 * columnEnergy( tex1, x, colourWeight ) );
-        totalCheap0 += c0;
-        totalCheap1 += c1;
+        total_cheap0 += c0;
+        total_cheap1 += c1;
         if ( x < uv.x )
         {
-            cheapLeft0 += c0;
-            cheapLeft1 += c1;
+            cheap_left0 += c0;
+            cheap_left1 += c1;
         }
     }
-    cheapLeft0 /= max( totalCheap0, 1e-4 );
-    cheapLeft1 /= max( totalCheap1, 1e-4 );
+    cheap_left0 /= max( total_cheap0, 1e-4 );
+    cheap_left1 /= max( total_cheap1, 1e-4 );
 
     // How far the frame is retargeted right now.
     float carve = arc * amt * ( 0.55 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) )
@@ -119,8 +119,8 @@ void main()
     // A fifth of the way toward the cumulative profile: at half, the frame
     // collapsed into its own centre and read as a zoom, which is precisely what
     // seam carving is not.
-    float u0 = uv.x + ( cheapLeft0 - uv.x ) * carve * 0.22;
-    float u1 = uv.x - ( cheapLeft1 - uv.x ) * carve * 0.22;
+    float u0 = uv.x + ( cheap_left0 - uv.x ) * carve * 0.22;
+    float u1 = uv.x - ( cheap_left1 - uv.x ) * carve * 0.22;
 
     vec3 a = textureLod( tex0, clamp( vec2( u0, uv.y ), 0.0, 1.0 ), 0.0 ).rgb;
     vec3 b = textureLod( tex1, clamp( vec2( u1, uv.y ), 0.0, 1.0 ), 0.0 ).rgb;
@@ -128,7 +128,7 @@ void main()
 
     // A seam closing pinches the light along it.  The seams are where the
     // compression is steepest, which is where the cheap columns were.
-    float pinch = clamp( ( cheapLeft0 - uv.x ) * 6.0, -1.0, 1.0 );
+    float pinch = clamp( ( cheap_left0 - uv.x ) * 6.0, -1.0, 1.0 );
     float seam = exp( -pow( fract( uv.x * 34.0 + pinch * 3.0 ) - 0.5, 2.0 ) / 0.02 ) * carve;
     vec3  glow = mix( vec3( 0.90, 0.94, 1.0 ), vec3( 1.0, 0.95, 0.86 ), fract( hue * 0.159 ) );
     col += glow * seam * ( 0.03 + 0.12 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );

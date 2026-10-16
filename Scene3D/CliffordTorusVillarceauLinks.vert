@@ -61,18 +61,18 @@ void main()
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // The engine draws NON-instanced (glDrawArrays), so gl_InstanceID is
     // always 0 -- every unit would collapse onto one spot.  Scene3DShader
     // packs the per-unit index into attrA.w instead (see buildGeometry).
-    int   cubeIndex = int( attrA.w );
-    float ci = float( cubeIndex );
+    int   cube_index = int( attrA.w );
+    float ci = float( cube_index );
     vIndex = ci / 4900.0;
 
     // Cube corner local vertex
-    vec3 cubeCorner = attrA.xyz;
+    vec3 cube_corner = attrA.xyz;
     vNormal = attrB.xyz;
     vTexCoord = attrA.xy * 0.5 + 0.5;
 
@@ -100,42 +100,42 @@ void main()
 
         // A mote sized as a fraction of its own depth stays a legible ~4 px
         // speck at any distance; below that it averages away to nothing.
-        float dScale = dz * 0.0042 * ( 0.60 + 0.80 * d4 ) * ( 1.0 + 0.25 * audioSwell );
+        float d_scale = dz * 0.0042 * ( 0.60 + 0.80 * d4 ) * ( 1.0 + 0.25 * audioSwell );
 
-        vec3 centre = vec3( ( d1 - 0.5 ) * open * dz * kTanY * aspect + 0.9 * cos( ph ),
-                            ( d2 - 0.5 ) * open * dz * kTanY + 0.9 * sin( ph * 0.83 ),
+        vec3 centre = vec3( ( d1 - 0.5 ) * open * dz * TanY * aspect + 0.9 * cos( ph ),
+                            ( d2 - 0.5 ) * open * dz * TanY + 0.9 * sin( ph * 0.83 ),
                             dz );
         vWorldPos = centre;
         vDust = 1.0;
 
-        vp = centre + cubeCorner * dScale;
+        vp = centre + cube_corner * d_scale;
     }
     else
     {
         // ---- THE STEREOGRAPHIC TORUS ---------------------------------
         // 4D Clifford Torus parameters: (u, v) on S3
-        float u = float( cubeIndex % 70 ) / 70.0 * 6.2831853;
-        float v = float( cubeIndex / 70 ) / 70.0 * 6.2831853;
+        float u = float( cube_index % 70 ) / 70.0 * 6.2831853;
+        float v = float( cube_index / 70 ) / 70.0 * 6.2831853;
 
         // 4D coordinates on S3: (cos u, sin u, cos v, sin v) / sqrt(2)
-        float rot4D = t * 0.5 * lnk;
-        vec4  p4D = vec4( cos( u ), sin( u ), cos( v + rot4D ), sin( v + rot4D ) ) * 0.7071;
+        float rot_4d = t * 0.5 * lnk;
+        vec4  p_4d = vec4( cos( u ), sin( u ), cos( v + rot_4d ), sin( v + rot_4d ) ) * 0.7071;
 
         // Stereographic projection from 4D to 3D: P_3D = (x, y, z) / (1 - w)
-        float denom = max( 1.0 - p4D.w * 0.65, 0.2 );
+        float denom = max( 1.0 - p_4d.w * 0.65, 0.2 );
         // The stereographic blow-up already multiplies the radius by up to
         // 1.85 and the camera sits 9 units back, so the overall scale is a
         // BOUNDED function of torusP: at the top of its 0.5..2.0 range the
         // outer rim reaches 7.1 and still clears the near plane, instead of
         // 13.7 -- which would have put half the donut behind the lens.
-        float sizeK = 3.0 * ( 0.72 + 0.28 * clamp( trs, 0.5, 2.0 ) );
-        vec3  torusCenter = p4D.xyz / denom * sizeK;
+        float size_k = 3.0 * ( 0.72 + 0.28 * clamp( trs, 0.5, 2.0 ) );
+        vec3  torus_center = p_4d.xyz / denom * size_k;
 
         // Cube size: big enough that neighbouring units on the 70 x 70 lattice
         // OVERLAP into a continuous surface.
-        float cubeScale = ( 0.145 + 0.045 * sin( u * 3.0 + t * 2.0 ) )
-                          * ( 1.0 + min( audioKick * 0.8, 1.0 ) );
-        vWorldPos = torusCenter + cubeCorner * cubeScale;
+        float cube_scale = ( 0.145 + 0.045 * sin( u * 3.0 + t * 2.0 ) )
+                           * ( 1.0 + min( audioKick * 0.8, 1.0 ) );
+        vWorldPos = torus_center + cube_corner * cube_scale;
         vDust = 0.0;
 
         vp = vWorldPos;

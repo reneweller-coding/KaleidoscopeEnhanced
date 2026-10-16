@@ -73,7 +73,7 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // Altitude 1 (orbit) -> 0 (ground), ~35 s per drop; every layer fades
@@ -88,9 +88,9 @@ void main()
     float glow = 1.0;
     // The star field is placed straight in VIEW space (see below), so it skips
     // the fall transform the world layers go through.
-    bool  viewSpace = false;
-    vec3  vpDirect = vec3( 0.0 );
-    float sizeBase = 196.9, sizeCap = 30.0, sizeMin = 1.5;
+    bool  view_space = false;
+    vec3  vp_direct = vec3( 0.0 );
+    float size_base = 196.9, size_cap = 30.0, size_min = 1.5;
 
     if ( r1 < 0.20 )
     {
@@ -108,10 +108,10 @@ void main()
         // 2.0 would fit the frustum exactly; 2.25 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.25;
-        vpDirect = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 1.8 * cos( ph ),
-                         ( hy - 0.5 ) * open * dz * kTanY + 1.8 * sin( ph * 0.79 ),
-                         dz );
-        viewSpace = true;
+        vp_direct = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 1.8 * cos( ph ),
+                          ( hy - 0.5 ) * open * dz * TanY + 1.8 * sin( ph * 0.79 ),
+                          dz );
+        view_space = true;
 
         col = vec3( 0.8, 0.85, 1.0 ) * ( 0.35 + 0.6 * r4 );
         // Stars up high; the same specks stay on as a dim ionised-air dust all
@@ -119,9 +119,9 @@ void main()
         glow = 0.30 + 0.85 * smoothstep( 0.25, 0.62, alt );
         // A speck must stay legible at any distance -- below ~2.5 px an
         // additive sprite averages away to nothing and the field reads black.
-        sizeBase = 157.5;
-        sizeCap = 16.9;
-        sizeMin = 2.6;
+        size_base = 157.5;
+        size_cap = 16.9;
+        size_min = 2.6;
     }
     else if ( r1 < 0.45 )
     {
@@ -188,8 +188,8 @@ void main()
                      world.y * cos( pitch ) - world.z * sin( pitch ),
                      world.y * sin( pitch ) + world.z * cos( pitch ) );
     vp.z += 40.0;
-    if ( viewSpace )
-        vp = vpDirect;
+    if ( view_space )
+        vp = vp_direct;
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
@@ -199,8 +199,8 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
     col *= glow * clamp( 1.0 - vp.z / 190.0, 0.0, 1.0 );
     vCol = vec4( col * 2.8, 1.0 );

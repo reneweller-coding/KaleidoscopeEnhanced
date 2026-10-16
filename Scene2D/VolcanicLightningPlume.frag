@@ -127,64 +127,64 @@ void main()
     float t = time * 0.4 + audioAdvance * 0.2;
 
     // Volcano caldera ground profile at bottom
-    float calderaY = -0.38 - 0.15 * abs( uv.x );
-    float isGround = step( uv.y, calderaY );
+    float caldera_y = -0.38 - 0.15 * abs( uv.x );
+    float is_ground = step( uv.y, caldera_y );
 
     // Eruption plume coordinate system (billowing upwards from caldera center)
-    vec2  plumeCoord = vec2( uv.x, uv.y - calderaY );
-    float plumeRadius = ( 0.08 + 0.35 * max( plumeCoord.y, 0.0 ) ) * smk;
+    vec2  plume_coord = vec2( uv.x, uv.y - caldera_y );
+    float plume_radius = ( 0.08 + 0.35 * max( plume_coord.y, 0.0 ) ) * smk;
 
     // Upward turbulence
-    vec2  billowUV = vec2( plumeCoord.x * 3.0, plumeCoord.y * 2.0 - t * 1.5 );
-    float billow = fbm( billowUV + fbm( billowUV * 2.0 ) );
+    vec2  billow_uv = vec2( plume_coord.x * 3.0, plume_coord.y * 2.0 - t * 1.5 );
+    float billow = fbm( billow_uv + fbm( billow_uv * 2.0 ) );
 
     // Ash plume density
-    float plumeDist = abs( plumeCoord.x ) / max( plumeRadius, 0.01 );
-    float ashDensity = smoothstep( 1.2, 0.2, plumeDist ) * smoothstep( 0.0, 0.2, plumeCoord.y ) * billow;
+    float plume_dist = abs( plume_coord.x ) / max( plume_radius, 0.01 );
+    float ash_density = smoothstep( 1.2, 0.2, plume_dist ) * smoothstep( 0.0, 0.2, plume_coord.y ) * billow;
 
     // Lava fountain at the vent mouth
-    float fountainHeight = ( 0.25 + 0.35 * audioSubBass + 0.2 * audioKick ) * erp;
-    float lavaDist = length( vec2( plumeCoord.x * 3.0, max( plumeCoord.y - fountainHeight * 0.5, 0.0 ) ) );
-    float lavaGlow = ( 0.015 / ( lavaDist * lavaDist + 0.005 ) ) * ( 1.0 + audioKick * 3.0 );
-    vec3  lavaCol = palTint( mix( vec3( 1.0, 0.2, 0.0 ), vec3( 1.0, 0.9, 0.3 ), clamp( lavaGlow * 0.3, 0.0, 1.0 ) ),
-                             0.06, 0.18 )
-                    * lavaGlow;
+    float fountain_height = ( 0.25 + 0.35 * audioSubBass + 0.2 * audioKick ) * erp;
+    float lava_dist = length( vec2( plume_coord.x * 3.0, max( plume_coord.y - fountain_height * 0.5, 0.0 ) ) );
+    float lava_glow = ( 0.015 / ( lava_dist * lava_dist + 0.005 ) ) * ( 1.0 + audioKick * 3.0 );
+    vec3  lava_col = palTint( mix( vec3( 1.0, 0.2, 0.0 ), vec3( 1.0, 0.9, 0.3 ), clamp( lava_glow * 0.3, 0.0, 1.0 ) ),
+                              0.06, 0.18 )
+                     * lava_glow;
 
     // Branched Volcanic Lightning discharges inside the ash plume
-    float lightningFlash = 0.0;
+    float lightning_flash = 0.0;
     if ( audioHigh > 0.35 || audioKick > 0.5 )
     {
         // Lightning is a large bright structure: treat as full-frame,
         // 3 Hz. 12 re-rolls a second read as flicker, not weather.
-        float boltSeed = floor( time * 3.00 );
-        float boltPath = ( noise( vec2( plumeCoord.y * 15.0, boltSeed ) ) - 0.5 ) * 0.3;
-        float boltDist = abs( plumeCoord.x - boltPath );
-        float bolt = ( 0.0015 * blt ) / ( boltDist * boltDist + 0.0001 );
-        bolt *= step( 0.05, plumeCoord.y ) * step( plumeCoord.y, 0.85 );
-        lightningFlash = bolt * ( audioHigh + audioKick * 2.0 );
+        float bolt_seed = floor( time * 3.00 );
+        float bolt_path = ( noise( vec2( plume_coord.y * 15.0, bolt_seed ) ) - 0.5 ) * 0.3;
+        float bolt_dist = abs( plume_coord.x - bolt_path );
+        float bolt = ( 0.0015 * blt ) / ( bolt_dist * bolt_dist + 0.0001 );
+        bolt *= step( 0.05, plume_coord.y ) * step( plume_coord.y, 0.85 );
+        lightning_flash = bolt * ( audioHigh + audioKick * 2.0 );
     }
-    vec3 lightningCol = vec3( 0.5, 0.8, 1.0 ) * lightningFlash * 2.0;
+    vec3 lightning_col = vec3( 0.5, 0.8, 1.0 ) * lightning_flash * 2.0;
 
     // Dark ash smoke with internal orange fire scattering
-    vec3 ashCol = mix( vec3( 0.04, 0.03, 0.03 ), vec3( 0.8, 0.25, 0.05 ), ashDensity * exp( -plumeCoord.y * 1.5 ) );
-    ashCol *= ashDensity;
+    vec3 ash_col = mix( vec3( 0.04, 0.03, 0.03 ), vec3( 0.8, 0.25, 0.05 ), ash_density * exp( -plume_coord.y * 1.5 ) );
+    ash_col *= ash_density;
 
     // Background sky and photo blending
-    vec3 bgPhoto = img( st );
-    vec3 skyCol = vec3( 0.01, 0.02, 0.05 ) + bgPhoto * 0.2;
+    vec3 bg_photo = img( st );
+    vec3 sky_col = vec3( 0.01, 0.02, 0.05 ) + bg_photo * 0.2;
 
     // Ground basalt silhouette
-    vec3 groundCol = vec3( 0.02, 0.02, 0.03 );
-    if ( isGround > 0.5 )
+    vec3 ground_col = vec3( 0.02, 0.02, 0.03 );
+    if ( is_ground > 0.5 )
     {
         // Glowing lava fissures on the volcano slope
         float fissure = smoothstep( 0.7, 0.95, noise( uv * 20.0 ) );
-        groundCol += vec3( 1.0, 0.3, 0.05 ) * fissure * ( 0.8 + 0.4 * audioBass );
+        ground_col += vec3( 1.0, 0.3, 0.05 ) * fissure * ( 0.8 + 0.4 * audioBass );
     }
 
-    vec3 col = mix( skyCol, ashCol, clamp( ashDensity * 1.5, 0.0, 1.0 ) );
-    col += lavaCol + lightningCol;
-    col = mix( col, groundCol, isGround );
+    vec3 col = mix( sky_col, ash_col, clamp( ash_density * 1.5, 0.0, 1.0 ) );
+    col += lava_col + lightning_col;
+    col = mix( col, ground_col, is_ground );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

@@ -8,7 +8,7 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-const vec3 CUBE_FACE_NORMALS[6] = vec3[6](
+const vec3 CubeFaceNormals[6] = vec3[6](
     vec3( 0.0, 0.0, -1.0 ), vec3( 0.0, 0.0, 1.0 ),
     vec3( -1.0, 0.0, 0.0 ), vec3( 1.0, 0.0, 0.0 ),
     vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, -1.0, 0.0 ) );
@@ -35,56 +35,56 @@ out float vEnergy;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float cubeID = attrA.w;
-    float gridX = mod( cubeID, 70.0 );
-    float gridZ = floor( cubeID / 70.0 );
+    float cube_id = attrA.w;
+    float grid_x = mod( cube_id, 70.0 );
+    float grid_z = floor( cube_id / 70.0 );
 
-    vec2  gridUV = ( vec2( gridX, gridZ ) - vec2( 35.0 ) ) / 35.0;
-    float dist = length( gridUV );
+    vec2  grid_uv = ( vec2( grid_x, grid_z ) - vec2( 35.0 ) ) / 35.0;
+    float dist = length( grid_uv );
 
     // Spectrum band assignment
-    int   bandIdx = int( clamp( dist * 31.0, 0.0, 31.0 ) );
-    float bandVal = audioSpectrum[bandIdx];
+    int   band_idx = int( clamp( dist * 31.0, 0.0, 31.0 ) );
+    float band_val = audioSpectrum[band_idx];
 
     // Qubit superposition state & Bloch sphere angle theta
-    float theta = ( sin( gridX * 0.4 + time * 2.0 ) * cos( gridZ * 0.4 - audioAdvance * 0.5 ) ) * 0.55;
-    float phi = ( gridUV.x * 3.0 + gridUV.y * 3.0 + audioPhase );
+    float theta = ( sin( grid_x * 0.4 + time * 2.0 ) * cos( grid_z * 0.4 - audioAdvance * 0.5 ) ) * 0.55;
+    float phi = ( grid_uv.x * 3.0 + grid_uv.y * 3.0 + audioPhase );
 
     // Gate flip transient on kick
-    float gateFlip = exp( -abs( dist - fract( time * 0.9 ) * 1.4 ) * 6.0 ) * audioKick * 0.8;
+    float gate_flip = exp( -abs( dist - fract( time * 0.9 ) * 1.4 ) * 6.0 ) * audioKick * 0.8;
 
     // Tower height
-    float height = ( 0.2 + bandVal * 1.2 + abs( sin( theta ) ) * 0.5 + gateFlip * 0.6 ) * ( 0.7 + 0.5 * audioBass );
+    float height = ( 0.2 + band_val * 1.2 + abs( sin( theta ) ) * 0.5 + gate_flip * 0.6 ) * ( 0.7 + 0.5 * audioBass );
 
     // Local qubit cube rotation (Bloch sphere rotation around Y and X)
-    vec3  localP = attrA.xyz;
-    float rotA = theta + gateFlip;
-    float cA = cos( rotA ), sA = sin( rotA );
-    localP.yz = vec2( localP.y * cA - localP.z * sA, localP.y * sA + localP.z * cA );
+    vec3  local_p = attrA.xyz;
+    float rot_a = theta + gate_flip;
+    float c_a = cos( rot_a ), s_a = sin( rot_a );
+    local_p.yz = vec2( local_p.y * c_a - local_p.z * s_a, local_p.y * s_a + local_p.z * c_a );
 
     // Scale cube into rectangular monolith
-    localP *= vec3( 0.055, 0.06 + height * 0.18, 0.055 );
+    local_p *= vec3( 0.055, 0.06 + height * 0.18, 0.055 );
 
-    vec3 cubeCenter = vec3( gridUV.x * 5.6, height * 0.5 - 1.0, gridUV.y * 5.6 );
-    vec3 pos = cubeCenter + localP;
+    vec3 cube_center = vec3( grid_uv.x * 5.6, height * 0.5 - 1.0, grid_uv.y * 5.6 );
+    vec3 pos = cube_center + local_p;
 
     vPos = pos;
-    vNormal = CUBE_FACE_NORMALS[int( mod( float( gl_VertexID ), 36.0 ) ) / 6];
-    vUV = gridUV * 0.5 + 0.5;
+    vNormal = CubeFaceNormals[int( mod( float( gl_VertexID ), 36.0 ) ) / 6];
+    vUV = grid_uv * 0.5 + 0.5;
     vQubitState = sin( theta * 2.0 );
-    vEnergy = bandVal + gateFlip;
+    vEnergy = band_val + gate_flip;
 
     // Stereoscopic 3D camera projection
     // Closer than before: at 9.5 units the array filled half the frame (reported).
     vec3 vp = pos;
     vp.y -= 1.1;
-    float tiltAngle = -0.78;
-    float cosT = cos( tiltAngle ), sinT = sin( tiltAngle );
-    vec3  rotatedVP = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float tilt_angle = -0.78;
+    float cos_t = cos( tilt_angle ), sin_t = sin( tilt_angle );
+    vec3  rotated_vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
 
-    rotatedVP.z += 4.4;
-    rotatedVP.x -= eyeOff;
+    rotated_vp.z += 4.4;
+    rotated_vp.x -= eyeOff;
 
-    gl_Position = projM * vec4( rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0 );
+    gl_Position = projM * vec4( rotated_vp.x, rotated_vp.y, -rotated_vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

@@ -64,7 +64,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nStrings = 6 + int( clamp( stringsP, 0.0, 1.0 ) * 4.0 );
+    int   n_strings = 6 + int( clamp( stringsP, 0.0, 1.0 ) * 4.0 );
     float amp = 0.02 + 0.03 * clamp( ampP, 0.0, 1.0 );
     float x0 = -aspect * 0.42, x1 = aspect * 0.42;
     float u = clamp( ( p.x - x0 ) / ( x1 - x0 ), 0.0, 1.0 );
@@ -81,10 +81,10 @@ void main()
 
     for ( int n = 1; n <= 10; ++n )
     {
-        if ( n > nStrings )
+        if ( n > n_strings )
             break;
         float fn = float( n );
-        float y = 0.4 - ( fn - 0.5 ) / float( nStrings ) * 0.8;
+        float y = 0.4 - ( fn - 0.5 ) / float( n_strings ) * 0.8;
         int   band = int( clamp( fn * 2.5, 0.0, 31.0 ) );
         float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
         // The standing-wave envelope: |sin(n pi u)| scaled by the amplitude
@@ -115,7 +115,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

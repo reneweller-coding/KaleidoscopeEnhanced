@@ -185,23 +185,23 @@ void main()
     {
         vec2  bp = p - vec2( 0.0, -0.02 );
         vec2  hb = vec2( 0.67, 0.41 );
-        float sArc;
-        vec2  onB;
+        float s_arc;
+        vec2  on_b;
         float side;
         if ( abs( bp.x ) / hb.x > abs( bp.y ) / hb.y )
         {
             float yy = clamp( bp.y, -hb.y, hb.y );
-            sArc = ( bp.x > 0.0 ) ? ( yy + hb.y ) : ( 2.0 * hb.y + 2.0 * hb.x + ( hb.y - yy ) );
+            s_arc = ( bp.x > 0.0 ) ? ( yy + hb.y ) : ( 2.0 * hb.y + 2.0 * hb.x + ( hb.y - yy ) );
             side = ( bp.x > 0.0 ) ? 0.0 : 2.0;
         }
         else
         {
             float xx = clamp( bp.x, -hb.x, hb.x );
-            sArc = ( bp.y > 0.0 ) ? ( 2.0 * hb.y + ( hb.x - xx ) ) : ( 4.0 * hb.y + 2.0 * hb.x + ( xx + hb.x ) );
+            s_arc = ( bp.y > 0.0 ) ? ( 2.0 * hb.y + ( hb.x - xx ) ) : ( 4.0 * hb.y + 2.0 * hb.x + ( xx + hb.x ) );
             side = ( bp.y > 0.0 ) ? 1.0 : 3.0;
         }
         float spacing = 0.075;
-        float bi = floor( sArc / spacing + 0.5 );
+        float bi = floor( s_arc / spacing + 0.5 );
         float sb = bi * spacing;
         vec2  bulb;
         if ( side == 0.0 )
@@ -225,19 +225,19 @@ void main()
     float win = sdBox( wp, vec2( 0.6, 0.28 ), 0.02 );
     if ( win < 0.0 )
     {
-        float reelW = 0.38;
+        float reel_w = 0.38;
         float rx = wp.x + 0.6;
-        float ri = floor( rx / ( reelW + 0.03 ) );
-        float lx = rx - ri * ( reelW + 0.03 );
-        if ( lx < reelW && ri < 3.0 )
+        float ri = floor( rx / ( reel_w + 0.03 ) );
+        float lx = rx - ri * ( reel_w + 0.03 );
+        if ( lx < reel_w && ri < 3.0 )
         {
             // Drum curvature: angle from the vertical position.
-            float yN = clamp( wp.y / 0.33, -0.99, 0.99 );
-            float th = asin( yN );
+            float y_n = clamp( wp.y / 0.33, -0.99, 0.99 );
+            float th = asin( y_n );
             float rate = ( 0.35 + 0.12 * ri + 0.08 * hash11( ri + 3.0 ) ) * spd;
             float s = th * 1.6 + T * rate + ri * 2.7;
             float si = floor( s );
-            vec2  q = vec2( ( lx - reelW * 0.5 ) / ( reelW * 0.62 ), fract( s ) - 0.5 );
+            vec2  q = vec2( ( lx - reel_w * 0.5 ) / ( reel_w * 0.62 ), fract( s ) - 0.5 );
             int   kind = int( mod( si * 2.0 + ri * 3.0 + floor( clamp( symbolsP, 0.0, 1.0 ) * 3.0 )
                                        + floor( hash11( si + ri * 11.0 ) * 4.0 ),
                                    6.0 ) );
@@ -268,7 +268,7 @@ void main()
            * ( 0.2 + 1.1 * kick );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

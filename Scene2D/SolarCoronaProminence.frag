@@ -92,7 +92,7 @@ float voronoiGranules( vec2 uv )
 {
     vec2  g = floor( uv );
     vec2  f = fract( uv );
-    float minDist = 1.0;
+    float min_dist = 1.0;
     for ( int y = -1; y <= 1; ++y )
     {
         for ( int x = -1; x <= 1; ++x )
@@ -100,10 +100,10 @@ float voronoiGranules( vec2 uv )
             vec2 lattice = vec2( float( x ), float( y ) );
             vec2 offset = vec2( hash21( g + lattice ), hash21( g + lattice + 15.7 ) );
             vec2 d = lattice + offset - f;
-            minDist = min( minDist, length( d ) );
+            min_dist = min( min_dist, length( d ) );
         }
     }
-    return minDist;
+    return min_dist;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -120,47 +120,47 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.18;
 
     // Convective solar granules background
-    vec2  granCoord = uv * 9.0 * grn + vec2( sin( t * 0.5 ), cos( t * 0.4 ) ) * 0.5;
-    float gran = voronoiGranules( granCoord );
-    float granuleLuminance = smoothstep( 0.05, 0.45, gran ) * ( 1.0 + 0.3 * audioMid );
+    vec2  gran_coord = uv * 9.0 * grn + vec2( sin( t * 0.5 ), cos( t * 0.4 ) ) * 0.5;
+    float gran = voronoiGranules( gran_coord );
+    float granule_luminance = smoothstep( 0.05, 0.45, gran ) * ( 1.0 + 0.3 * audioMid );
 
     // Magnetic coronal loop arcs (parabolic / catenary magnetic field lines)
-    float loopAccum = 0.0;
-    float loopCount = 6.0;
-    for ( float i = 0.0; i < loopCount; ++i )
+    float loop_accum = 0.0;
+    float loop_count = 6.0;
+    for ( float i = 0.0; i < loop_count; ++i )
     {
-        float xOffset = ( i - loopCount * 0.5 ) * 0.35;
-        float archHeight = ( 0.45 + 0.25 * sin( i * 1.7 + t ) ) * lp + audioBass * 0.3;
+        float x_offset = ( i - loop_count * 0.5 ) * 0.35;
+        float arch_height = ( 0.45 + 0.25 * sin( i * 1.7 + t ) ) * lp + audioBass * 0.3;
 
-        // Parabolic loop equation: y = archHeight - ((x - xOffset)^2 / width)
-        float loopWidth = 0.22 + 0.1 * i;
-        float targetY = archHeight - pow( ( uv.x - xOffset ) / loopWidth, 2.0 ) * 1.5;
-        float distToLoop = abs( uv.y - targetY );
+        // Parabolic loop equation: y = arch_height - ((x - x_offset)^2 / width)
+        float loop_width = 0.22 + 0.1 * i;
+        float target_y = arch_height - pow( ( uv.x - x_offset ) / loop_width, 2.0 ) * 1.5;
+        float dist_to_loop = abs( uv.y - target_y );
 
         // Twisted helical plasma braids inside loop
         float helix = sin( uv.x * 25.0 + t * 5.0 + i * 2.0 ) * 0.02;
-        distToLoop = abs( uv.y - ( targetY + helix ) );
+        dist_to_loop = abs( uv.y - ( target_y + helix ) );
 
-        float loopGlow = exp( -distToLoop * 35.0 ) * ( 0.8 + 0.4 * sin( uv.x * 12.0 - t * 4.0 ) );
-        loopAccum += loopGlow;
+        float loop_glow = exp( -dist_to_loop * 35.0 ) * ( 0.8 + 0.4 * sin( uv.x * 12.0 - t * 4.0 ) );
+        loop_accum += loop_glow;
     }
 
     // Magnetic reconnection apex flare on beat
-    vec2  flareCenter = vec2( sin( t * 1.2 ) * 0.2, 0.35 * lp );
-    float flareDist = length( uv - flareCenter );
-    float flare = exp( -flareDist * 18.0 ) * ( audioKick * 3.5 * flr + audioSubBass * 1.2 );
+    vec2  flare_center = vec2( sin( t * 1.2 ) * 0.2, 0.35 * lp );
+    float flare_dist = length( uv - flare_center );
+    float flare = exp( -flare_dist * 18.0 ) * ( audioKick * 3.5 * flr + audioSubBass * 1.2 );
 
     // Photo texture mapping warped by magnetic convection
-    vec2 photoUV = st + vec2( sin( uv.y * 8.0 + t ), cos( uv.x * 8.0 - t ) ) * 0.04 * ( 1.0 + audioKick * 0.8 );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( sin( uv.y * 8.0 + t ), cos( uv.x * 8.0 - t ) ) * 0.04 * ( 1.0 + audioKick * 0.8 );
+    vec3 photo = img( fract( photo_uv ) );
 
     // EUV & H-alpha solar palette (deep crimson, solar gold, ionized violet-white)
-    vec3 granColor = palTint( mix( vec3( 0.9, 0.3, 0.05 ), vec3( 1.0, 0.85, 0.3 ), granuleLuminance ),
-                              0.10 * granuleLuminance, 0.18 );
-    vec3 loopColor = palTint( mix( vec3( 1.0, 0.2, 0.5 ), vec3( 1.0, 0.95, 0.7 ), loopAccum * 0.4 ), 0.50, 0.18 );
+    vec3 gran_color = palTint( mix( vec3( 0.9, 0.3, 0.05 ), vec3( 1.0, 0.85, 0.3 ), granule_luminance ),
+                               0.10 * granule_luminance, 0.18 );
+    vec3 loop_color = palTint( mix( vec3( 1.0, 0.2, 0.5 ), vec3( 1.0, 0.95, 0.7 ), loop_accum * 0.4 ), 0.50, 0.18 );
 
-    vec3 col = mix( photo * 0.8, granColor, 0.45 + 0.2 * audioLevel );
-    col += loopAccum * loopColor * ( 1.0 + audioSwell * 0.8 );
+    vec3 col = mix( photo * 0.8, gran_color, 0.45 + 0.2 * audioLevel );
+    col += loop_accum * loop_color * ( 1.0 + audioSwell * 0.8 );
     col += flare * vec3( 1.0, 0.98, 0.85 ) * 1.8;
 
     if ( audioChromaHue != 0.0 )

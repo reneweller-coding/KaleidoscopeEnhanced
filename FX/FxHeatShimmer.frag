@@ -114,16 +114,16 @@ void main()
     vec3  base = texture( tex0, uv ).rgb;
     float lum = dot( base, vec3( 0.299, 0.587, 0.114 ) );
 
-    float airPath = 1.0;
+    float air_path = 1.0;
     if ( depthValid.x > 0.5 )
     {
         float z = linearise( texture( texDepth0, uv ).r );
         // More air in the way means more accumulated bending, up to a point.
-        airPath = clamp( z / 40.0, 0.15, 1.6 );
+        air_path = clamp( z / 40.0, 0.15, 1.6 );
     }
 
     float amt = ( 0.0016 + 0.0075 * clamp( heatP, 0.0, 2.0 ) )
-                * ( 0.35 + 1.1 * lum ) * airPath
+                * ( 0.35 + 1.1 * lum ) * air_path
                 * ( 0.55 + 0.9 * audioLevel + 0.7 * audioKick + 0.4 * audioSubBass );
 
     vec2  off = grad * amt;

@@ -39,7 +39,7 @@ out float vInst;
 out float vArm;
 out float vSwing;
 
-const float kGround = -14.0;
+const float Ground = -14.0;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -51,15 +51,15 @@ float hash11( float p )
 void main()
 {
     int  inst = gl_InstanceID;
-    bool isBody = gl_VertexID < meshVertexCount;
-    bool isArm = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
-    bool isBg = gl_VertexID >= mesh2VertexCount;
+    bool is_body = gl_VertexID < meshVertexCount;
+    bool is_arm = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
+    bool is_bg = gl_VertexID >= mesh2VertexCount;
     vec3 world, n;
     vInst = float( inst );
-    vArm = isArm ? 1.0 : 0.0;
+    vArm = is_arm ? 1.0 : 0.0;
     vSwing = 0.0;
 
-    if ( isBg && inst > 0 )
+    if ( is_bg && inst > 0 )
     {
         gl_Position = vec4( 0.0, 0.0, 2.0, 1.0 );
         vNormal = attrB.xyz;
@@ -74,45 +74,45 @@ void main()
     int        row = inst / 6;
     int        j = inst - row * 6;
     float      sz = 6.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
-    float      bodyH = 2.0 * sz;
-    vec3       pos = vec3( ( float( j ) - 2.5 ) * 13.0 + float( row ) * 6.5, kGround, 44.0 + float( row ) * 16.0 );
-    const mat3 turnM = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
+    float      body_h = 2.0 * sz;
+    vec3       pos = vec3( ( float( j ) - 2.5 ) * 13.0 + float( row ) * 6.5, Ground, 44.0 + float( row ) * 16.0 );
+    const mat3 turn_m = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
 
-    if ( isBody )
+    if ( is_body )
     {
         vec3  c = attrA.xyz - meshCenter;
         float mx = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
         vec3  local = c / mx * sz;
-        world = turnM * local + pos + vec3( 0.0, meshExtent.y / mx * sz, 0.0 );
-        n = normalize( turnM * attrB.xyz );
+        world = turn_m * local + pos + vec3( 0.0, meshExtent.y / mx * sz, 0.0 );
+        n = normalize( turn_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
-    else if ( isArm )
+    else if ( is_arm )
     {
         float arm = ( armP > 0.01 ? armP : 0.75 );
-        float szA = 0.5 * bodyH * arm;
+        float sz_a = 0.5 * body_h * arm;
         vec3  c = attrA.xyz - meshCenter2;
         float mx = max( meshExtent2.x, max( meshExtent2.y, meshExtent2.z ) );
-        vec3  local = c / mx * szA;
+        vec3  local = c / mx * sz_a;
         // Upside down: the sphere up, the bracket at the pivot.
-        const mat3 flipM = mat3( -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0 );
-        local = flipM * local;
-        local.y += meshExtent2.y / mx * szA; // pivot at the bottom
+        const mat3 flip_m = mat3( -1.0, 0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 0.0, 1.0 );
+        local = flip_m * local;
+        local.y += meshExtent2.y / mx * sz_a; // pivot at the bottom
 
         float bpm = 52.0 + 150.0 * hash11( fi * 2.17 + 0.4 );
         float s = sin( 6.2831853 * time * bpm / 60.0 + fi );
         vSwing = s;
         float ang = 0.40 * s;
         float ca = cos( ang ), sa = sin( ang );
-        mat3  rotZ = mat3( ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0 );
+        mat3  rot_z = mat3( ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0 );
 
-        float mxB = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
-        float depth = meshExtent.z / mxB * sz;
-        float pivotY = ( pivotP > 0.01 ? pivotP : 0.22 ) * bodyH;
+        float mx_b = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
+        float depth = meshExtent.z / mx_b * sz;
+        float pivot_y = ( pivotP > 0.01 ? pivotP : 0.22 ) * body_h;
         float front = ( frontP > 0.01 ? frontP : 1.2 );
-        world = rotZ * local + pos + vec3( 0.0, pivotY, -depth * front );
-        n = normalize( rotZ * flipM * attrB.xyz );
+        world = rot_z * local + pos + vec3( 0.0, pivot_y, -depth * front );
+        n = normalize( rot_z * flip_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent2;
     }
@@ -128,10 +128,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

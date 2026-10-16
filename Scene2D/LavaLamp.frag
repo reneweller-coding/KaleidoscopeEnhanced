@@ -132,7 +132,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -293,10 +293,10 @@ void main()
 
     // Colours: the wax and the liquid, from the photo where it has colour.
     vec3  ph = imgLod( vec2( 0.5 ) + 0.2 * vec2( sin( 0.02 * sceneTime ), cos( 0.017 * sceneTime ) ), 6.0 );
-    float h = ( satOf( ph ) > 0.2 ) ? hue_of( ph ) : hueP * 0.159;
+    float h = ( satOf( ph ) > 0.2 ) ? hueOf( ph ) : hueP * 0.159;
     h += 0.06 * clamp( audioMode, 0.0, 1.0 );
-    vec3 waxHot = hsv2rgb( vec3( fract( h ), 0.9, 1.0 ) );
-    vec3 waxDeep = hsv2rgb( vec3( fract( h - 0.03 ), 1.0, 0.45 ) );
+    vec3 wax_hot = hsv2rgb( vec3( fract( h ), 0.9, 1.0 ) );
+    vec3 wax_deep = hsv2rgb( vec3( fract( h - 0.03 ), 1.0, 0.45 ) );
     vec3 liquid = hsv2rgb( vec3( fract( h + 0.5 ), 0.75, 0.35 ) );
 
     // The liquid, lit from the heat below, and bent by the blobs (lens).
@@ -306,15 +306,15 @@ void main()
     // Wax: glows from inside -- bright where thin, deep where thick.
     float glow = 0.6 + 0.8 * clamp( glowP, 0.0, 1.0 );
     // Scattering: the thin skin glows brightest, the core stays saturated.
-    vec3 wax = mix( waxHot * 1.35, mix( waxHot, waxDeep, 0.45 ), smoothstep( 0.0, 0.6, thick ) ) * glow;
-    wax += waxHot * clamp( neck / max( f, 1e-3 ), 0.0, 1.0 ) * 0.25; // moving blobs run a little hotter
+    vec3 wax = mix( wax_hot * 1.35, mix( wax_hot, wax_deep, 0.45 ), smoothstep( 0.0, 0.6, thick ) ) * glow;
+    wax += wax_hot * clamp( neck / max( f, 1e-3 ), 0.0, 1.0 ) * 0.25; // moving blobs run a little hotter
     // Heat from below lights the wax more toward the bottom.
     wax *= 0.75 + 0.5 * smoothstep( 1.3, -1.3, q.y ) * ( 0.6 + 0.6 * bass );
     // Shape: the surface normal from the field; lit from the heat below,
     // a soft sheen from the room light above.
     // (height saturates into the blob, so the core is a smooth dome, not a crease)
-    float kH = 2.5 / thr;
-    vec2  gh = gr * kH * exp( -max( f - thr, 0.0 ) * kH );
+    float k_h = 2.5 / thr;
+    vec2  gh = gr * k_h * exp( -max( f - thr, 0.0 ) * k_h );
     vec3  n = normalize( vec3( -gh * 0.012, 1.0 ) );
     wax *= 0.7 + 0.45 * clamp( -n.y * 1.5 + 0.4, 0.0, 1.0 );
     wax += vec3( 1.0, 0.95, 0.9 ) * pow( max( dot( n, normalize( vec3( -0.3, 0.5, 1.0 ) ) ), 0.0 ), 18.0 ) * 0.35
@@ -324,6 +324,6 @@ void main()
     wax += vec3( 1.0, 0.95, 0.85 ) * rim * 0.35;
     vec3 col = mix( bg, wax, inside );
     // A soft halo of scattered light around the blobs.
-    col += waxHot * smoothstep( thr * 0.4, thr, f ) * ( 1.0 - inside ) * 0.18;
+    col += wax_hot * smoothstep( thr * 0.4, thr, f ) * ( 1.0 - inside ) * 0.18;
     finish( col );
 }

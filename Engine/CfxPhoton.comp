@@ -42,7 +42,7 @@ uniform float hue;
 uniform float level;
 uniform float disperse; ///< chromatic split between R and B
 
-const float SCALE = 256.0;
+const float Scale = 256.0;
 
 void splat( vec2 uv, vec3 col, float w )
 {
@@ -51,10 +51,10 @@ void splat( vec2 uv, vec3 col, float w )
         return;
     uint i = uint( ip.y * size.x + ip.x ) * 4u;
     vec3 c = max( col, vec3( 0.0 ) ) * w;
-    atomicAdd( acc[i + 0u], uint( c.r * SCALE ) );
-    atomicAdd( acc[i + 1u], uint( c.g * SCALE ) );
-    atomicAdd( acc[i + 2u], uint( c.b * SCALE ) );
-    atomicAdd( acc[i + 3u], uint( w * SCALE ) );
+    atomicAdd( acc[i + 0u], uint( c.r * Scale ) );
+    atomicAdd( acc[i + 1u], uint( c.g * Scale ) );
+    atomicAdd( acc[i + 2u], uint( c.b * Scale ) );
+    atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
 float hAt( ivec2 p )
@@ -79,9 +79,9 @@ void main()
     // Thin-surface refraction: the lateral shift on the floor is proportional
     // to the gradient times the depth.  Splitting R and B by a slightly
     // different factor gives the faint rainbow fringe real caustics have.
-    vec2 baseHit = uv - grad * depth;
-    vec2 hitR = uv - grad * ( depth * ( 1.0 + disperse ) );
-    vec2 hitB = uv - grad * ( depth * ( 1.0 - disperse ) );
+    vec2 base_hit = uv - grad * depth;
+    vec2 hit_r = uv - grad * ( depth * ( 1.0 + disperse ) );
+    vec2 hit_b = uv - grad * ( depth * ( 1.0 - disperse ) );
 
     // Nearly white: the water's colour belongs in the display shader, where it
     // can depend on depth.  A saturated tint here turned the whole pool green.
@@ -90,7 +90,7 @@ void main()
                       0.30 );
     float e = 0.55 + 0.9 * level;
 
-    splat( hitR, vec3( tint.r, 0.0, 0.0 ) * 3.0, e );
-    splat( baseHit, vec3( 0.0, tint.g, 0.0 ) * 3.0, e );
-    splat( hitB, vec3( 0.0, 0.0, tint.b ) * 3.0, e );
+    splat( hit_r, vec3( tint.r, 0.0, 0.0 ) * 3.0, e );
+    splat( base_hit, vec3( 0.0, tint.g, 0.0 ) * 3.0, e );
+    splat( hit_b, vec3( 0.0, 0.0, tint.b ) * 3.0, e );
 }

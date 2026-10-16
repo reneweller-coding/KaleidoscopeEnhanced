@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -258,9 +258,9 @@ void main()
     vec2  uv = p * 0.6 + 0.5;
     float T = 0.3 * sceneTime + 2.0 * audioAdvance;
     // Rock height from the photo (broad) with detail.
-    float hB = luma( imgK( uv, 4.0 ) );
-    float hD = luma( imgK( uv, 1.5 ) );
-    float H = hB * 0.8 + hD * 0.2 * ( 0.5 + clamp( rockP, 0.0, 1.0 ) );
+    float h_b = luma( imgK( uv, 4.0 ) );
+    float h_d = luma( imgK( uv, 1.5 ) );
+    float H = h_b * 0.8 + h_d * 0.2 * ( 0.5 + clamp( rockP, 0.0, 1.0 ) );
     // Tide level.
     float tide = 0.35 + 0.2 * clamp( audioSpread, 0.0, 1.0 ) + 0.05 * sin( 0.03 * sceneTime );
     float depth = tide - H;

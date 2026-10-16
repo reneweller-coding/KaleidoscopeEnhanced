@@ -97,7 +97,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float tilt = 0.35 + 0.3 * clamp( tiltP, 0.0, 1.0 );
-    float cloudCover = 0.35 + 0.4 * clamp( cloudP, 0.0, 1.0 );
+    float cloud_cover = 0.35 + 0.4 * clamp( cloudP, 0.0, 1.0 );
     float val = clamp( audioValence, 0.0, 1.0 );
 
     // A big sphere below and ahead; the camera looks down along the limb.
@@ -113,7 +113,7 @@ void main()
     // Sun direction: the terminator runs across the view; dayPhase turns it
     // slowly (a 4.7-minute cycle, continuous through the wrap).
     float dp = dayPhase * 6.2831853;
-    vec3  sunDir = normalize(
+    vec3  sun_dir = normalize(
         vec3( cos( dp * 0.5 + 0.6 ) * 0.9, 0.35 + 0.15 * sin( dp ), -0.4 + 0.5 * cos( dp * 0.5 + 0.6 ) ) );
 
     vec3 col;
@@ -131,28 +131,28 @@ void main()
         float land = fbm3( sp * 3.0 );
         float sea = smoothstep( 0.42, 0.5, land );
         float mountains = fbm3( sp * 9.0 + 4.0 ) * sea;
-        vec3  seaCol = imgPalette( hue * 0.159 + 0.55 ) * 0.5;
-        vec3  landCol = mix( imgPalette( hue * 0.159 + 0.25 ), imgPalette( hue * 0.159 + 0.1 ), mountains ) * 0.8;
-        vec3  ground = mix( seaCol, landCol, sea );
+        vec3  sea_col = imgPalette( hue * 0.159 + 0.55 ) * 0.5;
+        vec3  land_col = mix( imgPalette( hue * 0.159 + 0.25 ), imgPalette( hue * 0.159 + 0.1 ), mountains ) * 0.8;
+        vec3  ground = mix( sea_col, land_col, sea );
         // Weather: valence chooses bright cumulus or a brooding overcast.
         float cl = fbm3( sp * 5.0 + vec3( 0.0, sceneAdvance * 0.03, 0.0 ) );
-        float clouds = smoothstep( 1.0 - cloudCover, 1.0 - cloudCover + 0.25, cl );
-        vec3  cloudCol = mix( vec3( 0.55, 0.55, 0.6 ), vec3( 1.0, 0.98, 0.95 ), val );
-        vec3  surf = mix( ground, cloudCol, clouds );
+        float clouds = smoothstep( 1.0 - cloud_cover, 1.0 - cloud_cover + 0.25, cl );
+        vec3  cloud_col = mix( vec3( 0.55, 0.55, 0.6 ), vec3( 1.0, 0.98, 0.95 ), val );
+        vec3  surf = mix( ground, cloud_col, clouds );
 
-        float sun = dot( n, sunDir );
+        float sun = dot( n, sun_dir );
         float day = smoothstep( -0.08, 0.15, sun );
         // Terminator band: long shadows and gold light.
         float term = exp( -sun * sun * 60.0 );
-        vec3  dayLight = surf * ( 0.15 + 1.1 * max( sun, 0.0 ) ) * ( 0.7 + 0.5 * audioLevel );
-        dayLight += imgPalette( hue * 0.159 + 0.08 ) * term * 0.6;
+        vec3  day_light = surf * ( 0.15 + 1.1 * max( sun, 0.0 ) ) * ( 0.7 + 0.5 * audioLevel );
+        day_light += imgPalette( hue * 0.159 + 0.08 ) * term * 0.6;
         // Night side: dark, an aurora breathing on the swell, storms flashing.
         float aur = fbm3( sp * 6.0 + vec3( sceneTime * 0.1, 0.0, 0.0 ) );
         aur = pow( smoothstep( 0.45, 0.7, aur ), 2.0 ) * ( 0.2 + 0.8 * clamp( audioSwell, 0.0, 1.0 ) );
         vec3  night = surf * 0.02 + imgPalette( hue * 0.159 + 0.45 ) * aur * 0.7;
         float storm = smoothstep( 0.62, 0.7, cl ) * audioKick;
         night += vec3( 0.9, 0.9, 1.0 ) * storm * 0.8;
-        col = mix( night, dayLight, day );
+        col = mix( night, day_light, day );
         // Atmosphere rim.
         float rim = pow( 1.0 - max( dot( -rd, n ), 0.0 ), 3.0 );
         col += imgPalette( hue * 0.159 + 0.6 ) * rim * ( 0.3 + 0.6 * day );
@@ -165,14 +165,14 @@ void main()
         vec2  f = fract( sk * 90.0 ) - 0.5;
         float hs = fract( sin( dot( cell, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
         col = vec3( step( 0.986, hs ) * exp( -dot( f, f ) * 9.0 ) ) * 0.6;
-        float glow = pow( max( dot( rd, sunDir ), 0.0 ), 8.0 );
+        float glow = pow( max( dot( rd, sun_dir ), 0.0 ), 8.0 );
         col += imgPalette( hue * 0.159 + 0.08 ) * glow * 0.5;
         // Atmosphere halo just outside the limb.
         float limb = exp( -abs( sqrt( max( -disc, 0.0 ) ) ) * 6.0 );
         col += imgPalette( hue * 0.159 + 0.6 ) * limb * 0.5;
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

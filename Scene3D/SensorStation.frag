@@ -90,8 +90,8 @@ vec3 renderSky( vec3 dir )
     // family's own instruments are actually pointed at.
     float n1 = fbm( dir * 2.4 + vec3( 0.0, 0.0, time * 0.004 ) );
     float n2 = fbm( dir * 6.0 - vec3( time * 0.002, 0.0, 0.0 ) );
-    vec3  tintA = vec3( 0.10, 0.35, 0.55 ), tintB = vec3( 0.35, 0.15, 0.55 );
-    vec3  cloud = mix( tintA, tintB, smoothstep( 0.3, 0.7, n2 ) ) * smoothstep( 0.3, 0.8, n1 );
+    vec3  tint_a = vec3( 0.10, 0.35, 0.55 ), tint_b = vec3( 0.35, 0.15, 0.55 );
+    vec3  cloud = mix( tint_a, tint_b, smoothstep( 0.3, 0.7, n2 ) ) * smoothstep( 0.3, 0.8, n1 );
     // The beat lives HERE now. The hulls hold still (their kick hops and
     // the camera's swell-dolly are gone), so the backgrounds carry the
     // music: a kick pulse on the dominant glow, sized to read clearly
@@ -162,20 +162,20 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
-    vec3  lightDir = normalize( vec3( 0.2, 0.6, -0.5 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.2, 0.6, -0.5 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 50.0, 8.0, roughness ) );
-    vec3  specColor = mix( vec3( 0.85, 0.95, 1.0 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 50.0, 8.0, roughness ) );
+    vec3  spec_color = mix( vec3( 0.85, 0.95, 1.0 ), base.rgb, metallic );
 
     // A cool, slightly blue-shifted key -- clean instrumentation rather
     // than a warm inhabited hull.
     vec3 col = base.rgb * vec3( 0.85, 0.95, 1.05 ) * ( 0.5 + diff * ( 1.3 + 0.4 * audioSwell ) + fill * 0.3 );
-    col += specColor * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
 
     // Scan band: a thin bright stripe travels along the hull's own LOCAL
     // z-axis over time (object space, so it tracks the station's own
@@ -186,13 +186,13 @@ void main()
 
     // Modest fixed rim so silhouettes separate from black without
     // dominating -- the nebula outside now carries the color variety.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.4, 0.8, 1.0 ) * fresnel * ( 0.12 + 0.25 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

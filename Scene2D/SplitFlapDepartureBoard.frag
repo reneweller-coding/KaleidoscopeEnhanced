@@ -106,61 +106,61 @@ void main()
     vec3 col = img( uv ) * mix( vec3( 0.2 ), imgPalette( hue * 0.159 + 0.6 ) * 0.4, 0.5 ) * light * 0.5;
     // The board panel.
     vec2  board = vec2( aspect * 0.46, 0.42 );
-    float onBoard = step( abs( p.x ), board.x ) * step( abs( p.y ), board.y );
-    vec3  caseCol = mix( vec3( 0.1, 0.1, 0.11 ), imgPalette( hue * 0.159 + 0.05 ) * 0.2, 0.4 );
-    col = mix( col, caseCol * light, onBoard );
+    float on_board = step( abs( p.x ), board.x ) * step( abs( p.y ), board.y );
+    vec3  case_col = mix( vec3( 0.1, 0.1, 0.11 ), imgPalette( hue * 0.159 + 0.05 ) * 0.2, 0.4 );
+    col = mix( col, case_col * light, on_board );
     // Cell lattice.
     vec2 cell = vec2( 2.0 * board.x / cols, 2.0 * board.y / rows );
     vec2 g = ( p + board ) / cell;
     vec2 ci = floor( g );
     vec2 cf = fract( g );
-    if ( onBoard > 0.5 && ci.x >= 0.0 && ci.y >= 0.0 && ci.x < cols && ci.y < rows )
+    if ( on_board > 0.5 && ci.x >= 0.0 && ci.y >= 0.0 && ci.x < cols && ci.y < rows )
     {
         float row = ci.y;
-        float colIdx = ci.x;
+        float col_idx = ci.x;
         // Each row updates in its turn, one row at a time, on the clock.
-        float rowTurn = clock * 0.25 + row * 0.37;
-        float phase = fract( rowTurn );
+        float row_turn = clock * 0.25 + row * 0.37;
+        float phase = fract( row_turn );
         // A riffle: it runs for the first part of the row's slot, then holds.
         // The number of characters it steps through is fixed per update.
-        float upd = floor( rowTurn );
+        float upd = floor( row_turn );
         float steps = 3.0 + floor( hash21( vec2( row, upd ) ) * 9.0 );
-        float kickCol = floor( fract( clock * 0.11 + 0.3 ) * cols ); // the column the kick riffles
-        float kickHere = ( abs( colIdx - kickCol ) < 0.5 ) ? audioKick : 0.0;
-        float riffle = smoothstep( 0.45, 0.0, phase ) + 0.6 * kickHere;
+        float kick_col = floor( fract( clock * 0.11 + 0.3 ) * cols ); // the column the kick riffles
+        float kick_here = ( abs( col_idx - kick_col ) < 0.5 ) ? audioKick : 0.0;
+        float riffle = smoothstep( 0.45, 0.0, phase ) + 0.6 * kick_here;
         // The flap angle: a continuous saw over the steps, so the top half
         // is always mid-fall somewhere and never snaps.
-        float t = phase * steps * 3.0 + colIdx * 0.13 + kickHere * 6.0;
+        float t = phase * steps * 3.0 + col_idx * 0.13 + kick_here * 6.0;
         float sub = fract( t );
-        float chNow = floor( t ) + row * 5.0 + colIdx * 3.0;
+        float ch_now = floor( t ) + row * 5.0 + col_idx * 3.0;
         float fold = riffle * ( 1.0 - smoothstep( 0.0, 1.0, sub ) ); // 1 = flat, 0 = fallen
         // Cell background and its lit colour: the row's chroma class.
         int   cls = int( mod( row * 2.0 + 1.0, 12.0 ) );
         float e = clamp( audioChroma[cls] * 1.5, 0.0, 1.0 );
-        vec3  flapCol = mix( vec3( 0.07, 0.07, 0.08 ), imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 0.5,
-                             0.35 + 0.5 * e );
-        vec3  inkCol = mix( vec3( 0.88, 0.87, 0.8 ), imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.4 + 0.3,
-                            0.35 + 0.4 * e );
+        vec3  flap_col = mix( vec3( 0.07, 0.07, 0.08 ), imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 0.5,
+                              0.35 + 0.5 * e );
+        vec3  ink_col = mix( vec3( 0.88, 0.87, 0.8 ), imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.4 + 0.3,
+                             0.35 + 0.4 * e );
         // Two halves.  The top half of the NEXT character is falling over
         // the top half of the current one; the bottom half is already the
         // next character once the fold passes the middle.
         vec2  q = vec2( cf.x, cf.y );
-        float topHalf = step( 0.5, q.y );
+        float top_half = step( 0.5, q.y );
         vec2  gq = vec2( ( q.x - 0.12 ) / 0.76, ( q.y - 0.1 ) / 0.8 );
-        float chTop = mix( chNow + 1.0, chNow, fold );
-        float chBot = chNow;
+        float ch_top = mix( ch_now + 1.0, ch_now, fold );
+        float ch_bot = ch_now;
         // The falling leaf: compress the top half vertically as it turns.
-        vec2 gqTop = gq;
-        gqTop.y = 0.5 + ( gq.y - 0.5 ) / max( fold * 0.95 + 0.05, 0.06 );
-        float ink = topHalf > 0.5 ? glyph( gqTop, chTop ) : glyph( gq, chBot );
-        vec3  cellCol = mix( flapCol * light, inkCol * light, ink * 0.95 );
+        vec2 gq_top = gq;
+        gq_top.y = 0.5 + ( gq.y - 0.5 ) / max( fold * 0.95 + 0.05, 0.06 );
+        float ink = top_half > 0.5 ? glyph( gq_top, ch_top ) : glyph( gq, ch_bot );
+        vec3  cell_col = mix( flap_col * light, ink_col * light, ink * 0.95 );
         // The split line and the flap shadow just under it.
-        cellCol *= 1.0 - 0.55 * smoothstep( 0.02, 0.0, abs( q.y - 0.5 ) );
-        cellCol *= 1.0 - 0.35 * smoothstep( 0.14, 0.0, 0.5 - q.y ) * ( 1.0 - fold ) * step( q.y, 0.5 );
+        cell_col *= 1.0 - 0.55 * smoothstep( 0.02, 0.0, abs( q.y - 0.5 ) );
+        cell_col *= 1.0 - 0.35 * smoothstep( 0.14, 0.0, 0.5 - q.y ) * ( 1.0 - fold ) * step( q.y, 0.5 );
         // Cell gap.
         float gap = smoothstep( 0.03, 0.06, min( min( q.x, 1.0 - q.x ), min( q.y, 1.0 - q.y ) ) );
-        cellCol = mix( caseCol * light * 0.7, cellCol, gap );
-        col = mix( col, cellCol, onBoard );
+        cell_col = mix( case_col * light * 0.7, cell_col, gap );
+        col = mix( col, cell_col, on_board );
         // The glass in front: a soft diagonal reflection of the hall.
         col += img( clamp( vec2( uv.x * 0.4 + 0.3, uv.y * 0.4 + 0.4 ), 0.0, 1.0 ) )
                * smoothstep( 0.35, 0.0, abs( p.x * 0.6 + p.y - 0.15 ) ) * 0.06 * light;
@@ -172,7 +172,7 @@ void main()
     col = mix( col, vec3( 0.22, 0.23, 0.25 ) * light, rail );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

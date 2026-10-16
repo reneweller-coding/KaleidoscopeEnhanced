@@ -98,8 +98,8 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float gauge = 13.0 + 11.0 * clamp( gaugeP, 0.0, 1.0 );       // stitches across
-    float bandW = 2.0 + floor( clamp( bandP, 0.0, 1.0 ) * 5.0 ); // rows per colour band
+    float gauge = 13.0 + 11.0 * clamp( gaugeP, 0.0, 1.0 );        // stitches across
+    float band_w = 2.0 + floor( clamp( bandP, 0.0, 1.0 ) * 5.0 ); // rows per colour band
     float lamp = 0.65 + 0.55 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
@@ -114,18 +114,18 @@ void main()
     float rows = gauge * 0.72;
     vec2  g = vec2( ( p.x + aspect * 0.5 ) * gauge / aspect, ( p.y + 0.5 ) * rows );
     // Stocking stitch offsets every other row by half a stitch.
-    float rowI = floor( g.y );
-    float half_ = mod( rowI, 2.0 ) * 0.5;
-    vec2  cellF = vec2( fract( g.x + half_ ) - 0.5, fract( g.y ) - 0.5 );
+    float row_i = floor( g.y );
+    float half_ = mod( row_i, 2.0 ) * 0.5;
+    vec2  cell_f = vec2( fract( g.x + half_ ) - 0.5, fract( g.y ) - 0.5 );
     // The growing edge: how many rows exist so far.
     float edge = prog * ( rows + 2.0 ) - 1.0;
-    float exists = smoothstep( edge + 0.7, edge - 0.7, rowI );
+    float exists = smoothstep( edge + 0.7, edge - 0.7, row_i );
     if ( exists > 0.002 && abs( p.x ) < aspect * 0.44 )
     {
         // Yarn colour: a colourwork band per group of rows, its class
         // deciding the shade; the photo carries the dye variation.
-        float bandI = floor( rowI / bandW );
-        int   cls = int( mod( bandI * 3.0 + 1.0, 12.0 ) );
+        float band_i = floor( row_i / band_w );
+        int   cls = int( mod( band_i * 3.0 + 1.0, 12.0 ) );
         float e = clamp( audioChroma[cls] * 1.6, 0.0, 1.0 );
         vec3  yarn = mix( imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.25 + 0.12, vec3( 0.8, 0.75, 0.68 ), 0.3 );
         yarn *= 0.75 + 0.5 * e;
@@ -133,9 +133,9 @@ void main()
         // The stitch: two bowed legs meeting at the bottom.
         float w = 0.13;
         // The live row is looser: a slightly fatter stitch.
-        float live = smoothstep( edge - 1.2, edge, rowI );
+        float live = smoothstep( edge - 1.2, edge, row_i );
         w *= 1.0 + 0.35 * live;
-        float d = min( legD( cellF, -1.0, w ), legD( cellF, 1.0, w ) );
+        float d = min( legD( cell_f, -1.0, w ), legD( cell_f, 1.0, w ) );
         float stitch = smoothstep( 0.02, -0.01, d );
         // Rounded shading across the yarn: bright along the top of the loop.
         float round_ = smoothstep( 0.0, -w, d );
@@ -152,10 +152,10 @@ void main()
         col += vec3( 1.0, 0.98, 0.92 ) * stitch * live * exists * audioKick * 0.5;
     }
     // The needles: two steel rods lying across the live row.
-    float needleY = -0.5 + ( edge + 0.9 ) / rows;
+    float needle_y = -0.5 + ( edge + 0.9 ) / rows;
     for ( int k = 0; k < 2; ++k )
     {
-        float ny = needleY + float( k ) * 0.022;
+        float ny = needle_y + float( k ) * 0.022;
         float nd = abs( p.y - ny );
         float on = smoothstep( 0.009, 0.005, nd ) * step( abs( p.x ), aspect * 0.47 );
         vec3  steel = vec3( 0.72, 0.74, 0.78 ) * ( 0.6 + 0.5 * lamp );
@@ -166,24 +166,24 @@ void main()
                    smoothstep( 0.02, 0.0, length( p - vec2( aspect * 0.47, ny ) ) ) * smoothstep( 1.0, 0.85, prog ) );
     }
     // The ball of yarn at the bottom corner, with the working strand.
-    vec2  ballC = vec2( aspect * 0.36, -0.4 );
-    float br = length( p - ballC );
+    vec2  ball_c = vec2( aspect * 0.36, -0.4 );
+    float br = length( p - ball_c );
     float ball = smoothstep( 0.1, 0.095, br );
-    int   cls2 = int( mod( floor( edge / bandW ) * 3.0 + 1.0, 12.0 ) );
-    vec3  ballCol = mix( imgPalette( hue * 0.159 + float( cls2 ) / 12.0 ) * 1.25 + 0.12, vec3( 0.8, 0.75, 0.68 ), 0.3 );
-    ballCol *= 0.55 + 0.6 * sqrt( max( 1.0 - br / 0.1, 0.0 ) );
+    int   cls2 = int( mod( floor( edge / band_w ) * 3.0 + 1.0, 12.0 ) );
+    vec3 ball_col = mix( imgPalette( hue * 0.159 + float( cls2 ) / 12.0 ) * 1.25 + 0.12, vec3( 0.8, 0.75, 0.68 ), 0.3 );
+    ball_col *= 0.55 + 0.6 * sqrt( max( 1.0 - br / 0.1, 0.0 ) );
     // Wound strands across the ball.
-    ballCol *= 0.85 + 0.3 * sin( ( p.x - ballC.x ) * 90.0 + ( p.y - ballC.y ) * 40.0 );
-    col = mix( col, ballCol * lamp, ball );
+    ball_col *= 0.85 + 0.3 * sin( ( p.x - ball_c.x ) * 90.0 + ( p.y - ball_c.y ) * 40.0 );
+    col = mix( col, ball_col * lamp, ball );
     // The working strand from the ball up to the needle.
-    vec2  a = ballC + vec2( -0.05, 0.08 ), b = vec2( aspect * 0.2, needleY );
+    vec2  a = ball_c + vec2( -0.05, 0.08 ), b = vec2( aspect * 0.2, needle_y );
     vec2  dd = b - a;
     float t = clamp( dot( p - a, dd ) / dot( dd, dd ), 0.0, 1.0 );
     vec2  on2 = a + dd * t + vec2( 0.0, -0.06 * sin( t * 3.14159 ) );
-    col = mix( col, ballCol * 1.1 * lamp, smoothstep( 0.006, 0.003, length( p - on2 ) ) );
+    col = mix( col, ball_col * 1.1 * lamp, smoothstep( 0.006, 0.003, length( p - on2 ) ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

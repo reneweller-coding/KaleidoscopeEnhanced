@@ -83,9 +83,9 @@ void main()
 
     vec3 V = vec3( 0.0, 0.0, 1.0 );
     vec3 L = normalize( vec3( 0.5 * sin( time * 0.13 ), 0.5 * cos( time * 0.10 ), 0.85 ) );
-    vec3 Hv = normalize( L + V );
+    vec3 hv = normalize( L + V );
 
-    float spec = pow( max( dot( n, Hv ), 0.0 ), 45.0 + 90.0 * shineP );
+    float spec = pow( max( dot( n, hv ), 0.0 ), 45.0 + 90.0 * shineP );
     float fres = pow( 1.0 - max( dot( n, V ), 0.0 ), 2.5 );
 
     // The room the metal reflects: the photo, distorted by the surface normal.

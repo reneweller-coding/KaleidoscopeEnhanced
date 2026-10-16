@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -235,10 +235,10 @@ void main()
     float rough = clamp( audioRoughness, 0.0, 1.0 );
     float T = 0.25 * sceneTime + 1.5 * audioAdvance;
     // Thickness across the sheet: ropes (thick bands) running down, meandering.
-    float nR = 5.0 + 8.0 * clamp( ropeP, 0.0, 1.0 );
+    float n_r = 5.0 + 8.0 * clamp( ropeP, 0.0, 1.0 );
     float fold = 0.05 + 0.1 * clamp( audioSpread, 0.0, 1.0 );
     float x = p.x + fold * sin( p.y * 2.0 + T * 0.3 + fbm3( vec2( p.x * 2.0, 0.0 ) ) * 3.0 );
-    float ropes = 0.5 + 0.5 * cos( x * nR * 3.14159 + rough * 1.5 * sin( p.y * 6.0 - T ) );
+    float ropes = 0.5 + 0.5 * cos( x * n_r * 3.14159 + rough * 1.5 * sin( p.y * 6.0 - T ) );
     float th = ( 0.4 + 0.6 * clamp( thickP, 0.0, 1.0 ) ) * ( 0.35 + 0.65 * pow( ropes, 1.5 ) );
     // Flow texture: streaks sliding down.
     float streak = fbm3( vec2( x * 30.0, p.y * 2.0 + T ) );
@@ -255,7 +255,7 @@ void main()
     vec3 back = vec3( 1.0, 0.95, 0.85 ) * ( 0.6 + 0.6 * bass );
     vec3 col = ( back * 0.6 + behind ) * absorb;
     // Glossy highlights running down the ropes.
-    float hl = pow( max( 0.0, sin( x * nR * 3.14159 + 0.7 ) ), 20.0 ) * ( 0.5 + 0.5 * sin( p.y * 8.0 + T * 2.0 ) );
+    float hl = pow( max( 0.0, sin( x * n_r * 3.14159 + 0.7 ) ), 20.0 ) * ( 0.5 + 0.5 * sin( p.y * 8.0 + T * 2.0 ) );
     col += vec3( 1.0, 0.95, 0.85 ) * hl * 0.35 * ( 1.0 - win );
     col = mix( col, col * glowColour( behind + 1e-3, p, hueP * 0.159 ) * 1.2, 0.05 );
     finish( col );

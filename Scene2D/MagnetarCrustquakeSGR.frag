@@ -100,7 +100,7 @@ float voronoiCrust( vec2 p )
 {
     vec2  g = floor( p );
     vec2  f = fract( p );
-    float minDist = 1.0;
+    float min_dist = 1.0;
     for ( int y = -1; y <= 1; ++y )
     {
         for ( int x = -1; x <= 1; ++x )
@@ -108,10 +108,10 @@ float voronoiCrust( vec2 p )
             vec2 lattice = vec2( float( x ), float( y ) );
             vec2 offset = vec2( hash21( g + lattice ), hash21( g + lattice + 33.7 ) );
             vec2 d = lattice + offset - f;
-            minDist = min( minDist, length( d ) );
+            min_dist = min( min_dist, length( d ) );
         }
     }
-    return minDist;
+    return min_dist;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -131,42 +131,42 @@ void main()
     float angle = atan( uv.y, uv.x );
 
     // Neutron star surface sphere: r < 0.45
-    float starRadius = 0.42 + 0.05 * sin( t * 0.8 );
-    float isStar = smoothstep( starRadius + 0.02, starRadius - 0.02, r );
+    float star_radius = 0.42 + 0.05 * sin( t * 0.8 );
+    float is_star = smoothstep( star_radius + 0.02, star_radius - 0.02, r );
 
     // Crust voronoi fractures (fault lines)
-    vec2  crustCoord = uv * 10.0 * crs + vec2( t * 0.5, 0.0 );
-    float fracture = voronoiCrust( crustCoord );
-    float faultLines = exp( -fracture * 18.0 ) * isStar;
+    vec2  crust_coord = uv * 10.0 * crs + vec2( t * 0.5, 0.0 );
+    float fracture = voronoiCrust( crust_coord );
+    float fault_lines = exp( -fracture * 18.0 ) * is_star;
 
     // Starquake fault rupture glow on kick
-    float quakeGlow = faultLines * ( audioKick * 4.0 * brs + audioHigh * 2.0 );
+    float quake_glow = fault_lines * ( audioKick * 4.0 * brs + audioHigh * 2.0 );
 
-    // Dipolar magnetosphere field lines in exterior: r > starRadius
-    float dipoleAngle = angle + sin( r * 8.0 - t * 4.0 ) * 0.6 * ( 1.0 + audioBass );
-    float dipoleField = abs( sin( dipoleAngle * 6.0 ) );
-    float alfvenWaves = sin( r * 30.0 - t * 10.0 ) * exp( -r * 2.0 );
-    float magnetosphere = dipoleField * exp( -abs( r - starRadius ) * 4.0 ) * ( 1.0 + alfvenWaves * 0.5 );
+    // Dipolar magnetosphere field lines in exterior: r > star_radius
+    float dipole_angle = angle + sin( r * 8.0 - t * 4.0 ) * 0.6 * ( 1.0 + audioBass );
+    float dipole_field = abs( sin( dipole_angle * 6.0 ) );
+    float alfven_waves = sin( r * 30.0 - t * 10.0 ) * exp( -r * 2.0 );
+    float magnetosphere = dipole_field * exp( -abs( r - star_radius ) * 4.0 ) * ( 1.0 + alfven_waves * 0.5 );
 
     // Soft Gamma Repeater (SGR) polar flare burst
-    vec2  northPole = vec2( 0.0, starRadius * 0.9 );
-    float poleDist = length( uv - northPole );
-    float sgrFlare = exp( -poleDist * 8.0 ) * ( audioKick * 3.5 * brs + audioSubBass * 1.5 );
+    vec2  north_pole = vec2( 0.0, star_radius * 0.9 );
+    float pole_dist = length( uv - north_pole );
+    float sgr_flare = exp( -pole_dist * 8.0 ) * ( audioKick * 3.5 * brs + audioSubBass * 1.5 );
 
     // Photo texture mapping into crust plates and magnetic sheets
-    vec2 photoUV = st + vec2( sin( dipoleAngle ), cos( dipoleAngle ) ) * 0.04 * ( 1.0 + audioKick * 0.6 );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( sin( dipole_angle ), cos( dipole_angle ) ) * 0.04 * ( 1.0 + audioKick * 0.6 );
+    vec3 photo = img( fract( photo_uv ) );
 
     // Magnetar color palette (neutron iron crust, gamma violet-cyan, plasma white)
-    vec3 crustColor = palTint( mix( vec3( 0.08, 0.06, 0.1 ), vec3( 0.2, 0.15, 0.3 ), isStar ), 0.50, 0.20 );
-    vec3 flareColor = vec3( 0.2, 0.9, 1.0 );
-    vec3 gammaWhite = vec3( 1.0, 0.98, 0.95 );
+    vec3 crust_color = palTint( mix( vec3( 0.08, 0.06, 0.1 ), vec3( 0.2, 0.15, 0.3 ), is_star ), 0.50, 0.20 );
+    vec3 flare_color = vec3( 0.2, 0.9, 1.0 );
+    vec3 gamma_white = vec3( 1.0, 0.98, 0.95 );
 
     // Combine visualizer
-    vec3 col = mix( crustColor, photo * 0.8, 0.4 + 0.2 * audioLevel );
-    col += magnetosphere * flareColor * ( 1.0 + audioSwell * 0.8 );
-    col += quakeGlow * vec3( 1.0, 0.85, 0.3 ) * 2.0;
-    col += sgrFlare * gammaWhite * 2.5;
+    vec3 col = mix( crust_color, photo * 0.8, 0.4 + 0.2 * audioLevel );
+    col += magnetosphere * flare_color * ( 1.0 + audioSwell * 0.8 );
+    col += quake_glow * vec3( 1.0, 0.85, 0.3 ) * 2.0;
+    col += sgr_flare * gamma_white * 2.5;
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
@@ -178,7 +178,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.7;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.7;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

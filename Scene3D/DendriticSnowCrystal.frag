@@ -71,8 +71,8 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Prismatic ice dispersion colors
-    vec3 iceCore = vec3( 0.85, 0.95, 1.0 ); // Crystalline white/cyan
-    vec3 rainbowFacet = imgPalette( vRefract + time * 0.159 );
+    vec3 ice_core = vec3( 0.85, 0.95, 1.0 ); // Crystalline white/cyan
+    vec3 rainbow_facet = imgPalette( vRefract + time * 0.159 );
 
     // Photo reflection through ice crystal prism. Multiplying the ice by the photo
     // outright meant a dark slide rendered the whole crystal black; the photo now
@@ -80,9 +80,9 @@ void main()
     // 0.2 was tuned for a single flake sitting on the origin; with the drift now
     // spread across the whole frustum the same rate tiled the slide a dozen
     // times over and read as noise.
-    vec2 photoUV = vPos.xy * 0.035 + 0.5;
-    vec3 photoCol = img( fract( photoUV ) );
-    vec3 prism = mix( vec3( 1.0 ), photoCol * 1.7, 0.55 );
+    vec2 photo_uv = vPos.xy * 0.035 + 0.5;
+    vec3 photo_col = img( fract( photo_uv ) );
+    vec3 prism = mix( vec3( 1.0 ), photo_col * 1.7, 0.55 );
 
     // Sparkling specular glints. The hash used to be reseeded by `time * 4.0`
     // INSIDE the sin, so every frame drew a completely different noise field --
@@ -93,13 +93,13 @@ void main()
     float twinkle = floor( time * 2.0 + vSector * 0.7 );
     float sh = fract( sin( dot( cell, vec2( 12.9898, 78.233 ) ) + twinkle * 1.7 ) * 43758.5453 );
     float sparkle = pow( sh, 14.0 );
-    vec3  glintCol = vec3( 1.0 ) * sparkle * ( 1.2 + 2.5 * audioKick );
+    vec3  glint_col = vec3( 1.0 ) * sparkle * ( 1.2 + 2.5 * audioKick );
 
     // Radial shading along the arm so the crystal has bright core / cool tips
     // instead of one uniform tone.
     float radial = 0.45 + 0.75 * ( 1.0 - vRefract ) + 0.35 * pow( vRefract, 3.0 );
 
-    vec3 col = ( mix( iceCore, rainbowFacet, 0.4 ) * prism * radial * 0.85 + glintCol )
+    vec3 col = ( mix( ice_core, rainbow_facet, 0.4 ) * prism * radial * 0.85 + glint_col )
                * ice * glw;
 
     // The generator marks the far ice-dust haze with armID 7 (the flakes use
@@ -113,8 +113,8 @@ void main()
     // D = vPos.z + 6.5. Lit identically, near and far flakes read as one flat
     // sheet of confetti; sinking the far ones back restores the depth of a
     // real snowfall and keeps the many added crystals from summing too bright.
-    float viewD = max( vPos.z + 6.5, 1.0 );
-    col *= clamp( 7.0 / viewD, 0.26, 1.0 );
+    float view_d = max( vPos.z + 6.5, 1.0 );
+    col *= clamp( 7.0 / view_d, 0.26, 1.0 );
 
     col = min( col, vec3( 1.25 ) );
 

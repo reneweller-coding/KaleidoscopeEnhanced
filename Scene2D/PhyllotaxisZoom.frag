@@ -86,7 +86,7 @@ void main()
     // Nearest seeds: candidates around n0 = rho / B; only the ones whose
     // angle happens to fall near ours matter, the loop finds them.
     float n0 = rho / B;
-    float best = 1e9, bestN = 0.0;
+    float best = 1e9, best_n = 0.0;
     for ( int j = -16; j <= 16; ++j )
     {
         float n = floor( n0 ) + float( j );
@@ -96,7 +96,7 @@ void main()
         if ( d2 < best )
         {
             best = d2;
-            bestN = n;
+            best_n = n;
         }
     }
     float d = sqrt( best );
@@ -109,13 +109,13 @@ void main()
 
     // Colour: pitch class of the seed decides how bright it glows; the
     // palette walks along a 21-parastichy so neighbouring arms differ.
-    float pc = mod( bestN, 12.0 );
+    float pc = mod( best_n, 12.0 );
     if ( pc < 0.0 )
         pc += 12.0;
     float e = clamp( audioChroma[int( pc )], 0.0, 1.0 );
-    vec3  seedCol = imgPalette( hue * 0.159 + fract( bestN / 21.0 ) );
-    vec3  col = seedCol * disc * ( 0.55 + 1.4 * e + 0.3 * audioLevel );
-    col += seedCol * rim * ( 0.3 + 0.5 * e );
+    vec3  seed_col = imgPalette( hue * 0.159 + fract( best_n / 21.0 ) );
+    vec3  col = seed_col * disc * ( 0.55 + 1.4 * e + 0.3 * audioLevel );
+    col += seed_col * rim * ( 0.3 + 0.5 * e );
     // Gaps between seeds: a faint version of the photo so the field is never
     // black.
     float r = length( p );
@@ -127,7 +127,7 @@ void main()
     col *= smoothstep( 0.0, 0.05, r );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float numRings = ( ringsP > 1.0 ) ? ringsP : 8.0;
+    float num_rings = ( ringsP > 1.0 ) ? ringsP : 8.0;
     float folds = ( foldP > 1.0 ) ? foldP : 12.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -72,60 +72,60 @@ void main()
     float a = atan( uv.y, uv.x );
 
     // Discrete temporal ring index
-    float ringCoord = r * numRings;
-    float ringIdx = floor( ringCoord );
-    float ringFrac = fract( ringCoord );
+    float ring_coord = r * num_rings;
+    float ring_idx = floor( ring_coord );
+    float ring_frac = fract( ring_coord );
 
     // Staggered temporal phase per ring (chronological echo)
-    float timeLag = ringIdx * ( 0.35 + 0.15 * audioFlux );
-    float ringTime = audioAdvance * 0.25 * spd - timeLag;
+    float time_lag = ring_idx * ( 0.35 + 0.15 * audioFlux );
+    float ring_time = audioAdvance * 0.25 * spd - time_lag;
 
     // Alternating counter-rotation per ring
-    float dir = ( mod( ringIdx, 2.0 ) == 0.0 ) ? 1.0 : -1.0;
-    float rotA = a + ringTime * 0.5 * dir + 0.2 * sin( audioPhase + ringIdx );
+    float dir = ( mod( ring_idx, 2.0 ) == 0.0 ) ? 1.0 : -1.0;
+    float rot_a = a + ring_time * 0.5 * dir + 0.2 * sin( audioPhase + ring_idx );
 
     // Radial N-fold kaleidoscope mirror fold
     float seg = 3.14159265 / folds;
-    rotA = mod( rotA + seg, 2.0 * seg ) - seg;
-    rotA = abs( rotA );
+    rot_a = mod( rot_a + seg, 2.0 * seg ) - seg;
+    rot_a = abs( rot_a );
 
-    vec2 pFold = vec2( cos( rotA ), sin( rotA ) ) * r;
+    vec2 p_fold = vec2( cos( rot_a ), sin( rot_a ) ) * r;
 
     // Synaptic neural energy conduits (wavy pulses)
     // Only the amplitude is audio-driven -- the phase term stays untouched so
     // the ring echo cannot be remapped mid-flight by a sub-bass swell.
-    float wave = sin( r * 28.0 - ringTime * 4.0 + ringIdx ) * ( 0.03 + 0.04 * audioKick )
+    float wave = sin( r * 28.0 - ring_time * 4.0 + ring_idx ) * ( 0.03 + 0.04 * audioKick )
                  * ( 1.0 + 0.6 * audioSubBass );
-    pFold += vec2( sin( pFold.y * 15.0 ), cos( pFold.x * 15.0 ) ) * wave;
+    p_fold += vec2( sin( p_fold.y * 15.0 ), cos( p_fold.x * 15.0 ) ) * wave;
 
     // Sampling image at chrono-delayed coordinates
-    vec2 sampleUV = fract( pFold * ( 0.8 + 0.2 * sin( ringIdx * 1.5 ) ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_fold * ( 0.8 + 0.2 * sin( ring_idx * 1.5 ) ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Inter-ring glowing boundary line
-    float ringEdge = smoothstep( 0.08, 0.0, abs( ringFrac - 0.5 ) );
-    float conduitGlow = exp( -abs( sin( rotA * folds * 2.0 + ringTime ) ) * ( 15.0 + 10.0 * audioCentroid ) ) * glw;
+    float ring_edge = smoothstep( 0.08, 0.0, abs( ring_frac - 0.5 ) );
+    float conduit_glow = exp( -abs( sin( rot_a * folds * 2.0 + ring_time ) ) * ( 15.0 + 10.0 * audioCentroid ) ) * glw;
 
     // Color mixing across temporal layers
-    vec3 palA = imgPalette( ringIdx * 0.15 + ringTime * 0.05 );
-    vec3 palB = imgPalette( ringIdx * 0.15 + 0.5 );
-    vec3 mixedCol = mix( palA, palB, 0.5 + 0.5 * sin( r * 10.0 + ringTime ) );
+    vec3 pal_a = imgPalette( ring_idx * 0.15 + ring_time * 0.05 );
+    vec3 pal_b = imgPalette( ring_idx * 0.15 + 0.5 );
+    vec3 mixed_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( r * 10.0 + ring_time ) );
 
-    mixedCol = mix( mixedCol, texCol, 0.4 + 0.2 * audioValence );
+    mixed_col = mix( mixed_col, tex_col, 0.4 + 0.2 * audioValence );
 
     // Add glowing conduits & pulse
-    vec3 neonTint = vec3( 1.3, 0.8, 1.6 ) * ( conduitGlow + ringEdge * 0.6 ) * ( 1.0 + 2.5 * audioKick );
-    mixedCol += neonTint;
+    vec3 neon_tint = vec3( 1.3, 0.8, 1.6 ) * ( conduit_glow + ring_edge * 0.6 ) * ( 1.0 + 2.5 * audioKick );
+    mixed_col += neon_tint;
 
     // Center lotus bloom flare -- kept small enough to read as an accent,
     // not a white disc swallowing the whole mandala centre.
-    float centerFlare = exp( -r * 6.0 ) * ( 0.35 + 0.5 * audioLevel );
-    mixedCol += imgPalette( 0.8 ) * centerFlare;
+    float center_flare = exp( -r * 6.0 ) * ( 0.35 + 0.5 * audioLevel );
+    mixed_col += imgPalette( 0.8 ) * center_flare;
 
     // Contrast and vignette
-    mixedCol = pow( mixedCol, vec3( 0.9 ) );
+    mixed_col = pow( mixed_col, vec3( 0.9 ) );
     float vig = 1.0 - smoothstep( 0.9, 1.45, r );
-    mixedCol *= vig;
+    mixed_col *= vig;
 
-    fragColor = vec4( clamp( mixedCol, 0.0, 1.0 ), 1.0 );
+    fragColor = vec4( clamp( mixed_col, 0.0, 1.0 ), 1.0 );
 }

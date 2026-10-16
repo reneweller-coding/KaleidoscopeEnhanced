@@ -45,9 +45,9 @@ out float vBg;     ///< Background flag (from the vertex stage).
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
 
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         float spd = ( speedP > 0.01 ? speedP : 1.0 );
@@ -82,12 +82,12 @@ void main()
         // plane. What survived was a sliver, and the haze finished it off --
         // the render was a coloured fog with a sun in it. The visible span is
         // now deliberately 12..212.
-        float groundX = 195.0 * sz; // across the frame
-        float groundZ = 300.0 * sz; // half-length along the flight
+        float ground_x = 195.0 * sz; // across the frame
+        float ground_z = 300.0 * sz; // half-length along the flight
         float relief = 36.0 * sz * hgt;
-        vec3  q = vec3( p.x / max( e.x, 1e-4 ) * groundX,
+        vec3  q = vec3( p.x / max( e.x, 1e-4 ) * ground_x,
                         p.y / max( e.y, 1e-4 ) * relief,
-                        p.z / max( e.z, 1e-4 ) * groundZ );
+                        p.z / max( e.z, 1e-4 ) * ground_z );
 
         // ONE crossing per scene, not a wrap. Wrapping the coordinate with
         // mod() tore the mesh: any triangle straddling the seam had its
@@ -100,12 +100,12 @@ void main()
         // Bounded so the visible window (z = 12..212, inside kSceneFar) is
         // covered for the WHOLE crossing: the near edge never rises above 12
         // and the far edge never falls below 212. Solving both gives travel in
-        // [-groundZ, groundZ-200], which needs groundZ > 100 to be a range at
+        // [-ground_z, ground_z-200], which needs ground_z > 100 to be a range at
         // all -- hence 300.
         // sceneProgress alone. The advance top-up both jerked the ground on
         // every kick AND could push travel past the bounded range that keeps
         // the visible window covered -- sceneProgress is bounded by design.
-        float travel = mix( -groundZ, groundZ - 200.0, clamp( sceneProgress, 0.0, 1.0 ) );
+        float travel = mix( -ground_z, ground_z - 200.0, clamp( sceneProgress, 0.0, 1.0 ) );
         q.z -= travel;
 
         // Low and close. At 26 units up the ridges collapsed into a band along
@@ -130,16 +130,16 @@ void main()
         // Sinking every near vertex by the SAME amount keeps the relief's
         // shape intact -- nothing can fold -- while the whole near field
         // dips under the eye; the far ridgeline keeps its height.
-        float nearF = smoothstep( 110.0, 20.0, world.z );
-        world.y -= nearF * ( max( relief * 0.70 - 9.0, 0.0 ) + 4.0 );
+        float near_f = smoothstep( 110.0, 20.0, world.z );
+        world.y -= near_f * ( max( relief * 0.70 - 9.0, 0.0 ) + 4.0 );
 
         // The non-uniform squash changes the normals too: a normal transforms
         // by the INVERSE TRANSPOSE, which for a pure scale means dividing by
         // each factor instead of multiplying. Getting this backwards would
         // light the flattened terrain as though it were still a round object.
-        n = normalize( vec3( nrm.x * max( e.x, 1e-4 ) / groundX,
+        n = normalize( vec3( nrm.x * max( e.x, 1e-4 ) / ground_x,
                              nrm.y * max( e.y, 1e-4 ) / relief,
-                             nrm.z * max( e.z, 1e-4 ) / groundZ ) );
+                             nrm.z * max( e.z, 1e-4 ) / ground_z ) );
         vUV = vec2( attrA.w, attrB.w );
         vDist = world.z;
         vBg = 0.0;
@@ -158,6 +158,6 @@ void main()
 
     vec3 vp = vec3( world.x - eyeOff, world.y, world.z );
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 }

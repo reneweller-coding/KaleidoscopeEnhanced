@@ -38,53 +38,53 @@ out float vPour;
 out vec3  vLip;
 out vec3  vCup;
 
-const float kDist = 48.0;
-const float kGround = -18.0;
+const float Dist = 48.0;
+const float Ground = -18.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isMould = gl_VertexID < meshVertexCount;
-    bool isLadle = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
-    bool isBg = gl_VertexID >= mesh2VertexCount;
+    bool is_mould = gl_VertexID < meshVertexCount;
+    bool is_ladle = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
+    bool is_bg = gl_VertexID >= mesh2VertexCount;
     vec3 world, n;
-    vLadle = isLadle ? 1.0 : 0.0;
+    vLadle = is_ladle ? 1.0 : 0.0;
 
     float sz = 11.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
-    float mxM = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
-    vec3  mouldHalf = meshExtent / mxM * sz;
-    vec3  mouldPos = vec3( 4.0, kGround + mouldHalf.y, kDist );
-    vCup = mouldPos + vec3( 0.0, mouldHalf.y, -mouldHalf.z * 0.2 );
+    float mx_m = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
+    vec3  mould_half = meshExtent / mx_m * sz;
+    vec3  mould_pos = vec3( 4.0, Ground + mould_half.y, Dist );
+    vCup = mould_pos + vec3( 0.0, mould_half.y, -mould_half.z * 0.2 );
 
     // The pour: tips over the middle of the scene, rights itself at the end.
     float pour = smoothstep( 0.12, 0.45, sceneProgress ) * ( 1.0 - smoothstep( 0.82, 0.98, sceneProgress ) );
     vPour = pour;
-    float szL = sz * ( ladleP > 0.01 ? ladleP : 0.8 );
-    float mxL = max( meshExtent2.x, max( meshExtent2.y, meshExtent2.z ) );
-    vec3  ladleHalf = meshExtent2 / mxL * szL;
-    vec3  ladlePos = vec3( -13.0, kGround + 2.0 * mouldHalf.y + ladleHalf.y * 0.6 + 3.0, kDist - 2.0 );
+    float sz_l = sz * ( ladleP > 0.01 ? ladleP : 0.8 );
+    float mx_l = max( meshExtent2.x, max( meshExtent2.y, meshExtent2.z ) );
+    vec3  ladle_half = meshExtent2 / mx_l * sz_l;
+    vec3  ladle_pos = vec3( -13.0, Ground + 2.0 * mould_half.y + ladle_half.y * 0.6 + 3.0, Dist - 2.0 );
     float tilt = 1.05 * pour;
     float ct = cos( tilt ), st = sin( tilt );
-    mat3  tiltM = mat3( ct, st, 0.0, -st, ct, 0.0, 0.0, 0.0, 1.0 ); // tips toward +x, toward the mould
+    mat3  tilt_m = mat3( ct, st, 0.0, -st, ct, 0.0, 0.0, 0.0, 1.0 ); // tips toward +x, toward the mould
     float cy = cos( 3.14159265 + lipP ), sy = sin( 3.14159265 + lipP );
-    mat3  yawM = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+    mat3  yaw_m = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
     // The lip: the ladle's +x rim, after the tilt.
-    vLip = tiltM * vec3( ladleHalf.x * 0.95, ladleHalf.y * 0.8, 0.0 ) + ladlePos;
+    vLip = tilt_m * vec3( ladle_half.x * 0.95, ladle_half.y * 0.8, 0.0 ) + ladle_pos;
 
-    const mat3 turnM = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
-    if ( isMould )
+    const mat3 turn_m = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
+    if ( is_mould )
     {
         vec3 c = attrA.xyz - meshCenter;
-        world = turnM * ( c / mxM * sz ) + mouldPos;
-        n = normalize( turnM * attrB.xyz );
+        world = turn_m * ( c / mx_m * sz ) + mould_pos;
+        n = normalize( turn_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
-    else if ( isLadle )
+    else if ( is_ladle )
     {
         vec3 c = attrA.xyz - meshCenter2;
-        mat3 M = tiltM * yawM;
-        world = M * ( c / mxL * szL ) + ladlePos;
+        mat3 M = tilt_m * yaw_m;
+        world = M * ( c / mx_l * sz_l ) + ladle_pos;
         n = normalize( M * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent2;
@@ -101,10 +101,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

@@ -41,8 +41,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 out vec3  vCol;  ///< Colour (from the vertex stage).
 out float vSide; ///< Which side of a strip (from the vertex stage).
 
-const float TUBE_LEN = 40.0;
-const float NUM_RIBBONS = 20.0;
+const float TubeLen = 40.0;
+const float NumRibbons = 20.0;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -76,24 +76,24 @@ void main()
     float ri = attrA.w;
     vec4  seeds = attrB;
 
-    float sidesV = ( sidesP < 4 ) ? 6.0 : float( sidesP );
-    float speedV = ( speedP <= 0.01 ) ? 1.0 : speedP;
-    float pinchV = ( pinchP <= 0.01 ) ? 0.6 : pinchP;
-    float throatsV = ( throatsP < 2 ) ? 3.0 : float( throatsP );
+    float sides_v = ( sidesP < 4 ) ? 6.0 : float( sidesP );
+    float speed_v = ( speedP <= 0.01 ) ? 1.0 : speedP;
+    float pinch_v = ( pinchP <= 0.01 ) ? 0.6 : pinchP;
+    float throats_v = ( throatsP < 2 ) ? 3.0 : float( throatsP );
 
     // Mirror-kaleidoscope ribbon placement: each ribbon belongs to one of
-    // sidesV wedges (picked by index, not randomly), alternating wedges
+    // sides_v wedges (picked by index, not randomly), alternating wedges
     // mirrored -- real symmetry, not just even rotational spacing.
-    float perWedge = NUM_RIBBONS / sidesV;
-    float wedge = 6.2831853 / sidesV;
-    float copy = mod( floor( ri / perWedge ), sidesV );
-    float frac = mod( ri, perWedge ) / perWedge;
-    float baseAng = frac * wedge * 0.5;
-    float mirrored = ( mod( copy, 2.0 ) < 0.5 ) ? baseAng : ( wedge * 0.5 - baseAng );
+    float per_wedge = NumRibbons / sides_v;
+    float wedge = 6.2831853 / sides_v;
+    float copy = mod( floor( ri / per_wedge ), sides_v );
+    float frac = mod( ri, per_wedge ) / per_wedge;
+    float base_ang = frac * wedge * 0.5;
+    float mirrored = ( mod( copy, 2.0 ) < 0.5 ) ? base_ang : ( wedge * 0.5 - base_ang );
     float ang0 = mirrored + copy * wedge;
 
-    float camZ = time * 5.5 * speedV + audioAdvance * 14.0 * speedV;
-    float z = mod( t * TUBE_LEN - camZ, TUBE_LEN );
+    float cam_z = time * 5.5 * speed_v + audioAdvance * 14.0 * speed_v;
+    float z = mod( t * TubeLen - cam_z, TubeLen );
 
     // Twist + kaleidoscope spin, integrated.
     float twist = z * 0.05 + audioPhase * 0.3 + time * 0.01;
@@ -102,8 +102,8 @@ void main()
     // Wormhole throat: radius pulses through periodic pinch points along
     // the tube (a real hourglass silhouette repeating down its length),
     // deepened by the bass and briefly shocked outward on a kick.
-    float pinchPhase = z * ( 6.2831853 * throatsV / TUBE_LEN );
-    float throat = 1.0 - pinchV * ( 1.0 + 0.35 * audioBass ) * pow( 0.5 + 0.5 * cos( pinchPhase ), 3.0 );
+    float pinch_phase = z * ( 6.2831853 * throats_v / TubeLen );
+    float throat = 1.0 - pinch_v * ( 1.0 + 0.35 * audioBass ) * pow( 0.5 + 0.5 * cos( pinch_phase ), 3.0 );
     // Floor kept well clear of zero: a pinch point that closes down near the
     // camera's own z would bring ribbons close enough to the lens to smear
     // additively across the whole peripheral field of view (a blown-out
@@ -122,7 +122,7 @@ void main()
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 ); // clip segments behind the camera
 
     vSide = side;
-    vec3 col = imgPalette( 0.5 + 0.5 * sin( ang0 * sidesV * 0.5 + z * 0.08 ) ) * 1.5;
+    vec3 col = imgPalette( 0.5 + 0.5 * sin( ang0 * sides_v * 0.5 + z * 0.08 ) ) * 1.5;
     col = mix( col, vec3( 1.0, 0.9, 0.6 ), clamp( audioKick * exp( -z * 0.4 ), 0.0, 1.0 ) );
     if ( hueP > 0.001 )
         col = hueRot( col, hueP );

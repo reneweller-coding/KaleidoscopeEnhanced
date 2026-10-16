@@ -168,14 +168,14 @@ void main()
         }
     }
     // A radio mast with its red light.
-    float mastX = -0.32;
-    float mast = step( abs( p.x - mastX ), 0.0018 ) * step( p.y, hz + 0.42 )
-                 + step( abs( p.x - mastX ), 0.006 ) * step( p.y, hz + 0.3 );
+    float mast_x = -0.32;
+    float mast = step( abs( p.x - mast_x ), 0.0018 ) * step( p.y, hz + 0.42 )
+                 + step( abs( p.x - mast_x ), 0.006 ) * step( p.y, hz + 0.3 );
     float build = smoothstep( px, -px, p.y - top );
     float sil = max( build, clamp( mast, 0.0, 1.0 ) );
     vec3  city = vec3( 0.02, 0.022, 0.035 );
     // Windows: a grid on each facade, lit ones band by band.
-    float fwWin = fwidth( p.y * 120.0 ); // before the branch
+    float fw_win = fwidth( p.y * 120.0 ); // before the branch
     if ( build > 0.5 )
     {
         vec2  wq = vec2( bx * 5.0, p.y * 120.0 );
@@ -184,16 +184,16 @@ void main()
         float b = band[int( mod( wi.x + wi.y * 3.0, 8.0 ) )];
         float win = smoothstep( 0.25, 0.2, abs( wf.x - 0.5 ) ) * smoothstep( 0.3, 0.2, abs( wf.y - 0.5 ) );
         vec3  wc = mix( vec3( 1.0, 0.75, 0.4 ), vec3( 0.75, 0.85, 1.0 ), step( 0.8, hash21( wi + 3.0 ) ) );
-        city += wc * win * lit * ( 0.25 + 0.9 * b ) * smoothstep( 0.3, 0.1, fwWin );
+        city += wc * win * lit * ( 0.25 + 0.9 * b ) * smoothstep( 0.3, 0.1, fw_win );
     }
     col = mix( col, city, sil );
     // The warning light on the mast: a soft slow pulse.
     float blink = 0.5 + 0.5 * sin( T * 1.2 );
-    col += vec3( 1.0, 0.1, 0.05 ) * exp( -length( p - vec2( mastX, hz + 0.42 ) ) * 250.0 )
+    col += vec3( 1.0, 0.1, 0.05 ) * exp( -length( p - vec2( mast_x, hz + 0.42 ) ) * 250.0 )
            * ( 0.3 + 0.9 * blink * blink );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

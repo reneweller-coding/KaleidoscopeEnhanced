@@ -52,14 +52,14 @@ vec3 hueRot( vec3 c, float a )
 /// Blackbody stellar temperature palette
 vec3 blackbodyColor( float t )
 {
-    vec3 colM = vec3( 1.0, 0.25, 0.05 ); // Cool red (M-class)
-    vec3 colG = vec3( 1.0, 0.85, 0.40 ); // Solar yellow (G-class)
-    vec3 colO = vec3( 0.4, 0.75, 1.00 ); // Hot blue-white (O-class)
+    vec3 col_m = vec3( 1.0, 0.25, 0.05 ); // Cool red (M-class)
+    vec3 col_g = vec3( 1.0, 0.85, 0.40 ); // Solar yellow (G-class)
+    vec3 col_o = vec3( 0.4, 0.75, 1.00 ); // Hot blue-white (O-class)
     vec3 col;
     if ( t < 0.5 )
-        col = mix( colM, colG, t * 2.0 );
+        col = mix( col_m, col_g, t * 2.0 );
     else
-        col = mix( colG, colO, ( t - 0.5 ) * 2.0 );
+        col = mix( col_g, col_o, ( t - 0.5 ) * 2.0 );
     return col;
 }
 
@@ -79,13 +79,13 @@ void main()
     float alpha = exp( -r2 * 12.0 );
 
     // Stellar temperature coloring
-    vec3 starCol = blackbodyColor( clamp( vTemp * ht, 0.0, 1.0 ) );
+    vec3 star_col = blackbodyColor( clamp( vTemp * ht, 0.0, 1.0 ) );
 
     // Photo texture modulation for dust tint
-    vec2 dustUV = vPos.xz * 0.2 + 0.5;
-    vec3 dustCol = img( fract( dustUV ) );
+    vec2 dust_uv = vPos.xz * 0.2 + 0.5;
+    vec3 dust_col = img( fract( dust_uv ) );
 
-    vec3 col = ( starCol * 2.2 + dustCol * 0.5 ) * alpha * glw;
+    vec3 col = ( star_col * 2.2 + dust_col * 0.5 ) * alpha * glw;
 
     // Core thermonuclear glow
     if ( vTemp > 0.8 )
@@ -96,7 +96,7 @@ void main()
     col = hueRot( col, audioChromaHue + hue );
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

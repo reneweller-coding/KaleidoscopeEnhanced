@@ -32,15 +32,15 @@ void main()
     float gray = dot( vec3( colres[0], colres[1], colres[2] ), vec3( 0.3, 0.59, 0.11 ) );
 
     vec3 g = vec3( gray, gray, gray );
-    vec3 colorMul = vec3( 0.0, 0.0, 0.0 );
+    vec3 color_mul = vec3( 0.0, 0.0, 0.0 );
     if ( red > 0 )
-        colorMul.x = 1.0;
+        color_mul.x = 1.0;
     else if ( blue > 0 )
-        colorMul.y = 1.0;
+        color_mul.y = 1.0;
     else
-        colorMul.z = 1.0;
+        color_mul.z = 1.0;
 
-    vec3 res = colorMul * g * ( 1.0 + 0.30 * audioBeat );
+    vec3 res = color_mul * g * ( 1.0 + 0.30 * audioBeat );
     res = mix( res, colres, 0.18 * audioSwell );
 
     fragColor = vec4( res.x, res.y, res.z, 1.0 );

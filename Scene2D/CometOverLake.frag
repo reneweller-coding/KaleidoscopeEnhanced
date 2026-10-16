@@ -115,14 +115,14 @@ vec3 sky( vec2 q, float h )
     float wd = 0.012 + 0.16 * clamp( along / len, 0.0, 1.0 ) * ( 0.7 + 0.5 * g_tail );
     float dust = exp( -bend * bend / ( wd * wd ) ) * step( 0.0, along ) * exp( -along / len * 1.6 );
     dust *= 0.8 + 0.4 * fbm( vec2( along * 20.0, bend * 40.0 ) ); // striae
-    vec3 dustC = mix( vec3( 1.0, 0.9, 0.7 ), imgPalette( 0.1 + hueP * 0.159 ), 0.15 );
+    vec3 dust_c = mix( vec3( 1.0, 0.9, 0.7 ), imgPalette( 0.1 + hueP * 0.159 ), 0.15 );
     // Ion tail: thin, straight, blue, a bit longer.
     float iw = 0.004 + 0.02 * clamp( along / len, 0.0, 1.5 );
     float ion = exp( -( across + 0.01 ) * ( across + 0.01 ) / ( iw * iw ) ) * step( 0.0, along )
                 * exp( -along / len * 1.1 );
     ion *= 0.7 + 0.5 * noise2( vec2( along * 40.0 - g_T * 0.05, 0.0 ) );
     float glow = 0.6 + 0.5 * g_swell;
-    s += dustC * dust * 0.9 * glow + vec3( 0.35, 0.6, 1.0 ) * ion * 0.6 * glow;
+    s += dust_c * dust * 0.9 * glow + vec3( 0.35, 0.6, 1.0 ) * ion * 0.6 * glow;
     // The head: a bright coma.
     float hr = length( d );
     s += vec3( 0.9, 1.0, 0.95 ) * ( exp( -hr * hr * 40000.0 ) * 2.0 + exp( -hr * 60.0 ) * 0.4 ) * glow;
@@ -189,7 +189,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

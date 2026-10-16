@@ -119,30 +119,30 @@ void main()
         vec2  c = vec2( ( hash21( vec2( fi, 1.0 ) ) - 0.5 ) * aspect, ( hash21( vec2( fi, 2.0 ) ) - 0.5 ) ) * 0.9;
         float rr = length( p - c );
         float ragged = fbm( p * 6.0 + fi * 3.0 ) * 0.25;
-        float reachR = 0.05 + 0.75 * rough * ( 0.7 + 0.3 * hash21( vec2( fi, 3.0 ) ) );
-        rust = max( rust, smoothstep( reachR, reachR - 0.15 - ragged * 0.4, rr + ragged ) );
+        float reach_r = 0.05 + 0.75 * rough * ( 0.7 + 0.3 * hash21( vec2( fi, 3.0 ) ) );
+        rust = max( rust, smoothstep( reach_r, reach_r - 0.15 - ragged * 0.4, rr + ragged ) );
     }
     // Pitting inside the rust: fine noise.
     float pits = fbm( p * 25.0 ) * pitting;
     rust = clamp( rust * ( 0.7 + 0.5 * pits ), 0.0, 1.0 );
     // The polish sweep: a band travelling left to right whose height is
     // the change envelope; behind the band the plate is clean.
-    float sweepX = fract( sceneAdvance * 0.25 + sceneTime * 0.05 ) * ( aspect + 0.6 ) - aspect * 0.5 - 0.3;
-    float sweep = smoothstep( 0.25, 0.0, abs( p.x - sweepX ) ) * change;
-    float cleaned = smoothstep( 0.0, 0.3, sweepX - p.x ) * change;
+    float sweep_x = fract( sceneAdvance * 0.25 + sceneTime * 0.05 ) * ( aspect + 0.6 ) - aspect * 0.5 - 0.3;
+    float sweep = smoothstep( 0.25, 0.0, abs( p.x - sweep_x ) ) * change;
+    float cleaned = smoothstep( 0.0, 0.3, sweep_x - p.x ) * change;
     rust *= 1.0 - clamp( sweep + cleaned, 0.0, 1.0 );
     // Rust colour: layered oranges and browns from the palette and noise.
-    vec3 rustA = mix( vec3( 0.55, 0.22, 0.06 ), imgPalette( hue * 0.159 + 0.05 ), 0.3 );
-    vec3 rustB = mix( vec3( 0.25, 0.1, 0.04 ), imgPalette( hue * 0.159 + 0.1 ) * 0.5, 0.3 );
-    vec3 rustCol = mix( rustA, rustB, pits ) * ( 0.8 + 0.4 * fbm( p * 12.0 + 1.0 ) );
-    vec3 col = mix( chrome, rustCol, rust );
+    vec3 rust_a = mix( vec3( 0.55, 0.22, 0.06 ), imgPalette( hue * 0.159 + 0.05 ), 0.3 );
+    vec3 rust_b = mix( vec3( 0.25, 0.1, 0.04 ), imgPalette( hue * 0.159 + 0.1 ) * 0.5, 0.3 );
+    vec3 rust_col = mix( rust_a, rust_b, pits ) * ( 0.8 + 0.4 * fbm( p * 12.0 + 1.0 ) );
+    vec3 col = mix( chrome, rust_col, rust );
     // The rust front glows faintly (fresh oxide) and the polish band shines.
     float front = rust * ( 1.0 - rust ) * 4.0;
     col += vec3( 0.9, 0.5, 0.2 ) * front * 0.15;
     col += vec3( 1.0 ) * sweep * 0.5;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

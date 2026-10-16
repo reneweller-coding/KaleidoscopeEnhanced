@@ -91,37 +91,37 @@ void main()
         amp *= 0.5;
     }
 
-    float ejectaDist = r + turb * 0.12 * ( 0.8 + 0.5 * audioBass );
+    float ejecta_dist = r + turb * 0.12 * ( 0.8 + 0.5 * audioBass );
 
     // Core radioactive engine (thermal glow)
-    float coreRadius = 0.15 * ( coreP > 0.01 ? coreP : 1.0 ) * ( 1.0 + 0.3 * audioSubBass );
-    float coreGlow = exp( -ejectaDist / max( coreRadius, 0.01 ) ) * ( 1.0 + 2.5 * audioKick );
+    float core_radius = 0.15 * ( coreP > 0.01 ? coreP : 1.0 ) * ( 1.0 + 0.3 * audioSubBass );
+    float core_glow = exp( -ejecta_dist / max( core_radius, 0.01 ) ) * ( 1.0 + 2.5 * audioKick );
 
     // Lanthanide opacity curtain (outer absorbing shells)
-    float lanthOpacity = ( lanthP > 0.01 ? lanthP : 1.2 );
-    float shell = exp( -abs( ejectaDist - 0.45 ) * 6.0 * lanthOpacity );
+    float lanth_opacity = ( lanthP > 0.01 ? lanthP : 1.2 );
+    float shell = exp( -abs( ejecta_dist - 0.45 ) * 6.0 * lanth_opacity );
 
     // Shock break-out rays
     float rays = pow( sin( theta * 8.0 + turb * 3.0 + t * 1.5 ) * 0.5 + 0.5, 3.0 );
     rays *= exp( -r * 2.0 ) * ( shockP > 0.01 ? shockP : 1.0 ) * ( 0.8 + 1.2 * audioHigh );
 
     // Color synthesis: Incandescent gold/platinum core tinted toward photo palette
-    vec3 goldCore = vec3( 1.0, 0.75, 0.2 );
-    vec3 deepCrimson = vec3( 0.7, 0.12, 0.08 );
-    vec3 lanthanidePurple = vec3( 0.4, 0.05, 0.55 );
+    vec3 gold_core = vec3( 1.0, 0.75, 0.2 );
+    vec3 deep_crimson = vec3( 0.7, 0.12, 0.08 );
+    vec3 lanthanide_purple = vec3( 0.4, 0.05, 0.55 );
 
-    vec3 coreColor = palTint( goldCore, 0.05, 0.22 );
-    vec3 shellColor = palTint( mix( deepCrimson, lanthanidePurple, shell ), ejectaDist * 0.3, 0.28 );
-    vec3 rayColor = palTint( vec3( 1.0, 0.9, 0.7 ), audioCentroid, 0.25 );
+    vec3 core_color = palTint( gold_core, 0.05, 0.22 );
+    vec3 shell_color = palTint( mix( deep_crimson, lanthanide_purple, shell ), ejecta_dist * 0.3, 0.28 );
+    vec3 ray_color = palTint( vec3( 1.0, 0.9, 0.7 ), audioCentroid, 0.25 );
 
     // Background photo texture
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += shellColor * shell * ( 0.9 + 0.6 * audioSwell );
-    col += coreColor * coreGlow * 2.5;
-    col += rayColor * rays * 1.4;
+    col += shell_color * shell * ( 0.9 + 0.6 * audioSwell );
+    col += core_color * core_glow * 2.5;
+    col += ray_color * rays * 1.4;
     col += palTint( vec3( 1.0, 0.4, 0.1 ), turb * 0.2, 0.25 ) * ( audioKick * 0.4 );
 
     // Soft knee compression

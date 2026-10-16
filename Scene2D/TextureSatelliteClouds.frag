@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -340,8 +340,8 @@ void main()
     ground *= 1.0 - ( 0.4 + 0.3 * swell ) * cs;
     vec3 sun = mix( vec3( 0.9, 0.95, 1.05 ), vec3( 1.1, 0.95, 0.8 ), mode );
     // Cloud tops: brightness from the density (thicker = whiter), soft grey edges.
-    vec3 cloudC = sun * ( 0.65 + 0.4 * smoothstep( cover + 0.1, cover + 0.5, c ) );
-    vec3 col = mix( ground, cloudC, cloud );
+    vec3 cloud_c = sun * ( 0.65 + 0.4 * smoothstep( cover + 0.1, cover + 0.5, c ) );
+    vec3 col = mix( ground, cloud_c, cloud );
     // Lightning in storm cells.
     float flash = kick * storm * smoothstep( 0.7, 0.9, fbm3( x * 8.0 + sceneTime ) );
     col += vec3( 0.7, 0.8, 1.0 ) * flash * cloud;

@@ -39,40 +39,40 @@ float hash11( float p )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float quadID = attrA.w;
-    float seed = hash11( quadID );
+    float quad_id = attrA.w;
+    float seed = hash11( quad_id );
 
     // Organize quads into 16 cylindrical storage tiers
-    float tier = floor( quadID / 180.0 );
-    float tierAngle = mod( quadID, 180.0 ) / 180.0 * 6.2831853;
+    float tier = floor( quad_id / 180.0 );
+    float tier_angle = mod( quad_id, 180.0 ) / 180.0 * 6.2831853;
 
     float radius = 2.2 + 0.15 * sin( tier * 3.0 + time * 0.5 );
-    float height = ( tier - 8.0 ) * 0.35 + sin( tierAngle * 4.0 + time ) * 0.1;
+    float height = ( tier - 8.0 ) * 0.35 + sin( tier_angle * 4.0 + time ) * 0.1;
 
     // Orbiting rotation
     float t = time * 0.2 + audioAdvance * 0.1;
-    float currentAngle = tierAngle + t * ( 0.5 + 0.1 * tier );
+    float current_angle = tier_angle + t * ( 0.5 + 0.1 * tier );
 
-    vec3 waferCenter = vec3( radius * cos( currentAngle ), height, radius * sin( currentAngle ) );
+    vec3 wafer_center = vec3( radius * cos( current_angle ), height, radius * sin( current_angle ) );
 
     // Orientation: Face towards central laser emitter axis with slight tilt
-    vec3 tangent = vec3( -sin( currentAngle ), 0.0, cos( currentAngle ) );
+    vec3 tangent = vec3( -sin( current_angle ), 0.0, cos( current_angle ) );
     vec3 bitangent = vec3( 0.0, 1.0, 0.0 );
 
     // Quad local vertex offset
     vec2  offset = attrA.xy - vec2( 0.5 );
-    float waferScale = 0.14 + 0.03 * sin( quadID * 0.1 );
+    float wafer_scale = 0.14 + 0.03 * sin( quad_id * 0.1 );
 
-    vec3 localPos = offset.x * tangent * waferScale * 1.6 + offset.y * bitangent * waferScale;
-    vec3 pos = waferCenter + localPos;
+    vec3 local_pos = offset.x * tangent * wafer_scale * 1.6 + offset.y * bitangent * wafer_scale;
+    vec3 pos = wafer_center + local_pos;
 
     // Read laser scanning beam on audio kicks & mid frequencies
-    float laserHit = exp( -abs( height - sin( time * 3.0 ) * 2.0 ) * 4.0 ) * ( 0.8 + audioMid * 1.2 );
+    float laser_hit = exp( -abs( height - sin( time * 3.0 ) * 2.0 ) * 4.0 ) * ( 0.8 + audioMid * 1.2 );
 
     vPos = pos;
     vUV = attrA.xy;
     vTier = tier / 16.0;
-    vReadLaser = laserHit;
+    vReadLaser = laser_hit;
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;

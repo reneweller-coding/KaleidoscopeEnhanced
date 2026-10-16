@@ -73,10 +73,10 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-const float RS = 4.2;   ///< apothem of the shaft
-const float RW = 6.2;   ///< apothem of the gallery walls
-const float LH = 2.8;   ///< level height
-const float SLAB = 0.3; ///< floor thickness
+const float Rs = 4.2;   ///< apothem of the shaft
+const float Rw = 6.2;   ///< apothem of the gallery walls
+const float Lh = 2.8;   ///< level height
+const float Slab = 0.3; ///< floor thickness
 float       gLamp;
 
 /// Exit of a ray (from inside) through a hexagonal prism of apothem R.
@@ -116,13 +116,13 @@ vec3 books( float u, float y, float lev )
     bc = mix( bc * vec3( 0.55, 0.3, 0.2 ), vec3( 0.2, 0.12, 0.08 ), 0.35 * hash21( vec2( bi, 7.0 ) ) );
     bc = mix( bc, imgPalette( h + hueP * 0.159 ) * 0.6, 0.15 );
     float top = 0.62 + 0.3 * hash21( vec2( bi, shelf + 3.0 ) );
-    float isBook = step( fy, top ) * step( 0.06, fy );
+    float is_book = step( fy, top ) * step( 0.06, fy );
     vec2  fw = fwidth( vec2( bu, sy ) );
     float gap = smoothstep( 0.0, fw.x * 1.5 + 0.02, bf ) * smoothstep( 1.0, 1.0 - fw.x * 1.5 - 0.02, bf );
     vec3  wood = vec3( 0.22, 0.12, 0.06 );
-    vec3  c = mix( wood * 0.4, bc * ( 0.7 + 0.3 * gap ), isBook );
+    vec3  c = mix( wood * 0.4, bc * ( 0.7 + 0.3 * gap ), is_book );
     // A gilt band on some spines.
-    c += vec3( 0.5, 0.4, 0.2 ) * step( 0.7, h ) * smoothstep( 0.03, 0.0, abs( fy - top * 0.8 ) ) * isBook * 0.5;
+    c += vec3( 0.5, 0.4, 0.2 ) * step( 0.7, h ) * smoothstep( 0.03, 0.0, abs( fy - top * 0.8 ) ) * is_book * 0.5;
     // The shelf board.
     c = mix( c, wood * 1.3, smoothstep( 0.06 + fw.y, 0.06, fy ) );
     // Far away the spines blur into an even tone.
@@ -151,54 +151,54 @@ void main()
     vec3  up = cross( rt, fw );
     vec3  rd = normalize( p.x * rt + p.y * up + 1.2 * fw );
 
-    int   fS;
-    float tS = hexExit( ro.xz, rd.xz, RS, fS );
-    vec3  PS = ro + rd * tS;
-    float lev = floor( PS.y / LH );
-    float ly = PS.y - lev * LH; // height within the level
+    int   f_s;
+    float t_s = hexExit( ro.xz, rd.xz, Rs, f_s );
+    vec3  PS = ro + rd * t_s;
+    float lev = floor( PS.y / Lh );
+    float ly = PS.y - lev * Lh; // height within the level
 
     vec3  col = vec3( 0.0 );
-    float tHit;
-    vec3  lampPos = vec3( 0.0 );
-    if ( ly < SLAB )
+    float t_hit;
+    vec3  lamp_pos = vec3( 0.0 );
+    if ( ly < Slab )
     {
         // The edge of a floor slab: dark wood with a lighter lip.
-        float fa0 = float( fS ) * 1.0471976;
-        vec3  Lb = vec3( cos( fa0 ) * 4.7, lev * LH - 0.7, sin( fa0 ) * 4.7 );
+        float fa0 = float( f_s ) * 1.0471976;
+        vec3  Lb = vec3( cos( fa0 ) * 4.7, lev * Lh - 0.7, sin( fa0 ) * 4.7 );
         float lb = gLamp * 3.0 / ( 1.0 + dot( PS - Lb, PS - Lb ) * 0.3 ) + 0.1;
-        col = vec3( 0.3, 0.17, 0.09 ) * ( 0.6 + 0.4 * smoothstep( SLAB, SLAB - 0.05, ly ) ) * lb;
-        tHit = tS;
+        col = vec3( 0.3, 0.17, 0.09 ) * ( 0.6 + 0.4 * smoothstep( Slab, Slab - 0.05, ly ) ) * lb;
+        t_hit = t_s;
     }
     else
     {
         // Into the gallery: back wall, its floor or its ceiling.
-        int   fW;
-        float tW = hexExit( ro.xz, rd.xz, RW, fW );
-        float yFloor = lev * LH + SLAB, yCeil = ( lev + 1.0 ) * LH;
-        float tF = rd.y < 0.0 ? ( yFloor - ro.y ) / rd.y : 1e9;
-        float tC = rd.y > 0.0 ? ( yCeil - ro.y ) / rd.y : 1e9;
-        tHit = min( tW, min( tF, tC ) );
-        vec3  P = ro + rd * tHit;
-        float fa = float( fW ) * 1.0471976;
+        int   f_w;
+        float t_w = hexExit( ro.xz, rd.xz, Rw, f_w );
+        float y_floor = lev * Lh + Slab, y_ceil = ( lev + 1.0 ) * Lh;
+        float t_f = rd.y < 0.0 ? ( y_floor - ro.y ) / rd.y : 1e9;
+        float t_c = rd.y > 0.0 ? ( y_ceil - ro.y ) / rd.y : 1e9;
+        t_hit = min( t_w, min( t_f, t_c ) );
+        vec3  P = ro + rd * t_hit;
+        float fa = float( f_w ) * 1.0471976;
         vec2  fn = vec2( cos( fa ), sin( fa ) );
-        lampPos = vec3( fn.x * 4.7, yCeil - 0.7, fn.y * 4.7 );
-        float dl = length( P - lampPos );
+        lamp_pos = vec3( fn.x * 4.7, y_ceil - 0.7, fn.y * 4.7 );
+        float dl = length( P - lamp_pos );
         float light = gLamp * 3.2 / ( 1.0 + dl * dl * 0.3 ) + 0.04;
-        if ( tHit == tW )
+        if ( t_hit == t_w )
         {
             // Four of the six walls carry shelves; two open onto the stairs.
             float u = dot( P.xz, vec2( -fn.y, fn.x ) );
-            bool  shelves = mod( float( fW ) + lev, 3.0 ) > 0.5;
-            vec3  wc = shelves ? books( u, P.y - yFloor, lev + float( fW ) * 17.0 )
+            bool  shelves = mod( float( f_w ) + lev, 3.0 ) > 0.5;
+            vec3  wc = shelves ? books( u, P.y - y_floor, lev + float( f_w ) * 17.0 )
                                : vec3( 0.12, 0.08, 0.05 )
                                      * ( 0.7
                                          + 0.3
                                                * smoothstep( 0.02, 0.0,
-                                                             abs( fract( u * 1.5 + ( P.y - yFloor ) * 0.8 ) - 0.5 )
+                                                             abs( fract( u * 1.5 + ( P.y - y_floor ) * 0.8 ) - 0.5 )
                                                                  - 0.4 ) );
             col = wc * light;
         }
-        else if ( tHit == tF )
+        else if ( t_hit == t_f )
         {
             col = vec3( 0.3, 0.18, 0.1 ) * ( 0.8 + 0.2 * noise2( P.xz * vec2( 1.0, 8.0 ) ) ) * light * 0.8;
         }
@@ -211,17 +211,17 @@ void main()
                                           abs( fract( dot( P.xz, vec2( -fn.y, fn.x ) ) * 1.2 ) - 0.5 ) - 0.45 ) );
         }
         // The low railing at the shaft's edge, in front of the gallery.
-        if ( ly < SLAB + 0.95 )
+        if ( ly < Slab + 0.95 )
         {
-            float u = dot( PS.xz, vec2( -sin( float( fS ) * 1.0471976 ), cos( float( fS ) * 1.0471976 ) ) );
+            float u = dot( PS.xz, vec2( -sin( float( f_s ) * 1.0471976 ), cos( float( f_s ) * 1.0471976 ) ) );
             float fwu = fwidth( u * 6.0 );
             float bal = smoothstep( 0.18 + fwu, 0.18, abs( fract( u * 6.0 ) - 0.5 ) - 0.3 );
-            float rail = smoothstep( 0.05, 0.03, abs( ly - SLAB - 0.9 ) );
+            float rail = smoothstep( 0.05, 0.03, abs( ly - Slab - 0.9 ) );
             float cov = max( bal * 0.9, rail );
             vec3  rc = vec3( 0.2, 0.11, 0.05 ) * ( 0.3 + 0.4 * gLamp );
             col = mix( col, rc, cov );
             if ( cov > 0.5 )
-                tHit = tS;
+                t_hit = t_s;
         }
     }
     // The lamps: warm globes hanging in the galleries, seen with their halo.
@@ -231,10 +231,10 @@ void main()
         {
             float fa = float( f ) * 1.0471976;
             float lv = lev + float( k );
-            vec3  L = vec3( cos( fa ) * 4.7, ( lv + 1.0 ) * LH - 0.7, sin( fa ) * 4.7 );
+            vec3  L = vec3( cos( fa ) * 4.7, ( lv + 1.0 ) * Lh - 0.7, sin( fa ) * 4.7 );
             vec3  v = L - ro;
             float tl = dot( v, rd );
-            if ( tl <= 0.0 || tl > tHit + 0.3 )
+            if ( tl <= 0.0 || tl > t_hit + 0.3 )
                 continue;
             float d = length( v - rd * tl );
             float glob = smoothstep( 0.17, 0.14, d );
@@ -244,10 +244,10 @@ void main()
         }
     }
     // Warm dusty air in the shaft; far floors sink into darkness.
-    col = mix( col, vec3( 0.2, 0.12, 0.06 ) * ( 0.8 + 0.6 * swell ), 1.0 - exp( -tHit * 0.05 ) );
+    col = mix( col, vec3( 0.2, 0.12, 0.06 ) * ( 0.8 + 0.6 * swell ), 1.0 - exp( -t_hit * 0.05 ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

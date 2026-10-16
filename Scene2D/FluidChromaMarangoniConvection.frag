@@ -73,7 +73,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float cSc = ( cellScaleP > 0.01 ) ? cellScaleP : 1.0;
+    float c_sc = ( cellScaleP > 0.01 ) ? cellScaleP : 1.0;
     float mar = ( marangoniP > 0.01 ) ? marangoniP : 1.2;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -84,41 +84,41 @@ void main()
     // Convection coordinates
     // Dividing the convection lattice frequency widens every Benard cell, so
     // the honeycomb swells with the drone instead of just brightening.
-    vec2 pConv = uv * ( 6.0 * cSc ) / ( 1.0 + 0.4 * audioSubBass );
+    vec2 p_conv = uv * ( 6.0 * c_sc ) / ( 1.0 + 0.4 * audioSubBass );
 
     // Evaluate Bénard convection thermal upwelling
-    float tempField = benardCell( pConv, t );
+    float temp_field = benardCell( p_conv, t );
 
     // Surface tension Marangoni velocity curl: v = grad(temp) x ez
     float eps = 0.01;
-    float tX = benardCell( pConv + vec2( eps, 0.0 ), t );
-    float tY = benardCell( pConv + vec2( 0.0, eps ), t );
-    vec2  gradT = vec2( tX - tempField, tY - tempField ) / eps;
+    float t_x = benardCell( p_conv + vec2( eps, 0.0 ), t );
+    float t_y = benardCell( p_conv + vec2( 0.0, eps ), t );
+    vec2  grad_t = vec2( t_x - temp_field, t_y - temp_field ) / eps;
 
     // Displace coordinate along Marangoni flow
-    vec2 pMarangoni = uv + vec2( -gradT.y, gradT.x ) * ( 0.06 * mar );
+    vec2 p_marangoni = uv + vec2( -grad_t.y, grad_t.x ) * ( 0.06 * mar );
 
     // Concentric thermal droplet rings in upwelling centers
-    float dropRings = sin( tempField * 12.0 - t * 4.0 );
-    float cellBorder = smoothstep( 0.0, 0.05, abs( tempField ) );
+    float drop_rings = sin( temp_field * 12.0 - t * 4.0 );
+    float cell_border = smoothstep( 0.0, 0.05, abs( temp_field ) );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( pMarangoni * 0.4 + vec2( tempField * 0.05 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_marangoni * 0.4 + vec2( temp_field * 0.05 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Thermal gradient palette
-    vec3 palWarm = imgPalette( tempField * 0.4 + 0.1 );
-    vec3 palCool = imgPalette( tempField * 0.4 + 0.6 );
-    vec3 baseCol = mix( palCool, palWarm, clamp( tempField * 0.5 + 0.5, 0.0, 1.0 ) );
+    vec3 pal_warm = imgPalette( temp_field * 0.4 + 0.1 );
+    vec3 pal_cool = imgPalette( temp_field * 0.4 + 0.6 );
+    vec3 base_col = mix( pal_cool, pal_warm, clamp( temp_field * 0.5 + 0.5, 0.0, 1.0 ) );
 
-    baseCol = mix( baseCol, texCol, 0.35 + 0.15 * audioValence );
+    base_col = mix( base_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Glowing thermal plume centers & cell boundary lines
-    float plumeGlow = exp( -abs( tempField - 0.8 ) * 15.0 ) * ( 1.0 + 3.0 * audioKick ) * glw;
-    float borderGlow = exp( -abs( tempField ) * ( 20.0 + 10.0 * audioCentroid ) ) * glw;
+    float plume_glow = exp( -abs( temp_field - 0.8 ) * 15.0 ) * ( 1.0 + 3.0 * audioKick ) * glw;
+    float border_glow = exp( -abs( temp_field ) * ( 20.0 + 10.0 * audioCentroid ) ) * glw;
 
-    vec3 finalCol = baseCol + vec3( 1.6, 1.2, 0.4 ) * plumeGlow + vec3( 0.4, 1.2, 1.8 ) * borderGlow;
+    vec3 final_col = base_col + vec3( 1.6, 1.2, 0.4 ) * plume_glow + vec3( 0.4, 1.2, 1.8 ) * border_glow;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

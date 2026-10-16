@@ -67,8 +67,8 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
     vec2 field = texture( texMandelbrot, uv ).rg;
 
-    float cycleV = ( cycleP <= 0.01 ) ? 1.0 : cycleP;
-    float glowV = ( glowP <= 0.01 ) ? 1.0 : glowP;
+    float cycle_v = ( cycleP <= 0.01 ) ? 1.0 : cycleP;
+    float glow_v = ( glowP <= 0.01 ) ? 1.0 : glowP;
 
     vec3 col;
     if ( field.r < 0.0 )
@@ -88,25 +88,25 @@ void main()
         // Escaped: colour cycles with smooth escape time, phase-shifted
         // gently over time so the SAME structure slowly shifts palette
         // position even while the zoom itself is between resets.
-        float t = field.r * cycleV * 3.0 + time * 0.015 + audioPhase * 0.02;
+        float t = field.r * cycle_v * 3.0 + time * 0.015 + audioPhase * 0.02;
         col = imgPalette( t ) * 2.2;
 
         // Rim glow: fresh escapees (low field.r within an escaped pixel's
         // own local neighbourhood isn't available here, so use field.r's
         // own high-frequency component as a cheap boundary-detail proxy)
         // pulse brighter on the beat.
-        float rim = 1.0 - abs( fract( field.r * cycleV * 3.0 ) * 2.0 - 1.0 );
-        col += imgPalette( t + 0.3 ) * pow( rim, 4.0 ) * ( 0.6 + 0.6 * audioBeat ) * glowV;
+        float rim = 1.0 - abs( fract( field.r * cycle_v * 3.0 ) * 2.0 - 1.0 );
+        col += imgPalette( t + 0.3 ) * pow( rim, 4.0 ) * ( 0.6 + 0.6 * audioBeat ) * glow_v;
     }
 
     if ( hueP > 0.001 )
         col = hueRot( col, hueP );
 
-    col *= glowV * ( 1.1 + 0.3 * audioCentroid );
+    col *= glow_v * ( 1.1 + 0.3 * audioCentroid );
     col *= 1.0 + 0.35 * audioLevel;
     col += col * audioOnset * 0.15;
 
-    vec3 _catTone = clamp( col, 0.0, 1.0 ) * 0.8;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 ) * 0.8;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -24,8 +24,8 @@ out float vKind; ///< Element kind (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vDepth = attrA.w;
     vGlow = attrB.w;
     vKind = attrB.x;
@@ -36,7 +36,7 @@ void main()
     // centre down by sin(0.55)*4.5 = 2.35 units -- a full frame-height below
     // the picture.  Most of the magnetosphere was simply off the bottom of the
     // screen, which is the real reason this scene measured 84% empty.
-    vec3 vp = worldP;
+    vec3 vp = world_p;
 
     float tilt = 0.55;
     float c = cos( tilt ), s = sin( tilt );

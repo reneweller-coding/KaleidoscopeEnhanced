@@ -80,8 +80,8 @@ float sdf( vec3 p )
     float tube = radiusAt( th, p.z ) - length( q );
     // Signed distance scaled down: the radius varies, so steps must be careful.
     tube *= 0.7;
-    float floorD = p.y + 1.6;
-    return min( tube, floorD );
+    float floor_d = p.y + 1.6;
+    return min( tube, floor_d );
 }
 
 vec3 normalAt( vec3 p )
@@ -128,8 +128,8 @@ void main()
     // Surface coordinates for the skylights and light lines.
     vec2  q = P.xy - axis( P.z );
     float th = atan( q.y, q.x ) + gTw * 0.12 * P.z;
-    float tubeD = ( radiusAt( th, P.z ) - length( q ) ) * 0.7;
-    bool  isFloor = ( P.y + 1.6 ) < tubeD;
+    float tube_d = ( radiusAt( th, P.z ) - length( q ) ) * 0.7;
+    bool  is_floor = ( P.y + 1.6 ) < tube_d;
 
     // Soft occlusion from the distance field.
     float ao = 0.0;
@@ -147,7 +147,7 @@ void main()
                 * ( 0.62 + 0.35 * max( dot( n, vec3( 0.0, 1.0, 0.0 ) ), 0.0 ) + 0.18 * max( -n.y, 0.0 ) + 0.1 * n.x )
                 * ao;
     col *= 0.85 + 0.25 * swell;
-    if ( !isFloor )
+    if ( !is_floor )
     {
         // Skylight slits: bright bands winding across the ceiling.
         float slit = sin( th * 2.0 + P.z * 0.35 );
@@ -185,7 +185,7 @@ void main()
     col = mix( col, vec3( 0.96, 0.97, 1.0 ) * 1.5, 1.0 - exp( -t * 0.02 ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

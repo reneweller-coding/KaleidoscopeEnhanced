@@ -121,8 +121,8 @@ void main()
     // Canals and tracks between the parcels.
     vec2  fwp = fwidth( pg );
     vec2  edge = min( pf, 1.0 - pf ) / max( fwp, 1e-4 );
-    float canalX = smoothstep( 2.5, 1.0, edge.x * 0.5 );
-    float canalY = smoothstep( 2.5, 1.0, edge.y * 0.5 );
+    float canal_x = smoothstep( 2.5, 1.0, edge.x * 0.5 );
+    float canal_y = smoothstep( 2.5, 1.0, edge.y * 0.5 );
     // Stripes of tulips inside the parcel, along its long side (or across).
     bool  across = hash21( pi + 5.0 ) > 0.7;
     float sc = across ? pf.x * 1.6 * ps : pf.y * ps;
@@ -130,8 +130,8 @@ void main()
     float rf = fract( rows );
     float fwr = fwidth( rows ) + 1e-4;
     // Wide bands of one colour, several per parcel; bare soil rows between.
-    float bandIdx = floor( sc * 5.0 + h * 7.0 );
-    int   kind = int( mod( bandIdx + floor( h * 6.0 ), 6.0 ) );
+    float band_idx = floor( sc * 5.0 + h * 7.0 );
+    int   kind = int( mod( band_idx + floor( h * 6.0 ), 6.0 ) );
     // Some parcels are harvested green leaves or bare earth.
     float bare = step( 0.86, hash21( pi + 9.0 ) );
     vec3  flower = tulip( kind );
@@ -149,7 +149,7 @@ void main()
     vec3 canal = mix( vec3( 0.35, 0.5, 0.65 ), vec3( 0.75, 0.82, 0.9 ), noise2( q * 10.0 + T * 0.05 ) );
     col = mix( col, vec3( 0.3, 0.45, 0.2 ),
                max( smoothstep( 4.0, 2.5, edge.x ), smoothstep( 4.0, 2.5, edge.y ) ) * 0.8 );
-    col = mix( col, canal, max( canalX, canalY ) );
+    col = mix( col, canal, max( canal_x, canal_y ) );
     // A farm on some parcel corners: roof and its shadow.
     {
         vec2  fq = pf - vec2( 0.12, 0.2 );
@@ -167,7 +167,7 @@ void main()
     col *= 0.95 + 0.15 * swell;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

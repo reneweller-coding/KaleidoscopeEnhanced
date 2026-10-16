@@ -42,7 +42,7 @@ uniform int   sidesP;    ///< kaleido fold (0/1 off; 2..8)
 uniform float strengthP; ///< schlieren gain      (0 -> 1.0; 0.6..1.8)
 uniform float rainbowP;  ///< 0 knife-edge mono .. 1 colour-filter mode
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -69,8 +69,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -108,14 +108,14 @@ void main()
                  * ( 14.0 + 10.0 * audioSwell + 8.0 * audioBass );
 
     // ---- Knife-edge channel: gradient projected on a slowly turning edge.
-    float edgeAng = time * 0.05 + audioPhase * 0.10;
-    vec2  knife = vec2( cos( edgeAng ), sin( edgeAng ) );
+    float edge_ang = time * 0.05 + audioPhase * 0.10;
+    vec2  knife = vec2( cos( edge_ang ), sin( edge_ang ) );
     float schlier = 0.5 + dot( grad, knife ) * gain;
 
     // ---- Rainbow-filter channel: direction -> hue, magnitude -> saturation.
-    float dirAng = atan( grad.y, grad.x );
+    float dir_ang = atan( grad.y, grad.x );
     vec3  rain = hueRot( vec3( 1.0, 0.25, 0.15 ),
-                         dirAng + audioChromaHue * 6.2831853 * 0.15915 );
+                         dir_ang + audioChromaHue * 6.2831853 * 0.15915 );
     rain *= clamp( gmag * gain * 1.6, 0.0, 1.0 );
 
     // The photo seen THROUGH the flow (heat-haze refraction).
@@ -125,10 +125,10 @@ void main()
     float mono = clamp( schlier, 0.0, 1.0 );
     // Contrast curve around the mid-grey (knife edge sits at 0.5).
     mono = mono * mono * ( 3.0 - 2.0 * mono );
-    vec3 knifeCol = vec3( mono ) * mix( vec3( 1.0, 0.98, 0.92 ), vec3( 0.85, 0.92, 1.05 ), audioCentroid );
+    vec3 knife_col = vec3( mono ) * mix( vec3( 1.0, 0.98, 0.92 ), vec3( 0.85, 0.92, 1.05 ), audioCentroid );
 
     float rb = clamp( ( rainbowP <= 0.01 ) ? 0.35 : rainbowP, 0.0, 1.0 );
-    vec3  optics = mix( knifeCol, rain + vec3( 0.18 ), rb );
+    vec3  optics = mix( knife_col, rain + vec3( 0.18 ), rb );
 
     vec3 col = pic * ( 0.30 + 0.25 * audioLevel );
     col += optics * ( 0.75 + 0.35 * audioOnset );

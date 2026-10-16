@@ -109,7 +109,7 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.5;
 
-    vec3  sunDir = normalize( vec3( -0.55, 0.3, 0.75 ) );
+    vec3  sun_dir = normalize( vec3( -0.55, 0.3, 0.75 ) );
     float horizon = -0.08;
 
     // Space.
@@ -131,12 +131,12 @@ void main()
         vec3  n = vec3( d, sqrt( 1.0 - r2 ) );
         float lat = d.y * 0.94 + d.x * 0.18; // bands tilted with the planet
         float band = noise1( lat * 7.0 ) * 0.55 + noise1( lat * 23.0 + 2.0 ) * 0.3 + noise1( lat * 70.0 + 5.0 ) * 0.15;
-        vec3  bandC = mix( vec3( 0.78, 0.6, 0.38 ), vec3( 1.0, 0.94, 0.8 ), smoothstep( 0.25, 0.75, band ) );
-        bandC = mix( bandC, vec3( 0.72, 0.55, 0.38 ), smoothstep( 0.7, 0.9, noise1( lat * 5.0 + 7.0 ) ) * 0.6 );
-        bandC = mix( bandC, imgPalette( 0.1 + hue * 0.159 ), 0.15 );
-        float dif = max( dot( n, sunDir ), 0.0 );
-        float term = smoothstep( -0.05, 0.25, dot( n, sunDir ) );
-        vec3  pcol = bandC * ( 0.03 + 1.35 * dif ) * term * ( 0.9 + 0.35 * swell );
+        vec3  band_c = mix( vec3( 0.78, 0.6, 0.38 ), vec3( 1.0, 0.94, 0.8 ), smoothstep( 0.25, 0.75, band ) );
+        band_c = mix( band_c, vec3( 0.72, 0.55, 0.38 ), smoothstep( 0.7, 0.9, noise1( lat * 5.0 + 7.0 ) ) * 0.6 );
+        band_c = mix( band_c, imgPalette( 0.1 + hue * 0.159 ), 0.15 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
+        float term = smoothstep( -0.05, 0.25, dot( n, sun_dir ) );
+        vec3  pcol = band_c * ( 0.03 + 1.35 * dif ) * term * ( 0.9 + 0.35 * swell );
         // The rings' shadow: a band across the planet just above the ring line.
         float sh = smoothstep( 0.02, 0.0, abs( lat + 0.12 ) - 0.05 ) * ( 0.6 + 0.4 * noise1( lat * 90.0 ) );
         pcol *= 1.0 - 0.75 * sh;
@@ -156,11 +156,11 @@ void main()
         lanes *= 0.6 + 0.4 * noise1( x * 140.0 * rp + 3.0 );
         // The flow of fine particles along the flight (texture streaming).
         float grain = noise2( vec2( x * 25.0, z * 8.0 + T * 3.0 ) );
-        vec3  ringC = mix( vec3( 0.7, 0.58, 0.45 ), vec3( 1.0, 0.97, 0.9 ), lanes );
-        ringC = mix( ringC, vec3( 0.6, 0.65, 0.72 ), smoothstep( 0.6, 0.9, noise1( x * 1.3 + 50.0 ) ) * 0.5 );
-        vec3 rc = ringC * ( 0.15 + 0.85 * lanes ) * ( 0.55 + 0.35 * grain ) * ( 0.85 + 0.4 * swell );
+        vec3  ring_c = mix( vec3( 0.7, 0.58, 0.45 ), vec3( 1.0, 0.97, 0.9 ), lanes );
+        ring_c = mix( ring_c, vec3( 0.6, 0.65, 0.72 ), smoothstep( 0.6, 0.9, noise1( x * 1.3 + 50.0 ) ) * 0.5 );
+        vec3 rc = ring_c * ( 0.15 + 0.85 * lanes ) * ( 0.55 + 0.35 * grain ) * ( 0.85 + 0.4 * swell );
         // Distance haze toward the horizon (the rings get thin and bright).
-        rc = mix( rc, ringC * 0.55 * lanes, smoothstep( 2.0, 12.0, z ) );
+        rc = mix( rc, ring_c * 0.55 * lanes, smoothstep( 2.0, 12.0, z ) );
         // The rings are a sheet of particles, not a floor: thin ringlets and
         // the gaps let the stars below shine through; far away (grazing
         // view) the sheet closes up.
@@ -202,10 +202,10 @@ void main()
                                    + 0.45
                                          * vec3( noise2( dd * 3.0 + hsh * 20.0 ) - 0.5,
                                                  noise2( dd * 3.0 + 7.0 + hsh * 20.0 ) - 0.5, 0.0 ) );
-                    float dif = max( dot( n, sunDir ), 0.0 );
+                    float dif = max( dot( n, sun_dir ), 0.0 );
                     vec3  ice = mix( vec3( 0.62, 0.58, 0.52 ), vec3( 0.95, 0.94, 0.92 ), hsh );
                     vec3  cc3 = ice * ( 0.05 + 1.2 * dif ) * ( 0.85 + 0.3 * swell );
-                    float glint = pow( max( dot( reflect( -sunDir, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 40.0 );
+                    float glint = pow( max( dot( reflect( -sun_dir, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 40.0 );
                     cc3 += vec3( 1.0 ) * glint * ( 0.3 + 1.5 * kick ) * spk;
                     col = mix( col, cc3, fade * smoothstep( 1.0, 0.9, rr ) );
                 }
@@ -216,7 +216,7 @@ void main()
     col += vec3( 0.9, 0.85, 0.75 ) * exp( -abs( p.y - horizon ) * 300.0 ) * 0.35 * ( 0.8 + 0.4 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

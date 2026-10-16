@@ -154,7 +154,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -563,34 +563,34 @@ vec2 cdiv( vec2 a, vec2 b )
 /// @brief Three-fold (hexagonal) wave term for the Farris wallpapers.
 vec2 hexWave3( vec2 X, float n, float m )
 {
-    const float TAU = 6.2831853;
+    const float Tau = 6.2831853;
     vec2        Y = vec2( X.x + X.y * 0.5773503, X.y * 1.1547005 );
-    return ( cexpi( TAU * ( n * Y.x + m * Y.y ) ) + cexpi( TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-             + cexpi( TAU * ( -( n + m ) * Y.x + n * Y.y ) ) )
+    return ( cexpi( Tau * ( n * Y.x + m * Y.y ) ) + cexpi( Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+             + cexpi( Tau * ( -( n + m ) * Y.x + n * Y.y ) ) )
            / 3.0;
 }
 /// @brief Four-fold (square) wave term for the Farris wallpapers.
 vec2 sqWave4( vec2 X, float n, float m )
 {
-    const float TAU = 6.2831853;
-    return ( cexpi( TAU * ( n * X.x + m * X.y ) ) + cexpi( TAU * ( -m * X.x + n * X.y ) )
-             + cexpi( TAU * ( -n * X.x - m * X.y ) ) + cexpi( TAU * ( m * X.x - n * X.y ) ) )
+    const float Tau = 6.2831853;
+    return ( cexpi( Tau * ( n * X.x + m * X.y ) ) + cexpi( Tau * ( -m * X.x + n * X.y ) )
+             + cexpi( Tau * ( -n * X.x - m * X.y ) ) + cexpi( Tau * ( m * X.x - n * X.y ) ) )
            / 4.0;
 }
 /// @brief One Farris wave term of a wallpaper symmetry.
 vec2 farrisWave( vec2 X, int kind, float n, float m )
 {
-    const float TAU = 6.2831853;
+    const float Tau = 6.2831853;
     if ( kind == 6 )
         return 0.5 * ( hexWave3( X, n, m ) + hexWave3( X, m, n ) ); // p3m1: p3 + mirrors
     if ( kind >= 10 )
     {                                                                                    // p1, p2, pm, cm
         vec2 Z = kind == 13 ? X * vec2( 0.8, 1.3 ) : vec2( X.x + 0.3 * X.y, X.y * 1.1 ); // oblique / centred lattice
-        vec2 w = cexpi( TAU * ( n * Z.x + m * Z.y ) );
+        vec2 w = cexpi( Tau * ( n * Z.x + m * Z.y ) );
         if ( kind == 11 )
-            w += cexpi( -TAU * ( n * Z.x + m * Z.y ) ); // p2: half-turns
+            w += cexpi( -Tau * ( n * Z.x + m * Z.y ) ); // p2: half-turns
         if ( kind == 12 || kind == 13 )
-            w += cexpi( TAU * ( n * Z.x - m * Z.y ) ); // pm / cm: one mirror
+            w += cexpi( Tau * ( n * Z.x - m * Z.y ) ); // pm / cm: one mirror
         return w / ( kind == 10 ? 1.0 : 2.0 );
     }
     if ( kind == 7 )
@@ -602,32 +602,32 @@ vec2 farrisWave( vec2 X, int kind, float n, float m )
     { // cmm: centred rectangular, mirrors both ways
         vec2 Z = X * vec2( 0.8, 1.3 );
         return 0.25
-               * ( cexpi( TAU * ( n * Z.x + m * Z.y ) ) + cexpi( -TAU * ( n * Z.x + m * Z.y ) )
-                   + cexpi( TAU * ( n * Z.x - m * Z.y ) ) + cexpi( -TAU * ( n * Z.x - m * Z.y ) ) );
+               * ( cexpi( Tau * ( n * Z.x + m * Z.y ) ) + cexpi( -Tau * ( n * Z.x + m * Z.y ) )
+                   + cexpi( Tau * ( n * Z.x - m * Z.y ) ) + cexpi( -Tau * ( n * Z.x - m * Z.y ) ) );
     }
     if ( kind == 1 || kind == 2 )
     { // hexagonal lattice coordinates
         vec2 Y = vec2( X.x + X.y * 0.5773503, X.y * 1.1547005 );
-        vec2 w = cexpi( TAU * ( n * Y.x + m * Y.y ) ) + cexpi( TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-                 + cexpi( TAU * ( -( n + m ) * Y.x + n * Y.y ) );
+        vec2 w = cexpi( Tau * ( n * Y.x + m * Y.y ) ) + cexpi( Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+                 + cexpi( Tau * ( -( n + m ) * Y.x + n * Y.y ) );
         if ( kind == 2 )
-            w += cexpi( -TAU * ( n * Y.x + m * Y.y ) ) + cexpi( -TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-                 + cexpi( -TAU * ( -( n + m ) * Y.x + n * Y.y ) );
+            w += cexpi( -Tau * ( n * Y.x + m * Y.y ) ) + cexpi( -Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+                 + cexpi( -Tau * ( -( n + m ) * Y.x + n * Y.y ) );
         return w / ( kind == 2 ? 6.0 : 3.0 );
     }
     if ( kind == 4 || kind == 5 )
     {                                                // glide groups on a rectangular lattice
         float sg = mod( n, 2.0 ) < 0.5 ? 1.0 : -1.0; // (-1)^n: the half-step of the glide
-        vec2  w = cexpi( TAU * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( TAU * ( n * X.x - m * X.y * 0.7 ) );
+        vec2  w = cexpi( Tau * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( Tau * ( n * X.x - m * X.y * 0.7 ) );
         if ( kind == 5 )
-            w += cexpi( -TAU * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( TAU * ( -n * X.x + m * X.y * 0.7 ) );
+            w += cexpi( -Tau * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( Tau * ( -n * X.x + m * X.y * 0.7 ) );
         return w / ( kind == 5 ? 4.0 : 2.0 );
     }
-    vec2 w = cexpi( TAU * ( n * X.x + m * X.y ) ) + cexpi( TAU * ( -m * X.x + n * X.y ) )
-             + cexpi( TAU * ( -n * X.x - m * X.y ) ) + cexpi( TAU * ( m * X.x - n * X.y ) );
+    vec2 w = cexpi( Tau * ( n * X.x + m * X.y ) ) + cexpi( Tau * ( -m * X.x + n * X.y ) )
+             + cexpi( Tau * ( -n * X.x - m * X.y ) ) + cexpi( Tau * ( m * X.x - n * X.y ) );
     if ( kind == 3 )
-        w += cexpi( TAU * ( m * X.x + n * X.y ) ) + cexpi( TAU * ( -n * X.x + m * X.y ) )
-             + cexpi( TAU * ( -m * X.x - n * X.y ) ) + cexpi( TAU * ( n * X.x - m * X.y ) );
+        w += cexpi( Tau * ( m * X.x + n * X.y ) ) + cexpi( Tau * ( -n * X.x + m * X.y ) )
+             + cexpi( Tau * ( -m * X.x - n * X.y ) ) + cexpi( Tau * ( n * X.x - m * X.y ) );
     return w / ( kind == 3 ? 8.0 : 4.0 );
 }
 /// @brief Farris wallpaper (a symmetric wave pattern) about c.
@@ -2804,7 +2804,7 @@ vec2 stageAk( vec2 uv, int k, float v )
     return tBipolar( uv, gCt, 0.15 + 0.1 * v, 1.0 + floor( v * 2.99 ), gTC * 2.0 );
 }
 #else
-vec2 stageAk_0( vec2 uv, float v )
+vec2 stageAk0( vec2 uv, float v )
 {
 
 #if SPEC_A0 == 43
@@ -2960,7 +2960,7 @@ vec2 stageAk_0( vec2 uv, float v )
     return uv;
 }
 
-vec2 stageAk_1( vec2 uv, float v )
+vec2 stageAk1( vec2 uv, float v )
 {
 
 #if SPEC_A1 == 43
@@ -3164,7 +3164,7 @@ vec2 stageBk( vec2 uv, int k, float v )
     return tMirrorLine( uv, vec2( 0.5 ), gRot * 2.0 + v * 3.14 );
 }
 #else
-vec2 stageBk_0( vec2 uv, float v )
+vec2 stageBk0( vec2 uv, float v )
 {
 
 #if SPEC_B0 == 16
@@ -3211,7 +3211,7 @@ vec2 stageBk_0( vec2 uv, float v )
     return uv;
 }
 
-vec2 stageBk_1( vec2 uv, float v )
+vec2 stageBk1( vec2 uv, float v )
 {
 
 #if SPEC_B1 == 16
@@ -3301,7 +3301,7 @@ vec2 stageCk( vec2 uv, int k, float v )
     return tJoukowski( uv, gCw, 0.5 + 0.2 * sin( gTC * 0.4 ) + 0.1 * v, 2.0 );
 }
 #else
-vec2 stageCk_0( vec2 uv, float v )
+vec2 stageCk0( vec2 uv, float v )
 {
 
 #if SPEC_C0 == 13
@@ -3344,7 +3344,7 @@ vec2 stageCk_0( vec2 uv, float v )
     return uv;
 }
 
-vec2 stageCk_1( vec2 uv, float v )
+vec2 stageCk1( vec2 uv, float v )
 {
 
 #if SPEC_C1 == 13
@@ -3434,7 +3434,7 @@ vec2 stageDk( vec2 uv, int k, float v )
     return tRot( uv, vec2( 0.5 ), 0.5 * sin( gTC * 0.3 + v * 6.28 ) );
 }
 #else
-vec2 stageDk_0( vec2 uv, float v )
+vec2 stageDk0( vec2 uv, float v )
 {
 
 #if SPEC_D0 == 15
@@ -3481,7 +3481,7 @@ vec2 stageDk_0( vec2 uv, float v )
     return uv;
 }
 
-vec2 stageDk_1( vec2 uv, float v )
+vec2 stageDk1( vec2 uv, float v )
 {
 
 #if SPEC_D1 == 15
@@ -3608,9 +3608,9 @@ vec2 stageA( vec2 uv )
     }
     gIdW *= ( ka <= 0 ? 1.0 - f : 0.0 ) + ( kb <= 0 ? f : 0.0 );
 #ifdef SPEC_A0
-    vec2 r = stageAk_0( uv, va );
+    vec2 r = stageAk0( uv, va );
     if ( f > 0.0 )
-        r = morphMix( r, stageAk_1( uv, vb ), f );
+        r = morphMix( r, stageAk1( uv, vb ), f );
 #else
     vec2 r = stageAk( uv, ka, va );
     if ( f > 0.0 )
@@ -3646,9 +3646,9 @@ vec2 stageB( vec2 uv )
     }
     gIdW *= ( ka <= 2 ? 1.0 - f : 0.0 ) + ( kb <= 2 ? f : 0.0 );
 #ifdef SPEC_B0
-    vec2 r = stageBk_0( uv, va );
+    vec2 r = stageBk0( uv, va );
     if ( f > 0.0 )
-        r = morphMix( r, stageBk_1( uv, vb ), f );
+        r = morphMix( r, stageBk1( uv, vb ), f );
 #else
     vec2 r = stageBk( uv, ka, va );
     if ( f > 0.0 )
@@ -3684,9 +3684,9 @@ vec2 stageC( vec2 uv )
     }
     gIdW *= ( ka <= 1 ? 1.0 - f : 0.0 ) + ( kb <= 1 ? f : 0.0 );
 #ifdef SPEC_C0
-    vec2 r = stageCk_0( uv, va );
+    vec2 r = stageCk0( uv, va );
     if ( f > 0.0 )
-        r = morphMix( r, stageCk_1( uv, vb ), f );
+        r = morphMix( r, stageCk1( uv, vb ), f );
 #else
     vec2 r = stageCk( uv, ka, va );
     if ( f > 0.0 )
@@ -3738,9 +3738,9 @@ vec2 stageD( vec2 uv )
     }
     gIdW *= ( ka <= 2 ? 1.0 - f : 0.0 ) + ( kb <= 2 ? f : 0.0 );
 #ifdef SPEC_D0
-    vec2 r = breathD( uv, stageDk_0( uv, va ), SPEC_D0 );
+    vec2 r = breathD( uv, stageDk0( uv, va ), SPEC_D0 );
     if ( f > 0.0 )
-        r = morphMix( r, breathD( uv, stageDk_1( uv, vb ), SPEC_D1 ), f );
+        r = morphMix( r, breathD( uv, stageDk1( uv, vb ), SPEC_D1 ), f );
 #else
     vec2 r = stageDs( uv, ka, va );
     if ( f > 0.0 )
@@ -4432,7 +4432,7 @@ float fieldK( vec3 p, float xs, float xc, float xb, int world )
     return d / gDR * 0.8;
 }
 #else
-float fieldK_0( vec3 p, float xs, float xc, float xb, int world )
+float fieldK0( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
     int   ks = ordsp( pickStage( xs, 20 ) );
@@ -4841,7 +4841,7 @@ float fieldK_0( vec3 p, float xs, float xc, float xb, int world )
 
     return d / gDR * 0.8;
 }
-float fieldK_1( vec3 p, float xs, float xc, float xb, int world )
+float fieldK1( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
     int   ks = ordsp( pickStage( xs, 20 ) );
@@ -5268,7 +5268,7 @@ float field3( vec3 p )
                                                                                        // time
     }
 #ifdef SPEC_SP0
-    float d0 = fieldK_0( p, xs, xc, xb, 0 );
+    float d0 = fieldK0( p, xs, xc, xb, 0 );
 #else
     float d0 = fieldK( p, xs, xc, xb, 0 );
 #endif
@@ -5276,7 +5276,7 @@ float field3( vec3 p )
         return d0;
     vec3 p0 = gP;
 #ifdef SPEC_SP0
-    float d1 = fieldK_1( p, ys, yc, yb, 1 );
+    float d1 = fieldK1( p, ys, yc, yb, 1 );
 #else
     float d1 = fieldK( p, ys, yc, yb, 1 );
 #endif
@@ -5472,8 +5472,8 @@ void main()
     // The plane: its normal from the gaze, its depth the integrated flight along
     // the world's axis (the polar worlds stay in view), a little perspective so
     // the planes behind fan out.
-    vec3 sN, sX, sY;
-    sliceFrame( camP, sceneTime, sN, sX, sY );
+    vec3 s_n, s_x, s_y;
+    sliceFrame( camP, sceneTime, s_n, s_x, s_y );
     // hyperP: a cut through 4D -- the world is a function of time (its folds turn,
     // its classes breathe); with the plane nearly at rest and the world's time
     // running faster, the shapes grow, split and merge in place.
@@ -5483,49 +5483,49 @@ void main()
     gRot += hyp * 0.03 * sceneTime;
     // The view height follows the fold core (sliceZoom), gliding through a core fade.
     vec3  wcore = ( walkHost > 0.5 && walkAll() ) ? walkCore : vec3( coreP, coreP, 0.0 );
-    float sView = 3.0
-                  * mix( sliceZoom( ordco( pickStage( wcore.x, 22 ) ) ), sliceZoom( ordco( pickStage( wcore.y, 22 ) ) ),
-                         smoothstep( 0.0, 1.0, wcore.z ) );
-    float sDz = 0.4 * sView;            // the planes' spacing goes with the view
-    float sPx = sView / resolution.y;   // one pixel in the world
+    float s_view = 3.0
+                   * mix( sliceZoom( ordco( pickStage( wcore.x, 22 ) ) ),
+                          sliceZoom( ordco( pickStage( wcore.y, 22 ) ) ), smoothstep( 0.0, 1.0, wcore.z ) );
+    float s_dz = 0.4 * s_view;          // the planes' spacing goes with the view
+    float s_px = s_view / resolution.y; // one pixel in the world
     gCam = sc0 - vec3( 0.0, 0.0, 6.0 ); // the Droste worlds centre on the plane
-    vec3 rd = normalize( sN + ( sX * p.x + sY * p.y ) * 0.25 );
-    ro = sc0 + ( sX * p.x + sY * p.y ) * sView - rd;
-    vec3  sL = normalize( sX * 0.5 + sY * 0.7 - sN * 0.4 ); // the light from the viewer's side of the plane
+    vec3 rd = normalize( s_n + ( s_x * p.x + s_y * p.y ) * 0.25 );
+    ro = sc0 + ( s_x * p.x + s_y * p.y ) * s_view - rd;
+    vec3  s_l = normalize( s_x * 0.5 + s_y * 0.7 - s_n * 0.4 ); // the light from the viewer's side of the plane
     float t = 0.05;
     float d = 1.0;
     bool  hit = false;
     vec3  fp = vec3( 0.0 );
     float fdr = 1.0;
-    float dHit = 0.0;
+    float d_hit = 0.0;
     int   nl = 1 + int( clamp( layerP, 0.0, 1.0 ) * 7.99 ); // 1..8 planes, the last one always shown
     for ( int i = 0; i < 8; ++i )
     {
-        t = 1.0 + sDz * float( i );
+        t = 1.0 + s_dz * float( i );
         d = fieldS( ro + rd * t );
         if ( d < 0.0 || i >= nl - 1 )
         {
             hit = true;
             fp = gP;
             fdr = gDR;
-            dHit = d;
+            d_hit = d;
             break;
         }
     }
     vec3 lc = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
     // The fog takes the palette's hue (wandering with the music) rather than the photo's cast.
-    vec3 fogPal = hsv2rgb(
+    vec3 fog_pal = hsv2rgb(
         vec3( fract( hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5 ), 0.55, 1.0 ) );
-    vec3 fogC = mix( glowColour( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), p, hueP * 0.159 ), fogPal,
-                     0.8 * clamp( paletteP, 0.0, 1.0 ) )
-                * ( 0.05 + 0.1 * swell );
-    vec3 col = fogC;
+    vec3 fog_c = mix( glowColour( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), p, hueP * 0.159 ), fog_pal,
+                      0.8 * clamp( paletteP, 0.0, 1.0 ) )
+                 * ( 0.05 + 0.1 * swell );
+    vec3 col = fog_c;
     if ( hit )
     {
         vec3  q = ro + rd * t;
         vec3  n = normalS( q );
         float lod = clamp( log2( t * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
-        vec3  nGeo = n; // texture on the geometric normal, light on the bumped one
+        vec3  n_geo = n; // texture on the geometric normal, light on the bumped one
         if ( reliefP > 0.3 )
         { // a knob: every pixel takes the same branch
             vec3  t1 = normalize( cross( n, abs( n.y ) < 0.9 ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 ) ) ),
@@ -5536,46 +5536,46 @@ void main()
             vec3  g = t1 * ( reliefH( fp + t1 * ef, n, hl ) - h0 ) + t2 * ( reliefH( fp + t2 * ef, n, hl ) - h0 );
             n = normalize( n - g / e * 0.05 * smoothstep( 0.3, 1.0, reliefP ) );
         }
-        vec3  tex = colour3( fp, nGeo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
+        vec3  tex = colour3( fp, n_geo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
         float tm = luma( tex );
         tex = max( ( tex - tm ) * 1.5 + tm, 0.0 ) * 1.5; // livelier colour, brighter
-        vec3  L = sL;
+        vec3  L = s_l;
         float diff = 0.5 + 0.5 * dot( n, L ); // wrapped: a cut shows normals of every direction
         float ao = 0.0;
         for ( int k = 1; k <= 2; ++k )
         {
             float h = 0.06 * float( k );
-            ao += ( h - fieldS( q + n * h ) + dHit ) / h;
+            ao += ( h - fieldS( q + n * h ) + d_hit ) / h;
         }
-        ao = clamp( 1.0 - 0.4 * ao, 0.2, 1.0 ) * sliceShade( dHit, sPx );
+        ao = clamp( 1.0 - 0.4 * ao, 0.2, 1.0 ) * sliceShade( d_hit, s_px );
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
         vec3  surf = tex * lc * ( 0.35 + 0.9 * diff ) * ao;
-        vec3  rimC = glowColour( tex, fp.xy, hueP * 0.159 );
-        vec3  rim = rimC * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4; // lab audit: the glow style was half as bright
+        vec3  rim_c = glowColour( tex, fp.xy, hueP * 0.159 );
+        vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4; // lab audit: the glow style was half as bright
         float st = clamp( styleP, 0.0, 1.0 );
-        vec3  sc = mix( surf + rimC * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rimC * 0.12 * ao,
+        vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
                         smoothstep( 0.5, 1.0, st ) );
-        col = mix( fogC, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
+        col = mix( fog_c, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
         // isoP: the distance field's contour lines -- around every body its
         // height lines, like a map; every fourth stronger, all running slowly
         // outward (clock, never audio: the kick only brightens them).  Their
-        // width is a pixel in the world (sPx), not fwidth: the cut loop
+        // width is a pixel in the world (s_px), not fwidth: the cut loop
         // branches per pixel.  They fade with the distance from matter.
         float iso = smoothstep( 0.35, 0.75, isoP );
         if ( iso > 0.0 )
         {
-            float isoW = 0.05 * sView;
-            float isoU = dHit / isoW - 0.12 * sceneTime;
-            float isoF = abs( fract( isoU + 0.5 ) - 0.5 ) * isoW;            // to the nearest line, in the world
-            float isoPx = sPx * max( 1.0, resolution.y / 900.0 ); // a pixel at 900 lines: the same lines on a big
-                                                                  // screen
-            float isoL = 1.0 - smoothstep( 0.4 * isoPx, 1.1 * isoPx, isoF ); // thin: where the field is shallow they
-                                                                             // widen
-            float isoM = abs( mod( floor( isoU + 0.5 ), 4.0 ) ) < 0.5 ? 1.0 : 0.3;
-            float air = smoothstep( 0.0, 2.0 * sPx, dHit );
-            float fade = exp( -abs( dHit ) / ( 0.9 * sView ) ) * mix( 0.45, 1.0, air ); // on a cut face fainter
+            float iso_w = 0.05 * s_view;
+            float iso_u = d_hit / iso_w - 0.12 * sceneTime;
+            float iso_f = abs( fract( iso_u + 0.5 ) - 0.5 ) * iso_w;             // to the nearest line, in the world
+            float iso_px = s_px * max( 1.0, resolution.y / 900.0 ); // a pixel at 900 lines: the same lines on a big
+                                                                    // screen
+            float iso_l = 1.0 - smoothstep( 0.4 * iso_px, 1.1 * iso_px, iso_f ); // thin: where the field is shallow
+                                                                                 // they widen
+            float iso_m = abs( mod( floor( iso_u + 0.5 ), 4.0 ) ) < 0.5 ? 1.0 : 0.3;
+            float air = smoothstep( 0.0, 2.0 * s_px, d_hit );
+            float fade = exp( -abs( d_hit ) / ( 0.9 * s_view ) ) * mix( 0.45, 1.0, air ); // on a cut face fainter
             col *= 1.0 - 0.3 * iso * air; // the air between the lines darker: the map reads
-            col += iso * isoL * isoM * fade * rimC * ( 0.9 + 0.8 * kick );
+            col += iso * iso_l * iso_m * fade * rim_c * ( 0.9 + 0.8 * kick );
         }
     }
     finish( chainAfterglow( col ) );

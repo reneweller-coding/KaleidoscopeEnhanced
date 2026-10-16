@@ -92,27 +92,27 @@ void main()
     // Sine-Gordon soliton phase waves: phi(x,y)
     float phi1 = sin( p.x + sin( p.y * 1.5 + t ) * 1.2 * vrt );
     float phi2 = cos( p.y + sin( p.x * 1.5 - t ) * 1.2 * vrt );
-    float phaseField = atan( phi2, phi1 );
+    float phase_field = atan( phi2, phi1 );
 
     // Quantized vortex cores (zeros of superconducting order parameter)
-    float coreGrid = abs( sin( p.x * 0.866 + p.y * 0.5 ) * sin( p.x * 0.866 - p.y * 0.5 ) * sin( p.y ) );
-    float vortexCores = exp( -coreGrid * 15.0 ) * ( 1.0 + audioKick * 2.5 );
+    float core_grid = abs( sin( p.x * 0.866 + p.y * 0.5 ) * sin( p.x * 0.866 - p.y * 0.5 ) * sin( p.y ) );
+    float vortex_cores = exp( -core_grid * 15.0 ) * ( 1.0 + audioKick * 2.5 );
 
     // Superconducting phase isobars (interference lines)
-    float isobars = sin( phaseField * 12.0 + audioPhase * 4.0 );
+    float isobars = sin( phase_field * 12.0 + audioPhase * 4.0 );
     float lines = smoothstep( 0.65, 0.95, abs( isobars ) );
 
     // Photo texture mapping modulated by phase gradient
-    vec2 phaseGrad = vec2( phi1, phi2 ) * 0.04 * ( 1.0 + audioKick * 0.8 );
-    vec3 photo = img( fract( st + phaseGrad ) );
+    vec2 phase_grad = vec2( phi1, phi2 ) * 0.04 * ( 1.0 + audioKick * 0.8 );
+    vec3 photo = img( fract( st + phase_grad ) );
 
     // Quantum phase palette
-    vec3 phaseColor = imgPalette( ( phaseField + audioPhase ) * 0.159 );
+    vec3 phase_color = imgPalette( ( phase_field + audioPhase ) * 0.159 );
 
     // Combine visualizer
-    vec3 col = mix( photo * 0.85, phaseColor, 0.45 + 0.25 * audioSwell );
+    vec3 col = mix( photo * 0.85, phase_color, 0.45 + 0.25 * audioSwell );
     col += lines * vec3( 0.2, 0.9, 1.0 ) * ( 0.8 + audioHigh * 1.2 );
-    col += vortexCores * vec3( 1.0, 0.85, 0.3 ) * ( 1.5 + audioKick * 2.0 );
+    col += vortex_cores * vec3( 1.0, 0.85, 0.3 ) * ( 1.5 + audioKick * 2.0 );
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
@@ -124,7 +124,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.65;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.65;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -93,35 +93,35 @@ void main()
     float a = atan( uv.y, uv.x );
 
     // Pulsar rotation angle
-    float rotAngle = time * 3.0 * spn + audioAdvance * 0.8;
+    float rot_angle = time * 3.0 * spn + audioAdvance * 0.8;
 
     // Relativistic polar lighthouse beam (sweeping across screen)
-    vec2 beamDir1 = vec2( cos( rotAngle ), sin( rotAngle ) );
-    vec2 beamDir2 = -beamDir1;
+    vec2 beam_dir1 = vec2( cos( rot_angle ), sin( rot_angle ) );
+    vec2 beam_dir2 = -beam_dir1;
 
-    float dot1 = max( dot( normalize( uv ), beamDir1 ), 0.0 );
-    float dot2 = max( dot( normalize( uv ), beamDir2 ), 0.0 );
-    float beamPass = pow( max( dot1, dot2 ), 24.0 ) * bm * ( 1.0 + audioKick * 3.5 );
+    float dot1 = max( dot( normalize( uv ), beam_dir1 ), 0.0 );
+    float dot2 = max( dot( normalize( uv ), beam_dir2 ), 0.0 );
+    float beam_pass = pow( max( dot1, dot2 ), 24.0 ) * bm * ( 1.0 + audioKick * 3.5 );
 
-    vec3 beamCol = imgPalette( 0.25 * beamPass ) * 1.4 * beamPass * 3.0;
+    vec3 beam_col = imgPalette( 0.25 * beam_pass ) * 1.4 * beam_pass * 3.0;
 
     // Dipole magnetic field lines (r = R0 * sin^2(theta))
-    float magTheta = a - rotAngle;
-    float dipoleField = abs( r - 0.5 * pow( sin( magTheta * fld ), 2.0 ) );
-    float fieldGlow = ( 0.002 / ( dipoleField * dipoleField + 0.0003 ) ) * ( 0.8 + 0.4 * audioSwell );
-    vec3  fieldCol = vec3( 0.8, 0.2, 1.0 ) * fieldGlow;
+    float mag_theta = a - rot_angle;
+    float dipole_field = abs( r - 0.5 * pow( sin( mag_theta * fld ), 2.0 ) );
+    float field_glow = ( 0.002 / ( dipole_field * dipole_field + 0.0003 ) ) * ( 0.8 + 0.4 * audioSwell );
+    vec3  field_col = vec3( 0.8, 0.2, 1.0 ) * field_glow;
 
     // Neutron star central core (radius ~ 0.06)
-    float coreDist = length( uv );
-    float coreGlow = ( 0.008 / ( coreDist * coreDist + 0.001 ) ) * ( 1.0 + audioKick * 2.0 );
-    vec3  coreCol = vec3( 1.0, 1.0, 1.0 ) * coreGlow;
+    float core_dist = length( uv );
+    float core_glow = ( 0.008 / ( core_dist * core_dist + 0.001 ) ) * ( 1.0 + audioKick * 2.0 );
+    vec3  core_col = vec3( 1.0, 1.0, 1.0 ) * core_glow;
 
     // Warped background photo
-    vec2 photoUV = st + normalize( uv ) * ( 0.04 / ( r + 0.1 ) ) * ( 1.0 + audioSubBass );
-    vec3 photo = img( clamp( photoUV, 0.0, 1.0 ) );
+    vec2 photo_uv = st + normalize( uv ) * ( 0.04 / ( r + 0.1 ) ) * ( 1.0 + audioSubBass );
+    vec3 photo = img( clamp( photo_uv, 0.0, 1.0 ) );
 
     // Combine pulsar visualizer
-    vec3 col = photo * 0.3 + fieldCol + beamCol + coreCol;
+    vec3 col = photo * 0.3 + field_col + beam_col + core_col;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

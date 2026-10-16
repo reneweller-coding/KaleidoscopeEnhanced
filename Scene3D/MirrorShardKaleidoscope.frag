@@ -34,26 +34,26 @@ void main()
     vec3 rd = normalize( vWorldPos ); // camera sits near the world origin
 
     vec3 R = reflect( rd, n );
-    vec2 envUV = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
-                       clamp( 0.5 - R.y * 0.5, 0.02, 0.98 ) );
-    vec3 envPhoto = img( envUV );
+    vec2 env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
+                        clamp( 0.5 - R.y * 0.5, 0.02, 0.98 ) );
+    vec3 env_photo = img( env_uv );
 
     float fres = pow( 1.0 - clamp( dot( -rd, n ), 0.0, 1.0 ), 3.0 );
 
-    vec3  lightDir = normalize( vec3( 0.5, 0.8, -0.3 ) );
-    float diff = max( dot( n, lightDir ), 0.0 ) * 0.5 + 0.5;
-    vec3  refl = reflect( -lightDir, n );
+    vec3  light_dir = normalize( vec3( 0.5, 0.8, -0.3 ) );
+    float diff = max( dot( n, light_dir ), 0.0 ) * 0.5 + 0.5;
+    vec3  refl = reflect( -light_dir, n );
     float spec = pow( max( dot( -rd, refl ), 0.0 ), 40.0 );
 
     vec3 metal = mix( vec3( 0.22, 0.25, 0.32 ), vTint * 0.9, 0.5 );
     vec3 col = metal * diff;
-    col = mix( col, envPhoto * 1.7, 0.6 + 0.35 * fres );
+    col = mix( col, env_photo * 1.7, 0.6 + 0.35 * fres );
     col += spec * vec3( 1.0, 1.0, 1.0 ) * 1.1;
     col += vTint * fres * 0.6;
 
     col = mix( col, vec3( 1.0, 0.96, 0.85 ), vFlash * 0.7 );
 
-    vec3 _catTone = clamp( col, 0.0, 1.0 ) * 1.05;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 ) * 1.05;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -90,47 +90,48 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float haze = 0.5 + 0.5 * clamp( hazeP, 0.0, 1.0 );
-    float lakeY = -0.15 - 0.1 * clamp( lakeP, 0.0, 1.0 );
+    float lake_y = -0.15 - 0.1 * clamp( lakeP, 0.0, 1.0 );
     float rain = 0.3 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     float clock = sceneAdvance * 0.6 + sceneTime * 0.12;
 
     // Orange haze sky, darker up, warmer at the horizon; lightning glow.
-    vec3 hazeCol = mix( vec3( 0.85, 0.5, 0.15 ), imgPalette( hue * 0.159 + 0.05 ), 0.25 );
-    vec3 sky = mix( hazeCol * 1.1, vec3( 0.35, 0.18, 0.05 ), smoothstep( -0.1, 0.5, p.y ) );
-    sky += hazeCol * 0.5 * clamp( audioBass, 0.0, 1.0 ) * fbm( vec2( p.x * 2.0 + clock * 0.1, p.y * 3.0 ) );
+    vec3 haze_col = mix( vec3( 0.85, 0.5, 0.15 ), imgPalette( hue * 0.159 + 0.05 ), 0.25 );
+    vec3 sky = mix( haze_col * 1.1, vec3( 0.35, 0.18, 0.05 ), smoothstep( -0.1, 0.5, p.y ) );
+    sky += haze_col * 0.5 * clamp( audioBass, 0.0, 1.0 ) * fbm( vec2( p.x * 2.0 + clock * 0.1, p.y * 3.0 ) );
     // Saturn: a pale disc with rings, low behind the haze.
     vec2  sp = p - vec2( 0.35, 0.28 );
     float sr = length( sp );
     float saturn = smoothstep( 0.13, 0.125, sr );
-    float ringR = length( vec2( sp.x, sp.y * 4.5 ) );
-    float rings = smoothstep( 0.02, 0.0, abs( ringR - 0.26 ) - 0.06 ) * step( 0.13, sr + step( sp.y, 0.0 ) * 0.2 );
-    vec3  satCol = mix( vec3( 0.95, 0.85, 0.65 ), hazeCol, 0.5 );
-    sky = mix( sky, satCol * ( 0.6 + 0.3 * sqrt( max( 1.0 - sr * sr / 0.017, 0.0 ) ) ), saturn * ( 1.0 - haze * 0.5 ) );
-    sky = mix( sky, satCol * 0.8, rings * ( 1.0 - haze * 0.5 ) * 0.6 );
+    float ring_r = length( vec2( sp.x, sp.y * 4.5 ) );
+    float rings = smoothstep( 0.02, 0.0, abs( ring_r - 0.26 ) - 0.06 ) * step( 0.13, sr + step( sp.y, 0.0 ) * 0.2 );
+    vec3  sat_col = mix( vec3( 0.95, 0.85, 0.65 ), haze_col, 0.5 );
+    sky = mix( sky, sat_col * ( 0.6 + 0.3 * sqrt( max( 1.0 - sr * sr / 0.017, 0.0 ) ) ),
+               saturn * ( 1.0 - haze * 0.5 ) );
+    sky = mix( sky, sat_col * 0.8, rings * ( 1.0 - haze * 0.5 ) * 0.6 );
     // Far dunes: the photo as the hydrocarbon dune field, hazed.
-    float duneLine = 0.02 + 0.05 * fbm( vec2( p.x * 3.0, 1.0 ) );
+    float dune_line = 0.02 + 0.05 * fbm( vec2( p.x * 3.0, 1.0 ) );
     vec3  dunes = img( vec2( p.x / aspect + 0.5, ( p.y + 0.2 ) * 0.8 ) )
                   * mix( vec3( 0.6, 0.4, 0.2 ), imgPalette( hue * 0.159 + 0.1 ), 0.3 ) * 0.9;
-    dunes = mix( dunes, hazeCol * 0.7, haze * 0.5 );
-    vec3 col = mix( sky, dunes, step( p.y, duneLine ) );
+    dunes = mix( dunes, haze_col * 0.7, haze * 0.5 );
+    vec3 col = mix( sky, dunes, step( p.y, dune_line ) );
     // The lake: black, mirroring the haze, with rain rings and ripples.
-    if ( p.y < lakeY )
+    if ( p.y < lake_y )
     {
-        vec2 lq = vec2( p.x, ( lakeY - p.y ) * 4.0 );
-        vec3 lake = vec3( 0.02, 0.015, 0.01 ) + hazeCol * 0.12 * exp( -( lakeY - p.y ) * 3.0 );
+        vec2 lq = vec2( p.x, ( lake_y - p.y ) * 4.0 );
+        vec3 lake = vec3( 0.02, 0.015, 0.01 ) + haze_col * 0.12 * exp( -( lake_y - p.y ) * 3.0 );
         // Rain rings: expanding circles at hashed spots on the clock.
-        float ringsL = 0.0;
+        float rings_l = 0.0;
         for ( int k = 0; k < 8; ++k )
         {
             float fk = float( k );
             float ph = fract( clock * ( 0.5 + 0.3 * hash21( vec2( fk, 1.0 ) ) ) + hash21( vec2( fk, 2.0 ) ) );
-            vec2  c = vec2( ( hash21( vec2( fk, 3.0 ) ) - 0.5 ) * aspect, lakeY - hash21( vec2( fk, 4.0 ) ) * 0.3 );
+            vec2  c = vec2( ( hash21( vec2( fk, 3.0 ) ) - 0.5 ) * aspect, lake_y - hash21( vec2( fk, 4.0 ) ) * 0.3 );
             float rr = length( ( p - c ) * vec2( 1.0, 4.0 ) );
-            ringsL += exp( -abs( rr - ph * 0.25 ) * 60.0 ) * ( 1.0 - ph ) * rain;
+            rings_l += exp( -abs( rr - ph * 0.25 ) * 60.0 ) * ( 1.0 - ph ) * rain;
         }
-        lake += hazeCol * ringsL * 0.35;
+        lake += haze_col * rings_l * 0.35;
         // Wind ripples.
-        lake += hazeCol * 0.05 * pow( 0.5 + 0.5 * sin( p.x * 40.0 + clock * 2.0 + lq.y * 6.0 ), 4.0 );
+        lake += haze_col * 0.05 * pow( 0.5 + 0.5 * sin( p.x * 40.0 + clock * 2.0 + lq.y * 6.0 ), 4.0 );
         col = lake;
     }
     // Rain: round drops falling slowly, glinting on the treble.
@@ -141,10 +142,10 @@ void main()
     vec2  off = vec2( hash21( cell + 3.1 ), hash21( cell + 7.7 ) ) - 0.5;
     vec2  d = ( f - off * 0.6 ) * vec2( 1.0, 0.7 );
     float drops = smoothstep( 0.16, 0.05, length( d ) ) * step( 1.0 - rain * 0.5, hash21( cell ) );
-    col = mix( col, hazeCol * 1.3 + 0.2, drops * ( 0.4 + 0.6 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) );
+    col = mix( col, haze_col * 1.3 + 0.2, drops * ( 0.4 + 0.6 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

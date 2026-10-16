@@ -67,20 +67,20 @@ vec3 palTint( vec3 c, float t, float k )
 void main()
 {
     // Polar cyan ice identity color
-    vec3 iceCyan = vec3( 0.25, 0.85, 1.0 );
-    vec3 iceCol = palTint( iceCyan, vDepth * 0.4 + audioCentroid, 0.25 );
+    vec3 ice_cyan = vec3( 0.25, 0.85, 1.0 );
+    vec3 ice_col = palTint( ice_cyan, vDepth * 0.4 + audioCentroid, 0.25 );
 
     // The curtain now spans tens of world units laterally, so the photo is
     // sampled in SCREEN-relative coordinates -- a fixed world scale wrapped the
     // picture dozens of times across the far layers.
-    vec2 photoUv = fract( vPos.xy / max( vPos.z, 0.5 ) * 0.85 + 0.5 );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vPos.xy / max( vPos.z, 0.5 ) * 0.85 + 0.5 );
+    vec3 photo_sample = img( photo_uv );
 
-    vec3 col = iceCol * ( 0.6 + 0.4 * photoSample ) * vGlow;
+    vec3 col = ice_col * ( 0.6 + 0.4 * photo_sample ) * vGlow;
     col *= ( iceGlowP > 0.01 ? iceGlowP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
     // Fracture glint: gated on the tubes, so a kick does not flash the whole
     // mote field white.
-    col += iceCol * min( audioKick * 0.35, 0.4 ) * smoothstep( 0.55, 0.95, vGlow );
+    col += ice_col * min( audioKick * 0.35, 0.4 ) * smoothstep( 0.55, 0.95, vGlow );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

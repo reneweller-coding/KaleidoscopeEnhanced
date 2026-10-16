@@ -40,7 +40,7 @@ uniform float audioLowMid;  ///< 150-500 Hz harmonic warmth / pad body
 uniform float audioPhase;   ///< audio rotation phase (radians)
 uniform float audioAdvance; ///< audio tunnel forward advance
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -52,7 +52,7 @@ void main()
     p *= 4.0;
 
     // Optional rotation
-    float angle = ( rotate > 0 ) ? PI * 0.25 : 0.0;
+    float angle = ( rotate > 0 ) ? Pi * 0.25 : 0.0;
     float ca = cos( angle );
     float sa = sin( angle );
     p = mat2( ca, -sa, sa, ca ) * p;
@@ -64,10 +64,10 @@ void main()
     float a = atan( p.y, p.x );
 
     // ---- Kaleidoscope fold ----
-    float sidesK = 0.5 * float( sides );
+    float sides_k = 0.5 * float( sides );
     float tau = 1.047;
-    a = mod( a, tau / sidesK );
-    a = abs( a - tau / sidesK * 0.5 );
+    a = mod( a, tau / sides_k );
+    a = abs( a - tau / sides_k * 0.5 );
 
     // Very slow rotation – dark ambient should barely drift.
     // Base drift stays smooth; audio adds a jump-free integrated phase.
@@ -78,7 +78,7 @@ void main()
     // (host integrates flux*loudness over dt, so it never jumps when flux moves).
     vec2 uv;
     uv.x = speedTunnel * time + audioAdvance + 0.1 / max( r, 0.001 );
-    uv.y = a / PI;
+    uv.y = a / Pi;
 
     // ---- Low-mid harmonic wave distortion ----
     // Slow lateral shimmer proportional to 150-500 Hz harmonic content.
@@ -93,18 +93,18 @@ void main()
     // ---- Spectral centroid: colour temperature ----
     // centroid = 0 → void-blue  (Thomas Köner / Lustmord sub-bass void)
     // centroid = 1 → deep amber (warmer drone / pitch-shifted pads)
-    vec3 voidBlue = vec3( 0.55, 0.65, 1.08 );
-    vec3 deepAmber = vec3( 1.12, 0.78, 0.42 );
-    col.rgb *= mix( voidBlue, deepAmber, audioCentroid );
+    vec3 void_blue = vec3( 0.55, 0.65, 1.08 );
+    vec3 deep_amber = vec3( 1.12, 0.78, 0.42 );
+    col.rgb *= mix( void_blue, deep_amber, audioCentroid );
 
     // ---- Sub-bass vignette ----
     // Darkness closes in from the screen edges as sub-bass energy rises.
     // At audioSubBass=0 there is minimal vignette (0.3×).
     // At audioSubBass=1 the vignette is maximal – the image retreats to a small
     // central window surrounded by absolute darkness.
-    float dist = length( p ) * 0.25;             // 0 at centre, ~1 at corners
-    float vigPower = 0.25 + audioSubBass * 0.75; // 0.25 to 1.0
-    float vignette = 1.0 - smoothstep( 0.2, 1.1, dist * ( vigPower + 0.05 ) );
+    float dist = length( p ) * 0.25;              // 0 at centre, ~1 at corners
+    float vig_power = 0.25 + audioSubBass * 0.75; // 0.25 to 1.0
+    float vignette = 1.0 - smoothstep( 0.2, 1.1, dist * ( vig_power + 0.05 ) );
     col.rgb *= vignette;
 
     // ---- Luminance modulation ----

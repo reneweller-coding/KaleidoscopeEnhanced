@@ -27,7 +27,7 @@ out vec4 tcSeed[];
 // The sheet's world size.  Shared by the control and evaluation stages —
 // if these ever disagree, the two stages place the same patch in different
 // spots and the surface tears along every seam.
-const vec2    EXTENT = vec2( 220.0, 320.0 );
+const vec2    Extent = vec2( 220.0, 320.0 );
 uniform float camHP;   ///< preset: camera height above the water
 uniform float detailP; ///< preset: tessellation quality
 
@@ -35,7 +35,7 @@ uniform float detailP; ///< preset: tessellation quality
 /// camera, matching the engine's -z projection convention.
 vec3 flatAt( vec2 uv )
 {
-    return vec3( ( uv.x - 0.5 ) * EXTENT.x, 0.0, uv.y * EXTENT.y + 2.0 );
+    return vec3( ( uv.x - 0.5 ) * Extent.x, 0.0, uv.y * Extent.y + 2.0 );
 }
 
 /// @brief Brightness level between two coordinates.

@@ -99,7 +99,7 @@ void main()
     // The trails.  Walk backwards in time along each wand's path and lay
     // down a soft line segment for every step; the weight falls with age,
     // which is exactly what an open shutter records.
-    const int STEPS = 56;
+    const int Steps = 56;
     for ( int w = 0; w < 5; ++w )
     {
         if ( float( w ) >= wands )
@@ -109,32 +109,32 @@ void main()
         float e = clamp( audioChroma[cls] * 1.6, 0.0, 1.0 );
         vec3  wc = imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.6 + 0.15;
         vec2  prev = wandAt( fw, t, lobes, aspect );
-        float best = 1e9, bestAge = 1.0;
-        for ( int s = 1; s <= STEPS; ++s )
+        float best = 1e9, best_age = 1.0;
+        for ( int s = 1; s <= Steps; ++s )
         {
-            float age = float( s ) / float( STEPS ); // 0 = now, 1 = oldest
+            float age = float( s ) / float( Steps ); // 0 = now, 1 = oldest
             vec2  cur = wandAt( fw, t - age * expose, lobes, aspect );
             // Distance to the segment (prev, cur) -- a sampled point set
             // would draw a dotted line.
             vec2  d = cur - prev;
             float u = clamp( dot( p - prev, d ) / max( dot( d, d ), 1e-6 ), 0.0, 1.0 );
             float dist = length( p - ( prev + d * u ) );
-            float ageU = ( float( s ) - 1.0 + u ) / float( STEPS );
+            float age_u = ( float( s ) - 1.0 + u ) / float( Steps );
             if ( dist < best )
             {
                 best = dist;
-                bestAge = ageU;
+                best_age = age_u;
             }
             prev = cur;
         }
         // The ribbon: a bright core with a soft halo, both fading with age.
-        float fade = pow( 1.0 - bestAge, 1.6 );
+        float fade = pow( 1.0 - best_age, 1.6 );
         float core = smoothstep( 0.007, 0.0015, best );
         float halo = exp( -best * 42.0 );
         col += wc * core * fade * ( 0.5 + 1.1 * e ) * 1.5;
         col += wc * halo * fade * ( 0.25 + 0.6 * e ) * 0.7;
         // Sparkle on the freshest stretch, on the treble.
-        col += vec3( 1.0 ) * core * smoothstep( 0.25, 0.0, bestAge ) * hi * 0.5;
+        col += vec3( 1.0 ) * core * smoothstep( 0.25, 0.0, best_age ) * hi * 0.5;
         // The wand head itself: a small bright point where the light is now.
         vec2  head = wandAt( fw, t, lobes, aspect );
         float dh = length( p - head );
@@ -143,22 +143,22 @@ void main()
     // The flash: a silhouette of the dancer, frozen for the instant of the
     // kick.  A body shape at the centre, dark against the trails, with a
     // rim of flash light -- and it only ever appears where the body is.
-    float bodyD;
+    float body_d;
     {
         vec2  b = p - vec2( 0.04 * sin( t * 0.2 ), -0.16 );
         float torso = length( ( b - vec2( 0.0, 0.12 ) ) * vec2( 2.4, 1.0 ) ) - 0.12;
         float head = length( b - vec2( 0.0, 0.3 ) ) - 0.055;
         float legs = length( vec2( abs( b.x ) - 0.045, b.y + 0.02 ) * vec2( 3.4, 1.0 ) ) - 0.09;
         float arms = length( vec2( abs( b.x ) - 0.13, b.y - 0.2 ) * vec2( 1.0, 3.0 ) ) - 0.1;
-        bodyD = min( min( torso, head ), min( legs, arms ) );
+        body_d = min( min( torso, head ), min( legs, arms ) );
     }
-    float silhouette = smoothstep( 0.01, -0.01, bodyD );
+    float silhouette = smoothstep( 0.01, -0.01, body_d );
     float flash = audioKick;
     col = mix( col, col * 0.25, silhouette * smoothstep( 0.05, 0.35, flash ) );
-    col += vec3( 0.9, 0.92, 1.0 ) * smoothstep( 0.02, 0.0, abs( bodyD ) ) * flash * 1.2;
+    col += vec3( 0.9, 0.92, 1.0 ) * smoothstep( 0.02, 0.0, abs( body_d ) ) * flash * 1.2;
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

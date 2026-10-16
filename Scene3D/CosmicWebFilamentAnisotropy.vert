@@ -62,15 +62,15 @@ void main()
     float t = time * 0.3 + audioAdvance * 0.25;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     vec3  seed = attrB.xyz;
     float s4 = attrB.w;
-    float pIdx = attrA.w;
+    float p_idx = attrA.w;
 
     vec3  vp;
-    float sizeBase, sizeMin, sizeCap;
+    float size_base, size_min, size_cap;
 
     if ( s4 < 0.25 )
     {
@@ -90,8 +90,8 @@ void main()
         // 2.0 would fit the frustum exactly; 2.35 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.35;
-        vp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 1.6 * cos( ph ),
-                   ( hy - 0.5 ) * open * dz * kTanY + 1.6 * sin( ph * 0.79 ),
+        vp = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 1.6 * cos( ph ),
+                   ( hy - 0.5 ) * open * dz * TanY + 1.6 * sin( ph * 0.79 ),
                    dz );
 
         vDensity = 0.35 + 0.45 * hy;
@@ -101,9 +101,9 @@ void main()
         // A speck must stay legible at any distance -- below roughly four
         // pixels an additive sprite averages away to nothing and the far
         // field reads as black again.
-        sizeBase = 510.4;
-        sizeMin = 4.4;
-        sizeCap = 51.0;
+        size_base = 510.4;
+        size_min = 4.4;
+        size_cap = 51.0;
     }
     else
     {
@@ -113,25 +113,25 @@ void main()
         float ws = clamp( ( webScaleP > 0.01 ? webScaleP : 1.0 ), 0.6, 2.0 );
         float r = pow( seed.z, 0.40 ) * 6.2 * ( 0.72 + 0.30 * ws );
 
-        vec3 spherePos = vec3(
+        vec3 sphere_pos = vec3(
             sin( theta ) * cos( phi ) * r,
             sin( theta ) * sin( phi ) * r,
             cos( theta ) * r );
 
         // Zel'dovich approximation: pancake collapse warps the smooth field.
-        vec3 filamentPos = spherePos;
+        vec3 filament_pos = sphere_pos;
         // Collapse rates up ~2.5x: the Zel'dovich warp is what makes the web
         // flow rather than sit, and at 0.12 rad/s it did not move at all.
-        filamentPos.x += sin( spherePos.y * 0.75 + t * 1.00 ) * 0.9;
-        filamentPos.y += sin( spherePos.z * 0.75 + t * 0.78 ) * 0.9;
-        filamentPos.z += sin( spherePos.x * 0.75 + t * 1.25 ) * 0.9;
+        filament_pos.x += sin( sphere_pos.y * 0.75 + t * 1.00 ) * 0.9;
+        filament_pos.y += sin( sphere_pos.z * 0.75 + t * 0.78 ) * 0.9;
+        filament_pos.z += sin( sphere_pos.x * 0.75 + t * 1.25 ) * 0.9;
 
         // Collapse each particle onto a FILAMENT: two of the three axes snap
         // toward the nearest node of the supercluster lattice, the third runs
         // free -- so the particles form threads along all three directions,
         // meeting at the nodes.
-        const float kLat = 0.40;
-        vec3        node = round( filamentPos * kLat ) / kLat;
+        const float Lat = 0.40;
+        vec3        node = round( filament_pos * Lat ) / Lat;
         vec3        blend = vec3( 0.74 );
         float       axis = floor( seed.x * 2.999 );
         if ( axis < 0.5 )
@@ -140,29 +140,29 @@ void main()
             blend.y = 0.0;
         else
             blend.z = 0.0;
-        filamentPos = mix( filamentPos, node, blend );
+        filament_pos = mix( filament_pos, node, blend );
 
         // Density is the proximity to the CLUSTER NODE, not to the camera:
         // every node across the whole web lights up, not just the middle one.
-        float dNode = length( filamentPos - node );
-        float density = exp( -dNode * 0.62 ) * ( 0.75 + 0.35 * sin( pIdx * 0.01 + t ) );
+        float d_node = length( filament_pos - node );
+        float density = exp( -d_node * 0.62 ) * ( 0.75 + 0.35 * sin( p_idx * 0.01 + t ) );
         // A gentle far fade for depth, floored so the outer web never dies.
-        density *= clamp( 1.0 - length( filamentPos ) * 0.045, 0.32, 1.0 );
+        density *= clamp( 1.0 - length( filament_pos ) * 0.045, 0.32, 1.0 );
         vDensity = density;
 
         vCol = imgPalette( fract( density * 0.4 + seed.x * 0.3 + audioCentroid ) )
                * ( 0.40 + 0.80 * density );
 
-        sizeBase = 284.3;
-        sizeMin = 2.4;
-        sizeCap = 65.7;
+        size_base = 284.3;
+        size_min = 2.4;
+        size_cap = 65.7;
 
         // Rotation of the whole structure. At t * 0.1 (t itself at 0.3/s) this
         // was 0.03 rad/s -- under two degrees over a whole probe, so the web was
         // a still photograph (measured motion 0.0056). 0.42 gives 0.13 rad/s,
         // still an unhurried drift at 0.02 Hz, but the parallax between near and
         // far filaments now actually reads.
-        vec3  rp = filamentPos;
+        vec3  rp = filament_pos;
         float c = cos( t * 0.42 ), s = sin( t * 0.42 );
         vp = vec3( rp.x * c - rp.z * s, rp.y, rp.x * s + rp.z * c );
         // Far enough back that the near hemisphere of the web does not reach
@@ -182,7 +182,7 @@ void main()
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
     float gain = ( pointSizeP > 0.01 ? pointSizeP : 12.0 ) / 12.0;
-    gl_PointSize = clamp( sizeBase * gain * ( 0.6 + 0.5 * vDensity ) * px / dist
+    gl_PointSize = clamp( size_base * gain * ( 0.6 + 0.5 * vDensity ) * px / dist
                               + min( audioKick * 1.2, 2.0 ),
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+                          size_min, max( size_cap * px, size_min ) );
 }

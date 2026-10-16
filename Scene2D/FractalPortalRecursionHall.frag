@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float pScale = ( portalScaleP > 0.01 ) ? portalScaleP : 1.45;
-    float rotStep = ( rotAngleP > 0.01 ) ? rotAngleP : 0.785398; // 45 degrees
+    float p_scale = ( portalScaleP > 0.01 ) ? portalScaleP : 1.45;
+    float rot_step = ( rotAngleP > 0.01 ) ? rotAngleP : 0.785398; // 45 degrees
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
@@ -73,48 +73,48 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Logarithmic scale progression for infinite plunge
-    float zoomProg = mod( t * 0.8, 1.0 );
-    vec2  p = uv * exp( zoomProg * log( pScale ) );
+    float zoom_prog = mod( t * 0.8, 1.0 );
+    vec2  p = uv * exp( zoom_prog * log( p_scale ) );
 
-    vec3  colAcc = vec3( 0.0 );
-    float glowAcc = 0.0;
-    float weightAcc = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float glow_acc = 0.0;
+    float weight_acc = 0.0;
 
     // Iterated affine portal transformations across 8 nested levels
     for ( int k = 0; k < 8; k++ )
     {
         float kf = float( k );
-        float layerFade = smoothstep( 0.0, 0.4, kf ) * smoothstep( 7.5, 5.0, kf );
+        float layer_fade = smoothstep( 0.0, 0.4, kf ) * smoothstep( 7.5, 5.0, kf );
 
         // Elliptical portal frame distance
-        vec2  pEllip = p * vec2( 1.0, 1.3 + 0.2 * sin( audioSubBass ) );
-        float dFrame = abs( length( pEllip ) - 1.1 );
-        float frameGlow = exp( -dFrame * ( 22.0 + 12.0 * audioCentroid ) ) * layerFade * glw;
+        vec2  p_ellip = p * vec2( 1.0, 1.3 + 0.2 * sin( audioSubBass ) );
+        float d_frame = abs( length( p_ellip ) - 1.1 );
+        float frame_glow = exp( -d_frame * ( 22.0 + 12.0 * audioCentroid ) ) * layer_fade * glw;
 
         // Sample texture inside this portal frame
-        vec2 sampleUV = fract( p * 0.35 + 0.5 );
-        vec3 texCol = img( sampleUV );
-        vec3 palCol = imgPalette( kf * 0.15 + t * 0.05 );
+        vec2 sample_uv = fract( p * 0.35 + 0.5 );
+        vec3 tex_col = img( sample_uv );
+        vec3 pal_col = imgPalette( kf * 0.15 + t * 0.05 );
 
-        vec3 portalCol = mix( texCol, palCol, 0.5 );
-        vec3 frameTint = vec3( 1.3, 1.1, 1.8 ) * frameGlow * ( 1.0 + 2.5 * audioKick );
+        vec3 portal_col = mix( tex_col, pal_col, 0.5 );
+        vec3 frame_tint = vec3( 1.3, 1.1, 1.8 ) * frame_glow * ( 1.0 + 2.5 * audioKick );
 
-        colAcc += ( portalCol * 0.4 + frameTint ) * layerFade;
-        weightAcc += layerFade;
-        glowAcc += frameGlow;
+        col_acc += ( portal_col * 0.4 + frame_tint ) * layer_fade;
+        weight_acc += layer_fade;
+        glow_acc += frame_glow;
 
         // Step through portal into the next inner dimension: rotate and scale
-        float curRot = rotStep + 0.15 * sin( t * 0.4 + kf ) + 0.1 * audioFlux;
-        float cs = cos( curRot ), sn = sin( curRot );
-        p = mat2( cs, -sn, sn, cs ) * p * pScale;
+        float cur_rot = rot_step + 0.15 * sin( t * 0.4 + kf ) + 0.1 * audioFlux;
+        float cs = cos( cur_rot ), sn = sin( cur_rot );
+        p = mat2( cs, -sn, sn, cs ) * p * p_scale;
     }
 
-    vec3 finalCol = colAcc / max( 0.001, weightAcc );
+    vec3 final_col = col_acc / max( 0.001, weight_acc );
 
     // Center portal horizon singularity burst
-    float centerBloom = exp( -length( uv ) * 6.0 ) * ( 1.0 + 2.5 * audioKick );
-    finalCol += imgPalette( 0.85 ) * centerBloom;
+    float center_bloom = exp( -length( uv ) * 6.0 ) * ( 1.0 + 2.5 * audioKick );
+    final_col += imgPalette( 0.85 ) * center_bloom;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

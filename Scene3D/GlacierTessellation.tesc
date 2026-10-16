@@ -12,14 +12,14 @@ in vec4  vSeed[]; ///< Per-instance random seed (from the vertex stage).
 out vec2 tcUV[];
 out vec4 tcSeed[];
 
-const vec2    EXTENT = vec2( 240.0, 320.0 );
+const vec2    Extent = vec2( 240.0, 320.0 );
 uniform float camHP;   ///< Camera height knob, 0..1.
 uniform float detailP; ///< Detail knob, 0..1.
 
 /// @brief The flat (unlit) colour at a coordinate.
 vec3 flatAt( vec2 uv )
 {
-    return vec3( ( uv.x - 0.5 ) * EXTENT.x, 0.0, uv.y * EXTENT.y + 2.0 );
+    return vec3( ( uv.x - 0.5 ) * Extent.x, 0.0, uv.y * Extent.y + 2.0 );
 }
 
 /// @brief Brightness level between two coordinates.

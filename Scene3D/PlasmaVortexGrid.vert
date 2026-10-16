@@ -92,54 +92,54 @@ void main()
     // neighbouring grid rings apart without limit — after a few seconds the
     // mesh tore into the hard glitch shards the user reported.
     float T = time * 1.5 + audioAdvance * 2.0;
-    float twistedA = a + 0.35 * T
-                     + 1.6 * sin( r * 0.22 - T * 0.30 ) * ( 4.0 / ( r * 0.3 + 3.0 ) );
+    float twisted_a = a + 0.35 * T
+                      + 1.6 * sin( r * 0.22 - T * 0.30 ) * ( 4.0 / ( r * 0.3 + 3.0 ) );
 
     // Gravitational funnel depth
     float funnel = -( 18.0 * dpth ) / ( r * 0.25 + 1.2 ) - audioSubBass * 4.0;
 
     // Bessel wave ripples propagating outwards
-    float ripplePhase = r * ( 0.6 * rpl ) - time * 4.0 - audioAdvance * 2.0;
+    float ripple_phase = r * ( 0.6 * rpl ) - time * 4.0 - audioAdvance * 2.0;
     int   band = int( clamp( r / 40.0 * 31.0, 0.0, 31.0 ) );
-    float waveH = sin( ripplePhase ) * ( 1.5 + audioSpectrum[band] * 2.5 );
+    float wave_h = sin( ripple_phase ) * ( 1.5 + audioSpectrum[band] * 2.5 );
 
     // Shockwave tsunami from audioKick
     float shock = sin( r * 0.8 - fract( time * 2.0 ) * 20.0 ) * exp( -r * 0.08 ) * audioKick * 3.5;
 
-    float finalH = funnel + waveH + shock;
+    float final_h = funnel + wave_h + shock;
 
     // Swirled x, z coordinates
-    float swirledX = cos( twistedA ) * r;
-    float swirledZ = sin( twistedA ) * r;
+    float swirled_x = cos( twisted_a ) * r;
+    float swirled_z = sin( twisted_a ) * r;
 
-    vec3 worldP = vec3( swirledX, finalH, swirledZ );
+    vec3 world_p = vec3( swirled_x, final_h, swirled_z );
 
     // Camera banking around and looking into the funnel
-    float camAngle = time * 0.15 + audioAdvance * 0.05;
-    float camDist = 32.0 - audioSwell * 6.0;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 18.0 + 4.0 * sin( time * 0.2 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0, -6.0, 0.0 );
+    float cam_angle = time * 0.15 + audioAdvance * 0.05;
+    float cam_dist = 32.0 - audioSwell * 6.0;
+    vec3  cam_pos = vec3( sin( cam_angle ) * cam_dist, 18.0 + 4.0 * sin( time * 0.2 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0, -6.0, 0.0 );
 
-    vec3 ww = normalize( lookTarget - camPos );
+    vec3 ww = normalize( look_target - cam_pos );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    vec3 relP = worldP - camPos;
-    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
+    vec3 rel_p = world_p - cam_pos;
+    vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
 
-    viewP.x -= eyeOff;
-    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+    view_p.x -= eyeOff;
+    gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    vWorld = worldP;
+    vWorld = world_p;
     vUV = attrA.xy;
 
     // Color gradient from fiery center to electric violet rim
-    vec3 vortexCol = imgPalette( 0.35 * clamp( r / 35.0, 0.0, 1.0 ) ) * 1.4;
-    vortexCol = mix( vortexCol, vec3( 0.9, 0.1, 1.0 ), sin( twistedA * 3.0 ) * 0.5 + 0.5 );
+    vec3 vortex_col = imgPalette( 0.35 * clamp( r / 35.0, 0.0, 1.0 ) ) * 1.4;
+    vortex_col = mix( vortex_col, vec3( 0.9, 0.1, 1.0 ), sin( twisted_a * 3.0 ) * 0.5 + 0.5 );
 
     if ( hue > 0.001 )
-        vortexCol = hueRot( vortexCol, hue );
+        vortex_col = hueRot( vortex_col, hue );
 
-    vCol = vec4( vortexCol * glw, 1.0 );
+    vCol = vec4( vortex_col * glw, 1.0 );
 }

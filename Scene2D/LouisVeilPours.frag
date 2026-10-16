@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -235,15 +235,15 @@ void main()
     float T = 0.03 * sceneTime + 0.3 * audioAdvance + 0.1 * clamp( audioHarmChange, 0.0, 1.0 );
     vec3  canvas = vec3( 0.9, 0.87, 0.8 ) * ( 0.95 + 0.05 * noise2( p * 300.0 ) );
     vec3  col = canvas;
-    int   nV = 4 + int( clamp( layersP, 0.0, 1.0 ) * 3.99 );
+    int   n_v = 4 + int( clamp( layersP, 0.0, 1.0 ) * 3.99 );
     float glaze = 0.5 + 0.4 * clamp( glazeP, 0.0, 1.0 );
     for ( int k = 0; k < 8; ++k )
     {
-        if ( k >= nV )
+        if ( k >= n_v )
             break;
         float fk = float( k );
-        float life = fract( T + fk / float( nV ) );
-        float gen = floor( T + fk / float( nV ) );
+        float life = fract( T + fk / float( n_v ) );
+        float gen = floor( T + fk / float( n_v ) );
         float id = gen * 7.0 + fk;
         // A veil: a fan of many narrow bands of one colour, flowing out from
         // a source line and spreading, striated along the flow.
@@ -255,7 +255,7 @@ void main()
         float along = dot( d, dir );
         float across = dot( d, nrm ) / ( 0.35 + 0.35 * max( along, 0.0 ) ); // the fan spreads
         float width = 0.5 + 0.4 * clamp( audioSpread, 0.0, 1.0 );
-        float inFan = smoothstep( width, width * 0.55, abs( across + 0.15 * fbm3( vec2( along * 2.0, id ) ) ) );
+        float in_fan = smoothstep( width, width * 0.55, abs( across + 0.15 * fbm3( vec2( along * 2.0, id ) ) ) );
         // Striations: thin streams of thicker pigment inside the veil.
         float stri = 0.65
                      + 0.35
@@ -264,10 +264,10 @@ void main()
         float reach = life * 3.2 + 0.2;
         float front = smoothstep( reach, reach - 0.25 - 0.1 * noise2( vec2( across * 6.0, id ) ), along )
                       * smoothstep( -0.4, 0.1, along + 0.2 * fbm3( vec2( across * 3.0, id + 9.0 ) ) );
-        float a = inFan * front * smoothstep( 0.0, 0.05, life ) * smoothstep( 1.0, 0.6, life );
-        float tide = smoothstep( width * 0.85, width, abs( across ) ) * inFan;
+        float a = in_fan * front * smoothstep( 0.0, 0.05, life ) * smoothstep( 1.0, 0.6, life );
+        float tide = smoothstep( width * 0.85, width, abs( across ) ) * in_fan;
         vec3  ph = imgLod( vec2( id * 0.137, id * 0.091 ) + 0.5, 5.0 );
-        float h = ( satOf( ph ) > 0.2 ? hue_of( ph ) : hueP * 0.159 ) + 0.14 * fk;
+        float h = ( satOf( ph ) > 0.2 ? hueOf( ph ) : hueP * 0.159 ) + 0.14 * fk;
         vec3  dye = hsv2rgb( vec3( fract( h + 0.05 * clamp( audioMode, 0.0, 1.0 ) ), 0.5 + 0.35 * swell, 1.0 ) );
         dye = mix( vec3( 1.0 ), dye, stri ) * ( 1.0 - 0.2 * tide );
         col = mix( col, col * mix( vec3( 1.0 ), dye, glaze + 0.25 ), a );

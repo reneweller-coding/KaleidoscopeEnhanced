@@ -78,20 +78,20 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float tilt = 0.35 + 0.35 * clamp( tiltP, 0.0, 1.0 ); // 1 = face-on
-    float gapW = 0.02 + 0.03 * clamp( gapP, 0.0, 1.0 );
+    float gap_w = 0.02 + 0.03 * clamp( gapP, 0.0, 1.0 );
 
     // View: the disc plane foreshortened by the tilt, shifted down a little.
     vec2  q = vec2( p.x, ( p.y + 0.08 ) / tilt );
     float r = length( q );
     float a = atan( q.y, q.x );
 
-    // 32 rings between rIn and rOut.
-    const float rIn = 0.10, rOut = 1.15;
-    float       u = clamp( ( r - rIn ) / ( rOut - rIn ), 0.0, 0.9999 );
+    // 32 rings between r_in and r_out.
+    const float r_in = 0.10, r_out = 1.15;
+    float       u = clamp( ( r - r_in ) / ( r_out - r_in ), 0.0, 0.9999 );
     int         band = int( u * 32.0 );
     float       e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
     float       within = fract( u * 32.0 );
-    float       ringEdge = smoothstep( 0.0, 0.15, within ) * smoothstep( 1.0, 0.85, within );
+    float       ring_edge = smoothstep( 0.0, 0.15, within ) * smoothstep( 1.0, 0.85, within );
 
     // Keplerian rotation of the dust: inner faster.
     float omega = 0.9 / pow( max( r, 0.1 ), 1.5 );
@@ -102,24 +102,24 @@ void main()
     // Three planets on circular orbits carve gaps; each is a bright dot.
     vec3  col = vec3( 0.0 );
     float gap = 1.0;
-    float planetLight = 0.0;
+    float planet_light = 0.0;
     for ( int k = 0; k < 3; ++k )
     {
         float pr = 0.32 + 0.3 * float( k );
         float pw = 0.9 / pow( pr, 1.5 );
         float pa = sceneAdvance * pw + sceneTime * 0.04 * pw + float( k ) * 2.1;
-        gap *= 1.0 - 0.85 * exp( -pow( ( r - pr ) / gapW, 2.0 ) );
+        gap *= 1.0 - 0.85 * exp( -pow( ( r - pr ) / gap_w, 2.0 ) );
         vec2  pp = pr * vec2( cos( pa ), sin( pa ) );
         float d = length( q - pp );
-        planetLight += exp( -d * 90.0 ) * 1.2 + exp( -d * 25.0 ) * 0.2;
+        planet_light += exp( -d * 90.0 ) * 1.2 + exp( -d * 25.0 ) * 0.2;
     }
 
-    vec3  ringCol = imgPalette( hue * 0.159 + u * 0.8 );
-    float inDisc = smoothstep( rIn - 0.02, rIn + 0.02, r ) * ( 1.0 - smoothstep( rOut - 0.05, rOut + 0.05, r ) );
-    col += ringCol * dust * gap * inDisc * ( 0.12 + 1.3 * e ) * ( 0.7 + 0.3 * ringEdge );
+    vec3  ring_col = imgPalette( hue * 0.159 + u * 0.8 );
+    float in_disc = smoothstep( r_in - 0.02, r_in + 0.02, r ) * ( 1.0 - smoothstep( r_out - 0.05, r_out + 0.05, r ) );
+    col += ring_col * dust * gap * in_disc * ( 0.12 + 1.3 * e ) * ( 0.7 + 0.3 * ring_edge );
     // Haze between rings on the swell.
-    col += ringCol * inDisc * 0.08 * clamp( audioSwell, 0.0, 1.0 );
-    col += imgPalette( hue * 0.159 + 0.95 ) * planetLight * inDisc;
+    col += ring_col * in_disc * 0.08 * clamp( audioSwell, 0.0, 1.0 );
+    col += imgPalette( hue * 0.159 + 0.95 ) * planet_light * in_disc;
 
     // The star: a glow at the centre, flashing on the kick.
     float sr = length( vec2( p.x, p.y + 0.08 ) );
@@ -128,9 +128,9 @@ void main()
     // Background: faint stars.
     vec2 cell = floor( p * 70.0 );
     vec2 f = fract( p * 70.0 ) - 0.5;
-    col += vec3( step( 0.986, hash21( cell ) ) * exp( -dot( f, f ) * 9.0 ) ) * 0.45 * ( 1.0 - inDisc );
+    col += vec3( step( 0.986, hash21( cell ) ) * exp( -dot( f, f ) * 9.0 ) ) * 0.45 * ( 1.0 - in_disc );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

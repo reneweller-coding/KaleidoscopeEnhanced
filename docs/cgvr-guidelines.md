@@ -85,6 +85,36 @@ hand.
 | Global C functions carry a module prefix | Not applied | C++ here: namespaces (`Strings::`, `Platform::`) and class scope do that job |
 | — | `FxEffectKaleidoscope`, `FxEffectMulti`, `TextureEffect`, `TextureEffectTunnel`, `TextureEffectTunnelReverse` and the `#if 0` block in `Uniform.cpp` keep their old names | No build compiles them, so a rename could not be checked |
 
+## Names (GLSL)
+
+clang-tidy does not read GLSL; `python Tools/cgvr_glsl_names.py --plan | --apply` finds the scopes itself (function
+bodies, their declarations, global constants, macros, functions) and renames after the same examples:
+
+| Kind | Example |
+|---|---|
+| Local variable | `lightDir` → `light_dir`, `sampleUV` → `sample_uv` |
+| Local named constant | `const float TAU` → `Tau`, `kTanY` → `TanY` |
+| Global constant | `PI` → `Pi`, `kGround` → `Ground`, `MAX_STEPS` → `MaxSteps`, `M_PI` → `Pi` |
+| Macro | `#define spacing (...)` → `SPACING` |
+| Function | `hue_of` → `hueOf`, `stageAk_0` → `stageAk0` |
+
+Every new name is new to its file, so mapping it back must give the old token sequence exactly; a file that fails
+this is not written. Generated shaders get their names when they are written (`gen.py`, `make_chainpass.py` call
+`layout_and_names()`), so regenerating gives the committed files byte for byte.
+
+### Deviations
+
+| Rule | Here | Why |
+|---|---|---|
+| Local variables are lower case | `N`, `L`, `P`, `R`, `V`, `ND`, `R2` ... stay | The vectors of shading maths (normal, light, point, reflection); lower case they would clash with the scalar or 2D namesakes in the same function (`p`, `n`) |
+| Constants are written like `MaxNum` | One upper-case letter with digits (`E`, `M2`, `R0`) stays | Same notation, nothing to gain |
+| — | Uniforms, `in`/`out` variables, buffer blocks and struct members keep their names | They are the interface to the app, the presets, the other shader stage and the tools |
+| Constants are written like `MaxNum` | `const float chainAP = 0.47;` (frozen likes) keeps its name | `EffectShader::parseChainSource()` reads it under the knob's name |
+| Functions are lowerCamelCase | `permCode` and `main` are kept as they are | `EffectShader` reads `permCode` by name; `main` is GLSL's |
+| — | Parameters are not renamed | The guidelines give no rule for them |
+| — | 92 locals keep their name | The new name would also be a parameter, a file-scope name or a macro word somewhere in the file: a rename there could change what a name refers to |
+| Generated files follow the guidelines | `Tools/scenegen/src/*.glsl` and the GLSL inside `gen.py` keep the old names | The generators patch that text with patterns written for it; their output is renamed when it is written |
+
 ## Known state outside the guidelines
 
 - 223 of the 264 scenes that `gen.py` builds from `Tools/scenegen/src` differ from what `gen.py` produces today: the

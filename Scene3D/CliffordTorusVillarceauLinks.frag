@@ -85,17 +85,17 @@ void main()
     vec3 photo = img( vTexCoord );
 
     // Villarceau topological phase palette
-    vec3 torusColor = imgPalette( vIndex + audioPhase * 0.159 );
+    vec3 torus_color = imgPalette( vIndex + audioPhase * 0.159 );
 
     // Diffuse + Specular lighting. A second, dimmer fill from the opposite side
     // keeps the away-facing cube faces from going dead black: vNormal is an
     // axis-aligned CUBE FACE normal, so with one key light three of the six
     // faces returned diff == 0 exactly and rendered as holes in the surface.
-    vec3  lightDir = normalize( vec3( 0.5, 0.9, -0.6 ) );
-    vec3  fillDir = normalize( vec3( -0.6, -0.3, 0.75 ) );
-    float diff = max( dot( vNormal, lightDir ), 0.0 )
-                 + 0.42 * max( dot( vNormal, fillDir ), 0.0 );
-    float spec = pow( max( dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 16.0 );
+    vec3  light_dir = normalize( vec3( 0.5, 0.9, -0.6 ) );
+    vec3  fill_dir = normalize( vec3( -0.6, -0.3, 0.75 ) );
+    float diff = max( dot( vNormal, light_dir ), 0.0 )
+                 + 0.42 * max( dot( vNormal, fill_dir ), 0.0 );
+    float spec = pow( max( dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 16.0 );
 
     vec3 col;
 
@@ -106,11 +106,11 @@ void main()
         // Per-mote brightness spread so the dust field carries its own contrast
         // instead of being one uniform sub-threshold level.
         float mote = 0.55 + 0.75 * fract( vIndex * 37.13 );
-        col = mix( torusColor, photo, 0.30 ) * ( 0.16 + 0.09 * audioSwell ) * mote;
+        col = mix( torus_color, photo, 0.30 ) * ( 0.16 + 0.09 * audioSwell ) * mote;
     }
     else
     {
-        col = mix( photo, torusColor, 0.45 );
+        col = mix( photo, torus_color, 0.45 );
         col = col * ( 0.26 + 0.80 * diff )
               + vec3( 1.0, 0.95, 0.8 ) * min( spec * ( 1.0 + audioKick * 2.0 ), 1.1 );
 
@@ -122,9 +122,9 @@ void main()
         // the 0.02 background colour regardless of depth. The camera sits 9
         // units back along +z (see the .vert), so that is where depth is
         // measured from, and only beyond the object's own radius.
-        float camDist = length( vec3( vWorldPos.xy, vWorldPos.z + 9.0 ) );
+        float cam_dist = length( vec3( vWorldPos.xy, vWorldPos.z + 9.0 ) );
         col = mix( col, vec3( 0.03, 0.045, 0.09 ),
-                   1.0 - exp( -max( camDist - 5.5, 0.0 ) * 0.075 ) );
+                   1.0 - exp( -max( cam_dist - 5.5, 0.0 ) * 0.075 ) );
     }
 
     if ( audioChromaHue != 0.0 )

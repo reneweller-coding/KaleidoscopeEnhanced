@@ -83,19 +83,19 @@ void main()
 
     // Hexagonal silica micropores: sin(k_x * x) * sin(k_y * y)
     float pores = sin( p.x * 25.0 ) * sin( p.y * 25.0 );
-    float poreMask = smoothstep( -0.2, 0.5, pores );
+    float pore_mask = smoothstep( -0.2, 0.5, pores );
 
     // Photo texture mapping onto diatom valve
     vec3 photo = img( fract( vTexCoord ) );
 
     // Transparent silica glass & structural iridescence palette
-    vec3 glassIrid = imgPalette( vDiatomIndex + ( r * 4.0 + audioPhase ) * 0.159 );
+    vec3 glass_irid = imgPalette( vDiatomIndex + ( r * 4.0 + audioPhase ) * 0.159 );
 
     // Edge rim glow
-    float rimGlow = smoothstep( 0.7, 0.98, r );
+    float rim_glow = smoothstep( 0.7, 0.98, r );
 
-    vec3 col = mix( photo, glassIrid, 0.45 ) * ( 0.6 + 0.4 * poreMask );
-    col += rimGlow * vec3( 0.3, 0.95, 1.0 ) * ( 1.0 + audioKick * 2.5 );
+    vec3 col = mix( photo, glass_irid, 0.45 ) * ( 0.6 + 0.4 * pore_mask );
+    col += rim_glow * vec3( 0.3, 0.95, 1.0 ) * ( 1.0 + audioKick * 2.5 );
 
     // Distance fog
     float dist = length( vWorldPos );

@@ -109,8 +109,8 @@ float pillar( vec2 p, int k, out float up )
     w *= smoothstep( top + 0.02, top - 0.06, y );
     float body = abs( p.x - cx ) - w;
     // The head: a broad, lumpy knob with fingers (smooth-unioned).
-    float cxTop = x0 + lean * ( top + 0.5 ) + 0.07 * ( fbm( vec2( top * 2.5, fk * 7.0 ) ) - 0.5 );
-    vec2  hd = vec2( p.x - cxTop, ( y - top + 0.02 ) * 1.15 );
+    float cx_top = x0 + lean * ( top + 0.5 ) + 0.07 * ( fbm( vec2( top * 2.5, fk * 7.0 ) ) - 0.5 );
+    vec2  hd = vec2( p.x - cx_top, ( y - top + 0.02 ) * 1.15 );
     float ha = atan( hd.y, hd.x );
     vec2  hdir = vec2( cos( ha ), sin( ha ) );
     float hr = w0 * ( 0.95 + 0.9 * ( 0.7 * noise2( hdir * 2.0 + fk * 4.0 ) + 0.3 * noise2( hdir * 5.0 + fk ) - 0.45 ) );
@@ -160,8 +160,8 @@ void main()
 
     // The pillars: dark, textured dust; bright rims toward the light above;
     // fingers of gas streaming up off the heads.
-    vec3 dustC = vec3( 0.3, 0.19, 0.12 );
-    vec3 rimC = mix( vec3( 1.0, 0.78, 0.45 ), imgPalette( 0.1 + hue * 0.159 ), 0.18 );
+    vec3 dust_c = vec3( 0.3, 0.19, 0.12 );
+    vec3 rim_c = mix( vec3( 1.0, 0.78, 0.45 ), imgPalette( 0.1 + hue * 0.159 ), 0.18 );
     for ( int k = 0; k < 3; ++k )
     {
         float up;
@@ -170,19 +170,19 @@ void main()
         float sx = p.x + 0.02 * sin( p.y * 20.0 + float( k ) );
         float stream = exp( -max( d, 0.0 ) * 22.0 )
                        * smoothstep( 0.45, 0.8, fbm( vec2( sx * 22.0, p.y * 3.0 - T * 0.03 + float( k ) ) ) );
-        col += rimC * stream * 0.35 * smoothstep( 0.6, 1.0, up ) * ( 0.8 + 0.4 * swell );
+        col += rim_c * stream * 0.35 * smoothstep( 0.6, 1.0, up ) * ( 0.8 + 0.4 * swell );
         if ( d < 0.0 )
         {
             float depth = -d;
             float tex = fbm( p * 7.0 + float( k ) * 3.0 );
             float b0 = fbm( p * 9.0 + float( k ) ), b1 = fbm( p * 9.0 + float( k ) - vec2( 0.0, 0.08 ) );
             float lit = clamp( ( b0 - b1 ) * 8.0 + 0.1, 0.0, 1.0 );
-            vec3  c = dustC * ( 0.25 + 0.6 * tex ) * ( 0.35 + 0.65 * up );
-            c += rimC * lit * 0.35 * up * exp( -depth * 10.0 );
+            vec3  c = dust_c * ( 0.25 + 0.6 * tex ) * ( 0.35 + 0.65 * up );
+            c += rim_c * lit * 0.35 * up * exp( -depth * 10.0 );
             // Rims: bright where the pillar faces the light (upper parts).
             float rim = exp( -depth * 60.0 ) * ( 0.3 + 0.9 * up );
             col = mix( col, c, smoothstep( 0.0, 0.015, depth ) );
-            col += rimC * rim * 0.9 * ( 0.75 + 0.5 * swell );
+            col += rim_c * rim * 0.9 * ( 0.75 + 0.5 * swell );
         }
     }
 
@@ -203,13 +203,13 @@ void main()
             float pos = fract( T * 0.02 + float( n ) / 3.0 + fk * 0.37 ) * 0.35;
             knots += exp( -pow( ( aa - pos ) / 0.006, 2.0 ) ) * ( 1.0 - pos / 0.35 );
         }
-        vec3 jetC = vec3( 1.0, 0.5, 0.45 );
-        col += jetC * beam * ( 0.4 + 2.0 * knots ) * jp * ( 0.7 + 0.8 * kick );
+        vec3 jet_c = vec3( 1.0, 0.5, 0.45 );
+        col += jet_c * beam * ( 0.4 + 2.0 * knots ) * jp * ( 0.7 + 0.8 * kick );
         col += vec3( 1.0, 0.85, 0.7 ) * exp( -dot( d, d ) * 4000.0 ) * ( 0.8 + 1.2 * kick );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

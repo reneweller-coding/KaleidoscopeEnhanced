@@ -112,14 +112,14 @@ void main()
     // DER DRITTE AKT: Inspiral -> Merger-Blitz -> Schockwelle, zyklisch.
     // Vorher kreisten die Sterne nur ewig ("extrem langweilig").
     float cyc = fract( time / 45.0 );
-    float insp = smoothstep( 0.0, 0.82, cyc );   // 0..1 bis zum Merger
-    float postM = smoothstep( 0.82, 0.86, cyc ); // 1 nach dem Merger
-    float orbitSpeed = sceneTime * 2.0 + sceneTime * insp * insp * 5.0
-                       + sceneAdvance * 4.0;
-    float orbitRad = 0.42 * dp * ( 1.0 - 0.92 * insp ); // Spirale zieht sich zu
+    float insp = smoothstep( 0.0, 0.82, cyc );    // 0..1 bis zum Merger
+    float post_m = smoothstep( 0.82, 0.86, cyc ); // 1 nach dem Merger
+    float orbit_speed = sceneTime * 2.0 + sceneTime * insp * insp * 5.0
+                        + sceneAdvance * 4.0;
+    float orbit_rad = 0.42 * dp * ( 1.0 - 0.92 * insp ); // Spirale zieht sich zu
 
-    vec2 p1 = vec2( cos( orbitSpeed ), sin( orbitSpeed ) ) * orbitRad;
-    vec2 p2 = vec2( cos( orbitSpeed + 3.14159 ), sin( orbitSpeed + 3.14159 ) ) * orbitRad;
+    vec2 p1 = vec2( cos( orbit_speed ), sin( orbit_speed ) ) * orbit_rad;
+    vec2 p2 = vec2( cos( orbit_speed + 3.14159 ), sin( orbit_speed + 3.14159 ) ) * orbit_rad;
 
     // Distances
     float d1 = length( uv - p1 );
@@ -127,78 +127,78 @@ void main()
 
     // Gravitational lensing (approximate pixel distortion)
     float mass = 0.02 * ( 1.0 + audioSwell * 0.5 );
-    vec2  lensUv = uv;
-    lensUv -= ( uv - p1 ) * mass / max( d1 * d1, 0.01 );
-    lensUv -= ( uv - p2 ) * mass / max( d2 * d2, 0.01 );
+    vec2  lens_uv = uv;
+    lens_uv -= ( uv - p1 ) * mass / max( d1 * d1, 0.01 );
+    lens_uv -= ( uv - p2 ) * mass / max( d2 * d2, 0.01 );
 
     vec3 col = vec3( 0.0 );
 
-    vec3 starCol1 = imgPalette( 0.8 + audioCentroid * 0.1 ); // Extremely hot/bright
-    vec3 starCol2 = imgPalette( 0.9 + audioKick * 0.1 );
-    vec3 jetCol = imgPalette( 0.4 );
+    vec3 star_col1 = imgPalette( 0.8 + audioCentroid * 0.1 ); // Extremely hot/bright
+    vec3 star_col2 = imgPalette( 0.9 + audioKick * 0.1 );
+    vec3 jet_col = imgPalette( 0.4 );
 
     // Core of the stars (very small but infinitely bright)
-    float starVis = 1.0 - postM; // nach dem Merger verschmolzen
-    col += starCol1 * starVis * 0.005 / max( d1 - 0.01, 0.001 );
-    col += starCol2 * starVis * 0.005 / max( d2 - 0.01, 0.001 );
+    float star_vis = 1.0 - post_m; // nach dem Merger verschmolzen
+    col += star_col1 * star_vis * 0.005 / max( d1 - 0.01, 0.001 );
+    col += star_col2 * star_vis * 0.005 / max( d2 - 0.01, 0.001 );
 
     // MERGER: greller Blitz, dann expandierende Schockschale + Remnant.
     float flash = exp( -abs( cyc - 0.82 ) * 60.0 );
     col += vec3( 1.0, 0.97, 0.9 ) * flash * 5.0;
-    float ringT = clamp( ( cyc - 0.82 ) / 0.18, 0.0, 1.0 );
-    if ( ringT > 0.0 )
+    float ring_t = clamp( ( cyc - 0.82 ) / 0.18, 0.0, 1.0 );
+    if ( ring_t > 0.0 )
     {
-        float shockR = ringT * 1.7;
-        col += mix( starCol1, starCol2, 0.5 )
-               * exp( -abs( length( uv ) - shockR ) * 16.0 ) * ( 1.0 - ringT ) * 2.5;
+        float shock_r = ring_t * 1.7;
+        col += mix( star_col1, star_col2, 0.5 )
+               * exp( -abs( length( uv ) - shock_r ) * 16.0 ) * ( 1.0 - ring_t ) * 2.5;
         // Remnant-Magnetar im Zentrum
-        col += starCol2 * postM * ( 1.0 - ringT * 0.6 ) * 0.004 / max( length( uv ) - 0.005, 0.001 );
+        col += star_col2 * post_m * ( 1.0 - ring_t * 0.6 ) * 0.004 / max( length( uv ) - 0.005, 0.001 );
     }
 
     // Plasma sharing/accretion between them
-    float sharedD = length( uv - ( p1 + p2 ) * 0.5 ) - orbitRad;
-    float plasmaBridge = fbm( vec3( uv * 10.0, sceneTime * 5.0 ) ) * 0.05 / max( abs( sharedD ), 0.01 );
-    col += mix( starCol1, starCol2, 0.5 ) * plasmaBridge * ( 1.0 + audioSwell );
+    float shared_d = length( uv - ( p1 + p2 ) * 0.5 ) - orbit_rad;
+    float plasma_bridge = fbm( vec3( uv * 10.0, sceneTime * 5.0 ) ) * 0.05 / max( abs( shared_d ), 0.01 );
+    col += mix( star_col1, star_col2, 0.5 ) * plasma_bridge * ( 1.0 + audioSwell );
 
     // Jets emitting from poles (we approximate poles facing outward/inward)
-    vec2 jetDir1 = normalize( p1 );
-    vec2 jetDir2 = normalize( p2 );
+    vec2 jet_dir1 = normalize( p1 );
+    vec2 jet_dir2 = normalize( p2 );
 
     // Adding 3D rotation feel to jets
-    float jetRot = time * 2.0;
-    mat2  rot1 = mat2( cos( jetRot ), -sin( jetRot ), sin( jetRot ), cos( jetRot ) );
+    float jet_rot = time * 2.0;
+    mat2  rot1 = mat2( cos( jet_rot ), -sin( jet_rot ), sin( jet_rot ), cos( jet_rot ) );
 
-    float j1 = max( 0.0, dot( normalize( uv - p1 ), rot1 * jetDir1 ) );
-    float j2 = max( 0.0, dot( normalize( uv - p2 ), rot1 * jetDir2 ) );
+    float j1 = max( 0.0, dot( normalize( uv - p1 ), rot1 * jet_dir1 ) );
+    float j2 = max( 0.0, dot( normalize( uv - p2 ), rot1 * jet_dir2 ) );
 
     j1 = pow( j1, 100.0 ) * ( 0.01 / d1 );
     j2 = pow( j2, 100.0 ) * ( 0.01 / d2 );
 
     // Pulses traveling along jets
-    float jPulse1 = step( 0.8, sin( length( uv - p1 ) * 20.0 - time * 20.0 ) );
-    float jPulse2 = step( 0.8, sin( length( uv - p2 ) * 20.0 - time * 20.0 ) );
+    float j_pulse1 = step( 0.8, sin( length( uv - p1 ) * 20.0 - time * 20.0 ) );
+    float j_pulse2 = step( 0.8, sin( length( uv - p2 ) * 20.0 - time * 20.0 ) );
 
-    col += jetCol * j1 * jp * ( 1.0 + jPulse1 * audioKick * 5.0 );
-    col += jetCol * j2 * jp * ( 1.0 + jPulse2 * audioKick * 5.0 );
+    col += jet_col * j1 * jp * ( 1.0 + j_pulse1 * audioKick * 5.0 );
+    col += jet_col * j2 * jp * ( 1.0 + j_pulse2 * audioKick * 5.0 );
 
     // Magnetic field lines (fbm noise stretched along rotation)
     vec2  polar = vec2( length( uv ), atan( uv.y, uv.x ) );
-    float magField = fbm( vec3( polar.x * 2.0, polar.y * 10.0 - orbitSpeed, sceneTime ) );
-    col += jetCol * magField * 0.1 * ( 1.0 + audioSwell ) / ( polar.x + 0.1 );
+    float mag_field = fbm( vec3( polar.x * 2.0, polar.y * 10.0 - orbit_speed, sceneTime ) );
+    col += jet_col * mag_field * 0.1 * ( 1.0 + audioSwell ) / ( polar.x + 0.1 );
 
     // Deep space background (distorted)
-    vec3  bgCol = vec3( 0.0 );
-    float bgNoise = fbm( vec3( lensUv * 50.0, 0.0 ) );
-    if ( bgNoise > 0.8 )
-        bgCol = imgPalette( bgNoise ) * pow( bgNoise, 10.0 );
+    vec3  bg_col = vec3( 0.0 );
+    float bg_noise = fbm( vec3( lens_uv * 50.0, 0.0 ) );
+    if ( bg_noise > 0.8 )
+        bg_col = imgPalette( bg_noise ) * pow( bg_noise, 10.0 );
 
-    col += bgCol * ( 0.2 + audioSwell * 0.2 );
+    col += bg_col * ( 0.2 + audioSwell * 0.2 );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure (extreme for collision scene)
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.5 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.5 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

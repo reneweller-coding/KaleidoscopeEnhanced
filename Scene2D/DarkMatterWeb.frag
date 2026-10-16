@@ -134,8 +134,8 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.5;
 
-    vec3 coreC = mix( vec3( 1.0, 0.82, 0.5 ), imgPalette( 0.1 + hue * 0.159 ), 0.2 );
-    vec3 glowC = mix( vec3( 0.35, 0.3, 0.9 ), imgPalette( 0.65 + hue * 0.159 ), 0.25 );
+    vec3 core_c = mix( vec3( 1.0, 0.82, 0.5 ), imgPalette( 0.1 + hue * 0.159 ), 0.2 );
+    vec3 glow_c = mix( vec3( 0.35, 0.3, 0.9 ), imgPalette( 0.65 + hue * 0.159 ), 0.25 );
     vec3 col = vec3( 0.004, 0.004, 0.012 );
 
     // Far to near.
@@ -162,7 +162,7 @@ void main()
         float sheath = exp( -w.x * 6.0 ) * 0.14;
         // Density grows toward the halos along each filament.
         float halo = exp( -w.y * 6.0 ) * 0.6;
-        float haloCore = exp( -w.y * 20.0 ) * exp( -w.x * 10.0 );
+        float halo_core = exp( -w.y * 20.0 ) * exp( -w.x * 10.0 );
         // Flow: knots of matter travelling along the thread.
         float flow = pow( 0.5 + 0.5 * sin( w.z * 18.0 - T * 0.8 * ( w.w > 0.5 ? 1.0 : -1.0 ) + w.w * 6.28 ), 8.0 )
                      * exp( -w.x * 30.0 );
@@ -173,14 +173,14 @@ void main()
         float gal = smoothstep( 0.12, 0.02, length( gf - gc ) ) * step( 0.5, hash21( gi + fl ) ) * exp( -w.x * 28.0 )
                     * strength;
 
-        vec3 c = glowC * ( sheath + halo * 0.4 )
-                 + coreC * ( core * 0.8 + haloCore * ( 1.4 + 1.2 * kick ) * ( 0.8 + 0.5 * swell ) );
-        c += coreC * flow * 0.6 * gp + vec3( 1.0, 0.95, 0.9 ) * gal * 0.8;
+        vec3 c = glow_c * ( sheath + halo * 0.4 )
+                 + core_c * ( core * 0.8 + halo_core * ( 1.4 + 1.2 * kick ) * ( 0.8 + 0.5 * swell ) );
+        c += core_c * flow * 0.6 * gp + vec3( 1.0, 0.95, 0.9 ) * gal * 0.8;
         col += c * bright * ( 0.7 + 0.35 * swell );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

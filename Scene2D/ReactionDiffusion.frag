@@ -39,7 +39,7 @@ uniform int   sidesP; ///< kaleido fold of the field (0/1 -> off; 2..8)
 uniform float dispP;  ///< image displacement amount (0 -> 0.5; 0.3..0.9)
 uniform float zoomP;  ///< field zoom                (0 -> 1.0; 0.7..1.5)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -76,8 +76,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -100,9 +100,9 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
 
     // Per-activation character (constant during the scene):
-    float zoomV = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
-    float dispV = ( ( dispP <= 0.001 ) ? 0.5 : dispP )
-                  * ( 0.8 + 0.4 * audioSwell ); // breathes slowly
+    float zoom_v = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
+    float disp_v = ( ( dispP <= 0.001 ) ? 0.5 : dispP )
+                   * ( 0.8 + 0.4 * audioSwell ); // breathes slowly
 
     // Optional kaleidoscopic fold of the whole field (slowly spinning).
     vec2 suv;
@@ -110,12 +110,12 @@ void main()
     {
         vec2 cp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         cp = rot( time * 0.015 + audioPhase * 0.05 ) * cp;
-        suv = kaleido( cp, float( sidesP ) ) * 0.8 * zoomV + 0.5;
+        suv = kaleido( cp, float( sidesP ) ) * 0.8 * zoom_v + 0.5;
     }
     else
     {
         // Gentle drift so the fixed-grid simulation feels alive on screen.
-        suv = ( uv - 0.5 ) * zoomV + 0.5
+        suv = ( uv - 0.5 ) * zoom_v + 0.5
               + 0.02 * vec2( sin( uv.y * 6.0 + audioPhase * 0.3 ), cos( uv.x * 6.0 + audioPhase * 0.3 ) );
     }
     vec2 px = 1.0 / resolution;
@@ -132,7 +132,7 @@ void main()
     float edge = clamp( length( grad ) * 10.0, 0.0, 1.0 );
 
     // The picture ripples gently along the reaction gradient.
-    vec2 iuv = uv + grad * dispV;
+    vec2 iuv = uv + grad * disp_v;
     vec3 pic = img( fract( iuv ) );
 
     // Fake 3D: light the B-field like an embossed relief -> liquid metal.
@@ -143,16 +143,16 @@ void main()
 
     // Front colour from a drifting crop of the IMAGE, warm/cool by valence,
     // hue sweeping gently once per bar (continuous at the wrap).
-    vec3 frontCol = imgPal( b * 5.0 ) * 1.6;
-    frontCol = mix( frontCol * vec3( 0.75, 0.95, 1.25 ),
-                    frontCol * vec3( 1.25, 0.95, 0.65 ), audioValence );
-    frontCol = hueRot( frontCol, 0.35 * sin( audioBarPhase * 6.28318 ) );
+    vec3 front_col = imgPal( b * 5.0 ) * 1.6;
+    front_col = mix( front_col * vec3( 0.75, 0.95, 1.25 ),
+                     front_col * vec3( 1.25, 0.95, 0.65 ), audioValence );
+    front_col = hueRot( front_col, 0.35 * sin( audioBarPhase * 6.28318 ) );
 
     // Compose: image everywhere, stained + lit where the reaction lives.
     float m = smoothstep( 0.04, 0.35, b );
     vec3  col = pic * ( 0.40 + 0.85 * m ) * ( 0.65 + 0.35 * diff );
-    col = mix( col, col * frontCol * 1.6, 0.55 * m ); // stain active regions
-    col += edge * ( 0.32 + 0.40 * audioBeat + 0.15 * audioOnset ) * frontCol;
+    col = mix( col, col * front_col * 1.6, 0.55 * m ); // stain active regions
+    col += edge * ( 0.32 + 0.40 * audioBeat + 0.15 * audioOnset ) * front_col;
     col += spec * m * ( 0.35 + 0.25 * audioBeat ); // glossy highlights
     col *= 0.85 + 0.30 * audioCentroid;
     col *= 0.95 + 0.25 * audioLevel;

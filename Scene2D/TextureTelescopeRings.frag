@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -245,34 +245,34 @@ void main()
     float spd = ( h - 0.5 ) * 0.4;
     float ang = a + spd * sceneTime + ( h - 0.5 ) * 2.0 * audioPhase + h * 6.28;
     vec2  cs = vec2( cos( ang ), sin( ang ) );
-    float fwA = length( fwidth( vec2( cos( a ), sin( a ) ) ) );
+    float fw_a = length( fwidth( vec2( cos( a ), sin( a ) ) ) );
     // Photo band on the ring: around (angle) x across (fu).
     vec2  uv = vec2( ang / 3.14159265, fu * 0.35 + ri * 0.21 );
-    float fw = max( fwA / 3.14159265, fwidth( u ) * 0.35 ) * 1024.0;
+    float fw = max( fw_a / 3.14159265, fwidth( u ) * 0.35 ) * 1024.0;
     vec3  ph = imgLod( uv, clamp( log2( max( fw, 1.0 ) ), 0.0, 9.0 ) );
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  metal = mix( vec3( 0.55, 0.58, 0.62 ), vec3( 0.8, 0.62, 0.32 ), mode );
     vec3  face = mix( metal * ( 0.4 + 0.6 * luma( ph ) ), ph * 1.1, clamp( photoP, 0.0, 1.0 ) );
     // Profile across the ring: bevel at the outer step, knurling at the inner rim.
     float bevel = smoothstep( 0.82, 0.9, fu );
-    float knurlZone = smoothstep( 0.18, 0.1, fu );
+    float knurl_zone = smoothstep( 0.18, 0.1, fu );
     float kn = 0.5 + 0.5 * sin( ang * ( 60.0 + 60.0 * clamp( knurlP, 0.0, 1.0 ) ) + fu * 20.0 );
     vec3  col = face * ( 0.55 + 0.45 * smoothstep( 0.0, 0.5, fu ) );
-    col = mix( col, metal * ( 0.3 + 0.7 * kn ), knurlZone * 0.8 );
+    col = mix( col, metal * ( 0.3 + 0.7 * kn ), knurl_zone * 0.8 );
     // Bevel lit by a light from the upper left.
     float lit = 0.5 + 0.5 * dot( cs, normalize( vec2( -0.6, 0.8 ) ) );
     col = mix( col, metal * ( 0.2 + 1.1 * lit ), bevel );
     vec3  gc = glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( ri * 0.2, 0.0 ), hueP * 0.159 );
-    float pxU = fwidth( u ) + 1e-4;
-    float edge = exp( -( 1.0 - fu ) / ( pxU * 2.0 ) );
+    float px_u = fwidth( u ) + 1e-4;
+    float edge = exp( -( 1.0 - fu ) / ( px_u * 2.0 ) );
     col += mix( gc, vec3( 1.0 ), 0.5 ) * edge * lit * ( 0.3 + 1.0 * kick );
     // Scale ticks engraved on the face.
     float nt = 2.0 * floor( 18.0 + 18.0 * clamp( tickP, 0.0, 1.0 ) );
     float ta = abs( fract( ang * nt / 6.2831853 ) - 0.5 );
-    float tpx = fwA * nt / 6.2831853 + 1e-4;
+    float tpx = fw_a * nt / 6.2831853 + 1e-4;
     float tick = smoothstep( tpx * 1.5, 0.0, ta - 0.02 ) * smoothstep( 0.65, 0.6, fu ) * smoothstep( 0.3, 0.35, fu );
-    float bigTick = step( 0.5, abs( fract( ang * nt / 6.2831853 / 5.0 + 0.1 ) - 0.5 ) * 2.0 - 0.8 );
-    col = mix( col, col * 0.2, tick * ( 0.5 + 0.5 * bigTick ) * 0.8 );
+    float big_tick = step( 0.5, abs( fract( ang * nt / 6.2831853 / 5.0 + 0.1 ) - 0.5 ) * 2.0 - 0.8 );
+    col = mix( col, col * 0.2, tick * ( 0.5 + 0.5 * big_tick ) * 0.8 );
     // Shadow of the next (outer) ring's step onto this one.
     col *= 0.6 + 0.4 * smoothstep( 0.0, 0.12, fu );
     // Depth darkening and the eyepiece glow.

@@ -126,7 +126,7 @@ void main()
     vec3  dir = normalize( vec3( p.x + lean, p.y - 0.28, 1.25 ) );
 
     // Height-field march.
-    float t = 0.1, hitT = -1.0;
+    float t = 0.1, hit_t = -1.0;
     vec3  pos = cam;
     for ( int i = 0; i < 64; ++i )
     {
@@ -135,7 +135,7 @@ void main()
         float dh = pos.y - h;
         if ( dh < 0.01 * t )
         {
-            hitT = t;
+            hit_t = t;
             break;
         }
         t += max( dh * 0.6, 0.02 );
@@ -145,7 +145,7 @@ void main()
 
     vec3 col;
     vec3 sky = imgPalette( hue * 0.159 + 0.55 ) * ( 0.25 + 0.4 * audioSwell );
-    if ( hitT < 0.0 )
+    if ( hit_t < 0.0 )
     {
         // Sky: a dark gradient with the palette, a photo haze near the horizon.
         float hz = smoothstep( -0.05, 0.35, dir.y );
@@ -155,8 +155,8 @@ void main()
     else
     {
         float land = terrain( pos.xz, bend, relief, width );
-        bool  isWater = land < water + 0.005;
-        if ( isWater )
+        bool  is_water = land < water + 0.005;
+        if ( is_water )
         {
             // The waveform along the river: the 64 samples laid over ~18
             // units ahead, brightness only -- the geometry stays still.
@@ -166,10 +166,10 @@ void main()
             int   wi = int( u * 63.0 );
             float w = ( audioWave[max( wi - 1, 0 )] + audioWave[wi] + audioWave[min( wi + 1, 63 )] ) / 3.0;
             float ripple = 0.5 + 0.5 * sin( pos.z * 9.0 + pos.x * 3.0 - sceneTime * 4.0 );
-            vec3  waterCol = imgPalette( hue * 0.159 + 0.15 + 0.35 * mel );
-            float depthShade = clamp( ( water - land ) * 2.5, 0.0, 1.0 );
-            col = sky * 0.6 + waterCol * ( 0.45 + 0.6 * abs( w ) + 0.35 * ripple ) * ( 0.5 + 0.5 * depthShade );
-            col += waterCol * ( audioKick * 0.6 + audioBass * 0.3 );
+            vec3  water_col = imgPalette( hue * 0.159 + 0.15 + 0.35 * mel );
+            float depth_shade = clamp( ( water - land ) * 2.5, 0.0, 1.0 );
+            col = sky * 0.6 + water_col * ( 0.45 + 0.6 * abs( w ) + 0.35 * ripple ) * ( 0.5 + 0.5 * depth_shade );
+            col += water_col * ( audioKick * 0.6 + audioBass * 0.3 );
             // Reflection of the photo, streaked.
             col += img( vec2( fract( pos.x * 0.15 + 0.5 ), fract( pos.z * 0.05 ) ) ) * 0.15;
         }
@@ -183,18 +183,18 @@ void main()
                                          2.0 * e,
                                          terrain( pos.xz - vec2( 0.0, e ), bend, relief, width )
                                              - terrain( pos.xz + vec2( 0.0, e ), bend, relief, width ) ) );
-            float skyLit = clamp( nrm.y, 0.0, 1.0 );
+            float sky_lit = clamp( nrm.y, 0.0, 1.0 );
             vec3  ground = imgPalette( hue * 0.159 + 0.85 ) * 0.5;
-            col = ground * ( 0.08 + 0.35 * skyLit ) * ( 0.6 + 0.6 * audioLevel );
+            col = ground * ( 0.08 + 0.35 * sky_lit ) * ( 0.6 + 0.6 * audioLevel );
             col += imgPalette( hue * 0.159 + 0.15 + 0.35 * mel ) * exp( -d * 0.8 )
                    * ( 0.25 + 0.6 * audioLevel ); // river light on the banks
-            col += img( vec2( fract( pos.x * 0.1 ), fract( pos.z * 0.1 ) ) ) * 0.05 * skyLit;
+            col += img( vec2( fract( pos.x * 0.1 ), fract( pos.z * 0.1 ) ) ) * 0.05 * sky_lit;
         }
-        float fog = 1.0 - exp( -hitT * 0.045 );
+        float fog = 1.0 - exp( -hit_t * 0.045 );
         col = mix( col, sky * 0.35, clamp( fog, 0.0, 0.95 ) );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

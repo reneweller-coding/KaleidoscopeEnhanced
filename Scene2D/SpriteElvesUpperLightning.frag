@@ -94,8 +94,8 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nCols = 3 + int( clamp( columnsP, 0.0, 1.0 ) * 4.0 );
-    float elveRate = 0.5 + 0.5 * clamp( elveP, 0.0, 1.0 );
+    int   n_cols = 3 + int( clamp( columnsP, 0.0, 1.0 ) * 4.0 );
+    float elve_rate = 0.5 + 0.5 * clamp( elveP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
     float bass = clamp( audioBass, 0.0, 1.0 );
     vec3  red = mix( vec3( 1.0, 0.25, 0.3 ), imgPalette( hue * 0.159 + 0.0 ), 0.25 );
@@ -108,18 +108,18 @@ void main()
     vec2 sf = fract( su ) - 0.5;
     vec2 so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
     col += vec3( 0.75 ) * smoothstep( 0.14, 0.03, length( sf - so * 0.6 ) ) * step( 0.985, hash21( sc ) );
-    float ionY = 0.36;
-    col += blue * 0.06 * exp( -abs( p.y - ionY ) * 12.0 );
+    float ion_y = 0.36;
+    col += blue * 0.06 * exp( -abs( p.y - ion_y ) * 12.0 );
 
     // Elves: rings expanding outward at the ionosphere, launched on the clock.
     for ( int k = 0; k < 3; ++k )
     {
         float fk = float( k );
-        float ph = fract( clock * elveRate * ( 0.6 + 0.3 * hash11( fk * 3.1 ) ) + fk * 0.33 );
-        float cx = ( hash11( fk * 7.7 + floor( clock * elveRate * ( 0.6 + 0.3 * hash11( fk * 3.1 ) ) + fk * 0.33 ) )
+        float ph = fract( clock * elve_rate * ( 0.6 + 0.3 * hash11( fk * 3.1 ) ) + fk * 0.33 );
+        float cx = ( hash11( fk * 7.7 + floor( clock * elve_rate * ( 0.6 + 0.3 * hash11( fk * 3.1 ) ) + fk * 0.33 ) )
                      - 0.5 )
                    * aspect * 0.8;
-        float rr = length( ( p - vec2( cx, ionY ) ) * vec2( 1.0, 6.0 ) );
+        float rr = length( ( p - vec2( cx, ion_y ) ) * vec2( 1.0, 6.0 ) );
         float ring = exp( -abs( rr - ph * 0.9 ) * 25.0 ) * ( 1.0 - ph ) * ( 1.0 - ph );
         col += blue * ring * 0.8;
     }
@@ -129,16 +129,16 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     for ( int i = 0; i < 7; ++i )
     {
-        if ( i >= nCols )
+        if ( i >= n_cols )
             break;
         float fi = float( i );
         float cx = ( hash11( fi * 3.3 ) - 0.5 ) * aspect * 0.9;
         float w = 0.05 + 0.06 * hash11( fi * 5.9 );
         float base = -0.05, top = 0.32;
         float h = clamp( ( p.y - base ) / ( top - base ), 0.0, 1.0 );
-        float spreadW = w * ( 0.4 + 1.6 * h ); // tendrils spread upward
+        float spread_w = w * ( 0.4 + 1.6 * h ); // tendrils spread upward
         float dx = abs( p.x - cx );
-        float body = smoothstep( spreadW, spreadW * 0.2, dx );
+        float body = smoothstep( spread_w, spread_w * 0.2, dx );
         float tendril = pow( fbm( vec2( ( p.x - cx ) * 40.0, p.y * 6.0 + fi * 9.0 ) ), 2.0 ) * 3.0;
         float column = body * tendril * smoothstep( 0.0, 0.15, h ) * ( 1.0 - smoothstep( 0.85, 1.0, h ) );
         // The bright halo at the top of each sprite.
@@ -150,18 +150,18 @@ void main()
 
     // The thundercloud: a dark mass on the horizon lit from inside by the
     // bass, with the landscape (photo) below.
-    float cloudTop = -0.05 + 0.05 * fbm( vec2( p.x * 3.0, 2.0 ) );
-    float cloud = step( p.y, cloudTop ) * step( -0.3, p.y );
-    vec3  cloudCol = vec3( 0.05, 0.04, 0.06 )
-                     + imgPalette( hue * 0.159 + 0.1 ) * ( 0.2 + 0.9 * bass )
-                           * pow( fbm( vec2( p.x * 4.0 + clock * 0.2, p.y * 6.0 ) ), 1.5 ) * 1.5;
-    col = mix( col, cloudCol, cloud );
+    float cloud_top = -0.05 + 0.05 * fbm( vec2( p.x * 3.0, 2.0 ) );
+    float cloud = step( p.y, cloud_top ) * step( -0.3, p.y );
+    vec3  cloud_col = vec3( 0.05, 0.04, 0.06 )
+                      + imgPalette( hue * 0.159 + 0.1 ) * ( 0.2 + 0.9 * bass )
+                            * pow( fbm( vec2( p.x * 4.0 + clock * 0.2, p.y * 6.0 ) ), 1.5 ) * 1.5;
+    col = mix( col, cloud_col, cloud );
     float ground = step( p.y, -0.3 );
     vec3  land = img( vec2( p.x / aspect + 0.5, ( p.y + 0.5 ) * 0.6 ) ) * 0.15 * imgPalette( hue * 0.159 + 0.55 );
     col = mix( col, land, ground );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

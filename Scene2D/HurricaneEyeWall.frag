@@ -90,7 +90,7 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float R = 6.0 + 4.0 * clamp( radiusP, 0.0, 1.0 );    // eye radius (world units)
     float tilt = 0.15 + 0.25 * clamp( tiltP, 0.0, 1.0 ); // the wall leans outward
-    float wallH = ( 5.0 + 5.0 * clamp( radiusP, 0.0, 1.0 ) ) * ( 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
+    float wall_h = ( 5.0 + 5.0 * clamp( radiusP, 0.0, 1.0 ) ) * ( 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
     float rot = sceneAdvance * 0.12 + sceneTime * 0.025;
     float bass = clamp( audioBass, 0.0, 1.0 );
 
@@ -101,10 +101,10 @@ void main()
     vec3 rd = normalize( vec3( p.x, p.y, 1.1 ) );
     vec3 col;
     // Sea plane y = 0.
-    float tSea = ( rd.y < -1e-3 ) ? -ro.y / rd.y : 1e9;
+    float t_sea = ( rd.y < -1e-3 ) ? -ro.y / rd.y : 1e9;
     // Wall: a cone opening upward: radius(y) = R + tilt * y.  Solve
     // |xz(t)| = R + tilt * y(t) approximately by iteration.
-    float tWall = 1e9;
+    float t_wall = 1e9;
     {
         float t = R;
         for ( int i = 0; i < 6; ++i )
@@ -118,37 +118,37 @@ void main()
             t = max( t, 0.5 );
         }
         vec3 q = ro + rd * t;
-        if ( q.y < wallH && t > 0.5 )
-            tWall = t;
+        if ( q.y < wall_h && t > 0.5 )
+            t_wall = t;
     }
-    if ( tSea < tWall )
+    if ( t_sea < t_wall )
     {
         // The sea: dark, heaving swell lines, lit by the bass and the sky.
-        vec3  q = ro + rd * tSea;
-        float swellLines = 0.5 + 0.5 * sin( length( q.xz ) * 1.5 - sceneAdvance * 0.8 + fbm( q.xz * 0.3 ) * 4.0 );
-        vec3  sea = mix( vec3( 0.05, 0.12, 0.18 ), vec3( 0.15, 0.3, 0.35 ), swellLines * ( 0.4 + 0.6 * bass ) );
-        sea += vec3( 0.3, 0.5, 0.6 ) * pow( swellLines, 6.0 ) * bass * 0.4;
-        float fog = 1.0 - exp( -tSea * 0.05 );
+        vec3  q = ro + rd * t_sea;
+        float swell_lines = 0.5 + 0.5 * sin( length( q.xz ) * 1.5 - sceneAdvance * 0.8 + fbm( q.xz * 0.3 ) * 4.0 );
+        vec3  sea = mix( vec3( 0.05, 0.12, 0.18 ), vec3( 0.15, 0.3, 0.35 ), swell_lines * ( 0.4 + 0.6 * bass ) );
+        sea += vec3( 0.3, 0.5, 0.6 ) * pow( swell_lines, 6.0 ) * bass * 0.4;
+        float fog = 1.0 - exp( -t_sea * 0.05 );
         col = mix( sea, vec3( 0.5, 0.55, 0.6 ), fog * 0.6 );
     }
-    else if ( tWall < 1e8 )
+    else if ( t_wall < 1e8 )
     {
         // The wall: cloud texture (the photo) turning; lit from the top,
         // dark at the base; lightning on the kick.
-        vec3  q = ro + rd * tWall;
+        vec3  q = ro + rd * t_wall;
         float ang = atan( q.z, q.x ) + rot;
-        vec2  wuv = vec2( ang / 6.2831853 * 3.0, q.y / wallH );
+        vec2  wuv = vec2( ang / 6.2831853 * 3.0, q.y / wall_h );
         vec3  cloud = img( fract( wuv ) ) * 0.6 + 0.35;
         float bil = fbm( vec2( ang * 3.0, q.y * 0.4 ) + vec2( 0.0, -sceneAdvance * 0.05 ) );
         cloud *= 0.6 + 0.6 * bil;
         cloud = mix( cloud, cloud * imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.2 );
-        float heightLight = 0.25 + 0.75 * pow( q.y / wallH, 0.7 );
-        col = cloud * heightLight;
+        float height_light = 0.25 + 0.75 * pow( q.y / wall_h, 0.7 );
+        col = cloud * height_light;
         // Lightning: a localised branching flash (never the whole wall) on the kick.
         float bolt = pow( fbm( vec2( ang * 6.0, q.y * 0.5 + sceneAdvance ) ), 5.0 ) * 8.0;
         float sector = exp( -pow( sin( ang * 0.5 - sceneAdvance * 0.2 ), 2.0 ) * 12.0 );
         col += vec3( 1.0, 0.95, 0.9 ) * bolt * sector * audioKick * 0.5;
-        float fog = 1.0 - exp( -tWall * 0.03 );
+        float fog = 1.0 - exp( -t_wall * 0.03 );
         col = mix( col, vec3( 0.6, 0.65, 0.7 ), fog * 0.4 );
     }
     else
@@ -159,7 +159,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

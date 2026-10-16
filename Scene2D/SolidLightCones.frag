@@ -85,7 +85,7 @@ float g_shape;
 // ellipses (whose cone of light is a quadric) or straight lines (whose sheet
 // is a plane), so the view ray meets them ANALYTICALLY -- a thin glowing
 // sheet cannot be found by stepping through fog.
-const float XW = 5.5;
+const float Xw = 5.5;
 
 struct Shape
 {
@@ -138,7 +138,7 @@ float wallDist( Shape sh, vec2 w )
 /// Returns up to two (t, brightness) pairs packed as vec4.
 vec4 sheetHits( vec3 ro, vec3 rd, vec3 P, Shape sh, float tWall )
 {
-    float a = XW - P.x;
+    float a = Xw - P.x;
     vec3  u0 = ro - P;
     vec2  pc = P.yz - sh.c;
     // L(u) = pc * u.x + a * u.yz  (the drawing-plane offset times u.x)
@@ -224,25 +224,25 @@ void main()
     P[0] = vec3( -7.5, 2.3, 1.0 );
     P[1] = vec3( -7.0, 1.6, 4.5 );
     P[2] = vec3( -7.8, 2.8, 8.0 );
-    vec3 beamCol[3];
+    vec3 beam_col[3];
     for ( int j = 0; j < 3; ++j )
     {
         vec3 c = imgPalette( hue * 0.159 + float( j ) * 0.18 + 0.05 );
-        beamCol[j] = mix( vec3( 0.95, 0.95, 1.0 ), c * 1.3, 0.35 ); // mostly white light
+        beam_col[j] = mix( vec3( 0.95, 0.95, 1.0 ), c * 1.3, 0.35 ); // mostly white light
     }
-    int nOn = ( g_shape < 0.33 ) ? 2 : 3;
+    int n_on = ( g_shape < 0.33 ) ? 2 : 3;
 
-    float tWall = ( rd.x > 0.0 ) ? ( XW - ro.x ) / rd.x : 1e9;
-    float tFloor = ( rd.y < 0.0 ) ? -ro.y / rd.y : 1e9;
-    float tEnd = min( tWall, tFloor );
+    float tWall = ( rd.x > 0.0 ) ? ( Xw - ro.x ) / rd.x : 1e9;
+    float t_floor = ( rd.y < 0.0 ) ? -ro.y / rd.y : 1e9;
+    float t_end = min( tWall, t_floor );
 
     vec3 acc = vec3( 0.0 );
     for ( int j = 0; j < 3; ++j )
     {
-        if ( j >= nOn )
+        if ( j >= n_on )
             break;
         Shape sh = shapeOf( j );
-        vec4  h = sheetHits( ro, rd, P[j], sh, tEnd );
+        vec4  h = sheetHits( ro, rd, P[j], sh, t_end );
         float lvl = 0.3 + 1.2 * bands[j];
         for ( int k = 0; k < 2; ++k )
         {
@@ -251,7 +251,7 @@ void main()
                 continue;
             vec3  x = ro + rd * hk.x;
             float dens = 0.45 + 0.55 * noise3( x * 0.45 + vec3( 0.0, -sceneTime * 0.04, sceneTime * 0.02 ) );
-            acc += beamCol[j] * min( hk.y, 12.0 ) * dens * haze * lvl * 0.11 * exp( -hk.x * 0.03 );
+            acc += beam_col[j] * min( hk.y, 12.0 ) * dens * haze * lvl * 0.11 * exp( -hk.x * 0.03 );
         }
     }
 
@@ -259,45 +259,45 @@ void main()
     vec3 col = vec3( 0.004, 0.004, 0.007 );
     for ( int j = 0; j < 3; ++j )
     {
-        if ( j >= nOn )
+        if ( j >= n_on )
             break;
-        vec3  dirL = normalize( P[j] - ro );
-        float ang = acos( clamp( dot( rd, dirL ), -1.0, 1.0 ) );
-        col += beamCol[j] * exp( -ang * 5.0 ) * 0.05 * haze;
+        vec3  dir_l = normalize( P[j] - ro );
+        float ang = acos( clamp( dot( rd, dir_l ), -1.0, 1.0 ) );
+        col += beam_col[j] * exp( -ang * 5.0 ) * 0.05 * haze;
     }
-    if ( tWall < tFloor )
+    if ( tWall < t_floor )
     {
         vec3 wp = ro + rd * tWall;
-        vec3 wallC = img( fract( wp.yz * 0.07 ) ) * 0.015;
+        vec3 wall_c = img( fract( wp.yz * 0.07 ) ) * 0.015;
         for ( int j = 0; j < 3; ++j )
         {
-            if ( j >= nOn )
+            if ( j >= n_on )
                 break;
             float d = wallDist( shapeOf( j ), wp.yz );
-            wallC += beamCol[j] * exp( -d * d / 0.0015 ) * ( 0.6 + 1.2 * bands[j] );
+            wall_c += beam_col[j] * exp( -d * d / 0.0015 ) * ( 0.6 + 1.2 * bands[j] );
         }
-        col += wallC * exp( -tWall * 0.02 );
+        col += wall_c * exp( -tWall * 0.02 );
     }
-    else if ( tFloor < 1e8 )
+    else if ( t_floor < 1e8 )
     {
-        vec3 fp = ro + rd * tFloor;
-        col += img( fract( fp.xz * 0.08 ) ) * 0.02 * exp( -tFloor * 0.1 );
+        vec3 fp = ro + rd * t_floor;
+        col += img( fract( fp.xz * 0.08 ) ) * 0.02 * exp( -t_floor * 0.1 );
     }
     col += acc;
 
     // The lenses: small hot points with a soft flare on the kick.
     for ( int j = 0; j < 3; ++j )
     {
-        if ( j >= nOn )
+        if ( j >= n_on )
             break;
-        vec3  dirL = normalize( P[j] - ro );
-        float ang = acos( clamp( dot( rd, dirL ), -1.0, 1.0 ) );
+        vec3  dir_l = normalize( P[j] - ro );
+        float ang = acos( clamp( dot( rd, dir_l ), -1.0, 1.0 ) );
         float flare = exp( -ang * 300.0 ) * 3.0 + exp( -ang * 45.0 ) * ( 0.2 + 0.4 * clamp( audioKick, 0.0, 2.0 ) );
-        col += beamCol[j] * flare * ( 0.5 + bands[j] );
+        col += beam_col[j] * flare * ( 0.5 + bands[j] );
     }
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

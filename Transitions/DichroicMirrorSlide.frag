@@ -67,43 +67,43 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Diagonal mirror plane coordinate
-    vec2  mirrorDir = normalize( vec2( 1.0, 0.8 * sld ) );
-    float proj = dot( p, mirrorDir );
+    vec2  mirror_dir = normalize( vec2( 1.0, 0.8 * sld ) );
+    float proj = dot( p, mirror_dir );
 
-    float slidePos = mix( -1.2, 1.2, tProg );
-    float distToMirror = proj - slidePos;
+    float slide_pos = mix( -1.2, 1.2, t_prog );
+    float dist_to_mirror = proj - slide_pos;
 
     // Thin-film interference color on glass edge: lambda = 2 n d cos(theta).
     // audioBass undulates the film thickness d, which sets the fringe spacing.
-    // midTransition gates it, so at both fade endpoints the thickness is the
-    // un-driven one — and dichroicReflect only reaches the frame through the
-    // midTransition-gated glassEdge term anyway.
-    float filmThickness = 15.0 * dch; // constant: an envelope on a scale re-lays the whole pattern (speed
-                                      // pass 14.09.2026)
-    vec3 dichroicReflect = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + distToMirror * filmThickness + audioPhase );
+    // mid_transition gates it, so at both fade endpoints the thickness is the
+    // un-driven one — and dichroic_reflect only reaches the frame through the
+    // mid_transition-gated glass_edge term anyway.
+    float film_thickness = 15.0 * dch; // constant: an envelope on a scale re-lays the whole pattern (speed
+                                       // pass 14.09.2026)
+    vec3 dichroic_reflect = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + dist_to_mirror * film_thickness + audioPhase );
 
     // Glass refraction displacement
-    float refrOffset = exp( -abs( distToMirror ) * 10.0 ) * sign( distToMirror ) * 0.03 * midTransition;
-    vec2  warpUV = uv + mirrorDir * refrOffset;
+    float refr_offset = exp( -abs( dist_to_mirror ) * 10.0 ) * sign( dist_to_mirror ) * 0.03 * mid_transition;
+    vec2  warp_uv = uv + mirror_dir * refr_offset;
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
-    float wipeMask = smoothstep( -0.02, 0.02, distToMirror );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.02, 0.02, dist_to_mirror );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Glass edge flare
-    float glassEdge = exp( -abs( distToMirror ) * 20.0 ) * midTransition;
-    col.rgb += glassEdge * dichroicReflect * ( 1.5 + audioKick * 1.0 );
+    float glass_edge = exp( -abs( dist_to_mirror ) * 20.0 ) * mid_transition;
+    col.rgb += glass_edge * dichroic_reflect * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

@@ -77,20 +77,20 @@ float turingField( vec2 p, float t, float freq )
 {
     float f = 0.0;
     float amp = 1.0;
-    float curFreq = freq;
+    float cur_freq = freq;
 
     for ( int i = 0; i < 4; i++ )
     {
         // Rotated sinusoidal standing waves
         float ang = float( i ) * 0.785398 + t * 0.15;
         vec2  dir = vec2( cos( ang ), sin( ang ) );
-        vec2  pWarp = p + vec2( sin( p.y * 3.0 + t ), cos( p.x * 3.0 - t ) ) * 0.15;
+        vec2  p_warp = p + vec2( sin( p.y * 3.0 + t ), cos( p.x * 3.0 - t ) ) * 0.15;
 
-        float wave = sin( dot( pWarp, dir ) * curFreq + t * 2.0 );
+        float wave = sin( dot( p_warp, dir ) * cur_freq + t * 2.0 );
         f += wave * amp;
 
         amp *= 0.55;
-        curFreq *= 1.85;
+        cur_freq *= 1.85;
     }
     return f;
 }
@@ -102,7 +102,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float mlt = ( meltP > 0.01 ) ? meltP : 1.2;
-    float freqMod = ( spotFreqP > 0.01 ) ? spotFreqP : 1.0;
+    float freq_mod = ( spotFreqP > 0.01 ) ? spotFreqP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // The reaction only ever advanced on audioAdvance, which creeps at ~0.25/s on
@@ -112,65 +112,65 @@ void main()
     float t = time * 0.30 * spd + audioAdvance * 0.32 * spd;
 
     // Liquid dripping/melting downward displacement
-    vec2 pMelt = uv;
-    pMelt.y += sin( pMelt.x * 8.0 + t * 2.0 ) * ( 0.15 * mlt + 0.1 * audioSubBass );
-    pMelt += vec2( sin( pMelt.y * 6.0 - t ), cos( pMelt.x * 6.0 + t ) ) * 0.08;
+    vec2 p_melt = uv;
+    p_melt.y += sin( p_melt.x * 8.0 + t * 2.0 ) * ( 0.15 * mlt + 0.1 * audioSubBass );
+    p_melt += vec2( sin( p_melt.y * 6.0 - t ), cos( p_melt.x * 6.0 + t ) ) * 0.08;
 
     // Compute Turing morphogenetic field.
-    // baseFreq was 8..14 and turingField multiplies it by 1.85 per octave (x6.3
-    // by the 4th), evaluated on pMelt*2.0 -- the finest octave landed near 170
+    // base_freq was 8..14 and turingField multiplies it by 1.85 per octave (x6.3
+    // by the 4th), evaluated on p_melt*2.0 -- the finest octave landed near 170
     // cycles across the frame. That is far past the resolution the picture can
     // hold: every neighbourhood contained the full range of the field, so the
     // whole image averaged to one uniform value with no readable structure.
     // Dropped to a scale where the labyrinth cells are actually SEEN.
-    float baseFreq = ( 2.6 + 2.0 * audioCentroid ) * freqMod;
-    float chemicalVal = turingField( pMelt * 1.1, t, baseFreq );
+    float base_freq = ( 2.6 + 2.0 * audioCentroid ) * freq_mod;
+    float chemical_val = turingField( p_melt * 1.1, t, base_freq );
 
-    // Chemical boundary contour lines (isolines). chemicalVal spans about +-2.0,
+    // Chemical boundary contour lines (isolines). chemical_val spans about +-2.0,
     // so the old *6.0 wrapped the sine ~4x per unit of an already-oscillating
     // field -- pure moire, not contours. *1.2 traces the field's own isolines.
-    float isoLines = abs( sin( chemicalVal * 1.2 + t * 3.0 ) );
-    float ridgeGlow = smoothstep( 0.86, 1.0, isoLines ) * glw;
+    float iso_lines = abs( sin( chemical_val * 1.2 + t * 3.0 ) );
+    float ridge_glow = smoothstep( 0.86, 1.0, iso_lines ) * glw;
 
     // Large-scale concentration: the slow half of the field, used as a light/dark
     // mask so the frame carries low-frequency contrast instead of one flat level.
-    float conc = 0.5 + 0.5 * sin( chemicalVal * 0.9 - t * 0.25 );
+    float conc = 0.5 + 0.5 * sin( chemical_val * 0.9 - t * 0.25 );
 
     // Sample distorted texture along chemical gradient
-    vec2 sampleUV = fract( pMelt * 0.5 + vec2( chemicalVal * 0.08, 0.0 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_melt * 0.5 + vec2( chemical_val * 0.08, 0.0 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Dynamic color phase (inverts on audio kick)
-    float phase = chemicalVal * 0.4 + t * 0.15 + audioKick * 0.5;
-    vec3  palA = imgPalette( phase );
-    vec3  palB = imgPalette( phase + 0.5 );
-    vec3  chemCol = mix( palA, palB, 0.5 + 0.5 * sin( chemicalVal * 3.0 ) );
+    float phase = chemical_val * 0.4 + t * 0.15 + audioKick * 0.5;
+    vec3  pal_a = imgPalette( phase );
+    vec3  pal_b = imgPalette( phase + 0.5 );
+    vec3  chem_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( chemical_val * 3.0 ) );
 
-    chemCol = mix( chemCol, texCol, 0.35 + 0.15 * audioValence );
+    chem_col = mix( chem_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Dark troughs / lit crests: without this the base level sat just under the
     // ridge add and the whole frame clamped to white. The photo probe keeps that
     // crest/trough swing readable no matter how bright the current picture is --
     // a near-white photo used to swamp the whole modulation.
-    float expGain = clamp( 0.42 / max( 0.06, photoLevel() ), 0.55, 1.60 );
-    chemCol *= ( 0.30 + 0.85 * conc ) * expGain;
+    float exp_gain = clamp( 0.42 / max( 0.06, photoLevel() ), 0.55, 1.60 );
+    chem_col *= ( 0.30 + 0.85 * conc ) * exp_gain;
 
     // Add glowing reaction ridge lines and kick flash (bounded - the old
     // unbounded add pushed roughly a third of the frame past 1.0 on its own)
-    vec3 neonRidge = min( vec3( 1.4, 0.9, 1.7 ) * ridgeGlow * ( 1.0 + 2.0 * audioKick ),
-                          vec3( 0.85, 0.60, 1.00 ) );
-    chemCol += neonRidge * 0.6;
+    vec3 neon_ridge = min( vec3( 1.4, 0.9, 1.7 ) * ridge_glow * ( 1.0 + 2.0 * audioKick ),
+                           vec3( 0.85, 0.60, 1.00 ) );
+    chem_col += neon_ridge * 0.6;
 
     // Center chemical nucleus bloom
-    float centerBloom = exp( -length( uv ) * 4.0 ) * ( 0.35 + 0.7 * audioLevel );
-    chemCol += min( imgPalette( 0.8 ) * centerBloom, vec3( 0.42 ) );
+    float center_bloom = exp( -length( uv ) * 4.0 ) * ( 0.35 + 0.7 * audioLevel );
+    chem_col += min( imgPalette( 0.8 ) * center_bloom, vec3( 0.42 ) );
 
-    chemCol = pow( min( chemCol, vec3( 1.0 ) ), vec3( 0.87 ) );
+    chem_col = pow( min( chem_col, vec3( 1.0 ) ), vec3( 0.87 ) );
     // Soft knee on top of the hard cap: pow(x, 0.87) lifts the midtones, so
     // where a ridge crest lands on an already-lit crest the two still stacked
     // up against the ceiling. The knee bends those crests over instead of
     // flattening them against it.
-    vec3 _catTone = clamp( chemCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.26 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( chem_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.26 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

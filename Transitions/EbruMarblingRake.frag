@@ -62,32 +62,32 @@ void main()
 
     float t = time * 0.1221 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Comb teeth rake displacement along X axis: y-displacement alternating sign per tooth
-    float toothPhase = p.x * 20.0 * rak;
-    float toothSign = sin( toothPhase );
-    float rakeDisp = toothSign * 0.08 * midTransition * swr * ( 1.0 + audioSwell * 0.6 );
+    float tooth_phase = p.x * 20.0 * rak;
+    float tooth_sign = sin( tooth_phase );
+    float rake_disp = tooth_sign * 0.08 * mid_transition * swr * ( 1.0 + audioSwell * 0.6 );
 
     // Capillary swirl curls
-    float curl = sin( p.y * 15.0 + t * 3.0 ) * cos( p.x * 15.0 - t * 2.0 ) * 0.03 * midTransition;
+    float curl = sin( p.y * 15.0 + t * 3.0 ) * cos( p.x * 15.0 - t * 2.0 ) * 0.03 * mid_transition;
 
-    vec2 warpUV = uv + vec2( curl, rakeDisp );
+    vec2 warp_uv = uv + vec2( curl, rake_disp );
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Pigment gold vein lines
-    float vein = exp( -abs( toothSign ) * 15.0 ) * midTransition;
+    float vein = exp( -abs( tooth_sign ) * 15.0 ) * mid_transition;
     col.rgb += vein * vec3( 1.0, 0.85, 0.4 ) * ( 1.0 + audioKick * 0.83 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

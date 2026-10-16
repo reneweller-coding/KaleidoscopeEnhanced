@@ -160,18 +160,18 @@ void main()
         col *= 0.6 + 0.5 * smoothstep( 0.0, 0.4, uv.x );
         int   band = int( clamp( vAux * 31.0, 0.0, 31.0 ) );
         float e = clamp( audioSpectrum[band] * 1.7, 0.0, 1.0 );
-        vec3  edgeCol = imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.5 + 0.15;
+        vec3  edge_col = imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.5 + 0.15;
         float edge = smoothstep( 0.14, 0.0, uv.x );
-        col += edgeCol * edge * ( 0.2 + 1.0 * e );
+        col += edge_col * edge * ( 0.2 + 1.0 * e );
         col += vec3( 1.0 ) * edge * hi * 0.25;
     }
     // Hall haze with distance.
     float fog = 1.0 - exp( -max( vWorld.z - 9.0, 0.0 ) * 0.022 );
-    vec3  fogCol = mix( vec3( 0.4, 0.42, 0.48 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, 0.35 ) * light;
-    col = mix( col, fogCol, clamp( fog, 0.0, 0.8 ) * step( -1.5, vKind ) );
+    vec3  fog_col = mix( vec3( 0.4, 0.42, 0.48 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, 0.35 ) * light;
+    col = mix( col, fog_col, clamp( fog, 0.0, 0.8 ) * step( -1.5, vKind ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

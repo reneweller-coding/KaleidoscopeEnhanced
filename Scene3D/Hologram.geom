@@ -85,21 +85,21 @@ void main()
     float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
     float sp = ( spinP > 0.01 ? spinP : 1.0 );
 
-    float       rotY = ( time * 0.20 + audioAdvance * 0.10 ) * sp;
-    float       cy = cos( rotY ), sy = sin( rotY );
-    mat3        rotYMat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-    const float tiltX = 0.20;
-    float       cx = cos( tiltX ), sx = sin( tiltX );
-    mat3        rotXMat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
-    mat3        rotMat = rotXMat * rotYMat;
+    float       rot_y = ( time * 0.20 + audioAdvance * 0.10 ) * sp;
+    float       cy = cos( rot_y ), sy = sin( rot_y );
+    mat3        rot_y_mat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+    const float tilt_x = 0.20;
+    float       cx = cos( tilt_x ), sx = sin( tilt_x );
+    mat3        rot_x_mat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+    mat3        rot_mat = rot_x_mat * rot_y_mat;
 
     // One horizontal band per ~1/14 of object height. Only strong beats
     // trigger a dropout, and only some bands take part -- a glitch on every
     // beat stops reading as a fault and just becomes the animation.
-    float bandId = floor( ( gPos[0].y + 0.5 ) * 14.0 );
-    float bandRnd = hash11( bandId * 3.7 + floor( time * 3.0 ) * 11.0 );
-    float fire = step( 0.62, audioKick ) * step( 0.72, bandRnd );
-    float slip = ( bandRnd - 0.5 ) * 2.0 * fire * 0.09;
+    float band_id = floor( ( gPos[0].y + 0.5 ) * 14.0 );
+    float band_rnd = hash11( band_id * 3.7 + floor( time * 3.0 ) * 11.0 );
+    float fire = step( 0.62, audioKick ) * step( 0.72, band_rnd );
+    float slip = ( band_rnd - 0.5 ) * 2.0 * fire * 0.09;
 
     vec3 bary[3] = vec3[3]( vec3( 1.0, 0.0, 0.0 ), vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, 0.0, 1.0 ) );
 
@@ -112,11 +112,11 @@ void main()
         // on a dark floor. Size also drives brightness here, because the wire
         // is gated on how big a triangle lands on screen (see the .frag): a
         // small projection is a dim one, so the two faults had one cause.
-        vec3 w = rotMat * ( p * ( 48.0 * sz ) );
+        vec3 w = rot_mat * ( p * ( 48.0 * sz ) );
         w.z += 76.0;
 
         vUV = gUV[i];
-        vNormal = normalize( rotMat * gNormal[i] );
+        vNormal = normalize( rot_mat * gNormal[i] );
         vPos = w;
         vLocalPos = gPos[i];
         vBary = bary[i];

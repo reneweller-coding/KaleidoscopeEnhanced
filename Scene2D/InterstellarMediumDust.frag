@@ -126,29 +126,29 @@ void main()
     vec3  bg = vec3( star ) * 0.9 + imgPalette( hue * 0.159 + 0.6 ) * 0.015;
 
     // Embedded star: a point inside the cloud, lighting it.
-    vec3 starPos = vec3( 1.5, 0.6, 7.0 );
-    vec3 starCol = mix( imgPalette( hue * 0.159 + 0.05 ), vec3( 1.0, 0.95, 0.85 ), 0.5 ) * ( 0.6 + 0.6 * audioLevel )
-                   * ( 1.0 + 2.0 * audioKick );
+    vec3 star_pos = vec3( 1.5, 0.6, 7.0 );
+    vec3 star_col = mix( imgPalette( hue * 0.159 + 0.05 ), vec3( 1.0, 0.95, 0.85 ), 0.5 ) * ( 0.6 + 0.6 * audioLevel )
+                    * ( 1.0 + 2.0 * audioKick );
 
     // March through the cloud volume z in [3, 14]: accumulate transmittance
     // and in-scattered light from the embedded star and the palette ambient.
     vec3      col = vec3( 0.0 );
     float     trans = 1.0;
-    const int STEPS = 40;
+    const int Steps = 40;
     float     t0 = 3.0, t1 = 14.0;
-    float     dt = ( t1 - t0 ) / float( STEPS );
-    vec3      dustCol = imgPalette( hue * 0.159 + 0.55 );
-    for ( int i = 0; i < STEPS; ++i )
+    float     dt = ( t1 - t0 ) / float( Steps );
+    vec3      dust_col = imgPalette( hue * 0.159 + 0.55 );
+    for ( int i = 0; i < Steps; ++i )
     {
         float tt = t0 + ( float( i ) + 0.5 ) * dt;
         vec3  q = ro + rd * tt;
         float d = density( q * sc, t, base );
         if ( d < 0.005 )
             continue;
-        vec3  toStar = starPos - q;
-        float dist2 = dot( toStar, toStar );
+        vec3  to_star = star_pos - q;
+        float dist2 = dot( to_star, to_star );
         float lit = 3.0 / ( dist2 + 0.8 );
-        vec3  scatter = dustCol * ( 0.05 + 0.35 * lit ) + starCol * lit * 0.25;
+        vec3  scatter = dust_col * ( 0.05 + 0.35 * lit ) + star_col * lit * 0.25;
         float absorb = d * dt * 0.9;
         col += scatter * absorb * trans;
         trans *= exp( -absorb );
@@ -156,19 +156,19 @@ void main()
             break;
     }
     // The star itself, seen through the cloud in front of it.
-    vec3  toS = normalize( starPos - ro );
-    float sCore = exp( -acos( clamp( dot( rd, toS ), -1.0, 1.0 ) ) * 60.0 );
+    vec3  to_s = normalize( star_pos - ro );
+    float s_core = exp( -acos( clamp( dot( rd, to_s ), -1.0, 1.0 ) ) * 60.0 );
     // Transmittance up to the star's depth: re-march coarsely.
-    float transStar = 1.0;
+    float trans_star = 1.0;
     for ( int i = 0; i < 12; ++i )
     {
         float tt = t0 + ( float( i ) + 0.5 ) * ( 7.0 - t0 ) / 12.0;
-        transStar *= exp( -density( ( ro + toS * tt ) * sc, t, base ) * ( 7.0 - t0 ) / 12.0 * 0.9 );
+        trans_star *= exp( -density( ( ro + to_s * tt ) * sc, t, base ) * ( 7.0 - t0 ) / 12.0 * 0.9 );
     }
-    col += starCol * sCore * 2.0 * transStar;
+    col += star_col * s_core * 2.0 * trans_star;
     col += bg * trans;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -60,11 +60,11 @@ vec3 imgPalette( float t )
 void main()
 {
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float wallLight = 0.5 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
+    float wall_light = 0.5 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     if ( oitPass < 0.5 )
     {
         vec2 uv = vTexCoord;
-        vec3 col = img( uv ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.3 ) * wallLight * 0.5;
+        vec3 col = img( uv ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.3 ) * wall_light * 0.5;
         col *= 0.4 + 0.7 * exp( -length( uv - 0.5 ) * 1.6 );
         col *= 0.75 + 0.5 * audioLevel;
         outAccum = vec4( col, interpolation );
@@ -79,16 +79,16 @@ void main()
     vec3  V = normalize( -vWorld );
     float c = clamp( dot( n, V ), 0.0, 1.0 );
     float fres = 0.04 + 0.96 * pow( 1.0 - c, 4.0 );
-    vec3  Rf = refract( -V, n, 1.0 / 1.4 );
-    vec2  wuv = clamp( vec2( 0.5 + ( vWorld.x + Rf.x * 20.0 ) * 0.012, 0.5 + ( vWorld.y + Rf.y * 20.0 ) * 0.02 ), 0.0,
+    vec3  rf = refract( -V, n, 1.0 / 1.4 );
+    vec2  wuv = clamp( vec2( 0.5 + ( vWorld.x + rf.x * 20.0 ) * 0.012, 0.5 + ( vWorld.y + rf.y * 20.0 ) * 0.02 ), 0.0,
                        1.0 );
-    vec3  through = img( wuv ) * wallLight;
+    vec3  through = img( wuv ) * wall_light;
     vec3  tint = imgPalette( hue * 0.159 + float( ring ) * 0.33 ) * 1.5 + 0.1;
     vec3  glass = mix( through, through * tint * 2.0, 0.6 ) + tint * 0.15;
     float pulse = pow( 0.5 + 0.5 * sin( vAlong * 6.2831853 * 2.0 - sceneAdvance * 2.5 + float( ring ) * 2.0 ), 8.0 );
     glass += tint * ( 0.4 * e + pulse * ( 0.15 + 0.45 * e ) );
     vec3 R = reflect( -V, n );
-    vec3 refl = img( clamp( vec2( 0.5 + R.x * 0.4, 0.5 + R.y * 0.4 ), 0.0, 1.0 ) ) * wallLight;
+    vec3 refl = img( clamp( vec2( 0.5 + R.x * 0.4, 0.5 + R.y * 0.4 ), 0.0, 1.0 ) ) * wall_light;
     glass = mix( glass, refl, fres * 0.6 );
     vec3 L = normalize( vec3( -0.5, 0.7, -0.5 ) );
     vec3 H = normalize( L + V );

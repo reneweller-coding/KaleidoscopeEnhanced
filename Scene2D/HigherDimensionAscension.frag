@@ -88,8 +88,8 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 lightCol = imgPalette( 0.8 + audioCentroid * 0.2 ); // Blinding divine light
-    vec3 darkCol = imgPalette( 0.2 );                        // Deep structural shadows
+    vec3 light_col = imgPalette( 0.8 + audioCentroid * 0.2 ); // Blinding divine light
+    vec3 dark_col = imgPalette( 0.2 );                        // Deep structural shadows
 
     float t = time * 0.2 + audioAdvance * 0.5;
 
@@ -97,14 +97,14 @@ void main()
     vec3 rd = normalize( vec3( uv, 1.0 ) );
 
     // Smooth camera drift
-    float camRot = sin( t * 0.5 ) * 0.5;
-    mat2  rotM = mat2( cos( camRot ), -sin( camRot ), sin( camRot ), cos( camRot ) );
-    rd.xy = rotM * rd.xy;
+    float cam_rot = sin( t * 0.5 ) * 0.5;
+    mat2  rot_m = mat2( cos( cam_rot ), -sin( cam_rot ), sin( cam_rot ), cos( cam_rot ) );
+    rd.xy = rot_m * rd.xy;
 
     float d = 0.0;
     vec3  p;
     float iter = 0.0;
-    float minDist = 100.0; // Keep track of closest approach for glow
+    float min_dist = 100.0; // Keep track of closest approach for glow
 
     for ( int i = 0; i < 60; ++i )
     {
@@ -115,35 +115,35 @@ void main()
         float shift = 0.0; // structural kick shifts removed (V7d)
 
         // 4D Folding space
-        vec3 pFold = p;
+        vec3 p_fold = p;
 
         // Rotate in fake 4D
-        pFold = rotate4D( pFold, t * 0.5 + shift );
+        p_fold = rotate4D( p_fold, t * 0.5 + shift );
 
         // Space folding (absolute value folding)
         for ( int j = 0; j < 4; j++ )
         {
-            pFold = abs( pFold ) - vec3( 0.5, 0.5, 0.5 ) * fp;
-            pFold = rotate4D( pFold, t * 0.2 * float( j + 1 ) );
+            p_fold = abs( p_fold ) - vec3( 0.5, 0.5, 0.5 ) * fp;
+            p_fold = rotate4D( p_fold, t * 0.2 * float( j + 1 ) );
         }
 
         // Distance function (a lattice of intersecting beams)
-        float d1 = length( pFold.xy ) - 0.05;
-        float d2 = length( pFold.xz ) - 0.05;
-        float d3 = length( pFold.yz ) - 0.05;
+        float d1 = length( p_fold.xy ) - 0.05;
+        float d2 = length( p_fold.xz ) - 0.05;
+        float d3 = length( p_fold.yz ) - 0.05;
 
-        float distToStruct = min( min( d1, d2 ), d3 );
+        float dist_to_struct = min( min( d1, d2 ), d3 );
 
-        minDist = min( minDist, distToStruct );
+        min_dist = min( min_dist, dist_to_struct );
 
-        if ( distToStruct < 0.01 )
+        if ( dist_to_struct < 0.01 )
         {
             // Hit the structure
             iter = float( i ) / 60.0;
             break;
         }
 
-        d += distToStruct * 0.5; // slow stepping for accuracy in folded space
+        d += dist_to_struct * 0.5; // slow stepping for accuracy in folded space
 
         if ( d > 10.0 )
             break;
@@ -155,27 +155,27 @@ void main()
         float depth = d / 10.0;
 
         // Color based on depth and iteration count (complexity of fold)
-        vec3 surfaceCol = mix( lightCol, darkCol, depth );
+        vec3 surface_col = mix( light_col, dark_col, depth );
 
         // Flashes on structure
         float flash = step( 0.9, sin( iter * 100.0 + time * 10.0 ) ) * audioKick * gp;
 
-        col = surfaceCol * ( 1.0 - iter ) * ( 1.0 + audioSwell * 2.0 + flash );
+        col = surface_col * ( 1.0 - iter ) * ( 1.0 + audioSwell * 2.0 + flash );
     }
 
     // Intense volumetric glow filling the space
     // Based on how close the ray got to the folded structures
-    float glow = exp( -minDist * 15.0 ) * gp;
-    col += lightCol * glow * 0.5 * ( 1.0 + audioSwell );
+    float glow = exp( -min_dist * 15.0 ) * gp;
+    col += light_col * glow * 0.5 * ( 1.0 + audioSwell );
 
     // Overall ambient light of the higher dimension
-    col += lightCol * 0.1 * ( 1.0 + audioSwell );
+    col += light_col * 0.1 * ( 1.0 + audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

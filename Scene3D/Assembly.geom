@@ -103,9 +103,9 @@ void main()
     // the CELL, and pivot on the cell's own centre so the slab rotates about
     // itself instead of about the origin.
     vec3  mid = ( gPos[0] + gPos[1] + gPos[2] ) / 3.0;
-    vec3  cellIdx = floor( mid * chunk );
-    vec3  cellMid = ( cellIdx + 0.5 ) / chunk;
-    float id = dot( cellIdx, vec3( 1.0, 37.0, 991.0 ) );
+    vec3  cell_idx = floor( mid * chunk );
+    vec3  cell_mid = ( cell_idx + 0.5 ) / chunk;
+    float id = dot( cell_idx, vec3( 1.0, 37.0, 991.0 ) );
 
     // Arrivals spread over the first half, each taking 0.3 of the scene, so
     // the object is complete by about 0.8 and gets to be SEEN finished --
@@ -145,7 +145,7 @@ void main()
 
     for ( int i = 0; i < 3; ++i )
     {
-        vec3 p = cellMid + spin * ( gPos[i] - cellMid ) + offset + jolt;
+        vec3 p = cell_mid + spin * ( gPos[i] - cell_mid ) + offset + jolt;
         vec3 world = ( p - meshCenter ) * ( 78.0 * sz * fit );
         world.z += 78.0;
 

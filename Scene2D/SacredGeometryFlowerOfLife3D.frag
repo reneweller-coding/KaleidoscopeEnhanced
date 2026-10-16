@@ -76,18 +76,18 @@ float mapSacred( vec3 p, float t, float rBase )
     float d = sdSphere( p, 0.35 + 0.1 * audioKick );
 
     // 6 outer intersecting Flower of Life circles in hexagonal arrangement
-    float ringR = rBase;
-    float tubeR = 0.025 + 0.01 * audioLevel;
+    float ring_r = rBase;
+    float tube_r = 0.025 + 0.01 * audioLevel;
 
     // Central primary torus
-    d = min( d, sdTorus( p, vec2( ringR, tubeR ) ) );
+    d = min( d, sdTorus( p, vec2( ring_r, tube_r ) ) );
 
     // Hexagonal outer rings
     for ( int i = 0; i < 6; i++ )
     {
         float a = float( i ) * 1.04719755; // 60 degrees
-        vec3  center = vec3( cos( a ), sin( a ), 0.0 ) * ringR;
-        d = min( d, sdTorus( p - center, vec2( ringR, tubeR ) ) );
+        vec3  center = vec3( cos( a ), sin( a ), 0.0 ) * ring_r;
+        d = min( d, sdTorus( p - center, vec2( ring_r, tube_r ) ) );
 
         // Spherical node at intersection
         d = min( d, sdSphere( p - center, 0.08 + 0.03 * audioSubBass ) );
@@ -97,14 +97,14 @@ float mapSacred( vec3 p, float t, float rBase )
     // The old max(d, -dZ) subtracted it -- it deleted the geometry inside
     // the slab and kept only what stuck out, which is why the recording
     // showed a stray strut instead of the Flower of Life.
-    float dZ = abs( p.z ) - 0.25;
-    d = max( d, dZ );
+    float d_z = abs( p.z ) - 0.25;
+    d = max( d, d_z );
 
     // Diagonal Metatron connecting struts
-    vec3  pRot = p;
+    vec3  p_rot = p;
     float cs = 0.866025, sn = 0.5;
     vec2  q = vec2( abs( p.x ) * cs - p.y * sn, abs( p.x ) * sn + p.y * cs );
-    float strut = length( vec2( q.x, p.z ) ) - tubeR * 0.8;
+    float strut = length( vec2( q.x, p.z ) ) - tube_r * 0.8;
     d = min( d, strut );
 
     return d;
@@ -124,13 +124,13 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Camera ray setup with dynamic orbital tilt
-    float camDist = 2.9 + 0.35 * sin( audioSwell * 2.0 );
+    float cam_dist = 2.9 + 0.35 * sin( audioSwell * 2.0 );
     // The rings live in the XY plane, so the camera belongs on the Z axis:
     // a small tilt keeps it dimensional without turning the pattern edge-on.
     float tilt = 0.28 * sin( t * 0.4 );
     float roll = 0.22 * sin( t * 0.31 + audioPhase * 0.1 );
-    vec3  ro = vec3( sin( roll ) * camDist, sin( tilt ) * camDist,
-                     -cos( tilt ) * cos( roll ) * camDist );
+    vec3  ro = vec3( sin( roll ) * cam_dist, sin( tilt ) * cam_dist,
+                     -cos( tilt ) * cos( roll ) * cam_dist );
     vec3  ta = vec3( 0.0, 0.0, 0.0 );
     vec3  ww = normalize( ta - ro );
     vec3  uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.02 ) ) );
@@ -138,53 +138,53 @@ void main()
     vec3  rd = normalize( uv.x * uu + uv.y * vv + ( 1.3 + 0.2 * sin( audioSwell ) ) * ww );
 
     // Raymarch through Sacred Geometry field
-    float totDist = 0.0;
-    float minD = 1e4;
-    vec3  hitCol = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float min_d = 1e4;
+    vec3  hit_col = vec3( 0.0 );
 
     for ( int i = 0; i < 56; i++ )
     {
-        vec3 p = ro + rd * totDist;
+        vec3 p = ro + rd * tot_dist;
 
         // Apply slow dynamic inner rotation
-        float csY = cos( t * 0.2 ), snY = sin( t * 0.2 );
-        p.xz = mat2( csY, -snY, snY, csY ) * p.xz;
+        float cs_y = cos( t * 0.2 ), sn_y = sin( t * 0.2 );
+        p.xz = mat2( cs_y, -sn_y, sn_y, cs_y ) * p.xz;
 
         float d = mapSacred( p, t, rBase );
-        minD = min( minD, abs( d ) );
+        min_d = min( min_d, abs( d ) );
 
-        if ( abs( d ) < 0.003 || totDist > 7.0 )
+        if ( abs( d ) < 0.003 || tot_dist > 7.0 )
         {
-            vec2 sampleUV = fract( p.xy * 0.3 + p.z * 0.2 + 0.5 );
-            vec3 texCol = img( sampleUV );
+            vec2 sample_uv = fract( p.xy * 0.3 + p.z * 0.2 + 0.5 );
+            vec3 tex_col = img( sample_uv );
             vec3 pal = imgPalette( length( p ) * 0.4 + t * 0.1 );
-            hitCol = mix( texCol, pal, 0.5 ) * ( 0.8 + 0.5 * ( 1.0 - d ) );
+            hit_col = mix( tex_col, pal, 0.5 ) * ( 0.8 + 0.5 * ( 1.0 - d ) );
             break;
         }
 
-        totDist += max( 0.015, d * 0.7 );
+        tot_dist += max( 0.015, d * 0.7 );
     }
 
     // Volumetric glow along all sacred geometric edges
     // A sharper falloff and a palette tint instead of the old white
     // vec3(1.3,1.1,1.6)*2.5kick, which saturated into one glare pillar
     // whenever a torus tube sat edge-on to the camera.
-    float glow = exp( -minD * ( 26.0 + 10.0 * audioCentroid ) ) * glw;
+    float glow = exp( -min_d * ( 26.0 + 10.0 * audioCentroid ) ) * glw;
     glow = min( glow, 0.85 );
-    vec3 glowTint = imgPalette( fract( 0.08 + minD * 2.0 ) ) * glow * ( 0.9 + 0.9 * audioKick );
+    vec3 glow_tint = imgPalette( fract( 0.08 + min_d * 2.0 ) ) * glow * ( 0.9 + 0.9 * audioKick );
 
     // Background moiré interference field
     float moire = sin( length( uv ) * ( 35.0 + 20.0 * audioCentroid ) - t * 3.0 )
                   * cos( atan( uv.y, uv.x ) * 12.0 + t );
-    vec3  bgCol = imgPalette( moire * 0.2 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3  bg_col = imgPalette( moire * 0.2 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
 
-    vec3 finalCol = mix( bgCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
-    finalCol += glowTint;
+    vec3 final_col = mix( bg_col, hit_col, clamp( length( hit_col ), 0.0, 1.0 ) );
+    final_col += glow_tint;
 
     // Center Merkaba flare
-    float centerFlare = exp( -length( uv ) * 4.5 ) * ( 0.8 + 1.5 * audioKick );
-    finalCol += imgPalette( 0.85 ) * centerFlare;
+    float center_flare = exp( -length( uv ) * 4.5 ) * ( 0.8 + 1.5 * audioKick );
+    final_col += imgPalette( 0.85 ) * center_flare;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

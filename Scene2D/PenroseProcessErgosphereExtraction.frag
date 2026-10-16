@@ -79,54 +79,54 @@ void main()
     float phi = theta + omega * 0.15 + t * 0.5;
 
     // Gravitational lensing warp
-    float lensStr = ( lensP > 0.01 ? lensP : 1.2 );
-    vec2  warpedUv = uv + vec2( cos( phi ), sin( phi ) ) * ( lensStr * 0.04 / ( r + 0.1 ) );
+    float lens_str = ( lensP > 0.01 ? lensP : 1.2 );
+    vec2  warped_uv = uv + vec2( cos( phi ), sin( phi ) ) * ( lens_str * 0.04 / ( r + 0.1 ) );
 
     // Horizons: Event Horizon r_plus and Ergosphere r_ergo(theta)
     float r_plus = M + sqrt( max( 0.001, M * M - a_spin * a_spin * 0.25 ) );
-    float ergoDef = ( ergoP > 0.01 ? ergoP : 1.0 );
-    float r_ergo = M + sqrt( max( 0.001, M * M - a_spin * a_spin * 0.25 * pow( cos( theta ), 2.0 ) ) ) * ergoDef;
+    float ergo_def = ( ergoP > 0.01 ? ergoP : 1.0 );
+    float r_ergo = M + sqrt( max( 0.001, M * M - a_spin * a_spin * 0.25 * pow( cos( theta ), 2.0 ) ) ) * ergo_def;
 
     // Inside event horizon (shadow)
-    float horizonMask = smoothstep( r_plus - 0.02, r_plus + 0.03, r );
+    float horizon_mask = smoothstep( r_plus - 0.02, r_plus + 0.03, r );
 
     // Ergosphere region: r_plus < r < r_ergo
-    float inErgosphere = smoothstep( r_plus, r_plus + 0.04, r ) * smoothstep( r_ergo + 0.08, r_ergo, r );
+    float in_ergosphere = smoothstep( r_plus, r_plus + 0.04, r ) * smoothstep( r_ergo + 0.08, r_ergo, r );
 
     // Penrose particle splitting & escaping beams
-    float beamCount = 6.0;
-    float beams = pow( sin( phi * beamCount - t * 2.0 ) * 0.5 + 0.5, 4.0 );
-    beams *= inErgosphere * ( jetP > 0.01 ? jetP : 1.2 ) * ( 1.0 + 2.5 * audioKick );
+    float beam_count = 6.0;
+    float beams = pow( sin( phi * beam_count - t * 2.0 ) * 0.5 + 0.5, 4.0 );
+    beams *= in_ergosphere * ( jetP > 0.01 ? jetP : 1.2 ) * ( 1.0 + 2.5 * audioKick );
 
     // Relativistic Doppler beaming across disk (approaching side brighter & blueshifted)
     float doppler = sin( phi ) * 0.5 + 0.5;
-    float dopplerFactor = pow( doppler + 0.2, 2.5 );
+    float doppler_factor = pow( doppler + 0.2, 2.5 );
 
     // Accretion swirl ribbons
     float swirl = sin( log( r + 0.01 ) * 8.0 - phi * 2.0 + t ) * 0.5 + 0.5;
     swirl *= smoothstep( r_plus, r_plus + 0.1, r ) * exp( -r * 2.5 );
 
     // Color synthesis using photo palette modulated by Doppler shift
-    vec3 colErgo = imgPalette( fract( phi * 0.159 + doppler * 0.4 + t * 0.05 ) );
-    vec3 colBeams = imgPalette( fract( doppler + 0.5 + audioCentroid ) ) * 2.5;
-    vec3 colSwirl = imgPalette( fract( r * 0.5 + 0.25 ) ) * ( 0.8 + 0.6 * audioSwell );
+    vec3 col_ergo = imgPalette( fract( phi * 0.159 + doppler * 0.4 + t * 0.05 ) );
+    vec3 col_beams = imgPalette( fract( doppler + 0.5 + audioCentroid ) ) * 2.5;
+    vec3 col_swirl = imgPalette( fract( r * 0.5 + 0.25 ) ) * ( 0.8 + 0.6 * audioSwell );
 
     // Sample warped background photo
-    vec2 bgCoord = fract( warpedUv * 0.5 + 0.5 );
-    vec3 bgCol = img( bgCoord ) * 0.35;
+    vec2 bg_coord = fract( warped_uv * 0.5 + 0.5 );
+    vec3 bg_col = img( bg_coord ) * 0.35;
 
-    vec3 col = bgCol * horizonMask;
-    col += colErgo * inErgosphere * ( 1.2 + 0.8 * audioBass ) * dopplerFactor;
-    col += colBeams * beams;
-    col += colSwirl * swirl * dopplerFactor;
+    vec3 col = bg_col * horizon_mask;
+    col += col_ergo * in_ergosphere * ( 1.2 + 0.8 * audioBass ) * doppler_factor;
+    col += col_beams * beams;
+    col += col_swirl * swirl * doppler_factor;
 
     // Central horizon shadow ring glow
-    float ringGlow = exp( -abs( r - r_plus ) * 40.0 ) * ( 1.0 + 3.0 * audioKick );
-    col += imgPalette( t * 0.1 ) * ringGlow * 1.5;
+    float ring_glow = exp( -abs( r - r_plus ) * 40.0 ) * ( 1.0 + 3.0 * audioKick );
+    col += imgPalette( t * 0.1 ) * ring_glow * 1.5;
 
     // Ergosphere boundary line
-    float ergoLine = exp( -abs( r - r_ergo ) * 30.0 ) * 0.8;
-    col += imgPalette( audioAdvance * 0.05 ) * ergoLine;
+    float ergo_line = exp( -abs( r - r_ergo ) * 30.0 ) * 0.8;
+    col += imgPalette( audioAdvance * 0.05 ) * ergo_line;
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

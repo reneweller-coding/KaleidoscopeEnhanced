@@ -74,7 +74,7 @@ void main()
     // saturation rather than 0.74: the photo modulation below used to multiply
     // the three channels by DIFFERENT factors, which pushed the field lines
     // past 0.8 saturation over a third of the frame.
-    vec3 magnetarCol = vec3( 0.62, 0.32, 0.95 );
+    vec3 magnetar_col = vec3( 0.62, 0.32, 0.95 );
 
     if ( vKind > 1.5 )
     {
@@ -87,7 +87,7 @@ void main()
         float n2 = sin( uv.x * 10.3 - a * 0.6 + 1.9 ) * sin( uv.y * 7.7 + a * 0.9 );
         float fb = clamp( 0.55 + 0.30 * n1 + 0.15 * n2, 0.0, 1.0 );
 
-        vec3  hazeCol = palTint( vec3( 0.34, 0.20, 0.56 ), uv.x * 0.3 + audioCentroid, 0.35 );
+        vec3  haze_col = palTint( vec3( 0.34, 0.20, 0.56 ), uv.x * 0.3 + audioCentroid, 0.35 );
         float rad = length( ( uv - 0.5 ) * vec2( 1.7, 1.0 ) );
         float pool = mix( 1.0, 0.62, smoothstep( 0.25, 1.05, rad ) );
 
@@ -101,7 +101,7 @@ void main()
         // Its job is to be a plausible plasma-lit sky, not to fill anything;
         // the field lines and the X-ray specks do the filling.
         float amp = ( fireballP > 0.01 ? fireballP : 1.2 ) * 0.05;
-        vec3  hz = hazeCol * ( 0.35 + 0.65 * fb ) * pool * amp * ( 0.85 + 0.4 * audioSwell );
+        vec3  hz = haze_col * ( 0.35 + 0.65 * fb ) * pool * amp * ( 0.85 + 0.4 * audioSwell );
         // Cap the FINAL tinted colour, not just the scalar feeding it.
         fragColor = vec4( min( hz, vec3( 0.09 ) ), 1.0 );
         return;
@@ -115,19 +115,19 @@ void main()
         return;
     }
 
-    vec3 flareCol = palTint( magnetarCol, vDepth * 0.4 + audioCentroid, 0.25 );
+    vec3 flare_col = palTint( magnetar_col, vDepth * 0.4 + audioCentroid, 0.25 );
 
     // The magnetosphere now spans tens of world units, so the photo texture is
     // sampled in a SCREEN-relative frame -- a fixed world scale wrapped the
     // picture dozens of times across the outer field lines.
-    vec2 photoUv = fract( vPos.xy * 0.11 + 0.5 );
+    vec2 photo_uv = fract( vPos.xy * 0.11 + 0.5 );
     // The photo modulates BRIGHTNESS only. Multiplying the flare colour by the
     // photo's three channels separately stretched its channel ratios and drove
     // the field lines past 0.8 saturation; the photo's HUE already reaches this
     // scene through palTint above, which is where it belongs.
-    float photoL = dot( img( photoUv ), vec3( 0.299, 0.587, 0.114 ) );
+    float photo_l = dot( img( photo_uv ), vec3( 0.299, 0.587, 0.114 ) );
 
-    vec3 col = flareCol * ( 0.6 + 0.4 * photoL ) * vGlow;
+    vec3 col = flare_col * ( 0.6 + 0.4 * photo_l ) * vGlow;
 
     // quakeGlowP spans 0.8..2.5 in the preset and the verification render came
     // back sitting at the BOTTOM of it: luma 0.162, contrast 0.078. Contrast in
@@ -139,8 +139,8 @@ void main()
     // doubles while the top actually comes down, which keeps luma inside range
     // at both ends instead of trading one failure for the other.
     float qg = ( quakeGlowP > 0.01 ? quakeGlowP : 1.2 );
-    float qGain = 1.30 + 0.40 * clamp( ( qg - 0.8 ) / 1.7, 0.0, 1.0 );
-    col *= qGain * ( 0.85 + 0.35 * audioSwell );
+    float q_gain = 1.30 + 0.40 * clamp( ( qg - 0.8 ) / 1.7, 0.0, 1.0 );
+    col *= q_gain * ( 0.85 + 0.35 * audioSwell );
     // Gated on the crust flare so a kick lights the rupture, not the whole
     // (now frame-filling) magnetosphere at once.
     col += vec3( 1.0, 0.95, 0.9 ) * min( audioKick * 0.35, 0.4 )

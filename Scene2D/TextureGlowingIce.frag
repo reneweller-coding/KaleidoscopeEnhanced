@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -254,20 +254,20 @@ void main()
     float bass = clamp( audioBass, 0.0, 1.0 );
     float hi = clamp( audioHigh * 1.5, 0.0, 1.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  iceC = mix( vec3( 0.1, 0.35, 0.9 ), vec3( 0.15, 0.8, 0.8 ), mode );
-    iceC = mix( iceC, glowColour( imgLod( p * 0.3 + 0.5, 6.0 ), p, hueP * 0.159 ), 0.12 );
+    vec3  ice_c = mix( vec3( 0.1, 0.35, 0.9 ), vec3( 0.15, 0.8, 0.8 ), mode );
+    ice_c = mix( ice_c, glowColour( imgLod( p * 0.3 + 0.5, 6.0 ), p, hueP * 0.159 ), 0.12 );
     // Inner light: a soft glow that wanders.
     float lp = 0.05 * sceneTime + 0.3 * audioPhase;
     vec2  lc = vec2( 0.5 * sin( lp ), 0.3 * cos( lp * 0.8 ) );
     float inner = exp( -length( p - lc ) * 1.5 ) * ( 0.6 + 0.8 * bass );
-    vec3  col = iceC * ( 0.15 + 0.9 * inner );
+    vec3  col = ice_c * ( 0.15 + 0.9 * inner );
     // Frozen-in layers at several depths (parallax).
-    int   nL = 3 + int( clamp( layersP, 0.0, 1.0 ) * 2.99 );
+    int   n_l = 3 + int( clamp( layersP, 0.0, 1.0 ) * 2.99 );
     float spread = 0.3 + 0.5 * clamp( audioSpread, 0.0, 1.0 );
     float clarity = clamp( clarityP, 0.0, 1.0 );
     for ( int L = 0; L < 5; ++L )
     {
-        if ( L >= nL )
+        if ( L >= n_l )
             break;
         float fl = float( L );
         float z = 1.0 + fl * spread;
@@ -294,6 +294,6 @@ void main()
     float present = smoothstep( 0.45, 0.65, noise2( fq * 0.7 + 9.0 ) );
     float fl2 = smoothstep( 0.03, 0.0, fr ) * present;
     col += vec3( 0.9, 0.97, 1.0 ) * fl2 * ( 0.15 + 0.9 * hi ) * ( 0.4 + inner );
-    col += iceC * smoothstep( 0.12, 0.0, fr ) * 0.15 * present;
+    col += ice_c * smoothstep( 0.12, 0.0, fr ) * 0.15 * present;
     finish( col * 1.1 );
 }

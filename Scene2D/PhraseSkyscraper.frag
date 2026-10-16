@@ -75,9 +75,9 @@ float hash21( vec2 p )
 vec3 tower( vec2 p, float cx, float hw, float top, float floorH, float glow, float lit, float seed, float ground,
             out float cover )
 {
-    float inX = step( abs( p.x - cx ), hw );
-    float inY = step( ground, p.y ) * step( p.y, top );
-    cover = inX * inY;
+    float in_x = step( abs( p.x - cx ), hw );
+    float in_y = step( ground, p.y ) * step( p.y, top );
+    cover = in_x * in_y;
     float fl = floor( ( p.y - ground ) / floorH );
     float wx = fract( ( p.x - cx + hw ) / ( hw * 2.0 ) * 6.0 );
     float wy = fract( ( p.y - ground ) / floorH );
@@ -89,8 +89,8 @@ vec3 tower( vec2 p, float cx, float hw, float top, float floorH, float glow, flo
                     lit );
     vec3  facade = img( vec2( fract( ( p.x - cx ) * 2.0 + seed ), fract( ( p.y - ground ) * 1.5 ) ) ) * 0.25
                    + vec3( 0.03, 0.03, 0.05 );
-    vec3  winCol = mix( vec3( 1.0, 0.85, 0.55 ), imgPalette( seed * 0.3 + float( band ) / 32.0 ), 0.4 ) * 1.5;
-    return mix( facade, winCol * on, window * ( 0.4 + 0.6 * glow ) );
+    vec3  win_col = mix( vec3( 1.0, 0.85, 0.55 ), imgPalette( seed * 0.3 + float( band ) / 32.0 ), 0.4 ) * 1.5;
+    return mix( facade, win_col * on, window * ( 0.4 + 0.6 * glow ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -105,7 +105,7 @@ void main()
     float pos = clamp( audioPhrasePos, 0.0, 1.0 );
     float drop = clamp( audioDrop, 0.0, 1.0 );
     float ground = -0.42;
-    float maxTop = 0.42;
+    float max_top = 0.42;
     int   done = int( clamp( audioSectionCount, 0.0, 14.0 ) );
 
     // Night sky with round stars, the photo faint as city glow at the horizon.
@@ -132,26 +132,27 @@ void main()
         col = mix( col, tc, cov );
     }
     // The current tower: rising with the phrase, centre-right, in front.
-    float curTop = ground + 0.05 + ( maxTop - ground - 0.05 ) * pos;
+    float cur_top = ground + 0.05 + ( max_top - ground - 0.05 ) * pos;
     float cov;
-    vec3  tc = tower( p, 0.15, hw, curTop, floorH, 1.0, drop, 0.0, ground, cov );
+    vec3  tc = tower( p, 0.15, hw, cur_top, floorH, 1.0, drop, 0.0, ground, cov );
     col = mix( col, tc, cov );
     // The crane on top: a mast and a jib, a beacon flashing on the kick.
-    float mastX = 0.15 + hw * 0.6;
-    float mast = step( abs( p.x - mastX ), 0.006 ) * step( curTop, p.y ) * step( p.y, curTop + 0.14 );
-    float jib = step( abs( p.y - ( curTop + 0.13 ) ), 0.005 ) * step( mastX - 0.16, p.x ) * step( p.x, mastX + 0.06 );
+    float mast_x = 0.15 + hw * 0.6;
+    float mast = step( abs( p.x - mast_x ), 0.006 ) * step( cur_top, p.y ) * step( p.y, cur_top + 0.14 );
+    float jib = step( abs( p.y - ( cur_top + 0.13 ) ), 0.005 ) * step( mast_x - 0.16, p.x )
+                * step( p.x, mast_x + 0.06 );
     col = mix( col, vec3( 0.6, 0.45, 0.2 ), max( mast, jib ) );
-    col += vec3( 1.0, 0.2, 0.15 ) * exp( -length( p - vec2( mastX, curTop + 0.145 ) ) * 60.0 )
+    col += vec3( 1.0, 0.2, 0.15 ) * exp( -length( p - vec2( mast_x, cur_top + 0.145 ) ) * 60.0 )
            * ( 0.4 + 2.0 * audioKick );
     // The floor under construction: a bright edge at the top of the tower.
-    col += imgPalette( hue * 0.159 + 0.9 ) * smoothstep( 0.008, 0.0, abs( p.y - curTop ) )
+    col += imgPalette( hue * 0.159 + 0.9 ) * smoothstep( 0.008, 0.0, abs( p.y - cur_top ) )
            * step( abs( p.x - 0.15 ), hw ) * 0.8;
     // Street level: a glowing ground line.
     col = mix( col, vec3( 0.08, 0.07, 0.1 ), step( p.y, ground ) );
     col += imgPalette( hue * 0.159 + 0.1 ) * smoothstep( 0.01, 0.0, abs( p.y - ground ) ) * 0.5;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

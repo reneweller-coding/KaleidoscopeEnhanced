@@ -112,11 +112,11 @@ void main()
     // The constellation: 96 stars and 95 struts.  Stars fade with age; the
     // strut between two stars is drawn only when both notes sounded (pen
     // down), and a big pitch leap makes it a long, bright strut.
-    vec3  starCol = imgPalette( hue * 0.159 + 0.7 );
-    vec3  lineCol = imgPalette( hue * 0.159 + 0.3 );
+    vec3  star_col = imgPalette( hue * 0.159 + 0.7 );
+    vec3  line_col = imgPalette( hue * 0.159 + 0.3 );
     float acc = 0.0, lines = 0.0;
-    vec2  prevPos = vec2( 0.0 );
-    float prevM = 0.0;
+    vec2  prev_pos = vec2( 0.0 );
+    float prev_m = 0.0;
     for ( int k = 0; k < 96; ++k )
     {
         float m = melodyAgo( k );
@@ -132,17 +132,17 @@ void main()
         acc += ( core + halo ) * bright * flare;
         if ( k > 0 )
         {
-            float both = pen * smoothstep( 0.02, 0.06, prevM );
-            float ld = segDist( p, prevPos, sp );
-            float leap = abs( m - prevM );
+            float both = pen * smoothstep( 0.02, 0.06, prev_m );
+            float ld = segDist( p, prev_pos, sp );
+            float leap = abs( m - prev_m );
             lines += exp( -ld * 380.0 ) * both * ( 0.3 + 1.2 * leap ) * ( 1.0 - age * 0.8 );
         }
-        prevPos = sp;
-        prevM = m;
+        prev_pos = sp;
+        prev_m = m;
     }
     // Twinkle with melodic activity.
     float tw = 0.85 + 0.35 * sin( sceneAdvance * 6.0 + p.x * 40.0 ) * clamp( audioDeltaPitch * 2.0, 0.0, 1.0 );
-    col += starCol * acc * 1.3 * tw + lineCol * lines * 0.7;
+    col += star_col * acc * 1.3 * tw + line_col * lines * 0.7;
 
     // Fallback when the host has no melody yet (probe render, silence): a
     // slow procedural constellation, so the sky is never just empty.
@@ -154,11 +154,11 @@ void main()
         {
             float fk = float( k );
             vec2  sp = 0.45 * spread * vec2( cos( fk * 1.7 + ph ), sin( fk * 2.3 + ph * 0.7 ) );
-            col += starCol * exp( -length( p - sp ) * length( p - sp ) * 900.0 ) * 1.0;
+            col += star_col * exp( -length( p - sp ) * length( p - sp ) * 900.0 ) * 1.0;
         }
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

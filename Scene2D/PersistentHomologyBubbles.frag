@@ -88,47 +88,47 @@ void main()
 
     float     hue = ( hueP > 0.001 ) ? hueP : 0.0;
     const int N = 26;
-    int       nPts = 14 + int( clamp( pointsP, 0.0, 1.0 ) * 12.0 );
+    int       n_pts = 14 + int( clamp( pointsP, 0.0, 1.0 ) * 12.0 );
     float     spread = 0.8 + 0.15 * clamp( spreadP, 0.0, 1.0 );
     float     radius = 0.06 + 0.2 * clamp( audioSwell, 0.0, 1.0 );
     float     clock = sceneAdvance * 0.3 + sceneTime * 0.06;
 
     // Background: the photo dark, the point cloud was sampled from it.
     vec3 col = img( gl_FragCoord.xy / resolution ) * imgPalette( hue * 0.159 + 0.6 ) * 0.3 + vec3( 0.03, 0.03, 0.045 );
-    vec3 ballCol = imgPalette( hue * 0.159 + 0.55 ) * 0.5 + 0.05;
-    vec3 edgeCol = imgPalette( hue * 0.159 + 0.15 ) * 1.5 + 0.2;
-    vec3 triCol = imgPalette( hue * 0.159 + 0.3 ) * 0.8;
+    vec3 ball_col = imgPalette( hue * 0.159 + 0.55 ) * 0.5 + 0.05;
+    vec3 edge_col = imgPalette( hue * 0.159 + 0.15 ) * 1.5 + 0.2;
+    vec3 tri_col = imgPalette( hue * 0.159 + 0.3 ) * 0.8;
 
     vec2 pts[N];
     for ( int i = 0; i < N; ++i )
         pts[i] = pointAt( i, aspect, spread, clock );
 
     // Balls: translucent discs of the filtration radius.
-    float ballCover = 0.0;
+    float ball_cover = 0.0;
     for ( int i = 0; i < N; ++i )
     {
-        if ( i >= nPts )
+        if ( i >= n_pts )
             break;
         float d = length( p - pts[i] );
-        ballCover += smoothstep( radius, radius * 0.92, d ) * 0.35;
+        ball_cover += smoothstep( radius, radius * 0.92, d ) * 0.35;
     }
-    col = mix( col, ballCol, clamp( ballCover, 0.0, 0.7 ) );
+    col = mix( col, ball_col, clamp( ball_cover, 0.0, 0.7 ) );
     // Triangles (three balls pairwise touching): filled faintly.
     float tri = 0.0;
     for ( int i = 0; i < N; ++i )
     {
-        if ( i >= nPts )
+        if ( i >= n_pts )
             break;
         for ( int j = i + 1; j < N; ++j )
         {
-            if ( j >= nPts )
+            if ( j >= n_pts )
                 break;
             float dij = length( pts[i] - pts[j] );
             if ( dij > 2.0 * radius )
                 continue;
             for ( int k = j + 1; k < N; ++k )
             {
-                if ( k >= nPts )
+                if ( k >= n_pts )
                     break;
                 if ( length( pts[i] - pts[k] ) > 2.0 * radius || length( pts[j] - pts[k] ) > 2.0 * radius )
                     continue;
@@ -142,16 +142,16 @@ void main()
             }
         }
     }
-    col = mix( col, triCol, clamp( tri, 0.0, 0.8 ) );
+    col = mix( col, tri_col, clamp( tri, 0.0, 0.8 ) );
     // Edges (two balls touching): lines, fading in as the balls meet (the
     // birth), lit by the kick.
     for ( int i = 0; i < N; ++i )
     {
-        if ( i >= nPts )
+        if ( i >= n_pts )
             break;
         for ( int j = i + 1; j < N; ++j )
         {
-            if ( j >= nPts )
+            if ( j >= n_pts )
                 break;
             float dij = length( pts[i] - pts[j] );
             float born = smoothstep( 2.0 * radius + 0.02, 2.0 * radius - 0.02, dij );
@@ -159,13 +159,13 @@ void main()
                 continue;
             float d = segDist( p, pts[i], pts[j] );
             float fresh = 1.0 - smoothstep( 2.0 * radius - 0.06, 2.0 * radius - 0.02, dij );
-            col += edgeCol * smoothstep( 0.004, 0.001, d ) * born * ( 0.8 + 0.5 * audioKick * fresh );
+            col += edge_col * smoothstep( 0.004, 0.001, d ) * born * ( 0.8 + 0.5 * audioKick * fresh );
         }
     }
     // Points: round, sparkling on the treble.
     for ( int i = 0; i < N; ++i )
     {
-        if ( i >= nPts )
+        if ( i >= n_pts )
             break;
         float d = length( p - pts[i] );
         col = mix( col, vec3( 1.0 ), smoothstep( 0.012, 0.007, d ) );
@@ -173,7 +173,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

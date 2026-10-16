@@ -288,18 +288,18 @@ void main()
     vec3  fp = gp.xyz;
     vec3  lc = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
 
-    vec3 fogPal = hsv2rgb(
+    vec3 fog_pal = hsv2rgb(
         vec3( fract( hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5 ), 0.55, 1.0 ) );
-    vec3 fogC = mix( glowColour( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), p, hueP * 0.159 ), fogPal,
-                     0.8 * clamp( paletteP, 0.0, 1.0 ) )
-                * ( 0.05 + 0.1 * swell );
-    vec3 col = fogC;
+    vec3 fog_c = mix( glowColour( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), p, hueP * 0.159 ), fog_pal,
+                      0.8 * clamp( paletteP, 0.0, 1.0 ) )
+                 * ( 0.05 + 0.1 * swell );
+    vec3 col = fog_c;
     // colour and relief for every pixel: the derivatives must not sit in a pixel branch
     vec3  q = ro + rd * max( t, 0.0 );
     vec3  n = normalize( gn.xyz + vec3( 1e-6 ) );
     float lod = clamp( log2( max( t, 0.05 ) * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
-    vec3  nGeo = n; // texture on the geometric normal, light on the bumped one
-    vec3  tex0 = colour3T( nGeo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
+    vec3  n_geo = n; // texture on the geometric normal, light on the bumped one
+    vec3  tex0 = colour3T( n_geo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
     // relief: the colour chain's brightness as height; its slope on the surface from the
     // screen-space derivatives (bump mapping without tangents, Mikkelsen 2010)
     float hgt = luma( tex0 );
@@ -315,7 +315,7 @@ void main()
     }
     if ( hit )
     {
-        vec3  nGeo = n;
+        vec3  n_geo = n;
         vec3  tex = tex0;
         float tm = luma( tex );
         tex = max( ( tex - tm ) * 1.5 + tm, 0.0 ) * 1.5;
@@ -324,12 +324,12 @@ void main()
         float ao = gn.w;
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
         vec3  surf = tex * lc * ( 0.35 + 0.9 * diff ) * ao;
-        vec3  rimC = glowColour( tex, fp.xy, hueP * 0.159 );
-        vec3  rim = rimC * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4;
+        vec3  rim_c = glowColour( tex, fp.xy, hueP * 0.159 );
+        vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4;
         float st = clamp( styleP, 0.0, 1.0 );
-        vec3  sc = mix( surf + rimC * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rimC * 0.12 * ao,
+        vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
                         smoothstep( 0.5, 1.0, st ) );
-        col = mix( fogC, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
+        col = mix( fog_c, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
     }
     finish( chainAfterglow( col ) );
     // keeps the walk uniforms: the app finds the lab's stages by their locations

@@ -89,7 +89,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float cells = 4.0 + floor( clamp( cellsP, 0.0, 1.0 ) * 4.0 ); // openings across
-    float leafN = 3.0 + floor( clamp( leafP, 0.0, 1.0 ) * 3.0 );  // slats per half leaf
+    float leaf_n = 3.0 + floor( clamp( leafP, 0.0, 1.0 ) * 3.0 ); // slats per half leaf
     float day = 0.65 + 0.55 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
@@ -102,8 +102,8 @@ void main()
     paper *= 0.9 + 0.16 * noise2( p * 300.0 ); // fibre
     paper *= 0.88 + 0.2 * noise2( p * 26.0 );  // cloudiness
     // A shadow passing outside: the kick dims one side, locally.
-    float shadowX = ( fract( clock * 0.08 ) - 0.5 ) * aspect * 2.4;
-    paper *= 1.0 - 0.3 * exp( -abs( p.x - shadowX ) * 3.5 ) * audioKick;
+    float shadow_x = ( fract( clock * 0.08 ) - 0.5 ) * aspect * 2.4;
+    paper *= 1.0 - 0.3 * exp( -abs( p.x - shadow_x ) * 3.5 ) * audioKick;
     vec3 col = paper;
 
     // The cell lattice: the openings of the frame.
@@ -111,13 +111,13 @@ void main()
     vec2  g = ( p + vec2( aspect * 0.45, 0.45 ) ) / pitch;
     vec2  ci = floor( g );
     vec2  cf = fract( g ) - 0.5;
-    float rowsN = floor( 0.9 / pitch );
+    float rows_n = floor( 0.9 / pitch );
     // Order of assembly: row-major, one cell per slice of the arc.
-    float order = ( ci.y * cells + ci.x ) / max( cells * rowsN, 1.0 );
-    float slice = 1.0 / max( cells * rowsN, 1.0 );
+    float order = ( ci.y * cells + ci.x ) / max( cells * rows_n, 1.0 );
+    float slice = 1.0 / max( cells * rows_n, 1.0 );
     float built = smoothstep( order, order + slice * 2.2, prog );
-    float justBuilt = smoothstep( order + slice * 2.2, order + slice * 0.8, prog )
-                      * smoothstep( order, order + slice * 0.6, prog );
+    float just_built = smoothstep( order + slice * 2.2, order + slice * 0.8, prog )
+                       * smoothstep( order, order + slice * 0.6, prog );
 
     // The tint of the light through this pane: one chroma class.
     int   cls = int( mod( ci.x * 3.0 + ci.y * 5.0, 12.0 ) );
@@ -131,9 +131,9 @@ void main()
     for ( int k = 0; k < 6; ++k )
     {
         float fk = float( k );
-        if ( fk >= leafN * 2.0 )
+        if ( fk >= leaf_n * 2.0 )
             break;
-        float a = fk / ( leafN * 2.0 ) * 3.14159;
+        float a = fk / ( leaf_n * 2.0 ) * 3.14159;
         vec2  dir = vec2( cos( a ), sin( a ) );
         d = min( d, slat( cf, -dir * 0.5, dir * 0.5, w ) );
     }
@@ -141,10 +141,10 @@ void main()
     for ( int k = 0; k < 6; ++k )
     {
         float fk = float( k );
-        if ( fk >= leafN * 2.0 )
+        if ( fk >= leaf_n * 2.0 )
             break;
-        float a0 = fk / ( leafN * 2.0 ) * 3.14159;
-        float a1 = ( fk + 1.0 ) / ( leafN * 2.0 ) * 3.14159;
+        float a0 = fk / ( leaf_n * 2.0 ) * 3.14159;
+        float a1 = ( fk + 1.0 ) / ( leaf_n * 2.0 ) * 3.14159;
         vec2  p0 = vec2( cos( a0 ), sin( a0 ) ) * 0.27;
         vec2  p1 = vec2( cos( a1 ), sin( a1 ) ) * 0.27;
         d = min( d, slat( cf, p0, p1, w * 0.85 ) );
@@ -157,11 +157,11 @@ void main()
     wood *= 0.85 + 0.25 * noise2( cf * 40.0 + ci ); // grain
     // The wood is lit from the front, so it is brighter than the paper only
     // at its edges; against the glowing paper it mostly reads as silhouette.
-    vec3 barCol = wood * ( 0.35 + 0.3 * day ) * 0.38;
-    barCol += vec3( 1.0, 0.97, 0.9 ) * smoothstep( 0.002, -0.004, d ) * ( 0.15 + 0.5 * hi ) * 0.5;
-    col = mix( col, barCol, clamp( lattice + frame, 0.0, 1.0 ) );
+    vec3 bar_col = wood * ( 0.35 + 0.3 * day ) * 0.38;
+    bar_col += vec3( 1.0, 0.97, 0.9 ) * smoothstep( 0.002, -0.004, d ) * ( 0.15 + 0.5 * hi ) * 0.5;
+    col = mix( col, bar_col, clamp( lattice + frame, 0.0, 1.0 ) );
     // A freshly fitted piece catches the light for a moment.
-    col += wood * lattice * justBuilt * ( 0.3 + 0.7 * hi ) * 0.5;
+    col += wood * lattice * just_built * ( 0.3 + 0.7 * hi ) * 0.5;
     // The outer frame of the screen and its stiles.
     float outer = smoothstep( 0.012, 0.0, abs( max( abs( p.x ) - aspect * 0.45, abs( p.y ) - 0.45 ) ) );
     float stile = smoothstep( 0.02, 0.012, abs( abs( p.x ) - aspect * 0.45 + 0.02 ) );
@@ -169,7 +169,7 @@ void main()
                clamp( outer + stile * 0.6, 0.0, 1.0 ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

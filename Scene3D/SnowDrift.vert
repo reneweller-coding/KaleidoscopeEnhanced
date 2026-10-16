@@ -103,9 +103,9 @@ void main()
         gl_Position = projM * vec4( mw.x, mw.y, -mw.z, 1.0 );
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
         gl_PointSize = 190.0 * px;
-        vec3 moonC = mix( vec3( 0.72, 0.82, 1.00 ), vec3( 1.00, 0.93, 0.78 ),
-                          clamp( audioMode, 0.0, 1.0 ) );
-        vCol = vec4( moonC * ( 0.85 + 0.15 * audioSwell ), 2.0 );
+        vec3 moon_c = mix( vec3( 0.72, 0.82, 1.00 ), vec3( 1.00, 0.93, 0.78 ),
+                           clamp( audioMode, 0.0, 1.0 ) );
+        vCol = vec4( moon_c * ( 0.85 + 0.15 * audioSwell ), 2.0 );
         return;
     }
     // Ceiling raised from 13 px: it was clipping the near flakes back down to

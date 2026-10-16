@@ -86,8 +86,8 @@ vec3 renderSky( vec3 dir )
         // Sky: a vertical gradient, a banded sun, and a few stars up high.
         float h = clamp( dir.y, 0.0, 1.0 );
         col = mix( vec3( 0.34, 0.06, 0.30 ), vec3( 0.03, 0.02, 0.12 ), pow( h, 0.6 ) );
-        vec3  sunDir = normalize( vec3( 0.0, 0.16, 1.0 ) );
-        float d = distance( normalize( dir ), sunDir );
+        vec3  sun_dir = normalize( vec3( 0.0, 0.16, 1.0 ) );
+        float d = distance( normalize( dir ), sun_dir );
         float disc = 1.0 - smoothstep( 0.16, 0.175, d );
         // The classic horizontal cuts: wider apart toward the top of the disc.
         float band = step( 0.35, fract( dir.y * 42.0 ) );
@@ -160,20 +160,20 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // Warm key from the sun side, cool magenta bounce from the grid below --
     // the prop should look lit BY the scene it stands in.
-    vec3  lightDir = normalize( vec3( 0.15, 0.5, -0.7 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.15, 0.5, -0.7 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float bounce = max( -n.y, 0.0 );
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 48.0, 8.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0, 0.93, 0.82 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 48.0, 8.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0, 0.93, 0.82 ), base.rgb, metallic );
 
     vec3 col = base.rgb * ( 0.42 + diff * ( 1.25 + 0.45 * audioSwell ) );
     col += base.rgb * vec3( 0.9, 0.2, 0.7 ) * bounce * 0.5;
-    col += specColor * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
 
     // ---- the live display ----
     // Object space is roughly [-0.5,0.5] on the mesh's longest axis (measured
@@ -197,24 +197,24 @@ void main()
 
         float lit = step( panel.y, energy ) * gap * front;
         // Green through amber to red as the bar climbs, like a real VU meter.
-        vec3 barCol = mix( vec3( 0.15, 1.0, 0.35 ), vec3( 1.0, 0.75, 0.1 ), smoothstep( 0.35, 0.7, panel.y ) );
-        barCol = mix( barCol, vec3( 1.0, 0.15, 0.1 ), smoothstep( 0.72, 0.9, panel.y ) );
-        col += barCol * lit * bp * ( 1.5 + 1.6 * audioKick );
+        vec3 bar_col = mix( vec3( 0.15, 1.0, 0.35 ), vec3( 1.0, 0.75, 0.1 ), smoothstep( 0.35, 0.7, panel.y ) );
+        bar_col = mix( bar_col, vec3( 1.0, 0.15, 0.1 ), smoothstep( 0.72, 0.9, panel.y ) );
+        col += bar_col * lit * bp * ( 1.5 + 1.6 * audioKick );
 
         // A dim trace of the history above the live bar, so quiet passages
         // still have something moving on the panel.
-        float ageEnergy = texture( texSpectro, vec2( col24, fract( spectroHead - panel.y * 0.22 ) ) ).r;
-        col += vec3( 0.1, 0.5, 0.6 ) * ageEnergy * gap * front * 0.28 * bp;
+        float age_energy = texture( texSpectro, vec2( col24, fract( spectroHead - panel.y * 0.22 ) ) ).r;
+        col += vec3( 0.1, 0.5, 0.6 ) * age_energy * gap * front * 0.28 * bp;
     }
 
     // Neon rim picked up from the grid.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.9, 0.25, 0.8 ) * fresnel * ( 0.15 + 0.3 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

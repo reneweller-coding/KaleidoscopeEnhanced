@@ -93,8 +93,8 @@ void main()
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // Camera trajectory moving forward along z through the wormhole
-    float camZ = mod( t * 3.0, 20.0 ) - 10.0; // from -10 to +10
-    vec3  ro = vec3( sin( t * 0.5 ) * 0.2, cos( t * 0.4 ) * 0.2, camZ );
+    float cam_z = mod( t * 3.0, 20.0 ) - 10.0; // from -10 to +10
+    vec3  ro = vec3( sin( t * 0.5 ) * 0.2, cos( t * 0.4 ) * 0.2, cam_z );
     vec3  rd = normalize( vec3( uv, 1.2 ) );
 
     // Throat radius profile: r(l) = sqrt(r0^2 + l^2)
@@ -102,20 +102,20 @@ void main()
 
     // Ray deflection through wormhole metric
     vec3  p = ro;
-    float stepSize = 0.12;
-    float crossedThroat = 0.0;
-    float throatGlow = 0.0;
-    vec2  celestialUV = vec2( 0.0 );
+    float step_size = 0.12;
+    float crossed_throat = 0.0;
+    float throat_glow = 0.0;
+    vec2  celestial_uv = vec2( 0.0 );
 
     for ( int i = 0; i < 40; ++i )
     {
-        p += rd * stepSize;
+        p += rd * step_size;
         float r = length( p.xy );
         float l = p.z; // length along throat
 
         // Throat surface distance
-        float throatRadius = sqrt( r0 * r0 + l * l * 0.35 );
-        float distToThroat = r - throatRadius;
+        float throat_radius = sqrt( r0 * r0 + l * l * 0.35 );
+        float dist_to_throat = r - throat_radius;
 
         // Lensing curvature
         vec2 defl = -normalize( p.xy ) * ( r0 * r0 / max( r * r, 0.05 ) ) * 0.05 * crv;
@@ -124,42 +124,42 @@ void main()
 
         if ( abs( l ) < 0.5 )
         {
-            throatGlow += exp( -abs( distToThroat ) * 20.0 ) * 0.15;
+            throat_glow += exp( -abs( dist_to_throat ) * 20.0 ) * 0.15;
         }
 
         if ( l > 0.0 )
         {
-            crossedThroat = 1.0;
+            crossed_throat = 1.0;
         }
     }
 
     // Map asymptotic ray angles to celestial sphere coordinates
-    celestialUV = fract( vec2( atan( rd.y, rd.x ) * 0.15915 + t * 0.05, rd.z * 0.5 + 0.5 ) );
+    celestial_uv = fract( vec2( atan( rd.y, rd.x ) * 0.15915 + t * 0.05, rd.z * 0.5 + 0.5 ) );
 
     // Sample Universe 1 (tex0) or Universe 2 (tex1) depending on throat traversal
-    vec3 u1 = texture( tex0, celestialUV ).rgb;
-    vec3 u2 = texture( tex1, celestialUV ).rgb;
+    vec3 u1 = texture( tex0, celestial_uv ).rgb;
+    vec3 u2 = texture( tex1, celestial_uv ).rgb;
 
     // Blend across throat transition
     float transition = smoothstep( -1.5, 1.5, p.z );
     vec3  photo = mix( u1, u2, transition );
 
     // Gravitational lensing photon ring
-    float rScreen = length( uv );
-    float photonRing = exp( -abs( rScreen - 0.45 * thrt ) * 35.0 ) * ( 1.2 + audioKick * 3.0 );
-    vec3  ringColor = imgPalette( 0.30 * transition ) * 1.5;
+    float r_screen = length( uv );
+    float photon_ring = exp( -abs( r_screen - 0.45 * thrt ) * 35.0 ) * ( 1.2 + audioKick * 3.0 );
+    vec3  ring_color = imgPalette( 0.30 * transition ) * 1.5;
 
     // Combine visualizer
     vec3 col = photo * ( 0.85 + 0.3 * audioLevel );
-    col += photonRing * ringColor * 1.5;
-    col += throatGlow * vec3( 1.0, 0.9, 0.6 ) * ( 1.0 + audioKick * 2.0 );
+    col += photon_ring * ring_color * 1.5;
+    col += throat_glow * vec3( 1.0, 0.9, 0.6 ) * ( 1.0 + audioKick * 2.0 );
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
             col = hueRot( col, hue );
 
     // Vignette
-    float vig = smoothstep( 1.3, 0.35, rScreen );
+    float vig = smoothstep( 1.3, 0.35, r_screen );
     col *= vig;
 
     fragColor = vec4( col, 1.0 );

@@ -70,16 +70,16 @@ vec3 palTint( vec3 c, float t, float k )
 void main()
 {
     // Relativistic Cherenkov blue & nitrogen UV violet identity
-    vec3 cherenkovBlue = vec3( 0.15, 0.75, 1.0 );
-    vec3 cherenkovCol = palTint( cherenkovBlue, vDepth * 0.4 + audioCentroid, 0.25 );
+    vec3 cherenkov_blue = vec3( 0.15, 0.75, 1.0 );
+    vec3 cherenkov_col = palTint( cherenkov_blue, vDepth * 0.4 + audioCentroid, 0.25 );
 
     // The field now spans tens of world units laterally, so the photo texture
     // is sampled in SCREEN-relative coordinates -- a fixed world scale would
     // have wrapped the picture dozens of times across the far cascades.
-    vec2 photoUv = fract( vPos.xy / max( vPos.z, 0.5 ) * 0.85 + 0.5 );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vPos.xy / max( vPos.z, 0.5 ) * 0.85 + 0.5 );
+    vec3 photo_sample = img( photo_uv );
 
-    vec3 col = cherenkovCol * ( 0.6 + 0.4 * photoSample ) * vGlow;
+    vec3 col = cherenkov_col * ( 0.6 + 0.4 * photo_sample ) * vGlow;
     col *= ( cherenkovGlowP > 0.01 ? cherenkovGlowP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
     col += vec3( 0.9, 0.95, 1.0 ) * min( audioKick * 0.35, 0.4 ) * smoothstep( 0.05, 0.30, vGlow );
 

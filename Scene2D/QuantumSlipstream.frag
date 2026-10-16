@@ -91,8 +91,8 @@ void main()
     pattern = smoothstep( 0.2, 0.8, abs( pattern ) );
 
     // Distance from center determines intensity (creating a tunnel effect)
-    float tunnelWidth = 0.3 + 0.2 * audioSwell;
-    float intensity = tunnelWidth / ( r + 0.05 );
+    float tunnel_width = 0.3 + 0.2 * audioSwell;
+    float intensity = tunnel_width / ( r + 0.05 );
 
     // Color mapping based on polar angle and time
     vec3 col1 = imgPalette( 0.2 + audioCentroid * 0.2 );
@@ -107,15 +107,15 @@ void main()
     col += col2 * ( audioKick * 1.5 ) * ( 1.0 / ( r * 10.0 + 1.0 ) );
 
     // Add some noise/particles flying past
-    float particleNoise = fract( sin( dot( vec2( a, 1.0 / r + z ), vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
-    float particles = step( 0.98, particleNoise );
+    float particle_noise = fract( sin( dot( vec2( a, 1.0 / r + z ), vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+    float particles = step( 0.98, particle_noise );
     col += col1 * particles * 5.0 * ( 1.0 + audioKick );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -104,51 +104,51 @@ void main()
     }
 
     // The stroke: 95 segments from the newest sample (right) to the oldest.
-    float xNow = 0.62 * aspect * 0.5 + 0.1;
-    float dx = ( xNow + 0.5 * aspect * 0.95 ) / 95.0;
+    float x_now = 0.62 * aspect * 0.5 + 0.1;
+    float dx = ( x_now + 0.5 * aspect * 0.95 ) / 95.0;
     float ph = clamp( audioMelodyPhase, 0.0, 1.0 );
-    float sd = 1e9, sAge = 0.0, sAlong = 0.0, sAcross = 0.0, sW = 0.01;
-    float mPrev = melodyAgo( 0 );
-    vec2  aPrev = vec2( xNow - ph * dx, -0.32 + 0.66 * clamp( mPrev, 0.0, 1.0 ) );
+    float sd = 1e9, s_age = 0.0, s_along = 0.0, s_across = 0.0, s_w = 0.01;
+    float m_prev = melodyAgo( 0 );
+    vec2  a_prev = vec2( x_now - ph * dx, -0.32 + 0.66 * clamp( m_prev, 0.0, 1.0 ) );
     for ( int k = 1; k < 96; ++k )
     {
         float m = melodyAgo( k );
-        vec2  b = vec2( xNow - ( float( k ) + ph ) * dx, -0.32 + 0.66 * clamp( m, 0.0, 1.0 ) );
-        if ( m > 0.02 && mPrev > 0.02 )
+        vec2  b = vec2( x_now - ( float( k ) + ph ) * dx, -0.32 + 0.66 * clamp( m, 0.0, 1.0 ) );
+        if ( m > 0.02 && m_prev > 0.02 )
         {
-            vec2  pa = p - aPrev, ba = b - aPrev;
+            vec2  pa = p - a_prev, ba = b - a_prev;
             float h = clamp( dot( pa, ba ) / dot( ba, ba ), 0.0, 1.0 );
             // Brush pressure: a slow swell and ebb along the stroke,
             // continuous across the joints (a per-segment width drew beads).
             float along = float( k ) - 1.0 + h;
-            float absPos = mod( audioMelodyHead * 96.0 - along + 960.0, 96.0 );
-            float w = 0.006 + 0.008 * ringNoise( absPos, 1.0 );
+            float abs_pos = mod( audioMelodyHead * 96.0 - along + 960.0, 96.0 );
+            float w = 0.006 + 0.008 * ringNoise( abs_pos, 1.0 );
             float d = length( pa - ba * h ) - w;
             if ( d < sd )
             {
                 sd = d;
-                sAge = ( float( k ) - 1.0 + h ) / 95.0;
-                sAlong = absPos;
-                sW = w;
-                sAcross = dot( pa - ba * h, normalize( vec2( -ba.y, ba.x ) ) ) / w;
+                s_age = ( float( k ) - 1.0 + h ) / 95.0;
+                s_along = abs_pos;
+                s_w = w;
+                s_across = dot( pa - ba * h, normalize( vec2( -ba.y, ba.x ) ) ) / w;
             }
         }
-        aPrev = b;
-        mPrev = m;
+        a_prev = b;
+        m_prev = m;
     }
     // Ink: black and wet when fresh, drying lighter with dry-brush streaks.
-    float inkA = smoothstep( 0.0015, -0.0015, sd );
-    float dry = smoothstep( 0.35, 1.0, sAge );
-    float streak = 0.5 * ringNoise( sAlong * 3.0, floor( sAcross * 3.5 ) + 7.0 )
-                   + 0.5 * ringNoise( sAlong * 3.0, floor( sAcross * 3.5 ) + 8.0 );
-    inkA *= 1.0 - dry * smoothstep( 0.55, 0.35, streak ) * 0.85;
+    float ink_a = smoothstep( 0.0015, -0.0015, sd );
+    float dry = smoothstep( 0.35, 1.0, s_age );
+    float streak = 0.5 * ringNoise( s_along * 3.0, floor( s_across * 3.5 ) + 7.0 )
+                   + 0.5 * ringNoise( s_along * 3.0, floor( s_across * 3.5 ) + 8.0 );
+    ink_a *= 1.0 - dry * smoothstep( 0.55, 0.35, streak ) * 0.85;
     vec3 ink = mix( vec3( 0.03, 0.03, 0.04 ), vec3( 0.22, 0.2, 0.2 ), dry * 0.8 );
     // A soft bleed into the paper fibres around the fresh stroke.
     col *= 1.0 - 0.18 * exp( -max( sd, 0.0 ) * 220.0 ) * ( 1.0 - dry );
-    col = mix( col, ink, inkA );
+    col = mix( col, ink, ink_a );
     // The wet gleam on the freshest ink, brighter on an onset.
-    float fresh = exp( -sAge * 40.0 );
-    col += vec3( 1.0 ) * inkA * fresh * smoothstep( 0.2, 0.9, 1.0 - abs( sAcross ) )
+    float fresh = exp( -s_age * 40.0 );
+    col += vec3( 1.0 ) * ink_a * fresh * smoothstep( 0.2, 0.9, 1.0 - abs( s_across ) )
            * ( 0.08 + 0.25 * clamp( audioOnset, 0.0, 1.0 ) );
 
     // The vermilion seal in the lower right.
@@ -169,7 +169,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone * 1.15, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone * 1.15, 0.0, 1.0 ), 1.0 );
 }

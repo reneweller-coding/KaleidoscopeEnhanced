@@ -66,13 +66,13 @@ vec3 palTint( vec3 c, float t, float k )
 void main()
 {
     // Superfluid cryogenic cyan/violet palette
-    vec3 superfluidCol = vec3( 0.15, 0.85, 0.95 );
-    vec3 coreCol = palTint( superfluidCol, vDepth * 0.4 + audioCentroid, 0.25 );
+    vec3 superfluid_col = vec3( 0.15, 0.85, 0.95 );
+    vec3 core_col = palTint( superfluid_col, vDepth * 0.4 + audioCentroid, 0.25 );
 
-    vec2 photoUv = fract( vPos.xy * 0.3 + 0.5 );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vPos.xy * 0.3 + 0.5 );
+    vec3 photo_sample = img( photo_uv );
 
-    vec3 col = coreCol * ( 0.6 + 0.4 * photoSample ) * vGlow;
+    vec3 col = core_col * ( 0.6 + 0.4 * photo_sample ) * vGlow;
     col *= ( pinchGlowP > 0.01 ? pinchGlowP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
     col += vec3( 0.95, 0.95, 1.0 ) * ( audioKick * 0.35 );
 

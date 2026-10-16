@@ -70,7 +70,7 @@ float materialExposure( sampler2DArray tex )
 void main()
 {
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    vec3  driveCol = imgPalette( hue * 0.159 + 0.55 ) * 1.5 + vec3( 0.2, 0.4, 0.8 );
+    vec3  drive_col = imgPalette( hue * 0.159 + 0.55 ) * 1.5 + vec3( 0.2, 0.4, 0.8 );
     if ( vBg > 0.5 )
     {
         vec3  d = normalize( vPos );
@@ -89,9 +89,9 @@ void main()
     if ( base.a < 0.1 )
         discard;
     vec3  n = normalize( vNormal );
-    vec3  viewDir = normalize( -vPos );
-    vec3  lightDir = normalize( vec3( 0.4, 0.7, -0.5 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  view_dir = normalize( -vPos );
+    vec3  light_dir = normalize( vec3( 0.4, 0.7, -0.5 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
     float expose = materialExposure( texMeshMaterial );
     vec3  col = base.rgb * expose * ( 0.45 + diff * ( 1.2 + 0.5 * audioSwell ) + fill * 0.3 )
@@ -99,12 +99,12 @@ void main()
     // Drives at the tail spool up along the arc and pulse on the kick.
     float spool = smoothstep( 0.2, 0.75, clamp( sceneProgress, 0.0, 1.0 ) );
     float tail = 1.0 - smoothstep( 0.0, 0.25, vAlong );
-    col += driveCol * tail * spool * ( 0.4 + 0.6 * audioKick );
+    col += drive_col * tail * spool * ( 0.4 + 0.6 * audioKick );
     // The jump: the whole hull turns into a streak of drive light.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 3.0 );
-    col = mix( col, driveCol * ( 0.8 + fresnel ), vJump * 0.9 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 3.0 );
+    col = mix( col, drive_col * ( 0.8 + fresnel ), vJump * 0.9 );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

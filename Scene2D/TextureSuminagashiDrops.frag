@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -250,9 +250,9 @@ void main()
     float     M = floor( t );
     float     ft = fract( t );
     const int N = 45;
-    float     Rbase = ( 0.1 + 0.07 * clamp( audioSpread, 0.0, 1.0 ) );
-    vec2      uvP = p * 0.6 + 0.5;
-    vec3      paper = mix( vec3( 0.92, 0.9, 0.84 ), imgLod( uvP, 3.0 ) * 0.6 + 0.35, 0.35 + 0.3 * swell );
+    float     rbase = ( 0.1 + 0.07 * clamp( audioSpread, 0.0, 1.0 ) );
+    vec2      uv_p = p * 0.6 + 0.5;
+    vec3      paper = mix( vec3( 0.92, 0.9, 0.84 ), imgLod( uv_p, 3.0 ) * 0.6 + 0.35, 0.35 + 0.3 * swell );
     vec3      col = paper;
     for ( int k = 0; k < N; ++k )
     {
@@ -266,8 +266,8 @@ void main()
                                : vec2( ( mod( spot, 2.0 ) - 0.5 ) * 1.2, ( floor( spot / 2.0 ) - 0.5 ) * 0.7 ) )
                   + 0.2 * vec2( sin( spot * 2.1 + slow * ( 1.0 + spot * 0.3 ) ), cos( spot * 1.7 + slow * 1.3 ) );
         c += 0.03 * ( hash22( vec2( m, 1.0 ) ) - 0.5 );
-        float Rf = Rbase * ( 0.7 + 0.6 * hash11( m * 0.91 ) );
-        float R = Rf * sqrt( smoothstep( 0.0, 1.0, age ) ); // the drop spreads out after landing
+        float rf = rbase * ( 0.7 + 0.6 * hash11( m * 0.91 ) );
+        float R = rf * sqrt( smoothstep( 0.0, 1.0, age ) ); // the drop spreads out after landing
         vec2  d = q - c;
         float dd = dot( d, d );
         if ( dd < R * R )

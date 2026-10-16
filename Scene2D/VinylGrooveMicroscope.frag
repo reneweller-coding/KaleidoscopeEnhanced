@@ -99,24 +99,24 @@ void main()
     float gi = floor( t / pitch );
     float gt = fract( t / pitch ) - 0.5;               // -0.5 .. 0.5 across a period
     float mod_ = wall( s + gi * 37.0, depth ) / pitch; // wall offset in period units
-    float grooveHalf = 0.22;
-    float dWall = abs( gt - mod_ ) - grooveHalf; // <0 inside the groove
+    float groove_half = 0.22;
+    float d_wall = abs( gt - mod_ ) - groove_half; // <0 inside the groove
     // Vinyl surface: black with a diffraction rainbow (the photo bands),
     // the groove darker with lit walls.
     vec3  vinyl = vec3( 0.1, 0.1, 0.12 );
-    float rainbowT = fract( t * 0.6 + s * 0.02 );
-    vec3  rainbow = img( vec2( fract( s * 0.01 ), rainbowT ) )
+    float rainbow_t = fract( t * 0.6 + s * 0.02 );
+    vec3  rainbow = img( vec2( fract( s * 0.01 ), rainbow_t ) )
                     * mix( vec3( 0.6, 0.7, 1.0 ), imgPalette( hue * 0.159 + 0.5 ), 0.4 );
     vec3  land = vinyl + rainbow * 0.45 * pow( 0.5 + 0.5 * sin( t * 40.0 + s * 0.3 ), 6.0 );
-    vec3  grooveFloor = vinyl * 0.6;
-    float inGroove = smoothstep( 0.02, -0.02, dWall );
-    float wallEdge = smoothstep( 0.03, 0.0, abs( dWall ) );
-    vec3  col = mix( land, grooveFloor, inGroove );
+    vec3  groove_floor = vinyl * 0.6;
+    float in_groove = smoothstep( 0.02, -0.02, d_wall );
+    float wall_edge = smoothstep( 0.03, 0.0, abs( d_wall ) );
+    vec3  col = mix( land, groove_floor, in_groove );
     // The walls catch the light: a bright rim on one side (the microscope lamp), glinting on the treble.
     float side = step( 0.0, gt - mod_ );
-    col += vec3( 0.7, 0.75, 0.85 ) * wallEdge * ( 0.4 + 0.6 * side ) * ( 0.7 + 0.9 * hi );
+    col += vec3( 0.7, 0.75, 0.85 ) * wall_edge * ( 0.4 + 0.6 * side ) * ( 0.7 + 0.9 * hi );
     // Micro-texture along the walls: the waveform as faint ridges.
-    col += vec3( 0.3 ) * inGroove * pow( 0.5 + 0.5 * sin( s * 3.0 ), 8.0 ) * 0.4;
+    col += vec3( 0.3 ) * in_groove * pow( 0.5 + 0.5 * sin( s * 3.0 ), 8.0 ) * 0.4;
     // The stylus: a dark diamond tip in the centre groove, its shank rising to the top right.
     vec2  tip = vec2( 0.0, 0.0 );
     vec2  sq = p - tip;
@@ -137,7 +137,7 @@ void main()
     col *= smoothstep( 0.75, 0.45, length( p * vec2( 0.8, 1.0 ) ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

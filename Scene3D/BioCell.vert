@@ -53,7 +53,7 @@ void main()
     float glow = 1.0;
 
     // Kick pressure wave rippling out from the nucleus.
-    float kickR = 8.0 + 34.0 * fract( time * 0.6 );
+    float kick_r = 8.0 + 34.0 * fract( time * 0.6 );
 
     if ( r1 < 0.20 )
     {
@@ -84,11 +84,11 @@ void main()
     {
         // ---- Mitochondria: 9 glowing capsules adrift in the cytoplasm.
         float m = floor( ( r1 - 0.35 ) * 45.0 );
-        vec3  Cm = vec3( hash11( m * 3.1 ) - 0.5,
+        vec3  cm = vec3( hash11( m * 3.1 ) - 0.5,
                          ( hash11( m * 5.7 ) - 0.5 ) * 0.7,
                          hash11( m * 7.9 ) - 0.5 )
                    * 52.0;
-        Cm += vec3( sin( time * 0.13 + m * 2.0 ),
+        cm += vec3( sin( time * 0.13 + m * 2.0 ),
                     sin( time * 0.17 + m * 4.0 ),
                     sin( time * 0.11 + m * 6.0 ) )
               * 2.5;
@@ -99,7 +99,7 @@ void main()
         float th = r3 * 6.2831853;
         vec3  side = normalize( cross( A, vec3( 0.0, 1.0, 0.0 ) ) );
         vec3  up2 = cross( side, A );
-        world = Cm + A * u * 3.2
+        world = cm + A * u * 3.2
                 + ( side * cos( th ) + up2 * sin( th ) ) * 1.3
                       * sqrt( max( 0.0, 1.0 - abs( u ) * abs( u ) * 0.6 ) );
         col = hueRot( vec3( 1.0, 0.55, 0.20 ), audioChromaHue * 0.3 );
@@ -140,15 +140,15 @@ void main()
     }
 
     // Kick pressure wave brightens whatever shell it passes.
-    glow *= 1.0 + ( 0.6 * audioKick + 1.4 * audioDrop ) * exp( -abs( length( world ) - kickR ) * 0.15 );
+    glow *= 1.0 + ( 0.6 * audioKick + 1.4 * audioDrop ) * exp( -abs( length( world ) - kick_r ) * 0.15 );
 
     // Camera drifts through the cytoplasm on a slow loop.
     float ca = time * 0.05;
-    vec3  camP = vec3( cos( ca ) * 17.0, sin( time * 0.04 ) * 8.0, sin( ca ) * 17.0 );
-    vec3  fwd = normalize( -camP + vec3( 0.0, 0.0, 0.001 ) );
+    vec3  cam_p = vec3( cos( ca ) * 17.0, sin( time * 0.04 ) * 8.0, sin( ca ) * 17.0 );
+    vec3  fwd = normalize( -cam_p + vec3( 0.0, 0.0, 0.001 ) );
     vec3  rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3  up = cross( rgt, fwd );
-    vec3  rel = world - camP;
+    vec3  rel = world - cam_p;
     vec3  vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
 
     vp.x -= eyeOff;

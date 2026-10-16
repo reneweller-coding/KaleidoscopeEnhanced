@@ -66,55 +66,55 @@ void main()
 
     // Shower generation cycle
     float cycle = fract( seeds.x + time * 0.4 * spd + audioAdvance * 0.2 );
-    float sDist = cycle * 12.0 * csc;
+    float s_dist = cycle * 12.0 * csc;
 
     // Cone opening angle — the SPECTRAL spread sets the shower's spatial
     // spread: a narrow, pure spectrum collimates the cascade into a tight
     // pencil beam, a rich broadband one fans it out across the tank.
-    float coneAngle = seeds.y * 6.2831853;
+    float cone_angle = seeds.y * 6.2831853;
     float spread = ( 0.25 + 0.5 * seeds.z ) * cycle * ( 0.75 + 0.55 * audioSpread );
 
     // Magnetic field Lorentz curvature (helical spiral track)
     float charge = ( seeds.w > 0.5 ) ? 1.0 : -1.0;
-    float lorentzAngle = coneAngle + cycle * 4.0 * fld * charge;
+    float lorentz_angle = cone_angle + cycle * 4.0 * fld * charge;
 
-    vec3 worldP = vec3(
-        cos( lorentzAngle ) * spread * 6.0,
-        sin( lorentzAngle ) * spread * 6.0,
-        sDist - 6.0 );
+    vec3 world_p = vec3(
+        cos( lorentz_angle ) * spread * 6.0,
+        sin( lorentz_angle ) * spread * 6.0,
+        s_dist - 6.0 );
 
     // Dissonant clusters scatter the tracks off their clean helical paths —
     // consonant harmony lets every particle ride its Lorentz spiral cleanly.
     float jitter = audioRoughness * 0.55;
-    worldP.xy += vec2( sin( seeds.x * 91.7 + cycle * 17.0 ),
-                       cos( seeds.y * 73.3 + cycle * 13.0 ) )
-                 * jitter * spread * 3.0;
+    world_p.xy += vec2( sin( seeds.x * 91.7 + cycle * 17.0 ),
+                        cos( seeds.y * 73.3 + cycle * 13.0 ) )
+                  * jitter * spread * 3.0;
 
     // Kick shockwave explosion
-    worldP += normalize( worldP + vec3( 0.001 ) ) * audioKick * 2.0 * exp( -cycle * 3.0 );
+    world_p += normalize( world_p + vec3( 0.001 ) ) * audioKick * 2.0 * exp( -cycle * 3.0 );
 
     // Camera space
-    vec3 camPos = vec3( 0.0, 0.0, -10.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 0.0, -10.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Point size attenuation — hi-hats/cymbals spark a scattered SUBSET of the
     // tracks into brief bright grains (bounded, so the frame cannot flood).
-    float hatSpark = min( audioHat, 1.0 ) * step( 0.62, seeds.z ) * ( 1.0 - cycle );
-    gl_PointSize = ( 7.0 + 12.0 * audioKick * ( 1.0 - cycle ) + 4.5 * hatSpark )
+    float hat_spark = min( audioHat, 1.0 ) * step( 0.62, seeds.z ) * ( 1.0 - cycle );
+    gl_PointSize = ( 7.0 + 12.0 * audioKick * ( 1.0 - cycle ) + 4.5 * hat_spark )
                    * ( 1.0 / max( gl_Position.w * 0.1, 0.5 ) );
 
     vUV = vec2( seeds.x, seeds.y );
 
     // Pure Cherenkov cyan / ultraviolet electric color
-    vec3 cherenkovCyan = vec3( 0.05, 0.85, 1.0 );
-    vec3 cherenkovWhite = vec3( 0.9, 0.98, 1.0 );
-    vec3 col = mix( cherenkovCyan, cherenkovWhite, exp( -cycle * 4.0 ) );
+    vec3 cherenkov_cyan = vec3( 0.05, 0.85, 1.0 );
+    vec3 cherenkov_white = vec3( 0.9, 0.98, 1.0 );
+    vec3 col = mix( cherenkov_cyan, cherenkov_white, exp( -cycle * 4.0 ) );
     // Cymbal hits also flash those sparked tracks toward pure white.
-    col = mix( col, cherenkovWhite, hatSpark * 0.35 );
+    col = mix( col, cherenkov_white, hat_spark * 0.35 );
 
     if ( audioChromaHue != 0.0 )
         col = hueRot( col, audioChromaHue );

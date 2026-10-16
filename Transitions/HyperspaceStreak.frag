@@ -62,32 +62,32 @@ void main()
 
     float t = time * 0.3869 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
     float angle = atan( p.y, p.x );
 
     // Multi-tap radial warp stretch
-    float stretchFactor = midTransition * 0.35 * wrp * ( 1.0 + audioSwell * 0.7 );
+    float stretch_factor = mid_transition * 0.35 * wrp * ( 1.0 + audioSwell * 0.7 );
 
-    vec3 c1Acc = vec3( 0.0 );
-    vec3 c0Acc = vec3( 0.0 );
+    vec3 c1_acc = vec3( 0.0 );
+    vec3 c0_acc = vec3( 0.0 );
 
     for ( int i = 0; i < 8; ++i )
     {
         float fi = float( i ) / 8.0;
-        vec2  sampleP = p * ( 1.0 - fi * stretchFactor );
-        vec2  sampleUV = ( sampleP * resolution.y + 0.5 * resolution ) / resolution;
+        vec2  sample_p = p * ( 1.0 - fi * stretch_factor );
+        vec2  sample_uv = ( sample_p * resolution.y + 0.5 * resolution ) / resolution;
 
-        c1Acc += texture( tex1, fract( sampleUV ) ).rgb;
-        c0Acc += texture( tex0, fract( sampleUV ) ).rgb;
+        c1_acc += texture( tex1, fract( sample_uv ) ).rgb;
+        c0_acc += texture( tex0, fract( sample_uv ) ).rgb;
     }
 
-    vec3 c1 = c1Acc / 8.0;
-    vec3 c0 = c0Acc / 8.0;
+    vec3 c1 = c1_acc / 8.0;
+    vec3 c0 = c0_acc / 8.0;
 
-    vec3 col = mix( c1, c0, tProg );
+    vec3 col = mix( c1, c0, t_prog );
 
     // Radial hyperspace star streaks -- calibrated so the scene stays
     // readable underneath (the old 1.5+kick*3.5 gain whited it out) and
@@ -95,22 +95,22 @@ void main()
     // being stretched, not a foreign overlay.
     // audioHigh sharpens the streak lines by raising the ray exponent: a pure
     // profile change (thinner, crisper rays), never a brightness boost, and the
-    // t phase inside the sine is left alone.  midTransition returns the
+    // t phase inside the sine is left alone.  mid_transition returns the
     // exponent to exactly 12.0 at both fade endpoints.
-    float streakSharp = 12.0 * ( 1.0 + audioSwell * 0.9 * midTransition );
-    float rayStreak = pow( max( 0.0, sin( angle * 40.0 * str + t * 4.0 ) ), streakSharp ) * midTransition;
-    vec3  streakCyan = vec3( 0.3, 0.9, 1.0 );
-    float sceneLum = dot( col, vec3( 0.333 ) );
-    col += rayStreak * streakCyan * ( 0.2 + 0.5 * sceneLum ) * ( 0.6 + audioKick * 0.6 );
+    float streak_sharp = 12.0 * ( 1.0 + audioSwell * 0.9 * mid_transition );
+    float ray_streak = pow( max( 0.0, sin( angle * 40.0 * str + t * 4.0 ) ), streak_sharp ) * mid_transition;
+    vec3  streak_cyan = vec3( 0.3, 0.9, 1.0 );
+    float scene_lum = dot( col, vec3( 0.333 ) );
+    col += ray_streak * streak_cyan * ( 0.2 + 0.5 * scene_lum ) * ( 0.6 + audioKick * 0.6 );
 
     // Center arrival flash on kick
-    float centerFlash = exp( -r * 8.0 ) * midTransition * ( 0.25 + audioKick * 0.35 );
-    col += centerFlash * vec3( 1.0, 0.98, 0.9 );
+    float center_flash = exp( -r * 8.0 ) * mid_transition * ( 0.25 + audioKick * 0.35 );
+    col += center_flash * vec3( 1.0, 0.98, 0.9 );
 
     if ( audioChromaHue != 0.0 )
-        col = hueRot( col, audioChromaHue * midTransition );
+        col = hueRot( col, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col = hueRot( col, hue * midTransition );
+        col = hueRot( col, hue * mid_transition );
 
     fragColor = vec4( col, 1.0 );
 }

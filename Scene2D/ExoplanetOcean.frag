@@ -118,10 +118,10 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 waterColor = max( imgPalette( 0.2 ), vec3( 0.05, 0.07, 0.10 ) ); // Base dark water, nie ganz schwarz
-    vec3 bioColor = imgPalette( 0.7 + audioCentroid * 0.2 );              // Bioluminescent glow
-    vec3 skyColor = imgPalette( 0.1 );
-    vec3 moonColor = imgPalette( 0.9 );
+    vec3 water_color = max( imgPalette( 0.2 ), vec3( 0.05, 0.07, 0.10 ) ); // Base dark water, nie ganz schwarz
+    vec3 bio_color = imgPalette( 0.7 + audioCentroid * 0.2 );              // Bioluminescent glow
+    vec3 sky_color = imgPalette( 0.1 );
+    vec3 moon_color = imgPalette( 0.9 );
 
     // Horizon line with slight bobbing
     float horizon = -0.1 + sin( time * 0.2 ) * 0.02 * wp;
@@ -129,78 +129,78 @@ void main()
     if ( uv.y < horizon )
     {
         // Ocean surface
-        float dPlane = 0.1 / abs( uv.y - horizon );
-        vec2  planeUv = vec2( uv.x * dPlane, dPlane );
+        float d_plane = 0.1 / abs( uv.y - horizon );
+        vec2  plane_uv = vec2( uv.x * d_plane, d_plane );
 
         // Forward movement on an integrated clock (jump-free)
         float travel = time * 0.5 + audioAdvance * 0.8;
-        planeUv.y -= travel;
+        plane_uv.y -= travel;
 
         // Waves
-        float w = getWaves( planeUv * wp, travel );
+        float w = getWaves( plane_uv * wp, travel );
 
         // Normal approximation for lighting/reflection
         vec2  e = vec2( 0.05, 0.0 );
-        float wx = getWaves( ( planeUv + e.xy ) * wp, travel ) - w;
-        float wy = getWaves( ( planeUv + e.yx ) * wp, travel ) - w;
+        float wx = getWaves( ( plane_uv + e.xy ) * wp, travel ) - w;
+        float wy = getWaves( ( plane_uv + e.yx ) * wp, travel ) - w;
         vec3  normal = normalize( vec3( -wx, 1.0, -wy ) );
 
         // Reflection of the moon (light source is at y > horizon)
-        vec3 lightDir = normalize( vec3( 0.0, 0.5, 1.0 ) );
-        vec3 viewDir = normalize( vec3( 0.0, -abs( uv.y - horizon ), 1.0 ) );
+        vec3 light_dir = normalize( vec3( 0.0, 0.5, 1.0 ) );
+        vec3 view_dir = normalize( vec3( 0.0, -abs( uv.y - horizon ), 1.0 ) );
 
-        float spec = pow( max( dot( reflect( -lightDir, normal ), viewDir ), 0.0 ), 32.0 );
-        float diffuse = max( dot( normal, lightDir ), 0.0 );
+        float spec = pow( max( dot( reflect( -light_dir, normal ), view_dir ), 0.0 ), 32.0 );
+        float diffuse = max( dot( normal, light_dir ), 0.0 );
 
-        vec3 surfaceCol = waterColor * ( 0.28 + diffuse * 0.9 );
+        vec3 surface_col = water_color * ( 0.28 + diffuse * 0.9 );
         // Moon glitter path: the sparkling light road under the moon is what
         // makes a night sea READ as water.
-        float glitter = pow( max( dot( reflect( -lightDir, normal ), viewDir ), 0.0 ), 90.0 )
+        float glitter = pow( max( dot( reflect( -light_dir, normal ), view_dir ), 0.0 ), 90.0 )
                         * exp( -abs( uv.x ) * 2.2 );
-        surfaceCol += max( moonColor, vec3( 0.35, 0.33, 0.30 ) )
-                      * ( spec * 0.5 + glitter * 2.2 ) * mp * ( 0.6 + audioSwell );
+        surface_col += max( moon_color, vec3( 0.35, 0.33, 0.30 ) )
+                       * ( spec * 0.5 + glitter * 2.2 ) * mp * ( 0.6 + audioSwell );
 
         // Bioluminescence in the wave crests (high wave peaks)
         float crests = smoothstep( 0.4, 0.8, w );
-        float bioFlash = crests * ( 0.5 + audioKick * 3.0 ) * wp;
-        surfaceCol += bioColor * bioFlash;
+        float bio_flash = crests * ( 0.5 + audioKick * 3.0 ) * wp;
+        surface_col += bio_color * bio_flash;
 
         // Distance fog / haze fading to sky color
-        float fog = exp( -dPlane * 0.1 );
-        col = mix( skyColor * ( 0.1 + audioSwell * 0.1 ), surfaceCol, fog );
+        float fog = exp( -d_plane * 0.1 );
+        col = mix( sky_color * ( 0.1 + audioSwell * 0.1 ), surface_col, fog );
     }
     else
     {
         // Sky
         // The giant moon dominates the sky
-        vec2  moonPos = vec2( 0.0, horizon + 0.4 );
-        float dMoon = length( uv - moonPos );
-        float moonRad = 0.35 * mp;
+        vec2  moon_pos = vec2( 0.0, horizon + 0.4 );
+        float d_moon = length( uv - moon_pos );
+        float moon_rad = 0.35 * mp;
 
-        if ( dMoon < moonRad )
+        if ( d_moon < moon_rad )
         {
             // Moon surface
-            vec2  mUv = ( uv - moonPos ) / moonRad;
-            float mZ = sqrt( max( 0.0, 1.0 - dot( mUv, mUv ) ) );
+            vec2  m_uv = ( uv - moon_pos ) / moon_rad;
+            float m_z = sqrt( max( 0.0, 1.0 - dot( m_uv, m_uv ) ) );
 
             // Texture
-            float mTex = fbm( vec3( mUv * 3.0, mZ + time * 0.01 ) );
+            float m_tex = fbm( vec3( m_uv * 3.0, m_z + time * 0.01 ) );
 
             // Moon with a real terminator, and a brightness FLOOR: the pure
             // palette colour went black on dark photos -- the giant moon was
             // an invisible hole in the sky.
-            vec3  mCol = max( moonColor, vec3( 0.38, 0.36, 0.32 ) );
-            vec3  mN = normalize( vec3( mUv, mZ ) );
-            vec3  mSun = normalize( vec3( 0.55, 0.25, 0.55 ) );
-            float mShade = 0.32 + 0.68 * max( dot( mN, mSun ), 0.0 );
-            float edgeFade = smoothstep( 1.0, 0.92, length( mUv ) );
-            col = mCol * ( 0.55 + mTex * 0.45 ) * mShade * edgeFade * ( 1.0 + 0.4 * audioSwell );
+            vec3  m_col = max( moon_color, vec3( 0.38, 0.36, 0.32 ) );
+            vec3  m_n = normalize( vec3( m_uv, m_z ) );
+            vec3  m_sun = normalize( vec3( 0.55, 0.25, 0.55 ) );
+            float m_shade = 0.32 + 0.68 * max( dot( m_n, m_sun ), 0.0 );
+            float edge_fade = smoothstep( 1.0, 0.92, length( m_uv ) );
+            col = m_col * ( 0.55 + m_tex * 0.45 ) * m_shade * edge_fade * ( 1.0 + 0.4 * audioSwell );
         }
         else
         {
             // Sky background with stars and faint alien aurora/clouds
-            float skyNoise = fbm( vec3( uv * 2.0, time * 0.05 + audioAdvance * 0.5 ) );
-            col = skyColor * skyNoise * 0.5 * ( 1.0 + audioSwell );
+            float sky_noise = fbm( vec3( uv * 2.0, time * 0.05 + audioAdvance * 0.5 ) );
+            col = sky_color * sky_noise * 0.5 * ( 1.0 + audioSwell );
 
             // Stars -- round, jittered points (whole floor() cells were the
             // square pixels).
@@ -217,8 +217,8 @@ void main()
             }
 
             // Moon glow/halo
-            float halo = exp( -( dMoon - moonRad ) * 5.0 );
-            col += moonColor * halo * 0.5 * mp * ( 1.0 + audioSwell );
+            float halo = exp( -( d_moon - moon_rad ) * 5.0 );
+            col += moon_color * halo * 0.5 * mp * ( 1.0 + audioSwell );
         }
     }
 
@@ -226,7 +226,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -65,14 +65,14 @@ vec3 imgPalette( float t )
 void main()
 {
     vec3  corner = attrA.xyz;
-    float cIndex = attrA.w;
+    float c_index = attrA.w;
     vLocalPos = corner;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // 3D acoustic standing wave pressure field in ultrasonic levitation chamber
     // P(x,y,z) = cos(nx*x)*cos(ny*y)*cos(nz*z)
-    float kNodes = ( nodeDensityP > 0.01 ? nodeDensityP : 3.0 );
+    float k_nodes = ( nodeDensityP > 0.01 ? nodeDensityP : 3.0 );
 
     // ---- the levitation CHAMBER, sized to the view frustum ---------------
     // The old build hung every particle on one small sphere in the middle of
@@ -80,55 +80,55 @@ void main()
     // working volume, so the seeds are now spread in FRUSTUM coordinates
     // (x,y scaled by each particle's own depth): the trap field then covers
     // the frame evenly at every distance instead of clustering centrally.
-    const float kTanY = 0.5206; // 55 deg vertical FOV
+    const float TanY = 0.5206; // 55 deg vertical FOV
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
-    float pSeed = cIndex / 4900.0;
+    float p_seed = c_index / 4900.0;
     float h1 = attrB.x, h2 = attrB.y, h3 = attrB.z, h4 = attrB.w;
 
     float dz = 3.4 + h3 * 6.0; // chamber depth 3.4 .. 9.4
-    float halfH = dz * kTanY;
-    float halfW = halfH * aspect;
+    float half_h = dz * TanY;
+    float half_w = half_h * aspect;
 
     // 2.6 rather than 2.0: the chamber still reaches past all four edges when
     // the preset camera rig yaws/rolls, and the surplus keeps the on-screen
     // particle count (and therefore the exposure) in a sane band.
-    vec3 baseP = vec3( ( h1 - 0.5 ) * 2.6 * halfW,
-                       ( h2 - 0.5 ) * 2.6 * halfH,
-                       0.0 );
+    vec3 base_p = vec3( ( h1 - 0.5 ) * 2.6 * half_w,
+                        ( h2 - 0.5 ) * 2.6 * half_h,
+                        0.0 );
     // slow chamber-wide drift so the trap field is never frozen
-    baseP.x += 0.35 * sin( t * 0.31 + pSeed * 41.0 );
-    baseP.y += 0.30 * cos( t * 0.27 + pSeed * 57.0 );
+    base_p.x += 0.35 * sin( t * 0.31 + p_seed * 41.0 );
+    base_p.y += 0.30 * cos( t * 0.27 + p_seed * 57.0 );
 
     // Acoustic Gor'kov radiation force gathers the particles onto the nodal
     // surfaces of the standing wave; the trap phases creep, so the whole
     // lattice breathes and the clusters migrate from node to node.
-    float phX = t * 0.50, phY = -t * 0.40, phZ = t * 0.30;
-    baseP.x = gorkovClump( baseP.x, kNodes, phX, 0.42 );
-    baseP.y = gorkovClump( baseP.y, kNodes, phY, 0.42 );
-    float zLocal = gorkovClump( ( h4 - 0.5 ) * 1.6, kNodes, phZ, 0.42 );
+    float ph_x = t * 0.50, ph_y = -t * 0.40, ph_z = t * 0.30;
+    base_p.x = gorkovClump( base_p.x, k_nodes, ph_x, 0.42 );
+    base_p.y = gorkovClump( base_p.y, k_nodes, ph_y, 0.42 );
+    float z_local = gorkovClump( ( h4 - 0.5 ) * 1.6, k_nodes, ph_z, 0.42 );
 
-    float gorkovX = cos( baseP.x * kNodes + phX );
-    float gorkovY = cos( baseP.y * kNodes + phY );
-    float gorkovZ = cos( zLocal * kNodes + phZ );
-    float pressureNode = gorkovX * gorkovY * gorkovZ;
-    vAcousticNode = pressureNode;
+    float gorkov_x = cos( base_p.x * k_nodes + ph_x );
+    float gorkov_y = cos( base_p.y * k_nodes + ph_y );
+    float gorkov_z = cos( z_local * k_nodes + ph_z );
+    float pressure_node = gorkov_x * gorkov_y * gorkov_z;
+    vAcousticNode = pressure_node;
 
     // Acoustic levitation trapped cluster position (still jittering in its trap)
-    vec3 trapPos = vec3( baseP.xy, zLocal ) + vec3( gorkovX, gorkovY, gorkovZ ) * 0.12;
+    vec3 trap_pos = vec3( base_p.xy, z_local ) + vec3( gorkov_x, gorkov_y, gorkov_z ) * 0.12;
 
     // Microparticle cube size -- proportional to depth, so a far cluster is
     // still the same handful of pixels as a near one and no part of the
     // chamber thins out into invisible specks.
-    float pSize = clamp( ( particleSizeP > 0.001 ? particleSizeP : 0.055 ), 0.03, 0.07 );
-    float sz = pSize * ( dz / 5.5 ) * ( 1.0 + 0.3 * audioSwell );
-    vec3  cubePos = trapPos + corner * sz;
+    float p_size = clamp( ( particleSizeP > 0.001 ? particleSizeP : 0.055 ), 0.03, 0.07 );
+    float sz = p_size * ( dz / 5.5 ) * ( 1.0 + 0.3 * audioSwell );
+    vec3  cube_pos = trap_pos + corner * sz;
 
     vNormal = normalize( corner );
-    vCol = imgPalette( fract( pSeed * 7.0 + pressureNode * 0.3 + audioCentroid ) );
+    vCol = imgPalette( fract( p_seed * 7.0 + pressure_node * 0.3 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = cubePos;
+    vec3 vp = cube_pos;
 
     // Gentle chamber parallax (a full spin would swing the wide trap volume
     // out of the frustum and empty the picture again).

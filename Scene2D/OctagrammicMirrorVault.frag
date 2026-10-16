@@ -89,48 +89,48 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Dome rotation & breathing
-    float rotA = t * 0.2 + audioPhase * 0.1;
-    float cs = cos( rotA ), sn = sin( rotA );
+    float rot_a = t * 0.2 + audioPhase * 0.1;
+    float cs = cos( rot_a ), sn = sin( rot_a );
     vec2  p = mat2( cs, -sn, sn, cs ) * uv;
 
-    vec3  colAcc = vec3( 0.0 );
-    float totalWeight = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float total_weight = 0.0;
 
     // Accumulate across 5 nested star polygon vault shells
     for ( int k = 0; k < 5; k++ )
     {
         float kf = float( k );
-        // Sub-bass breathes the whole shell stack open: starScale is the
+        // Sub-bass breathes the whole shell stack open: star_scale is the
         // octagram's circumradius, i.e. the dome's aperture.
-        float starScale = ( 0.5 + kf * 0.45 ) * dpth * ( 1.0 + 0.15 * sin( audioSwell * 2.5 + kf ) )
-                          * ( 1.0 + 0.32 * audioSubBass );
+        float star_scale = ( 0.5 + kf * 0.45 ) * dpth * ( 1.0 + 0.15 * sin( audioSwell * 2.5 + kf ) )
+                           * ( 1.0 + 0.32 * audioSubBass );
 
         // Facet fold sharpness
-        float mSharp = ( 0.7 + 0.3 * sin( t * 0.5 + kf ) + 0.2 * audioFlux ) * fld;
-        float dStar = sdOctagram( p, starScale, mSharp );
+        float m_sharp = ( 0.7 + 0.3 * sin( t * 0.5 + kf ) + 0.2 * audioFlux ) * fld;
+        float d_star = sdOctagram( p, star_scale, m_sharp );
 
-        float edgeGlow = exp( -abs( dStar ) * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
+        float edge_glow = exp( -abs( d_star ) * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
 
         // Sample texture mapped on star facet coordinate
-        vec2 sampleUV = fract( p * ( 0.4 + kf * 0.1 ) + 0.5 );
-        vec3 texCol = img( sampleUV );
-        vec3 palCol = imgPalette( kf * 0.2 + t * 0.05 );
+        vec2 sample_uv = fract( p * ( 0.4 + kf * 0.1 ) + 0.5 );
+        vec3 tex_col = img( sample_uv );
+        vec3 pal_col = imgPalette( kf * 0.2 + t * 0.05 );
 
-        vec3 starCol = mix( texCol, palCol, 0.5 );
-        starCol += vec3( 1.4, 1.1, 1.7 ) * edgeGlow * ( 1.0 + 2.5 * audioKick );
+        vec3 star_col = mix( tex_col, pal_col, 0.5 );
+        star_col += vec3( 1.4, 1.1, 1.7 ) * edge_glow * ( 1.0 + 2.5 * audioKick );
 
         float w = 1.0 / ( 1.0 + kf * 0.4 );
-        colAcc += starCol * w;
-        totalWeight += w;
+        col_acc += star_col * w;
+        total_weight += w;
     }
 
-    vec3 finalCol = colAcc / max( 0.001, totalWeight );
+    vec3 final_col = col_acc / max( 0.001, total_weight );
 
     // Central infinite light funnel flare
-    float rCenter = length( uv );
-    float funnelBloom = exp( -rCenter * 6.0 ) * ( 1.2 + 2.5 * audioKick );
-    finalCol += imgPalette( 0.8 ) * funnelBloom;
+    float r_center = length( uv );
+    float funnel_bloom = exp( -r_center * 6.0 ) * ( 1.2 + 2.5 * audioKick );
+    final_col += imgPalette( 0.8 ) * funnel_bloom;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

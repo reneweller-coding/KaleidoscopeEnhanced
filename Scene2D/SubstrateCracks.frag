@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -245,8 +245,8 @@ void main()
     float depth = 4.0 + 3.0 * clamp( audioSpread, 0.0, 1.0 );
     float dmin = 9.0;
     float side = 0.0;
-    float trailD = 9.0;
-    vec2  trailId = id;
+    float trail_d = 9.0;
+    vec2  trail_id = id;
     for ( int k = 0; k < 7; ++k )
     {
         if ( float( k ) >= depth )
@@ -261,8 +261,8 @@ void main()
         {
             float x = mix( lo.x, hi.x, s );
             float grown = smoothstep( 0.0, 0.3, birth ) * smoothstep( 1.0, 0.9, birth );
-            float yEnd = mix( lo.y, hi.y, grown );
-            float d = abs( q.x - x ) + max( q.y - yEnd, 0.0 ) * 10.0;
+            float y_end = mix( lo.y, hi.y, grown );
+            float d = abs( q.x - x ) + max( q.y - y_end, 0.0 ) * 10.0;
             if ( d < dmin )
             {
                 dmin = d;
@@ -272,7 +272,7 @@ void main()
             {
                 hi.x = x;
                 id = id * 2.0 + vec2( 1.0, 0.0 );
-                trailD = min( trailD, x - q.x );
+                trail_d = min( trail_d, x - q.x );
             }
             else
             {
@@ -284,8 +284,8 @@ void main()
         {
             float y = mix( lo.y, hi.y, s );
             float grown = smoothstep( 0.0, 0.3, birth ) * smoothstep( 1.0, 0.9, birth );
-            float xEnd = mix( lo.x, hi.x, grown );
-            float d = abs( q.y - y ) + max( q.x - xEnd, 0.0 ) * 10.0;
+            float x_end = mix( lo.x, hi.x, grown );
+            float d = abs( q.y - y ) + max( q.x - x_end, 0.0 ) * 10.0;
             if ( d < dmin )
             {
                 dmin = d;
@@ -295,7 +295,7 @@ void main()
             {
                 hi.y = y;
                 id = id * 2.0 + vec2( 0.0, 1.0 );
-                trailD = min( trailD, y - q.y );
+                trail_d = min( trail_d, y - q.y );
             }
             else
             {
@@ -314,11 +314,11 @@ void main()
     pc = glowColour( pc, id * 0.01, hueP * 0.159 );
     float tw = 0.02 + 0.06 * clamp( trailP, 0.0, 1.0 ) * ( 0.6 + 0.8 * swell );
     float grain = noise2( p * 700.0 ); // sand grain (smooth noise, no pixel grid)
-    float trail = exp( -trailD / tw ) * step( grain, exp( -trailD / tw ) * 0.9 );
+    float trail = exp( -trail_d / tw ) * step( grain, exp( -trail_d / tw ) * 0.9 );
     vec3  paper = vec3( 0.96, 0.95, 0.92 );
-    vec3  lightV = mix( paper, pc * 0.9, trail * clamp( photoP + 0.3, 0.0, 1.3 ) * 0.7 );
-    lightV = mix( lightV, vec3( 0.05 ) * ( 1.0 - 0.5 * kick ), crack );
-    vec3 darkV = mix( vec3( 0.03, 0.03, 0.04 ), pc * 0.8, trail * 0.7 );
-    darkV = mix( darkV, vec3( 0.9 ) * ( 1.0 + 0.3 * kick ), crack );
-    finish( mix( darkV, lightV, mode ) );
+    vec3  light_v = mix( paper, pc * 0.9, trail * clamp( photoP + 0.3, 0.0, 1.3 ) * 0.7 );
+    light_v = mix( light_v, vec3( 0.05 ) * ( 1.0 - 0.5 * kick ), crack );
+    vec3 dark_v = mix( vec3( 0.03, 0.03, 0.04 ), pc * 0.8, trail * 0.7 );
+    dark_v = mix( dark_v, vec3( 0.9 ) * ( 1.0 + 0.3 * kick ), crack );
+    finish( mix( dark_v, light_v, mode ) );
 }

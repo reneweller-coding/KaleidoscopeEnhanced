@@ -138,9 +138,9 @@ float map( vec3 p, float tp )
     // Giant structural pillars crossing the shaft
     vec3 pq = p;
     pq.z = mod( pq.z, 20.0 ) - 10.0;
-    float pId = floor( p.z / 20.0 );
+    float p_id = floor( p.z / 20.0 );
 
-    if ( hash11( pId ) > 0.5 )
+    if ( hash11( p_id ) > 0.5 )
     {
         // Vertical pillar
         float pillar = sdBox( pq, vec3( 1.0, 5.0, 1.0 ) );
@@ -192,7 +192,7 @@ void main()
 
     // Camera rotating inside the shaft 90 degrees occasionally
     float phase = floor( time * 0.20 );
-    float camRoll = smoothstep( 0.0, 1.0, fract( time * 0.2 ) ) * 1.570796 + phase * 1.570796;
+    float cam_roll = smoothstep( 0.0, 1.0, fract( time * 0.2 ) ) * 1.570796 + phase * 1.570796;
 
     vec3 ro = vec3( 0.0, 0.0, drift );
 
@@ -206,7 +206,7 @@ void main()
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    float roll = camRoll + audioPhase * 0.1;
+    float roll = cam_roll + audioPhase * 0.1;
     vec2  ruv = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * uv;
     vec3  rd = normalize( ruv.x * uu + ruv.y * vv + 1.2 * ww );
 
@@ -235,8 +235,8 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 hiveColor = imgPalette( 0.3 );                    // usually sickly green/yellow
-    vec3 laserColor = imgPalette( 0.8 + audioKick * 0.2 ); // Red lasers
+    vec3 hive_color = imgPalette( 0.3 );                    // usually sickly green/yellow
+    vec3 laser_color = imgPalette( 0.8 + audioKick * 0.2 ); // Red lasers
 
     if ( m > 0.5 )
     {
@@ -258,14 +258,14 @@ void main()
         if ( g == 1.0 )
         {
             float blink = step( 0.5, sin( p.z * 5.0 - time * 10.0 ) + audioSwell );
-            col += hiveColor * blink * gp * ( 1.0 + audioKick * 2.0 );
+            col += hive_color * blink * gp * ( 1.0 + audioKick * 2.0 );
         }
 
         // Scanning lasers traversing the walls
-        float scanZ = fract( p.z * 0.1 - time * 0.5 ) * 10.0;
-        if ( abs( scanZ - 5.0 ) < 0.1 )
+        float scan_z = fract( p.z * 0.1 - time * 0.5 ) * 10.0;
+        if ( abs( scan_z - 5.0 ) < 0.1 )
         {
-            col += laserColor * 5.0 * gp * ( 1.0 + audioKick );
+            col += laser_color * 5.0 * gp * ( 1.0 + audioKick );
         }
 
         col *= clamp( 1.0 - float( steps ) * 0.015, 0.1, 1.0 );
@@ -278,7 +278,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -239,7 +239,7 @@ void main()
     vec3  thick = mix( vec3( 0.3, 0.09, 0.01 ), vec3( 0.6, 0.3, 0.04 ), mode );
     vec3  phc = imgLod( p * 0.3 + 0.5, 6.0 );
     if ( satOf( phc ) > 0.25 )
-        thin = mix( thin, hsv2rgb( vec3( hue_of( phc ), 0.6, 1.0 ) ), 0.2 );
+        thin = mix( thin, hsv2rgb( vec3( hueOf( phc ), 0.6, 1.0 ) ), 0.2 );
     // Folds of a viscous sheet: a domain-warped field, folded over itself
     // (the absolute value makes the creases), creeping slowly.
     float sc = 1.2 + 1.5 * clamp( coilP, 0.0, 1.0 );

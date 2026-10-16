@@ -43,11 +43,11 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // generator has no `resolution`; it lays the curtain out for 16:9 and the
 // vertex stage stretches x for the actual aspect.
-const float kTanY = 0.5206;
-const float kAsp = 1.7778;
+const float TanY = 0.5206;
+const float Asp = 1.7778;
 
-const uint kTubes = 160u;    ///< brinicles in the curtain
-const uint kBranches = 288u; ///< + 128 frost-mote branches; x 64 x 6 = 110592 verts
+const uint Tubes = 160u;    ///< brinicles in the curtain
+const uint Branches = 288u; ///< + 128 frost-mote branches; x 64 x 6 = 110592 verts
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -111,29 +111,29 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     uint  idx = g.x + 64u * ( g.y + 64u * g.z );
 
-    uint tubeIdx = idx / 64u;
-    uint segIdx = idx % 64u;
-    if ( tubeIdx >= kBranches )
+    uint tube_idx = idx / 64u;
+    uint seg_idx = idx % 64u;
+    if ( tube_idx >= Branches )
         return;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
-    if ( tubeIdx >= kTubes )
+    if ( tube_idx >= Tubes )
     {
         // ---- SUSPENDED FROST MOTES ------------------------------------
         // One speck per (branch, segment) slot, scattered through the whole
         // supercooled water column so the polar dark still carries texture
         // between the tubes.  A background layer: dim, but never so dim that
         // a tile of the picture reads as black.
-        float hid = float( tubeIdx ) * 64.0 + float( segIdx );
+        float hid = float( tube_idx ) * 64.0 + float( seg_idx );
         float g1 = hash11( hid * 1.41 + 0.9 );
         float g2 = hash11( hid * 2.83 + 4.1 );
         float g3 = hash11( hid * 5.29 + 8.7 );
         float g4 = hash11( hid * 7.13 + 12.3 );
 
         float dzh = 16.0 + g3 * 74.0;
-        float hH = dzh * kTanY;
-        float hW = hH * kAsp;
+        float h_h = dzh * TanY;
+        float h_w = h_h * Asp;
         // 2.0 fits the frustum exactly; 2.35 so the field still reaches past
         // all four edges when the preset camera rig rolls and yaws.
         float open = 2.35;
@@ -141,20 +141,20 @@ void main()
         // on absolute time.
         float ph = g1 * 6.2831853 + t * 0.09;
 
-        vec3 c = vec3( ( g1 - 0.5 ) * open * hW + 0.035 * hW * cos( ph ),
-                       ( g2 - 0.5 ) * open * hH - 0.030 * hH * fract( ph * 0.15 ),
+        vec3 c = vec3( ( g1 - 0.5 ) * open * h_w + 0.035 * h_w * cos( ph ),
+                       ( g2 - 0.5 ) * open * h_h - 0.030 * h_h * fract( ph * 0.15 ),
                        dzh );
 
-        float sl = hH * 0.010 * ( 0.5 + g4 );
-        float glowH = ( 0.10 + 0.16 * g4 ) * ( 1.0 + 0.7 * audioSwell )
-                      * ( 1.0 + 0.9 * audioKick * g2 );
+        float sl = h_h * 0.010 * ( 0.5 + g4 );
+        float glow_h = ( 0.10 + 0.16 * g4 ) * ( 1.0 + 0.7 * audioSwell )
+                       * ( 1.0 + 0.9 * audioKick * g2 );
         emitSegment( c - vec3( 0.0, sl, 0.0 ), c + vec3( 0.0, sl, 0.0 ),
-                     0.30 + 0.55 * g2, min( glowH, 0.50 ), hH * 0.0058 * ( 0.6 + 0.8 * g4 ) );
+                     0.30 + 0.55 * g2, min( glow_h, 0.50 ), h_h * 0.0058 * ( 0.6 + 0.8 * g4 ) );
         return;
     }
 
     // ---- ONE BRINICLE OF THE CURTAIN ----------------------------------
-    float sd = float( tubeIdx );
+    float sd = float( tube_idx );
     float seed = hash11( sd * 19.83 );
     float q1 = hash11( sd * 11.3 + 2.1 );
     float q2 = hash11( sd * 27.7 + 6.5 );
@@ -164,30 +164,30 @@ void main()
     // FRUSTUM-COORDINATE placement: a tube 30 units back subtends the same
     // angle as one at 5, so all layers of the curtain cover the picture.
     float dz = 4.5 + q3 * q3 * 30.0;
-    float halfH = dz * kTanY;
-    float halfW = halfH * kAsp;
+    float half_h = dz * TanY;
+    float half_w = half_h * Asp;
     float open = 2.25;
-    float ox = ( q1 - 0.5 ) * open * halfW;
-    float oz = ( q4 - 0.5 ) * 0.35 * halfW; // a little depth inside the layer
+    float ox = ( q1 - 0.5 ) * open * half_w;
+    float oz = ( q4 - 0.5 ) * 0.35 * half_w; // a little depth inside the layer
 
     // Root up on the pack-ice ceiling, above the top edge; the tube reaches
     // well past the bottom of the frame.
-    float rootY = halfH * ( 0.88 + 0.55 * q2 );
-    float len = halfH * ( 1.60 + 1.30 * q4 );
+    float root_y = half_h * ( 0.88 + 0.55 * q2 );
+    float len = half_h * ( 1.60 + 1.30 * q4 );
 
-    float s0 = float( segIdx ) / 64.0;
-    float s1 = float( segIdx + 1u ) / 64.0;
+    float s0 = float( seg_idx ) / 64.0;
+    float s1 = float( seg_idx + 1u ) / 64.0;
 
     // Wandering sinking brine plume trajectory, widening as it descends.
     vec2 wander0 = vec2( sin( s0 * 8.0 + seed * 5.0 + t * 0.5 ),
                          cos( s0 * 8.0 + seed * 5.0 - t * 0.4 ) )
-                   * ( 0.13 * s0 * halfH );
+                   * ( 0.13 * s0 * half_h );
     vec2 wander1 = vec2( sin( s1 * 8.0 + seed * 5.0 + t * 0.5 ),
                          cos( s1 * 8.0 + seed * 5.0 - t * 0.4 ) )
-                   * ( 0.13 * s1 * halfH );
+                   * ( 0.13 * s1 * half_h );
 
-    vec3 p0 = vec3( ox + wander0.x, rootY - s0 * len, dz + oz + wander0.y );
-    vec3 p1 = vec3( ox + wander1.x, rootY - s1 * len, dz + oz + wander1.y );
+    vec3 p0 = vec3( ox + wander0.x, root_y - s0 * len, dz + oz + wander0.y );
+    vec3 p1 = vec3( ox + wander1.x, root_y - s1 * len, dz + oz + wander1.y );
 
     // Crystallisation glow, with a FREEZE FRONT running down each tube so the
     // curtain keeps moving instead of standing still.
@@ -203,7 +203,7 @@ void main()
     // between them rather than one solid wall.  (It reads as thin because the
     // ribbon is now actually FACING the camera -- see emitSegment; before the
     // fix, any thickness at all came out as a zero-width sliver.)
-    float thick = halfH * 0.0050 * ( 1.0 - s0 * 0.4 ) * ( 1.0 + 0.4 * audioSwell );
+    float thick = half_h * 0.0050 * ( 1.0 - s0 * 0.4 ) * ( 1.0 + 0.4 * audioSwell );
 
     emitSegment( p0, p1, s0, min( glow, 3.0 ), thick );
 }

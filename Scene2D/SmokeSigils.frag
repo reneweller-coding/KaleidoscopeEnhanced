@@ -138,7 +138,7 @@ void main()
     // appears as the glyph's shape and only where the smoke is thick.
     vec3  col = vec3( 0.0 );
     float trans = 1.0;
-    vec3  smokeCol = imgPalette( hue * 0.159 + 0.55 );
+    vec3  smoke_col = imgPalette( hue * 0.159 + 0.55 );
     for ( int i = 0; i < 16; ++i )
     {
         float z = float( i ) / 16.0;
@@ -152,23 +152,23 @@ void main()
         float mask = mix( 0.12, gl, plane );
         float absorb = d * mask * 0.35;
         float lit = 0.5 + 0.5 * z;
-        col += smokeCol * lit * absorb * trans;
+        col += smoke_col * lit * absorb * trans;
         trans *= exp( -absorb );
     }
     col *= 1.6 * ( 0.7 + 0.5 * audioLevel );
 
     // The melody lifts a column of glyphs: smooth kernel over the column
     // distance, so the light glides as the pitch glides.
-    float colPos = clamp( audioMelodyPitch, 0.0, 0.999 ) * cells * aspect;
-    float colDist = abs( cell.x + 0.5 - colPos );
-    float lift = exp( -colDist * colDist * 1.2 );
+    float col_pos = clamp( audioMelodyPitch, 0.0, 0.999 ) * cells * aspect;
+    float col_dist = abs( cell.x + 0.5 - col_pos );
+    float lift = exp( -col_dist * col_dist * 1.2 );
     col += imgPalette( hue * 0.159 + 0.1 ) * gl * lift * 0.8;
     // The lattice itself, faint, flashing on the kick.
     col += imgPalette( hue * 0.159 + 0.9 ) * gl * ( 0.05 + 0.35 * audioKick );
     // The photo far behind, dim.
     col += img( fract( p * 0.5 + 0.5 ) ) * 0.05 * trans;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

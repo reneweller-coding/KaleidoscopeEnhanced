@@ -9,7 +9,7 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 layout( std430, binding = 0 ) buffer Verts
 {
-    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, pulse), attrB.xyzw (pad, branchLevel)
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, pulse), attrB.xyzw (pad, branch_level)
 };
 
 // DrawArraysIndirectCommand + our own counter:
@@ -82,11 +82,11 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
     float ocy = cos( oyaw ), osy = sin( oyaw );
     float opit = -0.25 + 0.10 * sin( time * 0.11 );
     float opc = cos( opit ), ops = sin( opit );
-    vec3  viewAxis = vec3( 0.0, 0.0, 1.0 );
-    viewAxis.yz = mat2( opc, ops, -ops, opc ) * viewAxis.yz; // undo pitch
-    viewAxis.xz = mat2( ocy, osy, -osy, ocy ) * viewAxis.xz; // undo yaw
+    vec3  view_axis = vec3( 0.0, 0.0, 1.0 );
+    view_axis.yz = mat2( opc, ops, -ops, opc ) * view_axis.yz; // undo pitch
+    view_axis.xz = mat2( ocy, osy, -osy, ocy ) * view_axis.xz; // undo yaw
 
-    vec3  side = cross( dir, viewAxis );
+    vec3  side = cross( dir, view_axis );
     float sl = length( side );
     // Degenerate only when the segment runs straight at the lens, where any
     // perpendicular is equally good.
@@ -107,36 +107,36 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint TOTAL_HYPHAE = 4096u;
-    if ( id >= TOTAL_HYPHAE )
+    const uint TotalHyphae = 4096u;
+    if ( id >= TotalHyphae )
         return;
 
     float seed = float( id );
-    float parentSeed = floor( seed / 3.0 ); // Branching hierarchy
+    float parent_seed = floor( seed / 3.0 ); // Branching hierarchy
 
     // Root cluster node
-    float treeAngle = hash11( parentSeed ) * 6.2831853;
-    float treeRadius = pow( hash11( parentSeed + 50.0 ), 0.5 ) * 2.8;
-    float treeHeight = ( hash11( parentSeed + 100.0 ) - 0.5 ) * 1.5;
+    float tree_angle = hash11( parent_seed ) * 6.2831853;
+    float tree_radius = pow( hash11( parent_seed + 50.0 ), 0.5 ) * 2.8;
+    float tree_height = ( hash11( parent_seed + 100.0 ) - 0.5 ) * 1.5;
 
-    vec3 parentPos = vec3( treeRadius * cos( treeAngle ), treeHeight, treeRadius * sin( treeAngle ) );
+    vec3 parent_pos = vec3( tree_radius * cos( tree_angle ), tree_height, tree_radius * sin( tree_angle ) );
 
     // Branch growth direction
-    float branchAngle = hash11( seed + 10.0 ) * 6.2831853;
-    float branchPitch = ( hash11( seed + 20.0 ) - 0.5 ) * 1.2;
-    float branchLen = 0.3 + 0.3 * hash11( seed + 30.0 );
+    float branch_angle = hash11( seed + 10.0 ) * 6.2831853;
+    float branch_pitch = ( hash11( seed + 20.0 ) - 0.5 ) * 1.2;
+    float branch_len = 0.3 + 0.3 * hash11( seed + 30.0 );
 
-    vec3 branchDir = vec3( cos( branchAngle ) * cos( branchPitch ), sin( branchPitch ),
-                           sin( branchAngle ) * cos( branchPitch ) );
-    vec3 childPos = parentPos + branchDir * branchLen;
+    vec3 branch_dir = vec3( cos( branch_angle ) * cos( branch_pitch ), sin( branch_pitch ),
+                            sin( branch_angle ) * cos( branch_pitch ) );
+    vec3 child_pos = parent_pos + branch_dir * branch_len;
 
     // Bio-electric action potential pulse traveling along hyphae
-    float distFromCenter = length( parentPos );
-    float pulseSpeed = 4.0;
-    float pulse = exp( -abs( distFromCenter - mod( time * pulseSpeed + audioAdvance * 2.0, 3.5 ) ) * 6.0 );
+    float dist_from_center = length( parent_pos );
+    float pulse_speed = 4.0;
+    float pulse = exp( -abs( dist_from_center - mod( time * pulse_speed + audioAdvance * 2.0, 3.5 ) ) * 6.0 );
     pulse *= ( 1.0 + audioKick * 3.0 );
 
-    float branchLevel = mod( seed, 4.0 ) / 4.0;
+    float branch_level = mod( seed, 4.0 ) / 4.0;
 
-    emitSegment( parentPos, childPos, pulse, branchLevel, 0.015 );
+    emitSegment( parent_pos, child_pos, pulse, branch_level, 0.015 );
 }

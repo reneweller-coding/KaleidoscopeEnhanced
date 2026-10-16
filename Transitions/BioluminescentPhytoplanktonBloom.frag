@@ -62,8 +62,8 @@ void main()
 
     float t = time * 0.07 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                  // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Oceanic fluid eddy streamline fields
     vec2 q1 = p * 8.0 * blm + vec2( sin( p.y * 5.0 + t ), cos( p.x * 5.0 - t ) );
@@ -71,25 +71,25 @@ void main()
 
     float eddy1 = sin( q1.x + sin( q1.y + t * 2.0 ) );
     float eddy2 = sin( q2.y + sin( q2.x - t * 2.0 ) );
-    float bloomField = ( eddy1 + eddy2 ) * 0.5;
+    float bloom_field = ( eddy1 + eddy2 ) * 0.5;
 
     // Shear-stress-induced displacement
-    vec2 shearDisp = vec2( eddy1, eddy2 ) * 0.035 * midTransition * swr * ( 1.0 + audioSwell * 0.7 );
+    vec2 shear_disp = vec2( eddy1, eddy2 ) * 0.035 * mid_transition * swr * ( 1.0 + audioSwell * 0.7 );
 
-    vec4 c1 = texture( tex1, fract( uv + shearDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - shearDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + shear_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - shear_disp ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Bioluminescent turquoise emission
-    float lightEmission = pow( max( 0.0, bloomField ), 3.0 ) * midTransition;
-    vec3  bioTurquoise = vec3( 0.08, 0.96, 0.88 );
-    col.rgb += lightEmission * bioTurquoise * ( 1.5 + audioKick * 1.17 );
+    float light_emission = pow( max( 0.0, bloom_field ), 3.0 ) * mid_transition;
+    vec3  bio_turquoise = vec3( 0.08, 0.96, 0.88 );
+    col.rgb += light_emission * bio_turquoise * ( 1.5 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

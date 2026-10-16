@@ -41,19 +41,19 @@ uniform float speedP; ///< Speed knob, 0..1.
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw), and the
 // camera distance the companion .vert applies.  A generator program gets no
 // `resolution` uniform, so the layout assumes 16:9 -- the house fallback.
-const float kTanY = 0.5206;
-const float kAspect = 1.7778;
-const float kCam = 6.4;
+const float TanY = 0.5206;
+const float Aspect = 1.7778;
+const float Cam = 6.4;
 
 // The tangle used to be a cylinder barely 2 units across at 4.6 units out --
 // a small knot floating in the middle of a frustum three times its size
 // (measured occ 0.22).  More strands, over a far wider volume, plus a
 // condensate speckle spread across the frustum to carry the corners.
-const uint STRANDS = 96u;
-const uint PER_STR = 128u;
-const uint TANGLE = STRANDS * PER_STR; ///< 12288
-const uint HAZE = 6000u;
-const uint POINTS = TANGLE + HAZE; ///< 18288 quads = 109728 vertices
+const uint Strands = 96u;
+const uint PerStr = 128u;
+const uint Tangle = Strands * PerStr; ///< 12288
+const uint Haze = 6000u;
+const uint Points = Tangle + Haze; ///< 18288 quads = 109728 vertices
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -112,7 +112,7 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  idx = g.x + 64u * ( g.y + 64u * g.z );
-    if ( idx >= POINTS )
+    if ( idx >= Points )
         return;
 
     float t = time * 0.45 * ( speedP > 0.0 ? speedP : 1.0 ) + audioAdvance * 0.22;
@@ -123,26 +123,26 @@ void main()
     // Dimmer than the vortex cores (the fragment stage reads the negative
     // normal.z as the marker).
     // ------------------------------------------------------------------
-    if ( idx >= TANGLE )
+    if ( idx >= Tangle )
     {
-        float fi = float( idx - TANGLE );
+        float fi = float( idx - Tangle );
         float h0 = hash11( fi * 1.731 + 0.13 );
         float h1 = hash11( fi * 3.917 + 4.71 );
         float h2 = hash11( fi * 7.311 + 9.27 );
         float h3 = hash11( fi * 5.109 + 2.53 );
 
         float dz = 2.6 + 13.0 * h0;
-        float halfH = dz * kTanY;
-        float halfW = halfH * kAspect;
+        float half_h = dz * TanY;
+        float half_w = half_h * Aspect;
         // 1.0 fits the frustum exactly; 1.08 keeps the field just past all four
         // edges.
         float ph = h3 * 6.2831853 + t * 0.18;
-        vec3  vp = vec3( ( h1 * 2.0 - 1.0 ) * halfW * 1.08 + 0.35 * cos( ph ),
-                         ( h2 * 2.0 - 1.0 ) * halfH * 1.08 + 0.35 * sin( ph * 0.83 ),
+        vec3  vp = vec3( ( h1 * 2.0 - 1.0 ) * half_w * 1.08 + 0.35 * cos( ph ),
+                         ( h2 * 2.0 - 1.0 ) * half_h * 1.08 + 0.35 * sin( ph * 0.83 ),
                          dz );
 
         // The vertex stage orbits everything it is given (yaw about y, then a
-        // nodding pitch) before pushing it out to kCam.  A cloud laid out in
+        // nodding pitch) before pushing it out to Cam.  A cloud laid out in
         // view coordinates would be swung straight out of the frustum by that
         // orbit -- so undo it here.  The generator is handed the very same
         // `time` and `audioAdvance` the render program gets (Scene3DShader
@@ -155,40 +155,40 @@ void main()
 
         // mat2(a,b,c,d) is COLUMN-major, so the .vert's two mat2s are R(-yaw)
         // and R(-pit); undo the pitch first, then the yaw.
-        vec3 q = vec3( vp.x, vp.y, vp.z - kCam );
+        vec3 q = vec3( vp.x, vp.y, vp.z - Cam );
         q = vec3( q.x, cp * q.y - sp * q.z, sp * q.y + cp * q.z ); // pitch^-1
         q = vec3( cy * q.x - sy * q.z, q.y, sy * q.x + cy * q.z ); // yaw^-1
 
-        float r = halfH * 0.011 * ( 0.55 + 0.9 * h3 ) * ( 1.0 + 0.3 * audioHigh );
+        float r = half_h * 0.011 * ( 0.55 + 0.9 * h3 ) * ( 1.0 + 0.3 * audioHigh );
         emitQuad( q, vec3( 0.0, 0.0, -1.0 ), h1, r );
         return;
     }
 
-    float pNorm = float( idx ) / float( TANGLE );
+    float p_norm = float( idx ) / float( Tangle );
 
     // 96 vortex strands
-    uint  strandID = idx / PER_STR;
-    float zNorm = float( idx % PER_STR ) / float( PER_STR );
-    float z = ( zNorm - 0.5 ) * 8.0;
+    uint  strand_id = idx / PerStr;
+    float z_norm = float( idx % PerStr ) / float( PerStr );
+    float z = ( z_norm - 0.5 ) * 8.0;
 
-    float angle = float( strandID ) * ( 6.2831853 / float( STRANDS ) );
+    float angle = float( strand_id ) * ( 6.2831853 / float( Strands ) );
     // The strand radii now span the frustum's height rather than a 1-unit
     // cylinder; the sin() term still keeps the shells irregular.
-    float rBase = ( 2.2 + 1.9 * sin( float( strandID ) * 1.5 ) ) * ( becP > 0.0 ? becP : 1.0 );
+    float r_base = ( 2.2 + 1.9 * sin( float( strand_id ) * 1.5 ) ) * ( becP > 0.0 ? becP : 1.0 );
 
     // Quantized vortex tangle dynamics: helical rotation + reconnection kinks
-    float helix = sin( z * 2.2 * ( vortexP > 0.0 ? vortexP : 1.0 ) - t * 4.0 + float( strandID ) );
-    float helixCos = cos( z * 2.2 * ( vortexP > 0.0 ? vortexP : 1.0 ) - t * 4.0 + float( strandID ) );
+    float helix = sin( z * 2.2 * ( vortexP > 0.0 ? vortexP : 1.0 ) - t * 4.0 + float( strand_id ) );
+    float helix_cos = cos( z * 2.2 * ( vortexP > 0.0 ? vortexP : 1.0 ) - t * 4.0 + float( strand_id ) );
     float kink = sin( z * 6.5 + t * 6.0 ) * ( 0.30 + 0.18 * audioKick );
 
-    float x = cos( angle + t * 0.5 ) * rBase + helix * 0.75 + kink;
-    float y = sin( angle + t * 0.5 ) * rBase + helixCos * 0.75 + kink;
+    float x = cos( angle + t * 0.5 ) * r_base + helix * 0.75 + kink;
+    float y = sin( angle + t * 0.5 ) * r_base + helix_cos * 0.75 + kink;
 
     vec3 pos = vec3( x, y, z );
-    vec3 normal = normalize( vec3( helix, helixCos, 0.5 ) );
+    vec3 normal = normalize( vec3( helix, helix_cos, 0.5 ) );
 
     // Core radius swells with the low end and snaps on kicks.  0.020 projected
     // to under three pixels at this distance -- the cores read as dust.
     float r = 0.055 * ( 1.0 + 0.9 * audioBass + 1.4 * audioKick + 0.5 * audioHigh );
-    emitQuad( pos, normal, pNorm, r );
+    emitQuad( pos, normal, p_norm, r );
 }

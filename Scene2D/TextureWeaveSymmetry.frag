@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -251,21 +251,21 @@ void main()
     float px = fwidth( g.x ) * 1.2;
     float warp = smoothstep( 0.5 - gap + px, 0.5 - gap - px, abs( f.x ) );
     float weft = smoothstep( 0.5 - gap + px, 0.5 - gap - px, abs( f.y ) );
-    float profW = sqrt( max( 0.0, 1.0 - pow( abs( f.x ) / ( 0.5 - gap ), 2.0 ) ) );
-    float profF = sqrt( max( 0.0, 1.0 - pow( abs( f.y ) / ( 0.5 - gap ), 2.0 ) ) );
-    float dipW = 0.65 + 0.35 * sqrt( max( 0.0, 1.0 - 4.0 * f.y * f.y ) );
-    float dipF = 0.65 + 0.35 * sqrt( max( 0.0, 1.0 - 4.0 * f.x * f.x ) );
-    vec3  tW = mix( vec3( 1.0 ), mix( vec3( 0.8, 0.9, 1.1 ), vec3( 1.1, 0.9, 0.75 ), mode ), 0.5 );
-    vec3  tF = mix( vec3( 1.0 ), mix( vec3( 1.1, 0.9, 0.75 ), vec3( 0.8, 0.9, 1.1 ), mode ), 0.5 );
-    vec3  cW = photo * tW * ( 0.45 + 0.65 * profW ) * ( over > 0.5 ? 1.0 : dipW );
-    vec3  cF = photo * tF * ( 0.45 + 0.65 * profF ) * ( over > 0.5 ? dipF : 1.0 );
-    cW += vec3( 1.0 ) * pow( profW, 10.0 ) * ( 0.05 + 0.4 * kick );
-    cF += vec3( 1.0 ) * pow( profF, 10.0 ) * ( 0.05 + 0.4 * kick );
-    vec3  gapC = glowColour( photo, q, hueP * 0.159 ) * ( 0.03 + 0.2 * swell );
-    vec3  col = gapC;
-    vec3  top = over > 0.5 ? cW : cF, bot = over > 0.5 ? cF * 0.7 : cW * 0.7;
-    float topA = over > 0.5 ? warp : weft, botA = over > 0.5 ? weft : warp;
-    col = mix( col, bot, botA );
-    col = mix( col, top, topA );
+    float prof_w = sqrt( max( 0.0, 1.0 - pow( abs( f.x ) / ( 0.5 - gap ), 2.0 ) ) );
+    float prof_f = sqrt( max( 0.0, 1.0 - pow( abs( f.y ) / ( 0.5 - gap ), 2.0 ) ) );
+    float dip_w = 0.65 + 0.35 * sqrt( max( 0.0, 1.0 - 4.0 * f.y * f.y ) );
+    float dip_f = 0.65 + 0.35 * sqrt( max( 0.0, 1.0 - 4.0 * f.x * f.x ) );
+    vec3  t_w = mix( vec3( 1.0 ), mix( vec3( 0.8, 0.9, 1.1 ), vec3( 1.1, 0.9, 0.75 ), mode ), 0.5 );
+    vec3  t_f = mix( vec3( 1.0 ), mix( vec3( 1.1, 0.9, 0.75 ), vec3( 0.8, 0.9, 1.1 ), mode ), 0.5 );
+    vec3  c_w = photo * t_w * ( 0.45 + 0.65 * prof_w ) * ( over > 0.5 ? 1.0 : dip_w );
+    vec3  c_f = photo * t_f * ( 0.45 + 0.65 * prof_f ) * ( over > 0.5 ? dip_f : 1.0 );
+    c_w += vec3( 1.0 ) * pow( prof_w, 10.0 ) * ( 0.05 + 0.4 * kick );
+    c_f += vec3( 1.0 ) * pow( prof_f, 10.0 ) * ( 0.05 + 0.4 * kick );
+    vec3  gap_c = glowColour( photo, q, hueP * 0.159 ) * ( 0.03 + 0.2 * swell );
+    vec3  col = gap_c;
+    vec3  top = over > 0.5 ? c_w : c_f, bot = over > 0.5 ? c_f * 0.7 : c_w * 0.7;
+    float top_a = over > 0.5 ? warp : weft, bot_a = over > 0.5 ? weft : warp;
+    col = mix( col, bot, bot_a );
+    col = mix( col, top, top_a );
     finish( col );
 }

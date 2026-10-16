@@ -107,7 +107,7 @@ void main( void )
     // threshold band stays centred on 0.35, so total ink coverage is unchanged
     // -- only its softness moves.
     float w = mix( 0.030, 0.078, clamp( audioFlatness, 0.0, 1.0 ) );
-    float inkEdge = smoothstep( 0.35 - w, 0.35 + w, field ); // main blot
+    float ink_edge = smoothstep( 0.35 - w, 0.35 + w, field ); // main blot
     float spots = smoothstep( 0.24, 0.27, field )
                   * ( 1.0 - smoothstep( 0.27, 0.30, field ) ); // satellite droplets
     float inner = smoothstep( 0.35 + w, 0.75, field );         // dense core
@@ -118,18 +118,18 @@ void main( void )
     // The musical mode colours the PLATE: minor keys cool it to a clinical
     // grey, major keys warm it to aged cream.  Luminance-matched, so the
     // paper's brightness never moves.
-    vec3 paperTone = mix( vec3( 0.76, 0.80, 0.86 ), vec3( 0.90, 0.83, 0.68 ),
-                          clamp( audioMode, 0.0, 1.0 ) );
-    vec3 paper = paperTone * ( 0.75 + 0.25 * img( suv ) );
-    vec3 inkCol = vec3( 0.035, 0.030, 0.055 )
-                  + img( clamp( vec2( 0.5 ) + p * 0.2, 0.0, 1.0 ) ) * 0.10 * ( 1.0 - inner );
+    vec3 paper_tone = mix( vec3( 0.76, 0.80, 0.86 ), vec3( 0.90, 0.83, 0.68 ),
+                           clamp( audioMode, 0.0, 1.0 ) );
+    vec3 paper = paper_tone * ( 0.75 + 0.25 * img( suv ) );
+    vec3 ink_col = vec3( 0.035, 0.030, 0.055 )
+                   + img( clamp( vec2( 0.5 ) + p * 0.2, 0.0, 1.0 ) ) * 0.10 * ( 1.0 - inner );
 
-    float ink = clamp( inkEdge + spots * 0.85, 0.0, 1.0 )
+    float ink = clamp( ink_edge + spots * 0.85, 0.0, 1.0 )
                 * ( 0.88 + 0.12 * audioLevel );
-    vec3  col = mix( paper, inkCol, ink );
+    vec3  col = mix( paper, ink_col, ink );
 
     if ( positive > 0 )
-        col = mix( inkCol, paper, ink ); // inverted plate
+        col = mix( ink_col, paper, ink ); // inverted plate
 
     fragColor = vec4( col, 1.0 );
 }

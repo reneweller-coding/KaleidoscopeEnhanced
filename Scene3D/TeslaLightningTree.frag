@@ -70,29 +70,29 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Ionized gas plasma colors
-    vec3 coreHot = vec3( 1.0, 0.95, 1.0 );     // Ultra-hot white core
-    vec3 coronaCyan = vec3( 0.1, 0.7, 1.0 );   // High-voltage cyan corona
-    vec3 coronaViolet = vec3( 0.7, 0.1, 1.0 ); // Nitrogen ionization violet
+    vec3 core_hot = vec3( 1.0, 0.95, 1.0 );     // Ultra-hot white core
+    vec3 corona_cyan = vec3( 0.1, 0.7, 1.0 );   // High-voltage cyan corona
+    vec3 corona_violet = vec3( 0.7, 0.1, 1.0 ); // Nitrogen ionization violet
 
-    vec3 plasmaCol = mix( coronaViolet, coronaCyan, fract( vBoltID * 0.15 + time * 0.5 ) );
+    vec3 plasma_col = mix( corona_violet, corona_cyan, fract( vBoltID * 0.15 + time * 0.5 ) );
 
     // CORONA vs CORE: sharp, harsh material collapses the discharge into a
     // hard white ionised core; dull dark material leaves it a broad violet /
     // cyan corona.  Neutral sharpness (0.5) reproduces the original
     // clamp(vHeat - 0.5, 0, 1) curve exactly.
     float shp = clamp( audioSharpness, 0.0, 1.0 );
-    float coreT = clamp( ( vHeat - ( 0.58 - 0.16 * shp ) ) / ( 1.30 - 0.60 * shp ),
-                         0.0, 1.0 );
-    plasmaCol = mix( plasmaCol, coreHot, coreT );
+    float core_t = clamp( ( vHeat - ( 0.58 - 0.16 * shp ) ) / ( 1.30 - 0.60 * shp ),
+                          0.0, 1.0 );
+    plasma_col = mix( plasma_col, core_hot, core_t );
 
     // Photo reflection modulation
-    vec2 photoUV = vPos.xy * 0.2 + 0.5;
-    vec3 photoCol = img( fract( photoUV ) );
+    vec2 photo_uv = vPos.xy * 0.2 + 0.5;
+    vec3 photo_col = img( fract( photo_uv ) );
 
     // vGain separates the families: main strokes at full strength, the ground
     // creep and the corona streamers well behind them, so the added fill never
     // competes with the discharge itself.
-    vec3 col = ( plasmaCol * 1.1 + photoCol * 0.3 ) * ( 0.55 + 0.7 * vHeat )
+    vec3 col = ( plasma_col * 1.1 + photo_col * 0.3 ) * ( 0.55 + 0.7 * vHeat )
                * vGain * arc * glw;
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
 

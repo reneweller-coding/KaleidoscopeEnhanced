@@ -9,7 +9,7 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 layout( std430, binding = 0 ) buffer Verts
 {
-    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, kelvinAmp), attrB.xyzw (pad, circulation)
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, kelvin_amp), attrB.xyzw (pad, circulation)
 };
 
 // DrawArraysIndirectCommand + our own counter:
@@ -55,7 +55,7 @@ void writeVertex( uint slot, vec3 p, float e1, float e2 )
 
 // Where the eye sits in this scene's world space: the vertex stage pushes the
 // tangle away with vp.z += 5.5, which puts the camera at z = -5.5.
-const vec3 CAMERA = vec3( 0.0, 0.0, -5.5 );
+const vec3 Camera = vec3( 0.0, 0.0, -5.5 );
 
 /// A vortex-ring segment is a line from p1 to p2; GL_TRIANGLES needs a real
 /// triangle, so it is emitted as a thin two-triangle ribbon.
@@ -75,8 +75,8 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
     // and rasterised to a hairline or to nothing at all.  Four thousand
     // filaments were being drawn and almost none of them covered a pixel;
     // that, not the palette, is why this scene measured near-black.
-    vec3  toCam = CAMERA - 0.5 * ( pA + pB );
-    vec3  sd = cross( dir, toCam );
+    vec3  to_cam = Camera - 0.5 * ( pA + pB );
+    vec3  sd = cross( dir, to_cam );
     float sl = length( sd );
     vec3  upv = ( abs( dir.y ) > 0.95 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 1.0, 0.0 );
     vec3  side = ( ( sl > 1e-5 ) ? sd / sl : normalize( cross( dir, upv ) ) ) * thickness;
@@ -97,38 +97,38 @@ void main()
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
     // 96 vortex rings of 64 segments.  A denser tangle spread over a wider
     // volume: 64 rings inside a 2-unit box left the frame's corners empty.
-    const uint TOTAL_SEGMENTS = 6144u;
-    if ( id >= TOTAL_SEGMENTS )
+    const uint TotalSegments = 6144u;
+    if ( id >= TotalSegments )
         return;
 
     float seed = float( id );
-    float ringID = floor( seed / 64.0 );
-    float segIdx = mod( seed, 64.0 );
+    float ring_id = floor( seed / 64.0 );
+    float seg_idx = mod( seed, 64.0 );
 
     // Vortex ring parameters
-    float ringRadius = ( 0.45 + 0.75 * hash11( ringID ) ) * 2.0;
-    float ringAngle = ( segIdx / 64.0 ) * 6.2831853;
+    float ring_radius = ( 0.45 + 0.75 * hash11( ring_id ) ) * 2.0;
+    float ring_angle = ( seg_idx / 64.0 ) * 6.2831853;
 
     // Self-induced translational motion of vortex ring along its axis
-    float ringSpeed = 1.0 / max( ringRadius, 0.2 );
-    float t = time * 0.4 * ringSpeed + audioAdvance * 0.2;
+    float ring_speed = 1.0 / max( ring_radius, 0.2 );
+    float t = time * 0.4 * ring_speed + audioAdvance * 0.2;
 
-    vec3 ringCenter = vec3( sin( ringID * 2.0 ) * 3.4,
-                            mod( t * 2.0 + ringID * 0.5, 5.2 ) - 2.6,
-                            cos( ringID * 3.0 ) * 2.6 );
+    vec3 ring_center = vec3( sin( ring_id * 2.0 ) * 3.4,
+                             mod( t * 2.0 + ring_id * 0.5, 5.2 ) - 2.6,
+                             cos( ring_id * 3.0 ) * 2.6 );
 
     // Helical Kelvin wave excitations along the vortex core
-    float kelvinAmp = ( 0.10 + 0.07 * audioHigh ) * sin( ringAngle * 12.0 - time * 8.0 );
-    float r = ringRadius + kelvinAmp;
+    float kelvin_amp = ( 0.10 + 0.07 * audioHigh ) * sin( ring_angle * 12.0 - time * 8.0 );
+    float r = ring_radius + kelvin_amp;
 
-    vec3 p1 = ringCenter + vec3( r * cos( ringAngle ), sin( ringAngle * 6.0 ) * 0.25, r * sin( ringAngle ) );
+    vec3 p1 = ring_center + vec3( r * cos( ring_angle ), sin( ring_angle * 6.0 ) * 0.25, r * sin( ring_angle ) );
 
     // Next segment endpoint
-    float nextAngle = ringAngle + ( 6.2831853 / 64.0 );
-    float r2 = ringRadius + ( 0.10 + 0.07 * audioHigh ) * sin( nextAngle * 12.0 - time * 8.0 );
-    vec3  p2 = ringCenter + vec3( r2 * cos( nextAngle ), sin( nextAngle * 6.0 ) * 0.25, r2 * sin( nextAngle ) );
+    float next_angle = ring_angle + ( 6.2831853 / 64.0 );
+    float r2 = ring_radius + ( 0.10 + 0.07 * audioHigh ) * sin( next_angle * 12.0 - time * 8.0 );
+    vec3  p2 = ring_center + vec3( r2 * cos( next_angle ), sin( next_angle * 6.0 ) * 0.25, r2 * sin( next_angle ) );
 
-    float circulation = 0.5 + 0.5 * sin( ringID + time * 3.0 + audioKick * 3.0 );
+    float circulation = 0.5 + 0.5 * sin( ring_id + time * 3.0 + audioKick * 3.0 );
 
     // Ribbon width.  0.015 was a hairline at the ~5.5-unit camera distance,
     // and worse, the ribbon used to be built EDGE ON to the eye (see
@@ -137,5 +137,5 @@ void main()
     // alone would want: at that combination 6144 filaments cover more than the
     // whole frame and the tangle rasterises into one solid mat with no gaps
     // between the vortex lines to read as depth.
-    emitSegment( p1, p2, kelvinAmp, circulation, 0.026 );
+    emitSegment( p1, p2, kelvin_amp, circulation, 0.026 );
 }

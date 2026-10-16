@@ -62,66 +62,66 @@ void main()
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     float t = time * 0.35 * spd + audioAdvance * 0.15;
-    float fGid = float( gid );
+    float f_gid = float( gid );
 
-    float strandID = floor( fGid / 64.0 ); // 64 strands
-    float segID = mod( fGid, 64.0 );       // 64 segments per strand
+    float strand_id = floor( f_gid / 64.0 ); // 64 strands
+    float seg_id = mod( f_gid, 64.0 );       // 64 segments per strand
 
-    float u1 = segID / 64.0;
-    float u2 = ( segID + 1.0 ) / 64.0;
+    float u1 = seg_id / 64.0;
+    float u2 = ( seg_id + 1.0 ) / 64.0;
 
     // Fibonacci sphere distribution for strand radial directions
-    float phi = strandID * 2.3999632; // golden angle
-    float cosTheta = 1.0 - ( strandID / 64.0 ) * 2.0;
-    float sinTheta = sqrt( max( 0.0, 1.0 - cosTheta * cosTheta ) );
-    vec3  dir = vec3( cos( phi ) * sinTheta, sin( phi ) * sinTheta, cosTheta );
+    float phi = strand_id * 2.3999632; // golden angle
+    float cos_theta = 1.0 - ( strand_id / 64.0 ) * 2.0;
+    float sin_theta = sqrt( max( 0.0, 1.0 - cos_theta * cos_theta ) );
+    vec3  dir = vec3( cos( phi ) * sin_theta, sin( phi ) * sin_theta, cos_theta );
 
     // Rayleigh-Taylor instability wave along filament length
-    float rBase1 = ( 1.2 + u1 * 3.8 * expn ) * ( 1.0 + 0.25 * audioSwell );
-    float rBase2 = ( 1.2 + u2 * 3.8 * expn ) * ( 1.0 + 0.25 * audioSwell );
+    float r_base1 = ( 1.2 + u1 * 3.8 * expn ) * ( 1.0 + 0.25 * audioSwell );
+    float r_base2 = ( 1.2 + u2 * 3.8 * expn ) * ( 1.0 + 0.25 * audioSwell );
 
-    float rtFinger1 = sin( u1 * 18.0 * flm + t * 2.0 + strandID ) * 0.45;
-    float rtFinger2 = sin( u2 * 18.0 * flm + t * 2.0 + strandID ) * 0.45;
+    float rt_finger1 = sin( u1 * 18.0 * flm + t * 2.0 + strand_id ) * 0.45;
+    float rt_finger2 = sin( u2 * 18.0 * flm + t * 2.0 + strand_id ) * 0.45;
 
     // Kick shockwave explosion
-    float kickBlast1 = audioKick * 1.5 * exp( -pow( u1 - 0.7, 2.0 ) * 10.0 );
-    float kickBlast2 = audioKick * 1.5 * exp( -pow( u2 - 0.7, 2.0 ) * 10.0 );
+    float kick_blast1 = audioKick * 1.5 * exp( -pow( u1 - 0.7, 2.0 ) * 10.0 );
+    float kick_blast2 = audioKick * 1.5 * exp( -pow( u2 - 0.7, 2.0 ) * 10.0 );
 
-    vec3 pA = dir * ( rBase1 + rtFinger1 + kickBlast1 );
-    vec3 pB = dir * ( rBase2 + rtFinger2 + kickBlast2 );
+    vec3 p_a = dir * ( r_base1 + rt_finger1 + kick_blast1 );
+    vec3 p_b = dir * ( r_base2 + rt_finger2 + kick_blast2 );
 
     // Ribbon cross vector
-    vec3 forward = normalize( pB - pA );
-    vec3 sideVec = normalize( cross( forward, vec3( 0.0, 1.0, 0.0 ) ) );
-    if ( length( sideVec ) < 0.1 )
-        sideVec = vec3( 1.0, 0.0, 0.0 );
+    vec3 forward = normalize( p_b - p_a );
+    vec3 side_vec = normalize( cross( forward, vec3( 0.0, 1.0, 0.0 ) ) );
+    if ( length( side_vec ) < 0.1 )
+        side_vec = vec3( 1.0, 0.0, 0.0 );
 
-    float ribbonWidth = 0.035 * ( 1.0 + audioHigh * 0.8 );
+    float ribbon_width = 0.035 * ( 1.0 + audioHigh * 0.8 );
 
-    vec3 v0 = pA - sideVec * ribbonWidth;
-    vec3 v1 = pA + sideVec * ribbonWidth;
-    vec3 v2 = pB - sideVec * ribbonWidth;
-    vec3 v3 = pB + sideVec * ribbonWidth;
+    vec3 v0 = p_a - side_vec * ribbon_width;
+    vec3 v1 = p_a + side_vec * ribbon_width;
+    vec3 v2 = p_b - side_vec * ribbon_width;
+    vec3 v3 = p_b + side_vec * ribbon_width;
 
     uint base = atomicAdd( cmd[4], 6u );
     if ( base + 6u > maxVertices )
         return;
 
-    vec3 pList[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
-    vec2 uvList[6] = vec2[6](
+    vec3 p_list[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
+    vec2 uv_list[6] = vec2[6](
         vec2( 0.0, u1 ), vec2( 1.0, u1 ), vec2( 0.0, u2 ),
         vec2( 1.0, u1 ), vec2( 1.0, u2 ), vec2( 0.0, u2 ) );
 
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
-        verts[off + 3u] = strandID;
-        verts[off + 4u] = hash11( strandID );
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
+        verts[off + 3u] = strand_id;
+        verts[off + 4u] = hash11( strand_id );
         verts[off + 5u] = u1;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }

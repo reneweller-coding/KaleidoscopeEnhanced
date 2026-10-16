@@ -60,7 +60,7 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float pId = attrA.w;
+    float p_id = attrA.w;
     vec4  seeds = attrB;
 
     float t = time * 0.35 + audioAdvance * 0.3;
@@ -68,8 +68,8 @@ void main()
     // Optical tweezer 3D Rydberg atom array (simple cubic grid with quantum fluctuations)
     float pitch = ( arrayPitchP > 0.01 ? arrayPitchP : 0.028 );
 
-    const float nSide = 39.0; // 39^3 = 59319 of the 60000 points
-    if ( pId >= nSide * nSide * nSide )
+    const float n_side = 39.0; // 39^3 = 59319 of the 60000 points
+    if ( p_id >= n_side * n_side * n_side )
     {
         // Leftover points of the host's fixed 60000-point buffer: park them
         // outside the clip volume rather than letting mod() stack duplicates
@@ -82,51 +82,51 @@ void main()
         return;
     }
 
-    float ix = mod( pId, nSide );
-    float iy = mod( floor( pId / nSide ), nSide );
-    float iz = floor( pId / ( nSide * nSide ) );
+    float ix = mod( p_id, n_side );
+    float iy = mod( floor( p_id / n_side ), n_side );
+    float iz = floor( p_id / ( n_side * n_side ) );
 
     // arrayPitchP still sets the tweezer spacing, but as a RELATIVE scale of a
     // slab that always overflows the frame: even the tightest pitch keeps the
     // half-width at 4.6 against a 4.17 frame half-width.  The DEPTH extent is
     // deliberately not scaled -- a deeper slab would push its near plane of
     // tweezers through the projection's 0.5 near plane.
-    float pScale = 0.82 + 0.50 * clamp( ( pitch - 0.015 ) / 0.025, 0.0, 1.0 );
-    vec3  ext = vec3( 5.6 * pScale, 5.6 * pScale, 1.6 );
+    float p_scale = 0.82 + 0.50 * clamp( ( pitch - 0.015 ) / 0.025, 0.0, 1.0 );
+    vec3  ext = vec3( 5.6 * p_scale, 5.6 * p_scale, 1.6 );
 
-    vec3 unit = ( vec3( ix, iy, iz ) + 0.5 ) / nSide - 0.5; // [-0.5, +0.5]^3
-    vec3 gridPos = unit * 2.0 * ext;
+    vec3 unit = ( vec3( ix, iy, iz ) + 0.5 ) / n_side - 0.5; // [-0.5, +0.5]^3
+    vec3 grid_pos = unit * 2.0 * ext;
 
     // Quantum zero-point motion in optical tweezers (scaled with the array)
     vec3 jitter = ( seeds.xyz - 0.5 ) * 0.11;
-    vec3 worldPos = gridPos + jitter;
+    vec3 world_pos = grid_pos + jitter;
 
     // Rydberg blockade radius (R_b): collective excitation wave propagating through atom array
-    float r = length( gridPos );
-    float rBlockade = ( blockadeRadP > 0.01 ? blockadeRadP : 0.4 );
+    float r = length( grid_pos );
+    float r_blockade = ( blockadeRadP > 0.01 ? blockadeRadP : 0.4 );
     // Full audioPhase made the excitation wave RACE across the lattice at
     // music tempo -- the white front repainting the whole grid was the real
     // source of the measured 0.33 hue flicker (two frag-side fixes later).
     // Quarter coupling keeps the wave musical at a watchable pace.
-    float blockadePhase = sin( r * ( 1.6 + 3.2 * rBlockade ) - t * 2.5 + audioPhase * 0.25 );
-    float isRydbergExcited = smoothstep( 0.3, 0.9, blockadePhase );
-    vBlockade = isRydbergExcited;
+    float blockade_phase = sin( r * ( 1.6 + 3.2 * r_blockade ) - t * 2.5 + audioPhase * 0.25 );
+    float is_rydberg_excited = smoothstep( 0.3, 0.9, blockade_phase );
+    vBlockade = is_rydberg_excited;
 
     // Point size: after six rounds of gain surgery the scene still read as a
     // faint dark texture -- the atoms were simply too small to carry light at
     // this lattice density. Area is the honest lever: 18-34px instead of
     // 8-16px triples the lit area per atom; the per-point cap and knee in the
     // frag keep additive stacking from burning.
-    float psMax = ( pointSizeP > 0.01 ? pointSizeP : 26.0 );
-    gl_PointSize = clamp( psMax * ( 0.8 + 0.4 * isRydbergExcited ), 18.0, 34.0 );
+    float ps_max = ( pointSizeP > 0.01 ? pointSizeP : 26.0 );
+    gl_PointSize = clamp( ps_max * ( 0.8 + 0.4 * is_rydberg_excited ), 18.0, 34.0 );
     vPointSize = gl_PointSize;
 
     // Same raw-centroid hue-flicker trap as SuperconductingVortex: the
     // slewed chromaHue carries the harmony instead.
-    vCol = imgPalette( fract( r * 0.14 + pId * 0.0001 + audioChromaHue * 0.5 ) );
+    vCol = imgPalette( fract( r * 0.14 + p_id * 0.0001 + audioChromaHue * 0.5 ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // In-plane roll: keeps the wide slab of tweezer planes facing the camera at
     // all times.  The old yaw about the vertical would have swung this slab

@@ -178,11 +178,11 @@ void main()
     {
         float h = hash21( bc + 1.9 );
         vec3  inner = paint( band + 0.4 + 0.2 * h, fam );
-        vec3  rimC = paint( band + 0.2 + 0.1 * h, fam );
+        vec3  rim_c = paint( band + 0.2 + 0.1 * h, fam );
         // Lace: several thin rings with a fibrous break-up.
         float lace = 0.5 + 0.5 * sin( best * 22.0 + 6.0 * noise2( gf * 30.0 + bc ) );
         float ring = smoothstep( 1.35, 1.0, best ) * smoothstep( 0.55, 0.9, best );
-        vec3  cell = mix( inner, rimC, smoothstep( 0.35, 0.95, best ) );
+        vec3  cell = mix( inner, rim_c, smoothstep( 0.35, 0.95, best ) );
         cell = mix( cell, vec3( 0.97 ), smoothstep( 0.85, 1.0, lace ) * ring * 0.7 );
         cell = mix( cell, paint( band + 0.8, fam ), smoothstep( 0.8, 1.0, 1.0 - lace ) * ring * 0.4 );
         col = mix( col, cell, smoothstep( 1.35, 1.1, best ) );
@@ -208,7 +208,7 @@ void main()
     col += vec3( 1.0 ) * spec * ( 0.15 + 0.35 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

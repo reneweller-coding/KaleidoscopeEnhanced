@@ -73,46 +73,46 @@ void main()
     float angle = atan( uv.y, uv.x );
 
     // Relativistic fireball expansion shockwave
-    float fireballR = ( 0.7 + 0.3 * sin( t * 0.8 ) ) * ( 1.0 + 0.4 * audioBass );
-    float fireballMask = smoothstep( fireballR + 0.2, fireballR - 0.1, r );
+    float fireball_r = ( 0.7 + 0.3 * sin( t * 0.8 ) ) * ( 1.0 + 0.4 * audioBass );
+    float fireball_mask = smoothstep( fireball_r + 0.2, fireball_r - 0.1, r );
 
     // SU(3) Non-Abelian color flux tubes
-    vec2 fluxUV = uv * ( 4.0 * str );
-    vec3 su3 = su3ColorField( fluxUV, t );
+    vec2 flux_uv = uv * ( 4.0 * str );
+    vec3 su3 = su3ColorField( flux_uv, t );
 
     // Color string tension & string-breaking vortex pinch
-    float stringTension = sin( uv.x * 12.0 + sin( uv.y * 8.0 + t ) * 2.0 );
-    float stringBreak = exp( -abs( stringTension ) * 8.0 ) * ( 0.8 + 1.2 * audioHigh );
+    float string_tension = sin( uv.x * 12.0 + sin( uv.y * 8.0 + t ) * 2.0 );
+    float string_break = exp( -abs( string_tension ) * 8.0 ) * ( 0.8 + 1.2 * audioHigh );
 
     // Deconfined quark trajectories advected through gluon field
-    vec2 quarkPos1 = uv + vec2( cos( t * 1.2 ), sin( t * 1.5 ) ) * 0.25;
-    vec2 quarkPos2 = uv + vec2( cos( t * 0.9 + 2.0 ), sin( t * 1.1 + 1.0 ) ) * 0.3;
-    vec2 quarkPos3 = uv + vec2( sin( t * 1.4 + 4.0 ), cos( t * 0.8 + 3.0 ) ) * 0.35;
+    vec2 quark_pos1 = uv + vec2( cos( t * 1.2 ), sin( t * 1.5 ) ) * 0.25;
+    vec2 quark_pos2 = uv + vec2( cos( t * 0.9 + 2.0 ), sin( t * 1.1 + 1.0 ) ) * 0.3;
+    vec2 quark_pos3 = uv + vec2( sin( t * 1.4 + 4.0 ), cos( t * 0.8 + 3.0 ) ) * 0.35;
 
-    float q1 = exp( -dot( quarkPos1, quarkPos1 ) * 30.0 );
-    float q2 = exp( -dot( quarkPos2, quarkPos2 ) * 30.0 );
-    float q3 = exp( -dot( quarkPos3, quarkPos3 ) * 30.0 );
-    float quarkGlow = ( q1 + q2 + q3 ) * ( 1.5 + 2.5 * audioKick );
+    float q1 = exp( -dot( quark_pos1, quark_pos1 ) * 30.0 );
+    float q2 = exp( -dot( quark_pos2, quark_pos2 ) * 30.0 );
+    float q3 = exp( -dot( quark_pos3, quark_pos3 ) * 30.0 );
+    float quark_glow = ( q1 + q2 + q3 ) * ( 1.5 + 2.5 * audioKick );
 
     // Photo texture embedded into the deconfined color fields
-    vec2 photoUV = uv * 0.5 + vec2( 0.5 ) + ( su3.xy - 0.5 ) * 0.1;
-    vec3 photoPlasma = img( fract( photoUV ) );
+    vec2 photo_uv = uv * 0.5 + vec2( 0.5 ) + ( su3.xy - 0.5 ) * 0.1;
+    vec3 photo_plasma = img( fract( photo_uv ) );
 
     // High-temperature QCD colors: 4 Trillion Kelvin Fireball White/Magenta/Cyan
-    vec3 qcdWhite = vec3( 1.0, 0.98, 0.95 ) * 3.0;
-    vec3 qcdMagenta = vec3( 1.0, 0.05, 0.6 ) * 2.0;
-    vec3 qcdCyan = vec3( 0.0, 0.85, 1.0 ) * 2.0;
+    vec3 qcd_white = vec3( 1.0, 0.98, 0.95 ) * 3.0;
+    vec3 qcd_magenta = vec3( 1.0, 0.05, 0.6 ) * 2.0;
+    vec3 qcd_cyan = vec3( 0.0, 0.85, 1.0 ) * 2.0;
 
-    vec3 plasmaCol = mix( qcdCyan, qcdMagenta, su3.r );
-    plasmaCol = mix( plasmaCol, qcdWhite, fireballMask * ( 0.5 + 0.5 * audioKick ) );
+    vec3 plasma_col = mix( qcd_cyan, qcd_magenta, su3.r );
+    plasma_col = mix( plasma_col, qcd_white, fireball_mask * ( 0.5 + 0.5 * audioKick ) );
 
     // Collision burst on kick
-    float collisionBurst = exp( -r * 3.0 ) * ( audioKick * 3.0 + audioSubBass * 1.5 );
+    float collision_burst = exp( -r * 3.0 ) * ( audioKick * 3.0 + audioSubBass * 1.5 );
 
-    vec3 col = photoPlasma * ( plasmaCol * 0.8 + 0.2 ) * pls;
-    col += plasmaCol * stringBreak * 1.5;
-    col += vec3( 1.0, 0.9, 0.5 ) * quarkGlow * 1.5;
-    col += qcdWhite * collisionBurst;
+    vec3 col = photo_plasma * ( plasma_col * 0.8 + 0.2 ) * pls;
+    col += plasma_col * string_break * 1.5;
+    col += vec3( 1.0, 0.9, 0.5 ) * quark_glow * 1.5;
+    col += qcd_white * collision_burst;
 
     col = hueRot( col, audioChromaHue + hue );
     col = pow( col, vec3( 0.85 ) ); // High contrast boost
@@ -120,7 +120,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.26;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.26;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -65,29 +65,29 @@ void main()
     float u = uv.x * 3.14159265;
     float v = uv.y * 1.5;
 
-    float vSpeed = ( deformSpeedP > 0.01 ? deformSpeedP : 1.0 );
-    float thetaDeform = t * 0.8 * vSpeed + audioPhase * 0.5;
-    vDeformAngle = thetaDeform;
+    float v_speed = ( deformSpeedP > 0.01 ? deformSpeedP : 1.0 );
+    float theta_deform = t * 0.8 * v_speed + audioPhase * 0.5;
+    vDeformAngle = theta_deform;
 
-    float cTh = cos( thetaDeform ), sTh = sin( thetaDeform );
-    float shV = sinh( v ), chV = cosh( v );
-    float sU = sin( u ), cU = cos( u );
+    float c_th = cos( theta_deform ), s_th = sin( theta_deform );
+    float sh_v = sinh( v ), ch_v = cosh( v );
+    float s_u = sin( u ), c_u = cos( u );
 
     float scale = ( sheetScaleP > 0.01 ? sheetScaleP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
 
-    vec3 worldPos = vec3(
-                        cTh * shV * sU + sTh * chV * cU,
-                        -cTh * shV * cU + sTh * chV * sU,
-                        u * cTh + v * sTh )
-                    * ( scale * 0.9 );
+    vec3 world_pos = vec3(
+                         c_th * sh_v * s_u + s_th * ch_v * c_u,
+                         -c_th * sh_v * c_u + s_th * ch_v * s_u,
+                         u * c_th + v * s_th )
+                     * ( scale * 0.9 );
 
     // Exact normal to Bonnet associated family of minimal surfaces
-    vNormal = normalize( vec3( -sU / chV, cU / chV, -shV / chV ) );
+    vNormal = normalize( vec3( -s_u / ch_v, c_u / ch_v, -sh_v / ch_v ) );
 
-    vCol = imgPalette( fract( thetaDeform * 0.159 + length( uv ) * 0.25 + audioCentroid ) );
+    vCol = imgPalette( fract( theta_deform * 0.159 + length( uv ) * 0.25 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 4.5;
     vp.x -= eyeOff;
 

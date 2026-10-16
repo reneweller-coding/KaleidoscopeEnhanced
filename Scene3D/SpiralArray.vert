@@ -52,18 +52,18 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // Helix parameters: h in 0..1 spans the visible column.
-    const float TURNS = 5.5;
+    const float Turns = 5.5;
     const float H = 34.0;
     const float R = 5.2;
 
     vec3  world;
     vec3  col;
     float bright;
-    float sizeMul = 1.0;
+    float size_mul = 1.0;
 
     // The whole molecule slowly turns; a beat pulse climbs it.
     float spin = time * 0.35;
-    float pulseH = fract( audioBeatPhase ); // 0 bottom .. 1 top
+    float pulse_h = fract( audioBeatPhase ); // 0 bottom .. 1 top
 
     // DROP UNZIP: the strands tear apart horizontally, most near the top.
     float unzip = audioDrop;
@@ -74,7 +74,7 @@ void main()
         float strand = ( idx < 12000.0 ) ? 0.0 : 1.0;
         float h = fract( idx / 12000.0 );
         h = fract( h * 7.919 + r1 * 0.002 ); // decorrelate
-        float ang = h * TURNS * 6.2831853 + spin + strand * 3.1415927;
+        float ang = h * Turns * 6.2831853 + spin + strand * 3.1415927;
 
         vec3 c3 = vec3( cos( ang ) * R, ( h - 0.5 ) * H, sin( ang ) * R );
         // Unzip: push the strands apart sideways, stronger toward the top.
@@ -87,9 +87,9 @@ void main()
         col = hueRot( ( strand < 0.5 ) ? vec3( 0.25, 0.85, 1.0 )
                                        : vec3( 1.0, 0.55, 0.25 ),
                       audioChromaHue );
-        float pulse = exp( -abs( h - pulseH ) * 8.0 );
+        float pulse = exp( -abs( h - pulse_h ) * 8.0 );
         bright = 0.45 + 0.9 * pulse + 0.4 * audioSwell;
-        sizeMul = 0.8 + 0.6 * pulse;
+        size_mul = 0.8 + 0.6 * pulse;
     }
     else if ( idx < 48000.0 )
     {
@@ -97,7 +97,7 @@ void main()
         float ri = floor( ( idx - 24000.0 ) / 375.0 ); // rung 0..63
         float tt = fract( ( idx - 24000.0 ) / 375.0 ); // 0..1 across the rung
         float h = ( ri + 0.5 ) / 64.0;
-        float ang = h * TURNS * 6.2831853 + spin;
+        float ang = h * Turns * 6.2831853 + spin;
 
         vec3 a3 = vec3( cos( ang ) * R, ( h - 0.5 ) * H, sin( ang ) * R );
         vec3 b3 = vec3( cos( ang + 3.1415927 ) * R, a3.y, sin( ang + 3.1415927 ) * R );
@@ -114,9 +114,9 @@ void main()
         float pc = mod( ri, 12.0 );
         float e = audioChroma[int( pc )] * 4.0;
         col = hueRot( vec3( 0.9, 0.5, 0.9 ), pc / 12.0 * 3.1415927 + audioChromaHue );
-        float pulse = exp( -abs( h - pulseH ) * 8.0 );
+        float pulse = exp( -abs( h - pulse_h ) * 8.0 );
         bright = ( 0.10 + 2.2 * e + 0.6 * pulse ) * ( 1.0 - gap );
-        sizeMul = 0.6 + 0.5 * e;
+        size_mul = 0.6 + 0.5 * e;
     }
     else
     {
@@ -128,7 +128,7 @@ void main()
                       sin( u + time * 0.1 ) * rad );
         col = hueRot( vec3( 0.3, 0.5, 0.9 ), audioChromaHue );
         bright = 0.05 + 0.10 * audioSwell;
-        sizeMul = 0.5;
+        size_mul = 0.5;
     }
 
     // Gentle camera: slight tilt + slow vertical drift along the molecule.
@@ -145,9 +145,9 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( 170.5 * sizeMul * ( 0.5 + 0.5 * r4 ) * px / dist, 1.5, 19.5 * px ); // sprite sweep
-                                                                                              // 2026-08-22: measured
-                                                                                              // luma 0.053, area x2.6
+    gl_PointSize = clamp( 170.5 * size_mul * ( 0.5 + 0.5 * r4 ) * px / dist, 1.5, 19.5 * px ); // sprite sweep
+                                                                                               // 2026-08-22: measured
+                                                                                               // luma 0.053, area x2.6
 
     vCol = vec4( col * bright * 2.8, 1.0 );
 }

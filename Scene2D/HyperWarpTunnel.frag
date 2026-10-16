@@ -50,7 +50,7 @@ uniform float twistP;         ///< Twist knob, 0..1.
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-const vec3 LW = vec3( 0.2126, 0.7152, 0.0722 );
+const vec3 Lw = vec3( 0.2126, 0.7152, 0.0722 );
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -95,7 +95,7 @@ vec3 imgPalette( float t )
 vec3 palNorm( float t )
 {
     vec3  p = imgPalette( t );
-    float pl = max( dot( p, LW ), 1e-4 );
+    float pl = max( dot( p, Lw ), 1e-4 );
     vec3  pn = min( p / pl, vec3( 2.5 ) );
     pn = mix( vec3( 1.0 ), pn, clamp( pl * 8.0, 0.25, 1.0 ) );
     return pn * 0.55;
@@ -183,12 +183,12 @@ void main()
     a += twist * sin( z * 0.05 + time * 0.5 );
 
     // Dynamic FBM domain warping on tunnel wall
-    vec2  tunnelUV = vec2( a / 3.14159265, z * 0.2 + audioAdvance * spd * 0.4 );
-    float warpPattern = fbm( tunnelUV * 3.0 + vec2( audioFlux * 0.5, time * 0.2 ) ) * wrp;
+    vec2  tunnel_uv = vec2( a / 3.14159265, z * 0.2 + audioAdvance * spd * 0.4 );
+    float warp_pattern = fbm( tunnel_uv * 3.0 + vec2( audioFlux * 0.5, time * 0.2 ) ) * wrp;
 
     // Distort UVs with warp pattern and sub-bass pulse
-    tunnelUV += vec2( sin( z * 2.0 + time ), cos( a * 4.0 ) ) * 0.05 * warpPattern;
-    tunnelUV.y += audioSubBass * 0.08 * sin( a * 6.0 );
+    tunnel_uv += vec2( sin( z * 2.0 + time ), cos( a * 4.0 ) ) * 0.05 * warp_pattern;
+    tunnel_uv.y += audioSubBass * 0.08 * sin( a * 6.0 );
 
     // ---- Tunnel wall: the photo, but level-normalised and contrast-expanded ----
     // The wall used to be the raw photo sample, so with the library's dark
@@ -197,33 +197,33 @@ void main()
     // own mean (imgDC) makes the wall's brightness a property of the TUNNEL and
     // only its texture a property of the picture; the S-curve then pushes the
     // wall's own light and dark apart instead of averaging them.
-    float dcL = max( dot( imgDC(), LW ), 0.05 );
-    float gain = clamp( 0.52 / dcL, 0.7, 3.2 );
-    vec3  wallC = img( fract( tunnelUV ) ) * gain;
-    float wexp = 0.45 + 1.10 * smoothstep( 0.10, 0.85, dot( wallC, LW ) );
-    wallC = min( wallC * wexp, vec3( 2.2 ) );
+    float dc_l = max( dot( imgDC(), Lw ), 0.05 );
+    float gain = clamp( 0.52 / dc_l, 0.7, 3.2 );
+    vec3  wall_c = img( fract( tunnel_uv ) ) * gain;
+    float wexp = 0.45 + 1.10 * smoothstep( 0.10, 0.85, dot( wall_c, Lw ) );
+    wall_c = min( wall_c * wexp, vec3( 2.2 ) );
 
     // Depth shading. smoothstep(0.0, 1.5, r) was the reason this scene once
     // measured occ 0.03: r never exceeds ~1.02 on a 16:9 frame, so that ramp
     // multiplied the wall into blackness across almost the whole picture.
-    float depthFade = smoothstep( 0.015, 0.42, r );
+    float depth_fade = smoothstep( 0.015, 0.42, r );
     // Wall relief with REAL GAPS: the FBM is remapped through a smoothstep
     // rather than used as a 0.72..1.30 tint, so the wall alternates between lit
     // bands and dark troughs instead of sitting at one brightness.
-    float relief = smoothstep( 0.20, 0.84, warpPattern );
-    float wallLit = depthFade * ( 0.14 + 0.95 * relief );
+    float relief = smoothstep( 0.20, 0.84, warp_pattern );
+    float wall_lit = depth_fade * ( 0.14 + 0.95 * relief );
 
-    vec3 col = wallC * wallLit;
+    vec3 col = wall_c * wall_lit;
 
     // Chromatic aberration towards screen edges
-    vec2 caOffset = uv * 0.02 * ( audioHigh + audioKick );
-    col.r = min( img( fract( tunnelUV + caOffset ) ).r * gain * wexp, 2.2 ) * wallLit;
-    col.b = min( img( fract( tunnelUV - caOffset ) ).b * gain * wexp, 2.2 ) * wallLit;
+    vec2 ca_offset = uv * 0.02 * ( audioHigh + audioKick );
+    col.r = min( img( fract( tunnel_uv + ca_offset ) ).r * gain * wexp, 2.2 ) * wall_lit;
+    col.b = min( img( fract( tunnel_uv - ca_offset ) ).b * gain * wexp, 2.2 ) * wall_lit;
 
     // ---- The tunnel's own lights (photo palette, photo-level independent) ----
-    vec3 glowCol = palNorm( 0.30 * audioCentroid );
-    vec3 spokeCol = palNorm( 0.5 );
-    vec3 streakCol = palNorm( 0.15 );
+    vec3 glow_col = palNorm( 0.30 * audioCentroid );
+    vec3 spoke_col = palNorm( 0.5 );
+    vec3 streak_col = palNorm( 0.15 );
 
     float rings = pow( 0.5 + 0.5 * cos( z * 1.1 - ( time * 2.6 * spd + audioAdvance * 4.0 ) ), 9.0 );
     float spokes = pow( abs( cos( a * 9.0 + z * 0.4 ) ), 7.0 );
@@ -238,14 +238,14 @@ void main()
     float       sa = a0 * ( NS / 6.2831853 );
     float       sid = floor( sa );
     float       sf = sa - sid - 0.5;
-    float       dS = abs( sf ) * ( 6.2831853 / NS ) * r;
-    float       core = exp( -( dS * dS ) / ( 0.0065 * 0.0065 ) );
+    float       d_s = abs( sf ) * ( 6.2831853 / NS ) * r;
+    float       core = exp( -( d_s * d_s ) / ( 0.0065 * 0.0065 ) );
     float       tail = pow( 0.5 + 0.5 * cos( a0 * NS ), 3.0 );
     float       sh = 0.30 + 0.70 * hash11( sid );
     float dash = 0.30
                  + 0.70
                        * pow( 0.5 + 0.5 * sin( z * 2.0 - ( time * 3.0 * spd + audioAdvance * 5.0 ) + sid * 1.7 ), 3.0 );
-    float       streak = ( core * sh * dash + 0.22 * tail ) * depthFade;
+    float       streak = ( core * sh * dash + 0.22 * tail ) * depth_fade;
 
     // Vanishing point: a COMPACT core (sigma ~32 px at 1080p) plus a small halo,
     // instead of the old frame-wide 1/r gradient -- a smooth gradient just
@@ -253,10 +253,10 @@ void main()
     float throat = exp( -( r * r ) / ( 0.030 * 0.030 ) );
     float halo = 0.10 / ( r + 0.20 );
 
-    col += glowCol * rings * ( 0.20 + 0.80 * depthFade ) * ( 0.9 + 0.8 * audioKick );
-    col += spokeCol * spokes * ( 0.25 + 0.75 * depthFade ) * 0.40;
-    col += streakCol * streak * ( 0.55 + 0.55 * audioHigh );
-    col += glowCol * ( throat * ( 0.85 + 0.55 * audioKick ) + halo * ( 0.25 + 0.35 * audioMid ) );
+    col += glow_col * rings * ( 0.20 + 0.80 * depth_fade ) * ( 0.9 + 0.8 * audioKick );
+    col += spoke_col * spokes * ( 0.25 + 0.75 * depth_fade ) * 0.40;
+    col += streak_col * streak * ( 0.55 + 0.55 * audioHigh );
+    col += glow_col * ( throat * ( 0.85 + 0.55 * audioKick ) + halo * ( 0.25 + 0.35 * audioMid ) );
 
     col = min( col, vec3( 1.6 ) );
 
@@ -272,7 +272,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = clamp( col * 0.56, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col * 0.56, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

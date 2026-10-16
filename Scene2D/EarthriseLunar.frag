@@ -104,7 +104,7 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
-    vec3  sunDir = normalize( vec3( -1.0, 0.15, 0.35 + 0.5 * clamp( phaseP, 0.0, 1.0 ) ) );
+    vec3  sun_dir = normalize( vec3( -1.0, 0.15, 0.35 + 0.5 * clamp( phaseP, 0.0, 1.0 ) ) );
 
     // Space: black with very faint stars (the exposure is set for the Moon).
     vec3 col = vec3( 0.0 );
@@ -136,22 +136,22 @@ void main()
         vec3  cq = q * 3.0 + vec3( T * 0.004, 0.0, 0.0 );
         float cloud = smoothstep( 0.5, 0.75, fbm3( cq + 2.0 * vec3( fbm3( cq * 0.7 ), fbm3( cq * 0.7 + 5.0 ), 0.0 ) ) );
         surf = mix( surf, vec3( 0.95 ), cloud * 0.85 );
-        float dif = max( dot( n, sunDir ), 0.0 );
-        float term = smoothstep( -0.05, 0.15, dot( n, sunDir ) );
+        float dif = max( dot( n, sun_dir ), 0.0 );
+        float term = smoothstep( -0.05, 0.15, dot( n, sun_dir ) );
         vec3  ec3 = surf * ( 0.02 + 1.3 * dif ) * term;
         // Sun glint on the oceans.
-        vec3 H = normalize( sunDir + vec3( 0.0, 0.0, 1.0 ) );
+        vec3 H = normalize( sun_dir + vec3( 0.0, 0.0, 1.0 ) );
         ec3 += vec3( 1.0, 0.95, 0.85 ) * pow( max( dot( n, H ), 0.0 ), 60.0 ) * ( 1.0 - land ) * ( 1.0 - cloud )
                * ( 0.4 + 0.9 * hi );
         // Atmosphere rim: thin, blue, on the lit side.
         float rim = pow( 1.0 - n.z, 3.0 );
-        ec3 += vec3( 0.3, 0.55, 1.0 ) * rim * smoothstep( -0.2, 0.4, dot( n, sunDir ) ) * ( 0.6 + 0.6 * swell );
+        ec3 += vec3( 0.3, 0.55, 1.0 ) * rim * smoothstep( -0.2, 0.4, dot( n, sun_dir ) ) * ( 0.6 + 0.6 * swell );
         col = mix( col, ec3, smoothstep( 1.0, 0.985, r2 ) );
     }
     // The thin glow of the atmosphere just beyond the limb.
     float rr = sqrt( r2 );
     col += vec3( 0.3, 0.55, 1.0 ) * exp( -max( rr - 1.0, 0.0 ) * 40.0 ) * step( 1.0, rr )
-           * smoothstep( -0.3, 0.6, dot( normalize( vec3( d, 0.0 ) ), sunDir ) ) * 0.3 * ( 0.6 + 0.6 * swell );
+           * smoothstep( -0.3, 0.6, dot( normalize( vec3( d, 0.0 ) ), sun_dir ) ) * 0.3 * ( 0.6 + 0.6 * swell );
 
     // The lunar horizon: a gently curved limb in the lower part of the frame,
     // the surface in perspective, sliding past slowly.
@@ -162,7 +162,7 @@ void main()
         float z = 0.06 / ( dd + 0.004 );               // depth
         vec2  g = vec2( p.x * z * 2.0, z - T * 0.08 ); // ground plane
         // Craters: round bowls with a lit rim and a shadowed side (sun from the left).
-        float shade = 0.0, rimL = 0.0;
+        float shade = 0.0, rim_l = 0.0;
         for ( int L = 0; L < 3; ++L )
         {
             float sc = 1.0 + 1.8 * float( L );
@@ -178,19 +178,19 @@ void main()
             {
                 shade += smoothstep( 1.0, 0.7, dl ) * smoothstep( -0.4, 0.6, -dv.x ) * 0.8 * fade; // inner wall away
                                                                                                    // from the sun
-                rimL += exp( -pow( ( dl - 1.0 ) * 6.0, 2.0 ) ) * smoothstep( 0.2, -0.6, dv.x ) * fade;
+                rim_l += exp( -pow( ( dl - 1.0 ) * 6.0, 2.0 ) ) * smoothstep( 0.2, -0.6, dv.x ) * fade;
             }
         }
         float tex = 0.75 + 0.25 * mix( noise2( g * 20.0 ), 0.5, smoothstep( 3.0, 10.0, z ) );
         vec3  regolith = vec3( 0.55, 0.53, 0.5 ) * tex * ( 0.45 + 0.4 * smoothstep( 0.0, 0.2, dd ) );
         regolith *= 1.0 - clamp( shade, 0.0, 0.95 );
-        regolith += vec3( 0.7 ) * clamp( rimL, 0.0, 1.0 ) * 0.3;
+        regolith += vec3( 0.7 ) * clamp( rim_l, 0.0, 1.0 ) * 0.3;
         // The near edge of the limb is brightest, the far limb falls off.
         col = regolith * ( 0.6 + 0.6 * exp( -dd * 2.0 ) );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

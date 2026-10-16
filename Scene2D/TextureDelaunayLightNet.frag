@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -293,14 +293,14 @@ void main()
     ring[8] = 6;
     for ( int a = 0; a < 8; ++a )
     {
-        vec2  A = P[12], B = P[ring[a]], Cc = P[ring[a + 1]];
-        vec2  e0 = B - A, e1 = Cc - B, e2 = A - Cc;
+        vec2  A = P[12], B = P[ring[a]], cc = P[ring[a + 1]];
+        vec2  e0 = B - A, e1 = cc - B, e2 = A - cc;
         float s0 = e0.x * ( g.y - A.y ) - e0.y * ( g.x - A.x );
         float s1 = e1.x * ( g.y - B.y ) - e1.y * ( g.x - B.x );
-        float s2 = e2.x * ( g.y - Cc.y ) - e2.y * ( g.x - Cc.x );
-        bool  inT = ( s0 > 0.0 && s1 > 0.0 && s2 > 0.0 ) || ( s0 < 0.0 && s1 < 0.0 && s2 < 0.0 );
+        float s2 = e2.x * ( g.y - cc.y ) - e2.y * ( g.x - cc.x );
+        bool  in_t = ( s0 > 0.0 && s1 > 0.0 && s2 > 0.0 ) || ( s0 < 0.0 && s1 < 0.0 && s2 < 0.0 );
         float per = length( e0 ) + length( e1 ) + length( e2 );
-        if ( inT && per < reach * 2.4 )
+        if ( in_t && per < reach * 2.4 )
             col += ( C[12] + C[ring[a]] ) * 0.5 * ( 0.02 + 0.08 * swell ) * smoothstep( reach * 2.4, reach * 1.6, per );
     }
     // Nodes: round glows.

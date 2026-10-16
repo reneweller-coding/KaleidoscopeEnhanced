@@ -125,7 +125,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -244,14 +244,14 @@ void main()
     gS = 0.8 + 1.5 * clamp( curlP, 0.0, 1.0 );
     // Line integral convolution of noise along the field: strands.
     float fine = 150.0 + 250.0 * clamp( strandP, 0.0, 1.0 );
-    float stepL = 0.004 + 0.004 * swell;
+    float step_l = 0.004 + 0.004 * swell;
     float acc = 0.0, wsum = 0.0;
     vec2  xf = p, xb = p;
     for ( int i = 0; i < 14; ++i )
     {
         float w = 1.0 - float( i ) / 14.0;
-        xf += fieldAt( xf ) * stepL;
-        xb -= fieldAt( xb ) * stepL;
+        xf += fieldAt( xf ) * step_l;
+        xb -= fieldAt( xb ) * step_l;
         acc += ( noise2( xf * fine ) + noise2( xb * fine ) ) * w;
         wsum += 2.0 * w;
     }

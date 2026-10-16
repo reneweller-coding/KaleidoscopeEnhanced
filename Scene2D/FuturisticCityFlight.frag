@@ -96,8 +96,8 @@ float hash21( vec2 p )
 }
 
 // ---- the street ------------------------------------------------------------
-const float STREET_HALF = 4.6; ///< kerb to kerb, the camera weaves well inside
-const float BLOCK = 9.0;       ///< one building per block along z
+const float StreetHalf = 4.6; ///< kerb to kerb, the camera weaves well inside
+const float Block = 9.0;      ///< one building per block along z
 
 /// A building's footprint and height from its block index and side.
 void building( float k, float side, float bp,
@@ -106,13 +106,13 @@ void building( float k, float side, float bp,
     float h1 = hash11( k * 3.7 + side * 17.1 );
     float h2 = hash11( k * 5.3 + side * 29.3 );
     float h3 = hash11( k * 7.9 + side * 41.7 );
-    float height = ( 6.0 + 18.0 * h1 * h1 ) * bp;                           // a few tall, most mid
-    float halfW = 2.2 + 3.0 * h2;                                           // across the street
-    float setback = 0.4 + 2.2 * h3;                                         // from the kerb
-    float halfD = BLOCK * ( 0.34 + 0.10 * hash11( k * 2.1 + side * 3.3 ) ); // along z
-    centre = vec3( side * ( STREET_HALF + setback + halfW ), height * 0.5,
-                   ( k + 0.5 ) * BLOCK );
-    half_ = vec3( halfW, height * 0.5, halfD );
+    float height = ( 6.0 + 18.0 * h1 * h1 ) * bp;                            // a few tall, most mid
+    float half_w = 2.2 + 3.0 * h2;                                           // across the street
+    float setback = 0.4 + 2.2 * h3;                                          // from the kerb
+    float half_d = Block * ( 0.34 + 0.10 * hash11( k * 2.1 + side * 3.3 ) ); // along z
+    centre = vec3( side * ( StreetHalf + setback + half_w ), height * 0.5,
+                   ( k + 0.5 ) * Block );
+    half_ = vec3( half_w, height * 0.5, half_d );
 }
 
 /// @brief Signed distance to a box of half size b.
@@ -130,7 +130,7 @@ float mapCity( vec3 p, float bp )
     float d = p.y; // the road
     gSide = 0.0;
     gBlock = 0.0;
-    float k0 = floor( p.z / BLOCK );
+    float k0 = floor( p.z / Block );
     for ( int s = 0; s < 2; ++s )
     {
         float side = ( s == 0 ) ? -1.0 : 1.0;
@@ -173,7 +173,7 @@ void main()
 {
     float bp = ( buildP > 0.01 ) ? buildP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
-    float fgP = ( fogP > 0.01 ) ? fogP : 1.0;
+    float fg_p = ( fogP > 0.01 ) ? fogP : 1.0;
     float hue = ( hueP > 0.01 ) ? hueP : 0.0;
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
@@ -202,12 +202,12 @@ void main()
             break;
     }
 
-    vec3 neonA = max( imgPalette( 0.15 ), vec3( 0.20, 0.16, 0.34 ) );
-    vec3 neonB = max( imgPalette( 0.62 ), vec3( 0.34, 0.14, 0.26 ) );
+    vec3 neon_a = max( imgPalette( 0.15 ), vec3( 0.20, 0.16, 0.34 ) );
+    vec3 neon_b = max( imgPalette( 0.62 ), vec3( 0.34, 0.14, 0.26 ) );
 
     // The sky at the end of the canyon: a night haze that carries the neon.
     float up = clamp( rd.y * 2.2 + 0.25, 0.0, 1.0 );
-    vec3  sky = mix( neonA * 0.55, vec3( 0.03, 0.02, 0.07 ), up )
+    vec3  sky = mix( neon_a * 0.55, vec3( 0.03, 0.02, 0.07 ), up )
                 * ( 0.45 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) );
     vec3  col = sky;
 
@@ -222,11 +222,11 @@ void main()
             vec3 asphalt = vec3( 0.045, 0.045, 0.055 );
             // Lane markings: a dashed centre line and solid kerb lines.
             float dash = step( 0.55, fract( p.z * 0.20 ) ) * smoothstep( 0.10, 0.04, abs( p.x ) );
-            float kerb = smoothstep( 0.14, 0.06, abs( abs( p.x ) - STREET_HALF + 0.35 ) );
+            float kerb = smoothstep( 0.14, 0.06, abs( abs( p.x ) - StreetHalf + 0.35 ) );
             col = asphalt + vec3( 0.55, 0.50, 0.30 ) * ( dash * 0.55 + kerb * 0.35 );
             // Wet asphalt: the neon of the walls mirrors faintly in it.
             float wet = pow( 1.0 - clamp( -rd.y, 0.0, 1.0 ), 3.0 );
-            col += mix( neonA, neonB, 0.5 + 0.5 * sin( p.z * 0.05 ) ) * wet * 0.25 * glw;
+            col += mix( neon_a, neon_b, 0.5 + 0.5 * sin( p.z * 0.05 ) ) * wet * 0.25 * glw;
         }
         else
         {
@@ -246,8 +246,8 @@ void main()
             float seed = hash21( cell + bid * 0.37 );
             // Which windows are lit is fixed; how MANY is a slow ramp on the
             // level; a lit one glows gently on a continuous, personal phase.
-            float litAt = 0.42 + 0.30 * clamp( audioLevel, 0.0, 1.0 );
-            float lit = smoothstep( litAt + 0.04, litAt - 0.04, seed );
+            float lit_at = 0.42 + 0.30 * clamp( audioLevel, 0.0, 1.0 );
+            float lit = smoothstep( lit_at + 0.04, lit_at - 0.04, seed );
             float breathe = 0.75 + 0.25 * sin( sceneTime * 0.6 + seed * 40.0 );
             // Under the roofline the top row is dark plant floor.
             lit *= step( p.y, gC.y + gH.y - 1.4 );
@@ -261,12 +261,12 @@ void main()
             if ( abs( n.x ) > 0.5 )
             {
                 float sx = hash11( bid * 1.9 );
-                float signZ = gC.z + ( sx - 0.5 ) * gH.z * 1.2;
-                float signY0 = 2.5 + 3.0 * hash11( bid * 3.1 );
-                float sign = smoothstep( 0.35, 0.10, abs( p.z - signZ ) )
-                             * smoothstep( 0.0, 0.3, p.y - signY0 ) * smoothstep( signY0 + 3.2, signY0 + 2.9, p.y );
-                vec3  signCol = mix( neonA, neonB, hash11( bid * 5.7 ) ) * 2.2;
-                col += signCol * sign * ( 0.6 + 1.1 * clamp( audioKick, 0.0, 1.0 ) ) * glw;
+                float sign_z = gC.z + ( sx - 0.5 ) * gH.z * 1.2;
+                float sign_y0 = 2.5 + 3.0 * hash11( bid * 3.1 );
+                float sign = smoothstep( 0.35, 0.10, abs( p.z - sign_z ) )
+                             * smoothstep( 0.0, 0.3, p.y - sign_y0 ) * smoothstep( sign_y0 + 3.2, sign_y0 + 2.9, p.y );
+                vec3  sign_col = mix( neon_a, neon_b, hash11( bid * 5.7 ) ) * 2.2;
+                col += sign_col * sign * ( 0.6 + 1.1 * clamp( audioKick, 0.0, 1.0 ) ) * glw;
             }
             // The roofline catches the sky.
             col += sky * 0.5 * clamp( n.y, 0.0, 1.0 );
@@ -280,15 +280,15 @@ void main()
     for ( int i = 0; i < 6; ++i )
     {
         float fi = float( i );
-        float laneX = ( mod( fi, 2.0 ) < 0.5 ? -1.0 : 1.0 ) * ( 1.4 + 1.2 * hash11( fi * 2.3 ) );
-        float laneY = 3.2 + 3.4 * hash11( fi * 4.1 );
+        float lane_x = ( mod( fi, 2.0 ) < 0.5 ? -1.0 : 1.0 ) * ( 1.4 + 1.2 * hash11( fi * 2.3 ) );
+        float lane_y = 3.2 + 3.4 * hash11( fi * 4.1 );
         // Speed as a multiple of the camera's own: above one pulls ahead,
         // below one drops back, negative is oncoming.
         float speed = ( mod( fi, 2.0 ) < 0.5 ) ? ( 1.3 + 0.7 * hash11( fi * 6.7 ) )
                                                : -( 1.0 + 0.8 * hash11( fi * 6.7 ) );
         float span = 160.0;
         float zc = ro.z + mod( hash11( fi * 8.9 ) * span + ( speed - 1.0 ) * T, span ) - 40.0;
-        vec3  car = vec3( laneX, laneY, zc );
+        vec3  car = vec3( lane_x, lane_y, zc );
         // Closest approach of the ray to the car.
         float along = clamp( dot( car - ro, rd ), 0.0, d );
         float miss = length( ro + rd * along - car );
@@ -298,16 +298,16 @@ void main()
     }
 
     // ---- fog closes the far end ----
-    float fog = exp( -d * 0.020 * fgP );
-    vec3  fogCol = mix( neonA, vec3( 0.02, 0.015, 0.05 ), 0.55 ) * ( 0.3 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
+    float fog = exp( -d * 0.020 * fg_p );
+    vec3  fog_col = mix( neon_a, vec3( 0.02, 0.015, 0.05 ), 0.55 ) * ( 0.3 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
     // A miss is the sky as set above; a hit fades into the fog with distance.
     if ( hit )
-        col = mix( fogCol * glw, col, fog );
+        col = mix( fog_col * glw, col, fog );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

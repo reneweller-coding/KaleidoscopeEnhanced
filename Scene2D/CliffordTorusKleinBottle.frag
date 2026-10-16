@@ -83,7 +83,7 @@ mat2 rot2D( float a )
 /// 4D Klein bottle distance function (Figure-8 immersion)
 float mapKlein( vec3 p, float rad, out float uParam, out float vParam )
 {
-    float t4D = time * 0.35 + audioAdvance * 0.2;
+    float t_4d = time * 0.35 + audioAdvance * 0.2;
 
     // Toroidal coordinate transformation
     float r = length( p.xy );
@@ -94,12 +94,12 @@ float mapKlein( vec3 p, float rad, out float uParam, out float vParam )
     vParam = v;
 
     // Figure-8 Klein bottle cross-section
-    float rTorus = 1.8 * rad;
-    float tubeR = 0.55 * ( 0.8 + 0.3 * audioBass );
+    float r_torus = 1.8 * rad;
+    float tube_r = 0.55 * ( 0.8 + 0.3 * audioBass );
 
     // Twisted figure-8 shape
-    float crossDist = length( vec2( r - rTorus, p.z ) ) - tubeR * ( 1.0 + 0.35 * sin( u * 0.5 + t4D ) );
-    return crossDist * 0.7;
+    float cross_dist = length( vec2( r - r_torus, p.z ) ) - tube_r * ( 1.0 + 0.35 * sin( u * 0.5 + t_4d ) );
+    return cross_dist * 0.7;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -124,15 +124,15 @@ void main()
     // FOV konstant: der Kick-Zoom war ein Vollbild-Sprung pro Schlag.
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.35 * ww );
 
-    float totalDist = 0.0;
-    float uP = 0.0, vP = 0.0;
+    float total_dist = 0.0;
+    float u_p = 0.0, v_p = 0.0;
     float glow = 0.0;
     bool  hit = false;
 
     for ( int i = 0; i < 64; ++i )
     {
-        vec3  p = ro + rd * totalDist;
-        float d = mapKlein( p, rad, uP, vP );
+        vec3  p = ro + rd * total_dist;
+        float d = mapKlein( p, rad, u_p, v_p );
 
         glow += exp( -max( d, 0.0 ) * 14.0 ) * ( 0.015 * gls );
 
@@ -141,16 +141,16 @@ void main()
             hit = true;
             break;
         }
-        if ( totalDist > 13.0 )
+        if ( total_dist > 13.0 )
             break;
-        totalDist += max( d * 0.65, 0.006 );
+        total_dist += max( d * 0.65, 0.006 );
     }
 
     vec3 col = vec3( 0.01, 0.02, 0.04 );
 
     if ( hit )
     {
-        vec3 p = ro + rd * totalDist;
+        vec3 p = ro + rd * total_dist;
 
         // Normal
         float du, dv;
@@ -162,20 +162,20 @@ void main()
 
         // Glass Fresnel reflection & refraction
         float fresnel = pow( 1.0 - max( dot( -rd, n ), 0.0 ), 3.0 );
-        vec3  refDir = reflect( rd, n );
-        vec3  refrDir = refract( rd, n, 0.85 );
+        vec3  ref_dir = reflect( rd, n );
+        vec3  refr_dir = refract( rd, n, 0.85 );
 
         // Refracted photo texture with chromatic dispersion
-        vec2 refrUV = st + refrDir.xy * 0.15 * ( 1.0 + audioSwell );
-        vec3 refrPhoto;
-        refrPhoto.r = img( refrUV + vec2( 0.008, 0.0 ) ).r;
-        refrPhoto.g = img( refrUV ).g;
-        refrPhoto.b = img( refrUV - vec2( 0.008, 0.0 ) ).b;
+        vec2 refr_uv = st + refr_dir.xy * 0.15 * ( 1.0 + audioSwell );
+        vec3 refr_photo;
+        refr_photo.r = img( refr_uv + vec2( 0.008, 0.0 ) ).r;
+        refr_photo.g = img( refr_uv ).g;
+        refr_photo.b = img( refr_uv - vec2( 0.008, 0.0 ) ).b;
 
         // Klein bottle non-orientable rainbow gradient
-        vec3 kleinRainbow = imgPalette( ( uP + vP * 2.0 + audioPhase ) * 0.159 );
+        vec3 klein_rainbow = imgPalette( ( u_p + v_p * 2.0 + audioPhase ) * 0.159 );
 
-        col = mix( refrPhoto, kleinRainbow, 0.35 );
+        col = mix( refr_photo, klein_rainbow, 0.35 );
         col += vec3( 1.0, 0.95, 0.8 ) * fresnel * ( 1.2 + audioKick * 2.5 );
     }
     else
@@ -185,8 +185,8 @@ void main()
     }
 
     // Add glowing glass edges
-    vec3 glowCol = imgPalette( 0.5 + 0.2 * sin( time * 2.5 ) );
-    col += glowCol * glow * ( 1.0 + audioKick * 3.0 );
+    vec3 glow_col = imgPalette( 0.5 + 0.2 * sin( time * 2.5 ) );
+    col += glow_col * glow * ( 1.0 + audioKick * 3.0 );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

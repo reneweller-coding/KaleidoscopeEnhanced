@@ -54,7 +54,7 @@ uniform float drop;
 uniform float hue;
 uniform float bright;
 
-const float SCALE = 256.0;
+const float Scale = 256.0;
 
 void splat1( ivec2 ip, vec3 col, float w )
 {
@@ -62,10 +62,10 @@ void splat1( ivec2 ip, vec3 col, float w )
         return;
     uint i = uint( ip.y * size.x + ip.x ) * 4u;
     vec3 c = max( col, vec3( 0.0 ) ) * w;
-    atomicAdd( acc[i + 0u], uint( c.r * SCALE ) );
-    atomicAdd( acc[i + 1u], uint( c.g * SCALE ) );
-    atomicAdd( acc[i + 2u], uint( c.b * SCALE ) );
-    atomicAdd( acc[i + 3u], uint( w * SCALE ) );
+    atomicAdd( acc[i + 0u], uint( c.r * Scale ) );
+    atomicAdd( acc[i + 1u], uint( c.g * Scale ) );
+    atomicAdd( acc[i + 2u], uint( c.b * Scale ) );
+    atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
 /// A bird gets a small CROSS footprint, not a single texel.  The resolve pass
@@ -93,10 +93,10 @@ void main()
     vec2 p = me.xy, v = me.zw;
 
     vec2  sep = vec2( 0.0 ), ali = vec2( 0.0 ), coh = vec2( 0.0 );
-    float nAli = 0.0, nCoh = 0.0;
+    float n_ali = 0.0, n_coh = 0.0;
 
-    const float rSep = 0.0065;
-    const float rVis = 0.016;
+    const float r_sep = 0.0065;
+    const float r_vis = 0.016;
 
     // PRESSURE from the uncapped cell counts.  The per-cell index list is
     // capped at `perCell`, so in a dense jam every boid only ever sees the
@@ -127,21 +127,21 @@ void main()
                 vec2 d = ob.xy - p;
                 d -= round( d );
                 float dist = length( d );
-                if ( dist > rVis )
+                if ( dist > r_vis )
                     continue;
-                if ( dist < rSep )
-                    sep -= d / ( dist + 1e-4 ) * ( rSep - dist );
+                if ( dist < r_sep )
+                    sep -= d / ( dist + 1e-4 ) * ( r_sep - dist );
                 ali += ob.zw;
-                nAli += 1.0;
+                n_ali += 1.0;
                 coh += d;
-                nCoh += 1.0;
+                n_coh += 1.0;
             }
         }
 
-    if ( nAli > 0.0 )
-        ali = ali / nAli - v;
-    if ( nCoh > 0.0 )
-        coh = coh / nCoh;
+    if ( n_ali > 0.0 )
+        ali = ali / n_ali - v;
+    if ( n_coh > 0.0 )
+        coh = coh / n_coh;
 
     // FIVE slowly orbiting attractors, assigned by a hash of the boid id.
     // Two attractors pulled the whole population into two fat blobs with no
@@ -152,8 +152,8 @@ void main()
     float ga = goalPhase * ( 0.7 + 0.23 * gi ) + gi * 1.2566;
     float gr = 0.20 + 0.11 * sin( goalPhase * 0.61 + gi * 2.3 );
     vec2  goal = vec2( 0.5 ) + gr * vec2( cos( ga ), sin( ga * 1.17 ) );
-    vec2  toGoal = goal - p;
-    toGoal -= round( toGoal );
+    vec2  to_goal = goal - p;
+    to_goal -= round( to_goal );
 
     // Down the density gradient, scaled by how crowded it actually is.
     vec2 pressure = -dens2 / max( total, 1.0 )
@@ -166,7 +166,7 @@ void main()
                 + pressure * 0.55
                 + ali * 1.9
                 + coh * 0.55
-                + toGoal * ( 0.16 + 2.6 * drop );
+                + to_goal * ( 0.16 + 2.6 * drop );
 
     // Kicks SCATTER the flock — per-bird random directions.  Pushing everyone
     // radially away from the frame centre (the obvious first idea) is not a
@@ -181,11 +181,11 @@ void main()
     v += acc2 * dt;
 
     // Speed limit -> the flock keeps a consistent, readable pace.
-    float spMax = 0.085 + 0.11 * level;
+    float sp_max = 0.085 + 0.11 * level;
     float sp = length( v );
-    if ( sp > spMax )
-        v *= spMax / sp;
-    if ( sp < spMax * 0.35 )
+    if ( sp > sp_max )
+        v *= sp_max / sp;
+    if ( sp < sp_max * 0.35 )
         v *= 1.06;
 
     // Guard: one NaN velocity would put a bird at an undefined pixel forever
@@ -200,7 +200,7 @@ void main()
     boid[id] = vec4( p, v );
 
     // Bright material makes the flock colder/whiter, dark material warmer.
-    float shade = clamp( sp / spMax, 0.0, 1.0 );
+    float shade = clamp( sp / sp_max, 0.0, 1.0 );
     vec3  col = 0.5 + 0.5 * cos( 6.2831853 * ( shade * 0.30 + 0.12 * bright + vec3( 0.0, 0.33, 0.67 ) ) + hue );
     col *= 0.45 + 1.1 * shade;
 

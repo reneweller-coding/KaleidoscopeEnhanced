@@ -96,9 +96,9 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float rows = 4.0 + floor( 4.0 * clamp( gridP, 0.0, 1.0 ) );
-    float sootAmt = 0.6 + 0.4 * clamp( sootP, 0.0, 1.0 );
+    float soot_amt = 0.6 + 0.4 * clamp( sootP, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
-    float lampS = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
+    float lamp_s = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
 
     // --- The fresco: a lapis-blue vault strewn with gold stars, and two
@@ -117,7 +117,7 @@ void main()
         painting = mix( painting, vec3( 0.95, 0.78, 0.35 ) * ( 0.9 + 0.3 * hi ), star );
     }
     // Two panels with painted frames.
-    float panelMask = 0.0;
+    float panel_mask = 0.0;
     for ( int k = 0; k < 2; ++k )
     {
         vec2  pc = vec2( ( k == 0 ) ? -0.42 : 0.42, -0.02 );
@@ -146,7 +146,7 @@ void main()
             vec3  fres = mix( earth, ph * vec3( 1.05, 0.95, 0.8 ), 0.45 );
             fres = mix( fres, fres * imgPalette( 0.1 + hue * 0.159 ) * 1.4, 0.12 );
             painting = fres;
-            panelMask = 1.0;
+            panel_mask = 1.0;
         }
     }
     // Plaster: texture, cracks, a few losses showing the bare intonaco.
@@ -159,15 +159,15 @@ void main()
 
     // --- The soot, and the cleaning: the sponge works along the wall in a
     // serpentine, row after row, continuously; behind it the colour comes up.
-    vec3  soot = mix( vec3( 0.07, 0.06, 0.05 ), painting * 0.22, 0.3 * ( 1.0 - sootAmt ) + 0.12 )
+    vec3  soot = mix( vec3( 0.07, 0.06, 0.05 ), painting * 0.22, 0.3 * ( 1.0 - soot_amt ) + 0.12 )
                  * ( 0.7 + 0.3 * fbm( p * 8.0 ) );
-    float rowF = ( 1.0 - uv.y ) * rows + 0.35 * ( fbm( p * 7.0 + 3.0 ) - 0.5 ); // ragged row edges
-    float r = floor( rowF );
+    float row_f = ( 1.0 - uv.y ) * rows + 0.35 * ( fbm( p * 7.0 + 3.0 ) - 0.5 ); // ragged row edges
+    float r = floor( row_f );
     float xr = ( mod( r, 2.0 ) < 0.5 ) ? uv.x : 1.0 - uv.x;
-    float cleanAt = ( r + xr ) / rows;
+    float clean_at = ( r + xr ) / rows;
     float ragged = 0.35 * ( fbm( p * 12.0 ) - 0.5 ) / rows;
-    float edgeW = 0.02 / rows;
-    float cleaned = smoothstep( cleanAt + ragged - edgeW, cleanAt + ragged + edgeW, prog * 1.02 );
+    float edge_w = 0.02 / rows;
+    float cleaned = smoothstep( clean_at + ragged - edge_w, clean_at + ragged + edge_w, prog * 1.02 );
     vec3  col = mix( soot, painting, cleaned );
 
     // The sponge: where the cleaning front is now (continuous path).
@@ -176,19 +176,19 @@ void main()
     float sx = ( mod( rr, 2.0 ) < 0.5 ) ? f : 1.0 - f;
     float sy = 1.0 - ( rr + 0.5 + smoothstep( 0.93, 1.0, f ) ) / rows;
     vec2  sp = vec2( ( sx - 0.5 ) * aspect, sy - 0.5 );
-    float dS = length( p - sp );
+    float d_s = length( p - sp );
     // Fresh cleaning is wet: a sheen right behind the sponge.
-    col += vec3( 0.25, 0.27, 0.3 ) * exp( -dS * 18.0 ) * 0.5 * step( prog, 0.98 );
+    col += vec3( 0.25, 0.27, 0.3 ) * exp( -d_s * 18.0 ) * 0.5 * step( prog, 0.98 );
 
     // The work lamp follows the sponge (smoothly); the rest of the wall is dim.
-    float lamp = 0.45 + 0.8 * exp( -dS * 1.4 );
+    float lamp = 0.45 + 0.8 * exp( -d_s * 1.4 );
     lamp = mix( lamp, 1.0, smoothstep( 0.9, 1.0, prog ) ); // the finished wall lit whole
-    col *= lamp * lampS;
+    col *= lamp * lamp_s;
     // The documentation camera's flash near the worked patch on the kick.
-    col += vec3( 1.0 ) * clamp( audioKick, 0.0, 1.0 ) * 0.25 * exp( -dS * 2.5 );
+    col += vec3( 1.0 ) * clamp( audioKick, 0.0, 1.0 ) * 0.25 * exp( -d_s * 2.5 );
     col *= 0.8 + 0.4 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

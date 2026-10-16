@@ -68,9 +68,9 @@ vec3 hueRot( vec3 c, float a )
 vec4 hexGrid( vec2 p )
 {
     vec2 s = vec2( 1.0, 1.7320508 );
-    vec4 hC = floor( vec4( p, p - vec2( 0.5, 1.0 ) ) / s.xyxy ) + 0.5;
-    vec4 h = vec4( p - hC.xy * s, p - ( hC.zw + 0.5 ) * s );
-    return ( dot( h.xy, h.xy ) < dot( h.zw, h.zw ) ) ? vec4( h.xy, hC.xy ) : vec4( h.zw, hC.zw + vec2( 0.5, 0.5 ) );
+    vec4 h_c = floor( vec4( p, p - vec2( 0.5, 1.0 ) ) / s.xyxy ) + 0.5;
+    vec4 h = vec4( p - h_c.xy * s, p - ( h_c.zw + 0.5 ) * s );
+    return ( dot( h.xy, h.xy ) < dot( h.zw, h.zw ) ) ? vec4( h.xy, h_c.xy ) : vec4( h.zw, h_c.zw + vec2( 0.5, 0.5 ) );
 }
 
 /// Ferrofluid heightfield & distance function
@@ -85,22 +85,22 @@ float mapFerrofluid( vec3 p, float spk, float visc )
 
     // Hexagonal magnetic spike lattice
     vec4 h = hexGrid( swirled * 1.6 );
-    vec2 hexCenter = h.zw;
-    vec2 localPos = h.xy;
+    vec2 hex_center = h.zw;
+    vec2 local_pos = h.xy;
 
     // Hash for per-cell magnetic pulse
-    float cellHash = fract( sin( dot( hexCenter, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
-    int   specIdx = int( clamp( cellHash * 31.0, 0.0, 31.0 ) );
-    float bandEnergy = audioSpectrum[specIdx];
+    float cell_hash = fract( sin( dot( hex_center, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
+    int   spec_idx = int( clamp( cell_hash * 31.0, 0.0, 31.0 ) );
+    float band_energy = audioSpectrum[spec_idx];
 
     // Rosensweig cone shape
-    float localR = length( localPos );
-    float spikeHeight = ( 0.6 + 1.2 * bandEnergy + 0.8 * audioBass ) * spk;
+    float local_r = length( local_pos );
+    float spike_height = ( 0.6 + 1.2 * band_energy + 0.8 * audioBass ) * spk;
 
     // Kick geyser pulse
-    spikeHeight += exp( -abs( r - fract( time * 0.7 ) * 4.0 ) * 4.0 ) * audioKick * 1.5;
+    spike_height += exp( -abs( r - fract( time * 0.7 ) * 4.0 ) * 4.0 ) * audioKick * 1.5;
 
-    float cone = exp( -localR * 5.0 * visc ) * spikeHeight;
+    float cone = exp( -local_r * 5.0 * visc ) * spike_height;
 
     // Fluid base ripples
     float ripple = sin( r * 8.0 - time * 4.0 ) * 0.06 * ( 0.5 + 0.5 * audioMid );
@@ -130,8 +130,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Camera setup - looking down into magnetic pool
-    float camAngle = time * 0.25 * spd;
-    vec3  ro = vec3( cos( camAngle ) * 3.8, 2.8, sin( camAngle ) * 3.8 );
+    float cam_angle = time * 0.25 * spd;
+    vec3  ro = vec3( cos( cam_angle ) * 3.8, 2.8, sin( cam_angle ) * 3.8 );
     vec3  ta = vec3( 0.0, 0.0, 0.0 );
     vec3  ww = normalize( ta - ro );
     vec3  uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
@@ -157,10 +157,10 @@ void main()
         vec3 ref = reflect( rd, n );
 
         // Magnetic laboratory lighting
-        vec3 lightPos1 = vec3( 2.0, 5.0, 2.0 );
-        vec3 lightPos2 = vec3( -3.0, 4.0, -2.0 );
-        vec3 l1 = normalize( lightPos1 - p );
-        vec3 l2 = normalize( lightPos2 - p );
+        vec3 light_pos1 = vec3( 2.0, 5.0, 2.0 );
+        vec3 light_pos2 = vec3( -3.0, 4.0, -2.0 );
+        vec3 l1 = normalize( light_pos1 - p );
+        vec3 l2 = normalize( light_pos2 - p );
 
         float diff1 = max( dot( n, l1 ), 0.0 );
         float diff2 = max( dot( n, l2 ), 0.0 );
@@ -169,21 +169,21 @@ void main()
         float fresnel = pow( 1.0 - max( dot( -rd, n ), 0.0 ), 4.0 );
 
         // Oily rainbow thin-film sheen
-        vec3 oilSheen = imgPalette( ( ( p.x + p.z ) * 4.0 + fresnel * 6.0 + audioPhase ) * 0.159 );
+        vec3 oil_sheen = imgPalette( ( ( p.x + p.z ) * 4.0 + fresnel * 6.0 + audioPhase ) * 0.159 );
 
         // Reflection of photo texture
-        vec2 refUV = ref.xz * 0.3 + 0.5;
-        vec3 photoRef = img( fract( refUV ) );
+        vec2 ref_uv = ref.xz * 0.3 + 0.5;
+        vec3 photo_ref = img( fract( ref_uv ) );
 
         // Jet-black ferrofluid base color with specular glints
-        vec3 fluidBase = vec3( 0.04, 0.04, 0.05 ) + photoRef * 0.15;
-        col = fluidBase * ( diff1 * 0.5 + diff2 * 0.3 + 0.2 );
+        vec3 fluid_base = vec3( 0.04, 0.04, 0.05 ) + photo_ref * 0.15;
+        col = fluid_base * ( diff1 * 0.5 + diff2 * 0.3 + 0.2 );
         col += ( vec3( 1.0 ) * spec1 + vec3( 0.7, 0.9, 1.0 ) * spec2 ) * ( 0.8 + 0.5 * audioHigh );
-        col += oilSheen * fresnel * ( 0.6 + 0.8 * audioLevel );
+        col += oil_sheen * fresnel * ( 0.6 + 0.8 * audioLevel );
 
         // Glow on spike crests
-        float spikeTip = smoothstep( 0.5, 1.5, p.y );
-        col += vec3( 0.1, 0.5, 1.0 ) * spikeTip * ( 0.4 + 1.2 * audioKick );
+        float spike_tip = smoothstep( 0.5, 1.5, p.y );
+        col += vec3( 0.1, 0.5, 1.0 ) * spike_tip * ( 0.4 + 1.2 * audioKick );
 
         // Fog
         col = mix( col, vec3( 0.01, 0.01, 0.02 ), 1.0 - exp( -t * 0.1 ) );

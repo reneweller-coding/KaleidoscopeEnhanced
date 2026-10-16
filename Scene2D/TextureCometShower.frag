@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -250,9 +250,9 @@ void main()
     vec2  dir = vec2( cos( ang ), sin( ang ) );
     vec2  nrm = vec2( -dir.y, dir.x );
     float along = dot( p, dir ), across = dot( p, nrm );
-    float laneW = 0.12 - 0.06 * clamp( densityP, 0.0, 1.0 );
-    float li = floor( across / laneW );
-    float tailL = 0.3 + 0.5 * clamp( audioSpread, 0.0, 1.0 );
+    float lane_w = 0.12 - 0.06 * clamp( densityP, 0.0, 1.0 );
+    float li = floor( across / lane_w );
+    float tail_l = 0.3 + 0.5 * clamp( audioSpread, 0.0, 1.0 );
     float fly = 0.4 * sceneTime + 2.5 * audioAdvance;
     vec3  ice = vec3( 0.6, 0.85, 1.0 ), gold = vec3( 1.0, 0.8, 0.4 );
     for ( int k = -1; k <= 1; ++k )
@@ -264,22 +264,22 @@ void main()
         float spd = 0.6 + 0.6 * hash11( lane * 1.3 );
         float period = 3.5;
         float hx = mod( fly * spd + h * 10.0, period ) - period * 0.5; // head position along the lane
-        float c0 = ( lane + 0.5 + 0.3 * ( hash11( lane * 2.1 ) - 0.5 ) ) * laneW;
+        float c0 = ( lane + 0.5 + 0.3 * ( hash11( lane * 2.1 ) - 0.5 ) ) * lane_w;
         float da = along - hx * 1.4; // behind the head: da < 0
         float dc = across - c0;
         // Dust tail curves away from the lane; ion tail straight.
         float behind = max( -da, 0.0 );
-        float curveOff = 0.15 * behind * behind * ( h - 0.3 );
-        float spread = 0.004 + 0.06 * behind / tailL;
-        float dust = exp( -pow( ( dc - curveOff ) / spread, 2.0 ) ) * exp( -behind / tailL ) * step( da, 0.0 );
-        float ion = exp( -pow( dc / ( 0.002 + 0.01 * behind ), 2.0 ) ) * exp( -behind / ( tailL * 1.5 ) )
+        float curve_off = 0.15 * behind * behind * ( h - 0.3 );
+        float spread = 0.004 + 0.06 * behind / tail_l;
+        float dust = exp( -pow( ( dc - curve_off ) / spread, 2.0 ) ) * exp( -behind / tail_l ) * step( da, 0.0 );
+        float ion = exp( -pow( dc / ( 0.002 + 0.01 * behind ), 2.0 ) ) * exp( -behind / ( tail_l * 1.5 ) )
                     * step( da, 0.0 );
         float head = exp( -( da * da + dc * dc ) / 0.00008 );
         float fade = smoothstep( period * 0.5, period * 0.35, abs( hx ) ); // appear and vanish smoothly at the lane
                                                                            // ends
         vec3 hc = glowColour( imgLod( vec2( h, fract( h * 7.0 ) ), 4.0 ), vec2( lane, 0.0 ), hueP * 0.159 );
-        vec3 dustC = mix( mix( ice, gold, mode ), hc, 0.3 );
-        col += ( dustC * dust * 0.8 + ice * ion * 0.6 + vec3( 1.0 ) * head * ( 1.5 + 2.5 * kick ) ) * fade;
+        vec3 dust_c = mix( mix( ice, gold, mode ), hc, 0.3 );
+        col += ( dust_c * dust * 0.8 + ice * ion * 0.6 + vec3( 1.0 ) * head * ( 1.5 + 2.5 * kick ) ) * fade;
     }
     finish( col );
 }

@@ -111,8 +111,8 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 hotColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // White/hot center
-    vec3 coolColor = imgPalette( 0.3 );                      // Edge expanding gas
+    vec3 hot_color = imgPalette( 0.8 + audioCentroid * 0.1 ); // White/hot center
+    vec3 cool_color = imgPalette( 0.3 );                      // Edge expanding gas
 
     // The "Bounce" state
     // We use a continuous time function that snaps violently to 0 on audioKick
@@ -120,20 +120,20 @@ void main()
 
     // A cyclic variable that represents the scale of the universe
     // 0 = singularity, >0 = expanded
-    float cycleTime = time * 2.0 * bp;
+    float cycle_time = time * 2.0 * bp;
     // We want it to suddenly snap to 0 when there's a strong kick
     // Since we don't have state, we use hash of time to simulate kicks triggering it
-    float kickTrigger = step( 0.9, hash11( floor( sceneTime * 4.00 ) ) ) * audioKick;
+    float kick_trigger = step( 0.9, hash11( floor( sceneTime * 4.00 ) ) ) * audioKick;
 
     // Scale of the universe (expands over time, snaps back on trigger)
-    float uScale = fract( cycleTime + audioAdvance ) + ( 1.0 - kickTrigger );
+    float u_scale = fract( cycle_time + audioAdvance ) + ( 1.0 - kick_trigger );
 
     // We remap scale so it expands fast, then slows down, then collapses instantly
-    // uScale is 0..2
-    float expansion = pow( uScale * 0.5, 0.5 ); // 0.0 to 1.0
+    // u_scale is 0..2
+    float expansion = pow( u_scale * 0.5, 0.5 ); // 0.0 to 1.0
 
     // If a kick is happening right now, expansion is near 0 (singularity)
-    if ( kickTrigger > 0.5 )
+    if ( kick_trigger > 0.5 )
         expansion = 0.01;
 
     float dist = length( uv );
@@ -142,14 +142,14 @@ void main()
     float singularity = 0.01 / max( dist, 0.001 );
 
     // The expanding front
-    float frontRad = expansion * 1.5;
-    float frontThickness = 0.1 * bp;
+    float front_rad = expansion * 1.5;
+    float front_thickness = 0.1 * bp;
 
     // Inside the universe
-    if ( dist < frontRad )
+    if ( dist < front_rad )
     {
         // Distance from center normalized 0..1
-        float normDist = dist / max( frontRad, 0.001 );
+        float norm_dist = dist / max( front_rad, 0.001 );
 
         // Primordial plasma (extremely dense and chaotic near the beginning)
         // Zoom out as it expands
@@ -159,24 +159,24 @@ void main()
         float plasma = fbm( p3 * pp );
 
         // Core is intensely hot, edges cool down
-        float heat = 1.0 - normDist;
+        float heat = 1.0 - norm_dist;
 
-        vec3 pCol = mix( coolColor, hotColor, heat * plasma );
+        vec3 p_col = mix( cool_color, hot_color, heat * plasma );
 
         // Energy spikes traveling outwards
         float spike = step( 0.9, fract( dist * 20.0 - time * 10.0 ) );
-        pCol += hotColor * spike * audioSwell * 2.0;
+        p_col += hot_color * spike * audioSwell * 2.0;
 
         // Dark matter web forming as it cools
         float web = fbm( p3 * 2.0 + 10.0 );
         float cooling = smoothstep( 0.5, 1.0, expansion ); // Only forms later in the cycle
-        pCol *= mix( 1.0, smoothstep( 0.4, 0.6, web ), cooling );
+        p_col *= mix( 1.0, smoothstep( 0.4, 0.6, web ), cooling );
 
-        col += pCol;
+        col += p_col;
 
         // The edge front (Big Bang shockwave)
-        float edge = exp( -abs( dist - frontRad ) * ( 50.0 / bp ) );
-        col += hotColor * edge * 2.0;
+        float edge = exp( -abs( dist - front_rad ) * ( 50.0 / bp ) );
+        col += hot_color * edge * 2.0;
     }
     else
     {
@@ -186,13 +186,13 @@ void main()
     }
 
     // The glaring light of the singularity penetrates everything
-    col += hotColor * singularity * ( 0.1 + audioSwell * 0.5 + kickTrigger * 2.0 );
+    col += hot_color * singularity * ( 0.1 + audioSwell * 0.5 + kick_trigger * 2.0 );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

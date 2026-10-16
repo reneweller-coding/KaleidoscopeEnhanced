@@ -118,7 +118,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float cells = 7.0 + 6.0 * clamp( cellsP, 0.0, 1.0 );
-    float wireW = 0.012 + 0.014 * clamp( wireP, 0.0, 1.0 );
+    float wire_w = 0.012 + 0.014 * clamp( wireP, 0.0, 1.0 );
     float lamp = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
@@ -143,12 +143,12 @@ void main()
 
     // Fill order: cells fill by their distance from the plate's centre, so
     // the work spreads outward.  Each has its own slice of the arc.
-    float centreR = length( centre / cells );
-    float fillFront = smoothstep( 0.0, 0.7, prog ) * 1.1;
-    float filled = smoothstep( fillFront + 0.1, fillFront - 0.1, centreR );
+    float centre_r = length( centre / cells );
+    float fill_front = smoothstep( 0.0, 0.7, prog ) * 1.1;
+    float filled = smoothstep( fill_front + 0.1, fill_front - 0.1, centre_r );
     // Firing follows a little later: the enamel sinks and comes up glassy.
-    float fireFront = smoothstep( 0.2, 0.95, prog ) * 1.15;
-    float fired = smoothstep( fireFront + 0.1, fireFront - 0.1, centreR );
+    float fire_front = smoothstep( 0.2, 0.95, prog ) * 1.15;
+    float fired = smoothstep( fire_front + 0.1, fire_front - 0.1, centre_r );
 
     // The enamel in this cell.
     int   cls = int( mod( floor( id * 12.0 ), 12.0 ) );
@@ -160,34 +160,34 @@ void main()
     vec3  powder = enamel * 0.75 * ( 0.85 + 0.25 * noise2( swirl * 90.0 ) );
     vec3  glass = enamel * ( 0.6 + 0.7 * dome );
     // The glass catches a highlight up and to the left of each cell's centre.
-    vec2 toHi = ( p - centre / cells * 1.0 );
-    glass += vec3( 1.0, 0.98, 0.95 ) * exp( -length( toHi + vec2( 0.012, -0.012 ) ) * 55.0 ) * ( 0.4 + 0.8 * hi );
+    vec2 to_hi = ( p - centre / cells * 1.0 );
+    glass += vec3( 1.0, 0.98, 0.95 ) * exp( -length( to_hi + vec2( 0.012, -0.012 ) ) * 55.0 ) * ( 0.4 + 0.8 * hi );
     // A little of the copper shows through the thin enamel at the rim.
     glass = mix( copper * 1.2, glass, smoothstep( 0.0, 0.25, toCentre * 2.0 ) );
-    vec3  cellCol = mix( powder, glass, fired );
-    float inCell = smoothstep( wireW * 0.9, wireW * 1.6, seam ) * filled;
-    col = mix( col, cellCol * lamp, inCell );
+    vec3  cell_col = mix( powder, glass, fired );
+    float in_cell = smoothstep( wire_w * 0.9, wire_w * 1.6, seam ) * filled;
+    col = mix( col, cell_col * lamp, in_cell );
     // A spark from the kiln lights one cell at a time on the kick.
-    float sparkCell = step( 0.93, hash21( vec2( id, floor( clock * 0.7 ) ) ) );
-    col += enamel * inCell * sparkCell * audioKick * 0.7;
+    float spark_cell = step( 0.93, hash21( vec2( id, floor( clock * 0.7 ) ) ) );
+    col += enamel * in_cell * spark_cell * audioKick * 0.7;
 
     // The gold wire: the cloison itself, standing proud of the enamel.
-    float wire = smoothstep( wireW * 1.5, wireW * 0.6, seam );
+    float wire = smoothstep( wire_w * 1.5, wire_w * 0.6, seam );
     vec3  gold = mix( vec3( 1.0, 0.82, 0.35 ), imgPalette( hue * 0.159 + 0.12 ), 0.25 );
     // Round wire: bright along its crown, dark at its feet.
-    float crown = smoothstep( wireW * 1.2, 0.0, seam );
-    vec3  wireCol = gold * ( 0.45 + 0.85 * crown ) * lamp;
-    wireCol += vec3( 1.0, 0.98, 0.9 ) * pow( crown, 3.0 ) * ( 0.35 + 0.9 * hi );
+    float crown = smoothstep( wire_w * 1.2, 0.0, seam );
+    vec3  wire_col = gold * ( 0.45 + 0.85 * crown ) * lamp;
+    wire_col += vec3( 1.0, 0.98, 0.9 ) * pow( crown, 3.0 ) * ( 0.35 + 0.9 * hi );
     // The shadow the wire casts into the cell beside it.
-    col *= 1.0 - 0.35 * smoothstep( wireW * 2.4, wireW * 1.4, seam ) * ( 1.0 - wire ) * filled;
-    col = mix( col, wireCol, wire );
+    col *= 1.0 - 0.35 * smoothstep( wire_w * 2.4, wire_w * 1.4, seam ) * ( 1.0 - wire ) * filled;
+    col = mix( col, wire_col, wire );
     // The plate's rim.
     float rim = smoothstep( 0.47, 0.46, length( p * vec2( 1.0, 1.05 ) ) );
     col = mix( copper * lamp * 0.5, col, rim );
     col += gold * smoothstep( 0.008, 0.0, abs( length( p * vec2( 1.0, 1.05 ) ) - 0.465 ) ) * ( 0.4 + 0.6 * hi );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

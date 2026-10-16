@@ -71,34 +71,34 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.45 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Soliton 1 (traveling right) & Soliton 2 (traveling left)
-    float x1 = ( p.x - mix( -1.2, 1.2, tProg ) ) * 8.0 / wdt;
-    float x2 = ( p.x - mix( 1.2, -1.2, tProg ) ) * 8.0 / wdt;
+    float x1 = ( p.x - mix( -1.2, 1.2, t_prog ) ) * 8.0 / wdt;
+    float x2 = ( p.x - mix( 1.2, -1.2, t_prog ) ) * 8.0 / wdt;
 
     float s1 = sech( x1 );
     float s2 = sech( x2 );
     float wave = ( s1 * s1 + s2 * s2 ) * slt;
 
     // Non-linear coordinate displacement
-    vec2 solDisp = vec2( wave * 0.04 * midTransition * ( 1.0 + audioSwell * 0.7 ), 0.0 );
+    vec2 sol_disp = vec2( wave * 0.04 * mid_transition * ( 1.0 + audioSwell * 0.7 ), 0.0 );
 
-    vec4 c1 = texture( tex1, fract( uv + solDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - solDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + sol_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - sol_disp ) );
 
-    float wipeMask = smoothstep( -0.5, 0.5, x1 );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.5, 0.5, x1 );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Glowing soliton wave crests
-    float crestGlow = pow( wave, 2.0 ) * midTransition;
-    col.rgb += crestGlow * vec3( 0.2, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.17 );
+    float crest_glow = pow( wave, 2.0 ) * mid_transition;
+    col.rgb += crest_glow * vec3( 0.2, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

@@ -35,8 +35,8 @@ void main()
     // too far on this sparse tunnel. 1.2 still sits well under the
     // additive-burn regime (knee + cap follow).
     vec3 col = vCol.rgb * glow * 8.5;
-    vec3 _catTone = col * 0.85;
-    _catTone /= 1.0 + 0.20 * max( _catTone.r, max( _catTone.g, _catTone.b ) ); // softer knee: gain alone stopped
+    vec3 cat_tone = col * 0.85;
+    cat_tone /= 1.0 + 0.20 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) ); // softer knee: gain alone stopped
                                                                                // registering
-    fragColor = vec4( _catTone, 1.0 );
+    fragColor = vec4( cat_tone, 1.0 );
 }

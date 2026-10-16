@@ -92,12 +92,12 @@ float fbm( vec2 p )
 }
 
 // The hall (metres): floor, mirror ceiling, side walls, the end wall with the sun.
-const float FLOOR = -1.6;
-const float CEIL = 18.0;
-const float HALFW = 11.0;
-const float ENDZ = 55.0;
-const vec3  SUNC = vec3( 0.0, 17.6, 55.0 );
-const float SUNR = 8.0;
+const float Floor = -1.6;
+const float Ceil = 18.0;
+const float Halfw = 11.0;
+const float Endz = 55.0;
+const vec3  Sunc = vec3( 0.0, 17.6, 55.0 );
+const float Sunr = 8.0;
 
 float gT; ///< The chain's (or scene's) time this frame.
 int   gCrowd;
@@ -107,11 +107,11 @@ float traceBox( vec3 ro, vec3 rd, out int mat )
 {
     float t = 1e9;
     mat = 3;
-    float tE = ( ENDZ - ro.z ) / rd.z;
-    t = tE;
+    float t_e = ( Endz - ro.z ) / rd.z;
+    t = t_e;
     if ( rd.y < 0.0 )
     {
-        float tf = ( FLOOR - ro.y ) / rd.y;
+        float tf = ( Floor - ro.y ) / rd.y;
         if ( tf < t )
         {
             t = tf;
@@ -120,14 +120,14 @@ float traceBox( vec3 ro, vec3 rd, out int mat )
     }
     if ( rd.y > 0.0 )
     {
-        float tc = ( CEIL - ro.y ) / rd.y;
+        float tc = ( Ceil - ro.y ) / rd.y;
         if ( tc < t )
         {
             t = tc;
             mat = 1;
         }
     }
-    float tw = ( sign( rd.x ) * HALFW - ro.x ) / rd.x;
+    float tw = ( sign( rd.x ) * Halfw - ro.x ) / rd.x;
     if ( tw < t )
     {
         t = tw;
@@ -141,7 +141,7 @@ float traceBox( vec3 ro, vec3 rd, out int mat )
 /// its soft coverage.
 float people( vec3 ro, vec3 rd, float tMax, out float cov )
 {
-    float tBest = 1e9;
+    float t_best = 1e9;
     cov = 0.0;
     for ( int i = 0; i < 48; ++i )
     {
@@ -152,9 +152,9 @@ float people( vec3 ro, vec3 rd, float tMax, out float cov )
         float zi = 7.0 + 42.0 * hash11( fi * 2.11 + 0.3 );
         float xi = ( hash11( fi * 3.7 + 0.1 ) - 0.5 ) * 18.0 + 0.9 * sin( gT * 0.015 + h * 6.28 );
         float t = ( zi - ro.z ) / rd.z;
-        if ( t <= 0.0 || t >= min( tMax, tBest ) )
+        if ( t <= 0.0 || t >= min( tMax, t_best ) )
             continue;
-        vec2  q = vec2( ro.x + rd.x * t - xi, ro.y + rd.y * t - FLOOR );
+        vec2  q = vec2( ro.x + rd.x * t - xi, ro.y + rd.y * t - Floor );
         float px = 0.0012 * t + 0.004; // one pixel at this depth
         float d;
         if ( h < 0.12 )
@@ -177,17 +177,17 @@ float people( vec3 ro, vec3 rd, float tMax, out float cov )
         float c = smoothstep( px, -px, d );
         if ( c > 0.02 )
         {
-            tBest = t;
+            t_best = t;
             cov = c;
         }
     }
-    return tBest;
+    return t_best;
 }
 
 /// The sun's light falling off from the disc's centre (approximately a point).
 float sunLight( vec3 P )
 {
-    vec3 v = P - SUNC;
+    vec3 v = P - Sunc;
     return 500.0 / ( dot( v, v ) + 500.0 );
 }
 
@@ -195,8 +195,8 @@ float sunLight( vec3 P )
 /// uniform haze: the integral of A / (h^2 + b + (t - t0)^2) dt.
 float inscatter( vec3 ro, vec3 rd, float t1 )
 {
-    float t0 = dot( SUNC - ro, rd );
-    vec3  c = ro + rd * t0 - SUNC;
+    float t0 = dot( Sunc - ro, rd );
+    vec3  c = ro + rd * t0 - Sunc;
     float s = sqrt( dot( c, c ) + 500.0 );
     return 500.0 / s * ( atan( ( t1 - t0 ) / s ) - atan( -t0 / s ) );
 }
@@ -208,10 +208,10 @@ float shade( vec3 P, int mat, float t )
     if ( mat == 3 )
     {
         // End wall: the half-disc sun below the ceiling, the wall dark around it.
-        float r = length( P.xy - SUNC.xy );
-        float disc = smoothstep( SUNR + 0.08 + 0.002 * t, SUNR - 0.08, r ) * step( P.y, CEIL );
+        float r = length( P.xy - Sunc.xy );
+        float disc = smoothstep( Sunr + 0.08 + 0.002 * t, Sunr - 0.08, r ) * step( P.y, Ceil );
         // The lamps behind the screen give the disc a faint structure.
-        float lamps = 0.93 + 0.07 * sin( atan( P.y - SUNC.y, P.x ) * 60.0 ) * smoothstep( 0.0, SUNR, r );
+        float lamps = 0.93 + 0.07 * sin( atan( P.y - Sunc.y, P.x ) * 60.0 ) * smoothstep( 0.0, Sunr, r );
         return 0.12 * L + disc * 5.0 * lamps;
     }
     if ( mat == 2 )
@@ -245,14 +245,14 @@ void main()
 
     // Haze density drifts; the swell thickens it.
     float rho = 0.028 * ( 0.6 + 0.5 * fbm( p * 2.5 + vec2( gT * 0.012, gT * 0.005 ) ) ) * ( 0.7 + 0.8 * swell );
-    float sunI = 0.85 + 0.5 * bass;
+    float sun_i = 0.85 + 0.5 * bass;
 
     int   mat;
     float t = traceBox( ro, rd, mat );
     float cov;
     float tp = people( ro, rd, t, cov );
-    float surf = shade( ro + rd * t, mat, t ) * sunI;
-    float tAll = t;
+    float surf = shade( ro + rd * t, mat, t ) * sun_i;
+    float t_all = t;
     if ( mat == 1 )
     {
         // The mirror ceiling: continue the ray downward from the hit point.
@@ -262,10 +262,10 @@ void main()
         float t2 = traceBox( P + rd2 * 0.01, rd2, mat2 );
         float cov2;
         float tp2 = people( P, rd2, t2, cov2 );
-        float s2 = shade( P + rd2 * t2, mat2, t + t2 ) * sunI;
+        float s2 = shade( P + rd2 * t2, mat2, t + t2 ) * sun_i;
         s2 *= 1.0 - cov2 * ( tp2 < 1e8 ? 1.0 : 0.0 );
         float T2 = exp( -rho * t2 );
-        s2 = s2 * T2 + rho * sunI * 2.2 * inscatter( P, rd2, t2 );
+        s2 = s2 * T2 + rho * sun_i * 2.2 * inscatter( P, rd2, t2 );
         // Panel seams in the mirror, faint and fading with distance.
         vec2  pq = P.xz / 3.0;
         vec2  fw = fwidth( pq ) + 1e-4;
@@ -279,15 +279,15 @@ void main()
     {
         surf *= 1.0 - cov;
     }
-    float Tr = exp( -rho * t );
-    float lum = surf * Tr + rho * sunI * 2.2 * inscatter( ro, rd, t ) + ( 1.0 - Tr ) * 0.12;
+    float tr = exp( -rho * t );
+    float lum = surf * tr + rho * sun_i * 2.2 * inscatter( ro, rd, t ) + ( 1.0 - tr ) * 0.12;
 
     // Mono-frequency light: everything is amber and black.
     vec3 amber = mix( vec3( 1.0, 0.62, 0.18 ), imgPalette( 0.1 + hueP * 0.159 ) * vec3( 1.2, 0.85, 0.4 ), 0.1 );
     vec3 col = amber * lum + vec3( 1.0, 0.85, 0.55 ) * max( lum - 2.0, 0.0 ) * 0.5;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

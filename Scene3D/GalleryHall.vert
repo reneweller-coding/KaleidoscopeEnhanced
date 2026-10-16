@@ -34,7 +34,7 @@ out float vKind; ///< 0 = picture, 1 = light strip
 void main()
 {
     float idx = attrA.w;
-    float camZ = time * 2.2 + audioAdvance * 9.0;
+    float cam_z = time * 2.2 + audioAdvance * 9.0;
 
     vec3  centre;
     vec2  half_;
@@ -46,7 +46,7 @@ void main()
         side = ( mod( idx, 2.0 ) < 1.0 ) ? -1.0 : 1.0;
         float slot = floor( idx / 2.0 );
         float L = 150.0 * 12.0;
-        float z = mod( slot * 12.0 - camZ, L ) + 2.0;
+        float z = mod( slot * 12.0 - cam_z, L ) + 2.0;
 
         centre = vec3( side * 9.0, 1.5, z );
         half_ = vec2( 3.4, 2.5 );
@@ -61,7 +61,7 @@ void main()
         // Ceiling light strips every 12 units.
         float slot = idx - 300.0;
         float L = 300.0 * 12.0;
-        float z = mod( slot * 12.0 - camZ, L ) + 2.0;
+        float z = mod( slot * 12.0 - cam_z, L ) + 2.0;
         centre = vec3( 0.0, 7.5, z );
         half_ = vec2( 1.4, 0.35 );
         side = 0.0;

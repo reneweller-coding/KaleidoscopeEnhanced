@@ -61,8 +61,8 @@ uniform float massP;
 uniform float spinP; ///< Spin knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const uint  kParts = 24576u;
-const float EPS = 0.18;
+const uint  Parts = 24576u;
+const float Eps = 0.18;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -98,20 +98,20 @@ void emitQuad( vec3 c, float s, float id, float a, float kind )
         return;
     vec3 p0 = c + vec3( -s, -s, 0.0 ), p1 = c + vec3( s, -s, 0.0 ), p2 = c + vec3( s, s, 0.0 ),
          p3 = c + vec3( -s, s, 0.0 );
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
-                              vec2( 0.0, 1.0 ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
+                               vec2( 0.0, 1.0 ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = a;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -124,7 +124,7 @@ void main()
     // GPU memory is recycled between runs, so a stale buffer can carry the
     // right magic and the wrong star (seen: the star missing until swallowed
     // particles were reborn at the right place).
-    bool needInit = ( magic != expectedMagic() ) || ( sceneTime < 0.06 );
+    bool need_init = ( magic != expectedMagic() ) || ( sceneTime < 0.06 );
 
     if ( genPass > 0.5 )
     {
@@ -133,7 +133,7 @@ void main()
             // The magic is only stamped once pass 0 has actually seeded the
             // particles (pad0 = 1), so the order of the two passes within a
             // frame cannot leave garbage state validated.
-            if ( needInit && pad0 == 1u )
+            if ( need_init && pad0 == 1u )
             {
                 magic = expectedMagic();
                 pad0 = 0u;
@@ -151,7 +151,7 @@ void main()
         emitQuad( vec3( 0.0, 0.0, 9.0 ), 16.0, 0.0, 0.0, -1.0 ); // sky
         emitQuad( vec3( 0.0, 0.0, 0.0 ), 0.9, 0.0, 0.0, 2.0 );   // the hole: shadow + photon ring
     }
-    if ( id >= kParts )
+    if ( id >= Parts )
         return;
 
     uint  o = id * 8u;
@@ -160,7 +160,7 @@ void main()
 
     vec3 p = vec3( st[o + 0u], st[o + 1u], st[o + 2u] );
     vec3 v = vec3( st[o + 3u], st[o + 4u], st[o + 5u] );
-    bool reborn = needInit || dot( p, p ) < 1e-6 || length( p ) < 0.3 || any( isnan( p ) );
+    bool reborn = need_init || dot( p, p ) < 1e-6 || length( p ) < 0.3 || any( isnan( p ) );
     if ( reborn )
     {
         vec3  h = hash31( fid * 1.37 + sceneSeed * 19.0 );
@@ -170,26 +170,26 @@ void main()
         p = centre + d;
         st[o + 6u] = pow( hash11( fid * 2.9 ), 0.5 );
         st[o + 7u] = 0.0;
-        if ( needInit && id == 0u )
+        if ( need_init && id == 0u )
             pad0 = 1u; // seeded: pass 1 may now stamp the magic
     }
     else
     {
-        float dtWall = clamp( time - lastT, 0.0, 0.05 );
-        float dtAdv = clamp( sceneAdvance - lastAdv, 0.0, 0.1 );
-        float dt = dtWall * ( 0.6 + 1.0 * clamp( audioLevel, 0.0, 1.0 ) ) + dtAdv * 0.8;
+        float dt_wall = clamp( time - lastT, 0.0, 0.05 );
+        float dt_adv = clamp( sceneAdvance - lastAdv, 0.0, 0.1 );
+        float dt = dt_wall * ( 0.6 + 1.0 * clamp( audioLevel, 0.0, 1.0 ) ) + dt_adv * 0.8;
 
         // Self-gravity as a spring to the star's centre; released over a
         // fifth of the arc around pericentre.
         float hold = 1.0 - smoothstep( 0.42, 0.62, prog );
-        vec3  toC = centre - p;
-        vec3  acc = toC * 9.0 * hold;
-        vec3  cNext = starPath( min( prog + 0.002, 1.0 ) );
-        vec3  vC = ( cNext - centre ) / 0.002 * 0.02;
-        acc += ( vC - v ) * 4.0 * hold;
+        vec3  to_c = centre - p;
+        vec3  acc = to_c * 9.0 * hold;
+        vec3  c_next = starPath( min( prog + 0.002, 1.0 ) );
+        vec3  v_c = ( c_next - centre ) / 0.002 * 0.02;
+        acc += ( v_c - v ) * 4.0 * hold;
         // The hole.
         vec3 d0 = p;
-        acc += -M * d0 / pow( dot( d0, d0 ) + EPS * EPS, 1.5 );
+        acc += -M * d0 / pow( dot( d0, d0 ) + Eps * Eps, 1.5 );
         v += acc * dt;
         p += v * dt;
         if ( length( p ) > 9.0 )

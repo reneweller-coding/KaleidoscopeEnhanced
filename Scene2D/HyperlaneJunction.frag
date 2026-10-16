@@ -100,8 +100,8 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 laneColor = imgPalette( 0.3 );
-    vec3 shipColor = imgPalette( 0.8 + audioKick * 0.2 );
+    vec3 lane_color = imgPalette( 0.3 );
+    vec3 ship_color = imgPalette( 0.8 + audioKick * 0.2 );
 
     // Grid raymarching for hyperlanes (using 3D grid intersection approach)
     // We'll simulate glowing lines on a 3D grid.
@@ -114,71 +114,71 @@ void main()
         vec3 q = ro + rd * d;
 
         // Grid coordinates
-        vec3 gridP = fract( q * lp ) - 0.5;
+        vec3 grid_p = fract( q * lp ) - 0.5;
         vec3 id = floor( q * lp );
 
         // Distance to nearest grid lines
-        vec3  distToLine = abs( gridP );
-        float dLineX = max( distToLine.y, distToLine.z ); // Line along X
-        float dLineY = max( distToLine.x, distToLine.z ); // Line along Y
-        float dLineZ = max( distToLine.x, distToLine.y ); // Line along Z
+        vec3  dist_to_line = abs( grid_p );
+        float d_line_x = max( dist_to_line.y, dist_to_line.z ); // Line along X
+        float d_line_y = max( dist_to_line.x, dist_to_line.z ); // Line along Y
+        float d_line_z = max( dist_to_line.x, dist_to_line.y ); // Line along Z
 
         // Minimum distance to any line
-        float dl = min( min( dLineX, dLineY ), dLineZ );
+        float dl = min( min( d_line_x, d_line_y ), d_line_z );
 
         // Smooth line rendering (volumetric accumulation)
-        float lineThickness = 0.055 + 0.04 * audioSwell; // floor so the lanes exist on quiet material
-        if ( dl < lineThickness )
+        float line_thickness = 0.055 + 0.04 * audioSwell; // floor so the lanes exist on quiet material
+        if ( dl < line_thickness )
         {
             // Check if this grid cell actually has a lane
             float h = hash31( id );
             if ( h > 0.5 )
             {
-                float alpha = smoothstep( lineThickness, 0.0, dl );
+                float alpha = smoothstep( line_thickness, 0.0, dl );
 
                 // Traffic pulses along the lines
                 float speed = 5.0 + hash11( h ) * 10.0;
                 float dir = ( hash11( h + 1.0 ) > 0.5 ) ? 1.0 : -1.0;
 
                 // Determine which axis we are on to animate the pulse correctly
-                float axisPos;
-                if ( dl == dLineX )
-                    axisPos = q.x;
-                else if ( dl == dLineY )
-                    axisPos = q.y;
+                float axis_pos;
+                if ( dl == d_line_x )
+                    axis_pos = q.x;
+                else if ( dl == d_line_y )
+                    axis_pos = q.y;
                 else
-                    axisPos = q.z;
+                    axis_pos = q.z;
 
-                float pulse = step( 0.95, fract( axisPos * 2.0 - time * speed * dir ) );
+                float pulse = step( 0.95, fract( axis_pos * 2.0 - time * speed * dir ) );
 
                 // Kick flashes at intersections
                 float intersection = step( 0.9, hash31( id + floor( time * 4.00 ) ) );
                 float flash = intersection * audioKick * 5.0;
 
-                vec3 localCol = laneColor * alpha * ( 0.75 + audioSwell * 0.5 );
-                localCol += shipColor * pulse * alpha * ( 2.0 + audioKick * 2.0 ) * tp;
-                localCol += vec3( 1.0 ) * flash * alpha;
+                vec3 local_col = lane_color * alpha * ( 0.75 + audioSwell * 0.5 );
+                local_col += ship_color * pulse * alpha * ( 2.0 + audioKick * 2.0 ) * tp;
+                local_col += vec3( 1.0 ) * flash * alpha;
 
-                col += localCol * exp( -d * 0.05 );
+                col += local_col * exp( -d * 0.05 );
             }
         }
 
         // Step forward. Since we use fract, we can step safely by distance to cell boundary
-        vec3  distToBound = ( sign( rd ) * 0.5 - gridP ) / rd;
-        float stepSize = min( min( distToBound.x, distToBound.y ), distToBound.z );
-        d += max( 0.01, stepSize / lp + 0.01 );
+        vec3  dist_to_bound = ( sign( rd ) * 0.5 - grid_p ) / rd;
+        float step_size = min( min( dist_to_bound.x, dist_to_bound.y ), dist_to_bound.z );
+        d += max( 0.01, step_size / lp + 0.01 );
 
         if ( d > 40.0 )
             break;
     }
 
     // Background glow
-    col += laneColor * 0.14 * ( 1.0 + audioSwell );
+    col += lane_color * 0.14 * ( 1.0 + audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

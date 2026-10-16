@@ -44,13 +44,13 @@ uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-const float kTanY = 0.5206;
-const float kAsp = 1.7778;
+const float TanY = 0.5206;
+const float Asp = 1.7778;
 
-const uint kShowers = 24u;   ///< cascades in the sky
-const uint kPerShower = 16u; ///< branches per cascade
-const uint kShowerBr = 384u; ///< kShowers * kPerShower
-const uint kBranches = 512u; ///< + 128 airglow branches; x 64 x 6 = 196608 verts
+const uint Showers = 24u;   ///< cascades in the sky
+const uint PerShower = 16u; ///< branches per cascade
+const uint ShowerBr = 384u; ///< Showers * PerShower
+const uint Branches = 512u; ///< + 128 airglow branches; x 64 x 6 = 196608 verts
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -114,50 +114,50 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     uint  idx = g.x + 64u * ( g.y + 64u * g.z );
 
-    uint branchIdx = idx / 64u;
-    uint segIdx = idx % 64u;
-    if ( branchIdx >= kBranches )
+    uint branch_idx = idx / 64u;
+    uint seg_idx = idx % 64u;
+    if ( branch_idx >= Branches )
         return;
 
     float t = time * 0.45 + audioAdvance * 0.4;
 
-    if ( branchIdx >= kShowerBr )
+    if ( branch_idx >= ShowerBr )
     {
         // ---- UPPER-ATMOSPHERE AIRGLOW ---------------------------------
         // Single-speck streaks, one per (branch, segment) slot, scattered
         // across the frustum from behind the field out to the far dark.  A
         // BACKGROUND layer: clearly dimmer than any track, but bright enough
         // that no tile of the sky is ever empty.
-        float hid = float( branchIdx ) * 64.0 + float( segIdx );
+        float hid = float( branch_idx ) * 64.0 + float( seg_idx );
         float g1 = hash11( hid * 1.37 + 0.7 );
         float g2 = hash11( hid * 2.71 + 3.3 );
         float g3 = hash11( hid * 5.11 + 9.1 );
         float g4 = hash11( hid * 7.77 + 13.7 );
 
         float dzh = 20.0 + g3 * 72.0;
-        float hH = dzh * kTanY;
-        float hW = hH * kAsp;
+        float h_h = dzh * TanY;
+        float h_w = h_h * Asp;
         // 2.0 would fit the frustum exactly; 2.35 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.35;
         float ph = g1 * 6.2831853 + t * 0.06;
 
-        vec3 c = vec3( ( g1 - 0.5 ) * open * hW + 0.03 * hW * cos( ph ),
-                       ( g2 - 0.5 ) * open * hH + 0.03 * hH * sin( ph * 0.83 ),
+        vec3 c = vec3( ( g1 - 0.5 ) * open * h_w + 0.03 * h_w * cos( ph ),
+                       ( g2 - 0.5 ) * open * h_h + 0.03 * h_h * sin( ph * 0.83 ),
                        dzh );
 
         // A speck must stay legible at any distance: sized as a fraction of
         // the half-height at its own depth, it is ~3 px whatever dzh is.
-        float sl = hH * 0.011 * ( 0.5 + g4 );
-        float glowH = ( 0.055 + 0.10 * g4 ) * ( 1.0 + 0.9 * audioSwell )
-                      * ( 1.0 + 0.8 * audioKick * g2 );
+        float sl = h_h * 0.011 * ( 0.5 + g4 );
+        float glow_h = ( 0.055 + 0.10 * g4 ) * ( 1.0 + 0.9 * audioSwell )
+                       * ( 1.0 + 0.8 * audioKick * g2 );
         emitSegment( c - vec3( 0.0, sl, 0.0 ), c + vec3( 0.0, sl, 0.0 ),
-                     0.35 + 0.5 * g2, min( glowH, 0.42 ), hH * 0.0060 * ( 0.6 + 0.8 * g4 ) );
+                     0.35 + 0.5 * g2, min( glow_h, 0.42 ), h_h * 0.0060 * ( 0.6 + 0.8 * g4 ) );
         return;
     }
 
     // ---- ONE CASCADE OF THE FIELD -------------------------------------
-    uint  sh = branchIdx / kPerShower; // 0..23
+    uint  sh = branch_idx / PerShower; // 0..23
     float sf = float( sh );
     float q1 = hash11( sf * 13.7 + 1.3 );
     float q2 = hash11( sf * 29.1 + 5.7 );
@@ -166,41 +166,41 @@ void main()
 
     // FRUSTUM-COORDINATE placement on a jittered 6 x 4 lattice.
     float dz = 5.0 + q3 * q3 * 27.0;
-    float halfH = dz * kTanY;
-    float halfW = halfH * kAsp;
+    float half_h = dz * TanY;
+    float half_w = half_h * Asp;
     float open = 2.15;
     float lx = mod( sf, 6.0 );
     float ly = floor( sf / 6.0 );
-    vec3  origin = vec3( ( ( lx + 0.5 ) / 6.0 - 0.5 + ( q1 - 0.5 ) * 0.15 ) * open * halfW,
-                         ( ( ly + 0.5 ) / 4.0 - 0.5 + ( q2 - 0.5 ) * 0.17 ) * open * halfH,
+    vec3  origin = vec3( ( ( lx + 0.5 ) / 6.0 - 0.5 + ( q1 - 0.5 ) * 0.15 ) * open * half_w,
+                         ( ( ly + 0.5 ) / 4.0 - 0.5 + ( q2 - 0.5 ) * 0.17 ) * open * half_h,
                          dz );
 
     // Extent scales with depth, so every cascade subtends the same angle.
     // Sized so 24 of them tile the 6 x 4 lattice with real dark sky between,
     // rather than each one covering a fifth of the picture on its own.
-    float S = halfH * ( 0.34 + 0.24 * q4 );
+    float S = half_h * ( 0.34 + 0.24 * q4 );
 
     // The primary enters from above and cascades down the frame, leaning off
     // vertical by its own arrival direction.
-    float leanA = q1 * 6.2831853;
-    float leanT = 0.22 + 0.38 * q2;
-    vec3  axis = normalize( vec3( sin( leanT ) * cos( leanA ), -cos( leanT ), sin( leanT ) * sin( leanA ) ) );
+    float lean_a = q1 * 6.2831853;
+    float lean_t = 0.22 + 0.38 * q2;
+    vec3  axis = normalize( vec3( sin( lean_t ) * cos( lean_a ), -cos( lean_t ), sin( lean_t ) * sin( lean_a ) ) );
 
-    float s0 = float( segIdx ) / 64.0;
-    float s1 = float( segIdx + 1u ) / 64.0;
+    float s0 = float( seg_idx ) / 64.0;
+    float s1 = float( seg_idx + 1u ) / 64.0;
 
     float L = 2.3 * S;
-    vec3  pTop = origin - axis * ( L * 0.5 );
+    vec3  p_top = origin - axis * ( L * 0.5 );
 
     // Secondary cascade cone (opening angle grows with atmospheric depth).
-    float bseed = hash11( float( branchIdx ) * 23.41 + sf * 3.7 );
-    float coneAngle = bseed * 6.2831853;
-    float coneWidth = ( 0.35 + 0.90 * hash11( bseed * 37.1 ) ) * S;
+    float bseed = hash11( float( branch_idx ) * 23.41 + sf * 3.7 );
+    float cone_angle = bseed * 6.2831853;
+    float cone_width = ( 0.35 + 0.90 * hash11( bseed * 37.1 ) ) * S;
 
     vec3 upv = ( abs( axis.y ) > 0.95 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 1.0, 0.0 );
     vec3 e1v = normalize( cross( axis, upv ) );
     vec3 e2v = cross( axis, e1v );
-    vec3 rad = e1v * cos( coneAngle ) + e2v * sin( coneAngle );
+    vec3 rad = e1v * cos( cone_angle ) + e2v * sin( cone_angle );
 
     // Moliere multiple Coulomb scattering fluctuations.
     vec3 sc0 = ( e1v * sin( s0 * 16.0 + bseed * 8.0 ) + e2v * cos( s0 * 16.0 + bseed * 8.0 ) )
@@ -210,13 +210,13 @@ void main()
 
     // NKG lateral distribution: the spray widens on spectral swell.
     float wide = 1.0 + 0.45 * audioSwell;
-    vec3  p0 = pTop + axis * ( s0 * L ) + rad * ( ( 0.05 + s0 * 0.85 ) * coneWidth * wide ) + sc0;
-    vec3  p1 = pTop + axis * ( s1 * L ) + rad * ( ( 0.05 + s1 * 0.85 ) * coneWidth * wide ) + sc1;
+    vec3  p0 = p_top + axis * ( s0 * L ) + rad * ( ( 0.05 + s0 * 0.85 ) * cone_width * wide ) + sc0;
+    vec3  p1 = p_top + axis * ( s1 * L ) + rad * ( ( 0.05 + s1 * 0.85 ) * cone_width * wide ) + sc1;
 
     // Relativistic Cherenkov cone glow, peaking at shower maximum (X_max near
     // s = 0.5), with an ionisation FRONT running down the cascade so the sky
     // keeps moving instead of standing still.
-    float showerMax = exp( -pow( ( s0 - 0.5 ) * 3.5, 2.0 ) );
+    float shower_max = exp( -pow( ( s0 - 0.5 ) * 3.5, 2.0 ) );
     // The ionisation front IS the scene's motion, and at t * 0.085 (t itself
     // running at 0.45/s) one front took about 26 seconds to travel the length of
     // a cascade -- over any few seconds of music the sky simply stood still
@@ -225,7 +225,7 @@ void main()
     // like. The coefficient on `time` inside t is constant, so anti-flicker safe.
     float front = fract( hash11( sf * 3.13 + 0.41 ) + t * 0.42 );
     float pulse = exp( -pow( ( s0 - front ) * 4.5, 2.0 ) );
-    float glow = showerMax * ( 0.30 + 1.25 * pulse )
+    float glow = shower_max * ( 0.30 + 1.25 * pulse )
                  * ( 1.0 + 3.0 * audioKick )
                  * ( 1.0 + 0.5 * sin( s0 * 20.0 - t * 6.0 ) );
     // Far cascades sit deeper in the air column and read dimmer.
@@ -235,7 +235,7 @@ void main()
     // ~4-8 px whatever dz is.  (It reads as thin because the ribbon is now
     // actually FACING the camera -- see emitSegment; before the fix, any
     // thickness at all came out as a zero-width sliver.)
-    float thick = halfH * 0.0036 * ( 1.0 + showerMax ) * ( 1.0 + 0.3 * audioSwell );
+    float thick = half_h * 0.0036 * ( 1.0 + shower_max ) * ( 1.0 + 0.3 * audioSwell );
 
     emitSegment( p0, p1, s0, min( glow, 3.2 ), thick );
 }

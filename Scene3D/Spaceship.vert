@@ -32,8 +32,8 @@ out float vBg;     ///< Background flag (from the vertex stage).
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
-    if ( !isBg )
+    bool is_bg = gl_VertexID >= meshVertexCount;
+    if ( !is_bg )
     {
         // The generator's "game" export is NORMALIZED to roughly a unit
         // bounding box (measured directly: ~1.0 on its longest axis),
@@ -41,8 +41,8 @@ void main()
         // designed at -- that number never gets baked into these vertex
         // coordinates. Scale up to a size that reads clearly against this
         // scene's ~90-unit camera distance.
-        const float kModelScale = 35.0;
-        vec3        local = attrA.xyz * kModelScale;
+        const float ModelScale = 35.0;
+        vec3        local = attrA.xyz * ModelScale;
 
         // Slow tumble + yaw so a single static asset still reads as alive;
         // audio only adds a small kick-driven bob -- this is one hero
@@ -53,21 +53,21 @@ void main()
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        float rotY = time * 0.45;
-        float rotX = sin( time * 0.07 ) * 0.2;
-        float cy = cos( rotY ), sy = sin( rotY );
-        float cx = cos( rotX ), sx = sin( rotX );
-        mat3  rotYMat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        mat3  rotXMat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
-        mat3  rotMat = rotYMat * rotXMat;
+        float rot_y = time * 0.45;
+        float rot_x = sin( time * 0.07 ) * 0.2;
+        float cy = cos( rot_y ), sy = sin( rot_y );
+        float cx = cos( rot_x ), sx = sin( rot_x );
+        mat3  rot_y_mat = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        mat3  rot_x_mat = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3  rot_mat = rot_y_mat * rot_x_mat;
 
-        world = rotMat * local;
+        world = rot_mat * local;
         world.z += 90.0; // push out in front of the camera
         // The slow drift stays; the +2*audioKick hop does not. A hull jerking
         // in time reads as a glitch, not as reactivity (reported) -- the beat
         // belongs to the engine glow and the background, not the ship's mass.
         world.y += 4.0 * sin( time * 0.2 );
-        n = normalize( rotMat * attrB.xyz );
+        n = normalize( rot_mat * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
     }
     else
@@ -86,10 +86,10 @@ void main()
     // clipped visible wedges out of the sky. Pinning shell depth just inside
     // the far plane is the standard skybox fix: no far-plane clipping however
     // big the shell is, and it can never occlude the object in front of it.
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

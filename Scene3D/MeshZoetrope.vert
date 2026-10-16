@@ -30,16 +30,16 @@ out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 out float vDrum;
 
-const float kDist = 50.0;
-const float kGround = -20.0;
+const float Dist = 50.0;
+const float Ground = -20.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
     vDrum = 0.0;
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = 18.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
         vec3  c = attrA.xyz - meshCenter;
@@ -54,7 +54,7 @@ void main()
         float ca = cos( ang ), sa = sin( ang );
         mat3  spin = mat3( ca, 0.0, -sa, 0.0, 1.0, 0.0, sa, 0.0, ca );
 
-        world = spin * local + vec3( 0.0, kGround + meshExtent.y / mx * sz, kDist );
+        world = spin * local + vec3( 0.0, Ground + meshExtent.y / mx * sz, Dist );
         n = normalize( spin * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = nl;
@@ -71,10 +71,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

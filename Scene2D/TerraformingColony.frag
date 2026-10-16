@@ -127,16 +127,16 @@ float map( vec3 p, float dp )
     }
 
     // Grid of biodomes and processors
-    vec3 gridP = p;
-    vec2 id = floor( gridP.xz / 8.0 ); // was vec3 (type error) -- this is a 2D grid-cell index
+    vec3 grid_p = p;
+    vec2 id = floor( grid_p.xz / 8.0 ); // was vec3 (type error) -- this is a 2D grid-cell index
     vec3 q = p;
     q.xz = mod( q.xz, 8.0 ) - 4.0;
 
     float h = hash21( id );
 
     // Align structures to ground height
-    float localH = fbm( vec3( floor( p.xz / 8.0 ) * 8.0, 0.0 ) * 0.2 ) * 1.5 - 1.0;
-    q.y -= localH;
+    float local_h = fbm( vec3( floor( p.xz / 8.0 ) * 8.0, 0.0 ) * 0.2 ) * 1.5 - 1.0;
+    q.y -= local_h;
 
     if ( h < 0.4 * dp )
     {
@@ -157,18 +157,18 @@ float map( vec3 p, float dp )
     else if ( h > 0.8 )
     {
         // Processor tower
-        float hTow = 3.0 + hash21( id + 2.0 ) * 3.0;
-        float tow = sdBox( q, vec3( 1.0, hTow, 1.0 ) );
+        float h_tow = 3.0 + hash21( id + 2.0 ) * 3.0;
+        float tow = sdBox( q, vec3( 1.0, h_tow, 1.0 ) );
 
         // Vent at top
-        float vent = sdBox( q - vec3( 0.0, hTow, 0.0 ), vec3( 0.5, 1.0, 0.5 ) );
+        float vent = sdBox( q - vec3( 0.0, h_tow, 0.0 ), vec3( 0.5, 1.0, 0.5 ) );
         tow = max( tow, -vent );
 
         if ( tow < d )
         {
             d = tow;
             mat = 3.0;
-            glow = step( hTow - 0.5, q.y );
+            glow = step( h_tow - 0.5, q.y );
         }
     }
 
@@ -234,19 +234,19 @@ void main()
 
     // A low alien sun in a thick orange-green haze: the whole colony stood
     // in near-black before (catalogue review 29.09.2026).
-    vec3  sunDir = normalize( vec3( -0.5, 0.22, 0.8 ) );
-    vec3  sunCol = vec3( 1.6, 1.0, 0.55 );
-    float sunUp = max( dot( rd, sunDir ), 0.0 );
+    vec3  sun_dir = normalize( vec3( -0.5, 0.22, 0.8 ) );
+    vec3  sun_col = vec3( 1.6, 1.0, 0.55 );
+    float sun_up = max( dot( rd, sun_dir ), 0.0 );
     vec3  col = mix( vec3( 0.35, 0.28, 0.2 ), vec3( 0.12, 0.16, 0.2 ), clamp( rd.y * 2.5, 0.0, 1.0 ) );
-    col += sunCol * ( pow( sunUp, 8.0 ) * 0.5 + pow( sunUp, 200.0 ) * 2.0 );
+    col += sun_col * ( pow( sun_up, 8.0 ) * 0.5 + pow( sun_up, 200.0 ) * 2.0 );
 
-    vec3 domeColor = imgPalette( 0.4 );
-    vec3 ventColor = imgPalette( 0.8 + 0.1 * audioKick );
+    vec3 dome_color = imgPalette( 0.4 );
+    vec3 vent_color = imgPalette( 0.8 + 0.1 * audioKick );
 
     if ( m > 0.5 )
     {
         vec3  n = calcNormal( p, dp );
-        float dif = max( dot( n, sunDir ), 0.0 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
         float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
         vec3 albedo;
@@ -264,7 +264,7 @@ void main()
             albedo = vec3( 0.2 ); // tech metal
         }
 
-        col = albedo * ( 0.12 + dif * sunCol );
+        col = albedo * ( 0.12 + dif * sun_col );
         col += albedo * fill * 0.25;
 
         if ( m == 2.0 && g > 0.5 )
@@ -276,40 +276,40 @@ void main()
             vec2  wi = floor( wq ), wf = fract( wq );
             vec2  wc = 0.3 + 0.4 * vec2( hash21( wi + 3.1 ), hash21( wi + 7.7 ) );
             float win = step( 0.5, hash21( wi ) ) * smoothstep( 0.26, 0.12, length( wf - wc ) );
-            col += domeColor * ( 0.25 + 0.35 * audioSwell );
-            col += domeColor * ( 0.6 + audioSwell * 0.6 ) * win * 2.2;
+            col += dome_color * ( 0.25 + 0.35 * audioSwell );
+            col += dome_color * ( 0.6 + audioSwell * 0.6 ) * win * 2.2;
 
             // Specular on glass
-            float spec = pow( max( dot( reflect( -sunDir, n ), -rd ), 0.0 ), 32.0 );
-            col += sunCol * spec;
+            float spec = pow( max( dot( reflect( -sun_dir, n ), -rd ), 0.0 ), 32.0 );
+            col += sun_col * spec;
         }
         else if ( m == 3.0 && g > 0.5 )
         {
             // Processor vent flash
             float flash = step( 0.9, fract( time * 2.0 + p.x ) );
-            col += ventColor * ( flash + audioKick * 2.0 ) * 3.0;
+            col += vent_color * ( flash + audioKick * 2.0 ) * 3.0;
         }
 
         col *= clamp( 1.0 - float( steps ) * 0.015, 0.1, 1.0 );
     }
 
     // Terraforming gases (volumetric fog)
-    float gasDens = fbm( p * 0.1 + vec3( time * 0.1, 0.0, 0.0 ) ) * exp( -max( p.y, 0.0 ) * 0.2 );
-    gasDens = clamp( gasDens * gp, 0.0, 1.0 );
+    float gas_dens = fbm( p * 0.1 + vec3( time * 0.1, 0.0, 0.0 ) ) * exp( -max( p.y, 0.0 ) * 0.2 );
+    gas_dens = clamp( gas_dens * gp, 0.0, 1.0 );
 
-    vec3 gasCol = mix( vec3( 0.2, 0.3, 0.2 ), ventColor, 0.3 ); // poisonous green / vent mix
+    vec3 gas_col = mix( vec3( 0.2, 0.3, 0.2 ), vent_color, 0.3 ); // poisonous green / vent mix
 
     // Distance fog
-    float distFog = exp( -d * 0.02 );
+    float dist_fog = exp( -d * 0.02 );
 
-    col = mix( gasCol * ( 0.5 + audioSwell ), col, 1.0 - gasDens * ( 1.0 - distFog ) );
-    vec3 hazeC = vec3( 0.35, 0.28, 0.2 ) + sunCol * pow( sunUp, 4.0 ) * 0.3;
-    col = mix( hazeC, col, distFog );
+    col = mix( gas_col * ( 0.5 + audioSwell ), col, 1.0 - gas_dens * ( 1.0 - dist_fog ) );
+    vec3 haze_c = vec3( 0.35, 0.28, 0.2 ) + sun_col * pow( sun_up, 4.0 ) * 0.3;
+    col = mix( haze_c, col, dist_fog );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

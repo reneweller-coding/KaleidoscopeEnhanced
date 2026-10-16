@@ -62,35 +62,35 @@ void main()
 
     float t = time * 0.0817 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Wave rolling from left to right with trochoidal crest steepness
-    float waveFront = mix( -1.2, 1.2, tProg );
-    float distToWave = p.x - waveFront + sin( p.y * 8.0 * wav + t * 2.0 ) * 0.08;
+    float wave_front = mix( -1.2, 1.2, t_prog );
+    float dist_to_wave = p.x - wave_front + sin( p.y * 8.0 * wav + t * 2.0 ) * 0.08;
 
     // Trochoidal wave profile
-    float waveHeight = cos( distToWave * 20.0 );
-    float crestFoam = smoothstep( 0.7, 1.0, waveHeight ) * exp( -abs( distToWave ) * 12.0 ) * fom;
+    float wave_height = cos( dist_to_wave * 20.0 );
+    float crest_foam = smoothstep( 0.7, 1.0, wave_height ) * exp( -abs( dist_to_wave ) * 12.0 ) * fom;
 
     // Water refraction displacement
-    vec2 waterDisp = vec2( sin( distToWave * 15.0 ), cos( p.y * 12.0 + t ) ) * 0.04 * midTransition
-                     * ( 1.0 + audioSwell * 0.7 );
+    vec2 water_disp = vec2( sin( dist_to_wave * 15.0 ), cos( p.y * 12.0 + t ) ) * 0.04 * mid_transition
+                      * ( 1.0 + audioSwell * 0.7 );
 
-    vec4 c1 = texture( tex1, fract( uv + waterDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - waterDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + water_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - water_disp ) );
 
-    float wipeMask = smoothstep( -0.04, 0.04, distToWave );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.04, 0.04, dist_to_wave );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Sea foam whitecaps
-    vec3 foamWhite = vec3( 0.9, 0.98, 1.0 );
-    col.rgb += crestFoam * foamWhite * midTransition * ( 1.5 + audioKick * 1.17 );
+    vec3 foam_white = vec3( 0.9, 0.98, 1.0 );
+    col.rgb += crest_foam * foam_white * mid_transition * ( 1.5 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

@@ -46,17 +46,17 @@ void main()
         discard;
 
     // Smooth gaussian point sprite
-    float hScale = ( haloP > 0.01 ? haloP : 1.2 );
-    float core = exp( -r2 * 18.0 / hScale );
+    float h_scale = ( haloP > 0.01 ? haloP : 1.2 );
+    float core = exp( -r2 * 18.0 / h_scale );
 
     // Controlled low luminance per point sprite (V8c)
-    float baseLum = ( pointGainP > 0.01 ? pointGainP : 0.08 ) * 0.38; // measured luma 0.021: was *0.12
+    float base_lum = ( pointGainP > 0.01 ? pointGainP : 0.08 ) * 0.38; // measured luma 0.021: was *0.12
 
-    vec2 photoUv = fract( gl_PointCoord + vMeltingState * 0.3 );
-    vec3 photo = img( photoUv );
+    vec2 photo_uv = fract( gl_PointCoord + vMeltingState * 0.3 );
+    vec3 photo = img( photo_uv );
 
-    vec3 col = vCol * ( 0.6 + 0.4 * photo ) * core * baseLum;
-    col += mix( vCol, vec3( 0.9, 0.95, 1.0 ), 0.35 ) * core * baseLum * ( 1.0 + 0.6 * audioKick ) * vMeltingState;
+    vec3 col = vCol * ( 0.6 + 0.4 * photo ) * core * base_lum;
+    col += mix( vCol, vec3( 0.9, 0.95, 1.0 ), 0.35 ) * core * base_lum * ( 1.0 + 0.6 * audioKick ) * vMeltingState;
     col *= ( 0.85 + 0.35 * audioSwell );
     col += vCol * ( audioKick * 0.03 );
 

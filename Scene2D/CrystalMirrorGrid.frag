@@ -89,21 +89,21 @@ float smax( float a, float b, float k )
 
 float mapLattice( vec3 p, float fDensity, float shatter )
 {
-    vec3 gridPos = floor( p * fDensity );
-    vec3 localPos = fract( p * fDensity ) - 0.5;
+    vec3 grid_pos = floor( p * fDensity );
+    vec3 local_pos = fract( p * fDensity ) - 0.5;
 
     // Shatter offset per crystal cell
-    float cellHash = hash3D( gridPos );
-    float kickDisp = sin( cellHash * 6.28 + time * 4.0 ) * shatter * audioKick;
-    localPos += vec3( sin( cellHash * 3.14 ), cos( cellHash * 1.5 ), sin( cellHash * 9.2 ) ) * kickDisp * 0.4;
+    float cell_hash = hash3D( grid_pos );
+    float kick_disp = sin( cell_hash * 6.28 + time * 4.0 ) * shatter * audioKick;
+    local_pos += vec3( sin( cell_hash * 3.14 ), cos( cell_hash * 1.5 ), sin( cell_hash * 9.2 ) ) * kick_disp * 0.4;
 
     // Box SDF with bevelled crystal facets
-    vec3  d = abs( localPos ) - vec3( 0.38 + 0.08 * sin( time + cellHash * 10.0 ) );
-    float boxSDF = length( max( d, 0.0 ) ) + min( max( d.x, max( d.y, d.z ) ), 0.0 );
+    vec3  d = abs( local_pos ) - vec3( 0.38 + 0.08 * sin( time + cell_hash * 10.0 ) );
+    float box_sdf = length( max( d, 0.0 ) ) + min( max( d.x, max( d.y, d.z ) ), 0.0 );
 
     // Bevel cut
-    float planeBevel = dot( localPos, normalize( vec3( 1.0 ) ) ) - ( 0.42 + 0.05 * audioBass );
-    float lat = max( boxSDF, planeBevel ) / fDensity;
+    float plane_bevel = dot( local_pos, normalize( vec3( 1.0 ) ) ) - ( 0.42 + 0.05 * audioBass );
+    float lat = max( box_sdf, plane_bevel ) / fDensity;
     // The lattice fills ALL of space; the orbiting camera (r = 3) sat
     // permanently inside a crystal, so every frame was one facet's flat
     // interior. Carve a spherical chamber around the orbit: the camera
@@ -127,7 +127,7 @@ vec3 calcNormal( vec3 p, float fDensity, float shatter )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float fDens = ( facetP > 0.0 ) ? facetP : 1.0;
+    float f_dens = ( facetP > 0.0 ) ? facetP : 1.0;
     float shat = ( shatterP > 0.0 ) ? shatterP : 1.0;
     float refr = ( refractP > 0.0 ) ? refractP : 1.0;
 
@@ -138,10 +138,10 @@ void main()
     vec3 rd = normalize( vec3( uv, 1.2 ) );
 
     // Dynamic rotation matrices driven by time and audio
-    float rotX = time * 0.2 + audioAdvance * 0.15;
-    float rotY = time * 0.25 + audioAdvance * 0.12; // was + audioMid*0.5: the camera angle jittered with the mid band
-    mat2  rx = mat2( cos( rotX ), sin( rotX ), -sin( rotX ), cos( rotX ) );
-    mat2  ry = mat2( cos( rotY ), sin( rotY ), -sin( rotY ), cos( rotY ) );
+    float rot_x = time * 0.2 + audioAdvance * 0.15;
+    float rot_y = time * 0.25 + audioAdvance * 0.12; // was + audioMid*0.5: the camera angle jittered with the mid band
+    mat2  rx = mat2( cos( rot_x ), sin( rot_x ), -sin( rot_x ), cos( rot_x ) );
+    mat2  ry = mat2( cos( rot_y ), sin( rot_y ), -sin( rot_y ), cos( rot_y ) );
 
     ro.yz = rx * ro.yz;
     rd.yz = rx * rd.yz;
@@ -150,14 +150,14 @@ void main()
 
     // Raymarching distance loop
     float t = 0.0;
-    float hitDist = -1.0;
+    float hit_dist = -1.0;
     for ( int i = 0; i < 48; i++ )
     {
         vec3  p = ro + rd * t;
-        float d = mapLattice( p, 2.0 * fDens, shat );
+        float d = mapLattice( p, 2.0 * f_dens, shat );
         if ( d < 0.003 )
         {
-            hitDist = t;
+            hit_dist = t;
             break;
         }
         t += d * 0.7;
@@ -165,59 +165,59 @@ void main()
             break;
     }
 
-    vec3 finalCol = vec3( 0.0 );
+    vec3 final_col = vec3( 0.0 );
 
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
-        vec3 p = ro + rd * hitDist;
-        vec3 N = calcNormal( p, 2.0 * fDens, shat );
+        vec3 p = ro + rd * hit_dist;
+        vec3 N = calcNormal( p, 2.0 * f_dens, shat );
         // MOSAIK-Spiegel: jede Zelle kippt ihren Spiegel eigenwillig, sonst
         // reflektiert die glatte Kammerwand einfach nur das Foto am Stueck
         // ("wirkt wie einfach nur das Bild").
-        vec3 cellId = floor( p * 2.0 * fDens );
-        vec3 tiltH = vec3( hash3D( cellId ), hash3D( cellId + 7.1 ), hash3D( cellId + 13.7 ) );
-        N = normalize( N + ( tiltH - 0.5 ) * 0.85 );
+        vec3 cell_id = floor( p * 2.0 * f_dens );
+        vec3 tilt_h = vec3( hash3D( cell_id ), hash3D( cell_id + 7.1 ), hash3D( cell_id + 13.7 ) );
+        N = normalize( N + ( tilt_h - 0.5 ) * 0.85 );
         vec3 R = reflect( rd, N );
 
         // Map reflection ray to source image UV
-        vec2 reflUV = vec2( atan( R.z, R.x ) / 6.283185 + 0.5, R.y * 0.5 + 0.5 );
-        vec3 reflCol = img( fract( reflUV ) );
+        vec2 refl_uv = vec2( atan( R.z, R.x ) / 6.283185 + 0.5, R.y * 0.5 + 0.5 );
+        vec3 refl_col = img( fract( refl_uv ) );
 
         // Refraction dispersion (RGB split on crystal edges)
-        vec3 refrR = refract( rd, N, 0.75 * refr );
-        vec3 refrG = refract( rd, N, 0.72 * refr );
-        vec3 refrB = refract( rd, N, 0.69 * refr );
+        vec3 refr_r = refract( rd, N, 0.75 * refr );
+        vec3 refr_g = refract( rd, N, 0.72 * refr );
+        vec3 refr_b = refract( rd, N, 0.69 * refr );
 
-        vec3 refrCol;
-        refrCol.r = img( fract( reflUV + refrR.xy * 0.1 ) ).r;
-        refrCol.g = img( fract( reflUV + refrG.xy * 0.1 ) ).g;
-        refrCol.b = img( fract( reflUV + refrB.xy * 0.1 ) ).b;
+        vec3 refr_col;
+        refr_col.r = img( fract( refl_uv + refr_r.xy * 0.1 ) ).r;
+        refr_col.g = img( fract( refl_uv + refr_g.xy * 0.1 ) ).g;
+        refr_col.b = img( fract( refl_uv + refr_b.xy * 0.1 ) ).b;
 
         // Fresnel term for glass/crystal specular highlight
         float fresnel = pow( 1.0 - max( dot( -rd, N ), 0.0 ), 3.0 );
-        finalCol = mix( refrCol, reflCol, fresnel * 0.8 + 0.2 );
+        final_col = mix( refr_col, refl_col, fresnel * 0.8 + 0.2 );
 
         // Specular spark on kick drum
-        vec3  lightDir = normalize( vec3( 0.5, 1.0, -1.0 ) );
-        float spec = pow( max( dot( R, lightDir ), 0.0 ), 16.0 );
-        finalCol += vec3( 1.0, 0.9, 0.7 ) * spec * ( 1.0 + audioKick * 2.0 );
+        vec3  light_dir = normalize( vec3( 0.5, 1.0, -1.0 ) );
+        float spec = pow( max( dot( R, light_dir ), 0.0 ), 16.0 );
+        final_col += vec3( 1.0, 0.9, 0.7 ) * spec * ( 1.0 + audioKick * 2.0 );
 
         // Edge glow
         float edge = 1.0 - max( dot( -rd, N ), 0.0 );
-        finalCol += imgPalette( 0.30 * audioCentroid ) * 1.5 * pow( edge, 4.0 ) * audioHigh;
+        final_col += imgPalette( 0.30 * audioCentroid ) * 1.5 * pow( edge, 4.0 ) * audioHigh;
     }
     else
     {
         // Background fallback projection
         // Dunkler Raum + Palettenhauch: der Cluster soll leuchten, nicht
         // der Hintergrund.
-        finalCol = imgPalette( 0.6 ) * 0.10 + img( fract( uv * 0.5 + 0.5 ) ) * 0.06;
+        final_col = imgPalette( 0.6 ) * 0.10 + img( fract( uv * 0.5 + 0.5 ) ) * 0.06;
     }
 
     if ( hueP > 0.0 )
     {
-        finalCol = hueRot( finalCol, hueP );
+        final_col = hueRot( final_col, hueP );
     }
 
-    fragColor = vec4( finalCol, 1.0 );
+    fragColor = vec4( final_col, 1.0 );
 }

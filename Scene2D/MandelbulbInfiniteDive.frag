@@ -98,7 +98,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float pMod = ( powerP > 0.01 ) ? powerP : 1.0;
+    float p_mod = ( powerP > 0.01 ) ? powerP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.132 * spd + audioAdvance * 0.132 * spd;
@@ -106,14 +106,15 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Power N smoothly morphs between 6.0 and 9.0
-    float power = ( 7.0 + 1.8 * sin( t * 0.3 ) + 1.0 * audioCentroid ) * pMod;
+    float power = ( 7.0 + 1.8 * sin( t * 0.3 ) + 1.0 * audioCentroid ) * p_mod;
 
     // Camera ray setup: forward dive towards the fractal bulb surface
-    float camDist = 2.4 - 0.5 * sin( t * 0.4 );
-    float camAngle = t * 0.25 + audioPhase * 0.1;
-    float camElev = 0.35 + 0.15 * sin( t * 0.35 );
+    float cam_dist = 2.4 - 0.5 * sin( t * 0.4 );
+    float cam_angle = t * 0.25 + audioPhase * 0.1;
+    float cam_elev = 0.35 + 0.15 * sin( t * 0.35 );
 
-    vec3 ro = vec3( cos( camAngle ) * cos( camElev ), sin( camElev ), sin( camAngle ) * cos( camElev ) ) * camDist;
+    vec3 ro = vec3( cos( cam_angle ) * cos( cam_elev ), sin( cam_elev ), sin( cam_angle ) * cos( cam_elev ) )
+              * cam_dist;
     vec3 ta = vec3( 0.0, 0.0, 0.0 );
 
     vec3 ww = normalize( ta - ro );
@@ -124,27 +125,27 @@ void main()
     // Sub-bass swells the bulb itself. Evaluating the DE in a shrunken space
     // and re-multiplying by the same factor keeps the estimator conservative,
     // which a naive "d * k" would not.
-    float bulbScale = 1.0 + 0.30 * audioSubBass;
-    float invBulb = 1.0 / bulbScale;
+    float bulb_scale = 1.0 + 0.30 * audioSubBass;
+    float inv_bulb = 1.0 / bulb_scale;
 
     // Raymarching loop
-    float totDist = 0.0;
+    float tot_dist = 0.0;
     float trap = 0.0;
-    float rimGlow = 0.0;
-    vec3  hitCol = vec3( 0.0 );
+    float rim_glow = 0.0;
+    vec3  hit_col = vec3( 0.0 );
 
     for ( int i = 0; i < 54; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curTrap;
-        float d = mapMandelbulb( p * invBulb, power, curTrap ) * bulbScale;
+        vec3  p = ro + rd * tot_dist;
+        float cur_trap;
+        float d = mapMandelbulb( p * inv_bulb, power, cur_trap ) * bulb_scale;
 
-        // Capping rimGlow at 0.45 bounded its MAGNITUDE but not its shape:
+        // Capping rim_glow at 0.45 bounded its MAGNITUDE but not its shape:
         // minD (closest |d| over the WHOLE march) is, by construction,
         // always inside [0, hit-threshold] for a ray that hits at all --
         // that's the definition of "hit", not a rim/proximity signal.
         // Verified numerically: for every hit pixel across a full screen
-        // grid, minD sat in [0, 0.002] and the resulting rimGlow was >0.9
+        // grid, minD sat in [0, 0.002] and the resulting rim_glow was >0.9
         // for 100% of them -- i.e. it was pegged at the 0.45 cap almost
         // everywhere on the bulb regardless of local geometry, producing
         // the same uniform lavender wash just at lower intensity (matches
@@ -157,41 +158,41 @@ void main()
         // mean 0.24, std 0.28 across the hit surface, not saturated).
         if ( abs( d ) < 0.002 )
         {
-            trap = curTrap;
+            trap = cur_trap;
 
             vec2  eps = vec2( 0.001, 0.0 );
-            float dxTrap, dyTrap, dzTrap;
-            vec3  ps = p * invBulb;
+            float dx_trap, dy_trap, dz_trap;
+            vec3  ps = p * inv_bulb;
             vec3  nrm = normalize( vec3(
-                mapMandelbulb( ps + eps.xyy, power, dxTrap ) - mapMandelbulb( ps - eps.xyy, power, dxTrap ),
-                mapMandelbulb( ps + eps.yxy, power, dyTrap ) - mapMandelbulb( ps - eps.yxy, power, dyTrap ),
-                mapMandelbulb( ps + eps.yyx, power, dzTrap ) - mapMandelbulb( ps - eps.yyx, power, dzTrap ) ) );
-            rimGlow = pow( 1.0 - abs( dot( nrm, -rd ) ), 3.0 ) * glw;
+                mapMandelbulb( ps + eps.xyy, power, dx_trap ) - mapMandelbulb( ps - eps.xyy, power, dx_trap ),
+                mapMandelbulb( ps + eps.yxy, power, dy_trap ) - mapMandelbulb( ps - eps.yxy, power, dy_trap ),
+                mapMandelbulb( ps + eps.yyx, power, dz_trap ) - mapMandelbulb( ps - eps.yyx, power, dz_trap ) ) );
+            rim_glow = pow( 1.0 - abs( dot( nrm, -rd ) ), 3.0 ) * glw;
 
-            vec2 sampleUV = fract( p.xy * 0.3 + p.z * 0.2 + 0.5 );
-            vec3 texCol = img( sampleUV );
+            vec2 sample_uv = fract( p.xy * 0.3 + p.z * 0.2 + 0.5 );
+            vec3 tex_col = img( sample_uv );
             vec3 pal = imgPalette( trap * 1.5 + t * 0.1 );
-            hitCol = mix( texCol, pal, 0.55 ) * ( 0.7 + 0.4 * ( 1.0 - d ) );
+            hit_col = mix( tex_col, pal, 0.55 ) * ( 0.7 + 0.4 * ( 1.0 - d ) );
             break;
         }
-        if ( totDist > 6.0 )
+        if ( tot_dist > 6.0 )
             break;
 
-        totDist += max( 0.015, d * 0.7 );
+        tot_dist += max( 0.015, d * 0.7 );
     }
 
     // Glowing surface rim (Fresnel term computed above; left at 0 on a
-    // true miss so bgCol/vignette shows through cleanly).
-    vec3 glowTint = vec3( 1.3, 1.0, 1.6 ) * rimGlow * ( 1.0 + 1.5 * audioKick );
+    // true miss so bg_col/vignette shows through cleanly).
+    vec3 glow_tint = vec3( 1.3, 1.0, 1.6 ) * rim_glow * ( 1.0 + 1.5 * audioKick );
 
     // Cosmic background
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.2 + 0.15 * audioLevel );
 
-    vec3 finalCol = mix( bgCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
-    finalCol += glowTint;
+    vec3 final_col = mix( bg_col, hit_col, clamp( length( hit_col ), 0.0, 1.0 ) );
+    final_col += glow_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

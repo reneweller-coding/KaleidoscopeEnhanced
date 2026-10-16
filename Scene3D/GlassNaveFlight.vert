@@ -24,8 +24,8 @@ out float vFace;
 void main()
 {
     float kind = attrB.y;
-    bool  wantGlass = ( oitPass > 0.5 );
-    if ( ( kind > 0.5 && kind < 1.5 ) != wantGlass )
+    bool  want_glass = ( oitPass > 0.5 );
+    if ( ( kind > 0.5 && kind < 1.5 ) != want_glass )
     {
         gl_Position = vec4( 0.0, 0.0, -2.0, 1.0 );
         vPos = vec3( 0.0 );

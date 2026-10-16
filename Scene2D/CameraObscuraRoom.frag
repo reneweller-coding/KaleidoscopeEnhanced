@@ -99,12 +99,12 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float holeBase = 0.4 + 0.6 * clamp( holeP, 0.0, 1.0 );
+    float hole_base = 0.4 + 0.6 * clamp( holeP, 0.0, 1.0 );
     float dust = 0.4 + 0.8 * clamp( dustP, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     // The aperture: open on the swell.  Brightness and blur move together,
     // which is what an aperture does, and both are slow.
-    float aperture = holeBase * ( 0.5 + 0.7 * swell );
+    float aperture = hole_base * ( 0.5 + 0.7 * swell );
     float blur = 0.0015 + 0.006 * aperture;
     float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
     // Daylight outside: the kick is a cloud edge passing the hole (light only).
@@ -125,13 +125,13 @@ void main()
     // The light cone itself, hanging in the dusty air: a wedge from the
     // pinhole (upper right, behind the viewer) across the room.
     vec2  hole = vec2( aspect * 0.42, 0.36 );
-    vec2  toWall = p - hole;
-    float along = clamp( -toWall.y / 0.95, 0.0, 1.0 );
+    vec2  to_wall = p - hole;
+    float along = clamp( -to_wall.y / 0.95, 0.0, 1.0 );
     float spread = 0.03 + 0.26 * along;
-    float across = abs( toWall.x + toWall.y * 0.55 ) / max( spread, 1e-3 );
+    float across = abs( to_wall.x + to_wall.y * 0.55 ) / max( spread, 1e-3 );
     float beam = smoothstep( 1.0, 0.35, across ) * smoothstep( 0.0, 0.15, along ) * ( 0.05 + 0.14 * aperture );
-    vec3  beamCol = mix( vec3( 1.0, 0.96, 0.88 ), imgPalette( hue * 0.159 + 0.1 ), 0.3 );
-    col += beamCol * beam * daylight * 0.5;
+    vec3  beam_col = mix( vec3( 1.0, 0.96, 0.88 ), imgPalette( hue * 0.159 + 0.1 ), 0.3 );
+    col += beam_col * beam * daylight * 0.5;
     // Dust motes: round, jittered, drifting up and sideways on the clock;
     // they only light where the beam is.
     for ( int layer = 0; layer < 2; ++layer )
@@ -144,17 +144,17 @@ void main()
         vec2  jit = vec2( hash21( c + 1.3 ), hash21( c + 5.9 ) ) - 0.5;
         float r = length( f - jit * 0.7 );
         float mote = smoothstep( 0.18, 0.05, r ) * step( 1.0 - 0.09 * dust, hash21( c + fl * 3.1 ) );
-        col += beamCol * mote * beam * 6.0 * ( 0.6 + 0.9 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
+        col += beam_col * mote * beam * 6.0 * ( 0.6 + 0.9 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
     }
     // The pinhole itself: a small bright point on the wall behind us, seen
     // as a glow at the top right edge.
     float hd = length( p - hole );
-    col += beamCol * exp( -hd * 24.0 ) * daylight * ( 0.25 + 0.5 * aperture );
+    col += beam_col * exp( -hd * 24.0 ) * daylight * ( 0.25 + 0.5 * aperture );
     // Floor line and the room's darkness at the bottom.
     col *= 0.55 + 0.45 * smoothstep( -0.12, 0.25, p.y );
     col *= 0.8 + 0.4 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

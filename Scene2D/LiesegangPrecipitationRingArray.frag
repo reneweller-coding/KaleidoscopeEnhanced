@@ -73,41 +73,41 @@ void main()
 
     // Liesegang geometric spacing law: x_{n+1} / x_n = 1 + P (Jablczynski constant)
     // In log-space, rings are evenly spaced: log(r)
-    float rParam = ( spacingRatioP > 0.01 ? spacingRatioP : 1.18 );
-    float logR = log( max( r * 3.0, 0.05 ) ) / log( rParam );
+    float r_param = ( spacingRatioP > 0.01 ? spacingRatioP : 1.18 );
+    float log_r = log( max( r * 3.0, 0.05 ) ) / log( r_param );
 
     // Dichte gedeckelt (Moire) und Drift halbiert.
-    float ringPhase = logR * min( ( ringDensityP > 0.01 ? ringDensityP : 6.0 ), 9.0 ) - t * 1.0;
+    float ring_phase = log_r * min( ( ringDensityP > 0.01 ? ringDensityP : 6.0 ), 9.0 ) - t * 1.0;
 
     // Sharp precipitate band profile (supersaturation threshold nucleation)
-    float localBand = fract( ringPhase ) - 0.5;
-    float precipBand = exp( -localBand * localBand * 26.0 );
+    float local_band = fract( ring_phase ) - 0.5;
+    float precip_band = exp( -local_band * local_band * 26.0 );
 
     // Colloidal diffusion gradient between rings
-    float dGrad = ( diffusionP > 0.01 ? diffusionP : 1.2 );
-    float ionDiffusion = exp( -r * dGrad * 2.0 );
+    float d_grad = ( diffusionP > 0.01 ? diffusionP : 1.2 );
+    float ion_diffusion = exp( -r * d_grad * 2.0 );
 
     // Nucleation flash on kick
     // Blitz nur an der wachsenden Front (Zentrum), nicht ueber alle Ringe.
-    float nucFlash = precipBand * exp( -r * 2.2 ) * ( 0.6 + 1.2 * audioKick )
-                     * ( colloidGlowP > 0.01 ? colloidGlowP : 1.3 );
+    float nuc_flash = precip_band * exp( -r * 2.2 ) * ( 0.6 + 1.2 * audioKick )
+                      * ( colloidGlowP > 0.01 ? colloidGlowP : 1.3 );
 
     // Palette assignment
     // audioAdvance statt Centroid: der Centroid liess ALLE Ringe pro Frame
     // die Farbe wechseln ("blinkendes Moire").
-    float palAngle = fract( logR * 0.15 + r * 0.2 + audioAdvance * 0.05 );
-    vec3  colBand = imgPalette( palAngle );
-    vec3  colGel = imgPalette( fract( palAngle + 0.5 ) ) * 0.6;
+    float pal_angle = fract( log_r * 0.15 + r * 0.2 + audioAdvance * 0.05 );
+    vec3  col_band = imgPalette( pal_angle );
+    vec3  col_gel = imgPalette( fract( pal_angle + 0.5 ) ) * 0.6;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colGel * ionDiffusion * ( 0.8 + 0.4 * audioSwell );
-    col += colBand * precipBand * 2.2;
-    col += vec3( 0.95, 0.95, 1.0 ) * nucFlash * 1.8;
-    col += colBand * ( audioKick * 0.35 );
+    col += col_gel * ion_diffusion * ( 0.8 + 0.4 * audioSwell );
+    col += col_band * precip_band * 2.2;
+    col += vec3( 0.95, 0.95, 1.0 ) * nuc_flash * 1.8;
+    col += col_band * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

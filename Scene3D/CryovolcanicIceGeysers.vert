@@ -6,7 +6,7 @@
  */
 // CryovolcanicIceGeysers.vert
 
-layout( location = 0 ) in vec4 attrA; ///< xyz = pos, w = plumeID
+layout( location = 0 ) in vec4 attrA; ///< xyz = pos, w = plume_id
 layout( location = 1 ) in vec4 attrB; ///< x = seed, y = u, zw = uv
 
 uniform mat4  projM;  ///< Projection matrix.
@@ -45,19 +45,19 @@ vec3 hueRot( vec3 c, float a )
 void main()
 {
     vec3  pos = attrA.xyz;
-    float plumeID = attrA.w;
+    float plume_id = attrA.w;
     float u = attrB.y;
     vTexCoord = attrB.zw;
 
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Glacial ice & sunlight scattering colors: Arctic Ice Cyan, Pale Sun Gold, Crystal White
-    vec3 iceCyan = vec3( 0.1, 0.85, 1.0 );
-    vec3 sunGold = vec3( 1.0, 0.9, 0.6 );
-    vec3 iceWhite = vec3( 0.95, 0.98, 1.0 );
+    vec3 ice_cyan = vec3( 0.1, 0.85, 1.0 );
+    vec3 sun_gold = vec3( 1.0, 0.9, 0.6 );
+    vec3 ice_white = vec3( 0.95, 0.98, 1.0 );
 
-    vec3 col = mix( iceCyan, iceWhite, u );
-    col = mix( col, sunGold, sin( plumeID * 0.3 + time ) * 0.4 + 0.4 );
+    vec3 col = mix( ice_cyan, ice_white, u );
+    col = mix( col, sun_gold, sin( plume_id * 0.3 + time ) * 0.4 + 0.4 );
 
     if ( audioChromaHue != 0.0 )
         col = hueRot( col, audioChromaHue );

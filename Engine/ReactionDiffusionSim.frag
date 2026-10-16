@@ -52,12 +52,12 @@ void main()
     lap += texture( texPrev, uv + vec2( -px.x, -px.y ) ).rg * 0.05;
     lap += s * ( -1.0 );
 
-    const float dA = 1.0;
-    const float dB = 0.5;
+    const float d_a = 1.0;
+    const float d_b = 0.5;
     float       reaction = A * B * B;
 
-    float nA = A + ( dA * lap.x - reaction + feed * ( 1.0 - A ) );
-    float nB = B + ( dB * lap.y + reaction - ( kill + feed ) * B );
+    float n_a = A + ( d_a * lap.x - reaction + feed * ( 1.0 - A ) );
+    float n_b = B + ( d_b * lap.y + reaction - ( kill + feed ) * B );
 
     // On a beat, scatter fresh reagent across the WHOLE field (hash-based) so the
     // entire pattern re-blooms with the music, rather than a few fixed dots
@@ -66,8 +66,8 @@ void main()
     {
         float n = hash( floor( gl_FragCoord.xy / 5.0 ) );
         if ( n > 0.90 )
-            nB = 1.0;
+            n_b = 1.0;
     }
 
-    fragColor = vec4( clamp( nA, 0.0, 1.0 ), clamp( nB, 0.0, 1.0 ), 0.0, 1.0 );
+    fragColor = vec4( clamp( n_a, 0.0, 1.0 ), clamp( n_b, 0.0, 1.0 ), 0.0, 1.0 );
 }

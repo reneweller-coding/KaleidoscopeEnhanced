@@ -50,7 +50,7 @@ uniform float gainP;
 uniform float bandP; ///< Band knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot2D( float a )
@@ -79,7 +79,7 @@ void main()
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
-    float halfW = aspect * 0.5;
+    float half_w = aspect * 0.5;
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
 
@@ -88,7 +88,7 @@ void main()
     // A schlieren window is a WINDOW: at 0.30 it covered the whole frame and
     // the transition read as a grey wash instead of a travelling band.
     float width = ( 0.11 + 0.05 * clamp( audioSwell, 0.0, 1.0 ) ) * bw;
-    float kx = mix( -halfW - width * 2.2, halfW + width * 2.2, d );
+    float kx = mix( -half_w - width * 2.2, half_w + width * 2.2, d );
 
     // Ahead of the knife the outgoing scene, behind it the incoming one.
     float passed = smoothstep( kx + width * 0.7, kx - width * 0.7, p.x );

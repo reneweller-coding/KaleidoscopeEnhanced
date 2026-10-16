@@ -70,35 +70,35 @@ void main()
 
     float t = time * 0.0573 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Cellular grid of sparkling dinoflagellates
     vec2  cell = floor( p * 35.0 * den );
-    float cellRand = hash21( cell );
+    float cell_rand = hash21( cell );
 
     // Sparkle pulse timing
-    float sparklePhase = sin( cellRand * 6.28 + t * 6.0 );
-    float sparkleFlash = pow( max( 0.0, sparklePhase ), 16.0 ) * midTransition * spk;
+    float sparkle_phase = sin( cell_rand * 6.28 + t * 6.0 );
+    float sparkle_flash = pow( max( 0.0, sparkle_phase ), 16.0 ) * mid_transition * spk;
 
     // Fluid wave displacement
-    vec2 waveDisp = vec2( sin( p.y * 10.0 + t * 2.0 ), cos( p.x * 10.0 - t * 2.0 ) ) * 0.025 * midTransition;
+    vec2 wave_disp = vec2( sin( p.y * 10.0 + t * 2.0 ), cos( p.x * 10.0 - t * 2.0 ) ) * 0.025 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + waveDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - waveDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + wave_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - wave_disp ) );
 
     // Staggered cellular blend
-    float blend = clamp( ( tProg - cellRand * 0.3 ) / 0.7, 0.0, 1.0 );
+    float blend = clamp( ( t_prog - cell_rand * 0.3 ) / 0.7, 0.0, 1.0 );
     vec4  col = mix( c1, c0, blend );
 
     // Bioluminescent cyan-emerald glow
-    vec3 bioCyan = vec3( 0.1, 0.95, 0.9 );
-    col.rgb += sparkleFlash * bioCyan * ( 1.5 + audioKick * 1.17 + audioHigh * 1.5 );
+    vec3 bio_cyan = vec3( 0.1, 0.95, 0.9 );
+    col.rgb += sparkle_flash * bio_cyan * ( 1.5 + audioKick * 1.17 + audioHigh * 1.5 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

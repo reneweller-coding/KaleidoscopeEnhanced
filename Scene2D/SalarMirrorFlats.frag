@@ -87,14 +87,14 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float crust = 0.4 + 0.6 * clamp( crustP, 0.0, 1.0 );
-    int   nWalk = 2 + int( clamp( walkersP, 0.0, 1.0 ) * 4.0 );
+    int   n_walk = 2 + int( clamp( walkersP, 0.0, 1.0 ) * 4.0 );
     float light = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
     float clock = sceneAdvance * 0.2 + sceneTime * 0.04;
     float horizon = 0.0;
 
     // Sky: the photo, warm-lit; the mirror below is the same photo flipped.
-    vec2 skyUV = vec2( p.x / aspect + 0.5, abs( p.y - horizon ) * 1.6 + 0.05 );
-    vec3 sky = img( clamp( skyUV, 0.0, 1.0 ) ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.25 )
+    vec2 sky_uv = vec2( p.x / aspect + 0.5, abs( p.y - horizon ) * 1.6 + 0.05 );
+    vec3 sky = img( clamp( sky_uv, 0.0, 1.0 ) ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.25 )
                * light;
     sky += vec3( 1.0, 0.95, 0.85 ) * exp( -abs( p.y - horizon ) * 6.0 ) * 0.25 * light;   // the bright band at the
                                                                                           // horizon
@@ -108,9 +108,9 @@ void main()
         float persp = 1.0 / max( d * 8.0, 0.4 ); // ground perspective
         vec2  gp = vec2( p.x * persp * 3.0, persp * 1.0 + clock * 0.02 );
         float edge = hexEdge( gp, 0.5 );
-        float crustLine = smoothstep( 0.86, 0.98, edge ) * smoothstep( 0.02, 0.2, d ) * crust;
+        float crust_line = smoothstep( 0.86, 0.98, edge ) * smoothstep( 0.02, 0.2, d ) * crust;
         vec3  mirror = sky * 0.85;
-        mirror = mix( mirror, vec3( 0.95, 0.95, 0.9 ) * light, crustLine * 0.18 * smoothstep( 0.5, 0.05, d ) );
+        mirror = mix( mirror, vec3( 0.95, 0.95, 0.9 ) * light, crust_line * 0.18 * smoothstep( 0.5, 0.05, d ) );
         float ripple = pow( 0.5 + 0.5 * sin( p.x * 80.0 + d * 200.0 + clock * 6.0 ), 8.0 ) * smoothstep( 0.0, 0.15, d );
         mirror += vec3( 1.0 ) * ripple * ( 0.05 + 0.18 * clamp( audioHigh * 2.0, 0.0, 1.0 ) ) * light;
         col = mirror;
@@ -119,27 +119,27 @@ void main()
     // moving slowly on the clock; each mirrored below the horizon.
     for ( int i = 0; i < 6; ++i )
     {
-        if ( i >= nWalk )
+        if ( i >= n_walk )
             break;
         float fi = float( i );
         float x = ( fract( clock * ( 0.03 + 0.02 * hash11( fi * 3.1 ) ) + hash11( fi * 5.3 ) ) - 0.5 ) * aspect * 1.4;
         float dist = 0.3 + 0.6 * hash11( fi * 7.7 ); // 0 near .. 1 far
         float h = 0.16 * ( 1.0 - dist * 0.85 );
-        float footY = horizon - 0.02 * ( 1.0 - dist );
-        vec2  q = p - vec2( x, footY );
+        float foot_y = horizon - 0.02 * ( 1.0 - dist );
+        vec2  q = p - vec2( x, foot_y );
         float body = step( abs( q.x ), h * 0.18 ) * step( 0.0, q.y ) * step( q.y, h * 0.75 );
         float head = smoothstep( h * 0.14, h * 0.1, length( q - vec2( 0.0, h * 0.85 ) ) );
         float fig = max( body, head );
-        vec2  qm = p - vec2( x, footY );
+        vec2  qm = p - vec2( x, foot_y );
         qm.y = -qm.y;
-        float bodyM = step( abs( qm.x ), h * 0.18 ) * step( 0.0, qm.y ) * step( qm.y, h * 0.75 );
-        float headM = smoothstep( h * 0.14, h * 0.1, length( qm - vec2( 0.0, h * 0.85 ) ) );
-        float figM = max( bodyM, headM ) * 0.7;
-        col = mix( col, vec3( 0.05, 0.05, 0.07 ), max( fig, figM ) );
+        float body_m = step( abs( qm.x ), h * 0.18 ) * step( 0.0, qm.y ) * step( qm.y, h * 0.75 );
+        float head_m = smoothstep( h * 0.14, h * 0.1, length( qm - vec2( 0.0, h * 0.85 ) ) );
+        float fig_m = max( body_m, head_m ) * 0.7;
+        col = mix( col, vec3( 0.05, 0.05, 0.07 ), max( fig, fig_m ) );
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

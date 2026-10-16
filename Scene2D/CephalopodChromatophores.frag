@@ -79,7 +79,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float dens = 22.0 + 18.0 * clamp( densP, 0.0, 1.0 );
-    float cloudAmt = 0.4 + 0.6 * clamp( cloudP, 0.0, 1.0 );
+    float cloud_amt = 0.4 + 0.6 * clamp( cloudP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
     float bias = 0.3 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
 
@@ -89,7 +89,7 @@ void main()
                     .rgb;
     skin = mix( skin, skin * imgPalette( hue * 0.159 + 0.1 ) * 1.6, 0.25 ) * 0.9 + 0.05;
     float cloud = 0.5 + 0.5 * sin( p.x * 4.0 + p.y * 1.5 - clock * 2.0 + 1.5 * noise2( p * 2.0 + clock * 0.1 ) );
-    cloud = smoothstep( 0.35, 0.8, cloud ) * cloudAmt;
+    cloud = smoothstep( 0.35, 0.8, cloud ) * cloud_amt;
     vec3 col = skin;
 
     // Chromatophores: two size classes on jittered grids; each cell has a
@@ -122,13 +122,13 @@ void main()
     vec2  iff = fract( iu ) - 0.5;
     vec2  io = vec2( hash21( ic + 2.3 ), hash21( ic + 6.1 ) ) - 0.5;
     float irid = smoothstep( 0.2, 0.05, length( iff - io * 0.6 ) ) * step( 0.9, hash21( ic ) );
-    vec3  iridCol = 0.5 + 0.5 * cos( 6.2831853 * ( hash21( ic ) + vec3( 0.0, 0.33, 0.66 ) + clock * 0.1 ) );
-    col += iridCol * irid * ( 0.25 + 0.45 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
+    vec3  irid_col = 0.5 + 0.5 * cos( 6.2831853 * ( hash21( ic ) + vec3( 0.0, 0.33, 0.66 ) + clock * 0.1 ) );
+    col += irid_col * irid * ( 0.25 + 0.45 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
     // Skin sheen.
     col *= 0.85 + 0.15 * ( 1.0 - length( p ) * 0.5 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

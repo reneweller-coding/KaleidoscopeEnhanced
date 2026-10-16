@@ -50,16 +50,16 @@ void main()
     float ri = attrA.w;
 
     const float L = 160.0;
-    float       camZ = time * 5.5 + audioAdvance * 14.0; // noticeably faster flight
-    float       z = mod( t * L - camZ, L );              // 0..L ahead of the camera
+    float       cam_z = time * 5.5 + audioAdvance * 14.0; // noticeably faster flight
+    float       z = mod( t * L - cam_z, L );              // 0..L ahead of the camera
 
     // The tube centre weaves HARD through ABSOLUTE space — the slalom curve
     // scrolls past the camera (a weave over relative z is a frozen shape:
     // that static look was exactly the old scene's problem).
     // Long, sweeping curves (the fast weave shook the frame nervously).
-    float zAbs = z + camZ;
-    vec2  cw = vec2( sin( zAbs * 0.020 + 1.3 ), cos( zAbs * 0.016 ) ) * 9.0
-               + vec2( sin( zAbs * 0.007 ), cos( zAbs * 0.006 + 2.0 ) ) * 6.0;
+    float z_abs = z + cam_z;
+    vec2  cw = vec2( sin( z_abs * 0.020 + 1.3 ), cos( z_abs * 0.016 ) ) * 9.0
+               + vec2( sin( z_abs * 0.007 ), cos( z_abs * 0.006 + 2.0 ) ) * 6.0;
 
     // Ribbon angle around the tube: per-ribbon slot + twist along z + a
     // smooth per-bar swing.
@@ -85,11 +85,11 @@ void main()
 
     // Camera rides the SAME weave slightly ahead of its own position (it
     // flies inside the slalom) and rolls into the curves.
-    float camA = camZ + 2.0;
-    vec2  camW = vec2( sin( camA * 0.020 + 1.3 ), cos( camA * 0.016 ) ) * 9.0
-                 + vec2( sin( camA * 0.007 ), cos( camA * 0.006 + 2.0 ) ) * 6.0;
-    vec3  vp = vec3( c2.x - camW.x, c2.y - camW.y, z );
-    float roll = 0.14 * cos( camA * 0.020 + 1.3 ); // gentle bank
+    float cam_a = cam_z + 2.0;
+    vec2  cam_w = vec2( sin( cam_a * 0.020 + 1.3 ), cos( cam_a * 0.016 ) ) * 9.0
+                  + vec2( sin( cam_a * 0.007 ), cos( cam_a * 0.006 + 2.0 ) ) * 6.0;
+    vec3  vp = vec3( c2.x - cam_w.x, c2.y - cam_w.y, z );
+    float roll = 0.14 * cos( cam_a * 0.020 + 1.3 ); // gentle bank
     vp.xy = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * vp.xy;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
@@ -101,9 +101,9 @@ void main()
     // Bounded hue spread (was a full-circle rainbow across the ribbons)
     vec3  col = hueRot( vec3( 0.2, 0.7, 1.0 ),
                         attrB.z * 0.9 + sin( audioChromaHue ) * 0.5 );
-    float kickGlow = audioKick * exp( -abs( z - 14.0 ) * 0.10 );
+    float kick_glow = audioKick * exp( -abs( z - 14.0 ) * 0.10 );
     col *= ( 0.5 + 0.5 * attrB.w )
-           * ( 1.0 + 1.5 * kickGlow + 1.2 * audioDrop );
+           * ( 1.0 + 1.5 * kick_glow + 1.2 * audioDrop );
     // A touch less fog than the old 0.020: with the ribbons spread over nested
     // shells, the far half of the tunnel is what carries the frame's edges,
     // and at 0.020 it had faded to nothing before it got there.

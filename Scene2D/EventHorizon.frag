@@ -76,10 +76,10 @@ void main()
     float tilt = 0.34 + 0.42 * tiltP + 0.06 * sin( audioAdvance * 0.05 );
     // Well OUTSIDE the disk's outer radius — a camera inside it sees nothing
     // but a wall of disk.
-    float camR = 15.0 - 1.0 * audioSwell;
+    float cam_r = 15.0 - 1.0 * audioSwell;
 
-    // Proper spherical placement, so |ro| really is camR.
-    vec3 ro = camR * vec3( cos( tilt ) * sin( orbit ), sin( tilt ), cos( tilt ) * cos( orbit ) );
+    // Proper spherical placement, so |ro| really is cam_r.
+    vec3 ro = cam_r * vec3( cos( tilt ) * sin( orbit ), sin( tilt ), cos( tilt ) * cos( orbit ) );
     vec3 fw = normalize( -ro );
     vec3 rt = normalize( cross( vec3( 0.0, 1.0, 0.0 ), fw ) );
     vec3 up = cross( fw, rt );
@@ -101,20 +101,20 @@ void main()
     float du = -dot( rd, e1 ) / dot( rd, e2 ) * u;
 
     float     phi = 0.0;
-    const int STEPS = 300; // adaptive dphi: near-shadow rays need the extra budget
+    const int Steps = 300; // adaptive dphi: near-shadow rays need the extra budget
     // Adaptive step: fine near the photon sphere (large u), coarse far out.
     // The fixed 0.055 quantised the escape direction next to the shadow and
     // broke the lensed sky into the coarse blocks the user reported.
     float dphi = 0.055;
 
     vec3  col = vec3( 0.0 );
-    float diskAcc = 0.0;
+    float disk_acc = 0.0;
     bool  captured = false;
-    vec3  escapeDir = rd;
+    vec3  escape_dir = rd;
 
-    float prevY = dot( ro, vec3( 0.0, 1.0, 0.0 ) );
+    float prev_y = dot( ro, vec3( 0.0, 1.0, 0.0 ) );
 
-    for ( int i = 0; i < STEPS; ++i )
+    for ( int i = 0; i < Steps; ++i )
     {
         // Leapfrog on d2u/dphi2 = 3 M u^2 - u
         dphi = 0.055 / ( 1.0 + 9.0 * M * u );
@@ -125,7 +125,7 @@ void main()
 
         if ( u <= 1e-4 )
         {
-            escapeDir = normalize( cos( phi ) * e1 + sin( phi ) * e2 );
+            escape_dir = normalize( cos( phi ) * e1 + sin( phi ) * e2 );
             break;
         }
         float r = 1.0 / u;
@@ -142,15 +142,15 @@ void main()
         // The disk is razor thin, so test for a SIGN CHANGE of y rather than
         // "is y small": a thickness test would miss it at grazing angles and
         // make the disk flicker as the camera moves.
-        if ( prevY * y < 0.0 )
+        if ( prev_y * y < 0.0 )
         {
-            float t = prevY / ( prevY - y );
+            float t = prev_y / ( prev_y - y );
             float rc = mix( 1.0 / max( u - du * dphi, 1e-4 ), r, t );
-            float rIn = 3.0 * M; // innermost stable orbit
-            float rOut = 9.0 * M;
-            if ( rc > rIn && rc < rOut )
+            float r_in = 3.0 * M; // innermost stable orbit
+            float r_out = 9.0 * M;
+            if ( rc > r_in && rc < r_out )
             {
-                float s = clamp( ( rc - rIn ) / ( rOut - rIn ), 0.0, 1.0 );
+                float s = clamp( ( rc - r_in ) / ( r_out - r_in ), 0.0, 1.0 );
 
                 // Keplerian orbit -> Doppler beaming: the side coming toward
                 // the camera is brighter and bluer.  Without this the disk
@@ -168,18 +168,18 @@ void main()
 
                 float bright = ( 1.0 - s ) * ( 1.0 - s ) * band * pow( dop, 3.0 );
                 col += diskColour( 1.0 - s ) * bright * ( 1.4 + 2.6 * diskP );
-                diskAcc += bright;
+                disk_acc += bright;
             }
         }
-        prevY = y;
+        prev_y = y;
     }
 
     if ( !captured )
     {
         // The photo IS the sky: the lensed direction decides where we sample,
         // so the slideshow gets dragged around the shadow and forms the ring.
-        vec2 sky = vec2( atan( escapeDir.z, escapeDir.x ) / 6.2831853 + 0.5,
-                         acos( clamp( escapeDir.y, -1.0, 1.0 ) ) / 3.14159265 );
+        vec2 sky = vec2( atan( escape_dir.z, escape_dir.x ) / 6.2831853 + 0.5,
+                         acos( clamp( escape_dir.y, -1.0, 1.0 ) ) / 3.14159265 );
         // textureLod(..., 0) on purpose: next to the shadow the lensed
         // direction changes enormously between adjacent pixels, so the
         // automatic derivative picks a very coarse mip and the sky breaks into
@@ -201,7 +201,7 @@ void main()
     }
 
     // Photon ring: a thin bright rim right at the shadow's edge.
-    float ring = smoothstep( 0.0, 1.2, diskAcc ) * ( 1.0 - smoothstep( 1.2, 3.0, diskAcc ) );
+    float ring = smoothstep( 0.0, 1.2, disk_acc ) * ( 1.0 - smoothstep( 1.2, 3.0, disk_acc ) );
     col += vec3( 1.0, 0.85, 0.65 ) * ring * ( 0.25 + 0.9 * audioKick );
 
     // Bounded hue nudge: chromaHue can carry a full turn, so send it through a

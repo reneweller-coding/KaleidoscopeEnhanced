@@ -119,66 +119,66 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 crustColor1 = vec3( 0.1, 0.12, 0.15 );                // Rocky/water planet
-    vec3 crustColor2 = vec3( 0.15, 0.1, 0.05 );                // Rocky/desert planet
-    vec3 magmaColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Intense heat
+    vec3 crust_color1 = vec3( 0.1, 0.12, 0.15 );                // Rocky/water planet
+    vec3 crust_color2 = vec3( 0.15, 0.1, 0.05 );                // Rocky/desert planet
+    vec3 magma_color = imgPalette( 0.8 + audioCentroid * 0.1 ); // Intense heat
 
     // Centers of the two planets
     // They are overlapping heavily to show the collision in progress
-    vec2 p1Center = vec2( -0.3, -0.2 );
-    vec2 p2Center = vec2( 0.3, 0.2 );
+    vec2 p1_center = vec2( -0.3, -0.2 );
+    vec2 p2_center = vec2( 0.3, 0.2 );
 
-    float p1Rad = 0.7;
-    float p2Rad = 0.6;
+    float p1_rad = 0.7;
+    float p2_rad = 0.6;
 
-    float d1 = length( uv - p1Center );
-    float d2 = length( uv - p2Center );
+    float d1 = length( uv - p1_center );
+    float d2 = length( uv - p2_center );
 
     // Impact zone is where they intersect
-    float impactZone = smoothstep( 0.4, 0.0, d1 ) * smoothstep( 0.4, 0.0, d2 );
+    float impact_zone = smoothstep( 0.4, 0.0, d1 ) * smoothstep( 0.4, 0.0, d2 );
 
     // Overall masking for the combined planetary mass
-    float mass = max( smoothstep( p1Rad, p1Rad - 0.05, d1 ), smoothstep( p2Rad, p2Rad - 0.05, d2 ) );
+    float mass = max( smoothstep( p1_rad, p1_rad - 0.05, d1 ), smoothstep( p2_rad, p2_rad - 0.05, d2 ) );
 
     if ( mass > 0.0 )
     {
         // Base planet textures
         // We distort the coordinates in the impact zone
-        vec2 distortUv = uv + normalize( uv ) * impactZone * ( fbm( vec3( uv * 10.0, time + audioAdvance ) ) * 0.5 );
+        vec2 distort_uv = uv + normalize( uv ) * impact_zone * ( fbm( vec3( uv * 10.0, time + audioAdvance ) ) * 0.5 );
 
-        float tex1 = fbm( vec3( ( distortUv - p1Center ) * 5.0, time * 0.1 ) );
-        float tex2 = fbm( vec3( ( distortUv - p2Center ) * 6.0, time * 0.1 + 10.0 ) );
+        float tex1 = fbm( vec3( ( distort_uv - p1_center ) * 5.0, time * 0.1 ) );
+        float tex2 = fbm( vec3( ( distort_uv - p2_center ) * 6.0, time * 0.1 + 10.0 ) );
 
-        vec3 pCol = mix( crustColor1 * tex1, crustColor2 * tex2, smoothstep( -0.1, 0.1, uv.x ) );
+        vec3 p_col = mix( crust_color1 * tex1, crust_color2 * tex2, smoothstep( -0.1, 0.1, uv.x ) );
 
         // Shattered crust - deep glowing cracks radiating from impact
-        float crackDist1 = length( distortUv - ( p1Center + p2Center ) * 0.5 );
+        float crack_dist1 = length( distort_uv - ( p1_center + p2_center ) * 0.5 );
 
         // Huge jagged ridges
-        float shatter = ridged( vec3( distortUv * 8.0, time * 0.2 + audioAdvance ) );
+        float shatter = ridged( vec3( distort_uv * 8.0, time * 0.2 + audioAdvance ) );
 
         // The closer to the impact zone, the more shattered it is and the brighter the magma
-        float damage = exp( -crackDist1 * 4.0 ) * ip;
+        float damage = exp( -crack_dist1 * 4.0 ) * ip;
         float cracks = smoothstep( 0.7 - damage * 0.3, 1.0, shatter );
 
         // Magma bleeding through the shattered crust
-        vec3 surfaceCol = mix( pCol, magmaColor * ( 1.0 + hp * 2.0 ), cracks * damage );
+        vec3 surface_col = mix( p_col, magma_color * ( 1.0 + hp * 2.0 ), cracks * damage );
 
         // The pure impact zone is a blinding mess of magma and plasma
-        float pureImpact = exp( -crackDist1 * 10.0 );
-        float impactNoise = fbm( vec3( distortUv * 20.0, time * 5.0 + audioAdvance * 5.0 ) );
-        surfaceCol = mix( surfaceCol, magmaColor * ( 2.0 + impactNoise * 2.0 ) * ( 1.0 + audioSwell * 2.0 ) * hp,
-                          pureImpact );
+        float pure_impact = exp( -crack_dist1 * 10.0 );
+        float impact_noise = fbm( vec3( distort_uv * 20.0, time * 5.0 + audioAdvance * 5.0 ) );
+        surface_col = mix( surface_col, magma_color * ( 2.0 + impact_noise * 2.0 ) * ( 1.0 + audioSwell * 2.0 ) * hp,
+                           pure_impact );
 
         // Add violent flashes on kicks directly in the impact zone
         float explosion = step( 0.9, hash11( floor( time * 4.00 ) ) ); // was 10 Hz
-        surfaceCol += magmaColor * explosion * audioKick * 10.0 * hp * pureImpact;
+        surface_col += magma_color * explosion * audioKick * 10.0 * hp * pure_impact;
 
-        col += surfaceCol * mass;
+        col += surface_col * mass;
 
         // Limb darkening on the outer edges, but brightening in the center
-        float outerLimb = smoothstep( 1.0, 0.8, max( d1 / p1Rad, d2 / p2Rad ) );
-        col *= outerLimb;
+        float outer_limb = smoothstep( 1.0, 0.8, max( d1 / p1_rad, d2 / p2_rad ) );
+        col *= outer_limb;
     }
     else
     {
@@ -200,42 +200,42 @@ void main()
 
     // Ejecta / Debris / Shockwaves exploding outward
     // Radial shockwaves blasting from the center
-    vec2  impactCenter = ( p1Center + p2Center ) * 0.5;
-    vec2  dir = uv - impactCenter;
+    vec2  impact_center = ( p1_center + p2_center ) * 0.5;
+    vec2  dir = uv - impact_center;
     float dist = length( dir );
 
     if ( dist > 0.1 )
     {
         // A shockwave expanding outward with audio kicks
         // We use fract of time to make continuous rings, multiplied by kick
-        float shockSpeed = time * 3.0 + audioAdvance * 5.0;
-        float shockRing = step( 0.95, fract( dist * 5.0 - shockSpeed ) );
+        float shock_speed = time * 3.0 + audioAdvance * 5.0;
+        float shock_ring = step( 0.95, fract( dist * 5.0 - shock_speed ) );
 
         // Break up the shockwave into fiery debris
-        float debrisNoise = fbm( vec3( normalize( dir ) * 10.0, shockSpeed ) );
-        float debris = smoothstep( 0.6, 0.8, debrisNoise );
+        float debris_noise = fbm( vec3( normalize( dir ) * 10.0, shock_speed ) );
+        float debris = smoothstep( 0.6, 0.8, debris_noise );
 
         // Shockwave is extremely bright when an audio kick happens
-        float shockInt = shockRing * debris * ( audioKick * 5.0 + audioSwell ) * hp * ip;
-        shockInt *= exp( -dist * 2.0 ); // fades as it gets further
+        float shock_int = shock_ring * debris * ( audioKick * 5.0 + audioSwell ) * hp * ip;
+        shock_int *= exp( -dist * 2.0 ); // fades as it gets further
 
-        col += magmaColor * shockInt;
+        col += magma_color * shock_int;
 
         // Continuous fine glowing dust being blown away
         float dust = fbm( vec3( dir * 5.0, time * 2.0 + audioAdvance * 3.0 ) );
-        float dustMask = smoothstep( 0.0, 0.5, dist ) * exp( -dist * 3.0 );
-        col += magmaColor * dust * dustMask * 0.5 * ( 1.0 + audioSwell ) * hp;
+        float dust_mask = smoothstep( 0.0, 0.5, dist ) * exp( -dist * 3.0 );
+        col += magma_color * dust * dust_mask * 0.5 * ( 1.0 + audioSwell ) * hp;
     }
 
     // Massive glare over the whole scene from the intense heat
-    float glare = exp( -length( uv - impactCenter ) * 2.0 );
-    col += magmaColor * glare * ( 0.2 + audioSwell * 0.5 ) * hp;
+    float glare = exp( -length( uv - impact_center ) * 2.0 );
+    col += magma_color * glare * ( 0.2 + audioSwell * 0.5 ) * hp;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

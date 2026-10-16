@@ -162,16 +162,16 @@ void main()
     // Ride the terrain: a fixed eye height buries the camera the moment a
     // ridge is taller than it is (the first cut filmed the inside of a
     // mountain).  Sample the ground under the camera and fly above it.
-    vec2  camXZ = vec2( 0.0, t * 14.0 );
-    float groundY = terrainH( camXZ * 0.045, rel * 1.10 ) * 5.0;
+    vec2  cam_xz = vec2( 0.0, t * 14.0 );
+    float ground_y = terrainH( cam_xz * 0.045, rel * 1.10 ) * 5.0;
     // Camera height needs BOTH a clearance above the ground under it and an
     // ABSOLUTE floor.  terrainH spans roughly -12..+13 here, so "local
     // ground + 17" still puts the eye eight units BELOW the peaks whenever
     // the camera happens to be over a deep valley -- which is why the frame
     // kept filling with rock no matter how far up the offset went.
-    const float kPeak = 13.0; // highest terrain the fbm reaches
-    float       eyeY = max( groundY + 10.0, kPeak + 7.0 ) + 2.2 * sin( t * 0.19 );
-    vec3        ro = vec3( camXZ.x, eyeY, camXZ.y );
+    const float Peak = 13.0; // highest terrain the fbm reaches
+    float       eye_y = max( ground_y + 10.0, Peak + 7.0 ) + 2.2 * sin( t * 0.19 );
+    vec3        ro = vec3( cam_xz.x, eye_y, cam_xz.y );
     float       pitch = -0.070 + 0.025 * sin( t * 0.31 );
     float       yaw = 0.16 * sin( t * 0.17 );
     vec3        fwd = normalize( vec3( sin( yaw ) * cos( pitch ), sin( pitch ), cos( yaw ) * cos( pitch ) ) );
@@ -183,11 +183,11 @@ void main()
 
     // A low sun, close to the horizon: long shadows, warm rim on every ridge.
     vec3 sun = normalize( vec3( -0.60, 0.34, 0.72 ) );
-    vec3 sunCol = mix( vec3( 1.0, 0.62, 0.34 ), imgPalette( 0.08 ), 0.30 ) * 1.5;
-    vec3 skyTint = imgPalette( 0.60 );
-    skyTint = mix( vec3( 0.40, 0.52, 0.86 ), skyTint, 0.40 );
-    vec3 floraTint = imgPalette( 0.34 );
-    floraTint = mix( vec3( 0.25, 0.95, 0.80 ), floraTint, 0.35 );
+    vec3 sun_col = mix( vec3( 1.0, 0.62, 0.34 ), imgPalette( 0.08 ), 0.30 ) * 1.5;
+    vec3 sky_tint = imgPalette( 0.60 );
+    sky_tint = mix( vec3( 0.40, 0.52, 0.86 ), sky_tint, 0.40 );
+    vec3 flora_tint = imgPalette( 0.34 );
+    flora_tint = mix( vec3( 0.25, 0.95, 0.80 ), flora_tint, 0.35 );
 
     float relief = rel * ( 1.0 + 0.09 * audioBass );
 
@@ -199,21 +199,21 @@ void main()
         // against -- ground and sky were the same violet and the horizon,
         // the one cue that makes a landscape read as vast, vanished.
         float up = clamp( rd.y * 2.1 + 0.06, 0.0, 1.0 );
-        vec3  horizonCol = mix( vec3( 0.95, 0.74, 0.58 ), sunCol * 0.75, 0.35 );
-        vec3  zenithCol = skyTint * 0.42;
-        col = mix( horizonCol, zenithCol, pow( up, 0.75 ) );
+        vec3  horizon_col = mix( vec3( 0.95, 0.74, 0.58 ), sun_col * 0.75, 0.35 );
+        vec3  zenith_col = sky_tint * 0.42;
+        col = mix( horizon_col, zenith_col, pow( up, 0.75 ) );
         // Sun disc and its bloom.
         float sd = max( dot( rd, sun ), 0.0 );
-        col += sunCol * pow( sd, 900.0 ) * 3.0;
-        col += sunCol * pow( sd, 8.0 ) * 0.28;
-        col += sunCol * pow( sd, 2.0 ) * 0.10;
+        col += sun_col * pow( sd, 900.0 ) * 3.0;
+        col += sun_col * pow( sd, 8.0 ) * 0.28;
+        col += sun_col * pow( sd, 2.0 ) * 0.10;
 
         // --- gas giant, low over the far ridges ---
         vec3  gg = normalize( vec3( 0.46, 0.20, 0.86 ) );
         float gr = 0.185 * sky;
         float gd = length( rd - gg * dot( rd, gg ) );
-        float inGiant = smoothstep( gr, gr * 0.985, gd ) * step( 0.0, dot( rd, gg ) );
-        if ( inGiant > 0.001 )
+        float in_giant = smoothstep( gr, gr * 0.985, gd ) * step( 0.0, dot( rd, gg ) );
+        if ( in_giant > 0.001 )
         {
             // Local sphere coordinates for the banding.
             vec3  gx = normalize( cross( gg, vec3( 0.0, 1.0, 0.0 ) ) );
@@ -230,31 +230,31 @@ void main()
                              fbm3( rot * 2.2 + 25.0, 4 ) )
                        - 0.5;
             float band = 0.5 + 0.5 * sin( sph.y * 11.0 + w1.x * 2.8 );
-            vec3  giantCol = mix( vec3( 0.52, 0.40, 0.30 ), vec3( 0.92, 0.84, 0.70 ), band );
-            giantCol = mix( giantCol, imgPalette( 0.16 ), 0.30 );
+            vec3  giant_col = mix( vec3( 0.52, 0.40, 0.30 ), vec3( 0.92, 0.84, 0.70 ), band );
+            giant_col = mix( giant_col, imgPalette( 0.16 ), 0.30 );
 
             // Its own terminator, lit by the same sun.
             float glam = max( dot( sph, sun ), 0.0 );
-            giantCol *= 0.28 + 1.55 * glam; // it read as a dark disc against the amber sky
+            giant_col *= 0.28 + 1.55 * glam; // it read as a dark disc against the amber sky
             // A slow aurora at the pole, breathing once per bar.
             float pole = smoothstep( 0.72, 0.95, abs( sph.y ) );
-            giantCol += floraTint * pole * ( 0.10 + 0.28 * ( 0.5 + 0.5 * sin( audioBeatPhase * 6.2831853 ) ) );
+            giant_col += flora_tint * pole * ( 0.10 + 0.28 * ( 0.5 + 0.5 * sin( audioBeatPhase * 6.2831853 ) ) );
 
-            col = mix( col, giantCol, inGiant );
+            col = mix( col, giant_col, in_giant );
 
             // Ring, seen nearly edge-on: a thin bright line across the disc.
-            float ringY = abs( lp.y + 0.06 );
-            float ringBand = smoothstep( 0.055, 0.030, ringY ) * smoothstep( 1.55, 1.10, length( lp ) );
+            float ring_y = abs( lp.y + 0.06 );
+            float ring_band = smoothstep( 0.055, 0.030, ring_y ) * smoothstep( 1.55, 1.10, length( lp ) );
             col += mix( vec3( 0.85, 0.80, 0.70 ), imgPalette( 0.24 ), 0.4 )
-                   * ringBand * 0.55 * step( 0.35, length( lp ) );
+                   * ring_band * 0.55 * step( 0.35, length( lp ) );
         }
 
         // --- small close moon ---
         vec3  mn = normalize( vec3( -0.52, 0.30, 0.80 ) );
         float mr = 0.052;
         float md = length( rd - mn * dot( rd, mn ) );
-        float inMoon = smoothstep( mr, mr * 0.97, md ) * step( 0.0, dot( rd, mn ) );
-        if ( inMoon > 0.001 )
+        float in_moon = smoothstep( mr, mr * 0.97, md ) * step( 0.0, dot( rd, mn ) );
+        if ( in_moon > 0.001 )
         {
             vec3  mx = normalize( cross( mn, vec3( 0.0, 1.0, 0.0 ) ) );
             vec3  my = cross( mx, mn );
@@ -264,7 +264,7 @@ void main()
             float crater = fbm3( sph * 7.0, 4 );
             vec3  mcol = vec3( 0.62, 0.60, 0.58 ) * ( 0.55 + 0.55 * crater );
             mcol *= 0.10 + 1.15 * max( dot( sph, sun ), 0.0 );
-            col = mix( col, mcol, inMoon );
+            col = mix( col, mcol, in_moon );
         }
 
         // --- high cirrus, drifting across the sky ---
@@ -274,17 +274,17 @@ void main()
             vec2  cq = cp.xz * 0.16 + vec2( t * 0.25, t * 0.09 );
             float cl = fbm3( vec3( cq, t * 0.05 ), 5 );
             cl = smoothstep( 0.52, 0.78, cl ) * smoothstep( 0.0, 0.22, rd.y );
-            vec3 clCol = mix( skyTint, sunCol, 0.45 ) * ( 0.30 + 0.55 * pow( max( dot( rd, sun ), 0.0 ), 3.0 ) );
-            col = mix( col, clCol, cl * 0.55 );
+            vec3 cl_col = mix( sky_tint, sun_col, 0.45 ) * ( 0.30 + 0.55 * pow( max( dot( rd, sun ), 0.0 ), 3.0 ) );
+            col = mix( col, cl_col, cl * 0.55 );
         }
     }
 
     // ---------------- terrain ----------------
-    float tHit = -1.0;
+    float t_hit = -1.0;
     {
         // Sphere-tracing a heightfield: step along the ray and bisect the
         // crossing.  Cheaper and far more stable than an SDF for ridges.
-        float lastH = 0.0, lastT = 0.0;
+        float last_h = 0.0, last_t = 0.0;
         float tt = 0.6;
         for ( int i = 0; i < 150; ++i )
         {
@@ -293,27 +293,27 @@ void main()
             if ( h < 0.0 )
             {
                 // Linear interpolation back to the surface.
-                tHit = lastT + ( tt - lastT ) * lastH / max( lastH - h, 1e-4 );
+                t_hit = last_t + ( tt - last_t ) * last_h / max( last_h - h, 1e-4 );
                 break;
             }
-            lastH = h;
-            lastT = tt;
+            last_h = h;
+            last_t = tt;
             tt += max( 0.35, h * 0.55 );
             if ( tt > 320.0 )
                 break;
         }
     }
 
-    if ( tHit > 0.0 )
+    if ( t_hit > 0.0 )
     {
-        vec3 p = ro + rd * tHit;
+        vec3 p = ro + rd * t_hit;
 
         // Normal from the heightfield gradient.
-        float e = 0.09 + tHit * 0.004;
-        float hC = terrainH( p.xz * 0.045, relief ) * 5.0;
-        float hX = terrainH( ( p.xz + vec2( e, 0.0 ) ) * 0.045, relief ) * 5.0;
-        float hZ = terrainH( ( p.xz + vec2( 0.0, e ) ) * 0.045, relief ) * 5.0;
-        vec3  n = normalize( vec3( hC - hX, e, hC - hZ ) );
+        float e = 0.09 + t_hit * 0.004;
+        float h_c = terrainH( p.xz * 0.045, relief ) * 5.0;
+        float h_x = terrainH( ( p.xz + vec2( e, 0.0 ) ) * 0.045, relief ) * 5.0;
+        float h_z = terrainH( ( p.xz + vec2( 0.0, e ) ) * 0.045, relief ) * 5.0;
+        vec3  n = normalize( vec3( h_c - h_x, e, h_c - h_z ) );
 
         float dif = max( dot( n, sun ), 0.0 );
 
@@ -342,12 +342,12 @@ void main()
         float flatness = smoothstep( 0.55, 0.88, n.y );
         rock = mix( rock, mix( vec3( 0.52, 0.42, 0.32 ), imgPalette( 0.12 ), 0.3 ), flatness * 0.55 );
 
-        vec3 tcol = rock * ( 0.16 + 2.30 * dif * sh ) * sunCol;
+        vec3 tcol = rock * ( 0.16 + 2.30 * dif * sh ) * sun_col;
         // Sky fill from above -- without it the shadowed faces go black.
-        tcol += rock * skyTint * ( 0.55 + 0.55 * n.y ) * 2.10;
+        tcol += rock * sky_tint * ( 0.55 + 0.55 * n.y ) * 2.10;
         // Bounce off the lit ridges: an airless-looking valley floor with no
         // indirect term reads as a hole cut in the picture.
-        tcol += rock * sunCol * 0.16 * ( 0.4 + 0.6 * sh );
+        tcol += rock * sun_col * 0.16 * ( 0.4 + 0.6 * sh );
 
         // Bioluminescent growth: it lives in the hollows the sun misses, and
         // pulses with the music.
@@ -356,22 +356,22 @@ void main()
         // that made every shadowed face count as a hollow and painted the
         // whole world bioluminescent teal.
         float patch = smoothstep( 0.56, 0.78, fbm3( p * 0.42, 4 ) );
-        float lowLying = smoothstep( 0.30, -0.20, n.y - 0.55 );
-        float hollow = patch * ( 0.35 + 0.65 * lowLying ) * ( 1.0 - flatness * 0.5 );
+        float low_lying = smoothstep( 0.30, -0.20, n.y - 0.55 );
+        float hollow = patch * ( 0.35 + 0.65 * low_lying ) * ( 1.0 - flatness * 0.5 );
         float pulse = 0.55 + 0.45 * sin( p.x * 0.35 + p.z * 0.28 - audioPhase * 0.8 );
-        tcol += floraTint * hollow * pulse
+        tcol += flora_tint * hollow * pulse
                 * ( 0.35 + 0.55 * audioSwell + 0.9 * audioKick ) * 0.30 * glw;
 
         // Distance haze: the depth cue that gives a landscape its scale.
         // Aerial perspective has to fade into THE SKY ALONG THIS RAY, not
-        // into a colour of its own: with a separate fogCol the far ground
+        // into a colour of its own: with a separate fog_col the far ground
         // and the sky above it never met, so the horizon disappeared and
         // the frame read as one dark violet murk with no depth at all.
         // `col` already holds the sky for this exact direction.
-        float fog = 1.0 - exp( -tHit * ( 0.0075 + 0.0025 * ( 1.0 - audioSwell ) ) );
-        vec3  fogCol = mix( col, sunCol * 0.65,
-                            pow( max( dot( rd, sun ), 0.0 ), 3.0 ) * 0.45 );
-        tcol = mix( tcol, fogCol, fog );
+        float fog = 1.0 - exp( -t_hit * ( 0.0075 + 0.0025 * ( 1.0 - audioSwell ) ) );
+        vec3  fog_col = mix( col, sun_col * 0.65,
+                             pow( max( dot( rd, sun ), 0.0 ), 3.0 ) * 0.45 );
+        tcol = mix( tcol, fog_col, fog );
 
         col = tcol;
     }
@@ -379,7 +379,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.22 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.38 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.38 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

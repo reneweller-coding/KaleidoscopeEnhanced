@@ -61,17 +61,17 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.45 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
     // Single fade envelope: 0 at BOTH endpoints, 1 mid-fade. Every decorative
     // term below is multiplied by it, which is what keeps d=0 exactly scene A
     // and d=1 exactly scene B.
-    float midT = sin( tProg * 3.14159265 );
+    float mid_t = sin( t_prog * 3.14159265 );
 
     float r = length( p );
     float angle = atan( p.y, p.x );
 
     // Shockwave expanding radius. `bls` used to multiply the RADIUS
-    // (tProg * 1.35 * bls), so it also set where the front ENDS: at the bottom
+    // (t_prog * 1.35 * bls), so it also set where the front ENDS: at the bottom
     // of blastP's 0.5..2.2 registration the front only reached 0.675, well
     // short of the frame's corner radius (~1.02 at 16:9), and the corners
     // therefore showed the NEW scene on the very first frame of the fade --
@@ -83,46 +83,46 @@ void main()
     // The guard is not cosmetic: GLSL evaluates pow as exp2(y*log2(x)), so
     // pow(0.0, y) goes through log2(0) = -inf and can come back NaN. An
     // unguarded version of this line measured 120/255 over the whole frame at
-    // tProg == 0 for exactly that reason.
-    float rShock = ( ( tProg > 0.0 ) ? pow( tProg, 1.0 / bls ) : 0.0 ) * 1.45;
-    float distToShock = r - rShock;
+    // t_prog == 0 for exactly that reason.
+    float r_shock = ( ( t_prog > 0.0 ) ? pow( t_prog, 1.0 / bls ) : 0.0 ) * 1.45;
+    float dist_to_shock = r - r_shock;
 
     // Shock front compression displacement. This warps the texture LOOKUP, so
     // it has to vanish at both endpoints or the scene is sampled off-register
     // there. It did not: at the top of shockP's 0.5..2.0 range the falloff is
     // wide enough that the term is still ~0.014 when the front has left the
     // frame, which measured 2.6/255 against a pixel-exact requirement. Gating
-    // on sin(tProg*pi) -- zero at both ends, one in the middle -- is the same
+    // on sin(t_prog*pi) -- zero at both ends, one in the middle -- is the same
     // idiom the other transitions use for their decorations.
-    float compression = exp( -abs( distToShock ) * 20.0 / shk ) * sign( distToShock ) * 0.05
-                        * ( 1.0 + audioSwell * 0.7 ) * midT;
-    vec2  shockDisp = normalize( p + 1e-4 ) * compression;
+    float compression = exp( -abs( dist_to_shock ) * 20.0 / shk ) * sign( dist_to_shock ) * 0.05
+                        * ( 1.0 + audioSwell * 0.7 ) * mid_t;
+    vec2  shock_disp = normalize( p + 1e-4 ) * compression;
 
-    vec4 c1 = texture( tex1, fract( uv + shockDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - shockDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + shock_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - shock_disp ) );
 
-    float wipeMask = smoothstep( -0.02, 0.02, distToShock );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.02, 0.02, dist_to_shock );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Glowing Cherenkov shock front ring
-    // Gated like everything else: at tProg=0 distToShock collapses to r, so an
+    // Gated like everything else: at t_prog=0 dist_to_shock collapses to r, so an
     // ungated ring peaked at 1.0 in the centre and painted a bright blob over
     // the incoming scene on the fade's last frame -- worse at high shockP,
     // where the falloff is widest (measured 2.5/255 across the middle third).
-    float shockRing = exp( -abs( distToShock ) * 35.0 / shk ) * midT;
-    vec3  shockColor = mix( vec3( 0.1, 0.9, 1.0 ), vec3( 1.0, 0.9, 0.3 ), exp( -r * 3.0 ) );
-    col.rgb += shockRing * shockColor * ( 1.5 + audioKick * 1.17 );
+    float shock_ring = exp( -abs( dist_to_shock ) * 35.0 / shk ) * mid_t;
+    vec3  shock_color = mix( vec3( 0.1, 0.9, 1.0 ), vec3( 1.0, 0.9, 0.3 ), exp( -r * 3.0 ) );
+    col.rgb += shock_ring * shock_color * ( 1.5 + audioKick * 1.17 );
 
     // Central supernova core flash — windowed by the transition envelope:
-    // the old (1.0 - tProg) factor left the flash at FULL brightness at the
-    // fade's end (tProg=0), a bright dot popping off when the pass stops.
-    float coreFlash = exp( -r * 15.0 ) * midT * ( 2.0 + audioKick * 1.33 );
-    col.rgb += coreFlash * vec3( 1.0, 0.98, 0.92 );
+    // the old (1.0 - t_prog) factor left the flash at FULL brightness at the
+    // fade's end (t_prog=0), a bright dot popping off when the pass stops.
+    float core_flash = exp( -r * 15.0 ) * mid_t * ( 2.0 + audioKick * 1.33 );
+    col.rgb += core_flash * vec3( 1.0, 0.98, 0.92 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midT );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_t );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midT );
+        col.rgb = hueRot( col.rgb, hue * mid_t );
 
     fragColor = col;
 }

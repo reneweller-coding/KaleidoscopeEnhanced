@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -244,12 +244,12 @@ void main()
     float y = p.y;
     float x = p.x;
     float bounces = 0.0;
-    float seamD = 9.0;
+    float seam_d = 9.0;
     for ( int i = 0; i < 8; ++i )
     {
         float top = gap + amp * sin( x * wl + flow ) + 0.006 * rough * sin( x * 60.0 + flow * 3.0 );
         float bot = -gap + amp * sin( x * wl * 1.3 - flow * 0.8 + 1.0 ) + 0.006 * rough * sin( x * 55.0 - flow * 2.7 );
-        seamD = min( seamD, min( abs( y - top ), abs( y - bot ) ) );
+        seam_d = min( seam_d, min( abs( y - top ), abs( y - bot ) ) );
         if ( y > top )
         {
             y = 2.0 * top - y;
@@ -273,6 +273,6 @@ void main()
     float fade = 0.78 - 0.15 * clamp( fadeP, 0.0, 1.0 );
     col *= pow( fade, bounces ) * mix( vec3( 1.0 ), tint, min( bounces * 0.25, 1.0 ) );
     // The mirror seams glow faintly.
-    col += tint * exp( -seamD / ( 2.0 / resolution.y * 2.5 ) ) * ( 0.1 + 0.5 * hi );
+    col += tint * exp( -seam_d / ( 2.0 / resolution.y * 2.5 ) ) * ( 0.1 + 0.5 * hi );
     finish( col * 1.1 );
 }

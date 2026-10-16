@@ -86,27 +86,27 @@ void main()
 {
     vec2 v = resolution;
     // Per-activation character (constant during the scene):
-    float zoomV = ( zoomP <= 0.001 ) ? 0.4 : zoomP;
-    float breathV = ( breathP <= 0.01 ) ? 20.0 : breathP;
-    float rotSpdV = ( rotSpdP <= 0.0001 ) ? 0.01 : rotSpdP;
-    float glowV = ( glowP <= 0.01 ) ? 5.0 : glowP;
+    float zoom_v = ( zoomP <= 0.001 ) ? 0.4 : zoomP;
+    float breath_v = ( breathP <= 0.01 ) ? 20.0 : breathP;
+    float rot_spd_v = ( rotSpdP <= 0.0001 ) ? 0.01 : rotSpdP;
+    float glow_v = ( glowP <= 0.01 ) ? 5.0 : glowP;
 
-    vec2  p = ( gl_FragCoord.xy - v * 0.5 ) * zoomV / v.y;
+    vec2  p = ( gl_FragCoord.xy - v * 0.5 ) * zoom_v / v.y;
     float tt = time + audioAdvance * 2.0; // jump-free (host-integrated) clock
 
     // Breathing effect: a touch stronger on the beat, deeper with the slow
     // swell (loudness -> size).
-    p += p * sin( dot( p, p ) * breathV - tt )
+    p += p * sin( dot( p, p ) * breath_v - tt )
          * ( 0.04 + 0.02 * audioBeat + 0.02 * audioSwell );
 
     vec4 c = vec4( 0.0 );
     for ( float i = 0.5; i < 8.0; i += 1.0 )
     {
         // Fractal fold + per-iteration rotation (mouse-detune -> centroid).
-        mat2 rot = mat2( cos( rotSpdV * ( tt + audioCentroid * 5.0 ) * i * i
+        mat2 rot = mat2( cos( rot_spd_v * ( tt + audioCentroid * 5.0 ) * i * i
                               + 0.78 * vec4( 1.0, 7.0, 3.0, 1.0 ) ) );
         p = abs( 2.0 * fract( p - 0.5 ) - 1.0 ) * rot;
-        c += exp( -abs( p.y ) * glowV ) * ( cos( vec4( 2.0, 3.0, 1.0, 0.0 ) * i ) * 0.5 + 0.5 );
+        c += exp( -abs( p.y ) * glow_v ) * ( cos( vec4( 2.0, 3.0, 1.0, 0.0 ) * i ) * 0.5 + 0.5 );
     }
 
     c.gb *= 0.5; // palette: red-leaning grade
@@ -139,8 +139,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     col *= 0.9 + 0.5 * audioLevel;

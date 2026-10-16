@@ -1994,7 +1994,7 @@ def spec_variants(body):
 
 sys.path.insert(0, os.path.join(ROOT, "Tools"))
 import doc_shaders as _doc   # Doxygen comments on what gen.py writes (Tools/doc_shaders.py)
-import cgvr_format as _fmt   # the layout of the CGVR guidelines (Tools/cgvr_format.py)
+import cgvr_glsl_names as _cgvr   # names and layout of the CGVR guidelines (Tools/cgvr_glsl_names.py)
 
 
 def assemble(name):
@@ -2062,10 +2062,10 @@ def assemble(name):
 
 
 def build(name):
-    """Writes Scene2D|FX/<name>.frag in the repository layout (CGVR guidelines, Tools/cgvr_format.py)."""
+    """Writes Scene2D|FX/<name>.frag with the CGVR guidelines' names and layout (Tools/cgvr_glsl_names.py)."""
     folder, text = assemble(name)
     path = os.path.join(ROOT, folder, name + ".frag")
-    io.open(path, "w", encoding="utf-8", newline="\n").write(_fmt.format_text(text, path))
+    io.open(path, "w", encoding="utf-8", newline="\n").write(_cgvr.layout_and_names(text, path))
     print("gebaut:", name)
     # The app runs these two labs' chains as passes (Engine/ChainPass): their
     # pass shaders and final shaders follow every rebuild.

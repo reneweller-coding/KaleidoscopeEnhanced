@@ -73,7 +73,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float tens = ( tensionP > 0.01 ) ? tensionP : 1.0;
-    float qR = ( quarkRadiusP > 0.01 ) ? quarkRadiusP : 0.65;
+    float q_r = ( quarkRadiusP > 0.01 ) ? quarkRadiusP : 0.65;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -81,56 +81,56 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // 3 Quarks (Red, Green, Blue) orbiting in a triangular nucleon bag
-    float bagR = ( qR + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
-    vec2  q1 = vec2( cos( t * 0.8 ), sin( t * 0.8 ) ) * bagR;
-    vec2  q2 = vec2( cos( t * 0.8 + 2.094395 ), sin( t * 0.8 + 2.094395 ) ) * bagR;
-    vec2  q3 = vec2( cos( t * 0.8 + 4.188790 ), sin( t * 0.8 + 4.188790 ) ) * bagR;
+    float bag_r = ( q_r + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
+    vec2  q1 = vec2( cos( t * 0.8 ), sin( t * 0.8 ) ) * bag_r;
+    vec2  q2 = vec2( cos( t * 0.8 + 2.094395 ), sin( t * 0.8 + 2.094395 ) ) * bag_r;
+    vec2  q3 = vec2( cos( t * 0.8 + 4.188790 ), sin( t * 0.8 + 4.188790 ) ) * bag_r;
 
     // Center Fermat / Torricelli junction point of the Y-shaped gluon flux tube
     vec2 junction = vec2( sin( t * 1.2 ), cos( t * 1.5 ) ) * 0.08;
 
     // Distance to 3 vibrating gluon flux tube strings meeting at junction
-    float dStr1 = sdSegment( uv, q1, junction );
-    float dStr2 = sdSegment( uv, q2, junction );
-    float dStr3 = sdSegment( uv, q3, junction );
+    float d_str1 = sdSegment( uv, q1, junction );
+    float d_str2 = sdSegment( uv, q2, junction );
+    float d_str3 = sdSegment( uv, q3, junction );
 
     // High-frequency quantum string vibrations along the tubes
-    float stringVib = sin( uv.x * 25.0 + uv.y * 25.0 - t * 8.0 ) * ( 0.02 * tens );
-    float minStringDist = min( min( dStr1, dStr2 ), dStr3 ) + stringVib;
+    float string_vib = sin( uv.x * 25.0 + uv.y * 25.0 - t * 8.0 ) * ( 0.02 * tens );
+    float min_string_dist = min( min( d_str1, d_str2 ), d_str3 ) + string_vib;
 
     // Distance to 3 quark charge nodes
-    float dQ1 = length( uv - q1 );
-    float dQ2 = length( uv - q2 );
-    float dQ3 = length( uv - q3 );
+    float d_q1 = length( uv - q1 );
+    float d_q2 = length( uv - q2 );
+    float d_q3 = length( uv - q3 );
 
     // Glowing flux tube string filaments
-    float tubeGlow = exp( -abs( minStringDist ) * ( 26.0 + 14.0 * audioCentroid ) ) * glw;
+    float tube_glow = exp( -abs( min_string_dist ) * ( 26.0 + 14.0 * audioCentroid ) ) * glw;
 
     // Quark node glowing color charges (Red, Green, Blue)
-    float qGlow1 = exp( -dQ1 * 18.0 ) * ( 1.2 + 2.5 * audioKick );
-    float qGlow2 = exp( -dQ2 * 18.0 ) * ( 1.2 + 2.5 * audioKick );
-    float qGlow3 = exp( -dQ3 * 18.0 ) * ( 1.2 + 2.5 * audioKick );
+    float q_glow1 = exp( -d_q1 * 18.0 ) * ( 1.2 + 2.5 * audioKick );
+    float q_glow2 = exp( -d_q2 * 18.0 ) * ( 1.2 + 2.5 * audioKick );
+    float q_glow3 = exp( -d_q3 * 18.0 ) * ( 1.2 + 2.5 * audioKick );
 
-    vec3 quarkColors = vec3( qGlow1, qGlow2, qGlow3 );
+    vec3 quark_colors = vec3( q_glow1, q_glow2, q_glow3 );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + vec2( t * 0.05, 0.0 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + vec2( t * 0.05, 0.0 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Gluon flux tube palette
-    vec3 palTube = imgPalette( minStringDist * 0.5 + t * 0.1 );
-    vec3 fluxCol = mix( texCol, palTube, 0.4 ) * 0.35;
+    vec3 pal_tube = imgPalette( min_string_dist * 0.5 + t * 0.1 );
+    vec3 flux_col = mix( tex_col, pal_tube, 0.4 ) * 0.35;
 
     // Combine glowing strings & quark color charges
-    vec3 stringTint = vec3( 1.3, 1.2, 1.7 ) * tubeGlow * ( 1.0 + 2.5 * audioKick );
-    vec3 quarkTint = vec3( 1.6 * qGlow1, 1.4 * qGlow2, 1.8 * qGlow3 );
+    vec3 string_tint = vec3( 1.3, 1.2, 1.7 ) * tube_glow * ( 1.0 + 2.5 * audioKick );
+    vec3 quark_tint = vec3( 1.6 * q_glow1, 1.4 * q_glow2, 1.8 * q_glow3 );
 
-    vec3 finalCol = fluxCol + stringTint + quarkTint;
+    vec3 final_col = flux_col + string_tint + quark_tint;
 
     // Junction center color singlet flash
-    float junctionFlash = exp( -length( uv - junction ) * 12.0 ) * ( 1.0 + 2.0 * audioKick );
-    finalCol += vec3( 1.8, 1.7, 1.9 ) * junctionFlash;
+    float junction_flash = exp( -length( uv - junction ) * 12.0 ) * ( 1.0 + 2.0 * audioKick );
+    final_col += vec3( 1.8, 1.7, 1.9 ) * junction_flash;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

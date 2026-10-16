@@ -49,7 +49,7 @@ uniform float focusP;    ///< preset: resting focal distance
 uniform float apertureP; ///< preset: how fast things go soft
 uniform float bokehP;    ///< preset: highlight blooming in the blur
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// A depth buffer is stored non-linearly — most of its precision sits near the
 /// camera.  Comparing raw values would put the whole scene in one bucket, so it

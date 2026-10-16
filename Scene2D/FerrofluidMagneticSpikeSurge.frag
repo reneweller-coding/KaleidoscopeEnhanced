@@ -63,13 +63,13 @@ float ferroHeight( vec2 p, float t, float sDens, float sHeight )
 {
     // Two ends of the same lattice scale: brightness subdivides the Rosensweig
     // pattern into more, finer cones, sub-bass widens each fluid pool cell.
-    vec2  pGrid = p * ( 6.0 * sDens ) * ( 1.0 + 0.25 * audioCentroid ) / ( 1.0 + 0.35 * audioSubBass );
-    vec2  gridFract = fract( pGrid ) - 0.5;
-    float rSpike = length( gridFract );
+    vec2  p_grid = p * ( 6.0 * sDens ) * ( 1.0 + 0.25 * audioCentroid ) / ( 1.0 + 0.35 * audioSubBass );
+    vec2  grid_fract = fract( p_grid ) - 0.5;
+    float r_spike = length( grid_fract );
 
     // Conical spike profile with magnetic modulation. A narrower cone base over
     // the same tip height is a steeper, sharper magnetic needle.
-    float cone = max( 0.0, 0.45 * ( 1.0 - 0.25 * audioCentroid ) - rSpike );
+    float cone = max( 0.0, 0.45 * ( 1.0 - 0.25 * audioCentroid ) - r_spike );
     float pulse = sin( p.x * 2.0 + t * 3.0 ) * cos( p.y * 2.0 - t * 2.5 );
 
     return cone * ( 1.2 + 0.8 * pulse + 1.2 * audioBass ) * sHeight * ( 1.0 + 0.4 * audioSubBass );
@@ -82,7 +82,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float sDens = ( spikeDensityP > 0.01 ) ? spikeDensityP : 1.0;
-    float sH = ( spikeHeightP > 0.01 ) ? spikeHeightP : 1.2;
+    float s_h = ( spikeHeightP > 0.01 ) ? spikeHeightP : 1.2;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -90,34 +90,34 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Evaluate ferrofluid height field
-    float h = ferroHeight( uv, t, sDens, sH );
+    float h = ferroHeight( uv, t, sDens, s_h );
 
     // Normal gradient for liquid chrome specular lighting
     float eps = 0.01;
-    float hX = ferroHeight( uv + vec2( eps, 0.0 ), t, sDens, sH );
-    float hY = ferroHeight( uv + vec2( 0.0, eps ), t, sDens, sH );
-    vec3  normal = normalize( vec3( ( hX - h ) * 4.0, ( hY - h ) * 4.0, eps ) );
+    float h_x = ferroHeight( uv + vec2( eps, 0.0 ), t, sDens, s_h );
+    float h_y = ferroHeight( uv + vec2( 0.0, eps ), t, sDens, s_h );
+    vec3  normal = normalize( vec3( ( h_x - h ) * 4.0, ( h_y - h ) * 4.0, eps ) );
 
     // Dynamic light direction
-    vec3  lightDir = normalize( vec3( cos( t * 0.5 ), sin( t * 0.5 ), 1.2 ) );
-    float diff = max( 0.0, dot( normal, lightDir ) );
-    float spec = pow( max( 0.0, dot( normal, normalize( lightDir + vec3( 0, 0, 1 ) ) ) ), 32.0 );
+    vec3  light_dir = normalize( vec3( cos( t * 0.5 ), sin( t * 0.5 ), 1.2 ) );
+    float diff = max( 0.0, dot( normal, light_dir ) );
+    float spec = pow( max( 0.0, dot( normal, normalize( light_dir + vec3( 0, 0, 1 ) ) ) ), 32.0 );
 
     // Sample distorted background photo in chrome reflection
-    vec2 reflectUV = fract( uv * 0.4 + normal.xy * 0.15 + 0.5 );
-    vec3 texCol = img( reflectUV );
+    vec2 reflect_uv = fract( uv * 0.4 + normal.xy * 0.15 + 0.5 );
+    vec3 tex_col = img( reflect_uv );
 
     // Obsidian liquid ferrofluid base
-    vec3 palObsidian = imgPalette( h * 0.5 + 0.1 );
-    vec3 liquidBase = mix( vec3( 0.04, 0.04, 0.06 ), palObsidian, 0.35 );
+    vec3 pal_obsidian = imgPalette( h * 0.5 + 0.1 );
+    vec3 liquid_base = mix( vec3( 0.04, 0.04, 0.06 ), pal_obsidian, 0.35 );
 
-    vec3 col = mix( liquidBase, texCol, 0.35 ) * ( 0.6 + 0.4 * diff );
+    vec3 col = mix( liquid_base, tex_col, 0.35 ) * ( 0.6 + 0.4 * diff );
 
     // Add chrome specular glints & spike tip flashes
-    vec3  chromeSpec = vec3( 1.5, 1.4, 1.7 ) * spec * ( 1.0 + 3.0 * audioKick ) * glw;
-    float spikeTipGlow = exp( -abs( h - 0.4 ) * 15.0 ) * ( 1.0 + 2.5 * audioKick );
+    vec3  chrome_spec = vec3( 1.5, 1.4, 1.7 ) * spec * ( 1.0 + 3.0 * audioKick ) * glw;
+    float spike_tip_glow = exp( -abs( h - 0.4 ) * 15.0 ) * ( 1.0 + 2.5 * audioKick );
 
-    col += chromeSpec + vec3( 1.6, 1.2, 0.4 ) * spikeTipGlow * 0.6;
+    col += chrome_spec + vec3( 1.6, 1.2, 0.4 ) * spike_tip_glow * 0.6;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

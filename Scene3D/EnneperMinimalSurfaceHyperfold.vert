@@ -59,15 +59,15 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Scale domain for Enneper surface parameters (u, v)
-    float domainScale = 1.35 * ( enneperScaleP > 0.01 ? enneperScaleP : 1.0 );
-    float u = uv.x * domainScale;
-    float v = uv.y * domainScale;
+    float domain_scale = 1.35 * ( enneperScaleP > 0.01 ? enneperScaleP : 1.0 );
+    float u = uv.x * domain_scale;
+    float v = uv.y * domain_scale;
 
     // Rotate (u, v) domain with audioPhase
     float cu = cos( audioPhase * 0.3 ), su = sin( audioPhase * 0.3 );
-    vec2  rotUV = vec2( u * cu - v * su, u * su + v * cu );
-    u = rotUV.x;
-    v = rotUV.y;
+    vec2  rot_uv = vec2( u * cu - v * su, u * su + v * cu );
+    u = rot_uv.x;
+    v = rot_uv.y;
 
     // Higher-order Enneper Minimal Surface equations
     float fold = ( hyperfoldP > 0.01 ? hyperfoldP : 1.0 );
@@ -75,7 +75,7 @@ void main()
     float y = v - ( v * v * v ) / 3.0 + v * u * u * fold;
     float z = ( u * u - v * v ) * ( 0.8 + 0.3 * audioSwell );
 
-    vec3 worldPos = vec3( x, y, z ) * 0.8;
+    vec3 world_pos = vec3( x, y, z ) * 0.8;
 
     // Analytical Normal for Enneper surface: n = (-2u, 2v, u^2 + v^2 - 1) / (1 + u^2 + v^2)
     vec3 n = normalize( vec3( -2.0 * u, 2.0 * v, u * u + v * v - 1.0 ) );
@@ -88,7 +88,7 @@ void main()
     vCol = imgPalette( fract( K * 0.8 + length( uv ) * 0.3 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // Smooth rotation in 3D
     float c = cos( t * 0.2 ), s = sin( t * 0.2 );

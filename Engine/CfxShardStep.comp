@@ -45,7 +45,7 @@ uniform float     damp;
 uniform float     gravity;
 uniform float     level;
 
-const float SCALE = 256.0;
+const float Scale = 256.0;
 
 void splat1( ivec2 ip, vec3 col, float w )
 {
@@ -53,10 +53,10 @@ void splat1( ivec2 ip, vec3 col, float w )
         return;
     uint i = uint( ip.y * size.x + ip.x ) * 4u;
     vec3 c = max( col, vec3( 0.0 ) ) * w;
-    atomicAdd( acc[i + 0u], uint( c.r * SCALE ) );
-    atomicAdd( acc[i + 1u], uint( c.g * SCALE ) );
-    atomicAdd( acc[i + 2u], uint( c.b * SCALE ) );
-    atomicAdd( acc[i + 3u], uint( w * SCALE ) );
+    atomicAdd( acc[i + 0u], uint( c.r * Scale ) );
+    atomicAdd( acc[i + 1u], uint( c.g * Scale ) );
+    atomicAdd( acc[i + 2u], uint( c.b * Scale ) );
+    atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -109,15 +109,15 @@ void main()
         for ( int sx = 0; sx < 16; ++sx )
         {
             vec2 loc = ( vec2( sx, sy ) + 0.5 ) / 16.0 - 0.5; // -0.5..0.5
-            vec2 srcUV = home + loc * cell;
-            vec3 col = texture( texPhoto, srcUV ).rgb;
+            vec2 src_uv = home + loc * cell;
+            vec3 col = texture( texPhoto, src_uv ).rgb;
 
-            vec2 dstUV = home + R * ( loc * cell ) + off;
+            vec2 dst_uv = home + R * ( loc * cell ) + off;
             // A shard leaving the frame just stops being drawn.
-            if ( dstUV.x < 0.0 || dstUV.x > 1.0 || dstUV.y < 0.0 || dstUV.y > 1.0 )
+            if ( dst_uv.x < 0.0 || dst_uv.x > 1.0 || dst_uv.y < 0.0 || dst_uv.y > 1.0 )
                 continue;
 
-            ivec2 ip = ivec2( dstUV * vec2( size ) );
+            ivec2 ip = ivec2( dst_uv * vec2( size ) );
             // Fill the gaps between samples so the shard reads as a solid piece.
             for ( int oy = 0; oy < 3; ++oy )
                 for ( int ox = 0; ox < 3; ++ox )

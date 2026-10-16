@@ -79,8 +79,8 @@ vec3 bokehLayer( vec2 p, float scale, float drift, float size, float layerSeed )
             float r = size * ( 0.22 + 0.30 * hash21( cell + 5.3 + layerSeed ) );
             // Kick pulse: a hashed ~third of the lights breathes up with the
             // (slew-limited) kick envelope — city windows flickering to the beat.
-            float kickSel = step( 0.66, hash21( cell + 9.1 + layerSeed ) );
-            r *= 1.0 + 0.35 * audioKick * kickSel;
+            float kick_sel = step( 0.66, hash21( cell + 9.1 + layerSeed ) );
+            r *= 1.0 + 0.35 * audioKick * kick_sel;
             float d = length( q - pos );
             // Soft-edged disc with a brighter rim (real bokeh has edge bias).
             float disc = smoothstep( r, r * 0.82, d );
@@ -89,7 +89,7 @@ vec3 bokehLayer( vec2 p, float scale, float drift, float size, float layerSeed )
             vec3 lc = img( fract( pos * 0.13 + 0.31 ) );
             lc = lc * ( 0.35 + 0.65 * hash21( cell + 7.7 ) ) + vec3( 0.25, 0.18, 0.08 );
             acc += lc * ( disc * 0.85 + rim * 0.5 )
-                   * ( 0.55 + 0.45 * audioKick * kickSel );
+                   * ( 0.55 + 0.45 * audioKick * kick_sel );
         }
     return acc;
 }

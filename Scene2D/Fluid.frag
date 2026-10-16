@@ -32,7 +32,7 @@ uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 uniform int   sidesP; ///< kaleido fold of the fluid (0/1 -> off; 2..8)
 uniform float zoomP;  ///< field zoom (0 -> 1.0; 0.7..1.5)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -61,8 +61,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -72,9 +72,9 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
 
-    float zoomV = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
+    float zoom_v = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
     // The slow swell looms the whole field gently (loudness -> approach).
-    zoomV /= ( 1.0 + 0.06 * audioSwell );
+    zoom_v /= ( 1.0 + 0.06 * audioSwell );
 
     // Field coordinate: plain (drifting) or kaleidoscopically folded.
     vec2 suv;
@@ -82,11 +82,11 @@ void main()
     {
         vec2 cp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         cp = rot( time * 0.012 + audioPhase * 0.05 ) * cp;
-        suv = kaleido( cp, float( sidesP ) ) * 0.8 * zoomV + 0.5;
+        suv = kaleido( cp, float( sidesP ) ) * 0.8 * zoom_v + 0.5;
     }
     else
     {
-        suv = ( uv - 0.5 ) * zoomV + 0.5
+        suv = ( uv - 0.5 ) * zoom_v + 0.5
               + 0.01 * vec2( sin( audioPhase * 0.20 ), cos( audioPhase * 0.16 ) );
     }
 
@@ -111,7 +111,7 @@ void main()
     col *= mix( vec3( 0.78, 0.88, 1.15 ), vec3( 1.22, 1.02, 0.78 ), audioCentroid );
     float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
     col = mix( vec3( lum ), col, 0.6 + 0.6 * audioValence );
-    col = hueRot( col, 0.30 * sin( audioBarPhase * 2.0 * PI ) );
+    col = hueRot( col, 0.30 * sin( audioBarPhase * 2.0 * Pi ) );
 
     col *= 0.95 + 0.40 * audioLevel;
     col *= 1.0 - 0.20 * dot( uv - 0.5, uv - 0.5 ) * 4.0; // soft vignette

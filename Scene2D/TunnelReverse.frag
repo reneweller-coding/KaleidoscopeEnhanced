@@ -44,7 +44,7 @@ uniform float     audioBuildUp;   ///< 0..1 EDM tension -> blend tips toward the
 uniform float     audioSpread;    ///< 0=narrow spectrum .. 1=wide -> depth mismatch between the layers
 uniform float     audioRoughness; ///< 0=consonant .. 1=dissonant -> the reverse layer grinds
 
-const float M_PI = 3.141592653589793;
+const float Pi = 3.141592653589793;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -67,7 +67,7 @@ void main()
 
     float angle = 0.0;
     if ( rotate > 0 )
-        angle = M_PI * 0.25;
+        angle = Pi * 0.25;
 
     // a rotation
     vec2 cst = vec2( cos( angle ), sin( angle ) );
@@ -78,18 +78,18 @@ void main()
     // power was never registered in any preset (always 0, GL's unset-uniform
     // default) -- 1.0/(2.0*power) divided by zero, sending r to infinity for
     // every pixel. 1.0 reproduces the plain Euclidean length() case.
-    float powV = ( power > 0.01 ) ? power : 1.0;
-    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
+    float pow_v = ( power > 0.01 ) ? power : 1.0;
+    float r = pow( pow( p.x * p.x, pow_v ) + pow( p.y * p.y, pow_v ), 1.0 / ( 2.0 * pow_v ) );
 
     // cartesian to polar coordinates
     // float r = length(p);
     float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5 * float( sides );
+    float sides_k = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod( a, tau / sidesK );
-    a = abs( a - tau / sidesK / 2. );
+    a = mod( a, tau / sides_k );
+    a = abs( a - tau / sides_k / 2. );
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
 
     vec2 uv;
@@ -110,13 +110,13 @@ void main()
 
     // cartesian to polar coordinates
     // r = length(p);
-    r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
+    r = pow( pow( p.x * p.x, pow_v ) + pow( p.y * p.y, pow_v ), 1.0 / ( 2.0 * pow_v ) );
     a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesT2 = 0.5 * float( sides );
-    a = mod( a, tau / sidesT2 );
-    a = abs( a - tau / sidesT2 / 2. );
+    float sides_t2 = 0.5 * float( sides );
+    a = mod( a, tau / sides_t2 );
+    a = abs( a - tau / sides_t2 / 2. );
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
 
     // the reverse layer RECEDES with the music (opposite sign), so the two
@@ -129,12 +129,12 @@ void main()
     uv.x = ( speedTunnelReverse * time - 0.5 * audioAdvance + throat2 / r );
     // Dissonance makes the two tunnels GRATE: only the reverse layer's angular
     // coordinate ripples (radially, no time term), so the layers grind visibly.
-    uv.y = ( a / M_PI ) + 0.035 * clamp( audioRoughness, 0.0, 1.0 ) * sin( r * 6.5 );
+    uv.y = ( a / Pi ) + 0.035 * clamp( audioRoughness, 0.0, 1.0 ) * sin( r * 6.5 );
 
     vec4 color2 = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
 
     // Combine Plain and Reverse.  A build-up tips the 50/50 blend toward the
     // RECEDING layer, so rising tension visibly pulls the image backwards.
-    float mixRev = 0.5 + 0.22 * clamp( audioBuildUp, 0.0, 1.0 );
-    fragColor = mix( color1, color2, mixRev ) * ( 1.0 + 0.10 * audioKick );
+    float mix_rev = 0.5 + 0.22 * clamp( audioBuildUp, 0.0, 1.0 );
+    fragColor = mix( color1, color2, mix_rev ) * ( 1.0 + 0.10 * audioKick );
 }

@@ -94,7 +94,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float       hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int         nVents = 2 + int( clamp( ventsP, 0.0, 1.0 ) * 3.0 );
+    int         n_vents = 2 + int( clamp( ventsP, 0.0, 1.0 ) * 3.0 );
     float       jr = 1.2 + 0.6 * clamp( jupP, 0.0, 1.0 );
     const float horizon = -0.25;
 
@@ -104,16 +104,16 @@ void main()
         // Jupiter: a huge disc above the horizon, its bands turning.
         vec2  jc = vec2( 0.3, horizon + jr * 0.55 );
         float jd = length( ( p - jc ) / vec2( 1.0, 1.0 ) ) - jr;
-        float onJ = 1.0 - smoothstep( -0.005, 0.005, jd );
+        float on_j = 1.0 - smoothstep( -0.005, 0.005, jd );
         // Bands: latitude from the disc; turning = a shift along the band.
         vec2  q = ( p - jc ) / jr;
         float lat = q.y;
         float lon = q.x / sqrt( max( 1.0 - lat * lat, 0.05 ) ) + sceneAdvance * 0.03 + sceneTime * 0.006;
         float band = 0.5 + 0.5 * sin( lat * 14.0 + fbm( vec2( lon * 3.0, lat * 6.0 ) ) * 2.5 );
         float storm = smoothstep( 0.55, 0.8, fbm( vec2( lon * 5.0 + 3.0, lat * 12.0 ) ) );
-        vec3  bandA = imgPalette( hue * 0.159 + 0.08 ) * 1.6 + vec3( 0.45, 0.3, 0.15 );
-        vec3  bandB = imgPalette( hue * 0.159 + 0.18 ) * 0.5 + vec3( 0.12, 0.08, 0.06 );
-        vec3  jup = mix( bandA, bandB, band );
+        vec3  band_a = imgPalette( hue * 0.159 + 0.08 ) * 1.6 + vec3( 0.45, 0.3, 0.15 );
+        vec3  band_b = imgPalette( hue * 0.159 + 0.18 ) * 0.5 + vec3( 0.12, 0.08, 0.06 );
+        vec3  jup = mix( band_a, band_b, band );
         jup = mix( jup, vec3( 0.9, 0.5, 0.35 ), storm * 0.6 );
         float limb = sqrt( max( 1.0 - dot( q, q ), 0.0 ) );
         jup *= 0.35 + 0.75 * limb;
@@ -123,7 +123,7 @@ void main()
         vec2 f = fract( su ) - 0.5;
         vec2 off = vec2( hash21( cell + 3.1 ), hash21( cell + 7.7 ) ) - 0.5;
         space += vec3( smoothstep( 0.15, 0.02, length( f - off * 0.6 ) ) * step( 0.975, hash21( cell ) ) ) * 0.7;
-        col = mix( space, jup, onJ );
+        col = mix( space, jup, on_j );
         // Horizon haze of sulphur dioxide.
         col += imgPalette( hue * 0.159 + 0.15 ) * exp( -( p.y - horizon ) * 12.0 ) * 0.12;
     }
@@ -141,10 +141,10 @@ void main()
     // Plumes: umbrella fountains at the vents.  Material rises along a
     // travelling phase and falls back in an arc; brightness from the onset.
     float onset = clamp( audioOnset, 0.0, 1.0 );
-    vec3  plumeCol = imgPalette( hue * 0.159 + 0.2 ) * 0.8 + vec3( 0.6, 0.5, 0.35 );
+    vec3  plume_col = imgPalette( hue * 0.159 + 0.2 ) * 0.8 + vec3( 0.6, 0.5, 0.35 );
     for ( int k = 0; k < 5; ++k )
     {
-        if ( k >= nVents )
+        if ( k >= n_vents )
             break;
         float fk = float( k );
         float vx = ( hash11( fk * 3.7 ) - 0.5 ) * 1.5;
@@ -154,8 +154,8 @@ void main()
         // Umbrella: a parabolic envelope; the plume is dense along the
         // envelope, thin inside.
         float x = d.x / ( 0.35 * H );
-        float envY = H * ( 1.0 - x * x );
-        float onUmb = exp( -abs( d.y - envY ) * 20.0 / max( H, 0.1 ) ) * step( 0.0, d.y ) * step( abs( x ), 1.15 );
+        float env_y = H * ( 1.0 - x * x );
+        float on_umb = exp( -abs( d.y - env_y ) * 20.0 / max( H, 0.1 ) ) * step( 0.0, d.y ) * step( abs( x ), 1.15 );
         float column = exp( -abs( d.x ) * 30.0 ) * step( 0.0, d.y ) * ( 1.0 - smoothstep( H * 0.9, H * 1.05, d.y ) );
         // Flow: dots rising on a phase (round, moving, continuous).
         float phase = sceneAdvance * 1.5 + sceneTime * 0.3 + fk;
@@ -163,12 +163,12 @@ void main()
         float flow = 0.6 + 0.4 * pow( 0.5 + 0.5 * cos( rise * 6.2831853 ), 2.0 );
         float fam = step( 0.3, hash11( fk * 9.9 ) );
         float bright = ( 0.35 + 1.4 * onset * fam ) * ( 1.0 - 0.5 * d.y / max( H, 0.1 ) );
-        col += plumeCol * ( onUmb * 0.9 + column * 0.6 ) * flow * bright;
+        col += plume_col * ( on_umb * 0.9 + column * 0.6 ) * flow * bright;
         // Vent glow on the bass.
         col += vec3( 1.0, 0.5, 0.15 ) * exp( -dot( d, d ) * 400.0 ) * ( 0.4 + 1.5 * audioBass );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

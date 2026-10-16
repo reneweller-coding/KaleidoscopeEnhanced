@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -244,7 +244,7 @@ void main()
     // by radius); growth follows each colony's own life cycle.
     float best = 1e3, second = 1e3;
     vec2  bid = vec2( 0.0 );
-    float bR = 0.0, bd = 0.0, bAge = 0.0;
+    float b_r = 0.0, bd = 0.0, b_age = 0.0;
     float fuzz = ( 0.02 + 0.06 * clamp( fuzzP, 0.0, 1.0 ) ) * ( 0.6 + 0.8 * rough );
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
@@ -266,9 +266,9 @@ void main()
                 second = best;
                 best = d;
                 bid = id + gen * 0.013;
-                bR = R;
+                b_r = R;
                 bd = length( dv );
-                bAge = age;
+                b_age = age;
             }
             else if ( d < second )
                 second = d;
@@ -277,9 +277,9 @@ void main()
     if ( best < 0.0 )
     {
         float h = hash21( bid );
-        float t = bd / max( bR, 1e-3 ); // 0 centre .. 1 margin
-        float nZ = 2.0 + 3.0 * clamp( ringP, 0.0, 1.0 );
-        float zone = 0.5 + 0.5 * cos( t * nZ * 6.2831853 - T * 3.0 );
+        float t = bd / max( b_r, 1e-3 ); // 0 centre .. 1 margin
+        float n_z = 2.0 + 3.0 * clamp( ringP, 0.0, 1.0 );
+        float zone = 0.5 + 0.5 * cos( t * n_z * 6.2831853 - T * 3.0 );
         vec3  cool[3];
         vec3  warm[3];
         cool[0] = vec3( 0.35, 0.55, 0.5 );
@@ -309,7 +309,7 @@ void main()
         colony = mix( colony, mix( cc, vec3( 1.0 ), 0.5 ), margin * 0.6 );
         colony += cc * margin * kick * 0.6;
         // Old colonies fade back into the picture.
-        float fade = smoothstep( 1.0, 0.7, bAge );
+        float fade = smoothstep( 1.0, 0.7, b_age );
         float show = ( 0.5 + 0.3 * swell );
         col = mix( ph, mix( colony, colony * ( 0.6 + 0.6 * luma( ph ) ), show ),
                    fade * smoothstep( 0.0, -fuzz, best ) );

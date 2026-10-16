@@ -96,7 +96,7 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
-    int   nT = 3 + int( clamp( tiersP, 0.0, 1.0 ) * 2.99 );
+    int   n_t = 3 + int( clamp( tiersP, 0.0, 1.0 ) * 2.99 );
 
     float hz = -0.22;
     // The golden clear strip under the shelf.
@@ -115,22 +115,22 @@ void main()
         float tf = ( above + warp ) / ( 0.06 + 0.02 * noise2( vec2( p.x * 1.5, 4.0 ) ) );
         float ti = floor( tf );
         float tl = fract( tf );
-        float tierOn = step( ti, float( nT ) - 1.0 );
+        float tier_on = step( ti, float( n_t ) - 1.0 );
         float lip = smoothstep( 0.0, 0.15, tl ) * smoothstep( 0.55, 0.2, tl );
         float und = smoothstep( 0.35, 1.0, tl );
         float sm = fbm( vec2( p.x * 2.0 + ti * 3.0 + T * 0.004, above * 10.0 ) );
         vec3  base = mix( vec3( 0.28, 0.33, 0.38 ), vec3( 0.2, 0.3, 0.3 ), 0.4 ); // blue-grey with a green cast
         base = mix( base, base * imgPalette( 0.45 + hueP * 0.159 ) * 1.4, 0.08 );
         vec3  shelf = base * ( 0.6 + 0.5 * sm );
-        float lipVar = smoothstep( 0.3, 0.7, noise2( vec2( p.x * 4.0 + ti * 7.0, ti ) ) );
-        shelf += vec3( 0.55, 0.5, 0.4 ) * lip * tierOn * lipVar * ( 0.3 + 0.3 * swell )
-                 * smoothstep( 0.1, 0.0, above - float( nT ) * 0.07 + 0.07 );
-        shelf *= 1.0 - 0.3 * und * tierOn;
+        float lip_var = smoothstep( 0.3, 0.7, noise2( vec2( p.x * 4.0 + ti * 7.0, ti ) ) );
+        shelf += vec3( 0.55, 0.5, 0.4 ) * lip * tier_on * lip_var * ( 0.3 + 0.3 * swell )
+                 * smoothstep( 0.1, 0.0, above - float( n_t ) * 0.07 + 0.07 );
+        shelf *= 1.0 - 0.3 * und * tier_on;
         // Above the tiers the main body: dark, turbulent.
-        float body = smoothstep( float( nT ) * 0.07 - 0.02, float( nT ) * 0.07 + 0.05, above );
-        vec3  bodyC = vec3( 0.1, 0.12, 0.15 )
-                      * ( 0.6 + 0.8 * fbm( vec2( p.x * 1.5, p.y * 3.0 ) + vec2( T * 0.003, 0.0 ) ) );
-        shelf = mix( shelf, bodyC, body );
+        float body = smoothstep( float( n_t ) * 0.07 - 0.02, float( n_t ) * 0.07 + 0.05, above );
+        vec3  body_c = vec3( 0.1, 0.12, 0.15 )
+                       * ( 0.6 + 0.8 * fbm( vec2( p.x * 1.5, p.y * 3.0 ) + vec2( T * 0.003, 0.0 ) ) );
+        shelf = mix( shelf, body_c, body );
         // Lightning deep inside the cloud: a soft glow from within, on the kick.
         vec2  lc = vec2( -0.3 + 0.6 * hash11( floor( T * 0.3 ) ), edge + 0.2 );
         float lg = exp( -length( ( p - lc ) * vec2( 0.8, 1.5 ) ) * 4.0 );
@@ -143,9 +143,9 @@ void main()
         col = mix( col, vec3( 0.3, 0.32, 0.33 ), scud * 0.8 );
     }
     // The rain curtain behind, visible under the shelf's far edge at the sides.
-    float rainC = smoothstep( 0.3, 0.6, abs( p.x ) ) * smoothstep( edge + 0.02, hz, p.y ) * step( hz, p.y );
+    float rain_c = smoothstep( 0.3, 0.6, abs( p.x ) ) * smoothstep( edge + 0.02, hz, p.y ) * step( hz, p.y );
     col = mix( col, vec3( 0.2, 0.22, 0.26 ) * ( 0.8 + 0.2 * noise2( vec2( p.x * 60.0, p.y * 4.0 + T * 0.5 ) ) ),
-               rainC * 0.8 );
+               rain_c * 0.8 );
 
     // The prairie: wheat waving in the gust, lit gold from the clear strip.
     if ( p.y < hz )
@@ -172,7 +172,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

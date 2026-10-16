@@ -75,7 +75,7 @@ float noise2( vec2 p )
 
 const float W = 1.0;    ///< half width of the alley
 const float H = 3.4;    ///< eaves height
-const int   NSIGN = 16; ///< slots looked at ahead (two blades per slot)
+const int   Nsign = 16; ///< slots looked at ahead (two blades per slot)
 
 float g_sp; ///< slot spacing along the alley
 float g_hue;
@@ -128,8 +128,8 @@ vec4 blade( vec3 ro, vec3 rd, float k, float side )
     float u = ( side * hp.x - ( W - depth ) ) / depth; // 0..1 inside
     float v = ( hp.y - y0 ) / hgt;
     vec2  q = vec2( u, v );
-    vec2  dEdge = min( q, 1.0 - q );
-    float edge = min( dEdge.x * depth, dEdge.y * hgt ); // metres to the border (<0 outside)
+    vec2  d_edge = min( q, 1.0 - q );
+    float edge = min( d_edge.x * depth, d_edge.y * hgt ); // metres to the border (<0 outside)
     if ( edge < -0.6 )
         return vec4( 0.0 );
     float inside = smoothstep( -0.004, 0.004, edge );
@@ -194,7 +194,7 @@ vec3 alley( vec3 ro, vec3 rd, out float tWall )
             col += nc * ( fr * 1.1 + step( be, 0.0 ) * 0.12 ) * ( 0.4 + 1.0 * e );
         }
         // Spill: nearby blade signs light the wall they hang on.
-        for ( int i = -1; i < NSIGN; ++i )
+        for ( int i = -1; i < Nsign; ++i )
         {
             float k = k0 + float( i );
             float side = sign( rd.x );
@@ -208,7 +208,7 @@ vec3 alley( vec3 ro, vec3 rd, out float tWall )
         col *= exp( -tw * 0.03 );
     }
     // Signs, far to near (painter's order), both walls.
-    for ( int i = NSIGN - 1; i >= 0; --i )
+    for ( int i = Nsign - 1; i >= 0; --i )
     {
         for ( int s = 0; s < 2; ++s )
         {
@@ -264,12 +264,12 @@ void main()
     }
 
     // Haze: the neon light scattered in the rain air.
-    vec3  hazeCol = imgPalette( g_hue * 0.159 + 0.25 ) * 0.10 + vec3( 0.02, 0.015, 0.04 );
+    vec3  haze_col = imgPalette( g_hue * 0.159 + 0.25 ) * 0.10 + vec3( 0.02, 0.015, 0.04 );
     float dist = min( tWall, 40.0 );
     // The lit crossing at the far end of the alley glows through the haze.
-    float endGlow = exp( -dot( p - vec2( 0.0, 0.05 ), p - vec2( 0.0, 0.05 ) ) * 14.0 );
-    hazeCol *= 1.0 + 2.5 * endGlow;
-    col = mix( col, hazeCol * ( 1.0 + 0.4 * clamp( audioKick, 0.0, 2.0 ) ),
+    float end_glow = exp( -dot( p - vec2( 0.0, 0.05 ), p - vec2( 0.0, 0.05 ) ) * 14.0 );
+    haze_col *= 1.0 + 2.5 * end_glow;
+    col = mix( col, haze_col * ( 1.0 + 0.4 * clamp( audioKick, 0.0, 2.0 ) ),
                ( 1.0 - exp( -dist * 0.035 * haze ) ) * 0.85 );
 
     // Rain: short soft streaks falling steadily, in two depth layers.
@@ -281,11 +281,11 @@ void main()
         float jx = hash21( c + fl * 5.0 ) - 0.5;
         float streak = smoothstep( 0.07, 0.0, abs( f.x - jx * 0.6 ) ) * smoothstep( 0.5, 0.1, abs( f.y ) );
         streak *= step( 0.72, hash21( c + 11.0 + fl ) );
-        col += hazeCol * 3.0 * streak * ( 0.35 + 0.8 * hi ) * ( 0.6 - fl * 0.25 );
+        col += haze_col * 3.0 * streak * ( 0.35 + 0.8 * hi ) * ( 0.6 - fl * 0.25 );
     }
 
     col *= 0.9 + 0.25 * audioLevel + 0.15 * clamp( audioKick, 0.0, 2.0 );
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

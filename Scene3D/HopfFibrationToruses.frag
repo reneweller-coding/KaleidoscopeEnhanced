@@ -9,7 +9,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
  * @file HopfFibrationToruses.frag
  * @brief Shades one fiber of a Hopf-fibration torus arrangement (Villarceau
  * circles) as a glowing strand with a soft cross-section falloff
- * (crossEdge) and a light pulse that visibly travels along the fiber over
+ * (cross_edge) and a light pulse that visibly travels along the fiber over
  * time.
  *
  * Each fiber's chromatic hue comes from the photo-arc palette (imgPalette)
@@ -77,19 +77,19 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Edge fading along ribbon cross-section
-    float crossEdge = smoothstep( 0.5, 0.1, abs( vUV.y - 0.5 ) );
+    float cross_edge = smoothstep( 0.5, 0.1, abs( vUV.y - 0.5 ) );
 
     // Hopf fiber chromatic spectrum
-    vec3 fiberColor = imgPalette( vFiberID + audioPhase * 0.159 );
+    vec3 fiber_color = imgPalette( vFiberID + audioPhase * 0.159 );
 
     // Light pulses traveling along Villarceau circle fibers
-    float speedPulse = 0.5 + 0.5 * sin( vUV.x * 30.0 - time * 10.0 );
-    fiberColor = mix( fiberColor, vec3( 1.0, 0.9, 0.7 ), speedPulse * 0.6 );
+    float speed_pulse = 0.5 + 0.5 * sin( vUV.x * 30.0 - time * 10.0 );
+    fiber_color = mix( fiber_color, vec3( 1.0, 0.9, 0.7 ), speed_pulse * 0.6 );
 
-    vec3 col = fiberColor * vEnergy * crossEdge * glw;
+    vec3 col = fiber_color * vEnergy * cross_edge * glw;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
-    fragColor = vec4( col, crossEdge * 0.9 );
+    fragColor = vec4( col, cross_edge * 0.9 );
 }

@@ -38,18 +38,18 @@ float hash11( float p )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float quadID = attrA.w;
-    float seed = hash11( quadID );
+    float quad_id = attrA.w;
+    float seed = hash11( quad_id );
 
     // 50x60 Miura-ori origami facet grid
-    float gridX = mod( quadID, 50.0 );
-    float gridY = floor( quadID / 50.0 );
+    float grid_x = mod( quad_id, 50.0 );
+    float grid_y = floor( quad_id / 50.0 );
 
-    vec2 gridUV = ( vec2( gridX, gridY ) - vec2( 25.0, 30.0 ) ) / 25.0;
+    vec2 grid_uv = ( vec2( grid_x, grid_y ) - vec2( 25.0, 30.0 ) ) / 25.0;
 
     // Folding angle gamma (0 = flat, pi/2 = fully folded compact)
     float t = time * 0.35 + audioAdvance * 0.2;
-    float fold = ( 0.5 + 0.45 * sin( t * 0.7 + length( gridUV ) * 2.0 ) ) * ( 1.0 - 0.3 * audioKick );
+    float fold = ( 0.5 + 0.45 * sin( t * 0.7 + length( grid_uv ) * 2.0 ) ) * ( 1.0 - 0.3 * audioKick );
 
     // Miura-ori fold equations:
     float a = 0.12;      // Facet length
@@ -59,16 +59,16 @@ void main()
     float v = asin( sin( alpha ) * sin( fold ) );
     float u = asin( cos( alpha ) / max( cos( v ), 0.001 ) );
 
-    float x = ( gridX - 25.0 ) * a * cos( v );
-    float y = ( gridY - 30.0 ) * b * cos( u );
-    float z = ( ( mod( gridX + gridY, 2.0 ) == 0.0 ) ? 1.0 : -1.0 ) * a * sin( fold ) * ( 1.0 + audioBass * 0.5 );
+    float x = ( grid_x - 25.0 ) * a * cos( v );
+    float y = ( grid_y - 30.0 ) * b * cos( u );
+    float z = ( ( mod( grid_x + grid_y, 2.0 ) == 0.0 ) ? 1.0 : -1.0 ) * a * sin( fold ) * ( 1.0 + audioBass * 0.5 );
 
-    vec3 facetCenter = vec3( x, y, z );
+    vec3 facet_center = vec3( x, y, z );
 
     // Local vertex of quad
     vec2 offset = attrA.xy - vec2( 0.5 );
-    vec3 localPos = vec3( offset.x * a * 0.95, offset.y * b * 0.95, 0.0 );
-    vec3 pos = facetCenter + localPos;
+    vec3 local_pos = vec3( offset.x * a * 0.95, offset.y * b * 0.95, 0.0 );
+    vec3 pos = facet_center + local_pos;
 
     vPos = pos;
     vUV = attrA.xy;

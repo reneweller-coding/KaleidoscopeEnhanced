@@ -66,58 +66,58 @@ void main()
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.4 + audioAdvance * 0.35;
 
-    float nAntidots = ( antidotCountP > 1.0 ? antidotCountP : 3.0 );
-    float rOrbit = ( anyonOrbitP > 0.01 ? anyonOrbitP : 1.0 ) * ( 0.35 + 0.1 * audioSwell );
+    float n_antidots = ( antidotCountP > 1.0 ? antidotCountP : 3.0 );
+    float r_orbit = ( anyonOrbitP > 0.01 ? anyonOrbitP : 1.0 ) * ( 0.35 + 0.1 * audioSwell );
 
-    float totalAnyonGlow = 0.0;
-    float berryPhase = audioPhase * 0.5;
+    float total_anyon_glow = 0.0;
+    float berry_phase = audioPhase * 0.5;
 
     // Simulate non-Abelian anyon orbits around multiple antidots
     for ( float i = 0.0; i < 4.0; i += 1.0 )
     {
-        if ( i >= nAntidots )
+        if ( i >= n_antidots )
             break;
 
-        float ang = i * ( 6.2831853 / nAntidots );
-        vec2  antidotCenter = vec2( cos( ang ), sin( ang ) ) * 0.5;
+        float ang = i * ( 6.2831853 / n_antidots );
+        vec2  antidot_center = vec2( cos( ang ), sin( ang ) ) * 0.5;
 
         // Anyons orbiting each antidot
-        float orbitAngle = t * 2.5 * ( mod( i, 2.0 ) == 0.0 ? 1.0 : -1.0 ) + i * 1.57;
-        vec2  anyonPos = antidotCenter + vec2( cos( orbitAngle ), sin( orbitAngle ) ) * rOrbit;
+        float orbit_angle = t * 2.5 * ( mod( i, 2.0 ) == 0.0 ? 1.0 : -1.0 ) + i * 1.57;
+        vec2  anyon_pos = antidot_center + vec2( cos( orbit_angle ), sin( orbit_angle ) ) * r_orbit;
 
-        float dAnyon = length( uv - anyonPos );
-        float anyonCore = exp( -dAnyon * dAnyon * 55.0 );
-        totalAnyonGlow += anyonCore;
+        float d_anyon = length( uv - anyon_pos );
+        float anyon_core = exp( -d_anyon * d_anyon * 55.0 );
+        total_anyon_glow += anyon_core;
 
         // Accumulate Berry phase: theta = sum (q_j * phi_j)
-        vec2 diff = uv - anyonPos;
-        berryPhase += atan( diff.y, diff.x ) * 0.25; // fractional charge e/4
+        vec2 diff = uv - anyon_pos;
+        berry_phase += atan( diff.y, diff.x ) * 0.25; // fractional charge e/4
     }
 
     // Quantum Hall interference fringes (Fabry-Perot anyon interferometer)
-    float fringeFreq = 24.0 * ( fractionalP > 0.01 ? fractionalP : 1.0 );
-    float berryFringes = sin( length( uv ) * fringeFreq + berryPhase ) * 0.5 + 0.5;
+    float fringe_freq = 24.0 * ( fractionalP > 0.01 ? fractionalP : 1.0 );
+    float berry_fringes = sin( length( uv ) * fringe_freq + berry_phase ) * 0.5 + 0.5;
 
     // Non-Abelian state fusion flash on kick
-    float fusionFlash = totalAnyonGlow * ( 1.0 + 4.0 * audioKick ) * ( berryGlowP > 0.01 ? berryGlowP : 1.3 );
+    float fusion_flash = total_anyon_glow * ( 1.0 + 4.0 * audioKick ) * ( berryGlowP > 0.01 ? berryGlowP : 1.3 );
 
     // Incompressible quantum liquid background
-    float bulkLiquid = smoothstep( 0.9, 0.2, length( uv ) );
+    float bulk_liquid = smoothstep( 0.9, 0.2, length( uv ) );
 
     // Palette assignment
-    float palAngle = fract( berryPhase * 0.159 + length( uv ) * 0.25 + audioCentroid );
-    vec3  colAnyon = imgPalette( palAngle );
-    vec3  colBerry = imgPalette( fract( palAngle + 0.5 ) ) * 1.8;
+    float pal_angle = fract( berry_phase * 0.159 + length( uv ) * 0.25 + audioCentroid );
+    vec3  col_anyon = imgPalette( pal_angle );
+    vec3  col_berry = imgPalette( fract( pal_angle + 0.5 ) ) * 1.8;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colBerry * bulkLiquid * berryFringes * ( 0.8 + 0.4 * audioSwell );
-    col += colAnyon * totalAnyonGlow * 2.2;
-    col += vec3( 0.95, 0.95, 1.0 ) * fusionFlash * 2.0;
-    col += colAnyon * ( audioKick * 0.35 );
+    col += col_berry * bulk_liquid * berry_fringes * ( 0.8 + 0.4 * audioSwell );
+    col += col_anyon * total_anyon_glow * 2.2;
+    col += vec3( 0.95, 0.95, 1.0 ) * fusion_flash * 2.0;
+    col += col_anyon * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

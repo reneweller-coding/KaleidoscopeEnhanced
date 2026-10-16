@@ -59,7 +59,7 @@ uniform float audioChromaHue;        ///< Hue of the dominant pitch class (radia
 uniform float audioAdvance;          ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                      ///< backwards).
 uniform float audioValence;          ///< Mood valence: 0 dark .. 1 bright.
-const float   PI = 3.14159265358979; ///< Pi.
+const float   Pi = 3.14159265358979; ///< Pi.
 
 /// Gaussian glow ring intensity at radius r for a ring centred at ri.
 /// wBase: structural minimum half-width.
@@ -94,7 +94,7 @@ float ringGlow( float r, float ri, float wBase, float energy )
 /// identical wrapping on all rings.
 vec4 ringTex( float angle, float r, float ringIdx )
 {
-    float u = angle / ( 2.0 * PI ) + ringIdx * 0.137;
+    float u = angle / ( 2.0 * Pi ) + ringIdx * 0.137;
     float v = fract( r * 0.45 + ringIdx * 0.073 );
     return interpolation * texture( tex0, vec2( u, v ) )
            + ( 1.0 - interpolation ) * texture( tex1, vec2( u, v ) );
@@ -126,9 +126,9 @@ void main()
     //   bass    ≈ audioLevel boosted, minus sub-bass leakage
     //   mid     ≈ audioLevel balanced, minus low-mid leakage
     //   high    ≈ audioFlux (high transients drive flux) + upperMid residual
-    float eBass = clamp( audioLevel * 1.5 - audioSubBass * 0.5, 0.0, 1.0 );
-    float eMid = clamp( audioLevel * 1.3 - audioLowMid * 0.35, 0.0, 1.0 );
-    float eHigh = clamp( audioFlux * 0.65 + audioUpperMid * 0.25, 0.0, 1.0 );
+    float e_bass = clamp( audioLevel * 1.5 - audioSubBass * 0.5, 0.0, 1.0 );
+    float e_mid = clamp( audioLevel * 1.3 - audioLowMid * 0.35, 0.0, 1.0 );
+    float e_high = clamp( audioFlux * 0.65 + audioUpperMid * 0.25, 0.0, 1.0 );
 
     // ---- Colour temperature helper ----
     // Each ring gets a tint: inner (low freq) = void-blue, outer (high) = air-white.
@@ -138,8 +138,8 @@ void main()
     // (Defined inline below since GLSL 1.20 has no nested function calls before declaration)
 
     // ---- Accumulate all 6 rings ----
-    vec3  accColor = vec3( 0.0 );
-    float accAlpha = 0.0;
+    vec3  acc_color = vec3( 0.0 );
+    float acc_alpha = 0.0;
 
     // Ring 0 – Sub-bass (20-60 Hz) ----------------------------------------
     {
@@ -150,21 +150,21 @@ void main()
         vec3  cold = vec3( 0.40, 0.50, 1.00 );
         vec3  warm = vec3( 0.70, 0.50, 0.80 );
         vec3  tint = mix( cold, warm, mix( rp, audioCentroid, 0.25 ) );
-        accColor += tc.rgb * tint * g;
-        accAlpha += g;
+        acc_color += tc.rgb * tint * g;
+        acc_alpha += g;
     }
 
     // Ring 1 – Bass (60-150 Hz) -------------------------------------------
     {
-        float e = eBass;
+        float e = e_bass;
         float g = ringGlow( r, 0.24, 0.009, e );
         vec4  tc = ringTex( at, r, 1.0 );
         float rp = 0.2;
         vec3  cold = vec3( 0.50, 0.55, 1.00 );
         vec3  warm = vec3( 0.80, 0.65, 0.85 );
         vec3  tint = mix( cold, warm, mix( rp, audioCentroid, 0.35 ) );
-        accColor += tc.rgb * tint * g;
-        accAlpha += g;
+        acc_color += tc.rgb * tint * g;
+        acc_alpha += g;
     }
 
     // Ring 2 – Low-mid (150-500 Hz) ---------------------------------------
@@ -176,21 +176,21 @@ void main()
         vec3  cold = vec3( 0.60, 0.60, 0.90 );
         vec3  warm = vec3( 0.95, 0.78, 0.55 );
         vec3  tint = mix( cold, warm, mix( rp, audioCentroid, 0.45 ) );
-        accColor += tc.rgb * tint * g;
-        accAlpha += g;
+        acc_color += tc.rgb * tint * g;
+        acc_alpha += g;
     }
 
     // Ring 3 – Mid (500-2k Hz) --------------------------------------------
     {
-        float e = eMid;
+        float e = e_mid;
         float g = ringGlow( r, 0.60, 0.011, e );
         vec4  tc = ringTex( at, r, 3.0 );
         float rp = 0.6;
         vec3  cold = vec3( 0.65, 0.65, 0.80 );
         vec3  warm = vec3( 1.05, 0.88, 0.55 );
         vec3  tint = mix( cold, warm, mix( rp, audioCentroid, 0.55 ) );
-        accColor += tc.rgb * tint * g;
-        accAlpha += g;
+        acc_color += tc.rgb * tint * g;
+        acc_alpha += g;
     }
 
     // Ring 4 – Upper-mid (2k-6k Hz) – metallic / industrial ---------------
@@ -202,41 +202,41 @@ void main()
         vec3  cold = vec3( 0.70, 0.70, 0.72 );
         vec3  warm = vec3( 1.10, 0.95, 0.60 );
         vec3  tint = mix( cold, warm, mix( rp, audioCentroid, 0.65 ) );
-        accColor += tc.rgb * tint * g;
-        accAlpha += g;
+        acc_color += tc.rgb * tint * g;
+        acc_alpha += g;
     }
 
     // Ring 5 – High (6k+ Hz) – air shimmer, outermost ---------------------
     {
-        float e = eHigh;
+        float e = e_high;
         float g = ringGlow( r, 1.10, 0.008, e );
         vec4  tc = ringTex( at, r, 5.0 );
         float rp = 1.0;
         vec3  cold = vec3( 0.70, 0.82, 1.10 );
         vec3  warm = vec3( 1.05, 0.98, 0.88 );
         vec3  tint = mix( cold, warm, mix( rp, audioCentroid, 0.50 ) );
-        accColor += tc.rgb * tint * g;
-        accAlpha += g;
+        acc_color += tc.rgb * tint * g;
+        acc_alpha += g;
     }
 
     // ---- KICK SHOCKWAVE: a bright ring EXPANDS from the centre through
     // the whole stack once per beat (radius rides beatPhase, brightness the
     // kick) — the stack stops being static wallpaper and starts drumming.
     {
-        float shockR = audioBeatPhase * 1.35;
-        float shock = exp( -abs( r - shockR ) * 22.0 )
+        float shock_r = audioBeatPhase * 1.35;
+        float shock = exp( -abs( r - shock_r ) * 22.0 )
                       * audioKick * ( 1.0 - audioBeatPhase * 0.6 );
         vec3  sc = imgPalette( 0.30 * audioCentroid ) * 1.9;
-        accColor += sc * shock * 1.6;
-        accAlpha += shock;
+        acc_color += sc * shock * 1.6;
+        acc_alpha += shock;
     }
 
     // ---- Global modulation ----
-    accColor *= ( 1.0
-                  + audioBeat * 0.25   // rings flare on beat (slew-limited host-side)
-                  + audioFlux * 0.10   // shimmer as spectrum evolves
-                  + audioLevel * 0.20  // gentle overall breathing
-                  + audioDrop * 0.9 ); // a drop lights the whole stack
+    acc_color *= ( 1.0
+                   + audioBeat * 0.25   // rings flare on beat (slew-limited host-side)
+                   + audioFlux * 0.10   // shimmer as spectrum evolves
+                   + audioLevel * 0.20  // gentle overall breathing
+                   + audioDrop * 0.9 ); // a drop lights the whole stack
 
-    fragColor = clamp( vec4( accColor, accAlpha ), 0.0, 1.0 );
+    fragColor = clamp( vec4( acc_color, acc_alpha ), 0.0, 1.0 );
 }

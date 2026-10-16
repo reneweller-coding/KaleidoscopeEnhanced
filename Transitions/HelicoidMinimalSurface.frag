@@ -68,8 +68,8 @@ void main()
 
     float t = time * 0.1875 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
     float theta = atan( p.y, p.x );
@@ -77,35 +77,35 @@ void main()
     // Helicoid minimal surface coordinate: z = c * theta + rotation.
     // audioBass undulates the helical pitch dz/dtheta.  It is applied to the
     // SPATIAL theta term only — never to the t term — so the screw rate stays
-    // audio-independent (anti-flicker).  midTransition returns the pitch to its
+    // audio-independent (anti-flicker).  mid_transition returns the pitch to its
     // base value at both fade endpoints, where the ramp wipe is blended out.
-    float pitchMod = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float helicoidZ = ( theta * pitchMod + tProg * 6.2831853 * scr + t * 0.8 ) / 3.14159265 * ptc;
-    float rampPhase = fract( helicoidZ );
-    float rampDist = min( rampPhase, 1.0 - rampPhase );
+    float pitch_mod = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float helicoid_z = ( theta * pitch_mod + t_prog * 6.2831853 * scr + t * 0.8 ) / 3.14159265 * ptc;
+    float ramp_phase = fract( helicoid_z );
+    float ramp_dist = min( ramp_phase, 1.0 - ramp_phase );
 
     // Helical screw coordinate warp; audioBass breathes the radial extent of
-    // the screw.  The angle already carries midTransition and warpUV is blended
-    // in by midTransition, so both endpoints are exact.
-    float screwRadius = 0.9; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float warpAngle = ( 1.0 - smoothstep( 0.0, screwRadius, r ) ) * midTransition * 3.14159265;
-    vec2  pWarp = rot2D( warpAngle ) * p;
-    vec2  warpUV = ( pWarp * resolution.y + 0.5 * resolution ) / resolution;
+    // the screw.  The angle already carries mid_transition and warp_uv is blended
+    // in by mid_transition, so both endpoints are exact.
+    float screw_radius = 0.9; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float warp_angle = ( 1.0 - smoothstep( 0.0, screw_radius, r ) ) * mid_transition * 3.14159265;
+    vec2  p_warp = rot2D( warp_angle ) * p;
+    vec2  warp_uv = ( p_warp * resolution.y + 0.5 * resolution ) / resolution;
 
-    vec4 c1 = texture( tex1, fract( mix( uv, warpUV, midTransition ) ) );
-    vec4 c0 = texture( tex0, fract( mix( warpUV, uv, 1.0 - midTransition ) ) );
+    vec4 c1 = texture( tex1, fract( mix( uv, warp_uv, mid_transition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( warp_uv, uv, 1.0 - mid_transition ) ) );
 
-    float wipeMask = smoothstep( 0.4, 0.6, rampPhase );
-    vec4  col = mix( c1, c0, mix( tProg, wipeMask, midTransition * 0.7 ) );
+    float wipe_mask = smoothstep( 0.4, 0.6, ramp_phase );
+    vec4  col = mix( c1, c0, mix( t_prog, wipe_mask, mid_transition * 0.7 ) );
 
     // Glowing helicoid ruling lines
-    float rulingGlow = exp( -rampDist * 20.0 ) * midTransition;
-    col.rgb += rulingGlow * vec3( 1.0, 0.85, 0.3 ) * ( 1.3 + audioKick * 1.0 );
+    float ruling_glow = exp( -ramp_dist * 20.0 ) * mid_transition;
+    col.rgb += ruling_glow * vec3( 1.0, 0.85, 0.3 ) * ( 1.3 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

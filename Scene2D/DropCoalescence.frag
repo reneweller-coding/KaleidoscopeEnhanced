@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -279,7 +279,7 @@ void main()
     G += G2 * 3.0 * ks;
     C += C2 * ks;
     W += W2 * ks;
-    vec3  dropC = C / max( W, 1e-4 );
+    vec3  drop_c = C / max( W, 1e-4 );
     float th = 0.5 - 0.18 * clamp( mergeP, 0.0, 1.0 );
     float aa = length( G ) * S / resolution.y * 1.5 + 1e-3;
     float inside = smoothstep( th - aa, th + aa, F );
@@ -291,7 +291,7 @@ void main()
     // Inside: the photo magnified by the lens, tinted by the drop's colour.
     vec2 n2 = -G / ( 1.0 + length( G ) * 0.15 ) * 0.08 * ( 0.4 + 0.8 * clamp( lensP, 0.0, 1.0 ) );
     vec3 seen = imgLod( uv + n2 / S * 4.0, 0.6 );
-    vec3 dcol = mix( dropC, dropC * ( 0.35 + 1.3 * luma( seen ) ) + seen * 0.25, 0.7 );
+    vec3 dcol = mix( drop_c, drop_c * ( 0.35 + 1.3 * luma( seen ) ) + seen * 0.25, 0.7 );
     dcol *= 0.6 + 0.6 * h;
     // Darker rim where the surface is steep, bright meniscus highlight.
     vec3  nrm = normalize( vec3( -G * 0.2, 1.0 ) );

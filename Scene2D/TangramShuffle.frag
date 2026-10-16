@@ -83,85 +83,85 @@ float sdTri( vec2 p, vec2 a, vec2 b, vec2 c )
 void pose( int i, int f, out vec2 pos, out float rot )
 {
     vec2  P[35];
-    float Rr[35];
+    float rr[35];
     // square
     P[0] = vec2( -0.25, 0.25 );
-    Rr[0] = 0.0;
+    rr[0] = 0.0;
     P[1] = vec2( 0.25, -0.25 );
-    Rr[1] = 3.14159;
+    rr[1] = 3.14159;
     P[2] = vec2( 0.25, 0.25 );
-    Rr[2] = -1.5708;
+    rr[2] = -1.5708;
     P[3] = vec2( -0.25, -0.25 );
-    Rr[3] = 1.5708;
+    rr[3] = 1.5708;
     P[4] = vec2( 0.0, 0.0 );
-    Rr[4] = 0.7854;
+    rr[4] = 0.7854;
     P[5] = vec2( 0.1, -0.35 );
-    Rr[5] = 0.0;
+    rr[5] = 0.0;
     P[6] = vec2( -0.3, 0.05 );
-    Rr[6] = 0.0;
+    rr[6] = 0.0;
     // cat
     P[7] = vec2( -0.35, -0.1 );
-    Rr[7] = 0.8;
+    rr[7] = 0.8;
     P[8] = vec2( 0.1, -0.2 );
-    Rr[8] = 2.5;
+    rr[8] = 2.5;
     P[9] = vec2( 0.35, 0.25 );
-    Rr[9] = -0.7;
+    rr[9] = -0.7;
     P[10] = vec2( 0.45, 0.5 );
-    Rr[10] = 0.3;
+    rr[10] = 0.3;
     P[11] = vec2( 0.2, 0.45 );
-    Rr[11] = 1.2;
+    rr[11] = 1.2;
     P[12] = vec2( -0.05, 0.1 );
-    Rr[12] = 0.4;
+    rr[12] = 0.4;
     P[13] = vec2( 0.5, -0.35 );
-    Rr[13] = 0.8;
+    rr[13] = 0.8;
     // bird
     P[14] = vec2( -0.4, 0.2 );
-    Rr[14] = 2.2;
+    rr[14] = 2.2;
     P[15] = vec2( 0.3, 0.1 );
-    Rr[15] = -0.6;
+    rr[15] = -0.6;
     P[16] = vec2( 0.0, -0.3 );
-    Rr[16] = 1.2;
+    rr[16] = 1.2;
     P[17] = vec2( 0.45, 0.4 );
-    Rr[17] = 0.0;
+    rr[17] = 0.0;
     P[18] = vec2( -0.1, 0.45 );
-    Rr[18] = 2.0;
+    rr[18] = 2.0;
     P[19] = vec2( 0.1, 0.2 );
-    Rr[19] = 0.7854;
+    rr[19] = 0.7854;
     P[20] = vec2( -0.45, -0.25 );
-    Rr[20] = 0.4;
+    rr[20] = 0.4;
     // boat
     P[21] = vec2( -0.3, -0.3 );
-    Rr[21] = 0.0;
+    rr[21] = 0.0;
     P[22] = vec2( 0.3, -0.3 );
-    Rr[22] = 0.0;
+    rr[22] = 0.0;
     P[23] = vec2( 0.0, 0.15 );
-    Rr[23] = 1.5708;
+    rr[23] = 1.5708;
     P[24] = vec2( 0.05, 0.45 );
-    Rr[24] = 0.0;
+    rr[24] = 0.0;
     P[25] = vec2( -0.2, 0.35 );
-    Rr[25] = 0.8;
+    rr[25] = 0.8;
     P[26] = vec2( 0.0, -0.05 );
-    Rr[26] = 0.0;
+    rr[26] = 0.0;
     P[27] = vec2( 0.35, 0.1 );
-    Rr[27] = 0.5;
+    rr[27] = 0.5;
     // runner
     P[28] = vec2( -0.1, 0.35 );
-    Rr[28] = 0.5;
+    rr[28] = 0.5;
     P[29] = vec2( 0.1, -0.1 );
-    Rr[29] = 2.8;
+    rr[29] = 2.8;
     P[30] = vec2( -0.35, -0.35 );
-    Rr[30] = 1.0;
+    rr[30] = 1.0;
     P[31] = vec2( 0.15, 0.55 );
-    Rr[31] = 0.2;
+    rr[31] = 0.2;
     P[32] = vec2( 0.4, -0.4 );
-    Rr[32] = 2.4;
+    rr[32] = 2.4;
     P[33] = vec2( -0.1, 0.05 );
-    Rr[33] = 0.3;
+    rr[33] = 0.3;
     P[34] = vec2( 0.4, 0.2 );
-    Rr[34] = 1.1;
+    rr[34] = 1.1;
     int idx = f * 7 + i;
     pos = P[idx];
-    rot = Rr[idx];
+    rot = rr[idx];
 }
 
 float pieceSD( int i, vec2 q )
@@ -227,11 +227,11 @@ void main()
         col *= 1.0 - shadow * 0.5;
         // The piece: its part of the photo (cut at the square-figure pose so
         // the square reassembles the picture), lacquered.
-        vec2  pSq;
-        float rSq;
-        pose( i, 0, pSq, rSq );
-        vec2 photoUV = ( mat2( cos( -rSq ), sin( -rSq ), -sin( -rSq ), cos( -rSq ) ) * q + pSq ) * 0.8 + 0.5;
-        vec3 face = img( clamp( photoUV, 0.0, 1.0 ) ) * 1.4 + 0.12;
+        vec2  p_sq;
+        float r_sq;
+        pose( i, 0, p_sq, r_sq );
+        vec2 photo_uv = ( mat2( cos( -r_sq ), sin( -r_sq ), -sin( -r_sq ), cos( -r_sq ) ) * q + p_sq ) * 0.8 + 0.5;
+        vec3 face = img( clamp( photo_uv, 0.0, 1.0 ) ) * 1.4 + 0.12;
         vec3 tint = imgPalette( hue * 0.159 + float( i ) * 0.14 );
         face = mix( face, face * tint * 1.6, 0.35 ) * lamp;
         float gloss = pow( max( 1.0 - length( q - vec2( -0.15, 0.15 ) ) * 2.5, 0.0 ), 3.0 ) * lacquer;
@@ -244,7 +244,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

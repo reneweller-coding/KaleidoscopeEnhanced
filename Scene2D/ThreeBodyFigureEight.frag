@@ -94,8 +94,8 @@ void main()
     col += vec3( 0.8 ) * smoothstep( 0.14, 0.03, length( sf - so * 0.6 ) ) * step( 0.985, hash21( sc ) );
 
     // Trails: brightness along the curve behind each body, by phase lag.
-    float trailGlow = 0.0;
-    vec3  trailCol = vec3( 0.0 );
+    float trail_glow = 0.0;
+    vec3  trail_col = vec3( 0.0 );
     for ( int k = 0; k < 3; ++k )
     {
         float tk = t + float( k ) * 2.0943951;
@@ -108,11 +108,11 @@ void main()
             float d = length( p - q );
             float w = 0.004 + 0.002 * ( 1.0 - lag / 3.2 );
             float g = exp( -d * d / ( w * w * 40.0 ) ) * exp( -lag / trail );
-            trailGlow += g;
-            trailCol += bc * g;
+            trail_glow += g;
+            trail_col += bc * g;
         }
     }
-    col += trailCol * 0.5;
+    col += trail_col * 0.5;
 
     // The suns: photo discs with corona, glowing with the bass; the one at
     // the centre crossing flashes on the kick.
@@ -136,7 +136,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

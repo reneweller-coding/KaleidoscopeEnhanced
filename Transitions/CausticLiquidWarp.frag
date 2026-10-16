@@ -62,8 +62,8 @@ void main()
 
     float t = time * 0.0492 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // 3 harmonic wave trains for optical caustics
     vec2 p1 = p * 15.0 * rpl;
@@ -74,25 +74,25 @@ void main()
     float w2 = sin( p2.y + sin( p2.x - t * 2.5 ) );
     float w3 = sin( p3.x + p3.y + t * 3.0 );
 
-    float causticField = ( w1 + w2 + w3 ) / 3.0;
-    float caustics = pow( max( 0.0, 1.0 - abs( causticField ) ), 8.0 ) * cst;
+    float caustic_field = ( w1 + w2 + w3 ) / 3.0;
+    float caustics = pow( max( 0.0, 1.0 - abs( caustic_field ) ), 8.0 ) * cst;
 
     // Refraction offset vector
-    vec2 refr = vec2( w1 - w2, w2 - w3 ) * 0.03 * midTransition * ( 1.0 + audioSwell * 0.7 );
+    vec2 refr = vec2( w1 - w2, w2 - w3 ) * 0.03 * mid_transition * ( 1.0 + audioSwell * 0.7 );
 
     vec4 c1 = texture( tex1, fract( uv + refr ) );
     vec4 c0 = texture( tex0, fract( uv - refr ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Shimmering aquatic caustic highlights
-    vec3 causticCyan = vec3( 0.2, 0.9, 1.0 );
-    col.rgb += caustics * causticCyan * midTransition * ( 1.2 + audioKick * 1.0 );
+    vec3 caustic_cyan = vec3( 0.2, 0.9, 1.0 );
+    col.rgb += caustics * caustic_cyan * mid_transition * ( 1.2 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

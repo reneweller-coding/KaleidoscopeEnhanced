@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -252,12 +252,12 @@ void main()
     float T = 0.04 * sceneTime + 0.3 * audioAdvance;
     // Heat: the photo's warmth plus wandering warm spots.
     float heat = clamp( photoP, 0.0, 1.0 ) * 0.6 * luma( imgLod( uv, 4.0 ) );
-    float nS = 2.0 + 4.0 * clamp( spotP, 0.0, 1.0 );
+    float n_s = 2.0 + 4.0 * clamp( spotP, 0.0, 1.0 );
     float spread = 0.25 + 0.3 * clamp( audioSpread, 0.0, 1.0 );
     for ( int i = 0; i < 6; ++i )
     {
         float fi = float( i );
-        float on = smoothstep( fi - 0.5, fi + 0.5, nS - 0.5 );
+        float on = smoothstep( fi - 0.5, fi + 0.5, n_s - 0.5 );
         if ( on <= 0.0 )
             break;
         vec2 c = vec2( 0.8 * sin( T * ( 0.7 + 0.2 * fi ) + fi * 2.1 ),

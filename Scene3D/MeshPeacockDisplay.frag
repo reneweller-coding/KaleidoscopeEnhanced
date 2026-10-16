@@ -39,8 +39,8 @@ in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vTrain;
 in float vBg; ///< Background flag (from the vertex stage).
 
-const float kDist = 54.0;
-const float kGround = -21.0;
+const float Dist = 54.0;
+const float Ground = -21.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -140,26 +140,26 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-const vec3 kSunDir = vec3( -0.5, 0.07, 0.85 );
+const vec3 SunDir = vec3( -0.5, 0.07, 0.85 );
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir )
 {
     float high = clamp( audioHigh, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
-    vec3  sunDir = normalize( kSunDir );
+    vec3  sun_dir = normalize( SunDir );
     vec3  col;
     if ( dir.y < -0.004 )
     {
         // The lawn, warm on the sun's side, hazing into the dusk far off.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.006 );
         float g = fbm2( P.xz * 0.08 );
         float g2 = fbm2( P.xz * 0.5 );
         vec3  grass = mix( vec3( 0.05, 0.11, 0.035 ), vec3( 0.10, 0.17, 0.05 ), g ) * ( 0.75 + 0.5 * g2 );
-        float sunSide = smoothstep( -0.2, 0.8, dot( normalize( dir.xz ), normalize( sunDir.xz ) ) );
-        grass = mix( grass, grass * vec3( 1.5, 1.15, 0.8 ), sunSide );
+        float sun_side = smoothstep( -0.2, 0.8, dot( normalize( dir.xz ), normalize( sun_dir.xz ) ) );
+        grass = mix( grass, grass * vec3( 1.5, 1.15, 0.8 ), sun_side );
         col = mix( vec3( 0.16, 0.10, 0.12 ), grass, haze );
     }
     else
@@ -167,13 +167,13 @@ vec3 renderSky( vec3 dir )
         // Dusk sky, the sun just down, a treeline, faint stars up high.
         float h = clamp( dir.y, 0.0, 1.0 );
         col = mix( vec3( 0.95, 0.45, 0.20 ), vec3( 0.09, 0.07, 0.25 ), pow( h, 0.45 ) );
-        float sd = distance( dir, sunDir );
+        float sd = distance( dir, sun_dir );
         col += vec3( 1.0, 0.75, 0.45 ) * exp( -sd * 9.0 ) * ( 0.7 + 0.4 * swell );
         col += vec3( 1.0, 0.9, 0.7 ) * ( 1.0 - smoothstep( 0.035, 0.045, sd ) ) * 1.5;
         float az = atan( dir.x, dir.z );
         float tree = 0.045 + 0.05 * noise1( az * 3.0 ) + 0.02 * noise1( az * 11.0 + 3.0 );
-        float treeMask = 1.0 - smoothstep( tree - 0.006, tree + 0.006, dir.y );
-        col = mix( col, vec3( 0.02, 0.03, 0.02 ), treeMask );
+        float tree_mask = 1.0 - smoothstep( tree - 0.006, tree + 0.006, dir.y );
+        col = mix( col, vec3( 0.02, 0.03, 0.02 ), tree_mask );
         col += stars( dir ) * smoothstep( 0.15, 0.6, h );
     }
 
@@ -224,7 +224,7 @@ void main()
 
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3  viewDir = normalize( -vPos );
+    vec3  view_dir = normalize( -vPos );
     float expose = materialExposure( texMeshMaterial );
     vec3  alb = base.rgb * expose;
 
@@ -232,15 +232,15 @@ void main()
     // so it can only be the rim light. The key is the last warm light from
     // the west, behind the camera's left shoulder; the violet sky fills
     // from above; the bass brings up a warm bounce from the grass below.
-    vec3  sunDir = normalize( kSunDir );
-    vec3  keyDir = normalize( vec3( -0.55, 0.40, -0.72 ) );
-    float diff = max( dot( n, keyDir ), 0.0 );
+    vec3  sun_dir = normalize( SunDir );
+    vec3  key_dir = normalize( vec3( -0.55, 0.40, -0.72 ) );
+    float diff = max( dot( n, key_dir ), 0.0 );
     vec3  col = alb * vec3( 1.0, 0.85, 0.65 ) * diff * ( 1.3 + 0.4 * swell );
     col += alb * vec3( 0.35, 0.32, 0.50 ) * ( 0.55 + 0.45 * n.y );
     col += alb * 0.12;
     col += alb * vec3( 1.0, 0.5, 0.25 ) * max( -n.y, 0.0 ) * ( 0.15 + 0.5 * bass );
-    float nvRim = clamp( dot( n, viewDir ), 0.0, 1.0 );
-    col += alb * vec3( 1.0, 0.6, 0.35 ) * pow( 1.0 - nvRim, 3.0 ) * max( dot( n, sunDir ), 0.0 ) * 0.9;
+    float nv_rim = clamp( dot( n, view_dir ), 0.0, 1.0 );
+    col += alb * vec3( 1.0, 0.6, 0.35 ) * pow( 1.0 - nv_rim, 3.0 ) * max( dot( n, sun_dir ), 0.0 ) * 0.9;
 
     // Structural colour: green-and-blue texels shift hue with the viewing
     // angle, and the treble adds to that shift. Everything else (the brown
@@ -249,7 +249,7 @@ void main()
     float mn = min( base.r, min( base.g, base.b ) );
     float sat = mx - mn;
     float gb = smoothstep( 0.04, 0.22, max( base.g, base.b ) - base.r ) * smoothstep( 0.08, 0.30, sat );
-    float nv = clamp( dot( n, viewDir ), 0.0, 1.0 );
+    float nv = clamp( dot( n, view_dir ), 0.0, 1.0 );
     float shift = ( 1.0 - nv ) * 1.5 + 0.7 * high;
     col = mix( col, hueRot( col, shift ), gb * 0.85 );
 
@@ -258,10 +258,10 @@ void main()
     col += vec3( 0.2, 0.5, 1.0 ) * eye * ( 0.2 + 0.9 * high );
 
     // Glints on the shafts: a sharp specular that the kick flares.
-    vec3  halfV = normalize( keyDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 70.0, 8.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic );
-    col += specColor * spec * ( 0.25 + 0.6 * ( 1.0 - roughness ) ) * ( 0.6 + 1.6 * kick * vTrain );
+    vec3  half_v = normalize( key_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 70.0, 8.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic );
+    col += spec_color * spec * ( 0.25 + 0.6 * ( 1.0 - roughness ) ) * ( 0.6 + 1.6 * kick * vTrain );
 
     // A soft rim from the sky behind, so the fan's edge reads against the dusk.
     float fres = pow( 1.0 - nv, 4.0 );
@@ -270,7 +270,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

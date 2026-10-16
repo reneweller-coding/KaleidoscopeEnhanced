@@ -58,20 +58,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -80,7 +80,7 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint kSeeds = 800u;
+    const uint Seeds = 800u;
     const vec3 head = vec3( 0.0, -0.6, 7.0 );
 
     if ( id == 0u )
@@ -93,7 +93,7 @@ void main()
                   vec2( 0.0 ), vec2( 1.0 ) );
         return;
     }
-    if ( id > kSeeds )
+    if ( id > Seeds )
         return;
 
     float fid = float( id );
@@ -122,7 +122,7 @@ void main()
     float ph = fract( clock * ( 0.15 + 0.1 * h2.y ) + h2.z );
     vec3  drift = vec3( wind * 7.0 * ph, 1.5 * ph + 0.5 * sin( ph * 12.0 + h3.x * 6.28 ),
                         0.6 * sin( ph * 7.0 + h3.y * 6.28 ) );
-    vec3  seedPos = head + d * stalk + drift * rel;
+    vec3  seed_pos = head + d * stalk + drift * rel;
     // Tumble: the parachute tilts with its drift.
     float tilt = rel * ( 0.6 * sin( clock * 1.5 + h3.z * 6.28 ) + 0.4 * ph );
     vec3  up = normalize( mix( d, vec3( sin( tilt ), cos( tilt ), 0.3 * sin( tilt * 0.7 ) ), rel ) );
@@ -132,14 +132,14 @@ void main()
     float lit = rel * ( 1.0 - smoothstep( 0.75, 1.0, ph ) );
     // The pappus: two crossed quads (kind 0) above the seed, the seed itself
     // a small quad (kind 1); the stalk on the head (kind 4) stays.
-    vec3 pap = seedPos + up * fluff * 0.5;
+    vec3 pap = seed_pos + up * fluff * 0.5;
     emitQuad( pap, side * fluff, up * fluff * 0.6, fid, lit, 0.0, vec2( 0.0 ), vec2( 1.0 ) );
     emitQuad( pap, side2 * fluff, up * fluff * 0.6, fid, lit, 0.0, vec2( 0.0 ), vec2( 1.0 ) );
-    emitQuad( seedPos - up * 0.03, side * 0.02, up * 0.05, fid, lit, 1.0, vec2( 0.0 ), vec2( 1.0 ) );
+    emitQuad( seed_pos - up * 0.03, side * 0.02, up * 0.05, fid, lit, 1.0, vec2( 0.0 ), vec2( 1.0 ) );
     // The stalk on the head: from the receptacle to the seat, kind 4.
     vec3 seat = head + d * stalk;
-    vec3 sMid = mix( head + d * 0.3, seat, 0.5 );
-    vec3 sHalf = ( seat - head - d * 0.3 ) * 0.5;
-    emitQuad( sMid, sHalf, normalize( cross( sHalf, vec3( 0.0, 0.0, 1.0 ) ) ) * 0.006, fid, 1.0 - rel, 4.0, vec2( 0.0 ),
-              vec2( 1.0 ) );
+    vec3 s_mid = mix( head + d * 0.3, seat, 0.5 );
+    vec3 s_half = ( seat - head - d * 0.3 ) * 0.5;
+    emitQuad( s_mid, s_half, normalize( cross( s_half, vec3( 0.0, 0.0, 1.0 ) ) ) * 0.006, fid, 1.0 - rel, 4.0,
+              vec2( 0.0 ), vec2( 1.0 ) );
 }

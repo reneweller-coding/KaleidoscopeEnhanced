@@ -75,42 +75,42 @@ void main()
     float t = time * 0.45 + audioAdvance * 0.4;
 
     // Magnetic guide field aligned along Y-axis
-    float vA = ( alfvenSpeedP > 0.01 ? alfvenSpeedP : 1.3 );
-    float nFil = ( filamentCountP > 1.0 ? filamentCountP : 6.0 );
+    float v_a = ( alfvenSpeedP > 0.01 ? alfvenSpeedP : 1.3 );
+    float n_fil = ( filamentCountP > 1.0 ? filamentCountP : 6.0 );
 
     // Torsional shear Alfvén wave displacement: delta B_x(x, y, t)
-    float kMix = ( phaseMixP > 0.01 ? phaseMixP : 1.2 );
-    float alfvenPhase = uv.y * 12.0 - t * 4.0 * vA + sin( uv.x * nFil * 3.14159265 * kMix ) * 2.0;
+    float k_mix = ( phaseMixP > 0.01 ? phaseMixP : 1.2 );
+    float alfven_phase = uv.y * 12.0 - t * 4.0 * v_a + sin( uv.x * n_fil * 3.14159265 * k_mix ) * 2.0;
 
-    float waveAmp = sin( alfvenPhase + audioPhase * 0.3 ) * 0.12;
-    float dx = uv.x + waveAmp;
+    float wave_amp = sin( alfven_phase + audioPhase * 0.3 ) * 0.12;
+    float dx = uv.x + wave_amp;
 
     // Filamentary current sheets: j_z = d(delta B_x)/dy
-    float filId = floor( dx * nFil );
-    float localFilX = fract( dx * nFil ) - 0.5;
-    float currentSheet = exp( -localFilX * localFilX * 35.0 );
+    float fil_id = floor( dx * n_fil );
+    float local_fil_x = fract( dx * n_fil ) - 0.5;
+    float current_sheet = exp( -local_fil_x * local_fil_x * 35.0 );
 
     // Phase-mixing Joule dissipation heating
-    float jouleHeating = pow( abs( cos( alfvenPhase ) ), 2.5 ) * currentSheet;
-    jouleHeating *= ( 1.0 + 3.5 * audioKick ) * ( jouleHeatP > 0.01 ? jouleHeatP : 1.3 );
+    float joule_heating = pow( abs( cos( alfven_phase ) ), 2.5 ) * current_sheet;
+    joule_heating *= ( 1.0 + 3.5 * audioKick ) * ( jouleHeatP > 0.01 ? jouleHeatP : 1.3 );
 
     // Coronal EUV plasma colors
-    vec3 coronalEUV = vec3( 0.1, 0.9, 0.7 );
-    vec3 flareAmber = vec3( 1.0, 0.45, 0.1 );
-    vec3 heatWhite = vec3( 1.0, 0.95, 0.9 );
+    vec3 coronal_euv = vec3( 0.1, 0.9, 0.7 );
+    vec3 flare_amber = vec3( 1.0, 0.45, 0.1 );
+    vec3 heat_white = vec3( 1.0, 0.95, 0.9 );
 
-    vec3 colCorona = palTint( mix( coronalEUV, flareAmber, clamp( jouleHeating, 0.0, 1.0 ) ),
-                              uv.y * 0.2 + audioCentroid, 0.26 );
+    vec3 col_corona = palTint( mix( coronal_euv, flare_amber, clamp( joule_heating, 0.0, 1.0 ) ),
+                               uv.y * 0.2 + audioCentroid, 0.26 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colCorona * currentSheet * ( 0.8 + 0.4 * audioSwell ) * 1.6;
-    col += heatWhite * jouleHeating * 2.4;
-    col += colCorona * abs( waveAmp * 5.0 ) * 1.2;
-    col += colCorona * ( audioKick * 0.35 );
+    col += col_corona * current_sheet * ( 0.8 + 0.4 * audioSwell ) * 1.6;
+    col += heat_white * joule_heating * 2.4;
+    col += col_corona * abs( wave_amp * 5.0 ) * 1.2;
+    col += col_corona * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

@@ -62,12 +62,12 @@ void main()
     float spc = ag.a;
 
     // Three-sensor steering toward the strongest own-species trail.
-    vec2  dF = vec2( cos( ang ), sin( ang ) );
-    vec2  dL = vec2( cos( ang + sensAngle ), sin( ang + sensAngle ) );
-    vec2  dR = vec2( cos( ang - sensAngle ), sin( ang - sensAngle ) );
-    float f = senseOwn( pos + dF * sensDist, spc );
-    float l = senseOwn( pos + dL * sensDist, spc );
-    float r = senseOwn( pos + dR * sensDist, spc );
+    vec2  d_f = vec2( cos( ang ), sin( ang ) );
+    vec2  d_l = vec2( cos( ang + sensAngle ), sin( ang + sensAngle ) );
+    vec2  d_r = vec2( cos( ang - sensAngle ), sin( ang - sensAngle ) );
+    float f = senseOwn( pos + d_f * sensDist, spc );
+    float l = senseOwn( pos + d_l * sensDist, spc );
+    float r = senseOwn( pos + d_r * sensDist, spc );
 
     if ( f >= l && f >= r )
         ; // keep going

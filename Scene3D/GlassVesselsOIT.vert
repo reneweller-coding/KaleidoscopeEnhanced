@@ -26,9 +26,9 @@ out float vId; ///< Instance or element id (from the vertex stage).
 void main()
 {
     float kind = attrB.y;
-    bool  isOpaque = kind < -0.5;
-    bool  wantGlass = oitPass > 0.5;
-    if ( isOpaque == wantGlass )
+    bool  is_opaque = kind < -0.5;
+    bool  want_glass = oitPass > 0.5;
+    if ( is_opaque == want_glass )
     {
         gl_Position = vec4( 0.0, 0.0, -2.0, 1.0 );
         vTexCoord = vec2( 0.0 );
@@ -44,7 +44,7 @@ void main()
     vKind = kind;
     vT = attrB.x;
     vId = attrA.w;
-    if ( isOpaque )
+    if ( is_opaque )
     {
         vTexCoord = attrB.zw;
         vNormal = ( kind < -1.5 ) ? vec3( 0.0, 1.0, 0.0 ) : vec3( 0.0, 0.0, -1.0 );

@@ -135,7 +135,7 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     vec3 base = vec3( 0.5 );
     if ( texMeshMaterialLayers > 0 )
@@ -162,13 +162,13 @@ void main()
     col += tint * node * audioKick * 0.9; // the strike lights them briefly
 
     // A rim so the silhouette survives against the dark chamber.
-    float rim = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 3.0 );
+    float rim = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 3.0 );
     col += tint * rim * ( 0.30 + 0.5 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

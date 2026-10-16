@@ -75,13 +75,13 @@ float photoLevel()
 /// Parametric (p, q) torus knot position: r(s)
 vec3 knotCurve( float s, float pParam, float qParam )
 {
-    float rMajor = 2.4;
-    float rMinor = 0.9;
+    float r_major = 2.4;
+    float r_minor = 0.9;
     float phi = pParam * s;
     float theta = qParam * s;
 
-    float r = rMajor + rMinor * cos( theta );
-    return vec3( r * cos( phi ), r * sin( phi ), rMinor * sin( theta ) );
+    float r = r_major + r_minor * cos( theta );
+    return vec3( r * cos( phi ), r * sin( phi ), r_minor * sin( theta ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -90,7 +90,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float kMod = ( knotP > 0.01 ) ? knotP : 1.0;
+    float k_mod = ( knotP > 0.01 ) ? knotP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
@@ -99,117 +99,118 @@ void main()
 
     // Torus knot harmonic frequencies (e.g. 2, 3 trefoil or 3, 5 knot)
     float pParam = 2.0;
-    float qParam = 3.0 + floor( kMod * 1.5 );
+    float qParam = 3.0 + floor( k_mod * 1.5 );
 
     // Camera ride coordinate along knot parameter s
-    float sCam = t * 0.5;
-    vec3  trackPos = knotCurve( sCam, pParam, qParam );
-    vec3  ta = knotCurve( sCam + 0.08, pParam, qParam );
+    float s_cam = t * 0.5;
+    vec3  track_pos = knotCurve( s_cam, pParam, qParam );
+    vec3  ta = knotCurve( s_cam + 0.08, pParam, qParam );
 
     // Frenet-Serret tangent, normal, binormal frame
-    vec3 T = normalize( ta - trackPos );
-    vec3 upApprox = normalize( knotCurve( sCam + 0.08, pParam, qParam ) - knotCurve( sCam - 0.08, pParam, qParam )
-                               + vec3( 0, 0, 1 ) );
-    vec3 N = normalize( cross( T, upApprox ) );
+    vec3 T = normalize( ta - track_pos );
+    vec3 up_approx = normalize( knotCurve( s_cam + 0.08, pParam, qParam ) - knotCurve( s_cam - 0.08, pParam, qParam )
+                                + vec3( 0, 0, 1 ) );
+    vec3 N = normalize( cross( T, up_approx ) );
     vec3 B = cross( N, T );
 
     // Roll banking in turns
-    float rollAngle = sin( sCam * qParam ) * 0.4 + 0.1 * audioSwell;
-    float csR = cos( rollAngle ), snR = sin( rollAngle );
-    vec3  right = N * csR - B * snR;
-    vec3  up = N * snR + B * csR;
+    float roll_angle = sin( s_cam * qParam ) * 0.4 + 0.1 * audioSwell;
+    float cs_r = cos( roll_angle ), sn_r = sin( roll_angle );
+    vec3  right = N * cs_r - B * sn_r;
+    vec3  up = N * sn_r + B * cs_r;
 
     // Chase-cam offset: riding the rail itself puts the camera's own start
     // position ON the knot curve, so the very first raymarch step (p = ro,
     // before any travel) trivially satisfies "distance to rail < threshold"
     // for EVERY pixel regardless of ray direction -- an instant, uniform hit
     // that reads as a flat wash instead of a tube flying past.
-    vec3 ro = trackPos - up * 0.4;
+    vec3 ro = track_pos - up * 0.4;
 
     vec3 rd = normalize( uv.x * right + uv.y * up + ( 1.2 + 0.2 * sin( audioSwell * 2.0 ) ) * T );
 
     // Raymarch through knot track and surrounding neon chamber
-    float totDist = 0.0;
-    float minTrackDist = 1e4;
-    vec3  hitCol = vec3( 0.0 );
-    float ringGlowAcc = 0.0;
+    float tot_dist = 0.0;
+    float min_track_dist = 1e4;
+    vec3  hit_col = vec3( 0.0 );
+    float ring_glow_acc = 0.0;
     bool  hit = false;
 
     for ( int i = 0; i < 56; i++ )
     {
-        vec3 p = ro + rd * totDist;
+        vec3 p = ro + rd * tot_dist;
 
         // Distance to surrounding reflective cubic mirror chamber
-        vec3  qRoom = abs( p ) - vec3( 3.8 );
-        float dRoom = -max( max( qRoom.x, qRoom.y ), qRoom.z );
+        vec3  q_room = abs( p ) - vec3( 3.8 );
+        float d_room = -max( max( q_room.x, q_room.y ), q_room.z );
 
         // Distance to the knot rail tube
         // Sample nearest knot curve point
-        float sApprox = sCam + totDist * 0.15;
-        vec3  pKnot = knotCurve( sApprox, pParam, qParam );
-        float dRail = length( p - pKnot ) - ( 0.08 + 0.03 * audioLevel );
+        float s_approx = s_cam + tot_dist * 0.15;
+        vec3  p_knot = knotCurve( s_approx, pParam, qParam );
+        float d_rail = length( p - p_knot ) - ( 0.08 + 0.03 * audioLevel );
 
         // Periodic glowing neon rings along the rail
-        float ringDist = abs( sin( sApprox * 25.0 - t * 4.0 ) );
+        float ring_dist = abs( sin( s_approx * 25.0 - t * 4.0 ) );
         // Sub-bass softens the radial falloff instead of adding light: the ring
         // reaches further out from the rail (a visibly fatter plasma hoop) while
         // its on-rail peak, which the tint constants are balanced against, is
         // exactly unchanged.
-        ringGlowAcc += exp( -max( 0.0, dRail ) * 10.0 / ( 1.0 + 0.4 * audioSubBass ) )
-                       * smoothstep( 0.8, 1.0, ringDist ) * ( 0.06 + 0.09 * audioKick );
+        ring_glow_acc += exp( -max( 0.0, d_rail ) * 10.0 / ( 1.0 + 0.4 * audioSubBass ) )
+                         * smoothstep( 0.8, 1.0, ring_dist ) * ( 0.06 + 0.09 * audioKick );
 
-        float d = min( dRail, abs( dRoom ) );
-        minTrackDist = min( minTrackDist, dRail );
+        float d = min( d_rail, abs( d_room ) );
+        min_track_dist = min( min_track_dist, d_rail );
 
-        // dRail is measured against a curve point that slides FORWARD with the
-        // march (sApprox tracks totDist), so it is not a conservative distance
+        // d_rail is measured against a curve point that slides FORWARD with the
+        // march (s_approx tracks tot_dist), so it is not a conservative distance
         // and for the whole forward cone it sat near-constant around 0.35,
         // pinning the step size. The far-plane arm therefore has to be
         // reachable within the iteration budget, and `i >= 55` guarantees the
         // pixel resolves to chamber colour rather than falling out of the loop
         // unshaded.
-        if ( d < 0.005 || totDist > 11.0 || i >= 55 )
+        if ( d < 0.005 || tot_dist > 11.0 || i >= 55 )
         {
             hit = true;
-            vec2 sampleUV = fract( p.xy * 0.2 + p.z * 0.2 + 0.5 );
-            vec3 texCol = img( sampleUV );
-            vec3 pal = imgPalette( sApprox * 0.1 + t * 0.05 );
+            vec2 sample_uv = fract( p.xy * 0.2 + p.z * 0.2 + 0.5 );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal = imgPalette( s_approx * 0.1 + t * 0.05 );
             // d is ~0 at every hit, so the old (0.7 + 0.4 * (1.0 - d)) term
             // was a constant 1.1 and the chamber had no depth cue at all.
             // Fade with travelled distance instead: near rail-side geometry
             // stays bright, the far end of the chamber falls away.
-            hitCol = mix( texCol, pal, 0.5 ) * ( 0.55 + 0.70 * exp( -totDist * 0.22 ) );
+            hit_col = mix( tex_col, pal, 0.5 ) * ( 0.55 + 0.70 * exp( -tot_dist * 0.22 ) );
             break;
         }
 
-        totDist += max( 0.02, d * 0.7 );
+        tot_dist += max( 0.02, d * 0.7 );
     }
 
     // Glowing rail lines & plasma rings
-    float railGlow = exp( -max( 0.0, minTrackDist ) * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
-    // The tint exceeds 1.0 per channel on its own and ringGlowAcc accumulates
+    float rail_glow = exp( -max( 0.0, min_track_dist ) * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
+    // The tint exceeds 1.0 per channel on its own and ring_glow_acc accumulates
     // over the whole march, so the TINTED vector is what has to be capped.
-    vec3 railTint = min( vec3( 1.3, 1.0, 1.7 ) * ( railGlow + ringGlowAcc ) * ( 1.0 + 2.5 * audioKick ), vec3( 1.3 ) );
+    vec3 rail_tint = min( vec3( 1.3, 1.0, 1.7 ) * ( rail_glow + ring_glow_acc ) * ( 1.0 + 2.5 * audioKick ),
+                          vec3( 1.3 ) );
 
     // Background laser chamber grid. The old selector was
-    // mix(bg, hitCol, clamp(length(hitCol), 0, 1)): intended as a "did we
+    // mix(bg, hit_col, clamp(length(hit_col), 0, 1)): intended as a "did we
     // hit?" test, it doubles as a brightness crusher -- with a dark photo a
     // genuine wall hit has length ~0.18, so it blended 82% of the (even
     // darker, 0.2-scaled) background back over the top. That, not the march,
     // is what left this flight at a tenth of its intended exposure. Select on
     // the march's own hit flag instead.
-    vec3 bgCol = imgPalette( 0.3 ) * ( 0.30 + 0.18 * audioLevel );
-    vec3 finalCol = hit ? hitCol : bgCol;
+    vec3 bg_col = imgPalette( 0.3 ) * ( 0.30 + 0.18 * audioLevel );
+    vec3 final_col = hit ? hit_col : bg_col;
 
     // Everything above is photo-derived: put the chamber on a fixed exposure
     // rather than inheriting whatever image happens to be bound.
-    finalCol *= clamp( 0.30 / max( 0.05, photoLevel() ), 0.40, 3.0 );
-    finalCol += railTint;
+    final_col *= clamp( 0.30 / max( 0.05, photoLevel() ), 0.40, 3.0 );
+    final_col += rail_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.26 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    _catTone /= 1.0 + 0.50 * max( _catTone.r, max( _catTone.g, _catTone.b ) ); // peak knee: tame local glare, keep
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.26 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    cat_tone /= 1.0 + 0.50 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) ); // peak knee: tame local glare, keep
                                                                                // midtones
-    fragColor = vec4( _catTone, 1.0 );
+    fragColor = vec4( cat_tone, 1.0 );
 }

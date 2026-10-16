@@ -48,7 +48,7 @@ void main()
 
     // The comet flies down -Z; the camera holds formation beside it.  The
     // tail sweeps LATERALLY across the frame so it stays visible.
-    vec3 tailDir = normalize( vec3( 0.80, 0.28, 0.55 ) );
+    vec3 tail_dir = normalize( vec3( 0.80, 0.28, 0.55 ) );
 
     vec3  world;
     vec3  col;
@@ -64,7 +64,7 @@ void main()
         float ra = time * 0.15;
         n.xy = mat2( cos( ra ), -sin( ra ), sin( ra ), cos( ra ) ) * n.xy;
         world = n * 3.2 * lump;
-        float lit = clamp( dot( n, -tailDir ), 0.1, 1.0 );
+        float lit = clamp( dot( n, -tail_dir ), 0.1, 1.0 );
         col = vec3( 0.80, 0.88, 0.95 ) * ( 0.25 + 0.9 * lit );
         glow = 0.9;
     }
@@ -93,7 +93,7 @@ void main()
                        * ( 1.5 + d * ( ion ? 0.10 : 0.22 ) );
         vec3  curve = ion ? vec3( 0.0 )
                           : vec3( 0.9, 0.45, 0.0 ) * d * d * 0.0035;
-        world = tailDir * d + spread + curve;
+        world = tail_dir * d + spread + curve;
         world.x += sin( d * 0.15 + time * 0.7 ) * ( ion ? 0.8 : 0.3 );
 
         col = ion ? hueRot( vec3( 0.25, 0.55, 1.0 ), audioChromaHue * 0.3 )
@@ -114,13 +114,13 @@ void main()
     }
 
     // Camera beside and slightly above the nucleus, gently breathing.
-    vec3 camP = vec3( 10.0 + sin( time * 0.10 ) * 2.0,
-                      6.0 + sin( time * 0.13 ) * 1.5,
-                      -14.0 );
-    vec3 fwd = normalize( vec3( 0.0, 0.0, 8.0 ) - camP );
+    vec3 cam_p = vec3( 10.0 + sin( time * 0.10 ) * 2.0,
+                       6.0 + sin( time * 0.13 ) * 1.5,
+                       -14.0 );
+    vec3 fwd = normalize( vec3( 0.0, 0.0, 8.0 ) - cam_p );
     vec3 rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 up = cross( rgt, fwd );
-    vec3 rel = world - camP;
+    vec3 rel = world - cam_p;
     vec3 vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
 
     vp.x -= eyeOff;

@@ -54,8 +54,8 @@ void main()
     // Spatially in part: swirl grows toward the rim, a radial ripple
     // wave rolls outward, and a slow sine "noise" field kneads everything.
     float rad = length( c );
-    float rotHere = warpRot + swirlAmp * smoothstep( 0.15, 0.75, rad );
-    float cs = cos( rotHere ), sn = sin( rotHere );
+    float rot_here = warpRot + swirlAmp * smoothstep( 0.15, 0.75, rad );
+    float cs = cos( rot_here ), sn = sin( rot_here );
     c = mat2( cs, -sn, sn, cs ) * c;
     c /= max( warpZoom, 1e-3 );
 
@@ -81,13 +81,13 @@ void main()
     // depth the stereo reprojection uses (bright = near).  Near structures
     // shed their echoes quickly (crisp foreground), far dim ones linger —
     // the trail itself gains a sense of depth.
-    float dScale = 1.0;
+    float d_scale = 1.0;
     if ( depth3D > 0.001 )
     {
         float plum = dot( prv, vec3( 0.299, 0.587, 0.114 ) );
         float nearness = smoothstep( 0.05, 0.6, plum );
-        dScale = mix( 1.0, mix( 1.035, 0.90, nearness ), depth3D );
+        d_scale = mix( 1.0, mix( 1.035, 0.90, nearness ), depth3D );
     }
 
-    fragColor = vec4( max( cur, prv * min( decay * dScale, 0.985 ) * edge ), 1.0 );
+    fragColor = vec4( max( cur, prv * min( decay * d_scale, 0.985 ) * edge ), 1.0 );
 }

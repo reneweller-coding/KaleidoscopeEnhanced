@@ -49,7 +49,7 @@ uniform float spacingP;
 // 30 x 30 pillars = 900 of the 4900 cubes.  At 16 x 16 the colonnade ran out
 // long before the horizon did and most of the frame was empty floor and empty
 // sky; a hall wants to recede until the haze closes it off.
-const int GRID = 30;
+const int Grid = 30;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -77,7 +77,7 @@ void main()
     else
     {
         float i = idx - 1.0;
-        if ( i >= float( GRID * GRID ) )
+        if ( i >= float( Grid * Grid ) )
         {
             // Unused cubes are collapsed to nothing rather than skipped: the
             // vertex count is fixed by the buffer, so they have to go
@@ -91,8 +91,8 @@ void main()
             return;
         }
 
-        float gx = mod( i, float( GRID ) );
-        float gz = floor( i / float( GRID ) );
+        float gx = mod( i, float( Grid ) );
+        float gz = floor( i / float( Grid ) );
         // The hall now runs well past the light's 120-unit box, the way a
         // colonnade wants to: everything outside the box simply comes back
         // unshadowed (see the explicit bounds test in PillarHall.frag's
@@ -106,7 +106,7 @@ void main()
         // now, not the knee-high stubs they were: at 2..14 units they all sat
         // below an eye placed 6..13 up, so the camera looked out over the top
         // of the whole hall into an empty black sky.
-        int   band = int( clamp( gx / float( GRID ) * 31.0, 0.0, 31.0 ) );
+        int   band = int( clamp( gx / float( Grid ) * 31.0, 0.0, 31.0 ) );
         float e = audioSpectrum[band];
         // Kept under ~47 units at the loudest: the shadow light's box is 120
         // tall about the origin, and a pillar whose top leaves it stops
@@ -117,7 +117,7 @@ void main()
 
         vec3 size = vec3( 2.2 + 1.4 * attrB.y, h, 2.2 + 1.4 * attrB.z );
         // Only four rows sit behind the eye; the rest recede into the haze.
-        vec3 base = vec3( ( gx - float( GRID ) * 0.5 + 0.5 ) * sp,
+        vec3 base = vec3( ( gx - float( Grid ) * 0.5 + 0.5 ) * sp,
                           0.0,
                           ( gz - 4.0 ) * sp );
 
@@ -159,8 +159,8 @@ void main()
         // Eye height, down INSIDE the colonnade.  camHP's 6..13 preset range
         // put the camera above nearly every pillar; at 1.6..4.5 the columns
         // tower over it and carry the picture to its top edge.
-        float eyeY = 1.6 + camHP * 0.22;
-        vec3  vp = vec3( world.x - eyeOff, world.y - eyeY, world.z );
+        float eye_y = 1.6 + camHP * 0.22;
+        vec3  vp = vec3( world.x - eyeOff, world.y - eye_y, world.z );
         gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     }

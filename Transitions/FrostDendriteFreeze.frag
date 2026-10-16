@@ -68,42 +68,42 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // 6-fold hexagonal ice dendrite growth
     float angle6 = 6.2831853 / 6.0;
     float a = atan( p.y, p.x );
     float r = length( p );
     a = mod( a, angle6 ) - angle6 * 0.5;
-    vec2 hexCoord = vec2( cos( a ), sin( a ) ) * r * 15.0 * frs;
+    vec2 hex_coord = vec2( cos( a ), sin( a ) ) * r * 15.0 * frs;
 
     // Dendritic side branchings.  audioHigh sharpens the crystalline facet
     // lines by steepening both dendrite falloffs; the peak value is unchanged,
-    // only the edge crispness.  midTransition is zero at both fade endpoints,
-    // so the pattern there is exactly the un-driven one — and frostPattern is
-    // only ever consumed through midTransition-gated terms anyway.
-    float facetSharp = 1.0 + audioSwell * 0.8 * midTransition;
-    float mainSpine = abs( hexCoord.y );
-    float sideBranches = abs( sin( hexCoord.x * 2.0 * brn - hexCoord.y * 3.0 ) );
-    float frostPattern = exp( -mainSpine * 8.0 * facetSharp ) + exp( -sideBranches * 6.0 * facetSharp ) * 0.6;
+    // only the edge crispness.  mid_transition is zero at both fade endpoints,
+    // so the pattern there is exactly the un-driven one — and frost_pattern is
+    // only ever consumed through mid_transition-gated terms anyway.
+    float facet_sharp = 1.0 + audioSwell * 0.8 * mid_transition;
+    float main_spine = abs( hex_coord.y );
+    float side_branches = abs( sin( hex_coord.x * 2.0 * brn - hex_coord.y * 3.0 ) );
+    float frost_pattern = exp( -main_spine * 8.0 * facet_sharp ) + exp( -side_branches * 6.0 * facet_sharp ) * 0.6;
 
     // Crystal refraction warp
-    vec2 frostWarp = vec2( cos( a * 6.0 ), sin( a * 6.0 ) ) * 0.02 * frostPattern * midTransition;
+    vec2 frost_warp = vec2( cos( a * 6.0 ), sin( a * 6.0 ) ) * 0.02 * frost_pattern * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + frostWarp ) );
-    vec4 c0 = texture( tex0, fract( uv - frostWarp ) );
+    vec4 c1 = texture( tex1, fract( uv + frost_warp ) );
+    vec4 c0 = texture( tex0, fract( uv - frost_warp ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Crystalline frost white/cyan glow
-    vec3 frostWhite = vec3( 0.85, 0.95, 1.0 );
-    col.rgb += frostPattern * frostWhite * midTransition * 0.7 * ( 1.0 + audioKick * 0.83 );
+    vec3 frost_white = vec3( 0.85, 0.95, 1.0 );
+    col.rgb += frost_pattern * frost_white * mid_transition * 0.7 * ( 1.0 + audioKick * 0.83 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

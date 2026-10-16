@@ -39,11 +39,11 @@ void main()
     if ( r2 > 1.0 )
         discard;
 
-    float spriteGlow = exp( -r2 * 4.0 );
+    float sprite_glow = exp( -r2 * 4.0 );
 
     // Controlled brightness per Rule V8c
-    float baseLuma = 0.60 * ( pointGainP > 0.01 ? pointGainP : 1.0 ); // round 2: knee compression
-    vec3  col = vCol * spriteGlow * ( baseLuma + 0.08 * vPhononAmp ) * ( 0.85 + 0.35 * audioSwell );
+    float base_luma = 0.60 * ( pointGainP > 0.01 ? pointGainP : 1.0 ); // round 2: knee compression
+    vec3  col = vCol * sprite_glow * ( base_luma + 0.08 * vPhononAmp ) * ( 0.85 + 0.35 * audioSwell );
     col += vCol * ( vPhononAmp * 0.08 ) * ( haloP > 0.01 ? haloP : 1.0 ) * ( audioKick * 1.5 );
 
     // Soft knee compression

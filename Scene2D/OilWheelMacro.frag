@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -284,13 +284,13 @@ void main()
             F += m;
             G += m * dd / ( R * R );
         }
-    float fwF = fwidth( F ) + 1e-3;
-    float lens = smoothstep( 0.5 - fwF, 0.5 + fwF, F );
+    float fw_f = fwidth( F ) + 1e-3;
+    float lens = smoothstep( 0.5 - fw_f, 0.5 + fw_f, F );
     // Inside a lens: the dyes behind seen magnified (a different part of the
     // flow) and brighter; a soft darker rim where the light bends away.
     vec2  mag = -G * 0.03;
-    float dyeIn = fbm( q * 0.6 + mag * 6.0 + 3.0 );
-    vec3  inside = lamp * mix( vec3( 1.0 ), mix( c2, c1, smoothstep( 0.35, 0.65, dyeIn ) ), 0.8 ) * 1.05;
+    float dye_in = fbm( q * 0.6 + mag * 6.0 + 3.0 );
+    vec3  inside = lamp * mix( vec3( 1.0 ), mix( c2, c1, smoothstep( 0.35, 0.65, dye_in ) ), 0.8 ) * 1.05;
     float rim = smoothstep( 0.5, 0.58, F ) * ( 1.0 - smoothstep( 0.58, 0.9, F ) );
     col = mix( col, inside, lens );
     col *= 1.0 - 0.35 * rim;

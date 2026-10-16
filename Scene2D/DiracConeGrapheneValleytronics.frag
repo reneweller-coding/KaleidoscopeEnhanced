@@ -86,47 +86,47 @@ void main()
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // Hexagonal reciprocal space k-vector lattice
-    vec2 kCoord = uv * 6.5 * cne;
+    vec2 k_coord = uv * 6.5 * cne;
 
     // K and K' valley node coordinates (hexagonal symmetry)
-    float h1 = sin( kCoord.x + t * 2.0 );
-    float h2 = sin( -0.5 * kCoord.x + 0.866 * kCoord.y - t );
-    float h3 = sin( -0.5 * kCoord.x - 0.866 * kCoord.y - t );
-    float hexBand = sqrt( h1 * h1 + h2 * h2 + h3 * h3 );
+    float h1 = sin( k_coord.x + t * 2.0 );
+    float h2 = sin( -0.5 * k_coord.x + 0.866 * k_coord.y - t );
+    float h3 = sin( -0.5 * k_coord.x - 0.866 * k_coord.y - t );
+    float hex_band = sqrt( h1 * h1 + h2 * h2 + h3 * h3 );
 
     // Conical Dirac cone dispersion: E = |k - K|
-    float diracEnergy = hexBand;
-    float fermiLevel = ( 0.45 + 0.15 * sin( t * 1.5 ) + 0.2 * audioBass );
-    float fermiSurface = exp( -abs( diracEnergy - fermiLevel ) * 20.0 );
+    float dirac_energy = hex_band;
+    float fermi_level = ( 0.45 + 0.15 * sin( t * 1.5 ) + 0.2 * audioBass );
+    float fermi_surface = exp( -abs( dirac_energy - fermi_level ) * 20.0 );
 
     // Valley pseudospin asymmetry (K vs K' polarization)
-    float valleyPolarization = sin( kCoord.x * 2.0 + kCoord.y * 3.464 + t * 3.0 ) * vly;
+    float valley_polarization = sin( k_coord.x * 2.0 + k_coord.y * 3.464 + t * 3.0 ) * vly;
 
     // Berry curvature flux peaks around Dirac points
-    float berryCurvature = exp( -hexBand * 12.0 ) * ( 1.0 + audioKick * 3.0 );
+    float berry_curvature = exp( -hex_band * 12.0 ) * ( 1.0 + audioKick * 3.0 );
 
     // Photo texture mapping onto Dirac Fermi contours
-    vec2 photoUV = st + vec2( h1, h2 ) * 0.03 * ( 1.0 + audioKick * 0.7 );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( h1, h2 ) * 0.03 * ( 1.0 + audioKick * 0.7 );
+    vec3 photo = img( fract( photo_uv ) );
 
     // Valley polarization colors: K valley (Emerald/Cyan), K' valley (Magenta/Gold)
-    vec3 valleyK = imgPalette( 0.15 ) * 1.5;
-    vec3 valleyK2 = imgPalette( 0.65 ) * 1.5;
-    vec3 berryGlow = vec3( 1.0, 0.95, 0.4 );
+    vec3 valley_k = imgPalette( 0.15 ) * 1.5;
+    vec3 valley_k2 = imgPalette( 0.65 ) * 1.5;
+    vec3 berry_glow = vec3( 1.0, 0.95, 0.4 );
 
     // USER-FEEDBACK: pseudo-3D relief of the Dirac energy landscape (the
     // cones get actual depth) + plasmon pulses radiating from the nodes.
-    float gEx = dFdx( diracEnergy ), gEy = dFdy( diracEnergy );
-    float relief = clamp( 0.65 + 55.0 * ( gEx * 0.8 - gEy * 0.6 ), 0.30, 1.55 );
-    float pulse = pow( 0.5 + 0.5 * sin( diracEnergy * 9.0 - t * 5.0 ), 6.0 )
-                  * exp( -hexBand * 1.3 ) * ( 0.8 + 1.4 * audioKick );
+    float g_ex = dFdx( dirac_energy ), g_ey = dFdy( dirac_energy );
+    float relief = clamp( 0.65 + 55.0 * ( g_ex * 0.8 - g_ey * 0.6 ), 0.30, 1.55 );
+    float pulse = pow( 0.5 + 0.5 * sin( dirac_energy * 9.0 - t * 5.0 ), 6.0 )
+                  * exp( -hex_band * 1.3 ) * ( 0.8 + 1.4 * audioKick );
 
-    vec3 valleyCol = mix( valleyK, valleyK2, valleyPolarization * 0.5 + 0.5 );
+    vec3 valley_col = mix( valley_k, valley_k2, valley_polarization * 0.5 + 0.5 );
 
     // Combine visualizer
-    vec3 col = mix( photo * 0.8, valleyCol, 0.45 + 0.25 * audioSwell );
-    col += fermiSurface * vec3( 0.3, 0.85, 1.0 ) * ( 1.0 + audioHigh * 1.2 );
-    col += berryCurvature * berryGlow * 2.2;
+    vec3 col = mix( photo * 0.8, valley_col, 0.45 + 0.25 * audioSwell );
+    col += fermi_surface * vec3( 0.3, 0.85, 1.0 ) * ( 1.0 + audioHigh * 1.2 );
+    col += berry_curvature * berry_glow * 2.2;
     col *= relief;
     col += imgPalette( 0.40 ) * pulse * 1.3;
 

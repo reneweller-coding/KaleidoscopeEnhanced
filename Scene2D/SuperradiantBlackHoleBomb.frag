@@ -78,48 +78,48 @@ void main()
     float theta = atan( uv.y, uv.x );
 
     // Black hole event horizon & ergosphere radius
-    float rHorizon = 0.18 * ( 1.0 + 0.2 * audioSubBass );
-    float rErgo = 0.32 * ( 1.0 + 0.2 * audioBass );
+    float r_horizon = 0.18 * ( 1.0 + 0.2 * audioSubBass );
+    float r_ergo = 0.32 * ( 1.0 + 0.2 * audioBass );
 
     // Spherical reflecting mirror cavity boundary
-    float rMirror = 0.85 * ( mirrorRadiusP > 0.01 ? mirrorRadiusP : 1.0 ) * ( 0.9 + 0.2 * audioSwell );
+    float r_mirror = 0.85 * ( mirrorRadiusP > 0.01 ? mirrorRadiusP : 1.0 ) * ( 0.9 + 0.2 * audioSwell );
 
     // Superradiant bosonic wavefield: Psi(r, theta) = R(r) * cos(m * theta - omega * t)
-    float modeM = ( modeL_P > 1.0 ? modeL_P : 4.0 );
+    float mode_m = ( modeL_P > 1.0 ? modeL_P : 4.0 );
     float growth = ( growthRateP > 0.01 ? growthRateP : 1.2 );
 
     // Radial standing wave trapped between ergosphere and mirror
     float k_rad = 18.0;
-    float radialWave = sin( ( r - rHorizon ) * k_rad ) * smoothstep( rHorizon, rHorizon + 0.05, r )
-                       * smoothstep( rMirror + 0.02, rMirror - 0.02, r );
-    float azimuthalWave = cos( modeM * theta - t * 3.5 + audioPhase );
+    float radial_wave = sin( ( r - r_horizon ) * k_rad ) * smoothstep( r_horizon, r_horizon + 0.05, r )
+                        * smoothstep( r_mirror + 0.02, r_mirror - 0.02, r );
+    float azimuthal_wave = cos( mode_m * theta - t * 3.5 + audioPhase );
 
     // Superradiant exponential amplification in the ergoregion
-    float bosonDensity = radialWave * azimuthalWave * ( 1.0 + exp( ( rErgo - r ) * 6.0 * growth ) );
+    float boson_density = radial_wave * azimuthal_wave * ( 1.0 + exp( ( r_ergo - r ) * 6.0 * growth ) );
 
     // Runaway explosion flash on kick
-    float runawayBomb = pow( clamp( bosonDensity * 0.8 + 0.5, 0.0, 1.0 ), 3.0 ) * ( 1.0 + 4.0 * audioKick )
-                        * ( bombGlowP > 0.01 ? bombGlowP : 1.5 );
+    float runaway_bomb = pow( clamp( boson_density * 0.8 + 0.5, 0.0, 1.0 ), 3.0 ) * ( 1.0 + 4.0 * audioKick )
+                         * ( bombGlowP > 0.01 ? bombGlowP : 1.5 );
 
     // Mirror boundary reflection glow
-    float mirrorGlow = exp( -abs( r - rMirror ) * 35.0 );
+    float mirror_glow = exp( -abs( r - r_mirror ) * 35.0 );
 
     // Central black hole gravitational shadow
-    float shadowMask = smoothstep( rHorizon - 0.02, rHorizon + 0.02, r );
+    float shadow_mask = smoothstep( r_horizon - 0.02, r_horizon + 0.02, r );
 
     // Assign photo palette
-    vec3 bosonColor = palTint( mix( vec3( 0.1, 0.8, 1.0 ), vec3( 1.0, 0.2, 0.5 ), abs( azimuthalWave ) ),
-                               r * 0.3 + audioCentroid, 0.28 );
+    vec3 boson_color = palTint( mix( vec3( 0.1, 0.8, 1.0 ), vec3( 1.0, 0.2, 0.5 ), abs( azimuthal_wave ) ),
+                                r * 0.3 + audioCentroid, 0.28 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
-    vec3 col = bg * shadowMask;
-    col += bosonColor * abs( bosonDensity ) * shadowMask * ( 0.8 + 0.4 * audioSwell );
-    col += vec3( 1.0, 0.95, 0.85 ) * runawayBomb * shadowMask * 2.2;
-    col += palTint( vec3( 0.9, 0.95, 1.0 ), t * 0.05, 0.2 ) * mirrorGlow * 1.8;
-    col += bosonColor * ( audioKick * 0.35 );
+    vec3 col = bg * shadow_mask;
+    col += boson_color * abs( boson_density ) * shadow_mask * ( 0.8 + 0.4 * audioSwell );
+    col += vec3( 1.0, 0.95, 0.85 ) * runaway_bomb * shadow_mask * 2.2;
+    col += palTint( vec3( 0.9, 0.95, 1.0 ), t * 0.05, 0.2 ) * mirror_glow * 1.8;
+    col += boson_color * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

@@ -81,20 +81,20 @@ void main()
     // photo as a wrap-around environment — this is what makes it CHROME.
     vec3  rd = normalize( vec3( ( vUV.x - 0.5 ) * 1.6, -0.35, 1.0 ) );
     vec3  R = reflect( rd, n );
-    vec2  envUV = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
-                        clamp( 0.55 - R.y * 0.55, 0.02, 0.98 ) );
-    vec3  envPhoto = img( envUV );
+    vec2  env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
+                         clamp( 0.55 - R.y * 0.55, 0.02, 0.98 ) );
+    vec3  env_photo = img( env_uv );
     float fres = pow( 1.0 - clamp( dot( -rd, n ), 0.0, 1.0 ), 3.0 );
 
     // Sheen bands sweep with the reflection vector (metal polish streaks)
-    float envY = R.y * 3.0 + R.x * 1.6;
-    float band1 = pow( clamp( sin( envY * 9.0 + time * 0.2 ) * 0.5 + 0.5, 0.0, 1.0 ), 3.0 );
-    float band2 = pow( clamp( sin( envY * 4.0 - time * 0.13 + 2.0 ) * 0.5 + 0.5, 0.0, 1.0 ), 5.0 );
+    float env_y = R.y * 3.0 + R.x * 1.6;
+    float band1 = pow( clamp( sin( env_y * 9.0 + time * 0.2 ) * 0.5 + 0.5, 0.0, 1.0 ), 3.0 );
+    float band2 = pow( clamp( sin( env_y * 4.0 - time * 0.13 + 2.0 ) * 0.5 + 0.5, 0.0, 1.0 ), 5.0 );
 
     vec3 warm = palTint( vec3( 0.95, 0.65, 0.30 ), 0.10, 0.30 );
     vec3 cool = palTint( vec3( 0.30, 0.50, 0.95 ), 0.60, 0.30 );
 
-    vec3 col = envPhoto * ( 0.50 + 0.85 * fres )
+    vec3 col = env_photo * ( 0.50 + 0.85 * fres )
                + warm * band1 * ( 0.40 + 0.22 * audioSwell )
                + cool * band2 * ( 0.30 + 0.18 * audioCentroid );
 

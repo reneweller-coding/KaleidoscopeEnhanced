@@ -74,10 +74,10 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-const float HW = 3.2, HH = 5.5; // the hall's half width at the floor and its height
-const float INNER = 0.86;       ///< the ribs' inner edge (scale of the shell)
-const float RIBW = 0.22;        ///< rib thickness along the hall
-const float SPINE = 0.55;       ///< half width of the skylight spine
+const float Hw = 3.2, HH = 5.5; // the hall's half width at the floor and its height
+const float Inner = 0.86;       ///< the ribs' inner edge (scale of the shell)
+const float Ribw = 0.22;        ///< rib thickness along the hall
+const float Spine = 0.55;       ///< half width of the skylight spine
 float       gSp;                ///< rib spacing
 float       gSwell;
 float       gBand[8];
@@ -85,7 +85,7 @@ float       gBand[8];
 /// Far root of the ray with an elliptic cylinder of the given scale.
 float shell( vec3 ro, vec3 rd, float k )
 {
-    vec2  a = vec2( k * HW, k * HH );
+    vec2  a = vec2( k * Hw, k * HH );
     vec2  o = ro.xy / a, d = rd.xy / a;
     float A = dot( d, d ), B = dot( o, d ), C = dot( o, o ) - 1.0;
     float disc = B * B - A * C;
@@ -102,49 +102,49 @@ vec3 sky( vec3 d )
 /// The hall along a ray (without the floor): ribs, glass, the spine.
 vec3 hall( vec3 ro, vec3 rd, out float tHit )
 {
-    float tIn = shell( ro, rd, INNER );
-    float tOut = shell( ro, rd, 1.0 );
-    vec3  Pin = ro + rd * tIn;
-    tHit = tOut;
+    float t_in = shell( ro, rd, Inner );
+    float t_out = shell( ro, rd, 1.0 );
+    vec3  pin = ro + rd * t_in;
+    tHit = t_out;
     vec3 white = vec3( 0.92, 0.92, 0.9 );
     // In the spine gap there are no ribs: sky.
-    bool spineIn = abs( Pin.x ) < SPINE && Pin.y > 0.0;
+    bool spine_in = abs( pin.x ) < Spine && pin.y > 0.0;
     // The rib that the inner hit lies in, if any.
-    float zr = Pin.z / gSp;
-    float kIn = floor( zr + 0.5 );
-    float inRib = step( abs( Pin.z - kIn * gSp ), RIBW * 0.5 );
-    if ( !spineIn && inRib > 0.5 )
+    float zr = pin.z / gSp;
+    float k_in = floor( zr + 0.5 );
+    float in_rib = step( abs( pin.z - k_in * gSp ), Ribw * 0.5 );
+    if ( !spine_in && in_rib > 0.5 )
     {
-        tHit = tIn;
+        tHit = t_in;
         // The inner edge: white, with its line of light.
-        float b = gBand[int( mod( kIn, 8.0 ) )];
-        vec3  lc = mix( vec3( 1.0, 0.92, 0.8 ), imgPalette( 0.1 + hueP * 0.159 + mod( kIn, 8.0 ) * 0.05 ) * 1.4, 0.35 );
-        float mid = exp( -pow( ( Pin.z - kIn * gSp ) / ( RIBW * 0.18 ), 2.0 ) );
-        return white * 0.8 + lc * mid * ( 0.15 + 2.4 * b ) * exp( -tIn * 0.04 );
+        float b = gBand[int( mod( k_in, 8.0 ) )];
+        vec3 lc = mix( vec3( 1.0, 0.92, 0.8 ), imgPalette( 0.1 + hueP * 0.159 + mod( k_in, 8.0 ) * 0.05 ) * 1.4, 0.35 );
+        float mid = exp( -pow( ( pin.z - k_in * gSp ) / ( Ribw * 0.18 ), 2.0 ) );
+        return white * 0.8 + lc * mid * ( 0.15 + 2.4 * b ) * exp( -t_in * 0.04 );
     }
     // Between the shells: the ray may meet the face of the next rib ahead.
-    float zOut = ( ro + rd * tOut ).z;
-    float zFace = ( floor( ( Pin.z + RIBW * 0.5 ) / gSp ) + 1.0 ) * gSp - RIBW * 0.5;
-    if ( rd.z > 0.0 && zFace < zOut )
+    float z_out = ( ro + rd * t_out ).z;
+    float z_face = ( floor( ( pin.z + Ribw * 0.5 ) / gSp ) + 1.0 ) * gSp - Ribw * 0.5;
+    if ( rd.z > 0.0 && z_face < z_out )
     {
-        float tf = ( zFace - ro.z ) / rd.z;
-        vec3  Pf = ro + rd * tf;
-        if ( abs( Pf.x ) > SPINE || Pf.y < 0.0 )
+        float tf = ( z_face - ro.z ) / rd.z;
+        vec3  pf = ro + rd * tf;
+        if ( abs( pf.x ) > Spine || pf.y < 0.0 )
         {
             tHit = tf;
             // The face of the rib: white, shaded darker toward the glass.
-            float k = length( Pf.xy / vec2( HW, HH ) );
-            float sh = mix( 0.95, 0.62, smoothstep( INNER, 1.0, k ) );
+            float k = length( pf.xy / vec2( Hw, HH ) );
+            float sh = mix( 0.95, 0.62, smoothstep( Inner, 1.0, k ) );
             return white * sh;
         }
     }
     // Glass (or the open spine): the sky through the mullions.
-    vec3 Po = ro + rd * tOut;
-    vec3 sk = sky( normalize( vec3( Po.x, Po.y + 2.0, 0.0 ) ) );
-    if ( abs( Po.x ) < SPINE )
+    vec3 po = ro + rd * t_out;
+    vec3 sk = sky( normalize( vec3( po.x, po.y + 2.0, 0.0 ) ) );
+    if ( abs( po.x ) < Spine )
         return sk * 1.25; // the open skylight
     // Mullions run along the arc between the ribs.
-    float ang = atan( Po.y / HH, abs( Po.x ) / HW );
+    float ang = atan( po.y / HH, abs( po.x ) / Hw );
     float mf = ang / 1.5708 * 7.0;
     float mull = smoothstep( fwidth( mf ) * 1.5 + 0.03, 0.0, abs( fract( mf ) - 0.5 ) - 0.45 );
     return mix( sk, white * 0.7, mull * 0.5 );
@@ -170,34 +170,34 @@ void main()
     vec3 rd = normalize( vec3( p.x, p.y + 0.12, 1.0 ) );
 
     vec3  col;
-    float tF = rd.y < 0.0 ? -ro.y / rd.y : 1e9;
-    float tH;
-    vec3  hc = hall( ro, rd, tH );
-    if ( tF < tH )
+    float t_f = rd.y < 0.0 ? -ro.y / rd.y : 1e9;
+    float t_h;
+    vec3  hc = hall( ro, rd, t_h );
+    if ( t_f < t_h )
     {
         // The polished marble floor mirrors the hall.
-        vec3  P = ro + rd * tF;
+        vec3  P = ro + rd * t_f;
         vec3  rr = vec3( rd.x, -rd.y, rd.z );
-        float tR;
-        vec3  refl = hall( P + rr * 0.01, rr, tR );
-        refl = mix( refl, vec3( 0.85, 0.87, 0.9 ), 1.0 - exp( -tR * 0.02 ) );
+        float t_r;
+        vec3  refl = hall( P + rr * 0.01, rr, t_r );
+        refl = mix( refl, vec3( 0.85, 0.87, 0.9 ), 1.0 - exp( -t_r * 0.02 ) );
         float vein = noise2( P.xz * vec2( 0.7, 2.0 ) ) * 0.5 + noise2( P.xz * 4.0 ) * 0.5;
         vec3  marble = vec3( 0.78, 0.78, 0.76 ) * ( 0.9 + 0.1 * vein );
         float fres = 0.35 + 0.45 * pow( 1.0 - abs( rd.y ), 4.0 );
         col = mix( marble * 0.75, refl, fres );
         // Seams of the floor slabs.
         col *= 0.92 + 0.08 * smoothstep( 0.0, 0.03, abs( fract( P.x * 0.5 ) - 0.5 ) );
-        tH = tF;
+        t_h = t_f;
     }
     else
     {
         col = hc;
     }
     // Distance haze: the far end of the hall dissolves into bright air.
-    col = mix( col, vec3( 0.9, 0.92, 0.95 ), 1.0 - exp( -tH * 0.035 ) );
+    col = mix( col, vec3( 0.9, 0.92, 0.95 ), 1.0 - exp( -t_h * 0.035 ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -98,7 +98,7 @@ void main()
     // Find the nearest seed AND the second nearest.  The second is what makes
     // the crack: the difference between the two distances is small exactly on
     // the boundary between cells, and nowhere else.
-    vec2  bestSeed = vec2( 0.0 ), bestOff = vec2( 0.0 );
+    vec2  best_seed = vec2( 0.0 ), best_off = vec2( 0.0 );
     float d1 = 1e9, d2 = 1e9;
     for ( int y = -1; y <= 1; ++y )
         for ( int x = -1; x <= 1; ++x )
@@ -112,17 +112,17 @@ void main()
             {
                 d2 = d1;
                 d1 = d;
-                bestSeed = gi + o;
-                bestOff = seed;
+                best_seed = gi + o;
+                best_off = seed;
             }
             else if ( d < d2 )
                 d2 = d;
         }
 
-    vec2 cellCentre = ( gi + bestOff - gf + gp ) / scale;
-    cellCentre.x /= aspect;
+    vec2 cell_centre = ( gi + best_off - gf + gp ) / scale;
+    cell_centre.x /= aspect;
 
-    vec4 rnd = vec4( hash22( bestSeed ), hash22( bestSeed + 17.3 ) );
+    vec4 rnd = vec4( hash22( best_seed ), hash22( best_seed + 17.3 ) );
 
     // How far this frame has thrown the shards.  Drops blow it wide open and
     // a build-up loosens everything in advance; the kick only nudges it --
@@ -134,7 +134,7 @@ void main()
     // Each shard flies outward from the frame's centre, spins about its own
     // centre, and drifts back.  Flying along a shared direction would slide the
     // whole image; radial motion is what reads as breaking apart.
-    vec2 dir = normalize( cellCentre - vec2( 0.5 ) + 1e-4 );
+    vec2 dir = normalize( cell_centre - vec2( 0.5 ) + 1e-4 );
     vec2 offset = dir * blast * ( 0.35 + 1.2 * rnd.x )
                   + ( rnd.zw - 0.5 ) * blast * 0.6;
 
@@ -144,11 +144,11 @@ void main()
 
     // Sample the photo through the shard's own frame: undo the shard's motion,
     // so the image travels WITH the piece.
-    vec2 local = uv - cellCentre;
+    vec2 local = uv - cell_centre;
     local.x *= aspect;
     local = rot * local * ( 1.0 - 0.10 * blast );
     local.x /= aspect;
-    vec2 suv = cellCentre + local - offset;
+    vec2 suv = cell_centre + local - offset;
 
     // Outside the frame there is no photo; mirroring keeps the shard filled
     // with plausible content instead of clamping to a smear of edge pixels.

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -252,9 +252,9 @@ void main()
         z = 0.5 * radiusAt( z + travel, a ) / r;
     float wz = z + travel;
     float R = radiusAt( wz, a );
-    float dR = ( radiusAt( wz + 0.01, a ) - radiusAt( wz - 0.01, a ) ) / 0.02;
+    float d_r = ( radiusAt( wz + 0.01, a ) - radiusAt( wz - 0.01, a ) ) / 0.02;
     // Wall facing: a bulge coming toward us (dR < 0 ahead) faces the camera.
-    float facing = clamp( 0.55 - dR * 1.2, 0.1, 1.3 );
+    float facing = clamp( 0.55 - d_r * 1.2, 0.1, 1.3 );
     float zoom = 0.3 + 0.4 * clamp( wallZoomP, 0.0, 1.0 );
     vec2  uv = vec2( a / 3.14159265, wz * zoom * 0.5 );
     vec2  cfw = fwidth( vec2( cos( a ), sin( a ) ) );

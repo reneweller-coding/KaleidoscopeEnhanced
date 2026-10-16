@@ -48,8 +48,8 @@ in float vRocket;
 in vec4  vFlame;
 in float vClimb;
 
-const float kDist = 84.0;
-const float kGround = -16.0;
+const float Dist = 84.0;
+const float Ground = -16.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -148,8 +148,8 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
     return lc * max( dot( n, d ), 0.0 ) * att;
 }
 
-const vec3 kFloodA = vec3( -34.0, kGround + 2.0, kDist - 30.0 );
-const vec3 kFloodB = vec3( 36.0, kGround + 2.0, kDist - 26.0 );
+const vec3 FloodA = vec3( -34.0, Ground + 2.0, Dist - 30.0 );
+const vec3 FloodB = vec3( 36.0, Ground + 2.0, Dist - 26.0 );
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir )
@@ -164,24 +164,24 @@ vec3 renderSky( vec3 dir )
     {
         // The ground: a dark flat, the floodlight pools, and the exhaust
         // cloud rolling out from the pad once the engines are lit.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.0045 );
         float g = fbm2( P.xz * 0.03 );
         col = vec3( 0.035, 0.04, 0.05 ) * ( 0.6 + 0.8 * g );
-        float poolA = exp( -length( P.xz - kFloodA.xz ) * 0.05 );
-        float poolB = exp( -length( P.xz - kFloodB.xz ) * 0.05 );
-        col += vec3( 0.5, 0.45, 0.35 ) * ( poolA + poolB ) * ( 0.25 + 0.75 * build ) * ( 0.7 + 0.6 * g );
+        float pool_a = exp( -length( P.xz - FloodA.xz ) * 0.05 );
+        float pool_b = exp( -length( P.xz - FloodB.xz ) * 0.05 );
+        col += vec3( 0.5, 0.45, 0.35 ) * ( pool_a + pool_b ) * ( 0.25 + 0.75 * build ) * ( 0.7 + 0.6 * g );
 
         float r = 9.0 + 48.0 * vClimb;
         float dc = length( P.xz - flame.xz );
         float cloud = fbm2( P.xz * 0.06 + vec2( time * 0.05, -time * 0.02 ) );
         float mask = smoothstep( r, r * 0.25, dc ) * burn;
         float dens = clamp( cloud * 1.8 - 0.35, 0.0, 1.0 ) * mask;
-        vec3  lowCol = vec3( 1.0, 0.62, 0.30 ) * ( 1.2 + 0.8 * bass );
-        vec3  highCol = vec3( 0.85, 0.85, 0.9 ) * ( 0.35 + 0.65 * build );
-        vec3  cloudCol = mix( lowCol, highCol, smoothstep( 0.0, 0.45, vClimb ) );
-        col = mix( col, cloudCol, dens );
+        vec3  low_col = vec3( 1.0, 0.62, 0.30 ) * ( 1.2 + 0.8 * bass );
+        vec3  high_col = vec3( 0.85, 0.85, 0.9 ) * ( 0.35 + 0.65 * build );
+        vec3  cloud_col = mix( low_col, high_col, smoothstep( 0.0, 0.45, vClimb ) );
+        col = mix( col, cloud_col, dens );
         col = mix( vec3( 0.03, 0.03, 0.05 ), col, haze );
     }
     else
@@ -247,31 +247,31 @@ void main()
     if ( base.a < 0.1 )
         discard;
 
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * expose;
 
     // Moon: a cool key from behind the camera's left shoulder.
-    vec3 moonDir = normalize( vec3( -0.4, 0.7, -0.55 ) );
-    vec3 col = alb * vec3( 0.55, 0.65, 0.9 ) * ( 0.10 + 0.25 * max( dot( n, moonDir ), 0.0 ) );
+    vec3 moon_dir = normalize( vec3( -0.4, 0.7, -0.55 ) );
+    vec3 col = alb * vec3( 0.55, 0.65, 0.9 ) * ( 0.10 + 0.25 * max( dot( n, moon_dir ), 0.0 ) );
     // Sky ambient.
     col += alb * vec3( 0.10, 0.11, 0.15 ) * ( 0.5 + 0.5 * n.y );
 
     // Floodlights: on the ground in front of the pad, coming up with the build-up.
-    vec3 floodCol = vec3( 1.0, 0.9, 0.7 ) * ( 0.9 + 2.6 * build );
-    vec3 flood = lightAt( vPos, n, kFloodA, floodCol, 48.0 ) + lightAt( vPos, n, kFloodB, floodCol, 48.0 );
+    vec3 flood_col = vec3( 1.0, 0.9, 0.7 ) * ( 0.9 + 2.6 * build );
+    vec3 flood = lightAt( vPos, n, FloodA, flood_col, 48.0 ) + lightAt( vPos, n, FloodB, flood_col, 48.0 );
     col += alb * flood;
 
     // The engines as a point light that rises with the rocket.
     float burn = vFlame.w;
-    vec3  flamePos = vFlame.xyz - vec3( 0.0, 2.0, 0.0 );
-    vec3  flameCol = vec3( 1.0, 0.6, 0.28 ) * burn * ( 4.0 + 3.0 * bass + 1.5 * kick );
-    col += alb * lightAt( vPos, n, flamePos, flameCol, 45.0 );
+    vec3  flame_pos = vFlame.xyz - vec3( 0.0, 2.0, 0.0 );
+    vec3  flame_col = vec3( 1.0, 0.6, 0.28 ) * burn * ( 4.0 + 3.0 * bass + 1.5 * kick );
+    col += alb * lightAt( vPos, n, flame_pos, flame_col, 45.0 );
 
     // Specular from the floods (a wet concrete sheen, a painted hull).
-    vec3  hA = normalize( normalize( kFloodA - vPos ) + viewDir );
-    float spec = pow( max( dot( n, hA ), 0.0 ), mix( 60.0, 6.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0 ), base.rgb, metallic );
-    col += specColor * spec * ( 0.15 + 0.35 * build ) * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
+    vec3  h_a = normalize( normalize( FloodA - vPos ) + view_dir );
+    float spec = pow( max( dot( n, h_a ), 0.0 ), mix( 60.0, 6.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0 ), base.rgb, metallic );
+    col += spec_color * spec * ( 0.15 + 0.35 * build ) * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
 
     if ( rocket )
     {
@@ -289,7 +289,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

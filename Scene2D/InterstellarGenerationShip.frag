@@ -90,10 +90,10 @@ float map( vec3 p, float hp )
     float cyl = sdCylinder( p, vec3( 0.0, 0.0, rad ) );
 
     // Habitation rings
-    float ringZ = mod( p.z, 20.0 ) - 10.0;
-    float ring = sdCylinder( vec3( p.xy, ringZ ), vec3( 0.0, 0.0, rad + 1.5 ) );
+    float ring_z = mod( p.z, 20.0 ) - 10.0;
+    float ring = sdCylinder( vec3( p.xy, ring_z ), vec3( 0.0, 0.0, rad + 1.5 ) );
     // Cut ring into sections
-    ring = max( ring, abs( ringZ ) - 2.0 );
+    ring = max( ring, abs( ring_z ) - 2.0 );
 
     // Combine hull
     float ship = min( cyl, ring );
@@ -103,13 +103,13 @@ float map( vec3 p, float hp )
     float pz = p.z;
 
     // Grid panels
-    float thStep = 12.0 * hp; // Number of panels around
-    float pzStep = 1.0 * hp;  // Number of panels along
+    float th_step = 12.0 * hp; // Number of panels around
+    float pz_step = 1.0 * hp;  // Number of panels along
 
-    float thId = floor( th * thStep / 6.2831853 );
-    float pzId = floor( pz * pzStep );
+    float th_id = floor( th * th_step / 6.2831853 );
+    float pz_id = floor( pz * pz_step );
 
-    float depth = hash21( vec2( thId, pzId ) ) * 0.5;
+    float depth = hash21( vec2( th_id, pz_id ) ) * 0.5;
     ship += depth; // Extrude outward slightly based on noise
 
     if ( ship < d )
@@ -118,8 +118,8 @@ float map( vec3 p, float hp )
         mat = 1.0;
 
         // Window check
-        float wNoise = hash21( vec2( thId, pzId + 5.3 ) );
-        if ( wNoise > 0.8 )
+        float w_noise = hash21( vec2( th_id, pz_id + 5.3 ) );
+        if ( w_noise > 0.8 )
             mat = 2.0; // Biosphere/city lights
     }
 
@@ -182,11 +182,11 @@ void main()
 
     // Rotate the ship around Z (by rotating the ray inversely)
     float spin = time * 0.2 + audioPhase * 0.5;
-    mat2  rotZ = mat2( cos( spin ), -sin( spin ), sin( spin ), cos( spin ) );
-    vec3  localRo = ro;
-    localRo.xy = rotZ * localRo.xy;
-    vec3 localRd = rd;
-    localRd.xy = rotZ * localRd.xy;
+    mat2  rot_z = mat2( cos( spin ), -sin( spin ), sin( spin ), cos( spin ) );
+    vec3  local_ro = ro;
+    local_ro.xy = rot_z * local_ro.xy;
+    vec3 local_rd = rd;
+    local_rd.xy = rot_z * local_rd.xy;
 
     float d = 0.0;
     vec3  p;
@@ -195,7 +195,7 @@ void main()
 
     for ( int i = 0; i < 80; ++i )
     {
-        p = localRo + localRd * d;
+        p = local_ro + local_rd * d;
         float ds = map( p, hp );
         m = hitMat;
         steps = i;
@@ -212,15 +212,15 @@ void main()
     vec3 tint = imgPalette( 0.5 );
     vec3 col = background( rd, drift, tint );
 
-    vec3 sunDir = normalize( vec3( 0.8, 0.5, 0.5 ) );
+    vec3 sun_dir = normalize( vec3( 0.8, 0.5, 0.5 ) );
     // Transform sun direction to local space too!
-    vec3 localSun = sunDir;
-    localSun.xy = rotZ * localSun.xy;
+    vec3 local_sun = sun_dir;
+    local_sun.xy = rot_z * local_sun.xy;
 
     if ( m > 0.5 )
     {
         vec3  n = calcNormal( p, hp );
-        float dif = max( dot( n, localSun ), 0.0 );
+        float dif = max( dot( n, local_sun ), 0.0 );
         float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
         vec3 albedo = vec3( 0.3, 0.32, 0.35 ); // white/grey hull
@@ -231,17 +231,17 @@ void main()
         if ( m == 2.0 )
         {
             // Biosphere / City lights inside the ring
-            vec3 lightCol = imgPalette( 0.7 + 0.1 * audioKick );
-            col += lightCol * ( 1.5 + audioLevel ) * glw;
+            vec3 light_col = imgPalette( 0.7 + 0.1 * audioKick );
+            col += light_col * ( 1.5 + audioLevel ) * glw;
         }
 
         // Anti-collision strobes
-        float pzId = floor( p.z * hp );
-        if ( mod( pzId, 10.0 ) == 0.0 )
+        float pz_id = floor( p.z * hp );
+        if ( mod( pz_id, 10.0 ) == 0.0 )
         {
-            float blink = step( 0.95, fract( time * 2.0 + pzId * 0.1 ) );
-            vec3  strobeCol = vec3( 1.0, 0.2, 0.1 );
-            col += strobeCol * blink * ( 2.0 + audioKick * 3.0 ) * glw * step( 0.8, n.x );
+            float blink = step( 0.95, fract( time * 2.0 + pz_id * 0.1 ) );
+            vec3  strobe_col = vec3( 1.0, 0.2, 0.1 );
+            col += strobe_col * blink * ( 2.0 + audioKick * 3.0 ) * glw * step( 0.8, n.x );
         }
 
         // AO
@@ -249,17 +249,17 @@ void main()
     }
 
     // Add engine glow if looking backward
-    float lookBack = max( dot( rd, vec3( 0.0, 0.0, -1.0 ) ), 0.0 );
-    if ( lookBack > 0.9 )
+    float look_back = max( dot( rd, vec3( 0.0, 0.0, -1.0 ) ), 0.0 );
+    if ( look_back > 0.9 )
     {
-        float plume = pow( lookBack, 20.0 );
+        float plume = pow( look_back, 20.0 );
         col += imgPalette( 0.9 ) * plume * ( 1.0 + audioSwell * 2.0 ) * glw;
     }
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

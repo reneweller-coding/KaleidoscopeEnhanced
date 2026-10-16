@@ -72,58 +72,58 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float psiMod = ( moduliP > 0.01 ) ? moduliP : 1.0;
-    float nPetals = ( petalsP > 1.0 ) ? petalsP : 5.0;
+    float psi_mod = ( moduliP > 0.01 ) ? moduliP : 1.0;
+    float n_petals = ( petalsP > 1.0 ) ? petalsP : 5.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.30 * spd + audioAdvance * 0.24 * spd; // Zeit-Basis:
     // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Moduli space deformation parameter psi
-    float psi = ( 0.85 + 0.4 * sin( t * 0.35 ) + 0.2 * audioFlux ) * psiMod;
+    float psi = ( 0.85 + 0.4 * sin( t * 0.35 ) + 0.2 * audioFlux ) * psi_mod;
 
     // 5-Fold / multi-fold symmetry fold in complex plane
     float a = atan( uv.y, uv.x );
     float r = length( uv ) * ( 2.2 + 0.3 * sin( audioSwell * 2.0 ) );
-    float seg = 6.2831853 / nPetals;
+    float seg = 6.2831853 / n_petals;
     a = mod( a + seg * 0.5, seg ) - seg * 0.5;
     a = abs( a );
     vec2 z = vec2( cos( a ), sin( a ) ) * r;
 
     // Calabi-Yau quintic polynomial evaluation: z1^5 + z2^5 - 5*psi*z1*z2 = 0
     vec2 z5 = cPow( z, 5.0 );
-    vec2 termInter = z * psi * 2.5;
-    vec2 fVal = z5 - termInter + vec2( cos( t * 0.5 ), sin( t * 0.5 ) ) * 0.3;
+    vec2 term_inter = z * psi * 2.5;
+    vec2 f_val = z5 - term_inter + vec2( cos( t * 0.5 ), sin( t * 0.5 ) ) * 0.3;
 
     // Sub-bass inflates the compactification radius itself, so the whole
     // manifold shell breathes outward rather than merely getting brighter.
-    float dManifold = abs( length( fVal ) - 0.7 * ( 1.0 + 0.4 * audioSubBass ) );
+    float d_manifold = abs( length( f_val ) - 0.7 * ( 1.0 + 0.4 * audioSubBass ) );
 
     // Glowing string manifold contour bands
-    float stringGlow = exp( -dManifold * ( 12.0 + 8.0 * audioCentroid ) ) * glw;
+    float string_glow = exp( -d_manifold * ( 12.0 + 8.0 * audioCentroid ) ) * glw;
 
     // Multi-scale string vibrations
-    float stringVib = sin( length( z5 ) * 8.0 - t * 4.0 );
-    float nodeFlash = smoothstep( 0.85, 1.0, abs( stringVib ) ) * ( 1.0 + 2.5 * audioKick );
+    float string_vib = sin( length( z5 ) * 8.0 - t * 4.0 );
+    float node_flash = smoothstep( 0.85, 1.0, abs( string_vib ) ) * ( 1.0 + 2.5 * audioKick );
 
     // Sample distorted background texture
-    vec2 sampleUV = fract( z * 0.3 + fVal * 0.1 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( z * 0.3 + f_val * 0.1 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Superstring spectrum palette
-    vec3 palA = imgPalette( dManifold * 0.2 + t * 0.05 );
-    vec3 palB = imgPalette( dManifold * 0.2 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( a * nPetals ) );
+    vec3 pal_a = imgPalette( d_manifold * 0.2 + t * 0.05 );
+    vec3 pal_b = imgPalette( d_manifold * 0.2 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( a * n_petals ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing string filaments and kick node flashes
-    vec3 stringTint = vec3( 1.3, 1.1, 1.8 ) * stringGlow * ( 1.0 + 2.5 * audioKick );
-    col += stringTint + vec3( 1.5, 1.4, 1.9 ) * nodeFlash * 0.6;
+    vec3 string_tint = vec3( 1.3, 1.1, 1.8 ) * string_glow * ( 1.0 + 2.5 * audioKick );
+    col += string_tint + vec3( 1.5, 1.4, 1.9 ) * node_flash * 0.6;
 
     // Center compactification singularity flare
-    float centerBloom = exp( -r * 4.0 ) * ( 0.8 + 1.5 * audioKick );
-    col += imgPalette( 0.85 ) * centerBloom;
+    float center_bloom = exp( -r * 4.0 ) * ( 0.8 + 1.5 * audioKick );
+    col += imgPalette( 0.85 ) * center_bloom;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

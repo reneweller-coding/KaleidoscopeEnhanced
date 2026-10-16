@@ -94,20 +94,20 @@ void main()
 
     // The mRNA tape: a band across the middle, moving left; codons as photo
     // tiles with three-letter cells.
-    float tapeY = -0.05;
-    float tape = smoothstep( 0.07, 0.065, abs( p.y - tapeY ) );
+    float tape_y = -0.05;
+    float tape = smoothstep( 0.07, 0.065, abs( p.y - tape_y ) );
     float tx = p.x + clock * 0.6;
     float codon = floor( tx * 8.0 );
-    vec3  tapeCol = img( vec2( fract( codon * 0.083 ), 0.5 ) ) * 0.9 + 0.1;
+    vec3  tape_col = img( vec2( fract( codon * 0.083 ), 0.5 ) ) * 0.9 + 0.1;
     float letters = smoothstep( 0.2, 0.15, abs( fract( tx * 24.0 ) - 0.5 ) ) * 0.4;
-    tapeCol = mix( tapeCol, vec3( 0.9, 0.85, 0.6 ), letters );
-    col = mix( col, tapeCol * glow, tape );
+    tape_col = mix( tape_col, vec3( 0.9, 0.85, 0.6 ), letters );
+    col = mix( col, tape_col * glow, tape );
 
     // The ribosome: two subunits (round blobs) straddling the tape at x = 0.
-    float big = smoothstep( 0.2, 0.18, length( ( p - vec2( 0.0, tapeY + 0.12 ) ) * vec2( 0.8, 1.0 ) ) );
-    float small = smoothstep( 0.14, 0.125, length( ( p - vec2( 0.0, tapeY - 0.1 ) ) * vec2( 0.8, 1.0 ) ) );
+    float big = smoothstep( 0.2, 0.18, length( ( p - vec2( 0.0, tape_y + 0.12 ) ) * vec2( 0.8, 1.0 ) ) );
+    float small = smoothstep( 0.14, 0.125, length( ( p - vec2( 0.0, tape_y - 0.1 ) ) * vec2( 0.8, 1.0 ) ) );
     vec3  ribo = mix( vec3( 0.45, 0.4, 0.55 ), imgPalette( hue * 0.159 + 0.7 ), 0.4 );
-    float rshade = 0.5 + 0.5 * ( 1.0 - length( p - vec2( -0.05, tapeY + 0.15 ) ) * 3.0 );
+    float rshade = 0.5 + 0.5 * ( 1.0 - length( p - vec2( -0.05, tape_y + 0.15 ) ) * 3.0 );
     col = mix( col, ribo * rshade * glow, max( big, small ) * 0.9 );
 
     // The growing chain: beads leaving the exit tunnel at the top of the
@@ -115,13 +115,14 @@ void main()
     // path (a spiral that starts to fold), coloured by the class loudest at
     // its index (a hashed class per bead, brightened by that class now).
     float added = clock * 0.6 * 8.0; // codons translated so far (continuous)
-    float fracBead = fract( added );
+    float frac_bead = fract( added );
     for ( int i = 0; i < 40; ++i )
     {
-        float fi = float( i ) + fracBead; // age of bead i in codons
+        float fi = float( i ) + frac_bead; // age of bead i in codons
         float s = fi * 0.045;
         float ang = 1.57 + s * 3.0 * curl + 0.4 * sin( s * 7.0 );
-        vec2 bp = vec2( 0.0, tapeY + 0.3 ) + vec2( cos( ang ), sin( ang ) ) * ( 0.06 + s * 0.9 ) + vec2( 0.0, s * 0.6 );
+        vec2  bp = vec2( 0.0, tape_y + 0.3 ) + vec2( cos( ang ), sin( ang ) ) * ( 0.06 + s * 0.9 )
+                   + vec2( 0.0, s * 0.6 );
         bp += vec2( 0.02 * sin( sceneAdvance * 0.8 + fi ), 0.015 * cos( sceneAdvance * 0.7 + fi * 1.3 ) );
         float idx = floor( added ) - float( i );
         int   k = int( mod( abs( idx ) * 7.0, 12.0 ) );
@@ -132,10 +133,10 @@ void main()
         float link = 0.0;
         if ( i > 0 )
         {
-            float fj = float( i - 1 ) + fracBead;
+            float fj = float( i - 1 ) + frac_bead;
             float sj = fj * 0.045;
             float angj = 1.57 + sj * 3.0 * curl + 0.4 * sin( sj * 7.0 );
-            vec2  bq = vec2( 0.0, tapeY + 0.3 ) + vec2( cos( angj ), sin( angj ) ) * ( 0.06 + sj * 0.9 )
+            vec2  bq = vec2( 0.0, tape_y + 0.3 ) + vec2( cos( angj ), sin( angj ) ) * ( 0.06 + sj * 0.9 )
                        + vec2( 0.0, sj * 0.6 );
             bq += vec2( 0.02 * sin( sceneAdvance * 0.8 + fj ), 0.015 * cos( sceneAdvance * 0.7 + fj * 1.3 ) );
             vec2  dd = bq - bp;
@@ -150,14 +151,14 @@ void main()
     }
     // A tRNA arriving: a small L-shape sliding in from the right on the clock.
     float tph = fract( clock * 0.6 * 8.0 * 0.5 );
-    vec2  tp = vec2( 0.5 - tph * 0.45, tapeY - 0.35 + tph * 0.25 );
+    vec2  tp = vec2( 0.5 - tph * 0.45, tape_y - 0.35 + tph * 0.25 );
     float trna = smoothstep( 0.03, 0.02, length( p - tp ) )
                  + smoothstep( 0.012, 0.006, abs( p.x - tp.x ) ) * step( abs( p.y - tp.y - 0.04 ), 0.05 );
     col = mix( col, imgPalette( hue * 0.159 + 0.2 ) * 1.4 * glow,
                clamp( trna, 0.0, 1.0 ) * ( 1.0 - smoothstep( 0.85, 1.0, tph ) ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

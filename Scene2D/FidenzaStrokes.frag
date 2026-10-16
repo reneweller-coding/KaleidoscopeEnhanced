@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -248,28 +248,28 @@ void main()
     vec2  gpsi = vec2( streamFn( p + vec2( e, 0.0 ), t, curl ) - psi, streamFn( p + vec2( 0.0, e ), t, curl ) - psi )
                  / e;
     float N = 4.0 + 6.0 * clamp( audioSpread, 0.0, 1.0 );
-    float bandF = psi * N;
-    float band = floor( bandF );
-    float across = fract( bandF ); // 0..1 across the ribbon
+    float band_f = psi * N;
+    float band = floor( band_f );
+    float across = fract( band_f ); // 0..1 across the ribbon
     // Along-ribbon coordinate: x warped slightly by the band's curve.
     vec2  tang = normalize( vec2( gpsi.y, -gpsi.x ) );
     float along = p.x + 0.3 * psi * tang.y + 0.15 * sceneTime * ( 0.5 + hash11( band ) )
                   + 0.6 * audioAdvance * ( 0.5 + hash11( band + 3.0 ) );
-    float segL = 0.35 + 1.2 * clamp( strokeP, 0.0, 1.0 );
-    float sa = along / segL + hash11( band * 1.7 ) * 7.0;
+    float seg_l = 0.35 + 1.2 * clamp( strokeP, 0.0, 1.0 );
+    float sa = along / seg_l + hash11( band * 1.7 ) * 7.0;
     float seg = floor( sa );
     float fs = fract( sa );
     // Pixel sizes for antialiasing.
-    float pxA = length( gpsi ) * N * 3.0 / resolution.y; // across units per pixel
-    float pxL = 3.0 / resolution.y / segL;               // along units per pixel
+    float px_a = length( gpsi ) * N * 3.0 / resolution.y; // across units per pixel
+    float px_l = 3.0 / resolution.y / seg_l;              // along units per pixel
     float gap = 0.06 + 0.12 * clamp( gapP, 0.0, 1.0 );
     // Rounded stroke ends: an ellipse-ish cap in (along, across) space.
-    float halfW = 0.5 - gap * 0.5;
+    float half_w = 0.5 - gap * 0.5;
     float ca = ( across - 0.5 );
-    float capL = min( 0.2, halfW * segL * 0.9 / segL );
-    float ex = max( 0.0, max( capL - fs, fs - ( 1.0 - capL ) ) ) / capL; // 0 in the body, 0..1 in the caps
-    float r = sqrt( ex * ex + ( ca / halfW ) * ( ca / halfW ) );
-    float inStroke = smoothstep( 1.0 + pxA / halfW * 1.5, 1.0 - pxA / halfW * 1.5, r );
+    float cap_l = min( 0.2, half_w * seg_l * 0.9 / seg_l );
+    float ex = max( 0.0, max( cap_l - fs, fs - ( 1.0 - cap_l ) ) ) / cap_l; // 0 in the body, 0..1 in the caps
+    float r = sqrt( ex * ex + ( ca / half_w ) * ( ca / half_w ) );
+    float in_stroke = smoothstep( 1.0 + px_a / half_w * 1.5, 1.0 - px_a / half_w * 1.5, r );
     // Some strokes are missing (the field shows through).
     float present = step( 0.12, hash21( vec2( band, seg ) + 0.3 ) );
     // Colour from the photo's palette.
@@ -285,11 +285,11 @@ void main()
     c = c / max( max( c.r, max( c.g, c.b ) ), 0.25 ) * ( 0.55 + 0.4 * hash21( vec2( band, seg ) + 5.0 ) );
     // Painted texture: bristle streaks along the stroke.
     float rough = clamp( audioRoughness, 0.0, 1.0 );
-    float bristle = noise2( vec2( fs * 3.0 * segL, across * 40.0 ) + vec2( seg, band ) * 3.7 );
+    float bristle = noise2( vec2( fs * 3.0 * seg_l, across * 40.0 ) + vec2( seg, band ) * 3.7 );
     c *= 0.85 + ( 0.12 + 0.25 * rough ) * ( bristle - 0.5 ) * 2.0;
     c *= 0.85 + 0.3 * smoothstep( 1.0, 0.0, r ); // a little body shading
     vec2 uv = p / 3.0 * 0.8 + 0.5;
     vec3 ground = mix( vec3( 0.93, 0.9, 0.84 ), imgLod( uv, 3.0 ), 0.25 ) * ( 0.35 + 0.25 * ( 1.0 - mode ) );
-    vec3 col = mix( ground, c * ( 1.0 + 0.4 * kick ), inStroke * present );
+    vec3 col = mix( ground, c * ( 1.0 + 0.4 * kick ), in_stroke * present );
     finish( col );
 }

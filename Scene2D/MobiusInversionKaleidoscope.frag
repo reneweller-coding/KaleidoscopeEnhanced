@@ -40,7 +40,7 @@ uniform float overlapP; ///< circle radius as a fraction of the tangent radius (
 uniform float glowP;    ///< Glow / afterglow knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const int N_ITER = 16;
+const int NIter = 16;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -71,48 +71,48 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    int   circlesV = ( circlesP < 3 ) ? 5 : circlesP;
-    float ringV = ( ringP <= 0.01 ) ? 0.62 : ringP;
-    float overlapV = ( overlapP <= 0.5 ) ? 1.08 : overlapP;
-    float glowV = ( glowP <= 0.01 ) ? 1.0 : glowP;
+    int   circles_v = ( circlesP < 3 ) ? 5 : circlesP;
+    float ring_v = ( ringP <= 0.01 ) ? 0.62 : ringP;
+    float overlap_v = ( overlapP <= 0.5 ) ? 1.08 : overlapP;
+    float glow_v = ( glowP <= 0.01 ) ? 1.0 : glowP;
 
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    float ringR = ringV * ( 1.0 + 0.12 * audioSwell );
-    float tangentR = ringR * sin( 3.14159265 / float( circlesV ) );
-    float circR = tangentR * overlapV;
-    float ringRot = audioPhase * 0.25 + time * 0.01;
+    float ring_r = ring_v * ( 1.0 + 0.12 * audioSwell );
+    float tangent_r = ring_r * sin( 3.14159265 / float( circles_v ) );
+    float circ_r = tangent_r * overlap_v;
+    float ring_rot = audioPhase * 0.25 + time * 0.01;
 
-    float itersUsed = 0.0;
-    for ( int it = 0; it < N_ITER; ++it )
+    float iters_used = 0.0;
+    for ( int it = 0; it < NIter; ++it )
     {
         bool hit = false;
         for ( int k = 0; k < 7; ++k )
         {
-            if ( k >= circlesV )
+            if ( k >= circles_v )
                 break;
-            float ang = ringRot + float( k ) * 6.2831853 / float( circlesV );
-            vec2  c = ringR * vec2( cos( ang ), sin( ang ) );
+            float ang = ring_rot + float( k ) * 6.2831853 / float( circles_v );
+            vec2  c = ring_r * vec2( cos( ang ), sin( ang ) );
             vec2  d = p - c;
             float len2 = dot( d, d );
-            float r2 = circR * circR;
+            float r2 = circ_r * circ_r;
             if ( len2 < r2 && len2 > 1e-8 )
             {
                 p = c + d * ( r2 / len2 );
                 hit = true;
-                itersUsed += 1.0;
+                iters_used += 1.0;
             }
         }
         if ( !hit )
             break;
     }
 
-    float depth = itersUsed / float( N_ITER );
+    float depth = iters_used / float( NIter );
 
     // Sample the (now deeply nested/inverted) coordinate as image UV, folded
     // once more so the picture itself reads symmetric across the ring.
-    vec2 sampleUV = fract( p * 0.5 + 0.5 );
-    vec3 pic = img( sampleUV );
+    vec2 sample_uv = fract( p * 0.5 + 0.5 );
+    vec3 pic = img( sample_uv );
 
     // Lattice structure from the inversion boundary itself (independent of
     // the photo): brighter where a pixel needed many inversions to escape,
@@ -120,16 +120,16 @@ void main()
     vec3 lattice = imgPalette( 0.15 + depth * 0.6 ) * ( 0.3 + 1.4 * depth * depth );
 
     vec3 col = mix( pic * ( 0.5 + 0.5 * ( 1.0 - depth ) ), lattice, 0.55 + 0.3 * depth );
-    col += lattice * pow( depth, 3.0 ) * ( 0.4 + 0.5 * audioBeat + 0.3 * audioKick ) * glowV;
+    col += lattice * pow( depth, 3.0 ) * ( 0.4 + 0.5 * audioBeat + 0.3 * audioKick ) * glow_v;
 
     if ( hueP > 0.001 )
         col = hueRot( col, hueP );
 
-    col *= glowV * ( 1.05 + 0.3 * audioCentroid );
+    col *= glow_v * ( 1.05 + 0.3 * audioCentroid );
     col *= 1.0 + 0.35 * audioLevel;
     col += col * audioOnset * 0.12;
 
-    vec3 _catTone = clamp( col, 0.0, 1.0 ) * 0.95;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 ) * 0.95;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

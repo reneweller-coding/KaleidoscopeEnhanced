@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -248,21 +248,21 @@ void main()
 
     // Blossoms: dye drops expanding from seeds that wander; each blossom is a
     // set of rings; later (inner) rings overlay earlier ones.
-    int   nB = 6 + int( clamp( bloomsP, 0.0, 1.0 ) * 3.99 );
+    int   n_b = 6 + int( clamp( bloomsP, 0.0, 1.0 ) * 3.99 );
     float scale = 0.9 - 0.4 * clamp( audioSpread, 0.0, 1.0 );
-    vec3  photoC = imgLod( vec2( 0.5 ) + 0.25 * vec2( sin( gT * 0.2 ), cos( gT * 0.17 ) ), 6.0 );
-    float h0 = ( satOf( photoC ) > 0.2 ) ? hue_of( photoC ) : hueP * 0.159;
+    vec3  photo_c = imgLod( vec2( 0.5 ) + 0.25 * vec2( sin( gT * 0.2 ), cos( gT * 0.17 ) ), 6.0 );
+    float h0 = ( satOf( photo_c ) > 0.2 ) ? hueOf( photo_c ) : hueP * 0.159;
     // The background liquid: itself a mix of dyes, swirling slowly.
-    float bgN = fbm( q * 0.9 + vec2( gT * 0.2, -gT * 0.15 ) );
-    vec3  col = hsv2rgb( vec3( fract( h0 + 0.5 + 0.35 * bgN ), 0.85, 0.55 + 0.35 * bgN ) );
+    float bg_n = fbm( q * 0.9 + vec2( gT * 0.2, -gT * 0.15 ) );
+    vec3  col = hsv2rgb( vec3( fract( h0 + 0.5 + 0.35 * bg_n ), 0.85, 0.55 + 0.35 * bg_n ) );
     float outline = 0.0;
     for ( int k = 0; k < 9; ++k )
     {
-        if ( k >= nB )
+        if ( k >= n_b )
             break;
         float fk = float( k );
         // Each blossom has a life cycle (grows, then is pushed aside); staggered.
-        float life = fract( gT * 0.08 + fk / float( nB ) + 0.13 * clamp( audioHarmChange, 0.0, 1.0 ) );
+        float life = fract( gT * 0.08 + fk / float( n_b ) + 0.13 * clamp( audioHarmChange, 0.0, 1.0 ) );
         vec2  c = vec2( sin( fk * 2.4 + gT * 0.1 ), cos( fk * 1.7 - gT * 0.13 ) ) * 0.9;
         float R = scale * ( 0.2 + 1.2 * life ) * ( 0.7 + 0.5 * hash11( fk ) );
         vec2  d = q - c;

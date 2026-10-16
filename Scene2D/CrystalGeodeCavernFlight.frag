@@ -78,19 +78,19 @@ float mapGeode( vec3 p, float t, float cDens, out float crystalFacet )
     float a = atan( p.y, p.x );
 
     // Cavern base tunnel radius
-    float cavR = 1.65 + 0.2 * sin( audioSwell * 2.0 ) + 0.15 * audioSubBass;
-    float dTunnel = cavR - r;
+    float cav_r = 1.65 + 0.2 * sin( audioSwell * 2.0 ) + 0.15 * audioSubBass;
+    float d_tunnel = cav_r - r;
 
     // Crystal clusters growing from cavern walls
     vec3 q = p;
     q.xy = vec2( r, a * 1.5 );
-    vec3 cCell = fract( q * ( 1.8 * cDens ) ) - 0.5;
+    vec3 c_cell = fract( q * ( 1.8 * cDens ) ) - 0.5;
 
     // Faceted hexagonal prism crystal SDF
-    float dCrystal = length( cCell.xy ) + abs( cCell.z ) * 0.5 - 0.28;
-    crystalFacet = dot( cCell, cCell );
+    float d_crystal = length( c_cell.xy ) + abs( c_cell.z ) * 0.5 - 0.28;
+    crystalFacet = dot( c_cell, c_cell );
 
-    return min( dTunnel, dCrystal );
+    return min( d_tunnel, d_crystal );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -111,60 +111,60 @@ void main()
     vec3 rd = normalize( vec3( uv, 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) );
 
     // Raymarching
-    float totDist = 0.0;
-    float minD = 1e4;
-    float hitFacet = 0.0;
-    vec3  hitCol = vec3( 0.0 );
-    // Composite on an explicit hit flag rather than on length(hitCol): once the
+    float tot_dist = 0.0;
+    float min_d = 1e4;
+    float hit_facet = 0.0;
+    vec3  hit_col = vec3( 0.0 );
+    // Composite on an explicit hit flag rather than on length(hit_col): once the
     // rock is held down to a dark exposure a legitimately dark crystal face has
     // a short colour vector, and a length() mask would fade those faces back
     // into the cavern haze.
-    float hitMask = 0.0;
+    float hit_mask = 0.0;
 
     // Hold the cavern back to a fixed dark base -- a geode reads as gemstones
     // catching a lamp in the dark, and with a bright photo the wall base alone
     // already sat near 1.0 with no room left for the facet glow.
-    float expGain = clamp( 0.25 / max( 0.05, photoLevel() ), 0.25, 2.4 );
+    float exp_gain = clamp( 0.25 / max( 0.05, photoLevel() ), 0.25, 2.4 );
 
     for ( int i = 0; i < 52; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curFacet;
-        float d = mapGeode( p, t, cDens, curFacet );
-        minD = min( minD, abs( d ) );
+        vec3  p = ro + rd * tot_dist;
+        float cur_facet;
+        float d = mapGeode( p, t, cDens, cur_facet );
+        min_d = min( min_d, abs( d ) );
 
-        if ( abs( d ) < 0.003 || totDist > 10.0 )
+        if ( abs( d ) < 0.003 || tot_dist > 10.0 )
         {
-            hitMask = 1.0;
-            hitFacet = curFacet;
-            vec2 sampleUV = fract( p.xy * 0.3 + p.z * 0.2 + 0.5 );
-            vec3 texCol = img( sampleUV );
-            vec3 palCol = imgPalette( p.z * 0.1 + hitFacet * 0.3 );
+            hit_mask = 1.0;
+            hit_facet = cur_facet;
+            vec2 sample_uv = fract( p.xy * 0.3 + p.z * 0.2 + 0.5 );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal_col = imgPalette( p.z * 0.1 + hit_facet * 0.3 );
 
-            hitCol = mix( texCol, palCol, 0.55 ) * ( 0.7 + 0.4 * ( 1.0 - d ) ) * expGain;
+            hit_col = mix( tex_col, pal_col, 0.55 ) * ( 0.7 + 0.4 * ( 1.0 - d ) ) * exp_gain;
             break;
         }
 
-        totDist += max( 0.015, d * 0.7 );
+        tot_dist += max( 0.015, d * 0.7 );
     }
 
     // Glowing gemstone facets & specular sparks
     // The tint constant exceeds 1.0 on two channels, so the TINTED vector
-    // carries the cap -- bounding only crystalGlow still let
+    // carries the cap -- bounding only crystal_glow still let
     // vec3(1.3,1.1,1.8) * it run past white on every kick.
-    float crystalGlow = exp( -minD * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
-    vec3  glowTint = min( vec3( 1.3, 1.1, 1.8 ) * crystalGlow * ( 1.0 + 2.5 * audioKick ), vec3( 0.90 ) );
+    float crystal_glow = exp( -min_d * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
+    vec3  glow_tint = min( vec3( 1.3, 1.1, 1.8 ) * crystal_glow * ( 1.0 + 2.5 * audioKick ), vec3( 0.90 ) );
 
-    vec3 bgCol = imgPalette( 0.3 ) * expGain * 0.55;
-    vec3 finalCol = mix( bgCol, hitCol, hitMask );
-    finalCol += glowTint;
+    vec3 bg_col = imgPalette( 0.3 ) * exp_gain * 0.55;
+    vec3 final_col = mix( bg_col, hit_col, hit_mask );
+    final_col += glow_tint;
 
     // Cavern depth fog -- also a photo sample, so on the same exposure gain.
-    float fog = 1.0 - exp( -totDist * 0.18 );
-    finalCol = mix( finalCol, imgPalette( 0.8 ) * expGain * 0.75, fog );
+    float fog = 1.0 - exp( -tot_dist * 0.18 );
+    final_col = mix( final_col, imgPalette( 0.8 ) * exp_gain * 0.75, fog );
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.28 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.28 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

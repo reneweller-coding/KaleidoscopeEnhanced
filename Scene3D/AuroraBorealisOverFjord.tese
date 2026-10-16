@@ -60,37 +60,37 @@ void main()
 
     // The far band of the patch domain (uv.y > 0.78) folds UP into an aurora
     // curtain wall — a cyclorama sky, since the grid is the only geometry.
-    float skyBand = smoothstep( 0.78, 0.80, uv.y );
+    float sky_band = smoothstep( 0.78, 0.80, uv.y );
     float tvy = min( uv.y, 0.78 ) / 0.78; // terrain-local 0..1
 
     // Fjord landscape: mountain ridges on the sides, water canal in the centre
-    float canalDist = abs( uv.x - 0.5 );
-    float mountainMask = smoothstep( 0.12, 0.45, canalDist );
+    float canal_dist = abs( uv.x - 0.5 );
+    float mountain_mask = smoothstep( 0.12, 0.45, canal_dist );
 
     vec2  p = vec2( uv.x, tvy + flight ) * vec2( 8.0, 12.0 );
-    float mountainH = ( noise( p ) * 0.6 + noise( p * 2.0 ) * 0.3 + noise( p * 4.0 ) * 0.1 ) * 3.5 * mountainMask;
+    float mountain_h = ( noise( p ) * 0.6 + noise( p * 2.0 ) * 0.3 + noise( p * 4.0 ) * 0.1 ) * 3.5 * mountain_mask;
 
-    float waterRipples = sin( ( tvy + flight ) * 30.0 - t * 4.0 ) * 0.03 * ( 1.0 - mountainMask )
-                         * ( 0.8 + 0.6 * audioBass );
+    float water_ripples = sin( ( tvy + flight ) * 30.0 - t * 4.0 ) * 0.03 * ( 1.0 - mountain_mask )
+                          * ( 0.8 + 0.6 * audioBass );
 
-    float height = mountainH + waterRipples - 1.2;
-    vec3  posT = vec3( ( uv.x - 0.5 ) * 8.0, height, ( tvy - 0.5 ) * 10.0 );
+    float height = mountain_h + water_ripples - 1.2;
+    vec3  pos_t = vec3( ( uv.x - 0.5 ) * 8.0, height, ( tvy - 0.5 ) * 10.0 );
 
     // Aurora curtain wall at the far end, rising into the sky
-    float wallY = ( uv.y - 0.78 ) / 0.22;
-    vec3  posS = vec3( ( uv.x - 0.5 ) * 14.0, wallY * 9.0 - 1.0, 5.4 + wallY * 1.5 );
+    float wall_y = ( uv.y - 0.78 ) / 0.22;
+    vec3  pos_s = vec3( ( uv.x - 0.5 ) * 14.0, wall_y * 9.0 - 1.0, 5.4 + wall_y * 1.5 );
 
-    vec3 pos = mix( posT, posS, skyBand );
+    vec3 pos = mix( pos_t, pos_s, sky_band );
 
     // Aurora intensity: drifting curtain bands (kick makes them surge softly)
-    float bands = noise( vec2( uv.x * 5.0 + flight * 0.35, wallY * 1.2 + t * 0.15 ) );
+    float bands = noise( vec2( uv.x * 5.0 + flight * 0.35, wall_y * 1.2 + t * 0.15 ) );
     float aurora = ( 0.35 + 0.65 * bands ) * ( 1.0 + audioKick * 0.7 );
 
     tePos = pos;
     teNormal = vec3( 0.0, 1.0, 0.0 );
     teUV = uv;
     teAurora = aurora;
-    teSky = skyBand;
+    teSky = sky_band;
 
     // Camera: slightly above the water, gently pitched down the fjord
     vec3 vp = pos;

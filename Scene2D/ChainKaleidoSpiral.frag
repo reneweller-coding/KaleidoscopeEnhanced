@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -538,7 +538,7 @@ void main()
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
-    vec3  reliefC = photo * ( 0.3 + 1.2 * relief ) + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell );
+    vec3  relief_c = photo * ( 0.3 + 1.2 * relief ) + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell );
     // Glowing edges: gradient magnitude as neon in the photo's colour.
     float edge = smoothstep( 0.02, 0.25, length( grad ) );
     vec3  neon = glowColour( ph, p, hueP * 0.159 ) * edge * ( 1.2 + 1.2 * kick ) + photo * 0.06;
@@ -546,11 +546,11 @@ void main()
     float xi = m * 12.0 - gT * 6.0; // the contour lines flow uphill (integrated, jump-free)
     float pxi = fwidth( xi ) + 1e-4;
     float iso = smoothstep( pxi * 1.5, 0.0, abs( fract( xi ) - 0.5 ) - 0.5 + pxi * 1.5 );
-    vec3  isoC = glowColour( ph, p, hueP * 0.159 ) * iso * ( 1.0 + kick ) + photo * 0.08;
+    vec3  iso_c = glowColour( ph, p, hueP * 0.159 ) * iso * ( 1.0 + kick ) + photo * 0.08;
     float st = clamp( styleP, 0.0, 1.0 ) * 3.0; // 0 photo, 1 relief, 2 edges, 3 isolines
-    vec3  col = mix( photo, reliefC, smoothstep( 0.0, 1.0, st ) );
+    vec3  col = mix( photo, relief_c, smoothstep( 0.0, 1.0, st ) );
     col = mix( col, neon, smoothstep( 1.0, 2.0, st ) );
-    col = mix( col, isoC, smoothstep( 2.0, 3.0, st ) );
+    col = mix( col, iso_c, smoothstep( 2.0, 3.0, st ) );
     col *= mix( vec3( 0.9, 0.97, 1.08 ), vec3( 1.08, 0.98, 0.9 ), mode );
     col += glowColour( ph, p, hueP * 0.159 ) * edge * kick * 0.3 * ( 1.0 - smoothstep( 1.0, 2.0, st ) );
     finish( col );

@@ -81,8 +81,8 @@ float mapSierpinski( vec3 p, float t, out float trapLevel )
     }
 
     // Distance to regular octahedron base
-    float dOct = ( abs( q.x ) + abs( q.y ) + abs( q.z ) - 1.2 ) / scale;
-    return dOct * 0.7;
+    float d_oct = ( abs( q.x ) + abs( q.y ) + abs( q.z ) - 1.2 ) / scale;
+    return d_oct * 0.7;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -99,8 +99,8 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Continuous dive along diagonal axis towards origin
-    float diveProg = mod( t * 0.6, 2.0 );
-    vec3  ro = vec3( 2.5 - diveProg * 0.8, 2.5 - diveProg * 0.8, 2.5 - diveProg * 0.8 ) * sc;
+    float dive_prog = mod( t * 0.6, 2.0 );
+    vec3  ro = vec3( 2.5 - dive_prog * 0.8, 2.5 - dive_prog * 0.8, 2.5 - dive_prog * 0.8 ) * sc;
     vec3  ta = vec3( 0.0, 0.0, 0.0 );
 
     vec3 ww = normalize( ta - ro );
@@ -109,10 +109,10 @@ void main()
     vec3 rd = normalize( uv.x * uu + uv.y * vv + ( 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) * ww );
 
     // Raymarch through Sierpinski fractal
-    float totDist = 0.0;
-    float minD = 1e4;
-    float hitTrap = 0.0;
-    vec3  hitCol = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float min_d = 1e4;
+    float hit_trap = 0.0;
+    vec3  hit_col = vec3( 0.0 );
 
     // Sub-bass breathes the whole octahedron lattice. Done as the textbook
     // uniform-scale wrap (divide the sample point, multiply the returned
@@ -122,40 +122,40 @@ void main()
 
     for ( int i = 0; i < 54; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curTrap;
-        float d = mapSierpinski( p / breath, t, curTrap ) * breath;
-        minD = min( minD, abs( d ) );
+        vec3  p = ro + rd * tot_dist;
+        float cur_trap;
+        float d = mapSierpinski( p / breath, t, cur_trap ) * breath;
+        min_d = min( min_d, abs( d ) );
 
-        if ( abs( d ) < 0.003 || totDist > 8.0 )
+        if ( abs( d ) < 0.003 || tot_dist > 8.0 )
         {
-            hitTrap = curTrap;
-            vec2 sampleUV = fract( p.xy * 0.3 + p.z * 0.3 + 0.5 );
-            vec3 texCol = img( sampleUV );
-            vec3 palCol = imgPalette( hitTrap * 0.2 + t * 0.05 );
-            hitCol = mix( texCol, palCol, 0.5 ) * ( 0.7 + 0.4 * ( 1.0 - d ) );
+            hit_trap = cur_trap;
+            vec2 sample_uv = fract( p.xy * 0.3 + p.z * 0.3 + 0.5 );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal_col = imgPalette( hit_trap * 0.2 + t * 0.05 );
+            hit_col = mix( tex_col, pal_col, 0.5 ) * ( 0.7 + 0.4 * ( 1.0 - d ) );
             break;
         }
 
-        totDist += max( 0.015, d * 0.7 );
+        tot_dist += max( 0.015, d * 0.7 );
     }
 
-    // Glowing triangular facet edges. minD tracks the MINIMUM distance seen
+    // Glowing triangular facet edges. min_d tracks the MINIMUM distance seen
     // across the whole 54-step march, so for a ray passing anywhere near
     // this recursively-detailed fractal it sits close to 0 across most of
     // the visible silhouette -- and the 1.7 tint constant alone already
     // exceeds 1.0 with NO kick at all, which is why the whole fractal shape
     // (not just its edges) was blowing out to a flat white triangle on
     // every frame. Cap the glow*audio product directly.
-    float edgeGlow = min( exp( -minD * ( 26.0 + 14.0 * audioCentroid ) ) * glw * ( 1.0 + 2.5 * audioKick ), 0.55 );
-    vec3  glowTint = vec3( 1.4, 1.1, 1.7 ) * edgeGlow;
+    float edge_glow = min( exp( -min_d * ( 26.0 + 14.0 * audioCentroid ) ) * glw * ( 1.0 + 2.5 * audioKick ), 0.55 );
+    vec3  glow_tint = vec3( 1.4, 1.1, 1.7 ) * edge_glow;
 
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.2 + 0.15 * audioLevel );
-    vec3 finalCol = mix( bgCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
-    finalCol += glowTint;
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3 final_col = mix( bg_col, hit_col, clamp( length( hit_col ), 0.0, 1.0 ) );
+    final_col += glow_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

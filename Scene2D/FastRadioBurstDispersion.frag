@@ -92,19 +92,19 @@ void main()
 
     // The sky: dynamic spectrum -- frequency up (band by height), time
     // across (right edge = now, left = the past), scrolling with the head.
-    float skyT = clamp( ( p.y - horizon ) / ( 0.5 - horizon ), 0.0, 1.0 ); // 0 bottom .. 1 top
-    float band = skyT;                                                     // low frequencies low in the sky
+    float sky_t = clamp( ( p.y - horizon ) / ( 0.5 - horizon ), 0.0, 1.0 ); // 0 bottom .. 1 top
+    float band = sky_t;                                                     // low frequencies low in the sky
     float age = ( 1.0 - uv.x ) * 0.9 * max( spectroFill, 0.05 );
     float e = spec( band, age );
-    vec3  skyCol = mix( vec3( 0.02, 0.03, 0.08 ), imgPalette( hue * 0.159 + 0.55 ) * 0.9, clamp( e * 1.6, 0.0, 1.0 ) );
-    skyCol += imgPalette( hue * 0.159 + 0.9 ) * pow( clamp( e * 1.6, 0.0, 1.0 ), 3.0 ) * 0.6;
+    vec3  sky_col = mix( vec3( 0.02, 0.03, 0.08 ), imgPalette( hue * 0.159 + 0.55 ) * 0.9, clamp( e * 1.6, 0.0, 1.0 ) );
+    sky_col += imgPalette( hue * 0.159 + 0.9 ) * pow( clamp( e * 1.6, 0.0, 1.0 ), 3.0 ) * 0.6;
     // Round stars through the spectrum where it is quiet.
     vec2 su = p * 90.0;
     vec2 sc = floor( su );
     vec2 sf = fract( su ) - 0.5;
     vec2 so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
-    skyCol += vec3( 0.7 ) * smoothstep( 0.14, 0.03, length( sf - so * 0.6 ) ) * step( 0.985, hash21( sc ) )
-              * ( 1.0 - clamp( e * 2.0, 0.0, 1.0 ) );
+    sky_col += vec3( 0.7 ) * smoothstep( 0.14, 0.03, length( sf - so * 0.6 ) ) * step( 0.985, hash21( sc ) )
+               * ( 1.0 - clamp( e * 2.0, 0.0, 1.0 ) );
 
     // Bursts: each launched on the clock; its arrival time at frequency f
     // (f = 0.3 + band) is t0 + dm/f^2 ; the sky x axis is time, so the
@@ -118,16 +118,16 @@ void main()
         float idx = floor( clock / period + hash11( fk * 5.3 ) );
         float dmk = dm * ( 0.5 + 0.8 * hash11( fk * 7.7 + idx ) );
         float f = 0.35 + band;
-        float delay = dmk / ( f * f ) * 0.12;                                   // seconds of sky per unit
-        float xArr = 1.0 - ( ph * 1.4 + delay - dmk * 0.12 / ( 1.35 * 1.35 ) ); // top of the sky arrives at x = 1 when
-                                                                                // ph = 0
+        float delay = dmk / ( f * f ) * 0.12;                                    // seconds of sky per unit
+        float x_arr = 1.0 - ( ph * 1.4 + delay - dmk * 0.12 / ( 1.35 * 1.35 ) ); // top of the sky arrives at x = 1 when
+                                                                                 // ph = 0
         float w = 0.006 + 0.004 * band;
-        float line = exp( -pow( ( uv.x - xArr ) / w, 2.0 ) );
+        float line = exp( -pow( ( uv.x - x_arr ) / w, 2.0 ) );
         float fade = 1.0 - smoothstep( 0.55, 0.95, ph );
         vec3  bc = mix( vec3( 1.0, 0.9, 0.7 ), imgPalette( hue * 0.159 + 0.1 + fk * 0.2 ), 0.5 );
         burst += bc * line * fade * ( 1.2 - 0.5 * band );
     }
-    vec3 col = skyCol + burst * step( horizon, p.y ) * 1.6;
+    vec3 col = sky_col + burst * step( horizon, p.y ) * 1.6;
 
     // The dish: a parabolic silhouette on the horizon, its feed glowing
     // with the bass, flashing on the kick; the ground is the photo dark.
@@ -140,14 +140,14 @@ void main()
                  * step( abs( dq.x ), 0.36 );
     float mast = step( abs( dq.x ), 0.006 ) * step( 0.0, dq.y ) * step( dq.y, 0.22 );
     float feed = exp( -length( dq - vec2( 0.0, 0.2 ) ) * 30.0 );
-    vec3  dishCol = vec3( 0.12, 0.13, 0.15 ) * ( 0.6 + 0.4 * ( dq.x + 0.36 ) );
-    col = mix( col, dishCol, max( dish, mast ) );
+    vec3  dish_col = vec3( 0.12, 0.13, 0.15 ) * ( 0.6 + 0.4 * ( dq.x + 0.36 ) );
+    col = mix( col, dish_col, max( dish, mast ) );
     col += imgPalette( hue * 0.159 + 0.1 ) * feed * ( 0.3 + 0.9 * clamp( audioBass, 0.0, 1.0 ) + 2.0 * audioKick );
     // Pedestal.
     col = mix( col, vec3( 0.08 ), step( abs( dq.x ), 0.03 ) * step( dq.y, -0.03 ) * step( -0.3, dq.y ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

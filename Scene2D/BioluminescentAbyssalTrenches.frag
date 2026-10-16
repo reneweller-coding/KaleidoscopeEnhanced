@@ -69,66 +69,66 @@ void main()
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Deep ocean perspective coordinates
-    float depthZ = ( 1.0 / ( abs( uv.y + 0.6 ) + 0.1 ) ) * ( 0.8 + 0.3 * audioSwell );
-    vec2  oceanicUV = vec2( uv.x * depthZ * 0.4, depthZ + t * 1.5 );
+    float depth_z = ( 1.0 / ( abs( uv.y + 0.6 ) + 0.1 ) ) * ( 0.8 + 0.3 * audioSwell );
+    vec2  oceanic_uv = vec2( uv.x * depth_z * 0.4, depth_z + t * 1.5 );
 
     // Oceanic thermal boundary refraction waves
-    float thermalWave = sin( uv.x * 10.0 + sin( uv.y * 8.0 + t ) * 2.0 );
-    vec2  refractedUV = uv * 0.6 + vec2( 0.5 ) + vec2( cos( thermalWave ), sin( thermalWave ) ) * 0.03;
-    vec3  photoOcean = img( fract( refractedUV ) );
+    float thermal_wave = sin( uv.x * 10.0 + sin( uv.y * 8.0 + t ) * 2.0 );
+    vec2  refracted_uv = uv * 0.6 + vec2( 0.5 ) + vec2( cos( thermal_wave ), sin( thermal_wave ) ) * 0.03;
+    vec3  photo_ocean = img( fract( refracted_uv ) );
 
     // Hydrothermal crystal vent spires
-    float spireCoord = abs( fract( oceanicUV.x * 0.5 ) - 0.5 ) * 2.0;
-    float spireHeight = exp( -spireCoord * 12.0 * trn );
+    float spire_coord = abs( fract( oceanic_uv.x * 0.5 ) - 0.5 ) * 2.0;
+    float spire_height = exp( -spire_coord * 12.0 * trn );
 
     // Bioluminescent siphonophore tentacles & pulsing pyrosomes
     float siphonophore = sin( uv.x * 25.0 + t * 4.0 ) * cos( uv.y * 30.0 - t * 3.0 );
-    float bioGlow = exp( -abs( siphonophore ) * 8.0 ) * ( 0.8 + 1.2 * audioHigh ) * bio;
+    float bio_glow = exp( -abs( siphonophore ) * 8.0 ) * ( 0.8 + 1.2 * audioHigh ) * bio;
 
     // Luciferin synchronized flash pulses on kicks
-    float luciferinPulse = sin( length( uv ) * 12.0 - time * 6.0 );
-    float bioFlash = exp( -abs( luciferinPulse ) * 6.0 ) * ( audioKick * 2.5 + audioSubBass * 1.2 );
+    float luciferin_pulse = sin( length( uv ) * 12.0 - time * 6.0 );
+    float bio_flash = exp( -abs( luciferin_pulse ) * 6.0 ) * ( audioKick * 2.5 + audioSubBass * 1.2 );
 
     // Marine snow as small round motes. The old step(0.96, hash) lit the
     // ENTIRE grid cell (1/35th of the screen) flat white -- the reported
     // "giant white pixels". Now each occupied cell holds one soft round
     // particle at a hashed offset, dimmer and properly tiny.
-    vec2  snowCell = uv * 35.0 + vec2( t * 0.5, t * 2.0 );
-    vec2  snowGrid = floor( snowCell );
-    float snowHash = hash21( snowGrid );
-    vec2  snowOff = ( vec2( hash21( snowGrid + 11.7 ), hash21( snowGrid + 23.3 ) ) - 0.5 ) * 0.6;
-    float snowD2 = dot( fract( snowCell ) - 0.5 - snowOff, fract( snowCell ) - 0.5 - snowOff );
-    float snowParticle = step( 0.96, snowHash ) * exp( -snowD2 * 110.0 ) * ( 0.35 + 0.55 * audioMid );
+    vec2  snow_cell = uv * 35.0 + vec2( t * 0.5, t * 2.0 );
+    vec2  snow_grid = floor( snow_cell );
+    float snow_hash = hash21( snow_grid );
+    vec2  snow_off = ( vec2( hash21( snow_grid + 11.7 ), hash21( snow_grid + 23.3 ) ) - 0.5 ) * 0.6;
+    float snow_d2 = dot( fract( snow_cell ) - 0.5 - snow_off, fract( snow_cell ) - 0.5 - snow_off );
+    float snow_particle = step( 0.96, snow_hash ) * exp( -snow_d2 * 110.0 ) * ( 0.35 + 0.55 * audioMid );
 
     // Deep-sea color palette: Abyssal Navy, Luciferin Cyan, Siphonophore Emerald, Mineral Vent Amber
-    vec3 abyssalNavy = vec3( 0.01, 0.03, 0.08 );
-    vec3 bioCyan = vec3( 0.0, 0.9, 1.0 ) * 2.0;
-    vec3 bioEmerald = vec3( 0.1, 1.0, 0.6 ) * 1.8;
-    vec3 ventAmber = vec3( 1.0, 0.5, 0.1 ) * 2.2;
+    vec3 abyssal_navy = vec3( 0.01, 0.03, 0.08 );
+    vec3 bio_cyan = vec3( 0.0, 0.9, 1.0 ) * 2.0;
+    vec3 bio_emerald = vec3( 0.1, 1.0, 0.6 ) * 1.8;
+    vec3 vent_amber = vec3( 1.0, 0.5, 0.1 ) * 2.2;
 
     // CANYON GEOMETRY -- the old build painted the glow grid across the
     // whole frame, which recorded as an LED panel, not a trench.
-    float trenchHalf = 0.06 + 0.62 * clamp( uv.y + 0.72, 0.0, 1.6 );
-    float rim = abs( uv.x ) - trenchHalf; // <0 open water, >0 rock wall
-    float wallBand = smoothstep( 0.0, 0.22, rim );
-    float floorBand = exp( -pow( ( uv.y + 0.66 ) * 2.6, 2.0 ) );
+    float trench_half = 0.06 + 0.62 * clamp( uv.y + 0.72, 0.0, 1.6 );
+    float rim = abs( uv.x ) - trench_half; // <0 open water, >0 rock wall
+    float wall_band = smoothstep( 0.0, 0.22, rim );
+    float floor_band = exp( -pow( ( uv.y + 0.66 ) * 2.6, 2.0 ) );
 
     // Open water: dark navy with a faint rising luciferin haze.
-    vec3 water = abyssalNavy + bioCyan * 0.03 * ( 1.0 + 0.6 * audioSwell ) * smoothstep( 0.4, -0.7, uv.y );
+    vec3 water = abyssal_navy + bio_cyan * 0.03 * ( 1.0 + 0.6 * audioSwell ) * smoothstep( 0.4, -0.7, uv.y );
 
     // Rock walls carry the photo texture, crushed toward navy.
-    vec3 wallRock = mix( abyssalNavy, photoOcean * 0.55, 0.55 );
+    vec3 wall_rock = mix( abyssal_navy, photo_ocean * 0.55, 0.55 );
 
-    vec3 col = mix( water, wallRock, wallBand );
+    vec3 col = mix( water, wall_rock, wall_band );
 
     // Bioluminescent colonies live ON the walls (gated to the rim zone).
-    float colonyZone = smoothstep( 0.015, 0.10, rim ) * ( 1.0 - smoothstep( 0.28, 0.55, rim ) );
-    col += mix( bioCyan, bioEmerald, sin( t + uv.y * 4.0 ) * 0.5 + 0.5 )
-           * ( bioGlow + bioFlash ) * ( 0.15 + 0.85 * colonyZone );
+    float colony_zone = smoothstep( 0.015, 0.10, rim ) * ( 1.0 - smoothstep( 0.28, 0.55, rim ) );
+    col += mix( bio_cyan, bio_emerald, sin( t + uv.y * 4.0 ) * 0.5 + 0.5 )
+           * ( bio_glow + bio_flash ) * ( 0.15 + 0.85 * colony_zone );
 
     // Hydrothermal vents glow along the trench floor.
-    col += ventAmber * spireHeight * floorBand * ( 0.6 + 1.2 * audioBass );
-    col += vec3( 0.8, 0.95, 1.0 ) * snowParticle * ( 1.0 - wallBand * 0.6 );
+    col += vent_amber * spire_height * floor_band * ( 0.6 + 1.2 * audioBass );
+    col += vec3( 0.8, 0.95, 1.0 ) * snow_particle * ( 1.0 - wall_band * 0.6 );
 
     // Atmospheric deep-sea absorption falloff
     col = hueRot( col, audioChromaHue + hue );

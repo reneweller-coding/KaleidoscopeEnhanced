@@ -86,10 +86,10 @@ void main()
     vec3 col = img( uv ) * mix( vec3( 0.14, 0.13, 0.14 ), imgPalette( hue * 0.159 + 0.6 ) * 0.25, 0.5 ) * 0.8;
 
     // The cabinet: a wooden case with a domed top.
-    float domeY = 0.2;
-    float caseHalf = aspect * 0.36;
-    float dome = step( length( vec2( p.x / caseHalf, max( p.y - domeY, 0.0 ) / 0.24 ) ), 1.0 );
-    float body = step( abs( p.x ), caseHalf ) * step( -0.46, p.y ) * step( p.y, domeY );
+    float dome_y = 0.2;
+    float case_half = aspect * 0.36;
+    float dome = step( length( vec2( p.x / case_half, max( p.y - dome_y, 0.0 ) / 0.24 ) ), 1.0 );
+    float body = step( abs( p.x ), case_half ) * step( -0.46, p.y ) * step( p.y, dome_y );
     float cabinet = max( dome, body );
     if ( cabinet > 0.5 )
     {
@@ -100,11 +100,11 @@ void main()
     }
     // The lit display window: the selection board with the photo as its
     // title strips, and the carousel behind it.
-    vec2  winC = vec2( 0.0, 0.05 );
-    float win = step( abs( p.x - winC.x ), caseHalf * 0.62 ) * step( abs( p.y - winC.y ), 0.16 );
+    vec2  win_c = vec2( 0.0, 0.05 );
+    float win = step( abs( p.x - win_c.x ), case_half * 0.62 ) * step( abs( p.y - win_c.y ), 0.16 );
     if ( win > 0.5 )
     {
-        vec2 wq = ( p - winC ) / vec2( caseHalf * 0.62, 0.16 );
+        vec2 wq = ( p - win_c ) / vec2( case_half * 0.62, 0.16 );
         // The carousel: a turntable of records seen edge-on, turning.
         float ca = atan( wq.y * 0.6, wq.x ) + clock * 0.5;
         float cr = length( wq * vec2( 1.0, 1.7 ) );
@@ -135,27 +135,27 @@ void main()
         // The tube's path: up one side, over the dome, down the other.
         float side = ( mod( fi, 2.0 ) < 0.5 ) ? -1.0 : 1.0;
         float lane = floor( fi * 0.5 );
-        float x0 = side * ( caseHalf - 0.035 - lane * 0.045 );
+        float x0 = side * ( case_half - 0.035 - lane * 0.045 );
         // The vertical part.
-        float dV = abs( p.x - x0 );
-        float onV = step( -0.44, p.y ) * step( p.y, domeY );
+        float d_v = abs( p.x - x0 );
+        float on_v = step( -0.44, p.y ) * step( p.y, dome_y );
         // The arched part over the dome.
-        float rr = caseHalf - 0.035 - lane * 0.045;
-        float dA = abs( length(
-                            vec2( p.x / max( rr, 1e-3 ), max( p.y - domeY, 0.0 ) / max( 0.24 * rr / caseHalf, 1e-3 ) ) )
-                        - 1.0 )
-                   * rr;
-        float onA = step( domeY, p.y );
-        float d = mix( dV, dA, onA );
-        float tubeR = 0.018;
-        float inTube = smoothstep( tubeR, tubeR * 0.75, d ) * max( onV, onA );
-        if ( inTube > 0.002 )
+        float rr = case_half - 0.035 - lane * 0.045;
+        float d_a = abs( length( vec2( p.x / max( rr, 1e-3 ),
+                                       max( p.y - dome_y, 0.0 ) / max( 0.24 * rr / case_half, 1e-3 ) ) )
+                         - 1.0 )
+                    * rr;
+        float on_a = step( dome_y, p.y );
+        float d = mix( d_v, d_a, on_a );
+        float tube_r = 0.018;
+        float in_tube = smoothstep( tube_r, tube_r * 0.75, d ) * max( on_v, on_a );
+        if ( in_tube > 0.002 )
         {
             // The liquid: the class colour, brighter in the middle of the bore.
-            float bore = 1.0 - clamp( d / tubeR, 0.0, 1.0 );
+            float bore = 1.0 - clamp( d / tube_r, 0.0, 1.0 );
             vec3  liquid = tc * ( 0.4 + 0.8 * sqrt( bore ) ) * ( 0.55 + 0.7 * e );
             // Bubbles: round, rising along the tube on their own phases.
-            float along = mix( ( p.y + 0.44 ) / 0.64, 1.0 + atan( p.y - domeY, abs( p.x ) ) * 0.3, onA );
+            float along = mix( ( p.y + 0.44 ) / 0.64, 1.0 + atan( p.y - dome_y, abs( p.x ) ) * 0.3, on_a );
             for ( int k = 0; k < 7; ++k )
             {
                 float fk = float( k );
@@ -170,22 +170,22 @@ void main()
             // A flicker in one tube on the kick.
             float pick = step( 0.8, hash11( fi + floor( clock * 0.9 ) ) );
             liquid += tc * pick * audioKick * 0.8;
-            col = mix( col, liquid, inTube );
+            col = mix( col, liquid, in_tube );
             // The glow the tube throws on the cabinet.
-            col += tc * exp( -d * 26.0 ) * ( 0.15 + 0.5 * e ) * max( onV, onA ) * 0.7;
+            col += tc * exp( -d * 26.0 ) * ( 0.15 + 0.5 * e ) * max( on_v, on_a ) * 0.7;
         }
     }
     // Chrome trim along the case edges.
-    float trim = smoothstep( 0.01, 0.004, abs( abs( p.x ) - caseHalf ) ) * step( -0.46, p.y ) * step( p.y, domeY );
+    float trim = smoothstep( 0.01, 0.004, abs( abs( p.x ) - case_half ) ) * step( -0.46, p.y ) * step( p.y, dome_y );
     col = mix( col, vec3( 0.75, 0.76, 0.8 ) * ( 0.5 + 0.6 * neon ), trim );
     col += vec3( 1.0 ) * trim * hi * 0.35;
     // The speaker grille below the window.
-    float grille = step( abs( p.x ), caseHalf * 0.55 ) * step( -0.36, p.y ) * step( p.y, -0.16 );
+    float grille = step( abs( p.x ), case_half * 0.55 ) * step( -0.36, p.y ) * step( p.y, -0.16 );
     float slots = smoothstep( 0.006, 0.002, abs( fract( p.y * 40.0 ) - 0.5 ) - 0.35 );
     col = mix( col, vec3( 0.14, 0.12, 0.1 ) * ( 0.6 + 0.5 * neon ), grille * slots );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

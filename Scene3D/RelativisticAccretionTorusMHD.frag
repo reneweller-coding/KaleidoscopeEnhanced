@@ -43,8 +43,8 @@ vec3 img( vec2 uv )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  lightDir = normalize( vec3( 0.0, 0.7, 0.7 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
+    vec3  light_dir = normalize( vec3( 0.0, 0.7, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
 
     // Relativistic beaming amplification -- clamped: the raw exponential
     // reached ~4x on the approaching limb and, together with the flat

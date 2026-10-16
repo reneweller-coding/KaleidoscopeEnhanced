@@ -129,7 +129,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -241,7 +241,7 @@ void main()
     // of drops; a drop's radius grows over its life, later ones lie on top.
     vec3  paper = vec3( 0.97, 0.96, 0.94 );
     vec3  col = paper;
-    float rimAcc = 0.0, goldAcc = 0.0;
+    float rim_acc = 0.0, gold_acc = 0.0;
     float size = 0.55 + 0.45 * clamp( audioSpread, 0.0, 1.0 );
     float dens = 0.45 + 0.4 * clamp( bloomsP, 0.0, 1.0 );
     for ( int L = 0; L < 4; ++L )
@@ -273,7 +273,7 @@ void main()
                 float dens2 = mix( 0.35, 1.0, smoothstep( 0.3, 0.97, r ) );
                 vec3  ph = imgLod( id * 0.093 + gen * 0.17, 5.0 );
                 vec3  ink = hsv2rgb( vec3(
-                    fract( ( satOf( ph ) > 0.2 ? hue_of( ph ) : hueP * 0.159 ) + 0.12 * hash21( id + gen ) + 0.1 * fl ),
+                    fract( ( satOf( ph ) > 0.2 ? hueOf( ph ) : hueP * 0.159 ) + 0.12 * hash21( id + gen ) + 0.1 * fl ),
                     0.85, 0.85 ) );
                 ink = mix( vec3( 1.0 ), ink, ( 0.55 + 0.4 * swell ) * dens2 );
                 // Fade out at the end of life (covered by the next layer anyway).
@@ -281,15 +281,15 @@ void main()
                 col = mix( col, col * ink, a );
                 float rim = exp( -pow( ( r - 0.99 ) / 0.018, 2.0 ) ) * smoothstep( 0.0, 0.05, life )
                             * smoothstep( 1.0, 0.8, life );
-                rimAcc = max( rimAcc, rim );
-                goldAcc = max( goldAcc, exp( -pow( ( r - 1.015 ) / 0.008, 2.0 ) ) * step( 0.5, hash21( id + 17.0 ) )
-                                            * smoothstep( 1.0, 0.8, life ) );
+                rim_acc = max( rim_acc, rim );
+                gold_acc = max( gold_acc, exp( -pow( ( r - 1.015 ) / 0.008, 2.0 ) ) * step( 0.5, hash21( id + 17.0 ) )
+                                              * smoothstep( 1.0, 0.8, life ) );
             }
     }
     // Dark lacy rims, and gold lines along some of them.
-    col *= 1.0 - 0.55 * rimAcc;
+    col *= 1.0 - 0.55 * rim_acc;
     vec3 gold = vec3( 1.0, 0.8, 0.35 );
-    col = mix( col, gold * ( 0.8 + 0.8 * hi ), goldAcc * ( 0.3 + 0.7 * clamp( goldP, 0.0, 1.0 ) ) );
+    col = mix( col, gold * ( 0.8 + 0.8 * hi ), gold_acc * ( 0.3 + 0.7 * clamp( goldP, 0.0, 1.0 ) ) );
     // Paper shows more where cleared.
     col = mix( col, paper, 0.15 * clamp( paperP, 0.0, 1.0 ) );
     finish( col * 0.95 );

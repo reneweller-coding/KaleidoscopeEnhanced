@@ -80,13 +80,13 @@ void main()
     float T = time + audioPhase * 0.3;
 
     // Per-activation fractal character (constant during the scene):
-    float iterZoom = ( iterZoomP <= 0.01 ) ? 1.5 : iterZoomP;
-    float ringFreq = ( ringFreqP <= 0.01 ) ? 8.0 : ringFreqP;
+    float iter_zoom = ( iterZoomP <= 0.01 ) ? 1.5 : iterZoomP;
+    float ring_freq = ( ringFreqP <= 0.01 ) ? 8.0 : ringFreqP;
 
     vec3 col = vec3( 0.0 );
     for ( int i = 0; i < 4; i++ )
     {
-        uv = fract( uv * iterZoom ) - 0.5;
+        uv = fract( uv * iter_zoom ) - 0.5;
         float d = length( uv ) * exp( -length( uv0 ) );
         vec3  c = palette( length( uv0 ) + float( i ) * 0.4 + T * 0.4 );
 
@@ -95,7 +95,7 @@ void main()
         vec3 pic = img( fract( uv + 0.5 + 0.12 * vec2( cos( T * 0.1 ), sin( T * 0.08 ) ) ) );
         c *= mix( vec3( 1.0 ), pic * 1.7, 0.6 );
 
-        d = sin( d * ringFreq + T ) / ringFreq;
+        d = sin( d * ring_freq + T ) / ring_freq;
         d = abs( d );
         d = pow( 0.01 / d, 1.2 );
         col += c * d;

@@ -149,9 +149,10 @@ void main()
     // The landscape: rolling ground and a rock arch, in silhouette.
     float ground = hz + 0.03 * fbm( vec2( p.x * 3.0, 1.0 ) ) + 0.02 * sin( p.x * 1.4 );
     vec2  aq = p - vec2( -0.35, hz );
-    float archOut = length( aq * vec2( 0.85, 1.0 + 0.3 * smoothstep( 0.0, 0.3, aq.x ) ) ) - 0.27;
-    float archIn = length( ( aq - vec2( 0.02, -0.03 ) ) * vec2( 1.0, 0.8 ) ) - 0.17;
-    float arch = max( archOut + 0.025 * ( fbm( aq * 12.0 ) - 0.5 ), -archIn + 0.02 * ( fbm( aq * 10.0 + 3.0 ) - 0.5 ) );
+    float arch_out = length( aq * vec2( 0.85, 1.0 + 0.3 * smoothstep( 0.0, 0.3, aq.x ) ) ) - 0.27;
+    float arch_in = length( ( aq - vec2( 0.02, -0.03 ) ) * vec2( 1.0, 0.8 ) ) - 0.17;
+    float arch = max( arch_out + 0.025 * ( fbm( aq * 12.0 ) - 0.5 ),
+                      -arch_in + 0.02 * ( fbm( aq * 10.0 + 3.0 ) - 0.5 ) );
     arch = max( arch, -aq.y );
     float sil = max( smoothstep( px, -px, p.y - ground ), smoothstep( px * 1.5, -px * 1.5, arch ) );
     vec3  land = vec3( 0.012, 0.012, 0.02 );
@@ -162,15 +163,15 @@ void main()
     {
         vec2  tq = p - vec2( -0.33, hz + 0.005 );
         float tent = max( abs( tq.x ) * 1.4 + tq.y - 0.045, -tq.y );
-        float inT = smoothstep( px, -px, tent );
+        float in_t = smoothstep( px, -px, tent );
         vec3  tc = vec3( 1.0, 0.55, 0.2 ) * ( 0.7 + 0.5 * swell ) * ( 0.8 + 0.4 * smoothstep( 0.045, 0.0, tq.y ) );
         tc = mix( tc, tc * imgPalette( 0.08 + hueP * 0.159 ) * 1.3, 0.1 );
-        col = mix( col, tc, inT );
+        col = mix( col, tc, in_t );
         col += vec3( 1.0, 0.5, 0.2 ) * exp( -length( tq * vec2( 1.0, 1.6 ) ) * 22.0 ) * 0.25 * ( 0.6 + 0.5 * swell );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

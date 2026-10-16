@@ -127,7 +127,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float shards = 3.5 + 3.5 * clamp( shardsP, 0.0, 1.0 );
-    float goldW = 0.5 + 0.8 * clamp( goldP, 0.0, 1.0 );
+    float gold_w = 0.5 + 0.8 * clamp( goldP, 0.0, 1.0 );
     float light = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
@@ -141,9 +141,9 @@ void main()
     // The bowl: a disc with a rim, seen from above and slightly tilted.
     vec2  q = p * vec2( 1.0, 1.12 );
     float r = length( q );
-    float bowlR = 0.4;
-    float inBowl = smoothstep( bowlR, bowlR - 0.006, r );
-    if ( inBowl > 0.002 )
+    float bowl_r = 0.4;
+    float in_bowl = smoothstep( bowl_r, bowl_r - 0.006, r );
+    if ( in_bowl > 0.002 )
     {
         // The glaze: the photo, soft, with a wheel-thrown ring texture.
         vec3 glaze = img( clamp( q * 1.1 + 0.5, 0.0, 1.0 ) )
@@ -151,10 +151,10 @@ void main()
         glaze *= 0.72 + 0.35 * sin( r * 90.0 );
         glaze *= 0.8 + 0.35 * fbm( q * 20.0 );
         // Curvature shading: the bowl dips away from the light.
-        float dome = sqrt( max( 1.0 - ( r / bowlR ) * ( r / bowlR ), 0.0 ) );
+        float dome = sqrt( max( 1.0 - ( r / bowl_r ) * ( r / bowl_r ), 0.0 ) );
         glaze *= 0.5 + 0.75 * dome;
         // Rim highlight.
-        glaze += vec3( 1.0, 0.98, 0.95 ) * smoothstep( 0.02, 0.0, abs( r - bowlR + 0.012 ) ) * 0.5;
+        glaze += vec3( 1.0, 0.98, 0.95 ) * smoothstep( 0.02, 0.0, abs( r - bowl_r + 0.012 ) ) * 0.5;
         vec3 bowl = glaze * light;
 
         // The crack network.  The break starts at one point and spreads;
@@ -163,43 +163,45 @@ void main()
         float seam, id;
         vec2  centre;
         voronoi( q * shards + 3.7, seam, id, centre );
-        float fromOrigin = length( ( centre / shards ) - origin );
+        float from_origin = length( ( centre / shards ) - origin );
         // The front: it sweeps outward over the first half of the arc.
         float front = smoothstep( 0.0, 0.55, prog ) * 0.9;
-        float broken = smoothstep( front + 0.06, front - 0.06, fromOrigin );
+        float broken = smoothstep( front + 0.06, front - 0.06, from_origin );
         // The gold follows the break, a little behind it.
-        float goldFront = smoothstep( 0.12, 0.75, prog ) * 0.95;
-        float mended = smoothstep( goldFront + 0.06, goldFront - 0.06, fromOrigin );
+        float gold_front = smoothstep( 0.12, 0.75, prog ) * 0.95;
+        float mended = smoothstep( gold_front + 0.06, gold_front - 0.06, from_origin );
         // The seam itself: a dark line, widened where the gold has arrived.
-        float w = 0.024 * goldW;
+        float w = 0.024 * gold_w;
         float crack = smoothstep( w * 1.6, w * 0.5, seam ) * broken;
         float gold = smoothstep( w * 1.35, w * 0.35, seam ) * mended;
         // A wandering edge, so the break is not a clean Voronoi line.
-        float edgeNoise = ( fbm( q * 26.0 ) - 0.5 ) * w * 1.2;
-        crack = smoothstep( w * 1.6, w * 0.5, seam + edgeNoise ) * broken;
-        gold = smoothstep( w * 1.35, w * 0.35, seam + edgeNoise ) * mended;
+        float edge_noise = ( fbm( q * 26.0 ) - 0.5 ) * w * 1.2;
+        crack = smoothstep( w * 1.6, w * 0.5, seam + edge_noise ) * broken;
+        gold = smoothstep( w * 1.35, w * 0.35, seam + edge_noise ) * mended;
         // Dark crack, then the gold laid into it.
         bowl = mix( bowl, bowl * 0.25, crack );
-        vec3 goldCol = mix( vec3( 1.0, 0.78, 0.3 ), imgPalette( hue * 0.159 + 0.12 ), 0.3 );
+        vec3 gold_col = mix( vec3( 1.0, 0.78, 0.3 ), imgPalette( hue * 0.159 + 0.12 ), 0.3 );
         // The gold is not flat: it has a bright core and a warm edge.
-        float core = smoothstep( w * 0.85, w * 0.15, seam + edgeNoise ) * mended;
-        bowl = mix( bowl, goldCol * ( 1.1 + 0.6 * light ), gold );
-        bowl += goldCol * core * ( 0.8 + 1.4 * hi ) * 1.3;
+        float core = smoothstep( w * 0.85, w * 0.15, seam + edge_noise ) * mended;
+        bowl = mix( bowl, gold_col * ( 1.1 + 0.6 * light ), gold );
+        bowl += gold_col * core * ( 0.8 + 1.4 * hi ) * 1.3;
         // A glint travelling along the seams on the kick: a bright band
         // that sweeps by angle, so it runs round the bowl.
         float a = atan( q.y, q.x );
         float sweep = pow( 0.5 + 0.5 * cos( a - clock * 1.6 ), 22.0 );
-        bowl += goldCol * gold * sweep * ( 0.3 + 1.6 * audioKick );
+        bowl += gold_col * gold * sweep * ( 0.3 + 1.6 * audioKick );
         // Each shard sits a hair differently, so the light catches them apart.
         bowl *= 0.9 + 0.2 * hash21( vec2( id, id * 3.1 ) ) * broken;
-        col = mix( col, bowl, inBowl );
+        col = mix( col, bowl, in_bowl );
     }
     // The bowl's shadow on the table.
     col *= 1.0
-           - 0.35 * smoothstep( bowlR + 0.08, bowlR - 0.02, length( ( p - vec2( 0.02, -0.03 ) ) * vec2( 1.0, 1.12 ) ) );
+           - 0.35
+                 * smoothstep( bowl_r + 0.08, bowl_r - 0.02,
+                               length( ( p - vec2( 0.02, -0.03 ) ) * vec2( 1.0, 1.12 ) ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

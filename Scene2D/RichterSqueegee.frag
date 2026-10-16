@@ -129,7 +129,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -255,7 +255,7 @@ void main()
     float smear = 0.15 + 0.35 * clamp( audioSpread, 0.0, 1.0 );
     float drag = 0.08 * sceneTime + 0.6 * audioAdvance;
     float tear = 0.04 * clamp( audioHarmChange, 0.0, 1.0 );
-    int   nL = 2 + int( clamp( layersP, 0.0, 1.0 ) * 2.99 );
+    int   n_l = 2 + int( clamp( layersP, 0.0, 1.0 ) * 2.99 );
 
     // Ground layer: the photo, smeared horizontally, the warmest colours.
     float ang0 = ( clamp( angleP, 0.0, 1.0 ) - 0.5 ) * 0.6;
@@ -266,7 +266,7 @@ void main()
     // Upper layers dragged over it, each torn open where the blade skipped.
     for ( int i = 1; i < 4; ++i )
     {
-        if ( i >= nL )
+        if ( i >= n_l )
             break;
         float fi = float( i );
         float ang = ang0 + ( fi - 1.5 ) * 0.25 + 1.5708 * step( 2.5, fi );

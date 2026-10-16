@@ -120,31 +120,31 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 2.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
-    int   nPl = 3 + int( clamp( plumesP, 0.0, 1.0 ) * 2.99 );
+    int   n_pl = 3 + int( clamp( plumesP, 0.0, 1.0 ) * 2.99 );
     float t = sceneTime * 0.05;
 
     // Back light: a low warm sun behind the clouds.
     vec2 sun = vec2( 0.15 * aspect, 0.12 );
-    vec3 sunC = mix( vec3( 1.0, 0.85, 0.6 ), imgPalette( hue * 0.159 + 0.08 ), 0.2 );
+    vec3 sun_c = mix( vec3( 1.0, 0.85, 0.6 ), imgPalette( hue * 0.159 + 0.08 ), 0.2 );
     // A clear evening sky behind: pale blue above, warm toward the sun.
-    vec3  skyHi = vec3( 0.55, 0.72, 0.95 );
-    vec3  skyLo = vec3( 1.0, 0.82, 0.62 );
-    vec3  col = mix( skyLo, skyHi, smoothstep( -0.4, 0.5, p.y ) ) * 0.9;
+    vec3  sky_hi = vec3( 0.55, 0.72, 0.95 );
+    vec3  sky_lo = vec3( 1.0, 0.82, 0.62 );
+    vec3  col = mix( sky_lo, sky_hi, smoothstep( -0.4, 0.5, p.y ) ) * 0.9;
     float sd = length( p - sun );
-    col += sunC * exp( -sd * 3.0 ) * ( 0.6 + 0.3 * kick );
+    col += sun_c * exp( -sd * 3.0 ) * ( 0.6 + 0.3 * kick );
 
     // Plumes: domain-warped density blobs, each centred somewhere and
     // billowing outward; composited back to front with self-shadowing
     // approximated by density toward the sun.
-    float accA = 0.0;
-    vec3  accC = vec3( 0.0 );
+    float acc_a = 0.0;
+    vec3  acc_c = vec3( 0.0 );
     for ( int k = 0; k < 5; ++k )
     {
-        if ( k >= nPl )
+        if ( k >= n_pl )
             break;
         float fk = float( k );
         // Plumes spread across the frame so they meet at their edges, not in one heap.
-        vec2 c = vec2( ( ( fk + 0.5 ) / float( nPl ) - 0.5 ) * aspect * 0.95 + ( hash11( fk * 1.7 ) - 0.5 ) * 0.15,
+        vec2 c = vec2( ( ( fk + 0.5 ) / float( n_pl ) - 0.5 ) * aspect * 0.95 + ( hash11( fk * 1.7 ) - 0.5 ) * 0.15,
                        ( hash11( fk * 4.3 ) - 0.5 ) * 0.5 );
         c += 0.05 * vec2( sin( t * 2.0 + fk ), cos( t * 1.7 + fk * 2.0 ) );
         vec2  q = ( p - c ) / ( 0.45 + 0.2 * swell );
@@ -159,24 +159,24 @@ void main()
         int   band = int( mod( fk * 6.0 + 2.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
         vec3  pig = pigment( fk, hue );
-        vec3  lit = pig * ( 1.1 + 0.5 * e ) + pig * edge * ( 1.1 + 0.6 * kick ) * sunC + sunC * edge * 0.12;
+        vec3  lit = pig * ( 1.1 + 0.5 * e ) + pig * edge * ( 1.1 + 0.6 * kick ) * sun_c + sun_c * edge * 0.12;
         float a = clamp( d * 1.5, 0.0, 1.0 ) * ( 0.8 + 0.2 * swell );
         // Front plume over what is behind (no averaging into mud).
-        accC = mix( accC, lit, a );
-        accA = accA + a * ( 1.0 - accA );
+        acc_c = mix( acc_c, lit, a );
+        acc_a = acc_a + a * ( 1.0 - acc_a );
     }
-    col = mix( col, accC, clamp( accA, 0.0, 1.0 ) );
+    col = mix( col, acc_c, clamp( acc_a, 0.0, 1.0 ) );
 
     // Glitter: fine grains catching the back light, round.
     vec2  g = p * 160.0 + vec2( 0.0, -sceneTime * 4.0 );
     vec2  gc = floor( g ), gf = fract( g ) - 0.5;
     vec2  gj = vec2( hash21( gc ), hash21( gc + 5.0 ) ) - 0.5;
     float gr = smoothstep( 0.18, 0.05, length( gf - gj * 0.6 ) ) * step( 0.975, hash21( gc + 9.0 ) );
-    col += sunC * gr * accA * ( 0.2 + 1.2 * hi );
+    col += sun_c * gr * acc_a * ( 0.2 + 1.2 * hi );
 
     // Daylight scene: brighter than the night scenes around it.
     col *= 1.3 * ( 0.9 + 0.2 * audioLevel );
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

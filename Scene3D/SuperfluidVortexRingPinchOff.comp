@@ -48,17 +48,17 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float kelvinP;
 
 // The scene projection: 55 deg vertical FOV, and the camera distance the
-// companion .vert applies (vp.z += kCam).  No `resolution` uniform reaches a
+// companion .vert applies (vp.z += Cam).  No `resolution` uniform reaches a
 // generator program, so the layout assumes a 16:9 frame; a narrower frame simply
 // pushes the outermost lattice column past the edge.
-const float kTanY = 0.5206;
-const float kAspect = 1.7778;
-const float kCam = 4.5;
+const float TanY = 0.5206;
+const float Aspect = 1.7778;
+const float Cam = 4.5;
 
-const uint COLS = 14u;
-const uint ROWS = 12u;
-const uint RINGS = COLS * ROWS; ///< 168 rings
-const uint SEGS = 64u;
+const uint Cols = 14u;
+const uint Rows = 12u;
+const uint Rings = Cols * Rows; ///< 168 rings
+const uint Segs = 64u;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -117,13 +117,13 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     uint  idx = g.x + 64u * ( g.y + 64u * g.z );
 
-    uint ringIdx = idx / SEGS;
-    uint segIdx = idx % SEGS;
-    if ( ringIdx >= RINGS )
+    uint ring_idx = idx / Segs;
+    uint seg_idx = idx % Segs;
+    if ( ring_idx >= Rings )
         return;
 
     float t = time * 0.45 + audioAdvance * 0.4;
-    float fi = float( ringIdx );
+    float fi = float( ring_idx );
     float h0 = hash11( fi * 31.17 );
     float h1 = hash11( fi * 12.71 + 5.30 );
     float h2 = hash11( fi * 7.93 + 11.10 );
@@ -132,54 +132,54 @@ void main()
 
     // ---- FRUSTUM PLACEMENT --------------------------------------------
     float dz = 2.7 + 8.6 * h0; // view-space depth of this ring
-    float halfH = dz * kTanY;
-    float halfW = halfH * kAspect;
+    float half_h = dz * TanY;
+    float half_w = half_h * Aspect;
 
-    uint  gx = ringIdx % COLS;
-    uint  gy = ( ringIdx / COLS ) % ROWS;
-    float fx = ( ( float( gx ) + 0.5 ) / float( COLS ) - 0.5 ) * 2.0 + ( h1 - 0.5 ) * 0.13;
-    float fy = ( ( float( gy ) + 0.5 ) / float( ROWS ) - 0.5 ) * 2.0 + ( h2 - 0.5 ) * 0.15;
+    uint  gx = ring_idx % Cols;
+    uint  gy = ( ring_idx / Cols ) % Rows;
+    float fx = ( ( float( gx ) + 0.5 ) / float( Cols ) - 0.5 ) * 2.0 + ( h1 - 0.5 ) * 0.13;
+    float fy = ( ( float( gy ) + 0.5 ) / float( Rows ) - 0.5 ) * 2.0 + ( h2 - 0.5 ) * 0.15;
 
-    vec3 ctr = vec3( fx * halfW * 1.02, fy * halfH * 1.02, dz - kCam );
+    vec3 ctr = vec3( fx * half_w * 1.02, fy * half_h * 1.02, dz - Cam );
 
     // Toroidal ring, sized as a constant fraction of the frame at its own depth.
-    float ringR = halfH * ( 0.085 + 0.155 * h3 );
+    float ring_r = half_h * ( 0.085 + 0.155 * h3 );
 
     // Each ring carries its own circulation axis and self-propels along it.
-    float aTh = h3 * 3.14159265;
-    float aPh = h4 * 6.2831853;
-    vec3  axis = vec3( sin( aTh ) * cos( aPh ), sin( aTh ) * sin( aPh ), cos( aTh ) );
+    float a_th = h3 * 3.14159265;
+    float a_ph = h4 * 6.2831853;
+    vec3  axis = vec3( sin( a_th ) * cos( a_ph ), sin( a_th ) * sin( a_ph ), cos( a_th ) );
     vec3  ref = ( abs( axis.z ) > 0.9 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 0.0, 1.0 );
-    vec3  uAx = normalize( cross( axis, ref ) );
-    vec3  wAx = cross( axis, uAx );
+    vec3  u_ax = normalize( cross( axis, ref ) );
+    vec3  w_ax = cross( axis, u_ax );
 
     // Self-induced drift along the ring's own axis, wrapping through its slot.
-    float travel = ( fract( h0 + t * 0.26 * ( 0.6 + 0.8 * h4 ) ) - 0.5 ) * halfH * 0.85;
+    float travel = ( fract( h0 + t * 0.26 * ( 0.6 + 0.8 * h4 ) ) - 0.5 ) * half_h * 0.85;
     vec3  base = ctr + axis * travel;
 
-    float s0 = float( segIdx ) / float( SEGS );
-    float s1 = float( segIdx + 1u ) / float( SEGS );
+    float s0 = float( seg_idx ) / float( Segs );
+    float s1 = float( seg_idx + 1u ) / float( Segs );
 
     float ang0 = s0 * 6.2831853;
     float ang1 = s1 * 6.2831853;
 
     // Crow instability azimuthal wavy perturbations: delta R = epsilon * cos(m * phi)
     float kelvin = clamp( ( kelvinP > 0.01 ? kelvinP : 1.0 ), 0.6, 2.2 );
-    float crow0 = sin( ang0 * 5.0 - t * 4.0 + fi ) * 0.11 * ringR * kelvin;
-    float crow1 = sin( ang1 * 5.0 - t * 4.0 + fi ) * 0.11 * ringR * kelvin;
+    float crow0 = sin( ang0 * 5.0 - t * 4.0 + fi ) * 0.11 * ring_r * kelvin;
+    float crow1 = sin( ang1 * 5.0 - t * 4.0 + fi ) * 0.11 * ring_r * kelvin;
 
-    vec3 p0 = base + ( uAx * cos( ang0 ) + wAx * sin( ang0 ) ) * ( ringR + crow0 );
-    vec3 p1 = base + ( uAx * cos( ang1 ) + wAx * sin( ang1 ) ) * ( ringR + crow1 );
+    vec3 p0 = base + ( u_ax * cos( ang0 ) + w_ax * sin( ang0 ) ) * ( ring_r + crow0 );
+    vec3 p1 = base + ( u_ax * cos( ang1 ) + w_ax * sin( ang1 ) ) * ( ring_r + crow1 );
 
     // Pinch-off reconnection flash.  Clamped at BOTH ends: the top so a loud
     // beat cannot flatten all 168 rings to white, the bottom because the old
     // expression went negative over a quarter of every ring's circumference and
     // clamped to black there -- a quantized vortex filament is continuous, and
     // the gaps were throwing away a quarter of the scene's coverage.
-    float pinchFlash = clamp( ( 1.0 + sin( ang0 * 5.0 - t * 4.0 + fi ) * 1.5 )
-                                  * ( 1.0 + 3.0 * audioKick ),
-                              0.22, 2.2 );
-    float thick = halfH * 0.0065 * ( 1.0 + 0.3 * audioSwell );
+    float pinch_flash = clamp( ( 1.0 + sin( ang0 * 5.0 - t * 4.0 + fi ) * 1.5 )
+                                   * ( 1.0 + 3.0 * audioKick ),
+                               0.22, 2.2 );
+    float thick = half_h * 0.0065 * ( 1.0 + 0.3 * audioSwell );
 
-    emitSegment( p0, p1, s0, pinchFlash, thick );
+    emitSegment( p0, p1, s0, pinch_flash, thick );
 }

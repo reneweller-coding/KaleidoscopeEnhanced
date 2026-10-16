@@ -138,8 +138,8 @@ void main()
     // Its light cone from the chip.
     {
         float ty = ( p.y - ( horizon - 0.12 ) ) / ( hc.y - hs.y - ( horizon - 0.12 ) );
-        float coneW = mix( 0.05, hs.x, clamp( ty, 0.0, 1.0 ) );
-        float cone = step( 0.0, ty ) * step( ty, 1.0 ) * smoothstep( coneW, coneW * 0.7, abs( p.x ) );
+        float cone_w = mix( 0.05, hs.x, clamp( ty, 0.0, 1.0 ) );
+        float cone = step( 0.0, ty ) * step( ty, 1.0 ) * smoothstep( cone_w, cone_w * 0.7, abs( p.x ) );
         col += laser * cone * 0.05 * ( 0.7 + 0.5 * swell );
     }
     vec2 hq = ( p - hc ) / hs; // -1..1 over the image
@@ -167,7 +167,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -95,6 +95,6 @@ void main()
     pcg( rs );
     dh += ( rnd( rs ) - 0.5 ) * seedAmp;
 
-    float hNew = clamp( h + dt * dh, -3.0, 3.0 );
-    imageStore( imgDst, p, vec4( hNew, h, 0.0, 1.0 ) );
+    float h_new = clamp( h + dt * dh, -3.0, 3.0 );
+    imageStore( imgDst, p, vec4( h_new, h, 0.0, 1.0 ) );
 }

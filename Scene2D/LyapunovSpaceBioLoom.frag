@@ -61,16 +61,16 @@ vec3 imgPalette( float t )
 /// Compute Lyapunov exponent for sequence "ABABBA" at parameters (A, B)
 float calcLyapunov( vec2 ab, float t )
 {
-    float aParam = ab.x;
-    float bParam = ab.y;
+    float a_param = ab.x;
+    float b_param = ab.y;
     float x = 0.5;
     float lambda = 0.0;
 
     // 24 Iterations over 6-step repeating sequence
     for ( int i = 0; i < 24; i++ )
     {
-        int   seqIdx = i % 6;
-        float r = ( seqIdx == 0 || seqIdx == 2 || seqIdx == 5 ) ? aParam : bParam;
+        int   seq_idx = i % 6;
+        float r = ( seq_idx == 0 || seq_idx == 2 || seq_idx == 5 ) ? a_param : b_param;
 
         // Logistic map step: x_{n+1} = r * x_n * (1 - x_n)
         x = r * x * ( 1.0 - x );
@@ -95,42 +95,42 @@ void main()
     // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Zoom into classic Lyapunov bio-space cusp around (3.8, 3.8)
-    vec2 abCenter = vec2( 3.6, 3.6 );
+    vec2 ab_center = vec2( 3.6, 3.6 );
     // Sub-bass magnifies the (A,B) window, so each cellular stability basin
     // swells across more screen area -- the basins breathe, the light doesn't.
-    float zoomLevel = ( 1.5 + 0.3 * sin( audioSwell * 2.0 ) ) * zm * ( 1.0 + 0.12 * audioSwell );
-    vec2  ab = abCenter + uv / zoomLevel;
+    float zoom_level = ( 1.5 + 0.3 * sin( audioSwell * 2.0 ) ) * zm * ( 1.0 + 0.12 * audioSwell );
+    vec2  ab = ab_center + uv / zoom_level;
 
     // Calculate Lyapunov exponent
     float lambda = calcLyapunov( ab, t );
 
     // 3D Embossed surface normal for plastic depth
     float eps = 0.006;
-    float lX = calcLyapunov( ab + vec2( eps, 0.0 ), t );
-    float lY = calcLyapunov( ab + vec2( 0.0, eps ), t );
-    vec3  normal = normalize( vec3( ( lX - lambda ) * rel, ( lY - lambda ) * rel, eps * 2.0 ) );
+    float l_x = calcLyapunov( ab + vec2( eps, 0.0 ), t );
+    float l_y = calcLyapunov( ab + vec2( 0.0, eps ), t );
+    vec3  normal = normalize( vec3( ( l_x - lambda ) * rel, ( l_y - lambda ) * rel, eps * 2.0 ) );
 
     // Specular lighting
-    vec3  lightDir = normalize( vec3( cos( t * 0.5 ), sin( t * 0.5 ), 1.2 ) );
-    float diff = max( 0.0, dot( normal, lightDir ) );
-    float spec = pow( max( 0.0, dot( normal, normalize( lightDir + vec3( 0, 0, 1 ) ) ) ), 20.0 );
+    vec3  light_dir = normalize( vec3( cos( t * 0.5 ), sin( t * 0.5 ), 1.2 ) );
+    float diff = max( 0.0, dot( normal, light_dir ) );
+    float spec = pow( max( 0.0, dot( normal, normalize( light_dir + vec3( 0, 0, 1 ) ) ) ), 20.0 );
 
     // Sample texture mapped across Lyapunov coordinates
-    vec2 sampleUV = fract( ab * 0.5 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( ab * 0.5 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Color: Stable (lambda < 0) vs Chaotic (lambda > 0)
-    vec3 palStable = imgPalette( -lambda * 0.3 + 0.2 );
-    vec3 palChaotic = imgPalette( lambda * 0.5 + 0.7 );
+    vec3 pal_stable = imgPalette( -lambda * 0.3 + 0.2 );
+    vec3 pal_chaotic = imgPalette( lambda * 0.5 + 0.7 );
 
-    vec3 baseCol = ( lambda < 0.0 ) ? palStable : palChaotic;
-    baseCol = mix( baseCol, texCol, 0.35 + 0.15 * audioValence );
+    vec3 base_col = ( lambda < 0.0 ) ? pal_stable : pal_chaotic;
+    base_col = mix( base_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Lighting and glowing stability boundaries
-    float boundaryGlow = exp( -abs( lambda ) * ( 20.0 + 10.0 * audioCentroid ) ) * glw;
-    baseCol = baseCol * ( 0.6 + 0.4 * diff ) + vec3( 1.3, 1.2, 1.6 ) * spec * ( 1.0 + 2.0 * audioKick );
-    baseCol += vec3( 1.4, 1.1, 1.8 ) * boundaryGlow * ( 1.0 + 2.5 * audioKick );
+    float boundary_glow = exp( -abs( lambda ) * ( 20.0 + 10.0 * audioCentroid ) ) * glw;
+    base_col = base_col * ( 0.6 + 0.4 * diff ) + vec3( 1.3, 1.2, 1.6 ) * spec * ( 1.0 + 2.0 * audioKick );
+    base_col += vec3( 1.4, 1.1, 1.8 ) * boundary_glow * ( 1.0 + 2.5 * audioKick );
 
-    baseCol = pow( baseCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( baseCol, 0.0, 1.0 ), 1.0 );
+    base_col = pow( base_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( base_col, 0.0, 1.0 ), 1.0 );
 }

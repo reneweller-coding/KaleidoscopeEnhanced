@@ -118,12 +118,12 @@ void main()
     vec2 st = gl_FragCoord.xy / resolution;
 
     // Dynamic Mandelbulb power modulated by audio swell
-    float activePower = pwr + 2.0 * sin( audioAdvance * 0.2 + time * 0.3 ) + 1.5 * audioSwell;
+    float active_power = pwr + 2.0 * sin( audioAdvance * 0.2 + time * 0.3 ) + 1.5 * audioSwell;
 
     // Orbiting / diving camera path
     float t = time * 0.25 + audioAdvance * 0.15;
-    float camDist = ( 1.8 - 0.6 * sin( t * 0.5 ) ) / zm;
-    vec3  ro = vec3( sin( t ) * camDist, 0.5 * cos( t * 0.7 ), cos( t ) * camDist );
+    float cam_dist = ( 1.8 - 0.6 * sin( t * 0.5 ) ) / zm;
+    vec3  ro = vec3( sin( t ) * cam_dist, 0.5 * cos( t * 0.7 ), cos( t ) * cam_dist );
     vec3  ta = vec3( 0.0, 0.0, 0.0 );
 
     vec3 ww = normalize( ta - ro );
@@ -131,76 +131,76 @@ void main()
     vec3 vv = cross( uu, ww );
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.5 * ww );
 
-    float totalDist = 0.0;
+    float total_dist = 0.0;
     float trap = 0.0;
-    float minTrap = 1e10;
-    float glowAcc = 0.0;
+    float min_trap = 1e10;
+    float glow_acc = 0.0;
     bool  hit = false;
 
     for ( int i = 0; i < 80; ++i )
     {
-        vec3  p = ro + rd * totalDist;
-        float d = mandelbulb( p, activePower, trap );
-        minTrap = min( minTrap, trap );
+        vec3  p = ro + rd * total_dist;
+        float d = mandelbulb( p, active_power, trap );
+        min_trap = min( min_trap, trap );
 
-        glowAcc += exp( -max( d, 0.0 ) * 12.0 ) * ( 0.02 * glw );
+        glow_acc += exp( -max( d, 0.0 ) * 12.0 ) * ( 0.02 * glw );
 
         if ( d < 0.001 )
         {
             hit = true;
             break;
         }
-        if ( totalDist > 8.0 )
+        if ( total_dist > 8.0 )
             break;
-        totalDist += max( d * 0.65, 0.003 );
+        total_dist += max( d * 0.65, 0.003 );
     }
 
     vec3 col = vec3( 0.01, 0.02, 0.05 );
 
     if ( hit )
     {
-        vec3 p = ro + rd * totalDist;
+        vec3 p = ro + rd * total_dist;
 
         // Normal computation
-        float dummyTrap;
+        float dummy_trap;
         float eps = 0.002;
-        vec3  n = normalize( vec3( mandelbulb( p + vec3( eps, 0.0, 0.0 ), activePower, dummyTrap )
-                                       - mandelbulb( p - vec3( eps, 0.0, 0.0 ), activePower, dummyTrap ),
-                                   mandelbulb( p + vec3( 0.0, eps, 0.0 ), activePower, dummyTrap )
-                                       - mandelbulb( p - vec3( 0.0, eps, 0.0 ), activePower, dummyTrap ),
-                                   mandelbulb( p + vec3( 0.0, 0.0, eps ), activePower, dummyTrap )
-                                       - mandelbulb( p - vec3( 0.0, 0.0, eps ), activePower, dummyTrap ) ) );
+        vec3  n = normalize( vec3( mandelbulb( p + vec3( eps, 0.0, 0.0 ), active_power, dummy_trap )
+                                       - mandelbulb( p - vec3( eps, 0.0, 0.0 ), active_power, dummy_trap ),
+                                   mandelbulb( p + vec3( 0.0, eps, 0.0 ), active_power, dummy_trap )
+                                       - mandelbulb( p - vec3( 0.0, eps, 0.0 ), active_power, dummy_trap ),
+                                   mandelbulb( p + vec3( 0.0, 0.0, eps ), active_power, dummy_trap )
+                                       - mandelbulb( p - vec3( 0.0, 0.0, eps ), active_power, dummy_trap ) ) );
 
         // Iridescent Thin-Film Specular Shading
-        vec3  lightDir = normalize( vec3( 0.8, 1.2, -0.6 ) );
-        float diff = max( dot( n, lightDir ), 0.0 );
+        vec3  light_dir = normalize( vec3( 0.8, 1.2, -0.6 ) );
+        float diff = max( dot( n, light_dir ), 0.0 );
         vec3  ref = reflect( rd, n );
-        float spec = pow( max( dot( ref, lightDir ), 0.0 ), 32.0 );
+        float spec = pow( max( dot( ref, light_dir ), 0.0 ), 32.0 );
 
         // Orbit trap color mapping
-        vec3 baseCol = imgPalette( ( minTrap * 8.0 + audioCentroid * 3.0 ) * 0.159 );
+        vec3 base_col = imgPalette( ( min_trap * 8.0 + audioCentroid * 3.0 ) * 0.159 );
 
         // Photo mapping from triplanar surface
-        vec2 photoCoord = fract( p.xy * 0.8 + 0.5 );
-        vec3 photo = img( photoCoord );
+        vec2 photo_coord = fract( p.xy * 0.8 + 0.5 );
+        vec3 photo = img( photo_coord );
 
-        col = mix( baseCol, photo, 0.4 ) * ( diff * 0.8 + 0.2 );
+        col = mix( base_col, photo, 0.4 ) * ( diff * 0.8 + 0.2 );
         col += vec3( 1.0, 0.9, 0.7 ) * spec * ( 1.5 + audioKick * 3.0 );
 
         // Distance fog
-        col = mix( col, vec3( 0.01, 0.02, 0.06 ), smoothstep( 2.5, 7.0, totalDist ) );
+        col = mix( col, vec3( 0.01, 0.02, 0.06 ), smoothstep( 2.5, 7.0, total_dist ) );
     }
 
     // Add interior fractal glow
-    vec3 glowColor = mix( vec3( 0.9, 0.2, 0.5 ), vec3( 0.2, 0.8, 1.0 ), sin( audioPhase + time ) * 0.5 + 0.5 );
-    col += glowColor * glowAcc * ( 1.0 + audioKick * 2.5 );
+    vec3 glow_color = mix( vec3( 0.9, 0.2, 0.5 ), vec3( 0.2, 0.8, 1.0 ), sin( audioPhase + time ) * 0.5 + 0.5 );
+    col += glow_color * glow_acc * ( 1.0 + audioKick * 2.5 );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -75,15 +75,15 @@ void main()
 
     // Negative refraction: the two media take their tints from the photo
     // palette a half-turn apart, so they always contrast but never candy.
-    vec3 positiveCol = imgPalette( 0.10 ) * 1.25;
-    vec3 negativeCol = imgPalette( 0.60 ) * 1.25;
-    vec3 metaColor = ( vPhaseVelocity > 0.0 ) ? positiveCol : negativeCol;
+    vec3 positive_col = imgPalette( 0.10 ) * 1.25;
+    vec3 negative_col = imgPalette( 0.60 ) * 1.25;
+    vec3 meta_color = ( vPhaseVelocity > 0.0 ) ? positive_col : negative_col;
 
     // Superlens focal spot: a spot IN the slab plane (xz), kick-pulsed
-    float focusGlow = exp( -length( vWorldPos.xz ) * 2.2 ) * ( 0.7 + audioKick * 0.6 );
+    float focus_glow = exp( -length( vWorldPos.xz ) * 2.2 ) * ( 0.7 + audioKick * 0.6 );
 
-    vec3 col = mix( photo, metaColor, 0.45 );
-    col += focusGlow * imgPalette( 0.35 ) * 1.6;
+    vec3 col = mix( photo, meta_color, 0.45 );
+    col += focus_glow * imgPalette( 0.35 ) * 1.6;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

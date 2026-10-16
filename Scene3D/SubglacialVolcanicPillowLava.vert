@@ -67,37 +67,37 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Pillow lava extrusion lobes
-    float pScale = ( pillowScaleP > 0.01 ? pillowScaleP : 4.5 );
-    vec2  p = uv * pScale;
+    float p_scale = ( pillowScaleP > 0.01 ? pillowScaleP : 4.5 );
+    vec2  p = uv * p_scale;
 
     // Cellular pillow lobes
     float lobe1 = sin( p.x * 2.0 + t * 0.5 ) * cos( p.y * 2.0 - t * 0.4 );
     float lobe2 = sin( p.x * 4.0 - p.y * 3.0 ) * 0.35;
-    float pillowHeight = ( lobe1 + lobe2 );
+    float pillow_height = ( lobe1 + lobe2 );
 
     // Extrusion fissures and cracks between pillow lobes
-    float crack = pow( clamp( 1.0 - abs( pillowHeight ), 0.0, 1.0 ), 3.0 );
+    float crack = pow( clamp( 1.0 - abs( pillow_height ), 0.0, 1.0 ), 3.0 );
     float heat = crack * ( 1.0 + 2.5 * audioKick );
     vHeat = heat;
 
-    float hScale = ( crustHeightP > 0.001 ? crustHeightP : 0.35 ) * ( 1.0 + 0.4 * audioSwell );
-    float z = ( pillowHeight * 0.5 - 0.2 ) * hScale;
+    float h_scale = ( crustHeightP > 0.001 ? crustHeightP : 0.35 ) * ( 1.0 + 0.4 * audioSwell );
+    float z = ( pillow_height * 0.5 - 0.2 ) * h_scale;
 
-    vec3 worldPos = vec3( uv.x * 3.0, uv.y * 3.0, z );
+    vec3 world_pos = vec3( uv.x * 3.0, uv.y * 3.0, z );
 
     // Approximate surface normal
-    float dHdx = cos( p.x * 2.0 ) * 0.3;
-    float dHdy = sin( p.y * 2.0 ) * 0.3;
-    vNormal = normalize( vec3( -dHdx, -dHdy, 1.0 ) );
+    float d_hdx = cos( p.x * 2.0 ) * 0.3;
+    float d_hdy = sin( p.y * 2.0 ) * 0.3;
+    vNormal = normalize( vec3( -d_hdx, -d_hdy, 1.0 ) );
 
     // Basalt crust tinted toward photo palette
-    vec3 basaltCrust = vec3( 0.12, 0.11, 0.14 );
-    vCol = palTint( basaltCrust, attrA.x * 0.3 + audioCentroid, 0.22 );
+    vec3 basalt_crust = vec3( 0.12, 0.11, 0.14 );
+    vCol = palTint( basalt_crust, attrA.x * 0.3 + audioCentroid, 0.22 );
 
     // Camera Transform (V3). Tilt FIRST, about the field's centre -- the
     // old tilt-after-dolly shifted the pillow field down by 4.5*sin(0.65)
     // (~2.7 units): top half of the frame black, field cropped below.
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.65;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

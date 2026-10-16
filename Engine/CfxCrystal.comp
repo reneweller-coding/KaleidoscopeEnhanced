@@ -41,7 +41,7 @@ uniform float hue;
 uniform float stickiness; ///< 0..1, chance of actually freezing on contact
 uniform float drift;      ///< downward/upward bias (music driven)
 
-const int STEPS = 9;
+const int Steps = 9;
 
 /// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg( inout uint s )
@@ -87,7 +87,7 @@ void main()
     if ( p.x < 0.0 || p.y < 0.0 || p.x > 1.0 || p.y > 1.0 )
         p = respawn( rs, 0.62 );
 
-    for ( int s = 0; s < STEPS; ++s )
+    for ( int s = 0; s < Steps; ++s )
     {
         ivec2 ip = ivec2( p * vec2( size ) );
 

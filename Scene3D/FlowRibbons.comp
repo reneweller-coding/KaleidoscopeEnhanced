@@ -52,9 +52,9 @@ uniform float widthP; ///< preset: ribbon width
 uniform float twistP; ///< preset: how fast a ribbon twists along itself
 uniform float scaleP; ///< preset: size of the flow structures
 
-const int   RIBBONS = 2400;
-const int   SEGS = 32;    ///< segments per ribbon
-const float STEP = 0.085; ///< integration step, world units
+const int   Ribbons = 2400;
+const int   Segs = 32;    ///< segments per ribbon
+const float Step = 0.085; ///< integration step, world units
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( vec3 p )
@@ -124,7 +124,7 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= uint( RIBBONS ) )
+    if ( id >= uint( Ribbons ) )
         return;
 
     float fi = float( id );
@@ -142,7 +142,7 @@ void main()
     // The whole ribbon is reserved with ONE atomicAdd.  Reserving per triangle
     // would issue sixty-four atomics for the same ribbon and serialise on the
     // counter for no gain.
-    uint need = uint( SEGS ) * 6u;
+    uint need = uint( Segs ) * 6u;
     uint base = atomicAdd( cmd[4], need );
     if ( base + need > maxVertices )
         return;
@@ -157,17 +157,17 @@ void main()
     vec3 up = abs( tang.y ) < 0.9 ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 );
     vec3 side = normalize( cross( tang, up ) );
 
-    for ( int s = 0; s < SEGS; ++s )
+    for ( int s = 0; s < Segs; ++s )
     {
-        float t0 = float( s ) / float( SEGS );
-        float t1 = float( s + 1 ) / float( SEGS );
+        float t0 = float( s ) / float( Segs );
+        float t1 = float( s + 1 ) / float( Segs );
 
         // Midpoint integration: with plain Euler the ribbons drift off the
         // streamline and the fold structure smears out.
         vec3 k1 = normalize( curl( prev ) + 1e-4 );
-        vec3 mid = prev + k1 * ( STEP * 0.5 );
+        vec3 mid = prev + k1 * ( Step * 0.5 );
         vec3 k2 = normalize( curl( mid ) + 1e-4 );
-        vec3 next = prev + k2 * STEP;
+        vec3 next = prev + k2 * Step;
 
         // Parallel transport: rotate the frame by the same rotation that took
         // the old tangent to the new one.

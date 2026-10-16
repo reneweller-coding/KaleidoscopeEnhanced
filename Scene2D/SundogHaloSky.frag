@@ -103,40 +103,40 @@ void main()
     float sun = 0.6 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float horizon = -0.2;
-    vec2  sunPos = vec2( 0.0, horizon + elev );
-    float haloR = 0.38; // 22 degrees at this field of view
+    vec2  sun_pos = vec2( 0.0, horizon + elev );
+    float halo_r = 0.38; // 22 degrees at this field of view
 
     // Sky: pale winter, warm near the sun with the bass, thin cloud texture from the photo.
     vec3  sky = mix( vec3( 0.75, 0.82, 0.92 ), vec3( 0.45, 0.6, 0.85 ), smoothstep( horizon, 0.5, p.y ) );
     float thin = fbm( vec2( p.x * 2.0 + sceneAdvance * 0.02, p.y * 4.0 ) );
     sky = mix( sky, sky * 1.1, thin * 0.3 );
     sky = mix( sky, sky * imgPalette( hue * 0.159 + 0.6 ) * 1.4, 0.12 );
-    sky += vec3( 1.0, 0.7, 0.4 ) * exp( -length( p - sunPos ) * 3.0 ) * 0.35
+    sky += vec3( 1.0, 0.7, 0.4 ) * exp( -length( p - sun_pos ) * 3.0 ) * 0.35
            * ( 0.3 + 0.7 * clamp( audioBass, 0.0, 1.0 ) );
     vec3 col = sky;
     // The sun: a warm disc with glare.
-    float sd = length( p - sunPos );
+    float sd = length( p - sun_pos );
     col += vec3( 1.0, 0.95, 0.85 ) * ( smoothstep( 0.03, 0.025, sd ) * 1.6 + exp( -sd * 8.0 ) * 0.8 ) * sun;
     // Sun pillar: a vertical streak above and below the sun.
-    col += vec3( 1.0, 0.85, 0.6 ) * exp( -abs( p.x - sunPos.x ) * 40.0 ) * exp( -abs( p.y - sunPos.y ) * 3.0 ) * 0.5
+    col += vec3( 1.0, 0.85, 0.6 ) * exp( -abs( p.x - sun_pos.x ) * 40.0 ) * exp( -abs( p.y - sun_pos.y ) * 3.0 ) * 0.5
            * sun * dust;
     // The 22 degree halo: a spectral ring, brighter with the crystal load.
-    col += spectralRing( sd, haloR, 0.02 ) * ( 0.15 + 0.6 * hi ) * dust * sun;
+    col += spectralRing( sd, halo_r, 0.02 ) * ( 0.15 + 0.6 * hi ) * dust * sun;
     // Sun dogs: bright spectral spots on the parhelic circle at the halo radius.
     for ( int s = -1; s <= 1; s += 2 )
     {
-        vec2  dogPos = sunPos + vec2( float( s ) * haloR * 1.05, 0.0 );
-        float dd = length( ( p - dogPos ) * vec2( 1.0, 2.5 ) );
-        vec3  dogCol = vec3( smoothstep( 0.06, 0.0, dd ), smoothstep( 0.05, 0.0, dd - 0.01 ),
-                             smoothstep( 0.05, 0.0, dd - 0.02 ) );
-        col += dogCol * ( 0.4 + 1.0 * hi ) * dust * sun;
+        vec2  dog_pos = sun_pos + vec2( float( s ) * halo_r * 1.05, 0.0 );
+        float dd = length( ( p - dog_pos ) * vec2( 1.0, 2.5 ) );
+        vec3  dog_col = vec3( smoothstep( 0.06, 0.0, dd ), smoothstep( 0.05, 0.0, dd - 0.01 ),
+                              smoothstep( 0.05, 0.0, dd - 0.02 ) );
+        col += dog_col * ( 0.4 + 1.0 * hi ) * dust * sun;
         // The parhelic circle: a faint white line through the sun dogs.
-        col += vec3( 1.0 ) * smoothstep( 0.006, 0.0, abs( p.y - sunPos.y ) )
-               * smoothstep( haloR * 0.9, haloR * 1.3, abs( p.x - sunPos.x ) ) * 0.25 * hi * dust;
+        col += vec3( 1.0 ) * smoothstep( 0.006, 0.0, abs( p.y - sun_pos.y ) )
+               * smoothstep( halo_r * 0.9, halo_r * 1.3, abs( p.x - sun_pos.x ) ) * 0.25 * hi * dust;
     }
     // Upper tangent arc: a spectral arc touching the halo at the top, flaring outward.
-    float arcD = length( ( p - sunPos - vec2( 0.0, haloR ) ) * vec2( 0.7, 1.8 ) );
-    col += spectralRing( arcD, 0.06, 0.02 ) * step( sunPos.y + haloR * 0.85, p.y ) * ( 0.1 + 0.5 * hi ) * dust * sun;
+    float arc_d = length( ( p - sun_pos - vec2( 0.0, halo_r ) ) * vec2( 0.7, 1.8 ) );
+    col += spectralRing( arc_d, 0.06, 0.02 ) * step( sun_pos.y + halo_r * 0.85, p.y ) * ( 0.1 + 0.5 * hi ) * dust * sun;
     // Diamond dust: round glints in the air on the kick and the treble.
     vec2  gu = ( p + vec2( 0.0, -sceneAdvance * 0.05 ) ) * 70.0;
     vec2  gc = floor( gu );
@@ -148,11 +148,12 @@ void main()
     float land = step( p.y, horizon + 0.02 * fbm( vec2( p.x * 4.0, 1.0 ) ) );
     vec3  snow = img( vec2( p.x / aspect + 0.5, ( p.y + 0.5 ) * 0.5 ) ) * 0.5 + 0.45;
     snow *= vec3( 0.85, 0.9, 1.0 ) * ( 0.5 + 0.5 * sun );
-    snow += vec3( 1.0, 0.8, 0.5 ) * exp( -length( vec2( p.x - sunPos.x, ( p.y - horizon ) * 3.0 ) ) * 3.0 ) * 0.3 * sun;
+    snow += vec3( 1.0, 0.8, 0.5 ) * exp( -length( vec2( p.x - sun_pos.x, ( p.y - horizon ) * 3.0 ) ) * 3.0 ) * 0.3
+            * sun;
     col = mix( col, snow, land );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

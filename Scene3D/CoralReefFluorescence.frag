@@ -79,8 +79,8 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Diffuse lighting in deep ocean
-    vec3  lightDir = normalize( vec3( 0.3, 1.0, 0.5 ) );
-    float diff = max( dot( vNormal, lightDir ), 0.0 ) * 0.6 + 0.4;
+    vec3  light_dir = normalize( vec3( 0.3, 1.0, 0.5 ) );
+    float diff = max( dot( vNormal, light_dir ), 0.0 ) * 0.6 + 0.4;
 
     // Base photo texture
     vec3 photo = img( vUV );
@@ -88,22 +88,22 @@ void main()
     // Fluorescent Green/Pink/Orange protein emission colors (GFP / RFP)
     // Fluorescence colours come from the PHOTO palette arc (house
     // standard) — the old neon green/magenta pair read as rainbow.
-    vec3 gfpColor = mix( imgPalette( 0.12 ), imgPalette( 0.55 ),
-                         sin( vUV.x * 10.0 + vUV.y * 8.0 ) * 0.5 + 0.5 )
-                    * 1.35;
-    vec3 fluorGlow = gfpColor * max( vFluorescence, 0.0 ) * flr;
+    vec3 gfp_color = mix( imgPalette( 0.12 ), imgPalette( 0.55 ),
+                          sin( vUV.x * 10.0 + vUV.y * 8.0 ) * 0.5 + 0.5 )
+                     * 1.35;
+    vec3 fluor_glow = gfp_color * max( vFluorescence, 0.0 ) * flr;
 
     // Deep ocean blue ambient
-    vec3 oceanAmbient = vec3( 0.02, 0.06, 0.18 );
+    vec3 ocean_ambient = vec3( 0.02, 0.06, 0.18 );
 
-    vec3 col = mix( oceanAmbient, photo, 0.35 ) * diff + fluorGlow * 1.5;
+    vec3 col = mix( ocean_ambient, photo, 0.35 ) * diff + fluor_glow * 1.5;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col * glw ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col * glw ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

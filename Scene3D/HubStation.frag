@@ -167,20 +167,20 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
-    vec3  lightDir = normalize( vec3( 0.4, 0.6, -0.5 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.4, 0.6, -0.5 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.55 + 0.45 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 40.0, 6.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 40.0, 6.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic );
 
     // Brighter overall than the other families -- this is a lit,
     // populated hub, not deep infrastructure or a warship.
     vec3 col = base.rgb * ( 0.6 + diff * ( 1.3 + 0.4 * audioSwell ) + fill * 0.4 );
-    col += specColor * spec * ( 0.5 + 0.55 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.5 + 0.55 * ( 1.0 - roughness ) );
 
     // Docking-light speckle: many small twinkling points across a coarse UV
     // grid, gated to the hull's darker patches (structure/shadow, not the
@@ -190,24 +190,24 @@ void main()
     // would light ~49% of all cells at once -- read as a uniform wash
     // instead of scattered points (found by rendering). 0.12 keeps even the
     // busiest instance under ~17%.
-    float lumaCell = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
+    float luma_cell = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
     vec2  grid = vUV * 40.0;
     vec2  cell = floor( grid );
     float r = hash21( cell );
     float lit = step( 1.0 - 0.12 * bp, r );
     float twinkle = 0.5 + 0.5 * sin( time * ( 2.0 + r * 6.0 ) + r * 30.0 );
-    float darkMask = 1.0 - smoothstep( 0.15, 0.45, lumaCell );
+    float dark_mask = 1.0 - smoothstep( 0.15, 0.45, luma_cell );
     // Fixed warm amber -- the starfield outside now carries the color
     // variety, not a photo-tinted hull.
-    col += vec3( 1.0, 0.75, 0.4 ) * lit * darkMask * twinkle * ( 0.5 + 0.4 * audioSwell + 0.4 * audioKick );
+    col += vec3( 1.0, 0.75, 0.4 ) * lit * dark_mask * twinkle * ( 0.5 + 0.4 * audioSwell + 0.4 * audioKick );
 
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.8, 0.5 ) * fresnel * ( 0.08 + 0.15 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

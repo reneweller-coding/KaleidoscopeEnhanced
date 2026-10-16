@@ -117,22 +117,22 @@ void main()
     vec2  gf = fract( gc ) - 0.5 - goff * 0.5;
     float grit = smoothstep( 0.25, 0.05, length( gf ) ) * step( 1.0 - 0.4 * grain, hash21( gcell ) );
 
-    vec3 sandCol = imgPalette( hue * 0.159 + 0.1 ) * 0.9 + vec3( 0.25, 0.18, 0.08 );
+    vec3 sand_col = imgPalette( hue * 0.159 + 0.1 ) * 0.9 + vec3( 0.25, 0.18, 0.08 );
     vec3 col = rock * ( 0.25 + 0.4 * audioLevel );
-    col = mix( col, sandCol * ( 0.6 + 0.6 * audioLevel ), clamp( streak, 0.0, 1.0 ) );
-    col += sandCol * grit * 0.6;
+    col = mix( col, sand_col * ( 0.6 + 0.6 * audioLevel ), clamp( streak, 0.0, 1.0 ) );
+    col += sand_col * grit * 0.6;
 
     // Light ahead: it brightens on builds and gusts on the kick, and the
     // sand scatters it (fog whose density is the grain).
-    float fogD = 0.05 + 0.12 * grain;
-    float fog = 1.0 - exp( -depth * fogD );
-    vec3  glowCol = mix( imgPalette( hue * 0.159 + 0.9 ), vec3( 1.0, 0.9, 0.7 ), 0.5 );
+    float fog_d = 0.05 + 0.12 * grain;
+    float fog = 1.0 - exp( -depth * fog_d );
+    vec3  glow_col = mix( imgPalette( hue * 0.159 + 0.9 ), vec3( 1.0, 0.9, 0.7 ), 0.5 );
     float ahead = exp( -r * 5.0 ) * ( 0.5 + 1.0 * clamp( audioSwell, 0.0, 1.0 ) + 0.6 * audioKick );
-    col = mix( col, sandCol * 0.35 * ( 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) ), clamp( fog, 0.0, 0.9 ) );
-    col += glowCol * ahead;
+    col = mix( col, sand_col * 0.35 * ( 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) ), clamp( fog, 0.0, 0.9 ) );
+    col += glow_col * ahead;
     col *= 1.0 - 0.3 * smoothstep( 0.7, 1.15, r );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

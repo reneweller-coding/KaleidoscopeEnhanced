@@ -42,9 +42,9 @@ vec3 img( vec2 uv )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  lightDir = normalize( vec3( 0.3, 0.6, 0.7 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
-    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 28.0 )
+    vec3  light_dir = normalize( vec3( 0.3, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
+    float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 28.0 )
                  * ( specularP > 0.01 ? specularP : 1.3 );
 
     vec3 photo = img( vUV );

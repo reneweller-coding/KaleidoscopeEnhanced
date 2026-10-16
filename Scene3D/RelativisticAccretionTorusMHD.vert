@@ -100,22 +100,22 @@ void main()
     float u = uv.x * 3.14159265;
     float v = uv.y * 3.14159265;
 
-    float R_torus = ( torusRadiusP > 0.01 ? torusRadiusP : 1.3 );
+    float r_torus = ( torusRadiusP > 0.01 ? torusRadiusP : 1.3 );
     float r_tube = ( torusThickP > 0.01 ? torusThickP : 0.65 ) * ( 0.85 + 0.3 * audioSwell );
     // Outer edge of the accretion flow, sized against the camera distance
     // below so the flow always reaches the left and right frame edges.
-    float R_out = 4.6 + 1.6 * R_torus;
+    float r_out = 4.6 + 1.6 * r_torus;
 
     float su = sin( u );
 
-    vec3 worldPos = surfacePos( u, v, R_torus, r_tube, R_out, t );
+    vec3 world_pos = surfacePos( u, v, r_torus, r_tube, r_out, t );
 
     // True geometric normal of whatever the cross-section builds (the analytic
     // torus normal is wrong everywhere on the flared skirt).
     const float du = 0.006, dv = 0.006;
-    vec3        pU = surfacePos( u + du, v, R_torus, r_tube, R_out, t );
-    vec3        pV = surfacePos( u, v + dv, R_torus, r_tube, R_out, t );
-    vNormal = normalize( cross( pU - worldPos, pV - worldPos ) );
+    vec3        p_u = surfacePos( u + du, v, r_torus, r_tube, r_out, t );
+    vec3        p_v = surfacePos( u, v + dv, r_torus, r_tube, r_out, t );
+    vNormal = normalize( cross( p_u - world_pos, p_v - world_pos ) );
 
     // Relativistic Doppler beaming factor: g = 1 / (gamma * (1 - v/c * cos(theta)))
     // Material moving towards observer on left side is blueshifted & boosted
@@ -124,22 +124,22 @@ void main()
 
     // Accretion plasma color, with the radial temperature gradient of a real
     // disc: the inner flow is the hot bright part, the outer flow cools off.
-    float rho = length( worldPos.xy );
-    float temp = clamp( 1.35 - rho / R_out, 0.0, 1.0 );
-    vec3  plasmaCol = mix( vec3( 1.0, 0.4, 0.1 ), vec3( 0.3, 0.8, 1.0 ), clamp( doppler + 0.5, 0.0, 1.0 ) )
-                      * ( 0.50 + 0.60 * temp );
-    vCol = palTint( plasmaCol, u * 0.15 + audioCentroid, 0.25 );
+    float rho = length( world_pos.xy );
+    float temp = clamp( 1.35 - rho / r_out, 0.0, 1.0 );
+    vec3  plasma_col = mix( vec3( 1.0, 0.4, 0.1 ), vec3( 0.3, 0.8, 1.0 ), clamp( doppler + 0.5, 0.0, 1.0 ) )
+                       * ( 0.50 + 0.60 * temp );
+    vCol = palTint( plasma_col, u * 0.15 + audioCentroid, 0.25 );
 
     // Camera Transform (V3): tilt BEFORE the translate -- applied after,
     // it swings the scene centre down by sin(tilt)*4.5 and left only the
     // torus rim peeking into the bottom of the frame.
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.65;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );
-    // 6.5 rather than 4.5: with the flow now reaching R_out the frame is filled
+    // 6.5 rather than 4.5: with the flow now reaching r_out the frame is filled
     // from this distance, and the near rim still stays well in front of the
-    // camera (6.5 - R_out*sin(tilt) is about 2 units at the widest preset).
+    // camera (6.5 - r_out*sin(tilt) is about 2 units at the widest preset).
     vp.z += 6.5;
     vp.x -= eyeOff;
 

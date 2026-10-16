@@ -109,8 +109,8 @@ float fibres( vec2 p )
 float plume( vec2 p, float k, float a, float T, float aspect )
 {
     float x0 = 0.5 + ( hash11( k * 3.7 ) - 0.5 ) * aspect * 0.85;
-    float headY = 1.12 - a * 1.35 + 0.05 * sin( k * 5.0 );
-    vec2  d = p - vec2( x0 + 0.05 * sin( a * 3.0 + k ), headY );
+    float head_y = 1.12 - a * 1.35 + 0.05 * sin( k * 5.0 );
+    vec2  d = p - vec2( x0 + 0.05 * sin( a * 3.0 + k ), head_y );
     float R = 0.04 + 0.12 * a; // ring radius grows
     // Curl the space around both lobes of the ring: filaments wind in.
     float tilt = 0.35 * ( hash11( k * 9.1 ) - 0.5 );
@@ -135,8 +135,8 @@ float plume( vec2 p, float k, float a, float T, float aspect )
     // Stem: from the ring up to the top, widening and thinning as it ages.
     float above = d.y;
     float w = 0.008 + 0.05 * clamp( above, 0.0, 1.0 ) * ( 0.4 + a );
-    float stemFib = fibres( vec2( d.x * 30.0, d.y * 6.0 ) + k * 3.0 );
-    float stem = exp( -d.x * d.x / ( w * w ) ) * smoothstep( 0.0, 0.06, above ) * ( 0.35 + 0.8 * stemFib )
+    float stem_fib = fibres( vec2( d.x * 30.0, d.y * 6.0 ) + k * 3.0 );
+    float stem = exp( -d.x * d.x / ( w * w ) ) * smoothstep( 0.0, 0.06, above ) * ( 0.35 + 0.8 * stem_fib )
                  * ( 1.0 - 0.6 * a );
     float fade = smoothstep( 0.0, 0.08, a ) * ( 1.0 - smoothstep( 0.7, 1.0, a ) );
     return ( lobe + cap + stem ) * fade;
@@ -159,10 +159,10 @@ void main()
     vec2 pw = p + warp * 0.08 + ( vec2( fbm( wq * 3.0 + 1.3 ), fbm( wq * 3.0 + 4.1 ) ) - 0.5 ) * 0.025;
 
     // Three inks, each with its own drops.
-    vec3 inkC[3];
-    inkC[0] = mix( vec3( 0.05, 0.2, 0.75 ), imgPalette( 0.6 ), 0.3 );  // blue
-    inkC[1] = mix( vec3( 0.8, 0.08, 0.45 ), imgPalette( 0.9 ), 0.3 );  // magenta
-    inkC[2] = mix( vec3( 0.95, 0.55, 0.05 ), imgPalette( 0.2 ), 0.3 ); // amber
+    vec3 ink_c[3];
+    ink_c[0] = mix( vec3( 0.05, 0.2, 0.75 ), imgPalette( 0.6 ), 0.3 );  // blue
+    ink_c[1] = mix( vec3( 0.8, 0.08, 0.45 ), imgPalette( 0.9 ), 0.3 );  // magenta
+    ink_c[2] = mix( vec3( 0.95, 0.55, 0.05 ), imgPalette( 0.2 ), 0.3 ); // amber
     vec3        absorb = vec3( 0.0 );
     float       dens = 0.0;
     const float P = 30.0; // life of a drop (s)
@@ -172,7 +172,7 @@ void main()
         float age = fract( ( T + fk * P / 8.0 ) / P );
         float cyc = floor( ( T + fk * P / 8.0 ) / P );
         float dn = plume( pw, fk * 13.0 + cyc * 3.1, age, T, aspect );
-        vec3  c = inkC[k % 3];
+        vec3  c = ink_c[k % 3];
         absorb += ( vec3( 1.0 ) - c ) * dn; // what the ink takes out of white
         dens += dn;
     }

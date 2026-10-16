@@ -126,47 +126,47 @@ void main()
     // Convective granule profile: convex dome inside cell, steep drop at lanes
     float d1 = v1.x;
     float d2 = v1.y;
-    float laneWidth = ( laneWidthP > 0.01 ? laneWidthP : 1.2 );
-    float lane = clamp( ( d2 - d1 ) * ( 4.0 / laneWidth ), 0.0, 1.0 );
+    float lane_width = ( laneWidthP > 0.01 ? laneWidthP : 1.2 );
+    float lane = clamp( ( d2 - d1 ) * ( 4.0 / lane_width ), 0.0, 1.0 );
 
     // Hot rising granule center vs cold sinking intergranular lanes
-    float granuleHeat = sqrt( max( 0.001, 1.0 - d1 * 2.0 ) ) * lane;
-    granuleHeat += ( 1.0 - v2.x ) * 0.25; // Sub-granular detail
+    float granule_heat = sqrt( max( 0.001, 1.0 - d1 * 2.0 ) ) * lane;
+    granule_heat += ( 1.0 - v2.x ) * 0.25; // Sub-granular detail
 
-    // Magnetic micro-flares localized in intergranular lanes. flareActive can
+    // Magnetic micro-flares localized in intergranular lanes. flare_active can
     // reach flareP's full 2.5, and raising THAT to the fourth power before a
     // kick multiplies it again put this term near 500 -- the single biggest
     // reason the photosphere clipped to a flat white sheet. The base is
     // saturated before the power, and the result is bounded afterwards.
-    float flareActive = ( 1.0 - lane ) * ( flareP > 0.01 ? min( flareP, 2.5 ) : 1.5 );
-    float microFlare = min( pow( min( flareActive, 1.25 ), 4.0 ) * ( 1.0 + 4.0 * audioKick ), 2.2 );
+    float flare_active = ( 1.0 - lane ) * ( flareP > 0.01 ? min( flareP, 2.5 ) : 1.5 );
+    float micro_flare = min( pow( min( flare_active, 1.25 ), 4.0 ) * ( 1.0 + 4.0 * audioKick ), 2.2 );
 
     // Color synthesis: Incandescent solar plasma identity tinted with photo palette
-    vec3 hotPlasma = vec3( 1.0, 0.9, 0.6 );
-    vec3 amberLobe = vec3( 1.0, 0.45, 0.05 );
-    vec3 darkLane = vec3( 0.12, 0.03, 0.01 );
+    vec3 hot_plasma = vec3( 1.0, 0.9, 0.6 );
+    vec3 amber_lobe = vec3( 1.0, 0.45, 0.05 );
+    vec3 dark_lane = vec3( 0.12, 0.03, 0.01 );
 
-    vec3 plasmaCol = palTint( mix( amberLobe, hotPlasma, granuleHeat ), granuleHeat * 0.3, 0.25 );
-    vec3 laneCol = palTint( darkLane, 0.1, 0.2 );
-    vec3 flareCol = palTint( vec3( 0.9, 0.95, 1.0 ), audioCentroid, 0.22 );
+    vec3 plasma_col = palTint( mix( amber_lobe, hot_plasma, granule_heat ), granule_heat * 0.3, 0.25 );
+    vec3 lane_col = palTint( dark_lane, 0.1, 0.2 );
+    vec3 flare_col = palTint( vec3( 0.9, 0.95, 1.0 ), audioCentroid, 0.22 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
 
-    // Granule shading is driven by granuleHeat, not laid on flat: `lane` is at
-    // or near 1 over almost every cell interior, so mix(laneCol, plasmaCol,
-    // lane) was painting the full incandescent plasmaCol across essentially the
+    // Granule shading is driven by granule_heat, not laid on flat: `lane` is at
+    // or near 1 over almost every cell interior, so mix(lane_col, plasma_col,
+    // lane) was painting the full incandescent plasma_col across essentially the
     // whole frame -- a uniform near-white sheet with the lanes as the only
     // structure. Weighting it by the convective heat profile keeps the rising
     // cell cores hot and lets their shoulders fall away, which is both darker
     // overall and higher in real contrast.
-    float heatMask = clamp( granuleHeat, 0.0, 1.4 );
-    col += mix( laneCol, plasmaCol * ( 0.12 + 0.48 * heatMask ), lane ) * ( 0.85 + 0.45 * audioSwell );
-    col += min( flareCol * microFlare * 1.1, vec3( 0.95 ) );
-    col += plasmaCol * ( audioKick * 0.22 );
+    float heat_mask = clamp( granule_heat, 0.0, 1.4 );
+    col += mix( lane_col, plasma_col * ( 0.12 + 0.48 * heat_mask ), lane ) * ( 0.85 + 0.45 * audioSwell );
+    col += min( flare_col * micro_flare * 1.1, vec3( 0.95 ) );
+    col += plasma_col * ( audioKick * 0.22 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

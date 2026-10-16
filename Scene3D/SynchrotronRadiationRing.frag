@@ -84,16 +84,16 @@ void main()
     // High energy X-ray to EUV synchrotron radiation spectrum.  The hot end
     // is GOLDEN now, not near-white -- white x high gain bleached the whole
     // ring (metric scan: saturation 0.06).
-    vec3 beamColor = palTint( mix( vec3( 0.1, 0.5, 1.0 ), vec3( 1.0, 0.72, 0.30 ), vRadiation ), 0.30 * vRadiation,
-                              0.20 );
-    vec3 col = beamColor * ( 0.5 + 0.9 * vRadiation * rdp ) * edge * glw;
+    vec3 beam_color = palTint( mix( vec3( 0.1, 0.5, 1.0 ), vec3( 1.0, 0.72, 0.30 ), vRadiation ), 0.30 * vRadiation,
+                               0.20 );
+    vec3 col = beam_color * ( 0.5 + 0.9 * vRadiation * rdp ) * edge * glw;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.30;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, edge * 0.9 );
+    vec3 cat_tone = ( col ) * 0.30;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, edge * 0.9 );
 }

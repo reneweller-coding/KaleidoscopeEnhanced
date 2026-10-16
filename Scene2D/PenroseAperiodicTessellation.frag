@@ -44,7 +44,7 @@ uniform float foldP;  ///< Fold knob, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PHI = 1.61803398875; ///< Golden Ratio
+const float Phi = 1.61803398875; ///< Golden Ratio
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -99,41 +99,41 @@ void main()
     vec2 p = uv * ( 3.5 / tl ) * ( 1.0 - 0.08 * audioSwell );
     p = rot2D( t * 0.3 ) * p;
 
-    float edgeDist = 1.0;
-    float tileType = 0.0;
+    float edge_dist = 1.0;
+    float tile_type = 0.0;
     float scale = 1.0;
 
     // Recursive Penrose grid / de Bruijn pentagrid projection
-    float angleStep = 6.2831853 / 5.0;
-    vec2  sumOffset = vec2( 0.0 );
+    float angle_step = 6.2831853 / 5.0;
+    vec2  sum_offset = vec2( 0.0 );
 
     for ( int i = 0; i < 5; ++i )
     {
-        float a = float( i ) * angleStep + t * 0.1;
+        float a = float( i ) * angle_step + t * 0.1;
         vec2  dir = vec2( cos( a ), sin( a ) );
         float proj = dot( p, dir ) + float( i ) * 0.2 * fld;
 
         // Pentagrid stripe boundaries
         float stripe = abs( fract( proj ) - 0.5 );
-        edgeDist = min( edgeDist, stripe );
+        edge_dist = min( edge_dist, stripe );
 
-        tileType += floor( proj );
+        tile_type += floor( proj );
     }
 
     // Photoelastic birefringence stress fringes (isochromatics)
-    float stress = sin( edgeDist * 40.0 + audioPhase * 4.0 );
-    vec3  stressColor = imgPalette( ( stress * 3.0 + tileType * 0.3 ) * 0.159 );
+    float stress = sin( edge_dist * 40.0 + audioPhase * 4.0 );
+    vec3  stress_color = imgPalette( ( stress * 3.0 + tile_type * 0.3 ) * 0.159 );
 
     // Photo texturing mapped into aperiodic cell frames
-    vec2 cellUV = fract( p * 0.25 + sumOffset );
-    vec3 photo = img( cellUV );
+    vec2 cell_uv = fract( p * 0.25 + sum_offset );
+    vec3 photo = img( cell_uv );
 
     // Combine visualizer
-    vec3 col = mix( photo * 0.85, stressColor, 0.4 + 0.2 * audioSwell );
+    vec3 col = mix( photo * 0.85, stress_color, 0.4 + 0.2 * audioSwell );
 
     // Glowing golden-ratio tile borders
-    float borderGlow = exp( -edgeDist * 30.0 ) * ( 1.0 + audioKick * 3.0 + audioHigh * 1.5 );
-    col += borderGlow * vec3( 1.0, 0.88, 0.45 );
+    float border_glow = exp( -edge_dist * 30.0 ) * ( 1.0 + audioKick * 3.0 + audioHigh * 1.5 );
+    col += border_glow * vec3( 1.0, 0.88, 0.45 );
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )

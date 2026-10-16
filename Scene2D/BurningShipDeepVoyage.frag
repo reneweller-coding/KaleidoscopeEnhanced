@@ -78,60 +78,60 @@ void main()
     // replicas line up -- so every cycle reads as travel toward something,
     // not as marble mush (the old centre (-0.45,-0.6) landed in a featureless
     // region and every pixel escaped within 2 iterations).
-    vec2  cOverview = vec2( -0.6, -0.55 );
-    vec2  cArmada = vec2( -1.7629, -0.0286 );
+    vec2  c_overview = vec2( -0.6, -0.55 );
+    vec2  c_armada = vec2( -1.7629, -0.0286 );
     float zc = 0.5 - 0.5 * cos( 6.2831853 * fract( t * 0.7 / 6.0 ) ); // 0..1..0
-    vec2  cCenter = mix( cOverview, cArmada, smoothstep( 0.0, 0.35, zc ) );
-    float zoomLevel = exp( zc * 7.5 ) * ( 0.55 * zm ) * ( 1.0 + 0.08 * audioSwell );
+    vec2  c_center = mix( c_overview, c_armada, smoothstep( 0.0, 0.35, zc ) );
+    float zoom_level = exp( zc * 7.5 ) * ( 0.55 * zm ) * ( 1.0 + 0.08 * audioSwell );
     // The ship renders upright with the y-window inverted (applied to the
     // WINDOW, so the centre coordinates above are true fractal coordinates).
-    vec2 c = cCenter + vec2( uv.x, -uv.y ) / zoomLevel;
+    vec2 c = c_center + vec2( uv.x, -uv.y ) / zoom_level;
 
     vec2  z = c;
-    float iterCount = -1.0;
+    float iter_count = -1.0;
     float trap = 1e5;
 
     // Burning ship iteration loop: z = (|x| + i|y|)^2 + c
     for ( int i = 0; i < 90; i++ )
     {
-        vec2 zAbs = abs( z );
-        z = vec2( zAbs.x * zAbs.x - zAbs.y * zAbs.y, 2.0 * zAbs.x * zAbs.y ) + c;
+        vec2 z_abs = abs( z );
+        z = vec2( z_abs.x * z_abs.x - z_abs.y * z_abs.y, 2.0 * z_abs.x * z_abs.y ) + c;
 
         float r2 = dot( z, z );
         trap = min( trap, abs( z.y ) + abs( z.x ) * 0.5 );
 
         if ( r2 > 16.0 )
         {
-            iterCount = float( i ) - log2( max( 1.0, log2( r2 ) ) );
+            iter_count = float( i ) - log2( max( 1.0, log2( r2 ) ) );
             break;
         }
     }
 
-    vec3 fireCol;
-    if ( iterCount < 0.0 )
+    vec3 fire_col;
+    if ( iter_count < 0.0 )
     {
         // INTERIOR: the hull itself -- near-black iron with a faint ember
         // texture, the iconic silhouette against the fire outside.
         vec3 ember = img( fract( z * 0.15 + 0.5 ) );
-        fireCol = vec3( 0.02, 0.015, 0.02 ) + ember * 0.06;
+        fire_col = vec3( 0.02, 0.015, 0.02 ) + ember * 0.06;
     }
     else
     {
         // EXTERIOR: fire gradient hugging the boundary. High iteration
         // counts (close to the set) burn bright, open water stays dark.
-        float g = pow( clamp( iterCount / 42.0, 0.0, 1.0 ), 1.1 );
-        vec2  sampleUV = fract( z * 0.2 + 0.5 );
-        vec3  texCol = img( sampleUV );
-        vec3  palA = imgPalette( g * 0.55 + trap * 0.10 );
-        vec3  palB = imgPalette( g * 0.55 + 0.5 );
-        fireCol = mix( palA, palB, 0.5 + 0.5 * sin( iterCount * 0.6 + t ) );
-        fireCol = mix( fireCol, texCol, 0.25 );
-        fireCol *= 0.22 + 2.0 * g;
+        float g = pow( clamp( iter_count / 42.0, 0.0, 1.0 ), 1.1 );
+        vec2  sample_uv = fract( z * 0.2 + 0.5 );
+        vec3  tex_col = img( sample_uv );
+        vec3  pal_a = imgPalette( g * 0.55 + trap * 0.10 );
+        vec3  pal_b = imgPalette( g * 0.55 + 0.5 );
+        fire_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( iter_count * 0.6 + t ) );
+        fire_col = mix( fire_col, tex_col, 0.25 );
+        fire_col *= 0.22 + 2.0 * g;
         // Flame licks on the iteration bands + kick flare
-        float flameGlow = exp( -abs( sin( iterCount * 0.4 + t ) ) * ( 15.0 - 5.0 * audioCentroid ) ) * glw;
-        fireCol += vec3( 1.6, 1.2, 0.6 ) * flameGlow * g * ( 0.5 + 1.5 * audioKick ) * flm;
+        float flame_glow = exp( -abs( sin( iter_count * 0.4 + t ) ) * ( 15.0 - 5.0 * audioCentroid ) ) * glw;
+        fire_col += vec3( 1.6, 1.2, 0.6 ) * flame_glow * g * ( 0.5 + 1.5 * audioKick ) * flm;
     }
 
-    fireCol = pow( fireCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( fireCol, 0.0, 1.0 ), 1.0 );
+    fire_col = pow( fire_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( fire_col, 0.0, 1.0 ), 1.0 );
 }

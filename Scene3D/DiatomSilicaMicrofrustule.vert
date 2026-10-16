@@ -47,8 +47,8 @@ void main()
     // The engine draws NON-instanced (glDrawArrays), so gl_InstanceID is
     // always 0 -- every unit would collapse onto one spot.  Scene3DShader
     // packs the per-unit index into attrA.w instead (see buildGeometry).
-    int quadIndex = int( attrA.w );
-    vDiatomIndex = float( quadIndex ) / 3000.0;
+    int quad_index = int( attrA.w );
+    vDiatomIndex = float( quad_index ) / 3000.0;
     // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
     // this shader's math assumes a centred [-1,1] domain, so remap it here
     // (otherwise everything lands in one quadrant, off to the side).
@@ -58,7 +58,7 @@ void main()
     float t = time * 0.35 * spd + audioAdvance * 0.18;
 
     // 3D suspension cloud
-    float u = float( quadIndex ) * 0.6180339887; // Golden ratio hash
+    float u = float( quad_index ) * 0.6180339887; // Golden ratio hash
     float phi = u * 6.2831853;
     float costheta = fract( u * 123.456 ) * 2.0 - 1.0;
     float theta = acos( costheta );
@@ -70,13 +70,13 @@ void main()
         r * cos( theta ) + sin( t * 0.5 + u * 10.0 ) * 0.3 );
 
     // Diatom card scale
-    float cardScale = ( 0.08 + 0.04 * sin( u * 20.0 + t * 2.0 ) ) * por * ( 1.0 + audioKick * 0.7 );
-    vec3  worldPos = center + vec3( corner.x, corner.y, 0.0 ) * cardScale;
-    vWorldPos = worldPos;
+    float card_scale = ( 0.08 + 0.04 * sin( u * 20.0 + t * 2.0 ) ) * por * ( 1.0 + audioKick * 0.7 );
+    vec3  world_pos = center + vec3( corner.x, corner.y, 0.0 ) * card_scale;
+    vWorldPos = world_pos;
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 7.0;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

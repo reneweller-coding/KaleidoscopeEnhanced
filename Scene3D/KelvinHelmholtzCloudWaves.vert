@@ -46,15 +46,15 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 gridUV = attrA.xy; // 0..1
+    vec2 grid_uv = attrA.xy; // 0..1
 
     float blw = ( billowP > 0.0 ) ? billowP : 1.0;
     float shr = ( shearP > 0.0 ) ? shearP : 1.0;
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    float x = ( gridUV.x - 0.5 ) * 22.0;
-    float z = ( gridUV.y - 0.5 ) * 22.0;
+    float x = ( grid_uv.x - 0.5 ) * 22.0;
+    float z = ( grid_uv.y - 0.5 ) * 22.0;
 
     float t = time * 0.35 * spd + audioAdvance * 0.15;
 
@@ -63,37 +63,37 @@ void main()
     float phase = x * k - t * 2.5;
 
     // Rolling wave crest
-    float billowWave = sin( phase ) * ( 1.0 + 0.5 * cos( z * 0.3 ) );
-    float billowCrest = exp( -pow( sin( phase * 0.5 ), 2.0 ) * 6.0 );
-    float y = ( billowWave * 0.8 + billowCrest * 1.8 ) * blw * ( 1.0 + 0.3 * audioBass );
+    float billow_wave = sin( phase ) * ( 1.0 + 0.5 * cos( z * 0.3 ) );
+    float billow_crest = exp( -pow( sin( phase * 0.5 ), 2.0 ) * 6.0 );
+    float y = ( billow_wave * 0.8 + billow_crest * 1.8 ) * blw * ( 1.0 + 0.3 * audioBass );
 
     // Lateral curl
-    x += cos( phase ) * 0.6 * billowCrest;
+    x += cos( phase ) * 0.6 * billow_crest;
 
     // Kick puff
-    y += audioKick * 1.5 * billowCrest;
+    y += audioKick * 1.5 * billow_crest;
 
-    vec3 worldP = vec3( x, y, z );
+    vec3 world_p = vec3( x, y, z );
 
     // Camera space
-    vec3 camPos = vec3( 0.0, 4.5, -16.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 4.5, -16.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    vUV = gridUV;
-    vBillow = billowCrest;
+    vUV = grid_uv;
+    vBillow = billow_crest;
     vNormal = normalize( vec3( -cos( phase ) * 0.6, 1.0, -sin( z * 0.3 ) * 0.3 ) );
 
     // Sunset amber, dusk indigo, cloud white palette
-    vec3 duskIndigo = vec3( 0.08, 0.06, 0.16 );
-    vec3 sunsetAmber = vec3( 1.0, 0.65, 0.25 );
-    vec3 cloudWhite = vec3( 0.95, 0.9, 0.85 );
+    vec3 dusk_indigo = vec3( 0.08, 0.06, 0.16 );
+    vec3 sunset_amber = vec3( 1.0, 0.65, 0.25 );
+    vec3 cloud_white = vec3( 0.95, 0.9, 0.85 );
 
-    vec3 col = mix( duskIndigo, sunsetAmber, vBillow );
-    col = mix( col, cloudWhite, clamp( y * 0.3, 0.0, 1.0 ) );
+    vec3 col = mix( dusk_indigo, sunset_amber, vBillow );
+    col = mix( col, cloud_white, clamp( y * 0.3, 0.0, 1.0 ) );
 
     if ( audioChromaHue != 0.0 )
         col = hueRot( col, audioChromaHue );

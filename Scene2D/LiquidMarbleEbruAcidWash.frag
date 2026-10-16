@@ -86,7 +86,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float cFreq = ( combFreqP > 0.01 ) ? combFreqP : 1.0;
+    float c_freq = ( combFreqP > 0.01 ) ? combFreqP : 1.0;
     float mlt = ( acidMeltP > 0.01 ) ? acidMeltP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -95,51 +95,51 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Multi-pass Ebru comb displacements in orthogonal directions
-    vec2  pMarb = uv;
-    float baseFreq = ( 8.0 + 4.0 * audioCentroid ) * cFreq;
+    vec2  p_marb = uv;
+    float base_freq = ( 8.0 + 4.0 * audioCentroid ) * c_freq;
 
-    pMarb = ebruComb( pMarb, t, baseFreq, 1.0 + 0.5 * audioSubBass );
-    pMarb.xy = pMarb.yx;
-    pMarb = ebruComb( pMarb, -t * 0.8, baseFreq * 1.4, -1.0 );
-    pMarb.xy = pMarb.yx;
+    p_marb = ebruComb( p_marb, t, base_freq, 1.0 + 0.5 * audioSubBass );
+    p_marb.xy = p_marb.yx;
+    p_marb = ebruComb( p_marb, -t * 0.8, base_freq * 1.4, -1.0 );
+    p_marb.xy = p_marb.yx;
 
     // Acid melt feedback distortion
-    pMarb += vec2( sin( pMarb.y * 6.0 + t ), cos( pMarb.x * 6.0 - t ) ) * ( 0.08 * mlt );
+    p_marb += vec2( sin( p_marb.y * 6.0 + t ), cos( p_marb.x * 6.0 - t ) ) * ( 0.08 * mlt );
 
     // Marble droplet rings (concentric drop injections)
-    float dropRings = sin( length( pMarb ) * 18.0 - t * 4.0 );
-    float ringGlow = smoothstep( 0.85, 1.0, abs( dropRings ) ) * glw;
+    float drop_rings = sin( length( p_marb ) * 18.0 - t * 4.0 );
+    float ring_glow = smoothstep( 0.85, 1.0, abs( drop_rings ) ) * glw;
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( pMarb * 0.4 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_marb * 0.4 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Acid wash chromatic phase inversion (inverts on audio kick)
-    float phase = length( pMarb ) * 0.5 + t * 0.15 + audioKick * 0.5;
-    vec3  palA = imgPalette( phase );
-    vec3  palB = imgPalette( phase + 0.5 );
-    vec3  marbCol = mix( palA, palB, 0.5 + 0.5 * dropRings );
+    float phase = length( p_marb ) * 0.5 + t * 0.15 + audioKick * 0.5;
+    vec3  pal_a = imgPalette( phase );
+    vec3  pal_b = imgPalette( phase + 0.5 );
+    vec3  marb_col = mix( pal_a, pal_b, 0.5 + 0.5 * drop_rings );
 
-    marbCol = mix( marbCol, texCol, 0.35 + 0.15 * audioValence );
+    marb_col = mix( marb_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Hold the oil film back to a fixed exposure. The base is entirely
     // mix(imgPalette, photo), so a light photo pinned the whole bath near 1.0
     // and the ridges and sheen were clipped away on top of it.
-    float expGain = clamp( 0.28 / max( 0.05, photoLevel() ), 0.28, 2.4 );
-    marbCol *= expGain;
+    float exp_gain = clamp( 0.28 / max( 0.05, photoLevel() ), 0.28, 2.4 );
+    marb_col *= exp_gain;
 
     // Add glowing marble ridge filaments & kick flash. The tint constants
     // exceed 1.0 per channel, so the TINTED vectors carry the caps -- bounding
     // only the scalars left them unbounded.
-    vec3 ridgeTint = min( vec3( 1.4, 1.1, 1.7 ) * ringGlow * ( 1.0 + 2.5 * audioKick ), vec3( 0.85 ) );
-    marbCol += ridgeTint;
+    vec3 ridge_tint = min( vec3( 1.4, 1.1, 1.7 ) * ring_glow * ( 1.0 + 2.5 * audioKick ), vec3( 0.85 ) );
+    marb_col += ridge_tint;
 
     // Specular liquid reflection
-    float spec = pow( clamp( 1.0 - abs( dropRings ) * 2.0, 0.0, 1.0 ), 4.0 );
-    marbCol += min( vec3( 1.3, 1.3, 1.5 ) * spec * ( 0.5 + 1.0 * audioLevel ), vec3( 0.70 ) );
+    float spec = pow( clamp( 1.0 - abs( drop_rings ) * 2.0, 0.0, 1.0 ), 4.0 );
+    marb_col += min( vec3( 1.3, 1.3, 1.5 ) * spec * ( 0.5 + 1.0 * audioLevel ), vec3( 0.70 ) );
 
-    marbCol = pow( marbCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( marbCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.28 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    marb_col = pow( marb_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( marb_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.28 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

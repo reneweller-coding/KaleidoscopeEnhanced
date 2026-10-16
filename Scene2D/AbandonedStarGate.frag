@@ -111,93 +111,93 @@ void main()
 
     // The gate is viewed slightly off-center and tilted
     float tilt = 0.3 * sin( time * 0.1 );
-    mat2  rotM = mat2( cos( tilt ), -sin( tilt ), sin( tilt ), cos( tilt ) );
-    vec2  p = rotM * uv;
+    mat2  rot_m = mat2( cos( tilt ), -sin( tilt ), sin( tilt ), cos( tilt ) );
+    vec2  p = rot_m * uv;
 
     // Slow drift of the camera past the structure
     vec2 offset = vec2( sin( time * 0.05 + audioAdvance * 0.5 ) * 0.2, cos( time * 0.07 ) * 0.2 );
     p += offset;
 
     // Perspective approximation for a 3D ring
-    float ySquash = 2.0; // Squashes Y to make it look like it's tilted away in 3D
-    vec2  ringP = vec2( p.x, p.y * ySquash );
+    float y_squash = 2.0; // Squashes Y to make it look like it's tilted away in 3D
+    vec2  ring_p = vec2( p.x, p.y * y_squash );
 
-    float distToCenter = length( ringP );
-    float angle = atan( ringP.y, ringP.x );
+    float dist_to_center = length( ring_p );
+    float angle = atan( ring_p.y, ring_p.x );
 
-    float ringRadius = 0.6;
-    float ringThickness = 0.1;
+    float ring_radius = 0.6;
+    float ring_thickness = 0.1;
 
     vec3 col = vec3( 0.0 );
 
-    vec3 gateCol = vec3( 0.15, 0.12, 0.1 ); // Rusted dark metal
-    vec3 energyCol = imgPalette( 0.8 + audioCentroid * 0.1 );
+    vec3 gate_col = vec3( 0.15, 0.12, 0.1 ); // Rusted dark metal
+    vec3 energy_col = imgPalette( 0.8 + audioCentroid * 0.1 );
 
     // Background Space
-    float bgNoise = fbm( vec3( p * 5.0, 0.0 ) );
-    col += vec3( 0.02, 0.01, 0.03 ) * bgNoise * ( 1.0 + audioSwell ); // Faint nebula dust
+    float bg_noise = fbm( vec3( p * 5.0, 0.0 ) );
+    col += vec3( 0.02, 0.01, 0.03 ) * bg_noise * ( 1.0 + audioSwell ); // Faint nebula dust
 
-    float ringDist = abs( distToCenter - ringRadius );
+    float ring_dist = abs( dist_to_center - ring_radius );
 
     // Render the physical ring structure
-    if ( ringDist < ringThickness )
+    if ( ring_dist < ring_thickness )
     {
         // Detailed surface texture (rust, panels, damage)
-        float surfaceDetail = fbm( vec3( angle * 10.0, distToCenter * 20.0, 0.0 ) );
+        float surface_detail = fbm( vec3( angle * 10.0, dist_to_center * 20.0, 0.0 ) );
         float panels = step( 0.9, fract( angle * 15.0 ) ); // Radial panel gaps
 
-        vec3 localCol = mix( gateCol, vec3( 0.05 ), surfaceDetail * rp ) * 2.2;
-        localCol *= ( 1.0 - panels * 0.5 );
+        vec3 local_col = mix( gate_col, vec3( 0.05 ), surface_detail * rp ) * 2.2;
+        local_col *= ( 1.0 - panels * 0.5 );
 
         // Lighting from ambient stars + faint internal glow
         float lighting = 0.9 + 0.5 * sin( angle * 2.0 + time );
-        localCol *= lighting;
+        local_col *= lighting;
 
         // Damage/holes in the ring
-        float damage = smoothstep( 0.4, 0.6, fbm( vec3( angle * 5.0, distToCenter * 5.0, 10.0 ) ) );
+        float damage = smoothstep( 0.4, 0.6, fbm( vec3( angle * 5.0, dist_to_center * 5.0, 10.0 ) ) );
         if ( damage * rp > 0.6 )
         {
-            localCol = vec3( 0.0 ); // hole
+            local_col = vec3( 0.0 ); // hole
         }
         else
         {
-            col = localCol;
+            col = local_col;
         }
 
         // Residual glowing circuitry on the ring (dormant until kick)
-        float circuitry = step( 0.95, fbm( vec3( angle * 30.0, distToCenter * 40.0, 0.0 ) ) );
-        col += energyCol * circuitry * ( 0.2 + audioSwell * 0.5 );
+        float circuitry = step( 0.95, fbm( vec3( angle * 30.0, dist_to_center * 40.0, 0.0 ) ) );
+        col += energy_col * circuitry * ( 0.2 + audioSwell * 0.5 );
     }
 
     // Unstable Wormhole Energy sparking in the center and along the inner edge
-    if ( distToCenter < ringRadius + 0.02 )
+    if ( dist_to_center < ring_radius + 0.02 )
     {
         // Event horizon / tear in spacetime
-        float tear = fbm( vec3( ringP * 3.0, sceneTime * 2.0 + sceneAdvance * 5.0 ) );
+        float tear = fbm( vec3( ring_p * 3.0, sceneTime * 2.0 + sceneAdvance * 5.0 ) );
 
         // Intensity spikes on audioKick (violent unstable sparking)
-        float sparkTrigger = step( 0.95, hash11( floor( sceneTime * 4.00 ) + floor( angle * 5.0 ) ) ); // was 10 Hz
-        float sparkInt = sparkTrigger * audioKick * 10.0 * sp;
+        float spark_trigger = step( 0.95, hash11( floor( sceneTime * 4.00 ) + floor( angle * 5.0 ) ) ); // was 10 Hz
+        float spark_int = spark_trigger * audioKick * 10.0 * sp;
 
         // Energy arcs jumping across the inner radius
-        float arc = smoothstep( 0.45, 0.75, tear ) * exp( -( ringRadius - distToCenter ) * 10.0 );
+        float arc = smoothstep( 0.45, 0.75, tear ) * exp( -( ring_radius - dist_to_center ) * 10.0 );
 
-        col += energyCol * arc * ( 0.9 + sparkInt + audioSwell * 1.5 );
+        col += energy_col * arc * ( 0.9 + spark_int + audioSwell * 1.5 );
 
         // Occasional violent flash filling the center (failed opening attempt)
-        float massiveFlash = step( 0.98, hash11( floor( time * 2.00 ) ) );
-        col += energyCol * massiveFlash * audioKick * 5.0 * sp * exp( -distToCenter * 5.0 );
+        float massive_flash = step( 0.98, hash11( floor( time * 2.00 ) ) );
+        col += energy_col * massive_flash * audioKick * 5.0 * sp * exp( -dist_to_center * 5.0 );
     }
 
     // Lens flare / Glare from sparks
-    float glare = exp( -distToCenter * 2.0 ) * audioKick * 0.5 * sp;
-    col += energyCol * glare;
+    float glare = exp( -dist_to_center * 2.0 ) * audioKick * 0.5 * sp;
+    col += energy_col * glare;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -62,60 +62,60 @@ void main()
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     float t = time * 0.35 * spd + audioAdvance * 0.15;
-    float fGid = float( gid );
+    float f_gid = float( gid );
 
-    float strandID = floor( fGid / 64.0 ); // 64 mycelial strands
-    float segID = mod( fGid, 64.0 );       // 64 segments per strand
+    float strand_id = floor( f_gid / 64.0 ); // 64 mycelial strands
+    float seg_id = mod( f_gid, 64.0 );       // 64 segments per strand
 
-    float u1 = segID / 64.0;
-    float u2 = ( segID + 1.0 ) / 64.0;
+    float u1 = seg_id / 64.0;
+    float u2 = ( seg_id + 1.0 ) / 64.0;
 
     // Stalactite ceiling anchor points
-    float anchorX = ( hash11( strandID ) - 0.5 ) * 8.0;
-    float anchorZ = ( hash11( strandID * 3.7 ) - 0.5 ) * 8.0;
+    float anchor_x = ( hash11( strand_id ) - 0.5 ) * 8.0;
+    float anchor_z = ( hash11( strand_id * 3.7 ) - 0.5 ) * 8.0;
 
     // Hanging downward from y = 3.0
     float y1 = 3.0 - u1 * 6.0 * hyp * ( 1.0 + 0.2 * audioBass );
     float y2 = 3.0 - u2 * 6.0 * hyp * ( 1.0 + 0.2 * audioBass );
 
     // Catenary / pendulum sway and branching curvature
-    float sway1 = sin( u1 * 4.0 + t * 2.0 + strandID ) * 0.45 * u1;
-    float sway2 = sin( u2 * 4.0 + t * 2.0 + strandID ) * 0.45 * u2;
+    float sway1 = sin( u1 * 4.0 + t * 2.0 + strand_id ) * 0.45 * u1;
+    float sway2 = sin( u2 * 4.0 + t * 2.0 + strand_id ) * 0.45 * u2;
 
-    float swayZ1 = cos( u1 * 3.5 - t * 1.8 + strandID * 2.0 ) * 0.4 * u1;
-    float swayZ2 = cos( u2 * 3.5 - t * 1.8 + strandID * 2.0 ) * 0.4 * u2;
+    float sway_z1 = cos( u1 * 3.5 - t * 1.8 + strand_id * 2.0 ) * 0.4 * u1;
+    float sway_z2 = cos( u2 * 3.5 - t * 1.8 + strand_id * 2.0 ) * 0.4 * u2;
 
-    vec3 pA = vec3( anchorX + sway1, y1, anchorZ + swayZ1 );
-    vec3 pB = vec3( anchorX + sway2, y2, anchorZ + swayZ2 );
+    vec3 p_a = vec3( anchor_x + sway1, y1, anchor_z + sway_z1 );
+    vec3 p_b = vec3( anchor_x + sway2, y2, anchor_z + sway_z2 );
 
-    vec3  forward = normalize( pB - pA );
+    vec3  forward = normalize( p_b - p_a );
     vec3  binormal = normalize( vec3( -forward.z, 0.0, forward.x ) );
-    float ribbonWidth = ( 0.02 + 0.015 * ( 1.0 - u1 ) ) * ( 1.0 + audioHigh * 0.5 );
+    float ribbon_width = ( 0.02 + 0.015 * ( 1.0 - u1 ) ) * ( 1.0 + audioHigh * 0.5 );
 
-    vec3 v0 = pA - binormal * ribbonWidth;
-    vec3 v1 = pA + binormal * ribbonWidth;
-    vec3 v2 = pB - binormal * ribbonWidth;
-    vec3 v3 = pB + binormal * ribbonWidth;
+    vec3 v0 = p_a - binormal * ribbon_width;
+    vec3 v1 = p_a + binormal * ribbon_width;
+    vec3 v2 = p_b - binormal * ribbon_width;
+    vec3 v3 = p_b + binormal * ribbon_width;
 
     uint base = atomicAdd( cmd[4], 6u );
     if ( base + 6u > maxVertices )
         return;
 
-    vec3 pList[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
-    vec2 uvList[6] = vec2[6](
+    vec3 p_list[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
+    vec2 uv_list[6] = vec2[6](
         vec2( 0.0, u1 ), vec2( 1.0, u1 ), vec2( 0.0, u2 ),
         vec2( 1.0, u1 ), vec2( 1.0, u2 ), vec2( 0.0, u2 ) );
 
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
-        verts[off + 3u] = strandID;
-        verts[off + 4u] = hash11( strandID );
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
+        verts[off + 3u] = strand_id;
+        verts[off + 4u] = hash11( strand_id );
         verts[off + 5u] = u1;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }

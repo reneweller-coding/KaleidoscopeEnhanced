@@ -36,7 +36,7 @@ uniform float driftP;
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioAdvance;   ///< shard drift speed multiplier (0 -> 1.0)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -78,8 +78,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg; // into one wedge
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg; // into one wedge
     a = abs( a );                       // mirror the wedge
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -108,8 +108,8 @@ void main()
 
     // Shard drift: phase is time + the INTEGRATED audio phase (the old
     // time * audioFlux term remapped every cell's phase each block -> jitter).
-    float driftV = ( driftP <= 0.01 ) ? 1.0 : driftP;
-    float dph = ( time * 0.10 + audioPhase * 0.25 ) * driftV;
+    float drift_v = ( driftP <= 0.01 ) ? 1.0 : driftP;
+    float dph = ( time * 0.10 + audioPhase * 0.25 ) * drift_v;
 
     float d1 = 8.0, d2 = 8.0;
     vec2  rel = vec2( 0.0 );
@@ -137,15 +137,15 @@ void main()
 
     // The picture, folded kaleidoscopically, gently refracted by each shard's
     // lens (a small, steady bulge — no violent beat spike).
-    vec2 baseUV = fp * 0.6 + 0.5;
-    vec2 iuv = baseUV + rel * 0.12;
+    vec2 base_uv = fp * 0.6 + 0.5;
+    vec2 iuv = base_uv + rel * 0.12;
     vec3 pic = img( fract( iuv ) );
 
     vec3 col = pic * ( 0.55 + 0.8 * audioLevel ) * ( 1.0 + 0.15 * audioBeat );
 
     // Backlit seams: warm/cool by valence, glowing softly (not a hard flare).
-    vec3 seamCol = imgPalette( 0.30 * audioValence ) * 1.5;
-    col = mix( col, seamCol * ( 0.6 + 0.7 * audioBeat + 0.3 * audioCentroid ),
+    vec3 seam_col = imgPalette( 0.30 * audioValence ) * 1.5;
+    col = mix( col, seam_col * ( 0.6 + 0.7 * audioBeat + 0.3 * audioCentroid ),
                seam * ( 0.30 + 0.25 * audioBeat ) );
 
     // Jewel vignette.

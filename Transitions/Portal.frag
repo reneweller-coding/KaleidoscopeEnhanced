@@ -20,7 +20,7 @@ uniform sampler2D texDepth0;  ///< scene depth of the OLD effect
 uniform vec2      depthValid; ///< x: does tex0 hold real 3D depth?
 uniform vec2      nearFar;    ///< shared scene clip planes (linearisation)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hashT( vec2 p2 )
@@ -51,7 +51,7 @@ void main()
     float d = 1.0 - interpolation; // transition progress 0..1
     // No beat surge any more: pushing the progress forward on every beat
     // made the geometry jump in time with the music (speed pass 14.09.2026).
-    float mid = sin( PI * d ); // 0 at both ends, 1 mid-transition
+    float mid = sin( Pi * d ); // 0 at both ends, 1 mid-transition
     // mid follows the progress only: a rotation, zoom or push that breathes with
     // the music is what the no-shake rule forbids, however slow the envelope.
     float aspect = resolution.x / resolution.y;
@@ -74,8 +74,8 @@ void main()
     float sw = d * d * 1.6 - 0.2;
     float ew = 0.06 + 0.10 * d;
     float nz = ( noise2T( p * vec2( 9.0 * aspect, 9.0 ) + d * 3.0 ) - 0.5 ) * ew;
-    float wOld = smoothstep( sw - ew, sw + ew, ln + nz );
-    vec4  col = mix( c1, c0, wOld );
+    float w_old = smoothstep( sw - ew, sw + ew, ln + nz );
+    vec4  col = mix( c1, c0, w_old );
     // Glowing rim rides the moving threshold (the portal's energy edge).
     float rim = exp( -abs( ln + nz - sw ) / max( ew, 1e-4 ) );
     col.rgb += vec3( 0.45, 0.75, 1.35 ) * rim * 0.40 * mid;

@@ -35,8 +35,8 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float zoomP;  ///< hex-lattice scale        (0 -> 1.0; 0.7 = coarser, 1.6 = finer)
 uniform float swirlP; ///< radius-coupled swirl amt (0 -> none; curves the lattice)
 
-const float PI = 3.14159265358979; ///< Pi.
-const float ROOT_3 = 1.7320508075688772;
+const float Pi = 3.14159265358979; ///< Pi.
+const float Root3 = 1.7320508075688772;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -85,17 +85,17 @@ vec3 palette( float t )
 
 vec4 getHex( vec2 p )
 {
-    vec2 s = vec2( 1.0, ROOT_3 );
-    vec4 hC = floor( vec4( p, p - vec2( 0.5, 1.0 ) ) / s.xyxy ) + 0.5;
-    vec4 h = vec4( p - hC.xy * s, p - ( hC.zw + 0.5 ) * s );
+    vec2 s = vec2( 1.0, Root3 );
+    vec4 h_c = floor( vec4( p, p - vec2( 0.5, 1.0 ) ) / s.xyxy ) + 0.5;
+    vec4 h = vec4( p - h_c.xy * s, p - ( h_c.zw + 0.5 ) * s );
     return dot( h.xy, h.xy ) < dot( h.zw, h.zw )
-               ? vec4( h.xy, hC.xy )
-               : vec4( h.zw, hC.zw + 0.5 );
+               ? vec4( h.xy, h_c.xy )
+               : vec4( h.zw, h_c.zw + 0.5 );
 }
 
 float hexDist( vec2 p )
 {
-    vec2 s = vec2( 1.0, ROOT_3 );
+    vec2 s = vec2( 1.0, Root3 );
     p = abs( p );
     return max( dot( p, s * 0.5 ), p.x );
 }
@@ -103,18 +103,18 @@ float hexDist( vec2 p )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  fragCoord = gl_FragCoord.xy;
+    vec2  frag_coord = gl_FragCoord.xy;
     float tt = time + audioAdvance * 3.0; // jump-free (host-integrated) clock
 
-    float r = PI / 6.0;
+    float r = Pi / 6.0;
     mat2  rot = mat2( cos( r ), sin( r ), -sin( r ), cos( r ) );
 
-    vec2 uv0 = 2.0 * ( fragCoord / resolution ) - 1.0;
+    vec2 uv0 = 2.0 * ( frag_coord / resolution ) - 1.0;
     uv0.x *= resolution.x / resolution.y;
     // Per-activation lattice scale + a radius-coupled swirl that bends the
     // straight hex lattice into curved, spiralling arms (jump-free clocks).
-    float zoomV = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
-    uv0 *= zoomV;
+    float zoom_v = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
+    uv0 *= zoom_v;
     if ( swirlP > 0.001 )
     {
         float ang = swirlP * length( uv0 ) * 1.5 + audioPhase * 0.10;
@@ -131,11 +131,11 @@ void main()
     for ( int i = 0; i < 5; i++ )
     {
         float fi = float( i );
-        h = getHex( 1.1 * ROOT_3 * h * rot ).xy;
+        h = getHex( 1.1 * Root3 * h * rot ).xy;
 
         float d = hexDist( h );
         d = 2.0 * d * pow( 0.2, d0 );
-        d = 0.5 * sin( 4.0 * d - 0.5 * tt + fi * 2.0 * PI / 7.0 );
+        d = 0.5 * sin( 4.0 * d - 0.5 * tt + fi * 2.0 * Pi / 7.0 );
         d = 0.04 / d;
         d = pow( d, 2.0 );
 
@@ -151,7 +151,7 @@ void main()
 
     // Image-driven colour: a drifting crop of the picture rotates the hue.
     float himg = dot( imgPal( dot( color, vec3( 0.333 ) ) * 6.0
-                              + length( fragCoord / resolution - 0.5 ) * 4.0 ),
+                              + length( frag_coord / resolution - 0.5 ) * 4.0 ),
                       vec3( 0.333 ) );
     color = hueRot( color, ( himg - 0.5 ) * 3.0 + time * 0.05 );
 

@@ -52,7 +52,7 @@ vec3 imgPalette( float t )
 void main()
 {
     vec3  corner = attrA.xyz;
-    float cIndex = attrA.w;
+    float c_index = attrA.w;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
@@ -64,41 +64,41 @@ void main()
     // icosahedron), cages on a face-centred 4x4x5 crystal.  The old build
     // spread lone 0.08-unit cubes over a 12x12x34 grid: recorded as a
     // sparse dust of white boxes with no molecule in sight.
-    float ballIdx = floor( cIndex / 60.0 ); // 0..81
-    float atomIdx = mod( cIndex, 60.0 );
+    float ball_idx = floor( c_index / 60.0 ); // 0..81
+    float atom_idx = mod( c_index, 60.0 );
 
-    float bx = mod( ballIdx, 4.0 );
-    float by = mod( floor( ballIdx / 4.0 ), 4.0 );
-    float bz = floor( ballIdx / 16.0 ); // 0..5
-    vec3  centerPos = ( vec3( bx, by, bz ) - vec3( 1.5, 1.5, 2.5 ) ) * ( 2.05 * pitch )
-                      + vec3( 0.5 * pitch * mod( bz, 2.0 ) ); // fcc-like stagger
+    float bx = mod( ball_idx, 4.0 );
+    float by = mod( floor( ball_idx / 4.0 ), 4.0 );
+    float bz = floor( ball_idx / 16.0 ); // 0..5
+    vec3  center_pos = ( vec3( bx, by, bz ) - vec3( 1.5, 1.5, 2.5 ) ) * ( 2.05 * pitch )
+                       + vec3( 0.5 * pitch * mod( bz, 2.0 ) ); // fcc-like stagger
 
-    float r = length( centerPos );
+    float r = length( center_pos );
 
     // Spherical Fibonacci direction for this atom.
     float ga = 2.39996323;
-    float zf = 1.0 - 2.0 * ( atomIdx + 0.5 ) / 60.0;
+    float zf = 1.0 - 2.0 * ( atom_idx + 0.5 ) / 60.0;
     float rf = sqrt( max( 0.0, 1.0 - zf * zf ) );
-    float th = atomIdx * ga;
-    vec3  atomDir = vec3( rf * cos( th ), rf * sin( th ), zf );
+    float th = atom_idx * ga;
+    vec3  atom_dir = vec3( rf * cos( th ), rf * sin( th ), zf );
 
-    float cageR = ( buckySizeP > 0.01 ? ( 0.45 + 2.0 * buckySizeP ) : 0.62 )
-                  * ( 1.0 + 0.06 * audioSwell );
+    float cage_r = ( buckySizeP > 0.01 ? ( 0.45 + 2.0 * buckySizeP ) : 0.62 )
+                   * ( 1.0 + 0.06 * audioSwell );
 
     // C60 cage vibration pulse (breathing mode), travelling through the
     // crystal as a wave.
     float pulse = exp( -abs( fract( r * 0.8 - t * 2.0 ) - 0.5 ) * 16.0 ) * ( 1.0 + 3.0 * audioKick );
     vBuckyPulse = pulse;
 
-    float bSize = 0.065 * ( 1.0 + 0.25 * pulse );
-    vec3  worldPos = centerPos + atomDir * cageR * ( 1.0 + 0.05 * pulse )
-                     + corner * bSize;
+    float b_size = 0.065 * ( 1.0 + 0.25 * pulse );
+    vec3  world_pos = center_pos + atom_dir * cage_r * ( 1.0 + 0.05 * pulse )
+                      + corner * b_size;
     vNormal = normalize( corner );
 
-    vCol = imgPalette( fract( 0.10 + ballIdx * 0.037 + atomDir.z * 0.08 ) );
+    vCol = imgPalette( fract( 0.10 + ball_idx * 0.037 + atom_dir.z * 0.08 ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // 3D rotation
     float c = cos( t * 0.15 ), s = sin( t * 0.15 );

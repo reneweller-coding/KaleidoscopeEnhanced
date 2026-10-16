@@ -73,11 +73,11 @@ float mapHopf( vec3 p, float t, float fiberDens, float tubeR, out float fiberPha
     fiberPhase = u + v + t * 2.0;
 
     // Toroidal nested shell distance
-    float dTor = abs( length( vec2( length( p.xy ) - 1.6, p.z ) ) - 0.7 ) - tubeR;
+    float d_tor = abs( length( vec2( length( p.xy ) - 1.6, p.z ) ) - 0.7 ) - tubeR;
 
     // Streamline periodic ribs
-    float streamRib = abs( sin( ( u - v ) * ( 6.0 * fiberDens ) + t * 4.0 ) );
-    return dTor + streamRib * 0.04;
+    float stream_rib = abs( sin( ( u - v ) * ( 6.0 * fiberDens ) + t * 4.0 ) );
+    return d_tor + stream_rib * 0.04;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -86,8 +86,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float fDens = ( fiberDensityP > 0.01 ) ? fiberDensityP : 1.0;
-    float tR = ( tubeRadiusP > 0.01 ) ? tubeRadiusP : 0.08;
+    float f_dens = ( fiberDensityP > 0.01 ) ? fiberDensityP : 1.0;
+    float t_r = ( tubeRadiusP > 0.01 ) ? tubeRadiusP : 0.08;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.168 * spd + audioAdvance * 0.168 * spd;
@@ -95,9 +95,9 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Orbital camera ray setup
-    float camDist = 3.2 + 0.4 * sin( audioSwell * 2.0 );
-    float camA = t * 0.25 + audioPhase * 0.1;
-    vec3  ro = vec3( cos( camA ) * camDist, 1.2 * sin( t * 0.3 ), sin( camA ) * camDist );
+    float cam_dist = 3.2 + 0.4 * sin( audioSwell * 2.0 );
+    float cam_a = t * 0.25 + audioPhase * 0.1;
+    vec3  ro = vec3( cos( cam_a ) * cam_dist, 1.2 * sin( t * 0.3 ), sin( cam_a ) * cam_dist );
     vec3  ta = vec3( 0.0, 0.0, 0.0 );
 
     vec3 ww = normalize( ta - ro );
@@ -105,51 +105,51 @@ void main()
     vec3 vv = cross( uu, ww );
     vec3 rd = normalize( uv.x * uu + uv.y * vv + ( 1.25 + 0.2 * sin( audioSwell ) ) * ww );
 
-    float tubeRadius = ( tR + 0.02 * audioSubBass );
+    float tube_radius = ( t_r + 0.02 * audioSubBass );
 
     // Brightness packs more streamline ribs onto each fiber. Only the (u-v)
-    // frequency is scaled -- the t*4.0 flow phase inside streamRib is a separate
+    // frequency is scaled -- the t*4.0 flow phase inside stream_rib is a separate
     // summand, so the ribs keep sliding smoothly while their spacing tightens.
-    float fDensA = fDens * ( 1.0 + 0.5 * audioCentroid );
+    float f_dens_a = f_dens * ( 1.0 + 0.5 * audioCentroid );
 
     // Raymarching through Hopf fiber field
-    float totDist = 0.0;
-    float hitPhase = 0.0;
-    float fiberGlow = 0.0;
-    vec3  hitCol = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float hit_phase = 0.0;
+    float fiber_glow = 0.0;
+    vec3  hit_col = vec3( 0.0 );
 
     for ( int i = 0; i < 52; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curPhase;
-        float d = mapHopf( p, t, fDensA, tubeRadius, curPhase );
+        vec3  p = ro + rd * tot_dist;
+        float cur_phase;
+        float d = mapHopf( p, t, f_dens_a, tube_radius, cur_phase );
 
         // A ray that never gets close to the fiber torus (d stays large,
-        // totDist runs out to 8.0) was previously falling into this SAME
+        // tot_dist runs out to 8.0) was previously falling into this SAME
         // branch as a real surface hit, so its huge/stale "d" fed straight
-        // into hitCol's (0.7 + 0.4*(1.0-d)) multiplier -- strongly negative
+        // into hit_col's (0.7 + 0.4*(1.0-d)) multiplier -- strongly negative
         // for d well above 1 -- producing a flat, wrongly-tinted patch
-        // across the whole missed region instead of leaving it to bgCol.
-        // Only an actual surface hit may set hitCol now; running out of
+        // across the whole missed region instead of leaving it to bg_col.
+        // Only an actual surface hit may set hit_col now; running out of
         // march distance is a plain miss.
         if ( abs( d ) < 0.003 )
         {
-            hitPhase = curPhase;
+            hit_phase = cur_phase;
 
             // This split fix alone left the picture unchanged because the
-            // OTHER additive term, fiberGlow, was never touched -- and it
+            // OTHER additive term, fiber_glow, was never touched -- and it
             // is the dominant one. minD (closest |d| over the WHOLE march)
             // is, by construction, always inside [0, 0.003] for any ray
             // that hits at all (that's the hit threshold, not a proximity
             // signal). Verified numerically across a full screen grid:
-            // 100% of hit pixels had minD in [0, 0.003] and fiberGlow
+            // 100% of hit pixels had minD in [0, 0.003] and fiber_glow
             // in [0.92, 1.0] -- i.e. exp(-minD*k) was pinned near its
             // ceiling for the ENTIRE visible fiber bundle regardless of
             // where on the torus the ray landed, flooding it with a
             // uniform (1.3,1.1,1.8)-tinted wash that swallowed the real
             // streamline pattern underneath (the hit region actually
             // covers most of the frame at this camera distance -- it is
-            // not a framing/FOV problem). streamRib is a genuine
+            // not a framing/FOV problem). stream_rib is a genuine
             // per-surface-point quantity that already exists in mapHopf's
             // distance field but was discarded; using it directly as the
             // glow driver recovers the actual streamline pulses the scene
@@ -159,39 +159,39 @@ void main()
             vec4  q4h = vec4( 2.0 * p, r2h - 1.0 ) / ( r2h + 1.0 );
             float uh = atan( q4h.y, q4h.x );
             float vh = atan( q4h.w, q4h.z );
-            float streamRib = abs( sin( ( uh - vh ) * ( 6.0 * fDensA ) + t * 4.0 ) );
+            float stream_rib = abs( sin( ( uh - vh ) * ( 6.0 * f_dens_a ) + t * 4.0 ) );
             // Exponent >= 1 on a 0..1 signal only ever narrows the rib, so a
             // bright mix resolves finer streamlines without adding any light.
-            fiberGlow = pow( 1.0 - streamRib, 1.0 + 1.2 * audioCentroid ) * glw;
+            fiber_glow = pow( 1.0 - stream_rib, 1.0 + 1.2 * audioCentroid ) * glw;
 
-            vec2 sampleUV = fract( vec2( atan( p.y, p.x ) / 6.2831853 + 0.5, p.z * 0.3 ) );
-            vec3 texCol = img( sampleUV );
-            vec3 pal = imgPalette( hitPhase * 0.15 + t * 0.05 );
-            hitCol = mix( texCol, pal, 0.5 ) * ( 0.7 + 0.4 * ( 1.0 - d ) );
+            vec2 sample_uv = fract( vec2( atan( p.y, p.x ) / 6.2831853 + 0.5, p.z * 0.3 ) );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal = imgPalette( hit_phase * 0.15 + t * 0.05 );
+            hit_col = mix( tex_col, pal, 0.5 ) * ( 0.7 + 0.4 * ( 1.0 - d ) );
             break;
         }
-        if ( totDist > 8.0 )
+        if ( tot_dist > 8.0 )
             break;
 
-        totDist += max( 0.02, d * 0.7 );
+        tot_dist += max( 0.02, d * 0.7 );
     }
 
-    // Glowing fiber streamlines & kick flash (streamRib term computed
-    // above; left at 0 on a true miss so bgCol shows through cleanly).
-    // fiberGlow averages ~0.6 across the whole hit surface (it is a real
+    // Glowing fiber streamlines & kick flash (stream_rib term computed
+    // above; left at 0 on a true miss so bg_col shows through cleanly).
+    // fiber_glow averages ~0.6 across the whole hit surface (it is a real
     // streamline signal, not a thin edge), so the raw (1.3,1.1,1.8) tint
     // already exceeds 1.0 per channel on AVERAGE before any kick -- capping
     // only the scalar left the tinted vec3 itself unbounded.
-    vec3 fiberTint = min( vec3( 1.3, 1.1, 1.8 ) * fiberGlow * ( 1.0 + 2.5 * audioKick ), vec3( 0.65 ) );
+    vec3 fiber_tint = min( vec3( 1.3, 1.1, 1.8 ) * fiber_glow * ( 1.0 + 2.5 * audioKick ), vec3( 0.65 ) );
 
     // Background Hopf field flare
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
 
-    vec3 finalCol = mix( bgCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
-    finalCol += fiberTint;
+    vec3 final_col = mix( bg_col, hit_col, clamp( length( hit_col ), 0.0, 1.0 ) );
+    final_col += fiber_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.5 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.5 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

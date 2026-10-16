@@ -90,52 +90,52 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Concentric spherical shells of radiolarian micro-skeletons
-    float shellIdx = floor( qi / 300.0 ); // 10 shells
-    float slotIdx = mod( qi, 300.0 );
+    float shell_idx = floor( qi / 300.0 ); // 10 shells
+    float slot_idx = mod( qi, 300.0 );
 
     // Golden spiral on sphere
-    float phi = slotIdx * 2.3999632;
-    float cosTheta = 1.0 - ( slotIdx / 300.0 ) * 2.0;
-    float sinTheta = sqrt( max( 0.0, 1.0 - cosTheta * cosTheta ) );
-    vec3  sphereDir = vec3( cos( phi ) * sinTheta, sin( phi ) * sinTheta, cosTheta );
+    float phi = slot_idx * 2.3999632;
+    float cos_theta = 1.0 - ( slot_idx / 300.0 ) * 2.0;
+    float sin_theta = sqrt( max( 0.0, 1.0 - cos_theta * cos_theta ) );
+    vec3  sphere_dir = vec3( cos( phi ) * sin_theta, sin( phi ) * sin_theta, cos_theta );
 
-    float shellRadius = ( 2.5 + shellIdx * 1.4 ) * ltc + audioSwell * 1.2;
-    float rotSpeed = ( 0.8 / ( 1.0 + shellIdx * 0.3 ) ) * ( ( mod( shellIdx, 2.0 ) > 0.5 ) ? 1.0 : -1.0 );
-    float angle = time * rotSpeed * 0.4 + audioAdvance * 0.1;
+    float shell_radius = ( 2.5 + shell_idx * 1.4 ) * ltc + audioSwell * 1.2;
+    float rot_speed = ( 0.8 / ( 1.0 + shell_idx * 0.3 ) ) * ( ( mod( shell_idx, 2.0 ) > 0.5 ) ? 1.0 : -1.0 );
+    float angle = time * rot_speed * 0.4 + audioAdvance * 0.1;
 
-    mat3 rotY = mat3( cos( angle ), 0.0, sin( angle ), 0.0, 1.0, 0.0, -sin( angle ), 0.0, cos( angle ) );
-    vec3 centerPos = rotY * ( sphereDir * shellRadius );
+    mat3 rot_y = mat3( cos( angle ), 0.0, sin( angle ), 0.0, 1.0, 0.0, -sin( angle ), 0.0, cos( angle ) );
+    vec3 center_pos = rot_y * ( sphere_dir * shell_radius );
 
     // Dynamic kick burst
-    centerPos += normalize( centerPos ) * audioSwell * 0.9;
+    center_pos += normalize( center_pos ) * audioSwell * 0.9;
 
     // Card orientation: facing outwards + tumbling
-    vec3 normal = rotY * sphereDir;
+    vec3 normal = rot_y * sphere_dir;
     vec3 tangent = normalize( cross( normal, vec3( 0.0, 1.0, 0.0 ) ) );
     if ( length( tangent ) < 0.1 )
         tangent = vec3( 1.0, 0.0, 0.0 );
     vec3 bitangent = cross( normal, tangent );
 
-    vec3 cardSize = vec3( 0.75, 0.75, 0.0 );
-    vec3 localPos = tangent * ( corner.x * cardSize.x ) + bitangent * ( corner.y * cardSize.y );
-    vec3 worldP = centerPos + localPos;
+    vec3 card_size = vec3( 0.75, 0.75, 0.0 );
+    vec3 local_pos = tangent * ( corner.x * card_size.x ) + bitangent * ( corner.y * card_size.y );
+    vec3 world_p = center_pos + local_pos;
 
     // Camera space
     // Camera pulled back: the outer shell (r~15 + swell + kick) must NEVER
     // reach the eye (user saw shells colliding with the camera).
-    vec3 camPos = vec3( 0.0, 0.0, -23.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 0.0, -23.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vUV = attrA.xy;
     vNormal = normal;
-    vWorldPos = worldP;
+    vWorldPos = world_p;
 
     // Transparent silica glass palette (pale aqua, crystal amethyst, sunlight gold)
-    vec3 col = palTint( mix( vec3( 0.2, 0.9, 1.0 ), vec3( 0.8, 0.4, 1.0 ), shellIdx / 10.0 ), 0.30 * shellIdx / 10.0,
+    vec3 col = palTint( mix( vec3( 0.2, 0.9, 1.0 ), vec3( 0.8, 0.4, 1.0 ), shell_idx / 10.0 ), 0.30 * shell_idx / 10.0,
                         0.55 );
     col = mix( col, vec3( 1.0, 0.95, 0.6 ), seeds.w );
 

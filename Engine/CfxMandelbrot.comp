@@ -6,7 +6,7 @@
  * ComputeFX::stepMandelbrot() can go roughly 10,000x deeper than plain float32 before the classic
  * "blocky/banded" precision breakdown sets in. Each pixel's offset from the (double-single) zoom
  * centre is computed in plain float32 -- always small and fully representable -- and combined with
- * the precise centre via ds_add(), which is the step that actually needs the extra precision: a
+ * the precise centre via dsAdd(), which is the step that actually needs the extra precision: a
  * naive `centerHi + offset` in plain float32 would round the offset away entirely once zoomScale
  * gets small, since the centre coordinate's own float32 mantissa can't resolve anything that far
  * below its own magnitude.
@@ -32,14 +32,14 @@ uniform float rot; ///< slow view rotation (radians), integrated host-side
 // Standard error-free-transformation building blocks; see e.g. Thall,
 // "Extended-Precision Floating Point Numbers for GPU Computation".
 
-vec2 ds_quick_two_sum( float a, float b )
+vec2 dsQuickTwoSum( float a, float b )
 {
     float s = a + b;
     float err = b - ( s - a );
     return vec2( s, err );
 }
 
-vec2 ds_two_sum( float a, float b )
+vec2 dsTwoSum( float a, float b )
 {
     float s = a + b;
     float bb = s - a;
@@ -47,30 +47,30 @@ vec2 ds_two_sum( float a, float b )
     return vec2( s, err );
 }
 
-vec2 ds_two_prod( float a, float b )
+vec2 dsTwoProd( float a, float b )
 {
     float p = a * b;
     float err = fma( a, b, -p );
     return vec2( p, err );
 }
 
-vec2 ds_add( vec2 a, vec2 b )
+vec2 dsAdd( vec2 a, vec2 b )
 {
-    vec2 s = ds_two_sum( a.x, b.x );
+    vec2 s = dsTwoSum( a.x, b.x );
     s.y += a.y + b.y;
-    return ds_quick_two_sum( s.x, s.y );
+    return dsQuickTwoSum( s.x, s.y );
 }
 
-vec2 ds_sub( vec2 a, vec2 b )
+vec2 dsSub( vec2 a, vec2 b )
 {
-    return ds_add( a, vec2( -b.x, -b.y ) );
+    return dsAdd( a, vec2( -b.x, -b.y ) );
 }
 
-vec2 ds_mul( vec2 a, vec2 b )
+vec2 dsMul( vec2 a, vec2 b )
 {
-    vec2 p = ds_two_prod( a.x, b.x );
+    vec2 p = dsTwoProd( a.x, b.x );
     p.y += a.x * b.y + a.y * b.x;
-    return ds_quick_two_sum( p.x, p.y );
+    return dsQuickTwoSum( p.x, p.y );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -90,49 +90,49 @@ void main()
     // c = centre (double-single) + offset (plain float, always small enough
     // to be exact on its own -- only the ADDITION to the big centre value
     // needs the error-free transform).
-    vec2 crDS = ds_add( vec2( centerHi.x, centerLo.x ), vec2( offset.x, 0.0 ) );
-    vec2 ciDS = ds_add( vec2( centerHi.y, centerLo.y ), vec2( offset.y, 0.0 ) );
+    vec2 cr_ds = dsAdd( vec2( centerHi.x, centerLo.x ), vec2( offset.x, 0.0 ) );
+    vec2 ci_ds = dsAdd( vec2( centerHi.y, centerLo.y ), vec2( offset.y, 0.0 ) );
 
-    vec2  zr = crDS, zi = ciDS;
-    float trapMin = 1e6;
+    vec2  zr = cr_ds, zi = ci_ds;
+    float trap_min = 1e6;
     int   iter = 0;
     float zr2hi = 0.0, zi2hi = 0.0;
     for ( ; iter < maxIter; ++iter )
     {
-        vec2 zr2 = ds_mul( zr, zr );
-        vec2 zi2 = ds_mul( zi, zi );
+        vec2 zr2 = dsMul( zr, zr );
+        vec2 zi2 = dsMul( zi, zi );
         zr2hi = zr2.x;
         zi2hi = zi2.x;
         if ( zr2hi + zi2hi > 4.0 )
             break;
 
-        vec2 zrzi = ds_mul( zr, zi );
-        vec2 newZi = ds_add( ds_add( zrzi, zrzi ), ciDS );
-        vec2 newZr = ds_add( ds_sub( zr2, zi2 ), crDS );
-        zr = newZr;
-        zi = newZi;
+        vec2 zrzi = dsMul( zr, zi );
+        vec2 new_zi = dsAdd( dsAdd( zrzi, zrzi ), ci_ds );
+        vec2 new_zr = dsAdd( dsSub( zr2, zi2 ), cr_ds );
+        zr = new_zr;
+        zi = new_zi;
 
         // Orbit trap: distance to the real axis, for extra interior detail
         // on points that never escape (classic deep-zoom shading trick).
-        trapMin = min( trapMin, abs( zi.x ) );
+        trap_min = min( trap_min, abs( zi.x ) );
     }
 
-    float smoothIter;
+    float smooth_iter;
     if ( iter >= maxIter )
     {
         // Never escaped: encode as a negative value so the fragment shader
         // can tell interior points (coloured from the orbit trap) apart from
         // escaped ones (coloured from the iteration count).
-        smoothIter = -1.0;
+        smooth_iter = -1.0;
     }
     else
     {
         // Standard smooth-iteration-count formula: removes the banding
         // between discrete integer iteration levels.
-        float logZn = log( zr2hi + zi2hi ) * 0.5;
-        float nu = log( logZn / log( 2.0 ) ) / log( 2.0 );
-        smoothIter = ( float( iter ) + 1.0 - nu ) / float( maxIter );
+        float log_zn = log( zr2hi + zi2hi ) * 0.5;
+        float nu = log( log_zn / log( 2.0 ) ) / log( 2.0 );
+        smooth_iter = ( float( iter ) + 1.0 - nu ) / float( maxIter );
     }
 
-    imageStore( imgOut, gid, vec4( smoothIter, clamp( trapMin, 0.0, 1.0 ), 0.0, 1.0 ) );
+    imageStore( imgOut, gid, vec4( smooth_iter, clamp( trap_min, 0.0, 1.0 ), 0.0, 1.0 ) );
 }

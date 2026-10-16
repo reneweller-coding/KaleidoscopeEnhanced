@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -241,8 +241,8 @@ void main()
     vec2  uv = p * 0.7 + 0.5 + vec2( 0.002, 0.0015 ) * sceneTime;
     // Height of the shell: broad photo masses plus terraces.
     float h = texHeight( uv, 4.5, 0.3 );
-    float nT = 10.0 + 25.0 * clamp( terraceP, 0.0, 1.0 );
-    float ter = h * nT + 0.3 * fbm3( p * 3.0 );
+    float n_t = 10.0 + 25.0 * clamp( terraceP, 0.0, 1.0 );
+    float ter = h * n_t + 0.3 * fbm3( p * 3.0 );
     float step_ = fract( ter );
     float terrace = smoothstep( 0.0, 0.08, step_ ) * smoothstep( 1.0, 0.85, step_ );
     // Platelets: a cell texture, each tile of nacre slightly different thickness.
@@ -265,8 +265,8 @@ void main()
         }
     float plate = hash21( id );
     // The tilt: the view angle over the surface changes slowly.
-    float tiltT = 0.03 * sceneTime + 0.25 * audioAdvance;
-    vec2  tilt = vec2( sin( tiltT ), cos( tiltT * 0.8 ) );
+    float tilt_t = 0.03 * sceneTime + 0.25 * audioAdvance;
+    vec2  tilt = vec2( sin( tilt_t ), cos( tilt_t * 0.8 ) );
     vec2  gh = texGrad( uv, 4.0 ) * 0.02;
     float view = dot( p + gh * 3.0, tilt ) * 1.5;
     float play = ( 0.5 + 1.0 * clamp( colourP, 0.0, 1.0 ) ) * ( 0.7 + 0.6 * clamp( audioSpread, 0.0, 1.0 ) );
@@ -281,7 +281,7 @@ void main()
     col *= 0.72 + 0.28 * terrace;
     col += irid * ( 1.0 - terrace ) * 0.12; // terrace steps catch colour
     // Sheen band wandering over the shell.
-    float band = exp( -pow( dot( p, vec2( tilt.y, -tilt.x ) ) * 2.5 - sin( tiltT * 1.3 ) * 1.2, 2.0 ) );
+    float band = exp( -pow( dot( p, vec2( tilt.y, -tilt.x ) ) * 2.5 - sin( tilt_t * 1.3 ) * 1.2, 2.0 ) );
     col += vec3( 1.0, 0.97, 0.95 ) * band * ( 0.15 + 0.35 * kick );
     // Glittering platelets.
     float gl = pow( hash21( id + 7.0 ), 30.0 ) * ( 0.5 + 0.5 * sin( sceneTime * 2.0 + plate * 40.0 ) );

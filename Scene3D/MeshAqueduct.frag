@@ -35,8 +35,8 @@ in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vInst;
 
-const float kDist = 92.0;
-const float kGround = -14.0;
+const float Dist = 92.0;
+const float Ground = -14.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -121,7 +121,7 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-const vec3 kKeyDir = vec3( 0.5, 0.55, -0.65 ); // the sun, behind the camera's right shoulder
+const vec3 KeyDir = vec3( 0.5, 0.55, -0.65 ); // the sun, behind the camera's right shoulder
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir )
@@ -133,12 +133,12 @@ vec3 renderSky( vec3 dir )
     if ( dir.y < -0.004 )
     {
         // The valley floor: meadow, and a river running behind the piers.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.004 );
         float g = fbm2( P.xz * 0.05 ), g2 = fbm2( P.xz * 0.4 );
         vec3  meadow = mix( vec3( 0.12, 0.20, 0.06 ), vec3( 0.30, 0.34, 0.10 ), g ) * ( 0.7 + 0.5 * g2 );
-        float river = 1.0 - smoothstep( 5.0, 9.0, abs( P.z - ( kDist + 42.0 ) + 6.0 * sin( P.x * 0.03 ) ) );
+        float river = 1.0 - smoothstep( 5.0, 9.0, abs( P.z - ( Dist + 42.0 ) + 6.0 * sin( P.x * 0.03 ) ) );
         float glit = pow( noise2( P.xz * 0.6 + vec2( time * 0.7, 0.0 ) ), 6.0 ) * ( 0.4 + 1.2 * high );
         vec3  water = vec3( 0.25, 0.40, 0.55 ) + vec3( 1.0, 0.95, 0.8 ) * glit;
         col = mix( meadow, water, river ) * day;
@@ -155,8 +155,8 @@ vec3 renderSky( vec3 dir )
         // The far side of the valley.
         float az = atan( dir.x, dir.z );
         float hill = 0.06 + 0.07 * noise1( az * 2.5 + 1.0 ) + 0.03 * noise1( az * 9.0 );
-        float hillMask = 1.0 - smoothstep( hill - 0.008, hill + 0.008, dir.y );
-        col = mix( col, mix( vec3( 0.16, 0.24, 0.16 ), vec3( 0.45, 0.50, 0.55 ), 0.5 ) * day * 0.7, hillMask );
+        float hill_mask = 1.0 - smoothstep( hill - 0.008, hill + 0.008, dir.y );
+        col = mix( col, mix( vec3( 0.16, 0.24, 0.16 ), vec3( 0.45, 0.50, 0.55 ), 0.5 ) * day * 0.7, hill_mask );
     }
     // Swifts: round silhouettes crossing the openings on their own smooth arcs.
     float dark = 0.0;
@@ -197,13 +197,13 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
     // Afternoon sun, sky fill, meadow bounce.
-    vec3  keyDir = normalize( kKeyDir );
+    vec3  key_dir = normalize( KeyDir );
     float day = 0.75 + 0.35 * swell;
-    vec3  col = alb * vec3( 1.0, 0.9, 0.75 ) * max( dot( n, keyDir ), 0.0 ) * 1.3 * day;
+    vec3  col = alb * vec3( 1.0, 0.9, 0.75 ) * max( dot( n, key_dir ), 0.0 ) * 1.3 * day;
     col += alb * vec3( 0.35, 0.45, 0.65 ) * ( 0.55 + 0.45 * n.y ) * 0.5 * day;
     col += alb * vec3( 0.25, 0.30, 0.12 ) * max( -n.y, 0.0 ) * 0.5 * day;
     col += alb * 0.05;
@@ -214,9 +214,9 @@ void main()
     int   idx = ( int( vInst + 0.5 ) * 2 + ( ( vLocal.x > 0.0 ) ? 1 : 0 ) ) % 12;
     float speak = clamp( audioChroma[idx] * 1.3, 0.0, 1.0 );
     float under = smoothstep( 0.25, -0.5, n.y ) * smoothstep( -0.95, -0.6, vLocal.y );
-    vec3  archCol = hsv2rgb( vec3( float( idx ) / 12.0, 0.75, 1.0 ) );
-    col += alb * archCol * under * speak * 1.6;
-    col += archCol * under * speak * 0.15;
+    vec3  arch_col = hsv2rgb( vec3( float( idx ) / 12.0, 0.75, 1.0 ) );
+    col += alb * arch_col * under * speak * 1.6;
+    col += arch_col * under * speak * 0.15;
 
     // The water in the channel along the top.
     float top = smoothstep( 0.75, 0.95, n.y ) * smoothstep( 0.70, 0.90, vLocal.y );
@@ -227,14 +227,14 @@ void main()
     col = mix( col, water * day, top * 0.85 );
 
     // A little sheen on the stone from the sun.
-    vec3  halfV = normalize( keyDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 40.0, 6.0, roughness ) );
+    vec3  half_v = normalize( key_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 40.0, 6.0, roughness ) );
     col += mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic ) * spec * 0.15 * day;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.10 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

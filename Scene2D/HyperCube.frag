@@ -30,7 +30,7 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioMode;      ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -108,8 +108,8 @@ void main()
     vec2  qd = rot( audioPhase * 0.30 + time * 0.05 ) * p;
     float inner = max( abs( qd.x ), abs( qd.y ) );
     float isz = 0.28 * ( 0.8 + 0.2 * sin( time * 0.3 ) ) + 0.06 * audioBass;
-    float ringE = smoothstep( 0.02, 0.0, abs( inner - isz ) );
-    col += pal( fract( hue + 0.3 ) ) * ringE * ( 0.6 + audioBeat + 0.4 * audioSubBass );
+    float ring_e = smoothstep( 0.02, 0.0, abs( inner - isz ) );
+    col += pal( fract( hue + 0.3 ) ) * ring_e * ( 0.6 + audioBeat + 0.4 * audioSubBass );
 
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

@@ -47,12 +47,12 @@ vec3 gerstnerWave( vec2 p, vec2 dir, float steepness, float wavelength, float sp
 void main()
 {
     vec2 uv = attrA.xy;
-    vec2 worldXZ = ( uv - vec2( 0.5 ) ) * vec2( 16.0, 10.0 );
+    vec2 world_xz = ( uv - vec2( 0.5 ) ) * vec2( 16.0, 10.0 );
 
     // FLIGHT: the wave field scrolls beneath the camera, so we glide
     // forward over open water (audioAdvance = jump-free music push).
     vec2 flow = vec2( 0.18, 0.85 ) * ( time * 0.5 + audioAdvance * 0.6 );
-    vec2 wp = worldXZ + flow;
+    vec2 wp = world_xz + flow;
 
     vec3 n = vec3( 0.0, 1.0, 0.0 );
     vec3 disp = vec3( 0.0 );
@@ -66,10 +66,10 @@ void main()
     disp += gerstnerWave( wp, normalize( vec2( 0.9, -0.3 ) ), 0.10 * amp, 0.8, 1.5, n );
 
     // Beat splash impulse
-    float splash = sin( length( worldXZ ) * 4.0 - time * 6.0 ) * audioKick * 0.4;
+    float splash = sin( length( world_xz ) * 4.0 - time * 6.0 ) * audioKick * 0.4;
     disp.y += splash;
 
-    vec3 pos = vec3( worldXZ.x + disp.x, disp.y - 2.2, worldXZ.y + disp.z );
+    vec3 pos = vec3( world_xz.x + disp.x, disp.y - 2.2, world_xz.y + disp.z );
     n = normalize( n );
 
     // Wave crest sharpness for bioluminescent foam emission
@@ -86,13 +86,13 @@ void main()
     // seen from below), with a gentle glide-bob.
     vec3 vp = pos;
     vp.y += 0.15 * sin( time * 0.4 );
-    float tiltAngle = -0.35;
-    float cosT = cos( tiltAngle ), sinT = sin( tiltAngle );
-    vec3  rotatedVP = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float tilt_angle = -0.35;
+    float cos_t = cos( tilt_angle ), sin_t = sin( tilt_angle );
+    vec3  rotated_vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
 
-    rotatedVP.z += 6.5;
-    rotatedVP.x -= eyeOff;
+    rotated_vp.z += 6.5;
+    rotated_vp.x -= eyeOff;
 
-    gl_Position = projM * vec4( rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0 );
+    gl_Position = projM * vec4( rotated_vp.x, rotated_vp.y, -rotated_vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

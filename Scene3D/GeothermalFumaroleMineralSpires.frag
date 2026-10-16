@@ -64,9 +64,9 @@ void main()
         return;
     }
 
-    vec3  lightDir = normalize( vec3( 0.4, 0.6, 0.7 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
-    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
+    vec3  light_dir = normalize( vec3( 0.4, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
+    float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
                  * ( specularP > 0.01 ? specularP : 1.2 );
 
     vec3 col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.42 + 0.62 * diff );
@@ -78,13 +78,13 @@ void main()
     // Distance haze: the far rows sink into the same mineral steam the
     // curtain is made of, so the field reads as depth instead of as small
     // dark cut-outs on black.
-    vec3 hazeCol = vec3( 0.20, 0.145, 0.095 ) * ( 0.85 + 0.35 * audioSwell );
-    col = mix( col, hazeCol, vFog * 0.72 );
+    vec3 haze_col = vec3( 0.20, 0.145, 0.095 ) * ( 0.85 + 0.35 * audioSwell );
+    col = mix( col, haze_col, vFog * 0.72 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );
     col /= 1.0 + 0.45 * max( col.r, max( col.g, col.b ) ); // sulphur terraces clipped flat yellow
-    float _gfLum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
-    col = mix( vec3( _gfLum ), col, 0.80 );
+    float gf_lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( gf_lum ), col, 0.80 );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

@@ -30,7 +30,7 @@ out float vDist;    ///< Distance (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-const vec2    EXTENT = vec2( 260.0, 210.0 );
+const vec2    Extent = vec2( 260.0, 210.0 );
 
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;    ///< Seconds since this scene was activated.
@@ -67,17 +67,17 @@ float fbm( vec2 p )
 /// The terrace field.  Returns the height; pool and terrace come back too.
 float surface( vec2 xz, out float pool, out float terrace )
 {
-    float stepsN = 5.0 + 5.0 * clamp( stepsP, 0.0, 1.0 );
+    float steps_n = 5.0 + 5.0 * clamp( stepsP, 0.0, 1.0 );
     // The slope runs downhill toward the camera, waving so the rims are
     // not straight lines.
     float down = xz.y * 0.055 + 0.9 * fbm( xz * 0.012 ) + 0.35 * sin( xz.x * 0.035 );
-    float t = down * stepsN * 0.3;
+    float t = down * steps_n * 0.3;
     terrace = t;
     float f = fract( t );
     // The staircase: a smoothstep riser instead of a hard step -- the whole
     // point of a continuous surface.  The lip sits at f near 0.
     float riser = smoothstep( 0.0, 0.28, f );
-    float h = ( floor( t ) + riser ) * ( 2.4 / ( stepsN * 0.3 ) );
+    float h = ( floor( t ) + riser ) * ( 2.4 / ( steps_n * 0.3 ) );
     // The rim bulge: travertine grows fastest where the water pours over.
     float bulge = exp( -pow( ( f - 0.12 ) / 0.09, 2.0 ) ) * 0.55;
     h += bulge;
@@ -95,10 +95,10 @@ float surface( vec2 xz, out float pool, out float terrace )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
-    vec2 uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
-    vec2 uv = mix( uvA, uvB, gl_TessCoord.y );
-    vec2 xz = vec2( ( uv.x - 0.5 ) * EXTENT.x, uv.y * EXTENT.y + 3.0 );
+    vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2 uv_b = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2 uv = mix( uv_a, uv_b, gl_TessCoord.y );
+    vec2 xz = vec2( ( uv.x - 0.5 ) * Extent.x, uv.y * Extent.y + 3.0 );
 
     float pool, terrace;
     float h = surface( xz, pool, terrace );

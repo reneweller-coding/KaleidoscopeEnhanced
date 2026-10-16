@@ -61,19 +61,19 @@ void main()
     vec3 photo = img( fract( vTexCoord ) );
 
     // Microwave photon packet propagation
-    float photonPacket = pow( abs( sin( vTexCoord.x * 2.0 - time * 6.0 ) ), 12.0 );
+    float photon_packet = pow( abs( sin( vTexCoord.x * 2.0 - time * 6.0 ) ), 12.0 );
 
     // Superconducting niobium gold & cyan palette
-    vec3 nbCyan = vec3( 0.1, 0.9, 1.0 );
-    vec3 goldPad = vec3( 1.0, 0.85, 0.3 );
-    vec3 qubitColor = mix( nbCyan, goldPad, sin( vQubitIndex * 6.28 + audioPhase ) * 0.5 + 0.5 );
+    vec3 nb_cyan = vec3( 0.1, 0.9, 1.0 );
+    vec3 gold_pad = vec3( 1.0, 0.85, 0.3 );
+    vec3 qubit_color = mix( nb_cyan, gold_pad, sin( vQubitIndex * 6.28 + audioPhase ) * 0.5 + 0.5 );
 
-    vec3 col = mix( photo, qubitColor, 0.45 );
-    col += photonPacket * vec3( 1.0, 0.98, 0.9 ) * ( 1.5 + audioKick * 3.0 );
+    vec3 col = mix( photo, qubit_color, 0.45 );
+    col += photon_packet * vec3( 1.0, 0.98, 0.9 ) * ( 1.5 + audioKick * 3.0 );
 
     // Edge glow
     float edge = pow( abs( vTexCoord.y - 0.5 ) * 2.0, 3.0 );
-    col += edge * nbCyan * ( 1.0 + audioHigh * 1.5 );
+    col += edge * nb_cyan * ( 1.0 + audioHigh * 1.5 );
 
     // Distance fog
     float dist = length( vWorldPos );

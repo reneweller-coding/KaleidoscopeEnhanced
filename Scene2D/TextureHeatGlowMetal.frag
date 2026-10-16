@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -258,12 +258,12 @@ void main()
     float relief = texHeight( uv, 3.0, 0.4 );
     float T = 0.05 * sceneTime + 0.35 * audioAdvance;
     float heat = 0.0, past = 0.0;
-    float nT = 2.0 + 3.0 * clamp( torchP, 0.0, 1.0 );
+    float n_t = 2.0 + 3.0 * clamp( torchP, 0.0, 1.0 );
     float spread = 0.08 + 0.08 * clamp( audioSpread, 0.0, 1.0 );
     for ( int i = 0; i < 5; ++i )
     {
         float fi = float( i );
-        float on = smoothstep( fi - 0.5, fi + 0.5, nT - 0.5 );
+        float on = smoothstep( fi - 0.5, fi + 0.5, n_t - 0.5 );
         if ( on <= 0.0 )
             break;
         vec2  c = vec2( 0.75 * sin( T * ( 0.6 + 0.2 * fi ) + fi * 2.3 ),

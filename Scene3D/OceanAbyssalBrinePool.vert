@@ -47,24 +47,24 @@ void main()
     // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
     // this shader's math assumes a centred [-1,1] domain, so remap it here
     // (otherwise everything lands in one quadrant, off to the side).
-    vec2 gridUV = attrA.xy * 2.0 - 1.0; // [-1,1]
-    vTexCoord = gridUV * 0.5 + 0.5;
+    vec2 grid_uv = attrA.xy * 2.0 - 1.0; // [-1,1]
+    vTexCoord = grid_uv * 0.5 + 0.5;
 
     float t = time * 0.35 * spd + audioAdvance * 0.18;
 
     // Brine pool shoreline basin (bowl depression: r > 0.8 is underwater beach, r < 0.8 is dense brine pool)
-    float r = length( gridUV ) * 2.5;
-    float basinDepth = smoothstep( 1.5, 0.4, r ) * -0.8 * brn;
+    float r = length( grid_uv ) * 2.5;
+    float basin_depth = smoothstep( 1.5, 0.4, r ) * -0.8 * brn;
 
     // Dense hypersaline internal waves on the brine pool surface
-    float internalWave = sin( gridUV.x * 12.0 * hlc + t * 2.0 ) * cos( gridUV.y * 10.0 - t * 1.5 ) * 0.08
-                         * ( 1.0 + audioBass * 0.6 );
+    float internal_wave = sin( grid_uv.x * 12.0 * hlc + t * 2.0 ) * cos( grid_uv.y * 10.0 - t * 1.5 ) * 0.08
+                          * ( 1.0 + audioBass * 0.6 );
 
-    float height = basinDepth + internalWave;
-    vec3  pos = vec3( gridUV.x * 4.6, height, gridUV.y * 4.6 );
+    float height = basin_depth + internal_wave;
+    vec3  pos = vec3( grid_uv.x * 4.6, height, grid_uv.y * 4.6 );
     vWorldPos = pos;
 
-    vNormal = normalize( vec3( -gridUV.x * 0.4, 1.0, -gridUV.y * 0.4 ) );
+    vNormal = normalize( vec3( -grid_uv.x * 0.4, 1.0, -grid_uv.y * 0.4 ) );
 
     // Camera: slow ORBIT around the brine basin (yaw), then pitch DOWN onto
     // it (negative tilt — the old +0.45 tipped the pool into a ceiling seen
@@ -76,9 +76,9 @@ void main()
     vp.xz = mat2( cy, -sy, sy, cy ) * vp.xz;
     // Closer and steeper: at 7 units the basin filled half the frame (reported).
     vp.y -= 1.1;
-    float camTilt = -0.80;
-    float cosT = cos( camTilt ), sinT = sin( camTilt );
-    vp = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float cam_tilt = -0.80;
+    float cos_t = cos( cam_tilt ), sin_t = sin( cam_tilt );
+    vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
     vp.z += 3.9;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

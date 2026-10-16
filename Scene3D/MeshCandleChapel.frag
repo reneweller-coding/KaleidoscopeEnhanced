@@ -35,7 +35,7 @@ in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vHash;
 
-const float kGround = -13.0;
+const float Ground = -13.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -94,7 +94,7 @@ vec3 renderSky( vec3 dir )
     vec3  col;
     if ( dir.y < -0.004 )
     {
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.012 );
         float flag = smoothstep( 0.0, 0.03,
@@ -116,10 +116,10 @@ vec3 renderSky( vec3 dir )
         int   pane = int( clamp( ( dy + 1.2 ) / 2.2 * 4.0, 0.0, 3.99 ) ) * 3
                      + int( clamp( ( dx + 1.0 ) * 1.5, 0.0, 2.99 ) );
         float speak = clamp( audioChroma[pane] * 1.3, 0.0, 1.0 );
-        vec3  paneCol = hsv2rgb( vec3( float( pane ) / 12.0, 0.7, 1.0 ) );
+        vec3  pane_col = hsv2rgb( vec3( float( pane ) / 12.0, 0.7, 1.0 ) );
         float lead = smoothstep( 0.02, 0.06, abs( fract( dx * 1.5 ) - 0.5 ) )
                      * smoothstep( 0.02, 0.06, abs( fract( ( dy + 1.2 ) / 2.2 * 4.0 ) - 0.5 ) );
-        col = mix( col, paneCol * ( 0.10 + 0.9 * speak ) * lead, arch );
+        col = mix( col, pane_col * ( 0.10 + 0.9 * speak ) * lead, arch );
     }
     return col;
 }
@@ -142,7 +142,7 @@ void main()
     if ( base.a < 0.1 )
         discard;
     vec3 n = normalize( vNormal );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
     // Lit by the flames all round: warm from every side, most from above.
@@ -159,16 +159,16 @@ void main()
     float flare = ( vHash < 0.12 ) ? kick : 0.0;
     col += vec3( 1.0, 0.85, 0.5 ) * flame * ( 1.4 + 2.2 * breath + 2.0 * flare ) * flick;
     // A little glow round the flame on the wax.
-    float nearFlame = smoothstep( 0.45, 0.8, vLocal.y ) * ( 1.0 - flame );
-    col += alb * vec3( 1.0, 0.7, 0.35 ) * nearFlame * ( 0.4 + 0.5 * breath ) * flick;
+    float near_flame = smoothstep( 0.45, 0.8, vLocal.y ) * ( 1.0 - flame );
+    col += alb * vec3( 1.0, 0.7, 0.35 ) * near_flame * ( 0.4 + 0.5 * breath ) * flick;
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.7, 0.4 ) * fres * 0.15 * breath;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.06 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

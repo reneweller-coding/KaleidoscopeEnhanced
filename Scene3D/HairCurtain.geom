@@ -46,7 +46,7 @@ uniform float lengthP; ///< preset: strand length
 uniform float swayP;   ///< preset: how far the wave throws them
 uniform float camHP;   ///< Camera height knob, 0..1.
 
-const int SEG = 8;
+const int Seg = 8;
 
 vec4 project( vec3 world )
 {
@@ -106,9 +106,9 @@ void main()
     float phase = root.x * 0.55 + root.z * 0.3 - time * 0.8 - audioAdvance * 1.35;
 
     vec3 prev = root;
-    for ( int i = 0; i <= SEG; ++i )
+    for ( int i = 0; i <= Seg; ++i )
     {
-        float t = float( i ) / float( SEG );
+        float t = float( i ) / float( Seg );
 
         // The strand leaves its root along the crown's normal and straightens
         // into a fall — hair keeps the shape of what it lay on for the first
@@ -127,8 +127,8 @@ void main()
 
         // Widen across the SCREEN, so a strand can never turn edge-on and drop
         // out; the tangent carries the real fibre direction for the shading.
-        vec3 toEye = normalize( vec3( eyeOff, camHP, 0.0 ) - p );
-        vec3 side = normalize( cross( tang, toEye ) );
+        vec3 to_eye = normalize( vec3( eyeOff, camHP, 0.0 ) - p );
+        vec3 side = normalize( cross( tang, to_eye ) );
 
         float w = width * ( 1.0 - 0.55 * t );
         emit( p - side * w, tang, t, h.w, 1.0 );

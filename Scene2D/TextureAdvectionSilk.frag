@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -248,7 +248,7 @@ void main()
     gT = 0.01 * sceneTime;
     gVS = 0.8 + 1.5 * ( 1.0 - clamp( vortexP, 0.0, 1.0 ) );
     gSw = 0.4 + 0.6 * clamp( audioSpread, 0.0, 1.0 );
-    float stepL = ( 0.006 + 0.01 * clamp( fibreP, 0.0, 1.0 ) );
+    float step_l = ( 0.006 + 0.01 * clamp( fibreP, 0.0, 1.0 ) );
     float adv = 0.02 * sceneTime + 0.15 * audioAdvance;
     // Streaming noise texture along the flow (phase moves along the lines).
     vec3  acc = vec3( 0.0 );
@@ -260,8 +260,8 @@ void main()
         float w = 1.0 - float( i ) / 16.0;
         vec2  vf = normalize( flowAt( xf ) + 1e-4 );
         vec2  vb = normalize( flowAt( xb ) + 1e-4 );
-        xf += vf * stepL;
-        xb -= vb * stepL;
+        xf += vf * step_l;
+        xb -= vb * step_l;
         acc += ( imgLod( xf * 0.5 + 0.5 - vec2( adv, 0.0 ), 2.0 ) + imgLod( xb * 0.5 + 0.5 - vec2( adv, 0.0 ), 2.0 ) )
                * w;
         nacc += ( noise2( xf * fine ) + noise2( xb * fine ) ) * w; // smooth noise: no cell grid

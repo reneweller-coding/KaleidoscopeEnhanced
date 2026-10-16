@@ -44,7 +44,7 @@ out vec3 vNormal; ///< Surface normal (from the vertex stage).
 // below-source-level fingerprint the RenderDoc follow-up task tracks for
 // EndOfTheUniverse. Rebuilding the identity from gl_VertexID sidesteps the
 // attribute path entirely.
-const vec3 kCube[36] = vec3[36](
+const vec3 Cube[36] = vec3[36](
     vec3( -0.5, -0.5, -0.5 ), vec3( 0.5, -0.5, -0.5 ), vec3( 0.5, 0.5, -0.5 ),
     vec3( -0.5, -0.5, -0.5 ), vec3( 0.5, 0.5, -0.5 ), vec3( -0.5, 0.5, -0.5 ),
     vec3( -0.5, -0.5, 0.5 ), vec3( 0.5, 0.5, 0.5 ), vec3( 0.5, -0.5, 0.5 ),
@@ -62,13 +62,13 @@ const vec3 kCube[36] = vec3[36](
 void main()
 {
     float idx = float( gl_VertexID / 36 );
-    vec3  cornerId = kCube[gl_VertexID - ( gl_VertexID / 36 ) * 36];
+    vec3  corner_id = Cube[gl_VertexID - ( gl_VertexID / 36 ) * 36];
 
     if ( cubeBudget < 0.75 && mod( idx, 2.0 ) > 0.5 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
-        vCorner = cornerId;
+        vCorner = corner_id;
         return;
     }
 
@@ -79,8 +79,8 @@ void main()
 
     vec3  scale;
     vec3  centre;
-    mat3  rotMat;
-    float roleW;
+    mat3  rot_mat;
+    float role_w;
 
     float spin = time * 0.2 + audioAdvance * 0.5;
 
@@ -96,11 +96,11 @@ void main()
         float z = ( r2 - 0.5 ) * 200.0;
         centre = vec3( 0.0, 0.0, z );
 
-        rotMat = mat3(
+        rot_mat = mat3(
             cos( spin ), -sin( spin ), 0.0,
             sin( spin ), cos( spin ), 0.0,
             0.0, 0.0, 1.0 );
-        roleW = 0.2;
+        role_w = 0.2;
     }
     else if ( r4 >= 0.55 )
     {
@@ -112,21 +112,21 @@ void main()
         centre = vec3( 2.6 * cos( phi ), 2.6 * sin( phi ), z );
         scale = vec3( 0.9, 0.9, 2.6 ) * ( 0.9 + 0.4 * r3 );
 
-        rotMat = mat3(
+        rot_mat = mat3(
             cos( spin ), -sin( spin ), 0.0,
             sin( spin ), cos( spin ), 0.0,
             0.0, 0.0, 1.0 );
-        roleW = 0.9;
+        role_w = 0.9;
     }
     else
     {
         // SUPPORT RINGS: tight collars around the shaft, inside the proven
         // radius band (5..9.2), sweeping past as the camera climbs.
-        float ringId = floor( r3 * 4.0 ); // 4 distinct rings
-        float radius = 5.0 + ringId * 1.4;
+        float ring_id = floor( r3 * 4.0 ); // 4 distinct rings
+        float radius = 5.0 + ring_id * 1.4;
         float z = ( r3 - 0.5 ) * 80.0;
 
-        float theta = r1 * 6.2831853 + spin * ( ringId * 0.5 + 1.0 ) * ( mod( ringId, 2.0 ) > 0.5 ? 1.0 : -1.0 );
+        float theta = r1 * 6.2831853 + spin * ( ring_id * 0.5 + 1.0 ) * ( mod( ring_id, 2.0 ) > 0.5 ? 1.0 : -1.0 );
 
         centre = vec3( radius * cos( theta ), radius * sin( theta ), z );
         scale = vec3( 1.6, 0.5, 1.6 ) * ( 1.0 + r2 );
@@ -135,15 +135,15 @@ void main()
         vec3 up = normalize( vec3( -cos( theta ), -sin( theta ), 0.0 ) ); // face center
         vec3 right = cross( up, forward );
 
-        rotMat = mat3( right, up, forward );
-        roleW = 0.6;
+        rot_mat = mat3( right, up, forward );
+        role_w = 0.6;
     }
 
-    vec3 localPos = cornerId * scale;
-    vec3 world = centre + rotMat * localPos;
+    vec3 local_pos = corner_id * scale;
+    vec3 world = centre + rot_mat * local_pos;
 
     // Camera climbs slowly along the tether axis.
-    float camZ = time * 8.0 + audioAdvance * 15.0;
+    float cam_z = time * 8.0 + audioAdvance * 15.0;
 
     // Wrap around for an endless ascent. THE ROOT CAUSE of every black/clumped
     // rendering of this scene (and AsteroidMiningBase's magenta-test black):
@@ -152,7 +152,7 @@ void main()
     // TachyonCommRelay kept world.z in [-180, 2], i.e. everything except a
     // 2-unit-thin slice sat BEHIND the camera. Tachyon itself only ever shows
     // the lucky near-plane crossers of that slice. Wrap ahead instead:
-    world.z = mod( world.z - camZ, 200.0 ); // (0, 200] ahead of the lens
+    world.z = mod( world.z - cam_z, 200.0 ); // (0, 200] ahead of the lens
 
     // Step the camera OFF the axis so it rides beside the column instead of
     // inside it.
@@ -175,16 +175,16 @@ void main()
 
     // Face normal from which pair of table triangles this vertex belongs to
     int  face = ( gl_VertexID - ( gl_VertexID / 36 ) * 36 ) / 6;
-    vec3 nLocal = face == 0   ? vec3( 0.0, 0.0, -1.0 )
-                  : face == 1 ? vec3( 0.0, 0.0, 1.0 )
-                  : face == 2 ? vec3( -1.0, 0.0, 0.0 )
-                  : face == 3 ? vec3( 1.0, 0.0, 0.0 )
-                  : face == 4 ? vec3( 0.0, -1.0, 0.0 )
-                              : vec3( 0.0, 1.0, 0.0 );
-    vec3 nWorld = rotMat * nLocal;
+    vec3 n_local = face == 0   ? vec3( 0.0, 0.0, -1.0 )
+                   : face == 1 ? vec3( 0.0, 0.0, 1.0 )
+                   : face == 2 ? vec3( -1.0, 0.0, 0.0 )
+                   : face == 3 ? vec3( 1.0, 0.0, 0.0 )
+                   : face == 4 ? vec3( 0.0, -1.0, 0.0 )
+                               : vec3( 0.0, 1.0, 0.0 );
+    vec3 n_world = rot_mat * n_local;
 
-    vCol = vec4( r1, r2, r3, roleW ); // roleW tells the frag what part it is
-    vCorner = cornerId;
+    vCol = vec4( r1, r2, r3, role_w ); // role_w tells the frag what part it is
+    vCorner = corner_id;
     vPos = world;
-    vNormal = nWorld;
+    vNormal = n_world;
 }

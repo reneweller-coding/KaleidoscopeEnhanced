@@ -96,7 +96,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float nLoops = floor( ( loopsP > 1.5 ? loopsP : 6.0 ) + 0.5 );
+    float n_loops = floor( ( loopsP > 1.5 ? loopsP : 6.0 ) + 0.5 );
     float hgt = 0.6 + 0.5 * clamp( heightP, 0.0, 1.0 );
     float lift = 1.0 + 0.35 * clamp( audioSwell, 0.0, 1.0 );
 
@@ -129,7 +129,7 @@ void main()
     float drop = clamp( audioDrop, 0.0, 1.0 );
     for ( int i = 0; i < 8; ++i )
     {
-        if ( float( i ) >= nLoops )
+        if ( float( i ) >= n_loops )
             break;
         float fi = float( i );
         float cx = ( hash11( fi * 3.1 ) - 0.5 ) * 1.6;
@@ -157,7 +157,7 @@ void main()
         col += hot * fp * ( 0.4 + 1.2 * audioKick );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

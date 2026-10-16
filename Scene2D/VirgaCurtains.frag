@@ -111,13 +111,13 @@ void main()
     float base = 0.1 + 0.06 * fbm( vec2( p.x * 2.0 + T * 0.004, 1.0 ) ) + 0.03 * sin( p.x * 1.3 );
     float deck = smoothstep( base - 0.01, base + 0.02, p.y );
     float cl = fbm( vec2( p.x * 3.0 + T * 0.005, p.y * 5.0 ) );
-    vec3  cloudC = mix( vec3( 0.14, 0.14, 0.18 ), vec3( 0.3, 0.3, 0.35 ), cl );
+    vec3  cloud_c = mix( vec3( 0.14, 0.14, 0.18 ), vec3( 0.3, 0.3, 0.35 ), cl );
     // The sun's light breaking through thin places and along the base.
     float thin = smoothstep( 0.55, 0.75, cl ) * exp( -sd * 2.5 );
-    cloudC += vec3( 1.0, 0.85, 0.6 ) * ( thin * 0.9 + exp( -sd * 6.0 ) * 0.4 ) * ( 0.7 + 0.6 * bass );
-    cloudC += vec3( 1.0, 0.8, 0.55 ) * smoothstep( 0.03, 0.0, p.y - base ) * deck * exp( -sd * 2.0 ) * 0.8;
-    cloudC = mix( cloudC, cloudC * imgPalette( 0.1 + hueP * 0.159 ) * 1.4, 0.08 );
-    col = mix( col, cloudC, deck );
+    cloud_c += vec3( 1.0, 0.85, 0.6 ) * ( thin * 0.9 + exp( -sd * 6.0 ) * 0.4 ) * ( 0.7 + 0.6 * bass );
+    cloud_c += vec3( 1.0, 0.8, 0.55 ) * smoothstep( 0.03, 0.0, p.y - base ) * deck * exp( -sd * 2.0 ) * 0.8;
+    cloud_c = mix( cloud_c, cloud_c * imgPalette( 0.1 + hueP * 0.159 ) * 1.4, 0.08 );
+    col = mix( col, cloud_c, deck );
 
     // Virga: curtains hanging from the base, swept by the wind, fading out.
     if ( p.y < base + 0.02 )
@@ -169,7 +169,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

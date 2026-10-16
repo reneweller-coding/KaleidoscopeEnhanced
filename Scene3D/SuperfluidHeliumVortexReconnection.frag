@@ -64,13 +64,13 @@ vec3 palTint( vec3 c, float t, float k )
 void main()
 {
     // Superfluid cyan / violet roton identity color
-    vec3 rotonCyan = vec3( 0.15, 0.9, 0.95 );
-    vec3 rotonCol = palTint( rotonCyan, vDepth * 0.4 + audioCentroid, 0.25 );
+    vec3 roton_cyan = vec3( 0.15, 0.9, 0.95 );
+    vec3 roton_col = palTint( roton_cyan, vDepth * 0.4 + audioCentroid, 0.25 );
 
-    vec2 photoUv = fract( vPos.xy * 0.3 + 0.5 );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vPos.xy * 0.3 + 0.5 );
+    vec3 photo_sample = img( photo_uv );
 
-    vec3 col = rotonCol * ( 0.6 + 0.4 * photoSample ) * vGlow;
+    vec3 col = roton_col * ( 0.6 + 0.4 * photo_sample ) * vGlow;
     col *= ( reconnGlowP > 0.01 ? reconnGlowP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
     col += vec3( 0.9, 0.95, 1.0 ) * ( audioKick * 0.35 );
 

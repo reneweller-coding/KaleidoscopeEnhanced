@@ -82,16 +82,16 @@ float photoLevel()
 // factor, so the estimator stays correct) doubles the tube spacing AND the
 // tube radius: the median hit now sits at 0.62 with a p95 of 2.5, so there is
 // a real depth range for the light to fall off across.
-const float NEURAL_WS = 0.5;
+const float NeuralWs = 0.5;
 
 /// Distance estimator for neural dendrite branching
 float mapNeural( vec3 p, float t, float brMod, out float synapseNode )
 {
-    vec3  q = p * NEURAL_WS;
+    vec3  q = p * NeuralWs;
     float d = 1e5;
     synapseNode = 0.0;
 
-    float dendScale = 1.0;
+    float dend_scale = 1.0;
     for ( int i = 0; i < 4; i++ )
     {
         // Absolute fold with rotation
@@ -105,15 +105,15 @@ float mapNeural( vec3 p, float t, float brMod, out float synapseNode )
         // produced the minimum, making the raymarcher hit one step off the
         // camera for nearly every ray -- a flat wash instead of branching
         // dendrites.
-        float dBranch = ( length( q.xy ) - 0.05 * ( 1.0 + 0.2 * sin( audioSubBass ) ) ) / dendScale;
-        d = min( d, dBranch );
+        float d_branch = ( length( q.xy ) - 0.05 * ( 1.0 + 0.2 * sin( audioSubBass ) ) ) / dend_scale;
+        d = min( d, d_branch );
 
         synapseNode += exp( -length( q ) * 8.0 );
         q *= 1.45 * brMod;
-        dendScale *= 1.45 * brMod;
+        dend_scale *= 1.45 * brMod;
     }
 
-    return d / NEURAL_WS;
+    return d / NeuralWs;
 }
 
 /// Surface normal by the 4-tap tetrahedron trick -- the arborization had NO
@@ -129,7 +129,7 @@ vec3 neuralNormal( vec3 p, float t, float brMod )
                     + k.yyx * mapNeural( p + k.yyx * e, t, brMod, s )
                     + k.yxy * mapNeural( p + k.yxy * e, t, brMod, s )
                     + k.xxx * mapNeural( p + k.xxx * e, t, brMod, s );
-    // Guarded, not normalize(): a miss leaves hitP at the origin and a
+    // Guarded, not normalize(): a miss leaves hit_p at the origin and a
     // degenerate gradient there would hand back NaN, which mix() propagates
     // even when the hit mask is zero (NaN * 0.0 is still NaN).
     return g / max( length( g ), 1e-6 );
@@ -142,7 +142,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float br = ( branchP > 0.01 ) ? branchP : 1.0;
-    float pSpd = ( pulseSpeedP > 0.01 ) ? pulseSpeedP : 1.0;
+    float p_spd = ( pulseSpeedP > 0.01 ) ? pulseSpeedP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // audioAdvance integrates at only ~0.1 units/s, far too slow to carry a
@@ -157,102 +157,102 @@ void main()
 
     // Hold the neuropil back to a fixed dark base: a bioluminescent axon only
     // reads if the tissue around it is dark, and with a bright photo the
-    // mix(texCol, palCol) base alone already sat near 1.0 so the firing pulses
+    // mix(tex_col, pal_col) base alone already sat near 1.0 so the firing pulses
     // had nowhere left to go.
-    float expGain = clamp( 0.30 / max( 0.05, photoLevel() ), 0.20, 1.6 );
+    float exp_gain = clamp( 0.30 / max( 0.05, photoLevel() ), 0.20, 1.6 );
 
     // Raymarching
-    float totDist = 0.0;
-    float minD = 1e4;
-    float hitSynapse = 0.0;
-    float hitDist = 0.0;
-    vec3  hitP = vec3( 0.0 );
-    // Composite on an explicit hit flag, not on length(hitCol): once the base
+    float tot_dist = 0.0;
+    float min_d = 1e4;
+    float hit_synapse = 0.0;
+    float hit_dist = 0.0;
+    vec3  hit_p = vec3( 0.0 );
+    // Composite on an explicit hit flag, not on length(hit_col): once the base
     // is held down to a dark exposure a legitimately dark dendrite has a short
     // colour vector, and a length() mask would fade those branches back into
     // the background.
-    float hitMask = 0.0;
+    float hit_mask = 0.0;
 
     for ( int i = 0; i < 80; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curSynapse;
-        float d = mapNeural( p, t, br, curSynapse );
-        minD = min( minD, abs( d ) );
+        vec3  p = ro + rd * tot_dist;
+        float cur_synapse;
+        float d = mapNeural( p, t, br, cur_synapse );
+        min_d = min( min_d, abs( d ) );
 
         // A ray that runs past the far limit is a MISS. Flagging it as a hit
-        // (the old `|| totDist > 8.0` inside the same branch) shaded empty
+        // (the old `|| tot_dist > 8.0` inside the same branch) shaded empty
         // space with surface colour and left nothing for the background.
-        if ( totDist > 8.0 )
+        if ( tot_dist > 8.0 )
             break;
 
         if ( abs( d ) < 0.003 )
         {
-            hitMask = 1.0;
-            hitSynapse = curSynapse;
-            hitDist = totDist;
-            hitP = p;
+            hit_mask = 1.0;
+            hit_synapse = cur_synapse;
+            hit_dist = tot_dist;
+            hit_p = p;
             break;
         }
 
         // Feiner Schritt: 0.015 min-step gegen 0.003-Schwelle uebersprang
         // die Konvergenz und zackte jede Silhouette aus ("pixelig").
-        totDist += max( 0.004, d * 0.8 );
+        tot_dist += max( 0.004, d * 0.8 );
     }
 
     // ---- SURFACE SHADING -------------------------------------------------
     // Normal + headlight + key light + inverse-square falloff. This is the
     // local light/dark separation the scene never had.
-    vec3  n = neuralNormal( hitP, t, br );
+    vec3  n = neuralNormal( hit_p, t, br );
     float head = clamp( dot( -rd, n ), 0.0, 1.0 );
     float key = clamp( dot( n, vec3( 0.55, 0.66, -0.51 ) ), 0.0, 1.0 );
-    float atten = 1.0 / ( 1.0 + 0.8 * hitDist * hitDist );
+    float atten = 1.0 / ( 1.0 + 0.8 * hit_dist * hit_dist );
     float shade = 0.10 + 0.75 * head * atten + 0.35 * key * atten;
 
     // Action potential pulse firing along the axon
-    float actionPulse = abs( sin( hitP.z * 12.0 - t * 8.0 * pSpd ) );
-    float pulseGlow = smoothstep( 0.82, 1.0, actionPulse );
+    float action_pulse = abs( sin( hit_p.z * 12.0 - t * 8.0 * p_spd ) );
+    float pulse_glow = smoothstep( 0.82, 1.0, action_pulse );
 
-    vec2 sampleUV = fract( hitP.xy * 0.4 + hitP.z * 0.2 + 0.5 );
-    vec3 texCol = img( sampleUV );
-    vec3 palCol = imgPalette( hitP.z * 0.15 + hitSynapse * 0.3 );
+    vec2 sample_uv = fract( hit_p.xy * 0.4 + hit_p.z * 0.2 + 0.5 );
+    vec3 tex_col = img( sample_uv );
+    vec3 pal_col = imgPalette( hit_p.z * 0.15 + hit_synapse * 0.3 );
 
-    vec3 hitCol = mix( texCol, palCol, 0.45 ) * ( 0.9 * shade * expGain );
+    vec3 hit_col = mix( tex_col, pal_col, 0.45 ) * ( 0.9 * shade * exp_gain );
 
-    // Luminous synaptic vesicles: hitSynapse is the accumulated exp(-|q|*8)
-    // around the fold nodes, so unlike minD it genuinely varies across the
+    // Luminous synaptic vesicles: hit_synapse is the accumulated exp(-|q|*8)
+    // around the fold nodes, so unlike min_d it genuinely varies across the
     // surface -- squared so only the node cores light up.
-    float ves = clamp( hitSynapse * 0.55, 0.0, 1.0 );
-    hitCol += min( vec3( 0.9, 1.5, 1.9 ) * ( ves * ves * 0.30 ), vec3( 0.27, 0.45, 0.57 ) );
+    float ves = clamp( hit_synapse * 0.55, 0.0, 1.0 );
+    hit_col += min( vec3( 0.9, 1.5, 1.9 ) * ( ves * ves * 0.30 ), vec3( 0.27, 0.45, 0.57 ) );
     // The tint constant exceeds 1.0 on every channel, so the TINTED vector
     // carries the cap. Gated on `head` so the pulse rides the facing surface
     // instead of painting a flat band across grazing geometry.
-    hitCol += min( vec3( 1.7, 1.6, 2.0 ) * pulseGlow * head * ( 0.55 + 1.6 * audioKick ),
-                   vec3( 0.68, 0.64, 0.80 ) );
+    hit_col += min( vec3( 1.7, 1.6, 2.0 ) * pulse_glow * head * ( 0.55 + 1.6 * audioKick ),
+                    vec3( 0.68, 0.64, 0.80 ) );
 
     // Glowing dendrite axons -- HALO AROUND THE MISSES ONLY.
     // This was the single biggest defect in the scene: 97% of rays terminate
-    // on abs(d) < 0.003, so for 97% of the frame minD WAS the hit epsilon and
-    // exp(-minD*30) evaluated to a constant (measured p5/p50/p95 =
+    // on abs(d) < 0.003, so for 97% of the frame min_d WAS the hit epsilon and
+    // exp(-min_d*30) evaluated to a constant (measured p5/p50/p95 =
     // 0.916/0.954/0.995). The vec3(0.95)-capped result was therefore a
     // frame-wide additive term of luma 0.918 with a standard deviation of
     // 0.007 -- a perfectly uniform bright wash pasted over a picture whose own
     // structure had a healthy std of 0.31. That is the whole of luma 0.63 /
     // contrast 0.05 / occ 0.09. A closest-approach glow only means anything
     // for a ray that never lands, so gate it on exactly that.
-    float axonGlow = exp( -minD * ( 24.0 + 12.0 * audioCentroid ) ) * glw * ( 1.0 - hitMask );
-    vec3  glowTint = min( vec3( 0.3, 1.4, 1.9 ) * axonGlow * 0.55 * ( 1.0 + 2.0 * audioKick ),
-                          vec3( 0.15, 0.70, 0.95 ) );
+    float axon_glow = exp( -min_d * ( 24.0 + 12.0 * audioCentroid ) ) * glw * ( 1.0 - hit_mask );
+    vec3  glow_tint = min( vec3( 0.3, 1.4, 1.9 ) * axon_glow * 0.55 * ( 1.0 + 2.0 * audioKick ),
+                           vec3( 0.15, 0.70, 0.95 ) );
 
     // Neuropil behind the arborization: dark cytoplasm, so the bioluminescent
     // branches read as bright strokes on it rather than being level with it.
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.1 ) * ( 0.10 * expGain ) * ( 0.55 + 0.35 * audioLevel );
-    vec3 finalCol = mix( bgCol, hitCol, hitMask );
-    finalCol += glowTint;
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.1 ) * ( 0.10 * exp_gain ) * ( 0.55 + 0.35 * audioLevel );
+    vec3 final_col = mix( bg_col, hit_col, hit_mask );
+    final_col += glow_tint;
 
-    // No gamma lift: pow(finalCol, 0.88) raised the dark neuropil by a fifth,
+    // No gamma lift: pow(final_col, 0.88) raised the dark neuropil by a fifth,
     // which is the end of the picture that has to stay dark.
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.28 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.28 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

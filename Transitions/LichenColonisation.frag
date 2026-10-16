@@ -47,7 +47,7 @@ uniform float sporesP;
 uniform float lobeP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -75,7 +75,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     float growth = 1.1; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
@@ -109,17 +109,17 @@ void main()
                                * sin( ang * ( 5.0 + floor( hash21( id + 4.4 ) * 4.0 ) ) + hash21( id + 8.8 ) * 6.28 )
                          + 0.06 * lobes
                                * sin( ang * ( 11.0 + floor( hash21( id + 6.2 ) * 6.0 ) ) + hash21( id + 3.4 ) * 6.28 );
-            float edgeDist = dist - r * lobe;
-            if ( edgeDist < e1 )
+            float edge_dist = dist - r * lobe;
+            if ( edge_dist < e1 )
             {
                 e2 = e1;
-                e1 = edgeDist;
+                e1 = edge_dist;
                 // Concentric growth zones: a record of the seasons it took.
-                zone = 0.5 + 0.5 * cos( clamp( dist / max( r * lobe, 1e-4 ), 0.0, 1.0 ) * 9.0 * PI );
+                zone = 0.5 + 0.5 * cos( clamp( dist / max( r * lobe, 1e-4 ), 0.0, 1.0 ) * 9.0 * Pi );
                 tint = hash21( id + 51.9 );
             }
-            else if ( edgeDist < e2 )
-                e2 = edgeDist;
+            else if ( edge_dist < e2 )
+                e2 = edge_dist;
         }
 
     float on = smoothstep( 0.004, -0.004, e1 );

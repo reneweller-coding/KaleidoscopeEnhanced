@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -306,7 +306,7 @@ void main()
     float cw = 0.12 + 0.12 * ( 1.0 - clamp( rivuletP, 0.0, 1.0 ) );
     float ci = floor( p.x / cw );
     float chan = 0.0;
-    vec2  lensOff = vec2( 0.0 );
+    vec2  lens_off = vec2( 0.0 );
     float head = 0.0;
     for ( int k = -1; k <= 1; ++k )
     {
@@ -320,36 +320,37 @@ void main()
         float d = abs( p.x - x0 );
         // The rivulet exists above its head; the head moves down in stop-and-go steps (smooth).
         float cyc = T * ( 0.3 + 0.3 * h ) + h * 5.0;
-        float stepT = floor( cyc ) + smoothstep( 0.3, 1.0, fract( cyc ) ); // pause, then run (continuous)
-        float run = mod( stepT * 0.35, 1.8 );
-        float headY = 0.8 - run;
+        float step_t = floor( cyc ) + smoothstep( 0.3, 1.0, fract( cyc ) ); // pause, then run (continuous)
+        float run = mod( step_t * 0.35, 1.8 );
+        float head_y = 0.8 - run;
         // The rivulet fades before its head wraps back to the top (no jump).
-        float rvFade = smoothstep( 1.8, 1.45, run ) * smoothstep( 0.0, 0.1, run );
-        float above = smoothstep( headY - 0.01, headY + 0.02, p.y ) * smoothstep( 1.0, 0.7, p.y - headY );
-        float inC = smoothstep( w, w * 0.5, d ) * above * rvFade;
-        if ( inC > chan )
+        float rv_fade = smoothstep( 1.8, 1.45, run ) * smoothstep( 0.0, 0.1, run );
+        float above = smoothstep( head_y - 0.01, head_y + 0.02, p.y ) * smoothstep( 1.0, 0.7, p.y - head_y );
+        float in_c = smoothstep( w, w * 0.5, d ) * above * rv_fade;
+        if ( in_c > chan )
         {
-            chan = inC;
-            lensOff = vec2( ( p.x - x0 ) / w, 0.0 );
+            chan = in_c;
+            lens_off = vec2( ( p.x - x0 ) / w, 0.0 );
         }
         // The drop at the head: a round lens.
-        vec2  hd = vec2( p.x - x0, ( p.y - headY ) * 0.8 );
+        vec2  hd = vec2( p.x - x0, ( p.y - head_y ) * 0.8 );
         float R = w * 2.8;
         float hr = length( hd ) / R;
-        float hdrop = smoothstep( 1.0, 0.85, hr ) * rvFade;
+        float hdrop = smoothstep( 1.0, 0.85, hr ) * rv_fade;
         if ( hdrop > head )
         {
             head = hdrop;
-            lensOff = hd / R;
+            lens_off = hd / R;
         }
     }
     // Through the water: the scene sharp, flipped, brighter.
     float clar = clamp( clarityP, 0.0, 1.0 );
-    vec3  sharp = imgK( uv - lensOff * 0.03, 1.5 - clar ) * tint * 1.3;
+    vec3  sharp = imgK( uv - lens_off * 0.03, 1.5 - clar ) * tint * 1.3;
     col = mix( col, sharp, max( chan, head ) );
     // Head highlight.
-    col += vec3( 1.0 ) * smoothstep( 0.35, 0.1, length( lensOff - vec2( -0.35, 0.35 ) ) ) * head * ( 0.4 + 1.0 * kick );
-    col *= 1.0 - 0.3 * smoothstep( 0.7, 1.0, length( lensOff ) ) * head; // dark rim of the drop
+    col += vec3( 1.0 ) * smoothstep( 0.35, 0.1, length( lens_off - vec2( -0.35, 0.35 ) ) ) * head
+           * ( 0.4 + 1.0 * kick );
+    col *= 1.0 - 0.3 * smoothstep( 0.7, 1.0, length( lens_off ) ) * head; // dark rim of the drop
     // Beads everywhere else.
     vec2  g = p * 60.0;
     vec2  gi = floor( g );

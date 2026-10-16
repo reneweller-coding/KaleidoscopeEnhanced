@@ -128,8 +128,8 @@ void main()
 
     // The dimples.  Each foot is a lens: a dark ring where the surface
     // curves away and a bright caustic inside it.
-    float dimpleLight = 0.0;
-    float dimpleDark = 0.0;
+    float dimple_light = 0.0;
+    float dimple_dark = 0.0;
     for ( int i = 0; i < 8; ++i )
     {
         float fi = float( i );
@@ -141,9 +141,9 @@ void main()
         vec2  side = vec2( -fwd.y, fwd.x );
         float scale = 0.75 + 0.5 * hash11( fi * 11.3 );
         // The body: a thin dark line along the heading.
-        float bodyT = clamp( dot( p - c, fwd ) / ( 0.055 * scale ), -1.0, 1.0 );
-        float bodyD = length( p - c - fwd * bodyT * 0.055 * scale );
-        float body = smoothstep( 0.007 * scale, 0.003 * scale, bodyD );
+        float body_t = clamp( dot( p - c, fwd ) / ( 0.055 * scale ), -1.0, 1.0 );
+        float body_d = length( p - c - fwd * body_t * 0.055 * scale );
+        float body = smoothstep( 0.007 * scale, 0.003 * scale, body_d );
         col = mix( col, vec3( 0.06, 0.06, 0.05 ), body * 0.85 );
         // Six legs: three pairs, each with a foot that dimples the surface.
         for ( int k = 0; k < 6; ++k )
@@ -161,19 +161,19 @@ void main()
             vec2  hip = c + fwd * ( pair - 1.0 ) * 0.04 * scale;
             vec2  d2 = foot - hip;
             float t2 = clamp( dot( p - hip, d2 ) / max( dot( d2, d2 ), 1e-6 ), 0.0, 1.0 );
-            float legD = length( p - ( hip + d2 * t2 ) );
-            col = mix( col, vec3( 0.08, 0.08, 0.07 ), smoothstep( 0.0035, 0.0015, legD ) * 0.7 );
+            float leg_d = length( p - ( hip + d2 * t2 ) );
+            col = mix( col, vec3( 0.08, 0.08, 0.07 ), smoothstep( 0.0035, 0.0015, leg_d ) * 0.7 );
             // The dimple: a lens of radius r.
             float r = 0.028 * scale;
             float dr = length( p - foot );
-            dimpleLight += smoothstep( r * 0.85, r * 0.35, dr ) * ( 1.0 - smoothstep( r * 0.3, 0.0, dr ) );
-            dimpleDark += smoothstep( r * 1.15, r * 0.85, dr ) * smoothstep( r * 0.75, r * 0.95, dr );
+            dimple_light += smoothstep( r * 0.85, r * 0.35, dr ) * ( 1.0 - smoothstep( r * 0.3, 0.0, dr ) );
+            dimple_dark += smoothstep( r * 1.15, r * 0.85, dr ) * smoothstep( r * 0.75, r * 0.95, dr );
         }
     }
     // The caustic ring under each foot, and the shadow rim around it.
-    col += mix( vec3( 1.0, 0.98, 0.85 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 ) * clamp( dimpleLight, 0.0, 2.0 ) * day
+    col += mix( vec3( 1.0, 0.98, 0.85 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 ) * clamp( dimple_light, 0.0, 2.0 ) * day
            * 0.9;
-    col *= 1.0 - 0.4 * clamp( dimpleDark, 0.0, 1.0 );
+    col *= 1.0 - 0.4 * clamp( dimple_dark, 0.0, 1.0 );
     // Rings: from the strokes and, on the kick, one wider rise far off.
     for ( int i = 0; i < 6; ++i )
     {
@@ -206,7 +206,7 @@ void main()
     col *= 0.75 + 0.4 * smoothstep( 0.3, 0.7, fbm( p * 2.2 + 9.0 ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

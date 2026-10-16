@@ -78,8 +78,8 @@ float noise2( vec2 p )
 vec3 discAt( vec2 q, float spin, float hue, float turb, float ringR, vec3 toCam )
 {
     float       r = length( q );
-    const float rIn = 0.42, rOut = 2.6;
-    if ( r < rIn || r > rOut )
+    const float r_in = 0.42, r_out = 2.6;
+    if ( r < r_in || r > r_out )
         return vec3( 0.0 );
     float a = atan( q.y, q.x );
     // Keplerian rotation: angle advances faster inside.
@@ -90,12 +90,12 @@ vec3 discAt( vec2 q, float spin, float hue, float turb, float ringR, vec3 toCam 
     float gas = noise2( vec2( phi * 2.0, r * 6.0 ) ) * 0.6 + noise2( vec2( phi * 5.0 + 3.0, r * 14.0 ) ) * 0.4;
     gas = mix( 0.6, gas, turb );
     // Radial profile: bright inside, a highlighted ring, fading out.
-    float prof = pow( rIn / r, 1.6 ) + 0.8 * exp( -pow( ( r - ringR ) * 4.0, 2.0 ) );
-    float edge = smoothstep( rIn, rIn + 0.06, r ) * ( 1.0 - smoothstep( rOut - 0.5, rOut, r ) );
+    float prof = pow( r_in / r, 1.6 ) + 0.8 * exp( -pow( ( r - ringR ) * 4.0, 2.0 ) );
+    float edge = smoothstep( r_in, r_in + 0.06, r ) * ( 1.0 - smoothstep( r_out - 0.5, r_out, r ) );
     // Doppler beaming: velocity is tangential; the part moving toward the
     // camera brightens and blues.
     vec2  vel = spin * vec2( -sin( a ), cos( a ) );
-    float beta = 0.55 * sqrt( rIn / r );
+    float beta = 0.55 * sqrt( r_in / r );
     float towards = dot( vel, toCam.xz );
     float beam = pow( clamp( 1.0 + beta * towards, 0.2, 2.0 ), 3.0 );
     vec3  warm = imgPalette( hue * 0.159 + 0.05 + 0.25 * audioMelodyPitch );
@@ -121,9 +121,9 @@ void main()
     vec3  rd = normalize( vec3( p.x, p.y, 1.6 ) );
     float ct = cos( tilt ), st = sin( tilt );
     // Rotate the world so the disc plane is y = 0 in march space.
-    mat3 toDisc = mat3( 1.0, 0.0, 0.0, 0.0, ct, -st, 0.0, st, ct );
-    vec3 pos = toDisc * ro;
-    vec3 dir = toDisc * rd;
+    mat3 to_disc = mat3( 1.0, 0.0, 0.0, 0.0, ct, -st, 0.0, st, ct );
+    vec3 pos = to_disc * ro;
+    vec3 dir = to_disc * rd;
 
     // March with gravitational bending: each step pulls the direction toward
     // the hole by ~1/r^2.  Crossings of the disc plane collect emission; the
@@ -131,9 +131,9 @@ void main()
     vec3        col = vec3( 0.0 );
     float       shadow = 0.0;
     const float M = 0.42;
-    const int   STEPS = 96;
+    const int   Steps = 96;
     float       h = 0.16;
-    for ( int i = 0; i < STEPS; ++i )
+    for ( int i = 0; i < Steps; ++i )
     {
         vec3  nxt = pos + dir * h;
         float r = length( nxt );
@@ -147,7 +147,7 @@ void main()
         {
             float t = pos.y / ( pos.y - nxt.y );
             vec3  hit = mix( pos, nxt, t );
-            vec3  toCam = normalize( toDisc * (ro)-hit );
+            vec3  toCam = normalize( to_disc * (ro)-hit );
             col += discAt( hit.xz, spin, hue, turb, ringR, toCam );
         }
         // Bend: acceleration toward the origin, scaled to give a photon ring.
@@ -177,7 +177,7 @@ void main()
     col += imgPalette( hue * 0.159 + 0.9 ) * ring * ( 0.25 + 0.6 * audioBass + 0.8 * audioKick );
     col *= 0.85 + 0.35 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

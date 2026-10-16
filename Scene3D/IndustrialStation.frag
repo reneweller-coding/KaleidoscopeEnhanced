@@ -96,8 +96,8 @@ vec3 renderSky( vec3 dir )
     // without breaking the temporal budget's full-frame brightness cap.
     vec3  col = vec3( 0.026, 0.024, 0.022 )
                 + vec3( 0.13, 0.115, 0.10 ) * haze * ( 0.80 + 0.25 * audioBass + 0.20 * audioKick );
-    float rockField = fbm( dir * 9.0 );
-    float rocks = smoothstep( 0.56, 0.63, rockField );
+    float rock_field = fbm( dir * 9.0 );
+    float rocks = smoothstep( 0.56, 0.63, rock_field );
     col += vec3( 0.34, 0.28, 0.23 ) * rocks * ( 0.6 + 0.4 * fbm( dir * 30.0 ) );
     col += vec3( 1.0 ) * starsField( dir, 0.0012 ) * ( 1.0 - rocks );
     return col;
@@ -165,20 +165,20 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // A dim, cold ambient wash -- this yard runs on its own furnace glow,
     // not daylight.
-    vec3  lightDir = normalize( vec3( 0.3, 0.55, -0.5 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.3, 0.55, -0.5 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.4 + 0.4 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 30.0, 6.0, roughness ) );
-    vec3  specColor = mix( vec3( 0.9 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 30.0, 6.0, roughness ) );
+    vec3  spec_color = mix( vec3( 0.9 ), base.rgb, metallic );
 
     vec3 col = base.rgb * ( 0.32 + diff * ( 1.1 + 0.35 * audioSwell ) + fill * 0.22 );
-    col += specColor * spec * ( 0.45 + 0.5 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.45 + 0.5 * ( 1.0 - roughness ) );
 
     // Furnace/vent glow: dark patches of the baked albedo (vents, exposed
     // machinery, shadowed gaps) flare orange on the beat -- an open
@@ -190,20 +190,20 @@ void main()
     // gaps, and the flare below would read as an all-over glow instead of a
     // handful of hot spots.
     float luma = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
-    float ventMask = 1.0 - smoothstep( 0.03, 0.12, luma );
+    float vent_mask = 1.0 - smoothstep( 0.03, 0.12, luma );
     float flare = 0.15 + 0.25 * sin( time * 3.0 ) + 0.7 * audioKick;
-    col += vec3( 1.0, 0.42, 0.08 ) * ventMask * max( flare, 0.0 ) * gp * ( 0.4 + 0.3 * audioSwell );
+    col += vec3( 1.0, 0.42, 0.08 ) * vent_mask * max( flare, 0.0 ) * gp * ( 0.4 + 0.3 * audioSwell );
 
     // A cool fixed rim so the hull still separates from pure black -- kept
     // modest, this is an accent, not a wash. The field outside now carries
     // the color variety, not a photo-tinted hull.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.6, 0.7, 0.8 ) * fresnel * ( 0.08 + 0.15 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

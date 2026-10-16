@@ -53,20 +53,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -75,9 +75,9 @@ void main()
 {
     uvec3       g = gl_GlobalInvocationID;
     uint        id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint  kSlabs = 60u;
-    const uint  kSprayPer = 40u;
-    const float CLIFF_Z = 22.0, CLIFF_H = 9.0, SEA_Y = -2.0;
+    const uint  Slabs = 60u;
+    const uint  SprayPer = 40u;
+    const float CliffZ = 22.0, CliffH = 9.0, SeaY = -2.0;
     float       clock = sceneAdvance * 0.3 + sceneTime * 0.06;
     float       rate = ( 0.3 + 0.7 * clamp( rateP, 0.0, 1.0 ) ) * ( 0.5 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
 
@@ -87,15 +87,15 @@ void main()
         // the sea as a quad (kind -2).
         emitQuad( vec3( 0.0, 8.0, 60.0 ), vec3( 80.0, 0.0, 0.0 ), vec3( 0.0, 40.0, 0.0 ), 0.0, 0.0, -1.0, vec2( 0.0 ),
                   vec2( 1.0 ) );
-        emitQuad( vec3( 0.0, SEA_Y + CLIFF_H * 0.5, CLIFF_Z ), vec3( 40.0, 0.0, 0.0 ), vec3( 0.0, CLIFF_H * 0.5, 0.0 ),
+        emitQuad( vec3( 0.0, SeaY + CliffH * 0.5, CliffZ ), vec3( 40.0, 0.0, 0.0 ), vec3( 0.0, CliffH * 0.5, 0.0 ),
                   0.0, 0.0, 2.0, vec2( 0.0 ), vec2( 1.0 ) );
-        emitQuad( vec3( 0.0, SEA_Y, 12.0 ), vec3( 60.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 12.0 ), 0.0, 0.0, -2.0, vec2( 0.0 ),
+        emitQuad( vec3( 0.0, SeaY, 12.0 ), vec3( 60.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 12.0 ), 0.0, 0.0, -2.0, vec2( 0.0 ),
                   vec2( 1.0 ) );
         return;
     }
-    uint s = ( id - 1u ) / ( 1u + kSprayPer );
-    uint part = ( id - 1u ) % ( 1u + kSprayPer );
-    if ( s >= kSlabs )
+    uint s = ( id - 1u ) / ( 1u + SprayPer );
+    uint part = ( id - 1u ) % ( 1u + SprayPer );
+    if ( s >= Slabs )
         return;
     float fs = float( s );
     vec3  h = hash31( fs * 3.7 + 1.0 );
@@ -107,15 +107,15 @@ void main()
     float life = fract( clock / period * 2.0 + h.y );
     float x = ( h.x - 0.5 ) * 60.0;
     float size = ( 1.2 + 1.8 * hash11( fs * 5.1 ) ) * ( sizeP > 0.05 ? sizeP : 1.0 );
-    float top = SEA_Y + CLIFF_H * ( 0.55 + 0.45 * hash11( fs * 7.3 ) );
+    float top = SeaY + CliffH * ( 0.55 + 0.45 * hash11( fs * 7.3 ) );
     // Phases: 0..0.15 lean out, 0.15..0.4 fall, 0.4..0.55 splash, 0.55..1 float away.
     float lean = smoothstep( 0.0, 0.15, life );
     float fall = smoothstep( 0.15, 0.4, life );
-    float floatAway = smoothstep( 0.55, 1.0, life );
+    float float_away = smoothstep( 0.55, 1.0, life );
     float tilt = lean * 0.5 + fall * 1.2;
-    float y = mix( top, SEA_Y + size * 0.3, fall ) - floatAway * 0.0;
-    float z = CLIFF_Z - lean * 0.8 - fall * 3.0 - floatAway * 8.0;
-    float drift = floatAway * ( h.z - 0.5 ) * 6.0;
+    float y = mix( top, SeaY + size * 0.3, fall ) - float_away * 0.0;
+    float z = CliffZ - lean * 0.8 - fall * 3.0 - float_away * 8.0;
+    float drift = float_away * ( h.z - 0.5 ) * 6.0;
     vec3  c = vec3( x + drift, y, z );
     if ( part == 0u )
     {
@@ -136,7 +136,7 @@ void main()
     vec3  hp = hash31( fs * 19.0 + fp * 3.3 );
     float t = ( life - 0.4 ) / 0.3; // 0..1 through the splash
     vec3  dir = normalize( vec3( hp.x - 0.5, 0.8 + hp.y, ( hp.z - 0.5 ) * 0.6 ) );
-    vec3  pos = vec3( x, SEA_Y, CLIFF_Z - 3.0 ) + dir * t * ( 3.0 + 4.0 * hp.z ) * size * 0.5
+    vec3  pos = vec3( x, SeaY, CliffZ - 3.0 ) + dir * t * ( 3.0 + 4.0 * hp.z ) * size * 0.5
                 - vec3( 0.0, 9.0 * t * t, 0.0 ) * size * 0.3;
     float dsz = 0.08 + 0.1 * hp.y * ( 1.0 - t );
     emitQuad( pos, vec3( dsz, 0.0, 0.0 ), vec3( 0.0, dsz, 0.0 ), fs, 1.0 - t, 1.0, vec2( 0.0 ), vec2( 1.0 ) );

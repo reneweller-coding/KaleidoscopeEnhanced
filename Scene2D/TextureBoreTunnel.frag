@@ -135,7 +135,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -244,8 +244,8 @@ void main()
     float rough = clamp( audioRoughness, 0.0, 1.0 );
 
     // Cross-section: a superellipse between circle and rounded square.
-    float powV = mix( 1.0, 2.2, clamp( audioMode, 0.0, 1.0 ) );
-    float r = pow( pow( abs( p.x ), 2.0 * powV ) + pow( abs( p.y ), 2.0 * powV ), 1.0 / ( 2.0 * powV ) );
+    float pow_v = mix( 1.0, 2.2, clamp( audioMode, 0.0, 1.0 ) );
+    float r = pow( pow( abs( p.x ), 2.0 * pow_v ) + pow( abs( p.y ), 2.0 * pow_v ), 1.0 / ( 2.0 * pow_v ) );
     float a = atan( p.y, p.x ) + 0.02 * sceneTime + 0.35 * audioPhase;
 
     // Depth along the bore and the angle around it.
@@ -275,22 +275,22 @@ void main()
     float twist = mix( -1.5, 1.5, clamp( twistP, 0.0, 1.0 ) );
     float rifle = 0.5 + 0.5 * cos( ( v * 6.2831853 / k * 6.0 ) + u * twist * 6.2831853 );
     float groove = smoothstep( 0.75, 1.0, rifle );
-    float rifleAA = smoothstep( 0.6, 0.15, fwidth( u * twist ) + 0.02 );
+    float rifle_aa = smoothstep( 0.6, 0.15, fwidth( u * twist ) + 0.02 );
 
     // The lamp's reach: the wall fades into darkness with depth, then the exit glows.
     float reach = exp( -z * mix( 1.1, 0.7, swell ) );
     float h = texHeight( tuv, lod + 2.0, 0.4 );
-    vec3  lampC = mix( vec3( 0.75, 0.85, 1.1 ), vec3( 1.15, 0.95, 0.75 ), clamp( audioRolloff, 0.0, 1.0 ) );
+    vec3  lamp_c = mix( vec3( 0.75, 0.85, 1.1 ), vec3( 1.15, 0.95, 0.75 ), clamp( audioRolloff, 0.0, 1.0 ) );
     // Coloured light: the wall takes a hue from the photo (or a wandering hue
     // field where the photo is grey), strongest in the lit ridges.
-    lampC *= mix(
+    lamp_c *= mix(
         vec3( 1.0 ),
         glowColour( imgLod( tuv, 6.0 ), vec2( cos( a ), sin( a ) ) * 0.9 + vec2( u * 0.05, 0.0 ), hueP * 0.159 ) * 1.4,
         0.45 );
-    vec3 col = wall * dif * lampC * reach * ( 1.0 - 0.45 * groove * rifleAA ) * ( 0.55 + 0.6 * h );
-    col += vec3( 1.0, 0.95, 0.85 ) * spec * reach * ( 0.25 + 0.9 * hi ) * rifleAA;
+    vec3 col = wall * dif * lamp_c * reach * ( 1.0 - 0.45 * groove * rifle_aa ) * ( 0.55 + 0.6 * h );
+    col += vec3( 1.0, 0.95, 0.85 ) * spec * reach * ( 0.25 + 0.9 * hi ) * rifle_aa;
     // The exit: a glow at the vanishing point, coloured by the photo.
-    vec3 exitC = mix( vec3( 1.0, 0.8, 0.55 ), imgPalette( 0.1 + hueP * 0.159 ) * 1.4, 0.5 );
-    col += exitC * exp( -r * 2.2 ) * ( 0.5 + 1.0 * bass );
+    vec3 exit_c = mix( vec3( 1.0, 0.8, 0.55 ), imgPalette( 0.1 + hueP * 0.159 ) * 1.4, 0.5 );
+    col += exit_c * exp( -r * 2.2 ) * ( 0.5 + 1.0 * bass );
     finish( col );
 }

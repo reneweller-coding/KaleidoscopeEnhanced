@@ -70,39 +70,39 @@ void main()
 
     float t = time * 0.0462 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Dispersion vector
-    vec2  dispDir = vec2( cos( t * 0.5 * spl ), sin( t * 0.5 * spl ) );
-    float dispMag = midTransition * 0.06 * prs * ( 1.0 + audioSwell * 0.8 );
+    vec2  disp_dir = vec2( cos( t * 0.5 * spl ), sin( t * 0.5 * spl ) );
+    float disp_mag = mid_transition * 0.06 * prs * ( 1.0 + audioSwell * 0.8 );
 
-    vec2 uvR = uv - dispDir * dispMag;
-    vec2 uvG = uv;
-    vec2 uvB = uv + dispDir * dispMag;
+    vec2 uv_r = uv - disp_dir * disp_mag;
+    vec2 uv_g = uv;
+    vec2 uv_b = uv + disp_dir * disp_mag;
 
     // Sample RGB channels separately for tex1 and tex0
-    float r1 = texture( tex1, fract( uvR ) ).r;
-    float g1 = texture( tex1, fract( uvG ) ).g;
-    float b1 = texture( tex1, fract( uvB ) ).b;
+    float r1 = texture( tex1, fract( uv_r ) ).r;
+    float g1 = texture( tex1, fract( uv_g ) ).g;
+    float b1 = texture( tex1, fract( uv_b ) ).b;
     vec3  c1 = vec3( r1, g1, b1 );
 
-    float r0 = texture( tex0, fract( uvR ) ).r;
-    float g0 = texture( tex0, fract( uvG ) ).g;
-    float b0 = texture( tex0, fract( uvB ) ).b;
+    float r0 = texture( tex0, fract( uv_r ) ).r;
+    float g0 = texture( tex0, fract( uv_g ) ).g;
+    float b0 = texture( tex0, fract( uv_b ) ).b;
     vec3  c0 = vec3( r0, g0, b0 );
 
-    vec3 col = mix( c1, c0, tProg );
+    vec3 col = mix( c1, c0, t_prog );
 
     // Spectral rainbow flare lines
-    float spectralStreak = pow( max( 0.0, sin( dot( p, dispDir ) * 40.0 - t * 4.0 ) ), 6.0 ) * midTransition;
-    vec3  rainbow = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + dot( p, dispDir ) * 10.0 + audioPhase );
-    col += spectralStreak * rainbow * ( 1.5 + audioKick * 1.0 );
+    float spectral_streak = pow( max( 0.0, sin( dot( p, disp_dir ) * 40.0 - t * 4.0 ) ), 6.0 ) * mid_transition;
+    vec3  rainbow = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + dot( p, disp_dir ) * 10.0 + audioPhase );
+    col += spectral_streak * rainbow * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col = hueRot( col, audioChromaHue * midTransition );
+        col = hueRot( col, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col = hueRot( col, hue * midTransition );
+        col = hueRot( col, hue * mid_transition );
 
     fragColor = vec4( col, 1.0 );
 }

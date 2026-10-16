@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -242,8 +242,8 @@ void main()
     float pers = 0.6 + 1.2 * swell; // how far back along the path the glow reaches
     float bw = 0.004 + 0.006 * clamp( beamP, 0.0, 1.0 );
     float glow = 0.0, core = 0.0, head = 0.0;
-    float skewMax = 0.6 * clamp( photoP, 0.0, 1.0 );
-    float size = ( 0.26 + 0.1 * clamp( audioSpread, 0.0, 1.0 ) ) / ( 1.0 + abs( skewMax ) );
+    float skew_max = 0.6 * clamp( photoP, 0.0, 1.0 );
+    float size = ( 0.26 + 0.1 * clamp( audioSpread, 0.0, 1.0 ) ) / ( 1.0 + abs( skew_max ) );
     float t0 = sceneTime * 0.8;
     // The picture steers the figure: per tile, its broad light sets phase and skew.
     vec3  tp = imgLod( tile * 0.17 + 0.5 + vec2( 0.01, 0.007 ) * sceneTime, 5.0 );

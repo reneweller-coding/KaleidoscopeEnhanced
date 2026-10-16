@@ -61,7 +61,7 @@ float voronoiDist( vec2 p )
 {
     vec2  g = floor( p );
     vec2  f = fract( p );
-    float minDist = 1.0;
+    float min_dist = 1.0;
     for ( int y = -1; y <= 1; ++y )
     {
         for ( int x = -1; x <= 1; ++x )
@@ -69,10 +69,10 @@ float voronoiDist( vec2 p )
             vec2 lattice = vec2( float( x ), float( y ) );
             vec2 offset = vec2( hash21( g + lattice ), hash21( g + lattice + 33.7 ) );
             vec2 d = lattice + offset - f;
-            minDist = min( minDist, length( d ) );
+            min_dist = min( min_dist, length( d ) );
         }
     }
-    return minDist;
+    return min_dist;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -88,39 +88,39 @@ void main()
 
     float t = time * 0.2098 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Crust fractures.  audioBass widens the tectonic fault lines by softening
     // the crack falloff; the peak stays 1.0 at v = 0, only the line gets
     // thicker.  The voronoi distance v itself is untouched, so the staggered
-    // plate blend below is unaffected, and midTransition gates the widening to
+    // plate blend below is unaffected, and mid_transition gates the widening to
     // exactly the base width at both fade endpoints (where the magma glow is
-    // multiplied out by midTransition anyway).
+    // multiplied out by mid_transition anyway).
     float v = voronoiDist( p * 8.0 * crs );
-    float faultWidth = 1.0 + audioSwell * 0.6 * midTransition;
-    float cracks = exp( -v * 15.0 / faultWidth );
+    float fault_width = 1.0 + audioSwell * 0.6 * mid_transition;
+    float cracks = exp( -v * 15.0 / fault_width );
 
     // Plate shift displacement
-    vec2 plateDisp = vec2( sin( p.y * 6.0 + t ), cos( p.x * 6.0 - t ) ) * 0.03 * midTransition;
+    vec2 plate_disp = vec2( sin( p.y * 6.0 + t ), cos( p.x * 6.0 - t ) ) * 0.03 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + plateDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - plateDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + plate_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - plate_disp ) );
 
     // Staggered plate cooling
-    float plateDelay = fract( v * 4.0 );
-    float blend = clamp( ( tProg - plateDelay * 0.3 ) / 0.7, 0.0, 1.0 );
+    float plate_delay = fract( v * 4.0 );
+    float blend = clamp( ( t_prog - plate_delay * 0.3 ) / 0.7, 0.0, 1.0 );
 
     vec4 col = mix( c1, c0, blend );
 
     // Glowing magma rivers along fault lines
-    vec3 magmaCol = mix( vec3( 0.95, 0.2, 0.05 ), vec3( 1.0, 0.85, 0.3 ), cracks );
-    col.rgb += cracks * magmaCol * midTransition * het * ( 1.5 + audioKick * 1.17 );
+    vec3 magma_col = mix( vec3( 0.95, 0.2, 0.05 ), vec3( 1.0, 0.85, 0.3 ), cracks );
+    col.rgb += cracks * magma_col * mid_transition * het * ( 1.5 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

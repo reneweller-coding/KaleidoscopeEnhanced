@@ -56,14 +56,14 @@ vec3 hueRot( vec3 c, float a )
 void main()
 {
     float side = attrA.y;
-    float rIdx = attrA.w; // ribbon 0..19
+    float r_idx = attrA.w; // ribbon 0..19
     float r1 = attrB.x, r2 = attrB.y;
 
     // Four beams per ribbon.  t runs 0..1 inside each of them.
     float tt = attrA.x * 4.0;
     float sub = min( floor( tt ), 3.0 );
     float t = clamp( tt - sub, 0.0, 1.0 );
-    float bi = rIdx * 4.0 + sub; // beam 0..79
+    float bi = r_idx * 4.0 + sub; // beam 0..79
 
     // Decorrelate the four beams that share a ribbon's hashes.
     float h1 = fract( r1 + sub * 0.2718 );
@@ -71,14 +71,14 @@ void main()
 
     // Four towers across the stage; the outer pair lean outwards.
     float twi = mod( bi, 4.0 );
-    float twSgn = ( twi < 1.5 ) ? -1.0 : 1.0;
+    float tw_sgn = ( twi < 1.5 ) ? -1.0 : 1.0;
     vec3  origin = vec3( ( twi - 1.5 ) * 9.5, 8.5, 7.0 );
 
     // Fan of beams sweeping with the bar; the drop points them all up.
     float k = floor( bi / 4.0 ) / 19.0; // 0..1 across one tower's fan
     float fan = ( k - 0.5 ) * 1.9;
     float sweep = sin( 6.2831853 * audioBarPhase + h1 * 6.2831853 ) * 0.85;
-    float yaw = fan * ( 0.55 + 0.25 * sweep ) - twSgn * 0.42;
+    float yaw = fan * ( 0.55 + 0.25 * sweep ) - tw_sgn * 0.42;
     float pitch = -0.30 + 0.55 * sweep
                   + ( h2 - 0.5 ) * 0.45; // (drop camera pitch removed, V7d)
 
@@ -96,8 +96,8 @@ void main()
     // view axis -- normalize()ing that gives NaN and drops the whole beam.
     vec3  sd = cross( dir, vec3( 0.0, 0.0, 1.0 ) );
     float sl = length( sd );
-    vec3  sideDir = ( sl > 1e-4 ) ? sd / sl : vec3( 1.0, 0.0, 0.0 );
-    pos += sideDir * side * ( 0.30 + 1.60 * t ); // cone spread
+    vec3  side_dir = ( sl > 1e-4 ) ? sd / sl : vec3( 1.0, 0.0, 0.0 );
+    pos += side_dir * side * ( 0.30 + 1.60 * t ); // cone spread
 
     vec3 vp = vec3( pos.x, pos.y - 2.0, pos.z );
 

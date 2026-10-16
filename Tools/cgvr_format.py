@@ -142,6 +142,31 @@ def split_code_comments( text ):
     return "".join( code ), comments
 
 
+def blank_code( text ):
+    """text with comments and string/character literals replaced by spaces, length and newlines kept."""
+    out, i, n = list( text ), 0, len( text )
+    while i < n:
+        if text.startswith( "//", i ):
+            j = text.find( "\n", i )
+            j = n if j < 0 else j
+        elif text.startswith( "/*", i ):
+            j = text.find( "*/", i + 2 )
+            j = n if j < 0 else j + 2
+        elif text[ i ] in "\"'":
+            q, j = text[ i ], i + 1
+            while j < n and text[ j ] != q and text[ j ] != "\n":
+                j += 2 if text[ j ] == "\\" else 1
+            j = min( j + 1, n )
+        else:
+            i += 1
+            continue
+        for k in range( i, j ):
+            if out[ k ] != "\n":
+                out[ k ] = " "
+        i = j
+    return "".join( out )
+
+
 def signature( text ):
     """Token sequence of text without comments and layout; preprocessor lines are single units."""
     code, comments = split_code_comments( text.replace( "\r\n", "\n" ) )

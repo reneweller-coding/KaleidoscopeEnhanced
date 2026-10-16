@@ -76,11 +76,11 @@ void main()
     // both the ground glow and the line gain come up.
     vec3 ground = mix( vec3( 0.08, 0.04, 0.16 ), vec3( 0.15, 0.08, 0.28 ),
                        clamp( vWorld.z / 22.0, 0.0, 1.0 ) );
-    vec3 lineCol = imgPalette( 0.30 * clamp( vWorld.z / 20.0, 0.0, 1.0 ) ) * 3.6;
+    vec3 line_col = imgPalette( 0.30 * clamp( vWorld.z / 20.0, 0.0, 1.0 ) ) * 3.6;
 
     vec3 col = ground
-               + lineCol * line * ( 0.9 + 1.1 * audioKick + 1.6 * audioDrop + 0.8 * sweep )
-               + lineCol * sweep * 0.10;
+               + line_col * line * ( 0.9 + 1.1 * audioKick + 1.6 * audioDrop + 0.8 * sweep )
+               + line_col * sweep * 0.10;
     col *= mix( vec3( 0.85, 0.9, 1.1 ), vec3( 1.1, 1.0, 0.85 ), audioCentroid );
     col *= exp( -vDist * 0.010 ); // horizon fog
 

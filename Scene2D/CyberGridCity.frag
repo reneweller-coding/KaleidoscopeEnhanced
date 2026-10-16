@@ -104,14 +104,14 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
-    vec2 screenUV = gl_FragCoord.xy / resolution;
+    vec2 screen_uv = gl_FragCoord.xy / resolution;
 
     // Flight camera
-    float camZ = time * 3.5 * spd + audioAdvance * 6.0;
-    float camH = 1.2 + 0.8 * sin( time * 0.15 ) + audioSwell * 0.6;
-    float camX = sin( time * 0.12 ) * 0.55;
-    vec3  ro = vec3( camX, camH, camZ );
-    vec3  ta = vec3( camX * 0.35, camH * 0.7 - 0.2, camZ + 8.0 );
+    float cam_z = time * 3.5 * spd + audioAdvance * 6.0;
+    float cam_h = 1.2 + 0.8 * sin( time * 0.15 ) + audioSwell * 0.6;
+    float cam_x = sin( time * 0.12 ) * 0.55;
+    vec3  ro = vec3( cam_x, cam_h, cam_z );
+    vec3  ta = vec3( cam_x * 0.35, cam_h * 0.7 - 0.2, cam_z + 8.0 );
 
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
@@ -124,155 +124,157 @@ void main()
     // Background synthwave sun & cyber grid horizon
     if ( rd.y > -0.05 )
     {
-        float sunY = 0.12 + 0.08 * sin( time * 0.05 );
-        vec3  sunDir = normalize( vec3( 0.0, sunY, 1.0 ) );
-        float sunDot = max( dot( rd, sunDir ), 0.0 );
-        float sunDisc = smoothstep( 0.985, 0.992, sunDot );
-        float sunGlow = pow( sunDot, 6.0 ) * 0.8;
+        float sun_y = 0.12 + 0.08 * sin( time * 0.05 );
+        vec3  sun_dir = normalize( vec3( 0.0, sun_y, 1.0 ) );
+        float sun_dot = max( dot( rd, sun_dir ), 0.0 );
+        float sun_disc = smoothstep( 0.985, 0.992, sun_dot );
+        float sun_glow = pow( sun_dot, 6.0 ) * 0.8;
 
         // Sun horizontal laser slices
-        if ( sunDisc > 0.0 && rd.y < sunY + 0.08 )
+        if ( sun_disc > 0.0 && rd.y < sun_y + 0.08 )
         {
             float slice = sin( rd.y * 140.0 - time * 2.0 );
             if ( slice < -0.2 )
-                sunDisc *= 0.15;
+                sun_disc *= 0.15;
         }
-        vec3 sunCol = imgPalette( 0.10 + 0.25 * clamp( ( rd.y - sunY + 0.1 ) * 4.0, 0.0, 1.0 ) ) * 1.6;
-        col += sunDisc * sunCol * 2.0 + sunGlow * vec3( 1.0, 0.2, 0.6 );
+        vec3 sun_col = imgPalette( 0.10 + 0.25 * clamp( ( rd.y - sun_y + 0.1 ) * 4.0, 0.0, 1.0 ) ) * 1.6;
+        col += sun_disc * sun_col * 2.0 + sun_glow * vec3( 1.0, 0.2, 0.6 );
 
         // Cyber stars
-        vec2  starUV = rd.xz / ( rd.y + 0.15 );
-        float starN = hash21( floor( starUV * 60.0 ) );
-        if ( starN > 0.985 )
+        vec2  star_uv = rd.xz / ( rd.y + 0.15 );
+        float star_n = hash21( floor( star_uv * 60.0 ) );
+        if ( star_n > 0.985 )
         {
-            col += vec3( 0.8, 0.9, 1.0 ) * pow( sin( starN * 100.0 + time * 3.0 ) * 0.5 + 0.5, 4.0 ) * audioHigh;
+            col += vec3( 0.8, 0.9, 1.0 ) * pow( sin( star_n * 100.0 + time * 3.0 ) * 0.5 + 0.5, 4.0 ) * audioHigh;
         }
     }
 
     float t = 0.0;
-    float maxDist = 45.0;
+    float max_dist = 45.0;
     vec3  p = ro;
-    float hitDist = -1.0;
-    vec3  hitCell = vec3( 0.0 );
-    vec3  hitNormal = vec3( 0.0 );
-    float hitMat = 0.0; // 0: ground, 1: building, 2: billboard
+    float hit_dist = -1.0;
+    vec3  hit_cell = vec3( 0.0 );
+    vec3  hit_normal = vec3( 0.0 );
+    float hit_mat = 0.0; // 0: ground, 1: building, 2: billboard
 
     // Grid step size
-    float cellW = 3.0 / dens;
+    float cell_w = 3.0 / dens;
 
     for ( int i = 0; i < 70; i++ )
     {
         p = ro + rd * t;
-        if ( t > maxDist )
+        if ( t > max_dist )
             break;
 
         // Ground plane at y = 0
-        float dGround = p.y;
+        float d_ground = p.y;
 
         // Building grid
-        vec2 cellId = floor( ( p.xz + cellW * 0.5 ) / cellW );
-        vec2 localXZ = mod( p.xz + cellW * 0.5, cellW ) - cellW * 0.5;
+        vec2 cell_id = floor( ( p.xz + cell_w * 0.5 ) / cell_w );
+        vec2 local_xz = mod( p.xz + cell_w * 0.5, cell_w ) - cell_w * 0.5;
 
         // Street avenue in center
-        float streetMask = step( 0.8, abs( cellId.x ) ); // Open central boulevard
+        float street_mask = step( 0.8, abs( cell_id.x ) ); // Open central boulevard
 
-        float hSeed = hash21( cellId );
-        float bHeight = ( 1.5 + 5.0 * pow( hSeed, 2.5 ) + audioSubBass * 1.5 * step( 0.85, hSeed ) ) * streetMask;
-        float bWidth = cellW * 0.38 * ( 0.6 + 0.4 * hash21( cellId + 17.1 ) );
+        float h_seed = hash21( cell_id );
+        float b_height = ( 1.5 + 5.0 * pow( h_seed, 2.5 ) + audioSubBass * 1.5 * step( 0.85, h_seed ) ) * street_mask;
+        float b_width = cell_w * 0.38 * ( 0.6 + 0.4 * hash21( cell_id + 17.1 ) );
 
-        vec3  bCenter = vec3( 0.0, bHeight * 0.5, 0.0 );
-        float dBox = sdBox( vec3( localXZ.x, p.y - bHeight * 0.5, localXZ.y ), vec3( bWidth, bHeight * 0.5, bWidth ) );
+        vec3  b_center = vec3( 0.0, b_height * 0.5, 0.0 );
+        float d_box = sdBox( vec3( local_xz.x, p.y - b_height * 0.5, local_xz.y ),
+                             vec3( b_width, b_height * 0.5, b_width ) );
 
-        float d = min( dGround, dBox );
+        float d = min( d_ground, d_box );
 
         if ( d < 0.005 * t )
         {
-            hitDist = t;
-            hitCell = vec3( cellId.x, cellId.y, hSeed );
-            if ( d == dGround )
+            hit_dist = t;
+            hit_cell = vec3( cell_id.x, cell_id.y, h_seed );
+            if ( d == d_ground )
             {
-                hitMat = 0.0;
-                hitNormal = vec3( 0.0, 1.0, 0.0 );
+                hit_mat = 0.0;
+                hit_normal = vec3( 0.0, 1.0, 0.0 );
             }
             else
             {
-                hitMat = ( hSeed > 0.82 ) ? 2.0 : 1.0; // Billboards on special towers
-                hitNormal = vec3( 0.0, 1.0, 0.0 );     // Approximate
+                hit_mat = ( h_seed > 0.82 ) ? 2.0 : 1.0; // Billboards on special towers
+                hit_normal = vec3( 0.0, 1.0, 0.0 );      // Approximate
             }
             break;
         }
         t += max( d * 0.6, 0.04 );
     }
 
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
-        vec3 hp = ro + rd * hitDist;
-        vec3 matCol = vec3( 0.0 );
+        vec3 hp = ro + rd * hit_dist;
+        vec3 mat_col = vec3( 0.0 );
 
-        if ( hitMat == 0.0 )
+        if ( hit_mat == 0.0 )
         {
             // Wet asphalt street with glowing neon grid
-            vec2  gUV = fract( hp.xz * 0.8 );
-            vec2  gLine = smoothstep( 0.06, 0.01, abs( gUV - 0.5 ) );
-            float gridGlow = max( gLine.x, gLine.y );
+            vec2  g_uv = fract( hp.xz * 0.8 );
+            vec2  g_line = smoothstep( 0.06, 0.01, abs( g_uv - 0.5 ) );
+            float grid_glow = max( g_line.x, g_line.y );
 
             // Traffic speed lines
-            float trafficZ = fract( hp.z * 0.2 - time * 2.0 * spd - audioAdvance * 1.2 );
-            float trafficBeam = smoothstep( 0.08, 0.0, abs( hp.x - 0.5 ) ) * exp( -trafficZ * 3.0 );
-            float trafficBeamL = smoothstep( 0.08, 0.0, abs( hp.x + 0.5 ) )
-                                 * exp( -fract( -hp.z * 0.2 - time * 2.0 * spd ) * 3.0 );
+            float traffic_z = fract( hp.z * 0.2 - time * 2.0 * spd - audioAdvance * 1.2 );
+            float traffic_beam = smoothstep( 0.08, 0.0, abs( hp.x - 0.5 ) ) * exp( -traffic_z * 3.0 );
+            float traffic_beam_l = smoothstep( 0.08, 0.0, abs( hp.x + 0.5 ) )
+                                   * exp( -fract( -hp.z * 0.2 - time * 2.0 * spd ) * 3.0 );
 
-            vec3 gridCol = imgPalette( ( hp.z * 0.1 ) * 0.159 ) * 1.5;
-            matCol = vec3( 0.02, 0.02, 0.04 );
-            matCol += gridGlow * gridCol * ( 1.2 + audioKick * 1.5 ) * neo;
-            matCol += trafficBeam * vec3( 0.0, 1.0, 0.9 ) * 3.0 + trafficBeamL * vec3( 1.0, 0.2, 0.2 ) * 3.0;
+            vec3 grid_col = imgPalette( ( hp.z * 0.1 ) * 0.159 ) * 1.5;
+            mat_col = vec3( 0.02, 0.02, 0.04 );
+            mat_col += grid_glow * grid_col * ( 1.2 + audioKick * 1.5 ) * neo;
+            mat_col += traffic_beam * vec3( 0.0, 1.0, 0.9 ) * 3.0 + traffic_beam_l * vec3( 1.0, 0.2, 0.2 ) * 3.0;
 
             // Puddle reflection
-            vec3 reflDir = reflect( rd, vec3( 0.0, 1.0, 0.0 ) );
-            vec3 reflSky = imgPalette( ( reflDir.z * 2.0 + time ) * 0.159 ) * 1.4;
-            matCol += reflSky * 0.3 * ( 0.8 + audioSwell * 0.5 );
+            vec3 refl_dir = reflect( rd, vec3( 0.0, 1.0, 0.0 ) );
+            vec3 refl_sky = imgPalette( ( refl_dir.z * 2.0 + time ) * 0.159 ) * 1.4;
+            mat_col += refl_sky * 0.3 * ( 0.8 + audioSwell * 0.5 );
         }
         else
         {
             // Skyscraper facade
-            float floorLevel = floor( hp.y * 3.0 );
-            float windowX = floor( hp.x * 3.0 + hp.z * 3.0 );
-            float winRand = hash21( vec2( windowX, floorLevel ) + hitCell.xy );
+            float floor_level = floor( hp.y * 3.0 );
+            float window_x = floor( hp.x * 3.0 + hp.z * 3.0 );
+            float win_rand = hash21( vec2( window_x, floor_level ) + hit_cell.xy );
 
-            vec3 bBase = vec3( 0.03, 0.03, 0.06 );
+            vec3 b_base = vec3( 0.03, 0.03, 0.06 );
 
-            if ( hitMat == 2.0 && hp.y > 1.0 && hp.y < 3.5 )
+            if ( hit_mat == 2.0 && hp.y > 1.0 && hp.y < 3.5 )
             {
                 // Giant Holographic Billboard projecting active photo
-                vec2 bUV = vec2( fract( hp.z * 0.4 + 0.5 ), ( hp.y - 1.0 ) / 2.5 );
-                vec3 photoCol = img( clamp( bUV, 0.0, 1.0 ) );
+                vec2 b_uv = vec2( fract( hp.z * 0.4 + 0.5 ), ( hp.y - 1.0 ) / 2.5 );
+                vec3 photo_col = img( clamp( b_uv, 0.0, 1.0 ) );
                 // Scanlines on billboard
-                photoCol *= 0.8 + 0.2 * sin( hp.y * 80.0 + time * 10.0 );
-                matCol = photoCol * ( 1.5 + audioKick * 1.0 );
+                photo_col *= 0.8 + 0.2 * sin( hp.y * 80.0 + time * 10.0 );
+                mat_col = photo_col * ( 1.5 + audioKick * 1.0 );
             }
             else
             {
                 // Glowing Cyber Windows
-                float winGrid = step( 0.25, fract( hp.y * 3.0 ) ) * step( 0.25, fract( ( hp.x + hp.z ) * 3.0 ) );
-                if ( winRand > 0.45 && winGrid > 0.5 )
+                float win_grid = step( 0.25, fract( hp.y * 3.0 ) ) * step( 0.25, fract( ( hp.x + hp.z ) * 3.0 ) );
+                if ( win_rand > 0.45 && win_grid > 0.5 )
                 {
-                    vec3 winCol = ( winRand > 0.8 ) ? vec3( 1.0, 0.9, 0.3 ) : ( winRand > 0.6 ) ? vec3( 0.1, 0.9, 1.0 )
-                                                                                                : vec3( 1.0, 0.2, 0.7 );
-                    bBase += winCol * ( 0.8 + 0.6 * audioHigh ) * neo;
+                    vec3 win_col = ( win_rand > 0.8 )   ? vec3( 1.0, 0.9, 0.3 )
+                                   : ( win_rand > 0.6 ) ? vec3( 0.1, 0.9, 1.0 )
+                                                        : vec3( 1.0, 0.2, 0.7 );
+                    b_base += win_col * ( 0.8 + 0.6 * audioHigh ) * neo;
                 }
                 // Building edge neon trim
-                vec2  cellXZ = mod( hp.xz + cellW * 0.5, cellW ) - cellW * 0.5;
-                float edgeGlow = smoothstep( 0.08, 0.0, abs( abs( cellXZ.x ) - cellW * 0.18 ) )
-                                 + smoothstep( 0.08, 0.0, abs( abs( cellXZ.y ) - cellW * 0.18 ) );
-                bBase += edgeGlow * vec3( 0.9, 0.1, 0.8 ) * ( 1.0 + audioKick * 1.5 );
-                matCol = bBase;
+                vec2  cell_xz = mod( hp.xz + cell_w * 0.5, cell_w ) - cell_w * 0.5;
+                float edge_glow = smoothstep( 0.08, 0.0, abs( abs( cell_xz.x ) - cell_w * 0.18 ) )
+                                  + smoothstep( 0.08, 0.0, abs( abs( cell_xz.y ) - cell_w * 0.18 ) );
+                b_base += edge_glow * vec3( 0.9, 0.1, 0.8 ) * ( 1.0 + audioKick * 1.5 );
+                mat_col = b_base;
             }
         }
 
         // Volumetric fog & distance atmospheric fade
-        float fog = 1.0 - exp( -hitDist * ( 0.04 + audioSwell * 0.03 ) );
-        vec3  fogCol = imgPalette( 0.60 + 0.30 * clamp( hp.y * 0.2, 0.0, 1.0 ) ) * 0.45;
-        col = mix( matCol, fogCol, fog );
+        float fog = 1.0 - exp( -hit_dist * ( 0.04 + audioSwell * 0.03 ) );
+        vec3  fog_col = imgPalette( 0.60 + 0.30 * clamp( hp.y * 0.2, 0.0, 1.0 ) ) * 0.45;
+        col = mix( mat_col, fog_col, fog );
     }
 
     // Audio-reactive lightning strike flash
@@ -290,8 +292,8 @@ void main()
     col = pow( col, vec3( 0.9 ) ); // Punchy contrast
 
     // Vignette
-    vec2  vUV = screenUV * ( 1.0 - screenUV.yx );
-    float vig = vUV.x * vUV.y * 15.0;
+    vec2  v_uv = screen_uv * ( 1.0 - screen_uv.yx );
+    float vig = v_uv.x * v_uv.y * 15.0;
     col *= clamp( pow( vig, 0.25 ), 0.0, 1.0 );
 
     fragColor = vec4( col, 1.0 );

@@ -98,10 +98,10 @@ void main()
 
     // Colour: body from one palette position, membrane (edge) from another,
     // the A-substrate as a dim wash behind.
-    vec3 bodyCol = imgPalette( hue * 0.159 + 0.15 + 0.2 * b );
-    vec3 edgeCol = imgPalette( hue * 0.159 + 0.65 ) * 1.5;
+    vec3 body_col = imgPalette( hue * 0.159 + 0.15 + 0.2 * b );
+    vec3 edge_col = imgPalette( hue * 0.159 + 0.65 ) * 1.5;
     vec3 wash = imgPalette( hue * 0.159 + 0.4 ) * 0.12 * a;
-    vec3 col = wash + bodyCol * body * ( 0.7 + 0.5 * audioLevel + 0.3 * audioBeat ) + edgeCol * edge * 0.8;
+    vec3 col = wash + body_col * body * ( 0.7 + 0.5 * audioLevel + 0.3 * audioBeat ) + edge_col * edge * 0.8;
 
     // Fold seams glow faintly so the symmetry reads even in a quiet field.
     float sector = 6.2831853 / n;
@@ -115,7 +115,7 @@ void main()
     // Vignette so the fold centre is the subject.
     col *= 1.0 - 0.45 * smoothstep( 0.45, 1.0, length( p ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

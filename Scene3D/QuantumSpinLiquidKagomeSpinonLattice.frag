@@ -56,19 +56,19 @@ void main()
     // TOTAL flux of every sprite by more than 2x, i.e. it was really an exposure
     // control in disguise.  Compressed, and divided back out so haloP now only
     // trades a tight bright core against a soft wide one.
-    float hScale = 0.90 + 0.50 * clamp( ( haloP > 0.01 ? haloP : 1.2 ), 0.6, 2.2 );
-    float core = exp( -r2 * 15.0 / hScale );
-    float fluxN = 1.50 / hScale;
+    float h_scale = 0.90 + 0.50 * clamp( ( haloP > 0.01 ? haloP : 1.2 ), 0.6, 2.2 );
+    float core = exp( -r2 * 15.0 / h_scale );
+    float flux_n = 1.50 / h_scale;
 
     // The per-SITE level -- depth, spinon occupation, triangle corner vs bond --
     // is decided in the .vert.  This stage only applies the sprite profile and
     // the preset gains.  The old flat 0.26 base gave every one of 19,000
     // on-screen sprites the same luminance, which is what an even wash IS.
-    float gain = ( 0.75 + 0.35 * clamp( ( pointGainP > 0.01 ? pointGainP : 1.1 ), 0.5, 1.8 ) ) * fluxN;
+    float gain = ( 0.75 + 0.35 * clamp( ( pointGainP > 0.01 ? pointGainP : 1.1 ), 0.5, 1.8 ) ) * flux_n;
     float lit = vLum * gain;
 
-    vec2 photoUv = fract( gl_PointCoord + vSpinon * 0.3 );
-    vec3 photo = img( photoUv );
+    vec2 photo_uv = fract( gl_PointCoord + vSpinon * 0.3 );
+    vec3 photo = img( photo_uv );
 
     vec3 col = vCol * ( 0.6 + 0.4 * photo ) * core * lit;
     // Spinon pair creation: a white-blue burst, and ONLY on the excited sites --

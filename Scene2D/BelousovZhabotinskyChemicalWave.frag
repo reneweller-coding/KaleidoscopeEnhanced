@@ -66,17 +66,17 @@ void main()
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.4 + audioAdvance * 0.35;
 
-    float numSpirals = ( spiralDensityP > 1.0 ? spiralDensityP : 4.0 );
-    float vSpeed = ( waveSpeedP > 0.01 ? waveSpeedP : 1.2 );
-    float kCurv = ( curvP > 0.01 ? curvP : 8.0 );
+    float num_spirals = ( spiralDensityP > 1.0 ? spiralDensityP : 4.0 );
+    float v_speed = ( waveSpeedP > 0.01 ? waveSpeedP : 1.2 );
+    float k_curv = ( curvP > 0.01 ? curvP : 8.0 );
 
-    float totalWave = 0.0;
-    float maxWave = -1.0;
+    float total_wave = 0.0;
+    float max_wave = -1.0;
 
     // Superimpose multiple BZ spiral waves with mutual annihilation min/max
     for ( float i = 0.0; i < 4.0; i += 1.0 )
     {
-        if ( i >= numSpirals )
+        if ( i >= num_spirals )
             break;
 
         float ang = i * 1.5707963 + audioPhase * 0.3;
@@ -89,37 +89,37 @@ void main()
 
         // Archimedean spiral: phase = k * r - phi - omega * t
         float chirality = mod( i, 2.0 ) == 0.0 ? 1.0 : -1.0;
-        float phase = r * kCurv - phi * chirality - t * 3.0 * vSpeed;
+        float phase = r * k_curv - phi * chirality - t * 3.0 * v_speed;
 
         // Autocatalytic sharp pulse wave profile
         float wave = pow( sin( phase ) * 0.5 + 0.5, 2.5 );
 
         // Annihilation: taking maximum wave state simulates non-overlapping reaction fronts
-        if ( wave > maxWave )
+        if ( wave > max_wave )
         {
-            maxWave = wave;
+            max_wave = wave;
         }
-        totalWave += wave;
+        total_wave += wave;
     }
 
-    float bzPattern = maxWave * ( redoxContrastP > 0.01 ? redoxContrastP : 1.3 );
+    float bz_pattern = max_wave * ( redoxContrastP > 0.01 ? redoxContrastP : 1.3 );
 
     // Wavefront edge flash on kick
-    float edgeFlash = pow( maxWave, 4.0 ) * ( 1.0 + 3.0 * audioKick );
+    float edge_flash = pow( max_wave, 4.0 ) * ( 1.0 + 3.0 * audioKick );
 
     // Ferroin catalyst redox states mapped to full photo palette
-    float palAngle = fract( bzPattern * 0.4 + t * 0.05 + audioCentroid );
-    vec3  colRedox = imgPalette( palAngle );
-    vec3  colFront = imgPalette( fract( palAngle + 0.5 ) ) * 2.2;
+    float pal_angle = fract( bz_pattern * 0.4 + t * 0.05 + audioCentroid );
+    vec3  col_redox = imgPalette( pal_angle );
+    vec3  col_front = imgPalette( fract( pal_angle + 0.5 ) ) * 2.2;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colRedox * bzPattern * ( 0.8 + 0.4 * audioSwell );
-    col += colFront * edgeFlash * 1.5;
-    col += colRedox * ( audioKick * 0.35 );
+    col += col_redox * bz_pattern * ( 0.8 + 0.4 * audioSwell );
+    col += col_front * edge_flash * 1.5;
+    col += col_redox * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

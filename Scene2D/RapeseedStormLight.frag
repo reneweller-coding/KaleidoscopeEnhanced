@@ -99,14 +99,14 @@ void main()
     float cl = fbm( cq + 0.5 * vec2( fbm( cq * 1.3 ), fbm( cq * 1.3 + 4.0 ) ) );
     vec3  sky = mix( vec3( 0.08, 0.09, 0.12 ), vec3( 0.3, 0.32, 0.36 ), smoothstep( 0.3, 0.8, cl ) );
     // The gap where the sun breaks through (wanders slowly).
-    vec2  gapC = vec2( 0.35 * sin( T * 0.01 ) - 0.1, 0.32 );
-    float gap = smoothstep( 0.35, 0.0, length( ( p - gapC ) * vec2( 0.7, 1.8 ) ) + 0.2 * ( cl - 0.5 ) );
+    vec2  gap_c = vec2( 0.35 * sin( T * 0.01 ) - 0.1, 0.32 );
+    float gap = smoothstep( 0.35, 0.0, length( ( p - gap_c ) * vec2( 0.7, 1.8 ) ) + 0.2 * ( cl - 0.5 ) );
     sky = mix( sky, vec3( 1.0, 0.92, 0.75 ) * ( 0.9 + 0.3 * swell ), gap * 0.8 );
     // Sun rays falling from the gap.
-    vec2  rd = p - gapC;
+    vec2  rd = p - gap_c;
     float ang = atan( rd.x, -rd.y );
     float rays = pow( 0.5 + 0.5 * sin( ang * 13.0 + fbm( vec2( ang * 3.0, 0.0 ) ) * 6.0 ), 3.0 )
-                 * exp( -length( rd ) * 2.5 ) * smoothstep( gapC.y, gapC.y - 0.1, p.y );
+                 * exp( -length( rd ) * 2.5 ) * smoothstep( gap_c.y, gap_c.y - 0.1, p.y );
     // Lightning glowing inside the cloud on the kick, off to one side.
     float lg = exp( -length( ( p - vec2( -0.55, 0.3 ) ) * vec2( 1.0, 1.6 ) ) * 4.0 ) * smoothstep( 0.4, 0.7, cl );
     sky += vec3( 0.7, 0.75, 1.0 ) * lg * kick * 1.2;
@@ -120,7 +120,7 @@ void main()
 
     // The land: rolling hills in layers; rapeseed fields in patches.
     // Light on the land: the sunlit patch under the gap, drifting.
-    vec2 lightC = vec2( gapC.x * 1.2 + 0.1, -0.18 );
+    vec2 light_c = vec2( gap_c.x * 1.2 + 0.1, -0.18 );
     for ( int L = 0; L < 4; ++L )
     {
         float fl = float( L );
@@ -145,11 +145,11 @@ void main()
             field *= 0.85 + 0.25 * noise2( vec2( p.x * 200.0, p.y * 60.0 ) );
             // Sunlit patch vs. cloud shadow.
             float sun = smoothstep( 0.5, 0.08,
-                                    length( ( p - lightC ) * vec2( 0.55, 1.8 ) )
+                                    length( ( p - light_c ) * vec2( 0.55, 1.8 ) )
                                         + 0.15 * ( fbm( p * 3.0 + T * 0.01 ) - 0.5 ) )
                         * ( 0.8 + 0.4 * swell );
-            float shadowTone = 0.32 + 0.1 * depth;
-            vec3  lit = field * mix( vec3( shadowTone ) * vec3( 0.8, 0.85, 1.0 ), vec3( 1.5, 1.35, 1.05 ), sun );
+            float shadow_tone = 0.32 + 0.1 * depth;
+            vec3  lit = field * mix( vec3( shadow_tone ) * vec3( 0.8, 0.85, 1.0 ), vec3( 1.5, 1.35, 1.05 ), sun );
             // The crest line catches a rim of light.
             lit += vec3( 1.0, 0.9, 0.6 ) * exp( -( h - p.y ) * 200.0 ) * sun * 0.5;
             // Atmospheric depth toward the storm grey.
@@ -175,7 +175,7 @@ void main()
     col += vec3( 1.0, 0.9, 0.7 ) * rays * 0.08 * ( 0.6 + 0.6 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

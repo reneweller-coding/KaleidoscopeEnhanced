@@ -50,7 +50,7 @@ uniform float clearP;
 uniform float dyeP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -89,10 +89,10 @@ void main()
     float bw = 0.055 * grow * leave; // border width
     float tab = bw * 2.6;            // the wide bottom tab
 
-    float halfW = aspect * 0.5, halfH = 0.5;
+    float half_w = aspect * 0.5, half_h = 0.5;
     // Distance INTO the image area, measured from its nearest edge.
-    float dx = min( halfW - bw - abs( p.x ), 0.0 + halfH - bw - p.y );
-    float dyv = p.y + halfH - tab;
+    float dx = min( half_w - bw - abs( p.x ), 0.0 + half_h - bw - p.y );
+    float dyv = p.y + half_h - tab;
     float inset = min( dx, dyv );
     float area = smoothstep( -0.004, 0.004, inset ); // 1 inside the picture
 
@@ -106,21 +106,21 @@ void main()
 
     // The dyes, in the order they are released.  Each removes its own
     // complementary channel, so blue drops first, then green, then red.
-    float pB = smoothstep( 0.06, 0.40 * dye + 0.08, d ); // yellow dye
-    float pG = smoothstep( 0.14, 0.52 * dye + 0.12, d ); // magenta dye
-    float pR = smoothstep( 0.22, 0.64 * dye + 0.12, d ); // cyan dye
+    float p_b = smoothstep( 0.06, 0.40 * dye + 0.08, d ); // yellow dye
+    float p_g = smoothstep( 0.14, 0.52 * dye + 0.12, d ); // magenta dye
+    float p_r = smoothstep( 0.22, 0.64 * dye + 0.12, d ); // cyan dye
 
     // The opacifier is grey, not white: a near-white sheet across the whole
     // frame reads as a flash, which is exactly what this catalogue avoids.
     vec3 milk = vec3( 0.44, 0.435, 0.43 );
-    vec3 dev = vec3( mix( milk.r, src1.r, pR ),
-                     mix( milk.g, src1.g, pG ),
-                     mix( milk.b, src1.b, pB ) );
+    vec3 dev = vec3( mix( milk.r, src1.r, p_r ),
+                     mix( milk.g, src1.g, p_g ),
+                     mix( milk.b, src1.b, p_b ) );
     // The early stage carries the warm cast the emulsion really has.
-    float castAmt = ( 1.0 - pR ) * ( 0.25 + 0.45 * clamp( audioValence, 0.0, 1.0 ) );
+    float cast_amt = ( 1.0 - p_r ) * ( 0.25 + 0.45 * clamp( audioValence, 0.0, 1.0 ) );
     // hueP swings the early cast between the warm and the cold emulsion.
-    vec3 castCol = mix( vec3( 1.12, 1.02, 0.80 ), vec3( 1.04, 0.98, 1.12 ), fract( hue * 0.159 ) );
-    dev = mix( dev, dev * castCol, castAmt );
+    vec3 cast_col = mix( vec3( 1.12, 1.02, 0.80 ), vec3( 1.04, 0.98, 1.12 ), fract( hue * 0.159 ) );
+    dev = mix( dev, dev * cast_col, cast_amt );
 
     vec3 picture = mix( milk, dev, cleared );
     // Emulsion grain, strongest while the sheet is still milky.

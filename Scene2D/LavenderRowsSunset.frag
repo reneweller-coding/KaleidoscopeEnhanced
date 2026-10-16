@@ -151,19 +151,19 @@ void main()
         // Backlight: the sun ahead -- the furrows glow, the bushes are in
         // their own shade with gold rims along their tops.
         float toward = exp( -abs( p.x - sun.x ) * 1.6 );
-        vec3  lightC = vec3( 1.0, 0.72, 0.4 ) * ( 0.5 + 0.5 * toward ) * ( 0.8 + 0.4 * swell );
+        vec3  light_c = vec3( 1.0, 0.72, 0.4 ) * ( 0.5 + 0.5 * toward ) * ( 0.8 + 0.4 * swell );
         vec3  furrow = earth * ( 0.45 + 0.6 * toward ) * ( 0.85 + 0.15 * noise2( vec2( xw * 12.0, z * 8.0 ) ) );
         float mound = sqrt( max( 1.0 - pow( abs( rf ) / bwid, 2.0 ), 0.0 ) );
-        vec3  bushC = purple * ( 0.35 + 0.35 * mound ) * ( 0.7 + 0.3 * toward );
+        vec3  bush_c = purple * ( 0.35 + 0.35 * mound ) * ( 0.7 + 0.3 * toward );
         // Flower spikes: fine vertical texture close by, blending with distance.
         float spikes = noise2( vec2( xw * 40.0, p.y * 300.0 ) );
         float near = smoothstep( 12.0, 3.0, z );
-        bushC *= 1.0 - 0.3 * near * smoothstep( 0.4, 0.8, spikes );
+        bush_c *= 1.0 - 0.3 * near * smoothstep( 0.4, 0.8, spikes );
         // The gold rim along the top edges of each row.
         float rim = smoothstep( bwid - fw * 2.0 - 0.06, bwid, abs( rf ) ) * bush;
         float b = band[int( mod( ri + 64.0, 8.0 ) )];
-        bushC += lightC * rim * ( 0.25 + 1.4 * b );
-        col = mix( furrow * ( lightC * 1.1 + 0.15 ), bushC * ( 0.9 + 0.25 * lightC ), bush );
+        bush_c += light_c * rim * ( 0.25 + 1.4 * b );
+        col = mix( furrow * ( light_c * 1.1 + 0.15 ), bush_c * ( 0.9 + 0.25 * light_c ), bush );
         // Haze toward the horizon.
         col = mix( col, vec3( 1.0, 0.65, 0.4 ) * ( 0.7 + 0.3 * swell ), smoothstep( 8.0, 60.0, z ) * 0.85 );
     }
@@ -171,7 +171,7 @@ void main()
     col += vec3( 1.0, 0.7, 0.4 ) * exp( -abs( p.y - hz ) * 40.0 ) * 0.12 * ( 0.6 + 0.6 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

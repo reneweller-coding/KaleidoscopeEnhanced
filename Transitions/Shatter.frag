@@ -16,7 +16,7 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hashT( vec2 p2 )
@@ -42,8 +42,8 @@ void main()
     // through the pixel's OWN cell would smear content once shards part.
     const float SC = 3.4; // shard cells per unit
     vec4        fresh = texture( tex1, p );
-    vec4        outC = fresh;
-    float       bestT = 1e9; // most intact matching shard wins
+    vec4        out_c = fresh;
+    float       best_t = 1e9; // most intact matching shard wins
     vec2        gcell = floor( cc * SC );
     for ( int gy = -1; gy <= 1; gy++ )
         for ( int gx = -1; gx <= 1; gx++ )
@@ -76,18 +76,18 @@ void main()
                         bc = c2;
                     }
                 }
-            if ( bc == cell && t < bestT )
+            if ( bc == cell && t < best_t )
             {
                 vec2 pq = vec2( q.x / aspect, q.y ) + 0.5;
                 if ( pq.x > 0.0 && pq.x < 1.0 && pq.y > 0.0 && pq.y < 1.0 )
                 {
                     vec4 shard = texture( tex0, pq );
                     shard.rgb *= 1.0 - 0.45 * t; // tumbling into shadow
-                    float wS = 1.0 - smoothstep( 0.70, 1.0, t );
-                    outC = mix( fresh, shard, wS );
-                    bestT = t;
+                    float w_s = 1.0 - smoothstep( 0.70, 1.0, t );
+                    out_c = mix( fresh, shard, w_s );
+                    best_t = t;
                 }
             }
         }
-    fragColor = outC;
+    fragColor = out_c;
 }

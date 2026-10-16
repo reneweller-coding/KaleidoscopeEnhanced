@@ -50,7 +50,7 @@ uniform float sitesP;
 uniform float rimP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -62,7 +62,7 @@ float hash21( vec2 p )
 void main()
 {
     float sites = 3.0 + floor( clamp( sitesP, 0.0, 1.0 ) * 4.0 ); // rolled ONCE
-    float rimW = ( rimP > 0.0 ) ? rimP : 1.0;
+    float rim_w = ( rimP > 0.0 ) ? rimP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
@@ -70,7 +70,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // Rupture rate: the flux hurries the holes along but never reverses them.
     float rate = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
@@ -82,7 +82,7 @@ void main()
     vec2  gi = floor( g );
 
     float best = 1e9; // distance to the nearest hole EDGE
-    float bestR = 0.0;
+    float best_r = 0.0;
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
         {
@@ -98,7 +98,7 @@ void main()
             if ( dist < best )
             {
                 best = dist;
-                bestR = r;
+                best_r = r;
             }
         }
 
@@ -108,8 +108,8 @@ void main()
     film = mix( film, 0.0, smoothstep( 0.88, 1.0, d ) ); // nothing left at the end
 
     // The rim: material swept up at the hole's edge, thicker as the hole grows.
-    float rw = ( 0.012 + 0.016 * clamp( audioSwell, 0.0, 1.0 ) ) * rimW
-               * ( 0.4 + 1.6 * clamp( bestR / max( cell, 1e-3 ), 0.0, 1.0 ) );
+    float rw = ( 0.012 + 0.016 * clamp( audioSwell, 0.0, 1.0 ) ) * rim_w
+               * ( 0.4 + 1.6 * clamp( best_r / max( cell, 1e-3 ), 0.0, 1.0 ) );
     float rim = exp( -pow( max( best, 0.0 ) / max( rw, 1e-4 ), 2.0 ) ) * film;
 
     vec3 sub = texture( tex1, uv ).rgb;

@@ -179,9 +179,9 @@ void main()
     // only, so on a short axis the plane spent most of the cycle outside the
     // model entirely -- half the frames showed an untouched object and the
     // other half nothing at all.
-    float halfLen = dot( abs( axis ), meshExtent ) * 1.04; // 4% margin, so the
-                                                           // sweep starts clear
-                                                           // of the surface
+    float half_len = dot( abs( axis ), meshExtent ) * 1.04; // 4% margin, so the
+                                                            // sweep starts clear
+                                                            // of the surface
     // No kick term here. It shoved the plane a step deeper on every beat,
     // which on screen was the whole cut face TWITCHING in time -- exactly the
     // "solid objects jerking to the music" complaint. The advance term already
@@ -195,18 +195,18 @@ void main()
     // object or an empty frame, and flicked through the interesting middle.
     // A triangle wave shaped by |u|^1.6 keeps the sign and slows around zero.
     float u = 4.0 * abs( ph - 0.5 ) - 1.0; // triangle, -1 .. +1
-    float planeD = halfLen * sign( u ) * pow( abs( u ), 1.6 )
-                   + dot( axis, meshCenter );
+    float plane_d = half_len * sign( u ) * pow( abs( u ), 1.6 )
+                    + dot( axis, meshCenter );
 
-    float d = dot( vLocalPos, axis ) - planeD;
+    float d = dot( vLocalPos, axis ) - plane_d;
     if ( d > 0.0 )
         discard; // everything in front is gone
 
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3  viewDir = normalize( -vPos );
-    float ndv = dot( n, viewDir );
+    vec3  view_dir = normalize( -vPos );
+    float ndv = dot( n, view_dir );
 
     vec3 base = vec3( 0.5 );
     if ( texMeshMaterialLayers > 0 )
@@ -229,7 +229,7 @@ void main()
     vec3 machined = mix( base * 0.7 + 0.60, tint * 1.35, 0.5 );
     // Machining grain follows the plane's own axes, so it reads as a surface
     // that was CUT rather than one that was always there.
-    float grain = noise3( vLocalPos * 90.0 + axis * planeD * 40.0 );
+    float grain = noise3( vLocalPos * 90.0 + axis * plane_d * 40.0 );
     machined *= 0.80 + 0.35 * grain;
     col = mix( col, machined, inside * 0.92 );
 
@@ -252,7 +252,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.10 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.4 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.4 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

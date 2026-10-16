@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -301,47 +301,47 @@ void main()
     float bill = ( 0.01 + 0.03 * clamp( audioSpread, 0.0, 1.0 ) );
     vec2  wv = vec2( sin( p.y * 3.0 + 0.3 * sceneTime ), sin( p.x * 2.5 - 0.25 * sceneTime ) );
     vec2  q = p + bill * wv;
-    float shadeB = 1.0
-                   + 3.0 * bill * ( cos( p.y * 3.0 + 0.3 * sceneTime ) + cos( p.x * 2.5 - 0.25 * sceneTime ) ) * 0.5;
+    float shade_b = 1.0
+                    + 3.0 * bill * ( cos( p.y * 3.0 + 0.3 * sceneTime ) + cos( p.x * 2.5 - 0.25 * sceneTime ) ) * 0.5;
     float N = 18.0 + 30.0 * clamp( threadP, 0.0, 1.0 );
     vec2  g = q * N;
     vec2  gi = floor( g );
     vec2  f = fract( g ) - 0.5;
     // Twill: warp over weft when (x + y * step) mod 4 < 2.
     float st = floor( 1.0 + 2.0 * clamp( twillP, 0.0, 1.0 ) );
-    float warpOver = step( mod( gi.x + gi.y * st, 4.0 ), 1.5 );
+    float warp_over = step( mod( gi.x + gi.y * st, 4.0 ), 1.5 );
     float gap = 0.05 + 0.2 * clamp( gapP, 0.0, 1.0 );
     // Thread profiles: round across, with fuzz.
-    float warpW = smoothstep( 0.5, 0.5 - gap, abs( f.x ) );
-    float weftW = smoothstep( 0.5, 0.5 - gap, abs( f.y ) );
-    float warpProf = sqrt( max( 0.0, 1.0 - ( f.x * 2.0 ) * ( f.x * 2.0 ) ) );
-    float weftProf = sqrt( max( 0.0, 1.0 - ( f.y * 2.0 ) * ( f.y * 2.0 ) ) );
+    float warp_w = smoothstep( 0.5, 0.5 - gap, abs( f.x ) );
+    float weft_w = smoothstep( 0.5, 0.5 - gap, abs( f.y ) );
+    float warp_prof = sqrt( max( 0.0, 1.0 - ( f.x * 2.0 ) * ( f.x * 2.0 ) ) );
+    float weft_prof = sqrt( max( 0.0, 1.0 - ( f.y * 2.0 ) * ( f.y * 2.0 ) ) );
     // Where the thread dips under, it darkens toward the crossing edges.
-    float dipWarp = 0.6 + 0.4 * sqrt( max( 0.0, 1.0 - ( f.y * 2.0 ) * ( f.y * 2.0 ) ) );
-    float dipWeft = 0.6 + 0.4 * sqrt( max( 0.0, 1.0 - ( f.x * 2.0 ) * ( f.x * 2.0 ) ) );
+    float dip_warp = 0.6 + 0.4 * sqrt( max( 0.0, 1.0 - ( f.y * 2.0 ) * ( f.y * 2.0 ) ) );
+    float dip_weft = 0.6 + 0.4 * sqrt( max( 0.0, 1.0 - ( f.x * 2.0 ) * ( f.x * 2.0 ) ) );
     float T = 0.01 * sceneTime + 0.08 * audioAdvance;
     vec2  cw = ( gi + 0.5 ) / N;
-    vec3  warpC = imgK( cw * 0.6 + 0.5 + vec2( T, 0.3 * T ), 1.5 );
-    vec3  weftSame = imgK( cw * 0.6 + 0.5 + vec2( 0.13 - 0.5 * T, 0.07 + T ), 1.5 );
-    vec3  weftC = mix( vec3( 1.0 ) - weftSame * 0.8, weftSame, mode );
-    weftC = mix( weftC, glowColour( weftSame, cw, hueP * 0.159 ) * 0.8, 0.25 );
+    vec3  warp_c = imgK( cw * 0.6 + 0.5 + vec2( T, 0.3 * T ), 1.5 );
+    vec3  weft_same = imgK( cw * 0.6 + 0.5 + vec2( 0.13 - 0.5 * T, 0.07 + T ), 1.5 );
+    vec3  weft_c = mix( vec3( 1.0 ) - weft_same * 0.8, weft_same, mode );
+    weft_c = mix( weft_c, glowColour( weft_same, cw, hueP * 0.159 ) * 0.8, 0.25 );
     float fuzz = 1.0 - ( 0.08 + 0.2 * rough ) * noise2( g * vec2( 1.0, 8.0 ) + gi.y );
     float fuzz2 = 1.0 - ( 0.08 + 0.2 * rough ) * noise2( g * vec2( 8.0, 1.0 ) + gi.x );
-    vec3  warp = warpC * ( 0.35 + 0.75 * warpProf ) * fuzz * ( warpOver > 0.5 ? 1.0 : dipWarp );
-    vec3  weft = weftC * ( 0.35 + 0.75 * weftProf ) * fuzz2 * ( warpOver > 0.5 ? dipWeft : 1.0 );
+    vec3  warp = warp_c * ( 0.35 + 0.75 * warp_prof ) * fuzz * ( warp_over > 0.5 ? 1.0 : dip_warp );
+    vec3  weft = weft_c * ( 0.35 + 0.75 * weft_prof ) * fuzz2 * ( warp_over > 0.5 ? dip_weft : 1.0 );
     // Sheen along each thread.
-    float sheenA = pow( warpProf, 8.0 ), sheenB = pow( weftProf, 8.0 );
-    warp += vec3( 1.0 ) * sheenA * ( 0.05 + 0.2 * swell + 0.4 * kick );
-    weft += vec3( 1.0 ) * sheenB * ( 0.05 + 0.2 * swell + 0.4 * kick );
-    vec3  top = warpOver > 0.5 ? warp : weft;
-    float topW = warpOver > 0.5 ? warpW : weftW;
-    vec3  bot = warpOver > 0.5 ? weft * 0.55 : warp * 0.55;
-    float botW = warpOver > 0.5 ? weftW : warpW;
+    float sheen_a = pow( warp_prof, 8.0 ), sheen_b = pow( weft_prof, 8.0 );
+    warp += vec3( 1.0 ) * sheen_a * ( 0.05 + 0.2 * swell + 0.4 * kick );
+    weft += vec3( 1.0 ) * sheen_b * ( 0.05 + 0.2 * swell + 0.4 * kick );
+    vec3  top = warp_over > 0.5 ? warp : weft;
+    float top_w = warp_over > 0.5 ? warp_w : weft_w;
+    vec3  bot = warp_over > 0.5 ? weft * 0.55 : warp * 0.55;
+    float bot_w = warp_over > 0.5 ? weft_w : warp_w;
     vec3  col = vec3( 0.02 );
-    col = mix( col, bot, botW );
-    col = mix( col, top, topW );
+    col = mix( col, bot, bot_w );
+    col = mix( col, top, top_w );
     // Where threads are finer than pixels, blend to the mean.
     float fine = smoothstep( 0.25, 0.5, fwidth( g.x ) );
-    col = mix( col, mix( warpC, weftC, 0.5 ) * 0.6, fine );
-    finish( col * shadeB );
+    col = mix( col, mix( warp_c, weft_c, 0.5 ) * 0.6, fine );
+    finish( col * shade_b );
 }

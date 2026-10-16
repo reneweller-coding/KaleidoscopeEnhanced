@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -275,8 +275,8 @@ void main()
     {
         // Total internal reflection: the surface mirrors the depths.
         float d = th - 0.848;
-        vec2  uvR = p * 0.3 + 0.5 + slope * 2.0;
-        vec3  deep = imgLod( uvR, 4.0 ) * 0.12;
+        vec2  uv_r = p * 0.3 + 0.5 + slope * 2.0;
+        vec3  deep = imgLod( uv_r, 4.0 ) * 0.12;
         col = water * ( 0.6 + 0.4 * exp( -d * 2.0 ) ) + deep * water * 3.0;
         col += vec3( 0.4, 0.6, 0.7 ) * exp( -d * 30.0 ) * 0.3; // bright just outside the rim
     }

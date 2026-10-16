@@ -33,19 +33,19 @@ out float vBg;     ///< Background flag (from the vertex stage).
 out float vInst;
 out float vSwing;
 
-const float kDist = 42.0;
-const float kPivotY = 14.0;
-const float kSpacing = 17.0;
+const float Dist = 42.0;
+const float PivotY = 14.0;
+const float Spacing = 17.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int  inst = gl_InstanceID;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
     vInst = float( inst );
     vSwing = 0.0;
-    if ( !isBg )
+    if ( !is_bg )
     {
         float fi = float( inst );
         float scale = 1.0 - 0.13 * fi;
@@ -62,11 +62,11 @@ void main()
         float ang = 0.38 * ( 0.45 + 0.55 * swell ) * s;
         vSwing = s;
         float      ca = cos( ang ), sa = sin( ang );
-        mat3       rotX = mat3( 1.0, 0.0, 0.0, 0.0, ca, sa, 0.0, -sa, ca );
-        const mat3 turnM = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
-        mat3       M = rotX * turnM;
+        mat3       rot_x = mat3( 1.0, 0.0, 0.0, 0.0, ca, sa, 0.0, -sa, ca );
+        const mat3 turn_m = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
+        mat3       M = rot_x * turn_m;
 
-        world = M * local + vec3( ( fi - 1.5 ) * kSpacing, kPivotY, kDist + 3.0 * fi );
+        world = M * local + vec3( ( fi - 1.5 ) * Spacing, PivotY, Dist + 3.0 * fi );
         n = normalize( M * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
@@ -91,10 +91,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

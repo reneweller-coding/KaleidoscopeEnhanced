@@ -84,17 +84,17 @@ void main()
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     // Placing the embers in FRUSTUM coordinates rather than in a fixed world
     // box is what keeps the field even across the picture at every depth.
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // MODE sets the base temperature the hue sweep runs from: minor cools
     // everything to blue, major restores the warm ember orange.  The two
     // endpoints are luminance-matched.
-    vec3 baseCol = mix( vec3( 0.30, 0.50, 0.95 ), vec3( 0.95, 0.45, 0.25 ), mmaj );
+    vec3 base_col = mix( vec3( 0.30, 0.50, 0.95 ), vec3( 0.95, 0.45, 0.25 ), mmaj );
 
     vec3  vp;
     vec3  col;
-    float sizeBase, sizeCap, sizeMin;
+    float size_base, size_cap, size_min;
 
     if ( r1 < 0.16 )
     {
@@ -115,19 +115,19 @@ void main()
         // and yaws the view (every Scene3D preset carries one), and spectral
         // spread only ever opens it further.
         float open = 2.25 + 0.35 * spr;
-        vp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 2.4 * cos( ph ),
-                   ( hy - 0.5 ) * open * dz * kTanY + 2.4 * sin( ph * 0.79 ),
+        vp = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 2.4 * cos( ph ),
+                   ( hy - 0.5 ) * open * dz * TanY + 2.4 * sin( ph * 0.79 ),
                    dz );
 
-        col = hueRot( baseCol, audioChromaHue * 0.5 );
+        col = hueRot( base_col, audioChromaHue * 0.5 );
         col *= ( 0.28 + 0.40 * r3 ) * ( 0.75 + 0.5 * audioSwell )
                * clamp( 1.0 - dz / 145.0, 0.0, 1.0 );
         // An ember has to stay a legible speck at any distance -- below
         // roughly two and a half pixels an additive sprite averages away to
         // nothing and the far half of the field reads as black again.
-        sizeBase = 84.0;
-        sizeCap = 9.0;
-        sizeMin = 2.6;
+        size_base = 84.0;
+        size_cap = 9.0;
+        size_min = 2.6;
 
         vCol = vec4( col * 4.4, 1.0 );
     }
@@ -191,14 +191,14 @@ void main()
         vp = world + vec3( 0.0, 0.0, outer ? 52.0 : 31.0 );
 
         // Hue runs along the knot; the flow makes it stream forever.
-        col = hueRot( baseCol, audioChromaHue + s * 0.8 );
+        col = hueRot( base_col, audioChromaHue + s * 0.8 );
         col *= ( 0.45 + 0.55 * r3 ) * ( 0.75 + 0.5 * audioSwell )
                * ( outer ? 0.55 : 1.0 )
                * clamp( 1.0 - vp.z / 135.0, 0.0, 1.0 );
 
-        sizeBase = outer ? 140.0 : 95.0;
-        sizeCap = outer ? 12.0 : 14.0;
-        sizeMin = 1.5;
+        size_base = outer ? 140.0 : 95.0;
+        size_cap = outer ? 12.0 : 14.0;
+        size_min = 1.5;
 
         vCol = vec4( col * 4.4, 1.0 );
     }
@@ -211,6 +211,6 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 }

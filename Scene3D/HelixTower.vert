@@ -55,14 +55,14 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     bool haze = hsh( r1, r2, 5.13 ) < 0.17;
 
     vec3  vp;
     vec3  col;
-    float sizeBase, sizeCap, sizeMin;
+    float size_base, size_cap, size_min;
     float wave = 0.0;
 
     if ( haze )
@@ -83,8 +83,8 @@ void main()
         // 2.0 would fit the frustum exactly; 2.3 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.3;
-        vp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 1.8 * cos( ph ),
-                   ( hy - 0.5 ) * open * dz * kTanY + 1.8 * sin( ph * 0.79 ),
+        vp = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 1.8 * cos( ph ),
+                   ( hy - 0.5 ) * open * dz * TanY + 1.8 * sin( ph * 0.79 ),
                    dz );
 
         col = hueRot( vec3( 0.30, 0.72, 0.90 ), audioChromaHue * 1.2 + hz * 1.4 )
@@ -94,9 +94,9 @@ void main()
         // A speck must stay legible at any distance -- below roughly two and a
         // half pixels an additive sprite averages away to nothing and the far
         // field reads as black again.
-        sizeBase = 100.0;
-        sizeCap = 11.0;
-        sizeMin = 2.7;
+        size_base = 100.0;
+        size_cap = 11.0;
+        size_min = 2.7;
     }
     else
     {
@@ -104,16 +104,16 @@ void main()
         float strand = step( 0.5, r1 );
         float t = rung ? floor( r2 * 46.0 ) / 46.0 : r2; // rungs quantised
         float y = ( t - 0.5 ) * 100.0;
-        float angH = t * 28.0 + time * 0.06 + audioPhase * 0.10;
+        float ang_h = t * 28.0 + time * 0.06 + audioPhase * 0.10;
 
         // Helix radius 11 (was 6): from a 20-unit camera orbit the double
         // strand now reaches roughly 80% of the way to both side edges instead
         // of hugging the middle third.
-        const float kHelixR = 11.0;
-        vec3        pA = vec3( cos( angH ) * kHelixR, y, sin( angH ) * kHelixR );
-        vec3        pB = vec3( cos( angH + 3.14159 ) * kHelixR, y, sin( angH + 3.14159 ) * kHelixR );
-        vec3        world = rung ? mix( pA, pB, r3 )
-                                 : ( strand > 0.5 ? pB : pA )
+        const float HelixR = 11.0;
+        vec3        p_a = vec3( cos( ang_h ) * HelixR, y, sin( ang_h ) * HelixR );
+        vec3        p_b = vec3( cos( ang_h + 3.14159 ) * HelixR, y, sin( ang_h + 3.14159 ) * HelixR );
+        vec3        world = rung ? mix( p_a, p_b, r3 )
+                                 : ( strand > 0.5 ? p_b : p_a )
                                        + vec3( r3 - 0.5, 0.0, r4 - 0.5 ) * 1.2;
 
         // Kick wave climbing the tower with the beat phase.
@@ -141,9 +141,9 @@ void main()
         col *= 1.0 + 1.6 * wave + 1.2 * audioDrop;
         col *= ( 0.8 + 0.4 * audioSwell ) * clamp( 1.0 - vp.z / 90.0, 0.0, 1.0 );
 
-        sizeBase = rung ? 115.0 : 88.0;
-        sizeCap = 26.0;
-        sizeMin = 2.2;
+        size_base = rung ? 115.0 : 88.0;
+        size_cap = 26.0;
+        size_min = 2.2;
     }
 
     vp.x -= eyeOff;
@@ -154,7 +154,7 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 1.1 + 0.7 * r4 ) * px / dist, sizeMin, max( sizeCap * px, sizeMin ) )
+    gl_PointSize = clamp( size_base * ( 1.1 + 0.7 * r4 ) * px / dist, size_min, max( size_cap * px, size_min ) )
                    * ( 2.0 + 0.8 * wave ); // sprite sweep 2026-08-22: measured luma 0.031, area x4.5
 
     vCol = vec4( col * 2.0, 1.0 );

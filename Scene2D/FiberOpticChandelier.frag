@@ -114,10 +114,10 @@ void main()
         dd = ( 0.5 - dd ) * 6.2831853 / nb * fr; // distance to the nearest baluster
         float bal = smoothstep( px * 1.6 + 0.0015 * rr, 0.0, dd ) * smoothstep( rr, rr + 0.005, fr )
                     * smoothstep( rr * 1.05, rr * 1.03, fr );
-        float lightK = 0.06 + 0.12 * exp( -ff * 0.3 );
-        col += vec3( 0.9, 0.8, 0.7 ) * ( band * lightK + bal * lightK * 0.35 ) * ( 0.7 + 0.5 * bass );
+        float light_k = 0.06 + 0.12 * exp( -ff * 0.3 );
+        col += vec3( 0.9, 0.8, 0.7 ) * ( band * light_k + bal * light_k * 0.35 ) * ( 0.7 + 0.5 * bass );
         // The dark slab of each floor outside its rail.
-        col += vec3( 0.5, 0.42, 0.36 ) * lightK * 0.25 * exp( -( fr - rr ) / ( 0.08 * rr ) ) * step( rr * 1.05, fr );
+        col += vec3( 0.5, 0.42, 0.36 ) * light_k * 0.25 * exp( -( fr - rr ) / ( 0.08 * rr ) ) * step( rr * 1.05, fr );
     }
 
     // Strands in three layers, short and dense near the hub, long outside.
@@ -129,7 +129,7 @@ void main()
     {
         float fl = float( L );
         float n = 70.0 + 50.0 * fl;
-        float rMin = ( 0.13 + 0.1 * fl ) * spread, rMax = ( 0.26 + 0.14 * fl ) * spread;
+        float r_min = ( 0.13 + 0.1 * fl ) * spread, r_max = ( 0.26 + 0.14 * fl ) * spread;
         float sag = 0.35 + 0.2 * fl; // strands curve as they sag
         // Undo the sag so the strand is a straight ray in (r, a).
         float a = th - sag * r * r * ( fl - 1.0 ) * 0.6;
@@ -139,9 +139,9 @@ void main()
         {
             float id = ci + float( k );
             float hs = hash21( vec2( mod( id, n ), fl * 5.0 + 1.0 ) );
-            float aC = ( id + 0.3 * ( hs - 0.5 ) - fl * 0.37 ) / n * 6.2831853;
-            float len = mix( rMin, rMax, hash21( vec2( mod( id, n ), fl * 5.0 + 2.0 ) ) );
-            float da = a - aC;
+            float a_c = ( id + 0.3 * ( hs - 0.5 ) - fl * 0.37 ) / n * 6.2831853;
+            float len = mix( r_min, r_max, hash21( vec2( mod( id, n ), fl * 5.0 + 2.0 ) ) );
+            float da = a - a_c;
             da -= 6.2831853 * floor( da / 6.2831853 + 0.5 );
             float dist = abs( da ) * r; // distance to the strand
             int   cls = int( mod( mod( id, n ) + fl * 5.0, 12.0 ) );
@@ -159,14 +159,14 @@ void main()
                 col += cc * core * ( 0.05 + 0.15 * e + pulse * ( 0.2 + 1.5 * e ) );
             }
             // The tip: a round point of light with a soft halo.
-            vec2 tip = vec2( cos( aC ), sin( aC ) ) * len;
+            vec2 tip = vec2( cos( a_c ), sin( a_c ) ) * len;
             // Re-apply the sag to place the tip where the strand ends.
-            float tA = aC + sag * len * len * ( fl - 1.0 ) * 0.6;
-            tip = vec2( cos( tA ), sin( tA ) ) * len;
+            float t_a = a_c + sag * len * len * ( fl - 1.0 ) * 0.6;
+            tip = vec2( cos( t_a ), sin( t_a ) ) * len;
             float dt = length( q - tip );
-            float tipR = 0.0035 + 0.0015 * ( 1.0 - fl * 0.3 );
+            float tip_r = 0.0035 + 0.0015 * ( 1.0 - fl * 0.3 );
             col += cc
-                   * ( smoothstep( tipR + px, tipR - px, dt ) * ( 0.3 + 1.6 * e )
+                   * ( smoothstep( tip_r + px, tip_r - px, dt ) * ( 0.3 + 1.6 * e )
                        + exp( -dt * 90.0 ) * ( 0.08 + 0.5 * e ) );
         }
     }
@@ -175,7 +175,7 @@ void main()
     col += imgPalette( 0.3 + hueP * 0.159 ) * exp( -r * 6.0 ) * 0.06 * ( 0.5 + energy );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

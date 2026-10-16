@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nRings = ( ringCountP > 1.0 ) ? ringCountP : 6.0;
-    float rMod = ( ribbonP > 0.01 ) ? ribbonP : 1.0;
+    float n_rings = ( ringCountP > 1.0 ) ? ringCountP : 6.0;
+    float r_mod = ( ribbonP > 0.01 ) ? ribbonP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -74,38 +74,38 @@ void main()
 
     // Torus parameters: R (major), r (minor)
     float R = 1.2 * ( 1.0 + 0.1 * sin( audioSwell * 2.0 ) );
-    float rTor = 0.55 * ( 1.0 + 0.15 * audioSubBass );
+    float r_tor = 0.55 * ( 1.0 + 0.15 * audioSubBass );
 
-    vec3  colAcc = vec3( 0.0 );
-    float glowAcc = 0.0;
-    float totalWeight = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float glow_acc = 0.0;
+    float total_weight = 0.0;
 
     // Accumulate across multiple inclined Villarceau circle pairs
-    int numR = int( clamp( nRings, 4.0, 8.0 ) );
+    int num_r = int( clamp( n_rings, 4.0, 8.0 ) );
     for ( int k = 0; k < 6; k++ )
     {
-        if ( k >= numR )
+        if ( k >= num_r )
             break;
         float kf = float( k );
 
         // Rotation angle of cutting plane pair
-        float aPlane = t * 0.25 + kf * ( 3.14159265 / float( numR ) );
-        float cs = cos( aPlane ), sn = sin( aPlane );
+        float a_plane = t * 0.25 + kf * ( 3.14159265 / float( num_r ) );
+        float cs = cos( a_plane ), sn = sin( a_plane );
         vec2  p = mat2( cs, -sn, sn, cs ) * uv * 2.2;
 
         // Centers of two Villarceau circles on the bitangential plane: (+- sqrt(R*r), 0)
-        float dOffset = sqrt( R * rTor );
-        vec2  c1 = vec2( dOffset, 0.0 );
-        vec2  c2 = vec2( -dOffset, 0.0 );
+        float d_offset = sqrt( R * r_tor );
+        vec2  c1 = vec2( d_offset, 0.0 );
+        vec2  c2 = vec2( -d_offset, 0.0 );
 
-        float rCircle = R; // Radius of Villarceau circle equals major radius R
+        float r_circle = R; // Radius of Villarceau circle equals major radius R
 
-        float dCircle1 = abs( length( p - c1 ) - rCircle );
-        float dCircle2 = abs( length( p - c2 ) - rCircle );
+        float d_circle1 = abs( length( p - c1 ) - r_circle );
+        float d_circle2 = abs( length( p - c2 ) - r_circle );
 
         // Luminous circular ribbon filaments
-        float g1 = exp( -dCircle1 * ( 24.0 + 12.0 * audioCentroid ) * rMod );
-        float g2 = exp( -dCircle2 * ( 24.0 + 12.0 * audioCentroid ) * rMod );
+        float g1 = exp( -d_circle1 * ( 24.0 + 12.0 * audioCentroid ) * r_mod );
+        float g2 = exp( -d_circle2 * ( 24.0 + 12.0 * audioCentroid ) * r_mod );
 
         // Flowing phase pulses along circles
         float flow1 = sin( atan( p.y - c1.y, p.x - c1.x ) * 6.0 + t * 4.0 + kf );
@@ -114,26 +114,26 @@ void main()
         vec3 pal1 = imgPalette( kf * 0.2 + t * 0.05 );
         vec3 pal2 = imgPalette( kf * 0.2 + 0.5 );
 
-        vec3 ringCol1 = pal1 * g1 * ( 0.8 + 0.4 * flow1 );
-        vec3 ringCol2 = pal2 * g2 * ( 0.8 + 0.4 * flow2 );
+        vec3 ring_col1 = pal1 * g1 * ( 0.8 + 0.4 * flow1 );
+        vec3 ring_col2 = pal2 * g2 * ( 0.8 + 0.4 * flow2 );
 
-        colAcc += ( ringCol1 + ringCol2 );
-        glowAcc += ( g1 + g2 );
-        totalWeight += 1.0;
+        col_acc += ( ring_col1 + ring_col2 );
+        glow_acc += ( g1 + g2 );
+        total_weight += 1.0;
     }
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
-    vec3 finalCol = mix( texCol * 0.3, colAcc, clamp( glowAcc, 0.0, 1.0 ) );
+    vec3 final_col = mix( tex_col * 0.3, col_acc, clamp( glow_acc, 0.0, 1.0 ) );
 
     // Glowing Villarceau intersection node flashes
-    vec3 nodeTint = vec3( 1.4, 1.1, 1.8 ) * glowAcc * glw * ( 1.0 + 2.5 * audioKick );
-    finalCol += nodeTint;
+    vec3 node_tint = vec3( 1.4, 1.1, 1.8 ) * glow_acc * glw * ( 1.0 + 2.5 * audioKick );
+    final_col += node_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    finalCol *= 0.78; // measured luma 0.640: knee, not a linear trim
-    finalCol /= 1.0 + 0.45 * max( finalCol.r, max( finalCol.g, finalCol.b ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    final_col *= 0.78; // measured luma 0.640: knee, not a linear trim
+    final_col /= 1.0 + 0.45 * max( final_col.r, max( final_col.g, final_col.b ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

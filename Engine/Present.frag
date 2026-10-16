@@ -150,10 +150,10 @@ float coneLight( vec2 p, vec2 origin, vec2 dir, float spread, float reach )
     vec2  v = p - origin;
     float t = dot( v, dir ); // distance along the beam
     if ( t < 0.0 )
-        return 0.0;                          // behind the lamp
-    float perp = length( v - t * dir );      // distance from the beam axis
-    float halfWidth = spread * ( t + 0.04 ); // cone widens with distance
-    float across = clamp( 1.0 - perp / halfWidth, 0.0, 1.0 );
+        return 0.0;                           // behind the lamp
+    float perp = length( v - t * dir );       // distance from the beam axis
+    float half_width = spread * ( t + 0.04 ); // cone widens with distance
+    float across = clamp( 1.0 - perp / half_width, 0.0, 1.0 );
     across = across * across; // soft edges
     float along = exp( -t / reach ) * ( 0.35 + 0.65 * clamp( 1.0 - t * 0.3, 0.0, 1.0 ) );
     return across * along;
@@ -193,15 +193,15 @@ void main()
     // Stereoscopic split: each half shows the FULL logical frame for one eye
     // (side-by-side "half" / top-bottom — the display or HMD player
     // unsqueezes them, so every uv-based computation below stays correct).
-    float eyeSign = 0.0; // -1 left eye, +1 right eye
+    float eye_sign = 0.0; // -1 left eye, +1 right eye
     if ( stereoMode == 1 )
     {
-        eyeSign = ( uv.x < 0.5 ) ? -1.0 : 1.0;
+        eye_sign = ( uv.x < 0.5 ) ? -1.0 : 1.0;
         uv.x = fract( uv.x * 2.0 );
     }
     else if ( stereoMode == 2 )
     {
-        eyeSign = ( uv.y >= 0.5 ) ? -1.0 : 1.0; // top half = left eye
+        eye_sign = ( uv.y >= 0.5 ) ? -1.0 : 1.0; // top half = left eye
         uv.y = fract( uv.y * 2.0 );
     }
 
@@ -211,7 +211,7 @@ void main()
     // the eyes.  Sampled from puv; the corner lights below keep the un-zoomed uv.
     // Gedaempft (war ungeklammert bis zu 1.0 -> 4% Zoom-Puls JEDEN Beat):
     // User-Feedback, die Beat-Reaktion war insgesamt zu praesent.
-    float scenePulse = clamp( audioBeat + 0.4 * audioDownbeat, 0.0, 1.0 ) * 0.6;
+    float scene_pulse = clamp( audioBeat + 0.4 * audioDownbeat, 0.0, 1.0 ) * 0.6;
     // Virtual camera: aspect-true roll + punch-in zoom + drift/shake offset,
     // combined with the beat "breath".  The host guarantees the zoom covers
     // the offset + rotation, so no edge ever samples outside the frame
@@ -221,7 +221,7 @@ void main()
     cuv.x *= aspect2;
     cuv = rot2( cuv, camRot );
     cuv.x /= aspect2;
-    float camz = ( 1.0 + 0.040 * scenePulse ) * max( camZoom, 1.0 );
+    float camz = ( 1.0 + 0.040 * scene_pulse ) * max( camZoom, 1.0 );
     vec2  puv = cuv / camz + 0.5 - camOff;
 
     // --- 2.5D-Parallaxe: die Kameradrift verschiebt NAHE Strukturen bis
@@ -262,13 +262,13 @@ void main()
             // TRUE stereo: the 3D scene already rendered one view per half —
             // just sample the matching half (no reprojection).
             if ( stereoMode == 1 )
-                puv = vec2( puv.x * 0.5 + ( ( eyeSign > 0.0 ) ? 0.5 : 0.0 ), puv.y );
+                puv = vec2( puv.x * 0.5 + ( ( eye_sign > 0.0 ) ? 0.5 : 0.0 ), puv.y );
             else // top half = left eye
-                puv = vec2( puv.x, puv.y * 0.5 + ( ( eyeSign < 0.0 ) ? 0.5 : 0.0 ) );
+                puv = vec2( puv.x, puv.y * 0.5 + ( ( eye_sign < 0.0 ) ? 0.5 : 0.0 ) );
         }
         else
             puv.x += stereoDepth * 0.007
-                     * ( stereoDepthAt( puv, cuv ) - 0.45 ) * eyeSign;
+                     * ( stereoDepthAt( puv, cuv ) - 0.45 ) * eye_sign;
         c = texture( tex, puv ).rgb;
     }
     else if ( stereoMode == 3 )
@@ -385,7 +385,7 @@ void main()
     // content does not blow out).  A gentle brightness lift on the beat (with the
     // zoom above = subtle whole-scene pump), and the slow SWELL lets ambient
     // builds visibly brighten and fade-outs breathe back down.
-    c *= ( 1.0 + 0.12 * audioLevel + 0.06 * audioFlux + 0.10 * scenePulse
+    c *= ( 1.0 + 0.12 * audioLevel + 0.06 * audioFlux + 0.10 * scene_pulse
            + 0.08 * audioSwell );
 
     // Bloom / glow.  Preferred: the real two-pass Gaussian (bloomTex, quarter res,
@@ -416,8 +416,8 @@ void main()
             wsum += 2.0 * w;
         }
         streak /= wsum;
-        float streakW = 0.10 + 0.30 * audioSwell + 0.80 * audioDrop;
-        c += streak * vec3( 0.55, 0.75, 1.30 ) * 0.30 * streakW;
+        float streak_w = 0.10 + 0.30 * audioSwell + 0.80 * audioDrop;
+        c += streak * vec3( 0.55, 0.75, 1.30 ) * 0.30 * streak_w;
     }
     // Halation: warmes Filmglimmen um die Lichter (breiter Mip-Tap des
     // Frames, warm getoent) - gibt Highlights den "Fotoemulsion"-Schmelz.
@@ -467,9 +467,9 @@ void main()
         vec2  ctr = vec2( aspect * 0.5, 0.5 );
 
         // Vivid mood colour (centroid temperature, valence saturation).
-        vec3  moodCol = mix( vec3( 0.25, 0.55, 1.0 ), vec3( 1.0, 0.55, 0.20 ), audioCentroid );
-        float sl = dot( moodCol, vec3( 0.299, 0.587, 0.114 ) );
-        moodCol = mix( vec3( sl ), moodCol, 0.75 + 0.5 * audioValence );
+        vec3  mood_col = mix( vec3( 0.25, 0.55, 1.0 ), vec3( 1.0, 0.55, 0.20 ), audioCentroid );
+        float sl = dot( mood_col, vec3( 0.299, 0.587, 0.114 ) );
+        mood_col = mix( vec3( sl ), mood_col, 0.75 + 0.5 * audioValence );
 
         // Beat/onset pulse with a modest always-on base.
         float pulse = clamp( 0.16 + 1.0 * audioBeat + 0.6 * audioDownbeat
@@ -486,12 +486,12 @@ void main()
         // Moving-head sweep, synced to the BAR (one full sweep per 4 beats, via
         // audioBarPhase) with phase offsets per corner; a slow time drift keeps
         // the heads alive when no tempo is running.  Wider sweep when loud.
-        float swAmp = 0.55 + 0.35 * audioLevel;
-        float swPh = 6.2831 * audioBarPhase + time * 0.10;
-        vec2  d0 = rot2( normalize( ctr - c0 ), swAmp * sin( swPh + 0.0 ) );
-        vec2  d1 = rot2( normalize( ctr - c1 ), swAmp * sin( swPh + 1.7 ) );
-        vec2  d2 = rot2( normalize( ctr - c2 ), swAmp * sin( swPh + 3.3 ) );
-        vec2  d3 = rot2( normalize( ctr - c3 ), swAmp * sin( swPh + 5.0 ) );
+        float sw_amp = 0.55 + 0.35 * audioLevel;
+        float sw_ph = 6.2831 * audioBarPhase + time * 0.10;
+        vec2  d0 = rot2( normalize( ctr - c0 ), sw_amp * sin( sw_ph + 0.0 ) );
+        vec2  d1 = rot2( normalize( ctr - c1 ), sw_amp * sin( sw_ph + 1.7 ) );
+        vec2  d2 = rot2( normalize( ctr - c2 ), sw_amp * sin( sw_ph + 3.3 ) );
+        vec2  d3 = rot2( normalize( ctr - c3 ), sw_amp * sin( sw_ph + 5.0 ) );
 
         // Colour CHASE: emphasis cycles through the corners (audioChase steps 1/4
         // on each onset).  Non-active corners keep a 0.45 base so all stay alive.
@@ -501,10 +501,10 @@ void main()
         float cw3 = 0.45 + 0.55 * ( 1.0 - smoothstep( 0.0, 0.25, abs( fract( audioChase - 0.75 + 0.5 ) - 0.5 ) ) );
         float p0 = pulse * cw0, p1 = pulse * cw1, p2 = pulse * cw2, p3 = pulse * cw3;
 
-        vec3 col0 = hueRotate( moodCol, audioChromaHue + 0.00 ) * 1.5;
-        vec3 col1 = hueRotate( moodCol, audioChromaHue + 0.12 ) * 1.5;
-        vec3 col2 = hueRotate( moodCol, audioChromaHue + 0.25 ) * 1.5;
-        vec3 col3 = hueRotate( moodCol, audioChromaHue + 0.37 ) * 1.5;
+        vec3 col0 = hueRotate( mood_col, audioChromaHue + 0.00 ) * 1.5;
+        vec3 col1 = hueRotate( mood_col, audioChromaHue + 0.12 ) * 1.5;
+        vec3 col2 = hueRotate( mood_col, audioChromaHue + 0.25 ) * 1.5;
+        vec3 col3 = hueRotate( mood_col, audioChromaHue + 0.37 ) * 1.5;
 
         // Core cone tint (visible over any content).
         c = mix( c, col0, clamp( coneLight( q, c0, d0, spread, reach ) * p0, 0.0, 0.88 ) );
@@ -536,7 +536,7 @@ void main()
         vec2  g = q - ctr;
         float ang = atan( g.y, g.x ) + time * 0.12;
         float rays = pow( 0.5 + 0.5 * cos( ang * 9.0 ), 6.0 );
-        c += hueRotate( moodCol, audioChromaHue + 0.6 ) * 1.3
+        c += hueRotate( mood_col, audioChromaHue + 0.6 ) * 1.3
              * rays * 0.08 * ( 0.2 + 0.8 * audioLevel ) * smoothstep( 0.05, 0.45, length( g ) );
     }
 
@@ -547,10 +547,10 @@ void main()
     // Titel/Limiter komponiert, damit Blackout & Co. mitwirken.
     if ( artistAlpha > 0.001 )
     {
-        float wU = 0.26; // 26% der Bildbreite
-        float hU = wU * ( resolution.x / resolution.y ) / max( artistAspect, 0.2 );
+        float w_u = 0.26; // 26% der Bildbreite
+        float h_u = w_u * ( resolution.x / resolution.y ) / max( artistAspect, 0.2 );
         vec2  m0 = vec2( 0.035, 0.045 ); // Ecke unten links
-        vec2  a = ( uv - m0 ) / vec2( wU, hU );
+        vec2  a = ( uv - m0 ) / vec2( w_u, h_u );
         if ( a.x > -0.2 && a.x < 1.2 && a.y > -0.2 && a.y < 1.2 )
         {
             // Atmen: kleine, langsame Verformung (zeitbasiert, flickerfrei).
@@ -580,8 +580,8 @@ void main()
     {
         float u = ( uv.x - 0.5 ) / 0.62 + 0.5; // Textband: 62% Breite
         // Sichtbares V pro Bildschirm-UV (Textur behaelt ihr Pixel-Seitenverhaeltnis).
-        float vSpan = ( resolution.y / resolution.x ) * lyricsAspect / 0.62;
-        float v = lyricsScrollV + ( 0.5 - uv.y ) * vSpan;
+        float v_span = ( resolution.y / resolution.x ) * lyricsAspect / 0.62;
+        float v = lyricsScrollV + ( 0.5 - uv.y ) * v_span;
         if ( u > 0.0 && u < 1.0 && v > 0.0 && v < 1.0 )
         {
             // Kinetik (optional, Umschalt+W - Default AUS: User-Feedback,
@@ -590,19 +590,19 @@ void main()
             // 0.35 s, ease-out) statt zu "springen".  lyricsLineAge bleibt
             // bei deaktivierter Kinetik immer 999 (siehe glwidget.cpp) ->
             // dieser Block ist dann komplett wirkungslos.
-            float u2 = u, v2 = v, slamGlow = 0.0;
+            float u2 = u, v2 = v, slam_glow = 0.0;
             if ( lyricsHl.x >= 0.0 && lyricsLineAge < 0.35 )
             {
                 float rem = 1.0 - lyricsLineAge / 0.35;
                 float sl = 1.0 + 0.18 * rem * rem;
                 float vc = 0.5 * ( lyricsHl.x + lyricsHl.y );
-                float vS = ( v - vc ) / sl + vc;
-                float uS = ( u - 0.5 ) / sl + 0.5;
-                if ( vS >= lyricsHl.x && vS <= lyricsHl.y )
+                float v_s = ( v - vc ) / sl + vc;
+                float u_s = ( u - 0.5 ) / sl + 0.5;
+                if ( v_s >= lyricsHl.x && v_s <= lyricsHl.y )
                 {
-                    u2 = uS;
-                    v2 = vS;
-                    slamGlow = rem;
+                    u2 = u_s;
+                    v2 = v_s;
+                    slam_glow = rem;
                 }
             }
             // Physische Textur-U (kann breiter als das nominale Fenster sein,
@@ -611,10 +611,10 @@ void main()
             // sichtbar verkleinert; nur innerhalb des Bands der gerade
             // gelesenen Zeile (Host, beide Modi) kommt der langsame
             // Marquee-Versatz dazu, statt abzuschneiden.
-            float uPhys = u2 * lyricsUScale;
+            float u_phys = u2 * lyricsUScale;
             if ( lyricsFocusV.x >= 0.0 && v2 >= lyricsFocusV.x && v2 <= lyricsFocusV.y )
-                uPhys += lyricsScrollU;
-            vec4 lt = texture( lyricsTex, vec2( clamp( uPhys, 0.0, 1.0 ), v2 ) );
+                u_phys += lyricsScrollU;
+            vec4 lt = texture( lyricsTex, vec2( clamp( u_phys, 0.0, 1.0 ), v2 ) );
             // Weiche Raender oben/unten (Credits-Fenster).
             float edge = smoothstep( 0.04, 0.22, uv.y ) * smoothstep( 0.96, 0.78, uv.y );
             float a = lt.a * lyricsAlpha * edge;
@@ -629,7 +629,7 @@ void main()
                     vec3  gold = col * vec3( 1.0, 0.86, 0.42 );
                     col = mix( col, gold, 0.35 + 0.65 * sweep );
                     c += gold * a * 0.25 * ( 0.5 + 0.5 * audioBeat );
-                    c += gold * a * 0.18 * slamGlow; // dezentes Aufblitzen
+                    c += gold * a * 0.18 * slam_glow; // dezentes Aufblitzen
                 }
                 else
                     a *= 0.45; // Kontext-Zeilen dezenter
@@ -648,7 +648,7 @@ void main()
     if ( titlePhase < 1.0 )
     {
         float ph = titlePhase;
-        float fadeIn = smoothstep( 0.00, 0.08, ph );
+        float fade_in = smoothstep( 0.00, 0.08, ph );
         float outp = smoothstep( 0.74, 0.97, ph );
         float e = smoothstep( 0.03, 0.42, ph );
         e = 1.0 - pow( 1.0 - e, 3.0 ); // ease-out cubic entrance
@@ -660,16 +660,16 @@ void main()
         tp.x *= resolution.x / resolution.y;
 
         vec2  tq = tp;
-        float blurA = 0.0;
+        float blur_a = 0.0;
         vec2  split = vec2( 0.0 );
-        float maskA = 1.0;
-        float glowX = 0.0;
+        float mask_a = 1.0;
+        float glow_x = 0.0;
 
         // ---- Spatial entrances ----
         if ( st == 1 )
             tq.y += 0.14 * d * d; // gentle drift-in
         else if ( st == 2 )
-            blurA = 0.012 * d; // focus pull
+            blur_a = 0.012 * d; // focus pull
         else if ( st == 6 )
         { // kaleido unwind
             float ang = atan( tp.y, tp.x );
@@ -685,7 +685,7 @@ void main()
         else if ( st == 8 )
         {
             tq *= 1.0 + 1.6 * d * d;
-            blurA = 0.006 * d;
+            blur_a = 0.006 * d;
         } // rises from depth
         else if ( st == 9 )
             tq.y += sin( tq.x * 16.0 + ph * 22.0 ) * 0.055 * d; // water ripple
@@ -707,7 +707,7 @@ void main()
             float r = length( tq );
             float ring = exp( -abs( r - e * 1.2 ) * 9.0 );
             tq += ( tq / max( r, 1e-3 ) ) * ring * 0.10 * d;
-            glowX = ring * 0.5 * d;
+            glow_x = ring * 0.5 * d;
         }
         else if ( st == 14 )
             tq = rot2( tq, 0.5 * d * d * ( titleSeed > 0.5 ? 1.0 : -1.0 ) ); // spin-in
@@ -725,7 +725,7 @@ void main()
                            vnoise2( tq * 5.0 + sd + 9.7 ) )
                      - 0.5;
             tq += w * 0.30 * d;
-            blurA = 0.006 * d;
+            blur_a = 0.006 * d;
         }
         else if ( st == 20 )
             tq += vec2( sin( tq.y * 55.0 + ph * 38.0 ), // heat shimmer
@@ -759,46 +759,46 @@ void main()
 
         // ---- Mask-based entrances (need text-space coordinates) ----
         if ( st == 3 )
-            maskA = smoothstep( 0.10, -0.02, tuv.x - e * 1.15 ); // soft L->R wipe
+            mask_a = smoothstep( 0.10, -0.02, tuv.x - e * 1.15 ); // soft L->R wipe
         else if ( st == 4 )
-            maskA = smoothstep( 0.06, -0.06, length( tq ) - e * 1.05 ); // iris
+            mask_a = smoothstep( 0.06, -0.06, length( tq ) - e * 1.05 ); // iris
         else if ( st == 5 )
         {
             float band = abs( fract( tuv.y * 4.0 ) - 0.5 ) * 2.0; // soft blinds
-            maskA = smoothstep( band - 0.25, band + 0.05, e * 1.25 );
+            mask_a = smoothstep( band - 0.25, band + 0.05, e * 1.25 );
         }
         else if ( st == 18 )
         {
             float g = hash21( floor( tuv * vec2( 140.0, 36.0 ) ) + sd ); // sparkle dissolve
-            maskA = smoothstep( d - 0.08, d + 0.08, g );
-            glowX = exp( -abs( g - d ) * 30.0 ) * 0.8 * d;
+            mask_a = smoothstep( d - 0.08, d + 0.08, g );
+            glow_x = exp( -abs( g - d ) * 30.0 ) * 0.8 * d;
         }
         else if ( st == 19 )
         {
             float sw = tuv.x + tuv.y * 0.25 - ( e * 1.6 - 0.25 ); // light sweep
-            maskA = smoothstep( 0.05, -0.10, sw );
-            glowX = exp( -abs( sw ) * 18.0 ) * 0.9;
+            mask_a = smoothstep( 0.05, -0.10, sw );
+            glow_x = exp( -abs( sw ) * 18.0 ) * 0.9;
         }
         else if ( st == 24 )
         {
             float band = abs( tuv.y - 0.5 ) * 2.0; // vertical curtain
-            maskA = smoothstep( band - 0.06, band + 0.06, e * 1.15 );
+            mask_a = smoothstep( band - 0.06, band + 0.06, e * 1.15 );
         }
         else if ( st == 26 )
         {
-            float cellX = floor( tuv.x * 34.0 ) / 34.0; // typewriter
-            maskA = step( cellX, e * 1.06 );
+            float cell_x = floor( tuv.x * 34.0 ) / 34.0; // typewriter
+            mask_a = step( cell_x, e * 1.06 );
         }
         else if ( st == 28 )
         {
             float band = abs( fract( ( tuv.x + tuv.y ) * 3.0 ) - 0.5 ) * 2.0; // diagonal blinds
-            maskA = smoothstep( band - 0.25, band + 0.05, e * 1.25 );
+            mask_a = smoothstep( band - 0.25, band + 0.05, e * 1.25 );
         }
         else if ( st == 29 )
         {
             float g = hash21( floor( tuv * vec2( 46.0, 12.0 ) ) + sd ); // magnetic snap
-            maskA = smoothstep( d - 0.10, d + 0.10, g );
-            glowX = exp( -abs( g - d ) * 22.0 ) * 0.7 * d;
+            mask_a = smoothstep( d - 0.10, d + 0.10, g );
+            glow_x = exp( -abs( g - d ) * 22.0 ) * 0.7 * d;
         }
 
         // ---- Sample: plain / blurred / echo ghosts / RGB split ----
@@ -809,13 +809,13 @@ void main()
             tt = titleTap( tuv ) * 0.5 + titleTap( tuv + o ) * 0.25
                  + titleTap( tuv - o ) * 0.25;
         }
-        else if ( blurA > 0.0001 )
+        else if ( blur_a > 0.0001 )
         {
             tt = titleTap( tuv ) * 0.4;
-            tt += titleTap( tuv + vec2( blurA, 0.0 ) ) * 0.15;
-            tt += titleTap( tuv - vec2( blurA, 0.0 ) ) * 0.15;
-            tt += titleTap( tuv + vec2( 0.0, blurA * 3.0 ) ) * 0.15;
-            tt += titleTap( tuv - vec2( 0.0, blurA * 3.0 ) ) * 0.15;
+            tt += titleTap( tuv + vec2( blur_a, 0.0 ) ) * 0.15;
+            tt += titleTap( tuv - vec2( blur_a, 0.0 ) ) * 0.15;
+            tt += titleTap( tuv + vec2( 0.0, blur_a * 3.0 ) ) * 0.15;
+            tt += titleTap( tuv - vec2( 0.0, blur_a * 3.0 ) ) * 0.15;
         }
         else
             tt = titleTap( tuv );
@@ -828,10 +828,10 @@ void main()
             tt.a = max( tt.a, max( tr.a, tb.a ) );
         }
 
-        float a = tt.a * fadeIn * ( 1.0 - outp ) * maskA;
+        float a = tt.a * fade_in * ( 1.0 - outp ) * mask_a;
         c = mix( c, tt.rgb, a * 0.92 );
         c += tt.rgb * a * ( 0.25 + 0.30 * audioBeat ); // gentle beat glow
-        c += tt.rgb * a * glowX;                       // style-specific glint
+        c += tt.rgb * a * glow_x;                      // style-specific glint
     }
 
     c *= scale; // photosensitivity brightness limit (applied last)
@@ -851,8 +851,8 @@ void main()
                            + vec2( fract( time * 13.7 ) * 91.0,
                                    fract( time * 7.3 ) * 57.0 ) )
                    - 0.5;
-        float lumG = clamp( dot( c, vec3( 0.299, 0.587, 0.114 ) ), 0.0, 1.0 );
-        c += gr * 0.022 * ( 0.35 + 0.65 * ( 1.0 - lumG ) )
+        float lum_g = clamp( dot( c, vec3( 0.299, 0.587, 0.114 ) ), 0.0, 1.0 );
+        c += gr * 0.022 * ( 0.35 + 0.65 * ( 1.0 - lum_g ) )
              * ( 0.55 + 0.45 * audioLevel );
     }
 

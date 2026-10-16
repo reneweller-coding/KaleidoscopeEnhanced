@@ -106,60 +106,60 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 metalCol = vec3( 0.30, 0.33, 0.38 ); // armored metal -- bright enough to read as METAL next to the glowing
-                                              // breaches, not as black holes
-    vec3 plasmaCol = imgPalette( 0.8 + audioCentroid * 0.1 ); // Blinding hot star
+    vec3 metal_col = vec3( 0.30, 0.33, 0.38 ); // armored metal -- bright enough to read as METAL next to the glowing
+                                               // breaches, not as black holes
+    vec3 plasma_col = imgPalette( 0.8 + audioCentroid * 0.1 ); // Blinding hot star
     // The palette follows the photo -- on a dark photo the star inside the
     // shell rendered BLACK, so every blown-off panel read as an ugly hole
     // ("defekte Normalen"). A star has a floor temperature: keep it hot.
-    plasmaCol = max( plasmaCol, vec3( 0.95, 0.52, 0.22 ) * 0.42 );
+    plasma_col = max( plasma_col, vec3( 0.95, 0.52, 0.22 ) * 0.42 );
 
     // We render the sphere filling most of the view
-    vec2  sphereCenter = vec2( 0.0 );
-    float sphereRad = 0.62; // ganze Sphaere sichtbar, Korona hat Platz
-    float dist = length( uv - sphereCenter );
+    vec2  sphere_center = vec2( 0.0 );
+    float sphere_rad = 0.62; // ganze Sphaere sichtbar, Korona hat Platz
+    float dist = length( uv - sphere_center );
 
     // Slow rotation
     float rot = time * 0.1 + audioAdvance * 0.5;
-    mat2  rotM = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
+    mat2  rot_m = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
 
-    if ( dist < sphereRad )
+    if ( dist < sphere_rad )
     {
         // Map 2D to 3D sphere
-        float z = sqrt( max( 0.0, sphereRad * sphereRad - dist * dist ) );
+        float z = sqrt( max( 0.0, sphere_rad * sphere_rad - dist * dist ) );
         vec3  p3 = vec3( uv.x, uv.y, z );
 
         // Apply rotation
-        p3.xz = rotM * p3.xz;
+        p3.xz = rot_m * p3.xz;
         p3.yz = mat2( cos( 0.3 ), -sin( 0.3 ), sin( 0.3 ), cos( 0.3 ) ) * p3.yz;
 
         // 1. The Metal Structure: a LAT/LON panel lattice on the sphere
         // surface. The old cubic floor(p3*8) grid cut the shell into the
         // broken-looking random chips the user reported -- panels must
         // follow the surface to read as a built megastructure.
-        vec3  p3n = p3 / sphereRad;
+        vec3  p3n = p3 / sphere_rad;
         float lat = asin( clamp( p3n.y, -1.0, 1.0 ) );
         float lon = atan( p3n.z, p3n.x );
         vec2  grid = vec2( lon * 3.0, lat * 3.0 ); // ~19 x 9 panels
-        vec2  gId = floor( grid );
-        vec2  gF = fract( grid );
+        vec2  g_id = floor( grid );
+        vec2  g_f = fract( grid );
 
-        float cellHash = fract( sin( dot( gId, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+        float cell_hash = fract( sin( dot( g_id, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
 
         // Panel edges: dark seams between curved plates
         float edges = 1.0
-                      - ( smoothstep( 0.0, 0.06, gF.x ) * smoothstep( 1.0, 0.94, gF.x ) * smoothstep( 0.0, 0.06, gF.y )
-                          * smoothstep( 1.0, 0.94, gF.y ) );
+                      - ( smoothstep( 0.0, 0.06, g_f.x ) * smoothstep( 1.0, 0.94, g_f.x )
+                          * smoothstep( 0.0, 0.06, g_f.y ) * smoothstep( 1.0, 0.94, g_f.y ) );
         float panels = 1.0 - edges;
 
         // Add structural ribbing (fbm) + per-panel tonal variation
         float ribbing = fbm( p3 * 20.0 );
-        vec3  surfaceCol = metalCol * ( 0.5 + ribbing * 0.35 + cellHash * 0.25 );
-        surfaceCol *= 0.35 + 0.65 * panels; // dark seams
+        vec3  surface_col = metal_col * ( 0.5 + ribbing * 0.35 + cell_hash * 0.25 );
+        surface_col *= 0.35 + 0.65 * panels; // dark seams
 
         // Lighting on the metal from ambient space
-        float lightFront = 0.62 + 0.38 * z / sphereRad;
-        surfaceCol *= lightFront;
+        float light_front = 0.62 + 0.38 * z / sphere_rad;
+        surface_col *= light_front;
 
         // 2. The Catastrophic Damage -- with an actual COLLAPSE ARC: a slow
         // triangle wave sweeps the blow-off threshold, so the shell visibly
@@ -168,34 +168,35 @@ void main()
         float fracture = fbm( p3 * 3.0 + time * 0.1 );
 
         // Probability of a panel being completely blown off
-        float blownOff = step( 0.95 - collapse * 0.55 - dp * 0.15, cellHash + fracture * 0.35 );
+        float blown_off = step( 0.95 - collapse * 0.55 - dp * 0.15, cell_hash + fracture * 0.35 );
 
         // If a panel is missing or there's a deep fracture, the star shines through
-        float holeMask = max( blownOff, smoothstep( 0.8 - dp * 0.2, 0.9, fracture ) );
+        float hole_mask = max( blown_off, smoothstep( 0.8 - dp * 0.2, 0.9, fracture ) );
 
-        if ( holeMask > 0.0 )
+        if ( hole_mask > 0.0 )
         {
             // Looking at the star inside
             // Deep plasma noise
-            float internalPlasma = fbm( vec3( p3 * 5.0 - vec3( 0.0, time * 2.0, 0.0 ) ) );
+            float internal_plasma = fbm( vec3( p3 * 5.0 - vec3( 0.0, time * 2.0, 0.0 ) ) );
 
             // Brightness spikes with audio kicks
-            float kickSpike = step( 0.7, hash11( cellHash * 100.0 + floor( time * 1.50 ) ) );
-            float intensity = 1.0 + ( kickSpike * audioKick * 10.0 * fp );
+            float kick_spike = step( 0.7, hash11( cell_hash * 100.0 + floor( time * 1.50 ) ) );
+            float intensity = 1.0 + ( kick_spike * audioKick * 10.0 * fp );
 
             // Blinding heat
-            surfaceCol = mix( surfaceCol, plasmaCol * ( 1.0 + internalPlasma ) * intensity * ( 0.7 + audioSwell * 1.1 ),
-                              holeMask ); // was 1.0+swell*2: with the hot plasma floor the sphere washed out to
-                                          // near-white
+            surface_col = mix( surface_col,
+                               plasma_col * ( 1.0 + internal_plasma ) * intensity * ( 0.7 + audioSwell * 1.1 ),
+                               hole_mask ); // was 1.0+swell*2: with the hot plasma floor the sphere washed out to
+                                            // near-white
 
             // The metal edges of the hole are melting/glowing red hot
-            float meltEdge = smoothstep( 0.0, 0.1, holeMask );
-            surfaceCol += plasmaCol * meltEdge * 0.5 * ( 1.0 + audioSwell );
+            float melt_edge = smoothstep( 0.0, 0.1, hole_mask );
+            surface_col += plasma_col * melt_edge * 0.5 * ( 1.0 + audioSwell );
         }
 
         // Limb darkening for the sphere
-        float limb = smoothstep( sphereRad, sphereRad * 0.7, dist );
-        col += surfaceCol * limb;
+        float limb = smoothstep( sphere_rad, sphere_rad * 0.7, dist );
+        col += surface_col * limb;
     }
     else
     {
@@ -210,42 +211,42 @@ void main()
     float angle = atan( uv.y, uv.x );
 
     // Create a 3D coordinate on the edge of the sphere based on angle to check if there's a hole
-    vec3 edgeP3 = vec3( cos( angle ) * sphereRad, sin( angle ) * sphereRad, 0.0 );
-    edgeP3.xz = rotM * edgeP3.xz;
-    edgeP3.yz = mat2( cos( 0.3 ), -sin( 0.3 ), sin( 0.3 ), cos( 0.3 ) ) * edgeP3.yz;
+    vec3 edge_p3 = vec3( cos( angle ) * sphere_rad, sin( angle ) * sphere_rad, 0.0 );
+    edge_p3.xz = rot_m * edge_p3.xz;
+    edge_p3.yz = mat2( cos( 0.3 ), -sin( 0.3 ), sin( 0.3 ), cos( 0.3 ) ) * edge_p3.yz;
 
-    float edgeFracture = fbm( edgeP3 * 3.0 + time * 0.1 );
-    vec3  edgeICell = floor( edgeP3 * 8.0 );
-    float edgeCellHash = hash11( edgeICell.x * 12.3 + edgeICell.y * 45.6 + edgeICell.z * 78.9 );
-    float edgeBlownOff = step( 0.7 - dp * 0.2, edgeCellHash + edgeFracture * 0.5 );
-    float edgeHoleMask = max( edgeBlownOff, smoothstep( 0.8 - dp * 0.2, 0.9, edgeFracture ) );
+    float edge_fracture = fbm( edge_p3 * 3.0 + time * 0.1 );
+    vec3  edge_i_cell = floor( edge_p3 * 8.0 );
+    float edge_cell_hash = hash11( edge_i_cell.x * 12.3 + edge_i_cell.y * 45.6 + edge_i_cell.z * 78.9 );
+    float edge_blown_off = step( 0.7 - dp * 0.2, edge_cell_hash + edge_fracture * 0.5 );
+    float edge_hole_mask = max( edge_blown_off, smoothstep( 0.8 - dp * 0.2, 0.9, edge_fracture ) );
 
-    if ( dist > sphereRad - 0.05 && edgeHoleMask > 0.0 )
+    if ( dist > sphere_rad - 0.05 && edge_hole_mask > 0.0 )
     {
         // A massive plasma jet escaping this hole
         // Noise for the jet shape
-        float flareNoise = fbm( vec3( angle * 5.0, dist * 5.0 - time * 5.0, 0.0 ) );
+        float flare_noise = fbm( vec3( angle * 5.0, dist * 5.0 - time * 5.0, 0.0 ) );
 
         // The flare gets weaker further out
-        float flareFalloff = exp( -( dist - sphereRad ) * ( 10.0 / fp ) );
+        float flare_falloff = exp( -( dist - sphere_rad ) * ( 10.0 / fp ) );
 
         // Flash on kick
-        float jetSpike = step( 0.95, hash11( floor( angle * 5.0 ) + floor( time * 4.00 ) ) );
-        float jetIntensity = 1.0 + ( jetSpike * audioKick * 10.0 * fp );
+        float jet_spike = step( 0.95, hash11( floor( angle * 5.0 ) + floor( time * 4.00 ) ) );
+        float jet_intensity = 1.0 + ( jet_spike * audioKick * 10.0 * fp );
 
-        float flare = smoothstep( 0.3, 0.8, flareNoise ) * flareFalloff * edgeHoleMask;
-        col += plasmaCol * flare * jetIntensity * ( 1.0 + audioSwell );
+        float flare = smoothstep( 0.3, 0.8, flare_noise ) * flare_falloff * edge_hole_mask;
+        col += plasma_col * flare * jet_intensity * ( 1.0 + audioSwell );
     }
 
     // Overwhelming glare from the failing containment
-    float totalGlare = exp( -dist * 1.5 );
-    col += plasmaCol * totalGlare * 0.2 * ( 1.0 + audioSwell * 0.5 ) * fp * dp;
+    float total_glare = exp( -dist * 1.5 );
+    col += plasma_col * total_glare * 0.2 * ( 1.0 + audioSwell * 0.5 ) * fp * dp;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

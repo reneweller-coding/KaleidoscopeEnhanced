@@ -52,42 +52,42 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float pIndex = attrA.w;
+    float p_index = attrA.w;
     vec4  seeds = attrB;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Triangular Abrikosov vortex lattice coordinates in (x,y) with z-depth
     float nx = 240.0;
-    float ix = mod( pIndex, nx );
-    float iy = floor( pIndex / nx );
+    float ix = mod( p_index, nx );
+    float iy = floor( p_index / nx );
 
-    float hexOffset = mod( iy, 2.0 ) * 0.5;
+    float hex_offset = mod( iy, 2.0 ) * 0.5;
     float spacing = ( latticePitchP > 0.001 ? latticePitchP : 0.025 );
 
-    vec2 latticePos = vec2(
-        ( ix + hexOffset - nx * 0.5 ) * spacing * 1.7320508,
+    vec2 lattice_pos = vec2(
+        ( ix + hex_offset - nx * 0.5 ) * spacing * 1.7320508,
         ( iy - 125.0 ) * spacing * 1.5 );
 
     // Thermal vortex lattice melting into vortex liquid / vortex glass
-    float thermalNoise = ( sin( pIndex * 12.34 + t * 2.0 ) * cos( pIndex * 5.67 - t * 1.5 ) );
-    float melting = smoothstep( 0.4, 0.8, sin( length( latticePos ) * 2.0 - t * 0.8 ) * 0.5 + 0.5 );
+    float thermal_noise = ( sin( p_index * 12.34 + t * 2.0 ) * cos( p_index * 5.67 - t * 1.5 ) );
+    float melting = smoothstep( 0.4, 0.8, sin( length( lattice_pos ) * 2.0 - t * 0.8 ) * 0.5 + 0.5 );
     melting *= ( 1.0 + 0.5 * audioSwell );
     vMeltingState = melting;
 
     // Jittered vortex liquid wandering
     vec2  jitter = vec2( seeds.x - 0.5, seeds.y - 0.5 ) * ( melting * 0.08 );
-    float zCoord = ( seeds.z - 0.5 ) * 1.2 + thermalNoise * 0.05;
+    float z_coord = ( seeds.z - 0.5 ) * 1.2 + thermal_noise * 0.05;
 
-    vec3 worldPos = vec3( latticePos + jitter, zCoord );
+    vec3 world_pos = vec3( lattice_pos + jitter, z_coord );
 
     // audioChromaHue instead of raw audioCentroid: the centroid wiggles
     // per analysis block and shifted EVERY particle's hue at once --
     // measured as COLOR_FLICKER. chromaHue is circular-slewed for hue duty.
-    vCol = imgPalette( fract( pIndex * 0.0001 + melting * 0.3 + audioChromaHue ) );
+    vCol = imgPalette( fract( p_index * 0.0001 + melting * 0.3 + audioChromaHue ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 4.5;
     vp.x -= eyeOff;
 
@@ -100,12 +100,12 @@ void main()
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Point Sprite size (V8c: cap 10-18px)
-    float baseSize = ( pointSizeP > 1.0 ? pointSizeP : 12.0 );
+    float base_size = ( pointSizeP > 1.0 ? pointSizeP : 12.0 );
     // Fewer, bigger (see SpinGlass): sub-pixel vortices read as noise.
-    if ( mod( pIndex, 3.0 ) > 0.5 )
+    if ( mod( p_index, 3.0 ) > 0.5 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
     }
-    gl_PointSize = clamp( baseSize * ( 3.4 / max( gl_Position.w * 0.25, 0.5 ) ), 5.0, 42.0 );
+    gl_PointSize = clamp( base_size * ( 3.4 / max( gl_Position.w * 0.25, 0.5 ) ), 5.0, 42.0 );
     vPointSize = gl_PointSize;
 }

@@ -104,14 +104,14 @@ void main()
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
-    float halfW = 0.9 + 0.5 * clamp( hillsP, 0.0, 1.0 ); // canal half-width (world)
+    float half_w = 0.9 + 0.5 * clamp( hillsP, 0.0, 1.0 ); // canal half-width (world)
     float dens = 0.5 + 0.8 * clamp( petalP, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.5;
 
     vec2  vp = vec2( 0.0, 0.0 ); // vanishing point
-    float camH = 1.1;
+    float cam_h = 1.1;
     vec3  light = vec3( 1.0, 0.97, 0.94 ) * ( 0.85 + 0.3 * swell );
-    vec3  pinkC = mix( vec3( 1.0, 0.72, 0.82 ), imgPalette( 0.9 + hue * 0.159 ), 0.15 );
+    vec3  pink_c = mix( vec3( 1.0, 0.72, 0.82 ), imgPalette( 0.9 + hue * 0.159 ), 0.15 );
 
     // Sky.
     vec3 col = mix( vec3( 0.98, 0.9, 0.86 ), vec3( 0.6, 0.75, 0.92 ), smoothstep( 0.05, 0.5, p.y ) ) * light;
@@ -121,24 +121,24 @@ void main()
     if ( p.y < vp.y )
     {
         float h = vp.y - p.y;
-        float z = camH * 0.3 / h;           // depth
+        float z = cam_h * 0.3 / h;          // depth
         float x = ( p.x - vp.x ) * z / 0.3; // lateral world
         float fog = smoothstep( 2.0, 25.0, z );
-        if ( abs( x ) < halfW )
+        if ( abs( x ) < half_w )
         {
             // Water: sky and canopies mirrored, ripples, petal rafts drifting.
             float rip = noise2( vec2( x * 6.0, z * 2.0 - T * 0.4 ) ) - 0.5;
-            vec3  refl = mix( vec3( 0.55, 0.68, 0.8 ), pinkC * 0.8,
-                              smoothstep( 0.4, 1.0, abs( x ) / halfW ) * smoothstep( 0.1, 0.6, prog ) );
+            vec3  refl = mix( vec3( 0.55, 0.68, 0.8 ), pink_c * 0.8,
+                              smoothstep( 0.4, 1.0, abs( x ) / half_w ) * smoothstep( 0.1, 0.6, prog ) );
             vec3  w = mix( vec3( 0.12, 0.2, 0.22 ), refl, 0.55 + 0.1 * rip );
             float raft = smoothstep( 0.55, 0.75, fbm( vec2( x * 1.2, z * 0.5 - T * 0.08 ) ) + 0.3 * prog - 0.2 );
             raft *= smoothstep( 0.5, 1.0, prog );
-            w = mix( w, pinkC * 0.95, raft * 0.85 );
+            w = mix( w, pink_c * 0.95, raft * 0.85 );
             w += vec3( 1.0 ) * pow( max( rip + 0.5, 0.0 ), 12.0 ) * ( 0.2 + 0.8 * hi ) * 0.4;
             col = w * light;
             wet = 1.0;
         }
-        else if ( abs( x ) < halfW + 0.5 )
+        else if ( abs( x ) < half_w + 0.5 )
         {
             // Stone bank wall top edge and the path.
             float blk = step( 0.9, fract( z * 2.0 ) ) + step( 0.92, fract( abs( x ) * 3.0 ) );
@@ -149,7 +149,7 @@ void main()
             // Grass under the trees, dusted with petals.
             vec3  grass = mix( vec3( 0.36, 0.44, 0.28 ), vec3( 0.5, 0.55, 0.38 ), noise2( vec2( x, z ) * 3.0 ) );
             float dust = smoothstep( 0.6, 0.8, noise2( vec2( x, z ) * 8.0 ) ) * smoothstep( 0.6, 1.0, prog );
-            col = mix( grass, pinkC, dust ) * light;
+            col = mix( grass, pink_c, dust ) * light;
         }
         col = mix( col, vec3( 0.95, 0.9, 0.9 ) * light, fog );
     }
@@ -163,34 +163,34 @@ void main()
         {
             float fk = float( k );
             float z = 1.9 + fk * 1.5;
-            float tx = side * ( halfW + 0.9 + 0.15 * hash11( fk + side * 7.0 ) );
+            float tx = side * ( half_w + 0.9 + 0.15 * hash11( fk + side * 7.0 ) );
             float sc = 0.3 / z;
-            vec2  base = vp + vec2( tx * sc, -camH * sc ); // trunk foot on screen
-            float treeH = ( 2.1 + 0.4 * hash11( fk * 3.1 + side ) ) * sc;
+            vec2  base = vp + vec2( tx * sc, -cam_h * sc ); // trunk foot on screen
+            float tree_h = ( 2.1 + 0.4 * hash11( fk * 3.1 + side ) ) * sc;
             vec2  d = p - base;
             // The front: far trees bloom first, the near ones last.
             float bloom = smoothstep( 0.0, 0.2, prog * 2.2 - ( 1.0 - fk / 13.0 ) * 1.0 );
             // Trunk: a leaning dark line.
             float lean = -side * 0.25;
-            float trunkX = d.x - lean * d.y;
-            float trunk = smoothstep( 0.07 * sc, 0.035 * sc, abs( trunkX ) ) * step( 0.0, d.y )
-                          * step( d.y, treeH * 0.85 );
+            float trunk_x = d.x - lean * d.y;
+            float trunk = smoothstep( 0.07 * sc, 0.035 * sc, abs( trunk_x ) ) * step( 0.0, d.y )
+                          * step( d.y, tree_h * 0.85 );
             col = mix( col, vec3( 0.18, 0.12, 0.1 ), trunk );
             // Canopy: leaning over the water, a lumpy cloud of clusters.
-            vec2  cc = base + vec2( lean * treeH * 0.8 - side * 0.55 * sc, treeH * 0.95 );
+            vec2  cc = base + vec2( lean * tree_h * 0.8 - side * 0.55 * sc, tree_h * 0.95 );
             vec2  cq = ( p - cc ) / ( sc * vec2( 1.6, 0.95 ) );
             float blob = length( cq ) - 1.0 + 0.35 * ( fbm( cq * 2.0 + fk * 3.0 + side ) - 0.5 );
             if ( blob < 0.25 )
             {
                 // Main branches: a few bent strokes fanning out from the trunk top.
                 float brd = 1e9;
-                vec2  top = base + vec2( lean * treeH * 0.85, treeH * 0.85 );
+                vec2  top = base + vec2( lean * tree_h * 0.85, tree_h * 0.85 );
                 for ( int b = 0; b < 4; ++b )
                 {
                     float fb = float( b );
                     float ang = 1.57 + side * ( -0.9 + 0.55 * fb ) + 0.3 * ( hash11( fk * 5.0 + fb ) - 0.5 );
                     vec2  dir = vec2( cos( ang ), sin( ang ) );
-                    vec2  e = top + dir * treeH * ( 0.55 + 0.25 * hash11( fk + fb * 3.0 ) );
+                    vec2  e = top + dir * tree_h * ( 0.55 + 0.25 * hash11( fk + fb * 3.0 ) );
                     vec2  pa = p - top, ba = e - top;
                     float hb = clamp( dot( pa, ba ) / dot( ba, ba ), 0.0, 1.0 );
                     brd = min( brd, length( pa - ba * hb ) / ( sc * ( 0.05 - 0.03 * hb ) ) );
@@ -217,12 +217,12 @@ void main()
                 float inside = smoothstep( 0.1, -0.1, blob );
                 float cover = smoothstep( 1.0, 0.85, f1 ) * inside
                               * smoothstep( 0.0, 0.3, bloom + 0.1 * ( hash21( gi ) - 0.5 ) ) * step( 0.01, bloom );
-                vec3  bl = mix( pinkC, vec3( 1.0, 0.92, 0.95 ), 0.35 * hash21( gi + 2.0 ) ) * ( 0.7 + 0.45 * lit )
+                vec3  bl = mix( pink_c, vec3( 1.0, 0.92, 0.95 ), 0.35 * hash21( gi + 2.0 ) ) * ( 0.7 + 0.45 * lit )
                            * ( 0.9 + 0.2 * smoothstep( -0.6, 0.8, cq.y ) );
-                float farFade = 1.0 - smoothstep( 10.0, 25.0, z ) * 0.6;
-                col = mix( col, vec3( 0.22, 0.15, 0.12 ) * light, branch * farFade );
-                col = mix( col, pinkC * 0.62 * light, inside * smoothstep( 0.1, 0.5, bloom ) * 0.75 * farFade );
-                col = mix( col, bl * light, cover * farFade );
+                float far_fade = 1.0 - smoothstep( 10.0, 25.0, z ) * 0.6;
+                col = mix( col, vec3( 0.22, 0.15, 0.12 ) * light, branch * far_fade );
+                col = mix( col, pink_c * 0.62 * light, inside * smoothstep( 0.1, 0.5, bloom ) * 0.75 * far_fade );
+                col = mix( col, bl * light, cover * far_fade );
             }
             // A paper lantern on the path side, near trees only.
             if ( k < 8 )
@@ -247,11 +247,11 @@ void main()
         float r = length( ( qf - off ) * vec2( 1.0, 1.5 ) );
         float pet = smoothstep( 0.12 + 0.03 * fl, 0.06, r )
                     * step( 1.0 - 0.18 * dens * smoothstep( 0.3, 0.9, prog ), hh );
-        col = mix( col, pinkC * ( 1.05 + 0.4 * kick ), pet * 0.9 );
+        col = mix( col, pink_c * ( 1.05 + 0.4 * kick ), pet * 0.9 );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

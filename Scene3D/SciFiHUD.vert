@@ -84,8 +84,8 @@ void main()
     }
     else if ( ri < 2.5 ) // radar sweep (trailing wedge)
     {
-        float sweepAngle = time * 1.1 + audioAdvance * 0.6;
-        float a = sweepAngle - t * 0.85;
+        float sweep_angle = time * 1.1 + audioAdvance * 0.6;
+        float a = sweep_angle - t * 0.85;
         float radius = mix( 0.8, 11.6, sd * 0.5 + 0.5 );
         pos = vec2( cos( a ), sin( a ) ) * radius;
         col = hueRot( vec3( 0.3, 1.0, 0.6 ), audioChromaHue * 0.3 );
@@ -127,14 +127,14 @@ void main()
         float sx = ( mod( corner, 2.0 ) < 0.5 ) ? -1.0 : 1.0;
         float sy = ( corner < 1.5 ) ? 1.0 : -1.0;
         vec2  cpt = vec2( sx * 2.3, sy * 1.7 );
-        float armLen = 0.7;
+        float arm_len = 0.7;
         vec2  local = ( t < 0.5 )
-                          ? vec2( mix( 0.0, -sx * armLen, t * 2.0 ), 0.0 )
-                          : vec2( 0.0, mix( 0.0, -sy * armLen, ( t - 0.5 ) * 2.0 ) );
+                          ? vec2( mix( 0.0, -sx * arm_len, t * 2.0 ), 0.0 )
+                          : vec2( 0.0, mix( 0.0, -sy * arm_len, ( t - 0.5 ) * 2.0 ) );
         pos = cpt + local + sdw * 0.05 * vec2( 1.0, 1.0 );
-        float lockPulse = 0.6 + 0.4 * sin( 6.2831853 * fract( time * 0.6 ) );
+        float lock_pulse = 0.6 + 0.4 * sin( 6.2831853 * fract( time * 0.6 ) );
         col = hueRot( vec3( 1.0, 0.3, 0.25 ), audioChromaHue * 0.3 )
-              * ( 0.7 + 0.6 * audioOnset ) * lockPulse;
+              * ( 0.7 + 0.6 * audioOnset ) * lock_pulse;
     }
     else if ( ri < 11.5 ) // crosshair horizontal
     {
@@ -156,9 +156,9 @@ void main()
     {
         float ring = ri - 13.0; // 0..2
         float a = t * 6.2831853;
-        float baseR = 3.2 + ring * 1.35;
+        float base_r = 3.2 + ring * 1.35;
         float pulse = exp( -fract( time * 0.7 - ring * 0.12 ) * 5.0 ) * audioOnset;
-        float radius = baseR * ( 1.0 + 0.25 * pulse ) + sdw * 0.04;
+        float radius = base_r * ( 1.0 + 0.25 * pulse ) + sdw * 0.04;
         pos = vec2( cos( a ), sin( a ) ) * radius;
         col = hueRot( vec3( 0.9, 0.35, 1.0 ), audioChromaHue * 0.3 );
         fade = 0.15 + pulse;

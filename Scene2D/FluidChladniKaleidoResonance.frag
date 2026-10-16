@@ -93,52 +93,52 @@ void main()
     float seg = 3.14159265 / 4.0;
     ang = mod( ang + seg * 0.5, seg ) - seg * 0.5;
     ang = abs( ang );
-    vec2 pSym = vec2( cos( ang ), sin( ang ) ) * rad;
+    vec2 p_sym = vec2( cos( ang ), sin( ang ) ) * rad;
 
     // Viscous fluid advection over 3 iterative passes
-    vec2 pFluid = pSym;
+    vec2 p_fluid = p_sym;
     for ( int k = 0; k < 3; k++ )
     {
-        vec2 curl = curlNoise( pFluid * 2.5, t + float( k ) * 1.5 );
-        pFluid += curl * ( 0.18 * visc + 0.12 * audioSubBass );
+        vec2 curl = curlNoise( p_fluid * 2.5, t + float( k ) * 1.5 );
+        p_fluid += curl * ( 0.18 * visc + 0.12 * audioSubBass );
     }
 
     // Modal frequencies selected by audio centroid and per-activation mode
-    float nMod = 2.0 + floor( ( modeP * 3.0 + audioCentroid * 4.0 ) );
-    float mMod = nMod + 1.0 + floor( audioFlux * 2.0 );
-    float modalRatio = 0.95 + 0.3 * sin( t * 0.7 );
+    float n_mod = 2.0 + floor( ( modeP * 3.0 + audioCentroid * 4.0 ) );
+    float m_mod = n_mod + 1.0 + floor( audioFlux * 2.0 );
+    float modal_ratio = 0.95 + 0.3 * sin( t * 0.7 );
 
     // Compute acoustic vibration field
-    float chladniVal = chladni2D( pFluid, nMod, mMod, modalRatio );
-    float nodalDist = abs( chladniVal );
+    float chladni_val = chladni2D( p_fluid, n_mod, m_mod, modal_ratio );
+    float nodal_dist = abs( chladni_val );
 
     // Glowing nodal lines (sand particles gathering at zero-amplitude vibration lines)
-    float nodalGlow = exp( -nodalDist * ( 28.0 + 15.0 * audioCentroid ) ) * glw;
+    float nodal_glow = exp( -nodal_dist * ( 28.0 + 15.0 * audioCentroid ) ) * glw;
 
     // Sample warped texture along fluid marble stream
-    vec2 sampleUV = fract( pFluid * 0.5 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_fluid * 0.5 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Iridescent interference colors across Chladni gradients
-    float phase = chladniVal * 4.0 + t * 2.0;
-    vec3  palA = imgPalette( phase * 0.1 );
-    vec3  palB = imgPalette( phase * 0.1 + 0.5 );
-    vec3  fluidCol = mix( palA, palB, 0.5 + 0.5 * sin( phase ) );
+    float phase = chladni_val * 4.0 + t * 2.0;
+    vec3  pal_a = imgPalette( phase * 0.1 );
+    vec3  pal_b = imgPalette( phase * 0.1 + 0.5 );
+    vec3  fluid_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( phase ) );
 
-    fluidCol = mix( fluidCol, texCol, 0.35 + 0.15 * audioValence );
+    fluid_col = mix( fluid_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add neon nodal particle lines with kick flash
-    vec3 neonNodal = vec3( 1.3, 1.0, 1.7 ) * nodalGlow * ( 1.0 + 3.0 * audioKick );
-    fluidCol += neonNodal;
+    vec3 neon_nodal = vec3( 1.3, 1.0, 1.7 ) * nodal_glow * ( 1.0 + 3.0 * audioKick );
+    fluid_col += neon_nodal;
 
     // Specular liquid ridge highlights
-    float ridge = pow( clamp( 1.0 - nodalDist * 4.0, 0.0, 1.0 ), 4.0 );
-    fluidCol += vec3( 1.0, 1.1, 1.3 ) * ridge * 0.6 * audioLevel;
+    float ridge = pow( clamp( 1.0 - nodal_dist * 4.0, 0.0, 1.0 ), 4.0 );
+    fluid_col += vec3( 1.0, 1.1, 1.3 ) * ridge * 0.6 * audioLevel;
 
     // Contrast & vignette
-    fluidCol = pow( fluidCol, vec3( 0.86 ) );
+    fluid_col = pow( fluid_col, vec3( 0.86 ) );
     float vig = 1.0 - smoothstep( 0.85, 1.4, rad );
-    fluidCol *= vig;
+    fluid_col *= vig;
 
-    fragColor = vec4( clamp( fluidCol, 0.0, 1.0 ), 1.0 );
+    fragColor = vec4( clamp( fluid_col, 0.0, 1.0 ), 1.0 );
 }

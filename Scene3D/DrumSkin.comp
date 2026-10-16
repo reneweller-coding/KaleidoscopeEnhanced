@@ -67,16 +67,16 @@ uniform float ampP;     ///< preset: how far the skin moves
 uniform float modeP;    ///< preset: how many modes are allowed to speak
 uniform float tensionP; ///< preset: overall mode speed
 
-const int   RINGS = 44;
-const int   SECT = 72;
-const int   NQUADS = RINGS * SECT;
+const int   Rings = 44;
+const int   Sect = 72;
+const int   Nquads = Rings * Sect;
 const float R = 3.05;
 
 // The first zeros of J_n, which set both the shape and the frequency of a mode.
-const int   NMODES = 8;
-const float ALPHA[8] = float[8]( 2.4048, 3.8317, 5.1356, 5.5201,
+const int   Nmodes = 8;
+const float Alpha[8] = float[8]( 2.4048, 3.8317, 5.1356, 5.5201,
                                  6.3802, 7.0156, 7.5883, 8.4172 );
-const int   ORDER[8] = int[8]( 0, 1, 2, 0,
+const int   Order[8] = int[8]( 0, 1, 2, 0,
                                3, 1, 4, 2 );
 
 float besselJ( int n, float x )
@@ -116,7 +116,7 @@ float skin( vec2 pxz, float amp, float modes, float speed )
     float rn = clamp( r / R, 0.0, 1.0 );
 
     float z = 0.0;
-    for ( int i = 0; i < NMODES; ++i )
+    for ( int i = 0; i < Nmodes; ++i )
     {
         if ( float( i ) > modes )
             break;
@@ -125,8 +125,8 @@ float skin( vec2 pxz, float amp, float modes, float speed )
         // is bright in the top end lights the high modes and a soft one leaves
         // the fundamental ringing alone.
         float drive = audioSpectrum[( i * 4 + 1 ) % 32];
-        float a = ALPHA[i];
-        int   n = ORDER[i];
+        float a = Alpha[i];
+        int   n = Order[i];
 
         // The phase advances at the mode's OWN frequency, which is proportional
         // to its Bessel zero.  Multiplying the host-integrated advance by a
@@ -142,7 +142,7 @@ float skin( vec2 pxz, float amp, float modes, float speed )
         // the membrane looked frozen across a whole 8 s probe.  A fixed
         // wall-clock base keeps the irrational mode ratios audibly beating;
         // audioAdvance still pushes them with the music.
-        float ph = ( time * 0.85 + audioAdvance * 0.55 ) * speed * ( a / ALPHA[0] ) + float( i ) * 1.9;
+        float ph = ( time * 0.85 + audioAdvance * 0.55 ) * speed * ( a / Alpha[0] ) + float( i ) * 1.9;
 
         float shape = besselJ( n, a * rn );
         float ang = ( n == 0 ) ? 1.0 : cos( float( n ) * th + float( i ) * 1.3 + sceneSeed * 6.0 );
@@ -152,8 +152,8 @@ float skin( vec2 pxz, float amp, float modes, float speed )
 
     // The rim is clamped: a drumhead is fixed at the hoop, which is the boundary
     // condition that makes the Bessel zeros the zeros in the first place.
-    float clampRim = 1.0 - smoothstep( 0.90, 1.0, rn );
-    return z * amp * clampRim;
+    float clamp_rim = 1.0 - smoothstep( 0.90, 1.0, rn );
+    return z * amp * clamp_rim;
 }
 
 /// @brief Writes one vertex into the output buffer (compute stage).
@@ -175,25 +175,25 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= uint( NQUADS ) )
+    if ( id >= uint( Nquads ) )
         return;
 
-    int s = int( id ) % SECT;
-    int r = int( id ) / SECT;
+    int s = int( id ) % Sect;
+    int r = int( id ) / Sect;
 
     // The displacement has to be a real fraction of the radius.  Eight modes at
     // a tenth of a unit each average out to almost nothing once they are summed
     // with alternating signs, so the sum needs a good deal more gain than the
     // individual mode amplitudes suggest.
     float amp = clamp( ampP, 0.1, 2.5 ) * 2.10 * ( 0.50 + 0.9 * audioLevel + 0.7 * audioKick );
-    float modes = clamp( modeP, 0.35, 1.0 ) * float( NMODES - 1 );
+    float modes = clamp( modeP, 0.35, 1.0 ) * float( Nmodes - 1 );
     float speed = clamp( tensionP, 0.3, 2.5 );
 
     // Rings spaced by sqrt so the cells keep a similar area from centre to rim.
-    float r0 = R * sqrt( float( r ) / float( RINGS ) );
-    float r1 = R * sqrt( float( r + 1 ) / float( RINGS ) );
-    float a0 = 6.2831853 * float( s ) / float( SECT );
-    float a1 = 6.2831853 * float( s + 1 ) / float( SECT );
+    float r0 = R * sqrt( float( r ) / float( Rings ) );
+    float r1 = R * sqrt( float( r + 1 ) / float( Rings ) );
+    float a0 = 6.2831853 * float( s ) / float( Sect );
+    float a1 = 6.2831853 * float( s + 1 ) / float( Sect );
 
     vec2 c00 = vec2( cos( a0 ), sin( a0 ) ) * r0;
     vec2 c10 = vec2( cos( a0 ), sin( a0 ) ) * r1;
@@ -214,22 +214,22 @@ void main()
     if ( n.y < 0.0 )
         n = -n;
 
-    float hAvg = ( h00 + h10 + h11 + h01 ) * 0.25;
-    float rAvg = ( r0 + r1 ) * 0.5 / R;
+    float h_avg = ( h00 + h10 + h11 + h01 ) * 0.25;
+    float r_avg = ( r0 + r1 ) * 0.5 / R;
 
     uint base = atomicAdd( cmd[4], 12u );
     if ( base + 12u > maxVertices )
         return;
-    writeVertex( base + 0u, p00, n, hAvg, rAvg );
-    writeVertex( base + 1u, p10, n, hAvg, rAvg );
-    writeVertex( base + 2u, p11, n, hAvg, rAvg );
-    writeVertex( base + 3u, p00, n, hAvg, rAvg );
-    writeVertex( base + 4u, p11, n, hAvg, rAvg );
-    writeVertex( base + 5u, p01, n, hAvg, rAvg );
-    writeVertex( base + 6u, p11, n, hAvg, rAvg );
-    writeVertex( base + 7u, p10, n, hAvg, rAvg );
-    writeVertex( base + 8u, p00, n, hAvg, rAvg );
-    writeVertex( base + 9u, p01, n, hAvg, rAvg );
-    writeVertex( base + 10u, p11, n, hAvg, rAvg );
-    writeVertex( base + 11u, p00, n, hAvg, rAvg );
+    writeVertex( base + 0u, p00, n, h_avg, r_avg );
+    writeVertex( base + 1u, p10, n, h_avg, r_avg );
+    writeVertex( base + 2u, p11, n, h_avg, r_avg );
+    writeVertex( base + 3u, p00, n, h_avg, r_avg );
+    writeVertex( base + 4u, p11, n, h_avg, r_avg );
+    writeVertex( base + 5u, p01, n, h_avg, r_avg );
+    writeVertex( base + 6u, p11, n, h_avg, r_avg );
+    writeVertex( base + 7u, p10, n, h_avg, r_avg );
+    writeVertex( base + 8u, p00, n, h_avg, r_avg );
+    writeVertex( base + 9u, p01, n, h_avg, r_avg );
+    writeVertex( base + 10u, p11, n, h_avg, r_avg );
+    writeVertex( base + 11u, p00, n, h_avg, r_avg );
 }

@@ -62,49 +62,49 @@ void main()
 
     float t = time * 0.0691 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // 4D point (x, y, z, w) where z = 0, w = 0 initially
-    float angleXW = tProg * 1.5707963 * r4d; // 0 to 90 degrees
-    float angleYZ = tProg * 1.5707963 * r4d + t * 0.5;
+    float angle_xw = t_prog * 1.5707963 * r4d; // 0 to 90 degrees
+    float angle_yz = t_prog * 1.5707963 * r4d + t * 0.5;
 
     // Rotate in X-W plane
-    float xNew = p.x * cos( angleXW );
-    float wNew = p.x * sin( angleXW );
+    float x_new = p.x * cos( angle_xw );
+    float w_new = p.x * sin( angle_xw );
 
     // Rotate in Y-Z plane
-    float yNew = p.y * cos( angleYZ );
-    float zNew = p.y * sin( angleYZ );
+    float y_new = p.y * cos( angle_yz );
+    float z_new = p.y * sin( angle_yz );
 
     // 4D perspective projection back to 2D: (x, y) / (2 - w).
     // audioBass undulates the hyper-volume projection perspective -- how hard
-    // the 4th coordinate w foreshortens.  midTransition gates it back to the
-    // base 0.5 at both fade endpoints, and warpUV is blended in by
-    // midTransition there as well, so the frame is exactly tex0 / tex1.
-    float perspW = 0.5; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float d4D = max( 1.8 - wNew * perspW, 0.4 );
-    vec2  pProj = vec2( xNew, yNew ) / d4D;
+    // the 4th coordinate w foreshortens.  mid_transition gates it back to the
+    // base 0.5 at both fade endpoints, and warp_uv is blended in by
+    // mid_transition there as well, so the frame is exactly tex0 / tex1.
+    float persp_w = 0.5; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float d_4d = max( 1.8 - w_new * persp_w, 0.4 );
+    vec2  p_proj = vec2( x_new, y_new ) / d_4d;
 
-    vec2 warpUV = ( pProj * resolution.y + 0.5 * resolution ) / resolution;
+    vec2 warp_uv = ( p_proj * resolution.y + 0.5 * resolution ) / resolution;
 
-    vec4 c1 = texture( tex1, fract( mix( uv, warpUV, midTransition ) ) );
-    vec4 c0 = texture( tex0, fract( mix( warpUV, uv, 1.0 - midTransition ) ) );
+    vec4 c1 = texture( tex1, fract( mix( uv, warp_uv, mid_transition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( warp_uv, uv, 1.0 - mid_transition ) ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Tesseract 4D hypercube wireframe edge glow -- genuinely thin lines
     // (smoothstep window on the sine peak; any pow() of |sin| still leaves
     // wide bands) and gentle gain: the old 1.2+kick*3 turned the whole frame
     // into a glowing grid with the scene gone underneath.
-    float wireEdge = max( abs( sin( p.x * 12.0 * slc ) ), abs( sin( p.y * 12.0 * slc ) ) );
-    float wireGlow = smoothstep( 0.985, 1.0, wireEdge ) * midTransition;
-    col.rgb += wireGlow * vec3( 0.2, 0.9, 1.0 ) * ( 0.3 + audioKick * 0.4 );
+    float wire_edge = max( abs( sin( p.x * 12.0 * slc ) ), abs( sin( p.y * 12.0 * slc ) ) );
+    float wire_glow = smoothstep( 0.985, 1.0, wire_edge ) * mid_transition;
+    col.rgb += wire_glow * vec3( 0.2, 0.9, 1.0 ) * ( 0.3 + audioKick * 0.4 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

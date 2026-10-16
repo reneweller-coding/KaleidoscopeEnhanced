@@ -93,8 +93,8 @@ void main()
     vec3 n = normalize( vNormal );
 
     // Fake a central star light
-    vec3  lightDir = normalize( vec3( 0.0 ) - vPos );
-    float dif = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.0 ) - vPos );
+    float dif = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
     vec3 albedo = vec3( 0.2, 0.22, 0.25 );
@@ -111,21 +111,21 @@ void main()
     float pat = techPattern( uv * pp );
     albedo *= 0.5 + 0.5 * pat;
 
-    vec3 energyColor = imgPalette( 0.8 + 0.1 * audioKick );
-    vec3 panelColor = imgPalette( 0.2 );
+    vec3 energy_color = imgPalette( 0.8 + 0.1 * audioKick );
+    vec3 panel_color = imgPalette( 0.2 );
 
-    vec3 col = albedo * ( 0.1 + dif * ( 1.0 + audioSwell ) ) * panelColor;
+    vec3 col = albedo * ( 0.1 + dif * ( 1.0 + audioSwell ) ) * panel_color;
     col += albedo * fill * 0.2;
 
     // Energy lines in the cracks
-    float energyLines = step( pat, 0.1 ) * fract( sin( vCol.w * 100.0 ) * 43758.5 );
-    energyLines *= smoothstep( 0.0, 0.2, sin( uv.x * 2.0 + time * 2.0 + audioAdvance * 5.0 ) );
+    float energy_lines = step( pat, 0.1 ) * fract( sin( vCol.w * 100.0 ) * 43758.5 );
+    energy_lines *= smoothstep( 0.0, 0.2, sin( uv.x * 2.0 + time * 2.0 + audioAdvance * 5.0 ) );
 
-    col += energyColor * energyLines * ( 1.5 + 3.0 * audioKick ) * ep;
+    col += energy_color * energy_lines * ( 1.5 + 3.0 * audioKick ) * ep;
 
     // Central star glow on the panels (atmospheric/corona scattering)
-    float distToCenter = length( vPos );
-    float corona = exp( -distToCenter * 0.02 ) * ( 1.0 + audioSwell * 0.5 );
+    float dist_to_center = length( vPos );
+    float corona = exp( -dist_to_center * 0.02 ) * ( 1.0 + audioSwell * 0.5 );
     col += imgPalette( 0.5 ) * corona * 0.5;
 
     // Fade into distance, matched to where the panels ACTUALLY are.
@@ -147,7 +147,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

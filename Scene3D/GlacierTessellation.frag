@@ -54,31 +54,31 @@ vec3 imgPalette( float t )
 void main()
 {
     vec3  n = normalize( vNormal );
-    vec3  lightDir = normalize( vec3( 0.6, 0.8, -0.5 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.6, 0.8, -0.5 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
 
     // Specular frost
-    vec3  viewDir = normalize( -vWorld );
-    vec3  refl = reflect( -lightDir, n );
-    float spec = pow( max( dot( viewDir, refl ), 0.0 ), 32.0 );
+    vec3  view_dir = normalize( -vWorld );
+    vec3  refl = reflect( -light_dir, n );
+    float spec = pow( max( dot( view_dir, refl ), 0.0 ), 32.0 );
 
     // Subsurface scattering ice blue
-    vec3 iceCore = vec3( 0.05, 0.6, 0.95 );
-    vec3 iceSurface = vec3( 0.85, 0.95, 1.0 );
-    vec3 iceCol = mix( iceCore, iceSurface, diff * 0.7 + 0.3 );
+    vec3 ice_core = vec3( 0.05, 0.6, 0.95 );
+    vec3 ice_surface = vec3( 0.85, 0.95, 1.0 );
+    vec3 ice_col = mix( ice_core, ice_surface, diff * 0.7 + 0.3 );
 
     // Glowing crevasses: light from inside the ice, tinted by the PHOTO
     // palette (house standard) instead of a fixed neon cyan.
     // 65% of a 1.6x photo-arc colour flooded the whole glacier with the
     // photo's dominant hue (recorded as ORANGE ice).  The photo may only
     // inflect the crevasse teal, never replace it.
-    vec3 crevasseCol = mix( vec3( 0.0, 1.0, 0.9 ), imgPalette( 0.18 ), 0.22 )
-                       * vCrevasse * 1.6;
+    vec3 crevasse_col = mix( vec3( 0.0, 1.0, 0.9 ), imgPalette( 0.18 ), 0.22 )
+                        * vCrevasse * 1.6;
 
     // Sample active photo texture
     vec3 photo = img( vUV );
 
-    vec3 col = iceCol + spec * vec3( 1.0, 1.0, 1.0 ) * 0.8 + crevasseCol;
+    vec3 col = ice_col + spec * vec3( 1.0, 1.0, 1.0 ) * 0.8 + crevasse_col;
     col /= 1.0 + 0.45 * max( col.r, max( col.g, col.b ) ); // additive stack knee
     col += photo * 0.25;
     col /= 1.0 + 0.25 * max( col.r, max( col.g, col.b ) );
@@ -86,8 +86,8 @@ void main()
     // Fog into distance
     float dist = length( vWorld );
     float fog = 1.0 - exp( -dist * 0.008 );
-    vec3  fogCol = vec3( 0.02, 0.08, 0.15 );
-    col = mix( col, fogCol, fog );
+    vec3  fog_col = vec3( 0.02, 0.08, 0.15 );
+    col = mix( col, fog_col, fog );
 
     float h = ( hueP > 0.0 ) ? hueP : 0.0;
     if ( h > 0.001 )

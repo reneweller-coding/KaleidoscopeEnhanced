@@ -126,18 +126,18 @@ void main()
 
     // The quilt grid.
     float pitch = aspect * 0.9 / cols;
-    float rowsN = floor( 0.9 / pitch );
+    float rows_n = floor( 0.9 / pitch );
     vec2  g = ( p + vec2( aspect * 0.45, 0.45 ) ) / pitch;
     vec2  bi = floor( g );
     vec2  bf = fract( g );
-    if ( bi.x >= 0.0 && bi.x < cols && bi.y >= 0.0 && bi.y < rowsN )
+    if ( bi.x >= 0.0 && bi.x < cols && bi.y >= 0.0 && bi.y < rows_n )
     {
         // Arrival order: row-major, each block over its own slice.
-        float order = ( bi.y * cols + bi.x ) / ( cols * rowsN );
-        float slice = 1.0 / ( cols * rowsN );
+        float order = ( bi.y * cols + bi.x ) / ( cols * rows_n );
+        float slice = 1.0 / ( cols * rows_n );
         float set = smoothstep( order, order + slice * 1.6, prog );
-        float justSet = smoothstep( order + slice * 1.6, order + slice * 0.6, prog )
-                        * smoothstep( order, order + slice * 0.4, prog );
+        float just_set = smoothstep( order + slice * 1.6, order + slice * 0.6, prog )
+                         * smoothstep( order, order + slice * 0.4, prog );
         if ( set > 0.002 )
         {
             // The block: one of four traditional patterns.
@@ -153,11 +153,11 @@ void main()
             // Weave texture and the slight sheen of cotton.
             fabric *= 0.85 + 0.25 * noise2( p * 260.0 );
             // Sashing between the blocks.
-            float inSash = 1.0
-                           - smoothstep( sash / pitch, sash / pitch + 0.02,
-                                         min( min( bf.x, 1.0 - bf.x ), min( bf.y, 1.0 - bf.y ) ) );
-            vec3  sashCol = mix( vec3( 0.85, 0.83, 0.78 ), imgPalette( hue * 0.159 + 0.1 ), 0.2 );
-            vec3  block = mix( fabric, sashCol * ( 0.8 + 0.3 * lamp ), inSash );
+            float in_sash = 1.0
+                            - smoothstep( sash / pitch, sash / pitch + 0.02,
+                                          min( min( bf.x, 1.0 - bf.x ), min( bf.y, 1.0 - bf.y ) ) );
+            vec3  sash_col = mix( vec3( 0.85, 0.83, 0.78 ), imgPalette( hue * 0.159 + 0.1 ), 0.2 );
+            vec3  block = mix( fabric, sash_col * ( 0.8 + 0.3 * lamp ), in_sash );
             // The quilting: a running stitch along every seam and a
             // diagonal grid over the whole block.
             float seam = smoothstep( 0.012, 0.0, abs( fract( pc ) - 0.0 ) ); // piece boundaries show as tone changes
@@ -169,10 +169,10 @@ void main()
             // The batting puffs a little between the quilting lines.
             block *= 0.92 + 0.16 * smoothstep( 0.2, 0.6, abs( fract( ( bf.x + bf.y ) * 6.0 ) - 0.5 ) );
             // The newest block lights on the kick.
-            block += imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * justSet * audioKick * 0.5;
+            block += imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * just_set * audioKick * 0.5;
             col = mix( col, block * lamp, set );
             // A soft shadow under the block edge, so it sits on the quilt.
-            col *= 1.0 - 0.25 * inSash * set * 0.5;
+            col *= 1.0 - 0.25 * in_sash * set * 0.5;
         }
     }
     // The binding around the finished quilt.
@@ -181,7 +181,7 @@ void main()
                edge * smoothstep( 0.85, 1.0, prog ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

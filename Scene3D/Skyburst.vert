@@ -31,9 +31,9 @@ void main()
 
     // Look slightly upward, because that is where fireworks are.  A rotation in
     // view space, the same way GrassField tilts down.
-    const float PITCH = -0.13;
+    const float Pitch = -0.13;
     vec3        vp = vec3( p.x - eyeOff, p.y - camHP, p.z );
-    float       cs = cos( PITCH ), sn = sin( PITCH );
+    float       cs = cos( Pitch ), sn = sin( Pitch );
     vp = vec3( vp.x, vp.y * cs + vp.z * sn, -vp.y * sn + vp.z * cs );
 
     vWorld = p;

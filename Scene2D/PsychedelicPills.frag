@@ -101,9 +101,9 @@ void main()
 
     // Per-activation character (constant during the scene); pill size breathes
     // slowly with the swell (loudness -> size).
-    float wobV = ( wobbleP <= 0.001 ) ? 0.25 : wobbleP;
-    float pillV = ( ( pillP <= 0.001 ) ? 0.1 : pillP ) * ( 1.0 + 0.12 * audioSwell );
-    float spinV = ( spinP <= 0.01 ) ? 1.0 : spinP;
+    float wob_v = ( wobbleP <= 0.001 ) ? 0.25 : wobbleP;
+    float pill_v = ( ( pillP <= 0.001 ) ? 0.1 : pillP ) * ( 1.0 + 0.12 * audioSwell );
+    float spin_v = ( spinP <= 0.01 ) ? 1.0 : spinP;
 
     float p = 0.0, h = 3.0, c, y;
     for ( int s = 0; s < 200; s++ )
@@ -111,15 +111,15 @@ void main()
         if ( !( abs( h ) > 0.001 && p < 40.0 ) )
             break;
         vec3 o = p * normalize( vec3( 1.0, v ) );
-        c = sin( e + p * 0.5 ) * wobV;
-        y = c + wobV;
+        c = sin( e + p * 0.5 ) * wob_v;
+        y = c + wob_v;
         o.x += scroll;
         o.y = abs( o.y );
         o = fract( o ) - 0.5;
-        o.xy = o.xy * rotm( e * spinV + audioPhase * 0.1 );
+        o.xy = o.xy * rotm( e * spin_v + audioPhase * 0.1 );
         o.y += y / 2.0;
         o.y -= clamp( o.y, 0.0, y );
-        p += h = ( length( o ) - pillV * ( 0.75 + p * 0.1 + c ) ) * 0.8;
+        p += h = ( length( o ) - pill_v * ( 0.75 + p * 0.1 + c ) ) * 0.8;
     }
 
     vec3 col = exp( -p * 0.15 - 0.5 * length( v ) )
@@ -148,8 +148,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     fragColor = vec4( col, 1.0 );

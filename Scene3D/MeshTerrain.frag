@@ -89,13 +89,13 @@ float materialExposure( sampler2DArray tex )
 
 // The sun sits just above the horizon, which is both the light and the reason
 // the haze glows brightest toward it.
-const vec3 kSunDir = vec3( -0.36, 0.11, 0.93 );
+const vec3 SunDir = vec3( -0.36, 0.11, 0.93 );
 
 vec3 skyColour( vec3 dir, vec3 tint )
 {
     float h = clamp( dir.y * 0.5 + 0.5, 0.0, 1.0 );
     vec3  col = mix( vec3( 0.30, 0.22, 0.20 ) * 0.55, vec3( 0.05, 0.07, 0.14 ), smoothstep( 0.45, 0.95, h ) );
-    vec3  s = normalize( kSunDir );
+    vec3  s = normalize( SunDir );
     float d = max( dot( dir, s ), 0.0 );
     col += tint * pow( d, 22.0 ) * 0.40 * ( 0.5 + 0.6 * audioSwell + 0.35 * audioKick ); // beat in the sky, not the
                                                                                          // ground
@@ -158,7 +158,7 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 s = normalize( kSunDir );
+    vec3 s = normalize( SunDir );
 
     vec3 base = vec3( 0.42, 0.38, 0.34 );
     if ( texMeshMaterialLayers > 0 )
@@ -169,8 +169,8 @@ void main()
     // dark side reads as a hole cut in the world.
     float lam = dot( n, s );
     float lit = max( lam, 0.0 );
-    float skyFill = 0.5 + 0.5 * n.y;
-    vec3  col = base * ( 0.20 * skyFill + 1.55 * lit ) * ( 0.85 + 0.4 * audioSwell );
+    float sky_fill = 0.5 + 0.5 * n.y;
+    vec3  col = base * ( 0.20 * sky_fill + 1.55 * lit ) * ( 0.85 + 0.4 * audioSwell );
 
     // Ridge lines: faces turning sharply away from the sun catch a rim, which
     // is what picks out a skyline from the air.
@@ -186,7 +186,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.10 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

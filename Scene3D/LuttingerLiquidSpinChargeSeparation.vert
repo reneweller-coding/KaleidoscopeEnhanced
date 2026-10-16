@@ -54,50 +54,50 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
-    vUV = vec2( tCoord, side * 0.5 + 0.5 );
+    vRibbonID = r_index;
+    vUV = vec2( t_coord, side * 0.5 + 0.5 );
 
     float t = time * 0.4 + audioAdvance * 0.35;
 
     // 1D Quantum wire trajectory along spiral cylinder
-    float phi = tCoord * 6.2831853 * 3.0;
-    float wireRadius = 1.3 + 0.4 * sin( rIndex * 0.6 + audioPhase );
+    float phi = t_coord * 6.2831853 * 3.0;
+    float wire_radius = 1.3 + 0.4 * sin( r_index * 0.6 + audioPhase );
 
     // Spinon velocity vs Holon velocity (Spin-charge separation: v_holon != v_spinon)
     float ratio = ( speedRatioP > 0.01 ? speedRatioP : 1.8 );
-    float holonPhase = sin( tCoord * 16.0 - t * 3.0 * ratio + rIndex * 0.3 );
-    float spinonPhase = sin( tCoord * 16.0 - t * 3.0 + rIndex * 0.3 );
+    float holon_phase = sin( t_coord * 16.0 - t * 3.0 * ratio + r_index * 0.3 );
+    float spinon_phase = sin( t_coord * 16.0 - t * 3.0 + r_index * 0.3 );
 
-    vHolon = holonPhase * 0.5 + 0.5;
-    vSpinon = spinonPhase * 0.5 + 0.5;
+    vHolon = holon_phase * 0.5 + 0.5;
+    vSpinon = spinon_phase * 0.5 + 0.5;
 
     // Spatial displacement of quantum wire from collective wave modes
-    float zPos = ( tCoord * 5.0 - 2.5 ) + holonPhase * 0.15;
-    float rMod = wireRadius + spinonPhase * 0.18;
+    float z_pos = ( t_coord * 5.0 - 2.5 ) + holon_phase * 0.15;
+    float r_mod = wire_radius + spinon_phase * 0.18;
 
-    vec3 centerPos = vec3(
-        cos( phi + rIndex * 0.5 ) * rMod,
-        sin( phi + rIndex * 0.5 ) * rMod,
-        zPos );
+    vec3 center_pos = vec3(
+        cos( phi + r_index * 0.5 ) * r_mod,
+        sin( phi + r_index * 0.5 ) * r_mod,
+        z_pos );
 
     vec3 tangent = normalize( vec3( -sin( phi ), cos( phi ), 0.35 ) );
     vec3 binormal = normalize( cross( tangent, vec3( 0.0, 0.0, 1.0 ) ) );
 
     float width = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.05 ) * ( 1.0 + 0.3 * audioSwell );
-    vec3  worldPos = centerPos + binormal * ( side * width );
+    vec3  world_pos = center_pos + binormal * ( side * width );
 
     // Color mapping: Holon mode (charge) vs Spinon mode (spin)
-    vec3 colHolon = imgPalette( fract( vHolon * 0.5 + audioCentroid ) );
-    vec3 colSpinon = imgPalette( fract( vSpinon * 0.5 + 0.5 + audioCentroid ) );
-    vCol = mix( colHolon, colSpinon, 0.5 );
+    vec3 col_holon = imgPalette( fract( vHolon * 0.5 + audioCentroid ) );
+    vec3 col_spinon = imgPalette( fract( vSpinon * 0.5 + 0.5 + audioCentroid ) );
+    vCol = mix( col_holon, col_spinon, 0.5 );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // Smooth 3D rotation
     float c = cos( t * 0.15 ), s = sin( t * 0.15 );

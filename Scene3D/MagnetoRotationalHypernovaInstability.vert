@@ -24,14 +24,14 @@ out float vHaze;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vFluxIdx = attrA.w;
     vEnergy = attrB.w;
     vHaze = attrB.x;
 
     float aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
-    vec3  vp = worldP;
+    vec3  vp = world_p;
 
     if ( vHaze > 0.5 )
     {

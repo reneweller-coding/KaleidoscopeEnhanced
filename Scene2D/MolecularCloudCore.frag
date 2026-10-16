@@ -188,23 +188,23 @@ void main()
     // The hourglass: two cavities carved by the outflow, their walls lit by
     // the protostar -- warm gold above, cold blue below (the lobes differ by
     // how much dust lies in front of them).
-    float wallR = 0.05 + 0.55 * pow( aa, 0.75 );     // cavity half width
-    float edge = abs( across ) / max( wallR, 1e-3 ); // 0 axis .. 1 wall
+    float wall_r = 0.05 + 0.55 * pow( aa, 0.75 );     // cavity half width
+    float edge = abs( across ) / max( wall_r, 1e-3 ); // 0 axis .. 1 wall
     vec2  fq = vec2( across * 4.0, along * 3.0 - T * 0.01 * sign( along ) );
     float wisp = ridged( fq * 2.5 + vec2( 0.0, sign( along ) * 3.0 ) );
     float wall = exp( -pow( ( edge - 1.0 ) * 2.6, 2.0 ) ) * ( 0.55 + 0.9 * wisp );
     float fill = smoothstep( 1.1, 0.2, edge ) * ( 0.25 + 0.5 * wisp );
     float lobe = ( wall + fill ) * exp( -aa * 1.3 ) * smoothstep( 0.0, 0.08, aa );
-    vec3  warmC = mix( vec3( 1.0, 0.62, 0.25 ), imgPalette( 0.08 + hue * 0.159 ), 0.22 );
-    vec3  coldC = mix( vec3( 0.35, 0.55, 1.0 ), imgPalette( 0.58 + hue * 0.159 ), 0.22 );
-    vec3  lobeC = mix( coldC, warmC, smoothstep( -0.05, 0.05, along ) );
+    vec3  warm_c = mix( vec3( 1.0, 0.62, 0.25 ), imgPalette( 0.08 + hue * 0.159 ), 0.22 );
+    vec3  cold_c = mix( vec3( 0.35, 0.55, 1.0 ), imgPalette( 0.58 + hue * 0.159 ), 0.22 );
+    vec3  lobe_c = mix( cold_c, warm_c, smoothstep( -0.05, 0.05, along ) );
     // Lobes are veiled by the dust in front, not cut out by it.
-    col += lobeC * lobe * ( 0.9 + 0.6 * swell ) * ( 1.0 - 0.55 * dust );
+    col += lobe_c * lobe * ( 0.9 + 0.6 * swell ) * ( 1.0 - 0.55 * dust );
 
     // The protostar's glow at the neck, and the edge-on disk that shadows it:
     // a dark lane across the neck.
     float core = exp( -dot( uv, uv ) * 90.0 );
-    col += mix( warmC, vec3( 1.0, 0.95, 0.85 ), 0.5 ) * core * ( 1.2 + 0.8 * swell + 0.4 * audioKick );
+    col += mix( warm_c, vec3( 1.0, 0.95, 0.85 ), 0.5 ) * core * ( 1.2 + 0.8 * swell + 0.4 * audioKick );
     float lane = exp( -along * along / 0.0012 ) * smoothstep( 0.32, 0.05, abs( across ) );
     col *= 1.0 - 0.92 * lane;
 
@@ -218,8 +218,8 @@ void main()
             float pos = fract( T * 0.012 + float( k ) / 6.0 ) * 0.95;
             knots += exp( -pow( ( aa - pos ) / 0.012, 2.0 ) ) * ( 1.0 - pos );
         }
-        vec3 jetC = vec3( 1.0, 0.45, 0.5 ); // shocked hydrogen and sulphur
-        col += jetC * beam * ( 0.35 + 2.2 * knots ) * ( 0.7 + 0.6 * swell ) * sp;
+        vec3 jet_c = vec3( 1.0, 0.45, 0.5 ); // shocked hydrogen and sulphur
+        col += jet_c * beam * ( 0.35 + 2.2 * knots ) * ( 0.7 + 0.6 * swell ) * sp;
     }
 
     // A few young stars nearby, with soft diffraction-free halos.
@@ -236,7 +236,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

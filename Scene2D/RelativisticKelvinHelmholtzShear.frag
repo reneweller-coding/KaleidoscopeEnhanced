@@ -75,44 +75,44 @@ void main()
     float t = time * 0.45 + audioAdvance * 0.4;
 
     // Relativistic shear layer at y = 0
-    float vGamma = ( jetSpeedP > 0.01 ? jetSpeedP : 1.3 );
-    float nVortices = ( vortexTrainP > 1.0 ? vortexTrainP : 5.0 );
+    float v_gamma = ( jetSpeedP > 0.01 ? jetSpeedP : 1.3 );
+    float n_vortices = ( vortexTrainP > 1.0 ? vortexTrainP : 5.0 );
 
-    float kX = uv.x * nVortices * 3.14159265 - t * 3.5 * vGamma;
+    float k_x = uv.x * n_vortices * 3.14159265 - t * 3.5 * v_gamma;
     float thick = ( shearThickP > 0.01 ? shearThickP : 1.0 ) * ( 0.85 + 0.35 * audioBass );
 
     // Stuart cat's-eye vortex stream function: psi(x, y) = ln(cosh(y/Delta) - C * cos(k*x))
-    float coshY = cosh( uv.y * 5.0 / thick );
-    float cosKX = cos( kX + audioPhase * 0.3 );
-    float catEye = ( coshY - 0.65 * cosKX );
+    float cosh_y = cosh( uv.y * 5.0 / thick );
+    float cos_kx = cos( k_x + audioPhase * 0.3 );
+    float cat_eye = ( cosh_y - 0.65 * cos_kx );
 
     // Vorticity magnitude ~ Laplacian of psi
-    float vorticity = 1.0 / max( catEye, 0.15 );
+    float vorticity = 1.0 / max( cat_eye, 0.15 );
 
     // Compressed magnetic field ribbons around vortex eyes
-    float bRibbon = exp( -abs( fract( catEye * 1.5 ) - 0.5 ) * 12.0 );
+    float b_ribbon = exp( -abs( fract( cat_eye * 1.5 ) - 0.5 ) * 12.0 );
 
     // Synchrotron emission flash on kick
-    float synchFlash = pow( clamp( vorticity * 0.4, 0.0, 1.0 ), 3.0 ) * ( 1.0 + 3.5 * audioKick )
-                       * ( synchGlowP > 0.01 ? synchGlowP : 1.3 );
+    float synch_flash = pow( clamp( vorticity * 0.4, 0.0, 1.0 ), 3.0 ) * ( 1.0 + 3.5 * audioKick )
+                        * ( synchGlowP > 0.01 ? synchGlowP : 1.3 );
 
     // Relativistic jet plasma colors
-    vec3 jetPlasma = vec3( 0.15, 0.75, 1.0 );
-    vec3 ambientGas = vec3( 0.9, 0.3, 0.1 );
-    vec3 synchWhite = vec3( 1.0, 0.95, 0.85 );
+    vec3 jet_plasma = vec3( 0.15, 0.75, 1.0 );
+    vec3 ambient_gas = vec3( 0.9, 0.3, 0.1 );
+    vec3 synch_white = vec3( 1.0, 0.95, 0.85 );
 
-    vec3 colShear = palTint( mix( jetPlasma, ambientGas, clamp( uv.y * 2.0 + 0.5, 0.0, 1.0 ) ),
-                             kX * 0.1 + audioCentroid, 0.26 );
+    vec3 col_shear = palTint( mix( jet_plasma, ambient_gas, clamp( uv.y * 2.0 + 0.5, 0.0, 1.0 ) ),
+                              k_x * 0.1 + audioCentroid, 0.26 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colShear * ( vorticity * 0.35 ) * ( 0.8 + 0.4 * audioSwell );
-    col += synchWhite * synchFlash * 2.2;
-    col += palTint( vec3( 0.3, 0.9, 1.0 ), t * 0.05, 0.22 ) * bRibbon * 1.6;
-    col += colShear * ( audioKick * 0.35 );
+    col += col_shear * ( vorticity * 0.35 ) * ( 0.8 + 0.4 * audioSwell );
+    col += synch_white * synch_flash * 2.2;
+    col += palTint( vec3( 0.3, 0.9, 1.0 ), t * 0.05, 0.22 ) * b_ribbon * 1.6;
+    col += col_shear * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

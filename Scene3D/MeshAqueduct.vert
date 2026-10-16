@@ -34,34 +34,34 @@ out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 out float vInst;
 
-const float kDist = 92.0;
-const float kGround = -14.0;
+const float Dist = 92.0;
+const float Ground = -14.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int  inst = gl_InstanceID;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
     vInst = float( inst );
-    if ( !isBg )
+    if ( !is_bg )
     {
         // Scale by HEIGHT: the segment stands 34 units tall whatever its
         // proportions, and its length follows from the model.
-        float szY = 17.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
-        float s = szY / meshExtent.y;
+        float sz_y = 17.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
+        float s = sz_y / meshExtent.y;
         vec3  c = attrA.xyz - meshCenter;
         vec3  local = c * s;
-        float segLen = 2.0 * meshExtent.x * s * 0.985; // a hair of overlap at the joints
+        float seg_len = 2.0 * meshExtent.x * s * 0.985; // a hair of overlap at the joints
 
         float yaw = 3.14159265 + 0.28 + yawP;
         float cy = cos( yaw ), sy = sin( yaw );
-        mat3  yawM = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        mat3  yaw_m = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
 
-        float along = ( float( inst ) - 0.5 * float( max( meshInstances, 1 ) - 1 ) ) * segLen;
-        vec3  row = yawM * vec3( along, 0.0, 0.0 );
-        world = yawM * local + row + vec3( 0.0, kGround + szY, kDist );
-        n = normalize( yawM * attrB.xyz );
+        float along = ( float( inst ) - 0.5 * float( max( meshInstances, 1 ) - 1 ) ) * seg_len;
+        vec3  row = yaw_m * vec3( along, 0.0, 0.0 );
+        world = yaw_m * local + row + vec3( 0.0, Ground + sz_y, Dist );
+        n = normalize( yaw_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
@@ -85,10 +85,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

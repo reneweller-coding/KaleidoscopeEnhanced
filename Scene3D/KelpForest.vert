@@ -88,14 +88,14 @@ void main()
     float surge = sin( 6.2831853 * audioBarPhase + r1 * 6.2831853 )
                   * ( 0.8 + 1.6 * audioSwell );
     float flutter = sin( t * 6.0 - time * 1.7 + r4 * 6.2831853 );
-    float bendX = ( surge * 4.5 + flutter * 1.2 ) * t * t;
-    float bendZ = ( surge * 1.5 + cos( t * 5.0 - time * 1.3 + r2 * 9.0 ) )
-                  * t * t * 0.8;
+    float bend_x = ( surge * 4.5 + flutter * 1.2 ) * t * t;
+    float bend_z = ( surge * 1.5 + cos( t * 5.0 - time * 1.3 + r2 * 9.0 ) )
+                   * t * t * 0.8;
 
     // Blade widens mid-frond, tapers at the tip.
-    float wHalf = ( 0.55 + 0.9 * r4 ) * sin( 3.14159265 * min( t * 1.15, 1.0 ) );
+    float w_half = ( 0.55 + 0.9 * r4 ) * sin( 3.14159265 * min( t * 1.15, 1.0 ) );
 
-    vec3 pos = root + vec3( bendX + side * wHalf, t * H, bendZ );
+    vec3 pos = root + vec3( bend_x + side * w_half, t * H, bend_z );
 
     vec3 vp = pos;
     vp.x -= eyeOff;

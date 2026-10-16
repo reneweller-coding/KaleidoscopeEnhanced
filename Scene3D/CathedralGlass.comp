@@ -62,16 +62,16 @@ uniform float spinP;  ///< preset: how fast the back wheels turn
 uniform float paneP;  ///< preset: pane size, so how thick the leading is
 uniform float depthP; ///< preset: how far apart the wheels sit
 
-const int   LAYERS = 3;
-const int   RINGS = 5;
-const int   SECT = 16;
+const int   Layers = 3;
+const int   Rings = 5;
+const int   Sect = 16;
 const float R0 = 0.55;
-const float DR = 0.72;
+const float Dr = 0.72;
 
-const int NGLASS = LAYERS * RINGS * SECT; ///< 240 panes
-const int NSPOKE = RINGS * SECT;          ///< 80 radial ribs
-const int NRINGQ = ( RINGS + 1 ) * SECT;  ///< 96 arc ribs
-const int NQUADS = NGLASS + NSPOKE + NRINGQ;
+const int Nglass = Layers * Rings * Sect; ///< 240 panes
+const int Nspoke = Rings * Sect;          ///< 80 radial ribs
+const int Nringq = ( Rings + 1 ) * Sect;  ///< 96 arc ribs
+const int Nquads = Nglass + Nspoke + Nringq;
 
 /// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex( uint slot, vec3 p, vec3 n, float kind, float lvl )
@@ -122,21 +122,21 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= uint( NQUADS ) )
+    if ( id >= uint( Nquads ) )
         return;
 
-    const float TAU = 6.2831853;
+    const float Tau = 6.2831853;
     float       gap = clamp( paneP, 0.4, 1.6 );
-    float       layerGap = clamp( depthP, 0.4, 2.0 ) * 0.95;
+    float       layer_gap = clamp( depthP, 0.4, 2.0 ) * 0.95;
     vec3        nz = vec3( 0.0, 0.0, 1.0 );
 
-    if ( id < uint( NGLASS ) )
+    if ( id < uint( Nglass ) )
     {
         int k = int( id );
-        int s = k % SECT;
-        k /= SECT;
-        int r = k % RINGS;
-        k /= RINGS;
+        int s = k % Sect;
+        k /= Sect;
+        int r = k % Rings;
+        k /= Rings;
         int l = k;
 
         // Wheel 0 is the window itself and stays put; the ones behind it turn,
@@ -147,22 +147,22 @@ void main()
                                : sgn * audioAdvance * clamp( spinP, 0.2, 3.0 )
                                      * ( 0.030 + 0.017 * float( l ) );
 
-        float a0 = TAU * ( float( s ) + 0.06 * gap ) / float( SECT ) + rot;
-        float a1 = TAU * ( float( s + 1 ) - 0.06 * gap ) / float( SECT ) + rot;
+        float a0 = Tau * ( float( s ) + 0.06 * gap ) / float( Sect ) + rot;
+        float a1 = Tau * ( float( s + 1 ) - 0.06 * gap ) / float( Sect ) + rot;
         // Every course is an annulus segment.  The middle stays open: it is the
         // oculus, and it is lit from its rim rather than glazed.  Two attempts
         // at filling it — a fan of triangles, then extending this course inward
         // — both came back as thin slivers instead of wedges, which is a real
         // unexplained behaviour of quads emitted at the centre of projection
         // here and not something to paper over with a third variation.
-        float ri = R0 + DR * float( r ) + 0.035 * gap;
-        float ro = R0 + DR * float( r + 1 ) - 0.035 * gap;
-        float z = -float( l ) * layerGap;
+        float ri = R0 + Dr * float( r ) + 0.035 * gap;
+        float ro = R0 + Dr * float( r + 1 ) - 0.035 * gap;
+        float z = -float( l ) * layer_gap;
 
         // Each sector is a spectrum band, so the wheel is a spectrum analyser
         // that happens to be a window.  Neighbouring sectors get neighbouring
         // bands, which is what makes a sweep read as a sweep.
-        int   band = ( s * 32 / SECT + r * 2 ) % 32;
+        int   band = ( s * 32 / Sect + r * 2 ) % 32;
         float lvl = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
 
         // The kind carries the layer index as well as "this is glass".  Three
@@ -181,14 +181,14 @@ void main()
     float w = 0.030 * gap + 0.010;
     float zf = 0.06;
 
-    if ( id < uint( NGLASS + NSPOKE ) )
+    if ( id < uint( Nglass + Nspoke ) )
     {
-        int   k = int( id ) - NGLASS;
-        int   s = k % SECT;
-        int   r = k / SECT;
-        float a = TAU * float( s ) / float( SECT );
-        float ri = R0 + DR * float( r );
-        float ro = R0 + DR * float( r + 1 );
+        int   k = int( id ) - Nglass;
+        int   s = k % Sect;
+        int   r = k / Sect;
+        float a = Tau * float( s ) / float( Sect );
+        float ri = R0 + Dr * float( r );
+        float ro = R0 + Dr * float( r + 1 );
         vec2  t = vec2( -sin( a ), cos( a ) ) * w; // sideways along the rib
         emitQuad( vec3( pol( ri, a, zf ).xy - t, zf ), vec3( pol( ro, a, zf ).xy - t, zf ),
                   vec3( pol( ro, a, zf ).xy + t, zf ), vec3( pol( ri, a, zf ).xy + t, zf ),
@@ -196,12 +196,12 @@ void main()
         return;
     }
 
-    int   k = int( id ) - NGLASS - NSPOKE;
-    int   s = k % SECT;
-    int   r = k / SECT;
-    float rr = R0 + DR * float( r );
-    float a0 = TAU * float( s ) / float( SECT );
-    float a1 = TAU * float( s + 1 ) / float( SECT );
+    int   k = int( id ) - Nglass - Nspoke;
+    int   s = k % Sect;
+    int   r = k / Sect;
+    float rr = R0 + Dr * float( r );
+    float a0 = Tau * float( s ) / float( Sect );
+    float a1 = Tau * float( s + 1 ) / float( Sect );
     emitQuad( pol( rr - w, a0, zf ), pol( rr + w, a0, zf ),
               pol( rr + w, a1, zf ), pol( rr - w, a1, zf ), nz, 0.0, 0.0 );
 }

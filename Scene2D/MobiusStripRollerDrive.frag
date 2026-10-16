@@ -61,9 +61,9 @@ vec3 imgPalette( float t )
 /// Parametric Möbius Strip surface point: r(u, v)
 vec3 mobiusPoint( float u, float v, float rBase, float w )
 {
-    float uHalf = u * 0.5;
-    float rad = rBase + v * w * cos( uHalf );
-    return vec3( rad * cos( u ), rad * sin( u ), v * w * sin( uHalf ) );
+    float u_half = u * 0.5;
+    float rad = rBase + v * w * cos( u_half );
+    return vec3( rad * cos( u ), rad * sin( u ), v * w * sin( u_half ) );
 }
 
 /// Signed distance to the Möbius RIBBON.
@@ -111,32 +111,32 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float rB = ( radiusP > 0.01 ) ? radiusP : 2.2;
-    float sW = ( stripWidthP > 0.01 ) ? stripWidthP : 0.65;
+    float s_w = ( stripWidthP > 0.01 ) ? stripWidthP : 0.65;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // Steady base rate from `time` plus the pre-integrated audio advance, the
     // same split the rest of the Scene2D family uses. `spd` is a per-activation
     // constant, never an audio value, so this stays anti-flicker safe. Driving
-    // the ride from audioAdvance alone swept uCam through barely a fifth of a
+    // the ride from audioAdvance alone swept u_cam through barely a fifth of a
     // radian over a whole quiet probe -- a crawl, not a roller drive.
     float t = time * 0.30 * spd + audioAdvance * 0.35 * spd;
 
     // Track progression parameter u
-    float uCam = t * 0.6;
+    float u_cam = t * 0.6;
 
     // Local ribbon frame on the centre circle: T runs along the track and N is
-    // the ribbon's face normal, tilting with uCam/2 -- the half-twist. (The
+    // the ribbon's face normal, tilting with u_cam/2 -- the half-twist. (The
     // strip's width axis falls out as `right` below, since cross(T, N) is
     // exactly it.)
-    float ch = cos( uCam * 0.5 ), sh = sin( uCam * 0.5 );
-    vec3  trackPos = vec3( rB * cos( uCam ), rB * sin( uCam ), 0.0 );
-    vec3  T = vec3( -sin( uCam ), cos( uCam ), 0.0 );
-    vec3  N = vec3( -cos( uCam ) * sh, -sin( uCam ) * sh, ch );
+    float ch = cos( u_cam * 0.5 ), sh = sin( u_cam * 0.5 );
+    vec3  track_pos = vec3( rB * cos( u_cam ), rB * sin( u_cam ), 0.0 );
+    vec3  T = vec3( -sin( u_cam ), cos( u_cam ), 0.0 );
+    vec3  N = vec3( -cos( u_cam ) * sh, -sin( u_cam ) * sh, ch );
 
     // Strip width breathes with sub-bass. Note the camera clearance below is
     // measured along N, perpendicular to the face, so widening the ribbon
     // cannot pull the surface toward the camera.
-    float       halfW = sW * ( 1.0 + 0.25 * audioSubBass );
+    float       halfW = s_w * ( 1.0 + 0.25 * audioSubBass );
     const float thick = 0.035;
 
     // Chase-cam: ride ABOVE the ribbon's face and look ALONG the tangent, so
@@ -144,12 +144,12 @@ void main()
     // itself put the camera ON the surface being marched, so the very first
     // step trivially hit for every pixel; the earlier lateral nudge of 0.35
     // only grazed a 0.06-radius tube and still filled half the frustum with
-    // the inside face. Clearance here is camH - thick >= 0.59 for every
+    // the inside face. Clearance here is cam_h - thick >= 0.59 for every
     // stripWidthP in range -- well clear of the surface, and two orders of
     // magnitude inside the march's 12.0 distance budget, so the offset can
     // never overshoot the far plane and blank the scene.
-    float camH = 0.35 + 0.70 * sW;
-    vec3  ro = trackPos + N * camH;
+    float cam_h = 0.35 + 0.70 * s_w;
+    vec3  ro = track_pos + N * cam_h;
 
     vec3 fwd = normalize( T - N * 0.20 ); // slight downward tilt onto the strip
     vec3 right = normalize( cross( fwd, N ) );
@@ -158,67 +158,67 @@ void main()
     vec3 rd = normalize( uv.x * right + uv.y * up + ( 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) * fwd );
 
     // Raymarching through Möbius strip ribbon
-    float totDist = 0.0;
-    float minTrackDist = 1e4;
-    vec3  hitCol = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float min_track_dist = 1e4;
+    vec3  hit_col = vec3( 0.0 );
     bool  hit = false;
 
     for ( int i = 0; i < 48; i++ )
     {
-        vec3 p = ro + rd * totDist;
+        vec3 p = ro + rd * tot_dist;
 
-        float along, uRaw;
-        float dRibbon = mobiusSDF( p, rB, halfW, thick, along, uRaw );
+        float along, u_raw;
+        float d_ribbon = mobiusSDF( p, rB, halfW, thick, along, u_raw );
 
-        // abs(), and never the camera sample at i == 0. minTrackDist was
+        // abs(), and never the camera sample at i == 0. min_track_dist was
         // min'd over the SIGNED distance, so any ray that crossed into the
         // ribbon drove it negative and exp(-negative * 36) blew the glow past
         // 1.0 -- that was the near-white wedge. And a closest-approach
         // distance is ~0 by construction on every ray that hit, so it is only
         // a meaningful signal on rays that MISSED (see the hit test below).
         if ( i > 0 )
-            minTrackDist = min( minTrackDist, abs( dRibbon ) );
+            min_track_dist = min( min_track_dist, abs( d_ribbon ) );
 
-        if ( dRibbon < 0.004 )
+        if ( d_ribbon < 0.004 )
         {
             hit = true;
             // Orientation flip determination (after one 2pi revolution, side is inverted)
-            float cycle = floor( uCam / 6.2831853 );
+            float cycle = floor( u_cam / 6.2831853 );
             bool  inverted = ( mod( cycle, 2.0 ) == 1.0 );
 
-            float uWrap = mod( uRaw, 6.2831853 );
+            float u_wrap = mod( u_raw, 6.2831853 );
             // Texture runs ALONG the track and ACROSS the strip's width, so the
             // photo now actually wraps the ribbon instead of being sliced by a
             // world-space z plane.
-            vec2 sampleUV = fract( vec2( uWrap / 6.2831853 * 2.0,
-                                         along / ( 2.0 * halfW ) + 0.5 ) );
-            vec3 texCol = img( sampleUV );
-            vec3 palCol = imgPalette( uWrap / 6.2831853 + ( inverted ? 0.5 : 0.0 ) );
+            vec2 sample_uv = fract( vec2( u_wrap / 6.2831853 * 2.0,
+                                          along / ( 2.0 * halfW ) + 0.5 ) );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal_col = imgPalette( u_wrap / 6.2831853 + ( inverted ? 0.5 : 0.0 ) );
 
             // Depth fog: without it the strip reads as one evenly lit slab
             // rather than a ribbon running away from the camera.
-            float fog = exp( -totDist * 0.16 );
-            hitCol = mix( texCol, palCol, 0.5 ) * ( 0.20 + 0.95 * fog );
+            float fog = exp( -tot_dist * 0.16 );
+            hit_col = mix( tex_col, pal_col, 0.5 ) * ( 0.20 + 0.95 * fog );
             break;
         }
 
         // Far plane: fall through to the background, rather than shading the
         // miss with ribbon texture as if it were a hit.
-        if ( totDist > 12.0 )
+        if ( tot_dist > 12.0 )
             break;
 
-        totDist += max( 0.004, dRibbon * 0.8 );
+        tot_dist += max( 0.004, d_ribbon * 0.8 );
     }
 
     // Glowing laser track rails -- silhouette haloes along the strip's edges,
     // on the rays that missed it.
-    float railGlow = hit ? 0.0 : exp( -max( minTrackDist, 0.0 ) * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
-    vec3  railTint = vec3( 1.3, 1.1, 1.8 ) * railGlow * ( 1.0 + 2.5 * audioKick );
+    float rail_glow = hit ? 0.0 : exp( -max( min_track_dist, 0.0 ) * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
+    vec3  rail_tint = vec3( 1.3, 1.1, 1.8 ) * rail_glow * ( 1.0 + 2.5 * audioKick );
 
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.2 + 0.15 * audioLevel );
-    vec3 finalCol = mix( bgCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
-    finalCol += railTint;
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.2 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3 final_col = mix( bg_col, hit_col, clamp( length( hit_col ), 0.0, 1.0 ) );
+    final_col += rail_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

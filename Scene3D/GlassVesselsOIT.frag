@@ -60,21 +60,21 @@ vec3 imgPalette( float t )
 void main()
 {
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float wallLight = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
+    float wall_light = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     if ( oitPass < 0.5 )
     {
         vec3 col;
         if ( vKind < -1.5 )
         {
             // The shelf: dark wood with the photo as grain.
-            col = img( fract( vTexCoord * vec2( 6.0, 1.0 ) ) ) * vec3( 0.35, 0.25, 0.15 ) * 1.2 * wallLight;
+            col = img( fract( vTexCoord * vec2( 6.0, 1.0 ) ) ) * vec3( 0.35, 0.25, 0.15 ) * 1.2 * wall_light;
             col *= 0.6 + 0.4 * vTexCoord.y;
         }
         else
         {
             // The wall: the photo, lit warm from the left.
             vec2 uv = vTexCoord;
-            col = img( uv ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.25 ) * wallLight * 0.8;
+            col = img( uv ) * mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.25 ) * wall_light * 0.8;
             col *= 0.5 + 0.7 * exp( -length( uv - vec2( 0.35, 0.55 ) ) * 1.5 );
         }
         col *= 0.75 + 0.5 * audioLevel;
@@ -91,10 +91,10 @@ void main()
     float fres = 0.04 + 0.96 * pow( 1.0 - c, 4.0 );
     // Refraction: the wall seen through the vessel -- sample the photo
     // along the refracted direction (the wall is far behind at z = 30).
-    vec3 Rf = refract( -V, n, 1.0 / 1.45 );
-    vec2 wuv = clamp( vec2( 0.5 + ( vWorld.x + Rf.x * 20.0 ) * 0.012, 0.5 + ( vWorld.y + Rf.y * 20.0 ) * 0.02 ), 0.0,
+    vec3 rf = refract( -V, n, 1.0 / 1.45 );
+    vec2 wuv = clamp( vec2( 0.5 + ( vWorld.x + rf.x * 20.0 ) * 0.012, 0.5 + ( vWorld.y + rf.y * 20.0 ) * 0.02 ), 0.0,
                       1.0 );
-    vec3 through = img( wuv ) * wallLight * 0.9;
+    vec3 through = img( wuv ) * wall_light * 0.9;
     // Tint by class; the sounding class glows as a liquid filling the vessel.
     vec3  tint = imgPalette( hue * 0.159 + float( k ) / 12.0 );
     vec3  glass = mix( through, through * tint * 2.2, 0.6 ) + tint * 0.12;
@@ -102,7 +102,7 @@ void main()
     glass += tint * level * 2.2;
     // Reflection of the room and a highlight.
     vec3 R = reflect( -V, n );
-    vec3 refl = img( clamp( vec2( 0.5 + R.x * 0.4, 0.5 + R.y * 0.4 ), 0.0, 1.0 ) ) * wallLight;
+    vec3 refl = img( clamp( vec2( 0.5 + R.x * 0.4, 0.5 + R.y * 0.4 ), 0.0, 1.0 ) ) * wall_light;
     glass = mix( glass, refl, fres * 0.7 );
     vec3 L = normalize( vec3( -0.5, 0.7, -0.5 ) );
     vec3 H = normalize( L + V );

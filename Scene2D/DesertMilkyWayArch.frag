@@ -109,7 +109,7 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.5;
     float sd = 0.25 + 0.5 * clamp( starsP, 0.0, 1.0 );
-    float fireAmt = 0.7 + 0.6 * clamp( fireP, 0.0, 1.0 );
+    float fire_amt = 0.7 + 0.6 * clamp( fireP, 0.0, 1.0 );
 
     // The sky turns slowly about a pole off the top of the frame.
     vec2  pole = vec2( -0.2, 1.4 );
@@ -144,13 +144,13 @@ void main()
     if ( p.y < buttes )
         col = vec3( 0.02, 0.025, 0.04 ) + vec3( 0.02, 0.02, 0.03 ) * noise2( p * 40.0 );
     // Desert floor: faint starlit sand, the fire's warm pool.
-    vec2  fireP2 = vec2( 0.05, -0.36 );
+    vec2  fire_p2 = vec2( 0.05, -0.36 );
     float flick = 0.8 + 0.2 * sin( T * 11.0 ) * sin( T * 7.3 + 1.0 ) + 0.5 * kick;
-    vec3  fireC = vec3( 1.0, 0.55, 0.2 ) * fireAmt * flick;
+    vec3  fire_c = vec3( 1.0, 0.55, 0.2 ) * fire_amt * flick;
     if ( p.y < hor - 0.01 )
     {
         vec3 sand = vec3( 0.06, 0.05, 0.05 ) * ( 0.8 + 0.4 * noise2( p * 60.0 ) );
-        sand += fireC * exp( -length( ( p - fireP2 ) * vec2( 1.0, 3.0 ) ) * 5.0 ) * 0.5;
+        sand += fire_c * exp( -length( ( p - fire_p2 ) * vec2( 1.0, 3.0 ) ) * 5.0 ) * 0.5;
         col = sand;
     }
 
@@ -161,37 +161,37 @@ void main()
     float rough = 0.14 * ( fbm( p * 3.5 ) - 0.5 ) + 0.03 * ( fbm( p * 25.0 ) - 0.5 );
     outer -= 0.25 * smoothstep( -0.1, -0.45, p.y );           // the legs widen into their footings
     outer -= 0.12 * smoothstep( 0.0, 0.3, p.y - ac.y - 0.3 ); // a heavier cap of rock on the crown
-    float archMask = step( outer + rough, 0.0 ) * step( 0.0, inner - rough ) * step( -0.46, p.y );
-    if ( archMask > 0.0 )
+    float arch_mask = step( outer + rough, 0.0 ) * step( 0.0, inner - rough ) * step( -0.46, p.y );
+    if ( arch_mask > 0.0 )
     {
         float strata = 0.7 + 0.3 * fbm( vec2( p.x * 5.0, p.y * 30.0 ) );
         float crack = smoothstep( 0.015, 0.0, abs( fbm( p * 7.0 ) - 0.5 ) ) * 0.3;
         vec3  rock = vec3( 0.13, 0.075, 0.06 ) * strata * ( 1.0 - crack );
         // The fire lights the inner curve and the legs from below.
-        float toFire = length( p - fireP2 );
-        float innerLit = exp( -max( inner, 0.0 ) * 12.0 );
-        rock += vec3( 0.9, 0.4, 0.15 ) * fireAmt * flick * exp( -toFire * 3.0 ) * ( 0.5 + 1.2 * innerLit )
+        float to_fire = length( p - fire_p2 );
+        float inner_lit = exp( -max( inner, 0.0 ) * 12.0 );
+        rock += vec3( 0.9, 0.4, 0.15 ) * fire_amt * flick * exp( -to_fire * 3.0 ) * ( 0.5 + 1.2 * inner_lit )
                 * ( 0.9 + 0.6 * clamp( audioBass, 0.0, 1.0 ) );
         // Starlight rim on top.
         rock += vec3( 0.1, 0.12, 0.2 ) * exp( -max( -outer, 0.0 ) * 30.0 ) * 0.5;
         col = rock;
     }
     // The fire itself and its glow.
-    vec2  fq = p - fireP2;
+    vec2  fq = p - fire_p2;
     float flame = exp( -( fq.x * fq.x * 4000.0 + max( fq.y, 0.0 ) * max( fq.y, 0.0 ) * 1200.0
                           + min( fq.y, 0.0 ) * min( fq.y, 0.0 ) * 20000.0 ) );
-    col += fireC * ( flame * 2.5 + exp( -length( fq ) * 18.0 ) * 0.4 );
+    col += fire_c * ( flame * 2.5 + exp( -length( fq ) * 18.0 ) * 0.4 );
     // Sparks rising: round, drifting up.
     for ( int k = 0; k < 8; ++k )
     {
         float fk = float( k );
         float ph = fract( T * 0.25 + fk * 0.137 );
-        vec2  sp = fireP2 + vec2( 0.03 * sin( fk * 3.7 + T * 1.3 ) * ph, ph * 0.22 );
+        vec2  sp = fire_p2 + vec2( 0.03 * sin( fk * 3.7 + T * 1.3 ) * ph, ph * 0.22 );
         col += vec3( 1.0, 0.6, 0.25 ) * exp( -dot( p - sp, p - sp ) * 60000.0 ) * ( 1.0 - ph ) * 1.5;
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

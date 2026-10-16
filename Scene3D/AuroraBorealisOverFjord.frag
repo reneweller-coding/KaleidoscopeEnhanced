@@ -70,35 +70,35 @@ void main()
     float aur = ( auroraP > 0.0 ) ? auroraP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    float canalDist = abs( teUV.x - 0.5 );
-    float isWater = 1.0 - smoothstep( 0.12, 0.18, canalDist );
+    float canal_dist = abs( teUV.x - 0.5 );
+    float is_water = 1.0 - smoothstep( 0.12, 0.18, canal_dist );
 
     // Mountain rock & snow shading
-    vec3  rockCol = vec3( 0.04, 0.05, 0.08 );
-    vec3  snowCol = vec3( 0.7, 0.8, 0.95 );
-    float snowMask = smoothstep( 0.5, 1.8, tePos.y );
-    vec3  mountainCol = mix( rockCol, snowCol, snowMask );
+    vec3  rock_col = vec3( 0.04, 0.05, 0.08 );
+    vec3  snow_col = vec3( 0.7, 0.8, 0.95 );
+    float snow_mask = smoothstep( 0.5, 1.8, tePos.y );
+    vec3  mountain_col = mix( rock_col, snow_col, snow_mask );
 
     // Aurora curtain: arctic-green identity, tinted by the photo palette
     // (house standard) instead of the old green/violet rainbow mix.
-    vec3 auroraGreen = vec3( 0.1, 1.0, 0.4 );
-    vec3 curtain = mix( auroraGreen, imgPalette( 0.15 + 0.10 * sin( teUV.x * 4.0 ) ), 0.55 );
-    vec3 skyAurora = curtain * teAurora * aur * ( 0.8 + 0.5 * audioSwell );
+    vec3 aurora_green = vec3( 0.1, 1.0, 0.4 );
+    vec3 curtain = mix( aurora_green, imgPalette( 0.15 + 0.10 * sin( teUV.x * 4.0 ) ), 0.55 );
+    vec3 sky_aurora = curtain * teAurora * aur * ( 0.8 + 0.5 * audioSwell );
 
     // Curtain wall: bright at its lower hem, fading upward, with vertical rays
-    float wallY = clamp( ( teUV.y - 0.78 ) / 0.22, 0.0, 1.0 );
-    float hem = exp( -wallY * 2.2 );
+    float wall_y = clamp( ( teUV.y - 0.78 ) / 0.22, 0.0, 1.0 );
+    float hem = exp( -wall_y * 2.2 );
     float rays = 0.65 + 0.35 * sin( teUV.x * 90.0 + time * 0.7 );
-    vec3  skyCol = skyAurora * hem * rays * 2.2;
+    vec3  sky_col = sky_aurora * hem * rays * 2.2;
 
     // Fjord mirror water reflection
-    vec3 waterReflect = skyAurora * 0.55 * ( 0.6 + 0.4 * sin( tePos.z * 3.0 + time * 1.2 ) ) + img( teUV ) * 0.25;
-    vec3 fjordCol = mix( mountainCol, waterReflect, isWater );
+    vec3 water_reflect = sky_aurora * 0.55 * ( 0.6 + 0.4 * sin( tePos.z * 3.0 + time * 1.2 ) ) + img( teUV ) * 0.25;
+    vec3 fjord_col = mix( mountain_col, water_reflect, is_water );
 
     // Terrain gets a soft aurora glow from above
-    vec3 ground = fjordCol + skyAurora * ( 1.0 - isWater ) * 0.20;
+    vec3 ground = fjord_col + sky_aurora * ( 1.0 - is_water ) * 0.20;
 
-    vec3 col = mix( ground, skyCol, teSky );
+    vec3 col = mix( ground, sky_col, teSky );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

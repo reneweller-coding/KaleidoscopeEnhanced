@@ -96,41 +96,41 @@ void main()
     float angle = atan( uv.y, uv.x );
 
     // Event horizon radius: r_s
-    float rSchwarzschild = ( 0.22 + 0.08 * sin( t * 0.7 ) + 0.1 * audioSubBass ) * hrz;
-    float rPhotonSphere = rSchwarzschild * 1.5;
+    float r_schwarzschild = ( 0.22 + 0.08 * sin( t * 0.7 ) + 0.1 * audioSubBass ) * hrz;
+    float r_photon_sphere = r_schwarzschild * 1.5;
 
     // Relativistic gravitational light deflection: theta = r - r_s^2 / r
-    float deflection = ( rSchwarzschild * rSchwarzschild ) / max( r * r, 0.001 );
-    vec2  deflUV = uv * ( 1.0 - deflection * 0.6 );
-    deflUV = rot2D( deflection * 1.5 + t * 0.2 ) * deflUV;
+    float deflection = ( r_schwarzschild * r_schwarzschild ) / max( r * r, 0.001 );
+    vec2  defl_uv = uv * ( 1.0 - deflection * 0.6 );
+    defl_uv = rot2D( deflection * 1.5 + t * 0.2 ) * defl_uv;
 
-    vec2 photoUV = fract( ( deflUV * resolution.y + 0.5 * resolution ) / resolution );
-    vec3 photo = img( photoUV );
+    vec2 photo_uv = fract( ( defl_uv * resolution.y + 0.5 * resolution ) / resolution );
+    vec3 photo = img( photo_uv );
 
     // Quantum Hawking radiation particles streaming outwards: r > r_s
-    float particleWaves = sin( r * 45.0 - t * 12.0 + angle * 4.0 );
-    float particleSparks = pow( max( 0.0, sin( r * 80.0 - t * 18.0 + angle * 8.0 ) ), 6.0 );
-    float hawkingFlux = exp( -abs( r - rSchwarzschild ) * 8.0 ) * ( particleWaves * 0.5 + 0.5 ) * evp;
+    float particle_waves = sin( r * 45.0 - t * 12.0 + angle * 4.0 );
+    float particle_sparks = pow( max( 0.0, sin( r * 80.0 - t * 18.0 + angle * 8.0 ) ), 6.0 );
+    float hawking_flux = exp( -abs( r - r_schwarzschild ) * 8.0 ) * ( particle_waves * 0.5 + 0.5 ) * evp;
 
     // Explosive gamma-ray burst on kick
-    float evaporationBurst = exp( -r * 6.0 ) * ( audioKick * 4.0 * evp + audioHigh * 1.5 );
+    float evaporation_burst = exp( -r * 6.0 ) * ( audioKick * 4.0 * evp + audioHigh * 1.5 );
 
     // Blackbody thermal Hawking radiation spectrum: T ~ 1 / M
-    vec3 thermalHawking = imgPalette( 0.35 * clamp( hawkingFlux * 1.5, 0.0, 1.0 ) ) * 1.5;
-    thermalHawking = mix( thermalHawking, vec3( 1.0, 0.98, 0.9 ), evaporationBurst * 0.5 );
+    vec3 thermal_hawking = imgPalette( 0.35 * clamp( hawking_flux * 1.5, 0.0, 1.0 ) ) * 1.5;
+    thermal_hawking = mix( thermal_hawking, vec3( 1.0, 0.98, 0.9 ), evaporation_burst * 0.5 );
 
     // Event horizon core shadow
-    float shadow = smoothstep( rSchwarzschild * 0.7, rSchwarzschild * 1.1, r );
+    float shadow = smoothstep( r_schwarzschild * 0.7, r_schwarzschild * 1.1, r );
 
     // Photon sphere bright ring
-    float photonRing = exp( -abs( r - rPhotonSphere ) * 35.0 ) * ( 1.2 + audioKick * 2.5 );
+    float photon_ring = exp( -abs( r - r_photon_sphere ) * 35.0 ) * ( 1.2 + audioKick * 2.5 );
 
     // Combine visualizer
     vec3 col = photo * ( 0.8 + 0.3 * audioLevel ) * shadow;
-    col += hawkingFlux * thermalHawking * ( 1.2 + audioSwell * 0.8 );
-    col += particleSparks * vec3( 1.0, 0.9, 0.6 ) * 1.5 * shadow;
-    col += photonRing * vec3( 0.4, 0.9, 1.0 ) * 1.5;
-    col += evaporationBurst * vec3( 1.0, 0.98, 0.92 ) * 2.0;
+    col += hawking_flux * thermal_hawking * ( 1.2 + audioSwell * 0.8 );
+    col += particle_sparks * vec3( 1.0, 0.9, 0.6 ) * 1.5 * shadow;
+    col += photon_ring * vec3( 0.4, 0.9, 1.0 ) * 1.5;
+    col += evaporation_burst * vec3( 1.0, 0.98, 0.92 ) * 2.0;
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
@@ -142,7 +142,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

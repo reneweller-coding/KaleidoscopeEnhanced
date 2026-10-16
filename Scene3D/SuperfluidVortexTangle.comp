@@ -72,8 +72,8 @@ void emitSegment( vec3 pA, vec3 pB, float circ, float ringID, float thickness )
     // rasterised edge-on and drew nothing at all, however thick they were set.
     // Most filaments in this scene are vertical or horizontal, so a large part
     // of the geometry was simply invisible.
-    const vec3 kViewAxis = vec3( 0.0, 0.0, 1.0 );
-    vec3       side = cross( dir, kViewAxis );
+    const vec3 ViewAxis = vec3( 0.0, 0.0, 1.0 );
+    vec3       side = cross( dir, ViewAxis );
     float      sl = length( side );
     // Degenerate only when the segment runs straight at the lens, where any
     // perpendicular is equally good.
@@ -94,43 +94,43 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint TOTAL_SEGMENTS = 4096u;
-    if ( id >= TOTAL_SEGMENTS )
+    const uint TotalSegments = 4096u;
+    if ( id >= TotalSegments )
         return;
 
-    uint ringIdx = id / 64u; // 64 quantized vortex rings
-    uint stepIdx = id % 64u; // 64 segments per ring
+    uint ring_idx = id / 64u; // 64 quantized vortex rings
+    uint step_idx = id % 64u; // 64 segments per ring
 
-    float ringSeed = float( ringIdx );
-    float ringR = 0.8 + 1.8 * hash11( ringSeed * 3.7 );
+    float ring_seed = float( ring_idx );
+    float ring_r = 0.8 + 1.8 * hash11( ring_seed * 3.7 );
 
     // Ring center translation through superfluid volume
-    float transSpeed = 0.5 / ringR;
-    vec3  ringCenter = vec3(
-        sin( ringSeed * 7.1 + time * 0.2 ) * 2.2,
-        cos( ringSeed * 13.3 + time * 0.15 ) * 1.6,
-        mod( ringSeed * 1.5 + ( time * transSpeed + audioAdvance * 0.1 ) * 3.0, 12.0 ) - 6.0 );
+    float trans_speed = 0.5 / ring_r;
+    vec3  ring_center = vec3(
+        sin( ring_seed * 7.1 + time * 0.2 ) * 2.2,
+        cos( ring_seed * 13.3 + time * 0.15 ) * 1.6,
+        mod( ring_seed * 1.5 + ( time * trans_speed + audioAdvance * 0.1 ) * 3.0, 12.0 ) - 6.0 );
 
-    float t0 = ( float( stepIdx ) / 64.0 ) * 6.2831853;
-    float t1 = ( float( stepIdx + 1u ) / 64.0 ) * 6.2831853;
+    float t0 = ( float( step_idx ) / 64.0 ) * 6.2831853;
+    float t1 = ( float( step_idx + 1u ) / 64.0 ) * 6.2831853;
 
     // Kelvin waves (helical perturbations along quantized vortex cores)
-    float kModes = 5.0 + floor( hash11( ringSeed * 9.1 ) * 4.0 );
-    float kelvinAmp = ( 0.12 + 0.15 * audioHigh ) * ( 1.0 + 0.5 * audioKick );
+    float k_modes = 5.0 + floor( hash11( ring_seed * 9.1 ) * 4.0 );
+    float kelvin_amp = ( 0.12 + 0.15 * audioHigh ) * ( 1.0 + 0.5 * audioKick );
 
-    float wave0 = sin( t0 * kModes + time * 4.0 ) * kelvinAmp;
-    float wave1 = sin( t1 * kModes + time * 4.0 ) * kelvinAmp;
+    float wave0 = sin( t0 * k_modes + time * 4.0 ) * kelvin_amp;
+    float wave1 = sin( t1 * k_modes + time * 4.0 ) * kelvin_amp;
 
     // Evaluate segment endpoints
-    float r0 = ringR + wave0;
-    float r1 = ringR + wave1;
+    float r0 = ring_r + wave0;
+    float r1 = ring_r + wave1;
 
-    vec3 pA = ringCenter + vec3( cos( t0 ) * r0, sin( t0 ) * r0, cos( t0 * kModes ) * kelvinAmp );
-    vec3 pB = ringCenter + vec3( cos( t1 ) * r1, sin( t1 ) * r1, cos( t1 * kModes ) * kelvinAmp );
+    vec3 pA = ring_center + vec3( cos( t0 ) * r0, sin( t0 ) * r0, cos( t0 * k_modes ) * kelvin_amp );
+    vec3 pB = ring_center + vec3( cos( t1 ) * r1, sin( t1 ) * r1, cos( t1 * k_modes ) * kelvin_amp );
 
     // Circulation speed & quantum energy
-    float circulation = ( 1.0 / ringR ) * ( 0.8 + 0.6 * audioBass );
+    float circulation = ( 1.0 / ring_r ) * ( 0.8 + 0.6 * audioBass );
     float thickness = ( 0.025 + 0.015 * audioKick );
 
-    emitSegment( pA, pB, circulation, ringSeed, thickness );
+    emitSegment( pA, pB, circulation, ring_seed, thickness );
 }

@@ -61,33 +61,33 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.45 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Hexagonal lattice coordinates for Rosensweig cone spikes
-    vec2  hexP = p * 12.0 * spk;
-    float h1 = sin( hexP.x + t );
-    float h2 = sin( -0.5 * hexP.x + 0.866 * hexP.y - t );
-    float h3 = sin( -0.5 * hexP.x - 0.866 * hexP.y - t );
-    float spikeField = max( 0.0, h1 + h2 + h3 );
-    float cones = pow( spikeField / 3.0, 3.0 );
+    vec2  hex_p = p * 12.0 * spk;
+    float h1 = sin( hex_p.x + t );
+    float h2 = sin( -0.5 * hex_p.x + 0.866 * hex_p.y - t );
+    float h3 = sin( -0.5 * hex_p.x - 0.866 * hex_p.y - t );
+    float spike_field = max( 0.0, h1 + h2 + h3 );
+    float cones = pow( spike_field / 3.0, 3.0 );
 
     // Conical radial pull displacement
-    vec2 coneDisp = normalize( p + 1e-4 ) * cones * 0.06 * midTransition * mag * ( 1.0 + audioSwell * 0.8 );
+    vec2 cone_disp = normalize( p + 1e-4 ) * cones * 0.06 * mid_transition * mag * ( 1.0 + audioSwell * 0.8 );
 
-    vec4 c1 = texture( tex1, fract( uv + coneDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - coneDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + cone_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - cone_disp ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Specular highlight on spike tips
-    float spikeTip = pow( cones, 2.0 ) * midTransition;
-    col.rgb += spikeTip * vec3( 0.3, 0.9, 1.0 ) * ( 1.2 + audioKick * 1.0 );
+    float spike_tip = pow( cones, 2.0 ) * mid_transition;
+    col.rgb += spike_tip * vec3( 0.3, 0.9, 1.0 ) * ( 1.2 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

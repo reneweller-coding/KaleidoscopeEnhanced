@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -268,7 +268,7 @@ void main()
     float depth = ( 0.6 + 0.8 * clamp( audioSpread, 0.0, 1.0 ) );
     // Light direction (low when swelling -> long shadows).
     vec2  ld = normalize( vec2( -0.7, 0.6 ) );
-    float shadowLen = ( 0.6 + 1.2 * swell ) * depth; // in pin spacings per unit height
+    float shadow_len = ( 0.6 + 1.2 * swell ) * depth; // in pin spacings per unit height
     vec2  g = p * S;
     // Hex packing.
     const vec2 s = vec2( 1.0, 1.7320508 );
@@ -289,7 +289,7 @@ void main()
     vec3  L = normalize( vec3( ld, 0.6 - 0.3 * swell ) );
     float diff = max( dot( n, L ), 0.0 );
     float spec = pow( max( dot( reflect( -L, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 40.0 );
-    vec3  headC = metal * tint * ( 0.2 + 0.95 * diff ) * ( 0.3 + 1.1 * h ) + vec3( 1.0 ) * spec * ( 0.5 + 1.2 * kick );
+    vec3  head_c = metal * tint * ( 0.2 + 0.95 * diff ) * ( 0.3 + 1.1 * h ) + vec3( 1.0 ) * spec * ( 0.5 + 1.2 * kick );
     // The bed between the pins: in shadow; plus shadows cast by higher
     // neighbours toward -ld.
     float shade = 1.0;
@@ -297,11 +297,11 @@ void main()
     {
         vec2  sp = cid / S + ld * float( k ) / S; // neighbour toward the light
         float hn = heightAt( sp );
-        float drop = ( hn - h ) * depth * shadowLen * S * 0.1 - float( k ) * 0.35;
+        float drop = ( hn - h ) * depth * shadow_len * S * 0.1 - float( k ) * 0.35;
         shade *= 1.0 - 0.45 * smoothstep( 0.0, 0.3, drop );
     }
     vec3 bed = vec3( 0.03, 0.03, 0.035 ) + metal * 0.08 * h;
-    vec3 col = mix( bed, headC * shade, head );
+    vec3 col = mix( bed, head_c * shade, head );
     // Faint glow at the tallest pins.
     vec3 gc = glowColour( imgK( uvc, 5.0 ), cid * 0.02, hueP * 0.159 );
     col += gc * head * smoothstep( 0.75, 1.0, h ) * 0.15;

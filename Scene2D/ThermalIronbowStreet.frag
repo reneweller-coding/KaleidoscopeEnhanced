@@ -119,9 +119,9 @@ void main()
     temp += 0.06 * ( noise2( p * 26.0 ) - 0.5 );
     // The street itself, drawn rather than hoped for: a facade block on each
     // side with warm windows, the road plane between them, a cold sky above.
-    float facL = smoothstep( -0.1, -0.16, p.x + aspect * 0.5 - 0.34 ) * step( horizon - 0.02, p.y );
-    float facR = smoothstep( -0.1, -0.16, aspect * 0.5 - 0.34 - p.x ) * step( horizon - 0.02, p.y );
-    float facade = clamp( facL + facR, 0.0, 1.0 );
+    float fac_l = smoothstep( -0.1, -0.16, p.x + aspect * 0.5 - 0.34 ) * step( horizon - 0.02, p.y );
+    float fac_r = smoothstep( -0.1, -0.16, aspect * 0.5 - 0.34 - p.x ) * step( horizon - 0.02, p.y );
+    float facade = clamp( fac_l + fac_r, 0.0, 1.0 );
     temp = mix( temp, temp * 0.55 + 0.1, facade );
     // Windows: a grid of warm rectangles on the facades, each with its own
     // steady temperature, a few of them hot.
@@ -132,15 +132,15 @@ void main()
     float warm = hash21( wc + 3.7 );
     temp += pane * ( 0.1 + 0.45 * warm ) * ( 0.7 + 0.5 * swell );
     // Road: a warm plane with tyre tracks, cooling toward the kerbs.
-    float roadPlane = smoothstep( horizon, horizon - 0.35, p.y ) * ( 1.0 - facade );
-    temp += roadPlane * 0.06;
-    temp -= roadPlane * 0.05 * smoothstep( 0.18, 0.34, abs( p.x ) );
-    temp += roadPlane * 0.05 * smoothstep( 0.1, 0.02, abs( abs( p.x ) - 0.14 ) );
+    float road_plane = smoothstep( horizon, horizon - 0.35, p.y ) * ( 1.0 - facade );
+    temp += road_plane * 0.06;
+    temp -= road_plane * 0.05 * smoothstep( 0.18, 0.34, abs( p.x ) );
+    temp += road_plane * 0.05 * smoothstep( 0.1, 0.02, abs( abs( p.x ) - 0.14 ) );
     temp *= gain;
     // A hot doorway on the left: the kick opens it.
     vec2  door = vec2( -aspect * 0.28, horizon + 0.08 );
-    float doorShape = smoothstep( 0.09, 0.0, max( abs( p.x - door.x ) - 0.02, abs( p.y - door.y ) - 0.07 ) );
-    temp += doorShape * ( 0.12 + 0.55 * audioKick );
+    float door_shape = smoothstep( 0.09, 0.0, max( abs( p.x - door.x ) - 0.02, abs( p.y - door.y ) - 0.07 ) );
+    temp += door_shape * ( 0.12 + 0.55 * audioKick );
     temp += exp( -length( ( p - door ) * vec2( 1.0, 0.7 ) ) * 7.0 ) * ( 0.05 + 0.35 * audioKick );
 
     // Walkers: warm bodies crossing on the clock.  A body is a soft blob
@@ -161,10 +161,10 @@ void main()
         vec2  wq = ( p - vec2( wx, wy ) ) / scale;
         // A gentle bob on the clock, so the walk reads without a beat.
         wq.y -= 0.006 * sin( clock * 6.0 + fi * 2.0 );
-        float bodyD = length( wq * vec2( 2.6, 1.0 ) - vec2( 0.0, 0.02 ) );
-        float body = smoothstep( 0.115, 0.03, bodyD );
-        float headD = length( ( wq - vec2( 0.0, 0.1 ) ) * vec2( 1.6, 1.0 ) );
-        float head = smoothstep( 0.045, 0.012, headD );
+        float body_d = length( wq * vec2( 2.6, 1.0 ) - vec2( 0.0, 0.02 ) );
+        float body = smoothstep( 0.115, 0.03, body_d );
+        float head_d = length( ( wq - vec2( 0.0, 0.1 ) ) * vec2( 1.6, 1.0 ) );
+        float head = smoothstep( 0.045, 0.012, head_d );
         // Legs: two short warm strokes that swing on the clock.
         float swing = 0.02 * sin( clock * 9.0 + fi * 1.3 );
         float leg = smoothstep( 0.02, 0.006,
@@ -188,13 +188,13 @@ void main()
                   + smoothstep( 0.0025, 0.0, abs( abs( p.y ) - 0.03 ) ) * step( abs( p.x ), 0.006 );
     col = mix( col, vec3( 0.95 ), clamp( ticks, 0.0, 1.0 ) * 0.8 );
     float sx = aspect * 0.5 - 0.045;
-    float onScale = step( abs( p.x - sx ), 0.018 ) * step( abs( p.y ), 0.3 );
-    col = mix( col, ironbow( p.y / 0.6 + 0.5 ), onScale );
+    float on_scale = step( abs( p.x - sx ), 0.018 ) * step( abs( p.y ), 0.3 );
+    col = mix( col, ironbow( p.y / 0.6 + 0.5 ), on_scale );
     float marker = smoothstep( 0.006, 0.0, abs( p.y - ( temp - 0.5 ) * 0.6 ) ) * step( abs( p.x - sx ), 0.03 );
     col = mix( col, vec3( 1.0 ), marker * 0.7 );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

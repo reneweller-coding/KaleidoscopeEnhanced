@@ -101,11 +101,11 @@ void main()
     // FALLBACK: when the smoke sim texture is absent/black (probe renders,
     // sim unit disabled), synthesize a procedural flame so the scene NEVER
     // shows an empty frame.  Four atlas taps decide whether the sim lives.
-    float simAlive = texture( texSmoke3D, vec2( 0.1, 0.6 ) ).r
-                     + texture( texSmoke3D, vec2( 0.5, 0.4 ) ).r
-                     + texture( texSmoke3D, vec2( 0.9, 0.6 ) ).r
-                     + texture( texSmoke3D, vec2( 0.3, 0.2 ) ).g;
-    if ( simAlive < 0.01 )
+    float sim_alive = texture( texSmoke3D, vec2( 0.1, 0.6 ) ).r
+                      + texture( texSmoke3D, vec2( 0.5, 0.4 ) ).r
+                      + texture( texSmoke3D, vec2( 0.9, 0.6 ) ).r
+                      + texture( texSmoke3D, vec2( 0.3, 0.2 ) ).g;
+    if ( sim_alive < 0.01 )
     {
         float lx = fract( vAtlasUV.x * 5.0 ); // local slice x (0..1)
         float v = vHeightFrac;

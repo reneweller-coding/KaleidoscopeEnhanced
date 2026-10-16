@@ -73,7 +73,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float kMod = ( waveVectorP > 0.01 ) ? waveVectorP : 1.0;
+    float k_mod = ( waveVectorP > 0.01 ) ? waveVectorP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
@@ -81,51 +81,51 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     float sigma = 0.45 * ( 1.0 + 0.15 * audioSubBass );
-    float kMag = ( 18.0 + 10.0 * audioCentroid ) * kMod;
+    float k_mag = ( 18.0 + 10.0 * audioCentroid ) * k_mod;
 
     // 3 Colliding Gaussian wavepackets
     vec2 pos1 = vec2( sin( t * 0.5 ) * 0.4, cos( t * 0.4 ) * 0.3 );
     vec2 pos2 = vec2( cos( t * 0.6 + 2.0 ) * 0.4, sin( t * 0.5 + 2.0 ) * 0.3 );
     vec2 pos3 = vec2( sin( t * 0.7 + 4.0 ) * 0.4, cos( t * 0.6 + 4.0 ) * 0.3 );
 
-    vec2 k1 = vec2( cos( t * 0.3 ), sin( t * 0.3 ) ) * kMag;
-    vec2 k2 = vec2( cos( t * 0.3 + 2.094 ), sin( t * 0.3 + 2.094 ) ) * kMag;
-    vec2 k3 = vec2( cos( t * 0.3 + 4.188 ), sin( t * 0.3 + 4.188 ) ) * kMag;
+    vec2 k1 = vec2( cos( t * 0.3 ), sin( t * 0.3 ) ) * k_mag;
+    vec2 k2 = vec2( cos( t * 0.3 + 2.094 ), sin( t * 0.3 + 2.094 ) ) * k_mag;
+    vec2 k3 = vec2( cos( t * 0.3 + 4.188 ), sin( t * 0.3 + 4.188 ) ) * k_mag;
 
     vec2 psi1 = wavepacket( uv, pos1, k1, sigma, 4.0, t );
     vec2 psi2 = wavepacket( uv, pos2, k2, sigma, 4.0, t );
     vec2 psi3 = wavepacket( uv, pos3, k3, sigma, 4.0, t );
 
     // Quantum superposition: Psi_total = psi1 + psi2 + psi3
-    vec2 psiTotal = psi1 + psi2 + psi3;
+    vec2 psi_total = psi1 + psi2 + psi3;
 
     // Probability density: |Psi|^2
-    float probDensity = dot( psiTotal, psiTotal );
+    float prob_density = dot( psi_total, psi_total );
 
     // Complex quantum phase angle
-    float quantumPhase = atan( psiTotal.y, psiTotal.x );
+    float quantum_phase = atan( psi_total.y, psi_total.x );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + psiTotal * 0.08 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + psi_total * 0.08 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Complex phase coloring
-    vec3 palA = imgPalette( quantumPhase / 6.2831853 + t * 0.05 );
-    vec3 palB = imgPalette( quantumPhase / 6.2831853 + 0.5 );
-    vec3 waveCol = mix( palA, palB, 0.5 + 0.5 * sin( quantumPhase * 2.0 ) );
+    vec3 pal_a = imgPalette( quantum_phase / 6.2831853 + t * 0.05 );
+    vec3 pal_b = imgPalette( quantum_phase / 6.2831853 + 0.5 );
+    vec3 wave_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( quantum_phase * 2.0 ) );
 
-    waveCol = mix( waveCol, texCol, 0.35 + 0.15 * audioValence );
+    wave_col = mix( wave_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Glowing quantum interference fringes & collapse burst
-    float fringeGlow = probDensity * glw * ( 1.0 + 2.0 * audioKick );
-    vec3  fringeTint = vec3( 1.3, 1.1, 1.8 ) * fringeGlow;
+    float fringe_glow = prob_density * glw * ( 1.0 + 2.0 * audioKick );
+    vec3  fringe_tint = vec3( 1.3, 1.1, 1.8 ) * fringe_glow;
 
     // Quantum wavepacket measurement collapse flash at wavepacket 1
-    float collapseFlash = exp( -length( uv - pos1 ) * 8.0 ) * ( 1.0 + 3.0 * audioKick );
-    vec3  finalCol = waveCol * 0.4 + fringeTint + vec3( 1.7, 1.6, 2.0 ) * collapseFlash * 0.6;
+    float collapse_flash = exp( -length( uv - pos1 ) * 8.0 ) * ( 1.0 + 3.0 * audioKick );
+    vec3  final_col = wave_col * 0.4 + fringe_tint + vec3( 1.7, 1.6, 2.0 ) * collapse_flash * 0.6;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    finalCol *= 0.71; // measured luma 0.703: knee, not a linear trim
-    finalCol /= 1.0 + 0.45 * max( finalCol.r, max( finalCol.g, finalCol.b ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    final_col *= 0.71; // measured luma 0.703: knee, not a linear trim
+    final_col /= 1.0 + 0.45 * max( final_col.r, max( final_col.g, final_col.b ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

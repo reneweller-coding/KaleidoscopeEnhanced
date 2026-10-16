@@ -68,36 +68,37 @@ void main()
 
     float t = time * 0.0091 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
     float theta = atan( p.y, p.x );
 
     // Kerr-Schild scalar H(r) = M r^3 / (r^4 + a^2 z^2)
-    float H = ( 0.2 * wrp ) / max( r * r + 0.04, 0.01 ) * midTransition;
+    float H = ( 0.2 * wrp ) / max( r * r + 0.04, 0.01 ) * mid_transition;
 
     // Null vector congruence k_a
-    float kAngle = theta + t * 0.5 * nll;
-    vec2  kVec = vec2( cos( kAngle ), sin( kAngle ) );
+    float k_angle = theta + t * 0.5 * nll;
+    vec2  k_vec = vec2( cos( k_angle ), sin( k_angle ) );
 
     // Kerr-Schild coordinate geodesic displacement
-    vec2 metricDisp = 2.0 * H * dot( p, kVec ) * kVec * 1.35; // constant: this amplitude is wrapped by fract(), so any
-                                                              // envelope reshuffled the frame (speed pass 14.09.2026)
+    vec2 metric_disp = 2.0 * H * dot( p, k_vec ) * k_vec * 1.35; // constant: this amplitude is wrapped by fract(), so
+                                                                 // any envelope reshuffled the frame (speed
+                                                                 // pass 14.09.2026)
 
-    vec4 c1 = texture( tex1, fract( uv + metricDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - metricDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + metric_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - metric_disp ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Spacetime null geodesic caustic lines
-    float caustic = exp( -abs( sin( kAngle * 6.0 - r * 15.0 ) ) * 12.0 ) * midTransition;
+    float caustic = exp( -abs( sin( k_angle * 6.0 - r * 15.0 ) ) * 12.0 ) * mid_transition;
     col.rgb += caustic * vec3( 0.3, 0.85, 1.0 ) * ( 1.4 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

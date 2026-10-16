@@ -57,19 +57,19 @@ vec3 imgPalette( float t )
 void main()
 {
     // Waveguide core profile across ribbon side (-1 to +1)
-    float coreFalloff = 1.0 - abs( vSide );
-    float coreGlow = pow( coreFalloff, 2.5 );
-    float edgeRim = exp( -abs( abs( vSide ) - 0.9 ) * 15.0 );
+    float core_falloff = 1.0 - abs( vSide );
+    float core_glow = pow( core_falloff, 2.5 );
+    float edge_rim = exp( -abs( abs( vSide ) - 0.9 ) * 15.0 );
 
     // Sample background photo mapped along waveguide ribbon length
-    vec2 photoUv = fract( vec2( vUV.x * 2.0, vUV.y ) );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vec2( vUV.x * 2.0, vUV.y ) );
+    vec3 photo_sample = img( photo_uv );
 
     // Combine vertex color, photo, and laser pulse
-    vec3 col = vCol * ( 0.6 + 0.4 * photoSample );
-    col += vCol * coreGlow * ( glowP > 0.01 ? glowP : 1.2 ) * ( 0.8 + 0.4 * audioSwell );
+    vec3 col = vCol * ( 0.6 + 0.4 * photo_sample );
+    col += vCol * core_glow * ( glowP > 0.01 ? glowP : 1.2 ) * ( 0.8 + 0.4 * audioSwell );
     col += vec3( 0.9, 0.95, 1.0 ) * vPulse * 2.5;
-    col += vCol * edgeRim * 1.5;
+    col += vCol * edge_rim * 1.5;
     col += vCol * ( audioKick * 0.3 );
 
     // Soft knee compression

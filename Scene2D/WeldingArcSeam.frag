@@ -94,8 +94,8 @@ void main()
     // gentle weave, and it wraps.  The seam line sits a little below centre.
     float travel = fract( clock * 0.16 );
     float tx = ( travel - 0.5 ) * aspect * 1.7;
-    float seamY = -0.06 + 0.02 * sin( p.x * 3.0 + clock * 0.2 );
-    vec2  torch = vec2( tx, seamY + 0.02 * sin( clock * 2.0 ) );
+    float seam_y = -0.06 + 0.02 * sin( p.x * 3.0 + clock * 0.2 );
+    vec2  torch = vec2( tx, seam_y + 0.02 * sin( clock * 2.0 ) );
 
     // The plate: mill scale from the photo, bluish grey, with a brushed grain.
     vec3 plate = img( uv * vec2( 1.0, 0.6 ) + vec2( 0.0, 0.2 ) )
@@ -103,38 +103,38 @@ void main()
     plate *= 0.75 + 0.3 * hash21( floor( vec2( p.x * 400.0, p.y * 40.0 ) ) );
     vec3 col = plate * 1.15 + 0.05;
     // Distance to the seam line, and how far behind the torch we are.
-    float dSeam = abs( p.y - seamY );
+    float d_seam = abs( p.y - seam_y );
     float behind = tx - p.x; // >0 = already welded
     // The bead: ripples of frozen metal, wider than the seam, only behind.
-    float beadW = 0.05 + 0.016 * bass;
-    float onSeam = smoothstep( beadW, beadW * 0.55, dSeam );
+    float bead_w = 0.05 + 0.016 * bass;
+    float on_seam = smoothstep( bead_w, bead_w * 0.55, d_seam );
     float welded = smoothstep( 0.0, 0.02, behind );
     float ripple = 0.5 + 0.5 * cos( ( p.x - tx ) * 160.0 );
     // Cooling: white at the torch, orange, then temper blues far behind.
-    float coolT = exp( -max( behind, 0.0 ) * 6.0 );
-    vec3  bead = heat( coolT * ( 0.85 + 0.3 * bass ) ) * ( 0.75 + 0.35 * ripple );
+    float cool_t = exp( -max( behind, 0.0 ) * 6.0 );
+    vec3  bead = heat( cool_t * ( 0.85 + 0.3 * bass ) ) * ( 0.75 + 0.35 * ripple );
     // Temper colours on the cooled part: a thin oxide rainbow beside the bead.
-    float temper = exp( -max( behind, 0.0 ) * 1.6 ) * smoothstep( beadW * 2.6, beadW, dSeam ) * ( 1.0 - onSeam );
-    vec3  temperCol = mix( vec3( 0.55, 0.35, 0.15 ), imgPalette( hue * 0.159 + 0.62 ), 0.45 );
-    col = mix( col, bead, onSeam * welded );
-    col += temperCol * temper * welded * 0.8;
+    float temper = exp( -max( behind, 0.0 ) * 1.6 ) * smoothstep( bead_w * 2.6, bead_w, d_seam ) * ( 1.0 - on_seam );
+    vec3  temper_col = mix( vec3( 0.55, 0.35, 0.15 ), imgPalette( hue * 0.159 + 0.62 ), 0.45 );
+    col = mix( col, bead, on_seam * welded );
+    col += temper_col * temper * welded * 0.8;
     // Heat haze glow around the whole hot stretch.
-    col += heat( 0.55 ) * exp( -dSeam * 7.0 ) * coolT * welded * 0.9;
+    col += heat( 0.55 ) * exp( -d_seam * 7.0 ) * cool_t * welded * 0.9;
     // The arc: a small core plus a wide glow.  Bright, but its size is on
     // the bass and its flicker on the treble -- never a whole-frame flash.
-    float dArc = length( ( p - torch ) * vec2( 1.0, 1.25 ) );
-    float core = smoothstep( 0.022 + 0.008 * bass, 0.0, dArc );
-    float glow = exp( -dArc * 5.5 );
-    vec3  arcCol = mix( vec3( 0.75, 0.85, 1.0 ), vec3( 1.0, 0.95, 0.85 ), 0.4 );
-    col += arcCol * core * 2.6;
-    col += arcCol * glow * ( 0.9 + 0.6 * bass ) * ( 0.9 + 0.25 * hi );
+    float d_arc = length( ( p - torch ) * vec2( 1.0, 1.25 ) );
+    float core = smoothstep( 0.022 + 0.008 * bass, 0.0, d_arc );
+    float glow = exp( -d_arc * 5.5 );
+    vec3  arc_col = mix( vec3( 0.75, 0.85, 1.0 ), vec3( 1.0, 0.95, 0.85 ), 0.4 );
+    col += arc_col * core * 2.6;
+    col += arc_col * glow * ( 0.9 + 0.6 * bass ) * ( 0.9 + 0.25 * hi );
     // The electrode holder: a dark wedge coming down from the top right.
     vec2  rod = p - torch;
-    float alongRod = clamp( dot( rod, normalize( vec2( 0.55, 1.0 ) ) ), 0.0, 0.6 );
-    float acrossRod = length( rod - normalize( vec2( 0.55, 1.0 ) ) * alongRod );
-    float holder = smoothstep( 0.02, 0.014, acrossRod ) * step( 0.03, alongRod );
-    col = mix( col, vec3( 0.08, 0.08, 0.09 ) * ( 0.5 + alongRod ), holder );
-    col += heat( 0.9 ) * smoothstep( 0.05, 0.02, alongRod ) * smoothstep( 0.02, 0.0, acrossRod ) * 1.2;
+    float along_rod = clamp( dot( rod, normalize( vec2( 0.55, 1.0 ) ) ), 0.0, 0.6 );
+    float across_rod = length( rod - normalize( vec2( 0.55, 1.0 ) ) * along_rod );
+    float holder = smoothstep( 0.02, 0.014, across_rod ) * step( 0.03, along_rod );
+    col = mix( col, vec3( 0.08, 0.08, 0.09 ) * ( 0.5 + along_rod ), holder );
+    col += heat( 0.9 ) * smoothstep( 0.05, 0.02, along_rod ) * smoothstep( 0.02, 0.0, across_rod ) * 1.2;
     // Sparks: round, jittered cells thrown forward and down from the arc,
     // their life a continuous phase so nothing pops into being.
     for ( int layer = 0; layer < 3; ++layer )
@@ -147,8 +147,8 @@ void main()
             float ph = fract( clock * ( 0.9 + 0.5 * hash11( fi * 1.7 ) ) + hash11( fi * 3.3 ) );
             float ang = ( hash11( fi * 5.1 ) - 0.5 ) * 2.6 - 1.2;
             float sp = 0.35 + 0.5 * hash11( fi * 7.7 );
-            vec2  sPos = torch + vec2( cos( ang ), sin( ang ) ) * sp * ph + vec2( 0.0, -0.55 * ph * ph );
-            float d = length( p - sPos );
+            vec2  s_pos = torch + vec2( cos( ang ), sin( ang ) ) * sp * ph + vec2( 0.0, -0.55 * ph * ph );
+            float d = length( p - s_pos );
             float life = ( 1.0 - ph ) * smoothstep( 0.0, 0.06, ph );
             float sz = 0.006 + 0.004 * hash11( fi * 9.1 );
             float dot_ = smoothstep( sz, sz * 0.25, d );
@@ -173,7 +173,7 @@ void main()
     col = mix( col, col * vec3( 0.75, 1.0, 0.85 ), 0.35 );
     col *= 0.9 + 0.25 * clamp( audioSwell, 0.0, 1.0 );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

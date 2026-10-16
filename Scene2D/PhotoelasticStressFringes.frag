@@ -85,7 +85,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float loads = 2.0 + floor( clamp( loadsP, 0.0, 1.0 ) * 3.0 ); // once per activation
-    float orderScale = 0.8 + 1.2 * clamp( orderP, 0.0, 1.0 );
+    float order_scale = 0.8 + 1.2 * clamp( orderP, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -99,9 +99,9 @@ void main()
     float plate = max( abs( q.x ) - 0.44, abs( q.y ) - 0.3 );
     plate = min( plate, length( vec2( max( abs( q.x ) - 0.44, 0.0 ), max( abs( q.y ) - 0.3, 0.0 ) ) ) - 0.06 );
     float hole = 0.1 - length( q );
-    float notchL = 0.07 - length( q - vec2( -0.44, 0.0 ) );
-    float notchR = 0.07 - length( q - vec2( 0.44, 0.0 ) );
-    float body = max( -plate, max( hole, max( notchL, notchR ) ) ); // >0 inside the material
+    float notch_l = 0.07 - length( q - vec2( -0.44, 0.0 ) );
+    float notch_r = 0.07 - length( q - vec2( 0.44, 0.0 ) );
+    float body = max( -plate, max( hole, max( notch_l, notch_r ) ) ); // >0 inside the material
     float inside = smoothstep( -0.004, 0.004, body );
 
     // The stress field: each load is a point pressing on the rim; the
@@ -123,12 +123,12 @@ void main()
     }
     // Stress concentration around the hole (the classic rosette) and at
     // the notch roots.
-    float rHole = max( length( q ), 1e-3 );
-    sigma *= 1.0 + 0.9 / ( 1.0 + pow( rHole * 6.0, 3.0 ) );
+    float r_hole = max( length( q ), 1e-3 );
+    sigma *= 1.0 + 0.9 / ( 1.0 + pow( r_hole * 6.0, 3.0 ) );
     sigma += 0.35 / ( 1.0 + pow( length( q - vec2( -0.44, 0.0 ) ) * 9.0, 2.5 ) );
     sigma += 0.35 / ( 1.0 + pow( length( q - vec2( 0.44, 0.0 ) ) * 9.0, 2.5 ) );
     // Fringe order: how many full wavelengths of retardation.
-    float n = sigma * orderScale * ( 0.6 + 0.8 * bass );
+    float n = sigma * order_scale * ( 0.6 + 0.8 * bass );
     vec3  fringes = fringeColour( n );
     // Isochromatic brightness between crossed polarisers goes as sin^2.
     float bright = pow( abs( sin( n * 3.14159 ) ), 0.7 );
@@ -167,7 +167,7 @@ void main()
     col *= smoothstep( 0.62, 0.5, length( p * vec2( 0.85, 1.0 ) ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

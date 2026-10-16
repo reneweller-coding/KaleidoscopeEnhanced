@@ -67,7 +67,7 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // Spectral spread runs the swarm's DEPTH: a narrow, pure spectrum keeps
@@ -82,16 +82,16 @@ void main()
     // the field still reaches past all four edges when the preset camera rig
     // rolls and yaws the view, and spread only ever opens it further.
     float dz = 7.5 + pow( r3, 1.35 ) * deep;
-    float halfH = dz * kTanY;
-    float halfW = halfH * aspect;
+    float half_h = dz * TanY;
+    float half_w = half_h * aspect;
     float open = 2.25 + 0.30 * spr;
 
     // Vertical bias: still a MEADOW, so the lamps crowd the lower half and
     // thin out toward the top of the night, but they reach both edges.
     float fy = pow( r2, 0.78 );
 
-    vec3 home = vec3( ( r1 - 0.5 ) * open * halfW,
-                      ( 1.05 - 2.30 * fy ) * halfH,
+    vec3 home = vec3( ( r1 - 0.5 ) * open * half_w,
+                      ( 1.05 - 2.30 * fy ) * half_h,
                       dz );
     // Wander scaled with depth, so the drift reads the same at every distance.
     float wob = 0.9 + 0.055 * dz;
@@ -114,10 +114,10 @@ void main()
     // Arousal decides how hard the swarm LOCKS: a calm passage leaves every
     // firefly on its own rhythm, an intense one pulls the entire meadow into
     // a single sweeping synchronous wave (real fireflies do exactly this).
-    float syncW = 0.25 + 0.55 * clamp( audioArousal, 0.0, 1.0 );
+    float sync_w = 0.25 + 0.55 * clamp( audioArousal, 0.0, 1.0 );
     // The squared envelope left most of the meadow sitting at zero; 1.6 keeps
     // the soft breathing blink but lets an unlit lamp stay faintly present.
-    float blink = pow( own * ( 1.0 - syncW ) + sync * syncW, 1.6 );
+    float blink = pow( own * ( 1.0 - sync_w ) + sync * sync_w, 1.6 );
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );

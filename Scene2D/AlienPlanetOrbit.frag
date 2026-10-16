@@ -235,8 +235,8 @@ void main()
     vec2  ruv = mat2( cos( roll ), -sin( roll ), sin( roll ), cos( roll ) ) * uv;
     vec3  rd = normalize( ruv.x * uu + ruv.y * vv + 1.2 * ww );
 
-    vec3 atmoCol = max( imgPalette( 0.1 + 0.2 * audioCentroid ), vec3( 0.14, 0.22, 0.34 ) );
-    vec3 cityCol = max( imgPalette( 0.6 + 0.1 * audioKick ), vec3( 0.55, 0.42, 0.20 ) );
+    vec3 atmo_col = max( imgPalette( 0.1 + 0.2 * audioCentroid ), vec3( 0.14, 0.22, 0.34 ) );
+    vec3 city_col = max( imgPalette( 0.6 + 0.1 * audioKick ), vec3( 0.55, 0.42, 0.20 ) );
 
     float d = 0.0;
     vec3  p;
@@ -265,12 +265,12 @@ void main()
     // Sonne hoeher gestellt: bei streifendem Licht stand die Normale des
     // sichtbaren Planetenstuecks (fast senkrecht) bei dif~0.2, und mit einer
     // dunklen Foto-Palette war der Planet komplett schwarz.
-    vec3 sunDir = normalize( vec3( 0.55, 0.62, 0.55 ) );
+    vec3 sun_dir = normalize( vec3( 0.55, 0.62, 0.55 ) );
 
     if ( m > 0.5 )
     {
         vec3  n = calcNormal( p, pr, sd );
-        float dif = max( dot( n, sunDir ), 0.0 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
         float fres = pow( 1.0 - max( dot( n, -rd ), 0.0 ), 5.0 );
 
         if ( m == 1.0 )
@@ -283,24 +283,24 @@ void main()
             // Alien land colours from the photo palette -- WITH a floor: a
             // dark photo made the whole planet black, so the frame was
             // nothing but a station corner on empty space (screening sweep).
-            vec3 landTone = max( imgPalette( 0.3 + 0.08 * terr ) * 0.7,
-                                 vec3( 0.16, 0.19, 0.14 ) );
-            vec3 albedo = mix( vec3( 0.10, 0.14, 0.20 ), landTone,
+            vec3 land_tone = max( imgPalette( 0.3 + 0.08 * terr ) * 0.7,
+                                  vec3( 0.16, 0.19, 0.14 ) );
+            vec3 albedo = mix( vec3( 0.10, 0.14, 0.20 ), land_tone,
                                clamp( terr * 0.5 + 0.5, 0.0, 1.0 ) );
 
             // Night side city lights
-            float night = smoothstep( 0.1, -0.2, dot( n, sunDir ) );
+            float night = smoothstep( 0.1, -0.2, dot( n, sun_dir ) );
             float cities = max( 0.0, sin( tp.x * 2.0 ) * cos( tp.y * 2.0 ) * sin( tp.x * 10.0 + tp.y * 10.0 ) );
             cities = pow( cities, 4.0 ) * ( 0.8 + 0.4 * audioKick );
 
             // Terminator ambient: the night side keeps a trace of skylight
             // instead of falling to pure black.
             col = albedo * ( 0.30 + dif * 1.7 );
-            col += cityCol * cities * night * glw * 1.5;
+            col += city_col * cities * night * glw * 1.5;
 
             // Atmosphere rim
-            float atmo = fres * smoothstep( -0.2, 0.5, dot( n, sunDir ) );
-            col += atmoCol * atmo * ( 1.0 + audioSwell * 0.5 ) * glw;
+            float atmo = fres * smoothstep( -0.2, 0.5, dot( n, sun_dir ) );
+            col += atmo_col * atmo * ( 1.0 + audioSwell * 0.5 ) * glw;
         }
         else if ( m == 2.0 )
         { // Station
@@ -312,7 +312,7 @@ void main()
             float lts = step( 0.9, hash21( floor( p.xy * 4.0 ) ) )
                         * smoothstep( 0.32, 0.12, length( fract( p.xy * 4.0 ) - 0.5 ) ); // round lights, not cells
                                                                                          // (V8e)
-            col += cityCol * lts * ( 0.5 + 0.5 * audioLevel ) * glw;
+            col += city_col * lts * ( 0.5 + 0.5 * audioLevel ) * glw;
 
             // AO
             col *= clamp( 1.0 - float( steps ) * 0.015, 0.2, 1.0 );
@@ -329,11 +329,11 @@ void main()
         float h = b * b - c;
         if ( h > 0.0 )
         {
-            float atmoHit = -b - sqrt( h );
-            if ( atmoHit > 0.0 && ( m == 0.0 || atmoHit < d ) )
+            float atmo_hit = -b - sqrt( h );
+            if ( atmo_hit > 0.0 && ( m == 0.0 || atmo_hit < d ) )
             {
-                float atmoGlow = exp( -atmoHit * 0.01 ) * ( 0.5 + audioSwell * 0.3 );
-                col += atmoCol * atmoGlow * glw * 0.4;
+                float atmo_glow = exp( -atmo_hit * 0.01 ) * ( 0.5 + audioSwell * 0.3 );
+                col += atmo_col * atmo_glow * glw * 0.4;
             }
         }
     }
@@ -348,14 +348,14 @@ void main()
         vec2  d2 = ruv - vec2( x, y );
         float body = exp( -dot( d2, d2 ) * 9000.0 );
         float blink = pow( 0.5 + 0.5 * sin( time * 6.0 + fi * 2.1 ), 6.0 );
-        col += ( vec3( 0.8, 0.9, 1.0 ) * 0.8 + cityCol * blink * 2.0 ) * body * glw;
+        col += ( vec3( 0.8, 0.9, 1.0 ) * 0.8 + city_col * blink * 2.0 ) * body * glw;
     }
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

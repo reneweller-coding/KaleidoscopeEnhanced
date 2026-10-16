@@ -26,15 +26,15 @@ out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 
-const float kDist = 62.0;
-const float kGround = -22.0;
+const float Dist = 62.0;
+const float Ground = -22.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = 20.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
         vec3  c = attrA.xyz - meshCenter;
@@ -42,9 +42,9 @@ void main()
         vec3  local = c / mx * sz;
         float yaw = 3.14159265 + yawP;
         float cy = cos( yaw ), sy = sin( yaw );
-        mat3  yawM = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        world = yawM * local + vec3( 0.0, kGround + meshExtent.y / mx * sz, kDist );
-        n = normalize( yawM * attrB.xyz );
+        mat3  yaw_m = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        world = yaw_m * local + vec3( 0.0, Ground + meshExtent.y / mx * sz, Dist );
+        n = normalize( yaw_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
@@ -60,10 +60,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

@@ -228,18 +228,18 @@ void main()
     // Nebula background
     // Nebel mit Floor und Grundhelligkeit -- vorher pow(n,2)*Palette auf
     // dunklem Foto = schwarzer Hintergrund, nur Traeger im Nichts.
-    vec3  nebTint = max( imgPalette( 0.3 + 0.1 * audioCentroid ), vec3( 0.14, 0.10, 0.18 ) );
-    float nebNoise = fbm( rd * 2.0 + vec3( 0.0, 0.0, drift * 0.01 ) );
-    vec3  col = nebTint * ( 0.22 + pow( nebNoise, 1.5 ) * np * ( 0.8 + audioSwell * 0.5 ) );
+    vec3  neb_tint = max( imgPalette( 0.3 + 0.1 * audioCentroid ), vec3( 0.14, 0.10, 0.18 ) );
+    float neb_noise = fbm( rd * 2.0 + vec3( 0.0, 0.0, drift * 0.01 ) );
+    vec3  col = neb_tint * ( 0.22 + pow( neb_noise, 1.5 ) * np * ( 0.8 + audioSwell * 0.5 ) );
 
-    vec3 sunDir = normalize( vec3( 0.5, 0.8, -0.2 ) );
+    vec3 sun_dir = normalize( vec3( 0.5, 0.8, -0.2 ) );
 
-    vec3 weldColor = imgPalette( 0.8 + 0.2 * audioKick );
+    vec3 weld_color = imgPalette( 0.8 + 0.2 * audioKick );
 
     if ( m > 0.5 )
     {
         vec3  n = calcNormal( p, yp );
-        float dif = max( dot( n, sunDir ), 0.0 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
         float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
         vec3 albedo = vec3( 0.1 );
@@ -249,16 +249,16 @@ void main()
             albedo = vec3( 0.8, 0.6, 0.1 ); // yellow/orange scaffolding
 
         col = albedo * ( 0.16 + dif );
-        col += nebTint * albedo * fill * 0.35;
+        col += neb_tint * albedo * fill * 0.35;
         // Rim-Licht: grosse Rumpfflaechen bekommen Kontur statt grauer Wand.
         col += albedo * pow( 1.0 - max( dot( n, -rd ), 0.0 ), 3.0 ) * 0.5;
 
         // Add welding flares
-        float weldDist = length( p - sparkPos );
-        float weldPulse = step( 0.9, hash21( floor( p.xz * 2.0 ) + floor( t * 10.0 ) ) );
-        if ( weldDist < 2.0 )
+        float weld_dist = length( p - sparkPos );
+        float weld_pulse = step( 0.9, hash21( floor( p.xz * 2.0 ) + floor( t * 10.0 ) ) );
+        if ( weld_dist < 2.0 )
         {
-            col += weldColor * exp( -weldDist * 4.0 ) * weldPulse * ( 2.0 + audioKick * 5.0 ) * sp;
+            col += weld_color * exp( -weld_dist * 4.0 ) * weld_pulse * ( 2.0 + audioKick * 5.0 ) * sp;
         }
 
         col *= clamp( 1.0 - float( steps ) * 0.015, 0.2, 1.0 );
@@ -267,22 +267,22 @@ void main()
     // Add volumetric flares / sparks in empty space
     if ( d > 5.0 )
     {
-        float sparkDist = length( ro + rd * min( d, 20.0 ) - sparkPos );
-        if ( sparkDist < 8.0 )
+        float spark_dist = length( ro + rd * min( d, 20.0 ) - sparkPos );
+        if ( spark_dist < 8.0 )
         {
-            float flare = exp( -sparkDist * 0.5 ) * ( audioKick * 1.5 );
-            col += weldColor * flare * sp;
+            float flare = exp( -spark_dist * 0.5 ) * ( audioKick * 1.5 );
+            col += weld_color * flare * sp;
         }
     }
 
     // Nebula fog
     float fog = exp( -d * 0.01 * np );
-    col = mix( nebTint * 0.2, col, fog );
+    col = mix( neb_tint * 0.2, col, fog );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

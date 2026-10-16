@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -239,18 +239,18 @@ void main()
     float px = sc / resolution.y * 1.5;
     float weave = clamp( weaveP, 0.0, 1.0 );
     float flow = 0.5 * sceneTime + 3.0 * audioAdvance;
-    vec3  pulseC = mix( vec3( 0.3, 0.7, 1.0 ), vec3( 1.0, 0.6, 0.3 ), clamp( audioMode, 0.0, 1.0 ) );
+    vec3  pulse_c = mix( vec3( 0.3, 0.7, 1.0 ), vec3( 1.0, 0.6, 0.3 ), clamp( audioMode, 0.0, 1.0 ) );
     vec3  bg = vec3( 0.02, 0.02, 0.03 ) + imgLod( q * 0.03 + 0.5, 6.0 ) * 0.05;
     // Each tile has two orientation states; a tile re-routes by cross-fading
     // (a turn would break the ribbons at the tile borders).
     float h = hash21( gi );
-    float flipT = sceneTime * ( 0.02 + 0.06 * clamp( flipP, 0.0, 1.0 ) ) + h * 10.0
-                  + 0.5 * clamp( audioHarmChange, 0.0, 1.0 );
-    float fade = smoothstep( 0.75, 1.0, fract( flipT ) );
+    float flip_t = sceneTime * ( 0.02 + 0.06 * clamp( flipP, 0.0, 1.0 ) ) + h * 10.0
+                   + 0.5 * clamp( audioHarmChange, 0.0, 1.0 );
+    float fade = smoothstep( 0.75, 1.0, fract( flip_t ) );
     vec3  cols[2];
     for ( int k = 0; k < 2; ++k )
     {
-        float orient = mod( floor( flipT ) + float( k ), 2.0 );
+        float orient = mod( floor( flip_t ) + float( k ), 2.0 );
         vec2  gf = fract( q ) - 0.5;
         if ( orient > 0.5 )
             gf.x = -gf.x;
@@ -267,8 +267,8 @@ void main()
         float sh2 = sqrt( max( 1.0 - d2 * d2 / ( w * w ), 0.0 ) );
         vec3  base = mix( tint * 0.8, ph * 1.2, 0.25 + 0.3 * swell );
         float dep = 0.3 + 0.6 * weave;
-        vec3  r1 = base * mix( 1.0, 0.25 + 0.75 * sh1, dep ) + pulseC * pulse * ( 0.8 + 1.2 * kick ) * sh1;
-        vec3  r2 = base * mix( 1.0, 0.25 + 0.75 * sh2, dep ) + pulseC * pulse * ( 0.8 + 1.2 * kick ) * sh2;
+        vec3  r1 = base * mix( 1.0, 0.25 + 0.75 * sh1, dep ) + pulse_c * pulse * ( 0.8 + 1.2 * kick ) * sh1;
+        vec3  r2 = base * mix( 1.0, 0.25 + 0.75 * sh2, dep ) + pulse_c * pulse * ( 0.8 + 1.2 * kick ) * sh2;
         vec3  c = mix( bg, r2, b2 );
         c = mix( c, r1, b1 );
         cols[k] = c;

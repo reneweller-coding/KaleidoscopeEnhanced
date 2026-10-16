@@ -109,24 +109,24 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     vec3  world = vec3( 0.0 );
-    vec3  vpView = vec3( 0.0 );
-    bool  inView = false; // layer already given in view space
+    vec3  vp_view = vec3( 0.0 );
+    bool  in_view = false; // layer already given in view space
     vec3  col;
     float glow = 1.0;
-    float sizeBase = 155.0, sizeMin = 1.5, sizeCap = 22.0, fadeD = 190.0;
+    float size_base = 155.0, size_min = 1.5, size_cap = 22.0, fade_d = 190.0;
 
     if ( r1 < 0.52 )
     {
         // ---- Cloud mass: clumpy billows, kneaded slowly, bottom heavy.
         float knot = floor( r2 * 32.0 );
-        vec3  Ck = vec3( ( hash11( knot * 3.1 ) - 0.5 ) * 105.0,
+        vec3  ck = vec3( ( hash11( knot * 3.1 ) - 0.5 ) * 105.0,
                          20.0 + hash11( knot * 5.3 ) * 20.0,
                          ( hash11( knot * 7.7 ) - 0.5 ) * 105.0 );
-        world = Ck + ( vec3( r3, fract( r2 * 31.0 ), r4 ) - 0.5 ) * 30.0;
+        world = ck + ( vec3( r3, fract( r2 * 31.0 ), r4 ) - 0.5 ) * 30.0;
         world.x += sin( world.y * 0.08 + time * 0.10 ) * 4.0;
         world.z += sin( world.x * 0.06 + time * 0.08 ) * 4.0;
 
@@ -146,9 +146,9 @@ void main()
                * 0.42; // wide sprites carry far more energy each -- see below
         // Billows have to FUSE, not speckle: several times the old width, and
         // never below the ~2.6 px an additive sprite needs to stay legible.
-        sizeBase = 430.0;
-        sizeMin = 2.6;
-        sizeCap = 55.0;
+        size_base = 430.0;
+        size_min = 2.6;
+        size_cap = 55.0;
     }
     else if ( r1 < 0.77 )
     {
@@ -179,9 +179,9 @@ void main()
         col = vec3( 0.35, 0.45, 0.60 );
         glow = ( 0.16 + 0.22 * audioLevel + 0.28 * audioSwell )
                * ( 0.4 + 0.6 * fract( r2 * 17.0 ) );
-        sizeBase = 210.0;
-        sizeMin = 2.2;
-        sizeCap = 24.0;
+        size_base = 210.0;
+        size_min = 2.2;
+        size_cap = 24.0;
     }
     else
     {
@@ -190,39 +190,39 @@ void main()
         // the gaps between the billows off pure black, and the same bolt
         // clocks flicker across it as distant SHEET lightning.  Placed
         // straight in view space -- it is atmosphere, it needs no parallax.
-        inView = true;
+        in_view = true;
         float hz = 96.0 + 92.0 * r3;
         // 2.0 would fit the frustum exactly; 2.35 so the sheet still reaches
         // past all four edges when the preset camera rig rolls the view.
-        vpView = vec3( ( r2 - 0.5 ) * 2.35 * kTanY * aspect * hz,
-                       ( r4 - 0.5 ) * 2.35 * kTanY * hz,
-                       hz );
+        vp_view = vec3( ( r2 - 0.5 ) * 2.35 * TanY * aspect * hz,
+                        ( r4 - 0.5 ) * 2.35 * TanY * hz,
+                        hz );
         float b = floor( fract( r2 * 6.13 + r4 * 2.71 ) * 12.0 );
         float env = boltEnv( b ) * ( 0.45 + 1.4 * audioSnare + 2.2 * audioDrop );
         col = mix( vec3( 0.10, 0.12, 0.20 ), vec3( 0.60, 0.64, 0.88 ),
                    clamp( env * 0.45, 0.0, 1.0 ) );
         glow = 0.30 + 0.28 * r4;
-        sizeBase = 2200.0;
-        sizeMin = 3.5;
-        sizeCap = 46.0;
-        fadeD = 900.0;
+        size_base = 2200.0;
+        size_min = 3.5;
+        size_cap = 46.0;
+        fade_d = 900.0;
     }
 
     // Low camera looking up into the storm, drifting slowly.
     float ca = time * 0.03;
-    vec3  camP = vec3( cos( ca ) * 40.0, -14.0, sin( ca ) * 40.0 );
-    vec3  fwd = normalize( vec3( 0.0, 14.0, 0.0 ) - camP );
+    vec3  cam_p = vec3( cos( ca ) * 40.0, -14.0, sin( ca ) * 40.0 );
+    vec3  fwd = normalize( vec3( 0.0, 14.0, 0.0 ) - cam_p );
     vec3  rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3  up = cross( rgt, fwd );
 
     vec3 vp;
-    if ( inView )
+    if ( in_view )
     {
-        vp = vpView;
+        vp = vp_view;
     }
     else
     {
-        vec3 rel = world - camP;
+        vec3 rel = world - cam_p;
         vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
     }
 
@@ -234,10 +234,10 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
-    col *= glow * clamp( 1.0 - vp.z / fadeD, 0.0, 1.0 );
+    col *= glow * clamp( 1.0 - vp.z / fade_d, 0.0, 1.0 );
     // Cap the TINTED vec3, not the scalar feeding it: the flash colours run
     // past 1.0 per channel on their own.
     vCol = vec4( min( palTint( col, 0.25 * r1, 0.18 ) * 3.0, vec3( 3.2 ) ), 1.0 );

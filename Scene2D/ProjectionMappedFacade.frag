@@ -80,9 +80,9 @@ float sdBox( vec2 p, vec2 b )
     return length( max( d, 0.0 ) ) + min( max( d.x, d.y ), 0.0 );
 }
 
-const float GROUND = -0.36;
-const float ENTAB = 0.2; ///< the main entablature
-const float TOP = 0.37;  ///< tip of the pediment
+const float Ground = -0.36;
+const float Entab = 0.2; ///< the main entablature
+const float Top = 0.37;  ///< tip of the pediment
 float       gBay;        ///< bay width
 float       gHalfW;      ///< half width of the facade
 
@@ -96,30 +96,30 @@ float band( float d, float w, float a )
 float relief( vec2 p, out float glass )
 {
     glass = 0.0;
-    if ( abs( p.x ) > gHalfW || p.y < GROUND )
+    if ( abs( p.x ) > gHalfW || p.y < Ground )
         return -1.0;
     float h = 0.0;
     // Rustication: grooves on the ground floor.
     if ( p.y < -0.12 )
-        h -= 0.004 * smoothstep( 0.002, 0.0, abs( fract( ( p.y - GROUND ) / 0.03 ) - 0.5 ) * 0.03 - 0.013 );
+        h -= 0.004 * smoothstep( 0.002, 0.0, abs( fract( ( p.y - Ground ) / 0.03 ) - 0.5 ) * 0.03 - 0.013 );
     // Pediment above the entablature in the middle, attic balustrade to the sides.
-    if ( p.y > ENTAB + 0.03 )
+    if ( p.y > Entab + 0.03 )
     {
-        float slope = TOP - ( TOP - ENTAB - 0.03 ) * abs( p.x ) / 0.36;
+        float slope = Top - ( Top - Entab - 0.03 ) * abs( p.x ) / 0.36;
         if ( abs( p.x ) < 0.36 && p.y < slope )
         {
-            float frame = min( abs( p.y - ( ENTAB + 0.035 ) ), ( slope - p.y ) * 0.95 );
+            float frame = min( abs( p.y - ( Entab + 0.035 ) ), ( slope - p.y ) * 0.95 );
             h = 0.012 + band( frame, 0.012, 0.02 ) - 0.008 * step( 0.014, frame );
             // A round window (oculus) in the tympanum.
-            float oc = length( p - vec2( 0.0, ENTAB + 0.075 ) ) - 0.03;
+            float oc = length( p - vec2( 0.0, Entab + 0.075 ) ) - 0.03;
             h += band( oc, 0.008, 0.012 ) - 0.02 * step( oc, -0.004 );
             glass = step( oc, -0.006 );
         }
-        else if ( p.y < ENTAB + 0.1 )
+        else if ( p.y < Entab + 0.1 )
         {
             // Balustrade: little bulging balusters between a rail and a plinth.
             float bx = fract( p.x / 0.018 ) - 0.5;
-            float by = ( p.y - ENTAB - 0.03 ) / 0.07;
+            float by = ( p.y - Entab - 0.03 ) / 0.07;
             float bal = step( abs( bx ), 0.25 + 0.12 * sin( by * 3.14159 ) ) * step( 0.15, by ) * step( by, 0.85 );
             h = 0.004 + 0.01 * bal + band( by - 0.93, 0.07, 0.012 ) + band( by - 0.07, 0.07, 0.01 );
             glass = -1.0 * ( 1.0 - bal ) * step( 0.15, by ) * step( by, 0.85 ); // sky between the balusters
@@ -131,14 +131,14 @@ float relief( vec2 p, out float glass )
         return h;
     }
     // Entablature and the storey cornice.
-    h += band( p.y - ENTAB, 0.028, 0.03 ) + band( p.y - ENTAB - 0.02, 0.01, 0.012 );
+    h += band( p.y - Entab, 0.028, 0.03 ) + band( p.y - Entab - 0.02, 0.01, 0.012 );
     h += band( p.y + 0.12, 0.014, 0.02 );
-    h += band( p.y - GROUND - 0.012, 0.012, 0.012 ); // plinth
+    h += band( p.y - Ground - 0.012, 0.012, 0.012 ); // plinth
     // Pilasters between the bays, with capitals and bases.
     float px = ( fract( p.x / gBay ) - 0.5 ) * gBay; // pilasters on the bay edges
-    if ( p.y < ENTAB - 0.02 )
+    if ( p.y < Entab - 0.02 )
     {
-        float cap = smoothstep( ENTAB - 0.06, ENTAB - 0.03, p.y );
+        float cap = smoothstep( Entab - 0.06, Entab - 0.03, p.y );
         float pw = 0.018 + 0.008 * cap;
         float pil = smoothstep( pw + 0.002, pw - 0.002, abs( px ) ) * step( -0.105, p.y );
         // Fluting on the shafts.
@@ -146,16 +146,16 @@ float relief( vec2 p, out float glass )
         h += pil * ( 0.018 + flute + 0.008 * cap );
     }
     // Windows: arched openings in each bay, both storeys; the portal in the middle.
-    float bayI = floor( p.x / gBay + 0.5 );
-    float wx = p.x - bayI * gBay;
+    float bay_i = floor( p.x / gBay + 0.5 );
+    float wx = p.x - bay_i * gBay;
     vec2  wq = vec2( wx, p.y );
-    float wUp, wDn;
+    float w_up, w_dn;
     {
         vec2  q = wq - vec2( 0.0, 0.03 );
         float ww = min( gBay * 0.17, 0.045 );
-        wUp = min( sdBox( q, vec2( ww, 0.06 ) ), length( q - vec2( 0.0, 0.06 ) ) - ww );
+        w_up = min( sdBox( q, vec2( ww, 0.06 ) ), length( q - vec2( 0.0, 0.06 ) ) - ww );
         vec2 q2 = wq - vec2( 0.0, -0.25 );
-        wDn = min( sdBox( q2, vec2( ww, 0.055 ) ), length( q2 - vec2( 0.0, 0.055 ) ) - ww );
+        w_dn = min( sdBox( q2, vec2( ww, 0.055 ) ), length( q2 - vec2( 0.0, 0.055 ) ) - ww );
     }
     // The portal: the central bay's ground floor is a tall arched door.
     float portal = 1e9;
@@ -164,9 +164,9 @@ float relief( vec2 p, out float glass )
         vec2  q = p - vec2( 0.0, -0.27 );
         float pw2 = gBay * 0.3;
         portal = min( sdBox( q, vec2( pw2, 0.09 ) ), length( q - vec2( 0.0, 0.09 ) ) - pw2 );
-        wDn = 1e9;
+        w_dn = 1e9;
     }
-    float win = min( min( wUp, wDn ), portal );
+    float win = min( min( w_up, w_dn ), portal );
     // Moulded frames around the openings; the openings recessed.
     h += band( win - 0.008, 0.007, 0.012 );
     if ( win < 0.0 )
@@ -213,24 +213,24 @@ void main()
         float lit = dif * ( 1.0 - ocl );
 
         // The stone itself, dimly lit by the street lamps.
-        float stoneN = 0.85 + 0.15 * noise2( p * 80.0 );
-        vec3  stone = vec3( 0.35, 0.3, 0.24 ) * stoneN;
+        float stone_n = 0.85 + 0.15 * noise2( p * 80.0 );
+        vec3  stone = vec3( 0.35, 0.3, 0.24 ) * stone_n;
         vec3  surf = stone * 0.08 * ( 0.6 + 0.4 * dif );
 
         // The show, in acts that cross-fade continuously.
         float act = T * 0.035;
-        float wPhoto = 0.55 + 0.45 * sin( act );
-        float wLines = 0.5 + 0.5 * sin( act * 1.3 + 2.0 );
+        float w_photo = 0.55 + 0.45 * sin( act );
+        float w_lines = 0.5 + 0.5 * sin( act * 1.3 + 2.0 );
         // Act 1: the photo, mapped to the facade, broken by the relief.
-        vec2 fuv = vec2( p.x / ( 2.0 * gHalfW ) + 0.5, ( p.y - GROUND ) / ( TOP - GROUND ) );
+        vec2 fuv = vec2( p.x / ( 2.0 * gHalfW ) + 0.5, ( p.y - Ground ) / ( Top - Ground ) );
         fuv += vec2( 0.0, -0.4 ) * h; // the projection shifts on the relief
         vec3 photo = img( clamp( fuv, 0.0, 1.0 ) );
-        vec3 proj = photo * wPhoto * 1.2;
+        vec3 proj = photo * w_photo * 1.2;
         // Act 2: light running along the outlines of the architecture.
         float edge = smoothstep( 0.8, 3.0, length( grad ) );
         float run = pow( 0.5 + 0.5 * sin( ( p.x * 6.0 + p.y * 3.0 ) * 3.0 - T * 0.8 ), 6.0 );
-        vec3  lineC = imgPalette( 0.2 + hueP * 0.159 ) * 1.6 + 0.2;
-        proj += lineC * edge * ( 0.25 + run + 1.5 * kick ) * wLines;
+        vec3  line_c = imgPalette( 0.2 + hueP * 0.159 ) * 1.6 + 0.2;
+        proj += line_c * edge * ( 0.25 + run + 1.5 * kick ) * w_lines;
         // Act 3: a glowing sweep passing across the front.
         float sx = 1.2 * sin( T * 0.05 );
         float sweep = exp( -pow( ( p.x - sx ) * 5.0, 2.0 ) );
@@ -240,11 +240,11 @@ void main()
         col = surf;
     }
     // A glow of the projection spilling into the haze above the square.
-    col += vec3( 0.05, 0.05, 0.08 ) * ( 0.5 + bass ) * smoothstep( 0.1, GROUND, p.y );
+    col += vec3( 0.05, 0.05, 0.08 ) * ( 0.5 + bass ) * smoothstep( 0.1, Ground, p.y );
 
     // The crowd in the square: two rows of heads and shoulders, dark
     // against the lit facade, the back row smaller.
-    float crowd = smoothstep( GROUND - 0.06, GROUND - 0.064, p.y );
+    float crowd = smoothstep( Ground - 0.06, Ground - 0.064, p.y );
     for ( int row = 0; row < 2; ++row )
     {
         float fr = float( row );
@@ -256,7 +256,7 @@ void main()
             float id = hi + float( k );
             float r = hash21( vec2( id, 3.0 + fr * 11.0 ) );
             float r2 = hash21( vec2( id, 5.0 + fr * 11.0 ) );
-            vec2  c = vec2( ( id + 0.5 + 0.5 * ( r - 0.5 ) ) / cols, GROUND - 0.035 + 0.02 * fr + 0.015 * r2 );
+            vec2  c = vec2( ( id + 0.5 + 0.5 * ( r - 0.5 ) ) / cols, Ground - 0.035 + 0.02 * fr + 0.015 * r2 );
             vec2  q = ( p - c ) / sc;
             float head = length( q * vec2( 1.0, 0.85 ) ) - 0.011;
             float body = length( ( q - vec2( 0.0, -0.032 ) ) * vec2( 0.55, 1.0 ) ) - 0.02;
@@ -267,7 +267,7 @@ void main()
     col = mix( col, vec3( 0.008, 0.008, 0.012 ), crowd );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

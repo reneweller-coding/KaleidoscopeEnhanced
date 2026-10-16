@@ -101,10 +101,10 @@ void main()
     float inside = smoothstep( 0.006, -0.006, r - ri );
     // Injected fluid: the photo, seen through the glass plate, with the
     // flow lines radial; the outer fluid: the palette, viscous and dark.
-    vec2 flowUV = vec2( fract( a / 6.2831853 + 0.5 ), clamp( r / max( ri, 1e-3 ), 0.0, 1.0 ) );
+    vec2 flow_uv = vec2( fract( a / 6.2831853 + 0.5 ), clamp( r / max( ri, 1e-3 ), 0.0, 1.0 ) );
     vec3 inner = img( vec2( p.x / aspect + 0.5, p.y + 0.5 ) ) * 1.2;
     inner = mix( inner, inner * imgPalette( hue * 0.159 + 0.1 ) * 1.6, 0.25 );
-    inner *= 0.8 + 0.2 * sin( flowUV.y * 40.0 - sceneAdvance * 0.5 );
+    inner *= 0.8 + 0.2 * sin( flow_uv.y * 40.0 - sceneAdvance * 0.5 );
     vec3 outer = imgPalette( hue * 0.159 + 0.55 ) * 0.9 + 0.12;
     outer *= 0.85 + 0.15 * sin( r * 50.0 + a * 3.0 );
     vec3 col = mix( outer, inner, inside );
@@ -117,7 +117,7 @@ void main()
     col *= 0.85 + 0.15 * ( 1.0 - smoothstep( 0.7, 1.0, r ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

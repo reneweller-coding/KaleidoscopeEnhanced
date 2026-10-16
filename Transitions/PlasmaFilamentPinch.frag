@@ -62,34 +62,34 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.5 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Multiple parallel Z-pinch filaments with m=1 kink helical oscillation
-    float filamentX = sin( p.y * 12.0 * knk + t * 4.0 ) * 0.06 * midTransition;
-    float distToFilament = abs( p.x - filamentX );
+    float filament_x = sin( p.y * 12.0 * knk + t * 4.0 ) * 0.06 * mid_transition;
+    float dist_to_filament = abs( p.x - filament_x );
 
     // Magnetic compression factor
-    float pinchRadius = 0.15 / ( 1.0 + midTransition * 4.0 * pnc );
-    float pinchCore = exp( -distToFilament * distToFilament / ( pinchRadius * pinchRadius ) );
+    float pinch_radius = 0.15 / ( 1.0 + mid_transition * 4.0 * pnc );
+    float pinch_core = exp( -dist_to_filament * dist_to_filament / ( pinch_radius * pinch_radius ) );
 
     // Lorentz force radial pull displacement
-    float pinchDispX = -sign( p.x - filamentX ) * pinchCore * 0.05 * midTransition * ( 1.0 + audioSwell * 0.8 );
-    vec2  warpUV = uv + vec2( pinchDispX, 0.0 );
+    float pinch_disp_x = -sign( p.x - filament_x ) * pinch_core * 0.05 * mid_transition * ( 1.0 + audioSwell * 0.8 );
+    vec2  warp_uv = uv + vec2( pinch_disp_x, 0.0 );
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Glowing high-temperature plasma core
-    vec3 plasmaColor = mix( vec3( 0.95, 0.3, 0.1 ), vec3( 0.3, 0.85, 1.0 ), pinchCore );
-    col.rgb += pinchCore * plasmaColor * midTransition * ( 1.6 + audioKick * 1.17 );
+    vec3 plasma_color = mix( vec3( 0.95, 0.3, 0.1 ), vec3( 0.3, 0.85, 1.0 ), pinch_core );
+    col.rgb += pinch_core * plasma_color * mid_transition * ( 1.6 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

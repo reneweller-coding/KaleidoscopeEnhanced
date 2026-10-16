@@ -100,20 +100,20 @@ float fbm( vec2 p )
     return v;
 }
 
-const vec2  HC = vec2( 0.0, 0.07 ); // centre of the apparition
-const vec2  HS = vec2( 0.3, 0.3 );  // its half size
-const float STAGEY = -0.2;          ///< stage floor line
+const vec2  Hc = vec2( 0.0, 0.07 ); // centre of the apparition
+const vec2  Hs = vec2( 0.3, 0.3 );  // its half size
+const float Stagey = -0.2;          ///< stage floor line
 float       gT, gAng, gHi;
 
 /// The apparition at a screen point: glow colour (rgb) and coverage (a).
 vec4 ghost( vec2 p )
 {
     // Invert the perspective of a plane turned about the vertical axis.
-    vec2  q = p - HC;
+    vec2  q = p - Hc;
     float k = 1.1, s = sin( gAng ), c = cos( gAng );
     float u = q.x / ( c - k * q.x * s );
     float v = q.y * ( 1.0 + k * u * s );
-    vec2  hu = vec2( u / HS.x, v / HS.y ); // -1..1 across the figure
+    vec2  hu = vec2( u / Hs.x, v / Hs.y ); // -1..1 across the figure
     if ( c - k * q.x * s < 0.1 )
         return vec4( 0.0 );
     // The figure: a floating dancer, arms raised and open, the body
@@ -170,14 +170,14 @@ void main()
 
     // The dark stage: a black box, a faint blue wash on the back wall.
     vec3 col = vec3( 0.01, 0.012, 0.02 )
-               + vec3( 0.02, 0.03, 0.06 ) * smoothstep( 0.5, -0.1, abs( p.x ) ) * smoothstep( STAGEY, 0.3, p.y );
+               + vec3( 0.02, 0.03, 0.06 ) * smoothstep( 0.5, -0.1, abs( p.x ) ) * smoothstep( Stagey, 0.3, p.y );
     // The stage floor: glossy black, mirroring the apparition.
-    if ( p.y < STAGEY )
+    if ( p.y < Stagey )
     {
-        vec2 mq = vec2( p.x, 2.0 * STAGEY - p.y );
+        vec2 mq = vec2( p.x, 2.0 * Stagey - p.y );
         mq.x += 0.004 * ( noise2( p * vec2( 30.0, 120.0 ) ) - 0.5 );
         vec4  gr = ghost( mq );
-        float f = exp( -( STAGEY - p.y ) * 7.0 );
+        float f = exp( -( Stagey - p.y ) * 7.0 );
         col += gr.rgb * gr.a * 0.3 * f * bright;
         col += vec3( 0.02, 0.03, 0.05 ) * f;
     }
@@ -195,31 +195,31 @@ void main()
     // The apparition on the gauze, and its halo in the haze around it.
     vec4 g = ghost( p );
     col += g.rgb * g.a * bright * 1.3;
-    float halo = exp( -max( length( ( p - HC ) / ( HS * vec2( 1.1, 1.2 ) ) ) - 0.7, 0.0 ) * 5.0 );
+    float halo = exp( -max( length( ( p - Hc ) / ( Hs * vec2( 1.1, 1.2 ) ) ) - 0.7, 0.0 ) * 5.0 );
     col += vec3( 0.35, 0.55, 0.9 ) * halo * 0.08 * bright;
     // The gauze itself shows only faintly where the light touches it.
     col += vec3( 0.5, 0.6, 0.7 ) * 0.015 * ( 0.5 + 0.5 * sin( p.x * 90.0 + 2.0 * noise2( p * 5.0 ) ) ) * halo * bright;
 
     // Heavy red curtains framing the stage opening, their folds catching the glow.
     {
-        float sideW = 0.5 * aspect - 0.62;
-        float xo = abs( p.x ) - ( 0.5 * aspect - sideW );
+        float side_w = 0.5 * aspect - 0.62;
+        float xo = abs( p.x ) - ( 0.5 * aspect - side_w );
         float swag = p.y - ( 0.42 - 0.04 * cos( p.x * 7.0 ) );
         if ( xo > 0.0 || swag > 0.0 )
         {
             float fx = xo > 0.0 ? p.x : p.x * 1.4;
             float folds = 0.5 + 0.5 * sin( fx * 70.0 + 1.5 * sin( p.y * 4.0 ) );
             vec3  cur = vec3( 0.35, 0.03, 0.04 ) * ( 0.2 + 0.8 * folds * folds );
-            float lightOn = 0.08 + 0.3 * exp( -max( xo, 0.0 ) * 12.0 ) * smoothstep( 0.5, -0.1, p.y );
+            float light_on = 0.08 + 0.3 * exp( -max( xo, 0.0 ) * 12.0 ) * smoothstep( 0.5, -0.1, p.y );
             if ( swag > 0.0 )
-                lightOn = 0.1 + 0.2 * exp( -swag * 20.0 );
-            col = cur * lightOn * bright;
+                light_on = 0.1 + 0.2 * exp( -swag * 20.0 );
+            col = cur * light_on * bright;
         }
     }
 
     // The audience in silhouette, the ghost's cold light on their heads.
     {
-        float crowd = 0.0, rimL = 0.0;
+        float crowd = 0.0, rim_l = 0.0;
         for ( int row = 0; row < 2; ++row )
         {
             float fr = float( row );
@@ -241,16 +241,16 @@ void main()
                 {
                     crowd = cov;
                     // Rim along the top of the head, facing the stage.
-                    rimL = smoothstep( -0.008 * ps, 0.0, d ) * smoothstep( -0.01, 0.02, q.y ) * cov;
+                    rim_l = smoothstep( -0.008 * ps, 0.0, d ) * smoothstep( -0.01, 0.02, q.y ) * cov;
                 }
             }
         }
         col = mix( col, vec3( 0.005, 0.006, 0.01 ), crowd );
-        col += vec3( 0.4, 0.6, 0.9 ) * rimL * 0.25 * bright;
+        col += vec3( 0.4, 0.6, 0.9 ) * rim_l * 0.25 * bright;
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

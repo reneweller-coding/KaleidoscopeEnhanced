@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -238,7 +238,7 @@ void main()
     vec2  cell = floor( g );
     vec2  lo = cell, hi = cell + 1.0;
     vec2  id = cell;
-    float minEdge = 9.0; // distance to the nearest bar
+    float min_edge = 9.0; // distance to the nearest bar
     float depth = 3.0 + 3.0 * clamp( depthP, 0.0, 1.0 );
     for ( int k = 0; k < 6; ++k )
     {
@@ -250,7 +250,7 @@ void main()
         if ( vertical )
         {
             float x = mix( lo.x, hi.x, s );
-            minEdge = min( minEdge, abs( g.x - x ) );
+            min_edge = min( min_edge, abs( g.x - x ) );
             if ( g.x < x )
             {
                 hi.x = x;
@@ -265,7 +265,7 @@ void main()
         else
         {
             float y = mix( lo.y, hi.y, s );
-            minEdge = min( minEdge, abs( g.y - y ) );
+            min_edge = min( min_edge, abs( g.y - y ) );
             if ( g.y < y )
             {
                 hi.y = y;
@@ -279,7 +279,7 @@ void main()
         }
         id = mod( id, 997.0 );
     }
-    minEdge = min( minEdge, min( min( g.x - cell.x, cell.x + 1.0 - g.x ), min( g.y - cell.y, cell.y + 1.0 - g.y ) ) );
+    min_edge = min( min_edge, min( min( g.x - cell.x, cell.x + 1.0 - g.x ), min( g.y - cell.y, cell.y + 1.0 - g.y ) ) );
     // Fill: flat colour or a photo window.
     float h = hash21( id + 3.0 );
     vec3  c[5];
@@ -303,7 +303,7 @@ void main()
     float bw = 0.006 + 0.012 * clamp( barP, 0.0, 1.0 );
     bw *= 1.0 + 0.5 * clamp( audioRoughness, 0.0, 1.0 ) * ( noise2( g * 30.0 ) - 0.5 );
     float px = fwidth( g.x ) * 1.2;
-    float bar = smoothstep( bw + px, bw - px, minEdge );
+    float bar = smoothstep( bw + px, bw - px, min_edge );
     col = mix( col, vec3( 0.03 ), bar );
     finish( col );
 }

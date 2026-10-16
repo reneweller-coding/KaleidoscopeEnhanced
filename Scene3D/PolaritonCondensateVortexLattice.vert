@@ -62,40 +62,40 @@ void main()
     vec2 p = uv * 3.5;
 
     // Triangular Abrikosov-like vortex lattice in macroscopic polariton wavefield
-    float vScale = ( vortexDensityP > 0.01 ? vortexDensityP : 2.5 );
-    vec2  q = p * vScale;
+    float v_scale = ( vortexDensityP > 0.01 ? vortexDensityP : 2.5 );
+    vec2  q = p * v_scale;
 
-    float phaseAcc = 0.0;
-    float heightAcc = 0.0;
+    float phase_acc = 0.0;
+    float height_acc = 0.0;
 
     for ( float i = 1.0; i <= 4.0; i += 1.0 )
     {
-        vec2  vPos = vec2( cos( i * 1.57 + t * 0.3 ), sin( i * 1.57 + t * 0.3 ) ) * ( 0.8 + 0.3 * sin( t * 0.5 + i ) );
-        vec2  diff = p - vPos;
+        vec2  v_pos = vec2( cos( i * 1.57 + t * 0.3 ), sin( i * 1.57 + t * 0.3 ) ) * ( 0.8 + 0.3 * sin( t * 0.5 + i ) );
+        vec2  diff = p - v_pos;
         float angle = atan( diff.y, diff.x );
         float dist = length( diff );
 
         // Quantized 2pi vortex winding
-        phaseAcc += angle;
+        phase_acc += angle;
         // Vortex core dip
-        heightAcc += ( 1.0 - exp( -dist * dist * 3.0 ) );
+        height_acc += ( 1.0 - exp( -dist * dist * 3.0 ) );
     }
 
     // Superfluid acoustic phonon waves
     float phonons = sin( length( p ) * 6.0 - t * 3.0 ) * 0.15;
 
-    float hScale = ( waveHeightP > 0.01 ? waveHeightP : 0.45 ) * ( 1.0 + 0.5 * audioSwell );
-    float zHeight = ( heightAcc * 0.25 - 0.5 + phonons ) * hScale;
+    float h_scale = ( waveHeightP > 0.01 ? waveHeightP : 0.45 ) * ( 1.0 + 0.5 * audioSwell );
+    float z_height = ( height_acc * 0.25 - 0.5 + phonons ) * h_scale;
 
     // Approximate surface normal
-    float dHdx = cos( p.x * 6.0 - t * 3.0 ) * 0.2;
-    float dHdy = cos( p.y * 6.0 - t * 3.0 ) * 0.2;
-    vNormal = normalize( vec3( -dHdx, -dHdy, 1.0 ) );
+    float d_hdx = cos( p.x * 6.0 - t * 3.0 ) * 0.2;
+    float d_hdy = cos( p.y * 6.0 - t * 3.0 ) * 0.2;
+    vNormal = normalize( vec3( -d_hdx, -d_hdy, 1.0 ) );
 
-    vPhase = phaseAcc;
-    vCol = imgPalette( fract( phaseAcc * 0.159 + t * 0.05 + audioCentroid ) );
+    vPhase = phase_acc;
+    vCol = imgPalette( fract( phase_acc * 0.159 + t * 0.05 + audioCentroid ) );
 
-    vec3 worldPos = vec3( p.x, p.y, zHeight );
+    vec3 world_pos = vec3( p.x, p.y, z_height );
 
     // Camera Transform (V3)
     // Tilt FIRST, then push away.  The old order rotated the already-pushed
@@ -103,7 +103,7 @@ void main()
     // and left it sitting in the lower half of the frame with black above.
     // Tilting about the plate's own centre keeps it on the view axis, and at
     // this distance it then fills the frame (reported: "bildschirmfuellender").
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.65;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

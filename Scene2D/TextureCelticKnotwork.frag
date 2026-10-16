@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -242,48 +242,49 @@ void main()
     float w = 0.16 + 0.1 * clamp( audioSpread, 0.0, 1.0 );
     float px = fwidth( d.x ) * 1.2 + 1e-4;
     float r1 = abs( fd.x ), r2 = abs( fd.y );
-    float onA = smoothstep( w + px, w - px, r1 ); // ribbon family A (along d.y)
-    float onB = smoothstep( w + px, w - px, r2 ); // ribbon family B (along d.x)
+    float on_a = smoothstep( w + px, w - px, r1 ); // ribbon family A (along d.y)
+    float on_b = smoothstep( w + px, w - px, r2 ); // ribbon family B (along d.x)
     // Over/under alternates at each crossing.
     vec2  cc = floor( d + 0.5 );
     float over = mod( cc.x + cc.y, 2.0 );
     // Some crossings open into turns (breaks), slowly changing.
     float br = 0.15 + 0.35 * clamp( breakP, 0.0, 1.0 );
     float change = 0.02 * sceneTime + 0.3 * clamp( audioHarmChange, 0.0, 1.0 );
-    float isBreak = smoothstep( br + 0.05, br - 0.05, noise2( cc * 0.7 + change ) );
+    float is_break = smoothstep( br + 0.05, br - 0.05, noise2( cc * 0.7 + change ) );
     // At a break, cut the ribbons near the crossing and round them into turns (approx.).
     vec2  cr = d - cc;
-    float nearX = smoothstep( 0.35, 0.2, max( abs( cr.x ), abs( cr.y ) ) );
-    float turnR = abs( length( abs( cr ) - vec2( 0.5 ) ) - 0.5 );
-    float turn = smoothstep( w + px, w - px, turnR ) * nearX * isBreak;
-    onA *= 1.0 - nearX * isBreak;
-    onB *= 1.0 - nearX * isBreak;
+    float near_x = smoothstep( 0.35, 0.2, max( abs( cr.x ), abs( cr.y ) ) );
+    float turn_r = abs( length( abs( cr ) - vec2( 0.5 ) ) - 0.5 );
+    float turn = smoothstep( w + px, w - px, turn_r ) * near_x * is_break;
+    on_a *= 1.0 - near_x * is_break;
+    on_b *= 1.0 - near_x * is_break;
     // Photo along the ribbons.
-    vec3 phA = imgLod( vec2( d.y * 0.1, fd.x * 0.3 ) + 0.5 + id.x * 0.13, 1.0 );
-    vec3 phB = imgLod( vec2( d.x * 0.1, fd.y * 0.3 ) + 0.2 + id.y * 0.17, 1.0 );
+    vec3 ph_a = imgLod( vec2( d.y * 0.1, fd.x * 0.3 ) + 0.5 + id.x * 0.13, 1.0 );
+    vec3 ph_b = imgLod( vec2( d.x * 0.1, fd.y * 0.3 ) + 0.2 + id.y * 0.17, 1.0 );
     vec3 gc = glowColour( imgLod( p * 0.5 + 0.5, 5.0 ), p, hueP * 0.159 );
-    vec3 ribA = mix( gc * 0.9, phA * 1.2, clamp( photoP, 0.0, 1.0 ) );
-    vec3 ribB = mix( gc.gbr * 0.9, phB * 1.2, clamp( photoP, 0.0, 1.0 ) );
+    vec3 rib_a = mix( gc * 0.9, ph_a * 1.2, clamp( photoP, 0.0, 1.0 ) );
+    vec3 rib_b = mix( gc.gbr * 0.9, ph_b * 1.2, clamp( photoP, 0.0, 1.0 ) );
     // Pulses travelling along.
     float T = 0.5 * sceneTime + 3.0 * audioAdvance;
     float pa = pow( 0.5 + 0.5 * sin( d.y * 2.0 - T + id.x ), 10.0 );
     float pb = pow( 0.5 + 0.5 * sin( d.x * 2.0 + T + id.y ), 10.0 );
-    ribA += gc * pa * ( 0.4 + 1.5 * kick );
-    ribB += gc * pb * ( 0.4 + 1.5 * kick );
+    rib_a += gc * pa * ( 0.4 + 1.5 * kick );
+    rib_b += gc * pb * ( 0.4 + 1.5 * kick );
     // Shade: the under ribbon darkens near the crossing.
-    float underShade = 1.0 - 0.45 * smoothstep( w * 2.5, w, min( r1, r2 ) );
-    vec3  inkC = mix( vec3( 0.02 ), vec3( 0.9, 0.7, 0.3 ), mode );
+    float under_shade = 1.0 - 0.45 * smoothstep( w * 2.5, w, min( r1, r2 ) );
+    vec3  ink_c = mix( vec3( 0.02 ), vec3( 0.9, 0.7, 0.3 ), mode );
     vec3  col = mix( vec3( 0.02, 0.02, 0.03 ), gc * 0.15, 0.3 + 0.7 * swell );
-    vec3  first = over > 0.5 ? ribB * underShade : ribA * underShade;
-    vec3  second = over > 0.5 ? ribA : ribB;
-    float fOn = over > 0.5 ? onB : onA, sOn = over > 0.5 ? onA : onB;
+    vec3  first = over > 0.5 ? rib_b * under_shade : rib_a * under_shade;
+    vec3  second = over > 0.5 ? rib_a : rib_b;
+    float f_on = over > 0.5 ? on_b : on_a, s_on = over > 0.5 ? on_a : on_b;
     // Ink outlines.
-    float outA = smoothstep( w + px * 2.5, w + px * 0.5, r1 ) * ( 1.0 - smoothstep( w - px * 0.5, w - px * 2.5, r1 ) );
-    float outB = smoothstep( w + px * 2.5, w + px * 0.5, r2 ) * ( 1.0 - smoothstep( w - px * 0.5, w - px * 2.5, r2 ) );
-    col = mix( col, first, fOn );
-    col = mix( col, inkC, ( over > 0.5 ? outB : outA ) * ( 1.0 - nearX * isBreak ) );
-    col = mix( col, second, sOn );
-    col = mix( col, inkC, ( over > 0.5 ? outA : outB ) * ( 1.0 - nearX * isBreak ) * ( 1.0 - fOn * ( 1.0 - sOn ) ) );
-    col = mix( col, mix( ribA, ribB, 0.5 ), turn );
+    float out_a = smoothstep( w + px * 2.5, w + px * 0.5, r1 ) * ( 1.0 - smoothstep( w - px * 0.5, w - px * 2.5, r1 ) );
+    float out_b = smoothstep( w + px * 2.5, w + px * 0.5, r2 ) * ( 1.0 - smoothstep( w - px * 0.5, w - px * 2.5, r2 ) );
+    col = mix( col, first, f_on );
+    col = mix( col, ink_c, ( over > 0.5 ? out_b : out_a ) * ( 1.0 - near_x * is_break ) );
+    col = mix( col, second, s_on );
+    col = mix( col, ink_c,
+               ( over > 0.5 ? out_a : out_b ) * ( 1.0 - near_x * is_break ) * ( 1.0 - f_on * ( 1.0 - s_on ) ) );
+    col = mix( col, mix( rib_a, rib_b, 0.5 ), turn );
     finish( col );
 }

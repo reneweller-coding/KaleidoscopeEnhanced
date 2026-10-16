@@ -83,36 +83,36 @@ void main()
 
     // Archimedian / Parker spiral: r(theta) = v / omega * theta
     // Spiral phase: angle - r * winding - t
-    float spiralArm = angle - r * 8.0 * spr - t * 2.5;
+    float spiral_arm = angle - r * 8.0 * spr - t * 2.5;
 
-    // Ballerina skirt wavy undulation: z(r, theta) = r * sin(4 * spiralArm)
-    float skirtWave = sin( spiralArm * 2.0 ) * ( 0.45 * skr + 0.2 * audioBass );
+    // Ballerina skirt wavy undulation: z(r, theta) = r * sin(4 * spiral_arm)
+    float skirt_wave = sin( spiral_arm * 2.0 ) * ( 0.45 * skr + 0.2 * audioBass );
 
     // Sector boundary current sheet (where magnetic polarity flips B_r = 0)
-    float sheetDist = abs( skirtWave );
-    float currentSheet = exp( -sheetDist * 16.0 );
+    float sheet_dist = abs( skirt_wave );
+    float current_sheet = exp( -sheet_dist * 16.0 );
 
     // Solar wind radial stream turbulence
     float turbulence = sin( r * 40.0 - t * 10.0 + angle * 6.0 ) * 0.08 * ( 1.0 + audioHigh );
 
     // Photo texture mapping along spiral current sheet
-    vec2 photoUV = st + vec2( sin( spiralArm ), cos( spiralArm ) ) * 0.04 * ( 1.0 + audioKick * 0.7 );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( sin( spiral_arm ), cos( spiral_arm ) ) * 0.04 * ( 1.0 + audioKick * 0.7 );
+    vec3 photo = img( fract( photo_uv ) );
 
     // Magnetic polarity palette: North Sector (Cyan/Blue), South Sector (Amber/Red), Current Sheet (Gold/White)
-    vec3 northSector = vec3( 0.05, 0.4, 0.9 );
-    vec3 southSector = vec3( 0.9, 0.3, 0.1 );
-    vec3 sheetGold = vec3( 1.0, 0.95, 0.5 );
+    vec3 north_sector = vec3( 0.05, 0.4, 0.9 );
+    vec3 south_sector = vec3( 0.9, 0.3, 0.1 );
+    vec3 sheet_gold = vec3( 1.0, 0.95, 0.5 );
 
-    float polarity = smoothstep( -0.2, 0.2, skirtWave );
-    vec3  sectorColor = mix( northSector, southSector, polarity );
+    float polarity = smoothstep( -0.2, 0.2, skirt_wave );
+    vec3  sector_color = mix( north_sector, south_sector, polarity );
 
     // Magnetic reconnection flash on kick
-    float reconnection = currentSheet * ( audioKick * 3.5 + audioSubBass * 1.2 );
+    float reconnection = current_sheet * ( audioKick * 3.5 + audioSubBass * 1.2 );
 
     // Combine visualizer
-    vec3 col = mix( sectorColor * 0.4, photo * 0.9, 0.5 + 0.2 * audioLevel );
-    col += currentSheet * sheetGold * ( 1.2 + audioSwell * 0.8 );
+    vec3 col = mix( sector_color * 0.4, photo * 0.9, 0.5 + 0.2 * audioLevel );
+    col += current_sheet * sheet_gold * ( 1.2 + audioSwell * 0.8 );
     col += reconnection * vec3( 1.0, 0.98, 0.85 ) * 1.5;
     col += turbulence * vec3( 0.3, 0.8, 1.0 );
 

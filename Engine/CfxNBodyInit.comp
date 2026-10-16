@@ -63,8 +63,8 @@ void main()
     vec3 centre = second ? vec3( 1.55, 0.42, -0.25 )
                          : vec3( -1.55, -0.42, 0.25 );
     // Tangential to the line joining them, just under circular speed.
-    vec3 driftV = second ? vec3( -0.075, 0.285, 0.0 )
-                         : vec3( 0.075, -0.285, 0.0 );
+    vec3 drift_v = second ? vec3( -0.075, 0.285, 0.0 )
+                          : vec3( 0.075, -0.285, 0.0 );
 
     // Tilt the two discs differently so the collision is not a flat mirror.
     float tilt = second ? 0.55 : -0.30;
@@ -83,5 +83,5 @@ void main()
     // Per-body mass keeps the TOTAL gravitating mass independent of the star
     // count, so the orbital speeds below stay valid if the count changes.
     pos[i] = vec4( centre + local, 32768.0 / float( count ) );
-    vel[i] = vec4( driftV + tang * vmag, second ? 0.62 : 0.14 );
+    vel[i] = vec4( drift_v + tang * vmag, second ? 0.62 : 0.14 );
 }

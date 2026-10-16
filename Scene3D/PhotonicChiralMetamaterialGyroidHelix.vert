@@ -55,13 +55,13 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
-    vUV = vec2( tCoord, side * 0.5 + 0.5 );
+    vRibbonID = r_index;
+    vUV = vec2( t_coord, side * 0.5 + 0.5 );
 
     // Base rate raised from 0.35: every mover in this scene is geared DOWN off
     // this clock (tumble 0.31t, lattice breath 0.61t, screw 1.5t), so at 0.35 the
@@ -75,37 +75,37 @@ void main()
     // ribbons are laid out on a 5 x 4 grid in FRUSTUM coordinates (x/y scaled
     // by each cell's own depth), so the array covers the whole picture at
     // every distance instead of bunching into one central knot.
-    const float kTanY = 0.5206; // 55 deg vertical FOV
+    const float TanY = 0.5206; // 55 deg vertical FOV
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
-    float gx = mod( rIndex, 5.0 );
-    float gy = floor( rIndex / 5.0 );
+    float gx = mod( r_index, 5.0 );
+    float gy = floor( r_index / 5.0 );
     // > 1.0 so the outer ranks straddle the frame edge: no empty border
     float nx = ( ( ( gx + 0.5 ) / 5.0 ) * 2.0 - 1.0 ) * 1.26;
     float ny = ( ( ( gy + 0.5 ) / 4.0 ) * 2.0 - 1.0 ) * 1.36;
     // slow lattice breathing -- continuous, no wrap, rate from the accumulator
-    nx += 0.055 * sin( t * 0.61 + rIndex * 1.13 );
-    ny += 0.050 * cos( t * 0.47 + rIndex * 2.07 );
+    nx += 0.055 * sin( t * 0.61 + r_index * 1.13 );
+    ny += 0.050 * cos( t * 0.47 + r_index * 2.07 );
 
     float dz = 4.6 + attrB.z * 2.4; // parallax layers
-    float halfH = dz * kTanY;
-    float halfW = halfH * aspect;
-    vec3  cellC = vec3( nx * halfW, ny * halfH, dz );
+    float half_h = dz * TanY;
+    float half_w = half_h * aspect;
+    vec3  cell_c = vec3( nx * half_w, ny * half_h, dz );
 
-    float hRad = ( helixRadiusP > 0.01 ? helixRadiusP : 0.65 );
+    float h_rad = ( helixRadiusP > 0.01 ? helixRadiusP : 0.65 );
     // Coil radius/length up from 0.21/0.95: with 20 fixed ribbons the only way to
     // raise coverage is to make each helix bigger. The array reached barely a
     // quarter of the frame's tiles before (measured occ 0.26).
-    float R = halfH * 0.30 * clamp( hRad / 0.65, 0.7, 1.6 ); // coil radius
-    float L = halfH * 1.30;                                  // coil length
+    float R = half_h * 0.30 * clamp( h_rad / 0.65, 0.7, 1.6 ); // coil radius
+    float L = half_h * 1.30;                                   // coil length
 
-    float nTurns = ( pitchTurnsP > 0.01 ? pitchTurnsP : 6.0 );
-    float phi = tCoord * nTurns * 6.2831853 + rIndex * 0.7853982 + t * 1.5;
+    float n_turns = ( pitchTurnsP > 0.01 ? pitchTurnsP : 6.0 );
+    float phi = t_coord * n_turns * 6.2831853 + r_index * 0.7853982 + t * 1.5;
 
-    vec3 centerPos = vec3( cos( phi ) * R, sin( phi ) * R, ( tCoord - 0.5 ) * L );
+    vec3 center_pos = vec3( cos( phi ) * R, sin( phi ) * R, ( t_coord - 0.5 ) * L );
 
-    vec3 tangent = normalize( vec3( -sin( phi ) * R * nTurns * 6.2831853,
-                                    cos( phi ) * R * nTurns * 6.2831853, L ) );
+    vec3 tangent = normalize( vec3( -sin( phi ) * R * n_turns * 6.2831853,
+                                    cos( phi ) * R * n_turns * 6.2831853, L ) );
     vec3 binormal = normalize( cross( tangent, vec3( cos( phi ), sin( phi ), 0.0 ) ) );
 
     // The quad is ~4.5x the metal ribbon: the fragment stage paints the inner
@@ -114,29 +114,29 @@ void main()
     // bloom is the only thing that can fill the gaps between 20 thin springs.
     float width = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.045 )
                   * clamp( R / 0.65, 0.6, 1.8 ) * 4.5 * ( 1.0 + 0.3 * audioSwell );
-    vec3  worldPos = centerPos + binormal * ( side * width );
+    vec3  world_pos = center_pos + binormal * ( side * width );
 
     // Each micro-helix tumbles on its own two axes -> the array is never still
-    float ax = 0.50 * sin( t * 0.31 + rIndex * 0.73 );
-    float ay = 0.50 * cos( t * 0.27 + rIndex * 1.31 );
+    float ax = 0.50 * sin( t * 0.31 + r_index * 0.73 );
+    float ay = 0.50 * cos( t * 0.27 + r_index * 1.31 );
     float ca = cos( ax ), sa = sin( ax );
-    worldPos = vec3( worldPos.x,
-                     worldPos.y * ca - worldPos.z * sa,
-                     worldPos.y * sa + worldPos.z * ca );
+    world_pos = vec3( world_pos.x,
+                      world_pos.y * ca - world_pos.z * sa,
+                      world_pos.y * sa + world_pos.z * ca );
     float cb = cos( ay ), sb = sin( ay );
-    worldPos = vec3( worldPos.x * cb + worldPos.z * sb,
-                     worldPos.y,
-                     -worldPos.x * sb + worldPos.z * cb );
+    world_pos = vec3( world_pos.x * cb + world_pos.z * sb,
+                      world_pos.y,
+                      -world_pos.x * sb + world_pos.z * cb );
 
     // Circular dichroism optical activity pulse
-    float pulse = exp( -abs( fract( tCoord * 3.0 - t * 2.5 + rIndex * 0.166 ) - 0.5 ) * 16.0 )
+    float pulse = exp( -abs( fract( t_coord * 3.0 - t * 2.5 + r_index * 0.166 ) - 0.5 ) * 16.0 )
                   * ( 1.0 + 3.0 * audioKick );
     vChiralPulse = pulse;
 
-    vCol = imgPalette( fract( rIndex * 0.166 + tCoord * 0.3 + audioCentroid ) );
+    vCol = imgPalette( fract( r_index * 0.166 + t_coord * 0.3 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = cellC + worldPos;
+    vec3 vp = cell_c + world_pos;
     vp.x -= eyeOff;
 
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

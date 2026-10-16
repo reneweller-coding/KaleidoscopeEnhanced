@@ -84,7 +84,7 @@ float voronoiPlates( vec2 p, out vec2 center )
     vec2  n = floor( p );
     vec2  f = fract( p );
     float m = 8.0;
-    vec2  mCenter = vec2( 0.0 );
+    vec2  m_center = vec2( 0.0 );
     for ( int j = -1; j <= 1; j++ )
     {
         for ( int i = -1; i <= 1; i++ )
@@ -96,11 +96,11 @@ float voronoiPlates( vec2 p, out vec2 center )
             if ( d < m )
             {
                 m = d;
-                mCenter = n + g + o;
+                m_center = n + g + o;
             }
         }
     }
-    center = mCenter;
+    center = m_center;
     return sqrt( m );
 }
 
@@ -117,21 +117,21 @@ void main()
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Magma convective vortex advection
-    vec2  vortexCenter = vec2( sin( t * 0.5 ) * 0.3, cos( t * 0.4 ) * 0.25 );
-    vec2  dV = uv - vortexCenter;
-    float rV = length( dV );
-    float swirl = exp( -rV * 2.5 ) * ( 2.5 + 1.5 * audioBass );
-    vec2  warpedUV = uv + vec2( -dV.y, dV.x ) * ( swirl * 0.1 );
+    vec2  vortex_center = vec2( sin( t * 0.5 ) * 0.3, cos( t * 0.4 ) * 0.25 );
+    vec2  d_v = uv - vortex_center;
+    float r_v = length( d_v );
+    float swirl = exp( -r_v * 2.5 ) * ( 2.5 + 1.5 * audioBass );
+    vec2  warped_uv = uv + vec2( -d_v.y, d_v.x ) * ( swirl * 0.1 );
 
     // Voronoi obsidian crust plates
-    vec2  plateCenter;
-    float plateDist = voronoiPlates( warpedUV * 5.0 * crs + vec2( t * 0.2, t * 0.1 ), plateCenter );
-    float faultLine = smoothstep( 0.12, 0.0, plateDist ); // 1 in fault, 0 on crust
+    vec2  plate_center;
+    float plate_dist = voronoiPlates( warped_uv * 5.0 * crs + vec2( t * 0.2, t * 0.1 ), plate_center );
+    float fault_line = smoothstep( 0.12, 0.0, plate_dist ); // 1 in fault, 0 on crust
 
     // Heat shimmer turbulence
-    float heatTurb = sin( warpedUV.x * 20.0 + time * 6.0 ) * cos( warpedUV.y * 20.0 + time * 5.0 );
-    vec2  photoUV = plateCenter * 0.15 + warpedUV * 0.4 + vec2( heatTurb * 0.015 );
-    vec3  photoObsidian = img( fract( photoUV ) );
+    float heat_turb = sin( warped_uv.x * 20.0 + time * 6.0 ) * cos( warped_uv.y * 20.0 + time * 5.0 );
+    vec2  photo_uv = plate_center * 0.15 + warped_uv * 0.4 + vec2( heat_turb * 0.015 );
+    vec3  photo_obsidian = img( fract( photo_uv ) );
 
     // Lava temperatures: 1500°C White-Hot Molten Core, 1000°C Yellow/Orange, 700°C Cherry Red, Black Obsidian
     //
@@ -141,33 +141,33 @@ void main()
     // 0.09 still came out with 93% of its pixels over-saturated.  Same three
     // temperatures in the same order, given the green/blue floor that real
     // incandescence has.
-    vec3 lavaWhite = vec3( 1.0, 0.98, 0.90 ) * 3.0;
-    vec3 lavaYellow = vec3( 1.0, 0.78, 0.34 ) * 2.2;
-    vec3 lavaRed = vec3( 1.0, 0.38, 0.24 ) * 1.8;
+    vec3 lava_white = vec3( 1.0, 0.98, 0.90 ) * 3.0;
+    vec3 lava_yellow = vec3( 1.0, 0.78, 0.34 ) * 2.2;
+    vec3 lava_red = vec3( 1.0, 0.38, 0.24 ) * 1.8;
     // The crust was the palette-tinted rock MULTIPLIED by the photo, i.e. the
     // picture squared, which drove the obsidian to near-black and left the
     // orange terms below as the only colour in the frame.
-    vec3 obsidianCrust = palTint( mix( vec3( 0.05, 0.055, 0.065 ), vec3( 0.17, 0.15, 0.135 ), photoObsidian.r ), 0.70,
-                                  0.18 )
-                         * ( 0.35 + 0.65 * photoObsidian );
+    vec3 obsidian_crust = palTint( mix( vec3( 0.05, 0.055, 0.065 ), vec3( 0.17, 0.15, 0.135 ), photo_obsidian.r ), 0.70,
+                                   0.18 )
+                          * ( 0.35 + 0.65 * photo_obsidian );
 
     // Molten fault line coloring
-    vec3 faultMagma = mix( lavaRed, lavaYellow, smoothstep( 0.4, 0.8, faultLine ) );
-    faultMagma = mix( faultMagma, lavaWhite, smoothstep( 0.8, 1.0, faultLine ) );
+    vec3 fault_magma = mix( lava_red, lava_yellow, smoothstep( 0.4, 0.8, fault_line ) );
+    fault_magma = mix( fault_magma, lava_white, smoothstep( 0.8, 1.0, fault_line ) );
 
     // Volcanic eruption flash on kick
-    float eruptionFlash = faultLine * ( audioKick * 2.8 + audioSubBass * 1.5 ) * mag;
+    float eruption_flash = fault_line * ( audioKick * 2.8 + audioSubBass * 1.5 ) * mag;
 
     // Shading composition
-    vec3 col = mix( obsidianCrust, faultMagma, faultLine );
-    col += min( lavaWhite * eruptionFlash, vec3( 1.6 ) );
+    vec3 col = mix( obsidian_crust, fault_magma, fault_line );
+    col += min( lava_white * eruption_flash, vec3( 1.6 ) );
 
     // Convective magma surface glow.  This is the single biggest source of the
     // garish reading: exp(-rV * 2.0) covers most of the frame, so a near-pure
     // orange at saturation 0.95 was laid over EVERY pixel including the crust
     // that is meant to read as cold rock.  Same warm glow, off the ceiling.
-    float coreGlow = exp( -rV * 2.0 ) * ( 0.4 + 0.6 * audioSwell );
-    col += vec3( 1.0, 0.55, 0.26 ) * coreGlow * 0.85;
+    float core_glow = exp( -r_v * 2.0 ) * ( 0.4 + 0.6 * audioSwell );
+    col += vec3( 1.0, 0.55, 0.26 ) * core_glow * 0.85;
 
     // Bounded: a full hueP rotation repainted molten rock PURPLE in the
     // probe.  Incandescence keeps its temperature; hueP only inflects.
@@ -176,11 +176,11 @@ void main()
     // A last bounded pull off the saturation ceiling: lava IS orange, so this
     // is deliberately gentle -- just enough that the incandescent half of the
     // frame stops reading as a single flat primary.
-    float _lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
-    col = mix( vec3( _lum ), col, 0.80 );
+    float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( lum ), col, 0.80 );
 
     col = pow( max( col, 0.0 ), vec3( 0.88 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.26 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.26 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -131,7 +131,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -271,8 +271,8 @@ void main()
     float w2 = inner * smoothstep( 1.3, 0.6, length( f1 - c2 ) * s2 / 2.0 );
     vec3  col = mix( a1, a2, w2 );
     // Colour: the photo's hue, or the wandering hue field where it is grey.
-    vec3 hueF = hsv2rgb( vec3( fract( hueP * 0.159 + 0.18 * length( f1 ) + 0.03 * audioAdvance ), 0.7, 1.0 ) );
-    col *= mix( vec3( 1.0 ), mix( glowColour( imgLod( win, 5.0 ), f1 * 0.5, hueP * 0.159 ), hueF, 0.5 ) * 1.4, 0.4 );
+    vec3 hue_f = hsv2rgb( vec3( fract( hueP * 0.159 + 0.18 * length( f1 ) + 0.03 * audioAdvance ), 0.7, 1.0 ) );
+    col *= mix( vec3( 1.0 ), mix( glowColour( imgLod( win, 5.0 ), f1 * 0.5, hueP * 0.159 ), hue_f, 0.5 ) * 1.4, 0.4 );
     // Seams glint like mirror edges.
     float px = 2.2 / resolution.y;
     float sg = exp( -seam1 / ( px * 2.0 ) ) + w2 * exp( -seam2 / ( px * 2.0 * s2 ) );

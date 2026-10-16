@@ -126,32 +126,32 @@ void main()
     crop *= 0.75 + 0.5 * e;
     // Each pivot turns at its own steady rate; the arm angle is the clock.
     float rate = 0.18 + 0.12 * hash21( ci + 3.3 );
-    float armA = clock * rate + hash21( ci + 7.7 ) * 6.2831853;
+    float arm_a = clock * rate + hash21( ci + 7.7 ) * 6.2831853;
     // The wetted wedge: behind the arm it is dark and wet, drying out over
     // the rest of the turn (a smooth ramp, so nothing snaps at the seam).
-    float behind = mod( armA - ang, 6.2831853 ) / 6.2831853; // 0 just watered, 1 about to be
+    float behind = mod( arm_a - ang, 6.2831853 ) / 6.2831853; // 0 just watered, 1 about to be
     float wet = exp( -behind * 3.2 );
     crop = mix( crop, crop * vec3( 0.55, 0.75, 0.6 ), wet * 0.7 );
     // Tracks: the faint concentric wheel ruts of the towers.
     crop *= 0.92 + 0.12 * smoothstep( 0.06, 0.2, abs( fract( r / radius * 6.0 ) - 0.5 ) );
-    float inField = smoothstep( radius, radius - 0.006, r );
-    col = mix( col, crop, inField );
+    float in_field = smoothstep( radius, radius - 0.006, r );
+    col = mix( col, crop, in_field );
     // The corners between circles: dry, sometimes with a small square plot.
-    float corner = ( 1.0 - inField ) * step( 0.55, hash21( ci + 11.3 ) );
+    float corner = ( 1.0 - in_field ) * step( 0.55, hash21( ci + 11.3 ) );
     col = mix( col, mix( soil, vec3( 0.35, 0.4, 0.2 ), 0.4 ), corner * 0.4 );
     // The arm itself: a thin bright line from the centre out, with the
     // sprinkler mist just behind it.
-    vec2  armDir = vec2( cos( armA ), sin( armA ) );
-    float alongArm = dot( cf, armDir );
-    float acrossArm = length( cf - armDir * alongArm );
-    float arm = smoothstep( 0.006, 0.002, acrossArm ) * step( 0.0, alongArm ) * step( alongArm, radius );
-    col = mix( col, vec3( 0.85, 0.86, 0.88 ), arm * inField * 0.9 );
+    vec2  arm_dir = vec2( cos( arm_a ), sin( arm_a ) );
+    float along_arm = dot( cf, arm_dir );
+    float across_arm = length( cf - arm_dir * along_arm );
+    float arm = smoothstep( 0.006, 0.002, across_arm ) * step( 0.0, along_arm ) * step( along_arm, radius );
+    col = mix( col, vec3( 0.85, 0.86, 0.88 ), arm * in_field * 0.9 );
     // The mist: a soft band trailing the arm.
-    float trail = mod( armA - ang, 6.2831853 );
-    float mist = exp( -trail * 22.0 ) * smoothstep( radius, radius * 0.05, r ) * inField;
+    float trail = mod( arm_a - ang, 6.2831853 );
+    float mist = exp( -trail * 22.0 ) * smoothstep( radius, radius * 0.05, r ) * in_field;
     col += mix( vec3( 0.8, 0.9, 1.0 ), imgPalette( hue * 0.159 + 0.5 ), 0.3 ) * mist * ( 0.3 + 0.9 * hi ) * 0.7;
     // The pivot point.
-    col = mix( col, vec3( 0.5, 0.5, 0.5 ), smoothstep( 0.012, 0.006, r ) * inField );
+    col = mix( col, vec3( 0.5, 0.5, 0.5 ), smoothstep( 0.012, 0.006, r ) * in_field );
     // Roads on the lattice lines, and a tractor raising dust on the kick.
     float road = smoothstep( 0.012, 0.006, abs( fract( g.x ) - 0.5 ) * pitch )
                  + smoothstep( 0.012, 0.006, abs( fract( g.y ) - 0.5 ) * pitch );
@@ -171,7 +171,7 @@ void main()
     col *= 0.88 + 0.2 * smoothstep( 0.35, 0.65, fbm( p * 1.6 + vec2( clock * 0.05, 0.0 ) ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

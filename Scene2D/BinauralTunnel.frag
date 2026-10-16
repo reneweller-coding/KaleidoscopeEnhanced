@@ -68,8 +68,8 @@ void main()
     float aspect = resolution.x / resolution.y;
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float eL = clamp( audioStereoL, 0.0, 1.5 );
-    float eR = clamp( audioStereoR, 0.0, 1.5 );
+    float e_l = clamp( audioStereoL, 0.0, 1.5 );
+    float e_r = clamp( audioStereoR, 0.0, 1.5 );
     float width = clamp( audioStereo, 0.0, 1.0 );
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float zoom = ( zoomP > 0.05 ) ? zoomP : 1.0;
@@ -78,8 +78,8 @@ void main()
     float a = atan( p.y, p.x );
 
     // Cross-section: how much of this direction is "left" (1 at a = pi).
-    float wL = 0.5 - 0.5 * cos( a );
-    float side = wL * eL + ( 1.0 - wL ) * eR;
+    float w_l = 0.5 - 0.5 * cos( a );
+    float side = w_l * e_l + ( 1.0 - w_l ) * e_r;
     // Geometry on the slow swell only (V7d): the vault opens on builds.  The
     // channels are LIGHT on their walls, the width is the seam and the arris.
     float radius = 1.0 + 0.45 * abs( sin( a ) ) * clamp( audioSwell, 0.0, 1.0 );
@@ -98,14 +98,14 @@ void main()
 
     // Ribs streaming past; the kick flashes them.
     float ribs = pow( 0.5 + 0.5 * cos( z * ( ribP > 0.1 ? ribP : 2.0 ) ), 10.0 );
-    float ribL = ribs * ( 0.6 + 1.4 * audioKick );
+    float rib_l = ribs * ( 0.6 + 1.4 * audioKick );
 
     // Each wall lit by its own channel: left cool, right warm.
-    vec3 lightL = imgPalette( hue * 0.159 + 0.55 ) * eL;
-    vec3 lightR = imgPalette( hue * 0.159 + 0.95 ) * eR;
-    vec3 light = mix( lightR, lightL, wL ) * 1.4 + 0.25;
+    vec3 light_l = imgPalette( hue * 0.159 + 0.55 ) * e_l;
+    vec3 light_r = imgPalette( hue * 0.159 + 0.95 ) * e_r;
+    vec3 light = mix( light_r, light_l, w_l ) * 1.4 + 0.25;
 
-    vec3 col = tex * light * ( 1.3 + 0.7 * audioLevel ) + imgPalette( hue * 0.159 + 0.75 ) * ribL * 0.8;
+    vec3 col = tex * light * ( 1.3 + 0.7 * audioLevel ) + imgPalette( hue * 0.159 + 0.75 ) * rib_l * 0.8;
 
     // Nave lines: when the mix is wide, bright arris lines run along the top
     // and bottom of the vault.
@@ -118,7 +118,7 @@ void main()
     col += imgPalette( hue * 0.159 + 0.1 ) * exp( -rr * 7.0 ) * ( 0.3 + 1.0 * audioBass );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

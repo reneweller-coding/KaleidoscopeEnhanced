@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -250,14 +250,14 @@ void main()
     vec3  linen = mix( vec3( 0.86, 0.81, 0.7 ), vec3( 0.62, 0.58, 0.52 ), clamp( canvasP, 0.0, 1.0 ) );
     linen *= 0.95 + 0.05 * noise2( p * vec2( 300.0, 290.0 ) );
     vec3  col = linen;
-    float nL = 3.0 + 4.0 * clamp( layerP, 0.0, 1.0 ) + 2.0 * swell;
+    float n_l = 3.0 + 4.0 * clamp( layerP, 0.0, 1.0 ) + 2.0 * swell;
     float loop = 0.6 + 1.0 * clamp( audioSpread, 0.0, 1.0 );
     float w0 = ( 0.003 + 0.005 * clamp( lineP, 0.0, 1.0 ) );
     float T = 0.02 * sceneTime + 0.15 * audioAdvance;
     for ( int k = 0; k < 9; ++k )
     {
         float fk = float( k );
-        float on = smoothstep( fk - 0.5, fk + 0.5, nL - 0.5 );
+        float on = smoothstep( fk - 0.5, fk + 0.5, n_l - 0.5 );
         if ( on <= 0.0 )
             break;
         // Each layer lives a while, then fades as a new one replaces it (continuous).

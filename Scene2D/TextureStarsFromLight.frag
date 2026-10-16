@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -235,8 +235,8 @@ void main()
     float mode = clamp( audioMode, 0.0, 1.0 );
     // The firmament turns around a pole off-screen.
     vec2  pole = vec2( 0.9, 1.2 );
-    float rotA = 0.01 * sceneTime + 0.08 * audioAdvance;
-    vec2  q = pole + rot2( rotA ) * ( p - pole );
+    float rot_a = 0.01 * sceneTime + 0.08 * audioAdvance;
+    vec2  q = pole + rot2( rot_a ) * ( p - pole );
     vec2  uv = q * 0.5 + 0.5;
     vec3  sky = mix( vec3( 0.005, 0.01, 0.03 ), vec3( 0.04, 0.02, 0.04 ), mode );
     // Milky clouds where the photo is bright but soft.
@@ -266,7 +266,7 @@ void main()
                 float mag = b * ( 1.0 - 0.3 * fl );
                 float tw = 1.0 + 0.4 * sin( sceneTime * ( 3.0 + 5.0 * hash21( id ) ) + hash21( id + 1.0 ) * 30.0 ) * hi;
                 // Colour: from the photo's hue, mapped onto star colours.
-                float t = fract( hue_of( ph ) + hueP * 0.159 );
+                float t = fract( hueOf( ph ) + hueP * 0.159 );
                 vec3  sc = mix( vec3( 0.7, 0.8, 1.0 ), vec3( 1.0, 0.75, 0.45 ), 0.5 + 0.5 * cos( t * 6.2831853 ) );
                 float core = exp( -r * r / ( 0.002 + 0.02 * mag * mag ) ) * ( 0.4 + 1.2 * mag );
                 float halo = exp( -r * ( 6.0 - 3.0 * mag ) ) * 0.15 * mag;

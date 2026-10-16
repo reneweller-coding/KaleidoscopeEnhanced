@@ -101,7 +101,7 @@ void main()
     float cell = 1.0 + 0.6 * clamp( pouchP, 0.0, 1.0 );
 
     float hz = -0.3; // the horizon
-    vec3  sunC = vec3( 1.0, 0.38, 0.12 );
+    vec3  sun_c = vec3( 1.0, 0.38, 0.12 );
     vec3  col;
     if ( p.y > hz + 0.06 )
     {
@@ -140,11 +140,11 @@ void main()
         float far = smoothstep( 0.25, 0.8, fw );
         lit = mix( lit, 0.45, far );
         bump = mix( bump, 0.6, far );
-        vec3 shadowC = vec3( 0.16, 0.08, 0.16 );
-        vec3 glowC = mix( sunC, vec3( 1.0, 0.6, 0.3 ), smoothstep( 0.0, 0.6, lit ) );
-        glowC = mix( glowC, imgPalette( 0.02 + hueP * 0.159 ) * 1.3, 0.1 );
+        vec3 shadow_c = vec3( 0.16, 0.08, 0.16 );
+        vec3 glow_c = mix( sun_c, vec3( 1.0, 0.6, 0.3 ), smoothstep( 0.0, 0.6, lit ) );
+        glow_c = mix( glow_c, imgPalette( 0.02 + hueP * 0.159 ) * 1.3, 0.1 );
         float strength = ( 0.7 + 0.7 * swell ) * ( 0.4 + 0.6 * exp( -( p.y - hz ) * 1.2 ) );
-        col = mix( shadowC, glowC * strength, pow( lit, 0.8 ) );
+        col = mix( shadow_c, glow_c * strength, pow( lit, 0.8 ) );
         // The seams between pouches are darkest.
         col *= 0.55 + 0.45 * smoothstep( 0.0, 0.35, bump );
         // Texture of the cloud and softness near the horizon.
@@ -157,11 +157,11 @@ void main()
     }
     // The clear strip at the horizon where the sun is setting.
     float gap = smoothstep( hz + 0.08, hz + 0.02, p.y ) * step( hz, p.y );
-    vec3  gapC = mix( vec3( 1.0, 0.75, 0.35 ), vec3( 1.0, 0.45, 0.2 ), smoothstep( hz, hz + 0.07, p.y ) )
-                 * ( 1.1 + 0.6 * bass );
-    gapC += vec3( 1.0, 0.9, 0.6 ) * exp( -length( ( p - vec2( -0.25, hz + 0.01 ) ) * vec2( 0.6, 3.0 ) ) * 12.0 )
-            * ( 0.8 + 0.5 * bass );
-    col = mix( col, gapC, gap );
+    vec3  gap_c = mix( vec3( 1.0, 0.75, 0.35 ), vec3( 1.0, 0.45, 0.2 ), smoothstep( hz, hz + 0.07, p.y ) )
+                  * ( 1.1 + 0.6 * bass );
+    gap_c += vec3( 1.0, 0.9, 0.6 ) * exp( -length( ( p - vec2( -0.25, hz + 0.01 ) ) * vec2( 0.6, 3.0 ) ) * 12.0 )
+             * ( 0.8 + 0.5 * bass );
+    col = mix( col, gap_c, gap );
     // The dark land below with a line of distant trees.
     float land = hz + 0.008 * noise2( vec2( p.x * 30.0, 1.0 ) )
                  + 0.01 * smoothstep( 0.6, 0.9, noise2( vec2( p.x * 80.0, 3.0 ) ) );
@@ -171,7 +171,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

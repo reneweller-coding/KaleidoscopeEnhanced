@@ -83,12 +83,12 @@ void main()
     vec3 photo = img( vUV );
 
     // Iridescent origami paper sheen
-    vec3 paperIrid = imgPalette( ( vFoldAngle * 4.0 + audioPhase ) * 0.159 );
+    vec3 paper_irid = imgPalette( ( vFoldAngle * 4.0 + audioPhase ) * 0.159 );
 
     // Glowing crease lines on beat kicks
-    vec3 creaseNeon = vec3( 1.0, 0.8, 0.2 ) * edge * ( 1.0 + audioKick * 3.0 );
+    vec3 crease_neon = vec3( 1.0, 0.8, 0.2 ) * edge * ( 1.0 + audioKick * 3.0 );
 
-    vec3 col = mix( photo, paperIrid, 0.3 ) * ( 0.8 + 0.4 * audioSwell ) + creaseNeon;
+    vec3 col = mix( photo, paper_irid, 0.3 ) * ( 0.8 + 0.4 * audioSwell ) + crease_neon;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -272,10 +272,10 @@ void main()
                 float alpha = smoothstep( 0.0, 0.1, life ) * smoothstep( 1.0, 0.8, life );
                 // Colour: the photo's colour split into a warm or a cool touch.
                 float sp = ( 0.05 + 0.12 * rough ) * ( fk * 2.0 - 1.0 );
-                vec3  hsvC = vec3( hue_of( ph ) + sp,
-                                   clamp( satOf( ph ) * ( 1.2 + 0.8 * clamp( vividP, 0.0, 1.0 ) ), 0.0, 1.0 ),
-                                   max( max( ph.r, ph.g ), ph.b ) );
-                vec3  pc = hsv2rgb( vec3( fract( hsvC.x + hueP * 0.159 * 0.2 ), hsvC.y, hsvC.z ) );
+                vec3  hsv_c = vec3( hueOf( ph ) + sp,
+                                    clamp( satOf( ph ) * ( 1.2 + 0.8 * clamp( vividP, 0.0, 1.0 ) ), 0.0, 1.0 ),
+                                    max( max( ph.r, ph.g ), ph.b ) );
+                vec3  pc = hsv2rgb( vec3( fract( hsv_c.x + hueP * 0.159 * 0.2 ), hsv_c.y, hsv_c.z ) );
                 pc *= mix( vec3( 0.85, 0.92, 1.1 ), vec3( 1.12, 0.98, 0.82 ), mode );
                 float px = fwidth( g.x );
                 float inside = smoothstep( px, -px, sd ) * alpha;

@@ -63,11 +63,11 @@ uniform float heightP;  ///< preset: tower height
 uniform float densityP; ///< preset: how many lots are actually built on
 uniform float avenueP;  ///< preset: width of the central avenue
 
-const int   COLS = 40; ///< lots across
-const int   ROWS = 46; ///< lots into the distance
-const float SPACING = 7.0;
-const float FOOT = 4.6;      ///< building footprint (the rest is street)
-const float AGE_SPAN = 0.82; ///< how much of the ring the city spans
+const int   Cols = 40; ///< lots across
+const int   Rows = 46; ///< lots into the distance
+const float Spacing = 7.0;
+const float Foot = 4.6;     ///< building footprint (the rest is street)
+const float AgeSpan = 0.82; ///< how much of the ring the city spans
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( vec2 p )
@@ -110,11 +110,11 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= uint( COLS * ROWS ) )
+    if ( id >= uint( Cols * Rows ) )
         return;
 
-    int i = int( id ) % COLS; // across  -> frequency
-    int j = int( id ) / COLS; // into the scene -> time
+    int i = int( id ) % Cols; // across  -> frequency
+    int j = int( id ) / Cols; // into the scene -> time
 
     vec2  lot = vec2( float( i ), float( j ) );
     float h1r = hash1( lot + sceneSeed * 13.0 );
@@ -124,23 +124,23 @@ void main()
     if ( h1r > densityP )
         return;
 
-    float cx = ( float( i ) - float( COLS - 1 ) * 0.5 ) * SPACING;
-    float cz = float( j ) * SPACING + 6.0;
+    float cx = ( float( i ) - float( Cols - 1 ) * 0.5 ) * Spacing;
+    float cz = float( j ) * Spacing + 6.0;
 
     // The avenue: a clear corridor straight down the middle of the frame,
     // which is what turns a field of boxes into a street you look along.
-    if ( abs( cx ) < avenueP * SPACING * 1.5 )
+    if ( abs( cx ) < avenueP * Spacing * 1.5 )
         return;
 
     // Frequency from distance to the avenue, so the bass towers flank the view
     // and the treble runs off to the sides.
-    float freq = clamp( abs( cx ) / ( float( COLS ) * 0.5 * SPACING ), 0.0, 1.0 );
+    float freq = clamp( abs( cx ) / ( float( Cols ) * 0.5 * Spacing ), 0.0, 1.0 );
     freq = 1.0 - freq; // 0 at the edges -> bass near the avenue
 
     // Frequency is symmetric about the avenue, so without this the two sides of
     // the street would be exact mirror images of each other.  Offsetting one
     // side by a fraction of a bar keeps the structure and kills the symmetry.
-    float t = spectroHead - ( float( j ) / float( ROWS ) ) * AGE_SPAN
+    float t = spectroHead - ( float( j ) / float( Rows ) ) * AgeSpan
               - ( ( cx > 0.0 ) ? 0.045 : 0.0 );
     float e = texture( texSpectro, vec2( freq, fract( t ) ) ).r;
     e *= smoothstep( 0.0, 0.12, spectroFill );
@@ -151,10 +151,10 @@ void main()
 
     // NOT "half": that is a reserved GLSL keyword and the compiler rejects it
     // with a bare syntax error that names the token and nothing else.
-    float halfW = FOOT * 0.5 * ( 0.72 + 0.5 * h2r );
-    float x0 = cx - halfW, x1 = cx + halfW;
-    float z0 = cz - halfW, z1 = cz + halfW;
-    float w = halfW * 2.0;
+    float half_w = Foot * 0.5 * ( 0.72 + 0.5 * h2r );
+    float x0 = cx - half_w, x1 = cx + half_w;
+    float z0 = cz - half_w, z1 = cz + half_w;
+    float w = half_w * 2.0;
 
     // Four walls + a roof.  No floor: nothing can ever see it.
     //   face 0 = +x, 1 = -x, 2 = +z, 3 = -z, 4 = +y

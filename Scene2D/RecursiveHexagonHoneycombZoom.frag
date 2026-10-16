@@ -109,7 +109,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float sc = ( scaleP > 0.01 ) ? scaleP : 1.0;
-    float wallW = 0.045 * ( ( wallWidthP > 0.01 ) ? wallWidthP : 1.0 );
+    float wall_w = 0.045 * ( ( wallWidthP > 0.01 ) ? wallWidthP : 1.0 );
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
@@ -129,12 +129,12 @@ void main()
     float kind = ( rnd < 0.62 ) ? 0.0 : ( ( rnd < 0.92 ) ? 1.0 : 2.0 ); // honey, capped, empty
 
     vec3 L = normalize( vec3( -0.5, 0.6, 0.65 ) );
-    vec3 honeyC = mix( vec3( 0.95, 0.55, 0.08 ), imgPalette( 0.1 + hue * 0.159 ), 0.18 );
-    vec3 waxC = vec3( 0.98, 0.88, 0.58 );
+    vec3 honey_c = mix( vec3( 0.95, 0.55, 0.08 ), imgPalette( 0.1 + hue * 0.159 ), 0.18 );
+    vec3 wax_c = vec3( 0.98, 0.88, 0.58 );
     vec3 light = vec3( 1.0, 0.93, 0.8 ) * ( 0.85 + 0.35 * swell );
 
     vec3  col;
-    float inner = 0.5 - wallW;
+    float inner = 0.5 - wall_w;
     if ( kind == 0.0 )
     {
         // Honey: a slightly domed amber surface; deeper colour toward the
@@ -143,11 +143,11 @@ void main()
         vec3  n = normalize( vec3( g * 0.9, 1.0 ) );
         float spec = pow( max( dot( reflect( -L, normalize( vec3( g * 2.2, 1.0 ) ) ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ),
                           24.0 );
-        vec3  c = honeyC * ( 0.55 + 0.6 * ( 1.0 - r * r ) ) * ( 0.8 + 0.3 * glw );
-        c = mix( c, honeyC * vec3( 0.7, 0.4, 0.2 ), smoothstep( 0.6, 1.0, r ) * 0.5 );
+        vec3  c = honey_c * ( 0.55 + 0.6 * ( 1.0 - r * r ) ) * ( 0.8 + 0.3 * glw );
+        c = mix( c, honey_c * vec3( 0.7, 0.4, 0.2 ), smoothstep( 0.6, 1.0, r ) * 0.5 );
         c += light * spec * ( 0.8 + 1.5 * kick );
         // A soft inner glow, as if lit from behind.
-        c += honeyC * 0.25 * glw * exp( -r * 3.0 );
+        c += honey_c * 0.25 * glw * exp( -r * 3.0 );
         col = c * light;
     }
     else if ( kind == 1.0 )
@@ -157,19 +157,19 @@ void main()
         vec3  n = normalize(
             vec3( g * 1.6 + 0.08 * ( vec2( noise2( w * 12.0 ), noise2( w * 12.0 + 7.0 ) ) - 0.5 ), 1.0 ) );
         float dif = max( dot( n, L ), 0.0 );
-        col = waxC * vec3( 0.95, 0.85, 0.7 ) * ( 0.45 + 0.65 * dif ) * light;
+        col = wax_c * vec3( 0.95, 0.85, 0.7 ) * ( 0.45 + 0.65 * dif ) * light;
     }
     else
     {
         // Empty: we look down into a dark hexagonal tube.
         float r = hd / inner;
-        col = waxC * mix( vec3( 0.12, 0.07, 0.03 ), vec3( 0.6, 0.45, 0.25 ), smoothstep( 0.2, 1.0, r ) ) * light;
+        col = wax_c * mix( vec3( 0.12, 0.07, 0.03 ), vec3( 0.6, 0.45, 0.25 ), smoothstep( 0.2, 1.0, r ) ) * light;
     }
     // The wax walls: pale ridges lit on one side.
-    float wallT = smoothstep( inner - 0.012, inner + 0.004, hd );
+    float wall_t = smoothstep( inner - 0.012, inner + 0.004, hd );
     float lit = 0.6 + 0.4 * dot( normalize( g + 1e-4 ), normalize( vec2( 0.5, -0.6 ) ) );
-    vec3  wall = waxC * ( 0.85 + 0.45 * lit ) * light;
-    col = mix( col, wall, wallT );
+    vec3  wall = wax_c * ( 0.85 + 0.45 * lit ) * light;
+    col = mix( col, wall, wall_t );
     col += vec3( 1.0, 0.95, 0.8 ) * exp( -abs( hd - 0.5 ) * 120.0 ) * 0.15; // wall crest
 
     // Bees: round bodies, banded abdomen, shimmering wings, a soft shadow.
@@ -198,12 +198,12 @@ void main()
         // Abdomen with bands, thorax, head.
         float abd = length( ( q - vec2( -0.55, 0.0 ) ) * vec2( 0.85, 1.35 ) );
         float bands = step( 0.5, fract( q.x * 3.2 + 0.2 ) );
-        vec3  abdC = mix( vec3( 0.95, 0.65, 0.1 ), vec3( 0.08, 0.05, 0.03 ), bands );
+        vec3  abd_c = mix( vec3( 0.95, 0.65, 0.1 ), vec3( 0.08, 0.05, 0.03 ), bands );
         float thor = length( ( q - vec2( 0.15, 0.0 ) ) * vec2( 1.3, 1.4 ) );
         float head = length( ( q - vec2( 0.72, 0.0 ) ) * vec2( 2.0, 2.0 ) );
         float body = min( min( abd, thor ), head );
         vec3  bc = ( abd < thor && abd < head )
-                       ? abdC
+                       ? abd_c
                        : ( ( thor < head ) ? vec3( 0.35, 0.22, 0.08 ) : vec3( 0.08, 0.06, 0.04 ) );
         // Round shading: fuzzy thorax, glossy abdomen.
         float sh = 0.55 + 0.45 * ( 1.0 - body );
@@ -213,7 +213,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

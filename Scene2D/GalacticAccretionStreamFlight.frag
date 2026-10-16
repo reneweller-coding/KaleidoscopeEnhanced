@@ -65,7 +65,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float hlx = ( helixP > 0.01 ) ? helixP : 1.0;
-    float jetInt = ( jetIntensityP > 0.01 ) ? jetIntensityP : 1.0;
+    float jet_int = ( jetIntensityP > 0.01 ) ? jetIntensityP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.228 * spd + audioAdvance * 0.228 * spd;
@@ -73,9 +73,9 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Helical camera path plunging into black hole core
-    float sHel = t * 1.5;
-    float rHel = ( 2.2 + 0.4 * sin( audioSwell * 2.0 ) ) * hlx;
-    vec3  ro = vec3( rHel * cos( sHel * 0.6 ), 1.2 * sin( sHel * 0.3 ), rHel * sin( sHel * 0.6 ) );
+    float s_hel = t * 1.5;
+    float r_hel = ( 2.2 + 0.4 * sin( audioSwell * 2.0 ) ) * hlx;
+    vec3  ro = vec3( r_hel * cos( s_hel * 0.6 ), 1.2 * sin( s_hel * 0.3 ), r_hel * sin( s_hel * 0.6 ) );
     vec3  ta = vec3( 0.0, 0.0, 0.0 ); // Looking at black hole center
 
     vec3 ww = normalize( ta - ro );
@@ -84,62 +84,64 @@ void main()
     vec3 rd = normalize( uv.x * uu + uv.y * vv + ( 1.2 + 0.2 * sin( audioSwell ) ) * ww );
 
     // Volumetric raymarching of accretion disk and synchrotron jets
-    vec3  colAcc = vec3( 0.0 );
-    float totDist = 0.0;
-    float plasmaAcc = 0.0;
-    float jetAcc = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float plasma_acc = 0.0;
+    float jet_acc = 0.0;
 
     for ( int i = 0; i < 48; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float rDisk = length( p.xz );
-        float yDisk = p.y;
+        vec3  p = ro + rd * tot_dist;
+        float r_disk = length( p.xz );
+        float y_disk = p.y;
 
         // Thin Keplerian accretion disk in XZ plane
-        float diskDensity = exp( -abs( yDisk ) * ( 12.0 - 4.0 * audioSubBass ) ) * smoothstep( 0.4, 0.8, rDisk )
-                            * smoothstep( 4.5, 1.5, rDisk );
+        float disk_density = exp( -abs( y_disk ) * ( 12.0 - 4.0 * audioSubBass ) ) * smoothstep( 0.4, 0.8, r_disk )
+                             * smoothstep( 4.5, 1.5, r_disk );
 
         // Relativistic spiral arms in accretion disk
-        float diskAngle = atan( p.z, p.x ) + ( 3.0 / max( 0.5, rDisk ) ) - t * 2.5;
+        float disk_angle = atan( p.z, p.x ) + ( 3.0 / max( 0.5, r_disk ) ) - t * 2.5;
         // Brightness raises the synchrotron harmonic by crossfading a coarse and a
-        // fine ribbon instead of scaling diskAngle -- diskAngle carries a t term, so
+        // fine ribbon instead of scaling disk_angle -- disk_angle carries a t term, so
         // an audio-varying frequency multiplier would remap the whole accumulated
         // phase every frame (flicker). Contrast rises with it, tightening filaments.
-        float spiralRibbon = mix( sin( diskAngle * 4.0 ), sin( diskAngle * 11.0 ), 0.55 * audioCentroid ) * 0.5 + 0.5;
-        diskDensity *= ( 0.6 - 0.15 * audioCentroid ) + ( 0.4 + 0.15 * audioCentroid ) * spiralRibbon;
+        float spiral_ribbon = mix( sin( disk_angle * 4.0 ), sin( disk_angle * 11.0 ), 0.55 * audioCentroid ) * 0.5
+                              + 0.5;
+        disk_density *= ( 0.6 - 0.15 * audioCentroid ) + ( 0.4 + 0.15 * audioCentroid ) * spiral_ribbon;
 
-        plasmaAcc += diskDensity * ( 0.04 + 0.05 * audioLevel );
+        plasma_acc += disk_density * ( 0.04 + 0.05 * audioLevel );
 
         // Relativistic vertical plasma jets along Y-axis
-        float jetRadius = 0.35 + abs( yDisk ) * 0.15;
-        float jetDensity = exp( -rDisk * rDisk / ( jetRadius * jetRadius ) ) * smoothstep( 0.2, 1.5, abs( yDisk ) );
-        jetAcc += jetDensity * ( 0.02 + 0.03 * audioHigh ) * jetInt;
+        float jet_radius = 0.35 + abs( y_disk ) * 0.15;
+        float jet_density = exp( -r_disk * r_disk / ( jet_radius * jet_radius ) )
+                            * smoothstep( 0.2, 1.5, abs( y_disk ) );
+        jet_acc += jet_density * ( 0.02 + 0.03 * audioHigh ) * jet_int;
 
-        totDist += 0.08;
+        tot_dist += 0.08;
     }
 
     // Central black hole event horizon silhouette
-    vec2  centerUV = uv;
-    float centerDist = length( centerUV );
-    float horizonMask = smoothstep( 0.18, 0.25, centerDist );
+    vec2  center_uv = uv;
+    float center_dist = length( center_uv );
+    float horizon_mask = smoothstep( 0.18, 0.25, center_dist );
 
     // Dynamic texture sample mapped across accretion disk coordinates
-    vec2 sampleUV = fract( uv * 0.4 + vec2( t * 0.1, 0.0 ) );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + vec2( t * 0.1, 0.0 ) );
+    vec3 tex_col = img( sample_uv );
 
     // Multi-temperature accretion plasma palette (golden-white inner disk to deep red outer rim)
-    vec3 palInner = imgPalette( plasmaAcc * 0.2 + 0.1 );
-    vec3 palJet = imgPalette( jetAcc * 0.3 + 0.7 );
+    vec3 pal_inner = imgPalette( plasma_acc * 0.2 + 0.1 );
+    vec3 pal_jet = imgPalette( jet_acc * 0.3 + 0.7 );
 
-    vec3 plasmaCol = mix( palInner, texCol, 0.35 );
-    vec3 jetCol = vec3( 0.3, 1.2, 1.9 ) * jetAcc * ( 1.0 + 2.0 * audioKick ) * glw;
+    vec3 plasma_col = mix( pal_inner, tex_col, 0.35 );
+    vec3 jet_col = vec3( 0.3, 1.2, 1.9 ) * jet_acc * ( 1.0 + 2.0 * audioKick ) * glw;
 
-    vec3 finalCol = ( plasmaCol * plasmaAcc * 2.5 + jetCol ) * horizonMask;
+    vec3 final_col = ( plasma_col * plasma_acc * 2.5 + jet_col ) * horizon_mask;
 
     // Photon ring flare around event horizon
-    float photonRing = exp( -abs( centerDist - 0.22 ) * 45.0 ) * ( 1.5 + 3.0 * audioKick );
-    finalCol += vec3( 1.8, 1.5, 1.1 ) * photonRing;
+    float photon_ring = exp( -abs( center_dist - 0.22 ) * 45.0 ) * ( 1.5 + 3.0 * audioKick );
+    final_col += vec3( 1.8, 1.5, 1.1 ) * photon_ring;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

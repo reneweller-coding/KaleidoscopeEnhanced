@@ -19,7 +19,7 @@ uniform float     audioAdvance;  ///< The music's advance: integrated tempo-weig
 precision highp float;
 #endif
 
-const int radius = 10;
+const int Radius = 10;
 
 float rand( vec2 co )
 {
@@ -76,10 +76,10 @@ float pattern( vec2 p, out vec2 q, out vec2 r )
     return fbm( p + 1.0 * r + 0.0 * time );
 }
 
-const vec3 color1 = vec3( 0.101961, 0.619608, 0.666667 );
-const vec3 color2 = vec3( 0.666667, 0.666667, 0.498039 );
-const vec3 color3 = vec3( 0, 0, 0.164706 );
-const vec3 color4 = vec3( 0.666667, 1, 1 );
+const vec3 Color1 = vec3( 0.101961, 0.619608, 0.666667 );
+const vec3 Color2 = vec3( 0.666667, 0.666667, 0.498039 );
+const vec3 Color3 = vec3( 0, 0, 0.164706 );
+const vec3 Color4 = vec3( 0.666667, 1, 1 );
 
 vec3 darken( vec3 s, vec3 d )
 {
@@ -278,16 +278,16 @@ vec3 saturation( vec3 s, vec3 d )
 
 vec3 luminosity( vec3 s, vec3 d )
 {
-    float dLum = dot( d, vec3( 0.3, 0.59, 0.11 ) );
-    float sLum = dot( s, vec3( 0.3, 0.59, 0.11 ) );
-    float lum = sLum - dLum;
+    float d_lum = dot( d, vec3( 0.3, 0.59, 0.11 ) );
+    float s_lum = dot( s, vec3( 0.3, 0.59, 0.11 ) );
+    float lum = s_lum - d_lum;
     vec3  c = d + lum;
-    float minC = min( min( c.x, c.y ), c.z );
-    float maxC = max( max( c.x, c.y ), c.z );
-    if ( minC < 0.0 )
-        return sLum + ( ( c - sLum ) * sLum ) / ( sLum - minC );
-    else if ( maxC > 1.0 )
-        return sLum + ( ( c - sLum ) * ( 1.0 - sLum ) ) / ( maxC - sLum );
+    float min_c = min( min( c.x, c.y ), c.z );
+    float max_c = max( max( c.x, c.y ), c.z );
+    if ( min_c < 0.0 )
+        return s_lum + ( ( c - s_lum ) * s_lum ) / ( s_lum - min_c );
+    else if ( max_c > 1.0 )
+        return s_lum + ( ( c - s_lum ) * ( 1.0 - s_lum ) ) / ( max_c - s_lum );
     else
         return c;
 }
@@ -309,7 +309,7 @@ void main( void )
 {
     vec2  src_size = vec2( 1.0 / resolution.x, 1.0 / resolution.y );
     vec2  uv = gl_FragCoord.xy / resolution.xy;
-    float n = float( ( radius + 1 ) * ( radius + 1 ) );
+    float n = float( ( Radius + 1 ) * ( Radius + 1 ) );
     int   i;
     int   j;
     vec3  m0 = vec3( 0.0 );
@@ -326,10 +326,10 @@ void main( void )
     vec2  r;
     vec2  c3 = 1000.0 * gl_FragCoord.xy / resolution.xy;
     float f = pattern( c3 * 0.01, q, r );
-    vec3  col = mix( color1, color2, clamp( ( f * f ) * 4.0, 0.0, 1.0 ) );
-    col = color2;
-    col = mix( col, color3, clamp( length( q ), 0.0, 1.0 ) );
-    col = mix( col, color4, clamp( length( r.x ), 0.0, 1.0 ) );
+    vec3  col = mix( Color1, Color2, clamp( ( f * f ) * 4.0, 0.0, 1.0 ) );
+    col = Color2;
+    col = mix( col, Color3, clamp( length( q ), 0.0, 1.0 ) );
+    col = mix( col, Color4, clamp( length( r.x ), 0.0, 1.0 ) );
 
     vec3 col2 = ( 0.2 * f * f * f + 0.6 * f * f + 0.5 * f ) * col;
     vec2 delta = col2.xy * 0.025;
@@ -351,9 +351,9 @@ void main( void )
 
     uv = uv + delta;
 
-    for ( int j = -radius; j <= 0; ++j )
+    for ( int j = -Radius; j <= 0; ++j )
     {
-        for ( int i = -radius; i <= 0; ++i )
+        for ( int i = -Radius; i <= 0; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb
@@ -363,9 +363,9 @@ void main( void )
         }
     }
 
-    for ( int j = -radius; j <= 0; ++j )
+    for ( int j = -Radius; j <= 0; ++j )
     {
-        for ( int i = 0; i <= radius; ++i )
+        for ( int i = 0; i <= Radius; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb
@@ -375,9 +375,9 @@ void main( void )
         }
     }
 
-    for ( int j = 0; j <= radius; ++j )
+    for ( int j = 0; j <= Radius; ++j )
     {
-        for ( int i = 0; i <= radius; ++i )
+        for ( int i = 0; i <= Radius; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb
@@ -387,9 +387,9 @@ void main( void )
         }
     }
 
-    for ( int j = 0; j <= radius; ++j )
+    for ( int j = 0; j <= Radius; ++j )
     {
-        for ( int i = -radius; i <= 0; ++i )
+        for ( int i = -Radius; i <= 0; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb

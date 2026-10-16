@@ -68,8 +68,8 @@ void main()
     // Photo texture mapping from world coords.  0.25 was tuned for a 2-unit
     // knot; the tangle now spans the frustum and that rate tiled the slide
     // many times over.
-    vec2 photoUV = fract( vWorldPos.xy * 0.07 + 0.5 );
-    vec3 photo = img( photoUV );
+    vec2 photo_uv = fract( vWorldPos.xy * 0.07 + 0.5 );
+    vec3 photo = img( photo_uv );
 
     // attrB = (sprite radius, layer marker, 0).  A NEGATIVE marker is the
     // surrounding thermal cloud (every vortex-core normal carried a fixed +0.5
@@ -78,14 +78,14 @@ void main()
     float haze = step( vNormal.y, -0.5 );
 
     // Ultra-cold rubidium condensate ruby & cyan palette
-    vec3 becRuby = vec3( 0.95, 0.1, 0.35 );
-    vec3 becCyan = vec3( 0.1, 0.95, 1.0 );
-    vec3 tangleColor = mix( becCyan, becRuby, sin( vVortexPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
+    vec3 bec_ruby = vec3( 0.95, 0.1, 0.35 );
+    vec3 bec_cyan = vec3( 0.1, 0.95, 1.0 );
+    vec3 tangle_color = mix( bec_cyan, bec_ruby, sin( vVortexPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
 
-    vec3 col = mix( photo, tangleColor, 0.6 ) * glow;
+    vec3 col = mix( photo, tangle_color, 0.6 ) * glow;
     // Hot core TINTED by the palette: the old near-white additive term
     // swamped the ruby/cyan entirely (metric scan: saturation 0.00).
-    col += glow * mix( tangleColor, vec3( 1.0, 0.98, 0.92 ), 0.35 )
+    col += glow * mix( tangle_color, vec3( 1.0, 0.98, 0.92 ), 0.35 )
            * ( 0.35 + audioKick * 0.55 );
 
     col *= mix( 1.0, 0.30, haze );
@@ -100,7 +100,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col * 1.5 ) * 0.55;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, glow );
+    vec3 cat_tone = ( col * 1.5 ) * 0.55;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, glow );
 }

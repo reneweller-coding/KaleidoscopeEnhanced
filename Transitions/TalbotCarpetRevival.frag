@@ -51,7 +51,7 @@ uniform float periodP;
 uniform float angleP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -79,7 +79,7 @@ float carpet( float x, float zz )
         float c = ( n == 0 ) ? 0.5 : ( 0.6366 / abs( fn ) ) * ( mod( abs( fn ), 2.0 ) > 0.5 ? 1.0 : 0.0 );
         if ( c <= 0.0 )
             continue;
-        float ph = 6.2831853 * fn * x - PI * zz * fn * fn;
+        float ph = 6.2831853 * fn * x - Pi * zz * fn * fn;
         re += c * cos( ph );
         im += c * sin( ph );
     }
@@ -98,7 +98,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // The grating runs across a fixed direction for this activation.
     float theta = mix( -1.2, 1.2, ang );

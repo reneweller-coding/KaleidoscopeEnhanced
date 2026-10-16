@@ -98,9 +98,9 @@ vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
     // the fog upward.  Sky (at the far plane) still gets full extinction, which
     // is what keeps the horizon from cutting a hard line.
     float y = ray.y * z;
-    float hFall = exp( -max( y, 0.0 ) * ( 0.045 * heightP ) );
+    float h_fall = exp( -max( y, 0.0 ) * ( 0.045 * heightP ) );
 
-    float density = densityP * ( 0.9 + 0.6 * audioSubBass ) * hFall;
+    float density = densityP * ( 0.9 + 0.6 * audioSubBass ) * h_fall;
     float ext = 1.0 - exp( -z * density * 0.0055 );
     ext = clamp( ext, 0.0, 1.0 );
 
@@ -115,9 +115,9 @@ vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
     // Dividing by that peak, which has the closed form (1+g)/(1-g)^2, turns it
     // into a 0..1 shape that still concentrates exactly where it should.
     float peak = ( 1.0 + g ) / max( ( 1.0 - g ) * ( 1.0 - g ), 1e-3 );
-    float inScatter = phaseHG( cosT, g ) * 12.566371 / peak;
+    float in_scatter = phaseHG( cosT, g ) * 12.566371 / peak;
 
-    vec3 air = airCol + sunCol * inScatter * ( 0.35 + 1.5 * glowP );
+    vec3 air = airCol + sunCol * in_scatter * ( 0.35 + 1.5 * glowP );
 
     return mix( c, air, ext );
 }

@@ -57,17 +57,17 @@ uniform float shellsP; ///< preset: how far the outer shells reach
 uniform float tubeP;   ///< preset: field-line thickness
 uniform float tiltP;   ///< preset: dipole tilt against the view
 
-const int   SHELLS = 18; ///< distinct L values
-const int   LONGS = 16;  ///< lines per shell
-const int   SEGS = 34;   ///< segments along one line
-const int   SIDES = 4;   ///< cross-section of a tube
-const float PLANET_R = 1.0;
-const int   LINES = SHELLS * LONGS;
+const int   Shells = 18; ///< distinct L values
+const int   Longs = 16;  ///< lines per shell
+const int   Segs = 34;   ///< segments along one line
+const int   Sides = 4;   ///< cross-section of a tube
+const float PlanetR = 1.0;
+const int   Lines = Shells * Longs;
 
-const int SPHERE_U = 40; ///< planet mesh
-const int SPHERE_V = 20;
+const int SphereU = 40; ///< planet mesh
+const int SphereV = 20;
 
-const float PI = 3.14159265; ///< Pi.
+const float Pi = 3.14159265; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( float n )
@@ -141,26 +141,26 @@ void main()
     mat3 M = tilt();
 
     // ---- the planet, built by the block of threads after the field lines ----
-    uint fieldCount = uint( LINES * SEGS );
-    if ( id >= fieldCount )
+    uint field_count = uint( Lines * Segs );
+    if ( id >= field_count )
     {
-        uint sid = id - fieldCount;
-        if ( sid >= uint( SPHERE_U * SPHERE_V ) )
+        uint sid = id - field_count;
+        if ( sid >= uint( SphereU * SphereV ) )
             return;
-        int su = int( sid ) % SPHERE_U;
-        int sv = int( sid ) / SPHERE_U;
+        int su = int( sid ) % SphereU;
+        int sv = int( sid ) / SphereU;
 
-        float u0 = float( su ) / float( SPHERE_U ) * 2.0 * PI;
-        float u1 = float( su + 1 ) / float( SPHERE_U ) * 2.0 * PI;
-        float v0 = float( sv ) / float( SPHERE_V ) * PI;
-        float v1 = float( sv + 1 ) / float( SPHERE_V ) * PI;
+        float u0 = float( su ) / float( SphereU ) * 2.0 * Pi;
+        float u1 = float( su + 1 ) / float( SphereU ) * 2.0 * Pi;
+        float v0 = float( sv ) / float( SphereV ) * Pi;
+        float v1 = float( sv + 1 ) / float( SphereV ) * Pi;
 
         vec3 p00 = vec3( sin( v0 ) * cos( u0 ), cos( v0 ), sin( v0 ) * sin( u0 ) );
         vec3 p10 = vec3( sin( v0 ) * cos( u1 ), cos( v0 ), sin( v0 ) * sin( u1 ) );
         vec3 p11 = vec3( sin( v1 ) * cos( u1 ), cos( v1 ), sin( v1 ) * sin( u1 ) );
         vec3 p01 = vec3( sin( v1 ) * cos( u0 ), cos( v1 ), sin( v1 ) * sin( u0 ) );
 
-        float R = PLANET_R * ( 1.0 + 0.02 * audioSubBass );
+        float R = PlanetR * ( 1.0 + 0.02 * audioSubBass );
         vec3  a = M * ( p00 * R ), b = M * ( p10 * R );
         vec3  c = M * ( p11 * R ), d = M * ( p01 * R );
         vec3  na = M * p00, nb = M * p10, nc = M * p11, nd = M * p01;
@@ -170,19 +170,19 @@ void main()
     }
 
     // ---- one segment of one field line ----
-    uint line = id / uint( SEGS );
-    uint seg = id % uint( SEGS );
-    uint sh = line / uint( LONGS );
-    uint lo = line % uint( LONGS );
+    uint line = id / uint( Segs );
+    uint seg = id % uint( Segs );
+    uint sh = line / uint( Longs );
+    uint lo = line % uint( Longs );
 
     // Shells spaced so the inner ones stay distinct instead of crowding.
     // The inner shell starts well clear of the surface: field lines that hug
     // the planet bury it in glow, and the planet is the anchor the whole image
     // needs.  The outer reach is kept modest for the same reason — at a
     // physical scale the planet would be a dot.
-    float f = float( sh ) / float( SHELLS - 1 );
+    float f = float( sh ) / float( Shells - 1 );
     float L = mix( 1.55, 1.55 + 2.9 * shellsP, f * f * 0.65 + f * 0.35 );
-    float phi = 2.0 * PI * ( float( lo ) + 0.5 * float( sh & 1u ) ) / float( LONGS );
+    float phi = 2.0 * Pi * ( float( lo ) + 0.5 * float( sh & 1u ) ) / float( Longs );
 
     // Each shell listens to its own band: bass hugs the planet, treble streams
     // out to the far lines.
@@ -191,12 +191,12 @@ void main()
     energy = clamp( energy * 1.6, 0.0, 1.4 );
 
     // A line only exists above the surface: r = L sin^2(theta) >= R.
-    float sMin = sqrt( clamp( PLANET_R / L, 0.0, 1.0 ) );
-    float thMin = asin( clamp( sMin, 0.0, 1.0 ) );
-    float t0 = float( seg ) / float( SEGS );
-    float t1 = float( seg + 1 ) / float( SEGS );
-    float th0 = mix( thMin, PI - thMin, t0 );
-    float th1 = mix( thMin, PI - thMin, t1 );
+    float s_min = sqrt( clamp( PlanetR / L, 0.0, 1.0 ) );
+    float th_min = asin( clamp( s_min, 0.0, 1.0 ) );
+    float t0 = float( seg ) / float( Segs );
+    float t1 = float( seg + 1 ) / float( Segs );
+    float th0 = mix( th_min, Pi - th_min, t0 );
+    float th1 = mix( th_min, Pi - th_min, t1 );
 
     vec3  p0 = M * linePoint( L, phi, th0 );
     vec3  p1 = M * linePoint( L, phi, th1 );
@@ -219,10 +219,10 @@ void main()
     float pulse = 0.5 + 0.5 * sin( t0 * 9.0 - audioAdvance * 2.2 + float( sh ) * 0.9 );
     float e0 = energy * ( 0.45 + 0.85 * pulse );
 
-    for ( int s = 0; s < SIDES; ++s )
+    for ( int s = 0; s < Sides; ++s )
     {
-        float a0 = 2.0 * PI * float( s ) / float( SIDES );
-        float a1 = 2.0 * PI * float( s + 1 ) / float( SIDES );
+        float a0 = 2.0 * Pi * float( s ) / float( Sides );
+        float a1 = 2.0 * Pi * float( s + 1 ) / float( Sides );
         vec3  n0 = u * cos( a0 ) + v * sin( a0 );
         vec3  n1 = u * cos( a1 ) + v * sin( a1 );
         vec3  b0 = p0 + n0 * rad, b1 = p0 + n1 * rad;

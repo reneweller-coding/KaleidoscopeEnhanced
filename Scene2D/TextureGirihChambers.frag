@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -266,12 +266,12 @@ void main()
     float la = 0.2 * sceneTime;
     float bev = clamp( 1.0 - dl / max( bw, 1e-3 ), 0.0, 1.0 );
     float lit = 0.55 + 0.45 * sin( la + dot( f, vec2( 3.0, 2.0 ) ) );
-    vec3  bandC = gold * ( 0.35 + 0.65 * bev ) * ( 0.6 + 0.6 * lit );
-    bandC = mix( bandC, bandC * glowColour( imgLod( win, 5.0 ), ci * 0.1, hueP * 0.159 ) * 1.3, 0.2 );
-    bandC *= 1.0 + 1.2 * kick;
+    vec3  band_c = gold * ( 0.35 + 0.65 * bev ) * ( 0.6 + 0.6 * lit );
+    band_c = mix( band_c, band_c * glowColour( imgLod( win, 5.0 ), ci * 0.1, hueP * 0.159 ) * 1.3, 0.2 );
+    band_c *= 1.0 + 1.2 * kick;
     // Shadow beside the bands (they are raised).
     col *= 1.0 - 0.45 * smoothstep( bw * 3.0, bw, dl ) * ( 1.0 - band );
-    col = mix( col, bandC, band );
+    col = mix( col, band_c, band );
     // Sparkles on the gold: round glints.
     vec2  sg = q * 18.0;
     vec2  si = floor( sg ), sf = fract( sg );

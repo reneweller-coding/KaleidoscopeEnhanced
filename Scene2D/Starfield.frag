@@ -32,7 +32,7 @@ uniform float densP;  ///< star density threshold (0 -> 0.92; 0.88 = dense, 0.95
 uniform float speedP; ///< flight speed multiplier (0 -> 1.0; 0.6..1.6)
 uniform float rollP;  ///< differential layer roll  (0 -> none; up to ~0.3)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -78,10 +78,10 @@ void main()
 
     // Per-activation character (constant during the scene):
     float dens = ( densP <= 0.01 ) ? 0.92 : densP;
-    float speedV = ( speedP <= 0.01 ) ? 1.0 : speedP;
+    float speed_v = ( speedP <= 0.01 ) ? 1.0 : speedP;
 
-    float speed = ( time * 0.25 + audioAdvance * 3.5 + audioPhase * 0.5 ) * speedV;
-    float baseRot = audioPhase * 0.2 + time * 0.03;
+    float speed = ( time * 0.25 + audioAdvance * 3.5 + audioPhase * 0.5 ) * speed_v;
+    float base_rot = audioPhase * 0.2 + time * 0.03;
 
     // Nebula: three looping depth layers of the image rushing toward the
     // camera, each rolled a little differently (parallax) and hue-shifted by
@@ -90,14 +90,14 @@ void main()
     for ( int k = 0; k < 3; k++ )
     {
         float fk = float( k );
-        vec2  ruv = rotM( baseRot * ( 1.0 + rollP * fk ) ) * uv;
+        vec2  ruv = rotM( base_rot * ( 1.0 + rollP * fk ) ) * uv;
         float depth = fract( speed * 0.06 + fk / 3.0 ); // 0..1 loop
         float zscale = mix( 2.2, 0.15, depth );         // zoom in as depth -> 1
         vec2  iuv = ruv * zscale * 0.5 + 0.5;
-        float fade = sin( depth * PI );
+        float fade = sin( depth * Pi );
         vec3  layer = img( fract( iuv ) ) * fade * ( 0.32 + 0.42 * audioLevel );
         layer = hueRot( layer, ( depth - 0.5 ) * 0.5
-                                   + 0.30 * sin( audioBarPhase * 2.0 * PI ) );
+                                   + 0.30 * sin( audioBarPhase * 2.0 * Pi ) );
         col += layer;
     }
 
@@ -107,7 +107,7 @@ void main()
     for ( int i = 0; i < 4; i++ )
     {
         float fi = float( i );
-        vec2  ruv = rotM( baseRot ) * uv;
+        vec2  ruv = rotM( base_rot ) * uv;
         float depth = fract( speed * 0.12 + fi * 0.25 );
         float scale = mix( 18.0, 0.6, depth );
         vec2  g = ruv * scale + fi * 37.2;
@@ -116,13 +116,13 @@ void main()
         float h = hash21( gi );
 
         // Radial direction of this star cell (for the warp trail).
-        vec2  cellPos = ( gi + 0.5 - fi * 37.2 ) / scale;
-        vec2  dir = cellPos / max( length( cellPos ), 1e-3 );
+        vec2  cell_pos = ( gi + 0.5 - fi * 37.2 ) / scale;
+        vec2  dir = cell_pos / max( length( cell_pos ), 1e-3 );
         float trail = 0.05 + 0.55 * audioBeat * depth; // beat -> warp jump
         vec2  dv = gf - dir * clamp( dot( gf, dir ), -trail, trail );
 
         float star = step( dens, h ) * smoothstep( 0.17, 0.02, length( dv ) );
-        float fade = sin( depth * PI );
+        float fade = sin( depth * Pi );
         float tw = 0.72 + 0.28 * sin( time * 3.0 + h * 40.0 ); // twinkle
         vec3  sc = mix( vec3( 0.95, 0.97, 1.08 ), imgPal( h * 6.0 ) * 1.5, 0.45 );
         stars += star * fade * tw * sc * ( 0.6 + 0.8 * audioLevel );
@@ -136,7 +136,7 @@ void main()
     col += audioBeat * 0.12;
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( clamp( col, 0.0, 1.0 ) ) * 0.75;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( clamp( col, 0.0, 1.0 ) ) * 0.75;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

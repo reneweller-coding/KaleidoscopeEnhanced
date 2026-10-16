@@ -68,55 +68,55 @@ void main()
 
     float t = time * 0.04 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                  // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Horizontal glitch block slices
-    float sliceY = floor( uv.y * 25.0 * glt );
-    float sliceNoise = hash21( vec2( sliceY, floor( t * 8.0 ) ) );
+    float slice_y = floor( uv.y * 25.0 * glt );
+    float slice_noise = hash21( vec2( slice_y, floor( t * 8.0 ) ) );
     // The slow swell intensifies the glitch: more slices trip the threshold
-    // and the ones that do displace harder.  Both are gated by midTransition,
+    // and the ones that do displace harder.  Both are gated by mid_transition,
     // which is zero at the fade endpoints — there the threshold is exactly 0.65
-    // again and every consumer of isGlitchSlice is itself multiplied by
-    // midTransition, so the frame is untouched.
-    float isGlitchSlice = step( 0.65 - audioSwell * 0.18 * midTransition, sliceNoise );
+    // again and every consumer of is_glitch_slice is itself multiplied by
+    // mid_transition, so the frame is untouched.
+    float is_glitch_slice = step( 0.65 - audioSwell * 0.18 * mid_transition, slice_noise );
 
     // Pixel sorting streak displacement based on luminance
-    vec4  baseSample = mix( texture( tex1, uv ), texture( tex0, uv ), tProg );
-    float lum = dot( baseSample.rgb, vec3( 0.299, 0.587, 0.114 ) );
+    vec4  base_sample = mix( texture( tex1, uv ), texture( tex0, uv ), t_prog );
+    float lum = dot( base_sample.rgb, vec3( 0.299, 0.587, 0.114 ) );
 
-    float streakOffset = ( lum - 0.5 ) * 0.15 * str * midTransition; // no kick: the sort offset is geometry
-    streakOffset += isGlitchSlice * ( sliceNoise - 0.5 ) * 0.08 * midTransition * ( 1.0 + audioSwell * 0.9 );
+    float streak_offset = ( lum - 0.5 ) * 0.15 * str * mid_transition; // no kick: the sort offset is geometry
+    streak_offset += is_glitch_slice * ( slice_noise - 0.5 ) * 0.08 * mid_transition * ( 1.0 + audioSwell * 0.9 );
 
-    vec2 warpUV = uv + vec2( streakOffset, 0.0 );
+    vec2 warp_uv = uv + vec2( streak_offset, 0.0 );
 
     // Chromatic aberration on glitch edges -- widened by the swell, still
-    // riding on midTransition so the split closes to zero at both endpoints.
-    float aberr = 0.015 * midTransition * ( 1.0 + audioSwell * 0.6 );
-    vec2  rUV = warpUV - vec2( aberr, 0.0 );
-    vec2  bUV = warpUV + vec2( aberr, 0.0 );
+    // riding on mid_transition so the split closes to zero at both endpoints.
+    float aberr = 0.015 * mid_transition * ( 1.0 + audioSwell * 0.6 );
+    vec2  r_uv = warp_uv - vec2( aberr, 0.0 );
+    vec2  b_uv = warp_uv + vec2( aberr, 0.0 );
 
-    float r1 = texture( tex1, fract( rUV ) ).r;
-    float g1 = texture( tex1, fract( warpUV ) ).g;
-    float b1 = texture( tex1, fract( bUV ) ).b;
+    float r1 = texture( tex1, fract( r_uv ) ).r;
+    float g1 = texture( tex1, fract( warp_uv ) ).g;
+    float b1 = texture( tex1, fract( b_uv ) ).b;
     vec3  c1 = vec3( r1, g1, b1 );
 
-    float r0 = texture( tex0, fract( rUV ) ).r;
-    float g0 = texture( tex0, fract( warpUV ) ).g;
-    float b0 = texture( tex0, fract( bUV ) ).b;
+    float r0 = texture( tex0, fract( r_uv ) ).r;
+    float g0 = texture( tex0, fract( warp_uv ) ).g;
+    float b0 = texture( tex0, fract( b_uv ) ).b;
     vec3  c0 = vec3( r0, g0, b0 );
 
-    vec3 col = mix( c1, c0, tProg );
+    vec3 col = mix( c1, c0, t_prog );
 
     // Glitch highlight sparks
-    float spark = isGlitchSlice * pow( hash21( gl_FragCoord.xy + floor( t * 8.0 ) ), 8.0 )
-                  * midTransition; // held with the slice set: hashing the continuous clock was white noise every frame
+    float spark = is_glitch_slice * pow( hash21( gl_FragCoord.xy + floor( t * 8.0 ) ), 8.0 )
+                  * mid_transition; // held with the slice set: hashing the continuous clock was white noise every frame
     col += spark * vec3( 0.2, 0.9, 1.0 ) * 2.0;
 
     if ( audioChromaHue != 0.0 )
-        col = hueRot( col, audioChromaHue * midTransition );
+        col = hueRot( col, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col = hueRot( col, hue * midTransition );
+        col = hueRot( col, hue * mid_transition );
 
     fragColor = vec4( col, 1.0 );
 }

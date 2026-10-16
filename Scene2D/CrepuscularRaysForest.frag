@@ -103,8 +103,8 @@ void main()
     // The sun sinks over the arc and drifts to the left, so the fan swings.
     vec2 sun = vec2( mix( 0.34, -0.1, prog ) * aspect, mix( 0.42, 0.1, prog ) );
     // Its colour warms as it sinks.
-    vec3 sunCol = mix( vec3( 1.0, 0.95, 0.8 ), vec3( 1.0, 0.62, 0.3 ), prog );
-    sunCol = mix( sunCol, imgPalette( hue * 0.159 + 0.08 ), 0.25 );
+    vec3 sun_col = mix( vec3( 1.0, 0.95, 0.8 ), vec3( 1.0, 0.62, 0.3 ), prog );
+    sun_col = mix( sun_col, imgPalette( hue * 0.159 + 0.08 ), 0.25 );
 
     // The wood: the photo, dim and green-blue away from the light.
     vec3 wood = img( uv ) * mix( vec3( 0.4, 0.45, 0.38 ), imgPalette( hue * 0.159 + 0.3 ), 0.3 );
@@ -124,8 +124,8 @@ void main()
         // Nearer trunks are darker against the mist.
         col = mix( col, bark * ( 0.25 + 0.35 * ( 1.0 - w * 12.0 ) ), trunk );
         // The rim that faces the sun catches light.
-        float rimSide = sign( sun.x - tx );
-        col += sunCol * smoothstep( w, w * 0.6, abs( d - w * 0.7 ) ) * step( 0.0, rimSide * ( p.x - tx ) ) * trunk
+        float rim_side = sign( sun.x - tx );
+        col += sun_col * smoothstep( w, w * 0.6, abs( d - w * 0.7 ) ) * step( 0.0, rim_side * ( p.x - tx ) ) * trunk
                * 0.25 * ( 1.0 - prog * 0.4 );
     }
     // The rays.  Angle from the sun; each ray is one spectrum band.
@@ -134,21 +134,21 @@ void main()
     float dist = length( rel );
     // The fan opens downward-right from the sun; only that wedge carries rays.
     float wedge = smoothstep( -2.9, -2.2, ang ) * smoothstep( 0.35, -0.3, ang );
-    float rayIdx = ( ang + 3.14159 ) / 6.2831853 * rays;
-    float cellF = fract( rayIdx );
-    int   band = int( mod( floor( rayIdx ) * 2.0 + 1.0, 32.0 ) );
+    float ray_idx = ( ang + 3.14159 ) / 6.2831853 * rays;
+    float cell_f = fract( ray_idx );
+    int   band = int( mod( floor( ray_idx ) * 2.0 + 1.0, 32.0 ) );
     float e = clamp( audioSpectrum[band] * 1.7, 0.0, 1.0 );
     // A ray is a soft wedge; its own slow shimmer comes from the mist.
-    float shape = pow( 0.5 + 0.5 * cos( ( cellF - 0.5 ) * 6.2831853 ), 2.2 );
+    float shape = pow( 0.5 + 0.5 * cos( ( cell_f - 0.5 ) * 6.2831853 ), 2.2 );
     float shimmer = 0.7 + 0.5 * fbm( vec2( ang * 6.0, dist * 3.0 - clock * 0.5 ) );
     float ray = shape * wedge * shimmer * smoothstep( 0.02, 0.5, dist ) * exp( -dist * 0.9 );
-    col += sunCol * ray * mist * ( 0.18 + 1.0 * e ) * 1.6;
+    col += sun_col * ray * mist * ( 0.18 + 1.0 * e ) * 1.6;
     // The sun's own glow behind the trees.
-    col += sunCol * exp( -dist * 3.2 ) * ( 0.35 + 0.4 * mist );
-    col += sunCol * exp( -dist * 12.0 ) * 0.6;
+    col += sun_col * exp( -dist * 3.2 ) * ( 0.35 + 0.4 * mist );
+    col += sun_col * exp( -dist * 12.0 ) * 0.6;
     // Mist body: brighter toward the light, drifting on the clock.
     float body = fbm( p * 2.2 + vec2( clock * 0.15, clock * 0.04 ) );
-    col += sunCol * mist * body * exp( -dist * 1.6 ) * 0.35;
+    col += sun_col * mist * body * exp( -dist * 1.6 ) * 0.35;
     // Pollen: round motes drifting up, lit only inside the fan.
     for ( int layer = 0; layer < 2; ++layer )
     {
@@ -159,15 +159,15 @@ void main()
         vec2  f = fract( g ) - 0.5;
         vec2  jit = vec2( hash21( c + 1.3 ), hash21( c + 5.9 ) ) - 0.5;
         float mote = smoothstep( 0.17, 0.05, length( f - jit * 0.7 ) ) * step( 0.9, hash21( c + fl * 7.3 ) );
-        col += sunCol * mote * ( 0.35 + 0.9 * hi ) * ( 0.3 + ray * 3.0 ) * 1.2;
+        col += sun_col * mote * ( 0.35 + 0.9 * hi ) * ( 0.3 + ray * 3.0 ) * 1.2;
     }
     // The floor: ferns and litter, darker, catching a little of the light.
-    float floorMask = smoothstep( -0.18, -0.42, p.y );
-    col = mix( col, col * vec3( 0.7, 0.85, 0.6 ) * 0.8, floorMask * 0.6 );
-    col += sunCol * floorMask * exp( -dist * 1.4 ) * 0.15;
+    float floor_mask = smoothstep( -0.18, -0.42, p.y );
+    col = mix( col, col * vec3( 0.7, 0.85, 0.6 ) * 0.8, floor_mask * 0.6 );
+    col += sun_col * floor_mask * exp( -dist * 1.4 ) * 0.15;
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

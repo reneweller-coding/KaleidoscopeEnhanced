@@ -125,7 +125,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -534,34 +534,34 @@ vec2 cdiv( vec2 a, vec2 b )
 /// @brief Three-fold (hexagonal) wave term for the Farris wallpapers.
 vec2 hexWave3( vec2 X, float n, float m )
 {
-    const float TAU = 6.2831853;
+    const float Tau = 6.2831853;
     vec2        Y = vec2( X.x + X.y * 0.5773503, X.y * 1.1547005 );
-    return ( cexpi( TAU * ( n * Y.x + m * Y.y ) ) + cexpi( TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-             + cexpi( TAU * ( -( n + m ) * Y.x + n * Y.y ) ) )
+    return ( cexpi( Tau * ( n * Y.x + m * Y.y ) ) + cexpi( Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+             + cexpi( Tau * ( -( n + m ) * Y.x + n * Y.y ) ) )
            / 3.0;
 }
 /// @brief Four-fold (square) wave term for the Farris wallpapers.
 vec2 sqWave4( vec2 X, float n, float m )
 {
-    const float TAU = 6.2831853;
-    return ( cexpi( TAU * ( n * X.x + m * X.y ) ) + cexpi( TAU * ( -m * X.x + n * X.y ) )
-             + cexpi( TAU * ( -n * X.x - m * X.y ) ) + cexpi( TAU * ( m * X.x - n * X.y ) ) )
+    const float Tau = 6.2831853;
+    return ( cexpi( Tau * ( n * X.x + m * X.y ) ) + cexpi( Tau * ( -m * X.x + n * X.y ) )
+             + cexpi( Tau * ( -n * X.x - m * X.y ) ) + cexpi( Tau * ( m * X.x - n * X.y ) ) )
            / 4.0;
 }
 /// @brief One Farris wave term of a wallpaper symmetry.
 vec2 farrisWave( vec2 X, int kind, float n, float m )
 {
-    const float TAU = 6.2831853;
+    const float Tau = 6.2831853;
     if ( kind == 6 )
         return 0.5 * ( hexWave3( X, n, m ) + hexWave3( X, m, n ) ); // p3m1: p3 + mirrors
     if ( kind >= 10 )
     {                                                                                    // p1, p2, pm, cm
         vec2 Z = kind == 13 ? X * vec2( 0.8, 1.3 ) : vec2( X.x + 0.3 * X.y, X.y * 1.1 ); // oblique / centred lattice
-        vec2 w = cexpi( TAU * ( n * Z.x + m * Z.y ) );
+        vec2 w = cexpi( Tau * ( n * Z.x + m * Z.y ) );
         if ( kind == 11 )
-            w += cexpi( -TAU * ( n * Z.x + m * Z.y ) ); // p2: half-turns
+            w += cexpi( -Tau * ( n * Z.x + m * Z.y ) ); // p2: half-turns
         if ( kind == 12 || kind == 13 )
-            w += cexpi( TAU * ( n * Z.x - m * Z.y ) ); // pm / cm: one mirror
+            w += cexpi( Tau * ( n * Z.x - m * Z.y ) ); // pm / cm: one mirror
         return w / ( kind == 10 ? 1.0 : 2.0 );
     }
     if ( kind == 7 )
@@ -573,32 +573,32 @@ vec2 farrisWave( vec2 X, int kind, float n, float m )
     { // cmm: centred rectangular, mirrors both ways
         vec2 Z = X * vec2( 0.8, 1.3 );
         return 0.25
-               * ( cexpi( TAU * ( n * Z.x + m * Z.y ) ) + cexpi( -TAU * ( n * Z.x + m * Z.y ) )
-                   + cexpi( TAU * ( n * Z.x - m * Z.y ) ) + cexpi( -TAU * ( n * Z.x - m * Z.y ) ) );
+               * ( cexpi( Tau * ( n * Z.x + m * Z.y ) ) + cexpi( -Tau * ( n * Z.x + m * Z.y ) )
+                   + cexpi( Tau * ( n * Z.x - m * Z.y ) ) + cexpi( -Tau * ( n * Z.x - m * Z.y ) ) );
     }
     if ( kind == 1 || kind == 2 )
     { // hexagonal lattice coordinates
         vec2 Y = vec2( X.x + X.y * 0.5773503, X.y * 1.1547005 );
-        vec2 w = cexpi( TAU * ( n * Y.x + m * Y.y ) ) + cexpi( TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-                 + cexpi( TAU * ( -( n + m ) * Y.x + n * Y.y ) );
+        vec2 w = cexpi( Tau * ( n * Y.x + m * Y.y ) ) + cexpi( Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+                 + cexpi( Tau * ( -( n + m ) * Y.x + n * Y.y ) );
         if ( kind == 2 )
-            w += cexpi( -TAU * ( n * Y.x + m * Y.y ) ) + cexpi( -TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-                 + cexpi( -TAU * ( -( n + m ) * Y.x + n * Y.y ) );
+            w += cexpi( -Tau * ( n * Y.x + m * Y.y ) ) + cexpi( -Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+                 + cexpi( -Tau * ( -( n + m ) * Y.x + n * Y.y ) );
         return w / ( kind == 2 ? 6.0 : 3.0 );
     }
     if ( kind == 4 || kind == 5 )
     {                                                // glide groups on a rectangular lattice
         float sg = mod( n, 2.0 ) < 0.5 ? 1.0 : -1.0; // (-1)^n: the half-step of the glide
-        vec2  w = cexpi( TAU * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( TAU * ( n * X.x - m * X.y * 0.7 ) );
+        vec2  w = cexpi( Tau * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( Tau * ( n * X.x - m * X.y * 0.7 ) );
         if ( kind == 5 )
-            w += cexpi( -TAU * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( TAU * ( -n * X.x + m * X.y * 0.7 ) );
+            w += cexpi( -Tau * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( Tau * ( -n * X.x + m * X.y * 0.7 ) );
         return w / ( kind == 5 ? 4.0 : 2.0 );
     }
-    vec2 w = cexpi( TAU * ( n * X.x + m * X.y ) ) + cexpi( TAU * ( -m * X.x + n * X.y ) )
-             + cexpi( TAU * ( -n * X.x - m * X.y ) ) + cexpi( TAU * ( m * X.x - n * X.y ) );
+    vec2 w = cexpi( Tau * ( n * X.x + m * X.y ) ) + cexpi( Tau * ( -m * X.x + n * X.y ) )
+             + cexpi( Tau * ( -n * X.x - m * X.y ) ) + cexpi( Tau * ( m * X.x - n * X.y ) );
     if ( kind == 3 )
-        w += cexpi( TAU * ( m * X.x + n * X.y ) ) + cexpi( TAU * ( -n * X.x + m * X.y ) )
-             + cexpi( TAU * ( -m * X.x - n * X.y ) ) + cexpi( TAU * ( n * X.x - m * X.y ) );
+        w += cexpi( Tau * ( m * X.x + n * X.y ) ) + cexpi( Tau * ( -n * X.x + m * X.y ) )
+             + cexpi( Tau * ( -m * X.x - n * X.y ) ) + cexpi( Tau * ( n * X.x - m * X.y ) );
     return w / ( kind == 3 ? 8.0 : 4.0 );
 }
 /// @brief Farris wallpaper (a symmetric wave pattern) about c.
@@ -1912,7 +1912,7 @@ void main()
     // Relief: the chain's photo lit from a slowly circling light.
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
-    vec3  reliefC = photo * ( 0.3 + 1.2 * relief ) + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell );
+    vec3  relief_c = photo * ( 0.3 + 1.2 * relief ) + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell );
     // Glowing edges: gradient magnitude as neon in the photo's colour.
     float edge = smoothstep( 0.02, 0.25, length( grad ) );
     vec3  neon = glowColour( ph, p, hueP * 0.159 ) * edge * ( 1.2 + 1.2 * kick ) + photo * 0.06;
@@ -1920,11 +1920,11 @@ void main()
     float xi = m * 12.0 - gT * 6.0; // the contour lines flow uphill (integrated, jump-free)
     float pxi = fwidth( xi ) + 1e-4;
     float iso = smoothstep( pxi * 1.5, 0.0, abs( fract( xi ) - 0.5 ) - 0.5 + pxi * 1.5 );
-    vec3  isoC = glowColour( ph, p, hueP * 0.159 ) * iso * ( 1.0 + kick ) + photo * 0.08;
+    vec3  iso_c = glowColour( ph, p, hueP * 0.159 ) * iso * ( 1.0 + kick ) + photo * 0.08;
     float st = clamp( styleP, 0.0, 1.0 ) * 3.0; // 0 photo, 1 relief, 2 edges, 3 isolines
-    vec3  col = mix( photo, reliefC, smoothstep( 0.0, 1.0, st ) );
+    vec3  col = mix( photo, relief_c, smoothstep( 0.0, 1.0, st ) );
     col = mix( col, neon, smoothstep( 1.0, 2.0, st ) );
-    col = mix( col, isoC, smoothstep( 2.0, 3.0, st ) );
+    col = mix( col, iso_c, smoothstep( 2.0, 3.0, st ) );
     col *= mix( vec3( 0.9, 0.97, 1.08 ), vec3( 1.08, 0.98, 0.9 ), mode );
     col += glowColour( ph, p, hueP * 0.159 ) * edge * kick * 0.3 * ( 1.0 - smoothstep( 1.0, 2.0, st ) );
     finish( col );

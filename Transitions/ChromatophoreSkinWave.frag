@@ -50,7 +50,7 @@ uniform float densityP; ///< Density knob, 0..1.
 uniform float waveP;    ///< Wave knob.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -70,7 +70,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // The travelling band of activation.
     float k = 4.1 / wav; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)

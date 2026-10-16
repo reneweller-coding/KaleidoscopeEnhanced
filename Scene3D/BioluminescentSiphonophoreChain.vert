@@ -34,11 +34,11 @@ void main()
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
-    // kCam MUST match the constant of the same name in the generator, which
+    // Cam MUST match the constant of the same name in the generator, which
     // lays the bloom out in frustum coordinates against it.
-    const float kCam = 7.0;
+    const float Cam = 7.0;
     vec3        vp = pos;
-    vp.z += kCam;
+    vp.z += Cam;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;

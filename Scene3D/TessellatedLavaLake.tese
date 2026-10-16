@@ -25,7 +25,7 @@ out float vDist; ///< Distance (from the vertex stage).
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-const vec2    EXTENT = vec2( 160.0, 220.0 );
+const vec2    Extent = vec2( 160.0, 220.0 );
 
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;    ///< Seconds since this scene was activated.
@@ -90,10 +90,10 @@ float surface( vec2 xz, float clock, float heave, out float seam, out float plat
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
-    vec2 uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
-    vec2 uv = mix( uvA, uvB, gl_TessCoord.y );
-    vec2 xz = vec2( ( uv.x - 0.5 ) * EXTENT.x, uv.y * EXTENT.y + 3.0 );
+    vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2 uv_b = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2 uv = mix( uv_a, uv_b, gl_TessCoord.y );
+    vec2 xz = vec2( ( uv.x - 0.5 ) * Extent.x, uv.y * Extent.y + 3.0 );
 
     float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
     float heave = 0.6 + 1.2 * clamp( audioSwell, 0.0, 1.0 );

@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -247,14 +247,14 @@ void main()
     float scumble = fbm( sq * 6.0 - vec2( flow * 1.3, 0.0 ) );
     // Palette: gold-white heart -> ochre -> rust -> grey-blue -> smoke.
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  photoC = imgLod( vec2( 0.5 ) + 0.2 * vec2( cos( sw ), sin( sw ) ) * r, 5.0 );
+    vec3  photo_c = imgLod( vec2( 0.5 ) + 0.2 * vec2( cos( sw ), sin( sw ) ) * r, 5.0 );
     vec3  gold = vec3( 1.0, 0.92, 0.65 ), ochre = vec3( 0.85, 0.62, 0.28 ), rust = vec3( 0.6, 0.3, 0.15 );
     vec3  slate = mix( vec3( 0.35, 0.42, 0.52 ), vec3( 0.5, 0.45, 0.4 ), mode );
     float t = clamp( r * 1.5 + ( stroke - 0.5 ) * 0.8, 0.0, 1.5 );
     vec3  col = mix( gold, ochre, smoothstep( 0.1, 0.45, t ) );
     col = mix( col, rust, smoothstep( 0.45, 0.8, t ) * ( 0.5 + 0.5 * stroke ) );
     col = mix( col, slate, smoothstep( 0.7, 1.2, t ) );
-    col = mix( col, col * mix( vec3( 1.0 ), glowColour( photoC, sq, hueP * 0.159 ) * 1.3, 0.35 ), 0.6 );
+    col = mix( col, col * mix( vec3( 1.0 ), glowColour( photo_c, sq, hueP * 0.159 ) * 1.3, 0.35 ), 0.6 );
     col *= 0.65 + 0.6 * scumble;
     col *= mix( 1.0, 0.45, smoothstep( 0.35, 1.1, r ) * smoothstep( 0.35, 0.65, stroke ) ); // storm-dark bands
     // The sun burning through at the heart.

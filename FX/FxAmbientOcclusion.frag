@@ -52,7 +52,7 @@ uniform float radiusP;   ///< preset: sampling radius in world units
 uniform float strengthP; ///< preset: how dark the creases go
 uniform float tintP;     ///< preset: how much colour the shadow keeps
 
-const int SAMPLES = 12;
+const int Samples = 12;
 
 /// @brief Depth buffer value to linear distance.
 float linearise( float d )
@@ -99,10 +99,10 @@ float occlusion( sampler2D dep, vec2 uv, float valid )
     float rot = fract( sin( dot( uv, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 ) * 6.2831853;
     float occ = 0.0;
 
-    for ( int i = 0; i < SAMPLES; ++i )
+    for ( int i = 0; i < Samples; ++i )
     {
         float a = float( i ) * 2.3999632 + rot;
-        float r = sqrt( ( float( i ) + 0.5 ) / float( SAMPLES ) ) * sr;
+        float r = sqrt( ( float( i ) + 0.5 ) / float( Samples ) ) * sr;
         vec2  su = clamp( uv + vec2( cos( a ), sin( a ) ) * r * vec2( 1.0, resolution.x / resolution.y ),
                           vec2( 0.002 ), vec2( 0.998 ) );
 
@@ -124,7 +124,7 @@ float occlusion( sampler2D dep, vec2 uv, float valid )
         occ += max( ndl - 0.06, 0.0 ) * range;
     }
 
-    return clamp( occ / float( SAMPLES ) * ( 1.2 + 3.4 * strengthP ), 0.0, 1.0 );
+    return clamp( occ / float( Samples ) * ( 1.2 + 3.4 * strengthP ), 0.0, 1.0 );
 }
 
 /// A cheap 4-tap blur of the occlusion, so the per-pixel dither in the sampling

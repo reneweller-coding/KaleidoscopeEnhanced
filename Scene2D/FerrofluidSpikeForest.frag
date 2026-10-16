@@ -93,8 +93,8 @@ float ferroHeight( vec2 p, float spk, float rng )
     float spikes = max( rings * petals, 0.0 );
 
     // Height of spikes driven by sub-bass
-    float spikeH = pow( spikes, 2.5 ) * ( 0.8 + 1.2 * audioSubBass + 0.5 * audioKick ) * spk;
-    return spikeH * exp( -r * 0.6 );
+    float spike_h = pow( spikes, 2.5 ) * ( 0.8 + 1.2 * audioSubBass + 0.5 * audioKick ) * spk;
+    return spike_h * exp( -r * 0.6 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -139,29 +139,29 @@ void main()
     {
         // Compute surface normal
         float eps = 0.005;
-        float hL = ferroHeight( p.xz - vec2( eps, 0.0 ), spk, rng );
-        float hR = ferroHeight( p.xz + vec2( eps, 0.0 ), spk, rng );
-        float hD = ferroHeight( p.xz - vec2( 0.0, eps ), spk, rng );
-        float hU = ferroHeight( p.xz + vec2( 0.0, eps ), spk, rng );
-        vec3  n = normalize( vec3( hL - hR, 2.0 * eps, hD - hU ) );
+        float h_l = ferroHeight( p.xz - vec2( eps, 0.0 ), spk, rng );
+        float h_r = ferroHeight( p.xz + vec2( eps, 0.0 ), spk, rng );
+        float h_d = ferroHeight( p.xz - vec2( 0.0, eps ), spk, rng );
+        float h_u = ferroHeight( p.xz + vec2( 0.0, eps ), spk, rng );
+        vec3  n = normalize( vec3( h_l - h_r, 2.0 * eps, h_d - h_u ) );
 
         // Specular reflections on deep black oily liquid
-        vec3  lightDir = normalize( vec3( 0.5, 1.0, -0.6 ) );
+        vec3  light_dir = normalize( vec3( 0.5, 1.0, -0.6 ) );
         vec3  ref = reflect( rd, n );
-        float diff = max( dot( n, lightDir ), 0.0 ) * 0.3 + 0.1;
-        float spec = pow( max( dot( ref, lightDir ), 0.0 ), 64.0 );
+        float diff = max( dot( n, light_dir ), 0.0 ) * 0.3 + 0.1;
+        float spec = pow( max( dot( ref, light_dir ), 0.0 ), 64.0 );
 
         // Reflected photo mapping
-        vec2 refUV = fract( ref.xy * 0.5 + 0.5 );
-        vec3 photo = img( refUV );
+        vec2 ref_uv = fract( ref.xy * 0.5 + 0.5 );
+        vec3 photo = img( ref_uv );
 
         // Oil-slick thin-film iridescence.  The colour phase now also drifts
         // with radius, so the rainbow sheen forms concentric mandala bands
         // that follow the spike rings instead of a single flat tint.
-        float cosTheta = max( dot( -rd, n ), 0.0 );
-        vec3  oilIrid = imgPalette( ( ( 1.0 - cosTheta ) * 8.0 * oil
-                                      + length( p.xz ) * 2.2 + audioCentroid * 3.0 )
-                                    * 0.159 );
+        float cos_theta = max( dot( -rd, n ), 0.0 );
+        vec3  oil_irid = imgPalette( ( ( 1.0 - cos_theta ) * 8.0 * oil
+                                       + length( p.xz ) * 2.2 + audioCentroid * 3.0 )
+                                     * 0.159 );
 
         // Deep glossy black ferrofluid body + sharp chrome specular highlights.
         // The iridescence used to be a pure Fresnel-edge effect (pow(...,3) is
@@ -169,9 +169,9 @@ void main()
         // pool read as flat black with colour only right at the silhouette.
         // A gentler falloff plus a small always-on floor spreads the rainbow
         // sheen across the visible spikes instead of just their rims.
-        vec3  ferroBody = vec3( 0.03, 0.03, 0.04 );
-        float iridSpread = 0.30 + 0.70 * pow( 1.0 - cosTheta, 1.6 );
-        col = mix( ferroBody, photo, 0.3 ) * diff + oilIrid * iridSpread * 1.3 * oil;
+        vec3  ferro_body = vec3( 0.03, 0.03, 0.04 );
+        float irid_spread = 0.30 + 0.70 * pow( 1.0 - cos_theta, 1.6 );
+        col = mix( ferro_body, photo, 0.3 ) * diff + oil_irid * irid_spread * 1.3 * oil;
         col += vec3( 1.0, 1.0, 1.0 ) * spec * ( 1.5 + audioKick * 3.0 );
     }
     else

@@ -76,7 +76,7 @@ void main()
 
     float dens = ( densityP > 0.0 ) ? densityP : 1.0;
     float sprk = ( sparkP > 0.0 ) ? sparkP : 1.0;
-    float cDst = ( camDistP > 0.0 ) ? camDistP : 1.0;
+    float c_dst = ( camDistP > 0.0 ) ? camDistP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Connectome structure: 2 Brain Hemispheres + Neural Axon Traces
@@ -85,59 +85,59 @@ void main()
     // Ellipsoidal brain lobe coordinate
     float phi = seeds.y * 6.2831853;
     float theta = ( seeds.z - 0.5 ) * 3.14159;
-    float rLobe = 6.5 * pow( seeds.w, 0.45 ) * dens;
+    float r_lobe = 6.5 * pow( seeds.w, 0.45 ) * dens;
 
-    vec3 lobePos = vec3(
+    vec3 lobe_pos = vec3(
         cos( theta ) * cos( phi ) * 4.5 * hemisphere + hemisphere * 2.5,
         sin( theta ) * 5.0,
         cos( theta ) * sin( phi ) * 7.0 );
 
     // Axonal pathway filament tracing (Fibonacci spiral nerve bundles)
-    float axonPhase = fract( seeds.x * 20.0 + time * 0.15 + audioAdvance * 0.1 );
-    vec3  axonPos = mix( lobePos, lobePos * 0.2, axonPhase );
+    float axon_phase = fract( seeds.x * 20.0 + time * 0.15 + audioAdvance * 0.1 );
+    vec3  axon_pos = mix( lobe_pos, lobe_pos * 0.2, axon_phase );
 
     // Dynamic neural wave propagation (depolarization waves)
-    float brainDist = length( lobePos );
-    float brainWave = sin( brainDist * 1.5 - time * 4.0 - audioPhase * 6.0 );
+    float brain_dist = length( lobe_pos );
+    float brain_wave = sin( brain_dist * 1.5 - time * 4.0 - audioPhase * 6.0 );
 
     // Action potential electrical discharge
-    float actionPotential = pow( sin( seeds.x * 100.0 - time * 8.0 - audioKick * 6.0 ) * 0.5 + 0.5, 12.0 ) * sprk;
+    float action_potential = pow( sin( seeds.x * 100.0 - time * 8.0 - audioKick * 6.0 ) * 0.5 + 0.5, 12.0 ) * sprk;
 
-    vec3 finalPos = mix( lobePos, axonPos, 0.5 );
-    finalPos += vec3( 0.0, sin( time + seeds.y * 6.28 ) * 0.3, 0.0 );
-    finalPos += ( seeds.xyz - 0.5 ) * audioSubBass * 1.5;
+    vec3 final_pos = mix( lobe_pos, axon_pos, 0.5 );
+    final_pos += vec3( 0.0, sin( time + seeds.y * 6.28 ) * 0.3, 0.0 );
+    final_pos += ( seeds.xyz - 0.5 ) * audioSubBass * 1.5;
 
     // Orbiting 3D camera
-    float camAngle = time * 0.12 + audioAdvance * 0.04;
-    float camDist = ( 16.0 * cDst ) - audioSwell * 3.0;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 4.0 + 3.0 * sin( time * 0.15 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0, 0.0, 0.0 );
+    float cam_angle = time * 0.12 + audioAdvance * 0.04;
+    float cam_dist = ( 16.0 * c_dst ) - audioSwell * 3.0;
+    vec3  cam_pos = vec3( sin( cam_angle ) * cam_dist, 4.0 + 3.0 * sin( time * 0.15 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0, 0.0, 0.0 );
 
-    vec3 ww = normalize( lookTarget - camPos );
+    vec3 ww = normalize( look_target - cam_pos );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    vec3 relP = finalPos - camPos;
-    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
+    vec3 rel_p = final_pos - cam_pos;
+    vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
 
-    viewP.x -= eyeOff;
-    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+    view_p.x -= eyeOff;
+    gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Point sprite size by depth and action potential — capped low: the
     // additive network integrates sprite AREA, the old 64 px cap was the
     // real reason the palette washed to white.
-    float pSize = ( 2.0 + actionPotential * 9.0 + audioHigh * 2.0 ) * ( 25.0 / max( viewP.z, 1.0 ) ); // sprite sweep
-    gl_PointSize = clamp( pSize, 1.0, 26.0 );
+    float p_size = ( 2.0 + action_potential * 9.0 + audioHigh * 2.0 ) * ( 25.0 / max( view_p.z, 1.0 ) ); // sprite sweep
+    gl_PointSize = clamp( p_size, 1.0, 26.0 );
 
     // Synaptic colour from the photo arc (house standard); action potentials
     // still flash the classic gold so spikes read as events.
-    vec3 baseCol = imgPalette( 0.30 * ( brainWave * 0.5 + 0.5 ) ) * 1.35;
-    baseCol = mix( baseCol, vec3( 1.0, 0.95, 0.4 ), actionPotential );
+    vec3 base_col = imgPalette( 0.30 * ( brain_wave * 0.5 + 0.5 ) ) * 1.35;
+    base_col = mix( base_col, vec3( 1.0, 0.95, 0.4 ), action_potential );
 
     if ( hue > 0.001 )
-        baseCol = hueRot( baseCol, hue );
+        base_col = hueRot( base_col, hue );
 
-    vCol = vec4( baseCol, 1.0 );
-    vLife = actionPotential;
+    vCol = vec4( base_col, 1.0 );
+    vLife = action_potential;
 }

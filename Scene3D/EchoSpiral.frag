@@ -26,8 +26,8 @@ void main()
     float halo = exp( -d * d * 1.8 ) * 0.35;
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( vCol.rgb * ( core + halo ) ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    _catTone *= 2.57; // measured-dark lift (visual pass)
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( vCol.rgb * ( core + halo ) ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    cat_tone *= 2.57; // measured-dark lift (visual pass)
+    fragColor = vec4( cat_tone, 1.0 );
 }

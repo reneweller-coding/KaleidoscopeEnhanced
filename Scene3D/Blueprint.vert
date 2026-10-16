@@ -21,13 +21,13 @@ uniform float audioLevel;   ///< Overall loudness, 0..1.
 uniform float audioSubBass; ///< Sub-bass band level, 0..1.
 uniform float morphP;       ///< Morph knob: how the scene changes over time, 0..1.
 
-const float PI = 3.14159265; ///< Pi.
+const float Pi = 3.14159265; ///< Pi.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float u = attrA.x * 2.0 * PI; // around the tube's path
-    float v = attrA.y * 2.0 * PI; // around the tube
+    float u = attrA.x * 2.0 * Pi; // around the tube's path
+    float v = attrA.y * 2.0 * Pi; // around the tube
 
     // Where in the morph cycle we are.  Two shapes are always blended, so the
     // body is almost never one of the pure forms — which is what makes it read

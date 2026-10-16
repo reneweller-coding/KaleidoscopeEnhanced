@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -265,11 +265,11 @@ void main()
     // Labradorite runs blue -> teal -> green -> gold -> orange with lamella
     // spacing; minor sits on the blue end, major on the gold end.
     float band = clamp( ( spacing - 0.55 ) * 1.4 + ( 1.0 - ang ) * 3.0, 0.0, 1.0 );
-    float hueS = fract( mix( 0.62, 0.3, mode ) - band * 0.55 + hueP * 0.04 );
-    vec3  schC = hsv2rgb( vec3( hueS, 0.85, 1.0 ) );
+    float hue_s = fract( mix( 0.62, 0.3, mode ) - band * 0.55 + hueP * 0.04 );
+    vec3  sch_c = hsv2rgb( vec3( hue_s, 0.85, 1.0 ) );
     // Fine striation inside each flash (the lamellae themselves).
     float stri = 0.8 + 0.2 * sin( fbm3( uv * 18.0 ) * 30.0 );
-    vec3  col = host * ( 1.0 - 0.5 * flash ) + schC * flash * stri * ( 1.3 + 1.0 * swell );
+    vec3  col = host * ( 1.0 - 0.5 * flash ) + sch_c * flash * stri * ( 1.3 + 1.0 * swell );
     // Sparkle at the brightest points of the flashes.
     vec2  sq = uv * 260.0, si = floor( sq );
     float sp = step( 0.93, hash21( si ) ) * smoothstep( 0.35, 0.0, length( fract( sq ) - 0.5 ) );

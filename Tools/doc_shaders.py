@@ -175,6 +175,7 @@ FUNCS = {
     "hue2rgb": "A hue as a colour (the house palette).",
     "hsv2rgb": "HSV (all 0..1) to RGB.",
     "hue_of": "Hue of a colour, 0..1.",
+    "hueOf": "Hue of a colour, 0..1.",   # the name in the shaders (Tools/cgvr_glsl_names.py); gen.py still writes hue_of
     "satOf": "Saturation of a colour, 0..1.",
     "luma": "Luminance of a colour (Rec. 601 weights).",
     "hueRot": "Rotates a colour's hue by an angle (about the grey axis).",

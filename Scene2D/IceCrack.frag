@@ -105,9 +105,9 @@ void main()
     vec2 gf = fract( g );
 
     // ---- pass one: which seed owns this pixel ----
-    vec2  bestOff = vec2( 0.0 );
-    vec2  bestSeed = vec2( 0.0 );
-    float bestD = 1e9;
+    vec2  best_off = vec2( 0.0 );
+    vec2  best_seed = vec2( 0.0 );
+    float best_d = 1e9;
     for ( int y = -1; y <= 1; ++y )
         for ( int x = -1; x <= 1; ++x )
         {
@@ -118,11 +118,11 @@ void main()
             vec2  h = hash22( gi + o );
             vec2  s = o + 0.5 + 0.42 * sin( time * 0.10 + audioAdvance * 0.12 + 6.2831853 * h );
             float d = dot( s - gf, s - gf );
-            if ( d < bestD )
+            if ( d < best_d )
             {
-                bestD = d;
-                bestOff = o;
-                bestSeed = s;
+                best_d = d;
+                best_off = o;
+                best_seed = s;
             }
         }
 
@@ -134,23 +134,23 @@ void main()
             vec2  o = vec2( float( x ), float( y ) );
             vec2  h = hash22( gi + o );
             vec2  s = o + 0.5 + 0.42 * sin( time * 0.10 + audioAdvance * 0.12 + 6.2831853 * h );
-            vec2  diff = s - bestSeed;
+            vec2  diff = s - best_seed;
             float len = length( diff );
             if ( len < 1e-4 )
                 continue; // the winning seed itself
             // Perpendicular distance from the pixel to the bisector.
-            wall = min( wall, dot( 0.5 * ( s + bestSeed ) - gf, diff / len ) );
+            wall = min( wall, dot( 0.5 * ( s + best_seed ) - gf, diff / len ) );
         }
 
     // The shard's own identity, used for its refraction and its tilt.
-    vec2 id = gi + bestOff;
+    vec2 id = gi + best_off;
     vec2 rnd = hash22( id * 1.37 + 4.1 );
 
     // A shatter impulse: the sheet breaks harder on kicks, and the shards ride
     // outward from their seed while it decays.
     float shatter = clamp( 0.25 + 1.5 * audioKick + 0.5 * audioSubBass, 0.0, 2.0 );
 
-    vec2 outward = normalize( gf - bestSeed + vec2( 1e-4 ) );
+    vec2 outward = normalize( gf - best_seed + vec2( 1e-4 ) );
     vec2 refr = ( rnd - 0.5 ) * ( 0.010 + 0.030 * clamp( refractP, 0.0, 2.0 ) )
                 + outward * 0.004 * shatter;
     vec2 suv = clamp( uv + refr, vec2( 0.001 ), vec2( 0.999 ) );
@@ -171,12 +171,12 @@ void main()
     // A crack in ice is not a dark line: it is a thin air gap that scatters, so
     // it reads BRIGHTER than the ice around it, with a dark core where the two
     // faces have parted.
-    vec3  crackCol = mix( vec3( 0.85, 0.94, 1.0 ),
-                          hue2rgb( fract( 0.55 + 0.12 * sin( audioChromaHue ) ) ), 0.28 );
+    vec3  crack_col = mix( vec3( 0.85, 0.94, 1.0 ),
+                           hue2rgb( fract( 0.55 + 0.12 * sin( audioChromaHue ) ) ), 0.28 );
     float core = 1.0 - smoothstep( 0.0, w * 0.35, wall );
 
     vec3 col = ice;
-    col = mix( col, crackCol * ( 1.2 + 1.8 * clamp( crackP, 0.0, 2.0 ) ), line * 0.85 );
+    col = mix( col, crack_col * ( 1.2 + 1.8 * clamp( crackP, 0.0, 2.0 ) ), line * 0.85 );
     col = mix( col, vec3( 0.02, 0.05, 0.09 ), core * 0.55 );
 
     // Frost gathers along the cracks and thins toward the middle of a shard.
@@ -184,7 +184,7 @@ void main()
     col += vec3( 0.55, 0.70, 0.90 ) * frost * 0.16 * ( 0.5 + 0.9 * audioAmbient );
 
     col *= 1.0 + 0.18 * audioBeat + 0.12 * audioLevel;
-    col += crackCol * 0.06 * audioHigh;
+    col += crack_col * 0.06 * audioHigh;
     col = col / ( 1.0 + col * 0.16 );
     fragColor = vec4( col, interpolation );
 }

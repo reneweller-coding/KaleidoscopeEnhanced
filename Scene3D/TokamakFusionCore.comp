@@ -9,7 +9,7 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 layout( std430, binding = 0 ) buffer Verts
 {
-    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, heat), attrB.xyzw (pad, specBand)
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, heat), attrB.xyzw (pad, spec_band)
 };
 
 // DrawArraysIndirectCommand + our own counter:
@@ -75,8 +75,8 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
     // rasterised edge-on and drew nothing at all, however thick they were set.
     // Most filaments in this scene are vertical or horizontal, so a large part
     // of the geometry was simply invisible.
-    const vec3 kViewAxis = vec3( 0.0, 0.0, 1.0 );
-    vec3       side = cross( dir, kViewAxis );
+    const vec3 ViewAxis = vec3( 0.0, 0.0, 1.0 );
+    vec3       side = cross( dir, ViewAxis );
     float      sl = length( side );
     // Degenerate only when the segment runs straight at the lens, where any
     // perpendicular is equally good.
@@ -97,23 +97,23 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint TOTAL_FILAMENTS = 4096u;
-    if ( id >= TOTAL_FILAMENTS )
+    const uint TotalFilaments = 4096u;
+    if ( id >= TotalFilaments )
         return;
 
     float seed = float( id );
     float strand = hash11( seed );
-    float strandIdx = float( id % 32u );
-    float ringIdx = float( id / 32u );
+    float strand_idx = float( id % 32u );
+    float ring_idx = float( id / 32u );
 
     // Major and minor radius of D-shaped tokamak torus
     float R0 = 3.5;                   // Major radius
     float a0 = 1.3 + 0.3 * audioBass; // Minor radius
 
     // Poloidal & toroidal angles
-    float q_safety = 3.0 + 0.5 * sin( audioAdvance * 0.1 );                             // Safety factor q = m/n
-    float phi = ( ringIdx / 128.0 ) * 6.2831853 + time * 0.3;                           // Toroidal angle
-    float theta = phi * q_safety + ( strandIdx / 32.0 ) * 6.2831853 + audioPhase * 0.5; // Poloidal angle
+    float q_safety = 3.0 + 0.5 * sin( audioAdvance * 0.1 );                              // Safety factor q = m/n
+    float phi = ( ring_idx / 128.0 ) * 6.2831853 + time * 0.3;                           // Toroidal angle
+    float theta = phi * q_safety + ( strand_idx / 32.0 ) * 6.2831853 + audioPhase * 0.5; // Poloidal angle
 
     // D-shaped elongation (elongation kappa ~ 1.7, triangularity delta ~ 0.3)
     float kappa = 1.7;
@@ -126,17 +126,17 @@ void main()
     float z1 = ( R0 + r1 * cos( theta + delta * sin( theta ) ) ) * sin( phi );
 
     // Segment end position (extending along magnetic field line)
-    float dPhi = 0.05 + 0.02 * audioKick;
-    float phi2 = phi + dPhi;
-    float theta2 = theta + dPhi * q_safety;
+    float d_phi = 0.05 + 0.02 * audioKick;
+    float phi2 = phi + d_phi;
+    float theta2 = theta + d_phi * q_safety;
 
     float x2 = ( R0 + r1 * cos( theta2 + delta * sin( theta2 ) ) ) * cos( phi2 );
     float y2 = r1 * kappa * sin( theta2 );
     float z2 = ( R0 + r1 * cos( theta2 + delta * sin( theta2 ) ) ) * sin( phi2 );
 
     // Color/energy data
-    float heat = 0.5 + 0.5 * sin( strandIdx * 0.5 + time * 4.0 + audioKick * 3.0 );
-    float specBand = strand;
+    float heat = 0.5 + 0.5 * sin( strand_idx * 0.5 + time * 4.0 + audioKick * 3.0 );
+    float spec_band = strand;
 
-    emitSegment( vec3( x1, y1, z1 ), vec3( x2, y2, z2 ), heat, specBand, 0.025 );
+    emitSegment( vec3( x1, y1, z1 ), vec3( x2, y2, z2 ), heat, spec_band, 0.025 );
 }

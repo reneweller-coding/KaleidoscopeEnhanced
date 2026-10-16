@@ -70,46 +70,46 @@ void main()
 
     float t = time * 0.0483 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Fractal lightning tree branching (DLA / Lichtenberg structure)
-    float arcPattern = 0.0;
-    vec2  curP = p * 4.0 * brn;
+    float arc_pattern = 0.0;
+    vec2  cur_p = p * 4.0 * brn;
 
     for ( int i = 0; i < 4; ++i )
     {
-        float noiseVal = sin( curP.y * 3.0 + t * 4.0 ) + cos( curP.x * 3.0 - t * 3.0 );
-        float distToLine = abs( curP.x + noiseVal * 0.3 );
-        float arc = exp( -distToLine * 30.0 );
-        arcPattern = max( arcPattern, arc * ( 1.0 / float( i + 1 ) ) );
+        float noise_val = sin( cur_p.y * 3.0 + t * 4.0 ) + cos( cur_p.x * 3.0 - t * 3.0 );
+        float dist_to_line = abs( cur_p.x + noise_val * 0.3 );
+        float arc = exp( -dist_to_line * 30.0 );
+        arc_pattern = max( arc_pattern, arc * ( 1.0 / float( i + 1 ) ) );
 
-        curP = curP * 2.0 + vec2( sin( t ), cos( t ) );
+        cur_p = cur_p * 2.0 + vec2( sin( t ), cos( t ) );
     }
 
     // Breakdown sweep front
-    float sweepFront = mix( -1.2, 1.2, tProg );
-    float distToSweep = p.x - sweepFront;
+    float sweep_front = mix( -1.2, 1.2, t_prog );
+    float dist_to_sweep = p.x - sweep_front;
 
     // Ionization plasma displacement
-    vec2 plasmaDisp = vec2( arcPattern, sin( p.y * 20.0 + t * 5.0 ) ) * 0.03 * midTransition
-                      * ( 1.0 + audioSwell * 0.6 );
+    vec2 plasma_disp = vec2( arc_pattern, sin( p.y * 20.0 + t * 5.0 ) ) * 0.03 * mid_transition
+                       * ( 1.0 + audioSwell * 0.6 );
 
-    vec4 c1 = texture( tex1, fract( uv + plasmaDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - plasmaDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + plasma_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - plasma_disp ) );
 
-    float wipeMask = smoothstep( -0.04, 0.04, distToSweep );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.04, 0.04, dist_to_sweep );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // High-voltage ozone blue-violet ionization arc
-    vec3  arcColor = mix( vec3( 0.2, 0.8, 1.0 ), vec3( 0.8, 0.3, 1.0 ), sin( p.y * 10.0 ) * 0.5 + 0.5 );
-    float dischargeGlow = ( arcPattern + exp( -abs( distToSweep ) * 20.0 ) ) * midTransition * vlt;
-    col.rgb += dischargeGlow * arcColor * ( 1.6 + audioKick * 1.17 + audioHigh * 1.5 );
+    vec3  arc_color = mix( vec3( 0.2, 0.8, 1.0 ), vec3( 0.8, 0.3, 1.0 ), sin( p.y * 10.0 ) * 0.5 + 0.5 );
+    float discharge_glow = ( arc_pattern + exp( -abs( dist_to_sweep ) * 20.0 ) ) * mid_transition * vlt;
+    col.rgb += discharge_glow * arc_color * ( 1.6 + audioKick * 1.17 + audioHigh * 1.5 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

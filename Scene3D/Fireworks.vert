@@ -91,7 +91,7 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // ------------------------------------------------------------------
@@ -117,32 +117,32 @@ void main()
         // soft, very dim HAZE puffs -- screen-space sized, so they stay big at
         // any depth -- with the stars and the city ember band on top of it.
         bool haze = ( r4 < 0.040 ); // ~400 puffs
-        bool cityGlow = ( !haze && r4 < 0.36 );
+        bool city_glow = ( !haze && r4 < 0.36 );
 
-        float fy = cityGlow ? ( -0.62 - 0.28 * r2 ) // along the horizon
-                            : ( r2 - 0.5 ) * open;
-        vec3  vpS = vec3( ( r1 - 0.5 ) * open * dz * kTanY * aspect,
-                          fy * dz * kTanY,
-                          dz );
+        float fy = city_glow ? ( -0.62 - 0.28 * r2 ) // along the horizon
+                             : ( r2 - 0.5 ) * open;
+        vec3  vp_s = vec3( ( r1 - 0.5 ) * open * dz * TanY * aspect,
+                           fy * dz * TanY,
+                           dz );
 
-        vpS.x -= eyeOff;
-        gl_Position = projM * vec4( vpS.x, vpS.y, -vpS.z, 1.0 );
+        vp_s.x -= eyeOff;
+        gl_Position = projM * vec4( vp_s.x, vp_s.y, -vp_s.z, 1.0 );
         gl_Position.x += eyeOff * 0.04 * gl_Position.w;
 
-        float pxS = resolution.y / 1080.0;
+        float px_s = resolution.y / 1080.0;
         // A star has to stay a legible speck: below roughly three pixels an
         // additive sprite averages away to nothing again.  A haze puff is the
         // opposite -- a wide soft blob, sized in SCREEN space so the far ones
         // do not shrink away.
         gl_PointSize = haze
-                           ? clamp( ( 110.0 + 60.0 * r1 ) * pxS, 8.0, 160.0 * pxS )
-                           : clamp( 70.0 * ( 0.4 + 0.8 * r4 ) * pxS / dz, 3.2, 6.5 * pxS );
+                           ? clamp( ( 110.0 + 60.0 * r1 ) * px_s, 8.0, 160.0 * px_s )
+                           : clamp( 70.0 * ( 0.4 + 0.8 * r4 ) * px_s / dz, 3.2, 6.5 * px_s );
 
         // Slow twinkle / ember flicker on jump-free clocks only.
         float tw = 0.62 + 0.38 * sin( time * ( 0.5 + 1.4 * r4 ) + r1 * 30.0 );
-        vec3  sc = haze       ? vec3( 0.34, 0.42, 0.72 )
-                   : cityGlow ? vec3( 1.00, 0.62, 0.30 )
-                              : vec3( 0.72, 0.80, 1.00 );
+        vec3  sc = haze        ? vec3( 0.34, 0.42, 0.72 )
+                   : city_glow ? vec3( 1.00, 0.62, 0.30 )
+                               : vec3( 0.72, 0.80, 1.00 );
         sc = palTint( sc, 0.40 * r2, 0.28 );
         // A puff is spread over ~20000 px, a star over ~10, so the puff's
         // per-pixel figure is far lower even though it carries the sky.
@@ -152,7 +152,7 @@ void main()
         // the layer built to be "the floor of the picture" measured as black.
         // The per-puff spread is widened too: uniform puffs would just raise the
         // modal value, and it is the VARIATION between them that fills tiles.
-        float lay = haze ? 0.26 : ( cityGlow ? 0.34 : 0.30 );
+        float lay = haze ? 0.26 : ( city_glow ? 0.34 : 0.30 );
         sc *= lay * ( haze ? ( 0.45 + 1.15 * r2 ) : tw )
               * ( 0.8 + 0.35 * audioSwell + 0.5 * audioDrop )
               * clamp( 1.0 - dz / 190.0, 0.0, 1.0 );
@@ -183,9 +183,9 @@ void main()
     // 2.00 / 1.55 (was 1.85 / 1.45): shells now also break just past the left
     // and right edges and reach lower down the frame, so the sky is lit corner
     // to corner instead of in a band across the middle.
-    vec3 Cb = vec3( ( hb1 - 0.5 ) * 2.00 * cbz * kTanY * aspect,
+    vec3 cb = vec3( ( hb1 - 0.5 ) * 2.00 * cbz * TanY * aspect,
                     // 10.0 is added back by the camera transform below.
-                    10.0 + ( hb2 - 0.42 ) * 1.55 * cbz * kTanY,
+                    10.0 + ( hb2 - 0.42 ) * 1.55 * cbz * TanY,
                     cbz - 12.0 );
 
     // Cycle clock: music energy (integrated advance) drives the firing rate,
@@ -206,11 +206,11 @@ void main()
     float typ = floor( hash11( burst * 13.7 + cyc * 3.1 ) * 5.999 );
     float burn = 0.8 + 1.6 * hash11( burst * 21.3 + cyc * 7.7 );
 
-    const float RISE = 0.10; // first 10 % of the cycle = rocket
+    const float Rise = 0.10; // first 10 % of the cycle = rocket
     vec3        world;
     float       B;
 
-    if ( u < RISE )
+    if ( u < Rise )
     {
         // ---- Rocket rise: a thin climbing streak from below. ----
         if ( r4 > 0.08 ) // only a few particles form the streak
@@ -219,22 +219,22 @@ void main()
             vCol = vec4( 0.0 );
             return;
         }
-        float ur = u / RISE;
+        float ur = u / Rise;
         // Start the climb just below the frame AT THIS SHELL'S DEPTH.  A fixed
         // world-space -14.0 is below the picture for a near shell but a third
         // of the way UP it for one 100 units back, so the distant rockets used
         // to pop into existence in mid-air.
-        float yBase = 10.0 - 1.15 * cbz * kTanY;
-        float yy = mix( yBase, Cb.y, ur * ur * ( 3.0 - 2.0 * ur ) );
-        world = vec3( Cb.x + sin( ur * 9.0 + hb2 * 6.0 ) * 0.6,
+        float y_base = 10.0 - 1.15 * cbz * TanY;
+        float yy = mix( y_base, cb.y, ur * ur * ( 3.0 - 2.0 * ur ) );
+        world = vec3( cb.x + sin( ur * 9.0 + hb2 * 6.0 ) * 0.6,
                       yy - r1 * 2.5 * ur, // short trail behind the head
-                      Cb.z );
+                      cb.z );
         B = ( 0.5 + 0.8 * audioKick ) * ( 0.4 + 0.6 * ur );
     }
     else
     {
         // ---- Explosion flight. ----
-        float ub = ( u - RISE ) / ( 1.0 - RISE );
+        float ub = ( u - Rise ) / ( 1.0 - Rise );
 
         float th = r1 * 6.2831853;
         float ph = acos( 2.0 * r2 - 1.0 );
@@ -258,7 +258,7 @@ void main()
         float grav = ( typ == 1.0 ) ? 34.0 : ( ( typ == 5.0 ) ? 6.0 : 15.0 );
         float sp = ( 8.0 + 7.0 * r3 ) * ( ( typ == 2.0 ) ? 0.85 : 1.0 );
         float re = sp * ( 1.0 - exp( -ub * 4.0 ) ) * 1.1;
-        world = Cb + d * re + vec3( 0.0, -grav * ub * ub, 0.0 );
+        world = cb + d * re + vec3( 0.0, -grav * ub * ub, 0.0 );
         if ( typ == 5.0 ) // GLITTER: sparks drift down slowly
             world.y -= 6.0 * ub;
 
@@ -308,7 +308,7 @@ void main()
                       audioChromaHue );
     else
         col = hueRot( vec3( 1.0, 0.62, 0.25 ), hb3 * 5.0 + audioChromaHue );
-    float ub2 = max( u - RISE, 0.0 ) / ( 1.0 - RISE );
+    float ub2 = max( u - Rise, 0.0 ) / ( 1.0 - Rise );
     col = mix( col, vec3( 1.0, 0.35, 0.15 ), smoothstep( 0.55, 0.85, ub2 ) * 0.7 );
 
     col *= B * ( 0.9 + 0.4 * audioSwell ) * clamp( 1.0 - vp.z / 150.0, 0.0, 1.0 );

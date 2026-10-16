@@ -83,8 +83,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float tScale = ( tesseractScaleP > 0.01 ) ? tesseractScaleP : 1.0;
-    float r4D = ( rot4DP > 0.01 ) ? rot4DP : 1.0;
+    float t_scale = ( tesseractScaleP > 0.01 ) ? tesseractScaleP : 1.0;
+    float r_4d = ( rot4DP > 0.01 ) ? rot4DP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -92,18 +92,18 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Continuous 4D forward plunge: w component advances continuously
-    float wPlunge = mod( t * 0.8, 2.0 ) - 1.0;
+    float w_plunge = mod( t * 0.8, 2.0 ) - 1.0;
 
     // Sub-bass swells the projected hypercube itself. It scales the final 2D
     // projection radius, NOT the 4D rotation or plunge phase -- a plain
     // per-frame size factor can breathe freely without remapping any
     // accumulated angle.
-    float volBreath = 1.0 + 0.35 * audioSubBass;
+    float vol_breath = 1.0 + 0.35 * audioSubBass;
 
     // Project 16 vertices of 4D Tesseract (+-1, +-1, +-1, +-1)
-    vec2  projV[16];
-    float rotA1 = t * 0.25 * r4D + audioPhase * 0.1;
-    float rotA2 = t * 0.18 * r4D + audioSwell * 0.4;
+    vec2  proj_v[16];
+    float rot_a1 = t * 0.25 * r_4d + audioPhase * 0.1;
+    float rot_a2 = t * 0.18 * r_4d + audioSwell * 0.4;
 
     for ( int i = 0; i < 16; i++ )
     {
@@ -113,42 +113,42 @@ void main()
             ( i & 4 ) != 0 ? 1.0 : -1.0,
             ( i & 8 ) != 0 ? 1.0 : -1.0 );
 
-        v4.w += wPlunge;
-        v4 = rot4D( v4, rotA1, rotA2 );
+        v4.w += w_plunge;
+        v4 = rot4D( v4, rot_a1, rot_a2 );
 
         // 4D Perspective Schlegel projection to 3D, then 3D to 2D
         float d4 = 2.4 - v4.w * 0.5;
         vec3  v3 = v4.xyz / max( 0.2, d4 );
 
         float d3 = 2.0 - v3.z * 0.3;
-        projV[i] = ( v3.xy / max( 0.2, d3 ) ) * ( 0.8 * tScale * volBreath );
+        proj_v[i] = ( v3.xy / max( 0.2, d3 ) ) * ( 0.8 * t_scale * vol_breath );
     }
 
     // Accumulate distance to 32 Tesseract wireframe edges
-    float minEdgeDist = 1e4;
-    float minVertexDist = 1e4;
+    float min_edge_dist = 1e4;
+    float min_vertex_dist = 1e4;
 
     for ( int i = 0; i < 16; i++ )
     {
-        minVertexDist = min( minVertexDist, length( uv - projV[i] ) );
+        min_vertex_dist = min( min_vertex_dist, length( uv - proj_v[i] ) );
 
         for ( int bit = 0; bit < 4; bit++ )
         {
             int j = i ^ ( 1 << bit );
             if ( j > i )
             {
-                float dEdge = sdSegment( uv, projV[i], projV[j] );
-                minEdgeDist = min( minEdgeDist, dEdge );
+                float d_edge = sdSegment( uv, proj_v[i], proj_v[j] );
+                min_edge_dist = min( min_edge_dist, d_edge );
             }
         }
     }
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing 4D struts and vertex sparks. Near the vanishing point many of
-    // the 32 projected edges cluster together, so minEdgeDist/minVertexDist
+    // the 32 projected edges cluster together, so min_edge_dist/min_vertex_dist
     // sit near 0 across a wide area -- and the tint constants alone (1.8,
     // 2.0) already exceed 1.0 even with NO kick, which is why the rounded
     // hypercube silhouette was blowing out to solid white on every frame,
@@ -156,29 +156,29 @@ void main()
     // 30 was far too soft: with 32 edges clustering near the vanishing
     // point the glow covered the whole silhouette and painted it solid
     // white.  A wireframe needs a falloff that only lights the LINE.
-    float edgeGlow = min( exp( -minEdgeDist * ( 150.0 + 40.0 * audioCentroid ) ) * glw * ( 1.0 + 2.0 * audioKick ),
-                          0.9 );
-    float vertexGlow = min( exp( -minVertexDist * 90.0 ) * ( 1.0 + 2.5 * audioKick ), 0.9 );
+    float edge_glow = min( exp( -min_edge_dist * ( 150.0 + 40.0 * audioCentroid ) ) * glw * ( 1.0 + 2.0 * audioKick ),
+                           0.9 );
+    float vertex_glow = min( exp( -min_vertex_dist * 90.0 ) * ( 1.0 + 2.5 * audioKick ), 0.9 );
 
     // 4D hypercube neon palette
-    vec3 palBase = imgPalette( minEdgeDist * 0.5 + t * 0.05 );
-    vec3 col = mix( texCol * 0.3, palBase, 0.45 );
+    vec3 pal_base = imgPalette( min_edge_dist * 0.5 + t * 0.05 );
+    vec3 col = mix( tex_col * 0.3, pal_base, 0.45 );
 
-    vec3 strutTint = vec3( 0.85, 0.95, 1.5 ) * edgeGlow;
-    vec3 sparkTint = vec3( 1.3, 1.2, 1.6 ) * vertexGlow;
+    vec3 strut_tint = vec3( 0.85, 0.95, 1.5 ) * edge_glow;
+    vec3 spark_tint = vec3( 1.3, 1.2, 1.6 ) * vertex_glow;
 
-    col += strutTint + sparkTint;
+    col += strut_tint + spark_tint;
 
     // Center 4D singularity burst
-    float centerBloom = min( exp( -length( uv ) * 14.0 ) * ( 0.5 + 1.2 * audioKick ), 0.35 );
-    col += imgPalette( 0.85 ) * centerBloom;
+    float center_bloom = min( exp( -length( uv ) * 14.0 ) * ( 0.5 + 1.2 * audioKick ), 0.35 );
+    col += imgPalette( 0.85 ) * center_bloom;
 
     col = pow( col, vec3( 0.88 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.4 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.4 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
     // One knee is enough: stacking a second one crushed the whole frame
     // under the 0.42 S-curve foot below, which then clamped the wires to
     // black and left only the centre bloom (the grey blob in the probe).
-    _catTone = clamp( ( _catTone - 0.12 ) * 1.45, 0.0, 1.0 );
-    fragColor = vec4( _catTone, 1.0 );
+    cat_tone = clamp( ( cat_tone - 0.12 ) * 1.45, 0.0, 1.0 );
+    fragColor = vec4( cat_tone, 1.0 );
 }

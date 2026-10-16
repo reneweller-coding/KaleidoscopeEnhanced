@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -252,9 +252,9 @@ void main()
     float fa = mod( ang + 6.2831853, sec ) - sec * 0.5; // -half..half within the petal
     // Petal outline: pointed, narrower when closed.
     float R = 0.48 * ( 0.75 + 0.25 * open );
-    float widthF = 0.45 + 0.55 * open;
-    float edgeA = abs( fa ) / ( sec * 0.5 * widthF );
-    float outline = r / R + 0.35 * edgeA * edgeA * ( r / R );
+    float width_f = 0.45 + 0.55 * open;
+    float edge_a = abs( fa ) / ( sec * 0.5 * width_f );
+    float outline = r / R + 0.35 * edge_a * edge_a * ( r / R );
     float px = fwidth( g.x ) * 1.5 / R;
     float inside = smoothstep( 1.0 + px, 1.0 - px, outline );
     // Pleats: each petal has a mountain fold on its midline and valley folds at its sides.

@@ -111,11 +111,11 @@ void main()
     float age = depth * 0.045 * spd + sceneAdvance * 0.01;
     float e = spec( band, age );
     float e2 = spec( band, age + 0.01 );
-    float eNear = spec( band, max( age - 0.01, 0.0 ) );
+    float e_near = spec( band, max( age - 0.01, 0.0 ) );
     e = clamp( e * 1.4, 0.0, 1.0 ) * min( spectroFill * 4.0, 1.0 );
 
     // Relief: a note is a bump.  Bumps catch light from the tunnel axis.
-    float relief = ( e2 - eNear ) * 6.0; // slope along depth
+    float relief = ( e2 - e_near ) * 6.0; // slope along depth
     float lit = clamp( 0.45 + 0.55 * relief, 0.0, 1.5 );
 
     // Wall colour: the band picks the palette position, energy the brightness.
@@ -131,13 +131,13 @@ void main()
 
     // Depth fog toward the far end (correct sign: far = fogged).
     float fog = 1.0 - exp( -depth * ( 0.05 + 0.08 * audioSwell ) );
-    vec3  fogCol = imgPalette( hue * 0.159 + 0.2 ) * 0.08;
-    vec3  col = mix( wall, fogCol, clamp( fog, 0.0, 0.80 ) );
+    vec3  fog_col = imgPalette( hue * 0.159 + 0.2 ) * 0.08;
+    vec3  col = mix( wall, fog_col, clamp( fog, 0.0, 0.80 ) );
 
     // A soft core glow at the vanishing point.
     col += imgPalette( hue * 0.159 + 0.7 ) * 0.25 * exp( -r * 18.0 ) * ( 0.6 + 0.8 * audioLevel );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

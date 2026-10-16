@@ -115,29 +115,29 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nEddies = 3 + int( clamp( eddiesP, 0.0, 1.0 ) * 4.0 );
+    int   n_eddies = 3 + int( clamp( eddiesP, 0.0, 1.0 ) * 4.0 );
     float wind = 0.3 + 0.7 * clamp( windP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
-    float bloomAmt = 0.3 + 0.8 * clamp( audioSwell, 0.0, 1.0 );
+    float bloom_amt = 0.3 + 0.8 * clamp( audioSwell, 0.0, 1.0 );
 
     // Advect backward through the eddy field to find where this water came
     // from; the bloom pattern lives in that source coordinate.
     vec2 q = p;
     for ( int s = 0; s < 12; ++s )
     {
-        q -= eddyVel( q, clock, nEddies ) * 0.12 * wind;
+        q -= eddyVel( q, clock, n_eddies ) * 0.12 * wind;
     }
     q -= vec2( clock * 0.03 * wind, 0.0 );
     // Bloom: filaments of fbm in the source frame, threshold by the swell.
     float bloom = fbm( q * 3.0 + 7.0 ) * 0.7 + fbm( q * 9.0 ) * 0.3;
-    bloom = smoothstep( 0.55 - 0.2 * bloomAmt, 0.75, bloom ) * bloomAmt;
+    bloom = smoothstep( 0.55 - 0.2 * bloom_amt, 0.75, bloom ) * bloom_amt;
     // Ocean colour: the photo as the sea surface (deep blue with the bass),
     // the bloom as milky green-turquoise.
     vec3 sea = img( fract( q * 0.4 + 0.5 ) ) * mix( vec3( 0.05, 0.2, 0.4 ), imgPalette( hue * 0.159 + 0.6 ), 0.4 )
                * 1.5;
     sea = mix( sea, vec3( 0.02, 0.08, 0.25 ), clamp( audioBass, 0.0, 1.0 ) * 0.4 );
-    vec3 bloomCol = mix( vec3( 0.3, 0.8, 0.6 ), imgPalette( hue * 0.159 + 0.3 ), 0.35 ) * 1.2;
-    vec3 col = mix( sea, bloomCol, bloom );
+    vec3 bloom_col = mix( vec3( 0.3, 0.8, 0.6 ), imgPalette( hue * 0.159 + 0.3 ), 0.35 ) * 1.2;
+    vec3 col = mix( sea, bloom_col, bloom );
     // Cloud shadows and sun glitter (round sparkles) on the treble.
     float cloud = smoothstep( 0.55, 0.75, fbm( p * 1.5 - clock * 0.05 + 3.0 ) );
     col *= 1.0 - 0.35 * cloud;
@@ -150,7 +150,7 @@ void main()
            * smoothstep( 0.6, 0.0, length( p - vec2( 0.3, 0.2 ) ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

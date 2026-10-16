@@ -129,7 +129,7 @@ void main()
 {
     vec2  p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nHeads = 2 + int( clamp( headsP, 0.0, 1.0 ) * 2.0 + 0.5 ); // 2..4
+    int   n_heads = 2 + int( clamp( headsP, 0.0, 1.0 ) * 2.0 + 0.5 ); // 2..4
     float opacity = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
     float R = 0.38;
 
@@ -140,32 +140,32 @@ void main()
 
     // Token energies: the twelve pitch classes.
     float e[12];
-    float maxE = 0.0;
-    int   maxI = 0;
+    float max_e = 0.0;
+    int   max_i = 0;
     for ( int i = 0; i < 12; ++i )
     {
         e[i] = clamp( audioChroma[i], 0.0, 1.0 );
-        if ( e[i] > maxE )
+        if ( e[i] > max_e )
         {
-            maxE = e[i];
-            maxI = i;
+            max_e = e[i];
+            max_i = i;
         }
     }
     // Relative to the strongest class, so quiet music still draws its
     // harmony (in the app the raw classes sat low and the web stayed faint);
     // the floor keeps silence from being blown up into a full web.
-    float norm = 1.0 / max( maxE, 0.15 );
+    float norm = 1.0 / max( max_e, 0.15 );
     for ( int i = 0; i < 12; ++i )
         e[i] = clamp( e[i] * norm, 0.0, 1.0 );
 
     // Heads by interval class: fifths (5), thirds (3, 4), steps (1, 2),
     // tritone (6).  Each attends between pitch classes at its interval, so a
     // major chord draws a magenta triangle of thirds and a cyan fifth.
-    vec3 headC[4];
-    headC[0] = mix( vec3( 0.2, 0.85, 1.0 ), imgPalette( hue * 0.159 + 0.5 ), 0.25 );  // fifths
-    headC[1] = mix( vec3( 1.0, 0.25, 0.75 ), imgPalette( hue * 0.159 + 0.8 ), 0.25 ); // thirds
-    headC[2] = mix( vec3( 1.0, 0.75, 0.25 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 ); // steps
-    headC[3] = mix( vec3( 0.6, 0.4, 1.0 ), imgPalette( hue * 0.159 + 0.65 ), 0.25 );  // tritone
+    vec3 head_c[4];
+    head_c[0] = mix( vec3( 0.2, 0.85, 1.0 ), imgPalette( hue * 0.159 + 0.5 ), 0.25 );  // fifths
+    head_c[1] = mix( vec3( 1.0, 0.25, 0.75 ), imgPalette( hue * 0.159 + 0.8 ), 0.25 ); // thirds
+    head_c[2] = mix( vec3( 1.0, 0.75, 0.25 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 ); // steps
+    head_c[3] = mix( vec3( 0.6, 0.4, 1.0 ), imgPalette( hue * 0.159 + 0.65 ), 0.25 );  // tritone
 
     // Bounding circle: every chord lies inside the ring.
     if ( r < R + 0.1 )
@@ -176,7 +176,7 @@ void main()
                 int iv = j - i;
                 int ic = min( iv, 12 - iv );
                 int head = ( ic == 5 ) ? 0 : ( ( ic == 3 || ic == 4 ) ? 1 : ( ( ic <= 2 ) ? 2 : 3 ) );
-                if ( head >= nHeads )
+                if ( head >= n_heads )
                     continue;
                 float w = e[i] * e[j];
                 float vis = smoothstep( 0.01, 0.08, w );
@@ -190,32 +190,32 @@ void main()
                 float glow = exp( -bt.x * 45.0 ) * 0.25;
                 // Light flows from query to key along the ribbon.
                 float pulse = 0.55 + 0.45 * sin( bt.y * 14.0 - sceneAdvance * 3.0 - float( head ) * 1.3 );
-                col += headC[head] * ( core * 1.4 + glow ) * vis * opacity * pulse * ( 0.4 + 0.9 * sqrt( w ) );
+                col += head_c[head] * ( core * 1.4 + glow ) * vis * opacity * pulse * ( 0.4 + 0.9 * sqrt( w ) );
             }
     }
 
     // The ring of tokens: twelve arcs of the photo, lit by their energy; the
     // strongest one flares on the kick.
     float ang = atan( p.y, p.x );
-    float posF = mod( ( 1.5707963 - ang ) / 6.2831853 * 12.0 + 0.5, 12.0 );
-    float pi_ = floor( posF );
-    int   kIdx = int( mod( pi_ * 7.0, 12.0 ) ); // inverse of 7k mod 12 is 7
-    float within = abs( fract( posF ) - 0.5 );
+    float pos_f = mod( ( 1.5707963 - ang ) / 6.2831853 * 12.0 + 0.5, 12.0 );
+    float pi_ = floor( pos_f );
+    int   k_idx = int( mod( pi_ * 7.0, 12.0 ) ); // inverse of 7k mod 12 is 7
+    float within = abs( fract( pos_f ) - 0.5 );
     float band = smoothstep( 0.012, 0.0, abs( r - R - 0.035 ) - 0.02 ) * smoothstep( 0.47, 0.42, within );
     float ek = 0.0;
     for ( int i = 0; i < 12; ++i )
-        if ( i == kIdx )
+        if ( i == k_idx )
             ek = e[i];
-    vec3 tokC = img( clamp( vec2( 0.5 ) + p * 0.9, 0.0, 1.0 ) ) * 0.6 + headC[0] * 0.15;
-    tokC *= 0.35 + 1.1 * ek;
-    if ( kIdx == maxI )
-        tokC += imgPalette( hue * 0.159 + 0.9 ) * clamp( audioKick, 0.0, 1.0 ) * 0.7;
-    col = mix( col, tokC, band );
+    vec3 tok_c = img( clamp( vec2( 0.5 ) + p * 0.9, 0.0, 1.0 ) ) * 0.6 + head_c[0] * 0.15;
+    tok_c *= 0.35 + 1.1 * ek;
+    if ( k_idx == max_i )
+        tok_c += imgPalette( hue * 0.159 + 0.9 ) * clamp( audioKick, 0.0, 1.0 ) * 0.7;
+    col = mix( col, tok_c, band );
     // A fine outer circle.
     col += vec3( 0.25, 0.3, 0.45 ) * exp( -abs( r - R - 0.075 ) * 600.0 ) * 0.4;
 
     col *= 0.8 + 0.4 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

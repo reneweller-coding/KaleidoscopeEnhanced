@@ -153,10 +153,10 @@ void main()
     // (The old discrete "walk free" loop jumped the camera 0.35 units at a
     // time whenever the terraces closed over it -- replaced by the smax
     // clearance bubble in the march below, continuous by construction.)
-    float totalDist = 0.0;
-    float minDist = 1000.0;
-    vec3  hitUVW = vec3( 0.0 );
-    int   hitSteps = 0;
+    float total_dist = 0.0;
+    float min_dist = 1000.0;
+    vec3  hit_uvw = vec3( 0.0 );
+    int   hit_steps = 0;
     // The 0.15*audioBass breathing moved the WALLS of the labyrinth;
     // a numeric probe showed the open channel closing over the camera on
     // bass swells (the recording's flat-grey frame is the inside of a
@@ -165,63 +165,63 @@ void main()
 
     for ( int i = 0; i < 80; ++i )
     {
-        vec3  p = ro + rd * totalDist;
+        vec3  p = ro + rd * total_dist;
         vec3  uvw;
         float d = mapBismuth( p, uvw, stepScale );
         d = smax( d, 0.50 - length( p - ro ), 0.18 ); // camera clearance bubble
-        minDist = min( minDist, d );
-        if ( d < 0.003 || totalDist > 20.0 )
+        min_dist = min( min_dist, d );
+        if ( d < 0.003 || total_dist > 20.0 )
         {
-            hitUVW = uvw;
-            hitSteps = i;
+            hit_uvw = uvw;
+            hit_steps = i;
             break;
         }
-        totalDist += d * 0.75;
+        total_dist += d * 0.75;
     }
 
     vec3 col = vec3( 0.0 );
 
-    if ( totalDist < 20.0 )
+    if ( total_dist < 20.0 )
     {
-        vec3 p = ro + rd * totalDist;
+        vec3 p = ro + rd * total_dist;
         vec3 n = calcNormal( p, stepScale );
-        vec3 lightDir = normalize( vec3( 0.6, 0.8, -0.5 ) );
+        vec3 light_dir = normalize( vec3( 0.6, 0.8, -0.5 ) );
 
         // Metallic specular & Fresnel
-        float diff = max( dot( n, lightDir ), 0.0 );
+        float diff = max( dot( n, light_dir ), 0.0 );
         vec3  ref = reflect( rd, n );
-        float spec = pow( max( dot( ref, lightDir ), 0.0 ), 32.0 );
+        float spec = pow( max( dot( ref, light_dir ), 0.0 ), 32.0 );
         float fresnel = pow( 1.0 - max( dot( -rd, n ), 0.0 ), 3.0 );
 
         // Thin-film interference oxidation layers
-        float filmThickness = dot( hitUVW, vec3( 1.2, 2.5, 3.8 ) ) + audioPhase * 0.2;
-        vec3  filmCol = thinFilmColor( filmThickness );
+        float film_thickness = dot( hit_uvw, vec3( 1.2, 2.5, 3.8 ) ) + audioPhase * 0.2;
+        vec3  film_col = thinFilmColor( film_thickness );
 
         // Terrace photo projection
-        vec2 terraceUV = hitUVW.xy * 0.5 + 0.5;
-        vec3 photoCol = img( fract( terraceUV ) );
+        vec2 terrace_uv = hit_uvw.xy * 0.5 + 0.5;
+        vec3 photo_col = img( fract( terrace_uv ) );
 
         // Stepped laser resonance pulses on kick
-        float terraceRing = sin( length( hitUVW ) * 20.0 - time * 6.0 );
-        float laserGlow = exp( -abs( terraceRing ) * 4.0 ) * audioKick * 2.5;
+        float terrace_ring = sin( length( hit_uvw ) * 20.0 - time * 6.0 );
+        float laser_glow = exp( -abs( terrace_ring ) * 4.0 ) * audioKick * 2.5;
 
         // Combine metallic bismuth shading
-        vec3 metalAlbedo = mix( vec3( 0.85, 0.88, 0.92 ), filmCol, 0.75 ) * photoCol;
-        col = metalAlbedo * ( diff * 0.6 + 0.3 ) + vec3( 1.0 ) * spec * 0.8 + filmCol * fresnel * 1.2;
-        col += vec3( 0.2, 0.8, 1.0 ) * laserGlow;
+        vec3 metal_albedo = mix( vec3( 0.85, 0.88, 0.92 ), film_col, 0.75 ) * photo_col;
+        col = metal_albedo * ( diff * 0.6 + 0.3 ) + vec3( 1.0 ) * spec * 0.8 + film_col * fresnel * 1.2;
+        col += vec3( 0.2, 0.8, 1.0 ) * laser_glow;
 
         // Ambient occlusion from raymarching steps
-        float ao = clamp( 1.0 - float( hitSteps ) / 80.0, 0.0, 1.0 );
+        float ao = clamp( 1.0 - float( hit_steps ) / 80.0, 0.0, 1.0 );
         col *= ao;
 
-        // Volumetric crystal depth fog.  At 0.12 the corridor (totalDist
+        // Volumetric crystal depth fog.  At 0.12 the corridor (total_dist
         // 10..20) sat in 70-90% fog -- THE reason the probe was near-black.
-        col = mix( col, vec3( 0.02, 0.01, 0.05 ), 1.0 - exp( -totalDist * 0.045 ) );
+        col = mix( col, vec3( 0.02, 0.01, 0.05 ), 1.0 - exp( -total_dist * 0.045 ) );
     }
     else
     {
         // Glow at distance
-        col = vec3( 0.02, 0.01, 0.05 ) + vec3( 0.1, 0.3, 0.6 ) * exp( -minDist * 8.0 );
+        col = vec3( 0.02, 0.01, 0.05 ) + vec3( 0.1, 0.3, 0.6 ) * exp( -min_dist * 8.0 );
     }
 
     col = hueRot( col, 0.25 * sin( hue ) ); // bounded: full rotation broke the bismuth identity
@@ -229,9 +229,9 @@ void main()
 
     // Headlight: the corridors carried no near light at all and probed
     // near-black front to back.
-    col *= 1.0 + 1.5 * exp( -totalDist * 0.30 );
+    col *= 1.0 + 1.5 * exp( -total_dist * 0.30 );
     // Headlight: the corridors carried no near light at all and probed
     // near-black front to back.
-    col *= 1.0 + 1.5 * exp( -totalDist * 0.30 );
+    col *= 1.0 + 1.5 * exp( -total_dist * 0.30 );
     fragColor = vec4( col, 1.0 );
 }

@@ -82,62 +82,62 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Orbiting concentric rings of monoliths
-    float ringIdx = floor( qi / 300.0 ); // 10 rings of 300 monoliths
-    float slotIdx = mod( qi, 300.0 );
+    float ring_idx = floor( qi / 300.0 ); // 10 rings of 300 monoliths
+    float slot_idx = mod( qi, 300.0 );
 
-    float ringRadius = ( 3.5 + ringIdx * 2.2 ) * orb + audioSwell * 2.0;
-    float ringSpeed = ( 1.2 / ( 1.0 + ringIdx * 0.4 ) ) * ( ( mod( ringIdx, 2.0 ) > 0.5 ) ? 1.0 : -1.0 );
+    float ring_radius = ( 3.5 + ring_idx * 2.2 ) * orb + audioSwell * 2.0;
+    float ring_speed = ( 1.2 / ( 1.0 + ring_idx * 0.4 ) ) * ( ( mod( ring_idx, 2.0 ) > 0.5 ) ? 1.0 : -1.0 );
 
-    float orbitAngle = ( slotIdx / 300.0 ) * 6.2831853 + time * ringSpeed * 0.4 + audioAdvance * 0.1;
+    float orbit_angle = ( slot_idx / 300.0 ) * 6.2831853 + time * ring_speed * 0.4 + audioAdvance * 0.1;
 
     // Monolith center position
-    vec3 monolithCenter = vec3(
-        cos( orbitAngle ) * ringRadius,
-        sin( orbitAngle * 2.0 + ringIdx ) * 1.5 + ( seeds.y - 0.5 ) * 3.0 * sct,
-        sin( orbitAngle ) * ringRadius );
+    vec3 monolith_center = vec3(
+        cos( orbit_angle ) * ring_radius,
+        sin( orbit_angle * 2.0 + ring_idx ) * 1.5 + ( seeds.y - 0.5 ) * 3.0 * sct,
+        sin( orbit_angle ) * ring_radius );
 
     // Dynamic kick expansion & tumble
-    monolithCenter += normalize( monolithCenter ) * audioKick * 2.0;
+    monolith_center += normalize( monolith_center ) * audioKick * 2.0;
 
     // Monolith orientation: tall vertical slabs facing slightly inward & tumbling
-    float yaw = orbitAngle + 1.5708 + seeds.z * 0.8;
+    float yaw = orbit_angle + 1.5708 + seeds.z * 0.8;
     float pitch = sin( time * 2.0 + seeds.x * 6.28 ) * 0.3 * ( 1.0 + 0.5 * audioSwell );
     float roll = cos( time * 1.5 + seeds.y * 6.28 ) * 0.2;
 
-    mat3 rotY = mat3( cos( yaw ), 0.0, sin( yaw ), 0.0, 1.0, 0.0, -sin( yaw ), 0.0, cos( yaw ) );
-    mat3 rotX = mat3( 1.0, 0.0, 0.0, 0.0, cos( pitch ), -sin( pitch ), 0.0, sin( pitch ), cos( pitch ) );
-    mat3 rotZ = mat3( cos( roll ), -sin( roll ), 0.0, sin( roll ), cos( roll ), 0.0, 0.0, 0.0, 1.0 );
-    mat3 rotMat = rotY * rotX * rotZ;
+    mat3 rot_y = mat3( cos( yaw ), 0.0, sin( yaw ), 0.0, 1.0, 0.0, -sin( yaw ), 0.0, cos( yaw ) );
+    mat3 rot_x = mat3( 1.0, 0.0, 0.0, 0.0, cos( pitch ), -sin( pitch ), 0.0, sin( pitch ), cos( pitch ) );
+    mat3 rot_z = mat3( cos( roll ), -sin( roll ), 0.0, sin( roll ), cos( roll ), 0.0, 0.0, 0.0, 1.0 );
+    mat3 rot_mat = rot_y * rot_x * rot_z;
 
     // Monolith dimensions: tall rectangular prism card
-    vec3 cardSize = vec3( 0.65, 2.2, 0.08 );
-    vec3 localPos = rotMat * ( vec3( corner.x, corner.y, 0.0 ) * cardSize );
+    vec3 card_size = vec3( 0.65, 2.2, 0.08 );
+    vec3 local_pos = rot_mat * ( vec3( corner.x, corner.y, 0.0 ) * card_size );
 
-    vec3 worldP = monolithCenter + localPos;
+    vec3 world_p = monolith_center + local_pos;
 
     // Camera
-    float camDist = 24.0 - audioSwell * 4.0;
-    float camAngle = time * 0.15 + audioAdvance * 0.05;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 10.0 + 4.0 * sin( time * 0.18 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0, 0.0, 0.0 );
+    float cam_dist = 24.0 - audioSwell * 4.0;
+    float cam_angle = time * 0.15 + audioAdvance * 0.05;
+    vec3  cam_pos = vec3( sin( cam_angle ) * cam_dist, 10.0 + 4.0 * sin( time * 0.18 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0, 0.0, 0.0 );
 
-    vec3 ww = normalize( lookTarget - camPos );
+    vec3 ww = normalize( look_target - cam_pos );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    vec3 relP = worldP - camPos;
-    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
+    vec3 rel_p = world_p - cam_pos;
+    vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
 
-    viewP.x -= eyeOff;
-    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+    view_p.x -= eyeOff;
+    gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vUV = attrA.xy;
-    vNormal = rotMat * vec3( 0.0, 0.0, 1.0 );
-    vWorldPos = worldP;
+    vNormal = rot_mat * vec3( 0.0, 0.0, 1.0 );
+    vWorldPos = world_p;
 
     // Prismatic color gradient
-    vec3 col = imgPalette( 0.35 * ringIdx / 10.0 ) * 1.4;
+    vec3 col = imgPalette( 0.35 * ring_idx / 10.0 ) * 1.4;
     col = mix( col, vec3( 1.0, 0.9, 0.3 ), seeds.w );
 
     if ( hue > 0.001 )

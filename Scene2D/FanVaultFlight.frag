@@ -81,24 +81,24 @@ float noise2( vec2 p )
 }
 
 const float W = 4.2;   ///< half width of the nave
-const float BAY = 6.4; ///< bay length
-const float RF = 3.3;  ///< fan radius
-const float YS = 7.5;  ///< springing height
-const float YT = 11.0; ///< crown of the vault
+const float Bay = 6.4; ///< bay length
+const float Rf = 3.3;  ///< fan radius
+const float Ys = 7.5;  ///< springing height
+const float Yt = 11.0; ///< crown of the vault
 float       gRing[5];
 
 /// Height of the vault's underside over (x, z), and the fan coordinates.
 float vault( vec2 q, out vec2 fan )
 {
-    float zk = floor( q.y / BAY + 0.5 ) * BAY;
+    float zk = floor( q.y / Bay + 0.5 ) * Bay;
     float sx = sign( q.x ) * W;
     vec2  d = vec2( ( sx - q.x ) * sign( q.x ), q.y - zk ); // x: out from the wall
     float r = length( d );
-    fan = vec2( r / RF, atan( d.y, max( d.x, 1e-4 ) ) );
-    if ( r >= RF )
-        return YT;
-    float k = 1.0 - r / RF;
-    return YT - ( YT - YS ) * k * k;
+    fan = vec2( r / Rf, atan( d.y, max( d.x, 1e-4 ) ) );
+    if ( r >= Rf )
+        return Yt;
+    float k = 1.0 - r / Rf;
+    return Yt - ( Yt - Ys ) * k * k;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -117,7 +117,7 @@ void main()
             s += audioSpectrum[min( i * 6 + j, 31 )];
         gRing[i] = clamp( s / 6.0 * ( 1.6 + 0.4 * float( i ) ), 0.0, 1.0 );
     }
-    float nRad = 10.0 + 6.0 * floor( clamp( ribsP, 0.0, 1.0 ) * 1.99 );
+    float n_rad = 10.0 + 6.0 * floor( clamp( ribsP, 0.0, 1.0 ) * 1.99 );
 
     // Gliding along the nave, looking forward and up into the vault.
     vec3 ro = vec3( 0.4, 1.7, T * 0.55 );
@@ -127,20 +127,20 @@ void main()
     vec3 rd = normalize( p.x * rt + p.y * up + 1.05 * fw );
 
     // Walls first (below the springing line).
-    float tWall = ( sign( rd.x ) * W - ro.x ) / rd.x;
-    vec3  PW = ro + rd * tWall;
+    float t_wall = ( sign( rd.x ) * W - ro.x ) / rd.x;
+    vec3  PW = ro + rd * t_wall;
     vec3  col;
-    float tHit;
+    float t_hit;
     vec3  stone = vec3( 0.72, 0.68, 0.6 );
     // Above the springing line the wall still closes the bay (the lunette
     // under the fans): the vault is only hit if the ray reaches it first.
-    float tVault = 1e9;
-    vec2  fanHit = vec2( 2.0 );
-    if ( PW.y >= YS && rd.y > 0.0 )
+    float t_vault = 1e9;
+    vec2  fan_hit = vec2( 2.0 );
+    if ( PW.y >= Ys && rd.y > 0.0 )
     {
-        float t = max( ( YS - ro.y ) / rd.y, 0.0 );
-        float tEnd = min( ( YT - ro.y ) / rd.y + 0.01, tWall );
-        float dt = ( tEnd - t ) / 64.0;
+        float t = max( ( Ys - ro.y ) / rd.y, 0.0 );
+        float t_end = min( ( Yt - ro.y ) / rd.y + 0.01, t_wall );
+        float dt = ( t_end - t ) / 64.0;
         vec2  fan;
         for ( int i = 0; i < 64; ++i )
         {
@@ -158,22 +158,22 @@ void main()
                     else
                         a = m;
                 }
-                tVault = 0.5 * ( a + b );
+                t_vault = 0.5 * ( a + b );
                 break;
             }
             t = tn;
         }
     }
-    if ( ( PW.y < YS || tVault > tWall ) && rd.y > -0.99 && !( rd.y < 0.0 && -ro.y / rd.y < tWall ) )
+    if ( ( PW.y < Ys || t_vault > t_wall ) && rd.y > -0.99 && !( rd.y < 0.0 && -ro.y / rd.y < t_wall ) )
     {
-        tHit = tWall;
-        float zb = PW.z / BAY;
+        t_hit = t_wall;
+        float zb = PW.z / Bay;
         float fz = fract( zb ) - 0.5;
         // A wall shaft rising to each springer; tall windows between.
-        float shaft = smoothstep( 0.06, 0.04, abs( abs( fz ) - 0.5 ) * BAY * 0.25 - 0.05 );
+        float shaft = smoothstep( 0.06, 0.04, abs( abs( fz ) - 0.5 ) * Bay * 0.25 - 0.05 );
         float win = step( abs( fz ), 0.38 ) * step( 1.8, PW.y )
-                    * step( PW.y, YS - 0.6 - 0.8 * ( 1.0 - smoothstep( 0.0, 0.38, abs( fz ) ) ) );
-        vec2  gq = vec2( fz * BAY * 2.0, PW.y * 1.2 );
+                    * step( PW.y, Ys - 0.6 - 0.8 * ( 1.0 - smoothstep( 0.0, 0.38, abs( fz ) ) ) );
+        vec2  gq = vec2( fz * Bay * 2.0, PW.y * 1.2 );
         float lead = smoothstep( 0.08, 0.02, abs( fract( gq.x ) - 0.5 ) - 0.42 )
                      + smoothstep( 0.08, 0.02, abs( fract( gq.y ) - 0.5 ) - 0.42 );
         vec3  glass = mix( vec3( 0.1, 0.12, 0.35 ), vec3( 0.35, 0.1, 0.2 ), hash21( floor( gq ) + floor( zb ) * 7.0 ) );
@@ -181,14 +181,14 @@ void main()
         col = stone * 0.12;
         col = mix( col, glass * ( 1.2 + 0.6 * swell ) * ( 1.0 - clamp( lead, 0.0, 1.0 ) * 0.8 ), win );
         // The lunette above the springing line: plain stone with a blind arch.
-        col = mix( col, stone * 0.2, step( YS, PW.y ) );
+        col = mix( col, stone * 0.2, step( Ys, PW.y ) );
         col = mix( col, stone * 0.22, shaft );
     }
     else if ( rd.y > 0.0 )
     {
-        float t = tVault;
+        float t = t_vault;
         vec2  fan;
-        tHit = t;
+        t_hit = t;
         vec3  P = ro + rd * t;
         float yv = vault( P.xz, fan );
         // Normal from the height field.
@@ -203,13 +203,13 @@ void main()
         if ( fan.x < 1.0 )
         {
             // Ribs on the fan: radial ones and rings.
-            float ang = fan.y / 3.14159 * nRad;
+            float ang = fan.y / 3.14159 * n_rad;
             float ra = abs( fract( ang ) - 0.5 );
-            float fwA = fwidth( ang ) * 1.2 + 0.02;
-            float radial = smoothstep( fwA, 0.0, ra - 0.02 ) * smoothstep( 0.02, 0.12, fan.x );
+            float fw_a = fwidth( ang ) * 1.2 + 0.02;
+            float radial = smoothstep( fw_a, 0.0, ra - 0.02 ) * smoothstep( 0.02, 0.12, fan.x );
             float rr = fan.x * 5.0;
-            float fwR = fwidth( rr ) * 1.2 + 0.02;
-            float ring = smoothstep( -fwR * 0.5, fwR * 0.5, abs( fract( rr ) - 0.5 ) - 0.45 );
+            float fw_r = fwidth( rr ) * 1.2 + 0.02;
+            float ring = smoothstep( -fw_r * 0.5, fw_r * 0.5, abs( fract( rr ) - 0.5 ) - 0.45 );
             int   ri = int( clamp( floor( rr ), 0.0, 4.0 ) );
             // Panels between the ribs: cusped tracery, shaded.
             float panel = 0.9 + 0.1 * cos( fract( ang ) * 6.2831853 ) * cos( fract( rr ) * 6.2831853 );
@@ -224,21 +224,21 @@ void main()
         else
         {
             // The crown between the fans: a diamond of ribs and a boss.
-            vec2  cq = vec2( P.x, mod( P.z, BAY ) - BAY * 0.5 );
+            vec2  cq = vec2( P.x, mod( P.z, Bay ) - Bay * 0.5 );
             float diam = abs( abs( cq.x ) + abs( cq.y ) * 0.6 - 1.0 );
-            float fwD = fwidth( diam ) * 1.5 + 0.01;
-            col += vec3( 1.0, 0.8, 0.5 ) * smoothstep( fwD + 0.03, 0.0, diam ) * ( 0.1 + 0.6 * gRing[4] );
+            float fw_d = fwidth( diam ) * 1.5 + 0.01;
+            col += vec3( 1.0, 0.8, 0.5 ) * smoothstep( fw_d + 0.03, 0.0, diam ) * ( 0.1 + 0.6 * gRing[4] );
             col += vec3( 1.0, 0.85, 0.5 ) * smoothstep( 0.3, 0.2, length( cq ) ) * ( 0.2 + 0.3 * bass );
         }
     }
     else
     {
         // The floor: dark stone slabs.
-        tHit = -ro.y / rd.y;
-        vec3 P = ro + rd * tHit;
+        t_hit = -ro.y / rd.y;
+        vec3 P = ro + rd * t_hit;
         col = vec3( 0.08, 0.075, 0.07 ) * ( 0.8 + 0.2 * noise2( P.xz * 2.0 ) );
     }
-    col = mix( col, vec3( 0.1, 0.08, 0.07 ), 1.0 - exp( -tHit * 0.025 ) );
+    col = mix( col, vec3( 0.1, 0.08, 0.07 ), 1.0 - exp( -t_hit * 0.025 ) );
 
     // Candles along the choir stalls ahead: warm flames with halos.
     for ( int side = 0; side < 2; ++side )
@@ -252,7 +252,7 @@ void main()
             vec3  C = vec3( sx * ( W - 1.1 ), 1.15 + 0.05 * h, zc );
             vec3  v = C - ro;
             float tl = dot( v, rd );
-            if ( tl <= 0.0 || tl > tHit )
+            if ( tl <= 0.0 || tl > t_hit )
                 continue;
             vec3  dv = v - rd * tl;
             float dd = length( dv * vec3( 1.0, 0.55, 1.0 ) );
@@ -264,7 +264,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

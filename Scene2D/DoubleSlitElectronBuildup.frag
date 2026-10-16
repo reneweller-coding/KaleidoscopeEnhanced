@@ -90,7 +90,7 @@ void main()
     // Wavelength follows the tonal centre, slowly (audioChromaHue is
     // continuous; only its sine is used).
     float k = 110.0 * ( 1.0 + 0.12 * sin( audioChromaHue ) );
-    vec3  waveC = mix( vec3( 0.3, 0.8, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.2 );
+    vec3  wave_c = mix( vec3( 0.3, 0.8, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.2 );
     vec3  phos = mix( vec3( 0.45, 1.0, 0.6 ), imgPalette( 0.35 + hue * 0.159 ), 0.15 );
 
     vec3 col = vec3( 0.01, 0.012, 0.02 );
@@ -107,7 +107,7 @@ void main()
             // Plane-ish waves from the gun.
             float r = length( q - vec2( xs, 0.0 ) );
             float w = cos( k * r - T * 6.0 );
-            col += waveC * ( 0.5 + 0.5 * w ) * exp( -abs( q.y ) * 3.0 ) * 0.35 * smoothstep( 0.0, 0.05, r );
+            col += wave_c * ( 0.5 + 0.5 * w ) * exp( -abs( q.y ) * 3.0 ) * 0.35 * smoothstep( 0.0, 0.05, r );
         }
         else
         {
@@ -115,12 +115,12 @@ void main()
             float r1 = length( q - vec2( xb, d * 0.5 ) ), r2 = length( q - vec2( xb, -d * 0.5 ) );
             float w = ( cos( k * r1 - T * 6.0 ) / sqrt( r1 + 0.02 ) + cos( k * r2 - T * 6.0 ) / sqrt( r2 + 0.02 ) );
             float I = w * w * 0.12;
-            col += waveC * I * 0.6;
+            col += wave_c * I * 0.6;
             // The fringe rays: time-averaged intensity, faint.
             float avg = ( 1.0 / ( r1 + 0.02 ) + 1.0 / ( r2 + 0.02 )
                           + 2.0 * cos( k * ( r1 - r2 ) ) / sqrt( ( r1 + 0.02 ) * ( r2 + 0.02 ) ) )
                         * 0.04;
-            col += waveC * avg * 0.35;
+            col += wave_c * avg * 0.35;
         }
         // The barrier with its two slits.
         float bar = smoothstep( 0.006, 0.003, abs( p.x - xb ) )
@@ -148,8 +148,8 @@ void main()
         {
             // The screen's horizontal axis is the transverse position y of
             // the left panel (scaled to fit).
-            float yScr = s.x / half_.x * 0.45;
-            float I = fringe( yScr, d, k, xr - xb );
+            float y_scr = s.x / half_.x * 0.45;
+            float I = fringe( y_scr, d, k, xr - xb );
             col = vec3( 0.012, 0.018, 0.02 ) + phos * 0.015;
             // Electrons: round dots, each arriving at its own moment; the
             // chance of a dot anywhere is the interference intensity, so the
@@ -171,7 +171,7 @@ void main()
     }
 
     col *= 0.85 + 0.3 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

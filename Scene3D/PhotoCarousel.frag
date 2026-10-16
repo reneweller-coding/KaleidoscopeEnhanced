@@ -40,9 +40,9 @@ void main()
     // Thin glowing frame around the card edge.
     vec2  b = min( vUV, 1.0 - vUV );
     float frame = 1.0 - smoothstep( 0.03, 0.07, min( b.x, b.y ) );
-    vec3  fCol = hueRot( vec3( 0.9, 0.6, 0.2 ),
-                         audioChromaHue + vSeed.z * 2.0 );
-    col = mix( col, fCol * ( 0.8 + 1.4 * audioKick ), frame );
+    vec3  f_col = hueRot( vec3( 0.9, 0.6, 0.2 ),
+                          audioChromaHue + vSeed.z * 2.0 );
+    col = mix( col, f_col * ( 0.8 + 1.4 * audioKick ), frame );
 
     col *= ( 0.75 + 0.45 * vGlow ) * ( 1.0 + 0.8 * audioDrop );
 

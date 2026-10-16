@@ -109,91 +109,91 @@ void main()
 
     // Smooth camera rotation
     float rot = sin( time * 0.1 ) * 0.2;
-    mat2  rotM = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
-    vec2  ruv = rotM * uv;
+    mat2  rot_m = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
+    vec2  ruv = rot_m * uv;
     vec3  rd = normalize( vec3( ruv, 1.0 ) );
 
     vec3 col = vec3( 0.0 );
 
-    vec3 bulkColor = imgPalette( 0.1 );                         // Deep, weird color for the bulk
-    vec3 bubbleColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Bright edge of universes
+    vec3 bulk_color = imgPalette( 0.1 );                         // Deep, weird color for the bulk
+    vec3 bubble_color = imgPalette( 0.8 + audioCentroid * 0.1 ); // Bright edge of universes
 
     // Background bulk (higher dimensional fluid/fog)
-    float bulkFog = fbm( vec3( uv * 2.0, drift * 0.5 ) );
-    col += bulkColor * bulkFog * 0.5 * bkp * ( 1.0 + audioSwell );
+    float bulk_fog = fbm( vec3( uv * 2.0, drift * 0.5 ) );
+    col += bulk_color * bulk_fog * 0.5 * bkp * ( 1.0 + audioSwell );
 
     // Raymarching spheres (Universes)
     float d = 0.0;
     vec3  p;
-    float densityAccum = 0.0;
+    float density_accum = 0.0;
 
     // Domain repetition for bubbles
-    float cellSize = 3.0 / bp;
+    float cell_size = 3.0 / bp;
 
     for ( int i = 0; i < 40; ++i )
     {
         p = ro + rd * d;
 
-        vec3 cellP = p / cellSize;
-        vec3 iCell = floor( cellP );
-        vec3 fCell = fract( cellP ) - 0.5; // -0.5 to 0.5
+        vec3 cell_p = p / cell_size;
+        vec3 i_cell = floor( cell_p );
+        vec3 f_cell = fract( cell_p ) - 0.5; // -0.5 to 0.5
 
         // Direkter fract(sin(dot))-Hash: hash11 mit Riesenargument kollabiert
         // auf der GPU (Praezision), das Blasenfeld war entartet.
-        float cellHash = fract( sin( dot( iCell, vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
+        float cell_hash = fract( sin( dot( i_cell, vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
 
         // Randomize bubble position within cell
         vec3 offset = vec3(
-                          hash11( cellHash ) - 0.5,
-                          hash11( cellHash + 1.0 ) - 0.5,
-                          hash11( cellHash + 2.0 ) - 0.5 )
+                          hash11( cell_hash ) - 0.5,
+                          hash11( cell_hash + 1.0 ) - 0.5,
+                          hash11( cell_hash + 2.0 ) - 0.5 )
                       * 0.5;
 
         // Random radius
-        float radius = 0.2 + 0.3 * hash11( cellHash + 3.0 );
+        float radius = 0.2 + 0.3 * hash11( cell_hash + 3.0 );
 
         // Calculate distance to this sphere
-        vec3  localP = fCell - offset;
-        float distToCenter = length( localP );
-        float distToSphere = distToCenter - radius;
+        vec3  local_p = f_cell - offset;
+        float dist_to_center = length( local_p );
+        float dist_to_sphere = dist_to_center - radius;
 
         // We only render the *surface* of the bubble (the membrane)
-        float membrane = abs( distToSphere );
+        float membrane = abs( dist_to_sphere );
 
         if ( membrane < 0.09 )
         {
             float alpha = smoothstep( 0.09, 0.0, membrane ) * 0.28;
 
             // Inside the bubble is another universe (different fbm pattern)
-            float inside = fbm( p * 5.0 + cellHash * 100.0 );
+            float inside = fbm( p * 5.0 + cell_hash * 100.0 );
 
             // The membrane glows
-            vec3 localCol = bubbleColor * ( 0.5 + inside * 0.5 );
+            vec3 local_col = bubble_color * ( 0.5 + inside * 0.5 );
 
             // Universes bumping into each other causing flashes
-            // We use cellHash to trigger random flashes
+            // We use cell_hash to trigger random flashes
             // Sanftes Aufglimmen statt 5-Hz-Strobo.
-            float collision = pow( 0.5 + 0.5 * sin( time * ( 0.6 + cellHash * 1.5 ) + cellHash * 40.0 ), 8.0 );
-            localCol += bubbleColor * collision * ( 0.5 + audioKick * 2.0 ) * bkp;
+            float collision = pow( 0.5 + 0.5 * sin( time * ( 0.6 + cell_hash * 1.5 ) + cell_hash * 40.0 ), 8.0 );
+            local_col += bubble_color * collision * ( 0.5 + audioKick * 2.0 ) * bkp;
 
             // Fresnel effect for the bubble (brighter on edges)
-            // We approximate normal based on localP
-            vec3  normal = normalize( localP );
+            // We approximate normal based on local_p
+            vec3  normal = normalize( local_p );
             float fresnel = 1.0 - max( 0.0, dot( normal, -rd ) );
             fresnel = pow( fresnel, 3.0 );
 
-            localCol += vec3( 1.0 ) * fresnel * ( 1.0 + audioSwell );
+            local_col += vec3( 1.0 ) * fresnel * ( 1.0 + audioSwell );
 
-            col += localCol * alpha * ( 1.0 - densityAccum );
-            densityAccum += alpha;
+            col += local_col * alpha * ( 1.0 - density_accum );
+            density_accum += alpha;
 
-            if ( densityAccum > 0.95 )
+            if ( density_accum > 0.95 )
                 break;
         }
 
         // Advance ray
         // Safe step size to not miss thin membranes
-        d += max( 0.02, abs( distToSphere ) * 0.5 );
+        d += max( 0.02, abs( dist_to_sphere ) * 0.5 );
         if ( d > 15.0 )
             break;
     }
@@ -202,7 +202,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

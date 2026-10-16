@@ -80,14 +80,14 @@ void main()
     vec3 photo = img( fract( vTexCoord * 2.0 ) );
 
     // Magnetic flux wireframe grid lines
-    vec2  gridLines = abs( fract( vTexCoord * 40.0 ) - 0.5 );
-    float gridWire = smoothstep( 0.46, 0.49, max( gridLines.x, gridLines.y ) );
+    vec2  grid_lines = abs( fract( vTexCoord * 40.0 ) - 0.5 );
+    float grid_wire = smoothstep( 0.46, 0.49, max( grid_lines.x, grid_lines.y ) );
 
     // Auroral luminescence
-    vec3 auroraCol = vColor.rgb * ( 1.2 + 0.8 * audioLevel );
-    vec3 wireCol = vec3( 0.2, 0.9, 1.0 ) * gridWire * ( 0.8 + 1.2 * audioHigh );
+    vec3 aurora_col = vColor.rgb * ( 1.2 + 0.8 * audioLevel );
+    vec3 wire_col = vec3( 0.2, 0.9, 1.0 ) * grid_wire * ( 0.8 + 1.2 * audioHigh );
 
-    vec3 col = ( photo * 0.4 + auroraCol * 0.8 ) * ( diff * 0.6 + 0.4 ) + wireCol;
+    vec3 col = ( photo * 0.4 + aurora_col * 0.8 ) * ( diff * 0.6 + 0.4 ) + wire_col;
     col += vec3( 1.0, 0.95, 0.85 ) * spec * ( 0.8 + 1.5 * audioHigh );
 
     col = hueRot( col, audioChromaHue + hue );

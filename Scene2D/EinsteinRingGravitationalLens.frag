@@ -102,68 +102,68 @@ void main()
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Lens center with slow gravitational drift
-    vec2  lensCenter = vec2( sin( t * 0.4 ) * 0.18, cos( t * 0.3 ) * 0.12 );
-    vec2  rel = uv - lensCenter;
+    vec2  lens_center = vec2( sin( t * 0.4 ) * 0.18, cos( t * 0.3 ) * 0.12 );
+    vec2  rel = uv - lens_center;
     float r = length( rel );
     float angle = atan( rel.y, rel.x );
 
     // Einstein radius with audio swell & mass
-    float rEinstein = ( 0.32 + 0.12 * audioSwell + 0.08 * audioSubBass ) * lns * sqrt( mss );
+    float r_einstein = ( 0.32 + 0.12 * audioSwell + 0.08 * audioSubBass ) * lns * sqrt( mss );
     // The frame is only 0.5 uv units tall from the centre: past ~0.42 the
     // luminous ring leaves the picture and the shadow disc below swallows
     // everything (the recording showed exactly that -- an 85%-black frame).
-    rEinstein = min( rEinstein, 0.40 );
+    r_einstein = min( r_einstein, 0.40 );
 
     // Gravitational wave metric ripples on kick
-    float gwRipple = sin( r * 35.0 - t * 8.0 ) * exp( -r * 3.0 ) * audioKick * 0.08;
+    float gw_ripple = sin( r * 35.0 - t * 8.0 ) * exp( -r * 3.0 ) * audioKick * 0.08;
 
     // Relativistic light deflection formula: alpha(r) = 4GM / r
-    // Deflection angle theta_source = theta - rEinstein^2 / theta
-    float deflFactor = ( rEinstein * rEinstein ) / max( r * r + 0.002, 0.001 );
-    vec2  warpedRel = rel * ( 1.0 - deflFactor ) + rel * gwRipple;
+    // Deflection angle theta_source = theta - r_einstein^2 / theta
+    float defl_factor = ( r_einstein * r_einstein ) / max( r * r + 0.002, 0.001 );
+    vec2  warped_rel = rel * ( 1.0 - defl_factor ) + rel * gw_ripple;
 
     // Frame dragging swirl near the photon sphere
-    float frameDrag = ( 0.25 * mss ) / ( r * r * r * 8.0 + 1.0 );
-    warpedRel = rot2D( frameDrag * ( 1.0 + audioBass * 1.5 ) ) * warpedRel;
+    float frame_drag = ( 0.25 * mss ) / ( r * r * r * 8.0 + 1.0 );
+    warped_rel = rot2D( frame_drag * ( 1.0 + audioBass * 1.5 ) ) * warped_rel;
 
     // Reconstruct texture coordinate
-    vec2 photoUV = ( warpedRel * resolution.y + 0.5 * resolution ) / resolution;
+    vec2 photo_uv = ( warped_rel * resolution.y + 0.5 * resolution ) / resolution;
     // Langsame Hintergrund-Drift: das gelinste Feld zieht vorbei.
-    photoUV += vec2( t * 0.03, t * 0.012 );
-    photoUV = fract( photoUV );
+    photo_uv += vec2( t * 0.03, t * 0.012 );
+    photo_uv = fract( photo_uv );
 
-    vec3 photo = img( photoUV );
+    vec3 photo = img( photo_uv );
 
     // WANDERNDER QUASAR hinter der Linse: er laeuft im Orbit und wird durch
     // das GEWARPTE Feld gezeichnet -- die Linse zerlegt ihn in wandernde
     // Bogen und Mehrfachbilder.
-    vec2  srcPos = vec2( sin( t * 0.23 ), cos( t * 0.31 ) ) * 0.45;
-    float srcD = length( warpedRel - srcPos );
+    vec2  src_pos = vec2( sin( t * 0.23 ), cos( t * 0.31 ) ) * 0.45;
+    float src_d = length( warped_rel - src_pos );
     vec3  quasar = max( imgPalette( 0.82 ), vec3( 0.85, 0.75, 0.55 ) )
-                   * exp( -srcD * srcD * 700.0 ) * ( 1.8 + 1.2 * audioSwell );
+                   * exp( -src_d * src_d * 700.0 ) * ( 1.8 + 1.2 * audioSwell );
 
     // Einstein ring luminous photon ring glow
-    float ringDist = abs( r - rEinstein );
-    float ringGlow = exp( -ringDist * 45.0 / lns ) * ( 1.2 + audioKick * 2.5 + audioMid );
+    float ring_dist = abs( r - r_einstein );
+    float ring_glow = exp( -ring_dist * 45.0 / lns ) * ( 1.2 + audioKick * 2.5 + audioMid );
 
     // Relativistic Doppler beaming across azimuthal angle
     float doppler = 1.0 + 0.45 * sin( angle + t * 2.0 );
-    vec3  dopplerColor = palTint( mix( vec3( 0.1, 0.7, 1.0 ), vec3( 1.0, 0.3, 0.1 ), clamp( doppler * 0.5, 0.0, 1.0 ) ),
+    vec3 doppler_color = palTint( mix( vec3( 0.1, 0.7, 1.0 ), vec3( 1.0, 0.3, 0.1 ), clamp( doppler * 0.5, 0.0, 1.0 ) ),
                                   0.30 * clamp( doppler * 0.5, 0.0, 1.0 ), 0.22 );
 
     // Event horizon shadow at the core
-    float horizonR = min( rEinstein * 0.35 * mss, 0.14 );
-    float shadow = smoothstep( horizonR * 0.8, horizonR * 1.2, r );
+    float horizon_r = min( r_einstein * 0.35 * mss, 0.14 );
+    float shadow = smoothstep( horizon_r * 0.8, horizon_r * 1.2, r );
 
     // Combine visualizer
     vec3 col = photo * ( 0.8 + 0.4 * audioLevel ) * shadow;
     col += quasar * shadow;
-    col += ringGlow * dopplerColor * ( 0.9 + audioHigh * 1.2 );
+    col += ring_glow * doppler_color * ( 0.9 + audioHigh * 1.2 );
 
     // Accretion disk inner ring glints
-    float innerR = abs( r - horizonR * 1.4 );
-    float innerGlow = exp( -innerR * 30.0 ) * ( audioSubBass * 1.8 + audioKick * 1.5 );
-    col += innerGlow * vec3( 1.0, 0.85, 0.4 );
+    float inner_r = abs( r - horizon_r * 1.4 );
+    float inner_glow = exp( -inner_r * 30.0 ) * ( audioSubBass * 1.8 + audioKick * 1.5 );
+    col += inner_glow * vec3( 1.0, 0.85, 0.4 );
 
     // Chroma rotation
     if ( audioChromaHue != 0.0 )

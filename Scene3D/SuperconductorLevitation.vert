@@ -99,66 +99,66 @@ void main()
 
     // Spectrum band assignment based on radius
     int   band = int( clamp( r / 35.0 * 31.0, 0.0, 31.0 ) );
-    float specAmp = audioSpectrum[band];
+    float spec_amp = audioSpectrum[band];
 
     // Levitation height calculation (concentric magnetic Bessel wave)
-    float wavePhase = r * 0.45 - time * 2.5 - audioAdvance * 2.0;
-    float levitationH = sin( wavePhase ) * ( 1.2 * lev ) + specAmp * 3.5;
+    float wave_phase = r * 0.45 - time * 2.5 - audioAdvance * 2.0;
+    float levitation_h = sin( wave_phase ) * ( 1.2 * lev ) + spec_amp * 3.5;
 
     // Magnetic shockwave expansion on kick
     float shock = sin( r * 0.8 - fract( time * 2.0 ) * 15.0 ) * exp( -r * 0.08 ) * audioKick * 4.0;
-    levitationH += shock;
+    levitation_h += shock;
 
     // Tile dimensions: thin levitating superconductor plates
-    vec3 localCorner = attrA.xyz;
-    vec3 tileSize = vec3( 0.85, 0.12, 0.85 );
-    vec3 tilePos = localCorner * tileSize;
+    vec3 local_corner = attrA.xyz;
+    vec3 tile_size = vec3( 0.85, 0.12, 0.85 );
+    vec3 tile_pos = local_corner * tile_size;
 
     // Quantum magnetic tilt along surface normal gradient
-    float tiltAngleX = cos( wavePhase ) * 0.25 * tlt;
-    float tiltAngleZ = sin( wavePhase ) * 0.25 * tlt;
+    float tilt_angle_x = cos( wave_phase ) * 0.25 * tlt;
+    float tilt_angle_z = sin( wave_phase ) * 0.25 * tlt;
 
     // Rotate tile corner
-    mat3 rotX = mat3( 1.0, 0.0, 0.0, 0.0, cos( tiltAngleX ), -sin( tiltAngleX ), 0.0, sin( tiltAngleX ),
-                      cos( tiltAngleX ) );
-    mat3 rotZ = mat3( cos( tiltAngleZ ), -sin( tiltAngleZ ), 0.0, sin( tiltAngleZ ), cos( tiltAngleZ ), 0.0, 0.0, 0.0,
-                      1.0 );
-    tilePos = rotZ * rotX * tilePos;
+    mat3 rot_x = mat3( 1.0, 0.0, 0.0, 0.0, cos( tilt_angle_x ), -sin( tilt_angle_x ), 0.0, sin( tilt_angle_x ),
+                       cos( tilt_angle_x ) );
+    mat3 rot_z = mat3( cos( tilt_angle_z ), -sin( tilt_angle_z ), 0.0, sin( tilt_angle_z ), cos( tilt_angle_z ), 0.0,
+                       0.0, 0.0, 1.0 );
+    tile_pos = rot_z * rot_x * tile_pos;
 
     // World placement
-    vec3 worldP = vec3( gx * 1.05, levitationH, gz * 1.05 );
-    vec3 finalWorld = worldP + tilePos;
+    vec3 world_p = vec3( gx * 1.05, levitation_h, gz * 1.05 );
+    vec3 final_world = world_p + tile_pos;
 
     // Camera flight circling above the levitation array
-    float camDist = 28.0 - audioSwell * 6.0;
-    float camAngle = time * 0.15 + audioAdvance * 0.05;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 14.0 + 4.0 * sin( time * 0.2 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0, 0.0, 0.0 );
+    float cam_dist = 28.0 - audioSwell * 6.0;
+    float cam_angle = time * 0.15 + audioAdvance * 0.05;
+    vec3  cam_pos = vec3( sin( cam_angle ) * cam_dist, 14.0 + 4.0 * sin( time * 0.2 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0, 0.0, 0.0 );
 
-    vec3 ww = normalize( lookTarget - camPos );
+    vec3 ww = normalize( look_target - cam_pos );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    vec3 relP = finalWorld - camPos;
-    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
+    vec3 rel_p = final_world - cam_pos;
+    vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
 
     // True stereo view offset
-    viewP.x -= eyeOff;
-    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+    view_p.x -= eyeOff;
+    gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Normal calculation
-    vec3 rawNormal = rotZ * rotX * vec3( 0.0, 1.0, 0.0 );
-    vNormal = rawNormal;
-    vWorldPos = finalWorld;
+    vec3 raw_normal = rot_z * rot_x * vec3( 0.0, 1.0, 0.0 );
+    vNormal = raw_normal;
+    vWorldPos = final_world;
     vUV = attrA.xy + 0.5;
 
     // Color: Cryogenic superconductor cyan & ultraviolet flux glow
-    vec3 baseCol = imgPalette( 0.30 * clamp( specAmp * 1.5, 0.0, 1.0 ) ) * 1.4;
-    baseCol = mix( baseCol, vec3( 1.0, 0.8, 0.2 ), shock * 0.5 );
+    vec3 base_col = imgPalette( 0.30 * clamp( spec_amp * 1.5, 0.0, 1.0 ) ) * 1.4;
+    base_col = mix( base_col, vec3( 1.0, 0.8, 0.2 ), shock * 0.5 );
 
     if ( hue > 0.001 )
-        baseCol = hueRot( baseCol, hue );
+        base_col = hueRot( base_col, hue );
 
-    vCol = vec4( baseCol, 1.0 );
+    vCol = vec4( base_col, 1.0 );
 }

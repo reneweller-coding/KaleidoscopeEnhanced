@@ -125,8 +125,8 @@ float fbmPlasma( vec2 p, float turb )
 
 /// Blackbody thermal incandescent color curve.
 ///
-/// The ramps used to be 0.0-0.8 / 0.3-1.4 / 0.8-2.2 while `totalThermal` below
-/// never dropped under about 1.2 anywhere in the frame -- a constant coreHeat
+/// The ramps used to be 0.0-0.8 / 0.3-1.4 / 0.8-2.2 while `total_thermal` below
+/// never dropped under about 1.2 anywhere in the frame -- a constant core_heat
 /// floor plus a granule term whose MEAN was 0.77. So the red channel's
 /// smoothstep was hard at 1.0 for every single pixel, green nearly so, and the
 /// Reinhardt tone-map then squeezed what little was left into a band about 0.05
@@ -169,27 +169,27 @@ void main()
     // Magnetic twisting rotation
     float spin = ( 0.2 + 0.4 / ( r + 0.4 ) ) * ( time * 0.2 + audioPhase * 0.5 );
     mat2  rot = mat2( cos( spin ), -sin( spin ), sin( spin ), cos( spin ) );
-    vec2  pRot = rot * p;
+    vec2  p_rot = rot * p;
 
     // Photosphere granular convection cells
-    float cells = fbmPlasma( pRot * 3.5, turb );
-    float cells2 = fbmPlasma( pRot * 7.0 + vec2( t * 0.5, -t * 0.3 ), turb * 1.2 );
+    float cells = fbmPlasma( p_rot * 3.5, turb );
+    float cells2 = fbmPlasma( p_rot * 7.0 + vec2( t * 0.5, -t * 0.3 ), turb * 1.2 );
     float granules = ( cells * 0.6 + cells2 * 0.4 );
 
     // Coronal mass ejection / magnetic prominence arches
-    int   promenCount = 6;
-    float promenGlow = 0.0;
-    for ( int k = 0; k < promenCount; k++ )
+    int   promen_count = 6;
+    float promen_glow = 0.0;
+    for ( int k = 0; k < promen_count; k++ )
     {
-        float pAngle = float( k ) * ( 6.2831853 / float( promenCount ) ) + t * 0.1;
-        float diffA = mod( a - pAngle + 3.14159, 6.2831853 ) - 3.14159;
+        float p_angle = float( k ) * ( 6.2831853 / float( promen_count ) ) + t * 0.1;
+        float diff_a = mod( a - p_angle + 3.14159, 6.2831853 ) - 3.14159;
 
         // Loop curve formula
-        float archR = 0.65 + 0.3 * sin( t * 2.0 + float( k ) * 2.5 ) + audioSubBass * 0.4 * flr;
-        float archH = 0.25 * sin( max( 0.0, 3.14159 - abs( diffA ) * 6.0 ) );
-        float dArch = abs( r - ( archR + archH ) ) + abs( diffA ) * 0.2;
+        float arch_r = 0.65 + 0.3 * sin( t * 2.0 + float( k ) * 2.5 ) + audioSubBass * 0.4 * flr;
+        float arch_h = 0.25 * sin( max( 0.0, 3.14159 - abs( diff_a ) * 6.0 ) );
+        float d_arch = abs( r - ( arch_r + arch_h ) ) + abs( diff_a ) * 0.2;
 
-        promenGlow += ( 0.012 / ( dArch * dArch + 0.003 ) ) * ( 0.8 + audioKick * 1.5 );
+        promen_glow += ( 0.012 / ( d_arch * d_arch + 0.003 ) ) * ( 0.8 + audioKick * 1.5 );
     }
 
     // Solar thermal temperature calculation.
@@ -197,30 +197,30 @@ void main()
     // uniform +0.7 pedestal under the whole frame rather than a convection
     // pattern. Centring it makes the intergranular lanes genuinely COLDER than
     // their surroundings -- which is what a photosphere looks like, and what
-    // gives the surface its contrast. coreHeat falls off faster so the limb and
+    // gives the surface its contrast. core_heat falls off faster so the limb and
     // corona are dark instead of already saturated.
-    float coreHeat = exp( -r * ( 2.4 / heat ) ) * 2.1;
-    float surfaceHeat = ( granules - 0.44 ) * 2.4 + promenGlow * 0.45;
+    float core_heat = exp( -r * ( 2.4 / heat ) ) * 2.1;
+    float surface_heat = ( granules - 0.44 ) * 2.4 + promen_glow * 0.45;
     float shockwave = sin( r * 20.0 - t * 6.0 - audioSubBass * 8.0 ) * exp( -r * 2.0 ) * audioKick * 1.8;
 
-    float totalThermal = coreHeat + surfaceHeat + shockwave;
+    float total_thermal = core_heat + surface_heat + shockwave;
 
     // Thermal color radiance
-    vec3 col = blackbody( totalThermal );
+    vec3 col = blackbody( total_thermal );
 
     // Sunspot magnetic dark filaments
-    float sunspots = smoothstep( 0.72, 0.85, fbmPlasma( pRot * 2.0 + vec2( t * 0.1 ), turb * 0.8 ) );
+    float sunspots = smoothstep( 0.72, 0.85, fbmPlasma( p_rot * 2.0 + vec2( t * 0.1 ), turb * 0.8 ) );
     col *= ( 1.0 - sunspots * 0.65 );
 
     // Background cosmic corona rays & solar wind
-    float coronaRays = pow( noise2D( vec2( a * 5.0 + t * 0.4, r * 2.0 - t * 1.5 ) ), 2.0 );
-    vec3 coronaCol = palTint( mix( vec3( 1.0, 0.4, 0.1 ), vec3( 0.9, 0.1, 0.4 ), sin( a * 3.0 + t ) * 0.5 + 0.5 ), 0.10,
-                              0.20 );
-    col += coronaCol * coronaRays * ( 0.6 + audioSwell * 0.8 ) * exp( -r * 0.8 );
+    float corona_rays = pow( noise2D( vec2( a * 5.0 + t * 0.4, r * 2.0 - t * 1.5 ) ), 2.0 );
+    vec3  corona_col = palTint( mix( vec3( 1.0, 0.4, 0.1 ), vec3( 0.9, 0.1, 0.4 ), sin( a * 3.0 + t ) * 0.5 + 0.5 ),
+                                0.10, 0.20 );
+    col += corona_col * corona_rays * ( 0.6 + audioSwell * 0.8 ) * exp( -r * 0.8 );
 
     // Sample texture with thermal distortion
-    vec2 photoUV = st + curlNoise( pRot * 2.0 ) * 0.02 * ( 1.0 + audioMid * 1.5 );
-    vec3 photo = img( clamp( photoUV, 0.0, 1.0 ) );
+    vec2 photo_uv = st + curlNoise( p_rot * 2.0 ) * 0.02 * ( 1.0 + audioMid * 1.5 );
+    vec3 photo = img( clamp( photo_uv, 0.0, 1.0 ) );
     col += photo * ( 0.25 + 0.3 * audioLevel ) * vec3( 1.2, 0.9, 0.4 );
 
     // Incandescent solar flares & sparks.
@@ -228,8 +228,8 @@ void main()
     // field 25 times a second, i.e. video static, well past the 8 Hz ceiling for
     // fine detail. 6 steps/second reads as sparks; the hard audioHigh > 0.4 gate
     // is now a smoothstep so the whole spark field cannot pop on and off.
-    float sparkGate = smoothstep( 0.32, 0.55, audioHigh );
-    if ( sparkGate > 0.001 )
+    float spark_gate = smoothstep( 0.32, 0.55, audioHigh );
+    if ( spark_gate > 0.001 )
     {
         // Runde Funken statt ganzer uv-Zellen (Quadrat-Pixel).
         vec2  kg = uv * 50.0;
@@ -239,7 +239,7 @@ void main()
         vec2  kp = ( vec2( fract( spark * 7.3 ), fract( spark * 13.7 ) ) - 0.5 ) * 0.7;
         float kd = dot( kf - kp, kf - kp );
         col += vec3( 1.5, 1.2, 0.8 ) * smoothstep( 0.965, 0.985, spark )
-               * exp( -kd * 70.0 ) * audioHigh * 1.8 * sparkGate;
+               * exp( -kd * 70.0 ) * audioHigh * 1.8 * spark_gate;
     }
 
     if ( hue > 0.001 )

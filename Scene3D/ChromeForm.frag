@@ -128,7 +128,7 @@ void main()
     }
 
     vec3 n = normalize( vNormal );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // Brushed metal: perturb the normal along one surface direction only, so
     // the reflection smears into streaks instead of blurring evenly. Anisotropy
@@ -141,13 +141,13 @@ void main()
         n = normalize( n + t * g * brush * ( 0.35 + 0.5 * audioHigh ) );
     }
 
-    vec3 r = reflect( -viewDir, n );
+    vec3 r = reflect( -view_dir, n );
     vec3 col = environment( r, tint ) * ( 0.85 + 0.55 * audioSwell );
 
     // Fresnel: grazing angles reflect nearly everything, which is what gives
     // polished metal its bright edges. A constant reflectivity looks like
     // plastic.
-    float f = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float f = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col = mix( col * 0.72, col * 1.5 + tint * 0.35, f );
 
     // A trace of the body's own colour, so it is metal rather than a soap
@@ -157,7 +157,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

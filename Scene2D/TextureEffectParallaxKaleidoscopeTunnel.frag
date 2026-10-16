@@ -48,7 +48,7 @@ uniform float     audioFlatness; ///< 0=tonal .. 1=noise-like -> how deep the pa
 uniform float     audioMode;     ///< 0=minor/cold .. 1=major/warm -> depth-haze colour
 
 
-const float M_PI = 3.141592653589793;
+const float Pi = 3.141592653589793;
 
 vec3 getKaleidoscopeColor( vec2 coord )
 {
@@ -68,7 +68,7 @@ vec3 getKaleidoscopeColor( vec2 coord )
 
     float angle = 0.0;
     if ( rotate > 0 )
-        angle = M_PI * 0.25;
+        angle = Pi * 0.25;
 
     // a rotation
     // vec2 cst = vec2( cos(interpolationRotation), sin(interpolationRotation) );
@@ -80,23 +80,23 @@ vec3 getKaleidoscopeColor( vec2 coord )
     // power was never registered in any preset (always 0, GL's unset-uniform
     // default) -- 1.0/(2.0*power) divided by zero, sending r to infinity for
     // every pixel. 1.0 reproduces the plain Euclidean length() case.
-    float powV = ( power > 0.01 ) ? power : 1.0;
-    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
+    float pow_v = ( power > 0.01 ) ? power : 1.0;
+    float r = pow( pow( p.x * p.x, pow_v ) + pow( p.y * p.y, pow_v ), 1.0 / ( 2.0 * pow_v ) );
 
     // cartesian to polar coordinates
     // float r = length(p);
     float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5 * float( sides );
+    float sides_k = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod( a, tau / sidesK );
-    a = abs( a - tau / sidesK / 2. );
+    a = mod( a, tau / sides_k );
+    a = abs( a - tau / sides_k / 2. );
     a += time * speed + 0.3 * audioPhase; // base rotation + jump-free audio rotation
 
     vec2 uv;
     uv.x = ( speedTunnel * time + 0.5 * audioAdvance + .1 / r );
-    uv.y = ( a / M_PI );
+    uv.y = ( a / Pi );
 
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 
@@ -124,22 +124,22 @@ void main( void )
     // below (and the orbit offset is expressed in the same grid units), so the
     // framing, zoom and orbit radius are all unchanged -- only the block size
     // moves.  A plain per-frame grid parameter; it never scales a time term.
-    const float pixelSize = 0.25;
-    float       quant = pixelSize * ( 1.0 + 0.70 * clamp( audioZCR, 0.0, 1.0 ) );
+    const float pixel_size = 0.25;
+    float       quant = pixel_size * ( 1.0 + 0.70 * clamp( audioZCR, 0.0, 1.0 ) );
     pixel = floor( pixel / quant );
 
-    // vec2 offset = vec2(time*3000.0,pow(max(-sin(time*.2),.0),2.0)*16000.0)/pixelSize;
-    // vec2 offset = vec2(pow(cos(time*.2),2.0)*16000.0,pow(sin(time*.2),2.0)*16000.0)/pixelSize;
+    // vec2 offset = vec2(time*3000.0,pow(max(-sin(time*.2),.0),2.0)*16000.0)/pixel_size;
+    // vec2 offset = vec2(pow(cos(time*.2),2.0)*16000.0,pow(sin(time*.2),2.0)*16000.0)/pixel_size;
 
-    float rotDir = 1.0;
+    float rot_dir = 1.0;
     if ( direction > 0 )
-        rotDir = -1.0;
+        rot_dir = -1.0;
 
 
     float orbit = speedMovement * time * .2 + 0.15 * audioAdvance; // jump-free audio drift
     float ext = extend * ( 1.0 + 0.12 * audioSwell );              // orbit widens on swells
-    vec2  offset = vec2( cos( orbit ) * ext, sin( rotDir * orbit ) * ext ) / quant;
-    // vec2 offset = vec2(cos(speedMovement*.2)*extend,sin(speedMovement*.2)*extend)/pixelSize;
+    vec2  offset = vec2( cos( orbit ) * ext, sin( rot_dir * orbit ) * ext ) / quant;
+    // vec2 offset = vec2(cos(speedMovement*.2)*extend,sin(speedMovement*.2)*extend)/pixel_size;
 
     // resolution.y/resolution.x*
 
@@ -148,7 +148,7 @@ void main( void )
     // near tunnel wall), a noise-like one sinks deep down the tunnel and hazes out.
     // (centred on the original 1.0; the `i == 31` guard below keeps the last
     // layer always hitting, which the fixed threshold used to do implicitly.)
-    float hitScale = 1.15 - 0.30 * clamp( audioFlatness, 0.0, 1.0 );
+    float hit_scale = 1.15 - 0.30 * clamp( audioFlatness, 0.0, 1.0 );
     // ...and the musical mode colours the depth fog those deep layers fade into.
     vec3 haze = mix( vec3( 0.42, 0.46, 0.58 ), vec3( 0.58, 0.52, 0.42 ),
                      clamp( audioMode, 0.0, 1.0 ) );
@@ -158,20 +158,20 @@ void main( void )
     {
         // parallax position, whole pixels for retro feel
         // float depth = 20.0+float(i);
-        float depthFactor = 60.0;
-        float depth = depthFactor + float( i );
+        float depth_factor = 60.0;
+        float depth = depth_factor + float( i );
         vec2  uv = pixel + floor( offset / depth );
 
         uv /= resolution.xy;
-        uv *= depth / depthFactor;
-        // uv *= 0.4*pixelSize;
+        uv *= depth / depth_factor;
+        // uv *= 0.4*pixel_size;
         uv *= 0.8 * quant;
 
         col = getKaleidoscopeColor( uv + .5 ); // interpolation * texture(tex0,uv+.5) +
                                                // (1.0-interpolation)*texture(tex1, uv+.5);
         // texture( iChannel0, uv+.5 ).rgb;
 
-        if ( 1.0 - col.y < float( i + 1 ) / 32.0 * hitScale || i == 31 )
+        if ( 1.0 - col.y < float( i + 1 ) / 32.0 * hit_scale || i == 31 )
         {
             // col = mix( vec3(.4,.6,.7), col, exp2(-float(i)*.1) );
             col = mix( haze, col, exp2( -float( i ) * .1 ) );

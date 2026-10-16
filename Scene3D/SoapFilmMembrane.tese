@@ -22,7 +22,7 @@ out float vThick;
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-const vec2    EXTENT = vec2( 14.0, 9.0 );
+const vec2    Extent = vec2( 14.0, 9.0 );
 
 uniform float sceneAdvance;  ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float sceneTime;     ///< Seconds since this scene was activated.
@@ -45,9 +45,9 @@ float height( vec2 uv, float clock, float amp, float modes )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
-    vec2 uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
-    vec2 uv = mix( uvA, uvB, gl_TessCoord.y );
+    vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2 uv_b = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2 uv = mix( uv_a, uv_b, gl_TessCoord.y );
 
     float clock = sceneAdvance * 0.6 + sceneTime * 0.15;
     float amp = 0.25 + 0.55 * clamp( audioSwell, 0.0, 1.0 );
@@ -58,9 +58,9 @@ void main()
     float e = 0.004;
     float hx = height( uv + vec2( e, 0.0 ), clock, amp, modes ) - height( uv - vec2( e, 0.0 ), clock, amp, modes );
     float hy = height( uv + vec2( 0.0, e ), clock, amp, modes ) - height( uv - vec2( 0.0, e ), clock, amp, modes );
-    vec3  n = normalize( vec3( -hx / ( 2.0 * e ) / EXTENT.x, -hy / ( 2.0 * e ) / EXTENT.y, 1.0 ) );
+    vec3  n = normalize( vec3( -hx / ( 2.0 * e ) / Extent.x, -hy / ( 2.0 * e ) / Extent.y, 1.0 ) );
 
-    vec3 p = vec3( ( uv.x - 0.5 ) * EXTENT.x, ( uv.y - 0.5 ) * EXTENT.y, 9.0 - h );
+    vec3 p = vec3( ( uv.x - 0.5 ) * Extent.x, ( uv.y - 0.5 ) * Extent.y, 9.0 - h );
     // Thickness: drains down over the arc (the top thins first), ripples
     // add a little, in the 300..900 nm range (units: nm / 100).
     float drain = clamp( sceneProgress, 0.0, 1.0 ) * ( 0.4 + 0.6 * clamp( drainP, 0.0, 1.0 ) );

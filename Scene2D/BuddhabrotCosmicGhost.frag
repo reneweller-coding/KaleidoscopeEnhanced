@@ -78,7 +78,7 @@ void main()
     c /= ( 1.0 + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
 
     // Multi-spectral orbit density sampling across 3 exposure depths (R, G, B channels)
-    vec3 orbitDensity = vec3( 0.0 );
+    vec3 orbit_density = vec3( 0.0 );
 
     vec2 z = c;
     for ( int i = 0; i < 32; i++ )
@@ -87,8 +87,8 @@ void main()
         float r2 = dot( z, z );
 
         // Distance from current pixel to orbit point
-        vec2  orbitPixel = vec2( z.y / 1.6, -( z.x + 0.45 ) / 1.6 );
-        float d = length( uv - orbitPixel );
+        vec2  orbit_pixel = vec2( z.y / 1.6, -( z.x + 0.45 ) / 1.6 );
+        float d = length( uv - orbit_pixel );
 
         // Tonal brightness tightens every exposure kernel at once: thinner, finer
         // filaments -- and because it only steepens the decay it can never raise
@@ -96,44 +96,44 @@ void main()
         float expo = dens * ( 1.0 + 0.45 * audioCentroid );
         // Channel R: long orbits (deep inner details)
         if ( i >= 18 )
-            orbitDensity.r += exp( -d * ( 35.0 * expo ) );
+            orbit_density.r += exp( -d * ( 35.0 * expo ) );
         // Channel G: medium orbits (body of Buddha)
         if ( i >= 8 )
-            orbitDensity.g += exp( -d * ( 25.0 * expo ) );
+            orbit_density.g += exp( -d * ( 25.0 * expo ) );
         // Channel B: short orbits (halo and aura)
-        orbitDensity.b += exp( -d * ( 15.0 * expo ) );
+        orbit_density.b += exp( -d * ( 15.0 * expo ) );
 
         if ( r2 > 16.0 )
             break;
     }
 
     // Sample slideshow texture on ghost coordinate
-    vec2 sampleUV = fract( uv * 0.4 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Astral palette mixing
-    vec3 palA = imgPalette( length( orbitDensity ) * 0.2 + t * 0.05 );
-    vec3 palB = imgPalette( length( orbitDensity ) * 0.2 + 0.5 );
-    vec3 ghostCol = mix( palA, palB, 0.5 + 0.5 * sin( orbitDensity.g * 2.0 ) );
+    vec3 pal_a = imgPalette( length( orbit_density ) * 0.2 + t * 0.05 );
+    vec3 pal_b = imgPalette( length( orbit_density ) * 0.2 + 0.5 );
+    vec3 ghost_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( orbit_density.g * 2.0 ) );
 
-    ghostCol = mix( ghostCol, texCol, 0.35 + 0.15 * audioValence );
+    ghost_col = mix( ghost_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing multi-channel astral light
-    vec3 astralLight = vec3(
-                           orbitDensity.r * 1.4,
-                           orbitDensity.g * 1.1,
-                           orbitDensity.b * 1.6 )
-                       * glw * ( 1.0 + 2.5 * audioKick ) * ar;
+    vec3 astral_light = vec3(
+                            orbit_density.r * 1.4,
+                            orbit_density.g * 1.1,
+                            orbit_density.b * 1.6 )
+                        * glw * ( 1.0 + 2.5 * audioKick ) * ar;
 
-    ghostCol += astralLight;
+    ghost_col += astral_light;
 
     // Third-eye chakra bloom (located at top center)
-    vec2  chakraPos = vec2( 0.0, 0.35 );
-    float chakraBloom = exp( -length( uv - chakraPos ) * 8.0 ) * ( 1.2 + 3.0 * audioKick );
-    ghostCol += vec3( 1.8, 1.6, 1.2 ) * chakraBloom;
+    vec2  chakra_pos = vec2( 0.0, 0.35 );
+    float chakra_bloom = exp( -length( uv - chakra_pos ) * 8.0 ) * ( 1.2 + 3.0 * audioKick );
+    ghost_col += vec3( 1.8, 1.6, 1.2 ) * chakra_bloom;
 
-    ghostCol = pow( ghostCol, vec3( 0.88 ) );
-    ghostCol /= 1.0 + 0.55 * max( ghostCol.r, max( ghostCol.g, ghostCol.b ) ); // peak knee: tame local glare, keep
-                                                                               // midtones
-    fragColor = vec4( clamp( ghostCol, 0.0, 1.0 ), 1.0 );
+    ghost_col = pow( ghost_col, vec3( 0.88 ) );
+    ghost_col /= 1.0 + 0.55 * max( ghost_col.r, max( ghost_col.g, ghost_col.b ) ); // peak knee: tame local glare, keep
+                                                                                   // midtones
+    fragColor = vec4( clamp( ghost_col, 0.0, 1.0 ), 1.0 );
 }

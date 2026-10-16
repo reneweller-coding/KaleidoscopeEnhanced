@@ -45,20 +45,20 @@ void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, float band, float face, float kin
     uint base = atomicAdd( cmd[4], 6u );
     if ( base + 6u > maxVertices )
         return;
-    vec3 pList[6] = vec3[6]( a, b, c, a, c, d );
-    vec2 uvList[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
-                              vec2( 0.0, 1.0 ) );
+    vec3 p_list[6] = vec3[6]( a, b, c, a, c, d );
+    vec2 uv_list[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
+                               vec2( 0.0, 1.0 ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = band;
         verts[off + 4u] = face;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -80,7 +80,7 @@ void main()
     float       bay = 6.0 * ( bayP > 0.05 ? bayP : 1.0 );
     float       H = 9.0 * ( heightP > 0.05 ? heightP : 1.0 );
     const float W = 5.0;   // half width of the nave
-    const int   BAYS = 16; // bays ahead of the camera
+    const int   Bays = 16; // bays ahead of the camera
     float       travel = sceneAdvance * 2.0 + sceneTime * 0.5;
     // Phase of the bay pattern relative to the camera: bays slide toward us.
     float phase = mod( travel, bay );
@@ -88,34 +88,34 @@ void main()
     if ( id == 0u )
     {
         // Sky (kind 2) far ahead, and the floor (stone) as one long quad.
-        float zFar = float( BAYS ) * bay;
-        emitQuad( vec3( -40.0, -30.0, zFar ), vec3( 40.0, -30.0, zFar ), vec3( 40.0, 40.0, zFar ),
-                  vec3( -40.0, 40.0, zFar ), 0.0, 4.0, 2.0 );
-        emitQuad( vec3( -W, -3.0, -bay ), vec3( W, -3.0, -bay ), vec3( W, -3.0, zFar ), vec3( -W, -3.0, zFar ), 0.0,
+        float z_far = float( Bays ) * bay;
+        emitQuad( vec3( -40.0, -30.0, z_far ), vec3( 40.0, -30.0, z_far ), vec3( 40.0, 40.0, z_far ),
+                  vec3( -40.0, 40.0, z_far ), 0.0, 4.0, 2.0 );
+        emitQuad( vec3( -W, -3.0, -bay ), vec3( W, -3.0, -bay ), vec3( W, -3.0, z_far ), vec3( -W, -3.0, z_far ), 0.0,
                   2.0, 0.0 );
         return;
     }
     // One thread per bay and side: id 1..2*BAYS.
-    if ( id > uint( 2 * BAYS ) )
+    if ( id > uint( 2 * Bays ) )
         return;
     int   k = int( id - 1u );
     int   b = k / 2;
     float side = ( k % 2 == 0 ) ? 1.0 : -1.0;
     float z = float( b ) * bay - phase; // bay position streaming toward the camera
-    float bandF = mod( float( b ) * 3.0 + ( side > 0.0 ? 0.0 : 16.0 ), 32.0 );
+    float band_f = mod( float( b ) * 3.0 + ( side > 0.0 ? 0.0 : 16.0 ), 32.0 );
 
     // Pillar: a stone box at the bay's front edge.
-    emitBox( vec3( side * W, -3.0 + H * 0.5, z ), vec3( 0.35, H * 0.5, 0.35 ), bandF, 0.0 );
+    emitBox( vec3( side * W, -3.0 + H * 0.5, z ), vec3( 0.35, H * 0.5, 0.35 ), band_f, 0.0 );
     // Glass pane: between this pillar and the next, on the wall line.
     vec3 p0 = vec3( side * W, -3.0, z + 0.4 ), p1 = vec3( side * W, -3.0, z + bay - 0.4 );
     vec3 p2 = vec3( side * W, -3.0 + H, z + bay - 0.4 ), p3 = vec3( side * W, -3.0 + H, z + 0.4 );
     if ( side > 0.0 )
-        emitQuad( p0, p3, p2, p1, bandF, 1.0, 1.0 ); // faces inward (-x)
+        emitQuad( p0, p3, p2, p1, band_f, 1.0, 1.0 ); // faces inward (-x)
     else
-        emitQuad( p0, p1, p2, p3, bandF, 0.0, 1.0 ); // faces inward (+x)
+        emitQuad( p0, p1, p2, p3, band_f, 0.0, 1.0 ); // faces inward (+x)
     // Clerestory: a tilted pane over the aisle, leaning in.
     vec3 c0 = vec3( side * W, -3.0 + H, z + 0.4 ), c1 = vec3( side * W, -3.0 + H, z + bay - 0.4 );
     vec3 c2 = vec3( side * W * 0.45, -3.0 + H * 1.35, z + bay - 0.4 ),
          c3 = vec3( side * W * 0.45, -3.0 + H * 1.35, z + 0.4 );
-    emitQuad( c0, c1, c2, c3, mod( bandF + 8.0, 32.0 ), 3.0, 1.0 );
+    emitQuad( c0, c1, c2, c3, mod( band_f + 8.0, 32.0 ), 3.0, 1.0 );
 }

@@ -90,8 +90,8 @@ void main()
     // Facet rings: table, star facets, kite facets, upper-girdle facets.
     float table = 0.38;
     // Star facets: triangles pointing out from the table edge.
-    float starEdge = table + ( 0.62 - table ) * ( 1.0 - m );
-    float kiteEdge = 0.62 + 0.32 * ( 1.0 - abs( m - 0.5 ) * 2.0 );
+    float star_edge = table + ( 0.62 - table ) * ( 1.0 - m );
+    float kite_edge = 0.62 + 0.32 * ( 1.0 - abs( m - 0.5 ) * 2.0 );
     float ring; // 0 table, 1 star, 2 kite, 3 upper girdle
     vec2  fid;  // facet id
     if ( r < table * ( 0.95 + 0.05 * cos( a * N ) ) )
@@ -99,12 +99,12 @@ void main()
         ring = 0.0;
         fid = vec2( 0.0 );
     }
-    else if ( r < starEdge )
+    else if ( r < star_edge )
     {
         ring = 1.0;
         fid = vec2( ai, 1.0 );
     }
-    else if ( r < kiteEdge )
+    else if ( r < kite_edge )
     {
         ring = 2.0;
         fid = vec2( floor( a / sector + 0.5 ), 2.0 );
@@ -117,9 +117,9 @@ void main()
 
     // Each facet has its own normal tilt: the table faces up, the crown
     // facets lean outward more with each ring.
-    float tiltA = ( ring == 0.0 ) ? 0.0 : ( 0.35 + 0.18 * ring );
+    float tilt_a = ( ring == 0.0 ) ? 0.0 : ( 0.35 + 0.18 * ring );
     float fa = ( fid.x + 0.5 ) * sector * ( ring == 3.0 ? 0.5 : 1.0 ) + ( ring == 2.0 ? -0.5 * sector : 0.0 );
-    vec3  n = normalize( vec3( cos( fa ) * sin( tiltA ), sin( fa ) * sin( tiltA ), cos( tiltA ) ) );
+    vec3  n = normalize( vec3( cos( fa ) * sin( tilt_a ), sin( fa ) * sin( tilt_a ), cos( tilt_a ) ) );
 
     // Light circling overhead.
     float la = sceneTime * 0.25;
@@ -146,23 +146,23 @@ void main()
     // reflected light direction is close to the viewer, and that colour
     // shifts with the angle -- so as the light circles, flashes travel.
     float disp = dot( n.xy, L.xy ) * 3.0 + hash21( fid + 11.0 );
-    vec3  fireC = spectral( disp );
+    vec3  fire_c = spectral( disp );
     int   band = int( mod( ring * 8.0 + fid.x, 32.0 ) );
     float e = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
     // Fire is sparse: only a few facets flash at a time, as the light moves
     // over them, and the flash is a patch inside the facet, not the whole of it.
-    float flashF = smoothstep( 0.82, 1.0, sin( la * 1.3 + hash21( fid + 13.0 ) * 6.2831853 ) * 0.5 + 0.5 );
-    float patchF = smoothstep( 0.6, 0.2,
-                               length( vec2( m, r - ( table + 0.3 ) ) * vec2( 1.0, 2.5 ) ) + hash21( fid ) * 0.2 );
-    float fireAmt = flashF * ( 0.4 + 0.6 * patchF ) * ( 0.6 + 1.2 * e ) * step( 0.5, ring );
-    vec3  col = mix( body, fireC * 1.3, clamp( fireAmt, 0.0, 1.0 ) ) + vec3( 1.0 ) * spec * ( 0.4 + 0.5 * swell );
+    float flash_f = smoothstep( 0.82, 1.0, sin( la * 1.3 + hash21( fid + 13.0 ) * 6.2831853 ) * 0.5 + 0.5 );
+    float patch_f = smoothstep( 0.6, 0.2,
+                                length( vec2( m, r - ( table + 0.3 ) ) * vec2( 1.0, 2.5 ) ) + hash21( fid ) * 0.2 );
+    float fire_amt = flash_f * ( 0.4 + 0.6 * patch_f ) * ( 0.6 + 1.2 * e ) * step( 0.5, ring );
+    vec3  col = mix( body, fire_c * 1.3, clamp( fire_amt, 0.0, 1.0 ) ) + vec3( 1.0 ) * spec * ( 0.4 + 0.5 * swell );
 
     // Facet edges: fine bright lines where the facets meet.
-    float edgeW = 0.004;
+    float edge_w = 0.004;
     float edges = 0.0;
-    edges += smoothstep( edgeW, 0.0, abs( r - table ) );
-    edges += smoothstep( edgeW, 0.0, abs( r - starEdge ) ) * step( table, r ) * step( r, 0.62 );
-    edges += smoothstep( edgeW, 0.0, abs( r - kiteEdge ) ) * step( 0.62, r );
+    edges += smoothstep( edge_w, 0.0, abs( r - table ) );
+    edges += smoothstep( edge_w, 0.0, abs( r - star_edge ) ) * step( table, r ) * step( r, 0.62 );
+    edges += smoothstep( edge_w, 0.0, abs( r - kite_edge ) ) * step( 0.62, r );
     edges += smoothstep( 0.006, 0.0, min( af, 1.0 - af ) * r ) * step( table, r );
     col += vec3( 0.9, 0.95, 1.0 ) * clamp( edges, 0.0, 1.0 ) * 0.25;
 
@@ -174,7 +174,7 @@ void main()
 
     col *= 0.85 + 0.35 * swell;
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -48,17 +48,17 @@ void main( void )
     vec2 uv = -gl_FragCoord.xy / resolution.xy;
 
     float tw = time + 0.6 * audioAdvance;
-    float timeSpeed = speed * tw;
-    float prevTime = speed * ( tw - 1.0 );
+    float time_speed = speed * tw;
+    float prev_time = speed * ( tw - 1.0 );
 
     // current offset
-    vec2 offset = getOffset( timeSpeed, uv );
+    vec2 offset = getOffset( time_speed, uv );
 
     // offset at prev frame
-    vec2 prevOffset = getOffset( prevTime, uv );
+    vec2 prev_offset = getOffset( prev_time, uv );
 
     // motion vector from previous to current frame
-    vec2 delta = offset - prevOffset;
+    vec2 delta = offset - prev_offset;
 
 
     uv += offset;

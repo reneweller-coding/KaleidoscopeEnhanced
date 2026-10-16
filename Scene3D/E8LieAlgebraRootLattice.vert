@@ -53,36 +53,36 @@ vec3 imgPalette( float t )
 void main()
 {
     vec3  corner = attrA.xyz;
-    float cIndex = attrA.w;
+    float c_index = attrA.w;
     vLocalPos = corner;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // E8 Lie group 240 root vectors projected into 3D
     // We construct 240 root positions via 8D rotation & projection
-    float seedIdx = cIndex;
-    float phi = seedIdx * 0.1375 + t * 0.2;
-    float theta = seedIdx * 0.2618 + audioPhase * 0.2;
+    float seed_idx = c_index;
+    float phi = seed_idx * 0.1375 + t * 0.2;
+    float theta = seed_idx * 0.2618 + audioPhase * 0.2;
 
     // Projection of 8D Gosset 4_21 polytope vertices
-    float r = ( 1.2 + 0.6 * sin( seedIdx * 0.5 + t * 0.4 ) ) * ( rootScaleP > 0.01 ? rootScaleP : 1.0 );
-    vec3  rootCenter = vec3(
+    float r = ( 1.2 + 0.6 * sin( seed_idx * 0.5 + t * 0.4 ) ) * ( rootScaleP > 0.01 ? rootScaleP : 1.0 );
+    vec3  root_center = vec3(
         r * sin( theta ) * cos( phi ),
         r * sin( theta ) * sin( phi ),
         r * cos( theta ) );
 
     // Cube scaling and orientation
     float sz = ( cubeSizeP > 0.001 ? cubeSizeP : 0.08 ) * ( 1.0 + 0.4 * audioKick );
-    vec3  cubePos = rootCenter + corner * sz;
+    vec3  cube_pos = root_center + corner * sz;
 
     vNormal = normalize( corner );
-    float weight = sin( seedIdx * 0.3 + t );
+    float weight = sin( seed_idx * 0.3 + t );
     vWeight = weight;
 
-    vCol = imgPalette( fract( cIndex * 0.02 + audioCentroid ) );
+    vCol = imgPalette( fract( c_index * 0.02 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = cubePos;
+    vec3 vp = cube_pos;
 
     // Smooth 3D rotation
     float c = cos( t * 0.15 ), s = sin( t * 0.15 );

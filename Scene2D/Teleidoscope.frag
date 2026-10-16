@@ -101,13 +101,13 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float baseS = 0.45 + 0.35 * clamp( sizeP, 0.0, 1.0 );
+    float base_s = 0.45 + 0.35 * clamp( sizeP, 0.0, 1.0 );
     float lens = 0.2 + 0.6 * clamp( lensP, 0.0, 1.0 );
     // The lens ball at the end: a bulge toward the edges (barrel).
     float r = length( p );
     vec2  pl = p * ( 1.0 + lens * r * r * 0.6 );
     // Mirror spacing slides on the swell (slow); the object cell turns.
-    float s = baseS * ( 0.85 + 0.3 * clamp( audioSwell, 0.0, 1.0 ) );
+    float s = base_s * ( 0.85 + 0.3 * clamp( audioSwell, 0.0, 1.0 ) );
     float seam;
     vec2  q = foldTri( pl, s, seam );
     float rot = sceneAdvance * 0.15 + sceneTime * 0.03;
@@ -136,7 +136,7 @@ void main()
     col *= 1.0 - smoothstep( 0.62, 0.72, r ) * 0.85;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

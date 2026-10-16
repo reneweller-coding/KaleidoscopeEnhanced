@@ -16,7 +16,7 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -28,10 +28,10 @@ void main()
 
     vec4  c0 = texture( tex0, p );
     vec4  c1 = texture( tex1, p );
-    float wR = clamp( d * 1.3, 0.0, 1.0 );
-    float wG = clamp( d * 1.3 - 0.15, 0.0, 1.0 );
-    float wB = clamp( d * 1.3 - 0.30, 0.0, 1.0 );
-    fragColor = vec4( mix( c0.r, c1.r, wR ),
-                      mix( c0.g, c1.g, wG ),
-                      mix( c0.b, c1.b, wB ), 1.0 );
+    float w_r = clamp( d * 1.3, 0.0, 1.0 );
+    float w_g = clamp( d * 1.3 - 0.15, 0.0, 1.0 );
+    float w_b = clamp( d * 1.3 - 0.30, 0.0, 1.0 );
+    fragColor = vec4( mix( c0.r, c1.r, w_r ),
+                      mix( c0.g, c1.g, w_g ),
+                      mix( c0.b, c1.b, w_b ), 1.0 );
 }

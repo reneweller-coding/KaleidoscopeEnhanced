@@ -61,19 +61,19 @@ void main()
     float lb = dot( pb, vec3( 0.299, 0.587, 0.114 ) );
     vec3  hi = mix( vec3( la ), pa, 0.45 ) * 1.70 + 0.20; // zenith
     vec3  lo = mix( vec3( lb ), pb, 0.55 ) * 1.15 + 0.10; // horizon
-    vec3  skyCol = mix( lo, hi, pow( uv.y, 0.75 ) );
+    vec3  sky_col = mix( lo, hi, pow( uv.y, 0.75 ) );
 
     // Low sun: a broad warm glow near the horizon, pulsing with the level.
     vec2  sun = vec2( 0.5 + 0.22 * sin( time * 0.02 ), 0.18 );
     float sd = length( ( uv - sun ) * vec2( resolution.x / resolution.y, 1.0 ) );
-    skyCol += vec3( 1.10, 0.72, 0.42 ) * exp( -sd * 3.2 )
-              * ( 0.30 + 0.25 * audioLevel + 0.20 * audioBeat );
-    skyCol *= 0.75 + 0.35 * audioAmbient;
+    sky_col += vec3( 1.10, 0.72, 0.42 ) * exp( -sd * 3.2 )
+               * ( 0.30 + 0.25 * audioLevel + 0.20 * audioBeat );
+    sky_col *= 0.75 + 0.35 * audioAmbient;
 
     // The flock darkens the sky where it is dense (real starlings are
     // silhouettes); the shimmer is only a rim highlight on the beat, never
     // the main event — otherwise the birds read as glowing gas.
-    vec3 ink = skyCol * ( 1.0 - dens * ( 0.70 + 0.30 * inkP ) );
+    vec3 ink = sky_col * ( 1.0 - dens * ( 0.70 + 0.30 * inkP ) );
     vec3 shimmer = ( flock + blur * 0.4 ) * ( 0.035 + 0.11 * audioBeat );
 
     vec3 col = ink + shimmer * dens;

@@ -67,34 +67,34 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec3  n = normalize( vNormal );
-    vec3  lightDir = normalize( vec3( 0.5, 0.9, -0.6 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.5, 0.9, -0.6 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
 
     // Silicon & gold substrate color
-    vec3 basePhoto = img( fract( vUV * 2.0 ) );
+    vec3 base_photo = img( fract( vUV * 2.0 ) );
     vec3 gold = vec3( 1.0, 0.78, 0.28 );
     vec3 silicon = vec3( 0.08, 0.10, 0.14 );
 
     // Superconducting Josephson junction circuit lines on top face
-    float circuitLine = 0.0;
+    float circuit_line = 0.0;
     if ( abs( n.y ) > 0.8 )
     {
-        vec2  localUV = fract( vPos.xz * 18.0 ) - 0.5;
-        float ring = abs( length( localUV ) - 0.35 );
-        circuitLine = exp( -ring * 20.0 );
+        vec2  local_uv = fract( vPos.xz * 18.0 ) - 0.5;
+        float ring = abs( length( local_uv ) - 0.35 );
+        circuit_line = exp( -ring * 20.0 );
     }
 
     // State coloring: the qubit state slides along the photo palette
-    vec3 stateCol = imgPalette( 0.30 * ( vQubitState * 0.5 + 0.5 ) );
-    vec3 emission = ( stateCol * ( 0.25 + 0.55 * vEnergy ) + gold * circuitLine * 1.2 ) * glw * neo;
+    vec3 state_col = imgPalette( 0.30 * ( vQubitState * 0.5 + 0.5 ) );
+    vec3 emission = ( state_col * ( 0.25 + 0.55 * vEnergy ) + gold * circuit_line * 1.2 ) * glw * neo;
 
     // Specular highlight
-    vec3  viewDir = normalize( vec3( 0.0, 1.0, 2.0 ) );
-    vec3  ref = reflect( -lightDir, n );
-    float spec = pow( max( dot( ref, viewDir ), 0.0 ), 32.0 );
+    vec3  view_dir = normalize( vec3( 0.0, 1.0, 2.0 ) );
+    vec3  ref = reflect( -light_dir, n );
+    float spec = pow( max( dot( ref, view_dir ), 0.0 ), 32.0 );
 
-    vec3 col = silicon * ( diff * 0.7 + 0.2 ) + basePhoto * 0.25 + gold * spec * 0.8 + emission;
-    col += stateCol * audioKick * smoothstep( 0.8, 1.5, vEnergy ) * 0.6; // Gate flash
+    vec3 col = silicon * ( diff * 0.7 + 0.2 ) + base_photo * 0.25 + gold * spec * 0.8 + emission;
+    col += state_col * audioKick * smoothstep( 0.8, 1.5, vEnergy ) * 0.6; // Gate flash
 
     col = hueRot( col, hue ); // chromaHue handled inside imgPalette
     col /= 1.0 + 0.32 * max( col.r, max( col.g, col.b ) );

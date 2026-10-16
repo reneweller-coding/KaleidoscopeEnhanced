@@ -96,9 +96,9 @@ vec3  hitColor = vec3( 0.0 );
 float map( vec3 p, float dp )
 {
     // Break space into grid cells for the asteroids
-    float cellSize = 3.0 / dp;
-    vec3  cell = floor( p / cellSize );
-    vec3  fractP = fract( p / cellSize ) * cellSize - ( cellSize * 0.5 );
+    float cell_size = 3.0 / dp;
+    vec3  cell = floor( p / cell_size );
+    vec3  fract_p = fract( p / cell_size ) * cell_size - ( cell_size * 0.5 );
 
     // Hash based on cell
     vec3 h = hash33( cell );
@@ -110,12 +110,12 @@ float map( vec3 p, float dp )
     }
 
     // Offset position within cell
-    vec3 pos = fractP - ( h - 0.5 ) * ( cellSize * 0.5 );
+    vec3 pos = fract_p - ( h - 0.5 ) * ( cell_size * 0.5 );
 
     // Random rotation for the crystal based on time and its seed
-    float rotSpeed = ( h.y - 0.5 ) * time;
-    pos.xy = rotM( rotSpeed + h.x * 6.28 ) * pos.xy;
-    pos.xz = rotM( rotSpeed * 0.5 + h.z * 6.28 ) * pos.xz;
+    float rot_speed = ( h.y - 0.5 ) * time;
+    pos.xy = rotM( rot_speed + h.x * 6.28 ) * pos.xy;
+    pos.xz = rotM( rot_speed * 0.5 + h.z * 6.28 ) * pos.xz;
 
     // Random size
     float size = 0.2 + h.z * 0.5;
@@ -188,47 +188,47 @@ void main()
     vec3 col = vec3( 0.0 );
 
     // Background light (a distant nebula or star illuminating the field)
-    vec3 bgLightDir = normalize( vec3( 0.5, 0.5, 1.0 ) );
-    vec3 bgCol = imgPalette( 0.2 ) * ( 0.18 + audioSwell * 0.25 );
+    vec3 bg_light_dir = normalize( vec3( 0.5, 0.5, 1.0 ) );
+    vec3 bg_col = imgPalette( 0.2 ) * ( 0.18 + audioSwell * 0.25 );
 
     if ( d < 40.0 )
     {
         vec3 n = calcNormal( p, dp );
 
         // Base color based on the crystal's unique seed
-        vec3 crysColor = imgPalette( g + audioCentroid * 0.1 );
+        vec3 crys_color = imgPalette( g + audioCentroid * 0.1 );
 
         // Lighting
-        float dif = max( dot( n, bgLightDir ), 0.0 );
-        float backLight = max( dot( n, -bgLightDir ), 0.0 );
+        float dif = max( dot( n, bg_light_dir ), 0.0 );
+        float back_light = max( dot( n, -bg_light_dir ), 0.0 );
 
         // Fake refraction / subsurface scattering
         float fresnel = pow( 1.0 - max( dot( n, -rd ), 0.0 ), 3.0 );
-        float internalGlow = backLight * 0.5 + fresnel * 0.5;
+        float internal_glow = back_light * 0.5 + fresnel * 0.5;
 
-        col = crysColor * ( 0.22 + dif * 1.1 );
+        col = crys_color * ( 0.22 + dif * 1.1 );
         // Rim light so a crystal facing away from the key light still has a
         // silhouette instead of reading as a flat black quad.
-        col += crysColor * fresnel * 0.6;
-        col += crysColor * internalGlow * 1.5 * gp * ( 1.0 + audioSwell );
+        col += crys_color * fresnel * 0.6;
+        col += crys_color * internal_glow * 1.5 * gp * ( 1.0 + audioSwell );
 
         // Specular flashes matching audio kicks (facets catching light perfectly)
-        float spec = pow( max( dot( reflect( bgLightDir, n ), -rd ), 0.0 ), 32.0 );
+        float spec = pow( max( dot( reflect( bg_light_dir, n ), -rd ), 0.0 ), 32.0 );
 
         // Flash logic based on time and the crystal's seed
         float flash = step( 0.75, hash11( g * 100.0 + floor( time * 1.50 ) ) );
-        col += crysColor * spec * ( 1.0 + flash * audioKick * 10.0 ) * gp;
+        col += crys_color * spec * ( 1.0 + flash * audioKick * 10.0 ) * gp;
 
         // Distance fog
-        col = mix( col, bgCol, smoothstep( 10.0, 40.0, d ) );
+        col = mix( col, bg_col, smoothstep( 10.0, 40.0, d ) );
         // Weiche MATERIALISIERUNG: die alte harte Blase (2.2) liess jeden
         // Kristall beim Grenzuebertritt schlagartig als Riesenmenge
         // aufploppen -- jetzt blendet Naehe sanft ein.
-        col = mix( bgCol, col, smoothstep( 0.7, 3.2, d ) );
+        col = mix( bg_col, col, smoothstep( 0.7, 3.2, d ) );
     }
     else
     {
-        col = bgCol;
+        col = bg_col;
 
         // Round, jittered stars. The old code lit ENTIRE floor(uv*100)
         // cells -- the user-reported huge square pixels.
@@ -249,7 +249,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

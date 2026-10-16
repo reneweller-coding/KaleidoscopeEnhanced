@@ -94,15 +94,15 @@ void main()
     // -> a warm green-gold one.  Both ends are luminance-matched against the
     // original teal ramp, so this reads purely as warmth, never as exposure.
     float mmaj = clamp( audioMode, 0.0, 1.0 );
-    vec3  restCold = mix( vec3( 0.08, 0.38, 0.45 ), vec3( 0.12, 0.55, 0.85 ), vLevel );
-    vec3  restWarm = mix( vec3( 0.14, 0.58, 0.24 ), vec3( 0.34, 0.78, 0.55 ), vLevel );
-    vec3  baseColor = palTint( mix( restCold, restWarm, mmaj ), 0.30 * vLevel, 0.25 );
+    vec3  rest_cold = mix( vec3( 0.08, 0.38, 0.45 ), vec3( 0.12, 0.55, 0.85 ), vLevel );
+    vec3  rest_warm = mix( vec3( 0.14, 0.58, 0.24 ), vec3( 0.34, 0.78, 0.55 ), vLevel );
+    vec3  base_color = palTint( mix( rest_cold, rest_warm, mmaj ), 0.30 * vLevel, 0.25 );
 
     // Bio-electric action potential: flash colour drawn from the PHOTO
     // palette so the network is never a monotone white/green thicket
-    vec3 pulseColor = imgPalette( 0.22 ) * 1.5;
+    vec3 pulse_color = imgPalette( 0.22 ) * 1.5;
 
-    vec3 col = mix( baseColor, pulseColor, vPulse * pls );
+    vec3 col = mix( base_color, pulse_color, vPulse * pls );
     col *= ( 0.5 + 0.9 * vPulse ) * glw;
     col /= 1.0 + 0.32 * max( col.r, max( col.g, col.b ) );
 

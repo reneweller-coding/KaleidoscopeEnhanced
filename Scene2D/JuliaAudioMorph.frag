@@ -69,9 +69,9 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float zoomV = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
-    float speedV = ( speedP <= 0.01 ) ? 1.0 : speedP;
-    float glowV = ( glowP <= 0.01 ) ? 1.0 : glowP;
+    float zoom_v = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
+    float speed_v = ( speedP <= 0.01 ) ? 1.0 : speedP;
+    float glow_v = ( glowP <= 0.01 ) ? 1.0 : glowP;
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
@@ -82,50 +82,50 @@ void main()
     // screen share either way -- the interior is dark, the exterior
     // fades). The framing is the scene's optimum; the flag is accepted
     // as the character of a thin-filament fractal.
-    float zoom = ( 1.6 + 0.35 * sin( time * 0.05 + audioSwell * 0.6 ) ) * zoomV;
+    float zoom = ( 1.6 + 0.35 * sin( time * 0.05 + audioSwell * 0.6 ) ) * zoom_v;
     zoom *= 1.0 - 0.04 * audioSwell;
     vec2 z = uv * zoom;
 
     // The audio-driven angle around the "interesting Julia" circle --
     // jump-free (audioChromaHue is already circular-slewed) plus a slow
     // continuous drift so a held key doesn't freeze the shape outright.
-    float t = audioChromaHue * speedV + audioAdvance * 0.05 * speedV;
+    float t = audioChromaHue * speed_v + audioAdvance * 0.05 * speed_v;
     vec2  c = 0.7885 * vec2( cos( t ), sin( t ) );
 
-    const int MAXI = 130;
+    const int Maxi = 130;
     float     iter = 0.0;
-    float     trapMin = 1e6;
-    for ( int i = 0; i < MAXI; ++i )
+    float     trap_min = 1e6;
+    for ( int i = 0; i < Maxi; ++i )
     {
         float x = z.x * z.x - z.y * z.y + c.x;
         float y = 2.0 * z.x * z.y + c.y;
         z = vec2( x, y );
-        trapMin = min( trapMin, abs( z.y ) );
+        trap_min = min( trap_min, abs( z.y ) );
         if ( dot( z, z ) > 4.0 )
         {
             iter = float( i );
             break;
         }
-        iter = float( MAXI );
+        iter = float( Maxi );
     }
 
     vec3 col;
-    if ( iter >= float( MAXI - 1 ) )
+    if ( iter >= float( Maxi - 1 ) )
     {
         // Interior: shade from the orbit trap, banded (a narrow real trap
         // range still reads as visible rings rather than flat colour). The
-        // palette angle rides on trapMin itself (not just the band), so the
+        // palette angle rides on trap_min itself (not just the band), so the
         // interior sweeps a real colour range instead of sitting near one
         // narrow hue the whole time.
-        float band = 0.5 + 0.5 * sin( trapMin * 30.0 );
-        col = imgPalette( 0.15 + trapMin * 0.5 + band * 0.1 ) * ( 0.3 + 0.7 * band );
+        float band = 0.5 + 0.5 * sin( trap_min * 30.0 );
+        col = imgPalette( 0.15 + trap_min * 0.5 + band * 0.1 ) * ( 0.3 + 0.7 * band );
     }
     else
     {
-        float logZn = log( dot( z, z ) ) * 0.5;
-        float nu = log( logZn / log( 2.0 ) ) / log( 2.0 );
-        float smoothIter = ( iter + 1.0 - nu ) / float( MAXI );
-        float pt = smoothIter * 2.2 + time * 0.01;
+        float log_zn = log( dot( z, z ) ) * 0.5;
+        float nu = log( log_zn / log( 2.0 ) ) / log( 2.0 );
+        float smooth_iter = ( iter + 1.0 - nu ) / float( Maxi );
+        float pt = smooth_iter * 2.2 + time * 0.01;
 
         // Brightness rides on how long a pixel survived, not just its hue:
         // an instant escape (the vast majority of the canvas, far from the
@@ -133,21 +133,21 @@ void main()
         // every other fast-escaping pixel, so the fractal's boundary reads
         // as a bright, detailed edge against real empty space rather than
         // a flat wash filling the whole frame.
-        float glow = smoothstep( 0.0, 0.12, smoothIter );
+        float glow = smoothstep( 0.0, 0.12, smooth_iter );
         col = imgPalette( pt ) * ( 0.35 + 2.3 * glow );
 
-        float rim = 1.0 - abs( fract( smoothIter * 2.2 ) * 2.0 - 1.0 );
-        col += imgPalette( pt + 0.3 ) * pow( rim, 4.0 ) * ( 0.5 + 0.6 * audioBeat ) * glowV;
+        float rim = 1.0 - abs( fract( smooth_iter * 2.2 ) * 2.0 - 1.0 );
+        col += imgPalette( pt + 0.3 ) * pow( rim, 4.0 ) * ( 0.5 + 0.6 * audioBeat ) * glow_v;
     }
 
     if ( hueP > 0.001 )
         col = hueRot( col, hueP );
 
-    col *= glowV * ( 1.1 + 0.3 * audioCentroid );
+    col *= glow_v * ( 1.1 + 0.3 * audioCentroid );
     col *= 1.0 + 0.35 * audioLevel;
     col += col * audioOnset * 0.15;
 
-    vec3 _catTone = clamp( col, 0.0, 1.0 ) * 1.0;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 ) * 1.0;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

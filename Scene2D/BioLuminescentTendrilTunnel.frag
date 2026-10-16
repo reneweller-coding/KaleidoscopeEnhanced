@@ -65,24 +65,24 @@ float mapTendrilTunnel( vec3 p, float t, float sway, out float pulseVal )
     float a = atan( p.y, p.x );
 
     // Tunnel wall baseline radius
-    float tunnelR = 1.45 + 0.2 * sin( audioSwell * 2.0 ) + 0.15 * audioSubBass;
+    float tunnel_r = 1.45 + 0.2 * sin( audioSwell * 2.0 ) + 0.15 * audioSubBass;
 
     // Swaying tendril displacement around perimeter
-    float nTendrils = 8.0;
-    float seg = 6.2831853 / nTendrils;
-    float aLocal = mod( a + seg * 0.5, seg ) - seg * 0.5;
+    float n_tendrils = 8.0;
+    float seg = 6.2831853 / n_tendrils;
+    float a_local = mod( a + seg * 0.5, seg ) - seg * 0.5;
 
     // Organic sinusoidal undulation along length Z
-    float waveZ = sin( p.z * 1.5 - t * 2.5 + a * 2.0 ) * ( 0.25 * sway );
-    float waveRadial = sin( a * nTendrils + p.z * 2.0 - t * 3.0 ) * 0.18;
+    float wave_z = sin( p.z * 1.5 - t * 2.5 + a * 2.0 ) * ( 0.25 * sway );
+    float wave_radial = sin( a * n_tendrils + p.z * 2.0 - t * 3.0 ) * 0.18;
 
     // Tendril strand surface distance
-    float dWall = abs( r - ( tunnelR + waveZ + waveRadial ) ) - 0.04;
+    float d_wall = abs( r - ( tunnel_r + wave_z + wave_radial ) ) - 0.04;
 
     // Nerve impulse pulse propagating along tendril fibers
     pulseVal = sin( p.z * 3.0 - t * 6.0 + a * 4.0 );
 
-    return dWall;
+    return d_wall;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -108,48 +108,48 @@ void main()
     vec3 rd = normalize( uv.x * uu + uv.y * vv + ( 1.2 + 0.2 * sin( audioSwell ) ) * ww );
 
     // Raymarching through tendril tunnel
-    float totDist = 0.0;
-    float minD = 1e4;
-    float pulseHit = 0.0;
-    vec3  hitCol = vec3( 0.0 );
-    float bioPlankton = 0.0;
+    float tot_dist = 0.0;
+    float min_d = 1e4;
+    float pulse_hit = 0.0;
+    vec3  hit_col = vec3( 0.0 );
+    float bio_plankton = 0.0;
 
     for ( int i = 0; i < 52; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curPulse;
-        float d = mapTendrilTunnel( p, t, swy, curPulse );
-        minD = min( minD, abs( d ) );
+        vec3  p = ro + rd * tot_dist;
+        float cur_pulse;
+        float d = mapTendrilTunnel( p, t, swy, cur_pulse );
+        min_d = min( min_d, abs( d ) );
 
-        bioPlankton += exp( -d * 6.0 ) * ( 0.015 + 0.02 * audioLevel );
+        bio_plankton += exp( -d * 6.0 ) * ( 0.015 + 0.02 * audioLevel );
 
-        if ( abs( d ) < 0.003 || totDist > 12.0 )
+        if ( abs( d ) < 0.003 || tot_dist > 12.0 )
         {
-            pulseHit = curPulse;
-            vec2 sampleUV = fract( vec2( atan( p.y, p.x ) / 6.2831853 + 0.5, p.z * 0.2 ) );
-            vec3 texCol = img( sampleUV );
-            vec3 palCol = imgPalette( p.z * 0.15 + t * 0.05 );
-            hitCol = mix( texCol, palCol, 0.5 ) * ( 0.6 + 0.4 * ( 1.0 - d ) );
+            pulse_hit = cur_pulse;
+            vec2 sample_uv = fract( vec2( atan( p.y, p.x ) / 6.2831853 + 0.5, p.z * 0.2 ) );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal_col = imgPalette( p.z * 0.15 + t * 0.05 );
+            hit_col = mix( tex_col, pal_col, 0.5 ) * ( 0.6 + 0.4 * ( 1.0 - d ) );
             break;
         }
 
-        totDist += max( 0.02, d * 0.7 );
+        tot_dist += max( 0.02, d * 0.7 );
     }
 
     // Glowing nerve pulses traveling along tendrils
-    float nervePulse = smoothstep( 0.7, 1.0, pulseHit ) * ( 1.0 + 3.0 * audioKick );
-    float edgeGlow = exp( -minD * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
+    float nerve_pulse = smoothstep( 0.7, 1.0, pulse_hit ) * ( 1.0 + 3.0 * audioKick );
+    float edge_glow = exp( -min_d * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
 
-    vec3 biolumTint = vec3( 0.2, 1.4, 1.7 ) * ( edgeGlow + nervePulse * 1.2 ) * ( 1.0 + 2.0 * audioKick );
-    vec3 planktonCol = imgPalette( 0.4 ) * bioPlankton * ( 0.8 + 1.2 * audioSwell );
+    vec3 biolum_tint = vec3( 0.2, 1.4, 1.7 ) * ( edge_glow + nerve_pulse * 1.2 ) * ( 1.0 + 2.0 * audioKick );
+    vec3 plankton_col = imgPalette( 0.4 ) * bio_plankton * ( 0.8 + 1.2 * audioSwell );
 
-    vec3 finalCol = mix( planktonCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
-    finalCol += biolumTint + planktonCol * 0.4;
+    vec3 final_col = mix( plankton_col, hit_col, clamp( length( hit_col ), 0.0, 1.0 ) );
+    final_col += biolum_tint + plankton_col * 0.4;
 
     // Abyss depth water fog
-    float fog = 1.0 - exp( -totDist * 0.15 );
-    finalCol = mix( finalCol, imgPalette( 0.8 ) * 0.25, fog );
+    float fog = 1.0 - exp( -tot_dist * 0.15 );
+    final_col = mix( final_col, imgPalette( 0.8 ) * 0.25, fog );
 
-    finalCol = pow( finalCol, vec3( 0.87 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.87 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

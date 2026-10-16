@@ -96,15 +96,15 @@ void main()
                 * mix( vec3( 0.16 ), imgPalette( hue * 0.159 + 0.6 ) * 0.35, 0.5 );
     vec3 col = back * ( 0.5 + 0.35 * haze ) + 0.015;
     // The deck: darker, with a slight sheen and a reflection of the pools.
-    float onDeck = step( p.y, deck );
-    vec3  deckCol = mix( vec3( 0.11, 0.11, 0.13 ), imgPalette( hue * 0.159 + 0.1 ) * 0.35, 0.4 );
-    col = mix( col, deckCol, onDeck );
+    float on_deck = step( p.y, deck );
+    vec3  deck_col = mix( vec3( 0.11, 0.11, 0.13 ), imgPalette( hue * 0.159 + 0.1 ) * 0.35, 0.4 );
+    col = mix( col, deck_col, on_deck );
     // The truss: a horizontal bar near the top with cross-braces.
-    float trussY = 0.42;
-    float bar = smoothstep( 0.018, 0.012, abs( p.y - trussY ) )
-                + smoothstep( 0.012, 0.008, abs( p.y - trussY - 0.06 ) );
+    float truss_y = 0.42;
+    float bar = smoothstep( 0.018, 0.012, abs( p.y - truss_y ) )
+                + smoothstep( 0.012, 0.008, abs( p.y - truss_y - 0.06 ) );
     float brace = smoothstep( 0.008, 0.004, abs( fract( ( p.x + p.y ) * 6.0 ) - 0.5 ) - 0.46 )
-                  * step( p.y, trussY + 0.06 ) * step( trussY, p.y );
+                  * step( p.y, truss_y + 0.06 ) * step( truss_y, p.y );
     col = mix( col, vec3( 0.3, 0.31, 0.33 ) * ( 0.5 + 0.5 * haze ), clamp( bar + brace * 0.7, 0.0, 1.0 ) );
 
     // The lamps.  Each is a fixture hanging under the truss with a beam.
@@ -117,7 +117,7 @@ void main()
         float e = clamp( audioChroma[cls] * 1.6, 0.0, 1.0 );
         // Position along the truss, evenly spread.
         float hx = ( ( fi + 0.5 ) / heads - 0.5 ) * aspect * 1.7;
-        vec2  head = vec2( hx, trussY - 0.045 );
+        vec2  head = vec2( hx, truss_y - 0.045 );
         // The pan: a steady sweep, each head at its own rate and phase.
         float rate = 0.25 + 0.22 * hash11( fi * 3.7 );
         float pan = sin( clock * rate * sweep + fi * 1.7 ) * 0.55;
@@ -130,24 +130,24 @@ void main()
         vec2  rel = p - head;
         float along = dot( rel, dir );
         float across = length( rel - dir * along );
-        float halfW = 0.012 + 0.075 * clamp( along / 0.9, 0.0, 1.0 );
-        float inCone = smoothstep( halfW, halfW * 0.35, across ) * smoothstep( 0.0, 0.06, along );
+        float half_w = 0.012 + 0.075 * clamp( along / 0.9, 0.0, 1.0 );
+        float in_cone = smoothstep( half_w, half_w * 0.35, across ) * smoothstep( 0.0, 0.06, along );
         // Haze makes the beam visible; it fades with distance from the lens.
         float fall = exp( -along * 0.9 );
         // The gobo: a pattern carried across the beam, from the photo.
         float gob = 0.65 + 0.35 * img( clamp( vec2( across * 6.0 + fi * 0.13, along * 0.7 ), 0.0, 1.0 ) ).r;
-        float beam = inCone * fall * haze * gob;
+        float beam = in_cone * fall * haze * gob;
         col += lc * beam * ( 0.25 + 0.95 * e ) * 1.3;
         // A crisper core inside the cone, and an edge shimmer on the treble.
-        col += lc * smoothstep( halfW * 0.5, 0.0, across ) * fall * ( 0.1 + 0.5 * e ) * ( 0.8 + 0.5 * hi );
+        col += lc * smoothstep( half_w * 0.5, 0.0, across ) * fall * ( 0.1 + 0.5 * e ) * ( 0.8 + 0.5 * hi );
         // The lens itself glows.
         col += lc * exp( -length( rel ) * 30.0 ) * ( 0.25 + 1.1 * e );
         // The pool where the beam meets the deck.
-        float hitT = ( deck - head.y ) / min( dir.y, -1e-3 );
-        vec2  hit = head + dir * hitT;
+        float hit_t = ( deck - head.y ) / min( dir.y, -1e-3 );
+        vec2  hit = head + dir * hit_t;
         float pool = exp( -length( ( p - vec2( hit.x, deck ) ) * vec2( 1.0, 3.4 ) ) * 6.0 );
-        col += lc * pool * onDeck * ( 0.3 + 1.0 * e ) * 1.1;
-        col += lc * pool * ( 1.0 - onDeck ) * ( 0.05 + 0.3 * e ) * 0.3; // spill just above the deck
+        col += lc * pool * on_deck * ( 0.3 + 1.0 * e ) * 1.1;
+        col += lc * pool * ( 1.0 - on_deck ) * ( 0.05 + 0.3 * e ) * 0.3; // spill just above the deck
     }
     // Haze grain, drifting slowly so the air lives.
     col *= 0.9 + 0.2 * noise2( p * 3.0 + vec2( clock * 0.15, clock * 0.05 ) );
@@ -158,7 +158,7 @@ void main()
     col += mix( vec3( 1.0, 0.6, 0.3 ), imgPalette( hue * 0.159 + 0.3 ), 0.4 ) * strip * ( 0.15 + 0.9 * audioKick );
     col *= 0.8 + 0.4 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

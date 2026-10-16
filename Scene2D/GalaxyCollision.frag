@@ -73,9 +73,9 @@ void main()
     // The tight star glow rides the treble's instant/slow-average ratio, so the
     // individual stars flare on shimmer and recede in dull passages.  Modulates
     // the EXISTING halo weight (0.33..0.77 around 0.55), no new light added.
-    float glowPunch = 0.55 + 0.22 * clamp( audioTrebRel - 1.0, -1.0, 1.0 );
+    float glow_punch = 0.55 + 0.22 * clamp( audioTrebRel - 1.0, -1.0, 1.0 );
 
-    vec3 col = core + near * glowPunch + far * ( 0.22 + 0.30 * dustP );
+    vec3 col = core + near * glow_punch + far * ( 0.22 + 0.30 * dustP );
 
     // Sub-bass makes the whole field pulse like a slow breath.
     col *= 1.0 + 0.30 * audioSubBass + 0.20 * audioBeat;

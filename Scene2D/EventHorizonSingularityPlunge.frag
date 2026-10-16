@@ -76,42 +76,42 @@ void main()
     float a = atan( uv.y, uv.x );
 
     // Relativistic tidal stretching (spaghettification along radial coordinate)
-    float tidalStretch = ( 1.5 + 0.8 * sin( audioSwell * 2.5 ) + 0.5 * audioSubBass ) * tdl;
-    vec2  pTidal = vec2(
-        ( uv.x / max( 0.1, r ) ) * pow( r, 1.0 / tidalStretch ),
-        ( uv.y / max( 0.1, r ) ) * pow( r, tidalStretch ) );
+    float tidal_stretch = ( 1.5 + 0.8 * sin( audioSwell * 2.5 ) + 0.5 * audioSubBass ) * tdl;
+    vec2  p_tidal = vec2(
+        ( uv.x / max( 0.1, r ) ) * pow( r, 1.0 / tidal_stretch ),
+        ( uv.y / max( 0.1, r ) ) * pow( r, tidal_stretch ) );
 
     // Shrinking Einstein celestial sky disk at top of screen (view of the outer universe)
-    vec2  skyPos = uv - vec2( 0.0, 0.35 );
-    float dSky = length( skyPos );
-    float skyMask = smoothstep( 0.28, 0.22, dSky );
+    vec2  sky_pos = uv - vec2( 0.0, 0.35 );
+    float d_sky = length( sky_pos );
+    float sky_mask = smoothstep( 0.28, 0.22, d_sky );
 
     // Swirling inner plasma turbulence inside event horizon
     // Brightness raises the SPATIAL frequency of the accretion filaments only;
     // the t-driven terms keep their fixed rate so the phase is never remapped.
-    float filamentFreq = 12.0 * ( 1.0 + 0.45 * audioCentroid );
-    float plasmaNoise = sin( pTidal.x * filamentFreq + t * 4.0 ) * cos( pTidal.y * filamentFreq - t * 3.5 );
-    float plasmaSpiral = sin( a * filamentFreq * 0.5 - ( 1.0 / max( 0.05, r ) ) * 4.0 + t * 6.0 );
+    float filament_freq = 12.0 * ( 1.0 + 0.45 * audioCentroid );
+    float plasma_noise = sin( p_tidal.x * filament_freq + t * 4.0 ) * cos( p_tidal.y * filament_freq - t * 3.5 );
+    float plasma_spiral = sin( a * filament_freq * 0.5 - ( 1.0 / max( 0.05, r ) ) * 4.0 + t * 6.0 );
 
     // Sample slideshow texture on outer universe disk vs inner plasma
-    vec2 skyUV = fract( skyPos * 1.5 + 0.5 );
-    vec3 skyCol = img( skyUV ) * ( 1.2 + 0.8 * audioLevel );
+    vec2 sky_uv = fract( sky_pos * 1.5 + 0.5 );
+    vec3 sky_col = img( sky_uv ) * ( 1.2 + 0.8 * audioLevel );
 
-    vec2 plasmaUV = fract( pTidal * 0.5 + vec2( t * 0.1, 0.0 ) );
-    vec3 plasmaTex = img( plasmaUV );
+    vec2 plasma_uv = fract( p_tidal * 0.5 + vec2( t * 0.1, 0.0 ) );
+    vec3 plasma_tex = img( plasma_uv );
 
     // Inner singularity palette (deep ultraviolet to gleam-white)
-    vec3 palSing = imgPalette( r * 2.0 + t * 0.1 );
-    vec3 plasmaCol = mix( plasmaTex, palSing, 0.5 ) * ( 0.6 + 0.4 * plasmaNoise ) * plsm;
+    vec3 pal_sing = imgPalette( r * 2.0 + t * 0.1 );
+    vec3 plasma_col = mix( plasma_tex, pal_sing, 0.5 ) * ( 0.6 + 0.4 * plasma_noise ) * plsm;
 
     // Glowing photon ring and singularity point
-    float photonRing = exp( -abs( dSky - 0.25 ) * 35.0 ) * ( 1.5 + 3.0 * audioKick ) * glw;
-    float singularityGlow = exp( -r * 12.0 ) * ( 2.0 + 4.0 * audioKick );
+    float photon_ring = exp( -abs( d_sky - 0.25 ) * 35.0 ) * ( 1.5 + 3.0 * audioKick ) * glw;
+    float singularity_glow = exp( -r * 12.0 ) * ( 2.0 + 4.0 * audioKick );
 
-    vec3 finalCol = mix( plasmaCol, skyCol, skyMask );
-    finalCol += vec3( 1.8, 1.5, 1.2 ) * photonRing;
-    finalCol += imgPalette( 0.85 ) * singularityGlow;
+    vec3 final_col = mix( plasma_col, sky_col, sky_mask );
+    final_col += vec3( 1.8, 1.5, 1.2 ) * photon_ring;
+    final_col += imgPalette( 0.85 ) * singularity_glow;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

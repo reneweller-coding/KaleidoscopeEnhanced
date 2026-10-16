@@ -68,42 +68,42 @@ void main()
 
     float t = time * 0.0209 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
     float angle = atan( p.y, p.x );
 
     // Morris-Thorne throat coordinate: l = -infty (Universe 1) to +infty (Universe 2)
-    float l = mix( -2.5, 2.5, tProg );
-    float throatRadius = 0.33 * thr; // constant: an envelope on a scale re-lays the whole pattern (speed
-                                     // pass 14.09.2026)
+    float l = mix( -2.5, 2.5, t_prog );
+    float throat_radius = 0.33 * thr; // constant: an envelope on a scale re-lays the whole pattern (speed
+                                      // pass 14.09.2026)
 
     // Radius function: r(l) = sqrt(r_0^2 + l^2)
-    float metricR = sqrt( throatRadius * throatRadius + l * l );
+    float metric_r = sqrt( throat_radius * throat_radius + l * l );
 
     // Spacetime curvature deflection
-    float deflection = ( throatRadius / max( r, 0.05 ) ) * midTransition * crv;
+    float deflection = ( throat_radius / max( r, 0.05 ) ) * mid_transition * crv;
     // The time-driven swirl term must be windowed by the envelope too — an
     // ungated t*0.4 rotated the WHOLE frame at both fade endpoints.
-    vec2 pWarp = rot2D( deflection * 1.5 + t * 0.4 * midTransition ) * ( p * ( 1.0 + deflection * 0.8 ) );
-    vec2 warpUV = ( pWarp * resolution.y + 0.5 * resolution ) / resolution;
+    vec2 p_warp = rot2D( deflection * 1.5 + t * 0.4 * mid_transition ) * ( p * ( 1.0 + deflection * 0.8 ) );
+    vec2 warp_uv = ( p_warp * resolution.y + 0.5 * resolution ) / resolution;
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
     // Dual universe boundary wipe
-    float throatWipe = smoothstep( -0.2, 0.2, l + ( r - 0.4 ) );
-    vec4  col = mix( c1, c0, throatWipe );
+    float throat_wipe = smoothstep( -0.2, 0.2, l + ( r - 0.4 ) );
+    vec4  col = mix( c1, c0, throat_wipe );
 
     // Exotic matter throat glowing ring
-    float throatGlow = exp( -abs( r - throatRadius ) * 20.0 ) * midTransition;
-    col.rgb += throatGlow * vec3( 0.4, 0.95, 1.0 ) * ( 1.5 + audioKick * 1.0 );
+    float throat_glow = exp( -abs( r - throat_radius ) * 20.0 ) * mid_transition;
+    col.rgb += throat_glow * vec3( 0.4, 0.95, 1.0 ) * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

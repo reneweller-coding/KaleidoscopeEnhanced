@@ -23,7 +23,7 @@ out float vHeight;
 
 uniform mat4  projM;  ///< Projection matrix.
 uniform float eyeOff; ///< Stereo eye offset (0 in mono).
-const vec2    EXTENT = vec2( 24.0, 14.0 );
+const vec2    Extent = vec2( 24.0, 14.0 );
 
 uniform float wedgeP;
 
@@ -35,23 +35,23 @@ float tri( float x )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
-    vec2  uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
-    vec2  uv = mix( uvA, uvB, gl_TessCoord.y );
+    vec2  uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2  uv_b = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2  uv = mix( uv_a, uv_b, gl_TessCoord.y );
     float cols = 12.0 + 8.0 * clamp( wedgeP, 0.0, 1.0 );
-    float rows = cols * EXTENT.y / EXTENT.x;
+    float rows = cols * Extent.y / Extent.x;
     vec2  g = vec2( uv.x * cols, uv.y * rows );
     // Wedge height: a pyramid in each cell (min of the two triangle waves).
     float hx = tri( g.x ), hy = tri( g.y );
     float h = min( hx, hy ) * 1.6;
-    vec3  p = vec3( ( uv.x - 0.5 ) * EXTENT.x, ( uv.y - 0.5 ) * EXTENT.y, 11.0 - h );
+    vec3  p = vec3( ( uv.x - 0.5 ) * Extent.x, ( uv.y - 0.5 ) * Extent.y, 11.0 - h );
     // Normal from the pyramid face: the gradient of min(tri, tri).
-    vec2 cellF = fract( g ) - 0.5;
+    vec2 cell_f = fract( g ) - 0.5;
     vec3 n;
-    if ( abs( cellF.x ) > abs( cellF.y ) )
-        n = normalize( vec3( sign( cellF.x ) * 1.6 * cols / EXTENT.x * 2.0, 0.0, 1.0 ) );
+    if ( abs( cell_f.x ) > abs( cell_f.y ) )
+        n = normalize( vec3( sign( cell_f.x ) * 1.6 * cols / Extent.x * 2.0, 0.0, 1.0 ) );
     else
-        n = normalize( vec3( 0.0, sign( cellF.y ) * 1.6 * rows / EXTENT.y * 2.0, 1.0 ) );
+        n = normalize( vec3( 0.0, sign( cell_f.y ) * 1.6 * rows / Extent.y * 2.0, 1.0 ) );
     n.z = -n.z; // faces the camera (-z)
     vWorld = p;
     vSurfUV = uv;

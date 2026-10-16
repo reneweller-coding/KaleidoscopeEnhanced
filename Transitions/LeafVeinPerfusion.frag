@@ -49,7 +49,7 @@ uniform float veinsP;
 uniform float bleedP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float n )
@@ -68,7 +68,7 @@ float segDist( vec2 p, vec2 a, vec2 b, out float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float nSec = 4.0 + floor( clamp( veinsP, 0.0, 1.0 ) * 5.0 ); // rolled ONCE
+    float n_sec = 4.0 + floor( clamp( veinsP, 0.0, 1.0 ) * 5.0 ); // rolled ONCE
     float bleed = ( bleedP > 0.0 ) ? bleedP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
@@ -77,7 +77,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // The petiole is at the left, the midrib runs to the tip.
     vec2 base = vec2( -aspect * 0.5 - 0.05, -0.06 );
@@ -88,21 +88,21 @@ void main()
     // Thick enough to READ as a network: at a third of this the venation was
     // there in the maths and invisible on screen, which makes the whole
     // transition a soft dissolve with a story nobody can see.
-    float wMain = 0.055, wSec = wMain * 0.63, wTer = wSec * 0.63;
+    float w_main = 0.055, w_sec = w_main * 0.63, w_ter = w_sec * 0.63;
 
     float t;
-    float dMain = segDist( p, base, tip, t );
-    float pathMain = t;         // 0 at the petiole, 1 at the tip
-    float best = dMain / wMain; // distance in units of that vein's width
-    float path = pathMain;
+    float d_main = segDist( p, base, tip, t );
+    float path_main = t;          // 0 at the petiole, 1 at the tip
+    float best = d_main / w_main; // distance in units of that vein's width
+    float path = path_main;
     float order = 0.0;
 
     for ( int i = 0; i < 9; ++i )
     {
-        if ( float( i ) >= nSec )
+        if ( float( i ) >= n_sec )
             break;
         float fi = float( i );
-        float u = ( fi + 0.5 ) / nSec; // where it leaves the midrib
+        float u = ( fi + 0.5 ) / n_sec; // where it leaves the midrib
         vec2  a = mix( base, tip, u );
         float side = ( mod( fi, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
         float lean = 0.55 + 0.30 * hash11( fi * 3.3 );
@@ -111,7 +111,7 @@ void main()
                   + vec2( 0.30 + 0.16 * hash11( fi * 5.1 ), side * ( 0.34 + 0.16 * hash11( fi * 7.9 ) ) )
                         * vec2( 1.0, lean );
         float ts;
-        float ds = segDist( p, a, b, ts ) / wSec;
+        float ds = segDist( p, a, b, ts ) / w_sec;
         if ( ds < best )
         {
             best = ds;
@@ -129,7 +129,7 @@ void main()
             vec2  b2 = a2
                        + vec2( 0.10 + 0.06 * hash11( fi * 2.1 + fk ), sd * ( 0.11 + 0.05 * hash11( fi * 9.3 + fk ) ) );
             float tt;
-            float dt = segDist( p, a2, b2, tt ) / wTer;
+            float dt = segDist( p, a2, b2, tt ) / w_ter;
             if ( dt < best )
             {
                 best = dt;

@@ -67,32 +67,32 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Mesospheric undular bore gravity wave train
-    float boreFreq = ( boreWaveP > 0.01 ? boreWaveP : 10.0 );
-    float wavePhase = uv.y * boreFreq - t * 2.5;
+    float bore_freq = ( boreWaveP > 0.01 ? boreWaveP : 10.0 );
+    float wave_phase = uv.y * bore_freq - t * 2.5;
 
     // Non-linear cnoidal wave soliton train
-    float waveCrest = pow( sin( wavePhase ) * 0.5 + 0.5, 3.0 );
-    float waveHeight = waveCrest * 0.35 * ( 1.0 + 0.4 * audioSwell );
+    float wave_crest = pow( sin( wave_phase ) * 0.5 + 0.5, 3.0 );
+    float wave_height = wave_crest * 0.35 * ( 1.0 + 0.4 * audioSwell );
 
     // Atmospheric curvature (spherical shell)
     float r2 = dot( uv, uv );
-    float earthCurv = -r2 * 0.45;
+    float earth_curv = -r2 * 0.45;
 
-    vec3 worldPos = vec3( uv.x * 3.2, uv.y * 3.2, earthCurv + waveHeight );
+    vec3 world_pos = vec3( uv.x * 3.2, uv.y * 3.2, earth_curv + wave_height );
 
     // Surface normal
-    float dHdy = cos( wavePhase ) * 0.4;
-    vNormal = normalize( vec3( 0.0, -dHdy, 1.0 ) );
+    float d_hdy = cos( wave_phase ) * 0.4;
+    vNormal = normalize( vec3( 0.0, -d_hdy, 1.0 ) );
 
     // Mesospheric hydroxyl chemiluminescence (airglow emerald green)
-    float airglow = waveCrest * ( 1.0 + 2.0 * audioKick );
+    float airglow = wave_crest * ( 1.0 + 2.0 * audioKick );
     vAirglow = airglow;
 
-    vec3 airglowGreen = vec3( 0.15, 0.95, 0.45 );
-    vCol = palTint( airglowGreen, attrA.y * 0.4 + audioCentroid, 0.26 );
+    vec3 airglow_green = vec3( 0.15, 0.95, 0.45 );
+    vCol = palTint( airglow_green, attrA.y * 0.4 + audioCentroid, 0.26 );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 4.5;
     vp.x -= eyeOff;
 

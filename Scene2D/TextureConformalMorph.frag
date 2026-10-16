@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -269,13 +269,13 @@ void main()
     float flow = 0.08 * sceneTime + 0.6 * audioAdvance;
     float turn = 0.02 * sceneTime + 0.2 * audioPhase;
     float px = 1.0 / resolution.y;
-    float sA, sB;
-    vec3  c1 = spiralSample( L, dL, 1.0, 1.0, zoom, flow, turn, px, sA );
-    vec3  c2 = spiralSample( L, dL, 1.0, 2.0, zoom, flow, turn, px, sB );
+    float s_a, s_b;
+    vec3  c1 = spiralSample( L, dL, 1.0, 1.0, zoom, flow, turn, px, s_a );
+    vec3  c2 = spiralSample( L, dL, 1.0, 2.0, zoom, flow, turn, px, s_b );
     float tw = clamp( twistP, 0.0, 1.0 );
     float wmix = smoothstep( 0.2, 0.8, tw + 0.25 * sin( 0.013 * sceneTime ) );
     vec3  col = mix( c1, c2, wmix );
-    float seam = mix( sA, sB, wmix );
+    float seam = mix( s_a, s_b, wmix );
     float mode = clamp( audioMode, 0.0, 1.0 );
     float lc = luma( col );
     col = max( mix( vec3( lc ), col, 1.35 ), 0.0 ) * mix( vec3( 0.9, 0.97, 1.1 ), vec3( 1.1, 0.97, 0.85 ), mode );

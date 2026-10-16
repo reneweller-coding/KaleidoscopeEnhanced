@@ -129,7 +129,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -240,14 +240,14 @@ void main()
 
     // Night sky with a warm haze from all the lanterns.
     vec3 col = mix( vec3( 0.02, 0.03, 0.09 ), vec3( 0.08, 0.05, 0.1 ), 0.5 + 0.5 * fbm3( p * 1.5 + drift * 0.3 ) );
-    vec3 flameC = mix( vec3( 1.0, 0.55, 0.15 ), vec3( 1.0, 0.45, 0.3 ), clamp( audioMode, 0.0, 1.0 ) );
-    col += flameC * 0.04 * ( 0.5 + 0.8 * swell );
+    vec3 flame_c = mix( vec3( 1.0, 0.55, 0.15 ), vec3( 1.0, 0.45, 0.3 ), clamp( audioMode, 0.0, 1.0 ) );
+    col += flame_c * 0.04 * ( 0.5 + 0.8 * swell );
 
     // Layers from far (small) to near (big); each a jittered grid of lanterns.
-    int nL = 4 + int( clamp( audioSpread, 0.0, 1.0 ) * 2.99 );
+    int n_l = 4 + int( clamp( audioSpread, 0.0, 1.0 ) * 2.99 );
     for ( int L = 6; L >= 0; --L )
     {
-        if ( L >= nL )
+        if ( L >= n_l )
             continue;
         float fl = float( L );
         float z = 1.0 + fl * 0.9; // depth
@@ -276,13 +276,13 @@ void main()
                 if ( cov <= 0.0 )
                 {
                     // glow halo in the haze
-                    col += flameC * exp( -max( box, 0.0 ) * 7.0 ) * 0.1 * ( 0.6 + 0.8 * bass ) / z;
+                    col += flame_c * exp( -max( box, 0.0 ) * 7.0 ) * 0.1 * ( 0.6 + 0.8 * bass ) / z;
                     continue;
                 }
                 // The paper: the photo printed on it, lit from within.
                 vec2 puv = id * 0.137 + d * 0.4 + 0.5;
                 vec3 paper = imgLod( puv, 1.0 + fl * 0.6 );
-                vec3 tint = mix( flameC, glowColour( paper, id * 0.3, hueP * 0.159 ), 0.2 ) * vec3( 1.1, 0.85, 0.6 );
+                vec3 tint = mix( flame_c, glowColour( paper, id * 0.3, hueP * 0.159 ), 0.2 ) * vec3( 1.1, 0.85, 0.6 );
                 // Warm light through thin paper: the photo only as the paper's pattern.
                 vec3 lit = tint * mix( 1.0, 0.45 + 1.1 * luma( paper ), clamp( photoP, 0.0, 1.0 ) * 0.8 )
                            * mix( vec3( 1.0 ), paper / max( luma( paper ), 0.05 ) * 0.8,
@@ -295,7 +295,7 @@ void main()
                 float ribs = smoothstep( 0.02, 0.0, abs( abs( d.x ) - w * 0.5 ) ) * 0.25;
                 lc *= 1.0 - ribs;
                 // Far lanterns fade into the haze.
-                lc = mix( lc, flameC * 0.6, smoothstep( 2.0, 6.0, z ) * 0.6 );
+                lc = mix( lc, flame_c * 0.6, smoothstep( 2.0, 6.0, z ) * 0.6 );
                 col = mix( col, lc, cov );
             }
     }

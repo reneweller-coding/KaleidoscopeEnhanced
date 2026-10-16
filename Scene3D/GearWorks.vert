@@ -114,7 +114,7 @@ void main()
 
     vec3  world;
     vec3  col;
-    float glowB = 1.0;
+    float glow_b = 1.0;
 
     float spin = time * 0.55 + audioAdvance * 0.9;
 
@@ -169,7 +169,7 @@ void main()
         col = palTint( mix( vec3( 0.85, 0.55, 0.20 ), vec3( 0.55, 0.55, 0.60 ),
                             hash11( g * 9.1 ) ),
                        0.30 * hash11( g * 9.1 ), 0.18 );
-        glowB = 0.7 + 0.5 * audioSwell + 1.0 * audioDrop;
+        glow_b = 0.7 + 0.5 * audioSwell + 1.0 * audioDrop;
     }
     else if ( idx < 4400.0 )
     {
@@ -179,20 +179,20 @@ void main()
         float k = idx - 4160.0;
         float a = 0.55 * sin( time * 1.35 );
         vec2  pivot = vec2( 4.0, 26.0 );
-        vec2  dirV = vec2( sin( a ), -cos( a ) );
+        vec2  dir_v = vec2( sin( a ), -cos( a ) );
         float d = k / 240.0;
-        vec2  P = pivot + dirV * d * 24.0;
+        vec2  P = pivot + dir_v * d * 24.0;
         float s = ( d > 0.88 ) ? 2.0 : 0.55; // the bob
         world = vec3( P.x, P.y, 33.0 );
         col = vec3( 0.95, 0.75, 0.30 );
-        glowB = 0.8 + 0.4 * audioSwell;
+        glow_b = 0.8 + 0.4 * audioSwell;
         world.xy += attrA.xy * s;
         world.z += attrA.z * s;
-        vec3 vpP = world;
-        vpP.x -= eyeOff;
-        gl_Position = projM * vec4( vpP.x, vpP.y, -vpP.z, 1.0 );
+        vec3 vp_p = world;
+        vp_p.x -= eyeOff;
+        gl_Position = projM * vec4( vp_p.x, vp_p.y, -vp_p.z, 1.0 );
         gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-        vCol = vec4( col * glowB * 1.4, 1.0 );
+        vCol = vec4( col * glow_b * 1.4, 1.0 );
         vCorner = attrA.xyz;
         return;
     }
@@ -207,19 +207,19 @@ void main()
                            + 1.0 * sin( 6.2831853 * audioBarPhase * 4.0 );
             world = vec3( -34.0 + d * 4.0, 20.0 + stroke, 35.0 );
             col = vec3( 0.75, 0.30, 0.15 );
-            glowB = 0.8 + 1.2 * audioKick;
+            glow_b = 0.8 + 1.2 * audioKick;
         }
         else
         {
             // Frame girders around the works.
             float f = k - 200.0;
-            float sideH = ( mod( f, 2.0 ) < 0.5 ) ? -1.0 : 1.0;
+            float side_h = ( mod( f, 2.0 ) < 0.5 ) ? -1.0 : 1.0;
             float d = fract( f * 0.007 );
             world = ( f < 400.0 )
-                        ? vec3( -40.0 + d * 80.0, sideH * 24.0, 38.0 )
-                        : vec3( sideH * 40.0, -24.0 + d * 48.0, 38.0 );
+                        ? vec3( -40.0 + d * 80.0, side_h * 24.0, 38.0 )
+                        : vec3( side_h * 40.0, -24.0 + d * 48.0, 38.0 );
             col = vec3( 0.30, 0.32, 0.38 );
-            glowB = 0.5 + 0.3 * audioSwell;
+            glow_b = 0.5 + 0.3 * audioSwell;
         }
     }
 
@@ -241,8 +241,8 @@ void main()
     // KICK SPARKS: random teeth flash white-hot on the kick (metal striking
     // metal), a drop sets the whole machine glowing.
     col = col;
-    float sparkG = step( 0.85, hash11( idx * 7.7 + floor( time * 8.0 ) ) ) * audioKick;
-    col += vec3( 1.0, 0.9, 0.6 ) * sparkG * 1.8;
-    vCol = vec4( col * glowB * ( 0.9 + 0.3 * r4 ) * 1.4, 1.0 );
+    float spark_g = step( 0.85, hash11( idx * 7.7 + floor( time * 8.0 ) ) ) * audioKick;
+    col += vec3( 1.0, 0.9, 0.6 ) * spark_g * 1.8;
+    vCol = vec4( col * glow_b * ( 0.9 + 0.3 * r4 ) * 1.4, 1.0 );
     vCorner = attrA.xyz;
 }

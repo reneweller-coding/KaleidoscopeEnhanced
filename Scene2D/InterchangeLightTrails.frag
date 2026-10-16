@@ -86,9 +86,10 @@ void road( float d, float s, float id )
     float on = smoothstep( hw + gPx, hw - gPx, abs( d ) );
     gCol = mix( gCol, vec3( 0.03, 0.03, 0.035 ), on );
     // Sodium lamps along the verge: warm pools.
-    float lampS = fract( s * 12.0 );
-    float lampGlow = exp( -pow( ( abs( d ) - hw - 0.004 ) / 0.012, 2.0 ) ) * exp( -pow( ( lampS - 0.5 ) / 0.25, 2.0 ) );
-    gCol += vec3( 1.0, 0.55, 0.15 ) * lampGlow * 0.1;
+    float lamp_s = fract( s * 12.0 );
+    float lamp_glow = exp( -pow( ( abs( d ) - hw - 0.004 ) / 0.012, 2.0 ) )
+                      * exp( -pow( ( lamp_s - 0.5 ) / 0.25, 2.0 ) );
+    gCol += vec3( 1.0, 0.55, 0.15 ) * lamp_glow * 0.1;
     // The light streams: each lane a thin line, white one way, red the other.
     for ( int l = 0; l < 6; ++l )
     {
@@ -132,10 +133,10 @@ void main()
     road( p.y - 0.02 * sin( p.x * 1.5 ), p.x, 0.0 );
     road( p.x * 0.97 + p.y * 0.24, p.y, 1.0 );
     // Cloverleaf loops in the four quadrants between them.
-    int nL = 2 + int( clamp( loopsP, 0.0, 1.0 ) * 2.99 );
+    int n_l = 2 + int( clamp( loopsP, 0.0, 1.0 ) * 2.99 );
     for ( int q = 0; q < 4; ++q )
     {
-        if ( q >= nL + ( nL == 2 ? 0 : 1 ) )
+        if ( q >= n_l + ( n_l == 2 ? 0 : 1 ) )
             break;
         float fq = float( q );
         vec2  sg = vec2( ( q == 0 || q == 3 ) ? 1.0 : -1.0, ( q < 2 ) ? 1.0 : -1.0 );
@@ -153,7 +154,7 @@ void main()
     col = mix( col, col * imgPalette( 0.08 + hueP * 0.159 ) * 1.3, 0.06 );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

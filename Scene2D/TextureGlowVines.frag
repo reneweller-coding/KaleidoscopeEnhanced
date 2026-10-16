@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -302,11 +302,11 @@ void main()
     vec3  vc = mix( vec3( 0.3, 0.8, 1.0 ), vec3( 0.6, 1.0, 0.3 ), mode );
     vec3  vc2 = mix( vec3( 0.8, 0.4, 1.0 ), vec3( 1.0, 0.8, 0.3 ), mode );
     float T = 0.3 * sceneTime + 2.0 * audioAdvance;
-    float nV = 2.0 + 2.0 * clamp( audioSpread, 0.0, 1.0 ) + 2.0 * clamp( vineP, 0.0, 1.0 );
+    float n_v = 2.0 + 2.0 * clamp( audioSpread, 0.0, 1.0 ) + 2.0 * clamp( vineP, 0.0, 1.0 );
     for ( int k = 0; k < 6; ++k )
     {
         float fk = float( k );
-        float on = smoothstep( fk - 0.5, fk + 0.5, nV - 0.5 );
+        float on = smoothstep( fk - 0.5, fk + 0.5, n_v - 0.5 );
         if ( on <= 0.0 )
             break;
         // A vine: an isoline of a field shaped by the photo and noise; sway with time.

@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float cMod = ( paramCP > 0.01 ) ? paramCP : 1.0;
+    float c_mod = ( paramCP > 0.01 ) ? paramCP : 1.0;
     float rbn = ( ribbonP > 0.01 ) ? ribbonP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -75,66 +75,67 @@ void main()
     // Rössler parameters: a = 0.2, b = 0.2, c = 5.7 (chaotic regime)
     float a = 0.2;
     float b = 0.2;
-    float c = ( 5.7 + 1.2 * sin( t * 0.3 ) + 0.8 * audioCentroid ) * cMod;
+    float c = ( 5.7 + 1.2 * sin( t * 0.3 ) + 0.8 * audioCentroid ) * c_mod;
 
     // Screen coordinate frame
-    float rotA = t * 0.15 + audioPhase * 0.1;
-    float cs = cos( rotA ), sn = sin( rotA );
+    float rot_a = t * 0.15 + audioPhase * 0.1;
+    float cs = cos( rot_a ), sn = sin( rot_a );
     // Sub-bass shrinks the world-units-per-screen factor, which magnifies the
     // spiral disk on screen -- the attractor state itself must stay untouched,
     // since its trajectory is an integration and rescaling it mid-flight would
     // jump the traced curve.
-    vec2 pRot = mat2( cs, -sn, sn, cs ) * uv * ( 22.0 + 4.0 * sin( audioSwell * 2.0 ) ) / ( 1.0 + 0.35 * audioSubBass );
+    vec2 p_rot = mat2( cs, -sn, sn, cs ) * uv * ( 22.0 + 4.0 * sin( audioSwell * 2.0 ) )
+                 / ( 1.0 + 0.35 * audioSubBass );
 
     // Numerical integration along a Rössler trajectory seeded from a FIXED
     // point shared by every pixel -- not the pixel's own position -- so the
     // traced curve is one real spatial path instead of every pixel trivially
     // starting AT distance zero from itself (which washed the whole frame
     // out to a near-uniform glow).
-    vec3  pRossler = vec3( 2.0, 1.0, 0.2 );
-    float minDist = 1e5;
-    float zEscapeAcc = 0.0;
+    vec3  p_rossler = vec3( 2.0, 1.0, 0.2 );
+    float min_dist = 1e5;
+    float z_escape_acc = 0.0;
 
     float dt = 0.02 * rbn;
 
     for ( int i = 0; i < 28; i++ )
     {
         // Rössler ODE equations
-        float dx = -pRossler.y - pRossler.z;
-        float dy = pRossler.x + a * pRossler.y;
-        float dz = b + pRossler.z * ( pRossler.x - c );
+        float dx = -p_rossler.y - p_rossler.z;
+        float dy = p_rossler.x + a * p_rossler.y;
+        float dz = b + p_rossler.z * ( p_rossler.x - c );
 
-        pRossler += vec3( dx, dy, dz ) * dt;
+        p_rossler += vec3( dx, dy, dz ) * dt;
 
-        float d = length( pRot - pRossler.xy );
-        minDist = min( minDist, d );
+        float d = length( p_rot - p_rossler.xy );
+        min_dist = min( min_dist, d );
 
         // Accumulate high-z excursions (the chaotic pop-up loop)
-        if ( pRossler.z > 2.0 )
+        if ( p_rossler.z > 2.0 )
         {
-            zEscapeAcc += exp( -d * 0.8 ) * ( pRossler.z * 0.2 );
+            z_escape_acc += exp( -d * 0.8 ) * ( p_rossler.z * 0.2 );
         }
     }
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( pRot * 0.06 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_rot * 0.06 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing trajectory ribbon
-    float lineGlow = exp( -minDist * ( 2.0 + 1.5 * audioCentroid ) ) * glw;
+    float line_glow = exp( -min_dist * ( 2.0 + 1.5 * audioCentroid ) ) * glw;
 
     // Palette mixing
-    float phase = atan( pRot.y, pRot.x ) / 6.2831853 + length( pRot ) * 0.03;
-    vec3  palA = imgPalette( phase + t * 0.05 );
-    vec3  palB = imgPalette( phase + 0.5 );
-    vec3  col = mix( palA, palB, 0.5 + 0.5 * sin( zEscapeAcc * 0.6 ) );
+    float phase = atan( p_rot.y, p_rot.x ) / 6.2831853 + length( p_rot ) * 0.03;
+    vec3  pal_a = imgPalette( phase + t * 0.05 );
+    vec3  pal_b = imgPalette( phase + 0.5 );
+    vec3  col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( z_escape_acc * 0.6 ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing ribbon sheets and chaotic Z-pop flashes
-    vec3 ribbonTint = vec3( 1.3, 1.1, 1.8 ) * lineGlow * ( 1.0 + 2.5 * audioKick );
-    vec3 zPopTint = vec3( 1.8, 1.5, 0.4 ) * zEscapeAcc * ( 1.0 + 3.0 * audioKick );
-    col += ribbonTint + zPopTint;
+    vec3 ribbon_tint = vec3( 1.3, 1.1, 1.8 ) * line_glow * ( 1.0 + 2.5 * audioKick );
+    vec3 z_pop_tint = vec3( 1.8, 1.5, 0.4 ) * z_escape_acc * ( 1.0 + 3.0 * audioKick );
+    col += ribbon_tint + z_pop_tint;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

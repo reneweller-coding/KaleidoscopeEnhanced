@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -259,7 +259,7 @@ void main()
                 // Split the photo colour into pure pigments: the dab takes the
                 // hue, pushed to full saturation, or its complement / white, so
                 // the average matches the photo but the dabs are pure.
-                float hh = hue_of( ph );
+                float hh = hueOf( ph );
                 float sat = satOf( ph );
                 float pick = hash21( id + gen * 3.0 + 5.0 );
                 float split = 0.25 + 0.5 * clamp( splitP, 0.0, 1.0 );

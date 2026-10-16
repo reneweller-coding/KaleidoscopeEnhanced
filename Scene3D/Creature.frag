@@ -172,32 +172,32 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // Sun straight down through the water, cool bounce from the depths.
-    vec3  sunDir = normalize( vec3( 0.12, 1.0, -0.25 ) );
-    float diff = max( dot( n, sunDir ), 0.0 );
-    float belowFill = max( -dot( n, sunDir ), 0.0 );
+    vec3  sun_dir = normalize( vec3( 0.12, 1.0, -0.25 ) );
+    float diff = max( dot( n, sun_dir ), 0.0 );
+    float below_fill = max( -dot( n, sun_dir ), 0.0 );
 
-    vec3  halfV = normalize( sunDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 70.0, 12.0, roughness ) );
+    vec3  half_v = normalize( sun_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 70.0, 12.0, roughness ) );
 
     vec3 col = base.rgb * vec3( 0.75, 0.95, 1.0 ) * ( 0.22 + diff * ( 1.35 + 0.5 * audioSwell ) );
-    col += base.rgb * vec3( 0.05, 0.22, 0.30 ) * belowFill * 0.5;
+    col += base.rgb * vec3( 0.05, 0.22, 0.30 ) * below_fill * 0.5;
     col += vec3( 0.8, 1.0, 1.0 ) * spec * ( 0.35 + 0.45 * ( 1.0 - roughness ) );
 
     // Caustic light crawling over the upward-facing surfaces. Driven from
     // WORLD xz so the pattern belongs to the water, not to the animal --
     // it should slide across the body as the creature swims through it.
-    float upFace = max( n.y, 0.0 );
+    float up_face = max( n.y, 0.0 );
     float c = caustic( vPos.xz * 0.055, time + audioAdvance * 0.3 );
-    col += vec3( 0.45, 0.95, 0.8 ) * c * upFace * ( 0.55 + 0.7 * audioSwell );
+    col += vec3( 0.45, 0.95, 0.8 ) * c * up_face * ( 0.55 + 0.7 * audioSwell );
 
     // Translucency: thin, edge-on parts (a bell rim, a fin) let the light
     // through instead of going solid. A fresnel term stands in for real
     // subsurface scattering, which would need thickness data the mesh has
     // no way to carry.
-    float rim = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 2.5 );
+    float rim = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 2.5 );
     col += vec3( 0.35, 0.85, 0.85 ) * rim * ( 0.25 + 0.35 * audioSwell );
 
     // Bioluminescence: a pulse travelling down the body on the beat.
@@ -214,7 +214,7 @@ void main()
     float depth = clamp( ( dist - 80.0 ) / 130.0, 0.0, 1.0 );
     col = mix( col, vec3( 0.02, 0.09, 0.13 ), depth );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

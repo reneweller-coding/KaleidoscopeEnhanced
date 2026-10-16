@@ -69,65 +69,65 @@ void main()
     float t = time * 0.3 * spd + audioAdvance * 0.2;
 
     // Digital glitch / data-mosh horizontal slice shift
-    float sliceBlock = floor( gl_FragCoord.y / 16.0 );
-    float sliceHash = hash21( vec2( sliceBlock, floor( time * 4.00 ) ) );
-    float glitchShift = ( sliceHash - 0.5 ) * 0.08 * step( 0.82, sliceHash ) * ( 1.0 + 3.0 * audioKick ) * glt;
+    float slice_block = floor( gl_FragCoord.y / 16.0 );
+    float slice_hash = hash21( vec2( slice_block, floor( time * 4.00 ) ) );
+    float glitch_shift = ( slice_hash - 0.5 ) * 0.08 * step( 0.82, slice_hash ) * ( 1.0 + 3.0 * audioKick ) * glt;
 
-    vec2 scanUV = uv + vec2( glitchShift, 0.0 );
+    vec2 scan_uv = uv + vec2( glitch_shift, 0.0 );
 
     // 3D Parallax camera rotation around hologram
-    float camYaw = sin( t * 0.4 ) * 0.35;
-    float camPitch = cos( t * 0.3 ) * 0.25;
-    scanUV = vec2(
-        scanUV.x * cos( camYaw ) - scanUV.y * sin( camYaw ),
-        scanUV.x * sin( camYaw ) + scanUV.y * cos( camYaw ) );
+    float cam_yaw = sin( t * 0.4 ) * 0.35;
+    float cam_pitch = cos( t * 0.3 ) * 0.25;
+    scan_uv = vec2(
+        scan_uv.x * cos( cam_yaw ) - scan_uv.y * sin( cam_yaw ),
+        scan_uv.x * sin( cam_yaw ) + scan_uv.y * cos( cam_yaw ) );
 
     // Sample photo with chromatic aberration
-    vec2  photoCenter = scanUV * 0.65 + vec2( 0.5 );
-    float dispAmt = ( 0.01 + 0.02 * audioKick ) * glt;
+    vec2  photo_center = scan_uv * 0.65 + vec2( 0.5 );
+    float disp_amt = ( 0.01 + 0.02 * audioKick ) * glt;
 
-    vec3 photoR = img( fract( photoCenter + vec2( dispAmt, 0.0 ) ) );
-    vec3 photoG = img( fract( photoCenter ) );
-    vec3 photoB = img( fract( photoCenter - vec2( dispAmt, 0.0 ) ) );
-    vec3 photoBase = vec3( photoR.r, photoG.g, photoB.b );
+    vec3 photo_r = img( fract( photo_center + vec2( disp_amt, 0.0 ) ) );
+    vec3 photo_g = img( fract( photo_center ) );
+    vec3 photo_b = img( fract( photo_center - vec2( disp_amt, 0.0 ) ) );
+    vec3 photo_base = vec3( photo_r.r, photo_g.g, photo_b.b );
 
     // Depth extrusion from luminance
-    float lum = dot( photoBase, vec3( 0.299, 0.587, 0.114 ) );
-    float hologramDepth = ( lum * 1.8 + 0.6 * audioBass ) * dpt;
+    float lum = dot( photo_base, vec3( 0.299, 0.587, 0.114 ) );
+    float hologram_depth = ( lum * 1.8 + 0.6 * audioBass ) * dpt;
 
     // Volumetric 3D laser scan beam sweep
-    float scanPos = mod( time * 0.6, 1.4 ) - 0.7;
-    float laserBeam = exp( -abs( scanUV.y - scanPos ) * 35.0 ) * ( 1.5 + 2.5 * audioHigh );
+    float scan_pos = mod( time * 0.6, 1.4 ) - 0.7;
+    float laser_beam = exp( -abs( scan_uv.y - scan_pos ) * 35.0 ) * ( 1.5 + 2.5 * audioHigh );
 
     // CRT hologram scanlines & dot matrix
     float scanline = sin( gl_FragCoord.y * 1.5 ) * 0.25 + 0.75;
-    float dotMatrix = sin( gl_FragCoord.x * 1.2 ) * sin( gl_FragCoord.y * 1.2 ) * 0.2 + 0.8;
+    float dot_matrix = sin( gl_FragCoord.x * 1.2 ) * sin( gl_FragCoord.y * 1.2 ) * 0.2 + 0.8;
 
     // Holographic quantum interference emitter rings
-    float emitterR = length( scanUV );
-    float emitterRing = sin( emitterR * 40.0 - time * 12.0 ) * 0.5 + 0.5;
-    emitterRing = pow( emitterRing, 6.0 ) * 0.6;
+    float emitter_r = length( scan_uv );
+    float emitter_ring = sin( emitter_r * 40.0 - time * 12.0 ) * 0.5 + 0.5;
+    emitter_ring = pow( emitter_ring, 6.0 ) * 0.6;
 
     // Cyberpunk hologram colors: Cyan / Blue with Neon Orange Laser Highlights
-    vec3 holoCyan = vec3( 0.0, 0.85, 1.0 );
-    vec3 holoOrange = vec3( 1.0, 0.45, 0.1 );
-    vec3 holoViolet = vec3( 0.7, 0.15, 1.0 );
+    vec3 holo_cyan = vec3( 0.0, 0.85, 1.0 );
+    vec3 holo_orange = vec3( 1.0, 0.45, 0.1 );
+    vec3 holo_violet = vec3( 0.7, 0.15, 1.0 );
 
-    vec3 holoColor = mix( holoCyan, holoViolet, lum );
-    holoColor = mix( holoColor, holoOrange, laserBeam );
+    vec3 holo_color = mix( holo_cyan, holo_violet, lum );
+    holo_color = mix( holo_color, holo_orange, laser_beam );
 
-    vec3 col = photoBase * holoColor * ( 1.2 + hologramDepth * 0.5 ) * scanline * dotMatrix;
-    col += holoOrange * laserBeam * 2.0;
-    col += holoCyan * emitterRing * ( 0.8 + 1.2 * audioMid );
+    vec3 col = photo_base * holo_color * ( 1.2 + hologram_depth * 0.5 ) * scanline * dot_matrix;
+    col += holo_orange * laser_beam * 2.0;
+    col += holo_cyan * emitter_ring * ( 0.8 + 1.2 * audioMid );
 
     // Background cyber grid floor reflection
     if ( uv.y < -0.2 )
     {
-        float floorZ = 1.0 / abs( uv.y + 0.2 );
-        vec2  floorUV = vec2( uv.x * floorZ * 0.5, floorZ + t * 2.0 );
-        vec2  fGrid = abs( fract( floorUV ) - 0.5 );
-        float gridLine = smoothstep( 0.48, 0.50, max( fGrid.x, fGrid.y ) );
-        col += holoCyan * gridLine * exp( -floorZ * 0.2 ) * 0.6;
+        float floor_z = 1.0 / abs( uv.y + 0.2 );
+        vec2  floor_uv = vec2( uv.x * floor_z * 0.5, floor_z + t * 2.0 );
+        vec2  f_grid = abs( fract( floor_uv ) - 0.5 );
+        float grid_line = smoothstep( 0.48, 0.50, max( f_grid.x, f_grid.y ) );
+        col += holo_cyan * grid_line * exp( -floor_z * 0.2 ) * 0.6;
     }
 
     col = hueRot( col, audioChromaHue + hue );

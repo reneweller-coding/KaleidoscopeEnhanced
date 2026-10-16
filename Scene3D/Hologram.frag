@@ -127,7 +127,7 @@ void main()
     float sc = ( scanP > 0.01 ? scanP : 1.0 );
 
     vec3 n = normalize( vNormal );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // Silhouette glow: a projection is brightest where the surface turns
     // away, because that is where the most of it lies along the sight line.
@@ -135,7 +135,7 @@ void main()
     // as a full-surface wash on a detailed one, because a finely modelled hull
     // presents grazing micro-facets everywhere -- which is exactly how the
     // projection filled in solid once the models gained detail.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.5 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.5 );
 
     // Wireframe: distance to the nearest triangle edge, in a width that
     // stays constant on screen thanks to the derivative.
@@ -175,7 +175,7 @@ void main()
 
     // A slow bright sweep, like the projector refreshing a slice at a time.
     float sweep = fract( vLocalPos.y * 0.9 - time * 0.14 - audioAdvance * 0.08 );
-    float sweepBand = smoothstep( 0.0, 0.03, sweep ) * ( 1.0 - smoothstep( 0.03, 0.10, sweep ) );
+    float sweep_band = smoothstep( 0.0, 0.03, sweep ) * ( 1.0 - smoothstep( 0.03, 0.10, sweep ) );
 
     // How solid this fragment is. Everything above is a reason to KEEP a
     // fragment; the dither below decides which of the weak ones survive.
@@ -184,12 +184,12 @@ void main()
     // that each look reasonable on their own pushed alpha over 1 across the
     // whole surface, nothing was discarded, and the hologram rendered as a
     // solid glowing lump.
-    float alpha = 0.04                // faint body fill, so the volume reads
-                  + wire * 0.85       // triangle edges, on a mesh coarse enough to have them
-                  + lattice * 0.70    // object-space grid: the structure on dense meshes
-                  + fresnel * 0.30    // silhouette
-                  + scan * 0.10       // scanline banding
-                  + sweepBand * 0.60; // refresh sweep
+    float alpha = 0.04                 // faint body fill, so the volume reads
+                  + wire * 0.85        // triangle edges, on a mesh coarse enough to have them
+                  + lattice * 0.70     // object-space grid: the structure on dense meshes
+                  + fresnel * 0.30     // silhouette
+                  + scan * 0.10        // scanline banding
+                  + sweep_band * 0.60; // refresh sweep
     // Thin where the surface faces us square on. A projection has no
     // substance of its own: what you see is how much of it lies along the
     // sight line, so a face-on panel should be nearly absent and only the
@@ -208,7 +208,7 @@ void main()
     // Colour: the tint everywhere, pushed toward white at the brightest
     // features so the wire and sweep read as overdriven rather than just
     // more saturated.
-    float hot = clamp( wire * 0.8 + lattice * 0.7 + sweepBand * 0.9 + fresnel * 0.4, 0.0, 1.0 );
+    float hot = clamp( wire * 0.8 + lattice * 0.7 + sweep_band * 0.9 + fresnel * 0.4, 0.0, 1.0 );
     vec3  col = mix( tint, vec3( 1.0 ), hot * 0.55 );
     col *= 0.55 + 1.25 * clamp( alpha, 0.0, 1.4 );
     col += tint * fresnel * ( 0.4 + 0.7 * audioSwell );
@@ -216,7 +216,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

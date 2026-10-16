@@ -89,7 +89,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nLayers = 4 + int( clamp( layersP, 0.0, 1.0 ) * 3.0 );
+    int   n_layers = 4 + int( clamp( layersP, 0.0, 1.0 ) * 3.0 );
     float rough = 0.3 + 0.7 * clamp( cutP, 0.0, 1.0 );
     float drift = sceneAdvance * 0.06 + sceneTime * 0.012;
 
@@ -103,11 +103,11 @@ void main()
     // a noisy skyline is paper), darker toward the front, with parallax.
     for ( int k = 0; k < 7; ++k )
     {
-        if ( k >= nLayers )
+        if ( k >= n_layers )
             break;
         float fk = float( k );
-        float depth = 1.0 - fk / float( nLayers ); // 1 back .. ~0 front
-        float par = 0.03 + 0.12 * ( 1.0 - depth ); // front sheets drift more
+        float depth = 1.0 - fk / float( n_layers ); // 1 back .. ~0 front
+        float par = 0.03 + 0.12 * ( 1.0 - depth );  // front sheets drift more
         float x = p.x + drift * par * 6.0 + fk * 3.7;
         float skyline = -0.55 + 0.65 * depth + 0.22 * fbm( vec2( x * 1.5, fk ) ) * rough + 0.06 * sin( x * 7.0 + fk );
         float paper = 1.0 - smoothstep( skyline, skyline + 0.004, p.y );
@@ -127,7 +127,7 @@ void main()
     col *= 0.7 + 0.5 * audioLevel;
     col *= 1.0 - 0.3 * smoothstep( 0.75, 1.15, length( p ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

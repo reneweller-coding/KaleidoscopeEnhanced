@@ -80,8 +80,8 @@ void main()
     float diff = max( dot( n, L ), 0.0 );
     vec3  col = ice * ( 0.3 + 0.9 * diff * sun );
     // Rubble matrix between the rafts is darker and rougher.
-    float matrixIce = 1.0 - smoothstep( 0.0, 0.18, vSeam );
-    col *= 1.0 - 0.35 * matrixIce;
+    float matrix_ice = 1.0 - smoothstep( 0.0, 0.18, vSeam );
+    col *= 1.0 - 0.35 * matrix_ice;
     // Lineae: rust-red bands along the raft edges (salts).
     float linea = smoothstep( 0.06, 0.0, abs( vSeam - 0.12 ) );
     col = mix( col, vec3( 0.5, 0.25, 0.12 ) * ( 0.5 + 0.5 * sun ), linea * 0.5 );
@@ -102,7 +102,7 @@ void main()
     col = mix( col, vec3( 0.02, 0.03, 0.06 ) + ocean * 0.04 * sub, clamp( fog, 0.0, 0.85 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

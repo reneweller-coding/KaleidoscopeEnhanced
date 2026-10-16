@@ -74,56 +74,56 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nSpirals = ( spiralCountP > 1.0 ) ? spiralCountP : 4.0;
-    float wSpd = ( waveSpeedP > 0.01 ) ? waveSpeedP : 1.0;
+    float n_spirals = ( spiralCountP > 1.0 ) ? spiralCountP : 4.0;
+    float w_spd = ( waveSpeedP > 0.01 ) ? waveSpeedP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
-    float kWave = ( 14.0 + 8.0 * audioCentroid ) * wSpd;
+    float kWave = ( 14.0 + 8.0 * audioCentroid ) * w_spd;
 
     // Accumulate multiple interacting BZ spiral wave centers
-    float waveAcc = 0.0;
-    int   numS = int( clamp( nSpirals, 2.0, 6.0 ) );
+    float wave_acc = 0.0;
+    int   num_s = int( clamp( n_spirals, 2.0, 6.0 ) );
 
     for ( int k = 0; k < 4; k++ )
     {
-        if ( k >= numS )
+        if ( k >= num_s )
             break;
         float kf = float( k );
-        float aCenter = t * 0.3 + kf * ( 6.2831853 / float( numS ) );
-        // Sub-bass drives the spiral cores apart: rCenter is the orbit radius
+        float a_center = t * 0.3 + kf * ( 6.2831853 / float( num_s ) );
+        // Sub-bass drives the spiral cores apart: r_center is the orbit radius
         // of each phase singularity, so scaling it breathes the whole core
         // constellation outward without touching its rotation phase.
-        float rCenter = ( 0.35 + 0.15 * sin( t * 0.4 + kf ) ) * ( 1.0 + 0.38 * audioSubBass );
-        vec2  cPos = vec2( cos( aCenter ), sin( aCenter ) ) * rCenter;
+        float r_center = ( 0.35 + 0.15 * sin( t * 0.4 + kf ) ) * ( 1.0 + 0.38 * audioSubBass );
+        vec2  c_pos = vec2( cos( a_center ), sin( a_center ) ) * r_center;
 
         float dir = ( k % 2 == 0 ) ? 1.0 : -1.0;
-        waveAcc += bzSpiral( uv, cPos, t, kWave, dir );
+        wave_acc += bzSpiral( uv, c_pos, t, kWave, dir );
     }
 
-    float chemicalState = waveAcc / float( numS );
+    float chemical_state = wave_acc / float( num_s );
 
     // Glowing wavefront crests
-    float crestGlow = smoothstep( 0.75, 1.0, chemicalState ) * glw;
+    float crest_glow = smoothstep( 0.75, 1.0, chemical_state ) * glw;
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + vec2( chemicalState * 0.08 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + vec2( chemical_state * 0.08 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Chemical luminescence palette
-    vec3 palA = imgPalette( chemicalState * 0.4 + t * 0.05 );
-    vec3 palB = imgPalette( chemicalState * 0.4 + 0.5 );
-    vec3 chemCol = mix( palA, palB, clamp( chemicalState * 0.5 + 0.5, 0.0, 1.0 ) );
+    vec3 pal_a = imgPalette( chemical_state * 0.4 + t * 0.05 );
+    vec3 pal_b = imgPalette( chemical_state * 0.4 + 0.5 );
+    vec3 chem_col = mix( pal_a, pal_b, clamp( chemical_state * 0.5 + 0.5, 0.0, 1.0 ) );
 
-    chemCol = mix( chemCol, texCol, 0.35 + 0.15 * audioValence );
+    chem_col = mix( chem_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing wavefront crests and kick flashes
-    vec3 crestTint = vec3( 1.4, 1.1, 1.8 ) * crestGlow * ( 1.0 + 2.5 * audioKick );
-    chemCol += crestTint;
+    vec3 crest_tint = vec3( 1.4, 1.1, 1.8 ) * crest_glow * ( 1.0 + 2.5 * audioKick );
+    chem_col += crest_tint;
 
-    chemCol = pow( chemCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( chemCol, 0.0, 1.0 ), 1.0 );
+    chem_col = pow( chem_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( chem_col, 0.0, 1.0 ), 1.0 );
 }

@@ -9,7 +9,7 @@ layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 layout( std430, binding = 0 ) buffer Verts
 {
-    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, species), attrB.xyzw (pad, bioGlow)
+    float verts[]; // 8 floats per vertex: attrA.xyzw (pos, species), attrB.xyzw (pad, bio_glow)
 };
 
 // DrawArraysIndirectCommand + our own counter:
@@ -74,8 +74,8 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
     // rasterised edge-on and drew nothing at all, however thick they were set.
     // Most filaments in this scene are vertical or horizontal, so a large part
     // of the geometry was simply invisible.
-    const vec3 kViewAxis = vec3( 0.0, 0.0, 1.0 );
-    vec3       side = cross( dir, kViewAxis );
+    const vec3 ViewAxis = vec3( 0.0, 0.0, 1.0 );
+    vec3       side = cross( dir, ViewAxis );
     float      sl = length( side );
     // Degenerate only when the segment runs straight at the lens, where any
     // perpendicular is equally good.
@@ -96,8 +96,8 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint TOTAL_ORGANISMS = 4096u;
-    if ( id >= TOTAL_ORGANISMS )
+    const uint TotalOrganisms = 4096u;
+    if ( id >= TotalOrganisms )
         return;
 
     float seed = float( id );
@@ -108,18 +108,18 @@ void main()
     float t = time * 0.3 + audioAdvance * 0.15;
 
     // Plume column convection & organism swirling
-    float plumeHeight = mod( rand1 * 10.0 + t * ( 1.5 + 2.0 * rand2 ), 6.0 ) - 2.5;
-    float plumeRadius = ( 0.3 + 0.35 * ( plumeHeight + 2.5 ) ) * ( 0.8 + 0.4 * rand3 );
+    float plume_height = mod( rand1 * 10.0 + t * ( 1.5 + 2.0 * rand2 ), 6.0 ) - 2.5;
+    float plume_radius = ( 0.3 + 0.35 * ( plume_height + 2.5 ) ) * ( 0.8 + 0.4 * rand3 );
 
     float angle = rand2 * 6.2831853 + t * ( 0.5 + rand1 * 0.5 );
 
     // Turbulence curl noise offset
-    float curlX = sin( plumeHeight * 3.0 + t * 2.0 + rand1 * 6.28 ) * 0.2;
-    float curlZ = cos( plumeHeight * 2.5 + t * 1.8 + rand2 * 6.28 ) * 0.2;
+    float curl_x = sin( plume_height * 3.0 + t * 2.0 + rand1 * 6.28 ) * 0.2;
+    float curl_z = cos( plume_height * 2.5 + t * 1.8 + rand2 * 6.28 ) * 0.2;
 
-    float x1 = plumeRadius * cos( angle ) + curlX;
-    float y1 = plumeHeight + audioKick * 0.4 * ( 1.0 - rand1 );
-    float z1 = plumeRadius * sin( angle ) + curlZ;
+    float x1 = plume_radius * cos( angle ) + curl_x;
+    float y1 = plume_height + audioKick * 0.4 * ( 1.0 - rand1 );
+    float z1 = plume_radius * sin( angle ) + curl_z;
 
     // Second vertex of organism / plume streamer
     float x2 = x1 + ( rand1 - 0.5 ) * 0.15;
@@ -127,7 +127,7 @@ void main()
     float z2 = z1 + ( rand3 - 0.5 ) * 0.15;
 
     float species = rand1; // 0..1 determines tube worm vs hydrothermal bacteria vs mineral particle
-    float bioGlow = 0.5 + 0.5 * sin( seed * 0.1 + time * 3.0 + audioKick * 4.0 );
+    float bio_glow = 0.5 + 0.5 * sin( seed * 0.1 + time * 3.0 + audioKick * 4.0 );
 
-    emitSegment( vec3( x1, y1, z1 ), vec3( x2, y2, z2 ), species, bioGlow, 0.025 );
+    emitSegment( vec3( x1, y1, z1 ), vec3( x2, y2, z2 ), species, bio_glow, 0.025 );
 }

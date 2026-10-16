@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -251,7 +251,7 @@ void main()
 
     // Curtains: bands along circles around the zenith, folded by a noise
     // along the angle (seamless: noise on the unit circle).
-    float nC = 2.0 + 3.0 * clamp( audioSpread, 0.0, 1.0 );
+    float n_c = 2.0 + 3.0 * clamp( audioSpread, 0.0, 1.0 );
     float fold = 0.25 + 0.45 * clamp( foldsP, 0.0, 1.0 );
     float flow = 0.08 * sceneTime + 0.8 * audioAdvance;
     vec3  aur = vec3( 0.0 );
@@ -261,10 +261,10 @@ void main()
         float rk = 0.3 + fk * 0.3 + 0.15 * sin( fk * 2.7 );
         // Photo structure bends the curtain: sample the photo along the angle.
         vec2  tq = dir * ( 0.35 + fk * 0.12 ) + 0.5 + vec2( flow * 0.05, 0.0 );
-        float photoBend = luma( imgLod( tq, 6.0 ) ) - 0.5;
+        float photo_bend = luma( imgLod( tq, 6.0 ) ) - 0.5;
         // Big slow meanders (the curtain snakes across the sky), fine folds on top.
         float bend = fold * 1.6 * ( noise2( dir * ( 0.9 + 0.3 * fk ) + vec2( flow * 0.5, fk * 3.0 ) ) - 0.5 )
-                     + 0.25 * fold * ( noise2( dir * 6.0 + vec2( flow * 2.0, fk ) ) - 0.5 ) + 0.4 * photoBend;
+                     + 0.25 * fold * ( noise2( dir * 6.0 + vec2( flow * 2.0, fk ) ) - 0.5 ) + 0.4 * photo_bend;
         float d = r - rk - bend * 0.5;
         // Curtain: sharp lower edge (outer side toward the viewer), long glow upward.
         float lower = smoothstep( -0.03, 0.0, d );
@@ -277,14 +277,14 @@ void main()
         float rays = smoothstep( 0.35, 0.85, rn );
         rays = mix( rays, 1.0, smoothstep( 0.02, 0.0, abs( d ) ) * 0.5 );
         float flick = 1.0 + 0.6 * hi * ( noise2( dir * 40.0 + sceneTime * 3.0 ) - 0.5 ) * smoothstep( 0.08, 0.0, d );
-        float I = glow * ( 0.15 + 1.3 * rays ) * flick * smoothstep( fk - 0.5, fk + 0.5, nC ) * 0.8;
+        float I = glow * ( 0.15 + 1.3 * rays ) * flick * smoothstep( fk - 0.5, fk + 0.5, n_c ) * 0.8;
         // Colour: green at the edge, rising into red/violet; tinted by the photo.
         float mode = clamp( audioMode, 0.0, 1.0 );
-        vec3  edgeC = mix( vec3( 0.2, 1.0, 0.45 ), vec3( 1.0, 0.35, 0.7 ), mode * 0.6 );
-        vec3  topC = mix( vec3( 0.8, 0.15, 0.4 ), vec3( 0.5, 0.25, 1.0 ), mode );
-        vec3  c = mix( edgeC, topC, smoothstep( 0.0, 0.25, d ) );
-        vec3  phC = glowColour( imgLod( tq, 5.0 ), dir + fk, hueP * 0.159 );
-        c = mix( c, phC, 0.35 * clamp( photoP, 0.0, 1.0 ) + 0.1 );
+        vec3  edge_c = mix( vec3( 0.2, 1.0, 0.45 ), vec3( 1.0, 0.35, 0.7 ), mode * 0.6 );
+        vec3  top_c = mix( vec3( 0.8, 0.15, 0.4 ), vec3( 0.5, 0.25, 1.0 ), mode );
+        vec3  c = mix( edge_c, top_c, smoothstep( 0.0, 0.25, d ) );
+        vec3  ph_c = glowColour( imgLod( tq, 5.0 ), dir + fk, hueP * 0.159 );
+        c = mix( c, ph_c, 0.35 * clamp( photoP, 0.0, 1.0 ) + 0.1 );
         aur += c * I;
     }
     // The corona: the curtains converge into a bright knot at the zenith.

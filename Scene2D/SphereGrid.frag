@@ -55,7 +55,7 @@ void main()
 {
     vec2  n = resolution;
     float s = time * 0.34 - 1.0;
-    float sAdv = s + audioAdvance * 2.0; // forward scroll (jump-free)
+    float s_adv = s + audioAdvance * 2.0; // forward scroll (jump-free)
 
     float fov = mix( 1.0, 2.0, sin( s + 3.14159 ) * 0.5 + 0.5 );
     vec3  t = normalize( vec3( ( 2.0 * gl_FragCoord.xy - n ) / n.y * fov, 1.0 ) );
@@ -70,7 +70,7 @@ void main()
         if ( !( d < 150.0 && l > 0.001 ) )
             break;
         a = r + d * t;
-        a.z += sAdv;
+        a.z += s_adv;
         d += l = length( mod( a + sp * 0.5, sp ) - sp * 0.5 ) - step( 1.0, abs( a.y ) ) + 0.001;
     }
 

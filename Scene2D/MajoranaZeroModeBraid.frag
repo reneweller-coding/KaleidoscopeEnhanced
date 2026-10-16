@@ -93,27 +93,27 @@ void main()
     float wire2 = abs( p.y - cos( p.x * 1.5 * brd - t * 3.0 ) * 0.8 );
     float wire3 = abs( p.x - sin( p.y * 1.5 * brd + t * 2.5 ) * 0.8 );
 
-    float wireGlow1 = exp( -wire1 * 25.0 );
-    float wireGlow2 = exp( -wire2 * 25.0 );
-    float wireGlow3 = exp( -wire3 * 25.0 );
-    float allWires = wireGlow1 + wireGlow2 + wireGlow3;
+    float wire_glow1 = exp( -wire1 * 25.0 );
+    float wire_glow2 = exp( -wire2 * 25.0 );
+    float wire_glow3 = exp( -wire3 * 25.0 );
+    float all_wires = wire_glow1 + wire_glow2 + wire_glow3;
 
     // Majorana bound zero-mode endpoints (solitons at wire ends & crossings)
-    float zeroModeCross = wireGlow1 * wireGlow2 * 4.0 + wireGlow1 * wireGlow3 * 4.0;
-    float majoranaFlash = zeroModeCross * ( 1.0 + audioKick * 3.5 );
+    float zero_mode_cross = wire_glow1 * wire_glow2 * 4.0 + wire_glow1 * wire_glow3 * 4.0;
+    float majorana_flash = zero_mode_cross * ( 1.0 + audioKick * 3.5 );
 
     // Topological phase accumulation in the loop
-    float loopPhase = sin( p.x * 3.0 + p.y * 3.0 + t * 2.0 );
-    vec3  phaseColor = imgPalette( ( loopPhase + audioPhase ) * 0.159 );
+    float loop_phase = sin( p.x * 3.0 + p.y * 3.0 + t * 2.0 );
+    vec3  phase_color = imgPalette( ( loop_phase + audioPhase ) * 0.159 );
 
     // Photo texture mapping into the topological nanowire junctions
-    vec2 photoUV = st + vec2( wireGlow1 - wireGlow2, wireGlow3 ) * 0.04 * ( 1.0 + audioKick );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( wire_glow1 - wire_glow2, wire_glow3 ) * 0.04 * ( 1.0 + audioKick );
+    vec3 photo = img( fract( photo_uv ) );
 
     // Combine visualizer
-    vec3 col = mix( photo * 0.8, phaseColor, 0.4 + 0.25 * audioSwell );
-    col += allWires * vec3( 0.1, 0.9, 1.0 ) * ( 1.0 + audioHigh * 1.2 );
-    col += majoranaFlash * vec3( 1.0, 0.95, 0.4 ) * 2.0;
+    vec3 col = mix( photo * 0.8, phase_color, 0.4 + 0.25 * audioSwell );
+    col += all_wires * vec3( 0.1, 0.9, 1.0 ) * ( 1.0 + audioHigh * 1.2 );
+    col += majorana_flash * vec3( 1.0, 0.95, 0.4 ) * 2.0;
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )

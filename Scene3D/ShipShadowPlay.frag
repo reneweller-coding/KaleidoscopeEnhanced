@@ -56,10 +56,10 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     // Lamps: mostly steady (a whole wall flickering on every hit is a strobe),
     // a quarter of their light follows the instruments.
-    vec3 lampA = ( imgPalette( hue * 0.159 + 0.05 ) * 1.6 + 0.3 ) * ( 0.85 + 0.25 * audioKick )
-                 * ( 0.8 + 0.3 * audioSwell );
-    vec3 lampB = ( imgPalette( hue * 0.159 + 0.55 ) * 1.6 + 0.3 ) * ( 0.85 + 0.25 * audioSnare )
-                 * ( 0.8 + 0.3 * audioSwell );
+    vec3 lamp_a = ( imgPalette( hue * 0.159 + 0.05 ) * 1.6 + 0.3 ) * ( 0.85 + 0.25 * audioKick )
+                  * ( 0.8 + 0.3 * audioSwell );
+    vec3 lamp_b = ( imgPalette( hue * 0.159 + 0.55 ) * 1.6 + 0.3 ) * ( 0.85 + 0.25 * audioSnare )
+                  * ( 0.8 + 0.3 * audioSwell );
 
     if ( vBg > 0.5 )
     {
@@ -69,9 +69,9 @@ void main()
         float wall = smoothstep( 0.55, 0.8, d.z );
         vec2  uv = d.xy / max( d.z, 0.3 ) * 0.5 + 0.5;
         vec3  plaster = img( clamp( uv, 0.0, 1.0 ) ) * 0.3 + 0.45;
-        float poolA = exp( -dot( d.xy - vec2( -0.2, 0.1 ), d.xy - vec2( -0.2, 0.1 ) ) * 2.5 );
-        float poolB = exp( -dot( d.xy - vec2( 0.2, 0.08 ), d.xy - vec2( 0.2, 0.08 ) ) * 2.5 );
-        vec3  col = plaster * ( lampA * poolA + lampB * poolB ) * 0.9 * wall * ( 0.8 + 0.4 * audioLevel );
+        float pool_a = exp( -dot( d.xy - vec2( -0.2, 0.1 ), d.xy - vec2( -0.2, 0.1 ) ) * 2.5 );
+        float pool_b = exp( -dot( d.xy - vec2( 0.2, 0.08 ), d.xy - vec2( 0.2, 0.08 ) ) * 2.5 );
+        vec3  col = plaster * ( lamp_a * pool_a + lamp_b * pool_b ) * 0.9 * wall * ( 0.8 + 0.4 * audioLevel );
         col += imgPalette( hue * 0.159 + 0.6 ) * 0.015;
         fragColor = vec4( col, 1.0 );
         return;
@@ -85,21 +85,21 @@ void main()
     {
         // The ship: nearly a silhouette, a little rim from each lamp.
         vec3  n = normalize( vNormal );
-        vec3  viewDir = normalize( -vPos );
-        float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 3.0 );
-        col = base.rgb * 0.12 + ( lampA + lampB ) * fres * 0.45;
+        vec3  view_dir = normalize( -vPos );
+        float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 3.0 );
+        col = base.rgb * 0.12 + ( lamp_a + lamp_b ) * fres * 0.45;
     }
     else
     {
         // A shadow: where lamp k is blocked, the wall keeps only the OTHER
         // lamp's light -- a coloured shadow, dark where both overlap.
-        vec3 other = ( vKind < 1.5 ) ? lampB : lampA;
+        vec3 other = ( vKind < 1.5 ) ? lamp_b : lamp_a;
         // Coloured shadow: the wall under it keeps only the other lamp.
         vec3 plaster = vec3( 0.6 );
         col = plaster * other * 0.9 * ( 0.8 + 0.4 * audioLevel );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

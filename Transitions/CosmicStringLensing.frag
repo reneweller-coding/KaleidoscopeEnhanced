@@ -62,34 +62,34 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.45 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Cosmic string position moving across the frame
-    float stringX = mix( -1.2, 1.2, tProg );
-    float distToString = p.x - stringX;
+    float string_x = mix( -1.2, 1.2, t_prog );
+    float dist_to_string = p.x - string_x;
 
     // Conical metric deficit angle jump: Delta_theta = 8 pi G mu
-    float deficitAngle = 0.05 * tns * dfc * midTransition * ( 1.0 + audioSwell * 0.7 );
-    float wedgeOffset = sign( distToString ) * deficitAngle;
+    float deficit_angle = 0.05 * tns * dfc * mid_transition * ( 1.0 + audioSwell * 0.7 );
+    float wedge_offset = sign( dist_to_string ) * deficit_angle;
 
-    vec2 warpUV = uv + vec2( wedgeOffset, 0.0 );
+    vec2 warp_uv = uv + vec2( wedge_offset, 0.0 );
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
-    float wipeMask = smoothstep( -0.02, 0.02, distToString );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.02, 0.02, dist_to_string );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Glowing 1D cosmic string core line
-    float stringCore = exp( -abs( distToString ) * 35.0 ) * midTransition;
-    vec3  coreColor = mix( vec3( 0.2, 0.9, 1.0 ), vec3( 1.0, 0.98, 0.9 ), stringCore );
-    col.rgb += stringCore * coreColor * ( 1.6 + audioKick * 1.17 );
+    float string_core = exp( -abs( dist_to_string ) * 35.0 ) * mid_transition;
+    vec3  core_color = mix( vec3( 0.2, 0.9, 1.0 ), vec3( 1.0, 0.98, 0.9 ), string_core );
+    col.rgb += string_core * core_color * ( 1.6 + audioKick * 1.17 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

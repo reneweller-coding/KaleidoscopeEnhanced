@@ -129,16 +129,16 @@ void main()
     float off = p.y - shore; // distance offshore (up the frame)
 
     // Black sand: dry above the swash line... wet and glossy below the water.
-    vec3  sandDry = vec3( 0.07, 0.07, 0.075 ) * ( 0.8 + 0.4 * noise2( p * 400.0 ) );
-    vec3  sandWet = vec3( 0.03, 0.035, 0.045 ) + vec3( 0.12, 0.14, 0.17 ) * fbm( p * 3.0 + 1.0 ) * 0.6;
-    float wetLine = swash - 0.08;
-    vec3  col = mix( sandDry, sandWet, smoothstep( wetLine - 0.02, wetLine + 0.02, p.y ) );
+    vec3  sand_dry = vec3( 0.07, 0.07, 0.075 ) * ( 0.8 + 0.4 * noise2( p * 400.0 ) );
+    vec3  sand_wet = vec3( 0.03, 0.035, 0.045 ) + vec3( 0.12, 0.14, 0.17 ) * fbm( p * 3.0 + 1.0 ) * 0.6;
+    float wet_line = swash - 0.08;
+    vec3  col = mix( sand_dry, sand_wet, smoothstep( wet_line - 0.02, wet_line + 0.02, p.y ) );
     // Glitter of wet grains.
     {
         vec2  g = p * 160.0, gi = floor( g ), gf = fract( g );
         vec2  gc = 0.25 + 0.5 * hash22( gi );
         float tw = 0.5 + 0.5 * sin( T * 2.0 + hash21( gi + 7.0 ) * 40.0 );
-        float wet = smoothstep( wetLine, wetLine + 0.03, p.y ) * step( p.y, swash );
+        float wet = smoothstep( wet_line, wet_line + 0.03, p.y ) * step( p.y, swash );
         col += vec3( 0.9, 0.95, 1.0 ) * smoothstep( 0.12, 0.0, length( gf - gc ) ) * step( 0.9, hash21( gi + 5.0 ) )
                * tw * wet * ( 0.15 + 0.7 * hi );
     }
@@ -187,7 +187,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

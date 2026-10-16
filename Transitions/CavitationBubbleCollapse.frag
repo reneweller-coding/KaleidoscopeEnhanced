@@ -50,7 +50,7 @@ uniform float sitesP;
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -71,7 +71,7 @@ void main()
     vec2  sc = vec2( 1.0 / aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     float grow = 1.05; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
@@ -79,7 +79,7 @@ void main()
     vec2  gi = floor( p / cell );
 
     float converted = 0.0; // how much of this pixel the collapses have taken
-    float inBub = 0.0, bubRim = 0.0, flash = 0.0, shock = 0.0;
+    float in_bub = 0.0, bub_rim = 0.0, flash = 0.0, shock = 0.0;
     vec2  refr = vec2( 0.0 );
 
     // Two cells out: the ring below is sized so it can never reach further.
@@ -102,15 +102,15 @@ void main()
                 float r = R * ( raw < 0.72 ? smoothstep( 0.0, 0.72, raw ) : pow( 1.0 - ( raw - 0.72 ) / 0.28, 2.2 ) );
                 float dist = length( p - c );
                 float ins = smoothstep( r, r * 0.88, dist );
-                if ( ins > inBub )
+                if ( ins > in_bub )
                 {
-                    inBub = ins;
+                    in_bub = ins;
                     float rr = clamp( dist / max( r, 1e-4 ), 0.0, 1.0 );
                     vec2  n = ( dist > 1e-5 ) ? ( p - c ) / dist : vec2( 0.0 );
                     // A vapour cavity is a strong negative lens.
-                    refr = -n * ( 1.0 - cos( rr * PI * 0.5 ) ) * r * 0.85;
+                    refr = -n * ( 1.0 - cos( rr * Pi * 0.5 ) ) * r * 0.85;
                 }
-                bubRim = max( bubRim, exp( -pow( ( dist - r ) / max( r * 0.13, 1e-4 ), 2.0 ) ) );
+                bub_rim = max( bub_rim, exp( -pow( ( dist - r ) / max( r * 0.13, 1e-4 ), 2.0 ) ) );
                 // The light of the last instant of the fall.
                 flash = max( flash, ins * smoothstep( 0.90, 1.0, raw ) );
             }
@@ -140,8 +140,8 @@ void main()
 
     // Inside a cavity: the liquid behind it, bent hard by the vapour.
     vec3 through = textureLod( tex0, clamp( uv + refr * sc, 0.0, 1.0 ), 0.0 ).rgb;
-    col = mix( col, through * 0.60, inBub * ( 1.0 - converted ) );
-    col += vec3( 0.85, 0.92, 1.0 ) * bubRim * ( 1.0 - converted ) * arc
+    col = mix( col, through * 0.60, in_bub * ( 1.0 - converted ) );
+    col += vec3( 0.85, 0.92, 1.0 ) * bub_rim * ( 1.0 - converted ) * arc
            * ( 0.05 + 0.12 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
 
     // The collapse itself, and the ring it sends out.

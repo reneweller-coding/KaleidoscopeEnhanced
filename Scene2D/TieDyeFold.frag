@@ -106,25 +106,25 @@ void main()
     // Dye: rings from the tie points, spiralling, soaked in along the
     // wrinkles; the front width grows with the swell (diffusion).
     float diff = 0.05 + 0.25 * clamp( audioSwell, 0.0, 1.0 );
-    float ringPhase = r * 6.0 - fa * spiral + wr.x * 3.0 - sceneAdvance * 0.15;
-    float rings = 0.5 + 0.5 * sin( ringPhase * 3.0 );
+    float ring_phase = r * 6.0 - fa * spiral + wr.x * 3.0 - sceneAdvance * 0.15;
+    float rings = 0.5 + 0.5 * sin( ring_phase * 3.0 );
     float dye = smoothstep( 0.5 - diff, 0.5 + diff, rings );
     // Dye colours: the palette, forced to full saturation with a hue wheel
     // (a grey photo would otherwise give grey dye).
-    vec3  wheelA = 0.5 + 0.5 * cos( 6.2831853 * ( hue * 0.159 + 0.0 + vec3( 0.0, 0.33, 0.66 ) ) );
-    vec3  wheelB = 0.5 + 0.5 * cos( 6.2831853 * ( hue * 0.159 + 0.33 + vec3( 0.0, 0.33, 0.66 ) ) );
-    vec3  wheelC = 0.5 + 0.5 * cos( 6.2831853 * ( hue * 0.159 + 0.66 + vec3( 0.0, 0.33, 0.66 ) ) );
-    vec3  dyeA = mix( imgPalette( hue * 0.159 + 0.0 ), wheelA, 0.6 );
-    vec3  dyeB = mix( imgPalette( hue * 0.159 + 0.33 ), wheelB, 0.6 );
-    vec3  dyeC = mix( imgPalette( hue * 0.159 + 0.66 ), wheelC, 0.6 );
-    float band = fract( ringPhase * 0.477 );
-    vec3  dyeCol = mix( mix( dyeA, dyeB, smoothstep( 0.0, 0.5, band ) ), dyeC, smoothstep( 0.5, 1.0, band ) );
+    vec3  wheel_a = 0.5 + 0.5 * cos( 6.2831853 * ( hue * 0.159 + 0.0 + vec3( 0.0, 0.33, 0.66 ) ) );
+    vec3  wheel_b = 0.5 + 0.5 * cos( 6.2831853 * ( hue * 0.159 + 0.33 + vec3( 0.0, 0.33, 0.66 ) ) );
+    vec3  wheel_c = 0.5 + 0.5 * cos( 6.2831853 * ( hue * 0.159 + 0.66 + vec3( 0.0, 0.33, 0.66 ) ) );
+    vec3  dye_a = mix( imgPalette( hue * 0.159 + 0.0 ), wheel_a, 0.6 );
+    vec3  dye_b = mix( imgPalette( hue * 0.159 + 0.33 ), wheel_b, 0.6 );
+    vec3  dye_c = mix( imgPalette( hue * 0.159 + 0.66 ), wheel_c, 0.6 );
+    float band = fract( ring_phase * 0.477 );
+    vec3  dye_col = mix( mix( dye_a, dye_b, smoothstep( 0.0, 0.5, band ) ), dye_c, smoothstep( 0.5, 1.0, band ) );
     float sat = 0.6 + 0.6 * clamp( audioBass, 0.0, 1.0 );
-    dyeCol = mix( vec3( dot( dyeCol, vec3( 0.333 ) ) ), dyeCol, sat ) * 1.4;
-    vec3 col = mix( fabric * 0.9, dyeCol * ( 0.4 + 0.6 * fabric ), dye * 0.85 );
+    dye_col = mix( vec3( dot( dye_col, vec3( 0.333 ) ) ), dye_col, sat ) * 1.4;
+    vec3 col = mix( fabric * 0.9, dye_col * ( 0.4 + 0.6 * fabric ), dye * 0.85 );
     // The dye fronts: where the front runs, a brighter seam on the kick.
     float front = exp( -abs( rings - 0.5 ) / max( diff, 0.02 ) * 2.0 );
-    col += dyeCol * front * ( 0.1 + 0.5 * audioKick );
+    col += dye_col * front * ( 0.1 + 0.5 * audioKick );
     // The fold seams: dark creases at the sector boundaries.
     float seam = exp( -min( fa, sector - fa ) * 40.0 );
     col *= 1.0 - 0.45 * seam;
@@ -132,7 +132,7 @@ void main()
     col += imgPalette( hue * 0.159 + 0.9 ) * exp( -r * 6.0 ) * 0.5;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

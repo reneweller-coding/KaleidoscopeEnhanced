@@ -35,7 +35,7 @@ uniform int   sidesP; ///< mirror fold count (0 -> 4; 3..8)
 uniform float veinP;  ///< vein frequency    (0 -> 7.0; 5 = broad, 10 = filigree)
 uniform float swirlP; ///< radial swirl amount (0 -> none; up to ~0.8)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -85,8 +85,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -148,13 +148,13 @@ void main()
 
     // Vein colour comes from a drifting crop of the IMAGE (not a fixed
     // teal/orange), warmed/cooled by the valence.
-    vec3 veinCol = imgPal( v * 4.0 ) * 1.6;
-    veinCol = mix( veinCol, veinCol * vec3( 1.25, 0.85, 0.55 ), 0.5 * audioValence );
+    vec3 vein_col = imgPal( v * 4.0 ) * 1.6;
+    vein_col = mix( vein_col, vein_col * vec3( 1.25, 0.85, 0.55 ), 0.5 * audioValence );
 
     vec3 col = pic * ( 0.5 + 0.8 * audioLevel );
-    col = mix( col, veinCol * ( 0.8 + 1.4 * audioBeat ), vein * 0.6 );
-    col = mix( col, veinCol * 1.2, vein2 * ( 0.3 + 0.3 * audioCentroid ) );
-    col += vein * audioBeat * 0.3 * veinCol;
+    col = mix( col, vein_col * ( 0.8 + 1.4 * audioBeat ), vein * 0.6 );
+    col = mix( col, vein_col * 1.2, vein2 * ( 0.3 + 0.3 * audioCentroid ) );
+    col += vein * audioBeat * 0.3 * vein_col;
     col *= ( 1.0 + 0.15 * audioSwell );
     col *= 1.0 - 0.25 * dot( p, p );
 

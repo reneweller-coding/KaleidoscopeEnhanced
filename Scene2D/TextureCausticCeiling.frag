@@ -133,7 +133,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -298,16 +298,16 @@ void main()
     vec3  c = vec3( cr, cg, cb );
     // Light colour: the photo's colour where it lands, warmer in major.
     vec3 ph = imgLod( q * 0.15 + 0.5 + vec2( gT * 0.006, gT * 0.004 ), 5.0 );
-    vec3 lightC = mix( vec3( 0.85, 0.95, 1.05 ), vec3( 1.1, 0.97, 0.8 ), clamp( audioMode, 0.0, 1.0 ) );
-    lightC *= mix( vec3( 1.0 ), glowColour( ph, q * 0.3, hueP * 0.159 ) * 1.3, 0.45 );
+    vec3 light_c = mix( vec3( 0.85, 0.95, 1.05 ), vec3( 1.1, 0.97, 0.8 ), clamp( audioMode, 0.0, 1.0 ) );
+    light_c *= mix( vec3( 1.0 ), glowColour( ph, q * 0.3, hueP * 0.159 ) * 1.3, 0.45 );
     // The floor: pale tiles tinted by water, the caustic on top.
     // The floor is the photo itself, under water (tinted, the ripples bend it).
     vec2 g0;
     vec3 H0;
     waves( q, g0, H0 );
     vec3 bottom = imgLod( q * 0.15 + 0.5 - g0 * 0.02, 1.5 );
-    vec3 floorC = mix( vec3( 0.1, 0.18, 0.24 ), bottom * vec3( 0.55, 0.75, 0.85 ), 0.6 );
-    vec3 col = floorC * ( 0.7 + 0.03 * cg ) + lightC * c * 0.09 * ( 0.7 + 0.6 * swell );
+    vec3 floor_c = mix( vec3( 0.1, 0.18, 0.24 ), bottom * vec3( 0.55, 0.75, 0.85 ), 0.6 );
+    vec3 col = floor_c * ( 0.7 + 0.03 * cg ) + light_c * c * 0.09 * ( 0.7 + 0.6 * swell );
     col += vec3( 1.0 ) * smoothstep( 12.0, 30.0, cg ) * ( 0.1 + 0.5 * hi );
     finish( col );
 }

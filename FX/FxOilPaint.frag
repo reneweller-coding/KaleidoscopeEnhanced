@@ -13,13 +13,13 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     audioBeat;     ///< beats sharpen the painting toward the raw scene
 
-const int radius = 7;
+const int Radius = 7;
 
 void main( void )
 {
     vec2  src_size = vec2( 1.0 / resolution.x, 1.0 / resolution.y );
     vec2  uv = gl_FragCoord.xy / resolution.xy;
-    float n = float( ( radius + 1 ) * ( radius + 1 ) );
+    float n = float( ( Radius + 1 ) * ( Radius + 1 ) );
     int   i;
     int   j;
     vec3  m0 = vec3( 0.0 );
@@ -33,9 +33,9 @@ void main( void )
     vec3  c;
 
 
-    for ( int j = -radius; j <= 0; ++j )
+    for ( int j = -Radius; j <= 0; ++j )
     {
-        for ( int i = -radius; i <= 0; ++i )
+        for ( int i = -Radius; i <= 0; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb
@@ -45,9 +45,9 @@ void main( void )
         }
     }
 
-    for ( int j = -radius; j <= 0; ++j )
+    for ( int j = -Radius; j <= 0; ++j )
     {
-        for ( int i = 0; i <= radius; ++i )
+        for ( int i = 0; i <= Radius; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb
@@ -57,9 +57,9 @@ void main( void )
         }
     }
 
-    for ( int j = 0; j <= radius; ++j )
+    for ( int j = 0; j <= Radius; ++j )
     {
-        for ( int i = 0; i <= radius; ++i )
+        for ( int i = 0; i <= Radius; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb
@@ -69,9 +69,9 @@ void main( void )
         }
     }
 
-    for ( int j = 0; j <= radius; ++j )
+    for ( int j = 0; j <= Radius; ++j )
     {
-        for ( int i = -radius; i <= 0; ++i )
+        for ( int i = -Radius; i <= 0; ++i )
         {
             // c = texture(iChannel0, uv + vec2(i,j) * src_size).rgb;
             c = interpolation * texture( tex0, uv + vec2( i, j ) * src_size ).rgb

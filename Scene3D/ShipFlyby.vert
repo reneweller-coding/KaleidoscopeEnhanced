@@ -45,8 +45,8 @@ out float vBg;       ///< Background flag (from the vertex stage).
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
-    if ( !isBg )
+    bool is_bg = gl_VertexID >= meshVertexCount;
+    if ( !is_bg )
     {
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         float trv = ( travelP > 0.01 ? travelP : 1.0 );
@@ -101,18 +101,18 @@ void main()
         float pitch = 0.06;             // about the beam axis, Z
         float cb = cos( bank ), sb = sin( bank );
         float cp = cos( pitch ), sp2 = sin( pitch );
-        mat3  bankM = mat3( 1.0, 0.0, 0.0, 0.0, cb, sb, 0.0, -sb, cb );
-        mat3  pitchM = mat3( cp, sp2, 0.0, -sp2, cp, 0.0, 0.0, 0.0, 1.0 );
-        mat3  rotM = pitchM * bankM;
+        mat3  bank_m = mat3( 1.0, 0.0, 0.0, 0.0, cb, sb, 0.0, -sb, cb );
+        mat3  pitch_m = mat3( cp, sp2, 0.0, -sp2, cp, 0.0, 0.0, 0.0, 1.0 );
+        mat3  rot_m = pitch_m * bank_m;
 
-        world = rotM * local;
+        world = rot_m * local;
         world.x += x;
         world.z += z;
         // Height only. The old +1.5*audioKick bounced the whole hull on every
         // beat -- a thousand-ton ship in vacuum does not hop (reported). The
         // music stays on the ENGINES: the frag flares the drives on the kick.
         world.y += -8.0;
-        n = normalize( rotM * nrm );
+        n = normalize( rot_m * nrm );
         vUV = vec2( attrA.w, attrB.w );
         vLocalPos = p;
     }
@@ -130,10 +130,10 @@ void main()
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     // Shell cube corners reach sqrt(3)*radius, past the far plane; pin their
     // depth just inside it (see Tools/SHADER_AUTHORING.md's mesh section).
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

@@ -76,48 +76,48 @@ void main()
 
     // Tilted equatorial plane for synchrotron torus rings
     float tilt = 0.55;
-    float cTilt = cos( tilt ), sTilt = sin( tilt );
-    vec2  pTorus = vec2( uv.x, uv.y / sTilt );
-    float rTorus = length( pTorus );
+    float c_tilt = cos( tilt ), s_tilt = sin( tilt );
+    vec2  p_torus = vec2( uv.x, uv.y / s_tilt );
+    float r_torus = length( p_torus );
 
     // Equatorial termination shock torus
-    float rShock = ( torusRadiusP > 0.01 ? torusRadiusP : 0.5 ) * ( 0.85 + 0.3 * audioBass );
-    float torusRing = exp( -abs( rTorus - rShock ) * 18.0 );
+    float r_shock = ( torusRadiusP > 0.01 ? torusRadiusP : 0.5 ) * ( 0.85 + 0.3 * audioBass );
+    float torus_ring = exp( -abs( r_torus - r_shock ) * 18.0 );
 
     // Moving dynamic synchrotron wisps expanding outward from shock
-    float wFreq = ( wispCountP > 0.01 ? wispCountP : 8.0 );
-    float wisps = sin( rTorus * wFreq - t * 4.0 + audioPhase ) * exp( -rTorus * 2.0 );
+    float w_freq = ( wispCountP > 0.01 ? wispCountP : 8.0 );
+    float wisps = sin( r_torus * w_freq - t * 4.0 + audioPhase ) * exp( -r_torus * 2.0 );
 
     // Polar collimated relativistic plasma jets along Y-axis
-    float jWidth = ( jetCollimP > 0.01 ? jetCollimP : 0.16 );
-    float polarJet = exp( -abs( uv.x ) * abs( uv.x ) / ( jWidth * jWidth ) ) * smoothstep( 0.05, 0.8, abs( uv.y ) );
+    float j_width = ( jetCollimP > 0.01 ? jetCollimP : 0.16 );
+    float polar_jet = exp( -abs( uv.x ) * abs( uv.x ) / ( j_width * j_width ) ) * smoothstep( 0.05, 0.8, abs( uv.y ) );
 
     // Central pulsar lighthouse beam rotation
-    float pAngle = atan( uv.y, uv.x );
-    float beam = pow( max( 0.0, cos( pAngle - t * 8.0 ) ), 12.0 ) * ( 1.0 + 3.5 * audioKick );
+    float p_angle = atan( uv.y, uv.x );
+    float beam = pow( max( 0.0, cos( p_angle - t * 8.0 ) ), 12.0 ) * ( 1.0 + 3.5 * audioKick );
 
     // Central pulsar neutron star core
     float core = exp( -dot( uv, uv ) * 55.0 ) * ( 1.0 + 2.0 * audioKick );
 
     // Synchrotron emission colors: electric blue / cyan with magnetic orange filaments
-    vec3 synchBlue = vec3( 0.15, 0.8, 1.0 );
-    vec3 wispAmber = vec3( 1.0, 0.55, 0.15 );
-    vec3 pulsarWhite = vec3( 1.0, 0.95, 0.9 );
+    vec3 synch_blue = vec3( 0.15, 0.8, 1.0 );
+    vec3 wisp_amber = vec3( 1.0, 0.55, 0.15 );
+    vec3 pulsar_white = vec3( 1.0, 0.95, 0.9 );
 
-    vec3 colSynch = palTint( mix( synchBlue, wispAmber, clamp( wisps + 0.5, 0.0, 1.0 ) ), rTorus * 0.3 + audioCentroid,
-                             0.26 );
+    vec3 col_synch = palTint( mix( synch_blue, wisp_amber, clamp( wisps + 0.5, 0.0, 1.0 ) ),
+                              r_torus * 0.3 + audioCentroid, 0.26 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colSynch * torusRing * ( synchGlowP > 0.01 ? synchGlowP : 1.3 ) * ( 0.85 + 0.35 * audioSwell ) * 2.2;
-    col += colSynch * abs( wisps ) * 1.4;
-    col += palTint( vec3( 0.4, 0.9, 1.0 ), abs( uv.y ) * 0.3, 0.22 ) * polarJet * 1.8;
-    col += pulsarWhite * beam * 2.5;
-    col += pulsarWhite * core * 3.0;
-    col += colSynch * ( audioKick * 0.35 );
+    col += col_synch * torus_ring * ( synchGlowP > 0.01 ? synchGlowP : 1.3 ) * ( 0.85 + 0.35 * audioSwell ) * 2.2;
+    col += col_synch * abs( wisps ) * 1.4;
+    col += palTint( vec3( 0.4, 0.9, 1.0 ), abs( uv.y ) * 0.3, 0.22 ) * polar_jet * 1.8;
+    col += pulsar_white * beam * 2.5;
+    col += pulsar_white * core * 3.0;
+    col += col_synch * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

@@ -74,8 +74,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float lDens = ( laserDensityP > 0.01 ) ? laserDensityP : 1.0;
-    float tRad = ( tunnelRadiusP > 0.01 ) ? tunnelRadiusP : 1.2;
+    float l_dens = ( laserDensityP > 0.01 ) ? laserDensityP : 1.0;
+    float t_rad = ( tunnelRadiusP > 0.01 ) ? tunnelRadiusP : 1.2;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // The flight only advanced on audioAdvance (~0.25 units/s on quiet material).
@@ -88,26 +88,26 @@ void main()
     vec3 rd = normalize( vec3( uv, 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) );
 
     // Raymarching to hit hexagonal tunnel wall
-    float totDist = 0.0;
-    vec3  hitPos = vec3( 0.0 );
-    float laserBeamsAcc = 0.0;
+    float tot_dist = 0.0;
+    vec3  hit_pos = vec3( 0.0 );
+    float laser_beams_acc = 0.0;
     // A wider lumen gives the flight real depth: with the old 1.2-unit radius a
     // ray reached the wall in about two units and the tunnel had no length to it.
-    float rHex = tRad * 2.6 * ( 1.0 + 0.1 * sin( audioSubBass ) );
+    float r_hex = t_rad * 2.6 * ( 1.0 + 0.1 * sin( audioSubBass ) );
 
     for ( int i = 0; i < 56; i++ )
     {
-        vec3 p = ro + rd * totDist;
-        hitPos = p; // always valid, even for a ray that runs the loop out
+        vec3 p = ro + rd * tot_dist;
+        hit_pos = p; // always valid, even for a ray that runs the loop out
 
         // Distance from inside the lumen to the hexagonal wall.
-        // This was `rHex - sdHexagon(...)`, which is not that distance at all:
+        // This was `r_hex - sdHexagon(...)`, which is not that distance at all:
         // inside the hexagon sdHexagon is negative, so the expression sat at
-        // rHex..2*rHex and only reached zero a full rHex OUTSIDE the tunnel.
+        // r_hex..2*r_hex and only reached zero a full r_hex OUTSIDE the tunnel.
         // The march therefore blew straight through the wall and stopped on a
         // phantom surface at double radius -- or ran out to the 14-unit cap,
         // where the fog below washed the result into one flat tone.
-        float dWall = -sdHexagon( p.xy, rHex );
+        float d_wall = -sdHexagon( p.xy, r_hex );
 
         // Volumetric laser cross-beams inside tunnel
         // Brightness selects the grid harmonic by crossfading a coarse and a 3x
@@ -115,56 +115,56 @@ void main()
         // distance, so an audio-varying frequency there would relocate every gate
         // in a single frame (flicker). The 3x lattice shares gate planes with the
         // coarse one, so the crossfade stays continuous.
-        float zGate = fract( p.z * ( 0.8 * lDens ) ) - 0.5;
-        float zGateFine = fract( p.z * ( 2.4 * lDens ) ) - 0.5;
+        float z_gate = fract( p.z * ( 0.8 * l_dens ) ) - 0.5;
+        float z_gate_fine = fract( p.z * ( 2.4 * l_dens ) ) - 0.5;
         // Six-fold beam LATTICE rather than the two centre lines the old
         // min(|p.x|,|p.y|) drew: three beam planes at 60 degrees, each repeated
         // across the lumen, so the matrix covers the whole tunnel cross-section
         // right out to the walls instead of only its axis. Repetition period is
         // a per-activation constant, so no gate ever moves with the audio.
-        float g = 1.6 * lDens;
+        float g = 1.6 * l_dens;
         float b0 = abs( fract( p.x * g ) - 0.5 ) / g;
         float b1 = abs( fract( ( p.x * 0.5 - p.y * 0.8660254 ) * g ) - 0.5 ) / g;
         float b2 = abs( fract( ( p.x * 0.5 + p.y * 0.8660254 ) * g ) - 0.5 ) / g;
-        float dBeam = min( b0, min( b1, b2 ) );
+        float d_beam = min( b0, min( b1, b2 ) );
 
-        float dLaser = dBeam + mix( abs( zGate ), abs( zGateFine ), 0.6 * audioCentroid ) * 0.4;
-        laserBeamsAcc += exp( -dLaser * ( 18.0 + 12.0 * audioCentroid ) ) * 0.026;
+        float d_laser = d_beam + mix( abs( z_gate ), abs( z_gate_fine ), 0.6 * audioCentroid ) * 0.4;
+        laser_beams_acc += exp( -d_laser * ( 18.0 + 12.0 * audioCentroid ) ) * 0.026;
 
-        if ( dWall < 0.005 || totDist > 22.0 )
+        if ( d_wall < 0.005 || tot_dist > 22.0 )
             break;
 
-        totDist += max( 0.02, dWall * 0.7 );
+        tot_dist += max( 0.02, d_wall * 0.7 );
     }
-    laserBeamsAcc = min( laserBeamsAcc, 1.0 );
+    laser_beams_acc = min( laser_beams_acc, 1.0 );
 
     // Hexagonal wall mirror texture
-    vec2 sampleUV = fract( hitPos.xy * 0.3 + hitPos.z * 0.2 + 0.5 );
-    vec3 texCol = img( sampleUV );
-    vec3 palCol = imgPalette( hitPos.z * 0.15 + 0.2 );
+    vec2 sample_uv = fract( hit_pos.xy * 0.3 + hit_pos.z * 0.2 + 0.5 );
+    vec3 tex_col = img( sample_uv );
+    vec3 pal_col = imgPalette( hit_pos.z * 0.15 + 0.2 );
 
-    vec3 wallBase = mix( texCol * 0.3, palCol, 0.45 );
+    vec3 wall_base = mix( tex_col * 0.3, pal_col, 0.45 );
 
     // Mirror panel seams on the hexagonal wall: 18 facet edges around the lumen
     // and a rib every ~1.1 units of flight. Without them the wall was a smooth
     // photo blur and carried no structure for the outer half of the frame.
-    float ang6 = atan( hitPos.y, hitPos.x );
-    float seamA = abs( fract( ang6 * 2.8648 ) - 0.5 );
-    float seamZ = abs( fract( hitPos.z * 0.9 ) - 0.5 );
-    float seam = exp( -min( seamA, seamZ ) * 22.0 );
-    wallBase += imgPalette( 0.35 ) * seam * 0.30 * ( 0.6 + 0.6 * audioMid );
+    float ang6 = atan( hit_pos.y, hit_pos.x );
+    float seam_a = abs( fract( ang6 * 2.8648 ) - 0.5 );
+    float seam_z = abs( fract( hit_pos.z * 0.9 ) - 0.5 );
+    float seam = exp( -min( seam_a, seam_z ) * 22.0 );
+    wall_base += imgPalette( 0.35 ) * seam * 0.30 * ( 0.6 + 0.6 * audioMid );
 
     // Glowing laser beams & portal gate bursts. The tint constants exceed 1.0
     // per channel, so the cap has to sit on the TINTED vector.
-    vec3 laserTint = min( vec3( 1.3, 1.6, 2.0 ) * laserBeamsAcc * ( 1.0 + 3.0 * audioKick ) * glw,
-                          vec3( 0.95, 0.95, 1.0 ) );
-    vec3 finalCol = wallBase + laserTint;
+    vec3 laser_tint = min( vec3( 1.3, 1.6, 2.0 ) * laser_beams_acc * ( 1.0 + 3.0 * audioKick ) * glw,
+                           vec3( 0.95, 0.95, 1.0 ) );
+    vec3 final_col = wall_base + laser_tint;
 
     // Atmospheric depth fog. Halved: at 0.18 the long axial rays (the whole
     // middle of the frame) reached fog ~1 and dissolved into a single flat tone.
-    float depthFog = 1.0 - exp( -totDist * 0.09 );
-    finalCol = mix( finalCol, imgPalette( 0.8 ) * 0.34 + laserTint * 0.45, depthFog * 0.85 );
+    float depth_fog = 1.0 - exp( -tot_dist * 0.09 );
+    final_col = mix( final_col, imgPalette( 0.8 ) * 0.34 + laser_tint * 0.45, depth_fog * 0.85 );
 
-    finalCol = pow( min( finalCol, vec3( 1.0 ) ), vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( min( final_col, vec3( 1.0 ) ), vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

@@ -97,8 +97,8 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float baseR = 0.16 + 0.08 * clamp( sizeP, 0.0, 1.0 );
-    float coolRate = 0.5 + 0.5 * clamp( coolP, 0.0, 1.0 );
+    float base_r = 0.16 + 0.08 * clamp( sizeP, 0.0, 1.0 );
+    float cool_rate = 0.5 + 0.5 * clamp( coolP, 0.0, 1.0 );
     float breath = clamp( audioSwell, 0.0, 1.0 );
     float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
     float bass = clamp( audioBass, 0.0, 1.0 );
@@ -107,8 +107,8 @@ void main()
     // temperature cycles on the clock (reheat, work, cool) and the kick
     // reheats it as light.
     vec2  centre = vec2( 0.1, -0.02 );
-    float R = baseR * ( 1.0 + 0.6 * breath );
-    float temp = 0.35 + 0.35 * ( 0.5 + 0.5 * sin( clock * 0.25 * coolRate ) ); // slow cycle
+    float R = base_r * ( 1.0 + 0.6 * breath );
+    float temp = 0.35 + 0.35 * ( 0.5 + 0.5 * sin( clock * 0.25 * cool_rate ) ); // slow cycle
     temp = clamp( temp + 0.3 * audioKick, 0.0, 1.0 );
 
     // The shop: the photo dark, the furnace mouth glowing left with the bass.
@@ -156,7 +156,7 @@ void main()
     col += vec3( 0.15, 0.08, 0.02 ) * shimmer;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

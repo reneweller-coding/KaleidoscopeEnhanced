@@ -70,44 +70,44 @@ void main()
     float theta = atan( uv.y, uv.x );
 
     // Graded refractive index profile: n(r) = (R_out / r)^2 inside trap radius
-    float rOut = ( trapRadiusP > 0.01 ? trapRadiusP : 0.85 ) * ( 0.9 + 0.2 * audioSwell );
-    float rCore = 0.15 * ( 1.0 + 0.2 * audioSubBass );
+    float r_out = ( trapRadiusP > 0.01 ? trapRadiusP : 0.85 ) * ( 0.9 + 0.2 * audioSwell );
+    float r_core = 0.15 * ( 1.0 + 0.2 * audioSubBass );
 
     // Logarithmic spiral light bending rays: r = r0 * exp(-k * theta)
-    float kCurl = ( spiralCurlP > 0.01 ? spiralCurlP : 3.5 );
-    float spiralPhase = theta * 6.0 + log( max( r, 0.01 ) ) * kCurl - t * 3.5 + audioPhase;
+    float k_curl = ( spiralCurlP > 0.01 ? spiralCurlP : 3.5 );
+    float spiral_phase = theta * 6.0 + log( max( r, 0.01 ) ) * k_curl - t * 3.5 + audioPhase;
 
     // Poynting energy flow streamlines
-    float pFreq = ( poyntingP > 0.01 ? poyntingP : 16.0 );
-    float poyntingWaves = sin( spiralPhase ) * 0.5 + 0.5;
+    float p_freq = ( poyntingP > 0.01 ? poyntingP : 16.0 );
+    float poynting_waves = sin( spiral_phase ) * 0.5 + 0.5;
 
     // Inward spiral wave intensity
-    float inTrap = smoothstep( rOut + 0.05, rOut - 0.05, r );
-    float spiralStream = poyntingWaves * inTrap;
+    float in_trap = smoothstep( r_out + 0.05, r_out - 0.05, r );
+    float spiral_stream = poynting_waves * in_trap;
 
     // Central plasmonic absorbing core (Joule heating hot spot)
-    float coreAbsorption = exp( -r * r * 45.0 ) * ( 1.0 + 4.0 * audioKick ) * ( absorberP > 0.01 ? absorberP : 1.3 );
+    float core_absorption = exp( -r * r * 45.0 ) * ( 1.0 + 4.0 * audioKick ) * ( absorberP > 0.01 ? absorberP : 1.3 );
 
     // Optical trap boundary ring
-    float trapBoundary = exp( -abs( r - rOut ) * 25.0 );
+    float trap_boundary = exp( -abs( r - r_out ) * 25.0 );
 
     // Full absorption shadow in innermost center
-    float centerShadow = smoothstep( 0.04, rCore, r );
+    float center_shadow = smoothstep( 0.04, r_core, r );
 
     // Palette assignment
-    float palAngle = fract( spiralPhase * 0.159 + r * 0.3 + audioCentroid );
-    vec3  colRay = imgPalette( palAngle );
-    vec3  colCore = imgPalette( fract( palAngle + 0.5 ) ) * 2.2;
+    float pal_angle = fract( spiral_phase * 0.159 + r * 0.3 + audioCentroid );
+    vec3  col_ray = imgPalette( pal_angle );
+    vec3  col_core = imgPalette( fract( pal_angle + 0.5 ) ) * 2.2;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
-    vec3 col = bg * centerShadow;
-    col += colRay * spiralStream * centerShadow * ( 0.8 + 0.4 * audioSwell ) * 1.8;
-    col += colCore * coreAbsorption * 2.5;
-    col += vec3( 0.9, 0.95, 1.0 ) * trapBoundary * 1.6;
-    col += colRay * ( audioKick * 0.35 );
+    vec3 col = bg * center_shadow;
+    col += col_ray * spiral_stream * center_shadow * ( 0.8 + 0.4 * audioSwell ) * 1.8;
+    col += col_core * core_absorption * 2.5;
+    col += vec3( 0.9, 0.95, 1.0 ) * trap_boundary * 1.6;
+    col += col_ray * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

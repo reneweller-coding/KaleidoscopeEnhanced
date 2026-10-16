@@ -47,9 +47,9 @@ out float vBg;     ///< Background flag (from the vertex stage).
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
 
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         float nr = ( nearP > 0.01 ? nearP : 1.0 );
@@ -92,6 +92,6 @@ void main()
 
     vec3 vp = vec3( world.x - eyeOff, world.y, world.z );
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 }

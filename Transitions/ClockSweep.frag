@@ -16,7 +16,7 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Mixes two RGBA values with a clamped weight.
 vec4 blend4( vec4 a, vec4 b, float w )
@@ -38,7 +38,7 @@ void main()
     float w1 = d;         // weight of the NEW scene
     float dark = 1.0;     // optional dip factor
 
-    float ang = atan( cc.y, cc.x ) / ( 2.0 * PI ) + 0.5;
+    float ang = atan( cc.y, cc.x ) / ( 2.0 * Pi ) + 0.5;
     w1 = smoothstep( ang - 0.035, ang + 0.035, d * 1.07 - 0.035 );
 
     vec4 c0 = texture( tex0, p0 );

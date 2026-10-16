@@ -80,62 +80,62 @@ void main()
     float a = atan( -uv.x, uv.y );
 
     // Logarithmic conformal Droste mapping: w = ln(r) + i * theta
-    float lnR = log( r );
+    float ln_r = log( r );
 
     // Spiral twist angle alpha modulated by audio
     float alpha = ( 0.75 + 0.25 * sin( t * 0.3 ) + 0.2 * audioCentroid ) * twst;
 
     // Dual spiral stream parameters: stream 1 (zooming in), stream 2 (zooming out)
-    float zoomPhase1 = mod( lnR * 0.5 - t * 0.6 + a * alpha * 0.159155, 1.0 );
-    float zoomPhase2 = mod( -lnR * 0.5 - t * 0.4 - a * alpha * 0.159155, 1.0 );
+    float zoom_phase1 = mod( ln_r * 0.5 - t * 0.6 + a * alpha * 0.159155, 1.0 );
+    float zoom_phase2 = mod( -ln_r * 0.5 - t * 0.4 - a * alpha * 0.159155, 1.0 );
 
     // Multi-octave blending for seamless infinite zoom
-    vec3  colAcc = vec3( 0.0 );
-    float weightAcc = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float weight_acc = 0.0;
 
     // Sub-bass swells the radius of the recursive sample ring, so the whole
     // vortex breathes wider on drones while the zoom phase stays untouched.
-    float vortexScale = 0.35 * ( 1.0 + 0.32 * audioSubBass );
+    float vortex_scale = 0.35 * ( 1.0 + 0.32 * audioSubBass );
 
     for ( int k = -1; k <= 1; k++ )
     {
-        float f1 = zoomPhase1 + float( k );
+        float f1 = zoom_phase1 + float( k );
         float w1 = exp( -4.0 * ( f1 - 0.5 ) * ( f1 - 0.5 ) );
 
         // Coordinate in exponential spiral space
         float rad1 = exp( f1 * 2.0 );
         float ang1 = a + f1 * alpha * 6.2831853 + t * 0.2;
-        vec2  uv1 = vec2( 0.5 ) + vec2( cos( ang1 ), sin( ang1 ) ) * rad1 * vortexScale;
+        vec2  uv1 = vec2( 0.5 ) + vec2( cos( ang1 ), sin( ang1 ) ) * rad1 * vortex_scale;
 
         vec3 sample1 = img( fract( uv1 ) );
         vec3 pal1 = imgPalette( f1 * 0.3 + a / 6.2831853 );
-        colAcc += mix( sample1, pal1, 0.4 ) * w1;
-        weightAcc += w1;
+        col_acc += mix( sample1, pal1, 0.4 ) * w1;
+        weight_acc += w1;
 
         // Counter-stream
-        float f2 = zoomPhase2 + float( k );
+        float f2 = zoom_phase2 + float( k );
         float w2 = exp( -4.0 * ( f2 - 0.5 ) * ( f2 - 0.5 ) ) * 0.6;
         float rad2 = exp( f2 * 2.0 );
         float ang2 = -a - f2 * alpha * 6.2831853 - t * 0.15;
-        vec2  uv2 = vec2( 0.5 ) + vec2( cos( ang2 ), sin( ang2 ) ) * rad2 * vortexScale;
+        vec2  uv2 = vec2( 0.5 ) + vec2( cos( ang2 ), sin( ang2 ) ) * rad2 * vortex_scale;
 
         vec3 sample2 = img( fract( uv2 ) );
         vec3 pal2 = imgPalette( f2 * 0.3 + 0.5 - a / 6.2831853 );
-        colAcc += mix( sample2, pal2, 0.4 ) * w2;
-        weightAcc += w2;
+        col_acc += mix( sample2, pal2, 0.4 ) * w2;
+        weight_acc += w2;
     }
 
-    vec3 finalCol = colAcc / max( 0.001, weightAcc );
+    vec3 final_col = col_acc / max( 0.001, weight_acc );
 
     // Glowing spiral branch ribs
-    float spiralRib = abs( sin( lnR * 6.0 - a * 4.0 * alpha + t * 4.0 ) );
-    float ribGlow = smoothstep( 0.85, 1.0, spiralRib ) * glw * ( 1.0 + 2.5 * audioKick );
-    finalCol += vec3( 1.3, 1.1, 1.7 ) * ribGlow * 0.6;
+    float spiral_rib = abs( sin( ln_r * 6.0 - a * 4.0 * alpha + t * 4.0 ) );
+    float rib_glow = smoothstep( 0.85, 1.0, spiral_rib ) * glw * ( 1.0 + 2.5 * audioKick );
+    final_col += vec3( 1.3, 1.1, 1.7 ) * rib_glow * 0.6;
 
     // Center singularity flash
-    float centerBloom = exp( -r * 8.0 ) * ( 1.0 + 2.0 * audioKick );
-    finalCol += imgPalette( 0.8 ) * centerBloom;
+    float center_bloom = exp( -r * 8.0 ) * ( 1.0 + 2.0 * audioKick );
+    final_col += imgPalette( 0.8 ) * center_bloom;
 
-    finalCol = pow( finalCol, vec3( 0.86 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.86 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

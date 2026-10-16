@@ -63,7 +63,7 @@ void main()
     float tissue = 0.7 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     int   band = int( clamp( vBand, 0.0, 31.0 ) );
     float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-    vec3  cellCol = mix( vec3( 0.5, 0.8, 1.0 ), imgPalette( hue * 0.159 + float( band ) / 32.0 ), 0.5 );
+    vec3  cell_col = mix( vec3( 0.5, 0.8, 1.0 ), imgPalette( hue * 0.159 + float( band ) / 32.0 ), 0.5 );
     vec3  col;
     if ( vKind < -0.5 )
     {
@@ -80,13 +80,13 @@ void main()
         if ( r > 1.0 )
             discard;
         float sh = sqrt( 1.0 - r * r );
-        col = cellCol * ( 0.5 + 0.9 * sh ) * ( 1.0 + 0.8 * e ) * tissue;
-        col += cellCol * exp( -r * r * 3.0 ) * audioKick * 1.2;
+        col = cell_col * ( 0.5 + 0.9 * sh ) * ( 1.0 + 0.8 * e ) * tissue;
+        col += cell_col * exp( -r * r * 3.0 ) * audioKick * 1.2;
     }
     else if ( vKind < 1.5 )
     {
         // Dendrite: faint fibre.
-        col = cellCol * 0.5 * tissue * ( 0.7 + 0.6 * e );
+        col = cell_col * 0.5 * tissue * ( 0.7 + 0.6 * e );
     }
     else
     {
@@ -95,13 +95,13 @@ void main()
         float ph = fract( clock * ( 0.4 + 0.3 * hash11( vId * 3.3 ) ) + hash11( vId * 5.1 ) );
         float pulse = exp( -pow( ( vTexCoord.x - ph ) * 14.0, 2.0 ) );
         float pulse2 = exp( -pow( ( vTexCoord.x - fract( ph + 0.5 ) ) * 14.0, 2.0 ) ) * 0.5;
-        col = cellCol * 0.55 * tissue + cellCol * ( pulse + pulse2 ) * ( 0.8 + 1.6 * e ) * 2.5;
+        col = cell_col * 0.55 * tissue + cell_col * ( pulse + pulse2 ) * ( 0.8 + 1.6 * e ) * 2.5;
     }
     float fog = 1.0 - exp( -max( vWorld.z - 6.0, 0.0 ) * 0.05 );
     col = mix( col, vec3( 0.01, 0.01, 0.02 ), clamp( fog, 0.0, 0.7 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -101,46 +101,46 @@ void main()
     rd.xy = rot2D( t * 0.1 ) * rd.xy;
 
     vec3  p = ro;
-    float edgeAccum = 0.0;
-    float bounceCount = 0.0;
-    vec2  uvSample = vec2( 0.0 );
+    float edge_accum = 0.0;
+    float bounce_count = 0.0;
+    vec2  uv_sample = vec2( 0.0 );
 
     for ( int i = 0; i < 42; ++i )
     {
         p += rd * 0.07;
 
         // Infinite cubic / octahedral prism lattice
-        vec3 cellP = fract( p * 0.8 * prs ) - 0.5;
-        vec3 absP = abs( cellP );
+        vec3 cell_p = fract( p * 0.8 * prs ) - 0.5;
+        vec3 abs_p = abs( cell_p );
 
         // Chamfered prism edges & corner cuts
-        float boxDist = max( max( absP.x, absP.y ), absP.z ) - 0.35;
-        float octDist = ( absP.x + absP.y + absP.z - 0.55 ) * 0.577;
-        float prismDist = max( boxDist, octDist );
+        float box_dist = max( max( abs_p.x, abs_p.y ), abs_p.z ) - 0.35;
+        float oct_dist = ( abs_p.x + abs_p.y + abs_p.z - 0.55 ) * 0.577;
+        float prism_dist = max( box_dist, oct_dist );
 
-        if ( prismDist < 0.05 )
+        if ( prism_dist < 0.05 )
         {
             // Prism edge glow
-            float edge = exp( -abs( prismDist ) * 35.0 );
-            edgeAccum += edge * 0.05;
-            bounceCount += 1.0;
+            float edge = exp( -abs( prism_dist ) * 35.0 );
+            edge_accum += edge * 0.05;
+            bounce_count += 1.0;
 
             // Optical refraction reflection bounce
-            vec3 n = normalize( cellP );
+            vec3 n = normalize( cell_p );
             rd = reflect( rd, n );
-            uvSample = fract( cellP.xy * 2.0 + 0.5 );
+            uv_sample = fract( cell_p.xy * 2.0 + 0.5 );
         }
     }
 
     // Chromatic RGB dispersion sampling
-    float dispSpread = 0.02 * dsp * ( 1.0 + audioKick * 0.8 );
-    vec3  photoR = img( fract( st + vec2( dispSpread, 0.0 ) ) );
-    vec3  photoG = img( fract( st ) );
-    vec3  photoB = img( fract( st - vec2( dispSpread, 0.0 ) ) );
-    vec3  photo = vec3( photoR.r, photoG.g, photoB.b );
+    float disp_spread = 0.02 * dsp * ( 1.0 + audioKick * 0.8 );
+    vec3  photo_r = img( fract( st + vec2( disp_spread, 0.0 ) ) );
+    vec3  photo_g = img( fract( st ) );
+    vec3  photo_b = img( fract( st - vec2( disp_spread, 0.0 ) ) );
+    vec3  photo = vec3( photo_r.r, photo_g.g, photo_b.b );
 
     // Dichroic thin-film interference colors (cyan, magenta, gold)
-    vec3 dichroic = imgPalette( ( bounceCount * 0.4 + audioPhase ) * 0.159 );
+    vec3 dichroic = imgPalette( ( bounce_count * 0.4 + audioPhase ) * 0.159 );
 
     // Diamond specular glints on kick
     // Kompakter Zentrums-Glint statt des bildschirmbreiten weissen Kreuzes.
@@ -148,7 +148,7 @@ void main()
 
     // Combine visualizer
     vec3 col = mix( photo * 0.85, dichroic, 0.45 + 0.2 * audioSwell );
-    col += edgeAccum * vec3( 0.3, 0.9, 1.0 ) * ( 1.2 + audioKick * 2.5 );
+    col += edge_accum * vec3( 0.3, 0.9, 1.0 ) * ( 1.2 + audioKick * 2.5 );
     col += glint * vec3( 1.0, 0.98, 0.9 );
 
     if ( audioChromaHue != 0.0 )
@@ -161,7 +161,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.65;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.65;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

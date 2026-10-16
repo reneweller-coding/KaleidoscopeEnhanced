@@ -36,31 +36,31 @@ out float vBioGlow;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
+    vec3 world_p = attrA.xyz;
 
     // The vent's HEAT: harmonic warmth in the low mids drives the convection,
     // billowing the smoker column outward; a thin, hollow mix lets it collapse
     // back toward a narrow thread rising off the chimney.
-    worldP.xz *= 1.0 + 0.35 * clamp( audioLowMid, 0.0, 1.0 );
+    world_p.xz *= 1.0 + 0.35 * clamp( audioLowMid, 0.0, 1.0 );
 
     // Sensory dissonance shakes the plume into turbulent eddies -- consonant
     // harmony lets the streamers rise in smooth laminar ribbons.  The shimmer
     // rides audioPhase (pre-integrated), never `time` scaled by audio.
     // (The noise is seeded from the UNMODULATED generator position, so the
     // heat bloom above cannot drag the eddy pattern around underneath it.)
-    vec3  seedP = attrA.xyz;
+    vec3  seed_p = attrA.xyz;
     float turb = clamp( audioRoughness, 0.0, 1.0 ) * 0.25;
-    worldP += vec3( sin( audioPhase * 2.3 + seedP.y * 3.1 + seedP.x * 1.7 ),
-                    sin( audioPhase * 1.7 + seedP.z * 2.6 ),
-                    cos( audioPhase * 2.0 + seedP.y * 2.4 + seedP.z * 1.3 ) )
-              * turb;
+    world_p += vec3( sin( audioPhase * 2.3 + seed_p.y * 3.1 + seed_p.x * 1.7 ),
+                     sin( audioPhase * 1.7 + seed_p.z * 2.6 ),
+                     cos( audioPhase * 2.0 + seed_p.y * 2.4 + seed_p.z * 1.3 ) )
+               * turb;
 
-    vPos = worldP;
+    vPos = world_p;
     vSpecies = attrA.w;
     vBioGlow = attrB.w;
 
     // Stereoscopic 3D camera projection
-    vec3 vp = worldP;
+    vec3 vp = world_p;
     vp.z += 5.2;
     vp.x -= eyeOff;
 

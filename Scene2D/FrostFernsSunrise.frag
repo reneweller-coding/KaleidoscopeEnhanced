@@ -151,8 +151,8 @@ void main()
     // ferns are longer and denser there and a clear window stays in the
     // middle where the warmth of the room keeps the glass clear.
     vec2  ed0 = vec2( 0.5 * aspect, 0.5 ) - abs( p );
-    float edgeD = min( ed0.x * 0.8, ed0.y );
-    float cover = smoothstep( 0.4 * frost, 0.02, edgeD );
+    float edge_d = min( ed0.x * 0.8, ed0.y );
+    float cover = smoothstep( 0.4 * frost, 0.02, edge_d );
     float dens = 0.0;
     float cs = 0.1;
     vec2  gi0 = floor( p / cs );
@@ -197,7 +197,7 @@ void main()
     col = mix( col, vec3( 0.9, 0.85, 0.85 ), 0.08 * fbm( p * 4.0 ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

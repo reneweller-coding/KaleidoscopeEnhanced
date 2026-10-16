@@ -71,44 +71,44 @@ void main()
 
     // Linear phase gradient along X-axis: Phi(x) = xi * x
     float xi = ( gradSlopeP > 0.01 ? gradSlopeP : 2.5 );
-    float linPhase = uv.x * xi * 6.2831853;
+    float lin_phase = uv.x * xi * 6.2831853;
 
     // Helical phase for generating Optical Vortex (Orbital Angular Momentum L)
     float l_charge = floor( oamChargeP > 0.5 ? oamChargeP : 2.0 );
-    float oamPhase = l_charge * theta + audioPhase * 0.5;
+    float oam_phase = l_charge * theta + audioPhase * 0.5;
 
     // Combined metasurface phase profile
-    float totalPhase = linPhase + oamPhase - t * 3.0;
+    float total_phase = lin_phase + oam_phase - t * 3.0;
 
     // Subwavelength nanoantenna array grid
-    float gridFreq = ( antennaP > 0.01 ? antennaP : 12.0 );
-    vec2  gridCell = fract( uv * gridFreq ) - 0.5;
-    float antennaMask = smoothstep( 0.42, 0.32, length( gridCell ) );
+    float grid_freq = ( antennaP > 0.01 ? antennaP : 12.0 );
+    vec2  grid_cell = fract( uv * grid_freq ) - 0.5;
+    float antenna_mask = smoothstep( 0.42, 0.32, length( grid_cell ) );
 
     // Anomalous refracted wave (generalized Snellius beam)
-    float waveFront = cos( totalPhase );
-    float waveIntensity = pow( waveFront * 0.5 + 0.5, 2.0 ) * ( anomalousP > 0.01 ? anomalousP : 1.3 );
+    float wave_front = cos( total_phase );
+    float wave_intensity = pow( wave_front * 0.5 + 0.5, 2.0 ) * ( anomalousP > 0.01 ? anomalousP : 1.3 );
 
     // Central optical phase singularity (doughnut mode intensity null at center)
-    float donutMode = ( 1.0 - exp( -r * r * 14.0 ) );
+    float donut_mode = ( 1.0 - exp( -r * r * 14.0 ) );
 
     // Resonance flash on kick
-    float resFlash = exp( -r * 8.0 ) * ( 1.0 + 3.5 * audioKick );
+    float res_flash = exp( -r * 8.0 ) * ( 1.0 + 3.5 * audioKick );
 
     // Palette assignment
-    float palAngle = fract( totalPhase * 0.159 + audioCentroid );
-    vec3  colWave = imgPalette( palAngle );
-    vec3  colGrid = imgPalette( fract( palAngle + 0.5 ) ) * 1.6;
+    float pal_angle = fract( total_phase * 0.159 + audioCentroid );
+    vec3  col_wave = imgPalette( pal_angle );
+    vec3  col_grid = imgPalette( fract( pal_angle + 0.5 ) ) * 1.6;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colWave * waveIntensity * donutMode * ( 0.8 + 0.4 * audioSwell );
-    col += colGrid * antennaMask * ( 0.5 + 0.5 * waveFront ) * 1.2;
-    col += vec3( 0.9, 0.95, 1.0 ) * resFlash * 2.0;
-    col += colWave * ( audioKick * 0.35 );
+    col += col_wave * wave_intensity * donut_mode * ( 0.8 + 0.4 * audioSwell );
+    col += col_grid * antenna_mask * ( 0.5 + 0.5 * wave_front ) * 1.2;
+    col += vec3( 0.9, 0.95, 1.0 ) * res_flash * 2.0;
+    col += col_wave * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

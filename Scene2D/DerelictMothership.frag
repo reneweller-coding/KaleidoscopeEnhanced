@@ -125,8 +125,8 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
 
-    vec3 glowC = mix( vec3( 0.35, 0.6, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.2 );
-    vec3 emberC = mix( vec3( 1.0, 0.5, 0.15 ), imgPalette( 0.1 + hue * 0.159 ), 0.2 );
+    vec3 glow_c = mix( vec3( 0.35, 0.6, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.2 );
+    vec3 ember_c = mix( vec3( 1.0, 0.5, 0.15 ), imgPalette( 0.1 + hue * 0.159 ), 0.2 );
 
     // Space, a nebula haze, and the planet below with its blue limb.
     vec3 col = vec3( 0.006, 0.006, 0.014 );
@@ -148,20 +148,20 @@ void main()
         float lit = smoothstep( -0.4, 0.8, pq.x * 0.6 + pq.y );
         col = surf * lit * ( 0.5 + 0.4 * swell );
     }
-    col += glowC * exp( -abs( pd - pr ) * 40.0 ) * ( 0.6 + 0.4 * swell );
-    col += glowC * exp( -max( pd - pr, 0.0 ) * 6.0 ) * 0.12;
+    col += glow_c * exp( -abs( pd - pr ) * 40.0 ) * ( 0.6 + 0.4 * swell );
+    col += glow_c * exp( -max( pd - pr, 0.0 ) * 6.0 ) * 0.12;
 
     // The ship: a long wedge, tilted, drifting very slowly to the right.
     float tilt = -0.12;
     vec2  s = mat2( cos( tilt ), -sin( tilt ), sin( tilt ), cos( tilt ) ) * ( p - vec2( -0.1 + 0.004 * T, 0.14 ) ) / hp;
     float cx = s.x;
-    float halfH = 0.13 + 0.05 * smoothstep( 0.9, -0.6, cx )
-                  + 0.04 * step( 0.0, sin( cx * 3.0 + 1.0 ) ) * smoothstep( 0.8, -0.2, cx );
+    float half_h = 0.13 + 0.05 * smoothstep( 0.9, -0.6, cx )
+                   + 0.04 * step( 0.0, sin( cx * 3.0 + 1.0 ) ) * smoothstep( 0.8, -0.2, cx );
     // Superstructure blocks along the top edge.
     float blocks = 0.03 * step( 0.55, hash21( vec2( floor( cx * 9.0 ), 3.0 ) ) )
                    + 0.015 * step( 0.5, hash21( vec2( floor( cx * 23.0 ), 5.0 ) ) );
-    float top = halfH + blocks;
-    float bot = -halfH * 0.8 - 0.02 * step( 0.6, hash21( vec2( floor( cx * 7.0 ), 9.0 ) ) );
+    float top = half_h + blocks;
+    float bot = -half_h * 0.8 - 0.02 * step( 0.6, hash21( vec2( floor( cx * 7.0 ), 9.0 ) ) );
     // Bow taper at the right end, the ship runs out of frame on the left.
     float bow = smoothstep( 1.35, 0.95, cx );
     top *= bow;
@@ -169,25 +169,25 @@ void main()
     if ( s.y < top && s.y > bot )
     {
         vec2  pl = plating( s * 1.3 );
-        float edgeTop = top - s.y, edgeBot = s.y - bot;
+        float edge_top = top - s.y, edge_bot = s.y - bot;
         vec3  hull = vec3( 0.13, 0.14, 0.17 ) * ( 1.0 + pl.x ) * ( 0.55 + 0.45 * pl.y );
         // Planet light from below-left catches the lower edge; a rim along the top.
-        hull += glowC * exp( -edgeBot * 25.0 ) * 0.35 * ( 0.7 + 0.5 * swell );
-        hull += vec3( 0.6, 0.65, 0.75 ) * exp( -edgeTop * 60.0 ) * 0.25;
+        hull += glow_c * exp( -edge_bot * 25.0 ) * 0.35 * ( 0.7 + 0.5 * swell );
+        hull += vec3( 0.6, 0.65, 0.75 ) * exp( -edge_top * 60.0 ) * 0.25;
         // Breaches: torn holes where the plating is gone, ribs inside and
         // the orange glow of emergency lighting.
         float br = fbm( s * vec2( 4.0, 7.0 ) + 11.0 );
-        float breach = smoothstep( 0.66, 0.7, br ) * smoothstep( 0.02, 0.05, min( edgeTop, edgeBot ) );
+        float breach = smoothstep( 0.66, 0.7, br ) * smoothstep( 0.02, 0.05, min( edge_top, edge_bot ) );
         if ( breach > 0.0 )
         {
             float ribs = step( 0.65, fract( s.x * 60.0 ) ) + step( 0.8, fract( s.y * 30.0 ) ) * 0.6;
-            float glowIn = smoothstep( 0.66, 0.8, br );
+            float glow_in = smoothstep( 0.66, 0.8, br );
             float flick = 0.7 + 0.3 * sin( T * 0.7 + br * 20.0 );
-            vec3  inside = vec3( 0.02 ) + emberC * glowIn * 1.7 * flick * gp * ( 0.8 + 0.6 * kick );
-            inside = mix( inside, vec3( 0.08, 0.07, 0.07 ) * ( 0.6 + glowIn ), clamp( ribs, 0.0, 1.0 ) * 0.8 );
+            vec3  inside = vec3( 0.02 ) + ember_c * glow_in * 1.7 * flick * gp * ( 0.8 + 0.6 * kick );
+            inside = mix( inside, vec3( 0.08, 0.07, 0.07 ) * ( 0.6 + glow_in ), clamp( ribs, 0.0, 1.0 ) * 0.8 );
             hull = mix( hull, inside, breach );
             // Jagged, hot edge of the tear.
-            hull += emberC * exp( -abs( br - 0.68 ) * 90.0 ) * 0.4 * gp;
+            hull += ember_c * exp( -abs( br - 0.68 ) * 90.0 ) * 0.4 * gp;
         }
         // Running lights along the keel: round, slowly pulsing.
         float lx = fract( s.x * 7.0 ) - 0.5;
@@ -196,7 +196,7 @@ void main()
                      * step( 0.35, hash21( vec2( floor( s.x * 7.0 ), 1.0 ) ) );
         hull += vec3( 1.0, 0.25, 0.2 ) * lamp * ( 0.4 + 0.6 * ( 0.5 + 0.5 * sin( T * 1.2 + floor( s.x * 7.0 ) ) ) ) * gp
                 * ( 0.7 + 0.8 * kick );
-        col = mix( col, hull, smoothstep( 0.0, 0.003, min( edgeTop, edgeBot ) ) );
+        col = mix( col, hull, smoothstep( 0.0, 0.003, min( edge_top, edge_bot ) ) );
     }
 
     // Debris tumbling slowly across the foreground: small dark shards.
@@ -213,12 +213,12 @@ void main()
         vec2  dd = mat2( cos( a ), -sin( a ), sin( a ), cos( a ) ) * ( p - dc );
         float shard = max( abs( dd.x ) - size, abs( dd.y ) - size * 0.45 ) + 0.004 * noise2( dd * 200.0 );
         float m = smoothstep( 0.002, 0.0, shard );
-        vec3  dcol = vec3( 0.06, 0.06, 0.08 ) + glowC * 0.25 * smoothstep( -size * 0.45, size * 0.45, -dd.y );
+        vec3  dcol = vec3( 0.06, 0.06, 0.08 ) + glow_c * 0.25 * smoothstep( -size * 0.45, size * 0.45, -dd.y );
         col = mix( col, dcol, m );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

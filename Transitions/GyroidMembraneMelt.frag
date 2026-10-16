@@ -69,8 +69,8 @@ void main()
 
     float t = time * 0.0884 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // 3D gyroid coordinates (x, y, z(t))
     vec3 q = vec3( p * 12.0 * gyr, t * 1.5 );
@@ -83,29 +83,29 @@ void main()
     // 0.2*iso wide, so the sweep must START above max(g)+edge and END below
     // min(g)-edge — the old -1.3..+1.3 range (and inverted direction) left
     // half the frame showing the wrong scene at BOTH fade endpoints.
-    float targetIso = mix( 2.0, -2.0, tProg );
-    float distToSurface = g - targetIso;
+    float target_iso = mix( 2.0, -2.0, t_prog );
+    float dist_to_surface = g - target_iso;
 
     // Membrane normal displacement
     vec2 grad = vec2( cos( q.x ) * cos( q.y ) - sin( q.z ) * sin( q.x ),
                       -sin( q.x ) * sin( q.y ) + cos( q.y ) * cos( q.z ) );
-    vec2 disp = grad * 0.02 * midTransition * ( 1.0 + audioSwell * 0.6 );
+    vec2 disp = grad * 0.02 * mid_transition * ( 1.0 + audioSwell * 0.6 );
 
     vec4 c1 = texture( tex1, fract( uv + disp ) );
     vec4 c0 = texture( tex0, fract( uv - disp ) );
 
-    float wipeMask = smoothstep( -0.2 * iso, 0.2 * iso, distToSurface );
-    vec4  col = mix( c1, c0, wipeMask );
+    float wipe_mask = smoothstep( -0.2 * iso, 0.2 * iso, dist_to_surface );
+    vec4  col = mix( c1, c0, wipe_mask );
 
     // Glowing minimal surface boundary
-    float surfaceGlow = exp( -abs( distToSurface ) * 12.0 / iso ) * midTransition;
-    vec3  glowColor = mix( vec3( 0.2, 0.9, 1.0 ), vec3( 1.0, 0.4, 0.8 ), sin( q.z ) * 0.5 + 0.5 );
-    col.rgb += surfaceGlow * glowColor * ( 1.4 + audioKick * 1.0 );
+    float surface_glow = exp( -abs( dist_to_surface ) * 12.0 / iso ) * mid_transition;
+    vec3  glow_color = mix( vec3( 0.2, 0.9, 1.0 ), vec3( 1.0, 0.4, 0.8 ), sin( q.z ) * 0.5 + 0.5 );
+    col.rgb += surface_glow * glow_color * ( 1.4 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

@@ -46,19 +46,19 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-const uint kLoops = 160u;
-const uint kSegs = 64u;
-const uint kLoopInv = kLoops * kSegs; ///< 10240 ribbon quads = 61440 verts
-const uint kSpecks = 1200u;
-const uint kHaze = 1u;
+const uint Loops = 160u;
+const uint Segs = 64u;
+const uint LoopInv = Loops * Segs; ///< 10240 ribbon quads = 61440 verts
+const uint Specks = 1200u;
+const uint Haze = 1u;
 
 // Camera constants -- MUST stay in sync with the .vert, which tilts BEFORE it
 // translates.  The far field is laid out in frustum coordinates and rotated
 // back into world space with viewToWorld().
-const float kTilt = 0.55;
-const float kCamZ = 4.5;
-const float kTanY = 0.5206; ///< tan(55 deg / 2), the engine's scene FOV
-const float kAspect = 1.78;
+const float Tilt = 0.55;
+const float CamZ = 4.5;
+const float TanY = 0.5206; ///< tan(55 deg / 2), the engine's scene FOV
+const float Aspect = 1.78;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -99,9 +99,9 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness, float k
     // the view axis has a large z component, so every field line running along
     // x came out very nearly edge-on to the camera and drew a sliver instead of
     // the ribbon it asked for.  Crossing with the VIEW AXIS faces them all at
-    // the lens.  (kTilt is the .vert's fixed tilt, applied before the push.)
-    vec3  viewAxis = vec3( 0.0, sin( kTilt ), cos( kTilt ) );
-    vec3  side = cross( dir, viewAxis );
+    // the lens.  (Tilt is the .vert's fixed tilt, applied before the push.)
+    vec3  view_axis = vec3( 0.0, sin( Tilt ), cos( Tilt ) );
+    vec3  side = cross( dir, view_axis );
     float sl = length( side );
     side = ( sl > 1e-4 ) ? side * ( thickness / sl ) : vec3( thickness, 0.0, 0.0 );
 
@@ -150,10 +150,10 @@ void emitHazePanel( vec3 c, vec3 ax, vec3 ay )
 }
 
 /// Undo the .vert's fixed tilt: a point/direction given in view space (before
-/// the vert's +kCamZ push) mapped back to the world value that lands on it.
+/// the vert's +CamZ push) mapped back to the world value that lands on it.
 vec3 viewToWorld( vec3 vp )
 {
-    float c = cos( kTilt ), s = sin( kTilt );
+    float c = cos( Tilt ), s = sin( Tilt );
     return vec3( vp.x, vp.y * c + vp.z * s, -vp.y * s + vp.z * c );
 }
 
@@ -167,16 +167,16 @@ void main()
     // never audio * time (anti-flicker rule).
     float t = time * 0.45 + audioAdvance * 0.4;
 
-    if ( idx < kLoopInv )
+    if ( idx < LoopInv )
     {
-        uint loopIdx = idx / kSegs;
-        uint segIdx = idx % kSegs;
+        uint loop_idx = idx / Segs;
+        uint seg_idx = idx % Segs;
 
-        float seed = hash11( float( loopIdx ) * 29.13 );
-        float seed2 = hash11( float( loopIdx ) * 11.71 + 4.31 );
+        float seed = hash11( float( loop_idx ) * 29.13 );
+        float seed2 = hash11( float( loop_idx ) * 11.71 + 4.31 );
 
-        float s0 = float( segIdx ) / float( kSegs );
-        float s1 = float( segIdx + 1u ) / float( kSegs );
+        float s0 = float( seg_idx ) / float( Segs );
+        float s1 = float( seg_idx + 1u ) / float( Segs );
 
         float theta0 = s0 * 3.14159265;
         float theta1 = s1 * 3.14159265;
@@ -188,10 +188,10 @@ void main()
         // now belong to the outer magnetosphere, which is what reaches the
         // frame edges.
         const float Rstar = 0.30;
-        float       Lsh = 0.60 + pow( seed, 0.45 ) * 4.20;
+        float       lsh = 0.60 + pow( seed, 0.45 ) * 4.20;
         float       sh0 = sin( theta0 ), sh1 = sin( theta1 );
-        float       r0 = Rstar + ( Lsh - Rstar ) * sh0 * sh0;
-        float       r1 = Rstar + ( Lsh - Rstar ) * sh1 * sh1;
+        float       r0 = Rstar + ( lsh - Rstar ) * sh0 * sh0;
+        float       r1 = Rstar + ( lsh - Rstar ) * sh1 * sh1;
 
         // Twisted magnetosphere: the field shears in azimuth with latitude, so
         // the loops read as a spiral burst rather than a flat paper fan.
@@ -201,7 +201,7 @@ void main()
 
         // High-frequency torsional shear Alfven wave ripple along the loop;
         // the amplitude scales with the shell so outer loops ripple visibly.
-        float amp = 0.05 * ( 0.4 + 0.35 * Lsh );
+        float amp = 0.05 * ( 0.4 + 0.35 * lsh );
         float aw0 = sin( s0 * 24.0 - t * 6.0 + seed * 5.0 ) * amp;
         float aw1 = sin( s1 * 24.0 - t * 6.0 + seed * 5.0 ) * amp;
 
@@ -239,11 +239,11 @@ void main()
         return;
     }
 
-    uint sIdx = idx - kLoopInv;
+    uint s_idx = idx - LoopInv;
 
-    if ( sIdx < kSpecks )
+    if ( s_idx < Specks )
     {
-        float h = float( sIdx );
+        float h = float( s_idx );
         float r1 = hash11( h * 1.37 + 0.11 );
         float r2 = hash11( h * 2.71 + 5.37 );
         float r3 = hash11( h * 4.19 + 9.71 );
@@ -255,7 +255,7 @@ void main()
         float u = ( r1 * 2.0 - 1.0 ) * 1.05 + 0.04 * sin( t * 0.21 + r4 * 6.2831853 );
         float v = ( r2 * 2.0 - 1.0 ) * 1.05 + 0.03 * cos( t * 0.17 + r1 * 6.2831853 );
 
-        vec3 c = viewToWorld( vec3( u * D * kTanY * kAspect, v * D * kTanY, D - kCamZ ) );
+        vec3 c = viewToWorld( vec3( u * D * TanY * Aspect, v * D * TanY, D - CamZ ) );
         // At 0.0024..0.0056 a speck came out about 5 px across at 1080p, which
         // the catalogue's ~6x measuring downscale averages away completely.
         float sz = D * ( 0.0040 + 0.0055 * r4 );
@@ -268,16 +268,16 @@ void main()
         return;
     }
 
-    if ( sIdx < kSpecks + kHaze )
+    if ( s_idx < Specks + Haze )
     {
         // One oversized panel far behind everything, exactly view-aligned, so
         // no tile of the frame is ever bare clear colour.  34, not 26: this
         // pass is OPAQUE and depth-tested, and the speck field reaches D = 28 --
         // a closer panel would simply hide its far half.
         float D = 34.0;
-        vec3  c = viewToWorld( vec3( 0.0, 0.0, D - kCamZ ) );
-        vec3  ax = vec3( D * kTanY * kAspect * 1.45, 0.0, 0.0 );
-        vec3  ay = viewToWorld( vec3( 0.0, D * kTanY * 1.45, 0.0 ) );
+        vec3  c = viewToWorld( vec3( 0.0, 0.0, D - CamZ ) );
+        vec3  ax = vec3( D * TanY * Aspect * 1.45, 0.0, 0.0 );
+        vec3  ay = viewToWorld( vec3( 0.0, D * TanY * 1.45, 0.0 ) );
         emitHazePanel( c, ax, ay );
     }
 }

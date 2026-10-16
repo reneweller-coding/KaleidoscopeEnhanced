@@ -77,7 +77,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float dens = 9.0 + 6.0 * clamp( densP, 0.0, 1.0 );
-    float sizeF = 0.7 + 0.5 * clamp( sizeP, 0.0, 1.0 );
+    float size_f = 0.7 + 0.5 * clamp( sizeP, 0.0, 1.0 );
     float open = clamp( audioSwell, 0.0, 1.0 );
     float sun = 0.6 + 0.6 * open;
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -111,10 +111,10 @@ void main()
         vec2  fq = ff - off * 0.6;
         int   k = int( mod( floor( cell.x * 0.31 + cell.y * 0.47 ) * 5.0, 12.0 ) );
         float e = clamp( audioChroma[k] * 1.5, 0.0, 1.0 );
-        vec3  petalCol = ( mix( imgPalette( hue * 0.159 + float( k ) / 12.0 ) * 1.6, vec3( 1.0, 0.85, 0.3 ), 0.25 )
-                           + 0.3 )
-                         * ( 0.7 + 0.6 * e );
-        float scale = 0.3 * sizeF;
+        vec3  petal_col = ( mix( imgPalette( hue * 0.159 + float( k ) / 12.0 ) * 1.6, vec3( 1.0, 0.85, 0.3 ), 0.25 )
+                            + 0.3 )
+                          * ( 0.7 + 0.6 * e );
+        float scale = 0.3 * size_f;
         float spread = 0.6 + 0.4 * smoothstep( 0.0, 1.0, open );  // petals unfold outward (never fully closed)
         float sway = 0.03 * sin( clock * 1.5 + cell.x + cell.y ); // the gust is light only (V7d)
         fq += vec2( sway, 0.0 );
@@ -127,9 +127,9 @@ void main()
         }
         float centre = smoothstep( scale * 0.3, scale * 0.2, length( fq ) );
         float has = step( 0.15, hash21( cell + 1.1 ) );
-        vec3  centreCol = img( fract( cell * 0.07 ) ) * 1.2 * vec3( 1.0, 0.9, 0.5 );
-        col = mix( col, petalCol * ( 0.7 + 0.3 * ( 1.0 - length( fq ) / scale ) ) * sun, petals * has );
-        col = mix( col, centreCol * sun, centre * has );
+        vec3  centre_col = img( fract( cell * 0.07 ) ) * 1.2 * vec3( 1.0, 0.9, 0.5 );
+        col = mix( col, petal_col * ( 0.7 + 0.3 * ( 1.0 - length( fq ) / scale ) ) * sun, petals * has );
+        col = mix( col, centre_col * sun, centre * has );
         // Pollen glitter on the treble.
         col += vec3( 1.0, 0.95, 0.6 ) * centre * has * hi * 0.6;
         // Bees: round dots moving on the clock over the near field.
@@ -148,7 +148,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

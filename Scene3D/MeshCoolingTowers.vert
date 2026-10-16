@@ -29,26 +29,26 @@ out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 out float vInst;
 
-const float kGround = -22.0;
+const float Ground = -22.0;
 
 /// The three towers' feet, shared with the fragment stage.
 vec3 towerFoot( int i )
 {
     if ( i == 0 )
-        return vec3( -66.0, kGround, 165.0 );
+        return vec3( -66.0, Ground, 165.0 );
     if ( i == 1 )
-        return vec3( 4.0, kGround, 148.0 );
-    return vec3( 72.0, kGround, 172.0 );
+        return vec3( 4.0, Ground, 148.0 );
+    return vec3( 72.0, Ground, 172.0 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int  inst = gl_InstanceID;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
     vInst = float( inst );
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = 30.0 * ( sizeP > 0.01 ? sizeP : 1.0 ); // half of the tower's height
         vec3  c = attrA.xyz - meshCenter;
@@ -57,9 +57,9 @@ void main()
         // A different yaw per tower so the three do not read as one copy.
         float yaw = 3.14159265 + 1.1 * float( inst );
         float cy = cos( yaw ), sy = sin( yaw );
-        mat3  yawM = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        world = yawM * local + towerFoot( inst ) + vec3( 0.0, meshExtent.y / mx * sz, 0.0 );
-        n = normalize( yawM * attrB.xyz );
+        mat3  yaw_m = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        world = yaw_m * local + towerFoot( inst ) + vec3( 0.0, meshExtent.y / mx * sz, 0.0 );
+        n = normalize( yaw_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
@@ -84,10 +84,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

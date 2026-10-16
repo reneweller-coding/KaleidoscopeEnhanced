@@ -38,12 +38,12 @@ void main()
     // is: dull material spreads a broad soft sheen over the swell, bright
     // cymbal-rich material pulls it into tight hard sparkles.  Only the
     // exponent moves, so the highlight never gets brighter than it already is.
-    vec3  lightDir = normalize( vec3( 0.3, 0.9, -0.4 ) );
+    vec3  light_dir = normalize( vec3( 0.3, 0.9, -0.4 ) );
     vec3  n = normalize( vNormal );
     float shrp = clamp( audioSharpness, 0.0, 1.0 );
-    float specPow = mix( 16.0, 64.0, shrp );
-    float specGain = mix( 0.55, 1.0, shrp ); // wide sheen stays dim, tight glint burns
-    float spec = pow( max( dot( reflect( -lightDir, n ), vec3( 0, 0, 1 ) ), 0.0 ), specPow ) * specGain;
+    float spec_pow = mix( 16.0, 64.0, shrp );
+    float spec_gain = mix( 0.55, 1.0, shrp ); // wide sheen stays dim, tight glint burns
+    float spec = pow( max( dot( reflect( -light_dir, n ), vec3( 0, 0, 1 ) ), 0.0 ), spec_pow ) * spec_gain;
 
     vec3 col = mix( vCol.rgb, photo * 1.2, 0.45 );
     col += pow( vBioGlow, 1.8 ) * vec3( 0.1, 0.95, 1.0 ) * 1.0;
@@ -51,7 +51,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

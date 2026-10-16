@@ -81,34 +81,35 @@ void main()
 
     // 32 petals, one per beat of the phrase.  The hand is the phrase
     // position; petals behind it are filled, ahead of it are outlines.
-    float petalAng = fract( a * 0.15915494 + 0.25 ); // 0..1 around
-    float beatIdx = petalAng * 32.0;
-    float filled = step( beatIdx, audioPhrasePos * 32.0 );
-    float hand = exp( -abs( petalAng - audioPhrasePos ) * 60.0 )
-                 + exp( -abs( petalAng - audioPhrasePos + 1.0 ) * 60.0 );
+    float petal_ang = fract( a * 0.15915494 + 0.25 ); // 0..1 around
+    float beat_idx = petal_ang * 32.0;
+    float filled = step( beat_idx, audioPhrasePos * 32.0 );
+    float hand = exp( -abs( petal_ang - audioPhrasePos ) * 60.0 )
+                 + exp( -abs( petal_ang - audioPhrasePos + 1.0 ) * 60.0 );
 
     // Petal shape in polar space: a lobe per beat.
-    float lobe = 0.5 + 0.5 * cos( fract( beatIdx ) * 6.2831853 );
+    float lobe = 0.5 + 0.5 * cos( fract( beat_idx ) * 6.2831853 );
     float inner = 0.16; // the drop is light, not scale (V7d)
-    float outerBase = ( 0.42 + 0.22 * lobe ) * pet;
-    float outer = mix( outerBase, outerBase * 0.55, tension );
-    float inPetal = smoothstep( inner - 0.01, inner + 0.01, r ) * ( 1.0 - smoothstep( outer - 0.01, outer + 0.01, r ) );
+    float outer_base = ( 0.42 + 0.22 * lobe ) * pet;
+    float outer = mix( outer_base, outer_base * 0.55, tension );
+    float in_petal = smoothstep( inner - 0.01, inner + 0.01, r )
+                     * ( 1.0 - smoothstep( outer - 0.01, outer + 0.01, r ) );
     float edge = exp( -abs( r - outer ) * 90.0 ) + exp( -abs( r - inner ) * 90.0 );
 
     // Bar rings: 8 faint rings mark the bars, the innermost ticks per beat.
-    float barRing = 0.0;
+    float bar_ring = 0.0;
     for ( int b = 1; b <= 8; ++b )
-        barRing += exp( -abs( r - inner - ( outer - inner ) * float( b ) / 8.0 ) * 120.0 ) * 0.3;
+        bar_ring += exp( -abs( r - inner - ( outer - inner ) * float( b ) / 8.0 ) * 120.0 ) * 0.3;
     float tick = exp( -abs( r - inner * 0.8 ) * 80.0 ) * ( 0.5 + 0.5 * cos( audioBeatPhase * 6.2831853 ) );
 
     // Colour: filled petals in the palette, heating with the tension.
-    vec3 petalCol = imgPalette( hue * 0.159 + petalAng * 0.5 );
+    vec3 petal_col = imgPalette( hue * 0.159 + petal_ang * 0.5 );
     vec3 hot = imgPalette( hue * 0.159 + 0.9 ) * 1.4;
-    vec3 fillCol = mix( petalCol, hot, tension * 0.8 );
-    vec3 col = fillCol * inPetal * ( 0.35 + 0.8 * filled ) * ( 0.8 + 0.5 * audioLevel );
+    vec3 fill_col = mix( petal_col, hot, tension * 0.8 );
+    vec3 col = fill_col * in_petal * ( 0.35 + 0.8 * filled ) * ( 0.8 + 0.5 * audioLevel );
     col += imgPalette( hue * 0.159 + 0.6 ) * edge * 0.5;
-    col += imgPalette( hue * 0.159 + 0.2 ) * ( barRing + tick ) * 0.6;
-    col += hot * hand * inPetal * 1.2;
+    col += imgPalette( hue * 0.159 + 0.2 ) * ( bar_ring + tick ) * 0.6;
+    col += hot * hand * in_petal * 1.2;
 
     // Kick: petal tips flash.
     col += hot * exp( -abs( r - outer ) * 40.0 ) * audioKick * 0.6;
@@ -122,9 +123,9 @@ void main()
     vec2  bp = vec2( ca * p.x - sa * p.y, sa * p.x + ca * p.y ) * 0.5 + 0.5;
     vec3  bg = img( clamp( bp, 0.0, 1.0 ) );
     bg = mix( vec3( dot( bg, vec3( 0.333 ) ) ), bg, 0.4 ) * ( 0.10 + 0.10 * audioSwell );
-    col += bg * ( 1.0 - inPetal * 0.8 );
+    col += bg * ( 1.0 - in_petal * 0.8 );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

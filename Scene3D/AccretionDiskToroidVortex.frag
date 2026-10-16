@@ -72,13 +72,13 @@ void main()
     vec3 photo = img( vTexCoord );
 
     // Relativistic Doppler beaming palette (approaching = intense cyan-white, receding = deep ruby redshift)
-    vec3 blueShift = vec3( 0.3, 0.9, 1.0 ) * 1.5;
-    vec3 redShift = vec3( 0.9, 0.15, 0.05 ) * 0.6;
+    vec3 blue_shift = vec3( 0.3, 0.9, 1.0 ) * 1.5;
+    vec3 red_shift = vec3( 0.9, 0.15, 0.05 ) * 0.6;
     // Spectral rolloff sets the beaming COLOUR TEMPERATURE: when the energy
     // sits low the whole ring cools toward ruby redshift, when it reaches up
     // into the highs the approaching limb burns cyan-white.
-    float dopTemp = clamp( vDoppler * 0.5 + 0.5 + ( audioRolloff - 0.45 ) * 0.55, 0.0, 1.0 );
-    vec3  dopplerColor = mix( redShift, blueShift, dopTemp );
+    float dop_temp = clamp( vDoppler * 0.5 + 0.5 + ( audioRolloff - 0.45 ) * 0.55, 0.0, 1.0 );
+    vec3  doppler_color = mix( red_shift, blue_shift, dop_temp );
 
     // Accretion disk incandescent glow — a rim around the ISCO edge, not a
     // frame-filling flood (old gain washed everything white).
@@ -86,22 +86,22 @@ void main()
     // Zwicker sharpness tightens the rim: dull material leaves a soft halo,
     // cymbal-bright material draws it down to a hard incandescent wire.
     // (Tightening only ever REMOVES energy, so exposure stays put.)
-    float rimTight = 2.2 * ( 1.0 + 0.75 * audioSharpness );
-    float innerGlow = exp( -abs( r - 1.1 ) * rimTight ) * ( 0.7 + audioKick * 0.7 + audioHigh * 0.4 );
+    float rim_tight = 2.2 * ( 1.0 + 0.75 * audioSharpness );
+    float inner_glow = exp( -abs( r - 1.1 ) * rim_tight ) * ( 0.7 + audioKick * 0.7 + audioHigh * 0.4 );
 
     // Lighting
-    vec3  lightDir = normalize( vec3( 0.0, 1.0, 0.0 ) );
-    float diff = max( dot( vNormal, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.0, 1.0, 0.0 ) );
+    float diff = max( dot( vNormal, light_dir ), 0.0 );
 
-    vec3 col = mix( photo, dopplerColor, 0.55 );
-    col = col * ( 0.4 + 0.6 * diff ) + innerGlow * vec3( 1.0, 0.95, 0.7 ) * 1.1;
+    vec3 col = mix( photo, doppler_color, 0.55 );
+    col = col * ( 0.4 + 0.6 * diff ) + inner_glow * vec3( 1.0, 0.95, 0.7 ) * 1.1;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.55;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.55;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

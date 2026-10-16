@@ -36,7 +36,7 @@ uniform uint  frame;
 uniform float rain;      ///< erosion strength
 uniform float capacityK; ///< how much sediment the water can carry
 
-const int STEPS = 64;
+const int Steps = 64;
 
 /// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg( inout uint s )
@@ -94,7 +94,7 @@ void main()
     float water = 1.0;
     float sed = 0.0;
 
-    for ( int s = 0; s < STEPS; ++s )
+    for ( int s = 0; s < Steps; ++s )
     {
         ivec2 ip = ivec2( pos );
         float h = hAt( ip );
@@ -120,8 +120,8 @@ void main()
         if ( pos.x < 2.0 || pos.y < 2.0 || pos.x > float( size.x ) - 3.0 || pos.y > float( size.y ) - 3.0 )
             break;
 
-        float hNew = hAt( ivec2( pos ) );
-        float drop = h - hNew; // > 0 = running downhill
+        float h_new = hAt( ivec2( pos ) );
+        float drop = h - h_new; // > 0 = running downhill
 
         // Carrying capacity grows with slope and speed: fast water on a steep
         // slope cuts, slow water on the flat drops its load.  That single rule

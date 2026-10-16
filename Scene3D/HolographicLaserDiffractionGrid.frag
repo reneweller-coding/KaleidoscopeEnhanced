@@ -35,9 +35,9 @@ void main()
 
     // Specular laser glint
     vec3  n = normalize( vNormal );
-    vec3  lightDir = normalize( vec3( 0.3, 0.8, -0.5 ) );
-    vec3  viewDir = normalize( -vWorldPos );
-    float spec = pow( max( dot( viewDir, reflect( -lightDir, n ) ), 0.0 ), 32.0 );
+    vec3  light_dir = normalize( vec3( 0.3, 0.8, -0.5 ) );
+    vec3  view_dir = normalize( -vWorldPos );
+    float spec = pow( max( dot( view_dir, reflect( -light_dir, n ) ), 0.0 ), 32.0 );
 
     vec3 col = mix( vCol.rgb * 0.45, photo * 1.4, 0.65 );
     col += fringe * vCol.rgb * 1.6;

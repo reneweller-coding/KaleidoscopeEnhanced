@@ -81,26 +81,26 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
-    int   nD = 7 + int( clamp( dancersP, 0.0, 1.0 ) * 5.99 );
+    int   n_d = 7 + int( clamp( dancersP, 0.0, 1.0 ) * 5.99 );
 
     // Floor: dark polished wood (the photo), lit by warm lamps.
-    vec3 lampC = mix( vec3( 1.0, 0.78, 0.5 ), imgPalette( hue * 0.159 + 0.08 ), 0.2 );
+    vec3 lamp_c = mix( vec3( 1.0, 0.78, 0.5 ), imgPalette( hue * 0.159 + 0.08 ), 0.2 );
     vec2 wq = vec2( p.x * 2.0, p.y * 18.0 );
     vec3 wood = img( fract( vec2( p.x * 0.3, p.y * 0.3 ) + 0.2 ) ) * vec3( 0.35, 0.22, 0.12 );
     wood *= 0.7 + 0.3 * noise2( wq ) + 0.1 * step( 0.95, fract( p.y * 9.0 ) );
     float lamps = 0.6 + 0.9 * exp( -dot( p, p ) * 1.2 );
-    vec3  col = wood * lampC * lamps * ( 0.5 + 0.5 * swell );
+    vec3  col = wood * lamp_c * lamps * ( 0.5 + 0.5 * swell );
 
     // The ring of dancers.
-    float ringR = 0.34;
-    float ringA = sceneTime * 0.05;
+    float ring_r = 0.34;
+    float ring_a = sceneTime * 0.05;
     for ( int k = 0; k < 12; ++k )
     {
-        if ( k >= nD )
+        if ( k >= n_d )
             break;
         float fk = float( k );
-        float a = ringA + fk / float( nD ) * 6.2831853;
-        vec2  c = vec2( cos( a ), sin( a ) ) * ringR * vec2( 1.25, 1.0 );
+        float a = ring_a + fk / float( n_d ) * 6.2831853;
+        vec2  c = vec2( cos( a ), sin( a ) ) * ring_r * vec2( 1.25, 1.0 );
         float sk = 0.11 + 0.02 * hash11( fk ); // skirt radius
         vec2  d = p - c;
         float r = length( d ) / sk;
@@ -118,7 +118,7 @@ void main()
         vec3  cloth = mix( vec3( 0.97, 0.96, 0.94 ), imgPalette( hue * 0.159 + fk * 0.05 ) * 1.3, 0.06 );
         float disc = smoothstep( 1.0, 0.9, r );
         float lum = ( 0.55 + 0.25 * folds ) * ( 0.7 + 0.25 * r ) * ( 0.75 + 0.6 * e );
-        vec3  skirt = cloth * lum * mix( vec3( 1.0 ), lampC, 0.35 );
+        vec3  skirt = cloth * lum * mix( vec3( 1.0 ), lamp_c, 0.35 );
         // The hem: a brighter ring with sparkle.
         float hem = exp( -abs( r - 0.97 ) * 40.0 );
         skirt += cloth * hem * ( 0.35 + 0.8 * hi * noise2( vec2( ang * 10.0 + spin, fk ) ) );
@@ -126,7 +126,7 @@ void main()
         float head = smoothstep( 0.2, 0.15, r );
         skirt = mix( skirt, vec3( 0.12, 0.08, 0.06 ), head );
         // Motion halo: the exposure smears light outside the disc.
-        col += cloth * lampC * exp( -max( r - 1.0, 0.0 ) * 12.0 ) * ( 1.0 - disc ) * 0.25 * ( 0.6 + e );
+        col += cloth * lamp_c * exp( -max( r - 1.0, 0.0 ) * 12.0 ) * ( 1.0 - disc ) * 0.25 * ( 0.6 + e );
         col = mix( col, skirt, disc );
         // Soft shadow on the floor, down-right.
         vec2 sd = ( p - c - vec2( 0.02, -0.02 ) ) / sk;
@@ -134,7 +134,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -233,10 +233,10 @@ void main()
     float hi = clamp( audioHigh * 1.5, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  waterC = mix( vec3( 0.1, 0.25, 0.5 ), vec3( 0.2, 0.45, 0.3 ), mode );
+    vec3  water_c = mix( vec3( 0.1, 0.25, 0.5 ), vec3( 0.2, 0.45, 0.3 ), mode );
     vec2  uv = p * 0.5 + 0.5;
     vec3  behind = imgLod( uv, 3.0 );
-    vec3  col = mix( waterC * 0.15, behind * waterC * 1.5, 0.3 + 0.4 * swell );
+    vec3  col = mix( water_c * 0.15, behind * water_c * 1.5, 0.3 + 0.4 * swell );
     float T = 0.25 * sceneTime + 1.5 * audioAdvance;
     float cw = 0.25 + 0.3 * clamp( columnP, 0.0, 1.0 );
     float plume = 0.02 + 0.08 * clamp( audioSpread, 0.0, 1.0 );
@@ -246,10 +246,10 @@ void main()
         float fl = float( L ); // bubble size class: 0 big .. 2 small
         float R = ( 0.035 - 0.009 * fl ) * ( 0.7 + 0.6 * clamp( sizeP, 0.0, 1.0 ) );
         float spacing = R * 3.2;
-        float colI = floor( p.x / cw + fl * 0.33 );
+        float col_i = floor( p.x / cw + fl * 0.33 );
         for ( int k = -1; k <= 1; ++k )
         {
-            float ci = colI + float( k );
+            float ci = col_i + float( k );
             float h = hash11( ci * 1.37 + fl * 5.0 );
             if ( h > 0.7 )
                 continue;
@@ -266,18 +266,18 @@ void main()
                 float wob = plume * ( hb - 0.5 ) * 2.0 + ( 0.01 + 0.02 * fl ) * sin( b * 1.7 + T * ( 3.0 + fl * 3.0 ) );
                 vec2  c = vec2( cx + wob, ( b + 0.5 ) * spacing - T * speed * 0.3 );
                 vec2  d = p - c;
-                float Rb = R * ( 0.7 + 0.6 * hash21( vec2( ci, b ) + 3.0 ) );
+                float rb = R * ( 0.7 + 0.6 * hash21( vec2( ci, b ) + 3.0 ) );
                 // Big bubbles flatten and wobble.
                 d.y *= 1.0 + ( 0.25 - 0.1 * fl ) * ( 0.5 + 0.5 * sin( T * 4.0 + b ) );
-                float r = length( d ) / Rb;
+                float r = length( d ) / rb;
                 if ( r > 1.3 )
                     continue;
-                float inside = smoothstep( 1.0 + pxs / Rb, 1.0 - pxs / Rb, r );
+                float inside = smoothstep( 1.0 + pxs / rb, 1.0 - pxs / rb, r );
                 // Lens: the photo behind, flipped and squeezed.
-                vec3  lensC = imgLod( uv - d * ( 2.0 + 4.0 * clamp( lensP, 0.0, 1.0 ) ), 2.0 ) * waterC * 1.8;
+                vec3  lens_c = imgLod( uv - d * ( 2.0 + 4.0 * clamp( lensP, 0.0, 1.0 ) ), 2.0 ) * water_c * 1.8;
                 float rim = smoothstep( 0.75, 1.0, r ) * inside;
-                float hl = smoothstep( 0.35, 0.1, length( d / Rb - vec2( -0.35, 0.35 ) ) );
-                vec3  bc = mix( lensC * 0.6, mix( waterC, vec3( 1.0 ), 0.6 ), rim * ( 0.7 + 0.8 * kick ) )
+                float hl = smoothstep( 0.35, 0.1, length( d / rb - vec2( -0.35, 0.35 ) ) );
+                vec3  bc = mix( lens_c * 0.6, mix( water_c, vec3( 1.0 ), 0.6 ), rim * ( 0.7 + 0.8 * kick ) )
                            + vec3( 1.0 ) * hl * ( 0.6 + hi * step( 1.5, fl ) * 1.0 );
                 col = mix( col, bc, inside );
             }

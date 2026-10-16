@@ -59,7 +59,7 @@ void main()
     float lap = tile[l.y][l.x - 1] + tile[l.y][l.x + 1]
                 + tile[l.y - 1][l.x] + tile[l.y + 1][l.x] - 4.0 * h;
 
-    float hNew = ( 2.0 * h - hprev + speed * lap ) * damp;
+    float h_new = ( 2.0 * h - hprev + speed * lap ) * damp;
 
     // Stone: a smooth dimple, so the wave front stays band-limited (a hard
     // spike would alias into checkerboard noise on the very first step).
@@ -67,8 +67,8 @@ void main()
     {
         vec2  uv = ( vec2( p ) + 0.5 ) / vec2( size );
         float d = length( ( uv - dropPos ) * vec2( float( size.x ) / float( size.y ), 1.0 ) );
-        hNew += dropAmp * exp( -d * d * 900.0 );
+        h_new += dropAmp * exp( -d * d * 900.0 );
     }
 
-    imageStore( imgDst, p, vec4( clamp( hNew, -4.0, 4.0 ), h, 0.0, 1.0 ) );
+    imageStore( imgDst, p, vec4( clamp( h_new, -4.0, 4.0 ), h, 0.0, 1.0 ) );
 }

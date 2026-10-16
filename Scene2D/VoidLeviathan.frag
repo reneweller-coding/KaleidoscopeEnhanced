@@ -185,18 +185,18 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 biolumColor = imgPalette( 0.7 + audioCentroid * 0.2 ); // bioluminescent glow
-    vec3 skinColor = vec3( 0.17, 0.23, 0.28 ); // dark, deep sea/void color -- but a body that reads, not a silhouette
+    vec3 biolum_color = imgPalette( 0.7 + audioCentroid * 0.2 ); // bioluminescent glow
+    vec3 skin_color = vec3( 0.17, 0.23, 0.28 ); // dark, deep sea/void color -- but a body that reads, not a silhouette
 
     if ( d < 80.0 )
     {
         vec3 n = calcNormal( p, sp );
 
         // Ambient starlight / very faint distant sun
-        vec3  lightDir = normalize( vec3( 1.0, 0.5, 0.5 ) );
-        float dif = max( dot( n, lightDir ), 0.0 );
+        vec3  light_dir = normalize( vec3( 1.0, 0.5, 0.5 ) );
+        float dif = max( dot( n, light_dir ), 0.0 );
 
-        col = skinColor * ( 0.38 + dif * ( 0.8 + audioSwell * 0.4 ) );
+        col = skin_color * ( 0.38 + dif * ( 0.8 + audioSwell * 0.4 ) );
 
         // Bioluminescent patterns on the skin
         // Create intricate patterns using fbm and sine waves
@@ -207,10 +207,10 @@ void main()
         // Reaction to kick
         float flash = step( 0.9, hash11( floor( p.y * 0.5 ) + floor( time * 4.00 ) ) );
 
-        col += biolumColor * stripe * gp * ( 1.35 + flash * audioKick * 5.0 );
+        col += biolum_color * stripe * gp * ( 1.35 + flash * audioKick * 5.0 );
 
         // Specular reflection (wet/leathery)
-        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 16.0 );
+        float spec = pow( max( dot( reflect( -light_dir, n ), -rd ), 0.0 ), 16.0 );
         col += vec3( 0.2 ) * spec * ( 0.1 + audioSwell * 0.2 );
 
         col *= clamp( 1.0 - float( steps ) * 0.01, 0.1, 1.0 );
@@ -245,7 +245,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

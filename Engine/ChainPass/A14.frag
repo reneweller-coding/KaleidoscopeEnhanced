@@ -40,34 +40,34 @@ vec2 cmul( vec2 a, vec2 b )
 /// @brief Three-fold (hexagonal) wave term for the Farris wallpapers.
 vec2 hexWave3( vec2 X, float n, float m )
 {
-    const float TAU = 6.2831853;
+    const float Tau = 6.2831853;
     vec2        Y = vec2( X.x + X.y * 0.5773503, X.y * 1.1547005 );
-    return ( cexpi( TAU * ( n * Y.x + m * Y.y ) ) + cexpi( TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-             + cexpi( TAU * ( -( n + m ) * Y.x + n * Y.y ) ) )
+    return ( cexpi( Tau * ( n * Y.x + m * Y.y ) ) + cexpi( Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+             + cexpi( Tau * ( -( n + m ) * Y.x + n * Y.y ) ) )
            / 3.0;
 }
 /// @brief Four-fold (square) wave term for the Farris wallpapers.
 vec2 sqWave4( vec2 X, float n, float m )
 {
-    const float TAU = 6.2831853;
-    return ( cexpi( TAU * ( n * X.x + m * X.y ) ) + cexpi( TAU * ( -m * X.x + n * X.y ) )
-             + cexpi( TAU * ( -n * X.x - m * X.y ) ) + cexpi( TAU * ( m * X.x - n * X.y ) ) )
+    const float Tau = 6.2831853;
+    return ( cexpi( Tau * ( n * X.x + m * X.y ) ) + cexpi( Tau * ( -m * X.x + n * X.y ) )
+             + cexpi( Tau * ( -n * X.x - m * X.y ) ) + cexpi( Tau * ( m * X.x - n * X.y ) ) )
            / 4.0;
 }
 /// @brief One Farris wave term of a wallpaper symmetry.
 vec2 farrisWave( vec2 X, int kind, float n, float m )
 {
-    const float TAU = 6.2831853;
+    const float Tau = 6.2831853;
     if ( kind == 6 )
         return 0.5 * ( hexWave3( X, n, m ) + hexWave3( X, m, n ) );
     if ( kind >= 10 )
     {
         vec2 Z = kind == 13 ? X * vec2( 0.8, 1.3 ) : vec2( X.x + 0.3 * X.y, X.y * 1.1 );
-        vec2 w = cexpi( TAU * ( n * Z.x + m * Z.y ) );
+        vec2 w = cexpi( Tau * ( n * Z.x + m * Z.y ) );
         if ( kind == 11 )
-            w += cexpi( -TAU * ( n * Z.x + m * Z.y ) );
+            w += cexpi( -Tau * ( n * Z.x + m * Z.y ) );
         if ( kind == 12 || kind == 13 )
-            w += cexpi( TAU * ( n * Z.x - m * Z.y ) );
+            w += cexpi( Tau * ( n * Z.x - m * Z.y ) );
         return w / ( kind == 10 ? 1.0 : 2.0 );
     }
     if ( kind == 7 )
@@ -78,32 +78,32 @@ vec2 farrisWave( vec2 X, int kind, float n, float m )
     {
         vec2 Z = X * vec2( 0.8, 1.3 );
         return 0.25
-               * ( cexpi( TAU * ( n * Z.x + m * Z.y ) ) + cexpi( -TAU * ( n * Z.x + m * Z.y ) )
-                   + cexpi( TAU * ( n * Z.x - m * Z.y ) ) + cexpi( -TAU * ( n * Z.x - m * Z.y ) ) );
+               * ( cexpi( Tau * ( n * Z.x + m * Z.y ) ) + cexpi( -Tau * ( n * Z.x + m * Z.y ) )
+                   + cexpi( Tau * ( n * Z.x - m * Z.y ) ) + cexpi( -Tau * ( n * Z.x - m * Z.y ) ) );
     }
     if ( kind == 1 || kind == 2 )
     {
         vec2 Y = vec2( X.x + X.y * 0.5773503, X.y * 1.1547005 );
-        vec2 w = cexpi( TAU * ( n * Y.x + m * Y.y ) ) + cexpi( TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-                 + cexpi( TAU * ( -( n + m ) * Y.x + n * Y.y ) );
+        vec2 w = cexpi( Tau * ( n * Y.x + m * Y.y ) ) + cexpi( Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+                 + cexpi( Tau * ( -( n + m ) * Y.x + n * Y.y ) );
         if ( kind == 2 )
-            w += cexpi( -TAU * ( n * Y.x + m * Y.y ) ) + cexpi( -TAU * ( m * Y.x - ( n + m ) * Y.y ) )
-                 + cexpi( -TAU * ( -( n + m ) * Y.x + n * Y.y ) );
+            w += cexpi( -Tau * ( n * Y.x + m * Y.y ) ) + cexpi( -Tau * ( m * Y.x - ( n + m ) * Y.y ) )
+                 + cexpi( -Tau * ( -( n + m ) * Y.x + n * Y.y ) );
         return w / ( kind == 2 ? 6.0 : 3.0 );
     }
     if ( kind == 4 || kind == 5 )
     {
         float sg = mod( n, 2.0 ) < 0.5 ? 1.0 : -1.0;
-        vec2  w = cexpi( TAU * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( TAU * ( n * X.x - m * X.y * 0.7 ) );
+        vec2  w = cexpi( Tau * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( Tau * ( n * X.x - m * X.y * 0.7 ) );
         if ( kind == 5 )
-            w += cexpi( -TAU * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( TAU * ( -n * X.x + m * X.y * 0.7 ) );
+            w += cexpi( -Tau * ( n * X.x + m * X.y * 0.7 ) ) + sg * cexpi( Tau * ( -n * X.x + m * X.y * 0.7 ) );
         return w / ( kind == 5 ? 4.0 : 2.0 );
     }
-    vec2 w = cexpi( TAU * ( n * X.x + m * X.y ) ) + cexpi( TAU * ( -m * X.x + n * X.y ) )
-             + cexpi( TAU * ( -n * X.x - m * X.y ) ) + cexpi( TAU * ( m * X.x - n * X.y ) );
+    vec2 w = cexpi( Tau * ( n * X.x + m * X.y ) ) + cexpi( Tau * ( -m * X.x + n * X.y ) )
+             + cexpi( Tau * ( -n * X.x - m * X.y ) ) + cexpi( Tau * ( m * X.x - n * X.y ) );
     if ( kind == 3 )
-        w += cexpi( TAU * ( m * X.x + n * X.y ) ) + cexpi( TAU * ( -n * X.x + m * X.y ) )
-             + cexpi( TAU * ( -m * X.x - n * X.y ) ) + cexpi( TAU * ( n * X.x - m * X.y ) );
+        w += cexpi( Tau * ( m * X.x + n * X.y ) ) + cexpi( Tau * ( -n * X.x + m * X.y ) )
+             + cexpi( Tau * ( -m * X.x - n * X.y ) ) + cexpi( Tau * ( n * X.x - m * X.y ) );
     return w / ( kind == 3 ? 8.0 : 4.0 );
 }
 /// @brief Farris wallpaper (a symmetric wave pattern) about c.

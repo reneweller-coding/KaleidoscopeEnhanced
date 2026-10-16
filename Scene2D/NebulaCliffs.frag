@@ -169,9 +169,9 @@ void main()
 
     // Three ranges of dust, far to near.  Each: an edge profile with crags,
     // a wispy boundary, a lit rim and a dark, textured interior.
-    vec3 dustFar = vec3( 0.45, 0.28, 0.2 );
-    vec3 dustNear = vec3( 0.35, 0.18, 0.09 );
-    vec3 rimC = mix( vec3( 1.0, 0.72, 0.35 ), imgPalette( 0.1 + hue * 0.159 ), 0.2 );
+    vec3 dust_far = vec3( 0.45, 0.28, 0.2 );
+    vec3 dust_near = vec3( 0.35, 0.18, 0.09 );
+    vec3 rim_c = mix( vec3( 1.0, 0.72, 0.35 ), imgPalette( 0.1 + hue * 0.159 ), 0.2 );
     for ( int L = 0; L < 3; ++L )
     {
         float fl = float( L );
@@ -179,20 +179,20 @@ void main()
         vec2  q = p * ( 1.0 + 0.35 * fl ) + vec2( T * speed + fl * 7.3, 0.0 );
         float edge = edgeAt( q.x, fl, dp );
         float slope = ( edgeAt( q.x + 0.03, fl, dp ) - edgeAt( q.x - 0.03, fl, dp ) ) / 0.06 * ( 1.0 + 0.35 * fl );
-        float cosS = inversesqrt( 1.0 + slope * slope ); // vertical -> true distance to the edge
+        float cos_s = inversesqrt( 1.0 + slope * slope ); // vertical -> true distance to the edge
         // Wispy boundary: the edge is warped by fine noise.
         float warp = ( fbm( q * 9.0 + vec2( 0.0, -T * 0.01 ) ) - 0.5 ) * 0.05;
         float d = p.y - edge + warp; // > 0 above the edge
         // Wisps boiling off the rim.
-        float wisp = exp( -max( d, 0.0 ) * cosS * 11.0 )
+        float wisp = exp( -max( d, 0.0 ) * cos_s * 11.0 )
                      * smoothstep( 0.35, 0.8, fbm( vec2( q.x * 7.0, q.y * 2.0 - T * 0.02 ) ) );
-        col += rimC * wisp * step( 0.0, d ) * 0.35 * gp * ( 0.7 + 0.5 * swell ) * ( 1.0 - 0.3 * fl );
+        col += rim_c * wisp * step( 0.0, d ) * 0.35 * gp * ( 0.7 + 0.5 * swell ) * ( 1.0 - 0.3 * fl );
         if ( d < 0.0 )
         {
-            float depth = -d * cosS;
+            float depth = -d * cos_s;
             float tex = fbm( q * 5.0 + 11.0 * fl );
             float crag = ridged( q * 8.0 + 3.0 * fl );
-            vec3  dust = mix( dustFar, dustNear, fl / 2.0 ) * ( 0.35 + 0.6 * tex );
+            vec3  dust = mix( dust_far, dust_near, fl / 2.0 ) * ( 0.35 + 0.6 * tex );
             dust = mix( dust, dust * imgPalette( 0.08 + hue * 0.159 ) * 1.6, 0.15 );
             // The ionisation front: a bright rim fading into the dust.
             float rim = exp( -depth * ( 22.0 - 5.0 * fl ) ) * ( 0.5 + 0.9 * crag );
@@ -202,7 +202,7 @@ void main()
             float b0 = fbm( bq ), b1 = fbm( bq - vec2( 0.02, 0.06 ) );
             float lit = clamp( ( b0 - b1 ) * 9.0 + 0.2, 0.0, 1.0 ) * exp( -depth * 3.5 );
             vec3  c = dust * ( 0.16 + 0.2 * crag * exp( -depth * 6.0 ) )
-                      + rimC * lit * 0.45 * gp * ( 0.75 + 0.5 * swell );
+                      + rim_c * lit * 0.45 * gp * ( 0.75 + 0.5 * swell );
             // Nearer ranges veil less haze; farther ones pick up blue.
             c = mix( c, cavity * 0.5, 0.25 * ( 2.0 - fl ) / 2.0 );
             // Protostars shining red through the dust.
@@ -213,12 +213,12 @@ void main()
             c += vec3( 1.0, 0.35, 0.2 ) * ps * ( 0.4 + 1.0 * clamp( audioKick, 0.0, 1.0 ) );
             // Soft, semi-transparent boundary: nebular dust has no hard edge.
             col = mix( col, c, smoothstep( 0.0, 0.035, depth ) );
-            col += rimC * rim * 1.6 * gp * ( 0.75 + 0.5 * swell );
+            col += rim_c * rim * 1.6 * gp * ( 0.75 + 0.5 * swell );
         }
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -54,8 +54,8 @@ mat3 axisSpin( float axis, float ang )
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
-    if ( !isBg )
+    bool is_bg = gl_VertexID >= meshVertexCount;
+    if ( !is_bg )
     {
         // Every model from this generator is normalized to ~1.0 on its longest
         // axis (measured directly across the whole batch) -- 32 scales that up
@@ -87,19 +87,19 @@ void main()
         // STILL, because a megastructure that fails to spin looks fine and one
         // that tumbles does not.
         float       sp = max( spinP, 0.0 );
-        const float tiltX = 0.55;
+        const float tilt_x = 0.55;
         // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        mat3  spinMat = axisSpin( spinAxisP, time * 0.25 * sp );
-        float ctx = cos( tiltX ), stx = sin( tiltX );
-        mat3  tiltMat = mat3( 1.0, 0.0, 0.0, 0.0, ctx, stx, 0.0, -stx, ctx );
-        mat3  rotMat = tiltMat * spinMat;
+        mat3  spin_mat = axisSpin( spinAxisP, time * 0.25 * sp );
+        float ctx = cos( tilt_x ), stx = sin( tilt_x );
+        mat3  tilt_mat = mat3( 1.0, 0.0, 0.0, 0.0, ctx, stx, 0.0, -stx, ctx );
+        mat3  rot_mat = tilt_mat * spin_mat;
 
-        world = rotMat * local;
+        world = rot_mat * local;
         world.z += 110.0;
-        n = normalize( rotMat * attrB.xyz );
+        n = normalize( rot_mat * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
     }
     else
@@ -118,10 +118,10 @@ void main()
     // clipped visible wedges out of the sky. Pinning shell depth just inside
     // the far plane is the standard skybox fix: no far-plane clipping however
     // big the shell is, and it can never occlude the object in front of it.
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

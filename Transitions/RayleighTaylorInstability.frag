@@ -61,35 +61,35 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.45 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Rayleigh-Taylor harmonic interface: y = y_0 + A * cos(kx) * exp(gamma*t)
     float k = 14.0 * fng;
     float wave = cos( p.x * k );
     float mushroom = sin( p.x * k * 2.0 ) * sin( p.y * 10.0 + t * 2.0 ) * 0.2 * grw;
 
-    float interfaceY = mix( -0.8, 0.8, tProg )
-                       + ( wave + mushroom ) * 0.15 * midTransition * ( 1.0 + audioSwell * 0.7 );
-    float distToInterface = p.y - interfaceY;
+    float interface_y = mix( -0.8, 0.8, t_prog )
+                        + ( wave + mushroom ) * 0.15 * mid_transition * ( 1.0 + audioSwell * 0.7 );
+    float dist_to_interface = p.y - interface_y;
 
     // Vortex roll-up displacement
-    vec2 vortexDisp = vec2( sin( p.y * 15.0 ), cos( p.x * 15.0 ) ) * 0.03 * midTransition;
+    vec2 vortex_disp = vec2( sin( p.y * 15.0 ), cos( p.x * 15.0 ) ) * 0.03 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + vortexDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - vortexDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + vortex_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - vortex_disp ) );
 
-    float wipeMask = smoothstep( -0.05, 0.05, distToInterface );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.05, 0.05, dist_to_interface );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Glowing fluid interface boundary
-    float interfaceGlow = exp( -abs( distToInterface ) * 20.0 ) * midTransition;
-    col.rgb += interfaceGlow * vec3( 0.2, 0.9, 0.6 ) * ( 1.4 + audioKick * 1.0 );
+    float interface_glow = exp( -abs( dist_to_interface ) * 20.0 ) * mid_transition;
+    col.rgb += interface_glow * vec3( 0.2, 0.9, 0.6 ) * ( 1.4 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

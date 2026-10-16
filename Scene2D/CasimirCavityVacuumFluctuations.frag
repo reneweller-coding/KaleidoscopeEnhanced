@@ -105,50 +105,50 @@ void main()
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // Dynamic cavity gap spacing
-    float cavityGap = ( 0.45 + 0.15 * sin( t * 0.8 ) + 0.2 * audioSubBass ) * gp;
+    float cavity_gap = ( 0.45 + 0.15 * sin( t * 0.8 ) + 0.2 * audioSubBass ) * gp;
 
     // Quantized cavity standing wave modes: sin(n * pi * x / L)
-    float standingModes = 0.0;
+    float standing_modes = 0.0;
     for ( float n = 1.0; n <= 6.0; ++n )
     {
-        float k = n * 3.14159 / cavityGap;
+        float k = n * 3.14159 / cavity_gap;
         float wave = sin( uv.y * k + t * n * 0.8 ) * cos( uv.x * k * 0.7 - t * n * 0.5 );
-        standingModes += wave / n;
+        standing_modes += wave / n;
     }
 
     // Zero-point vacuum fluctuations (multi-octave stochastic field)
-    vec2  qCoord = uv * 14.0;
-    float vac1 = noise2D( qCoord + vec2( t * 2.0, -t * 1.5 ) );
-    float vac2 = noise2D( qCoord * 2.0 - vec2( t * 3.0, t * 2.5 ) );
-    float vac3 = noise2D( qCoord * 4.0 + vec2( -t * 4.0, t * 3.5 ) );
-    float vacFluct = ( vac1 + vac2 * 0.5 + vac3 * 0.25 ) * flc;
+    vec2  q_coord = uv * 14.0;
+    float vac1 = noise2D( q_coord + vec2( t * 2.0, -t * 1.5 ) );
+    float vac2 = noise2D( q_coord * 2.0 - vec2( t * 3.0, t * 2.5 ) );
+    float vac3 = noise2D( q_coord * 4.0 + vec2( -t * 4.0, t * 3.5 ) );
+    float vac_fluct = ( vac1 + vac2 * 0.5 + vac3 * 0.25 ) * flc;
 
     // Dynamical Casimir photon pair creation sparks on kick
-    float pairCreation = pow( noise2D( uv * 25.0 + t * 5.0 ), 4.0 ) * ( audioKick * 4.0 + audioHigh * 2.0 );
+    float pair_creation = pow( noise2D( uv * 25.0 + t * 5.0 ), 4.0 ) * ( audioKick * 4.0 + audioHigh * 2.0 );
 
     // Dielectric mirror reflection photo mapping
-    vec2 photoUV = st + vec2( sin( uv.y * 10.0 + standingModes ), cos( uv.x * 10.0 - standingModes ) ) * 0.03 * flc;
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( sin( uv.y * 10.0 + standing_modes ), cos( uv.x * 10.0 - standing_modes ) ) * 0.03 * flc;
+    vec3 photo = img( fract( photo_uv ) );
 
     // Quantum vacuum palette (deep indigo, electric cyan, violet-gold)
-    vec3 vacColor = imgPalette( 0.30 * vacFluct ) * ( 0.5 + 1.0 * vacFluct );
-    vacColor += standingModes * vec3( 0.5, 0.2, 0.8 ) * ( 1.0 + audioSwell );
+    vec3 vac_color = imgPalette( 0.30 * vac_fluct ) * ( 0.5 + 1.0 * vac_fluct );
+    vac_color += standing_modes * vec3( 0.5, 0.2, 0.8 ) * ( 1.0 + audioSwell );
 
     // Combine visualizer
-    vec3 col = mix( photo * 0.8, vacColor, 0.5 + 0.2 * audioLevel );
-    col += pairCreation * vec3( 1.0, 0.95, 0.85 );
+    vec3 col = mix( photo * 0.8, vac_color, 0.5 + 0.2 * audioLevel );
+    col += pair_creation * vec3( 1.0, 0.95, 0.85 );
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
             col = hueRot( col, hue );
 
     // Cavity edge mirrors
-    float edgeMirror = smoothstep( 0.0, 0.15, abs( uv.y ) - cavityGap * 0.8 );
-    col = mix( col, vec3( 0.9, 0.95, 1.0 ) * ( photo + 0.3 ), edgeMirror * 0.4 );
+    float edge_mirror = smoothstep( 0.0, 0.15, abs( uv.y ) - cavity_gap * 0.8 );
+    col = mix( col, vec3( 0.9, 0.95, 1.0 ) * ( photo + 0.3 ), edge_mirror * 0.4 );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

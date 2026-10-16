@@ -67,8 +67,8 @@ void main()
     vec3 R = reflect( -V, N );
 
     // Reflected photo texture
-    vec2 refUV = R.xy * 0.5 + vec2( 0.5 );
-    vec3 photoRef = img( fract( refUV ) );
+    vec2 ref_uv = R.xy * 0.5 + vec2( 0.5 );
+    vec3 photo_ref = img( fract( ref_uv ) );
 
     // Specular sunlight flash
     vec3  L = normalize( vec3( 0.5, 0.8, 1.0 ) );
@@ -78,10 +78,10 @@ void main()
     // Hexagonal mirror border
     vec2  b = abs( vTexCoord - vec2( 0.5 ) ) * 2.0;
     float border = max( b.x, b.y );
-    float edgeMask = smoothstep( 0.85, 0.95, border );
+    float edge_mask = smoothstep( 0.85, 0.95, border );
 
-    vec3 col = photoRef * ( 0.8 + 0.4 * audioLevel ) * ( 1.0 - edgeMask * 0.5 );
-    col += vColor.rgb * edgeMask * ( 1.2 + 1.5 * audioHigh );
+    vec3 col = photo_ref * ( 0.8 + 0.4 * audioLevel ) * ( 1.0 - edge_mask * 0.5 );
+    col += vColor.rgb * edge_mask * ( 1.2 + 1.5 * audioHigh );
     col += vec3( 1.0, 0.98, 0.9 ) * spec * ( 1.5 + 2.0 * audioKick );
 
     col = hueRot( col, audioChromaHue + hue );

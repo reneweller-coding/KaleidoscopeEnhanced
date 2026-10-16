@@ -134,33 +134,33 @@ void main()
     // Into the disc plane: tilt (the disc is seen at ~60 degrees) and a
     // slow rigid turn.
     vec2  q = p - vec2( 0.02, 0.0 );
-    float tiltRot = 0.35;
-    q = mat2( cos( tiltRot ), -sin( tiltRot ), sin( tiltRot ), cos( tiltRot ) ) * q;
+    float tilt_rot = 0.35;
+    q = mat2( cos( tilt_rot ), -sin( tilt_rot ), sin( tilt_rot ), cos( tilt_rot ) ) * q;
     vec2  g = vec2( q.x, q.y / 0.5 ) / 0.95;
     float spin = -T * 0.008;
     g = mat2( cos( spin ), -sin( spin ), sin( spin ), cos( spin ) ) * g;
     float r = length( g );
 
     // The galaxy itself.
-    float armD = arms( g + 0.06 * ( vec2( fbm( g * 4.0 ), fbm( g * 4.0 + 5.0 ) ) - 0.5 ) );
+    float arm_d = arms( g + 0.06 * ( vec2( fbm( g * 4.0 ), fbm( g * 4.0 + 5.0 ) ) - 0.5 ) );
     float disc = exp( -r * 1.7 );
     float bulge = exp( -r * r * 40.0 );
     float dust = smoothstep( 0.35, 0.75, arms( g * 1.0 + vec2( 0.03, -0.02 ) ) ) * smoothstep( 0.08, 0.3, r )
                  * ( 0.5 + 0.5 * fbm( g * 9.0 ) );
     float clumps = pow( fbm( g * 14.0 ), 3.0 ) * 3.0;
     vec3  gal = vec3( 1.0, 0.85, 0.6 ) * bulge * 2.2
-                + vec3( 0.55, 0.7, 1.0 ) * disc * ( 0.2 + 1.8 * armD * ( 0.6 + clumps ) )
-                + vec3( 1.0, 0.45, 0.65 ) * disc * armD * smoothstep( 0.55, 0.9, fbm( g * 20.0 ) ) * 1.5;
+                + vec3( 0.55, 0.7, 1.0 ) * disc * ( 0.2 + 1.8 * arm_d * ( 0.6 + clumps ) )
+                + vec3( 1.0, 0.45, 0.65 ) * disc * arm_d * smoothstep( 0.55, 0.9, fbm( g * 20.0 ) ) * 1.5;
     gal *= 1.0 - 0.75 * dust;
     col += gal * ( r < 1.6 ? 1.0 : 0.0 );
 
     // The network: a node per cell in the disc plane (star systems), linked
     // to its right and upper neighbours; links bright where the arms are.
-    float cellS = 13.0 * tp;
-    vec2  gc = g * cellS;
+    float cell_s = 13.0 * tp;
+    vec2  gc = g * cell_s;
     vec2  gi = floor( gc );
-    vec3  netC = mix( vec3( 0.35, 0.95, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.3 );
-    vec3  nodeC = mix( vec3( 1.0, 0.8, 0.45 ), imgPalette( 0.1 + hue * 0.159 ), 0.25 );
+    vec3  net_c = mix( vec3( 0.35, 0.95, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.3 );
+    vec3  node_c = mix( vec3( 1.0, 0.8, 0.45 ), imgPalette( 0.1 + hue * 0.159 ), 0.25 );
     float net = 0.0, pk = 0.0, node = 0.0;
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
@@ -186,13 +186,13 @@ void main()
             }
         }
     // The network lives on the disc: dense along the arms, thin in between.
-    float onDisc = smoothstep( 1.2, 0.7, r ) * ( 0.15 + 1.4 * armD + 0.6 * bulge );
-    col += netC * net * 0.22 * onDisc * ( 0.7 + 0.5 * swell );
-    col += netC * pk * 0.9 * gp * onDisc;
-    col += nodeC * node * 0.7 * onDisc * ( 0.8 + 1.2 * kick );
+    float on_disc = smoothstep( 1.2, 0.7, r ) * ( 0.15 + 1.4 * arm_d + 0.6 * bulge );
+    col += net_c * net * 0.22 * on_disc * ( 0.7 + 0.5 * swell );
+    col += net_c * pk * 0.9 * gp * on_disc;
+    col += node_c * node * 0.7 * on_disc * ( 0.8 + 1.2 * kick );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

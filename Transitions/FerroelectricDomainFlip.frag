@@ -61,35 +61,35 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.45 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // 90-degree and 180-degree domain stripe patterns
     vec2  q = p * 18.0 * dom;
-    float domainPattern = sin( q.x + sin( q.y * 1.5 ) ) * cos( q.y + sin( q.x * 1.5 ) );
+    float domain_pattern = sin( q.x + sin( q.y * 1.5 ) ) * cos( q.y + sin( q.x * 1.5 ) );
 
     // Coercive electric field sweep
-    float eField = mix( -1.2, 1.2, tProg );
-    float polarization = domainPattern - eField;
+    float e_field = mix( -1.2, 1.2, t_prog );
+    float polarization = domain_pattern - e_field;
 
     // Piezoelectric shear strain displacement
-    float signP = sign( polarization );
-    vec2  piezDisp = vec2( signP * 0.02, -signP * 0.02 ) * midTransition * ( 1.0 + audioSwell * 0.7 );
+    float sign_p = sign( polarization );
+    vec2  piez_disp = vec2( sign_p * 0.02, -sign_p * 0.02 ) * mid_transition * ( 1.0 + audioSwell * 0.7 );
 
-    vec4 c1 = texture( tex1, fract( uv + piezDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - piezDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + piez_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - piez_disp ) );
 
-    float domainWipe = smoothstep( -0.1 / wal, 0.1 / wal, polarization );
-    vec4  col = mix( c0, c1, domainWipe );
+    float domain_wipe = smoothstep( -0.1 / wal, 0.1 / wal, polarization );
+    vec4  col = mix( c0, c1, domain_wipe );
 
     // Glowing ferroelectric domain walls (bound charge accumulation)
-    float wallGlow = exp( -abs( polarization ) * 20.0 * wal ) * midTransition;
-    col.rgb += wallGlow * vec3( 1.0, 0.4, 0.85 ) * ( 1.4 + audioKick * 1.0 );
+    float wall_glow = exp( -abs( polarization ) * 20.0 * wal ) * mid_transition;
+    col.rgb += wall_glow * vec3( 1.0, 0.4, 0.85 ) * ( 1.4 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

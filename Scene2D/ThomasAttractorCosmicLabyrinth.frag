@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float bMod = ( bParamP > 0.01 ) ? bParamP : 1.0;
+    float b_mod = ( bParamP > 0.01 ) ? bParamP : 1.0;
     float trl = ( trailP > 0.01 ) ? trailP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -73,59 +73,59 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Thomas attractor damping parameter b: chaotic regime around 0.18 - 0.208
-    float b = ( 0.19 + 0.02 * sin( t * 0.4 ) + 0.015 * audioCentroid ) * bMod;
+    float b = ( 0.19 + 0.02 * sin( t * 0.4 ) + 0.015 * audioCentroid ) * b_mod;
 
     // 3D Orbital rotation of screen plane
-    float rotA = t * 0.2 + audioPhase * 0.1;
-    float cs = cos( rotA ), sn = sin( rotA );
+    float rot_a = t * 0.2 + audioPhase * 0.1;
+    float cs = cos( rot_a ), sn = sin( rot_a );
     // Sub-bass shrinks the world-units-per-screen factor, so the labyrinth
     // volume swells into the frame. The integrated attractor state itself is
     // left alone -- rescaling a trajectory mid-flight would jump the curve.
-    vec2 pRot = mat2( cs, -sn, sn, cs ) * uv * ( 8.0 + 1.5 * sin( audioSwell * 2.0 ) ) / ( 1.0 + 0.35 * audioSubBass );
+    vec2 p_rot = mat2( cs, -sn, sn, cs ) * uv * ( 8.0 + 1.5 * sin( audioSwell * 2.0 ) ) / ( 1.0 + 0.35 * audioSubBass );
 
     // Multi-step numerical RK2 integration along the Thomas attractor curve,
     // seeded from a FIXED point shared by every pixel -- not the pixel's own
     // position -- so the traced curve is one real spatial path instead of
     // every pixel trivially starting AT distance zero from itself (which
     // washed the whole frame out to a near-uniform glow).
-    vec3  pThomas = vec3( 1.5, 0.8, sin( t * 0.5 ) * 2.0 );
-    float minDist = 1e5;
-    float energyAcc = 0.0;
+    vec3  p_thomas = vec3( 1.5, 0.8, sin( t * 0.5 ) * 2.0 );
+    float min_dist = 1e5;
+    float energy_acc = 0.0;
 
     float dt = 0.04 * trl;
 
     for ( int i = 0; i < 26; i++ )
     {
         // Thomas ODE derivatives
-        float dx = sin( pThomas.y ) - b * pThomas.x;
-        float dy = sin( pThomas.z ) - b * pThomas.y;
-        float dz = sin( pThomas.x ) - b * pThomas.z;
+        float dx = sin( p_thomas.y ) - b * p_thomas.x;
+        float dy = sin( p_thomas.z ) - b * p_thomas.y;
+        float dz = sin( p_thomas.x ) - b * p_thomas.z;
 
-        pThomas += vec3( dx, dy, dz ) * dt;
+        p_thomas += vec3( dx, dy, dz ) * dt;
 
-        float d = length( pRot - pThomas.xy );
-        minDist = min( minDist, d );
-        energyAcc += exp( -d * 2.5 );
+        float d = length( p_rot - p_thomas.xy );
+        min_dist = min( min_dist, d );
+        energy_acc += exp( -d * 2.5 );
     }
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( pRot * 0.1 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_rot * 0.1 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing trajectory ribbon lines
-    float lineGlow = exp( -minDist * ( 4.0 + 3.0 * audioCentroid ) ) * glw;
+    float line_glow = exp( -min_dist * ( 4.0 + 3.0 * audioCentroid ) ) * glw;
 
     // Palette mixing across cyclic attractor loops
-    float loopPhase = atan( pRot.y, pRot.x ) / 6.2831853 + length( pRot ) * 0.1;
-    vec3  palA = imgPalette( loopPhase + t * 0.05 );
-    vec3  palB = imgPalette( loopPhase + 0.5 );
-    vec3  col = mix( palA, palB, 0.5 + 0.5 * sin( energyAcc * 0.4 ) );
+    float loop_phase = atan( p_rot.y, p_rot.x ) / 6.2831853 + length( p_rot ) * 0.1;
+    vec3  pal_a = imgPalette( loop_phase + t * 0.05 );
+    vec3  pal_b = imgPalette( loop_phase + 0.5 );
+    vec3  col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( energy_acc * 0.4 ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing attractor labyrinth tubes and kick pulses
-    vec3 tubeTint = vec3( 1.3, 1.1, 1.8 ) * ( lineGlow + energyAcc * 0.1 ) * ( 1.0 + 2.5 * audioKick );
-    col += tubeTint;
+    vec3 tube_tint = vec3( 1.3, 1.1, 1.8 ) * ( line_glow + energy_acc * 0.1 ) * ( 1.0 + 2.5 * audioKick );
+    col += tube_tint;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

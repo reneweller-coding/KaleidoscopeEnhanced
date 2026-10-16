@@ -83,16 +83,16 @@ void main()
 
     // The pyramid: a triangle on the ground line, apex at the top.
     float ground = -0.38;
-    float apexY = 0.42;
-    float halfBase = 0.7;
-    float py = ( p.y - ground ) / ( apexY - ground );
-    float inside = step( 0.0, py ) * step( py, 1.0 ) * step( abs( p.x ), halfBase * ( 1.0 - py ) );
+    float apex_y = 0.42;
+    float half_base = 0.7;
+    float py = ( p.y - ground ) / ( apex_y - ground );
+    float inside = step( 0.0, py ) * step( py, 1.0 ) * step( abs( p.x ), half_base * ( 1.0 - py ) );
     // The hidden chamber: a rectangle inside, sized by chamberP.
     vec2  cc = vec2( 0.05, ground + 0.28 );
     vec2  cs = vec2( 0.18 + 0.1 * clamp( chamberP, 0.0, 1.0 ), 0.1 );
     float chamber = step( abs( p.x - cc.x ), cs.x ) * step( abs( p.y - cc.y ), cs.y );
-    float chamberSoft = smoothstep( cs.x + 0.05, cs.x, abs( p.x - cc.x ) )
-                        * smoothstep( cs.y + 0.05, cs.y, abs( p.y - cc.y ) );
+    float chamber_soft = smoothstep( cs.x + 0.05, cs.x, abs( p.x - cc.x ) )
+                         * smoothstep( cs.y + 0.05, cs.y, abs( p.y - cc.y ) );
 
     // Night sky with round stars.
     vec3 col = vec3( 0.01, 0.012, 0.03 );
@@ -117,7 +117,7 @@ void main()
     // photo appears (excess muons), fading in with the progress.
     vec3 reveal = img( clamp( ( p - cc + cs ) / ( 2.0 * cs ), 0.0, 1.0 ) ) * 1.4;
     reveal = mix( reveal, reveal * imgPalette( hue * 0.159 + 0.5 ) * 1.5, 0.25 );
-    float resolved = smoothstep( 0.1, 0.9, prog ) * chamberSoft;
+    float resolved = smoothstep( 0.1, 0.9, prog ) * chamber_soft;
     col = mix( col, reveal, resolved * inside );
     // Muon tracks: straight lines from the sky, launched on the clock,
     // brighter where they pass through the chamber (less stone).
@@ -129,16 +129,16 @@ void main()
         float x0 = ( hash11( fk * 7.7 + idx ) - 0.5 ) * aspect * 1.2;
         float slope = ( hash11( fk * 9.1 + idx ) - 0.5 ) * 0.8;
         // The track is a line x = x0 + slope * (0.5 - y); its head descends with ph.
-        float headY = 0.55 - ph * 1.1;
+        float head_y = 0.55 - ph * 1.1;
         float dx = abs( p.x - ( x0 + slope * ( 0.5 - p.y ) ) );
-        float onLine = smoothstep( 0.004, 0.001, dx ) * step( headY, p.y ) * step( p.y, 0.55 );
-        float tail = exp( -( p.y - headY ) * 6.0 );
-        float throughChamber = chamber;
-        float alive = mix( 1.0, 0.35, inside * ( 1.0 - throughChamber ) );
+        float on_line = smoothstep( 0.004, 0.001, dx ) * step( head_y, p.y ) * step( p.y, 0.55 );
+        float tail = exp( -( p.y - head_y ) * 6.0 );
+        float through_chamber = chamber;
+        float alive = mix( 1.0, 0.35, inside * ( 1.0 - through_chamber ) );
         vec3  tc = mix( vec3( 0.6, 0.85, 1.0 ), imgPalette( hue * 0.159 + 0.35 ), 0.4 );
-        col += tc * onLine * tail * alive * ( 1.2 + 0.8 * throughChamber ) * ( 1.0 - smoothstep( 0.85, 1.0, ph ) );
+        col += tc * on_line * tail * alive * ( 1.2 + 0.8 * through_chamber ) * ( 1.0 - smoothstep( 0.85, 1.0, ph ) );
         if ( k == 0 )
-            col += tc * onLine * tail * audioKick * 2.0;
+            col += tc * on_line * tail * audioKick * 2.0;
     }
     // Scintillator sparkle at the detector (round), on the treble.
     vec2  gu = p * 50.0;
@@ -150,7 +150,7 @@ void main()
     col += vec3( 0.7, 0.9, 1.0 ) * spark * clamp( audioHigh * 2.0, 0.0, 1.0 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

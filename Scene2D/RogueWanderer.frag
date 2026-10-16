@@ -117,20 +117,20 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     vec3 col = vec3( 0.0 );
-    vec3 iceColor = vec3( 0.02, 0.05, 0.1 ); // Deep, dark, frozen blue
-    vec3 magmaColor = max( imgPalette( 0.8 + audioCentroid * 0.1 ), vec3( 0.60, 0.24, 0.08 ) ); // Hot glowing fissures
+    vec3 ice_color = vec3( 0.02, 0.05, 0.1 ); // Deep, dark, frozen blue
+    vec3 magma_color = max( imgPalette( 0.8 + audioCentroid * 0.1 ), vec3( 0.60, 0.24, 0.08 ) ); // Hot glowing fissures
 
     // Planet parameters
-    vec2  planetCenter = vec2( 0.0 );
-    float planetRad = 0.8;
-    float dist = length( uv - planetCenter );
+    vec2  planet_center = vec2( 0.0 );
+    float planet_rad = 0.8;
+    float dist = length( uv - planet_center );
 
     // Slow rotation
     float rot = time * 0.05 + audioAdvance * 0.2;
-    mat2  rotM = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
+    mat2  rot_m = mat2( cos( rot ), -sin( rot ), sin( rot ), cos( rot ) );
 
     // Deep space background (extremely sparse/dark)
-    if ( dist > planetRad )
+    if ( dist > planet_rad )
     {
         // Runde, gejitterte Sterne: ganze floor()-Zellen aufzuhellen ergibt
         // QUADRATE (der wiederholt gemeldete "Riesenpixel"-Fehler).
@@ -147,15 +147,15 @@ void main()
         }
 
         // Faint outgassing from the planet hitting the vacuum
-        float atmos = exp( -( dist - planetRad ) * 15.0 );
-        float gasNoise = fbm( vec3( rotM * uv * 10.0, time * 0.1 ) );
-        col += magmaColor * atmos * gasNoise * 0.2 * ( 0.5 + audioSwell );
+        float atmos = exp( -( dist - planet_rad ) * 15.0 );
+        float gas_noise = fbm( vec3( rot_m * uv * 10.0, time * 0.1 ) );
+        col += magma_color * atmos * gas_noise * 0.2 * ( 0.5 + audioSwell );
     }
     else
     {
         // We are on the planet surface
         // Map 2D to 3D sphere
-        float z = sqrt( max( 0.0, planetRad * planetRad - dist * dist ) );
+        float z = sqrt( max( 0.0, planet_rad * planet_rad - dist * dist ) );
         vec3  p3 = vec3( uv.x, uv.y, z );
 
         // Apply rotation
@@ -163,7 +163,7 @@ void main()
         p3.yz = mat2( cos( 0.2 ), -sin( 0.2 ), sin( 0.2 ), cos( 0.2 ) ) * p3.yz; // static tilt
 
         // Generate ice surface
-        float surfaceNoise = fbm( p3 * 4.0 * ip );
+        float surface_noise = fbm( p3 * 4.0 * ip );
 
         // Generate deep cracks/fissures (we use ridged noise inverted)
         // High values are the bottom of the cracks
@@ -171,38 +171,38 @@ void main()
         cracks = smoothstep( 0.7, 0.9, cracks ); // only show the deepest cuts
 
         // Add secondary smaller cracks
-        float smallCracks = ridged( p3 * 15.0 );
-        smallCracks = smoothstep( 0.8, 1.0, smallCracks ) * 0.5;
+        float small_cracks = ridged( p3 * 15.0 );
+        small_cracks = smoothstep( 0.8, 1.0, small_cracks ) * 0.5;
 
-        float totalCracks = max( cracks, smallCracks );
+        float total_cracks = max( cracks, small_cracks );
 
         // Magma pulsing through the cracks
         // Flowing noise inside the cracks
-        float magmaFlow = fbm( vec3( p3 * 20.0 + vec3( 0.0, time + audioAdvance, 0.0 ) ) );
-        float magmaGlow = totalCracks * ( 0.2 + magmaFlow * 0.8 ) * mp;
+        float magma_flow = fbm( vec3( p3 * 20.0 + vec3( 0.0, time + audioAdvance, 0.0 ) ) );
+        float magma_glow = total_cracks * ( 0.2 + magma_flow * 0.8 ) * mp;
 
         // Kicks cause eruptions/flashes in the magma
         float eruption = step( 0.9, hash11( floor( p3.x * 5.0 ) + floor( time * 4.00 ) ) );
-        magmaGlow *= ( 1.0 + eruption * audioKick * 5.0 );
+        magma_glow *= ( 1.0 + eruption * audioKick * 5.0 );
 
         // Subsurface scattering (ice glowing from the magma underneath)
         float subsurface = smoothstep( 0.5, 0.8, ridged( p3 * 5.0 ) ) * 0.5;
 
         // Combine surface
-        vec3 surfaceCol = mix( iceColor * ( 0.5 + surfaceNoise * 0.5 ), magmaColor, magmaGlow );
-        surfaceCol += magmaColor * subsurface * ( 0.5 + audioSwell ) * mp;
+        vec3 surface_col = mix( ice_color * ( 0.5 + surface_noise * 0.5 ), magma_color, magma_glow );
+        surface_col += magma_color * subsurface * ( 0.5 + audioSwell ) * mp;
 
         // Limb darkening (it's dark space, no sun, only internal light)
-        float limb = smoothstep( planetRad, planetRad * 0.5, dist );
+        float limb = smoothstep( planet_rad, planet_rad * 0.5, dist );
 
-        col += surfaceCol * limb;
+        col += surface_col * limb;
     }
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

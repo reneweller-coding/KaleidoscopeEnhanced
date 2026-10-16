@@ -104,50 +104,50 @@ void main()
     float t = time * 0.4 + audioAdvance * 0.35;
 
     // Cloud anvil background & turbulence
-    float cloudTurb = ( cloudP > 0.01 ? cloudP : 1.2 );
-    vec2  cloudCoord = uv * 2.0 * cloudTurb + vec2( 0.0, -t * 0.2 );
-    float clouds = fbm( cloudCoord ) * ( 0.8 + 0.4 * audioSwell );
+    float cloud_turb = ( cloudP > 0.01 ? cloudP : 1.2 );
+    vec2  cloud_coord = uv * 2.0 * cloud_turb + vec2( 0.0, -t * 0.2 );
+    float clouds = fbm( cloud_coord ) * ( 0.8 + 0.4 * audioSwell );
 
     // Main vertical lightning channel column
-    float branchComplexity = ( branchP > 0.01 ? branchP : 1.5 );
-    float mainArcDist = 1e5;
+    float branch_complexity = ( branchP > 0.01 ? branchP : 1.5 );
+    float main_arc_dist = 1e5;
 
     for ( float i = 0.0; i < 3.0; i += 1.0 )
     {
-        float xOffset = ( i - 1.0 ) * 0.35 + sin( t * 0.8 + i ) * 0.1;
-        float jagged = fbm( vec2( uv.y * 6.0 * branchComplexity, t * 2.0 + i * 1.5 ) ) * 0.35 - 0.175;
-        float d = abs( uv.x - ( xOffset + jagged ) );
-        mainArcDist = min( mainArcDist, d );
+        float x_offset = ( i - 1.0 ) * 0.35 + sin( t * 0.8 + i ) * 0.1;
+        float jagged = fbm( vec2( uv.y * 6.0 * branch_complexity, t * 2.0 + i * 1.5 ) ) * 0.35 - 0.175;
+        float d = abs( uv.x - ( x_offset + jagged ) );
+        main_arc_dist = min( main_arc_dist, d );
     }
 
     // Spiderweb branch discharges
-    float branchArc = abs( sin( uv.x * 8.0 + uv.y * 12.0 + fbm( uv * 10.0 + t ) * 4.0 ) );
-    float branchIntensity = exp( -branchArc * 8.0 ) * ( 0.4 + 1.8 * audioSnare );
+    float branch_arc = abs( sin( uv.x * 8.0 + uv.y * 12.0 + fbm( uv * 10.0 + t ) * 4.0 ) );
+    float branch_intensity = exp( -branch_arc * 8.0 ) * ( 0.4 + 1.8 * audioSnare );
 
     // Lightning plasma channel glow
-    float arcCore = exp( -mainArcDist * 90.0 ) * ( 1.0 + 4.0 * audioKick ) * ( flashP > 0.01 ? flashP : 1.5 );
-    float arcHalo = exp( -mainArcDist * 12.0 ) * ( 0.8 + 1.5 * audioMid );
+    float arc_core = exp( -main_arc_dist * 90.0 ) * ( 1.0 + 4.0 * audioKick ) * ( flashP > 0.01 ? flashP : 1.5 );
+    float arc_halo = exp( -main_arc_dist * 12.0 ) * ( 0.8 + 1.5 * audioMid );
 
     // Cloud illumination by lightning flashes
-    float cloudIllum = clouds * ( arcHalo * 1.5 + audioKick * 0.6 );
+    float cloud_illum = clouds * ( arc_halo * 1.5 + audioKick * 0.6 );
 
     // Methane ionization color: Deep violet-cyan identity tinted with photo palette
-    vec3 methaneViolet = vec3( 0.55, 0.2, 0.95 );
-    vec3 lightningBlue = vec3( 0.1, 0.6, 1.0 );
-    vec3 arcColor = palTint( mix( lightningBlue, methaneViolet, sin( audioCentroid * 3.14 ) * 0.5 + 0.5 ),
-                             mainArcDist * 2.0, 0.25 );
+    vec3 methane_violet = vec3( 0.55, 0.2, 0.95 );
+    vec3 lightning_blue = vec3( 0.1, 0.6, 1.0 );
+    vec3 arc_color = palTint( mix( lightning_blue, methane_violet, sin( audioCentroid * 3.14 ) * 0.5 + 0.5 ),
+                              main_arc_dist * 2.0, 0.25 );
 
     // Background photo texture
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.2;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.2;
 
     vec3 col = bg;
     col += palTint( vec3( 0.08, 0.12, 0.22 ), clouds * 0.5, 0.2 ) * ( 0.5 + clouds * 0.7 );
-    col += arcColor * cloudIllum * 1.6;
-    col += arcColor * branchIntensity * 1.4;
-    col += vec3( 0.9, 0.95, 1.0 ) * arcCore * 2.5;
-    col += arcColor * arcHalo * 1.2;
-    col += arcColor * ( audioKick * 0.35 );
+    col += arc_color * cloud_illum * 1.6;
+    col += arc_color * branch_intensity * 1.4;
+    col += vec3( 0.9, 0.95, 1.0 ) * arc_core * 2.5;
+    col += arc_color * arc_halo * 1.2;
+    col += arc_color * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

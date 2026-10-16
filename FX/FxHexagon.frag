@@ -32,8 +32,8 @@ float hexDist( vec2 a, vec2 b )
     float s = sin( deg30 );
     float c = cos( deg30 );
 
-    float diagDist = s * p.x + c * p.y;
-    return max( diagDist, p.x ) / c;
+    float diag_dist = s * p.x + c * p.y;
+    return max( diag_dist, p.x ) / c;
 }
 
 vec2 nearestHex( float s, vec2 st )
@@ -45,34 +45,34 @@ vec2 nearestHex( float s, vec2 st )
     float m = h / r;
 
     vec2 sect = st / vec2( 2.0 * r, h + s );
-    vec2 sectPxl = mod( st, vec2( 2.0 * r, h + s ) );
+    vec2 sect_pxl = mod( st, vec2( 2.0 * r, h + s ) );
 
-    float aSection = mod( floor( sect.y ), 2.0 );
+    float a_section = mod( floor( sect.y ), 2.0 );
 
     vec2 coord = floor( sect );
-    if ( aSection > 0.0 )
+    if ( a_section > 0.0 )
     {
-        if ( sectPxl.y < ( h - sectPxl.x * m ) )
+        if ( sect_pxl.y < ( h - sect_pxl.x * m ) )
         {
             coord -= 1.0;
         }
-        else if ( sectPxl.y < ( -h + sectPxl.x * m ) )
+        else if ( sect_pxl.y < ( -h + sect_pxl.x * m ) )
         {
             coord.y -= 1.0;
         }
     }
     else
     {
-        if ( sectPxl.x > r )
+        if ( sect_pxl.x > r )
         {
-            if ( sectPxl.y < ( 2.0 * h - sectPxl.x * m ) )
+            if ( sect_pxl.y < ( 2.0 * h - sect_pxl.x * m ) )
             {
                 coord.y -= 1.0;
             }
         }
         else
         {
-            if ( sectPxl.y < ( sectPxl.x * m ) )
+            if ( sect_pxl.y < ( sect_pxl.x * m ) )
             {
                 coord.y -= 1.0;
             }
@@ -101,10 +101,10 @@ void main( void )
     float dist = hexDist( gl_FragCoord.xy, nearest );
 
     float luminance = ( texel.r + texel.g + texel.b ) / 3.0;
-    float interiorSize = s;
+    float interior_size = s;
     // Thin dark borders flash up between the cells on each beat (slew-limited
     // upstream -> a soft honeycomb pulse, no strobe); hits brighten the cells.
-    float border = smoothstep( interiorSize - 2.0, interiorSize, dist );
+    float border = smoothstep( interior_size - 2.0, interior_size, dist );
     float interior = ( 1.0 - 0.6 * audioBeat * border ) * ( 1.0 + 0.15 * audioOnset );
     fragColor = vec4( texel.rgb * interior, 1.0 );
 }

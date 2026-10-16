@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -243,8 +243,8 @@ void main()
         per = r2.y > 0.0 ? 3.0 - r2.x / abs( r2.y ) : 7.0 + r2.x / abs( r2.y );
     per = mod( per + 1.0, 8.0 );
     // Footprint of per without the spikes at the wrap (8 -> 0) and the wall corners.
-    float fwP = min( fwidth( per ), fwidth( mod( per + 4.0, 8.0 ) ) );
-    float fwH;
+    float fw_p = min( fwidth( per ), fwidth( mod( per + 4.0, 8.0 ) ) );
+    float fw_h;
     float wall = floor( per * 0.5 );
     float s = per - 2.0 * wall - 1.0; // -1..1 across the wall
     float rise = 0.3 * sceneTime + 2.0 * audioAdvance;
@@ -252,28 +252,28 @@ void main()
     float h = ( z + rise ) / sh;
     float storey = floor( h );
     float fh = fract( h ); // 0 floor .. 1 ceiling of the storey
-    fwH = fwidth( h );
-    float nA = floor( 2.0 + 3.0 * clamp( archP, 0.0, 1.0 ) ); // arches per wall
-    float ax = ( s * 0.5 + 0.5 ) * nA;
+    fw_h = fwidth( h );
+    float n_a = floor( 2.0 + 3.0 * clamp( archP, 0.0, 1.0 ) ); // arches per wall
+    float ax = ( s * 0.5 + 0.5 ) * n_a;
     float ai = floor( ax );
     float af = fract( ax ) - 0.5; // -0.5..0.5 across the arch
     // Arch opening: a rectangle with a round top.
-    float archH = 0.55 + 0.2 * clamp( audioSpread, 0.0, 1.0 );
+    float arch_h = 0.55 + 0.2 * clamp( audioSpread, 0.0, 1.0 );
     float ow = 0.34;
     vec2  aq = vec2( af, fh - 0.1 );
-    float body = max( abs( aq.x ) - ow, max( -aq.y, aq.y - archH + ow ) );
-    float top = length( vec2( aq.x, aq.y - ( archH - ow ) ) ) - ow;
-    float opening = min( body, max( top, -( aq.y - ( archH - ow ) ) ) );
-    float px = ( fwP * 0.5 * nA + fwH ) * 1.2 + 1e-4;
-    float inOpen = smoothstep( px, -px, opening );
+    float body = max( abs( aq.x ) - ow, max( -aq.y, aq.y - arch_h + ow ) );
+    float top = length( vec2( aq.x, aq.y - ( arch_h - ow ) ) ) - ow;
+    float opening = min( body, max( top, -( aq.y - ( arch_h - ow ) ) ) );
+    float px = ( fw_p * 0.5 * n_a + fw_h ) * 1.2 + 1e-4;
+    float in_open = smoothstep( px, -px, opening );
     vec3  lc = mix( vec3( 0.7, 0.8, 1.0 ), vec3( 1.15, 0.9, 0.6 ), mode );
     // Stone: the photo, grey and dim, lit from above.
     vec2 suv = vec2( per * 0.5, h * 0.3 );
     vec3 stone = mix( vec3( luma( imgLod( suv, 2.0 ) ) ), imgLod( suv, 2.0 ), 0.3 ) * 0.5 * lc;
     stone *= 0.6 + 0.4 * fh; // lighter toward the top of each storey
     // Ribs: the corner lines and the cornice at each floor.
-    float corner = exp( -( 1.0 - abs( s ) ) / ( fwP * 2.0 + 1e-4 ) );
-    float cornice = exp( -min( fh, 1.0 - fh ) / ( fwH * 2.0 + 1e-4 ) );
+    float corner = exp( -( 1.0 - abs( s ) ) / ( fw_p * 2.0 + 1e-4 ) );
+    float cornice = exp( -min( fh, 1.0 - fh ) / ( fw_h * 2.0 + 1e-4 ) );
     stone += lc * ( corner + cornice ) * 0.15;
     // Stained glass in the openings: the photo, glowing.
     vec2 guv = vec2( af * 0.8 + ai * 0.31 + wall * 0.17, aq.y * 0.8 + storey * 0.23 );
@@ -283,7 +283,7 @@ void main()
     // Leading between the panes.
     float lead = step( 0.94, max( abs( fract( guv.x * 4.0 ) - 0.5 ), abs( fract( guv.y * 4.0 ) - 0.5 ) ) * 2.0 );
     glass *= 1.0 - 0.7 * lead;
-    vec3 col = mix( stone, glass, inOpen );
+    vec3 col = mix( stone, glass, in_open );
     // Height fog to the bright sky above.
     vec3 sky = mix( lc, glowColour( imgLod( vec2( 0.5 ), 6.0 ), p, hueP * 0.159 ), 0.3 ) * ( 0.6 + 0.8 * swell );
     col = mix( sky, col, exp( -z * 0.06 ) );

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -318,9 +318,9 @@ void main()
     float ns = floor( 3.0 + 4.0 * clamp( spokeP, 0.0, 1.0 ) );
     float sa = abs( fract( ang * ns / 6.2831853 ) - 0.5 ) * 6.2831853 / ns * r;
     float spoke = smoothstep( 0.035 + px, 0.035 - px, sa );
-    float rimBand = smoothstep( 0.3 - px, 0.3 + px, r );
+    float rim_band = smoothstep( 0.3 - px, 0.3 + px, r );
     float hub = smoothstep( 0.1 + px, 0.1 - px, r );
-    float solid = body * max( max( rimBand, spoke ), hub );
+    float solid = body * max( max( rim_band, spoke ), hub );
     // Enamel inside: the photo, turning with the gear.
     vec2 luv = rot2( -( dir * T / teeth * 6.0 ) ) * l;
     vec2 uv = ( gi + 0.5 ) / S * 0.6 + 0.5 + luv * 0.3;
@@ -332,11 +332,11 @@ void main()
     // The windows between the spokes show the enamel; the solid parts are metal.
     vec3 col = vec3( 0.02, 0.02, 0.025 ) + imgLod( p * 0.5 + 0.5, 5.0 ) * 0.04;
     col = mix( col, enamel * 0.8, body * ( 1.0 - solid ) );
-    vec3 metC = metal * ( 0.55 + 0.45 * sin( ang * 2.0 + 1.0 ) * 0.5 + 0.25 );
-    col = mix( col, metC, solid );
+    vec3 met_c = metal * ( 0.55 + 0.45 * sin( ang * 2.0 + 1.0 ) * 0.5 + 0.25 );
+    col = mix( col, met_c, solid );
     // Rim polish and teeth glints.
-    float rimLine = exp( -abs( r - outer + 0.01 ) / ( px * 1.5 ) ) * body;
-    col += mix( metal, vec3( 1.0 ), 0.5 ) * rimLine * ( 0.2 + 0.8 * kick );
+    float rim_line = exp( -abs( r - outer + 0.01 ) / ( px * 1.5 ) ) * body;
+    col += mix( metal, vec3( 1.0 ), 0.5 ) * rim_line * ( 0.2 + 0.8 * kick );
     col += vec3( 1.0 ) * pow( max( 0.0, cos( ang * teeth ) ), 30.0 ) * smoothstep( outer - 0.03, outer, r ) * body * hi
            * 0.6;
     // Axle.

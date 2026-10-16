@@ -62,12 +62,12 @@ void main()
 
     float t = time * 0.0552 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Chladni plate eigenmodes (n, m) morphing with transition
-    float n = ( 3.0 + tProg * 3.0 ) * mod;
-    float m = ( 5.0 + tProg * 2.0 ) * mod;
+    float n = ( 3.0 + t_prog * 3.0 ) * mod;
+    float m = ( 5.0 + t_prog * 2.0 ) * mod;
 
     vec2  q = p * 3.14159265;
     float chladni1 = sin( n * q.x ) * sin( m * q.y ) - sin( m * q.x ) * sin( n * q.y );
@@ -76,26 +76,26 @@ void main()
     float chladni = mix( chladni1, chladni2, sin( t * 2.0 ) * 0.5 + 0.5 );
 
     // Nodal line proximity (where vibration = 0)
-    float distToNode = abs( chladni );
-    float nodalLine = exp( -distToNode * 15.0 * ndl );
+    float dist_to_node = abs( chladni );
+    float nodal_line = exp( -dist_to_node * 15.0 * ndl );
 
     // Plate vibration displacement
-    vec2 vibDisp = vec2( sin( chladni * 5.0 ), cos( chladni * 5.0 ) ) * 0.025 * midTransition
-                   * ( 1.0 + audioSwell * 0.7 );
+    vec2 vib_disp = vec2( sin( chladni * 5.0 ), cos( chladni * 5.0 ) ) * 0.025 * mid_transition
+                    * ( 1.0 + audioSwell * 0.7 );
 
-    vec4 c1 = texture( tex1, fract( uv + vibDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - vibDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + vib_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - vib_disp ) );
 
-    float blend = clamp( tProg + chladni * 0.25 * midTransition, 0.0, 1.0 );
+    float blend = clamp( t_prog + chladni * 0.25 * mid_transition, 0.0, 1.0 );
     vec4  col = mix( c1, c0, blend );
 
     // Glowing resonant nodal lines
-    col.rgb += nodalLine * vec3( 1.0, 0.85, 0.35 ) * midTransition * ( 1.3 + audioKick * 1.0 );
+    col.rgb += nodal_line * vec3( 1.0, 0.85, 0.35 ) * mid_transition * ( 1.3 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

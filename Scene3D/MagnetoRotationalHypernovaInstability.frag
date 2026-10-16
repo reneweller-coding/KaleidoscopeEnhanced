@@ -61,39 +61,39 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float palCoord = fract( vFluxIdx + abs( vPos.z ) * 0.2 + audioCentroid );
-    vec3  strandColor = imgPalette( palCoord );
+    float pal_coord = fract( vFluxIdx + abs( vPos.z ) * 0.2 + audioCentroid );
+    vec3  strand_color = imgPalette( pal_coord );
 
     if ( vHaze > 0.5 )
     {
         // FAR EJECTA: the same palette, unlit and far dimmer -- a background
         // layer that fills the empty sky without lifting it toward grey.
-        vec3 h = strandColor * vEnergy * ( 0.85 + 0.5 * audioSwell );
+        vec3 h = strand_color * vEnergy * ( 0.85 + 0.5 * audioSwell );
         h /= 1.0 + 0.35 * max( h.r, max( h.g, h.b ) );
         fragColor = vec4( clamp( h, 0.0, 1.0 ), 1.0 );
         return;
     }
 
     // Core stellar accretion center glow
-    float rCore = length( vPos.xy );
-    float centralCore = exp( -dot( vPos, vPos ) * 1.5 ) * ( 1.0 + 3.0 * audioKick );
+    float r_core = length( vPos.xy );
+    float central_core = exp( -dot( vPos, vPos ) * 1.5 ) * ( 1.0 + 3.0 * audioKick );
 
-    vec2 photoUv = fract( vPos.xy * 0.3 + 0.5 );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vPos.xy * 0.3 + 0.5 );
+    vec3 photo_sample = img( photo_uv );
 
     // Synchrotron brightness falls off along the flux tube; without a real
     // per-point gradient the whole bundle shaded to one tone.
-    float axialGlow = exp( -abs( vPos.z ) * 0.45 );
-    float rimGlow = exp( -rCore * 1.1 );
+    float axial_glow = exp( -abs( vPos.z ) * 0.45 );
+    float rim_glow = exp( -r_core * 1.1 );
 
-    vec3 col = strandColor * ( 0.6 + 0.4 * photoSample ) * vEnergy;
+    vec3 col = strand_color * ( 0.6 + 0.4 * photo_sample ) * vEnergy;
     col *= ( jetGlowP > 0.01 ? jetGlowP : 1.2 ) * ( 0.8 + 0.4 * audioSwell );
-    col *= 0.55 + 0.95 * ( 0.5 * axialGlow + 0.5 * rimGlow );
-    // Capped: centralCore reaches 4 on a kick, and the core sits dead centre of
+    col *= 0.55 + 0.95 * ( 0.5 * axial_glow + 0.5 * rim_glow );
+    // Capped: central_core reaches 4 on a kick, and the core sits dead centre of
     // the frame now that the tilt no longer parks the object under the bottom
     // edge -- uncapped it flared a white disc across a twentieth of the picture.
-    col += min( imgPalette( 0.1 ) * centralCore * 2.5, vec3( 1.1 ) );
-    col += strandColor * ( audioKick * 0.35 );
+    col += min( imgPalette( 0.1 ) * central_core * 2.5, vec3( 1.1 ) );
+    col += strand_color * ( audioKick * 0.35 );
     // Magnetic reconnection flare along the tube (reconnP was declared and never
     // read -- the documented reconnection burst had no effect at all).
     float reconn = ( reconnP > 0.01 ? reconnP : 1.0 );

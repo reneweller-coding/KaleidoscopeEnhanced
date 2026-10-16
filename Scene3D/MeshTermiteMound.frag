@@ -36,8 +36,8 @@ in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 
-const float kDist = 62.0;
-const float kGround = -22.0;
+const float Dist = 62.0;
+const float Ground = -22.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -127,7 +127,7 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-const vec3 kKeyDir = vec3( 0.6, 0.30, -0.65 ); // the last sun, low, behind the camera's right
+const vec3 KeyDir = vec3( 0.6, 0.30, -0.65 ); // the last sun, low, behind the camera's right
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir )
@@ -139,7 +139,7 @@ vec3 renderSky( vec3 dir )
     vec3  col;
     if ( dir.y < -0.004 )
     {
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.005 );
         float g = fbm2( P.xz * 0.06 ), g2 = fbm2( P.xz * 0.5 );
@@ -156,13 +156,13 @@ vec3 renderSky( vec3 dir )
         float crown = 0.035
                       + 0.045 * smoothstep( 0.55, 0.75, noise1( az * 6.0 + 2.0 ) )
                             * ( 0.7 + 0.3 * noise1( az * 40.0 ) );
-        float treeMask = 1.0 - smoothstep( crown - 0.005, crown + 0.005, dir.y );
-        col = mix( col, vec3( 0.03, 0.025, 0.02 ), treeMask );
+        float tree_mask = 1.0 - smoothstep( crown - 0.005, crown + 0.005, dir.y );
+        col = mix( col, vec3( 0.03, 0.025, 0.02 ), tree_mask );
         col += stars( dir ) * smoothstep( 0.12, 0.5, h ) * ( 1.2 - 0.6 * swell );
 
         // The heat plumes: warm haze rising above the mound's chimneys in
         // the direction of the mound top, spreading as it climbs.
-        float top = atan( kGround + 40.0, kDist );  // elevation of the mound top
+        float top = atan( Ground + 40.0, Dist );    // elevation of the mound top
         float rise = ( dir.y - top * 0.85 ) / 0.45; // 0 at the chimneys, 1 well above
         float lean = 0.05 * rise * rise;            // the evening breeze
         float w = 0.10 + 0.22 * rise;
@@ -202,11 +202,11 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
-    vec3 keyDir = normalize( kKeyDir );
-    vec3 col = alb * vec3( 1.0, 0.65, 0.40 ) * max( dot( n, keyDir ), 0.0 ) * 1.4 * dusk;
+    vec3 key_dir = normalize( KeyDir );
+    vec3 col = alb * vec3( 1.0, 0.65, 0.40 ) * max( dot( n, key_dir ), 0.0 ) * 1.4 * dusk;
     col += alb * vec3( 0.30, 0.22, 0.45 ) * ( 0.55 + 0.45 * n.y ) * 0.45 * dusk;
     col += alb * vec3( 0.30, 0.20, 0.08 ) * max( -n.y, 0.0 ) * 0.4 * dusk;
     col += alb * 0.05;
@@ -215,13 +215,13 @@ void main()
     float chimney = smoothstep( 0.45, 0.9, vLocal.y );
     col += vec3( 1.0, 0.45, 0.18 ) * chimney * ( 0.05 + 0.45 * bass ) * ( 0.6 + 0.4 * max( n.y, 0.0 ) );
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.6, 0.35 ) * fres * 0.2 * dusk;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.10 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

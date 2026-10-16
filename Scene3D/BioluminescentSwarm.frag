@@ -44,21 +44,21 @@ void main()
     }
 
     vec3  n = normalize( vNormal );
-    vec3  lightDir = normalize( vec3( 0.5, 0.8, -0.6 ) );
-    float diff = max( dot( n, lightDir ), 0.0 ) * 0.5 + 0.5;
+    vec3  light_dir = normalize( vec3( 0.5, 0.8, -0.6 ) );
+    float diff = max( dot( n, light_dir ), 0.0 ) * 0.5 + 0.5;
 
     // Specular highlight
-    vec3  viewDir = normalize( -vWorld );
-    vec3  refl = reflect( -lightDir, n );
-    float spec = pow( max( dot( viewDir, refl ), 0.0 ), 16.0 );
+    vec3  view_dir = normalize( -vWorld );
+    vec3  refl = reflect( -light_dir, n );
+    float spec = pow( max( dot( view_dir, refl ), 0.0 ), 16.0 );
 
     // Near creatures burn far hotter than the far side of the murmuration; the
     // camera orbits at ~28 units, so this is a real per-fragment depth cue and
     // it is what gives the swarm range instead of one uniform dim tone.
-    float camDist = length( vWorld );
-    float nearGain = 0.45 + 1.35 * exp( -max( camDist - 8.0, 0.0 ) * 0.055 );
+    float cam_dist = length( vWorld );
+    float near_gain = 0.45 + 1.35 * exp( -max( cam_dist - 8.0, 0.0 ) * 0.055 );
 
-    vec3 col = vCol.rgb * diff * nearGain + min( spec, 1.0 ) * vec3( 1.0, 1.0, 1.0 );
+    vec3 col = vCol.rgb * diff * near_gain + min( spec, 1.0 ) * vec3( 1.0, 1.0, 1.0 );
     // Additive pass: cap the tinted vector, not just a scalar.
     col = min( col, vec3( 1.6 ) );
     col /= 1.0 + 0.30 * max( col.r, max( col.g, col.b ) );

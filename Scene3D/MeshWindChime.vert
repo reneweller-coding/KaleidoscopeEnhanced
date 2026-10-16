@@ -31,15 +31,15 @@ out vec3  vPos;    ///< Position (from the vertex stage).
 out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 
-const float kDist = 52.0;
-const float kTop = 24.0;
+const float Dist = 52.0;
+const float Top = 24.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = 20.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
         vec3  c = attrA.xyz - meshCenter;
@@ -53,12 +53,12 @@ void main()
         float      ax = 0.07 * amp * sin( time * 0.61 ) + 0.02 * amp * sin( time * 1.37 );
         float      az = 0.05 * amp * sin( time * 0.83 + 1.0 );
         float      cx = cos( ax ), sx = sin( ax ), cz = cos( az ), szz = sin( az );
-        mat3       rotX = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
-        mat3       rotZ = mat3( cz, szz, 0.0, -szz, cz, 0.0, 0.0, 0.0, 1.0 );
-        const mat3 turnM = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
-        mat3       M = rotX * rotZ * turnM;
+        mat3       rot_x = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3       rot_z = mat3( cz, szz, 0.0, -szz, cz, 0.0, 0.0, 0.0, 1.0 );
+        const mat3 turn_m = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
+        mat3       M = rot_x * rot_z * turn_m;
 
-        world = M * local + vec3( 0.0, kTop, kDist );
+        world = M * local + vec3( 0.0, Top, Dist );
         n = normalize( M * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
@@ -75,10 +75,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

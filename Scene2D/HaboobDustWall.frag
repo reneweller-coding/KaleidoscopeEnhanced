@@ -88,7 +88,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float wallH = ( 0.65 + 0.35 * clamp( heightP, 0.0, 1.0 ) ) * ( 0.75 + 0.4 * clamp( audioSwell, 0.0, 1.0 ) );
+    float wall_h = ( 0.65 + 0.35 * clamp( heightP, 0.0, 1.0 ) ) * ( 0.75 + 0.4 * clamp( audioSwell, 0.0, 1.0 ) );
     float billow = 0.5 + 0.8 * clamp( billowP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
     // The front: the wall's near edge in screen depth, advancing and
@@ -109,23 +109,23 @@ void main()
     vec3  col = mix( sky, town, step( p.y, skyline ) );
     // The wall: it covers the scene from the front depth outward; its face
     // is a boiling field of round billows (fbm lobes), its top ragged.
-    float wallTop = ground + wallH + 0.08 * fbm( vec2( p.x * 2.5 + clock * 0.5, 3.0 ) ) * billow;
-    float wallDepth = 1.0 - front; // how far it has come
+    float wall_top = ground + wall_h + 0.08 * fbm( vec2( p.x * 2.5 + clock * 0.5, 3.0 ) ) * billow;
+    float wall_depth = 1.0 - front; // how far it has come
     // In screen space the wall stands at a depth; pixels "behind" it (far
     // side of the street and the sky above the far side) are inside it.
     float behind = smoothstep( front - 0.08, front + 0.08, depth ); // ground pixels beyond the front
-    float inWall = max( behind, step( skyline, p.y ) ) * step( p.y, wallTop );
-    inWall = max( inWall, step( skyline, p.y ) * step( p.y, wallTop ) );
+    float in_wall = max( behind, step( skyline, p.y ) ) * step( p.y, wall_top );
+    in_wall = max( in_wall, step( skyline, p.y ) * step( p.y, wall_top ) );
     vec2  wq = vec2( p.x * 2.0 + clock * 0.3, p.y * 3.0 - clock * 0.6 );
     float lobes = fbm( wq * billow ) * 0.6 + fbm( wq * 3.0 * billow + 7.0 ) * 0.4;
-    vec3  wallCol = dust * ( 0.55 + 0.6 * lobes );
-    wallCol *= 0.5 + 0.5 * smoothstep( wallTop, ground, p.y ); // darker toward the base
+    vec3  wall_col = dust * ( 0.55 + 0.6 * lobes );
+    wall_col *= 0.5 + 0.5 * smoothstep( wall_top, ground, p.y ); // darker toward the base
     // Lightning inside the dust: a diffuse flash with a branching shape on the kick.
     float bolt = pow( fbm( vec2( p.x * 8.0, p.y * 3.0 + clock ) ), 4.0 ) * 6.0;
-    wallCol += vec3( 1.0, 0.95, 0.85 ) * ( 0.3 + bolt ) * audioKick * 0.8 * inWall;
+    wall_col += vec3( 1.0, 0.95, 0.85 ) * ( 0.3 + bolt ) * audioKick * 0.8 * in_wall;
     // The wall's edge: a softer boundary where the dust thins.
-    float edgeSoft = smoothstep( wallTop, wallTop - 0.08, p.y );
-    col = mix( col, wallCol, inWall * edgeSoft );
+    float edge_soft = smoothstep( wall_top, wall_top - 0.08, p.y );
+    col = mix( col, wall_col, in_wall * edge_soft );
     // Dust in the air in front of the wall: round motes streaming on the clock.
     vec2  mu = ( p + vec2( -clock * 0.6, 0.0 ) ) * 50.0;
     vec2  mc = floor( mu );
@@ -137,7 +137,7 @@ void main()
     col = mix( col, dust, 0.15 * ( 1.0 - front ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

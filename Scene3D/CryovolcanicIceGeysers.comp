@@ -62,17 +62,17 @@ void main()
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
-    float fGid = float( gid );
+    float f_gid = float( gid );
 
-    float plumeID = floor( fGid / 64.0 ); // 64 geysers
-    float segID = mod( fGid, 64.0 );      // 64 segments per plume
+    float plume_id = floor( f_gid / 64.0 ); // 64 geysers
+    float seg_id = mod( f_gid, 64.0 );      // 64 segments per plume
 
-    float u1 = segID / 64.0;
-    float u2 = ( segID + 1.0 ) / 64.0;
+    float u1 = seg_id / 64.0;
+    float u2 = ( seg_id + 1.0 ) / 64.0;
 
     // Linear ground vent positions along ice fractures
-    float ventX = ( hash11( plumeID ) - 0.5 ) * 10.0;
-    float ventZ = ( hash11( plumeID * 2.3 ) - 0.5 ) * 8.0;
+    float vent_x = ( hash11( plume_id ) - 0.5 ) * 10.0;
+    float vent_z = ( hash11( plume_id * 2.3 ) - 0.5 ) * 8.0;
 
     // Plume altitude: y in [0, 6]
     float y1 = u1 * 6.0 * gys * ( 1.0 + 0.3 * audioBass );
@@ -82,44 +82,44 @@ void main()
     float spread1 = pow( u1, 1.5 ) * 1.8 * plm + sin( u1 * 10.0 - t * 3.0 ) * 0.2;
     float spread2 = pow( u2, 1.5 ) * 1.8 * plm + sin( u2 * 10.0 - t * 3.0 ) * 0.2;
 
-    float angle1 = plumeID * 1.5 + u1 * 4.0 + t;
-    float angle2 = plumeID * 1.5 + u2 * 4.0 + t;
+    float angle1 = plume_id * 1.5 + u1 * 4.0 + t;
+    float angle2 = plume_id * 1.5 + u2 * 4.0 + t;
 
     // Kick eruption burst
-    float kickErupt1 = audioKick * 2.0 * u1;
-    float kickErupt2 = audioKick * 2.0 * u2;
+    float kick_erupt1 = audioKick * 2.0 * u1;
+    float kick_erupt2 = audioKick * 2.0 * u2;
 
-    vec3 pA = vec3( ventX + cos( angle1 ) * spread1, y1 + kickErupt1 - 2.5, ventZ + sin( angle1 ) * spread1 );
-    vec3 pB = vec3( ventX + cos( angle2 ) * spread2, y2 + kickErupt2 - 2.5, ventZ + sin( angle2 ) * spread2 );
+    vec3 p_a = vec3( vent_x + cos( angle1 ) * spread1, y1 + kick_erupt1 - 2.5, vent_z + sin( angle1 ) * spread1 );
+    vec3 p_b = vec3( vent_x + cos( angle2 ) * spread2, y2 + kick_erupt2 - 2.5, vent_z + sin( angle2 ) * spread2 );
 
-    vec3  forward = normalize( pB - pA );
+    vec3  forward = normalize( p_b - p_a );
     vec3  binormal = normalize( vec3( -forward.z, 0.0, forward.x ) );
-    float ribbonWidth = ( 0.02 + 0.04 * u1 ) * ( 1.0 + audioHigh * 0.5 );
+    float ribbon_width = ( 0.02 + 0.04 * u1 ) * ( 1.0 + audioHigh * 0.5 );
 
-    vec3 v0 = pA - binormal * ribbonWidth;
-    vec3 v1 = pA + binormal * ribbonWidth;
-    vec3 v2 = pB - binormal * ribbonWidth;
-    vec3 v3 = pB + binormal * ribbonWidth;
+    vec3 v0 = p_a - binormal * ribbon_width;
+    vec3 v1 = p_a + binormal * ribbon_width;
+    vec3 v2 = p_b - binormal * ribbon_width;
+    vec3 v3 = p_b + binormal * ribbon_width;
 
     uint base = atomicAdd( cmd[4], 6u );
     if ( base + 6u > maxVertices )
         return;
 
-    vec3 pList[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
-    vec2 uvList[6] = vec2[6](
+    vec3 p_list[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
+    vec2 uv_list[6] = vec2[6](
         vec2( 0.0, u1 ), vec2( 1.0, u1 ), vec2( 0.0, u2 ),
         vec2( 1.0, u1 ), vec2( 1.0, u2 ), vec2( 0.0, u2 ) );
 
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
-        verts[off + 3u] = plumeID;
-        verts[off + 4u] = hash11( plumeID );
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
+        verts[off + 3u] = plume_id;
+        verts[off + 4u] = hash11( plume_id );
         verts[off + 5u] = u1;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }

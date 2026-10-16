@@ -196,15 +196,15 @@ void main()
     vec3  vv = cross( uu, ww );
     vec3  rd = normalize( uv.x * uu + uv.y * vv + 1.15 * ww );
 
-    vec3 sunDir = normalize( vec3( -0.55, 0.22, 0.8 ) );
-    vec3 sunC = vec3( 1.0, 0.86, 0.66 ) * ( 1.1 + 0.4 * swell );
+    vec3 sun_dir = normalize( vec3( -0.55, 0.22, 0.8 ) );
+    vec3 sun_c = vec3( 1.0, 0.86, 0.66 ) * ( 1.1 + 0.4 * swell );
 
     // Sky: warm haze at the horizon, deep blue-violet above.
     float up = max( rd.y, 0.0 );
-    vec3  hazeC = mix( vec3( 0.95, 0.78, 0.58 ), imgPalette( 0.1 ), 0.18 );
-    vec3  col = mix( hazeC, vec3( 0.1, 0.12, 0.3 ), pow( up, 0.55 ) );
-    float sunA = max( dot( rd, sunDir ), 0.0 );
-    col += sunC * ( pow( sunA, 600.0 ) * 3.0 + pow( sunA, 12.0 ) * 0.35 );
+    vec3  haze_c = mix( vec3( 0.95, 0.78, 0.58 ), imgPalette( 0.1 ), 0.18 );
+    vec3  col = mix( haze_c, vec3( 0.1, 0.12, 0.3 ), pow( up, 0.55 ) );
+    float sun_a = max( dot( rd, sun_dir ), 0.0 );
+    col += sun_c * ( pow( sun_a, 600.0 ) * 3.0 + pow( sun_a, 12.0 ) * 0.35 );
 
     // A moon in crescent.
     {
@@ -214,8 +214,8 @@ void main()
         {
             vec3  mu = normalize( cross( md, vec3( 0.0, 1.0, 0.0 ) ) ), mv = cross( mu, md );
             vec2  mq = vec2( dot( rd, mu ), dot( rd, mv ) ) / 0.035;
-            vec3  mN = mq.x * mu + mq.y * mv - sqrt( max( 1.0 - dot( mq, mq ), 0.0 ) ) * md; // faces us
-            float lit = smoothstep( -0.05, 0.3, dot( mN, sunDir ) );
+            vec3  m_n = mq.x * mu + mq.y * mv - sqrt( max( 1.0 - dot( mq, mq ), 0.0 ) ) * md; // faces us
+            float lit = smoothstep( -0.05, 0.3, dot( m_n, sun_dir ) );
             float disc = smoothstep( 1.0, 0.95, length( mq ) );
             col = mix( col, vec3( 0.85, 0.82, 0.78 ) * ( 0.05 + 0.95 * lit ), disc );
         }
@@ -263,40 +263,40 @@ void main()
                                    2.0 * e,
                                    deck( xz - vec2( 0.0, e ), 5 ) * cp - deck( xz + vec2( 0.0, e ), 5 ) * cp ) );
         vec3  alb = bandCol( xz );
-        float dif = max( dot( n, sunDir ), 0.0 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
         // Self-shadow toward the low sun: sample the deck along the sun ray.
         float sh = 1.0;
         for ( int k = 1; k < 6; ++k )
         {
-            vec3 sp3 = vec3( xz.x, h0, xz.y ) + sunDir * float( k ) * 1.6;
+            vec3 sp3 = vec3( xz.x, h0, xz.y ) + sun_dir * float( k ) * 1.6;
             sh = min( sh, clamp( ( sp3.y - deck( sp3.xz, 3 ) * cp ) * 0.6 + 0.2, 0.0, 1.0 ) );
         }
         float amb = 0.35 + 0.25 * n.y;
-        float heightTone = 0.75 + 0.35 * smoothstep( 0.0, 8.0, h0 ); // tops brighter, valleys deep
-        vec3  c = alb * ( sunC * dif * sh * 1.05 + vec3( 0.45, 0.5, 0.65 ) * amb ) * heightTone;
+        float height_tone = 0.75 + 0.35 * smoothstep( 0.0, 8.0, h0 ); // tops brighter, valleys deep
+        vec3  c = alb * ( sun_c * dif * sh * 1.05 + vec3( 0.45, 0.5, 0.65 ) * amb ) * height_tone;
         // Silver lining where the sun grazes the tops.
-        c += sunC * pow( 1.0 - max( dot( n, -rd ), 0.0 ), 4.0 ) * dif * 0.25;
+        c += sun_c * pow( 1.0 - max( dot( n, -rd ), 0.0 ), 4.0 ) * dif * 0.25;
 
         // Lightning deep in the deck: storm cells flash with the kick and
         // light the clouds from inside, blue-white.
         vec2  cell = floor( xz / 36.0 );
         vec2  cc = ( cell + 0.3 + 0.4 * vec2( hash21( cell ), hash21( cell + 4.1 ) ) ) * 36.0;
-        float isStorm = step( 0.55, hash21( cell + 8.3 ) );
+        float is_storm = step( 0.55, hash21( cell + 8.3 ) );
         float fl = clamp( audioKick * 1.3, 0.0, 1.0 )
                    * ( 0.5 + 0.5 * sin( hash21( cell + 2.0 ) * 6.28 + audioAdvance * 0.7 ) );
-        float glow = exp( -dot( xz - cc, xz - cc ) / 60.0 ) * isStorm * fl * sp;
+        float glow = exp( -dot( xz - cc, xz - cc ) / 60.0 ) * is_storm * fl * sp;
         c += vec3( 0.7, 0.8, 1.0 ) * glow * ( 1.4 - 0.6 * smoothstep( 0.0, 8.0, h0 ) );
 
         // Aerial perspective into the warm haze.
         float fog = 1.0 - exp( -t * 0.0055 );
-        col = mix( c, hazeC * ( 0.9 + 0.3 * swell ), fog );
+        col = mix( c, haze_c * ( 0.9 + 0.3 * swell ), fog );
     }
 
     col *= 0.92 + 0.16 * audioLevel;
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

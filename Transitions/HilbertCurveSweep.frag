@@ -49,7 +49,7 @@ uniform float orderP; ///< Order of the chain's four stages (one of 24), 0..1.
 uniform float edgeP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// The distance along the Hilbert curve of the cell (x, y) in an n x n grid.
 /// Walks down the orders: read the quadrant, add the quadrant's share of the
@@ -81,13 +81,13 @@ uint hilbertIndex( uint n, uint x, uint y )
 void main()
 {
     float ord = clamp( orderP, 0.0, 1.0 );
-    float edgeW = ( edgeP > 0.0 ) ? edgeP : 1.0;
+    float edge_w = ( edgeP > 0.0 ) ? edgeP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec2 uv = gl_FragCoord.xy / resolution;
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // Order 4..6, i.e. a 16, 32 or 64 cell grid.  Chosen ONCE per activation --
     // changing it mid-turn would renumber every cell at once.
@@ -109,7 +109,7 @@ void main()
     float pos = ( float( idx ) + sub ) / total;
 
     // The front, with a soft edge a couple of cells wide.
-    float w = ( 1.6 * edgeW ) / total * fn; // in units of the whole curve
+    float w = ( 1.6 * edge_w ) / total * fn; // in units of the whole curve
     float front = d * ( 1.0 + 2.0 * w ) - w + audioAdvance * 0.0004;
     float taken = smoothstep( front + w, front - w, pos );
 

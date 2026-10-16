@@ -57,28 +57,28 @@ void main()
 
     // Edge falloff for glowing ribbon tube look
     float edge = 1.0 - abs( vSide );
-    float coreGlow = pow( edge, 2.5 );
+    float core_glow = pow( edge, 2.5 );
 
     // Velocity Doppler color gradient
-    vec3 slowCol = vec3( 0.1, 0.4, 1.0 ); // Cyan / blue
-    vec3 fastCol = vec3( 1.0, 0.1, 0.5 ); // Magenta / hot pink
-    vec3 neonCol = mix( slowCol, fastCol, clamp( vVelocity * 0.4 - 0.2, 0.0, 1.0 ) );
+    vec3 slow_col = vec3( 0.1, 0.4, 1.0 ); // Cyan / blue
+    vec3 fast_col = vec3( 1.0, 0.1, 0.5 ); // Magenta / hot pink
+    vec3 neon_col = mix( slow_col, fast_col, clamp( vVelocity * 0.4 - 0.2, 0.0, 1.0 ) );
 
     // High-speed pulse packets traveling along the ribbon
     float pulse = sin( vT * 40.0 - time * 15.0 ) * 0.5 + 0.5;
     pulse = pow( pulse, 6.0 ) * ( 1.0 + 2.0 * audioKick );
 
     // Photo texture modulation
-    vec2 photoUV = vec2( vT * 2.0, vRibbonID / 20.0 );
-    vec3 photoCol = img( fract( photoUV ) );
+    vec2 photo_uv = vec2( vT * 2.0, vRibbonID / 20.0 );
+    vec3 photo_col = img( fract( photo_uv ) );
 
-    vec3 col = ( neonCol * coreGlow * 1.8 + vec3( 1.0 ) * pulse * 2.5 + photoCol * 0.4 ) * glw;
+    vec3 col = ( neon_col * core_glow * 1.8 + vec3( 1.0 ) * pulse * 2.5 + photo_col * 0.4 ) * glw;
     col += vec3( 0.2, 0.6, 1.0 ) * pow( edge, 8.0 ) * 1.5; // Bright center line
 
     col = hueRot( col, audioChromaHue + hue );
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.55;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.55;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -70,74 +70,74 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float speedV = ( speedP <= 0.01 ) ? 1.0 : speedP;
-    float pylonV = ( pylonP <= 0.01 ) ? 1.0 : pylonP;
-    float terrainV = ( terrainP <= 0.01 ) ? 1.0 : terrainP;
+    float speed_v = ( speedP <= 0.01 ) ? 1.0 : speedP;
+    float pylon_v = ( pylonP <= 0.01 ) ? 1.0 : pylonP;
+    float terrain_v = ( terrainP <= 0.01 ) ? 1.0 : terrainP;
 
     // Scene3DShader supplies attrA.xy in [0,1] for geom="grid"; remap to a
     // centred domain (Tools/SHADER_AUTHORING.md V2).
-    vec2 gridUV = attrA.xy * 2.0 - 1.0;
+    vec2 grid_uv = attrA.xy * 2.0 - 1.0;
 
-    float worldX = gridUV.x * 9.0;
-    float worldZ = gridUV.y * 15.0;
+    float world_x = grid_uv.x * 9.0;
+    float world_z = grid_uv.y * 15.0;
 
     // Integrated forward drive: the mesh itself never moves, but the height
     // and pylon functions are scrolled by it, so the road reads as endless.
-    float drive = time * 1.1 * speedV + audioAdvance * 1.6 * speedV;
-    float scrolledZ = worldZ + drive;
+    float drive = time * 1.1 * speed_v + audioAdvance * 1.6 * speed_v;
+    float scrolled_z = world_z + drive;
 
     // Flattened road strip either side of x=0.
-    float roadHalfW = 2.4;
-    float roadMask = 1.0 - smoothstep( roadHalfW * 0.55, roadHalfW, abs( worldX ) );
+    float road_half_w = 2.4;
+    float road_mask = 1.0 - smoothstep( road_half_w * 0.55, road_half_w, abs( world_x ) );
 
     // Rolling terrain either side of the road.
-    float terrain = sin( worldX * 0.35 + scrolledZ * 0.08 ) * 0.9
-                    + sin( worldX * 0.9 - scrolledZ * 0.14 ) * 0.35;
-    terrain *= terrainV * ( 1.0 + 0.35 * audioBass );
+    float terrain = sin( world_x * 0.35 + scrolled_z * 0.08 ) * 0.9
+                    + sin( world_x * 0.9 - scrolled_z * 0.14 ) * 0.35;
+    terrain *= terrain_v * ( 1.0 + 0.35 * audioBass );
 
     // Road-surface shimmer (subtle, so it still reads as a road not dunes).
-    float shimmer = sin( worldX * 6.0 + scrolledZ * 2.5 ) * 0.02 * ( 1.0 + audioHigh * 1.5 );
+    float shimmer = sin( world_x * 6.0 + scrolled_z * 2.5 ) * 0.02 * ( 1.0 + audioHigh * 1.5 );
 
     // Roadside pylon lane: a periodic sharp spike along Z, only near the
-    // lane band either side of the road -- rushes past as scrolledZ advances.
-    float pylonOffsetX = roadHalfW + 1.0;
-    float laneDist = abs( abs( worldX ) - pylonOffsetX );
-    float laneMask = smoothstep( 0.5, 0.0, laneDist );
-    float pylonSpacing = 5.5;
-    float zPhase = mod( scrolledZ, pylonSpacing ) / pylonSpacing; // 0..1
-    float pylonShape = pow( max( 0.0, cos( zPhase * 6.2831853 ) ), 10.0 );
-    float kickPulse = 1.0 + audioKick * 0.6;
-    float pylonHeight = laneMask * pylonShape * 5.0 * pylonV * kickPulse;
+    // lane band either side of the road -- rushes past as scrolled_z advances.
+    float pylon_offset_x = road_half_w + 1.0;
+    float lane_dist = abs( abs( world_x ) - pylon_offset_x );
+    float lane_mask = smoothstep( 0.5, 0.0, lane_dist );
+    float pylon_spacing = 5.5;
+    float z_phase = mod( scrolled_z, pylon_spacing ) / pylon_spacing; // 0..1
+    float pylon_shape = pow( max( 0.0, cos( z_phase * 6.2831853 ) ), 10.0 );
+    float kick_pulse = 1.0 + audioKick * 0.6;
+    float pylon_height = lane_mask * pylon_shape * 5.0 * pylon_v * kick_pulse;
 
-    float height = mix( terrain, 0.0, roadMask ) + shimmer + pylonHeight;
+    float height = mix( terrain, 0.0, road_mask ) + shimmer + pylon_height;
 
-    vec3 pos = vec3( worldX, height - 1.0, worldZ );
+    vec3 pos = vec3( world_x, height - 1.0, world_z );
     vWorldPos = pos;
 
     // Normal from the analytic slope (finite-difference-free, matches the
     // terrain/pylon height function's own gradient direction).
-    float dHdx = ( mix( cos( worldX * 0.35 + scrolledZ * 0.08 ) * 0.315
-                            + cos( worldX * 0.9 - scrolledZ * 0.14 ) * 0.315,
-                        0.0, roadMask ) )
-                 * terrainV;
-    vNormal = normalize( vec3( -dHdx, 1.0, -0.15 ) );
+    float d_hdx = ( mix( cos( world_x * 0.35 + scrolled_z * 0.08 ) * 0.315
+                             + cos( world_x * 0.9 - scrolled_z * 0.14 ) * 0.315,
+                         0.0, road_mask ) )
+                  * terrain_v;
+    vNormal = normalize( vec3( -d_hdx, 1.0, -0.15 ) );
 
     // Camera: low, close to the road surface, looking forward with a
     // shallow downward tilt -- a driving view, not a bird's-eye dune view.
     vec3 vp = pos;
     vp.y -= 0.55;
-    float camTilt = -0.16;
-    float cosT = cos( camTilt ), sinT = sin( camTilt );
-    vp = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float cam_tilt = -0.16;
+    float cos_t = cos( cam_tilt ), sin_t = sin( cam_tilt );
+    vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
     vp.z += 9.5 - audioSwell * 1.2;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    vRoadMask = roadMask;
-    vPylonGlow = clamp( pylonHeight * 0.3 + audioKick * laneMask * 0.5, 0.0, 1.5 );
+    vRoadMask = road_mask;
+    vPylonGlow = clamp( pylon_height * 0.3 + audioKick * lane_mask * 0.5, 0.0, 1.5 );
 
-    vec3 tint = imgPalette( 0.5 + 0.5 * sin( worldX * 0.2 + scrolledZ * 0.05 ) ) * 1.2;
+    vec3 tint = imgPalette( 0.5 + 0.5 * sin( world_x * 0.2 + scrolled_z * 0.05 ) ) * 1.2;
     if ( hueP > 0.001 )
         tint = hueRot( tint, hueP );
     vTint = tint;

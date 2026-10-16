@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -243,10 +243,10 @@ vec2 flowDir( vec2 uv )
     float n1 = fbm3( cq + vec2( 0.0, e ) ), n2 = fbm3( cq - vec2( 0.0, e ) );
     float n3 = fbm3( cq + vec2( e, 0.0 ) ), n4 = fbm3( cq - vec2( e, 0.0 ) );
     vec2  curl = vec2( n1 - n2, n4 - n3 ) / ( 2.0 * e );
-    vec2  dA = along / ( ga + 1e-4 ), dC = curl / ( length( curl ) + 1e-4 );
+    vec2  d_a = along / ( ga + 1e-4 ), d_c = curl / ( length( curl ) + 1e-4 );
     // Where the photo has structure its contours rule; calm areas swirl freely.
     float w = gCurl * ( 1.0 - smoothstep( 0.1, 0.8, ga ) );
-    vec2  d = normalize( mix( dA, dC, w ) + 1e-4 );
+    vec2  d = normalize( mix( d_a, d_c, w ) + 1e-4 );
     return d;
 }
 
@@ -269,21 +269,21 @@ void main()
     // both ways; a phase pulse travels along each line with the flow, so the
     // threads visibly stream.  Many thin threads, not a smear.
     float acc = 0.0, wsum = 0.0;
-    vec2  uF = uv0, uB = uv0;
+    vec2  u_f = uv0, u_b = uv0;
     for ( int i = 0; i < 16; ++i )
     {
         float fi = float( i );
         float w = exp( -fi * fi / 90.0 );
-        uF += flowDir( uF ) * len;
-        uB -= flowDir( uB ) * len;
-        float nF = noise2( uF * 260.0 );
-        float nB = noise2( uB * 260.0 );
-        nF *= nF * nF;
-        nB *= nB * nB; // sparse bright seeds
+        u_f += flowDir( u_f ) * len;
+        u_b -= flowDir( u_b ) * len;
+        float n_f = noise2( u_f * 260.0 );
+        float n_b = noise2( u_b * 260.0 );
+        n_f *= n_f * n_f;
+        n_b *= n_b * n_b; // sparse bright seeds
         // travelling pulse: phase along the line
-        float pF = 0.5 + 0.5 * sin( ( flow - fi * 0.35 ) * 2.0 );
-        float pB = 0.5 + 0.5 * sin( ( flow + fi * 0.35 ) * 2.0 );
-        acc += w * ( nF * pF + nB * pB );
+        float p_f = 0.5 + 0.5 * sin( ( flow - fi * 0.35 ) * 2.0 );
+        float p_b = 0.5 + 0.5 * sin( ( flow + fi * 0.35 ) * 2.0 );
+        acc += w * ( n_f * p_f + n_b * p_b );
         wsum += 2.0 * w;
     }
     float lic = acc / wsum;

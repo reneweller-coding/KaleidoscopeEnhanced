@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float aSpin = ( spinP > 0.01 ) ? spinP : 0.95; // Kerr spin parameter near maximal (0.95)
-    float dBeaming = ( dopplerP > 0.01 ) ? dopplerP : 1.2;
+    float a_spin = ( spinP > 0.01 ) ? spinP : 0.95; // Kerr spin parameter near maximal (0.95)
+    float d_beaming = ( dopplerP > 0.01 ) ? dopplerP : 1.2;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.240 * spd + audioAdvance * 0.240 * spd;
@@ -73,54 +73,55 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Tilted accretion disk coordinates: (x, y / cos(inclination))
-    vec2  pDisk = uv * vec2( 1.0, 2.2 );
-    float r = length( pDisk );
-    float a = atan( pDisk.y, pDisk.x );
+    vec2  p_disk = uv * vec2( 1.0, 2.2 );
+    float r = length( p_disk );
+    float a = atan( p_disk.y, p_disk.x );
 
     // Frame dragging angular velocity: omega = 2*a*M / (r^3 + a^2*r + 2*a^2)
-    float omegaDrag = ( 2.0 * aSpin ) / ( r * r * r + aSpin * aSpin * r + 0.5 );
-    float phiRot = a - ( omegaDrag * 2.0 + t * 3.0 );
+    float omega_drag = ( 2.0 * a_spin ) / ( r * r * r + a_spin * a_spin * r + 0.5 );
+    float phi_rot = a - ( omega_drag * 2.0 + t * 3.0 );
 
     // Accretion disk inner radius (ISCO) and outer envelope
-    float rISCO = 0.25;
-    float rOuter = 1.1 * ( 1.0 + 0.15 * sin( audioSwell * 2.0 ) ) * ( 1.0 + 0.32 * audioSubBass );
-    float diskMask = smoothstep( rISCO - 0.02, rISCO + 0.05, r ) * smoothstep( rOuter + 0.2, rOuter - 0.1, r );
+    float r_isco = 0.25;
+    float r_outer = 1.1 * ( 1.0 + 0.15 * sin( audioSwell * 2.0 ) ) * ( 1.0 + 0.32 * audioSubBass );
+    float disk_mask = smoothstep( r_isco - 0.02, r_isco + 0.05, r ) * smoothstep( r_outer + 0.2, r_outer - 0.1, r );
 
     // Relativistic Doppler beaming: approaching side (x < 0) boosted by factor (1 + v/c)^4
-    float vOrbital = sqrt( 1.0 / max( 0.1, r ) );
-    float dopplerFactor = pow( 1.0 - ( pDisk.x / max( 0.1, r ) ) * vOrbital * 0.45 * dBeaming, 3.5 );
+    float v_orbital = sqrt( 1.0 / max( 0.1, r ) );
+    float doppler_factor = pow( 1.0 - ( p_disk.x / max( 0.1, r ) ) * v_orbital * 0.45 * d_beaming, 3.5 );
 
     // Plasma spiral turbulence. Brightness raises only the RADIAL wave
-    // numbers -- the phiRot factors must stay fixed because phiRot already
+    // numbers -- the phi_rot factors must stay fixed because phi_rot already
     // carries the t*3.0 spin phase, and scaling that would remap the whole
     // accumulated rotation on every audio change.
-    float turbFreq = 1.0 + 0.55 * audioCentroid;
-    float plasmaTurb = sin( phiRot * 6.0 + r * 15.0 * turbFreq - t * 4.0 ) * cos( phiRot * 4.0 - r * 8.0 * turbFreq );
+    float turb_freq = 1.0 + 0.55 * audioCentroid;
+    float plasma_turb = sin( phi_rot * 6.0 + r * 15.0 * turb_freq - t * 4.0 )
+                        * cos( phi_rot * 4.0 - r * 8.0 * turb_freq );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( vec2( phiRot / 6.2831853 + 0.5, r * 0.5 ) );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( vec2( phi_rot / 6.2831853 + 0.5, r * 0.5 ) );
+    vec3 tex_col = img( sample_uv );
 
     // Palette with Doppler shift: left side blueshifted (hot white/cyan), right side redshifted (crimson)
-    vec3 palBlueshift = vec3( 0.4, 1.4, 2.0 );
-    vec3 palRedshift = vec3( 1.8, 0.4, 0.2 );
-    vec3 palBase = mix( palBlueshift, palRedshift, clamp( ( pDisk.x / max( 0.1, r ) ) * 0.5 + 0.5, 0.0, 1.0 ) );
-    palBase = mix( palBase, imgPalette( r * 0.5 + 0.1 ), 0.35 );
+    vec3 pal_blueshift = vec3( 0.4, 1.4, 2.0 );
+    vec3 pal_redshift = vec3( 1.8, 0.4, 0.2 );
+    vec3 pal_base = mix( pal_blueshift, pal_redshift, clamp( ( p_disk.x / max( 0.1, r ) ) * 0.5 + 0.5, 0.0, 1.0 ) );
+    pal_base = mix( pal_base, imgPalette( r * 0.5 + 0.1 ), 0.35 );
 
-    vec3 diskCol = mix( texCol * 0.3, palBase, 0.5 ) * ( 0.7 + 0.3 * plasmaTurb ) * dopplerFactor * diskMask;
+    vec3 disk_col = mix( tex_col * 0.3, pal_base, 0.5 ) * ( 0.7 + 0.3 * plasma_turb ) * doppler_factor * disk_mask;
 
     // Photon ring lensing arc (just outside horizon)
-    float photonRing = exp( -abs( r - 0.2 ) * 35.0 ) * ( 1.5 + 3.0 * audioKick ) * glw;
+    float photon_ring = exp( -abs( r - 0.2 ) * 35.0 ) * ( 1.5 + 3.0 * audioKick ) * glw;
 
     // Black hole shadow (interior of ISCO)
-    float shadowMask = smoothstep( 0.18, 0.22, r );
+    float shadow_mask = smoothstep( 0.18, 0.22, r );
 
-    vec3 finalCol = diskCol * shadowMask + vec3( 1.8, 1.7, 2.0 ) * photonRing;
+    vec3 final_col = disk_col * shadow_mask + vec3( 1.8, 1.7, 2.0 ) * photon_ring;
 
     // Core ISCO flare
-    float iscoGlow = exp( -abs( r - rISCO ) * 20.0 ) * ( 0.8 + 2.0 * audioKick );
-    finalCol += imgPalette( 0.85 ) * iscoGlow * shadowMask;
+    float isco_glow = exp( -abs( r - r_isco ) * 20.0 ) * ( 0.8 + 2.0 * audioKick );
+    final_col += imgPalette( 0.85 ) * isco_glow * shadow_mask;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

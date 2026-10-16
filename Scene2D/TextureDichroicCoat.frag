@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -259,10 +259,10 @@ void main()
     float h = hash21( id );
     float T = 0.05 * sceneTime + 0.35 * audioAdvance;
     // The hue of the transmitted colour: slides with the tilt and across the sheet.
-    float hueT = fract( mix( 0.5, 0.05, mode ) + 0.25 * sin( T + h * 6.28 )
-                        + ( 0.1 + 0.3 * clamp( audioSpread, 0.0, 1.0 ) ) * dot( p, vec2( 0.5, 0.3 ) ) + hueP * 0.159 );
-    vec3  trans = hsv2rgb( vec3( hueT, 0.85, 1.0 ) );
-    vec3  refl = hsv2rgb( vec3( fract( hueT + 0.5 ), 0.85, 1.0 ) );
+    float hue_t = fract( mix( 0.5, 0.05, mode ) + 0.25 * sin( T + h * 6.28 )
+                         + ( 0.1 + 0.3 * clamp( audioSpread, 0.0, 1.0 ) ) * dot( p, vec2( 0.5, 0.3 ) ) + hueP * 0.159 );
+    vec3  trans = hsv2rgb( vec3( hue_t, 0.85, 1.0 ) );
+    vec3  refl = hsv2rgb( vec3( fract( hue_t + 0.5 ), 0.85, 1.0 ) );
     vec2  uv = p * 0.6 + 0.5;
     vec3  ph = imgLod( uv, 1.0 );
     vec3  through = mix( vec3( luma( ph ) ), ph, 0.5 ) * trans * ( 0.5 + 0.9 * clamp( photoP, 0.0, 1.0 ) );

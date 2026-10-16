@@ -92,11 +92,11 @@ float map( vec3 p, float pp )
     float glow = 0.0;
 
     // Hallway boundaries
-    float floorDist = p.y + 3.0;
-    float ceilDist = 3.0 - p.y;
-    float wallDist = 4.0 - abs( p.x );
+    float floor_dist = p.y + 3.0;
+    float ceil_dist = 3.0 - p.y;
+    float wall_dist = 4.0 - abs( p.x );
 
-    float hall = min( min( floorDist, ceilDist ), wallDist );
+    float hall = min( min( floor_dist, ceil_dist ), wall_dist );
     if ( hall < d )
     {
         d = hall;
@@ -108,35 +108,35 @@ float map( vec3 p, float pp )
     q.z = mod( q.z, 2.0 ) - 1.0;
 
     // Pods along the walls
-    vec3 leftWall = p;
-    leftWall.x += 3.5;
-    leftWall.z = mod( leftWall.z, 2.0 ) - 1.0;
+    vec3 left_wall = p;
+    left_wall.x += 3.5;
+    left_wall.z = mod( left_wall.z, 2.0 ) - 1.0;
 
-    vec3 rightWall = p;
-    rightWall.x -= 3.5;
-    rightWall.z = mod( rightWall.z, 2.0 ) - 1.0;
+    vec3 right_wall = p;
+    right_wall.x -= 3.5;
+    right_wall.z = mod( right_wall.z, 2.0 ) - 1.0;
 
     // Create racks of pods vertically
-    float yId = floor( ( p.y + 2.5 ) / 1.5 );
-    vec3  lwq = leftWall;
+    float y_id = floor( ( p.y + 2.5 ) / 1.5 );
+    vec3  lwq = left_wall;
     lwq.y = mod( lwq.y + 2.5, 1.5 ) - 0.75;
 
-    vec3 rwq = rightWall;
+    vec3 rwq = right_wall;
     rwq.y = mod( rwq.y + 2.5, 1.5 ) - 0.75;
 
     // Box for the pod
     if ( p.y > -2.5 && p.y < 2.5 )
     {
-        float lPod = sdBox( lwq, vec3( 0.5, 0.6, 0.8 ) );
-        float rPod = sdBox( rwq, vec3( 0.5, 0.6, 0.8 ) );
+        float l_pod = sdBox( lwq, vec3( 0.5, 0.6, 0.8 ) );
+        float r_pod = sdBox( rwq, vec3( 0.5, 0.6, 0.8 ) );
 
-        float pods = min( lPod, rPod );
+        float pods = min( l_pod, r_pod );
 
         // Window on the pod
-        float windowL = sdBox( lwq - vec3( 0.5, 0.0, 0.0 ), vec3( 0.1, 0.4, 0.6 ) );
-        float windowR = sdBox( rwq - vec3( -0.5, 0.0, 0.0 ), vec3( 0.1, 0.4, 0.6 ) );
+        float window_l = sdBox( lwq - vec3( 0.5, 0.0, 0.0 ), vec3( 0.1, 0.4, 0.6 ) );
+        float window_r = sdBox( rwq - vec3( -0.5, 0.0, 0.0 ), vec3( 0.1, 0.4, 0.6 ) );
 
-        if ( windowL < lPod || windowR < rPod )
+        if ( window_l < l_pod || window_r < r_pod )
         {
             glow = 1.0; // Life support glass
         }
@@ -148,9 +148,9 @@ float map( vec3 p, float pp )
         }
 
         // Status lights
-        float lightL = sdBox( lwq - vec3( 0.5, 0.5, 0.0 ), vec3( 0.1, 0.05, 0.1 ) );
-        float lightR = sdBox( rwq - vec3( -0.5, 0.5, 0.0 ), vec3( 0.1, 0.05, 0.1 ) );
-        float lights = min( lightL, lightR );
+        float light_l = sdBox( lwq - vec3( 0.5, 0.5, 0.0 ), vec3( 0.1, 0.05, 0.1 ) );
+        float light_r = sdBox( rwq - vec3( -0.5, 0.5, 0.0 ), vec3( 0.1, 0.05, 0.1 ) );
+        float lights = min( light_l, light_r );
 
         if ( lights < d )
         {
@@ -162,9 +162,9 @@ float map( vec3 p, float pp )
 
     // Support pillars
     float pz = mod( p.z, 10.0 ) - 5.0;
-    float pillL = length( max( abs( vec2( p.x + 3.9, pz ) ) - vec2( 0.2, 0.5 ), 0.0 ) );
-    float pillR = length( max( abs( vec2( p.x - 3.9, pz ) ) - vec2( 0.2, 0.5 ), 0.0 ) );
-    float pillars = min( pillL, pillR );
+    float pill_l = length( max( abs( vec2( p.x + 3.9, pz ) ) - vec2( 0.2, 0.5 ), 0.0 ) );
+    float pill_r = length( max( abs( vec2( p.x - 3.9, pz ) ) - vec2( 0.2, 0.5 ), 0.0 ) );
+    float pillars = min( pill_l, pill_r );
     if ( pillars < d )
     {
         d = pillars;
@@ -244,8 +244,8 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 podColor = max( imgPalette( 0.3 ), vec3( 0.14, 0.26, 0.34 ) );   // cool blue/cyan for cryo
-    vec3 alertColor = max( imgPalette( 0.9 ), vec3( 0.55, 0.20, 0.10 ) ); // warm red/orange for alert
+    vec3 pod_color = max( imgPalette( 0.3 ), vec3( 0.14, 0.26, 0.34 ) );   // cool blue/cyan for cryo
+    vec3 alert_color = max( imgPalette( 0.9 ), vec3( 0.55, 0.20, 0.10 ) ); // warm red/orange for alert
 
     if ( m > 0.5 )
     {
@@ -265,7 +265,7 @@ void main()
             // Floor guide lights
             if ( p.y < -2.9 && abs( p.x ) < 1.0 && mod( p.z, 2.0 ) < 1.0 )
             {
-                col += podColor * ( 1.0 + audioSwell ) * gp;
+                col += pod_color * ( 1.0 + audioSwell ) * gp;
             }
         }
         else if ( m == 2.0 )
@@ -277,7 +277,7 @@ void main()
             if ( g == 1.0 )
             {
                 float vitals = step( 0.5, sin( p.z * 10.0 - time * 5.0 ) + audioLevel );
-                col += podColor * vitals * gp * ( 0.5 + audioSwell );
+                col += pod_color * vitals * gp * ( 0.5 + audioSwell );
 
                 // Reflection on glass
                 float spec = pow( max( dot( reflect( -normalize( vec3( 0.0, 0.0, p.z ) - p ), n ), -rd ), 0.0 ), 16.0 );
@@ -286,14 +286,15 @@ void main()
             // Status lights
             else if ( g == 2.0 )
             {
-                float zId = floor( p.z / 2.0 );
-                float yId = floor( ( p.y + 2.5 ) / 1.5 );
-                float isAwake = step( 0.95, hash21( vec2( zId, yId + time * 0.1 ) ) ); // some pods randomly wake/alarm
+                float z_id = floor( p.z / 2.0 );
+                float y_id = floor( ( p.y + 2.5 ) / 1.5 );
+                float is_awake = step( 0.95, hash21( vec2( z_id, y_id + time * 0.1 ) ) ); // some pods randomly
+                                                                                          // wake/alarm
 
-                vec3  lCol = mix( podColor, alertColor, isAwake + audioKick );
-                float blink = isAwake > 0.0 ? step( 0.5, fract( time * 5.0 ) ) : 1.0;
+                vec3  l_col = mix( pod_color, alert_color, is_awake + audioKick );
+                float blink = is_awake > 0.0 ? step( 0.5, fract( time * 5.0 ) ) : 1.0;
 
-                col += lCol * blink * ( 2.0 + audioKick * 3.0 ) * gp;
+                col += l_col * blink * ( 2.0 + audioKick * 3.0 ) * gp;
             }
         }
 
@@ -302,13 +303,13 @@ void main()
 
     // Cryo-fog (volumetric)
     float fog = exp( -d * 0.05 );
-    vec3  fogCol = mix( vec3( 0.02, 0.05, 0.1 ), podColor, 0.2 ) * ( 0.5 + audioSwell * 1.5 );
-    col = mix( fogCol, col, fog );
+    vec3  fog_col = mix( vec3( 0.02, 0.05, 0.1 ), pod_color, 0.2 ) * ( 0.5 + audioSwell * 1.5 );
+    col = mix( fog_col, col, fog );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

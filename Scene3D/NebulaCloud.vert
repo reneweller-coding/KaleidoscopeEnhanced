@@ -67,10 +67,10 @@ void main()
     // knot field flattens toward a disc, with energy reaching into the highs
     // it stands up into a column.  (Neutral rolloff ~0.5 reproduces the
     // original 0.55 flattening factor.)
-    float vExt = 0.36 + 0.40 * clamp( audioRolloff, 0.0, 1.0 ); // 0.36 .. 0.76
+    float v_ext = 0.36 + 0.40 * clamp( audioRolloff, 0.0, 1.0 ); // 0.36 .. 0.76
     float knot = floor( attrA.w / 1500.0 );
-    vec3  Ck = vec3( hash11( knot * 3.1 + 0.7 ) - 0.5,
-                     ( hash11( knot * 5.3 + 1.9 ) - 0.5 ) * vExt,
+    vec3  ck = vec3( hash11( knot * 3.1 + 0.7 ) - 0.5,
+                     ( hash11( knot * 5.3 + 1.9 ) - 0.5 ) * v_ext,
                      hash11( knot * 7.7 + 3.2 ) - 0.5 )
                * 44.0;
 
@@ -79,7 +79,7 @@ void main()
     // into diffuse fog.  Dispersing only ever thins the additive overlap, so
     // the wide end cannot brighten the frame.
     float clump = 9.0 * ( 0.92 + 0.50 * clamp( audioFlatness, 0.0, 1.0 ) );
-    vec3  world = Ck + ( vec3( r1 + r2, r2 + r3, r3 + r4 ) - 1.0 ) * clump;
+    vec3  world = ck + ( vec3( r1 + r2, r2 + r3, r3 + r4 ) - 1.0 ) * clump;
 
     // Slow sine winds knead the cloud; the whole nebula rotates.
     float ph = time * 0.06;
@@ -108,10 +108,10 @@ void main()
     // cloud toward the emission pinks, a minor key cools it toward the blue
     // reflection nebula.  A pure re-weighting of the existing mix -- both
     // families sit at the same brightness, so nothing is gained here.
-    float mixK = clamp( hash11( knot * 9.9 + 0.3 )
-                            + ( 0.5 - clamp( audioMode, 0.0, 1.0 ) ) * 0.5,
-                        0.0, 1.0 );
-    vec3  col = mix( emis, refl, mixK );
+    float mix_k = clamp( hash11( knot * 9.9 + 0.3 )
+                             + ( 0.5 - clamp( audioMode, 0.0, 1.0 ) ) * 0.5,
+                         0.0, 1.0 );
+    vec3  col = mix( emis, refl, mix_k );
     if ( r4 > 0.985 )
         col = vec3( 0.95, 0.97, 1.0 ) * 2.2; // embedded stars
     col *= ( 0.22 + 0.30 * r3 )

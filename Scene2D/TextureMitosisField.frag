@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -280,8 +280,8 @@ void main()
     fc = mix( vec3( 0.7, 0.85, 0.9 ), fc, clamp( photoP, 0.0, 1.0 ) * 0.8 + 0.2 );
     float inside = smoothstep( 0.35, 0.6, field );
     float rim = smoothstep( 0.3, 0.45, field ) * ( 1.0 - smoothstep( 0.45, 0.8, field ) );
-    vec3  cellC = fc * ( 0.35 + 0.3 * field );
-    col = mix( col, cellC, inside * 0.85 );
+    vec3  cell_c = fc * ( 0.35 + 0.3 * field );
+    col = mix( col, cell_c, inside * 0.85 );
     col += fc * rim * ( 0.5 + 0.5 * ( 1.0 - mode ) );
     col += fc * smoothstep( 0.1, 0.35, field ) * ( 1.0 - inside ) * ( 0.05 + 0.2 * swell );
     col = mix( col, fc * 0.3 + vec3( 0.1, 0.1, 0.2 ), nuc * 0.7 * ( 1.0 - mode * 0.5 ) );

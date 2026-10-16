@@ -86,7 +86,7 @@ float crustFracture( vec2 p, out vec2 cellCenter )
     vec2  n = floor( p );
     vec2  f = fract( p );
     float m = 8.0;
-    vec2  mCenter = vec2( 0.0 );
+    vec2  m_center = vec2( 0.0 );
     for ( int j = -1; j <= 1; j++ )
     {
         for ( int i = -1; i <= 1; i++ )
@@ -98,11 +98,11 @@ float crustFracture( vec2 p, out vec2 cellCenter )
             if ( d < m )
             {
                 m = d;
-                mCenter = n + g + o;
+                m_center = n + g + o;
             }
         }
     }
-    cellCenter = mCenter;
+    cellCenter = m_center;
     return sqrt( m );
 }
 
@@ -122,44 +122,44 @@ void main()
 
     // Dynamic magnetic flux twist
     float t = time * 0.3 * spd + audioAdvance * 0.15;
-    vec2  warpedUV = uv * ( 1.8 + 0.4 * sin( t * 0.5 ) );
+    vec2  warped_uv = uv * ( 1.8 + 0.4 * sin( t * 0.5 ) );
 
     // Magnetic dipole field line curvature
-    float bDipole = ( warpedUV.x * warpedUV.x - 2.0 * warpedUV.y * warpedUV.y ) / pow( r + 0.1, 2.5 );
-    warpedUV += vec2( -warpedUV.y, warpedUV.x ) * ( bDipole * 0.08 * mag );
+    float b_dipole = ( warped_uv.x * warped_uv.x - 2.0 * warped_uv.y * warped_uv.y ) / pow( r + 0.1, 2.5 );
+    warped_uv += vec2( -warped_uv.y, warped_uv.x ) * ( b_dipole * 0.08 * mag );
 
     // Crust fracture plate simulation
     vec2  cellCenter;
-    float fractureDist = crustFracture( warpedUV * 4.5, cellCenter );
-    float faultLine = smoothstep( 0.08, 0.0, fractureDist );
+    float fracture_dist = crustFracture( warped_uv * 4.5, cellCenter );
+    float fault_line = smoothstep( 0.08, 0.0, fracture_dist );
 
     // Starquake pulse triggered by audioKick & low bass
-    float starquake = sin( length( warpedUV ) * 15.0 - time * 8.0 );
-    float quakeFlash = exp( -abs( starquake ) * 5.0 ) * ( audioKick * 2.5 + audioSubBass * 1.5 ) * brs;
+    float starquake = sin( length( warped_uv ) * 15.0 - time * 8.0 );
+    float quake_flash = exp( -abs( starquake ) * 5.0 ) * ( audioKick * 2.5 + audioSubBass * 1.5 ) * brs;
 
     // Relativistic magnetic flux loops (arching over the crust)
-    float loopY = sin( warpedUV.x * 6.0 + t * 2.0 ) * cos( warpedUV.y * 4.0 - t );
-    float fluxTube = exp( -abs( loopY ) * 15.0 ) * ( 0.8 + 0.8 * audioHigh );
+    float loop_y = sin( warped_uv.x * 6.0 + t * 2.0 ) * cos( warped_uv.y * 4.0 - t );
+    float flux_tube = exp( -abs( loop_y ) * 15.0 ) * ( 0.8 + 0.8 * audioHigh );
 
     // Photo projection on neutron crust plates
-    vec2 crustUV = cellCenter * 0.15 + warpedUV * 0.3;
-    vec3 photoCrust = img( fract( crustUV ) );
+    vec2 crust_uv = cellCenter * 0.15 + warped_uv * 0.3;
+    vec3 photo_crust = img( fract( crust_uv ) );
 
     // Neutron star crust colors: Ultra-dense metallic chrome + glowing mantle faults
-    vec3 crustBase = palTint( mix( vec3( 0.05, 0.06, 0.09 ), vec3( 0.12, 0.15, 0.22 ), photoCrust.r ),
-                              0.40 * photoCrust.r, 0.20 );
+    vec3 crust_base = palTint( mix( vec3( 0.05, 0.06, 0.09 ), vec3( 0.12, 0.15, 0.22 ), photo_crust.r ),
+                               0.40 * photo_crust.r, 0.20 );
 
     // Glowing fault lines: Blinding blue-white Cherenkov radiation + ultra-hot cyan
-    vec3 cherenkovCol = vec3( 0.3, 0.7, 1.0 ) * 2.5 + vec3( 1.0 ) * 1.5;
-    vec3 pairPlasmaCol = vec3( 1.0, 0.2, 0.7 ) * 2.0;
+    vec3 cherenkov_col = vec3( 0.3, 0.7, 1.0 ) * 2.5 + vec3( 1.0 ) * 1.5;
+    vec3 pair_plasma_col = vec3( 1.0, 0.2, 0.7 ) * 2.0;
 
-    vec3 col = crustBase * ( 1.0 - faultLine * 0.8 ) + photoCrust * 0.4;
-    col += cherenkovCol * faultLine * ( 1.2 + 2.0 * quakeFlash );
-    col += mix( cherenkovCol, pairPlasmaCol, sin( t + bDipole ) * 0.5 + 0.5 ) * fluxTube * mag;
+    vec3 col = crust_base * ( 1.0 - fault_line * 0.8 ) + photo_crust * 0.4;
+    col += cherenkov_col * fault_line * ( 1.2 + 2.0 * quake_flash );
+    col += mix( cherenkov_col, pair_plasma_col, sin( t + b_dipole ) * 0.5 + 0.5 ) * flux_tube * mag;
 
     // Relativistic gamma-ray burst shockwave covering 100% of viewport
-    float shockRing = exp( -abs( r - fract( time * 0.6 ) * 1.6 ) * 8.0 ) * audioKick * 2.0;
-    col += vec3( 0.9, 0.95, 1.0 ) * shockRing;
+    float shock_ring = exp( -abs( r - fract( time * 0.6 ) * 1.6 ) * 8.0 ) * audioKick * 2.0;
+    col += vec3( 0.9, 0.95, 1.0 ) * shock_ring;
 
     // Polar magnetic beacon synchrotron sweep
     float beacon = pow( max( sin( angle * 2.0 + t * 4.0 ), 0.0 ), 12.0 ) * ( 0.5 + 1.5 * audioMid );

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -241,16 +241,16 @@ void main()
     vec2 cid = floor( uv );
     vec2 f = fract( uv ) - 0.5;
     // Rotate the cell frame so "outward" (increasing log r) points along +y.
-    vec2 outD = normalize( vec2( 13.0, -8.0 ) );
-    vec2 lf = vec2( dot( f, vec2( outD.y, -outD.x ) ), dot( f, outD ) );
+    vec2 out_d = normalize( vec2( 13.0, -8.0 ) );
+    vec2 lf = vec2( dot( f, vec2( out_d.y, -out_d.x ) ), dot( f, out_d ) );
     // Scale shape: a rounded shield, tip outward.
     float gap = 0.04 + 0.12 * clamp( gapP, 0.0, 1.0 ) - 0.05 * clamp( audioSpread, 0.0, 1.0 );
     // Rounded rhombus filling the lattice cell (the cell itself is the scale).
     vec2  bq = abs( f ) - ( 0.5 - gap - 0.12 );
     float shield = length( max( bq, 0.0 ) ) + min( max( bq.x, bq.y ), 0.0 ) - 0.12;
     // Footprint without the atan-cut spike: angular part from cos/sin.
-    float fwA = length( fwidth( vec2( cos( th ), sin( th ) ) ) );
-    float px = ( fwA * 13.0 + fwidth( lr ) * 13.0 ) / 6.2831853 + 1e-4;
+    float fw_a = length( fwidth( vec2( cos( th ), sin( th ) ) ) );
+    float px = ( fw_a * 13.0 + fwidth( lr ) * 13.0 ) / 6.2831853 + 1e-4;
     float inside = smoothstep( px, -px, shield );
     // Relief: rises from base to a ridge near the tip.
     float t = clamp( lf.y + 0.5, 0.0, 1.0 );

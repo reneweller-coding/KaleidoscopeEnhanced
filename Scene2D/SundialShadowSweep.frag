@@ -106,10 +106,10 @@ void main()
     // The day: the sun climbs and sinks over the arc.
     float elev = sin( prog * 3.14159 ); // 0 at dawn/dusk, 1 at noon
     // The shadow angle sweeps from morning to evening.
-    float shadowA = mix( -2.2, 0.9, prog );
-    float shadowLen = mix( 0.44, 0.16, elev );
-    vec3  sunCol = mix( vec3( 1.0, 0.55, 0.32 ), vec3( 1.0, 0.97, 0.86 ), smoothstep( 0.1, 0.65, elev ) );
-    sunCol = mix( sunCol, imgPalette( hue * 0.159 + 0.1 ), 0.2 );
+    float shadow_a = mix( -2.2, 0.9, prog );
+    float shadow_len = mix( 0.44, 0.16, elev );
+    vec3  sun_col = mix( vec3( 1.0, 0.55, 0.32 ), vec3( 1.0, 0.97, 0.86 ), smoothstep( 0.1, 0.65, elev ) );
+    sun_col = mix( sun_col, imgPalette( hue * 0.159 + 0.1 ), 0.2 );
     // A cloud passing: the kick makes it deeper, but its motion is on the clock.
     float cloud = smoothstep( 0.45, 0.75, fbm( p * 1.2 + vec2( clock * 0.12, 0.0 ) ) );
     float shade = 1.0 - ( 0.2 + 0.4 * audioKick ) * cloud;
@@ -121,9 +121,9 @@ void main()
 
     // The dial plate.
     float r = length( p * vec2( 1.0, 1.05 ) );
-    float plateR = 0.36;
-    float onPlate = smoothstep( plateR, plateR - 0.006, r );
-    if ( onPlate > 0.002 )
+    float plate_r = 0.36;
+    float on_plate = smoothstep( plate_r, plate_r - 0.006, r );
+    if ( on_plate > 0.002 )
     {
         // Weathered bronze: the photo as its patina, with a turned finish.
         vec3 bronze = mix( vec3( 0.55, 0.45, 0.24 ), imgPalette( hue * 0.159 + 0.12 ), 0.3 );
@@ -144,20 +144,20 @@ void main()
             float ha = mix( -2.5, 1.2, fk / ( hours - 1.0 ) );
             vec2  dir = vec2( cos( ha ), sin( ha ) );
             // The line: from the centre out to the rim.
-            float t = clamp( dot( p, dir ), 0.0, plateR );
-            float lineD = length( p - dir * t );
+            float t = clamp( dot( p, dir ), 0.0, plate_r );
+            float line_d = length( p - dir * t );
             float major = ( mod( fk, 3.0 ) < 0.5 ) ? 1.0 : 0.55;
-            float line = smoothstep( 0.004 * major + 0.002, 0.001, lineD ) * step( plateR * 0.35, t );
+            float line = smoothstep( 0.004 * major + 0.002, 0.001, line_d ) * step( plate_r * 0.35, t );
             // Which class this hour takes, and whether the shadow is on it.
             int   cls = int( mod( fk, 12.0 ) );
             float e = clamp( audioChroma[cls] * 1.6, 0.0, 1.0 );
-            float near = smoothstep( 0.25, 0.0, abs( ha - shadowA ) );
-            vec3  lineCol = mix( vec3( 0.2, 0.15, 0.08 ), imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.4,
-                                 0.3 + 0.5 * near );
-            plate = mix( plate, lineCol, line * 0.9 );
+            float near = smoothstep( 0.25, 0.0, abs( ha - shadow_a ) );
+            vec3  line_col = mix( vec3( 0.2, 0.15, 0.08 ), imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.4,
+                                  0.3 + 0.5 * near );
+            plate = mix( plate, line_col, line * 0.9 );
             plate += imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * line * near * e * 0.9;
             // The numeral: a small mark near the rim, lit as the shadow arrives.
-            vec2  np = dir * ( plateR * 0.82 );
+            vec2  np = dir * ( plate_r * 0.82 );
             float num = 0.0;
             for ( int m = 0; m < 4; ++m )
             {
@@ -172,33 +172,33 @@ void main()
             plate += imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * num * near * ( 0.4 + 0.9 * e );
         }
         // The rim ring.
-        plate = mix( plate, bronze * 1.4 * sun, smoothstep( 0.008, 0.0, abs( r - plateR * 0.93 ) ) );
+        plate = mix( plate, bronze * 1.4 * sun, smoothstep( 0.008, 0.0, abs( r - plate_r * 0.93 ) ) );
         // The bronze sheen on the treble: a broad specular sweep.
         plate += vec3( 1.0, 0.95, 0.8 ) * exp( -pow( ( dot( p, vec2( 0.6, 0.8 ) ) - 0.1 ) * 5.0, 2.0 ) )
                  * ( 0.1 + 0.4 * hi ) * sun * shade;
-        col = mix( col, plate, onPlate );
+        col = mix( col, plate, on_plate );
     }
     // The gnomon and its shadow.  The shadow first, so the gnomon sits on it.
-    vec2  sdir = vec2( cos( shadowA ), sin( shadowA ) );
-    float st = clamp( dot( p, sdir ), 0.0, shadowLen );
+    vec2  sdir = vec2( cos( shadow_a ), sin( shadow_a ) );
+    float st = clamp( dot( p, sdir ), 0.0, shadow_len );
     float sd = length( p - sdir * st );
     // The shadow widens with distance, as a real penumbra does.
-    float sw = 0.012 + 0.03 * ( st / max( shadowLen, 1e-3 ) );
+    float sw = 0.012 + 0.03 * ( st / max( shadow_len, 1e-3 ) );
     float shadow = smoothstep( sw, sw * 0.4, sd ) * step( 0.0, dot( p, sdir ) );
-    col *= 1.0 - 0.55 * shadow * onPlate * ( 0.5 + 0.5 * elev );
-    col *= 1.0 - 0.3 * shadow * ( 1.0 - onPlate );
+    col *= 1.0 - 0.55 * shadow * on_plate * ( 0.5 + 0.5 * elev );
+    col *= 1.0 - 0.3 * shadow * ( 1.0 - on_plate );
     // The gnomon: a triangular plate standing on the dial, pointing north.
     vec2  gdir = vec2( 0.0, 1.0 );
     float gt = clamp( dot( p, gdir ), 0.0, 0.3 );
     float gd = abs( dot( p, vec2( 1.0, 0.0 ) ) );
     float gnomon = step( gd, 0.014 + 0.0 * gt ) * step( 0.0, dot( p, gdir ) ) * step( dot( p, gdir ), 0.3 - gd * 4.0 );
-    vec3  gnCol = mix( vec3( 0.5, 0.4, 0.2 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 ) * sun * shade;
-    gnCol *= 0.6 + 0.6 * smoothstep( -0.01, 0.01, p.x );
-    col = mix( col, gnCol, gnomon );
+    vec3  gn_col = mix( vec3( 0.5, 0.4, 0.2 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 ) * sun * shade;
+    gn_col *= 0.6 + 0.6 * smoothstep( -0.01, 0.01, p.x );
+    col = mix( col, gn_col, gnomon );
     col += vec3( 1.0, 0.95, 0.85 ) * smoothstep( 0.004, 0.0, abs( p.x ) ) * gnomon * ( 0.2 + 0.5 * hi );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

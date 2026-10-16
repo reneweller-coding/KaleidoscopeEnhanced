@@ -70,13 +70,13 @@ void main()
     float glow = exp( -r2 * 2.0 );
 
     // Photo texture mapping from world coords
-    vec2 photoUV = fract( vWorldPos.xy * 0.25 + 0.5 );
-    vec3 photo = img( photoUV );
+    vec2 photo_uv = fract( vWorldPos.xy * 0.25 + 0.5 );
+    vec3 photo = img( photo_uv );
 
     // Molten iron dynamo gold & electric magnetic cyan palette
-    vec3 ironGold = vec3( 1.0, 0.75, 0.2 );
-    vec3 fieldCyan = vec3( 0.1, 0.9, 1.0 );
-    vec3 coreColor = mix( ironGold, fieldCyan, sin( vDynamoPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
+    vec3 iron_gold = vec3( 1.0, 0.75, 0.2 );
+    vec3 field_cyan = vec3( 0.1, 0.9, 1.0 );
+    vec3 core_color = mix( iron_gold, field_cyan, sin( vDynamoPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
 
     vec3 col;
     if ( vHaze > 0.5 )
@@ -84,17 +84,17 @@ void main()
         // Dissolved field: the same palette, far dimmer, no hot core -- a
         // background layer that carries the empty corners without lifting the
         // picture toward grey.
-        photoUV = fract( vWorldPos.xy / max( vWorldPos.z, 1.0 ) * 0.7 + 0.5 );
-        photo = img( photoUV );
-        col = mix( coreColor, photo, 0.35 ) * glow
+        photo_uv = fract( vWorldPos.xy / max( vWorldPos.z, 1.0 ) * 0.7 + 0.5 );
+        photo = img( photo_uv );
+        col = mix( core_color, photo, 0.35 ) * glow
               * ( 0.075 + 0.055 * audioSwell + 0.045 * audioKick );
     }
     else
     {
-        col = mix( photo, coreColor, 0.6 ) * glow;
+        col = mix( photo, core_color, 0.6 ) * glow;
         // Hot core TINTED by the palette (the white additive term drowned the
         // gold/cyan; metric scan: saturation 0.00).
-        col += glow * mix( coreColor, vec3( 1.0, 0.98, 0.85 ), 0.35 )
+        col += glow * mix( core_color, vec3( 1.0, 0.98, 0.85 ), 0.35 )
                * min( 0.35 + audioKick * 0.55, 1.0 );
     }
 
@@ -105,7 +105,7 @@ void main()
     // frame to white.  The old (col * 0.9) * 0.55 pre-gain was a leftover from
     // an earlier exposure pass: it halved an already sparse picture and was
     // most of why this scene measured at luma 0.013.
-    vec3 _catTone = col;
-    _catTone /= 1.0 + 0.42 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = col;
+    cat_tone /= 1.0 + 0.42 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

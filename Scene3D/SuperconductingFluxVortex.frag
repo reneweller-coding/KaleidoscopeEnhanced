@@ -22,7 +22,7 @@ in float vHaze;
  * Only audioChromaHue and the hueP preset are read here, rotating the whole
  * picture's colour; the underlying vortex colour mix, its rotation, and its
  * audioKick/audioLevel-driven brightness are computed in the companion
- * vertex shader (SuperconductingFluxVortex.vert). distFromCenter (from
+ * vertex shader (SuperconductingFluxVortex.vert). dist_from_center (from
  * vTexCoord.x) shapes the glowing core profile across the ribbon's width.
  *
  * This pass is drawn OPAQUE and depth-tested (geom="indirect"), so a
@@ -59,9 +59,9 @@ void main()
         // Glowing flux tube core profile.  The falloff is gentler than the
         // original exp(-d*4.5): that lit barely the centre line of an already
         // hair-thin ribbon and let the rest read as black.
-        float distFromCenter = abs( vTexCoord.x - 0.5 ) * 2.0;
-        float fluxGlow = exp( -distFromCenter * 2.2 );
-        col = vColor.rgb * fluxGlow * 1.25;
+        float dist_from_center = abs( vTexCoord.x - 0.5 ) * 2.0;
+        float flux_glow = exp( -dist_from_center * 2.2 );
+        col = vColor.rgb * flux_glow * 1.25;
     }
 
     col = hueRot( col, audioChromaHue + hue );

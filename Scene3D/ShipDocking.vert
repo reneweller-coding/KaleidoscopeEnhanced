@@ -53,16 +53,16 @@ out float vApproach; ///< 0 far out, 1 docked; drives thruster and floodlight in
 void main()
 {
     vec3 world, n;
-    bool isStation = gl_VertexID < meshVertexCount;
-    bool isShip = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
-    bool isBg = gl_VertexID >= mesh2VertexCount;
+    bool is_station = gl_VertexID < meshVertexCount;
+    bool is_ship = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
+    bool is_bg = gl_VertexID >= mesh2VertexCount;
 
     float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
     float t = sceneProgress;
     float ease = 1.0 - pow( 1.0 - t, 3.0 ); // fast approach, gentle arrival
 
     vApproach = ease;
-    vShip = isShip ? 1.0 : 0.0;
+    vShip = is_ship ? 1.0 : 0.0;
 
     // STAGING NOTE. A truthful size ratio makes this shot unreadable: at a
     // realistic shuttle-to-station scale the ship covers a couple of pixels
@@ -72,7 +72,7 @@ void main()
     // some screen size. The ship still reads as roughly a fifth of the
     // station on screen while being nowhere near that fraction in world
     // units, which is what sells the difference without hiding the subject.
-    if ( isStation )
+    if ( is_station )
     {
         vec3 local = attrA.xyz * ( 90.0 * sz );
         // A station may rotate about its own axis (spin gravity) but never
@@ -84,20 +84,20 @@ void main()
         // coupling was removed. The summed coefficient keeps the average pace.
         float       rot = time * 0.11 * sp;
         float       cr = cos( rot ), sr = sin( rot );
-        mat3        spinM = mat3( cr, sr, 0.0, -sr, cr, 0.0, 0.0, 0.0, 1.0 );
-        const float tiltX = 0.35;
-        float       cx = cos( tiltX ), sx = sin( tiltX );
-        mat3        tiltM = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
-        mat3        rotM = tiltM * spinM;
+        mat3        spin_m = mat3( cr, sr, 0.0, -sr, cr, 0.0, 0.0, 0.0, 1.0 );
+        const float tilt_x = 0.35;
+        float       cx = cos( tilt_x ), sx = sin( tilt_x );
+        mat3        tilt_m = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
+        mat3        rot_m = tilt_m * spin_m;
 
-        world = rotM * local;
+        world = rot_m * local;
         world.x += 10.0;
         world.z += 150.0;
-        n = normalize( rotM * attrB.xyz );
+        n = normalize( rot_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocalPos = attrA.xyz;
     }
-    else if ( isShip )
+    else if ( is_ship )
     {
         float shs = ( shipScaleP > 0.001 ? shipScaleP : 0.26 );
         // Put the hull's LONGEST axis along the direction of travel. This used
@@ -151,9 +151,9 @@ void main()
         // Yaw to face travel, flattening out as it arrives.
         float yaw = -0.5 * ( 1.0 - ease );
         float cy = cos( yaw ), sy = sin( yaw );
-        mat3  yawM = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        world += yawM * local;
-        n = normalize( yawM * nrm );
+        mat3  yaw_m = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
+        world += yaw_m * local;
+        n = normalize( yaw_m * nrm );
         vUV = vec2( attrA.w, attrB.w );
         vLocalPos = p;
     }
@@ -169,10 +169,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

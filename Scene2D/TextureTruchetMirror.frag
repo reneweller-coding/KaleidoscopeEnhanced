@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -254,16 +254,16 @@ void main()
     // The ribbon coordinate: distance from the arc (across) mirrored into the band.
     float z = 0.25 + 0.35 * clamp( photoZoomP, 0.0, 1.0 );
     vec2  win = vec2( 0.5 ) + 0.25 * vec2( sin( T * 0.3 ), cos( T * 0.23 ) );
-    vec3  cA = imgLod( win + vec2( abs( A.x ) / width, A.y / 3.14159 + T * 0.1 ) * z, 0.8 );
-    vec3  cB = imgLod( win + vec2( abs( B.x ) / width, B.y / 3.14159 + T * 0.1 ) * z, 0.8 );
-    vec3  col = mix( cA, cB, o );
+    vec3  c_a = imgLod( win + vec2( abs( A.x ) / width, A.y / 3.14159 + T * 0.1 ) * z, 0.8 );
+    vec3  c_b = imgLod( win + vec2( abs( B.x ) / width, B.y / 3.14159 + T * 0.1 ) * z, 0.8 );
+    vec3  col = mix( c_a, c_b, o );
     float d = mix( A.x, B.x, o );
     vec3  tint = mix( vec3( 0.85, 0.95, 1.1 ), vec3( 1.1, 0.95, 0.8 ), mode );
     col *= tint * ( 0.6 + 0.6 * smoothstep( width, 0.0, d ) );
     // Between the ribbons: a dark glowing gap.
-    float gapM = smoothstep( width, width + 0.05, d );
+    float gap_m = smoothstep( width, width + 0.05, d );
     vec3  gc = glowColour( col, gi * 0.1, hueP * 0.159 );
-    col = mix( col, gc * ( 0.03 + 0.2 * swell ), gapM );
+    col = mix( col, gc * ( 0.03 + 0.2 * swell ), gap_m );
     // The mirror arcs gleam along their centre lines.
     float px = fwidth( g.x ) * 1.2;
     float sharp = 0.5 + 1.5 * clamp( mirrorP, 0.0, 1.0 );

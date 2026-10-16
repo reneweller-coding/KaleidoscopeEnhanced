@@ -89,18 +89,18 @@ void main()
     // The design: rings from the centre out, each laid over a slice of the
     // arc, filling around from angle 0 as it is laid; each ring a petal
     // pattern (a rose curve) in its class colour, drawn as powder grains.
-    float outerR = 0.62;
+    float outer_r = 0.62;
     for ( int i = 0; i < 11; ++i )
     {
         float fi = float( i );
         if ( fi >= rings )
             break;
-        float r0 = outerR * fi / rings, r1 = outerR * ( fi + 1.0 ) / rings;
+        float r0 = outer_r * fi / rings, r1 = outer_r * ( fi + 1.0 ) / rings;
         float t0 = fi / rings, t1 = ( fi + 1.0 ) / rings;
         float laid = clamp( ( prog - t0 ) / ( t1 - t0 ), 0.0, 1.0 ); // how far around this ring is laid
         float around = fract( a / 6.2831853 + 0.25 );
         float here = smoothstep( laid, laid - 0.03, around ) * step( 0.001, laid );
-        float inRing = step( r0, r ) * step( r, r1 );
+        float in_ring = step( r0, r ) * step( r, r1 );
         int   k = int( mod( fi * 5.0 + 2.0, 12.0 ) );
         float e = clamp( audioChroma[k] * 1.5, 0.0, 1.0 );
         // The motif: petal lobes (rose curve) alternating with the ring index.
@@ -118,18 +118,18 @@ void main()
         vec2  gf = fract( gu ) - 0.5;
         vec2  go = vec2( hash21( gc + 1.3 ), hash21( gc + 5.9 ) ) - 0.5;
         float grain = smoothstep( 0.42, 0.25, length( gf - go * 0.5 ) );
-        float cover = inRing * here * ( 0.6 + 0.4 * grain );
+        float cover = in_ring * here * ( 0.6 + 0.4 * grain );
         col = mix( col, pc * ( 1.1 + 0.4 * grain ) * lamp, cover * 0.95 );
         // Mica sparkle on the treble.
         col += vec3( 1.0 ) * smoothstep( 0.2, 0.05, length( gf - go * 0.5 ) ) * step( 0.93, hash21( gc + 7.0 ) )
-               * inRing * here * hi * 0.6;
+               * in_ring * here * hi * 0.6;
     }
     // The hand's pinch: where the design is being laid right now, a small
     // cloud of powder falls (brighter on the kick).
-    float layingRing = floor( prog * rings );
-    float rr = outerR * ( layingRing + 0.5 ) / rings;
-    float laidNow = fract( prog * rings );
-    float aa = ( laidNow - 0.25 ) * 6.2831853;
+    float laying_ring = floor( prog * rings );
+    float rr = outer_r * ( laying_ring + 0.5 ) / rings;
+    float laid_now = fract( prog * rings );
+    float aa = ( laid_now - 0.25 ) * 6.2831853;
     vec2  hand = vec2( cos( aa ), sin( aa ) ) * rr;
     float pinch = exp( -length( p - hand ) * 25.0 ) * step( prog, 0.999 );
     col += vec3( 1.0, 0.9, 0.6 ) * pinch * ( 0.3 + 1.5 * audioKick );
@@ -138,7 +138,7 @@ void main()
     col += vec3( 1.0, 0.7, 0.3 ) * exp( -r * 30.0 ) * lamp * 1.2;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

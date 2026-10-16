@@ -117,17 +117,17 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Audio-reactive glitch slicing
-    float glitchTime = floor( time * 4.00 );
-    float sliceSeed = hash21( vec2( floor( st.y * 24.0 ), glitchTime ) );
-    float sliceActive = step( 0.85 - 0.25 * audioKick, sliceSeed ) * glt;
+    float glitch_time = floor( time * 4.00 );
+    float slice_seed = hash21( vec2( floor( st.y * 24.0 ), glitch_time ) );
+    float slice_active = step( 0.85 - 0.25 * audioKick, slice_seed ) * glt;
 
-    vec2 glitchedUV = uv;
-    vec2 glitchedST = st;
-    if ( sliceActive > 0.5 )
+    vec2 glitched_uv = uv;
+    vec2 glitched_st = st;
+    if ( slice_active > 0.5 )
     {
-        float xShift = ( hash21( vec2( sliceSeed, 1.2 ) ) - 0.5 ) * 0.12 * ( 1.0 + audioKick * 1.5 );
-        glitchedUV.x += xShift;
-        glitchedST.x += xShift;
+        float x_shift = ( hash21( vec2( slice_seed, 1.2 ) ) - 0.5 ) * 0.12 * ( 1.0 + audioKick * 1.5 );
+        glitched_uv.x += x_shift;
+        glitched_st.x += x_shift;
     }
 
     // 4D Tesseract ray-geometry projection
@@ -135,27 +135,27 @@ void main()
     vec3  col = vec3( 0.01, 0.02, 0.03 ); // Dark cyber background
 
     // Matrix glyph stream in background
-    vec2  matrixUV = vec2( floor( glitchedST.x * 60.0 ) / 60.0, glitchedST.y );
-    float streamSpd = 2.5 + hash21( vec2( matrixUV.x, 9.0 ) ) * 4.0;
-    float streamY = fract( matrixUV.y + time * streamSpd * 0.2 );
-    float glyphRand = hash21( vec2( matrixUV.x, floor( glitchedST.y * 35.0 - time * streamSpd * 7.0 ) ) );
-    float charMask = step( 0.4, glyphRand ) * pow( 1.0 - streamY, 3.0 );
-    vec3  matrixGlyph = vec3( 0.1, 1.0, 0.4 ) * charMask * ( 0.4 + audioHigh * 0.8 );
-    col += matrixGlyph;
+    vec2  matrix_uv = vec2( floor( glitched_st.x * 60.0 ) / 60.0, glitched_st.y );
+    float stream_spd = 2.5 + hash21( vec2( matrix_uv.x, 9.0 ) ) * 4.0;
+    float stream_y = fract( matrix_uv.y + time * stream_spd * 0.2 );
+    float glyph_rand = hash21( vec2( matrix_uv.x, floor( glitched_st.y * 35.0 - time * stream_spd * 7.0 ) ) );
+    float char_mask = step( 0.4, glyph_rand ) * pow( 1.0 - stream_y, 3.0 );
+    vec3  matrix_glyph = vec3( 0.1, 1.0, 0.4 ) * char_mask * ( 0.4 + audioHigh * 0.8 );
+    col += matrix_glyph;
 
     // 16 Vertices of a 4D Unit Hypercube: (±1, ±1, ±1, ±1)
     // Project edges onto 2D screen
-    vec3  wireColor = vec3( 0.0 );
-    float minWireDist = 100.0;
+    vec3  wire_color = vec3( 0.0 );
+    float min_wire_dist = 100.0;
 
     // Hypercube rotation angles
-    float aXW = t * 0.7;
-    float aYW = t * 0.5 + audioPhase * 0.3;
-    float aZW = t * 0.9;
-    float aXY = t * 0.3;
+    float a_xw = t * 0.7;
+    float a_yw = t * 0.5 + audioPhase * 0.3;
+    float a_zw = t * 0.9;
+    float a_xy = t * 0.3;
 
     // Camera 4D perspective distance
-    float camDist4D = 2.8 + 0.5 * sin( t * 0.2 ) - audioSwell * 0.4;
+    float cam_dist_4d = 2.8 + 0.5 * sin( t * 0.2 ) - audioSwell * 0.4;
 
     // Raymarch through 4D bounding hyper-planes
     for ( int i = 0; i < 16; i++ )
@@ -168,14 +168,14 @@ void main()
             ( float( ( i >> 3 ) & 1 ) - 0.5 ) * 2.0 );
 
         // Apply 4D rotations
-        v4 = rotXW( v4, aXW );
-        v4 = rotYW( v4, aYW );
-        v4 = rotZW( v4, aZW );
-        v4 = rotXY( v4, aXY );
+        v4 = rotXW( v4, a_xw );
+        v4 = rotYW( v4, a_yw );
+        v4 = rotZW( v4, a_zw );
+        v4 = rotXY( v4, a_xy );
 
-        // 4D to 3D perspective projection: P3 = V.xyz / (camDist4D - V.w)
-        float wFactor = 1.0 / max( camDist4D - v4.w, 0.2 );
-        vec3  p3 = v4.xyz * wFactor;
+        // 4D to 3D perspective projection: P3 = V.xyz / (cam_dist_4d - V.w)
+        float w_factor = 1.0 / max( cam_dist_4d - v4.w, 0.2 );
+        vec3  p3 = v4.xyz * w_factor;
 
         // 3D to 2D projection
         vec2 p2 = p3.xy * ( 1.2 / ( p3.z + 2.5 ) );
@@ -191,44 +191,44 @@ void main()
                     ( float( ( j >> 1 ) & 1 ) - 0.5 ) * 2.0,
                     ( float( ( j >> 2 ) & 1 ) - 0.5 ) * 2.0,
                     ( float( ( j >> 3 ) & 1 ) - 0.5 ) * 2.0 );
-                v4_b = rotXW( v4_b, aXW );
-                v4_b = rotYW( v4_b, aYW );
-                v4_b = rotZW( v4_b, aZW );
-                v4_b = rotXY( v4_b, aXY );
+                v4_b = rotXW( v4_b, a_xw );
+                v4_b = rotYW( v4_b, a_yw );
+                v4_b = rotZW( v4_b, a_zw );
+                v4_b = rotXY( v4_b, a_xy );
 
-                float wFactor_b = 1.0 / max( camDist4D - v4_b.w, 0.2 );
-                vec3  p3_b = v4_b.xyz * wFactor_b;
+                float w_factor_b = 1.0 / max( cam_dist_4d - v4_b.w, 0.2 );
+                vec3  p3_b = v4_b.xyz * w_factor_b;
                 vec2  p2_b = p3_b.xy * ( 1.2 / ( p3_b.z + 2.5 ) );
 
-                // 2D Line segment distance from glitchedUV to line(p2, p2_b)
-                vec2  pa = glitchedUV - p2;
+                // 2D Line segment distance from glitched_uv to line(p2, p2_b)
+                vec2  pa = glitched_uv - p2;
                 vec2  ba = p2_b - p2;
                 float h = clamp( dot( pa, ba ) / max( dot( ba, ba ), 1e-5 ), 0.0, 1.0 );
-                float lineDist = length( pa - ba * h );
+                float line_dist = length( pa - ba * h );
 
                 // Laser wireframe glow
-                float edgeGlow = ( 0.002 * fct ) / ( lineDist * lineDist + 0.0001 );
+                float edge_glow = ( 0.002 * fct ) / ( line_dist * line_dist + 0.0001 );
 
                 // Color by 4D depth (v4.w)
-                vec3 edgeCol = imgPalette( 0.30 * ( ( v4.w + v4_b.w ) * 0.25 + 0.5 ) ) * 1.5;
-                wireColor += edgeCol * edgeGlow;
+                vec3 edge_col = imgPalette( 0.30 * ( ( v4.w + v4_b.w ) * 0.25 + 0.5 ) ) * 1.5;
+                wire_color += edge_col * edge_glow;
             }
         }
     }
 
-    col += wireColor * ( 0.7 + audioKick * 0.8 );
+    col += wire_color * ( 0.7 + audioKick * 0.8 );
 
     // Multi-planar photo mapping with RGB chromatic aberration
-    float chromOff = ( 0.015 + 0.02 * audioKick ) * glt;
-    vec3  photoR = img( clamp( glitchedST + vec2( chromOff, 0.0 ), 0.0, 1.0 ) );
-    vec3  photoG = img( clamp( glitchedST, 0.0, 1.0 ) );
-    vec3  photoB = img( clamp( glitchedST - vec2( chromOff, 0.0 ), 0.0, 1.0 ) );
-    vec3  photoAberrated = vec3( photoR.r, photoG.g, photoB.b );
+    float chrom_off = ( 0.015 + 0.02 * audioKick ) * glt;
+    vec3  photo_r = img( clamp( glitched_st + vec2( chrom_off, 0.0 ), 0.0, 1.0 ) );
+    vec3  photo_g = img( clamp( glitched_st, 0.0, 1.0 ) );
+    vec3  photo_b = img( clamp( glitched_st - vec2( chrom_off, 0.0 ), 0.0, 1.0 ) );
+    vec3  photo_aberrated = vec3( photo_r.r, photo_g.g, photo_b.b );
 
     // Blend photo onto hypercube core
-    float coreDist = length( glitchedUV );
-    float coreMask = smoothstep( 1.2, 0.2, coreDist ) * ( 0.35 + 0.35 * audioLevel );
-    col = mix( col, col + photoAberrated * 1.4, coreMask );
+    float core_dist = length( glitched_uv );
+    float core_mask = smoothstep( 1.2, 0.2, core_dist ) * ( 0.35 + 0.35 * audioLevel );
+    col = mix( col, col + photo_aberrated * 1.4, core_mask );
 
     // Scanlines
     float scanline = sin( gl_FragCoord.y * 1.5 + time * 5.0 ) * 0.06;
@@ -239,7 +239,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.65;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.65;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

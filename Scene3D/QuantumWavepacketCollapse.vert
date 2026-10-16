@@ -42,12 +42,12 @@ void main()
 {
     float id = attrA.w;
     float seed = hash11( id );
-    vec3  seedPos = attrB.xyz * 2.0 - 1.0;
+    vec3  seed_pos = attrB.xyz * 2.0 - 1.0;
 
     // Spherical coordinates of 3D quantum eigenstate harmonic oscillator
-    float r = length( seedPos ) * 2.5;
-    float theta = acos( clamp( seedPos.z / max( r, 0.001 ), -1.0, 1.0 ) );
-    float phi = atan( seedPos.y, seedPos.x );
+    float r = length( seed_pos ) * 2.5;
+    float theta = acos( clamp( seed_pos.z / max( r, 0.001 ), -1.0, 1.0 ) );
+    float phi = atan( seed_pos.y, seed_pos.x );
 
     // Superposition of spherical harmonics Y_lm and radial Laguerre modes
     float t = time * 0.5 + audioAdvance * 0.2;
@@ -56,21 +56,21 @@ void main()
     float mode3 = sin( r * 6.0 - t * 4.0 - phi * 2.0 );
 
     // Complex probability amplitude psi
-    float psiRe = mode1 + mode2 * 0.7;
-    float psiIm = mode3 + mode1 * 0.5;
-    float prob = ( psiRe * psiRe + psiIm * psiIm ) * ( 0.8 + 0.4 * audioSwell );
-    float qPhase = atan( psiIm, psiRe );
+    float psi_re = mode1 + mode2 * 0.7;
+    float psi_im = mode3 + mode1 * 0.5;
+    float prob = ( psi_re * psi_re + psi_im * psi_im ) * ( 0.8 + 0.4 * audioSwell );
+    float q_phase = atan( psi_im, psi_re );
 
     // Beat transient triggers localized wavepacket collapse towards a nodal singularity
-    vec3  collapseCenter = vec3( sin( t * 0.7 ) * 1.5, cos( t * 0.5 ) * 1.2, sin( t * 0.3 ) * 1.0 );
-    float collapseAmount = audioKick * 0.7;
+    vec3  collapse_center = vec3( sin( t * 0.7 ) * 1.5, cos( t * 0.5 ) * 1.2, sin( t * 0.3 ) * 1.0 );
+    float collapse_amount = audioKick * 0.7;
 
-    vec3 pos = mix( seedPos * ( 1.5 + 0.8 * prob ),
-                    collapseCenter + normalize( seedPos - collapseCenter ) * ( 0.3 + 0.5 * seed ), collapseAmount );
+    vec3 pos = mix( seed_pos * ( 1.5 + 0.8 * prob ),
+                    collapse_center + normalize( seed_pos - collapse_center ) * ( 0.3 + 0.5 * seed ), collapse_amount );
 
     vPos = pos;
     vProb = prob;
-    vPhase = qPhase;
+    vPhase = q_phase;
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;

@@ -42,49 +42,49 @@ out float vTranscription;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ribbonID = attrA.w;
-    float tAlong = attrA.x * 20.0; // Travel down DNA macromolecule axis
+    float ribbon_id = attrA.w;
+    float t_along = attrA.x * 20.0; // Travel down DNA macromolecule axis
 
     float t = time * 0.4 + audioAdvance * 0.2;
-    float helixAngle = tAlong + t;
+    float helix_angle = t_along + t;
 
     // Major double-helix backbone strands vs base-pair hydrogen bridge rungs
     float radius = 1.6;
-    float isStrandB = ( ribbonID >= 10.0 ) ? 1.0 : 0.0;
-    float strandPhase = ( isStrandB > 0.5 ) ? 3.14159265 : 0.0;
+    float is_strand_b = ( ribbon_id >= 10.0 ) ? 1.0 : 0.0;
+    float strand_phase = ( is_strand_b > 0.5 ) ? 3.14159265 : 0.0;
 
     // Unzipping replication fork at center — every chord/key change tears the
     // strands further apart, so the helix "re-reads" itself on each harmonic
     // turn and closes again as the new harmony settles.
-    float unzip = exp( -pow( tAlong - 10.0, 2.0 ) * 0.1 )
+    float unzip = exp( -pow( t_along - 10.0, 2.0 ) * 0.1 )
                   * ( 0.8 + 0.5 * audioSwell + 0.6 * clamp( audioHarmChange, 0.0, 1.0 ) );
     float r = radius * ( 1.0 + unzip );
 
-    float x = r * cos( helixAngle + strandPhase );
+    float x = r * cos( helix_angle + strand_phase );
     float y = ( attrA.x - 0.5 ) * 8.0;
-    float z = r * sin( helixAngle + strandPhase );
+    float z = r * sin( helix_angle + strand_phase );
 
-    vec3 helixPos = vec3( x, y, z );
+    vec3 helix_pos = vec3( x, y, z );
 
     // Ribbon cross-section width
-    vec3 tangent = normalize( vec3( -sin( helixAngle + strandPhase ), 0.4, cos( helixAngle + strandPhase ) ) );
+    vec3 tangent = normalize( vec3( -sin( helix_angle + strand_phase ), 0.4, cos( helix_angle + strand_phase ) ) );
     vec3 normal = vec3( 0.0, 1.0, 0.0 );
 
-    float width = ( 0.075 + 0.03 * sin( tAlong * 4.0 ) ) * ( 1.0 + audioKick * 0.5 );
-    vec3  pos = helixPos + normal * ( attrA.y * 0.5 ) * width;
+    float width = ( 0.075 + 0.03 * sin( t_along * 4.0 ) ) * ( 1.0 + audioKick * 0.5 );
+    vec3  pos = helix_pos + normal * ( attrA.y * 0.5 ) * width;
 
     // Transcription pulse traveling along DNA.  The 2-6 kHz metallic edge
     // focuses the read-head: a dull mix smears it into a broad glowing wash,
     // an industrial-bright one cuts it to a razor scan line.  The travel RATE
     // is audio-free; only the falloff width moves (and tightening only ever
     // removes glow, never adds).
-    float pulseTight = 2.0 * ( 1.0 + 1.3 * clamp( audioUpperMid, 0.0, 1.0 ) );
-    float transPulse = exp( -abs( tAlong - mod( time * 6.0, 20.0 ) ) * pulseTight ) * ( 1.0 + audioKick * 2.5 );
+    float pulse_tight = 2.0 * ( 1.0 + 1.3 * clamp( audioUpperMid, 0.0, 1.0 ) );
+    float trans_pulse = exp( -abs( t_along - mod( time * 6.0, 20.0 ) ) * pulse_tight ) * ( 1.0 + audioKick * 2.5 );
 
     vPos = pos;
     vUV = vec2( attrA.x, attrA.y * 0.5 + 0.5 );
-    vStrandID = ribbonID / 20.0;
-    vTranscription = transPulse;
+    vStrandID = ribbon_id / 20.0;
+    vTranscription = trans_pulse;
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;

@@ -129,7 +129,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -240,9 +240,9 @@ void main()
     float z = throat / max( r, 1e-3 );
     float u = z + 0.4 * sceneTime + 1.5 * audioAdvance;
     // Lantern grid on the wall: rings along u, lanterns around a.
-    float nA = 2.0 * floor( 5.0 + 5.0 * clamp( countP, 0.0, 1.0 ) ); // even, so the seam hides
-    float ringSp = 0.55 + 0.4 * clamp( gapP, 0.0, 1.0 );
-    vec2  g = vec2( a / 6.2831853 * nA, u / ringSp );
+    float n_a = 2.0 * floor( 5.0 + 5.0 * clamp( countP, 0.0, 1.0 ) ); // even, so the seam hides
+    float ring_sp = 0.55 + 0.4 * clamp( gapP, 0.0, 1.0 );
+    vec2  g = vec2( a / 6.2831853 * n_a, u / ring_sp );
     vec2  gi = floor( g );
     float off = 0.5 * mod( gi.y, 2.0 ); // staggered rings
     g.x -= off;
@@ -250,7 +250,7 @@ void main()
     vec2 gf = fract( g ) - 0.5;
     // Sway: each lantern swings slightly on its cord (stetig).
     gf.x += 0.08 * clamp( audioRoughness, 0.0, 1.0 ) * sin( sceneTime * 0.8 + hash21( gi ) * 6.28 );
-    vec3 flameC = mix( vec3( 1.0, 0.55, 0.15 ), vec3( 1.0, 0.45, 0.35 ), clamp( audioMode, 0.0, 1.0 ) );
+    vec3 flame_c = mix( vec3( 1.0, 0.55, 0.15 ), vec3( 1.0, 0.45, 0.35 ), clamp( audioMode, 0.0, 1.0 ) );
     // Lantern body: rounded barrel.
     // Round lanterns (an ellipse bulging a little along the ring direction).
     float d = length( gf * vec2( 1.0, 1.15 ) ) - 0.36; // stays inside its cell (no clipped rims)
@@ -258,9 +258,9 @@ void main()
     float aa = max( fwd, 0.01 ) * 1.5;
     float cov = smoothstep( aa, -aa, d );
     // The paper shows a piece of the photo (the id selects which piece).
-    vec2  puv = vec2( mod( gi.x, nA ) * 0.173, gi.y * 0.311 ) + gf * 0.35;
+    vec2  puv = vec2( mod( gi.x, n_a ) * 0.173, gi.y * 0.311 ) + gf * 0.35;
     vec3  paper = imgLod( puv, clamp( log2( max( fwd * 1024.0 * 0.35, 1.0 ) ), 0.0, 8.0 ) );
-    vec3  tint = mix( flameC, glowColour( paper, vec2( cos( a ), sin( a ) ) + gi.y * 0.1, hueP * 0.159 ), 0.25 )
+    vec3  tint = mix( flame_c, glowColour( paper, vec2( cos( a ), sin( a ) ) + gi.y * 0.1, hueP * 0.159 ), 0.25 )
                  * vec3( 1.1, 0.88, 0.65 );
     vec3  lit = tint * mix( 1.0, 0.4 + 1.2 * luma( paper ), clamp( photoP, 0.0, 1.0 ) * 0.8 );
     float core = exp( -length( gf ) * 6.0 );
@@ -274,18 +274,18 @@ void main()
     float dn = d;
     for ( int k = -1; k <= 1; k += 2 )
     {
-        float ry = floor( u / ringSp ) + float( k );
+        float ry = floor( u / ring_sp ) + float( k );
         float offk = 0.5 * mod( ry, 2.0 );
-        float gx = a / 6.2831853 * nA - offk;
-        vec2  f2 = vec2( fract( gx ) - 0.5, u / ringSp - ry - 0.5 );
+        float gx = a / 6.2831853 * n_a - offk;
+        vec2  f2 = vec2( fract( gx ) - 0.5, u / ring_sp - ry - 0.5 );
         dn = min( dn, length( f2 * vec2( 1.0, 1.15 ) ) - 0.36 );
     }
-    vec3 rib = vec3( 0.03, 0.018, 0.012 ) + flameC * 0.18 * exp( -max( dn, 0.0 ) * 6.0 ) * ( 0.7 + 0.6 * bass );
+    vec3 rib = vec3( 0.03, 0.018, 0.012 ) + flame_c * 0.18 * exp( -max( dn, 0.0 ) * 6.0 ) * ( 0.7 + 0.6 * bass );
     vec3 col = mix( rib, lan, cov );
     // Depth: far rings blur into golden haze; the far end glows.
     float far = smoothstep( 2.0, 9.0, z );
-    col = mix( col, flameC * 0.75, far );
-    col += flameC * exp( -r * 2.0 ) * ( 0.3 + 0.6 * bass );
+    col = mix( col, flame_c * 0.75, far );
+    col += flame_c * exp( -r * 2.0 ) * ( 0.3 + 0.6 * bass );
     col *= smoothstep( 0.0, 0.25, r ) * 0.5 + 0.5;
     finish( col );
 }

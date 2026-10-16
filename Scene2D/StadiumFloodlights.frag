@@ -111,31 +111,31 @@ void main()
            * 0.4;
 
     // The pitch: a rectangle in perspective, seen from the upper stand.
-    float yN = -0.46, yF = -0.06;
-    float tq = clamp( ( p.y - yN ) / ( yF - yN ), 0.0, 1.0 );
-    float halfW = mix( 0.66, 0.36, tq );
+    float y_n = -0.46, y_f = -0.06;
+    float tq = clamp( ( p.y - y_n ) / ( y_f - y_n ), 0.0, 1.0 );
+    float half_w = mix( 0.66, 0.36, tq );
     float wz = tq / ( tq + ( 1.0 - tq ) * 1.9 ); // perspective-corrected depth 0 near .. 1 far
-    vec2  pq = vec2( p.x / halfW, wz );
-    float inP = smoothstep( 1.0 + px * 3.0 / halfW, 1.0 - px * 3.0 / halfW, abs( pq.x ) ) * step( yN, p.y )
-                * step( p.y, yF );
+    vec2  pq = vec2( p.x / half_w, wz );
+    float in_p = smoothstep( 1.0 + px * 3.0 / half_w, 1.0 - px * 3.0 / half_w, abs( pq.x ) ) * step( y_n, p.y )
+                 * step( p.y, y_f );
     float stripes = 0.5 + 0.5 * sign( sin( pq.y * 3.14159 * 12.0 ) );
     vec3  grass = mix( vec3( 0.07, 0.28, 0.09 ), vec3( 0.1, 0.35, 0.12 ), stripes );
     // Pitch markings: halfway line, centre circle, touchlines, the boxes.
     vec2  m = vec2( pq.x * 1.55, ( pq.y - 0.5 ) * 2.2 );
-    float fwM = fwidth( m.y ) * 1.5 + 0.004;
-    float lines = smoothstep( fwM, 0.0, abs( m.y ) ) + smoothstep( fwM * 1.5, 0.0, abs( length( m ) - 0.2 ) )
+    float fw_m = fwidth( m.y ) * 1.5 + 0.004;
+    float lines = smoothstep( fw_m, 0.0, abs( m.y ) ) + smoothstep( fw_m * 1.5, 0.0, abs( length( m ) - 0.2 ) )
                   + smoothstep( 0.02, 0.0, abs( abs( pq.x ) - 0.97 ) )
-                  + smoothstep( fwM, 0.0, abs( abs( m.y ) - 1.08 ) ) * step( abs( pq.x ), 0.98 )
-                  + smoothstep( fwM, 0.0, abs( abs( m.y ) - 0.85 ) ) * step( abs( m.x ), 0.62 )
+                  + smoothstep( fw_m, 0.0, abs( abs( m.y ) - 1.08 ) ) * step( abs( pq.x ), 0.98 )
+                  + smoothstep( fw_m, 0.0, abs( abs( m.y ) - 0.85 ) ) * step( abs( m.x ), 0.62 )
                   + smoothstep( 0.012, 0.0, abs( abs( m.x ) - 0.62 ) ) * step( 0.85, abs( m.y ) )
                         * step( abs( m.y ), 1.08 );
     grass = mix( grass, vec3( 0.85 ), clamp( lines, 0.0, 1.0 ) * 0.8 );
     // The stands all around: rows of seats parallel to the pitch, dark.
-    float dS = max( abs( pq.x ) - 1.0, max( yN - p.y, p.y - yF ) * 3.0 );
-    float rows = 0.5 + 0.5 * sin( dS * 160.0 );
+    float d_s = max( abs( pq.x ) - 1.0, max( y_n - p.y, p.y - y_f ) * 3.0 );
+    float rows = 0.5 + 0.5 * sin( d_s * 160.0 );
     vec3  stand = mix( vec3( 0.03, 0.03, 0.05 ), vec3( 0.08, 0.06, 0.12 ), rows * 0.6 );
     stand = mix( stand, stand * imgPalette( 0.7 + hueP * 0.159 ) * 2.0, 0.2 );
-    float pitch = inP;
+    float pitch = in_p;
     vec3  ground = mix( stand, grass, pitch );
     // The stand's top edge: the far roof line against the sky.
     float bowl = smoothstep( px * 2.0, -px * 2.0, p.y - ( 0.02 + 0.06 * p.x * p.x ) );
@@ -152,7 +152,7 @@ void main()
     foots[2] = vec2( -0.8, -0.3 );
     foots[3] = vec2( 0.8, -0.3 );
     float I = 0.9 + 0.8 * kick;
-    vec3  lampC = vec3( 1.0, 0.98, 0.94 );
+    vec3  lamp_c = vec3( 1.0, 0.98, 0.94 );
     vec3  beams = vec3( 0.0 );
     float lit = 0.0;
     for ( int i = 0; i < 4; ++i )
@@ -169,8 +169,8 @@ void main()
         vec2  lg = fract( bq * vec2( 50.0, 50.0 ) ) - 0.5;
         float lamp = smoothstep( 0.35, 0.2, length( lg ) ) * bank;
         col = mix( col, vec3( 0.05 ), bank * 0.8 );
-        col += lampC * lamp * 2.0 * I;
-        col += lampC * exp( -length( bq ) * 12.0 ) * 0.3 * I;
+        col += lamp_c * lamp * 2.0 * I;
+        col += lamp_c * exp( -length( bq ) * 12.0 ) * 0.3 * I;
         // The beam: a cone from the bank down toward the centre of the pitch.
         vec2  target = vec2( -0.1 * sign( L.x ), -0.24 );
         vec2  dir = normalize( target - L );
@@ -180,12 +180,12 @@ void main()
         float spread = 0.04 * s + along * 0.32;
         float cone = smoothstep( spread, spread * 0.3, across ) * step( 0.0, along );
         float mist = ( 0.5 + 0.5 * fbm( p * 4.0 + vec2( T * 0.03, -T * 0.02 ) ) ) * ( 0.5 + 0.7 * swell );
-        beams += lampC * cone * exp( -along * 0.9 ) * mist * 0.22 * I;
+        beams += lamp_c * cone * exp( -along * 0.9 ) * mist * 0.22 * I;
         lit += cone * exp( -along * 1.0 );
     }
     col += beams;
     // Reflections of the lamps in the wet pitch.
-    col += lampC * 0.08 * pitch * ( 0.5 + 0.5 * noise2( p * vec2( 40.0, 120.0 ) ) ) * clamp( lit, 0.0, 1.0 );
+    col += lamp_c * 0.08 * pitch * ( 0.5 + 0.5 * noise2( p * vec2( 40.0, 120.0 ) ) ) * clamp( lit, 0.0, 1.0 );
     // Rain: silver streaks visible where the beams light it.
     {
         vec2  rq = vec2( p.x + p.y * 0.08, p.y ) * vec2( 160.0, 5.0 ) + vec2( 0.0, T * 6.0 );
@@ -197,7 +197,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

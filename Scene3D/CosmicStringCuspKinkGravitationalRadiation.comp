@@ -49,11 +49,11 @@ uniform float lensingP;
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).  The
 // layout aspect is a shade wider than 16:9 so the outer column of loops still
 // reaches the edge of a wider display.
-const float kTanY = 0.5206;
-const float kAspect = 1.85;
+const float TanY = 0.5206;
+const float Aspect = 1.85;
 
-const uint LOOPS = 160u;
-const uint SEGS = 64u;
+const uint Loops = 160u;
+const uint Segs = 64u;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -119,19 +119,19 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     uint  idx = g.x + 64u * ( g.y + 64u * g.z );
 
-    uint loopIdx = idx / SEGS;
-    uint segIdx = idx % SEGS;
-    if ( loopIdx >= LOOPS )
+    uint loop_idx = idx / Segs;
+    uint seg_idx = idx % Segs;
+    if ( loop_idx >= Loops )
         return;
 
     float t = time * 0.45 + audioAdvance * 0.4;
-    float fl = float( loopIdx );
+    float fl = float( loop_idx );
     float seed = hash11( fl * 33.71 );
 
     // ---- Where this loop hangs in the network ------------------------
     // Stratified 16 x 10 over the frame, jittered, then drifting slowly.
-    uint  ix = loopIdx % 16u;
-    uint  iy = loopIdx / 16u; // 0 .. 9
+    uint  ix = loop_idx % 16u;
+    uint  iy = loop_idx / 16u; // 0 .. 9
     float hx = hash11( fl * 7.13 + 1.7 );
     float hy = hash11( fl * 3.97 + 5.3 );
     float hz = hash11( fl * 11.31 + 9.1 );
@@ -143,11 +143,11 @@ void main()
     sy += sin( dph * 0.83 ) * 0.050;
 
     float D = 4.5 + hz * 19.0; // depth 4.5 .. 23.5
-    float halfH = kTanY * D;   // frustum half-height there
-    vec3  ctr = vec3( sx * halfH * kAspect, sy * halfH, D );
+    float half_h = TanY * D;   // frustum half-height there
+    vec3  ctr = vec3( sx * half_h * Aspect, sy * half_h, D );
 
-    float s0 = float( segIdx ) / float( SEGS );
-    float s1 = float( segIdx + 1u ) / float( SEGS );
+    float s0 = float( seg_idx ) / float( Segs );
+    float s1 = float( seg_idx + 1u ) / float( Segs );
 
     float phi0 = s0 * 6.2831853;
     float phi1 = s1 * 6.2831853;
@@ -159,37 +159,39 @@ void main()
     // so a loop twenty units away is drawn the same size as one four units
     // away and the network reads as a network rather than as a perspective
     // funnel of specks.
-    float rLoop = ( 0.09 + 0.06 * seed ) * halfH;
+    float r_loop = ( 0.09 + 0.06 * seed ) * half_h;
 
     // Right and left-moving wave modes producing cusps.  A per-loop
     // phase offset on the left-mover staggers the loops' breathing:
     // with identical phases the xy radius of EVERY loop is
     // cos(phi)*cos(omega*t), so twice per period the whole ensemble
     // collapsed to a point and the scene went black.
-    float phaseL = seed * 6.2831853;
-    vec3 a0 = vec3( cos( phi0 - t * omega ), sin( phi0 - t * omega ), sin( 2.0 * ( phi0 - t * omega ) ) * 0.5 ) * rLoop;
-    vec3  b0 = vec3( cos( phi0 + t * omega + phaseL ), sin( phi0 + t * omega + phaseL ),
-                     cos( 2.0 * ( phi0 + t * omega + phaseL ) ) * 0.5 )
-               * rLoop;
+    float phase_l = seed * 6.2831853;
+    vec3  a0 = vec3( cos( phi0 - t * omega ), sin( phi0 - t * omega ), sin( 2.0 * ( phi0 - t * omega ) ) * 0.5 )
+               * r_loop;
+    vec3  b0 = vec3( cos( phi0 + t * omega + phase_l ), sin( phi0 + t * omega + phase_l ),
+                     cos( 2.0 * ( phi0 + t * omega + phase_l ) ) * 0.5 )
+               * r_loop;
     vec3  p0 = ctr + 0.5 * ( a0 + b0 );
 
-    vec3 a1 = vec3( cos( phi1 - t * omega ), sin( phi1 - t * omega ), sin( 2.0 * ( phi1 - t * omega ) ) * 0.5 ) * rLoop;
-    vec3 b1 = vec3( cos( phi1 + t * omega + phaseL ), sin( phi1 + t * omega + phaseL ),
-                    cos( 2.0 * ( phi1 + t * omega + phaseL ) ) * 0.5 )
-              * rLoop;
+    vec3 a1 = vec3( cos( phi1 - t * omega ), sin( phi1 - t * omega ), sin( 2.0 * ( phi1 - t * omega ) ) * 0.5 )
+              * r_loop;
+    vec3 b1 = vec3( cos( phi1 + t * omega + phase_l ), sin( phi1 + t * omega + phase_l ),
+                    cos( 2.0 * ( phi1 + t * omega + phase_l ) ) * 0.5 )
+              * r_loop;
     vec3 p1 = ctr + 0.5 * ( a1 + b1 );
 
     // Relativistic cusp velocity ~ |dx/dt| -> c.  Normalised by the loop's
-    // own radius: now that rLoop scales with depth, an unnormalised speed
-    // would saturate isCusp to 1.0 for every distant loop and the whole far
+    // own radius: now that r_loop scales with depth, an unnormalised speed
+    // would saturate is_cusp to 1.0 for every distant loop and the whole far
     // half of the network would burn at full cusp brightness.
-    float cuspSpeed = length( 0.5 * ( a0 - b0 ) ) / max( rLoop, 1e-4 );
-    float isCusp = pow( clamp( cuspSpeed * 1.2, 0.0, 1.0 ), 4.0 );
+    float cusp_speed = length( 0.5 * ( a0 - b0 ) ) / max( r_loop, 1e-4 );
+    float is_cusp = pow( clamp( cusp_speed * 1.2, 0.0, 1.0 ), 4.0 );
 
     // Depth cue: the far network is a touch dimmer, never black.
     float dfade = clamp( 1.0 - ( D - 4.5 ) / 34.0, 0.40, 1.0 );
 
-    float cuspFlash = ( 1.0 + isCusp * 4.0 ) * ( 1.0 + 3.0 * audioKick ) * dfade;
+    float cusp_flash = ( 1.0 + is_cusp * 4.0 ) * ( 1.0 + 3.0 * audioKick ) * dfade;
 
     // Cord thickness as a screen fraction, so no cord ever thins below a
     // handful of pixels at the back of the volume.  This pass is OPAQUE and
@@ -197,8 +199,8 @@ void main()
     // to be a solid lit cord -- a wide faint halo quad would just punch dim
     // rectangles through every loop behind it.
     float lens = ( lensingP > 0.01 ) ? lensingP : 1.2;
-    float thick = ( 0.011 + 0.008 * isCusp ) * halfH
+    float thick = ( 0.011 + 0.008 * is_cusp ) * half_h
                   * ( 0.85 + 0.25 * lens ) * ( 1.0 + 0.3 * audioSwell );
 
-    emitSegment( p0, p1, s0, cuspFlash, thick );
+    emitSegment( p0, p1, s0, cusp_flash, thick );
 }

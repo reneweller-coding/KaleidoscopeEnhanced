@@ -75,13 +75,13 @@ void main()
     vec3 photo = img( fract( vTexCoord ) );
 
     // Cholesteric Bragg circular reflection color palette (iridescent emerald, sapphire, ruby)
-    vec3 braggColor = imgPalette( ( vWorldPos.z * 3.0 + vHelixPhase * 6.28 + audioPhase ) * 0.159 );
+    vec3 bragg_color = imgPalette( ( vWorldPos.z * 3.0 + vHelixPhase * 6.28 + audioPhase ) * 0.159 );
 
     // Glowing edges
-    float edgeGlow = pow( abs( vTexCoord.y - 0.5 ) * 2.0, 3.0 );
+    float edge_glow = pow( abs( vTexCoord.y - 0.5 ) * 2.0, 3.0 );
 
-    vec3 col = mix( photo, braggColor, 0.5 );
-    col += edgeGlow * vec3( 1.0, 0.95, 0.6 ) * ( 1.2 + audioKick * 2.5 );
+    vec3 col = mix( photo, bragg_color, 0.5 );
+    col += edge_glow * vec3( 1.0, 0.95, 0.6 ) * ( 1.2 + audioKick * 2.5 );
 
     // Distance fog
     float dist = length( vWorldPos );

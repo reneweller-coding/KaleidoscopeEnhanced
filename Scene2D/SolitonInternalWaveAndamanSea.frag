@@ -148,9 +148,9 @@ void main()
     float core = smoothstep( 0.55, 0.95, glint );
     float bright = glint * ( 1.0 + ( R - 1.0 ) * mix( 1.2, -1.0, core ) );
     vec3  navy = vec3( 0.02, 0.06, 0.13 );
-    vec3  glintC = mix( vec3( 1.0, 0.93, 0.8 ), imgPalette( 0.1 ) * 1.2, 0.12 );
-    vec3  col = navy * ( 0.8 + 0.4 * ( R - 1.0 ) )
-                + glintC * bright * sqrt( gl ) * 0.95 * ( 0.85 + 0.3 * swell ); // sqrt: glitterP reaches 2.5, the glint
+    vec3  glint_c = mix( vec3( 1.0, 0.93, 0.8 ), imgPalette( 0.1 ) * 1.2, 0.12 );
+    vec3 col = navy * ( 0.8 + 0.4 * ( R - 1.0 ) )
+               + glint_c * bright * sqrt( gl ) * 0.95 * ( 0.85 + 0.3 * swell ); // sqrt: glitterP reaches 2.5, the glint
                                                                                 // blew out to white in the app
 
     // Islands: land with a coral-shallow halo and a surf line.
@@ -159,19 +159,19 @@ void main()
     float shallow = smoothstep( 0.62, 0.66, lf ) * ( 1.0 - land );
     col = mix( col, mix( col, vec3( 0.2, 0.75, 0.7 ) * ( 0.35 + 0.6 * glint ), 0.7 ), shallow );
     float surf = exp( -abs( lf - 0.665 ) * 180.0 );
-    vec3  landC = mix( vec3( 0.12, 0.2, 0.08 ), vec3( 0.3, 0.3, 0.16 ), fbm( w * 6.0 ) );
-    landC = mix( landC, imgPalette( 0.35 ) * 0.35, 0.2 );
-    col = mix( col, landC * ( 0.8 + 0.4 * fbm( w * 14.0 ) ), land );
+    vec3  land_c = mix( vec3( 0.12, 0.2, 0.08 ), vec3( 0.3, 0.3, 0.16 ), fbm( w * 6.0 ) );
+    land_c = mix( land_c, imgPalette( 0.35 ) * 0.35, 0.2 );
+    col = mix( col, land_c * ( 0.8 + 0.4 * fbm( w * 14.0 ) ), land );
     col += vec3( 0.9 ) * surf * 0.6;
 
     // Popcorn cumulus with their shadows.
     vec2  cw = w * 1.3 + vec2( T * 0.01, 0.0 );
     float cd = fbm( cw * 3.0 ) + 0.35 * noise2( cw * 12.0 );
-    float cMask = smoothstep( 0.62, 0.78, noise2( cw * 0.35 + 9.0 ) );
-    float cloud = smoothstep( 0.8, 0.9, cd ) * cMask;
+    float c_mask = smoothstep( 0.62, 0.78, noise2( cw * 0.35 + 9.0 ) );
+    float cloud = smoothstep( 0.8, 0.9, cd ) * c_mask;
     vec2  sw = cw + vec2( 0.025, -0.02 );
-    float cShadow = smoothstep( 0.8, 0.9, fbm( sw * 3.0 ) + 0.35 * noise2( sw * 12.0 ) ) * cMask;
-    col *= 1.0 - 0.3 * cShadow * ( 1.0 - cloud );
+    float c_shadow = smoothstep( 0.8, 0.9, fbm( sw * 3.0 ) + 0.35 * noise2( sw * 12.0 ) ) * c_mask;
+    col *= 1.0 - 0.3 * c_shadow * ( 1.0 - cloud );
     col = mix( col, vec3( 1.0 ) * ( 1.3 + 0.3 * swell ), cloud );
 
     col *= 0.9 + 0.2 * audioLevel;

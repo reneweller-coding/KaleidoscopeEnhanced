@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -237,7 +237,7 @@ void main()
     vec2  base = p * 0.9 + 0.5;
 
     // Fogged glass: the photo soft and pale, tinted.
-    vec3  fogTint = mix( vec3( 0.85, 0.92, 1.05 ), vec3( 1.05, 0.95, 0.85 ), clamp( audioMode, 0.0, 1.0 ) );
+    vec3  fog_tint = mix( vec3( 0.85, 0.92, 1.05 ), vec3( 1.05, 0.95, 0.85 ), clamp( audioMode, 0.0, 1.0 ) );
     vec3  behind = imgLod( base + drift, 4.5 );
     float fog = clamp( 0.35 + 0.35 * clamp( fogP, 0.0, 1.0 ) + 0.25 * swell, 0.0, 0.95 );
     // The photo is backlit: its colours pushed toward saturation (or a hue
@@ -245,17 +245,17 @@ void main()
     vec3 lit = mix( behind, glowColour( behind, base * 1.3 + drift, hueP * 0.159 ) * ( 0.4 + 0.8 * luma( behind ) ),
                     0.55 )
                * 1.3;
-    vec3 col = mix( lit, vec3( luma( lit ) ) * 0.5 + 0.25, fog * 0.7 ) * fogTint * 0.7;
+    vec3 col = mix( lit, vec3( luma( lit ) ) * 0.5 + 0.25, fog * 0.7 ) * fog_tint * 0.7;
     // Condensation texture on the fog: tiny droplets.
     col *= 0.9 + 0.1 * noise2( p * 400.0 );
 
     // Drops on three size scales, a jittered grid each; nearest drop wins.
     float mag = 0.12 + 0.2 * clamp( audioSpread, 0.0, 1.0 );
-    float szK = 0.6 + 0.8 * clamp( sizeP, 0.0, 1.0 );
+    float sz_k = 0.6 + 0.8 * clamp( sizeP, 0.0, 1.0 );
     for ( int L = 0; L < 3; ++L )
     {
         float fl = float( L );
-        float cell = ( 0.13 - 0.035 * fl ) * szK;
+        float cell = ( 0.13 - 0.035 * fl ) * sz_k;
         vec2  slide = vec2( 0.0, -0.004 * sceneTime * ( 1.0 + fl ) ); // drops creep slowly
         vec2  g = ( p + slide ) / cell + fl * 7.3;
         vec2  gi = floor( g );
@@ -278,20 +278,21 @@ void main()
                 vec2  cw = ( c - fl * 7.3 ) * cell - slide; // drop centre in screen space
                 vec2  local = ( p - cw );
                 float z = sqrt( max( 1.0 - dl * dl, 0.0 ) ); // drop height (dome)
-                vec2  lensUV = cw * 0.9 + 0.5 + drift - local * ( 1.0 / mag ) * ( 0.6 + 0.6 * z );
-                vec3  ph = imgLod( lensUV, 0.5 );
-                vec3 inDrop = mix( ph, glowColour( ph, lensUV * 1.3, hueP * 0.159 ) * ( 0.4 + 0.9 * luma( ph ) ), 0.55 )
-                              * 1.6;
+                vec2  lens_uv = cw * 0.9 + 0.5 + drift - local * ( 1.0 / mag ) * ( 0.6 + 0.6 * z );
+                vec3  ph = imgLod( lens_uv, 0.5 );
+                vec3  in_drop = mix( ph, glowColour( ph, lens_uv * 1.3, hueP * 0.159 ) * ( 0.4 + 0.9 * luma( ph ) ),
+                                     0.55 )
+                                * 1.6;
                 // Rim: dark refraction ring at the edge, bright highlight top-left.
                 float ring = smoothstep( 0.7, 1.0, dl );
-                inDrop *= 1.0 - 0.75 * ring;
+                in_drop *= 1.0 - 0.75 * ring;
                 vec2  hdir = normalize( vec2( -0.6, 0.7 ) );
                 float hl = smoothstep( 0.3, 0.0, length( d / rr - hdir * 0.5 ) );
-                inDrop += vec3( 1.0 ) * hl * ( 0.35 + 0.9 * hi );
+                in_drop += vec3( 1.0 ) * hl * ( 0.35 + 0.9 * hi );
                 // Caustic: the drop focuses light into a bright crescent at the far side.
-                inDrop += vec3( 1.0, 0.97, 0.9 ) * smoothstep( 0.25, 0.0, length( d / rr + hdir * 0.62 ) ) * 0.25;
+                in_drop += vec3( 1.0, 0.97, 0.9 ) * smoothstep( 0.25, 0.0, length( d / rr + hdir * 0.62 ) ) * 0.25;
                 float aa = px / ( cell * rr ) * 1.5;
-                col = mix( col, inDrop, smoothstep( 1.0 + aa, 1.0 - aa, dl ) );
+                col = mix( col, in_drop, smoothstep( 1.0 + aa, 1.0 - aa, dl ) );
             }
     }
     finish( col );

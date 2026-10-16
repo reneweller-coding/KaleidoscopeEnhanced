@@ -41,35 +41,35 @@ out float vPhaseVelocity;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float nVal = ( nP > 0.0 ) ? nP : 1.0;
+    float n_val = ( nP > 0.0 ) ? nP : 1.0;
     float lns = ( lensP > 0.0 ) ? lensP : 1.0;
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
     // this shader's math assumes a centred [-1,1] domain, so remap it here
     // (otherwise everything lands in one quadrant, off to the side).
-    vec2 gridUV = attrA.xy * 2.0 - 1.0; // [-1,1]
-    vTexCoord = gridUV * 0.5 + 0.5;
+    vec2 grid_uv = attrA.xy * 2.0 - 1.0; // [-1,1]
+    vTexCoord = grid_uv * 0.5 + 0.5;
 
     float t = time * 0.45 * spd + audioAdvance * 0.22;
 
-    // Interface at gridUV.y = 0: positive index region (y > 0), negative index metamaterial (y < 0)
-    float isNegative = ( gridUV.y < 0.0 ) ? -1.0 : 1.0;
-    vPhaseVelocity = isNegative;
+    // Interface at grid_uv.y = 0: positive index region (y > 0), negative index metamaterial (y < 0)
+    float is_negative = ( grid_uv.y < 0.0 ) ? -1.0 : 1.0;
+    vPhaseVelocity = is_negative;
 
     // Backwards phase velocity in negative index medium: k_y flips sign!
-    float kx = gridUV.x * 12.0 * lns;
-    float ky = abs( gridUV.y ) * 12.0 * nVal;
-    float wavePhase = ( isNegative > 0.0 ) ? ( kx + ky - t * 4.0 ) : ( kx - ky - t * 4.0 );
+    float kx = grid_uv.x * 12.0 * lns;
+    float ky = abs( grid_uv.y ) * 12.0 * n_val;
+    float wave_phase = ( is_negative > 0.0 ) ? ( kx + ky - t * 4.0 ) : ( kx - ky - t * 4.0 );
 
     // Negative refraction superlens focusing peak at y = -0.5
-    float superlensFocus = exp( -length( vec2( gridUV.x * 2.0, gridUV.y + 0.5 ) ) * 6.0 );
+    float superlens_focus = exp( -length( vec2( grid_uv.x * 2.0, grid_uv.y + 0.5 ) ) * 6.0 );
 
-    float height = sin( wavePhase ) * 0.35 * ( 1.0 + 0.3 * audioBass ) + superlensFocus * ( 0.6 + audioKick * 0.8 );
-    vec3  pos = vec3( gridUV.x * 4.6, height, gridUV.y * 4.6 );
+    float height = sin( wave_phase ) * 0.35 * ( 1.0 + 0.3 * audioBass ) + superlens_focus * ( 0.6 + audioKick * 0.8 );
+    vec3  pos = vec3( grid_uv.x * 4.6, height, grid_uv.y * 4.6 );
     vWorldPos = pos;
 
-    vNormal = normalize( vec3( -cos( wavePhase ) * 0.4, 1.0, -isNegative * sin( wavePhase ) * 0.4 ) );
+    vNormal = normalize( vec3( -cos( wave_phase ) * 0.4, 1.0, -is_negative * sin( wave_phase ) * 0.4 ) );
 
     // Camera transform: this surface lies in the XZ plane, so pitch it down
     // first (otherwise it is seen edge-on), then push away along +z and negate
@@ -78,9 +78,9 @@ void main()
     // about half the frame with black above (reported).
     vec3 vp = pos;
     vp.y -= 1.0;
-    float camTilt = -0.80;
-    float cosT = cos( camTilt ), sinT = sin( camTilt );
-    vp = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float cam_tilt = -0.80;
+    float cos_t = cos( cam_tilt ), sin_t = sin( cam_tilt );
+    vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
     vp.z += 4.0;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

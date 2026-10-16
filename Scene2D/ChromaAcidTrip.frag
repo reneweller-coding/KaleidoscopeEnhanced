@@ -103,30 +103,30 @@ void main()
     float spiral = a * arms + log( max( r, 0.01 ) ) * 12.0 * fdb - t * 3.0;
 
     // Melting sinusoidal wave contours
-    vec2  meltCoord = uv * 4.0;
-    float wave1 = sin( meltCoord.x + sin( meltCoord.y * 1.5 + t ) * 2.0 * mlt );
-    float wave2 = cos( meltCoord.y + sin( meltCoord.x * 1.5 - t ) * 2.0 * mlt );
-    float wave3 = sin( ( meltCoord.x + meltCoord.y ) * 1.2 + a
+    vec2  melt_coord = uv * 4.0;
+    float wave1 = sin( melt_coord.x + sin( melt_coord.y * 1.5 + t ) * 2.0 * mlt );
+    float wave2 = cos( melt_coord.y + sin( melt_coord.x * 1.5 - t ) * 2.0 * mlt );
+    float wave3 = sin( ( melt_coord.x + melt_coord.y ) * 1.2 + a
                        + 0.2 * ( log( max( r, 0.01 ) ) * 12.0 * fdb - t * 3.0 )
                        + audioBass * 3.0 ); // a*1: integer coeff = no atan seam
 
-    float acidPattern = ( wave1 + wave2 + wave3 ) / 3.0;
+    float acid_pattern = ( wave1 + wave2 + wave3 ) / 3.0;
 
     // Psychedelic contour isolines (topographic acid bands)
-    float contours = sin( acidPattern * 18.0 + spiral + audioPhase * 4.0 );
+    float contours = sin( acid_pattern * 18.0 + spiral + audioPhase * 4.0 );
     float isolines = smoothstep( 0.7, 0.95, abs( contours ) );
 
     // Vibrant rainbow color assignment
-    float colorPhase = acidPattern * 1.5 + r * 0.8 - t * 0.5 + audioChromaHue;
-    vec3  acidCol = acidPalette( colorPhase );
-    acidCol = mix( acidCol, vec3( 1.0 ) - acidCol, isolines * 0.8 );
+    float color_phase = acid_pattern * 1.5 + r * 0.8 - t * 0.5 + audioChromaHue;
+    vec3  acid_col = acidPalette( color_phase );
+    acid_col = mix( acid_col, vec3( 1.0 ) - acid_col, isolines * 0.8 );
 
     // Optical warp distortion for photo sampling
-    vec2 photoWarp = st + vec2( wave1, wave2 ) * 0.04 * mlt * ( 1.0 + audioKick * 0.8 );
-    vec3 photo = img( clamp( photoWarp, 0.0, 1.0 ) );
+    vec2 photo_warp = st + vec2( wave1, wave2 ) * 0.04 * mlt * ( 1.0 + audioKick * 0.8 );
+    vec3 photo = img( clamp( photo_warp, 0.0, 1.0 ) );
 
     // Combine psychedelic visualizer
-    vec3 col = mix( acidCol, photo * 1.4, 0.4 + 0.3 * audioLevel );
+    vec3 col = mix( acid_col, photo * 1.4, 0.4 + 0.3 * audioLevel );
     col += isolines * vec3( 1.0, 0.9, 0.2 ) * ( 0.8 + audioHigh * 1.2 );
 
     // Audio-reactive chromatic solarization flash on kick
@@ -139,8 +139,8 @@ void main()
         col = hueRot( col, hue );
 
     // Vignette
-    vec2  vUV = st * ( 1.0 - st.yx );
-    float vig = vUV.x * vUV.y * 15.0;
+    vec2  v_uv = st * ( 1.0 - st.yx );
+    float vig = v_uv.x * v_uv.y * 15.0;
     col *= clamp( pow( vig, 0.25 ), 0.0, 1.0 );
 
     fragColor = vec4( col, 1.0 );

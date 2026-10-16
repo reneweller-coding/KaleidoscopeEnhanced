@@ -68,8 +68,8 @@ void main()
         float a = smoothstep( 0.35, 0.4, r );
         if ( r > 0.95 )
             discard;
-        vec3 ringCol = imgPalette( 0.9 ) * 1.6 + vec3( 0.3, 0.2, 0.1 );
-        col = ringCol * ( ring * ( 0.6 + 1.2 * audioBass + 2.0 * clamp( audioDrop, 0.0, 1.0 ) ) + halo ) * a;
+        vec3 ring_col = imgPalette( 0.9 ) * 1.6 + vec3( 0.3, 0.2, 0.1 );
+        col = ring_col * ( ring * ( 0.6 + 1.2 * audioBass + 2.0 * clamp( audioDrop, 0.0, 1.0 ) ) + halo ) * a;
         if ( r < 0.38 )
             col = vec3( 0.0 );
     }
@@ -83,7 +83,7 @@ void main()
         col = vColor.rgb * a * ( 1.6 + 0.8 * audioKick );
         col *= clamp( 1.5 - vDepth * 0.06, 0.35, 1.0 );
     }
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

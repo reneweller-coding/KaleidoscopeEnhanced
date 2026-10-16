@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -237,7 +237,7 @@ void main()
     float twist = 0.03 * sceneTime + 0.3 * audioPhase;
     vec2  cs = vec2( cos( a ), sin( a ) );
     vec2  cfw = fwidth( cs );
-    float fwA = length( cfw );
+    float fw_a = length( cfw );
     // Inner lattice at radius 1 (depth z1), outer wall at radius 2.2 (z2).
     float z1 = 0.5 / r;
     float z2 = 1.1 / r;
@@ -248,17 +248,17 @@ void main()
     float v = ( z1 + travel ) / ( pitch * 2.0 );
     vec2  g1 = vec2( u + v, u - v );     // the two diagonal families
     vec2  f1 = abs( fract( g1 ) - 0.5 ); // 0.5 at the girders' centres
-    float pxU = fwA * M / 6.2831853 + fwidth( v ) + 1e-4;
+    float px_u = fw_a * M / 6.2831853 + fwidth( v ) + 1e-4;
     float gw = 0.05 + 0.08 * clamp( girderP, 0.0, 1.0 );
-    float gir = max( smoothstep( 0.5 - gw - pxU, 0.5 - gw + pxU, f1.x ),
-                     smoothstep( 0.5 - gw - pxU, 0.5 - gw + pxU, f1.y ) );
+    float gir = max( smoothstep( 0.5 - gw - px_u, 0.5 - gw + px_u, f1.x ),
+                     smoothstep( 0.5 - gw - px_u, 0.5 - gw + px_u, f1.y ) );
     // Joints where the two families cross.
     vec2  jn = abs( fract( g1 + 0.5 ) - 0.5 );
     float jd = length( jn );
-    float joint = smoothstep( 0.12 + pxU, 0.12 - pxU, jd );
+    float joint = smoothstep( 0.12 + px_u, 0.12 - px_u, jd );
     // Outer tunnel: the photo, moving slower (further away).
     vec2  ouv = vec2( a / 3.14159265, ( z2 + travel * 0.6 ) * 0.25 );
-    float fw = max( fwA / 3.14159265, fwidth( z2 ) * 0.25 ) * 1024.0;
+    float fw = max( fw_a / 3.14159265, fwidth( z2 ) * 0.25 ) * 1024.0;
     vec3  outer = imgLod( ouv, clamp( log2( max( fw, 1.0 ) ), 0.0, 9.0 ) ) * ( 0.5 + 0.8 * clamp( outerP, 0.0, 1.0 ) );
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  lc = mix( vec3( 0.6, 0.8, 1.1 ), vec3( 1.15, 0.85, 0.55 ), mode );
@@ -266,11 +266,11 @@ void main()
                            hueP * 0.159 );
     outer *= exp( -z2 * 0.1 );
     // Girders: dark steel, lit edges.
-    float edgeLit = max( smoothstep( 0.5 - gw - pxU * 3.0, 0.5 - gw, f1.x )
-                             * ( 1.0 - smoothstep( 0.5 - gw, 0.5 - gw + pxU * 3.0, f1.x ) ),
-                         smoothstep( 0.5 - gw - pxU * 3.0, 0.5 - gw, f1.y )
-                             * ( 1.0 - smoothstep( 0.5 - gw, 0.5 - gw + pxU * 3.0, f1.y ) ) );
-    vec3  steel = vec3( 0.08, 0.085, 0.09 ) * lc + lc * edgeLit * 0.35;
+    float edge_lit = max( smoothstep( 0.5 - gw - px_u * 3.0, 0.5 - gw, f1.x )
+                              * ( 1.0 - smoothstep( 0.5 - gw, 0.5 - gw + px_u * 3.0, f1.x ) ),
+                          smoothstep( 0.5 - gw - px_u * 3.0, 0.5 - gw, f1.y )
+                              * ( 1.0 - smoothstep( 0.5 - gw, 0.5 - gw + px_u * 3.0, f1.y ) ) );
+    vec3  steel = vec3( 0.08, 0.085, 0.09 ) * lc + lc * edge_lit * 0.35;
     steel *= exp( -z1 * 0.12 );
     vec3 col = mix( outer, steel, gir );
     // Joint lights, a pulse running along the tunnel.

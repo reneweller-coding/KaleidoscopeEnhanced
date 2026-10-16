@@ -40,16 +40,16 @@ in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vInst;
 
-const float kGround = -22.0;
-const float kTowerH = 60.0;
+const float Ground = -22.0;
+const float TowerH = 60.0;
 
 vec3 towerFoot( int i )
 {
     if ( i == 0 )
-        return vec3( -66.0, kGround, 165.0 );
+        return vec3( -66.0, Ground, 165.0 );
     if ( i == 1 )
-        return vec3( 4.0, kGround, 148.0 );
-    return vec3( 72.0, kGround, 172.0 );
+        return vec3( 4.0, Ground, 148.0 );
+    return vec3( 72.0, Ground, 172.0 );
 }
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
@@ -154,7 +154,7 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
     return lc * max( dot( n, d ), 0.0 ) * att;
 }
 
-const vec3 kSunDir = vec3( 0.75, 0.10, -0.55 ); // the last sun, low, right, behind the camera
+const vec3 SunDir = vec3( 0.75, 0.10, -0.55 ); // the last sun, low, right, behind the camera
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir )
@@ -165,7 +165,7 @@ vec3 renderSky( vec3 dir )
     float az = atan( dir.x, dir.z );
     if ( dir.y < -0.004 )
     {
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.004 );
         float g = fbm2( P.xz * 0.05 );
@@ -185,8 +185,8 @@ vec3 renderSky( vec3 dir )
         col += stars( dir ) * smoothstep( 0.2, 0.6, h );
         // The plant on the horizon: blocky silhouettes.
         float roof = 0.02 + 0.03 * step( 0.5, noise1( az * 14.0 ) ) + 0.015 * noise1( az * 40.0 );
-        float plantMask = 1.0 - smoothstep( roof - 0.004, roof + 0.004, dir.y );
-        col = mix( col, vec3( 0.03, 0.03, 0.04 ), plantMask );
+        float plant_mask = 1.0 - smoothstep( roof - 0.004, roof + 0.004, dir.y );
+        col = mix( col, vec3( 0.03, 0.03, 0.04 ), plant_mask );
         // A few sodium lamps along it.
         float lamp = step( 0.93, hash21( vec2( floor( az * 60.0 ), 1.0 ) ) )
                      * ( 1.0 - smoothstep( 0.004, 0.009, abs( dir.y - roof + 0.006 ) ) );
@@ -197,7 +197,7 @@ vec3 renderSky( vec3 dir )
         // of its height, lit warm from below and orange from the sun's side.
         for ( int i = 0; i < 3; i++ )
         {
-            vec3  top = towerFoot( i ) + vec3( 0.0, kTowerH, 0.0 );
+            vec3  top = towerFoot( i ) + vec3( 0.0, TowerH, 0.0 );
             vec3  td = normalize( top );
             float az0 = atan( td.x, td.z );
             float e0 = asin( td.y );
@@ -206,22 +206,24 @@ vec3 renderSky( vec3 dir )
                 continue;
             float lean = 0.10 * rise * rise + 0.02 * rise;
             float w = 0.045 + 0.12 * rise;
-            float dAz = az - az0 - lean;
-            float column = exp( -pow( dAz / w, 2.0 ) ) * smoothstep( -0.08, 0.10, rise )
+            float d_az = az - az0 - lean;
+            float column = exp( -pow( d_az / w, 2.0 ) ) * smoothstep( -0.08, 0.10, rise )
                            * ( 1.0 - smoothstep( 0.55, 1.3, rise ) );
             // The fbm is the expensive part: only pay it inside the column.
             if ( column < 0.003 )
                 continue;
-            float dens = fbm2( vec2( ( dAz ) * 14.0 + float( i ) * 3.0, dir.y * 9.0 - sceneTime * 0.16 - float( i ) ) );
+            float dens = fbm2(
+                vec2( ( d_az ) * 14.0 + float( i ) * 3.0, dir.y * 9.0 - sceneTime * 0.16 - float( i ) ) );
             float steam = column * smoothstep( 0.62 - 0.30 * swell, 0.85, dens + 0.15 * swell );
             int   band = int( clamp( rise, 0.0, 0.999 ) * 32.0 );
             float sp = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
-            vec3  bandCol = hsv2rgb( vec3( 0.02 + 0.65 * rise, 0.55, 1.0 ) );
-            vec3  steamCol = mix( vec3( 0.85, 0.80, 0.85 ), bandCol, 0.25 + 0.65 * sp ) * ( 0.5 + 0.7 * sp );
-            steamCol *= 0.5 + 0.6 * exp( -rise * 2.0 ); // floodlit from below
-            steamCol += vec3( 1.0, 0.5, 0.2 ) * 0.35 * smoothstep( -0.3, 0.6, dAz ) * ( 1.0 - rise * 0.5 ); // the sun's
-                                                                                                            // side
-            col = mix( col, steamCol, clamp( steam, 0.0, 0.9 ) );
+            vec3  band_col = hsv2rgb( vec3( 0.02 + 0.65 * rise, 0.55, 1.0 ) );
+            vec3  steam_col = mix( vec3( 0.85, 0.80, 0.85 ), band_col, 0.25 + 0.65 * sp ) * ( 0.5 + 0.7 * sp );
+            steam_col *= 0.5 + 0.6 * exp( -rise * 2.0 ); // floodlit from below
+            steam_col += vec3( 1.0, 0.5, 0.2 ) * 0.35 * smoothstep( -0.3, 0.6, d_az ) * ( 1.0 - rise * 0.5 ); // the
+                                                                                                              // sun's
+                                                                                                              // side
+            col = mix( col, steam_col, clamp( steam, 0.0, 0.9 ) );
         }
     }
     return col;
@@ -253,19 +255,19 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
     // The last sun, the evening sky, floodlights from the plant floor.
-    vec3 sunDir = normalize( kSunDir );
-    vec3 col = alb * vec3( 1.0, 0.55, 0.32 ) * max( dot( n, sunDir ), 0.0 ) * 1.1;
+    vec3 sun_dir = normalize( SunDir );
+    vec3 col = alb * vec3( 1.0, 0.55, 0.32 ) * max( dot( n, sun_dir ), 0.0 ) * 1.1;
     col += alb * vec3( 0.28, 0.25, 0.42 ) * ( 0.55 + 0.45 * n.y ) * 0.5;
     col += alb * 0.04;
     int  ti = int( vInst + 0.5 );
     vec3 foot = towerFoot( ti );
-    vec3 floodCol = vec3( 1.0, 0.85, 0.6 ) * ( 1.2 + 2.5 * kick );
-    col += alb * lightAt( vPos, n, foot + vec3( 30.0, 4.0, -40.0 ), floodCol, 55.0 );
-    col += alb * lightAt( vPos, n, foot + vec3( -26.0, 4.0, -36.0 ), floodCol * 0.7, 55.0 );
+    vec3 flood_col = vec3( 1.0, 0.85, 0.6 ) * ( 1.2 + 2.5 * kick );
+    col += alb * lightAt( vPos, n, foot + vec3( 30.0, 4.0, -40.0 ), flood_col, 55.0 );
+    col += alb * lightAt( vPos, n, foot + vec3( -26.0, 4.0, -36.0 ), flood_col * 0.7, 55.0 );
 
     // The glow inside: the rim at the top lit from within with the bass,
     // and the aircraft warning lights, blinking slowly.
@@ -276,13 +278,13 @@ void main()
                    * step( 0.7, fract( atan( vLocal.x, vLocal.z ) / 6.2831853 * 3.0 + 0.5 ) );
     col += vec3( 1.0, 0.1, 0.05 ) * beacon * blink * 1.5;
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.9, 0.5, 0.35 ) * fres * 0.15;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.10 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

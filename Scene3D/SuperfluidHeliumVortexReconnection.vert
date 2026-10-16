@@ -22,13 +22,13 @@ out float vGlow;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vDepth = attrA.w;
     vGlow = attrB.w;
 
     // Stereoscopic 3D camera projection (V3)
-    vec3 vp = worldP;
+    vec3 vp = world_p;
 
     // 3D rotation
     float tilt = 0.55;

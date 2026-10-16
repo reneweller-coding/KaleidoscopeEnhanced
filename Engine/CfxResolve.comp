@@ -38,7 +38,7 @@ uniform float exposure;
 uniform float gammaInv; ///< flame gamma (applied to the brightness term)
 uniform float decay;    ///< how much of the previous frame survives
 
-const float SCALE = 1.0 / 256.0;
+const float Scale = 1.0 / 256.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -48,8 +48,8 @@ void main()
         return;
 
     uint  i = uint( p.y * size.x + p.x ) * 4u;
-    vec3  sum = vec3( acc[i], acc[i + 1u], acc[i + 2u] ) * SCALE;
-    float hits = float( acc[i + 3u] ) * SCALE;
+    vec3  sum = vec3( acc[i], acc[i + 1u], acc[i + 2u] ) * Scale;
+    float hits = float( acc[i + 3u] ) * Scale;
 
     vec3 col;
     if ( mode == 1 )

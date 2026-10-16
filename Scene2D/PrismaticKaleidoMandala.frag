@@ -87,9 +87,9 @@ vec2 kaleidoFold( vec2 p, float sectors )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float sectorAngle = 6.2831853 / sectors;
-    a = mod( a, sectorAngle );
-    a = abs( a - sectorAngle * 0.5 );
+    float sector_angle = 6.2831853 / sectors;
+    a = mod( a, sector_angle );
+    a = abs( a - sector_angle * 0.5 );
     return vec2( cos( a ), sin( a ) ) * r;
 }
 

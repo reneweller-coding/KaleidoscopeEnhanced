@@ -108,50 +108,51 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 cityColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Warm city lights
-    vec3 structColor = imgPalette( 0.2 );                     // Cold metal of the elevator
-    vec3 neonColor = imgPalette( 0.5 );                       // Elevator interior/exterior lights
+    vec3 city_color = imgPalette( 0.8 + audioCentroid * 0.1 ); // Warm city lights
+    vec3 struct_color = imgPalette( 0.2 );                     // Cold metal of the elevator
+    vec3 neon_color = imgPalette( 0.5 );                       // Elevator interior/exterior lights
 
-    float transitSpeed = time * 5.0 * sp + audioAdvance * 10.0 * sp;
+    float transit_speed = time * 5.0 * sp + audioAdvance * 10.0 * sp;
 
     // 1. The Planet Below
     // The planet is a massive sphere taking up the lower portion of the view
     // We approximate it with a large circle, but moving slightly away
-    vec2  planetCenter = vec2( 0.0, -1.5 );
-    float planetRadius = 1.4;
-    float distToPlanet = length( uv - planetCenter );
+    vec2  planet_center = vec2( 0.0, -1.5 );
+    float planet_radius = 1.4;
+    float dist_to_planet = length( uv - planet_center );
 
-    if ( distToPlanet < planetRadius )
+    if ( dist_to_planet < planet_radius )
     {
         // Surface
-        vec2 pUv = ( uv - planetCenter ) * 2.0;
+        vec2 p_uv = ( uv - planet_center ) * 2.0;
 
         // City light grid
         // We project it onto a sphere-like surface
-        float sphereZ = sqrt( max( 0.0, 1.0 - dot( pUv, pUv ) ) );
-        vec3  sphereNorm = vec3( pUv, sphereZ );
+        float sphere_z = sqrt( max( 0.0, 1.0 - dot( p_uv, p_uv ) ) );
+        vec3  sphere_norm = vec3( p_uv, sphere_z );
 
         // Parallax effect as we move up
-        vec3 projP = sphereNorm * 5.0;
-        projP.y -= time * 0.2; // Slow rotation of the planet
+        vec3 proj_p = sphere_norm * 5.0;
+        proj_p.y -= time * 0.2; // Slow rotation of the planet
 
-        float cityDetail = fbm( projP * 10.0 );
-        float grid = step( 0.8, sin( projP.x * 50.0 ) ) * step( 0.8, sin( projP.y * 50.0 ) );
+        float city_detail = fbm( proj_p * 10.0 );
+        float grid = step( 0.8, sin( proj_p.x * 50.0 ) ) * step( 0.8, sin( proj_p.y * 50.0 ) );
 
-        float lights = cityDetail * grid * cp;
+        float lights = city_detail * grid * cp;
 
         // Atmospheric scattering (limb darkening/brightening)
-        float atmos = smoothstep( 0.8, 1.0, length( pUv ) );
+        float atmos = smoothstep( 0.8, 1.0, length( p_uv ) );
 
-        vec3 surfaceCol = cityColor * lights * ( 0.2 + audioSwell * 0.8 );
-        surfaceCol = mix( surfaceCol, vec3( 0.1, 0.2, 0.5 ) * ( 0.5 + audioSwell ), atmos ); // blueish atmosphere edge
+        vec3 surface_col = city_color * lights * ( 0.2 + audioSwell * 0.8 );
+        surface_col = mix( surface_col, vec3( 0.1, 0.2, 0.5 ) * ( 0.5 + audioSwell ), atmos ); // blueish atmosphere
+                                                                                               // edge
 
-        col += surfaceCol;
+        col += surface_col;
     }
     else
     {
         // Atmospheric halo
-        float halo = exp( -( distToPlanet - planetRadius ) * 20.0 );
+        float halo = exp( -( dist_to_planet - planet_radius ) * 20.0 );
         col += vec3( 0.1, 0.2, 0.5 ) * halo * ( 0.5 + audioSwell );
 
         // Deep space background
@@ -172,65 +173,66 @@ void main()
 
     // 2. The Elevator Tether and passing structures
     // The tether is a massive vertical pillar just outside the window (maybe off to the side)
-    float tetherX = -0.68;
-    float tetherWidth = 0.13;
-    float distToTether = abs( uv.x - tetherX );
+    float tether_x = -0.68;
+    float tether_width = 0.13;
+    float dist_to_tether = abs( uv.x - tether_x );
 
-    if ( distToTether < tetherWidth )
+    if ( dist_to_tether < tether_width )
     {
         // We are looking at the central pillar sliding down incredibly fast
-        float slideY = uv.y * 4.0 + transitSpeed; // was *10: structure blurred into a smear
+        float slide_y = uv.y * 4.0 + transit_speed; // was *10: structure blurred into a smear
 
         // Horizontal structural rings passing by
-        float rings = step( 0.9, fract( slideY * 0.5 ) );
-        float panels = fbm( vec3( uv.x * 50.0, slideY, 0.0 ) );
+        float rings = step( 0.9, fract( slide_y * 0.5 ) );
+        float panels = fbm( vec3( uv.x * 50.0, slide_y, 0.0 ) );
 
-        vec3 localTether = mix( max( structColor, vec3( 0.22 ) ) * 0.5, max( structColor, vec3( 0.22 ) ), panels );
+        vec3 local_tether = mix( max( struct_color, vec3( 0.22 ) ) * 0.5, max( struct_color, vec3( 0.22 ) ), panels );
 
         // Cylindrical shading: cos() is symmetric about the tether axis --
         // the old sin() went NEGATIVE on the left half and blacked it out.
-        float cylinderShade = cos( ( uv.x - tetherX ) / tetherWidth * 1.57 );
-        localTether *= ( 0.40 + 0.60 * max( cylinderShade, 0.0 ) );
+        float cylinder_shade = cos( ( uv.x - tether_x ) / tether_width * 1.57 );
+        local_tether *= ( 0.40 + 0.60 * max( cylinder_shade, 0.0 ) );
         // Structural rings (computed before, never drawn).
-        localTether = mix( localTether, max( structColor, vec3( 0.3 ) ) * 1.5, rings * 0.6 );
+        local_tether = mix( local_tether, max( struct_color, vec3( 0.3 ) ) * 1.5, rings * 0.6 );
         // A passing elevator car: a bright pod sliding along the tether.
-        float carPhase = fract( transitSpeed * 0.03 );
-        float car = exp( -pow( ( uv.y - ( carPhase * 2.4 - 1.2 ) ) * 6.0, 2.0 ) );
-        localTether += neonColor * car * ( 1.2 + audioKick * 1.5 );
+        float car_phase = fract( transit_speed * 0.03 );
+        float car = exp( -pow( ( uv.y - ( car_phase * 2.4 - 1.2 ) ) * 6.0, 2.0 ) );
+        local_tether += neon_color * car * ( 1.2 + audioKick * 1.5 );
 
         // Neon tracking lights sliding past
-        float trackLight = step( 0.98, fract( slideY * 0.1 ) ) * step( tetherWidth * 0.8, distToTether );
-        localTether += neonColor * trackLight * ( 2.0 + audioKick * 5.0 );
+        float track_light = step( 0.98, fract( slide_y * 0.1 ) ) * step( tether_width * 0.8, dist_to_tether );
+        local_tether += neon_color * track_light * ( 2.0 + audioKick * 5.0 );
 
         // Add passing support beams overlapping the tether
-        float beam = step( 0.95, fract( slideY * 0.05 ) );
-        localTether = mix( localTether, structColor * 0.2, beam );
+        float beam = step( 0.95, fract( slide_y * 0.05 ) );
+        local_tether = mix( local_tether, struct_color * 0.2, beam );
 
-        col = localTether;
+        col = local_tether;
     }
 
     // 3. Interior of our transit pod (framing the view)
     // Frame at the top and right
-    float frameTop = smoothstep( 0.45, 0.5, uv.y );
-    float frameRight = smoothstep( 0.7, 0.8, uv.x );
-    float frameLeft = smoothstep( -0.8, -0.9, uv.x );
-    float frame = max( frameTop, max( frameRight, frameLeft ) );
+    float frame_top = smoothstep( 0.45, 0.5, uv.y );
+    float frame_right = smoothstep( 0.7, 0.8, uv.x );
+    float frame_left = smoothstep( -0.8, -0.9, uv.x );
+    float frame = max( frame_top, max( frame_right, frame_left ) );
 
     if ( frame > 0.0 )
     {
-        vec3 frameCol = structColor * 0.1; // dark interior
+        vec3 frame_col = struct_color * 0.1; // dark interior
 
         // Reflection of neon lights on the glass
-        float reflection = step( 0.98, fract( ( uv.y * 10.0 + transitSpeed ) * 0.1 ) ) * ( 1.0 - frame );
-        col += neonColor * reflection * 0.5 * ( 1.0 + audioKick );
+        float reflection = step( 0.98, fract( ( uv.y * 10.0 + transit_speed ) * 0.1 ) ) * ( 1.0 - frame );
+        col += neon_color * reflection * 0.5 * ( 1.0 + audioKick );
 
         // Mix frame
-        col = mix( col, frameCol, frame );
+        col = mix( col, frame_col, frame );
     }
 
     // Speed lines (optical illusion of high speed particles/dust outside the window)
-    float speedDust = hash11( dot( floor( vec2( uv.x * 50.0, uv.y * 10.0 + transitSpeed * 2.0 ) ), vec2( 1.2, 3.4 ) ) );
-    if ( speedDust > 0.99 && frame == 0.0 )
+    float speed_dust = hash11(
+        dot( floor( vec2( uv.x * 50.0, uv.y * 10.0 + transit_speed * 2.0 ) ), vec2( 1.2, 3.4 ) ) );
+    if ( speed_dust > 0.99 && frame == 0.0 )
     {
         col += vec3( 1.0 ) * ( 0.5 + audioKick );
     }
@@ -239,7 +241,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

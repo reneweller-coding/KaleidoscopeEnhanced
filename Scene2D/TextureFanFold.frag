@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -253,8 +253,8 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
-    float dirA = 0.4 * sin( 0.013 * sceneTime ) + 0.25 * audioPhase;
-    vec2  d = vec2( cos( dirA ), sin( dirA ) );
+    float dir_a = 0.4 * sin( 0.013 * sceneTime ) + 0.25 * audioPhase;
+    vec2  d = vec2( cos( dir_a ), sin( dir_a ) );
     vec2  t = vec2( -d.y, d.x );
     float u = dot( p, d ), v = dot( p, t );
     float W = 0.03 + 0.05 * clamp( pleatP, 0.0, 1.0 ); // pleat width (flat)
@@ -271,15 +271,15 @@ void main()
     float f = ( u - k * pw ) / pw; // 0..1 over the pair
     float face = step( 0.5, f );   // 0 = face A, 1 = face B
     // The paper coordinate (unfolded): the photo lies on the flat sheet.
-    float flatU = k * 2.0 * W + ( f < 0.5 ? f * 2.0 * W : W + ( f - 0.5 ) * 2.0 * W );
-    vec2  uv = ( d * flatU + t * v ) * 0.6 + 0.5 + vec2( 0.003, 0.002 ) * sceneTime;
+    float flat_u = k * 2.0 * W + ( f < 0.5 ? f * 2.0 * W : W + ( f - 0.5 ) * 2.0 * W );
+    vec2  uv = ( d * flat_u + t * v ) * 0.6 + 0.5 + vec2( 0.003, 0.002 ) * sceneTime;
     vec3  ph = imgK( uv, 0.8 );
     // Lighting: face A tilted toward the light, face B away.
     vec3  lc = mix( vec3( 0.85, 0.92, 1.1 ), vec3( 1.1, 0.95, 0.8 ), mode );
     float lit = face < 0.5 ? 0.75 + 0.35 * sin( ang ) : 0.75 - ( 0.45 + 0.3 * swell ) * sin( ang );
     vec3  col = ph * lit * lc;
     // Paper grain.
-    col *= 1.0 - 0.06 * clamp( paperP, 0.0, 1.0 ) * noise2( vec2( flatU, v ) * 300.0 );
+    col *= 1.0 - 0.06 * clamp( paperP, 0.0, 1.0 ) * noise2( vec2( flat_u, v ) * 300.0 );
     // Ridges (the fold lines) catch light; valleys shade.
     float px = fwidth( f ) * 1.5 + 1e-4;
     float ridge = exp( -min( f, 1.0 - f ) / px );

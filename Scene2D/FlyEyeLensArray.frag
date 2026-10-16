@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -255,9 +255,9 @@ void main()
     float hl = smoothstep( 0.25, 0.05, length( l - vec2( -0.14, 0.14 ) ) );
     col += vec3( 1.0 ) * hl * ( 0.15 + 0.6 * kick );
     // Rims.
-    float hexD = max( abs( l.x ), abs( l.x ) * 0.5 + abs( l.y ) * 0.866 );
+    float hex_d = max( abs( l.x ), abs( l.x ) * 0.5 + abs( l.y ) * 0.866 );
     float px = fwidth( q.x ) * 1.2;
     float rw = 0.02 + 0.05 * clamp( rimP, 0.0, 1.0 );
-    col *= smoothstep( 0.5, 0.5 - rw - px, hexD ) * 0.85 + 0.15;
+    col *= smoothstep( 0.5, 0.5 - rw - px, hex_d ) * 0.85 + 0.15;
     finish( col );
 }

@@ -96,35 +96,35 @@ void main()
 
     float t = time * 0.102 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                   // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Multi-layered billowing smoke fBM
-    vec2  smokeUV = p * 4.0 * smk + vec2( 0.0, -t * 1.2 * drf );
-    float smoke1 = fbm( smokeUV );
-    float smoke2 = fbm( smokeUV * 2.0 + vec2( smoke1, -t * 0.8 ) );
-    float smokeDensity = smoke2 * midTransition;
+    vec2  smoke_uv = p * 4.0 * smk + vec2( 0.0, -t * 1.2 * drf );
+    float smoke1 = fbm( smoke_uv );
+    float smoke2 = fbm( smoke_uv * 2.0 + vec2( smoke1, -t * 0.8 ) );
+    float smoke_density = smoke2 * mid_transition;
 
     // Fluid smoke displacement
-    vec2 smokeDisp = vec2( smoke1 - 0.5, smoke2 - 0.5 ) * 0.05 * midTransition * ( 1.0 + audioSwell * 0.6 );
+    vec2 smoke_disp = vec2( smoke1 - 0.5, smoke2 - 0.5 ) * 0.05 * mid_transition * ( 1.0 + audioSwell * 0.6 );
 
-    vec4 c1 = texture( tex1, fract( uv + smokeDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - smokeDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + smoke_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - smoke_disp ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Smoke occludes rather than adds: fog-blend the scene toward the smoke
     // colour (the old pure add at kick gain ~3x overexposed the frame), then
     // a small scatter add lets kicks light the plumes from within.
-    vec3  smokeGlow = mix( vec3( 0.3, 0.4, 0.6 ), vec3( 0.9, 0.85, 0.8 ), smokeDensity );
-    float dens = clamp( smokeDensity, 0.0, 1.0 );
-    col.rgb = mix( col.rgb, smokeGlow, dens * 0.55 );
-    col.rgb += dens * dens * smokeGlow * ( 0.08 + audioKick * 0.15 );
+    vec3  smoke_glow = mix( vec3( 0.3, 0.4, 0.6 ), vec3( 0.9, 0.85, 0.8 ), smoke_density );
+    float dens = clamp( smoke_density, 0.0, 1.0 );
+    col.rgb = mix( col.rgb, smoke_glow, dens * 0.55 );
+    col.rgb += dens * dens * smoke_glow * ( 0.08 + audioKick * 0.15 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

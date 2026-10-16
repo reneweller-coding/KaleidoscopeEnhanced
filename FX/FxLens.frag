@@ -29,26 +29,26 @@ uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 //	return actualUV + (mag * vecToPoint);
 //}
 
-#define pi 3.141592653589793238462643383279
+#define PI 3.141592653589793238462643383279
 
 float atan2( float y, float x )
 {
     if ( x > 0. )
         return atan( y / x );
     if ( y >= 0. && x < 0. )
-        return atan( y / x ) + pi;
+        return atan( y / x ) + PI;
     if ( y < 0. && x < 0. )
-        return atan( y / x ) - pi;
+        return atan( y / x ) - PI;
     if ( y > 0. && x == 0. )
-        return pi / 2.;
+        return PI / 2.;
     if ( y < 0. && x == 0. )
-        return -pi / 2.;
+        return -PI / 2.;
     if ( y == 0. && x == 0. )
-        return pi / 2.; // undefined usually
-    return pi / 2.;
+        return PI / 2.; // undefined usually
+    return PI / 2.;
 }
 
-vec2 uv_polar( vec2 uv, vec2 center )
+vec2 uvPolar( vec2 uv, vec2 center )
 {
     vec2  c = uv - center;
     float rad = length( c );
@@ -58,7 +58,7 @@ vec2 uv_polar( vec2 uv, vec2 center )
 
 vec2 getModifiedUV( vec2 uv, vec2 position, float radius, float refractivity )
 {
-    vec2  polar = uv_polar( uv, position );
+    vec2  polar = uvPolar( uv, position );
     float cone = clamp( 1. - polar.y / radius, 0., 1. );
     float halfsphere = sqrt( 1. - pow( cone - 1., 2. ) );
     float w = atan2( 1. - cone, halfsphere );
@@ -74,20 +74,20 @@ void main( void )
     const float radius = 0.15;
     float       strength = 115.9;
 
-    float minRes = min( resolution.x, resolution.y );
+    float min_res = min( resolution.x, resolution.y );
     vec2  uv1 = gl_FragCoord.xy / resolution.xy;
 
     float offset = 0.3;
 
     float speed = 0.4;
-    float orbA = speed * time + 0.20 * audioAdvance;
-    vec2  cst = vec2( cos( orbA ), sin( orbA ) );
+    float orb_a = speed * time + 0.20 * audioAdvance;
+    vec2  cst = vec2( cos( orb_a ), sin( orb_a ) );
     mat2  rot = mat2( cst.x, -cst.y, cst.y, cst.x );
 
     vec2 pos1 = vec2( 0.0, offset );
     pos1 = rot * pos1;
     pos1 += vec2( 0.5, 0.5 );
-    vec2 modifiedUV1 = getModifiedUV(
+    vec2 modified_uv1 = getModifiedUV(
         uv1,
         pos1,
         radius,
@@ -97,7 +97,7 @@ void main( void )
     pos2 = rot * pos2;
     pos2 += vec2( 0.5, 0.5 );
 
-    vec2 modifiedUV2 = getModifiedUV(
+    vec2 modified_uv2 = getModifiedUV(
         uv1,
         pos2,
         radius,
@@ -108,7 +108,7 @@ void main( void )
     pos3 = rot * pos3;
     pos3 += vec2( 0.5, 0.5 );
 
-    vec2 modifiedUV3 = getModifiedUV(
+    vec2 modified_uv3 = getModifiedUV(
         uv1,
         pos3,
         radius,
@@ -118,13 +118,13 @@ void main( void )
     pos4 = rot * pos4;
     pos4 += vec2( 0.5, 0.5 );
 
-    vec2 modifiedUV4 = getModifiedUV(
+    vec2 modified_uv4 = getModifiedUV(
         uv1,
         pos4,
         radius,
         strength );
 
-    vec2 uv = 0.25 * ( modifiedUV1 + modifiedUV2 + modifiedUV3 + modifiedUV4 );
+    vec2 uv = 0.25 * ( modified_uv1 + modified_uv2 + modified_uv3 + modified_uv4 );
 
     fragColor = interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv );
 }

@@ -104,9 +104,9 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     vec3 col = vec3( 0.0 );
-    vec3 magmaColor = imgPalette( 0.8 + audioCentroid * 0.1 );
-    vec3 crustColor = vec3( 0.05, 0.02, 0.01 ); // Dark solidified rock
-    vec3 starColor = imgPalette( 0.2 );         // Usually white/blue-ish for high heat
+    vec3 magma_color = imgPalette( 0.8 + audioCentroid * 0.1 );
+    vec3 crust_color = vec3( 0.05, 0.02, 0.01 ); // Dark solidified rock
+    vec3 star_color = imgPalette( 0.2 );         // Usually white/blue-ish for high heat
 
     // Horizon line
     float horizon = 0.0 + sin( time * 0.1 ) * 0.05;
@@ -114,87 +114,87 @@ void main()
     if ( uv.y < horizon )
     {
         // Lava ocean surface (pseudo 3D plane projection)
-        float dPlane = 0.2 / abs( uv.y - horizon );
-        vec2  planeUv = vec2( uv.x * dPlane, dPlane );
+        float d_plane = 0.2 / abs( uv.y - horizon );
+        vec2  plane_uv = vec2( uv.x * d_plane, d_plane );
 
         // Panning across the ocean
-        planeUv.y -= time * 0.3 + audioAdvance;
-        planeUv.x += sin( time * 0.1 ) * 0.5;
+        plane_uv.y -= time * 0.3 + audioAdvance;
+        plane_uv.x += sin( time * 0.1 ) * 0.5;
 
         // Lava texture
         // Low frequency for massive convection cells
-        float cells = fbm( vec3( planeUv * 1.5 * lp, time * 0.1 ) );
+        float cells = fbm( vec3( plane_uv * 1.5 * lp, time * 0.1 ) );
 
         // High frequency for flowing magma
-        float flow = fbm( vec3( planeUv * 10.0, time * 0.5 + audioAdvance * 2.0 ) );
+        float flow = fbm( vec3( plane_uv * 10.0, time * 0.5 + audioAdvance * 2.0 ) );
 
         // We create crust where it's cooler
-        float crustMask = smoothstep( 0.4, 0.6, cells + flow * 0.2 );
+        float crust_mask = smoothstep( 0.4, 0.6, cells + flow * 0.2 );
 
         // The exposed magma is incredibly bright
         float heat = smoothstep( 0.6, 0.3, cells );
 
         // Eruptionen: runde glimmende Herde statt der einfarbigen
         // Riesenquadrate (ganze 0.5er-Zellen blinkten mit 5 Hz).
-        vec2  eCell = floor( planeUv * 4.0 );
-        vec2  eFrac = fract( planeUv * 4.0 ) - 0.5;
-        float eh = fract( sin( dot( eCell, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
-        float eSel = step( 0.8, fract( eh + floor( time * 4.00 ) * 0.31 ) );
-        float eShape = exp( -dot( eFrac, eFrac ) * 9.0 );
-        float ePulse = 0.5 + 0.5 * sin( time * 2.5 + eh * 40.0 );
-        float eruptionFlash = eSel * eShape * ePulse * ( 0.6 + audioKick * 2.0 ) * lp;
+        vec2  e_cell = floor( plane_uv * 4.0 );
+        vec2  e_frac = fract( plane_uv * 4.0 ) - 0.5;
+        float eh = fract( sin( dot( e_cell, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
+        float e_sel = step( 0.8, fract( eh + floor( time * 4.00 ) * 0.31 ) );
+        float e_shape = exp( -dot( e_frac, e_frac ) * 9.0 );
+        float e_pulse = 0.5 + 0.5 * sin( time * 2.5 + eh * 40.0 );
+        float eruption_flash = e_sel * e_shape * e_pulse * ( 0.6 + audioKick * 2.0 ) * lp;
 
-        vec3 surfaceCol = mix( magmaColor * ( heat + eruptionFlash ) * 2.0, crustColor, crustMask );
+        vec3 surface_col = mix( magma_color * ( heat + eruption_flash ) * 2.0, crust_color, crust_mask );
 
         // Distance fade/atmospheric haze (heat shimmer)
-        float haze = exp( -dPlane * 0.2 );
-        col = surfaceCol * haze * ( 0.5 + audioSwell * 0.5 );
+        float haze = exp( -d_plane * 0.2 );
+        col = surface_col * haze * ( 0.5 + audioSwell * 0.5 );
 
         // Reflection of the massive star on the magma
-        float starReflection = exp( -abs( uv.x ) * 10.0 ) * exp( -dPlane * 0.5 );
-        col += starColor * starReflection * sp * ( 1.0 + audioSwell );
+        float star_reflection = exp( -abs( uv.x ) * 10.0 ) * exp( -d_plane * 0.5 );
+        col += star_color * star_reflection * sp * ( 1.0 + audioSwell );
     }
     else
     {
         // Sky / The close massive star
         // The star is huge, taking up most of the sky
-        vec2  starPos = vec2( 0.0, horizon + 0.3 );
-        float dStar = length( uv - starPos );
-        float starRad = 0.6;
+        vec2  star_pos = vec2( 0.0, horizon + 0.3 );
+        float d_star = length( uv - star_pos );
+        float star_rad = 0.6;
 
-        if ( dStar < starRad )
+        if ( d_star < star_rad )
         {
             // Star surface
-            vec2  sUv = ( uv - starPos ) * 5.0;
-            float surface = fbm( vec3( sUv, time * 0.5 + audioAdvance ) );
+            vec2  s_uv = ( uv - star_pos ) * 5.0;
+            float surface = fbm( vec3( s_uv, time * 0.5 + audioAdvance ) );
 
-            float core = smoothstep( starRad, 0.0, dStar );
-            col += starColor * ( 0.8 + surface * 0.5 ) * core * sp * ( 1.0 + audioSwell );
+            float core = smoothstep( star_rad, 0.0, d_star );
+            col += star_color * ( 0.8 + surface * 0.5 ) * core * sp * ( 1.0 + audioSwell );
         }
         else
         {
             // Corona and flares
-            float corona = exp( -( dStar - starRad ) * 10.0 );
+            float corona = exp( -( d_star - star_rad ) * 10.0 );
 
             // Solar flares reaching out
-            float angle = atan( uv.y - starPos.y, uv.x - starPos.x );
-            float flares = fbm( vec3( angle * 10.0, dStar * 5.0, time * 2.0 ) );
-            flares = smoothstep( 0.6, 0.9, flares ) * exp( -( dStar - starRad ) * 5.0 );
+            float angle = atan( uv.y - star_pos.y, uv.x - star_pos.x );
+            float flares = fbm( vec3( angle * 10.0, d_star * 5.0, time * 2.0 ) );
+            flares = smoothstep( 0.6, 0.9, flares ) * exp( -( d_star - star_rad ) * 5.0 );
 
-            col += starColor * corona * sp * ( 0.5 + audioSwell );
-            col += starColor * flares * sp * ( 1.0 + audioKick * 3.0 );
+            col += star_color * corona * sp * ( 0.5 + audioSwell );
+            col += star_color * flares * sp * ( 1.0 + audioKick * 3.0 );
         }
 
         // Dense, burning atmosphere
         float atmos = exp( -( uv.y - horizon ) * 5.0 );
-        col += magmaColor * atmos * 0.5 * ( 1.0 + audioSwell );
+        col += magma_color * atmos * 0.5 * ( 1.0 + audioSwell );
     }
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -19,7 +19,7 @@ void main()
     float glow = exp( -vSide * vSide * 3.0 );
     vec3  col = vCol * glow;
 
-    vec3 _catTone = col * 0.8;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = col * 0.8;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

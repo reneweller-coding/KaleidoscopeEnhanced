@@ -77,25 +77,25 @@ vec3 cellularNoise( vec2 p, float t )
 {
     vec2  ip = floor( p );
     vec2  fp = fract( p );
-    float minDist = 1e4;
-    vec2  minPt = vec2( 0.0 );
+    float min_dist = 1e4;
+    vec2  min_pt = vec2( 0.0 );
 
     for ( int y = -1; y <= 1; y++ )
     {
         for ( int x = -1; x <= 1; x++ )
         {
             vec2  neighbor = vec2( float( x ), float( y ) );
-            vec2  randPt = sin( ip + neighbor + vec2( t * 0.3, t * 0.4 ) ) * 0.4 + 0.5;
-            vec2  diff = neighbor + randPt - fp;
+            vec2  rand_pt = sin( ip + neighbor + vec2( t * 0.3, t * 0.4 ) ) * 0.4 + 0.5;
+            vec2  diff = neighbor + rand_pt - fp;
             float d = dot( diff, diff );
-            if ( d < minDist )
+            if ( d < min_dist )
             {
-                minDist = d;
-                minPt = neighbor + randPt;
+                min_dist = d;
+                min_pt = neighbor + rand_pt;
             }
         }
     }
-    return vec3( sqrt( minDist ), minPt );
+    return vec3( sqrt( min_dist ), min_pt );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -115,73 +115,73 @@ void main()
     // Scale 0: Cosmic Galaxy / Nebula
     // Scale 1: Biological Cell / Organelle
     // Scale 2: Quantum Foam / Crystal Lattice
-    float logScale = mod( t * 0.5, 3.0 );
-    float scaleFrac = fract( logScale );
-    int   currentScale = int( floor( logScale ) );
+    float log_scale = mod( t * 0.5, 3.0 );
+    float scale_frac = fract( log_scale );
+    int   current_scale = int( floor( log_scale ) );
 
-    vec3  colAcc = vec3( 0.0 );
-    float weightAcc = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float weight_acc = 0.0;
 
     // Hold the cytoplasm back to a fixed dark base. Every scale's colour is
     // mix(photo, imgPalette) -- with a bright photo that base alone already sat
     // near 1.0 and the glowing membranes had nowhere left to go, which flattened
     // the whole dive to a milky wash.
-    float expGain = clamp( 0.26 / max( 0.05, photoLevel() ), 0.26, 2.4 );
+    float exp_gain = clamp( 0.26 / max( 0.05, photoLevel() ), 0.26, 2.4 );
 
     for ( int s = 0; s < 3; s++ )
     {
         float sf = float( s );
-        float relScale = mod( sf - logScale + 3.0, 3.0 );
-        float zoomFactor = exp( relScale * 2.2 );
+        float rel_scale = mod( sf - log_scale + 3.0, 3.0 );
+        float zoom_factor = exp( rel_scale * 2.2 );
 
         // Blending weight between scales
-        float w = smoothstep( 0.0, 0.5, relScale ) * smoothstep( 3.0, 2.0, relScale );
+        float w = smoothstep( 0.0, 0.5, rel_scale ) * smoothstep( 3.0, 2.0, rel_scale );
         if ( w <= 0.001 )
             continue;
 
-        vec2 pScale = uv * zoomFactor;
+        vec2 p_scale = uv * zoom_factor;
 
         // Swirling rotation per scale
-        float rotA = t * 0.2 * ( s % 2 == 0 ? 1.0 : -1.0 ) + length( pScale ) * 0.1;
-        float cs = cos( rotA ), sn = sin( rotA );
-        pScale = mat2( cs, -sn, sn, cs ) * pScale;
+        float rot_a = t * 0.2 * ( s % 2 == 0 ? 1.0 : -1.0 ) + length( p_scale ) * 0.1;
+        float cs = cos( rot_a ), sn = sin( rot_a );
+        p_scale = mat2( cs, -sn, sn, cs ) * p_scale;
 
         // Cellular membranes & organelle structure
         // Brightness drives the organelle lattice frequency (finer ripple),
         // sub-bass pushes the glowing membrane shell outward so the cells
         // visibly inflate and relax -- both are pure shape terms, so neither
         // can remap the accumulated swirl phase.
-        vec3  cellInfo = cellularNoise( pScale * ( 1.5 + 0.6 * audioCentroid ), t + sf );
-        float dMemb = cellInfo.x;
-        float membGlow = exp( -abs( dMemb - 0.45 * ( 1.0 + 0.3 * audioSubBass ) ) * 12.0 * memb ) * glw;
+        vec3  cell_info = cellularNoise( p_scale * ( 1.5 + 0.6 * audioCentroid ), t + sf );
+        float d_memb = cell_info.x;
+        float memb_glow = exp( -abs( d_memb - 0.45 * ( 1.0 + 0.3 * audioSubBass ) ) * 12.0 * memb ) * glw;
 
         // Sample texture on cellular coordinate
-        vec2 sampleUV = fract( pScale * 0.2 + cellInfo.yz * 0.1 + 0.5 );
-        vec3 texCol = img( sampleUV );
-        vec3 palCol = imgPalette( sf * 0.33 + dMemb * 0.3 );
+        vec2 sample_uv = fract( p_scale * 0.2 + cell_info.yz * 0.1 + 0.5 );
+        vec3 tex_col = img( sample_uv );
+        vec3 pal_col = imgPalette( sf * 0.33 + d_memb * 0.3 );
 
-        vec3 scaleCol = mix( texCol, palCol, 0.5 ) * expGain;
+        vec3 scale_col = mix( tex_col, pal_col, 0.5 ) * exp_gain;
 
         // Add glowing membrane walls & nucleus. The tint constants exceed 1.0
         // per channel, so the TINTED vectors carry the caps -- bounding only
         // the scalar glow left vec3(1.2,1.4,1.8) * it running past white. The
         // nucleus rides the same exposure gain as the base, since imgPalette()
         // is a photo sample too.
-        float nucleusGlow = exp( -length( pScale ) * 3.5 ) * ( 1.0 + 2.0 * audioKick );
-        scaleCol += min( vec3( 1.2, 1.4, 1.8 ) * membGlow * ( 0.8 + 1.5 * audioKick ), vec3( 0.85 ) );
-        scaleCol += min( imgPalette( 0.85 ) * expGain * nucleusGlow, vec3( 0.70 ) );
+        float nucleus_glow = exp( -length( p_scale ) * 3.5 ) * ( 1.0 + 2.0 * audioKick );
+        scale_col += min( vec3( 1.2, 1.4, 1.8 ) * memb_glow * ( 0.8 + 1.5 * audioKick ), vec3( 0.85 ) );
+        scale_col += min( imgPalette( 0.85 ) * exp_gain * nucleus_glow, vec3( 0.70 ) );
 
-        colAcc += scaleCol * w;
-        weightAcc += w;
+        col_acc += scale_col * w;
+        weight_acc += w;
     }
 
-    vec3 finalCol = colAcc / max( 0.001, weightAcc );
+    vec3 final_col = col_acc / max( 0.001, weight_acc );
 
     // Respiration pulse
-    finalCol *= ( 0.85 + 0.15 * sin( audioSwell * 3.0 ) );
+    final_col *= ( 0.85 + 0.15 * sin( audioSwell * 3.0 ) );
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.28 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.28 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

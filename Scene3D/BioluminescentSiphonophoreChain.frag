@@ -78,13 +78,13 @@ void main()
     float glow = exp( -r2 * 3.5 );
 
     // Photo texture mapping from world coords
-    vec2 photoUV = fract( vWorldPos.xy * 0.25 + 0.5 );
-    vec3 photo = img( photoUV );
+    vec2 photo_uv = fract( vWorldPos.xy * 0.25 + 0.5 );
+    vec3 photo = img( photo_uv );
 
     // Bioluminescent siphonophore cyan & seafoam green palette
-    vec3 bioCyan = vec3( 0.1, 0.9, 1.0 );
-    vec3 bioGreen = vec3( 0.1, 1.0, 0.6 );
-    vec3 chainColor = mix( bioCyan, bioGreen, sin( vChainPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
+    vec3 bio_cyan = vec3( 0.1, 0.9, 1.0 );
+    vec3 bio_green = vec3( 0.1, 1.0, 0.6 );
+    vec3 chain_color = mix( bio_cyan, bio_green, sin( vChainPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
 
     vec3 col;
     if ( vNormal.z < 0.0 )
@@ -98,13 +98,13 @@ void main()
     else
     {
         // Action potential pulse wave racing along the chain
-        float actionPotential = pow( abs( sin( vChainPhase * 25.0 - time * 6.0 ) ), 8.0 );
+        float action_potential = pow( abs( sin( vChainPhase * 25.0 - time * 6.0 ) ), 8.0 );
 
-        col = mix( photo, chainColor, 0.6 ) * glow;
+        col = mix( photo, chain_color, 0.6 ) * glow;
         // Capped: the bloom is fifteen colonies now, and an uncapped pulse on a
         // loud beat would blow every one of them out at once.
         col += vec3( 1.0, 0.98, 0.9 ) * glow
-               * min( actionPotential * ( 2.0 + audioKick * 3.0 ), 2.4 );
+               * min( action_potential * ( 2.0 + audioKick * 3.0 ), 2.4 );
     }
 
     if ( audioChromaHue != 0.0 )
@@ -114,11 +114,11 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col * 2.8 ) * 0.55;
+    vec3 cat_tone = ( col * 2.8 ) * 0.55;
     // Ceiling just under the knee's clipping point (1.47 in -> 0.97 out): the
     // action potential now races along fifteen colonies spread over the whole
     // frame, so its hot core must stay a bright flash and not a white hole.
-    _catTone = min( _catTone, vec3( 1.40 ) );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, glow );
+    cat_tone = min( cat_tone, vec3( 1.40 ) );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, glow );
 }

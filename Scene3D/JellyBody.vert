@@ -51,13 +51,13 @@ float modes( vec3 d, float th, float ph )
     float s = 0.0;
 
     // KICK: l=2 squash (Y20) + a tumbling l=2 partner, slow fat wobble.
-    float ringK = cos( time * 9.0 ) * 0.65 + cos( time * 6.2 + 1.3 ) * 0.35;
-    s += audioKick * 0.16 * ringK * ( 3.0 * z * z - 1.0 ) * 0.5;
+    float ring_k = cos( time * 9.0 ) * 0.65 + cos( time * 6.2 + 1.3 ) * 0.35;
+    s += audioKick * 0.16 * ring_k * ( 3.0 * z * z - 1.0 ) * 0.5;
     s += audioKick * 0.09 * cos( time * 7.4 + 0.7 ) * ( x * x - y * y );
 
     // SNARE: l=3 flex, faster ring.
-    float ringS = cos( time * 16.0 + sceneSeed * 6.28 );
-    s += audioSnare * 0.11 * ringS * cos( 3.0 * th ) * sp * sp * sp;
+    float ring_s = cos( time * 16.0 + sceneSeed * 6.28 );
+    s += audioSnare * 0.11 * ring_s * cos( 3.0 * th ) * sp * sp * sp;
     s += audioSnare * 0.07 * cos( time * 19.0 + 2.1 ) * ( 2.5 * z * z - 1.5 ) * z;
 
     // HAT: fine shimmer, high order, quick ring.

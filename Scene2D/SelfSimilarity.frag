@@ -41,7 +41,7 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform int   sidesP; ///< kaleido fold (0/1 off; 2..8)
 uniform float zoomP;  ///< matrix zoom (0 -> 1.0; 0.7..1.6)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -75,8 +75,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -93,7 +93,7 @@ float ssm( vec2 h )
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;
-    float zoomV = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
+    float zoom_v = ( zoomP <= 0.01 ) ? 1.0 : zoomP;
 
     // Matrix coordinates: either the flat scrolling plot or a kaleido fold.
     vec2 h;
@@ -101,11 +101,11 @@ void main()
     {
         vec2 cp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         cp = rot( time * 0.012 + audioPhase * 0.04 ) * cp;
-        h = kaleido( cp, float( sidesP ) ) * 0.75 * zoomV;
+        h = kaleido( cp, float( sidesP ) ) * 0.75 * zoom_v;
     }
     else
     {
-        h = ( uv - 0.5 ) * zoomV + 0.5;
+        h = ( uv - 0.5 ) * zoom_v + 0.5;
     }
 
     // s: similarity of moment h.x with moment h.y.
@@ -113,12 +113,12 @@ void main()
 
     // Multi-scale accent: a coarser sample adds the big section blocks on
     // top of the fine repetition stripes.
-    float sBig = ssm( floor( h * 32.0 ) / 32.0 + 1.0 / 64.0 );
-    float v = s * 0.75 + sBig * 0.45;
+    float s_big = ssm( floor( h * 32.0 ) / 32.0 + 1.0 / 64.0 );
+    float v = s * 0.75 + s_big * 0.45;
 
     // Diagonal "now" beam: cells comparing a moment with itself.
-    float dDiag = abs( fract( h.x - h.y + 0.5 ) - 0.5 ); // 0 on the diagonal
-    float diag = exp( -dDiag * 70.0 ) * ( 0.35 + 0.8 * audioBeat );
+    float d_diag = abs( fract( h.x - h.y + 0.5 ) - 0.5 ); // 0 on the diagonal
+    float diag = exp( -d_diag * 70.0 ) * ( 0.35 + 0.8 * audioBeat );
 
     // Stain the structure with the image; keep dissimilar cells near-black.
     // Bounded hue nudge.  audioChromaHue * 0.6 is a 0..3.8 rad sweep, which

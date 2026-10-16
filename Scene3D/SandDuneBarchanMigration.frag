@@ -27,7 +27,7 @@ out vec4 fragColor; ///< The pixel's colour (output).
  *                     integrate to a brighter frame
  *   audioMode      -> SHADOW TEMPERATURE only: minor harmony cools the shaded
  *                     side of each dune toward blue dusk, major warms it.
- *                     The lit sandGold is deliberately untouched -- the dunes
+ *                     The lit sand_gold is deliberately untouched -- the dunes
  *                     must stay sand-coloured
  */
 
@@ -89,34 +89,34 @@ void main()
     // in minor and warming in major.  The two shadow ends are luminance-
     // matched to the original (0.233), so this is temperature, not exposure.
     float mmaj = clamp( audioMode, 0.0, 1.0 );
-    vec3  sandGold = vec3( 0.95, 0.7, 0.35 );
-    vec3  shadowSand = mix( vec3( 0.16, 0.20, 0.34 ), vec3( 0.42, 0.24, 0.10 ), mmaj );
+    vec3  sand_gold = vec3( 0.95, 0.7, 0.35 );
+    vec3  shadow_sand = mix( vec3( 0.16, 0.20, 0.34 ), vec3( 0.42, 0.24, 0.10 ), mmaj );
 
     // SHARPNESS sets the glint's lobe: dull/dark material -> a broad low
     // sheen, bright harsh material -> a narrow hard glitter on the crests.
     // The gain falls with the lobe width so the broad end does not integrate
     // to a brighter frame than the original exponent-16 highlight did.
     float shp = clamp( audioSharpness, 0.0, 1.0 );
-    float specExp = mix( 7.0, 40.0, shp );
-    float specAmp = 0.55 + 0.60 * shp;
+    float spec_exp = mix( 7.0, 40.0, shp );
+    float spec_amp = 0.55 + 0.60 * shp;
 
-    vec3  lightDir = normalize( vec3( 0.8, 0.5, -0.4 ) );
-    float diff = max( dot( vNormal, lightDir ), 0.0 );
-    float spec = pow( max( dot( reflect( -lightDir, vNormal ), vec3( 0.0, 1.0, 0.0 ) ), 0.0 ), specExp );
+    vec3  light_dir = normalize( vec3( 0.8, 0.5, -0.4 ) );
+    float diff = max( dot( vNormal, light_dir ), 0.0 );
+    float spec = pow( max( dot( reflect( -light_dir, vNormal ), vec3( 0.0, 1.0, 0.0 ) ), 0.0 ), spec_exp );
 
-    vec3 sandCol = mix( shadowSand, sandGold, diff );
-    vec3 col = mix( photo, sandCol, 0.55 );
+    vec3 sand_col = mix( shadow_sand, sand_gold, diff );
+    vec3 col = mix( photo, sand_col, 0.55 );
     col = col * ( 0.35 + 0.65 * diff )
-          + spec * vec3( 1.0, 0.95, 0.8 ) * ( 0.5 + audioKick * 0.6 ) * specAmp;
+          + spec * vec3( 1.0, 0.95, 0.8 ) * ( 0.5 + audioKick * 0.6 ) * spec_amp;
 
     // AERIAL PERSPECTIVE.  The field now runs all the way to the horizon, and
     // without haze the far rows read as one flat sheet of gold with the
     // sampling grain crawling through it.  The haze air is deliberately DARK
     // (a dusk desert, not a white-out) and follows the same mode temperature
     // as the shadows, so the distance recedes instead of glowing.
-    vec3  duskAir = mix( vec3( 0.10, 0.10, 0.15 ), vec3( 0.17, 0.12, 0.07 ), mmaj );
+    vec3  dusk_air = mix( vec3( 0.10, 0.10, 0.15 ), vec3( 0.17, 0.12, 0.07 ), mmaj );
     float aer = clamp( vWorldPos.z / 34.0, 0.0, 1.0 );
-    col = mix( col, duskAir * ( 0.85 + 0.4 * audioSwell ), aer * 0.72 );
+    col = mix( col, dusk_air * ( 0.85 + 0.4 * audioSwell ), aer * 0.72 );
 
     // NO global chromaHue rotation: dunes must stay SAND-coloured — the
     // musical key only drifts the photo blend, not the identity gold.

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -242,11 +242,11 @@ void main()
     // Air gap: the minimum over several spherical glasses resting on the flat.
     float curv = 3.0 + 6.0 * clamp( audioSpread, 0.0, 1.0 );
     float gap = 1e3;
-    float nC = 2.0 + 3.0 * clamp( contactP, 0.0, 1.0 );
+    float n_c = 2.0 + 3.0 * clamp( contactP, 0.0, 1.0 );
     for ( int i = 0; i < 5; ++i )
     {
         float fi = float( i );
-        float on = step( fi, nC - 0.5 );
+        float on = step( fi, n_c - 0.5 );
         if ( on < 0.5 )
             break;
         vec2  c = vec2( 0.8 * sin( T * ( 0.6 + 0.2 * fi ) + fi * 2.1 ),

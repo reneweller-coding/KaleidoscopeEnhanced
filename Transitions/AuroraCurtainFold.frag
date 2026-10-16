@@ -62,41 +62,41 @@ void main()
 
     float t = time * 0.1248 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Auroral curtain folds across the frame
-    float curtainFold = sin( p.x * 6.0 * crt + t * 2.0 ) * 0.15 + sin( p.x * 14.0 * crt - t * 3.0 ) * 0.05;
-    float curtainY = p.y - curtainFold;
+    float curtain_fold = sin( p.x * 6.0 * crt + t * 2.0 ) * 0.15 + sin( p.x * 14.0 * crt - t * 3.0 ) * 0.05;
+    float curtain_y = p.y - curtain_fold;
 
     // Vertical auroral rays
     float rays = pow( sin( p.x * 40.0 * ray + t * 4.0 ) * 0.5 + 0.5, 4.0 );
 
     // Sweep front
-    float sweepFront = mix( -1.2, 1.2, tProg );
-    float distToFront = p.x - sweepFront;
+    float sweep_front = mix( -1.2, 1.2, t_prog );
+    float dist_to_front = p.x - sweep_front;
 
     // Atmospheric refraction displacement
-    vec2 auroraDisp = vec2( curtainFold, rays ) * 0.03 * midTransition * ( 1.0 + audioSwell * 0.6 );
+    vec2 aurora_disp = vec2( curtain_fold, rays ) * 0.03 * mid_transition * ( 1.0 + audioSwell * 0.6 );
 
-    vec4 c1 = texture( tex1, fract( uv + auroraDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - auroraDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + aurora_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - aurora_disp ) );
 
-    float wipeMask = smoothstep( -0.05, 0.05, distToFront );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.05, 0.05, dist_to_front );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Emerald oxygen (557.7 nm) & violet nitrogen (427.8 nm) emission
     vec3 emerald = vec3( 0.15, 0.95, 0.45 );
     vec3 violet = vec3( 0.7, 0.2, 1.0 );
-    vec3 auroraCol = mix( emerald, violet, clamp( curtainY * 2.0 + 0.5, 0.0, 1.0 ) );
+    vec3 aurora_col = mix( emerald, violet, clamp( curtain_y * 2.0 + 0.5, 0.0, 1.0 ) );
 
-    float auroraGlow = exp( -abs( distToFront ) * 12.0 ) * ( 0.6 + 0.4 * rays ) * midTransition;
-    col.rgb += auroraGlow * auroraCol * ( 1.5 + audioKick * 1.0 );
+    float aurora_glow = exp( -abs( dist_to_front ) * 12.0 ) * ( 0.6 + 0.4 * rays ) * mid_transition;
+    col.rgb += aurora_glow * aurora_col * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

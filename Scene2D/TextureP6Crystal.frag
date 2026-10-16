@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -271,10 +271,10 @@ void main()
     col += lc * spec * 0.35;
     // Facet edges: wedge borders and the hexagon rim.
     float px = fwidth( r ) * 1.5 + 1e-4;
-    float edgeW = min( la, sec - la ) * r;
-    float hexD = max( abs( h.x ), abs( h.x ) * 0.5 + abs( h.y ) * 0.866 ); // pointy-top cell, inradius 0.5
+    float edge_w = min( la, sec - la ) * r;
+    float hex_d = max( abs( h.x ), abs( h.x ) * 0.5 + abs( h.y ) * 0.866 ); // pointy-top cell, inradius 0.5
     vec3  gc = glowColour( imgLod( win, 5.0 ), cid * 0.1, hueP * 0.159 );
-    float edge = exp( -edgeW / px ) * smoothstep( 0.05, 0.15, r ) + exp( -max( 0.5 - hexD, 0.0 ) / px );
+    float edge = exp( -edge_w / px ) * smoothstep( 0.05, 0.15, r ) + exp( -max( 0.5 - hex_d, 0.0 ) / px );
     col += mix( gc, vec3( 1.0 ), 0.5 ) * edge * ( 0.2 + 0.9 * kick );
     // The jewel at the centre: a small refracting dome.
     float jr = 0.1;

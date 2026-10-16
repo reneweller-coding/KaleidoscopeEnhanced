@@ -41,8 +41,8 @@ vec3 img( vec2 uv )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  lightDir = normalize( vec3( 0.0, 0.0, 1.0 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
+    vec3  light_dir = normalize( vec3( 0.0, 0.0, 1.0 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
     float fresnel = pow( 1.0 - abs( dot( vNormal, vec3( 0.0, 0.0, 1.0 ) ) ), 3.0 );
 
     vec3 photo = img( vUV );

@@ -76,7 +76,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float grainSize = 0.03 + 0.03 * clamp( grainP, 0.0, 1.0 );
+    float grain_size = 0.03 + 0.03 * clamp( grainP, 0.0, 1.0 );
     float spread = 0.4 + 0.6 * clamp( spreadP, 0.0, 1.0 );
     float density = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -106,7 +106,7 @@ void main()
         vec2  jit = vec2( hash21( c + 1.3 ), hash21( c + 5.9 ) ) - 0.5;
         vec2  q = f - jit * 0.7;
         float r = length( q ) / scale; // metric radius
-        float size = grainSize * ( 0.6 + 0.8 * hash21( c + 9.1 ) ) * ( 1.0 - fl * 0.2 );
+        float size = grain_size * ( 0.6 + 0.8 * hash21( c + 9.1 ) ) * ( 1.0 - fl * 0.2 );
         // Existence: a smooth window of the hash against the density.
         float exist = smoothstep( h - 0.15, h + 0.05, 0.35 + 0.65 * density );
         // The band at the grain centre (pitch on y), its energy.
@@ -130,7 +130,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

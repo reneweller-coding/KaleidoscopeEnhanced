@@ -107,84 +107,84 @@ void main()
     // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Polynomial power (3 to 6)
-    int nPower = int( clamp( 3.0 + floor( powerP * 2.0 + audioCentroid * 2.0 ), 3.0, 6.0 ) );
+    int n_power = int( clamp( 3.0 + floor( powerP * 2.0 + audioCentroid * 2.0 ), 3.0, 6.0 ) );
 
     // Dynamic constant offset c = c_r + i * c_i
-    vec2 cConst = vec2(
+    vec2 c_const = vec2(
         1.0 + 0.3 * sin( t * 0.4 ),
         0.3 * cos( t * 0.35 + audioFlux ) );
 
     // Initial complex coordinate with zoom & rotation
     float zoom = 1.45 + 0.25 * sin( audioSwell * 2.0 );
-    float rotA = t * 0.12;
-    float cs = cos( rotA ), sn = sin( rotA );
+    float rot_a = t * 0.12;
+    float cs = cos( rot_a ), sn = sin( rot_a );
     vec2  z = mat2( cs, -sn, sn, cs ) * uv * zoom;
 
-    float iterCount = 0.0;
+    float iter_count = 0.0;
 
     // Newton-Raphson iteration: z -> z - (z^n - c) / (n * z^(n-1))
     for ( int i = 0; i < 22; i++ )
     {
-        vec2 zn = cPow( z, nPower );
-        vec2 zn_minus_1 = cPow( z, nPower - 1 );
+        vec2 zn = cPow( z, n_power );
+        vec2 zn_minus_1 = cPow( z, n_power - 1 );
 
-        vec2 fz = zn - cConst;
-        vec2 dfz = float( nPower ) * zn_minus_1;
+        vec2 fz = zn - c_const;
+        vec2 dfz = float( n_power ) * zn_minus_1;
 
-        vec2 stepZ = cDiv( fz, dfz );
-        z -= stepZ;
+        vec2 step_z = cDiv( fz, dfz );
+        z -= step_z;
 
-        float stepLen = dot( stepZ, stepZ );
-        if ( stepLen < 0.0001 )
+        float step_len = dot( step_z, step_z );
+        if ( step_len < 0.0001 )
         {
-            iterCount = float( i );
+            iter_count = float( i );
             break;
         }
 
-        iterCount += 1.0;
+        iter_count += 1.0;
     }
 
     // Determine root angle sector
-    float rootAngle = atan( z.y, z.x );
-    float rootSector = ( rootAngle + 3.14159265 ) / ( 6.2831853 / float( nPower ) );
+    float root_angle = atan( z.y, z.x );
+    float root_sector = ( root_angle + 3.14159265 ) / ( 6.2831853 / float( n_power ) );
 
     // 3D Embossed surface normal estimation based on iteration gradient
     float eps = 0.005;
-    vec2  zDx = uv + vec2( eps, 0.0 );
-    vec2  zDy = uv + vec2( 0.0, eps );
+    vec2  z_dx = uv + vec2( eps, 0.0 );
+    vec2  z_dy = uv + vec2( 0.0, eps );
     // The sin() term is the sea swell riding on the iteration terrain; sub-bass
     // scales its amplitude only (never its phase), so heavy lows deepen the
     // wave relief that the normal -- and therefore the glints -- are built from.
-    float waveAmp = 1.0 + 0.5 * audioSubBass;
-    float hCenter = iterCount + waveAmp * sin( rootAngle * float( nPower ) * 2.0 + t );
-    float hDx = iterCount + waveAmp * sin( atan( zDx.y, zDx.x ) * float( nPower ) * 2.0 + t );
-    float hDy = iterCount + waveAmp * sin( atan( zDy.y, zDy.x ) * float( nPower ) * 2.0 + t );
+    float wave_amp = 1.0 + 0.5 * audioSubBass;
+    float h_center = iter_count + wave_amp * sin( root_angle * float( n_power ) * 2.0 + t );
+    float h_dx = iter_count + wave_amp * sin( atan( z_dx.y, z_dx.x ) * float( n_power ) * 2.0 + t );
+    float h_dy = iter_count + wave_amp * sin( atan( z_dy.y, z_dy.x ) * float( n_power ) * 2.0 + t );
 
-    vec3 normal = normalize( vec3( ( hDx - hCenter ) * rel, ( hDy - hCenter ) * rel, eps * 3.0 ) );
-    vec3 lightDir = normalize( vec3( cos( t * 0.5 ), sin( t * 0.5 ), 1.2 ) );
+    vec3 normal = normalize( vec3( ( h_dx - h_center ) * rel, ( h_dy - h_center ) * rel, eps * 3.0 ) );
+    vec3 light_dir = normalize( vec3( cos( t * 0.5 ), sin( t * 0.5 ), 1.2 ) );
 
     // Lighting: Diffuse + Specular sea glints
-    float diff = max( 0.0, dot( normal, lightDir ) );
-    vec3  viewDir = vec3( 0.0, 0.0, 1.0 );
-    vec3  halfVec = normalize( lightDir + viewDir );
-    float spec = pow( max( 0.0, dot( normal, halfVec ) ), 24.0 ) * ( 1.0 + 2.0 * audioKick );
+    float diff = max( 0.0, dot( normal, light_dir ) );
+    vec3  view_dir = vec3( 0.0, 0.0, 1.0 );
+    vec3  half_vec = normalize( light_dir + view_dir );
+    float spec = pow( max( 0.0, dot( normal, half_vec ) ), 24.0 ) * ( 1.0 + 2.0 * audioKick );
 
     // Dynamic texture sample mapped to converged root basin
-    vec2 sampleUV = fract( z * 0.4 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( z * 0.4 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Multi-attractor psychedelic coloring
-    vec3 palA = imgPalette( rootSector / float( nPower ) + iterCount * 0.05 );
-    vec3 palB = imgPalette( rootSector / float( nPower ) + 0.5 );
-    vec3 basinCol = mix( palA, palB, 0.5 + 0.5 * sin( iterCount * 0.6 + t ) );
+    vec3 pal_a = imgPalette( root_sector / float( n_power ) + iter_count * 0.05 );
+    vec3 pal_b = imgPalette( root_sector / float( n_power ) + 0.5 );
+    vec3 basin_col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( iter_count * 0.6 + t ) );
 
-    basinCol = mix( basinCol, texCol, 0.35 + 0.15 * audioValence );
+    basin_col = mix( basin_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Hold the sea surface to a fixed level so the relief, the glints and the
     // basin boundaries are what carries the light, whatever photo is bound.
-    basinCol *= clamp( 0.32 / max( 0.05, photoLevel() ), 0.20, 2.4 );
+    basin_col *= clamp( 0.32 / max( 0.05, photoLevel() ), 0.20, 2.4 );
 
-    // Glowing root boundary lines. The old metric was min(stepLen) fed into
+    // Glowing root boundary lines. The old metric was min(step_len) fed into
     // exp(-d * 50) -- but Newton converges QUADRATICALLY, so every pixel's
     // smallest step is ~1e-4..1e-2 and that exponential evaluated to ~0.9
     // across the entire frame: an unbroken magenta flood that clipped the
@@ -192,18 +192,18 @@ void main()
     // slowly, i.e. large steps) as the only DARK part of the picture -- the
     // exact inverse of the intent. A basin boundary is where convergence is
     // slow, so key the glow off the iteration count instead.
-    float convergeSlow = clamp( iterCount / 22.0, 0.0, 1.0 );
-    float rootEdgeGlow = smoothstep( 0.45, 1.0, convergeSlow ) * glw;
+    float converge_slow = clamp( iter_count / 22.0, 0.0, 1.0 );
+    float root_edge_glow = smoothstep( 0.45, 1.0, converge_slow ) * glw;
 
-    basinCol = basinCol * ( 0.25 + 0.75 * diff )
-               + min( vec3( 1.2, 1.3, 1.5 ) * spec, vec3( 1.15 ) );
-    basinCol += min( vec3( 1.4, 0.9, 1.6 ) * rootEdgeGlow * ( 1.0 + 2.5 * audioKick ), vec3( 1.25 ) );
+    basin_col = basin_col * ( 0.25 + 0.75 * diff )
+                + min( vec3( 1.2, 1.3, 1.5 ) * spec, vec3( 1.15 ) );
+    basin_col += min( vec3( 1.4, 0.9, 1.6 ) * root_edge_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.25 ) );
 
-    basinCol = pow( basinCol, vec3( 0.87 ) );
-    vec3 _catTone = clamp( basinCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.28 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) ); // peak knee round 2
-    float _nbLum = dot( _catTone, vec3( 0.299, 0.587, 0.114 ) );
-    _catTone = clamp( mix( vec3( _nbLum ), _catTone, 1.35 ), 0.0, 1.0 );
-    fragColor = vec4( _catTone, 1.0 );
+    basin_col = pow( basin_col, vec3( 0.87 ) );
+    vec3 cat_tone = clamp( basin_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.28 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) ); // peak knee round 2
+    float nb_lum = dot( cat_tone, vec3( 0.299, 0.587, 0.114 ) );
+    cat_tone = clamp( mix( vec3( nb_lum ), cat_tone, 1.35 ), 0.0, 1.0 );
+    fragColor = vec4( cat_tone, 1.0 );
 }

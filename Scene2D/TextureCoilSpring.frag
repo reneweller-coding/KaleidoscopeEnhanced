@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -262,9 +262,9 @@ void main()
     float fw1 = max( length( fwidth( cs ) ) / 3.14159265, fwidth( z1 ) / pitch * 0.25 ) * 1024.0;
     vec3  rib = imgLod( uv1 + vec2( 0.0, ( c1.z - 0.5 ) * 0.1 ), clamp( log2( max( fw1, 1.0 ) ), 0.0, 9.0 ) );
     float prof = sqrt( max( 0.0, 1.0 - ( c1.x / width ) * ( c1.x / width ) ) );
-    vec3  ribC = rib * lc * ( 0.4 + 0.8 * prof ) * exp( -z1 * 0.08 );
+    vec3  rib_c = rib * lc * ( 0.4 + 0.8 * prof ) * exp( -z1 * 0.08 );
     float edge = exp( -abs( c1.x - width ) / ( px1 * 1.5 ) );
-    ribC += mix( gc, vec3( 1.0 ), 0.5 ) * edge * ( 0.25 + 1.0 * kick ) * exp( -z1 * 0.08 );
+    rib_c += mix( gc, vec3( 1.0 ), 0.5 ) * edge * ( 0.25 + 1.0 * kick ) * exp( -z1 * 0.08 );
     // Outer coil at radius 2 (seen through the gaps), counter-rotating, slower.
     float z2 = 1.0 / r;
     vec3  c2 = coil( z2 + travel * 0.6, -a, pitch * 1.3, width, -turn * 0.7 );
@@ -272,10 +272,10 @@ void main()
     float on2 = smoothstep( width + px2, width - px2, c2.x ) * clamp( outerP + 0.2, 0.0, 1.0 );
     vec3  rib2 = imgLod( vec2( -a / 3.14159265, ( z2 + travel * 0.6 ) / pitch * 0.2 + 0.5 ),
                          clamp( log2( max( fw1, 1.0 ) ) + 1.0, 0.0, 9.0 ) );
-    vec3  rib2C = rib2 * lc * 0.45 * exp( -z2 * 0.1 );
+    vec3  rib_2c = rib2 * lc * 0.45 * exp( -z2 * 0.1 );
     vec3  back = gc * ( 0.08 + 0.5 * swell ) * exp( -r * 2.0 );
-    vec3  col = mix( back, rib2C, on2 );
-    col = mix( col, ribC, on1 );
+    vec3  col = mix( back, rib_2c, on2 );
+    col = mix( col, rib_c, on1 );
     col += gc * exp( -r * 14.0 ) * ( 0.4 + swell );
     finish( col );
 }

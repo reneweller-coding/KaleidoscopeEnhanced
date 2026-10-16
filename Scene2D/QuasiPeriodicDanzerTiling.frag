@@ -86,7 +86,7 @@ void main()
     // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Golden ratio constant
-    const float PHI = 1.6180339887;
+    const float Phi = 1.6180339887;
 
     // 6 Basis vectors projected onto 2D from icosahedral 6D hyper-space
     // Sub-bass breathes the lattice: dividing the projection scale enlarges
@@ -94,8 +94,8 @@ void main()
     // `offset`, is left alone so the aperiodic pattern keeps flowing evenly).
     vec2 p = uv * ( 8.0 * sc ) / ( 1.0 + 0.15 * audioSwell );
 
-    float fieldSum = 0.0;
-    float minDist = 1e4;
+    float field_sum = 0.0;
+    float min_dist = 1e4;
 
     // Project 6 symmetric directions (2pi / 6 * k + golden shift)
     for ( int i = 0; i < 6; i++ )
@@ -104,52 +104,52 @@ void main()
         vec2  dir = vec2( cos( angle ), sin( angle ) );
 
         // 6D Cut plane translation offset
-        float offset = sin( t * 0.4 + float( i ) * PHI );
+        float offset = sin( t * 0.4 + float( i ) * Phi );
 
         float proj = dot( p, dir ) + offset;
         float wave = cos( proj * str );
-        fieldSum += wave;
+        field_sum += wave;
 
-        float dGrid = abs( fract( proj * 0.5 ) - 0.5 );
-        minDist = min( minDist, dGrid );
+        float d_grid = abs( fract( proj * 0.5 ) - 0.5 );
+        min_dist = min( min_dist, d_grid );
     }
 
     // Quasicrystal aperiodic potential
-    float potential = fieldSum / 6.0;
+    float potential = field_sum / 6.0;
 
-    // Luminous aperiodic lattice nodes. minDist is the minimum of six
+    // Luminous aperiodic lattice nodes. min_dist is the minimum of six
     // |fract(x)-0.5| terms, so its density piles up hard against zero (mean
     // ~0.07): with the old 18.0 falloff the glow still averaged ~0.4 across
     // the WHOLE frame and, tinted, clipped roughly half the pixels to white
     // grout. A falloff matched to that scale keeps the lattice as thin lit
     // seams -- bright where they land, black in between.
-    float nodeGlow = exp( -minDist * ( 60.0 + 30.0 * audioCentroid ) ) * glw;
-    float peakStar = pow( max( 0.0, potential ), 6.0 ) * ( 1.0 + 3.0 * audioKick );
+    float node_glow = exp( -min_dist * ( 60.0 + 30.0 * audioCentroid ) ) * glw;
+    float peak_star = pow( max( 0.0, potential ), 6.0 ) * ( 1.0 + 3.0 * audioKick );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + vec2( potential * 0.08 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + vec2( potential * 0.08 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Quasicrystal palette
-    vec3 palA = imgPalette( potential * 0.4 + t * 0.05 );
-    vec3 palB = imgPalette( potential * 0.4 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( fieldSum * 2.0 ) );
+    vec3 pal_a = imgPalette( potential * 0.4 + t * 0.05 );
+    vec3 pal_b = imgPalette( potential * 0.4 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( field_sum * 2.0 ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Hold the crystal cells to a fixed dark level so the diffraction facets
     // read as light against the lattice, whatever photo happens to be bound.
     col *= clamp( 0.20 / max( 0.05, photoLevel() ), 0.20, 2.4 );
 
     // Add glowing aperiodic stars & vertex nodes. Both tints exceed 1.0 per
-    // channel on their own, so the TINTED vectors are capped -- peakStar in
+    // channel on their own, so the TINTED vectors are capped -- peak_star in
     // particular reaches 1.0 on a kick and its tinted result ran to ~6.
-    vec3 starTint = min( vec3( 1.4, 1.2, 1.8 ) * nodeGlow * ( 1.0 + 2.0 * audioKick ), vec3( 1.2 ) );
-    vec3 peakTint = min( vec3( 1.6, 1.5, 1.9 ) * peakStar, vec3( 1.4 ) );
-    col += starTint + peakTint;
+    vec3 star_tint = min( vec3( 1.4, 1.2, 1.8 ) * node_glow * ( 1.0 + 2.0 * audioKick ), vec3( 1.2 ) );
+    vec3 peak_tint = min( vec3( 1.6, 1.5, 1.9 ) * peak_star, vec3( 1.4 ) );
+    col += star_tint + peak_tint;
 
     col = pow( col, vec3( 0.88 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.33 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.33 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

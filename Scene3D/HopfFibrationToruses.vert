@@ -30,8 +30,8 @@ out float vEnergy;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float ribbonID = attrA.w;
-    float tAlong = attrA.x * 6.2831853; // Angle along fiber circle
+    float ribbon_id = attrA.w;
+    float t_along = attrA.x * 6.2831853; // Angle along fiber circle
 
     // 4D Hopf Fibration parameterization
     // Each fiber is defined by two angles eta (torus radius) and xi (torus
@@ -39,14 +39,14 @@ void main()
     // degenerates to the Hopf circle, sin(eta) or cos(eta) goes to zero and the
     // ribbon frame below normalises a zero vector -- ribbon 0 used to come out
     // NaN and vanish, taking a twentieth of the picture with it.
-    float fu = ( ribbonID + 0.5 ) / 20.0;
+    float fu = ( ribbon_id + 0.5 ) / 20.0;
     float eta = 0.10 + fu * 1.38; // ~0.10 .. ~1.48 rad
     float xi = fu * 6.2831853 + time * 0.2 + audioAdvance * 0.1;
 
     // 4D Clifford rotation driven by audio
-    float t4D = time * 0.4 + audioAdvance * 0.2;
-    float psi = tAlong + t4D;
-    float phi = xi + t4D * 0.5;
+    float t_4d = time * 0.4 + audioAdvance * 0.2;
+    float psi = t_along + t_4d;
+    float phi = xi + t_4d * 0.5;
 
     // Coordinates on 4D 3-sphere S3
     float x1 = cos( psi ) * sin( eta );
@@ -58,22 +58,22 @@ void main()
     // the whole fibration as a small knot in the middle of the frame; 2.9
     // lets the outer Villarceau circles run past the edges of the picture.
     float denom = max( 1.0 - x4 * 0.7, 0.2 );
-    vec3  hopfR3 = vec3( x1, x2, x3 ) / denom * 2.9;
+    vec3  hopf_r3 = vec3( x1, x2, x3 ) / denom * 2.9;
 
     // Ribbon width offset.  The old 0.04-0.06 drew the fibers as hairlines --
     // 20 threads in a 1080-line frame, which is why the scan read the scene as
     // near-black despite reasonable coverage.  These are ribbons, so they are
     // wide enough to be seen as surfaces.
     vec3  tangent = normalize( vec3( -sin( psi ) * sin( eta ), cos( psi ) * sin( eta ), 0.0 ) );
-    vec3  normal4D = normalize( cross( tangent, vec3( 0.0, 0.0, 1.0 ) ) );
-    float ribbonWidth = ( 0.09 + 0.035 * sin( tAlong * 4.0 ) ) * ( 1.0 + audioKick * 0.5 );
+    vec3  normal_4d = normalize( cross( tangent, vec3( 0.0, 0.0, 1.0 ) ) );
+    float ribbon_width = ( 0.09 + 0.035 * sin( t_along * 4.0 ) ) * ( 1.0 + audioKick * 0.5 );
 
-    vec3 pos = hopfR3 + normal4D * ( attrA.y * 0.5 ) * ribbonWidth;
+    vec3 pos = hopf_r3 + normal_4d * ( attrA.y * 0.5 ) * ribbon_width;
 
     vPos = pos;
     vUV = vec2( attrA.x, attrA.y * 0.5 + 0.5 );
     vFiberID = fu;
-    vEnergy = ( 0.8 + 0.4 * sin( tAlong * 8.0 - time * 6.0 ) ) * ( 1.0 + audioKick * 2.0 );
+    vEnergy = ( 0.8 + 0.4 * sin( t_along * 8.0 - time * 6.0 ) ) * ( 1.0 + audioKick * 2.0 );
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;

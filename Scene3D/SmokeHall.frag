@@ -211,9 +211,9 @@ void main()
     // with nothing to be visible in.  An earlier exponent of 0.22 put barely a
     // sixth of the density up at the ceiling, which is precisely where the effect
     // was supposed to start.
-    float hFall = exp( -max( vWorld.y, 0.0 ) * 0.10 );
+    float h_fall = exp( -max( vWorld.y, 0.0 ) * 0.10 );
     float far = 1.0 - smoothstep( 0.75, 1.0, vExtra );
-    float dens = d * hFall * far * clamp( densityP, 0.2, 2.0 )
+    float dens = d * h_fall * far * clamp( densityP, 0.2, 2.0 )
                  * ( 0.55 + 0.45 * audioLevel );
 
     if ( dens < 0.004 )

@@ -43,35 +43,35 @@ void main()
     float klv = ( kelvinP > 0.0 ) ? kelvinP : 1.0;
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
-    int   particleIdx = gl_VertexID;
-    float pNorm = float( particleIdx ) / 60000.0;
-    vVortexPhase = pNorm;
+    int   particle_idx = gl_VertexID;
+    float p_norm = float( particle_idx ) / 60000.0;
+    vVortexPhase = p_norm;
 
     float t = time * 0.45 * spd + audioAdvance * 0.22;
 
     // 200 vortices each with 300 points along Z-axis
-    int   vortexID = particleIdx / 300;
-    float zNorm = float( particleIdx % 300 ) / 300.0; // [0, 1]
-    float z = ( zNorm - 0.5 ) * 4.5;
+    int   vortex_id = particle_idx / 300;
+    float z_norm = float( particle_idx % 300 ) / 300.0; // [0, 1]
+    float z = ( z_norm - 0.5 ) * 4.5;
 
     // Triangular Abrikosov lattice base coordinates (hexagonal packing)
-    float row = float( vortexID / 14 );
-    float col = float( vortexID % 14 );
-    float hexX = ( col + mod( row, 2.0 ) * 0.5 - 7.0 ) * 0.35 * flx;
-    float hexY = ( row - 7.0 ) * 0.303 * flx;
+    float row = float( vortex_id / 14 );
+    float col = float( vortex_id % 14 );
+    float hex_x = ( col + mod( row, 2.0 ) * 0.5 - 7.0 ) * 0.35 * flx;
+    float hex_y = ( row - 7.0 ) * 0.303 * flx;
 
     // Helical Kelvin wave excitations along the vortex core: r_k(z, t)
-    float kelvinWave = sin( z * 6.0 * klv - t * 5.0 + float( vortexID ) * 0.5 );
-    float kelvinCos = cos( z * 6.0 * klv - t * 5.0 + float( vortexID ) * 0.5 );
-    float waveAmp = ( 0.06 + 0.04 * audioBass ) * ( 1.0 + audioKick * 0.8 );
+    float kelvin_wave = sin( z * 6.0 * klv - t * 5.0 + float( vortex_id ) * 0.5 );
+    float kelvin_cos = cos( z * 6.0 * klv - t * 5.0 + float( vortex_id ) * 0.5 );
+    float wave_amp = ( 0.06 + 0.04 * audioBass ) * ( 1.0 + audioKick * 0.8 );
 
-    vec3 worldPos = vec3( hexX + kelvinWave * waveAmp, hexY + kelvinCos * waveAmp, z );
-    vWorldPos = worldPos;
+    vec3 world_pos = vec3( hex_x + kelvin_wave * wave_amp, hex_y + kelvin_cos * wave_amp, z );
+    vWorldPos = world_pos;
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view).
     // Without the push-back only the half of the lattice that happened to fall
     // beyond the near plane was ever visible.
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 7.0;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

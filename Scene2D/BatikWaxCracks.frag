@@ -125,7 +125,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float motif = 3.0 + floor( clamp( motifP, 0.0, 1.0 ) * 4.0 ); // motif repeats
-    float crackScale = 14.0 + 14.0 * clamp( crackP, 0.0, 1.0 );
+    float crack_scale = 14.0 + 14.0 * clamp( crackP, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -175,8 +175,8 @@ void main()
     // The crazing: cracks spread over the arc from a few starting points,
     // and the dye runs into them.  A crack exists once the front reaches it.
     float id;
-    float seam = seamAt( p * crackScale, id );
-    float edgeNoise = ( fbm( p * 40.0 ) - 0.5 ) * 0.02;
+    float seam = seamAt( p * crack_scale, id );
+    float edge_noise = ( fbm( p * 40.0 ) - 0.5 ) * 0.02;
     // The front: several origins, so the net grows from more than one place.
     float nearest = 9.0;
     for ( int k = 0; k < 3; ++k )
@@ -187,12 +187,12 @@ void main()
     }
     float front = smoothstep( 0.1, 0.85, prog ) * 1.6;
     float grown = smoothstep( front + 0.12, front - 0.12, nearest );
-    float crack = smoothstep( 0.035, 0.004, seam + edgeNoise ) * grown;
+    float crack = smoothstep( 0.035, 0.004, seam + edge_noise ) * grown;
     // The dye in the crack: deeper with the bass, and it bleeds sideways.
-    float bleed = smoothstep( 0.09, 0.02, seam + edgeNoise ) * grown * ( 0.35 + 0.6 * bass );
-    vec3  crackDye = dye * 0.5;
-    col = mix( col, crackDye, bleed * 0.45 );
-    col = mix( col, crackDye * 0.5, crack * 0.85 );
+    float bleed = smoothstep( 0.09, 0.02, seam + edge_noise ) * grown * ( 0.35 + 0.6 * bass );
+    vec3  crack_dye = dye * 0.5;
+    col = mix( col, crack_dye, bleed * 0.45 );
+    col = mix( col, crack_dye * 0.5, crack * 0.85 );
 
     // The wax that is still on the cloth: a slight sheen, and it is paler.
     col = mix( col, col * 1.12 + vec3( 0.05, 0.045, 0.035 ), wax * ( 1.0 - smoothstep( 0.75, 1.0, prog ) ) * 0.6 );
@@ -205,7 +205,7 @@ void main()
     col = mix( col, vec3( 0.25, 0.2, 0.14 ), pin );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

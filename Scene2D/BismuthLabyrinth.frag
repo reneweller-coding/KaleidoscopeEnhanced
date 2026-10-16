@@ -92,7 +92,7 @@ float map( vec3 p, out float outLayer, float stpScale, float boxScale )
 
     // Recursive hopper crystal folding
     float scale = 1.0;
-    float layerAcc = 0.0;
+    float layer_acc = 0.0;
     float d = 1e9;
 
     for ( int i = 0; i < 4; i++ )
@@ -123,7 +123,7 @@ float map( vec3 p, out float outLayer, float stpScale, float boxScale )
         if ( dl < d )
         {
             d = dl;
-            layerAcc = float( i );
+            layer_acc = float( i );
         }
     }
 
@@ -131,7 +131,7 @@ float map( vec3 p, out float outLayer, float stpScale, float boxScale )
     // complement of a tube -> still Lipschitz-1).
     d = max( d, gCorrR - length( p.xy - gAxis ) );
 
-    outLayer = layerAcc;
+    outLayer = layer_acc;
     return d;
 }
 
@@ -160,20 +160,20 @@ void main()
     vec2 st = gl_FragCoord.xy / resolution;
 
     // Flight camera navigating through the hopper crystal labyrinth
-    float camZ = time * 0.5 + audioAdvance * 0.3; // ruhigerer Vorschub
-    float camX = sin( time * 0.15 ) * 1.2;
-    float camY = cos( time * 0.12 ) * 1.2;
-    vec3  ro = vec3( camX, camY, camZ );
+    float cam_z = time * 0.5 + audioAdvance * 0.3; // ruhigerer Vorschub
+    float cam_x = sin( time * 0.15 ) * 1.2;
+    float cam_y = cos( time * 0.12 ) * 1.2;
+    vec3  ro = vec3( cam_x, cam_y, cam_z );
 
     // The corridor follows the camera's own x/y, so the lens always sits in
     // open crystal air.  SUB-BASS opens the chamber out (documented mapping;
     // it was declared but never actually used before).
-    gAxis = vec2( camX, camY );
+    gAxis = vec2( cam_x, cam_y );
     gCorrR = 0.72 + 0.24 * clamp( audioSubBass, 0.0, 1.0 );
 
     // Look-at direction with gentle banking
-    float lookZ = camZ + 3.0;
-    vec3  ta = vec3( camX + sin( time * 0.15 + 0.4 ) * 0.6, camY + cos( time * 0.12 + 0.4 ) * 0.6, lookZ );
+    float look_z = cam_z + 3.0;
+    vec3  ta = vec3( cam_x + sin( time * 0.15 + 0.4 ) * 0.6, cam_y + cos( time * 0.12 + 0.4 ) * 0.6, look_z );
 
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
@@ -182,20 +182,20 @@ void main()
 
     // Raymarch
     float t = 0.0;
-    float maxDist = 26.0;
-    // Explicit hit FLAG: the old code used `hitDist > 0.0` as the did-we-hit
+    float max_dist = 26.0;
+    // Explicit hit FLAG: the old code used `hit_dist > 0.0` as the did-we-hit
     // test, so a surface met at t == 0 (camera flush against a terrace) was
     // silently shaded as a miss.
     bool  hit = false;
-    float hitDist = 0.0;
-    float hitLayer = 0.0;
+    float hit_dist = 0.0;
+    float hit_layer = 0.0;
     // The terrace fold only has a reachable attractor while the step scale stays
     // below ~1.0; above that the labyrinth walls retreat out of march range and the
     // frame renders as flat black. Clamp into the range that actually carries geometry
     // so the crystal fills the view for every preset / swell value.
     float stpScale = clamp( stp * ( 1.0 + 0.10 * audioSwell ), 0.60, 0.88 );
     float boxScale = clamp( 0.45 * iters, 0.40, 0.56 );
-    float volGlow = 0.0;
+    float vol_glow = 0.0;
 
     for ( int i = 0; i < 110; i++ )
     {
@@ -204,77 +204,77 @@ void main()
         float d = map( p, lyr, stpScale, boxScale );
         // faint volumetric shimmer in the corridors -> the gaps between terraces
         // still read as lit crystal air rather than as holes
-        volGlow += exp( -abs( d ) * 9.0 ) * 0.014;
+        vol_glow += exp( -abs( d ) * 9.0 ) * 0.014;
         // Absolute term in the threshold: without it the test collapses to
         // d < 0 at t == 0 and the first sample can never register.
         if ( d < 0.0015 * t + 0.0009 )
         {
             hit = true;
-            hitDist = t;
-            hitLayer = lyr;
+            hit_dist = t;
+            hit_layer = lyr;
             break;
         }
         t += max( d * 0.75, 0.010 );
-        if ( t > maxDist )
+        if ( t > max_dist )
             break;
     }
-    volGlow = min( volGlow, 0.9 );
+    vol_glow = min( vol_glow, 0.9 );
 
     // Far-field oxide haze: the labyrinth's own thin-film palette, spread across every
     // ray direction so misses land on atmosphere instead of black.
-    float hazeT = 0.35 + 0.25 * ( rd.y * 0.5 + 0.5 ) + 0.15 * sin( rd.x * 3.0 + audioAdvance * 0.05 )
-                  + audioCentroid * 0.2;
-    vec3  col = min( thinFilmColor( hazeT ) * ( 0.055 + 0.045 * audioLevel ), vec3( 0.16 ) );
+    float haze_t = 0.35 + 0.25 * ( rd.y * 0.5 + 0.5 ) + 0.15 * sin( rd.x * 3.0 + audioAdvance * 0.05 )
+                   + audioCentroid * 0.2;
+    vec3  col = min( thinFilmColor( haze_t ) * ( 0.055 + 0.045 * audioLevel ), vec3( 0.16 ) );
 
     if ( hit )
     {
-        vec3 p = ro + rd * hitDist;
+        vec3 p = ro + rd * hit_dist;
         vec3 n = calcNormal( p, stpScale, boxScale );
         vec3 view = -rd;
 
         // Thin-film interference thickness based on surface angle, depth & position
-        float dotNV = max( dot( n, view ), 0.0 );
+        float dot_nv = max( dot( n, view ), 0.0 );
         // audioAdvance statt audioCentroid: der Centroid zittert pro Frame und
         // schob den kompletten Regenbogen ueber den Schirm -- das "Hektische".
-        float filmThickness = dotNV * 2.5 + hitLayer * 0.9 + p.z * 0.15 + audioAdvance * 0.06;
+        float film_thickness = dot_nv * 2.5 + hit_layer * 0.9 + p.z * 0.15 + audioAdvance * 0.06;
         // Capped: thinFilmColor peaks at 1.5 per channel, and with the terraces
         // now actually being hit that peak would land straight on the clip.
-        vec3 rainbowOxide = min( thinFilmColor( filmThickness ), vec3( 1.05 ) );
-        rainbowOxide = mix( vec3( dot( rainbowOxide, vec3( 0.333 ) ) ), rainbowOxide, 0.72 );
+        vec3 rainbow_oxide = min( thinFilmColor( film_thickness ), vec3( 1.05 ) );
+        rainbow_oxide = mix( vec3( dot( rainbow_oxide, vec3( 0.333 ) ) ), rainbow_oxide, 0.72 );
 
         // Metallic Bismuth core lighting
-        vec3  lightDir = normalize( vec3( 0.5, 0.8, -0.6 ) );
-        float diff = max( dot( n, lightDir ), 0.0 );
+        vec3  light_dir = normalize( vec3( 0.5, 0.8, -0.6 ) );
+        float diff = max( dot( n, light_dir ), 0.0 );
         vec3  refl = reflect( rd, n );
-        float spec = pow( max( dot( refl, lightDir ), 0.0 ), 32.0 );
+        float spec = pow( max( dot( refl, light_dir ), 0.0 ), 32.0 );
 
         // Sample input photo texture on hopper mirrors
-        vec2 reflUV = refl.xy * 0.5 + 0.5;
-        vec3 photoRefl = img( clamp( reflUV, 0.0, 1.0 ) );
+        vec2 refl_uv = refl.xy * 0.5 + 0.5;
+        vec3 photo_refl = img( clamp( refl_uv, 0.0, 1.0 ) );
 
         // Ambient occlusion estimate
         float dummy;
         float ao = clamp( map( p + n * 0.15, dummy, stpScale, boxScale ) / 0.15, 0.0, 1.0 );
 
         // Assemble metallic bismuth surface
-        vec3 metallicBase = vec3( 0.85, 0.88, 0.92 ); // Silver/white bismuth metal core
+        vec3 metallic_base = vec3( 0.85, 0.88, 0.92 ); // Silver/white bismuth metal core
         // Ambient floor on the diffuse term: terraces turned away from the key
         // light used to fall to pure black, punching holes in the corridor.
-        vec3 surfaceCol = mix( metallicBase * ( 0.22 + 0.78 * diff ), rainbowOxide,
-                               clamp( 0.70 * irid, 0.0, 0.88 ) );
-        surfaceCol += min( spec * vec3( 1.0, 0.95, 0.9 ) * ( 1.1 + audioKick * 1.1 ),
-                           vec3( 0.55 ) );
-        surfaceCol += photoRefl * 0.32 * ( 0.8 + audioLevel * 0.5 );
-        surfaceCol *= ( 0.36 + 0.64 * ao );
+        vec3 surface_col = mix( metallic_base * ( 0.22 + 0.78 * diff ), rainbow_oxide,
+                                clamp( 0.70 * irid, 0.0, 0.88 ) );
+        surface_col += min( spec * vec3( 1.0, 0.95, 0.9 ) * ( 1.1 + audioKick * 1.1 ),
+                            vec3( 0.55 ) );
+        surface_col += photo_refl * 0.32 * ( 0.8 + audioLevel * 0.5 );
+        surface_col *= ( 0.36 + 0.64 * ao );
 
         // Distance atmospheric crystal fog
-        float fog = 1.0 - exp( -hitDist * 0.12 );
-        vec3  fogCol = mix( vec3( 0.10, 0.06, 0.18 ), vec3( 0.28, 0.16, 0.40 ), dotNV );
-        col = mix( surfaceCol, fogCol, fog );
+        float fog = 1.0 - exp( -hit_dist * 0.12 );
+        vec3  fog_col = mix( vec3( 0.10, 0.06, 0.18 ), vec3( 0.28, 0.16, 0.40 ), dot_nv );
+        col = mix( surface_col, fog_col, fog );
     }
 
     // Corridor shimmer (bounded) so unhit pixels still carry structure
-    col += min( thinFilmColor( hazeT + hitLayer * 0.2 ) * volGlow * 0.35, vec3( 0.30 ) );
+    col += min( thinFilmColor( haze_t + hit_layer * 0.2 ) * vol_glow * 0.35, vec3( 0.30 ) );
 
     // Audio-reactive rainbow laser pulse on kick
     if ( audioKick > 0.6 )
@@ -287,8 +287,8 @@ void main()
         col = hueRot( col, hue );
 
     // Vignette (softened - the old one crushed the frame corners to black)
-    vec2  vUV = st * ( 1.0 - st.yx );
-    float vig = vUV.x * vUV.y * 15.0;
+    vec2  v_uv = st * ( 1.0 - st.yx );
+    float vig = v_uv.x * v_uv.y * 15.0;
     col *= mix( 0.70, 1.0, clamp( pow( vig, 0.25 ), 0.0, 1.0 ) );
 
     fragColor = vec4( col, 1.0 );

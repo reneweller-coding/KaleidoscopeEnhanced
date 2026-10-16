@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -248,7 +248,7 @@ void main()
     vec2  i = floor( x ), f = fract( x );
     float d1 = 9.0, d2 = 9.0;
     vec2  id = i;
-    vec2  toC = vec2( 0.0 );
+    vec2  to_c = vec2( 0.0 );
     for ( int y = -1; y <= 1; ++y )
         for ( int xx = -1; xx <= 1; ++xx )
         {
@@ -260,7 +260,7 @@ void main()
                 d2 = d1;
                 d1 = d;
                 id = i + o;
-                toC = f - c;
+                to_c = f - c;
             }
             else if ( d < d2 )
                 d2 = d;
@@ -268,7 +268,7 @@ void main()
     float present = step( hash21( id + 7.0 ), dens );
     float membrane = exp( -( d2 - d1 ) / ( 0.04 + blur * 0.3 ) ) * present;
     float nr = 0.18 + 0.1 * hash21( id + 2.0 );
-    vec2  ne = toC * vec2( 1.0, 1.0 + 0.4 * hash21( id + 3.0 ) );
+    vec2  ne = to_c * vec2( 1.0, 1.0 + 0.4 * hash21( id + 3.0 ) );
     float nucleus = smoothstep( nr + blur * 0.3, nr - 0.02, length( ne ) ) * present;
     float cyto = smoothstep( 0.1, 0.4, d2 - d1 ) * present;
     // Fibres: thin wavy lines across.

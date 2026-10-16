@@ -49,7 +49,7 @@ uniform float nucleiP;
 uniform float rateP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -76,7 +76,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     float temp = rate * 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
@@ -84,8 +84,8 @@ void main()
     vec2  gi = floor( p / cell );
 
     float w1 = 1e9, w2 = 1e9; // nearest and second-nearest weighted distance
-    vec2  bestId = vec2( 0.0 );
-    float bestBirth = 0.0;
+    vec2  best_id = vec2( 0.0 );
+    float best_birth = 0.0;
     for ( int j = -2; j <= 2; ++j )
         for ( int i = -2; i <= 2; ++i )
         {
@@ -108,8 +108,8 @@ void main()
             {
                 w2 = w1;
                 w1 = w;
-                bestId = id;
-                bestBirth = birth;
+                best_id = id;
+                best_birth = birth;
             }
             else if ( w < w2 )
             {
@@ -130,7 +130,7 @@ void main()
     parent *= mix( 1.0, 0.92, arc );
 
     // A grain's orientation shows as a small, steady tint.
-    float orient = hash21( bestId + 41.7 );
+    float orient = hash21( best_id + 41.7 );
     vec3  fresh = texture( tex1, uv ).rgb;
     fresh = hueRot( fresh, ( orient - 0.5 ) * 0.34 * arc + hue * 0.05 * arc );
     fresh *= mix( 1.0, 0.94 + 0.14 * orient, arc );

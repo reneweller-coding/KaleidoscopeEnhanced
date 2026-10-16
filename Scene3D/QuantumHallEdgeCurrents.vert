@@ -79,54 +79,54 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     const float L = 150.0;
-    float       camZ = time * 8.0 + audioAdvance * 16.0;
-    float       zRel = t * L;
-    float       zAbs = zRel + camZ;
+    float       cam_z = time * 8.0 + audioAdvance * 16.0;
+    float       z_rel = t * L;
+    float       z_abs = z_rel + cam_z;
 
     // Edge boundary profile
-    float boundaryAngle = ( ri / 20.0 ) * 6.2831853;
-    float edgeRadius = ( 5.0 + 2.0 * sin( ri * 1.5 ) ) * chn + audioSwell * 2.0;
+    float boundary_angle = ( ri / 20.0 ) * 6.2831853;
+    float edge_radius = ( 5.0 + 2.0 * sin( ri * 1.5 ) ) * chn + audioSwell * 2.0;
 
     // Cyclotron skipping orbits: cycloid curve along z: r(z) = r0 + r_cyc * (1 - cos(omega*z))
     float omega = 0.25 * orb;
-    float rCyc = 0.8 * ( 1.0 + 0.5 * audioBass );
-    float skipRadius = edgeRadius + rCyc * ( 1.0 - cos( zAbs * omega ) );
-    float skipAngle = boundaryAngle + sin( zAbs * omega ) * 0.15;
+    float r_cyc = 0.8 * ( 1.0 + 0.5 * audioBass );
+    float skip_radius = edge_radius + r_cyc * ( 1.0 - cos( z_abs * omega ) );
+    float skip_angle = boundary_angle + sin( z_abs * omega ) * 0.15;
 
-    vec3 centerPos = vec3(
-        cos( skipAngle ) * skipRadius,
-        sin( skipAngle ) * skipRadius,
-        zRel );
+    vec3 center_pos = vec3(
+        cos( skip_angle ) * skip_radius,
+        sin( skip_angle ) * skip_radius,
+        z_rel );
 
     // Kick phase jump
-    centerPos += vec3( cos( boundaryAngle ), sin( boundaryAngle ), 0.0 ) * audioSwell * 0.8;
+    center_pos += vec3( cos( boundary_angle ), sin( boundary_angle ), 0.0 ) * audioSwell * 0.8;
 
-    vec3  tangentDir = vec3( -sin( skipAngle ), cos( skipAngle ), 0.0 );
-    float ribbonWidth = ( 0.32 * wid ) * ( 1.0 + 0.3 * audioKick );
-    vec3  worldP = centerPos + tangentDir * ( side * ribbonWidth );
+    vec3  tangent_dir = vec3( -sin( skip_angle ), cos( skip_angle ), 0.0 );
+    float ribbon_width = ( 0.32 * wid ) * ( 1.0 + 0.3 * audioKick );
+    vec3  world_p = center_pos + tangent_dir * ( side * ribbon_width );
 
     // Camera space
-    vec3 camPos = vec3( 0.0, 0.0, 0.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 0.0, 0.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vSide = side;
     vLength = t;
 
     // Chiral pulse wave
-    float pulse = fract( zAbs * 0.05 - time * 3.5 - ri * 0.2 );
-    float pulseGlow = exp( -pulse * 6.0 ) * 2.0;
+    float pulse = fract( z_abs * 0.05 - time * 3.5 - ri * 0.2 );
+    float pulse_glow = exp( -pulse * 6.0 ) * 2.0;
 
     // Landau level color palette (topological emerald, gold, cyan)
     vec3 col = imgPalette( ( ri * 0.7 + time ) * 0.159 ) * 1.4;
-    col = mix( col, vec3( 1.0, 0.85, 0.2 ), pulseGlow * 0.5 );
+    col = mix( col, vec3( 1.0, 0.85, 0.2 ), pulse_glow * 0.5 );
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
             col = hueRot( col, hue );
 
-    vCol = vec4( col * ( 1.0 + pulseGlow + audioHigh * 0.8 ), 1.0 );
+    vCol = vec4( col * ( 1.0 + pulse_glow + audioHigh * 0.8 ), 1.0 );
 }

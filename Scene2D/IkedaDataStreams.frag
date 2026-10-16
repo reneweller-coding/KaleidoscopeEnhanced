@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -234,9 +234,9 @@ void main()
     float hi = clamp( audioHigh * 1.5, 0.0, 1.0 );
     float mode = smoothstep( 0.45, 0.55, clamp( audioMode, 0.0, 1.0 ) ); // short flip, no long grey blend
     float rough = clamp( audioRoughness, 0.0, 1.0 );
-    float nL = 20.0 + 40.0 * clamp( audioSpread, 0.0, 1.0 );
+    float n_l = 20.0 + 40.0 * clamp( audioSpread, 0.0, 1.0 );
     // Lanes of varying height: warp y with a stepped-free noise so lanes differ.
-    float y = p.y * nL + clamp( laneP, 0.0, 1.0 ) * 3.0 * fbm3( vec2( p.y * 3.0, 1.0 ) );
+    float y = p.y * n_l + clamp( laneP, 0.0, 1.0 ) * 3.0 * fbm3( vec2( p.y * 3.0, 1.0 ) );
     float lane = floor( y );
     float ly = fract( y );
     float h = hash11( lane * 0.731 + 3.0 );
@@ -247,7 +247,7 @@ void main()
     float x = ( p.x + T * speed * 0.1 ) * res;
     float bi = floor( x );
     // The photo, scanned: the lane's brightness at this x decides the bar density.
-    vec2  uv = vec2( p.x * 0.5 + 0.5, ( lane + 0.5 ) / nL * 0.5 + 0.5 );
+    vec2  uv = vec2( p.x * 0.5 + 0.5, ( lane + 0.5 ) / n_l * 0.5 + 0.5 );
     float lum = luma( imgLod( uv, 2.0 ) );
     float thr = mix( 0.5, 1.0 - lum, clamp( photoP, 0.0, 1.0 ) );
     float bar = step( thr, hash21( vec2( bi, lane ) ) );

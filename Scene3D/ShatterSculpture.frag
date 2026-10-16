@@ -142,21 +142,21 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // Gallery spotlight: one hard warm key from high front-left, a very dim
     // cool fill so the shadow side is readable rather than black.
-    vec3  keyDir = normalize( vec3( -0.45, 0.75, -0.5 ) );
-    float key = max( dot( n, keyDir ), 0.0 );
+    vec3  key_dir = normalize( vec3( -0.45, 0.75, -0.5 ) );
+    float key = max( dot( n, key_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.3, -0.4, -0.6 ) );
 
-    vec3  halfV = normalize( keyDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 60.0, 10.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0, 0.96, 0.9 ), base.rgb, metallic );
+    vec3  half_v = normalize( key_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 60.0, 10.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0, 0.96, 0.9 ), base.rgb, metallic );
 
     vec3 col = base.rgb * vec3( 1.0, 0.96, 0.9 ) * ( 0.30 + key * ( 1.5 + 0.5 * audioSwell ) );
     col += base.rgb * vec3( 0.35, 0.42, 0.6 ) * fill * 0.22;
-    col += specColor * spec * ( 0.5 + 0.7 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.5 + 0.7 * ( 1.0 - roughness ) );
 
     // The fracture glow: the further a shard has travelled, the more it is
     // lit from within. Backfaces (the freshly exposed inner surface of the
@@ -172,13 +172,13 @@ void main()
         col = mix( col, col * vec3( 0.85, 0.9, 1.05 ), vShard * 0.4 );
     }
 
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.9, 0.85, 0.75 ) * fresnel * ( 0.10 + 0.18 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

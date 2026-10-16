@@ -47,7 +47,7 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 gridUV = attrA.xy; // 0..1
+    vec2 grid_uv = attrA.xy; // 0..1
 
     float hgt = ( waveHeightP > 0.0 ) ? waveHeightP : 1.0;
     float stp = ( steepnessP > 0.0 ) ? steepnessP : 1.0;
@@ -58,71 +58,71 @@ void main()
     // far edge still covers the frustum at the top of a frame the camera below
     // now looks DOWN into -- a plate seen in perspective is a trapezoid, and a
     // frame is a rectangle.
-    float x0 = ( gridUV.x - 0.5 ) * 96.0;
-    float z0 = gridUV.y * 60.0;
+    float x0 = ( grid_uv.x - 0.5 ) * 96.0;
+    float z0 = grid_uv.y * 60.0;
 
     float t = time * 0.45 * spd + audioAdvance * 0.2;
 
     // Primary breaking wave (Gerstner harmonic with steep crest)
     float k = 0.72;
     float phase = z0 * k - t * 3.0;
-    float crestProfile = exp( -pow( sin( phase * 0.5 ), 2.0 ) * 8.0 * stp );
+    float crest_profile = exp( -pow( sin( phase * 0.5 ), 2.0 ) * 8.0 * stp );
     // Break the crest into patches along x — a real breaker foams in cells,
     // not as one full-width neon bar.  Surf hiss IS broadband noise, so the
     // noisier the signal (audioZCR) the more those long smooth foam rolls
     // shatter into fine, scattered cells; a pure held tone leaves them whole.
     // Only the cell WEIGHTING moves, never a spatial frequency, so nothing
     // slides when the feature jumps.
-    float cellBig = pow( 0.5 + 0.5 * sin( x0 * 0.7 + phase * 0.9 ), 2.0 );
-    float cellFine = pow( 0.5 + 0.5 * sin( x0 * 3.1 - phase * 1.7 + z0 * 1.3 ), 2.0 );
-    float cells = mix( cellBig, cellBig * ( 0.30 + 0.70 * cellFine ),
+    float cell_big = pow( 0.5 + 0.5 * sin( x0 * 0.7 + phase * 0.9 ), 2.0 );
+    float cell_fine = pow( 0.5 + 0.5 * sin( x0 * 3.1 - phase * 1.7 + z0 * 1.3 ), 2.0 );
+    float cells = mix( cell_big, cell_big * ( 0.30 + 0.70 * cell_fine ),
                        clamp( audioZCR * 1.4, 0.0, 1.0 ) );
-    crestProfile *= 0.35 + 0.65 * cells;
+    crest_profile *= 0.35 + 0.65 * cells;
 
     // Wave curling forward as it breaks
     float dx = sin( phase ) * 0.8 * stp;
     // Harmonic warmth (pads, low strings, bass guitar body) is the deep ocean
     // swell underneath the breaker — it lifts the whole water column, where
     // audioBass only pumps the crest.
-    float dy = ( cos( phase ) + crestProfile * 2.0 )
+    float dy = ( cos( phase ) + crest_profile * 2.0 )
                * ( 0.85 * hgt + 0.35 * audioBass + 0.30 * audioLowMid );
     float dz = -sin( phase ) * 1.2 * stp;
 
     // Cross-swell ripples
     float ripple = sin( x0 * 1.5 + z0 * 0.8 + t * 4.0 ) * 0.15 * ( 1.0 + audioHigh );
 
-    vec3 worldP = vec3( x0 + dx, dy + ripple, z0 + dz );
+    vec3 world_p = vec3( x0 + dx, dy + ripple, z0 + dz );
 
     // Kick breaker explosion
-    worldP.y += audioKick * 0.8 * crestProfile;
+    world_p.y += audioKick * 0.8 * crest_profile;
 
     // Camera: low over the near edge and pitched DOWN onto the water.  The
     // old camera sat at 6.5 looking dead level, so the sea was a strip along
     // the bottom under a black sky (reported).
-    vec3 camPos = vec3( 0.0, 5.4, -3.0 );
-    vec3 relP = worldP - camPos;
+    vec3 cam_pos = vec3( 0.0, 5.4, -3.0 );
+    vec3 rel_p = world_p - cam_pos;
     // Steep enough to fill the frame, shallow enough that the crests still
     // read in profile: at 0.62 the sea was a flat green field from above.
     const float pitch = 0.44;
     float       pc = cos( pitch ), ps = sin( pitch );
-    relP = vec3( relP.x, relP.y * pc + relP.z * ps, -relP.y * ps + relP.z * pc );
-    relP.x -= eyeOff;
+    rel_p = vec3( rel_p.x, rel_p.y * pc + rel_p.z * ps, -rel_p.y * ps + rel_p.z * pc );
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    vUV = gridUV;
-    vBioGlow = crestProfile * ( 1.0 + audioKick * 0.8 );
+    vUV = grid_uv;
+    vBioGlow = crest_profile * ( 1.0 + audioKick * 0.8 );
 
     // Normal approximation
     vNormal = normalize( vec3( -dx * 0.5, 1.0, -dz * 0.8 ) );
 
     // Ocean deep navy / bioluminescent cyan palette
-    vec3 deepOcean = vec3( 0.02, 0.05, 0.12 );
-    vec3 bioCyan = vec3( 0.0, 0.95, 1.0 );
+    vec3 deep_ocean = vec3( 0.02, 0.05, 0.12 );
+    vec3 bio_cyan = vec3( 0.0, 0.95, 1.0 );
     // Brighter crests: seen from above at this distance the old glow read as
     // a dim teal wash with the bioluminescence lost in it.
-    vec3 col = mix( deepOcean * 1.4, bioCyan, clamp( pow( vBioGlow, 1.1 ) * 1.5, 0.0, 1.0 ) );
+    vec3 col = mix( deep_ocean * 1.4, bio_cyan, clamp( pow( vBioGlow, 1.1 ) * 1.5, 0.0, 1.0 ) );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

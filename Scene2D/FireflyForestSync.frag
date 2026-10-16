@@ -109,11 +109,11 @@ void main()
     // Night: blue mist between the trunks, darker toward the ground.
     vec3 mist = vec3( 0.05, 0.09, 0.15 ) * ( 0.8 + 0.6 * swell );
     vec3 col = mist * ( 0.6 + 0.6 * smoothstep( -0.4, 0.3, p.y ) );
-    vec3 ffC = mix( vec3( 0.75, 1.0, 0.25 ), imgPalette( 0.2 + hueP * 0.159 ) * vec3( 1.0, 1.2, 0.5 ), 0.12 );
+    vec3 ff_c = mix( vec3( 0.75, 1.0, 0.25 ), imgPalette( 0.2 + hueP * 0.159 ) * vec3( 1.0, 1.2, 0.5 ), 0.12 );
 
     // The flash waves: a front sweeping across the forest, then a pause.
     float period = 7.0;
-    float wavePos = fract( T / period ) * 3.2 - 1.3; // the front's x position
+    float wave_pos = fract( T / period ) * 3.2 - 1.3; // the front's x position
     float bursts = 1.0 + 0.8 * kick;
 
     // Layers of trunks from far to near; fireflies between the layers.
@@ -137,14 +137,14 @@ void main()
                                        cos( T * 0.12 + hash21( id + 1.0 ) * 20.0 ) );
                 vec2 cp = c / ( 38.0 - fl * 8.0 ) - vec2( fl * 13.0, 0.0 ) / ( 38.0 - fl * 8.0 );
                 // Each flash when the wave passes, with a little individual delay.
-                float delay = ( cp.x - wavePos ) * 2.2 + 0.3 * hash21( id + 3.0 );
+                float delay = ( cp.x - wave_pos ) * 2.2 + 0.3 * hash21( id + 3.0 );
                 float flash = exp( -delay * delay * 3.0 ) * bursts * 2.0;
                 // A dim constant glimmer between waves, some out of step.
                 float own = pow( max( 0.0, sin( T * 1.3 + hash21( id + 5.0 ) * 40.0 ) ), 16.0 ) * 0.4;
                 float I = flash + own;
                 float d = length( g - c );
                 float r0 = 0.08 + 0.04 * fl;
-                col += ffC * ( smoothstep( r0, 0.0, d ) * 1.5 + exp( -d / ( r0 * 2.0 ) ) * 0.25 ) * I
+                col += ff_c * ( smoothstep( r0, 0.0, d ) * 1.5 + exp( -d / ( r0 * 2.0 ) ) * 0.25 ) * I
                        * ( 0.5 + 0.5 * ( 1.0 - depth ) );
             }
         // Trunks of this layer: vertical, slightly tapering, with bark texture.
@@ -162,23 +162,23 @@ void main()
             if ( cov > 0.0 )
             {
                 // Lit from within the forest by the passing wave on one side.
-                float lit = exp( -pow( ( p.x - wavePos ) * 1.5, 2.0 ) ) * bursts * 0.15;
+                float lit = exp( -pow( ( p.x - wave_pos ) * 1.5, 2.0 ) ) * bursts * 0.15;
                 vec3  bark = vec3( 0.02, 0.025, 0.03 ) * ( 0.7 + 0.5 * noise2( vec2( dx * 3.0, p.y * 30.0 ) ) );
                 bark = mix( bark, mist * 0.8, depth * 0.6 );
-                bark += ffC * lit * ( 0.5 + 0.5 * dx ) * ( 1.0 - depth * 0.5 );
+                bark += ff_c * lit * ( 0.5 + 0.5 * dx ) * ( 1.0 - depth * 0.5 );
                 col = mix( col, bark, cov );
             }
         }
     }
     // Ferns and undergrowth along the bottom, catching the glow.
     float fern = smoothstep( 0.55, 0.7, fbm( vec2( p.x * 10.0, p.y * 14.0 ) ) + smoothstep( -0.25, -0.5, p.y ) * 0.6 );
-    float glowG = exp( -pow( ( p.x - wavePos ) * 1.8, 2.0 ) ) * bursts;
-    col = mix( col, vec3( 0.02, 0.04, 0.02 ) + ffC * 0.08 * glowG, fern * smoothstep( -0.2, -0.4, p.y ) );
+    float glow_g = exp( -pow( ( p.x - wave_pos ) * 1.8, 2.0 ) ) * bursts;
+    col = mix( col, vec3( 0.02, 0.04, 0.02 ) + ff_c * 0.08 * glow_g, fern * smoothstep( -0.2, -0.4, p.y ) );
     // A faint haze of light where the wave is.
-    col += ffC * 0.03 * glowG * smoothstep( 0.4, -0.3, p.y );
+    col += ff_c * 0.03 * glow_g * smoothstep( 0.4, -0.3, p.y );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

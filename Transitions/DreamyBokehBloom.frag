@@ -60,23 +60,23 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Multi-tap bokeh disc sampling
-    float blurRadius = midTransition * 0.025 * bkh * ( 1.0 + audioSwell * 0.5 );
+    float blur_radius = mid_transition * 0.025 * bkh * ( 1.0 + audioSwell * 0.5 );
 
-    vec3  c1Acc = vec3( 0.0 );
-    vec3  c0Acc = vec3( 0.0 );
-    float w1Sum = 0.0;
-    float w0Sum = 0.0;
+    vec3  c1_acc = vec3( 0.0 );
+    vec3  c0_acc = vec3( 0.0 );
+    float w1_sum = 0.0;
+    float w0_sum = 0.0;
 
     // 12-tap golden angle Fermat spiral disc
-    float goldenAngle = 2.39996323;
+    float golden_angle = 2.39996323;
     for ( int i = 0; i < 12; ++i )
     {
-        float r = sqrt( float( i + 1 ) / 12.0 ) * blurRadius;
-        float theta = float( i ) * goldenAngle;
+        float r = sqrt( float( i + 1 ) / 12.0 ) * blur_radius;
+        float theta = float( i ) * golden_angle;
         vec2  offset = vec2( cos( theta ), sin( theta ) ) * r;
 
         vec3 s1 = texture( tex1, fract( uv + offset ) ).rgb;
@@ -86,30 +86,30 @@ void main()
         float w1 = 1.0 + dot( s1, vec3( 0.333 ) ) * blm;
         float w0 = 1.0 + dot( s0, vec3( 0.333 ) ) * blm;
 
-        c1Acc += s1 * w1;
-        c0Acc += s0 * w0;
-        w1Sum += w1;
-        w0Sum += w0;
+        c1_acc += s1 * w1;
+        c0_acc += s0 * w0;
+        w1_sum += w1;
+        w0_sum += w0;
     }
 
     // Each accumulator carries ITS OWN weights -- a shared normalizer
     // brightens whichever scene has the stronger highlights and washed
     // the whole frame toward white.
-    vec3 c1 = c1Acc / w1Sum;
-    vec3 c0 = c0Acc / w0Sum;
+    vec3 c1 = c1_acc / w1_sum;
+    vec3 c0 = c0_acc / w0_sum;
 
-    vec3 col = mix( c1, c0, tProg );
+    vec3 col = mix( c1, c0, t_prog );
 
     // Luminous bloom glow on kick -- masked to the frame's own highlights;
     // a flat full-frame add whited the whole picture out at strong kicks.
     float hi = smoothstep( 0.55, 1.0, dot( col, vec3( 0.333 ) ) );
-    float bloomGlow = midTransition * hi * ( audioKick * 0.15 + audioSwell * 0.10 );
-    col += bloomGlow * vec3( 1.0, 0.95, 0.85 );
+    float bloom_glow = mid_transition * hi * ( audioKick * 0.15 + audioSwell * 0.10 );
+    col += bloom_glow * vec3( 1.0, 0.95, 0.85 );
 
     if ( audioChromaHue != 0.0 )
-        col = hueRot( col, audioChromaHue * midTransition );
+        col = hueRot( col, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col = hueRot( col, hue * midTransition );
+        col = hueRot( col, hue * mid_transition );
 
     fragColor = vec4( col, 1.0 );
 }

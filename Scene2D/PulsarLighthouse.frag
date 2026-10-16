@@ -107,16 +107,16 @@ void main()
     vec3  pulsar = vec3( 0.0, hgt, 5.0 );
     float ph = audioBeatPhase * 6.2831853;
     // Beam axes: three cones sharing the rotation, offset around the axis.
-    vec3 spinAxis = normalize( vec3( sin( tilt ), cos( tilt ), 0.0 ) );
-    vec3 u = normalize( cross( spinAxis, vec3( 0.0, 0.0, 1.0 ) ) );
-    vec3 w = cross( spinAxis, u );
+    vec3 spin_axis = normalize( vec3( sin( tilt ), cos( tilt ), 0.0 ) );
+    vec3 u = normalize( cross( spin_axis, vec3( 0.0, 0.0, 1.0 ) ) );
+    vec3 w = cross( spin_axis, u );
     // Cones lean well down so they sweep the plain around the tower.
-    vec3 beamK = normalize( u * cos( ph ) + w * sin( ph ) - spinAxis * 1.1 );
-    vec3 beamS = normalize( u * cos( ph + 2.094 ) + w * sin( ph + 2.094 ) - spinAxis * 1.1 );
-    vec3 beamH = normalize( u * cos( ph + 4.189 ) + w * sin( ph + 4.189 ) - spinAxis * 1.1 );
-    vec3 colK = imgPalette( hue * 0.159 + 0.05 ) * ( 0.3 + 1.7 * audioKick );
-    vec3 colS = imgPalette( hue * 0.159 + 0.4 ) * ( 0.2 + 1.5 * audioSnare );
-    vec3 colH = imgPalette( hue * 0.159 + 0.75 ) * ( 0.15 + 1.2 * audioHat );
+    vec3 beam_k = normalize( u * cos( ph ) + w * sin( ph ) - spin_axis * 1.1 );
+    vec3 beam_s = normalize( u * cos( ph + 2.094 ) + w * sin( ph + 2.094 ) - spin_axis * 1.1 );
+    vec3 beam_h = normalize( u * cos( ph + 4.189 ) + w * sin( ph + 4.189 ) - spin_axis * 1.1 );
+    vec3 col_k = imgPalette( hue * 0.159 + 0.05 ) * ( 0.3 + 1.7 * audioKick );
+    vec3 col_s = imgPalette( hue * 0.159 + 0.4 ) * ( 0.2 + 1.5 * audioSnare );
+    vec3 col_h = imgPalette( hue * 0.159 + 0.75 ) * ( 0.15 + 1.2 * audioHat );
 
     // Camera on the plain, looking slightly up at the pulsar.
     vec3 ro = vec3( 0.0, 0.6, 0.0 );
@@ -128,17 +128,17 @@ void main()
     {
         float t = -ro.y / rd.y;
         vec3  hit = ro + rd * t;
-        vec3  toHit = normalize( hit - pulsar );
+        vec3  to_hit = normalize( hit - pulsar );
         float lit = 0.0;
-        vec3  lightCol = vec3( 0.0 );
-        lightCol += colK * ( coneLight( toHit, beamK, 40.0 ) + 0.3 * coneLight( toHit, beamK, 6.0 ) );
-        lightCol += colS * ( coneLight( toHit, beamS, 40.0 ) + 0.3 * coneLight( toHit, beamS, 6.0 ) );
-        lightCol += colH * ( coneLight( toHit, beamH, 40.0 ) + 0.3 * coneLight( toHit, beamH, 6.0 ) );
+        vec3  light_col = vec3( 0.0 );
+        light_col += col_k * ( coneLight( to_hit, beam_k, 40.0 ) + 0.3 * coneLight( to_hit, beam_k, 6.0 ) );
+        light_col += col_s * ( coneLight( to_hit, beam_s, 40.0 ) + 0.3 * coneLight( to_hit, beam_s, 6.0 ) );
+        light_col += col_h * ( coneLight( to_hit, beam_h, 40.0 ) + 0.3 * coneLight( to_hit, beam_h, 6.0 ) );
         float dist2 = dot( hit - pulsar, hit - pulsar );
         vec2  guv = hit.xz * 0.12 + vec2( 0.5, sceneAdvance * 0.01 );
         vec3  ground = img( fract( guv ) ) * 0.9 + 0.1;
         float rough = 0.6 + 0.4 * fbm( hit.xz * 0.8 );
-        col = ground * rough * ( lightCol * 220.0 / ( dist2 + 4.0 ) + 0.08 );
+        col = ground * rough * ( light_col * 220.0 / ( dist2 + 4.0 ) + 0.08 );
         float fog = 1.0 - exp( -t * 0.05 );
         col = mix( col, imgPalette( hue * 0.159 + 0.6 ) * 0.03, fog );
     }
@@ -163,19 +163,19 @@ void main()
             vec3  pt = ro + rd * t;
             vec3  dv = normalize( pt - pulsar );
             float dd = dot( pt - pulsar, pt - pulsar );
-            acc += ( colK * coneLight( dv, beamK, 260.0 ) + colS * coneLight( dv, beamS, 260.0 )
-                     + colH * coneLight( dv, beamH, 260.0 ) )
+            acc += ( col_k * coneLight( dv, beam_k, 260.0 ) + col_s * coneLight( dv, beam_s, 260.0 )
+                     + col_h * coneLight( dv, beam_h, 260.0 ) )
                    / ( dd + 1.0 );
         }
         col += acc * haze * 8.0;
         // The pulsar itself.
-        vec3  toP = normalize( pulsar - ro );
-        float core = exp( -acos( clamp( dot( rd, toP ), -1.0, 1.0 ) ) * 80.0 );
+        vec3  to_p = normalize( pulsar - ro );
+        float core = exp( -acos( clamp( dot( rd, to_p ), -1.0, 1.0 ) ) * 80.0 );
         col += vec3( 1.0, 0.95, 0.85 ) * core * 2.0
-               + imgPalette( hue * 0.159 + 0.9 ) * exp( -acos( clamp( dot( rd, toP ), -1.0, 1.0 ) ) * 12.0 ) * 0.4;
+               + imgPalette( hue * 0.159 + 0.9 ) * exp( -acos( clamp( dot( rd, to_p ), -1.0, 1.0 ) ) * 12.0 ) * 0.4;
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

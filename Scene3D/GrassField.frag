@@ -47,13 +47,13 @@ void main()
 {
     // Sun kept low so the blades throw long, warm highlights.
     vec3 L = normalize( vec3( 0.42, 0.30, -0.86 ) );
-    vec3 skyLo = vec3( 0.10, 0.13, 0.20 );
-    vec3 skyHi = vec3( 0.26, 0.36, 0.55 ) * ( 0.5 + 1.1 * skyP );
+    vec3 sky_lo = vec3( 0.10, 0.13, 0.20 );
+    vec3 sky_hi = vec3( 0.26, 0.36, 0.55 ) * ( 0.5 + 1.1 * skyP );
     // One haze colour for BOTH the ground and the blades, reaching full well
     // before the field ends.  Otherwise the last row of blades stops in mid-air
     // and the sward reads as a hedge with a cut edge.
-    vec3        hazeCol = skyHi * 0.8;
-    const float HAZE_D = 38.0;
+    vec3        haze_col = sky_hi * 0.8;
+    const float HazeD = 38.0;
     vec3        col;
 
     if ( vKind < 0.5 )
@@ -63,7 +63,7 @@ void main()
         vec3 photo = textureLod( tex0, fract( uv * vec2( 1.0, 0.55 ) + vec2( time * 0.004, 0.25 ) ), 0.0 ).rgb;
         photo = mix( vec3( dot( photo, vec3( 0.333 ) ) ), photo, 0.65 );
         float g = clamp( uv.y, 0.0, 1.0 );
-        col = mix( skyLo, skyHi, g );
+        col = mix( sky_lo, sky_hi, g );
         col = mix( col, col * 0.7 + photo * 0.35, 0.45 * skyP );
         col += vec3( 1.0, 0.75, 0.45 ) * pow( max( 1.0 - abs( uv.y - 0.42 ) * 3.0, 0.0 ), 3.0 )
                * ( 0.25 + 0.6 * audioLevel );
@@ -71,11 +71,11 @@ void main()
     else if ( vKind < 1.5 )
     {
         // --- ground: dark soil near, distant lawn beyond the last blade ---
-        float d = clamp( vWorld.z / HAZE_D, 0.0, 1.0 );
+        float d = clamp( vWorld.z / HazeD, 0.0, 1.0 );
         vec3  soil = vec3( 0.030, 0.042, 0.022 ) * ( 1.0 + 0.5 * audioAmbient );
         vec3  lawn = vec3( 0.075, 0.155, 0.055 ); // what a dense sward averages to
         col = mix( soil, lawn, smoothstep( 0.05, 0.5, d ) );
-        col = mix( col, hazeCol, pow( d, 1.3 ) );
+        col = mix( col, haze_col, pow( d, 1.3 ) );
     }
     else
     {
@@ -106,7 +106,7 @@ void main()
 
         // Sky ambient — a hemisphere term, so upward-facing blades pick up the
         // same light the backdrop is made of and the field sits in its scene.
-        col += base * skyHi * ao * ( 0.45 + 0.55 * max( n.y, 0.0 ) );
+        col += base * sky_hi * ao * ( 0.45 + 0.55 * max( n.y, 0.0 ) );
 
         // Translucency: grass is thin enough that the sun shines THROUGH the
         // blades that face away, which is the effect that sells a backlit lawn.
@@ -124,8 +124,8 @@ void main()
         col += lush * pow( max( 1.0 - abs( sweep - 0.5 ) * 5.0, 0.0 ), 3.0 )
                * vAlong * audioKick * 1.1;
 
-        float haze = clamp( vWorld.z / HAZE_D, 0.0, 1.0 );
-        col = mix( col, hazeCol, pow( haze, 1.3 ) );
+        float haze = clamp( vWorld.z / HazeD, 0.0, 1.0 );
+        col = mix( col, haze_col, pow( haze, 1.3 ) );
     }
 
     // Bounded hue nudge — a full turn would take the lawn to magenta.

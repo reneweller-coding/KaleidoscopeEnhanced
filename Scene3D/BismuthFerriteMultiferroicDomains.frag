@@ -43,19 +43,19 @@ vec3 img( vec2 uv )
 void main()
 {
     // Quad edge conductive channel detection
-    vec2  edgeUv = abs( vUV * 2.0 - 1.0 );
-    float edgeDist = max( edgeUv.x, edgeUv.y );
-    float channelGlow = smoothstep( 0.82, 0.98, edgeDist ) * ( channelGlowP > 0.01 ? channelGlowP : 1.2 );
+    vec2  edge_uv = abs( vUV * 2.0 - 1.0 );
+    float edge_dist = max( edge_uv.x, edge_uv.y );
+    float channel_glow = smoothstep( 0.82, 0.98, edge_dist ) * ( channelGlowP > 0.01 ? channelGlowP : 1.2 );
 
-    vec3  lightDir = normalize( vec3( 0.4, 0.6, 0.7 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
-    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
+    vec3  light_dir = normalize( vec3( 0.4, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
+    float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
                  * ( specularP > 0.01 ? specularP : 1.2 );
 
     vec3 photo = img( vUV );
 
     vec3 col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.5 + 0.5 * diff );
-    col += vec3( 0.9, 0.95, 1.0 ) * channelGlow * ( 1.0 + 3.0 * audioKick );
+    col += vec3( 0.9, 0.95, 1.0 ) * channel_glow * ( 1.0 + 3.0 * audioKick );
     col += vec3( 1.0, 0.95, 0.8 ) * spec;
     col *= ( 0.85 + 0.35 * audioSwell );
     col += vCol * ( audioKick * 0.3 );

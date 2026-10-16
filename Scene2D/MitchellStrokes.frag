@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -256,10 +256,10 @@ void main()
                 float life = fract( cyc );
                 float gen = floor( cyc );
                 vec2  cw = ( id + 0.5 - fl * 7.1 ) / G;
-                float dLocal = smoothstep( 0.45 - 0.15 * clamp( audioSpread, 0.0, 1.0 ), 0.7,
-                                           fbm3( cw * S + vec2( 0.02 * sceneTime, 0.0 ) ) )
-                               * ( 0.5 + 0.7 * swell );
-                if ( hash21( id + gen * 1.7 + fl ) > dLocal )
+                float d_local = smoothstep( 0.45 - 0.15 * clamp( audioSpread, 0.0, 1.0 ), 0.7,
+                                            fbm3( cw * S + vec2( 0.02 * sceneTime, 0.0 ) ) )
+                                * ( 0.5 + 0.7 * swell );
+                if ( hash21( id + gen * 1.7 + fl ) > d_local )
                     continue;
                 vec2  c = id + 0.5 + 0.3 * ( hash22( id + gen ) - 0.5 );
                 float ang = ( hash21( id + gen * 3.0 ) - 0.5 ) * 3.14159 * ( 0.6 + 0.8 * rough ) + 1.2;

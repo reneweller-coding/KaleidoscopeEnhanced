@@ -43,10 +43,10 @@ uniform float pseudoScaleP;
 uniform float tractrixCuspP;
 
 // Engine grid: 220 x 120 cells (see Scene3DShader::buildGeometry, GEOM_GRID).
-const float GW = 220.0, GH = 120.0;
-const float NX = 5.0, NY = 4.0; // lattice: 5 across, 4 down
+const float Gw = 220.0, GH = 120.0;
+const float Nx = 5.0, NY = 4.0; // lattice: 5 across, 4 down
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-const float kTanY = 0.5206;
+const float TanY = 0.5206;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -72,16 +72,16 @@ void main()
     // vertex lands in never disagrees with its neighbours: every block closes
     // on itself and no triangle is stretched between two horns.
     float cell = attrA.w;
-    float cx = mod( cell, GW );
-    float cy = floor( cell / GW );
-    float bw = GW / NX; // 44 cells wide
+    float cx = mod( cell, Gw );
+    float cy = floor( cell / Gw );
+    float bw = Gw / Nx; // 44 cells wide
     float bh = GH / NY; // 30 cells tall
     float bx = floor( cx / bw );
     float by = floor( cy / bh );
-    float inst = by * NX + bx;
+    float inst = by * Nx + bx;
 
     // Local patch coordinates inside the block, exactly 0..1 at its edges.
-    vec2 luv = vec2( ( attrA.x * GW - bx * bw ) / bw,
+    vec2 luv = vec2( ( attrA.x * Gw - bx * bw ) / bw,
                      ( attrA.y * GH - by * bh ) / bh );
 
     vec2 uv = luv * 2.0 - 1.0;
@@ -94,46 +94,46 @@ void main()
     float v = uv.x * 3.14159265;
     vTractrixU = u;
 
-    float sechU = 1.0 / cosh( u );
-    float tanhU = tanh( u );
+    float sech_u = 1.0 / cosh( u );
+    float tanh_u = tanh( u );
 
     // ---- Where this horn hangs ---------------------------------------
     float jitr = fract( inst * 0.618034 + 0.27 );
     float jitd = fract( inst * 0.371 + 0.11 );
     float depth = 4.2 + jitd * 5.4; // 4.2 .. 9.6
-    float halfH = depth * kTanY;
+    float half_h = depth * TanY;
     float aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // Screen-space slot, pushed out far enough that the outer ring of horns
     // hangs half off the edge of the picture.
-    float sx = ( ( bx + 0.5 ) / NX - 0.5 ) * 2.0 * 1.02;
+    float sx = ( ( bx + 0.5 ) / Nx - 0.5 ) * 2.0 * 1.02;
     float sy = ( ( by + 0.5 ) / NY - 0.5 ) * 2.0 * 1.02;
     // A slow individual drift so the lattice never reads as frozen wallpaper.
     float dph = time * 0.13 + inst * 1.7;
     sx += cos( dph ) * 0.055;
     sy += sin( dph * 0.81 ) * 0.075;
 
-    vec3 ctr = vec3( sx * halfH * aspect, sy * halfH, depth );
+    vec3 ctr = vec3( sx * half_h * aspect, sy * half_h, depth );
 
     // The horn's own radius, as a fraction of the frustum half-height at its
     // depth -- so a far horn is drawn just as large on screen as a near one.
     // pseudoScaleP still varies the horns per activation, but at half weight:
     // at its 2.2 extreme a full-strength factor would swell twenty horns into
     // one solid overlapping mass.
-    float pS = mix( 1.0, ( pseudoScaleP > 0.01 ? pseudoScaleP : 1.3 ) / 1.3, 0.5 );
-    float scale = ( 0.30 + 0.09 * jitr ) * halfH * pS * ( 0.85 + 0.35 * audioSwell );
+    float p_s = mix( 1.0, ( pseudoScaleP > 0.01 ? pseudoScaleP : 1.3 ) / 1.3, 0.5 );
+    float scale = ( 0.30 + 0.09 * jitr ) * half_h * p_s * ( 0.85 + 0.35 * audioSwell );
 
     // Asymmetric flared trumpet bells
-    float cuspWarp = 1.0 + 0.12 * sin( v * 4.0 + t * 0.8 + inst ) * ( tractrixCuspP > 0.01 ? tractrixCuspP : 1.0 );
+    float cusp_warp = 1.0 + 0.12 * sin( v * 4.0 + t * 0.8 + inst ) * ( tractrixCuspP > 0.01 ? tractrixCuspP : 1.0 );
 
-    vec3 worldPos = vec3(
-                        sechU * cos( v ) * cuspWarp,
-                        sechU * sin( v ) * cuspWarp,
-                        u - tanhU )
-                    * scale;
+    vec3 world_pos = vec3(
+                         sech_u * cos( v ) * cusp_warp,
+                         sech_u * sin( v ) * cusp_warp,
+                         u - tanh_u )
+                     * scale;
 
     // Normal to Tractricoid
-    vec3 nrm0 = normalize( vec3( -tanhU * cos( v ), -tanhU * sin( v ), sechU ) );
+    vec3 nrm0 = normalize( vec3( -tanh_u * cos( v ), -tanh_u * sin( v ), sech_u ) );
 
     vCol = imgPalette( fract( u * 0.2 + v * 0.159 + inst * 0.071 + audioCentroid ) );
 
@@ -145,7 +145,7 @@ void main()
 
     // Camera Transform (V3): each horn turns on its own axis and hangs at its
     // own tilt, then is placed at its frustum slot.
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     float ra = t * 0.15 + inst * 0.83;
     vp = vec3( vp.x * cos( ra ) - vp.z * sin( ra ), vp.y, vp.x * sin( ra ) + vp.z * cos( ra ) );

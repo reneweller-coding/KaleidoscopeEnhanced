@@ -36,7 +36,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -78,8 +78,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -115,9 +115,9 @@ void main()
     // Plasma FLOW warps the folded picture (marbling).  The warp amplitude
     // breathes only with the SLOW swell (the old audioLevel term wobbled it).
     vec2  flow = vec2( sin( q.y * 1.3 + t * 1.1 ), cos( q.x + t ) );
-    float flowAmt = ( ( flowAmtP <= 0.001 ) ? 0.10 : flowAmtP )
-                    * ( 0.7 + 0.5 * audioSwell );
-    vec2  iuv = fp * 0.6 + 0.5 + flow * v * flowAmt;
+    float flow_amt = ( ( flowAmtP <= 0.001 ) ? 0.10 : flowAmtP )
+                     * ( 0.7 + 0.5 * audioSwell );
+    vec2  iuv = fp * 0.6 + 0.5 + flow * v * flow_amt;
     vec3  pic = img( fract( iuv ) );
 
     // Iridescent plasma sheen tints the picture.  The hue moves only via slow

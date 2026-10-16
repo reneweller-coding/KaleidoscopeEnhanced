@@ -68,46 +68,46 @@ void main()
 
     float t = time * 0.0231 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // audioBass pulses the Poincare metric radius (the disk scale).  Gated by
-    // midTransition, so at both fade endpoints the disk is the un-driven one --
-    // and uvWarped is blended in by midTransition there anyway, collapsing to
+    // mid_transition, so at both fade endpoints the disk is the un-driven one --
+    // and uv_warped is blended in by mid_transition there anyway, collapsing to
     // plain uv.
-    float diskRadius = 1.8 * dsk; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    vec2  z = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y * diskRadius;
+    float disk_radius = 1.8 * dsk; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    vec2  z = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y * disk_radius;
 
     // Hyperbolic rotation & translation: z' = (z - a) / (1 - conj(a)*z)
-    float rotAngle = ( tProg * 3.14159265 + t * 0.5 ) * spn;
-    z = rot2D( rotAngle ) * z;
+    float rot_angle = ( t_prog * 3.14159265 + t * 0.5 ) * spn;
+    z = rot2D( rot_angle ) * z;
 
     // Möbius parameter a moving across the disk
-    vec2 a = vec2( sin( tProg * 3.14159265 ) * 0.65, 0.0 );
+    vec2 a = vec2( sin( t_prog * 3.14159265 ) * 0.65, 0.0 );
 
     // Complex division: (z - a) / (1 - a*z)
     vec2  num = z - a;
     vec2  den = vec2( 1.0 - ( a.x * z.x + a.y * z.y ), -( a.x * z.y - a.y * z.x ) );
-    float denMag2 = dot( den, den );
-    vec2  zPrime = vec2( dot( num, den ), num.y * den.x - num.x * den.y ) / max( denMag2, 1e-4 );
+    float den_mag2 = dot( den, den );
+    vec2  z_prime = vec2( dot( num, den ), num.y * den.x - num.x * den.y ) / max( den_mag2, 1e-4 );
 
     // Conformal sampling UVs
-    vec2 uvWarped = zPrime * 0.5 + 0.5;
+    vec2 uv_warped = z_prime * 0.5 + 0.5;
 
-    vec4 c1 = texture( tex1, fract( mix( uv, uvWarped, midTransition ) ) );
-    vec4 c0 = texture( tex0, fract( mix( uvWarped, uv, 1.0 - midTransition ) ) );
+    vec4 c1 = texture( tex1, fract( mix( uv, uv_warped, mid_transition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( uv_warped, uv, 1.0 - mid_transition ) ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Glowing geodesic circle rim
-    float r = length( zPrime );
-    float rim = exp( -abs( r - 1.0 ) * 15.0 ) * midTransition;
+    float r = length( z_prime );
+    float rim = exp( -abs( r - 1.0 ) * 15.0 ) * mid_transition;
     col.rgb += rim * vec3( 0.1, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

@@ -80,7 +80,7 @@ vec3 imgPalette( float t )
 void main()
 {
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
-    vec3  rimTint = hueRot( vec3( 1.0, 0.72, 0.35 ), tintP );
+    vec3  rim_tint = hueRot( vec3( 1.0, 0.72, 0.35 ), tintP );
 
     // Screen coordinates, aspect-corrected and centred. The interior is drawn
     // in SCREEN space on purpose: it must feel like a fixed scene behind a
@@ -140,7 +140,7 @@ void main()
                         * ( 0.45 + 0.55 * fract( sin( x * 91.7 ) * 4371.3 ) );
         float on = step( uv.y + 0.45, h ) * step( -0.45, uv.y );
         col = imgPalette( fract( x * 1.7 + 0.15 ) ) * ( 0.35 + 1.5 * on );
-        col += rimTint * on * 0.35;
+        col += rim_tint * on * 0.35;
     }
     else
     {
@@ -159,14 +159,14 @@ void main()
     // tighter now: only the last stretch before the silhouette counts as rim,
     // and the kick brightens it less, so a passing band cannot flash the face.
     vec3  n = normalize( vNormal );
-    vec3  viewDir = normalize( -vPos );
-    float rim = smoothstep( 0.62, 0.92, 1.0 - abs( dot( n, viewDir ) ) );
-    col = mix( col, rimTint, clamp( rim * ( 0.55 + 0.45 * audioKick ), 0.0, 1.0 ) );
+    vec3  view_dir = normalize( -vPos );
+    float rim = smoothstep( 0.62, 0.92, 1.0 - abs( dot( n, view_dir ) ) );
+    col = mix( col, rim_tint, clamp( rim * ( 0.55 + 0.45 * audioKick ), 0.0, 1.0 ) );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.14 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

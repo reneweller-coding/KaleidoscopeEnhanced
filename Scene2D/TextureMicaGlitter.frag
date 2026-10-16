@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -309,7 +309,7 @@ void main()
     float T = 0.08 * sceneTime + 0.55 * audioAdvance;
     // Sheets: patches of aligned flakes; each sheet's normal angle.
     float ss = 2.0 + 3.0 * ( 1.0 - clamp( audioSpread, 0.0, 1.0 ) );
-    float sheetA = fbm3( p * ss + 3.0 ) * 6.2831853;
+    float sheet_a = fbm3( p * ss + 3.0 ) * 6.2831853;
     float align = 0.4 + 0.6 * clamp( sheetP, 0.0, 1.0 );
     // Flakes: small irregular platelets (Voronoi cells), normal = sheet normal + jitter.
     vec2  g = p * 55.0;
@@ -331,14 +331,14 @@ void main()
             else if ( d < f2 )
                 f2 = d;
         }
-    float isFlake = step( hash21( id + 2.0 ), 0.35 + 0.5 * clamp( flakeP, 0.0, 1.0 ) );
-    float na = sheetA + ( hash21( id ) - 0.5 ) * 6.2831853 * ( 1.0 - align );
+    float is_flake = step( hash21( id + 2.0 ), 0.35 + 0.5 * clamp( flakeP, 0.0, 1.0 ) );
+    float na = sheet_a + ( hash21( id ) - 0.5 ) * 6.2831853 * ( 1.0 - align );
     // The light's direction rolls; a flake flashes when aligned with it.
     float la = T * 1.5 + 0.8 * sin( dot( p, vec2( 0.5, 0.3 ) ) + T );
     float flash = pow( max( 0.0, cos( na - la ) ), 40.0 );
     float tw = pow( max( 0.0, sin( sceneTime * 3.0 + hash21( id + 5.0 ) * 40.0 ) ), 16.0 ) * hi;
     float body = smoothstep( 0.0, 0.1, f2 - f1 );
-    col += mica * isFlake * body * ( 0.06 + ( 0.9 + 1.8 * kick ) * flash + tw );
+    col += mica * is_flake * body * ( 0.06 + ( 0.9 + 1.8 * kick ) * flash + tw );
     col = mix( col, col * glowColour( ph, p, hueP * 0.159 ) * 1.2, 0.05 );
     finish( col );
 }

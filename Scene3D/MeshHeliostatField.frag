@@ -40,9 +40,9 @@ in float vBg;     ///< Background flag (from the vertex stage).
 in float vMirror;
 in vec3  vAim;
 
-const float kGround = -6.0;
-const vec3  kTowerFoot = vec3( 0.0, kGround, 170.0 );
-const float kTowerH = 70.0;
+const float Ground = -6.0;
+const vec3  TowerFoot = vec3( 0.0, Ground, 170.0 );
+const float TowerH = 70.0;
 
 vec3 sunDir()
 {
@@ -138,7 +138,7 @@ vec3 renderSky( vec3 dir )
     vec3  col;
     if ( dir.y < -0.004 )
     {
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.003 );
         float g = fbm2( P.xz * 0.04 ), g2 = fbm2( P.xz * 0.35 );
@@ -160,7 +160,7 @@ vec3 renderSky( vec3 dir )
     // The receiver's halo and the haze of the converging beams -- small:
     // at the first setting the halo was the picture and the tower a
     // silhouette inside it.
-    vec3  recv = normalize( kTowerFoot + vec3( 0.0, kTowerH * 0.82, 0.0 ) );
+    vec3  recv = normalize( TowerFoot + vec3( 0.0, TowerH * 0.82, 0.0 ) );
     float a = 1.0 - dot( dir, recv );
     col += vec3( 1.0, 0.95, 0.85 ) * exp( -a * 900.0 ) * ( 0.3 + 0.9 * bass );
     col += vec3( 1.0, 0.9, 0.75 ) * exp( -a * 60.0 ) * ( 0.04 + 0.10 * swell );
@@ -213,7 +213,7 @@ void main()
     if ( base.a < 0.1 )
         discard;
 
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * expose;
     vec3 sd = sunDir();
 
@@ -233,7 +233,7 @@ void main()
         // nothing reliable, and the object-space front axis was a guess that
         // failed): the panel is the face that points along the aiming normal.
         float glass = smoothstep( 0.55, 0.85, dot( normalize( vNormal ), vAim ) );
-        vec3  r = reflect( -viewDir, n );
+        vec3  r = reflect( -view_dir, n );
         vec3  refl = renderSky( r ) * 1.3;
         float glint = pow( max( dot( r, sd ), 0.0 ), 60.0 );
         col = mix( col, refl, glass * 0.9 );
@@ -249,14 +249,14 @@ void main()
         col += vec3( 1.0, 0.7, 0.4 ) * recv * 0.3;
     }
 
-    vec3  halfV = normalize( sd + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 60.0, 6.0, roughness ) );
+    vec3  half_v = normalize( sd + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 60.0, 6.0, roughness ) );
     col += mix( vec3( 1.0 ), base.rgb, metallic ) * spec * 0.25 * day;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.08 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

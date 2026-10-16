@@ -47,7 +47,7 @@ uniform float ribbonWidthP;
 uniform float wakefieldLengthP;
 
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-const float kTanY = 0.5206;
+const float TanY = 0.5206;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -68,27 +68,27 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
+    vRibbonID = r_index;
 
     float aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     float t = time * 0.45 + audioAdvance * 0.4;
 
     // Two runs per ribbon: 0 = accelerator channel, 1 = ambient plasma.
-    float g = min( floor( tCoord * 2.0 ), 1.0 );
-    float u = clamp( tCoord * 2.0 - g, 0.0, 1.0 );
+    float g = min( floor( t_coord * 2.0 ), 1.0 );
+    float u = clamp( t_coord * 2.0 - g, 0.0, 1.0 );
     vUV = vec2( u, side * 0.5 + 0.5 );
 
     // Exactly zero at both ends of a run, so the bridging quad degenerates.
     float taper = smoothstep( 0.0, 0.10, u ) * ( 1.0 - smoothstep( 0.90, 0.99, u ) );
 
-    float wBase = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.045 )
-                  * ( 1.0 + 0.3 * audioSwell );
+    float w_base = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.045 )
+                   * ( 1.0 + 0.3 * audioSwell );
 
     vec3 vp;
 
@@ -97,48 +97,48 @@ void main()
         // ---- The accelerator channel ---------------------------------
         // Laser plasma wakefield "bubble" regime: ultraintense laser expels
         // electrons creating a spherical ion cavity.
-        float rBubble = ( bubbleRadiusP > 0.01 ? bubbleRadiusP : 0.85 ) * 2.4;
-        float zLen = ( wakefieldLengthP > 0.01 ? wakefieldLengthP : 3.6 ) * 3.6;
-        float zPos = ( u - 0.5 ) * zLen;
+        float r_bubble = ( bubbleRadiusP > 0.01 ? bubbleRadiusP : 0.85 ) * 2.4;
+        float z_len = ( wakefieldLengthP > 0.01 ? wakefieldLengthP : 3.6 ) * 3.6;
+        float z_pos = ( u - 0.5 ) * z_len;
 
         // A wake is a TRAIN of cavities, not a single bubble: the plasma
         // oscillates behind the driver at the plasma wavelength, so the
         // blowout repeats down the channel.  The train damps with distance
         // behind the driver but never pinches shut, so the whole channel
         // carries structure.
-        float zLaser = sin( t * 1.5 ) * 1.6;
-        float lam = 2.15 * rBubble; // plasma wavelength
-        float dCav = abs( fract( ( zPos - zLaser ) / lam + 0.5 ) - 0.5 ) * lam;
-        float damp = 0.55 + 0.45 * exp( -abs( zPos - zLaser ) * 0.14 );
-        float rLoc = rBubble * damp;
+        float z_laser = sin( t * 1.5 ) * 1.6;
+        float lam = 2.15 * r_bubble; // plasma wavelength
+        float d_cav = abs( fract( ( z_pos - z_laser ) / lam + 0.5 ) - 0.5 ) * lam;
+        float damp = 0.55 + 0.45 * exp( -abs( z_pos - z_laser ) * 0.14 );
+        float r_loc = r_bubble * damp;
         // Each cavity spans a whole half-period, so the train is a chain of
         // touching cavities: damping narrows them without opening bare gaps
         // of axis between them.
-        float uCav = dCav / ( 0.5 * lam );
-        float bubbleR = rLoc * sqrt( max( 0.0, 1.0 - uCav * uCav ) );
+        float u_cav = d_cav / ( 0.5 * lam );
+        float bubble_r = r_loc * sqrt( max( 0.0, 1.0 - u_cav * u_cav ) );
 
         // One strand per ribbon.
-        float nStrands = 20.0;
-        float phi = rIndex * ( 6.2831853 / nStrands ) + zPos * 2.0 + t * 2.0;
+        float n_strands = 20.0;
+        float phi = r_index * ( 6.2831853 / n_strands ) + z_pos * 2.0 + t * 2.0;
 
-        vec3 centerPos = vec3( cos( phi ) * ( bubbleR + 0.22 ),
-                               sin( phi ) * ( bubbleR + 0.22 ),
-                               zPos );
+        vec3 center_pos = vec3( cos( phi ) * ( bubble_r + 0.22 ),
+                                sin( phi ) * ( bubble_r + 0.22 ),
+                                z_pos );
 
         vec3 binormal = vec3( cos( phi ), sin( phi ), 0.0 );
 
-        float width = wBase * 1.6 * taper;
-        vec3  worldPos = centerPos + binormal * ( side * width );
+        float width = w_base * 1.6 * taper;
+        vec3  world_pos = center_pos + binormal * ( side * width );
 
         // Trapped relativistic electron bunch self-injection flash at the
         // back of the bubble.
-        float atBack = exp( -pow( zPos - ( zLaser - rBubble ), 2.0 ) * 6.0 );
-        vBubblePulse = atBack * ( 1.0 + 3.5 * audioKick ) * taper;
+        float at_back = exp( -pow( z_pos - ( z_laser - r_bubble ), 2.0 ) * 6.0 );
+        vBubblePulse = at_back * ( 1.0 + 3.5 * audioKick ) * taper;
 
-        vCol = imgPalette( fract( rIndex * 0.166 + u * 0.3 + audioCentroid ) ) * taper;
+        vCol = imgPalette( fract( r_index * 0.166 + u * 0.3 + audioCentroid ) ) * taper;
 
         // Camera Transform (V3): the channel turns broadside and end-on.
-        vp = worldPos;
+        vp = world_pos;
         float c = cos( t * 0.15 ), s = sin( t * 0.15 );
         vp = vec3( vp.x * c - vp.z * s, vp.y, vp.x * s + vp.z * c );
         // Far enough back that the lengthened channel (half-length up to 6.5
@@ -154,37 +154,37 @@ void main()
         // in fine striations along the laser's own polarisation.  Twenty of
         // them, each a long wavy cord crossing the picture at its own angle
         // and depth, which is what carries the frame outside the channel.
-        float fs = fract( rIndex * 0.618034 + 0.19 );
-        float fd = 6.5 + fract( rIndex * 0.371 + 0.53 ) * 15.5; // depth 6.5 .. 22
-        float halfH = fd * kTanY;
+        float fs = fract( r_index * 0.618034 + 0.19 );
+        float fd = 6.5 + fract( r_index * 0.371 + 0.53 ) * 15.5; // depth 6.5 .. 22
+        float half_h = fd * TanY;
 
-        float aFil = fs * 3.14159265;
-        vec2  dir = vec2( cos( aFil ), sin( aFil ) );
+        float a_fil = fs * 3.14159265;
+        vec2  dir = vec2( cos( a_fil ), sin( a_fil ) );
         vec2  nrm = vec2( -dir.y, dir.x );
 
         // Screen-normalised coordinates: y spans +-1, x spans +-aspect.  The
         // cord runs past both edges whichever way it is pointing.
         float s = ( u - 0.5 ) * 2.0;
-        float offN = ( fract( rIndex * 0.917 + 0.31 ) - 0.5 ) * 2.0 * 1.15;
-        float wob = sin( s * 3.4 + time * 0.37 + rIndex * 1.7 + audioPhase * 0.25 ) * 0.20
-                    + sin( s * 8.1 - time * 0.23 + rIndex ) * 0.08;
+        float off_n = ( fract( r_index * 0.917 + 0.31 ) - 0.5 ) * 2.0 * 1.15;
+        float wob = sin( s * 3.4 + time * 0.37 + r_index * 1.7 + audioPhase * 0.25 ) * 0.20
+                    + sin( s * 8.1 - time * 0.23 + r_index ) * 0.08;
 
-        vec2 sxy = dir * ( s * 2.3 ) + nrm * ( offN + wob );
+        vec2 sxy = dir * ( s * 2.3 ) + nrm * ( off_n + wob );
 
-        float width = ( 0.010 + 0.006 * fs ) * halfH
+        float width = ( 0.010 + 0.006 * fs ) * half_h
                       * ( 1.0 + 0.3 * audioSwell ) * taper;
 
-        vp = vec3( sxy.x * halfH + nrm.x * side * width,
-                   sxy.y * halfH + nrm.y * side * width,
+        vp = vec3( sxy.x * half_h + nrm.x * side * width,
+                   sxy.y * half_h + nrm.y * side * width,
                    fd );
 
         // Betatron sparkle running along the cord.
-        vBubblePulse = 0.10 * pow( 0.5 + 0.5 * sin( s * 26.0 + t * 2.4 + rIndex * 2.0 ), 3.0 )
+        vBubblePulse = 0.10 * pow( 0.5 + 0.5 * sin( s * 26.0 + t * 2.4 + r_index * 2.0 ), 3.0 )
                        * ( 1.0 + 2.0 * audioKick ) * taper;
 
         // Background layer: clearly dimmer than the channel, but bright
         // enough that no tile of the picture is ever empty.
-        vCol = imgPalette( fract( rIndex * 0.083 + u * 0.15 + audioCentroid ) ) * 0.42 * taper;
+        vCol = imgPalette( fract( r_index * 0.083 + u * 0.15 + audioCentroid ) ) * 0.42 * taper;
     }
 
     vp.x -= eyeOff;

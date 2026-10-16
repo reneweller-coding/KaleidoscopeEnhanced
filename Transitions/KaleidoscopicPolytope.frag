@@ -68,45 +68,45 @@ void main()
 
     float t = time * 0.0295 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Coxeter folding planes
     vec2  q = p;
-    float mirrorDist = 1.0;
+    float mirror_dist = 1.0;
 
-    float foldAngle = ( tProg * 1.5707963 + t * 0.2 ) * mir;
+    float fold_angle = ( t_prog * 1.5707963 + t * 0.2 ) * mir;
 
     // The Coxeter breathing radius (the fold offset) follows the progress only:
     // folded four times, any envelope on it re-laid the whole mirror.  The
-    // offset already carries midTransition, so it collapses to exactly 0 at
-    // both fade endpoints, where warpUV is blended out by midTransition too.
-    float breathe = 0.25 * fld * midTransition * 1.35; // constant: this amplitude is wrapped by fract(), so any
-                                                       // envelope reshuffled the frame (speed pass 14.09.2026)
+    // offset already carries mid_transition, so it collapses to exactly 0 at
+    // both fade endpoints, where warp_uv is blended out by mid_transition too.
+    float breathe = 0.25 * fld * mid_transition * 1.35; // constant: this amplitude is wrapped by fract(), so any
+                                                        // envelope reshuffled the frame (speed pass 14.09.2026)
 
     for ( int i = 0; i < 4; ++i )
     {
         q = abs( q ) - breathe;
-        q = rot2D( foldAngle ) * q;
-        mirrorDist = min( mirrorDist, min( abs( q.x ), abs( q.y ) ) );
+        q = rot2D( fold_angle ) * q;
+        mirror_dist = min( mirror_dist, min( abs( q.x ), abs( q.y ) ) );
     }
 
-    vec2 warpUV = ( q * resolution.y + 0.5 * resolution ) / resolution;
+    vec2 warp_uv = ( q * resolution.y + 0.5 * resolution ) / resolution;
 
-    vec4 c1 = texture( tex1, fract( mix( uv, warpUV, midTransition ) ) );
-    vec4 c0 = texture( tex0, fract( mix( warpUV, uv, 1.0 - midTransition ) ) );
+    vec4 c1 = texture( tex1, fract( mix( uv, warp_uv, mid_transition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( warp_uv, uv, 1.0 - mid_transition ) ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Glowing mirror intersection lines
-    float lineGlow = exp( -mirrorDist * 40.0 ) * midTransition;
-    vec3  mirrorColor = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + length( q ) * 15.0 + audioPhase );
-    col.rgb += lineGlow * mirrorColor * ( 1.3 + audioKick * 1.0 );
+    float line_glow = exp( -mirror_dist * 40.0 ) * mid_transition;
+    vec3  mirror_color = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + length( q ) * 15.0 + audioPhase );
+    col.rgb += line_glow * mirror_color * ( 1.3 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

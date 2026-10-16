@@ -68,7 +68,7 @@ void main()
 
     float brst = ( burstP > 0.0 ) ? burstP : 1.0;
     float spn = ( spinP > 0.0 ) ? spinP : 1.0;
-    float cDst = ( camDistP > 0.0 ) ? camDistP : 1.0;
+    float c_dst = ( camDistP > 0.0 ) ? camDistP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Cube grid position in 3D space: 70x70 field arranged into a giant monolithic gemstone
@@ -80,75 +80,75 @@ void main()
     if ( r > 32.0 )
         return;
 
-    float geodeY = sin( r * 0.12 ) * 6.0 + ( seeds.y - 0.5 ) * 3.0;
-    vec3  cubeCenter = vec3( gx * 0.45, geodeY, gz * 0.45 );
+    float geode_y = sin( r * 0.12 ) * 6.0 + ( seeds.y - 0.5 ) * 3.0;
+    vec3  cube_center = vec3( gx * 0.45, geode_y, gz * 0.45 );
 
     // Explosive fracture outward displacement on audioKick.  Snares/claps
     // crack a DIFFERENT subset of shards loose (seeds.z decides which drum a
     // shard answers to), so the gem fractures in two interleaved rhythms.
-    vec3  explodeDir = normalize( cubeCenter + vec3( 0.0, 1.0, 0.0 ) );
-    float snareCrack = clamp( audioSnare, 0.0, 1.0 ) * step( 0.5, seeds.z );
-    float shardFlight = ( audioKick * 6.0 + audioSubBass * 2.5 + snareCrack * 3.5 )
-                        * brst * ( 0.5 + 0.5 * seeds.x );
+    vec3  explode_dir = normalize( cube_center + vec3( 0.0, 1.0, 0.0 ) );
+    float snare_crack = clamp( audioSnare, 0.0, 1.0 ) * step( 0.5, seeds.z );
+    float shard_flight = ( audioKick * 6.0 + audioSubBass * 2.5 + snare_crack * 3.5 )
+                         * brst * ( 0.5 + 0.5 * seeds.x );
 
     // An EDM build-up hauls the whole geode back in on itself — the gem
     // clenches shut under the rising tension, then blows apart at the drop.
-    shardFlight *= 1.0 - 0.38 * clamp( audioBuildUp, 0.0, 1.0 );
+    shard_flight *= 1.0 - 0.38 * clamp( audioBuildUp, 0.0, 1.0 );
 
     // Shard tumbling rotation (rate stays audio-free; the snare only adds a
     // decaying ANGLE jolt, so the tumble kicks and settles without flicker).
-    vec3  spinAxis = normalize( seeds.yzw - 0.5 );
-    float spinAngle = ( time * 3.0 + audioAdvance * 4.0 ) * spn * seeds.x
-                      + snareCrack * 0.9;
+    vec3  spin_axis = normalize( seeds.yzw - 0.5 );
+    float spin_angle = ( time * 3.0 + audioAdvance * 4.0 ) * spn * seeds.x
+                       + snare_crack * 0.9;
 
     // Center of this triangle face
-    vec3 faceCenter = ( vObjPos[0] + vObjPos[1] + vObjPos[2] ) / 3.0;
+    vec3 face_center = ( vObjPos[0] + vObjPos[1] + vObjPos[2] ) / 3.0;
 
     // Shard world position
-    vec3 shardCenter = cubeCenter + explodeDir * shardFlight;
+    vec3 shard_center = cube_center + explode_dir * shard_flight;
 
     // Camera
-    float camAngle = time * 0.15 + audioAdvance * 0.04;
-    float camDist = ( 22.0 * cDst ) - audioSwell * 4.0;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 10.0 + 3.0 * sin( time * 0.18 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0, 0.0, 0.0 );
+    float cam_angle = time * 0.15 + audioAdvance * 0.04;
+    float cam_dist = ( 22.0 * c_dst ) - audioSwell * 4.0;
+    vec3  cam_pos = vec3( sin( cam_angle ) * cam_dist, 10.0 + 3.0 * sin( time * 0.18 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0, 0.0, 0.0 );
 
-    vec3 ww = normalize( lookTarget - camPos );
+    vec3 ww = normalize( look_target - cam_pos );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
     // Facet normal calculation
     vec3 e1 = vObjPos[1] - vObjPos[0];
     vec3 e2 = vObjPos[2] - vObjPos[0];
-    vec3 rawNormal = normalize( cross( e1, e2 ) );
-    vec3 rotNorm = rotAxis( rawNormal, spinAxis, spinAngle );
+    vec3 raw_normal = normalize( cross( e1, e2 ) );
+    vec3 rot_norm = rotAxis( raw_normal, spin_axis, spin_angle );
 
     // Facet gem color: Ruby, Sapphire, Emerald, Diamond
-    vec3 gemCol = mix( vec3( 0.1, 0.7, 1.0 ), vec3( 1.0, 0.1, 0.5 ), seeds.x );
-    gemCol = mix( gemCol, vec3( 1.0, 0.85, 0.2 ), audioKick * 0.8 );
+    vec3 gem_col = mix( vec3( 0.1, 0.7, 1.0 ), vec3( 1.0, 0.1, 0.5 ), seeds.x );
+    gem_col = mix( gem_col, vec3( 1.0, 0.85, 0.2 ), audioKick * 0.8 );
     if ( hue > 0.001 )
-        gemCol = hueRot( gemCol, hue );
+        gem_col = hueRot( gem_col, hue );
 
-    vec3 baryCoords[3] = vec3[3]( vec3( 1.0, 0.0, 0.0 ), vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, 0.0, 1.0 ) );
+    vec3 bary_coords[3] = vec3[3]( vec3( 1.0, 0.0, 0.0 ), vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, 0.0, 1.0 ) );
 
     // Emit the 3 corners of the shard
     for ( int k = 0; k < 3; k++ )
     {
-        vec3 cornerRel = vObjPos[k] - faceCenter;
-        vec3 rotCorner = rotAxis( cornerRel, spinAxis, spinAngle );
-        vec3 worldP = shardCenter + rotAxis( faceCenter, spinAxis, spinAngle ) + rotCorner;
+        vec3 corner_rel = vObjPos[k] - face_center;
+        vec3 rot_corner = rotAxis( corner_rel, spin_axis, spin_angle );
+        vec3 world_p = shard_center + rotAxis( face_center, spin_axis, spin_angle ) + rot_corner;
 
-        vec3 relP = worldP - camPos;
-        vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
-        viewP.x -= eyeOff;
+        vec3 rel_p = world_p - cam_pos;
+        vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
+        view_p.x -= eyeOff;
 
-        gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+        gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-        gNormal = rotNorm;
-        gWorld = worldP;
-        gCol = vec4( gemCol, 1.0 );
-        gBary = baryCoords[k];
+        gNormal = rot_norm;
+        gWorld = world_p;
+        gCol = vec4( gem_col, 1.0 );
+        gBary = bary_coords[k];
         EmitVertex();
     }
     EndPrimitive();

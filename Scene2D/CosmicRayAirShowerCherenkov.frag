@@ -94,49 +94,49 @@ void main()
     float t = time * 0.45 * spd + audioAdvance * 0.22;
 
     // Air shower axis (top center to bottom)
-    float showerY = uv.y;
-    float showerX = uv.x - sin( showerY * 1.5 + t * 0.5 ) * 0.1;
+    float shower_y = uv.y;
+    float shower_x = uv.x - sin( shower_y * 1.5 + t * 0.5 ) * 0.1;
 
     // Lateral particle spread (Greisen function profile: widens towards bottom)
-    float altitude = clamp( showerY + 0.6, 0.01, 1.2 );
-    float lateralSpread = pow( 1.2 - altitude, 1.5 ) * ( 0.45 * csc + 0.2 * audioBass );
+    float altitude = clamp( shower_y + 0.6, 0.01, 1.2 );
+    float lateral_spread = pow( 1.2 - altitude, 1.5 ) * ( 0.45 * csc + 0.2 * audioBass );
 
     // Lateral distance from shower core
-    float distToCore = abs( showerX ) / max( lateralSpread, 0.01 );
-    float coreLuminance = exp( -distToCore * 4.0 );
+    float dist_to_core = abs( shower_x ) / max( lateral_spread, 0.01 );
+    float core_luminance = exp( -dist_to_core * 4.0 );
 
     // Cascading secondary particles (shower tracks)
-    vec2  trackCoord = vec2( showerX * 25.0, showerY * 15.0 - t * 8.0 );
-    vec2  sparkF = fract( trackCoord ) - 0.5;
-    float particleSparks = pow( hash21( floor( trackCoord ) ), 8.0 )
-                           * exp( -dot( sparkF, sparkF ) * 14.0 ) // round spark, not a filled cell
-                           * ( audioHigh * 3.0 + 0.5 );
+    vec2  track_coord = vec2( shower_x * 25.0, shower_y * 15.0 - t * 8.0 );
+    vec2  spark_f = fract( track_coord ) - 0.5;
+    float particle_sparks = pow( hash21( floor( track_coord ) ), 8.0 )
+                            * exp( -dot( spark_f, spark_f ) * 14.0 ) // round spark, not a filled cell
+                            * ( audioHigh * 3.0 + 0.5 );
 
     // Forward Cherenkov light cone (bright circular ring expanding downward)
-    float cherenkovPhase = fract( t * 1.8 + audioPhase * 0.5 );
-    float cherenkovY = 0.5 - cherenkovPhase * 1.0;
-    float cherenkovDist = abs( showerY - cherenkovY );
-    float cherenkovRing = exp( -cherenkovDist * 20.0 ) * exp( -abs( showerX ) * 3.0 ) * ( audioKick * 3.5 + 0.8 );
+    float cherenkov_phase = fract( t * 1.8 + audioPhase * 0.5 );
+    float cherenkov_y = 0.5 - cherenkov_phase * 1.0;
+    float cherenkov_dist = abs( shower_y - cherenkov_y );
+    float cherenkov_ring = exp( -cherenkov_dist * 20.0 ) * exp( -abs( shower_x ) * 3.0 ) * ( audioKick * 3.5 + 0.8 );
 
     // Photo texture mapping into atmospheric air shower ionization
-    vec2 photoUV = st + vec2( sin( trackCoord.y ), cos( trackCoord.x ) ) * 0.03 * ( 1.0 + audioKick * 0.5 );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( sin( track_coord.y ), cos( track_coord.x ) ) * 0.03 * ( 1.0 + audioKick * 0.5 );
+    vec3 photo = img( fract( photo_uv ) );
 
     // Near-UV Nitrogen fluorescence & Cherenkov blue palette
-    vec3 nightSky = vec3( 0.02, 0.03, 0.08 );
-    vec3 nitrogenViolet = vec3( 0.5, 0.2, 0.95 );
-    vec3 cherenkovCyan = vec3( 0.1, 0.85, 1.0 );
-    vec3 impactWhite = vec3( 0.95, 0.98, 1.0 );
+    vec3 night_sky = vec3( 0.02, 0.03, 0.08 );
+    vec3 nitrogen_violet = vec3( 0.5, 0.2, 0.95 );
+    vec3 cherenkov_cyan = vec3( 0.1, 0.85, 1.0 );
+    vec3 impact_white = vec3( 0.95, 0.98, 1.0 );
 
     // Combine visualizer
-    vec3 col = mix( nightSky, photo * 0.8, 0.35 + 0.2 * audioLevel );
-    col += coreLuminance * nitrogenViolet * ( 1.0 + audioSwell * 0.8 ) * flr;
-    col += cherenkovRing * cherenkovCyan * 1.8;
-    col += particleSparks * impactWhite * 2.0;
+    vec3 col = mix( night_sky, photo * 0.8, 0.35 + 0.2 * audioLevel );
+    col += core_luminance * nitrogen_violet * ( 1.0 + audioSwell * 0.8 ) * flr;
+    col += cherenkov_ring * cherenkov_cyan * 1.8;
+    col += particle_sparks * impact_white * 2.0;
 
     // Primary impact flash at the top on kick
-    float impactFlash = exp( -length( uv - vec2( 0.0, 0.5 ) ) * 6.0 ) * audioKick * 3.0;
-    col += impactFlash * impactWhite;
+    float impact_flash = exp( -length( uv - vec2( 0.0, 0.5 ) ) * 6.0 ) * audioKick * 3.0;
+    col += impact_flash * impact_white;
 
     if ( audioChromaHue != 0.0 )
         col = hueRot( col, audioChromaHue );
@@ -149,7 +149,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.65;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.65;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

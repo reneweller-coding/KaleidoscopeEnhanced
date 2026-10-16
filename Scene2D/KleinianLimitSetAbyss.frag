@@ -75,7 +75,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float zm = ( zoomP > 0.01 ) ? zoomP : 1.0;
-    float modParam = ( moduliP > 0.01 ) ? moduliP : 1.0;
+    float mod_param = ( moduliP > 0.01 ) ? moduliP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.25 * spd + audioAdvance * 0.20 * spd; // Zeit-Basis:
@@ -89,28 +89,28 @@ void main()
     float zc = 0.5 - 0.5 * cos( 6.2831853 * fract( t * 0.6 / 6.0 ) ); // 0..1..0
     // Zoom gedeckelt (max ~9x statt 403x): tief im Set blieb nur noch die
     // Grenzlinie uebrig -- "zwei einfarbige Flaechen".
-    float zoomLevel = exp( zc * 2.2 ) * zm;
-    vec2  z = uv / zoomLevel;
+    float zoom_level = exp( zc * 2.2 ) * zm;
+    vec2  z = uv / zoom_level;
 
     // Moduli parameter mu for Maskit slice: mu = (mu_r, mu_i)
     vec2 mu = vec2(
-        1.95 + 0.15 * sin( t * 0.3 ) * modParam,
+        1.95 + 0.15 * sin( t * 0.3 ) * mod_param,
         0.08 + 0.12 * cos( t * 0.24 ) * ( 1.0 + 0.2 * audioSwell ) );
 
     // Initial translation and rotation
-    float rotA = t * 0.15;
-    float cs = cos( rotA ), sn = sin( rotA );
+    float rot_a = t * 0.15;
+    float cs = cos( rot_a ), sn = sin( rot_a );
     z = mat2( cs, -sn, sn, cs ) * z + vec2( 1.0, 0.0 );
 
-    float iterCount = 0.0;
-    float minCuspDist = 1e5;
+    float iter_count = 0.0;
+    float min_cusp_dist = 1e5;
     float trap = 1e5;
 
     // Radius of the inversion circle of generator b. Sub-bass has to drive BOTH
     // the generator and the pearl-line distance below -- moving only the
     // measured radius would slide the highlight off the orbit points that
     // actually exist and simply extinguish the necklace.
-    float circR = 1.0 + 0.18 * audioSubBass;
+    float circ_r = 1.0 + 0.18 * audioSubBass;
 
     // Iterated Kleinian group generator transformations:
     // a: z -> z + 2
@@ -121,43 +121,43 @@ void main()
         z.x = mod( z.x + 1.0, 2.0 ) - 1.0;
 
         // Circle inversion fold (generator b)
-        vec2 zInv = cInv( z );
-        vec2 zNext = -zInv * ( circR * circR ) + mu;
+        vec2 z_inv = cInv( z );
+        vec2 z_next = -z_inv * ( circ_r * circ_r ) + mu;
 
         // Check if inside fundamental domain circle
-        if ( dot( zNext, zNext ) < dot( z, z ) )
+        if ( dot( z_next, z_next ) < dot( z, z ) )
         {
-            z = zNext;
-            iterCount += 1.0;
+            z = z_next;
+            iter_count += 1.0;
         }
 
-        float dCircle = abs( length( z ) - circR );
-        minCuspDist = min( minCuspDist, dCircle );
+        float d_circle = abs( length( z ) - circ_r );
+        min_cusp_dist = min( min_cusp_dist, d_circle );
         trap = min( trap, dot( z, z ) );
     }
 
     // Dynamic texture sample mapped to chaotic attractor coordinate
-    vec2 sampleUV = fract( z * 0.3 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( z * 0.3 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing pearl necklace edge lines
-    float pearlGlow = exp( -minCuspDist * ( 40.0 + 20.0 * audioCentroid ) ) * glw;
+    float pearl_glow = exp( -min_cusp_dist * ( 40.0 + 20.0 * audioCentroid ) ) * glw;
 
     // Palette blending across iteration depth & orbit trap
-    vec3 colA = imgPalette( iterCount * 0.09 + trap * 0.2 );
-    vec3 colB = imgPalette( iterCount * 0.09 + 0.5 );
-    vec3 finalCol = mix( colA, colB, 0.5 + 0.5 * sin( iterCount * 0.8 + t ) );
+    vec3 col_a = imgPalette( iter_count * 0.09 + trap * 0.2 );
+    vec3 col_b = imgPalette( iter_count * 0.09 + 0.5 );
+    vec3 final_col = mix( col_a, col_b, 0.5 + 0.5 * sin( iter_count * 0.8 + t ) );
 
-    finalCol = mix( finalCol, texCol, 0.35 + 0.15 * audioValence );
+    final_col = mix( final_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add neon pearl highlights and kick flash
-    vec3 pearlTint = vec3( 1.3, 1.1, 1.7 ) * pearlGlow * ( 1.0 + 3.0 * audioKick );
-    finalCol += pearlTint;
+    vec3 pearl_tint = vec3( 1.3, 1.1, 1.7 ) * pearl_glow * ( 1.0 + 3.0 * audioKick );
+    final_col += pearl_tint;
 
     // Cusp center bloom
-    float cuspBloom = exp( -trap * 3.0 ) * ( 0.8 + 1.2 * audioLevel );
-    finalCol += imgPalette( 0.8 ) * cuspBloom;
+    float cusp_bloom = exp( -trap * 3.0 ) * ( 0.8 + 1.2 * audioLevel );
+    final_col += imgPalette( 0.8 ) * cusp_bloom;
 
-    finalCol = pow( finalCol, vec3( 0.87 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.87 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

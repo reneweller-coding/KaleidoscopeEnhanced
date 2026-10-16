@@ -77,7 +77,7 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-const float FLOORY = -0.42;
+const float Floory = -0.42;
 float       gT, gPx, gDens;
 
 /// The colour of a pitch class: a wheel of hues, softened toward white.
@@ -96,7 +96,7 @@ vec3 curtain( vec2 p )
     {
         float fl = float( L );
         float sp = ( 0.07 - 0.018 * fl ) * gDens; // column spacing: near wide, far dense
-        float depthK = 1.0 - 0.3 * fl;            // far layers dim into the haze
+        float depth_k = 1.0 - 0.3 * fl;           // far layers dim into the haze
         float top = 0.5 + 0.02 * fl;
         float gx = p.x / sp + fl * 0.37;
         float ci = floor( gx + 0.5 );
@@ -107,7 +107,7 @@ vec3 curtain( vec2 p )
             float cx = ( id + 0.2 * ( hs - 0.5 ) - fl * 0.37 ) * sp;
             float dx = p.x - cx;
             // Each tube hangs to its own length.
-            float bottom = FLOORY + 0.015
+            float bottom = Floory + 0.015
                            + 0.1 * hash21( vec2( id, fl * 7.0 + 2.0 ) ) * hash21( vec2( id, fl * 3.0 + 5.0 ) )
                            + 0.02 * fl;
             if ( p.y < bottom - 0.01 || p.y > top )
@@ -129,13 +129,13 @@ vec3 curtain( vec2 p )
                 drop += tail * 0.7 + head * 1.5;
             }
             float ends = smoothstep( bottom - 0.01, bottom + 0.01, p.y ) * smoothstep( top, top - 0.05, p.y );
-            float w = 0.0022 * depthK + gPx * 0.6;
+            float w = 0.0022 * depth_k + gPx * 0.6;
             float core = exp( -dx * dx / ( w * w ) );
             float halo = exp( -abs( dx ) / ( 0.22 * sp ) ) * 0.3;
-            float bright = ( 0.05 + drop * ( 0.12 + 1.6 * e ) ) * ends * depthK;
+            float bright = ( 0.05 + drop * ( 0.12 + 1.6 * e ) ) * ends * depth_k;
             col += cc * bright * ( core + halo );
             // A white-hot core at the drop heads.
-            col += vec3( 1.0 ) * core * drop * e * 0.4 * ends * depthK;
+            col += vec3( 1.0 ) * core * drop * e * 0.4 * ends * depth_k;
         }
     }
     return col;
@@ -162,21 +162,21 @@ void main()
                * ( 0.6 + 0.8 * energy );
     vec3  col = haze * hz * smoothstep( 0.7, -0.2, abs( p.y - 0.05 ) );
 
-    if ( p.y > FLOORY )
+    if ( p.y > Floory )
     {
         col += curtain( p );
     }
     else
     {
         // The glossy floor: the curtain mirrored, softened and dimmed.
-        vec2  q = vec2( p.x + 0.004 * ( noise2( p * vec2( 40.0, 200.0 ) ) - 0.5 ), 2.0 * FLOORY - p.y );
-        float f = exp( -( FLOORY - p.y ) * 6.0 );
+        vec2  q = vec2( p.x + 0.004 * ( noise2( p * vec2( 40.0, 200.0 ) ) - 0.5 ), 2.0 * Floory - p.y );
+        float f = exp( -( Floory - p.y ) * 6.0 );
         col = col * 0.5 + curtain( q ) * 0.35 * f;
         col += haze * 0.15 * f;
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

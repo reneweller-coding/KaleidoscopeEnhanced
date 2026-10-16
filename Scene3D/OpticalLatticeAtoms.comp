@@ -56,20 +56,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -116,7 +116,7 @@ void main()
     float fill = 0.5 + 0.5 * clamp( fillP, 0.0, 1.0 );
     if ( h.x > fill )
         return; // empty site (fixed per activation)
-    vec3 sitePos = origin + vec3( float( ix ), float( iy ), float( iz ) ) * pitch;
+    vec3 site_pos = origin + vec3( float( ix ), float( iy ), float( iz ) ) * pitch;
     // Tunnelling: a cosine oscillation toward one neighbour direction; the
     // amplitude shrinks when the lattice is deep (high swell).
     vec3  dirs[6] = vec3[6]( vec3( 1, 0, 0 ), vec3( -1, 0, 0 ), vec3( 0, 1, 0 ), vec3( 0, -1, 0 ), vec3( 0, 0, 1 ),
@@ -124,7 +124,7 @@ void main()
     vec3  dir = dirs[int( h.y * 5.99 )];
     float phase = clock * ( 0.5 + 0.5 * h.z ) + h.x * 6.28;
     float stray = ( 0.45 - 0.3 * depth ) * pitch;
-    vec3  pos = sitePos + dir * stray * 0.5 * ( 1.0 - cos( phase ) );
+    vec3  pos = site_pos + dir * stray * 0.5 * ( 1.0 - cos( phase ) );
     float sz = 0.2 + 0.08 * ( 1.0 - depth );
     float cls = mod( float( ix + iy * 5u + iz * 7u ), 12.0 );
     emitQuad( pos, vec3( sz, 0.0, 0.0 ), vec3( 0.0, sz, 0.0 ), cls, 0.5 + 0.5 * sin( phase ), 0.0, vec2( 0.0 ),

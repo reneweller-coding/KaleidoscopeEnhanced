@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -256,7 +256,7 @@ void main()
     dirs[3] = vec2( -1.0, 1.0 );
     float dmin = 9.0;
     float conn = 0.0;
-    float sAlong = 0.0;
+    float s_along = 0.0;
     for ( int k = 0; k < 4; ++k )
     {
         for ( int sgn = 0; sgn < 2; ++sgn )
@@ -272,7 +272,7 @@ void main()
             if ( d < dmin )
             {
                 dmin = d;
-                sAlong = dot( gi, normalize( dirs[k] ) ) + h * length( b ) * ( sgn == 0 ? 1.0 : -1.0 );
+                s_along = dot( gi, normalize( dirs[k] ) ) + h * length( b ) * ( sgn == 0 ? 1.0 : -1.0 );
             }
         }
     }
@@ -283,7 +283,7 @@ void main()
                                                                                                         // ends
     float via = step( 2.5, conn ) * smoothstep( 0.14 + px, 0.14 - px, length( gf ) );                   // junctions
     float flow = 1.2 * sceneTime + 8.0 * audioAdvance;
-    float pulse = pow( 0.5 + 0.5 * sin( sAlong * 0.9 - flow + hash21( gi ) * 0.5 ), 10.0 );
+    float pulse = pow( 0.5 + 0.5 * sin( s_along * 0.9 - flow + hash21( gi ) * 0.5 ), 10.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  pc = mix( vec3( 0.2, 0.9, 1.0 ), vec3( 1.0, 0.7, 0.2 ), mode );
     pc = mix( pc, glowColour( imgLod( gi / gPitch * 0.9 + 0.5, 5.0 ), gi * 0.02, hueP * 0.159 ), 0.3 );

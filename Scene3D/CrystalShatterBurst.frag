@@ -35,26 +35,26 @@ uniform float audioSharpness; ///< Zwicker HF loudness: 0 = dull, 1 = harsh-brig
 void main()
 {
     vec3  n = normalize( gNormal );
-    vec3  lightDir = normalize( vec3( 0.6, 0.9, -0.4 ) );
-    float diff = max( dot( n, lightDir ), 0.0 ) * 0.7 + 0.3;
+    vec3  light_dir = normalize( vec3( 0.6, 0.9, -0.4 ) );
+    float diff = max( dot( n, light_dir ), 0.0 ) * 0.7 + 0.3;
 
     // Specular highlight — sharpness decides whether the gem answers with a
     // broad dull sheen or a hard cut-glass glint (energy stays balanced: the
     // wider highlight is dimmed by the same amount it spreads).
     float shrp = clamp( audioSharpness, 0.0, 1.0 );
-    vec3  viewDir = normalize( -gWorld );
-    vec3  refl = reflect( -lightDir, n );
-    float spec = pow( max( dot( viewDir, refl ), 0.0 ), mix( 12.0, 64.0, shrp ) )
+    vec3  view_dir = normalize( -gWorld );
+    vec3  refl = reflect( -light_dir, n );
+    float spec = pow( max( dot( view_dir, refl ), 0.0 ), mix( 12.0, 64.0, shrp ) )
                  * mix( 0.55, 1.0, shrp );
 
     // Shard faceted wireframe edge line — bright timbres draw it down to a
     // hairline, dull ones leave the facet borders soft.  Never wider than the
     // original 0.08, so the wireframe cannot flood the frame.
-    float minBary = min( min( gBary.x, gBary.y ), gBary.z );
-    float edgeGlow = smoothstep( mix( 0.08, 0.03, shrp ), 0.0, minBary );
+    float min_bary = min( min( gBary.x, gBary.y ), gBary.z );
+    float edge_glow = smoothstep( mix( 0.08, 0.03, shrp ), 0.0, min_bary );
 
     vec3 col = gCol.rgb * diff + spec * vec3( 1.0, 1.0, 1.0 );
-    col += edgeGlow * gCol.rgb * 2.0;
+    col += edge_glow * gCol.rgb * 2.0;
 
     fragColor = vec4( col, 1.0 );
 }

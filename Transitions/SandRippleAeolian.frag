@@ -62,38 +62,38 @@ void main()
 
     float t = time * 0.0339 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Diagonal wind direction
-    vec2  windDir = normalize( vec2( 1.0, 0.4 ) );
-    float windCoord = dot( p, windDir );
+    vec2  wind_dir = normalize( vec2( 1.0, 0.4 ) );
+    float wind_coord = dot( p, wind_dir );
 
     // Sand ripple saltation waveform
-    float ripple = sin( windCoord * 45.0 * rpl - t * 6.0 * wnd );
-    float rippleShape = pow( sin( windCoord * 45.0 * rpl * 0.5 - t * 3.0 * wnd ) * 0.5 + 0.5, 2.0 );
+    float ripple = sin( wind_coord * 45.0 * rpl - t * 6.0 * wnd );
+    float ripple_shape = pow( sin( wind_coord * 45.0 * rpl * 0.5 - t * 3.0 * wnd ) * 0.5 + 0.5, 2.0 );
 
     // Wind sweep front moving across
-    float sweepFront = mix( -1.2, 1.2, tProg );
-    float distToFront = windCoord - sweepFront;
+    float sweep_front = mix( -1.2, 1.2, t_prog );
+    float dist_to_front = wind_coord - sweep_front;
 
     // Sand grain displacement
-    vec2 sandDisp = windDir * ripple * 0.03 * midTransition * ( 1.0 + audioSwell * 0.6 );
+    vec2 sand_disp = wind_dir * ripple * 0.03 * mid_transition * ( 1.0 + audioSwell * 0.6 );
 
-    vec4 c1 = texture( tex1, fract( uv + sandDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - sandDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + sand_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - sand_disp ) );
 
-    float wipeMask = smoothstep( -0.05, 0.05, distToFront );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.05, 0.05, dist_to_front );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Golden sand mineral glints
-    float glint = exp( -abs( distToFront ) * 15.0 ) * rippleShape * midTransition;
+    float glint = exp( -abs( dist_to_front ) * 15.0 ) * ripple_shape * mid_transition;
     col.rgb += glint * vec3( 1.0, 0.85, 0.4 ) * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

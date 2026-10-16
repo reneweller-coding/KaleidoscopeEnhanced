@@ -97,7 +97,7 @@ void main()
 
     // The two vanes differ, which is what separates a feather from a leaf.
     float side = ( v < 0.0 ) ? 0.62 : 1.0;
-    float halfW = w * side;
+    float half_w = w * side;
 
     // Barbs: a comb running along the vane, angled toward the tip.
     float barbs = 22.0 + 26.0 * clamp( barbP, 0.0, 1.5 );
@@ -105,7 +105,7 @@ void main()
 
     // The same comb nicks the outline, so the edge is ragged the way separated
     // barbs are, instead of being a clean curve.
-    float edge = halfW * ( 1.0 - 0.10 * clamp( barbP, 0.0, 1.5 ) * ( 0.5 + 0.5 * comb ) );
+    float edge = half_w * ( 1.0 - 0.10 * clamp( barbP, 0.0, 1.5 ) * ( 0.5 + 0.5 * comb ) );
 
     if ( abs( v ) > edge )
         discard;

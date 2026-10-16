@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -237,23 +237,23 @@ void main()
     float a = atan( p.y, p.x ) + 0.012 * sceneTime + 0.2 * audioPhase;
     float z = 0.45 / max( r, 1e-3 );
     float u = z + 0.18 * sceneTime + 1.0 * audioAdvance;
-    float nA = 2.0 * floor( 14.0 + 14.0 * clamp( countP, 0.0, 1.0 ) );
-    float ringSp = 0.22;
+    float n_a = 2.0 * floor( 14.0 + 14.0 * clamp( countP, 0.0, 1.0 ) );
+    float ring_sp = 0.22;
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  glowC = mix( vec3( 0.55, 0.35, 1.0 ), vec3( 1.0, 0.65, 0.25 ), mode );
-    float lightA = 0.1 * sceneTime;
+    vec3  glow_c = mix( vec3( 0.55, 0.35, 1.0 ), vec3( 1.0, 0.65, 0.25 ), mode );
+    float light_a = 0.1 * sceneTime;
     // Crystals from this ring and the two rings behind overlap (long points
     // reach into the next ring); draw back to front.
     vec3  crystal = vec3( 0.0 );
     float cover = 0.0;
     for ( int k = 2; k >= 0; --k )
     {
-        float ry = floor( u / ringSp ) - float( k );
+        float ry = floor( u / ring_sp ) - float( k );
         float off = hash11( ry * 1.3 );
-        float gx = a / 6.2831853 * nA - off;
+        float gx = a / 6.2831853 * n_a - off;
         vec2  gi = vec2( floor( gx ), ry );
-        float hx = hash21( vec2( mod( gi.x, nA ), gi.y ) );
-        vec2  gf = vec2( fract( gx ) - 0.5 + 0.2 * ( hx - 0.5 ), ( u - ry * ringSp ) / ringSp );
+        float hx = hash21( vec2( mod( gi.x, n_a ), gi.y ) );
+        vec2  gf = vec2( fract( gx ) - 0.5 + 0.2 * ( hx - 0.5 ), ( u - ry * ring_sp ) / ring_sp );
         float len = ( 1.2 + 1.6 * hx ) * ( 0.7 + 0.5 * clamp( audioSpread, 0.0, 1.0 ) );
         float w = 0.48 * ( 1.0 - gf.y / len );
         float fwx = fwidth( gx ) + 0.01;
@@ -262,10 +262,10 @@ void main()
         if ( ins <= 0.0 )
             continue;
         float facet = gf.x > 0.0 ? 1.0 : 0.0;
-        float lit = 0.5 + 0.5 * cos( a - lightA + ( facet - 0.5 ) * 1.3 + hx * 2.0 );
-        vec2  cuv = vec2( mod( gi.x, nA ) * 0.071, gi.y * 0.233 );
+        float lit = 0.5 + 0.5 * cos( a - light_a + ( facet - 0.5 ) * 1.3 + hx * 2.0 );
+        vec2  cuv = vec2( mod( gi.x, n_a ) * 0.071, gi.y * 0.233 );
         vec3  ph = imgLod( cuv, 4.0 );
-        vec3  cc = mix( glowColour( ph, vec2( cos( a ), sin( a ) ) + gi.y * 0.1, hueP * 0.159 ), glowC, 0.35 );
+        vec3  cc = mix( glowColour( ph, vec2( cos( a ), sin( a ) ) + gi.y * 0.1, hueP * 0.159 ), glow_c, 0.35 );
         // Translucent quartz: the core glows, the facets reflect.
         float t = gf.y / len;
         float trans = ( 0.5 + 0.9 * clamp( glowP, 0.0, 1.0 ) ) * ( 0.6 + 0.6 * bass ) * ( 1.0 - 0.5 * t );
@@ -286,7 +286,7 @@ void main()
     vec3 col = mix( crust, crystal, inside );
     // Depth: far rings fade into a glowing core.
     float far = smoothstep( 2.0, 8.0, z );
-    col = mix( col, glowC * 0.5, far );
-    col += glowC * exp( -r * 3.0 ) * ( 0.3 + 0.5 * bass );
+    col = mix( col, glow_c * 0.5, far );
+    col += glow_c * exp( -r * 3.0 ) * ( 0.3 + 0.5 * bass );
     finish( col );
 }

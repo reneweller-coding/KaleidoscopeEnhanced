@@ -104,7 +104,7 @@ float fbm( vec2 p )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    int   nPlume = ( plumesP > 0 ) ? plumesP : 3;
+    int   n_plume = ( plumesP > 0 ) ? plumesP : 3;
     float swirl = ( swirlP > 0.0 ) ? swirlP : 1.0;
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
@@ -139,11 +139,11 @@ void main()
     // ITS OWN COLOUR — the tints accumulate density-weighted, so where two
     // inks meet they visibly mix.
     float density = 0.0;
-    float headGlow = 0.0;
-    vec3  tintAcc = vec3( 0.0 );
+    float head_glow = 0.0;
+    vec3  tint_acc = vec3( 0.0 );
     for ( int i = 0; i < 6; i++ )
     {
-        if ( i >= nPlume )
+        if ( i >= n_plume )
             break;
         float fi = float( i );
         float px = ( hash11( fi * 13.7 + 3.1 ) - 0.5 ) * 1.3; // column x
@@ -153,14 +153,14 @@ void main()
         d.x /= ( 0.28 + 0.55 * clamp( 0.55 - y0, 0.0, 1.2 ) ); // widen w/ depth
         float col = exp( -dot( d, d ) * 7.0 );
         density += col;
-        tintAcc += hueRot( vec3( 1.0, 0.45, 0.30 ),
-                           inkHueP + hash11( fi * 9.7 + 0.4 ) * 4.8 )
-                   * col;
+        tint_acc += hueRot( vec3( 1.0, 0.45, 0.30 ),
+                            inkHueP + hash11( fi * 9.7 + 0.4 ) * 4.8 )
+                    * col;
         // The plume HEAD (just below the source) wells up on onsets.
         float head = exp( -dot( wp - vec2( px, y0 + 0.05 ), wp - vec2( px, y0 + 0.05 ) ) * 30.0 );
-        headGlow += head;
+        head_glow += head;
     }
-    vec3 plumeTint = tintAcc / max( density, 1e-3 );
+    vec3 plume_tint = tint_acc / max( density, 1e-3 );
     density = clamp( density, 0.0, 1.4 );
 
     // Marbling detail inside the ink + fine TENDRIL filaments (a third,
@@ -178,14 +178,14 @@ void main()
                    * smoothstep( -0.35, 0.55, p.y );
     water += vec3( 0.08, 0.13, 0.19 ) * shafts * ( 0.30 + 0.65 * audioSwell );
 
-    vec3 inkCol = img( fract( wp * 0.45 + 0.5 + ( w2 - 0.5 ) * 0.2 ) );
-    inkCol = mix( inkCol, inkCol * plumeTint * 2.2, 0.60 );
-    inkCol *= 0.45 + 0.95 * marble;
+    vec3 ink_col = img( fract( wp * 0.45 + 0.5 + ( w2 - 0.5 ) * 0.2 ) );
+    ink_col = mix( ink_col, ink_col * plume_tint * 2.2, 0.60 );
+    ink_col *= 0.45 + 0.95 * marble;
 
-    vec3 col = mix( water, inkCol, smoothstep( 0.06, 0.85, density ) );
+    vec3 col = mix( water, ink_col, smoothstep( 0.06, 0.85, density ) );
     // Fresh ink wells out of the plume heads on every onset — clearly
     // visible drops now, not just a faint shimmer.
-    col += imgPal( marble * 5.0 ) * headGlow * ( 0.20 + 1.40 * audioOnset );
+    col += imgPal( marble * 5.0 ) * head_glow * ( 0.20 + 1.40 * audioOnset );
 
     // Gentle vignette + mood grade.
     col *= 1.0 - 0.40 * dot( p, p );

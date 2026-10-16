@@ -113,11 +113,11 @@ void main()
         // FRONT takes that same visible half to mean 0.57 with a p10..p90
         // spread of 0.94: every tower now has a bright edge and a dark edge,
         // which is the local light/dark separation the picture was missing.
-        vec3  lightDir = normalize( vec3( -0.55, 0.62, -0.56 ) );
-        float diff = max( 0.0, dot( vNormal, lightDir ) );
+        vec3  light_dir = normalize( vec3( -0.55, 0.62, -0.56 ) );
+        float diff = max( 0.0, dot( vNormal, light_dir ) );
         // The eye direction has to flip with it, or the crystal sheen lands on
         // the far side of every tower.
-        float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, -1.0 ) ) ), 24.0 )
+        float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, -1.0 ) ) ), 24.0 )
                      * ( specularP > 0.01 ? specularP : 1.2 );
 
         vec3 photo = img( vUV );

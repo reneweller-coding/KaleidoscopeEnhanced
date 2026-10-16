@@ -62,51 +62,51 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Solvent front moving upward
-    float solventFront = mix( -1.2, 1.2, tProg ) * slv;
-    float distToSolvent = p.y - solventFront;
+    float solvent_front = mix( -1.2, 1.2, t_prog ) * slv;
+    float dist_to_solvent = p.y - solvent_front;
 
     // Different Rf factors for R, G, B channels
-    float rf_R = 0.9 * rtd;
-    float rf_G = 0.65 * rtd;
-    float rf_B = 0.4 * rtd;
+    float rf_r = 0.9 * rtd;
+    float rf_g = 0.65 * rtd;
+    float rf_b = 0.4 * rtd;
 
     // Capillary paper fibre texture: fine vertical striations in the sheet that
     // deflect the climbing pigment bands.  audioBass undulates how pronounced
-    // the weave is.  The whole term is multiplied by midTransition, so it is
+    // the weave is.  The whole term is multiplied by mid_transition, so it is
     // exactly zero at both fade endpoints and cannot shift the solvent front,
     // the wipe mask, or the sampled UVs there.
     float fibre = sin( p.x * 85.0 + sin( p.y * 5.0 + t * 0.7 ) * 1.6 );
-    float fibreDisp = fibre * 0.006 * ( 1.0 + audioSwell * 0.8 ) * midTransition;
+    float fibre_disp = fibre * 0.006 * ( 1.0 + audioSwell * 0.8 ) * mid_transition;
 
-    float rDisp = max( 0.0, solventFront * rf_R - p.y ) * 0.04 * midTransition + fibreDisp;
-    float gDisp = max( 0.0, solventFront * rf_G - p.y ) * 0.04 * midTransition + fibreDisp;
-    float bDisp = max( 0.0, solventFront * rf_B - p.y ) * 0.04 * midTransition + fibreDisp;
+    float r_disp = max( 0.0, solvent_front * rf_r - p.y ) * 0.04 * mid_transition + fibre_disp;
+    float g_disp = max( 0.0, solvent_front * rf_g - p.y ) * 0.04 * mid_transition + fibre_disp;
+    float b_disp = max( 0.0, solvent_front * rf_b - p.y ) * 0.04 * mid_transition + fibre_disp;
 
-    float r1 = texture( tex1, fract( uv + vec2( 0.0, rDisp ) ) ).r;
-    float g1 = texture( tex1, fract( uv + vec2( 0.0, gDisp ) ) ).g;
-    float b1 = texture( tex1, fract( uv + vec2( 0.0, bDisp ) ) ).b;
+    float r1 = texture( tex1, fract( uv + vec2( 0.0, r_disp ) ) ).r;
+    float g1 = texture( tex1, fract( uv + vec2( 0.0, g_disp ) ) ).g;
+    float b1 = texture( tex1, fract( uv + vec2( 0.0, b_disp ) ) ).b;
     vec3  c1 = vec3( r1, g1, b1 );
 
-    float r0 = texture( tex0, fract( uv - vec2( 0.0, rDisp ) ) ).r;
-    float g0 = texture( tex0, fract( uv - vec2( 0.0, gDisp ) ) ).g;
-    float b0 = texture( tex0, fract( uv - vec2( 0.0, bDisp ) ) ).b;
+    float r0 = texture( tex0, fract( uv - vec2( 0.0, r_disp ) ) ).r;
+    float g0 = texture( tex0, fract( uv - vec2( 0.0, g_disp ) ) ).g;
+    float b0 = texture( tex0, fract( uv - vec2( 0.0, b_disp ) ) ).b;
     vec3  c0 = vec3( r0, g0, b0 );
 
-    float wipeMask = smoothstep( -0.05, 0.05, distToSolvent );
-    vec3  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.05, 0.05, dist_to_solvent );
+    vec3  col = mix( c0, c1, wipe_mask );
 
     // Solvent meniscus line glow
-    float meniscus = exp( -abs( distToSolvent ) * 25.0 ) * midTransition;
+    float meniscus = exp( -abs( dist_to_solvent ) * 25.0 ) * mid_transition;
     col += meniscus * vec3( 0.3, 0.85, 1.0 ) * ( 1.3 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col = hueRot( col, audioChromaHue * midTransition );
+        col = hueRot( col, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col = hueRot( col, hue * midTransition );
+        col = hueRot( col, hue * mid_transition );
 
     fragColor = vec4( col, 1.0 );
 }

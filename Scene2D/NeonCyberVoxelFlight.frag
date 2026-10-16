@@ -62,8 +62,8 @@ vec3 imgPalette( float t )
 float buildingHeight( vec2 cellID, float hMod )
 {
     float n = sin( cellID.x * 12.9898 + cellID.y * 78.233 );
-    float randH = fract( sin( n ) * 43758.5453 );
-    return ( 0.8 + 2.5 * randH ) * ( 1.0 + 1.2 * audioBass ) * hMod;
+    float rand_h = fract( sin( n ) * 43758.5453 );
+    return ( 0.8 + 2.5 * rand_h ) * ( 1.0 + 1.2 * audioBass ) * hMod;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -72,7 +72,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float cDens = ( cityDensityP > 0.01 ) ? cityDensityP : 1.0;
+    float c_dens = ( cityDensityP > 0.01 ) ? cityDensityP : 1.0;
     float hMod = ( heightP > 0.01 ) ? heightP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -87,16 +87,16 @@ void main()
     vec3 rd = normalize( vec3( uv.x, uv.y - 0.1, 1.25 ) );
 
     // Raymarching through voxel city
-    float totDist = 0.0;
-    vec3  hitCol = vec3( 0.0 );
-    vec3  hitPos = vec3( 0.0 );
-    bool  hitBuilding = false;
+    float tot_dist = 0.0;
+    vec3  hit_col = vec3( 0.0 );
+    vec3  hit_pos = vec3( 0.0 );
+    bool  hit_building = false;
 
     for ( int i = 0; i < 54; i++ )
     {
-        vec3 p = ro + rd * totDist;
-        vec2 cellID = floor( p.xz * ( 0.5 * cDens ) );
-        vec2 cellUV = fract( p.xz * ( 0.5 * cDens ) ) - 0.5;
+        vec3 p = ro + rd * tot_dist;
+        vec2 cellID = floor( p.xz * ( 0.5 * c_dens ) );
+        vec2 cell_uv = fract( p.xz * ( 0.5 * c_dens ) ) - 0.5;
 
         float h = buildingHeight( cellID, hMod );
 
@@ -104,72 +104,72 @@ void main()
         // path (x = 1.5*sin(z*0.3/3.5), the exact ro trajectory) so the
         // flight lane stays a street canyon instead of ramming a facade
         // every few seconds. Towers beyond the lane keep full height.
-        vec2  cellWorld = ( cellID + 0.5 ) / ( 0.5 * cDens );
-        float lane = abs( cellWorld.x - 1.5 * sin( cellWorld.y * 0.0857143 ) );
+        vec2  cell_world = ( cellID + 0.5 ) / ( 0.5 * c_dens );
+        float lane = abs( cell_world.x - 1.5 * sin( cell_world.y * 0.0857143 ) );
         h = min( h, mix( 0.55, 60.0, smoothstep( 1.3, 3.6, lane ) ) );
 
         // Distance to box tower: |x| < 0.35, |z| < 0.35, y < h
-        vec2  dBox2D = abs( cellUV ) - vec2( 0.35 );
-        float dWall = max( dBox2D.x, dBox2D.y );
-        float dRoof = p.y - h;
+        vec2  d_box_2d = abs( cell_uv ) - vec2( 0.35 );
+        float d_wall = max( d_box_2d.x, d_box_2d.y );
+        float d_roof = p.y - h;
 
-        float d = max( dWall, dRoof );
+        float d = max( d_wall, d_roof );
 
-        if ( d < 0.01 || totDist > 25.0 )
+        if ( d < 0.01 || tot_dist > 25.0 )
         {
-            if ( totDist <= 25.0 )
+            if ( tot_dist <= 25.0 )
             {
-                hitBuilding = true;
-                hitPos = p;
+                hit_building = true;
+                hit_pos = p;
             }
             break;
         }
 
-        totDist += max( 0.03, d * 0.65 );
+        tot_dist += max( 0.03, d * 0.65 );
     }
 
-    if ( hitBuilding )
+    if ( hit_building )
     {
         // Compute glowing window grid on building facade
-        vec2  winGrid = fract( hitPos.xy * vec2( 8.0, 4.0 ) ) - 0.5;
-        float winDist = max( abs( winGrid.x ), abs( winGrid.y ) );
+        vec2  win_grid = fract( hit_pos.xy * vec2( 8.0, 4.0 ) ) - 0.5;
+        float win_dist = max( abs( win_grid.x ), abs( win_grid.y ) );
         // Tonal brightness crisps the window edges: raising the inner stop
         // narrows the smoothstep band, so bright material gives hard-edged
         // voxel windows and dark material leaves them soft/blurred.
-        float winMask = smoothstep( 0.4, 0.25 + 0.11 * audioCentroid, winDist );
+        float win_mask = smoothstep( 0.4, 0.25 + 0.11 * audioCentroid, win_dist );
 
         // Random window light on/off pattern
-        float winRand = fract( sin( dot( floor( hitPos.xy * vec2( 8.0, 4.0 ) ), vec2( 12.3, 45.6 ) ) ) * 43758.5453 );
-        float isLit = step( 0.45, winRand );
+        float win_rand = fract( sin( dot( floor( hit_pos.xy * vec2( 8.0, 4.0 ) ), vec2( 12.3, 45.6 ) ) ) * 43758.5453 );
+        float is_lit = step( 0.45, win_rand );
 
         // Sample texture on facade
-        vec2 sampleUV = fract( hitPos.xz * 0.2 + hitPos.y * 0.1 );
-        vec3 texCol = img( sampleUV );
-        vec3 palCol = imgPalette( hitPos.y * 0.2 + 0.1 );
+        vec2 sample_uv = fract( hit_pos.xz * 0.2 + hit_pos.y * 0.1 );
+        vec3 tex_col = img( sample_uv );
+        vec3 pal_col = imgPalette( hit_pos.y * 0.2 + 0.1 );
 
-        vec3 bldgBase = mix( texCol, palCol, 0.3 ) * 0.4;
-        vec3 winCol = vec3( 1.5, 1.3, 0.4 ) * winMask * isLit * ( 1.0 + 2.0 * audioKick ) * glw;
+        vec3 bldg_base = mix( tex_col, pal_col, 0.3 ) * 0.4;
+        vec3 win_col = vec3( 1.5, 1.3, 0.4 ) * win_mask * is_lit * ( 1.0 + 2.0 * audioKick ) * glw;
 
-        hitCol = bldgBase + winCol;
+        hit_col = bldg_base + win_col;
 
         // Rooftop laser beacons
-        float roofBeacon = smoothstep( 0.1, 0.0,
-                                       abs( hitPos.y - buildingHeight( floor( hitPos.xz * ( 0.5 * cDens ) ), hMod ) ) );
-        hitCol += vec3( 1.8, 0.3, 0.9 ) * roofBeacon * ( 1.0 + 2.5 * audioKick );
+        float roof_beacon = smoothstep(
+            0.1, 0.0, abs( hit_pos.y - buildingHeight( floor( hit_pos.xz * ( 0.5 * c_dens ) ), hMod ) ) );
+        hit_col += vec3( 1.8, 0.3, 0.9 ) * roof_beacon * ( 1.0 + 2.5 * audioKick );
     }
     else
     {
         // Sky with cyberpunk laser grid
-        float skyGrid = abs( sin( rd.x * 25.0 / max( 0.05, rd.y + 0.2 ) ) )
-                        * abs( cos( 1.0 / max( 0.05, rd.y + 0.2 ) * 10.0 - t * 2.0 ) );
-        hitCol = imgPalette( 0.8 ) * smoothstep( 0.88, 1.0, skyGrid ) * 0.3 * audioHigh;
-        hitCol += mix( imgPalette( 0.2 ) * 0.15, imgPalette( 0.7 ) * 0.5, clamp( rd.y + 0.2, 0.0, 1.0 ) );
+        float sky_grid = abs( sin( rd.x * 25.0 / max( 0.05, rd.y + 0.2 ) ) )
+                         * abs( cos( 1.0 / max( 0.05, rd.y + 0.2 ) * 10.0 - t * 2.0 ) );
+        hit_col = imgPalette( 0.8 ) * smoothstep( 0.88, 1.0, sky_grid ) * 0.3 * audioHigh;
+        hit_col += mix( imgPalette( 0.2 ) * 0.15, imgPalette( 0.7 ) * 0.5, clamp( rd.y + 0.2, 0.0, 1.0 ) );
     }
 
     // Atmospheric depth haze
-    float depthFog = 1.0 - exp( -totDist * 0.08 );
-    hitCol = mix( hitCol, imgPalette( 0.75 ) * 0.4, depthFog );
+    float depth_fog = 1.0 - exp( -tot_dist * 0.08 );
+    hit_col = mix( hit_col, imgPalette( 0.75 ) * 0.4, depth_fog );
 
-    hitCol = pow( hitCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( hitCol, 0.0, 1.0 ), 1.0 );
+    hit_col = pow( hit_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( hit_col, 0.0, 1.0 ), 1.0 );
 }

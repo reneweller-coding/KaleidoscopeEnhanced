@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -243,12 +243,12 @@ void main()
     bgc *= mix( vec3( 0.95, 1.0, 1.1 ), vec3( 1.1, 1.0, 0.9 ), clamp( audioMode, 0.0, 1.0 ) );
     vec3  col = bgc * 0.75;
     float mag = 0.25 + 0.35 * clamp( audioSpread, 0.0, 1.0 );
-    float szK = ( 0.6 + 0.8 * clamp( sizeP, 0.0, 1.0 ) ) * ( 0.85 + 0.3 * swell );
+    float sz_k = ( 0.6 + 0.8 * clamp( sizeP, 0.0, 1.0 ) ) * ( 0.85 + 0.3 * swell );
     // Drops at three sizes (big lenses, medium, small satellites).
     for ( int L = 0; L < 3; ++L )
     {
         float fl = float( L );
-        float cell = ( 0.26 - 0.07 * fl ) * szK;
+        float cell = ( 0.26 - 0.07 * fl ) * sz_k;
         vec2  g = p / cell + vec2( T * ( 1.0 + fl * 0.5 ), T * 0.6 ) + fl * 17.0;
         vec2  gi = floor( g );
         for ( int j = -1; j <= 1; ++j )
@@ -268,14 +268,15 @@ void main()
                 vec2 cw = ( c - vec2( T * ( 1.0 + fl * 0.5 ), T * 0.6 ) - fl * 17.0 ) * cell;
                 vec2 luv = cw * 0.7 + 0.5 + vec2( 0.01, 0.006 ) * sceneTime
                            + ( p - cw ) * 0.7 * mag * ( 0.5 + 0.8 * z );
-                vec3 inD = imgLod( luv, blur * 0.4 );
-                inD = mix( inD, glowColour( inD, luv, hueP * 0.159 ) * ( 0.4 + 0.9 * luma( inD ) ), 0.5 ) * 1.5;
+                vec3 in_d = imgLod( luv, blur * 0.4 );
+                in_d = mix( in_d, glowColour( in_d, luv, hueP * 0.159 ) * ( 0.4 + 0.9 * luma( in_d ) ), 0.5 ) * 1.5;
                 // Dark refraction edge, bright inner rim, a highlight.
-                inD *= mix( 1.0, 0.1, smoothstep( 0.75, 1.0, dl ) );
-                inD += vec3( 1.0 ) * exp( -pow( ( dl - 0.85 ) / 0.05, 2.0 ) ) * 0.25;
-                inD += vec3( 1.0 ) * smoothstep( 0.25, 0.0, length( d / r - vec2( -0.35, 0.4 ) ) ) * ( 0.4 + 0.9 * hi );
+                in_d *= mix( 1.0, 0.1, smoothstep( 0.75, 1.0, dl ) );
+                in_d += vec3( 1.0 ) * exp( -pow( ( dl - 0.85 ) / 0.05, 2.0 ) ) * 0.25;
+                in_d += vec3( 1.0 ) * smoothstep( 0.25, 0.0, length( d / r - vec2( -0.35, 0.4 ) ) )
+                        * ( 0.4 + 0.9 * hi );
                 float aa = 2.0 / resolution.y / ( cell * r );
-                col = mix( col, inD, smoothstep( 1.0 + aa, 1.0 - aa, dl ) );
+                col = mix( col, in_d, smoothstep( 1.0 + aa, 1.0 - aa, dl ) );
             }
     }
     finish( col );

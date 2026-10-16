@@ -40,9 +40,9 @@ uniform float boyScaleP;
 uniform float symmetryP;
 
 // Host grid dimensions (Scene3DShader GEOM_GRID) and the shared 55-degree frustum.
-const float GW = 220.0, GH = 120.0;
-const float TAN_HALF_FOV = 0.52056705;
-const float ASPECT_GUESS = 1.7777778;
+const float Gw = 220.0, GH = 120.0;
+const float TanHalfFov = 0.52056705;
+const float AspectGuess = 1.7777778;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -67,9 +67,9 @@ void main()
 
     // --- split the host grid into four whole-cell blocks -------------------
     float cell = attrA.w;
-    float cx = mod( cell, GW );
-    float cy = floor( cell / GW );
-    float bx = step( GW * 0.5, cx );
+    float cx = mod( cell, Gw );
+    float cy = floor( cell / Gw );
+    float bx = step( Gw * 0.5, cx );
     float by = step( GH * 0.5, cy );
     float inst = bx + 2.0 * by; // 0..3
 
@@ -100,14 +100,14 @@ void main()
     float z = zr * ( 1.25 + 0.50 * audioSwell );
 
     float scale = 2.2 * ( boyScaleP > 0.01 ? boyScaleP : 1.0 );
-    vec3  worldPos = vec3( x, y, z - 0.45 ) * scale;
+    vec3  world_pos = vec3( x, y, z - 0.45 ) * scale;
 
     // Normal calculation
     vec3 n = normalize( vec3( x * 1.5, y * 1.5, zr * 2.0 - 1.0 ) );
     vNormal = n;
 
     // Triple self-intersection point indicator (near origin where 3 sheets cross)
-    float trip = exp( -length( worldPos ) * 2.5 ) * ( 1.0 + 3.0 * audioKick );
+    float trip = exp( -length( world_pos ) * 2.5 ) * ( 1.0 + 3.0 * audioKick );
     vTriplePoint = trip;
 
     vCol = imgPalette( fract( theta * 0.159 * 3.0 + r * 0.4 + audioCentroid ) );
@@ -121,8 +121,8 @@ void main()
         // Depth range tracks the shells' own scale, so the motes stay spread
         // through the volume the immersion occupies at any boyScaleP.
         float dz = 2.2 + scale * ( 0.5 + 4.6 * s0 );
-        float hx = TAN_HALF_FOV * ASPECT_GUESS * dz;
-        float hy = TAN_HALF_FOV * dz;
+        float hx = TanHalfFov * AspectGuess * dz;
+        float hy = TanHalfFov * dz;
         float dph = audioAdvance * 0.05 + audioPhase * 0.15;
         float px = ( s1 * 2.0 - 1.0 ) + 0.06 * sin( dph + s3 * 6.2831853 );
         float py = ( s2 * 2.0 - 1.0 ) + 0.06 * cos( dph * 0.83 + s1 * 6.2831853 );
@@ -131,7 +131,7 @@ void main()
         vec3 c = vec3( px * hx * 1.15, py * hy * 1.15, dz );
 
         // Cell-local corner in {-1,+1}^2 -> a camera-facing mote quad.
-        vec2  cq = clamp( guv * vec2( GW, GH ) - vec2( cx, cy ), 0.0, 1.0 ) * 2.0 - 1.0;
+        vec2  cq = clamp( guv * vec2( Gw, GH ) - vec2( cx, cy ), 0.0, 1.0 ) * 2.0 - 1.0;
         float msz = 0.0045 * dz * ( 0.6 + 0.7 * s3 ) * ( 1.0 + 0.6 * audioKick );
 
         vp = c + vec3( cq * msz, 0.0 );
@@ -146,13 +146,13 @@ void main()
         // composition (hero at ~61% of the frame height, mid at ~80%, outer
         // filling it) holds for every boyScaleP, and no shell can swing part of
         // itself behind the lens the way a fixed 4.8 did at the preset maximum.
-        float shellScale = ( inst < 0.5 ) ? 1.00 : ( ( inst < 1.5 ) ? 1.70 : 2.60 );
-        float shellDist = ( inst < 0.5 ) ? 2.85 : ( ( inst < 1.5 ) ? 2.15 : 1.85 );
-        float shellSpin = ( inst < 0.5 ) ? 1.00 : ( ( inst < 1.5 ) ? -0.62 : 0.33 );
+        float shell_scale = ( inst < 0.5 ) ? 1.00 : ( ( inst < 1.5 ) ? 1.70 : 2.60 );
+        float shell_dist = ( inst < 0.5 ) ? 2.85 : ( ( inst < 1.5 ) ? 2.15 : 1.85 );
+        float shell_spin = ( inst < 0.5 ) ? 1.00 : ( ( inst < 1.5 ) ? -0.62 : 0.33 );
         vDim = ( inst < 0.5 ) ? 1.00 : ( ( inst < 1.5 ) ? 0.62 : 0.36 );
-        float shellZ = shellDist * scale * shellScale;
+        float shell_z = shell_dist * scale * shell_scale;
 
-        float a = t * 0.25 * shellSpin;
+        float a = t * 0.25 * shell_spin;
 
         // Bounded pitch/yaw (never a full edge-on quarter turn) plus a free
         // roll about the view axis, so every shell stays broad on screen.
@@ -160,14 +160,14 @@ void main()
         float yaw = 1.00 * sin( a * 0.55 );
         float rol = a;
 
-        vec3  p = worldPos * shellScale;
+        vec3  p = world_pos * shell_scale;
         float cp = cos( pit ), sp = sin( pit );
         p = vec3( p.x, p.y * cp - p.z * sp, p.y * sp + p.z * cp );
         float cyw = cos( yaw ), syw = sin( yaw );
         p = vec3( p.x * cyw + p.z * syw, p.y, -p.x * syw + p.z * cyw );
         float cr = cos( rol ), sr = sin( rol );
         p = vec3( p.x * cr - p.y * sr, p.x * sr + p.y * cr, p.z );
-        p.z += shellZ;
+        p.z += shell_z;
         vp = p;
     }
 

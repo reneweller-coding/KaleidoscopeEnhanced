@@ -92,9 +92,9 @@ void main()
     // Ray structure: a tonal, single-band sky draws crisp vertical rays; a
     // noise-like spectrum smears them into one diffuse veil.  Only the ray
     // CONTRAST moves — the mean stays at 0.55, so exposure is untouched.
-    float rayDepth = 0.45 * ( 1.0 - 0.65 * audioFlatness );
+    float ray_depth = 0.45 * ( 1.0 - 0.65 * audioFlatness );
     col *= ( 0.5 + 0.5 * audioLevel + 0.5 * audioSwell )
-           * ( 0.55 + rayDepth * sin( t * 17.0 + ph * 5.0 ) ); // slow ray structure
+           * ( 0.55 + ray_depth * sin( t * 17.0 + ph * 5.0 ) ); // slow ray structure
 
     vCol = vec4( col * 0.40, 1.0 );
     vSide = sd;

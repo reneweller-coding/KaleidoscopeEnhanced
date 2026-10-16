@@ -113,52 +113,52 @@ void main()
 
     // The lines.  Each is a 7-node polyline drawn as a thick round-capped
     // stroke; a pulse of light runs along it on the clock.
-    float interD = 1e9; // nearest interchange
-    float interE = 0.0;
+    float inter_d = 1e9; // nearest interchange
+    float inter_e = 0.0;
     for ( int L = 0; L < 12; ++L )
     {
         if ( float( L ) >= lines )
             break;
-        float fL = float( L );
+        float f_l = float( L );
         float e = clamp( audioChroma[L] * 1.6, 0.0, 1.0 );
-        vec3  lc = imgPalette( hue * 0.159 + fL / 12.0 ) * 1.35 + 0.1;
+        vec3  lc = imgPalette( hue * 0.159 + f_l / 12.0 ) * 1.35 + 0.1;
         // Run position along the whole line, in node units.
-        float trainPos = fract( clock * ( 0.055 + 0.02 * hash11( fL * 5.3 ) ) + hash11( fL * 7.1 ) ) * 6.0;
-        float best = 1e9, bestS = 0.0;
+        float train_pos = fract( clock * ( 0.055 + 0.02 * hash11( f_l * 5.3 ) ) + hash11( f_l * 7.1 ) ) * 6.0;
+        float best = 1e9, best_s = 0.0;
         for ( int k = 0; k < 6; ++k )
         {
-            vec2  a = node( fL, float( k ), aspect, bench );
-            vec2  b = node( fL, float( k ) + 1.0, aspect, bench );
+            vec2  a = node( f_l, float( k ), aspect, bench );
+            vec2  b = node( f_l, float( k ) + 1.0, aspect, bench );
             float t;
             float d = segD( p, a, b, t );
             if ( d < best )
             {
                 best = d;
-                bestS = float( k ) + t;
+                best_s = float( k ) + t;
             }
         }
         float w = 0.013;
         float stroke = smoothstep( w, w * 0.6, best );
         col = mix( col, lc * ( 0.55 + 0.45 * e ) * light, stroke );
         // The train: a bright bead running along, with a short tail.
-        float ahead = bestS - trainPos;
+        float ahead = best_s - train_pos;
         float tail = exp( -max( -ahead, 0.0 ) * 3.2 ) * smoothstep( 0.35, 0.0, max( ahead, 0.0 ) );
         col += lc * stroke * tail * ( 0.6 + 1.0 * e ) * 1.5;
         col += lc * smoothstep( w * 2.4, 0.0, best ) * exp( -abs( ahead ) * 14.0 ) * ( 0.3 + 0.7 * e );
         // Stations: a tick at every node, an interchange circle at the ends.
         for ( int k = 0; k <= 6; ++k )
         {
-            vec2  n = node( fL, float( k ), aspect, bench );
+            vec2  n = node( f_l, float( k ), aspect, bench );
             float dn = length( p - n );
             if ( k == 0 || k == 6 )
             {
                 float ring = smoothstep( 0.024, 0.019, dn ) * smoothstep( 0.012, 0.017, dn );
                 col = mix( col, vec3( 0.12 ) * light, ring );
                 col = mix( col, paper, smoothstep( 0.013, 0.011, dn ) );
-                if ( dn < interD )
+                if ( dn < inter_d )
                 {
-                    interD = dn;
-                    interE = e;
+                    inter_d = dn;
+                    inter_e = e;
                 }
             }
             else
@@ -170,14 +170,14 @@ void main()
         }
     }
     // Interchange rings pulse on the kick, only right at the interchange.
-    col += vec3( 0.95, 0.92, 0.85 ) * smoothstep( 0.03, 0.014, interD ) * audioKick * ( 0.3 + 0.7 * interE );
+    col += vec3( 0.95, 0.92, 0.85 ) * smoothstep( 0.03, 0.014, inter_d ) * audioKick * ( 0.3 + 0.7 * inter_e );
     // A fold crease and the printed border, so it reads as a paper map.
     col *= 1.0 - 0.08 * smoothstep( 0.012, 0.0, abs( p.x - 0.02 ) );
     float border = smoothstep( 0.006, 0.0, abs( max( abs( p.x ) - aspect * 0.47, abs( p.y ) - 0.45 ) ) );
     col = mix( col, vec3( 0.2, 0.2, 0.22 ) * light, border );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

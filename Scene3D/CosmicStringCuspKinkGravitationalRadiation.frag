@@ -67,14 +67,14 @@ vec3 palTint( vec3 c, float t, float k )
 void main()
 {
     // Primordial cosmic string deep electric azure / gold cusp identity
-    vec3 stringCol = vec3( 0.2, 0.7, 1.0 );
-    vec3 cuspCol = palTint( stringCol, vDepth * 0.4 + audioCentroid, 0.25 );
+    vec3 string_col = vec3( 0.2, 0.7, 1.0 );
+    vec3 cusp_col = palTint( string_col, vDepth * 0.4 + audioCentroid, 0.25 );
 
     // The network now spans the whole view volume, so the photo lookup runs
     // at a much gentler scale -- at the old 0.3 it wrapped many times per
     // loop and read as noise instead of as photograph.
-    vec2 photoUv = fract( vPos.xy * 0.03 + 0.5 );
-    vec3 photoSample = img( photoUv );
+    vec2 photo_uv = fract( vPos.xy * 0.03 + 0.5 );
+    vec3 photo_sample = img( photo_uv );
 
     // Transverse profile across the cord: cylindrical shading, bright along
     // the spine and falling to a lit rim rather than to nothing.  The pass is
@@ -87,7 +87,7 @@ void main()
     float prof = 0.42 + 0.58 * sqrt( max( 0.0, 1.0 - x * x ) )
                  + 0.10 * lens * smoothstep( 0.72, 1.0, abs( x ) );
 
-    vec3 col = cuspCol * ( 0.6 + 0.4 * photoSample ) * vGlow * prof;
+    vec3 col = cusp_col * ( 0.6 + 0.4 * photo_sample ) * vGlow * prof;
     col *= ( cuspGlowP > 0.01 ? cuspGlowP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
     // The kick flash rides the same profile: applied flat it would have lit
     // the entire halo band on every beat.

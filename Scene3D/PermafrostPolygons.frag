@@ -81,11 +81,11 @@ void main()
     // The ponds in the troughs: mirrors of the sky (the photo top), lit by the bass.
     vec3 V = normalize( vec3( 0.0, camHP, 0.0 ) - vWorld );
     vec3 R = reflect( -V, vec3( 0.0, 1.0, 0.0 ) );
-    vec3 skyRefl = img( clamp( vec2( 0.5 + R.x * 0.4, 0.75 + R.y * 0.25 ), 0.0, 1.0 ) )
-                   * mix( vec3( 0.7, 0.85, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 );
-    skyRefl *= ( 0.6 + 0.9 * clamp( audioBass, 0.0, 1.0 ) ) * sun;
+    vec3 sky_refl = img( clamp( vec2( 0.5 + R.x * 0.4, 0.75 + R.y * 0.25 ), 0.0, 1.0 ) )
+                    * mix( vec3( 0.7, 0.85, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 );
+    sky_refl *= ( 0.6 + 0.9 * clamp( audioBass, 0.0, 1.0 ) ) * sun;
     float fres = 0.3 + 0.7 * pow( 1.0 - max( V.y, 0.0 ), 2.0 );
-    vec3  pond = mix( vec3( 0.08, 0.12, 0.15 ), skyRefl, fres );
+    vec3  pond = mix( vec3( 0.08, 0.12, 0.15 ), sky_refl, fres );
     col = mix( col, pond, smoothstep( 0.4, 0.9, vTrough ) );
     // Frost glints on the ridges (round), on the treble.
     vec2  gu = vWorld.xz * 1.5;
@@ -99,12 +99,12 @@ void main()
     col += vec3( 1.0 ) * audioKick * 0.6 * step( 0.985, hash21( vec2( vCell, floor( sceneAdvance * 0.5 ) ) ) )
            * ( 1.0 - vTrough );
     // Distance haze into a pale arctic sky.
-    vec3  hazeCol = mix( vec3( 0.7, 0.78, 0.85 ), imgPalette( hue * 0.159 + 0.6 ), 0.25 ) * sun;
+    vec3  haze_col = mix( vec3( 0.7, 0.78, 0.85 ), imgPalette( hue * 0.159 + 0.6 ), 0.25 ) * sun;
     float fog = 1.0 - exp( -vDist * 0.007 );
-    col = mix( col, hazeCol, clamp( fog, 0.0, 0.85 ) );
+    col = mix( col, haze_col, clamp( fog, 0.0, 0.85 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

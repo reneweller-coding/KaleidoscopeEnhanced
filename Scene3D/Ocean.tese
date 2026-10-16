@@ -32,7 +32,7 @@ uniform float eyeOff; ///< Stereo eye offset (0 in mono).
 // The sheet's world size.  Shared by the control and evaluation stages —
 // if these ever disagree, the two stages place the same patch in different
 // spots and the surface tears along every seam.
-const vec2 EXTENT = vec2( 220.0, 320.0 );
+const vec2 Extent = vec2( 220.0, 320.0 );
 
 // audioAdvance is the engine's HOST-INTEGRATED travel phase, and uniforms are
 // program-wide, so the tessellation stages see it without any engine change.
@@ -70,20 +70,20 @@ vec3 gerstner( vec2 pos, vec2 dir, float amp, float len, float phase,
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
-    vec2 uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
-    vec2 uv = mix( uvA, uvB, gl_TessCoord.y );
+    vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2 uv_b = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2 uv = mix( uv_a, uv_b, gl_TessCoord.y );
 
     // z runs AHEAD of the camera (the engine projects with -z).
-    vec3 p = vec3( ( uv.x - 0.5 ) * EXTENT.x, 0.0, uv.y * EXTENT.y + 2.0 );
+    vec3 p = vec3( ( uv.x - 0.5 ) * Extent.x, 0.0, uv.y * Extent.y + 2.0 );
 
     vec3 tanX = vec3( 1.0, 0.0, 0.0 );
     vec3 tanZ = vec3( 0.0, 0.0, 1.0 );
 
     float swell = swellP * ( 1.0 + 0.55 * audioSubBass + 0.30 * audioKick );
     float choppy = choppyP;
-    float windDir = 0.55 + 0.20 * sin( audioAdvance * 0.017 );
-    float wavePhase = audioAdvance * 0.85;
+    float wind_dir = 0.55 + 0.20 * sin( audioAdvance * 0.017 );
+    float wave_phase = audioAdvance * 0.85;
 
     float amp = 1.5 * swell;
     float len = 55.0;
@@ -91,12 +91,12 @@ void main()
     vec3  disp = vec3( 0.0 );
     for ( int i = 0; i < 6; ++i )
     {
-        float a = windDir + rot;
+        float a = wind_dir + rot;
         vec2  dir = vec2( cos( a ), sin( a ) );
         // Deep-water dispersion: shorter waves travel slower, which is what
         // keeps the octaves from marching in lockstep.
         float speed = sqrt( 6.2831853 / len );
-        disp += gerstner( p.xz, dir, amp, len, wavePhase * speed * 3.2,
+        disp += gerstner( p.xz, dir, amp, len, wave_phase * speed * 3.2,
                           choppy, tanX, tanZ );
         amp *= 0.60;
         len *= 0.52;

@@ -59,26 +59,26 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Primordial tensor metric perturbations: h_+ and h_x polarizations
-    float kGW = ( gwFreqP > 0.01 ? gwFreqP : 8.0 );
-    float wavePhase = ( uv.x + uv.y ) * kGW - t * 3.0;
-    vGravWavePhase = wavePhase;
+    float k_gw = ( gwFreqP > 0.01 ? gwFreqP : 8.0 );
+    float wave_phase = ( uv.x + uv.y ) * k_gw - t * 3.0;
+    vGravWavePhase = wave_phase;
 
     // + polarization (stretching x while compressing y) & x polarization (45-degree shear)
-    float hPlus = cos( wavePhase ) * ( uv.x * uv.x - uv.y * uv.y ) * 0.15;
-    float hCross = sin( wavePhase + audioPhase * 0.5 ) * ( 2.0 * uv.x * uv.y ) * 0.15;
+    float h_plus = cos( wave_phase ) * ( uv.x * uv.x - uv.y * uv.y ) * 0.15;
+    float h_cross = sin( wave_phase + audioPhase * 0.5 ) * ( 2.0 * uv.x * uv.y ) * 0.15;
 
-    float tScale = ( tensorScaleP > 0.01 ? tensorScaleP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
-    float zWarp = ( hPlus + hCross ) * tScale;
+    float t_scale = ( tensorScaleP > 0.01 ? tensorScaleP : 1.2 ) * ( 0.85 + 0.35 * audioSwell );
+    float z_warp = ( h_plus + h_cross ) * t_scale;
 
     // Space metric expansion background
-    vec3 worldPos = vec3( uv.x * 3.0, uv.y * 3.0, zWarp );
+    vec3 world_pos = vec3( uv.x * 3.0, uv.y * 3.0, z_warp );
 
     // Metric curvature normal
-    float dHdx = cos( wavePhase ) * uv.x * 0.4;
-    float dHdy = sin( wavePhase ) * uv.y * 0.4;
-    vNormal = normalize( vec3( -dHdx, -dHdy, 1.0 ) );
+    float d_hdx = cos( wave_phase ) * uv.x * 0.4;
+    float d_hdy = sin( wave_phase ) * uv.y * 0.4;
+    vNormal = normalize( vec3( -d_hdx, -d_hdy, 1.0 ) );
 
-    vCol = imgPalette( fract( wavePhase * 0.159 + length( uv ) * 0.25 + audioCentroid ) );
+    vCol = imgPalette( fract( wave_phase * 0.159 + length( uv ) * 0.25 + audioCentroid ) );
 
     // Camera Transform (V3)
     // Tilt FIRST, then push away.  The old order rotated the already-pushed
@@ -86,7 +86,7 @@ void main()
     // and left it sitting in the lower half of the frame with black above.
     // Tilting about the plate's own centre keeps it on the view axis, and at
     // this distance it then fills the frame (reported: "bildschirmfuellender").
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.55;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

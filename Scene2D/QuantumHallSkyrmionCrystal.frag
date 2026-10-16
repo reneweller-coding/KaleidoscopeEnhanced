@@ -70,14 +70,14 @@ void main()
     float pitch = ( crystalPitchP > 0.01 ? crystalPitchP : 3.8 );
     vec2  p = uv * pitch;
 
-    // ECHTE Inverse der cartPos-Formel unten (X = sqrt3*(cx+0.5*cy),
+    // ECHTE Inverse der cart_pos-Formel unten (X = sqrt3*(cx+0.5*cy),
     // Y = 1.5*cy) -- die alte Rueckrechnung gehoerte zu einem anderen
     // Gitter und liess am unteren Rand abgeschnittene Spikes stehen.
     vec2 cell = floor( vec2( p.x * 0.57735027 - p.y * 0.33333333,
                              p.y * 0.66666667 ) );
 
-    float minDist = 1e5;
-    vec2  closestOffset = vec2( 0.0 );
+    float min_dist = 1e5;
+    vec2  closest_offset = vec2( 0.0 );
 
     // +-2 statt +-1: die +-1-Suche im GESCHERTEN Zellraum verfehlte in der
     // unteren Bildhaelfte den wahren naechsten Mittelpunkt, und die Kugeln
@@ -87,52 +87,52 @@ void main()
         for ( int x = -2; x <= 2; x++ )
         {
             vec2  neighbor = vec2( float( x ), float( y ) );
-            vec2  cartPos = vec2( sqrt( 3.0 ) * ( cell.x + neighbor.x + 0.5 * ( cell.y + neighbor.y ) ),
-                                  1.5 * ( cell.y + neighbor.y ) );
-            vec2  diff = p - cartPos;
+            vec2  cart_pos = vec2( sqrt( 3.0 ) * ( cell.x + neighbor.x + 0.5 * ( cell.y + neighbor.y ) ),
+                                   1.5 * ( cell.y + neighbor.y ) );
+            vec2  diff = p - cart_pos;
             float d = length( diff );
-            if ( d < minDist )
+            if ( d < min_dist )
             {
-                minDist = d;
-                closestOffset = diff;
+                min_dist = d;
+                closest_offset = diff;
             }
         }
     }
 
     // Skyrmion spin profile: theta(r) in quantum Hall state
-    float spinW = ( spinRadiusP > 0.01 ? spinRadiusP : 1.0 ) * ( 0.8 + 0.4 * audioBass );
-    float spinAngle = 3.14159265 * exp( -minDist * minDist * 2.5 * spinW );
-    float azim = atan( closestOffset.y, closestOffset.x ) + spinAngle + audioPhase * 0.5;
+    float spin_w = ( spinRadiusP > 0.01 ? spinRadiusP : 1.0 ) * ( 0.8 + 0.4 * audioBass );
+    float spin_angle = 3.14159265 * exp( -min_dist * min_dist * 2.5 * spin_w );
+    float azim = atan( closest_offset.y, closest_offset.x ) + spin_angle + audioPhase * 0.5;
 
     // Out-of-plane spin component S_z = cos(theta)
-    float sz = cos( spinAngle );
+    float sz = cos( spin_angle );
 
     // Cyclotron orbit ripples in Landau level
-    float cycloFreq = ( cyclotronP > 0.01 ? cyclotronP : 16.0 );
-    float cycloRipples = sin( minDist * cycloFreq - t * 4.0 ) * exp( -minDist * 2.0 ) * ( 0.6 + 0.8 * audioHigh );
+    float cyclo_freq = ( cyclotronP > 0.01 ? cyclotronP : 16.0 );
+    float cyclo_ripples = sin( min_dist * cyclo_freq - t * 4.0 ) * exp( -min_dist * 2.0 ) * ( 0.6 + 0.8 * audioHigh );
 
     // Fractional Hall current around skyrmion cores
-    float hallCurrent = ( hallCurrentP > 0.01 ? hallCurrentP : 1.3 ) * sin( azim * 2.0 + t * 2.0 )
-                        * exp( -abs( spinAngle - 1.57 ) * 4.0 );
+    float hall_current = ( hallCurrentP > 0.01 ? hallCurrentP : 1.3 ) * sin( azim * 2.0 + t * 2.0 )
+                         * exp( -abs( spin_angle - 1.57 ) * 4.0 );
 
     // Quasiparticle flash on kick
-    float qpFlash = exp( -minDist * 14.0 ) * ( 1.0 + 3.5 * audioKick );
+    float qp_flash = exp( -min_dist * 14.0 ) * ( 1.0 + 3.5 * audioKick );
 
     // Palette assignment
-    float palAngle = fract( azim * 0.159 + sz * 0.3 + length( cell ) * 0.05 + audioCentroid );
-    vec3  colSkyrmion = imgPalette( palAngle );
-    vec3  colCurrent = imgPalette( fract( palAngle + 0.5 ) ) * 2.0;
+    float pal_angle = fract( azim * 0.159 + sz * 0.3 + length( cell ) * 0.05 + audioCentroid );
+    vec3  col_skyrmion = imgPalette( pal_angle );
+    vec3  col_current = imgPalette( fract( pal_angle + 0.5 ) ) * 2.0;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colSkyrmion * ( 0.75 + 0.25 * sz ) * ( 0.85 + 0.35 * audioSwell );
-    col += colCurrent * abs( hallCurrent );
-    col += vec3( 0.9, 0.95, 1.0 ) * qpFlash * 2.2;
-    col += colSkyrmion * abs( cycloRipples ) * 0.9;
-    col += colSkyrmion * ( audioKick * 0.35 );
+    col += col_skyrmion * ( 0.75 + 0.25 * sz ) * ( 0.85 + 0.35 * audioSwell );
+    col += col_current * abs( hall_current );
+    col += vec3( 0.9, 0.95, 1.0 ) * qp_flash * 2.2;
+    col += col_skyrmion * abs( cyclo_ripples ) * 0.9;
+    col += col_skyrmion * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

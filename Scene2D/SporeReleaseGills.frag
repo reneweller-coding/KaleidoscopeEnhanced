@@ -73,7 +73,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float gills = floor( 48.0 + 48.0 * clamp( gillsP, 0.0, 1.0 ) ); // once per activation
-    float sporeAmt = 0.5 + 0.5 * clamp( sporeP, 0.0, 1.0 );
+    float spore_amt = 0.5 + 0.5 * clamp( sporeP, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float clock = sceneAdvance * 0.3 + sceneTime * 0.06;
     vec2  centre = vec2( 0.0, 0.55 ); // the stem meets the cap above the frame top
@@ -86,24 +86,24 @@ void main()
     col += vec3( 0.3, 0.4, 0.15 ) * exp( -( p.y + 0.5 ) * 3.0 ) * ( 0.3 + 0.9 * clamp( audioBass, 0.0, 1.0 ) ) * 0.5;
     // The cap: the underside, cream with the photo as its tint, gills as
     // radial ridges from the centre; each gill lit by its band.
-    float capR = 1.15;
-    float underCap = smoothstep( capR, capR - 0.02, r );
-    float gillIdx = floor( ( a + 3.14159 ) / 6.2831853 * gills );
-    float gillF = fract( ( a + 3.14159 ) / 6.2831853 * gills ) - 0.5;
-    int   band = int( mod( gillIdx, 32.0 ) );
+    float cap_r = 1.15;
+    float under_cap = smoothstep( cap_r, cap_r - 0.02, r );
+    float gill_idx = floor( ( a + 3.14159 ) / 6.2831853 * gills );
+    float gill_f = fract( ( a + 3.14159 ) / 6.2831853 * gills ) - 0.5;
+    int   band = int( mod( gill_idx, 32.0 ) );
     float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-    float ridge = smoothstep( 0.5, 0.0, abs( gillF ) );
+    float ridge = smoothstep( 0.5, 0.0, abs( gill_f ) );
     vec3  cream = mix( vec3( 0.85, 0.78, 0.65 ),
-                       img( vec2( fract( a / 6.2831853 + 0.5 ), clamp( r / capR, 0.0, 1.0 ) ) ) * 1.1, 0.35 );
-    vec3  gillCol = cream * ( 0.35 + 0.5 * ridge ) * ( 0.5 + 0.5 * smoothstep( 0.0, 0.5, r ) );
-    gillCol += imgPalette( hue * 0.159 + float( band ) / 32.0 ) * ridge * e * 0.6;
-    gillCol *= 0.6 + 0.4 * ( 1.0 - r / capR ); // darker toward the rim
-    col = mix( col, gillCol, underCap );
+                       img( vec2( fract( a / 6.2831853 + 0.5 ), clamp( r / cap_r, 0.0, 1.0 ) ) ) * 1.1, 0.35 );
+    vec3  gill_col = cream * ( 0.35 + 0.5 * ridge ) * ( 0.5 + 0.5 * smoothstep( 0.0, 0.5, r ) );
+    gill_col += imgPalette( hue * 0.159 + float( band ) / 32.0 ) * ridge * e * 0.6;
+    gill_col *= 0.6 + 0.4 * ( 1.0 - r / cap_r ); // darker toward the rim
+    col = mix( col, gill_col, under_cap );
     // The stem: a pale column at the centre going up out of frame.
     float stem = step( abs( q.x ), 0.12 ) * step( 0.0, q.y );
-    col = mix( col, cream * 0.7 * ( 0.6 + 0.4 * ( 1.0 - abs( q.x ) / 0.12 ) ), stem * underCap );
+    col = mix( col, cream * 0.7 * ( 0.6 + 0.4 * ( 1.0 - abs( q.x ) / 0.12 ) ), stem * under_cap );
     // The rim edge.
-    col = mix( col, cream * 0.4, smoothstep( 0.015, 0.0, abs( r - capR ) ) );
+    col = mix( col, cream * 0.4, smoothstep( 0.015, 0.0, abs( r - cap_r ) ) );
     // Spores: round, drifting down from the gills in slow curtains; the
     // side light (treble) picks them out; a kick puff brightens them.
     for ( int layer = 0; layer < 3; ++layer )
@@ -114,15 +114,15 @@ void main()
         vec2  sc = floor( su );
         vec2  sf = fract( su ) - 0.5;
         vec2  so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
-        float below = smoothstep( capR + 0.1, capR - 0.3, r ) * step( p.y, 0.45 );
-        float spore = smoothstep( 0.16, 0.05, length( sf - so * 0.6 ) ) * step( 1.0 - 0.12 * sporeAmt, hash21( sc ) )
+        float below = smoothstep( cap_r + 0.1, cap_r - 0.3, r ) * step( p.y, 0.45 );
+        float spore = smoothstep( 0.16, 0.05, length( sf - so * 0.6 ) ) * step( 1.0 - 0.12 * spore_amt, hash21( sc ) )
                       * below;
-        vec3  sporeCol = mix( vec3( 0.75, 0.7, 0.6 ), imgPalette( hue * 0.159 + 0.08 ), 0.3 );
-        col += sporeCol * spore * ( 0.25 + 0.9 * hi + 0.8 * audioKick ) * ( 1.0 - fl * 0.25 );
+        vec3  spore_col = mix( vec3( 0.75, 0.7, 0.6 ), imgPalette( hue * 0.159 + 0.08 ), 0.3 );
+        col += spore_col * spore * ( 0.25 + 0.9 * hi + 0.8 * audioKick ) * ( 1.0 - fl * 0.25 );
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

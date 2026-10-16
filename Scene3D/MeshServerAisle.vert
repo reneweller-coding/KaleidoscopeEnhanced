@@ -28,17 +28,17 @@ out vec3  vLocal;  ///< Object-space position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 out float vInst;
 
-const float kGround = -16.0;
-const float kHalfAisle = 15.0;
+const float Ground = -16.0;
+const float HalfAisle = 15.0;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int  inst = gl_InstanceID;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
     vInst = float( inst );
-    if ( !isBg )
+    if ( !is_bg )
     {
         int   side = inst - ( inst / 2 ) * 2;
         int   j = inst / 2;
@@ -49,9 +49,9 @@ void main()
         // +Z to +X for the left row, +Z to -X for the right row.
         mat3  R = ( side == 0 ) ? mat3( 0.0, 0.0, -1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0 )
                                 : mat3( 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0 );
-        float x = ( side == 0 ) ? -kHalfAisle : kHalfAisle;
+        float x = ( side == 0 ) ? -HalfAisle : HalfAisle;
         float z = 28.0 + float( j ) * 15.0;
-        world = R * local + vec3( x, kGround + meshExtent.y / mx * sz, z );
+        world = R * local + vec3( x, Ground + meshExtent.y / mx * sz, z );
         n = normalize( R * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
@@ -76,10 +76,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

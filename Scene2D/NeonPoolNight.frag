@@ -116,9 +116,9 @@ void main()
         vec2  tq = fq * 40.0;
         vec2  tf = abs( fract( tq ) - 0.5 );
         float grout = smoothstep( 0.46, 0.5, max( tf.x, tf.y ) );
-        vec3  floorC = mix( vec3( 0.3, 0.55, 0.7 ), vec3( 0.18, 0.35, 0.5 ), grout );
+        vec3  floor_c = mix( vec3( 0.3, 0.55, 0.7 ), vec3( 0.18, 0.35, 0.5 ), grout );
         float lane = step( abs( fract( fq.y / 0.17 + 0.5 ) - 0.5 ) * 0.17, 0.012 ) * step( abs( fq.x ), half_.x - 0.1 );
-        floorC = mix( floorC, vec3( 0.05, 0.1, 0.35 ), lane );
+        floor_c = mix( floor_c, vec3( 0.05, 0.1, 0.35 ), lane );
         // Light: lamps set into the long walls, each with its band.
         vec3 light = vec3( 0.0 );
         for ( int k = 0; k < 8; ++k )
@@ -135,7 +135,7 @@ void main()
         }
         light += vec3( 0.05, 0.2, 0.35 ) * 0.4; // ambient underwater glow
         float c = caustic( fq * 14.0, T * 0.5 * ( 1.0 + 0.6 * bass ) );
-        vec3  w = floorC * light * ( 0.45 + 1.1 * c * ( 0.6 + 0.8 * bass ) );
+        vec3  w = floor_c * light * ( 0.45 + 1.1 * c * ( 0.6 + 0.8 * bass ) );
         // Depth tint: deeper toward one end.
         w *= mix( vec3( 1.0 ), vec3( 0.4, 0.7, 1.0 ), smoothstep( -0.5, 0.6, q.x ) * 0.5 );
         // The inflatable ring drifting across, and its shadow on the floor.
@@ -144,10 +144,10 @@ void main()
         float shadow = smoothstep( 0.02, 0.0, abs( length( q - rc - vec2( 0.03, -0.03 ) ) - 0.06 ) - 0.02 );
         w *= 1.0 - 0.45 * shadow;
         float ring = smoothstep( 0.004, 0.0, abs( rr - 0.06 ) - 0.022 );
-        vec3  ringC = mix( vec3( 1.0, 0.4, 0.3 ), vec3( 1.0 ),
-                           step( 0.5, fract( atan( q.y - rc.y, q.x - rc.x ) / 6.2831853 * 6.0 ) ) );
+        vec3  ring_c = mix( vec3( 1.0, 0.4, 0.3 ), vec3( 1.0 ),
+                            step( 0.5, fract( atan( q.y - rc.y, q.x - rc.x ) / 6.2831853 * 6.0 ) ) );
         float rl = 0.6 + 0.4 * dot( normalize( q - rc + 1e-4 ), vec2( -0.6, 0.8 ) ) * sign( rr - 0.06 );
-        w = mix( w, ringC * rl * ( 0.5 + 0.3 * swell ) + light * 0.1, ring );
+        w = mix( w, ring_c * rl * ( 0.5 + 0.3 * swell ) + light * 0.1, ring );
         // Surface glints.
         // Surface glints: round, jittered points that wink on and off.
         vec2  gg = q * 45.0, gi = floor( gg ), gf = fract( gg );
@@ -175,7 +175,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

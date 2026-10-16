@@ -113,9 +113,9 @@ void main()
     vec3  col = vec3( 0.0 );
     float trans = 1.0;
     // Central star.
-    vec3  toStar = normalize( -ro );
-    float core = exp( -acos( clamp( dot( rd, toStar ), -1.0, 1.0 ) ) * 40.0 / max( D, 0.5 ) );
-    vec3  starCol = vec3( 0.85, 0.9, 1.0 );
+    vec3  to_star = normalize( -ro );
+    float core = exp( -acos( clamp( dot( rd, to_star ), -1.0, 1.0 ) ) * 40.0 / max( D, 0.5 ) );
+    vec3  star_col = vec3( 0.85, 0.9, 1.0 );
 
     for ( int k = 3; k >= -3; --k )
     {
@@ -127,17 +127,17 @@ void main()
         if ( disc < 0.0 )
             continue;
         float sq = sqrt( disc );
-        float tA = -b - sq, tB = -b + sq;
+        float t_a = -b - sq, t_b = -b + sq;
         // Band for this shell: the absolute shell index m + k, wrapped over 32
         // bands in a fixed way so the wrap of zf keeps the band with the shell.
         int   band = int( mod( float( m ) + float( k ) + 16.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-        vec3  shellCol = imgPalette( hue * 0.159 + float( band ) / 32.0 * 0.8 ) * ( 0.25 + 1.4 * e );
+        vec3  shell_col = imgPalette( hue * 0.159 + float( band ) / 32.0 * 0.8 ) * ( 0.25 + 1.4 * e );
         // Two crossings (front and back of the shell), each a thin glowing
         // layer mottled by fbm on the sphere.
         for ( int s = 0; s < 2; ++s )
         {
-            float t = ( s == 0 ) ? tA : tB;
+            float t = ( s == 0 ) ? t_a : t_b;
             if ( t < 0.0 )
                 continue;
             vec3  h = ( ro + rd * t ) / R; // point on the unit sphere
@@ -146,14 +146,14 @@ void main()
             // Grazing rays pass through more gas (limb brightening).
             float graze = 1.0 / max( abs( dot( normalize( ro + rd * t ), rd ) ), 0.2 );
             float a = clamp( gas * thick * graze * 2.5, 0.0, 0.85 );
-            float depthFade = exp( -t * 0.08 );
-            col += shellCol * a * trans * depthFade * 1.6;
+            float depth_fade = exp( -t * 0.08 );
+            col += shell_col * a * trans * depth_fade * 1.6;
             trans *= 1.0 - a * 0.6;
         }
     }
     // The white dwarf, seen through whatever gas is in front.
-    col += starCol * core * ( 2.0 + 3.0 * audioKick ) * trans;
-    col += starCol * exp( -length( p ) * 3.0 ) * 0.08 * trans;
+    col += star_col * core * ( 2.0 + 3.0 * audioKick ) * trans;
+    col += star_col * exp( -length( p ) * 3.0 ) * 0.08 * trans;
     // Faint far stars.
     vec2  su = p * 60.0;
     vec2  cell = floor( su );
@@ -163,7 +163,7 @@ void main()
     col += vec3( smoothstep( 0.14, 0.02, length( f - off * 0.6 ) ) * step( 0.978, hs ) ) * 0.5 * trans;
     col *= 0.8 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

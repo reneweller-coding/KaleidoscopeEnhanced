@@ -50,7 +50,7 @@ uniform float stepsP;
 uniform float warpP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -96,7 +96,7 @@ void main()
     vec2  sc = vec2( 1.0 / aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // The noise level falls across the turn.
     float pace = steps * 1.05; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)

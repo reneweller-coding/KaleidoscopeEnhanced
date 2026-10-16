@@ -47,25 +47,25 @@ void main()
     if ( r2 > 0.25 )
         discard;
 
-    float hScale = ( haloP > 0.01 ? haloP : 1.2 );
-    float core = exp( -r2 * 18.0 / hScale );
+    float h_scale = ( haloP > 0.01 ? haloP : 1.2 );
+    float core = exp( -r2 * 18.0 / h_scale );
 
     // EXPOSURE REBALANCE: the array used to heap ~20 layers of sprites into one
     // small central disc, so every sprite had to be near-black to keep that
     // disc off the clip point.  Now that the slab spans the whole frame the
     // stack is only ~1 deep, so each sprite carries roughly 6x the luminance --
     // the same total light, spread over the picture instead of piled up.
-    float baseLum = ( pointGainP > 0.01 ? pointGainP : 1.1 ) * 0.26;
+    float base_lum = ( pointGainP > 0.01 ? pointGainP : 1.1 ) * 0.26;
 
     // The excitation wave used to SLIDE each sprite's photo window as it
-    // passed (photoUv += vBlockade*0.3), so every wavefront crossing re-drew
+    // passed (photo_uv += vBlockade*0.3), so every wavefront crossing re-drew
     // every atom's colours -- measured hueFlickHi 0.30. The window is stable
     // now; excitation still shows through the white blockade-flash term.
-    vec2 photoUv = fract( gl_PointCoord * 0.9 + 0.05 );
-    vec3 photo = img( photoUv );
+    vec2 photo_uv = fract( gl_PointCoord * 0.9 + 0.05 );
+    vec3 photo = img( photo_uv );
 
-    vec3 col = vCol * ( 0.6 + 0.4 * photo ) * core * baseLum;
-    col += vec3( 0.95, 0.95, 1.0 ) * core * baseLum * min( 1.0 + 1.1 * audioKick, 1.9 ) * vBlockade
+    vec3 col = vCol * ( 0.6 + 0.4 * photo ) * core * base_lum;
+    col += vec3( 0.95, 0.95, 1.0 ) * core * base_lum * min( 1.0 + 1.1 * audioKick, 1.9 ) * vBlockade
            * 0.7; // flash partly restored: the flicker was the racing WAVE (vert), not the flash; contrast needs it
     col *= ( 0.85 + 0.35 * audioSwell );
     col += vCol * min( audioKick * 0.03, 0.05 );
@@ -78,8 +78,8 @@ void main()
 
     // FLAT fix: the additive white terms dominate the tinted base; push
     // the chroma back up before the knee (luma-preserving saturation).
-    float _lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
-    col = mix( vec3( _lum ), col, 1.30 );
+    float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( lum ), col, 1.30 );
     col = max( col, 0.0 );
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

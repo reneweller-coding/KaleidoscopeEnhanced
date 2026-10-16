@@ -41,21 +41,21 @@ vec3 img( vec2 uv )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  lightDir = normalize( vec3( 0.5, 0.6, 0.7 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
-    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
+    vec3  light_dir = normalize( vec3( 0.5, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
+    float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
                  * ( fresnelP > 0.01 ? fresnelP : 1.2 );
 
     // Heptagonal tile boundary grid
     vec2  p = vUV * 2.0 - 1.0;
     float r = length( p );
-    float edgeGlow = exp( -abs( r - 0.85 ) * 16.0 );
+    float edge_glow = exp( -abs( r - 0.85 ) * 16.0 );
 
     vec3 photo = img( vUV );
 
     vec3 col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.4 + 0.6 * diff );
     col += vec3( 0.95, 0.95, 1.0 ) * spec * ( 1.0 + 3.0 * audioKick );
-    col += vCol * edgeGlow * 1.6;
+    col += vCol * edge_glow * 1.6;
     col *= ( 0.85 + 0.35 * audioSwell );
     col += vCol * ( audioKick * 0.3 );
 

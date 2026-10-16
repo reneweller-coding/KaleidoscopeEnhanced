@@ -49,8 +49,8 @@ void main()
     // The engine draws NON-instanced (glDrawArrays), so gl_InstanceID is
     // always 0 -- every unit would collapse onto one spot.  Scene3DShader
     // packs the per-unit index into attrA.w instead (see buildGeometry).
-    int  cubeIndex = int( attrA.w );
-    vec3 cubeCorner = attrA.xyz;
+    int  cube_index = int( attrA.w );
+    vec3 cube_corner = attrA.xyz;
     vNormal = attrB.xyz;
     vTexCoord = attrA.xy * 0.5 + 0.5;
 
@@ -62,11 +62,11 @@ void main()
     // 5 px specks over a black field is what the "too dark, not filling"
     // measurement was actually looking at.  Big enough to still cover the
     // frame's corners when the slow roll turns it.
-    if ( cubeIndex == 0 )
+    if ( cube_index == 0 )
     {
         vKind = 1.0;
         vCoreDist = 0.0;
-        vec3 slab = cubeCorner * vec3( 30.0, 30.0, 0.2 ) + vec3( 0.0, 0.0, 6.0 );
+        vec3 slab = cube_corner * vec3( 30.0, 30.0, 0.2 ) + vec3( 0.0, 0.0, 6.0 );
         vWorldPos = slab;
         vec3  vps = slab;
         float fro0 = time * 0.06;
@@ -84,7 +84,7 @@ void main()
     // under half the frame's width.  pcf still sets the lattice density, but
     // at 30% leverage: at full leverage its 0.5..2.0 preset range swung the
     // lattice between a fifth of the frame and four times its width.
-    int   li = cubeIndex - 1;
+    int   li = cube_index - 1;
     int   row = li / 70;
     int   col = li % 70;
     float sp = 0.185 * ( 0.7 + 0.3 * pcf );
@@ -94,7 +94,7 @@ void main()
     // Hollow core radius (central air hole), in step with the new pitch
     float r = length( vec2( x, y ) );
     vCoreDist = r;
-    float isHollow = smoothstep( 0.70 * cor, 1.05 * cor, r );
+    float is_hollow = smoothstep( 0.70 * cor, 1.05 * cor, r );
 
     // Z-axis longitudinal wave
     float z = ( float( li % 20 ) / 20.0 - 0.5 ) * 4.0;
@@ -102,15 +102,15 @@ void main()
 
     // Capillary walls as a fixed FRACTION of the pitch, so the cladding keeps
     // its density whatever the lattice is scaled to.
-    float cubeScale = sp * 0.60 * isHollow * ( 1.0 + audioKick * 0.5 );
-    vec3  worldPos = vec3( x, y + pulse, z ) + cubeCorner * cubeScale;
-    vWorldPos = worldPos;
+    float cube_scale = sp * 0.60 * is_hollow * ( 1.0 + audioKick * 0.5 );
+    vec3  world_pos = vec3( x, y + pulse, z ) + cube_corner * cube_scale;
+    vWorldPos = world_pos;
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
     // Gentle roll around the fiber axis (flight is carried by the light
     // pulses racing down the core, see the frag)
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float fro = time * 0.06;
     vp.xy = mat2( cos( fro ), -sin( fro ), sin( fro ), cos( fro ) ) * vp.xy;
     vp.z += 7.0;

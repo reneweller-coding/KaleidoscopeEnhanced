@@ -20,13 +20,13 @@ out float vSector;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vRefract = attrA.w;
     vSector = attrB.w;
 
     // Stereoscopic 3D camera projection
-    vec3 vp = worldP;
+    vec3 vp = world_p;
     vp.z += 6.5;
     vp.x -= eyeOff;
 

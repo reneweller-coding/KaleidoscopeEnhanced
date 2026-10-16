@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -239,8 +239,8 @@ void main()
     float fog2 = fbm( p * 2.2 - vec2( T * 1.3, 0.0 ) + 4.0 );
     float fog = clamp(
         ( 0.3 + 0.4 * clamp( fogP, 0.0, 1.0 ) ) * ( 0.6 + 0.8 * swell ) * ( 0.5 + fog1 * 0.8 + fog2 * 0.4 ), 0.0, 1.5 );
-    vec3 fogC = mix( vec3( 0.35, 0.4, 0.5 ), vec3( 0.5, 0.42, 0.35 ), mode );
-    vec3 col = fogC * 0.07 * ( 0.5 + fog );
+    vec3 fog_c = mix( vec3( 0.35, 0.4, 0.5 ), vec3( 0.5, 0.42, 0.35 ), mode );
+    vec3 col = fog_c * 0.07 * ( 0.5 + fog );
     // Lights at three depths on jittered grids.
     float halo = ( 0.6 + 0.8 * clamp( haloP, 0.0, 1.0 ) ) * ( 0.8 + 0.5 * clamp( audioSpread, 0.0, 1.0 ) );
     for ( int L = 0; L < 3; ++L )
@@ -273,6 +273,6 @@ void main()
             }
     }
     // The fog veils everything a little.
-    col = mix( col, fogC * 0.12 * ( 0.5 + fog ), 0.2 * fog );
+    col = mix( col, fog_c * 0.12 * ( 0.5 + fog ), 0.2 * fog );
     finish( col );
 }

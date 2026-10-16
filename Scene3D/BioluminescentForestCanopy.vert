@@ -22,13 +22,13 @@ out float vBioGlow;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vFloraType = attrA.w;
     vBioGlow = attrB.w;
 
     // Stereoscopic 3D camera projection
-    vec3 vp = worldP;
+    vec3 vp = world_p;
     vp.z += 5.2;
     vp.x -= eyeOff;
 

@@ -75,51 +75,51 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Colonial stem axis curving through abyssal water
-    float waveAmp = ( waveScaleP > 0.01 ? waveScaleP : 1.2 );
-    float stemX = sin( uv.y * 2.5 + t * 0.6 ) * 0.35 * waveAmp;
-    float dxStem = uv.x - stemX;
+    float wave_amp = ( waveScaleP > 0.01 ? waveScaleP : 1.2 );
+    float stem_x = sin( uv.y * 2.5 + t * 0.6 ) * 0.35 * wave_amp;
+    float dx_stem = uv.x - stem_x;
 
     // Nectophore bells arranged along colonial stem
-    float nectoFreq = ( nectoCountP > 1.0 ? nectoCountP : 5.0 );
-    float bellPhase = uv.y * nectoFreq + t * 1.5;
-    float bellLocalY = fract( bellPhase ) - 0.5;
+    float necto_freq = ( nectoCountP > 1.0 ? nectoCountP : 5.0 );
+    float bell_phase = uv.y * necto_freq + t * 1.5;
+    float bell_local_y = fract( bell_phase ) - 0.5;
 
     // Dome profile of each nectophore bell
-    float bellRadius = 0.22 * ( 1.0 + 0.3 * audioSwell );
-    float bellDist = length( vec2( dxStem, bellLocalY * 0.3 ) );
-    float inBell = smoothstep( bellRadius + 0.02, bellRadius - 0.04, bellDist );
-    float bellRim = exp( -abs( bellDist - bellRadius ) * 35.0 );
+    float bell_radius = 0.22 * ( 1.0 + 0.3 * audioSwell );
+    float bell_dist = length( vec2( dx_stem, bell_local_y * 0.3 ) );
+    float in_bell = smoothstep( bell_radius + 0.02, bell_radius - 0.04, bell_dist );
+    float bell_rim = exp( -abs( bell_dist - bell_radius ) * 35.0 );
 
     // Hanging tentilla curtains trailing behind stem
-    float tentFreq = ( tentillaP > 0.01 ? tentillaP : 14.0 );
-    float tentWaves = sin( uv.x * tentFreq + sin( uv.y * 8.0 - t * 3.0 ) * 2.0 );
-    float tentilla = exp( -abs( dxStem - 0.25 ) * 4.0 ) * ( tentWaves * 0.5 + 0.5 );
+    float tent_freq = ( tentillaP > 0.01 ? tentillaP : 14.0 );
+    float tent_waves = sin( uv.x * tent_freq + sin( uv.y * 8.0 - t * 3.0 ) * 2.0 );
+    float tentilla = exp( -abs( dx_stem - 0.25 ) * 4.0 ) * ( tent_waves * 0.5 + 0.5 );
 
     // Bioelectric traveling contraction wave along the whole siphonophore
-    float travelingWave = sin( uv.y * 6.0 - t * 4.0 + audioPhase ) * 0.5 + 0.5;
-    float bioPulse = pow( travelingWave, 3.0 ) * ( 1.0 + 3.0 * audioKick ) * ( bioGlowP > 0.01 ? bioGlowP : 1.2 );
+    float traveling_wave = sin( uv.y * 6.0 - t * 4.0 + audioPhase ) * 0.5 + 0.5;
+    float bio_pulse = pow( traveling_wave, 3.0 ) * ( 1.0 + 3.0 * audioKick ) * ( bioGlowP > 0.01 ? bioGlowP : 1.2 );
 
     // Marine snow & sparkling nematocysts
     float spark = pow( max( 0.0, sin( uv.x * 45.0 + uv.y * 35.0 + t * 4.0 + audioFlux * 3.0 ) ), 12.0 )
                   * ( 0.8 + 1.5 * audioHigh );
 
     // Siphonophore deep-sea cyan / amber bioluminescent palette
-    vec3 deepWater = vec3( 0.01, 0.03, 0.08 );
-    vec3 bioCyan = vec3( 0.1, 0.85, 0.95 );
-    vec3 bioAmber = vec3( 1.0, 0.65, 0.2 );
+    vec3 deep_water = vec3( 0.01, 0.03, 0.08 );
+    vec3 bio_cyan = vec3( 0.1, 0.85, 0.95 );
+    vec3 bio_amber = vec3( 1.0, 0.65, 0.2 );
 
-    vec3 bellColor = palTint( mix( bioCyan, bioAmber, travelingWave ), uv.y * 0.2 + audioCentroid, 0.27 );
+    vec3 bell_color = palTint( mix( bio_cyan, bio_amber, traveling_wave ), uv.y * 0.2 + audioCentroid, 0.27 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.2;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.2;
 
-    vec3 col = bg + palTint( deepWater, 0.5, 0.15 );
-    col += bellColor * inBell * ( 0.6 + 0.4 * travelingWave ) * ( 0.8 + 0.4 * audioSwell );
-    col += vec3( 0.9, 0.95, 1.0 ) * bellRim * 1.8;
-    col += bellColor * tentilla * bioPulse * 1.6;
+    vec3 col = bg + palTint( deep_water, 0.5, 0.15 );
+    col += bell_color * in_bell * ( 0.6 + 0.4 * traveling_wave ) * ( 0.8 + 0.4 * audioSwell );
+    col += vec3( 0.9, 0.95, 1.0 ) * bell_rim * 1.8;
+    col += bell_color * tentilla * bio_pulse * 1.6;
     col += vec3( 0.85, 1.0, 0.9 ) * spark * 2.2;
-    col += bellColor * ( audioKick * 0.35 );
+    col += bell_color * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

@@ -82,59 +82,59 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     const float L = 180.0;
-    float       camZ = time * 8.0 * spd + audioAdvance * 18.0;
-    float       zRel = t * L;
-    float       zAbs = zRel + camZ;
+    float       cam_z = time * 8.0 * spd + audioAdvance * 18.0;
+    float       z_rel = t * L;
+    float       z_abs = z_rel + cam_z;
 
     // Highway 3D spline curvature
-    vec2 centerWeave = vec2(
-        sin( zAbs * 0.018 + 1.2 ) * 12.0 + sin( zAbs * 0.008 ) * 8.0,
-        cos( zAbs * 0.015 ) * 8.0 + cos( zAbs * 0.006 + 1.0 ) * 6.0 );
+    vec2 center_weave = vec2(
+        sin( z_abs * 0.018 + 1.2 ) * 12.0 + sin( z_abs * 0.008 ) * 8.0,
+        cos( z_abs * 0.015 ) * 8.0 + cos( z_abs * 0.006 + 1.0 ) * 6.0 );
 
     // Multi-lane orbital angle around highway core
-    float laneAngle = ( ri / 20.0 ) * 6.2831853 + zAbs * ( 0.025 * tws ) + sin( zAbs * 0.005 + time * 0.5 ) * 1.5;
+    float lane_angle = ( ri / 20.0 ) * 6.2831853 + z_abs * ( 0.025 * tws ) + sin( z_abs * 0.005 + time * 0.5 ) * 1.5;
 
     // Ribbon radius from highway center
-    float radius = 5.5 + 1.5 * sin( ri * 1.3 + zAbs * 0.02 ) + audioSwell * 2.0;
+    float radius = 5.5 + 1.5 * sin( ri * 1.3 + z_abs * 0.02 ) + audioSwell * 2.0;
     // (kick radius pulse removed, V7d)
 
-    vec3 centerPos = vec3( centerWeave.x, centerWeave.y, zRel );
-    vec3 radialDir = vec3( cos( laneAngle ), sin( laneAngle ), 0.0 );
-    vec3 tangentDir = vec3( -sin( laneAngle ), cos( laneAngle ), 0.0 );
+    vec3 center_pos = vec3( center_weave.x, center_weave.y, z_rel );
+    vec3 radial_dir = vec3( cos( lane_angle ), sin( lane_angle ), 0.0 );
+    vec3 tangent_dir = vec3( -sin( lane_angle ), cos( lane_angle ), 0.0 );
 
     // Ribbon width & banking
-    float ribbonWidth = ( 0.45 * wid ) * ( 1.0 + 0.3 * audioKick );
-    vec3  worldP = centerPos + radialDir * radius + tangentDir * ( side * ribbonWidth );
+    float ribbon_width = ( 0.45 * wid ) * ( 1.0 + 0.3 * audioKick );
+    vec3  world_p = center_pos + radial_dir * radius + tangent_dir * ( side * ribbon_width );
 
     // Camera space
-    vec3 camTarget = vec3(
-        sin( ( camZ + 25.0 ) * 0.018 + 1.2 ) * 12.0,
-        cos( ( camZ + 25.0 ) * 0.015 ) * 8.0,
+    vec3 cam_target = vec3(
+        sin( ( cam_z + 25.0 ) * 0.018 + 1.2 ) * 12.0,
+        cos( ( cam_z + 25.0 ) * 0.015 ) * 8.0,
         25.0 );
-    vec3 camPos = vec3(
-        sin( camZ * 0.018 + 1.2 ) * 12.0,
-        cos( camZ * 0.015 ) * 8.0,
+    vec3 cam_pos = vec3(
+        sin( cam_z * 0.018 + 1.2 ) * 12.0,
+        cos( cam_z * 0.015 ) * 8.0,
         0.0 );
 
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vSide = side;
     vLength = t;
 
     // Highway neon pulse packets traveling down the lanes
-    float pulse = fract( zAbs * 0.05 - time * 3.0 * spd - ri * 0.1 );
-    float pulseGlow = exp( -pulse * 6.0 ) * 2.0;
+    float pulse = fract( z_abs * 0.05 - time * 3.0 * spd - ri * 0.1 );
+    float pulse_glow = exp( -pulse * 6.0 ) * 2.0;
 
     // Color gradient across ribbons: Cyberpunk teal, neon magenta, electric yellow
-    vec3 ribbonCol = imgPalette( ( ri * 0.6 + time ) * 0.159 ) * 1.5;
-    ribbonCol = mix( ribbonCol, vec3( 1.0, 0.9, 0.1 ), pulseGlow * 0.5 );
+    vec3 ribbon_col = imgPalette( ( ri * 0.6 + time ) * 0.159 ) * 1.5;
+    ribbon_col = mix( ribbon_col, vec3( 1.0, 0.9, 0.1 ), pulse_glow * 0.5 );
 
     if ( hue > 0.001 )
-        ribbonCol = hueRot( ribbonCol, hue );
+        ribbon_col = hueRot( ribbon_col, hue );
 
-    vCol = vec4( ribbonCol * ( 1.0 + pulseGlow + audioHigh * 0.8 ), 1.0 );
+    vCol = vec4( ribbon_col * ( 1.0 + pulse_glow + audioHigh * 0.8 ), 1.0 );
 }

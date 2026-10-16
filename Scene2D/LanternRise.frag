@@ -76,10 +76,10 @@ vec3 lanterns( vec2 p, float scale, float speed, float T, float layer, vec3 pape
 {
     vec3  c = vec3( 0.0 );
     vec2  g = p * scale;
-    float colI = floor( g.x );
+    float col_i = floor( g.x );
     for ( int dx = -1; dx <= 1; ++dx )
     {
-        float cx = colI + float( dx );
+        float cx = col_i + float( dx );
         float h = hash21( vec2( cx, layer ) );
         float y = g.y - T * speed * ( 0.7 + 0.6 * h ); // rising: the pattern moves up
         float cy = floor( y );
@@ -160,9 +160,9 @@ void main()
     roof = max( roof, step( abs( tq.x ), 0.006 ) * step( 0.0, tq.y ) * step( tq.y, 0.2 ) ); // the spire
     float sil = max( step( p.y, bank ), roof );
     // The crowd on the near side of the bank: heads and raised arms.
-    float crowdTop = horizon + 0.012 + 0.012 * noise2( vec2( p.x * 60.0, 3.0 ) )
-                     + 0.01 * step( 0.8, noise2( vec2( p.x * 25.0, 7.0 ) ) );
-    sil = max( sil, step( p.y, crowdTop ) * step( horizon - 0.02, p.y ) );
+    float crowd_top = horizon + 0.012 + 0.012 * noise2( vec2( p.x * 60.0, 3.0 ) )
+                      + 0.01 * step( 0.8, noise2( vec2( p.x * 25.0, 7.0 ) ) );
+    sil = max( sil, step( p.y, crowd_top ) * step( horizon - 0.02, p.y ) );
     col = mix( col, vec3( 0.02, 0.02, 0.04 ) + paper * 0.03, sil );
 
     // The river: mirrored sky and lanterns, broken into ripple streaks.
@@ -194,7 +194,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

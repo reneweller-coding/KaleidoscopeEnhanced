@@ -113,8 +113,8 @@ void main()
 
     // ---- glass ----
     // vKind is 1, 2 or 3 for the three wheels, 4 for the oculus.
-    bool  isEye = ( vKind > 3.5 );
-    float layer = isEye ? 0.0 : clamp( vKind - 1.0, 0.0, 2.0 );
+    bool  is_eye = ( vKind > 3.5 );
+    float layer = is_eye ? 0.0 : clamp( vKind - 1.0, 0.0, 2.0 );
     float front = 1.0 - 0.30 * layer;
 
     // Hue runs around the wheel and steps out with the ring, which is how a real
@@ -136,8 +136,8 @@ void main()
     // The oculus stays open, so the ring around it has to do its work: it burns
     // brightest at its inner edge and falls away outward, which reads as light
     // pouring through the hole rather than as a hole.
-    float eye = isEye ? ( 1.0 - smoothstep( 0.55, 1.30, rad ) )
-                      : ( 1.0 - smoothstep( 1.30, 2.20, rad ) ) * 0.30;
+    float eye = is_eye ? ( 1.0 - smoothstep( 0.55, 1.30, rad ) )
+                       : ( 1.0 - smoothstep( 1.30, 2.20, rad ) ) * 0.30;
     // Keep the glow tinted rather than white: a warm light poured over every
     // pane at full strength washes the colour out of the window, and the colour
     // is the only thing a rose window is for.
@@ -162,7 +162,7 @@ void main()
     // Loud panes go denser as well as brighter, so a band that comes in reads
     // as glass filling with colour rather than as a lamp behind it.
     float alpha = clamp( ( 0.28 + 0.42 * vLevel ) * ( 1.0 - 0.24 * layer )
-                             + ( isEye ? 0.20 : 0.0 ),
+                             + ( is_eye ? 0.20 : 0.0 ),
                          0.0, 0.90 );
 
     float zn = nearFar.x, zf = nearFar.y;

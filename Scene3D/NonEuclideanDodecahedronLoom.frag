@@ -76,13 +76,13 @@ void main()
     vec3 photo = img( fract( vTexCoord ) );
 
     // Sacred dodecahedral color palette
-    vec3 ribbonColor = imgPalette( vRibbonIndex + audioPhase * 0.159 );
+    vec3 ribbon_color = imgPalette( vRibbonIndex + audioPhase * 0.159 );
 
     // Glowing edges across the ribbon
-    float edgeGlow = pow( abs( vTexCoord.y - 0.5 ) * 2.0, 3.0 );
+    float edge_glow = pow( abs( vTexCoord.y - 0.5 ) * 2.0, 3.0 );
 
-    vec3 col = mix( photo, ribbonColor, 0.45 );
-    col += edgeGlow * imgPalette( 0.5 + vRibbonIndex * 0.3 ) * ( 0.35 + audioKick * 0.35 );
+    vec3 col = mix( photo, ribbon_color, 0.45 );
+    col += edge_glow * imgPalette( 0.5 + vRibbonIndex * 0.3 ) * ( 0.35 + audioKick * 0.35 );
 
     // Distance fog.  The shell now reaches out to ~4.7 units, and the old
     // 0.2 coefficient toward near-black swallowed everything but the nearest

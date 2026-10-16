@@ -237,30 +237,30 @@ void main()
     float s = foldScale( sc );
 
     // Raymarching through Apollonian fractal space
-    float totDist = 0.02;
-    float minD = 1e4;
+    float tot_dist = 0.02;
+    float min_d = 1e4;
     float trap = 0.0;
     float marched = 0.0;
-    vec3  hitCol = vec3( 0.0 );
-    float nebulaAcc = 0.0;
+    vec3  hit_col = vec3( 0.0 );
+    float nebula_acc = 0.0;
     bool  hit = false;
 
     for ( int i = 0; i < 120; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curTrap;
-        float d = mapApollonian( p, ro, s, curTrap );
+        vec3  p = ro + rd * tot_dist;
+        float cur_trap;
+        float d = mapApollonian( p, ro, s, cur_trap );
         // Camera clearance bubble (see smax above): the diagonal course
         // regularly punched straight through shells before this.
         d = smax( d, 0.42 - length( p - ro ), 0.15 );
         float ad = abs( d );
-        minD = min( minD, ad );
+        min_d = min( min_d, ad );
         marched = float( i );
 
         // Volumetric nebula accumulation in the voids
-        nebulaAcc += exp( -ad * 14.0 ) * ( 0.010 + 0.012 * audioLevel ) * den;
+        nebula_acc += exp( -ad * 14.0 ) * ( 0.010 + 0.012 * audioLevel ) * den;
 
-        // The hit epsilon used to be 0.0015 * (1 + totDist) against a minimum
+        // The hit epsilon used to be 0.0015 * (1 + tot_dist) against a minimum
         // step of 0.012 -- eight times coarser than the tolerance. Rays
         // therefore stopped in MID-AIR, wherever the estimator's noise happened
         // to dip, and the "surface" normal taken there was garbage (measured
@@ -268,25 +268,25 @@ void main()
         // A tolerance that stays under the step size makes the march actually
         // land on the shell; the diffuse response rises to 0.28 with a spread
         // of 0.35, which is the light/dark separation the picture was missing.
-        if ( ad < 0.0009 * ( 1.0 + 0.3 * totDist ) )
+        if ( ad < 0.0009 * ( 1.0 + 0.3 * tot_dist ) )
         {
-            trap = curTrap;
+            trap = cur_trap;
             hit = true;
             break;
         }
 
-        totDist += max( 0.004, ad * 0.85 );
-        if ( totDist > 12.0 )
+        tot_dist += max( 0.004, ad * 0.85 );
+        if ( tot_dist > 12.0 )
             break;
     }
-    nebulaAcc = min( nebulaAcc, 1.1 );
+    nebula_acc = min( nebula_acc, 1.1 );
 
     // One global exposure gain taken from the photo on the texture units. Hit
     // faces, nebula, haze and stars are ALL photo-derived, so a bright photo
     // pushed the whole frame to a near-white wash with no room left for the
     // rim glow. Scaling them together preserves local contrast; it only moves
     // the exposure the gasket is lit at.
-    float expGain = clamp( 0.24 / max( 0.05, photoLevel() ), 0.24, 2.4 );
+    float exp_gain = clamp( 0.24 / max( 0.05, photoLevel() ), 0.24, 2.4 );
 
     if ( hit )
     {
@@ -294,7 +294,7 @@ void main()
         // term of any kind -- no normal, no light, no occlusion -- so a shell
         // that filled the frame filled it with one colour. Everything below is
         // the missing shading.
-        vec3 p = ro + rd * totDist;
+        vec3 p = ro + rd * tot_dist;
         vec3 nor = calcNormal( p, ro, s );
 
         // How long the ray had to grope before it landed stands in for ambient
@@ -314,8 +314,8 @@ void main()
         vec3  hlf = normalize( lig - rd );
         float spe = pow( clamp( dot( nor, hlf ), 0.0, 1.0 ), 20.0 );
 
-        vec2 sampleUV = fract( p.xz * 0.25 + 0.5 );
-        vec3 texCol = img( sampleUV );
+        vec2 sample_uv = fract( p.xz * 0.25 + 0.5 );
+        vec3 tex_col = img( sample_uv );
         vec3 pal = imgPalette( trap * 2.0 + t * 0.1 );
         // 1.55, not 0.66. The verification render came back at luma 0.095 with
         // occupancy 0.51 -- the shading was right but the whole picture sat too
@@ -326,7 +326,7 @@ void main()
         // DIFFERENCE by the same factor. Swept in simulation: occupancy climbs
         // 0.69 -> 0.87 from gain 0.66 to 1.4 while clipHi stays at 0.000,
         // because the soft knee at the end of main() absorbs the top.
-        vec3 base = mix( texCol, pal, 0.55 ) * expGain * 1.55;
+        vec3 base = mix( tex_col, pal, 0.55 ) * exp_gain * 1.55;
 
         // Two structure terms. The orbit trap bands the shells by which sphere
         // of the packing they belong to; the world-space grain keeps even a
@@ -337,45 +337,45 @@ void main()
         float det = 0.58 + 0.42 * sin( p.x * 26.0 ) * sin( p.y * 26.0 + 1.7 ) * sin( p.z * 26.0 + 3.1 );
 
         float shade = ( 0.05 + 1.00 * hdl * ao + 0.60 * dif * ao + bac ) * band * det;
-        hitCol = base * shade + pal * ( spe * ao * 0.45 ) + pal * ( fre * ao * 0.20 );
+        hit_col = base * shade + pal * ( spe * ao * 0.45 ) + pal * ( fre * ao * 0.20 );
     }
 
     // Glowing rims around the VOIDS. This term is a function of how close the
     // ray passed to a shell -- which for a ray that HITS one is, by definition,
-    // zero. It was applied unconditionally, so exp(-minD * 30) came out at
+    // zero. It was applied unconditionally, so exp(-min_d * 30) came out at
     // ~0.95 on every pixel of the frame, the vec3 cap below turned that into a
     // flat vec3(0.80), and +0.64 of uniform grey was painted over the whole
     // picture (measured: it alone accounted for luma 0.65 at contrast 0.018).
     // Capping the tinted vector is still right -- vec3(1.2,1.0,1.6) exceeds 1.0
     // per channel on its own -- but the term only means anything on a MISS.
-    float edgeGlow = hit ? 0.0
-                         : min( exp( -minD * 55.0 ) * glw, 1.4 );
-    vec3  glowTint = min( vec3( 1.2, 1.0, 1.6 ) * edgeGlow * ( 1.0 + 2.0 * audioKick ), vec3( 0.55 ) );
+    float edge_glow = hit ? 0.0
+                          : min( exp( -min_d * 55.0 ) * glw, 1.4 );
+    vec3  glow_tint = min( vec3( 1.2, 1.0, 1.6 ) * edge_glow * ( 1.0 + 2.0 * audioKick ), vec3( 0.55 ) );
 
     // Volumetric cosmic nebula fog
-    vec3 nebulaCol = imgPalette( 0.35 + sin( t * 0.2 ) * 0.2 ) * expGain * nebulaAcc * ( 1.0 + 0.7 * audioSwell );
+    vec3 nebula_col = imgPalette( 0.35 + sin( t * 0.2 ) * 0.2 ) * exp_gain * nebula_acc * ( 1.0 + 0.7 * audioSwell );
 
     // ---- far field: a bounded haze + star dust so the voids are atmosphere, not nothing
     float hz = 0.5 + 0.5 * sin( rd.x * 3.7 + t * 0.11 ) * sin( rd.y * 3.1 - t * 0.09 ) * sin( rd.z * 2.3 + t * 0.07 );
-    vec3  haze = imgPalette( 0.62 + 0.15 * hz ) * expGain * ( 0.030 + 0.060 * hz ) * ( 0.7 + 0.5 * audioSwell );
-    vec3  stars = imgPalette( 0.18 ) * expGain * starField( rd ) * ( 0.35 + 0.35 * audioHigh );
-    vec3  farField = min( haze + stars, vec3( 0.45 ) );
+    vec3  haze = imgPalette( 0.62 + 0.15 * hz ) * exp_gain * ( 0.030 + 0.060 * hz ) * ( 0.7 + 0.5 * audioSwell );
+    vec3  stars = imgPalette( 0.18 ) * exp_gain * starField( rd ) * ( 0.35 + 0.35 * audioHigh );
+    vec3  far_field = min( haze + stars, vec3( 0.45 ) );
 
-    // Composite on the actual hit flag, not on length(hitCol): once the base
+    // Composite on the actual hit flag, not on length(hit_col): once the base
     // is held down to a dark exposure a legitimately dark gasket face has a
     // short colour vector, and the old length() mask silently faded those
     // faces back into the nebula.
-    vec3 finalCol = mix( nebulaCol + farField, hitCol, hit ? 1.0 : 0.0 );
-    finalCol += glowTint * 0.8 + nebulaCol * 0.30;
+    vec3 final_col = mix( nebula_col + far_field, hit_col, hit ? 1.0 : 0.0 );
+    final_col += glow_tint * 0.8 + nebula_col * 0.30;
 
     // Atmospheric depth fog. Held well back from the old 0.14/0.8: the fog
     // colour is a single flat value, so a strong mix is itself a frame-wide
     // flattener, and the shading above now carries the depth cue anyway.
-    float fog = 1.0 - exp( -totDist * 0.16 );
-    finalCol = mix( finalCol, imgPalette( 0.7 ) * expGain * 0.18 + farField * 0.6, fog * 0.55 );
+    float fog = 1.0 - exp( -tot_dist * 0.16 );
+    final_col = mix( final_col, imgPalette( 0.7 ) * exp_gain * 0.18 + far_field * 0.6, fog * 0.55 );
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -264,20 +264,20 @@ void main()
     float lat = asin( clamp( v.y, -1.0, 1.0 ) );
     float lon = atan( v.z, v.x );
     float li = floor( ( lat / 3.14159265 + 0.5 ) * nf );
-    float nLon = 2.0 * max( 1.0, floor( nf * cos( ( li + 0.5 ) / nf * 3.14159265 - 1.5708 ) ) );
-    float lo = floor( ( lon / 6.2831853 + 0.5 ) * nLon );
-    vec2  fid = vec2( li, mod( lo, nLon ) );
+    float n_lon = 2.0 * max( 1.0, floor( nf * cos( ( li + 0.5 ) / nf * 3.14159265 - 1.5708 ) ) );
+    float lo = floor( ( lon / 6.2831853 + 0.5 ) * n_lon );
+    vec2  fid = vec2( li, mod( lo, n_lon ) );
     // Facet normal: flat per facet (mirror-ball look).
     float flat_ = hash21( fid + cid );
-    vec2  fuv = vec2( ( lo + 0.5 ) / nLon, ( li + 0.5 ) / nf );
+    vec2  fuv = vec2( ( lo + 0.5 ) / n_lon, ( li + 0.5 ) / nf );
     vec3  ph = imgLod( fuv * 0.8 + hash22( cid ) * 0.5, 2.0 );
-    vec3  photoC = mix( ph, glowColour( ph, fid, hueP * 0.159 ), 0.3 );
+    vec3  photo_c = mix( ph, glowColour( ph, fid, hueP * 0.159 ), 0.3 );
     vec3  L = normalize( vec3( -0.5, 0.6, 0.65 ) );
     float diff = smoothstep( -0.1 - 0.3 * swell, 0.4, dot( n, L ) );
-    vec3  sc = mix( photoC * lc, lc * ( 0.3 + 0.7 * flat_ ), clamp( mirrorP, 0.0, 1.0 ) * 0.6 ) * ( 0.2 + 0.9 * diff );
+    vec3  sc = mix( photo_c * lc, lc * ( 0.3 + 0.7 * flat_ ), clamp( mirrorP, 0.0, 1.0 ) * 0.6 ) * ( 0.2 + 0.9 * diff );
     // Facet edges.
     float fe = min( abs( fract( ( lat / 3.14159265 + 0.5 ) * nf ) - 0.5 ),
-                    abs( fract( ( lon / 6.2831853 + 0.5 ) * nLon ) - 0.5 ) );
+                    abs( fract( ( lon / 6.2831853 + 0.5 ) * n_lon ) - 0.5 ) );
     sc *= 0.8 + 0.2 * smoothstep( 0.42, 0.5, 0.5 - fe );
     // Specular glint and facet sparkles.
     float spec = pow( max( dot( reflect( -L, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 40.0 );

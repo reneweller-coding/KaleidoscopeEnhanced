@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -301,7 +301,7 @@ void main()
     // at slowly wandering places; the displacement pushes dye outward
     // along streaks.
     vec2  x = p;
-    float streakAcc = 0.0;
+    float streak_acc = 0.0;
     float reach = ( 0.3 + 0.5 * clamp( burstP, 0.0, 1.0 ) ) * ( 0.6 + 0.8 * clamp( audioSpread, 0.0, 1.0 ) );
     for ( int i = 0; i < 4; ++i )
     {
@@ -319,7 +319,7 @@ void main()
         float fing = 0.6 + 0.5 * noise2( u * ( 3.0 + 5.0 * rough ) + fi * 9.0 ) + 0.15 * noise2( u * 9.0 + fi );
         float push = reach * pulse * fing * r / ( r * r + 0.05 ) * 0.35;
         x -= d / r * push; // sample from further in: dye moves out
-        streakAcc += pulse * fing * exp( -r * 2.0 );
+        streak_acc += pulse * fing * exp( -r * 2.0 );
     }
     // Dye field: blobs of colour in the (advected) coordinates.
     float bs = 2.5 + 3.0 * ( 1.0 - clamp( blobP, 0.0, 1.0 ) );
@@ -351,7 +351,7 @@ void main()
                      1.0 - clamp( milkP, 0.0, 1.0 ) );
     vec3 col = mix( milk, dye * 0.9, smoothstep( 0.0, 0.7, cover ) );
     // Thin dye films between the blobs where the streaks stretched them.
-    col = mix( col, mix( milk, dye, 0.5 ), 0.2 * smoothstep( 0.1, 0.6, streakAcc ) * ( 1.0 - cover ) );
+    col = mix( col, mix( milk, dye, 0.5 ), 0.2 * smoothstep( 0.1, 0.6, streak_acc ) * ( 1.0 - cover ) );
     // Sheen on the milk.
     float sheen = pow( max( 0.0, fbm3( p * 1.2 + vec2( 0.0, 0.02 * sceneTime ) ) ), 3.0 );
     col += vec3( 1.0 ) * sheen * ( 0.05 + 0.2 * kick );

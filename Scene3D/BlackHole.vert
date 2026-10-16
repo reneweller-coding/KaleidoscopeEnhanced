@@ -62,7 +62,7 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // Camera orbits slowly, a little above the disk plane.  Pulled back far
@@ -76,7 +76,7 @@ void main()
 
     vec3  vp;
     vec3  col;
-    float sizeBase = 90.0, sizeCap = 18.0, sizeMin = 1.5;
+    float size_base = 90.0, size_cap = 18.0, size_min = 1.5;
 
     if ( r1 < 0.22 )
     {
@@ -107,8 +107,8 @@ void main()
         float rs = max( length( sxy ), 1e-4 );
         sxy *= sqrt( rs * rs + 0.09 ) / rs;
 
-        vp = vec3( sxy.x * 0.5 * open * dz * kTanY,
-                   sxy.y * 0.5 * open * dz * kTanY,
+        vp = vec3( sxy.x * 0.5 * open * dz * TanY,
+                   sxy.y * 0.5 * open * dz * TanY,
                    dz );
 
         // Cool starlight with the occasional warm giant; the dust behind
@@ -121,9 +121,9 @@ void main()
         // A star has to stay a legible speck at any depth -- below about two
         // and a half pixels an additive sprite averages away to nothing and
         // the far half of the sky reads black again.
-        sizeBase = 70.0;
-        sizeCap = 7.0;
-        sizeMin = 2.4;
+        size_base = 70.0;
+        size_cap = 7.0;
+        size_min = 2.4;
     }
     else
     {
@@ -151,9 +151,9 @@ void main()
             // disk to nothing well inside the new outer edge.
             col *= doppler * ( 1.32 - 0.016 * rad );
 
-            sizeBase = 95.0;
-            sizeCap = 18.0;
-            sizeMin = 2.0;
+            size_base = 95.0;
+            size_cap = 18.0;
+            size_min = 2.0;
         }
         else if ( r1 < 0.81 )
         {
@@ -162,7 +162,7 @@ void main()
             float rad = 6.4 + r3 * 0.28;
             world = vec3( cos( ang ) * rad, ( r4 - 0.5 ) * 0.3, sin( ang ) * rad );
             col = vec3( 1.0, 0.95, 0.8 ) * 1.8;
-            sizeCap = 14.0;
+            size_cap = 14.0;
         }
         else if ( r1 < 0.91 )
         {
@@ -176,9 +176,9 @@ void main()
             float ang = r3 * 6.2831853 + s * 9.0;
             world = vec3( cos( ang ) * rad, ( r4 - 0.5 ) * 5.0 * ( 1.0 - s ), sin( ang ) * rad );
             col = vec3( 0.55, 0.35, 0.75 ) * ( 0.32 + 0.85 * s );
-            sizeBase = 110.0;
-            sizeCap = 12.0;
-            sizeMin = 2.2;
+            size_base = 110.0;
+            size_cap = 12.0;
+            size_min = 2.2;
         }
         else
         {
@@ -191,9 +191,9 @@ void main()
                           sin( r4 * 6.2831853 ) * spread );
             col = vec3( 0.55, 0.75, 1.0 )
                   * ( 0.30 + 2.2 * audioDrop ) * exp( -t * 0.045 );
-            sizeBase = 100.0;
-            sizeCap = 10.0;
-            sizeMin = 2.0;
+            size_base = 100.0;
+            size_cap = 10.0;
+            size_min = 2.0;
         }
 
         vec3 rel = world - cam;
@@ -210,8 +210,8 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
     col = hueRot( col, audioChromaHue * 0.35 );
     col *= ( 0.8 + 0.45 * audioSwell );

@@ -50,10 +50,10 @@ void main()
     vec2 p = gl_FragCoord.xy / resolution;
 
     // Per-activation character (constant during the scene):
-    float breathAmt = ( breathAmtP <= 0.001 ) ? 0.030 : breathAmtP;
-    float waveAmt = ( waveAmtP <= 0.001 ) ? 0.012 : waveAmtP;
-    float spinV = ( spinP <= 0.001 ) ? 0.05 : spinP;
-    float chromaV = ( chromaP <= 0.0001 ) ? 0.0022 : chromaP;
+    float breath_amt = ( breathAmtP <= 0.001 ) ? 0.030 : breathAmtP;
+    float wave_amt = ( waveAmtP <= 0.001 ) ? 0.012 : waveAmtP;
+    float spin_v = ( spinP <= 0.001 ) ? 0.05 : spinP;
+    float chroma_v = ( chromaP <= 0.0001 ) ? 0.0022 : chromaP;
 
     // Centre the coordinate for the zoom/rotation, aspect-corrected.
     vec2 c = p - 0.5;
@@ -62,27 +62,27 @@ void main()
     float r = length( c );
 
     // Beat breath: zoom in slightly on the beat (deeper on the downbeat).
-    float breath = breathAmt * audioBeat + 0.5 * breathAmt * audioDownbeat;
+    float breath = breath_amt * audioBeat + 0.5 * breath_amt * audioDownbeat;
     c /= ( 1.0 + breath );
 
     // Radial shock-wave riding the continuous beat phase: a faint expanding
     // ripple that displaces the sampling radius as it passes.
-    float wR = audioBeatPhase * 1.2;
-    float wave = exp( -pow( ( r - wR ) * 10.0, 2.0 ) ) * audioBeat;
-    c *= 1.0 + waveAmt * wave;
+    float w_r = audioBeatPhase * 1.2;
+    float wave = exp( -pow( ( r - w_r ) * 10.0, 2.0 ) ) * audioBeat;
+    c *= 1.0 + wave_amt * wave;
 
     // Slow continuous rotation.
-    c = rot( audioPhase * spinV ) * c;
+    c = rot( audioPhase * spin_v ) * c;
 
     c.x /= resolution.x / resolution.y;
     vec2 uv = c + 0.5;
 
     // Onset chroma shimmer: R and B sample at slightly different radii while a
     // hit rings (slew-limited upstream -> a soft glassy fringe, no strobe).
-    float split = chromaV * audioOnset;
+    float split = chroma_v * audioOnset;
     vec2  dir = ( uv - 0.5 );
-    vec4  colG = frame( uv );
-    vec4  colR = frame( uv + dir * split );
-    vec4  colB = frame( uv - dir * split );
-    fragColor = vec4( colR.r, colG.g, colB.b, colG.a );
+    vec4  col_g = frame( uv );
+    vec4  col_r = frame( uv + dir * split );
+    vec4  col_b = frame( uv - dir * split );
+    fragColor = vec4( col_r.r, col_g.g, col_b.b, col_g.a );
 }

@@ -69,12 +69,12 @@ uniform float lengthP; ///< preset: how fast segments shorten
 uniform float growthP; ///< preset: growth speed
 uniform float leafP;   ///< preset: leaf size
 
-const int   MAXDEPTH = 8;                            ///< nodes 1 .. 2^9-1
-const uint  NODES = ( 1u << ( MAXDEPTH + 1 ) ) - 1u; ///< 511
-const int   SIDES = 5;                               ///< cross-section of a branch tube
-const uint  TREES = 7u;                              ///< trees in the grove
-const uint  SLOTS = 512u;                            ///< invocations reserved per tree
-const float GROUNDY = -1.80;                         ///< the forest floor the trunks stand on
+const int   Maxdepth = 8;                            ///< nodes 1 .. 2^9-1
+const uint  Nodes = ( 1u << ( Maxdepth + 1 ) ) - 1u; ///< 511
+const int   Sides = 5;                               ///< cross-section of a branch tube
+const uint  Trees = 7u;                              ///< trees in the grove
+const uint  Slots = 512u;                            ///< invocations reserved per tree
+const float Groundy = -1.80;                         ///< the forest floor the trunks stand on
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( float n )
@@ -127,9 +127,9 @@ void main()
     // right under the camera is finely divided and the far ground is cheap.
     // Without it the whole lower half of the frame was black no matter how
     // many trees stood in it.
-    if ( id >= TREES * SLOTS )
+    if ( id >= Trees * Slots )
     {
-        uint  q = id - TREES * SLOTS;
+        uint  q = id - Trees * Slots;
         float ia = float( q % 32u );
         float ir = float( q / 32u );
 
@@ -139,10 +139,10 @@ void main()
         float rr1 = 1.2 * pow( 1.28, ir + 1.0 );
 
         vec3 gn = vec3( 0.0, 1.0, 0.0 );
-        vec3 q00 = vec3( cos( a0 ) * rr0, GROUNDY, sin( a0 ) * rr0 );
-        vec3 q10 = vec3( cos( a1 ) * rr0, GROUNDY, sin( a1 ) * rr0 );
-        vec3 q01 = vec3( cos( a0 ) * rr1, GROUNDY, sin( a0 ) * rr1 );
-        vec3 q11 = vec3( cos( a1 ) * rr1, GROUNDY, sin( a1 ) * rr1 );
+        vec3 q00 = vec3( cos( a0 ) * rr0, Groundy, sin( a0 ) * rr0 );
+        vec3 q10 = vec3( cos( a1 ) * rr0, Groundy, sin( a1 ) * rr0 );
+        vec3 q01 = vec3( cos( a0 ) * rr1, Groundy, sin( a0 ) * rr1 );
+        vec3 q11 = vec3( cos( a1 ) * rr1, Groundy, sin( a1 ) * rr1 );
 
         // depthN carries the ground's own distance out from the grove centre,
         // which the fragment stage reads as its mist ramp.
@@ -153,9 +153,9 @@ void main()
         return;
     }
 
-    uint tree = id / SLOTS;
-    uint n = ( id % SLOTS ) + 1u; // heap numbering starts at 1
-    if ( n > NODES )
+    uint tree = id / Slots;
+    uint n = ( id % Slots ) + 1u; // heap numbering starts at 1
+    if ( n > Nodes )
         return;
 
     int depth = findMSB( n ); // 0 for the trunk
@@ -164,14 +164,14 @@ void main()
     // the ring; the ring's radius stays under the camera distance so no trunk
     // can ever swing behind the eye as the whole grove turns.
     float ft = float( tree );
-    float tang = 6.2831853 * ( ft / float( TREES ) ) + sceneSeed * 2.7;
+    float tang = 6.2831853 * ( ft / float( Trees ) ) + sceneSeed * 2.7;
     float trad = ( tree == 0u ) ? 0.0 : ( 4.2 + 5.6 * hash1( ft * 3.1 + sceneSeed * 11.0 ) );
     float tscl = 0.75 + 0.60 * hash1( ft * 7.7 + sceneSeed * 5.0 );
-    vec3  root = vec3( cos( tang ) * trad, GROUNDY + 0.05, sin( tang ) * trad );
+    vec3  root = vec3( cos( tang ) * trad, Groundy + 0.05, sin( tang ) * trad );
 
     // The growth wave.  It breathes in and out rather than restarting, so the
     // crown never pops back to a stump between cycles.
-    float wave = growthP * ( float( MAXDEPTH ) + 1.5 )
+    float wave = growthP * ( float( Maxdepth ) + 1.5 )
                      * ( 0.55 + 0.45 * sin( audioAdvance * 0.055 ) )
                  + 2.2 * audioKick + 1.2 * audioSubBass;
     float open = clamp( wave - float( depth ), 0.0, 1.0 );
@@ -216,21 +216,21 @@ void main()
         rad *= 0.82;
     }
 
-    float segLen = len * open;
+    float seg_len = len * open;
     vec3  p0 = pos;
-    vec3  p1 = pos + dir * segLen;
+    vec3  p1 = pos + dir * seg_len;
     float r0 = rad;
     float r1 = rad * 0.72;
-    float depthN = float( depth ) / float( MAXDEPTH );
+    float depthN = float( depth ) / float( Maxdepth );
 
     // ---- the branch as a tapered tube ----
     vec3 u = normalize( side - dir * dot( side, dir ) );
     vec3 v = cross( dir, u );
 
-    for ( int s = 0; s < SIDES; ++s )
+    for ( int s = 0; s < Sides; ++s )
     {
-        float a0 = 6.2831853 * float( s ) / float( SIDES );
-        float a1 = 6.2831853 * float( s + 1 ) / float( SIDES );
+        float a0 = 6.2831853 * float( s ) / float( Sides );
+        float a1 = 6.2831853 * float( s + 1 ) / float( Sides );
         vec3  n0 = u * cos( a0 ) + v * sin( a0 );
         vec3  n1 = u * cos( a1 ) + v * sin( a1 );
 
@@ -241,12 +241,12 @@ void main()
     }
 
     // ---- a leaf at every fully grown tip ----
-    if ( depth >= MAXDEPTH - 1 && open > 0.5 )
+    if ( depth >= Maxdepth - 1 && open > 0.5 )
     {
         // Sized from the twig it grows on, not from a constant.  A fixed size
         // is a leaf that happens to fit ONE generation; here it is bigger than
         // the whole branch and the crown turns into a pile of slabs.
-        float sz = leafP * segLen * 1.15 * ( 0.6 + 0.8 * hash1( float( n ) + 3.7 + ft * 57.3 ) )
+        float sz = leafP * seg_len * 1.15 * ( 0.6 + 0.8 * hash1( float( n ) + 3.7 + ft * 57.3 ) )
                    * ( 0.75 + 0.6 * audioHigh );
         vec3  c = p1 + dir * sz * 0.7;
         vec3  e0 = u * sz, e1 = v * sz * 0.55;

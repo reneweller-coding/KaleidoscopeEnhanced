@@ -79,44 +79,44 @@ void main()
     vec2 p = uv;
     p.y += sin( p.x * 2.5 + t * 0.8 ) * 0.08;
 
-    float beamPos = fract( t * 0.3 ) * 3.0 - 1.5;
-    float dx = p.x - beamPos;
+    float beam_pos = fract( t * 0.3 ) * 3.0 - 1.5;
+    float dx = p.x - beam_pos;
     float r = abs( p.y );
 
     // Cherenkov cone geometry (Mach angle)
-    float machAngle = ( 0.75 + 0.25 * sin( audioCentroid * 3.14 ) ) * ( machP > 0.01 ? machP : 1.0 );
-    float coneD = dx * machAngle - r;
-    float inCone = smoothstep( 0.0, 0.15, coneD );
+    float mach_angle = ( 0.75 + 0.25 * sin( audioCentroid * 3.14 ) ) * ( machP > 0.01 ? machP : 1.0 );
+    float cone_d = dx * mach_angle - r;
+    float in_cone = smoothstep( 0.0, 0.15, cone_d );
 
     // Plasma wakefield cavitation bubbles
-    float bubbleFreq = 5.0 * ( bubbleP > 0.01 ? bubbleP : 1.0 );
-    float bubblePhase = dx * bubbleFreq + t * 4.0;
-    float bubbleCavity = exp( -r * ( 6.0 - 2.0 * audioSubBass ) ) * ( 0.5 + 0.5 * cos( bubblePhase ) );
+    float bubble_freq = 5.0 * ( bubbleP > 0.01 ? bubbleP : 1.0 );
+    float bubble_phase = dx * bubble_freq + t * 4.0;
+    float bubble_cavity = exp( -r * ( 6.0 - 2.0 * audioSubBass ) ) * ( 0.5 + 0.5 * cos( bubble_phase ) );
 
     // Optical Mach fringes & high-gradient interference
-    float fringeDensity = 18.0 * ( fringeP > 0.01 ? fringeP : 1.5 );
-    float fringes = sin( coneD * fringeDensity + audioPhase * 2.0 ) * 0.5 + 0.5;
-    fringes *= inCone * exp( -max( 0.0, -dx ) * 0.8 );
+    float fringe_density = 18.0 * ( fringeP > 0.01 ? fringeP : 1.5 );
+    float fringes = sin( cone_d * fringe_density + audioPhase * 2.0 ) * 0.5 + 0.5;
+    fringes *= in_cone * exp( -max( 0.0, -dx ) * 0.8 );
 
     // Core ionization spark
     float spark = exp( -dot( vec2( dx, p.y ), vec2( dx, p.y ) ) * 45.0 ) * ( 1.0 + 3.0 * audioKick );
 
     // Dielectric background polarization
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 photoBg = img( bgUv );
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 photo_bg = img( bg_uv );
 
     // Color synthesis: Deep Cherenkov blue-violet identity tinted with photo palette
-    vec3 cherenkovBlue = vec3( 0.08, 0.45, 1.0 );
-    vec3 violetGlow = vec3( 0.55, 0.15, 0.95 );
-    vec3 shockTint = palTint( mix( cherenkovBlue, violetGlow, fringes ), coneD * 0.2, 0.28 );
+    vec3 cherenkov_blue = vec3( 0.08, 0.45, 1.0 );
+    vec3 violet_glow = vec3( 0.55, 0.15, 0.95 );
+    vec3 shock_tint = palTint( mix( cherenkov_blue, violet_glow, fringes ), cone_d * 0.2, 0.28 );
 
-    vec3 col = photoBg * 0.25;
-    col += shockTint * ( inCone * 0.8 + fringes * 0.6 ) * ( glowP > 0.01 ? glowP : 1.2 );
-    col += palTint( vec3( 0.2, 0.8, 1.0 ), dx * 0.1, 0.25 ) * bubbleCavity * ( 0.8 + 0.6 * audioSwell );
+    vec3 col = photo_bg * 0.25;
+    col += shock_tint * ( in_cone * 0.8 + fringes * 0.6 ) * ( glowP > 0.01 ? glowP : 1.2 );
+    col += palTint( vec3( 0.2, 0.8, 1.0 ), dx * 0.1, 0.25 ) * bubble_cavity * ( 0.8 + 0.6 * audioSwell );
     col += vec3( 0.8, 0.95, 1.0 ) * spark;
 
     // Kick flash
-    col += shockTint * audioKick * 0.35;
+    col += shock_tint * audioKick * 0.35;
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

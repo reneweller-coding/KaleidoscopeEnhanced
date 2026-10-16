@@ -115,7 +115,7 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
-    float gownW = mix( 0.22, 0.36, clamp( gownP, 0.0, 1.0 ) );
+    float gown_w = mix( 0.22, 0.36, clamp( gownP, 0.0, 1.0 ) );
 
     // The light: a soft band that travels slowly across the panel.
     float lx = sin( sceneTime * 0.09 ) * aspect * 0.55;
@@ -127,11 +127,12 @@ void main()
     vec2  fi = floor( fq ), ff = fract( fq );
     float tilt = hash21( fi );
     float crack = smoothstep( 0.0, 0.06, min( min( ff.x, 1.0 - ff.x ), min( ff.y, 1.0 - ff.y ) ) );
-    vec3  goldBase = mix( vec3( 0.72, 0.52, 0.2 ), vec3( 0.95, 0.78, 0.38 ), 0.3 + 0.5 * tilt );
-    goldBase = mix( goldBase, imgPalette( hue * 0.159 + 0.08 ) * 1.2, 0.12 );
-    goldBase *= 0.75 + 0.35 * fbm( p * 6.0 );
+    vec3  gold_base = mix( vec3( 0.72, 0.52, 0.2 ), vec3( 0.95, 0.78, 0.38 ), 0.3 + 0.5 * tilt );
+    gold_base = mix( gold_base, imgPalette( hue * 0.159 + 0.08 ) * 1.2, 0.12 );
+    gold_base *= 0.75 + 0.35 * fbm( p * 6.0 );
     float spec = pow( clamp( 1.0 - abs( tilt - 0.5 - ( p.x - lx ) * 0.3 ), 0.0, 1.0 ), 8.0 );
-    vec3 col = goldBase * ( 0.55 + 0.9 * light ) * ( 0.85 + 0.15 * crack ) + vec3( 1.0, 0.9, 0.6 ) * spec * light * 0.6;
+    vec3  col = gold_base * ( 0.55 + 0.9 * light ) * ( 0.85 + 0.15 * crack )
+                + vec3( 1.0, 0.9, 0.6 ) * spec * light * 0.6;
     // Glints.
     float gl = step( 0.985, hash21( fi + floor( sceneTime * 0.0 ) + 3.0 ) ) * spec;
     col += vec3( 1.0, 0.95, 0.8 ) * gl * ( 0.2 + 1.2 * hi );
@@ -141,8 +142,8 @@ void main()
     {
         float fi2 = float( i );
         vec2 c = vec2( ( hash11( fi2 * 3.1 + 1.0 ) - 0.5 ) * aspect * 0.95, ( hash11( fi2 * 7.7 + 2.0 ) - 0.5 ) * 0.9 );
-        if ( abs( c.x ) < gownW * 0.6 )
-            c.x += sign( c.x + 0.001 ) * gownW * 0.8;
+        if ( abs( c.x ) < gown_w * 0.6 )
+            c.x += sign( c.x + 0.001 ) * gown_w * 0.8;
         float b = 0.008 + 0.008 * hash11( fi2 * 5.5 );
         float d = spiralD( p, c, b, 3.0 + floor( hash11( fi2 ) * 3.0 ) );
         float within = smoothstep( b * 6.2831853 * 5.0, b * 6.2831853 * 3.0, length( p - c ) );
@@ -159,26 +160,26 @@ void main()
     vec2  ei = floor( eg ), ef = fract( eg ) - 0.5;
     vec2  ej = ( hash22( ei + 4.0 ) - 0.5 ) * 0.4;
     float ed = length( ( ef - ej ) * vec2( 1.0, 1.5 ) );
-    float eyeOn = step( 0.6, hash21( ei + 9.0 ) ) * step( gownW, abs( p.x ) );
+    float eye_on = step( 0.6, hash21( ei + 9.0 ) ) * step( gown_w, abs( p.x ) );
     float er = 0.13 + 0.05 * hash21( ei );
-    float eRings = step( ed, er ) * ( 0.5 + 0.5 * sin( ed / er * 18.0 ) );
+    float e_rings = step( ed, er ) * ( 0.5 + 0.5 * sin( ed / er * 18.0 ) );
     int   eb = int( mod( hash21( ei + 2.0 ) * 32.0, 32.0 ) );
     float ee = clamp( audioSpectrum[eb] * 1.5, 0.0, 1.0 );
-    vec3  eyeC = mix( vec3( 0.05 ), imgPalette( hue * 0.159 + hash21( ei + 6.0 ) * 0.5 ) * 1.2, eRings );
-    eyeC = mix( eyeC, vec3( 1.0, 0.8, 0.35 ), smoothstep( 0.35, 0.2, ed / er ) * ( 0.5 + 0.5 * ee ) );
-    col = mix( col, eyeC, eyeOn * step( ed, er ) );
+    vec3  eye_c = mix( vec3( 0.05 ), imgPalette( hue * 0.159 + hash21( ei + 6.0 ) * 0.5 ) * 1.2, e_rings );
+    eye_c = mix( eye_c, vec3( 1.0, 0.8, 0.35 ), smoothstep( 0.35, 0.2, ed / er ) * ( 0.5 + 0.5 * ee ) );
+    col = mix( col, eye_c, eye_on * step( ed, er ) );
 
     // Small black-and-white squares scattered on the gold.
     vec2  sg = p * 14.0;
     vec2  si = floor( sg ), sf = fract( sg );
-    float sq = step( 0.85, hash21( si + 12.0 ) ) * step( gownW, abs( p.x ) );
-    float inSq = step( 0.25, sf.x ) * step( sf.x, 0.75 ) * step( 0.25, sf.y ) * step( sf.y, 0.75 );
+    float sq = step( 0.85, hash21( si + 12.0 ) ) * step( gown_w, abs( p.x ) );
+    float in_sq = step( 0.25, sf.x ) * step( sf.x, 0.75 ) * step( 0.25, sf.y ) * step( sf.y, 0.75 );
     float chk = mod( floor( sf.x * 4.0 ) + floor( sf.y * 4.0 ), 2.0 );
-    col = mix( col, mix( vec3( 0.06 ), vec3( 0.9, 0.88, 0.82 ), chk ), sq * inSq );
+    col = mix( col, mix( vec3( 0.06 ), vec3( 0.9, 0.88, 0.82 ), chk ), sq * in_sq );
 
     // The gown down the middle: tesserae from the photo with gold grout,
     // flaring out toward the bottom, sprinkled with ornamental discs.
-    float gw = gownW * ( 0.75 + 0.5 * ( 0.5 - p.y ) );
+    float gw = gown_w * ( 0.75 + 0.5 * ( 0.5 - p.y ) );
     float gm = smoothstep( gw + 0.01, gw - 0.01, abs( p.x + 0.02 * sin( p.y * 6.0 ) ) );
     if ( gm > 0.0 )
     {
@@ -188,20 +189,20 @@ void main()
         float gg = dot( tess, vec3( 0.333 ) );
         tess = mix( vec3( gg ), tess, 1.35 ) * ( 0.8 + 0.3 * hash21( ti ) );
         float grout = smoothstep( 0.0, 0.12, min( min( tf.x, 1.0 - tf.x ), min( tf.y, 1.0 - tf.y ) ) );
-        vec3  gown = mix( goldBase * 0.8, tess * ( 0.9 + 0.5 * light ), grout );
+        vec3  gown = mix( gold_base * 0.8, tess * ( 0.9 + 0.5 * light ), grout );
         // Ornamental discs on the gown.
         vec2  dg = p * 9.0;
         vec2  di = floor( dg ), df = fract( dg ) - 0.5;
         float dd = length( df - ( hash22( di ) - 0.5 ) * 0.3 );
         float disc = step( dd, 0.18 ) * step( 0.5, hash21( di + 3.0 ) );
-        vec3  discC = mix( vec3( 1.0, 0.8, 0.35 ), vec3( 0.05 ), step( 0.5, fract( dd * 16.0 ) ) );
-        gown = mix( gown, discC * ( 0.8 + light ), disc );
+        vec3  disc_c = mix( vec3( 1.0, 0.8, 0.35 ), vec3( 0.05 ), step( 0.5, fract( dd * 16.0 ) ) );
+        gown = mix( gown, disc_c * ( 0.8 + light ), disc );
         col = mix( col, gown, gm );
         col = mix( col, vec3( 0.08, 0.05, 0.02 ), exp( -abs( abs( p.x ) - gw ) * 300.0 ) * 0.8 );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

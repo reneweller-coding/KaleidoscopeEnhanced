@@ -74,13 +74,13 @@ void main()
     if ( r > 1.0 )
         discard;
     vec3  photo = img( vTexCoord );
-    float heightT = clamp( ( vWorld.y + 3.0 ) / 7.0, 0.0, 1.0 );
-    vec3  rangeCol = mix( vec3( 0.2, 0.5, 1.0 ), vec3( 1.0, 0.6, 0.2 ), heightT );
-    col = mix( photo * 1.4, rangeCol, 0.4 ) * ( 0.4 + 1.2 * vLit ) * ( 1.0 - r * r * 0.5 ) * 1.5;
+    float height_t = clamp( ( vWorld.y + 3.0 ) / 7.0, 0.0, 1.0 );
+    vec3  range_col = mix( vec3( 0.2, 0.5, 1.0 ), vec3( 1.0, 0.6, 0.2 ), height_t );
+    col = mix( photo * 1.4, range_col, 0.4 ) * ( 0.4 + 1.2 * vLit ) * ( 1.0 - r * r * 0.5 ) * 1.5;
     col += vec3( 1.0 ) * smoothstep( 0.7, 1.0, vLit ) * clamp( audioHigh * 2.0, 0.0, 1.0 ) * 0.5 * ( 1.0 - r );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

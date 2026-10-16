@@ -49,7 +49,7 @@ uniform float pitchP;  ///< Pitch knob, 0..1.
 uniform float spreadP; ///< Spread knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -62,7 +62,7 @@ void main()
     vec2  uv = gl_FragCoord.xy / resolution;
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // Position within this lenticule, 0..1.
     float s = fract( uv.x * pitch );

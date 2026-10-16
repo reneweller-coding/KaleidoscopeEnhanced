@@ -111,9 +111,9 @@ void main()
     // MODE sets the head's temperature before the key's hue wind is applied:
     // a minor key cools the sunflower to a blue-violet seed head, a major key
     // restores its warm gold.  The two ends are luminance-matched.
-    vec3 seedCol = mix( vec3( 0.45, 0.55, 0.95 ), vec3( 0.95, 0.65, 0.20 ),
-                        clamp( audioMode, 0.0, 1.0 ) );
-    vec3 col = hueRot( seedCol, audioChromaHue + fr * 0.35 );
+    vec3 seed_col = mix( vec3( 0.45, 0.55, 0.95 ), vec3( 0.95, 0.65, 0.20 ),
+                         clamp( audioMode, 0.0, 1.0 ) );
+    vec3 col = hueRot( seed_col, audioChromaHue + fr * 0.35 );
     col *= ( 0.40 + 0.50 * r4 + 1.4 * ring )
            * ( 0.8 + 0.4 * audioSwell );
     vCol = vec4( col * 0.60, 1.0 );

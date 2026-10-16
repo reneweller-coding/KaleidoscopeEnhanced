@@ -53,41 +53,41 @@ vec3 imgPalette( float t )
 void main()
 {
     // Remap quad corner UV [0,1] to centered [-1,1] domain
-    vec2 localCorner = attrA.xy * 2.0 - 1.0;
+    vec2 local_corner = attrA.xy * 2.0 - 1.0;
     vUV = attrA.xy;
-    float qIndex = attrA.w;
+    float q_index = attrA.w;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Multiferroic domain grid arrangement (71, 109, 180 degree ferroelectric domains)
-    float gridDim = 16.0;
-    float ix = mod( qIndex, gridDim );
-    float iy = floor( qIndex / gridDim );
+    float grid_dim = 16.0;
+    float ix = mod( q_index, grid_dim );
+    float iy = floor( q_index / grid_dim );
 
     // Domain type classification (0, 1, 2)
-    float domainType = mod( ix + iy * 2.0 + floor( t * 0.2 ), 3.0 );
-    vDomainType = domainType;
+    float domain_type = mod( ix + iy * 2.0 + floor( t * 0.2 ), 3.0 );
+    vDomainType = domain_type;
 
     // Domain terrace step heights
-    float stepH = ( stepHeightP > 0.001 ? stepHeightP : 0.08 ) * ( 1.0 + 0.5 * audioSwell );
-    float zStep = ( domainType * stepH ) + sin( ix * 0.5 + t ) * 0.04;
+    float step_h = ( stepHeightP > 0.001 ? stepHeightP : 0.08 ) * ( 1.0 + 0.5 * audioSwell );
+    float z_step = ( domain_type * step_h ) + sin( ix * 0.5 + t ) * 0.04;
 
     float scale = ( domainScaleP > 0.01 ? domainScaleP : 0.22 );
-    vec2  centerPos = ( vec2( ix, iy ) - gridDim * 0.5 ) * scale;
+    vec2  center_pos = ( vec2( ix, iy ) - grid_dim * 0.5 ) * scale;
 
     // Quad orientation based on ferroelectric polarization direction
-    float polAngle = domainType * 1.2566 + audioPhase * 0.3;
-    float cp = cos( polAngle ), sp = sin( polAngle );
-    vec2  rotCorner = vec2( localCorner.x * cp - localCorner.y * sp, localCorner.x * sp + localCorner.y * cp )
-                      * ( scale * 0.48 );
+    float pol_angle = domain_type * 1.2566 + audioPhase * 0.3;
+    float cp = cos( pol_angle ), sp = sin( pol_angle );
+    vec2  rot_corner = vec2( local_corner.x * cp - local_corner.y * sp, local_corner.x * sp + local_corner.y * cp )
+                       * ( scale * 0.48 );
 
-    vec3 worldPos = vec3( centerPos + rotCorner, zStep );
+    vec3 world_pos = vec3( center_pos + rot_corner, z_step );
 
     vNormal = normalize( vec3( sp * 0.3, cp * 0.3, 1.0 ) );
-    vCol = imgPalette( fract( domainType * 0.33 + qIndex * 0.01 + audioCentroid ) );
+    vCol = imgPalette( fract( domain_type * 0.33 + q_index * 0.01 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 4.5;
     vp.x -= eyeOff;
 

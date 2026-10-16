@@ -157,49 +157,49 @@ void main()
     // (The old discrete "walk free" loop teleported the camera in 0.3-unit
     // jumps whenever the corridor closed -- replaced by the smax clearance
     // bubble in the march below, which is continuous by construction.)
-    float dO = 0.0;
-    float hitDist = -1.0;
-    float trapMin = 1e5;
+    float d_o = 0.0;
+    float hit_dist = -1.0;
+    float trap_min = 1e5;
     int   steps = 0;
-    vec3  hitP = vec3( 0.0 ); // guarded by hitDist, but the compiler cannot see that
+    vec3  hit_p = vec3( 0.0 ); // guarded by hit_dist, but the compiler cannot see that
 
     for ( int i = 0; i < 90; ++i )
     {
-        vec3  p = ro + rd * dO;
-        float curTrap;
-        float dS = apollonianSDF( p * gsk, gsk, frc, curTrap );
-        dS = smax( dS, 0.38 - length( p - ro ), 0.12 ); // camera clearance bubble
-        trapMin = min( trapMin, curTrap );
+        vec3  p = ro + rd * d_o;
+        float cur_trap;
+        float d_s = apollonianSDF( p * gsk, gsk, frc, cur_trap );
+        d_s = smax( d_s, 0.38 - length( p - ro ), 0.12 ); // camera clearance bubble
+        trap_min = min( trap_min, cur_trap );
         steps = i;
 
-        if ( dS < 0.0008 + 0.0012 * dO )
+        if ( d_s < 0.0008 + 0.0012 * d_o )
         {
-            hitDist = dO;
-            hitP = p;
+            hit_dist = d_o;
+            hit_p = p;
             break;
         }
-        if ( dO > 9.0 )
+        if ( d_o > 9.0 )
             break;
-        dO += dS * 0.85;
+        d_o += d_s * 0.85;
     }
 
     vec3 deep = imgPalette( 0.62 ) * 0.06 + vec3( 0.01, 0.012, 0.03 );
     vec3 col = deep;
 
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
         vec2  e = vec2( 0.0015, 0.0 );
-        float tU;
-        vec3  n = normalize( vec3( apollonianSDF( ( hitP + e.xyy ) * gsk, gsk, frc, tU )
-                                       - apollonianSDF( ( hitP - e.xyy ) * gsk, gsk, frc, tU ),
-                                   apollonianSDF( ( hitP + e.yxy ) * gsk, gsk, frc, tU )
-                                       - apollonianSDF( ( hitP - e.yxy ) * gsk, gsk, frc, tU ),
-                                   apollonianSDF( ( hitP + e.yyx ) * gsk, gsk, frc, tU )
-                                       - apollonianSDF( ( hitP - e.yyx ) * gsk, gsk, frc, tU ) ) );
+        float t_u;
+        vec3  n = normalize( vec3( apollonianSDF( ( hit_p + e.xyy ) * gsk, gsk, frc, t_u )
+                                       - apollonianSDF( ( hit_p - e.xyy ) * gsk, gsk, frc, t_u ),
+                                   apollonianSDF( ( hit_p + e.yxy ) * gsk, gsk, frc, t_u )
+                                       - apollonianSDF( ( hit_p - e.yxy ) * gsk, gsk, frc, t_u ),
+                                   apollonianSDF( ( hit_p + e.yyx ) * gsk, gsk, frc, t_u )
+                                       - apollonianSDF( ( hit_p - e.yyx ) * gsk, gsk, frc, t_u ) ) );
 
-        vec3  lightDir = normalize( vec3( 0.4, 0.85, -0.45 ) );
-        float diff = max( dot( n, lightDir ), 0.0 );
-        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 48.0 );
+        vec3  light_dir = normalize( vec3( 0.4, 0.85, -0.45 ) );
+        float diff = max( dot( n, light_dir ), 0.0 );
+        float spec = pow( max( dot( reflect( -light_dir, n ), -rd ), 0.0 ), 48.0 );
 
         // Jewel colour from the ORBIT TRAP (constant per sphere, so each
         // sphere reads as one gem) -- no per-pixel photo hash, which is what
@@ -209,8 +209,8 @@ void main()
         // every big sphere. floor() gives one gem tone per trap class -- flat
         // colour per sphere, stripes gone; the tiny advance drift shifts all
         // gems together, never spatially.
-        float gemClass = floor( trapMin * 5.0 ) * 0.2;
-        vec3  jewel = imgPalette( fract( gemClass * 0.83 + 0.02 * audioAdvance ) );
+        float gem_class = floor( trap_min * 5.0 ) * 0.2;
+        vec3  jewel = imgPalette( fract( gem_class * 0.83 + 0.02 * audioAdvance ) );
         jewel = mix( jewel, img( n.xy * 0.25 + 0.5 ), 0.22 );
 
         // Iteration-count occlusion: crevices between kissing spheres darken.
@@ -221,7 +221,7 @@ void main()
         col += spec * vec3( 1.0, 0.96, 0.88 ) * ( 0.8 + 1.6 * audioKick );
         col += jewel * rim * 0.55;
 
-        col = mix( col, deep, 1.0 - exp( -hitDist * 0.30 ) );
+        col = mix( col, deep, 1.0 - exp( -hit_dist * 0.30 ) );
     }
 
     if ( audioChromaHue != 0.0 )

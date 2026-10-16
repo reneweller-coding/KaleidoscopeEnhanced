@@ -105,10 +105,10 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 iceColor = vec3( 0.1, 0.15, 0.2 );                   // Cold, dark ice
-    vec3 methaneColor = imgPalette( 0.3 );                    // Opaque, dark liquid
-    vec3 skyColor = vec3( 0.02, 0.05, 0.1 );                  // Hazy atmosphere
-    vec3 ringColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Bright icy rings
+    vec3 ice_color = vec3( 0.1, 0.15, 0.2 );                   // Cold, dark ice
+    vec3 methane_color = imgPalette( 0.3 );                    // Opaque, dark liquid
+    vec3 sky_color = vec3( 0.02, 0.05, 0.1 );                  // Hazy atmosphere
+    vec3 ring_color = imgPalette( 0.8 + audioCentroid * 0.1 ); // Bright icy rings
 
     float drift = time * 0.2 + audioAdvance * 0.5;
 
@@ -116,10 +116,10 @@ void main()
     float horizon = -0.1;
 
     // 1. The Sky (Gas giant and rings)
-    vec3 skyRender = vec3( 0.0 );
+    vec3 sky_render = vec3( 0.0 );
 
     // We render the sky first so we can reflect it
-    vec2 skyUv = uv;
+    vec2 sky_uv = uv;
     // For reflection later, we will flip uv.y
 
     // Function to render the sky
@@ -129,76 +129,76 @@ void main()
     if ( uv.y > horizon )
     {
         // Direct sky
-        skyUv = uv;
+        sky_uv = uv;
     }
     else
     {
         // Reflected sky (distorted by calm ripples)
-        float dPlane = 0.1 / abs( uv.y - horizon );
-        vec2  planeUv = vec2( uv.x * dPlane + drift, dPlane - drift );
+        float d_plane = 0.1 / abs( uv.y - horizon );
+        vec2  plane_uv = vec2( uv.x * d_plane + drift, d_plane - drift );
 
         // Very slow, viscous ripples (methane is cold and dense)
-        float ripples = fbm( vec3( planeUv * 2.0, time * 0.1 ) ) * 0.02;
+        float ripples = fbm( vec3( plane_uv * 2.0, time * 0.1 ) ) * 0.02;
 
-        skyUv = vec2( uv.x + ripples, 2.0 * horizon - uv.y + ripples );
+        sky_uv = vec2( uv.x + ripples, 2.0 * horizon - uv.y + ripples );
     }
 
     // Draw the Gas Giant
-    vec2  planetPos = vec2( 0.3, horizon + 0.3 );
-    float dPlanet = length( skyUv - planetPos );
-    float planetRad = 0.4 * rp;
+    vec2  planet_pos = vec2( 0.3, horizon + 0.3 );
+    float d_planet = length( sky_uv - planet_pos );
+    float planet_rad = 0.4 * rp;
 
-    if ( dPlanet < planetRad )
+    if ( d_planet < planet_rad )
     {
         // Planet surface (bands)
-        float bands = sin( ( skyUv.y - planetPos.y ) * 30.0 + fbm( vec3( skyUv * 5.0, time * 0.01 ) ) * 2.0 );
-        skyRender = mix( iceColor, ringColor * 0.5, smoothstep( -1.0, 1.0, bands ) );
+        float bands = sin( ( sky_uv.y - planet_pos.y ) * 30.0 + fbm( vec3( sky_uv * 5.0, time * 0.01 ) ) * 2.0 );
+        sky_render = mix( ice_color, ring_color * 0.5, smoothstep( -1.0, 1.0, bands ) );
 
         // Edge shadow
-        skyRender *= smoothstep( planetRad, planetRad * 0.8, dPlanet );
+        sky_render *= smoothstep( planet_rad, planet_rad * 0.8, d_planet );
     }
     else
     {
         // Atmospheric haze
-        skyRender = skyColor * ( 0.2 + audioSwell * 0.2 );
+        sky_render = sky_color * ( 0.2 + audioSwell * 0.2 );
     }
 
     // Draw the majestic rings
     // The rings are an ellipse intersecting the planet
-    vec2 ringCenter = planetPos;
+    vec2 ring_center = planet_pos;
     // Tilt the rings
-    mat2 ringRot = mat2( cos( 0.3 ), -sin( 0.3 ), sin( 0.3 ), cos( 0.3 ) );
-    vec2 ruv = ringRot * ( skyUv - ringCenter );
+    mat2 ring_rot = mat2( cos( 0.3 ), -sin( 0.3 ), sin( 0.3 ), cos( 0.3 ) );
+    vec2 ruv = ring_rot * ( sky_uv - ring_center );
 
     // Ellipse distance approximation
-    float dRing = length( vec2( ruv.x, ruv.y * 5.0 ) ); // stretched Y
+    float d_ring = length( vec2( ruv.x, ruv.y * 5.0 ) ); // stretched Y
 
-    if ( dRing > 0.4 * rp && dRing < 0.8 * rp )
+    if ( d_ring > 0.4 * rp && d_ring < 0.8 * rp )
     {
         // We are in the ring plane
         // Determine if we are in front of or behind the planet
         // ruv.y > 0 means the back half, ruv.y < 0 means front half
-        bool isFront = ruv.y < 0.0;
+        bool is_front = ruv.y < 0.0;
 
-        if ( isFront || dPlanet > planetRad )
+        if ( is_front || d_planet > planet_rad )
         {
             // Ring texture (radial noise)
-            float ringTex = fbm( vec3( dRing * 20.0, 0.0, 0.0 ) );
+            float ring_tex = fbm( vec3( d_ring * 20.0, 0.0, 0.0 ) );
 
             // Mask out gaps in the rings
-            float gaps = sin( dRing * 100.0 ) * sin( dRing * 50.0 );
+            float gaps = sin( d_ring * 100.0 ) * sin( d_ring * 50.0 );
 
             if ( gaps > 0.0 )
             {
                 // Flash on kick (meteor impacts in the rings)
-                float ringFlash = step( 0.95, hash11( floor( ruv.x * 10.0 ) + floor( time * 4.00 ) ) ) * audioKick * 3.0
-                                  * rp;
+                float ring_flash = step( 0.95, hash11( floor( ruv.x * 10.0 ) + floor( time * 4.00 ) ) ) * audioKick
+                                   * 3.0 * rp;
 
-                vec3 localRingCol = ringColor * ( 0.5 + ringTex * 0.5 ) * ( 1.0 + audioSwell ) * gaps;
-                localRingCol += ringColor * ringFlash;
+                vec3 local_ring_col = ring_color * ( 0.5 + ring_tex * 0.5 ) * ( 1.0 + audioSwell ) * gaps;
+                local_ring_col += ring_color * ring_flash;
 
                 // Additive blend for rings
-                skyRender += localRingCol;
+                sky_render += local_ring_col;
             }
         }
     }
@@ -206,43 +206,43 @@ void main()
     // 2. The Landscape (Ice and Methane Lakes)
     if ( uv.y < horizon )
     {
-        float dPlane = 0.1 / abs( uv.y - horizon );
-        vec2  planeUv = vec2( uv.x * dPlane + drift, dPlane - drift );
+        float d_plane = 0.1 / abs( uv.y - horizon );
+        vec2  plane_uv = vec2( uv.x * d_plane + drift, d_plane - drift );
 
         // Terrain height (Islands of ice vs lakes)
-        float terrain = fbm( vec3( planeUv * 2.0, 0.0 ) );
+        float terrain = fbm( vec3( plane_uv * 2.0, 0.0 ) );
 
         // Smooth threshold to separate land and liquid
         float shore = smoothstep( 0.4, 0.5, terrain );
 
         // Ice land
-        vec3 landCol = iceColor * ( 0.5 + fbm( vec3( planeUv * 10.0, 0.0 ) ) * 0.5 ) * ip;
+        vec3 land_col = ice_color * ( 0.5 + fbm( vec3( plane_uv * 10.0, 0.0 ) ) * 0.5 ) * ip;
 
         // Methane lake (reflects the sky)
         // Methane is dark, so reflection is prominent
-        vec3 lakeCol = mix( methaneColor * 0.2, skyRender, 0.8 );
+        vec3 lake_col = mix( methane_color * 0.2, sky_render, 0.8 );
 
         // Combine land and lake
-        vec3 surfaceCol = mix( lakeCol, landCol, shore );
+        vec3 surface_col = mix( lake_col, land_col, shore );
 
         // Distance fog / haze (thick atmosphere)
-        float fog = exp( -dPlane * 0.5 );
-        col = mix( skyColor, surfaceCol, fog );
+        float fog = exp( -d_plane * 0.5 );
+        col = mix( sky_color, surface_col, fog );
     }
     else
     {
         // We look at the sky
-        col = skyRender;
+        col = sky_render;
     }
 
     // Overall atmospheric haze
-    col += skyColor * 0.1 * ( 1.0 + audioSwell );
+    col += sky_color * 0.1 * ( 1.0 + audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

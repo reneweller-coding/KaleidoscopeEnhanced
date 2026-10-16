@@ -102,10 +102,10 @@ void main()
     vec2  vp = vec2( 0.45, hz + 0.01 );
     vec2  A = vec2( -1.0, -0.3 );
     float tx = clamp( ( p.x - A.x ) / ( vp.x - A.x ), 0.0, 1.0 );
-    float parTop = mix( A.y, vp.y, tx );
-    bool  onBridge = p.y < parTop && p.x < vp.x + ( vp.y - p.y ) * 1.3;
-    float postM = 0.0, lanM = 0.0;
-    vec3  lampC = mix( vec3( 1.0, 0.78, 0.45 ), imgPalette( 0.1 + hueP * 0.159 ) * 1.2, 0.12 );
+    float par_top = mix( A.y, vp.y, tx );
+    bool  on_bridge = p.y < par_top && p.x < vp.x + ( vp.y - p.y ) * 1.3;
+    float post_m = 0.0, lan_m = 0.0;
+    vec3  lamp_c = mix( vec3( 1.0, 0.78, 0.45 ), imgPalette( 0.1 + hueP * 0.159 ) * 1.2, 0.12 );
     vec3  glow = vec3( 0.0 );
     vec3  river = vec3( 0.0 );
     for ( int k = 0; k < 7; ++k )
@@ -119,12 +119,12 @@ void main()
         // Post and lantern.
         float post = step( abs( p.x - base.x ), 0.005 * s + px * 0.5 ) * step( base.y, p.y )
                      * step( p.y, lamp.y - 0.02 * s );
-        postM = max( postM, post );
+        post_m = max( post_m, post );
         float lan = length( ( p - lamp ) * vec2( 1.0, 0.8 ) ) - 0.02 * s;
-        lanM = max( lanM, smoothstep( px, -px, lan ) );
+        lan_m = max( lan_m, smoothstep( px, -px, lan ) );
         // Glow and haze around the lamp.
         float dl = length( p - lamp );
-        glow += lampC * ( exp( -dl / ( 0.04 * s ) ) * 0.7 + exp( -dl / ( 0.15 * s ) ) * 0.15 * ( 0.7 + 0.6 * swell ) )
+        glow += lamp_c * ( exp( -dl / ( 0.04 * s ) ) * 0.7 + exp( -dl / ( 0.15 * s ) ) * 0.15 * ( 0.7 + 0.6 * swell ) )
                 * I;
         // The swarm: insects on loose orbits around the lamp, each a point of light.
         float R = 0.22 * s;
@@ -146,34 +146,34 @@ void main()
                 float r0 = 0.0012 + 0.0022 * s + px * 0.5;
                 float tw = 0.6 + 0.4 * sin( T * 6.0 + fi * 3.0 );
                 float lit = exp( -length( o ) / R * 1.2 );
-                glow += lampC * ( smoothstep( r0, 0.0, d ) * 1.6 + exp( -d / ( r0 * 2.5 ) ) * 0.25 )
+                glow += lamp_c * ( smoothstep( r0, 0.0, d ) * 1.6 + exp( -d / ( r0 * 2.5 ) ) * 0.25 )
                         * ( 0.6 + 1.0 * hi ) * tw * lit;
             }
         }
         // The lamp mirrored in the river: a long rippling streak.
         float streak = exp(
             -pow( ( p.x - lamp.x - 0.012 * sin( p.y * 90.0 + T * 2.0 + fk ) ) / ( 0.014 * s + 0.004 ), 2.0 ) );
-        river += lampC * streak * exp( -( hz - p.y ) * 3.0 )
+        river += lamp_c * streak * exp( -( hz - p.y ) * 3.0 )
                  * ( 0.25 + 0.3 * noise2( vec2( p.x * 40.0, p.y * 200.0 - T * 2.0 ) ) ) * I;
     }
     // The river below the far bank, where the parapet does not hide it.
-    if ( p.y < hz && !onBridge )
+    if ( p.y < hz && !on_bridge )
     {
         col = vec3( 0.01, 0.015, 0.03 ) + river;
     }
     // The parapet: dark stone, its top edge catching the lamplight.
-    if ( onBridge )
+    if ( on_bridge )
     {
         float stone = 0.8 + 0.2 * noise2( vec2( p.x * 30.0, p.y * 60.0 ) );
         col = vec3( 0.03, 0.025, 0.022 ) * stone;
-        col += lampC * 0.18 * smoothstep( 0.012, 0.0, parTop - p.y ) * ( 0.7 + 0.4 * bass );
+        col += lamp_c * 0.18 * smoothstep( 0.012, 0.0, par_top - p.y ) * ( 0.7 + 0.4 * bass );
     }
-    col = mix( col, vec3( 0.03, 0.025, 0.02 ), postM );
-    col = mix( col, lampC * 2.0, lanM );
+    col = mix( col, vec3( 0.03, 0.025, 0.02 ), post_m );
+    col = mix( col, lamp_c * 2.0, lan_m );
     col += glow;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

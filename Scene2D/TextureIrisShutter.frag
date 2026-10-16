@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -234,7 +234,7 @@ vec4 iris( vec2 q, float m, float px )
     float rot = 0.05 * sceneTime * ( hm > 0.5 ? 1.0 : -1.0 ) + 0.4 * audioPhase + hm * 6.28;
     float R = ( 0.2 + 0.12 * clamp( audioSpread, 0.0, 1.0 ) ) * ( 0.8 + 0.25 * sin( 0.2 * sceneTime + m * 2.1 ) );
     float curv = ( 0.3 + 1.2 * clamp( curveP, 0.0, 1.0 ) ) / R * 0.3;
-    float halfSide = R * tan( 3.14159265 / N );
+    float half_side = R * tan( 3.14159265 / N );
     // Every blade whose edge lies behind the point covers it; the visible
     // one is chosen by a skewed score, which turns the blade borders into a
     // pinwheel.  The gap to the runner-up shades the overlap.
@@ -278,9 +278,9 @@ vec4 iris( vec2 q, float m, float px )
     c *= 0.6 + 0.4 * smoothstep( 0.0, R * 0.3, dv );             // shadow near the edge (depth)
     c *= 0.7 + 0.45 * hash11( vis * 3.1 + m );                   // each blade its own tone
     c *= 1.0 - 0.6 * exp( dn / ( R * 0.06 ) ) * step( dn, 0.0 ); // shadow of the blade lying over it
-    vec3  edgeC = glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( m, vis ) * 0.3, hueP * 0.159 );
+    vec3  edge_c = glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( m, vis ) * 0.3, hueP * 0.159 );
     float edge = exp( -dv / ( px * 2.5 ) ) + 0.3 * exp( -dv / ( px * 12.0 ) );
-    c += mix( edgeC, vec3( 1.0 ), 0.4 ) * edge * ( 0.5 + 1.3 * clamp( audioKick, 0.0, 1.0 ) );
+    c += mix( edge_c, vec3( 1.0 ), 0.4 ) * edge * ( 0.5 + 1.3 * clamp( audioKick, 0.0, 1.0 ) );
     return vec4( c, 1.0 );
 }
 

@@ -45,8 +45,8 @@ in float vPour;
 in vec3  vLip;
 in vec3  vCup;
 
-const float kDist = 48.0;
-const float kGround = -18.0;
+const float Dist = 48.0;
+const float Ground = -18.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -116,7 +116,7 @@ vec3 renderSky( vec3 dir )
     float az = atan( dir.x, dir.z );
     if ( dir.y < -0.004 )
     {
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.008 );
         col = vec3( 0.12, 0.10, 0.08 ) * ( 0.6 + 0.6 * noise2( P.xz * 0.15 ) );
@@ -206,22 +206,22 @@ void main()
     if ( base.a < 0.1 )
         discard;
     vec3 n = normalize( vNormal );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * expose;
 
     // The shop's light: a dim lamp, the furnace from the right, and the
     // melt itself as two point lights (the lip and the cup).
-    vec3 lampDir = normalize( vec3( -0.2, 0.8, -0.5 ) );
-    vec3 col = alb * vec3( 0.7, 0.7, 0.75 ) * max( dot( n, lampDir ), 0.0 ) * 0.5;
+    vec3 lamp_dir = normalize( vec3( -0.2, 0.8, -0.5 ) );
+    vec3 col = alb * vec3( 0.7, 0.7, 0.75 ) * max( dot( n, lamp_dir ), 0.0 ) * 0.5;
     col += alb * vec3( 1.0, 0.45, 0.15 ) * max( dot( n, normalize( vec3( 0.8, 0.1, 0.5 ) ) ), 0.0 )
            * ( 0.2 + 0.6 * bass );
     col += alb * vec3( 0.10, 0.09, 0.10 ) * 0.5;
-    vec3 meltCol = vec3( 1.0, 0.55, 0.2 ) * ( 3.0 + 2.0 * pour );
-    col += alb * lightAt( vPos, n, vCup + vec3( 0.0, 2.0, 0.0 ), meltCol * pour, 22.0 );
-    col += alb * lightAt( vPos, n, vLip, meltCol * ( 0.4 + 0.6 * pour ), 18.0 );
+    vec3 melt_col = vec3( 1.0, 0.55, 0.2 ) * ( 3.0 + 2.0 * pour );
+    col += alb * lightAt( vPos, n, vCup + vec3( 0.0, 2.0, 0.0 ), melt_col * pour, 22.0 );
+    col += alb * lightAt( vPos, n, vLip, melt_col * ( 0.4 + 0.6 * pour ), 18.0 );
 
-    vec3  halfV = normalize( lampDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 60.0, 8.0, roughness ) );
+    vec3  half_v = normalize( lamp_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 60.0, 8.0, roughness ) );
     col += mix( vec3( 1.0 ), base.rgb, metallic ) * spec * 0.2;
 
     float luma = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
@@ -243,13 +243,13 @@ void main()
         col = mix( col, heatCol( heat ) * ( 1.5 + 0.6 * bass ), cavity * fill );
     }
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.5, 0.2 ) * fres * ( 0.1 + 0.3 * pour );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.06 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

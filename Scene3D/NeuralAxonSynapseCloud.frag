@@ -38,12 +38,12 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Soft Gaussian point sprite circle
-    vec2  circCoord = gl_PointCoord * 2.0 - 1.0;
-    float distSq = dot( circCoord, circCoord );
-    if ( distSq > 1.0 )
+    vec2  circ_coord = gl_PointCoord * 2.0 - 1.0;
+    float dist_sq = dot( circ_coord, circ_coord );
+    if ( dist_sq > 1.0 )
         discard;
 
-    float alpha = exp( -distSq * 5.0 );
+    float alpha = exp( -dist_sq * 5.0 );
     vec3  col = vColor.rgb * alpha * 2.0; // measured luma 0.028: was *0.80
 
     col = hueRot( col, audioChromaHue + hue );

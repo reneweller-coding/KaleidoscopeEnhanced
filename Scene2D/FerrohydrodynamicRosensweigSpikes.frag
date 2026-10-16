@@ -78,14 +78,14 @@ void main()
     float pitch = ( spikePitchP > 0.01 ? spikePitchP : 4.2 );
     vec2  p = uv * pitch;
 
-    // ECHTE Inverse der cartPos-Formel unten (X = sqrt3*(cx+0.5*cy),
+    // ECHTE Inverse der cart_pos-Formel unten (X = sqrt3*(cx+0.5*cy),
     // Y = 1.5*cy) -- die alte Rueckrechnung gehoerte zu einem anderen
     // Gitter und liess am unteren Rand abgeschnittene Spikes stehen.
     vec2 cell = floor( vec2( p.x * 0.57735027 - p.y * 0.33333333,
                              p.y * 0.66666667 ) );
 
-    float minDist = 1e5;
-    vec2  closestOffset = vec2( 0.0 );
+    float min_dist = 1e5;
+    vec2  closest_offset = vec2( 0.0 );
 
     // +-2 statt +-1: die +-1-Suche im GESCHERTEN Zellraum verfehlte in der
     // unteren Bildhaelfte den wahren naechsten Mittelpunkt, und die Kugeln
@@ -95,45 +95,45 @@ void main()
         for ( int x = -2; x <= 2; x++ )
         {
             vec2  neighbor = vec2( float( x ), float( y ) );
-            vec2  cartPos = vec2( sqrt( 3.0 ) * ( cell.x + neighbor.x + 0.5 * ( cell.y + neighbor.y ) ),
-                                  1.5 * ( cell.y + neighbor.y ) );
-            vec2  diff = p - cartPos;
+            vec2  cart_pos = vec2( sqrt( 3.0 ) * ( cell.x + neighbor.x + 0.5 * ( cell.y + neighbor.y ) ),
+                                   1.5 * ( cell.y + neighbor.y ) );
+            vec2  diff = p - cart_pos;
             float d = length( diff );
-            if ( d < minDist )
+            if ( d < min_dist )
             {
-                minDist = d;
-                closestOffset = diff;
+                min_dist = d;
+                closest_offset = diff;
             }
         }
     }
 
     // Conical Rosensweig spike height profile: z(r) ~ exp(-r * sharpness)
-    float kSharp = ( sharpnessP > 0.01 ? sharpnessP : 2.5 ) * ( 1.0 + 0.4 * audioBass );
-    float spikeHeight = exp( -minDist * kSharp );
+    float k_sharp = ( sharpnessP > 0.01 ? sharpnessP : 2.5 ) * ( 1.0 + 0.4 * audioBass );
+    float spike_height = exp( -min_dist * k_sharp );
 
     // Spike tip specular highlight (oily surfactant sheen)
-    float specSheen = pow( spikeHeight, 3.5 ) * ( sheenP > 0.01 ? sheenP : 1.3 );
+    float spec_sheen = pow( spike_height, 3.5 ) * ( sheenP > 0.01 ? sheenP : 1.3 );
 
     // Magnetic pulse flash on kick
-    float spikeFlash = pow( spikeHeight, 5.0 ) * ( 1.0 + 4.0 * audioKick );
+    float spike_flash = pow( spike_height, 5.0 ) * ( 1.0 + 4.0 * audioKick );
 
     // Surface tension meniscus rings around spikes
-    float meniscus = exp( -abs( minDist - 0.45 ) * 16.0 );
+    float meniscus = exp( -abs( min_dist - 0.45 ) * 16.0 );
 
     // Oily black ferrofluid color with photo palette iridescence
-    vec3 blackFerro = vec3( 0.08, 0.07, 0.1 );
-    vec3 ferroCol = palTint( blackFerro, minDist * 0.4 + audioCentroid, 0.24 );
+    vec3 black_ferro = vec3( 0.08, 0.07, 0.1 );
+    vec3 ferro_col = palTint( black_ferro, min_dist * 0.4 + audioCentroid, 0.24 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.2;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.2;
 
     vec3 col = bg;
-    col += ferroCol * ( 0.6 + 0.4 * spikeHeight ) * ( 0.85 + 0.35 * audioSwell );
-    col += vec3( 0.95, 0.95, 1.0 ) * specSheen * 2.0;
-    col += vec3( 1.0, 0.95, 0.9 ) * spikeFlash * 2.5;
-    col += ferroCol * meniscus * 1.4;
-    col += ferroCol * ( audioKick * 0.35 );
+    col += ferro_col * ( 0.6 + 0.4 * spike_height ) * ( 0.85 + 0.35 * audioSwell );
+    col += vec3( 0.95, 0.95, 1.0 ) * spec_sheen * 2.0;
+    col += vec3( 1.0, 0.95, 0.9 ) * spike_flash * 2.5;
+    col += ferro_col * meniscus * 1.4;
+    col += ferro_col * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

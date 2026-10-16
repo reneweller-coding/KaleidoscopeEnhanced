@@ -48,18 +48,18 @@ void main()
     // invisible (the old single-throat mod() vanished mid-view and popped
     // back at the far end: the "collapse and restart" artefact).
     float travel = ( time * 12.0 + audioAdvance * 20.0 ) / 170.0;
-    float lensAmt = 0.0;
+    float lens_amt = 0.0;
     for ( int k = 0; k < 2; ++k )
     {
         float ph = fract( travel + float( k ) * 0.5 );
-        float throatZ = 165.0 - ph * 175.0;               // 165 (far) -> -10 (behind)
-        float fade = smoothstep( 160.0, 135.0, throatZ )  // fade in far away
-                     * smoothstep( -8.0, 12.0, throatZ ); // open up at the camera
-        float dz = z - throatZ;
-        lensAmt = max( lensAmt, exp( -dz * dz * 0.010 ) * fade );
+        float throat_z = 165.0 - ph * 175.0;               // 165 (far) -> -10 (behind)
+        float fade = smoothstep( 160.0, 135.0, throat_z )  // fade in far away
+                     * smoothstep( -8.0, 12.0, throat_z ); // open up at the camera
+        float dz = z - throat_z;
+        lens_amt = max( lens_amt, exp( -dz * dz * 0.010 ) * fade );
     }
 
-    float r = ( 9.0 + 1.0 * audioSwell ) * ( 1.0 - 0.86 * lensAmt )
+    float r = ( 9.0 + 1.0 * audioSwell ) * ( 1.0 - 0.86 * lens_amt )
               * ( 1.0 + 0.05 * audioSwell );
     r = max( r, 0.35 ); // never fully collapses
 
@@ -72,5 +72,5 @@ void main()
     vUV = vec2( u, w );
     vDist = z;
     vAng = ang;
-    vLensAmt = lensAmt;
+    vLensAmt = lens_amt;
 }

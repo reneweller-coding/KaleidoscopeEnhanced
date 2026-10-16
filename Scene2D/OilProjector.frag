@@ -137,7 +137,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -256,19 +256,19 @@ vec3 wheel( vec2 q, vec3 dyeA, vec3 dyeB, out float edgeA, out float edgeB )
     float a = oilField( q, 1.7 );
     float b = oilField( q * 1.13 + 3.0, 9.4 );
     float s = gSharp;
-    float inA = smoothstep( -s, s, a );
-    float inB = smoothstep( -s, s, b );
+    float in_a = smoothstep( -s, s, a );
+    float in_b = smoothstep( -s, s, b );
     // Subtractive dyes: each oil absorbs, overlaps multiply.
     vec3 T = vec3( 1.0 );
-    T *= mix( vec3( 1.0 ), dyeA, inA );
-    T *= mix( vec3( 1.0 ), dyeB, inB );
+    T *= mix( vec3( 1.0 ), dyeA, in_a );
+    T *= mix( vec3( 1.0 ), dyeB, in_b );
     // Interfaces: a dark refraction line with a bright focused rim inside.
     edgeA = exp( -a * a / ( s * s * 1.5 + 0.004 ) );
     edgeB = exp( -b * b / ( s * s * 1.5 + 0.004 ) );
-    float rimA = exp( -pow( ( a - 2.5 * s ) / ( s * 1.2 + 0.03 ), 2.0 ) );
-    float rimB = exp( -pow( ( b - 2.5 * s ) / ( s * 1.2 + 0.03 ), 2.0 ) );
+    float rim_a = exp( -pow( ( a - 2.5 * s ) / ( s * 1.2 + 0.03 ), 2.0 ) );
+    float rim_b = exp( -pow( ( b - 2.5 * s ) / ( s * 1.2 + 0.03 ), 2.0 ) );
     T *= 1.0 - 0.85 * max( edgeA, edgeB );
-    T += ( dyeA * rimA + dyeB * rimB ) * 0.35;
+    T += ( dyeA * rim_a + dyeB * rim_b ) * 0.35;
     return T;
 }
 
@@ -288,37 +288,37 @@ void main()
     // Dyes: saturated colours from the photo (or a hue pair where it is grey);
     // the second dye sits across the colour wheel from the first.
     float h0 = hueP * 0.159 + 0.08 * clamp( audioMode, 0.0, 1.0 );
-    vec3  photoC = imgLod( vec2( 0.5 ) + 0.25 * vec2( sin( 0.01 * sceneTime ), cos( 0.013 * sceneTime ) ), 6.0 );
+    vec3  photo_c = imgLod( vec2( 0.5 ) + 0.25 * vec2( sin( 0.01 * sceneTime ), cos( 0.013 * sceneTime ) ), 6.0 );
     // Subtractive dyes like the real oils: bright colours that each absorb
     // one band (yellow, magenta, cyan family), a third of the wheel apart,
     // so their overlaps give the deep red, green and blue.
-    float hA = ( satOf( photoC ) > 0.2 ) ? hue_of( photoC ) : h0;
-    vec3  dA = hsv2rgb( vec3( fract( hA ), 0.85, 1.0 ) );
-    vec3  dB = hsv2rgb( vec3( fract( hA + 0.333 ), 0.85, 1.0 ) );
-    dA = 1.0 - ( 1.0 - dA ) * 1.1;
-    dB = 1.0 - ( 1.0 - dB ) * 1.1;
-    dA = clamp( dA * vec3( 1.0 ) + ( 1.0 - max( dA.r, max( dA.g, dA.b ) ) ), 0.0, 1.0 );
-    dB = clamp( dB + ( 1.0 - max( dB.r, max( dB.g, dB.b ) ) ), 0.0, 1.0 );
+    float h_a = ( satOf( photo_c ) > 0.2 ) ? hueOf( photo_c ) : h0;
+    vec3  d_a = hsv2rgb( vec3( fract( h_a ), 0.85, 1.0 ) );
+    vec3  d_b = hsv2rgb( vec3( fract( h_a + 0.333 ), 0.85, 1.0 ) );
+    d_a = 1.0 - ( 1.0 - d_a ) * 1.1;
+    d_b = 1.0 - ( 1.0 - d_b ) * 1.1;
+    d_a = clamp( d_a * vec3( 1.0 ) + ( 1.0 - max( d_a.r, max( d_a.g, d_a.b ) ) ), 0.0, 1.0 );
+    d_b = clamp( d_b + ( 1.0 - max( d_b.r, max( d_b.g, d_b.b ) ) ), 0.0, 1.0 );
 
-    int  nP = 2 + int( clamp( projP, 0.0, 1.0 ) * 1.99 );
+    int  n_p = 2 + int( clamp( projP, 0.0, 1.0 ) * 1.99 );
     vec3 col = vec3( 0.0 );
     for ( int k = 0; k < 3; ++k )
     {
-        if ( k >= nP )
+        if ( k >= n_p )
             break;
         float fk = float( k );
         // Each projector: its own wheel angle and a light circle on the wall.
-        vec2  c = vec2( 0.55 * ( fk - 0.5 * float( nP - 1 ) ), 0.08 * sin( fk * 2.3 ) );
-        float wheelA = 0.015 * sceneTime * ( fk == 1.0 ? -1.0 : 1.0 ) + 0.3 * audioPhase + fk * 2.1;
-        vec2  q = rot2( wheelA ) * ( p - c ) * mag + vec2( fk * 11.0, 0.0 );
+        vec2  c = vec2( 0.55 * ( fk - 0.5 * float( n_p - 1 ) ), 0.08 * sin( fk * 2.3 ) );
+        float wheel_a = 0.015 * sceneTime * ( fk == 1.0 ? -1.0 : 1.0 ) + 0.3 * audioPhase + fk * 2.1;
+        vec2  q = rot2( wheel_a ) * ( p - c ) * mag + vec2( fk * 11.0, 0.0 );
         // Lens dispersion: each channel sees the wheel slightly shifted
         // radially, which gives the rainbow fringes on the interfaces.
         vec2  disp = ( p - c ) * 0.012 * mag;
-        float eA, eB, e2, e3;
-        vec3  tR = wheel( q + disp, dA, dB, eA, eB );
-        vec3  tG = wheel( q, dA, dB, e2, e3 );
-        vec3  tB = wheel( q - disp, dA, dB, e2, e3 );
-        vec3  T = vec3( tR.r, tG.g, tB.b );
+        float e_a, e_b, e2, e3;
+        vec3  t_r = wheel( q + disp, d_a, d_b, e_a, e_b );
+        vec3  t_g = wheel( q, d_a, d_b, e2, e3 );
+        vec3  t_b = wheel( q - disp, d_a, d_b, e2, e3 );
+        vec3  T = vec3( t_r.r, t_g.g, t_b.b );
         // Air bubbles: round, bright core, dark refraction ring, drifting with the heat.
         vec2  bq = q * 1.8 + vec2( gHeat * 0.4, -gHeat * 0.25 ), bi = floor( bq ), bf = fract( bq );
         vec2  bc = 0.25 + 0.5 * hash22( bi );
@@ -334,7 +334,7 @@ void main()
         col += T * lamp * ( 0.55 + 0.4 * bass );
     }
     // Overlapping projectors add up; a little stray light on the wall between.
-    col = col / ( 1.0 + 0.25 * float( nP - 1 ) ) + vec3( 0.02, 0.015, 0.03 );
+    col = col / ( 1.0 + 0.25 * float( n_p - 1 ) ) + vec3( 0.02, 0.015, 0.03 );
     col = mix( vec3( luma( col ) ), col, 1.25 ); // the dyes glow rich on the wall
     finish( col * 1.05 );
 }

@@ -87,12 +87,12 @@ mat2 rot2D( float a )
     return mat2( c, -s, s, c );
 }
 
-// The bake cube spans [-BAKE_EXTENT, BAKE_EXTENT] on every axis -- MUST match
+// The bake cube spans [-BakeExtent, BakeExtent] on every axis -- MUST match
 // QuaternionicJulia4DFlight.comp's EXTENT constant.
-const float BAKE_EXTENT = 2.2;
+const float BakeExtent = 2.2;
 vec3        worldToUV( vec3 p )
 {
-    return ( p + BAKE_EXTENT ) / ( 2.0 * BAKE_EXTENT );
+    return ( p + BakeExtent ) / ( 2.0 * BakeExtent );
 }
 
 /// Distance + orbit-trap lookup against the baked field (see the .comp file):
@@ -128,43 +128,43 @@ void main()
     rd.yz = rot2D( sin( t * 0.4 ) * 0.3 ) * rd.yz;
     rd.xz = rot2D( t * 0.5 ) * rd.xz;
 
-    float dO = 0.0;
-    float hitDist = -1.0;
-    float trapMin = 1e5;
-    vec3  hitP = vec3( 0.0 ); // guarded by hitDist, but the compiler cannot see that
+    float d_o = 0.0;
+    float hit_dist = -1.0;
+    float trap_min = 1e5;
+    vec3  hit_p = vec3( 0.0 ); // guarded by hit_dist, but the compiler cannot see that
 
     for ( int i = 0; i < 48; ++i )
     {
-        vec3 p = ro + rd * dO;
+        vec3 p = ro + rd * d_o;
 
         vec2  field = fieldAt( p );
-        float dS = field.r;
+        float d_s = field.r;
         // Camera clearance: the morphing set can swell right up to the
         // (fixed) camera -- keep a free bubble instead of clipping into it.
-        dS = max( dS, 0.35 - length( p - ro ) );
-        trapMin = min( trapMin, field.g );
+        d_s = max( d_s, 0.35 - length( p - ro ) );
+        trap_min = min( trap_min, field.g );
 
-        if ( dS < 0.003 )
+        if ( d_s < 0.003 )
         {
-            hitDist = dO;
-            hitP = p;
+            hit_dist = d_o;
+            hit_p = p;
             break;
         }
-        if ( dO > 6.0 )
+        if ( d_o > 6.0 )
             break;
-        dO += dS * 0.7;
+        d_o += d_s * 0.7;
     }
 
-    // Miss rays carry trapMin too: an orbit-trap AURA fills the frame with
+    // Miss rays carry trap_min too: an orbit-trap AURA fills the frame with
     // the fractal's energy field instead of near-black (the metric scan
     // measured luma 6 / coverage 0 -- the set is thin at many C morphs and
     // most rays miss).  Level breathes the aura, phase spins its colour.
     vec3 col = vec3( 0.02, 0.02, 0.05 );
-    vec3 aura = imgPalette( ( trapMin * 8.0 + audioPhase ) * 0.159 )
-                * exp( -trapMin * 1.4 ) * ( 0.9 + 0.4 * audioLevel );
+    vec3 aura = imgPalette( ( trap_min * 8.0 + audioPhase ) * 0.159 )
+                * exp( -trap_min * 1.4 ) * ( 0.9 + 0.4 * audioLevel );
     col += aura * 0.85;
 
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
         // Normal approximation: central differences on the baked field
         // (the voxel grid caps the achievable detail -- a softer normal than
@@ -172,26 +172,26 @@ void main()
         // 9-iteration formula three more times per hit pixel).
         vec3 e = vec3( 0.01, 0.0, 0.0 );
         vec3 n = normalize( vec3(
-            fieldAt( hitP + e.xyy ).r - fieldAt( hitP - e.xyy ).r,
-            fieldAt( hitP + e.yxy ).r - fieldAt( hitP - e.yxy ).r,
-            fieldAt( hitP + e.yyx ).r - fieldAt( hitP - e.yyx ).r ) );
+            fieldAt( hit_p + e.xyy ).r - fieldAt( hit_p - e.xyy ).r,
+            fieldAt( hit_p + e.yxy ).r - fieldAt( hit_p - e.yxy ).r,
+            fieldAt( hit_p + e.yyx ).r - fieldAt( hit_p - e.yyx ).r ) );
 
-        vec3  lightDir = normalize( vec3( 0.6, 0.8, -0.5 ) );
-        float diff = max( dot( n, lightDir ), 0.0 );
-        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 32.0 );
+        vec3  light_dir = normalize( vec3( 0.6, 0.8, -0.5 ) );
+        float diff = max( dot( n, light_dir ), 0.0 );
+        float spec = pow( max( dot( reflect( -light_dir, n ), -rd ), 0.0 ), 32.0 );
 
         // Photo mapping from surface reflection and normal
-        vec2 photoUV = fract( n.xy * 0.5 + 0.5 + hitP.z * 0.1 );
-        vec3 photo = img( photoUV );
+        vec2 photo_uv = fract( n.xy * 0.5 + 0.5 + hit_p.z * 0.1 );
+        vec3 photo = img( photo_uv );
 
         // Iridescent metallic gradient
-        vec3 irid = imgPalette( ( trapMin * 12.0 + audioPhase ) * 0.159 );
+        vec3 irid = imgPalette( ( trap_min * 12.0 + audioPhase ) * 0.159 );
 
         col = mix( photo * 0.9, irid, 0.5 );
         col = col * ( 0.3 + 0.7 * diff ) + spec * vec3( 1.0, 0.95, 0.9 ) * ( 1.2 + audioKick * 2.0 );
 
         // Depth fog
-        col = mix( col, vec3( 0.02, 0.02, 0.06 ), 1.0 - exp( -hitDist * 0.3 ) );
+        col = mix( col, vec3( 0.02, 0.02, 0.06 ), 1.0 - exp( -hit_dist * 0.3 ) );
     }
 
     if ( audioChromaHue != 0.0 )

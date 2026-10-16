@@ -46,15 +46,15 @@ vec3 img( vec2 uv )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 lightDir = normalize( vec3( 0.5, 0.6, 0.7 ) );
-    vec3 viewDir = vec3( 0.0, 0.0, 1.0 );
+    vec3 light_dir = normalize( vec3( 0.5, 0.6, 0.7 ) );
+    vec3 view_dir = vec3( 0.0, 0.0, 1.0 );
     vec3 N = normalize( vNormal );
-    vec3 H = normalize( lightDir + viewDir );
+    vec3 H = normalize( light_dir + view_dir );
 
-    float diff = max( 0.0, dot( N, lightDir ) );
+    float diff = max( 0.0, dot( N, light_dir ) );
     float ndh = max( 0.0, dot( N, H ) );
-    float specB = pow( ndh, 9.0 );  // the crystal's broad metallic sheen
-    float specT = pow( ndh, 48.0 ); // the dipole-alignment glint itself
+    float spec_b = pow( ndh, 9.0 );  // the crystal's broad metallic sheen
+    float spec_t = pow( ndh, 48.0 ); // the dipole-alignment glint itself
 
     // OCTAHEDRAL FACETING.  The old term was
     //     smoothstep(0.42, 0.5, max(|x|, |y|, |z|))
@@ -64,14 +64,14 @@ void main()
     // more than three times the whole shaded term, which is why the culture
     // measured flat.  The SECOND largest coordinate is 0 at a face centre and
     // 0.5 on a crystal edge, so this lights the facet borders instead.
-    vec3  aPos = abs( vLocalPos );
-    float mxc = max( max( aPos.x, aPos.y ), aPos.z );
-    float mnc = min( min( aPos.x, aPos.y ), aPos.z );
-    float midC = aPos.x + aPos.y + aPos.z - mxc - mnc;
-    float facet = smoothstep( 0.26, 0.50, midC );
+    vec3  a_pos = abs( vLocalPos );
+    float mxc = max( max( a_pos.x, a_pos.y ), a_pos.z );
+    float mnc = min( min( a_pos.x, a_pos.y ), a_pos.z );
+    float mid_c = a_pos.x + a_pos.y + a_pos.z - mxc - mnc;
+    float facet = smoothstep( 0.26, 0.50, mid_c );
 
-    vec2 photoUv = fract( vLocalPos.xy * 2.0 + 0.5 );
-    vec3 photo = img( photoUv );
+    vec2 photo_uv = fract( vLocalPos.xy * 2.0 + 0.5 );
+    vec3 photo = img( photo_uv );
 
     // Magnetite is its own colour -- a blue-black metallic mineral -- as well as
     // whatever the photo palette gives it.  Half the photo library is deep-space
@@ -85,7 +85,7 @@ void main()
     // The frame carries 306 chains instead of one clump, so the glint has to be
     // bounded: specularP alone reaches 2.5, and a kick multiplies it by four
     // again.  Bright chains glint harder than the ones sunk in the medium.
-    float glint = min( ( specB * 0.34 + specT * 1.05 * ( specularP > 0.01 ? specularP : 1.2 ) )
+    float glint = min( ( spec_b * 0.34 + spec_t * 1.05 * ( specularP > 0.01 ? specularP : 1.2 ) )
                            * ( 1.0 + 3.0 * audioKick ),
                        1.5 );
     col += vec3( 0.95, 0.95, 1.0 ) * glint * ( 0.35 + 0.65 * vChainLit );

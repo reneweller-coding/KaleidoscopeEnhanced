@@ -174,10 +174,10 @@ float map( vec3 p, float fp )
     if ( h < 0.6 * fp )
     {
         // Offset in Z so they aren't all in a perfect plane
-        float zOffset = hash21( id + 7.3 ) * 40.0;
-        float zSpacing = 60.0;
-        float idZ = floor( ( cp.z - zOffset ) / zSpacing );
-        cp.z = mod( cp.z - zOffset, zSpacing ) - zSpacing * 0.5;
+        float z_offset = hash21( id + 7.3 ) * 40.0;
+        float z_spacing = 60.0;
+        float id_z = floor( ( cp.z - z_offset ) / z_spacing );
+        cp.z = mod( cp.z - z_offset, z_spacing ) - z_spacing * 0.5;
         cp.xy = mod( cp.xy + vec2( 10.0, 5.0 ), vec2( 20.0, 10.0 ) ) - vec2( 10.0, 5.0 );
 
         float ship = shipSDF( cp );
@@ -233,7 +233,7 @@ void main()
     vec3 nebTint = imgPalette( 0.1 + 0.2 * audioCentroid );
     nebTint = mix( vec3( dot( nebTint, vec3( 0.333 ) ) ), nebTint, 1.2 );
 
-    vec3 engineColor = imgPalette( 0.8 + 0.1 * audioKick );
+    vec3 engine_color = imgPalette( 0.8 + 0.1 * audioKick );
 
     float d = 0.0;
     vec3  p;
@@ -258,12 +258,12 @@ void main()
 
     vec3 col = background( rd, drift, neb, nebTint );
 
-    vec3 sunDir = normalize( vec3( 0.5, 0.8, -0.2 ) );
+    vec3 sun_dir = normalize( vec3( 0.5, 0.8, -0.2 ) );
 
     if ( m > 0.5 )
     {
         vec3  n = calcNormal( p, fp );
-        float dif = max( dot( n, sunDir ), 0.0 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
         float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
         vec3 albedo = vec3( 0.2, 0.22, 0.25 );
@@ -276,7 +276,7 @@ void main()
 
         if ( m == 2.0 )
         { // Engines
-            col += engineColor * ( 1.5 + 2.0 * audioKick + 1.5 * audioSwell ) * glw;
+            col += engine_color * ( 1.5 + 2.0 * audioKick + 1.5 * audioSwell ) * glw;
         }
 
         // AO
@@ -292,7 +292,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

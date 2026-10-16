@@ -74,11 +74,11 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     const float L = 240.0;
-    float       camZ = time * 12.0 + audioAdvance * 55.0; // the music is the throttle
+    float       cam_z = time * 12.0 + audioAdvance * 55.0; // the music is the throttle
 
     float ang = r1 * 6.2831853;
     float rad = 1.6 + 30.0 * pow( r2, 1.5 ); // clear corridor centre
-    float z = mod( r3 * L - camZ, L );
+    float z = mod( r3 * L - cam_z, L );
 
     vec3 vp = vec3( cos( ang ) * rad, sin( ang ) * rad, z );
     vp.x -= eyeOff;
@@ -97,9 +97,9 @@ void main()
     // tints the whole field.
     vec3 col = palTint( mix( vec3( 1.0 ), vec3( 0.55, 0.7, 1.0 ), r4 * 0.7 ), 0.30 * r4, 0.20 );
     col = hueRot( col, ( r1 - 0.5 ) * 1.1 );
-    float fadeFar = clamp( 1.0 - z / L, 0.0, 1.0 );
-    float fadeNear = smoothstep( 1.0, 6.0, z );
-    col *= ( 0.45 + 0.65 * r2 ) * fadeFar * fadeNear
+    float fade_far = clamp( 1.0 - z / L, 0.0, 1.0 );
+    float fade_near = smoothstep( 1.0, 6.0, z );
+    col *= ( 0.45 + 0.65 * r2 ) * fade_far * fade_near
            * ( 0.8 + 0.5 * audioSwell + 0.4 * audioLevel + 2.0 * hyper );
     vCol = vec4( col * 2.4, 1.0 );
 }

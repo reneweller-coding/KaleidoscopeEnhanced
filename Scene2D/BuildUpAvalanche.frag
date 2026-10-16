@@ -119,7 +119,7 @@ void main()
     float build = clamp( audioBuildUp, 0.0, 1.0 );
     float drop = clamp( audioDrop, 0.0, 1.0 ); // 1 at the drop, decaying
     float T = sceneTime + sceneAdvance * 0.5;
-    vec3  sunDir = normalize( vec3( -0.6, 0.5, 0.6 ) );
+    vec3  sun_dir = normalize( vec3( -0.6, 0.5, 0.6 ) );
 
     // Alpine sky: deep blue overhead, pale at the horizon, the sun's glow.
     vec3 col = mix( vec3( 0.75, 0.85, 0.95 ), vec3( 0.12, 0.3, 0.65 ), smoothstep( -0.1, 0.5, p.y ) );
@@ -139,9 +139,9 @@ void main()
     float px = 0.18;
     float peakY = 0.4;
     float prof = profileAt( p.x, px, peakY, slope );
-    float onFace = step( p.y, prof );
-    float snowLine = 0.0;
-    if ( onFace > 0.0 )
+    float on_face = step( p.y, prof );
+    float snow_line = 0.0;
+    if ( on_face > 0.0 )
     {
         float depth = prof - p.y;
         // Faces rising to the right look toward the sun (left); the line
@@ -172,14 +172,14 @@ void main()
         float cover = smoothstep( 0.35 - 0.3 * build, 0.6 - 0.3 * build,
                                   rib * 0.6 + 0.5 * smoothstep( 0.0, 0.3, depth ) * 0.0 + 0.4 * fbm( p * 6.0 ) );
         cover = max( cover, 0.3 + 0.5 * build ) * ( 1.0 - 0.6 * smoothstep( 0.62, 0.75, rib ) );
-        vec3  rockC = mix( vec3( 0.25, 0.22, 0.2 ), vec3( 0.4, 0.36, 0.32 ), fbm( p * 20.0 ) );
-        vec3  snowC = vec3( 0.97, 0.98, 1.0 );
+        vec3  rock_c = mix( vec3( 0.25, 0.22, 0.2 ), vec3( 0.4, 0.36, 0.32 ), fbm( p * 20.0 ) );
+        vec3  snow_c = vec3( 0.97, 0.98, 1.0 );
         float lit = sunny ? ( 0.8 + 0.3 * rib ) : ( 0.35 + 0.2 * rib );
-        vec3  face = mix( rockC, snowC, clamp( cover, 0.0, 1.0 ) ) * lit;
+        vec3  face = mix( rock_c, snow_c, clamp( cover, 0.0, 1.0 ) ) * lit;
         if ( !sunny )
             face *= vec3( 0.75, 0.85, 1.05 ); // blue shade
         // The cornice lip along the ridge line, growing with the build.
-        face = mix( face, snowC * 1.1, smoothstep( 0.02 + 0.03 * build, 0.0, depth ) * ( 0.4 + 0.6 * build ) );
+        face = mix( face, snow_c * 1.1, smoothstep( 0.02 + 0.03 * build, 0.0, depth ) * ( 0.4 + 0.6 * build ) );
         // Aerial haze toward the valley.
         face = mix( face, vec3( 0.75, 0.82, 0.92 ), smoothstep( -0.1, -0.5, p.y ) * 0.35 );
         col = face;
@@ -203,19 +203,19 @@ void main()
     float running = step( 0.02, drop ) * ( 1.0 - smoothstep( 0.75, 1.0, run ) );
     if ( running > 0.0 )
     {
-        float startY = peakY - 0.12;
-        float frontY = startY - run * 0.9;
+        float start_y = peakY - 0.12;
+        float front_y = start_y - run * 0.9;
         // The path runs down and out across the sunny face; the cloud
         // widens as it goes and billows most at its head.
-        float xPath = px - 0.08 - ( startY - p.y ) * 0.45;
-        float across = abs( p.x - xPath );
-        float w = 0.03 + 0.35 * clamp( startY - p.y, 0.0, 1.0 ) * ( 0.5 + run );
+        float x_path = px - 0.08 - ( start_y - p.y ) * 0.45;
+        float across = abs( p.x - x_path );
+        float w = 0.03 + 0.35 * clamp( start_y - p.y, 0.0, 1.0 ) * ( 0.5 + run );
         float body = smoothstep( w, w * 0.2, across )
-                     * smoothstep( frontY - 0.06, frontY + 0.04, p.y )
-                     * smoothstep( startY + 0.03, startY - 0.05, p.y );
-        vec2  hq = p - vec2( px - 0.08 - ( startY - frontY ) * 0.45, frontY + 0.02 );
-        float headR = 0.06 + 0.2 * run;
-        float head = exp( -dot( hq, hq ) / ( headR * headR ) );
+                     * smoothstep( front_y - 0.06, front_y + 0.04, p.y )
+                     * smoothstep( start_y + 0.03, start_y - 0.05, p.y );
+        vec2  hq = p - vec2( px - 0.08 - ( start_y - front_y ) * 0.45, front_y + 0.02 );
+        float head_r = 0.06 + 0.2 * run;
+        float head = exp( -dot( hq, hq ) / ( head_r * head_r ) );
         float bill = fbm( p * 6.0 + vec2( 0.0, sceneAdvance * 0.6 ) ) * 0.6
                      + fbm( p * 14.0 - vec2( sceneAdvance * 0.3, 0.0 ) ) * 0.4;
         float cloud = clamp( ( body * 0.8 + head * 1.2 ) * smoothstep( 0.25, 0.7, bill + 0.3 * ( body + head ) ), 0.0,
@@ -254,7 +254,7 @@ void main()
     col += vec3( 1.0 ) * flakes * 0.6;
     col *= 0.8 + 0.4 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -61,35 +61,35 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r2 = dot( p, p );
     // Optical path difference: Delta = r^2 / R + d(t)
-    float delta = r2 * 30.0 * rng - tProg * 12.0 * gap;
+    float delta = r2 * 30.0 * rng - t_prog * 12.0 * gap;
 
     // Thin film interference cosine wave
     float fringe = cos( delta * 3.14159265 );
-    float fringeMask = smoothstep( -0.3, 0.3, fringe );
+    float fringe_mask = smoothstep( -0.3, 0.3, fringe );
 
     // Lens air-gap refraction warp
-    vec2 refr = normalize( p + 1e-4 ) * fringe * 0.025 * midTransition * ( 1.0 + audioSwell * 0.7 );
+    vec2 refr = normalize( p + 1e-4 ) * fringe * 0.025 * mid_transition * ( 1.0 + audioSwell * 0.7 );
 
     vec4 c1 = texture( tex1, fract( uv + refr ) );
     vec4 c0 = texture( tex0, fract( uv - refr ) );
 
-    float blend = clamp( tProg * 1.4 - ( 1.0 - fringeMask ) * 0.4, 0.0, 1.0 );
+    float blend = clamp( t_prog * 1.4 - ( 1.0 - fringe_mask ) * 0.4, 0.0, 1.0 );
     vec4  col = mix( c1, c0, blend );
 
     // Spectral rainbow thin-film colors
     vec3  rainbow = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + delta * 2.0 + audioPhase );
-    float ringGlow = pow( max( 0.0, fringe ), 4.0 ) * midTransition;
-    col.rgb += ringGlow * rainbow * ( 1.4 + audioKick * 1.0 );
+    float ring_glow = pow( max( 0.0, fringe ), 4.0 ) * mid_transition;
+    col.rgb += ring_glow * rainbow * ( 1.4 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

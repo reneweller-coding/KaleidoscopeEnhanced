@@ -100,9 +100,9 @@ void main()
     float cx = ( 1.0 + u * u ) / ( 2.0 * u );
     float R = ( 1.0 - u * u ) / ( 2.0 * u );
 
-    float discR = 0.6 * ( 1.0 + 0.04 * clamp( audioSwell, 0.0, 1.0 ) );
-    vec2  z = p / discR;
-    float rimD = abs( length( z ) - 1.0 );
+    float disc_r = 0.6 * ( 1.0 + 0.04 * clamp( audioSwell, 0.0, 1.0 ) );
+    vec2  z = p / disc_r;
+    float rim_d = abs( length( z ) - 1.0 );
     if ( dot( z, z ) > 1.0 )
         z = z / dot( z, z );
 
@@ -154,17 +154,17 @@ void main()
     float par = mod( inv + flip, 2.0 );
     vec3  light = imgPalette( hue * 0.159 + 0.1 + 0.3 * audioMelodyPitch ) * 1.4 + 0.2;
     vec3  dark = imgPalette( hue * 0.159 + 0.6 ) * 0.35;
-    vec3  fishCol = mix( light, dark, par );
+    vec3  fish_col = mix( light, dark, par );
     vec3  water = mix( dark * 0.5, light * 0.35, par );
-    vec3  col = mix( water, fishCol, fish );
+    vec3  col = mix( water, fish_col, fish );
     col += imgPalette( hue * 0.159 + 0.9 ) * outline * 0.35;
     col += vec3( 1.0 ) * eye * ( 0.6 + 1.5 * audioKick );
     // Photo grain on the fish.
     col *= 0.8 + 0.4 * dot( img( fract( local * 0.5 + 0.5 ) ), vec3( 0.333 ) );
     col *= 0.7 + 0.5 * audioLevel;
-    col += imgPalette( hue * 0.159 + 0.5 ) * exp( -rimD * 30.0 ) * 0.5;
+    col += imgPalette( hue * 0.159 + 0.5 ) * exp( -rim_d * 30.0 ) * 0.5;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

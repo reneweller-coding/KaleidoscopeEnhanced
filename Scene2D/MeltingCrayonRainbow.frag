@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -237,16 +237,16 @@ void main()
     float yb = -p.y / bh + 0.3;
     float band = floor( yb );
     float fy = fract( yb ); // 0 at the crayon row, 1 at the band bottom
-    float nC = 12.0 + 16.0 * clamp( crayonP, 0.0, 1.0 );
-    float x = p.x * nC * 0.5 + band * 0.37;
+    float n_c = 12.0 + 16.0 * clamp( crayonP, 0.0, 1.0 );
+    float x = p.x * n_c * 0.5 + band * 0.37;
     float ci = floor( x );
     float fx = fract( x ) - 0.5;
     float T = 0.05 * sceneTime + 0.3 * audioAdvance;
     vec3  canvas = mix( vec3( 0.03 ), vec3( 0.95, 0.94, 0.9 ), mode );
     vec3  col = canvas;
     // Crayon colour: rainbow order across, or the photo's colours.
-    vec3 rain = hsv2rgb( vec3( fract( ci / nC + hueP * 0.159 ), 0.85, 0.95 ) );
-    vec3 pc = glowColour( imgLod( vec2( ci / nC * 2.0 + 0.2, band * 0.23 + 0.3 ), 3.0 ), vec2( ci, band ),
+    vec3 rain = hsv2rgb( vec3( fract( ci / n_c + hueP * 0.159 ), 0.85, 0.95 ) );
+    vec3 pc = glowColour( imgLod( vec2( ci / n_c * 2.0 + 0.2, band * 0.23 + 0.3 ), 3.0 ), vec2( ci, band ),
                           hueP * 0.159 );
     vec3 cc = mix( rain, pc, clamp( photoP, 0.0, 1.0 ) * 0.8 );
     // Runs: each crayon's rivulet down the band, wobbling, length growing.
@@ -254,13 +254,14 @@ void main()
     float len = ( 0.35 + 0.5 * swell ) * ( 0.5 + 0.5 * h ) * ( 0.8 + 0.2 * sin( T + h * 6.28 ) );
     float spl = 0.08 + 0.2 * clamp( audioSpread, 0.0, 1.0 );
     float wob = spl * ( fbm3( vec2( ci * 3.1, fy * 3.0 ) ) - 0.5 ) * 2.0 * fy;
-    float runW = 0.32 * ( 1.0 - 0.6 * fy / max( len, 0.05 ) ) * ( 0.8 + 0.4 * noise2( vec2( ci, fy * 8.0 ) ) );
+    float run_w = 0.32 * ( 1.0 - 0.6 * fy / max( len, 0.05 ) ) * ( 0.8 + 0.4 * noise2( vec2( ci, fy * 8.0 ) ) );
     float px = fwidth( x ) * 1.5;
-    float run = smoothstep( runW + px, runW - px, abs( fx - wob ) ) * step( fy, len );
+    float run = smoothstep( run_w + px, run_w - px, abs( fx - wob ) ) * step( fy, len );
     // Drip head: a round bead at the end of the run.
-    float head = smoothstep( 0.3 + px, 0.3 - px, length( vec2( fx - wob, ( fy - len ) * nC * 0.5 * bh ) ) ); // round in
-                                                                                                             // screen
-                                                                                                             // units
+    float head = smoothstep( 0.3 + px, 0.3 - px, length( vec2( fx - wob, ( fy - len ) * n_c * 0.5 * bh ) ) ); // round
+                                                                                                              // in
+                                                                                                              // screen
+                                                                                                              // units
     float wax = max( run, head * step( 0.1, len ) );
     // Splatter.
     vec2  sg = vec2( x * 2.0, fy * 20.0 );
@@ -270,9 +271,9 @@ void main()
     wax = max( wax, sp );
     // The crayon stub at the top.
     float stub = step( fy, 0.08 ) * smoothstep( 0.42, 0.38, abs( fx ) );
-    vec3  waxC = cc * ( 0.75 + 0.35 * ( 1.0 - abs( fx - wob ) / 0.35 ) );
-    waxC += vec3( 1.0 ) * pow( max( 0.0, 1.0 - abs( fx - wob + 0.1 ) / 0.1 ), 6.0 ) * ( 0.15 + 0.5 * kick ) * run;
-    col = mix( col, waxC, wax );
+    vec3  wax_c = cc * ( 0.75 + 0.35 * ( 1.0 - abs( fx - wob ) / 0.35 ) );
+    wax_c += vec3( 1.0 ) * pow( max( 0.0, 1.0 - abs( fx - wob + 0.1 ) / 0.1 ), 6.0 ) * ( 0.15 + 0.5 * kick ) * run;
+    col = mix( col, wax_c, wax );
     col = mix( col, cc * 0.8, stub );
     finish( col );
 }

@@ -109,80 +109,80 @@ void main()
     float angle = atan( uv.y, uv.x );
 
     vec3 col = vec3( 0.0 );
-    vec3 beamColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Blinding, hot energy
-    vec3 shockColor = imgPalette( 0.2 );                      // Outer ejected material
+    vec3 beam_color = imgPalette( 0.8 + audioCentroid * 0.1 ); // Blinding, hot energy
+    vec3 shock_color = imgPalette( 0.2 );                      // Outer ejected material
 
     // 1. The Central Beam (Gamma Ray Jet)
     // The jet is extremely focused, coming straight at the camera.
     // We create a perspective illusion of a tunnel of light.
 
     // Wobbly, relativistic distortion of the beam
-    float beamWobble = fbm( vec3( angle * 2.0, time * 2.0, 0.0 ) ) * 0.05;
-    float distDistort = dist + beamWobble;
+    float beam_wobble = fbm( vec3( angle * 2.0, time * 2.0, 0.0 ) ) * 0.05;
+    float dist_distort = dist + beam_wobble;
 
     // The core of the beam is infinitely bright and tiny
-    float beamCoreRadius = 0.05 / bp;
-    float core = exp( -distDistort * ( 50.0 * bp ) );
+    float beam_core_radius = 0.05 / bp;
+    float core = exp( -dist_distort * ( 50.0 * bp ) );
 
     // Relativistic particles shooting outwards from the center (Z-axis illusion)
     // Map 2D to a 3D cylindrical tunnel
-    float tunnelZ = 1.0 / max( distDistort, 0.001 );
-    float tunnelU = angle * 2.0;                                     // wrap around
-    float tunnelV = tunnelZ - ( time * 10.0 + audioAdvance * 20.0 ); // rushing towards us
+    float tunnel_z = 1.0 / max( dist_distort, 0.001 );
+    float tunnel_u = angle * 2.0;                                      // wrap around
+    float tunnel_v = tunnel_z - ( time * 10.0 + audioAdvance * 20.0 ); // rushing towards us
 
     // High frequency noise for the chaotic plasma
-    float plasma = fbm( vec3( tunnelU * 5.0, tunnelV * 2.0, time ) );
-    float plasmaStrands = step( 0.7, plasma );
+    float plasma = fbm( vec3( tunnel_u * 5.0, tunnel_v * 2.0, time ) );
+    float plasma_strands = step( 0.7, plasma );
 
     // Combine core and plasma
-    float beamIntensity = core + ( plasmaStrands * exp( -distDistort * 10.0 ) );
+    float beam_intensity = core + ( plasma_strands * exp( -dist_distort * 10.0 ) );
 
     // Audio Kick triggers catastrophic spikes in the beam
-    float kickSpike = step( 0.9, hash11( floor( time * 4.00 ) ) ) * audioKick * 10.0; // was 15 Hz
-    beamIntensity *= ( 1.0 + kickSpike );
+    float kick_spike = step( 0.9, hash11( floor( time * 4.00 ) ) ) * audioKick * 10.0; // was 15 Hz
+    beam_intensity *= ( 1.0 + kick_spike );
 
-    col += beamColor * beamIntensity * ( 1.25 + audioSwell * 2.0 );
+    col += beam_color * beam_intensity * ( 1.25 + audioSwell * 2.0 );
 
     // 2. Surrounding Accretion Disk / Dying Star Remnant
     // The material being violently ripped apart and blown away laterally
     if ( dist > 0.1 )
     {
         // Shockwave rings expanding outwards
-        float expandSpeed = time * 2.0 + audioAdvance * 3.0;
-        float rings = sin( dist * 50.0 - expandSpeed );
-        float ringMask = smoothstep( 0.9, 1.0, rings );
+        float expand_speed = time * 2.0 + audioAdvance * 3.0;
+        float rings = sin( dist * 50.0 - expand_speed );
+        float ring_mask = smoothstep( 0.9, 1.0, rings );
 
         // Break rings into turbulent debris
         float debris = fbm( vec3( angle * 10.0, dist * 5.0, time * 2.0 ) );
-        float ejecta = ringMask * debris * sp;
+        float ejecta = ring_mask * debris * sp;
 
         // Ejecta gets destroyed/fades as it gets pushed further out
-        float ejectaFade = exp( -( dist - 0.1 ) * 5.0 );
+        float ejecta_fade = exp( -( dist - 0.1 ) * 5.0 );
 
-        col += shockColor * ejecta * ejectaFade * ( 1.0 + audioKick * 3.0 ) * ( 0.5 + audioSwell );
+        col += shock_color * ejecta * ejecta_fade * ( 1.0 + audioKick * 3.0 ) * ( 0.5 + audioSwell );
 
         // A massive lateral shockwave (equatorial plane of the star)
         // We approximate it by creating a bright horizontal line that is distorted
         float lateral = abs( uv.y + fbm( vec3( uv.x * 5.0, time, 0.0 ) ) * 0.1 );
-        float lateralWave = exp( -lateral * 20.0 ) * exp( -abs( uv.x ) * 2.0 );
-        col += beamColor * lateralWave * sp * ( 1.0 + audioKick * 5.0 );
+        float lateral_wave = exp( -lateral * 20.0 ) * exp( -abs( uv.x ) * 2.0 );
+        col += beam_color * lateral_wave * sp * ( 1.0 + audioKick * 5.0 );
     }
 
     // 3. Glare and Lens effects (the energy is overwhelming)
     // Massive radial glare rays
     float rays = fbm( vec3( angle * 20.0, time * 0.5, 0.0 ) );
-    float raysMask = smoothstep( 0.6, 0.9, rays ) * exp( -dist * 3.0 );
-    col += beamColor * raysMask * 0.5 * ( 1.0 + audioKick * 2.0 );
+    float rays_mask = smoothstep( 0.6, 0.9, rays ) * exp( -dist * 3.0 );
+    col += beam_color * rays_mask * 0.5 * ( 1.0 + audioKick * 2.0 );
 
     // Overall blinding haze
     float haze = exp( -dist * 1.35 );
-    col += beamColor * haze * 0.85 * ( 1.0 + audioSwell );
+    col += beam_color * haze * 0.85 * ( 1.0 + audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

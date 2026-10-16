@@ -67,9 +67,9 @@ float hash21( vec2 p )
     return fract( ( p3.x + p3.y ) * p3.z );
 }
 
-const float GRID = 13.0; ///< cells from the centre to the edge
-const float BALLR = 0.27;
-const float CEIL = 11.0;
+const float Grid = 13.0; ///< cells from the centre to the edge
+const float Ballr = 0.27;
+const float Ceil = 11.0;
 
 float gT, gW;
 
@@ -94,8 +94,8 @@ vec3 envir( vec3 R )
     e = mix( vec3( g ), e, 0.6 );
     // Below the horizon the lit floor of the hall, above it the dark
     // ceiling: the sharp line between them is what reads as chrome.
-    float floorSide = smoothstep( 0.03, -0.03, R.y );
-    return mix( e * 0.18 + vec3( 0.02 ), e * 1.1 + 0.08, floorSide );
+    float floor_side = smoothstep( 0.03, -0.03, R.y );
+    return mix( e * 0.18 + vec3( 0.02 ), e * 1.1 + 0.08, floor_side );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -111,12 +111,12 @@ void main()
     gW = clamp( waveP, 0.0, 1.0 );
 
     // Standing at the edge of the field, looking in and up.
-    vec3  ro = vec3( 0.0, 1.7, -GRID - 5.0 );
+    vec3  ro = vec3( 0.0, 1.7, -Grid - 5.0 );
     vec3  fw = normalize( vec3( 0.0, 0.42, 1.0 ) );
     vec3  rt = normalize( cross( vec3( 0.0, 1.0, 0.0 ), fw ) );
     vec3  up = cross( fw, rt );
     vec3  rd = normalize( p.x * rt + p.y * up + 1.25 * fw );
-    float pxK = 1.6 / ( resolution.y * 1.25 ); // pixel footprint per unit distance
+    float px_k = 1.6 / ( resolution.y * 1.25 ); // pixel footprint per unit distance
 
     vec3 key = normalize( vec3( -0.6, -0.5, 0.6 ) ); // spot lights shine down into the field
     vec3 key2 = normalize( vec3( 0.7, -0.3, -0.2 ) );
@@ -125,7 +125,7 @@ void main()
     vec3 bg;
     if ( rd.y > 0.0 )
     {
-        float tc = ( CEIL - ro.y ) / rd.y;
+        float tc = ( Ceil - ro.y ) / rd.y;
         vec2  cq = ( ro + rd * tc ).xz;
         // Downlights in the ceiling panels.
         vec2  lq = cq / 4.0, lf = fract( lq ) - 0.5;
@@ -144,44 +144,44 @@ void main()
     if ( rd.y > 0.0 )
     {
         // The slab of the field: from just under the lowest balls to the ceiling.
-        float tA = max( ( 3.4 - ro.y ) / rd.y, 0.0 );
-        float tB = ( CEIL - ro.y ) / rd.y;
+        float t_a = max( ( 3.4 - ro.y ) / rd.y, 0.0 );
+        float t_b = ( Ceil - ro.y ) / rd.y;
         // Clip to the grid's footprint in x/z.
         vec2 ro2 = ro.xz, rd2 = rd.xz;
         vec2 inv = 1.0 / ( rd2 + 1e-6 * sign( rd2 ) + vec2( 1e-7 ) );
-        vec2 t1 = ( vec2( -GRID - 0.5 ) - ro2 ) * inv, t2 = ( vec2( GRID + 0.5 ) - ro2 ) * inv;
+        vec2 t1 = ( vec2( -Grid - 0.5 ) - ro2 ) * inv, t2 = ( vec2( Grid + 0.5 ) - ro2 ) * inv;
         vec2 tmin = min( t1, t2 ), tmax = max( t1, t2 );
-        tA = max( tA, max( tmin.x, tmin.y ) );
-        tB = min( tB, min( tmax.x, tmax.y ) );
-        if ( tA < tB )
+        t_a = max( t_a, max( tmin.x, tmin.y ) );
+        t_b = min( t_b, min( tmax.x, tmax.y ) );
+        if ( t_a < t_b )
         {
             // Grid walk over the cells the ray crosses.
-            vec2 pos = ro2 + rd2 * tA;
+            vec2 pos = ro2 + rd2 * t_a;
             vec2 cell = floor( pos + 0.5 );
             vec2 stp = sign( rd2 );
-            vec2 tDelta = abs( inv );
-            vec2 tNext = ( ( cell + 0.5 * stp ) - ro2 ) * inv;
+            vec2 t_delta = abs( inv );
+            vec2 t_next = ( ( cell + 0.5 * stp ) - ro2 ) * inv;
             for ( int k = 0; k < 90; ++k )
             {
-                float tc = min( tNext.x, tNext.y );
-                if ( abs( cell.x ) <= GRID && abs( cell.y ) <= GRID )
+                float tc = min( t_next.x, t_next.y );
+                if ( abs( cell.x ) <= Grid && abs( cell.y ) <= Grid )
                 {
                     float by = ballY( cell );
                     vec3  C = vec3( cell.x, by, cell.y );
-                    float px = pxK * dot( C - ro, rd );
+                    float px = px_k * dot( C - ro, rd );
                     // Ball: nearest approach of the ray to the centre.
                     float tb = dot( C - ro, rd );
                     vec3  cp = ro + rd * tb - C;
                     float dmin = length( cp );
-                    float cov = smoothstep( BALLR + px, BALLR - px, dmin );
+                    float cov = smoothstep( Ballr + px, Ballr - px, dmin );
                     // The wire above the ball: nearest approach in x/z.
                     vec2  w = cell - ro2;
                     float tw = dot( w, rd2 ) / dot( rd2, rd2 );
                     float yw = ro.y + rd.y * tw;
                     float dw = length( ro2 + rd2 * tw - cell );
-                    float pw = pxK * tw;
+                    float pw = px_k * tw;
                     float wcov = smoothstep( max( pw, 0.012 ) * 1.2, 0.0, dw ) * min( 0.012 / max( pw, 0.012 ), 1.0 )
-                                 * 0.8 * step( by + BALLR * 0.8, yw ) * step( yw, CEIL );
+                                 * 0.8 * step( by + Ballr * 0.8, yw ) * step( yw, Ceil );
                     vec3  wcol = vec3( 0.35, 0.33, 0.3 ) * ( 0.3 + 0.7 * bass ) * 0.5;
                     // Order the wire and the ball by distance along the ray.
                     if ( wcov > 0.0 && tw < tb )
@@ -192,9 +192,9 @@ void main()
                     if ( cov > 0.0 )
                     {
                         // Surface point (or the rim point for an edge pixel).
-                        float hh = sqrt( max( BALLR * BALLR - dmin * dmin, 0.0 ) );
+                        float hh = sqrt( max( Ballr * Ballr - dmin * dmin, 0.0 ) );
                         vec3  P = ro + rd * ( tb - hh ) - C;
-                        vec3  n = normalize( dmin < BALLR ? P : cp );
+                        vec3  n = normalize( dmin < Ballr ? P : cp );
                         vec3  R = reflect( rd, n );
                         float fr = 0.65 + 0.35 * pow( 1.0 - max( dot( -rd, n ), 0.0 ), 3.0 );
                         vec3  sc = envir( R ) * fr * vec3( 0.9, 0.92, 0.95 );
@@ -215,16 +215,16 @@ void main()
                     if ( alpha > 0.995 )
                         break;
                 }
-                if ( tc > tB )
+                if ( tc > t_b )
                     break;
-                if ( tNext.x < tNext.y )
+                if ( t_next.x < t_next.y )
                 {
-                    tNext.x += tDelta.x;
+                    t_next.x += t_delta.x;
                     cell.x += stp.x;
                 }
                 else
                 {
-                    tNext.y += tDelta.y;
+                    t_next.y += t_delta.y;
                     cell.y += stp.y;
                 }
             }
@@ -233,7 +233,7 @@ void main()
     vec3 col = acc + ( 1.0 - alpha ) * bg;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

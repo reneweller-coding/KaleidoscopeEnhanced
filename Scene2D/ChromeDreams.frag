@@ -83,12 +83,12 @@ void main()
     float e = time * 0.4;
     // Per-activation character (constant during the scene); torus thickness
     // breathes slowly with the swell (loudness -> size).
-    float ringV = ( ringP <= 0.001 ) ? 0.2 : ringP;
-    float stretchV = ( stretchP <= 0.001 ) ? 0.2 : stretchP;
-    float stripeV = ( stripeP <= 0.01 ) ? 6.0 : stripeP;
-    float travV = ( travP <= 0.01 ) ? 1.0 : travP;
-    float thickMul = 1.0 + 0.12 * audioSwell;
-    float eAdv = ( e + audioAdvance * 1.5 ) * travV; // forward scroll (jump-free)
+    float ring_v = ( ringP <= 0.001 ) ? 0.2 : ringP;
+    float stretch_v = ( stretchP <= 0.001 ) ? 0.2 : stretchP;
+    float stripe_v = ( stripeP <= 0.01 ) ? 6.0 : stripeP;
+    float trav_v = ( travP <= 0.01 ) ? 1.0 : travP;
+    float thick_mul = 1.0 + 0.12 * audioSwell;
+    float e_adv = ( e + audioAdvance * 1.5 ) * trav_v; // forward scroll (jump-free)
 
     float c = 0.0, d = 3.0;
     for ( int o = 0; o < 200; o++ )
@@ -97,17 +97,17 @@ void main()
             break;
         vec3 p = abs( 0.7 * c * normalize( vec3( ( 2.0 * gl_FragCoord.xy - r ) / r.y, 1.0 ) ) );
         p.xy = p.xy * crot( e + audioPhase * 0.1 );
-        p.zy += eAdv + c * 0.2;
+        p.zy += e_adv + c * 0.2;
         p = fract( p ) - 0.5;
         p.xy = p.xy * crot( c );
         p.xz = p.xz * crot( e );
-        p.y = max( abs( p.y ) - amix( 0.0, stretchV, 1.0, 0.0 ), 0.0 );
-        c += d = ( length( vec2( length( p.xy ) - ringV, p.z ) )
-                   - amix( 0.04, 0.1, 0.5, 4.0 ) * thickMul - c * 0.01 )
+        p.y = max( abs( p.y ) - amix( 0.0, stretch_v, 1.0, 0.0 ), 0.0 );
+        c += d = ( length( vec2( length( p.xy ) - ring_v, p.z ) )
+                   - amix( 0.04, 0.1, 0.5, 4.0 ) * thick_mul - c * 0.01 )
                  * 0.5;
     }
 
-    vec3 base = 1.2 * ( cos( c * stripeV + 0.8 * vec3( 0.0, 1.0 + c * 0.04, 2.0 ) ) + 0.2 ) / exp( c * 0.14 );
+    vec3 base = 1.2 * ( cos( c * stripe_v + 0.8 * vec3( 0.0, 1.0 + c * 0.04, 2.0 ) ) + 0.2 ) / exp( c * 0.14 );
     // Image crop drives the colour; the crop index wanders once per bar
     // (continuous across the bar wrap).
     base *= 0.35 + 1.4 * imgPal( c * 0.5 + 0.6 * sin( audioBarPhase * 6.28318 ) );
@@ -126,8 +126,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     fragColor = vec4( col, 1.0 );

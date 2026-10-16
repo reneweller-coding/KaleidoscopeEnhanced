@@ -129,8 +129,8 @@ void main()
     // Water on the glass: offset of the view through it, and a mask of
     // where a drop (or a trail) is.
     vec2  off = vec2( 0.0 );
-    float dropM = 0.0;
-    float rimGlint = 0.0;
+    float drop_m = 0.0;
+    float rim_glint = 0.0;
 
     // Static drops in two sizes.
     for ( int l = 0; l < 2; ++l )
@@ -147,10 +147,10 @@ void main()
         // A drop is a small lens: the view through it is inverted and sharp.
         vec2 n = d / max( rad, 1e-3 );
         off += -n * 0.18 * m / ( 12.0 + fl * 16.0 ) * 3.0;
-        dropM = max( dropM, m );
-        rimGlint += smoothstep( rad - 0.05, rad - 0.01, r ) * m * step( 0.0, d.y ) * step( d.x, 0.0 );
+        drop_m = max( drop_m, m );
+        rim_glint += smoothstep( rad - 0.05, rad - 0.01, r ) * m * step( 0.0, d.y ) * step( d.x, 0.0 );
         // The window reflects a small bright spot on every drop.
-        rimGlint += smoothstep( 0.07, 0.0, length( d - vec2( -0.35, 0.4 ) * rad ) ) * m * 1.5;
+        rim_glint += smoothstep( 0.07, 0.0, length( d - vec2( -0.35, 0.4 ) * rad ) ) * m * 1.5;
     }
 
     // Running drops: one per column cell, sliding down and wiggling,
@@ -169,7 +169,7 @@ void main()
         float r = length( d );
         float m = smoothstep( 0.28, 0.2, r ) * active;
         off += -normalize( d + 1e-4 ) * 0.02 * m;
-        dropM = max( dropM, m );
+        drop_m = max( drop_m, m );
         // Trail above the drop: the glass is wiped clear there (less haze),
         // with a string of tiny beads.
         // (The trail dries off before the drop wraps, so nothing vanishes
@@ -180,9 +180,9 @@ void main()
         vec2  bc = floor( bg ), bf = fract( bg ) - 0.5;
         float bead = smoothstep( 0.3, 0.15, length( bf - ( hash22( bc + col ) - 0.5 ) * 0.3 ) )
                      * step( 0.6, hash21( bc + col * 3.0 ) );
-        dropM = max( dropM, bead * trail );
-        rimGlint += bead * trail * 0.5;
-        dropM = max( dropM, trail * 0.35 );
+        drop_m = max( drop_m, bead * trail );
+        rim_glint += bead * trail * 0.5;
+        drop_m = max( drop_m, trail * 0.35 );
     }
 
     // Behind the glass: blurred city; through water: the sharp, inverted city.
@@ -191,18 +191,18 @@ void main()
     // city, sharp and turned over (the offset points away from the centre).
     vec2 inv = uv + off * 9.0;
     vec3 sharp = city( clamp( inv, 0.0, 1.0 ), 0.15 ) * 1.6;
-    vec3 col = mix( blurred, sharp + blurred * 0.35, clamp( dropM, 0.0, 1.0 ) );
+    vec3 col = mix( blurred, sharp + blurred * 0.35, clamp( drop_m, 0.0, 1.0 ) );
     // Condensation haze on the dry glass, glowing with the city light.
-    vec3 hazeC = mix( vec3( 0.2, 0.2, 0.28 ), imgPalette( g_hue * 0.159 + 0.2 ) * 0.4, 0.4 );
-    col += hazeC * ( 1.0 - dropM ) * ( 0.12 + 0.15 * swell );
+    vec3 haze_c = mix( vec3( 0.2, 0.2, 0.28 ), imgPalette( g_hue * 0.159 + 0.2 ) * 0.4, 0.4 );
+    col += haze_c * ( 1.0 - drop_m ) * ( 0.12 + 0.15 * swell );
     // Rim glints where a drop catches a light.
-    col += vec3( 1.0, 0.95, 0.9 ) * rimGlint * ( 0.25 + 0.6 * hi );
+    col += vec3( 1.0, 0.95, 0.9 ) * rim_glint * ( 0.25 + 0.6 * hi );
     // Drops are dark at their edges (total internal reflection).
     // (A thin darker rim where the drop's edge bends light away.)
-    col *= 1.0 - 0.12 * smoothstep( 0.05, 0.4, dropM ) * smoothstep( 0.95, 0.5, dropM );
+    col *= 1.0 - 0.12 * smoothstep( 0.05, 0.4, drop_m ) * smoothstep( 0.95, 0.5, drop_m );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

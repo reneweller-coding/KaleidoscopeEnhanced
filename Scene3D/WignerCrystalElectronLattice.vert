@@ -53,28 +53,28 @@ void main()
     float t = time * 0.4 + audioAdvance * 0.35;
 
     // Triangular 2D/3D electron lattice arrangement
-    float pIdx = attrA.w;
+    float p_idx = attrA.w;
     vec3  seed = attrB.xyz;
 
     // Triangular grid indices
-    float row = floor( sqrt( pIdx ) );
-    float colIdx = pIdx - row * row;
+    float row = floor( sqrt( p_idx ) );
+    float col_idx = p_idx - row * row;
 
     float scale = ( crystalScaleP > 0.01 ? crystalScaleP : 0.12 );
-    float x = ( colIdx - row * 0.5 ) * scale * 1.7320508;
+    float x = ( col_idx - row * 0.5 ) * scale * 1.7320508;
     float y = ( row - 100.0 ) * scale * 1.5;
 
     // Phonon acoustic wave displacement
-    float phononFreq = 4.0;
-    float phononWave = sin( length( vec2( x, y ) ) * phononFreq - t * 3.0 + audioPhase );
-    vPhononAmp = phononWave * 0.5 + 0.5;
+    float phonon_freq = 4.0;
+    float phonon_wave = sin( length( vec2( x, y ) ) * phonon_freq - t * 3.0 + audioPhase );
+    vPhononAmp = phonon_wave * 0.5 + 0.5;
 
     // Quantum zero-point jitter
-    float jitStr = ( jitterP > 0.001 ? jitterP : 0.02 ) * ( 1.0 + 2.0 * audioKick );
-    vec3  jitter = ( seed - 0.5 ) * jitStr;
+    float jit_str = ( jitterP > 0.001 ? jitterP : 0.02 ) * ( 1.0 + 2.0 * audioKick );
+    vec3  jitter = ( seed - 0.5 ) * jit_str;
 
-    float z = phononWave * 0.25 * ( 1.0 + 0.5 * audioSwell );
-    vec3  worldPos = vec3( x * 0.15, y * 0.15, z ) + jitter;
+    float z = phonon_wave * 0.25 * ( 1.0 + 0.5 * audioSwell );
+    vec3  world_pos = vec3( x * 0.15, y * 0.15, z ) + jitter;
 
     vCol = imgPalette( fract( vPhononAmp * 0.4 + seed.x * 0.2 + audioCentroid ) );
 
@@ -85,7 +85,7 @@ void main()
     // Camera Transform (V3). Tilt FIRST, about the lattice centre -- the
     // old tilt-after-dolly shifted the structure down by 4.8*sin(0.55)
     // (~2.5 units), cropping it to the bottom corner of the frame.
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.55;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

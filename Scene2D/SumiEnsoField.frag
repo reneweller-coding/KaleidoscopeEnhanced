@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -273,15 +273,15 @@ void main()
             ink *= 1.0 - dry * smoothstep( 0.45, 0.65, streak );
             // Fade out late in life.
             float fade = smoothstep( 1.0, 0.7, t );
-            vec3  inkC = mix( vec3( 0.04, 0.05, 0.09 ), vec3( 0.18, 0.1, 0.06 ), mode );
+            vec3  ink_c = mix( vec3( 0.04, 0.05, 0.09 ), vec3( 0.18, 0.1, 0.06 ), mode );
             if ( hash21( id + gen * 5.0 ) > 0.85 )
-                inkC = mix( inkC, vec3( 0.75, 0.15, 0.08 ), mode ); // a cinnabar seal colour now and then
-            inkC = mix( inkC, glowColour( imgLod( uv, 5.0 ), id, hueP * 0.159 ) * 0.3, 0.12 );
+                ink_c = mix( ink_c, vec3( 0.75, 0.15, 0.08 ), mode ); // a cinnabar seal colour now and then
+            ink_c = mix( ink_c, glowColour( imgLod( uv, 5.0 ), id, hueP * 0.159 ) * 0.3, 0.12 );
             // Wet sheen near the fresh end.
-            inkC += vec3( 0.5 ) * exp( -( drawn - a ) * 3.0 ) * step( a, drawn ) * 0.2 * kick;
-            col = mix( col, inkC, ink * fade );
+            ink_c += vec3( 0.5 ) * exp( -( drawn - a ) * 3.0 ) * step( a, drawn ) * 0.2 * kick;
+            col = mix( col, ink_c, ink * fade );
             // Ink bleeding into the paper around the stroke.
-            col = mix( col, inkC, 0.12 * smoothstep( w * 2.5, w, band ) * step( a, drawn ) * fade * ( 1.0 - ink ) );
+            col = mix( col, ink_c, 0.12 * smoothstep( w * 2.5, w, band ) * step( a, drawn ) * fade * ( 1.0 - ink ) );
         }
     finish( col );
 }

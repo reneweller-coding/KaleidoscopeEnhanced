@@ -63,10 +63,10 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float       hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float       stepsPerTurn = 12.0 + 8.0 * clamp( turnsP, 0.0, 1.0 );
-    float       rIn = 0.12 + 0.1 * clamp( wellP, 0.0, 1.0 );     // the well
-    const float rOut = 1.0;                                      // outer wall
-    float       riseTotal = 1.0;                                 // height of one turn
+    float       steps_per_turn = 12.0 + 8.0 * clamp( turnsP, 0.0, 1.0 );
+    float       r_in = 0.12 + 0.1 * clamp( wellP, 0.0, 1.0 );    // the well
+    const float r_out = 1.0;                                     // outer wall
+    float       rise_total = 1.0;                                // height of one turn
     float       descent = sceneAdvance * 0.5 + sceneTime * 0.12; // in turns
 
     // Looking down the axis: each pixel is a ray from the eye at height 0
@@ -79,45 +79,46 @@ void main()
     vec3  col = vec3( 0.0 );
     // March depth: the step surfaces are the treads (horizontal) at heights
     // that depend on the angle: tread height h(theta) = -(theta / 2pi +
-    // stepIndex) * riseTotal, quantised into steps.  We march d and test
-    // whether the radius at that depth is between rIn and rOut and whether
+    // stepIndex) * rise_total, quantised into steps.  We march d and test
+    // whether the radius at that depth is between r_in and r_out and whether
     // the tread at that angle is above the ray.
     float trans = 1.0;
-    float hitD = -1.0;
-    float hitR = 0.0;
-    float hitAng = 0.0;
-    float hitStep = 0.0;
-    float wallHit = 0.0;
+    float hit_d = -1.0;
+    float hit_r = 0.0;
+    float hit_ang = 0.0;
+    float hit_step = 0.0;
+    float wall_hit = 0.0;
     float d = 0.15;
     for ( int i = 0; i < 90; ++i )
     {
         float r = R * d * 0.52 * 2.0; // radius at this depth
-        if ( r > rOut )
+        if ( r > r_out )
         {
-            wallHit = 1.0;
-            hitD = d;
-            hitR = r;
-            hitAng = a;
+            wall_hit = 1.0;
+            hit_d = d;
+            hit_r = r;
+            hit_ang = a;
             break;
         }
-        if ( r > rIn )
+        if ( r > r_in )
         {
             // Tread height at this angle (helix descending clockwise): the
             // continuous helix height plus the quantisation into steps.
-            float turnsHere = ( a / 6.2831853 );                                    // -0.5..0.5
-            float k = floor( ( d + descent - turnsHere * riseTotal ) / riseTotal ); // which turn
-            float hHelix = ( turnsHere + k ) * riseTotal - descent; // height (depth) of the helix at this angle in turn
-                                                                    // k
-            float stepIdx = floor( turnsHere * stepsPerTurn + k * stepsPerTurn );
-            float hStep = ( stepIdx / stepsPerTurn ) * riseTotal - descent;
-            // The ray at depth d has passed the tread if d >= hStep (tread is
-            // a horizontal surface at depth hStep, at this angle).
-            if ( d >= hStep && d < hStep + 0.02 + 0.06 )
+            float turns_here = ( a / 6.2831853 );                                      // -0.5..0.5
+            float k = floor( ( d + descent - turns_here * rise_total ) / rise_total ); // which turn
+            float h_helix = ( turns_here + k ) * rise_total - descent; // height (depth) of the helix at this angle in
+                                                                       // turn
+                                                                       // k
+            float step_idx = floor( turns_here * steps_per_turn + k * steps_per_turn );
+            float h_step = ( step_idx / steps_per_turn ) * rise_total - descent;
+            // The ray at depth d has passed the tread if d >= h_step (tread is
+            // a horizontal surface at depth h_step, at this angle).
+            if ( d >= h_step && d < h_step + 0.02 + 0.06 )
             {
-                hitD = hStep;
-                hitR = r;
-                hitAng = a;
-                hitStep = stepIdx;
+                hit_d = h_step;
+                hit_r = r;
+                hit_ang = a;
+                hit_step = step_idx;
                 break;
             }
         }
@@ -125,32 +126,32 @@ void main()
         if ( d > 9.0 )
             break;
     }
-    if ( hitD > 0.0 )
+    if ( hit_d > 0.0 )
     {
-        if ( wallHit > 0.5 )
+        if ( wall_hit > 0.5 )
         {
             // Outer wall: stone with lamps at every turn.
-            float turn = fract( ( hitD + descent ) / riseTotal );
+            float turn = fract( ( hit_d + descent ) / rise_total );
             float lamp = pow( 0.5 + 0.5 * cos( turn * 6.2831853 ), 20.0 );
-            int   band = int( mod( floor( ( hitD + descent ) / riseTotal ) + 8.0, 32.0 ) );
+            int   band = int( mod( floor( ( hit_d + descent ) / rise_total ) + 8.0, 32.0 ) );
             float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-            vec3  stone = imgPalette( hue * 0.159 + 0.6 ) * 0.25 * ( 0.5 + 0.5 * cos( hitAng * 24.0 ) * 0.2 );
+            vec3  stone = imgPalette( hue * 0.159 + 0.6 ) * 0.25 * ( 0.5 + 0.5 * cos( hit_ang * 24.0 ) * 0.2 );
             col = stone * ( 0.4 + 0.6 * audioLevel ) + imgPalette( hue * 0.159 + 0.05 ) * lamp * ( 0.4 + 1.6 * e );
         }
         else
         {
             // A tread: the photo inlaid, radial grain, nosing highlight.
-            float u = ( hitR - rIn ) / ( rOut - rIn );
-            vec2  uv = vec2( fract( hitStep / stepsPerTurn * 3.0 ), u );
+            float u = ( hit_r - r_in ) / ( r_out - r_in );
+            vec2  uv = vec2( fract( hit_step / steps_per_turn * 3.0 ), u );
             vec3  tread = img( uv ) * imgPalette( hue * 0.159 + 0.15 ) * 1.6;
-            float nose = exp( -abs( fract( hitAng / 6.2831853 * stepsPerTurn ) - 0.5 ) * 12.0 );
+            float nose = exp( -abs( fract( hit_ang / 6.2831853 * steps_per_turn ) - 0.5 ) * 12.0 );
             col = tread * ( 0.5 + 0.5 * audioLevel )
                   + imgPalette( hue * 0.159 + 0.9 ) * nose * ( 0.15 + 0.6 * audioKick ) * step( 0.85, u );
             // Banister at the inner edge.
             float ban = exp( -abs( u - 0.06 ) * 30.0 );
             col += imgPalette( hue * 0.159 + 0.85 ) * ban * ( 0.3 + 1.0 * audioKick );
         }
-        float fog = 1.0 - exp( -hitD * 0.35 );
+        float fog = 1.0 - exp( -hit_d * 0.35 );
         col = mix( col, imgPalette( hue * 0.159 + 0.6 ) * 0.04, clamp( fog, 0.0, 0.92 ) );
     }
     else
@@ -159,7 +160,7 @@ void main()
         col = imgPalette( hue * 0.159 + 0.1 ) * exp( -R * 6.0 ) * ( 0.15 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

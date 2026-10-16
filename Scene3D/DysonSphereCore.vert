@@ -49,15 +49,15 @@ void main()
     float radius = 150.0;
 
     // Slow rotation of the sphere
-    float rotT = time * 0.05 + audioAdvance * 0.1;
-    theta += rotT;
+    float rot_t = time * 0.05 + audioAdvance * 0.1;
+    theta += rot_t;
 
     vec3 dir = vec3( cos( phi ) * cos( theta ), sin( phi ), cos( phi ) * sin( theta ) );
     vec3 centre = dir * radius;
 
     // Scale cubes into huge flat panels or spires
-    float isSpire = step( 0.9, r4 );
-    vec3  scale = isSpire > 0.5 ? vec3( 2.0, 2.0, 15.0 ) : vec3( 12.0, 12.0, 0.5 );
+    float is_spire = step( 0.9, r4 );
+    vec3  scale = is_spire > 0.5 ? vec3( 2.0, 2.0, 15.0 ) : vec3( 12.0, 12.0, 0.5 );
 
     // Add some random variation
     scale *= 1.0 + r3 * 0.5;
@@ -68,16 +68,16 @@ void main()
     if ( abs( dir.y ) > 0.99 )
         up = vec3( 1.0, 0.0, 0.0 );
     vec3 right = normalize( cross( up, dir ) );
-    vec3 realUp = cross( dir, right );
+    vec3 real_up = cross( dir, right );
 
-    mat3 rotMat = mat3( right, realUp, dir );
+    mat3 rot_mat = mat3( right, real_up, dir );
 
-    vec3 localPos = attrA.xyz * scale;
-    vec3 world = centre + rotMat * localPos;
+    vec3 local_pos = attrA.xyz * scale;
+    vec3 world = centre + rot_mat * local_pos;
 
     // Camera is inside the sphere, offset by drift
-    float camZ = time * 2.0 + audioAdvance * 5.0;
-    world.z -= camZ;
+    float cam_z = time * 2.0 + audioAdvance * 5.0;
+    world.z -= cam_z;
 
     // Loop the space so we never run out of panels (wrap them around)
     // Actually, it's a sphere, so we just let it rotate. We move the camera inside.
@@ -91,13 +91,13 @@ void main()
     // The far bound was 140 while the shell this scene is made of has radius
     // 150 -- the cull was TIGHTER THAN THE STRUCTURE it exists to show.  Only
     // z is actually displaced (world.x/y are already inside [-150,150], so
-    // their mod() is a no-op), so whenever camZ's wrap phase left the shell
+    // their mod() is a no-op), so whenever cam_z's wrap phase left the shell
     // near its natural radius, EVERY panel failed the test and the frame went
     // uniformly empty: measured 0.0 % survivors at phase 0, and 44 % of all
     // rendered frames came back with zero spatial variance.
     // 260 sits just past the largest distance the wrap can produce (212).
-    float zDist = length( world );
-    if ( zDist < 2.0 || zDist > 260.0 )
+    float z_dist = length( world );
+    if ( z_dist < 2.0 || z_dist > 260.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
@@ -111,17 +111,17 @@ void main()
     gl_Position.x += eyeOff * 0.06 * gl_Position.w;
 
     // Normal based on cube face
-    vec3 nLocal = vec3( 0.0 );
+    vec3 n_local = vec3( 0.0 );
     if ( abs( attrA.x ) > 0.49 )
-        nLocal = vec3( sign( attrA.x ), 0.0, 0.0 );
+        n_local = vec3( sign( attrA.x ), 0.0, 0.0 );
     else if ( abs( attrA.y ) > 0.49 )
-        nLocal = vec3( 0.0, sign( attrA.y ), 0.0 );
+        n_local = vec3( 0.0, sign( attrA.y ), 0.0 );
     else
-        nLocal = vec3( 0.0, 0.0, sign( attrA.z ) );
-    vec3 nWorld = rotMat * nLocal;
+        n_local = vec3( 0.0, 0.0, sign( attrA.z ) );
+    vec3 n_world = rot_mat * n_local;
 
     vCol = vec4( r1, r2, r3, r4 );
     vCorner = attrA.xyz;
     vPos = world;
-    vNormal = nWorld;
+    vNormal = n_world;
 }

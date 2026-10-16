@@ -79,44 +79,44 @@ void main()
     float z = ( 1.0 / ( r + 0.05 ) ) * ( 0.8 + 0.3 * audioSwell ) + ( time * 0.7 * spd + audioAdvance * 0.35 );
 
     // Curving tunnel axis
-    vec2 tunnelCenter = vec2( sin( z * 0.3 * crv ) * 0.4, cos( z * 0.25 * crv ) * 0.3 );
-    vec2 p = ( uv - tunnelCenter / ( z * 0.5 + 1.0 ) );
+    vec2 tunnel_center = vec2( sin( z * 0.3 * crv ) * 0.4, cos( z * 0.25 * crv ) * 0.3 );
+    vec2 p = ( uv - tunnel_center / ( z * 0.5 + 1.0 ) );
     r = length( p );
     angle = atan( p.y, p.x );
 
     // 8-fold hyperbolic sector symmetry
     float sectors = 8.0 * brn;
-    float secAngle = 6.2831853 / sectors;
-    float foldedAngle = mod( angle + 0.5 * secAngle, secAngle ) - 0.5 * secAngle;
-    vec2  hCoord = vec2( cos( foldedAngle ), sin( foldedAngle ) ) * ( 1.0 - exp( -r * 2.0 ) );
+    float sec_angle = 6.2831853 / sectors;
+    float folded_angle = mod( angle + 0.5 * sec_angle, sec_angle ) - 0.5 * sec_angle;
+    vec2  h_coord = vec2( cos( folded_angle ), sin( folded_angle ) ) * ( 1.0 - exp( -r * 2.0 ) );
 
     // Hyperbolic circle inversion reflection
-    float cX = 0.85;
-    float cR = 0.55;
-    vec2  d = hCoord - vec2( cX, 0.0 );
+    float c_x = 0.85;
+    float c_r = 0.55;
+    vec2  d = h_coord - vec2( c_x, 0.0 );
     float d2 = dot( d, d );
-    if ( d2 < cR * cR )
+    if ( d2 < c_r * c_r )
     {
-        hCoord = vec2( cX, 0.0 ) + d * ( cR * cR / d2 );
+        h_coord = vec2( c_x, 0.0 ) + d * ( c_r * c_r / d2 );
     }
 
     // Photo texture mapping onto hyperbolic tunnel tiles
-    vec2 tunnelUV = vec2( hCoord.x * 1.5, fract( z * 0.2 + hCoord.y * 0.5 ) );
-    tunnelUV = abs( fract( tunnelUV ) * 2.0 - 1.0 ); // Kaleidoscopic fold
+    vec2 tunnel_uv = vec2( h_coord.x * 1.5, fract( z * 0.2 + h_coord.y * 0.5 ) );
+    tunnel_uv = abs( fract( tunnel_uv ) * 2.0 - 1.0 ); // Kaleidoscopic fold
 
-    vec3 photoTile = img( tunnelUV );
+    vec3 photo_tile = img( tunnel_uv );
 
     // Hyperbolic tile borders & glowing archways
-    float tileBorder = min( abs( fract( z * 0.5 ) - 0.5 ), abs( foldedAngle / ( 0.5 * secAngle ) - 1.0 ) );
-    float archGlow = exp( -tileBorder * 20.0 ) * ( 0.8 + 1.5 * audioHigh );
+    float tile_border = min( abs( fract( z * 0.5 ) - 0.5 ), abs( folded_angle / ( 0.5 * sec_angle ) - 1.0 ) );
+    float arch_glow = exp( -tile_border * 20.0 ) * ( 0.8 + 1.5 * audioHigh );
 
     // Color grading & depth perspective
-    vec3 archCol = imgPalette( ( z * 0.5 + audioPhase ) * 0.159 );
-    vec3 col = photoTile * ( 0.8 + 0.5 * audioLevel ) + archCol * archGlow * 1.8;
+    vec3 arch_col = imgPalette( ( z * 0.5 + audioPhase ) * 0.159 );
+    vec3 col = photo_tile * ( 0.8 + 0.5 * audioLevel ) + arch_col * arch_glow * 1.8;
 
     // Vanishing point core laser flare on kicks
-    float coreFlare = exp( -r * 4.0 ) * ( 0.5 + 2.5 * audioKick );
-    col += vec3( 1.0, 0.95, 0.85 ) * coreFlare;
+    float core_flare = exp( -r * 4.0 ) * ( 0.5 + 2.5 * audioKick );
+    col += vec3( 1.0, 0.95, 0.85 ) * core_flare;
 
     // Tunnel wall entrance fade
     col *= smoothstep( 0.0, 0.1, r );
@@ -126,7 +126,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

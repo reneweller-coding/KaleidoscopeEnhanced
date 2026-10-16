@@ -60,9 +60,9 @@ void main()
     float u = attrA.x, w = attrA.y;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
-    float       halfA = kTanY * aspect; // tan of the horizontal half-FOV
+    float       half_a = TanY * aspect; // tan of the horizontal half-FOV
 
     // Row 87 of 120 is the shoreline between water and sky curtain.  The two
     // halves MEET there -- same depth, same height -- so the row of cells that
@@ -87,7 +87,7 @@ void main()
 
         // 2.0 would fit the frame exactly; 2.25 keeps water under all four
         // corners while the preset camera rig rolls and yaws the view.
-        float x = ( u - 0.5 ) * 2.25 * z * halfA;
+        float x = ( u - 0.5 ) * 2.25 * z * half_a;
 
         // Eighteen raindrop sites on staggered cycles; each ring expands and
         // dies away smoothly.  The sites are scattered across the FRUSTUM --
@@ -105,12 +105,12 @@ void main()
             float ep = floor( time / cycle + ph ); // which drop
 
             float cz = 10.0 + hash11( fi * 9.1 + ep ) * 90.0;
-            float cx = ( hash11( fi * 1.7 + ep ) - 0.5 ) * 1.90 * cz * halfA;
+            float cx = ( hash11( fi * 1.7 + ep ) - 0.5 ) * 1.90 * cz * half_a;
 
             float d = length( vec2( x, z ) - vec2( cx, cz ) );
-            float ringR = t01 * 42.0;
-            float wave = sin( ( d - ringR ) * 0.9 )
-                         * exp( -abs( d - ringR ) * 0.28 )
+            float ring_r = t01 * 42.0;
+            float wave = sin( ( d - ring_r ) * 0.9 )
+                         * exp( -abs( d - ring_r ) * 0.28 )
                          * ( 1.0 - t01 ) * 0.8;
             h += wave;
             slope += wave * 0.9;
@@ -157,7 +157,7 @@ void main()
         z = mix( 150.0, 195.0, sk );
         y = -eye + sk * 130.0; // top edge lands ~20% above the frame
 
-        float x = ( u - 0.5 ) * 2.25 * z * halfA;
+        float x = ( u - 0.5 ) * 2.25 * z * half_a;
         sky = 1.0;
         vWorld = vec3( x, y, z );
     }

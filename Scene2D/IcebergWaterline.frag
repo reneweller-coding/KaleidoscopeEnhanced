@@ -119,7 +119,7 @@ void main()
 
     // The waterline: a slow swell across the lens.
     float wl = 0.08 + 0.012 * sin( p.x * 3.0 - T * 0.9 ) + 0.006 * sin( p.x * 9.0 + T * 1.4 );
-    vec3  sunDir = normalize( vec3( -0.6, 0.45, 0.4 ) );
+    vec3  sun_dir = normalize( vec3( -0.6, 0.45, 0.4 ) );
     vec3  col;
 
     if ( p.y > wl )
@@ -143,7 +143,7 @@ void main()
             vec3  n = normalize( vec3( ( h0 - hx ) * 9.0, ( h0 - hy ) * 4.0, 1.0 ) );
             float bulk = clamp( ( p.x + 0.05 * tilt ) / 0.55, -1.0, 1.0 );
             n = normalize( n + vec3( bulk * 0.9, 0.25, 0.0 ) );
-            float dif = max( dot( n, sunDir ), 0.0 );
+            float dif = max( dot( n, sun_dir ), 0.0 );
             vec3  ice = mix( vec3( 0.3, 0.55, 0.8 ), vec3( 1.15, 1.17, 1.2 ), smoothstep( -0.1, 0.9, dif ) );
             // Crevasses: deep blue lines.
             float crev = smoothstep( 0.9, 1.0, ridged( vec2( p.x * 9.0, y * 1.5 ) + 7.0 ) );
@@ -178,14 +178,14 @@ void main()
         {
             // Light comes down through the ice: bright turquoise near the
             // surface, deep glacial blue lower; ripple caustics on it.
-            vec3  iceU = mix( vec3( 0.4, 0.95, 0.95 ), vec3( 0.08, 0.35, 0.7 ), smoothstep( 0.0, d, y ) );
+            vec3  ice_u = mix( vec3( 0.4, 0.95, 0.95 ), vec3( 0.08, 0.35, 0.7 ), smoothstep( 0.0, d, y ) );
             float caus = pow( 1.0 - abs( 2.0 * fbm( vec2( p.x * 8.0 + T * 0.2, y * 6.0 - T * 0.15 ) ) - 1.0 ), 8.0 );
-            iceU += vec3( 0.6, 1.0, 1.0 ) * caus * exp( -y * 4.0 ) * 0.35 * ( 0.7 + 0.5 * swell );
+            ice_u += vec3( 0.6, 1.0, 1.0 ) * caus * exp( -y * 4.0 ) * 0.35 * ( 0.7 + 0.5 * swell );
             float relief = ridged( vec2( p.x * 4.0, y * 4.0 ) + 11.0 );
-            iceU *= 0.75 + 0.35 * relief;
+            ice_u *= 0.75 + 0.35 * relief;
             // Water between the lens and the ice veils it with depth.
-            iceU = mix( iceU, water, smoothstep( 0.1, 0.7, y ) * 0.5 );
-            col = mix( col, iceU, smoothstep( 0.0, 0.02, shape ) );
+            ice_u = mix( ice_u, water, smoothstep( 0.1, 0.7, y ) * 0.5 );
+            col = mix( col, ice_u, smoothstep( 0.0, 0.02, shape ) );
         }
         // Bubbles: round, rising along the ice.
         for ( int k = 0; k < 14; ++k )
@@ -207,7 +207,7 @@ void main()
     col += vec3( 0.9, 1.0, 1.0 ) * exp( -abs( p.y - wl ) * 400.0 ) * 0.6;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

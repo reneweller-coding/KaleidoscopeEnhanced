@@ -129,7 +129,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -247,8 +247,8 @@ void main()
     vec2  p = screenP() * 2.0;
     float hi = clamp( audioHigh * 1.5, 0.0, 1.0 );
     // Superellipse metric (like the original Kaleidoscope's power knob).
-    float powV = mix( 0.75, 1.4, clamp( audioMode, 0.0, 1.0 ) );
-    float r0 = pow( pow( abs( p.x ), 2.0 * powV ) + pow( abs( p.y ), 2.0 * powV ), 1.0 / ( 2.0 * powV ) );
+    float pow_v = mix( 0.75, 1.4, clamp( audioMode, 0.0, 1.0 ) );
+    float r0 = pow( pow( abs( p.x ), 2.0 * pow_v ) + pow( abs( p.y ), 2.0 * pow_v ), 1.0 / ( 2.0 * pow_v ) );
     p = normalize( p + 1e-5 ) * r0;
     p = rot2( 0.02 * sceneTime + 0.3 * audioPhase ) * p;
     vec2  win = vec2( 0.5 )
@@ -258,25 +258,25 @@ void main()
     float mn = 3.0 + 3.0 * clamp( minFoldP, 0.0, 1.0 );
     float mx = mn + 3.0 + 6.0 * clamp( maxFoldP, 0.0, 1.0 );
     // Ring layers: each ring has its own breathing phase.
-    float nR = 1.0 + floor( clamp( ringsP, 0.0, 1.0 ) * 3.0 );
-    float ringW = 1.4 / nR;
+    float n_r = 1.0 + floor( clamp( ringsP, 0.0, 1.0 ) * 3.0 );
+    float ring_w = 1.4 / n_r;
     // Ring index as a continuous value; the colour is a blend of the two
     // nearest rings, so ring borders are soft.
-    float rc = clamp( r0 / ringW - 0.5, 0.0, nR - 1.0 );
+    float rc = clamp( r0 / ring_w - 0.5, 0.0, n_r - 1.0 );
     float r0i = floor( rc ), rt = smoothstep( 0.35, 0.65, rc - r0i );
     vec3  col = vec3( 0.0 );
     float seam = 0.0;
     for ( int k = 0; k < 2; ++k )
     {
-        float rr = min( r0i + float( k ), nR - 1.0 );
+        float rr = min( r0i + float( k ), n_r - 1.0 );
         float w = ( k == 0 ) ? 1.0 - rt : rt;
         float breath = 0.5
                        - 0.5
                              * cos( sceneTime * ( 0.05 + 0.02 * rr ) + rr * 1.7
                                     + 0.8 * clamp( audioHarmChange, 0.0, 1.0 ) );
         breath = clamp( breath + 0.3 * clamp( audioSwell, 0.0, 1.0 ), 0.0, 1.0 );
-        float nF = mix( mn, mx, breath );
-        float n0 = floor( nF ), f = smoothstep( 0.0, 1.0, nF - n0 );
+        float n_f = mix( mn, mx, breath );
+        float n0 = floor( n_f ), f = smoothstep( 0.0, 1.0, n_f - n0 );
         float s0, s1;
         vec2  pr = rot2( rr * 0.4 ) * p;
         vec3  c0 = kaleido( pr, n0, win + rr * 0.07, s0 );
@@ -286,8 +286,8 @@ void main()
     }
     float m = luma( imgLod( win, 8.0 ) );
     col = ( col - m ) * 1.5 + m;
-    vec3 hueF = hsv2rgb( vec3( fract( hueP * 0.159 + 0.2 * r0 + 0.02 * audioAdvance ), 0.7, 1.0 ) );
-    col *= mix( vec3( 1.0 ), mix( glowColour( imgLod( win, 5.0 ), p * 0.5, hueP * 0.159 ), hueF, 0.5 ) * 1.4, 0.4 );
+    vec3 hue_f = hsv2rgb( vec3( fract( hueP * 0.159 + 0.2 * r0 + 0.02 * audioAdvance ), 0.7, 1.0 ) );
+    col *= mix( vec3( 1.0 ), mix( glowColour( imgLod( win, 5.0 ), p * 0.5, hueP * 0.159 ), hue_f, 0.5 ) * 1.4, 0.4 );
     col += vec3( 1.0, 0.97, 0.92 ) * exp( -seam / ( 2.5 / resolution.y * 2.0 ) ) * ( 0.04 + 0.25 * hi );
     finish( col * 1.05 );
 }

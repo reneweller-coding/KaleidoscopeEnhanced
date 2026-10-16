@@ -77,9 +77,9 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Magic angle modulation
-    float baseTheta = 0.019; // ~1.1 degrees in radians
-    float twistMod = ( twistP > 0.01 ? twistP : 1.0 );
-    float theta = ( baseTheta + 0.008 * sin( t * 0.2 + audioPhase * 0.5 ) ) * twistMod;
+    float base_theta = 0.019; // ~1.1 degrees in radians
+    float twist_mod = ( twistP > 0.01 ? twistP : 1.0 );
+    float theta = ( base_theta + 0.008 * sin( t * 0.2 + audioPhase * 0.5 ) ) * twist_mod;
 
     // Rotate Layer 1 and Layer 2
     float c1 = cos( theta * 0.5 ), s1 = sin( theta * 0.5 );
@@ -89,43 +89,43 @@ void main()
     vec2 p2 = vec2( uv.x * c2 - uv.y * s2, uv.x * s2 + uv.y * c2 );
 
     // Graphene atomic lattice waves
-    float atomicScale = 45.0;
-    float g1 = hexGraphene( p1, atomicScale );
-    float g2 = hexGraphene( p2, atomicScale );
+    float atomic_scale = 45.0;
+    float g1 = hexGraphene( p1, atomic_scale );
+    float g2 = hexGraphene( p2, atomic_scale );
 
     // Macroscopic Moiré interference pattern (Difference of wavevectors Delta K)
-    float moireScale = atomicScale * theta * 12.0;
-    vec2  pMoire = uv * moireScale;
-    float moireHex = hexGraphene( pMoire, 1.0 );
+    float moire_scale = atomic_scale * theta * 12.0;
+    vec2  p_moire = uv * moire_scale;
+    float moire_hex = hexGraphene( p_moire, 1.0 );
 
     // AA-stacking flat-band localized electron state islands (peaks of Moiré pattern)
-    float flatBandIntensity = pow( clamp( moireHex * 0.5 + 0.5, 0.0, 1.0 ),
-                                   3.0 * ( flatBandP > 0.01 ? flatBandP : 1.0 ) );
+    float flat_band_intensity = pow( clamp( moire_hex * 0.5 + 0.5, 0.0, 1.0 ),
+                                     3.0 * ( flatBandP > 0.01 ? flatBandP : 1.0 ) );
 
     // Quantum tunneling current & interference contrast
     float contrast = ( interfP > 0.01 ? interfP : 1.5 );
-    float quantumInterf = ( g1 * g2 ) * contrast * ( 0.8 + 0.5 * audioMid );
+    float quantum_interf = ( g1 * g2 ) * contrast * ( 0.8 + 0.5 * audioMid );
 
     // Microscopic honeycomb visibility
-    float honeyVis = ( honeyP > 0.01 ? honeyP : 0.6 ) * ( 0.6 + 0.8 * audioHigh );
+    float honey_vis = ( honeyP > 0.01 ? honeyP : 0.6 ) * ( 0.6 + 0.8 * audioHigh );
 
     // Correlated electron bursts on kick
-    float mottFlash = flatBandIntensity * ( 1.0 + 3.0 * audioKick );
+    float mott_flash = flat_band_intensity * ( 1.0 + 3.0 * audioKick );
 
     // Assign photo palette
-    float palMoire = fract( moireHex * 0.25 + t * 0.05 + audioCentroid );
-    vec3  colMoire = imgPalette( palMoire );
-    vec3  colFlat = imgPalette( fract( palMoire + 0.5 ) ) * 2.2;
-    vec3  colInterf = imgPalette( fract( quantumInterf * 0.5 + 0.25 ) );
+    float pal_moire = fract( moire_hex * 0.25 + t * 0.05 + audioCentroid );
+    vec3  col_moire = imgPalette( pal_moire );
+    vec3  col_flat = imgPalette( fract( pal_moire + 0.5 ) ) * 2.2;
+    vec3  col_interf = imgPalette( fract( quantum_interf * 0.5 + 0.25 ) );
 
     // Sample background photo
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colMoire * ( 0.6 + 0.4 * audioSwell );
-    col += colFlat * mottFlash * 1.5;
-    col += colInterf * abs( quantumInterf ) * honeyVis * 1.8;
+    col += col_moire * ( 0.6 + 0.4 * audioSwell );
+    col += col_flat * mott_flash * 1.5;
+    col += col_interf * abs( quantum_interf ) * honey_vis * 1.8;
     col += imgPalette( t * 0.1 ) * audioKick * 0.35;
 
     // Soft knee compression

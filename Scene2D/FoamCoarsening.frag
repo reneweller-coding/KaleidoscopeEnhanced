@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -282,8 +282,8 @@ void main()
     // Plateau borders: where the third site is as close as the first two.
     float junction = exp( -F.y / 0.05 ) * exp( -F.x / 0.03 );
     // Bubble lens: the photo seen through, magnified toward the bubble centre.
-    float lensK = 0.3 + 0.6 * clamp( lensP, 0.0, 1.0 );
-    vec2  uv = p * 0.6 + 0.5 - toC / S * lensK * 0.6 + vec2( 0.003, 0.002 ) * sceneTime;
+    float lens_k = 0.3 + 0.6 * clamp( lensP, 0.0, 1.0 );
+    vec2  uv = p * 0.6 + 0.5 - toC / S * lens_k * 0.6 + vec2( 0.003, 0.002 ) * sceneTime;
     vec3  ph = imgLod( uv, 1.0 ) * ( 0.25 + 0.5 * swell );
     vec3  col = ph * ( 0.7 + 0.3 * smoothstep( 0.0, 0.3, F.x ) );
     // Wall colour: thin-film tint that varies along the walls.
@@ -293,8 +293,8 @@ void main()
     col += fc * wall * wb * 0.8;
     col += vec3( 1.0, 0.98, 0.95 ) * junction * ( 0.25 + 0.8 * kick ) * wb;
     // A faint back layer.
-    vec2 cid2, toC2;
-    vec3 F2 = foam( p * S * 1.7 + 11.0, T * 0.8, spread, cid2, toC2 );
+    vec2 cid2, to_c2;
+    vec3 F2 = foam( p * S * 1.7 + 11.0, T * 0.8, spread, cid2, to_c2 );
     col += fc * exp( -F2.x / 0.02 ) * 0.12 * wb;
     // Sparkles on the walls: round glints.
     vec2  sg = p * 90.0;

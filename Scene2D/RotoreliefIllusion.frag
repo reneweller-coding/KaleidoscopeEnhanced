@@ -72,8 +72,8 @@ void main()
     float rings = 5.0 + 6.0 * clamp( ringsP, 0.0, 1.0 );
 
     // Twelve discs in a 4 x 3 field; each disc has its own rate and sense.
-    vec2  cellSz = vec2( aspect / 4.0, 1.0 / 3.0 );
-    vec2  g = ( p + vec2( aspect, 1.0 ) * 0.5 ) / cellSz;
+    vec2  cell_sz = vec2( aspect / 4.0, 1.0 / 3.0 );
+    vec2  g = ( p + vec2( aspect, 1.0 ) * 0.5 ) / cell_sz;
     vec2  ci = floor( g );
     vec2  cf = fract( g ) - 0.5;
     int   k = int( clamp( ci.x + ci.y * 4.0, 0.0, 11.0 ) );
@@ -81,7 +81,7 @@ void main()
     float e = clamp( audioChroma[k] * 1.5, 0.0, 1.0 );
     float rate = ( 0.6 + 0.6 * hash11( fk * 3.7 ) ) * ( hash11( fk * 5.1 ) > 0.5 ? 1.0 : -1.0 );
     float rot = sceneAdvance * rate + sceneTime * 0.1 * rate + hash11( fk * 9.3 ) * 6.28;
-    vec2  q = cf * vec2( cellSz.x / cellSz.y, 1.0 ); // square coordinates
+    vec2  q = cf * vec2( cell_sz.x / cell_sz.y, 1.0 ); // square coordinates
     float rad = 0.44;
     float r = length( q );
 
@@ -94,7 +94,7 @@ void main()
         float c2 = cos( rot ), s2 = sin( rot );
         vec2  off = vec2( c2, s2 ) * ecc;
         float best = 1e9;
-        float ringId = 0.0;
+        float ring_id = 0.0;
         for ( int i = 0; i < 12; ++i )
         {
             if ( float( i ) >= rings )
@@ -106,13 +106,13 @@ void main()
             if ( dd < best )
             {
                 best = dd;
-                ringId = fi;
+                ring_id = fi;
             }
         }
-        float lineW = 0.018;
-        float line = smoothstep( lineW, lineW * 0.4, best );
+        float line_w = 0.018;
+        float line = smoothstep( line_w, line_w * 0.4, best );
         // The band between the lines carries the photo, sampled by ring.
-        float band = fract( ringId / rings + rot * 0.05 );
+        float band = fract( ring_id / rings + rot * 0.05 );
         vec3  photo = img( vec2( band, 0.5 + 0.4 * sin( atan( q.y, q.x ) + rot ) ) );
         vec3  base = mix( imgPalette( hue * 0.159 + fk / 12.0 ), photo * 1.5, 0.5 ) + 0.12;
         float contrast = 0.4 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
@@ -131,7 +131,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

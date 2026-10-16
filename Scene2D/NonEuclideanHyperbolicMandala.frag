@@ -93,15 +93,15 @@ void main()
     z = mobius( z, a );
 
     // Poincare disk inversion folding (Coxeter group circle inversions)
-    float sectorAngle = 6.2831853 / sym;
-    float totalInversions = 0.0;
-    float minD = 1000.0;
+    float sector_angle = 6.2831853 / sym;
+    float total_inversions = 0.0;
+    float min_d = 1000.0;
 
     for ( int i = 0; i < 6; ++i )
     {
         // N-fold rotational symmetry fold
         float ang = atan( z.y, z.x );
-        ang = mod( ang + 0.5 * sectorAngle, sectorAngle ) - 0.5 * sectorAngle;
+        ang = mod( ang + 0.5 * sector_angle, sector_angle ) - 0.5 * sector_angle;
         float r = length( z );
         z = vec2( cos( ang ), sin( ang ) ) * r;
 
@@ -114,27 +114,27 @@ void main()
         if ( d2 < r_c * r_c )
         {
             z = vec2( c_x, 0.0 ) + d * ( r_c * r_c / d2 );
-            totalInversions += 1.0;
+            total_inversions += 1.0;
         }
 
-        minD = min( minD, abs( length( z ) - 0.5 ) );
+        min_d = min( min_d, abs( length( z ) - 0.5 ) );
     }
 
     // Kaleidoscope mandala photo texture coordinate
-    vec2 mandalaUV = z * 0.5 + vec2( 0.5 );
-    mandalaUV = fract( mandalaUV + vec2( time * 0.05, audioPhase * 0.1 ) );
+    vec2 mandala_uv = z * 0.5 + vec2( 0.5 );
+    mandala_uv = fract( mandala_uv + vec2( time * 0.05, audioPhase * 0.1 ) );
 
-    vec3 photoCol = img( mandalaUV );
+    vec3 photo_col = img( mandala_uv );
 
     // Sacred geometry gold and iridescent borders
-    float border = exp( -abs( minD ) * 30.0 );
-    float innerRings = sin( length( z ) * 25.0 - time * 4.0 );
-    float ringGlow = exp( -abs( innerRings ) * 6.0 ) * ( 0.8 + 1.2 * audioHigh );
+    float border = exp( -abs( min_d ) * 30.0 );
+    float inner_rings = sin( length( z ) * 25.0 - time * 4.0 );
+    float ring_glow = exp( -abs( inner_rings ) * 6.0 ) * ( 0.8 + 1.2 * audioHigh );
 
     vec3 gold = vec3( 1.0, 0.82, 0.35 );
-    vec3 iridescent = imgPalette( ( totalInversions * 1.2 + audioPhase ) * 0.159 );
+    vec3 iridescent = imgPalette( ( total_inversions * 1.2 + audioPhase ) * 0.159 );
 
-    vec3 col = photoCol * ( 0.8 + 0.4 * totalInversions ) + gold * border * 2.5 + iridescent * ringGlow * 1.5;
+    vec3 col = photo_col * ( 0.8 + 0.4 * total_inversions ) + gold * border * 2.5 + iridescent * ring_glow * 1.5;
     col += vec3( 1.0 ) * audioKick * exp( -length( uv ) * 4.0 ) * 1.5; // Central burst
 
     col = hueRot( col, hue ); // chromaHue handled inside imgPalette
@@ -142,7 +142,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

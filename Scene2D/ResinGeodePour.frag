@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -281,7 +281,7 @@ void main()
     col = mix( col, metal * ( 0.8 + 1.0 * kick ), edge * 0.8 );
     // The crystal centre: sparkling facets.
     float cr = 0.12 + 0.15 * clamp( crystalP, 0.0, 1.0 );
-    float inC = smoothstep( cr, cr * 0.9, r );
+    float in_c = smoothstep( cr, cr * 0.9, r );
     // Crystal facets: Voronoi cells (no square pixels), each a tilted face.
     vec2  cq = bd * 25.0;
     vec2  ci = floor( cq ), cf = fract( cq );
@@ -307,6 +307,6 @@ void main()
     crys *= 0.75 + 0.25 * smoothstep( 0.0, 0.1, f2 - f1 ); // facet edges
     crys += vec3( 1.0 ) * step( 0.9, facet ) * pow( max( 0.0, sin( sceneTime * 3.0 + facet * 40.0 ) ), 6.0 )
             * ( 0.5 + 1.5 * hi ) * smoothstep( 0.35, 0.0, f1 );
-    col = mix( col, crys, inC );
+    col = mix( col, crys, in_c );
     finish( col );
 }

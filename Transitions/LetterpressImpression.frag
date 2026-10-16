@@ -52,7 +52,7 @@ uniform float biteP;
 uniform float reliefP; ///< Relief knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -85,26 +85,26 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI ); // the relief only exists mid-press
+    float arc = sin( d * Pi ); // the relief only exists mid-press
 
     vec3 src0 = texture( tex0, uv ).rgb;
     vec3 src1 = texture( tex1, uv ).rgb;
 
     // The plate: the incoming picture read as a height field.
     vec2  px = 1.5 / resolution;
-    float hC = lum( src1 );
-    float hX = lum( texture( tex1, clamp( uv + vec2( px.x, 0.0 ), 0.0, 1.0 ) ).rgb )
-               - lum( texture( tex1, clamp( uv - vec2( px.x, 0.0 ), 0.0, 1.0 ) ).rgb );
-    float hY = lum( texture( tex1, clamp( uv + vec2( 0.0, px.y ), 0.0, 1.0 ) ).rgb )
-               - lum( texture( tex1, clamp( uv - vec2( 0.0, px.y ), 0.0, 1.0 ) ).rgb );
-    vec2  grad = vec2( hX, hY ) * 26.0 * relief;
+    float h_c = lum( src1 );
+    float h_x = lum( texture( tex1, clamp( uv + vec2( px.x, 0.0 ), 0.0, 1.0 ) ).rgb )
+                - lum( texture( tex1, clamp( uv - vec2( px.x, 0.0 ), 0.0, 1.0 ) ).rgb );
+    float h_y = lum( texture( tex1, clamp( uv + vec2( 0.0, px.y ), 0.0, 1.0 ) ).rgb )
+                - lum( texture( tex1, clamp( uv - vec2( 0.0, px.y ), 0.0, 1.0 ) ).rgb );
+    vec2  grad = vec2( h_x, h_y ) * 26.0 * relief;
     float steep = length( grad );
 
     // The platen closes: the inked area grows until it has taken the whole
     // plate, which is what makes the endpoint exact.
     float press = smoothstep( 0.0, 1.0, d );
-    float inkT = hC + ( press * 2.3 - 1.15 );
-    float ink = smoothstep( -0.05, 0.05, inkT );
+    float ink_t = h_c + ( press * 2.3 - 1.15 );
+    float ink = smoothstep( -0.05, 0.05, ink_t );
 
     // Lighting off the plate's own gradient: light from the upper left.
     vec3  n = normalize( vec3( -grad.x, -grad.y, 1.0 ) );
@@ -122,10 +122,10 @@ void main()
 
     // The ink itself, a touch warmer or cooler with the midrange.
     // hueP picks the ink's own cast, audioMid warms or cools it from there.
-    vec3 inkCast = mix( vec3( 0.98, 0.97, 1.00 ), vec3( 1.00, 0.96, 0.90 ), fract( hue * 0.159 ) );
+    vec3 ink_cast = mix( vec3( 0.98, 0.97, 1.00 ), vec3( 1.00, 0.96, 0.90 ), fract( hue * 0.159 ) );
     vec3 inked = src1
                  * mix( vec3( 1.0 ),
-                        mix( inkCast, inkCast * vec3( 1.04, 1.00, 0.94 ), clamp( audioMid * 2.0, 0.0, 1.0 ) ), arc );
+                        mix( ink_cast, ink_cast * vec3( 1.04, 1.00, 0.94 ), clamp( audioMid * 2.0, 0.0, 1.0 ) ), arc );
 
     vec3 col = mix( sheet, inked, ink );
 

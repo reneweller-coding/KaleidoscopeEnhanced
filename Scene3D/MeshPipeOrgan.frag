@@ -40,8 +40,8 @@ in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 
-const float kDist = 64.0;
-const float kGround = -23.0;
+const float Dist = 64.0;
+const float Ground = -23.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -130,8 +130,8 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
 }
 
 // Candles: two warm point lights low in front of the case.
-const vec3 kCandleA = vec3( -16.0, kGround + 3.0, kDist - 22.0 );
-const vec3 kCandleB = vec3( 14.0, kGround + 2.0, kDist - 26.0 );
+const vec3 CandleA = vec3( -16.0, Ground + 3.0, Dist - 22.0 );
+const vec3 CandleB = vec3( 14.0, Ground + 2.0, Dist - 26.0 );
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir )
@@ -142,15 +142,15 @@ vec3 renderSky( vec3 dir )
     if ( dir.y < -0.004 )
     {
         // A flagstone floor, warm near the candles, dark far off.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.008 );
         float chk = mod( floor( P.x / 7.0 ) + floor( P.z / 7.0 ), 2.0 );
         vec3  stone = mix( vec3( 0.16, 0.13, 0.10 ), vec3( 0.09, 0.08, 0.07 ), chk )
                       * ( 0.7 + 0.6 * fbm2( P.xz * 0.3 ) );
-        float warmA = exp( -length( P.xz - kCandleA.xz ) * 0.035 );
-        float warmB = exp( -length( P.xz - kCandleB.xz ) * 0.035 );
-        col = stone * ( 0.25 + 1.6 * ( warmA + warmB ) * ( 0.6 + 0.5 * swell ) );
+        float warm_a = exp( -length( P.xz - CandleA.xz ) * 0.035 );
+        float warm_b = exp( -length( P.xz - CandleB.xz ) * 0.035 );
+        col = stone * ( 0.25 + 1.6 * ( warm_a + warm_b ) * ( 0.6 + 0.5 * swell ) );
         col = mix( vec3( 0.02, 0.015, 0.01 ), col, haze );
     }
     else
@@ -174,11 +174,11 @@ vec3 renderSky( vec3 dir )
         float petal = ( ang / 6.2831853 + 0.5 ) * 12.0;
         int   k = int( mod( floor( petal ), 12.0 ) );
         float speak = clamp( audioChroma[k] * 1.3, 0.0, 1.0 );
-        vec3  petalCol = hsv2rgb( vec3( float( k ) / 12.0, 0.65, 1.0 ) );
+        vec3  petal_col = hsv2rgb( vec3( float( k ) / 12.0, 0.65, 1.0 ) );
         float ring = ( 1.0 - smoothstep( 0.060, 0.067, wdist ) ) * smoothstep( 0.009, 0.015, wdist );
         float mull = smoothstep( 0.04, 0.09, abs( fract( petal ) - 0.5 ) );
         float spokes = smoothstep( 0.0025, 0.005, abs( wdist - 0.038 ) );
-        col += petalCol * ring * mull * spokes * ( 0.15 + 1.0 * speak );
+        col += petal_col * ring * mull * spokes * ( 0.15 + 1.0 * speak );
         col += vec3( 0.5, 0.4, 0.6 ) * exp( -wdist * 14.0 ) * 0.14;
     }
     return col;
@@ -202,8 +202,8 @@ void main()
     if ( base.a < 0.1 )
         discard;
     float roughness = 0.55, metallic = 0.1;
-    bool  hasMR = texMeshMaterialLayers >= 2;
-    if ( hasMR )
+    bool  has_mr = texMeshMaterialLayers >= 2;
+    if ( has_mr )
     {
         vec4 mr = texture( texMeshMaterial, vec3( vUV, 1.0 ) );
         roughness = mr.g;
@@ -212,29 +212,29 @@ void main()
 
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3  viewDir = normalize( -vPos );
+    vec3  view_dir = normalize( -vPos );
     float expose = materialExposure( texMeshMaterial );
     vec3  alb = base.rgb * expose;
 
     // Candlelight from below, moonlight from a high window (cool, so the
     // pipe metal reads as silver and not as more candle-orange wood), a
     // faint fill from the vault.
-    vec3 candleCol = vec3( 1.0, 0.72, 0.42 ) * ( 1.4 + 1.2 * swell );
-    vec3 cand = lightAt( vPos, n, kCandleA, candleCol, 40.0 ) + lightAt( vPos, n, kCandleB, candleCol, 40.0 );
-    vec3 moonDir = normalize( vec3( -0.35, 0.75, -0.55 ) );
-    vec3 moon = vec3( 0.40, 0.48, 0.70 ) * max( dot( n, moonDir ), 0.0 ) * 0.9;
+    vec3 candle_col = vec3( 1.0, 0.72, 0.42 ) * ( 1.4 + 1.2 * swell );
+    vec3 cand = lightAt( vPos, n, CandleA, candle_col, 40.0 ) + lightAt( vPos, n, CandleB, candle_col, 40.0 );
+    vec3 moon_dir = normalize( vec3( -0.35, 0.75, -0.55 ) );
+    vec3 moon = vec3( 0.40, 0.48, 0.70 ) * max( dot( n, moon_dir ), 0.0 ) * 0.9;
     vec3 col = alb * ( cand + moon + vec3( 0.10, 0.10, 0.14 ) * ( 0.5 + 0.5 * n.y ) + 0.05 );
 
     // The gilding and the pipe metal catch the candles and the moon.
-    vec3  hA = normalize( normalize( kCandleA - vPos ) + viewDir );
-    vec3  hB = normalize( normalize( kCandleB - vPos ) + viewDir );
-    vec3  hM = normalize( moonDir + viewDir );
+    vec3  h_a = normalize( normalize( CandleA - vPos ) + view_dir );
+    vec3  h_b = normalize( normalize( CandleB - vPos ) + view_dir );
+    vec3  h_m = normalize( moon_dir + view_dir );
     float shin = mix( 70.0, 6.0, roughness );
-    float spec = pow( max( dot( n, hA ), 0.0 ), shin ) + pow( max( dot( n, hB ), 0.0 ), shin );
-    float specM = pow( max( dot( n, hM ), 0.0 ), shin );
-    vec3  specColor = mix( vec3( 1.0, 0.9, 0.75 ), base.rgb, metallic );
-    col += specColor * spec * ( 0.3 + 0.7 * metallic ) * ( 0.5 + 0.5 * swell );
-    col += mix( vec3( 0.7, 0.8, 1.0 ), base.rgb, metallic ) * specM * ( 0.3 + 0.7 * metallic ) * 0.8;
+    float spec = pow( max( dot( n, h_a ), 0.0 ), shin ) + pow( max( dot( n, h_b ), 0.0 ), shin );
+    float spec_m = pow( max( dot( n, h_m ), 0.0 ), shin );
+    vec3  spec_color = mix( vec3( 1.0, 0.9, 0.75 ), base.rgb, metallic );
+    col += spec_color * spec * ( 0.3 + 0.7 * metallic ) * ( 0.5 + 0.5 * swell );
+    col += mix( vec3( 0.7, 0.8, 1.0 ), base.rgb, metallic ) * spec_m * ( 0.3 + 0.7 * metallic ) * 0.8;
 
     // Which texels are pipe metal: metallic and unsaturated (silver), or --
     // without a metallic map -- simply bright and unsaturated.
@@ -242,25 +242,25 @@ void main()
     float mn = min( base.r, min( base.g, base.b ) );
     float sat = ( mx - mn ) / max( mx, 1e-3 );
     float luma = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
-    float pipe = hasMR ? smoothstep( 0.30, 0.65, metallic ) * ( 1.0 - smoothstep( 0.20, 0.45, sat ) )
-                       : smoothstep( 0.30, 0.55, luma ) * ( 1.0 - smoothstep( 0.15, 0.35, sat ) );
+    float pipe = has_mr ? smoothstep( 0.30, 0.65, metallic ) * ( 1.0 - smoothstep( 0.20, 0.45, sat ) )
+                        : smoothstep( 0.30, 0.55, luma ) * ( 1.0 - smoothstep( 0.15, 0.35, sat ) );
 
     // The pipe's pitch class from its place across the front.
     int   idx = int( clamp( ( vLocal.x * 0.5 + 0.5 ) * 12.0, 0.0, 11.99 ) );
     float speak = clamp( audioChroma[idx] * 1.3, 0.0, 1.0 );
     float shim = 0.5 + 0.5 * sin( vLocal.y * 14.0 - time * 3.0 );
-    vec3  speakCol = hsv2rgb( vec3( float( idx ) / 12.0, 0.35, 1.0 ) );
-    col += speakCol * pipe * speak * ( 0.6 + 0.6 * shim * ( 0.5 + 0.5 * high ) );
+    vec3  speak_col = hsv2rgb( vec3( float( idx ) / 12.0, 0.35, 1.0 ) );
+    col += speak_col * pipe * speak * ( 0.6 + 0.6 * shim * ( 0.5 + 0.5 * high ) );
     // The pedal rank: the tallest pipes come up on the kick.
     col += vec3( 1.0, 0.85, 0.6 ) * pipe * smoothstep( 0.1, 0.8, vLocal.y ) * kick * 0.7;
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.7, 0.45 ) * fres * 0.10 * ( 0.5 + 0.5 * swell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

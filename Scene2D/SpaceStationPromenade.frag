@@ -110,7 +110,7 @@ float map( vec3 p, float ap )
 
     // Repetition along Z for ribs and windows
     float pz = mod( p.z, 4.0 ) - 2.0;
-    float zId = floor( p.z / 4.0 );
+    float z_id = floor( p.z / 4.0 );
 
     // Circular ribs.  The whole map is an INTERIOR field -- `tube` above is
     // `r - length(p.xy)`, the gap from a point inside the cylinder out to its
@@ -134,18 +134,18 @@ float map( vec3 p, float ap )
     float sector = floor( a / ( 3.14159 / 4.0 ) );
     float sa = a - sector * ( 3.14159 / 4.0 ) - ( 3.14159 / 8.0 );
 
-    vec2 polarP = length( p.xy ) * vec2( cos( sa ), sin( sa ) );
-    vec3 localP = vec3( polarP.x, polarP.y, pz );
+    vec2 polar_p = length( p.xy ) * vec2( cos( sa ), sin( sa ) );
+    vec3 local_p = vec3( polar_p.x, polar_p.y, pz );
 
     // Pillars/structures on the walls
-    float pillar = sdBox( localP - vec3( r, 0.0, 0.0 ), vec3( 0.5, 0.5, 1.0 ) );
+    float pillar = sdBox( local_p - vec3( r, 0.0, 0.0 ), vec3( 0.5, 0.5, 1.0 ) );
 
     // Cut out windows from the main tube (when not on a rib and in certain sectors)
-    float windowCut = sdBox( localP - vec3( r, 0.0, 0.0 ), vec3( 0.5, 1.5, 1.0 ) );
+    float window_cut = sdBox( local_p - vec3( r, 0.0, 0.0 ), vec3( 0.5, 1.5, 1.0 ) );
     if ( mod( sector, 2.0 ) == 0.0 )
     {
         // Cut window
-        tube = max( tube, -windowCut );
+        tube = max( tube, -window_cut );
         d = min( tube, rib );
         if ( d == tube )
             mat = 1.0;
@@ -159,10 +159,10 @@ float map( vec3 p, float ap )
     }
 
     // Floating neon signs/holograms in the center
-    float signBox = sdBox( vec3( p.x, p.y + 2.0, pz ), vec3( 0.1, 1.0, 0.8 ) );
-    if ( hash11( zId ) > 0.5 && signBox < d )
+    float sign_box = sdBox( vec3( p.x, p.y + 2.0, pz ), vec3( 0.1, 1.0, 0.8 ) );
+    if ( hash11( z_id ) > 0.5 && sign_box < d )
     {
-        d = signBox;
+        d = sign_box;
         mat = 4.0;
         glow = 2.0;
     }
@@ -204,9 +204,9 @@ void main()
     float drift = sceneTime * 2.0 + sceneAdvance * 5.0;
 
     // Camera rotating inside the station
-    float camRoll = time * 0.1;
-    vec3  ro = vec3( 2.0 * cos( camRoll ), 2.0 * sin( camRoll ), drift );
-    vec3  ta = ro + vec3( -0.5 * cos( camRoll ), -0.5 * sin( camRoll ), 1.0 );
+    float cam_roll = time * 0.1;
+    vec3  ro = vec3( 2.0 * cos( cam_roll ), 2.0 * sin( cam_roll ), drift );
+    vec3  ta = ro + vec3( -0.5 * cos( cam_roll ), -0.5 * sin( cam_roll ), 1.0 );
 
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
@@ -241,16 +241,16 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 signColor1 = imgPalette( 0.3 );
-    vec3 signColor2 = imgPalette( 0.8 + audioKick * 0.1 );
+    vec3 sign_color1 = imgPalette( 0.3 );
+    vec3 sign_color2 = imgPalette( 0.8 + audioKick * 0.1 );
 
     if ( m > 0.5 && d < 80.0 )
     {
         vec3 n = calcNormal( p, ap );
 
         // Interior light (from center)
-        vec3  lightDir = normalize( vec3( 0.0, 0.0, p.z ) - p );
-        float dif = max( dot( n, lightDir ), 0.0 );
+        vec3  light_dir = normalize( vec3( 0.0, 0.0, p.z ) - p );
+        float dif = max( dot( n, light_dir ), 0.0 );
 
         vec3 albedo = vec3( 0.2 );
         if ( m == 1.0 )
@@ -264,14 +264,14 @@ void main()
         if ( g == 1.0 )
         {
             float strip = step( 0.8, fract( p.z * 2.0 ) );
-            col += signColor1 * strip * gp * ( 1.0 + audioKick * 2.0 );
+            col += sign_color1 * strip * gp * ( 1.0 + audioKick * 2.0 );
         }
         else if ( m == 4.0 && g == 2.0 )
         {                                                                     // Hologram signs
             float flicker = step( 0.1, hash11( floor( time * 8.0 + p.z ) ) ); // was 20 Hz -- over the noise-strobe
                                                                               // budget
             float scanline = sin( p.y * 100.0 - time * 10.0 ) * 0.5 + 0.5;
-            vec3  sc = mix( signColor1, signColor2, hash11( floor( p.z ) ) );
+            vec3  sc = mix( sign_color1, sign_color2, hash11( floor( p.z ) ) );
             col = sc * flicker * scanline * gp * ( 2.0 + audioKick * 3.0 );
         }
 
@@ -280,7 +280,7 @@ void main()
     else
     {
         // Outside window (starfield)
-        vec3 bgCol = vec3( 0.0 );
+        vec3 bg_col = vec3( 0.0 );
         for ( int i = 0; i < 2; ++i )
         {
             float sc = 50.0 + 50.0 * float( i );
@@ -289,10 +289,10 @@ void main()
             vec3  f = fract( st ) - 0.5;
             if ( hash11( dot( cell, vec3( 12.3, 45.6, 78.9 ) ) ) > 0.98 )
             {
-                bgCol += mix( signColor1, vec3( 1.0 ), hash11( cell.x ) ) * exp( -length( f ) * length( f ) * 400.0 );
+                bg_col += mix( sign_color1, vec3( 1.0 ), hash11( cell.x ) ) * exp( -length( f ) * length( f ) * 400.0 );
             }
         }
-        col = bgCol * ( 0.8 + audioSwell * 0.6 );
+        col = bg_col * ( 0.8 + audioSwell * 0.6 );
     }
 
     // Atmospheric haze inside.  The corridor is marched out to d = 80, but the
@@ -311,7 +311,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

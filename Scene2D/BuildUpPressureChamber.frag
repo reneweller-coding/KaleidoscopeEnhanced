@@ -82,9 +82,9 @@ void main()
 
     // Light: cool and open when relaxed, red and close under pressure; the
     // drop floods the far end.
-    vec3 calmCol = imgPalette( hue * 0.159 + 0.55 );
-    vec3 tenseCol = imgPalette( hue * 0.159 + 0.02 ) * 1.3 + vec3( 0.3, 0.0, 0.0 );
-    vec3 lightCol = mix( calmCol, tenseCol, build );
+    vec3 calm_col = imgPalette( hue * 0.159 + 0.55 );
+    vec3 tense_col = imgPalette( hue * 0.159 + 0.02 ) * 1.3 + vec3( 0.3, 0.0, 0.0 );
+    vec3 light_col = mix( calm_col, tense_col, build );
 
     // Ribs every 2 units, lamps on them flashing with the kick.
     float rib = pow( 0.5 + 0.5 * cos( wz * 3.14159265 ), 14.0 );
@@ -93,34 +93,34 @@ void main()
     if ( wall < 0.5 )
     {
         vec2 uv = vec2( fract( wz * 0.1 ), hit.y / H * 0.5 + 0.5 );
-        col = img( uv ) * lightCol * 1.6 * ( 0.35 + 0.4 * audioLevel );
+        col = img( uv ) * light_col * 1.6 * ( 0.35 + 0.4 * audioLevel );
         // Pressure lines: the walls show stress fractures as the build rises.
         float stress = pow( 0.5 + 0.5 * sin( hit.y * 40.0 + wz * 2.0 ), 20.0 ) * build;
-        col += tenseCol * stress * 0.6;
+        col += tense_col * stress * 0.6;
     }
     else if ( wall < 1.5 )
     {
         vec2 uv = vec2( fract( hit.x / W * 0.5 + 0.5 ), fract( wz * 0.1 ) );
-        col = img( uv ) * lightCol * 0.9 * ( 0.3 + 0.3 * audioLevel );
-        col += lightCol * ( 0.15 + 0.8 * clamp( audioBass, 0.0, 1.0 ) ) * exp( -abs( hit.x ) / W * 2.5 ) * 0.5;
+        col = img( uv ) * light_col * 0.9 * ( 0.3 + 0.3 * audioLevel );
+        col += light_col * ( 0.15 + 0.8 * clamp( audioBass, 0.0, 1.0 ) ) * exp( -abs( hit.x ) / W * 2.5 ) * 0.5;
     }
     else
     {
-        col = lightCol * 0.25 * ( 0.4 + 0.5 * audioLevel );
+        col = light_col * 0.25 * ( 0.4 + 0.5 * audioLevel );
     }
-    col += lightCol * lamp * 0.9;
+    col += light_col * lamp * 0.9;
 
     // The far end: a bright opening that floods on the drop and glows with
     // the build (the pressure has somewhere to go).
     float far = exp( -hit.z * 0.12 );
     float ahead = exp( -dot( p, p ) * 6.0 );
-    col += mix( calmCol, vec3( 1.0, 0.95, 0.9 ), drop ) * ahead * ( 0.15 + 0.4 * build + 2.5 * drop );
+    col += mix( calm_col, vec3( 1.0, 0.95, 0.9 ), drop ) * ahead * ( 0.15 + 0.4 * build + 2.5 * drop );
     // Fog toward the far end, colour of the current light.
     float fog = 1.0 - exp( -hit.z * 0.16 );
-    col = mix( col, lightCol * ( 0.03 + 0.3 * drop ), clamp( fog, 0.0, 0.95 ) );
+    col = mix( col, light_col * ( 0.03 + 0.3 * drop ), clamp( fog, 0.0, 0.95 ) );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

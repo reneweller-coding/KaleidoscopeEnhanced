@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -333,13 +333,13 @@ void main()
     float seam = mix( s0, s1, f );
 
     // Seams glow like the joints of a kaleidoscope.
-    vec3 seamC = mix( vec3( 0.6, 0.8, 1.0 ), vec3( 1.0, 0.8, 0.5 ), clamp( audioMode, 0.0, 1.0 ) );
-    seamC = mix( seamC, imgPalette( 0.2 + hueP * 0.159 ) * 1.4, 0.35 );
+    vec3 seam_c = mix( vec3( 0.6, 0.8, 1.0 ), vec3( 1.0, 0.8, 0.5 ), clamp( audioMode, 0.0, 1.0 ) );
+    seam_c = mix( seam_c, imgPalette( 0.2 + hueP * 0.159 ) * 1.4, 0.35 );
     float glow = exp( -max( seam, 0.0 ) / ( px * 2.5 ) )
                  * ( 0.12 + 0.6 * clamp( audioHarmChange, 0.0, 1.0 ) + 0.15 * clamp( audioHigh, 0.0, 1.0 ) );
     // Colour: the photo's own hue, or a wandering hue field where it is grey.
     col *= mix( vec3( 1.0 ), glowColour( imgLod( win, 5.0 ), p * 1.5, hueP * 0.159 ) * 1.5, 0.4 );
-    col = col * 1.15 + seamC * glow;
+    col = col * 1.15 + seam_c * glow;
     // A gentle vignette of depth toward the edges keeps the eye inside.
     col *= 0.85 + 0.15 * smoothstep( 1.2, 0.2, length( p ) );
     finish( col );

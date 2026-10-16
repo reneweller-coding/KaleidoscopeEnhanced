@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -271,11 +271,11 @@ void main()
     film = max( mix( vec3( luma( film ) ), film, 1.5 ), 0.0 );                 // vivid like real soap
     film = mix( film, film.gbr, 0.5 - 0.5 * cos( hueP * 0.159 * 6.2831853 ) ); // hue knob rotates the palette
     // The film against the dark, lit unevenly.
-    float lightF = 0.35 + 0.45 * smoothstep( -0.2, 0.8, fbm3( p * 0.7 + 3.0 ) );
+    float light_f = 0.35 + 0.45 * smoothstep( -0.2, 0.8, fbm3( p * 0.7 + 3.0 ) );
     // Reflection of the photo, bent by the film's surface.
     vec2 uv = p * 0.6 + 0.5 + 0.03 * w2;
     vec3 refl = imgLod( uv, 2.0 );
-    vec3 col = film * lightF * ( 0.7 + 0.5 * luma( refl ) )
+    vec3 col = film * light_f * ( 0.7 + 0.5 * luma( refl ) )
                + refl * 0.08 * clamp( reflectP, 0.0, 1.0 ) * ( 0.3 + swell );
     // A soft window highlight gliding over the film.
     vec2  hc = vec2( 0.5 * sin( 0.03 * sceneTime ), 0.25 * cos( 0.021 * sceneTime ) );

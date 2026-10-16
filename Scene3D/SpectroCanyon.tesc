@@ -16,13 +16,13 @@ out vec4 tcSeed[];
 
 uniform float detailP; ///< Detail knob, 0..1.
 
-const vec2 EXTENT = vec2( 78.0, 260.0 );
+const vec2 Extent = vec2( 78.0, 260.0 );
 
 /// @brief Brightness level between two coordinates.
 float levelFor( vec2 uvA, vec2 uvB )
 {
     vec2  m = mix( uvA, uvB, 0.5 );
-    float d = m.y * EXTENT.y + 3.0;
+    float d = m.y * Extent.y + 3.0;
     return clamp( 210.0 * detailP / d, 1.0, 22.0 );
 }
 

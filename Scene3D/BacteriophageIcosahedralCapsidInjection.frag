@@ -61,9 +61,9 @@ void main()
         return;
     }
 
-    vec3  lightDir = normalize( vec3( 0.5, 0.6, 0.7 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
-    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
+    vec3  light_dir = normalize( vec3( 0.5, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
+    float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 24.0 )
                  * ( specularP > 0.01 ? specularP : 1.2 );
 
     vec3 col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.62 + 0.85 * diff );
@@ -76,8 +76,8 @@ void main()
     // is made of, so the swarm reads as depth instead of as dark cut-outs.
     // The old 0.10/0.19 haze at 70% mix was BRIGHTER than the phages:
     // the whole frame recorded as one teal flood with silhouette holes.
-    vec3 hazeCol = vec3( 0.02, 0.055, 0.065 ) * ( 0.85 + 0.35 * audioSwell );
-    col = mix( col, hazeCol, vFog * 0.55 );
+    vec3 haze_col = vec3( 0.02, 0.055, 0.065 ) * ( 0.85 + 0.35 * audioSwell );
+    col = mix( col, haze_col, vFog * 0.55 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

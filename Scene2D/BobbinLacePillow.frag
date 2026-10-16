@@ -95,10 +95,10 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float prog = clamp( sceneProgress, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.5;
-    float lampS = 0.8 + 0.4 * clamp( audioSwell, 0.0, 1.0 );
+    float lamp_s = 0.8 + 0.4 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
-    int   nB = 10 + int( clamp( pairsP, 0.0, 1.0 ) * 8.0 ); // bobbins
-    float mesh = 16.0 + 8.0 * clamp( pinsP, 0.0, 1.0 );     // ground cells per unit
+    int   n_b = 10 + int( clamp( pairsP, 0.0, 1.0 ) * 8.0 ); // bobbins
+    float mesh = 16.0 + 8.0 * clamp( pinsP, 0.0, 1.0 );      // ground cells per unit
 
     // The pillow: a dome of deep blue-green cotton with a fine weave.
     float r = length( p * vec2( 0.8, 1.0 ) );
@@ -107,17 +107,17 @@ void main()
     vec3 col = cloth;
 
     // The pricking card down the middle: buff parchment.
-    float cardW = 0.36;
-    float onCard = step( abs( p.x ), cardW );
+    float card_w = 0.36;
+    float on_card = step( abs( p.x ), card_w );
     vec3  card = vec3( 0.86, 0.76, 0.58 ) * ( 0.9 + 0.1 * noise2( p * 40.0 ) );
-    col = mix( col, card * ( 1.1 - 0.4 * r ), onCard );
+    col = mix( col, card * ( 1.1 - 0.4 * r ), on_card );
 
     // The working line moves down the card over the arc; above it the lace.
-    float lineY = 0.46 - prog * 0.72;
+    float line_y = 0.46 - prog * 0.72;
     vec2  m = vec2( p.x + p.y, p.x - p.y ) * mesh * 0.7071; // diagonal lattice
     vec2  mf = fract( m ) - 0.5;
     float lace = 0.0;
-    if ( p.y > lineY && onCard > 0.0 )
+    if ( p.y > line_y && on_card > 0.0 )
     {
         // Torchon ground: threads along both diagonals, twisted pairs.
         float d1 = abs( mf.x ), d2 = abs( mf.y );
@@ -128,10 +128,10 @@ void main()
         float sr = length( sq );
         float spider = smoothstep( 0.75, 0.6, sr ) * ( 0.6 + 0.4 * step( 0.5, fract( atan( sq.y, sq.x ) * 1.27 ) ) )
                        + smoothstep( 0.12, 0.0, abs( sr - 1.1 ) ) * 0.8;
-        float isSpider = step( 0.5, hash21( sc ) );
-        lace = clamp( mix( thr, max( thr * step( 1.4, sr ), spider ), isSpider ), 0.0, 1.0 );
+        float is_spider = step( 0.5, hash21( sc ) );
+        lace = clamp( mix( thr, max( thr * step( 1.4, sr ), spider ), is_spider ), 0.0, 1.0 );
         // Scalloped fan edges down both sides.
-        float ex = cardW - abs( p.x );
+        float ex = card_w - abs( p.x );
         float fan = smoothstep( 0.015, 0.0, abs( ex - 0.05 - 0.03 * abs( sin( p.y * mesh * 0.6 ) ) ) );
         lace = max( lace, fan );
         vec3 thread = vec3( 0.98, 0.97, 0.93 ) * ( 0.9 + 0.2 * hi * noise2( p * 300.0 ) );
@@ -142,24 +142,24 @@ void main()
     {
         vec2  node = m - floor( m + 0.5 );
         float hole = smoothstep( 0.08, 0.04, length( node ) );
-        float below = step( p.y, lineY ) * onCard;
+        float below = step( p.y, line_y ) * on_card;
         col = mix( col, vec3( 0.3, 0.24, 0.18 ), hole * below * 0.8 );
-        float pinZone = smoothstep( lineY + 0.12, lineY + 0.01, p.y ) * step( lineY, p.y ) * onCard;
+        float pin_zone = smoothstep( line_y + 0.12, line_y + 0.01, p.y ) * step( line_y, p.y ) * on_card;
         float head = smoothstep( 0.3, 0.18, length( node ) );
         vec3  brass = vec3( 0.95, 0.75, 0.35 ) * ( 0.7 + 0.5 * smoothstep( 0.1, -0.1, node.x + node.y ) );
-        col = mix( col, brass, head * pinZone * step( 0.35, hash21( floor( m + 0.5 ) ) ) );
+        col = mix( col, brass, head * pin_zone * step( 0.35, hash21( floor( m + 0.5 ) ) ) );
     }
 
     // Threads from the working line down to the bobbins, and the bobbins.
-    float fanY = -0.3;
+    float fan_y = -0.3;
     for ( int i = 0; i < 18; ++i )
     {
-        if ( i >= nB )
+        if ( i >= n_b )
             break;
         float fi = float( i );
-        float u = ( fi + 0.5 ) / float( nB ) - 0.5;
-        vec2  a = vec2( u * cardW * 1.6, lineY );
-        vec2  b = vec2( u * aspect * 0.85 + 0.012 * sin( T * 0.6 + fi * 1.3 ), fanY );
+        float u = ( fi + 0.5 ) / float( n_b ) - 0.5;
+        vec2  a = vec2( u * card_w * 1.6, line_y );
+        vec2  b = vec2( u * aspect * 0.85 + 0.012 * sin( T * 0.6 + fi * 1.3 ), fan_y );
         // Thread.
         vec2  pa = p - a, ba = b - a;
         float h = clamp( dot( pa, ba ) / dot( ba, ba ), 0.0, 1.0 );
@@ -185,17 +185,17 @@ void main()
             float ang = float( k ) / 5.0 * 6.2831853;
             vec2  bc = tail + bd * 0.012 + ( bd * sin( ang ) * 0.6 + bs * cos( ang ) ) * 0.012;
             float bead = smoothstep( 0.0055, 0.004, length( p - bc ) );
-            vec3  beadC = 0.5 + 0.5 * cos( 6.2831853 * ( hash11( fi * 3.0 + float( k ) ) + vec3( 0.0, 0.33, 0.67 ) ) );
-            col = mix( col, beadC * ( 0.8 + 0.4 * e ), bead );
+            vec3  bead_c = 0.5 + 0.5 * cos( 6.2831853 * ( hash11( fi * 3.0 + float( k ) ) + vec3( 0.0, 0.33, 0.67 ) ) );
+            col = mix( col, bead_c * ( 0.8 + 0.4 * e ), bead );
         }
     }
 
     // Lamp light: warm, from above.
-    col *= lampS * ( 1.1 - 0.35 * length( p - vec2( 0.0, 0.2 ) ) );
+    col *= lamp_s * ( 1.1 - 0.35 * length( p - vec2( 0.0, 0.2 ) ) );
     col *= mix( vec3( 1.0 ), vec3( 1.05, 0.98, 0.9 ), 0.6 );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

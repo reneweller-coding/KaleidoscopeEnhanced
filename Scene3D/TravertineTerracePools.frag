@@ -118,8 +118,8 @@ void main()
     if ( wet > 0.001 )
     {
         // The sky in the water: the photo, turquoise, brighter with the bass.
-        vec2 skyUV = clamp( vec2( vWorld.x * 0.006 + 0.5, 0.6 + vWorld.z * 0.0015 ), 0.0, 1.0 );
-        vec3 sky = img( skyUV ) * mix( vec3( 0.35, 0.85, 0.9 ), imgPalette( hue * 0.159 + 0.5 ), 0.3 );
+        vec2 sky_uv = clamp( vec2( vWorld.x * 0.006 + 0.5, 0.6 + vWorld.z * 0.0015 ), 0.0, 1.0 );
+        vec3 sky = img( sky_uv ) * mix( vec3( 0.35, 0.85, 0.9 ), imgPalette( hue * 0.159 + 0.5 ), 0.3 );
         sky *= 0.7 + 0.9 * bass;
         // Depth: the middle of a pool is deeper and bluer.
         vec3 water = mix( sky, mix( vec3( 0.05, 0.42, 0.5 ), imgPalette( hue * 0.159 + 0.45 ) * 0.5, 0.35 ),
@@ -133,8 +133,8 @@ void main()
     }
     // The rim: wet, glassy, and where the water pours it catches the sun.
     float lip = smoothstep( 0.35, 0.05, vPool );
-    float pourNoise = fbm( vec2( vWorld.x * 0.5, vTerrace * 6.0 - clock * 1.4 ) );
-    float pour = lip * smoothstep( 0.45, 0.8, pourNoise );
+    float pour_noise = fbm( vec2( vWorld.x * 0.5, vTerrace * 6.0 - clock * 1.4 ) );
+    float pour = lip * smoothstep( 0.45, 0.8, pour_noise );
     col = mix( col, col * vec3( 0.85, 0.95, 1.0 ) * 1.1, lip * 0.5 );
     col += vec3( 1.0, 0.99, 0.95 ) * pour * ( 0.3 + 0.5 * sun );
     // Glints on the wet lip, on the treble: round, jittered points.
@@ -150,11 +150,11 @@ void main()
     col += vec3( 1.0, 0.98, 0.95 ) * exp( -bd * 0.6 ) * audioKick * 1.2;
     // Distance haze over the hill.
     float fog = 1.0 - exp( -max( vDist - 25.0, 0.0 ) * 0.006 );
-    vec3  fogCol = mix( vec3( 0.82, 0.88, 0.95 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 ) * sun;
-    col = mix( col, fogCol, clamp( fog, 0.0, 0.85 ) );
+    vec3  fog_col = mix( vec3( 0.82, 0.88, 0.95 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 ) * sun;
+    col = mix( col, fog_col, clamp( fog, 0.0, 0.85 ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

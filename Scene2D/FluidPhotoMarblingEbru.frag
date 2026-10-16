@@ -104,53 +104,53 @@ void main()
     vec2 c2 = vec2( cos( t * 0.4 + 2.0 ) * 0.45, sin( t * 0.7 + 1.0 ) * 0.35 );
     vec2 c3 = vec2( sin( t * 0.5 + 4.0 ) * 0.35, cos( t * 0.6 + 3.0 ) * 0.4 );
 
-    float swirlStrength = ( 2.2 + 1.5 * audioBass ) * swl;
-    p = ebruVortex( p, c1, swirlStrength, 0.4 );
-    p = ebruVortex( p, c2, -swirlStrength * 0.8, 0.45 );
-    p = ebruVortex( p, c3, swirlStrength * 0.9, 0.35 );
+    float swirl_strength = ( 2.2 + 1.5 * audioBass ) * swl;
+    p = ebruVortex( p, c1, swirl_strength, 0.4 );
+    p = ebruVortex( p, c2, -swirl_strength * 0.8, 0.45 );
+    p = ebruVortex( p, c3, swirl_strength * 0.9, 0.35 );
 
     // Kick shockwave rings expanding through the marbled liquid
-    float kickDist = length( uv - c1 );
-    float kickRing = sin( kickDist * 16.0 - time * 8.0 ) * exp( -kickDist * 3.0 ) * audioKick * 0.15;
-    p += ( uv - c1 ) * kickRing;
+    float kick_dist = length( uv - c1 );
+    float kick_ring = sin( kick_dist * 16.0 - time * 8.0 ) * exp( -kick_dist * 3.0 ) * audioKick * 0.15;
+    p += ( uv - c1 ) * kick_ring;
 
     // Sample marbled photo texture
-    vec2 marbledUV = p * 0.8 + vec2( 0.5 );
-    vec3 photoMarbled = img( fract( marbledUV ) );
+    vec2 marbled_uv = p * 0.8 + vec2( 0.5 );
+    vec3 photo_marbled = img( fract( marbled_uv ) );
 
     // Specular liquid water surface sheen
     vec2  eps = vec2( 0.005, 0.0 );
-    vec3  pX = img( fract( ( p + eps.xy ) * 0.8 + vec2( 0.5 ) ) );
-    vec3  pY = img( fract( ( p + eps.yx ) * 0.8 + vec2( 0.5 ) ) );
-    float lumX = dot( pX, vec3( 0.333 ) );
-    float lumY = dot( pY, vec3( 0.333 ) );
-    float lum0 = dot( photoMarbled, vec3( 0.333 ) );
+    vec3  p_x = img( fract( ( p + eps.xy ) * 0.8 + vec2( 0.5 ) ) );
+    vec3  p_y = img( fract( ( p + eps.yx ) * 0.8 + vec2( 0.5 ) ) );
+    float lum_x = dot( p_x, vec3( 0.333 ) );
+    float lum_y = dot( p_y, vec3( 0.333 ) );
+    float lum0 = dot( photo_marbled, vec3( 0.333 ) );
 
-    vec3 normal = normalize( vec3( ( lum0 - lumX ) * 15.0, ( lum0 - lumY ) * 15.0, 1.0 ) );
-    vec3 lightDir = normalize( vec3( 0.4, 0.8, 1.0 ) );
-    vec3 viewDir = vec3( 0.0, 0.0, 1.0 );
-    vec3 halfVec = normalize( lightDir + viewDir );
+    vec3 normal = normalize( vec3( ( lum0 - lum_x ) * 15.0, ( lum0 - lum_y ) * 15.0, 1.0 ) );
+    vec3 light_dir = normalize( vec3( 0.4, 0.8, 1.0 ) );
+    vec3 view_dir = vec3( 0.0, 0.0, 1.0 );
+    vec3 half_vec = normalize( light_dir + view_dir );
 
-    float spec = pow( max( dot( normal, halfVec ), 0.0 ), 32.0 );
+    float spec = pow( max( dot( normal, half_vec ), 0.0 ), 32.0 );
 
     // Gold pigment veins floating in marbled swirls. The scalar was bounded
     // only by audioHigh's range while the TINTED vector was free, so on a
     // bright passage the veins alone added up to 2.1 per channel.
-    float veinMask = smoothstep( 0.7, 0.85, abs( sin( lum0 * 20.0 ) ) );
-    vec3  goldVein = min( vec3( 1.0, 0.82, 0.35 ) * ( 1.5 + 2.0 * audioHigh ) * veinMask * 0.6, vec3( 0.80 ) );
+    float vein_mask = smoothstep( 0.7, 0.85, abs( sin( lum0 * 20.0 ) ) );
+    vec3  gold_vein = min( vec3( 1.0, 0.82, 0.35 ) * ( 1.5 + 2.0 * audioHigh ) * vein_mask * 0.6, vec3( 0.80 ) );
 
     // Hold the oil film back to a fixed exposure. The bath is one flat sample
     // of the picture, so a light photo pinned the entire viewport near 1.0 and
     // both the veins and the water sheen were clipped away on top of it.
-    float expGain = clamp( 0.32 / max( 0.05, photoLevel() ), 0.32, 2.4 );
+    float exp_gain = clamp( 0.32 / max( 0.05, photoLevel() ), 0.32, 2.4 );
 
-    vec3 col = photoMarbled * expGain * ( 0.85 + 0.4 * audioLevel ) + goldVein;
+    vec3 col = photo_marbled * exp_gain * ( 0.85 + 0.4 * audioLevel ) + gold_vein;
     col += min( vec3( 1.0 ) * spec * ( 0.6 + 0.8 * audioMid ), vec3( 0.70 ) );
 
     col = hueRot( col, audioChromaHue + hue );
 
     col = pow( max( col, 0.0 ), vec3( 0.9 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.26 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.26 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

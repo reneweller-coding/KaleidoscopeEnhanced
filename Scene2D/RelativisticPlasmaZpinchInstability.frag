@@ -75,45 +75,45 @@ void main()
     float t = time * 0.45 + audioAdvance * 0.4;
 
     // Axial current along Y-axis with helical m=1 kink displacement
-    float kinkAmp = ( kinkAmpP > 0.01 ? kinkAmpP : 1.0 ) * ( 0.15 + 0.1 * sin( t * 0.6 ) );
-    float kinkX = sin( uv.y * 6.0 + t * 3.0 + audioPhase ) * kinkAmp;
+    float kink_amp = ( kinkAmpP > 0.01 ? kinkAmpP : 1.0 ) * ( 0.15 + 0.1 * sin( t * 0.6 ) );
+    float kink_x = sin( uv.y * 6.0 + t * 3.0 + audioPhase ) * kink_amp;
 
-    float dx = uv.x - kinkX;
+    float dx = uv.x - kink_x;
 
     // m=0 sausage mode (necking along axis where radius squeezes to near zero)
-    float sausageFreq = ( sausageP > 0.01 ? sausageP : 8.0 );
-    float sausageNecks = sin( uv.y * sausageFreq - t * 2.0 ) * 0.5 + 0.5;
+    float sausage_freq = ( sausageP > 0.01 ? sausageP : 8.0 );
+    float sausage_necks = sin( uv.y * sausage_freq - t * 2.0 ) * 0.5 + 0.5;
 
     // Plasma pinch core radius
-    float baseR = ( pinchRadiusP > 0.01 ? pinchRadiusP : 0.18 ) * ( 1.0 - 0.3 * audioBass );
-    float pinchR = baseR * ( 0.35 + 0.65 * sausageNecks );
+    float base_r = ( pinchRadiusP > 0.01 ? pinchRadiusP : 0.18 ) * ( 1.0 - 0.3 * audioBass );
+    float pinch_r = base_r * ( 0.35 + 0.65 * sausage_necks );
 
     float r = abs( dx );
-    float inCore = smoothstep( pinchR + 0.05, pinchR - 0.02, r );
+    float in_core = smoothstep( pinch_r + 0.05, pinch_r - 0.02, r );
 
     // Thermonuclear fusion hotspots at necking pinch points
-    float hotSpot = ( 1.0 - sausageNecks ) * exp( -r * 25.0 ) * ( 1.0 + 4.0 * audioKick )
-                    * ( xrayGlowP > 0.01 ? xrayGlowP : 1.5 );
+    float hot_spot = ( 1.0 - sausage_necks ) * exp( -r * 25.0 ) * ( 1.0 + 4.0 * audioKick )
+                     * ( xrayGlowP > 0.01 ? xrayGlowP : 1.5 );
 
     // Azimuthal B-field streamlines and helical return current cage
-    float bField = sin( uv.y * 18.0 + dx * 25.0 - t * 4.0 ) * exp( -r * 3.0 );
+    float b_field = sin( uv.y * 18.0 + dx * 25.0 - t * 4.0 ) * exp( -r * 3.0 );
 
     // Bremsstrahlung radiation colors: High-energy plasma X-ray violet-white core tinted by photo
-    vec3 plasmaCore = vec3( 1.0, 0.95, 0.85 );
-    vec3 xRayViolet = vec3( 0.55, 0.25, 0.95 );
-    vec3 hotPink = vec3( 1.0, 0.15, 0.45 );
+    vec3 plasma_core = vec3( 1.0, 0.95, 0.85 );
+    vec3 x_ray_violet = vec3( 0.55, 0.25, 0.95 );
+    vec3 hot_pink = vec3( 1.0, 0.15, 0.45 );
 
-    vec3 coreColor = palTint( mix( xRayViolet, hotPink, sausageNecks ), uv.y * 0.2 + audioCentroid, 0.25 );
+    vec3 core_color = palTint( mix( x_ray_violet, hot_pink, sausage_necks ), uv.y * 0.2 + audioCentroid, 0.25 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += coreColor * inCore * ( 0.8 + 0.5 * audioSwell );
-    col += vec3( 0.9, 0.95, 1.0 ) * hotSpot * 2.8;
-    col += palTint( vec3( 0.1, 0.7, 1.0 ), uv.y * 0.3, 0.22 ) * abs( bField ) * 1.4;
-    col += coreColor * ( audioKick * 0.35 );
+    col += core_color * in_core * ( 0.8 + 0.5 * audioSwell );
+    col += vec3( 0.9, 0.95, 1.0 ) * hot_spot * 2.8;
+    col += palTint( vec3( 0.1, 0.7, 1.0 ), uv.y * 0.3, 0.22 ) * abs( b_field ) * 1.4;
+    col += core_color * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

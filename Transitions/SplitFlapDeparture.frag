@@ -51,7 +51,7 @@ uniform float colsP;
 uniform float flapsP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -70,7 +70,7 @@ void main()
     vec2  uv = gl_FragCoord.xy / resolution;
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     float rows = max( 3.0, floor( cols / aspect ) );
     vec2  grid = vec2( cols, rows );
@@ -93,37 +93,37 @@ void main()
     // Which picture a given leaf carries: the last one is the destination, the
     // ones before it are intermediate leaves off the drum.
     // (Sampled with an offset so an intermediate leaf is a different tile.)
-    vec2 cellUv = ( gi + gf ) / grid;
+    vec2 cell_uv = ( gi + gf ) / grid;
 
     // The leaf currently falling covers the top half, squashed by its own angle.
-    float squash = abs( cos( ph * PI ) );
+    float squash = abs( cos( ph * Pi ) );
     float top = step( 0.5, gf.y );
 
     // Contents: before it settles, an intermediate tile; after, the destination.
     float which = min( leaf, flaps );
     vec2  jump = vec2( hash21( gi + which * 7.7 ), hash21( gi + which * 13.1 ) ) - 0.5;
-    vec2  offUv = clamp( cellUv + jump * 0.55 * ( 1.0 - settled ), 0.0, 1.0 );
+    vec2  off_uv = clamp( cell_uv + jump * 0.55 * ( 1.0 - settled ), 0.0, 1.0 );
 
-    vec3 arriving = textureLod( tex1, offUv, 0.0 ).rgb;
-    vec3 leaving = textureLod( tex0, cellUv, 0.0 ).rgb;
+    vec3 arriving = textureLod( tex1, off_uv, 0.0 ).rgb;
+    vec3 leaving = textureLod( tex0, cell_uv, 0.0 ).rgb;
     // Once it has passed its first leaf the cell is showing board stock, not
     // the outgoing scene any more.
-    vec3 wasHere = mix( leaving, textureLod( tex1, offUv, 0.0 ).rgb,
-                        clamp( leaf / max( flaps, 1.0 ), 0.0, 1.0 ) );
-    vec3 destination = textureLod( tex1, cellUv, 0.0 ).rgb;
-    vec3 face = mix( wasHere, destination, settled );
+    vec3 was_here = mix( leaving, textureLod( tex1, off_uv, 0.0 ).rgb,
+                         clamp( leaf / max( flaps, 1.0 ), 0.0, 1.0 ) );
+    vec3 destination = textureLod( tex1, cell_uv, 0.0 ).rgb;
+    vec3 face = mix( was_here, destination, settled );
 
     // The falling leaf: in the top half of the cell it is seen edge-on, so it
     // is compressed toward the hinge and darker.
     float fall = ( 1.0 - settled ) * top;
-    vec2  squashedUv = clamp( vec2( cellUv.x,
-                                    ( gi.y + 0.5 + ( gf.y - 0.5 ) * max( squash, 0.06 ) ) / rows ),
-                              0.0, 1.0 );
-    vec3  leafFace = mix( textureLod( tex1, clamp( squashedUv + jump * 0.55 * ( 1.0 - settled ), 0.0, 1.0 ), 0.0 ).rgb,
-                          textureLod( tex0, squashedUv, 0.0 ).rgb, 1.0 - clamp( leaf / max( flaps, 1.0 ), 0.0, 1.0 ) );
-    leafFace *= 0.55 + 0.45 * squash; // edge-on catches less light
+    vec2  squashed_uv = clamp( vec2( cell_uv.x,
+                                     ( gi.y + 0.5 + ( gf.y - 0.5 ) * max( squash, 0.06 ) ) / rows ),
+                               0.0, 1.0 );
+    vec3 leaf_face = mix( textureLod( tex1, clamp( squashed_uv + jump * 0.55 * ( 1.0 - settled ), 0.0, 1.0 ), 0.0 ).rgb,
+                          textureLod( tex0, squashed_uv, 0.0 ).rgb, 1.0 - clamp( leaf / max( flaps, 1.0 ), 0.0, 1.0 ) );
+    leaf_face *= 0.55 + 0.45 * squash; // edge-on catches less light
 
-    vec3 col = mix( face, leafFace, fall * 0.9 );
+    vec3 col = mix( face, leaf_face, fall * 0.9 );
 
     // The hinge across the middle of every cell, and the gap between cells.
     float hinge = smoothstep( 0.030, 0.0, abs( gf.y - 0.5 ) );

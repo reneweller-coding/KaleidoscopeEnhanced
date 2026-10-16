@@ -85,7 +85,7 @@ void main()
     vec3 supercontinuum = imgPalette( ( vWorldPos.z * 2.0 + audioPhase ) * 0.159 );
 
     // Silica glass cladding palette
-    vec3 silicaCyan = vec3( 0.2, 0.85, 1.0 );
+    vec3 silica_cyan = vec3( 0.2, 0.85, 1.0 );
 
     if ( vKind > 0.5 )
     {
@@ -95,7 +95,7 @@ void main()
         // rod's edge.  This is the surface that keeps the frame from being
         // black between the capillaries.
         float rr = length( vWorldPos.xy ) / 15.0;
-        vec3  back = mix( silicaCyan * 0.135, vec3( 0.010, 0.016, 0.032 ),
+        vec3  back = mix( silica_cyan * 0.135, vec3( 0.010, 0.016, 0.032 ),
                           smoothstep( 0.0, 0.85, rr ) );
         back += supercontinuum * exp( -rr * 3.0 ) * ( 0.10 + 0.30 * audioKick );
         back *= 0.75 + 0.5 * audioSwell;
@@ -106,15 +106,15 @@ void main()
         return;
     }
 
-    vec3 col = mix( photo, silicaCyan, 0.4 );
+    vec3 col = mix( photo, silica_cyan, 0.4 );
     // LIGHT PULSES race down the fiber core on the kick — the point of a
     // photonic crystal fiber is guided light, so SHOW the light.
     float pz = fract( vWorldPos.z * 0.06 - time * 0.9 - audioAdvance * 0.4 );
     float pulse = exp( -pz * 7.0 ) * ( 0.5 + 1.1 * audioKick );
     // Falloffs re-scaled with the lattice: at the old rates the whole
     // cladding sat past exp(-3r) and the guided glow never reached it.
-    float coreDist = length( vWorldPos.xy );
-    col += supercontinuum * pulse * exp( -coreDist * 0.16 ) * 2.2;
+    float core_dist = length( vWorldPos.xy );
+    col += supercontinuum * pulse * exp( -core_dist * 0.16 ) * 2.2;
     col += exp( -vCoreDist * 0.9 ) * supercontinuum * ( 1.5 + audioKick * 3.0 );
 
     // Distance fog

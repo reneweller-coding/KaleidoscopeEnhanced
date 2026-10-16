@@ -75,18 +75,18 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Ultra-high temperature plasma thermal radiation spectrum
-    vec3 coreColor = imgPalette( 0.30 * vStrand ) * 1.4;
-    coreColor = mix( coreColor, vec3( 1.0, 0.95, 0.7 ), pow( vHeat, 2.0 ) * ht );
+    vec3 core_color = imgPalette( 0.30 * vStrand ) * 1.4;
+    core_color = mix( core_color, vec3( 1.0, 0.95, 0.7 ), pow( vHeat, 2.0 ) * ht );
 
     float intensity = ( 0.8 + 0.6 * vHeat ) * ( 1.0 + audioKick * 2.5 ) * glw;
-    vec3  col = coreColor * intensity;
+    vec3  col = core_color * intensity;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.55;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.55;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

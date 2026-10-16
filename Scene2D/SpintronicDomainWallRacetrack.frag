@@ -68,48 +68,48 @@ void main()
 
     // Parallel nanowire racetrack tracks
     float pitch = ( trackPitchP > 0.01 ? trackPitchP : 4.0 );
-    float trackId = floor( uv.y * pitch );
-    float localY = fract( uv.y * pitch ) - 0.5;
+    float track_id = floor( uv.y * pitch );
+    float local_y = fract( uv.y * pitch ) - 0.5;
 
     // Spin-transfer torque drift along track (alternating direction per track)
-    float dir = mod( trackId, 2.0 ) == 0.0 ? 1.0 : -1.0;
-    float vDrift = ( torqueP > 0.01 ? torqueP : 1.2 ) * dir;
-    float trackX = uv.x + t * vDrift * 0.35 + trackId * 0.25;
+    float dir = mod( track_id, 2.0 ) == 0.0 ? 1.0 : -1.0;
+    float v_drift = ( torqueP > 0.01 ? torqueP : 1.2 ) * dir;
+    float track_x = uv.x + t * v_drift * 0.35 + track_id * 0.25;
 
     // Chiral domain wall magnetization pattern M_z(x) = tanh((x - x_0) / Delta)
-    float wallWidth = ( wallWidthP > 0.01 ? wallWidthP : 1.0 );
-    float domainPhase = trackX * 3.5;
-    float mz = sin( domainPhase );
+    float wall_width = ( wallWidthP > 0.01 ? wallWidthP : 1.0 );
+    float domain_phase = track_x * 3.5;
+    float mz = sin( domain_phase );
 
     // Domain wall location (where mz crosses 0)
-    float wallDist = abs( fract( domainPhase / 3.14159265 + 0.5 ) - 0.5 ) * 3.14159265;
-    float wallGlow = exp( -wallDist * 8.0 / max( wallWidth, 0.1 ) ) * ( 1.0 + 3.0 * audioKick );
+    float wall_dist = abs( fract( domain_phase / 3.14159265 + 0.5 ) - 0.5 ) * 3.14159265;
+    float wall_glow = exp( -wall_dist * 8.0 / max( wall_width, 0.1 ) ) * ( 1.0 + 3.0 * audioKick );
 
     // Magnon spin-wave ripples emitted from moving domain walls
-    float magnonFreq = ( magnonP > 0.01 ? magnonP : 16.0 );
-    float spinWaves = sin( trackX * magnonFreq - t * 4.0 + audioPhase ) * 0.5 + 0.5;
-    spinWaves *= ( 0.6 + 0.8 * audioHigh );
+    float magnon_freq = ( magnonP > 0.01 ? magnonP : 16.0 );
+    float spin_waves = sin( track_x * magnon_freq - t * 4.0 + audioPhase ) * 0.5 + 0.5;
+    spin_waves *= ( 0.6 + 0.8 * audioHigh );
 
     // Nanowire track boundary mask
-    float inTrack = smoothstep( 0.46, 0.38, abs( localY ) );
-    float trackEdge = exp( -abs( abs( localY ) - 0.42 ) * 25.0 );
+    float in_track = smoothstep( 0.46, 0.38, abs( local_y ) );
+    float track_edge = exp( -abs( abs( local_y ) - 0.42 ) * 25.0 );
 
     // Palette assignment from photo arc
-    float palAngle = fract( domainPhase * 0.159 + trackId * 0.08 + audioCentroid );
-    vec3  colDomain = imgPalette( palAngle );
-    vec3  colWall = imgPalette( fract( palAngle + 0.5 ) ) * 2.2;
-    vec3  colWave = imgPalette( fract( trackX * 0.2 + 0.33 ) );
+    float pal_angle = fract( domain_phase * 0.159 + track_id * 0.08 + audioCentroid );
+    vec3  col_domain = imgPalette( pal_angle );
+    vec3  col_wall = imgPalette( fract( pal_angle + 0.5 ) ) * 2.2;
+    vec3  col_wave = imgPalette( fract( track_x * 0.2 + 0.33 ) );
 
     // Sample background photo
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colDomain * inTrack * ( 0.65 + 0.35 * mz ) * ( 0.8 + 0.4 * audioSwell );
-    col += colWall * inTrack * wallGlow;
-    col += colWave * inTrack * spinWaves * 0.8;
-    col += vec3( 0.9, 0.95, 1.0 ) * trackEdge * 1.5;
-    col += colWall * ( audioKick * 0.35 );
+    col += col_domain * in_track * ( 0.65 + 0.35 * mz ) * ( 0.8 + 0.4 * audioSwell );
+    col += col_wall * in_track * wall_glow;
+    col += col_wave * in_track * spin_waves * 0.8;
+    col += vec3( 0.9, 0.95, 1.0 ) * track_edge * 1.5;
+    col += col_wall * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

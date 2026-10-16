@@ -73,8 +73,8 @@ void main()
     float R1 = 0.25 * ( cloakRadiusP > 0.01 ? cloakRadiusP : 1.0 ) * ( 1.0 + 0.3 * audioSwell ); // Inner hidden core
     float R2 = 0.65 * ( transScaleP > 0.01 ? transScaleP : 1.0 );                                // Outer cloaking shell
 
-    vec2  transformedUv = uv;
-    float inCloakShell = 0.0;
+    vec2  transformed_uv = uv;
+    float in_cloak_shell = 0.0;
 
     if ( r < R2 )
     {
@@ -82,43 +82,43 @@ void main()
         {
             // Transformation map: r' = R1 + r * (R2 - R1) / R2
             float r_prime = R1 + ( r - R1 ) * ( R2 / ( R2 - R1 ) );
-            transformedUv = vec2( cos( theta ), sin( theta ) ) * r_prime;
-            inCloakShell = 1.0;
+            transformed_uv = vec2( cos( theta ), sin( theta ) ) * r_prime;
+            in_cloak_shell = 1.0;
         }
         else
         {
             // Inside the hidden core (isolated region)
-            transformedUv = uv * ( R2 / max( R1, 0.01 ) );
+            transformed_uv = uv * ( R2 / max( R1, 0.01 ) );
         }
     }
 
     // Wavefront propagation across transformed space
-    float waveFreq = ( waveDensityP > 0.01 ? waveDensityP : 12.0 );
-    float wavefronts = sin( transformedUv.x * waveFreq - t * 4.0 ) * 0.5 + 0.5;
+    float wave_freq = ( waveDensityP > 0.01 ? waveDensityP : 12.0 );
+    float wavefronts = sin( transformed_uv.x * wave_freq - t * 4.0 ) * 0.5 + 0.5;
 
     // Compressed boundary caustics (high gradient of transformation at R1 and R2)
-    float causticR1 = exp( -abs( r - R1 ) * 35.0 ) * ( causticP > 0.01 ? causticP : 1.5 ) * ( 1.0 + 3.0 * audioKick );
-    float causticR2 = exp( -abs( r - R2 ) * 25.0 ) * ( 0.8 + 0.8 * audioMid );
+    float caustic_r1 = exp( -abs( r - R1 ) * 35.0 ) * ( causticP > 0.01 ? causticP : 1.5 ) * ( 1.0 + 3.0 * audioKick );
+    float caustic_r2 = exp( -abs( r - R2 ) * 25.0 ) * ( 0.8 + 0.8 * audioMid );
 
     // Core concealment shadow & inner resonator modes
-    float inCore = smoothstep( R1 + 0.02, R1 - 0.02, r );
-    float coreMode = sin( theta * 8.0 + t * 2.0 ) * inCore * ( 0.4 + 1.2 * audioSubBass );
+    float in_core = smoothstep( R1 + 0.02, R1 - 0.02, r );
+    float core_mode = sin( theta * 8.0 + t * 2.0 ) * in_core * ( 0.4 + 1.2 * audioSubBass );
 
     // Palette assignments
-    vec3 colWave = imgPalette( fract( transformedUv.x * 0.2 + t * 0.05 + audioCentroid ) );
-    vec3 colR1 = imgPalette( t * 0.1 ) * 2.2;
-    vec3 colR2 = imgPalette( fract( theta * 0.159 + 0.5 ) ) * 1.5;
-    vec3 colCore = imgPalette( fract( r * 2.0 + audioPhase ) );
+    vec3 col_wave = imgPalette( fract( transformed_uv.x * 0.2 + t * 0.05 + audioCentroid ) );
+    vec3 col_r1 = imgPalette( t * 0.1 ) * 2.2;
+    vec3 col_r2 = imgPalette( fract( theta * 0.159 + 0.5 ) ) * 1.5;
+    vec3 col_core = imgPalette( fract( r * 2.0 + audioPhase ) );
 
     // Sample background photo with transformation lensing
-    vec2 bgUv = fract( transformedUv * 0.5 + 0.5 );
-    vec3 bg = img( bgUv );
+    vec2 bg_uv = fract( transformed_uv * 0.5 + 0.5 );
+    vec3 bg = img( bg_uv );
 
     vec3 col = bg * 0.55;
-    col += colWave * wavefronts * ( 0.6 + 0.4 * inCloakShell );
-    col += colR1 * causticR1;
-    col += colR2 * causticR2;
-    col += colCore * coreMode * 1.5;
+    col += col_wave * wavefronts * ( 0.6 + 0.4 * in_cloak_shell );
+    col += col_r1 * caustic_r1;
+    col += col_r2 * caustic_r2;
+    col += col_core * core_mode * 1.5;
     col += imgPalette( audioAdvance * 0.1 ) * ( audioKick * 0.3 );
 
     // Soft knee compression

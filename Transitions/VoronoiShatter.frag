@@ -68,9 +68,9 @@ vec3 voronoi( vec2 p )
 {
     vec2  g = floor( p );
     vec2  f = fract( p );
-    float minDist = 1.0;
-    vec2  minOffset = vec2( 0.0 );
-    vec2  minLattice = vec2( 0.0 );
+    float min_dist = 1.0;
+    vec2  min_offset = vec2( 0.0 );
+    vec2  min_lattice = vec2( 0.0 );
 
     for ( int y = -1; y <= 1; ++y )
     {
@@ -80,15 +80,15 @@ vec3 voronoi( vec2 p )
             vec2  offset = vec2( hash21( g + lattice ), hash21( g + lattice + 33.7 ) );
             vec2  d = lattice + offset - f;
             float dist = length( d );
-            if ( dist < minDist )
+            if ( dist < min_dist )
             {
-                minDist = dist;
-                minOffset = offset;
-                minLattice = lattice;
+                min_dist = dist;
+                min_offset = offset;
+                min_lattice = lattice;
             }
         }
     }
-    return vec3( minDist, minOffset );
+    return vec3( min_dist, min_offset );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -104,42 +104,42 @@ void main()
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
 
-    // Transition progress: tProg in [0, 1]
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float ease = smoothstep( 0.0, 1.0, tProg );
+    // Transition progress: t_prog in [0, 1]
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float ease = smoothstep( 0.0, 1.0, t_prog );
 
     // Voronoi cell evaluation
-    vec2  cellCoord = p * 12.0 * cll;
-    vec3  v = voronoi( cellCoord );
-    float cellDist = v.x;
-    float cellSeed = v.y;
+    vec2  cell_coord = p * 12.0 * cll;
+    vec3  v = voronoi( cell_coord );
+    float cell_dist = v.x;
+    float cell_seed = v.y;
 
     // Per-cell staggered transition timing
-    float cellDelay = fract( cellSeed * 7.13 );
-    float cellProg = clamp( ( tProg - cellDelay * 0.3 ) / 0.7, 0.0, 1.0 );
-    cellProg = smoothstep( 0.0, 1.0, cellProg );
+    float cell_delay = fract( cell_seed * 7.13 );
+    float cell_prog = clamp( ( t_prog - cell_delay * 0.3 ) / 0.7, 0.0, 1.0 );
+    cell_prog = smoothstep( 0.0, 1.0, cell_prog );
 
     // Dynamic rotation & displacement during mid-transition
-    float midTransition = sin( cellProg * 3.14159265 );
-    float cellAngle = ( cellSeed - 0.5 ) * 1.5 * midTransition * lft * ( 1.0 + 0.5 * audioSwell );
-    vec2  dispUV = ( rot2D( cellAngle ) * ( uv - 0.5 ) ) + 0.5;
+    float mid_transition = sin( cell_prog * 3.14159265 );
+    float cell_angle = ( cell_seed - 0.5 ) * 1.5 * mid_transition * lft * ( 1.0 + 0.5 * audioSwell );
+    vec2  disp_uv = ( rot2D( cell_angle ) * ( uv - 0.5 ) ) + 0.5;
 
     // Sample incoming and outgoing textures
-    vec4 c1 = texture( tex1, fract( dispUV ) );
-    vec4 c0 = texture( tex0, fract( dispUV ) );
+    vec4 c1 = texture( tex1, fract( disp_uv ) );
+    vec4 c0 = texture( tex0, fract( disp_uv ) );
 
     // Smooth blend
-    vec4 col = mix( c1, c0, cellProg );
+    vec4 col = mix( c1, c0, cell_prog );
 
     // Glowing cell borders
-    float border = exp( -cellDist * 20.0 ) * midTransition;
-    vec3  borderGlow = vec3( 0.3, 0.85, 1.0 ) * border * ( 1.5 + audioKick * 1.0 );
-    col.rgb += borderGlow;
+    float border = exp( -cell_dist * 20.0 ) * mid_transition;
+    vec3  border_glow = vec3( 0.3, 0.85, 1.0 ) * border * ( 1.5 + audioKick * 1.0 );
+    col.rgb += border_glow;
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

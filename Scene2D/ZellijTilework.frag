@@ -96,29 +96,29 @@ void main()
     vec2  corner = abs( f ) - 0.5;
     float small = step( max( abs( corner.x ), abs( corner.y ) ) - 0.1, 0.0 );
     float small2 = step( length( f ) - 0.62, 0.0 ) * 0.0;
-    float cornerSq = step( 0.4, abs( f.x ) ) * step( 0.4, abs( f.y ) );
+    float corner_sq = step( 0.4, abs( f.x ) ) * step( 0.4, abs( f.y ) );
     // Tile classes: star = class A, corner squares = class B, kites = class
     // by direction (four kinds).  Each tile carries a piece of the photo.
-    float tileKind;
+    float tile_kind;
     if ( star > 0.5 )
-        tileKind = 0.0;
-    else if ( cornerSq > 0.5 )
-        tileKind = 1.0;
+        tile_kind = 0.0;
+    else if ( corner_sq > 0.5 )
+        tile_kind = 1.0;
     else
-        tileKind = 2.0 + floor( mod( atan( f.y, f.x ) / 1.5708 + 4.0, 4.0 ) );
-    int   cls = int( mod( tileKind * 2.0 + cell.x + cell.y * 3.0, 12.0 ) );
+        tile_kind = 2.0 + floor( mod( atan( f.y, f.x ) / 1.5708 + 4.0, 4.0 ) );
+    int   cls = int( mod( tile_kind * 2.0 + cell.x + cell.y * 3.0, 12.0 ) );
     float e = clamp( audioChroma[cls] * 1.5, 0.0, 1.0 );
     // Glaze colours: the traditional set, tinted by the palette.
     vec3 glaze;
-    if ( tileKind < 0.5 )
+    if ( tile_kind < 0.5 )
         glaze = vec3( 0.1, 0.3, 0.55 );
-    else if ( tileKind < 1.5 )
+    else if ( tile_kind < 1.5 )
         glaze = vec3( 0.85, 0.75, 0.55 );
-    else if ( tileKind < 2.5 )
+    else if ( tile_kind < 2.5 )
         glaze = vec3( 0.15, 0.45, 0.35 );
-    else if ( tileKind < 3.5 )
+    else if ( tile_kind < 3.5 )
         glaze = vec3( 0.65, 0.2, 0.15 );
-    else if ( tileKind < 4.5 )
+    else if ( tile_kind < 4.5 )
         glaze = vec3( 0.9, 0.85, 0.6 );
     else
         glaze = vec3( 0.2, 0.2, 0.25 );
@@ -130,7 +130,7 @@ void main()
     float edge = smoothstep( 0.03, 0.01, abs( ds ) );
     edge = max( edge, smoothstep( 0.03, 0.01, abs( max( abs( corner.x ), abs( corner.y ) ) - 0.1 ) ) * ( 1.0 - star ) );
     float diag = min( smoothstep( 0.02, 0.005, abs( abs( f.x ) - abs( f.y ) ) ), 1.0 ) * ( 1.0 - star )
-                 * ( 1.0 - cornerSq );
+                 * ( 1.0 - corner_sq );
     edge = max( edge, diag );
     vec3 grout = vec3( 0.55, 0.5, 0.42 ) * ( 0.7 - 0.3 * clamp( audioChroma[0] * 0.0, 0.0, 1.0 ) ) * light;
     vec3 col = mix( tile, grout, edge * 0.9 );
@@ -141,7 +141,7 @@ void main()
     col *= 0.8 + 0.3 * smoothstep( -0.5, 0.5, p.y );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

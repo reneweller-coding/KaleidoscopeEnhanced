@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -249,7 +249,7 @@ void main()
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  lc = mix( vec3( 0.75, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.75 ), mode );
     float open = 0.8 + 0.6 * clamp( audioSpread, 0.0, 1.0 );
-    float fwA = length( fwidth( vec2( cos( a ), sin( a ) ) ) ); // derivatives before any branch
+    float fw_a = length( fwidth( vec2( cos( a ), sin( a ) ) ) ); // derivatives before any branch
     for ( int k = 0; k < 2; ++k )
     {
         float w = wi - float( k );            // outer first (it lies on top)
@@ -261,9 +261,9 @@ void main()
         float pf = fract( pa ) - 0.5; // -0.5..0.5 across the petal
         // Petal outline: width as a function of t (round tip, narrow base).
         float sh = 0.4 + 0.6 * clamp( shapeP, 0.0, 1.0 );
-        float halfW = 0.5 * pow( sin( 3.14159265 * clamp( t, 0.0, 1.0 ) ), sh ) * ( 0.8 + 0.2 * t );
-        float px = fwA * n / 6.2831853 + 1e-4;
-        float inside = smoothstep( halfW + px, halfW - px, abs( pf ) );
+        float half_w = 0.5 * pow( sin( 3.14159265 * clamp( t, 0.0, 1.0 ) ), sh ) * ( 0.8 + 0.2 * t );
+        float px = fw_a * n / 6.2831853 + 1e-4;
+        float inside = smoothstep( half_w + px, half_w - px, abs( pf ) );
         if ( inside <= 0.0 )
             continue;
         // Photo on the petal, one piece per petal.
@@ -278,7 +278,7 @@ void main()
         c *= 1.0 - 0.3 * vein;
         c += lc * vein * 0.1;
         // Translucent glow near the edge.
-        c += glowColour( ph, vec2( w, pid ), hueP * 0.159 ) * smoothstep( halfW * 0.5, halfW, abs( pf ) )
+        c += glowColour( ph, vec2( w, pid ), hueP * 0.159 ) * smoothstep( half_w * 0.5, half_w, abs( pf ) )
              * ( 0.1 + 0.4 * swell ) * t;
         // Shadow cast by the petal on top onto the petal below (k == 1).
         c *= k == 1 ? 0.65 : 1.0;

@@ -79,11 +79,11 @@ float hsh( float a, float b, float s )
 void main()
 {
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
     // 2.0 would fit the frustum exactly; 2.3 so the field still reaches past
     // all four edges when the preset camera rig rolls and yaws the view.
-    const float kOpen = 2.3;
+    const float Open = 2.3;
 
     // Base rate raised from 0.35. Every mover here is geared DOWN off this clock
     // (curtain roll 0.25t, crust ruffle 0.7t, plume sway 0.45t), so the fastest
@@ -94,16 +94,16 @@ void main()
     float t = time * 0.55 + audioAdvance * 0.3;
 
     // Sulfide mineral / sulfur yellow / chalcopyrite palette.
-    vec3 sulfurYellow = vec3( 0.9, 0.75, 0.15 );
+    vec3 sulfur_yellow = vec3( 0.9, 0.75, 0.15 );
 
     vec3 vp;
 
     // v below this line is spent on the far steam curtain.  15 of the 120 grid
     // rows -- the split has to land on a whole cell row or the boundary
     // triangles would stretch between the two layers.
-    const float kBackV = 0.125;
+    const float BackV = 0.125;
 
-    if ( attrA.y < kBackV )
+    if ( attrA.y < BackV )
     {
         // ---- FAR VENT-STEAM CURTAIN ----------------------------------
         // A single full-frustum sheet of mineral haze far behind the field.
@@ -111,11 +111,11 @@ void main()
         // the receding chimneys something to fade into.
         vBack = 1.0;
         float gu = attrA.x;
-        float gv = attrA.y / kBackV;
+        float gv = attrA.y / BackV;
 
         float dz = 112.0;
-        vp = vec3( ( gu - 0.5 ) * kOpen * dz * kTanY * aspect,
-                   ( gv - 0.5 ) * kOpen * dz * kTanY,
+        vp = vec3( ( gu - 0.5 ) * Open * dz * TanY * aspect,
+                   ( gv - 0.5 ) * Open * dz * TanY,
                    dz );
 
         vUV = vec2( gu, gv );
@@ -142,7 +142,7 @@ void main()
     {
         // ---- THE SPIRE FIELD -----------------------------------------
         vBack = 0.0;
-        float sv = ( attrA.y - kBackV ) / ( 1.0 - kBackV );
+        float sv = ( attrA.y - BackV ) / ( 1.0 - BackV );
 
         const float NS = 11.0; // chimneys across the u axis (220 / 11 = 20 cells each)
         const float MS = 7.0;  // depth rows down the v axis
@@ -160,23 +160,23 @@ void main()
 
         // Depth ladder: the rows march away from the camera, so the field has
         // a real foreground / far distance instead of one flat wall.
-        float rowF = ( ri + 0.5 ) / MS;
-        float dz = 14.0 + 68.5 * pow( rowF, 1.7 ) + 3.0 * ( h3 - 0.5 ); // was 8.5 +-2.5: the front spires filled and
-                                                                        // clipped the frame
-        float halfH = dz * kTanY;
-        float halfW = halfH * aspect;
+        float row_f = ( ri + 0.5 ) / MS;
+        float dz = 14.0 + 68.5 * pow( row_f, 1.7 ) + 3.0 * ( h3 - 0.5 ); // was 8.5 +-2.5: the front spires filled and
+                                                                         // clipped the frame
+        float half_h = dz * TanY;
+        float half_w = half_h * aspect;
 
         // Columns, staggered every other row so the rows never line up into
         // visible lanes.
-        float colF = fract( ( ci + 0.5 ) / NS + 0.5 / NS * mod( ri, 2.0 )
-                            + ( h1 - 0.5 ) * 0.6 / NS );
+        float col_f = fract( ( ci + 0.5 ) / NS + 0.5 / NS * mod( ri, 2.0 )
+                             + ( h1 - 0.5 ) * 0.6 / NS );
 
         // SWELL widens the chimney girth (and, with it, the precipitate
         // density read in the fragment stage).
-        float sScale = ( spireScaleP > 0.01 ? spireScaleP : 1.0 );
-        float towerH = ( 0.95 + 1.0 * h2 ) * halfH;
-        float towerR = towerH * ( 0.10 + 0.07 * h4 ) * sScale
-                       * ( 0.85 + 0.30 * audioSwell );
+        float s_scale = ( spireScaleP > 0.01 ? spireScaleP : 1.0 );
+        float tower_h = ( 0.95 + 1.0 * h2 ) * half_h;
+        float tower_r = tower_h * ( 0.10 + 0.07 * h4 ) * s_scale
+                        * ( 0.85 + 0.30 * audioSwell );
 
         float ang = lu * 6.2831853;
 
@@ -189,31 +189,31 @@ void main()
         // creeping at a tenth of that rate.
         float ruff = sin( ang * 8.0 + t * 1.5 ) * cos( lv * 9.0 - t * 2.6 ) * 0.13
                      + sin( ang * 3.0 - t * 0.9 ) * 0.06;
-        float rad = towerR * ( taper + ruff * ( 0.35 + 0.65 * taper ) );
+        float rad = tower_r * ( taper + ruff * ( 0.35 + 0.65 * taper ) );
 
         // Slow plume sway, strongest at the apex.
-        float swayPh = h1 * 6.2831853 + t * 0.45;
-        vec2  sway = vec2( sin( swayPh ), cos( swayPh * 0.73 ) )
-                     * ( towerH * 0.10 * pow( lv, 2.0 ) );
+        float sway_ph = h1 * 6.2831853 + t * 0.45;
+        vec2  sway = vec2( sin( sway_ph ), cos( sway_ph * 0.73 ) )
+                     * ( tower_h * 0.10 * pow( lv, 2.0 ) );
 
         vec3 world = vec3( rad * cos( ang ) + sway.x,
-                           lv * towerH + sway.y * 0.25,
+                           lv * tower_h + sway.y * 0.25,
                            rad * sin( ang ) );
 
         // Base just under the bottom edge, so every chimney grows up out of
         // frame-bottom and the tops scatter over the whole picture height.
-        vp = vec3( ( colF - 0.5 ) * kOpen * halfW + world.x,
-                   -1.06 * halfH + world.y,
+        vp = vec3( ( col_f - 0.5 ) * Open * half_w + world.x,
+                   -1.06 * half_h + world.y,
                    dz + world.z );
 
         // Superheated hydrothermal vent glow at the chimney apex.
-        float atApex = smoothstep( 0.68, 0.98, lv );
-        vVentGlow = atApex * ( 1.0 + 3.0 * audioKick ) * ( gasP > 0.01 ? gasP : 1.2 )
+        float at_apex = smoothstep( 0.68, 0.98, lv );
+        vVentGlow = at_apex * ( 1.0 + 3.0 * audioKick ) * ( gasP > 0.01 ? gasP : 1.2 )
                     * ( 0.55 + 0.75 * h4 );
 
         vNormal = normalize( vec3( cos( ang ), 0.45 + 0.5 * ( 1.0 - taper ), sin( ang ) ) );
         vUV = fract( vec2( lu + h1, lv * 0.8 + h2 ) );
-        vCol = palTint( sulfurYellow * ( 0.75 + 0.5 * h4 ),
+        vCol = palTint( sulfur_yellow * ( 0.75 + 0.5 * h4 ),
                         lv * 0.3 + h1 * 0.2 + audioCentroid, 0.25 );
         vFog = clamp( ( dz - 12.0 ) / 86.0, 0.0, 1.0 );
     }

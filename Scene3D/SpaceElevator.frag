@@ -82,8 +82,8 @@ void main()
     // 0.8-1.0: Cars
 
     // Sunlight (strong directional light)
-    vec3  sunDir = normalize( vec3( 0.8, 0.5, 0.5 ) );
-    float dif = max( dot( n, sunDir ), 0.0 );
+    vec3  sun_dir = normalize( vec3( 0.8, 0.5, 0.5 ) );
+    float dif = max( dot( n, sun_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( -0.8, -0.5, -0.5 ) );
 
     vec3 albedo = vec3( 0.7, 0.75, 0.8 ); // White/grey advanced materials
@@ -103,41 +103,41 @@ void main()
     vec3 col = albedo * ( 0.1 + dif * ( 1.0 + audioSwell * 0.5 ) );
     col += albedo * fill * 0.2;
 
-    vec3 lightCol = imgPalette( 0.8 + 0.1 * audioKick );
-    vec3 warnCol = vec3( 1.0, 0.2, 0.1 );
+    vec3 light_col = imgPalette( 0.8 + 0.1 * audioKick );
+    vec3 warn_col = vec3( 1.0, 0.2, 0.1 );
 
     if ( type < 0.5 )
     {
         // Tether structure
         float window = step( 0.9, hash21( grid + vec2( 10.0 ) ) );
-        float isWall = step( 0.5, 1.0 - abs( n.y ) );
-        col += lightCol * window * isWall * ( 0.5 + audioLevel ) * gp;
+        float is_wall = step( 0.5, 1.0 - abs( n.y ) );
+        col += light_col * window * is_wall * ( 0.5 + audioLevel ) * gp;
 
         // Strobes
         if ( mod( vCol.y * 100.0, 20.0 ) < 1.0 )
         {
             float blink = step( 0.95, fract( time * 2.0 + vCol.x * 10.0 ) );
-            col += warnCol * blink * ( 2.0 + audioKick * 3.0 ) * gp;
+            col += warn_col * blink * ( 2.0 + audioKick * 3.0 ) * gp;
         }
     }
     else if ( type < 0.8 )
     {
         // Support Rings
-        float glowEdge = step( 0.9, hash21( grid * 0.1 ) );
-        col += lightCol * glowEdge * ( 1.0 + audioKick * 2.0 ) * gp;
+        float glow_edge = step( 0.9, hash21( grid * 0.1 ) );
+        col += light_col * glow_edge * ( 1.0 + audioKick * 2.0 ) * gp;
     }
     else
     {
         // Elevator Cars
         // Intense glow
-        float carGlow = step( 0.5, hash21( grid ) );
-        vec3  carCol = imgPalette( vCol.x );
-        col += carCol * carGlow * ( 1.5 + audioKick * 2.0 ) * gp * 2.0;
+        float car_glow = step( 0.5, hash21( grid ) );
+        vec3  car_col = imgPalette( vCol.x );
+        col += car_col * car_glow * ( 1.5 + audioKick * 2.0 ) * gp * 2.0;
 
         // Engine trails pointing down
         if ( n.y < -0.5 )
         {
-            col += carCol * ( 2.0 + audioSwell * 3.0 ) * gp * 3.0;
+            col += car_col * ( 2.0 + audioSwell * 3.0 ) * gp * 3.0;
         }
     }
 
@@ -145,14 +145,14 @@ void main()
     float dist = length( vPos );
     float atm = exp( -dist * 0.005 );
 
-    vec3 skyCol = mix( vec3( 0.01, 0.02, 0.05 ), vec3( 0.3, 0.5, 0.8 ), ( 0.2 + 0.8 * audioSwell ) );
+    vec3 sky_col = mix( vec3( 0.01, 0.02, 0.05 ), vec3( 0.3, 0.5, 0.8 ), ( 0.2 + 0.8 * audioSwell ) );
 
-    col = mix( skyCol, col, clamp( atm, 0.0, 1.0 ) );
+    col = mix( sky_col, col, clamp( atm, 0.0, 1.0 ) );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

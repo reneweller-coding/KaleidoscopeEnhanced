@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -273,8 +273,8 @@ void main()
     // Radial shading inside each rosette: bright centres, darker rims.
     float rr = length( mix( f3, f6, smoothstep( 0.2, 0.8, mode ) ) );
     col *= 1.45 - 1.0 * smoothstep( 0.15, 0.6, rr );
-    vec3 hueF = hsv2rgb( vec3( fract( hueP * 0.159 + 0.25 * fbm3( fq * 0.5 ) + 0.01 * sceneTime ), 0.8, 1.0 ) );
-    col = mix( col, hueF * lc * 1.8, 0.25 );
+    vec3 hue_f = hsv2rgb( vec3( fract( hueP * 0.159 + 0.25 * fbm3( fq * 0.5 ) + 0.01 * sceneTime ), 0.8, 1.0 ) );
+    col = mix( col, hue_f * lc * 1.8, 0.25 );
     col += vec3( 1.0, 0.97, 0.92 ) * exp( -seam * cell / ( 1.5 / resolution.y * 2.0 ) ) * ( 0.05 + 0.3 * hi );
     finish( col * 1.05 );
 }

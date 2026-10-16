@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -262,28 +262,28 @@ void main()
     vec2 cuv = ( gi + c1 ) / sc * 0.7 + 0.5;
     vec3 ph = imgLod( cuv, 4.0 );
     vec3 glass = hsv2rgb(
-        vec3( fract( ( satOf( ph ) > 0.15 ? hue_of( ph ) : fract( hueP * 0.159 + hash21( id ) * 0.6 ) )
+        vec3( fract( ( satOf( ph ) > 0.15 ? hueOf( ph ) : fract( hueP * 0.159 + hash21( id ) * 0.6 ) )
                      + 0.3 * ( hash21( id + 4.0 ) - 0.5 ) ),
               0.75 + 0.2 * clamp( saturateP, 0.0, 1.0 ), 1.0 ) );
     glass = mix( glass, glass * glass, 0.5 * clamp( saturateP, 0.0, 1.0 ) );
     glass *= 0.6 + 0.6 * luma( ph );
     // Backlight: drifting brightness waves, warm or cool.
     float light = 0.45 + 0.55 * fbm3( p * 1.2 + vec2( 0.06 * sceneTime + 0.6 * audioAdvance, 0.0 ) );
-    vec3  lightC = mix( vec3( 0.9, 0.95, 1.1 ), vec3( 1.15, 1.0, 0.8 ), clamp( audioMode, 0.0, 1.0 ) )
-                   * ( 0.7 + 0.6 * bass );
+    vec3  light_c = mix( vec3( 0.9, 0.95, 1.1 ), vec3( 1.15, 1.0, 0.8 ), clamp( audioMode, 0.0, 1.0 ) )
+                    * ( 0.7 + 0.6 * bass );
     // Glass texture: ripples and seeds.
     float ripple = 0.85 + 0.15 * noise2( q * ( 4.0 + 4.0 * rough ) + id );
     vec2  sq = q * 9.0, si = floor( sq );
     float seed = step( 0.93, hash21( si ) ) * smoothstep( 0.3, 0.0, length( fract( sq ) - 0.5 ) );
-    vec3  col = glass * lightC * light * ripple * 1.5;
+    vec3  col = glass * light_c * light * ripple * 1.5;
     col += vec3( 1.0 ) * seed * light * ( 0.2 + 0.9 * hi );
     // Lead cames: dark, slightly rounded, a faint highlight.
     float lw = 0.04 + 0.06 * clamp( leadP, 0.0, 1.0 );
     float px = sc / resolution.y * 1.5;
     float lead = smoothstep( lw + px, lw - px, border );
-    vec3  leadC = vec3( 0.04, 0.04, 0.045 ) + vec3( 0.12 ) * smoothstep( lw, 0.0, abs( border - lw * 0.5 ) ) * 0.3;
-    col = mix( col, leadC, lead );
+    vec3  lead_c = vec3( 0.04, 0.04, 0.045 ) + vec3( 0.12 ) * smoothstep( lw, 0.0, abs( border - lw * 0.5 ) ) * 0.3;
+    col = mix( col, lead_c, lead );
     // Glow bleeding past the lead into the room.
-    col += glass * lightC * light * 0.08;
+    col += glass * light_c * light * 0.08;
     finish( col );
 }

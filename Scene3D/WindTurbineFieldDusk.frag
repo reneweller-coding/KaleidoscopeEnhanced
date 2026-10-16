@@ -91,8 +91,8 @@ void main()
         // The band of afterglow: one spectrum band per slice across the sky.
         int   band = int( clamp( uv.x * 31.0, 0.0, 31.0 ) );
         float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-        vec3  glowCol = mix( vec3( 1.0, 0.55, 0.3 ), imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.4, 0.45 );
-        col += glowCol * smoothstep( 0.4, 0.06, uv.y ) * ( 0.12 + 0.55 * e ) * dusk;
+        vec3  glow_col = mix( vec3( 1.0, 0.55, 0.3 ), imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.4, 0.45 );
+        col += glow_col * smoothstep( 0.4, 0.06, uv.y ) * ( 0.12 + 0.55 * e ) * dusk;
         // A few stars high up.
         vec2  sg = uv * vec2( 700.0, 400.0 );
         vec2  sc = floor( sg ), sf = fract( sg ) - 0.5;
@@ -146,11 +146,11 @@ void main()
     }
     // Haze: the far rows stack into the dusk.
     float fog = 1.0 - exp( -max( vWorld.z - 10.0, 0.0 ) * ( 0.014 + 0.014 * ( 1.0 - clamp( audioSwell, 0.0, 1.0 ) ) ) );
-    vec3  fogCol = mix( vec3( 0.45, 0.5, 0.62 ), imgPalette( hue * 0.159 + 0.6 ) * 0.6, 0.4 ) * dusk;
-    col = mix( col, fogCol, clamp( fog, 0.0, 0.9 ) * step( -1.5, vKind ) );
+    vec3  fog_col = mix( vec3( 0.45, 0.5, 0.62 ), imgPalette( hue * 0.159 + 0.6 ) * 0.6, 0.4 ) * dusk;
+    col = mix( col, fog_col, clamp( fog, 0.0, 0.9 ) * step( -1.5, vKind ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

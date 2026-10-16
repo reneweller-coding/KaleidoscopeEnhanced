@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -308,13 +308,13 @@ void main()
                glowColour( imgK( uv * 1.6, 1.5 ), p, hueP * 0.159 ) * ( 0.4 + 0.6 * luma( imgK( uv * 1.6, 1.5 ) ) ),
                0.55 * clamp( photoP + 0.3, 0.0, 1.3 ) );
     pig = max( mix( vec3( luma( pig ) ), pig, 0.8 + 0.6 * swell ), 0.0 );
-    float washV = 0.75 + 0.25 * fbm( p * 2.0 + vec2( T, 0.0 ) );
+    float wash_v = 0.75 + 0.25 * fbm( p * 2.0 + vec2( T, 0.0 ) );
     vec3  col = mix( vec3( 0.95, 0.93, 0.88 ), pig,
-                     clamp( washV * ( 0.75 + 0.35 * clamp( washP, 0.0, 1.0 ) ), 0.0, 1.0 ) );
+                     clamp( wash_v * ( 0.75 + 0.35 * clamp( washP, 0.0, 1.0 ) ), 0.0, 1.0 ) );
     // Salt bursts: jittered grains; each a feathery starburst of paler colour.
-    float burstR = 0.3 + 0.3 * clamp( audioSpread, 0.0, 1.0 );
-    float clusterF = ( 0.25 + 0.75 * smoothstep( 0.3, 0.7, fbm3( p * 1.5 + 9.0 ) ) )
-                     * ( 0.3 + 0.7 * clamp( saltP, 0.0, 1.0 ) );
+    float burst_r = 0.3 + 0.3 * clamp( audioSpread, 0.0, 1.0 );
+    float cluster_f = ( 0.25 + 0.75 * smoothstep( 0.3, 0.7, fbm3( p * 1.5 + 9.0 ) ) )
+                      * ( 0.3 + 0.7 * clamp( saltP, 0.0, 1.0 ) );
     float bleach = 0.0;
     for ( int L = 0; L < 2; ++L )
     {
@@ -326,14 +326,14 @@ void main()
             for ( int i = -1; i <= 1; ++i )
             {
                 vec2 id = gi + vec2( i, j );
-                if ( hash21( id + fl ) > clusterF )
+                if ( hash21( id + fl ) > cluster_f )
                     continue;
                 vec2  c = id + 0.2 + 0.6 * hash22( id + fl * 3.0 );
                 vec2  d = g - c;
                 float r = length( d );
                 float grow = smoothstep( 0.0, 1.0, fract( T * 2.0 + hash21( id + 5.0 ) ) );
                 float life = fract( T * 2.0 + hash21( id + 5.0 ) );
-                float R = burstR * ( 0.5 + 0.5 * hash21( id + 2.0 ) ) * ( 0.3 + 0.7 * grow );
+                float R = burst_r * ( 0.5 + 0.5 * hash21( id + 2.0 ) ) * ( 0.3 + 0.7 * grow );
                 float ang = atan( d.y, d.x );
                 vec2  u = vec2( cos( ang ), sin( ang ) );
                 // Feathery arms: noise on the unit circle (seamless).

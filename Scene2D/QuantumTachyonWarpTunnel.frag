@@ -93,57 +93,57 @@ void main()
     // Sub-bass widens the tunnel throat by dilating the radial coordinate the
     // cylindrical mapping is built from -- the -t*4.0 flight term stays
     // untouched so the accumulated warp phase is never remapped.
-    float rTun = max( 0.01, r / ( 1.0 + 0.35 * audioSubBass ) );
-    float rRel = pow( rTun, 1.0 / gamma );
+    float r_tun = max( 0.01, r / ( 1.0 + 0.35 * audioSubBass ) );
+    float r_rel = pow( r_tun, 1.0 / gamma );
 
     // Warp tunnel cylindrical coordinates: (angle a, depth z = 1/r)
-    float zTunnel = ( 1.0 / rRel ) * wrp - t * 4.0;
+    float z_tunnel = ( 1.0 / r_rel ) * wrp - t * 4.0;
 
     // Cherenkov radiation shock cone rings
-    float cherenkovCone = abs( sin( zTunnel * 1.5 + t * 2.0 ) );
-    float coneGlow = exp( -cherenkovCone * 8.0 ) * glw;
+    float cherenkov_cone = abs( sin( z_tunnel * 1.5 + t * 2.0 ) );
+    float cone_glow = exp( -cherenkov_cone * 8.0 ) * glw;
 
     // High-speed radial tachyon light streaks
     // Tonal brightness raises the angular streak count and narrows the
     // smoothstep band, so bright material resolves into many thin filaments
     // while dark material leaves a few soft ones.
-    float streaks = abs( sin( a * ( 24.0 * strk ) * ( 1.0 + 0.4 * audioCentroid ) + sin( zTunnel * 0.5 ) * 3.0 ) );
-    float streakGlow = smoothstep( 0.85 + 0.1 * audioCentroid, 1.0, streaks ) * ( 1.0 + 2.0 * audioHigh );
+    float streaks = abs( sin( a * ( 24.0 * strk ) * ( 1.0 + 0.4 * audioCentroid ) + sin( z_tunnel * 0.5 ) * 3.0 ) );
+    float streak_glow = smoothstep( 0.85 + 0.1 * audioCentroid, 1.0, streaks ) * ( 1.0 + 2.0 * audioHigh );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( vec2( a / 6.2831853 + 0.5, zTunnel * 0.15 ) );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( vec2( a / 6.2831853 + 0.5, z_tunnel * 0.15 ) );
+    vec3 tex_col = img( sample_uv );
 
     // Cherenkov electric-blue / violet / magenta palette
-    vec3 palBase = imgPalette( zTunnel * 0.1 + 0.2 );
+    vec3 pal_base = imgPalette( z_tunnel * 0.1 + 0.2 );
     // Hold the tunnel wall back to a fixed dark base -- Cherenkov light only
     // reads against dark spacetime, and with a bright photo the wall alone
     // already sat near 1.0 so every glow below was clipped away on top of it.
-    float expGain = clamp( 0.22 / max( 0.05, photoLevel() ), 0.22, 2.4 );
-    vec3  col = mix( texCol, palBase, 0.45 ) * expGain;
+    float exp_gain = clamp( 0.22 / max( 0.05, photoLevel() ), 0.22, 2.4 );
+    vec3  col = mix( tex_col, pal_base, 0.45 ) * exp_gain;
 
     // Add glowing Cherenkov shock rings & tachyon streaks
     // The tint constants exceed 1.0 per channel, so the TINTED vectors carry
     // the caps -- bounding only the scalar glows left vec3(0.2,1.3,1.9) * it
     // free to reach 6.7 on a kick.
-    vec3 cherenkovTint = min( vec3( 0.2, 1.3, 1.9 ) * coneGlow * ( 1.0 + 2.5 * audioKick ), vec3( 1.0 ) );
+    vec3 cherenkov_tint = min( vec3( 0.2, 1.3, 1.9 ) * cone_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.0 ) );
     // Colour temperature follows the same brightness cue: dark lows tint the
     // streaks amber, bright highs push them to cold hyperviolet. Both ends
     // stay at or below the original tint peaks, so no extra light is added.
-    vec3 streakTemp = mix( vec3( 1.6, 1.3, 1.0 ), vec3( 1.2, 1.4, 1.9 ), audioCentroid );
-    vec3 streakTint = min( streakTemp * streakGlow * ( 0.8 + 1.5 * audioKick ), vec3( 0.95 ) );
+    vec3 streak_temp = mix( vec3( 1.6, 1.3, 1.0 ), vec3( 1.2, 1.4, 1.9 ), audioCentroid );
+    vec3 streak_tint = min( streak_temp * streak_glow * ( 0.8 + 1.5 * audioKick ), vec3( 0.95 ) );
 
-    col += cherenkovTint + streakTint;
+    col += cherenkov_tint + streak_tint;
 
     // Center hyperdrive singularity flare. It stays the brightest thing on
     // screen, but bounded: 2.0 + 4.0 * kick on a tint peaking at 2.0 put this
     // single term at 12.0 per channel over the whole tunnel throat.
-    float centerFlare = exp( -r * 12.0 ) * ( 2.0 + 4.0 * audioKick );
-    col += min( vec3( 1.6, 1.7, 2.0 ) * centerFlare, vec3( 1.35 ) );
+    float center_flare = exp( -r * 12.0 ) * ( 2.0 + 4.0 * audioKick );
+    col += min( vec3( 1.6, 1.7, 2.0 ) * center_flare, vec3( 1.35 ) );
 
     // Vignette & gamma
     col = pow( col, vec3( 0.88 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

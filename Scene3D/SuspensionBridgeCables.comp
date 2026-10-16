@@ -51,20 +51,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -88,20 +88,20 @@ void emitSeg( vec3 a, vec3 b, float w, float id, float lit, float kind )
     emitQuad( mid, half_, side * w, id, lit, kind, vec2( 0.0 ), vec2( 1.0 ) );
 }
 
-const float DECK_Y = 2.4; ///< the deck girder overhead
-const float TOWER_TOP = 9.5;
-const float ROAD_HALF = 4.2; ///< half the deck width
+const float DeckY = 2.4; ///< the deck girder overhead
+const float TowerTop = 9.5;
+const float RoadHalf = 4.2; ///< half the deck width
 // The cables hang OUTSIDE the deck edge.  At the deck width they sit exactly
 // behind the slab, which -- looking up from under the bridge -- hides them
 // completely; the first cut of this scene showed a bare deck and two towers.
-const float CABLE_X = 6.6;
+const float CableX = 6.6;
 
 /// The main cable's height at distance z from the near tower, for a span S.
 float cableY( float z, float S )
 {
     float u = clamp( z / S, 0.0, 1.0 );
     float sag = 4.0 * u * ( 1.0 - u ); // 0 at the towers, 1 at mid-span
-    return mix( TOWER_TOP, DECK_Y + 0.6, sag );
+    return mix( TowerTop, DeckY + 0.6, sag );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -126,7 +126,7 @@ void main()
     // scrolling with the flight so its ribs move past.
     if ( id == 1u )
     {
-        emitQuad( vec3( 0.0, DECK_Y, 34.0 ), vec3( ROAD_HALF, 0.0, 0.0 ), vec3( 0.0, 0.0, 34.0 ), 0.0, 0.0, 3.0,
+        emitQuad( vec3( 0.0, DeckY, 34.0 ), vec3( RoadHalf, 0.0, 0.0 ), vec3( 0.0, 0.0, 34.0 ), 0.0, 0.0, 3.0,
                   vec2( 0.0 ), vec2( 1.0 ) );
         return;
     }
@@ -136,16 +136,16 @@ void main()
     if ( k < 8u )
     {
         uint  ti = k / 2u; // which tower along the run
-        float sideS = ( k % 2u == 0u ) ? -1.0 : 1.0;
+        float side_s = ( k % 2u == 0u ) ? -1.0 : 1.0;
         float zt = mod( float( ti ) * span - fly, span * 4.0 ) - span * 0.5;
         if ( zt < 1.0 || zt > 120.0 )
             return;
-        vec3 c = vec3( sideS * CABLE_X, ( TOWER_TOP - 4.0 ) * 0.5, zt );
-        emitQuad( c, vec3( 0.55, 0.0, 0.0 ), vec3( 0.0, ( TOWER_TOP + 4.0 ) * 0.5, 0.0 ), float( ti ), 0.0, 2.0,
+        vec3 c = vec3( side_s * CableX, ( TowerTop - 4.0 ) * 0.5, zt );
+        emitQuad( c, vec3( 0.55, 0.0, 0.0 ), vec3( 0.0, ( TowerTop + 4.0 ) * 0.5, 0.0 ), float( ti ), 0.0, 2.0,
                   vec2( 0.0 ), vec2( 1.0 ) );
         // The cross beam near the top.
         if ( k % 2u == 0u )
-            emitQuad( vec3( 0.0, TOWER_TOP - 1.2, zt ), vec3( CABLE_X, 0.0, 0.0 ), vec3( 0.0, 0.4, 0.0 ), float( ti ),
+            emitQuad( vec3( 0.0, TowerTop - 1.2, zt ), vec3( CableX, 0.0, 0.0 ), vec3( 0.0, 0.4, 0.0 ), float( ti ),
                       0.0, 2.0, vec2( 0.0 ), vec2( 1.0 ) );
         return;
     }
@@ -153,21 +153,22 @@ void main()
     // Main cables: sampled catenary segments, both sides, over four spans.
     if ( k < 320u )
     {
-        uint  segI = k % 40u;
+        uint  seg_i = k % 40u;
         uint  rest = k / 40u;
-        float sideS = ( rest % 2u == 0u ) ? -1.0 : 1.0;
-        uint  spanI = rest / 2u; // 0..3
-        float z0 = float( spanI ) * span - mod( fly, span );
-        float u0 = float( segI ) / 40.0, u1 = float( segI + 1u ) / 40.0;
-        vec3  a = vec3( sideS * CABLE_X, cableY( u0 * span, span ), z0 + u0 * span );
-        vec3  b = vec3( sideS * CABLE_X, cableY( u1 * span, span ), z0 + u1 * span );
+        float side_s = ( rest % 2u == 0u ) ? -1.0 : 1.0;
+        uint  span_i = rest / 2u; // 0..3
+        float z0 = float( span_i ) * span - mod( fly, span );
+        float u0 = float( seg_i ) / 40.0, u1 = float( seg_i + 1u ) / 40.0;
+        vec3  a = vec3( side_s * CableX, cableY( u0 * span, span ), z0 + u0 * span );
+        vec3  b = vec3( side_s * CableX, cableY( u1 * span, span ), z0 + u1 * span );
         if ( a.z < 0.8 || a.z > 120.0 )
             return;
-        emitSeg( a, b, 0.26, float( segI ), u0, 0.0 );
+        emitSeg( a, b, 0.26, float( seg_i ), u0, 0.0 );
         // A lamp bead every fifth segment, its brightness from a band.
-        if ( segI % 5u == 0u && hash11( float( spanI ) * 3.1 + float( segI ) ) < 0.6 + 0.4 * clamp( lampP, 0.0, 1.0 ) )
+        if ( seg_i % 5u == 0u
+             && hash11( float( span_i ) * 3.1 + float( seg_i ) ) < 0.6 + 0.4 * clamp( lampP, 0.0, 1.0 ) )
             emitQuad( a + vec3( 0.0, -0.4, 0.0 ), vec3( 0.3, 0.0, 0.0 ), vec3( 0.0, 0.3, 0.0 ),
-                      float( segI ), u0, 4.0, vec2( 0.0 ), vec2( 1.0 ) );
+                      float( seg_i ), u0, 4.0, vec2( 0.0 ), vec2( 1.0 ) );
         return;
     }
     k -= 320u;
@@ -176,17 +177,17 @@ void main()
     {
         uint  hi = k % 20u;
         uint  rest = k / 20u;
-        float sideS = ( rest % 2u == 0u ) ? -1.0 : 1.0;
-        uint  spanI = rest / 2u; // 0..3
-        float z0 = float( spanI ) * span - mod( fly, span );
+        float side_s = ( rest % 2u == 0u ) ? -1.0 : 1.0;
+        uint  span_i = rest / 2u; // 0..3
+        float z0 = float( span_i ) * span - mod( fly, span );
         float u = ( float( hi ) + 0.5 ) / 20.0;
         float z = z0 + u * span;
         if ( z < 0.8 || z > 120.0 )
             return;
         float top = cableY( u * span, span );
-        vec3  a = vec3( sideS * CABLE_X, top, z );
-        vec3  b = vec3( sideS * CABLE_X, DECK_Y - 0.2, z );
-        if ( top <= DECK_Y + 0.15 )
+        vec3  a = vec3( side_s * CableX, top, z );
+        vec3  b = vec3( side_s * CableX, DeckY - 0.2, z );
+        if ( top <= DeckY + 0.15 )
             return;
         emitSeg( a, b, 0.075, float( hi ), u, 1.0 );
         return;

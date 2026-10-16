@@ -116,41 +116,41 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     vec3 col = vec3( 0.0 );
-    vec3 starColor = imgPalette( 0.8 + audioCentroid * 0.1 );
-    vec3 darkPlasma = vec3( 0.05, 0.0, 0.1 ); // Exposed darker core layers
+    vec3 star_color = imgPalette( 0.8 + audioCentroid * 0.1 );
+    vec3 dark_plasma = vec3( 0.05, 0.0, 0.1 ); // Exposed darker core layers
 
     // Positions
-    vec2 starPos = vec2( -0.4, 0.0 );
-    vec2 bhPos = vec2( 0.5, 0.0 );
+    vec2 star_pos = vec2( -0.4, 0.0 );
+    vec2 bh_pos = vec2( 0.5, 0.0 );
 
     // Apply gravitational lensing to the whole scene from the black hole
-    float bhMass = 0.05 * gp;
-    vec2  lensedUv = lens( uv, bhPos, bhMass );
+    float bh_mass = 0.05 * gp;
+    vec2  lensed_uv = lens( uv, bh_pos, bh_mass );
 
     // 1. The Black Hole
-    float dBh = length( uv - bhPos );
-    float eventHorizon = 0.1 * gp;
+    float d_bh = length( uv - bh_pos );
+    float event_horizon = 0.1 * gp;
 
     // 2. The Star
-    float dStar = length( lensedUv - starPos );
+    float d_star = length( lensed_uv - star_pos );
 
     // The star is being deformed towards the black hole (Roche lobe overflow)
     // We stretch the distance function towards the BH
-    vec2 toBh = normalize( bhPos - starPos );
-    vec2 fromStar = lensedUv - starPos;
+    vec2 to_bh = normalize( bh_pos - star_pos );
+    vec2 from_star = lensed_uv - star_pos;
 
     // Teardrop distortion
-    float stretch = max( 0.0, dot( normalize( fromStar ), toBh ) );
-    float starDistorted = dStar * ( 1.0 - stretch * 0.4 * gp );
+    float stretch = max( 0.0, dot( normalize( from_star ), to_bh ) );
+    float star_distorted = d_star * ( 1.0 - stretch * 0.4 * gp );
 
-    float starRad = 0.5;
+    float star_rad = 0.5;
 
-    if ( starDistorted < starRad )
+    if ( star_distorted < star_rad )
     {
         // We are on the star surface
         // Map 2D to fake 3D sphere
-        float z = sqrt( max( 0.0, starRad * starRad - starDistorted * starDistorted ) );
-        vec3  p3 = vec3( fromStar, z );
+        float z = sqrt( max( 0.0, star_rad * star_rad - star_distorted * star_distorted ) );
+        vec3  p3 = vec3( from_star, z );
 
         // Rotation
         p3.xy = mat2( cos( time * 0.1 ), -sin( time * 0.1 ), sin( time * 0.1 ), cos( time * 0.1 ) ) * p3.xy;
@@ -159,22 +159,22 @@ void main()
         float surface = fbm( vec3( p3 * 5.0 + vec3( 0.0, time * 0.5 + audioAdvance, 0.0 ) ) );
 
         // The side facing the BH is shattering/exploding
-        float shatterZone = stretch; // 0 on back, 1 on front facing BH
+        float shatter_zone = stretch; // 0 on back, 1 on front facing BH
 
         // vec3(p3*10.0, time*2.0) was a vec3 + a float = 4 components into a
         // 3-component constructor (GLSL error C1068). Animate along z instead.
-        float shatterNoise = fbm( p3 * 10.0 + vec3( 0.0, 0.0, time * 2.0 ) );
-        float crack = smoothstep( 0.6 - shatterZone * 0.4 * sp, 1.0, shatterNoise );
+        float shatter_noise = fbm( p3 * 10.0 + vec3( 0.0, 0.0, time * 2.0 ) );
+        float crack = smoothstep( 0.6 - shatter_zone * 0.4 * sp, 1.0, shatter_noise );
 
         // Violent kick explosions tearing chunks out of the star
-        float explosion = step( 0.9, hash11( floor( p3.x * 5.0 ) + floor( time * 4.00 ) ) ) * shatterZone; // was 10 Hz
+        float explosion = step( 0.9, hash11( floor( p3.x * 5.0 ) + floor( time * 4.00 ) ) ) * shatter_zone; // was 10 Hz
 
-        vec3 surfaceCol = mix( starColor * ( 0.5 + surface * 0.5 ), darkPlasma, crack * 0.8 );
-        surfaceCol += starColor * explosion * audioKick * 5.0 * sp;
+        vec3 surface_col = mix( star_color * ( 0.5 + surface * 0.5 ), dark_plasma, crack * 0.8 );
+        surface_col += star_color * explosion * audioKick * 5.0 * sp;
 
         // Limb darkening
-        float limb = smoothstep( starRad, starRad - 0.1, starDistorted );
-        col += surfaceCol * limb * ( 1.0 + audioSwell * 0.5 );
+        float limb = smoothstep( star_rad, star_rad - 0.1, star_distorted );
+        col += surface_col * limb * ( 1.0 + audioSwell * 0.5 );
     }
 
     // 3. The Accretion Stream (Siphoned material)
@@ -182,86 +182,86 @@ void main()
 
     // Distance from the line connecting star and BH
     // Using unlensed UV for the plasma stream looks better
-    vec2 streamDir = toBh;
-    vec2 perpDir = vec2( -streamDir.y, streamDir.x );
+    vec2 stream_dir = to_bh;
+    vec2 perp_dir = vec2( -stream_dir.y, stream_dir.x );
 
-    vec2  pStream = uv - starPos;
-    float distAlongStream = dot( pStream, streamDir );
-    float distFromStream = abs( dot( pStream, perpDir ) );
+    vec2  p_stream = uv - star_pos;
+    float dist_along_stream = dot( p_stream, stream_dir );
+    float dist_from_stream = abs( dot( p_stream, perp_dir ) );
 
-    float streamLen = length( bhPos - starPos );
+    float stream_len = length( bh_pos - star_pos );
 
-    if ( distAlongStream > 0.0 && distAlongStream < streamLen )
+    if ( dist_along_stream > 0.0 && dist_along_stream < stream_len )
     {
         // The stream narrows as it gets closer to the BH, but is chaotic
-        float normalizedDist = distAlongStream / streamLen;
+        float normalized_dist = dist_along_stream / stream_len;
 
-        float streamWobble = fbm( vec3( normalizedDist * 10.0, time * 2.0, 0.0 ) ) * 0.1;
-        float actualDistFromStream = abs( distFromStream - streamWobble );
+        float stream_wobble = fbm( vec3( normalized_dist * 10.0, time * 2.0, 0.0 ) ) * 0.1;
+        float actual_dist_from_stream = abs( dist_from_stream - stream_wobble );
 
-        float streamWidth = 0.15 * ( 1.0 - normalizedDist ) * gp;
+        float stream_width = 0.15 * ( 1.0 - normalized_dist ) * gp;
 
-        if ( actualDistFromStream < streamWidth )
+        if ( actual_dist_from_stream < stream_width )
         {
             // Rushing plasma
             float speed = time * 10.0 + audioAdvance * 20.0;
-            float plasmaNoise = fbm( vec3( distFromStream * 20.0, distAlongStream * 10.0 + speed, time ) );
+            float plasma_noise = fbm( vec3( dist_from_stream * 20.0, dist_along_stream * 10.0 + speed, time ) );
 
             // Brightness increases as it gets sucked in
-            float heat = pow( normalizedDist, 2.0 );
+            float heat = pow( normalized_dist, 2.0 );
 
             // Audio kicks create massive pulses traveling down the stream
-            float pulse = step( 0.9, fract( distAlongStream * 5.0 - speed * 0.5 ) );
+            float pulse = step( 0.9, fract( dist_along_stream * 5.0 - speed * 0.5 ) );
 
-            float core = smoothstep( streamWidth, 0.0, actualDistFromStream ) * plasmaNoise;
+            float core = smoothstep( stream_width, 0.0, actual_dist_from_stream ) * plasma_noise;
 
-            vec3 streamCol = starColor * core * ( 1.0 + heat * 5.0 ) * gp;
-            streamCol *= ( 1.0 + pulse * audioKick * 5.0 * sp );
+            vec3 stream_col = star_color * core * ( 1.0 + heat * 5.0 ) * gp;
+            stream_col *= ( 1.0 + pulse * audioKick * 5.0 * sp );
 
-            col += streamCol * ( 1.0 + audioSwell );
+            col += stream_col * ( 1.0 + audioSwell );
         }
     }
 
     // 4. Black Hole Accretion Disk & Event Horizon
-    if ( dBh < eventHorizon )
+    if ( d_bh < event_horizon )
     {
         col = vec3( 0.0 ); // Black hole core
     }
     else
     {
         // Accretion disk orbiting the BH
-        float angleBh = atan( uv.y - bhPos.y, uv.x - bhPos.x );
-        float diskSpeed = time * 5.0 + audioAdvance * 5.0;
+        float angle_bh = atan( uv.y - bh_pos.y, uv.x - bh_pos.x );
+        float disk_speed = time * 5.0 + audioAdvance * 5.0;
 
-        float diskNoise = fbm( vec3( angleBh * 10.0 + diskSpeed, dBh * 20.0, time ) );
+        float disk_noise = fbm( vec3( angle_bh * 10.0 + disk_speed, d_bh * 20.0, time ) );
 
         // Disk falls off quickly
-        float diskMask = exp( -( dBh - eventHorizon ) * ( 30.0 / gp ) );
+        float disk_mask = exp( -( d_bh - event_horizon ) * ( 30.0 / gp ) );
 
-        col += starColor * diskNoise * diskMask * 3.0 * ( 1.0 + audioSwell ) * gp;
+        col += star_color * disk_noise * disk_mask * 3.0 * ( 1.0 + audioSwell ) * gp;
 
         // Event horizon photon ring (bright thin edge)
-        float photonRing = exp( -abs( dBh - eventHorizon * 1.1 ) * 100.0 );
-        col += starColor * photonRing * 5.0 * gp;
+        float photon_ring = exp( -abs( d_bh - event_horizon * 1.1 ) * 100.0 );
+        col += star_color * photon_ring * 5.0 * gp;
     }
 
     // Background stars (lensed)
-    if ( starDistorted >= starRad && dBh >= eventHorizon )
+    if ( star_distorted >= star_rad && d_bh >= event_horizon )
     {
-        float bg = hash11( dot( floor( lensedUv * 200.0 ), vec2( 12.3, 45.6 ) ) );
+        float bg = hash11( dot( floor( lensed_uv * 200.0 ), vec2( 12.3, 45.6 ) ) );
         if ( bg > 0.99 )
             col += vec3( 1.0 ) * ( 0.1 + audioSwell * 0.1 );
     }
 
     // Glare from the dying star
-    float starGlare = exp( -dStar * 2.0 );
-    col += starColor * starGlare * 0.3 * ( 1.0 + audioSwell );
+    float star_glare = exp( -d_star * 2.0 );
+    col += star_color * star_glare * 0.3 * ( 1.0 + audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -65,8 +65,8 @@ vec2 hash22( vec2 p )
     return vec2( hash21( p ), hash21( p + 17.3 ) );
 }
 
-const vec3  BALL = vec3( 0.0, 3.2, 6.0 );
-const float BR = 0.45;
+const vec3  Ball = vec3( 0.0, 3.2, 6.0 );
+const float Br = 0.45;
 float       g_rot, g_hue, g_tint;
 
 /// The pattern of reflections on a surface point: the ball throws its
@@ -75,18 +75,18 @@ float       g_rot, g_hue, g_tint;
 /// is a small soft square spot.
 vec3 spots( vec3 p )
 {
-    vec3 d = normalize( p - BALL );
+    vec3 d = normalize( p - Ball );
     // Rotate the grid about the vertical axis.
     float ca = cos( g_rot ), sa = sin( g_rot );
     d = vec3( ca * d.x + sa * d.z, d.y, -sa * d.x + ca * d.z );
     float lat = asin( clamp( d.y, -1.0, 1.0 ) );
     float lon = atan( d.z, d.x );
-    float nLat = 26.0;
-    float li = floor( ( lat / 3.14159 + 0.5 ) * nLat );
-    float ringN = max( 4.0, floor( 2.0 * nLat * cos( ( li + 0.5 ) / nLat * 3.14159 - 1.5708 ) ) );
-    float lo = ( lon / 6.2831853 + 0.5 ) * ringN;
+    float n_lat = 26.0;
+    float li = floor( ( lat / 3.14159 + 0.5 ) * n_lat );
+    float ring_n = max( 4.0, floor( 2.0 * n_lat * cos( ( li + 0.5 ) / n_lat * 3.14159 - 1.5708 ) ) );
+    float lo = ( lon / 6.2831853 + 0.5 ) * ring_n;
     vec2  cell = vec2( floor( lo ), li );
-    vec2  f = vec2( fract( lo ), fract( ( lat / 3.14159 + 0.5 ) * nLat ) ) - 0.5;
+    vec2  f = vec2( fract( lo ), fract( ( lat / 3.14159 + 0.5 ) * n_lat ) ) - 0.5;
     // Not every facet catches the spotlight.
     float on = step( 0.55, hash21( cell ) );
     float sz = 0.22;
@@ -94,7 +94,7 @@ vec3 spots( vec3 p )
     int   band = int( mod( hash21( cell + 3.0 ) * 32.0, 32.0 ) );
     float e = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
     vec3  c = mix( vec3( 1.0 ), imgPalette( g_hue * 0.159 + hash21( cell + 9.0 ) * 0.8 ) * 1.4, g_tint );
-    float dist = length( p - BALL );
+    float dist = length( p - Ball );
     return c * sq * on * ( 0.4 + 1.0 * e ) * 11.0 / ( 1.0 + dist * dist * 0.08 );
 }
 
@@ -158,12 +158,12 @@ void main()
     vec3 col = base * 0.18 + ( 0.45 + base ) * spots( hp ) * spot * 0.6;
 
     // The ball itself: facets of mirror, some flashing.
-    vec3  oc = ro - BALL;
-    float b = dot( oc, rd ), c = dot( oc, oc ) - BR * BR, h = b * b - c;
+    vec3  oc = ro - Ball;
+    float b = dot( oc, rd ), c = dot( oc, oc ) - Br * Br, h = b * b - c;
     float tb = ( h > 0.0 ) ? -b - sqrt( h ) : 1e9;
     if ( tb > 0.0 && tb < t )
     {
-        vec3  n = normalize( ro + rd * tb - BALL );
+        vec3  n = normalize( ro + rd * tb - Ball );
         float ca = cos( g_rot ), sa = sin( g_rot );
         vec3  nr = vec3( ca * n.x + sa * n.z, n.y, -sa * n.x + ca * n.z );
         vec2  fc = floor( vec2( atan( nr.z, nr.x ) * 8.0, asin( nr.y ) * 10.0 ) );
@@ -193,14 +193,14 @@ void main()
     col += beams * haze * spot;
     // The spotlight's own beam onto the ball, from high left.
     vec3  sl = vec3( -5.0, 5.8, -1.0 );
-    vec3  ax = normalize( BALL - sl );
-    vec3  w = ro + rd * max( dot( BALL - ro, rd ), 0.0 );
+    vec3  ax = normalize( Ball - sl );
+    vec3  w = ro + rd * max( dot( Ball - ro, rd ), 0.0 );
     float along = dot( w - sl, ax );
     float across = length( ( w - sl ) - ax * along );
     col += vec3( 1.0, 0.95, 0.85 ) * exp( -across * across * 12.0 ) * step( 0.0, along ) * 0.04 * haze * spot;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

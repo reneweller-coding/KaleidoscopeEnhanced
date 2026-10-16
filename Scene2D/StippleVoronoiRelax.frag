@@ -71,22 +71,22 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float base = 40.0 + 30.0 * clamp( densP, 0.0, 1.0 );
     float dens = base * ( 0.8 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
-    float inkMix = clamp( inkP, 0.0, 1.0 );
+    float ink_mix = clamp( inkP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
 
     // Paper: warm white with the photo very faint.
     vec3 paper = vec3( 0.94, 0.91, 0.84 );
     paper = mix( paper, paper * imgPalette( hue * 0.159 + 0.1 ) * 1.3, 0.1 );
     vec3 col = paper;
-    vec3 ink = mix( vec3( 0.08, 0.06, 0.05 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, inkMix * 0.6 );
+    vec3 ink = mix( vec3( 0.08, 0.06, 0.05 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, ink_mix * 0.6 );
 
     // Three dot layers of increasing density; a dot exists where the local
     // darkness exceeds the layer's threshold (so dark = more dots), sized
     // by the darkness, jittered, and drifting on small orbits (relaxation).
     float dark = 1.0 - dot( img( uv ), vec3( 0.299, 0.587, 0.114 ) );
     dark = smoothstep( 0.05, 0.95, dark );
-    float kickLit = audioKick * smoothstep( 0.6, 0.9, dark );
-    float hiLit = clamp( audioHigh * 2.0, 0.0, 1.0 ) * smoothstep( 0.4, 0.1, dark );
+    float kick_lit = audioKick * smoothstep( 0.6, 0.9, dark );
+    float hi_lit = clamp( audioHigh * 2.0, 0.0, 1.0 ) * smoothstep( 0.4, 0.1, dark );
     for ( int layer = 0; layer < 3; ++layer )
     {
         float fl = float( layer );
@@ -107,17 +107,17 @@ void main()
         float r = ( 0.16 + 0.26 * cdark ) * ( 1.0 - 0.15 * fl );
         float d = length( f + 0.0 - ( jit * 0.6 + orbit ) );
         float dot_ = smoothstep( r, r * 0.6, d ) * present;
-        vec3  dotCol = ink;
-        dotCol = mix( dotCol, imgPalette( hue * 0.159 + 0.9 ) * 1.5, kickLit * 0.3 );
-        dotCol = mix( dotCol, vec3( 1.0, 0.95, 0.8 ), hiLit * 0.25 );
-        col = mix( col, dotCol, dot_ );
+        vec3  dot_col = ink;
+        dot_col = mix( dot_col, imgPalette( hue * 0.159 + 0.9 ) * 1.5, kick_lit * 0.3 );
+        dot_col = mix( dot_col, vec3( 1.0, 0.95, 0.8 ), hi_lit * 0.25 );
+        col = mix( col, dot_col, dot_ );
     }
     // Paper grain (static) and vignette.
     col *= 0.96 + 0.04 * hash21( floor( gl_FragCoord.xy * 0.5 ) );
     col *= 0.9 + 0.1 * ( 1.0 - length( p ) * 0.6 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

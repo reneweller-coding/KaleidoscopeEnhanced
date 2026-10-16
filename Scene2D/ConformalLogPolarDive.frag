@@ -79,9 +79,9 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float sprl = ( spiralP > 0.01 ) ? spiralP : 1.0;
-    // Ganzzahlig gerundet: ein nicht-ganzzahliges nArms reisst die
+    // Ganzzahlig gerundet: ein nicht-ganzzahliges n_arms reisst die
     // Winkel-Kachelung am Branch-Cut auf (zweite Quelle derselben Naht).
-    float nArms = floor( ( ( armsP > 1.0 ) ? armsP : 2.0 ) + 0.5 );
+    float n_arms = floor( ( ( armsP > 1.0 ) ? armsP : 2.0 ) + 0.5 );
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
@@ -92,7 +92,7 @@ void main()
     float a = atan( uv.y, uv.x );
 
     // Conformal log-polar transformation: w = ln(r) + i * theta
-    float lnR = log( r );
+    float ln_r = log( r );
 
     // Spiral winding as an INTEGER per-activation constant. The old
     // continuously-varying winding made the atan branch cut jump by a
@@ -101,57 +101,57 @@ void main()
     // of wraps passes through fract() invisibly.
     float wind = max( 1.0, floor( 1.2 * sprl + 0.5 ) );
 
-    // Log-polar coordinates with continuous forward translation along lnR and rotation along a
-    vec2 logPolar = vec2(
-        lnR * 0.6 - t * 0.8 + a * wind * 0.159155,
+    // Log-polar coordinates with continuous forward translation along ln_r and rotation along a
+    vec2 log_polar = vec2(
+        ln_r * 0.6 - t * 0.8 + a * wind * 0.159155,
         a / 6.2831853 + t * 0.1 );
 
     // Multi-octave blending
-    float phase = fract( logPolar.x );
-    vec3  colAcc = vec3( 0.0 );
-    float weightAcc = 0.0;
+    float phase = fract( log_polar.x );
+    vec3  col_acc = vec3( 0.0 );
+    float weight_acc = 0.0;
 
     for ( int k = -1; k <= 1; k++ )
     {
         float f = phase + float( k );
         float w = exp( -4.0 * ( f - 0.5 ) * ( f - 0.5 ) );
 
-        vec2 sampleCoord = vec2( f * 2.0, logPolar.y * nArms );
-        vec3 sampleCol = img( fract( sampleCoord ) );
-        vec3 palCol = imgPalette( f * 0.3 + a / 6.2831853 );
+        vec2 sample_coord = vec2( f * 2.0, log_polar.y * n_arms );
+        vec3 sample_col = img( fract( sample_coord ) );
+        vec3 pal_col = imgPalette( f * 0.3 + a / 6.2831853 );
 
-        colAcc += mix( sampleCol, palCol, 0.45 ) * w;
-        weightAcc += w;
+        col_acc += mix( sample_col, pal_col, 0.45 ) * w;
+        weight_acc += w;
     }
 
     // Hold the galactic disc back to a fixed dark base: spiral arms only read
     // against dark inter-arm space, and with a bright photo the octave-blended
     // base alone already sat near 1.0.
-    vec3  finalCol = colAcc / max( 0.001, weightAcc );
-    float expGain = clamp( 0.27 / max( 0.05, photoLevel() ), 0.27, 2.4 );
-    finalCol *= expGain;
+    vec3  final_col = col_acc / max( 0.001, weight_acc );
+    float exp_gain = clamp( 0.27 / max( 0.05, photoLevel() ), 0.27, 2.4 );
+    final_col *= exp_gain;
 
     // Glowing logarithmic spiral arm filaments
-    float armDist = abs( sin( lnR * 4.0 - a * wind * nArms + t * 4.0 ) );
-    // Sub-bass drops the smoothstep edge, widening the band of armDist that
+    float arm_dist = abs( sin( ln_r * 4.0 - a * wind * n_arms + t * 4.0 ) );
+    // Sub-bass drops the smoothstep edge, widening the band of arm_dist that
     // counts as "inside an arm" -- the arms breathe fatter. The divisor trades
     // peak intensity for that extra area so the widened arms don't clip.
-    float armEdge = 0.85 - 0.22 * audioSubBass;
-    float armGlow = smoothstep( armEdge, 1.0, armDist ) * glw * ( 1.0 + 2.5 * audioKick )
-                    / ( 1.0 + 0.35 * audioSubBass );
+    float arm_edge = 0.85 - 0.22 * audioSubBass;
+    float arm_glow = smoothstep( arm_edge, 1.0, arm_dist ) * glw * ( 1.0 + 2.5 * audioKick )
+                     / ( 1.0 + 0.35 * audioSubBass );
     // The tint constant exceeds 1.0 on two channels, so the TINTED vector
-    // carries the cap -- bounding only armGlow still let vec3(1.3,1.1,1.8) * it
+    // carries the cap -- bounding only arm_glow still let vec3(1.3,1.1,1.8) * it
     // run past white on every kick.
-    finalCol += min( vec3( 1.3, 1.1, 1.8 ) * armGlow * 0.7, vec3( 0.85 ) );
+    final_col += min( vec3( 1.3, 1.1, 1.8 ) * arm_glow * 0.7, vec3( 0.85 ) );
 
     // Center singularity core bloom. imgPalette() is a photo sample, so it
     // rides the same exposure gain as the base and is capped as well -- a
     // kick used to multiply a near-white palette by 3.7 right at the core.
-    float centerBloom = exp( -r * 8.0 ) * ( 1.2 + 2.5 * audioKick );
-    finalCol += min( imgPalette( 0.85 ) * expGain * centerBloom, vec3( 0.90 ) );
+    float center_bloom = exp( -r * 8.0 ) * ( 1.2 + 2.5 * audioKick );
+    final_col += min( imgPalette( 0.85 ) * exp_gain * center_bloom, vec3( 0.90 ) );
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.28 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.28 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

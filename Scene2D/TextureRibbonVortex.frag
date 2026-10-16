@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -263,26 +263,26 @@ void main()
     float turn = 0.05 * sceneTime + 0.3 * audioPhase;
     float width = 0.5 + 0.35 * clamp( audioSpread, 0.0, 1.0 );
     float z = 0.7 + 0.8 * clamp( zoomP, 0.0, 1.0 );
-    float idA, idB;
-    vec4  A = ribbons( lr * z, a, 6.0, k, flow, turn, width, 0.0, fwA, idA );
-    vec4  B = ribbons( lr * z, -a, 4.0, k * 0.8, flow * 0.8, turn * 0.7, width * 0.8, 0.5, fwA, idB );
+    float id_a, id_b;
+    vec4  A = ribbons( lr * z, a, 6.0, k, flow, turn, width, 0.0, fwA, id_a );
+    vec4  B = ribbons( lr * z, -a, 4.0, k * 0.8, flow * 0.8, turn * 0.7, width * 0.8, 0.5, fwA, id_b );
     // Weave: which family is on top alternates along the crossings.
-    float over = mod( idA + idB, 2.0 ); // true weave: alternates at every crossing
+    float over = mod( id_a + id_b, 2.0 ); // true weave: alternates at every crossing
     float wv = clamp( weaveP, 0.0, 1.0 );
     vec3  col = vec3( 0.02 );
     vec3  top = mix( A.rgb, B.rgb, over );
-    float topA = mix( A.a, B.a * wv, over );
+    float top_a = mix( A.a, B.a * wv, over );
     vec3  bot = mix( B.rgb, A.rgb, over );
-    float botA = mix( B.a * wv, A.a, over );
-    col = mix( col, bot * 0.7, botA );
-    col = mix( col, top, topA );
+    float bot_a = mix( B.a * wv, A.a, over );
+    col = mix( col, bot * 0.7, bot_a );
+    col = mix( col, top, top_a );
     // Shadow of the top ribbon's edge on the lower one.
-    col *= 1.0 - 0.3 * botA * ( 1.0 - topA );
+    col *= 1.0 - 0.3 * bot_a * ( 1.0 - top_a );
     vec3  gc = glowColour( imgLod( vec2( 0.5 + 0.1 * sin( 0.02 * sceneTime ), 0.5 ), 6.0 ), vec2( flow * 0.05, 0.0 ),
                            hueP * 0.159 );
     float mode = clamp( audioMode, 0.0, 1.0 );
     gc = mix( gc, gc * mix( vec3( 0.8, 0.9, 1.2 ), vec3( 1.2, 0.9, 0.7 ), mode ), 0.5 );
-    col += gc * topA
+    col += gc * top_a
            * pow( max( 0.0, 1.0 - abs( fract( ( a + turn ) * 6.0 / 6.2831853 + lr * z * k ) - 0.5 ) * 4.0 ), 6.0 )
            * ( 0.1 + 0.6 * kick );
     // The eye.

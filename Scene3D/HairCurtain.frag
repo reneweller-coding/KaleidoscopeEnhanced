@@ -87,8 +87,8 @@ vec3 hue2rgb( float h )
 /// between the shifted tangent and the half-vector.
 float hairSpec( vec3 T, vec3 H, float shift, float power )
 {
-    vec3  Ts = normalize( T + shift * vec3( 0.0, 1.0, 0.0 ) );
-    float d = dot( Ts, H );
+    vec3  ts = normalize( T + shift * vec3( 0.0, 1.0, 0.0 ) );
+    float d = dot( ts, H );
     return pow( max( sqrt( 1.0 - d * d ), 0.0 ), power );
 }
 

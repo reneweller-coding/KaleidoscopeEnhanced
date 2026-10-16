@@ -17,8 +17,8 @@ out float gIndex;
 
 uniform float sceneSeed; ///< A random number fixed per activation.
 
-const float SPAN_Z = 5.5;  ///< depth: several layers of strands
-const float CROWN_R = 7.0; ///< radius of the surface the hair falls over
+const float SpanZ = 5.5;  ///< depth: several layers of strands
+const float CrownR = 7.0; ///< radius of the surface the hair falls over
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -29,7 +29,7 @@ void main()
     // Strands are pushed toward the camera the same way GrassField pushes its
     // blades: a uniform depth spread wastes most of them behind the layers we
     // can already see.
-    float z = 1.6 + SPAN_Z * h.x * h.x;
+    float z = 1.6 + SpanZ * h.x * h.x;
 
     // Roots sit on an ARC, not on a straight line, and each strand leaves its
     // root along the surface normal there.  That is the whole reason this scene
@@ -38,8 +38,8 @@ void main()
     // band at all.  Falling over a curved crown fans the fibre directions, and
     // the sheen appears as an arc across the curtain.
     float a = ( h.y - 0.5 ) * 1.75;
-    vec3  centre = vec3( 0.0, 5.2 - CROWN_R, 0.0 );
-    gRoot = centre + CROWN_R * vec3( sin( a ), cos( a ), 0.0 ) + vec3( 0.0, 0.6 * h.z, z );
+    vec3  centre = vec3( 0.0, 5.2 - CrownR, 0.0 );
+    gRoot = centre + CrownR * vec3( sin( a ), cos( a ), 0.0 ) + vec3( 0.0, 0.6 * h.z, z );
 
     // Outward at the root, tipping steeply downward — gravity wins fast.
     gLean = normalize( vec3( sin( a ) * 1.15, cos( a ) * 0.25 - 1.0, 0.12 * ( h.w - 0.5 ) ) );

@@ -57,8 +57,8 @@ uniform float decayP;  ///< feedback persistence (0 -> 0.997; 0.994..0.999)
 uniform float injectP; ///< fresh-photo injection strength (0 -> 0.05; 0.05..0.13)
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
-const vec3  LW = vec3( 0.2126, 0.7152, 0.0722 );
+const float Pi = 3.14159265358979; ///< Pi.
+const vec3  Lw = vec3( 0.2126, 0.7152, 0.0722 );
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -96,7 +96,7 @@ vec3 imgPalette( float t )
 vec3 palNorm( float t )
 {
     vec3  p = imgPalette( t );
-    float pl = max( dot( p, LW ), 1e-4 );
+    float pl = max( dot( p, Lw ), 1e-4 );
     vec3  pn = min( p / pl, vec3( 2.5 ) );
     return mix( vec3( 1.0 ), pn, clamp( pl * 8.0, 0.25, 1.0 ) ) * 0.55;
 }
@@ -115,8 +115,8 @@ vec2 kaleido( vec2 p, float sides, out float wedgeA, out float segOut )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     wedgeA = a;
     segOut = seg;
@@ -126,9 +126,9 @@ vec2 kaleido( vec2 p, float sides, out float wedgeA, out float segOut )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float sidesV = ( sidesP < 5 ) ? 7.0 : float( sidesP );
-    float decayV = ( decayP <= 0.5 ) ? 0.997 : decayP;
-    float injV = ( injectP <= 0.001 ) ? 0.05 : injectP;
+    float sides_v = ( sidesP < 5 ) ? 7.0 : float( sidesP );
+    float decay_v = ( decayP <= 0.5 ) ? 0.997 : decayP;
+    float inj_v = ( injectP <= 0.001 ) ? 0.05 : injectP;
 
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
@@ -138,7 +138,7 @@ void main()
     // this samples last frame's already-folded output, the fold recurses and
     // detail compounds -- this is the entire "feedback" trick.
     float wedgeA, seg;
-    vec2  folded = kaleido( c, sidesV, wedgeA, seg );
+    vec2  folded = kaleido( c, sides_v, wedgeA, seg );
     float rad = length( c );
 
     // Small per-frame zoom + rotation (deliberately a near-constant, not
@@ -151,8 +151,8 @@ void main()
     // region within a couple of seconds, starving the loop of brightness
     // no matter how strong the fresh-photo injection below is.
     float zoom = 1.006 + 0.004 * audioSwell;
-    float rotHere = 0.02; // steady turn: a beat-flipped direction was a jerk (V7d)
-    float cs = cos( rotHere ), sn = sin( rotHere );
+    float rot_here = 0.02; // steady turn: a beat-flipped direction was a jerk (V7d)
+    float cs = cos( rot_here ), sn = sin( rot_here );
     folded = mat2( cs, -sn, sn, cs ) * folded / max( zoom, 1e-3 );
 
     vec2 puv = vec2( folded.x / aspect, folded.y ) + 0.5;
@@ -178,8 +178,8 @@ void main()
     // wash. The peak (0.38+0.66 = 1.04) is deliberately just under the inverse
     // of decay*(1-inject) for the strongest legal preset (0.996*0.94 = 0.936),
     // so the loop can never run away: 0.936*1.04 = 0.974 < 1.
-    float prevL = dot( prev, LW );
-    prev *= 0.38 + 0.66 * smoothstep( 0.10, 0.60, prevL );
+    float prev_l = dot( prev, Lw );
+    prev *= 0.38 + 0.66 * smoothstep( 0.10, 0.60, prev_l );
 
     // Fresh injection: a little of the current photo, folded the SAME way as
     // the feedback so new material enters already symmetric, not as a flat
@@ -194,13 +194,13 @@ void main()
     // pushed through a smoothstep, so only the picture's LIGHT parts feed the
     // loop and its shadows inject nothing -- that is what leaves black between
     // the petals.
-    float dcL = max( dot( imgDC(), LW ), 0.05 );
-    float gain = clamp( 0.36 / dcL, 0.6, 3.0 );
-    vec2  injUV = clamp( vec2( folded.x / aspect, folded.y ) * 1.30 + 0.5, 0.0, 1.0 );
-    vec3  photo = img( injUV ) * gain;
-    photo *= 0.20 + 1.30 * smoothstep( 0.06, 0.55, dot( photo, LW ) );
+    float dc_l = max( dot( imgDC(), Lw ), 0.05 );
+    float gain = clamp( 0.36 / dc_l, 0.6, 3.0 );
+    vec2  inj_uv = clamp( vec2( folded.x / aspect, folded.y ) * 1.30 + 0.5, 0.0, 1.0 );
+    vec3  photo = img( inj_uv ) * gain;
+    photo *= 0.20 + 1.30 * smoothstep( 0.06, 0.55, dot( photo, Lw ) );
     vec3  fresh = mix( photo, palNorm( 0.5 + 0.5 * length( folded ) ), 0.15 );
-    float injectHere = injV * ( 1.2 + 0.8 * audioSwell );
+    float inject_here = inj_v * ( 1.2 + 0.8 * audioSwell );
 
     // decay is capped at 0.996 (not 0.999): together with the contrast curve
     // above this is what keeps the loop's peak gain below 1.
@@ -208,13 +208,13 @@ void main()
     // to black through the loop (measured: 0.65 -> 0.09 luma).  This soft
     // ceiling bites only above 0.55 luma, so the loop settles near it
     // instead of racing to white -- or to black.
-    float prevLum = dot( prev, vec3( 0.299, 0.587, 0.114 ) );
-    prev *= 1.0 - 0.26 * smoothstep( 0.42, 0.88, prevLum );
+    float prev_lum = dot( prev, vec3( 0.299, 0.587, 0.114 ) );
+    prev *= 1.0 - 0.26 * smoothstep( 0.42, 0.88, prev_lum );
     // The angular blur launders chroma out of the loop (measured sat 0.09);
     // make the INJECTION carry extra chroma so the equilibrium keeps colour.
-    float freshLum = dot( fresh, vec3( 0.299, 0.587, 0.114 ) );
-    fresh = clamp( mix( vec3( freshLum ), fresh, 1.8 ), 0.0, 1.0 );
-    vec3 col = mix( prev * min( decayV, 0.996 ) * edge, fresh, injectHere );
+    float fresh_lum = dot( fresh, vec3( 0.299, 0.587, 0.114 ) );
+    fresh = clamp( mix( vec3( fresh_lum ), fresh, 1.8 ), 0.0, 1.0 );
+    vec3 col = mix( prev * min( decay_v, 0.996 ) * edge, fresh, inject_here );
 
     // ---- The mirror itself, drawn CRISP every frame ----
     // Everything above went through the loop and is therefore soft. These three
@@ -227,12 +227,12 @@ void main()
     //  * petal ribs: concentric bands rolling outward, dimmed toward the seams
     //    so each wedge reads as a separate petal.
     //  * the rosette at the convergence point.
-    float dSeam = rad * min( wedgeA, seg - wedgeA );
-    float seamL = exp( -( dSeam * dSeam ) / ( 0.0075 * 0.0075 ) );
-    float petal = 0.35 + 0.65 * pow( sin( clamp( wedgeA / seg, 0.0, 1.0 ) * PI ), 2.0 );
+    float d_seam = rad * min( wedgeA, seg - wedgeA );
+    float seam_l = exp( -( d_seam * d_seam ) / ( 0.0075 * 0.0075 ) );
+    float petal = 0.35 + 0.65 * pow( sin( clamp( wedgeA / seg, 0.0, 1.0 ) * Pi ), 2.0 );
     float ribs = pow( 0.5 + 0.5 * cos( rad * 46.0 - ( time * 0.8 + audioAdvance * 1.6 ) ), 8.0 );
     float rose = exp( -( rad * rad ) / ( 0.045 * 0.045 ) );
-    col += palNorm( 0.20 ) * ( seamL * 0.38 * ( 0.55 + 0.45 * audioKick ) + rose * 0.42 );
+    col += palNorm( 0.20 ) * ( seam_l * 0.38 * ( 0.55 + 0.45 * audioKick ) + rose * 0.42 );
     col += palNorm( 0.65 ) * ( ribs * petal * 0.28 );
 
     col *= 0.95 + 0.35 * audioLevel;
@@ -240,7 +240,7 @@ void main()
     if ( hueP > 0.001 )
         col = hueRot( col, hueP );
 
-    vec3 _catTone = clamp( col, 0.0, 1.0 ) * 1.0;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 ) * 1.0;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

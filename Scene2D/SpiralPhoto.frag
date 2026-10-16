@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -256,8 +256,8 @@ void main()
     lc = mix( vec3( 1.0 ), lc, 0.3 + 0.6 * swell );
     vec3 paper = vec3( 0.94, 0.92, 0.87 ) * ( 0.97 + 0.03 * noise2( p * 400.0 ) );
     vec3 ink = mix( vec3( 0.05, 0.05, 0.08 ), lc * 0.4, 0.5 * swell );
-    vec3 onPaper = mix( paper, ink, line * ( 0.9 + 0.1 * kick ) );
+    vec3 on_paper = mix( paper, ink, line * ( 0.9 + 0.1 * kick ) );
     // Paper tint follows the mode (cool grey in minor, warm cream in major).
-    onPaper *= mix( vec3( 0.9, 0.95, 1.05 ), vec3( 1.04, 1.0, 0.94 ), mode );
-    finish( onPaper );
+    on_paper *= mix( vec3( 0.9, 0.95, 1.05 ), vec3( 1.04, 1.0, 0.94 ), mode );
+    finish( on_paper );
 }

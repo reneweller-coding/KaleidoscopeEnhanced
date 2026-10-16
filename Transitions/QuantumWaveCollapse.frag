@@ -61,44 +61,45 @@ void main()
 
     float t = time * 0.0423 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Dual-state wavefunction superposition: psi = psi_1 + psi_2.
     // audioBass undulates the de Broglie wavenumber and the slit separation
     // that sets the interference fringe spacing.  Both are spatial factors --
     // the -t*4.0 phase is untouched, so the wave drift rate stays
-    // audio-independent -- and midTransition returns both to their base values
-    // at the fade endpoints, where phaseDisp and the ring glow are zero.
-    float deBroglieK = 25.0 * wav; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float slitSep = 0.3;           // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float psi1 = sin( length( p - vec2( slitSep, 0.0 ) ) * deBroglieK - t * 4.0 );
-    float psi2 = sin( length( p + vec2( slitSep, 0.0 ) ) * deBroglieK - t * 4.0 );
+    // audio-independent -- and mid_transition returns both to their base values
+    // at the fade endpoints, where phase_disp and the ring glow are zero.
+    float de_broglie_k = 25.0 * wav; // constant: an envelope on a scale re-lays the whole pattern (speed
+                                     // pass 14.09.2026)
+    float slit_sep = 0.3; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float psi1 = sin( length( p - vec2( slit_sep, 0.0 ) ) * de_broglie_k - t * 4.0 );
+    float psi2 = sin( length( p + vec2( slit_sep, 0.0 ) ) * de_broglie_k - t * 4.0 );
 
     // Probability density: |psi|^2 = (psi1 + psi2)^2
-    float probDensity = ( psi1 + psi2 ) * 0.5;
-    float interference = probDensity * probDensity;
+    float prob_density = ( psi1 + psi2 ) * 0.5;
+    float interference = prob_density * prob_density;
 
     // Measurement collapse progression
-    float collapseThreshold = smoothstep( 0.0, 1.0, pow( tProg, clp ) );
-    float measuredState = step( collapseThreshold, interference );
+    float collapse_threshold = smoothstep( 0.0, 1.0, pow( t_prog, clp ) );
+    float measured_state = step( collapse_threshold, interference );
 
     // Quantum phase coordinate displacement
-    vec2 phaseDisp = vec2( psi1, psi2 ) * 0.03 * midTransition;
+    vec2 phase_disp = vec2( psi1, psi2 ) * 0.03 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + phaseDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - phaseDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + phase_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - phase_disp ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Glowing quantum phase rings
-    vec3 phaseColor = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + interference * 6.28 + audioPhase );
-    col.rgb += interference * phaseColor * midTransition * ( 1.2 + audioKick * 1.0 );
+    vec3 phase_color = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + interference * 6.28 + audioPhase );
+    col.rgb += interference * phase_color * mid_transition * ( 1.2 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

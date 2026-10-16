@@ -43,9 +43,9 @@ out vec3  vWorldPos; ///< World position (from the vertex stage).
 out vec3  vTint;
 out float vFlash;
 
-const float NUM_CUBES = 4900.0;
-const float NUM_RINGS = 8.0;
-const float PER_RING = NUM_CUBES / NUM_RINGS;
+const float NumCubes = 4900.0;
+const float NumRings = 8.0;
+const float PerRing = NumCubes / NumRings;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -85,23 +85,23 @@ void main()
         return;
     }
 
-    float sidesV = ( sidesP < 4 ) ? 6.0 : float( sidesP );
-    float tiltV = ( tiltP <= 0.01 ) ? 1.0 : tiltP;
-    float shardV = ( shardP <= 0.01 ) ? 1.0 : shardP;
+    float sides_v = ( sidesP < 4 ) ? 6.0 : float( sidesP );
+    float tilt_v = ( tiltP <= 0.01 ) ? 1.0 : tiltP;
+    float shard_v = ( shardP <= 0.01 ) ? 1.0 : shardP;
 
-    float ring = floor( i / PER_RING );
-    float idxInRing = mod( i, PER_RING );
-    float ringR = 1.1 + ring * 0.78;
+    float ring = floor( i / PerRing );
+    float idx_in_ring = mod( i, PerRing );
+    float ring_r = 1.1 + ring * 0.78;
 
     // Mirror-kaleidoscope wedge placement (same construction as the fold used
     // in ParticleTunnelFlight.vert): index picks the wedge copy so population
     // is even, alternating copies mirrored for true kaleidoscope symmetry.
-    float perWedge = PER_RING / sidesV;
-    float wedge = 6.2831853 / sidesV;
-    float copy = mod( floor( idxInRing / perWedge ), sidesV );
-    float frac = mod( idxInRing, perWedge ) / perWedge;
-    float baseAng = frac * wedge * 0.5;
-    float mirrored = ( mod( copy, 2.0 ) < 0.5 ) ? baseAng : ( wedge * 0.5 - baseAng );
+    float per_wedge = PerRing / sides_v;
+    float wedge = 6.2831853 / sides_v;
+    float copy = mod( floor( idx_in_ring / per_wedge ), sides_v );
+    float frac = mod( idx_in_ring, per_wedge ) / per_wedge;
+    float base_ang = frac * wedge * 0.5;
+    float mirrored = ( mod( copy, 2.0 ) < 0.5 ) ? base_ang : ( wedge * 0.5 - base_ang );
     float spin = audioPhase * 0.35 + time * 0.015;
     float ang = mirrored + copy * wedge + spin;
 
@@ -109,43 +109,43 @@ void main()
 
     // Gentle dome: outer rings recede in depth, so the disc reads as a shallow
     // bowl rather than a flat wallpaper of mirrors.
-    float domeCurve = ring * ring * 0.05;
+    float dome_curve = ring * ring * 0.05;
 
-    vec2 xy = vec2( cos( ang ), sin( ang ) ) * ringR;
+    vec2 xy = vec2( cos( ang ), sin( ang ) ) * ring_r;
 
     // Per-shard tilt: phase-offset by the shard's own seed so the disc
     // shimmers rather than tilting in unison; kick briefly widens the swing
     // and adds a metallic flash.
-    float tiltPhase = seeds.x * 6.2831853 + time * 0.4; // no beat-locked wobble (V7d)
-    float kickBoost = 1.0 + audioKick * 0.8;
-    float tiltAmtX = sin( tiltPhase ) * ( 0.30 + 0.20 * seeds.y ) * tiltV * kickBoost;
-    float tiltAmtY = cos( tiltPhase * 1.31 + seeds.z * 6.2831853 ) * ( 0.30 + 0.20 * seeds.w ) * tiltV * kickBoost;
+    float tilt_phase = seeds.x * 6.2831853 + time * 0.4; // no beat-locked wobble (V7d)
+    float kick_boost = 1.0 + audioKick * 0.8;
+    float tilt_amt_x = sin( tilt_phase ) * ( 0.30 + 0.20 * seeds.y ) * tilt_v * kick_boost;
+    float tilt_amt_y = cos( tilt_phase * 1.31 + seeds.z * 6.2831853 ) * ( 0.30 + 0.20 * seeds.w ) * tilt_v * kick_boost;
 
-    mat3 rotX = mat3( 1.0, 0.0, 0.0,
-                      0.0, cos( tiltAmtX ), -sin( tiltAmtX ),
-                      0.0, sin( tiltAmtX ), cos( tiltAmtX ) );
-    mat3 rotY = mat3( cos( tiltAmtY ), 0.0, sin( tiltAmtY ),
-                      0.0, 1.0, 0.0,
-                      -sin( tiltAmtY ), 0.0, cos( tiltAmtY ) );
-    mat3 tiltR = rotY * rotX;
+    mat3 rot_x = mat3( 1.0, 0.0, 0.0,
+                       0.0, cos( tilt_amt_x ), -sin( tilt_amt_x ),
+                       0.0, sin( tilt_amt_x ), cos( tilt_amt_x ) );
+    mat3 rot_y = mat3( cos( tilt_amt_y ), 0.0, sin( tilt_amt_y ),
+                       0.0, 1.0, 0.0,
+                       -sin( tilt_amt_y ), 0.0, cos( tilt_amt_y ) );
+    mat3 tilt_r = rot_y * rot_x;
 
     // Thin plate facing back toward the camera (camera sits near the world
     // origin looking down +Z; the disc is ahead of it, so the resting facet
     // normal points toward -Z).
-    vec3 plateSize = vec3( 0.34, 0.34, 0.045 ) * shardV;
-    vec3 localCorner = tiltR * ( attrA.xyz * plateSize );
+    vec3 plate_size = vec3( 0.34, 0.34, 0.045 ) * shard_v;
+    vec3 local_corner = tilt_r * ( attrA.xyz * plate_size );
 
-    vec3 worldP = vec3( xy, 6.4 + ring * 0.55 + domeCurve );
-    vec3 finalWorld = worldP + localCorner;
+    vec3 world_p = vec3( xy, 6.4 + ring * 0.55 + dome_curve );
+    vec3 final_world = world_p + local_corner;
 
-    vec3 vp = finalWorld;
+    vec3 vp = final_world;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    vec3 rawNormal = tiltR * vec3( 0.0, 0.0, -1.0 );
-    vNormal = rawNormal;
-    vWorldPos = finalWorld;
+    vec3 raw_normal = tilt_r * vec3( 0.0, 0.0, -1.0 );
+    vNormal = raw_normal;
+    vWorldPos = final_world;
 
     float flash = clamp( audioKick * ( 0.5 + 0.5 * seeds.x ) - 0.3, 0.0, 1.0 );
     vFlash = flash;

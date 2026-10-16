@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -244,13 +244,13 @@ void main()
         dens += smoothstep( 0.42, 0.75, fbm( p * sc + o + 1.2 * w ) ) / ( 1.0 + fk * 0.4 );
     }
     dens *= ( 0.45 + 0.4 * clamp( smokeP, 0.0, 1.0 ) ) * ( 0.6 + 0.7 * swell );
-    float nB = floor( 3.0 + 3.0 * clamp( beamsP, 0.0, 1.0 ) );
+    float n_b = floor( 3.0 + 3.0 * clamp( beamsP, 0.0, 1.0 ) );
     float bw = 0.07 + 0.08 * clamp( audioSpread, 0.0, 1.0 );
     vec3  light = vec3( 0.0 );
     for ( int i = 0; i < 6; ++i )
     {
         float fi = float( i );
-        float on = smoothstep( fi - 0.5, fi + 0.5, nB - 0.5 );
+        float on = smoothstep( fi - 0.5, fi + 0.5, n_b - 0.5 );
         if ( on <= 0.0 )
             break;
         // Each beam: a source off-screen, direction sweeping slowly.

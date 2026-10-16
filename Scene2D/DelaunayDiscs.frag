@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -262,7 +262,7 @@ void main()
     float best = -9.0;
     vec2  bid = vec2( 0.0 );
     vec2  bl = vec2( 0.0 );
-    float bR = 1.0;
+    float b_r = 1.0;
     float grow = 0.75 + 0.3 * clamp( audioSpread, 0.0, 1.0 );
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
@@ -278,18 +278,18 @@ void main()
                 best = sc;
                 bid = id;
                 bl = g - c;
-                bR = R;
+                b_r = R;
             }
         }
     // Rings and sectors of the chosen disc.
-    float nR = 3.0 + 4.0 * clamp( ringP, 0.0, 1.0 );
-    float rr = length( bl ) / bR;  // 0..1 inside, >1 outside (background arcs)
-    float ring = floor( rr * nR ); // (space)
+    float n_r = 3.0 + 4.0 * clamp( ringP, 0.0, 1.0 );
+    float rr = length( bl ) / b_r;  // 0..1 inside, >1 outside (background arcs)
+    float ring = floor( rr * n_r ); // (space)
     float dir = mod( ring, 2.0 ) < 0.5 ? 1.0 : -1.0;
     float ang = atan( bl.y, bl.x ) + dir * T * ( 0.3 + 0.2 * hash21( bid + ring ) ) + hash21( bid + ring * 3.0 ) * 6.28;
-    float nS = 2.0 * floor( 1.0 + 2.0 * clamp( sectorP, 0.0, 1.0 ) ); // 2, 4 or 6 sectors
-    float sa = ang * nS / 6.2831853;
-    float sector = mod( floor( sa ), nS );
+    float n_s = 2.0 * floor( 1.0 + 2.0 * clamp( sectorP, 0.0, 1.0 ) ); // 2, 4 or 6 sectors
+    float sa = ang * n_s / 6.2831853;
+    float sector = mod( floor( sa ), n_s );
     float k = floor( hash21( bid * 1.7 + vec2( ring, sector ) ) * 8.0 );
     vec3  c = delaunayPal( k, mode );
     // Photo colours mixed in.
@@ -300,11 +300,11 @@ void main()
     float brush = noise2( vec2( ang * 8.0, rr * 60.0 ) + bid * 3.0 );
     c *= 0.95 + ( 0.04 + 0.1 * rough ) * ( brush - 0.5 ) * 2.0;
     // Thin dark lines between rings and sectors, a little irregular.
-    float pxR = fwidth( rr * nR ) + 1e-4;
-    float ringLine = smoothstep( pxR * 1.5, 0.0, abs( fract( rr * nR ) - 0.5 ) - 0.5 + pxR * 1.5 + 0.0 );
-    float pxS = length( fwidth( vec2( cos( ang ), sin( ang ) ) ) ) * nS / 6.2831853 * 4.0 + 1e-4;
-    float secLine = smoothstep( pxS, 0.0, min( fract( sa ), 1.0 - fract( sa ) ) * rr );
-    c *= 1.0 - 0.35 * max( ringLine, secLine ) * step( rr, 1.0 );
+    float px_r = fwidth( rr * n_r ) + 1e-4;
+    float ring_line = smoothstep( px_r * 1.5, 0.0, abs( fract( rr * n_r ) - 0.5 ) - 0.5 + px_r * 1.5 + 0.0 );
+    float px_s = length( fwidth( vec2( cos( ang ), sin( ang ) ) ) ) * n_s / 6.2831853 * 4.0 + 1e-4;
+    float sec_line = smoothstep( px_s, 0.0, min( fract( sa ), 1.0 - fract( sa ) ) * rr );
+    c *= 1.0 - 0.35 * max( ring_line, sec_line ) * step( rr, 1.0 );
     // Outside all discs: large faint arcs of the background.
     if ( rr > 1.0 )
         c = mix( c, c * 0.55, 0.5 );

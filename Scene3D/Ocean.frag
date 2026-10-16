@@ -60,9 +60,9 @@ void main()
     // Sky reflection: the photo, sampled along the reflected ray.  Deliberately
     // low-contrast so the sea keeps its own colour.
     vec3 R = reflect( -V, n );
-    vec2 skyUV = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
-                       clamp( R.y, 0.0, 1.0 ) );
-    vec3 sky = texture( tex0, fract( skyUV ) ).rgb;
+    vec2 sky_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5,
+                        clamp( R.y, 0.0, 1.0 ) );
+    vec3 sky = texture( tex0, fract( sky_uv ) ).rgb;
     sky = mix( vec3( dot( sky, vec3( 0.33 ) ) ), sky, 0.55 ) * 0.75 + 0.03;
 
     // Water body colour: deep teal, shallower and greener on the crests.
@@ -92,8 +92,8 @@ void main()
 
     // Distance haze toward the horizon.
     float haze = clamp( vDist / 220.0, 0.0, 1.0 );
-    vec3  hazeCol = sky * 0.55 + vec3( 0.04, 0.06, 0.09 );
-    col = mix( col, hazeCol, haze * haze * 0.85 );
+    vec3  haze_col = sky * 0.55 + vec3( 0.04, 0.06, 0.09 );
+    col = mix( col, haze_col, haze * haze * 0.85 );
 
     col *= 1.0 + 0.18 * audioBeat;
     col = col / ( 1.0 + col * 0.30 );

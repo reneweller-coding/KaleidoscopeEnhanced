@@ -85,11 +85,11 @@ void main()
     // the ends of the drift.
     float mx = 0.075 * sin( dayPhase * 6.2831853 );
     float tilt = ( tiltP - 0.5 ) * 0.6;
-    vec2  moonC = vec2( mx * cos( tilt ), mx * sin( tilt ) );
-    float dSun = length( p ) - RS;
-    float dMoon = length( p - moonC ) - RM;
-    float sunDisc = 1.0 - smoothstep( -0.003, 0.003, dSun );
-    float moonDisc = 1.0 - smoothstep( -0.003, 0.003, dMoon );
+    vec2  moon_c = vec2( mx * cos( tilt ), mx * sin( tilt ) );
+    float d_sun = length( p ) - RS;
+    float d_moon = length( p - moon_c ) - RM;
+    float sun_disc = 1.0 - smoothstep( -0.003, 0.003, d_sun );
+    float moon_disc = 1.0 - smoothstep( -0.003, 0.003, d_moon );
     // How total: the moon's offset from the sun's centre.
     float cover = 1.0 - smoothstep( 0.035, 0.07, abs( mx ) );
     float sky = cover; // sky darkens toward totality
@@ -105,19 +105,19 @@ void main()
     {
         float fk = float( k );
         float ang = fk / 32.0 * 6.2831853 + ( hash11( fk * 3.1 ) - 0.5 ) * 0.12 + sceneAdvance * 0.01;
-        float dA = a - ang;
-        dA = atan( sin( dA ), cos( dA ) );
+        float d_a = a - ang;
+        d_a = atan( sin( d_a ), cos( d_a ) );
         float e = clamp( audioSpectrum[k] * 1.6, 0.0, 1.0 );
         float len = RS + reach * ( 0.35 + 0.65 * e ) * ( 0.7 + 0.6 * hash11( fk * 5.3 ) );
         float width = 0.05 + 0.04 * hash11( fk * 7.7 );
         float along = smoothstep( len, RS + 0.01, r );
-        corona += exp( -dA * dA / ( width * width ) ) * along * ( 0.3 + 0.7 * e )
+        corona += exp( -d_a * d_a / ( width * width ) ) * along * ( 0.3 + 0.7 * e )
                   * ( 1.0 / ( 1.0 + ( r - RS ) * 6.0 ) );
     }
     // A soft inner corona all round.
     corona += exp( -( r - RS ) * 9.0 ) * 0.6 * step( RS, r );
-    vec3 coronaCol = mix( vec3( 0.95, 0.95, 1.0 ), imgPalette( hue * 0.159 + 0.55 ), 0.35 );
-    col += coronaCol * corona * ( 0.5 + 0.7 * audioLevel ) * sky;
+    vec3 corona_col = mix( vec3( 0.95, 0.95, 1.0 ), imgPalette( hue * 0.159 + 0.55 ), 0.35 );
+    col += corona_col * corona * ( 0.5 + 0.7 * audioLevel ) * sky;
 
     // Chromosphere: a thin pink ring; prominences: red loops on the limb.
     float chromo = exp( -abs( r - RS * 1.005 ) * 250.0 );
@@ -126,25 +126,25 @@ void main()
     {
         float fk = float( k );
         float ang = hash11( fk * 9.3 ) * 6.2831853;
-        float dA = atan( sin( a - ang ), cos( a - ang ) );
+        float d_a = atan( sin( a - ang ), cos( a - ang ) );
         float h = 0.02 + 0.04 * hash11( fk * 4.4 ) * ( 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
-        float prom = exp( -dA * dA * 900.0 ) * smoothstep( RS + h, RS, r ) * step( RS, r );
+        float prom = exp( -d_a * d_a * 900.0 ) * smoothstep( RS + h, RS, r ) * step( RS, r );
         col += vec3( 1.0, 0.35, 0.3 ) * prom * 1.5 * sky;
     }
 
     // The photosphere where the moon does not cover it: blinding white,
     // fading the corona away (partial phases); the diamond ring is the last
     // sliver, flaring on the kick.
-    float photo = sunDisc * ( 1.0 - moonDisc );
-    vec3  sunCol = vec3( 1.0, 0.98, 0.9 );
+    float photo = sun_disc * ( 1.0 - moon_disc );
+    vec3  sun_col = vec3( 1.0, 0.98, 0.9 );
     float sliver = photo;
-    col = mix( col, sunCol * 4.0, photo );
-    col += sunCol * sliver * ( 2.0 + 4.0 * audioKick );
+    col = mix( col, sun_col * 4.0, photo );
+    col += sun_col * sliver * ( 2.0 + 4.0 * audioKick );
     // Baily's beads / diamond glow around the sliver.
-    col += sunCol * exp( -abs( dMoon ) * 40.0 ) * photo * 2.0;
+    col += sun_col * exp( -abs( d_moon ) * 40.0 ) * photo * 2.0;
     // Glare from the uncovered photosphere brightens the whole sky.
     float glare = ( 1.0 - cover );
-    col += sunCol * glare * exp( -r * 2.0 ) * 0.6;
+    col += sun_col * glare * exp( -r * 2.0 ) * 0.6;
 
     // Sky: stars appear during totality (round, jittered); deep blue-black.
     vec2  su = p * 50.0;
@@ -156,9 +156,9 @@ void main()
     col += vec3( star ) * 0.6 * sky * step( RS * 1.3, r );
     col += mix( vec3( 0.25, 0.35, 0.6 ), vec3( 0.01, 0.015, 0.04 ), sky ) * 0.15 * ( 1.0 - photo );
     // The moon: black, a faint earthshine texture from the photo.
-    col = mix( col, img( fract( p * 0.8 + 0.5 ) ) * 0.03, moonDisc * ( 1.0 - photo ) );
+    col = mix( col, img( fract( p * 0.8 + 0.5 ) ) * 0.03, moon_disc * ( 1.0 - photo ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

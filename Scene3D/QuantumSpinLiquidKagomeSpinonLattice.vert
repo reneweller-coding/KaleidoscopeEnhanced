@@ -81,13 +81,13 @@ void park()
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float pId = attrA.w;
+    float p_id = attrA.w;
     vec4  seeds = attrB;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
-    const float nSide = 39.0; // 39^3 = 59319 of the 60000 points
-    if ( pId >= nSide * nSide * nSide )
+    const float n_side = 39.0; // 39^3 = 59319 of the 60000 points
+    if ( p_id >= n_side * n_side * n_side )
     {
         // Leftover points of the host's fixed 60000-point buffer: park them
         // outside the clip volume rather than letting mod() stack duplicates
@@ -96,20 +96,20 @@ void main()
         return;
     }
 
-    float ix = mod( pId, nSide );
-    float iy = mod( floor( pId / nSide ), nSide );
-    float iz = floor( pId / ( nSide * nSide ) );
+    float ix = mod( p_id, n_side );
+    float iy = mod( floor( p_id / n_side ), n_side );
+    float iz = floor( p_id / ( n_side * n_side ) );
 
     // Kagome corner-sharing-triangle sub-lattice
-    float triangleSub = mod( ix + iy + iz, 3.0 );
-    vec2  sub = ( triangleSub == 0.0 ) ? vec2( 0.0, 0.0 )
-                                       : ( ( triangleSub == 1.0 ) ? vec2( 0.5, 0.0 ) : vec2( 0.25, 0.433 ) );
+    float triangle_sub = mod( ix + iy + iz, 3.0 );
+    vec2  sub = ( triangle_sub == 0.0 ) ? vec2( 0.0, 0.0 )
+                                        : ( ( triangle_sub == 1.0 ) ? vec2( 0.5, 0.0 ) : vec2( 0.25, 0.433 ) );
 
     // Cell -> normalised [-0.5, +0.5] lattice coordinates, then blown up to a
     // slab that is much wider than it is deep.
-    vec3 unit = vec3( ( ix + sub.x ) / nSide - 0.5,
-                      ( iy + sub.y ) / nSide - 0.5,
-                      ( iz + 0.5 ) / nSide - 0.5 );
+    vec3 unit = vec3( ( ix + sub.x ) / n_side - 0.5,
+                      ( iy + sub.y ) / n_side - 0.5,
+                      ( iz + 0.5 ) / n_side - 0.5 );
 
     // kagomePitchP still sets the lattice spacing, but as a RELATIVE scale of a
     // slab that always overflows the frame: even the tightest pitch keeps the
@@ -117,10 +117,10 @@ void main()
     // deliberately NOT scaled -- a deeper slab would push its near face through
     // the 0.5 near plane.
     float pitch = ( kagomePitchP > 0.01 ? kagomePitchP : 0.026 );
-    float pScale = 0.82 + 0.50 * clamp( ( pitch - 0.015 ) / 0.025, 0.0, 1.0 );
-    vec3  ext = vec3( 5.6 * pScale, 5.6 * pScale, 1.6 );
+    float p_scale = 0.82 + 0.50 * clamp( ( pitch - 0.015 ) / 0.025, 0.0, 1.0 );
+    vec3  ext = vec3( 5.6 * p_scale, 5.6 * p_scale, 1.6 );
 
-    vec3 gridPos = unit * 2.0 * ext;
+    vec3 grid_pos = unit * 2.0 * ext;
 
     // ---- COHERENT SPINON CONTINUUM -----------------------------------
     // Three interfering spinon plane waves at 120 degrees -- the emergent gauge
@@ -129,23 +129,23 @@ void main()
     // the one structured term in the scene into per-point noise.  Their q
     // vectors are nearly in-plane, so the pattern survives being seen through
     // the depth of the slab instead of averaging out along the view axis.
-    float      kSpread = clamp( ( spinonSpreadP > 0.01 ? spinonSpreadP : 1.2 ), 0.6, 2.2 );
-    float      kq = 6.5 * kSpread;
+    float      k_spread = clamp( ( spinonSpreadP > 0.01 ? spinonSpreadP : 1.2 ), 0.6, 2.2 );
+    float      kq = 6.5 * k_spread;
     const vec3 q1 = vec3( 1.0, 0.000, 0.160 );
     const vec3 q2 = vec3( -0.5, 0.866, -0.160 );
     const vec3 q3 = vec3( -0.5, -0.866, 0.272 );
-    float      wv = sin( dot( gridPos, q1 ) * kq - t * 1.60 + audioPhase * 0.35 )
-                    + sin( dot( gridPos, q2 ) * kq + t * 1.15 )
-                    + sin( dot( gridPos, q3 ) * kq - t * 0.80 );
-    float      isSpinon = smoothstep( 0.10, 0.78, wv * 0.3333 );
-    vSpinon = isSpinon;
+    float      wv = sin( dot( grid_pos, q1 ) * kq - t * 1.60 + audioPhase * 0.35 )
+                    + sin( dot( grid_pos, q2 ) * kq + t * 1.15 )
+                    + sin( dot( grid_pos, q3 ) * kq - t * 0.80 );
+    float      is_spinon = smoothstep( 0.10, 0.78, wv * 0.3333 );
+    vSpinon = is_spinon;
 
     // VOIDS: away from the spinon fronts only a fifth of the sites stay lit, so
     // the frame keeps genuine dark gaps between the bright cells instead of an
     // even dither.  The gate is a smooth per-site fade around that site's own
     // seed, never a hard on/off, so nothing pops as the fronts sweep past; a
     // site is only parked once it is already invisible.
-    float keep = 0.20 + 0.80 * isSpinon;
+    float keep = 0.20 + 0.80 * is_spinon;
     float live = smoothstep( seeds.w - 0.14, seeds.w + 0.14, keep );
     if ( live < 0.02 )
     {
@@ -153,20 +153,20 @@ void main()
         return;
     }
 
-    vec3 jitter = ( seeds.xyz - 0.5 ) * 0.10 * ( 1.0 + 0.5 * isSpinon );
-    vec3 worldPos = gridPos + jitter;
+    vec3 jitter = ( seeds.xyz - 0.5 ) * 0.10 * ( 1.0 + 0.5 * is_spinon );
+    vec3 world_pos = grid_pos + jitter;
 
     // JUMP FIX: the palette index used to be dominated by RAW audioCentroid, so
     // every point in the frame swung hue together on any transient and the whole
     // picture lurched (jump=73).  The index is now mostly SPATIAL (radius, sub-
     // lattice, stacking layer) with a slow pre-integrated drift, and the
     // centroid only nudges it.
-    float r = length( gridPos );
-    vCol = imgPalette( fract( r * 0.16 + triangleSub * 0.333 + iz * 0.017
+    float r = length( grid_pos );
+    vCol = imgPalette( fract( r * 0.16 + triangle_sub * 0.333 + iz * 0.017
                               + audioAdvance * 0.02 + audioCentroid * 0.10 ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // In-plane roll: keeps the wide slab facing the camera at all times.
     float ra = t * 0.15;
@@ -187,18 +187,18 @@ void main()
     // known: a spinon on a near plane is several times the level of a dormant
     // spin on a far one, and the triangle-corner sites carry more than the
     // bond sites.  Without this every sprite landed in the same luma bucket.
-    float depthLit = clamp( 4.6 / max( vp.z, 0.6 ), 0.34, 1.5 );
-    float node = ( triangleSub < 0.5 ) ? 1.0 : 0.0;
-    vLum = ( 0.32 + 3.0 * isSpinon ) * depthLit * ( 1.0 + 0.42 * node ) * live;
+    float depth_lit = clamp( 4.6 / max( vp.z, 0.6 ), 0.34, 1.5 );
+    float node = ( triangle_sub < 0.5 ) ? 1.0 : 0.0;
+    vLum = ( 0.32 + 3.0 * is_spinon ) * depth_lit * ( 1.0 + 0.42 * node ) * live;
 
     // Point size: also depth-scaled, and in 1080p-relative pixels so the sprite
     // keeps its angular size on any output.  pointSizeP is compressed into
     // 0.82..1.18 of the base -- used raw its 8..16 range swings the sprite AREA
     // by 4x, which is the whole exposure of the scene.
     float px = resolution.y / 1080.0;
-    float psMax = clamp( ( pointSizeP > 0.01 ? pointSizeP : 18.0 ), 12.0, 26.0 ); // sprite sweep
-    float gain = 0.45 + 0.55 * ( psMax / 12.0 );
-    gl_PointSize = clamp( 135.0 * gain * ( 0.75 + 0.55 * isSpinon ) * ( 0.55 + 0.45 * live )
+    float ps_max = clamp( ( pointSizeP > 0.01 ? pointSizeP : 18.0 ), 12.0, 26.0 ); // sprite sweep
+    float gain = 0.45 + 0.55 * ( ps_max / 12.0 );
+    gl_PointSize = clamp( 135.0 * gain * ( 0.75 + 0.55 * is_spinon ) * ( 0.55 + 0.45 * live )
                               * px / max( vp.z, 0.6 ),
                           max( 4.0, 8.0 * px ), max( 8.0, 30.0 * px ) );
     vPointSize = gl_PointSize;

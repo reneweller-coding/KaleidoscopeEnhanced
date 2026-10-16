@@ -131,7 +131,7 @@ vec3 skyline( vec2 p, float row, out float cov )
         float sx = 0.2 + 0.6 * hash11( bi * 5.7 + row );
         float sw = 0.07;
         float sy0 = base + ( top - base ) * 0.3, sy1 = base + ( top - base ) * 0.9;
-        float inSign = step( abs( bf - sx ), sw ) * step( sy0, p.y ) * step( p.y, sy1 );
+        float in_sign = step( abs( bf - sx ), sw ) * step( sy0, p.y ) * step( p.y, sy1 );
         vec3  nc = neonCol( hash11( bi * 7.3 + row ) );
         float b = gBand[int( mod( bi + row * 3.0, 8.0 ) )];
         // Glyph-like blocks inside the sign.
@@ -143,7 +143,7 @@ vec3 skyline( vec2 p, float row, out float cov )
         vec2  bd = abs( gl ) - vec2( 0.3, 0.28 );
         float glyph = smoothstep( 0.06, 0.0, length( max( bd, 0.0 ) ) + min( max( bd.x, bd.y ), 0.0 ) - 0.08 )
                       * smoothstep( 0.35, 0.65, on );
-        c = mix( c, nc * ( 0.5 + 1.4 * b ) * ( 0.5 + 0.5 * glyph ), inSign );
+        c = mix( c, nc * ( 0.5 + 1.4 * b ) * ( 0.5 + 0.5 * glyph ), in_sign );
         // Its glow on the wet facade around it.
         c += nc * exp( -abs( bf - sx ) * 8.0 ) * smoothstep( sy0 - 0.04, sy0, p.y ) * smoothstep( sy1 + 0.04, sy1, p.y )
              * 0.12 * ( 0.5 + b );
@@ -184,16 +184,16 @@ void main()
     }
 
     // The foreground roof: a wet flat roof with puddles mirroring the neon.
-    float roofY = -0.2;
-    if ( p.y < roofY )
+    float roof_y = -0.2;
+    if ( p.y < roof_y )
     {
-        float dd = roofY - p.y;
+        float dd = roof_y - p.y;
         float z = 0.1 / dd;
         vec2  g = vec2( p.x * z, z );
         float puddle = smoothstep( 0.45, 0.55, fbm( g * 1.5 ) );
         vec3  roof = vec3( 0.05, 0.05, 0.055 ) * ( 0.8 + 0.3 * noise2( g * 10.0 ) );
         // Mirror: sample the skyline above the roof line, wobbling with ripples.
-        vec2  mp = vec2( p.x + 0.004 * sin( g.y * 40.0 + gT * 3.0 ), roofY + dd * 1.2 );
+        vec2  mp = vec2( p.x + 0.004 * sin( g.y * 40.0 + gT * 3.0 ), roof_y + dd * 1.2 );
         vec3  refl = col * 0.0;
         float cv;
         vec3  sk = vec3( 0.0 );
@@ -212,8 +212,8 @@ void main()
                      * step( hash21( ri + 3.0 ), rain );
         col += vec3( 0.5, 0.5, 0.6 ) * ring * puddle * 0.4;
         // A railing along the roof's edge.
-        float rail = smoothstep( 0.004, 0.0, abs( p.y - roofY + 0.005 ) )
-                     + step( abs( fract( p.x * 18.0 ) - 0.5 ), 0.03 ) * step( roofY - 0.05, p.y );
+        float rail = smoothstep( 0.004, 0.0, abs( p.y - roof_y + 0.005 ) )
+                     + step( abs( fract( p.x * 18.0 ) - 0.5 ), 0.03 ) * step( roof_y - 0.05, p.y );
         col = mix( col, vec3( 0.03 ), clamp( rail, 0.0, 1.0 ) * 0.8 );
     }
     // Rain: fine slanting streaks, lit by the neon glow.
@@ -226,7 +226,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

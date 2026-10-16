@@ -78,12 +78,12 @@ void main()
         roughness = texture( texMeshMaterial, vec3( vUV, 1.0 ) ).g;
 
     vec3  n = normalize( vNormal );
-    vec3  viewDir = normalize( -vPos );
-    vec3  lightDir = normalize( vec3( 0.3, 0.7, -0.6 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  view_dir = normalize( -vPos );
+    vec3  light_dir = normalize( vec3( 0.3, 0.7, -0.6 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 64.0, 6.0, roughness ) );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 64.0, 6.0, roughness ) );
 
     float expose = materialExposure( texMeshMaterial );
     vec3  col = base.rgb * expose * ( 0.5 + diff * ( 1.2 + 0.5 * audioSwell ) + fill * 0.35 );
@@ -92,11 +92,11 @@ void main()
     float odd = mod( vCopy, 2.0 );
     vec3  tint = mix( imgPalette( hue * 0.159 + 0.1 ), imgPalette( hue * 0.159 + 0.6 ), odd );
     col = mix( col, col * tint * 2.0, 0.35 );
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += tint * fresnel * ( 0.2 + 0.4 * audioSwell + 0.8 * audioKick );
     col *= 0.8 + 0.4 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

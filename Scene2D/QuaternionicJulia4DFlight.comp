@@ -12,7 +12,7 @@
  * engine reuses everywhere the step is far below what a beat-driven visual
  * needs to read as smooth.
  *
- * Must stay byte-for-byte in step with the C/wCoord/hyper-rotation formulas
+ * Must stay byte-for-byte in step with the C/w_coord/hyper-rotation formulas
  * in QuaternionicJulia4DFlight.frag's main() -- this is the SAME field,
  * just computed once per voxel instead of once per ray step.
  */
@@ -27,10 +27,10 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
 uniform float speedP;       ///< per-activation param the .frag also reads; MUST
                             // match its "t" formula or the baked hyper-rotation
                             // drifts out of sync with the live camera rotation
-uniform float sliceP;       ///< 4D hyperspace slice offset (feeds wCoord below)
+uniform float sliceP;       ///< 4D hyperspace slice offset (feeds w_coord below)
 
-const int   RES = 96;
-const float EXTENT = 2.2; ///< bake cube spans [-EXTENT, EXTENT] on every axis
+const int   Res = 96;
+const float Extent = 2.2; ///< bake cube spans [-EXTENT, EXTENT] on every axis
 
 /// @brief 2D rotation matrix.
 mat2 rot2D( float a )
@@ -71,7 +71,7 @@ float qJuliaSDF( vec4 p, vec4 c, out float trap )
 void main()
 {
     ivec3 gid = ivec3( gl_GlobalInvocationID );
-    if ( gid.x >= RES || gid.y >= RES || gid.z >= RES )
+    if ( gid.x >= Res || gid.y >= Res || gid.z >= Res )
         return;
 
     // Same "t" as QuaternionicJulia4DFlight.frag's main() -- it drives the
@@ -88,15 +88,15 @@ void main()
     float slc = ( sliceP > 0.0 ) ? sliceP : 1.0;
     // Amplitude gesenkt: bei |w| ~0.4 war der 3D-Schnitt zeitweise fast
     // LEER -- die gemeldeten Schwarzphasen.
-    float wCoord = sin( t * 0.6 ) * 0.22 * slc;
+    float w_coord = sin( t * 0.6 ) * 0.22 * slc;
 
-    vec3 p = mix( vec3( -EXTENT ), vec3( EXTENT ), vec3( gid ) / float( RES - 1 ) );
-    vec4 p4D = vec4( p, wCoord );
-    p4D.xw = rot2D( t * 0.4 ) * p4D.xw;
-    p4D.yw = rot2D( t * 0.3 ) * p4D.yw;
+    vec3 p = mix( vec3( -Extent ), vec3( Extent ), vec3( gid ) / float( Res - 1 ) );
+    vec4 p_4d = vec4( p, w_coord );
+    p_4d.xw = rot2D( t * 0.4 ) * p_4d.xw;
+    p_4d.yw = rot2D( t * 0.3 ) * p_4d.yw;
 
     float trap;
-    float d = qJuliaSDF( p4D, C, trap );
+    float d = qJuliaSDF( p_4d, C, trap );
 
     imageStore( bakeField, gid, vec4( d, trap, 0.0, 0.0 ) );
 }

@@ -27,24 +27,24 @@
 layout( local_size_x = 4, local_size_y = 4, local_size_z = 4 ) in;
 
 const int   N = 3000; ///< particles
-const int   GRID_RES = 16;
-const int   CELL_CAP = 12;  ///< max particles tracked per cell
-const float DOMAIN = 3.2;   ///< box half-width: [-DOMAIN, DOMAIN]^3
-const float FLOOR_Y = -3.0; ///< particles rest on this plane
-const float CELL_SIZE = ( 2.0 * DOMAIN ) / float( GRID_RES );
-const float H = CELL_SIZE;   ///< SPH smoothing radius
-const float REST_DENS = 6.0; ///< target rest density
-const float STIFFNESS = 2.4; ///< pressure = STIFFNESS*(density-REST_DENS)
-const float PARTICLE_M = 1.0;
-const float VISCOSITY = 0.8;
-const float GRAV = -9.0;
+const int   GridRes = 16;
+const int   CellCap = 12;  ///< max particles tracked per cell
+const float Domain = 3.2;  ///< box half-width: [-DOMAIN, DOMAIN]^3
+const float FloorY = -3.0; ///< particles rest on this plane
+const float CellSize = ( 2.0 * Domain ) / float( GridRes );
+const float H = CellSize;    ///< SPH smoothing radius
+const float RestDens = 6.0;  ///< target rest density
+const float Stiffness = 2.4; ///< pressure = STIFFNESS*(density-RestDens)
+const float ParticleM = 1.0;
+const float Viscosity = 0.8;
+const float Grav = -9.0;
 
 // std430: particles first (N*8 floats: pos.xyz, density, vel.xyz, pressure),
-// then the grid (GRID_RES^3 cells * (1 count + CELL_CAP indices) uints).
+// then the grid (GridRes^3 cells * (1 count + CellCap indices) uints).
 layout( std430, binding = 2 ) buffer StateBuf
 {
     float particles[N * 8];
-    uint  grid[GRID_RES * GRID_RES * GRID_RES * ( 1 + CELL_CAP )];
+    uint  grid[GridRes * GridRes * GridRes * ( 1 + CellCap )];
 };
 
 // Output: the shared indirect vertex/command contract every geom="indirect"
@@ -86,12 +86,12 @@ vec3 hash13( float x )
 
 int cellIndex( ivec3 c )
 {
-    c = clamp( c, ivec3( 0 ), ivec3( GRID_RES - 1 ) );
-    return ( c.z * GRID_RES + c.y ) * GRID_RES + c.x;
+    c = clamp( c, ivec3( 0 ), ivec3( GridRes - 1 ) );
+    return ( c.z * GridRes + c.y ) * GridRes + c.x;
 }
 ivec3 cellOf( vec3 p )
 {
-    return ivec3( floor( ( p - vec3( -DOMAIN, FLOOR_Y, -DOMAIN ) ) / CELL_SIZE ) );
+    return ivec3( floor( ( p - vec3( -Domain, FloorY, -Domain ) ) / CellSize ) );
 }
 
 vec3 posOf( int i )
@@ -167,9 +167,9 @@ void main()
     {
         // Pass 0: clear grid counts (one invocation per cell; extra
         // invocations beyond the grid size simply have nothing to clear).
-        int cells = GRID_RES * GRID_RES * GRID_RES;
+        int cells = GridRes * GridRes * GridRes;
         if ( i < cells )
-            grid[i * ( 1 + CELL_CAP )] = 0u;
+            grid[i * ( 1 + CellCap )] = 0u;
         return;
     }
 
@@ -190,15 +190,15 @@ void main()
         if ( p == vec3( 0.0 ) && velOf( i ) == vec3( 0.0 ) )
         {
             vec3 h3 = hash13( float( i ) );
-            p = ( h3 - 0.5 ) * vec3( DOMAIN * 1.2, 1.0, DOMAIN * 1.2 )
-                + vec3( 0.0, DOMAIN * 0.6, 0.0 ); // drop from a loose cloud up top
+            p = ( h3 - 0.5 ) * vec3( Domain * 1.2, 1.0, Domain * 1.2 )
+                + vec3( 0.0, Domain * 0.6, 0.0 ); // drop from a loose cloud up top
             setPos( i, p );
             setVel( i, vec3( 0.0 ) );
         }
         int  ci = cellIndex( cellOf( p ) );
-        uint slot = atomicAdd( grid[ci * ( 1 + CELL_CAP )], 1u );
-        if ( slot < uint( CELL_CAP ) )
-            grid[ci * ( 1 + CELL_CAP ) + 1u + slot] = uint( i );
+        uint slot = atomicAdd( grid[ci * ( 1 + CellCap )], 1u );
+        if ( slot < uint( CellCap ) )
+            grid[ci * ( 1 + CellCap ) + 1u + slot] = uint( i );
         return;
     }
 
@@ -217,16 +217,16 @@ void main()
                 for ( int dx = -1; dx <= 1; ++dx )
                 {
                     int  ci = cellIndex( c + ivec3( dx, dy, dz ) );
-                    uint cnt = min( grid[ci * ( 1 + CELL_CAP )], uint( CELL_CAP ) );
+                    uint cnt = min( grid[ci * ( 1 + CellCap )], uint( CellCap ) );
                     for ( uint s = 0u; s < cnt; ++s )
                     {
-                        int   j = int( grid[ci * ( 1 + CELL_CAP ) + 1u + s] );
+                        int   j = int( grid[ci * ( 1 + CellCap ) + 1u + s] );
                         float r2 = dot( pi - posOf( j ), pi - posOf( j ) );
-                        dens += PARTICLE_M * poly6( r2, H * H );
+                        dens += ParticleM * poly6( r2, H * H );
                     }
                 }
         setDens( i, dens );
-        setPres( i, max( STIFFNESS * ( dens - REST_DENS ), 0.0 ) );
+        setPres( i, max( Stiffness * ( dens - RestDens ), 0.0 ) );
         return;
     }
 
@@ -237,34 +237,34 @@ void main()
         if ( i >= N )
             return;
         vec3  pi = posOf( i ), vi = velOf( i );
-        float rhoI = max( densOf( i ), 1e-3 ), presI = presOf( i );
+        float rho_i = max( densOf( i ), 1e-3 ), pres_i = presOf( i );
         ivec3 c = cellOf( pi );
-        vec3  fPress = vec3( 0.0 ), fVisc = vec3( 0.0 );
+        vec3  f_press = vec3( 0.0 ), f_visc = vec3( 0.0 );
         for ( int dz = -1; dz <= 1; ++dz )
             for ( int dy = -1; dy <= 1; ++dy )
                 for ( int dx = -1; dx <= 1; ++dx )
                 {
                     int  ci = cellIndex( c + ivec3( dx, dy, dz ) );
-                    uint cnt = min( grid[ci * ( 1 + CELL_CAP )], uint( CELL_CAP ) );
+                    uint cnt = min( grid[ci * ( 1 + CellCap )], uint( CellCap ) );
                     for ( uint s = 0u; s < cnt; ++s )
                     {
-                        int j = int( grid[ci * ( 1 + CELL_CAP ) + 1u + s] );
+                        int j = int( grid[ci * ( 1 + CellCap ) + 1u + s] );
                         if ( j == i )
                             continue;
                         vec3  rij = pi - posOf( j );
                         float r = length( rij );
-                        float rhoJ = max( densOf( j ), 1e-3 );
-                        fPress -= PARTICLE_M * ( presI / ( rhoI * rhoI ) + presOf( j ) / ( rhoJ * rhoJ ) )
-                                  * spikyGrad( rij, r, H );
+                        float rho_j = max( densOf( j ), 1e-3 );
+                        f_press -= ParticleM * ( pres_i / ( rho_i * rho_i ) + presOf( j ) / ( rho_j * rho_j ) )
+                                   * spikyGrad( rij, r, H );
                         if ( r < H )
-                            fVisc += VISCOSITY * PARTICLE_M * ( velOf( j ) - vi ) / rhoJ * ( 1.0 - r / H );
+                            f_visc += Viscosity * ParticleM * ( velOf( j ) - vi ) / rho_j * ( 1.0 - r / H );
                     }
                 }
-        vec3 accel = fPress + fVisc + vec3( 0.0, GRAV, 0.0 );
+        vec3 accel = f_press + f_visc + vec3( 0.0, Grav, 0.0 );
         // A kick punches the whole pool upward from underneath -- a splash,
         // not just a colour change (photosensitivity-safe: bounded impulse,
         // not a brightness spike).
-        accel.y += audioKick * 5.0 * exp( -max( pi.y - FLOOR_Y, 0.0 ) * 0.8 );
+        accel.y += audioKick * 5.0 * exp( -max( pi.y - FloorY, 0.0 ) * 0.8 );
 
         float dt = 0.016; // fixed step: independent of the host frame rate,
                           // which would otherwise feed back into the sim
@@ -273,34 +273,34 @@ void main()
         pi += vi * dt;
 
         // Box collision: reflect + damp on any wall/floor penetration.
-        if ( pi.x < -DOMAIN )
+        if ( pi.x < -Domain )
         {
-            pi.x = -DOMAIN;
+            pi.x = -Domain;
             vi.x *= -0.4;
         }
-        if ( pi.x > DOMAIN )
+        if ( pi.x > Domain )
         {
-            pi.x = DOMAIN;
+            pi.x = Domain;
             vi.x *= -0.4;
         }
-        if ( pi.z < -DOMAIN )
+        if ( pi.z < -Domain )
         {
-            pi.z = -DOMAIN;
+            pi.z = -Domain;
             vi.z *= -0.4;
         }
-        if ( pi.z > DOMAIN )
+        if ( pi.z > Domain )
         {
-            pi.z = DOMAIN;
+            pi.z = Domain;
             vi.z *= -0.4;
         }
-        if ( pi.y < FLOOR_Y )
+        if ( pi.y < FloorY )
         {
-            pi.y = FLOOR_Y;
+            pi.y = FloorY;
             vi.y *= -0.35;
         }
-        if ( pi.y > DOMAIN * 2.0 )
+        if ( pi.y > Domain * 2.0 )
         {
-            pi.y = DOMAIN * 2.0;
+            pi.y = Domain * 2.0;
             vi.y *= -0.2;
         } // soft lid
 
@@ -316,7 +316,7 @@ void main()
     if ( i >= N )
         return;
     vec3  p = posOf( i );
-    float r = 0.052 * ( 0.7 + 0.25 * clamp( densOf( i ) / REST_DENS, 0.0, 2.0 ) )
+    float r = 0.052 * ( 0.7 + 0.25 * clamp( densOf( i ) / RestDens, 0.0, 2.0 ) )
               * ( 1.0 + 0.15 * audioLevel );
 
     vec3 h3 = hash13( float( i ) + 91.3 );
@@ -338,6 +338,6 @@ void main()
     for ( int v = 0; v < 12; ++v )
     {
         verts[base + uint( v )].attrA = vec4( p + verts9[v], float( i ) );
-        verts[base + uint( v )].attrB = vec4( h3, densOf( i ) / max( REST_DENS, 1e-3 ) );
+        verts[base + uint( v )].attrB = vec4( h3, densOf( i ) / max( RestDens, 1e-3 ) );
     }
 }

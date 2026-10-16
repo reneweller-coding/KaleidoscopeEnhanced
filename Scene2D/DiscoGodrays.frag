@@ -105,8 +105,8 @@ void main()
     float k = time * 0.3 + audioPhase * 0.15; // disco spin (jump-free)
 
     // Per-activation ball character (constant during the scene, so no snapping):
-    float facet = ( facetP <= 0.01 ) ? 0.3 : facetP; // facet angle -> ray count
-    float tubeW = ( tubeP <= 0.001 ) ? 0.05 : tubeP; // ray thickness
+    float facet = ( facetP <= 0.01 ) ? 0.3 : facetP;  // facet angle -> ray count
+    float tube_w = ( tubeP <= 0.001 ) ? 0.05 : tubeP; // ray thickness
 
     vec4 O = vec4( 0.0 );
     for ( int i = 0; i < 60; i++ )
@@ -123,11 +123,11 @@ void main()
         float a2 = floor( ( atan( p.y, p.x ) + k ) / facet + 0.5 ) * facet - k;
         p.yx = p.yx * rot( a2 );
 
-        float dt = length( p.yz ) - tubeW; // glowing tube (radial ray)
-        l = length( p ) - 1.15;            // sphere shell (glow volume)
+        float dt = length( p.yz ) - tube_w; // glowing tube (radial ray)
+        l = length( p ) - 1.15;             // sphere shell (glow volume)
 
         vec4 disco = cos( k - t + vec4( 0.0, 0.5, 1.0, 0.0 ) );
-        vec4 glow = disco * smoothstep( 1.0, 0.0, dt / ( tubeW * 0.9 ) ) // ray halo
+        vec4 glow = disco * smoothstep( 1.0, 0.0, dt / ( tube_w * 0.9 ) ) // ray halo
                     * disco * smoothstep( 1.0, 0.0, l );
         O += glow * 1.1 + 0.0015;
 

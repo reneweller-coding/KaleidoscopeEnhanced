@@ -49,7 +49,7 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-const float NUM_POINTS = 2500.0;
+const float NumPoints = 2500.0;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -77,10 +77,10 @@ vec3 hueRot( vec3 c, float a )
 
 void emitVert( vec3 worldPos, vec3 norm, vec3 col, vec3 camPos, vec3 uu, vec3 vv, vec3 ww )
 {
-    vec3 relP = worldPos - camPos;
-    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
-    viewP.x -= eyeOff;
-    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+    vec3 rel_p = worldPos - camPos;
+    vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
+    view_p.x -= eyeOff;
+    gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
     gNormal = norm;
     gWorld = worldPos;
@@ -92,24 +92,24 @@ void emitVert( vec3 worldPos, vec3 norm, vec3 col, vec3 camPos, vec3 uu, vec3 vv
 void main()
 {
     float idx = vIndex[0];
-    if ( idx > NUM_POINTS )
+    if ( idx > NumPoints )
         return;
 
     vec4  seeds = vSeeds[0];
-    float sidesV = ( sidesP < 4 ) ? 6.0 : float( sidesP );
-    float explodeV = ( explodeP <= 0.01 ) ? 3.2 : explodeP;
-    float shardV = ( shardP <= 0.01 ) ? 1.0 : shardP;
-    float cDst = ( camDistP > 0.0 ) ? camDistP : 1.0;
+    float sides_v = ( sidesP < 4 ) ? 6.0 : float( sidesP );
+    float explode_v = ( explodeP <= 0.01 ) ? 3.2 : explodeP;
+    float shard_v = ( shardP <= 0.01 ) ? 1.0 : shardP;
+    float c_dst = ( camDistP > 0.0 ) ? camDistP : 1.0;
 
     // Mirror-kaleidoscope wedge placement: same construction as
     // ParticleTunnelFlight.vert -- index picks the wedge copy (even
     // population), alternating copies mirrored for true symmetry.
-    float perWedge = NUM_POINTS / sidesV;
-    float wedge = 6.2831853 / sidesV;
-    float copy = mod( floor( idx / perWedge ), sidesV );
-    float frac = mod( idx, perWedge ) / perWedge;
-    float baseAng = frac * wedge * 0.5;
-    float mirrored = ( mod( copy, 2.0 ) < 0.5 ) ? baseAng : ( wedge * 0.5 - baseAng );
+    float per_wedge = NumPoints / sides_v;
+    float wedge = 6.2831853 / sides_v;
+    float copy = mod( floor( idx / per_wedge ), sides_v );
+    float frac = mod( idx, per_wedge ) / per_wedge;
+    float base_ang = frac * wedge * 0.5;
+    float mirrored = ( mod( copy, 2.0 ) < 0.5 ) ? base_ang : ( wedge * 0.5 - base_ang );
     float spin = audioPhase * 0.4 + time * 0.015;
     float ang = mirrored + copy * wedge + spin;
 
@@ -119,37 +119,37 @@ void main()
     // Stateless explode/settle envelope: audioBeatPhase already re-triggers
     // itself every beat, so no persistent "time since last beat" is needed.
     float burst = pow( clamp( 1.0 - audioBeatPhase, 0.0, 1.0 ), 2.2 );
-    float shellR = 1.05 + 1.05 * seeds.x;
+    float shell_r = 1.05 + 1.05 * seeds.x;
     // Settled (burst=0) still reads as a real shattered mass, not a
     // near-invisible dot waiting for the next beat -- only the ADDED
-    // travel between beats is scaled by explodeV.
-    float rad = shellR * ( 1.0 + 0.45 * explodeV * burst ) + audioKick * 0.4 * burst;
+    // travel between beats is scaled by explode_v.
+    float rad = shell_r * ( 1.0 + 0.45 * explode_v * burst ) + audioKick * 0.4 * burst;
 
-    vec3 dirFlat = normalize( vec3( cos( ang ), 0.0, sin( ang ) ) );
-    vec3 basePos = dirFlat * rad + vec3( 0.0, elev * ( 0.3 + 0.7 * burst ), 0.0 );
+    vec3 dir_flat = normalize( vec3( cos( ang ), 0.0, sin( ang ) ) );
+    vec3 base_pos = dir_flat * rad + vec3( 0.0, elev * ( 0.3 + 0.7 * burst ), 0.0 );
 
     // Small triangular shard, loosely facing outward with a per-shard tilt.
-    float size = ( 0.10 + 0.10 * seeds.w ) * shardV;
-    vec3  outward = normalize( basePos + vec3( 0.0, 0.001, 0.0 ) );
-    vec3  tiltAxis = normalize( vec3( seeds.y - 0.5, seeds.z - 0.5, seeds.x - 0.5 ) + 1e-4 );
-    vec3  side1 = normalize( cross( outward, tiltAxis ) + 1e-4 );
+    float size = ( 0.10 + 0.10 * seeds.w ) * shard_v;
+    vec3  outward = normalize( base_pos + vec3( 0.0, 0.001, 0.0 ) );
+    vec3  tilt_axis = normalize( vec3( seeds.y - 0.5, seeds.z - 0.5, seeds.x - 0.5 ) + 1e-4 );
+    vec3  side1 = normalize( cross( outward, tilt_axis ) + 1e-4 );
     vec3  side2 = cross( outward, side1 );
 
-    vec3 p0 = basePos + outward * size * 0.5;
-    vec3 p1 = basePos - side1 * size * 0.5 - outward * size * 0.2;
-    vec3 p2 = basePos + side1 * size * 0.5 - outward * size * 0.2;
+    vec3 p0 = base_pos + outward * size * 0.5;
+    vec3 p1 = base_pos - side1 * size * 0.5 - outward * size * 0.2;
+    vec3 p2 = base_pos + side1 * size * 0.5 - outward * size * 0.2;
     vec3 norm = normalize( cross( p1 - p0, p2 - p0 ) );
 
     // Camera: fixed-ish, gently orbiting, looking at the burst centre.
-    float camAngle = time * 0.06 + audioAdvance * 0.02;
-    float camDist = 4.4 * cDst;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 0.6 * sin( time * 0.1 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0 );
-    vec3  ww = normalize( lookTarget - camPos );
+    float cam_angle = time * 0.06 + audioAdvance * 0.02;
+    float cam_dist = 4.4 * c_dst;
+    vec3  camPos = vec3( sin( cam_angle ) * cam_dist, 0.6 * sin( time * 0.1 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0 );
+    vec3  ww = normalize( look_target - camPos );
     vec3  uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3  vv = cross( uu, ww );
 
-    vec3 col = imgPalette( 0.5 + 0.5 * sin( ang * sidesV * 0.5 + elev ) ) * 1.6;
+    vec3 col = imgPalette( 0.5 + 0.5 * sin( ang * sides_v * 0.5 + elev ) ) * 1.6;
     col = mix( col, vec3( 1.0, 0.97, 0.85 ), clamp( audioKick * burst * 0.5, 0.0, 0.55 ) );
     if ( hueP > 0.001 )
         col = hueRot( col, hueP );

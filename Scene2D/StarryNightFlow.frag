@@ -162,8 +162,8 @@ void main()
     vec3  night = gs < 0.33   ? mix( ultra, cobalt, gs * 3.0 )
                   : gs < 0.66 ? mix( cobalt, turq, ( gs - 0.33 ) * 3.0 )
                               : mix( turq, yellow, ( gs - 0.66 ) * 3.0 );
-    vec3  photoC = mix( vec3( g ), paint, 1.5 );
-    vec3  col = mix( night, photoC, 0.3 );
+    vec3  photo_c = mix( vec3( g ), paint, 1.5 );
+    vec3  col = mix( night, photo_c, 0.3 );
     col = mix( col, imgPalette( hue * 0.159 + g * 0.6 ), 0.1 );
     // Impasto: the grooves as light and shadow across each stroke.
     float ridge = smoothstep( 0.38, 0.62, groove );
@@ -178,17 +178,17 @@ void main()
         float d = length( p - g_vc[i] );
         int   band = int( mod( float( i ) * 9.0 + 4.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
-        vec3  starC = mix( vec3( 1.0, 0.92, 0.55 ), imgPalette( hue * 0.159 + 0.1 + float( i ) * 0.07 ), 0.3 );
+        vec3  star_c = mix( vec3( 1.0, 0.92, 0.55 ), imgPalette( hue * 0.159 + 0.1 + float( i ) * 0.07 ), 0.3 );
         float rings = 0.5 + 0.5 * sin( d * 90.0 - crawl * 3.0 * g_vs[i] );
         float halo = exp( -d * 5.0 ) * ( 0.25 + 0.75 * rings ) * ridge;
-        col = mix( col, starC * ( 0.8 + 0.4 * rings ), clamp( halo * ( 0.35 + 0.8 * e ), 0.0, 0.8 ) );
-        col += starC * exp( -d * 40.0 ) * ( 0.7 + 0.8 * e );
+        col = mix( col, star_c * ( 0.8 + 0.4 * rings ), clamp( halo * ( 0.35 + 0.8 * e ), 0.0, 0.8 ) );
+        col += star_c * exp( -d * 40.0 ) * ( 0.7 + 0.8 * e );
         // Sparkle in the ring strokes.
-        col += starC * pow( rings, 16.0 ) * exp( -d * 8.0 ) * hi * 0.4;
+        col += star_c * pow( rings, 16.0 ) * exp( -d * 8.0 ) * hi * 0.4;
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

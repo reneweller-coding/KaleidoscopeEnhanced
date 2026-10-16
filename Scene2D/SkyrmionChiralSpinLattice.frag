@@ -68,8 +68,8 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Gyrotropic Skyrmion Hall drift
-    float driftVel = ( driftP > 0.01 ? driftP : 0.8 );
-    vec2  drift = vec2( cos( t * driftVel * 0.5 ), sin( t * driftVel * 0.5 + 0.8 ) ) * 0.15;
+    float drift_vel = ( driftP > 0.01 ? driftP : 0.8 );
+    vec2  drift = vec2( cos( t * drift_vel * 0.5 ), sin( t * drift_vel * 0.5 + 0.8 ) ) * 0.15;
 
     // Hexagonal lattice geometry
     float scale = ( latticeP > 0.01 ? latticeP : 3.5 ) * ( 1.0 + 0.1 * audioSwell );
@@ -81,8 +81,8 @@ void main()
     vec2 f = fract( r_hex ) - 0.5;
 
     // Find closest hexagonal lattice center
-    float minDist = 1e5;
-    vec2  closestOffset = vec2( 0.0 );
+    float min_dist = 1e5;
+    vec2  closest_offset = vec2( 0.0 );
 
     for ( int y = -1; y <= 1; y++ )
     {
@@ -92,51 +92,51 @@ void main()
             vec2 center = neighbor + vec2( 0.0 );
 
             // Hexagonal skew back to Cartesian
-            vec2  cartPos = vec2( sqrt( 3.0 ) * ( cell.x + neighbor.x + 0.5 * ( cell.y + neighbor.y ) ),
-                                  1.5 * ( cell.y + neighbor.y ) );
-            vec2  diff = p - cartPos;
+            vec2  cart_pos = vec2( sqrt( 3.0 ) * ( cell.x + neighbor.x + 0.5 * ( cell.y + neighbor.y ) ),
+                                   1.5 * ( cell.y + neighbor.y ) );
+            vec2  diff = p - cart_pos;
             float d = length( diff );
-            if ( d < minDist )
+            if ( d < min_dist )
             {
-                minDist = d;
-                closestOffset = diff;
+                min_dist = d;
+                closest_offset = diff;
             }
         }
     }
 
     // Skyrmion spin texture: theta(r) rotates from Pi (core) to 0 (outer ferromagnetic domain)
-    float coreSharpness = ( coreP > 0.01 ? coreP : 1.0 ) * ( 0.8 + 0.5 * audioBass );
-    float spinTheta = 3.14159265 * exp( -minDist * minDist * 2.2 * coreSharpness );
+    float core_sharpness = ( coreP > 0.01 ? coreP : 1.0 ) * ( 0.8 + 0.5 * audioBass );
+    float spin_theta = 3.14159265 * exp( -min_dist * min_dist * 2.2 * core_sharpness );
 
     // Chiral winding angle (Dzyaloshinskii-Moriya helicity)
-    float chiralTwist = ( chiralP > 0.01 ? chiralP : 1.2 );
-    float azim = atan( closestOffset.y, closestOffset.x ) + spinTheta * chiralTwist + audioPhase;
+    float chiral_twist = ( chiralP > 0.01 ? chiralP : 1.2 );
+    float azim = atan( closest_offset.y, closest_offset.x ) + spin_theta * chiral_twist + audioPhase;
 
     // 3D magnetization vector m = (sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta))
     vec3 m_spin = vec3(
-        sin( spinTheta ) * cos( azim ),
-        sin( spinTheta ) * sin( azim ),
-        cos( spinTheta ) );
+        sin( spin_theta ) * cos( azim ),
+        sin( spin_theta ) * sin( azim ),
+        cos( spin_theta ) );
 
     // Topological charge density q = m . (dm/dx x dm/dy) ~ sin(theta)/r * dtheta/dr
-    float topCharge = abs( sin( spinTheta ) * exp( -minDist * 3.0 ) );
+    float top_charge = abs( sin( spin_theta ) * exp( -min_dist * 3.0 ) );
 
     // Faraday rotation & photo palette mapping
-    float palAngle = fract( azim * 0.159 + m_spin.z * 0.3 + t * 0.05 + audioCentroid );
-    vec3  colSpin = imgPalette( palAngle );
+    float pal_angle = fract( azim * 0.159 + m_spin.z * 0.3 + t * 0.05 + audioCentroid );
+    vec3  col_spin = imgPalette( pal_angle );
 
     // Core highlight & domain boundary lines
-    float coreGlow = exp( -minDist * 12.0 ) * ( 1.0 + 3.0 * audioKick );
-    float domainWall = exp( -abs( spinTheta - 1.57 ) * 5.0 ) * ( 0.8 + 0.4 * audioHigh );
+    float core_glow = exp( -min_dist * 12.0 ) * ( 1.0 + 3.0 * audioKick );
+    float domain_wall = exp( -abs( spin_theta - 1.57 ) * 5.0 ) * ( 0.8 + 0.4 * audioHigh );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colSpin * ( 0.85 + 0.35 * m_spin.z ) * ( 0.8 + 0.4 * audioSwell );
-    col += imgPalette( t * 0.1 ) * coreGlow * 2.0;
-    col += imgPalette( palAngle + 0.5 ) * domainWall * 1.2;
+    col += col_spin * ( 0.85 + 0.35 * m_spin.z ) * ( 0.8 + 0.4 * audioSwell );
+    col += imgPalette( t * 0.1 ) * core_glow * 2.0;
+    col += imgPalette( pal_angle + 0.5 ) * domain_wall * 1.2;
     col += imgPalette( audioAdvance * 0.1 ) * ( audioKick * 0.3 );
 
     // Soft knee compression

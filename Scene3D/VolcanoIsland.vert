@@ -19,7 +19,7 @@
 // sat behind.
 //
 // Second pass: every layer was still drawing at the 1.5 px sprite floor (the
-// shared sizeBase of 110 is 1.26 px at the island's 70-unit viewing distance),
+// shared size_base of 110 is 1.26 px at the island's 70-unit viewing distance),
 // so the whole scene measured as a stipple of specks on black -- luma 0.027,
 // a quarter of the frame's tiles carrying anything at all.  Sprite sizes are
 // now chosen per layer so the solid things (rock, water, sky) overlap into
@@ -90,7 +90,7 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // Day/night: one full cycle per dayPhase period.  Stars fade in the
@@ -100,27 +100,27 @@ void main()
     // Camera circles the island at sea level distance.  Built BEFORE the
     // layers so the sea can be laid out relative to the eye.
     float ca = time * 0.045;
-    vec3  camP = vec3( cos( ca ) * 70.0, 6.0, sin( ca ) * 70.0 );
-    vec3  fwd = normalize( vec3( 0.0, 8.0, 0.0 ) - camP );
+    vec3  cam_p = vec3( cos( ca ) * 70.0, 6.0, sin( ca ) * 70.0 );
+    vec3  fwd = normalize( vec3( 0.0, 8.0, 0.0 ) - cam_p );
     vec3  rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3  up = cross( rgt, fwd );
-    vec3  fwdH = normalize( vec3( fwd.x, 0.0, fwd.z ) );
+    vec3  fwd_h = normalize( vec3( fwd.x, 0.0, fwd.z ) );
 
     // Cone: apex (crater rim) at y=14, base radius 34 at y=-12.
     vec3  world = vec3( 0.0 );
-    vec3  vpView = vec3( 0.0 );
-    bool  inView = false; // layer already given in view space
+    vec3  vp_view = vec3( 0.0 );
+    bool  in_view = false; // layer already given in view space
     vec3  col;
     float glow = 1.0;
     // Per-layer sprite sizing and distance fade -- one shared 170-unit fade
     // used to erase the entire star sphere (radius 150, seen from 70 out).
     //
-    // sizeBase used to be 110, which at the island's 70-unit viewing distance
+    // size_base used to be 110, which at the island's 70-unit viewing distance
     // is 1.26 px: EVERY solid layer collapsed onto its 1.5 px floor and the
     // island, the sea and the fountain all rendered as a faint stipple of
     // specks on black (luma 0.027).  The sprites now overlap into actual
     // surfaces, and each layer picks the size its distance needs.
-    float sizeBase = 520.0, sizeMin = 1.5, sizeCap = 30.0, fadeD = 170.0;
+    float size_base = 520.0, size_min = 1.5, size_cap = 30.0, fade_d = 170.0;
 
     if ( r1 < 0.20 )
     {
@@ -129,11 +129,11 @@ void main()
         float u = fract( ( time + audioAdvance * 0.8 ) / cyc + r3 * 7.0 );
         float T = u * cyc;
         float ang = r4 * 6.2831853;
-        float vUp = 16.0 + 10.0 * r2;
-        float vSide2 = ( 2.0 + 6.0 * fract( r3 * 13.0 ) );
-        world = vec3( cos( ang ) * vSide2 * T,
-                      14.0 + vUp * T - 6.5 * T * T,
-                      sin( ang ) * vSide2 * T );
+        float v_up = 16.0 + 10.0 * r2;
+        float v_side2 = ( 2.0 + 6.0 * fract( r3 * 13.0 ) );
+        world = vec3( cos( ang ) * v_side2 * T,
+                      14.0 + v_up * T - 6.5 * T * T,
+                      sin( ang ) * v_side2 * T );
         // Eruption strength gates how many bombs are lit.
         float intensity = 0.40 + 0.5 * audioKick + 1.0 * audioDrop
                           + 0.20 * audioBass;
@@ -142,8 +142,8 @@ void main()
                             smoothstep( 0.0, 0.8, u ) ),
                        0.10, 0.15 );
         glow = lit * ( 1.0 - smoothstep( 0.75, 1.0, u ) ) * 1.6;
-        sizeBase = 360.0;
-        sizeCap = 20.0; // hot: kept smaller, it clips
+        size_base = 360.0;
+        size_cap = 20.0; // hot: kept smaller, it clips
     }
     else if ( r1 < 0.37 )
     {
@@ -160,8 +160,8 @@ void main()
         glow = 0.8 + 0.4 * r4 + rim * ( 0.9 + 1.2 * audioDrop );
         // Dark rock seen from 70 units out: it needs the biggest sprites of
         // all, or the island is a stipple of specks instead of a silhouette.
-        sizeBase = 760.0;
-        sizeCap = 34.0;
+        size_base = 760.0;
+        size_cap = 34.0;
     }
     else if ( r1 < 0.46 )
     {
@@ -175,8 +175,8 @@ void main()
         float pulse = 0.6 + 0.4 * sin( h * 20.0 - time * 2.0 + ch );
         col = palTint( mix( vec3( 1.0, 0.5, 0.08 ), vec3( 0.75, 0.10, 0.02 ), 1.0 - h ), 0.06 * h, 0.15 );
         glow = pulse * ( 1.2 + 0.6 * audioBass + 1.2 * audioDrop );
-        sizeBase = 380.0;
-        sizeCap = 20.0; // hot: kept smaller, it clips
+        size_base = 380.0;
+        size_cap = 20.0; // hot: kept smaller, it clips
     }
     else if ( r1 < 0.55 )
     {
@@ -188,8 +188,8 @@ void main()
         col = vec3( 1.0, 0.45, 0.12 );
         glow = ( 1.0 - u ) * ( 0.35 + 0.5 * audioSwell + 0.8 * audioDrop )
                * ( 0.4 + 0.6 * r3 );
-        sizeBase = 380.0;
-        sizeCap = 18.0;
+        size_base = 380.0;
+        size_cap = 18.0;
     }
     else if ( r1 < 0.70 )
     {
@@ -205,10 +205,10 @@ void main()
                 * 150.0;
         col = vec3( 0.75, 0.8, 0.95 );
         glow = ( 0.45 + 0.75 * r4 ) * ( 1.0 - 0.9 * daylight ); // fade by day
-        sizeBase = 150.0;
-        sizeMin = 3.0;
-        sizeCap = 7.0;
-        fadeD = 900.0;
+        size_base = 150.0;
+        size_min = 3.0;
+        size_cap = 7.0;
+        fade_d = 900.0;
     }
     else if ( r1 < 0.80 )
     {
@@ -218,30 +218,30 @@ void main()
         // the picture needs: big, very dim sprites laid straight into view
         // space over the whole sky, brightest in a soft diagonal band (the
         // Milky Way at night, sun haze by day).
-        inView = true;
+        in_view = true;
         float hz = 130.0 + 170.0 * r3;
-        float ndcY = mix( -0.03, 1.22, r2 );
+        float ndc_y = mix( -0.03, 1.22, r2 );
         // NOT r4: r4 also sets the sprite size below, and reusing it would
         // make the sky grow steadily coarser from left to right.
-        float ndcX = ( hash11( r4 * 91.7 + r2 * 13.3 + 3.1 ) - 0.5 ) * 2.55
-                     + 0.07 * sin( time * 0.02 + r2 * 31.0 );
-        vpView = vec3( ndcX * kTanY * aspect * hz, ndcY * kTanY * hz, hz );
+        float ndc_x = ( hash11( r4 * 91.7 + r2 * 13.3 + 3.1 ) - 0.5 ) * 2.55
+                      + 0.07 * sin( time * 0.02 + r2 * 31.0 );
+        vp_view = vec3( ndc_x * TanY * aspect * hz, ndc_y * TanY * hz, hz );
 
         // NOT pow(x, 2.0): pow() is exp2(y*log2(x)) and this base goes
         // negative, which is undefined in GLSL.
-        float bq = ndcY - 0.52 + 0.34 * ndcX;
+        float bq = ndc_y - 0.52 + 0.34 * ndc_x;
         float band = exp( -bq * bq * 2.6 );
-        float mott = 0.65 + 0.35 * sin( ndcX * 7.3 + ndcY * 5.1 + r3 * 6.2831853 );
+        float mott = 0.65 + 0.35 * sin( ndc_x * 7.3 + ndc_y * 5.1 + r3 * 6.2831853 );
         vec3  night = palTint( vec3( 0.13, 0.15, 0.28 ), 0.48, 0.30 );
         vec3  dayly = palTint( vec3( 0.30, 0.40, 0.55 ), 0.52, 0.25 );
         col = mix( night, dayly, daylight );
         // Bright enough that a sprite core clears the "this tile carries
         // content" step, dim enough that the sky as a whole stays night.
         glow = ( 0.16 + 0.42 * band ) * mott * ( 0.85 + 0.30 * audioSwell );
-        sizeBase = 4200.0;
-        sizeMin = 4.0;
-        sizeCap = 46.0;
-        fadeD = 900.0;
+        size_base = 4200.0;
+        size_min = 4.0;
+        size_cap = 46.0;
+        fade_d = 900.0;
     }
     else
     {
@@ -252,17 +252,17 @@ void main()
             // Horizon mist: a thin frustum-placed band that closes the seam
             // between the farthest water and the sky.  Placed straight in
             // view space -- it is atmosphere, it needs no parallax.
-            inView = true;
+            in_view = true;
             float hz = 150.0 + 48.0 * r3;
             float ty = mix( -0.17, 0.055, r2 );
-            float tx = ( hash11( r4 * 57.3 + 1.9 ) - 0.5 ) * 2.35 * kTanY * aspect;
-            vpView = vec3( tx * hz, ty * hz, hz );
+            float tx = ( hash11( r4 * 57.3 + 1.9 ) - 0.5 ) * 2.35 * TanY * aspect;
+            vp_view = vec3( tx * hz, ty * hz, hz );
             col = palTint( vec3( 0.30, 0.38, 0.52 ), 0.55, 0.30 );
             glow = ( 0.14 + 0.18 * r2 ) * ( 0.8 + 0.4 * audioSwell );
-            sizeBase = 900.0;
-            sizeMin = 4.0;
-            sizeCap = 30.0;
-            fadeD = 900.0;
+            size_base = 900.0;
+            size_min = 4.0;
+            size_cap = 30.0;
+            fade_d = 900.0;
         }
         else
         {
@@ -272,12 +272,12 @@ void main()
             // what keeps the near water from being a handful of huge sprites
             // and the far water from bunching into one line.
             float sw = ( sq - 0.28 ) / 0.72;
-            float seaY = -13.0;
-            float H = camP.y - seaY;
-            float rowU = mix( 0.182, 1.16, pow( sw, 0.9 ) ); // 0.182 => 200 units, inside the far plane
-            float dist = H / ( rowU * kTanY );
-            float sx = ( r2 - 0.5 ) * 2.35 * kTanY * aspect * dist;
-            world = vec3( camP.x, seaY, camP.z ) + rgt * sx + fwdH * dist;
+            float sea_y = -13.0;
+            float H = cam_p.y - sea_y;
+            float row_u = mix( 0.182, 1.16, pow( sw, 0.9 ) ); // 0.182 => 200 units, inside the far plane
+            float dist = H / ( row_u * TanY );
+            float sx = ( r2 - 0.5 ) * 2.35 * TanY * aspect * dist;
+            world = vec3( cam_p.x, sea_y, cam_p.z ) + rgt * sx + fwd_h * dist;
 
             // Swell: long crossing waves, plus a glint that only fires on the
             // crests, so the water sparkles instead of glowing flatly.
@@ -299,25 +299,25 @@ void main()
             // cone.  Cutting it at the island's footprint both fixes that and
             // draws the shore.
             float ashore = smoothstep( 30.0, 42.0, length( world.xz ) );
-            glow = ( 0.42 + 0.60 * ( 1.0 - rowU / 1.16 ) ) * ( 0.75 + 0.45 * audioSwell )
+            glow = ( 0.42 + 0.60 * ( 1.0 - row_u / 1.16 ) ) * ( 0.75 + 0.45 * audioSwell )
                    * ( 0.65 + 0.7 * r3 ) * ( 1.0 - 0.35 * daylight ) * ashore;
             // Big enough to overlap into a continuous water surface: at 190 the
             // near rows were 3 px and the whole bottom of the frame was black.
-            sizeBase = 900.0;
-            sizeMin = 3.4;
-            sizeCap = 44.0;
-            fadeD = 900.0;
+            size_base = 900.0;
+            size_min = 3.4;
+            size_cap = 44.0;
+            fade_d = 900.0;
         }
     }
 
     vec3 vp;
-    if ( inView )
+    if ( in_view )
     {
-        vp = vpView;
+        vp = vp_view;
     }
     else
     {
-        vec3 rel = world - camP;
+        vec3 rel = world - cam_p;
         vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
     }
 
@@ -329,10 +329,10 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
-    col *= glow * clamp( 1.0 - vp.z / fadeD, 0.0, 1.0 );
+    col *= glow * clamp( 1.0 - vp.z / fade_d, 0.0, 1.0 );
     // 3.0 rather than 3.4: the hot layers now draw with sprites several times
     // larger, so the same per-sprite peak would clip several times the area.
     vCol = vec4( min( col * 2.8, vec3( 3.0 ) ), 1.0 );

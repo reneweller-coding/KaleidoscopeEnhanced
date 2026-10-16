@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -236,14 +236,14 @@ void main()
     vec2  uv = p * 0.5 + 0.5 + vec2( 0.002, 0.001 ) * sceneTime;
     float lod = 4.5 - 1.5 * rough + 1.5 * clamp( smoothP, 0.0, 1.0 );
     float T = 0.03 * sceneTime + 0.2 * audioAdvance;
-    float nB = 6.0 + 10.0 * clamp( audioSpread, 0.0, 1.0 );
+    float n_b = 6.0 + 10.0 * clamp( audioSpread, 0.0, 1.0 );
     // Four offset taps smooth the coarse mip (no bilinear crosses in the isolines).
     float e = exp2( lod ) / 1024.0 * 0.5;
     float h = 0.25
               * ( luma( imgLod( uv + vec2( e, e ), lod ) ) + luma( imgLod( uv + vec2( -e, e ), lod ) )
                   + luma( imgLod( uv + vec2( e, -e ), lod ) ) + luma( imgLod( uv - vec2( e, e ), lod ) ) );
     h += 0.05 * fbm3( p * 2.0 );
-    float x = h * nB + T;
+    float x = h * n_b + T;
     float band = floor( x );
     float fb = fract( x );
     // Palette per band.

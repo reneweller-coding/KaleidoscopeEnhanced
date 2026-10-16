@@ -48,7 +48,7 @@ uniform float hatchP;
 uniform float angleP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -93,8 +93,8 @@ float hatch( vec2 p, float a, float f, float tone, float width, float drift )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float hatchDens = ( hatchP > 0.0 ) ? hatchP : 1.0;
-    float angBase = clamp( angleP, 0.0, 1.0 );
+    float hatch_dens = ( hatchP > 0.0 ) ? hatchP : 1.0;
+    float ang_base = clamp( angleP, 0.0, 1.0 );
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     float aspect = resolution.x / resolution.y;
@@ -116,7 +116,7 @@ void main()
     vec3 ground = mix( src0, board, ink );
 
     // Three sets, opened in turn.  The first works the highlights only.
-    float a0 = mix( 0.35, 0.95, angBase );
+    float a0 = mix( 0.35, 0.95, ang_base );
     float drift = audioAdvance * 0.012;
     float wid = ( 0.30 + 0.14 * clamp( audioSwell, 0.0, 1.0 ) );
 
@@ -124,7 +124,7 @@ void main()
     float g2 = smoothstep( 0.20, 0.56, d );
     float g3 = smoothstep( 0.36, 0.78, d );
 
-    float freq = 78.0 * hatchDens;
+    float freq = 78.0 * hatch_dens;
     float s1 = hatch( p, a0, freq, smoothstep( 0.55, 1.0, tone ) * g1, wid, drift ) * g1;
     float s2 = hatch( p, a0 - 1.15, freq * 1.31, smoothstep( 0.25, 0.85, tone ) * g2, wid, -drift * 0.7 ) * g2;
     float s3 = hatch( p, a0 + 1.05, freq * 1.73, smoothstep( 0.02, 0.60, tone ) * g3, wid, drift * 0.4 ) * g3;

@@ -83,12 +83,12 @@ void main()
     vec2  eye = vec2( 0.35 * cos( rot ), 0.2 * sin( rot ) );
     vec2  q = p - eye;
     float r = length( q );
-    float ringIdx = floor( r * rings );
+    float ring_idx = floor( r * rings );
     float within = fract( r * rings ); // position across one prism
     // Each prism ring deflects radially by a sawtooth (the Fresnel profile):
     // the deflection grows across the prism and resets at the step.
     vec2  rdir = q / max( r, 1e-4 );
-    float deflect = ( within - 0.5 ) * 0.35 + ringIdx * 0.02;
+    float deflect = ( within - 0.5 ) * 0.35 + ring_idx * 0.02;
     // Sample the world three times with dispersion.
     vec3 col;
     col.r = world( p + rdir * ( deflect - disp ), hue ).r;
@@ -108,7 +108,7 @@ void main()
     col += vec3( 1.0, 0.95, 0.8 ) * beam * 0.9;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

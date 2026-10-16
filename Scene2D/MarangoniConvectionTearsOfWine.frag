@@ -75,62 +75,62 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Climbing film meniscus front located near y = 0.25
-    float vClimb = ( climbSpeedP > 0.01 ? climbSpeedP : 1.2 );
-    float meniscusY = 0.25 + sin( uv.x * 6.0 + t * 0.5 ) * 0.05;
+    float v_climb = ( climbSpeedP > 0.01 ? climbSpeedP : 1.2 );
+    float meniscus_y = 0.25 + sin( uv.x * 6.0 + t * 0.5 ) * 0.05;
 
     // Capillary instability bead rim at top of climbing film
-    float nTears = ( tearCountP > 1.0 ? tearCountP : 7.0 );
-    float beadPhase = uv.x * nTears * 3.14159265;
-    float beads = pow( sin( beadPhase ) * 0.5 + 0.5, 3.0 ) * exp( -abs( uv.y - meniscusY ) * 20.0 );
+    float n_tears = ( tearCountP > 1.0 ? tearCountP : 7.0 );
+    float bead_phase = uv.x * n_tears * 3.14159265;
+    float beads = pow( sin( bead_phase ) * 0.5 + 0.5, 3.0 ) * exp( -abs( uv.y - meniscus_y ) * 20.0 );
 
     // Cascading descending droplet tear rivulets below meniscus
-    float tearRivulet = 0.0;
+    float tear_rivulet = 0.0;
     for ( float i = 0.0; i < 7.0; i += 1.0 )
     {
-        if ( i >= nTears )
+        if ( i >= n_tears )
             break;
 
-        float tearX = ( i - ( nTears - 1.0 ) * 0.5 ) * ( 0.8 / nTears );
-        float dropY = meniscusY - fract( t * 0.8 * vClimb + i * 0.37 ) * 0.8;
+        float tear_x = ( i - ( n_tears - 1.0 ) * 0.5 ) * ( 0.8 / n_tears );
+        float drop_y = meniscus_y - fract( t * 0.8 * v_climb + i * 0.37 ) * 0.8;
 
         // Droplet tear profile
-        float dDrop = length( vec2( uv.x - tearX, uv.y - dropY ) );
-        float dropCore = exp( -dDrop * dDrop * 120.0 );
+        float d_drop = length( vec2( uv.x - tear_x, uv.y - drop_y ) );
+        float drop_core = exp( -d_drop * d_drop * 120.0 );
 
         // Rivulet trail
-        float inTrail = exp( -abs( uv.x - tearX ) * 45.0 ) * smoothstep( dropY, meniscusY, uv.y )
-                        * smoothstep( -0.6, dropY, uv.y );
-        tearRivulet += dropCore * 2.0 + inTrail * 0.6;
+        float in_trail = exp( -abs( uv.x - tear_x ) * 45.0 ) * smoothstep( drop_y, meniscus_y, uv.y )
+                         * smoothstep( -0.6, drop_y, uv.y );
+        tear_rivulet += drop_core * 2.0 + in_trail * 0.6;
     }
 
     // Bulk wine liquid pool at bottom (y < -0.4)
-    float bulkPool = smoothstep( -0.35, -0.5, uv.y );
+    float bulk_pool = smoothstep( -0.35, -0.5, uv.y );
 
     // Capillary ripples on climbing film
     float ripples = sin( uv.y * 25.0 - t * 4.0 + audioPhase ) * ( 0.6 + 0.8 * audioMid );
 
     // Pinch-off flash on kick
-    float pinchFlash = beads * ( 1.0 + 3.5 * audioKick ) * ( wineSheenP > 0.01 ? wineSheenP : 1.3 );
+    float pinch_flash = beads * ( 1.0 + 3.5 * audioKick ) * ( wineSheenP > 0.01 ? wineSheenP : 1.3 );
 
     // Ruby red wine color palette
-    vec3 wineRuby = vec3( 0.55, 0.04, 0.12 );
-    vec3 wineGlass = vec3( 0.9, 0.2, 0.35 );
-    vec3 wineSheen = vec3( 1.0, 0.95, 0.9 );
+    vec3 wine_ruby = vec3( 0.55, 0.04, 0.12 );
+    vec3 wine_glass = vec3( 0.9, 0.2, 0.35 );
+    vec3 wine_sheen = vec3( 1.0, 0.95, 0.9 );
 
-    vec3 colWine = palTint( mix( wineRuby, wineGlass, clamp( uv.y + 0.5, 0.0, 1.0 ) ), uv.x * 0.2 + audioCentroid,
-                            0.26 );
+    vec3 col_wine = palTint( mix( wine_ruby, wine_glass, clamp( uv.y + 0.5, 0.0, 1.0 ) ), uv.x * 0.2 + audioCentroid,
+                             0.26 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colWine * bulkPool * 1.5;
-    col += colWine * tearRivulet * ( 0.8 + 0.4 * audioSwell ) * 1.6;
-    col += colWine * beads * 1.8;
-    col += wineSheen * pinchFlash * 2.2;
-    col += colWine * abs( ripples ) * smoothstep( meniscusY, -0.4, uv.y ) * 0.6;
-    col += colWine * ( audioKick * 0.35 );
+    col += col_wine * bulk_pool * 1.5;
+    col += col_wine * tear_rivulet * ( 0.8 + 0.4 * audioSwell ) * 1.6;
+    col += col_wine * beads * 1.8;
+    col += wine_sheen * pinch_flash * 2.2;
+    col += col_wine * abs( ripples ) * smoothstep( meniscus_y, -0.4, uv.y ) * 0.6;
+    col += col_wine * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

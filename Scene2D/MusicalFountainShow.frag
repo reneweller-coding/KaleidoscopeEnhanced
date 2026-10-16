@@ -159,8 +159,8 @@ void main()
     // Mist hanging over the basin, lit by the jets.
     float mist = noise2( vec2( p.x * 3.0 + sceneTime * 0.1, p.y * 5.0 ) ) * smoothstep( wl + 0.4, wl, p.y )
                  * step( wl, p.y );
-    vec3  mistC = fountain( vec2( p.x, wl + 0.02 ), wl ) * 0.5 + jetColour( g_n * 0.5 ) * 0.05;
-    col += mistC * mist * ( 0.4 + 0.6 * swell );
+    vec3  mist_c = fountain( vec2( p.x, wl + 0.02 ), wl ) * 0.5 + jetColour( g_n * 0.5 ) * 0.05;
+    col += mist_c * mist * ( 0.4 + 0.6 * swell );
 
     // The basin: a black mirror of everything above, rippled.
     if ( p.y < wl )
@@ -186,7 +186,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

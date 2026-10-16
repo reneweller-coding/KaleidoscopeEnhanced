@@ -121,23 +121,23 @@ void main()
 
     // Extreme camera shake on kicks
     float shake = 0.0; // kick camera jitter removed (V7d)
-    vec2  shakeUv = uv + vec2( hash11( time * 100.0 ), hash11( time * 100.0 + 1.0 ) ) * shake - ( shake * 0.5 );
+    vec2  shake_uv = uv + vec2( hash11( time * 100.0 ), hash11( time * 100.0 + 1.0 ) ) * shake - ( shake * 0.5 );
 
-    vec3 rd = normalize( shakeUv.x * uu + shakeUv.y * vv + 1.5 * ww );
+    vec3 rd = normalize( shake_uv.x * uu + shake_uv.y * vv + 1.5 * ww );
 
     // Raymarching volumetric energy field
     float d = 0.0;
     vec3  p;
     vec3  col = vec3( 0.0 );
 
-    vec3 coreColor = imgPalette( 0.8 + audioCentroid * 0.2 );
-    vec3 jetColor = imgPalette( 0.1 + audioKick * 0.1 );
+    vec3 core_color = imgPalette( 0.8 + audioCentroid * 0.2 );
+    vec3 jet_color = imgPalette( 0.1 + audioKick * 0.1 );
 
     // Tilt the system
     mat2 tilt = rot( 0.5 );
 
     // Fast rotation of the pulsar
-    float fastSpin = time * 10.0 * sp + audioPhase * 5.0;
+    float fast_spin = time * 10.0 * sp + audioPhase * 5.0;
 
     for ( int i = 0; i < 60; i++ )
     {
@@ -146,45 +146,45 @@ void main()
         // System transform
         vec3 sp = p;
         sp.yz = tilt * sp.yz;
-        sp.xz = rot( fastSpin ) * sp.xz;
+        sp.xz = rot( fast_spin ) * sp.xz;
 
         // Accretion disk
         float r = length( sp.xz );
         float disk = abs( sp.y ) - 0.05 * ( 1.0 + r ); // flares outward slightly
-        float diskDens = smoothstep( 2.0, 0.5, r ) * smoothstep( 0.1, 0.5, r );
-        float diskNoise = fbm( vec3( sp.xz * 5.0, time * 2.0 ) );
+        float disk_dens = smoothstep( 2.0, 0.5, r ) * smoothstep( 0.1, 0.5, r );
+        float disk_noise = fbm( vec3( sp.xz * 5.0, time * 2.0 ) );
 
-        if ( disk < 0.1 && diskDens > 0.0 )
+        if ( disk < 0.1 && disk_dens > 0.0 )
         {
-            float alpha = ( 0.1 - disk ) * 10.0 * diskDens * diskNoise;
-            col += coreColor * alpha * ( 1.0 + audioSwell * 2.0 ) * ep * 0.05;
+            float alpha = ( 0.1 - disk ) * 10.0 * disk_dens * disk_noise;
+            col += core_color * alpha * ( 1.0 + audioSwell * 2.0 ) * ep * 0.05;
         }
 
         // Central star (core)
-        float coreDist = length( sp );
-        if ( coreDist < 0.2 )
+        float core_dist = length( sp );
+        if ( core_dist < 0.2 )
         {
-            float coreAlpha = ( 0.2 - coreDist ) * 20.0;
-            col += vec3( 1.0, 0.9, 0.8 ) * coreAlpha * ep * 0.2;
+            float core_alpha = ( 0.2 - core_dist ) * 20.0;
+            col += vec3( 1.0, 0.9, 0.8 ) * core_alpha * ep * 0.2;
         }
 
         // Jets
-        float jetRadius = 0.05 + abs( sp.y ) * 0.1; // jets widen
-        float jet = length( sp.xz ) - jetRadius;
+        float jet_radius = 0.05 + abs( sp.y ) * 0.1; // jets widen
+        float jet = length( sp.xz ) - jet_radius;
         if ( jet < 0.0 && abs( sp.y ) > 0.15 )
         {
             // Pulses traveling up/down the jet
             float pulse = step( 0.8, fract( abs( sp.y ) * 2.0 - time * 20.0 - audioKick * 2.0 ) );
-            float jetNoise = fbm( vec3( sp.xz * 10.0, sp.y - time * 30.0 ) );
+            float jet_noise = fbm( vec3( sp.xz * 10.0, sp.y - time * 30.0 ) );
 
-            float alpha = ( 0.0 - jet ) * 20.0 * jetNoise;
+            float alpha = ( 0.0 - jet ) * 20.0 * jet_noise;
             float fade = exp( -abs( sp.y ) * 0.5 );
 
-            col += jetColor * alpha * fade * ( 1.0 + pulse * 5.0 * audioKick ) * ep * 0.1;
+            col += jet_color * alpha * fade * ( 1.0 + pulse * 5.0 * audioKick ) * ep * 0.1;
         }
 
         // Volumetric scattering/halo
-        col += coreColor * exp( -coreDist * 3.0 ) * ( 0.01 + audioSwell * 0.02 ) * ep;
+        col += core_color * exp( -core_dist * 3.0 ) * ( 0.01 + audioSwell * 0.02 ) * ep;
 
         d += 0.05 + d * 0.02; // step size
         if ( d > 8.0 )
@@ -192,7 +192,7 @@ void main()
     }
 
     // Add intense starfield background
-    vec3 bgCol = vec3( 0.0 );
+    vec3 bg_col = vec3( 0.0 );
     for ( int i = 0; i < 2; ++i )
     {
         float sc = 80.0 + 50.0 * float( i );
@@ -201,10 +201,10 @@ void main()
         vec3  f = fract( st ) - 0.5;
         if ( hash11( dot( cell, vec3( 12.3, 45.6, 78.9 ) ) ) > 0.98 )
         {
-            bgCol += mix( jetColor, coreColor, hash11( cell.x ) ) * exp( -length( f ) * length( f ) * 400.0 );
+            bg_col += mix( jet_color, core_color, hash11( cell.x ) ) * exp( -length( f ) * length( f ) * 400.0 );
         }
     }
-    col += bgCol * ( 0.2 + audioSwell * 0.5 );
+    col += bg_col * ( 0.2 + audioSwell * 0.5 );
 
     // Vignette / brightness boost
     col *= 1.5;
@@ -213,7 +213,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

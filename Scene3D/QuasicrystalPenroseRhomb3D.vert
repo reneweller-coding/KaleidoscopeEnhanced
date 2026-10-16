@@ -53,7 +53,7 @@ vec3 imgPalette( float t )
 void main()
 {
     vec3  corner = attrA.xyz;
-    float cIndex = attrA.w;
+    float c_index = attrA.w;
     vLocalPos = corner;
 
     float t = time * 0.35 + audioAdvance * 0.3;
@@ -67,8 +67,8 @@ void main()
     // primitive was silently dropped, so NINETEEN TWENTIETHS of the lattice
     // never drew at all.  That, not the exposure, is why the frame measured
     // occ 0.18 on a mostly black picture.
-    const float totalCubes = 4900.0;
-    float       seed = cIndex / totalCubes;
+    const float total_cubes = 4900.0;
+    float       seed = c_index / total_cubes;
 
     // TRUE cut-and-project quasicrystal, replacing the golden-angle ball
     // (which recorded as formless mush -- a random ball has no lattice order
@@ -77,7 +77,7 @@ void main()
     // points whose PERPENDICULAR-space image falls inside the acceptance
     // window survive.  The survivors form an aperiodic icosahedral lattice
     // with visible 5-fold axes -- which is what the scene's name promises.
-    float nn = cIndex;
+    float nn = c_index;
     float d0 = mod( nn, 4.0 ) - 1.5;
     nn = floor( nn / 4.0 );
     float d1 = mod( nn, 4.0 ) - 1.5;
@@ -108,7 +108,7 @@ void main()
     vec3 perp = d0 * f0 + d1 * f1 + d2 * f2 + d3 * f3 + d4 * f4 + d5 * f5;
 
     float win = 1.40;
-    if ( cIndex >= 4096.0 || dot( perp, perp ) > win * win )
+    if ( c_index >= 4096.0 || dot( perp, perp ) > win * win )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec3( 0.0 );
@@ -119,8 +119,8 @@ void main()
     }
 
     float spread = ( quasiScaleP > 0.01 ? ( 0.66 + 0.14 * quasiScaleP ) : 0.78 );
-    vec3  quasiPos = par * spread;
-    vQuasiShell = length( quasiPos );
+    vec3  quasi_pos = par * spread;
+    vQuasiShell = length( quasi_pos );
 
     // Rhombohedral rhombohedron cube scaling.  Spread over the full lattice the
     // rhombs also have to be big enough to read: as a bare multiple of
@@ -128,7 +128,7 @@ void main()
     // preset now sets an offset above a floor that always reads.
     float sz = ( cubeSizeP > 0.001 ? ( 0.10 + 0.85 * cubeSizeP ) : 0.16 )
                * ( 1.0 + 0.3 * audioSwell );
-    vec3  cubePos = quasiPos + corner * sz;
+    vec3  cube_pos = quasi_pos + corner * sz;
 
     vNormal = normalize( corner );
     // Perp-space coordinate as the palette key: constant per cube (no
@@ -139,7 +139,7 @@ void main()
                               + dot( perp, vec3( 0.171, 0.223, 0.281 ) ) ) );
 
     // Camera Transform (V3)
-    vec3 vp = cubePos;
+    vec3 vp = cube_pos;
 
     // 3D rotation
     float c = cos( t * 0.2 ), s = sin( t * 0.2 );

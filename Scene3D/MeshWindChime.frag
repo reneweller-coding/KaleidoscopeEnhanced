@@ -38,8 +38,8 @@ in vec3  vPos;    ///< Position (from the vertex stage).
 in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 
-const float kDist = 52.0;
-const float kGround = -30.0;
+const float Dist = 52.0;
+const float Ground = -30.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -124,7 +124,7 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-const vec3 kSunDir = vec3( -0.45, 0.55, -0.70 ); // afternoon sun, behind the camera's left
+const vec3 SunDir = vec3( -0.45, 0.55, -0.70 ); // afternoon sun, behind the camera's left
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir )
@@ -146,7 +146,7 @@ vec3 renderSky( vec3 dir )
     else if ( dir.y < -0.004 )
     {
         // The lawn.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.005 );
         float g = fbm2( P.xz * 0.06 ), g2 = fbm2( P.xz * 0.5 );
@@ -158,11 +158,11 @@ vec3 renderSky( vec3 dir )
         float h = clamp( dir.y, 0.0, 1.0 );
         col = mix( vec3( 0.80, 0.85, 0.90 ), vec3( 0.35, 0.55, 0.90 ), pow( h / 0.3, 0.6 ) ) * day;
         float tree = 0.05 + 0.06 * noise1( az * 3.5 ) + 0.02 * noise1( az * 12.0 + 5.0 );
-        float treeMask = 1.0 - smoothstep( tree - 0.006, tree + 0.006, dir.y );
-        col = mix( col, vec3( 0.06, 0.14, 0.05 ) * day, treeMask );
+        float tree_mask = 1.0 - smoothstep( tree - 0.006, tree + 0.006, dir.y );
+        col = mix( col, vec3( 0.06, 0.14, 0.05 ) * day, tree_mask );
     }
     // Halos of the ringing tubes, thrown across the garden behind the chime.
-    vec3  d = normalize( vec3( 0.0, 4.0, kDist ) );
+    vec3  d = normalize( vec3( 0.0, 4.0, Dist ) );
     float a = acos( clamp( dot( dir, d ), -1.0, 1.0 ) );
     for ( int i = 0; i < 12; i++ )
     {
@@ -202,17 +202,17 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
-    vec3 sd = normalize( kSunDir );
+    vec3 sd = normalize( SunDir );
     vec3 col = alb * vec3( 1.0, 0.92, 0.8 ) * max( dot( n, sd ), 0.0 ) * 1.3 * day;
     col += alb * vec3( 0.40, 0.55, 0.85 ) * ( 0.55 + 0.45 * n.y ) * 0.5 * day;
     col += alb * vec3( 0.15, 0.25, 0.08 ) * max( -n.y, 0.0 ) * 0.5 * day;
     col += alb * 0.05;
 
-    vec3  halfV = normalize( sd + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 90.0, 8.0, roughness ) );
+    vec3  half_v = normalize( sd + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 90.0, 8.0, roughness ) );
     col += mix( vec3( 1.0 ), base.rgb, metallic ) * spec * ( 0.3 + 0.7 * metallic ) * ( 0.6 + 1.2 * high );
 
     // Which tube: its place round the disc gives its class.
@@ -221,21 +221,21 @@ void main()
                  * ( 1.0 - smoothstep( 0.75, 0.95, vLocal.y ) ) * smoothstep( 0.2, 0.6, metallic );
     int   idx = int( clamp( ( atan( vLocal.x, vLocal.z ) / 6.2831853 + 0.5 ) * 12.0, 0.0, 11.99 ) );
     float speak = clamp( audioChroma[idx] * 1.3, 0.0, 1.0 );
-    vec3  classCol = hsv2rgb( vec3( float( idx ) / 12.0, 0.5, 1.0 ) );
-    col += classCol * tube * speak * 0.9;
+    vec3  class_col = hsv2rgb( vec3( float( idx ) / 12.0, 0.5, 1.0 ) );
+    col += class_col * tube * speak * 0.9;
 
     // The clapper in the middle: its glint on the kick.
     float clapper = ( 1.0 - smoothstep( 0.15, 0.30, rad ) ) * smoothstep( -0.9, -0.5, vLocal.y )
                     * ( 1.0 - smoothstep( 0.1, 0.4, vLocal.y ) );
     col += vec3( 1.0, 0.95, 0.85 ) * clapper * kick * 0.8;
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.8, 0.9, 1.0 ) * fres * 0.15 * day;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.08 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

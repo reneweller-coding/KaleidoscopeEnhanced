@@ -123,8 +123,8 @@ void main()
     vec3 col = img( gl_FragCoord.xy / resolution ) * imgPalette( hue * 0.159 + 0.1 ) * 0.25 + vec3( 0.05, 0.045, 0.04 );
     // The diagonals glow with the bass (where the primes line up).
     float diag = min( abs( abs( cell.x ) - abs( cell.y ) ), 1.0 );
-    float diagGlow = ( 1.0 - diag ) * ( 0.08 + 0.25 * clamp( audioBass, 0.0, 1.0 ) );
-    col += imgPalette( hue * 0.159 + 0.6 ) * diagGlow;
+    float diag_glow = ( 1.0 - diag ) * ( 0.08 + 0.25 * clamp( audioBass, 0.0, 1.0 ) );
+    col += imgPalette( hue * 0.159 + 0.6 ) * diag_glow;
     // The prime: a round dot, coloured by n mod 12 (a chroma class).
     if ( prime )
     {
@@ -140,11 +140,11 @@ void main()
     // Cell grid faint; the outermost visible ring flashes on the kick.
     float grid = smoothstep( 0.02, 0.0, 0.5 - max( abs( f.x ), abs( f.y ) ) - 0.0 ) * 0.05;
     col += vec3( grid );
-    float ringK = floor( 0.5 * cells ) - 1.0;
-    col += imgPalette( hue * 0.159 + 0.9 ) * step( abs( k - ringK ), 0.5 ) * audioKick * 0.5;
+    float ring_k = floor( 0.5 * cells ) - 1.0;
+    col += imgPalette( hue * 0.159 + 0.9 ) * step( abs( k - ring_k ), 0.5 ) * audioKick * 0.5;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

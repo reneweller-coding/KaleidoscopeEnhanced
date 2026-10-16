@@ -24,8 +24,8 @@ out float vGlow;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vDepth = attrA.w;
     vGlow = attrB.w;
 
@@ -36,7 +36,7 @@ void main()
     // compensated here, so a wider or narrower frame still gets an
     // edge-to-edge curtain.
     float aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
-    vec3  vp = worldP;
+    vec3  vp = world_p;
     vp.x *= aspect / 1.7778;
     vp.x -= eyeOff;
 

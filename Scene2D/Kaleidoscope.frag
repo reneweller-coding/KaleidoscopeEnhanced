@@ -49,7 +49,7 @@ uniform float audioMode;       ///< 0=minor/dark .. 1=major/bright -> rosette su
 uniform float audioHarmChange; ///< spikes on chord/key changes -> zoom breath
 uniform float audioRoughness;  ///< 0=consonant .. 1=dissonant -> wavy mirror-glass ripple
 
-const float M_PI = 3.141592653589793;
+const float Pi = 3.141592653589793;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -69,7 +69,7 @@ void main()
 
     float angle = 0.0;
     if ( rotate > 0 )
-        angle = M_PI * 0.25;
+        angle = Pi * 0.25;
 
     // a rotation
     // vec2 cst = vec2( cos(interpolationRotation), sin(interpolationRotation) );
@@ -83,23 +83,23 @@ void main()
     // sending r to infinity for every pixel and blanking the whole fold.
     // 1.0 reproduces the plain Euclidean length() case (the commented-out
     // fallback below), the correct "no warp" default.
-    float powV = ( power > 0.01 ) ? power : 1.0;
+    float pow_v = ( power > 0.01 ) ? power : 1.0;
     // The musical mode reshapes the radial metric itself: minor keys push the
     // superellipse exponent below 1 (a pinched, spiky star rosette), major keys
     // above it (full, rounded petals).  A pure per-frame SHAPE parameter -- it
     // never touches 'time', so no accumulated phase can be remapped by it.
-    powV *= 0.82 + 0.36 * clamp( audioMode, 0.0, 1.0 );
-    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
+    pow_v *= 0.82 + 0.36 * clamp( audioMode, 0.0, 1.0 );
+    float r = pow( pow( p.x * p.x, pow_v ) + pow( p.y * p.y, pow_v ), 1.0 / ( 2.0 * pow_v ) );
 
     // cartesian to polar coordinates
     // float r = length(p);
     float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5 * float( sides );
+    float sides_k = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod( a, tau / sidesK );
-    a = abs( a - tau / sidesK / 2. );
+    a = mod( a, tau / sides_k );
+    a = abs( a - tau / sides_k / 2. );
     a += time * speed + audioPhase; // base rotation + jump-free audio rotation
     // Dissonance bends the mirror seams: a radius-dependent ripple, so straight
     // segment borders turn into warped, old-glass edges on rough clusters.
@@ -118,11 +118,11 @@ void main()
     // every chord/key move rides the same gentle zoom breath, so the pattern
     // answers the HARMONY as well as the rhythm.
     float hcdf = clamp( audioHarmChange, 0.0, 1.0 );
-    float zoomK = 1.0 + audioSwell * 0.04;
-    vec2  pZoomed = p / zoomK;
-    vec4  colZoomed = interpolation * texture( tex0, pZoomed + 0.5 )
-                      + ( 1.0 - interpolation ) * texture( tex1, pZoomed + 0.5 );
-    col = mix( col, colZoomed, min( audioBeat * 0.18 + hcdf * 0.30, 0.45 ) );
+    float zoom_k = 1.0 + audioSwell * 0.04;
+    vec2  p_zoomed = p / zoom_k;
+    vec4  col_zoomed = interpolation * texture( tex0, p_zoomed + 0.5 )
+                       + ( 1.0 - interpolation ) * texture( tex1, p_zoomed + 0.5 );
+    col = mix( col, col_zoomed, min( audioBeat * 0.18 + hcdf * 0.30, 0.45 ) );
 
     // Mood colour / saturation / loudness-brightness are applied GLOBALLY in the
     // final present pass; no per-effect brightness flash here.

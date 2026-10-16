@@ -26,18 +26,18 @@ void main()
 
     // Icosahedral skeletal mesh pattern inside the card
     vec2  p = vUV * 6.0;
-    float hexGrid = min( min( abs( sin( p.x ) ), abs( sin( p.x * 0.5 + p.y * 0.866 ) ) ),
-                         abs( sin( p.x * 0.5 - p.y * 0.866 ) ) );
-    float latticeStrut = exp( -hexGrid * 14.0 );
+    float hex_grid = min( min( abs( sin( p.x ) ), abs( sin( p.x * 0.5 + p.y * 0.866 ) ) ),
+                          abs( sin( p.x * 0.5 - p.y * 0.866 ) ) );
+    float lattice_strut = exp( -hex_grid * 14.0 );
 
     // Specular glass highlight
     vec3  n = normalize( vNormal );
-    vec3  lightDir = normalize( vec3( 0.4, 0.9, -0.5 ) );
-    vec3  viewDir = normalize( -vWorldPos );
-    float spec = pow( max( dot( viewDir, reflect( -lightDir, n ) ), 0.0 ), 32.0 );
+    vec3  light_dir = normalize( vec3( 0.4, 0.9, -0.5 ) );
+    vec3  view_dir = normalize( -vWorldPos );
+    float spec = pow( max( dot( view_dir, reflect( -light_dir, n ) ), 0.0 ), 32.0 );
 
     vec3 col = mix( vCol.rgb * 0.4, photo * 1.4, 0.7 );
-    col += latticeStrut * vCol.rgb * 2.0;
+    col += lattice_strut * vCol.rgb * 2.0;
     col += spec * vec3( 1.0, 1.0, 1.0 );
 
     fragColor = vec4( col, 1.0 );

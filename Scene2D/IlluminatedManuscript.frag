@@ -105,8 +105,8 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float vineLen = 0.7 + 0.3 * clamp( vineP, 0.0, 1.0 );
-    float goldAmt = 0.6 + 0.4 * clamp( goldP, 0.0, 1.0 );
+    float vine_len = 0.7 + 0.3 * clamp( vineP, 0.0, 1.0 );
+    float gold_amt = 0.6 + 0.4 * clamp( goldP, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
     float sweep = 0.5 + 0.5 * sin( sceneAdvance * 0.3 + sceneTime * 0.05 + 2.0 * clamp( audioSwell, 0.0, 1.0 ) );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -116,13 +116,13 @@ void main()
     vellum *= 0.96 + 0.04 * hash21( floor( p * 300.0 ) );
     vec3 col = vellum;
     // Ruled lines and script: rows of dark marks (a stand-in for the text).
-    float rowF = ( p.y + 0.35 ) * 14.0;
-    float row = floor( rowF );
-    float inText = step( -0.42, p.y ) * step( p.y, 0.3 ) * step( -aspect * 0.2, p.x ) * step( p.x, aspect * 0.42 );
-    float glyph = smoothstep( 0.25, 0.15, abs( fract( rowF ) - 0.5 ) )
+    float row_f = ( p.y + 0.35 ) * 14.0;
+    float row = floor( row_f );
+    float in_text = step( -0.42, p.y ) * step( p.y, 0.3 ) * step( -aspect * 0.2, p.x ) * step( p.x, aspect * 0.42 );
+    float glyph = smoothstep( 0.25, 0.15, abs( fract( row_f ) - 0.5 ) )
                   * step( 0.3, hash21( vec2( floor( p.x * 60.0 ), row ) ) )
                   * smoothstep( 0.35, 0.2, abs( fract( p.x * 60.0 ) - 0.5 ) );
-    col = mix( col, vec3( 0.2, 0.12, 0.08 ), glyph * inText * 0.85 );
+    col = mix( col, vec3( 0.2, 0.12, 0.08 ), glyph * in_text * 0.85 );
     // The initial: a large square at the top left with a gilded frame and
     // the miniature (the photo) inside.
     vec2  ic = vec2( -aspect * 0.32, 0.12 );
@@ -134,35 +134,35 @@ void main()
     col = mix( col, mini, box - frame );
     // Gold leaf: warm yellow with a highlight sweeping across on the swell,
     // flashing on the kick, burnish dots sparkling on the treble.
-    vec3  gold = vec3( 0.95, 0.75, 0.3 ) * goldAmt;
+    vec3  gold = vec3( 0.95, 0.75, 0.3 ) * gold_amt;
     float shine = pow( max( 1.0 - abs( ( iq.x + iq.y ) * 1.5 - ( sweep * 2.0 - 1.0 ) ), 0.0 ), 3.0 );
-    vec3  goldLit = gold * ( 0.7 + 0.8 * shine ) + vec3( 1.0, 0.95, 0.8 ) * shine * 0.4
-                    + vec3( 1.0, 0.9, 0.6 ) * audioKick * 0.5;
-    col = mix( col, goldLit, frame );
+    vec3  gold_lit = gold * ( 0.7 + 0.8 * shine ) + vec3( 1.0, 0.95, 0.8 ) * shine * 0.4
+                     + vec3( 1.0, 0.9, 0.6 ) * audioKick * 0.5;
+    col = mix( col, gold_lit, frame );
     // Vines: four tendrils growing from the initial along the margins.
     float leaf1, leaf2, leaf3, leaf4;
-    float v1 = vine( p, ic + vec2( 0.2, 0.15 ), vec2( 1.0, 0.0 ), aspect * 0.7 * vineLen, prog, 1.0, leaf1 );
-    float v2 = vine( p, ic + vec2( -0.1, -0.2 ), vec2( 0.0, -1.0 ), 0.55 * vineLen, prog * 0.9, 2.0, leaf2 );
-    float v3 = vine( p, ic + vec2( 0.2, -0.18 ), vec2( 0.6, -0.8 ), 0.5 * vineLen, prog * 0.8, 3.0, leaf3 );
-    float v4 = vine( p, ic + vec2( -0.05, 0.2 ), vec2( 0.3, 1.0 ), 0.3 * vineLen, prog * 0.7, 4.0, leaf4 );
+    float v1 = vine( p, ic + vec2( 0.2, 0.15 ), vec2( 1.0, 0.0 ), aspect * 0.7 * vine_len, prog, 1.0, leaf1 );
+    float v2 = vine( p, ic + vec2( -0.1, -0.2 ), vec2( 0.0, -1.0 ), 0.55 * vine_len, prog * 0.9, 2.0, leaf2 );
+    float v3 = vine( p, ic + vec2( 0.2, -0.18 ), vec2( 0.6, -0.8 ), 0.5 * vine_len, prog * 0.8, 3.0, leaf3 );
+    float v4 = vine( p, ic + vec2( -0.05, 0.2 ), vec2( 0.3, 1.0 ), 0.3 * vine_len, prog * 0.7, 4.0, leaf4 );
     float stem = smoothstep( 0.006, 0.002, min( min( v1, v2 ), min( v3, v4 ) ) );
     float leaf = max( max( leaf1, leaf2 ), max( leaf3, leaf4 ) );
-    vec3  vineCol = mix( vec3( 0.15, 0.35, 0.15 ), imgPalette( hue * 0.159 + 0.35 ), 0.3 );
-    col = mix( col, vineCol, stem );
-    col = mix( col, mix( vineCol * 1.3, gold, 0.35 + 0.3 * shine ), leaf );
+    vec3  vine_col = mix( vec3( 0.15, 0.35, 0.15 ), imgPalette( hue * 0.159 + 0.35 ), 0.3 );
+    col = mix( col, vine_col, stem );
+    col = mix( col, mix( vine_col * 1.3, gold, 0.35 + 0.3 * shine ), leaf );
     // Burnished gold dots in the margins, sparkling on the treble.
     vec2  gu = p * 24.0;
     vec2  gc = floor( gu );
     vec2  gf = fract( gu ) - 0.5;
     vec2  go = vec2( hash21( gc + 1.3 ), hash21( gc + 5.9 ) ) - 0.5;
-    float dot_ = smoothstep( 0.14, 0.09, length( gf - go * 0.4 ) ) * step( 0.9, hash21( gc ) ) * ( 1.0 - inText )
+    float dot_ = smoothstep( 0.14, 0.09, length( gf - go * 0.4 ) ) * step( 0.9, hash21( gc ) ) * ( 1.0 - in_text )
                  * ( 1.0 - box );
     col = mix( col, gold * ( 0.8 + 0.6 * hi + 0.5 * shine ), dot_ );
     // Page edge shadow.
     col *= 0.85 + 0.15 * ( 1.0 - length( p / vec2( aspect * 0.5, 0.5 ) ) * 0.5 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

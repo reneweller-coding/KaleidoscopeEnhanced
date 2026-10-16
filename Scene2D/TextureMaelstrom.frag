@@ -132,7 +132,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -254,8 +254,8 @@ void main()
     float a = atan( p.y, p.x );
     float lr = log( max( r, 1e-3 ) );
     // Arms: integer counts cross-faded (mode morphs smoothly between them).
-    float armsF = 2.0 + 4.0 * clamp( armsP, 0.0, 1.0 ) + 2.0 * clamp( audioMode, 0.0, 1.0 );
-    float a0 = 2.0 * floor( armsF * 0.5 ), af = ( armsF - a0 ) * 0.5;
+    float arms_f = 2.0 + 4.0 * clamp( armsP, 0.0, 1.0 ) + 2.0 * clamp( audioMode, 0.0, 1.0 );
+    float a0 = 2.0 * floor( arms_f * 0.5 ), af = ( arms_f - a0 ) * 0.5;
     float wind = ( 1.2 + 1.6 * clamp( windP, 0.0, 1.0 ) ) * ( 0.8 + 0.5 * clamp( audioSpread, 0.0, 1.0 ) );
 
     vec3  col = vec3( 0.0 );
@@ -278,8 +278,8 @@ void main()
         // Foam streaks wound along the arms: noise on the unit circle, turned
         // with the spiral, so it has no seam either.
         vec2  dir = vec2( cos( a - lr * wind * 6.2831853 / arms ), sin( a - lr * wind * 6.2831853 / arms ) );
-        float foamN = fbm3( dir * 2.5 + vec2( lr * 1.5 - 0.06 * sceneTime, 0.0 ) );
-        float foam = smoothstep( 0.62 - 0.2 * clamp( foamP, 0.0, 1.0 ), 0.8, foamN );
+        float foam_n = fbm3( dir * 2.5 + vec2( lr * 1.5 - 0.06 * sceneTime, 0.0 ) );
+        float foam = smoothstep( 0.62 - 0.2 * clamp( foamP, 0.0, 1.0 ), 0.8, foam_n );
         vec3  c = wall * lit
                   * mix( vec3( 1.0 ),
                          glowColour( imgLod( tuv, 6.0 ), vec2( cos( a ), sin( a ) ) + lr * 0.1, hueP * 0.159 ) * 1.5,

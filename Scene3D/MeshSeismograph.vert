@@ -37,49 +37,49 @@ out float vBg;     ///< Background flag (from the vertex stage).
 out float vDrum;
 out float vTurn;
 
-const float kDist = 46.0;
-const float kGround = -16.0;
-const float kRate = 0.35; ///< radians per second, shared with the fragment stage
+const float Dist = 46.0;
+const float Ground = -16.0;
+const float Rate = 0.35; ///< radians per second, shared with the fragment stage
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBase = gl_VertexID < meshVertexCount;
-    bool isDrum = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
-    bool isBg = gl_VertexID >= mesh2VertexCount;
+    bool is_base = gl_VertexID < meshVertexCount;
+    bool is_drum = gl_VertexID >= meshVertexCount && gl_VertexID < mesh2VertexCount;
+    bool is_bg = gl_VertexID >= mesh2VertexCount;
     vec3 world, n;
-    vDrum = isDrum ? 1.0 : 0.0;
-    vTurn = time * kRate;
+    vDrum = is_drum ? 1.0 : 0.0;
+    vTurn = time * Rate;
 
     float      sz = 14.0 * ( sizeP > 0.01 ? sizeP : 1.0 );
-    float      mxB = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
-    vec3       baseHalf = meshExtent / mxB * sz;
-    const mat3 turnM = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
+    float      mx_b = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
+    vec3       base_half = meshExtent / mx_b * sz;
+    const mat3 turn_m = mat3( -1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, -1.0 );
 
-    if ( isBase )
+    if ( is_base )
     {
         vec3 c = attrA.xyz - meshCenter;
-        world = turnM * ( c / mxB * sz ) + vec3( 0.0, kGround + baseHalf.y, kDist );
-        n = normalize( turnM * attrB.xyz );
+        world = turn_m * ( c / mx_b * sz ) + vec3( 0.0, Ground + base_half.y, Dist );
+        n = normalize( turn_m * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
         vLocal = c / meshExtent;
     }
-    else if ( isDrum )
+    else if ( is_drum )
     {
-        float szD = sz * ( drumP > 0.01 ? drumP : 0.45 );
+        float sz_d = sz * ( drumP > 0.01 ? drumP : 0.45 );
         vec3  c = attrA.xyz - meshCenter2;
         float mx = max( meshExtent2.x, max( meshExtent2.y, meshExtent2.z ) );
-        vec3  local = c / mx * szD;
+        vec3  local = c / mx * sz_d;
         // Turn about the axle (the model's longest axis, x), then lay the
         // axle along world Z so it runs under the pen arm, which the base
         // model carries along X.
         float ang = vTurn;
         float ca = cos( ang ), sa = sin( ang );
-        mat3  rotX = mat3( 1.0, 0.0, 0.0, 0.0, ca, sa, 0.0, -sa, ca );
+        mat3  rot_x = mat3( 1.0, 0.0, 0.0, 0.0, ca, sa, 0.0, -sa, ca );
         // The axle stays along X: seen end-on (axle along Z) the drum is a
         // disc and the paper is hidden. The pen tip sits on the drum's top.
-        mat3 M = rotX;
-        vec3 centre = vec3( drumXP * baseHalf.x, kGround + drumYP * 2.0 * baseHalf.y, kDist - drumZP * baseHalf.z );
+        mat3 M = rot_x;
+        vec3 centre = vec3( drumXP * base_half.x, Ground + drumYP * 2.0 * base_half.y, Dist - drumZP * base_half.z );
         world = M * local + centre;
         n = normalize( M * attrB.xyz );
         vUV = vec2( attrA.w, attrB.w );
@@ -97,10 +97,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

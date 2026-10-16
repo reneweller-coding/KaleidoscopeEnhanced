@@ -106,7 +106,7 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
-    int   nF = 5 + int( clamp( fishP, 0.0, 1.0 ) * 4.99 );
+    int   n_f = 5 + int( clamp( fishP, 0.0, 1.0 ) * 4.99 );
     float t = sceneTime;
 
     // Surface ripple normal (slow wind ripples).
@@ -137,7 +137,7 @@ void main()
     // The koi.
     for ( int k = 0; k < 9; ++k )
     {
-        if ( k >= nF )
+        if ( k >= n_f )
             break;
         float fk = float( k );
         vec2  c = fishPos( fk, t, aspect );
@@ -161,19 +161,19 @@ void main()
         // Colour: white base with orange and black patches (kohaku, showa).
         float patch = noise2( vec2( s * 3.0, across * 30.0 ) + fk * 13.0 );
         vec3  orange = mix( vec3( 1.0, 0.4, 0.1 ), imgPalette( hue * 0.159 + 0.05 ) * 1.3, 0.15 );
-        vec3  fishC = vec3( 0.95, 0.93, 0.88 );
+        vec3  fish_c = vec3( 0.95, 0.93, 0.88 );
         if ( hash11( fk + 9.0 ) < 0.5 )
-            fishC = mix( fishC, orange, smoothstep( 0.45, 0.6, patch ) );
+            fish_c = mix( fish_c, orange, smoothstep( 0.45, 0.6, patch ) );
         else
-            fishC = mix( orange, vec3( 0.05 ), smoothstep( 0.55, 0.7, patch ) );
+            fish_c = mix( orange, vec3( 0.05 ), smoothstep( 0.55, 0.7, patch ) );
         int   band = int( mod( fk * 5.0 + 2.0, 32.0 ) );
         float e = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
-        fishC *= 0.7 + 0.2 * ( 1.0 - abs( across ) / max( w, 1e-3 ) ) + 0.35 * e;
+        fish_c *= 0.7 + 0.2 * ( 1.0 - abs( across ) / max( w, 1e-3 ) ) + 0.35 * e;
         // Seen through water: a little dimmer and greener.
-        fishC = mix( fishC, vec3( 0.1, 0.25, 0.2 ), 0.18 );
-        vec3 finC = mix( vec3( 0.9, 0.85, 0.8 ), orange, 0.35 ); // fins are pale and translucent
-        col = mix( col, finC * 0.8, clamp( tail + fin, 0.0, 1.0 ) * 0.45 );
-        col = mix( col, fishC, body );
+        fish_c = mix( fish_c, vec3( 0.1, 0.25, 0.2 ), 0.18 );
+        vec3 fin_c = mix( vec3( 0.9, 0.85, 0.8 ), orange, 0.35 ); // fins are pale and translucent
+        col = mix( col, fin_c * 0.8, clamp( tail + fin, 0.0, 1.0 ) * 0.45 );
+        col = mix( col, fish_c, body );
         // Shadow of the fish on the bottom.
         col *= 1.0
                - 0.3 * smoothstep( w + 0.03, w - 0.01, length( vec2( along, across ) + vec2( 0.03, 0.03 ) ) - 0.0 )
@@ -181,9 +181,9 @@ void main()
     }
 
     // The water surface: sky and branches mirrored, Fresnel light.
-    vec3  skyC = mix( vec3( 0.6, 0.75, 0.9 ), imgPalette( hue * 0.159 + 0.55 ), 0.3 ) * ( 0.7 + 0.5 * swell );
+    vec3  sky_c = mix( vec3( 0.6, 0.75, 0.9 ), imgPalette( hue * 0.159 + 0.55 ), 0.3 ) * ( 0.7 + 0.5 * swell );
     float branches = smoothstep( 0.52, 0.62, fbm( p * 2.5 + rn * 0.3 + vec2( 3.0, 1.0 ) ) );
-    vec3  refl = mix( skyC, vec3( 0.08, 0.1, 0.06 ), branches );
+    vec3  refl = mix( sky_c, vec3( 0.08, 0.1, 0.06 ), branches );
     col = mix( col, refl, 0.28 );
     // Ripple glints.
     float glint = pow( max( 0.0, 1.0 - length( rn ) * 6.0 ), 10.0 ) * step( 0.5, noise2( p * 40.0 + t ) );
@@ -197,14 +197,14 @@ void main()
                   * vec2( aspect * 1.1, 0.8 );
         vec2  d = p - c;
         float a = atan( d.y, d.x ) + t * 0.02 + fk;
-        float leafR = 0.03 * ( 0.55 + 0.45 * pow( abs( cos( a * 2.5 ) ), 0.5 ) );
-        float leaf = smoothstep( leafR, leafR - 0.003, length( d ) );
+        float leaf_r = 0.03 * ( 0.55 + 0.45 * pow( abs( cos( a * 2.5 ) ), 0.5 ) );
+        float leaf = smoothstep( leaf_r, leaf_r - 0.003, length( d ) );
         vec3  lc = mix( vec3( 0.85, 0.25, 0.08 ), imgPalette( hue * 0.159 + 0.08 ), 0.2 );
         col = mix( col, lc * ( 0.8 + 0.2 * hash11( fk + 7.0 ) ), leaf );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -79,12 +79,12 @@ void main()
     float stream = mod( attrA.w, 6.0 );
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     vec3  vp;
     vec3  col;
-    float sizeBase, sizeCap, sizeMin;
+    float size_base, size_cap, size_min;
 
     if ( r1 < 0.17 )
     {
@@ -103,8 +103,8 @@ void main()
         // 2.0 would fit the frustum exactly; 2.3 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.3;
-        vp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 2.0 * cos( ph ),
-                   ( hy - 0.5 ) * open * dz * kTanY + 2.0 * sin( ph * 0.79 ),
+        vp = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 2.0 * cos( ph ),
+                   ( hy - 0.5 ) * open * dz * TanY + 2.0 * sin( ph * 0.79 ),
                    dz );
 
         col = imgPalette( fract( hz * 0.6 + stream * 0.167 ) );
@@ -114,9 +114,9 @@ void main()
         // A speck must stay legible at any distance -- below roughly two and a
         // half pixels an additive sprite averages away to nothing and the far
         // field reads as black again.
-        sizeBase = 96.0;
-        sizeCap = 10.0;
-        sizeMin = 2.7;
+        size_base = 96.0;
+        size_cap = 10.0;
+        size_min = 2.7;
     }
     else
     {
@@ -157,9 +157,9 @@ void main()
         col *= ( 0.4 + 0.6 * r3 ) * ( 0.7 + 0.5 * audioSwell )
                * clamp( 1.0 - vp.z / 95.0, 0.0, 1.0 );
 
-        sizeBase = 210.0;
-        sizeCap = 15.0;
-        sizeMin = 2.6;
+        size_base = 210.0;
+        size_cap = 15.0;
+        size_min = 2.6;
     }
 
     vp.x -= eyeOff;
@@ -170,8 +170,8 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
     vCol = vec4( col * 2.7, 1.0 );
 }

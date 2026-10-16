@@ -94,8 +94,8 @@ void kiteLattice( vec2 p, out vec2 hexCell, out float kite, out float edge, out 
     float rim = 0.866 - dot( abs( d ), vec2( 0.0, 0.0 ) );
     // Hexagon boundary distance (flat-top): the max of projections onto the three normals.
     float hb = max( abs( d.y ), abs( d.x ) * 0.8660254 + abs( d.y ) * 0.5 ) / 0.8660254;
-    float rimDist = ( 1.0 - hb ) * 0.866;
-    edge = min( spoke, rimDist );
+    float rim_dist = ( 1.0 - hb ) * 0.866;
+    edge = min( spoke, rim_dist );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -107,8 +107,8 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float scale = ( 5.0 + 4.0 * clamp( scaleP, 0.0, 1.0 ) )
                   * ( 1.0 + 0.12 * sin( sceneAdvance * 0.05 + sceneTime * 0.01 ) );
-    float flipFrac = 0.12 + 0.1 * clamp( flipP, 0.0, 1.0 );
-    float paperLight = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
+    float flip_frac = 0.12 + 0.1 * clamp( flipP, 0.0, 1.0 );
+    float paper_light = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
     vec2  q = p * scale + vec2( sceneAdvance * 0.05, sceneAdvance * 0.02 );
 
     vec2  hexCell, hexCentre;
@@ -118,13 +118,13 @@ void main()
     // we assign each kite to a hat by a deterministic aperiodic-looking
     // rule: hat id from the hexagon and the kite index folded through a
     // golden-ratio hash (no true period), with a flipped fraction.
-    float hatKey = floor( hash21( hexCell ) * 3.0 + kite * 0.5 );
-    vec2  hatId = hexCell + vec2( hatKey, floor( kite / 3.0 ) );
-    float h = hash21( hatId * 1.618 );
-    float flipped = step( 1.0 - flipFrac, hash21( hatId + 0.5 ) );
+    float hat_key = floor( hash21( hexCell ) * 3.0 + kite * 0.5 );
+    vec2  hat_id = hexCell + vec2( hat_key, floor( kite / 3.0 ) );
+    float h = hash21( hat_id * 1.618 );
+    float flipped = step( 1.0 - flip_frac, hash21( hat_id + 0.5 ) );
     // The hat carries a photo piece; the piece's uv from the hat id and the
     // position within the hat (so each hat shows a different part).
-    vec2 puv = fract( hatId * 0.137 + ( q - hexCentre ) * 0.15 + 0.5 );
+    vec2 puv = fract( hat_id * 0.137 + ( q - hexCentre ) * 0.15 + 0.5 );
     vec3 tile = img( puv ) * 1.2;
     vec3 tint = imgPalette( hue * 0.159 + h * 0.5 );
     tile = mix( tile, tile * tint * 1.6, 0.3 );
@@ -132,15 +132,15 @@ void main()
     int   cls = int( mod( floor( h * 12.0 ), 12.0 ) );
     float e = clamp( audioChroma[cls] * 1.5, 0.0, 1.0 );
     tile = mix( tile, imgPalette( hue * 0.159 + float( cls ) / 12.0 ) * 1.8, flipped * ( 0.4 + 0.5 * e ) );
-    tile *= paperLight;
+    tile *= paper_light;
     // Edges: the kite lattice lines, darker within a hat, bright between
     // hats (approximated by the hat key change), glowing on the kick.
     float line = smoothstep( 0.06, 0.02, edge );
-    vec3  edgeCol = mix( vec3( 0.05 ), imgPalette( hue * 0.159 + 0.9 ) * 1.5, audioKick * 0.8 );
-    vec3  col = mix( tile, edgeCol, line * 0.8 );
+    vec3  edge_col = mix( vec3( 0.05 ), imgPalette( hue * 0.159 + 0.9 ) * 1.5, audioKick * 0.8 );
+    vec3  col = mix( tile, edge_col, line * 0.8 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

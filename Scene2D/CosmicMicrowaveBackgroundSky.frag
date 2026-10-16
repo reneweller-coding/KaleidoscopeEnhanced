@@ -112,8 +112,8 @@ void main()
     T = T / max( norm, 1e-3 ) * 6.0; // roughly -1 .. 1 (the noise sum is narrow)
     // The dipole: our own motion through the CMB, a smooth hot/cold pair
     // that flashes on the kick.
-    vec3 dipoleDir = normalize( vec3( 0.6, 0.2, 0.7 ) );
-    T += dot( rd, dipoleDir ) * ( 0.15 + 0.35 * audioKick );
+    vec3 dipole_dir = normalize( vec3( 0.6, 0.2, 0.7 ) );
+    T += dot( rd, dipole_dir ) * ( 0.15 + 0.35 * audioKick );
 
     // Colour: the classic map (blue cold, red hot, through white) tinted by
     // the palette so it belongs to the photo.
@@ -128,7 +128,7 @@ void main()
     col = mix( col, img( fract( vec2( atan( rd.z, rd.x ) * 0.159 + 0.5, rd.y * 0.5 + 0.5 ) ) ) * 0.35, plane * 0.2 );
     col *= 1.0 - 0.3 * smoothstep( 0.7, 1.15, length( p ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

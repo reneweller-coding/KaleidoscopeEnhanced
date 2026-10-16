@@ -69,26 +69,26 @@ void main()
     float edge = smoothstep( 0.5, 0.1, abs( vUV.y - 0.5 ) );
 
     // DNA nucleotide base color mapping (Adenine=Green, Thymine=Red, Cytosine=Cyan, Guanine=Gold)
-    float baseIdx = mod( floor( vUV.x * 40.0 ), 4.0 );
-    vec3  baseColor = vec3( 0.0 );
-    if ( baseIdx == 0.0 )
-        baseColor = vec3( 0.1, 0.9, 0.3 ); // Adenine
-    else if ( baseIdx == 1.0 )
-        baseColor = vec3( 1.0, 0.2, 0.3 ); // Thymine
-    else if ( baseIdx == 2.0 )
-        baseColor = vec3( 0.1, 0.8, 1.0 ); // Cytosine
+    float base_idx = mod( floor( vUV.x * 40.0 ), 4.0 );
+    vec3  base_color = vec3( 0.0 );
+    if ( base_idx == 0.0 )
+        base_color = vec3( 0.1, 0.9, 0.3 ); // Adenine
+    else if ( base_idx == 1.0 )
+        base_color = vec3( 1.0, 0.2, 0.3 ); // Thymine
+    else if ( base_idx == 2.0 )
+        base_color = vec3( 0.1, 0.8, 1.0 ); // Cytosine
     else
-        baseColor = vec3( 1.0, 0.8, 0.2 ); // Guanine
+        base_color = vec3( 1.0, 0.8, 0.2 ); // Guanine
 
     // Musical mode sets the sequencer's colour temperature: minor keys drain
     // the four bases toward a cold steel-cyan readout, major keys let the full
     // warm A/T/C/G spectrum come back. Colour only -- luminance never rises.
-    vec3 coldBase = mix( vec3( 0.15, 0.55, 0.85 ), baseColor, 0.35 );
-    baseColor = mix( coldBase, baseColor, clamp( audioMode, 0.0, 1.0 ) );
+    vec3 cold_base = mix( vec3( 0.15, 0.55, 0.85 ), base_color, 0.35 );
+    base_color = mix( cold_base, base_color, clamp( audioMode, 0.0, 1.0 ) );
 
     // Transcription laser pulse
-    vec3 pulseColor = vec3( 1.0, 1.0, 0.8 );
-    vec3 col = mix( baseColor, pulseColor, vTranscription * 0.7 );
+    vec3 pulse_color = vec3( 1.0, 1.0, 0.8 );
+    vec3 col = mix( base_color, pulse_color, vTranscription * 0.7 );
     col *= ( 0.8 + 2.0 * vTranscription ) * edge * glw;
 
     if ( hue > 0.001 )

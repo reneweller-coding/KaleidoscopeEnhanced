@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -233,8 +233,8 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float T = 0.05 * sceneTime + 0.4 * audioAdvance;
-    float dirA = 0.3 * sin( 0.01 * sceneTime ) + 0.3 * clamp( audioHarmChange, 0.0, 1.0 );
-    vec2  d = vec2( cos( dirA ), sin( dirA ) );
+    float dir_a = 0.3 * sin( 0.01 * sceneTime ) + 0.3 * clamp( audioHarmChange, 0.0, 1.0 );
+    vec2  d = vec2( cos( dir_a ), sin( dir_a ) );
     vec2  uv = p * 0.6 + 0.5 + vec2( 0.003, 0.002 ) * sceneTime;
     float h = luma( imgLod( uv, 5.5 ) );
     float bend = ( 0.3 + 0.7 * clamp( bendP, 0.0, 1.0 ) ) * ( 0.5 + clamp( audioSpread, 0.0, 1.0 ) );

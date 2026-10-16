@@ -84,18 +84,18 @@ void main()
     // parameter -- it never touches 'time', so no phase can be remapped.
     // (Multiplicative on purpose: if 'power' is unset the behaviour is exactly
     // as before, no new division-by-zero case is introduced or removed.)
-    float powV = power * ( 0.80 + 0.40 * clamp( audioFlatness, 0.0, 1.0 ) );
-    float r = pow( pow( p.x * p.x, powV ) + pow( p.y * p.y, powV ), 1.0 / ( 2.0 * powV ) );
+    float pow_v = power * ( 0.80 + 0.40 * clamp( audioFlatness, 0.0, 1.0 ) );
+    float r = pow( pow( p.x * p.x, pow_v ) + pow( p.y * p.y, pow_v ), 1.0 / ( 2.0 * pow_v ) );
 
     // cartesian to polar coordinates
     // float r = length(p);
     float a = atan( p.y, p.x );
 
     // kaleidoscope
-    float sidesK = .5 * float( sides );
+    float sides_k = .5 * float( sides );
     float tau = 1. * 1.047;
-    a = mod( a, tau / sidesK );
-    a = abs( a - tau / sidesK / 2. );
+    a = mod( a, tau / sides_k );
+    a = abs( a - tau / sides_k / 2. );
 
     vec2 uv;
     uv.x = ( speed * time + audioAdvance + .1 / r );

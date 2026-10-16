@@ -6,7 +6,7 @@
  */
 // SupernovaRemnantNebula.vert
 
-layout( location = 0 ) in vec4 attrA; ///< xyz = pos, w = strandID
+layout( location = 0 ) in vec4 attrA; ///< xyz = pos, w = strand_id
 layout( location = 1 ) in vec4 attrB; ///< x = seed, y = u, zw = uv
 
 uniform mat4  projM;  ///< Projection matrix.
@@ -45,23 +45,23 @@ vec3 hueRot( vec3 c, float a )
 void main()
 {
     vec3  pos = attrA.xyz;
-    float strandID = attrA.w;
+    float strand_id = attrA.w;
     float u = attrB.y;
     vTexCoord = attrB.zw;
 
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Supernova emission lines: [SII] Red, H-alpha Crimson, [OIII] Emerald/Cyan
-    vec3 sulfurRed = vec3( 0.95, 0.15, 0.05 );
-    vec3 oxygenCyan = vec3( 0.0, 0.85, 0.9 );
-    vec3 hydrogenPink = vec3( 1.0, 0.3, 0.6 );
+    vec3 sulfur_red = vec3( 0.95, 0.15, 0.05 );
+    vec3 oxygen_cyan = vec3( 0.0, 0.85, 0.9 );
+    vec3 hydrogen_pink = vec3( 1.0, 0.3, 0.6 );
 
-    vec3 col = mix( sulfurRed, oxygenCyan, u );
-    col = mix( col, hydrogenPink, sin( strandID * 0.4 + time ) * 0.5 + 0.5 );
+    vec3 col = mix( sulfur_red, oxygen_cyan, u );
+    col = mix( col, hydrogen_pink, sin( strand_id * 0.4 + time ) * 0.5 + 0.5 );
 
     // Central pulsar flash
-    float pulsarGlow = exp( -length( pos ) * 1.5 ) * ( audioKick * 2.5 + audioSubBass * 1.2 );
-    col += pulsarGlow * vec3( 1.0, 0.95, 0.85 );
+    float pulsar_glow = exp( -length( pos ) * 1.5 ) * ( audioKick * 2.5 + audioSubBass * 1.2 );
+    col += pulsar_glow * vec3( 1.0, 0.95, 0.85 );
 
     if ( audioChromaHue != 0.0 )
         col = hueRot( col, audioChromaHue );

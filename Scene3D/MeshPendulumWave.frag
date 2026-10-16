@@ -35,9 +35,9 @@ in float vBg;     ///< Background flag (from the vertex stage).
 in float vInst;
 in float vSwing;
 
-const float kDist = 70.0;
-const float kPivotY = 22.0;
-const float kGround = -20.0;
+const float Dist = 70.0;
+const float PivotY = 22.0;
+const float Ground = -20.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -112,7 +112,7 @@ vec3 renderSky( vec3 dir )
     if ( dir.y < -0.004 )
     {
         // The lab floor: dark tiles, a faint grid.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.008 );
         float grid = 1.0
@@ -128,8 +128,8 @@ vec3 renderSky( vec3 dir )
         float az = atan( dir.x, dir.z );
         float h = clamp( dir.y, 0.0, 1.0 );
         col = vec3( 0.14, 0.15, 0.18 ) * ( 0.6 + 0.6 * fbm2( vec2( az * 6.0, dir.y * 8.0 ) ) ) * exp( -h * 2.5 );
-        float railE = atan( kPivotY + 1.5, kDist );
-        float rail = 1.0 - smoothstep( 0.004, 0.009, abs( dir.y - railE ) );
+        float rail_e = atan( PivotY + 1.5, Dist );
+        float rail = 1.0 - smoothstep( 0.004, 0.009, abs( dir.y - rail_e ) );
         col += vec3( 0.6, 0.6, 0.65 ) * rail * 0.6;
         col *= 0.4 + 0.6 * swell;
         col += vec3( 1.0, 0.9, 0.75 ) * exp( -distance( dir, normalize( vec3( 0.0, 0.8, 1.0 ) ) ) * 4.0 ) * 0.14
@@ -164,16 +164,16 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
-    vec3 lampDir = normalize( vec3( 0.0, 0.8, -0.6 ) );
-    vec3 col = alb * vec3( 1.0, 0.92, 0.8 ) * max( dot( n, lampDir ), 0.0 ) * ( 0.9 + 0.8 * swell );
+    vec3 lamp_dir = normalize( vec3( 0.0, 0.8, -0.6 ) );
+    vec3 col = alb * vec3( 1.0, 0.92, 0.8 ) * max( dot( n, lamp_dir ), 0.0 ) * ( 0.9 + 0.8 * swell );
     col += alb * vec3( 0.18, 0.19, 0.24 ) * ( 0.55 + 0.45 * n.y ) * 0.6;
     col += alb * 0.05;
 
-    vec3  halfV = normalize( lampDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 90.0, 8.0, roughness ) );
+    vec3  half_v = normalize( lamp_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 90.0, 8.0, roughness ) );
     col += mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic ) * spec * ( 0.4 + 0.8 * metallic );
 
     // The bob glows with the bass; the pendulum passing through centre
@@ -183,13 +183,13 @@ void main()
     float centre = 1.0 - smoothstep( 0.0, 0.25, abs( vSwing ) );
     col += vec3( 0.8, 0.9, 1.0 ) * centre * beat * 0.9;
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.9, 0.9, 1.0 ) * fres * 0.12;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.08 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

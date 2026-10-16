@@ -92,24 +92,24 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    float halfW = 0.55 + 0.3 * clamp( widthP, 0.0, 1.0 );
+    float half_w = 0.55 + 0.3 * clamp( widthP, 0.0, 1.0 );
     float veins = 3.0 + 4.0 * clamp( veinP, 0.0, 1.0 );
     float descent = sceneAdvance * 0.9 + sceneTime * 0.2;
 
-    // Looking down: the crevasse is a slot of width 2*halfW(y) running away
+    // Looking down: the crevasse is a slot of width 2*half_w(y) running away
     // below us; depth from the eye maps to screen radius.  Two walls (left
     // and right), the slot between them opens to the dark below.
     vec3 ro = vec3( 0.0, 0.0, 0.0 );
     vec3 rd = normalize( vec3( p.x, -1.0, p.y * 0.9 ) ); // looking down (-y), z forward
-    // Walls at x = +-halfW(depth); solve for the hit with the nearer wall.
+    // Walls at x = +-half_w(depth); solve for the hit with the nearer wall.
     float side = ( rd.x > 0.0 ) ? 1.0 : -1.0;
     // The width varies with depth (slowly): iterate a few times.
     float t = 0.1;
-    float w = halfW;
+    float w = half_w;
     for ( int i = 0; i < 4; ++i )
     {
         float depth = -( ro.y + rd.y * t ) + descent;
-        w = halfW * ( 0.75 + 0.35 * sin( depth * 0.35 ) + 0.15 * sin( depth * 0.9 + 1.0 ) );
+        w = half_w * ( 0.75 + 0.35 * sin( depth * 0.35 ) + 0.15 * sin( depth * 0.9 + 1.0 ) );
         t = ( side * w - ro.x ) / max( abs( rd.x ), 1e-3 ) * ( rd.x > 0.0 ? 1.0 : 1.0 );
         t = abs( t );
     }
@@ -160,7 +160,7 @@ void main()
     col = mix( col, deep * 0.5, clamp( fog, 0.0, 0.9 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

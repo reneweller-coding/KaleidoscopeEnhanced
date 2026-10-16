@@ -183,12 +183,12 @@ void main()
     }
     // Mist over everything, thicker near the falls.
     float mist = smoothstep( 4.0, 9.0, vWorld.z ) * ( 0.2 + 0.3 * flow );
-    vec3  mistCol = mix( vec3( 0.8, 0.85, 0.88 ), imgPalette( hue * 0.159 + 0.55 ), 0.25 )
-                    * ( 0.6 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
-    col = mix( col, mistCol, clamp( mist, 0.0, 0.6 ) * step( -1.5, vKind ) );
+    vec3  mist_col = mix( vec3( 0.8, 0.85, 0.88 ), imgPalette( hue * 0.159 + 0.55 ), 0.25 )
+                     * ( 0.6 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
+    col = mix( col, mist_col, clamp( mist, 0.0, 0.6 ) * step( -1.5, vKind ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

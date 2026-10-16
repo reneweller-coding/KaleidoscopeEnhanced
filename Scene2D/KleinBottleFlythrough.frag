@@ -126,7 +126,7 @@ void main()
     vec3  rd = normalize( fw * 1.3 + rt * p.x + up * p.y );
 
     // Are we inside the surface?  Then march the wall from within (flip sign).
-    float sideSign = ( bottle( ro, neck, inflate ) < 0.0 ) ? -1.0 : 1.0;
+    float side_sign = ( bottle( ro, neck, inflate ) < 0.0 ) ? -1.0 : 1.0;
 
     float t = 0.02;
     float d = 1.0;
@@ -134,7 +134,7 @@ void main()
     for ( int i = 0; i < 80; ++i )
     {
         pos = ro + rd * t;
-        d = sideSign * bottle( pos, neck, inflate );
+        d = side_sign * bottle( pos, neck, inflate );
         if ( d < 0.003 )
             break;
         t += d * 0.8;
@@ -145,25 +145,25 @@ void main()
     vec3 col;
     if ( d < 0.003 )
     {
-        vec3 n = sideSign * normalAt( pos, neck, inflate );
+        vec3 n = side_sign * normalAt( pos, neck, inflate );
         // Inner light: a warm lamp at the body's centre and a cool one in
         // the neck, tinted by the melody.
-        vec3  lampA = vec3( 0.0, 0.0, 0.0 ), lampB = vec3( 1.2, 0.6, 0.0 );
-        vec3  la = lampA - pos, lb = lampB - pos;
+        vec3  lamp_a = vec3( 0.0, 0.0, 0.0 ), lamp_b = vec3( 1.2, 0.6, 0.0 );
+        vec3  la = lamp_a - pos, lb = lamp_b - pos;
         float ia = 3.0 / ( dot( la, la ) + 0.5 ), ib = 2.0 / ( dot( lb, lb ) + 0.5 );
-        vec3  lightCol = imgPalette( hue * 0.159 + 0.1 + 0.3 * audioMelodyPitch ) * ia * ( 1.0 + 1.5 * audioKick )
-                         + imgPalette( hue * 0.159 + 0.6 ) * ib;
+        vec3  light_col = imgPalette( hue * 0.159 + 0.1 + 0.3 * audioMelodyPitch ) * ia * ( 1.0 + 1.5 * audioKick )
+                          + imgPalette( hue * 0.159 + 0.6 ) * ib;
         float fres = pow( 1.0 - clamp( dot( -rd, n ), 0.0, 1.0 ), 3.0 );
         vec3  skin = triplanar( pos, n );
         col = skin * ( 0.3 + 0.6 * audioLevel ) * ( 0.4 + 0.6 * clamp( dot( n, normalize( la ) ), 0.0, 1.0 ) );
-        col += lightCol * ( 0.5 + 0.5 * fres ) * 1.2;
+        col += light_col * ( 0.5 + 0.5 * fres ) * 1.2;
         // Meridian lines on the glass so the surface reads as a surface.
         float mer = exp( -abs( fract( atan( pos.z, pos.x ) * 2.5 ) - 0.5 ) * 30.0 )
                     + exp( -abs( fract( pos.y * 1.5 ) - 0.5 ) * 30.0 );
         col += imgPalette( hue * 0.159 + 0.9 ) * mer * 0.15;
         col += imgPalette( hue * 0.159 + 0.85 ) * fres * 0.5;
         // Inside reads warmer, outside cooler, so the swap is felt.
-        col *= ( sideSign < 0.0 ) ? vec3( 1.15, 1.0, 0.9 ) : vec3( 0.9, 1.0, 1.15 );
+        col *= ( side_sign < 0.0 ) ? vec3( 1.15, 1.0, 0.9 ) : vec3( 0.9, 1.0, 1.15 );
         float fog = 1.0 - exp( -t * 0.12 );
         col = mix( col, imgPalette( hue * 0.159 + 0.6 ) * 0.05, fog );
     }
@@ -178,7 +178,7 @@ void main()
         col += vec3( step( 0.985, hs ) * exp( -dot( f, f ) * 9.0 ) ) * 0.5;
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

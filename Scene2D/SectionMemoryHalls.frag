@@ -85,15 +85,15 @@ vec3 shadeHall( vec3 hit, float wz, float wall, vec4 hall, float known, float hu
 
     // Pillars at the hall's spacing; a lamp on each, pulsing in turn.
     float pil = pow( 0.5 + 0.5 * cos( wz * 6.2831853 / hall.y ), 12.0 );
-    float lampPhase = fract( wz / hall.y - audioBeatPhase );
-    float lampOn = pow( 0.5 + 0.5 * cos( lampPhase * 6.2831853 ), 4.0 ) * ( 0.6 + 1.2 * audioKick );
+    float lamp_phase = fract( wz / hall.y - audioBeatPhase );
+    float lamp_on = pow( 0.5 + 0.5 * cos( lamp_phase * 6.2831853 ), 4.0 ) * ( 0.6 + 1.2 * audioKick );
 
     vec3 col;
     if ( wall < 0.5 )
     {
         vec2 uv = vec2( fract( wz * 0.12 ), hit.y * 0.5 + 0.5 );
         col = img( uv ) * tint * 2.0 * ( 0.5 + 0.4 * audioLevel );
-        col += lamp * pil * lampOn * 1.2;
+        col += lamp * pil * lamp_on * 1.2;
         // Ornament band at eye height.
         col += tint * 0.3 * pow( 0.5 + 0.5 * cos( hit.y * hall.z + wz * 0.7 ), 6.0 );
     }
@@ -101,7 +101,7 @@ vec3 shadeHall( vec3 hit, float wz, float wall, vec4 hall, float known, float hu
     {
         vec2 uv = vec2( fract( hit.x * 0.4 + 0.5 ), fract( wz * 0.12 ) );
         col = img( uv ) * tint * 1.2 * ( 0.45 + 0.3 * audioLevel );
-        col += lamp * pil * lampOn * 0.35 * exp( -abs( hit.x ) * 1.2 );
+        col += lamp * pil * lamp_on * 0.35 * exp( -abs( hit.x ) * 1.2 );
         col += tint * ( 0.2 + 0.9 * audioBass ) * exp( -abs( hit.x ) * 2.0 ) * 0.5; // lit centre line
     }
     else
@@ -109,7 +109,7 @@ vec3 shadeHall( vec3 hit, float wz, float wall, vec4 hall, float known, float hu
         // Ceiling: the hall's ornament.
         float orn = pow( 0.5 + 0.5 * cos( hit.x * hall.z ) * cos( wz * hall.z * 0.5 ), 3.0 );
         col = tint * ( 0.15 + 0.6 * orn ) * ( 0.5 + 0.5 * audioLevel );
-        col += lamp * pil * lampOn * 0.9;
+        col += lamp * pil * lamp_on * 0.9;
     }
     return col;
 }
@@ -141,25 +141,25 @@ void main()
     // The door: it appears D ahead when a section changes and comes toward
     // us at the flight speed.  Beyond it the new hall, before it the old.
     const float D = 14.0;
-    float       doorZ = D - v * audioSectionAge;
-    float       ahead = step( doorZ, hit.z ); // spatial: which side of the door this pixel is
-    vec4        hallNew = hallOf( audioSectionId );
-    vec4        hallOld = hallOf( audioSectionPrev );
-    vec3        colNew = shadeHall( hit, wz, wall, hallNew, audioSectionKnown, hue, hit.z );
-    vec3        colOld = shadeHall( hit, wz, wall, hallOld, 0.5, hue, hit.z );
-    vec3        col = mix( colOld, colNew, ahead );
+    float       door_z = D - v * audioSectionAge;
+    float       ahead = step( door_z, hit.z ); // spatial: which side of the door this pixel is
+    vec4        hall_new = hallOf( audioSectionId );
+    vec4        hall_old = hallOf( audioSectionPrev );
+    vec3        col_new = shadeHall( hit, wz, wall, hall_new, audioSectionKnown, hue, hit.z );
+    vec3        col_old = shadeHall( hit, wz, wall, hall_old, 0.5, hue, hit.z );
+    vec3        col = mix( col_old, col_new, ahead );
 
     // The doorway: a lit frame on the walls at the door plane.
-    float frame = exp( -abs( hit.z - doorZ ) * 3.0 );
-    vec3  doorLight = mix( imgPalette( hue * 0.159 + 0.6 ), imgPalette( hue * 0.159 + 0.95 ), audioSectionKnown );
-    col += doorLight * frame * ( 0.8 + 0.6 * audioLevel ) * step( 0.0, doorZ + 0.5 );
+    float frame = exp( -abs( hit.z - door_z ) * 3.0 );
+    vec3  door_light = mix( imgPalette( hue * 0.159 + 0.6 ), imgPalette( hue * 0.159 + 0.95 ), audioSectionKnown );
+    col += door_light * frame * ( 0.8 + 0.6 * audioLevel ) * step( 0.0, door_z + 0.5 );
 
     // Fog: the far end vanishes, which also hides a new door's arrival.
     float fog = 1.0 - exp( -hit.z * 0.22 );
     col = mix( col, vec3( 0.0 ), clamp( fog, 0.0, 0.97 ) );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

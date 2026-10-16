@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -274,10 +274,10 @@ void main()
     vec2 uv = cen / S * 0.5 + 0.5;
     vec3 fc = imgLod( uv, 3.0 );
     // Facet normal from the photo's luma at the corners (a height field).
-    float hA = luma( imgLod( A / S * 0.5 + 0.5, 3.0 ) ), hB = luma( imgLod( B / S * 0.5 + 0.5, 3.0 ) ),
-          hC = luma( imgLod( C / S * 0.5 + 0.5, 3.0 ) );
+    float h_a = luma( imgLod( A / S * 0.5 + 0.5, 3.0 ) ), h_b = luma( imgLod( B / S * 0.5 + 0.5, 3.0 ) ),
+          h_c = luma( imgLod( C / S * 0.5 + 0.5, 3.0 ) );
     float relief = ( 0.5 + 1.5 * clamp( reliefP, 0.0, 1.0 ) ) * ( 1.0 + rough );
-    vec3  n = normalize( cross( vec3( B - A, ( hB - hA ) * relief ), vec3( C - A, ( hC - hA ) * relief ) ) );
+    vec3  n = normalize( cross( vec3( B - A, ( h_b - h_a ) * relief ), vec3( C - A, ( h_c - h_a ) * relief ) ) );
     if ( n.z < 0.0 )
         n = -n;
     float la = 0.2 * sceneTime + 0.8 * audioAdvance;
@@ -287,10 +287,10 @@ void main()
     vec3  lc = mix( vec3( 0.85, 0.92, 1.1 ), vec3( 1.1, 0.95, 0.8 ), mode );
     vec3  col = fc * lc * ( 0.45 + 0.75 * diff ) + lc * spec * ( 0.15 + 0.8 * kick );
     // Edges.
-    float dE = min( min( sdSeg( g, A, B ), sdSeg( g, B, C ) ), sdSeg( g, C, A ) );
+    float d_e = min( min( sdSeg( g, A, B ), sdSeg( g, B, C ) ), sdSeg( g, C, A ) );
     float px = fwidth( g.x ) * 1.2;
     col = mix( col, col * 0.6,
-               smoothstep( px * 1.5, 0.0, dE ) * ( 0.2 + 0.6 * clamp( edgeP, 0.0, 1.0 ) ) * ( 0.5 + swell ) );
+               smoothstep( px * 1.5, 0.0, d_e ) * ( 0.2 + 0.6 * clamp( edgeP, 0.0, 1.0 ) ) * ( 0.5 + swell ) );
     col = mix( col, col * glowColour( fc, cen * 0.1, hueP * 0.159 ) * 1.2, 0.05 );
     finish( col );
 }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -244,7 +244,7 @@ void main()
     // Sphere-trace the lattice of struts along the three axes.
     float t = 0.05;
     float dmin = 1e3;
-    float tHit = -1.0;
+    float t_hit = -1.0;
     vec3  hp = ro;
     for ( int i = 0; i < 64; ++i )
     {
@@ -256,7 +256,7 @@ void main()
         dmin = min( dmin, d / t );
         if ( d < 0.001 * t )
         {
-            tHit = t;
+            t_hit = t;
             break;
         }
         t += d * 0.9;
@@ -266,9 +266,9 @@ void main()
     vec3  lc = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
     vec3  gc = glowColour( imgLod( vec2( 0.5 + 0.1 * sin( 0.02 * sceneTime ), 0.5 ), 6.0 ), vec2( travel * 0.02, 0.0 ),
                            hueP * 0.159 );
-    float fogK = ( 0.05 + 0.08 * clamp( fogP, 0.0, 1.0 ) ) * ( 0.7 + 0.8 * swell );
+    float fog_k = ( 0.05 + 0.08 * clamp( fogP, 0.0, 1.0 ) ) * ( 0.7 + 0.8 * swell );
     vec3  col = gc * 0.06;
-    if ( tHit > 0.0 )
+    if ( t_hit > 0.0 )
     {
         vec3 q = mod( hp, cs ) - cs * 0.5;
         // Which strut: the axis we are closest to.
@@ -291,21 +291,21 @@ void main()
             uv = vec2( hp.z, atan( q.y, q.x ) );
         }
         vec3 ph = imgLod( vec2( uv.x * 0.15 + 0.5, uv.y / 3.14159265 ),
-                          clamp( log2( tHit * 2.0 ), 0.0, 7.0 ) ); // angle/pi:
-                                                                   // the
-                                                                   // atan
-                                                                   // cut
-                                                                   // meets
-                                                                   // the
-                                                                   // mirror
-                                                                   // fold
+                          clamp( log2( t_hit * 2.0 ), 0.0, 7.0 ) ); // angle/pi:
+                                                                    // the
+                                                                    // atan
+                                                                    // cut
+                                                                    // meets
+                                                                    // the
+                                                                    // mirror
+                                                                    // fold
         float diff = 0.4 + 0.6 * max( dot( n, normalize( vec3( 0.4, 0.8, -0.3 ) ) ), 0.0 );
         vec3  sc = ph * lc * diff;
         // Nodes: bright where all three axes meet.
         float node = exp( -length( q ) / ( r * 3.0 ) );
         sc += gc * node * ( 0.8 + 2.0 * kick );
         sc += gc * ( 0.1 + 0.4 * clamp( glowP, 0.0, 1.0 ) ) * pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
-        col = mix( sc, gc * 0.25, 1.0 - exp( -tHit * fogK ) );
+        col = mix( sc, gc * 0.25, 1.0 - exp( -t_hit * fog_k ) );
     }
     else
     {

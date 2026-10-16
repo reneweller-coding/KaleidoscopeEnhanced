@@ -174,18 +174,18 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // A single distant key light plus a soft fill, standing in for the
     // system's star -- there is no scene-wide light rig to hook into here,
     // every Scene3D scene fakes its own.
-    vec3  lightDir = normalize( vec3( 0.4, 0.6, -0.5 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.4, 0.6, -0.5 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 64.0, 4.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 64.0, 4.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0 ), base.rgb, metallic );
 
     // The hull's own albedo is a very dark "gunmetal" (near-black by
     // design, see this ship's spec) -- measured directly against the
@@ -194,18 +194,18 @@ void main()
     // and panel-line detail actually read as a ship instead of a silhouette.
     float expose = materialExposure( texMeshMaterial );
     vec3  col = base.rgb * expose * ( 0.55 + diff * ( 1.4 + 0.6 * audioSwell ) + fill * 0.35 );
-    col += specColor * spec * ( 0.6 + 0.8 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.6 + 0.8 * ( 1.0 - roughness ) );
 
     // Rim glow + shield-flicker: a fixed cool tint, kept deliberately modest
     // -- an edge accent, not a wash across the whole hull. The nebula
     // outside now carries the color variety, not a photo-tinted hull.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.55, 0.5, 0.85 ) * fresnel * ( 0.15 + 0.35 * audioSwell + 0.5 * audioKick );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

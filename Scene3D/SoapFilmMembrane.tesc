@@ -15,7 +15,7 @@ in vec4  vSeed[]; ///< Per-instance random seed (from the vertex stage).
 out vec2 tcUV[];
 out vec4 tcSeed[];
 
-const vec2    EXTENT = vec2( 14.0, 9.0 );
+const vec2    Extent = vec2( 14.0, 9.0 );
 uniform float detailP;    ///< Detail knob, 0..1.
 uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 
@@ -23,7 +23,7 @@ uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 float levelFor( vec2 uvA, vec2 uvB )
 {
     vec2  mid = mix( uvA, uvB, 0.5 );
-    float d = length( ( mid - 0.5 ) * EXTENT );
+    float d = length( ( mid - 0.5 ) * Extent );
     float fine = 0.8 + 0.4 * clamp( audioSwell, 0.0, 1.0 );
     return clamp( 14.0 * detailP * fine / ( 1.0 + d * 0.08 ), 2.0, 24.0 );
 }

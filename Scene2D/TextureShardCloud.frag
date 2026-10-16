@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -236,13 +236,13 @@ void main()
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  lc = mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode );
     vec3  col = vec3( 0.01, 0.012, 0.02 );
-    float nL = 2.0 + 2.0 * clamp( layerP, 0.0, 1.0 );
+    float n_l = 2.0 + 2.0 * clamp( layerP, 0.0, 1.0 );
     float T = 0.03 * sceneTime + 0.25 * audioAdvance;
     float gap = 0.04 + 0.2 * clamp( audioSpread, 0.0, 1.0 );
     for ( int L = 3; L >= 0; --L )
     { // far to near
         float fl = float( L );
-        float on = smoothstep( fl - 0.5, fl + 0.5, nL - 0.5 );
+        float on = smoothstep( fl - 0.5, fl + 0.5, n_l - 0.5 );
         if ( on <= 0.0 )
             continue;
         float depth = 1.0 + fl * 0.7;

@@ -154,16 +154,16 @@ void main()
     col += vec3( 0.25, 0.06, 0.03 ) * exp( -length( uv ) * 2.2 ) * 0.5;
 
     float radii[3] = float[3]( 1.0, 0.8, 0.62 );
-    vec3  shellHot[3] = vec3[3]( vec3( 0.45, 0.09, 0.05 ), vec3( 0.95, 0.4, 0.12 ), vec3( 1.0, 0.8, 0.35 ) );
+    vec3  shell_hot[3] = vec3[3]( vec3( 0.45, 0.09, 0.05 ), vec3( 0.95, 0.4, 0.12 ), vec3( 1.0, 0.8, 0.35 ) );
     vec3  axes[3] = vec3[3]( vec3( 0.3, 1.0, 0.2 ), vec3( -0.5, 1.0, 0.4 ), vec3( 0.2, 1.0, -0.6 ) );
     float rates[3] = float[3]( 0.015, -0.025, 0.04 );
     float grids[3] = float[3]( 9.0, 7.0, 5.0 );
-    float gapFr[3] = float[3]( 0.28, 0.35, 0.45 );
-    vec3  dataC = mix( vec3( 0.5, 0.9, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.3 );
+    float gap_fr[3] = float[3]( 0.28, 0.35, 0.45 );
+    vec3  data_c = mix( vec3( 0.5, 0.9, 1.0 ), imgPalette( 0.55 + hue * 0.159 ), 0.3 );
 
     vec3  acc = vec3( 0.0 );
     float trans = 1.0;
-    bool  reachedStar = true;
+    bool  reached_star = true;
     for ( int s = 0; s < 3; ++s )
     {
         float t0;
@@ -171,40 +171,40 @@ void main()
         {
             // Through a gap but past the next shell: the far inside wall of
             // the shell we are in, lit orange by the star within.
-            acc += trans * shellHot[max( s - 1, 0 )] * 1.4 * ( 0.8 + 0.4 * swell );
+            acc += trans * shell_hot[max( s - 1, 0 )] * 1.4 * ( 0.8 + 0.4 * swell );
             trans = 0.0;
-            reachedStar = false;
+            reached_star = false;
             break;
         }
         vec3 hp = ro + rd * t0;
         vec3 n = normalize( hp );
         vec3 ln = rotAxis( axes[s], T * rates[s] ) * n;
         vec3 pn = panels( ln, floor( grids[s] * tp + 0.5 ) );
-        bool gap = pn.x < gapFr[s];
+        bool gap = pn.x < gap_fr[s];
         // Panel face: dark with its own waste-heat glow, hotter inward;
         // limb brightening from the heat seen through more material.
         float facing = max( dot( n, -rd ), 0.0 );
-        vec3  panel = shellHot[s] * ( 0.25 + 0.5 * pn.x ) * ( 0.5 + 0.8 * pow( 1.0 - facing, 2.0 ) );
+        vec3  panel = shell_hot[s] * ( 0.25 + 0.5 * pn.x ) * ( 0.5 + 0.8 * pow( 1.0 - facing, 2.0 ) );
         panel = mix( panel, panel * imgPalette( 0.1 + hue * 0.159 + 0.2 * float( s ) ) * 1.5, 0.15 );
         // Radiator fins: fine lines across the panel.
         panel *= 0.85 + 0.15 * step( 0.5, fract( pn.z * 6.0 ) );
         // Seams: bright data lines, packets flowing along them.
         float seam = smoothstep( 0.06, 0.0, pn.y );
         float packet = pow( 0.5 + 0.5 * sin( pn.z * 3.0 - T * 2.0 * ( s == 1 ? -1.0 : 1.0 ) + pn.x * 6.0 ), 12.0 );
-        vec3  seamC = dataC * seam * ( 0.35 + 1.4 * packet * dp ) * ( 0.7 + 0.8 * kick );
+        vec3  seam_c = data_c * seam * ( 0.35 + 1.4 * packet * dp ) * ( 0.7 + 0.8 * kick );
         if ( !gap )
         {
-            acc += trans * ( panel + seamC );
+            acc += trans * ( panel + seam_c );
             trans = 0.0;
-            reachedStar = false;
+            reached_star = false;
             break;
         }
         // Through the gap: the seam rims still glow, the rest shows deeper.
-        acc += trans * seamC * 0.6;
+        acc += trans * seam_c * 0.6;
         // Light from inside spills out of the gap rim.
-        acc += trans * shellHot[min( s + 1, 2 )] * smoothstep( 0.15, 0.0, pn.y ) * 0.5;
+        acc += trans * shell_hot[min( s + 1, 2 )] * smoothstep( 0.15, 0.0, pn.y ) * 0.5;
     }
-    if ( reachedStar && trans > 0.0 )
+    if ( reached_star && trans > 0.0 )
     {
         float t0;
         if ( sphere( ro, rd, 0.42, t0 ) )
@@ -229,7 +229,7 @@ void main()
     col = mix( col, acc, hit );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

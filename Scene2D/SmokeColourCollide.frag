@@ -137,27 +137,27 @@ void main()
     // Density detail: filaments stretched by the flow.
     float fil = fbm( q * vec2( 5.0, 9.0 ) + vec2( -flow, 0.0 ) );
     float fil2 = fbm( q * vec2( 5.0, 9.0 ) + vec2( flow, 3.0 ) );
-    float dL = left * smoothstep( 0.3, 0.75, fil ) * ( 0.7 + 0.6 * swell );
-    float dR = right * smoothstep( 0.3, 0.75, fil2 ) * ( 0.7 + 0.6 * swell );
+    float d_l = left * smoothstep( 0.3, 0.75, fil ) * ( 0.7 + 0.6 * swell );
+    float d_r = right * smoothstep( 0.3, 0.75, fil2 ) * ( 0.7 + 0.6 * swell );
     // The colours: a complementary pair, turned by hueP.
     float h = hueP * 0.3;
-    vec3  cL = 0.5 + 0.5 * cos( 6.2831853 * ( h + 0.9 + vec3( 0.0, 0.33, 0.67 ) ) );
-    vec3  cR = 0.5 + 0.5 * cos( 6.2831853 * ( h + 0.45 + vec3( 0.0, 0.33, 0.67 ) ) );
-    cL = mix( cL, imgPalette( 0.9 + hueP * 0.159 ), 0.1 ) * 1.3;
-    cR = mix( cR, imgPalette( 0.45 + hueP * 0.159 ), 0.1 ) * 1.3;
+    vec3  c_l = 0.5 + 0.5 * cos( 6.2831853 * ( h + 0.9 + vec3( 0.0, 0.33, 0.67 ) ) );
+    vec3  c_r = 0.5 + 0.5 * cos( 6.2831853 * ( h + 0.45 + vec3( 0.0, 0.33, 0.67 ) ) );
+    c_l = mix( c_l, imgPalette( 0.9 + hueP * 0.159 ), 0.1 ) * 1.3;
+    c_r = mix( c_r, imgPalette( 0.45 + hueP * 0.159 ), 0.1 ) * 1.3;
     // Side lighting: the smoke's edges facing the light glow, the far side is shadowed.
     float e = 0.01;
     float gx = fbm( q * vec2( 5.0, 9.0 ) + vec2( -flow, 0.0 ) + vec2( e * 5.0, 0.0 ) ) - fil;
     float lit = clamp( 0.6 - gx * 20.0, 0.2, 1.4 );
-    vec3  col = cL * dL * lit + cR * dR * lit;
+    vec3  col = c_l * d_l * lit + c_r * d_r * lit;
     // Where they meet: white-violet heat.
-    float meet = sqrt( dL * dR );
+    float meet = sqrt( d_l * d_r );
     col += vec3( 1.0, 0.9, 1.0 ) * meet * ( 0.6 + 1.2 * bass );
     // Wisps fading into the dark.
     col *= smoothstep( 0.75, 0.3, abs( p.y ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

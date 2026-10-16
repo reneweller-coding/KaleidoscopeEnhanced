@@ -87,80 +87,80 @@ void main()
     vec3 rd = normalize( vec3( uv, 1.4 ) );
 
     // Dynamic rotation of crystal chamber mirrors
-    float rotAngle = t * 0.4 + audioPhase * 0.15;
-    float cr = cos( rotAngle ), sr = sin( rotAngle );
+    float rot_angle = t * 0.4 + audioPhase * 0.15;
+    float cr = cos( rot_angle ), sr = sin( rot_angle );
     rd.xy = vec2( rd.x * cr - rd.y * sr, rd.x * sr + rd.y * cr );
 
     vec3  col = vec3( 0.0 );
-    vec3  curP = ro;
-    vec3  curDir = rd;
+    vec3  cur_p = ro;
+    vec3  cur_dir = rd;
     float throughput = 1.0;
 
     // Multi-bounce crystal reflection trace
     for ( int bounce = 0; bounce < 4; ++bounce )
     {
         // Intersect bounding crystal facet box / polyhedron
-        vec3  boxSize = vec3( 1.4, 1.4, 1.4 ) * ( 1.0 + 0.2 * sin( audioAdvance * 0.1 ) );
-        vec3  t1 = ( -boxSize - curP ) / curDir;
-        vec3  t2 = ( boxSize - curP ) / curDir;
-        vec3  tMax = max( t1, t2 );
-        float dist = min( min( tMax.x, tMax.y ), tMax.z );
+        vec3  box_size = vec3( 1.4, 1.4, 1.4 ) * ( 1.0 + 0.2 * sin( audioAdvance * 0.1 ) );
+        vec3  t1 = ( -box_size - cur_p ) / cur_dir;
+        vec3  t2 = ( box_size - cur_p ) / cur_dir;
+        vec3  t_max = max( t1, t2 );
+        float dist = min( min( t_max.x, t_max.y ), t_max.z );
 
-        curP += curDir * dist;
+        cur_p += cur_dir * dist;
 
         // Facet normal calculation
         vec3 normal = vec3( 0.0 );
-        if ( abs( curP.x - boxSize.x ) < 1e-3 )
+        if ( abs( cur_p.x - box_size.x ) < 1e-3 )
             normal = vec3( -1.0, 0.0, 0.0 );
-        else if ( abs( curP.x + boxSize.x ) < 1e-3 )
+        else if ( abs( cur_p.x + box_size.x ) < 1e-3 )
             normal = vec3( 1.0, 0.0, 0.0 );
-        else if ( abs( curP.y - boxSize.y ) < 1e-3 )
+        else if ( abs( cur_p.y - box_size.y ) < 1e-3 )
             normal = vec3( 0.0, -1.0, 0.0 );
-        else if ( abs( curP.y + boxSize.y ) < 1e-3 )
+        else if ( abs( cur_p.y + box_size.y ) < 1e-3 )
             normal = vec3( 0.0, 1.0, 0.0 );
-        else if ( abs( curP.z - boxSize.z ) < 1e-3 )
+        else if ( abs( cur_p.z - box_size.z ) < 1e-3 )
             normal = vec3( 0.0, 0.0, -1.0 );
         else
             normal = vec3( 0.0, 0.0, 1.0 );
 
         // Facet bevel displacement
-        vec2 facetUV = ( normal.x != 0.0 ) ? curP.yz : ( ( normal.y != 0.0 ) ? curP.xz : curP.xy );
-        facetUV *= 2.5 * fct;
-        vec2 facetCell = floor( facetUV );
-        vec2 facetF = fract( facetUV ) - vec2( 0.5 );
+        vec2 facet_uv = ( normal.x != 0.0 ) ? cur_p.yz : ( ( normal.y != 0.0 ) ? cur_p.xz : cur_p.xy );
+        facet_uv *= 2.5 * fct;
+        vec2 facet_cell = floor( facet_uv );
+        vec2 facet_f = fract( facet_uv ) - vec2( 0.5 );
 
         // Perturb normal along crystal facet bevels
-        normal = normalize( normal + vec3( facetF * 0.4, 0.0 ) );
+        normal = normalize( normal + vec3( facet_f * 0.4, 0.0 ) );
 
         // Sample photo with chromatic dispersion (RGB channel offset)
-        vec2  sampleUV = facetUV * 0.25 + vec2( 0.5 ) + vec2( float( bounce ) * 0.1 );
-        float dispAmt = 0.02 * disp * ( 1.0 + 0.5 * audioKick );
+        vec2  sample_uv = facet_uv * 0.25 + vec2( 0.5 ) + vec2( float( bounce ) * 0.1 );
+        float disp_amt = 0.02 * disp * ( 1.0 + 0.5 * audioKick );
 
-        vec3 photoR = img( fract( sampleUV + vec2( dispAmt, 0.0 ) ) );
-        vec3 photoG = img( fract( sampleUV ) );
-        vec3 photoB = img( fract( sampleUV - vec2( dispAmt, 0.0 ) ) );
-        vec3 photoSample = vec3( photoR.r, photoG.g, photoB.b );
+        vec3 photo_r = img( fract( sample_uv + vec2( disp_amt, 0.0 ) ) );
+        vec3 photo_g = img( fract( sample_uv ) );
+        vec3 photo_b = img( fract( sample_uv - vec2( disp_amt, 0.0 ) ) );
+        vec3 photo_sample = vec3( photo_r.r, photo_g.g, photo_b.b );
 
         // Dichroic glass transmission & reflection color
-        vec3 dichroicCol = imgPalette( ( float( bounce ) * 1.5 + audioPhase ) * 0.159 );
+        vec3 dichroic_col = imgPalette( ( float( bounce ) * 1.5 + audioPhase ) * 0.159 );
 
         // Sparkling diamond glints on facet vertices
-        float glintHash = hash21( facetCell + float( bounce ) * 17.0 );
-        float glint = pow( max( dot( reflect( curDir, normal ), normalize( vec3( 0.5, 0.8, -0.6 ) ) ), 0.0 ), 48.0 );
-        glint *= ( 1.0 + 1.2 * audioHigh * glintHash ); // ohne Blink-Gate
+        float glint_hash = hash21( facet_cell + float( bounce ) * 17.0 );
+        float glint = pow( max( dot( reflect( cur_dir, normal ), normalize( vec3( 0.5, 0.8, -0.6 ) ) ), 0.0 ), 48.0 );
+        glint *= ( 1.0 + 1.2 * audioHigh * glint_hash ); // ohne Blink-Gate
 
         // KANTEN-FADE: wenn ein Bounce von einer Wand zur Nachbarwand
         // wechselt, springt sein Foto-Ausschnitt -- nahe der Kante wird der
         // Beitrag deshalb ausgeblendet, aus dem harten Texturwechsel wird
         // eine Ueberblendung.
-        vec3  an = abs( curP ) / boxSize;
+        vec3  an = abs( cur_p ) / box_size;
         float second = max( min( an.x, an.y ), min( max( an.x, an.y ), an.z ) );
-        float edgeW = smoothstep( 1.0, 0.86, second );
-        col += ( photoSample * dichroicCol * 1.4 + vec3( 1.0 ) * glint * 2.0 )
-               * throughput * edgeW;
+        float edge_w = smoothstep( 1.0, 0.86, second );
+        col += ( photo_sample * dichroic_col * 1.4 + vec3( 1.0 ) * glint * 2.0 )
+               * throughput * edge_w;
 
         // Next bounce reflection
-        curDir = reflect( curDir, normal );
+        cur_dir = reflect( cur_dir, normal );
         throughput *= 0.65;
     }
 

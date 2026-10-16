@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -260,16 +260,16 @@ void main()
     // Motif field: the photo (or noise) sliced into dye layers.
     float m = mix( fbm( p * 2.0 + 3.0 ), luma( imgK( uv, 2.5 ) ), clamp( photoP, 0.0, 1.0 ) * 0.8 );
     m += 0.08 * sin( T + p.x * 2.0 ) * 0.5;
-    float nL = 2.0 + 3.0 * clamp( layerP, 0.0, 1.0 );
+    float n_l = 2.0 + 3.0 * clamp( layerP, 0.0, 1.0 );
     float thr = 0.1 * ( clamp( audioSpread, 0.0, 1.0 ) - 0.5 );
-    float lv = clamp( ( m + thr ) * nL, 0.0, nL - 0.001 );
+    float lv = clamp( ( m + thr ) * n_l, 0.0, n_l - 0.001 );
     float layer = floor( lv );
     float edge = fract( lv );
     // Colours: from pale (waxed first) to deep ground.
     vec3  pale = mix( vec3( 0.92, 0.9, 0.82 ), vec3( 0.97, 0.9, 0.7 ), mode );
     vec3  deep = mix( vec3( 0.05, 0.1, 0.3 ), vec3( 0.45, 0.08, 0.05 ), mode );
     vec3  mid = mix( vec3( 0.3, 0.45, 0.7 ), vec3( 0.85, 0.55, 0.15 ), mode );
-    float t = 1.0 - layer / max( nL - 1.0, 1.0 ); // bright motifs -> pale
+    float t = 1.0 - layer / max( n_l - 1.0, 1.0 ); // bright motifs -> pale
     vec3  col = t > 0.5 ? mix( mid, pale, ( t - 0.5 ) * 2.0 ) : mix( deep, mid, t * 2.0 );
     col *= 0.9 + 0.2 * swell * ( 1.0 - t );
     col = mix( col, col * glowColour( imgK( uv, 5.0 ), p, hueP * 0.159 ) * 1.2, 0.08 );

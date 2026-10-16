@@ -80,15 +80,15 @@ float mapKlein( vec3 p, float t, float rBase, out float uCoord )
     uCoord = a;
 
     // Figure-8 cross section: r(v) = (rBase + cos(u/2)*sin(v) - sin(u/2)*sin(2v))
-    float uHalf = a * 0.5 + t * 0.4;
+    float u_half = a * 0.5 + t * 0.4;
     float v = atan( p.z, r - rBase );
 
     // Sub-bass swells the base cross-section, i.e. the neck the camera flies
     // through; only the constant term is scaled so the figure-8 lobes keep
-    // their shape and crossSecR can never approach 0 (min stays ~0.35).
-    float crossSecR = 0.65 * ( 1.0 + 0.3 * audioSubBass ) + 0.25 * cos( uHalf ) * sin( v )
-                      - 0.25 * sin( uHalf ) * sin( 2.0 * v );
-    float d = length( vec2( r - rBase, p.z ) ) - crossSecR;
+    // their shape and cross_sec_r can never approach 0 (min stays ~0.35).
+    float cross_sec_r = 0.65 * ( 1.0 + 0.3 * audioSubBass ) + 0.25 * cos( u_half ) * sin( v )
+                        - 0.25 * sin( u_half ) * sin( 2.0 * v );
+    float d = length( vec2( r - rBase, p.z ) ) - cross_sec_r;
 
     return d * 0.65;
 }
@@ -99,7 +99,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float rB = ( radiusP > 0.01 ) ? radiusP : 1.8;
+    float r_b = ( radiusP > 0.01 ) ? radiusP : 1.8;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -107,9 +107,9 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Camera ride coordinate inside the Klein bottle tube
-    float aCam = t * 0.5;
-    vec3  ro = vec3( cos( aCam ) * rB, sin( aCam ) * rB, 0.3 * sin( aCam * 2.0 ) );
-    vec3  ta = vec3( cos( aCam + 0.1 ) * rB, sin( aCam + 0.1 ) * rB, 0.3 * sin( ( aCam + 0.1 ) * 2.0 ) );
+    float a_cam = t * 0.5;
+    vec3  ro = vec3( cos( a_cam ) * r_b, sin( a_cam ) * r_b, 0.3 * sin( a_cam * 2.0 ) );
+    vec3  ta = vec3( cos( a_cam + 0.1 ) * r_b, sin( a_cam + 0.1 ) * r_b, 0.3 * sin( ( a_cam + 0.1 ) * 2.0 ) );
 
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 0.0, 1.0 ) ) );
@@ -117,43 +117,43 @@ void main()
     vec3 rd = normalize( uv.x * uu + uv.y * vv + ( 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) * ww );
 
     // Raymarching through Klein bottle
-    float totDist = 0.0;
-    float hitU = 0.0;
-    vec3  hitP = ro;
+    float tot_dist = 0.0;
+    float hit_u = 0.0;
+    vec3  hit_p = ro;
     bool  hit = false;
-    vec3  hitCol = vec3( 0.0 );
+    vec3  hit_col = vec3( 0.0 );
 
     for ( int i = 0; i < 64; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curU;
-        float d = mapKlein( p, t, rB, curU );
+        vec3  p = ro + rd * tot_dist;
+        float cur_u;
+        float d = mapKlein( p, t, r_b, cur_u );
         float ad = abs( d );
 
         // The camera rides INSIDE the tube, where the estimator is negative.
         // Sphere-tracing the SIGNED value pinned every step at the old 0.015
         // floor and the 0.003 hit window was narrower than the distance one
         // such step covers, so rays walked straight through the wall: all but
-        // a small central disc fell out of the loop with hitCol still black,
+        // a small central disc fell out of the loop with hit_col still black,
         // and the frame collapsed to the dim background ring pattern. March
         // on |d| -- inside the tube that IS the distance to the wall -- with a
         // window wide enough that a step can no longer jump over it.
-        if ( ad < 0.008 + totDist * 0.004 )
+        if ( ad < 0.008 + tot_dist * 0.004 )
         {
             hit = true;
-            hitU = curU;
-            hitP = p;
-            vec2 sampleUV = fract( vec2( hitU / 6.2831853 + 0.5, p.z * 0.4 ) );
-            vec3 texCol = img( sampleUV );
-            vec3 pal = imgPalette( hitU / 6.2831853 + t * 0.05 );
-            hitCol = mix( texCol, pal, 0.5 ) * ( 0.55 + 0.65 * exp( -totDist * 0.35 ) );
+            hit_u = cur_u;
+            hit_p = p;
+            vec2 sample_uv = fract( vec2( hit_u / 6.2831853 + 0.5, p.z * 0.4 ) );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal = imgPalette( hit_u / 6.2831853 + t * 0.05 );
+            hit_col = mix( tex_col, pal, 0.5 ) * ( 0.55 + 0.65 * exp( -tot_dist * 0.35 ) );
             break;
         }
 
-        if ( totDist > 8.0 )
+        if ( tot_dist > 8.0 )
             break;
 
-        totDist += max( 0.004, ad * 0.6 );
+        tot_dist += max( 0.004, ad * 0.6 );
     }
 
     // Glowing surface ribs. The old scalar was exp(-minD * k), but now that
@@ -161,28 +161,28 @@ void main()
     // which would turn the rib term into a full-frame constant. Read the
     // ribbing off the hit point's own (u, v) surface coordinates instead --
     // that is what "ribbing resolution" was meant to modulate.
-    vec2  ribVec = vec2( length( hitP.xy ) - rB, hitP.z );
-    float ribV = ( dot( ribVec, ribVec ) > 1e-8 ) ? atan( ribVec.y, ribVec.x ) : 0.0;
-    float ribs = pow( max( 0.0, sin( hitU * 3.0 + ribV * ( 5.0 + 4.0 * audioCentroid ) + t ) ), 6.0 );
-    float ribGlow = ribs * glw * float( hit ) * ( 0.30 + 0.25 * audioLevel );
-    vec3  glowTint = min( vec3( 1.3, 1.1, 1.8 ) * ribGlow * ( 1.0 + 2.5 * audioKick ), vec3( 1.15 ) );
+    vec2  rib_vec = vec2( length( hit_p.xy ) - r_b, hit_p.z );
+    float rib_v = ( dot( rib_vec, rib_vec ) > 1e-8 ) ? atan( rib_vec.y, rib_vec.x ) : 0.0;
+    float ribs = pow( max( 0.0, sin( hit_u * 3.0 + rib_v * ( 5.0 + 4.0 * audioCentroid ) + t ) ), 6.0 );
+    float rib_glow = ribs * glw * float( hit ) * ( 0.30 + 0.25 * audioLevel );
+    vec3  glow_tint = min( vec3( 1.3, 1.1, 1.8 ) * rib_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.15 ) );
 
     // Surface-vs-background selection. The old test was
-    // mix(bg, hitCol, clamp(length(hitCol), 0, 1)) -- with a dark photo a
+    // mix(bg, hit_col, clamp(length(hit_col), 0, 1)) -- with a dark photo a
     // genuine hit has length ~0.18, so it silently blended 82% of the even
     // darker background back in and crushed the surface into the floor. Use
     // the march's own hit flag, and let DISTANCE, not brightness, do the fade.
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.3 ) * ( 0.30 + 0.20 * audioLevel );
-    vec3 finalCol = hit ? hitCol : bgCol;
-    finalCol = mix( finalCol, bgCol, clamp( totDist * 0.09, 0.0, 0.5 ) );
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.3 ) * ( 0.30 + 0.20 * audioLevel );
+    vec3 final_col = hit ? hit_col : bg_col;
+    final_col = mix( final_col, bg_col, clamp( tot_dist * 0.09, 0.0, 0.5 ) );
 
     // Everything above is photo-derived, so put the plunge on a fixed
     // exposure rather than inheriting whatever the bound image happens to be.
-    finalCol *= clamp( 0.28 / max( 0.05, photoLevel() ), 0.35, 3.2 );
-    finalCol += glowTint;
+    final_col *= clamp( 0.28 / max( 0.05, photoLevel() ), 0.35, 3.2 );
+    final_col += glow_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.25 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.25 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

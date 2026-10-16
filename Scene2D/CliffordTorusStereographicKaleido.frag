@@ -75,7 +75,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float rDens = ( ringDensityP > 0.01 ) ? ringDensityP : 1.0;
+    float r_dens = ( ringDensityP > 0.01 ) ? ringDensityP : 1.0;
     float twst = ( twistP > 0.01 ) ? twistP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -101,57 +101,57 @@ void main()
     // R2 = 0.5 is the canonical (equal-radius) torus; sub-bass breathes that
     // major radius. dot(p4.xy,p4.xy) spans 0..1 for the normalized p4, so the
     // swollen radius stays inside the hypersphere.
-    float torusR2 = 0.5 * ( 1.0 + 0.30 * audioSubBass );
-    float dClifford = abs( dot( p4.xy, p4.xy ) - torusR2 );
+    float torus_r2 = 0.5 * ( 1.0 + 0.30 * audioSubBass );
+    float d_clifford = abs( dot( p4.xy, p4.xy ) - torus_r2 );
 
     // Villarceau nested circular streamlines
-    float villarceau1 = sin( ( u + v ) * 4.0 * rDens + t * 2.0 * twst );
-    float villarceau2 = sin( ( u - v ) * 4.0 * rDens - t * 2.0 * twst );
-    float vGrid = abs( villarceau1 * villarceau2 );
+    float villarceau1 = sin( ( u + v ) * 4.0 * r_dens + t * 2.0 * twst );
+    float villarceau2 = sin( ( u - v ) * 4.0 * r_dens - t * 2.0 * twst );
+    float v_grid = abs( villarceau1 * villarceau2 );
 
     // Sample texture mapped onto (u, v) toroidal coordinates
-    vec2 sampleUV = fract( vec2( u / 6.2831853 + 0.5, v / 6.2831853 + 0.5 ) );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( vec2( u / 6.2831853 + 0.5, v / 6.2831853 + 0.5 ) );
+    vec3 tex_col = img( sample_uv );
 
     // Luminous Villarceau streamlines
-    float ringGlow = exp( -vGrid * ( 16.0 + 10.0 * audioCentroid ) ) * glw;
-    float surfaceGlow = exp( -dClifford * 20.0 );
+    float ring_glow = exp( -v_grid * ( 16.0 + 10.0 * audioCentroid ) ) * glw;
+    float surface_glow = exp( -d_clifford * 20.0 );
 
     // Color palette blending
-    vec3 palA = imgPalette( ( u + v ) / 6.2831853 + t * 0.05 );
-    vec3 palB = imgPalette( ( u - v ) / 6.2831853 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( u * 2.0 ) );
+    vec3 pal_a = imgPalette( ( u + v ) / 6.2831853 + t * 0.05 );
+    vec3 pal_b = imgPalette( ( u - v ) / 6.2831853 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( u * 2.0 ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
     // The ray gaps used to read as a flat pale wash because this base
     // palette/photo mix sat near the tonemap ceiling across the frame, so it
     // is held back to give the rays something darker to stand against. 0.6
-    // was too deep once the surfaceGlow gate below started attenuating the
+    // was too deep once the surface_glow gate below started attenuating the
     // rings as well -- the two stacked and the whole scene went muddy
     // (measured luma 0.124, contrast 0.033).
     col *= 0.82;
 
     // Add glowing Villarceau rings & intersection node flashes. The first
     // pass's 0.85 cap plus a 0.4 knee still let ~50% of the frame clip,
-    // matching the re-verification's "flat white in the ray gaps" -- vGrid's
+    // matching the re-verification's "flat white in the ray gaps" -- v_grid's
     // ray pattern (product of two sine sunburst terms) stays small across
     // WIDE angular bands, not just thin lines, and the 1.7-peak tint channel
     // survived even the 0.85 cap. Tighten the cap and lower the tint
     // constants themselves so a fully-lit ring band stays well under 1.0.
     // Gate the rings by proximity to the torus surface -- they live ON it, so
-    // the lit band visibly travels outward as sub-bass swells torusR2. Pure
+    // the lit band visibly travels outward as sub-bass swells torus_r2. Pure
     // attenuation (max factor 1.0), so it cannot re-open the clipping problem.
-    vec3  ringTint = vec3( 1.0, 0.85, 1.3 ) * min( ringGlow * ( 1.0 + 2.0 * audioKick ), 0.5 )
-                     * ( 0.55 + 0.45 * surfaceGlow );
-    float nodeFlash = min( exp( -vGrid * 40.0 ) * audioKick * 2.0, 0.6 );
-    col += ringTint + vec3( 1.2, 1.1, 1.4 ) * nodeFlash;
+    vec3  ring_tint = vec3( 1.0, 0.85, 1.3 ) * min( ring_glow * ( 1.0 + 2.0 * audioKick ), 0.5 )
+                      * ( 0.55 + 0.45 * surface_glow );
+    float node_flash = min( exp( -v_grid * 40.0 ) * audioKick * 2.0, 0.6 );
+    col += ring_tint + vec3( 1.2, 1.1, 1.4 ) * node_flash;
 
     // Center focal bloom
-    float centerBloom = min( exp( -r2 * 4.0 ) * ( 0.6 + 1.2 * audioLevel ), 0.6 );
-    col += imgPalette( 0.85 ) * centerBloom;
+    float center_bloom = min( exp( -r2 * 4.0 ) * ( 0.6 + 1.2 * audioLevel ), 0.6 );
+    col += imgPalette( 0.85 ) * center_bloom;
 
     col = pow( col, vec3( 0.88 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.85 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.85 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

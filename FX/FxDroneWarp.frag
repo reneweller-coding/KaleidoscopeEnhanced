@@ -52,21 +52,21 @@ void main()
     // Per-activation character (constant during the scene).  The warp field's
     // scale additionally follows the spectral centroid a little: bright airy
     // material -> finer ripples, dark material -> broad billows (timbre->shape).
-    float scaleV = ( ( warpScaleP <= 0.01 ) ? 3.0 : warpScaleP )
-                   * ( 1.0 + 0.25 * ( audioCentroid - 0.5 ) );
-    float amtV = ( warpAmtP <= 0.01 ) ? 1.0 : warpAmtP;
-    float driftV = ( driftP <= 0.01 ) ? 1.0 : driftP;
+    float scale_v = ( ( warpScaleP <= 0.01 ) ? 3.0 : warpScaleP )
+                    * ( 1.0 + 0.25 * ( audioCentroid - 0.5 ) );
+    float amt_v = ( warpAmtP <= 0.01 ) ? 1.0 : warpAmtP;
+    float drift_v = ( driftP <= 0.01 ) ? 1.0 : driftP;
 
     // Engagement: fully liquid in drones, nearly plain in beat music.
-    float amt = ( 0.15 + 0.85 * audioAmbient ) * ( 0.010 + 0.035 * audioSwell ) * amtV;
+    float amt = ( 0.15 + 0.85 * audioAmbient ) * ( 0.010 + 0.035 * audioSwell ) * amt_v;
 
     // Slow, round warp field (two noise octaves, drifting with audioPhase).
-    float t = ( time * 0.03 + audioPhase * 0.10 ) * driftV;
+    float t = ( time * 0.03 + audioPhase * 0.10 ) * drift_v;
     vec2  w;
-    w.x = vnoise( p * scaleV + vec2( 0.0, t ) ) - 0.5
-          + 0.5 * ( vnoise( p * scaleV * 2.0 + vec2( 3.7, -t * 0.7 ) ) - 0.5 );
-    w.y = vnoise( p * scaleV + vec2( 5.2, t * 0.8 ) ) - 0.5
-          + 0.5 * ( vnoise( p * scaleV * 2.0 + vec2( 8.1, t * 0.6 ) ) - 0.5 );
+    w.x = vnoise( p * scale_v + vec2( 0.0, t ) ) - 0.5
+          + 0.5 * ( vnoise( p * scale_v * 2.0 + vec2( 3.7, -t * 0.7 ) ) - 0.5 );
+    w.y = vnoise( p * scale_v + vec2( 5.2, t * 0.8 ) ) - 0.5
+          + 0.5 * ( vnoise( p * scale_v * 2.0 + vec2( 8.1, t * 0.6 ) ) - 0.5 );
 
     // Gentle looming breathe with the swell.
     vec2 c = p - 0.5;

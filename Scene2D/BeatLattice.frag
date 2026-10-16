@@ -31,7 +31,7 @@ uniform float audioCentroid;  ///< Spectral centroid (brightness of the sound), 
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float audioBass;      ///< Bass band level, 0..1.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -68,8 +68,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -93,20 +93,20 @@ void main()
     vec3 pic = img( fract( iuv ) );
 
     // Ring wave riding the CONTINUOUS beat phase: expands outward once per beat.
-    float ringR = audioBeatPhase * 1.15;
-    float ring = exp( -pow( ( r - ringR ) * 9.0, 2.0 ) );
+    float ring_r = audioBeatPhase * 1.15;
+    float ring = exp( -pow( ( r - ring_r ) * 9.0, 2.0 ) );
     // Downbeat: a wider, brighter surge on the bar's "1".
-    float dbRing = exp( -pow( ( r - audioBarPhase * 1.3 ) * 5.0, 2.0 ) ) * audioDownbeat;
+    float db_ring = exp( -pow( ( r - audioBarPhase * 1.3 ) * 5.0, 2.0 ) ) * audioDownbeat;
 
     // Bar-phase highlight rotating once per bar.
-    float ang = atan( p.y, p.x ) / ( 2.0 * PI ) + 0.5;
-    float swp = 0.5 + 0.5 * cos( ( ang - audioBarPhase ) * 2.0 * PI );
+    float ang = atan( p.y, p.x ) / ( 2.0 * Pi ) + 0.5;
+    float swp = 0.5 + 0.5 * cos( ( ang - audioBarPhase ) * 2.0 * Pi );
     swp = swp * swp * swp;
 
     vec3 col = pic * ( 0.45 + 0.60 * audioBeat + 0.25 * audioOnset );
     col += edges * imgPal( crease * 10.0 + r * 2.0 ) * ( 0.45 + 1.5 * audioBeat );
     col += ring * imgPal( r * 3.0 ) * ( 0.30 + 0.90 * audioBeat );
-    col += dbRing * imgPal( r * 3.0 + 1.5 ) * 0.8;
+    col += db_ring * imgPal( r * 3.0 + 1.5 ) * 0.8;
     col *= 0.80 + 0.35 * swp;
 
     // Mood grade + image-driven hue variance.

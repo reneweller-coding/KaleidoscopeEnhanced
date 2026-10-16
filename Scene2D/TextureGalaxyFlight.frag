@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -232,21 +232,21 @@ vec3 galaxy( vec2 q, float spin, float arms, float wind, float dust, float photo
     float lr = log( r );
     // Arm phase: logarithmic spiral, integer arm count (seamless).
     float ph = arms * ( a - wind * lr - spin );
-    float armI = 0.5 + 0.5 * cos( ph );
+    float arm_i = 0.5 + 0.5 * cos( ph );
     vec2  u = vec2( cos( a - wind * lr - spin ), sin( a - wind * lr - spin ) );
     float clouds = fbm( u * 3.0 + vec2( lr * 4.0, 0.0 ) );
     float disk = exp( -r * 2.2 );
-    float arm = pow( armI, 2.0 ) * ( 0.6 + 0.6 * clouds ) * disk;
+    float arm = pow( arm_i, 2.0 ) * ( 0.6 + 0.6 * clouds ) * disk;
     // Dust lane on the inner (leading) edge of each arm.
     float lane = pow( 0.5 + 0.5 * cos( ph + 0.9 ), 6.0 ) * dust * smoothstep( 0.05, 0.25, r ) * disk;
     vec2  uv = u * ( 0.2 + 0.25 * r ) + 0.5;
     vec3  pc = imgLod( uv, 2.5 );
-    vec3  starC = mix( mix( vec3( 0.6, 0.75, 1.0 ), vec3( 1.0, 0.85, 0.6 ), mode ), glowColour( pc, u, hueP * 0.159 ),
-                       photoK );
-    vec3  col = starC * arm * 1.8;
+    vec3  star_c = mix( mix( vec3( 0.6, 0.75, 1.0 ), vec3( 1.0, 0.85, 0.6 ), mode ), glowColour( pc, u, hueP * 0.159 ),
+                        photoK );
+    vec3  col = star_c * arm * 1.8;
     col *= 1.0 - 0.8 * lane;
     // Knots: blue star-forming regions and pink nebulae along the arms.
-    float knot = smoothstep( 0.7, 0.9, fbm3( u * 8.0 + vec2( lr * 12.0, 1.0 ) ) ) * pow( armI, 4.0 ) * disk;
+    float knot = smoothstep( 0.7, 0.9, fbm3( u * 8.0 + vec2( lr * 12.0, 1.0 ) ) ) * pow( arm_i, 4.0 ) * disk;
     col += mix( vec3( 0.5, 0.7, 1.0 ), vec3( 1.0, 0.4, 0.6 ), step( 0.5, fbm3( u * 3.0 + 5.0 ) ) ) * knot
            * ( 1.0 + 2.0 * kick );
     // Core.

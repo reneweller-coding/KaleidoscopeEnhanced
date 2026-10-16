@@ -101,16 +101,16 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     vec3  world = vec3( 0.0 );
-    vec3  vpView = vec3( 0.0 );
-    bool  inView = false; // layer already given in view space
+    vec3  vp_view = vec3( 0.0 );
+    bool  in_view = false; // layer already given in view space
     vec3  col;
     float bright;
-    float sizeMul = 1.0;
-    float sizeMin = 1.5, sizeCap = 13.0;
+    float size_mul = 1.0;
+    float size_min = 1.5, size_cap = 13.0;
 
     if ( idx < 27000.0 )
     {
@@ -136,8 +136,8 @@ void main()
         // Per-grain brightness drops with the spread, so a planet gains total
         // light while losing its blown-out core.
         bright = ( 0.44 + 1.55 * e ) * ( 0.8 + 0.4 * audioSwell ) * 0.46;
-        sizeMul = 0.9 + 0.9 * e;
-        sizeMin = 2.2;
+        size_mul = 0.9 + 0.9 * e;
+        size_min = 2.2;
     }
     else if ( idx < 54000.0 )
     {
@@ -174,9 +174,9 @@ void main()
         // A silent interval used to leave its filament at 0.05 -- invisible.
         // The graph itself is the scene's shape, so it stays faintly drawn.
         bright = 0.30 + 1.9 * act + 1.6 * pulse;
-        sizeMul = 0.85;
-        sizeMin = 2.2;
-        sizeCap = 8.0;
+        size_mul = 0.85;
+        size_min = 2.2;
+        size_cap = 8.0;
     }
     else
     {
@@ -184,26 +184,26 @@ void main()
         // Placed in FRUSTUM coordinates (x,y scaled by depth) rather than in a
         // world box, which is what keeps it even across the picture at every
         // distance -- including the corners the projected torus never reaches.
-        inView = true;
+        in_view = true;
         float dz = 14.0 + r3 * 82.0;
         float ph = r1 * 6.2831853 + time * 0.06 + audioRotPhase * 0.05;
         // 2.0 would fit the frustum exactly; 2.25 so the field still reaches
         // past all four edges when the preset camera rig rolls the view.
         const float open = 2.25;
-        vpView = vec3( ( r1 - 0.5 ) * open * dz * kTanY * aspect + 2.0 * cos( ph ),
-                       ( r2 - 0.5 ) * open * dz * kTanY + 2.0 * sin( ph * 0.79 ),
-                       dz );
+        vp_view = vec3( ( r1 - 0.5 ) * open * dz * TanY * aspect + 2.0 * cos( ph ),
+                        ( r2 - 0.5 ) * open * dz * TanY + 2.0 * sin( ph * 0.79 ),
+                        dz );
         col = hueRot( vec3( 0.34, 0.48, 0.92 ), audioChromaHue * 0.5 );
         bright = ( 0.085 + 0.10 * r3 ) * ( 0.8 + 0.4 * audioSwell )
                  * clamp( 1.0 - dz / 150.0, 0.0, 1.0 );
         // A speck must stay legible at any distance -- below ~2.6 px an
         // additive sprite averages away and the far field reads black again.
-        sizeMul = 0.78;
-        sizeMin = 2.6;
-        sizeCap = 9.0;
+        size_mul = 0.78;
+        size_min = 2.6;
+        size_cap = 9.0;
     }
 
-    vec3 vp = inView ? vpView : world + vec3( 0.0, 0.0, 30.0 );
+    vec3 vp = in_view ? vp_view : world + vec3( 0.0, 0.0, 30.0 );
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
@@ -212,8 +212,8 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( 110.0 * sizeMul * ( 0.5 + 0.5 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( 110.0 * size_mul * ( 0.5 + 0.5 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
     col *= bright * ( 1.0 + 0.25 * audioKick + 0.9 * audioDrop );
     // Cap the TINTED vec3, not the scalar feeding it: a hue-rotated node

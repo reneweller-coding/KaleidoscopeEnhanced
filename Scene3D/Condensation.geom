@@ -134,9 +134,9 @@ void main()
     // appeared at the very end -- proven by running the same scene with the
     // spread set to nothing, which made the object render immediately and
     // correctly. The target was never wrong; the distance was.
-    vec3 gasPos = mid + ( wander * 0.20 + drift * 0.32 ) * cloud;
+    vec3 gas_pos = mid + ( wander * 0.20 + drift * 0.32 ) * cloud;
 
-    vec3 p = mix( gasPos, mid, formed );
+    vec3 p = mix( gas_pos, mid, formed );
 
     // Even once formed, the surface keeps a little breath on the beat, so the
     // object never sets into something inert.

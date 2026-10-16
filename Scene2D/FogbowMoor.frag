@@ -96,12 +96,12 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
-    float fogD = 0.6 + 0.6 * clamp( fogP, 0.0, 1.0 );
+    float fog_d = 0.6 + 0.6 * clamp( fogP, 0.0, 1.0 );
 
     float hz = -0.06;
-    vec3  fogC = vec3( 0.86, 0.87, 0.86 ) * ( 0.92 + 0.15 * swell );
+    vec3  fog_c = vec3( 0.86, 0.87, 0.86 ) * ( 0.92 + 0.15 * swell );
     // The sky: fog lit from behind, a touch warmer toward the top.
-    vec3 col = mix( fogC, vec3( 0.9, 0.88, 0.84 ), smoothstep( 0.0, 0.5, p.y ) );
+    vec3 col = mix( fog_c, vec3( 0.9, 0.88, 0.84 ), smoothstep( 0.0, 0.5, p.y ) );
 
     // The fogbow: a broad white ring around the antisolar point below the
     // horizon; warm outer edge, cool inner edge.
@@ -109,15 +109,15 @@ void main()
     float r = length( p - anti );
     float R = 0.62, W = 0.09;
     float bow = exp( -pow( ( r - R ) / W, 2.0 ) );
-    vec3  bowC = vec3( 1.0 ) * bow;
-    bowC += vec3( 0.35, 0.12, -0.05 ) * exp( -pow( ( r - R - W * 0.9 ) / ( W * 0.4 ), 2.0 ) );
-    bowC += vec3( -0.05, 0.05, 0.2 ) * exp( -pow( ( r - R + W * 0.9 ) / ( W * 0.4 ), 2.0 ) );
+    vec3  bow_c = vec3( 1.0 ) * bow;
+    bow_c += vec3( 0.35, 0.12, -0.05 ) * exp( -pow( ( r - R - W * 0.9 ) / ( W * 0.4 ), 2.0 ) );
+    bow_c += vec3( -0.05, 0.05, 0.2 ) * exp( -pow( ( r - R + W * 0.9 ) / ( W * 0.4 ), 2.0 ) );
     // A faint second, inner ring (supernumerary).
-    bowC += vec3( 0.4 ) * exp( -pow( ( r - R + W * 1.9 ) / ( W * 0.35 ), 2.0 ) ) * 0.4;
-    float bowVis = ( 0.22 + 0.2 * swell ) * smoothstep( hz - 0.02, hz + 0.1, p.y + 0.12 );
-    col += bowC * bowVis;
+    bow_c += vec3( 0.4 ) * exp( -pow( ( r - R + W * 1.9 ) / ( W * 0.35 ), 2.0 ) ) * 0.4;
+    float bow_vis = ( 0.22 + 0.2 * swell ) * smoothstep( hz - 0.02, hz + 0.1, p.y + 0.12 );
+    col += bow_c * bow_vis;
     // Inside the bow the fog is a little brighter.
-    col += vec3( 0.04 ) * smoothstep( R, R - 0.2, r ) * bowVis * 2.0;
+    col += vec3( 0.04 ) * smoothstep( R, R - 0.2, r ) * bow_vis * 2.0;
 
     // The moor: a ground plane in perspective, fading into the fog with distance.
     if ( p.y < hz )
@@ -133,10 +133,10 @@ void main()
         ground *= 0.82 + 0.28 * mix( noise2( gq * vec2( 18.0, 10.0 ) ), 0.5, smoothstep( 0.02, 0.2, fw ) );
         // Peat pools mirroring the white sky.
         float pool = smoothstep( 0.68, 0.72, fbm( gq * vec2( 0.6, 1.2 ) + 11.0 ) );
-        ground = mix( ground, mix( vec3( 0.12, 0.12, 0.13 ), fogC * 0.95, 0.75 ), pool );
+        ground = mix( ground, mix( vec3( 0.12, 0.12, 0.13 ), fog_c * 0.95, 0.75 ), pool );
         // Fog thickens with distance, drifting.
-        float fz = 1.0 - exp( -z * 0.12 * fogD * ( 0.8 + 0.4 * fbm( vec2( p.x * 3.0 + T * 0.03, z * 0.3 ) ) ) );
-        col = mix( ground, fogC, clamp( fz, 0.0, 0.98 ) );
+        float fz = 1.0 - exp( -z * 0.12 * fog_d * ( 0.8 + 0.4 * fbm( vec2( p.x * 3.0 + T * 0.03, z * 0.3 ) ) ) );
+        col = mix( ground, fog_c, clamp( fz, 0.0, 0.98 ) );
         // Dew glittering on the near grass.
         if ( p.y < -0.3 )
         {
@@ -168,17 +168,17 @@ void main()
             tr = max( tr, clamp( crown + trunk, 0.0, 1.0 ) * step( 0.0, yy ) );
         }
         float wall = step( p.y, yb + 0.006 + 0.002 * noise2( vec2( p.x * 90.0, 2.0 ) ) ) * step( yb - 0.002, p.y );
-        float fz = 1.0 - exp( -zt * 0.12 * fogD );
-        vec3  tc = mix( vec3( 0.3, 0.3, 0.28 ), fogC, fz );
+        float fz = 1.0 - exp( -zt * 0.12 * fog_d );
+        vec3  tc = mix( vec3( 0.3, 0.3, 0.28 ), fog_c, fz );
         col = mix( col, tc, max( tr, wall ) );
     }
     // Low fog banks lying over the moor, drifting.
     float bank = smoothstep( 0.5, 0.8, fbm( vec2( p.x * 1.5 + T * 0.02, p.y * 6.0 ) ) )
                  * smoothstep( hz + 0.08, hz - 0.05, p.y ) * smoothstep( hz - 0.3, hz - 0.1, p.y );
-    col = mix( col, fogC, bank * 0.6 * fogD );
+    col = mix( col, fog_c, bank * 0.6 * fog_d );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

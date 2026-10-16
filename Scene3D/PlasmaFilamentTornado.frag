@@ -37,10 +37,10 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Glowing filament core cross-section profile
-    float distFromCenter = abs( vTexCoord.x - 0.5 ) * 2.0;
-    float filamentGlow = exp( -distFromCenter * 4.0 );
+    float dist_from_center = abs( vTexCoord.x - 0.5 ) * 2.0;
+    float filament_glow = exp( -dist_from_center * 4.0 );
 
-    vec3 col = vColor.rgb * filamentGlow * 1.5;
+    vec3 col = vColor.rgb * filament_glow * 1.5;
 
     col = hueRot( col, audioChromaHue + hue );
     fragColor = vec4( col, 1.0 );

@@ -66,62 +66,62 @@ void main()
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.4 + audioAdvance * 0.35;
 
-    // Harmonic trap background (Thomas-Fermi density profile: n(r) = max(0, 1 - r^2/R_TF^2))
+    // Harmonic trap background (Thomas-Fermi density profile: n(r) = max(0, 1 - r^2/r_tf^2))
     float r = length( uv );
-    float R_TF = 0.95 * ( 0.85 + 0.25 * audioSwell );
-    float condensateDensity = clamp( 1.0 - ( r * r ) / ( R_TF * R_TF ), 0.0, 1.0 );
+    float r_tf = 0.95 * ( 0.85 + 0.25 * audioSwell );
+    float condensate_density = clamp( 1.0 - ( r * r ) / ( r_tf * r_tf ), 0.0, 1.0 );
 
-    float numVortices = ( vortexCountP > 1.0 ? vortexCountP : 8.0 );
+    float num_vortices = ( vortexCountP > 1.0 ? vortexCountP : 8.0 );
     float cascade = ( cascadeP > 0.01 ? cascadeP : 1.2 );
 
-    float totalPhase = audioPhase * 0.3;
-    float coreDips = 1.0;
+    float total_phase = audioPhase * 0.3;
+    float core_dips = 1.0;
 
     // Accumulate quantized vortex phases: Psi(r) = sqrt(n) * exp(i * sum(theta_j))
     for ( float j = 0.0; j < 8.0; j += 1.0 )
     {
-        if ( j >= numVortices )
+        if ( j >= num_vortices )
             break;
 
         // Vortex trajectory (clustered into two giant Onsager storms: positive & negative circulation)
         float sign = mod( j, 2.0 ) == 0.0 ? 1.0 : -1.0;
-        float clusterCenter = sign * ( 0.35 / max( cascade, 0.5 ) );
+        float cluster_center = sign * ( 0.35 / max( cascade, 0.5 ) );
 
-        float vAngle = j * 0.7854 + t * ( 0.6 + 0.2 * j ) * sign;
-        float vRad = 0.15 + 0.12 * sin( t * 0.8 + j );
-        vec2  vPos = vec2( clusterCenter + cos( vAngle ) * vRad, sin( vAngle ) * vRad );
+        float v_angle = j * 0.7854 + t * ( 0.6 + 0.2 * j ) * sign;
+        float v_rad = 0.15 + 0.12 * sin( t * 0.8 + j );
+        vec2  v_pos = vec2( cluster_center + cos( v_angle ) * v_rad, sin( v_angle ) * v_rad );
 
-        vec2  diff = uv - vPos;
+        vec2  diff = uv - v_pos;
         float d = length( diff );
         float angle = atan( diff.y, diff.x );
 
-        totalPhase += angle * sign;
+        total_phase += angle * sign;
 
         // Healing length core profile: tanh(r / xi)
         float xi = ( coreRadiusP > 0.001 ? coreRadiusP : 0.045 ) * ( 1.0 + 0.4 * audioBass );
-        coreDips *= clamp( d / xi, 0.0, 1.0 );
+        core_dips *= clamp( d / xi, 0.0, 1.0 );
     }
 
     // Bogoliubov phonon sound ripples
-    float cSound = ( soundSpeedP > 0.01 ? soundSpeedP : 1.2 );
-    float phonons = sin( r * 18.0 - t * 4.0 * cSound ) * 0.08 * ( 0.6 + 0.8 * audioMid );
+    float c_sound = ( soundSpeedP > 0.01 ? soundSpeedP : 1.2 );
+    float phonons = sin( r * 18.0 - t * 4.0 * c_sound ) * 0.08 * ( 0.6 + 0.8 * audioMid );
 
-    float finalDensity = condensateDensity * coreDips + phonons;
+    float final_density = condensate_density * core_dips + phonons;
 
     // Annihilation flashes on kick
-    float coreFlash = ( 1.0 - coreDips ) * ( 1.0 + 3.5 * audioKick );
+    float core_flash = ( 1.0 - core_dips ) * ( 1.0 + 3.5 * audioKick );
 
     // Palette assignment
-    vec3 colPhase = imgPalette( fract( totalPhase * 0.159 + t * 0.05 + audioCentroid ) );
-    vec3 colCore = imgPalette( fract( totalPhase * 0.159 + 0.5 ) );
+    vec3 col_phase = imgPalette( fract( total_phase * 0.159 + t * 0.05 + audioCentroid ) );
+    vec3 col_core = imgPalette( fract( total_phase * 0.159 + 0.5 ) );
 
     // Background photo texture
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colPhase * finalDensity * 1.8;
-    col += colCore * coreFlash * 2.0;
+    col += col_phase * final_density * 1.8;
+    col += col_core * core_flash * 2.0;
     col += imgPalette( audioAdvance * 0.1 ) * ( audioKick * 0.35 );
 
     // Soft knee compression

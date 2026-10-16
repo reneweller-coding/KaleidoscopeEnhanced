@@ -79,49 +79,49 @@ void main()
     // c/d scale the cosine terms, i.e. how far each Clifford step folds the
     // sheet back on itself; sub-bass swells that fold depth. Bounded well
     // under the |x|,|y| <= 1+c limit so the attractor stays finite.
-    float foldAmp = 1.0 + 0.35 * audioSubBass;
-    float c = ( 1.0 + 0.3 * sin( t * 0.4 + audioPhase * 0.3 ) ) * foldAmp;
-    float d = ( 0.7 + 0.3 * cos( t * 0.35 ) ) * foldAmp;
+    float fold_amp = 1.0 + 0.35 * audioSubBass;
+    float c = ( 1.0 + 0.3 * sin( t * 0.4 + audioPhase * 0.3 ) ) * fold_amp;
+    float d = ( 0.7 + 0.3 * cos( t * 0.35 ) ) * fold_amp;
 
     // Screen coordinate frame with gentle rotation
-    float rotA = t * 0.15 + audioPhase * 0.1;
-    float cs = cos( rotA ), sn = sin( rotA );
+    float rot_a = t * 0.15 + audioPhase * 0.1;
+    float cs = cos( rot_a ), sn = sin( rot_a );
     vec2  p = mat2( cs, -sn, sn, cs ) * uv * ( 2.8 * dens );
 
     // Multi-point Clifford attractor evaluation from local coordinate seeds
-    float minDist = 1e5;
-    float densityAcc = 0.0;
+    float min_dist = 1e5;
+    float density_acc = 0.0;
 
-    vec2 pIter = p;
+    vec2 p_iter = p;
     for ( int i = 0; i < 28; i++ )
     {
         // Clifford map equation
-        float xNext = sin( a * pIter.y ) + c * cos( a * pIter.x );
-        float yNext = sin( b * pIter.x ) + d * cos( b * pIter.y );
-        pIter = vec2( xNext, yNext );
+        float x_next = sin( a * p_iter.y ) + c * cos( a * p_iter.x );
+        float y_next = sin( b * p_iter.x ) + d * cos( b * p_iter.y );
+        p_iter = vec2( x_next, y_next );
 
-        float dCur = length( p - pIter );
-        minDist = min( minDist, dCur );
-        densityAcc += exp( -dCur * ( 8.0 * slk ) );
+        float d_cur = length( p - p_iter );
+        min_dist = min( min_dist, d_cur );
+        density_acc += exp( -d_cur * ( 8.0 * slk ) );
     }
 
     // Sample texture mapped on attractor coordinate
-    vec2 sampleUV = fract( pIter * 0.3 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_iter * 0.3 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Luminous silk ribbon caustics
-    float silkGlow = exp( -minDist * ( 12.0 + 8.0 * audioCentroid ) ) * glw;
+    float silk_glow = exp( -min_dist * ( 12.0 + 8.0 * audioCentroid ) ) * glw;
 
     // Palette mixing
-    vec3 palA = imgPalette( densityAcc * 0.1 + t * 0.05 );
-    vec3 palB = imgPalette( densityAcc * 0.1 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( densityAcc * 0.8 + t ) );
+    vec3 pal_a = imgPalette( density_acc * 0.1 + t * 0.05 );
+    vec3 pal_b = imgPalette( density_acc * 0.1 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( density_acc * 0.8 + t ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing silk ribbon sheets and kick flashes
-    vec3 silkTint = vec3( 1.3, 1.1, 1.7 ) * ( silkGlow + densityAcc * 0.08 ) * ( 1.0 + 2.5 * audioKick );
-    col += silkTint;
+    vec3 silk_tint = vec3( 1.3, 1.1, 1.7 ) * ( silk_glow + density_acc * 0.08 ) * ( 1.0 + 2.5 * audioKick );
+    col += silk_tint;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

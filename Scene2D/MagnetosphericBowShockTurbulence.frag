@@ -75,53 +75,54 @@ void main()
     float t = time * 0.45 + audioAdvance * 0.4;
 
     // Solar wind incoming from left (-x) impacting planetary dipole at (0.35, 0)
-    vec2 planetPos = vec2( 0.35, 0.0 );
-    vec2 relP = uv - planetPos;
+    vec2 planet_pos = vec2( 0.35, 0.0 );
+    vec2 rel_p = uv - planet_pos;
 
     // Hyperbolic Bow Shock front: x_shock = -standoff + curv * y^2
     float standoff = ( 0.35 * ( 1.0 - 0.25 * audioBass ) );
     float curv = ( shockCurvP > 0.01 ? shockCurvP : 0.85 );
-    float shockX = -standoff + curv * ( uv.y * uv.y );
+    float shock_x = -standoff + curv * ( uv.y * uv.y );
 
-    float shockDist = uv.x - shockX;
-    float shockFront = exp( -abs( shockDist ) * 30.0 );
+    float shock_dist = uv.x - shock_x;
+    float shock_front = exp( -abs( shock_dist ) * 30.0 );
 
     // Turbulent magnetosheath eddies (between bow shock and magnetopause)
-    float vSpeed = ( windSpeedP > 0.01 ? windSpeedP : 1.2 );
-    vec2  sheathUv = vec2( uv.x * 6.0 + t * 2.5 * vSpeed, uv.y * 6.0 );
-    float eddy = sin( sheathUv.x + sin( sheathUv.y ) ) * cos( sheathUv.y - sin( sheathUv.x ) );
+    float v_speed = ( windSpeedP > 0.01 ? windSpeedP : 1.2 );
+    vec2  sheath_uv = vec2( uv.x * 6.0 + t * 2.5 * v_speed, uv.y * 6.0 );
+    float eddy = sin( sheath_uv.x + sin( sheath_uv.y ) ) * cos( sheath_uv.y - sin( sheath_uv.x ) );
 
-    // Ion cyclotron whistler waves propagating in foreshock region (x < shockX)
-    float wFreq = ( whistlerP > 0.01 ? whistlerP : 16.0 );
-    float whistler = sin( uv.x * wFreq - t * 4.0 + audioPhase ) * smoothstep( 0.0, -0.2, shockDist );
+    // Ion cyclotron whistler waves propagating in foreshock region (x < shock_x)
+    float w_freq = ( whistlerP > 0.01 ? whistlerP : 16.0 );
+    float whistler = sin( uv.x * w_freq - t * 4.0 + audioPhase ) * smoothstep( 0.0, -0.2, shock_dist );
 
     // Auroral particle cusp curtains funneling into planetary magnetic poles
-    float rDipole = length( relP );
-    float dipoleAngle = atan( relP.y, relP.x );
-    float dipoleField = sin( dipoleAngle * 2.0 ) / max( rDipole * rDipole, 0.01 );
+    float r_dipole = length( rel_p );
+    float dipole_angle = atan( rel_p.y, rel_p.x );
+    float dipole_field = sin( dipole_angle * 2.0 ) / max( r_dipole * r_dipole, 0.01 );
 
-    float auroraCurtain = exp( -abs( sin( dipoleAngle ) * rDipole - 0.15 ) * 12.0 ) * smoothstep( 0.5, 0.1, rDipole );
-    auroraCurtain *= ( 1.0 + 3.0 * audioKick ) * ( auroraGlowP > 0.01 ? auroraGlowP : 1.3 );
+    float aurora_curtain = exp( -abs( sin( dipole_angle ) * r_dipole - 0.15 ) * 12.0 )
+                           * smoothstep( 0.5, 0.1, r_dipole );
+    aurora_curtain *= ( 1.0 + 3.0 * audioKick ) * ( auroraGlowP > 0.01 ? auroraGlowP : 1.3 );
 
     // Color palettes
-    vec3 solarWindCol = vec3( 1.0, 0.7, 0.2 );
-    vec3 auroraEmerald = vec3( 0.1, 0.95, 0.45 );
-    vec3 shockCyan = vec3( 0.2, 0.85, 1.0 );
+    vec3 solar_wind_col = vec3( 1.0, 0.7, 0.2 );
+    vec3 aurora_emerald = vec3( 0.1, 0.95, 0.45 );
+    vec3 shock_cyan = vec3( 0.2, 0.85, 1.0 );
 
-    vec3 colShock = palTint( shockCyan, uv.y * 0.2 + audioCentroid, 0.25 );
-    vec3 colAurora = palTint( auroraEmerald, t * 0.05 + audioCentroid, 0.28 );
-    vec3 colWind = palTint( solarWindCol, uv.x * 0.3, 0.22 );
+    vec3 col_shock = palTint( shock_cyan, uv.y * 0.2 + audioCentroid, 0.25 );
+    vec3 col_aurora = palTint( aurora_emerald, t * 0.05 + audioCentroid, 0.28 );
+    vec3 col_wind = palTint( solar_wind_col, uv.x * 0.3, 0.22 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colShock * shockFront * 2.4;
-    col += colWind * abs( eddy ) * smoothstep( -0.2, 0.2, shockDist ) * ( 0.8 + 0.4 * audioSwell );
-    col += colShock * abs( whistler ) * 0.9;
-    col += colAurora * auroraCurtain * 2.5;
-    col += colAurora * ( audioKick * 0.35 );
+    col += col_shock * shock_front * 2.4;
+    col += col_wind * abs( eddy ) * smoothstep( -0.2, 0.2, shock_dist ) * ( 0.8 + 0.4 * audioSwell );
+    col += col_shock * abs( whistler ) * 0.9;
+    col += col_aurora * aurora_curtain * 2.5;
+    col += col_aurora * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

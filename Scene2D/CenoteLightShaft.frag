@@ -98,15 +98,15 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float roots = 4.0 + floor( clamp( rootsP, 0.0, 1.0 ) * 6.0 ); // once per activation
     float motes = 0.4 + 0.9 * clamp( moteP, 0.0, 1.0 );
-    float sunAmt = 0.5 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
+    float sun_amt = 0.5 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
     float prog = clamp( sceneProgress, 0.0, 1.0 );
 
     // The opening: an ellipse high in frame; the sun crosses it over the arc.
     vec2  hole = vec2( 0.02, 0.44 );
-    float sunX = mix( -0.16, 0.16, prog );
-    vec2  sun = hole + vec2( sunX, -0.01 );
+    float sun_x = mix( -0.16, 0.16, prog );
+    vec2  sun = hole + vec2( sun_x, -0.01 );
 
     // The cavern: the photo as wet limestone, blue-green and dim, darker
     // toward the edges of frame.
@@ -123,25 +123,25 @@ void main()
 
     // The opening itself: bright sky and jungle rim seen from below.
     vec2  hq = ( p - hole ) / vec2( 0.3, 0.13 );
-    float inHole = smoothstep( 1.0, 0.9, length( hq ) );
-    vec3  skyCol = mix( vec3( 1.0, 0.98, 0.85 ), imgPalette( hue * 0.159 + 0.15 ), 0.25 );
-    col = mix( col, skyCol * ( 1.1 + 0.8 * sunAmt ), inHole * 0.92 );
+    float in_hole = smoothstep( 1.0, 0.9, length( hq ) );
+    vec3  sky_col = mix( vec3( 1.0, 0.98, 0.85 ), imgPalette( hue * 0.159 + 0.15 ), 0.25 );
+    col = mix( col, sky_col * ( 1.1 + 0.8 * sun_amt ), in_hole * 0.92 );
     // The jungle rim: dark fringe just inside the opening.
-    float rim = smoothstep( 1.18, 1.0, length( hq ) ) * ( 1.0 - inHole );
+    float rim = smoothstep( 1.18, 1.0, length( hq ) ) * ( 1.0 - in_hole );
     col = mix( col, mix( vec3( 0.06, 0.12, 0.05 ), imgPalette( hue * 0.159 + 0.3 ) * 0.2, 0.4 ), rim );
 
     // The shaft: a cone from the sun down into the water, widening.
     vec2  rel = p - sun;
     float down = clamp( -rel.y, 0.0, 1.4 );
-    float halfW = 0.045 + 0.30 * down;
-    float across = abs( rel.x + rel.y * 0.12 ) / max( halfW, 1e-3 );
+    float half_w = 0.045 + 0.30 * down;
+    float across = abs( rel.x + rel.y * 0.12 ) / max( half_w, 1e-3 );
     float shaft = smoothstep( 1.0, 0.15, across ) * smoothstep( 0.0, 0.06, down ) * exp( -down * 0.9 );
     // The shaft's own texture: slow bands of brighter water drifting down.
     float bands = 0.65 + 0.5 * fbm( vec2( across * 2.0, down * 3.5 - clock * 0.5 ) );
-    vec3  shaftCol = mix( vec3( 0.85, 0.95, 0.8 ), imgPalette( hue * 0.159 + 0.2 ), 0.25 );
-    col += shaftCol * shaft * bands * sunAmt * 0.85;
+    vec3  shaft_col = mix( vec3( 0.85, 0.95, 0.8 ), imgPalette( hue * 0.159 + 0.2 ), 0.25 );
+    col += shaft_col * shaft * bands * sun_amt * 0.85;
     // A brighter core.
-    col += shaftCol * smoothstep( 0.45, 0.0, across ) * smoothstep( 0.0, 0.1, down ) * exp( -down * 1.3 ) * sunAmt
+    col += shaft_col * smoothstep( 0.45, 0.0, across ) * smoothstep( 0.0, 0.1, down ) * exp( -down * 1.3 ) * sun_amt
            * 0.6;
 
     // Roots: hanging strands from the rim, lit where they cross the shaft.
@@ -155,17 +155,17 @@ void main()
         // The strand: a slow sway, thicker at the top.
         float sway = 0.03 * sin( clock * 0.35 + fi * 1.7 );
         float yy = clamp( hole.y - p.y, 0.0, len );
-        float xAt = rx + sway * ( yy / max( len, 1e-3 ) ) * ( yy / max( len, 1e-3 ) ) * 3.0;
+        float x_at = rx + sway * ( yy / max( len, 1e-3 ) ) * ( yy / max( len, 1e-3 ) ) * 3.0;
         float w = mix( 0.006, 0.0015, yy / max( len, 1e-3 ) );
-        float strand = smoothstep( w, w * 0.4, abs( p.x - xAt ) ) * step( p.y, hole.y ) * step( hole.y - len, p.y );
-        vec3  rootCol = mix( vec3( 0.2, 0.14, 0.1 ), imgPalette( hue * 0.159 + 0.08 ) * 0.3, 0.35 );
+        float strand = smoothstep( w, w * 0.4, abs( p.x - x_at ) ) * step( p.y, hole.y ) * step( hole.y - len, p.y );
+        vec3  root_col = mix( vec3( 0.2, 0.14, 0.1 ), imgPalette( hue * 0.159 + 0.08 ) * 0.3, 0.35 );
         // Where a root stands in the shaft it lights up.
         float lit = shaft * 1.6;
-        col = mix( col, rootCol * ( 0.5 + 1.4 * lit ) * ( 0.4 + 0.8 * sunAmt ), strand );
+        col = mix( col, root_col * ( 0.5 + 1.4 * lit ) * ( 0.4 + 0.8 * sun_amt ), strand );
         // Fine hairs off the strand.
-        float hair = smoothstep( w * 3.0, 0.0, abs( p.x - xAt ) )
+        float hair = smoothstep( w * 3.0, 0.0, abs( p.x - x_at ) )
                      * step( 0.55, hash21( vec2( fi, floor( p.y * 90.0 ) ) ) );
-        col = mix( col, rootCol * ( 0.6 + 1.2 * lit ), hair * 0.35 * step( p.y, hole.y ) * step( hole.y - len, p.y ) );
+        col = mix( col, root_col * ( 0.6 + 1.2 * lit ), hair * 0.35 * step( p.y, hole.y ) * step( hole.y - len, p.y ) );
     }
 
     // Motes: round particles hanging in the water, brilliant inside the shaft.
@@ -184,19 +184,19 @@ void main()
     // The halocline: a shimmering layer where fresh water meets salt.
     float halo = exp( -abs( p.y + 0.12 + 0.02 * fbm( vec2( p.x * 5.0, clock * 0.3 ) ) ) * 22.0 );
     col = mix( col, col * vec3( 1.15, 1.05, 0.95 ) + vec3( 0.05, 0.07, 0.06 ), halo * 0.7 );
-    col += shaftCol * halo * shaft * 0.5;
+    col += shaft_col * halo * shaft * 0.5;
     // A fish crossing the shaft: its own smooth path, lit by the kick.
     float fph = fract( clock * 0.11 );
     vec2  fish = vec2( mix( -0.5, 0.5, fph ) * aspect, -0.05 + 0.12 * sin( fph * 6.2831853 ) );
     vec2  fq = p - fish;
-    float fishD = length( fq * vec2( 1.0, 2.6 ) );
-    float fishS = smoothstep( 0.035, 0.012, fishD );
+    float fish_d = length( fq * vec2( 1.0, 2.6 ) );
+    float fish_s = smoothstep( 0.035, 0.012, fish_d );
     float tail = smoothstep( 0.02, 0.0, abs( fq.y * 2.0 ) - 0.006 ) * smoothstep( 0.06, 0.03, abs( fq.x + 0.04 ) );
-    col = mix( col, mix( vec3( 0.5, 0.55, 0.5 ), shaftCol, 0.4 ) * ( 0.3 + 1.5 * shaft + 0.6 * audioKick ),
-               max( fishS, tail * 0.7 ) );
+    col = mix( col, mix( vec3( 0.5, 0.55, 0.5 ), shaft_col, 0.4 ) * ( 0.3 + 1.5 * shaft + 0.6 * audioKick ),
+               max( fish_s, tail * 0.7 ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

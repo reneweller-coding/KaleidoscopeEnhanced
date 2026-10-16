@@ -51,11 +51,11 @@ float hash11( float p )
 void main()
 {
     float id = float( gl_VertexID );
-    float seedX = hash11( id );
-    float seedY = hash11( id + 5000.0 );
+    float seed_x = hash11( id );
+    float seed_y = hash11( id + 5000.0 );
 
     // Initial random position on square plate [-1, 1]
-    vec2 p = vec2( seedX * 2.0 - 1.0, seedY * 2.0 - 1.0 );
+    vec2 p = vec2( seed_x * 2.0 - 1.0, seed_y * 2.0 - 1.0 );
 
     // Chladni modal numbers (m, n) driven by spectrum / audio frequencies.
     // Spectral SPREAD is the plate's modal complexity: a narrow, pure spectrum
@@ -71,33 +71,33 @@ void main()
 
     // Gradient of vibration field: particles drift down the gradient towards w = 0 (nodal lines)
     float eps = 0.01;
-    float wX = ( sin( n * pi * ( p.x + eps ) * 0.5 ) * sin( m * pi * p.y * 0.5 )
-                 - sin( m * pi * ( p.x + eps ) * 0.5 ) * sin( n * pi * p.y * 0.5 ) - w )
-               / eps;
-    float wY = ( sin( n * pi * p.x * 0.5 ) * sin( m * pi * ( p.y + eps ) * 0.5 )
-                 - sin( m * pi * p.x * 0.5 ) * sin( n * pi * ( p.y + eps ) * 0.5 ) - w )
-               / eps;
-    vec2  gradW = vec2( wX, wY );
+    float w_x = ( sin( n * pi * ( p.x + eps ) * 0.5 ) * sin( m * pi * p.y * 0.5 )
+                  - sin( m * pi * ( p.x + eps ) * 0.5 ) * sin( n * pi * p.y * 0.5 ) - w )
+                / eps;
+    float w_y = ( sin( n * pi * p.x * 0.5 ) * sin( m * pi * ( p.y + eps ) * 0.5 )
+                  - sin( m * pi * p.x * 0.5 ) * sin( n * pi * ( p.y + eps ) * 0.5 ) - w )
+                / eps;
+    vec2  grad_w = vec2( w_x, w_y );
 
     // Dynamic displacement towards nodal lines.  A chord / key change re-tunes
     // the plate: the grains lose their grip on the lines and have to settle
     // all over again as the new harmony holds.
     float retune = clamp( audioHarmChange, 0.0, 1.0 );
     float drift = 0.4 * ( 1.0 - 0.5 * audioKick ) * ( 1.0 - 0.55 * retune );
-    vec2  nodalPos = p - gradW * w * drift;
+    vec2  nodal_pos = p - grad_w * w * drift;
 
     // Broadband hiss keeps the sand skittering across the plate; a pure held
     // tone lets it collapse onto razor-sharp nodal lines.  The wobble rides
     // audioPhase (pre-integrated) so the scatter drifts instead of snapping.
     float scatter = clamp( audioZCR, 0.0, 1.0 ) * 0.22 + retune * 0.10;
-    nodalPos += vec2( sin( audioPhase * 3.0 + seedX * 40.0 ),
-                      cos( audioPhase * 2.6 + seedY * 40.0 ) )
-                * scatter;
+    nodal_pos += vec2( sin( audioPhase * 3.0 + seed_x * 40.0 ),
+                       cos( audioPhase * 2.6 + seed_y * 40.0 ) )
+                 * scatter;
 
     // Bounce height on beat kicks
     float bounce = abs( w ) * ( 0.2 + 0.8 * audioKick ) * ( 0.8 + 0.4 * audioBass );
 
-    vec3 pos = vec3( nodalPos.x * 3.0, bounce - 0.8, nodalPos.y * 3.0 );
+    vec3 pos = vec3( nodal_pos.x * 3.0, bounce - 0.8, nodal_pos.y * 3.0 );
 
     vPos = pos;
     vNodalDist = abs( w );
@@ -106,14 +106,14 @@ void main()
     // Stereoscopic 3D camera projection with downward plate angle
     vec3  vp = pos;
     float tilt = 0.45;
-    float cosT = cos( tilt ), sinT = sin( tilt );
-    vec3  rotatedVP = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float cos_t = cos( tilt ), sin_t = sin( tilt );
+    vec3  rotated_vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
 
-    rotatedVP.z += 5.2;
-    rotatedVP.x -= eyeOff;
+    rotated_vp.z += 5.2;
+    rotated_vp.x -= eyeOff;
 
-    gl_Position = projM * vec4( rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0 );
+    gl_Position = projM * vec4( rotated_vp.x, rotated_vp.y, -rotated_vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    gl_PointSize = clamp( ( 5.0 + 5.5 * vPlateEnergy ) * ( 9.5 / rotatedVP.z ), 2.0, 34.0 ); // sprite sweep
+    gl_PointSize = clamp( ( 5.0 + 5.5 * vPlateEnergy ) * ( 9.5 / rotated_vp.z ), 2.0, 34.0 ); // sprite sweep
 }

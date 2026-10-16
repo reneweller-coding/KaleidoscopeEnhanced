@@ -25,17 +25,17 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 void main()
 {
     vec2  circ = gl_PointCoord - 0.5;
-    float distSq = dot( circ, circ );
-    if ( distSq > 0.25 )
+    float dist_sq = dot( circ, circ );
+    if ( dist_sq > 0.25 )
         discard;
 
-    float core = exp( -distSq * 16.0 );
+    float core = exp( -dist_sq * 16.0 );
     vec3  photo = ( interpolation * texture( tex0, vUV ) + ( 1.0 - interpolation ) * texture( tex1, vUV ) ).rgb;
 
     vec3 col = mix( vCol.rgb, photo * 1.5, 0.4 ) * core;
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, vCol.a * core );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, vCol.a * core );
 }

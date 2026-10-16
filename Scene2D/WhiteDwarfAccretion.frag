@@ -104,122 +104,122 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Orbital mechanics
-    float orbitSpeed = time * 0.5 + audioAdvance * 2.0;
+    float orbit_speed = time * 0.5 + audioAdvance * 2.0;
 
     // The White Dwarf is at the center
-    vec2 wdPos = vec2( 0.0, 0.0 );
+    vec2 wd_pos = vec2( 0.0, 0.0 );
 
     // The Red Giant orbits the white dwarf (for the camera view)
-    float rgDist = 1.2;
-    vec2  rgPos = vec2( cos( orbitSpeed ), sin( orbitSpeed ) ) * rgDist;
+    float rg_dist = 1.2;
+    vec2  rg_pos = vec2( cos( orbit_speed ), sin( orbit_speed ) ) * rg_dist;
 
     vec3 col = vec3( 0.0 );
 
-    vec3 rgColor = imgPalette( 0.1 + audioCentroid * 0.1 ); // deep red/orange
-    vec3 wdColor = imgPalette( 0.9 + audioKick * 0.1 );     // hot blue/white
-    vec3 diskColor = imgPalette( 0.5 );                     // mix for the accretion disk
+    vec3 rg_color = imgPalette( 0.1 + audioCentroid * 0.1 ); // deep red/orange
+    vec3 wd_color = imgPalette( 0.9 + audioKick * 0.1 );     // hot blue/white
+    vec3 disk_color = imgPalette( 0.5 );                     // mix for the accretion disk
 
-    float dWD = length( uv - wdPos );
-    float dRG = length( uv - rgPos );
+    float d_wd = length( uv - wd_pos );
+    float d_rg = length( uv - rg_pos );
 
     // --- 1. Red Giant ---
-    float rgRad = 0.5;
-    float rgEdge = smoothstep( rgRad, rgRad * 0.9, dRG );
+    float rg_rad = 0.5;
+    float rg_edge = smoothstep( rg_rad, rg_rad * 0.9, d_rg );
 
     // Texture for the red giant surface
-    if ( dRG < rgRad * 1.5 )
+    if ( d_rg < rg_rad * 1.5 )
     {
-        vec3  p = vec3( ( uv - rgPos ) * 5.0, time * 0.5 );
-        float surfaceNoise = fbm( p );
+        vec3  p = vec3( ( uv - rg_pos ) * 5.0, time * 0.5 );
+        float surface_noise = fbm( p );
 
-        vec3 localRG = rgColor * ( 0.5 + surfaceNoise * 0.5 ) * ( 1.0 + audioSwell * 0.5 );
+        vec3 local_rg = rg_color * ( 0.5 + surface_noise * 0.5 ) * ( 1.0 + audioSwell * 0.5 );
 
         // Darken edges (limb darkening)
-        localRG *= smoothstep( rgRad * 1.2, 0.0, dRG );
+        local_rg *= smoothstep( rg_rad * 1.2, 0.0, d_rg );
 
-        col += localRG * rgEdge;
+        col += local_rg * rg_edge;
 
         // Solar flares / atmosphere
-        float atmos = exp( -( dRG - rgRad ) * 10.0 );
-        col += rgColor * atmos * ( 0.5 + audioSwell );
+        float atmos = exp( -( d_rg - rg_rad ) * 10.0 );
+        col += rg_color * atmos * ( 0.5 + audioSwell );
     }
 
     // --- 2. Plasma Stream (Roche Lobe overflow) ---
     // The stream goes from the inner Lagrangian point (L1) towards the white dwarf, curving into the disk
-    vec2 l1Pos = rgPos * 0.6; // Approximate L1 point
+    vec2 l1_pos = rg_pos * 0.6; // Approximate L1 point
 
     // Curve the stream using polar coordinates around the WD
-    vec2  polarWD = vec2( dWD, atan( uv.y, uv.x ) );
-    float angleToRG = atan( rgPos.y, rgPos.x );
+    vec2  polar_wd = vec2( d_wd, atan( uv.y, uv.x ) );
+    float angle_to_rg = atan( rg_pos.y, rg_pos.x );
 
     // Determine the spiral path of the stream
-    // The stream originates at angleToRG, and spirals inwards
-    float streamAngle = angleToRG - ( 1.0 - polarWD.x ) * 3.0; // arbitrary spiral function
+    // The stream originates at angle_to_rg, and spirals inwards
+    float stream_angle = angle_to_rg - ( 1.0 - polar_wd.x ) * 3.0; // arbitrary spiral function
 
     // Wrap angle diff
-    float aDiffStream = mod( polarWD.y - streamAngle + 3.14159, 6.28318 ) - 3.14159;
+    float a_diff_stream = mod( polar_wd.y - stream_angle + 3.14159, 6.28318 ) - 3.14159;
 
     // The stream is only between the red giant and the disk
-    float streamMask = smoothstep( rgDist, 0.2, polarWD.x );
+    float stream_mask = smoothstep( rg_dist, 0.2, polar_wd.x );
 
-    if ( abs( aDiffStream ) < 0.3 && streamMask > 0.0 )
+    if ( abs( a_diff_stream ) < 0.3 && stream_mask > 0.0 )
     {
-        float streamCenter = 1.0 - abs( aDiffStream ) / 0.3;
+        float stream_center = 1.0 - abs( a_diff_stream ) / 0.3;
 
         // Flowing noise
-        float flow = fbm( vec3( polarWD.x * 5.0, polarWD.y * 5.0 + time * 5.0 * fp, 0.0 ) );
+        float flow = fbm( vec3( polar_wd.x * 5.0, polar_wd.y * 5.0 + time * 5.0 * fp, 0.0 ) );
 
-        vec3 streamCol = mix( rgColor, wdColor, 1.0 - polarWD.x );
-        col += streamCol * pow( streamCenter, 3.0 ) * flow * streamMask * ( 1.0 + audioSwell * 0.5 );
+        vec3 stream_col = mix( rg_color, wd_color, 1.0 - polar_wd.x );
+        col += stream_col * pow( stream_center, 3.0 ) * flow * stream_mask * ( 1.0 + audioSwell * 0.5 );
     }
 
     // --- 3. Accretion Disk ---
-    float diskOuter = 0.4;
-    float diskInner = 0.05;
+    float disk_outer = 0.4;
+    float disk_inner = 0.05;
 
-    if ( dWD < diskOuter && dWD > diskInner )
+    if ( d_wd < disk_outer && d_wd > disk_inner )
     {
         // Fast rotation
-        float diskRot = polarWD.y - time * 5.0 * dp - audioAdvance * 10.0;
+        float disk_rot = polar_wd.y - time * 5.0 * dp - audioAdvance * 10.0;
 
-        float diskDetail = fbm( vec3( polarWD.x * 20.0, diskRot * 10.0, time ) );
+        float disk_detail = fbm( vec3( polar_wd.x * 20.0, disk_rot * 10.0, time ) );
 
         // Radial intensity profile
-        float diskProfile = smoothstep( diskOuter, diskOuter * 0.5, dWD )
-                            * smoothstep( diskInner, diskInner * 2.0, dWD );
+        float disk_profile = smoothstep( disk_outer, disk_outer * 0.5, d_wd )
+                             * smoothstep( disk_inner, disk_inner * 2.0, d_wd );
 
         // Turbulence/clumping reacting to kick
-        float turbulence = smoothstep( 0.4, 0.8, diskDetail );
+        float turbulence = smoothstep( 0.4, 0.8, disk_detail );
 
-        vec3 localDisk = mix( rgColor, wdColor, smoothstep( diskOuter, diskInner, dWD ) );
+        vec3 local_disk = mix( rg_color, wd_color, smoothstep( disk_outer, disk_inner, d_wd ) );
 
-        col += localDisk * diskProfile * ( 0.5 + turbulence * 1.2 ) * dp * ( 1.0 + audioKick * 2.0 );
+        col += local_disk * disk_profile * ( 0.5 + turbulence * 1.2 ) * dp * ( 1.0 + audioKick * 2.0 );
     }
 
     // --- 4. White Dwarf ---
     // Tiny, but incredibly bright
-    float wdCore = 0.01;
-    float wdGlow = exp( -dWD * 30.0 );
+    float wd_core = 0.01;
+    float wd_glow = exp( -d_wd * 30.0 );
 
-    col += wdColor * smoothstep( wdCore * 2.0, wdCore, dWD ) * 2.0;
-    col += wdColor * wdGlow * ( 1.0 + audioKick * 3.0 );
+    col += wd_color * smoothstep( wd_core * 2.0, wd_core, d_wd ) * 2.0;
+    col += wd_color * wd_glow * ( 1.0 + audioKick * 3.0 );
 
     // Polar Jets from the White Dwarf
     // Assuming rotation axis is somewhat arbitrary, let's say it's Z-axis (pointing at us)
     // Actually, Scene2D means we see it from above or side. Let's make jets shoot up/down
-    vec2 jetDir1 = vec2( -sin( orbitSpeed ), cos( orbitSpeed ) ); // Perpendicular to orbit
-    vec2 jetDir2 = -jetDir1;
+    vec2 jet_dir1 = vec2( -sin( orbit_speed ), cos( orbit_speed ) ); // Perpendicular to orbit
+    vec2 jet_dir2 = -jet_dir1;
 
-    float j1 = max( 0.0, dot( normalize( uv - wdPos ), jetDir1 ) );
-    float j2 = max( 0.0, dot( normalize( uv - wdPos ), jetDir2 ) );
+    float j1 = max( 0.0, dot( normalize( uv - wd_pos ), jet_dir1 ) );
+    float j2 = max( 0.0, dot( normalize( uv - wd_pos ), jet_dir2 ) );
 
-    j1 = pow( j1, 150.0 ) * ( 0.005 / dWD );
-    j2 = pow( j2, 150.0 ) * ( 0.005 / dWD );
+    j1 = pow( j1, 150.0 ) * ( 0.005 / d_wd );
+    j2 = pow( j2, 150.0 ) * ( 0.005 / d_wd );
 
-    float jPulse = step( 0.8, sin( dWD * 20.0 - time * 15.0 ) );
+    float j_pulse = step( 0.8, sin( d_wd * 20.0 - time * 15.0 ) );
 
-    col += wdColor * j1 * dp * ( 0.5 + jPulse * audioKick * 5.0 );
-    col += wdColor * j2 * dp * ( 0.5 + jPulse * audioKick * 5.0 );
+    col += wd_color * j1 * dp * ( 0.5 + j_pulse * audioKick * 5.0 );
+    col += wd_color * j2 * dp * ( 0.5 + j_pulse * audioKick * 5.0 );
 
     // --- 5. Background ---
     // Runde, gejitterte Sterne: ganze floor()-Zellen aufzuhellen ergibt
@@ -240,7 +240,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

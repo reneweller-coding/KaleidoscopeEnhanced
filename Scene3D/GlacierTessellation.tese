@@ -31,25 +31,25 @@ out vec3  vWorld;  ///< World position (from the vertex stage).
 out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vCrevasse;
 
-const vec2 EXTENT = vec2( 240.0, 320.0 );
+const vec2 Extent = vec2( 240.0, 320.0 );
 
 float glacierHeight( vec2 p, float t, out float crevasse )
 {
     float wh = ( waveHP > 0.0 ) ? waveHP : 1.0;
 
     // Mountainous ice cliffs & shelf
-    float baseCliff = pow( abs( p.x ) / 100.0, 1.8 ) * 45.0;
+    float base_cliff = pow( abs( p.x ) / 100.0, 1.8 ) * 45.0;
 
     // Wave ripples across ice
     float wave1 = sin( p.y * 0.04 - t * 2.0 + p.x * 0.03 ) * 3.5;
     float wave2 = cos( p.y * 0.02 + t * 1.5 - p.x * 0.05 ) * 2.5;
 
     // Crevasses / fault lines
-    float crackPattern = sin( p.x * 0.15 + sin( p.y * 0.08 ) * 3.0 );
-    crevasse = smoothstep( 0.85, 0.98, abs( crackPattern ) );
+    float crack_pattern = sin( p.x * 0.15 + sin( p.y * 0.08 ) * 3.0 );
+    crevasse = smoothstep( 0.85, 0.98, abs( crack_pattern ) );
 
     int   band = int( clamp( abs( p.x ) / 120.0 * 31.0, 0.0, 31.0 ) );
-    float h = ( baseCliff + wave1 + wave2 ) * ( 1.0 + audioSpectrum[band] * 0.8 ) * wh;
+    float h = ( base_cliff + wave1 + wave2 ) * ( 1.0 + audioSpectrum[band] * 0.8 ) * wh;
     h -= crevasse * 6.0; // Deep drop into crevasse
 
     // Glacial surge on sub-bass
@@ -66,42 +66,42 @@ void main()
     vec2 u1 = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
     vec2 uv = mix( u0, u1, gl_TessCoord.y );
 
-    float camZ = time * 7.0 + audioAdvance * 14.0;
-    float x = ( uv.x - 0.5 ) * EXTENT.x;
-    float zRel = uv.y * EXTENT.y + 2.0;
-    float zAbs = zRel + camZ;
+    float cam_z = time * 7.0 + audioAdvance * 14.0;
+    float x = ( uv.x - 0.5 ) * Extent.x;
+    float z_rel = uv.y * Extent.y + 2.0;
+    float z_abs = z_rel + cam_z;
 
     float t = time * 0.3 + audioAdvance * 0.1;
-    float crevasseVal;
-    float h = glacierHeight( vec2( x, zAbs ), t, crevasseVal );
+    float crevasse_val;
+    float h = glacierHeight( vec2( x, z_abs ), t, crevasse_val );
 
-    vec3 worldP = vec3( x, h, zRel );
+    vec3 world_p = vec3( x, h, z_rel );
 
     // Compute surface normal via finite difference
     const float eps = 0.5;
     float       dummy;
-    float       hX = glacierHeight( vec2( x + eps, zAbs ), t, dummy );
-    float       hZ = glacierHeight( vec2( x, zAbs + eps ), t, dummy );
-    vec3        n = normalize( vec3( ( h - hX ) / eps, 1.0, ( h - hZ ) / eps ) );
+    float       h_x = glacierHeight( vec2( x + eps, z_abs ), t, dummy );
+    float       h_z = glacierHeight( vec2( x, z_abs + eps ), t, dummy );
+    vec3        n = normalize( vec3( ( h - h_x ) / eps, 1.0, ( h - h_z ) / eps ) );
 
     // Camera space
-    float camH = ( camHP > 0.0 ) ? camHP : 9.0;
+    float cam_h = ( camHP > 0.0 ) ? camHP : 9.0;
     float swing = sin( time * 0.12 ) * 5.0; // was 15: the sweep carried the camera into the valley walls
     // Ride a smoothed ice height at the camera's own position: a FIXED
     // altitude sat below the wave crests, so ridges regularly swept through
     // the lens. Only the audio-free base terms are sampled here -- a kick
     // must never bump the camera.
-    float camBase = pow( abs( swing ) / 100.0, 1.8 ) * 45.0
-                    + sin( camZ * 0.04 - t * 2.0 + swing * 0.03 ) * 3.5
-                    + cos( camZ * 0.02 + t * 1.5 - swing * 0.05 ) * 2.5;
-    vec3  vp = vec3( x - swing, h - ( camBase + camH ), zRel );
+    float cam_base = pow( abs( swing ) / 100.0, 1.8 ) * 45.0
+                     + sin( cam_z * 0.04 - t * 2.0 + swing * 0.03 ) * 3.5
+                     + cos( cam_z * 0.02 + t * 1.5 - swing * 0.05 ) * 2.5;
+    vec3  vp = vec3( x - swing, h - ( cam_base + cam_h ), z_rel );
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vNormal = n;
-    vWorld = worldP;
+    vWorld = world_p;
     vUV = uv;
-    vCrevasse = crevasseVal;
+    vCrevasse = crevasse_val;
 }

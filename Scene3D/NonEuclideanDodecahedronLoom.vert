@@ -51,8 +51,8 @@ out float vRibbonIndex;
 /// radius sqrt(3), so one scale factor normalises the lot.
 vec3 dodecaVertex( int i )
 {
-    const float PHI = 1.6180339887;
-    const float IPH = 0.6180339887;
+    const float Phi = 1.6180339887;
+    const float Iph = 0.6180339887;
     if ( i < 8 )
         return vec3( float( i & 1 ) * 2.0 - 1.0,
                      float( ( i >> 1 ) & 1 ) * 2.0 - 1.0,
@@ -63,10 +63,10 @@ vec3 dodecaVertex( int i )
     float a = float( j & 1 ) * 2.0 - 1.0;
     float b = float( ( j >> 1 ) & 1 ) * 2.0 - 1.0;
     if ( fam == 0 )
-        return vec3( 0.0, a * IPH, b * PHI );
+        return vec3( 0.0, a * Iph, b * Phi );
     if ( fam == 1 )
-        return vec3( a * IPH, b * PHI, 0.0 );
-    return vec3( a * PHI, 0.0, b * IPH );
+        return vec3( a * Iph, b * Phi, 0.0 );
+    return vec3( a * Phi, 0.0, b * Iph );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -83,27 +83,27 @@ void main()
     // GEOM_RIBBON packs the ribbon index into attrA.w; attrB.x is a random
     // hash01 in [0,1), so int(attrB.x) was always 0 and all 20 ribbons
     // collapsed onto ribbon 0 (see Scene3DShader::buildGeometry).
-    int   ribbonIdx = int( attrA.w );
+    int   ribbon_idx = int( attrA.w );
     float s = attrA.x;    // [0, 1] along ribbon
     float side = attrA.y; // -1 or +1 for ribbon width
-    vRibbonIndex = float( ribbonIdx ) / 20.0;
+    vRibbonIndex = float( ribbon_idx ) / 20.0;
     vTexCoord = vec2( s * 4.0, side * 0.5 + 0.5 );
 
     float t = time * 0.4 + audioAdvance * 0.2;
 
-    const float PHI = 1.6180339887; // Golden ratio
+    const float Phi = 1.6180339887; // Golden ratio
 
     // ONE KNOT PER DODECAHEDRON VERTEX: each strand weaves around its own axis
     // out on the shell, which is both what fills the frame and what finally
     // makes the scene literally dodecahedral.
-    vec3 axis = dodecaVertex( ribbonIdx ) * 0.57735027; // / sqrt(3) -> unit
+    vec3 axis = dodecaVertex( ribbon_idx ) * 0.57735027; // / sqrt(3) -> unit
     vec3 upv = ( abs( axis.y ) > 0.9 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 1.0, 0.0 );
     vec3 e1 = normalize( cross( axis, upv ) );
     vec3 e2 = cross( axis, e1 );
 
     // theta drifts along the strand, so the extra windings weave a shell
     // instead of retracing the same closed curve three times.
-    float theta = float( ribbonIdx ) * 0.314159265 + s * 2.4;
+    float theta = float( ribbon_idx ) * 0.314159265 + s * 2.4;
     float u = s * 6.2831853 * 3.0 * lmp + t * 0.5;
 
     float R = 2.50 * sz;  // distance of the knot's centre from the origin
@@ -111,7 +111,7 @@ void main()
 
     // Hyperbolic dodecahedron geodesic curve, now in the knot's own frame.
     vec3 local = e1 * ( sin( u * 2.0 + theta ) * lr )
-                 + e2 * ( cos( u * 3.0 + theta * PHI ) * lr )
+                 + e2 * ( cos( u * 3.0 + theta * Phi ) * lr )
                  + axis * ( sin( u + theta * 2.0 ) * lr * 0.7 );
     vec3 p0 = axis * R + local;
 
@@ -138,7 +138,7 @@ void main()
     // measured occ 0.17 at luma 0.011. Crossing with the view direction instead
     // guarantees the ribbon is always presented flat to the lens.
     vec3  tangent = normalize( e1 * ( 2.0 * cos( u * 2.0 + theta ) )
-                               + e2 * ( -3.0 * sin( u * 3.0 + theta * PHI ) )
+                               + e2 * ( -3.0 * sin( u * 3.0 + theta * Phi ) )
                                + axis * ( 0.7 * cos( u + theta * 2.0 ) ) );
     vec3  bn = cross( tangent, fwd );
     float bl = length( bn );
@@ -147,15 +147,15 @@ void main()
     vec3 binormal = ( bl > 1e-4 ) ? bn / bl
                                   : normalize( cross( tangent, vec3( 1.0, 0.0, 0.0 ) ) );
 
-    float ribbonWidth = ( 0.115 + 0.045 * sin( s * 15.0 + t * 3.0 ) ) * wdp
-                        * ( 1.0 + audioKick * 0.7 );
-    vec3  worldPos = p0 + binormal * ( side * ribbonWidth );
-    vWorldPos = worldPos;
+    float ribbon_width = ( 0.115 + 0.045 * sin( s * 15.0 + t * 3.0 ) ) * wdp
+                         * ( 1.0 + audioKick * 0.7 );
+    vec3  world_pos = p0 + binormal * ( side * ribbon_width );
+    vWorldPos = world_pos;
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
     // 3-axis tumble (user feedback: static view was dull)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.xz = mat2( lcy, -lsy, lsy, lcy ) * vp.xz;
     vp.yz = mat2( lpc, -lps, lps, lpc ) * vp.yz;
     vp.z += 6.2;

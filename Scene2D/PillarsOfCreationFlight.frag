@@ -125,17 +125,17 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 dustColor1 = imgPalette( 0.2 + audioCentroid * 0.1 ); // deep browns/reds
-    vec3 dustColor2 = imgPalette( 0.6 + audioCentroid * 0.2 ); // brighter greens/cyans
-    vec3 starColor = imgPalette( 0.9 + audioKick * 0.1 );      // hot white/blue
+    vec3 dust_color1 = imgPalette( 0.2 + audioCentroid * 0.1 ); // deep browns/reds
+    vec3 dust_color2 = imgPalette( 0.6 + audioCentroid * 0.2 ); // brighter greens/cyans
+    vec3 star_color = imgPalette( 0.9 + audioKick * 0.1 );      // hot white/blue
 
     // Volumetric raymarching for the nebula pillars
     float d = 0.0;
     vec3  p;
-    float densityAccum = 0.0;
+    float density_accum = 0.0;
 
     // Ambient light coming from behind the pillars
-    vec3 lightDir = normalize( vec3( 0.5, 0.5, 1.0 ) );
+    vec3 light_dir = normalize( vec3( 0.5, 0.5, 1.0 ) );
 
     for ( int i = 0; i < 45; ++i )
     {
@@ -143,39 +143,39 @@ void main()
 
         // Shape of the pillars
         // Base structure: columns going roughly along Y axis
-        float pillarShape = sin( p.x * 0.5 ) * cos( p.z * 0.3 );
-        pillarShape += sin( p.y * 0.2 );
+        float pillar_shape = sin( p.x * 0.5 ) * cos( p.z * 0.3 );
+        pillar_shape += sin( p.y * 0.2 );
 
         // Add fractal detail to the edges of the pillars
         float detail = fbm( p * 0.8 * dp );
-        float density = smoothstep( 0.15, 0.55, pillarShape + detail * 1.5 ) * dp;
+        float density = smoothstep( 0.15, 0.55, pillar_shape + detail * 1.5 ) * dp;
 
         if ( density > 0.01 )
         {
             // Self-shadowing approximation inside the cloud
-            float shadow = fbm( p * 1.5 + lightDir * 0.5 );
+            float shadow = fbm( p * 1.5 + light_dir * 0.5 );
 
-            vec3 localCol = mix( dustColor1, dustColor2, detail );
+            vec3 local_col = mix( dust_color1, dust_color2, detail );
 
             // Lighting
             float lum = ( 0.45 + shadow * 1.1 ) * ( 1.0 + audioSwell );
-            localCol *= lum;
+            local_col *= lum;
 
             // Add newborn stars embedded in the dust
-            float starField = hash31( floor( p * 5.0 ) );
-            if ( starField > 0.98 )
+            float star_field = hash31( floor( p * 5.0 ) );
+            if ( star_field > 0.98 )
             {
-                float pulse = sin( time * 5.0 + starField * 100.0 ) * 0.5 + 0.5;
-                float kickFlash = step( 0.99, hash11( floor( p.z ) + floor( time * 4.00 ) ) );
-                localCol += starColor * ( pulse + kickFlash * audioKick * 10.0 ) * sp * 5.0;
+                float pulse = sin( time * 5.0 + star_field * 100.0 ) * 0.5 + 0.5;
+                float kick_flash = step( 0.99, hash11( floor( p.z ) + floor( time * 4.00 ) ) );
+                local_col += star_color * ( pulse + kick_flash * audioKick * 10.0 ) * sp * 5.0;
             }
 
             // Accumulate
             float alpha = density * 0.35;
-            col += localCol * alpha * ( 1.0 - densityAccum );
-            densityAccum += alpha;
+            col += local_col * alpha * ( 1.0 - density_accum );
+            density_accum += alpha;
 
-            if ( densityAccum > 0.95 )
+            if ( density_accum > 0.95 )
                 break;
         }
 
@@ -186,13 +186,13 @@ void main()
     }
 
     // Background glow (the ionizing radiation from massive O-type stars off-camera)
-    vec3 bgGlow = dustColor2 * ( 0.1 + audioSwell * 0.2 ) * smoothstep( -1.0, 1.0, rd.y );
-    col += bgGlow * ( 1.0 - densityAccum );
+    vec3 bg_glow = dust_color2 * ( 0.1 + audioSwell * 0.2 ) * smoothstep( -1.0, 1.0, rd.y );
+    col += bg_glow * ( 1.0 - density_accum );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

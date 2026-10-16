@@ -104,59 +104,59 @@ void main()
     float a = atan( uv.y, uv.x );
 
     // Glass sphere boundary at r = 0.48
-    float glassR = 0.48;
-    float insideGlass = step( r, glassR );
+    float glass_r = 0.48;
+    float inside_glass = step( r, glass_r );
 
     // Spherical glass refraction
-    float glassZ = sqrt( max( glassR * glassR - r * r, 0.0 ) );
-    vec2  refrUV = st + ( uv / max( r, 0.01 ) ) * ( 1.0 - glassZ / glassR ) * 0.08 * gls;
-    vec3  photo = img( clamp( refrUV, 0.0, 1.0 ) );
+    float glass_z = sqrt( max( glass_r * glass_r - r * r, 0.0 ) );
+    vec2  refr_uv = st + ( uv / max( r, 0.01 ) ) * ( 1.0 - glass_z / glass_r ) * 0.08 * gls;
+    vec3  photo = img( clamp( refr_uv, 0.0, 1.0 ) );
 
     // Central high-voltage graphite electrode core at r = 0.08
-    float coreDist = length( uv );
-    float coreGlow = ( 0.005 / ( coreDist * coreDist + 0.001 ) ) * ( 1.0 + audioKick * 2.0 );
-    vec3  coreColor = vec3( 0.9, 0.3, 1.0 ) * coreGlow;
+    float core_dist = length( uv );
+    float core_glow = ( 0.005 / ( core_dist * core_dist + 0.001 ) ) * ( 1.0 + audioKick * 2.0 );
+    vec3  core_color = vec3( 0.9, 0.3, 1.0 ) * core_glow;
 
     // Snaking plasma filaments
-    vec3 filamentCol = vec3( 0.0 );
-    int  numArcs = int( 8.0 * arc );
+    vec3 filament_col = vec3( 0.0 );
+    int  num_arcs = int( 8.0 * arc );
 
     float t = time * 2.5 + audioAdvance * 1.5;
 
     for ( int i = 0; i < 8; ++i )
     {
         float fi = float( i );
-        float baseAngle = ( fi / 8.0 ) * 6.2831853 + sin( t * 0.3 + fi ) * 0.4;
+        float base_angle = ( fi / 8.0 ) * 6.2831853 + sin( t * 0.3 + fi ) * 0.4;
 
         // Tendril path with dielectric breakdown noise
-        float arcRadius = r / glassR;
-        float wiggle = ( noise( vec2( arcRadius * 8.0 * brn, t + fi * 10.0 ) ) - 0.5 ) * 0.35 * arcRadius;
-        float targetAngle = baseAngle + wiggle;
+        float arc_radius = r / glass_r;
+        float wiggle = ( noise( vec2( arc_radius * 8.0 * brn, t + fi * 10.0 ) ) - 0.5 ) * 0.35 * arc_radius;
+        float target_angle = base_angle + wiggle;
 
-        float angleDist = abs( mod( a - targetAngle + 3.14159, 6.28318 ) - 3.14159 );
-        float distToArc = angleDist * r;
+        float angle_dist = abs( mod( a - target_angle + 3.14159, 6.28318 ) - 3.14159 );
+        float dist_to_arc = angle_dist * r;
 
-        float arcGlow = ( 0.0012 / ( distToArc * distToArc + 0.0001 ) ) * step( 0.06, r ) * step( r, glassR );
+        float arc_glow = ( 0.0012 / ( dist_to_arc * dist_to_arc + 0.0001 ) ) * step( 0.06, r ) * step( r, glass_r );
 
         // Neon magenta/electric cyan ionization gradient
-        vec3 aCol = imgPalette( 0.30 * arcRadius ) * 1.5;
-        filamentCol += aCol * arcGlow;
+        vec3 a_col = imgPalette( 0.30 * arc_radius ) * 1.5;
+        filament_col += a_col * arc_glow;
     }
 
     // Glass rim glow and touch point flares
-    float glassRim = abs( r - glassR );
-    float rimGlow = ( 0.0015 / ( glassRim * glassRim + 0.00015 ) ) * ( 0.8 + 0.4 * audioSwell );
-    vec3  rimCol = vec3( 0.3, 0.7, 1.0 ) * rimGlow;
+    float glass_rim = abs( r - glass_r );
+    float rim_glow = ( 0.0015 / ( glass_rim * glass_rim + 0.00015 ) ) * ( 0.8 + 0.4 * audioSwell );
+    vec3  rim_col = vec3( 0.3, 0.7, 1.0 ) * rim_glow;
 
     // Combine visualizer
-    vec3 col = photo * 0.25 + coreColor + filamentCol * ( 1.0 + audioHigh * 2.0 + audioKick * 2.0 ) + rimCol;
+    vec3 col = photo * 0.25 + core_color + filament_col * ( 1.0 + audioHigh * 2.0 + audioKick * 2.0 ) + rim_col;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.7;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.7;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

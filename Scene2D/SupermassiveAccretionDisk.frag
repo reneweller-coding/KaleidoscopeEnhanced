@@ -107,64 +107,64 @@ void main()
 
     // Kerr black hole parameters
     float rs = 0.22 * ( 1.0 + 0.3 * audioSubBass ); // Event horizon radius
-    float rErgo = rs * 1.6;                         // Ergosphere radius
+    float r_ergo = rs * 1.6;                        // Ergosphere radius
 
     // Gravitational lensing curvature
     float deflection = rs / max( r - rs * 0.7, 0.015 );
-    vec2  lensUV = uv + ( uv / max( r, 0.01 ) ) * deflection * 0.12;
+    vec2  lens_uv = uv + ( uv / max( r, 0.01 ) ) * deflection * 0.12;
 
     // Camera tilt / view angle towards tilted accretion disk
-    float tiltAngle = 0.35 + 0.1 * sin( t * 0.2 );
-    vec2  diskCoord = vec2( lensUV.x, lensUV.y / cos( tiltAngle ) );
-    float diskR = length( diskCoord );
-    float diskA = atan( diskCoord.y, diskCoord.x );
+    float tilt_angle = 0.35 + 0.1 * sin( t * 0.2 );
+    vec2  disk_coord = vec2( lens_uv.x, lens_uv.y / cos( tilt_angle ) );
+    float disk_r = length( disk_coord );
+    float disk_a = atan( disk_coord.y, disk_coord.x );
 
     // Accretion disk keplerian spiral coordinates
-    float diskSpin = ( 8.0 / ( diskR + 0.4 ) ) * t;
-    float spiralA = diskA - diskSpin;
+    float disk_spin = ( 8.0 / ( disk_r + 0.4 ) ) * t;
+    float spiral_a = disk_a - disk_spin;
 
     // Accretion disk temperature & gas density
-    float innerR = rs * 1.8;
-    float outerR = 1.4 * dsk;
-    float diskMask = smoothstep( innerR, innerR + 0.08, diskR ) * smoothstep( outerR, outerR - 0.3, diskR );
+    float inner_r = rs * 1.8;
+    float outer_r = 1.4 * dsk;
+    float disk_mask = smoothstep( inner_r, inner_r + 0.08, disk_r ) * smoothstep( outer_r, outer_r - 0.3, disk_r );
 
-    float diskGas = noise( vec2( spiralA * 4.0, diskR * 12.0 - t * 2.0 ) );
-    float diskGas2 = noise( vec2( spiralA * 8.0 + t, diskR * 24.0 ) );
-    float gasDensity = ( diskGas * 0.6 + diskGas2 * 0.4 ) * diskMask;
+    float disk_gas = noise( vec2( spiral_a * 4.0, disk_r * 12.0 - t * 2.0 ) );
+    float disk_gas2 = noise( vec2( spiral_a * 8.0 + t, disk_r * 24.0 ) );
+    float gas_density = ( disk_gas * 0.6 + disk_gas2 * 0.4 ) * disk_mask;
 
     // Relativistic Doppler Beaming: Approaching side (left) is blue-shifted & much brighter
-    float beaming = clamp( 1.0 - sin( diskA ) * 0.75, 0.2, 2.5 );
-    vec3  dopplerCol = imgPalette( 0.30 * clamp( beaming * 0.5, 0.0, 1.0 ) ) * 1.5;
-    dopplerCol = mix( dopplerCol, vec3( 1.0, 0.9, 0.4 ), pow( gasDensity, 2.0 ) );
+    float beaming = clamp( 1.0 - sin( disk_a ) * 0.75, 0.2, 2.5 );
+    vec3  doppler_col = imgPalette( 0.30 * clamp( beaming * 0.5, 0.0, 1.0 ) ) * 1.5;
+    doppler_col = mix( doppler_col, vec3( 1.0, 0.9, 0.4 ), pow( gas_density, 2.0 ) );
 
-    vec3 accretionCol = dopplerCol * gasDensity * beaming * 2.5 * ( 0.8 + audioSwell * 0.6 );
+    vec3 accretion_col = doppler_col * gas_density * beaming * 2.5 * ( 0.8 + audioSwell * 0.6 );
 
     // Photon sphere bright glowing ring at 1.5 * rs
-    float photonRingDist = abs( r - rs * 1.5 );
-    float photonRing = ( 0.003 / ( photonRingDist * photonRingDist + 0.0002 ) ) * ( 1.0 + audioKick * 2.0 );
-    vec3  ringCol = vec3( 1.0, 0.9, 0.6 ) * photonRing;
+    float photon_ring_dist = abs( r - rs * 1.5 );
+    float photon_ring = ( 0.003 / ( photon_ring_dist * photon_ring_dist + 0.0002 ) ) * ( 1.0 + audioKick * 2.0 );
+    vec3  ring_col = vec3( 1.0, 0.9, 0.6 ) * photon_ring;
 
     // Relativistic polar plasma jets shooting perpendicular to disk
-    float jetDistX = abs( uv.x ) / max( abs( uv.y ), 0.05 );
-    float jetGlow = ( 0.008 * jt ) / ( jetDistX * jetDistX + 0.01 ) * exp( -abs( uv.y ) * 0.3 );
-    jetGlow *= ( 0.5 + 0.5 * sin( uv.y * 30.0 - time * 15.0 ) );
-    vec3 jetCol = vec3( 0.1, 0.7, 1.0 ) * jetGlow * ( 1.0 + audioKick * 3.0 );
+    float jet_dist_x = abs( uv.x ) / max( abs( uv.y ), 0.05 );
+    float jet_glow = ( 0.008 * jt ) / ( jet_dist_x * jet_dist_x + 0.01 ) * exp( -abs( uv.y ) * 0.3 );
+    jet_glow *= ( 0.5 + 0.5 * sin( uv.y * 30.0 - time * 15.0 ) );
+    vec3 jet_col = vec3( 0.1, 0.7, 1.0 ) * jet_glow * ( 1.0 + audioKick * 3.0 );
 
     // Gravitationally warped photo background
-    vec2 photoUV = st + ( uv / max( r, 0.01 ) ) * deflection * 0.06 * ( 1.0 + audioBass );
-    vec3 photo = img( clamp( photoUV, 0.0, 1.0 ) );
+    vec2 photo_uv = st + ( uv / max( r, 0.01 ) ) * deflection * 0.06 * ( 1.0 + audioBass );
+    vec3 photo = img( clamp( photo_uv, 0.0, 1.0 ) );
 
     // Combine black hole visualizer
-    vec3 col = photo * 0.35 + accretionCol + ringCol + jetCol;
+    vec3 col = photo * 0.35 + accretion_col + ring_col + jet_col;
 
     // Event horizon absolute darkness
-    float horizonMask = smoothstep( rs * 0.95, rs * 1.05, r );
-    col *= horizonMask;
+    float horizon_mask = smoothstep( rs * 0.95, rs * 1.05, r );
+    col *= horizon_mask;
 
     // High frequency synchrotron radiation sparks
-    if ( audioHigh > 0.4 && diskMask > 0.1 )
+    if ( audioHigh > 0.4 && disk_mask > 0.1 )
     {
-        float spark = hash21( floor( diskCoord * 60.0 ) + vec2( floor( time * 4.00 ), 5.0 ) );
+        float spark = hash21( floor( disk_coord * 60.0 ) + vec2( floor( time * 4.00 ), 5.0 ) );
         if ( spark > 0.96 )
         {
             col += vec3( 1.5, 1.2, 0.9 ) * audioHigh * 2.0;
@@ -175,8 +175,8 @@ void main()
         col = hueRot( col, hue );
 
     // Vignette
-    vec2  vUV = st * ( 1.0 - st.yx );
-    float vig = vUV.x * vUV.y * 15.0;
+    vec2  v_uv = st * ( 1.0 - st.yx );
+    float vig = v_uv.x * v_uv.y * 15.0;
     col *= clamp( pow( vig, 0.25 ), 0.0, 1.0 );
 
     fragColor = vec4( col, 1.0 );

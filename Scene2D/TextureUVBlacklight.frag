@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -268,11 +268,11 @@ void main()
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec2  uv = p * 0.75 + 0.5 + vec2( 0.005, 0.003 ) * sceneTime;
     vec3  ph = imgLod( uv, 0.5 );
-    float lodC = 5.0 - 1.8 * clamp( detailP, 0.0, 1.0 );
-    float l = luma( imgLod( uv, lodC ) ) + 0.08 * ( fbm3( p * 2.0 + 0.02 * sceneTime ) - 0.5 );
-    float e = exp2( lodC ) / 1024.0;
-    vec2  gl = vec2( luma( imgLod( uv + vec2( e, 0.0 ), lodC ) ) - luma( imgLod( uv - vec2( e, 0.0 ), lodC ) ),
-                     luma( imgLod( uv + vec2( 0.0, e ), lodC ) ) - luma( imgLod( uv - vec2( 0.0, e ), lodC ) ) )
+    float lod_c = 5.0 - 1.8 * clamp( detailP, 0.0, 1.0 );
+    float l = luma( imgLod( uv, lod_c ) ) + 0.08 * ( fbm3( p * 2.0 + 0.02 * sceneTime ) - 0.5 );
+    float e = exp2( lod_c ) / 1024.0;
+    vec2  gl = vec2( luma( imgLod( uv + vec2( e, 0.0 ), lod_c ) ) - luma( imgLod( uv - vec2( e, 0.0 ), lod_c ) ),
+                     luma( imgLod( uv + vec2( 0.0, e ), lod_c ) ) - luma( imgLod( uv - vec2( 0.0, e ), lod_c ) ) )
                / ( 2.0 * e ) * 0.75;
     float gpx = length( gl ) / resolution.y + 1e-4; // luma change per pixel
     // The picture under UV: deep violet.
@@ -281,11 +281,11 @@ void main()
     col += vec3( 0.55, 0.65, 1.0 ) * smoothstep( 0.55, 0.95, luma( ph ) ) * ( 1.0 - satOf( ph ) )
            * ( 0.25 + 0.5 * swell );
     // Neon contour lines, their levels creeping.
-    float nL = 2.5 + 3.5 * clamp( audioSpread, 0.0, 1.0 );
-    float lv = l * nL + 0.15 * sceneTime + 1.2 * audioAdvance;
-    float k = floor( lv + 0.5 );   // nearest level (in space, not time)
-    float dl = abs( lv - k ) / nL; // luma distance to it
-    float dpx = dl / gpx;          // in pixels
+    float n_l = 2.5 + 3.5 * clamp( audioSpread, 0.0, 1.0 );
+    float lv = l * n_l + 0.15 * sceneTime + 1.2 * audioAdvance;
+    float k = floor( lv + 0.5 );    // nearest level (in space, not time)
+    float dl = abs( lv - k ) / n_l; // luma distance to it
+    float dpx = dl / gpx;           // in pixels
     float w = 1.2 + 3.0 * clamp( lineP, 0.0, 1.0 );
     vec3  nc = mix( uvNeon( k, mode ), glowColour( imgLod( uv, 6.0 ), p, hueP * 0.159 ), 0.15 );
     float line = smoothstep( w + 1.0, w - 1.0, dpx );

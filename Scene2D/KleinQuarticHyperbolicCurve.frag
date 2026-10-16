@@ -98,7 +98,7 @@ void main()
     vec2 z = uv * ( 2.8 / gns ) * ( 1.0 - 0.06 * audioSwell );
     z = rot2D( t * 0.25 ) * z;
 
-    float edgeDist = 1.0;
+    float edge_dist = 1.0;
     float reflections = 0.0;
 
     // 7-fold hyperbolic Coxeter reflection lines
@@ -113,14 +113,14 @@ void main()
         z = vec2( cos( a ), sin( a ) ) * r;
 
         // Hyperbolic circle inversion centered on geodesic boundary
-        vec2  circleCenter = vec2( 1.2 * hpt, 0.0 );
-        float circleRadius = 0.65;
-        vec2  diff = z - circleCenter;
+        vec2  circle_center = vec2( 1.2 * hpt, 0.0 );
+        float circle_radius = 0.65;
+        vec2  diff = z - circle_center;
         float d2 = dot( diff, diff );
 
-        if ( d2 < circleRadius * circleRadius )
+        if ( d2 < circle_radius * circle_radius )
         {
-            z = circleCenter + diff * ( circleRadius * circleRadius / max( d2, 1e-4 ) );
+            z = circle_center + diff * ( circle_radius * circle_radius / max( d2, 1e-4 ) );
             reflections += 1.0;
         }
 
@@ -132,33 +132,33 @@ void main()
             reflections += 1.0;
         }
 
-        edgeDist = min( edgeDist, abs( sin( a * 7.0 ) ) );
+        edge_dist = min( edge_dist, abs( sin( a * 7.0 ) ) );
     }
 
     // Photo texture mapping into folded Klein heptagonal domains
-    vec2 photoUV = fract( z * 0.5 + 0.5 );
-    vec3 photo = img( photoUV );
+    vec2 photo_uv = fract( z * 0.5 + 0.5 );
+    vec3 photo = img( photo_uv );
 
     // PSL(2,7) symmetry group color palette
-    vec3 groupColor = imgPalette( ( reflections * 0.5 + audioPhase ) * 0.159 );
+    vec3 group_color = imgPalette( ( reflections * 0.5 + audioPhase ) * 0.159 );
 
     // Glowing automorphism reflection lines
     // Kick 3.0 + high 1.5 turned crescendos into one full-frame flash
     // (the largest single-frame luma jump in the whole catalogue's scan).
-    float lineGlow = exp( -edgeDist * 25.0 ) * ( 1.0 + min( audioKick * 0.6 + audioHigh * 0.25, 0.8 ) );
+    float line_glow = exp( -edge_dist * 25.0 ) * ( 1.0 + min( audioKick * 0.6 + audioHigh * 0.25, 0.8 ) );
 
     // Combine visualizer
-    vec3 col = mix( photo * 0.85, groupColor, 0.45 + 0.2 * audioSwell );
-    col += lineGlow * vec3( 1.0, 0.9, 0.4 ) * 1.5;
+    vec3 col = mix( photo * 0.85, group_color, 0.45 + 0.2 * audioSwell );
+    col += line_glow * vec3( 1.0, 0.9, 0.4 ) * 1.5;
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
             col = hueRot( col, hue );
 
     // Poincaré disk boundary vignette
-    float diskR = length( uv );
-    float diskVig = smoothstep( 1.35, 0.3, diskR );
-    col *= diskVig;
+    float disk_r = length( uv );
+    float disk_vig = smoothstep( 1.35, 0.3, disk_r );
+    col *= disk_vig;
 
     fragColor = vec4( col, 1.0 );
 }

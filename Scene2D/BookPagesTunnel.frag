@@ -67,7 +67,7 @@ vec3 hitPage( vec3 ro, vec3 rd, float zc, float ang, float w, float h )
     // Page plane: contains the spine line (y = 0, z = zc) along x, rotated
     // about that line by ang; the page extends from the spine outward (v in
     // 0..h along the rotated direction) and along x in -w..w.
-    vec3  dirUp = vec3( 0.0, cos( ang ), sin( ang ) );
+    vec3  dir_up = vec3( 0.0, cos( ang ), sin( ang ) );
     vec3  n = vec3( 0.0, -sin( ang ), cos( ang ) );
     vec3  o = vec3( 0.0, 0.0, zc );
     float denom = dot( rd, n );
@@ -78,7 +78,7 @@ vec3 hitPage( vec3 ro, vec3 rd, float zc, float ang, float w, float h )
         return vec3( -1.0 );
     vec3  hp = ro + rd * t;
     float u = hp.x;
-    float v = dot( hp - o, dirUp );
+    float v = dot( hp - o, dir_up );
     if ( abs( u ) > w || v < 0.0 || v > h )
         return vec3( -1.0 );
     return vec3( t, u / w * 0.5 + 0.5, v / h );
@@ -126,14 +126,14 @@ void main()
     // the nearest page that is still well ahead (zc >= 0.7).  A page that
     // has come close fades out over the one behind it, so it never fills
     // the frame with one dim close-up and never pops away.
-    float nearT = 1e9;
-    vec3  nearH = vec3( -1.0 );
-    float nearAng = 0.0;
-    float nearZ = 0.0;
-    float farT = 1e9;
-    vec3  farH = vec3( -1.0 );
-    float farAng = 0.0;
-    float farZ = 0.0;
+    float near_t = 1e9;
+    vec3  near_h = vec3( -1.0 );
+    float near_ang = 0.0;
+    float near_z = 0.0;
+    float far_t = 1e9;
+    vec3  far_h = vec3( -1.0 );
+    float far_ang = 0.0;
+    float far_z = 0.0;
     float k0 = floor( travel / spacing );
     for ( int k = 0; k < 28; ++k )
     {
@@ -145,19 +145,19 @@ void main()
         vec3  h = hitPage( ro, rd, zc, ang, pw, ph );
         if ( h.x <= 0.0 )
             continue;
-        if ( h.x < nearT )
+        if ( h.x < near_t )
         {
-            nearT = h.x;
-            nearH = h;
-            nearAng = ang;
-            nearZ = zc;
+            near_t = h.x;
+            near_h = h;
+            near_ang = ang;
+            near_z = zc;
         }
-        if ( zc >= 0.7 && h.x < farT )
+        if ( zc >= 0.7 && h.x < far_t )
         {
-            farT = h.x;
-            farH = h;
-            farAng = ang;
-            farZ = zc;
+            far_t = h.x;
+            far_h = h;
+            far_ang = ang;
+            far_z = zc;
         }
     }
 
@@ -168,15 +168,15 @@ void main()
               + imgPalette( hue * 0.159 + 0.1 ) * exp( -length( p - vec2( 0.0, 0.1 ) ) * 3.0 ) * 0.5;
 
     vec3 col = bg;
-    if ( farH.x > 0.0 )
-        col = shadePage( farH, farAng, rd, hue );
-    if ( nearH.x > 0.0 && nearZ < 0.7 )
+    if ( far_h.x > 0.0 )
+        col = shadePage( far_h, far_ang, rd, hue );
+    if ( near_h.x > 0.0 && near_z < 0.7 )
     {
-        vec3 nc = shadePage( nearH, nearAng, rd, hue );
-        col = mix( col, nc, smoothstep( 0.15, 0.6, nearZ ) );
+        vec3 nc = shadePage( near_h, near_ang, rd, hue );
+        col = mix( col, nc, smoothstep( 0.15, 0.6, near_z ) );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -90,37 +90,37 @@ void main()
 
     // Ultrasonic standing wave cycle: expansion -> violent collapse -> rebound
     float cycle = fract( t * 1.5 + audioPhase * 0.5 );
-    float bubbleR = ( 0.28 * sin( cycle * 3.14159 ) + 0.05 ) * cav * ( 1.0 + 0.3 * audioBass );
+    float bubble_r = ( 0.28 * sin( cycle * 3.14159 ) + 0.05 ) * cav * ( 1.0 + 0.3 * audioBass );
 
     // Instant of maximum collapse and picosecond flash
-    float flashInstant = exp( -pow( cycle - 0.95, 2.0 ) * 120.0 ) * ( audioKick * 4.0 + 0.8 );
+    float flash_instant = exp( -pow( cycle - 0.95, 2.0 ) * 120.0 ) * ( audioKick * 4.0 + 0.8 );
 
     // Spherical acoustic shockwaves radiating outwards
     float shockwave1 = sin( r * 32.0 - t * 14.0 ) * exp( -r * 2.5 );
     float shockwave2 = cos( r * 50.0 - t * 20.0 ) * exp( -r * 3.5 );
-    float acousticRings = max( 0.0, shockwave1 + shockwave2 * 0.6 ) * shk;
+    float acoustic_rings = max( 0.0, shockwave1 + shockwave2 * 0.6 ) * shk;
 
     // Liquid water refraction caustics
-    vec2  causticCoord = uv * 8.0 + vec2( sin( t * 2.0 + r * 10.0 ), cos( t * 2.0 - r * 10.0 ) ) * 0.2;
-    float caustic = pow( sin( causticCoord.x + sin( causticCoord.y * 1.5 ) ) * 0.5 + 0.5, 3.0 );
+    vec2  caustic_coord = uv * 8.0 + vec2( sin( t * 2.0 + r * 10.0 ), cos( t * 2.0 - r * 10.0 ) ) * 0.2;
+    float caustic = pow( sin( caustic_coord.x + sin( caustic_coord.y * 1.5 ) ) * 0.5 + 0.5, 3.0 );
 
     // Liquid photo distortion
-    vec2 photoWarp = st + ( uv / ( r + 0.1 ) ) * ( shockwave1 * 0.04 + flashInstant * 0.06 );
-    vec3 photo = img( clamp( photoWarp, 0.0, 1.0 ) );
+    vec2 photo_warp = st + ( uv / ( r + 0.1 ) ) * ( shockwave1 * 0.04 + flash_instant * 0.06 );
+    vec3 photo = img( clamp( photo_warp, 0.0, 1.0 ) );
 
     // Bubble interface Fresnel reflection
-    float bubbleDist = abs( r - bubbleR );
-    float bubbleWall = exp( -bubbleDist * 40.0 / cav );
+    float bubble_dist = abs( r - bubble_r );
+    float bubble_wall = exp( -bubble_dist * 40.0 / cav );
 
     // Plasma core flash color (ultraviolet white / cyan / violet)
-    vec3 plasmaColor = mix( imgPalette( 0.15 ) * 1.5, vec3( 1.0, 0.95, 0.9 ), flashInstant * 0.5 );
+    vec3 plasma_color = mix( imgPalette( 0.15 ) * 1.5, vec3( 1.0, 0.95, 0.9 ), flash_instant * 0.5 );
 
     // Combine visualizer
     vec3 col = photo * ( 0.8 + 0.3 * audioLevel );
-    col += bubbleWall * vec3( 0.4, 0.9, 1.0 ) * ( 1.0 + audioMid );
-    col += acousticRings * vec3( 0.3, 0.7, 1.0 ) * ( 1.2 + audioKick * 2.0 );
+    col += bubble_wall * vec3( 0.4, 0.9, 1.0 ) * ( 1.0 + audioMid );
+    col += acoustic_rings * vec3( 0.3, 0.7, 1.0 ) * ( 1.2 + audioKick * 2.0 );
     col += caustic * vec3( 0.2, 0.5, 0.8 ) * 0.6;
-    col += exp( -r * 25.0 ) * plasmaColor * flashInstant * 3.5;
+    col += exp( -r * 25.0 ) * plasma_color * flash_instant * 3.5;
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )

@@ -64,9 +64,9 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float phiSc = ( phiScaleP > 0.01 ) ? phiScaleP : 1.0;
+    float phi_sc = ( phiScaleP > 0.01 ) ? phiScaleP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
-    float symN = ( symmetryP > 1.0 ) ? symmetryP : 5.0; // 5 or 7 or 10
+    float sym_n = ( symmetryP > 1.0 ) ? symmetryP : 5.0; // 5 or 7 or 10
 
     float t = time * 0.132 * spd + audioAdvance * 0.132 * spd;
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
@@ -74,22 +74,22 @@ void main()
 
     // Golden ratio scale factor
     float phi = 1.6180339887;
-    float scale = ( 14.0 * phiSc ) * ( 1.0 + 0.15 * sin( audioSwell * 2.0 ) );
+    float scale = ( 14.0 * phi_sc ) * ( 1.0 + 0.15 * sin( audioSwell * 2.0 ) );
     vec2  p = uv * scale;
 
     // De-Bruijn 5D wave sum method for aperiodic quasicrystal
-    float quasiSum = 0.0;
-    float quasiPhase = 0.0;
+    float quasi_sum = 0.0;
+    float quasi_phase = 0.0;
     vec2  grad = vec2( 0.0 );
 
-    int   nWaves = int( clamp( symN, 5.0, 10.0 ) );
-    float dAngle = 3.14159265 / float( nWaves );
+    int   n_waves = int( clamp( sym_n, 5.0, 10.0 ) );
+    float d_angle = 3.14159265 / float( n_waves );
 
     for ( int i = 0; i < 10; i++ )
     {
-        if ( i >= nWaves )
+        if ( i >= n_waves )
             break;
-        float ang = float( i ) * dAngle + t * 0.15;
+        float ang = float( i ) * d_angle + t * 0.15;
         vec2  dir = vec2( cos( ang ), sin( ang ) );
 
         // 5D hyper-plane shift parameterized by audio and time
@@ -97,28 +97,28 @@ void main()
         float phase = dot( p, dir ) + shift;
 
         float wave = cos( phase );
-        quasiSum += wave;
-        quasiPhase += sin( phase );
+        quasi_sum += wave;
+        quasi_phase += sin( phase );
         grad += -sin( phase ) * dir;
     }
 
     // Normalized quasicrystal field
-    quasiSum /= float( nWaves );
-    float field = quasiSum * 0.5 + 0.5;
+    quasi_sum /= float( n_waves );
+    float field = quasi_sum * 0.5 + 0.5;
 
     // Aperiodic Bragg diffraction node detection (where gradient is near zero and amplitude high)
-    float node = exp( -dot( grad, grad ) * 0.15 ) * smoothstep( 0.4, 0.9, quasiSum ) * glw;
+    float node = exp( -dot( grad, grad ) * 0.15 ) * smoothstep( 0.4, 0.9, quasi_sum ) * glw;
 
     // Golden-ratio recursive coordinate mapping for image sampling
-    vec2 mappedUV = fract( p * 0.05 + grad * 0.08 + 0.5 );
-    vec3 texCol = img( mappedUV );
+    vec2 mapped_uv = fract( p * 0.05 + grad * 0.08 + 0.5 );
+    vec3 tex_col = img( mapped_uv );
 
     // Multilayered psychedelic coloring
-    vec3 palBase = imgPalette( field + quasiPhase * 0.1 );
-    vec3 palGlow = imgPalette( field * 2.0 + 0.3 );
+    vec3 pal_base = imgPalette( field + quasi_phase * 0.1 );
+    vec3 pal_glow = imgPalette( field * 2.0 + 0.3 );
 
-    vec3 col = mix( palBase, palGlow, field );
-    col = mix( col, texCol, 0.35 + 0.2 * audioValence );
+    vec3 col = mix( pal_base, pal_glow, field );
+    col = mix( col, tex_col, 0.35 + 0.2 * audioValence );
 
     // Glowing Bragg nodes
     col += vec3( 1.4, 1.1, 1.8 ) * node * ( 1.0 + 3.0 * audioKick );

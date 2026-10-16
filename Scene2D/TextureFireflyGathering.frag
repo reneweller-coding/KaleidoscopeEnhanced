@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -235,7 +235,7 @@ void main()
     vec2  uv0 = p * 0.7 + 0.5 + vec2( 0.006, 0.004 ) * sceneTime;
     vec3  col = imgLod( uv0, 2.0 ) * ( 0.03 + 0.1 * clamp( photoP, 0.0, 1.0 ) * ( 0.5 + swell ) );
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  ffC = mix( vec3( 0.7, 1.0, 0.25 ), vec3( 1.0, 0.8, 0.3 ), mode );
+    vec3  ff_c = mix( vec3( 0.7, 1.0, 0.25 ), vec3( 1.0, 0.8, 0.3 ), mode );
     float gather = 0.5 + 0.8 * clamp( audioSpread, 0.0, 1.0 );
     for ( int L = 0; L < 3; ++L )
     {
@@ -272,7 +272,7 @@ void main()
                              * exp( -pow( ( cw.x + cw.y * 0.5 ) * 2.0 - fract( sceneTime * 0.2 ) * 7.0 + 3.5,
                                           2.0 ) ); // wraps off-screen
                 float I = ( 0.35 + 0.8 * want + blink * ( 0.8 + 0.8 * hi ) + 1.5 * wave ) / ( 1.0 + fl * 0.5 );
-                vec3  c3 = mix( ffC, glowColour( imgLod( cuv, 4.0 ), cw, hueP * 0.159 ),
+                vec3  c3 = mix( ff_c, glowColour( imgLod( cuv, 4.0 ), cw, hueP * 0.159 ),
                                 clamp( colourP, 0.0, 1.0 ) * 0.7 );
                 col += c3 * ( smoothstep( 0.1, 0.02, d ) * 1.6 + exp( -d * 7.0 ) * 0.45 ) * I;
             }

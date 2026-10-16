@@ -46,15 +46,15 @@ uniform float blastP;   ///< preset: how far the shards fly
 uniform float camDistP; ///< preset: distance to the shell
 uniform float spinP;    ///< preset: shard tumble
 
-const float PI = 3.14159265; ///< Pi.
+const float Pi = 3.14159265; ///< Pi.
 
 // The mesh's own triangles are far too fine to be shards — 52800 of them on a
 // unit sphere, each about a hundredth across.  Flung individually they read as
 // dust, not as a breaking shell.  So the shards are PLATES: a coarse grid laid
 // over the surface, with every triangle inside a plate sharing one centre, one
 // axis and one throw, which makes them fly as a single rigid chip.
-const float PLATE_W = 28.0;
-const float PLATE_H = 15.0;
+const float PlateW = 28.0;
+const float PlateH = 15.0;
 
 /// Rotate v around a unit axis by angle a (Rodrigues).
 vec3 rotAxis( vec3 v, vec3 axis, float a )
@@ -76,10 +76,10 @@ void main()
 
     // Which plate does this triangle belong to, and where is that plate's
     // centre on the sphere?
-    vec2  uvC = ( gUV[0] + gUV[1] + gUV[2] ) / 3.0;
-    vec2  cell = floor( uvC * vec2( PLATE_W, PLATE_H ) );
-    vec2  cuv = ( cell + 0.5 ) / vec2( PLATE_W, PLATE_H );
-    float cth = cuv.x * 2.0 * PI, cphi = cuv.y * PI;
+    vec2  uv_c = ( gUV[0] + gUV[1] + gUV[2] ) / 3.0;
+    vec2  cell = floor( uv_c * vec2( PlateW, PlateH ) );
+    vec2  cuv = ( cell + 0.5 ) / vec2( PlateW, PlateH );
+    float cth = cuv.x * 2.0 * Pi, cphi = cuv.y * Pi;
     vec3  centre = vec3( sin( cphi ) * cos( cth ), cos( cphi ), sin( cphi ) * sin( cth ) );
 
     vec3  dir = normalize( centre );
@@ -94,8 +94,8 @@ void main()
     float ea = audioAdvance * 0.23;
     vec3  epi = normalize( vec3( cos( ea ), 0.55 * sin( ea * 0.7 ), sin( ea ) ) );
     float ang = acos( clamp( dot( dir, epi ), -1.0, 1.0 ) ); // 0 .. PI
-    float ringR = fract( audioAdvance * 0.20 ) * ( PI + 0.9 ) - 0.45;
-    float ring = exp( -pow( ( ang - ringR ) / 0.30, 2.0 ) );
+    float ring_r = fract( audioAdvance * 0.20 ) * ( Pi + 0.9 ) - 0.45;
+    float ring = exp( -pow( ( ang - ring_r ) / 0.30, 2.0 ) );
 
     // Loudness lifts the whole shell a little; the kick drives the ring.  The
     // resting term stays small on purpose — a shell that is always half open

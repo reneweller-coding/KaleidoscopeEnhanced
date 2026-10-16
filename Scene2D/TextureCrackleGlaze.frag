@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -269,24 +269,24 @@ void main()
     float crack2 = smoothstep( px * 4.0, 0.0, c2.x ) * ( 0.3 + 0.7 * rough );
     // Gold: runs along the big cracks; which cracks and how far is a slow field.
     float T = 0.04 * sceneTime + 0.3 * audioAdvance;
-    float runField = fbm3( p * 1.2 + vec2( T, -0.5 * T ) );
-    float carry = smoothstep( 0.6 - 0.25 * clamp( audioSpread, 0.0, 1.0 ), 0.75, runField );
+    float run_field = fbm3( p * 1.2 + vec2( T, -0.5 * T ) );
+    float carry = smoothstep( 0.6 - 0.25 * clamp( audioSpread, 0.0, 1.0 ), 0.75, run_field );
     float gold = crack1 * carry;
-    float goldWide = smoothstep( px * 5.0, 0.0, c1.x ) * carry;
+    float gold_wide = smoothstep( px * 5.0, 0.0, c1.x ) * carry;
     // The glaze over the photo: tinted, glossy, deeper in the hollows.
-    vec3  glazeC = mix( vec3( 0.75, 0.9, 0.82 ), vec3( 1.0, 0.95, 0.85 ), mode );
+    vec3  glaze_c = mix( vec3( 0.75, 0.9, 0.82 ), vec3( 1.0, 0.95, 0.85 ), mode );
     float hollow = 1.0 - luma( imgLod( uv, 4.0 ) );
-    vec3  col = mix( ph, ph * glazeC, 0.4 + 0.4 * clamp( glazeP, 0.0, 1.0 ) );
-    col = mix( col, glazeC * luma( col ) * 1.2, ( 0.15 + 0.25 * swell ) * hollow );
+    vec3  col = mix( ph, ph * glaze_c, 0.4 + 0.4 * clamp( glazeP, 0.0, 1.0 ) );
+    col = mix( col, glaze_c * luma( col ) * 1.2, ( 0.15 + 0.25 * swell ) * hollow );
     // Each crackle cell tilts a little: slightly different gloss.
     col *= 0.93 + 0.1 * hash21( id1 );
     // Dark cracks (dirt), gold cracks.
     col *= 1.0 - 0.6 * crack1 * ( 1.0 - carry ) - 0.35 * crack2;
-    vec3 goldC = vec3( 1.0, 0.78, 0.35 );
-    goldC = mix( goldC, goldC * glowColour( imgLod( uv, 5.0 ), p, hueP * 0.159 ) * 1.3, 0.15 );
+    vec3 gold_c = vec3( 1.0, 0.78, 0.35 );
+    gold_c = mix( gold_c, gold_c * glowColour( imgLod( uv, 5.0 ), p, hueP * 0.159 ) * 1.3, 0.15 );
     float gl = ( 0.8 + 0.8 * clamp( goldP, 0.0, 1.0 ) ) * ( 1.0 + 1.2 * kick );
-    col = mix( col, goldC * gl, gold );
-    col += goldC * goldWide * 0.15 * gl;
+    col = mix( col, gold_c * gl, gold );
+    col += gold_c * gold_wide * 0.15 * gl;
     // Gloss highlight gliding over the glaze.
     vec2  hd = vec2( 0.6 * sin( 0.03 * sceneTime ), 0.3 * cos( 0.023 * sceneTime ) );
     float hl = exp( -dot( p - hd, p - hd ) * 5.0 ) * ( 0.6 + 0.4 * hash21( id1 ) );

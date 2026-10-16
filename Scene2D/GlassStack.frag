@@ -73,11 +73,11 @@ float hash11( float n )
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-const int NP = 7;
-mat3      g_R[NP];
-vec3      g_C[NP];
-vec3      g_H[NP];
-vec3      g_col[NP];
+const int Np = 7;
+mat3      g_R[Np];
+vec3      g_C[Np];
+vec3      g_H[Np];
+vec3      g_col[Np];
 int       g_n = 7;
 
 mat3 rotY( float a )
@@ -104,17 +104,17 @@ vec2 boxHit( vec3 ro, vec3 rd, int i, out vec3 nEnt )
     vec3  inv = 1.0 / d;
     vec3  t1 = ( -g_H[i] - o ) * inv, t2 = ( g_H[i] - o ) * inv;
     vec3  tn = min( t1, t2 ), tf = max( t1, t2 );
-    float tN = max( max( tn.x, tn.y ), tn.z ), tF = min( min( tf.x, tf.y ), tf.z );
+    float t_n = max( max( tn.x, tn.y ), tn.z ), t_f = min( min( tf.x, tf.y ), tf.z );
     vec3  nl = -sign( d ) * step( tn.yzx, tn.xyz ) * step( tn.zxy, tn.xyz );
     nEnt = g_R[i] * nl;
-    return vec2( tN, tF );
+    return vec2( t_n, t_f );
 }
 
 /// Absorption along a ray through all panes (for the shadow on the table).
 vec3 transmit( vec3 ro, vec3 rd, float dens )
 {
     vec3 tr = vec3( 1.0 );
-    for ( int i = 0; i < NP; ++i )
+    for ( int i = 0; i < Np; ++i )
     {
         if ( i >= g_n )
             break;
@@ -137,7 +137,7 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
-    float camD = clamp( ( camDistP > 0.1 ) ? camDistP : 6.0, 5.0, 7.5 );
+    float cam_d = clamp( ( camDistP > 0.1 ) ? camDistP : 6.0, 5.0, 7.5 );
     float spread = clamp( ( spreadP > 0.1 ) ? spreadP : 1.0, 0.7, 1.3 );
     g_n = 4 + int( clamp( ( shellsP > 0.01 ) ? shellsP : 0.7, 0.45, 1.0 ) * 3.0 + 0.5 );
     float dens = 2.0 + 3.5 * clamp( ( glassP > 0.01 ) ? glassP : 0.7, 0.4, 1.0 );
@@ -148,7 +148,7 @@ void main()
     vec3 cols[7] = vec3[7]( vec3( 0.15, 0.35, 0.95 ), vec3( 1.0, 0.65, 0.12 ), vec3( 0.95, 0.12, 0.2 ),
                             vec3( 0.15, 0.8, 0.4 ), vec3( 0.6, 0.25, 0.9 ), vec3( 0.2, 0.85, 0.9 ),
                             vec3( 1.0, 0.9, 0.3 ) );
-    for ( int i = 0; i < NP; ++i )
+    for ( int i = 0; i < Np; ++i )
     {
         float fi = float( i );
         float h1 = hash11( fi * 3.1 ), h2 = hash11( fi * 7.7 ), h3 = hash11( fi * 11.3 );
@@ -164,29 +164,29 @@ void main()
         g_col[i] = mix( cols[i], imgPalette( fi / 7.0 ), 0.12 );
     }
 
-    vec3 ro = vec3( 0.0, 1.2, -camD );
+    vec3 ro = vec3( 0.0, 1.2, -cam_d );
     vec3 ww = normalize( vec3( 0.0, -0.2, 0.0 ) - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.9 * ww );
-    vec3 lampP = vec3( -1.2, 4.5, 0.8 );
-    vec3 lampC = vec3( 1.0, 0.97, 0.92 ) * ( 0.9 + 0.35 * swell );
+    vec3 lamp_p = vec3( -1.2, 4.5, 0.8 );
+    vec3 lamp_c = vec3( 1.0, 0.97, 0.92 ) * ( 0.9 + 0.35 * swell );
 
     // The white light table (y = -1) fading into a soft grey studio.
     vec3  bg = mix( vec3( 0.85, 0.85, 0.88 ), vec3( 0.45, 0.46, 0.52 ), smoothstep( -0.3, 0.6, uv.y ) )
                * ( 0.8 + 0.3 * swell );
     vec3  col = bg;
-    float tFloor = ( rd.y < 0.0 ) ? ( -1.0 - ro.y ) / rd.y : 1e9;
-    if ( tFloor < 1e8 )
+    float t_floor = ( rd.y < 0.0 ) ? ( -1.0 - ro.y ) / rd.y : 1e9;
+    if ( t_floor < 1e8 )
     {
-        vec3 fp = ro + rd * tFloor;
-        vec3 L = normalize( lampP - fp );
-        vec3 fcol = vec3( 0.95, 0.95, 0.97 ) * lampC * ( 0.55 + 0.45 * L.y );
+        vec3 fp = ro + rd * t_floor;
+        vec3 L = normalize( lamp_p - fp );
+        vec3 fcol = vec3( 0.95, 0.95, 0.97 ) * lamp_c * ( 0.55 + 0.45 * L.y );
         // Coloured shadows: the lamp's light through every pane.
         fcol *= transmit( fp, L, dens );
         // The table glows faintly from below, too (light table).
         fcol += vec3( 0.08, 0.08, 0.09 );
-        float fade = smoothstep( 14.0, 5.0, tFloor );
+        float fade = smoothstep( 14.0, 5.0, t_floor );
         col = mix( bg, fcol, fade );
     }
 
@@ -194,24 +194,24 @@ void main()
     // plus reflections and glowing edges at the panes' surfaces.
     vec3 tr = vec3( 1.0 );
     vec3 add = vec3( 0.0 );
-    for ( int i = 0; i < NP; ++i )
+    for ( int i = 0; i < Np; ++i )
     {
         if ( i >= g_n )
             break;
         vec3 n;
         vec2 t = boxHit( ro, rd, i, n );
-        if ( t.y > max( t.x, 0.0 ) && t.x < tFloor )
+        if ( t.y > max( t.x, 0.0 ) && t.x < t_floor )
         {
-            t.y = min( t.y, tFloor );
+            t.y = min( t.y, t_floor );
             float len = t.y - t.x;
             tr *= exp( -( 1.0 - g_col[i] ) * len * dens );
             // Surface: a Fresnel sheen and the lamp's highlight.
             vec3  hp = ro + rd * t.x;
             vec3  V = -rd;
             float fres = 0.04 + 0.96 * pow( 1.0 - abs( dot( n, V ) ), 5.0 );
-            vec3  Lh = normalize( lampP - hp );
-            float spec = pow( max( dot( reflect( -Lh, n ), V ), 0.0 ), 120.0 );
-            add += ( vec3( 0.9, 0.92, 1.0 ) * fres * 0.35 + lampC * spec * ( 1.2 + 1.5 * hi ) ) * 0.8;
+            vec3  lh = normalize( lamp_p - hp );
+            float spec = pow( max( dot( reflect( -lh, n ), V ), 0.0 ), 120.0 );
+            add += ( vec3( 0.9, 0.92, 1.0 ) * fres * 0.35 + lamp_c * spec * ( 1.2 + 1.5 * hi ) ) * 0.8;
             // Edges glow: light trapped in the slab leaks out at its rims.
             vec3  lp = transpose( g_R[i] ) * ( hp - g_C[i] );
             vec3  q = abs( lp ) / g_H[i];
@@ -223,7 +223,7 @@ void main()
     col = col * tr + add;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

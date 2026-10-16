@@ -139,12 +139,12 @@ void main()
     vec2  vc = vec2( 0.08, 0.05 );
     vec2  d = p - vc;
     float ang = atan( d.y, d.x );
-    float rOpen = 0.28 + 0.08 * sin( ang * 2.0 + 1.0 )
-                  + 0.06 * ( fbm( vec2( cos( ang ), sin( ang ) ) * 1.3 + 3.0 ) - 0.5 );
+    float r_open = 0.28 + 0.08 * sin( ang * 2.0 + 1.0 )
+                   + 0.06 * ( fbm( vec2( cos( ang ), sin( ang ) ) * 1.3 + 3.0 ) - 0.5 );
     float r = length( d * vec2( 0.8, 1.0 ) );
-    float wallMask = smoothstep( rOpen - 0.02, rOpen + 0.03, r );
+    float wall_mask = smoothstep( r_open - 0.02, r_open + 0.03, r );
     // Depth of the wall: near at the frame edges, receding toward the opening.
-    float depthW = clamp( ( r - rOpen ) / 0.6, 0.0, 1.0 );
+    float depth_w = clamp( ( r - r_open ) / 0.6, 0.0, 1.0 );
 
     // Limestone: scalloped, pale; stalactites hanging from the roof.
     vec2  wq = vec2( ang * 1.2, 1.0 / max( r, 0.05 ) );
@@ -163,20 +163,20 @@ void main()
                 continue;
             float cx = ( id + 0.5 + 0.3 * ( hash11( id * 2.3 ) - 0.5 ) ) / 24.0;
             // Root on the roof edge of the opening above this x.
-            float rootY = vc.y + sqrt( max( rOpen * rOpen - pow( ( cx - vc.x ) * 0.8, 2.0 ), 0.0 ) ) - 0.01;
+            float root_y = vc.y + sqrt( max( r_open * r_open - pow( ( cx - vc.x ) * 0.8, 2.0 ), 0.0 ) ) - 0.01;
             float len = 0.04 + 0.1 * hash11( id * 3.1 );
-            float yy = ( rootY - p.y ) / len;
+            float yy = ( root_y - p.y ) / len;
             float w = 0.012 * ( 1.0 - yy ) * ( 0.7 + 0.5 * hash11( id * 4.3 ) );
             stal = max( stal, smoothstep( px * 1.5, -px * 1.5, abs( p.x - cx ) - w ) * step( 0.0, yy ) * step( yy, 1.0 )
-                                  * step( cx > vc.x - 0.3 ? 0.0 : 1.0, 0.5 ) * step( p.y, rootY ) );
+                                  * step( cx > vc.x - 0.3 ? 0.0 : 1.0, 0.5 ) * step( p.y, root_y ) );
         }
     }
-    float solid = max( wallMask, stal );
+    float solid = max( wall_mask, stal );
 
     // The divers and their beams.
     vec3  col = vec3( 0.0 );
-    vec3  beamSum = vec3( 0.0 );
-    float lightOnRock = 0.0;
+    vec3  beam_sum = vec3( 0.0 );
+    float light_on_rock = 0.0;
     vec2  dpos[2];
     dpos[0] = vec2( -0.22, -0.12 );
     dpos[1] = vec2( 0.28, -0.02 );
@@ -196,48 +196,48 @@ void main()
         float along = dot( rel, dir );
         float across = abs( dot( rel, vec2( -dir.y, dir.x ) ) );
         // Where the beam's axis meets the tunnel wall (the opening's rim).
-        float tHit = 0.05;
+        float t_hit = 0.05;
         for ( int k = 0; k < 24; ++k )
         {
-            vec2  h = torch + dir * tHit - vc;
+            vec2  h = torch + dir * t_hit - vc;
             float ha = atan( h.y, h.x );
             float hr = 0.28 + 0.08 * sin( ha * 2.0 + 1.0 )
                        + 0.06 * ( fbm( vec2( cos( ha ), sin( ha ) ) * 1.3 + 3.0 ) - 0.5 );
             if ( length( h * vec2( 0.8, 1.0 ) ) > hr )
                 break;
-            tHit += 0.03;
+            t_hit += 0.03;
         }
-        vec2  H = torch + dir * tHit;
+        vec2  H = torch + dir * t_hit;
         float cone = smoothstep( 0.1 * along + 0.01, 0.04 * along, across ) * step( 0.0, along )
-                     * smoothstep( tHit + 0.05, tHit - 0.02, along );
+                     * smoothstep( t_hit + 0.05, t_hit - 0.02, along );
         float fall = exp( -along * 1.2 );
         float I = ( 0.8 + 0.6 * bass );
         // The volume of the beam in the water, and the pool of light where it
         // lands on the rock (stretched along the beam, since it grazes the wall).
-        beamSum += vec3( 0.95, 0.9, 0.75 ) * cone * fall * I * ( 0.14 + 0.12 * swell );
+        beam_sum += vec3( 0.95, 0.9, 0.75 ) * cone * fall * I * ( 0.14 + 0.12 * swell );
         vec2  hq = p - H;
         float ha2 = dot( hq, dir ), hc2 = dot( hq, vec2( -dir.y, dir.x ) );
-        float spot = exp( -( ha2 * ha2 ) / ( 0.02 + 0.03 * tHit ) - ( hc2 * hc2 ) / ( 0.004 + 0.01 * tHit * tHit ) );
+        float spot = exp( -( ha2 * ha2 ) / ( 0.02 + 0.03 * t_hit ) - ( hc2 * hc2 ) / ( 0.004 + 0.01 * t_hit * t_hit ) );
         float spill = exp( -length( hq ) * 5.0 ) * 0.3;
-        lightOnRock += ( spot * 1.3 + spill ) * I;
+        light_on_rock += ( spot * 1.3 + spill ) * I;
         figs = min( figs, diver( p - dp, dsz[i], sin( T * 1.1 + fi * 1.7 ) ) );
     }
     // Rock: dark, lit where the beams touch it.
-    vec3 rockC = rock * ( 0.07 + 1.2 * lightOnRock ) * ( 1.0 - 0.4 * depthW );
+    vec3 rock_c = rock * ( 0.07 + 1.2 * light_on_rock ) * ( 1.0 - 0.4 * depth_w );
     // Inside the opening the tunnel goes on: its farther walls ring the
     // black core, faintly lit by the beams passing through.
-    float farWall = smoothstep( rOpen * 0.42, rOpen * 0.6, r ) * ( 1.0 - wallMask );
-    vec3  farC = rock * ( 0.03 + 0.5 * clamp( dot( beamSum, vec3( 0.33 ) ) * 3.0, 0.0, 1.0 ) )
-                 * smoothstep( rOpen * 0.42, rOpen, r );
-    col = mix( beamSum * 0.3 + farC * farWall, rockC, solid );
-    col += beamSum * ( 1.0 - solid * 0.7 );
+    float far_wall = smoothstep( r_open * 0.42, r_open * 0.6, r ) * ( 1.0 - wall_mask );
+    vec3  far_c = rock * ( 0.03 + 0.5 * clamp( dot( beam_sum, vec3( 0.33 ) ) * 3.0, 0.0, 1.0 ) )
+                  * smoothstep( r_open * 0.42, r_open, r );
+    col = mix( beam_sum * 0.3 + far_c * far_wall, rock_c, solid );
+    col += beam_sum * ( 1.0 - solid * 0.7 );
     // Particles glittering inside the beams.
     {
         vec2  g = p * 70.0 + vec2( T * 0.05, T * 0.03 ), gi = floor( g ), gf = fract( g );
         vec2  gc = 0.25 + 0.5 * hash22( gi );
         float tw = 0.5 + 0.5 * sin( T * 2.0 + hash21( gi + 7.0 ) * 40.0 );
         float part = smoothstep( 0.12, 0.0, length( gf - gc ) ) * step( 0.75, hash21( gi + 5.0 ) );
-        col += vec3( 1.0, 0.97, 0.9 ) * part * tw * clamp( dot( beamSum, vec3( 0.33 ) ) * 6.0, 0.0, 1.0 )
+        col += vec3( 1.0, 0.97, 0.9 ) * part * tw * clamp( dot( beam_sum, vec3( 0.33 ) ) * 6.0, 0.0, 1.0 )
                * ( 0.3 + 1.0 * hi ) * ( 1.0 - solid );
     }
     // The divers: dark silhouettes rimmed by their own torch glow.
@@ -255,14 +255,14 @@ void main()
             float bd = length( p - bc ) - br;
             float ring = smoothstep( px * 1.5, 0.0, abs( bd ) ) + smoothstep( 0.0, -br, bd ) * 0.15;
             col += vec3( 0.75, 0.85, 0.9 ) * ring * ( 0.3 + 0.7 * smoothstep( 0.7, 0.0, ph ) )
-                   * ( 0.3 + 0.7 * lightOnRock + 0.2 );
+                   * ( 0.3 + 0.7 * light_on_rock + 0.2 );
         }
     }
     // Faint blue-green ambient water in the dark.
-    col += vec3( 0.0, 0.035, 0.045 ) * ( 0.6 + 0.6 * swell ) * ( 1.0 - 0.6 * smoothstep( rOpen, 0.0, r ) );
+    col += vec3( 0.0, 0.035, 0.045 ) * ( 0.6 + 0.6 * swell ) * ( 1.0 - 0.6 * smoothstep( r_open, 0.0, r ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -85,7 +85,7 @@ float noise3( vec3 p )
                 f.z );
 }
 
-const float BR = 12.0; ///< base asteroid radius
+const float Br = 12.0; ///< base asteroid radius
 float       g_T = 0.0;
 float       g_mat = 0.0; ///< 1 base rock, 2 dome, 3 small rock
 
@@ -115,12 +115,12 @@ vec3 domeDir( int i )
 float map( vec3 p )
 {
     // The base asteroid.
-    float d = length( p ) - BR - 1.4 * lumps( p * 0.8 );
+    float d = length( p ) - Br - 1.4 * lumps( p * 0.8 );
     g_mat = 1.0;
     // Domes set into its surface.
     for ( int i = 0; i < 6; ++i )
     {
-        vec3  c = domeDir( i ) * ( BR - 0.2 );
+        vec3  c = domeDir( i ) * ( Br - 0.2 );
         float dd = length( p - c ) - ( 1.3 + 0.3 * float( i % 3 ) );
         if ( dd < d )
         {
@@ -134,8 +134,8 @@ float map( vec3 p )
     vec3  q = p - id * cs;
     float h = hash31( id + 7.0 );
     vec3  cc = id * cs;
-    float ringDist = abs( length( cc.xz ) - 40.0 ) + abs( cc.y ) * 0.5;
-    if ( h > 0.45 && ringDist > 10.0 && length( cc ) > 22.0 )
+    float ring_dist = abs( length( cc.xz ) - 40.0 ) + abs( cc.y ) * 0.5;
+    if ( h > 0.45 && ring_dist > 10.0 && length( cc ) > 22.0 )
     {
         vec3  j = ( vec3( hash31( id + 1.0 ), hash31( id + 2.0 ), hash31( id + 3.0 ) ) - 0.5 ) * 6.0;
         vec3  r = q - j;
@@ -195,9 +195,9 @@ void main()
     vec3  vv = cross( uu, ww );
     vec3  rd = normalize( uv.x * uu + uv.y * vv + 1.5 * ww );
 
-    vec3 sunDir = normalize( vec3( 0.7, 0.35, -0.5 ) );
-    vec3 sunC = vec3( 1.0, 0.95, 0.88 ) * ( 1.2 + 0.4 * swell );
-    vec3 lightC = mix( vec3( 1.0, 0.7, 0.35 ), imgPalette( 0.1 + hue * 0.159 ), 0.25 );
+    vec3 sun_dir = normalize( vec3( 0.7, 0.35, -0.5 ) );
+    vec3 sun_c = vec3( 1.0, 0.95, 0.88 ) * ( 1.2 + 0.4 * swell );
+    vec3 light_c = mix( vec3( 1.0, 0.7, 0.35 ), imgPalette( 0.1 + hue * 0.159 ), 0.25 );
 
     // Space: stars, a faint nebula, the sun's glare.
     vec3 col = vec3( 0.004, 0.005, 0.012 );
@@ -211,20 +211,20 @@ void main()
         // A banded gas giant hangs in the sky (the fill light's source).
         vec3  gd = normalize( vec3( -0.6, -0.2, 0.7 ) );
         float ca = dot( rd, gd );
-        float gR = 0.34;
-        if ( ca > cos( gR ) )
+        float g_r = 0.34;
+        if ( ca > cos( g_r ) )
         {
             vec3  gu = normalize( cross( gd, vec3( 0.0, 1.0, 0.0 ) ) ), gv = cross( gu, gd );
-            vec2  q = vec2( dot( rd, gu ), dot( rd, gv ) ) / sin( gR );
+            vec2  q = vec2( dot( rd, gu ), dot( rd, gv ) ) / sin( g_r );
             float z = sqrt( max( 1.0 - dot( q, q ), 0.0 ) );
             vec3  gn = normalize( q.x * gu + q.y * gv - z * gd );
             float band = 0.5 + 0.5 * sin( q.y * 14.0 + 3.0 * noise3( vec3( q * 3.0, 1.0 ) ) );
             vec3  gcol = mix( vec3( 0.75, 0.55, 0.35 ), vec3( 0.95, 0.88, 0.72 ), band );
-            float gl = max( dot( gn, sunDir ), 0.0 );
+            float gl = max( dot( gn, sun_dir ), 0.0 );
             col = gcol * ( 0.03 + 1.1 * gl ) * ( 0.9 + 0.3 * swell ) * smoothstep( 1.0, 0.97, length( q ) );
         }
-        col += sunC * pow( max( dot( rd, sunDir ), 0.0 ), 800.0 ) * 4.0
-               + sunC * pow( max( dot( rd, sunDir ), 0.0 ), 12.0 ) * 0.08;
+        col += sun_c * pow( max( dot( rd, sun_dir ), 0.0 ), 800.0 ) * 4.0
+               + sun_c * pow( max( dot( rd, sun_dir ), 0.0 ), 12.0 ) * 0.08;
     }
 
     // March.
@@ -249,17 +249,17 @@ void main()
     // The mining ship and its laser.
     float sa = T * 0.05;
     vec3  ship = vec3( 17.0 * cos( sa ), 9.0, 17.0 * sin( sa ) );
-    vec3  target = normalize( ship - vec3( 0.0, 4.0, 0.0 ) ) * ( BR - 0.5 );
+    vec3  target = normalize( ship - vec3( 0.0, 4.0, 0.0 ) ) * ( Br - 0.5 );
 
     if ( hit > 0.5 )
     {
         vec3  n = calcNormal( p );
-        float dif = max( dot( n, sunDir ), 0.0 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
         // A soft shadow toward the sun.
         float sh = 1.0, st = 0.3;
         for ( int k = 0; k < 20; ++k )
         {
-            float h = map( p + sunDir * st );
+            float h = map( p + sun_dir * st );
             sh = min( sh, 10.0 * h / st );
             st += clamp( h, 0.3, 2.0 );
             if ( sh < 0.02 || st > 30.0 )
@@ -278,18 +278,18 @@ void main()
             vec3  wi = floor( wq );
             float wh = hash31( wi + 3.0 );
             float win = smoothstep( 0.3, 0.12, length( fract( wq ) - 0.5 ) ) * step( 0.55, wh );
-            col = vec3( 0.06, 0.07, 0.09 ) * ( dif * sh + amb ) + lightC * win * 1.1 * ( 0.7 + 0.4 * swell );
-            col += lightC * 0.06;
-            col += sunC * pow( max( dot( reflect( -sunDir, n ), -rd ), 0.0 ), 60.0 ) * sh;
+            col = vec3( 0.06, 0.07, 0.09 ) * ( dif * sh + amb ) + light_c * win * 1.1 * ( 0.7 + 0.4 * swell );
+            col += light_c * 0.06;
+            col += sun_c * pow( max( dot( reflect( -sun_dir, n ), -rd ), 0.0 ), 60.0 ) * sh;
         }
         else
         {
             // Rock: cratered, grey-brown, lit hard by the sun.
             float cr = noise3( p * 0.9 ) * 0.6 + noise3( p * 2.7 ) * 0.4;
-            vec3  rockC = mix( vec3( 0.3, 0.27, 0.24 ), vec3( 0.5, 0.45, 0.38 ), cr );
+            vec3  rock_c = mix( vec3( 0.3, 0.27, 0.24 ), vec3( 0.5, 0.45, 0.38 ), cr );
             if ( mat == 3.0 )
-                rockC *= 0.85;
-            col = rockC * ( dif * sh * sunC + amb + fill ) + vec3( 0.3, 0.35, 0.45 ) * rim * 0.4;
+                rock_c *= 0.85;
+            col = rock_c * ( dif * sh * sun_c + amb + fill ) + vec3( 0.3, 0.35, 0.45 ) * rim * 0.4;
             // Base lights on the big rock: blinking pad lights, round.
             if ( mat == 1.0 )
             {
@@ -298,7 +298,7 @@ void main()
                 float lh = hash31( gi );
                 float blink = 0.5 + 0.5 * sin( T * 1.5 + lh * 30.0 );
                 float lamp = smoothstep( 0.25, 0.05, length( fract( gp ) - 0.5 ) ) * step( 0.965, lh );
-                col += lightC * lamp * ( 0.4 + 0.8 * blink );
+                col += light_c * lamp * ( 0.4 + 0.8 * blink );
             }
         }
         // The laser's impact: a hot glow around the target point.
@@ -321,13 +321,13 @@ void main()
     if ( hit < 0.5 || tsh < t )
     {
         col = mix( col, vec3( 0.15, 0.16, 0.18 ), smoothstep( 0.7, 0.5, dsh ) );
-        col += lightC * exp( -dsh * 6.0 ) * 0.3;
+        col += light_c * exp( -dsh * 6.0 ) * 0.3;
     }
     // Dust glow around the impact, seen against space.
     col += vec3( 1.0, 0.5, 0.25 ) * 0.02 * dp * exp( -length( cross( rd, target - ro ) ) * 0.2 ) * ( 1.0 + kick );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

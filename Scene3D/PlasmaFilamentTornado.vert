@@ -6,7 +6,7 @@
  */
 // PlasmaFilamentTornado.vert
 
-layout( location = 0 ) in vec4 attrA; ///< xyz = pos, w = strandID
+layout( location = 0 ) in vec4 attrA; ///< xyz = pos, w = strand_id
 layout( location = 1 ) in vec4 attrB; ///< x = seed, y = u, zw = uv
 
 uniform mat4  projM;  ///< Projection matrix.
@@ -35,17 +35,17 @@ out vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
 void main()
 {
     vec3  pos = attrA.xyz;
-    float strandID = attrA.w;
+    float strand_id = attrA.w;
     float u = attrB.y;
     vTexCoord = attrB.zw;
 
     // Relativistic plasma emission colors: Hot Cyan, Electric Violet, Blinding Core White
-    vec3 plasmaCyan = vec3( 0.0, 0.85, 1.0 );
-    vec3 plasmaViolet = vec3( 0.7, 0.15, 1.0 );
-    vec3 coreWhite = vec3( 1.0, 0.98, 0.95 );
+    vec3 plasma_cyan = vec3( 0.0, 0.85, 1.0 );
+    vec3 plasma_violet = vec3( 0.7, 0.15, 1.0 );
+    vec3 core_white = vec3( 1.0, 0.98, 0.95 );
 
-    vec3 col = mix( plasmaCyan, plasmaViolet, sin( strandID * 0.2 + time ) * 0.5 + 0.5 );
-    col = mix( col, coreWhite, exp( -length( pos.xz ) * 3.0 ) * ( 0.5 + 1.0 * audioKick ) );
+    vec3 col = mix( plasma_cyan, plasma_violet, sin( strand_id * 0.2 + time ) * 0.5 + 0.5 );
+    col = mix( col, core_white, exp( -length( pos.xz ) * 3.0 ) * ( 0.5 + 1.0 * audioKick ) );
 
     vColor = vec4( col * ( 0.8 + 0.6 * audioLevel ), 1.0 );
 

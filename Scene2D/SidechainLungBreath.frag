@@ -109,9 +109,9 @@ void main()
     vec3 col = img( gl_FragCoord.xy / resolution ) * 0.2 * vec3( 0.7, 0.8, 1.0 );
     col *= 0.7 + 0.3 * ( 1.0 - length( p ) * 0.8 );
     // The lungs.
-    float dL = lungSD( p, -1.0, breath );
-    float dR = lungSD( p, 1.0, breath );
-    float d = min( dL, dR );
+    float d_l = lungSD( p, -1.0, breath );
+    float d_r = lungSD( p, 1.0, breath );
+    float d = min( d_l, d_r );
     float body = smoothstep( 0.006, 0.0, d );
     // Alveoli: round jittered cells carrying the photo, lit by the band at their height.
     vec2  g = p * cells;
@@ -164,12 +164,12 @@ void main()
     vec2  mq = p - vec2( aspect * 0.5 - 0.09, 0.0 );
     float frame = step( abs( mq.x ), 0.03 ) * step( abs( mq.y ), 0.3 );
     float fill = step( abs( mq.x ), 0.022 ) * step( mq.y, 0.28 ) * step( 0.28 - 0.56 * audioKick, mq.y );
-    vec3  meterCol = mix( vec3( 0.2, 0.8, 0.3 ), vec3( 1.0, 0.3, 0.2 ), clamp( ( 0.28 - mq.y ) / 0.56, 0.0, 1.0 ) );
+    vec3  meter_col = mix( vec3( 0.2, 0.8, 0.3 ), vec3( 1.0, 0.3, 0.2 ), clamp( ( 0.28 - mq.y ) / 0.56, 0.0, 1.0 ) );
     col = mix( col, vec3( 0.06 ), frame );
-    col = mix( col, meterCol * 1.2, fill );
+    col = mix( col, meter_col * 1.2, fill );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

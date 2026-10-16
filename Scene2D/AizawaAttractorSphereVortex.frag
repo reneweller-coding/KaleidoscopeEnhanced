@@ -72,7 +72,7 @@ float photoLevel()
 }
 
 // Aizawa system parameters: a=0.95, b=0.7, c=0.6, d=3.5, e=0.25, f=0.1
-const float AIZ_A = 0.95, AIZ_B = 0.7, AIZ_C = 0.6, AIZ_D = 3.5, AIZ_E = 0.25, AIZ_F = 0.1;
+const float AizA = 0.95, AIZ_B = 0.7, AIZ_C = 0.6, AIZ_D = 3.5, AIZ_E = 0.25, AIZ_F = 0.1;
 
 vec3 aizawaDeriv( vec3 q )
 {
@@ -80,7 +80,7 @@ vec3 aizawaDeriv( vec3 q )
     return vec3(
         ( q.z - AIZ_B ) * q.x - AIZ_D * q.y,
         AIZ_D * q.x + ( q.z - AIZ_B ) * q.y,
-        AIZ_C + AIZ_A * q.z - ( q.z * q.z * q.z ) / 3.0
+        AIZ_C + AizA * q.z - ( q.z * q.z * q.z ) / 3.0
             - r2xy * ( 1.0 + AIZ_E * q.z ) + AIZ_F * q.z * ( q.x * q.x * q.x ) );
 }
 
@@ -92,7 +92,7 @@ void main()
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     // Sub-bass swells the shell's apparent radius. Applied to the view scale
     // (a static per-frame shape factor), never to anything multiplied by time.
-    float sRad = ( ( sphereRadP > 0.01 ) ? sphereRadP : 1.0 ) * ( 1.0 + 0.35 * audioSubBass );
+    float s_rad = ( ( sphereRadP > 0.01 ) ? sphereRadP : 1.0 ) * ( 1.0 + 0.35 * audioSubBass );
     float vrtx = ( vortexP > 0.01 ) ? vortexP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -103,18 +103,18 @@ void main()
     // 3D Orbital rotation of screen plane. The window is sized so the traced
     // attractor (|xy| reaches ~1.3) fills the frame height instead of sitting
     // as a small motif on a large dead field.
-    float rotA = t * 0.2 + audioPhase * 0.1;
-    float cs = cos( rotA ), sn = sin( rotA );
-    vec2  pRot = mat2( cs, -sn, sn, cs ) * uv * ( 3.2 / sRad );
+    float rot_a = t * 0.2 + audioPhase * 0.1;
+    float cs = cos( rot_a ), sn = sin( rot_a );
+    vec2  p_rot = mat2( cs, -sn, sn, cs ) * uv * ( 3.2 / s_rad );
 
     // Multi-step numerical RK2 integration along Aizawa sphere attractor.
     // Seeded from a FIXED point shared by every pixel -- not the pixel's own
     // position -- so the traced curve is one real spatial trajectory instead
     // of every pixel trivially starting AT distance zero from itself (which
     // washed the whole frame out to a near-uniform glow).
-    vec3  pAiz = vec3( 0.1, 0.05, 0.5 + 0.3 * sin( t * 0.4 ) );
-    float minDist = 1e5;
-    float vortexEnergy = 0.0;
+    vec3  p_aiz = vec3( 0.1, 0.05, 0.5 + 0.3 * sin( t * 0.4 ) );
+    float min_dist = 1e5;
+    float vortex_energy = 0.0;
 
     // Clamped so no preset value of vortexP can push the step past the point
     // where the d=3.5 rotation term stops integrating cleanly.
@@ -129,17 +129,17 @@ void main()
         // pumps radius into the d=3.5 rotation term, so simply integrating
         // longer would have blown the orbit up; RK2's error is O(dt^3) per
         // step, which keeps the traced curve on the real attractor.
-        vec3 k1 = aizawaDeriv( pAiz );
-        vec3 k2 = aizawaDeriv( pAiz + k1 * ( dt * 0.5 ) );
-        pAiz += k2 * dt;
+        vec3 k1 = aizawaDeriv( p_aiz );
+        vec3 k2 = aizawaDeriv( p_aiz + k1 * ( dt * 0.5 ) );
+        p_aiz += k2 * dt;
 
-        float dDist = length( pRot - pAiz.xy );
-        minDist = min( minDist, dDist );
+        float d_dist = length( p_rot - p_aiz.xy );
+        min_dist = min( min_dist, d_dist );
 
         // Core axial tornado energy
-        if ( abs( pAiz.x ) < 0.3 && abs( pAiz.y ) < 0.3 )
+        if ( abs( p_aiz.x ) < 0.3 && abs( p_aiz.y ) < 0.3 )
         {
-            vortexEnergy += exp( -dDist * 8.0 );
+            vortex_energy += exp( -d_dist * 8.0 );
         }
     }
 
@@ -148,26 +148,26 @@ void main()
     // axis every step qualified, the sum reached ~28 and the tinted vector hit
     // ~48 at the centre -- the white flood that ate the frame. Normalise by
     // the step budget and cap so the funnel stays a core, not a haze.
-    vortexEnergy = clamp( vortexEnergy * 0.09, 0.0, 1.1 );
+    vortex_energy = clamp( vortex_energy * 0.09, 0.0, 1.1 );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( pRot * 0.2 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_rot * 0.2 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing trajectory ribbon lines. The old 4.5 falloff still returned 0.1
     // a half-unit off the curve, so the "ribbons" were a broad soft haze with
     // no edge anywhere; a tighter exponent turns them back into lines.
-    float lineGlow = exp( -minDist * ( 11.0 + 6.0 * audioCentroid ) ) * glw;
+    float line_glow = exp( -min_dist * ( 11.0 + 6.0 * audioCentroid ) ) * glw;
     // Light RUNNING along the ribbon: a triple bright pulse chases the curve's
     // angular phase, so the shell reads as circulating energy, not a still.
-    float runPhase = atan( pRot.y, pRot.x ) * 3.0 - t * 2.4 - audioPhase * 0.6;
-    lineGlow *= 0.7 + 0.5 * pow( 0.5 + 0.5 * sin( runPhase ), 3.0 );
+    float run_phase = atan( p_rot.y, p_rot.x ) * 3.0 - t * 2.4 - audioPhase * 0.6;
+    line_glow *= 0.7 + 0.5 * pow( 0.5 + 0.5 * sin( run_phase ), 3.0 );
 
     // ORBITING BEACONS: five point lights on inclined elliptical orbits around
     // the shell -- the "rotating lights". Each has its own angular speed, the
     // pack follows the music (audioPhase), and a depth cue dims/blurs a light
     // on the far side of its orbit so the circling reads as 3D.
-    vec3 beaconCol = vec3( 0.0 );
+    vec3 beacon_col = vec3( 0.0 );
     for ( int j = 0; j < 5; j++ )
     {
         float fj = float( j );
@@ -175,19 +175,19 @@ void main()
         float rad = 0.85 + 0.18 * sin( fj * 1.7 + t * 0.4 );
         vec2  lp = vec2( cos( ang ), sin( ang ) * 0.42 ) * rad;
         float depth = 0.55 + 0.45 * sin( ang + fj );
-        float d = length( pRot - lp );
+        float d = length( p_rot - lp );
         float spark = exp( -d * ( 26.0 - 10.0 * depth ) );
-        beaconCol += imgPalette( 0.15 + 0.2 * fj ) * spark * depth
-                     * ( 0.8 + 1.6 * audioLevel );
+        beacon_col += imgPalette( 0.15 + 0.2 * fj ) * spark * depth
+                      * ( 0.8 + 1.6 * audioLevel );
     }
 
     // Palette mixing across Aizawa sphere
-    float phase = atan( pRot.y, pRot.x ) / 6.2831853 + length( pRot ) * 0.15;
-    vec3  palA = imgPalette( phase + t * 0.05 );
-    vec3  palB = imgPalette( phase + 0.5 );
-    vec3  col = mix( palA, palB, 0.5 + 0.5 * sin( vortexEnergy * 0.5 ) );
+    float phase = atan( p_rot.y, p_rot.x ) / 6.2831853 + length( p_rot ) * 0.15;
+    vec3  pal_a = imgPalette( phase + t * 0.05 );
+    vec3  pal_b = imgPalette( phase + 0.5 );
+    vec3  col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( vortex_energy * 0.5 ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Hold the celestial backdrop to a fixed dark level so the shell and the
     // funnel are what carries the light, whatever photo happens to be bound.
@@ -196,12 +196,12 @@ void main()
     // Add glowing spherical shell and central tornado flares. Both tint
     // constants exceed 1.0 per channel, so the TINTED vectors are capped --
     // capping the scalars alone still let the colour run past white.
-    vec3 sphereTint = min( vec3( 1.3, 1.1, 1.8 ) * lineGlow * ( 1.0 + 2.5 * audioKick ), vec3( 1.2 ) );
-    vec3 tornadoTint = min( vec3( 1.7, 1.4, 0.5 ) * vortexEnergy * ( 1.0 + 3.0 * audioKick ), vec3( 1.4 ) );
-    col += sphereTint + tornadoTint + min( beaconCol, vec3( 1.2 ) );
+    vec3 sphere_tint = min( vec3( 1.3, 1.1, 1.8 ) * line_glow * ( 1.0 + 2.5 * audioKick ), vec3( 1.2 ) );
+    vec3 tornado_tint = min( vec3( 1.7, 1.4, 0.5 ) * vortex_energy * ( 1.0 + 3.0 * audioKick ), vec3( 1.4 ) );
+    col += sphere_tint + tornado_tint + min( beacon_col, vec3( 1.2 ) );
 
     col = pow( col, vec3( 0.88 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.32 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.32 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

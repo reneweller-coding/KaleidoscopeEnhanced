@@ -49,24 +49,24 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
-const float GROUND_Y = -2.2;
+const float GroundY = -2.2;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -74,7 +74,7 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
     uint  rows = 2u + uint( clamp( rowsP, 0.0, 1.0 ) * 2.0 );
-    uint  perRow = 6u;
+    uint  per_row = 6u;
     float speed = 0.5 + 0.8 * clamp( speedP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.4 + sceneTime * 0.08;
 
@@ -82,33 +82,33 @@ void main()
     {
         emitQuad( vec3( 0.0, 8.0, 90.0 ), vec3( 150.0, 0.0, 0.0 ), vec3( 0.0, 60.0, 0.0 ), 0.0, 0.0, -1.0, vec2( 0.0 ),
                   vec2( 1.0 ) );
-        emitQuad( vec3( 0.0, GROUND_Y, 55.0 ), vec3( 150.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 60.0 ), 0.0, 0.0, -2.0,
+        emitQuad( vec3( 0.0, GroundY, 55.0 ), vec3( 150.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 60.0 ), 0.0, 0.0, -2.0,
                   vec2( 0.0 ), vec2( 1.0 ) );
         return;
     }
     uint t = id - 1u;
-    uint nT = rows * perRow;
-    uint turbine = t % nT;
-    uint part = t / nT;
+    uint n_t = rows * per_row;
+    uint turbine = t % n_t;
+    uint part = t / n_t;
     if ( part > 5u )
         return;
 
-    uint  row = turbine / perRow;
-    uint  col = turbine % perRow;
+    uint  row = turbine / per_row;
+    uint  col = turbine % per_row;
     float fr = float( row ), fc = float( col );
     // Rows recede; each row is offset so the field reads as depth, not a wall.
     float z = 16.0 + fr * 15.0;
-    float x = ( fc - float( perRow - 1u ) * 0.5 ) * ( 7.5 + fr * 3.0 ) + ( hash11( fr * 3.1 + fc ) - 0.5 ) * 3.0;
+    float x = ( fc - float( per_row - 1u ) * 0.5 ) * ( 7.5 + fr * 3.0 ) + ( hash11( fr * 3.1 + fc ) - 0.5 ) * 3.0;
     float scale = 1.0 + 0.25 * hash11( fr * 5.7 + fc * 1.3 );
-    float hubY = GROUND_Y + 5.2 * scale;
-    vec3  hub = vec3( x, hubY, z );
+    float hub_y = GroundY + 5.2 * scale;
+    vec3  hub = vec3( x, hub_y, z );
     float R = 3.4 * scale; // blade length
 
     if ( part == 0u )
     {
         // The tower: a tapered column.
-        vec3 c = vec3( x, ( GROUND_Y + hubY ) * 0.5, z );
-        emitQuad( c, vec3( 0.16 * scale, 0.0, 0.0 ), vec3( 0.0, ( hubY - GROUND_Y ) * 0.5, 0.0 ),
+        vec3 c = vec3( x, ( GroundY + hub_y ) * 0.5, z );
+        emitQuad( c, vec3( 0.16 * scale, 0.0, 0.0 ), vec3( 0.0, ( hub_y - GroundY ) * 0.5, 0.0 ),
                   float( turbine ), 0.0, 1.0, vec2( 0.0 ), vec2( 1.0 ) );
         return;
     }

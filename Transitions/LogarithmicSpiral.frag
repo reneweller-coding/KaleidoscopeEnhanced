@@ -68,8 +68,8 @@ void main()
 
     float t = time * 0.1455 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
     float angle = atan( p.y, p.x );
@@ -77,37 +77,37 @@ void main()
     // Logarithmic spiral mapping: log(r) vs theta.  audioBass undulates the
     // spiral pitch via the log(r) coefficient — a spatial term, so the arm
     // rotation rate stays audio-independent — and, below, the radial breathing
-    // radius.  Both ride on midTransition and are therefore the un-driven
-    // values at tProg 0 and 1, where `blend` self-clamps to 0/1 anyway.
-    float pitchMod = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float logR = log( max( r, 0.001 ) );
-    float spiralAngle = angle * arm * 2.0 - logR * 3.0 * spr * pitchMod + tProg * 6.2831853;
+    // radius.  Both ride on mid_transition and are therefore the un-driven
+    // values at t_prog 0 and 1, where `blend` self-clamps to 0/1 anyway.
+    float pitch_mod = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float log_r = log( max( r, 0.001 ) );
+    float spiral_angle = angle * arm * 2.0 - log_r * 3.0 * spr * pitch_mod + t_prog * 6.2831853;
 
     // Spiral swirl displacement
-    float breatheR = 0.8; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float swirl = ( 1.0 - smoothstep( 0.0, breatheR, r ) ) * midTransition * 3.14159265;
-    vec2  pWarped = rot2D( swirl ) * p;
-    vec2  uvWarped = ( pWarped * resolution.y + 0.5 * resolution ) / resolution;
+    float breathe_r = 0.8; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float swirl = ( 1.0 - smoothstep( 0.0, breathe_r, r ) ) * mid_transition * 3.14159265;
+    vec2  p_warped = rot2D( swirl ) * p;
+    vec2  uv_warped = ( p_warped * resolution.y + 0.5 * resolution ) / resolution;
 
     // Spiral wave mask for staggered wiping
-    float spiralWave = sin( spiralAngle + t * 2.0 );
-    float spiralMask = smoothstep( -0.4, 0.4, spiralWave );
+    float spiral_wave = sin( spiral_angle + t * 2.0 );
+    float spiral_mask = smoothstep( -0.4, 0.4, spiral_wave );
 
-    float blend = clamp( tProg * 1.5 - ( 1.0 - spiralMask ) * 0.5, 0.0, 1.0 );
+    float blend = clamp( t_prog * 1.5 - ( 1.0 - spiral_mask ) * 0.5, 0.0, 1.0 );
 
-    vec4 c1 = texture( tex1, fract( mix( uv, uvWarped, midTransition ) ) );
-    vec4 c0 = texture( tex0, fract( mix( uvWarped, uv, 1.0 - midTransition ) ) );
+    vec4 c1 = texture( tex1, fract( mix( uv, uv_warped, mid_transition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( uv_warped, uv, 1.0 - mid_transition ) ) );
 
     vec4 col = mix( c1, c0, blend );
 
     // Glowing spiral arm highlights
-    float armGlow = exp( -abs( spiralWave ) * 12.0 ) * midTransition;
-    col.rgb += armGlow * vec3( 1.0, 0.85, 0.3 ) * ( 1.2 + audioKick * 1.0 );
+    float arm_glow = exp( -abs( spiral_wave ) * 12.0 ) * mid_transition;
+    col.rgb += arm_glow * vec3( 1.0, 0.85, 0.3 ) * ( 1.2 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

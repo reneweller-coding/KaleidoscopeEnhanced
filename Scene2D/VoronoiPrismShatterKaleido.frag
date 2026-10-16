@@ -58,7 +58,7 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// 2D Voronoi evaluation returning (minDist, cellID, borderDist)
+/// 2D Voronoi evaluation returning (minDist, cell_id, borderDist)
 vec4 voronoi( vec2 p, float t )
 {
     vec2 n = floor( p );
@@ -110,7 +110,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float cDens = ( cellDensityP > 0.01 ) ? cellDensityP : 1.0;
+    float c_dens = ( cellDensityP > 0.01 ) ? cellDensityP : 1.0;
     float shtr = ( shatterP > 0.01 ) ? shatterP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -124,48 +124,48 @@ void main()
     float seg = 3.14159265 / 4.0;
     a = mod( a + seg * 0.5, seg ) - seg * 0.5;
     a = abs( a );
-    vec2 pFold = vec2( cos( a ), sin( a ) ) * r;
+    vec2 p_fold = vec2( cos( a ), sin( a ) ) * r;
 
     // Voronoi cell coordinates
-    vec2 pVor = pFold * ( 6.0 * cDens );
+    vec2 p_vor = p_fold * ( 6.0 * c_dens );
 
     // Shatter displacement shockwave on kicks, plus a slow sub-bass swell that
     // pushes the cells outward along the same radial axis -- the crystal
     // breathes apart on drones between the sharp kick bursts.
-    vec2 shatterOffset = ( pFold / max( 0.1, r ) ) * ( ( audioKick * 0.4 + 0.35 * audioSubBass ) * shtr );
-    pVor += shatterOffset;
+    vec2 shatter_offset = ( p_fold / max( 0.1, r ) ) * ( ( audioKick * 0.4 + 0.35 * audioSubBass ) * shtr );
+    p_vor += shatter_offset;
 
-    vec4  vInfo = voronoi( pVor, t );
-    float dCenter = vInfo.x;
-    vec2  cellID = vInfo.yz;
-    float dBorder = vInfo.w;
+    vec4  v_info = voronoi( p_vor, t );
+    float d_center = v_info.x;
+    vec2  cell_id = v_info.yz;
+    float d_border = v_info.w;
 
     // Diamond crystal facet normal tilt
-    vec3 facetNormal = normalize( vec3( cos( cellID.x * 12.3 + t ), sin( cellID.y * 14.5 - t ), 1.2 ) );
+    vec3 facet_normal = normalize( vec3( cos( cell_id.x * 12.3 + t ), sin( cell_id.y * 14.5 - t ), 1.2 ) );
 
     // Chromatic dispersion refraction on cell facet
-    float dLambda = 0.015 * ( 1.0 + audioCentroid );
-    vec2  uvR = fract( pFold * 0.4 + facetNormal.xy * ( 0.08 - dLambda ) + 0.5 );
-    vec2  uvG = fract( pFold * 0.4 + facetNormal.xy * 0.08 + 0.5 );
-    vec2  uvB = fract( pFold * 0.4 + facetNormal.xy * ( 0.08 + dLambda ) + 0.5 );
+    float d_lambda = 0.015 * ( 1.0 + audioCentroid );
+    vec2  uv_r = fract( p_fold * 0.4 + facet_normal.xy * ( 0.08 - d_lambda ) + 0.5 );
+    vec2  uv_g = fract( p_fold * 0.4 + facet_normal.xy * 0.08 + 0.5 );
+    vec2  uv_b = fract( p_fold * 0.4 + facet_normal.xy * ( 0.08 + d_lambda ) + 0.5 );
 
-    vec3 texR = img( uvR );
-    vec3 texG = img( uvG );
-    vec3 texB = img( uvB );
-    vec3 texPrism = vec3( texR.r, texG.g, texB.b );
+    vec3 tex_r = img( uv_r );
+    vec3 tex_g = img( uv_g );
+    vec3 tex_b = img( uv_b );
+    vec3 tex_prism = vec3( tex_r.r, tex_g.g, tex_b.b );
 
     // Glowing Voronoi facet borders
-    float borderGlow = exp( -dBorder * ( 30.0 + 15.0 * audioCentroid ) ) * glw;
-    float facetSpark = pow( max( 0.0, dot( facetNormal, normalize( vec3( 1.0, 1.0, 2.0 ) ) ) ), 24.0 );
+    float border_glow = exp( -d_border * ( 30.0 + 15.0 * audioCentroid ) ) * glw;
+    float facet_spark = pow( max( 0.0, dot( facet_normal, normalize( vec3( 1.0, 1.0, 2.0 ) ) ) ), 24.0 );
 
     // Palette mixing per cell ID
-    vec3 palCol = imgPalette( sin( dot( cellID, vec2( 12.9898, 78.233 ) ) ) * 0.5 + 0.5 );
-    vec3 cellCol = mix( texPrism, palCol, 0.45 );
+    vec3 pal_col = imgPalette( sin( dot( cell_id, vec2( 12.9898, 78.233 ) ) ) * 0.5 + 0.5 );
+    vec3 cell_col = mix( tex_prism, pal_col, 0.45 );
 
     // Add glowing border struts & diamond sparks
-    vec3 borderTint = vec3( 1.4, 1.1, 1.8 ) * borderGlow * ( 1.0 + 3.0 * audioKick );
-    cellCol += borderTint + vec3( 1.5, 1.5, 1.8 ) * facetSpark * ( 1.0 + 2.0 * audioKick );
+    vec3 border_tint = vec3( 1.4, 1.1, 1.8 ) * border_glow * ( 1.0 + 3.0 * audioKick );
+    cell_col += border_tint + vec3( 1.5, 1.5, 1.8 ) * facet_spark * ( 1.0 + 2.0 * audioKick );
 
-    cellCol = pow( cellCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( cellCol, 0.0, 1.0 ), 1.0 );
+    cell_col = pow( cell_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( cell_col, 0.0, 1.0 ), 1.0 );
 }

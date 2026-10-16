@@ -154,15 +154,15 @@ void main()
         // Faces toward the west (left) catch the last light.
         float face = clamp( 0.55 - slope * 0.25 + 0.3 * ( gully - 0.5 ), 0.2, 1.0 );
         // The earth's shadow climbs up the walls, slowly and boundedly.
-        float shadowLine = base + 0.02 + 0.2 * smoothstep( 0.0, 240.0, T )
-                           + 0.03 * ( noise2( vec2( p.x * 4.0, 7.0 ) ) - 0.5 );
-        float lit = smoothstep( shadowLine - 0.01, shadowLine + 0.02, p.y );
-        vec3  glowC = mix( vec3( 1.0, 0.45, 0.4 ), vec3( 1.0, 0.6, 0.3 ), smoothstep( 0.1, 0.35, p.y - base ) );
-        glowC = mix( glowC, imgPalette( 0.95 + hueP * 0.159 ) * 1.3, 0.1 );
+        float shadow_line = base + 0.02 + 0.2 * smoothstep( 0.0, 240.0, T )
+                            + 0.03 * ( noise2( vec2( p.x * 4.0, 7.0 ) ) - 0.5 );
+        float lit = smoothstep( shadow_line - 0.01, shadow_line + 0.02, p.y );
+        vec3  glow_c = mix( vec3( 1.0, 0.45, 0.4 ), vec3( 1.0, 0.6, 0.3 ), smoothstep( 0.1, 0.35, p.y - base ) );
+        glow_c = mix( glow_c, imgPalette( 0.95 + hueP * 0.159 ) * 1.3, 0.1 );
         vec3 dusk = vec3( 0.3, 0.33, 0.48 );
-        vec3 lightC = mix( dusk * 0.8, glowC * ( 0.8 + 0.9 * swell ), lit );
-        col = rock * lightC * face;
-        col = mix( col, vec3( 0.95, 0.92, 1.0 ) * mix( dusk, glowC * ( 0.9 + 0.6 * swell ), lit ) * 1.1, ledge * 0.5 );
+        vec3 light_c = mix( dusk * 0.8, glow_c * ( 0.8 + 0.9 * swell ), lit );
+        col = rock * light_c * face;
+        col = mix( col, vec3( 0.95, 0.92, 1.0 ) * mix( dusk, glow_c * ( 0.9 + 0.6 * swell ), lit ) * 1.1, ledge * 0.5 );
         // Scree at the foot, then dark forested slopes down into the valley.
         col = mix( col, vec3( 0.5, 0.5, 0.55 ) * dusk, smoothstep( base + 0.05, base + 0.01, p.y ) );
         float canopy = 0.6 + 0.5 * noise2( p * vec2( 160.0, 90.0 ) ) * noise2( p * vec2( 40.0, 25.0 ) + 3.0 );
@@ -210,7 +210,7 @@ void main()
                smoothstep( -0.04, -0.14, p.y ) * ( 1.0 - meadow ) * ( 1.0 - trees ) * 0.35 );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

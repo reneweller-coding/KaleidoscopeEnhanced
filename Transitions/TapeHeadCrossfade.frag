@@ -50,7 +50,7 @@ uniform float angleP;
 uniform float wowP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -70,13 +70,13 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // The tape runs left to right; the splice is cut at an angle across it.
     float slant = mix( 0.45, 1.25, ang );
     float along = p.x + p.y * slant;
-    float halfW = ( aspect + slant ) * 0.5 + 0.05;
-    float splice = mix( -halfW - 0.05, halfW + 0.05, d );
+    float half_w = ( aspect + slant ) * 0.5 + 0.05;
+    float splice = mix( -half_w - 0.05, half_w + 0.05, d );
 
     // Wow and flutter: a slow speed error and a fast one, integrated into the
     // position.  It is a SPEED error, so what it moves is where the tape is.

@@ -32,8 +32,8 @@ void main()
     vec3 col = texture( tex0, vUV ).rgb * vLight;
 
     // Hot fracture edges, strongest during the blast.
-    vec2  cellUV = fract( vUV * vec2( 75.0, 40.0 ) );
-    vec2  b = min( cellUV, 1.0 - cellUV );
+    vec2  cell_uv = fract( vUV * vec2( 75.0, 40.0 ) );
+    vec2  b = min( cell_uv, 1.0 - cell_uv );
     float edge = 1.0 - smoothstep( 0.0, 0.10, min( b.x, b.y ) );
     col += hueRot( vec3( 1.0, 0.55, 0.20 ), audioChromaHue )
            * edge * ( 0.15 + 1.6 * audioDrop );

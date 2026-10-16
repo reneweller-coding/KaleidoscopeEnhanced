@@ -61,7 +61,7 @@ vec3 hsv2rgb( vec3 c )
 }
 
 // ---- Sky shell: shared hash/noise/fbm + three backdrop styles, all tinted
-/// by this instance's own accentColor so the environment and the hull's
+/// by this instance's own accent_color so the environment and the hull's
 /// accent glow read as one coherent identity. ----
 float hash13( vec3 p )
 {
@@ -124,8 +124,8 @@ vec3 renderSky( vec3 dir, vec3 tint, float bgType )
     }
     else // starfield with a bright nearby star -- for the solar collector
     {
-        vec3  sunDir = normalize( vec3( -0.3, 0.15, 1.0 ) );
-        float d = max( dot( dir, sunDir ), 0.0 );
+        vec3  sun_dir = normalize( vec3( -0.3, 0.15, 1.0 ) );
+        float d = max( dot( dir, sun_dir ), 0.0 );
         vec3  sun = tint * pow( d, 400.0 ) * 8.0 + tint * pow( d, 8.0 ) * 0.6;
         return vec3( 0.01 ) + sun + vec3( 1.0 ) * starsField( dir, 0.0015 );
     }
@@ -173,11 +173,11 @@ void main()
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
     float tint = tintP; // 0 is a valid, meaningful hue -- no fallback
     float gp = ( glowP > 0.01 ? glowP : 1.0 );
-    vec3  accentColor = hsv2rgb( vec3( tint / 6.2831853, 0.55, 1.0 ) );
+    vec3  accent_color = hsv2rgb( vec3( tint / 6.2831853, 0.55, 1.0 ) );
 
     if ( vBg > 0.5 )
     {
-        fragColor = vec4( renderSky( normalize( vPos ), accentColor, bgTypeP ), 1.0 );
+        fragColor = vec4( renderSky( normalize( vPos ), accent_color, bgTypeP ), 1.0 );
         return;
     }
 
@@ -195,18 +195,18 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
-    vec3  lightDir = normalize( vec3( 0.35, 0.55, -0.55 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.35, 0.55, -0.55 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 50.0, 8.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 50.0, 8.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0 ), base.rgb, metallic );
 
     vec3 col = base.rgb * ( 0.5 + diff * ( 1.3 + 0.4 * audioSwell ) + fill * 0.3 );
-    col += specColor * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
 
     // The one deliberately shared trick: the accent color comes from
     // tintP, so each instance's XML entry picks its own signature color
@@ -214,19 +214,19 @@ void main()
     // It rides the same "bright baked patches glow" idea as the other
     // families' window/vent/docking accents.
     float luma = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
-    float accentMask = smoothstep( 0.18, 0.45, luma );
-    col += accentColor * accentMask * gp * ( 0.4 + 0.5 * audioSwell ) * ( 0.85 + 0.3 * audioKick );
+    float accent_mask = smoothstep( 0.18, 0.45, luma );
+    col += accent_color * accent_mask * gp * ( 0.4 + 0.5 * audioSwell ) * ( 0.85 + 0.3 * audioKick );
 
-    // Fixed accentColor rim -- tintP is this instance's whole identity, so
+    // Fixed accent_color rim -- tintP is this instance's whole identity, so
     // the hull's own rim stays that color rather than picking up whatever
     // the backdrop happens to be doing at that exact pixel.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
-    col += accentColor * fresnel * ( 0.1 + 0.2 * audioSwell ) * gp;
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
+    col += accent_color * fresnel * ( 0.1 + 0.2 * audioSwell ) * gp;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -242,7 +242,7 @@ void main()
     float f = abs( fract( x ) - 0.5 );
     float line = smoothstep( px * 1.5, 0.0, 0.5 - f );
     float idx = step( mod( floor( x + 0.5 ), 5.0 ), 0.5 );
-    float lineI = smoothstep( px * 3.0, 0.0, 0.5 - f ) * idx;
+    float line_i = smoothstep( px * 3.0, 0.0, 0.5 - f ) * idx;
     // Neon hypsometric colour.
     vec3 cold = hsv2rgb( vec3( fract( 0.55 + 0.25 * h + hueP * 0.159 ), 0.8, 1.0 ) );
     vec3 warm = hsv2rgb( vec3( fract( 0.95 + 0.15 * h + hueP * 0.159 ), 0.8, 1.0 ) );
@@ -257,7 +257,7 @@ void main()
     vec3  col = vec3( 0.01, 0.012, 0.02 ) + lc * ( 0.02 + 0.08 * clamp( fillP, 0.0, 1.0 ) ) * ( 0.5 + h )
                 + vec3( 0.03 ) * shade * ( 0.3 + 0.9 * swell );
     col += lc * line * 0.8;
-    col += mix( lc, vec3( 1.0 ), 0.3 ) * lineI * ( 0.6 + 1.2 * kick );
+    col += mix( lc, vec3( 1.0 ), 0.3 ) * line_i * ( 0.6 + 1.2 * kick );
     col += lc * exp( -( 0.5 - f ) / ( px * 6.0 ) ) * 0.1;
     // Scan line.
     float sy = mod( 0.08 * sceneTime, 2.6 ) - 1.3; // wraps well off-screen

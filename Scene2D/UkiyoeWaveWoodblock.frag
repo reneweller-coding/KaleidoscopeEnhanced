@@ -83,14 +83,14 @@ void main()
     float reach = ( 0.3 + 0.7 * smoothstep( 0.0, 0.8, prog ) ) * crest * ( 0.85 + 0.3 * clamp( audioSwell, 0.0, 1.0 ) );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     vec3  blue = mix( vec3( 0.1, 0.2, 0.45 ), imgPalette( hue * 0.159 + 0.62 ), 0.25 * clamp( blueP, 0.0, 1.0 ) );
-    vec3  blueLight = mix( vec3( 0.35, 0.55, 0.75 ), imgPalette( hue * 0.159 + 0.58 ), 0.2 );
+    vec3  blue_light = mix( vec3( 0.35, 0.55, 0.75 ), imgPalette( hue * 0.159 + 0.58 ), 0.2 );
     vec3  cream = vec3( 0.93, 0.87, 0.72 );
     vec3  ink = vec3( 0.1, 0.09, 0.1 );
 
     // The paper: cream with the photo as a faint grain and the sky field.
     vec3 paper = cream * ( 0.92 + 0.08 * noise2( p * 200.0 ) );
-    vec3 skyField = mix( paper, img( gl_FragCoord.xy / resolution ) * cream * 1.1, 0.35 );
-    vec3 col = mix( skyField, paper, smoothstep( 0.1, 0.5, p.y ) );
+    vec3 sky_field = mix( paper, img( gl_FragCoord.xy / resolution ) * cream * 1.1, 0.35 );
+    vec3 col = mix( sky_field, paper, smoothstep( 0.1, 0.5, p.y ) );
     // The far mountain under the wave: a small cone with a snow cap.
     float mtn = step( p.y, -0.05 + 0.18 * ( 1.0 - abs( p.x - 0.25 ) * 4.0 ) ) * step( abs( p.x - 0.25 ), 0.25 );
     col = mix( col, blue * 0.9, mtn );
@@ -102,33 +102,33 @@ void main()
     // Wave profile: height as a function of x, plus the curl over the top.
     float wx = ( p.x + aspect * 0.5 ) / aspect; // 0 left .. 1 right
     float body = -0.45 + 0.9 * reach * pow( smoothstep( 0.0, 0.75, wx ) * ( 1.0 - smoothstep( 0.75, 0.95, wx ) ), 0.8 );
-    float inWave = step( p.y, body );
+    float in_wave = step( p.y, body );
     // The curl: the crest bends over to the right at the top: a circle-ish lobe.
     vec2  cc = vec2( -aspect * 0.5 + aspect * 0.72, body + 0.02 );
-    float curlR = 0.18 * reach;
+    float curl_r = 0.18 * reach;
     vec2  cq = p - cc;
-    float curl = step( length( cq ), curlR ) * step( 0.0, cq.x ) * step( -0.2, cq.y )
-                 * ( 1.0 - step( length( cq - vec2( 0.05, -0.1 ) ), curlR * 0.55 ) * step( cq.y, 0.0 ) );
-    float wave = max( inWave, curl );
+    float curl = step( length( cq ), curl_r ) * step( 0.0, cq.x ) * step( -0.2, cq.y )
+                 * ( 1.0 - step( length( cq - vec2( 0.05, -0.1 ) ), curl_r * 0.55 ) * step( cq.y, 0.0 ) );
+    float wave = max( in_wave, curl );
     // Water lines: lighter stripes following the profile.
     float stripes = pow( 0.5 + 0.5 * sin( ( p.y - body ) * 60.0 + p.x * 20.0 ), 6.0 );
-    vec3  water = mix( blue, blueLight, stripes * 0.8 );
+    vec3  water = mix( blue, blue_light, stripes * 0.8 );
     water = mix( water, blue * 0.7, smoothstep( 0.0, 0.35, body - p.y ) ); // darker deep in the body
     col = mix( col, water, wave );
     // The key line at the crest and the curl edge.
-    float edgeLine = smoothstep( 0.008, 0.0, abs( p.y - body ) ) * step( 0.05, wx ) * step( wx, 0.95 );
-    edgeLine = max( edgeLine, smoothstep( 0.008, 0.0, abs( length( cq ) - curlR ) ) * step( 0.0, cq.x ) );
-    col = mix( col, ink, edgeLine * 0.9 );
+    float edge_line = smoothstep( 0.008, 0.0, abs( p.y - body ) ) * step( 0.05, wx ) * step( wx, 0.95 );
+    edge_line = max( edge_line, smoothstep( 0.008, 0.0, abs( length( cq ) - curl_r ) ) * step( 0.0, cq.x ) );
+    col = mix( col, ink, edge_line * 0.9 );
     // Foam claws: round dots along the crest and the curl edge, brighter on
     // the kick; spray dots above in the air, on the treble.
     float along = wx * 40.0;
     float claw = smoothstep( 0.35, 0.15, length( vec2( fract( along ) - 0.5, ( p.y - body - 0.02 ) * 40.0 ) ) )
                  * step( 0.2, wx ) * step( wx, 0.9 );
-    float curlAng = atan( cq.y, cq.x );
-    float clawCurl = smoothstep( 0.35, 0.15,
-                                 length( vec2( fract( curlAng * 3.0 ) - 0.5, ( length( cq ) - curlR ) * 40.0 ) ) )
-                     * step( 0.0, cq.x ) * step( 0.0, curlAng );
-    col = mix( col, cream * ( 1.0 + 0.12 * audioKick ), max( claw, clawCurl ) );
+    float curl_ang = atan( cq.y, cq.x );
+    float claw_curl = smoothstep( 0.35, 0.15,
+                                  length( vec2( fract( curl_ang * 3.0 ) - 0.5, ( length( cq ) - curl_r ) * 40.0 ) ) )
+                      * step( 0.0, cq.x ) * step( 0.0, curl_ang );
+    col = mix( col, cream * ( 1.0 + 0.12 * audioKick ), max( claw, claw_curl ) );
     vec2  su = p * 50.0;
     vec2  sc = floor( su );
     vec2  sf = fract( su ) - 0.5;
@@ -143,7 +143,7 @@ void main()
                step( abs( p.x - aspect * 0.42 ), 0.02 ) * step( abs( p.y - 0.36 ), 0.06 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

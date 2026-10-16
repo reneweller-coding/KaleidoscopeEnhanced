@@ -14,7 +14,7 @@ in vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
  * already audio-modulated per vertex by the companion vertex shader (the
  * filament network's pulse/growth reactivity lives there), and vTexCoord
  * both maps the photo texture and drives the exponential edge glow along the
- * strand via filamentEdge.
+ * strand via filament_edge.
  */
 
 uniform sampler2D tex0;          ///< The current photo.
@@ -26,10 +26,10 @@ void main()
 {
     vec3  photo = ( interpolation * texture( tex0, vTexCoord ) + ( 1.0 - interpolation ) * texture( tex1, vTexCoord ) )
                       .rgb;
-    float filamentEdge = exp( -abs( vTexCoord.x - 0.5 ) * 6.0 );
+    float filament_edge = exp( -abs( vTexCoord.x - 0.5 ) * 6.0 );
 
     vec3 col = mix( vColor.rgb * 0.5, photo * 1.35, 0.6 );
-    col += filamentEdge * vColor.rgb * 1.6;
+    col += filament_edge * vColor.rgb * 1.6;
 
     fragColor = vec4( col, 1.0 );
 }

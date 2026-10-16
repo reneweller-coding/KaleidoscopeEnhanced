@@ -87,8 +87,8 @@ void main()
     vec3 L = normalize( vec3( 0.45 * sin( time * 0.28 ), 0.45 * cos( time * 0.21 ), 0.9 ) );
 
     float diff = max( dot( n, L ), 0.0 );
-    vec3  Hv = normalize( L + V );
-    float spec = pow( max( dot( n, Hv ), 0.0 ), 28.0 + 45.0 * shineP );
+    vec3  hv = normalize( L + V );
+    float spec = pow( max( dot( n, hv ), 0.0 ), 28.0 + 45.0 * shineP );
     float fres = pow( 1.0 - max( dot( n, V ), 0.0 ), 3.0 );
 
     // Reflection: the photo, sampled along the normal — the ferrofluid mirrors

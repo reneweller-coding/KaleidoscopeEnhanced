@@ -114,14 +114,14 @@ void main()
     float seed = floor( clamp( rocksP, 0.0, 1.0 ) * 5.0 );
 
     // The lamp's reach: brightest in a broad pool that wanders slowly.
-    vec2  lampC = vec2( 0.3 * sin( T * 0.03 ), 0.05 + 0.08 * sin( T * 0.021 ) );
-    float reach = exp( -dot( p - lampC, p - lampC ) * 1.6 );
-    float uvI = ( 0.55 + 0.45 * reach ) * ( 0.8 + 0.4 * swell );
+    vec2  lamp_c = vec2( 0.3 * sin( T * 0.03 ), 0.05 + 0.08 * sin( T * 0.021 ) );
+    float reach = exp( -dot( p - lamp_c, p - lamp_c ) * 1.6 );
+    float uv_i = ( 0.55 + 0.45 * reach ) * ( 0.8 + 0.4 * swell );
 
     // Dark room, violet wash on the back wall; the shelf edge.
-    float shelfY = -0.36;
+    float shelf_y = -0.36;
     vec3  col = vec3( 0.02, 0.0, 0.05 ) + vec3( 0.1, 0.02, 0.22 ) * reach * 0.4 * ( 0.7 + 0.5 * swell );
-    if ( p.y < shelfY )
+    if ( p.y < shelf_y )
         col = vec3( 0.015, 0.01, 0.03 ) + vec3( 0.08, 0.02, 0.18 ) * reach * 0.3;
 
     // The fluorescent colours.
@@ -138,14 +138,14 @@ void main()
         float cx = -0.78 + float( k ) * 0.31 + 0.06 * ( hash11( fk * 1.3 ) - 0.5 );
         float rw = 0.13 + 0.04 * hash11( fk * 2.1 );
         float rh = 0.16 + 0.2 * hash11( fk * 3.7 );
-        vec2  c = vec2( cx, shelfY + rh * 0.8 );
+        vec2  c = vec2( cx, shelf_y + rh * 0.8 );
         vec2  q = ( p - c ) / vec2( rw, rh );
         float ang = atan( q.y, q.x );
         // An irregular lumpy outline, flat on the shelf.
         float rr = 1.0 + 0.18 * ( fbm( vec2( cos( ang ), sin( ang ) ) * 1.5 + fk ) - 0.5 )
                    + 0.08 * sin( ang * 5.0 + fk );
         float d = ( length( q ) - rr ) * min( rw, rh );
-        d = max( d, shelfY - p.y );
+        d = max( d, shelf_y - p.y );
         float cov = smoothstep( px, -px, d );
         // Which minerals: two per specimen.
         float h = hash11( fk * 5.9 );
@@ -167,21 +167,21 @@ void main()
         vec3  glow = m1 * vein * ( 0.9 + 0.4 * fbm( tq * 3.0 ) ) + m2 * pocket * ( 0.55 + 0.7 * xtal );
         glow *= 0.6 + 0.5 * bulge;
         glow = mix( glow, glow * imgPalette( fk * 0.1 + hueP * 0.159 ) * 1.3, 0.06 );
-        vec3 spec = host + glow * uvI;
+        vec3 spec = host + glow * uv_i;
         // A rim of violet light from the lamp above.
-        spec += vec3( 0.25, 0.05, 0.5 ) * smoothstep( -0.02, 0.0, d ) * smoothstep( -0.2, 0.8, q.y ) * 0.3 * uvI;
+        spec += vec3( 0.25, 0.05, 0.5 ) * smoothstep( -0.02, 0.0, d ) * smoothstep( -0.2, 0.8, q.y ) * 0.3 * uv_i;
         col = mix( col, spec, cov );
         // The glow spilling onto the shelf in front and the wall behind.
-        vec3 avgGlow = ( m1 * 0.5 + m2 * 0.4 ) * uvI;
-        spill += avgGlow * exp( -length( ( p - vec2( cx, shelfY ) ) * vec2( 0.8, 2.5 ) ) / ( rw * 1.5 ) ) * 0.18
+        vec3 avg_glow = ( m1 * 0.5 + m2 * 0.4 ) * uv_i;
+        spill += avg_glow * exp( -length( ( p - vec2( cx, shelf_y ) ) * vec2( 0.8, 2.5 ) ) / ( rw * 1.5 ) ) * 0.18
                  * ( 1.0 - cov );
     }
     col += spill;
     // The shelf's front edge catching the violet light.
-    col += vec3( 0.2, 0.05, 0.4 ) * smoothstep( 0.006, 0.0, abs( p.y - shelfY + 0.004 ) ) * 0.4 * ( 0.5 + reach );
+    col += vec3( 0.2, 0.05, 0.4 ) * smoothstep( 0.006, 0.0, abs( p.y - shelf_y + 0.004 ) ) * 0.4 * ( 0.5 + reach );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

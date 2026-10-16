@@ -70,65 +70,65 @@ void main()
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Tile grid setup (50x50 to 80x80 matrix)
-    vec2 gridUV = uv * 28.0 * den;
-    vec2 tileID = floor( gridUV );
-    vec2 localUV = fract( gridUV ) - vec2( 0.5 );
+    vec2 grid_uv = uv * 28.0 * den;
+    vec2 tile_id = floor( grid_uv );
+    vec2 local_uv = fract( grid_uv ) - vec2( 0.5 );
 
     // Sample photo at the tile center
-    vec2  photoUV = ( tileID / ( 28.0 * den ) ) * 0.5 + vec2( 0.5 );
-    vec3  tilePhoto = img( fract( photoUV ) );
-    float tileLum = dot( tilePhoto, vec3( 0.299, 0.587, 0.114 ) );
+    vec2  photo_uv = ( tile_id / ( 28.0 * den ) ) * 0.5 + vec2( 0.5 );
+    vec3  tile_photo = img( fract( photo_uv ) );
+    float tile_lum = dot( tile_photo, vec3( 0.299, 0.587, 0.114 ) );
 
     // Spectrum band elevation per tile column
-    float tileHash = hash21( tileID );
-    int   specBand = int( clamp( tileHash * 31.0, 0.0, 31.0 ) );
-    float bandVal = audioSpectrum[specBand];
+    float tile_hash = hash21( tile_id );
+    int   spec_band = int( clamp( tile_hash * 31.0, 0.0, 31.0 ) );
+    float band_val = audioSpectrum[spec_band];
 
     // Audio-driven kinetic tile height displacement (3D relief)
-    float waveX = sin( tileID.x * 0.3 + t * 3.0 );
-    float waveY = cos( tileID.y * 0.3 - t * 2.5 );
-    float height = ( tileLum * 1.5 + bandVal * 2.0 + ( waveX + waveY ) * 0.4 ) * dpt * ( 0.8 + 0.6 * audioBass );
+    float wave_x = sin( tile_id.x * 0.3 + t * 3.0 );
+    float wave_y = cos( tile_id.y * 0.3 - t * 2.5 );
+    float height = ( tile_lum * 1.5 + band_val * 2.0 + ( wave_x + wave_y ) * 0.4 ) * dpt * ( 0.8 + 0.6 * audioBass );
 
     // Mechanical tile flip / tilt angle
-    float flipWave = sin( dot( tileID, vec2( 0.5, 0.8 ) ) * 0.4 - time * 6.0 );
-    float flipAngle = ( height * 0.4 + smoothstep( 0.7, 1.0, flipWave ) * 1.2 * audioKick );
+    float flip_wave = sin( dot( tile_id, vec2( 0.5, 0.8 ) ) * 0.4 - time * 6.0 );
+    float flip_angle = ( height * 0.4 + smoothstep( 0.7, 1.0, flip_wave ) * 1.2 * audioKick );
 
     // Tile border & beveled face
-    vec2  beveled = abs( localUV ) * 2.0;
-    float tileBorder = max( beveled.x, beveled.y );
-    float faceMask = smoothstep( 0.95, 0.85, tileBorder ); // 1 on face, 0 at gap
-    float bevelGlint = smoothstep( 0.75, 0.90, tileBorder ) * faceMask;
+    vec2  beveled = abs( local_uv ) * 2.0;
+    float tile_border = max( beveled.x, beveled.y );
+    float face_mask = smoothstep( 0.95, 0.85, tile_border ); // 1 on face, 0 at gap
+    float bevel_glint = smoothstep( 0.75, 0.90, tile_border ) * face_mask;
 
     // 3D Tile surface normal with tilt
-    vec3 tileNormal = normalize( vec3(
-        sin( flipAngle ) * ( localUV.x > 0.0 ? 1.0 : -1.0 ),
-        cos( flipAngle ) * ( localUV.y > 0.0 ? 1.0 : -1.0 ),
+    vec3 tile_normal = normalize( vec3(
+        sin( flip_angle ) * ( local_uv.x > 0.0 ? 1.0 : -1.0 ),
+        cos( flip_angle ) * ( local_uv.y > 0.0 ? 1.0 : -1.0 ),
         1.0 ) );
 
     // Dynamic lighting (sunlight from top-right)
-    vec3 lightDir = normalize( vec3( 0.5, 0.8, 1.2 ) );
-    vec3 viewDir = vec3( 0.0, 0.0, 1.0 );
-    vec3 halfVec = normalize( lightDir + viewDir );
+    vec3 light_dir = normalize( vec3( 0.5, 0.8, 1.2 ) );
+    vec3 view_dir = vec3( 0.0, 0.0, 1.0 );
+    vec3 half_vec = normalize( light_dir + view_dir );
 
-    float diff = max( dot( tileNormal, lightDir ), 0.0 );
-    float spec = pow( max( dot( tileNormal, halfVec ), 0.0 ), 32.0 );
+    float diff = max( dot( tile_normal, light_dir ), 0.0 );
+    float spec = pow( max( dot( tile_normal, half_vec ), 0.0 ), 32.0 );
 
     // Ambient occlusion / cast shadow between elevated tiles
-    float shadow = clamp( 1.0 - ( 1.0 - height * 0.3 ) * ( 1.0 - faceMask ) * 1.5, 0.1, 1.0 );
+    float shadow = clamp( 1.0 - ( 1.0 - height * 0.3 ) * ( 1.0 - face_mask ) * 1.5, 0.1, 1.0 );
 
     // Mosaic coloring
-    vec3 tileCol = tilePhoto * ( diff * 0.7 + 0.3 ) * ( 0.8 + 0.4 * audioLevel );
-    tileCol += vec3( 1.0, 0.95, 0.85 ) * spec * ( 0.8 + 1.5 * audioHigh );
-    tileCol += vec3( 1.0, 0.8, 0.4 ) * bevelGlint * ( 0.6 + 1.2 * audioMid ); // Golden bevel shine
+    vec3 tile_col = tile_photo * ( diff * 0.7 + 0.3 ) * ( 0.8 + 0.4 * audioLevel );
+    tile_col += vec3( 1.0, 0.95, 0.85 ) * spec * ( 0.8 + 1.5 * audioHigh );
+    tile_col += vec3( 1.0, 0.8, 0.4 ) * bevel_glint * ( 0.6 + 1.2 * audioMid ); // Golden bevel shine
 
-    vec3 col = tileCol * faceMask * shadow;
+    vec3 col = tile_col * face_mask * shadow;
 
     // Dark chassis background in tile gaps
-    col += vec3( 0.02, 0.03, 0.05 ) * ( 1.0 - faceMask );
+    col += vec3( 0.02, 0.03, 0.05 ) * ( 1.0 - face_mask );
 
     // Laser scan beam traveling across mosaic
-    float scanLine = exp( -abs( uv.y - sin( time * 2.0 ) * 0.5 ) * 25.0 ) * ( 0.4 + 1.2 * audioKick );
-    col += vec3( 0.1, 0.8, 1.0 ) * scanLine;
+    float scan_line = exp( -abs( uv.y - sin( time * 2.0 ) * 0.5 ) * 25.0 ) * ( 0.4 + 1.2 * audioKick );
+    col += vec3( 0.1, 0.8, 1.0 ) * scan_line;
 
     col = hueRot( col, audioChromaHue + hue );
     col = pow( col, vec3( 0.9 ) );

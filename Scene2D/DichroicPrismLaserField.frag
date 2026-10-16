@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nPlates = ( plateCountP > 1.0 ) ? plateCountP : 5.0;
+    float n_plates = ( plateCountP > 1.0 ) ? plateCountP : 5.0;
     float pol = ( polarizeP > 0.01 ) ? polarizeP : 1.2;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -72,89 +72,89 @@ void main()
     // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
-    vec3  colAcc = vec3( 0.0 );
-    float totalWeight = 0.0;
-    float laserAcc = 0.0;
-    vec3  laserCol = vec3( 0.0 );
+    vec3  col_acc = vec3( 0.0 );
+    float total_weight = 0.0;
+    float laser_acc = 0.0;
+    vec3  laser_col = vec3( 0.0 );
 
     // Iterate across multiple tilted dichroic glass plates
-    int numP = int( clamp( nPlates, 3.0, 6.0 ) );
+    int num_p = int( clamp( n_plates, 3.0, 6.0 ) );
     for ( int k = 0; k < 5; k++ )
     {
-        if ( k >= numP )
+        if ( k >= num_p )
             break;
         float kf = float( k );
 
         // Plate angle and rotation
-        float plateAngle = t * 0.3 + kf * ( 6.2831853 / float( numP ) );
-        float cs = cos( plateAngle ), sn = sin( plateAngle );
-        vec2  pPlate = mat2( cs, -sn, sn, cs ) * uv;
+        float plate_angle = t * 0.3 + kf * ( 6.2831853 / float( num_p ) );
+        float cs = cos( plate_angle ), sn = sin( plate_angle );
+        vec2  p_plate = mat2( cs, -sn, sn, cs ) * uv;
 
         // Bounded rectangular glass plate SDF
         // Sub-bass swells the plate half-extents on top of the per-plate swell
         // breathing -- the glass itself grows, the film/laser pattern on it does not.
-        vec2  plateHalf = vec2( 0.7, 0.45 + 0.1 * sin( audioSwell * 2.0 + kf ) ) * ( 1.0 + 0.30 * audioSubBass );
-        vec2  dBox = abs( pPlate ) - plateHalf;
-        float plateDist = max( dBox.x, dBox.y );
+        vec2  plate_half = vec2( 0.7, 0.45 + 0.1 * sin( audioSwell * 2.0 + kf ) ) * ( 1.0 + 0.30 * audioSubBass );
+        vec2  d_box = abs( p_plate ) - plate_half;
+        float plate_dist = max( d_box.x, d_box.y );
 
         // Dichroic thin-film transmission phase (wavelength-dependent interference)
-        float filmPhase = ( pPlate.x * 2.0 + pPlate.y * 1.5 ) * pol + t * 0.8 + kf * 0.7;
-        vec3  dichroicColor = vec3(
-                                  sin( filmPhase ),
-                                  sin( filmPhase + 2.094 ),
-                                  sin( filmPhase + 4.188 ) )
-                                  * 0.5
-                              + 0.5;
+        float film_phase = ( p_plate.x * 2.0 + p_plate.y * 1.5 ) * pol + t * 0.8 + kf * 0.7;
+        vec3  dichroic_color = vec3(
+                                   sin( film_phase ),
+                                   sin( film_phase + 2.094 ),
+                                   sin( film_phase + 4.188 ) )
+                                   * 0.5
+                               + 0.5;
 
         // Laser beam slicing through plate
-        float laserLine = abs( pPlate.y - 0.2 * sin( pPlate.x * 4.0 + t * 3.0 ) );
+        float laser_line = abs( p_plate.y - 0.2 * sin( p_plate.x * 4.0 + t * 3.0 ) );
         // Narrow beam (90, not 25) and per-plate SPECTRAL colour: five wide
         // pale beams summed into the old uniform wash.
-        float laserGlow = exp( -laserLine * 90.0 ) * step( plateDist, 0.0 );
-        laserAcc += laserGlow * ( 1.0 + 3.0 * audioKick );
-        laserCol += pow( dichroicColor, vec3( 1.5 ) ) * laserGlow * ( 1.0 + 2.2 * audioKick );
+        float laser_glow = exp( -laser_line * 90.0 ) * step( plate_dist, 0.0 );
+        laser_acc += laser_glow * ( 1.0 + 3.0 * audioKick );
+        laser_col += pow( dichroic_color, vec3( 1.5 ) ) * laser_glow * ( 1.0 + 2.2 * audioKick );
 
         // Glass plate edge bevel glow. The first pass capped the glow*kick
         // product to 1.0, but the 1.8-peak blue tint channel still turned
         // that "capped" value into 1.8 -- lower both the cap and the tint
         // constants so the final tinted term stays under 1.0.
-        float edgeGlow = min(
-            exp( -abs( plateDist ) * ( 20.0 + 10.0 * audioCentroid ) ) * glw * ( 1.0 + 2.0 * audioKick ), 0.5 );
+        float edge_glow = min(
+            exp( -abs( plate_dist ) * ( 20.0 + 10.0 * audioCentroid ) ) * glw * ( 1.0 + 2.0 * audioKick ), 0.5 );
 
         // Sample texture mapped through the dichroic plate
-        vec2 sampleUV = fract( pPlate * 0.4 + 0.5 );
-        vec3 texCol = img( sampleUV );
-        vec3 palCol = imgPalette( kf * 0.2 + t * 0.05 );
+        vec2 sample_uv = fract( p_plate * 0.4 + 0.5 );
+        vec3 tex_col = img( sample_uv );
+        vec3 pal_col = imgPalette( kf * 0.2 + t * 0.05 );
 
-        vec3 plateCol = mix( texCol, palCol, 0.4 ) * dichroicColor;
-        plateCol += vec3( 0.9, 0.8, 1.2 ) * edgeGlow;
+        vec3 plate_col = mix( tex_col, pal_col, 0.4 ) * dichroic_color;
+        plate_col += vec3( 0.9, 0.8, 1.2 ) * edge_glow;
 
-        float w = smoothstep( 0.08, -0.05, plateDist );
-        colAcc += plateCol * w;
-        totalWeight += w;
+        float w = smoothstep( 0.08, -0.05, plate_dist );
+        col_acc += plate_col * w;
+        total_weight += w;
     }
 
-    vec3 finalCol = colAcc / max( 0.001, totalWeight );
+    vec3 final_col = col_acc / max( 0.001, total_weight );
 
-    // Add bright slicing laser beams. laserAcc sums UNWEIGHTED across up to
+    // Add bright slicing laser beams. laser_acc sums UNWEIGHTED across up to
     // 5 overlapping rotated plates, each contributing up to ~4 on a strong
     // kick. The first pass capped the ACCUMULATOR to 1.4, but the 2.0-peak
     // tint channel still turned that into up to 2.8 per channel -- the
     // accumulator cap alone wasn't the fix, the tinted term needed its own
-    // ceiling too. laserTint is also added across the whole frame wherever
-    // ANY plate is lit (unlike plateCol it isn't weight-blended against the
+    // ceiling too. laser_tint is also added across the whole frame wherever
+    // ANY plate is lit (unlike plate_col it isn't weight-blended against the
     // background), which is why this read as an almost uniform pale wash
     // rather than isolated beams. Tighten the cap and lower the tint
     // constants.
-    vec3 laserTint = min( laserCol, vec3( 1.35 ) ) * glw;
-    finalCol += laserTint;
+    vec3 laser_tint = min( laser_col, vec3( 1.35 ) ) * glw;
+    final_col += laser_tint;
 
     // Background optical dispersion
-    vec3 bgCol = imgPalette( length( uv ) * 0.4 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
-    finalCol = mix( bgCol, finalCol, clamp( totalWeight, 0.0, 1.0 ) );
+    vec3 bg_col = imgPalette( length( uv ) * 0.4 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
+    final_col = mix( bg_col, final_col, clamp( total_weight, 0.0, 1.0 ) );
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 1.6 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 1.6 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -14,13 +14,13 @@ out vec3 gObj;
 out vec4 gRnd;
 out vec2 gUV;
 
-const float PI = 3.14159265; ///< Pi.
+const float Pi = 3.14159265; ///< Pi.
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float th = attrA.x * 2.0 * PI;
-    float phi = attrA.y * PI;
+    float th = attrA.x * 2.0 * Pi;
+    float phi = attrA.y * Pi;
     gObj = vec3( sin( phi ) * cos( th ), cos( phi ), sin( phi ) * sin( th ) );
     gRnd = attrB;
     gUV = attrA.xy;

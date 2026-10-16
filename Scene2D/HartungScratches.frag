@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -255,25 +255,25 @@ void main()
                 continue;
             // A sheaf: lines fanning from a root point.
             vec2  root = id + vec2( 0.2 + 0.6 * hash21( id + gen ), 0.1 + 0.3 * hash21( id + gen + 2.0 ) );
-            float baseA = 1.5708 + ( hash21( id + gen + 5.0 ) - 0.5 ) * 1.2;
+            float base_a = 1.5708 + ( hash21( id + gen + 5.0 ) - 0.5 ) * 1.2;
             float fan = 0.3 + 0.9 * clamp( audioSpread, 0.0, 1.0 );
-            float nL = 8.0 + 16.0 * clamp( lineP, 0.0, 1.0 );
+            float n_l = 8.0 + 16.0 * clamp( lineP, 0.0, 1.0 );
             vec2  d = g - root;
             float r = length( d );
-            float a = atan( d.y, d.x ) - baseA;
+            float a = atan( d.y, d.x ) - base_a;
             float L = ( 0.5 + 0.7 * clamp( lengthP, 0.0, 1.0 ) ) * ( 0.6 + 0.4 * hash21( id + gen + 7.0 ) );
             float grow = smoothstep( 0.0, 0.2, life );
             // Nearest line in the fan (angles jittered per line).
-            float la = ( a / fan + 0.5 ) * nL;
+            float la = ( a / fan + 0.5 ) * n_l;
             float li = floor( la );
-            if ( li < 0.0 || li >= nL )
+            if ( li < 0.0 || li >= n_l )
                 continue;
             float jit = ( hash21( vec2( li, h + gen ) ) - 0.5 ) * 0.8 * ( 0.5 + rough );
-            float lineA = ( ( li + 0.5 + jit ) / nL - 0.5 ) * fan;
+            float line_a = ( ( li + 0.5 + jit ) / n_l - 0.5 ) * fan;
             float llen = L * ( 0.5 + 0.5 * hash21( vec2( h + gen, li ) ) );
-            float dist = abs( sin( a - lineA ) ) * r;
+            float dist = abs( sin( a - line_a ) ) * r;
             float w = 0.004 * ( 1.0 - 0.7 * r / max( llen, 1e-3 ) );
-            float on = smoothstep( w + 0.003, w, dist ) * step( r, llen * grow ) * step( 0.0, cos( a - lineA ) );
+            float on = smoothstep( w + 0.003, w, dist ) * step( r, llen * grow ) * step( 0.0, cos( a - line_a ) );
             float fade = smoothstep( 1.0, 0.75, life );
             scratch = max( scratch, on * fade );
         }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -280,22 +280,22 @@ void main()
                     atan( p.y, p.x ) + 0.02 * sceneTime + 0.2 * audioPhase );
     float grow = 0.9 + 0.1 * clamp( audioSpread, 0.0, 1.0 );
     float zoom = 0.25 + 0.3 * clamp( photoZoomP, 0.0, 1.0 );
-    float rimA, kA, rimB, kB;
-    vec4  A = doyle( w, 5.0, 3.0, grow, zoom, rimA, kA );
-    vec4  B = doyle( w, 8.0, 5.0, grow, zoom, rimB, kB );
-    float mixB = smoothstep( 0.47, 0.53, clamp( armsP, 0.0, 1.0 ) + 0.001 ); // a short cross-fade: two packings never
-                                                                             // sit on top of each other for long
+    float rim_a, k_a, rim_b, k_b;
+    vec4  A = doyle( w, 5.0, 3.0, grow, zoom, rim_a, k_a );
+    vec4  B = doyle( w, 8.0, 5.0, grow, zoom, rim_b, k_b );
+    float mix_b = smoothstep( 0.47, 0.53, clamp( armsP, 0.0, 1.0 ) + 0.001 ); // a short cross-fade: two packings never
+                                                                              // sit on top of each other for long
     vec3  gap = mix( vec3( 0.02, 0.03, 0.08 ), vec3( 0.06, 0.03, 0.02 ), mode );
-    vec3  outC[2];
+    vec3  out_c[2];
     float rims[2];
     vec4  D[2];
     float ks[2];
     D[0] = A;
     D[1] = B;
-    rims[0] = rimA;
-    rims[1] = rimB;
-    ks[0] = kA;
-    ks[1] = kB;
+    rims[0] = rim_a;
+    rims[1] = rim_b;
+    ks[0] = k_a;
+    ks[1] = k_b;
     for ( int s = 0; s < 2; ++s )
     {
         vec4  d = D[s];
@@ -306,14 +306,14 @@ void main()
         vec3  ph = imgLod( uv, 0.8 ) * ( 0.85 + 0.4 * swell );
         float px = fwidth( rr ) + 1e-4;
         float inside = smoothstep( 1.0 + px, 1.0 - px, rr );
-        vec3  rimC = mix( vec3( 1.0, 0.8, 0.4 ), glowColour( ph, local, hueP * 0.159 ), 0.3 );
+        vec3  rim_c = mix( vec3( 1.0, 0.8, 0.4 ), glowColour( ph, local, hueP * 0.159 ), 0.3 );
         float rw = 0.04 + 0.08 * clamp( rimP, 0.0, 1.0 );
         float rim = smoothstep( rw + px, 0.0, abs( rr - 1.0 + rw ) );
         vec3  c = mix( gap, ph * ( 0.8 + 0.2 * ( 1.0 - rr * rr ) ), inside );
-        c = mix( c, rimC * ( 0.7 + 1.0 * kick ), rim );
-        outC[s] = c;
+        c = mix( c, rim_c * ( 0.7 + 1.0 * kick ), rim );
+        out_c[s] = c;
     }
-    vec3 col = mix( outC[0], outC[1], mixB );
+    vec3 col = mix( out_c[0], out_c[1], mix_b );
     // The infinitely small centre dissolves into a glow.
     vec3 gc = glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( w.x * 0.1, 0.0 ), hueP * 0.159 );
     col = mix( col, gc * 0.4, smoothstep( 0.012, 0.0, r ) );

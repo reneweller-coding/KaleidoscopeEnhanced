@@ -33,17 +33,17 @@ void main()
 
     // Prismatic facet border glow
     vec2  edge = smoothstep( 0.42, 0.49, abs( vUV - 0.5 ) );
-    float edgeGlow = max( edge.x, edge.y );
+    float edge_glow = max( edge.x, edge.y );
 
     // Specular glass reflection
     vec3  n = normalize( vNormal );
-    vec3  lightDir = normalize( vec3( 0.5, 0.9, -0.6 ) );
-    vec3  viewDir = normalize( -vWorldPos );
-    vec3  refl = reflect( -lightDir, n );
-    float spec = pow( max( dot( viewDir, refl ), 0.0 ), 32.0 );
+    vec3  light_dir = normalize( vec3( 0.5, 0.9, -0.6 ) );
+    vec3  view_dir = normalize( -vWorldPos );
+    vec3  refl = reflect( -light_dir, n );
+    float spec = pow( max( dot( view_dir, refl ), 0.0 ), 32.0 );
 
     vec3 col = mix( vCol.rgb * 0.4, photo * 1.5, 0.7 );
-    col += edgeGlow * vCol.rgb * 2.0;
+    col += edge_glow * vCol.rgb * 2.0;
     col += spec * vec3( 1.0, 1.0, 1.0 );
 
     fragColor = vec4( col, 1.0 );

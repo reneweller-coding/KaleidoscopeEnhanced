@@ -62,22 +62,22 @@ uniform float pulseP;
 uniform float speedP; ///< Speed knob, 0..1.
 
 // The scene projection: 55 deg vertical FOV, and the camera distance the
-// companion .vert applies (vp.z += kCam).  A generator program gets no
+// companion .vert applies (vp.z += Cam).  A generator program gets no
 // `resolution` uniform, so the layout assumes 16:9; a narrower frame simply
 // pushes the outer lattice column past the edge.
-const float kTanY = 0.5206;
-const float kAspect = 1.7778;
-const float kCam = 7.0;
+const float TanY = 0.5206;
+const float Aspect = 1.7778;
+const float Cam = 7.0;
 
-const uint ZOOIDS = 64u;
-const uint PER_ZOOID = 32u;
-const uint PER_COL = ZOOIDS * PER_ZOOID; ///< 2048 points per colony
-const uint COLS = 5u;
-const uint ROWS = 3u;
-const uint COLONIES = COLS * ROWS;         ///< 15 colonies
-const uint CHAIN_PTS = PER_COL * COLONIES; ///< 30720
-const uint SNOW = 6000u;                   ///< marine snow motes
-const uint TOTAL = CHAIN_PTS + SNOW;       ///< 36720 quads = 220320 vertices
+const uint Zooids = 64u;
+const uint PerZooid = 32u;
+const uint PerCol = Zooids * PerZooid; ///< 2048 points per colony
+const uint Cols = 5u;
+const uint Rows = 3u;
+const uint Colonies = Cols * Rows;       ///< 15 colonies
+const uint ChainPts = PerCol * Colonies; ///< 30720
+const uint Snow = 6000u;                 ///< marine snow motes
+const uint Total = ChainPts + Snow;      ///< 36720 quads = 220320 vertices
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -134,47 +134,47 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  idx = g.x + 64u * ( g.y + 64u * g.z );
-    if ( idx >= TOTAL )
+    if ( idx >= Total )
         return;
 
     float t = time * 0.4 * ( speedP > 0.0 ? speedP : 1.0 ) + audioAdvance * 0.2;
 
-    if ( idx >= CHAIN_PTS )
+    if ( idx >= ChainPts )
     {
         // ---- MARINE SNOW --------------------------------------------
         // Detritus drifting through the whole water volume, so the space
         // between the colonies reads as ocean instead of as nothing.
-        float fi = float( idx - CHAIN_PTS );
+        float fi = float( idx - ChainPts );
         float s0 = hash11( fi * 1.731 + 0.13 );
         float s1 = hash11( fi * 3.917 + 4.71 );
         float s2 = hash11( fi * 7.311 + 9.27 );
         float s3 = hash11( fi * 5.109 + 2.53 );
 
         float dz = 3.2 + 12.5 * s0;
-        float halfH = dz * kTanY;
-        float halfW = halfH * kAspect;
+        float half_h = dz * TanY;
+        float half_w = half_h * Aspect;
 
         // Slow sink with a lateral sway; wrapping keeps the field uniform.
         float fall = fract( s1 + t * 0.035 * ( 0.5 + s3 ) );
         float sway = sin( t * 0.5 + s2 * 6.2831853 ) * 0.05;
 
-        vec3  pos = vec3( ( s2 * 2.0 - 1.0 + sway ) * halfW * 1.04,
-                          ( 1.04 - 2.08 * fall ) * halfH,
-                          dz - kCam );
-        float r = halfH * 0.0026 * ( 0.6 + 0.9 * s3 ) * ( 1.0 + 0.35 * audioHigh );
+        vec3  pos = vec3( ( s2 * 2.0 - 1.0 + sway ) * half_w * 1.04,
+                          ( 1.04 - 2.08 * fall ) * half_h,
+                          dz - Cam );
+        float r = half_h * 0.0026 * ( 0.6 + 0.9 * s3 ) * ( 1.0 + 0.35 * audioHigh );
         emitQuad( pos, vec3( 0.0, 0.0, -1.0 ), s1, r );
         return;
     }
 
     // ---- ONE COLONY OF THE BLOOM ------------------------------------
-    uint colony = idx / PER_COL;
-    uint li = idx % PER_COL;
-    uint zooidID = li / PER_ZOOID;
-    uint ringIdx = li % PER_ZOOID;
+    uint colony = idx / PerCol;
+    uint li = idx % PerCol;
+    uint zooid_id = li / PerZooid;
+    uint ring_idx = li % PerZooid;
 
-    float zNorm = float( ringIdx ) / float( PER_ZOOID );
-    float s = ( float( zooidID ) + zNorm ) / float( ZOOIDS ); // [0,1] along the stem
-    float pNorm = float( li ) / float( PER_COL );
+    float z_norm = float( ring_idx ) / float( PerZooid );
+    float s = ( float( zooid_id ) + z_norm ) / float( Zooids ); // [0,1] along the stem
+    float p_norm = float( li ) / float( PerCol );
 
     float fc = float( colony );
     float c0 = hash11( fc * 13.77 + 2.10 );
@@ -183,19 +183,19 @@ void main()
     float c3 = hash11( fc * 4.63 + 5.90 );
     float c4 = hash11( fc * 17.23 + 3.30 );
 
-    uint gx = colony % COLS;
-    uint gy = ( colony / COLS ) % ROWS;
+    uint gx = colony % Cols;
+    uint gy = ( colony / Cols ) % Rows;
 
     float dz = 4.6 + 8.2 * c0; // this colony's view depth
-    float halfH = dz * kTanY;
-    float halfW = halfH * kAspect;
-    float fx = ( ( float( gx ) + 0.5 ) / float( COLS ) - 0.5 ) * 2.0 + ( c1 - 0.5 ) * 0.24;
-    float fy = ( ( float( gy ) + 0.5 ) / float( ROWS ) - 0.5 ) * 2.0 + ( c2 - 0.5 ) * 0.30;
-    vec3  ctr = vec3( fx * halfW * 1.02, fy * halfH * 1.02, dz - kCam );
+    float half_h = dz * TanY;
+    float half_w = half_h * Aspect;
+    float fx = ( ( float( gx ) + 0.5 ) / float( Cols ) - 0.5 ) * 2.0 + ( c1 - 0.5 ) * 0.24;
+    float fy = ( ( float( gy ) + 0.5 ) / float( Rows ) - 0.5 ) * 2.0 + ( c2 - 0.5 ) * 0.30;
+    vec3  ctr = vec3( fx * half_w * 1.02, fy * half_h * 1.02, dz - Cam );
 
     // Everything about the colony is a fraction of the frame at ITS depth, so a
     // far colony reads the same size as a near one instead of shrinking away.
-    float scale = halfH;
+    float scale = half_h;
 
     // The stem hangs along its own axis, leaning off vertical per colony.
     float lean = ( c3 - 0.5 ) * 1.5;
@@ -207,27 +207,27 @@ void main()
     // z -- so the half-length has to stay short enough that the nearest colony
     // cannot reach through the near plane whatever the preset rolls.
     float chain = clamp( ( chainP > 0.0 ? chainP : 1.0 ), 0.5, 2.0 );
-    float lenS = scale * ( 0.75 + 0.45 * c1 ) * chain;
+    float len_s = scale * ( 0.75 + 0.45 * c1 ) * chain;
     float phase = c2 * 6.2831853;
 
     // Winding sinusoidal stem, undulating in its own two lateral directions.
     float amp = scale * 0.30;
-    vec3  alongV = axis * ( ( s - 0.5 ) * 2.0 * lenS );
+    vec3  along_v = axis * ( ( s - 0.5 ) * 2.0 * len_s );
     vec3  wob = e1 * ( sin( s * 10.0 + t * 2.0 + phase ) * amp + sin( s * 25.0 - t * 3.0 + phase ) * amp * 0.25 )
                 + e2 * ( cos( s * 8.0 - t * 1.5 + phase ) * amp + cos( s * 20.0 + t * 2.5 + phase ) * amp * 0.25 );
 
     // Pulsating nectophores & trailing tentilla tentacles
-    float zooidAngle = float( ringIdx ) * ( 6.2831853 / float( PER_ZOOID ) );
+    float zooid_angle = float( ring_idx ) * ( 6.2831853 / float( PerZooid ) );
     float pulse = ( 0.20 + 0.10 * sin( s * 40.0 * ( pulseP > 0.0 ? pulseP : 1.0 ) - t * 8.0 ) )
                   * ( 1.0 + audioKick * 0.6 ) * scale * 0.55;
 
-    vec3 pos = ctr + alongV + wob
-               + e1 * ( cos( zooidAngle ) * pulse )
-               + e2 * ( sin( zooidAngle ) * pulse );
-    vec3 normal = normalize( vec3( cos( zooidAngle ), sin( zooidAngle ), 0.5 ) );
+    vec3 pos = ctr + along_v + wob
+               + e1 * ( cos( zooid_angle ) * pulse )
+               + e2 * ( sin( zooid_angle ) * pulse );
+    vec3 normal = normalize( vec3( cos( zooid_angle ), sin( zooid_angle ), 0.5 ) );
 
     // Each nectophore flares with the beat; the radius is a constant fraction
     // of the frame at this colony's depth.
     float r = scale * 0.0072 * ( 1.0 + 0.6 * audioBass + 1.1 * audioKick + 0.3 * audioHigh );
-    emitQuad( pos, normal, pNorm, r );
+    emitQuad( pos, normal, p_norm, r );
 }

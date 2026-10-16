@@ -116,9 +116,9 @@ void main()
     // 2.2-unit column subtending barely a fifth of the frame; closing in and
     // widening the column is what actually fills the picture.
     vec3 ro = vec3( sin( t * 0.45 ) * 7.4, 2.4 * sin( t * 0.27 ) + 1.5, cos( t * 0.45 ) * 7.4 );
-    vec3 lookTarget = vec3( 0.0, 0.9 * sin( t * 0.31 ), 0.0 );
+    vec3 look_target = vec3( 0.0, 0.9 * sin( t * 0.31 ), 0.0 );
 
-    vec3 ww = normalize( lookTarget - ro );
+    vec3 ww = normalize( look_target - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
@@ -127,24 +127,24 @@ void main()
     float scale = 1.7 * twr;
     float thickness = ( 0.13 + 0.04 * sin( t ) + 0.05 * audioBass ) * sdl;
 
-    float dO = 0.0;
-    float hitDist = -1.0;
-    float minDS = 1e5;     // closest approach of a MISS ray
-    vec3  p = vec3( 0.0 ); // guarded by hitDist, but the compiler cannot see that
+    float d_o = 0.0;
+    float hit_dist = -1.0;
+    float min_ds = 1e5;    // closest approach of a MISS ray
+    vec3  p = vec3( 0.0 ); // guarded by hit_dist, but the compiler cannot see that
     for ( int i = 0; i < 72; ++i )
     {
-        p = ro + rd * dO;
+        p = ro + rd * d_o;
         // bound the infinite Scherk field to a COLUMN -> an actual tower
-        float dS = max( scherkSDF( p, scale, thickness ), length( p.xz ) - 3.1 );
-        minDS = min( minDS, dS );
-        if ( dS < 0.003 )
+        float d_s = max( scherkSDF( p, scale, thickness ), length( p.xz ) - 3.1 );
+        min_ds = min( min_ds, d_s );
+        if ( d_s < 0.003 )
         {
-            hitDist = dO;
+            hit_dist = d_o;
             break;
         }
-        if ( dO > 26.0 )
+        if ( d_o > 26.0 )
             break;
-        dO += dS * 0.65;
+        d_o += d_s * 0.65;
     }
 
     // Near-miss halo: rays grazing the tower glow instead of dropping to
@@ -156,8 +156,8 @@ void main()
     vec3  col = img( clamp( vec2( st.x, 1.0 - st.y * 0.85 ), 0.0, 1.0 ) ) * ( 0.34 + 0.34 * sky )
                 + imgPalette( 0.42 ) * sky * 0.30
                 + vec3( 0.03, 0.045, 0.09 );
-    vec3  halo = imgPalette( ( minDS * 6.0 + audioPhase ) * 0.159 )
-                 * exp( -minDS * 3.5 ) * ( 0.5 + 0.5 * audioLevel );
+    vec3  halo = imgPalette( ( min_ds * 6.0 + audioPhase ) * 0.159 )
+                 * exp( -min_ds * 3.5 ) * ( 0.5 + 0.5 * audioLevel );
     col += halo * 0.75;
 
     // ---- distant tower forest -------------------------------------------
@@ -179,18 +179,18 @@ void main()
     forest = min( forest, 1.0 );
     col += imgPalette( 0.42 + audioPhase * 0.05 ) * forest * ( 0.13 + 0.07 * audioLevel );
 
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
         vec3  n = calcNormal( p, scale, thickness );
-        vec3  lightDir = normalize( vec3( 0.4, 0.9, -0.5 ) );
-        vec3  fillDir = normalize( ro - p ); // camera fill light
-        float diff = max( dot( n, lightDir ), 0.0 ) * 0.75
-                     + max( dot( n, fillDir ), 0.0 ) * 0.55 + 0.16;
-        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 32.0 );
+        vec3  light_dir = normalize( vec3( 0.4, 0.9, -0.5 ) );
+        vec3  fill_dir = normalize( ro - p ); // camera fill light
+        float diff = max( dot( n, light_dir ), 0.0 ) * 0.75
+                     + max( dot( n, fill_dir ), 0.0 ) * 0.55 + 0.16;
+        float spec = pow( max( dot( reflect( -light_dir, n ), -rd ), 0.0 ), 32.0 );
 
         // UV coordinates on saddle surface
-        vec2 photoUV = fract( vec2( p.x * 0.2 + p.z * 0.1, p.y * 0.2 + dot( p.xy, n.yx ) * 0.1 ) );
-        vec3 photo = img( photoUV );
+        vec2 photo_uv = fract( vec2( p.x * 0.2 + p.z * 0.1, p.y * 0.2 + dot( p.xy, n.yx ) * 0.1 ) );
+        vec3 photo = img( photo_uv );
 
         // Iridescent structural color
         vec3 irid = imgPalette( ( dot( p, vec3( 0.35 ) ) + audioPhase ) * 0.159 );
@@ -204,7 +204,7 @@ void main()
         col += edge * vec3( 0.3, 0.85, 1.0 ) * ( 1.0 + audioKick * 2.5 );
 
         // Distance fog
-        col = mix( col, vec3( 0.02, 0.03, 0.07 ), 1.0 - exp( -hitDist * 0.18 ) );
+        col = mix( col, vec3( 0.02, 0.03, 0.07 ), 1.0 - exp( -hit_dist * 0.18 ) );
     }
 
     if ( audioChromaHue != 0.0 )
@@ -218,7 +218,7 @@ void main()
     // bottom 6% of the range (measured luma 0.056, contrast 0.022), where no
     // neighbouring values are far enough apart to read as structure. The knee
     // alone already guarantees the highlights cannot clip.
-    vec3 _catTone = col;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = col;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -242,8 +242,8 @@ void main()
     vec3  sky = vec3( 0.01, 0.015, 0.04 ) + vec3( 0.02, 0.02, 0.05 ) * smoothstep( 0.4, 0.0, yy );
     vec2  suv = vec2( p.x * 0.5 + 0.5 + 0.002 * sceneTime, 0.3 );
     vec3  shore = imgLod( suv + vec2( 0.0, max( yy, 0.0 ) * 2.0 ), 2.0 );
-    float shoreBand = smoothstep( 0.06, 0.0, yy ) * step( 0.0, yy );
-    col = sky + neonOf( shore + 1e-3, 1.5 ) * shoreBand * 0.25 * clamp( shoreP + 0.2, 0.0, 1.2 );
+    float shore_band = smoothstep( 0.06, 0.0, yy ) * step( 0.0, yy );
+    col = sky + neonOf( shore + 1e-3, 1.5 ) * shore_band * 0.25 * clamp( shoreP + 0.2, 0.0, 1.2 );
     // Water-plane quantities computed unconditionally (derivatives must not
     // live in a pixel-dependent branch).
     float d = 0.3 / max( -yy, 0.005 );
@@ -291,15 +291,15 @@ void main()
                 float barrel = abs( lb.x ) * ( 1.35 + 0.5 * lb.y * lb.y );
                 float body = smoothstep( 0.5 + px, 0.5 - px, max( barrel, abs( lb.y ) ) );
                 float cap = smoothstep( 0.38, 0.42, abs( lb.y ) );
-                float glowIn = ( 1.0 - 0.6 * length( lb * vec2( 1.6, 1.0 ) ) ) * ( 1.0 - 0.85 * cap );
+                float glow_in = ( 1.0 - 0.6 * length( lb * vec2( 1.6, 1.0 ) ) ) * ( 1.0 - 0.85 * cap );
                 vec2  lr = ( p - base + vec2( 0.0, S * 0.55 + bob ) ) / S;
                 lr.x += rip * 8.0 / S * 0.1;
-                float reflB = smoothstep( 0.7, 0.1, length( lr * vec2( 1.3, 0.7 ) ) );
+                float refl_b = smoothstep( 0.7, 0.1, length( lr * vec2( 1.3, 0.7 ) ) );
                 vec3  lc = mix( warm, glowColour( imgLod( hash22( id + 5.0 ), 4.0 ), id, hueP * 0.159 ), 0.35 );
                 float flick = 0.85 + 0.15 * sin( sceneTime * ( 3.0 + 4.0 * h ) + h * 30.0 );
                 float far = smoothstep( 40.0, 15.0, dz );
-                col += lc * body * max( glowIn, 0.05 ) * flick * ( 1.4 + 1.5 * kick ) * far;
-                col += lc * reflB * 0.25 * flick * ( 0.6 + 0.8 * swell ) * far;
+                col += lc * body * max( glow_in, 0.05 ) * flick * ( 1.4 + 1.5 * kick ) * far;
+                col += lc * refl_b * 0.25 * flick * ( 0.6 + 0.8 * swell ) * far;
                 col += lc * exp( -length( p - base - vec2( 0.0, S * 0.5 ) ) / S * 1.5 ) * 0.08 * ( 0.5 + swell ) * far;
             }
         // Distance haze.

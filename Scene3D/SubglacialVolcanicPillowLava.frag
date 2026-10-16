@@ -65,14 +65,14 @@ vec3 palTint( vec3 c, float t, float k )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  lightDir = normalize( vec3( 0.4, 0.6, 0.7 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
-    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 16.0 )
+    vec3  light_dir = normalize( vec3( 0.4, 0.6, 0.7 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
+    float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 16.0 )
                  * ( crustGlowP > 0.01 ? crustGlowP : 1.0 );
 
     // Molten lava fissure color
-    vec3 hotLava = vec3( 1.0, 0.4, 0.05 );
-    vec3 lavaCol = palTint( hotLava, vHeat * 0.3 + audioCentroid, 0.22 );
+    vec3 hot_lava = vec3( 1.0, 0.4, 0.05 );
+    vec3 lava_col = palTint( hot_lava, vHeat * 0.3 + audioCentroid, 0.22 );
 
     vec3 photo = img( vUV );
 
@@ -82,9 +82,9 @@ void main()
     crust = mix( crust, vec3( 0.05, 0.07, 0.10 ), 0.35 );
     vec3 col = crust;
     col += vec3( 0.55, 0.75, 1.0 ) * spec * 0.35;
-    col += lavaCol * vHeat * ( lavaHeatP > 0.01 ? lavaHeatP : 1.5 ) * 3.2;
+    col += lava_col * vHeat * ( lavaHeatP > 0.01 ? lavaHeatP : 1.5 ) * 3.2;
     col *= ( 0.85 + 0.35 * audioSwell );
-    col += lavaCol * ( audioKick * 0.35 );
+    col += lava_col * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

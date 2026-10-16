@@ -85,7 +85,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float gauge = 9.0 + 7.0 * clamp( gaugeP, 0.0, 1.0 ); // rings across
-    float squashBase = 0.5 + 0.25 * clamp( weaveP, 0.0, 1.0 );
+    float squash_base = 0.5 + 0.25 * clamp( weaveP, 0.0, 1.0 );
     float lamp = 0.65 + 0.55 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float clock = sceneAdvance * 0.5 + sceneTime * 0.1;
@@ -99,22 +99,22 @@ void main()
     float band = exp( -pow( wave - 1.0, 2.0 ) * 1.2 );
     // The kick's glint wave: a ring of brightness expanding from the centre
     // on its own continuous phase, so the kick lights it but never moves it.
-    float glintR = fract( clock * 0.35 ) * 1.4;
-    float glintWave = exp( -abs( length( p ) - glintR ) * 9.0 ) * ( 1.0 - fract( clock * 0.35 ) );
+    float glint_r = fract( clock * 0.35 ) * 1.4;
+    float glint_wave = exp( -abs( length( p ) - glint_r ) * 9.0 ) * ( 1.0 - fract( clock * 0.35 ) );
 
     // The mail lattice: rows of rings, every other row offset, and the
     // rings of one row thread through the row above.
-    float pitchX = aspect * 2.0 / gauge;
-    float pitchY = pitchX * 0.46;
+    float pitch_x = aspect * 2.0 / gauge;
+    float pitch_y = pitch_x * 0.46;
     // Two passes: the under-rings first, then the over-rings, which is what
     // makes 4-in-1 read as interlocked and not as overlapping discs.
     for ( int pass = 0; pass < 2; ++pass )
     {
-        float rowOff = float( pass ) * 0.5;
-        vec2  g = vec2( ( p.x + aspect ) / pitchX - rowOff, ( p.y + 0.5 ) / pitchY );
+        float row_off = float( pass ) * 0.5;
+        vec2  g = vec2( ( p.x + aspect ) / pitch_x - row_off, ( p.y + 0.5 ) / pitch_y );
         // Only every other row belongs to this pass.
-        float rowSel = mod( floor( g.y ), 2.0 );
-        if ( ( pass == 0 && rowSel > 0.5 ) || ( pass == 1 && rowSel < 0.5 ) )
+        float row_sel = mod( floor( g.y ), 2.0 );
+        if ( ( pass == 0 && row_sel > 0.5 ) || ( pass == 1 && row_sel < 0.5 ) )
         {
             // fall through: the other pass draws this row
         }
@@ -124,14 +124,14 @@ void main()
                 vec2 ci = floor( g ) + vec2( float( dx ), float( dy ) );
                 if ( mod( ci.y, 2.0 ) != float( pass ) )
                     continue;
-                vec2 centre = vec2( ( ci.x + 0.5 + rowOff ) * pitchX - aspect, ( ci.y + 0.5 ) * pitchY - 0.5 );
+                vec2 centre = vec2( ( ci.x + 0.5 + row_off ) * pitch_x - aspect, ( ci.y + 0.5 ) * pitch_y - 0.5 );
                 vec2 q = p - centre;
                 // The ripple tilts this ring: the squash changes with the wave
                 // at the ring's own position, so the tilt travels smoothly.
                 float w2 = sin( ( centre.x * 1.6 + centre.y * 0.8 ) * 3.0 - clock * 1.4 );
-                float squash = squashBase * ( 1.0 - 0.35 * w2 );
-                float rad = pitchX * 0.47;
-                float wire = pitchX * 0.085;
+                float squash = squash_base * ( 1.0 - 0.35 * w2 );
+                float rad = pitch_x * 0.47;
+                float wire = pitch_x * 0.085;
                 float across, around;
                 float ring = ringAt( q, rad, wire, squash, across, around );
                 if ( ring < 0.002 )
@@ -145,23 +145,23 @@ void main()
                 float shade = 0.35 + 0.75 * sqrt( max( 1.0 - across * across, 0.0 ) );
                 // The lamp sits up and to the left, so the ring is bright there.
                 float lit = 0.5 + 0.6 * cos( around - 2.2 );
-                vec3  ringCol = steel * shade * ( 0.45 + 0.75 * lit ) * lamp;
+                vec3  ring_col = steel * shade * ( 0.45 + 0.75 * lit ) * lamp;
                 // The travelling highlight band.
-                float bandHere = exp( -pow( w2 - 1.0, 2.0 ) * 1.2 );
-                ringCol += vec3( 1.0, 0.98, 0.95 ) * bandHere * shade * ( 0.25 + 0.6 * hi ) * 0.8;
+                float band_here = exp( -pow( w2 - 1.0, 2.0 ) * 1.2 );
+                ring_col += vec3( 1.0, 0.98, 0.95 ) * band_here * shade * ( 0.25 + 0.6 * hi ) * 0.8;
                 // The kick's glint wave.
-                ringCol += vec3( 1.0 ) * glintWave * shade * ( 0.2 + 1.3 * audioKick ) * 0.7;
+                ring_col += vec3( 1.0 ) * glint_wave * shade * ( 0.2 + 1.3 * audioKick ) * 0.7;
                 // Contact shadow where this ring lies over its neighbour.
                 float contact = smoothstep( wire * 2.2, wire, abs( abs( q.x ) - rad * 0.9 ) );
                 col *= 1.0 - 0.3 * contact * ring;
-                col = mix( col, ringCol, ring );
+                col = mix( col, ring_col, ring );
             }
     }
     // A slight overall vignette so the sheet has a body.
     col *= 0.85 + 0.2 * ( 1.0 - length( p ) * 0.6 );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

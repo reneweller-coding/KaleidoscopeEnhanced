@@ -35,11 +35,11 @@ uniform int   kSides;   ///< >=2: weave a spinning n-fold image rosette in (0 = 
 uniform float rosetteP; ///< rosette strength      (0 -> 0.22)
 
 #define TT            ( time * 0.7 )
-#define spacing       ( ( spacingP <= 0.01 ) ? 7.0 : spacingP )
-#define light_spacing 2.0
+#define SPACING       ( ( spacingP <= 0.01 ) ? 7.0 : spacingP )
+#define LIGHT_SPACING 2.0
 // Neon glow fattens with the slow swell (loudness -> size, slew-limited upstream).
-#define attenuation ( ( ( attenP <= 0.01 ) ? 22.0 : attenP ) * ( 1.0 - 0.15 * audioSwell ) )
-#define epsilon     0.005
+#define ATTENUATION ( ( ( attenP <= 0.01 ) ? 22.0 : attenP ) * ( 1.0 - 0.15 * audioSwell ) )
+#define EPSILON     0.005
 
 mat2 rotm( float a )
 {
@@ -88,28 +88,28 @@ float hash12( vec2 p )
     return fract( ( p3.x + p3.y ) * p3.z );
 }
 
-#define rep( p, r ) ( mod( ( p ) + ( r ) / 2.0, ( r ) ) - ( r ) / 2.0 )
-#define torus( p )  ( length( vec2( length( ( p ).xz ) - 0.6, ( p ).y ) ) - 0.06 )
+#define REP( p, r ) ( mod( ( p ) + ( r ) / 2.0, ( r ) ) - ( r ) / 2.0 )
+#define TORUS( p )  ( length( vec2( length( ( p ).xz ) - 0.6, ( p ).y ) ) - 0.06 )
 
 vec3 getLight( vec3 p, vec3 color )
 {
-    return max( vec3( 0.0 ), color / ( 1.0 + pow( abs( torus( p ) * attenuation ), 1.3 ) ) - 0.001 );
+    return max( vec3( 0.0 ), color / ( 1.0 + pow( abs( TORUS( p ) * ATTENUATION ), 1.3 ) ) - 0.001 );
 }
 
 vec3 geo( vec3 po, inout float d, inout vec2 f )
 {
-    float r = hash12( floor( po.yz / spacing + vec2( 0.5 ) ) ) - 0.5;
-    vec3  p = rep( po + vec3( TT * r * 4.0, 0.0, 0.0 ), vec3( 0.5, spacing, spacing ) );
+    float r = hash12( floor( po.yz / SPACING + vec2( 0.5 ) ) ) - 0.5;
+    vec3  p = REP( po + vec3( TT * r * 4.0, 0.0, 0.0 ), vec3( 0.5, SPACING, SPACING ) );
     p.xy *= rotm( 1.57 );
-    d = min( d, torus( p ) );
+    d = min( d, TORUS( p ) );
 
-    f = floor( po.yz / ( spacing * light_spacing ) - vec2( 0.5 ) );
+    f = floor( po.yz / ( SPACING * LIGHT_SPACING ) - vec2( 0.5 ) );
     r = hash12( f ) - 0.5;
     if ( r > -0.45 )
-        p = rep( po + vec3( TT * 30.0 * r, 0.0, 0.0 ), spacing * light_spacing * vec3( r + 0.54, 1.0, 1.0 ) );
+        p = REP( po + vec3( TT * 30.0 * r, 0.0, 0.0 ), SPACING * LIGHT_SPACING * vec3( r + 0.54, 1.0, 1.0 ) );
     else
-        p = rep( po + vec3( TT * 30.0 * 0.5 * ( 1.0 + r * 0.003 * hash12( floor( po.yz * spacing ) ) ), 0.0, 0.0 ),
-                 spacing * light_spacing );
+        p = REP( po + vec3( TT * 30.0 * 0.5 * ( 1.0 + r * 0.003 * hash12( floor( po.yz * SPACING ) ) ), 0.0, 0.0 ),
+                 SPACING * LIGHT_SPACING );
     p.xy *= rotm( 1.57 );
     f = ( cos( f.xy ) * 0.5 + 0.5 ) * 0.4;
     return p;
@@ -125,12 +125,12 @@ vec4 map( vec3 p )
     po = geo( p, d, f );
     col += getLight( po, vec3( 1.0, f ) );
 
-    p.z += spacing / 2.0;
+    p.z += SPACING / 2.0;
     p.xy *= rotm( 1.57 );
     po = geo( p, d, f );
     col += getLight( po, vec3( f.x, 0.5, f.y ) );
 
-    p.xy += spacing / 2.0;
+    p.xy += SPACING / 2.0;
     p.xz *= rotm( 1.57 );
     po = geo( p, d, f );
     col += getLight( po, vec3( f, 1.0 ) );
@@ -150,9 +150,9 @@ void main()
 {
     vec2 uv = ( 2.0 * gl_FragCoord.xy - resolution ) / resolution.y;
 
-    float camT = TT + audioAdvance * 0.4; // audio travel (jump-free)
-    vec3  ro = getOrigin( camT );
-    vec3  fdir = normalize( getOrigin( camT + 0.5 ) - ro );
+    float cam_t = TT + audioAdvance * 0.4; // audio travel (jump-free)
+    vec3  ro = getOrigin( cam_t );
+    vec3  fdir = normalize( getOrigin( cam_t + 0.5 ) - ro );
     vec3  rr = normalize( cross( normalize( ro ), fdir ) );
     vec3  rd = normalize( fdir + uv.x * rr + uv.y * cross( fdir, rr ) );
 
@@ -164,8 +164,8 @@ void main()
         vec4 res = map( p );
         col += res.rgb;
         t += abs( res.w );
-        if ( abs( res.w ) < epsilon )
-            t += epsilon;
+        if ( abs( res.w ) < EPSILON )
+            t += EPSILON;
         if ( col.r >= 1.0 && col.g >= 1.0 && col.b >= 1.0 )
             break;
         if ( t > 80.0 )
@@ -196,8 +196,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     fragColor = vec4( col, 1.0 );

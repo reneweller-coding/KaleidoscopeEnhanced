@@ -34,8 +34,8 @@ in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vDrum;
 
-const float kDist = 50.0;
-const float kGround = -20.0;
+const float Dist = 50.0;
+const float Ground = -20.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -113,7 +113,7 @@ vec3 renderSky( vec3 dir )
     if ( dir.y < -0.004 )
     {
         // The table: polished walnut, the lamp's warmth on it.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.010 );
         float grain = 0.7 + 0.4 * noise2( vec2( P.x * 0.35, P.z * 3.0 ) );
@@ -163,16 +163,16 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
-    vec3 lampDir = normalize( vec3( -0.55, 0.5, -0.5 ) );
-    vec3 col = alb * vec3( 1.0, 0.82, 0.55 ) * max( dot( n, lampDir ), 0.0 ) * 1.2 * lamp;
+    vec3 lamp_dir = normalize( vec3( -0.55, 0.5, -0.5 ) );
+    vec3 col = alb * vec3( 1.0, 0.82, 0.55 ) * max( dot( n, lamp_dir ), 0.0 ) * 1.2 * lamp;
     col += alb * vec3( 0.30, 0.12, 0.10 ) * ( 0.55 + 0.45 * n.y ) * 0.5 * lamp;
     col += alb * 0.05;
 
-    vec3  halfV = normalize( lampDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 90.0, 8.0, roughness ) );
+    vec3  half_v = normalize( lamp_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 90.0, 8.0, roughness ) );
     col += mix( vec3( 1.0, 0.9, 0.7 ), base.rgb, metallic ) * spec * ( 0.3 + 0.7 * metallic ) * ( 0.6 + 1.0 * high )
            * lamp;
 
@@ -185,13 +185,13 @@ void main()
                   * vDrum;
     col += vec3( 1.0, 0.9, 0.7 ) * paper * ( 0.25 + 0.6 * swell );
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.7, 0.45 ) * fres * 0.15 * lamp;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.06 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

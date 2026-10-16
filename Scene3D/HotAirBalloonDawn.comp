@@ -48,20 +48,20 @@ void emitQuad4( vec3 p0, vec3 p1, vec3 p2, vec3 p3, float id, float lit, float k
     uint base = atomicAdd( cmd[4], 6u );
     if ( base + 6u > maxVertices )
         return;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -76,9 +76,9 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    uint       nBalloons = 8u + uint( clamp( fleetP, 0.0, 1.0 ) * 10.0 );
-    const uint kSeg = 16u, kRows = 8u;
-    const uint quadsPer = kSeg * kRows;
+    uint       n_balloons = 8u + uint( clamp( fleetP, 0.0, 1.0 ) * 10.0 );
+    const uint Seg = 16u, Rows = 8u;
+    const uint quads_per = Seg * Rows;
     float      wind = 0.3 + 0.7 * clamp( windP, 0.0, 1.0 );
     float      clock = sceneAdvance * 0.25 + sceneTime * 0.05;
 
@@ -91,9 +91,9 @@ void main()
         return;
     }
     uint q = id - 1u;
-    uint b = q / ( quadsPer + 2u );
-    uint part = q % ( quadsPer + 2u );
-    if ( b >= nBalloons )
+    uint b = q / ( quads_per + 2u );
+    uint part = q % ( quads_per + 2u );
+    if ( b >= n_balloons )
         return;
     float fb = float( b );
     vec3  h = hash31( fb * 3.7 + 1.0 );
@@ -107,12 +107,12 @@ void main()
     float R = 1.6 + 0.6 * hash11( fb * 5.5 );
     float shrink = 1.0 - smoothstep( 0.85, 1.0, life );
     R *= shrink;
-    if ( part < quadsPer )
+    if ( part < quads_per )
     {
         // Envelope: lat-long quad (si, ri); a teardrop profile (wider on top).
-        uint  si = part % kSeg, ri = part / kSeg;
-        float a0 = float( si ) / float( kSeg ) * 6.2831853, a1 = float( si + 1u ) / float( kSeg ) * 6.2831853;
-        float t0 = float( ri ) / float( kRows ), t1 = float( ri + 1u ) / float( kRows );
+        uint  si = part % Seg, ri = part / Seg;
+        float a0 = float( si ) / float( Seg ) * 6.2831853, a1 = float( si + 1u ) / float( Seg ) * 6.2831853;
+        float t0 = float( ri ) / float( Rows ), t1 = float( ri + 1u ) / float( Rows );
         // Profile: radius by height fraction t (0 bottom .. 1 top).
         float r0 = R * sin( t0 * 3.14159 ) * ( 0.4 + 0.6 * t0 ) * ( t0 < 0.15 ? 0.5 + 3.0 * t0 : 1.0 );
         float r1 = R * sin( t1 * 3.14159 ) * ( 0.4 + 0.6 * t1 ) * ( t1 < 0.15 ? 0.5 + 3.0 * t1 : 1.0 );
@@ -121,11 +121,11 @@ void main()
         vec3  p2 = c + vec3( cos( a1 ) * r1, y1, sin( a1 ) * r1 ), p3 = c + vec3( cos( a0 ) * r1, y1, sin( a0 ) * r1 );
         // Store the segment/row for gores in the uv, the light term in lit.
         float lit = 0.5 + 0.5 * cos( a0 + 0.8 ); // dawn light from the east side
-        emitQuad4( p0, p1, p2, p3, fb, lit, 0.0, vec2( float( si ) / float( kSeg ), t0 ),
-                   vec2( float( si + 1u ) / float( kSeg ), t1 ) );
+        emitQuad4( p0, p1, p2, p3, fb, lit, 0.0, vec2( float( si ) / float( Seg ), t0 ),
+                   vec2( float( si + 1u ) / float( Seg ), t1 ) );
         return;
     }
-    if ( part == quadsPer )
+    if ( part == quads_per )
     {
         // The basket (kind 1) below the envelope.
         vec3 bc = c + vec3( 0.0, -R * 1.1, 0.0 );

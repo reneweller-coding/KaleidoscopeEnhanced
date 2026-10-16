@@ -52,38 +52,38 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float pIndex = attrA.w;
+    float p_index = attrA.w;
     vec4  seeds = attrB;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Geometrically frustrated 3D Kagome / Pyrochlore spin-glass lattice
     float nx = 240.0;
-    float ix = mod( pIndex, nx );
-    float iy = floor( pIndex / nx );
+    float ix = mod( p_index, nx );
+    float iy = floor( p_index / nx );
 
     float spacing = ( kagomePitchP > 0.001 ? kagomePitchP : 0.024 );
 
     // Triangles sharing vertices: Kagome lattice topology
-    float triMod = mod( ix + iy, 3.0 );
-    vec2  kagomeP = vec2(
-        ( ix - nx * 0.5 ) * spacing * 1.7320508 + triMod * 0.01,
+    float tri_mod = mod( ix + iy, 3.0 );
+    vec2  kagome_p = vec2(
+        ( ix - nx * 0.5 ) * spacing * 1.7320508 + tri_mod * 0.01,
         ( iy - 125.0 ) * spacing * 1.5 );
 
     // Frustrated spin orientations undergoing thermal Glauber dynamics
-    float spinState = sin( pIndex * 37.19 + t * 1.5 ) * cos( pIndex * 13.45 - t * 1.2 );
-    float frustration = abs( sin( spinState * 3.14159265 + audioPhase ) );
+    float spin_state = sin( p_index * 37.19 + t * 1.5 ) * cos( p_index * 13.45 - t * 1.2 );
+    float frustration = abs( sin( spin_state * 3.14159265 + audioPhase ) );
     vFrustration = frustration;
 
     // Spin ice 3D depth layer
-    float zCoord = ( seeds.z - 0.5 ) * 1.4 + spinState * 0.15;
+    float z_coord = ( seeds.z - 0.5 ) * 1.4 + spin_state * 0.15;
 
-    vec3 worldPos = vec3( kagomeP, zCoord );
+    vec3 world_pos = vec3( kagome_p, z_coord );
 
-    vCol = imgPalette( fract( pIndex * 0.0001 + frustration * 0.35 + audioCentroid ) );
+    vCol = imgPalette( fract( p_index * 0.0001 + frustration * 0.35 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 4.5;
     vp.x -= eyeOff;
 
@@ -96,14 +96,14 @@ void main()
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Point Sprite size (V8c: cap 10-18px)
-    float baseSize = ( pointSizeP > 1.0 ? pointSizeP : 12.0 );
+    float base_size = ( pointSizeP > 1.0 ? pointSizeP : 12.0 );
     // Fewer, bigger: at full density every site was sub-pixel and the
     // lattice integrated into grey noise.  Two sites in three are
     // dropped; the survivors carry the picture.
-    if ( mod( pIndex, 3.0 ) > 0.5 )
+    if ( mod( p_index, 3.0 ) > 0.5 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
     }
-    gl_PointSize = clamp( baseSize * ( 3.2 / max( gl_Position.w * 0.25, 0.5 ) ), 5.0, 40.0 );
+    gl_PointSize = clamp( base_size * ( 3.2 / max( gl_Position.w * 0.25, 0.5 ) ), 5.0, 40.0 );
     vPointSize = gl_PointSize;
 }

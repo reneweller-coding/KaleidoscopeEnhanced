@@ -90,8 +90,8 @@ void main()
     float       par = mod( floor( rb ), 2.0 ); // which face this ribbon shows
 
     // Gaps between ribbons; the kick flashes them wider.
-    float gapW = 0.06 + 0.04 * audioKick;
-    float body = smoothstep( 0.0, gapW, s ) * smoothstep( 1.0, 1.0 - gapW, s );
+    float gap_w = 0.06 + 0.04 * audioKick;
+    float body = smoothstep( 0.0, gap_w, s ) * smoothstep( 1.0, 1.0 - gap_w, s );
 
     // Photo along the ribbon, endless in z.
     vec2  uv = vec2( s * 0.8 + 0.1, fract( z * 0.12 ) );
@@ -117,7 +117,7 @@ void main()
     col += imgPalette( hue * 0.159 + 0.1 ) * exp( -r * 8.0 ) * ( 0.3 + 0.9 * audioBass );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

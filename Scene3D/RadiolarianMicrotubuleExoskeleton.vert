@@ -22,8 +22,8 @@ out float vGlow;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
-    vPos = worldP;
+    vec3 world_p = attrA.xyz;
+    vPos = world_p;
     vRadius = attrA.w;
     vGlow = attrB.w;
 
@@ -35,7 +35,7 @@ void main()
     // would swing every one of them through a huge orbit and out of frame.  Each
     // skeleton therefore turns about its OWN centre inside the .comp, and this
     // stage is a straight camera transform.
-    vec3 vp = worldP;
+    vec3 vp = world_p;
     vp.z += 4.8;
     vp.x -= eyeOff;
 

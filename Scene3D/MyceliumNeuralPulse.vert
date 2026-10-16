@@ -41,28 +41,28 @@ out float vLevel;
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3 worldP = attrA.xyz;
+    vec3 world_p = attrA.xyz;
 
     // HARMONIC BREATH: pad/body warmth (150-500 Hz) inflates the mat; a thin
     // harmony lets it settle back.  Pure shape scale -- no time factor.
-    worldP *= 1.0 + 0.26 * clamp( audioLowMid, 0.0, 1.0 );
+    world_p *= 1.0 + 0.26 * clamp( audioLowMid, 0.0, 1.0 );
 
     // DISSONANCE TANGLE: a smooth (C1-continuous) spatial field, so every
     // vertex of one hyphae ribbon moves together -- a per-vertex hash here
     // would tear the two-triangle ribbons apart.  Consonant harmony leaves
     // the network clean, rough clusters snarl it.
-    vec3 tangle = vec3( sin( worldP.y * 3.1 + worldP.z * 2.3 ),
-                        sin( worldP.z * 2.7 + worldP.x * 3.5 ),
-                        sin( worldP.x * 2.9 + worldP.y * 2.1 ) );
-    worldP += tangle * ( 0.34 * clamp( audioRoughness, 0.0, 1.0 ) );
+    vec3 tangle = vec3( sin( world_p.y * 3.1 + world_p.z * 2.3 ),
+                        sin( world_p.z * 2.7 + world_p.x * 3.5 ),
+                        sin( world_p.x * 2.9 + world_p.y * 2.1 ) );
+    world_p += tangle * ( 0.34 * clamp( audioRoughness, 0.0, 1.0 ) );
 
-    vPos = worldP;
+    vPos = world_p;
     vPulse = attrA.w;
     vLevel = attrB.w;
 
     // Stereoscopic 3D camera projection
     // ORBIT (user feedback): the camera circles the structure
-    vec3  vp = worldP;
+    vec3  vp = world_p;
     float oyaw = time * 0.12 + audioAdvance * 0.07;
     float ocy = cos( oyaw ), osy = sin( oyaw );
     vp.xz = mat2( ocy, -osy, osy, ocy ) * vp.xz;

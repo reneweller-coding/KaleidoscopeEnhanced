@@ -66,21 +66,21 @@ void main()
     float r2 = dot( pt, pt );
     if ( r2 > 1.0 )
         discard;
-    float spriteGlow = exp( -r2 * 4.0 );
+    float sprite_glow = exp( -r2 * 4.0 );
 
     // Photo texture mapping from world coords
-    vec2 photoUV = fract( vWorldPos.xy * 0.3 + 0.5 );
-    vec3 photo = img( photoUV );
+    vec2 photo_uv = fract( vWorldPos.xy * 0.3 + 0.5 );
+    vec3 photo = img( photo_uv );
 
     // Quantized flux vortex cyan & violet palette
-    vec3 fluxCyan = vec3( 0.1, 0.9, 1.0 );
-    vec3 fluxViolet = vec3( 0.7, 0.2, 1.0 );
-    vec3 vortexColor = mix( fluxCyan, fluxViolet, sin( vVortexPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
+    vec3 flux_cyan = vec3( 0.1, 0.9, 1.0 );
+    vec3 flux_violet = vec3( 0.7, 0.2, 1.0 );
+    vec3 vortex_color = mix( flux_cyan, flux_violet, sin( vVortexPhase * 12.56 + audioPhase ) * 0.5 + 0.5 );
 
-    vec3 col = mix( photo, vortexColor, 0.6 ) * spriteGlow;
+    vec3 col = mix( photo, vortex_color, 0.6 ) * sprite_glow;
     // Hot core TINTED by the palette (white additive term drowned the
     // cyan/violet; metric scan: saturation 0.11).
-    col += spriteGlow * mix( vortexColor, vec3( 1.0, 0.98, 0.9 ), 0.35 )
+    col += sprite_glow * mix( vortex_color, vec3( 1.0, 0.98, 0.9 ), 0.35 )
            * ( 0.45 + audioKick * 1.8 );
 
     if ( audioChromaHue != 0.0 )
@@ -90,7 +90,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.55;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, spriteGlow );
+    vec3 cat_tone = ( col ) * 0.55;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, sprite_glow );
 }

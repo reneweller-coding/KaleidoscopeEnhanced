@@ -118,16 +118,16 @@ void main()
 
     vec3 col = vec3( 0.0 );
 
-    vec3 holeColor = vec3( 0.0 );                                 // Absolute nothingness
-    vec3 universeColor = imgPalette( 0.8 + audioCentroid * 0.1 ); // Blueshifted outer universe
+    vec3 hole_color = vec3( 0.0 );                                 // Absolute nothingness
+    vec3 universe_color = imgPalette( 0.8 + audioCentroid * 0.1 ); // Blueshifted outer universe
 
     // 1. Space-time tearing / Glitches on Kick
     // Violent radial tearing
     float tear = 0.0;
     if ( audioKick > 0.1 )
     {
-        float tearNoise = fbm( vec3( angle * 10.0, sceneTime * 20.0, 0.0 ) );
-        if ( tearNoise > 0.7 )
+        float tear_noise = fbm( vec3( angle * 10.0, sceneTime * 20.0, 0.0 ) );
+        if ( tear_noise > 0.7 )
         {
             // Offset UV radially
             uv *= 1.0 + audioSwell * 0.08 * wp;
@@ -141,18 +141,18 @@ void main()
     // We simulate this by making the central black area grow
 
     // Instead of actually making it grow, we just keep it fixed and make the edges zoom past us
-    float horizonRad = 0.3;
+    float horizon_rad = 0.3;
 
-    if ( dist > horizonRad )
+    if ( dist > horizon_rad )
     {
         // Outside the event horizon
         // The universe speeds up infinitely, turning stars into radial streaks
 
         // Distance from the horizon outwards (0 at horizon, goes to infinity)
-        float dOut = dist - horizonRad;
+        float d_out = dist - horizon_rad;
 
         // Relativistic optical distortion (looks like a tunnel)
-        float z = 1.0 / max( dOut, 0.001 );
+        float z = 1.0 / max( d_out, 0.001 );
 
         // The speed at which the outer universe passes by is extreme
         float speed = time * 20.0 + audioAdvance * 50.0;
@@ -162,42 +162,42 @@ void main()
         float v = z - speed;   // rushing towards us
 
         // Star streaks (stretched noise)
-        float streakNoise = fbm( vec3( u, v * 0.1, 0.0 ) );
-        float streaks = smoothstep( 0.6, 1.0, streakNoise ) * sp;
+        float streak_noise = fbm( vec3( u, v * 0.1, 0.0 ) );
+        float streaks = smoothstep( 0.6, 1.0, streak_noise ) * sp;
 
         // The stars are heavily blueshifted due to our fall (bright, energetic)
-        vec3 streakCol = universeColor * streaks * ( 2.0 + audioSwell * 2.0 );
+        vec3 streak_col = universe_color * streaks * ( 2.0 + audioSwell * 2.0 );
 
         // The closer to the horizon, the more distorted and redshifted the light gets
         // just before it crosses (the accretion disk / photon sphere)
 
-        float photonSphere = exp( -dOut * 10.0 * wp );
-        vec3  diskColor = imgPalette( 0.2 ); // Redshifted
+        float photon_sphere = exp( -d_out * 10.0 * wp );
+        vec3  disk_color = imgPalette( 0.2 ); // Redshifted
 
-        float diskNoise = fbm( vec3( angle * 10.0, dOut * 50.0 - sceneTime * 5.0, sceneTime ) );
+        float disk_noise = fbm( vec3( angle * 10.0, d_out * 50.0 - sceneTime * 5.0, sceneTime ) );
 
-        streakCol = mix( streakCol, diskColor * diskNoise * 5.0 * ( 1.0 + audioSwell ), photonSphere );
+        streak_col = mix( streak_col, disk_color * disk_noise * 5.0 * ( 1.0 + audioSwell ), photon_sphere );
 
         // Fade out at the very edges of the screen
-        float edgeFade = smoothstep( 2.0, 0.5, dist );
-        col = streakCol * edgeFade;
+        float edge_fade = smoothstep( 2.0, 0.5, dist );
+        col = streak_col * edge_fade;
     }
     else
     {
         // Inside the event horizon
         // Nothing escapes, but we can add some quantum foam or Hawking radiation glitches
-        float insideD = dist / horizonRad;
+        float inside_d = dist / horizon_rad;
 
         // Deep quantum noise
         float quantum = fbm( vec3( uv * 50.0, sceneTime * 2.0 ) );
-        float qMask = smoothstep( 0.9, 1.0, quantum ) * exp( -insideD * 5.0 );
+        float q_mask = smoothstep( 0.9, 1.0, quantum ) * exp( -inside_d * 5.0 );
 
-        col = universeColor * qMask * audioKick * wp;
+        col = universe_color * q_mask * audioKick * wp;
     }
 
     // The glaring edge of the photon sphere
-    float edgeGlare = exp( -abs( dist - horizonRad ) * 40.0 ) * wp;
-    col += universeColor * edgeGlare * ( 0.5 + audioSwell );
+    float edge_glare = exp( -abs( dist - horizon_rad ) * 40.0 ) * wp;
+    col += universe_color * edge_glare * ( 0.5 + audioSwell );
 
     // Add violent glitch color shifts
     if ( tear > 0.0 )
@@ -209,7 +209,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

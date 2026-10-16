@@ -33,8 +33,8 @@ out float vBg;     ///< Background flag (from the vertex stage).
 out float vInst;
 out vec2  vCentre; ///< the gear's centre in world xy, for the meshing-point sparks
 
-const float kDist = 58.0;
-const float kR = 9.0;
+const float Dist = 58.0;
+const float R = 9.0;
 
 vec2 gearCentre( int i )
 {
@@ -46,13 +46,13 @@ vec2 gearCentre( int i )
 void main()
 {
     int  inst = gl_InstanceID;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
     vInst = float( inst );
     vCentre = gearCentre( inst );
-    if ( !isBg )
+    if ( !is_bg )
     {
-        float sz = kR * ( sizeP > 0.01 ? sizeP : 1.0 );
+        float sz = R * ( sizeP > 0.01 ? sizeP : 1.0 );
         vec3  c = attrA.xyz - meshCenter;
         vec3  e = meshExtent;
         float mx = max( e.x, max( e.y, e.z ) );
@@ -60,24 +60,24 @@ void main()
         vec3  nl = attrB.xyz;
 
         // Axis to the camera: the thinnest extent.
-        mat3 toZ;
+        mat3 to_z;
         if ( e.y <= e.x && e.y <= e.z )
-            toZ = mat3( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.0, 0.0 );
+            to_z = mat3( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -1.0, 0.0 );
         else if ( e.x <= e.y && e.x <= e.z )
-            toZ = mat3( 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0 );
+            to_z = mat3( 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, -1.0, 0.0, 0.0 );
         else
-            toZ = mat3( 1.0 );
+            to_z = mat3( 1.0 );
 
         float dir = ( mod( float( inst ), 2.0 ) < 0.5 ) ? 1.0 : -1.0;
         float ang = dir * time * 0.45 * ( rateP > 0.01 ? rateP : 1.0 ) + float( inst ) * 0.13;
         float ca = cos( ang ), sa = sin( ang );
         mat3  spin = mat3( ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0 );
-        mat3  M = spin * toZ;
+        mat3  M = spin * to_z;
 
-        world = M * local + vec3( vCentre, kDist );
+        world = M * local + vec3( vCentre, Dist );
         n = normalize( M * nl );
         vUV = vec2( attrA.w, attrB.w );
-        vLocal = toZ * ( c / e );
+        vLocal = to_z * ( c / e );
     }
     else
     {
@@ -99,10 +99,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

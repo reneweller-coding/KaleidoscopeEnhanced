@@ -39,37 +39,38 @@ float hash11( float p )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float quadID = attrA.w;
-    float seed = hash11( quadID );
+    float quad_id = attrA.w;
+    float seed = hash11( quad_id );
 
     // 16 concentric orbital inclination rings
-    float ring = floor( quadID / 180.0 );
-    float satIdx = mod( quadID, 180.0 );
+    float ring = floor( quad_id / 180.0 );
+    float sat_idx = mod( quad_id, 180.0 );
 
-    float orbitalRadius = 1.8 + ring * 0.18;
-    float orbitalSpeed = 0.5 / sqrt( orbitalRadius );
+    float orbital_radius = 1.8 + ring * 0.18;
+    float orbital_speed = 0.5 / sqrt( orbital_radius );
     float inclination = ( ring - 8.0 ) * 0.15;
 
-    float t = time * 0.3 * orbitalSpeed + audioAdvance * 0.1;
-    float trueAnomaly = ( satIdx / 180.0 ) * 6.2831853 + t;
+    float t = time * 0.3 * orbital_speed + audioAdvance * 0.1;
+    float true_anomaly = ( sat_idx / 180.0 ) * 6.2831853 + t;
 
     // Orbital 3D coordinates
-    vec3 orbPos = vec3( orbitalRadius * cos( trueAnomaly ), sin( inclination ) * orbitalRadius * sin( trueAnomaly ),
-                        cos( inclination ) * orbitalRadius * sin( trueAnomaly ) );
+    vec3 orb_pos = vec3( orbital_radius * cos( true_anomaly ),
+                         sin( inclination ) * orbital_radius * sin( true_anomaly ),
+                         cos( inclination ) * orbital_radius * sin( true_anomaly ) );
 
     // Satellite face pointing towards central star (0,0,0)
-    vec3 toCenter = normalize( -orbPos );
-    vec3 tangent = normalize( cross( toCenter, vec3( 0.0, 1.0, 0.0 ) ) );
-    vec3 bitangent = cross( toCenter, tangent );
+    vec3 to_center = normalize( -orb_pos );
+    vec3 tangent = normalize( cross( to_center, vec3( 0.0, 1.0, 0.0 ) ) );
+    vec3 bitangent = cross( to_center, tangent );
 
     // Mirror quad local size
     vec2  offset = attrA.xy - vec2( 0.5 );
-    float mirrorScale = 0.08 + 0.02 * sin( quadID * 0.2 );
+    float mirror_scale = 0.08 + 0.02 * sin( quad_id * 0.2 );
 
-    vec3 pos = orbPos + ( offset.x * tangent + offset.y * bitangent ) * mirrorScale;
+    vec3 pos = orb_pos + ( offset.x * tangent + offset.y * bitangent ) * mirror_scale;
 
     // Laser relay pulses firing between swarm satellites on beat kicks
-    float relay = ( 0.5 + 0.5 * sin( satIdx * 0.5 + time * 6.0 ) ) * ( 1.0 + audioKick * 3.0 );
+    float relay = ( 0.5 + 0.5 * sin( sat_idx * 0.5 + time * 6.0 ) ) * ( 1.0 + audioKick * 3.0 );
 
     vPos = pos;
     vUV = attrA.xy;

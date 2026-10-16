@@ -51,7 +51,7 @@ uniform float tiltP; ///< Tilt knob, 0..1.
 uniform float stiffP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -85,13 +85,13 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 ); // 0 = old sheet, 1 = new scene
-    float arc = sin( d * PI );                        // exactly 0 at both ends
+    float arc = sin( d * Pi );                        // exactly 0 at both ends
 
     // The sheet's own frame: the fold line runs along q.y, the turn along q.x.
     float tilt = mix( -0.38, 0.38, tlt );
-    mat2  toQ = rot2D( -tilt ), toP = rot2D( tilt );
-    vec2  q = toQ * p;
-    float halfW = 0.5 * ( aspect * abs( cos( tilt ) ) + abs( sin( tilt ) ) ) + 0.03;
+    mat2  to_q = rot2D( -tilt ), to_p = rot2D( tilt );
+    vec2  q = to_q * p;
+    float half_w = 0.5 * ( aspect * abs( cos( tilt ) ) + abs( sin( tilt ) ) ) + 0.03;
 
     // Radius: stiff paper wraps wide, and the roll tightens as more sheet is
     // taken up.  No audio at all on the radius: even the slow swell made the
@@ -100,8 +100,8 @@ void main()
                                                  // pass 14.09.2026)
     // The fold sweeps far enough past both edges that the roll is off-screen at
     // both ends of the transition -- that is what makes the endpoints exact.
-    float cx = mix( halfW + 0.05, -halfW - 2.0 * 0.46 * stiff - 0.20, d );
-    float sheetLen = max( 0.0, halfW - cx ); // material already lifted
+    float cx = mix( half_w + 0.05, -half_w - 2.0 * 0.46 * stiff - 0.20, d );
+    float sheet_len = max( 0.0, half_w - cx ); // material already lifted
 
     vec3 paper = mix( vec3( 0.94, 0.92, 0.87 ), vec3( 0.97, 0.94, 0.83 ),
                       clamp( audioMid * 2.0, 0.0, 1.0 ) );
@@ -119,9 +119,9 @@ void main()
         // Inside the roll band.  The horizontal offset is the sine of the wrap
         // angle; the angle gives both the arc length and the surface normal.
         float phi = asin( clamp( w, -1.0, 1.0 ) ); // -PI/2 .. PI/2
-        float s = radius * ( phi + PI * 0.5 );     // arc length from the fold
+        float s = radius * ( phi + Pi * 0.5 );     // arc length from the fold
 
-        if ( s > sheetLen )
+        if ( s > sheet_len )
         {
             // Past the free edge: the sheet does not reach here any more.
             vec3 under = texture( tex1, uv ).rgb;
@@ -130,9 +130,9 @@ void main()
         else
         {
             // Sample the sheet at the page position that wrapped to here.
-            vec2 pageQ = vec2( cx + s, q.y );
-            vec2 pageUv = ( toP * pageQ ) / vec2( aspect, 1.0 ) + 0.5;
-            vec3 sheet = texture( tex0, clamp( pageUv, 0.0, 1.0 ) ).rgb;
+            vec2 page_q = vec2( cx + s, q.y );
+            vec2 page_uv = ( to_p * page_q ) / vec2( aspect, 1.0 ) + 0.5;
+            vec3 sheet = texture( tex0, clamp( page_uv, 0.0, 1.0 ) ).rgb;
 
             // Shading from the cylinder's own normal, light from the upper left.
             vec2  n = vec2( sin( phi ), cos( phi ) );
@@ -150,10 +150,10 @@ void main()
             col = face * shade;
             col += paper * spec * ( 0.08 + 0.24 * clamp( audioKick, 0.0, 1.0 ) );
             // The free edge catches the light as a thin bright line.
-            float edge = smoothstep( 0.030, 0.0, sheetLen - s );
+            float edge = smoothstep( 0.030, 0.0, sheet_len - s );
             col += paper * edge * ( 0.12 + 0.34 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
             // Paper tooth, so the roll is not a plastic tube.
-            col *= 0.94 + 0.12 * hash21( floor( pageUv * resolution.y * 0.5 ) );
+            col *= 0.94 + 0.12 * hash21( floor( page_uv * resolution.y * 0.5 ) );
         }
     }
     else

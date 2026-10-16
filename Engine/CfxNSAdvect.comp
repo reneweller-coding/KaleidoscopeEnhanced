@@ -70,33 +70,33 @@ void main()
 
     // Trace backwards along the velocity and pick up what was there.
     vec2 back = uv - v * dt;
-    vec2 vNew = velAt( back ) * 0.999;
-    vec4 dNew = dyeAt( back );
-    dNew.rgb *= dissipation;
-    dNew.a *= dissipation;
+    vec2 v_new = velAt( back ) * 0.999;
+    vec4 d_new = dyeAt( back );
+    d_new.rgb *= dissipation;
+    d_new.a *= dissipation;
 
     // Forces: a wandering jet on the beat, plus buoyancy so dense dye rises.
     float d = length( ( uv - jetPos ) * vec2( float( size.x ) / float( size.y ), 1.0 ) );
     float g = exp( -d * d * 260.0 );
-    vNew += jetDir * ( jetAmp * g * dt * 60.0 );
-    vNew.y += dNew.a * 0.12 * dt * 60.0 * ( 0.4 + level );
+    v_new += jetDir * ( jetAmp * g * dt * 60.0 );
+    v_new.y += d_new.a * 0.12 * dt * 60.0 * ( 0.4 + level );
 
     // Inject fresh dye at the jet, coloured from the photo there.
     if ( jetAmp > 0.001 )
     {
         vec3 c = texture( texPhoto, uv ).rgb;
         vec3 tint = 0.5 + 0.5 * cos( 6.2831853 * ( vec3( 0.0, 0.33, 0.67 ) ) + hue );
-        dNew.rgb += mix( c, c * tint * 1.8, 0.6 ) * g * jetAmp * 2.4;
-        dNew.a += g * jetAmp * 2.0;
+        d_new.rgb += mix( c, c * tint * 1.8, 0.6 ) * g * jetAmp * 2.4;
+        d_new.a += g * jetAmp * 2.0;
     }
 
     // Walls: no flow through the border, otherwise the projection cannot
     // converge and the whole field slowly drifts off screen.
     if ( p.x <= 1 || p.x >= size.x - 2 )
-        vNew.x = 0.0;
+        v_new.x = 0.0;
     if ( p.y <= 1 || p.y >= size.y - 2 )
-        vNew.y = 0.0;
+        v_new.y = 0.0;
 
-    imageStore( velDst, p, vec4( vNew, 0.0, 1.0 ) );
-    imageStore( dyeDst, p, clamp( dNew, 0.0, 8.0 ) );
+    imageStore( velDst, p, vec4( v_new, 0.0, 1.0 ) );
+    imageStore( dyeDst, p, clamp( d_new, 0.0, 8.0 ) );
 }

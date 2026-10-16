@@ -67,51 +67,51 @@ void main()
     float t = time * 0.45 + audioAdvance * 0.4;
 
     // Stacked Josephson junction barriers along Y-axis
-    float jCount = ( junctionCountP > 1.0 ? junctionCountP : 5.0 );
-    float layerY = fract( uv.y * jCount ) - 0.5;
-    float layerId = floor( uv.y * jCount );
+    float j_count = ( junctionCountP > 1.0 ? junctionCountP : 5.0 );
+    float layer_y = fract( uv.y * j_count ) - 0.5;
+    float layer_id = floor( uv.y * j_count );
 
     // Sine-Gordon fluxon soliton chain: phi(x, t) = 4 * arctan(exp((x - v*t) / gamma))
-    float vSwihart = ( swihartSpeedP > 0.01 ? swihartSpeedP : 1.3 );
-    float fDensity = ( fluxonDensityP > 0.01 ? fluxonDensityP : 3.5 );
+    float v_swihart = ( swihartSpeedP > 0.01 ? swihartSpeedP : 1.3 );
+    float f_density = ( fluxonDensityP > 0.01 ? fluxonDensityP : 3.5 );
 
     // Alternating fluxon drift directions per junction layer
-    float dir = mod( layerId, 2.0 ) == 0.0 ? 1.0 : -1.0;
-    float fluxonPhase = uv.x * fDensity - t * 4.0 * vSwihart * dir + layerId * 0.35;
+    float dir = mod( layer_id, 2.0 ) == 0.0 ? 1.0 : -1.0;
+    float fluxon_phase = uv.x * f_density - t * 4.0 * v_swihart * dir + layer_id * 0.35;
 
     // Sine-Gordon 2*pi phase kink profile: dPhi/dx = 2 / cosh((x - vt)/lambda_J)
-    float localX = fract( fluxonPhase / 3.14159265 + 0.5 ) - 0.5;
-    float fluxonCore = 1.0 / cosh( localX * 12.0 );
+    float local_x = fract( fluxon_phase / 3.14159265 + 0.5 ) - 0.5;
+    float fluxon_core = 1.0 / cosh( local_x * 12.0 );
 
     // Terahertz Cherenkov radiation wave tail
-    float cherenkov = sin( uv.x * 22.0 - t * 8.0 * dir + audioPhase ) * exp( -abs( layerY ) * 6.0 )
+    float cherenkov = sin( uv.x * 22.0 - t * 8.0 * dir + audioPhase ) * exp( -abs( layer_y ) * 6.0 )
                       * ( 0.6 + 0.8 * audioHigh );
 
     // Barrier insulator interface line
-    float barrierLine = exp( -abs( layerY ) * 30.0 );
+    float barrier_line = exp( -abs( layer_y ) * 30.0 );
 
     // Superconducting order parameter phase
-    float phi = 4.0 * atan( exp( localX * 8.0 ) );
+    float phi = 4.0 * atan( exp( local_x * 8.0 ) );
 
     // Radiation flash on kick
-    float thzFlash = fluxonCore * ( 1.0 + 3.5 * audioKick ) * ( thzGlowP > 0.01 ? thzGlowP : 1.4 );
+    float thz_flash = fluxon_core * ( 1.0 + 3.5 * audioKick ) * ( thzGlowP > 0.01 ? thzGlowP : 1.4 );
 
     // Palette assignment
-    float palAngle = fract( phi * 0.159 + layerId * 0.1 + audioCentroid );
-    vec3  colFluxon = imgPalette( palAngle );
-    vec3  colTHz = imgPalette( fract( palAngle + 0.5 ) ) * 2.0;
+    float pal_angle = fract( phi * 0.159 + layer_id * 0.1 + audioCentroid );
+    vec3  col_fluxon = imgPalette( pal_angle );
+    vec3  col_t_hz = imgPalette( fract( pal_angle + 0.5 ) ) * 2.0;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colFluxon * ( 0.5 + 0.5 * sin( phi ) ) * ( 0.8 + 0.4 * audioSwell );
-    col += colTHz * fluxonCore * 1.8;
-    col += vec3( 0.95, 0.95, 1.0 ) * thzFlash * 2.0;
-    col += colTHz * abs( cherenkov ) * 1.2;
-    col += vec3( 0.7, 0.85, 1.0 ) * barrierLine * 1.2;
-    col += colFluxon * ( audioKick * 0.35 );
+    col += col_fluxon * ( 0.5 + 0.5 * sin( phi ) ) * ( 0.8 + 0.4 * audioSwell );
+    col += col_t_hz * fluxon_core * 1.8;
+    col += vec3( 0.95, 0.95, 1.0 ) * thz_flash * 2.0;
+    col += col_t_hz * abs( cherenkov ) * 1.2;
+    col += vec3( 0.7, 0.85, 1.0 ) * barrier_line * 1.2;
+    col += col_fluxon * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

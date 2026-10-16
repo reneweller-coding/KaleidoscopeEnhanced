@@ -24,13 +24,13 @@ void main()
 
     if ( gl_InvocationID == 0 )
     {
-        float tessLevel = 16.0 + 12.0 * audioMid + 8.0 * audioSwell;
-        gl_TessLevelOuter[0] = tessLevel;
-        gl_TessLevelOuter[1] = tessLevel;
-        gl_TessLevelOuter[2] = tessLevel;
-        gl_TessLevelOuter[3] = tessLevel;
+        float tess_level = 16.0 + 12.0 * audioMid + 8.0 * audioSwell;
+        gl_TessLevelOuter[0] = tess_level;
+        gl_TessLevelOuter[1] = tess_level;
+        gl_TessLevelOuter[2] = tess_level;
+        gl_TessLevelOuter[3] = tess_level;
 
-        gl_TessLevelInner[0] = tessLevel;
-        gl_TessLevelInner[1] = tessLevel;
+        gl_TessLevelInner[0] = tess_level;
+        gl_TessLevelInner[1] = tess_level;
     }
 }

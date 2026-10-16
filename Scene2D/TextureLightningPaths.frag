@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -258,21 +258,21 @@ void main()
     float px = sc / resolution.y;
     float trunk = isoLine( n1, g1, px * 1.2 );
     // Branches only near the trunk (they fork off it).
-    float nearTrunk = exp( -pow( abs( n1 - 0.5 ) / 0.06, 2.0 ) );
-    float branch = isoLine( n2, g2, px * 0.8 ) * nearTrunk * ( 0.3 + 0.7 * clamp( branchP, 0.0, 1.0 ) )
+    float near_trunk = exp( -pow( abs( n1 - 0.5 ) / 0.06, 2.0 ) );
+    float branch = isoLine( n2, g2, px * 0.8 ) * near_trunk * ( 0.3 + 0.7 * clamp( branchP, 0.0, 1.0 ) )
                    * ( 0.4 + 0.6 * clamp( audioSpread, 0.0, 1.0 ) );
     // Which stretches are live now: a wandering charge; flicker along the bolt.
     float charge = smoothstep( 0.3, 0.6, fbm3( p * 1.2 + vec2( 0.09 * sceneTime + audioAdvance, 0.0 ) ) );
     float flick = 0.6 + 0.4 * noise2( vec2( sceneTime * 9.0, n1 * 30.0 ) );
     float I = charge * flick * ( 0.5 + 1.6 * kick );
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  boltC = mix( vec3( 0.65, 0.5, 1.0 ), vec3( 0.6, 0.95, 1.0 ), mode );
-    boltC = mix( boltC, glowColour( imgLod( uv, 6.0 ), p, hueP * 0.159 ), 0.15 );
+    vec3  bolt_c = mix( vec3( 0.65, 0.5, 1.0 ), vec3( 0.6, 0.95, 1.0 ), mode );
+    bolt_c = mix( bolt_c, glowColour( imgLod( uv, 6.0 ), p, hueP * 0.159 ), 0.15 );
     // The dark stone (the photo), lit around the live bolts.
     vec3 stone = imgLod( uv, 1.0 ) * 0.14;
-    vec3 col = stone * ( 1.0 + 3.0 * clamp( stoneP, 0.0, 1.0 ) * nearTrunk * I );
-    col += boltC * exp( -pow( abs( n1 - 0.5 ) / 0.04, 2.0 ) ) * I * 0.6; // glow around the bolt
-    col += mix( boltC, vec3( 1.0 ), 0.6 ) * ( trunk + branch * 0.8 ) * I * 2.4;
-    col += boltC * trunk * 0.08 * ( 0.4 + 0.8 * swell ); // faint afterglow everywhere
+    vec3 col = stone * ( 1.0 + 3.0 * clamp( stoneP, 0.0, 1.0 ) * near_trunk * I );
+    col += bolt_c * exp( -pow( abs( n1 - 0.5 ) / 0.04, 2.0 ) ) * I * 0.6; // glow around the bolt
+    col += mix( bolt_c, vec3( 1.0 ), 0.6 ) * ( trunk + branch * 0.8 ) * I * 2.4;
+    col += bolt_c * trunk * 0.08 * ( 0.4 + 0.8 * swell ); // faint afterglow everywhere
     finish( col );
 }

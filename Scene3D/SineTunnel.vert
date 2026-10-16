@@ -49,24 +49,24 @@ void main()
 
     // KICK PUNCH: a sharp constriction ring races away from the camera on
     // every kick; a DROP blows the whole tube wide for a beat.
-    float punchZ = fract( z * 0.02 - audioAdvance * 0.15 );
+    float punch_z = fract( z * 0.02 - audioAdvance * 0.15 );
     // (kick punch wave removed, V7d)
     r *= 1.0 + 0.10 * audioSwell;
 
     // SERPENTINE FLIGHT: the tube winds through ABSOLUTE space and the
     // camera flies its centreline — sweeping banked curves keep revealing
     // new tunnel around each bend (the fixed straight "hole" is gone).
-    float camZ = time * 9.0 + audioAdvance * 14.0;
-    float zAbs = z + camZ;
-    vec2  path = vec2( sin( zAbs * 0.022 + 1.0 ), cos( zAbs * 0.017 ) ) * 10.0
-                 + vec2( sin( zAbs * 0.008 ), cos( zAbs * 0.006 + 2.0 ) ) * 7.0;
-    vec2  camP = vec2( sin( camZ * 0.022 + 1.0 ), cos( camZ * 0.017 ) ) * 10.0
-                 + vec2( sin( camZ * 0.008 ), cos( camZ * 0.006 + 2.0 ) ) * 7.0;
+    float cam_z = time * 9.0 + audioAdvance * 14.0;
+    float z_abs = z + cam_z;
+    vec2  path = vec2( sin( z_abs * 0.022 + 1.0 ), cos( z_abs * 0.017 ) ) * 10.0
+                 + vec2( sin( z_abs * 0.008 ), cos( z_abs * 0.006 + 2.0 ) ) * 7.0;
+    vec2  cam_p = vec2( sin( cam_z * 0.022 + 1.0 ), cos( cam_z * 0.017 ) ) * 10.0
+                  + vec2( sin( cam_z * 0.008 ), cos( cam_z * 0.006 + 2.0 ) ) * 7.0;
 
-    vec3  vp = vec3( cos( ang ) * r + path.x - camP.x,
-                     sin( ang ) * r + path.y - camP.y, z );
-    float rollA = audioRotPhase * 0.4 + 0.5 * cos( camZ * 0.022 + 1.0 );
-    vp.xy = mat2( cos( rollA ), -sin( rollA ), sin( rollA ), cos( rollA ) ) * vp.xy;
+    vec3  vp = vec3( cos( ang ) * r + path.x - cam_p.x,
+                     sin( ang ) * r + path.y - cam_p.y, z );
+    float roll_a = audioRotPhase * 0.4 + 0.5 * cos( cam_z * 0.022 + 1.0 );
+    vp.xy = mat2( cos( roll_a ), -sin( roll_a ), sin( roll_a ), cos( roll_a ) ) * vp.xy;
 
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

@@ -49,7 +49,7 @@ uniform float bandsP;
 uniform float shearP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float n )
@@ -66,7 +66,7 @@ mat2 rot2D( float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float bandsN = 5.0 + floor( clamp( bandsP, 0.0, 1.0 ) * 6.0 ); // rolled ONCE per activation
+    float bands_n = 5.0 + floor( clamp( bandsP, 0.0, 1.0 ) * 6.0 ); // rolled ONCE per activation
     float shear = ( shearP > 0.0 ) ? shearP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
@@ -75,20 +75,20 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // Two habit planes, crossing the way real twins do.
     float grow = 1.0;  // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float cover = 0.0; // how much of this pixel has transformed
     float edge = 0.0;  // how close it is to a twin boundary
     float fresh = 0.0; // how newly this band nucleated
-    vec2  shiftSum = vec2( 0.0 );
+    vec2  shift_sum = vec2( 0.0 );
 
     for ( int j = 0; j < 2; ++j )
     {
         float aj = ( j == 0 ) ? 0.62 : -0.74;
         vec2  q = rot2D( aj ) * p;
-        float sp = 1.35 / bandsN; // band spacing
+        float sp = 1.35 / bands_n; // band spacing
         float idx = floor( q.y / sp );
         for ( int k = -1; k <= 1; ++k )
         {
@@ -101,18 +101,18 @@ void main()
                 continue;
             // A lens: widest in the middle, tapering to its tips.
             float centre = ( id + 0.5 ) * sp;
-            float halfW = sp * 0.52 * g;
+            float half_w = sp * 0.52 * g;
             float along = clamp( q.x / 1.3, -1.0, 1.0 );
-            float lens = halfW * sqrt( max( 0.0, 1.0 - along * along * 0.55 ) );
+            float lens = half_w * sqrt( max( 0.0, 1.0 - along * along * 0.55 ) );
             float dist = abs( q.y - centre );
-            float inBand = smoothstep( lens, lens * 0.82, dist );
-            cover = max( cover, inBand );
+            float in_band = smoothstep( lens, lens * 0.82, dist );
+            cover = max( cover, in_band );
             edge = max( edge, exp( -pow( ( dist - lens ) / ( sp * 0.09 ), 2.0 ) ) * g );
-            fresh = max( fresh, inBand * ( 1.0 - smoothstep( t0, t0 + 0.16, d ) ) );
+            fresh = max( fresh, in_band * ( 1.0 - smoothstep( t0, t0 + 0.16, d ) ) );
             // The transformation strain is FIXED: a band that has formed does
             // not go on shearing, it only gets wider.
             vec2 dir = rot2D( -aj ) * vec2( 1.0, 0.0 );
-            shiftSum += dir * inBand * 0.028 * shear * ( j == 0 ? 1.0 : -1.0 );
+            shift_sum += dir * in_band * 0.028 * shear * ( j == 0 ? 1.0 : -1.0 );
         }
     }
     cover = clamp( cover, 0.0, 1.0 );
@@ -122,8 +122,8 @@ void main()
     // The transformation strain is accommodated once the twins have taken the
     // whole frame -- and it has to be, or the last frame is the incoming scene
     // shifted sideways instead of the incoming scene.
-    shiftSum *= 1.0 - smoothstep( 0.78, 1.0, d );
-    vec2 sheared = clamp( uv + shiftSum / vec2( aspect, 1.0 ), 0.0, 1.0 );
+    shift_sum *= 1.0 - smoothstep( 0.78, 1.0, d );
+    vec2 sheared = clamp( uv + shift_sum / vec2( aspect, 1.0 ), 0.0, 1.0 );
     vec3 parent = texture( tex0, uv ).rgb;
     vec3 twin = texture( tex1, sheared ).rgb;
 

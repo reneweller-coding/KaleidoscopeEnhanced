@@ -74,12 +74,12 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nPlanets = 2 + int( clamp( planetsP, 0.0, 1.0 ) * 3.0 );
-    float speckleDens = 30.0 + 30.0 * clamp( speckleP, 0.0, 1.0 );
+    int   n_planets = 2 + int( clamp( planetsP, 0.0, 1.0 ) * 3.0 );
+    float speckle_dens = 30.0 + 30.0 * clamp( speckleP, 0.0, 1.0 );
     float halo = 0.3 + 0.9 * clamp( audioSwell, 0.0, 1.0 );
     float rot = sceneAdvance * 0.12 + sceneTime * 0.025;
     float r = length( p );
-    float maskR = 0.08;
+    float mask_r = 0.08;
 
     // Rotating frame for the speckles.
     float c2 = cos( rot ), s2 = sin( rot );
@@ -96,24 +96,24 @@ void main()
 
     // Speckles: a grid of hashed spots in the rotating frame; brightness
     // from the band at that radius; they shimmer slowly (a noise clock).
-    vec2  gu = q * speckleDens;
+    vec2  gu = q * speckle_dens;
     vec2  cell = floor( gu );
     vec2  f = fract( gu ) - 0.5;
     vec2  off = vec2( hash21( cell + 3.1 ), hash21( cell + 7.7 ) ) - 0.5;
     float d = length( f - off * 0.5 );
-    float rr = length( ( cell + 0.5 + off * 0.5 ) / speckleDens );
+    float rr = length( ( cell + 0.5 + off * 0.5 ) / speckle_dens );
     int   band = int( clamp( rr / 0.7 * 31.0, 0.0, 31.0 ) );
     float e = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
     float present = step( 0.3, hash21( cell + 1.1 ) );
     float shimmer = 0.6 + 0.4 * sin( sceneAdvance * 1.5 + hash21( cell + 9.9 ) * 6.28 );
     float speckle = exp( -d * d * 40.0 ) * present * ( 0.35 + 0.65 * e ) * shimmer * exp( -rr * 1.0 );
-    vec3  spCol = mix( vec3( 0.9, 0.85, 0.8 ), imgPalette( hue * 0.159 + hash21( cell + 5.5 ) * 0.2 ), 0.5 ) * 2.0;
-    col += spCol * speckle * halo * 2.5;
+    vec3  sp_col = mix( vec3( 0.9, 0.85, 0.8 ), imgPalette( hue * 0.159 + hash21( cell + 5.5 ) * 0.2 ), 0.5 ) * 2.0;
+    col += sp_col * speckle * halo * 2.5;
 
     // Planets: steady round dots in the fixed frame (they do not rotate).
     for ( int i = 0; i < 5; ++i )
     {
-        if ( i >= nPlanets )
+        if ( i >= n_planets )
             break;
         float fi = float( i );
         float pa = hash11( fi * 3.7 ) * 6.2831853;
@@ -125,15 +125,15 @@ void main()
         col += pc * ( smoothstep( sz, sz * 0.4, pd ) + exp( -pd / ( sz * 3.0 ) ) * 0.4 );
     }
     // The coronagraph mask: black disc with a bright glinting rim.
-    float mask = smoothstep( maskR, maskR * 0.97, r );
-    float rim = smoothstep( 0.006, 0.0, abs( r - maskR ) );
+    float mask = smoothstep( mask_r, mask_r * 0.97, r );
+    float rim = smoothstep( 0.006, 0.0, abs( r - mask_r ) );
     col = mix( col, vec3( 0.0 ), mask );
     col += imgPalette( hue * 0.159 + 0.9 ) * rim * ( 0.3 + 1.2 * audioKick );
     // The inner working angle ring, faint.
-    col += vec3( 0.4, 0.45, 0.6 ) * smoothstep( 0.003, 0.0, abs( r - maskR * 2.2 ) ) * 0.15;
+    col += vec3( 0.4, 0.45, 0.6 ) * smoothstep( 0.003, 0.0, abs( r - mask_r * 2.2 ) ) * 0.15;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

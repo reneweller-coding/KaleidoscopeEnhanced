@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nLoops = ( loopCountP > 1.0 ) ? loopCountP : 3.0;
-    float flareInt = ( flareIntensityP > 0.01 ) ? flareIntensityP : 1.0;
+    float n_loops = ( loopCountP > 1.0 ) ? loopCountP : 3.0;
+    float flare_int = ( flareIntensityP > 0.01 ) ? flareIntensityP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -73,61 +73,61 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Boiling solar surface granulation background
-    float granNoise = sin( uv.x * 20.0 + t * 2.0 ) * cos( uv.y * 20.0 - t * 1.5 );
-    float gran = smoothstep( -0.4, 0.8, granNoise ) * ( 0.6 + 0.4 * audioSubBass );
+    float gran_noise = sin( uv.x * 20.0 + t * 2.0 ) * cos( uv.y * 20.0 - t * 1.5 );
+    float gran = smoothstep( -0.4, 0.8, gran_noise ) * ( 0.6 + 0.4 * audioSubBass );
 
-    vec3  loopAcc = vec3( 0.0 );
-    float flareAcc = 0.0;
+    vec3  loop_acc = vec3( 0.0 );
+    float flare_acc = 0.0;
 
     // Accumulate across multiple magnetic coronal loops
-    int numL = int( clamp( nLoops, 2.0, 5.0 ) );
+    int num_l = int( clamp( n_loops, 2.0, 5.0 ) );
     for ( int k = 0; k < 4; k++ )
     {
-        if ( k >= numL )
+        if ( k >= num_l )
             break;
         float kf = float( k );
 
         // Parametric semi-circular coronal loop arc centered at bottom
-        float arcRadius = 0.55 + kf * 0.25 + 0.1 * sin( audioSwell * 2.5 + kf );
-        vec2  arcCenter = vec2( ( kf - 1.5 ) * 0.35 + sin( t * 0.4 + kf ) * 0.15, -0.4 );
+        float arc_radius = 0.55 + kf * 0.25 + 0.1 * sin( audioSwell * 2.5 + kf );
+        vec2  arc_center = vec2( ( kf - 1.5 ) * 0.35 + sin( t * 0.4 + kf ) * 0.15, -0.4 );
 
-        vec2  rel = uv - arcCenter;
-        float rArc = length( rel );
-        float aArc = atan( rel.y, rel.x );
+        vec2  rel = uv - arc_center;
+        float r_arc = length( rel );
+        float a_arc = atan( rel.y, rel.x );
 
         // Distance to the coronal loop tube
-        float dLoop = abs( rArc - arcRadius ) - 0.03;
+        float d_loop = abs( r_arc - arc_radius ) - 0.03;
 
         // Helical magnetic twisting along the loop arc
-        float helixTwist = sin( aArc * 16.0 + rArc * 12.0 - t * 5.0 + kf );
-        float loopFilament = exp( -abs( dLoop + helixTwist * 0.02 ) * ( 24.0 + 12.0 * audioCentroid ) );
+        float helix_twist = sin( a_arc * 16.0 + r_arc * 12.0 - t * 5.0 + kf );
+        float loop_filament = exp( -abs( d_loop + helix_twist * 0.02 ) * ( 24.0 + 12.0 * audioCentroid ) );
 
-        // Reconnection flare at the apex of the loop (aArc near pi/2)
-        float apexDist = length( rel - vec2( 0.0, arcRadius ) );
-        float flareNode = exp( -apexDist * 14.0 ) * ( 1.0 + 3.0 * audioKick ) * flareInt;
-        flareAcc += flareNode;
+        // Reconnection flare at the apex of the loop (a_arc near pi/2)
+        float apex_dist = length( rel - vec2( 0.0, arc_radius ) );
+        float flare_node = exp( -apex_dist * 14.0 ) * ( 1.0 + 3.0 * audioKick ) * flare_int;
+        flare_acc += flare_node;
 
         // Color gradient of loop (golden hydrogen alpha to extreme ultraviolet core)
-        vec3 loopCol = mix( vec3( 1.8, 1.2, 0.2 ), vec3( 1.9, 0.3, 0.8 ), clamp( rel.y / arcRadius, 0.0, 1.0 ) );
-        loopCol = mix( loopCol, imgPalette( kf * 0.25 + 0.1 ), 0.35 );
+        vec3 loop_col = mix( vec3( 1.8, 1.2, 0.2 ), vec3( 1.9, 0.3, 0.8 ), clamp( rel.y / arc_radius, 0.0, 1.0 ) );
+        loop_col = mix( loop_col, imgPalette( kf * 0.25 + 0.1 ), 0.35 );
 
-        loopAcc += ( loopCol * loopFilament + vec3( 1.9, 1.8, 1.4 ) * flareNode ) * glw;
+        loop_acc += ( loop_col * loop_filament + vec3( 1.9, 1.8, 1.4 ) * flare_node ) * glw;
     }
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + vec2( t * 0.05, gran * 0.05 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + vec2( t * 0.05, gran * 0.05 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Photosphere surface base
-    vec3 photosphereCol = mix( vec3( 1.6, 0.8, 0.1 ), vec3( 1.2, 0.2, 0.1 ), gran );
-    vec3 baseCol = mix( photosphereCol, texCol, 0.35 );
+    vec3 photosphere_col = mix( vec3( 1.6, 0.8, 0.1 ), vec3( 1.2, 0.2, 0.1 ), gran );
+    vec3 base_col = mix( photosphere_col, tex_col, 0.35 );
 
-    vec3 finalCol = baseCol * 0.4 + loopAcc;
+    vec3 final_col = base_col * 0.4 + loop_acc;
 
     // Global coronal halo flare
-    float coronalGlow = exp( -length( uv + vec2( 0.0, 0.4 ) ) * 3.0 ) * ( 0.8 + 1.5 * audioKick );
-    finalCol += imgPalette( 0.85 ) * coronalGlow;
+    float coronal_glow = exp( -length( uv + vec2( 0.0, 0.4 ) ) * 3.0 ) * ( 0.8 + 1.5 * audioKick );
+    final_col += imgPalette( 0.85 ) * coronal_glow;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

@@ -119,9 +119,9 @@ float map( vec3 p, float dp, float sp )
     float d = 1e10;
 
     // Confine to a thin ring plane
-    float planeBound = abs( p.y ) - 2.0;
-    if ( planeBound > 5.0 )
-        return planeBound;
+    float plane_bound = abs( p.y ) - 2.0;
+    if ( plane_bound > 5.0 )
+        return plane_bound;
 
     // Grid of chunks
     vec3 id = floor( p / 4.0 );
@@ -137,11 +137,11 @@ float map( vec3 p, float dp, float sp )
         q.xz = rot( time * speed * 0.7 ) * q.xz;
 
         // Random rock shape
-        float rockSize = ( 0.5 + h * 1.5 ) * sp;
-        float rock = length( q ) - rockSize;
+        float rock_size = ( 0.5 + h * 1.5 ) * sp;
+        float rock = length( q ) - rock_size;
 
         // Displacement for rough ice chunks
-        rock += fbm( p * 2.0 ) * 0.5 * rockSize;
+        rock += fbm( p * 2.0 ) * 0.5 * rock_size;
 
         if ( rock < d )
             d = rock;
@@ -217,20 +217,20 @@ void main()
 
     vec3 col = vec3( 0.005, 0.008, 0.015 ); // dark space
 
-    vec3 sunDir = normalize( vec3( 1.0, 0.5, 0.5 ) );
-    vec3 iceColor = imgPalette( 0.4 );
-    vec3 flashColor = imgPalette( 0.8 + audioKick * 0.1 );
+    vec3 sun_dir = normalize( vec3( 1.0, 0.5, 0.5 ) );
+    vec3 ice_color = imgPalette( 0.4 );
+    vec3 flash_color = imgPalette( 0.8 + audioKick * 0.1 );
 
     if ( m > 0.5 && d <= 120.0 )
     {
         vec3  n = calcNormal( p, dp, sp );
-        float dif = max( dot( n, sunDir ), 0.0 );
+        float dif = max( dot( n, sun_dir ), 0.0 );
         float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, -1.0, 0.0 ) );
 
-        vec3 albedo = mix( vec3( 0.8, 0.9, 1.0 ), iceColor, 0.5 ); // Icy blue/white
+        vec3 albedo = mix( vec3( 0.8, 0.9, 1.0 ), ice_color, 0.5 ); // Icy blue/white
 
         // Specular highlight for ice
-        float spec = pow( max( dot( reflect( -sunDir, n ), -rd ), 0.0 ), 16.0 );
+        float spec = pow( max( dot( reflect( -sun_dir, n ), -rd ), 0.0 ), 16.0 );
 
         col = albedo * ( 0.1 + dif * ( 1.0 + audioSwell ) ) + spec * vec3( 1.0 ) * ( 0.5 + audioSwell );
         col += albedo * fill * 0.1;
@@ -241,38 +241,38 @@ void main()
         {
             // Nur auf Kicks, ohne 5-Hz-Dauerstrobo.
             float flash = step( 0.93, fract( time * 0.7 + id * 10.0 ) );
-            col += flashColor * flash * audioKick * 2.5;
+            col += flash_color * flash * audioKick * 2.5;
         }
 
         col *= clamp( 1.0 - float( steps ) * 0.01, 0.2, 1.0 );
     }
 
     // Add thick ring dust (volumetric fog along the plane)
-    float planeDist = abs( ro.y ) / abs( rd.y );
+    float plane_dist = abs( ro.y ) / abs( rd.y );
     if ( rd.y < 0.0 || ro.y < 2.0 )
     {
-        float maxDist = min( d, 120.0 );
+        float max_dist = min( d, 120.0 );
 
         // Accumulate dust
         float dust = 0.0;
         vec3  rp = ro;
-        float stepSize = maxDist / 15.0;
+        float step_size = max_dist / 15.0;
         for ( int i = 0; i < 15; ++i )
         {
             if ( abs( rp.y ) < 2.5 )
             {
-                dust += ( 1.0 - smoothstep( 0.0, 2.5, abs( rp.y ) ) ) * stepSize * 0.05 * dp;
+                dust += ( 1.0 - smoothstep( 0.0, 2.5, abs( rp.y ) ) ) * step_size * 0.05 * dp;
             }
-            rp += rd * stepSize;
+            rp += rd * step_size;
         }
         dust = clamp( dust, 0.0, 1.0 );
 
-        vec3 dustCol = mix( vec3( 0.1, 0.15, 0.2 ), iceColor, 0.5 );
+        vec3 dust_col = mix( vec3( 0.1, 0.15, 0.2 ), ice_color, 0.5 );
         // Sun scattering in dust
-        float scat = max( dot( rd, sunDir ), 0.0 );
-        dustCol += vec3( 0.8, 0.7, 0.6 ) * pow( scat, 4.0 ) * ( 0.5 + audioSwell );
+        float scat = max( dot( rd, sun_dir ), 0.0 );
+        dust_col += vec3( 0.8, 0.7, 0.6 ) * pow( scat, 4.0 ) * ( 0.5 + audioSwell );
 
-        col = mix( col, dustCol, dust );
+        col = mix( col, dust_col, dust );
     }
 
     // Deep space fade
@@ -281,7 +281,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

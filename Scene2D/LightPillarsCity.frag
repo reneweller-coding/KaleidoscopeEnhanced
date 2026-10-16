@@ -97,7 +97,7 @@ void main()
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.5;
-    int   nP = 26 + int( clamp( pillarsP, 0.0, 1.0 ) * 20.0 );
+    int   n_p = 26 + int( clamp( pillarsP, 0.0, 1.0 ) * 20.0 );
 
     // Deep cold night sky, a faint bluish haze of crystals low down.
     vec3 col = mix( vec3( 0.03, 0.045, 0.09 ), vec3( 0.005, 0.01, 0.03 ), smoothstep( -0.2, 0.5, p.y ) );
@@ -110,32 +110,32 @@ void main()
                * smoothstep( 0.0, 0.3, p.y ) * 0.5;
     }
 
-    float roofY = -0.18;
+    float roof_y = -0.18;
     // The pillars: vertical columns rising from sources along the skyline,
     // brightest near the source and fading with height; the columns shimmer.
     vec3 pil = vec3( 0.0 );
     for ( int k = 0; k < 46; ++k )
     {
-        if ( k >= nP )
+        if ( k >= n_p )
             break;
         float fk = float( k );
         float x = ( hash11( fk * 1.31 ) - 0.5 ) * aspect * 1.05;
         float depth = hash11( fk * 2.77 ); // 0 near .. 1 far
-        float baseY = roofY - 0.02 + 0.06 * depth;
+        float base_y = roof_y - 0.02 + 0.06 * depth;
         float hgt = 0.35 + 0.45 * hash11( fk * 3.9 );
         float w = mix( 0.012, 0.004, depth );
         vec3  lc = lampColour( hash11( fk * 5.3 ) );
         lc = mix( lc, imgPalette( hash11( fk * 7.1 ) + hue * 0.159 ) * 1.2, 0.12 );
         float e = clamp( audioChroma[k % 12] * 1.5, 0.0, 1.0 );
         float dx = abs( p.x - x );
-        float up = p.y - baseY;
+        float up = p.y - base_y;
         float col_ = exp( -dx * dx / ( w * w ) ) * step( 0.0, up ) * exp( -up / hgt * 1.3 );
         col_ *= 0.8 + 0.2 * sin( up * 40.0 - T * 1.5 + fk ); // shimmer
         col_ += exp( -dx * dx / ( w * w * 16.0 ) ) * step( 0.0, up ) * exp( -up / hgt * 2.5 ) * 0.15;
         float strength = ( 0.35 + 0.9 * e ) * mix( 1.0, 0.5, depth );
         pil += lc * col_ * strength;
         // The source: a small bright lamp at the base.
-        pil += lc * exp( -dot( p - vec2( x, baseY ), p - vec2( x, baseY ) ) * 60000.0 ) * 2.0;
+        pil += lc * exp( -dot( p - vec2( x, base_y ), p - vec2( x, base_y ) ) * 60000.0 ) * 2.0;
     }
     col += pil;
 
@@ -146,7 +146,7 @@ void main()
         float scale = 14.0 - 4.0 * fr;
         float bx = p.x * scale + fr * 17.0;
         float bi = floor( bx ), bf = fract( bx );
-        float h = roofY - 0.03 - 0.07 * fr + 0.05 * hash11( bi + fr * 31.0 );
+        float h = roof_y - 0.03 - 0.07 * fr + 0.05 * hash11( bi + fr * 31.0 );
         // Pitched roofs.
         float roof = h + ( 0.5 - abs( bf - 0.5 ) ) * 0.06 * ( 0.6 + 0.5 * hash11( bi * 3.0 + fr ) );
         if ( p.y < roof )
@@ -179,7 +179,7 @@ void main()
            * ( 0.2 + 0.8 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

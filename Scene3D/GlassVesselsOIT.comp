@@ -46,19 +46,19 @@ void emitQuadN( vec3 p0, vec3 p1, vec3 p2, vec3 p3, vec3 n0, vec3 n1, vec3 n2, v
     uint base = atomicAdd( cmd[4], 6u );
     if ( base + 6u > maxVertices )
         return;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec3 nList[6] = vec3[6]( n0, n1, n2, n0, n2, n3 );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec3 n_list[6] = vec3[6]( n0, n1, n2, n0, n2, n3 );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = aux;
         verts[off + 5u] = kind;
-        verts[off + 6u] = nList[i].x;
-        verts[off + 7u] = nList[i].y;
+        verts[off + 6u] = n_list[i].x;
+        verts[off + 7u] = n_list[i].y;
     }
 }
 
@@ -68,20 +68,20 @@ void emitFlat( vec3 c, vec3 ax, vec3 ay, float kind )
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
-                              vec2( 0.0, 1.0 ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
+                               vec2( 0.0, 1.0 ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = 0.0;
         verts[off + 4u] = 0.0;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -103,8 +103,8 @@ void main()
 {
     uvec3      g = gl_GlobalInvocationID;
     uint       id = g.x + 64u * ( g.y + 64u * g.z );
-    const uint kSeg = 36u, kRows = 20u;
-    const uint quadsPer = kSeg * kRows;
+    const uint Seg = 36u, Rows = 20u;
+    const uint quads_per = Seg * Rows;
 
     if ( id == 0u )
     {
@@ -113,20 +113,20 @@ void main()
         return;
     }
     uint q = id - 1u;
-    if ( q >= 12u * quadsPer )
+    if ( q >= 12u * quads_per )
         return;
-    uint  v = q / quadsPer;
-    uint  qi = q - v * quadsPer;
-    uint  row = qi / kSeg;
-    uint  seg = qi - row * kSeg;
+    uint  v = q / quads_per;
+    uint  qi = q - v * quads_per;
+    uint  row = qi / Seg;
+    uint  seg = qi - row * Seg;
     float fv = float( v );
     float rot = sceneAdvance * 0.05 + sceneTime * 0.01;
     // Vessel placement: a shallow arc on the shelf, turning slowly.
     float ang = ( fv - 5.5 ) / 12.0 * 3.0 + rot;
     vec3  base = vec3( sin( ang ) * 7.5, -1.9, 8.5 - cos( ang ) * 2.0 + 2.0 );
     float size = ( 1.25 + 0.55 * hash11( fv * 3.1 ) ) * ( sizeP > 0.05 ? sizeP : 1.0 );
-    float t0 = float( row ) / float( kRows ), t1 = float( row + 1u ) / float( kRows );
-    float a0 = float( seg ) / float( kSeg ) * 6.2831853, a1 = float( seg + 1u ) / float( kSeg ) * 6.2831853;
+    float t0 = float( row ) / float( Rows ), t1 = float( row + 1u ) / float( Rows );
+    float a0 = float( seg ) / float( Seg ) * 6.2831853, a1 = float( seg + 1u ) / float( Seg ) * 6.2831853;
     float r0 = profile( t0, fv, shapeP ) * size, r1 = profile( t1, fv, shapeP ) * size;
     float dr = ( r1 - r0 ) / max( ( t1 - t0 ) * size * 1.6, 1e-3 );
     vec3  P[4];

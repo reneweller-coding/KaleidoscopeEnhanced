@@ -53,27 +53,27 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
-    vUV = vec2( tCoord, side * 0.5 + 0.5 );
+    vRibbonID = r_index;
+    vUV = vec2( t_coord, side * 0.5 + 0.5 );
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
-    float scaleV = ( branchScaleP > 0.01 ? branchScaleP : 1.0 );
+    float scale_v = ( branchScaleP > 0.01 ? branchScaleP : 1.0 );
 
     // RETICULOPODIA are a NET, not a star.  Twenty purely radial spokes over
     // "16 sectors" put four ribbons exactly on top of another four and left
     // wide empty wedges between the rest.  Twelve radial veins crossed by eight
     // concentric strands weave an actual reticulate mesh -- which is both what
     // the organism looks like and what carries the frame's outer tiles.
-    bool ring = ( rIndex > 11.5 );
+    bool ring = ( r_index > 11.5 );
 
-    vec3  centerPos;
+    vec3  center_pos;
     vec3  tangent;
     float taper;
 
@@ -82,37 +82,37 @@ void main()
         // ---- radial protoplasmic veins ------------------------------------
         // Starting at 0.7 rather than 0.2 keeps twelve additive ribbons from
         // all piling onto one hot point at the centre.
-        float branchAngle = rIndex * 0.5235988 + r1 * 0.4; // 12 sectors
-        float branchDist = ( 0.7 + tCoord * 3.3 ) * scaleV;
+        float branch_angle = r_index * 0.5235988 + r1 * 0.4; // 12 sectors
+        float branch_dist = ( 0.7 + t_coord * 3.3 ) * scale_v;
 
         // Organic meandering of protoplasmic veins -- wide enough now that the
         // veins wander across each other instead of running dead straight.
-        float meander = sin( tCoord * 9.0 + rIndex * 1.7 + t * 0.8 ) * 0.42
-                        + sin( tCoord * 3.1 + r2 * 6.2831853 - t * 0.5 ) * 0.30;
-        float phi = branchAngle + meander;
+        float meander = sin( t_coord * 9.0 + r_index * 1.7 + t * 0.8 ) * 0.42
+                        + sin( t_coord * 3.1 + r2 * 6.2831853 - t * 0.5 ) * 0.30;
+        float phi = branch_angle + meander;
 
-        float zFloor = sin( branchDist * 2.0 - t * 0.5 ) * 0.15 - 0.5;
-        centerPos = vec3( cos( phi ) * branchDist, sin( phi ) * branchDist, zFloor );
+        float z_floor = sin( branch_dist * 2.0 - t * 0.5 ) * 0.15 - 0.5;
+        center_pos = vec3( cos( phi ) * branch_dist, sin( phi ) * branch_dist, z_floor );
         tangent = normalize( vec3( cos( phi ), sin( phi ), 0.1 ) );
-        taper = 1.0 - tCoord * 0.45;
+        taper = 1.0 - t_coord * 0.45;
     }
     else
     {
         // ---- concentric reticulate strands --------------------------------
-        float k = ( rIndex - 12.0 ) / 7.0; // 0..1 over 8 rings
-        float ringR = ( 0.55 + k * 3.3 ) * scaleV;
+        float k = ( r_index - 12.0 ) / 7.0; // 0..1 over 8 rings
+        float ring_r = ( 0.55 + k * 3.3 ) * scale_v;
         // r3 is a constant per-ribbon seed, so this only ever puts a CONSTANT
         // factor on the clock.
-        float phi = tCoord * 6.2831853 + r1 * 6.2831853 + t * ( 0.12 + 0.10 * r3 );
-        float wob = sin( phi * ( 3.0 + floor( r2 * 4.0 ) ) + t * 0.6 ) * 0.18 * ringR;
-        float rr = ringR + wob;
+        float phi = t_coord * 6.2831853 + r1 * 6.2831853 + t * ( 0.12 + 0.10 * r3 );
+        float wob = sin( phi * ( 3.0 + floor( r2 * 4.0 ) ) + t * 0.6 ) * 0.18 * ring_r;
+        float rr = ring_r + wob;
 
-        float zFloor = sin( rr * 2.0 - t * 0.5 ) * 0.15 - 0.5;
-        centerPos = vec3( cos( phi ) * rr, sin( phi ) * rr, zFloor );
+        float z_floor = sin( rr * 2.0 - t * 0.5 ) * 0.15 - 0.5;
+        center_pos = vec3( cos( phi ) * rr, sin( phi ) * rr, z_floor );
         tangent = normalize( vec3( -sin( phi ), cos( phi ), 0.08 ) );
-        // Periodic in tCoord, so the ring's width matches where the strip
+        // Periodic in t_coord, so the ring's width matches where the strip
         // closes on itself instead of stepping at the seam.
-        taper = 0.85 + 0.15 * sin( tCoord * 6.2831853 * 4.0 + rIndex );
+        taper = 0.85 + 0.15 * sin( t_coord * 6.2831853 * 4.0 + r_index );
     }
 
     vec3 binormal = normalize( cross( tangent, vec3( 0.0, 0.0, 1.0 ) ) );
@@ -123,14 +123,14 @@ void main()
     // reading as a soft translucent tube rather than a flat band.
     float width = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.06 )
                   * 2.6 * taper * ( 1.0 + 0.3 * audioSwell );
-    vec3  worldPos = centerPos + binormal * ( side * width );
+    vec3  world_pos = center_pos + binormal * ( side * width );
 
     // Bioelectric travelling wave through plasma tubes
-    float pulse = exp( -abs( fract( tCoord * 3.0 - t * 1.5 + rIndex * 0.1 ) - 0.5 ) * 12.0 )
+    float pulse = exp( -abs( fract( t_coord * 3.0 - t * 1.5 + r_index * 0.1 ) - 0.5 ) * 12.0 )
                   * ( 1.0 + 3.0 * audioKick );
     vBioPulse = pulse;
 
-    vCol = imgPalette( fract( rIndex * 0.06 + tCoord * 0.3 + audioCentroid ) );
+    vCol = imgPalette( fract( r_index * 0.06 + t_coord * 0.3 + audioCentroid ) );
 
     // Camera Transform (V3)
     // The abyssal tilt has to be applied to the ORGANISM, about its own centre,
@@ -139,7 +139,7 @@ void main()
     // whole network off the bottom of the frame: only the crescent between
     // y = 0.7 and y = 3 ever landed inside the picture, which is exactly the
     // sliver the metric scan saw (occ 0.19).
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.65;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

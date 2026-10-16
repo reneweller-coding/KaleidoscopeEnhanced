@@ -122,15 +122,15 @@ void main()
     vec3 vv = cross( uu, ww );
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.4 * ww );
 
-    float totalDist = 0.0;
-    float gField = 0.0;
+    float total_dist = 0.0;
+    float g_field = 0.0;
     float glow = 0.0;
     bool  hit = false;
 
     for ( int i = 0; i < 72; ++i )
     {
-        vec3  p = ro + rd * totalDist;
-        float d = mapCalabiYau( p, gen, gField );
+        vec3  p = ro + rd * total_dist;
+        float d = mapCalabiYau( p, gen, g_field );
 
         glow += exp( -max( d, 0.0 ) * 16.0 ) * ( 0.018 * glw );
 
@@ -139,26 +139,26 @@ void main()
             hit = true;
             break;
         }
-        if ( totalDist > 8.0 )
+        if ( total_dist > 8.0 )
             break;
-        totalDist += max( d * 0.6, 0.005 );
+        total_dist += max( d * 0.6, 0.005 );
     }
 
     vec3 col = vec3( 0.01, 0.02, 0.05 );
 
     if ( hit )
     {
-        vec3 p = ro + rd * totalDist;
+        vec3 p = ro + rd * total_dist;
 
         // Surface normal
-        float dummyG;
+        float dummy_g;
         float eps = 0.003;
-        vec3  n = normalize( vec3( mapCalabiYau( p + vec3( eps, 0.0, 0.0 ), gen, dummyG )
-                                       - mapCalabiYau( p - vec3( eps, 0.0, 0.0 ), gen, dummyG ),
-                                   mapCalabiYau( p + vec3( 0.0, eps, 0.0 ), gen, dummyG )
-                                       - mapCalabiYau( p - vec3( 0.0, eps, 0.0 ), gen, dummyG ),
-                                   mapCalabiYau( p + vec3( 0.0, 0.0, eps ), gen, dummyG )
-                                       - mapCalabiYau( p - vec3( 0.0, 0.0, eps ), gen, dummyG ) ) );
+        vec3  n = normalize( vec3( mapCalabiYau( p + vec3( eps, 0.0, 0.0 ), gen, dummy_g )
+                                       - mapCalabiYau( p - vec3( eps, 0.0, 0.0 ), gen, dummy_g ),
+                                   mapCalabiYau( p + vec3( 0.0, eps, 0.0 ), gen, dummy_g )
+                                       - mapCalabiYau( p - vec3( 0.0, eps, 0.0 ), gen, dummy_g ),
+                                   mapCalabiYau( p + vec3( 0.0, 0.0, eps ), gen, dummy_g )
+                                       - mapCalabiYau( p - vec3( 0.0, 0.0, eps ), gen, dummy_g ) ) );
 
         // Ricci-flat specular iridescence
         vec3  light = normalize( vec3( 0.8, 1.0, -0.6 ) );
@@ -166,17 +166,17 @@ void main()
         float spec = pow( max( dot( reflect( rd, n ), light ), 0.0 ), 32.0 );
 
         // Photo texture mapped to manifold coordinates
-        vec2 photoUV = fract( vec2( atan( p.y, p.x ), p.z ) * 0.5 + 0.5 );
-        vec3 photo = img( photoUV );
+        vec2 photo_uv = fract( vec2( atan( p.y, p.x ), p.z ) * 0.5 + 0.5 );
+        vec3 photo = img( photo_uv );
 
-        vec3 manifoldColor = imgPalette( ( gField * 8.0 + audioCentroid * 3.0 ) * 0.159 );
-        col = mix( manifoldColor, photo, 0.35 ) * ( diff * 0.8 + 0.2 );
+        vec3 manifold_color = imgPalette( ( g_field * 8.0 + audioCentroid * 3.0 ) * 0.159 );
+        col = mix( manifold_color, photo, 0.35 ) * ( diff * 0.8 + 0.2 );
         col += vec3( 1.0, 0.95, 0.8 ) * spec * ( 1.5 + audioKick * 3.0 );
     }
 
     // Add internal energy glow
-    vec3 glowCol = imgPalette( 0.45 + 0.20 * sin( time * 2.0 ) );
-    col += glowCol * glow * ( 1.0 + audioKick * 2.5 );
+    vec3 glow_col = imgPalette( 0.45 + 0.20 * sin( time * 2.0 ) );
+    col += glow_col * glow * ( 1.0 + audioKick * 2.5 );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

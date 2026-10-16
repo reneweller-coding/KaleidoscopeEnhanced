@@ -72,8 +72,8 @@ void main()
 
     // Wedge hue: the azimuth around Y reveals which of the NFOLD mirror
     // copies this fragment belongs to, so colour reinforces the symmetry.
-    float wedgeHue = atan( vObj.z, vObj.x ) / 6.2831853;
-    float hue = fract( 0.5 + wedgeHue + 0.3 * ( hueP - 0.5 ) + 0.10 * vDepth );
+    float wedge_hue = atan( vObj.z, vObj.x ) / 6.2831853;
+    float hue = fract( 0.5 + wedge_hue + 0.3 * ( hueP - 0.5 ) + 0.10 * vDepth );
     vec3  flesh = imgPalette( hue ) * 1.4;
     vec3  base = mix( vec3( 0.10, 0.11, 0.16 ), flesh, clamp( tip * 1.4 + 0.25, 0.0, 1.0 ) );
 

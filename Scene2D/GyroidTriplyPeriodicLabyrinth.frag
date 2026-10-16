@@ -143,9 +143,9 @@ void main()
     // Slab-Seite -- der gemeldete Kamerasprung. Ersetzt durch die
     // Clearance-Blase im March unten: stetig per Konstruktion.)
 
-    vec3 lookTarget = ro + vec3( sin( t * 0.6 ) * 0.4, cos( t * 0.4 ) * 0.4, 1.0 );
+    vec3 look_target = ro + vec3( sin( t * 0.6 ) * 0.4, cos( t * 0.4 ) * 0.4, 1.0 );
 
-    vec3 ww = normalize( lookTarget - ro );
+    vec3 ww = normalize( look_target - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
@@ -157,25 +157,25 @@ void main()
     // above; a proximity glow is integrated ALONG the ray as it goes, so the
     // directions that never meet a wall still carry the labyrinth's own
     // structure instead of coming back as dead background.
-    float dO = 0.12;
-    float hitDist = -1.0;
+    float d_o = 0.12;
+    float hit_dist = -1.0;
     float glow = 0.0;
-    vec3  p = vec3( 0.0 ); // guarded by hitDist, but the compiler cannot see that
+    vec3  p = vec3( 0.0 ); // guarded by hit_dist, but the compiler cannot see that
     for ( int i = 0; i < 90; ++i )
     {
-        p = ro + rd * dO;
-        float dS = gyroidSDF( p, scale, thickness );
-        dS = max( dS, 0.45 - dO ); // Kamera-Clearance-Blase
-        if ( dS < 0.003 )
+        p = ro + rd * d_o;
+        float d_s = gyroidSDF( p, scale, thickness );
+        d_s = max( d_s, 0.45 - d_o ); // Kamera-Clearance-Blase
+        if ( d_s < 0.003 )
         {
-            hitDist = dO;
+            hit_dist = d_o;
             break;
         }
-        if ( dO > 16.0 )
+        if ( d_o > 16.0 )
             break;
-        float stp = max( dS * 0.35, 0.006 );
-        glow += exp( -max( dS, 0.0 ) * 7.0 ) * stp * exp( -dO * 0.10 );
-        dO += stp;
+        float stp = max( d_s * 0.35, 0.006 );
+        glow += exp( -max( d_s, 0.0 ) * 7.0 ) * stp * exp( -d_o * 0.10 );
+        d_o += stp;
     }
     glow = min( glow * 1.15, 1.0 );
 
@@ -184,24 +184,24 @@ void main()
     vec3 deep = mix( vec3( 0.035, 0.050, 0.090 ), imgPalette( 0.62 ) * 0.32, 0.55 );
     vec3 col = deep * ( 0.85 + 0.30 * audioLevel );
 
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
         vec3 n = calcNormal( p, scale, thickness );
         // Headlamp: the light travels WITH the camera, so corridor walls fall
         // off naturally into the dark ahead - that reads as a labyrinth.
-        vec3  lightDir = normalize( ro - p );
-        float atten = exp( -hitDist * 0.22 ) * ( 1.4 + 0.6 * audioLevel );
-        float diff = max( dot( n, lightDir ), 0.0 ) * atten + 0.10;
-        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 24.0 ) * atten;
+        vec3  light_dir = normalize( ro - p );
+        float atten = exp( -hit_dist * 0.22 ) * ( 1.4 + 0.6 * audioLevel );
+        float diff = max( dot( n, light_dir ), 0.0 ) * atten + 0.10;
+        float spec = pow( max( dot( reflect( -light_dir, n ), -rd ), 0.0 ), 24.0 ) * atten;
 
         // UV projection for photo texture onto gyroid surface
-        vec2 photoUV = fract( vec2( atan( n.z, n.x ) * 0.3183, p.z * 0.15 + dot( p.xy, n.yx ) * 0.1 ) );
-        vec3 photo = img( photoUV );
+        vec2 photo_uv = fract( vec2( atan( n.z, n.x ) * 0.3183, p.z * 0.15 + dot( p.xy, n.yx ) * 0.1 ) );
+        vec3 photo = img( photo_uv );
 
         // Iridescent structural color
-        vec3 iridCol = imgPalette( ( dot( p, vec3( 0.3 ) ) + audioPhase ) * 0.159 );
+        vec3 irid_col = imgPalette( ( dot( p, vec3( 0.3 ) ) + audioPhase ) * 0.159 );
 
-        col = mix( photo * 0.8, iridCol, 0.45 );
+        col = mix( photo * 0.8, irid_col, 0.45 );
         col = col * ( 0.3 + 0.7 * diff ) + spec * vec3( 1.0, 0.95, 0.85 );
 
         // Neon edge caustic glow on kick.  This used to test |g| against
@@ -214,7 +214,7 @@ void main()
 
         // Volumetric distance fog, fading into the same deep labyrinth the
         // miss branch paints, so wall and no-wall meet without a seam.
-        col = mix( col, deep, 1.0 - exp( -hitDist * 0.11 ) );
+        col = mix( col, deep, 1.0 - exp( -hit_dist * 0.11 ) );
     }
 
     // Proximity glow gathered along the ray: corridor mouths and the gaps
@@ -227,7 +227,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.72;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.72;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

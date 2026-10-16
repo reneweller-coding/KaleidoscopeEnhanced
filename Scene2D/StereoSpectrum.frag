@@ -67,8 +67,8 @@ void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
-    bool  leftHalf = uv.x < 0.5;
-    float hx = leftHalf ? ( 0.5 - uv.x ) * 2.0 : ( uv.x - 0.5 ) * 2.0; // 0 centre .. 1 edge
+    bool  left_half = uv.x < 0.5;
+    float hx = left_half ? ( 0.5 - uv.x ) * 2.0 : ( uv.x - 0.5 ) * 2.0; // 0 centre .. 1 edge
 
     // Band index: bass in the middle, treble at the edges.
     float binf = clamp( hx * 32.0, 0.0, 31.0 );
@@ -76,14 +76,14 @@ void main()
     float amp = audioSpectrum[bin];
 
     // Per-channel gain so left/right differ with the stereo image.
-    vec3  ch = leftHalf ? audioStereoL : audioStereoR;
+    vec3  ch = left_half ? audioStereoL : audioStereoR;
     float gain = 0.55 + 0.9 * ( ( ch.x + ch.y + ch.z ) / 3.0 );
-    float barH = clamp( amp * gain * ( 1.05 + 0.3 * audioBeat ), 0.0, 1.0 );
+    float bar_h = clamp( amp * gain * ( 1.05 + 0.3 * audioBeat ), 0.0, 1.0 );
 
     // MIRRORED bars: they grow from the horizontal centre line up AND down
     // (classic symmetric EQ - much more balanced than the old bottom-up bars).
-    float yy = abs( uv.y - 0.5 ) * 2.0;                       // 0 centre .. 1 edge
-    float below = smoothstep( barH + 0.02, barH - 0.02, yy ); // 1 inside the bar
+    float yy = abs( uv.y - 0.5 ) * 2.0;                         // 0 centre .. 1 edge
+    float below = smoothstep( bar_h + 0.02, bar_h - 0.02, yy ); // 1 inside the bar
 
     // Thin gaps between the bars.
     float gap = smoothstep( 0.10, 0.22, fract( binf ) ) * smoothstep( 0.10, 0.22, 1.0 - fract( binf ) );
@@ -113,9 +113,9 @@ void main()
     col += bc * below * gap * led * ( 0.15 + 0.35 * amp + 0.35 * audioBeat );
 
     // Bright tip line along both bar ends + a soft afterglow above the tip.
-    float tip = smoothstep( 0.018, 0.0, abs( yy - barH ) ) * gap;
+    float tip = smoothstep( 0.018, 0.0, abs( yy - bar_h ) ) * gap;
     col += bc * tip * ( 1.0 + 0.3 * sin( uv.x * 60.0 + audioPhase * 2.0 ) );
-    col += bc * exp( -max( yy - barH, 0.0 ) * 9.0 ) * 0.22 * amp * gap;
+    col += bc * exp( -max( yy - bar_h, 0.0 ) * 9.0 ) * 0.22 * amp * gap;
 
     // Central seam glows with the stereo width.
     float seam = smoothstep( 0.035, 0.0, abs( uv.x - 0.5 ) );

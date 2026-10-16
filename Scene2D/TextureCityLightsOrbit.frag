@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -239,7 +239,8 @@ void main()
     vec2  uv = w * 0.55 + 0.5;
     // Urbanisation from the photo.
     float urb = clamp( luma( imgLod( uv, 3.5 ) ) - luma( imgLod( uv, 7.0 ) ) + 0.5, 0.0, 1.0 );
-    float urbC = smoothstep( 0.5 - 0.12 * clamp( audioSpread, 0.0, 1.0 ), 0.7, urb + 0.15 * ( fbm3( w * 4.0 ) - 0.5 ) );
+    float urb_c = smoothstep( 0.5 - 0.12 * clamp( audioSpread, 0.0, 1.0 ), 0.7,
+                              urb + 0.15 * ( fbm3( w * 4.0 ) - 0.5 ) );
     // Ground: dark land and sea, moonlit.
     float land = smoothstep( 0.2, 0.35, luma( imgLod( uv, 5.0 ) ) );
     vec3  col = mix( vec3( 0.005, 0.01, 0.025 ), vec3( 0.02, 0.022, 0.025 ) + imgLod( uv, 2.0 ) * 0.03, land );
@@ -247,7 +248,7 @@ void main()
     vec3  lc = mix( sodium, led, mode );
     lc = mix( lc, glowColour( imgLod( uv, 5.0 ), w, hueP * 0.159 ), 0.12 );
     // City glow (the bloom of many lights).
-    col += lc * urbC * urbC * 0.3;
+    col += lc * urb_c * urb_c * 0.3;
     // Individual lights: round jittered points in two scales.
     float dens = ( 0.3 + 0.7 * clamp( cityP, 0.0, 1.0 ) );
     for ( int L = 0; L < 2; ++L )
@@ -274,12 +275,12 @@ void main()
     vec2  cq = p * 1.4 + vec2( 0.02, 0.008 ) * sceneTime + orbit * 0.6;
     float cl = fbm( cq + 0.5 * vec2( fbm3( cq * 0.8 ), fbm3( cq * 0.8 + 3.0 ) ) );
     float cover = smoothstep( 0.62 - 0.2 * clamp( cloudP, 0.0, 1.0 ) - 0.1 * swell, 0.9, cl );
-    vec3  cloudC = vec3( 0.05, 0.06, 0.08 ) + lc * urbC * 0.08;
+    vec3  cloud_c = vec3( 0.05, 0.06, 0.08 ) + lc * urb_c * 0.08;
     // Lightning: one wandering cell flashes with the kick.
     vec2  lp = 0.5 * vec2( sin( 0.13 * sceneTime ), cos( 0.11 * sceneTime ) );
     float bolt = kick * exp( -length( p - lp ) * 4.0 ) * cover;
-    cloudC += vec3( 0.7, 0.75, 1.0 ) * bolt * 1.5;
-    col = mix( col, cloudC, cover * 0.85 );
+    cloud_c += vec3( 0.7, 0.75, 1.0 ) * bolt * 1.5;
+    col = mix( col, cloud_c, cover * 0.85 );
     // The thin blue airglow haze.
     col += vec3( 0.01, 0.02, 0.05 ) * ( 1.0 + length( p ) );
     finish( col );

@@ -81,23 +81,23 @@ void main()
     vec2 p = uv * vec2( 5.0 * cnv, 4.2 );
 
     // Rayleigh-Bénard convection vorticity rolls: psi(x, y) = sin(k_x * x) * sin(k_y * y)
-    float rollX = sin( p.x + sin( p.y * 2.0 + t ) * 0.6 );
-    float rollY = cos( p.y - t * 1.4 ) * ( 0.8 + 0.3 * audioBass );
-    float convectionStream = rollX * rollY;
+    float roll_x = sin( p.x + sin( p.y * 2.0 + t ) * 0.6 );
+    float roll_y = cos( p.y - t * 1.4 ) * ( 0.8 + 0.3 * audioBass );
+    float convection_stream = roll_x * roll_y;
 
     // Secondary boundary-layer fingering, so the cell field keeps structure
     // all the way into the corners instead of fading to dead rock.
     float fine = sin( p.x * 2.3 + p.y * 1.1 + t * 0.7 ) * cos( p.y * 2.7 - t * 0.9 );
-    convectionStream = convectionStream * 0.80 + fine * 0.34;
+    convection_stream = convection_stream * 0.80 + fine * 0.34;
 
-    float hotRoll = max( convectionStream, 0.0 );
-    float coldRoll = max( -convectionStream, 0.0 );
+    float hot_roll = max( convection_stream, 0.0 );
+    float cold_roll = max( -convection_stream, 0.0 );
 
     // --- FIVE rising diapirs across the whole section --------------------
     // (one lone central plume left five sixths of the frame empty)
     const int NP = 5;
-    float     plumeStem = 0.0;
-    float     diapirHead = 0.0;
+    float     plume_stem = 0.0;
+    float     diapir_head = 0.0;
     for ( int i = 0; i < NP; ++i )
     {
         float fi = float( i );
@@ -106,63 +106,64 @@ void main()
         float ph = sd * 6.2831853;
 
         // Rising thermal plume stem (upwelling column, widening as it rises)
-        float stemX = uv.x - x0 - sin( uv.y * 4.0 - t * 1.6 + ph ) * 0.10;
-        float stemWidth = ( 0.045 + 0.032 * ( uv.y + 0.5 ) ) * plm * ( 0.75 + 0.6 * sd );
-        float sw = max( stemWidth, 0.02 );
-        plumeStem += exp( -( stemX * stemX ) / ( sw * sw ) ) * ( 0.75 + 0.35 * sd ); // gaussian: the |x| tail summed
-                                                                                     // into a flood
+        float stem_x = uv.x - x0 - sin( uv.y * 4.0 - t * 1.6 + ph ) * 0.10;
+        float stem_width = ( 0.045 + 0.032 * ( uv.y + 0.5 ) ) * plm * ( 0.75 + 0.6 * sd );
+        float sw = max( stem_width, 0.02 );
+        plume_stem += exp( -( stem_x * stem_x ) / ( sw * sw ) ) * ( 0.75 + 0.35 * sd ); // gaussian: the |x| tail summed
+                                                                                        // into a flood
 
         // Mushrooming diapir head, each one arrested at a different depth
-        float headY = 0.10 + 0.32 * fract( sd * 3.7 );
-        float headDist = length( vec2( stemX * 1.5, uv.y - headY ) );
-        diapirHead += exp( -headDist * 9.0 ) * ( 0.55 + 0.45 * sd ) * ( 1.0 + audioKick * 1.2 );
+        float head_y = 0.10 + 0.32 * fract( sd * 3.7 );
+        float head_dist = length( vec2( stem_x * 1.5, uv.y - head_y ) );
+        diapir_head += exp( -head_dist * 9.0 ) * ( 0.55 + 0.45 * sd ) * ( 1.0 + audioKick * 1.2 );
     }
-    plumeStem = min( plumeStem, 1.6 );
-    diapirHead = min( diapirHead, 1.5 );
+    plume_stem = min( plume_stem, 1.6 );
+    diapir_head = min( diapir_head, 1.5 );
 
     // Photo texture mapping into molten magma flow (mirrored wrap: the old
     // fract() left an animated seam at the frame edge that read as a JUMP)
-    vec2 magmaWarp = st + vec2( rollX, rollY ) * 0.04 * ( 1.0 + audioKick * 0.7 );
-    vec3 photo = img( abs( fract( magmaWarp * 0.5 ) * 2.0 - 1.0 ) );
+    vec2 magma_warp = st + vec2( roll_x, roll_y ) * 0.04 * ( 1.0 + audioKick * 0.7 );
+    vec3 photo = img( abs( fract( magma_warp * 0.5 ) * 2.0 - 1.0 ) );
 
     // Viscous magma temperature palette — pulled off the saturation ceiling
     // (deep basalt, 1500°C ember, molten gold, cold subducted slab)
-    vec3 basaltDark = vec3( 0.055, 0.048, 0.052 );
-    vec3 magmaCrimson = vec3( 0.80, 0.36, 0.22 );
-    vec3 moltenGold = vec3( 0.97, 0.84, 0.55 );
-    vec3 slabCool = vec3( 0.16, 0.20, 0.26 );
+    vec3 basalt_dark = vec3( 0.055, 0.048, 0.052 );
+    vec3 magma_crimson = vec3( 0.80, 0.36, 0.22 );
+    vec3 molten_gold = vec3( 0.97, 0.84, 0.55 );
+    vec3 slab_cool = vec3( 0.16, 0.20, 0.26 );
 
-    float tempField = clamp( plumeStem * 0.70 + diapirHead * 0.95 + hotRoll * 0.30, 0.0, 1.0 );
-    tempField = pow( tempField, 1.35 ); // hot stays hot, warm mush goes dark
-    vec3 thermalCol = mix( basaltDark, magmaCrimson, tempField );
+    float temp_field = clamp( plume_stem * 0.70 + diapir_head * 0.95 + hot_roll * 0.30, 0.0, 1.0 );
+    temp_field = pow( temp_field, 1.35 ); // hot stays hot, warm mush goes dark
+    vec3 thermal_col = mix( basalt_dark, magma_crimson, temp_field );
     // Timbre brightness shifts the magma's colour temperature toward
     // incandescent gold -- the audioCentroid mapping this file's header
     // documents, which nothing in the body actually implemented.  Gold is the
     // least saturated end of the ramp, so this also spends the frame's hottest
     // pixels on its calmest colour rather than its most strident one.
-    thermalCol = mix( thermalCol, moltenGold,
-                      clamp( pow( tempField, 2.6 ) * ( 0.35 + 0.35 * audioSwell + 0.30 * audioCentroid ), 0.0, 1.0 ) );
+    thermal_col = mix(
+        thermal_col, molten_gold,
+        clamp( pow( temp_field, 2.6 ) * ( 0.35 + 0.35 * audioSwell + 0.30 * audioCentroid ), 0.0, 1.0 ) );
 
     // Cold downwelling limbs = subducting slabs, so the "empty" half of every
     // convection roll carries content too.
-    thermalCol = mix( thermalCol, slabCool, clamp( coldRoll * 0.55, 0.0, 0.55 ) );
+    thermal_col = mix( thermal_col, slab_cool, clamp( cold_roll * 0.55, 0.0, 0.55 ) );
 
     // Hot D'' layer at the core-mantle boundary and the cool lithosphere lid.
-    float coreGlow = smoothstep( -0.26, -0.50, uv.y );
-    thermalCol += magmaCrimson * coreGlow * ( 0.20 + 0.13 * audioBass );
+    float core_glow = smoothstep( -0.26, -0.50, uv.y );
+    thermal_col += magma_crimson * core_glow * ( 0.20 + 0.13 * audioBass );
     float crust = smoothstep( 0.28, 0.50, uv.y );
-    thermalCol = mix( thermalCol, slabCool * 0.9, crust * 0.45 );
+    thermal_col = mix( thermal_col, slab_cool * 0.9, crust * 0.45 );
 
     // Combine visualizer — the cool mantle now shows its rock texture instead
     // of reading as black.
-    float mixW = clamp( 0.42 + 0.45 * tempField + 0.15 * audioLevel, 0.0, 0.95 );
+    float mix_w = clamp( 0.42 + 0.45 * temp_field + 0.15 * audioLevel, 0.0, 0.95 );
     // photo*0.62 made the COLD rock the brightest thing in frame (the
     // recording showed cream-white with dark plume silhouettes -- inverted).
     // Cold mantle is dark; brightness now belongs to temperature alone.
-    vec3 rockTex = mix( vec3( dot( photo, vec3( 0.333 ) ) ), photo, 0.45 );
-    vec3 rock = rockTex * mix( 0.10, 0.22, tempField ); // the 0.50 ceiling was the cream flood
-    vec3 col = mix( rock, thermalCol, mixW );
-    col += diapirHead * vec3( 1.0, 0.55, 0.25 ) * ( 0.20 + audioKick * 0.5 ); // was a cream flood over the whole frame
+    vec3 rock_tex = mix( vec3( dot( photo, vec3( 0.333 ) ) ), photo, 0.45 );
+    vec3 rock = rock_tex * mix( 0.10, 0.22, temp_field ); // the 0.50 ceiling was the cream flood
+    vec3 col = mix( rock, thermal_col, mix_w );
+    col += diapir_head * vec3( 1.0, 0.55, 0.25 ) * ( 0.20 + audioKick * 0.5 ); // was a cream flood over the whole frame
 
     // Bounded hue nudges.  Rotating by the RAW audioChromaHue swung the whole
     // frame right around the wheel as the key slewed: that is the measured
@@ -187,8 +188,8 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3  _catTone = col * 0.86;
-    float _m = max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    _catTone *= 1.0 / ( 1.0 + max( 0.0, _m - 0.72 ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3  cat_tone = col * 0.86;
+    float m = max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    cat_tone *= 1.0 / ( 1.0 + max( 0.0, m - 0.72 ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

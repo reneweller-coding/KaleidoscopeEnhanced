@@ -169,9 +169,9 @@ void main()
     }
     // Water column: green, thickening with distance and with the bass.
     float depth = max( vWorld.z, 0.0 );
-    vec3  waterCol = mix( vec3( 0.1, 0.3, 0.28 ), imgPalette( hue * 0.159 + 0.45 ) * 0.4, 0.35 );
+    vec3  water_col = mix( vec3( 0.1, 0.3, 0.28 ), imgPalette( hue * 0.159 + 0.45 ) * 0.4, 0.35 );
     float thick = 1.0 - exp( -depth * ( 0.035 + 0.03 * bass ) );
-    col = mix( col, waterCol * light, clamp( thick, 0.0, 0.9 ) );
+    col = mix( col, water_col * light, clamp( thick, 0.0, 0.9 ) );
     // Suspended particles: round motes lit by the caustics.
     vec2  mg = vec2( vWorld.x * 2.5, vWorld.y * 2.5 + clock * 0.2 );
     vec2  mc = floor( mg ), mf = fract( mg ) - 0.5;
@@ -180,7 +180,7 @@ void main()
     col += vec3( 0.9, 1.0, 0.9 ) * mote * ( 0.1 + 0.8 * caustic ) * ( 0.3 + 0.6 * hi );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -113,8 +113,8 @@ void main()
 
     // Haze toward the far end of the history, tinted by the slideshow photo so
     // the canyon sits under a sky rather than in a void.
-    vec2 skyUV = vec2( vWorld.x / 300.0 + 0.5 + time * 0.003, 0.72 );
-    vec3 sky = textureLod( tex0, fract( skyUV ), 0.0 ).rgb;
+    vec2 sky_uv = vec2( vWorld.x / 300.0 + 0.5 + time * 0.003, 0.72 );
+    vec3 sky = textureLod( tex0, fract( sky_uv ), 0.0 ).rgb;
     sky = mix( vec3( dot( sky, vec3( 0.333 ) ) ), sky, 0.55 ) * 0.45 + vec3( 0.03, 0.04, 0.07 );
     float haze = clamp( vDist / 200.0, 0.0, 1.0 );
     col = mix( col, sky, pow( haze, 1.4 ) );

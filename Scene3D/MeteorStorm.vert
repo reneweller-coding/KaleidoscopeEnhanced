@@ -92,14 +92,14 @@ void main()
 
     vec3  world;
     vec3  col;
-    float sizeBase, sizeCap, sizeMin, sizeJit;
+    float size_base, size_cap, size_min, size_jit;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     // Everything below is placed in FRUSTUM coordinates -- an x/y offset
     // scaled by its own depth -- which is what keeps both the star field and
     // the meteors' flight paths evenly spread over the picture at every
     // distance instead of bunching into one corner of a black frame.
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     if ( idx < 28000.0 )
@@ -119,8 +119,8 @@ void main()
         // slice's half-width / half-height, so a far meteor sweeps exactly as
         // much of the PICTURE as a near one.
         float dz0 = 45.0 + h3 * 90.0;
-        float hw = kTanY * aspect * dz0;
-        float hh = kTanY * dz0;
+        float hw = TanY * aspect * dz0;
+        float hh = TanY * dz0;
         vec3  start = vec3( -0.85 * hw, 0.80 * hh, dz0 );
         vec3  dir = normalize( vec3( 0.82 + 0.14 * h2,
                                      -0.50 - 0.22 * h2,
@@ -139,10 +139,10 @@ void main()
         col *= alive * ( 0.40 + 0.90 * head )
                * ( 1.0 + 0.6 * audioOnset + 2.2 * audioDrop );
 
-        sizeBase = 297.2 * ( 0.7 + 1.3 * head );
-        sizeCap = 47.6;
-        sizeMin = 1.5;
-        sizeJit = 0.4 + 0.8 * r4;
+        size_base = 297.2 * ( 0.7 + 1.3 * head );
+        size_cap = 47.6;
+        size_min = 1.5;
+        size_jit = 0.4 + 0.8 * r4;
     }
     else if ( r4 < 0.30 )
     {
@@ -152,8 +152,8 @@ void main()
         // as black again, which is exactly what the old star dome did.
         float dz = 22.0 + r3 * 130.0;
         float open = 2.3; // 2.0 fits the frustum exactly; 2.3 covers the rig's roll
-        world = vec3( ( r1 - 0.5 ) * open * dz * kTanY * aspect,
-                      ( r2 - 0.5 ) * open * dz * kTanY,
+        world = vec3( ( r1 - 0.5 ) * open * dz * TanY * aspect,
+                      ( r2 - 0.5 ) * open * dz * TanY,
                       dz );
         float tw = 0.85 + 0.15 * sin( time * ( 0.4 + r3 * 0.9 ) + r1 * 40.0 );
         col = palTint( vec3( 0.55, 0.62, 0.90 ), 0.62, 0.35 )
@@ -165,27 +165,27 @@ void main()
         // patch, which has to hold a constant apparent size or the far half of
         // the field collapses onto the minimum-size floor and stops being
         // haze.  Folding dz back into the jitter cancels that division.
-        sizeBase = 26.7;
-        sizeCap = 47.6;
-        sizeMin = 3.0;
-        sizeJit = ( 0.5 + 1.3 * r1 ) * dz;
+        size_base = 26.7;
+        size_cap = 47.6;
+        size_min = 3.0;
+        size_jit = ( 0.5 + 1.3 * r1 ) * dz;
     }
     else
     {
         // ---- Star field, spread across the frustum at every depth. ----
         float dz = 20.0 + r3 * r3 * 150.0;
         float open = 2.3;
-        world = vec3( ( r1 - 0.5 ) * open * dz * kTanY * aspect,
-                      ( r2 - 0.5 ) * open * dz * kTanY,
+        world = vec3( ( r1 - 0.5 ) * open * dz * TanY * aspect,
+                      ( r2 - 0.5 ) * open * dz * TanY,
                       dz );
         float tw = 0.75 + 0.25 * sin( time * ( 1.0 + r3 * 3.0 ) + r4 * 40.0 );
         col = vec3( 0.75, 0.8, 0.95 ) * ( 0.30 + 0.70 * r4 ) * tw
               * ( 0.8 + 0.4 * audioSwell );
 
-        sizeBase = 297.2;
-        sizeCap = 47.6;
-        sizeMin = 1.8;
-        sizeJit = 0.4 + 0.8 * r4;
+        size_base = 297.2;
+        size_cap = 47.6;
+        size_min = 1.8;
+        size_jit = 0.4 + 0.8 * r4;
     }
 
     vec3 vp = world;
@@ -197,8 +197,8 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * sizeJit * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * size_jit * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
     // Cap the TINTED colour, not the scalar that fed it.
     vCol = vec4( min( col * 3.0, vec3( 3.4 ) ), 1.0 );
 }

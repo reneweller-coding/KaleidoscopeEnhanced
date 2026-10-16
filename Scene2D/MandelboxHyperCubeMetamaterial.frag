@@ -84,8 +84,8 @@ float mandelboxSDF( vec3 p, float scl, float fld, out float trap )
 {
     vec3  offset = p;
     float dr = 1.0;
-    float rMin2 = 0.25;
-    float rMax2 = 1.0;
+    float r_min2 = 0.25;
+    float r_max2 = 1.0;
     trap = 1e5;
 
     for ( int i = 0; i < 7; ++i )
@@ -97,15 +97,15 @@ float mandelboxSDF( vec3 p, float scl, float fld, out float trap )
         float r2 = dot( p, p );
         trap = min( trap, abs( p.x * p.y ) );
 
-        if ( r2 < rMin2 )
+        if ( r2 < r_min2 )
         {
-            float factor = ( rMax2 / rMin2 );
+            float factor = ( r_max2 / r_min2 );
             p *= factor;
             dr *= factor;
         }
-        else if ( r2 < rMax2 )
+        else if ( r2 < r_max2 )
         {
-            float factor = ( rMax2 / r2 );
+            float factor = ( r_max2 / r2 );
             p *= factor;
             dr *= factor;
         }
@@ -139,66 +139,66 @@ void main()
     vec3 vv = cross( uu, ww );
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.25 * ww ); // Kick-FOV-Pumpen raus
 
-    float dO = 0.0;
-    float hitDist = -1.0;
-    float trapMin = 1e5;
-    vec3  hitP = vec3( 0.0 ); // guarded by hitDist, but the compiler cannot see that
+    float d_o = 0.0;
+    float hit_dist = -1.0;
+    float trap_min = 1e5;
+    vec3  hit_p = vec3( 0.0 ); // guarded by hit_dist, but the compiler cannot see that
 
     for ( int i = 0; i < 48; ++i )
     {
-        vec3  p = ro + rd * dO;
-        float curTrap;
-        float dS = mandelboxSDF( p, scl, fld, curTrap );
-        trapMin = min( trapMin, curTrap );
+        vec3  p = ro + rd * d_o;
+        float cur_trap;
+        float d_s = mandelboxSDF( p, scl, fld, cur_trap );
+        trap_min = min( trap_min, cur_trap );
 
-        if ( dS < 0.003 )
+        if ( d_s < 0.003 )
         {
-            hitDist = dO;
-            hitP = p;
+            hit_dist = d_o;
+            hit_p = p;
             break;
         }
-        if ( dO > 22.0 )
+        if ( d_o > 22.0 )
             break;
-        dO += dS * 0.65;
+        d_o += d_s * 0.65;
     }
 
     // Orbit-trap aura for miss rays: the box's energy field fills the frame
     // instead of near-black (metric scan: luma 8, saturation 0 -- most rays
     // miss the thin metamaterial lattice).
     vec3 col = vec3( 0.02, 0.03, 0.06 );
-    vec3 aura = imgPalette( ( trapMin * 7.0 + audioPhase ) * 0.159 + 0.05 )
-                * exp( -trapMin * 1.8 ) * ( 0.5 + 0.5 * audioLevel );
+    vec3 aura = imgPalette( ( trap_min * 7.0 + audioPhase ) * 0.159 + 0.05 )
+                * exp( -trap_min * 1.8 ) * ( 0.5 + 0.5 * audioLevel );
     col += aura * 0.8;
 
-    if ( hitDist > 0.0 )
+    if ( hit_dist > 0.0 )
     {
         vec2  e = vec2( 0.005, 0.0 );
-        float tU;
+        float t_u;
         vec3  n = normalize( vec3(
-            mandelboxSDF( hitP + e.xyy, scl, fld, tU ) - mandelboxSDF( hitP - e.xyy, scl, fld, tU ),
-            mandelboxSDF( hitP + e.yxy, scl, fld, tU ) - mandelboxSDF( hitP - e.yxy, scl, fld, tU ),
-            mandelboxSDF( hitP + e.yyx, scl, fld, tU ) - mandelboxSDF( hitP - e.yyx, scl, fld, tU ) ) );
+            mandelboxSDF( hit_p + e.xyy, scl, fld, t_u ) - mandelboxSDF( hit_p - e.xyy, scl, fld, t_u ),
+            mandelboxSDF( hit_p + e.yxy, scl, fld, t_u ) - mandelboxSDF( hit_p - e.yxy, scl, fld, t_u ),
+            mandelboxSDF( hit_p + e.yyx, scl, fld, t_u ) - mandelboxSDF( hit_p - e.yyx, scl, fld, t_u ) ) );
 
-        vec3  lightDir = normalize( vec3( 0.5, 0.9, -0.6 ) );
-        float diff = max( dot( n, lightDir ), 0.0 );
-        float spec = pow( max( dot( reflect( -lightDir, n ), -rd ), 0.0 ), 32.0 );
+        vec3  light_dir = normalize( vec3( 0.5, 0.9, -0.6 ) );
+        float diff = max( dot( n, light_dir ), 0.0 );
+        float spec = pow( max( dot( reflect( -light_dir, n ), -rd ), 0.0 ), 32.0 );
 
         // Photo mapping from normal and world coords
-        vec2 photoUV = fract( vec2( dot( hitP.xy, n.yx ) * 0.1, hitP.z * 0.1 ) );
-        vec3 photo = img( photoUV );
+        vec2 photo_uv = fract( vec2( dot( hit_p.xy, n.yx ) * 0.1, hit_p.z * 0.1 ) );
+        vec3 photo = img( photo_uv );
 
         // Cyberpunk neon architecture palette
-        vec3 cyber = imgPalette( ( trapMin * 10.0 + audioPhase ) * 0.159 );
+        vec3 cyber = imgPalette( ( trap_min * 10.0 + audioPhase ) * 0.159 );
 
         col = mix( photo * 0.85, cyber, 0.45 );
         col = col * ( 0.35 + 0.65 * diff ) + spec * vec3( 1.0, 0.95, 0.85 );
 
         // Neon edge line glow
-        float edge = smoothstep( 0.05, 0.01, abs( dot( n, normalize( hitP ) ) ) );
+        float edge = smoothstep( 0.05, 0.01, abs( dot( n, normalize( hit_p ) ) ) );
         col += edge * vec3( 0.1, 0.9, 1.0 ) * ( 1.2 + audioKick * 2.5 );
 
         // Distance fog
-        col = mix( col, vec3( 0.02, 0.03, 0.07 ), 1.0 - exp( -hitDist * 0.15 ) );
+        col = mix( col, vec3( 0.02, 0.03, 0.07 ), 1.0 - exp( -hit_dist * 0.15 ) );
     }
 
     if ( audioChromaHue != 0.0 )

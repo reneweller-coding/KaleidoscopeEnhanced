@@ -41,19 +41,19 @@ uniform float camHP;  ///< preset: eye height
 uniform float bladeP; ///< preset: blade height
 uniform float windP;  ///< preset: wind strength
 
-const float FIELD_W = 26.0;
-const float FIELD_D = 55.0;
+const float FieldW = 26.0;
+const float FieldD = 55.0;
 
 // The engine's projection looks dead level, which shows the sward edge-on as a
 // narrow band with the horizon across the middle.  Tilting the view down here
 // — a rotation in view space, nothing the engine needs to know about — lifts
 // the horizon into the upper third and lets the field open out into the frame.
-const float PITCH = 0.30;
+const float Pitch = 0.30;
 
 vec4 project( vec3 world )
 {
     vec3  vp = vec3( world.x - eyeOff, world.y - ( camHP + 1.7 ), world.z );
-    float cs = cos( PITCH ), sn = sin( PITCH );
+    float cs = cos( Pitch ), sn = sin( Pitch );
     vp = vec3( vp.x, vp.y * cs + vp.z * sn, -vp.y * sn + vp.z * cs );
     vec4 c = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     c.x += eyeOff * 0.045 * c.w;
@@ -144,14 +144,14 @@ void main()
     // blade can turn exactly edge-on and vanish.  Its NORMAL still comes from
     // the per-blade lean, which is what gives the field its scattered
     // highlights instead of one uniform sheen.
-    vec3 toEye = normalize( vec3( eyeOff, camHP, 0.0 ) - root );
-    vec3 side = normalize( cross( vec3( 0.0, 1.0, 0.0 ), toEye ) );
-    vec3 leanN = normalize( vec3( -dir.y, 0.55, dir.x ) );
+    vec3 to_eye = normalize( vec3( eyeOff, camHP, 0.0 ) - root );
+    vec3 side = normalize( cross( vec3( 0.0, 1.0, 0.0 ), to_eye ) );
+    vec3 lean_n = normalize( vec3( -dir.y, 0.55, dir.x ) );
 
-    const int SEG = 4;
-    for ( int i = 0; i <= SEG; ++i )
+    const int Seg = 4;
+    for ( int i = 0; i <= Seg; ++i )
     {
-        float t = float( i ) / float( SEG );
+        float t = float( i ) / float( Seg );
         vec3  a = mix( p0, p1, t );
         vec3  b = mix( p1, p2, t );
         vec3  p = mix( a, b, t );
@@ -161,7 +161,7 @@ void main()
         float w = width * ( 1.0 - t ) * ( 1.0 - t * 0.45 );
 
         vec3 tang = normalize( b - a );
-        vec3 n = normalize( mix( leanN, cross( tang, side ), 0.35 ) );
+        vec3 n = normalize( mix( lean_n, cross( tang, side ), 0.35 ) );
 
         emit( p - side * w, n, t, h.w, 2.0 );
         emit( p + side * w, n, t, h.w, 2.0 );

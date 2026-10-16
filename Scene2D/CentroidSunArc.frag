@@ -95,28 +95,28 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float hills = 2.0 + 2.0 * clamp( hillsP, 0.0, 1.0 );
-    float lakeY = -0.22 - 0.1 * clamp( lakeP, 0.0, 1.0 );
+    float lake_y = -0.22 - 0.1 * clamp( lakeP, 0.0, 1.0 );
     float day = clamp( audioCentroid, 0.0, 1.0 ); // 0 dusk .. 1 noon
     float haze = clamp( audioFlatness, 0.0, 1.0 );
     float clock = sceneAdvance * 0.3 + sceneTime * 0.06;
     // The sun: on an arc, height from the centroid; colour reddens low.
-    float sunA = mix( 0.05, 1.35, day );
-    vec2  sunPos = vec2( 0.55 - cos( sunA ) * 0.7, -0.05 + sin( sunA ) * 0.55 );
-    vec3  sunCol = mix( vec3( 1.0, 0.35, 0.1 ), vec3( 1.0, 0.97, 0.9 ), smoothstep( 0.0, 0.5, day ) );
+    float sun_a = mix( 0.05, 1.35, day );
+    vec2  sun_pos = vec2( 0.55 - cos( sun_a ) * 0.7, -0.05 + sin( sun_a ) * 0.55 );
+    vec3  sun_col = mix( vec3( 1.0, 0.35, 0.1 ), vec3( 1.0, 0.97, 0.9 ), smoothstep( 0.0, 0.5, day ) );
 
     // Sky: gradient from dusk purple/orange to noon blue, hazed.
-    vec3 duskSky = mix( vec3( 0.35, 0.15, 0.3 ), vec3( 0.95, 0.5, 0.25 ), smoothstep( 0.5, -0.1, p.y ) );
-    vec3 noonSky = mix( vec3( 0.3, 0.55, 0.95 ), vec3( 0.75, 0.85, 1.0 ), smoothstep( 0.5, -0.1, p.y ) );
-    vec3 sky = mix( duskSky, noonSky, day );
+    vec3 dusk_sky = mix( vec3( 0.35, 0.15, 0.3 ), vec3( 0.95, 0.5, 0.25 ), smoothstep( 0.5, -0.1, p.y ) );
+    vec3 noon_sky = mix( vec3( 0.3, 0.55, 0.95 ), vec3( 0.75, 0.85, 1.0 ), smoothstep( 0.5, -0.1, p.y ) );
+    vec3 sky = mix( dusk_sky, noon_sky, day );
     sky = mix( sky, sky * imgPalette( hue * 0.159 + 0.6 ) * 1.5, 0.15 );
     sky = mix( sky, vec3( 0.75, 0.75, 0.75 ) * ( 0.4 + 0.6 * day ), haze * 0.5 );
-    float sd = length( ( p - sunPos ) * vec2( 1.0, 1.0 ) );
-    sky += sunCol * ( smoothstep( 0.045, 0.04, sd ) * 1.5 + exp( -sd * 4.0 ) * 0.8 * ( 0.5 + 0.5 * haze ) );
+    float sd = length( ( p - sun_pos ) * vec2( 1.0, 1.0 ) );
+    sky += sun_col * ( smoothstep( 0.045, 0.04, sd ) * 1.5 + exp( -sd * 4.0 ) * 0.8 * ( 0.5 + 0.5 * haze ) );
     // Clouds drifting.
     float cl = fbm( vec2( p.x * 1.5 - clock * 0.08, p.y * 3.0 ) + 2.0 );
     float cover = smoothstep( 0.5, 0.75, cl ) * step( -0.05, p.y );
-    vec3  cloudCol = mix( sunCol * 0.7 + 0.3, vec3( 0.95 ), day ) * ( 0.6 + 0.4 * ( 1.0 - haze ) );
-    sky = mix( sky, cloudCol, cover * 0.7 );
+    vec3  cloud_col = mix( sun_col * 0.7 + 0.3, vec3( 0.95 ), day ) * ( 0.6 + 0.4 * ( 1.0 - haze ) );
+    sky = mix( sky, cloud_col, cover * 0.7 );
     vec3 col = sky;
 
     // Hills: layered ridges of the photo, lit by the sun, long shadows at dusk.
@@ -133,22 +133,22 @@ void main()
         // Lighting: the sun-facing slope (the fbm slope sign) vs. the shadowed side.
         float slope = fbm( vec2( ( p.x + 0.01 ) * ( 1.5 + fi ) + fi * 7.0, 1.0 ) )
                       - fbm( vec2( ( p.x - 0.01 ) * ( 1.5 + fi ) + fi * 7.0, 1.0 ) );
-        float facing = 0.5 + 0.5 * sign( slope ) * sign( sunPos.x - p.x );
+        float facing = 0.5 + 0.5 * sign( slope ) * sign( sun_pos.x - p.x );
         float light = mix( 0.25, 1.0, facing ) * ( 0.3 + 0.7 * day ) + 0.1;
         hill *= light;
-        hill = mix( hill, sunCol * 0.6, ( 1.0 - day ) * 0.3 * facing );
+        hill = mix( hill, sun_col * 0.6, ( 1.0 - day ) * 0.3 * facing );
         hill = mix( hill, sky, depth * 0.45 * ( 0.5 + 0.5 * haze ) );
         col = mix( col, hill, m );
     }
     // The lake: mirrors the sky and the sun, glinting on the kick.
-    if ( p.y < lakeY )
+    if ( p.y < lake_y )
     {
-        vec2  rp = vec2( p.x, 2.0 * lakeY - p.y );
-        float rd = length( ( rp - sunPos ) * vec2( 1.0, 1.0 ) );
+        vec2  rp = vec2( p.x, 2.0 * lake_y - p.y );
+        float rd = length( ( rp - sun_pos ) * vec2( 1.0, 1.0 ) );
         vec3  lake = mix( sky, vec3( 0.05, 0.1, 0.15 ), 0.4 );
-        lake += sunCol * exp( -abs( p.x - sunPos.x ) * 12.0 ) * ( 1.0 - smoothstep( 0.0, 0.35, lakeY - p.y ) ) * 0.6;
+        lake += sun_col * exp( -abs( p.x - sun_pos.x ) * 12.0 ) * ( 1.0 - smoothstep( 0.0, 0.35, lake_y - p.y ) ) * 0.6;
         float ripple = pow( 0.5 + 0.5 * sin( p.x * 60.0 + p.y * 80.0 + clock * 3.0 ), 6.0 );
-        lake += sunCol * ripple * exp( -abs( p.x - sunPos.x ) * 6.0 ) * ( 0.15 + 0.8 * audioKick );
+        lake += sun_col * ripple * exp( -abs( p.x - sun_pos.x ) * 6.0 ) * ( 0.15 + 0.8 * audioKick );
         col = lake;
     }
     // Birds: round bodies crossing on the clock, high.
@@ -163,7 +163,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

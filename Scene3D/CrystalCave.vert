@@ -52,11 +52,11 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     const float L = 210.0;
-    float       camZ = time * 3.5 + audioAdvance * 8.0;
-    float       z = mod( r1 * L - camZ, L );
+    float       cam_z = time * 3.5 + audioAdvance * 8.0;
+    float       z = mod( r1 * L - cam_z, L );
 
     float ang = r2 * 6.2831853;
-    float radT = 9.0 + 15.0 * r3;
+    float rad_t = 9.0 + 15.0 * r3;
 
     // Crystal size + orientation (fixed per crystal).
     float sy = 2.0 + 6.0 * r4; // long axis
@@ -66,7 +66,7 @@ void main()
     vec2 radial = vec2( cos( ang ), sin( ang ) );
     vec2 tang = vec2( -radial.y, radial.x );
 
-    vec3 C = vec3( radial * radT, z );
+    vec3 C = vec3( radial * rad_t, z );
     vec3 world = C
                  + vec3( -radial, 0.0 ) * ( attrA.y * sy + sy * 0.35 ) // points inward
                  + vec3( tang, 0.0 ) * ( attrA.x * sx + attrA.y * ( r1 - 0.5 ) * 0.8 )

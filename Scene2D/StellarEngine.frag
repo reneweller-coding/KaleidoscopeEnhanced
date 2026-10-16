@@ -107,83 +107,84 @@ void main()
     // The mirror curves around the star (parabolic)
 
     vec3 col = vec3( 0.0 );
-    vec3 starCol = imgPalette( 0.8 + audioCentroid * 0.1 ); // Hot orange/yellow
-    vec3 structCol = imgPalette( 0.3 );                     // Metallic
+    vec3 star_col = imgPalette( 0.8 + audioCentroid * 0.1 ); // Hot orange/yellow
+    vec3 struct_col = imgPalette( 0.3 );                     // Metallic
 
     // Star position
-    vec2  starPos = vec2( 0.5, 0.0 );
-    float dStar = length( uv - starPos );
+    vec2  star_pos = vec2( 0.5, 0.0 );
+    float d_star = length( uv - star_pos );
 
     // Mirror is a huge arc blocking the left side of the star
     // Defined in polar coords relative to star
-    vec2 polarStar = vec2( dStar, atan( uv.y - starPos.y, uv.x - starPos.x ) );
+    vec2 polar_star = vec2( d_star, atan( uv.y - star_pos.y, uv.x - star_pos.x ) );
 
     // Base mirror shape (arc from 135 to 225 degrees)
-    float mirrorRadius = 0.8;
-    float angleDiff = mod( polarStar.y - 3.14159, 6.28318 ) - 3.14159; // center at pi
+    float mirror_radius = 0.8;
+    float angle_diff = mod( polar_star.y - 3.14159, 6.28318 ) - 3.14159; // center at pi
 
-    float mirrorArc = step( abs( angleDiff ), 1.2 ); // Covers a large angle
+    float mirror_arc = step( abs( angle_diff ), 1.2 ); // Covers a large angle
 
     // Thickness of the mirror
-    float mirrorThick = smoothstep( 0.0, 0.02, abs( polarStar.x - mirrorRadius ) );
+    float mirror_thick = smoothstep( 0.0, 0.02, abs( polar_star.x - mirror_radius ) );
 
-    if ( mirrorArc > 0.5 && polarStar.x > mirrorRadius - 0.05 && polarStar.x < mirrorRadius + 0.05 )
+    if ( mirror_arc > 0.5 && polar_star.x > mirror_radius - 0.05 && polar_star.x < mirror_radius + 0.05 )
     {
         // We are ON the mirror structure
         float t = time * 0.1;
-        float detail = fbm( vec3( polarStar.y * 50.0 * mp, polarStar.x * 200.0, t ) );
+        float detail = fbm( vec3( polar_star.y * 50.0 * mp, polar_star.x * 200.0, t ) );
 
-        vec3 localCol = vec3( 0.1 ); // dark metal
+        vec3 local_col = vec3( 0.1 ); // dark metal
 
         // Structural ribbing
-        float ribs = step( 0.9, fract( polarStar.y * 30.0 * mp ) );
-        localCol = mix( localCol, structCol, ribs );
+        float ribs = step( 0.9, fract( polar_star.y * 30.0 * mp ) );
+        local_col = mix( local_col, struct_col, ribs );
 
         // The side facing the star (inner radius) is blindingly lit
-        float heat = exp( -( polarStar.x - ( mirrorRadius - 0.05 ) ) * 100.0 );
-        localCol += starCol * heat * ( 1.0 + audioSwell * 2.0 );
+        float heat = exp( -( polar_star.x - ( mirror_radius - 0.05 ) ) * 100.0 );
+        local_col += star_col * heat * ( 1.0 + audioSwell * 2.0 );
 
         // Impact flares on the mirror surface
-        float impact = step( 0.99, hash11( floor( polarStar.y * 20.0 ) + floor( time * 4.00 ) ) );
-        localCol += starCol * impact * audioKick * 5.0 * fp;
+        float impact = step( 0.99, hash11( floor( polar_star.y * 20.0 ) + floor( time * 4.00 ) ) );
+        local_col += star_col * impact * audioKick * 5.0 * fp;
 
-        col = localCol;
+        col = local_col;
     }
     else
     {
         // Space around the mirror
-        if ( polarStar.x < mirrorRadius || mirrorArc < 0.5 )
+        if ( polar_star.x < mirror_radius || mirror_arc < 0.5 )
         {
             // View of the star and its atmosphere
-            float starCore = smoothstep( 0.3, 0.28, dStar );
+            float star_core = smoothstep( 0.3, 0.28, d_star );
 
             // Solar surface detail
-            if ( starCore > 0.0 )
+            if ( star_core > 0.0 )
             {
-                float surface = fbm( vec3( ( uv - starPos ) * 10.0, time * 0.5 + audioAdvance ) );
-                col += starCol * ( 0.8 + surface * 0.5 ) * starCore * ( 1.0 + audioSwell );
+                float surface = fbm( vec3( ( uv - star_pos ) * 10.0, time * 0.5 + audioAdvance ) );
+                col += star_col * ( 0.8 + surface * 0.5 ) * star_core * ( 1.0 + audioSwell );
             }
 
             // Corona / Flares
-            float corona = exp( -( dStar - 0.3 ) * 10.0 );
-            float flareDist = fbm( vec3( polarStar.y * 5.0, dStar * 2.0, time * 2.0 ) );
-            float flares = smoothstep( 0.5, 0.8, flareDist ) * exp( -( dStar - 0.3 ) * 5.0 );
+            float corona = exp( -( d_star - 0.3 ) * 10.0 );
+            float flare_dist = fbm( vec3( polar_star.y * 5.0, d_star * 2.0, time * 2.0 ) );
+            float flares = smoothstep( 0.5, 0.8, flare_dist ) * exp( -( d_star - 0.3 ) * 5.0 );
 
-            col += starCol * corona * ( 0.5 + audioSwell * 0.5 );
-            col += starCol * flares * fp * ( 1.0 + audioKick * 2.0 );
+            col += star_col * corona * ( 0.5 + audioSwell * 0.5 );
+            col += star_col * flares * fp * ( 1.0 + audioKick * 2.0 );
 
             // Propulsion exhaust escaping the open side
-            if ( abs( angleDiff ) > 1.2 )
+            if ( abs( angle_diff ) > 1.2 )
             {
                 // Solar wind being funnelled and escaping
-                float wind = fbm( vec3( polarStar.x * 3.0 + time * 5.0 + audioAdvance * 5.0, polarStar.y * 5.0, 0.0 ) );
-                float windMask = smoothstep( 0.3, 1.5, polarStar.x );
-                col += starCol * wind * windMask * 0.5 * ( 1.0 + audioKick );
+                float wind = fbm(
+                    vec3( polar_star.x * 3.0 + time * 5.0 + audioAdvance * 5.0, polar_star.y * 5.0, 0.0 ) );
+                float wind_mask = smoothstep( 0.3, 1.5, polar_star.x );
+                col += star_col * wind * wind_mask * 0.5 * ( 1.0 + audioKick );
             }
         }
 
         // Background stars (only visible far from the glare)
-        float glare = exp( -dStar * 1.5 );
+        float glare = exp( -d_star * 1.5 );
         if ( glare < 0.5 )
         {
             // Runde, gejitterte Sterne statt aufgehellter floor()-Zellen
@@ -202,14 +203,14 @@ void main()
         }
 
         // Overwhelming glare over everything
-        col += starCol * glare * 0.2 * ( 1.0 + audioSwell );
+        col += star_col * glare * 0.2 * ( 1.0 + audioSwell );
     }
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

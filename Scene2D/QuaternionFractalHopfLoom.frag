@@ -87,15 +87,15 @@ void main()
     // Hopf fibration coordinates
     // Ganzzahlige Hopf-Windung, sonst springt r*sin(theta) am atan-Cut
     // (die gemeldete Kante links).
-    float hopfWinding = max( 1.0, floor( ( hopfP > 0.01 ? hopfP : 2.0 ) + 0.5 ) );
+    float hopf_winding = max( 1.0, floor( ( hopfP > 0.01 ? hopfP : 2.0 ) + 0.5 ) );
     float r = length( uv );
-    float theta = atan( uv.y, uv.x ) * hopfWinding + audioPhase;
+    float theta = atan( uv.y, uv.x ) * hopf_winding + audioPhase;
 
     // Hyper-slice rotation in 4D: C parameter
-    float sliceSpeed = ( sliceP > 0.01 ? sliceP : 0.8 );
+    float slice_speed = ( sliceP > 0.01 ? sliceP : 0.8 );
     vec4  C = vec4(
-        -0.2 + 0.15 * cos( t * sliceSpeed ),
-        0.55 + 0.1 * sin( t * sliceSpeed * 0.7 ),
+        -0.2 + 0.15 * cos( t * slice_speed ),
+        0.55 + 0.1 * sin( t * slice_speed * 0.7 ),
         0.25 * sin( t * 0.5 + audioPhase ),
         -0.15 * cos( t * 0.4 ) );
 
@@ -106,16 +106,16 @@ void main()
         r * sin( theta ) * 0.5,
         r * cos( theta ) * 0.5 );
 
-    float trapScale = ( trapP > 0.01 ? trapP : 1.2 );
-    float trapDist = 1e5;
-    float trapCross = 1e5;
+    float trap_scale = ( trapP > 0.01 ? trapP : 1.2 );
+    float trap_dist = 1e5;
+    float trap_cross = 1e5;
 
-    float maxIt = ( iterP > 1.0 ? iterP : 9.0 );
-    float itCount = 0.0;
+    float max_it = ( iterP > 1.0 ? iterP : 9.0 );
+    float it_count = 0.0;
 
     for ( float i = 0.0; i < 14.0; i += 1.0 )
     {
-        if ( i >= maxIt )
+        if ( i >= max_it )
             break;
         if ( dot( z, z ) > 8.0 )
             break;
@@ -123,37 +123,37 @@ void main()
         z = qSquare( z ) + C;
 
         // Orbit traps: spherical and cross-plane
-        float dSphere = abs( length( z ) - trapScale );
-        float dCross = min( abs( z.x * z.y ), abs( z.z * z.w ) );
+        float d_sphere = abs( length( z ) - trap_scale );
+        float d_cross = min( abs( z.x * z.y ), abs( z.z * z.w ) );
 
-        trapDist = min( trapDist, dSphere );
-        trapCross = min( trapCross, dCross );
-        itCount = i;
+        trap_dist = min( trap_dist, d_sphere );
+        trap_cross = min( trap_cross, d_cross );
+        it_count = i;
     }
 
     // Smooth iteration metric & potential
-    float smoothIt = itCount - log( max( 1.0, log( dot( z, z ) ) * 0.5 ) ) / log( 2.0 );
+    float smooth_it = it_count - log( max( 1.0, log( dot( z, z ) ) * 0.5 ) ) / log( 2.0 );
 
     // Optical trap glow synthesis.  The cross trap min(|x*y|,|z*w|) is
     // near zero for almost EVERY orbit (any single component crossing
     // zero suffices), so its falloff must be sharp and its gain modest --
     // the original 12.0/2.2 pairing lit the entire frame to white.
-    float glowSphere = exp( -trapDist * 7.0 ) * ( 0.8 + 0.5 * audioMid );
-    float glowCross = exp( -trapCross * 60.0 ) * ( 1.0 + 2.5 * audioKick );
+    float glow_sphere = exp( -trap_dist * 7.0 ) * ( 0.8 + 0.5 * audioMid );
+    float glow_cross = exp( -trap_cross * 60.0 ) * ( 1.0 + 2.5 * audioKick );
 
     // Palette assignment
-    vec3 colSphere = imgPalette( fract( trapDist * 0.35 + smoothIt * 0.1 + audioCentroid ) );
-    vec3 colCross = imgPalette( fract( trapCross * 0.8 + t * 0.05 + 0.5 ) );
-    vec3 colField = imgPalette( fract( smoothIt * 0.15 + t * 0.04 ) );
+    vec3 col_sphere = imgPalette( fract( trap_dist * 0.35 + smooth_it * 0.1 + audioCentroid ) );
+    vec3 col_cross = imgPalette( fract( trap_cross * 0.8 + t * 0.05 + 0.5 ) );
+    vec3 col_field = imgPalette( fract( smooth_it * 0.15 + t * 0.04 ) );
 
     // Sample background photo
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg * 0.5;
-    col += colField * ( smoothstep( 0.0, maxIt, smoothIt ) * 0.9 + 0.15 ) * ( 0.85 + 0.4 * audioSwell );
-    col += colSphere * glowSphere * 1.2;
-    col += colCross * glowCross * 1.2;
+    col += col_field * ( smoothstep( 0.0, max_it, smooth_it ) * 0.9 + 0.15 ) * ( 0.85 + 0.4 * audioSwell );
+    col += col_sphere * glow_sphere * 1.2;
+    col += col_cross * glow_cross * 1.2;
     col += imgPalette( audioAdvance * 0.1 ) * ( audioKick * 0.35 );
 
     // Soft knee compression

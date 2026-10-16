@@ -85,16 +85,16 @@ void main()
     float tt = time + audioAdvance * 2.0; // jump-free (host-integrated) clock
 
     // Per-activation character (constant during the scene):
-    float oscV = ( oscP <= 0.001 ) ? 0.05 : oscP;
-    float deepV = ( deepP <= 0.01 ) ? 4.0 : deepP;
-    float breathV = ( breathP <= 0.01 ) ? 20.0 : breathP;
+    float osc_v = ( oscP <= 0.001 ) ? 0.05 : oscP;
+    float deep_v = ( deepP <= 0.01 ) ? 4.0 : deepP;
+    float breath_v = ( breathP <= 0.01 ) ? 20.0 : breathP;
 
     // Slow zoom oscillation (bounded, so it never crosses zero / flips sign).
-    float zoom = -5.0 + abs( sin( tt * oscV ) ) * deepV;
+    float zoom = -5.0 + abs( sin( tt * osc_v ) ) * deep_v;
     p = ( ( p - v * 0.5 ) * 0.4 / v.y ) / zoom;
 
     // Breathing effect: stronger on the beat, deeper with the slow swell.
-    p += p * sin( dot( p, p ) * breathV - tt )
+    p += p * sin( dot( p, p ) * breath_v - tt )
          * ( 0.04 + 0.02 * audioBeat + 0.02 * audioSwell );
 
     vec4 c = vec4( 0.0 );
@@ -107,8 +107,8 @@ void main()
         c += exp( -abs( p.y ) * 5.0 ) * ( cos( vec4( 1.0, 2.0, 3.0, 0.0 ) * i ) * 0.3 + 0.2 );
     }
 
-    float darkV = ( darkP <= 0.001 ) ? 0.3 : darkP;
-    c -= vec4( darkV, darkV, darkV, 0.0 ); // dark base -> higher contrast
+    float dark_v = ( darkP <= 0.001 ) ? 0.3 : darkP;
+    c -= vec4( dark_v, dark_v, dark_v, 0.0 ); // dark base -> higher contrast
     c = clamp( c, 0.0, 1.0 );
 
     vec3 col = c.rgb;
@@ -135,8 +135,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     col *= 0.9 + 0.5 * audioLevel;

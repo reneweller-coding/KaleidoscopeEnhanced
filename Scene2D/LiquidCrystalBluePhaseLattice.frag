@@ -74,38 +74,38 @@ void main()
 
     // Double-twist cylinder director field: n(r) rotates simultaneously in 2 perpendicular directions
     float r = length( f );
-    float kTwist = ( chiralTwistP > 0.01 ? chiralTwistP : 1.2 );
-    float twistAngle = r * 3.14159265 * kTwist + audioPhase * 0.5 + t * 0.8;
+    float k_twist = ( chiralTwistP > 0.01 ? chiralTwistP : 1.2 );
+    float twist_angle = r * 3.14159265 * k_twist + audioPhase * 0.5 + t * 0.8;
 
     // Director orientation
-    vec2 director = vec2( cos( twistAngle ), sin( twistAngle ) );
+    vec2 director = vec2( cos( twist_angle ), sin( twist_angle ) );
 
     // -1/2 disclination lines at the cell corners (where 4 double-twist cylinders meet)
-    float cornerDist = length( abs( f ) - vec2( 0.5 ) );
-    float kDisc = ( disclinationP > 0.01 ? disclinationP : 1.4 );
-    float disclinationCore = exp( -cornerDist * cornerDist * 40.0 * kDisc );
+    float corner_dist = length( abs( f ) - vec2( 0.5 ) );
+    float k_disc = ( disclinationP > 0.01 ? disclinationP : 1.4 );
+    float disclination_core = exp( -corner_dist * corner_dist * 40.0 * k_disc );
 
     // Selective Bragg reflection of blue light from cubic photonic lattice
-    float braggPlane = sin( f.x * 6.2831853 ) * cos( f.y * 6.2831853 );
-    float blueReflection = pow( braggPlane * 0.5 + 0.5, 3.0 ) * ( blueReflectP > 0.01 ? blueReflectP : 1.3 );
+    float bragg_plane = sin( f.x * 6.2831853 ) * cos( f.y * 6.2831853 );
+    float blue_reflection = pow( bragg_plane * 0.5 + 0.5, 3.0 ) * ( blueReflectP > 0.01 ? blueReflectP : 1.3 );
 
     // Switching flash on kick
-    float switchFlash = exp( -r * 12.0 ) * ( 1.0 + 3.5 * audioKick );
+    float switch_flash = exp( -r * 12.0 ) * ( 1.0 + 3.5 * audioKick );
 
     // Blue Phase deep sapphire / cobalt / violet palette
-    float palAngle = fract( twistAngle * 0.159 + length( cell ) * 0.08 + audioCentroid );
-    vec3  colBlue = imgPalette( palAngle );
-    vec3  colDisc = imgPalette( fract( palAngle + 0.5 ) ) * 1.8;
+    float pal_angle = fract( twist_angle * 0.159 + length( cell ) * 0.08 + audioCentroid );
+    vec3  col_blue = imgPalette( pal_angle );
+    vec3  col_disc = imgPalette( fract( pal_angle + 0.5 ) ) * 1.8;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colBlue * blueReflection * ( 0.8 + 0.4 * audioSwell ) * 2.2;
-    col += colDisc * disclinationCore * 1.6;
-    col += vec3( 0.9, 0.95, 1.0 ) * switchFlash * 2.0;
-    col += colBlue * ( audioKick * 0.35 );
+    col += col_blue * blue_reflection * ( 0.8 + 0.4 * audioSwell ) * 2.2;
+    col += col_disc * disclination_core * 1.6;
+    col += vec3( 0.9, 0.95, 1.0 ) * switch_flash * 2.0;
+    col += col_blue * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

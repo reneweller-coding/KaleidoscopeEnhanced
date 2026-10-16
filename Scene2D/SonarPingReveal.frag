@@ -76,7 +76,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float rate = 0.35 + 0.45 * clamp( rateP, 0.0, 1.0 );
-    float fadeLen = 0.25 + 0.45 * clamp( fadeP, 0.0, 1.0 );
+    float fade_len = 0.25 + 0.45 * clamp( fadeP, 0.0, 1.0 );
     float clock = sceneAdvance * 0.6 + sceneTime * 0.12;
     float r = length( p );
     float a = atan( p.y, p.x );
@@ -101,27 +101,27 @@ void main()
         float ph = fract( clock * rate + fk * 0.2 );
         float rr = ph * 1.2;   // ring radius
         float behind = rr - r; // >0 inside the ring (already passed)
-        float wake = exp( -max( behind, 0.0 ) / fadeLen ) * step( 0.0, behind );
-        float ringLine = exp( -abs( behind ) * 40.0 );
+        float wake = exp( -max( behind, 0.0 ) / fade_len ) * step( 0.0, behind );
+        float ring_line = exp( -abs( behind ) * 40.0 );
         // Angular texture on the ring: the echo is not uniform.
-        float angMod = 0.8 + 0.2 * sin( a * 12.0 + fk * 2.0 + clock );
-        lit = max( lit, wake * angMod * ( 1.0 - smoothstep( 0.85, 1.0, ph ) ) );
-        front += ringLine * ( 1.0 - smoothstep( 0.85, 1.0, ph ) );
+        float ang_mod = 0.8 + 0.2 * sin( a * 12.0 + fk * 2.0 + clock );
+        lit = max( lit, wake * ang_mod * ( 1.0 - smoothstep( 0.85, 1.0, ph ) ) );
+        front += ring_line * ( 1.0 - smoothstep( 0.85, 1.0, ph ) );
     }
     // The kick ping: an extra bright ring that leaves the centre with the kick.
-    float kickRing = exp( -abs( r - fract( clock * rate * 2.0 ) * 1.2 ) * 30.0 ) * audioKick;
-    vec3  ringCol = mix( vec3( 0.4, 1.0, 0.7 ), imgPalette( hue * 0.159 + 0.35 ), 0.4 );
+    float kick_ring = exp( -abs( r - fract( clock * rate * 2.0 ) * 1.2 ) * 30.0 ) * audioKick;
+    vec3  ring_col = mix( vec3( 0.4, 1.0, 0.7 ), imgPalette( hue * 0.159 + 0.35 ), 0.4 );
     vec3  col = photo * lit * 1.2 + photo * edge * lit * 0.8;
-    col += ringCol * front * 0.6 + ringCol * kickRing * 1.5;
+    col += ring_col * front * 0.6 + ring_col * kick_ring * 1.5;
     // The emitter at the centre hums with the bass; a faint grid of the sonar display.
-    col += ringCol * exp( -r * 12.0 ) * ( 0.3 + 1.0 * clamp( audioBass, 0.0, 1.0 ) );
+    col += ring_col * exp( -r * 12.0 ) * ( 0.3 + 1.0 * clamp( audioBass, 0.0, 1.0 ) );
     float grid = smoothstep( 0.003, 0.0, abs( fract( r * 5.0 ) - 0.5 ) - 0.49 ) * 0.06
                  + smoothstep( 0.003, 0.0, abs( fract( a * 1.909 ) - 0.5 ) - 0.49 ) * 0.04 * step( 0.1, r );
-    col += ringCol * grid;
-    col += ringCol * 0.015;
+    col += ring_col * grid;
+    col += ring_col * 0.015;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

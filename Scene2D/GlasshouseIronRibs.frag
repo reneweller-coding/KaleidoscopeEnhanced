@@ -96,28 +96,28 @@ void main()
     float v = p.x / ( 0.35 + 0.85 * max( p.y + 0.55, 0.05 ) ); // across the vault
     float u = 1.0 / max( p.y + 0.55, 0.05 );                   // along it, perspective
     // The sun crosses the vault over the arc.
-    float sunV = mix( -0.9, 0.9, prog );
-    vec2  sunP = vec2( sunV * ( 0.35 + 0.85 * 0.55 ), 0.28 );
-    vec3  sunCol = mix( vec3( 1.0, 0.96, 0.85 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 );
+    float sun_v = mix( -0.9, 0.9, prog );
+    vec2  sun_p = vec2( sun_v * ( 0.35 + 0.85 * 0.55 ), 0.28 );
+    vec3  sun_col = mix( vec3( 1.0, 0.96, 0.85 ), imgPalette( hue * 0.159 + 0.1 ), 0.25 );
 
     // Panes: the sky and the garden through the glass, brighter toward the
     // ridge, with a green cast from the plants below reflected in them.
-    vec2 paneUV = clamp( vec2( v * 0.4 + 0.5, 0.25 + 0.5 / max( u, 0.6 ) ), 0.0, 1.0 );
-    vec3 outside = img( paneUV ) * mix( vec3( 0.85, 0.95, 1.0 ), imgPalette( hue * 0.159 + 0.55 ), 0.3 );
+    vec2 pane_uv = clamp( vec2( v * 0.4 + 0.5, 0.25 + 0.5 / max( u, 0.6 ) ), 0.0, 1.0 );
+    vec3 outside = img( pane_uv ) * mix( vec3( 0.85, 0.95, 1.0 ), imgPalette( hue * 0.159 + 0.55 ), 0.3 );
     vec3 col = outside * ( 0.5 + 0.75 * day );
     // The glass is dirty and slightly green.
     col *= 0.85 + 0.25 * noise2( vec2( v * 6.0, u * 2.0 ) );
     col = mix( col, col * vec3( 0.9, 1.0, 0.92 ), 0.4 );
     // The glazing grid: ribs across the vault, purlins along it.
-    float ribI = v * ribs;
-    float ribD = abs( fract( ribI ) - 0.5 );
-    float ribW = 0.055 + 0.03 / max( u, 1.0 );
-    float rib = smoothstep( ribW, ribW * 0.55, ribD );
+    float rib_i = v * ribs;
+    float rib_d = abs( fract( rib_i ) - 0.5 );
+    float rib_w = 0.055 + 0.03 / max( u, 1.0 );
+    float rib = smoothstep( rib_w, rib_w * 0.55, rib_d );
     float purl = smoothstep( 0.05, 0.02, abs( fract( u * 1.6 ) - 0.5 ) - 0.44 );
     vec3  iron = mix( vec3( 0.16, 0.17, 0.16 ), imgPalette( hue * 0.159 + 0.3 ) * 0.25, 0.35 );
     // Ironwork catches the light on its upper edge.
-    float ironLit = smoothstep( ribW * 0.9, ribW * 0.2, abs( ribD - ribW * 0.5 ) );
-    col = mix( col, iron * ( 0.5 + 0.5 * day ) + sunCol * ironLit * 0.25 * day, clamp( rib + purl * 0.8, 0.0, 1.0 ) );
+    float iron_lit = smoothstep( rib_w * 0.9, rib_w * 0.2, abs( rib_d - rib_w * 0.5 ) );
+    col = mix( col, iron * ( 0.5 + 0.5 * day ) + sun_col * iron_lit * 0.25 * day, clamp( rib + purl * 0.8, 0.0, 1.0 ) );
     // Ridge beam and the finial cresting along the very top.
     float ridge = smoothstep( 0.05, 0.02, abs( p.y - 0.44 ) );
     float crest = smoothstep( 0.012, 0.0, abs( fract( p.x * 22.0 ) - 0.5 ) - 0.42 ) * step( 0.44, p.y )
@@ -125,13 +125,13 @@ void main()
     col = mix( col, iron * ( 0.6 + 0.4 * day ), clamp( ridge + crest, 0.0, 1.0 ) );
     // The sun through the glass: a bright patch with a bloom, and the
     // shadow pattern of the ribs cast down into the haze.
-    float dSun = length( p - sunP );
-    col += sunCol * exp( -dSun * 5.5 ) * day * 0.7;
-    col += sunCol * exp( -dSun * 22.0 ) * day * 1.1;
+    float d_sun = length( p - sun_p );
+    col += sun_col * exp( -d_sun * 5.5 ) * day * 0.7;
+    col += sun_col * exp( -d_sun * 22.0 ) * day * 1.1;
     // Warm haze under the roof, thicker with the bass, lit by the sun.
     float haze = ( 0.25 + 0.55 * clamp( audioBass, 0.0, 1.0 ) ) * smoothstep( 0.5, -0.4, p.y );
-    float hazeN = 0.6 + 0.5 * noise2( p * 2.4 + vec2( clock * 0.1, clock * 0.03 ) );
-    col += sunCol * haze * hazeN * exp( -dSun * 1.8 ) * 0.5 * day;
+    float haze_n = 0.6 + 0.5 * noise2( p * 2.4 + vec2( clock * 0.1, clock * 0.03 ) );
+    col += sun_col * haze * haze_n * exp( -d_sun * 1.8 ) * 0.5 * day;
     // Condensation: drops on the inside of the glass, sliding down slowly
     // on the clock, each dragging a thin wet trail.
     for ( int layer = 0; layer < 2; ++layer )
@@ -149,7 +149,7 @@ void main()
             float r = length( q * vec2( 1.0, 1.25 ) );
             float drop = smoothstep( 0.16, 0.05, r );
             // The drop is a little lens: it brightens and shifts the view.
-            col = mix( col, img( clamp( paneUV + q * 0.05, 0.0, 1.0 ) ) * 1.3 * day, drop * 0.7 );
+            col = mix( col, img( clamp( pane_uv + q * 0.05, 0.0, 1.0 ) ) * 1.3 * day, drop * 0.7 );
             col += vec3( 1.0, 0.98, 0.95 ) * smoothstep( 0.06, 0.0, length( q - vec2( -0.03, 0.03 ) ) ) * drop
                    * ( 0.4 + 0.9 * hi );
             // Trail above it, where it has already run.
@@ -175,7 +175,7 @@ void main()
     col = mix( col, mix( vec3( 0.05, 0.09, 0.05 ), imgPalette( hue * 0.159 + 0.35 ) * 0.2, 0.4 ), frond * 0.9 );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

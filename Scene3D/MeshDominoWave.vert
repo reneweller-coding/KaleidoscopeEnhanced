@@ -32,25 +32,25 @@ out float vInst;
 out float vFall;
 out vec3  vFront; ///< world position of the wave front, for the spotlight that follows it
 
-const float kGround = -8.0;
-const int   kPerLane = 28;
-const float kPitch = 2.4;
+const float Ground = -8.0;
+const int   PerLane = 28;
+const float Pitch = 2.4;
 
 vec3 tilePos( int k )
 {
-    int   lane = k / kPerLane;
-    int   j = k - lane * kPerLane;
-    float dirSign = ( lane - ( lane / 2 ) * 2 == 0 ) ? 1.0 : -1.0;
-    float x = ( float( j ) - 13.5 ) * kPitch * dirSign;
+    int   lane = k / PerLane;
+    int   j = k - lane * PerLane;
+    float dir_sign = ( lane - ( lane / 2 ) * 2 == 0 ) ? 1.0 : -1.0;
+    float x = ( float( j ) - 13.5 ) * Pitch * dir_sign;
     float z = 30.0 + float( lane ) * 7.0;
-    return vec3( x, kGround, z );
+    return vec3( x, Ground, z );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     int  inst = gl_InstanceID;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     vec3 world, n;
     vInst = float( inst );
 
@@ -60,10 +60,10 @@ void main()
     vFront = tilePos( fk );
     vFall = 0.0;
 
-    if ( !isBg )
+    if ( !is_bg )
     {
-        int   lane = inst / kPerLane;
-        float dirSign = ( lane - ( lane / 2 ) * 2 == 0 ) ? 1.0 : -1.0;
+        int   lane = inst / PerLane;
+        float dir_sign = ( lane - ( lane / 2 ) * 2 == 0 ) ? 1.0 : -1.0;
         float sz = 2.2 * ( sizeP > 0.01 ? sizeP : 1.0 );
         vec3  c = attrA.xyz - meshCenter;
         float mx = max( meshExtent.x, max( meshExtent.y, meshExtent.z ) );
@@ -71,14 +71,14 @@ void main()
         local.y += meshExtent.y / mx * sz; // pivot at the bottom edge
 
         // Broad face across the lane: +Z to +X (or -X).
-        mat3 face = mat3( 0.0, 0.0, -dirSign, 0.0, 1.0, 0.0, dirSign, 0.0, 0.0 );
+        mat3 face = mat3( 0.0, 0.0, -dir_sign, 0.0, 1.0, 0.0, dir_sign, 0.0, 0.0 );
         // The fall: a smooth curve from upright to leaning on the next tile.
         float fall = smoothstep( 0.0, 6.0, f - float( inst ) );
         vFall = fall;
-        float ang = -1.22 * fall * dirSign;
+        float ang = -1.22 * fall * dir_sign;
         float ca = cos( ang ), sa = sin( ang );
-        mat3  rotZ = mat3( ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0 );
-        mat3  M = rotZ * face;
+        mat3  rot_z = mat3( ca, sa, 0.0, -sa, ca, 0.0, 0.0, 0.0, 1.0 );
+        mat3  M = rot_z * face;
 
         world = M * local + tilePos( inst );
         n = normalize( M * attrB.xyz );
@@ -105,10 +105,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -234,10 +234,10 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  water = mix( vec3( 0.02, 0.12, 0.3 ), vec3( 0.03, 0.35, 0.4 ), mode );
-    vec3  lightC = mix( vec3( 0.6, 0.85, 1.0 ), vec3( 0.7, 1.0, 0.9 ), mode );
+    vec3  light_c = mix( vec3( 0.6, 0.85, 1.0 ), vec3( 0.7, 1.0, 0.9 ), mode );
     // Depth gradient (repeating softly so the plane is endless vertically).
-    float depthG = 0.5 + 0.5 * sin( p.y * 1.2 + 1.0 );
-    vec3  col = water * ( 0.5 + 0.7 * depthG );
+    float depth_g = 0.5 + 0.5 * sin( p.y * 1.2 + 1.0 );
+    vec3  col = water * ( 0.5 + 0.7 * depth_g );
     // The reef in the haze.
     vec2 uv = p * 0.5 + 0.5 + vec2( 0.005, 0.0 ) * sceneTime + vec2( 0.03, 0.0 ) * audioAdvance;
     vec3 reef = imgLod( uv, 2.5 );
@@ -258,11 +258,11 @@ void main()
         beams += smoothstep( 1.0 - bw * 0.5, 1.0, f + 0.35 ) / ( 1.0 + fk );
     }
     beams *= 0.5 + 0.5 * smoothstep( -0.6, 0.6, p.y ); // stronger near the surface
-    col += lightC * beams * ( 0.25 + 0.4 * bass ) * ( 1.0 - 0.4 * swell );
+    col += light_c * beams * ( 0.25 + 0.4 * bass ) * ( 1.0 - 0.4 * swell );
     // Surface shimmer at the top (repeats with the depth gradient).
-    float surf = smoothstep( 0.85, 1.0, depthG )
+    float surf = smoothstep( 0.85, 1.0, depth_g )
                  * pow( max( 0.0, fbm3( vec2( p.x * 6.0, 0.3 * sceneTime ) ) * 1.4 - 0.2 ), 3.0 );
-    col += lightC * surf * 0.5;
+    col += light_c * surf * 0.5;
     // Haze.
     col = mix( col, water * 1.3, 0.2 + 0.3 * swell );
     // Particles and bubbles.
@@ -276,11 +276,11 @@ void main()
         float d = length( fract( g ) - c );
         float on = step( hash21( gi + 5.0 + fl ), 0.1 + 0.3 * clamp( particleP, 0.0, 1.0 ) );
         float bubble = step( 0.7, hash21( gi + 9.0 ) );
-        vec3  pc = bubble > 0.5 ? lightC
+        vec3  pc = bubble > 0.5 ? light_c
                                       * ( smoothstep( 0.18, 0.12, d ) * smoothstep( 0.06, 0.12, d ) * 1.2
                                           + smoothstep( 0.08, 0.02, length( fract( g ) - c - vec2( -0.04, 0.04 ) ) )
                                                 * ( 0.4 + 1.2 * hi ) )
-                                : lightC * 0.4 * smoothstep( 0.1, 0.02, d );
+                                : light_c * 0.4 * smoothstep( 0.1, 0.02, d );
         col += pc * on * ( 0.5 + beams ) / ( 1.0 + fl * 0.5 );
     }
     col = mix( col, col * glowColour( reef, p, hueP * 0.159 ) * 1.3, 0.05 );

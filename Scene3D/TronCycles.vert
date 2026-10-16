@@ -71,9 +71,9 @@ void main()
         // ---- Light-cycle walls. ----
         float L = 16.0 + 12.0 * r1; // segment length
         float sped = 10.0 + 5.0 * r2;
-        float sHead = time * sped + audioAdvance * 16.0;
+        float s_head = time * sped + audioAdvance * 16.0;
         float trail = 4.5 * L; // wall length behind the head
-        float s = sHead - ( 1.0 - t ) * trail;
+        float s = s_head - ( 1.0 - t ) * trail;
 
         float n = floor( s / L );
         float fr = fract( s / L );
@@ -82,17 +82,17 @@ void main()
         vec2  origin = vec2( ( hash11( ri * 3.1 ) - 0.5 ) * 160.0,
                              ( hash11( ri * 7.7 ) - 0.5 ) * 160.0 );
         float n8 = mod( n, 8.0 );
-        vec2  posX = origin;
+        vec2  pos_x = origin;
         for ( int k = 0; k < 8; ++k )
         {
             if ( float( k ) >= n8 )
                 break;
-            posX += segDir( float( k ) ) * L;
+            pos_x += segDir( float( k ) ) * L;
         }
-        posX += segDir( n8 ) * L * fr;
+        pos_x += segDir( n8 ) * L * fr;
 
         // Wall: side spans the height.
-        world = vec3( posX.x, 1.6 + sd * 1.6, posX.y );
+        world = vec3( pos_x.x, 1.6 + sd * 1.6, pos_x.y );
 
         float head = smoothstep( 0.75, 1.0, t ); // brightest at the head
         col = hueRot( vec3( 0.15, 0.85, 1.0 ), ri * 0.85 + audioChromaHue * 0.6 );
@@ -115,11 +115,11 @@ void main()
 
     // Elevated camera slowly circling the arena.
     float ca = time * 0.05;
-    vec3  camP = vec3( cos( ca ) * 105.0, 55.0, sin( ca ) * 105.0 );
-    vec3  fwd = normalize( vec3( 0.0, 4.0, 0.0 ) - camP );
+    vec3  cam_p = vec3( cos( ca ) * 105.0, 55.0, sin( ca ) * 105.0 );
+    vec3  fwd = normalize( vec3( 0.0, 4.0, 0.0 ) - cam_p );
     vec3  rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3  up = cross( rgt, fwd );
-    vec3  rel = world - camP;
+    vec3  rel = world - cam_p;
     vec3  vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
 
     vp.x -= eyeOff;

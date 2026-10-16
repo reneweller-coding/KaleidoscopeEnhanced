@@ -83,29 +83,29 @@ void main()
     // spin state is a smooth square wave of the half-frequency phase, with
     // a phase gradient across the lattice so the flips travel.
     float phase = clock * 0.5 + ( cell.x * 0.5 + cell.y * 0.3 ) * grad * 1.1 + 0.1 * hash21( cell );
-    float spinState = smoothstep( -0.6, 0.6, sin( phase * 3.14159 ) ); // 0 = down, 1 = up
+    float spin_state = smoothstep( -0.6, 0.6, sin( phase * 3.14159 ) ); // 0 = down, 1 = up
     // The drive pulse: a flash at frequency w (twice the flips), brightening on the kick.
     float drive = pow( 0.5 + 0.5 * cos( clock * 3.14159 * 2.0 ), 8.0 );
     vec3  up = imgPalette( hue * 0.159 + 0.0 ) * 1.5 + 0.15;
     vec3  down = imgPalette( hue * 0.159 + 0.5 ) * 1.5 + 0.15;
-    vec3  spinCol = mix( down, up, spinState );
+    vec3  spin_col = mix( down, up, spin_state );
     // The disc: the photo cell tinted by its state; an arrow-like shading
     // (top bright for up, bottom bright for down) so the flip reads.
     vec2  puv = ( cell + 0.5 ) / pitch;
     vec3  photo = img( clamp( puv * vec2( 1.0 / aspect, 1.0 ) + 0.5, 0.0, 1.0 ) );
-    float shade = 0.6 + 0.5 * ( f.y * 2.0 ) * ( spinState * 2.0 - 1.0 );
-    vec3  disc = mix( photo * 1.2, spinCol, 0.55 ) * shade * depth + spinCol * ( 1.0 - depth ) * 0.4;
-    float discMask = smoothstep( 0.42, 0.36, d );
+    float shade = 0.6 + 0.5 * ( f.y * 2.0 ) * ( spin_state * 2.0 - 1.0 );
+    vec3  disc = mix( photo * 1.2, spin_col, 0.55 ) * shade * depth + spin_col * ( 1.0 - depth ) * 0.4;
+    float disc_mask = smoothstep( 0.42, 0.36, d );
     // Background: dark with the coupling lines between neighbours glowing
     // with the bass, and the drive flash across everything.
     vec3  col = imgPalette( hue * 0.159 + 0.6 ) * 0.04;
-    float links = smoothstep( 0.03, 0.0, min( abs( f.x ), abs( f.y ) ) ) * ( 1.0 - discMask );
+    float links = smoothstep( 0.03, 0.0, min( abs( f.x ), abs( f.y ) ) ) * ( 1.0 - disc_mask );
     col += mix( up, down, 0.5 ) * links * ( 0.15 + 0.6 * clamp( audioBass, 0.0, 1.0 ) );
-    col = mix( col, disc, discMask );
-    col += vec3( 1.0 ) * drive * ( 0.03 + 0.22 * audioKick ) * discMask;
+    col = mix( col, disc, disc_mask );
+    col += vec3( 1.0 ) * drive * ( 0.03 + 0.22 * audioKick ) * disc_mask;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

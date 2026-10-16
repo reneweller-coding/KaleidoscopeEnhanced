@@ -77,50 +77,50 @@ void main()
     vec3  rd = normalize( uv.x * uu + uv.y * vv + 1.5 * ww );
 
     vec3  col = vec3( 0.0 );
-    float stepSize = 0.12;
+    float step_size = 0.12;
 
     // Volumetric beam accumulation
     for ( int i = 0; i < 48; ++i )
     {
-        vec3 p = ro + rd * ( float( i ) * stepSize );
+        vec3 p = ro + rd * ( float( i ) * step_size );
 
         // Multi-axis laser grid sheets
-        vec3  gridP = fract( p * 0.8 ) - 0.5;
-        float beamX = exp( -abs( gridP.y ) * 25.0 ) * exp( -abs( gridP.z ) * 25.0 );
-        float beamY = exp( -abs( gridP.x ) * 25.0 ) * exp( -abs( gridP.z ) * 25.0 );
-        float beamZ = exp( -abs( gridP.x ) * 25.0 ) * exp( -abs( gridP.y ) * 25.0 );
+        vec3  grid_p = fract( p * 0.8 ) - 0.5;
+        float beam_x = exp( -abs( grid_p.y ) * 25.0 ) * exp( -abs( grid_p.z ) * 25.0 );
+        float beam_y = exp( -abs( grid_p.x ) * 25.0 ) * exp( -abs( grid_p.z ) * 25.0 );
+        float beam_z = exp( -abs( grid_p.x ) * 25.0 ) * exp( -abs( grid_p.y ) * 25.0 );
 
         // Q-switched pulse wave traveling along beams
-        float pulseX = sin( p.x * 6.0 - time * 12.0 ) * 0.5 + 0.5;
-        float pulseY = sin( p.y * 6.0 + time * 10.0 ) * 0.5 + 0.5;
-        float pulseZ = sin( p.z * 6.0 - time * 14.0 ) * 0.5 + 0.5;
+        float pulse_x = sin( p.x * 6.0 - time * 12.0 ) * 0.5 + 0.5;
+        float pulse_y = sin( p.y * 6.0 + time * 10.0 ) * 0.5 + 0.5;
+        float pulse_z = sin( p.z * 6.0 - time * 14.0 ) * 0.5 + 0.5;
 
         // Dispersion of photo texture through dichroic prisms
-        vec2 prismUV = p.xy * 0.2 + vec2( 0.5 );
-        vec3 photoR = img( fract( prismUV + vec2( 0.015 * disp, 0.0 ) ) );
-        vec3 photoG = img( fract( prismUV ) );
-        vec3 photoB = img( fract( prismUV - vec2( 0.015 * disp, 0.0 ) ) );
-        vec3 dispersedPhoto = vec3( photoR.r, photoG.g, photoB.b );
+        vec2 prism_uv = p.xy * 0.2 + vec2( 0.5 );
+        vec3 photo_r = img( fract( prism_uv + vec2( 0.015 * disp, 0.0 ) ) );
+        vec3 photo_g = img( fract( prism_uv ) );
+        vec3 photo_b = img( fract( prism_uv - vec2( 0.015 * disp, 0.0 ) ) );
+        vec3 dispersed_photo = vec3( photo_r.r, photo_g.g, photo_b.b );
 
         // Beam colors & Raman stimulated emission
-        vec3 colX = vec3( 1.0, 0.2, 0.1 ) * ( pulseX * 1.5 + 0.5 ) * ( 0.8 + 1.2 * audioKick );
-        vec3 colY = vec3( 0.1, 1.0, 0.4 ) * ( pulseY * 1.5 + 0.5 ) * ( 0.8 + 0.8 * audioMid );
-        vec3 colZ = vec3( 0.2, 0.5, 1.0 ) * ( pulseZ * 1.5 + 0.5 ) * ( 0.8 + 1.0 * audioHigh );
+        vec3 col_x = vec3( 1.0, 0.2, 0.1 ) * ( pulse_x * 1.5 + 0.5 ) * ( 0.8 + 1.2 * audioKick );
+        vec3 col_y = vec3( 0.1, 1.0, 0.4 ) * ( pulse_y * 1.5 + 0.5 ) * ( 0.8 + 0.8 * audioMid );
+        vec3 col_z = vec3( 0.2, 0.5, 1.0 ) * ( pulse_z * 1.5 + 0.5 ) * ( 0.8 + 1.0 * audioHigh );
 
-        vec3 beamEnergy = ( colX * beamX + colY * beamY + colZ * beamZ ) * bm;
+        vec3 beam_energy = ( col_x * beam_x + col_y * beam_y + col_z * beam_z ) * bm;
 
         // Brewster prism cubes floating in cavity
-        vec3  cubeP = mod( p + 1.5, 3.0 ) - 1.5;
-        float cubeDist = max( abs( cubeP.x ), max( abs( cubeP.y ), abs( cubeP.z ) ) ) - 0.45;
-        float prismFacet = smoothstep( 0.05, 0.0, abs( cubeDist ) );
-        vec3  prismGlow = spectrumColor( fract( length( cubeP ) * 2.0 + audioPhase * 0.2 ) ) * prismFacet * 2.0;
+        vec3  cube_p = mod( p + 1.5, 3.0 ) - 1.5;
+        float cube_dist = max( abs( cube_p.x ), max( abs( cube_p.y ), abs( cube_p.z ) ) ) - 0.45;
+        float prism_facet = smoothstep( 0.05, 0.0, abs( cube_dist ) );
+        vec3  prism_glow = spectrumColor( fract( length( cube_p ) * 2.0 + audioPhase * 0.2 ) ) * prism_facet * 2.0;
 
-        col += ( beamEnergy * dispersedPhoto * 2.2 + prismGlow ) * stepSize * ( 0.7 + 0.6 * audioLevel );
+        col += ( beam_energy * dispersed_photo * 2.2 + prism_glow ) * step_size * ( 0.7 + 0.6 * audioLevel );
     }
 
     // Vanishing point core laser flash on downbeats
-    float centerBeam = exp( -length( uv ) * 4.0 ) * ( 0.4 + 1.8 * audioKick );
-    col += vec3( 1.0, 0.8, 0.9 ) * centerBeam;
+    float center_beam = exp( -length( uv ) * 4.0 ) * ( 0.4 + 1.8 * audioKick );
+    col += vec3( 1.0, 0.8, 0.9 ) * center_beam;
 
     col = hueRot( col, audioChromaHue + hue );
     col = pow( col, vec3( 0.9 ) ); // Saturation boost
@@ -128,7 +128,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

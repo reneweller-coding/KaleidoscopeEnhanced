@@ -77,36 +77,36 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec3 n = normalize( vNormal );
-    vec3 viewDir = normalize( vec3( 0.0, 2.0, 5.0 ) - vPos );
-    vec3 lightDir = normalize( vec3( 0.4, 0.8, -0.6 ) );
+    vec3 view_dir = normalize( vec3( 0.0, 2.0, 5.0 ) - vPos );
+    vec3 light_dir = normalize( vec3( 0.4, 0.8, -0.6 ) );
 
     // Deep ocean water shading
-    vec3 deepWater = vec3( 0.01, 0.03, 0.08 );
-    vec3 shallowWater = vec3( 0.02, 0.12, 0.22 );
-    vec3 waterBase = mix( deepWater, shallowWater, clamp( vHeight + 0.5, 0.0, 1.0 ) );
+    vec3 deep_water = vec3( 0.01, 0.03, 0.08 );
+    vec3 shallow_water = vec3( 0.02, 0.12, 0.22 );
+    vec3 water_base = mix( deep_water, shallow_water, clamp( vHeight + 0.5, 0.0, 1.0 ) );
 
     // Fresnel reflection of photo sky
-    float fresnel = pow( 1.0 - max( dot( viewDir, n ), 0.0 ), 4.0 );
-    vec3  ref = reflect( -viewDir, n );
-    vec2  skyUV = ref.xz * 0.2 + 0.5;
-    vec3  photoSky = img( fract( skyUV ) );
+    float fresnel = pow( 1.0 - max( dot( view_dir, n ), 0.0 ), 4.0 );
+    vec3  ref = reflect( -view_dir, n );
+    vec2  sky_uv = ref.xz * 0.2 + 0.5;
+    vec3  photo_sky = img( fract( sky_uv ) );
 
     // Specular highlight from moonlight
-    vec3  halfVec = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfVec ), 0.0 ), 64.0 );
+    vec3  half_vec = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_vec ), 0.0 ), 64.0 );
 
     // Bioluminescent dinoflagellate blue-cyan glow on wave crests — a
     // narrow crest band, hot audio brightens WITHOUT washing to white.
-    float bioIntensity = smoothstep( 0.7, 2.2, vCrest );
-    vec3  bioGlowCol = palTint(
+    float bio_intensity = smoothstep( 0.7, 2.2, vCrest );
+    vec3  bio_glow_col = palTint(
         mix( vec3( 0.0, 0.8, 1.0 ), vec3( 0.1, 1.0, 0.6 ), sin( vPos.x * 2.0 + time * 3.0 ) * 0.5 + 0.5 ), 0.15, 0.25 );
-    vec3 bioEmission = bioGlowCol * bioIntensity * ( 0.9 + 1.1 * audioKick ) * bio * glw;
+    vec3 bio_emission = bio_glow_col * bio_intensity * ( 0.9 + 1.1 * audioKick ) * bio * glw;
 
     // Subsurface scattering glow
     float sss = smoothstep( -0.2, 0.8, vHeight ) * ( 1.0 - n.y );
-    vec3  sssCol = vec3( 0.05, 0.35, 0.45 ) * sss;
+    vec3  sss_col = vec3( 0.05, 0.35, 0.45 ) * sss;
 
-    vec3 col = waterBase + photoSky * fresnel * 0.8 + vec3( 1.0 ) * spec * 0.9 + bioEmission + sssCol;
+    vec3 col = water_base + photo_sky * fresnel * 0.8 + vec3( 1.0 ) * spec * 0.9 + bio_emission + sss_col;
 
     col = hueRot( col, hue ); // chromaHue handled inside imgPalette
     col /= 1.0 + 0.32 * max( col.r, max( col.g, col.b ) );

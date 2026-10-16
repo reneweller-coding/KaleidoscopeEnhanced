@@ -76,8 +76,8 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nSeeds = 8 + int( clamp( seedsP, 0.0, 1.0 ) * 10.0 );
-    float fanN = 8.0 + 10.0 * clamp( fanP, 0.0, 1.0 );
+    int   n_seeds = 8 + int( clamp( seedsP, 0.0, 1.0 ) * 10.0 );
+    float fan_n = 8.0 + 10.0 * clamp( fanP, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -85,24 +85,24 @@ void main()
     // The bowl: a disc, its glaze the photo, glossy, with a rim; the kiln
     // interior (dark, red-glowing) around it.
     float r = length( p );
-    float bowlR = 0.47;
+    float bowl_r = 0.47;
     vec3  kiln = vec3( 0.12, 0.05, 0.03 )
-                 + vec3( 0.9, 0.35, 0.1 ) * exp( -( r - bowlR ) * 4.0 ) * ( 0.3 + 0.7 * bass ) * step( bowlR, r );
+                 + vec3( 0.9, 0.35, 0.1 ) * exp( -( r - bowl_r ) * 4.0 ) * ( 0.3 + 0.7 * bass ) * step( bowl_r, r );
     vec3  glaze = img( gl_FragCoord.xy / resolution ) * 1.1;
     glaze = mix( glaze, glaze * imgPalette( hue * 0.159 + 0.5 ) * 1.5, 0.35 );
     // The glaze pools thicker toward the centre (a deeper colour).
-    glaze *= 0.85 + 0.15 * ( 1.0 - r / bowlR );
-    vec3 col = mix( kiln, glaze, smoothstep( bowlR, bowlR - 0.01, r ) );
+    glaze *= 0.85 + 0.15 * ( 1.0 - r / bowl_r );
+    vec3 col = mix( kiln, glaze, smoothstep( bowl_r, bowl_r - 0.01, r ) );
 
     // Crystals: radiating fans of needles from fixed seeds, growing on the
     // arc (each with its own nucleation time), each lit by a chroma class.
     for ( int i = 0; i < 18; ++i )
     {
-        if ( i >= nSeeds )
+        if ( i >= n_seeds )
             break;
         float fi = float( i );
-        vec2  c = vec2( hash11( fi * 3.7 ) - 0.5, hash11( fi * 5.3 ) - 0.5 ) * bowlR * 1.6;
-        if ( length( c ) > bowlR * 0.9 )
+        vec2  c = vec2( hash11( fi * 3.7 ) - 0.5, hash11( fi * 5.3 ) - 0.5 ) * bowl_r * 1.6;
+        if ( length( c ) > bowl_r * 0.9 )
             c *= 0.7;
         float nuc = hash11( fi * 7.7 ) * 0.5; // nucleation time in the arc
         float growth = smoothstep( nuc, nuc + 0.45, prog );
@@ -113,7 +113,7 @@ void main()
             continue;
         float ang = atan( d.y, d.x );
         // Needles: angular spokes with a slight curve, denser near the centre.
-        float spokes = pow( 0.5 + 0.5 * sin( ang * fanN + dd * 20.0 + hash11( fi * 2.2 ) * 6.28 ), 6.0 );
+        float spokes = pow( 0.5 + 0.5 * sin( ang * fan_n + dd * 20.0 + hash11( fi * 2.2 ) * 6.28 ), 6.0 );
         float body = smoothstep( radius, radius * 0.7, dd );
         float edge = smoothstep( radius + 0.01, radius - 0.005, dd );
         int   k = int( mod( fi * 5.0, 12.0 ) );
@@ -128,16 +128,16 @@ void main()
     }
     // Gloss: highlights on the glaze surface, on the treble.
     col += vec3( 1.0 ) * pow( max( 1.0 - length( p - vec2( -0.15, 0.2 ) ) * 3.0, 0.0 ), 4.0 ) * ( 0.15 + 0.5 * hi )
-           * step( r, bowlR );
+           * step( r, bowl_r );
     col += vec3( 1.0 ) * pow( max( 1.0 - length( p - vec2( 0.2, -0.1 ) ) * 6.0, 0.0 ), 6.0 ) * ( 0.1 + 0.3 * hi )
-           * step( r, bowlR );
+           * step( r, bowl_r );
     // The rim.
-    col = mix( col, vec3( 0.5, 0.4, 0.3 ) * ( 0.5 + 0.5 * bass ), smoothstep( 0.012, 0.0, abs( r - bowlR ) ) );
+    col = mix( col, vec3( 0.5, 0.4, 0.3 ) * ( 0.5 + 0.5 * bass ), smoothstep( 0.012, 0.0, abs( r - bowl_r ) ) );
     // Pyrometer spark on the kick.
     col += vec3( 1.0, 0.6, 0.2 ) * exp( -length( p - vec2( aspect * 0.42, 0.4 ) ) * 30.0 ) * ( 0.3 + 2.0 * audioKick );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -108,50 +108,50 @@ void main()
     float deflection = rs / max( r - rs * 0.5, 0.01 );
 
     // Warped radius
-    float warpedR = r + deflection * 0.15;
+    float warped_r = r + deflection * 0.15;
 
     // Hyper-velocity tunnel coordinate
-    float camZ = time * 4.0 * spd + audioAdvance * 8.0;
-    float tunnelZ = ( 1.0 / max( warpedR, 0.02 ) ) * wrp + camZ;
+    float cam_z = time * 4.0 * spd + audioAdvance * 8.0;
+    float tunnel_z = ( 1.0 / max( warped_r, 0.02 ) ) * wrp + cam_z;
 
     // Twisted spiral angle
-    float spiralA = a + tunnelZ * 0.08 + sin( tunnelZ * 0.05 ) * 0.5 + audioPhase * 0.3;
+    float spiral_a = a + tunnel_z * 0.08 + sin( tunnel_z * 0.05 ) * 0.5 + audioPhase * 0.3;
 
     // Relativistic star streaks & hyperspace filament lattice
-    vec2 grid = vec2( spiralA * ( 12.0 / 3.14159 ), tunnelZ * 0.5 );
-    vec2 gridId = floor( grid );
-    vec2 gridF = fract( grid ) - 0.5;
+    vec2 grid = vec2( spiral_a * ( 12.0 / 3.14159 ), tunnel_z * 0.5 );
+    vec2 grid_id = floor( grid );
+    vec2 grid_f = fract( grid ) - 0.5;
 
-    float streakSeed = hash21( gridId );
-    float streakMask = step( 0.65, streakSeed );
+    float streak_seed = hash21( grid_id );
+    float streak_mask = step( 0.65, streak_seed );
 
     // Longitudinal streak stretch
-    float streakDist = length( vec2( gridF.x, gridF.y * 0.15 ) );
-    float streakGlow = ( 0.006 / ( streakDist * streakDist + 0.0008 ) ) * streakMask;
+    float streak_dist = length( vec2( grid_f.x, grid_f.y * 0.15 ) );
+    float streak_glow = ( 0.006 / ( streak_dist * streak_dist + 0.0008 ) ) * streak_mask;
 
     // Doppler Shift color spectrum: Blue-shift in center, Red-shift in periphery
     float doppler = clamp( ( 1.0 - r ) * 1.5 + audioAdvance * 0.5, 0.0, 2.0 );
-    vec3  dopplerCol = palTint( mix( vec3( 1.0, 0.2, 0.1 ), vec3( 0.1, 0.8, 1.0 ), doppler * 0.6 ), 0.30 * doppler,
-                                0.22 );
-    dopplerCol = mix( dopplerCol, vec3( 0.9, 0.4, 1.0 ), sin( tunnelZ * 0.2 ) * 0.5 + 0.5 );
+    vec3  doppler_col = palTint( mix( vec3( 1.0, 0.2, 0.1 ), vec3( 0.1, 0.8, 1.0 ), doppler * 0.6 ), 0.30 * doppler,
+                                 0.22 );
+    doppler_col = mix( doppler_col, vec3( 0.9, 0.4, 1.0 ), sin( tunnel_z * 0.2 ) * 0.5 + 0.5 );
 
-    vec3 col = dopplerCol * streakGlow * ( 0.8 + audioHigh * 1.2 );
+    vec3 col = doppler_col * streak_glow * ( 0.8 + audioHigh * 1.2 );
 
     // Accretion disk photon sphere ring
-    float ringDist = abs( r - rs * 1.4 );
-    float photonRing = ( 0.004 / ( ringDist * ringDist + 0.0003 ) ) * ( 1.0 + audioKick * 2.0 );
-    vec3  ringCol = palTint(
+    float ring_dist = abs( r - rs * 1.4 );
+    float photon_ring = ( 0.004 / ( ring_dist * ring_dist + 0.0003 ) ) * ( 1.0 + audioKick * 2.0 );
+    vec3  ring_col = palTint(
         mix( vec3( 1.0, 0.9, 0.4 ), vec3( 0.2, 1.0, 0.8 ), sin( a * 4.0 + time * 3.0 ) * 0.5 + 0.5 ), 0.20, 0.22 );
-    col += ringCol * photonRing;
+    col += ring_col * photon_ring;
 
     // Gravitational lensing photo mapping
-    vec2 lensUV = st + ( uv / max( r, 0.01 ) ) * deflection * 0.08 * ( 1.0 + audioBass );
-    vec3 photo = img( clamp( lensUV, 0.0, 1.0 ) );
+    vec2 lens_uv = st + ( uv / max( r, 0.01 ) ) * deflection * 0.08 * ( 1.0 + audioBass );
+    vec3 photo = img( clamp( lens_uv, 0.0, 1.0 ) );
     col += photo * ( 0.4 + 0.4 * audioLevel ) * exp( -r * 0.6 );
 
     // Event horizon singularity darkness
-    float horizonMask = smoothstep( rs * 0.8, rs * 1.05, r );
-    col *= horizonMask;
+    float horizon_mask = smoothstep( rs * 0.8, rs * 1.05, r );
+    col *= horizon_mask;
 
     // Relativistic warp pulse on heavy kicks
     if ( audioKick > 0.65 )
@@ -164,13 +164,13 @@ void main()
         col = hueRot( col, hue );
 
     // Vignette
-    vec2  vUV = st * ( 1.0 - st.yx );
-    float vig = vUV.x * vUV.y * 15.0;
+    vec2  v_uv = st * ( 1.0 - st.yx );
+    float vig = v_uv.x * v_uv.y * 15.0;
     col *= clamp( pow( vig, 0.25 ), 0.0, 1.0 );
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.7;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.7;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

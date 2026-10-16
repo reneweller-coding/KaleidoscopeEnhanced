@@ -47,14 +47,14 @@ void main( void )
     float extend = 4000.0;
 
     // pixellate
-    const float pixelSize = 0.25;
-    pixel = floor( pixel / pixelSize );
+    const float pixel_size = 0.25;
+    pixel = floor( pixel / pixel_size );
 
-    // vec2 offset = vec2(time*3000.0,pow(max(-sin(time*.2),.0),2.0)*16000.0)/pixelSize;
-    // vec2 offset = vec2(pow(cos(time*.2),2.0)*16000.0,pow(sin(time*.2),2.0)*16000.0)/pixelSize;
+    // vec2 offset = vec2(time*3000.0,pow(max(-sin(time*.2),.0),2.0)*16000.0)/pixel_size;
+    // vec2 offset = vec2(pow(cos(time*.2),2.0)*16000.0,pow(sin(time*.2),2.0)*16000.0)/pixel_size;
     float oa = speed * time * .2 + 0.15 * audioPhase;
     float ex = extend * ( 1.0 + 0.25 * audioSwell );
-    vec2  offset = vec2( cos( oa ) * ex, sin( oa ) * ex ) / pixelSize;
+    vec2  offset = vec2( cos( oa ) * ex, sin( oa ) * ex ) / pixel_size;
 
     // resolution.y/resolution.x*
 
@@ -68,8 +68,8 @@ void main( void )
 
         uv /= resolution.xy;
         uv *= depth / 40.0;
-        // uv *= 0.4*pixelSize;
-        uv *= 0.6 * pixelSize;
+        // uv *= 0.4*pixel_size;
+        uv *= 0.6 * pixel_size;
 
         col = ( interpolation * texture( tex0, uv + .5 ) + ( 1.0 - interpolation ) * texture( tex1, uv + .5 ) ).rgb;
         // texture( iChannel0, uv+.5 ).rgb;

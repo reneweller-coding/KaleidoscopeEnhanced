@@ -108,10 +108,10 @@ void main()
     float o = 0.0, f = 3.0;
     // Per-activation character (constant during the scene); ring thickness
     // breathes slowly with the swell (loudness -> size).
-    float stripeV = ( stripeP <= 0.01 ) ? 8.0 : stripeP;
-    float ringV = ( ( ringP <= 0.01 ) ? 1.0 : ringP ) * ( 1.0 + 0.10 * audioSwell );
-    float travV = ( travP <= 0.01 ) ? 1.0 : travP;
-    float scroll = ( time * 0.5 + audioAdvance * 2.0 ) * travV; // forward travel (jump-free)
+    float stripe_v = ( stripeP <= 0.01 ) ? 8.0 : stripeP;
+    float ring_v = ( ( ringP <= 0.01 ) ? 1.0 : ringP ) * ( 1.0 + 0.10 * audioSwell );
+    float trav_v = ( travP <= 0.01 ) ? 1.0 : travP;
+    float scroll = ( time * 0.5 + audioAdvance * 2.0 ) * trav_v; // forward travel (jump-free)
 
     for ( int g = 0; g < 200; g++ )
     {
@@ -122,13 +122,13 @@ void main()
         float l = floor( e.z + 0.5 );
         f = 2.0 - length( e.xy ) - o * 0.1;
         e = fract( e + 0.5 ) - 0.5;
-        float rr1 = tmix( 0.1, 0.5, 2.0, l ) * ringV;
-        float rr2 = tmix( 0.05, tmix( 0.1, 0.4, 0.5, 0.0 ), 1.0, 1.6 + l ) * ringV;
+        float rr1 = tmix( 0.1, 0.5, 2.0, l ) * ring_v;
+        float rr2 = tmix( 0.05, tmix( 0.1, 0.4, 0.5, 0.0 ), 1.0, 1.6 + l ) * ring_v;
         f = 0.5 * max( f, length( vec2( length( e.xy ) - rr1, e.z ) ) - rr2 );
         o += f;
     }
 
-    vec3 col = ( cos( o * stripeV + vec3( 0.0, 1.0, 2.0 ) * 0.8 ) * 5.0 ) / exp( o * 0.2 + length( n ) );
+    vec3 col = ( cos( o * stripe_v + vec3( 0.0, 1.0, 2.0 ) * 0.8 ) * 5.0 ) / exp( o * 0.2 + length( n ) );
     col = max( col, 0.0 );
     col = palTint( col, 0.05 * o, 0.28 );
     col *= 1.0 + 0.5 * audioBeat + 0.3 * audioOnset;
@@ -154,8 +154,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     fragColor = vec4( col, 1.0 );

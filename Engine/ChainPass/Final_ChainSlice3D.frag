@@ -310,8 +310,8 @@ void main()
 
 
 
-    vec3 sN, sX, sY;
-    sliceFrame( camP, sceneTime, sN, sX, sY );
+    vec3 s_n, s_x, s_y;
+    sliceFrame( camP, sceneTime, s_n, s_x, s_y );
 
 
 
@@ -321,36 +321,36 @@ void main()
     gRot += hyp * 0.03 * sceneTime;
 
     vec3  wcore = ( walkHost > 0.5 && walkAll() ) ? walkCore : vec3( coreP, coreP, 0.0 );
-    float sView = 3.0
-                  * mix( sliceZoom( ordco( pickStage( wcore.x, 22 ) ) ), sliceZoom( ordco( pickStage( wcore.y, 22 ) ) ),
-                         smoothstep( 0.0, 1.0, wcore.z ) );
-    float sDz = 0.4 * sView;
-    float sPx = sView / resolution.y;
+    float s_view = 3.0
+                   * mix( sliceZoom( ordco( pickStage( wcore.x, 22 ) ) ),
+                          sliceZoom( ordco( pickStage( wcore.y, 22 ) ) ), smoothstep( 0.0, 1.0, wcore.z ) );
+    float s_dz = 0.4 * s_view;
+    float s_px = s_view / resolution.y;
     gCam = sc0 - vec3( 0.0, 0.0, 6.0 );
-    vec3 rd = normalize( sN + ( sX * p.x + sY * p.y ) * 0.25 );
-    ro = sc0 + ( sX * p.x + sY * p.y ) * sView - rd;
-    vec3  sL = normalize( sX * 0.5 + sY * 0.7 - sN * 0.4 );
+    vec3 rd = normalize( s_n + ( s_x * p.x + s_y * p.y ) * 0.25 );
+    ro = sc0 + ( s_x * p.x + s_y * p.y ) * s_view - rd;
+    vec3  s_l = normalize( s_x * 0.5 + s_y * 0.7 - s_n * 0.4 );
     ivec2 ip = ivec2( gl_FragCoord.xy - chainOff );
     vec4  gp = texelFetch( texGPos, ip, 0 ), gn = texelFetch( texGNrm, ip, 0 );
     float t = gp.w;
     bool  hit = t >= 0.0;
     vec3  fp = gp.xyz;
-    float gU = length( gn.xyz ) - 2.0; // the cut point's distance, packed by the geometry pass
-    float dHit = gU * sView / max( 1.0 - abs( gU ), 1e-6 );
+    float g_u = length( gn.xyz ) - 2.0; // the cut point's distance, packed by the geometry pass
+    float d_hit = g_u * s_view / max( 1.0 - abs( g_u ), 1e-6 );
     vec3  lc = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.15, 0.9, 0.7 ), mode );
 
-    vec3 fogPal = hsv2rgb(
+    vec3 fog_pal = hsv2rgb(
         vec3( fract( hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode + 0.5 ), 0.55, 1.0 ) );
-    vec3 fogC = mix( glowColour( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), p, hueP * 0.159 ), fogPal,
-                     0.8 * clamp( paletteP, 0.0, 1.0 ) )
-                * ( 0.05 + 0.1 * swell );
-    vec3 col = fogC;
+    vec3 fog_c = mix( glowColour( imgK( vec2( 0.5 ) + 0.2 * p, 5.0 ), p, hueP * 0.159 ), fog_pal,
+                      0.8 * clamp( paletteP, 0.0, 1.0 ) )
+                 * ( 0.05 + 0.1 * swell );
+    vec3 col = fog_c;
     // colour and relief for every pixel: the derivatives must not sit in a pixel branch
     vec3  q = ro + rd * max( t, 0.0 );
     vec3  n = normalize( gn.xyz + vec3( 1e-6 ) );
     float lod = clamp( log2( max( t, 0.05 ) * 2.0 ) + 1.5 * ( 1.0 - clamp( detailP, 0.0, 1.0 ) ), 0.0, 7.0 );
-    vec3  nGeo = n; // texture on the geometric normal, light on the bumped one
-    vec3  tex0 = colour3T( nGeo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
+    vec3  n_geo = n; // texture on the geometric normal, light on the bumped one
+    vec3  tex0 = colour3T( n_geo, lod, 0.2 + 0.7 * clamp( paletteP, 0.0, 1.0 ) );
     // relief: the colour chain's brightness as height; its slope on the surface from the
     // screen-space derivatives (bump mapping without tangents, Mikkelsen 2010)
     float hgt = luma( tex0 );
@@ -366,21 +366,21 @@ void main()
     }
     if ( hit )
     {
-        vec3  nGeo = n;
+        vec3  n_geo = n;
         vec3  tex = tex0;
         float tm = luma( tex );
         tex = max( ( tex - tm ) * 1.5 + tm, 0.0 ) * 1.5;
-        vec3  L = sL;
+        vec3  L = s_l;
         float diff = 0.5 + 0.5 * dot( n, L );
         float ao = gn.w;
         float fres = pow( 1.0 - abs( dot( n, -rd ) ), 3.0 );
         vec3  surf = tex * lc * ( 0.35 + 0.9 * diff ) * ao;
-        vec3  rimC = glowColour( tex, fp.xy, hueP * 0.159 );
-        vec3  rim = rimC * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4;
+        vec3  rim_c = glowColour( tex, fp.xy, hueP * 0.159 );
+        vec3  rim = rim_c * fres * ( 0.7 + 1.5 * kick ) + surf * 0.4;
         float st = clamp( styleP, 0.0, 1.0 );
-        vec3  sc = mix( surf + rimC * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rimC * 0.12 * ao,
+        vec3  sc = mix( surf + rim_c * fres * ( 0.15 + 0.6 * kick ), rim * 1.3 + rim_c * 0.12 * ao,
                         smoothstep( 0.5, 1.0, st ) );
-        col = mix( fogC, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
+        col = mix( fog_c, sc, exp( -t * ( 0.06 + 0.04 * swell ) ) );
 
 
 
@@ -388,16 +388,16 @@ void main()
         float iso = smoothstep( 0.35, 0.75, isoP );
         if ( iso > 0.0 )
         {
-            float isoW = 0.05 * sView;
-            float isoU = dHit / isoW - 0.12 * sceneTime;
-            float isoF = abs( fract( isoU + 0.5 ) - 0.5 ) * isoW;
-            float isoPx = sPx * max( 1.0, resolution.y / 900.0 );
-            float isoL = 1.0 - smoothstep( 0.4 * isoPx, 1.1 * isoPx, isoF );
-            float isoM = abs( mod( floor( isoU + 0.5 ), 4.0 ) ) < 0.5 ? 1.0 : 0.3;
-            float air = smoothstep( 0.0, 2.0 * sPx, dHit );
-            float fade = exp( -abs( dHit ) / ( 0.9 * sView ) ) * mix( 0.45, 1.0, air );
+            float iso_w = 0.05 * s_view;
+            float iso_u = d_hit / iso_w - 0.12 * sceneTime;
+            float iso_f = abs( fract( iso_u + 0.5 ) - 0.5 ) * iso_w;
+            float iso_px = s_px * max( 1.0, resolution.y / 900.0 );
+            float iso_l = 1.0 - smoothstep( 0.4 * iso_px, 1.1 * iso_px, iso_f );
+            float iso_m = abs( mod( floor( iso_u + 0.5 ), 4.0 ) ) < 0.5 ? 1.0 : 0.3;
+            float air = smoothstep( 0.0, 2.0 * s_px, d_hit );
+            float fade = exp( -abs( d_hit ) / ( 0.9 * s_view ) ) * mix( 0.45, 1.0, air );
             col *= 1.0 - 0.3 * iso * air;
-            col += iso * isoL * isoM * fade * rimC * ( 0.9 + 0.8 * kick );
+            col += iso * iso_l * iso_m * fade * rim_c * ( 0.9 + 0.8 * kick );
         }
     }
     finish( chainAfterglow( col ) );

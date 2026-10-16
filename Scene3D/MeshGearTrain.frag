@@ -37,7 +37,7 @@ in float vBg;     ///< Background flag (from the vertex stage).
 in float vInst;
 in vec2  vCentre;
 
-const float kDist = 58.0;
+const float Dist = 58.0;
 const float kR = 9.0;
 
 vec2 gearCentre( int i )
@@ -124,8 +124,8 @@ vec3 renderSky( vec3 dir )
     vec3  lamp = normalize( vec3( -0.5, 0.7, 0.8 ) );
     col += vec3( 1.0, 0.75, 0.45 ) * exp( -distance( dir, lamp ) * 3.5 ) * 0.25 * ( 0.5 + 0.5 * swell );
     // The sparks of the meshing points also light the plates, faintly.
-    vec3 midDir = normalize( vec3( 0.0, 0.0, kDist ) );
-    col += vec3( 1.0, 0.55, 0.2 ) * exp( -( 1.0 - dot( dir, midDir ) ) * 12.0 ) * kick * 0.15;
+    vec3 mid_dir = normalize( vec3( 0.0, 0.0, Dist ) );
+    col += vec3( 1.0, 0.55, 0.2 ) * exp( -( 1.0 - dot( dir, mid_dir ) ) * 12.0 ) * kick * 0.15;
     return col;
 }
 
@@ -155,16 +155,16 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
-    vec3 lampDir = normalize( vec3( -0.5, 0.7, -0.5 ) );
-    vec3 col = alb * vec3( 1.0, 0.8, 0.55 ) * max( dot( n, lampDir ), 0.0 ) * ( 1.2 + 0.9 * swell );
+    vec3 lamp_dir = normalize( vec3( -0.5, 0.7, -0.5 ) );
+    vec3 col = alb * vec3( 1.0, 0.8, 0.55 ) * max( dot( n, lamp_dir ), 0.0 ) * ( 1.2 + 0.9 * swell );
     col += alb * vec3( 0.18, 0.18, 0.22 ) * ( 0.55 + 0.45 * n.y ) * 0.6;
     col += alb * 0.09;
 
-    vec3  halfV = normalize( lampDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 90.0, 8.0, roughness ) );
+    vec3  half_v = normalize( lamp_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 90.0, 8.0, roughness ) );
     col += mix( vec3( 1.0, 0.9, 0.7 ), base.rgb, metallic ) * spec * ( 0.4 + 0.8 * metallic ) * ( 0.7 + 1.0 * high );
 
     // Sparks at the meshing points: on the rim, toward each neighbour, on the kick.
@@ -189,13 +189,13 @@ void main()
     }
     col += vec3( 1.0, 0.6, 0.25 ) * rim * spark * kick * 1.5;
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.8, 0.5 ) * fres * 0.12 * ( 0.5 + 0.5 * swell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.08 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

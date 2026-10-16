@@ -104,31 +104,31 @@ void main()
            * exp( -length( p * vec2( 0.8, 1.0 ) ) * 2.2 ) * 0.25 * lamp;
 
     float half_ = bulbHalf( p.y, waist );
-    float inGlass = step( abs( p.x ), half_ ) * step( abs( p.y ), 0.44 );
+    float in_glass = step( abs( p.x ), half_ ) * step( abs( p.y ), 0.44 );
     // The sand: the upper level falls, the lower heap rises, both smooth.
-    float upperLevel = mix( 0.42, 0.02, smoothstep( 0.0, 1.0, prog ) );
-    float heapH = mix( 0.0, 0.34, smoothstep( 0.0, 1.0, prog ) );
-    vec3  sandCol = mix( vec3( 0.88, 0.72, 0.42 ), imgPalette( hue * 0.159 + 0.12 ), 0.3 );
+    float upper_level = mix( 0.42, 0.02, smoothstep( 0.0, 1.0, prog ) );
+    float heap_h = mix( 0.0, 0.34, smoothstep( 0.0, 1.0, prog ) );
+    vec3  sand_col = mix( vec3( 0.88, 0.72, 0.42 ), imgPalette( hue * 0.159 + 0.12 ), 0.3 );
     // Grain texture: round, jittered cells, so the sand never reads as a
     // flat fill.
     vec2  gg = p * 190.0;
     vec2  gc = floor( gg ), gf = fract( gg ) - 0.5;
     vec2  gj = vec2( hash21( gc + 1.3 ), hash21( gc + 5.9 ) ) - 0.5;
     float grain = smoothstep( 0.34, 0.1, length( gf - gj * 0.7 ) );
-    if ( inGlass > 0.5 )
+    if ( in_glass > 0.5 )
     {
         // The upper body: sand below the level, with a funnel dipping to
         // the waist as it empties.
         float funnel = 0.05 + 0.28 * ( 1.0 - smoothstep( 0.0, 0.55, prog ) );
-        float surface = upperLevel
+        float surface = upper_level
                         - funnel * exp( -pow( p.x / max( half_, 1e-3 ) * 1.6, 2.0 ) ) * smoothstep( 0.05, 0.5, prog );
         float upper = step( 0.02, p.y ) * step( p.y, surface );
         // The lower heap: a mound with a crater under the stream.
-        float mound = heapH * ( 1.0 - 0.55 * pow( abs( p.x ) / max( half_, 1e-3 ), 1.6 ) );
-        mound -= 0.05 * heapH * exp( -pow( p.x * 22.0, 2.0 ) ); // the crater
+        float mound = heap_h * ( 1.0 - 0.55 * pow( abs( p.x ) / max( half_, 1e-3 ), 1.6 ) );
+        mound -= 0.05 * heap_h * exp( -pow( p.x * 22.0, 2.0 ) ); // the crater
         float lower = step( -0.42, p.y ) * step( p.y, -0.42 + mound );
         float sand = max( upper, lower );
-        vec3  body = sandCol * ( 0.55 + 0.5 * grain );
+        vec3  body = sand_col * ( 0.55 + 0.5 * grain );
         // Layering in the heap, and a darker packed base.
         body *= 0.8 + 0.3 * sin( ( p.y + 0.42 ) * 90.0 + p.x * 20.0 );
         body *= 0.75 + 0.35 * smoothstep( -0.42, 0.0, p.y );
@@ -139,15 +139,16 @@ void main()
         // The falling stream: a thin column of round grains between the
         // waist and the heap, only while there is sand above.
         float running = smoothstep( 0.0, 0.04, prog ) * smoothstep( 1.0, 0.96, prog );
-        float inStream = step( abs( p.x ), 0.012 ) * step( p.y, 0.02 ) * step( -0.42 + mound, p.y );
+        float in_stream = step( abs( p.x ), 0.012 ) * step( p.y, 0.02 ) * step( -0.42 + mound, p.y );
         vec2  sg = vec2( p.x * 380.0, ( p.y + clock * 0.9 ) * 190.0 );
         vec2  sc = floor( sg ), sf = fract( sg ) - 0.5;
         vec2  sj = vec2( hash21( sc + 2.7 ), hash21( sc + 8.1 ) ) - 0.5;
         float fall = smoothstep( 0.3, 0.08, length( sf - sj * 0.7 ) ) * step( 1.0 - 0.55 * grains, hash21( sc ) );
-        col += sandCol * inStream * fall * running * ( 1.2 + 0.9 * hi + 0.8 * audioKick );
+        col += sand_col * in_stream * fall * running * ( 1.2 + 0.9 * hi + 0.8 * audioKick );
         // The dust the stream throws up where it lands.
         vec2 land = vec2( 0.0, -0.42 + mound );
-        col += sandCol * exp( -length( ( p - land ) * vec2( 0.6, 2.2 ) ) * 26.0 ) * running * ( 0.25 + 0.5 * hi ) * 0.7;
+        col += sand_col * exp( -length( ( p - land ) * vec2( 0.6, 2.2 ) ) * 26.0 ) * running * ( 0.25 + 0.5 * hi )
+               * 0.7;
         // The glass itself: a bright inner edge and a soft body tint.
         float edge = smoothstep( 0.006, 0.0, half_ - abs( p.x ) );
         col += vec3( 0.85, 0.92, 1.0 ) * edge * ( 0.35 + 0.4 * lamp );
@@ -157,18 +158,18 @@ void main()
     }
     // The frame: two plates and three posts.
     float plate = step( abs( abs( p.y ) - 0.455 ), 0.022 ) * step( abs( p.x ), 0.3 );
-    vec3  frameCol = mix( vec3( 0.45, 0.3, 0.16 ), imgPalette( hue * 0.159 + 0.08 ), 0.25 );
-    frameCol *= 0.7 + 0.4 * noise2( p * 50.0 );
-    col = mix( col, frameCol * lamp, plate );
+    vec3  frame_col = mix( vec3( 0.45, 0.3, 0.16 ), imgPalette( hue * 0.159 + 0.08 ), 0.25 );
+    frame_col *= 0.7 + 0.4 * noise2( p * 50.0 );
+    col = mix( col, frame_col * lamp, plate );
     for ( int k = -1; k <= 1; k += 2 )
     {
         float px = float( k ) * 0.27;
         float post = step( abs( p.x - px ), 0.014 ) * step( abs( p.y ), 0.46 );
-        col = mix( col, frameCol * lamp * ( 0.8 + 0.3 * float( k ) ), post );
+        col = mix( col, frame_col * lamp * ( 0.8 + 0.3 * float( k ) ), post );
     }
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

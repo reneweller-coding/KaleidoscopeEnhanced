@@ -131,7 +131,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -251,7 +251,7 @@ void main()
     gRough = clamp( audioRoughness, 0.0, 1.0 );
     float sc = 1.0 + 1.2 * clamp( scaleP, 0.0, 1.0 );
     vec2  q = rot2( 0.015 * sceneTime + 0.2 * audioPhase ) * p * sc;
-    float nS = 2.0 + 2.0 * clamp( seamsP, 0.0, 1.0 ) + 1.5 * clamp( audioSpread, 0.0, 1.0 );
+    float n_s = 2.0 + 2.0 * clamp( seamsP, 0.0, 1.0 ) + 1.5 * clamp( audioSpread, 0.0, 1.0 );
 
     // Reflect across every seam the point lies on the negative side of;
     // repeat a few passes so crossings multiply into rosettes.
@@ -261,7 +261,7 @@ void main()
         for ( int k = 0; k < 7; ++k )
         {
             float fk = float( k );
-            float w = smoothstep( fk - 0.5, fk + 0.5, nS );
+            float w = smoothstep( fk - 0.5, fk + 0.5, n_s );
             if ( w <= 0.0 )
                 continue;
             float f = seamF( q, fk );
@@ -278,9 +278,9 @@ void main()
     vec3  col = imgLod( uv, 0.3 );
     float m = luma( imgLod( uv, 8.0 ) );
     col = ( col - m ) * 1.4 + m;
-    vec3 hueF = hsv2rgb( vec3( fract( hueP * 0.159 + 0.25 * fbm3( q * 0.5 ) ), 0.7, 1.0 ) );
-    col *= mix( vec3( 1.0 ), mix( glowColour( imgLod( uv, 5.0 ), q * 0.4, hueP * 0.159 ), hueF, 0.5 ) * 1.35, 0.45 );
-    vec3 seamC = mix( vec3( 0.7, 0.85, 1.0 ), vec3( 1.0, 0.8, 0.55 ), clamp( audioMode, 0.0, 1.0 ) );
-    col += seamC * glow * ( 0.06 + 0.3 * hi );
+    vec3 hue_f = hsv2rgb( vec3( fract( hueP * 0.159 + 0.25 * fbm3( q * 0.5 ) ), 0.7, 1.0 ) );
+    col *= mix( vec3( 1.0 ), mix( glowColour( imgLod( uv, 5.0 ), q * 0.4, hueP * 0.159 ), hue_f, 0.5 ) * 1.35, 0.45 );
+    vec3 seam_c = mix( vec3( 0.7, 0.85, 1.0 ), vec3( 1.0, 0.8, 0.55 ), clamp( audioMode, 0.0, 1.0 ) );
+    col += seam_c * glow * ( 0.06 + 0.3 * hi );
     finish( col * 1.05 );
 }

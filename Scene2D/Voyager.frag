@@ -39,7 +39,7 @@ uniform int kSides;      ///< >=2: fold the image KALEIDOSCOPICALLY with this ma
 uniform float travelMul; ///< flight-speed multiplier      (0 -> 1.0)
 uniform float cellH;     ///< corridor cell height         (0 -> 2.0)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -54,8 +54,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -99,7 +99,7 @@ void main()
     else
         iuv = vec2( u.x * R.y / R.x, u.y );
     vec3  pic = img( fract( iuv ) );
-    float picLum = dot( pic, vec3( 0.299, 0.587, 0.114 ) );
+    float pic_lum = dot( pic, vec3( 0.299, 0.587, 0.114 ) );
 
     float T = time;                                     // rotation clock
     float tm = ( travelMul <= 0.01 ) ? 1.0 : travelMul; // constant per activation
@@ -114,8 +114,8 @@ void main()
     // Ray direction: the folded coord, rotated slowly over time (+ gentle audio).
     float a = T / 16.0 + audioPhase * 0.10;
     vec4  c4 = cos( a + vec4( 0.0, 33.0, 11.0, 0.0 ) );
-    mat2  rotM = mat2( c4.x, c4.y, c4.z, c4.w );
-    vec3  dir = normalize( vec3( u * rotM, 1.0 ) );
+    mat2  rot_m = mat2( c4.x, c4.y, c4.z, c4.w );
+    vec3  dir = normalize( vec3( u * rot_m, 1.0 ) );
 
     // Beats / onsets brighten the light field (slew-limited upstream -> no strobe).
     float glow = 0.07 * ( 1.0 + 0.6 * audioBeat + 0.4 * audioOnset + 0.3 * audioBass );
@@ -133,7 +133,7 @@ void main()
         float d = length( p ) - 0.1;
         t += d;
         float dd = d + 1.0;
-        vec4  pal = 1.0 + cos( length( q ) * 0.14 + length( u ) * 3.0 - T - picLum * 2.0 + vec4( 0.0, 1.0, 2.0, 0.0 ) );
+        vec4 pal = 1.0 + cos( length( q ) * 0.14 + length( u ) * 3.0 - T - pic_lum * 2.0 + vec4( 0.0, 1.0, 2.0, 0.0 ) );
         O += glow * pow( n, 5.0 ) / dd * pal;
     }
 
@@ -155,8 +155,8 @@ void main()
     // The folded picture itself shimmers through as a kaleidoscopic rosette
     // (squared -> only its bright parts, so the depth is preserved).  In the
     // true-kaleido variants the rosette is the point, so it gets more weight.
-    float rosW = ( kSides >= 2 ) ? 0.28 : 0.10;
-    col += pic * pic * rosW * ( 0.5 + 0.5 * audioLevel );
+    float ros_w = ( kSides >= 2 ) ? 0.28 : 0.10;
+    col += pic * pic * ros_w * ( 0.5 + 0.5 * audioLevel );
 
     col *= 0.9 + 0.5 * audioLevel;
 

@@ -42,12 +42,12 @@ vec2 hash2G( vec2 p )
                   * 43758.5453 );
 }
 
-/// Classic 2D Voronoi: returns (cellHash, edgeDist F2-F1).
+/// Classic 2D Voronoi: returns (cell_hash, edgeDist F2-F1).
 vec3 voronoi( vec2 p )
 {
     vec2  ip = floor( p ), fp = fract( p );
     float f1 = 8.0, f2 = 8.0;
-    vec2  bestOff = vec2( 0.0 );
+    vec2  best_off = vec2( 0.0 );
     for ( int y = -1; y <= 1; y++ )
         for ( int x = -1; x <= 1; x++ )
         {
@@ -58,14 +58,14 @@ vec3 voronoi( vec2 p )
             {
                 f2 = f1;
                 f1 = d;
-                bestOff = ip + off;
+                best_off = ip + off;
             }
             else if ( d < f2 )
             {
                 f2 = d;
             }
         }
-    return vec3( hashG( bestOff ), f1, f2 );
+    return vec3( hashG( best_off ), f1, f2 );
 }
 vec3 hueRotG( vec3 c, float a )
 {
@@ -87,16 +87,16 @@ void main()
 
     vec2  pv = vec2( cos( fa ), sin( fa ) ) * rad * 9.0;
     vec3  vc = voronoi( pv );
-    float cellHash = vc.x;
+    float cell_hash = vc.x;
     float lead = smoothstep( 0.0, 0.015, vc.z - vc.y ); // dark border near edges
 
     // Each glass piece: a seeded crop of the current image, saturated.
-    vec2  crop = hash2G( vec2( cellHash * 37.0, cellHash * 71.0 ) ) * 0.6;
-    vec2  sampleUV = crop + fract( pv * 0.15 + cellHash * 3.0 ) * 0.4;
-    vec3  pic = texture( tex0, sampleUV ).rgb;
+    vec2  crop = hash2G( vec2( cell_hash * 37.0, cell_hash * 71.0 ) ) * 0.6;
+    vec2  sample_uv = crop + fract( pv * 0.15 + cell_hash * 3.0 ) * 0.4;
+    vec3  pic = texture( tex0, sample_uv ).rgb;
     float lum = dot( pic, vec3( 0.299, 0.587, 0.114 ) );
     vec3  glass = mix( vec3( lum ), pic, 1.7 ); // extra saturation
-    glass = hueRotG( glass, audioChromaHue * 0.5 + cellHash * 2.2 );
+    glass = hueRotG( glass, audioChromaHue * 0.5 + cell_hash * 2.2 );
 
     vec3 col = mix( vec3( 0.03, 0.02, 0.02 ), glass, lead );
 

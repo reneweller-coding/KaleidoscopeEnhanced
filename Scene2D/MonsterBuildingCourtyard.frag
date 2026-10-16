@@ -111,39 +111,39 @@ vec3 facade( float u, float Y, float wallId, float H )
     pastel *= 0.8 + 0.2 * noise2( vec2( u * 3.0, Y * 0.3 ) );
     // Dusk: the facades are lit by the sky above, brighter toward the top.
     float amb = 0.3 + 0.45 * smoothstep( 0.0, H, Y );
-    vec3  wallC = pastel * amb;
+    vec3  wall_c = pastel * amb;
 
     // The window of this cell: lit or dark, warm or cool, and its band.
     float h = hash21( gi + wallId * 31.0 );
     float lit = step( 0.5, h );
     vec3  wc = mix( vec3( 1.0, 0.72, 0.4 ), vec3( 0.75, 0.9, 1.0 ), step( 0.75, hash21( gi + 7.0 ) ) );
     float band = gBand[int( mod( floor( h * 97.0 ), 8.0 ) )];
-    vec3  winLight = wc * lit * ( 0.2 + 0.9 * band );
-    vec3  winDark = vec3( 0.05, 0.06, 0.08 ) + pastel * 0.05;
-    vec3  win = mix( winDark, winLight, lit );
+    vec3  win_light = wc * lit * ( 0.2 + 0.9 * band );
+    vec3  win_dark = vec3( 0.05, 0.06, 0.08 ) + pastel * 0.05;
+    vec3  win = mix( win_dark, win_light, lit );
 
     // Averaged cell (for far floors): wall with a share of window light.
-    vec3  avg = mix( wallC, win, 0.25 );
+    vec3  avg = mix( wall_c, win, 0.25 );
     float detail = smoothstep( 0.45, 0.18, lod );
     if ( detail <= 0.0 )
         return avg;
 
-    vec3 c = wallC;
+    vec3 c = wall_c;
     // Window with its frame.
     float wm = boxMask( gf, vec2( 0.2, 0.4 ), vec2( 0.8, 0.86 ), aa );
     c = mix( c, win, wm );
     // A mullion splitting the window.
-    c = mix( c, wallC * 0.8, boxMask( gf, vec2( 0.49, 0.4 ), vec2( 0.51, 0.86 ), aa ) * wm );
+    c = mix( c, wall_c * 0.8, boxMask( gf, vec2( 0.49, 0.4 ), vec2( 0.51, 0.86 ), aa ) * wm );
     // Air-conditioner box under the sill on some flats.
-    float hasAC = step( 0.45, hash21( gi + 13.0 ) );
-    float acX = 0.18 + 0.3 * hash21( gi + 17.0 );
-    float ac = boxMask( gf, vec2( acX, 0.06 ), vec2( acX + 0.34, 0.28 ), aa ) * hasAC;
+    float has_ac = step( 0.45, hash21( gi + 13.0 ) );
+    float ac_x = 0.18 + 0.3 * hash21( gi + 17.0 );
+    float ac = boxMask( gf, vec2( ac_x, 0.06 ), vec2( ac_x + 0.34, 0.28 ), aa ) * has_ac;
     c = mix( c, vec3( 0.55, 0.55, 0.52 ) * amb * 1.2, ac );
     c = mix( c, vec3( 0.05 ),
-             boxMask( gf, vec2( acX + 0.04, 0.1 ), vec2( acX + 0.3, 0.24 ), aa ) * hasAC * 0.6 ); // its grille
+             boxMask( gf, vec2( ac_x + 0.04, 0.1 ), vec2( ac_x + 0.3, 0.24 ), aa ) * has_ac * 0.6 ); // its grille
     // Laundry on a pole across some windows: bright cloth hanging down.
-    float hasL = step( 0.75, hash21( gi + 23.0 ) );
-    float pole = smoothstep( aa.y * 1.5, 0.0, abs( gf.y - 0.93 ) ) * hasL;
+    float has_l = step( 0.75, hash21( gi + 23.0 ) );
+    float pole = smoothstep( aa.y * 1.5, 0.0, abs( gf.y - 0.93 ) ) * has_l;
     c = mix( c, vec3( 0.1 ), pole * 0.8 );
     float cloth = 0.0;
     for ( int k = 0; k < 3; ++k )
@@ -153,9 +153,9 @@ vec3 facade( float u, float Y, float wallId, float H )
             cloth, boxMask( gf, vec2( cx, 0.74 - 0.08 * hash21( gi + float( k ) * 9.0 ) ), vec2( cx + 0.09, 0.93 ), aa )
                        * step( 0.3, hash21( gi + float( k ) * 3.0 ) ) );
     }
-    vec3 clothC = mix( 0.5 + 0.5 * cos( 6.2831853 * ( hash21( gi + 29.0 ) + vec3( 0.0, 0.33, 0.67 ) ) ), vec3( 0.9 ),
-                       0.5 );
-    c = mix( c, clothC * ( amb * 1.5 + 0.1 ), cloth * hasL );
+    vec3 cloth_c = mix( 0.5 + 0.5 * cos( 6.2831853 * ( hash21( gi + 29.0 ) + vec3( 0.0, 0.33, 0.67 ) ) ), vec3( 0.9 ),
+                        0.5 );
+    c = mix( c, cloth_c * ( amb * 1.5 + 0.1 ), cloth * has_l );
     // The floor slab line.
     c *= 1.0 - 0.3 * boxMask( gf, vec2( -0.1, -0.02 ), vec2( 1.1, 0.03 ), aa );
     return mix( avg, c, detail );
@@ -198,20 +198,20 @@ void main()
     }
     else
     {
-        bool  xWall = tx < tz;
+        bool  x_wall = tx < tz;
         vec2  hit = cam + d * t;
-        float u = xWall ? hit.y * sign( d.x ) : -hit.x * sign( d.y );
-        float wallId = xWall ? ( d.x > 0.0 ? 0.0 : 1.0 ) : ( d.y > 0.0 ? 2.0 : 3.0 );
+        float u = x_wall ? hit.y * sign( d.x ) : -hit.x * sign( d.y );
+        float wallId = x_wall ? ( d.x > 0.0 ? 0.0 : 1.0 ) : ( d.y > 0.0 ? 2.0 : 3.0 );
         col = facade( u + wallId * 50.0, t, wallId, H );
         // The corners of the courtyard are darker.
-        float corner = xWall ? abs( hit.y ) / B : abs( hit.x ) / A;
+        float corner = x_wall ? abs( hit.y ) / B : abs( hit.x ) / A;
         col *= 1.0 - 0.3 * smoothstep( 0.85, 1.0, corner );
         // The parapet at the top edge catches the last light.
         col += vec3( 0.5, 0.4, 0.5 ) * smoothstep( H - 2.5, H, t ) * 0.15 * ( 0.8 + 0.4 * swell );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

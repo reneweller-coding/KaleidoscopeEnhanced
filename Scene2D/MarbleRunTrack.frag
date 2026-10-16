@@ -100,7 +100,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nMarbles = 6 + int( clamp( marblesP, 0.0, 1.0 ) * 6.0 );
+    int   n_marbles = 6 + int( clamp( marblesP, 0.0, 1.0 ) * 6.0 );
     float loops = 0.6 + 0.6 * clamp( loopP, 0.0, 1.0 );
     float light = 0.8 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     float clock = sceneAdvance * 0.12 + sceneTime * 0.025;
@@ -120,17 +120,17 @@ void main()
     // Which marble is nearest along the track lights the rail here.
     for ( int i = 0; i < 12; ++i )
     {
-        if ( i >= nMarbles )
+        if ( i >= n_marbles )
             break;
         float fi = float( i );
-        float tm = fract( clock + fi / float( nMarbles ) + 0.02 * sin( sceneAdvance * 0.3 + fi ) );
+        float tm = fract( clock + fi / float( n_marbles ) + 0.02 * sin( sceneAdvance * 0.3 + fi ) );
         int   k = int( mod( fi * 5.0, 12.0 ) );
         float e = clamp( audioChroma[k] * 1.5, 0.0, 1.0 );
         vec3  mc = imgPalette( hue * 0.159 + float( k ) / 12.0 ) * 1.5 + 0.15;
         // Rail light near the marble along the track parameter (wrapped distance).
         float dt = abs( fract( tAt - tm + 0.5 ) - 0.5 );
-        float railLit = exp( -dt * 40.0 ) * rail;
-        col += mc * railLit * ( 0.4 + 1.2 * e );
+        float rail_lit = exp( -dt * 40.0 ) * rail;
+        col += mc * rail_lit * ( 0.4 + 1.2 * e );
         // The marble: a glass sphere of the photo, class-tinted, with a highlight.
         vec2  mp = trackPos( tm, loops );
         vec2  q = p - mp;
@@ -152,7 +152,7 @@ void main()
     col += vec3( 1.0, 0.9, 0.6 ) * exp( -bd * 15.0 ) * audioKick * 1.5;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

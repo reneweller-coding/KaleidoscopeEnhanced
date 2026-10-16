@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -256,33 +256,33 @@ void main()
     // The photo on the walls (mirror period 2 -> the wrap at 8 is seamless).
     float wz = 0.3 + 0.5 * clamp( wallZoomP, 0.0, 1.0 );
     vec2  uv = vec2( per * 0.5, ( z + travel ) * wz ); // 8 * 0.5 = 4: whole mirror periods
-    float fwP = min( fwidth( per ), fwidth( mod( per + 4.0, 8.0 ) ) );
-    float fw = max( fwP * 0.5, fwidth( z ) * wz ) * 1024.0;
-    vec3  wallC = imgLod( uv, clamp( log2( max( fw, 1.0 ) ), 0.0, 9.0 ) );
+    float fw_p = min( fwidth( per ), fwidth( mod( per + 4.0, 8.0 ) ) );
+    float fw = max( fw_p * 0.5, fwidth( z ) * wz ) * 1024.0;
+    vec3  wall_c = imgLod( uv, clamp( log2( max( fw, 1.0 ) ), 0.0, 9.0 ) );
     // Wall shading from a slowly circling light.
     float wa = wall * 1.5707963 + roll;
-    float lightA = 0.2 * sceneTime;
-    float shade = 0.7 + 0.35 * cos( wa - lightA );
+    float light_a = 0.2 * sceneTime;
+    float shade = 0.7 + 0.35 * cos( wa - light_a );
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  lc = mix( vec3( 0.6, 0.8, 1.1 ), vec3( 1.15, 0.85, 0.55 ), mode );
-    vec3  glowC = glowColour( imgLod( vec2( 0.5 + 0.1 * sin( 0.02 * sceneTime ), 0.5 ), 6.0 ),
-                              vec2( travel * 0.05, 0.0 ), hueP * 0.159 );
-    vec3  col = wallC * shade * lc * 1.2;
+    vec3  glow_c = glowColour( imgLod( vec2( 0.5 + 0.1 * sin( 0.02 * sceneTime ), 0.5 ), 6.0 ),
+                               vec2( travel * 0.05, 0.0 ), hueP * 0.159 );
+    vec3  col = wall_c * shade * lc * 1.2;
     // Corner lines with pulses racing along.
-    float px = fwP * 1.5 + 1e-4;
+    float px = fw_p * 1.5 + 1e-4;
     float corner = exp( -pow( ( 1.0 - abs( s ) ) / px, 2.0 ) * 0.5 );
     float pulse = pow( 0.5 + 0.5 * sin( ( z + travel ) * 1.5 - 4.0 * sceneTime + wall * 1.3 ), 8.0 );
-    col += glowC * corner * ( 0.4 + ( 1.0 + 1.5 * kick ) * pulse );
+    col += glow_c * corner * ( 0.4 + ( 1.0 + 1.5 * kick ) * pulse );
     // Frames of light every few units.
     float fs = 0.8 + 1.6 * clamp( frameP, 0.0, 1.0 );
     float fz = ( z + travel ) / fs;
     float fd = abs( fract( fz ) - 0.5 ) * 2.0; // 1 at a frame
     float frame = smoothstep( 1.0 - fwidth( fz ) * 3.0, 1.0, fd );
-    col += mix( glowC, vec3( 1.0 ), 0.3 ) * frame * ( 0.5 + 1.2 * kick );
+    col += mix( glow_c, vec3( 1.0 ), 0.3 ) * frame * ( 0.5 + 1.2 * kick );
     // Depth fog to the glowing end.
     float fog = exp( -z * 0.18 );
-    vec3  endC = glowC * ( 0.25 + 0.6 * swell );
-    col = mix( endC, col, fog );
-    col += endC * exp( -length( p ) * 12.0 ) * 1.5;
+    vec3  end_c = glow_c * ( 0.25 + 0.6 * swell );
+    col = mix( end_c, col, fog );
+    col += end_c * exp( -length( p ) * 12.0 ) * 1.5;
     finish( col );
 }

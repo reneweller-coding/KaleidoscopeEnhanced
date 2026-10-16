@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -301,16 +301,16 @@ void main()
     // Rock layers: the photo's broad luma sets slowness; strata along y.
     float slow = luma( imgLod( uv, 4.0 ) );
     float strata = sin( p.y * 12.0 + 3.0 * fbm3( p * 1.5 ) ) * 0.5 + 0.5;
-    float travelK = 1.0 + ( 0.3 + 0.7 * rough ) * ( slow - 0.5 + 0.3 * ( strata - 0.5 ) );
+    float travel_k = 1.0 + ( 0.3 + 0.7 * rough ) * ( slow - 0.5 + 0.3 * ( strata - 0.5 ) );
     float T = 0.4 * sceneTime + 2.5 * audioAdvance;
     float k = 12.0 + 20.0 * clamp( freqP, 0.0, 1.0 );
     float width = 0.15 + 0.2 * clamp( audioSpread, 0.0, 1.0 );
     float amp = 0.0;
-    float nQ = 2.0 + 3.0 * clamp( quakeP, 0.0, 1.0 );
+    float n_q = 2.0 + 3.0 * clamp( quakeP, 0.0, 1.0 );
     for ( int i = 0; i < 5; ++i )
     {
         float fi = float( i );
-        float on = smoothstep( fi - 0.5, fi + 0.5, nQ - 0.5 );
+        float on = smoothstep( fi - 0.5, fi + 0.5, n_q - 0.5 );
         if ( on <= 0.0 )
             break;
         float cyc = T * ( 0.12 + 0.04 * fi ) + fi * 0.37;
@@ -318,12 +318,12 @@ void main()
         float gen = floor( cyc );
         vec2  c = vec2( 0.9 * ( hash11( gen * 1.3 + fi ) - 0.5 ) * 2.0,
                         0.5 * ( hash11( gen * 2.1 + fi + 5.0 ) - 0.5 ) * 2.0 );
-        float d = length( p - c ) * travelK;
+        float d = length( p - c ) * travel_k;
         float front = age * 1.6;
         float pkt = exp( -pow( ( d - front ) / width, 2.0 ) );
         amp += on * pkt * sin( ( d - front ) * k ) * ( 1.0 - age ) * smoothstep( 0.0, 0.05, age ) / ( 1.0 + d * 2.0 );
         // A reflected wave from the strata (faint, delayed).
-        float dr = length( p - vec2( c.x, -c.y - 0.3 ) ) * travelK;
+        float dr = length( p - vec2( c.x, -c.y - 0.3 ) ) * travel_k;
         amp += on * 0.35 * exp( -pow( ( dr - front * 0.9 ) / width, 2.0 ) ) * sin( ( dr - front * 0.9 ) * k )
                * ( 1.0 - age ) * smoothstep( 0.0, 0.05, age ) / ( 1.0 + dr * 2.0 );
     }

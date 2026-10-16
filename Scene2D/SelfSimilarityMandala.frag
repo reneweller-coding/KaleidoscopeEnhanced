@@ -84,19 +84,19 @@ void main()
 
     // Ring layer: now against the past, radius = age.
     float age = clamp( r / 0.9, 0.0, 1.0 ) * span;
-    float simNow = ssm( 0.0, age );
+    float sim_now = ssm( 0.0, age );
     // Petal layer: similarity between two past moments picked by the wedge
     // position -- the matrix's diagonal bands become petals.
-    float ageB = clamp( mir, 0.0, 1.0 ) * span;
-    float simPair = ssm( age, ageB );
+    float age_b = clamp( mir, 0.0, 1.0 ) * span;
+    float sim_pair = ssm( age, age_b );
 
-    vec3  ringCol = imgPalette( hue * 0.159 + 0.15 + 0.5 * age / max( span, 1e-3 ) );
-    vec3  petalCol = imgPalette( hue * 0.159 + 0.6 );
-    float ring = pow( clamp( simNow, 0.0, 1.0 ), 2.0 );
-    float petal = pow( clamp( simPair, 0.0, 1.0 ), 3.0 );
+    vec3  ring_col = imgPalette( hue * 0.159 + 0.15 + 0.5 * age / max( span, 1e-3 ) );
+    vec3  petal_col = imgPalette( hue * 0.159 + 0.6 );
+    float ring = pow( clamp( sim_now, 0.0, 1.0 ), 2.0 );
+    float petal = pow( clamp( sim_pair, 0.0, 1.0 ), 3.0 );
     // Ring stripes so the ages read as rings.
     float stripes = 0.6 + 0.4 * pow( 0.5 + 0.5 * cos( age * 90.0 ), 2.0 );
-    vec3  col = ringCol * ring * stripes * 2.0 + petalCol * petal * 1.3;
+    vec3  col = ring_col * ring * stripes * 2.0 + petal_col * petal * 1.3;
     // A returning section warms everything (we have been here before).
     col = mix( col, col * imgPalette( hue * 0.159 + 0.05 ) * 2.0, 0.4 * clamp( audioSectionKnown, 0.0, 1.0 ) );
     // Seams and the centre.
@@ -107,7 +107,7 @@ void main()
     col *= ( 0.7 + 0.5 * audioLevel ) * ( 0.85 + 0.35 * audioSwell );
     col *= 1.0 - 0.5 * smoothstep( 0.85, 1.15, r );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

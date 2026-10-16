@@ -60,10 +60,10 @@ uniform float massP;
 uniform float spinP; ///< Spin knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const uint  kStars = 32768u;
+const uint  Stars = 32768u;
 const float D0 = 4.6;      ///< initial core separation
-const float EPS = 0.28;    ///< softening
-const float TMERGE = 75.0; ///< simulation seconds until the cores meet
+const float Eps = 0.28;    ///< softening
+const float Tmerge = 75.0; ///< simulation seconds until the cores meet
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -122,20 +122,20 @@ void emitQuad( vec3 c, float s, float id, float a, float kind, vec2 uvScale )
         return;
     vec3 p0 = c + vec3( -s, -s, 0.0 ), p1 = c + vec3( s, -s, 0.0 ), p2 = c + vec3( s, s, 0.0 ),
          p3 = c + vec3( -s, s, 0.0 );
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
-                              vec2( 0.0, 1.0 ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( 0.0, 0.0 ), vec2( 1.0, 0.0 ), vec2( 1.0, 1.0 ), vec2( 0.0, 0.0 ), vec2( 1.0, 1.0 ),
+                               vec2( 0.0, 1.0 ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = a;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x * uvScale.x;
-        verts[off + 7u] = uvList[i].y * uvScale.y;
+        verts[off + 6u] = uv_list[i].x * uvScale.x;
+        verts[off + 7u] = uv_list[i].y * uvScale.y;
     }
 }
 
@@ -146,26 +146,26 @@ void main()
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
     // Re-seed on a bad magic AND in the first frames of every activation:
     // recycled GPU memory can carry the right magic and a stale state.
-    bool needInit = ( magic != expectedMagic() ) || ( sceneTime < 0.06 );
+    bool need_init = ( magic != expectedMagic() ) || ( sceneTime < 0.06 );
 
     // ---------------- pass 1: the clocks (one thread) ----------------
     if ( genPass > 0.5 )
     {
         if ( id == 0u )
         {
-            if ( needInit )
+            if ( need_init )
             {
                 magic = expectedMagic();
-                simT = 0.15 * TMERGE;
+                simT = 0.15 * Tmerge;
                 theta = 0.0;
             } // start already closing
             else
             {
-                float dtWall = clamp( time - lastT, 0.0, 0.05 );
-                float dtAdv = clamp( sceneAdvance - lastAdv, 0.0, 0.1 );
-                float dt = dtWall * ( 0.5 + 1.3 * clamp( audioLevel, 0.0, 1.0 ) ) + dtAdv * 0.9;
+                float dt_wall = clamp( time - lastT, 0.0, 0.05 );
+                float dt_adv = clamp( sceneAdvance - lastAdv, 0.0, 0.1 );
+                float dt = dt_wall * ( 0.5 + 1.3 * clamp( audioLevel, 0.0, 1.0 ) ) + dt_adv * 0.9;
                 simT += dt;
-                theta += dt * omega( simT / TMERGE );
+                theta += dt * omega( simT / Tmerge );
             }
             lastT = time;
             lastAdv = sceneAdvance;
@@ -174,7 +174,7 @@ void main()
     }
 
     // ---------------- pass 0: seed or integrate, then emit ----------------
-    float tau = simT / TMERGE;
+    float tau = simT / Tmerge;
     vec3  c0 = corePos( tau, theta ), c1 = -c0;
 
     if ( id == 0u )
@@ -184,15 +184,15 @@ void main()
         emitQuad( c0, 0.55, 0.0, 0.0, 2.0, vec2( 1.0 ) );
         emitQuad( c1, 0.55, 1.0, 0.0, 2.0, vec2( 1.0 ) );
     }
-    if ( id >= kStars )
+    if ( id >= Stars )
         return;
 
     uint  o = id * 8u;
     float fid = float( id );
-    float galaxy = ( id < kStars / 2u ) ? 0.0 : 1.0;
+    float galaxy = ( id < Stars / 2u ) ? 0.0 : 1.0;
     float M = 1.0 * ( ( massP > 0.05 ) ? massP : 1.0 );
 
-    if ( needInit )
+    if ( need_init )
     {
         // Cold disc: exponential-ish radius, thin, on a circular orbit around
         // its own core, plus the core's own velocity along the in-spiral.
@@ -202,15 +202,15 @@ void main()
         float ph0 = h.y * 6.2831853;
         float ph = ph0 + 0.45 * sin( 2.0 * ph0 - 2.6 * r );
         float zz = 0.05 * ( h.z - 0.5 ) * ( 1.0 - r * 0.4 );
-        float vc = sqrt( M * r * r / pow( r * r + EPS * EPS, 1.5 ) );
+        float vc = sqrt( M * r * r / pow( r * r + Eps * Eps, 1.5 ) );
         mat3  F = discFrame( galaxy );
         vec3  core = ( galaxy < 0.5 ) ? c0 : c1;
         // Core velocity by finite difference of the analytic path.
         float dth = 0.01 * omega( tau );
-        vec3  coreNext = corePos( tau + 0.01 / TMERGE, theta + dth );
-        vec3  vCore = ( ( galaxy < 0.5 ) ? ( coreNext - c0 ) : ( -coreNext - c1 ) ) / 0.01;
+        vec3  core_next = corePos( tau + 0.01 / Tmerge, theta + dth );
+        vec3  v_core = ( ( galaxy < 0.5 ) ? ( core_next - c0 ) : ( -core_next - c1 ) ) / 0.01;
         vec3  p = core + F * vec3( r * cos( ph ), r * sin( ph ), zz );
-        vec3  v = vCore + F * vec3( -vc * sin( ph ), vc * cos( ph ), 0.0 );
+        vec3  v = v_core + F * vec3( -vc * sin( ph ), vc * cos( ph ), 0.0 );
         st[o + 0u] = p.x;
         st[o + 1u] = p.y;
         st[o + 2u] = p.z;
@@ -226,11 +226,11 @@ void main()
     vec3 v = vec3( st[o + 3u], st[o + 4u], st[o + 5u] );
 
     // One step of the restricted problem: gravity of both cores, softened.
-    float dtWall = clamp( time - lastT, 0.0, 0.05 );
-    float dtAdv = clamp( sceneAdvance - lastAdv, 0.0, 0.1 );
-    float dt = dtWall * ( 0.5 + 1.3 * clamp( audioLevel, 0.0, 1.0 ) ) + dtAdv * 0.9;
+    float dt_wall = clamp( time - lastT, 0.0, 0.05 );
+    float dt_adv = clamp( sceneAdvance - lastAdv, 0.0, 0.1 );
+    float dt = dt_wall * ( 0.5 + 1.3 * clamp( audioLevel, 0.0, 1.0 ) ) + dt_adv * 0.9;
     vec3  d0 = p - c0, d1 = p - c1;
-    vec3  acc = -M * d0 / pow( dot( d0, d0 ) + EPS * EPS, 1.5 ) - M * d1 / pow( dot( d1, d1 ) + EPS * EPS, 1.5 );
+    vec3  acc = -M * d0 / pow( dot( d0, d0 ) + Eps * Eps, 1.5 ) - M * d1 / pow( dot( d1, d1 ) + Eps * Eps, 1.5 );
     v += acc * dt;
     // Keep the far tails from leaving the picture for good.
     float far = length( p );

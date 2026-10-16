@@ -94,8 +94,8 @@ void main()
               + sin( ang * 3.0 + r4 * 6.2831 ) * 0.3;
 
     // Kick shock ring: rides outward with the beat phase, lit by the kick.
-    float ringR = 4.0 + audioBeatPhase * 26.0;
-    float ring = exp( -abs( rad - ringR ) * 0.35 ) * audioKick;
+    float ring_r = 4.0 + audioBeatPhase * 26.0;
+    float ring = exp( -abs( rad - ring_r ) * 0.35 ) * audioKick;
 
     vec3 world = vec3( cos( ang ) * rad, y, sin( ang ) * rad );
 

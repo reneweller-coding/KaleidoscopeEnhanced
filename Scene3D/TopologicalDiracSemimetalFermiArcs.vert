@@ -54,19 +54,19 @@ vec3 imgPalette( float t )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
-    vUV = vec2( tCoord, side * 0.5 + 0.5 );
+    vRibbonID = r_index;
+    vUV = vec2( t_coord, side * 0.5 + 0.5 );
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Topological Dirac/Weyl semimetal Fermi Arcs: open disjoint arcs connecting Weyl nodes (+ and - chirality)
-    float dNodes = ( nodeDistP > 0.01 ? nodeDistP : 1.4 );
-    float kCurv = ( arcCurvP > 0.01 ? arcCurvP : 1.2 );
+    float d_nodes = ( nodeDistP > 0.01 ? nodeDistP : 1.4 );
+    float k_curv = ( arcCurvP > 0.01 ? arcCurvP : 1.2 );
 
     // Disjoint open Fermi arcs, on BOTH crystal surfaces.  The engine builds
     // 20 ribbons (indices 0..19); the old layout drew all twenty as one small
@@ -77,27 +77,27 @@ void main()
     // face (opposite chirality, which is what the two surfaces really carry),
     // each successive lane sitting further out and bowing harder, so the fan
     // opens across the whole frame instead of stacking in the middle of it.
-    float lane = floor( rIndex * 0.5 ); // 0..9
-    float ln = lane / 9.0;              // 0..1, inner .. outer
-    float surf = ( mod( rIndex, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
-    float arcSc = 1.0 + 1.35 * ln;
+    float lane = floor( r_index * 0.5 ); // 0..9
+    float ln = lane / 9.0;               // 0..1, inner .. outer
+    float surf = ( mod( r_index, 2.0 ) < 0.5 ) ? 1.0 : -1.0;
+    float arc_sc = 1.0 + 1.35 * ln;
 
     // 1.45: the outer lanes have to run PAST the left and right edges.  Without
     // it the fan stopped at 70 % of the frame width and the outermost two tile
     // columns on each side stayed empty however tall the arcs were bowed.
-    float xHalf = ( 0.9 + 0.55 * dNodes ) * arcSc * 1.45;
-    float xPos = ( tCoord - 0.5 ) * 2.0 * xHalf;
+    float x_half = ( 0.9 + 0.55 * d_nodes ) * arc_sc * 1.45;
+    float x_pos = ( t_coord - 0.5 ) * 2.0 * x_half;
 
-    float bow = 1.0 - 4.0 * ( tCoord - 0.5 ) * ( tCoord - 0.5 );
-    float yAmp = 0.45 * ( 0.6 + kCurv ) * arcSc;
-    float yPos = surf * ( 0.25 + 0.85 * ln + bow * yAmp );
+    float bow = 1.0 - 4.0 * ( t_coord - 0.5 ) * ( t_coord - 0.5 );
+    float y_amp = 0.45 * ( 0.6 + k_curv ) * arc_sc;
+    float y_pos = surf * ( 0.25 + 0.85 * ln + bow * y_amp );
 
-    float zLayer = ( lane - 4.5 ) * 0.22 * surf + sin( tCoord * 12.0 - t * 2.5 ) * 0.10 * arcSc;
+    float z_layer = ( lane - 4.5 ) * 0.22 * surf + sin( t_coord * 12.0 - t * 2.5 ) * 0.10 * arc_sc;
 
-    vec3 centerPos = vec3( xPos, yPos, zLayer );
+    vec3 center_pos = vec3( x_pos, y_pos, z_layer );
 
-    vec3 tangent = normalize( vec3( 2.0 * xHalf,
-                                    surf * ( -8.0 * ( tCoord - 0.5 ) ) * yAmp,
+    vec3 tangent = normalize( vec3( 2.0 * x_half,
+                                    surf * ( -8.0 * ( t_coord - 0.5 ) ) * y_amp,
                                     0.0 ) );
     vec3 binormal = normalize( cross( tangent, vec3( 0.0, 0.0, 1.0 ) ) );
 
@@ -106,17 +106,17 @@ void main()
     // a 1080-line frame -- a lane that thin averages away to nothing.
     float width = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.05 )
                   * 1.7 * ( 1.0 + 0.3 * audioSwell );
-    vec3  worldPos = centerPos + binormal * ( side * width );
+    vec3  world_pos = center_pos + binormal * ( side * width );
 
     // Chiral anomaly / Weyl node current pulse
-    float pulse = exp( -abs( fract( tCoord * 2.0 - t * 3.0 + rIndex * 0.166 ) - 0.5 ) * 16.0 )
+    float pulse = exp( -abs( fract( t_coord * 2.0 - t * 3.0 + r_index * 0.166 ) - 0.5 ) * 16.0 )
                   * ( 1.0 + 3.0 * audioKick );
     vWeylPulse = pulse;
 
-    vCol = imgPalette( fract( rIndex * 0.166 + tCoord * 0.3 + audioCentroid ) );
+    vCol = imgPalette( fract( r_index * 0.166 + t_coord * 0.3 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // 3D rotation -- a BOUNDED sway, not a turntable.  A full turn takes the
     // fan (which is now nearly twelve units wide and only two deep) edge on

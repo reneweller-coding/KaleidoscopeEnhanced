@@ -86,12 +86,12 @@ void main()
     float H = 0.75 + 0.45 * audioSwell;
     vec2  sway = vec2( 0.0 ); // no camera sway (V7d)
     vec3  rd = normalize( vec3( p.x + sway.x, p.y + sway.y, 1.35 ) );
-    float tF = ( rd.y < 0.0 ) ? -H / rd.y : 1e9; // floor
-    float tC = ( rd.y > 0.0 ) ? H / rd.y : 1e9;  // ceiling
-    float tW = 1.0 / max( abs( rd.x ), 1e-4 );   // walls at x = +-1
-    float t = min( min( tF, tC ), tW );
+    float t_f = ( rd.y < 0.0 ) ? -H / rd.y : 1e9; // floor
+    float t_c = ( rd.y > 0.0 ) ? H / rd.y : 1e9;  // ceiling
+    float t_w = 1.0 / max( abs( rd.x ), 1e-4 );   // walls at x = +-1
+    float t = min( min( t_f, t_c ), t_w );
     vec3  hit = rd * t;
-    int   face = ( t == tW ) ? 2 : ( ( t == tF ) ? 0 : 1 );
+    int   face = ( t == t_w ) ? 2 : ( ( t == t_f ) ? 0 : 1 );
 
     // Along the corridor = history (0 = now at the camera).  Across = the
     // other time axis, centred on now, so the diagonal (self-similarity of a
@@ -106,21 +106,21 @@ void main()
     float b = along + 0.12 * sc + across * 0.5 * sc;
     float sim = ssm( fract( a ), fract( b ) );
     // Coarse section blocks on top of the fine stripes (reference scene).
-    float simBig = ssm( fract( floor( a * 32.0 ) / 32.0 + 1.0 / 64.0 ),
-                        fract( floor( b * 32.0 ) / 32.0 + 1.0 / 64.0 ) );
-    sim = clamp( sim * 0.8 + simBig * 0.5, 0.0, 1.2 );
+    float sim_big = ssm( fract( floor( a * 32.0 ) / 32.0 + 1.0 / 64.0 ),
+                         fract( floor( b * 32.0 ) / 32.0 + 1.0 / 64.0 ) );
+    sim = clamp( sim * 0.8 + sim_big * 0.5, 0.0, 1.2 );
 
     // Tiles: the matrix is 256 wide; draw grout lines at texel edges so the
     // hallway reads as tiled stone, not as a smooth gradient.
-    vec2  cellUv = vec2( a, b ) * 256.0;
-    vec2  cf = abs( fract( cellUv ) - 0.5 );
+    vec2  cell_uv = vec2( a, b ) * 256.0;
+    vec2  cf = abs( fract( cell_uv ) - 0.5 );
     float grout = smoothstep( 0.42, 0.5, max( cf.x, cf.y ) );
 
     // Bright tiles where the song resembles itself; dark thresholds where it
     // changed.  The near row pulses on the beat.
-    float nearRow = exp( -hit.z * 0.9 ) * audioBeat;
-    vec3  tileCol = imgPalette( hue * 0.159 + sim * 0.6 + float( face ) * 0.11 );
-    vec3  col = tileCol * ( 0.24 + 1.4 * sim * glw + 0.5 * nearRow );
+    float near_row = exp( -hit.z * 0.9 ) * audioBeat;
+    vec3  tile_col = imgPalette( hue * 0.159 + sim * 0.6 + float( face ) * 0.11 );
+    vec3  col = tile_col * ( 0.24 + 1.4 * sim * glw + 0.5 * near_row );
     col *= 1.0 - 0.45 * grout;
 
     // Light strips along the corridor edges, and a far-end glow that opens
@@ -133,7 +133,7 @@ void main()
     float fog = 1.0 - exp( -hit.z * 0.03 );
     col = mix( col, imgPalette( hue * 0.159 + 0.3 ) * ( 0.05 + 0.10 * audioLevel ), fog );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

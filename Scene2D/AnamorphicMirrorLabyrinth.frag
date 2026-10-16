@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float mCount = ( mirrorCountP > 0.5 ) ? mirrorCountP : 3.0;
+    float m_count = ( mirrorCountP > 0.5 ) ? mirrorCountP : 3.0;
     float anm = ( anamorphP > 0.01 ) ? anamorphP : 1.2;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -73,78 +73,78 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Multi-center anamorphic distortion lattice
-    vec3  finalCol = vec3( 0.0 );
-    float totalWeight = 0.0;
-    float causticAccum = 0.0;
+    vec3  final_col = vec3( 0.0 );
+    float total_weight = 0.0;
+    float caustic_accum = 0.0;
 
-    int numPillars = int( clamp( mCount, 1.0, 5.0 ) );
+    int num_pillars = int( clamp( m_count, 1.0, 5.0 ) );
 
     for ( int k = 0; k < 4; k++ )
     {
-        if ( k >= numPillars )
+        if ( k >= num_pillars )
             break;
 
         float kf = float( k );
-        float orbitAngle = t * 0.35 + kf * ( 6.2831853 / float( numPillars ) );
-        float orbitRad = ( numPillars == 1 ) ? 0.0 : ( 0.42 + 0.15 * sin( t * 0.5 + kf ) );
-        vec2  center = vec2( cos( orbitAngle ), sin( orbitAngle ) ) * orbitRad;
+        float orbit_angle = t * 0.35 + kf * ( 6.2831853 / float( num_pillars ) );
+        float orbit_rad = ( num_pillars == 1 ) ? 0.0 : ( 0.42 + 0.15 * sin( t * 0.5 + kf ) );
+        vec2  center = vec2( cos( orbit_angle ), sin( orbit_angle ) ) * orbit_rad;
 
         vec2  rel = uv - center;
         float r = length( rel );
         float a = atan( rel.y, rel.x );
 
         // Cylindrical mirror radius
-        float mirrorR = 0.28 + 0.08 * sin( audioSwell * 2.5 + kf ) + 0.05 * audioSubBass;
+        float mirror_r = 0.28 + 0.08 * sin( audioSwell * 2.5 + kf ) + 0.05 * audioSubBass;
 
         // Anamorphic coordinate unrolling
         // Inside/near mirror: unroll cylinder reflection; outside: polar stretch
-        float reflectionDist = abs( r - mirrorR );
-        float anamAngle = a * anm + t * 0.2 * ( k % 2 == 0 ? 1.0 : -1.0 );
-        float anamRadius = exp( r * 2.2 * anm ) * 0.25;
+        float reflection_dist = abs( r - mirror_r );
+        float anam_angle = a * anm + t * 0.2 * ( k % 2 == 0 ? 1.0 : -1.0 );
+        float anam_radius = exp( r * 2.2 * anm ) * 0.25;
 
-        vec2 anamUV = vec2(
-            0.5 + 0.45 * anamRadius * cos( anamAngle ),
-            0.5 + 0.45 * anamRadius * sin( anamAngle ) );
+        vec2 anam_uv = vec2(
+            0.5 + 0.45 * anam_radius * cos( anam_angle ),
+            0.5 + 0.45 * anam_radius * sin( anam_angle ) );
 
         // Ripple caustic displacement on mirror cylinder boundary
         float ripple = sin( r * 35.0 - t * 4.0 ) * ( 0.02 + 0.03 * audioKick );
-        anamUV += vec2( cos( a * 4.0 ), sin( a * 4.0 ) ) * ripple;
+        anam_uv += vec2( cos( a * 4.0 ), sin( a * 4.0 ) ) * ripple;
 
         // Sample unwrapped texture
-        vec3 colSample = img( fract( anamUV ) );
+        vec3 col_sample = img( fract( anam_uv ) );
 
         // Specular chrome edge and focal caustic
-        float edge = smoothstep( 0.08, 0.0, reflectionDist );
+        float edge = smoothstep( 0.08, 0.0, reflection_dist );
         // Tonal brightness tightens the focal falloff instead of boosting it --
         // a sharper caustic must not also become a brighter one.
-        float caustic = pow( clamp( 1.0 - reflectionDist * ( 8.0 + 5.0 * audioCentroid ), 0.0, 1.0 ),
+        float caustic = pow( clamp( 1.0 - reflection_dist * ( 8.0 + 5.0 * audioCentroid ), 0.0, 1.0 ),
                              3.0 + 1.5 * audioCentroid );
-        causticAccum += caustic * ( 1.0 + 2.0 * audioKick );
+        caustic_accum += caustic * ( 1.0 + 2.0 * audioKick );
 
         // Mix palette tint with chrome reflection
         vec3 tint = imgPalette( a / 6.2831853 + kf * 0.25 );
-        vec3 mixedCol = mix( colSample, tint, 0.4 + 0.3 * edge );
+        vec3 mixed_col = mix( col_sample, tint, 0.4 + 0.3 * edge );
 
         // Chrome shine
-        mixedCol += vec3( 1.2, 1.1, 1.4 ) * caustic * glw;
+        mixed_col += vec3( 1.2, 1.1, 1.4 ) * caustic * glw;
 
         float weight = 1.0 / ( 0.1 + r * r * 4.0 );
-        finalCol += mixedCol * weight;
-        totalWeight += weight;
+        final_col += mixed_col * weight;
+        total_weight += weight;
     }
 
-    finalCol /= max( 0.001, totalWeight );
+    final_col /= max( 0.001, total_weight );
 
     // Global chromatic aberration from anamorphic lenses
     float ca = 0.012 * ( audioFlux + audioKick );
-    vec3  caTint = imgPalette( length( uv ) + ca );
-    finalCol.r = mix( finalCol.r, caTint.r, 0.25 );
+    vec3  ca_tint = imgPalette( length( uv ) + ca );
+    final_col.r = mix( final_col.r, ca_tint.r, 0.25 );
 
     // Background optical dispersion grid
     float grid = abs( sin( uv.x * 20.0 + t ) ) * abs( cos( uv.y * 20.0 - t ) );
-    finalCol += imgPalette( 0.3 ) * grid * 0.12 * audioLevel;
+    final_col += imgPalette( 0.3 ) * grid * 0.12 * audioLevel;
 
     // Saturation and contrast
-    finalCol = pow( finalCol, vec3( 0.85 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.85 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

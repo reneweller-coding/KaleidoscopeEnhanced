@@ -73,43 +73,43 @@ void main()
     vec2  f = fract( p ) - 0.5;
 
     // Dielectric cylinder pillar
-    float rCyl = ( cylinderRadP > 0.01 ? cylinderRadP : 0.28 );
-    float dPillar = length( f );
-    float inPillar = smoothstep( rCyl + 0.03, rCyl - 0.03, dPillar );
-    float pillarEdge = exp( -abs( dPillar - rCyl ) * 35.0 );
+    float r_cyl = ( cylinderRadP > 0.01 ? cylinderRadP : 0.28 );
+    float d_pillar = length( f );
+    float in_pillar = smoothstep( r_cyl + 0.03, r_cyl - 0.03, d_pillar );
+    float pillar_edge = exp( -abs( d_pillar - r_cyl ) * 35.0 );
 
     // Zero-index wave tunneling: phase k = 0 implies wavelength -> infty, uniform phase across crystal!
-    float zeroIndexPhase = sin( t * 3.0 + audioPhase * 0.5 ) * 0.5 + 0.5;
+    float zero_index_phase = sin( t * 3.0 + audioPhase * 0.5 ) * 0.5 + 0.5;
 
     // Dirac cone linear dispersion perturbation: omega - omega_D ~ v_D * |k|
-    float vPurity = ( diracPurityP > 0.01 ? diracPurityP : 1.2 );
-    float diracCone = sin( length( uv ) * 14.0 * ( 1.0 - 0.7 * vPurity ) - t * 4.0 );
+    float v_purity = ( diracPurityP > 0.01 ? diracPurityP : 1.2 );
+    float dirac_cone = sin( length( uv ) * 14.0 * ( 1.0 - 0.7 * v_purity ) - t * 4.0 );
 
-    // Accidental degeneracy flash on kick.  zeroIndexPhase is spatially
+    // Accidental degeneracy flash on kick.  zero_index_phase is spatially
     // UNIFORM (that's the k=0 physics), so this term must stay small and
     // mostly ride on the pillar edges below -- at its original gain the
     // whole frame washed to pure white half of the time.
-    float diracFlash = zeroIndexPhase * ( 0.5 + 1.2 * audioKick ) * ( tunnelGlowP > 0.01 ? tunnelGlowP : 1.3 );
+    float dirac_flash = zero_index_phase * ( 0.5 + 1.2 * audioKick ) * ( tunnelGlowP > 0.01 ? tunnelGlowP : 1.3 );
 
     // High-order Bloch harmonics
-    float blochHarmonics = sin( f.x * 12.0 ) * cos( f.y * 12.0 ) * ( 0.6 + 0.8 * audioHigh );
+    float bloch_harmonics = sin( f.x * 12.0 ) * cos( f.y * 12.0 ) * ( 0.6 + 0.8 * audioHigh );
 
     // Palette assignment
-    float palAngle = fract( length( cell ) * 0.08 + t * 0.05 + audioCentroid );
-    vec3  colDirac = imgPalette( palAngle );
-    vec3  colPillar = imgPalette( fract( palAngle + 0.5 ) ) * 1.5;
+    float pal_angle = fract( length( cell ) * 0.08 + t * 0.05 + audioCentroid );
+    vec3  col_dirac = imgPalette( pal_angle );
+    vec3  col_pillar = imgPalette( fract( pal_angle + 0.5 ) ) * 1.5;
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += colPillar * inPillar * ( 0.8 + 0.4 * audioSwell );
-    col += colDirac * zeroIndexPhase * 0.6;
-    col += vec3( 0.95, 0.95, 1.0 ) * diracFlash * ( 0.3 + 1.2 * pillarEdge );
-    col += colPillar * pillarEdge * 1.6;
-    col += colDirac * abs( blochHarmonics ) * inPillar * 0.8;
-    col += colDirac * ( audioKick * 0.35 );
+    col += col_pillar * in_pillar * ( 0.8 + 0.4 * audioSwell );
+    col += col_dirac * zero_index_phase * 0.6;
+    col += vec3( 0.95, 0.95, 1.0 ) * dirac_flash * ( 0.3 + 1.2 * pillar_edge );
+    col += col_pillar * pillar_edge * 1.6;
+    col += col_dirac * abs( bloch_harmonics ) * in_pillar * 0.8;
+    col += col_dirac * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

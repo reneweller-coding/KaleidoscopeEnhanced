@@ -157,9 +157,9 @@ void main()
         if ( t > 28.0 )
             break;
     }
-    float hueF = hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
-    vec3  fogC = hsv2rgb( vec3( fract( hueF + 0.5 ), 0.5, 1.0 ) ) * ( 0.04 + 0.08 * swell );
-    vec3  col = fogC;
+    float hue_f = hueP * 0.159 + 0.12 * audioPhase + 0.004 * sceneTime + 0.3 * mode;
+    vec3  fog_c = hsv2rgb( vec3( fract( hue_f + 0.5 ), 0.5, 1.0 ) ) * ( 0.04 + 0.08 * swell );
+    vec3  col = fog_c;
     if ( hit )
     {
         vec3 q = ro + rd * t;
@@ -171,38 +171,38 @@ void main()
 
 
 
-        float pxW = t * 2.0 / resolution.y * 0.32;
-        float pxZ = pxW / max( abs( dot( normalize( vec3( q.xy - axisXY( q.z ), 0.0 ) ), rd ) ), 0.03 );
+        float px_w = t * 2.0 / resolution.y * 0.32;
+        float px_z = px_w / max( abs( dot( normalize( vec3( q.xy - axisXY( q.z ), 0.0 ) ), rd ) ), 0.03 );
         vec2  w0 = wallUV( q );
         vec2  m0c = mirrorUV( c );
-        float fx = min( length( mirrorUV( chain( w0 + vec2( pxW, 0.0 ) ) ) - m0c ),
-                        length( m0c - mirrorUV( chain( w0 - vec2( pxW, 0.0 ) ) ) ) );
-        float fy = min( length( mirrorUV( chain( w0 + vec2( 0.0, pxZ ) ) ) - m0c ),
-                        length( m0c - mirrorUV( chain( w0 - vec2( 0.0, pxZ ) ) ) ) );
+        float fx = min( length( mirrorUV( chain( w0 + vec2( px_w, 0.0 ) ) ) - m0c ),
+                        length( m0c - mirrorUV( chain( w0 - vec2( px_w, 0.0 ) ) ) ) );
+        float fy = min( length( mirrorUV( chain( w0 + vec2( 0.0, px_z ) ) ) - m0c ),
+                        length( m0c - mirrorUV( chain( w0 - vec2( 0.0, px_z ) ) ) ) );
         float lod = clamp( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) + 1.0 - 1.2 * clamp( detailP, 0.0, 1.0 ), 0.0,
                            9.0 );
 
 
-        vec3 nTube = -normalize( vec3( q.xy - axisXY( q.z ), 0.0 ) );
+        vec3 n_tube = -normalize( vec3( q.xy - axisXY( q.z ), 0.0 ) );
         n = normalize(
-            mix( nTube, n, clamp( 1.0 - ( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) - 4.0 ) / 2.5, 0.0, 1.0 ) ) );
+            mix( n_tube, n, clamp( 1.0 - ( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) - 4.0 ) / 2.5, 0.0, 1.0 ) ) );
         vec3  ph = imgLod( c, lod );
         float m0 = luma( ph );
         float hgt = wallHeight( wallUV( q ), c );
         vec2  cm = mirrorUV( c );
 
 
-        float hueW = clamp( 1.0 - ( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) - 3.0 ) / 3.0, 0.0, 1.0 );
-        float h = hueF + hueW * ( 0.9 * cm.x + 0.6 * cm.y ) + 0.25 * m0;
+        float hue_w = clamp( 1.0 - ( log2( max( max( fx, fy ) * 1024.0, 1.0 ) ) - 3.0 ) / 3.0, 0.0, 1.0 );
+        float h = hue_f + hue_w * ( 0.9 * cm.x + 0.6 * cm.y ) + 0.25 * m0;
         vec3  field = hsv2rgb( vec3( fract( h ), 0.55 + 0.4 * swell, 1.0 ) ) * ( 0.35 + 1.3 * m0 );
         vec3  tex = mix( max( ( ph - m0 ) * 1.4 + m0, 0.0 ), field, 0.2 + 0.75 * clamp( paletteP, 0.0, 1.0 ) );
         vec3  lc = mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.12, 0.92, 0.72 ), mode );
 
-        vec3  Lh = normalize( ro + vec3( 0.0, 0.0, 1.5 ) - q );
+        vec3  lh = normalize( ro + vec3( 0.0, 0.0, 1.5 ) - q );
         float la = 0.13 * sceneTime;
-        vec3  Lk = normalize( vec3( cos( la ), sin( la ), 0.4 ) );
-        float diff = 0.55 * max( dot( n, Lh ), 0.0 ) + 0.35 * ( 0.5 + 0.5 * dot( n, Lk ) );
-        float spec = pow( max( dot( reflect( -Lh, n ), -rd ), 0.0 ), 24.0 );
+        vec3  lk = normalize( vec3( cos( la ), sin( la ), 0.4 ) );
+        float diff = 0.55 * max( dot( n, lh ), 0.0 ) + 0.35 * ( 0.5 + 0.5 * dot( n, lk ) );
+        float spec = pow( max( dot( reflect( -lh, n ), -rd ), 0.0 ), 24.0 );
         float ao = 0.45 + 0.55 * hgt;
         vec3  surf = tex * lc * ( 0.5 + 1.25 * diff ) * ao + lc * spec * ( 0.15 + 0.35 * swell );
 
@@ -211,7 +211,7 @@ void main()
         vec3  glow = neonOf( field + 1e-3, 2.0 ) * ( crest * ( 0.6 + 1.2 * kick ) + fres * 0.5 );
         float st = clamp( styleP, 0.0, 1.0 );
         vec3  sc = mix( surf + glow * 0.25 * ( 0.5 + kick ), glow + surf * 0.55, smoothstep( 0.35, 0.65, st ) );
-        col = mix( fogC, sc, exp( -t * ( 0.07 + 0.03 * swell ) ) );
+        col = mix( fog_c, sc, exp( -t * ( 0.07 + 0.03 * swell ) ) );
     }
     if ( walkHost < -1.0 )
         col += vec3( walkA.x + walkB.x + walkC.x + walkD.x ); // keeps the walk uniforms

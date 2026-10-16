@@ -74,17 +74,17 @@ void main()
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );
     float t = time * 0.35 + audioAdvance * 0.3;
 
-    float vSpeed = ( turbSpeedP > 0.01 ? turbSpeedP : 1.0 );
-    float fScale = ( fractalScaleP > 0.01 ? fractalScaleP : 3.5 );
+    float v_speed = ( turbSpeedP > 0.01 ? turbSpeedP : 1.0 );
+    float f_scale = ( fractalScaleP > 0.01 ? fractalScaleP : 3.5 );
 
     // Scale-invariant multi-octave density fluctuations (critical opalescence)
     float density = 0.0;
     float weight = 1.0;
-    vec2  p = uv * fScale;
+    vec2  p = uv * f_scale;
 
     for ( int i = 0; i < 4; i++ )
     {
-        float wave = sin( p.x * 2.0 + t * vSpeed ) * cos( p.y * 2.0 - t * 0.8 * vSpeed );
+        float wave = sin( p.x * 2.0 + t * v_speed ) * cos( p.y * 2.0 - t * 0.8 * v_speed );
         wave += sin( p.x * 3.0 - p.y * 2.5 + float( i ) ) * 0.5;
         density += wave * weight;
         p = vec2( p.x * 1.8 + p.y * 0.6, -p.x * 0.6 + p.y * 1.8 );
@@ -92,35 +92,35 @@ void main()
     }
 
     // Critical cluster condensation / droplet formation
-    float cDens = ( clusterDensP > 0.01 ? clusterDensP : 4.5 );
-    float dropletClusters = pow( sin( uv.x * cDens + density * 2.0 ) * cos( uv.y * cDens - density * 2.0 ) * 0.5 + 0.5,
-                                 2.5 );
+    float c_dens = ( clusterDensP > 0.01 ? clusterDensP : 4.5 );
+    float droplet_clusters = pow(
+        sin( uv.x * c_dens + density * 2.0 ) * cos( uv.y * c_dens - density * 2.0 ) * 0.5 + 0.5, 2.5 );
 
     // Opalescent scattering (milky white pearl sheen with subtle dispersion)
-    float opalGlow = ( opalescenceP > 0.01 ? opalescenceP : 1.3 ) * ( 0.85 + 0.35 * audioSwell );
-    float pearl = pow( clamp( density * 0.5 + 0.5, 0.0, 1.0 ), 2.0 ) * opalGlow;
+    float opal_glow = ( opalescenceP > 0.01 ? opalescenceP : 1.3 ) * ( 0.85 + 0.35 * audioSwell );
+    float pearl = pow( clamp( density * 0.5 + 0.5, 0.0, 1.0 ), 2.0 ) * opal_glow;
 
     // Critical transition flash on kick
-    float criticalFlash = pow( dropletClusters, 2.0 ) * ( 1.0 + 3.5 * audioKick );
+    float critical_flash = pow( droplet_clusters, 2.0 ) * ( 1.0 + 3.5 * audioKick );
 
     // Nucleation sparkling glints
-    float nucleateSpark = pow( max( 0.0, sin( uv.x * 45.0 + uv.y * 40.0 + t * 5.0 + audioFlux * 3.0 ) ), 16.0 )
-                          * ( 0.7 + 1.2 * audioHigh );
+    float nucleate_spark = pow( max( 0.0, sin( uv.x * 45.0 + uv.y * 40.0 + t * 5.0 + audioFlux * 3.0 ) ), 16.0 )
+                           * ( 0.7 + 1.2 * audioHigh );
 
     // Milky iridescent pearl palette tinted by photo
-    vec3 milkyPearl = vec3( 0.92, 0.95, 1.0 );
-    vec3 opalTint = palTint( milkyPearl, density * 0.3 + audioCentroid, 0.28 );
+    vec3 milky_pearl = vec3( 0.92, 0.95, 1.0 );
+    vec3 opal_tint = palTint( milky_pearl, density * 0.3 + audioCentroid, 0.28 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.25;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.25;
 
     vec3 col = bg;
-    col += opalTint * pearl * 1.6;
-    col += opalTint * dropletClusters * 1.4;
-    col += vec3( 0.95, 0.95, 1.0 ) * criticalFlash * 1.8;
-    col += vec3( 0.9, 1.0, 0.95 ) * nucleateSpark * 2.2;
-    col += opalTint * ( audioKick * 0.35 );
+    col += opal_tint * pearl * 1.6;
+    col += opal_tint * droplet_clusters * 1.4;
+    col += vec3( 0.95, 0.95, 1.0 ) * critical_flash * 1.8;
+    col += vec3( 0.9, 1.0, 0.95 ) * nucleate_spark * 2.2;
+    col += opal_tint * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

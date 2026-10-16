@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -244,12 +244,13 @@ void main()
     vec2 w = p + 0.25 * vec2( sin( T + p.y * 1.5 ), cos( T * 0.8 + p.x * 1.3 ) );
     w += 0.15 * vec2( fbm3( p * 1.5 + T ), fbm3( p * 1.5 - T + 4.0 ) );
     vec2  uv = w * 0.5 + 0.5 + vec2( 0.02 * sin( T * 0.3 ), 0.0 );
-    float shapeD = 1.0 - luma( imgLod( uv, 4.5 ) );
+    float shape_d = 1.0 - luma( imgLod( uv, 4.5 ) );
     float blob = fbm( w * 1.2 + vec2( T * 0.5, 0.0 ) );
     float spread = 0.2 * clamp( audioSpread, 0.0, 1.0 );
     // The photo shapes the flock by local contrast (every photo gives some shape).
-    shapeD = 0.5 + ( shapeD - ( 1.0 - luma( imgLod( uv, 7.0 ) ) ) ) * 2.0;
-    float field = mix( blob, shapeD, 0.5 * clamp( shapeP, 0.0, 1.0 ) ) + 0.1 * rough * ( noise2( p * 10.0 + T ) - 0.5 );
+    shape_d = 0.5 + ( shape_d - ( 1.0 - luma( imgLod( uv, 7.0 ) ) ) ) * 2.0;
+    float field = mix( blob, shape_d, 0.5 * clamp( shapeP, 0.0, 1.0 ) )
+                  + 0.1 * rough * ( noise2( p * 10.0 + T ) - 0.5 );
     float dens = smoothstep( 0.42 + spread, 0.72, field )
                  * smoothstep( 0.9, 0.6, length( w * vec2( 0.6, 1.0 ) ) - 0.3 );
     // Ripples of density travelling through the flock.

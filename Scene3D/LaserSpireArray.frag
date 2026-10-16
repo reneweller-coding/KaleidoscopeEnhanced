@@ -42,17 +42,17 @@ void main()
     }
 
     vec3  n = normalize( gNormal );
-    vec3  lightDir = normalize( vec3( 0.5, 0.8, -0.6 ) );
-    float diff = max( dot( n, lightDir ), 0.0 ) * 0.7 + 0.3;
+    vec3  light_dir = normalize( vec3( 0.5, 0.8, -0.6 ) );
+    float diff = max( dot( n, light_dir ), 0.0 ) * 0.7 + 0.3;
 
     // Specular highlight — the industrial 2-6 kHz band decides how metallic
     // the crystal reads: dull/warm gives a broad matte sheen, scraping-bright
     // gives a hard chrome glint.  Gain drops as the highlight widens, so the
     // total specular energy stays put.
     float mtl = clamp( audioUpperMid, 0.0, 1.0 );
-    vec3  viewDir = normalize( -gWorld );
-    vec3  refl = reflect( -lightDir, n );
-    float spec = pow( max( dot( viewDir, refl ), 0.0 ), mix( 8.0, 48.0, mtl ) )
+    vec3  view_dir = normalize( -gWorld );
+    vec3  refl = reflect( -light_dir, n );
+    float spec = pow( max( dot( view_dir, refl ), 0.0 ), mix( 8.0, 48.0, mtl ) )
                  * mix( 0.5, 1.0, mtl );
 
     vec3 col = gCol.rgb * diff + spec * vec3( 1.0, 1.0, 1.0 );

@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -277,14 +277,14 @@ void main()
     vec3 phosphor = vec3( 0.2, 1.0, 0.35 ) * ( 0.2 + 0.8 * v ) * step( 0.05, v ) * ( 0.25 + 0.9 * after );
     vec3 col = mix( phosphor, echo, mode );
     // Leading line of the sweep.
-    vec3 lineC = mix( vec3( 0.4, 1.0, 0.5 ), vec3( 0.8, 0.95, 1.0 ), mode );
-    col += lineC * lead * ( 0.3 + 1.0 * kick );
+    vec3 line_c = mix( vec3( 0.4, 1.0, 0.5 ), vec3( 0.8, 0.95, 1.0 ), mode );
+    col += line_c * lead * ( 0.3 + 1.0 * kick );
     // Range rings and map.
     float rings = abs( fract( r * 8.0 ) - 0.5 );
     float rpx = fwidth( r * 8.0 ) + 1e-4;
-    col += lineC * smoothstep( rpx * 1.5, 0.0, 0.5 - rings ) * 0.08;
-    float mapE = texEdge( p * 0.6 + 0.5, 3.0 );
-    col += lineC * smoothstep( 0.3, 0.8, mapE ) * 0.06 * clamp( mapP + 0.2, 0.0, 1.2 );
+    col += line_c * smoothstep( rpx * 1.5, 0.0, 0.5 - rings ) * 0.08;
+    float map_e = texEdge( p * 0.6 + 0.5, 3.0 );
+    col += line_c * smoothstep( 0.3, 0.8, map_e ) * 0.06 * clamp( mapP + 0.2, 0.0, 1.2 );
     col = mix( col, col * glowColour( imgLod( uv, 6.0 ), p, hueP * 0.159 ) * 1.3, 0.08 );
     col += vec3( 0.0, 0.01, 0.015 );
     finish( col );

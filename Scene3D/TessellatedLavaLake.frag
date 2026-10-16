@@ -79,11 +79,11 @@ void main()
     crust *= 0.4 + 0.8 * diff;
     // The melt in the seams: orange-white, brighter with the bass, flaring
     // on the kick; the seam width grows a little with the bass (light only).
-    float seamGlow = 1.0 - smoothstep( 0.0, 0.12 + 0.08 * bass, vSeam );
+    float seam_glow = 1.0 - smoothstep( 0.0, 0.12 + 0.08 * bass, vSeam );
     vec3  melt = mix( vec3( 1.0, 0.45, 0.08 ), imgPalette( hue * 0.159 + 0.05 ), 0.3 );
     vec3  hot = mix( melt, vec3( 1.0, 0.9, 0.6 ), bass * 0.6 );
     float pulse = 0.8 + 0.6 * bass + 1.2 * audioKick;
-    vec3  col = mix( crust, hot * pulse * 1.6, seamGlow );
+    vec3  col = mix( crust, hot * pulse * 1.6, seam_glow );
     // The glow bleeds onto the plate edges.
     float bleed = exp( -vSeam * 6.0 ) * ( 0.3 + 0.7 * bass );
     col += melt * bleed * 0.5;
@@ -92,7 +92,7 @@ void main()
     vec2  sc = floor( su );
     vec2  sf = fract( su ) - 0.5;
     vec2  so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
-    float spark = smoothstep( 0.18, 0.05, length( sf - so * 0.6 ) ) * step( 0.96, hash21( sc ) ) * seamGlow;
+    float spark = smoothstep( 0.18, 0.05, length( sf - so * 0.6 ) ) * step( 0.96, hash21( sc ) ) * seam_glow;
     col += vec3( 1.0, 0.8, 0.5 ) * spark * 2.0;
     // Distance: the far lake dims into smoke lit from below.
     float fog = 1.0 - exp( -vDist * 0.005 );
@@ -100,7 +100,7 @@ void main()
     col = mix( col, smoke, clamp( fog, 0.0, 0.9 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

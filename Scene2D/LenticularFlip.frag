@@ -84,13 +84,13 @@ void main()
     float cell = floor( lx );
     float within = fract( lx ) - 0.5;             // -0.5..0.5 across the rib
     float seen = 0.5 + 0.5 * view + within * 0.9; // where under the rib we look
-    float mixAB = smoothstep( 0.35, 0.65, seen );
+    float mix_ab = smoothstep( 0.35, 0.65, seen );
     // Refraction across the rib: the image under it is magnified (the
     // classic smear); sample with an offset.
     vec2 suv = uv + vec2( within * 0.012, 0.0 );
     vec3 A = texture( tex0, clamp( suv, 0.0, 1.0 ) ).rgb;
     vec3 B = texture( tex1, clamp( suv, 0.0, 1.0 ) ).rgb;
-    vec3 col = mix( A, B, mixAB );
+    vec3 col = mix( A, B, mix_ab );
     // A printed lenticular is punchy: lift contrast and saturation (the
     // catalogue's quiet photos made the sheet a grey wash).
     float lum = dot( col, vec3( 0.299, 0.587, 0.114 ) );
@@ -100,13 +100,13 @@ void main()
     // Holographic foil laminated over the print: diffraction rainbows that
     // sweep across the sheet with the viewing angle, strongest in the dark
     // parts of the picture, and glitter that winks as the angle passes.
-    float foilMask = 0.25 + 0.55 * ( 1.0 - lum );
+    float foil_mask = 0.25 + 0.55 * ( 1.0 - lum );
     float wob = 0.15 * sin( p.y * 7.0 + p.x * 3.0 );
     vec3  holo = 0.5
                  + 0.5
                        * cos( 6.2831853
                               * ( dot( p, vec2( 0.6, 0.8 ) ) * 1.6 + view * 1.3 + wob + vec3( 0.0, 0.33, 0.66 ) ) );
-    col = mix( col, col * 0.4 + holo * 0.8, foilMask * 0.55 );
+    col = mix( col, col * 0.4 + holo * 0.8, foil_mask * 0.55 );
     {
         vec2  g = gl_FragCoord.xy / resolution.y * 90.0;
         vec2  gi = floor( g ), gf = fract( g );
@@ -134,7 +134,7 @@ void main()
     col *= 0.7 + 0.3 * ( 1.0 - length( p ) * 0.6 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -52,20 +52,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -97,8 +97,8 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    uint  nNeurons = 40u + uint( clamp( neuronsP, 0.0, 1.0 ) * 40.0 );
-    uint  nBranch = 5u + uint( clamp( branchP, 0.0, 1.0 ) * 5.0 );
+    uint  n_neurons = 40u + uint( clamp( neuronsP, 0.0, 1.0 ) * 40.0 );
+    uint  n_branch = 5u + uint( clamp( branchP, 0.0, 1.0 ) * 5.0 );
     float clock = sceneAdvance * 0.06 + sceneTime * 0.012;
     mat3  R = mat3( cos( clock ), 0.0, -sin( clock ), 0.0, 1.0, 0.0, sin( clock ), 0.0, cos( clock ) );
 
@@ -109,7 +109,7 @@ void main()
         return;
     }
     uint n = id - 1u;
-    if ( n >= nNeurons )
+    if ( n >= n_neurons )
         return;
     float fn = float( n );
     vec3  soma = somaPos( fn, R );
@@ -117,14 +117,14 @@ void main()
     emitQuad( soma, vec3( 0.22, 0.0, 0.0 ), vec3( 0.0, 0.22, 0.0 ), fn, mod( fn * 3.0, 32.0 ), 0.0, vec2( 0.0 ),
               vec2( 1.0 ) );
     // Dendrites: short branches out of the soma (kind 1).
-    for ( uint b = 0u; b < nBranch; ++b )
+    for ( uint b = 0u; b < n_branch; ++b )
     {
         vec3 h = hash31( fn * 11.0 + float( b ) * 3.3 + 20.0 ) - 0.5;
         vec3 tip = soma + normalize( h ) * ( 0.6 + 0.8 * hash11( fn + float( b ) * 5.5 ) );
         emitFibre( soma, tip, 0.02, fn * 16.0 + float( b ), mod( fn * 3.0, 32.0 ), 1.0 );
     }
     // Axon: to another neuron (kind 2), long, carrying the spikes; band by neuron.
-    float target = mod( fn * 7.0 + 3.0, float( nNeurons ) );
+    float target = mod( fn * 7.0 + 3.0, float( n_neurons ) );
     vec3  tgt = somaPos( target, R );
     emitFibre( soma, tgt, 0.035, fn, mod( fn * 3.0, 32.0 ), 2.0 );
 }

@@ -105,10 +105,10 @@ void main()
     // but does not strobe.
     vec2  cell = floor( uv * vec2( grain * aspect, grain ) );
     float seed = floor( sceneAdvance * 2.0 ) * 0.37;
-    float seedF = fract( sceneAdvance * 2.0 );
+    float seed_f = fract( sceneAdvance * 2.0 );
     vec3  n0 = vec3( gauss( cell, seed ), gauss( cell + 31.0, seed ), gauss( cell + 57.0, seed ) );
     vec3  n1 = vec3( gauss( cell, seed + 0.37 ), gauss( cell + 31.0, seed + 0.37 ), gauss( cell + 57.0, seed + 0.37 ) );
-    vec3  noise = mix( n0, n1, smoothstep( 0.0, 1.0, seedF ) ) * 0.5 + 0.5;
+    vec3  noise = mix( n0, n1, smoothstep( 0.0, 1.0, seed_f ) ) * 0.5 + 0.5;
     noise = mix( vec3( dot( noise, vec3( 0.333 ) ) ), noise, 0.6 );
     // The diffusion blend: sqrt(1 - s^2) image + s noise (variance-preserving).
     float s = sigma;
@@ -119,7 +119,7 @@ void main()
     col += imgPalette( hue * 0.159 + 0.9 ) * grid * ( 0.03 + 0.4 * audioKick ) * ( 0.3 + 0.7 * sigma );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

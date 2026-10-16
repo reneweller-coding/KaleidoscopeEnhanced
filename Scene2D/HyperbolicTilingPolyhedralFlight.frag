@@ -99,11 +99,11 @@ float mapHyperbolic( vec3 p, float crv, float strutWidth, float period,
     }
 
     // Distance to polyhedral edges (struts)
-    float dStruts = length( vec2( length( q.xy ) - 1.2 * crv, q.z ) ) - strutWidth;
-    float dStruts2 = length( vec2( length( q.yz ) - 1.2 * crv, q.x ) ) - strutWidth;
-    float dStruts3 = length( vec2( length( q.zx ) - 1.2 * crv, q.y ) ) - strutWidth;
+    float d_struts = length( vec2( length( q.xy ) - 1.2 * crv, q.z ) ) - strutWidth;
+    float d_struts2 = length( vec2( length( q.yz ) - 1.2 * crv, q.x ) ) - strutWidth;
+    float d_struts3 = length( vec2( length( q.zx ) - 1.2 * crv, q.y ) ) - strutWidth;
 
-    return min( min( dStruts, dStruts2 ), dStruts3 );
+    return min( min( d_struts, d_struts2 ), d_struts3 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -125,7 +125,7 @@ void main()
     // stetig, und die Koordinate bleibt klein.  Bei y = 700 (eine Stunde
     // Laufzeit) loest float noch 6e-5 auf -- eine Strebe ist 0.04 breit, das
     // ginge gerade so; bei y = 20000 nicht mehr.
-    // Die Periode haengt an crv, NICHT an crvB: sonst verschoebe der Subbass
+    // Die Periode haengt an crv, NICHT an crv_b: sonst verschoebe der Subbass
     // den Wickelpunkt und das Bild spraenge im Takt der Musik.
     float period = 4.0 * crv;
     vec3  ro = vec3(
@@ -146,60 +146,60 @@ void main()
     // offset and the strut ring radius, so the whole H^3 cell -- the cathedral
     // vault the camera flies through -- breathes outward on drones. Strut width
     // stays fixed, so the DE keeps its conservative step size.
-    float crvB = crv * ( 1.0 + 0.3 * audioSubBass );
+    float crv_b = crv * ( 1.0 + 0.3 * audioSubBass );
 
     // Raymarching through hyperbolic space
-    float totDist = 0.0;
-    float minD = 1e4;
-    float hitCell = 0.0;
-    vec3  hitCol = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float min_d = 1e4;
+    float hit_cell = 0.0;
+    vec3  hit_col = vec3( 0.0 );
     bool  hit = false;
 
     for ( int i = 0; i < 56; i++ )
     {
-        vec3  p = ro + rd * totDist;
-        float curCell;
-        float d = mapHyperbolic( p, crvB, strutWidth, period, curCell );
-        minD = min( minD, abs( d ) );
+        vec3  p = ro + rd * tot_dist;
+        float cur_cell;
+        float d = mapHyperbolic( p, crv_b, strutWidth, period, cur_cell );
+        min_d = min( min_d, abs( d ) );
 
         // Running out of corridor is a MISS: the ray met nothing, so it must
         // fall through to the background.  Sharing this branch with the real
         // surface test shaded empty space as if it were a wall, which is what
         // painted the far distance in flat sheets.
-        if ( totDist > 10.0 )
+        if ( tot_dist > 10.0 )
             break;
 
         if ( abs( d ) < 0.003 )
         {
             hit = true;
-            hitCell = curCell;
-            vec2 sampleUV = fract( p.xz * 0.3 + 0.5 );
-            vec3 texCol = img( sampleUV );
-            vec3 pal = imgPalette( hitCell * 0.15 + t * 0.1 );
-            hitCol = mix( texCol, pal, 0.55 ) * ( 0.7 + 0.5 * ( 1.0 - d ) );
+            hit_cell = cur_cell;
+            vec2 sample_uv = fract( p.xz * 0.3 + 0.5 );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal = imgPalette( hit_cell * 0.15 + t * 0.1 );
+            hit_col = mix( tex_col, pal, 0.55 ) * ( 0.7 + 0.5 * ( 1.0 - d ) );
             break;
         }
 
-        totDist += max( 0.015, d * 0.7 );
+        tot_dist += max( 0.015, d * 0.7 );
     }
 
     // Glowing cathedral arch ribs
-    float ribGlow = exp( -minD * ( 28.0 + 14.0 * audioCentroid ) ) * glw;
-    vec3  glowTint = vec3( 1.4, 1.1, 1.7 ) * ribGlow * ( 1.0 + 2.5 * audioKick );
+    float rib_glow = exp( -min_d * ( 28.0 + 14.0 * audioCentroid ) ) * glw;
+    vec3  glow_tint = vec3( 1.4, 1.1, 1.7 ) * rib_glow * ( 1.0 + 2.5 * audioKick );
 
     // Background stained glass atmosphere
-    vec3 bgCol = imgPalette( length( uv ) * 0.3 + 0.4 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3 bg_col = imgPalette( length( uv ) * 0.3 + 0.4 ) * ( 0.2 + 0.15 * audioLevel );
 
-    vec3 finalCol = hit ? hitCol : bgCol;
-    finalCol += glowTint;
+    vec3 final_col = hit ? hit_col : bg_col;
+    final_col += glow_tint;
 
     // Hyperbolic depth fog.  Rate 0.2 is a half-distance of 3.5 against a
     // march that runs to 10, so nearly the whole corridor was mixed into the
     // constant below and the frame measured a median spatial sd of 0.004.
     // 0.08 puts the half-distance at 8.7, i.e. the depth actually marched.
-    float fog = 1.0 - exp( -totDist * 0.08 );
-    finalCol = mix( finalCol, imgPalette( 0.8 ) * 0.35, fog );
+    float fog = 1.0 - exp( -tot_dist * 0.08 );
+    final_col = mix( final_col, imgPalette( 0.8 ) * 0.35, fog );
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

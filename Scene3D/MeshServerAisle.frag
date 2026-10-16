@@ -35,7 +35,7 @@ in vec3  vLocal;  ///< Object-space position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vInst;
 
-const float kGround = -16.0;
+const float Ground = -16.0;
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -98,7 +98,7 @@ vec3 renderSky( vec3 dir )
     if ( dir.y < -0.004 )
     {
         // Raised floor tiles, a cool sheen down the aisle.
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.006 );
         float tile = smoothstep( 0.0, 0.03,
@@ -156,17 +156,17 @@ void main()
     }
     vec3 n = normalize( vNormal );
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * materialExposure( texMeshMaterial );
 
     // Strip lights from above, the aisle's cool glow on the fronts.
     vec3 col = alb * vec3( 0.85, 0.9, 1.0 ) * max( n.y, 0.0 ) * 0.9 * light;
-    vec3 aisleDir = normalize( vec3( -vPos.x, 2.0, 0.0 ) );
-    col += alb * vec3( 0.6, 0.75, 1.0 ) * max( dot( n, aisleDir ), 0.0 ) * 0.6 * light;
+    vec3 aisle_dir = normalize( vec3( -vPos.x, 2.0, 0.0 ) );
+    col += alb * vec3( 0.6, 0.75, 1.0 ) * max( dot( n, aisle_dir ), 0.0 ) * 0.6 * light;
     col += alb * vec3( 0.10, 0.11, 0.14 ) * 0.5;
 
-    vec3  halfV = normalize( vec3( 0.0, 1.0, 0.0 ) + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 70.0, 8.0, roughness ) );
+    vec3  half_v = normalize( vec3( 0.0, 1.0, 0.0 ) + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 70.0, 8.0, roughness ) );
     col += mix( vec3( 0.9, 0.95, 1.0 ), base.rgb, metallic ) * spec * 0.3 * light;
 
     // The LEDs: saturated blue, green and cyan texels, blinking in rows
@@ -181,13 +181,13 @@ void main()
                         fract( time * ( 1.5 + 2.0 * hash21( vec2( row, vInst ) ) ) + hash21( vec2( vInst, row ) ) ) );
     col += base.rgb / max( mx, 1e-3 ) * led * ( 0.8 + 2.4 * band * blink + 0.8 * kick );
 
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.6, 0.8, 1.0 ) * fres * 0.12 * light;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.08 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

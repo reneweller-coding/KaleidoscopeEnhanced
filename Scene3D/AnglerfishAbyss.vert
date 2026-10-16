@@ -27,8 +27,8 @@ out float vBg;     ///< Background flag (from the vertex stage).
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
-    if ( isBg )
+    bool is_bg = gl_VertexID >= meshVertexCount;
+    if ( is_bg )
     {
         vec3 w = attrA.xyz;
         vNormal = normalize( attrB.xyz );

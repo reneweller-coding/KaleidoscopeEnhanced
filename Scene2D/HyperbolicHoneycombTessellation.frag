@@ -82,7 +82,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nSym = ( symmetryP > 1.0 ) ? symmetryP : 7.0;
+    float n_sym = ( symmetryP > 1.0 ) ? symmetryP : 7.0;
     float sc = ( tileScaleP > 0.01 ) ? tileScaleP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -91,59 +91,59 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Scale disk. Sub-bass shrinks the coordinate multiplier, which pushes the
-    // rDisk==1 boundary (and the rim halo that rings it) further out on screen --
+    // r_disk==1 boundary (and the rim halo that rings it) further out on screen --
     // the Poincare disk itself breathes wider on drones.
     vec2  z = uv * ( 1.8 * sc ) / ( 1.0 + 0.3 * audioSubBass );
-    float rDisk = length( z );
+    float r_disk = length( z );
 
     // Hyperbolic translation offset in unit disk
-    float aTrans = t * 0.3 + audioPhase * 0.1;
-    float rTrans = 0.45 * sin( t * 0.4 + audioSwell * 2.0 );
-    vec2  aParam = vec2( cos( aTrans ), sin( aTrans ) ) * rTrans;
+    float a_trans = t * 0.3 + audioPhase * 0.1;
+    float r_trans = 0.45 * sin( t * 0.4 + audioSwell * 2.0 );
+    vec2  a_param = vec2( cos( a_trans ), sin( a_trans ) ) * r_trans;
 
     // Apply Möbius transform
-    z = mobiusTranslate( z, aParam );
+    z = mobiusTranslate( z, a_param );
 
     // Heptagonal / 7-Fold radial symmetry fold
     float a = atan( z.y, z.x );
     float r = length( z );
-    float seg = 6.2831853 / nSym;
+    float seg = 6.2831853 / n_sym;
     a = mod( a + seg * 0.5, seg ) - seg * 0.5;
     a = abs( a );
-    vec2 pFold = vec2( cos( a ), sin( a ) ) * r;
+    vec2 p_fold = vec2( cos( a ), sin( a ) ) * r;
 
     // Hyperbolic geodesic circular arc distance
     // In Poincaré disk, geodesics are circles orthogonal to the boundary
-    float rArc = 0.52;
-    vec2  cArc = vec2( 0.85, 0.0 );
-    float dArc = abs( length( pFold - cArc ) - rArc );
+    float r_arc = 0.52;
+    vec2  c_arc = vec2( 0.85, 0.0 );
+    float d_arc = abs( length( p_fold - c_arc ) - r_arc );
 
     // Glowing hyperbolic tile borders
-    float borderGlow = exp( -dArc * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
+    float border_glow = exp( -d_arc * ( 25.0 + 12.0 * audioCentroid ) ) * glw;
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( pFold * 0.5 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( p_fold * 0.5 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Non-Euclidean spectrum palette
-    vec3 palA = imgPalette( r * 0.8 + t * 0.05 );
-    vec3 palB = imgPalette( r * 0.8 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( a * nSym ) );
+    vec3 pal_a = imgPalette( r * 0.8 + t * 0.05 );
+    vec3 pal_b = imgPalette( r * 0.8 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( a * n_sym ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing hyperbolic arcs & kick flash
-    vec3 arcTint = vec3( 1.4, 1.1, 1.8 ) * borderGlow * ( 1.0 + 2.5 * audioKick );
-    col += arcTint;
+    vec3 arc_tint = vec3( 1.4, 1.1, 1.8 ) * border_glow * ( 1.0 + 2.5 * audioKick );
+    col += arc_tint;
 
     // Boundary infinity glow: a thin halo AT the unit disk's edge. The
-    // previous smoothstep(0.7,1.0,rDisk) saturates to its max for any pixel
-    // past rDisk~1.0 -- and since rDisk = length(uv*1.8*sc) exceeds 1.0
+    // previous smoothstep(0.7,1.0,r_disk) saturates to its max for any pixel
+    // past r_disk~1.0 -- and since r_disk = length(uv*1.8*sc) exceeds 1.0
     // across most of the frame (uv already reaches past +-1 along the
     // screen's longer axis), that flooded nearly the whole image with a
     // flat, overexposed tint instead of ringing just the disk's rim.
-    float rimGlow = exp( -abs( rDisk - 1.0 ) * 8.0 ) * ( 0.4 + 0.5 * audioKick );
-    col += imgPalette( 0.85 ) * rimGlow;
+    float rim_glow = exp( -abs( r_disk - 1.0 ) * 8.0 ) * ( 0.4 + 0.5 * audioKick );
+    col += imgPalette( 0.85 ) * rim_glow;
 
     col = pow( col, vec3( 0.88 ) );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );

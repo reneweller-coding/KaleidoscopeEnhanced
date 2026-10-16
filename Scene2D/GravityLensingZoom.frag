@@ -82,7 +82,7 @@ void main()
     float mass = ( 0.006 + 0.008 * clamp( massP, 0.0, 1.0 ) ) * ( 1.0 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
 
     vec2  uvq = q;
-    float ringGlow = 0.0, arcGlow = 0.0;
+    float ring_glow = 0.0, arc_glow = 0.0;
     for ( int k = -1; k <= 2; ++k )
     {
         float per = m + float( k );
@@ -91,16 +91,16 @@ void main()
         float scale = exp( -float( k ) * L );
         float ang = hash11( per * 3.7 ) * 6.2831853;
         vec2  c = vec2( cos( ang ), sin( ang ) ) * 0.25 * scale;
-        float thetaE2 = mass * scale * scale; // Einstein radius^2 at this scale
+        float theta_e2 = mass * scale * scale; // Einstein radius^2 at this scale
         vec2  d = uvq - c;
         float dd = max( dot( d, d ), 1e-6 );
         // Point-mass deflection: the source position is the image minus
-        // thetaE^2 * d / |d|^2.
-        uvq -= thetaE2 * d / dd;
-        float thetaE = sqrt( thetaE2 );
+        // theta_e^2 * d / |d|^2.
+        uvq -= theta_e2 * d / dd;
+        float theta_e = sqrt( theta_e2 );
         float rr = sqrt( dd );
-        ringGlow += exp( -abs( rr - thetaE ) / ( thetaE * 0.25 + 1e-4 ) ) * scale;
-        arcGlow += exp( -abs( rr - thetaE * 1.6 ) / ( thetaE * 0.4 + 1e-4 ) ) * scale * 0.4;
+        ring_glow += exp( -abs( rr - theta_e ) / ( theta_e * 0.25 + 1e-4 ) ) * scale;
+        arc_glow += exp( -abs( rr - theta_e * 1.6 ) / ( theta_e * 0.4 + 1e-4 ) ) * scale * 0.4;
     }
 
     // Endless zoom by layered copies of the photo: copy k has size
@@ -119,11 +119,11 @@ void main()
     // Depth: the far centre darkens (fog rises with distance, correct sign).
     col *= smoothstep( 0.0, 0.3, length( p ) ) * ( 1.0 - 0.3 * smoothstep( 0.6, 1.1, length( p ) ) );
 
-    col += imgPalette( hue * 0.159 + 0.9 ) * ringGlow * ( 1.2 + 2.0 * audioBass );
-    col += imgPalette( hue * 0.159 + 0.5 ) * arcGlow * ( 0.8 + 2.0 * audioKick );
+    col += imgPalette( hue * 0.159 + 0.9 ) * ring_glow * ( 1.2 + 2.0 * audioBass );
+    col += imgPalette( hue * 0.159 + 0.5 ) * arc_glow * ( 0.8 + 2.0 * audioKick );
     col *= 1.0 - 0.45 * smoothstep( 0.55, 1.1, length( p ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -66,7 +66,7 @@ vec3 imgPalette( float t )
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 // Messed up by Weyland
 
-const int nrBubbles = 32;
+const int NrBubbles = 32;
 
 // USER-FEEDBACK-REDESIGN: soap bubbles with a real LIFE CYCLE over the photo.
 // - how many are alive follows the music's complexity (flux/level/beat)
@@ -79,10 +79,10 @@ void main( void )
 {
     vec2 uv = -1.0 + 2.0 * gl_FragCoord.xy / resolution.xy;
     uv.x *= resolution.x / resolution.y;
-    vec2 screenUV = gl_FragCoord.xy / resolution.xy;
+    vec2 screen_uv = gl_FragCoord.xy / resolution.xy;
 
     // Dim photo backdrop - the bubbles are the bright thing.
-    vec3 color = img( screenUV ) * ( 0.42 + 0.12 * audioLevel );
+    vec3 color = img( screen_uv ) * ( 0.42 + 0.12 * audioLevel );
 
     // Musical activity level -- SLOW signals only. The old gate rode
     // audioFlux/audioBeat, which jump per frame, and clamp(nAct - i) switched
@@ -91,7 +91,7 @@ void main( void )
     // one rise, re-rolled at respawn when the bubble is invisibly small).
     float act = clamp( 0.40 + 0.45 * audioSwell + 0.25 * audioLevel, 0.0, 1.0 );
 
-    for ( int i = 0; i < nrBubbles; i++ )
+    for ( int i = 0; i < NrBubbles; i++ )
     {
         // bubble seeds
         float pha = sin( float( i ) * 546.13 + 1.0 ) * 0.5 + 0.5;
@@ -100,20 +100,20 @@ void main( void )
 
         // Life phase 0..1 = the same wrap that carries the bubble bottom->top,
         // so every wrap IS a respawn: born at 0, pops just before 1.
-        float lifeArg = pha + 0.1 * ( speed * time / 5.0 + 0.8 * audioAdvance ) * ( 0.2 + 0.8 * siz );
-        float ly = fract( lifeArg );
+        float life_arg = pha + 0.1 * ( speed * time / 5.0 + 0.8 * audioAdvance ) * ( 0.2 + 0.8 * siz );
+        float ly = fract( life_arg );
         // Per-life random vs. the slow activity level; the soft window means
         // a drifting act value fades a bubble over seconds, never pops it.
-        float h = fract( sin( float( i ) * 91.17 + floor( lifeArg ) * 57.3 ) * 43758.5453 );
+        float h = fract( sin( float( i ) * 91.17 + floor( life_arg ) * 57.3 ) * 43758.5453 );
         float gate = smoothstep( h - 0.10, h + 0.10, act );
         if ( gate <= 0.001 )
             continue;
-        float bornT = smoothstep( 0.0, 0.07, ly );  // scale-in at birth
-        float popT = smoothstep( 0.90, 0.985, ly ); // burst near the top
+        float born_t = smoothstep( 0.0, 0.07, ly );  // scale-in at birth
+        float pop_t = smoothstep( 0.90, 0.985, ly ); // burst near the top
 
         float rad = ( 0.09 + 0.45 * siz
                       + sin( speed * time / 60.0 + pha * 500.0 + siz ) / 22.0 )
-                        * bornT * ( 1.0 + 0.55 * popT )
+                        * born_t * ( 1.0 + 0.55 * pop_t )
                     + 0.025 * audioKick * ( 0.3 + 0.7 * siz );
         vec2  pos = vec2( pox + sin( speed * time / 40.0 + 0.15 * audioAdvance + pha + siz ),
                           -1.0 - rad + ( 2.0 + 2.0 * rad ) * ly );
@@ -127,16 +127,16 @@ void main( void )
         float rim = smoothstep( 0.62, 0.97, f ) * ( 1.0 - smoothstep( 0.97, 1.04, f ) );
 
         // The bubble is a lens: the photo refracts toward its centre.
-        vec3 refr = img( clamp( screenUV - ( uv - pos ) * 0.16 * inside, 0.0, 1.0 ) );
+        vec3 refr = img( clamp( screen_uv - ( uv - pos ) * 0.16 * inside, 0.0, 1.0 ) );
         vec3 tint = imgPalette( pha + f * 0.35 ); // iridescent film
 
-        float alive = inside * ( 1.0 - popT ) * gate;
+        float alive = inside * ( 1.0 - pop_t ) * gate;
         color = mix( color, refr * ( 1.05 + 0.25 * audioLevel ) + tint * 0.20, alive * 0.85 );
-        color += tint * rim * ( 0.55 + 0.45 * audioLevel ) * ( 1.0 - popT ) * gate;
+        color += tint * rim * ( 0.55 + 0.45 * audioLevel ) * ( 1.0 - pop_t ) * gate;
 
         // The POP: a bright expanding ring where the skin just was.
         float ring = exp( -abs( dis - rad * 1.12 ) * 55.0 )
-                     * popT * ( 1.1 + 1.4 * audioKick );
+                     * pop_t * ( 1.1 + 1.4 * audioKick );
         color += tint * ring * gate;
     }
 

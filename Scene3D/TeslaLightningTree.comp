@@ -119,21 +119,21 @@ vec2 strikePoint( float b )
 // the tiles carrying anything): the bolts now strike a ground DISC that
 // crosses the whole picture, surface creep runs outward from each strike, and
 // a sparse corona fills the dielectric volume around the tree.
-const uint  BOLT_COUNT = 128u;
-const uint  BOLT_STEPS = 64u;
-const uint  BOLT_SEGS = BOLT_COUNT * BOLT_STEPS; ///< 8192
-const uint  CREEP_ARMS = 192u;
-const uint  CREEP_STEPS = 24u;
-const uint  CREEP_SEGS = CREEP_ARMS * CREEP_STEPS; ///< 4608
-const uint  SPARK_SEGS = 3072u;
-const float GROUND_Y = -2.7;
+const uint  BoltCount = 128u;
+const uint  BoltSteps = 64u;
+const uint  BoltSegs = BoltCount * BoltSteps; ///< 8192
+const uint  CreepArms = 192u;
+const uint  CreepSteps = 24u;
+const uint  CreepSegs = CreepArms * CreepSteps; ///< 4608
+const uint  SparkSegs = 3072u;
+const float GroundY = -2.7;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= BOLT_SEGS + CREEP_SEGS + SPARK_SEGS )
+    if ( id >= BoltSegs + CreepSegs + SparkSegs )
         return;
 
     // Mirror of the .vert's orbit, inverted, so emitSegment() can widen every
@@ -149,92 +149,92 @@ void main()
 
     float seed = float( id );
 
-    if ( id < BOLT_SEGS )
+    if ( id < BoltSegs )
     {
         // ---- MAIN DISCHARGE TREE ---------------------------------------
-        uint boltIdx = id / BOLT_STEPS;
-        uint stepIdx = id % BOLT_STEPS;
+        uint bolt_idx = id / BoltSteps;
+        uint step_idx = id % BoltSteps;
 
-        float boltSeed = float( boltIdx );
-        vec3  boltOrigin = vec3(
-            ( hash11( boltSeed * 13.1 ) - 0.5 ) * 1.6,
+        float bolt_seed = float( bolt_idx );
+        vec3  bolt_origin = vec3(
+            ( hash11( bolt_seed * 13.1 ) - 0.5 ) * 1.6,
             3.4,
-            ( hash11( boltSeed * 27.7 ) - 0.5 ) * 1.6 );
+            ( hash11( bolt_seed * 27.7 ) - 0.5 ) * 1.6 );
 
         // Strike points are spread over a disc reaching out to ~5.8 units, so
         // the fan of bolts opens across the frame instead of hanging in a
         // narrow column down the middle.
-        vec2 sp = strikePoint( boltSeed );
-        vec3 boltTarget = vec3( sp.x, GROUND_Y, sp.y );
+        vec2 sp = strikePoint( bolt_seed );
+        vec3 bolt_target = vec3( sp.x, GroundY, sp.y );
 
-        float t0 = float( stepIdx ) / float( BOLT_STEPS );
-        float t1 = float( stepIdx + 1u ) / float( BOLT_STEPS );
+        float t0 = float( step_idx ) / float( BoltSteps );
+        float t1 = float( step_idx + 1u ) / float( BoltSteps );
 
         // Stepped leader jitter / fractal branching
-        vec3 p0 = mix( boltOrigin, boltTarget, t0 );
-        vec3 p1 = mix( boltOrigin, boltTarget, t1 );
+        vec3 p0 = mix( bolt_origin, bolt_target, t0 );
+        vec3 p1 = mix( bolt_origin, bolt_target, t1 );
 
         // Fractal lightning noise offset; a bolt reaching further out wanders
         // more on its way there.
         float wide = 0.55 + 0.13 * length( sp );
-        float jitterAmp = sin( t0 * 3.14159 ) * 0.7 * wide * ( 1.0 + 0.3 * audioHigh );
-        vec3  jitter0 = ( hash31( boltSeed * 100.0 + float( stepIdx ) ) - vec3( 0.5 ) ) * jitterAmp;
-        vec3  jitter1 = ( hash31( boltSeed * 100.0 + float( stepIdx + 1u ) ) - vec3( 0.5 ) ) * jitterAmp;
+        float jitter_amp = sin( t0 * 3.14159 ) * 0.7 * wide * ( 1.0 + 0.3 * audioHigh );
+        vec3  jitter0 = ( hash31( bolt_seed * 100.0 + float( step_idx ) ) - vec3( 0.5 ) ) * jitter_amp;
+        vec3  jitter1 = ( hash31( bolt_seed * 100.0 + float( step_idx + 1u ) ) - vec3( 0.5 ) ) * jitter_amp;
 
         p0 += jitter0;
         p1 += jitter1;
 
         // Secondary branching branch creation on higher steps
-        if ( stepIdx > 20u && hash11( seed * 7.7 ) > 0.6 )
+        if ( step_idx > 20u && hash11( seed * 7.7 ) > 0.6 )
         {
-            vec3 branchDir = normalize( p1 - p0 + ( hash31( seed * 19.3 ) - vec3( 0.5 ) ) * 1.8 );
-            p1 = p0 + branchDir * 0.25;
+            vec3 branch_dir = normalize( p1 - p0 + ( hash31( seed * 19.3 ) - vec3( 0.5 ) ) * 1.8 );
+            p1 = p0 + branch_dir * 0.25;
         }
 
         // Return stroke heat / ionization flash
-        float isMainStroke = step( 0.85, hash11( boltSeed + floor( time * 3.0 ) ) );
-        float heat = ( 1.0 - t0 ) * ( 0.6 + 2.0 * audioKick * isMainStroke );
+        float is_main_stroke = step( 0.85, hash11( bolt_seed + floor( time * 3.0 ) ) );
+        float heat = ( 1.0 - t0 ) * ( 0.6 + 2.0 * audioKick * is_main_stroke );
 
-        float thickness = ( 0.02 + 0.03 * isMainStroke + 0.015 * audioKick ) * ( 1.0 - t0 * 0.5 );
+        float thickness = ( 0.02 + 0.03 * is_main_stroke + 0.015 * audioKick ) * ( 1.0 - t0 * 0.5 );
 
-        emitSegment( p0, p1, heat, boltSeed, thickness,
-                     0.60 + 0.40 * isMainStroke );
+        emitSegment( p0, p1, heat, bolt_seed, thickness,
+                     0.60 + 0.40 * is_main_stroke );
     }
-    else if ( id < BOLT_SEGS + CREEP_SEGS )
+    else if ( id < BoltSegs + CreepSegs )
     {
         // ---- SURFACE CREEP ---------------------------------------------
         // Lichtenberg figures crawling outward from each strike point along
         // the dielectric surface: the real behaviour of a discharge that has
         // run out of gap, and what carries the bottom corners of the frame.
-        uint  c = id - BOLT_SEGS;
-        uint  arm = c / CREEP_STEPS;
-        uint  sIdx = c % CREEP_STEPS;
-        float aS = float( arm );
+        uint  c = id - BoltSegs;
+        uint  arm = c / CreepSteps;
+        uint  s_idx = c % CreepSteps;
+        float a_s = float( arm );
 
-        float bSel = floor( hash11( aS * 5.7 ) * float( BOLT_COUNT ) );
-        vec2  anchor = strikePoint( bSel );
+        float b_sel = floor( hash11( a_s * 5.7 ) * float( BoltCount ) );
+        vec2  anchor = strikePoint( b_sel );
 
-        float dir = hash11( aS * 3.3 ) * 6.2831853;
-        float curl = ( hash11( aS * 8.9 ) - 0.5 ) * 2.2;
-        float reach = 1.2 + 3.6 * hash11( aS * 11.9 );
+        float dir = hash11( a_s * 3.3 ) * 6.2831853;
+        float curl = ( hash11( a_s * 8.9 ) - 0.5 ) * 2.2;
+        float reach = 1.2 + 3.6 * hash11( a_s * 11.9 );
 
-        float u0 = float( sIdx ) / float( CREEP_STEPS );
-        float u1 = float( sIdx + 1u ) / float( CREEP_STEPS );
+        float u0 = float( s_idx ) / float( CreepSteps );
+        float u1 = float( s_idx + 1u ) / float( CreepSteps );
         float a0 = dir + curl * u0, a1 = dir + curl * u1;
         vec2  q0 = anchor + vec2( cos( a0 ), sin( a0 ) ) * reach * u0;
         vec2  q1 = anchor + vec2( cos( a1 ), sin( a1 ) ) * reach * u1;
 
         float jit = 0.11 * ( 1.0 + 0.4 * audioHigh );
-        vec3  j0 = ( hash31( aS * 61.0 + float( sIdx ) ) - vec3( 0.5 ) ) * jit;
-        vec3  j1 = ( hash31( aS * 61.0 + float( sIdx + 1u ) ) - vec3( 0.5 ) ) * jit;
+        vec3  j0 = ( hash31( a_s * 61.0 + float( s_idx ) ) - vec3( 0.5 ) ) * jit;
+        vec3  j1 = ( hash31( a_s * 61.0 + float( s_idx + 1u ) ) - vec3( 0.5 ) ) * jit;
 
-        vec3 p0 = vec3( q0.x, GROUND_Y, q0.y ) + vec3( j0.x, j0.y * 0.25, j0.z );
-        vec3 p1 = vec3( q1.x, GROUND_Y, q1.y ) + vec3( j1.x, j1.y * 0.25, j1.z );
+        vec3 p0 = vec3( q0.x, GroundY, q0.y ) + vec3( j0.x, j0.y * 0.25, j0.z );
+        vec3 p1 = vec3( q1.x, GroundY, q1.y ) + vec3( j1.x, j1.y * 0.25, j1.z );
 
         // Dies away toward the tip, and lights with the same kick as the tree.
         float fade = 1.0 - u0;
         float heat = fade * ( 0.35 + 1.1 * audioKick );
-        emitSegment( p0, p1, heat, bSel, 0.012 + 0.014 * fade,
+        emitSegment( p0, p1, heat, b_sel, 0.012 + 0.014 * fade,
                      ( 0.20 + 0.30 * fade ) * ( 0.8 + 0.5 * audioKick ) );
     }
     else
@@ -245,7 +245,7 @@ void main()
         // 6-unit ball, which is what the camera's 6.5-unit orbit distance sees
         // as a full frame; short and thin, so they fill the empty tiles
         // without covering the strokes behind them.
-        float sf = float( id - BOLT_SEGS - CREEP_SEGS );
+        float sf = float( id - BoltSegs - CreepSegs );
         vec3  h = hash31( sf * 1.7 + 3.0 );
         vec3  h2 = hash31( sf * 9.3 + 41.0 );
 

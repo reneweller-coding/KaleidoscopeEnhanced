@@ -60,38 +60,38 @@ uniform float burstP; ///< preset: burst size
 uniform float trailP; ///< preset: trail length
 uniform float rateP;  ///< preset: how often shells go up
 
-const int SHELLS = 24; ///< was 14: the sky has room for more
-const int SPARKS = 480;
-const int TRAIL = 6; ///< points per trail -> TRAIL-1 segments
+const int Shells = 24; ///< was 14: the sky has room for more
+const int Sparks = 480;
+const int Trail = 6; ///< points per trail -> TRAIL-1 segments
 // The night sky itself, as real geometry.  Everything the old scene called
 // "sky" was only ever added ON TOP of spark fragments, so the actual
 // background stayed pure black and three quarters of the frame was empty.
 // A 48 x 24 lat-long dome costs 1,152 quads and fills every one of them.
-const uint SKY_AZ = 48u;
-const uint SKY_EL = 24u;
-const uint SKY_BASE = uint( SHELLS * SPARKS );
+const uint SkyAz = 48u;
+const uint SkyEl = 24u;
+const uint SkyBase = uint( Shells * Sparks );
 // THE DOME HAS TO FIT INSIDE THE FAR PLANE.  Scene3DShader::draw builds the
 // projection with far = 220 (EffectShader::kSceneFar), and the dome is centred
-// on the camera, so every one of its vertices sits at exactly SKY_R units of
+// on the camera, so every one of its vertices sits at exactly SkyR units of
 // forward distance times cos(angle-off-axis).  At the 300 it was written with,
 // 94.6 % of the frame's directions came out past 220 and the far clip threw the
 // whole sky away again -- the scene measured luma 0.023 with a pure black
 // background even after this dome was added.  190 leaves ~30 units of margin
 // and still sits behind every spark (the furthest a shell's sparks reach from
 // the camera is about 170).
-const float SKY_R = 190.0;
+const float SkyR = 190.0;
 // How far below the horizon the dome reaches.  The view is pitched up by
 // 0.13 rad and the frustum's half-height is 0.52 rad, so the bottom edge of
 // the frame looks 0.39 rad BELOW horizontal; the dome has to reach past that
 // (sin 0.39 = 0.38) or a black band opens along the bottom of the picture.
-const float SKY_LOW = -0.55;
+const float SkyLow = -0.55;
 // Deliberately far below 9.81.  A firework is watched over a couple of
 // seconds, and at real gravity the fall (0.5*g*t^2) swamps the burst's own
 // spread (v/k, about 8 units) — the sphere never opens, the sparks just rain
 // downward.  Slowing gravity is what buys the bloom its moment.
-const float GRAV = 3.4;
-const float BURST_AT = 0.30; ///< fraction of the shell's life
-const float DRAG = 1.15;
+const float Grav = 3.4;
+const float BurstAt = 0.30; ///< fraction of the shell's life
+const float Drag = 1.15;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( float n )
@@ -109,9 +109,9 @@ vec2 hash2( float n )
 /// slow drift.
 vec3 sparkAt( vec3 burstPos, vec3 v, float t )
 {
-    float k = DRAG;
+    float k = Drag;
     float f = ( 1.0 - exp( -k * t ) ) / k;
-    return burstPos + v * f - vec3( 0.0, 0.5 * GRAV * t * t, 0.0 );
+    return burstPos + v * f - vec3( 0.0, 0.5 * Grav * t * t, 0.0 );
 }
 
 /// kind: 0 = spark trail, 1 = sky dome.  It rides in the slot that used to be
@@ -140,7 +140,7 @@ void writeVertex( uint slot, vec3 p, float age, float shellHue, float bright )
 vec3 domeAt( float a, float h )
 {
     float rr = sqrt( max( 1.0 - h * h, 0.0 ) );
-    return vec3( SKY_R * rr * cos( a ), SKY_R * h, SKY_R * rr * sin( a ) );
+    return vec3( SkyR * rr * cos( a ), SkyR * h, SkyR * rr * sin( a ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -148,22 +148,22 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= SKY_BASE + SKY_AZ * SKY_EL )
+    if ( id >= SkyBase + SkyAz * SkyEl )
         return;
 
     // ---- the night sky ------------------------------------------------
-    if ( id >= SKY_BASE )
+    if ( id >= SkyBase )
     {
-        uint  q = id - SKY_BASE;
-        float ia = float( q % SKY_AZ );
-        float ie = float( q / SKY_AZ );
+        uint  q = id - SkyBase;
+        float ia = float( q % SkyAz );
+        float ie = float( q / SkyAz );
 
-        float a0 = 6.2831853 * ia / float( SKY_AZ );
-        float a1 = 6.2831853 * ( ia + 1.0 ) / float( SKY_AZ );
-        float f0 = ie / float( SKY_EL );
-        float f1 = ( ie + 1.0 ) / float( SKY_EL );
-        float h0 = mix( SKY_LOW, 1.0, f0 );
-        float h1 = mix( SKY_LOW, 1.0, f1 );
+        float a0 = 6.2831853 * ia / float( SkyAz );
+        float a1 = 6.2831853 * ( ia + 1.0 ) / float( SkyAz );
+        float f0 = ie / float( SkyEl );
+        float f1 = ( ie + 1.0 ) / float( SkyEl );
+        float h0 = mix( SkyLow, 1.0, f0 );
+        float h1 = mix( SkyLow, 1.0, f1 );
 
         uint base = atomicAdd( cmd[4], 6u );
         if ( base + 6u > maxVertices )
@@ -174,7 +174,7 @@ void main()
         // coordinates of its star field.
         vec3  p00 = domeAt( a0, h0 ), p10 = domeAt( a1, h0 );
         vec3  p01 = domeAt( a0, h1 ), p11 = domeAt( a1, h1 );
-        float u0 = ia / float( SKY_AZ ), u1 = ( ia + 1.0 ) / float( SKY_AZ );
+        float u0 = ia / float( SkyAz ), u1 = ( ia + 1.0 ) / float( SkyAz );
 
         writeVertexK( base + 0u, p00, f0, u0, 1.0, 1.0 );
         writeVertexK( base + 1u, p10, f0, u1, 1.0, 1.0 );
@@ -185,8 +185,8 @@ void main()
         return;
     }
 
-    int shell = int( id ) / SPARKS;
-    int spark = int( id ) % SPARKS;
+    int shell = int( id ) / Sparks;
+    int spark = int( id ) % Sparks;
 
     float sf = float( shell ) + sceneSeed * 53.0;
     vec2  sh = hash2( sf );
@@ -206,35 +206,35 @@ void main()
     // in the middle of the picture.
     vec3  pad = vec3( ( sh.x - 0.5 ) * 130.0, 0.0, 18.0 + sh.y * 90.0 );
     float apex = 8.0 + 26.0 * sh2 * ( 1.0 + 0.4 * audioSubBass );
-    // Rise time is BURST_AT of the life; pick the launch speed that reaches the
+    // Rise time is BurstAt of the life; pick the launch speed that reaches the
     // apex exactly then, so the shell always bursts at the top of its arc.
-    float riseT = BURST_AT;
-    float v0 = apex / riseT + 0.5 * GRAV * riseT;
+    float rise_t = BurstAt;
+    float v0 = apex / rise_t + 0.5 * Grav * rise_t;
 
-    if ( life < BURST_AT )
+    if ( life < BurstAt )
     {
         // Still climbing: draw the mortar's own trail, a short bright streak.
         if ( spark >= 12 )
             return; // one thin trail, not 620 of them
         float t = life;
-        uint  need = uint( TRAIL - 1 ) * 6u;
+        uint  need = uint( Trail - 1 ) * 6u;
         uint  base = atomicAdd( cmd[4], need );
         if ( base + need > maxVertices )
             return;
 
         float hue = fract( 0.08 + 0.05 * sh2 );
         float dt = 0.012;
-        for ( int s = 0; s < TRAIL - 1; ++s )
+        for ( int s = 0; s < Trail - 1; ++s )
         {
             float t0 = max( t - float( s ) * dt, 0.0 );
             float t1 = max( t - float( s + 1 ) * dt, 0.0 );
-            vec3  a = pad + vec3( 0.0, v0 * t0 - 0.5 * GRAV * t0 * t0, 0.0 );
-            vec3  b = pad + vec3( 0.0, v0 * t1 - 0.5 * GRAV * t1 * t1, 0.0 );
+            vec3  a = pad + vec3( 0.0, v0 * t0 - 0.5 * Grav * t0 * t0, 0.0 );
+            vec3  b = pad + vec3( 0.0, v0 * t1 - 0.5 * Grav * t1 * t1, 0.0 );
             // Screen-constant, like the burst trails below (see there).
             float dm = max( length( a ), 4.0 );
             float w0 = 0.0030 * dm, w1 = 0.0022 * dm;
             uint  o = base + uint( s ) * 6u;
-            float br = 1.0 - float( s ) / float( TRAIL );
+            float br = 1.0 - float( s ) / float( Trail );
             writeVertex( o + 0u, a - vec3( w0, 0, 0 ), 0.0, hue, br );
             writeVertex( o + 1u, a + vec3( w0, 0, 0 ), 0.0, hue, br );
             writeVertex( o + 2u, b + vec3( w1, 0, 0 ), 0.0, hue, br * 0.6 );
@@ -247,12 +247,12 @@ void main()
 
     // ---- after the burst ----
     vec3  burstPos = pad + vec3( 0.0, apex, 0.0 );
-    float t = ( life - BURST_AT ) / ( 1.0 - BURST_AT ) * 1.8; // seconds since burst
+    float t = ( life - BurstAt ) / ( 1.0 - BurstAt ) * 1.8; // seconds since burst
 
     // Spark direction: a Fibonacci sphere, which spreads points far more evenly
     // than random directions do — random ones clump and the shell looks moth
     // eaten.
-    float fi = ( float( spark ) + 0.5 ) / float( SPARKS );
+    float fi = ( float( spark ) + 0.5 ) / float( Sparks );
     float phi = acos( 1.0 - 2.0 * fi );
     float theta = 2.39996323 * float( spark );
     vec3  dir = vec3( sin( phi ) * cos( theta ), cos( phi ), sin( phi ) * sin( theta ) );
@@ -271,13 +271,13 @@ void main()
     if ( fade <= 0.002 )
         return;
 
-    uint need = uint( TRAIL - 1 ) * 6u;
+    uint need = uint( Trail - 1 ) * 6u;
     uint base = atomicAdd( cmd[4], need );
     if ( base + need > maxVertices )
         return;
 
     float dt = trailP * 0.055;
-    for ( int s = 0; s < TRAIL - 1; ++s )
+    for ( int s = 0; s < Trail - 1; ++s )
     {
         float t0 = max( t - float( s ) * dt, 0.0 );
         float t1 = max( t - float( s + 1 ) * dt, 0.0 );
@@ -293,8 +293,8 @@ void main()
         // at this scale nothing more careful is visible.
         vec3 side = normalize( cross( seg / L, vec3( 0.0, 0.0, 1.0 ) ) + 1e-4 );
 
-        float f0 = float( s ) / float( TRAIL - 1 );
-        float f1 = float( s + 1 ) / float( TRAIL - 1 );
+        float f0 = float( s ) / float( Trail - 1 );
+        float f1 = float( s + 1 ) / float( Trail - 1 );
         // SCREEN-CONSTANT STREAK WIDTH.  The half-width used to be a fixed
         // 0.035..0.085 WORLD units, which at the depths these shells burst at
         // (40..130) put the median trail at 0.6 px wide at 1080p.  The frame is

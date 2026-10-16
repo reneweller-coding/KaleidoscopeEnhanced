@@ -60,22 +60,22 @@ void main()
 
     // Triply Periodic Minimal Surface (TPMS) Gyroid nodal approximation:
     // f(x,y,z) = sin(x)*cos(y) + sin(y)*cos(z) + sin(z)*cos(x) = 0
-    float kPitch = ( gyroidPitchP > 0.01 ? gyroidPitchP : 3.5 );
-    vec2  p = uv * 3.14159265 * kPitch;
+    float k_pitch = ( gyroidPitchP > 0.01 ? gyroidPitchP : 3.5 );
+    vec2  p = uv * 3.14159265 * k_pitch;
 
-    float zG = sin( p.x ) * cos( p.y + t ) + cos( p.x - t ) * sin( p.y );
-    float gAmp = ( gyroidAmpP > 0.01 ? gyroidAmpP : 0.6 ) * ( 0.85 + 0.35 * audioSwell );
+    float z_g = sin( p.x ) * cos( p.y + t ) + cos( p.x - t ) * sin( p.y );
+    float g_amp = ( gyroidAmpP > 0.01 ? gyroidAmpP : 0.6 ) * ( 0.85 + 0.35 * audioSwell );
 
-    vGyroidAngle = zG;
+    vGyroidAngle = z_g;
 
-    vec3 worldPos = vec3( uv.x * 2.5, uv.y * 2.5, zG * gAmp );
+    vec3 world_pos = vec3( uv.x * 2.5, uv.y * 2.5, z_g * g_amp );
 
     // Gradient normal of gyroid
-    float dZdx = cos( p.x ) * cos( p.y + t ) - sin( p.x - t ) * sin( p.y );
-    float dZdy = -sin( p.x ) * sin( p.y + t ) + cos( p.x - t ) * cos( p.y );
-    vNormal = normalize( vec3( -dZdx * gAmp, -dZdy * gAmp, 1.0 ) );
+    float d_zdx = cos( p.x ) * cos( p.y + t ) - sin( p.x - t ) * sin( p.y );
+    float d_zdy = -sin( p.x ) * sin( p.y + t ) + cos( p.x - t ) * cos( p.y );
+    vNormal = normalize( vec3( -d_zdx * g_amp, -d_zdy * g_amp, 1.0 ) );
 
-    vCol = imgPalette( fract( zG * 0.3 + length( uv ) * 0.2 + audioCentroid ) );
+    vCol = imgPalette( fract( z_g * 0.3 + length( uv ) * 0.2 + audioCentroid ) );
 
     // Camera Transform (V3)
     // Tilt FIRST, then push away.  The old order rotated the already-pushed
@@ -83,7 +83,7 @@ void main()
     // and left it sitting in the lower half of the frame with black above.
     // Tilting about the plate's own centre keeps it on the view axis, and at
     // this distance it then fills the frame (reported: "bildschirmfuellender").
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float tilt = 0.55;
     float c = cos( tilt ), s = sin( tilt );
     vp = vec3( vp.x, vp.y * c - vp.z * s, vp.y * s + vp.z * c );

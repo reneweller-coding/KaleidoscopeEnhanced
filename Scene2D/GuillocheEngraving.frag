@@ -78,7 +78,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float layers = floor( 3.0 + 4.0 * clamp( layersP, 0.0, 1.0 ) ); // once per activation
-    float inkW = 0.0035 + 0.003 * clamp( inkP, 0.0, 1.0 );
+    float ink_w = 0.0035 + 0.003 * clamp( inkP, 0.0, 1.0 );
     float rot = sceneAdvance * 0.08 + sceneTime * 0.015;
 
     float r = length( p );
@@ -103,7 +103,7 @@ void main()
         {
             float ri = base + float( i ) * 0.014 + ro;
             float d = abs( r - ri );
-            ink += smoothstep( inkW, inkW * 0.3, d ) * ( 1.0 - fl / layers * 0.4 );
+            ink += smoothstep( ink_w, ink_w * 0.3, d ) * ( 1.0 - fl / layers * 0.4 );
         }
     }
     ink = clamp( ink, 0.0, 1.0 );
@@ -111,11 +111,11 @@ void main()
     float hatch = pow( 0.5 + 0.5 * sin( th * 240.0 ), 12.0 ) * smoothstep( 0.1, 0.4, r )
                   * ( 1.0 - smoothstep( 0.55, 0.9, r ) );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
-    vec3  inkCol = imgPalette( hue * 0.159 + 0.0 ) * 0.5;
-    inkCol = mix( inkCol, vec3( 0.05, 0.08, 0.2 ), 0.5 );
+    vec3  ink_col = imgPalette( hue * 0.159 + 0.0 ) * 0.5;
+    ink_col = mix( ink_col, vec3( 0.05, 0.08, 0.2 ), 0.5 );
     vec3 col = paper;
-    col = mix( col, inkCol, ink * 0.85 );
-    col = mix( col, inkCol, hatch * ( 0.1 + 0.4 * hi ) );
+    col = mix( col, ink_col, ink * 0.85 );
+    col = mix( col, ink_col, hatch * ( 0.1 + 0.4 * hi ) );
     // The ink catches the light on the kick (the intaglio relief).
     col += imgPalette( hue * 0.159 + 0.9 ) * ink * ( 0.1 + 0.6 * audioKick );
     // Corner ornaments: the rosette echoed small in the corners.
@@ -124,11 +124,12 @@ void main()
     float cth = atan( cp.y, cp.x ) - rot * 2.0;
     float cink = 0.0;
     for ( int i = 0; i < 4; ++i )
-        cink += smoothstep( inkW, inkW * 0.3, abs( cr - ( 0.05 + float( i ) * 0.02 + rose( cth * 2.0, 1.0 ) * 0.4 ) ) );
-    col = mix( col, inkCol, clamp( cink, 0.0, 1.0 ) * 0.8 * step( cr, 0.16 ) );
+        cink += smoothstep( ink_w, ink_w * 0.3,
+                            abs( cr - ( 0.05 + float( i ) * 0.02 + rose( cth * 2.0, 1.0 ) * 0.4 ) ) );
+    col = mix( col, ink_col, clamp( cink, 0.0, 1.0 ) * 0.8 * step( cr, 0.16 ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

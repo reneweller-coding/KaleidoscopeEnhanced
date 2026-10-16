@@ -76,53 +76,53 @@ void main()
 
     // Convective ash column expanding upward from bottom crater
     float h = uv.y + 0.6;
-    float colWidth = 0.18 + h * 0.45 * ( 0.85 + 0.3 * audioSwell );
+    float col_width = 0.18 + h * 0.45 * ( 0.85 + 0.3 * audioSwell );
 
     // Turbulent billowing vortices
-    float turbFreq = ( ashTurbP > 0.01 ? ashTurbP : 5.0 );
-    vec2  turbP = vec2( uv.x * turbFreq, uv.y * turbFreq - t * 2.0 );
-    float ashBillow = sin( turbP.x * 2.0 + sin( turbP.y * 1.5 ) ) * cos( turbP.y * 2.0 - turbP.x );
-    ashBillow += sin( turbP.x * 4.0 - turbP.y * 3.0 ) * 0.35;
+    float turb_freq = ( ashTurbP > 0.01 ? ashTurbP : 5.0 );
+    vec2  turb_p = vec2( uv.x * turb_freq, uv.y * turb_freq - t * 2.0 );
+    float ash_billow = sin( turb_p.x * 2.0 + sin( turb_p.y * 1.5 ) ) * cos( turb_p.y * 2.0 - turb_p.x );
+    ash_billow += sin( turb_p.x * 4.0 - turb_p.y * 3.0 ) * 0.35;
 
-    float dx = abs( uv.x + ashBillow * 0.08 );
-    float inPlume = smoothstep( colWidth + 0.1, colWidth - 0.05, dx ) * smoothstep( -0.6, -0.4, uv.y );
+    float dx = abs( uv.x + ash_billow * 0.08 );
+    float in_plume = smoothstep( col_width + 0.1, col_width - 0.05, dx ) * smoothstep( -0.6, -0.4, uv.y );
 
     // Volcanic lightning fractal branching discharge
-    float bDensity = ( boltBranchP > 0.01 ? boltBranchP : 2.0 );
-    float boltPath1 = sin( uv.y * 14.0 * bDensity + t * 5.0 ) * 0.12 + sin( uv.y * 28.0 ) * 0.04;
-    float boltPath2 = cos( uv.y * 18.0 * bDensity - t * 4.0 ) * 0.14 + sin( uv.y * 35.0 ) * 0.03;
+    float b_density = ( boltBranchP > 0.01 ? boltBranchP : 2.0 );
+    float bolt_path1 = sin( uv.y * 14.0 * b_density + t * 5.0 ) * 0.12 + sin( uv.y * 28.0 ) * 0.04;
+    float bolt_path2 = cos( uv.y * 18.0 * b_density - t * 4.0 ) * 0.14 + sin( uv.y * 35.0 ) * 0.03;
 
-    float bolt1 = exp( -abs( uv.x - boltPath1 ) * 60.0 );
-    float bolt2 = exp( -abs( uv.x - boltPath2 ) * 55.0 );
+    float bolt1 = exp( -abs( uv.x - bolt_path1 ) * 60.0 );
+    float bolt2 = exp( -abs( uv.x - bolt_path2 ) * 55.0 );
 
     // Lightning stroke flash on kick
-    float lightningFlash = ( bolt1 + bolt2 ) * ( 1.0 + 4.5 * audioKick );
+    float lightning_flash = ( bolt1 + bolt2 ) * ( 1.0 + 4.5 * audioKick );
 
     // Incandescent crater magma glow at bottom
-    float craterDist = length( vec2( uv.x, uv.y + 0.55 ) );
-    float magmaCore = exp( -craterDist * 6.0 ) * ( 1.0 + 0.6 * audioBass ) * ( magmaGlowP > 0.01 ? magmaGlowP : 1.5 );
+    float crater_dist = length( vec2( uv.x, uv.y + 0.55 ) );
+    float magma_core = exp( -crater_dist * 6.0 ) * ( 1.0 + 0.6 * audioBass ) * ( magmaGlowP > 0.01 ? magmaGlowP : 1.5 );
 
     // Flying incandescent tephra sparks & lava bombs
     float spark = pow( max( 0.0, sin( uv.x * 35.0 - uv.y * 25.0 + t * 6.0 + audioFlux * 3.0 ) ), 16.0 );
 
     // Color palettes: Dark basalt ash tinted by photo, incandescent orange magma, electric cyan lightning
-    vec3 ashDark = vec3( 0.12, 0.11, 0.14 );
-    vec3 magmaColor = vec3( 1.0, 0.35, 0.05 );
-    vec3 boltColor = vec3( 0.75, 0.9, 1.0 );
+    vec3 ash_dark = vec3( 0.12, 0.11, 0.14 );
+    vec3 magma_color = vec3( 1.0, 0.35, 0.05 );
+    vec3 bolt_color = vec3( 0.75, 0.9, 1.0 );
 
-    vec3 ashCol = palTint( ashDark, uv.y * 0.2 + audioCentroid, 0.2 );
-    vec3 magCol = palTint( magmaColor, uv.x * 0.3 + audioCentroid, 0.25 );
+    vec3 ash_col = palTint( ash_dark, uv.y * 0.2 + audioCentroid, 0.2 );
+    vec3 mag_col = palTint( magma_color, uv.x * 0.3 + audioCentroid, 0.25 );
 
     // Background photo sampling
-    vec2 bgUv = gl_FragCoord.xy / resolution;
-    vec3 bg = img( bgUv ) * 0.2;
+    vec2 bg_uv = gl_FragCoord.xy / resolution;
+    vec3 bg = img( bg_uv ) * 0.2;
 
     vec3 col = bg;
-    col += ashCol * inPlume * ( 0.6 + 0.4 * ashBillow ) * ( smokeDensP > 0.01 ? smokeDensP : 1.2 );
-    col += magCol * magmaCore * 2.2;
-    col += boltColor * lightningFlash * 2.5;
-    col += magCol * spark * 2.0;
-    col += magCol * ( audioKick * 0.35 );
+    col += ash_col * in_plume * ( 0.6 + 0.4 * ash_billow ) * ( smokeDensP > 0.01 ? smokeDensP : 1.2 );
+    col += mag_col * magma_core * 2.2;
+    col += bolt_color * lightning_flash * 2.5;
+    col += mag_col * spark * 2.0;
+    col += mag_col * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

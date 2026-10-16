@@ -47,35 +47,35 @@ void main()
     // GEOM_RIBBON packs the ribbon index into attrA.w; attrB.x is a random
     // hash01 in [0,1), so int(attrB.x) was always 0 and all 20 ribbons
     // collapsed onto ribbon 0 (see Scene3DShader::buildGeometry).
-    int   ribbonIdx = int( attrA.w );
+    int   ribbon_idx = int( attrA.w );
     float s = attrA.x;    // [0, 1] along resonator
     float side = attrA.y; // -1 or +1
-    vQubitIndex = float( ribbonIdx ) / 20.0;
+    vQubitIndex = float( ribbon_idx ) / 20.0;
     vTexCoord = vec2( s * 8.0, side * 0.5 + 0.5 );
 
     float t = time * 0.4 + audioAdvance * 0.2;
 
     // Resonator array layout: 20 parallel coplanar waveguides with meander turns
-    float xBase = ( float( ribbonIdx ) - 10.0 ) * 0.35 * qbt;
-    float yMeander = sin( s * 25.0 * mnd ) * 0.25;
+    float x_base = ( float( ribbon_idx ) - 10.0 ) * 0.35 * qbt;
+    float y_meander = sin( s * 25.0 * mnd ) * 0.25;
     float z = ( s - 0.5 ) * 5.0;
 
     // Microwave standing wave voltage: V(s) = V_0 * cos(n * pi * s)
-    float standingVoltage = cos( s * 12.566 - t * 4.0 ) * ( 0.08 + 0.04 * audioBass );
+    float standing_voltage = cos( s * 12.566 - t * 4.0 ) * ( 0.08 + 0.04 * audioBass );
 
-    vec3 p0 = vec3( xBase + yMeander, standingVoltage, z );
+    vec3 p0 = vec3( x_base + y_meander, standing_voltage, z );
 
     // Tangent & Binormal
     vec3 tangent = normalize( vec3( cos( s * 25.0 * mnd ) * 6.25, 0.0, 5.0 ) );
     vec3 binormal = normalize( cross( tangent, vec3( 0.0, 1.0, 0.0 ) ) );
 
-    float ribbonWidth = ( 0.035 + 0.015 * sin( s * 30.0 + t * 4.0 ) ) * wdp * ( 1.0 + audioKick * 0.6 );
-    vec3  worldPos = p0 + binormal * ( side * ribbonWidth );
-    vWorldPos = worldPos;
+    float ribbon_width = ( 0.035 + 0.015 * sin( s * 30.0 + t * 4.0 ) ) * wdp * ( 1.0 + audioKick * 0.6 );
+    vec3  world_pos = p0 + binormal * ( side * ribbon_width );
+    vWorldPos = world_pos;
 
     // Camera transform: projM expects NEGATIVE view-space z (clip-w = -z_view),
     // so push the scene away along +z and negate.  eyeOff is the stereo shift.
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     // Orbit + pitch: the resonator strip was seen edge-on as a thin band
     float yaw = 0.9 + time * 0.13 + audioAdvance * 0.06;
     float cy = cos( yaw ), sy = sin( yaw );

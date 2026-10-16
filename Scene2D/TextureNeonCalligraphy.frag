@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -236,13 +236,13 @@ void main()
     vec2  uv = p * 0.5 + 0.5;
     vec3  col = imgLod( uv, 4.0 ) * 0.03;
     float T = 0.1 * sceneTime + 0.6 * audioAdvance;
-    float nS = 3.0 + 4.0 * clamp( strokeP, 0.0, 1.0 );
+    float n_s = 3.0 + 4.0 * clamp( strokeP, 0.0, 1.0 );
     float loop = 1.0 + 3.0 * clamp( loopP, 0.0, 1.0 );
-    float wBase = 0.006 + 0.012 * clamp( audioSpread, 0.0, 1.0 );
+    float w_base = 0.006 + 0.012 * clamp( audioSpread, 0.0, 1.0 );
     for ( int k = 0; k < 7; ++k )
     {
         float fk = float( k );
-        float on = smoothstep( fk - 0.5, fk + 0.5, nS - 0.5 );
+        float on = smoothstep( fk - 0.5, fk + 0.5, n_s - 0.5 );
         if ( on <= 0.0 )
             break;
         // Each stroke lives a cycle: written (0..0.4), shown, faded (0.8..1).
@@ -255,7 +255,7 @@ void main()
         float alpha = smoothstep( 1.0, 0.8, life ) * on;
         // Stroke path: a parametric curve sampled in segments; distance to it,
         // with the exact curve parameter at the closest point (smooth width).
-        float best = 1e3, bestT = 0.0;
+        float best = 1e3, best_t = 0.0;
         vec2  prev = vec2( 0.0 );
         for ( int i = 0; i <= 40; ++i )
         {
@@ -275,14 +275,14 @@ void main()
                 if ( dd < best )
                 {
                     best = dd;
-                    bestT = t - ( 1.0 - hh ) / 40.0;
+                    best_t = t - ( 1.0 - hh ) / 40.0;
                 }
             }
             prev = pt;
         }
         // Brush profile: swell in the middle of the stroke, taper at the ends.
-        float w = wBase * ( 0.3 + 1.4 * sin( 3.14159 * clamp( bestT / max( drawn, 0.05 ), 0.0, 1.0 ) ) )
-                  * ( 0.75 + 0.5 * ( 0.5 + 0.5 * sin( bestT * 9.0 + h * 5.0 ) ) );
+        float w = w_base * ( 0.3 + 1.4 * sin( 3.14159 * clamp( best_t / max( drawn, 0.05 ), 0.0, 1.0 ) ) )
+                  * ( 0.75 + 0.5 * ( 0.5 + 0.5 * sin( best_t * 9.0 + h * 5.0 ) ) );
         vec3  nc = hsv2rgb( vec3( fract( h + hueP * 0.159 + mix( 0.55, 0.0, mode ) * 0.5 ), 0.85, 1.0 ) );
         nc = mix( nc, glowColour( imgLod( vec2( h, fract( h * 7.0 ) ), 4.0 ), vec2( h, 0.0 ), hueP * 0.159 ),
                   clamp( photoP, 0.0, 1.0 ) * 0.6 );

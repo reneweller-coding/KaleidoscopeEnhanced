@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -247,15 +247,15 @@ void main()
     // Palette: the photo's colours folded into a storm scheme.
     float mode = clamp( audioMode, 0.0, 1.0 );
     vec3  dark = mix( vec3( 0.01, 0.03, 0.09 ), vec3( 0.03, 0.03, 0.07 ), mode );
-    vec3  midC = mix( vec3( 0.08, 0.22, 0.5 ), vec3( 0.15, 0.3, 0.45 ), mode );
-    vec3  lightC = mix( vec3( 0.8, 0.9, 1.0 ), vec3( 1.0, 0.85, 0.55 ), mode );
+    vec3  mid_c = mix( vec3( 0.08, 0.22, 0.5 ), vec3( 0.15, 0.3, 0.45 ), mode );
+    vec3  light_c = mix( vec3( 0.8, 0.9, 1.0 ), vec3( 1.0, 0.85, 0.55 ), mode );
     vec2  uv = p * 0.5 + 0.5 + 0.2 * ( w2 - 0.5 );
     vec3  ph = imgLod( uv, 4.0 );
     vec3  pcol = glowColour( ph, w1 * 2.0, hueP * 0.159 );
-    midC = mix( midC, pcol * 0.5, 0.3 * clamp( photoP, 0.0, 1.0 ) );
-    vec3 col = mix( dark, midC, smoothstep( 0.4, 0.75, mass ) * ( 0.6 + 0.4 * swell ) );
-    col = mix( col, mix( midC * 1.6, lightC, smoothstep( 0.3, 0.9, light ) ), smoothstep( 0.0, 0.8, light ) );
-    col += lightC * pow( light, 4.0 ) * ( 0.2 + 0.6 * kick );
+    mid_c = mix( mid_c, pcol * 0.5, 0.3 * clamp( photoP, 0.0, 1.0 ) );
+    vec3 col = mix( dark, mid_c, smoothstep( 0.4, 0.75, mass ) * ( 0.6 + 0.4 * swell ) );
+    col = mix( col, mix( mid_c * 1.6, light_c, smoothstep( 0.3, 0.9, light ) ), smoothstep( 0.0, 0.8, light ) );
+    col += light_c * pow( light, 4.0 ) * ( 0.2 + 0.6 * kick );
     // Wash edges: a slightly darker rim where one wash meets the next.
     float wash = abs( fract( mass * 4.0 + 0.2 * w1.x ) - 0.5 );
     col *= 0.88 + 0.12 * smoothstep( 0.0, 0.08, wash );
@@ -278,7 +278,7 @@ void main()
                    * ( 0.4 + 0.6 * clamp( strokeP, 0.0, 1.0 ) );
         lines = max( lines, smoothstep( wdt + 1.0, wdt - 0.5, dpx ) * on );
     }
-    vec3 ink = mix( dark * 0.5, lightC, light );
+    vec3 ink = mix( dark * 0.5, light_c, light );
     col = mix( col, ink, lines * 0.85 );
     // Spatters: round drops of thinned paint.
     vec2  sg = p * 18.0 + 3.0;

@@ -153,19 +153,19 @@ void main()
     {
         // The main cable: a thick rope with a specular line along it.
         float across = abs( uv.x - 0.5 ) * 2.0;
-        vec3  cableCol = mix( vec3( 0.62, 0.6, 0.58 ), imgPalette( hue * 0.159 + 0.1 ), 0.3 );
-        col = cableCol * dusk * ( 0.35 + 0.9 * sqrt( max( 1.0 - across * across, 0.0 ) ) );
+        vec3  cable_col = mix( vec3( 0.62, 0.6, 0.58 ), imgPalette( hue * 0.159 + 0.1 ), 0.3 );
+        col = cable_col * dusk * ( 0.35 + 0.9 * sqrt( max( 1.0 - across * across, 0.0 ) ) );
         col += vec3( 1.0, 0.95, 0.85 ) * smoothstep( 0.35, 0.0, abs( uv.x - 0.38 ) ) * 0.35 * dusk;
         // Strand winding.
         col *= 0.88 + 0.2 * sin( uv.y * 90.0 + uv.x * 6.0 );
     }
     // Distance fog: the far end of the bridge goes into the dusk.
     float fog = 1.0 - exp( -max( vWorld.z - 8.0, 0.0 ) * ( 0.02 + 0.02 * ( 1.0 - clamp( audioSwell, 0.0, 1.0 ) ) ) );
-    vec3  fogCol = mix( vec3( 0.3, 0.33, 0.42 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, 0.4 ) * dusk;
-    col = mix( col, fogCol, clamp( fog, 0.0, 0.85 ) * step( -1.5, vKind ) );
+    vec3  fog_col = mix( vec3( 0.3, 0.33, 0.42 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, 0.4 ) * dusk;
+    col = mix( col, fog_col, clamp( fog, 0.0, 0.85 ) * step( -1.5, vKind ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

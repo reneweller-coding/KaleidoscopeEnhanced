@@ -90,7 +90,7 @@ void main()
 
     // A wedge of the dye field: radius runs with v, angle with the mirror;
     // the stereo balance slides the wedge's origin across the field.
-    float eL = clamp( audioStereoL, 0.0, 1.5 ), eR = clamp( audioStereoR, 0.0, 1.5 );
+    float e_l = clamp( audioStereoL, 0.0, 1.5 ), e_r = clamp( audioStereoR, 0.0, 1.5 );
     vec2  src = vec2( 0.5, 0.5 ); // fixed source (a per-frame shift is a shake, V7d)
     vec2  q = ( 0.12 + 0.36 * v ) * vec2( cos( mir * 2.0 ), sin( mir * 2.0 ) );
     vec2  suv = src + q;
@@ -107,7 +107,7 @@ void main()
     // Fallback when the sim is dark: the photo through the same mandala.
     vec3 base = img( fract( suv ) ) * 0.3;
     vec3 col = max( dye * 2.2, base );
-    col *= mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.1 * i + 0.05 * ( eR - eL ) ), 0.5 );
+    col *= mix( vec3( 1.0 ), imgPalette( hue * 0.159 + 0.1 * i + 0.05 * ( e_r - e_l ) ), 0.5 );
 
     // Ripples from the centre on the onset: a travelling phase, its
     // amplitude the envelope.
@@ -115,15 +115,15 @@ void main()
     col *= 1.0 + 0.6 * clamp( audioOnset, 0.0, 1.0 ) * pow( ripple, 3.0 );
 
     // Ring seams glow on the beat; the mirror seams faintly always.
-    float seamR = exp( -min( v, 1.0 - v ) * 40.0 );
-    float seamA = exp( -min( loc, sector - loc ) * 60.0 ) * r;
-    col += imgPalette( hue * 0.159 + 0.8 ) * ( seamR * ( 0.15 + 0.5 * audioBeat ) + seamA * 0.2 );
+    float seam_r = exp( -min( v, 1.0 - v ) * 40.0 );
+    float seam_a = exp( -min( loc, sector - loc ) * 60.0 ) * r;
+    col += imgPalette( hue * 0.159 + 0.8 ) * ( seam_r * ( 0.15 + 0.5 * audioBeat ) + seam_a * 0.2 );
 
     col *= 1.0 + 0.4 * audioKick * exp( -r * 4.0 );
     col *= ( 0.7 + 0.5 * audioLevel ) * ( 0.85 + 0.35 * audioSwell );
     col *= 1.0 - 0.4 * smoothstep( 0.6, 1.1, r );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

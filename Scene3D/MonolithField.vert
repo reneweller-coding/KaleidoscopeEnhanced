@@ -71,11 +71,11 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     const float L = 260.0;
-    float       camZ = time * 3.2 + audioAdvance * 8.0;
+    float       cam_z = time * 3.2 + audioAdvance * 8.0;
 
     // Day/night ambient angle: a warm grazing light by day keeps the
     // glyph edges dimly visible even without band energy; night is starker.
@@ -83,7 +83,7 @@ void main()
 
     vec3  world;
     vec3  col;
-    float glowB = 1.0;
+    float glow_b = 1.0;
     vec3  scale;
     float fade = 1.0;
     vFlat = 0.0;
@@ -91,7 +91,7 @@ void main()
     if ( idx < 200.0 )
     {
         // ---- The monoliths: looping rows flanking a broad avenue. ----
-        float z = mod( r1 * L - camZ, L );
+        float z = mod( r1 * L - cam_z, L );
         float side = ( r2 < 0.5 ) ? -1.0 : 1.0;
         float lane = 7.0 + r3 * 40.0;
         float H = 9.0 + r4 * 15.0;
@@ -108,9 +108,9 @@ void main()
         float choir = audioDownbeat * exp( -abs( z - 26.0 ) * 0.05 );
         col = hueRot( vec3( 0.30, 0.55, 0.85 ),
                       audioChromaHue + r4 * 1.3 + 0.12 * ( 1.0 - daylight ) );
-        glowB = min( 0.30 + 0.20 * daylight + 1.7 * hum + 1.2 * choir
-                         + 2.2 * audioDrop,
-                     4.0 );
+        glow_b = min( 0.30 + 0.20 * daylight + 1.7 * hum + 1.2 * choir
+                          + 2.2 * audioDrop,
+                      4.0 );
 
         if ( z < 1.5 || z > 175.0 )
         {
@@ -125,13 +125,13 @@ void main()
     else if ( idx < 1300.0 )
     {
         // ---- Drifting shards high above the plain. ----
-        float z = mod( r1 * L - camZ * 0.8, L );
+        float z = mod( r1 * L - cam_z * 0.8, L );
         world = vec3( ( r2 - 0.5 ) * 130.0,
                       7.0 + r3 * 34.0 + sin( time * 0.2 + r4 * 40.0 ) * 1.5,
                       z );
         scale = vec3( 0.5 + 0.9 * r4 );
         col = hueRot( vec3( 0.35, 0.45, 0.70 ), audioChromaHue );
-        glowB = min( 0.25 + 0.35 * audioSwell + 1.2 * audioDrop, 2.0 );
+        glow_b = min( 0.25 + 0.35 * audioSwell + 1.2 * audioDrop, 2.0 );
         if ( z < 1.5 || z > 145.0 )
         {
             gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
@@ -154,8 +154,8 @@ void main()
         // The scene's far plane is 220 (Scene3DShader::draw); a mote past it is
         // clipped away entirely, so the band stops well short of it.
         float dz = 52.0 + hz * 138.0;
-        float halfH = dz * kTanY;
-        float halfW = halfH * aspect;
+        float half_h = dz * TanY;
+        float half_w = half_h * aspect;
 
         // 2.0 would span the frustum exactly; 2.3 so the field still reaches
         // past the side edges when the preset camera rig rolls and yaws.  The
@@ -164,8 +164,8 @@ void main()
         float ny = -0.04 + hy * 1.22;
         float ph = hx * 6.2831853 + time * 0.05 + audioAdvance * 0.04;
 
-        world = vec3( ( hx - 0.5 ) * 2.3 * halfW + 0.02 * halfW * cos( ph ),
-                      ny * halfH - 4.0 + 0.015 * halfH * sin( ph * 0.83 ),
+        world = vec3( ( hx - 0.5 ) * 2.3 * half_w + 0.02 * half_w * cos( ph ),
+                      ny * half_h - 4.0 + 0.015 * half_h * sin( ph * 0.83 ),
                       dz );
         // A mote sized as a fraction of its own depth stays a legible ~10 px
         // speck at any distance; below a few pixels it averages away and the
@@ -173,19 +173,19 @@ void main()
         scale = vec3( dz * 0.0105 * ( 0.6 + 1.0 * hw ) );
 
         col = hueRot( vec3( 0.26, 0.38, 0.62 ), audioChromaHue + hz * 0.9 );
-        glowB = ( 0.44 + 0.44 * hw ) * ( 0.85 + 0.35 * audioSwell )
-                + 0.45 * audioDrop;
+        glow_b = ( 0.44 + 0.44 * hw ) * ( 0.85 + 0.35 * audioSwell )
+                 + 0.45 * audioDrop;
         fade = clamp( 1.0 - dz / 260.0, 0.20, 1.0 );
         vFlat = 1.0;
     }
     else
     {
         // ---- The plain itself: overlapping slabs laid out to the horizon. ----
-        float z = mod( r1 * L - camZ, L );
+        float z = mod( r1 * L - cam_z, L );
         world = vec3( ( r2 - 0.5 ) * 250.0, -8.35 + ( r3 - 0.5 ) * 0.22, z );
         scale = vec3( 7.0 + 5.0 * r3, 0.30, 7.0 + 5.0 * r4 );
         col = vec3( 0.105, 0.115, 0.155 ) * ( 0.65 + 0.7 * r4 );
-        glowB = min( 0.9 + 0.25 * audioSwell + 0.6 * audioDrop, 2.0 );
+        glow_b = min( 0.9 + 0.25 * audioSwell + 0.6 * audioDrop, 2.0 );
         if ( z < 0.8 || z > 205.0 )
         {
             gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
@@ -207,7 +207,7 @@ void main()
     if ( vp.z < 0.4 )
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
 
-    col *= glowB * fade;
+    col *= glow_b * fade;
     vCol = vec4( col * 1.5, 1.0 );
     vCorner = attrA.xyz;
 }

@@ -84,11 +84,11 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Bioluminescent alien rainforest palette (emerald, cyan, magenta, amber)
-    vec3 floraColor = palTint( mix( vec3( 0.1, 0.9, 0.4 ), vec3( 0.9, 0.1, 0.7 ), vFloraType ), 0.30 * vFloraType,
-                               0.25 );
-    floraColor = mix( floraColor, vec3( 0.2, 0.8, 1.0 ), sin( vFloraType * 6.28 + time ) * 0.5 + 0.5 );
+    vec3 flora_color = palTint( mix( vec3( 0.1, 0.9, 0.4 ), vec3( 0.9, 0.1, 0.7 ), vFloraType ), 0.30 * vFloraType,
+                                0.25 );
+    flora_color = mix( flora_color, vec3( 0.2, 0.8, 1.0 ), sin( vFloraType * 6.28 + time ) * 0.5 + 0.5 );
 
-    vec3 col = floraColor * ( 0.8 + 1.2 * vBioGlow ) * glw;
+    vec3 col = flora_color * ( 0.8 + 1.2 * vBioGlow ) * glw;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

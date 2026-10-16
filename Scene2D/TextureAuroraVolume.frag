@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -245,7 +245,7 @@ void main()
     col += vec3( 0.8, 0.85, 1.0 ) * smoothstep( 0.2, 0.02, length( fract( sg ) - 0.25 - 0.5 * hash22( si ) ) )
            * step( 0.93, hash21( si ) ) * 0.4;
     // Curtains: bands in the sky plane (projected), folds rolling along them.
-    float nC = 2.0 + 3.0 * clamp( curtainP, 0.0, 1.0 );
+    float n_c = 2.0 + 3.0 * clamp( curtainP, 0.0, 1.0 );
     vec3  green = mix( vec3( 0.2, 1.0, 0.45 ), vec3( 1.0, 0.35, 0.2 ), mode );
     vec3  violet = mix( vec3( 0.55, 0.3, 1.0 ), vec3( 1.0, 0.8, 0.3 ), mode );
     vec3  tint = glowColour( imgLod( p * 0.3 + 0.5, 5.0 ), p, hueP * 0.159 );
@@ -254,11 +254,11 @@ void main()
     for ( int k = 0; k < 5; ++k )
     {
         float fk = float( k );
-        float on = smoothstep( fk - 0.5, fk + 0.5, nC - 0.5 );
+        float on = smoothstep( fk - 0.5, fk + 0.5, n_c - 0.5 );
         if ( on <= 0.0 )
             break;
         // A curtain: a wavy line across the sky, seen in perspective (the plane sits above us).
-        float off = ( fk - ( nC - 1.0 ) * 0.5 ) * 0.35 * spread;
+        float off = ( fk - ( n_c - 1.0 ) * 0.5 ) * 0.35 * spread;
         float fold = 0.12 * sin( p.x * 3.0 + T * ( 1.0 + 0.3 * fk ) + fk * 2.0 )
                      + 0.06 * sin( p.x * 7.0 - T * 1.7 + fk );
         float d = p.y - off - fold;

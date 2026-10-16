@@ -200,9 +200,9 @@ void main()
     vec2  gm = abs( mod( vWorld.xz, 1.7 ) - 0.85 );
     float joint = clamp( 1.0 - min( gm.x, gm.y ) / 0.16, 0.0, 1.0 );
     float slab = 0.5 + 0.5 * sign( sin( vWorld.x * 1.8480 ) * sin( vWorld.z * 1.8480 ) );
-    float floorRelief = 1.0 - 0.6 * ( 0.55 * joint + 0.30 * ( 1.0 - slab ) );
+    float floor_relief = 1.0 - 0.6 * ( 0.55 * joint + 0.30 * ( 1.0 - slab ) );
 
-    float rel = ( vKind < 0.5 ) ? floorRelief : relief;
+    float rel = ( vKind < 0.5 ) ? floor_relief : relief;
 
     // THE SUN NO LONGER DEPENDS ON THE SHADOW LOOKUP SURVIVING.
     // Measured: this scene renders at luma 0.024 / contrast 0.031, and a
@@ -214,17 +214,17 @@ void main()
     // the hall lit and readable whatever the map returns, and still lets a
     // working map draw its shadows -- they just fall to 60% rather than to
     // nothing, which is what a shadow under a real sky does anyway.
-    float sunVis = 0.60 + 0.40 * shadow;
-    float rimVis = 0.60 + 0.40 * shadow2;
+    float sun_vis = 0.60 + 0.40 * shadow;
+    float rim_vis = 0.60 + 0.40 * shadow2;
 
     // Wrapped diffuse on top: with a sun this high, a vertical pillar face at
     // 90 degrees to it gets ndl = 0 and no amount of relief can show on a
     // surface multiplied by zero.
-    float ndlLit = mix( ndl, pow( clamp( dot( n, L ) * 0.5 + 0.5, 0.0, 1.0 ), 1.6 ), 0.45 );
+    float ndl_lit = mix( ndl, pow( clamp( dot( n, L ) * 0.5 + 0.5, 0.0, 1.0 ), 1.6 ), 0.45 );
 
     // Sun: warm, and the thing the shadow term modulates.
     vec3 sun = vec3( 1.0, 0.90, 0.72 ) * ( 1.5 + 1.4 * audioLevel );
-    vec3 col = base * sun * ( ndlLit * sunVis * rel );
+    vec3 col = base * sun * ( ndl_lit * sun_vis * rel );
 
     // Studio second light: a cool moonlit rim/fill, lower and from roughly the
     // opposite side (see updateLightMatrix2's angleOffset/tiltY) -- picks out
@@ -232,7 +232,7 @@ void main()
     // reading as a flat rim-light hack. Weaker than the sun so it reads as
     // fill, not a second competing key.
     vec3 rim = vec3( 0.45, 0.60, 0.85 ) * ( 0.55 + 0.55 * audioAmbient ) * 1.6;
-    col += base * rim * ( ndl2 * rimVis * rel );
+    col += base * rim * ( ndl2 * rim_vis * rel );
 
     // Sky ambient from above, unshadowed — an occlusion term is what darkens
     // the shadowed areas, not the absence of any light at all.  Killing the
@@ -254,7 +254,7 @@ void main()
 
     vec3 H = normalize( L + V );
     col += vec3( 1.0, 0.95, 0.85 ) * pow( max( dot( n, H ), 0.0 ), 60.0 )
-           * sunVis * rel * ( 0.3 + 1.6 * audioHigh ) * 1.4;
+           * sun_vis * rel * ( 0.3 + 1.6 * audioHigh ) * 1.4;
 
     // Distance haze so the hall recedes. Pushed out from 190 to 300 units and
     // darkened: at 190 the fog card owned the far half of the frame, became the

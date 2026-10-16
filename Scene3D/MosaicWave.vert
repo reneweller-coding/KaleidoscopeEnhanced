@@ -39,8 +39,8 @@ void main()
 
     // Flip wave: travels across the columns once per bar (+ a slow drift so
     // quiet passages still shimmer).
-    float wavePos = fract( audioBarPhase + time * 0.02 );
-    float dist = abs( cx / 100.0 - wavePos );
+    float wave_pos = fract( audioBarPhase + time * 0.02 );
+    float dist = abs( cx / 100.0 - wave_pos );
     dist = min( dist, 1.0 - dist );
     float flip = 3.14159265 * exp( -dist * 9.0 )
                  * ( 0.55 + 0.45 * audioSwell + 0.6 * audioKick );

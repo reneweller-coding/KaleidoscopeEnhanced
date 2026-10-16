@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -242,11 +242,11 @@ void main()
     {
         float fl = float( L ); // 0 near .. 2 far
         float depth = 1.0 + fl * 0.8;
-        float nL = 3.0 + 3.0 * clamp( laneP, 0.0, 1.0 );
+        float n_l = 3.0 + 3.0 * clamp( laneP, 0.0, 1.0 );
         // Lane coordinate: y bent by a slow curve.
         float y = p.y * depth + curv * sin( p.x * 1.2 * depth + fl * 2.0 + 0.05 * sceneTime );
-        float lane = floor( y * nL / 2.0 + 0.5 );
-        float ly = y - lane * 2.0 / nL;
+        float lane = floor( y * n_l / 2.0 + 0.5 );
+        float ly = y - lane * 2.0 / n_l;
         float dir = mod( lane, 2.0 ) < 0.5 ? 1.0 : -1.0;
         float speed = ( 0.6 + 0.4 * hash11( lane + fl * 7.0 ) ) * dir;
         float x = p.x * depth + T * speed * ( 1.2 - 0.3 * fl );
@@ -260,7 +260,7 @@ void main()
             if ( h > 0.7 )
                 continue;
             vec2 ctr = vec2( ( c + 0.5 + 0.3 * ( hash21( vec2( lane, c ) + 2.0 ) - 0.5 ) ) * cell, 0.0 );
-            vec2 d = vec2( x, ly * 1.0 ) - ctr - vec2( 0.0, ( hash21( vec2( c, lane ) + 5.0 ) - 0.5 ) * 0.3 / nL );
+            vec2 d = vec2( x, ly * 1.0 ) - ctr - vec2( 0.0, ( hash21( vec2( c, lane ) + 5.0 ) - 0.5 ) * 0.3 / n_l );
             // Cat's-eye: discs toward the edge of the frame are clipped by a second circle.
             vec2  cat = p * 0.25;
             float dd = max( length( d ), length( d + cat * R * 4.0 ) * 0.95 );

@@ -51,12 +51,12 @@ uniform float densityP; ///< preset: how thick the stand is
 uniform float heightP;  ///< preset: trunk height
 uniform float swayP;    ///< preset: how much the trunks lean with the music
 
-const int   TREES = 64;
-const int   SIDES = 4;
-const float SPANX = 15.0;
-const float SPANZ = 26.0;
+const int   Trees = 64;
+const int   Sides = 4;
+const float Spanx = 15.0;
+const float Spanz = 26.0;
 
-const int NQUADS = 1 + TREES * SIDES;
+const int Nquads = 1 + Trees * Sides;
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash1( float n )
@@ -103,20 +103,20 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= uint( NQUADS ) )
+    if ( id >= uint( Nquads ) )
         return;
 
     if ( id == 0u )
     {
-        emitQuad( vec3( -SPANX - 6.0, 0.0, -10.0 ), vec3( SPANX + 6.0, 0.0, -10.0 ),
-                  vec3( SPANX + 6.0, 0.0, SPANZ ), vec3( -SPANX - 6.0, 0.0, SPANZ ),
+        emitQuad( vec3( -Spanx - 6.0, 0.0, -10.0 ), vec3( Spanx + 6.0, 0.0, -10.0 ),
+                  vec3( Spanx + 6.0, 0.0, Spanz ), vec3( -Spanx - 6.0, 0.0, Spanz ),
                   vec3( 0.0, 1.0, 0.0 ), 0.0, 0.0 );
         return;
     }
 
     int k = int( id ) - 1;
-    int side = k % SIDES;
-    int t = k / SIDES;
+    int side = k % Sides;
+    int t = k / Sides;
 
     float h0 = hash1( float( t ) * 3.17 + sceneSeed * 41.0 );
     float h1 = hash1( float( t ) * 7.91 + 2.3 + sceneSeed * 17.0 );
@@ -124,8 +124,8 @@ void main()
 
     // Scattered, not gridded: a grid reads as a plantation and the shadows fall
     // into rows the eye locks onto instead of a thicket.
-    float cx = ( h0 * 2.0 - 1.0 ) * SPANX * clamp( densityP, 0.5, 1.6 );
-    float depth = mod( h1 * SPANZ + audioAdvance * 1.15, SPANZ + 8.0 ) - 6.0;
+    float cx = ( h0 * 2.0 - 1.0 ) * Spanx * clamp( densityP, 0.5, 1.6 );
+    float depth = mod( h1 * Spanz + audioAdvance * 1.15, Spanz + 8.0 ) - 6.0;
 
     // Tall on purpose.  The host keeps the sun high — deliberately, because a low
     // sun makes shadows longer than the objects and any repeated geometry turns
@@ -143,8 +143,8 @@ void main()
                        cos( audioAdvance * 0.23 + h1 * 6.28 ) )
                  * sw * H;
 
-    float a0 = 6.2831853 * float( side ) / float( SIDES );
-    float a1 = 6.2831853 * float( side + 1 ) / float( SIDES );
+    float a0 = 6.2831853 * float( side ) / float( Sides );
+    float a1 = 6.2831853 * float( side + 1 ) / float( Sides );
     vec2  d0 = vec2( cos( a0 ), sin( a0 ) );
     vec2  d1 = vec2( cos( a1 ), sin( a1 ) );
 

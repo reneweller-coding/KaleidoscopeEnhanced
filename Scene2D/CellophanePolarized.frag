@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -236,17 +236,17 @@ void main()
     float rough = clamp( audioRoughness, 0.0, 1.0 );
     vec2  uv = p * 0.5 + 0.5;
     float T = 0.05 * sceneTime + 0.35 * audioAdvance;
-    float nL = 2.0 + 3.0 * clamp( layerP, 0.0, 1.0 ) + 2.0 * clamp( audioSpread, 0.0, 1.0 );
+    float n_l = 2.0 + 3.0 * clamp( layerP, 0.0, 1.0 ) + 2.0 * clamp( audioSpread, 0.0, 1.0 );
     float S = 2.0 + 3.0 * ( 1.0 - clamp( shardP, 0.0, 1.0 ) );
     // Retardation: sum over layers; each layer a Voronoi of flat shards with
     // its own thickness and fast axis.
     float ret = 0.0;
-    float axisC = 0.0, axisS = 0.0;
+    float axis_c = 0.0, axis_s = 0.0;
     float creases = 0.0;
     for ( int k = 0; k < 7; ++k )
     {
         float fk = float( k );
-        float on = smoothstep( fk - 0.5, fk + 0.5, nL - 0.5 );
+        float on = smoothstep( fk - 0.5, fk + 0.5, n_l - 0.5 );
         if ( on <= 0.0 )
             break;
         vec2 q = rot2( fk * 1.3 ) * p * S + fk * 5.1 + 0.3 * rough * vec2( fbm3( p * 4.0 + fk ), fbm3( p * 4.0 - fk ) );
@@ -275,12 +275,12 @@ void main()
         float th = ( 0.4 + 0.6 * hash21( id + fk ) ) * ( 0.8 + 0.5 * swell ) * cover * on;
         float ax = hash21( id + fk * 11.0 ) * 3.14159;
         ret += th;
-        axisC += cos( 2.0 * ax ) * th;
-        axisS += sin( 2.0 * ax ) * th;
+        axis_c += cos( 2.0 * ax ) * th;
+        axis_s += sin( 2.0 * ax ) * th;
         creases = max( creases, exp( -( f2 - f1 ) / 0.01 ) * cover * on );
     }
     // Interference colour for crossed polars: I = sin^2(2 theta) * sin^2(pi * ret / lambda).
-    float theta = atan( axisS, axisC ) * 0.5 - T;
+    float theta = atan( axis_s, axis_c ) * 0.5 - T;
     float s2 = pow( sin( 2.0 * theta ), 2.0 );
     vec3  lam = vec3( 0.65, 0.53, 0.45 );
     vec3  crossed = s2 * pow( sin( 3.14159 * ret * 1.2 / lam + hueP * 0.159 * 3.0 ), vec3( 2.0 ) );

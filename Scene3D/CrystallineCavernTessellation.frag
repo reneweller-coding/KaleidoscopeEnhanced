@@ -79,7 +79,7 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     vec3 n = normalize( teNormal );
-    vec3 lightPos = vec3( 0.0, 0.0, 0.0 ); // Lantern in cavern center
+    vec3 light_pos = vec3( 0.0, 0.0, 0.0 ); // Lantern in cavern center
 
     // WHERE THE EYE ACTUALLY IS.  The .tese projects with vp = pos + (0,0,6.5),
     // so the camera sits at object-space z = -6.5, not +6.5. Both the view
@@ -88,14 +88,14 @@ void main()
     // every facet and, worse, INVERTED the fog: the nearest, most detailed
     // stretch of cavern was the most heavily washed out while the far end came
     // through clear. That is what flattened the picture (contrast 0.053).
-    const vec3 kEye = vec3( 0.0, 0.0, -6.5 );
+    const vec3 Eye = vec3( 0.0, 0.0, -6.5 );
 
-    vec3 l = normalize( lightPos - tePos );
-    vec3 viewDir = normalize( kEye - tePos );
+    vec3 l = normalize( light_pos - tePos );
+    vec3 view_dir = normalize( Eye - tePos );
 
     float diff = max( dot( n, l ), 0.0 );
     vec3  ref = reflect( -l, n );
-    float spec = pow( max( dot( ref, viewDir ), 0.0 ), 32.0 );
+    float spec = pow( max( dot( ref, view_dir ), 0.0 ), 32.0 );
 
     // Amethyst / quartz crystal colouring, pulled onto the house model.  The
     // two gems were vec3(0.6,0.2,0.9) and vec3(0.1,0.8,0.95) -- 0.78 and 0.89
@@ -104,29 +104,29 @@ void main()
     // (measured satHi 0.188). The two gems now sit a single step apart around
     // the cavern's own amethyst, and the hue itself is carried by the photo
     // with the musical key rotating the arc: the same stone, catalogue palette.
-    vec3  gemA = vec3( 0.46, 0.28, 0.62 ); // amethyst
-    vec3  gemB = vec3( 0.30, 0.46, 0.62 ); // pale quartz, one neighbour away
+    vec3  gem_a = vec3( 0.46, 0.28, 0.62 ); // amethyst
+    vec3  gem_b = vec3( 0.30, 0.46, 0.62 ); // pale quartz, one neighbour away
     float band = sin( tePos.z * 0.5 + time * 0.6 ) * 0.5 + 0.5;
-    vec3  crystalBase = mix( mix( gemA, gemB, band ),
-                             imgPalette( band * 0.4 + 0.1 ) * 1.15, 0.45 );
+    vec3  crystal_base = mix( mix( gem_a, gem_b, band ),
+                              imgPalette( band * 0.4 + 0.1 ) * 1.15, 0.45 );
 
     // Rock substrate photo texturing
-    vec3 rockPhoto = img( fract( teUV * 3.0 ) );
+    vec3 rock_photo = img( fract( teUV * 3.0 ) );
     // The substrate was 0.08 x photo, i.e. essentially black, so everything that
     // was not a crystal facet contributed nothing at all to the picture.
-    vec3 rockBase = vec3( 0.20, 0.16, 0.24 ) * ( 0.35 + 0.95 * rockPhoto );
+    vec3 rock_base = vec3( 0.20, 0.16, 0.24 ) * ( 0.35 + 0.95 * rock_photo );
 
     // Faceted crystal emission & subsurface scattering
-    float crystalMask = smoothstep( 0.2, 0.8, teCrystal );
-    vec3  emission = crystalBase * crystalMask * ( 1.2 + 2.0 * audioKick ) * cry * glw;
+    float crystal_mask = smoothstep( 0.2, 0.8, teCrystal );
+    vec3  emission = crystal_base * crystal_mask * ( 1.2 + 2.0 * audioKick ) * cry * glw;
 
     // Specular reflections on crystalline facets
-    vec3 col = mix( rockBase, crystalBase * 0.5, crystalMask ) * ( diff * 0.9 + 0.16 );
-    col += vec3( 1.0 ) * min( spec * ( 0.5 + crystalMask * 1.5 ), 1.2 );
+    vec3 col = mix( rock_base, crystal_base * 0.5, crystal_mask ) * ( diff * 0.9 + 0.16 );
+    col += vec3( 1.0 ) * min( spec * ( 0.5 + crystal_mask * 1.5 ), 1.2 );
     col += emission;
 
-    // Distance depth fog, measured from the eye (see kEye above).
-    float dist = length( tePos - kEye );
+    // Distance depth fog, measured from the eye (see Eye above).
+    float dist = length( tePos - Eye );
     col = mix( col, vec3( 0.03, 0.02, 0.06 ), min( 1.0 - exp( -dist * 0.075 ), 0.72 ) );
 
     col = hueRot( col, audioChromaHue + hue );

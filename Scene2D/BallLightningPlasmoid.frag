@@ -94,40 +94,40 @@ void main()
     float angle = atan( uv.y, uv.x );
 
     // Toroidal plasma core radius
-    float plasmoidRadius = ( 0.32 + 0.08 * sin( t * 1.5 ) + 0.12 * audioBass ) * pls;
-    float coreDist = abs( r - plasmoidRadius );
+    float plasmoid_radius = ( 0.32 + 0.08 * sin( t * 1.5 ) + 0.12 * audioBass ) * pls;
+    float core_dist = abs( r - plasmoid_radius );
 
     // Helical internal magnetic vortex filaments
     float helix = sin( angle * 8.0 + r * 15.0 - t * 6.0 );
-    float corePlasma = exp( -coreDist * 18.0 ) * ( 1.0 + helix * 0.5 );
+    float core_plasma = exp( -core_dist * 18.0 ) * ( 1.0 + helix * 0.5 );
 
     // Dielectric air breakdown discharge arcs branching outward
-    vec2  arcCoord = uv * 14.0 * arc + vec2( t * 3.0, -t * 2.0 );
-    float arcNoise = noise2D( arcCoord ) + 0.5 * noise2D( arcCoord * 2.0 );
-    float dischargeArc = exp( -abs( sin( angle * 12.0 + arcNoise * 4.0 - t * 4.0 ) ) * 25.0 )
-                         * smoothstep( plasmoidRadius, 0.8, r );
-    float arcFlash = dischargeArc * ( audioKick * 4.0 + audioHigh * 2.0 );
+    vec2  arc_coord = uv * 14.0 * arc + vec2( t * 3.0, -t * 2.0 );
+    float arc_noise = noise2D( arc_coord ) + 0.5 * noise2D( arc_coord * 2.0 );
+    float discharge_arc = exp( -abs( sin( angle * 12.0 + arc_noise * 4.0 - t * 4.0 ) ) * 25.0 )
+                          * smoothstep( plasmoid_radius, 0.8, r );
+    float arc_flash = discharge_arc * ( audioKick * 4.0 + audioHigh * 2.0 );
 
     // Atmospheric ionization halo glow
     float halo = exp( -r * 3.5 ) * ( 0.8 + 0.4 * audioSwell );
 
     // Photo texture mapping onto turbulent plasma envelope
-    vec2 photoUV = st + vec2( sin( angle * 4.0 + t ), cos( angle * 4.0 - t ) ) * 0.04 * ( 1.0 + audioKick * 0.8 );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( sin( angle * 4.0 + t ), cos( angle * 4.0 - t ) ) * 0.04 * ( 1.0 + audioKick * 0.8 );
+    vec3 photo = img( fract( photo_uv ) );
 
     // Ball lightning electric palette (electric cyan, neon violet-blue, blinding white-yellow)
-    vec3 plasmaCyan = vec3( 0.1, 0.9, 1.0 );
-    vec3 plasmaViolet = vec3( 0.6, 0.2, 1.0 );
-    vec3 coreWhite = vec3( 1.0, 0.98, 0.9 );
+    vec3 plasma_cyan = vec3( 0.1, 0.9, 1.0 );
+    vec3 plasma_violet = vec3( 0.6, 0.2, 1.0 );
+    vec3 core_white = vec3( 1.0, 0.98, 0.9 );
 
-    vec3 plasmoidColor = mix( plasmaCyan, plasmaViolet, helix * 0.5 + 0.5 );
+    vec3 plasmoid_color = mix( plasma_cyan, plasma_violet, helix * 0.5 + 0.5 );
 
     // Combine visualizer
     vec3 col = photo * ( 0.75 + 0.25 * audioLevel );
-    col += halo * plasmaViolet * 0.6;
-    col += corePlasma * plasmoidColor * 1.5;
-    col += arcFlash * coreWhite * 2.5;
-    col += exp( -r * 20.0 ) * coreWhite * ( 1.0 + audioKick * 3.0 );
+    col += halo * plasma_violet * 0.6;
+    col += core_plasma * plasmoid_color * 1.5;
+    col += arc_flash * core_white * 2.5;
+    col += exp( -r * 20.0 ) * core_white * ( 1.0 + audioKick * 3.0 );
 
     if ( audioChromaHue != 0.0 )
         col = hueRot( col, audioChromaHue );

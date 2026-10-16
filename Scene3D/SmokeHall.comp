@@ -92,8 +92,8 @@ uniform float spacingP; ///< preset: pillar spacing
 uniform float heightP;  ///< preset: hall height
 uniform float camHP;    ///< preset: eye height
 
-const int COLS = 4; ///< pillar columns (two per side)
-const int ROWS = 6; ///< pillar rows along the hall
+const int Cols = 4; ///< pillar columns (two per side)
+const int Rows = 6; ///< pillar rows along the hall
 // The roof is mostly SOLID, with narrow slots between the beams.  Both earlier
 // attempts went the other way, on the reasoning that the beams' black undersides
 // were filling the frame — but that was a framing problem, not a roof one.  What
@@ -101,21 +101,21 @@ const int ROWS = 6; ///< pillar rows along the hall
 // fifths of the volume lit, and a volume that is mostly lit is a pale wash with
 // no beams in it.  Mostly dark with a few bright slots is the cathedral, and it
 // is also what makes the dark ceiling correct rather than a fault.
-const int   BEAMS = 10;
-const float BEAM_PITCH = 3.40;
-const float SLOT_W = 0.70;
-const int   SLABS = 56; ///< smoke slices
+const int   Beams = 10;
+const float BeamPitch = 3.40;
+const float SlotW = 0.70;
+const int   Slabs = 56; ///< smoke slices
 // The hall is deliberately SHORT.  The shadow box is centred on the origin and
 // sized once, so anything past its edge gets "lit" for free — and a stretch of
 // unshadowed smoke at the far end is a grey wash with no beams in it, sitting
 // right in the middle of the frame where the corridor recedes.  Better a short
 // hall entirely inside the box than a long one half outside it.
-const float SPAN = 26.0;
-const float NEARZ = -4.8; ///< first smoke slab (object z; eye is at -6)
-const float FARZ = 21.0;  ///< last smoke slab
+const float Span = 26.0;
+const float Nearz = -4.8; ///< first smoke slab (object z; eye is at -6)
+const float Farz = 21.0;  ///< last smoke slab
 
-const int NPILLQ = COLS * ROWS * 4; ///< 160 pillar sides
-const int NQUADS = 1 + NPILLQ + BEAMS + SLABS;
+const int Npillq = Cols * Rows * 4; ///< 160 pillar sides
+const int Nquads = 1 + Npillq + Beams + Slabs;
 
 /// @brief Writes one vertex into the output buffer (compute stage).
 void writeVertex( uint slot, vec3 p, vec3 n, float kind, float extra )
@@ -157,7 +157,7 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
-    if ( id >= uint( NQUADS ) )
+    if ( id >= uint( Nquads ) )
         return;
 
     // A taller hall as well as a sparser roof: the beams have to be far enough
@@ -174,18 +174,18 @@ void main()
     {
         // Floor.
         emitQuad( vec3( -16.0, 0.0, -8.0 ), vec3( 16.0, 0.0, -8.0 ),
-                  vec3( 16.0, 0.0, SPAN ), vec3( -16.0, 0.0, SPAN ),
+                  vec3( 16.0, 0.0, Span ), vec3( -16.0, 0.0, Span ),
                   vec3( 0.0, 1.0, 0.0 ), 0.0, 0.0 );
         return;
     }
 
-    if ( id < uint( 1 + NPILLQ ) )
+    if ( id < uint( 1 + Npillq ) )
     {
         int k = int( id ) - 1;
         int side = k % 4;
         k /= 4;
-        int col = k % COLS;
-        k /= COLS;
+        int col = k % Cols;
+        k /= Cols;
         int row = k;
 
         float xs = ( col < 2 ) ? -1.0 : 1.0;
@@ -209,7 +209,7 @@ void main()
         return;
     }
 
-    if ( id < uint( 1 + NPILLQ + BEAMS ) )
+    if ( id < uint( 1 + Npillq + Beams ) )
     {
         // Roof beams run ALONG the hall, not across it.  Across was the obvious
         // arrangement and it produces no visible shafts at all: a view ray going
@@ -219,25 +219,25 @@ void main()
         // ray keeps whichever side it started on — which is what a shaft is.
         // One quad each is enough; a beam only has to block, and it is only ever
         // seen from below.
-        int   b = int( id ) - 1 - NPILLQ;
-        float bx = -15.0 + float( b ) * BEAM_PITCH;
-        float t = BEAM_PITCH - SLOT_W;
+        int   b = int( id ) - 1 - Npillq;
+        float bx = -15.0 + float( b ) * BeamPitch;
+        float t = BeamPitch - SlotW;
         // Back to -8, not -3: the nearest smoke slabs sit behind the eye's own
         // starting point, and a slab with no beam above it is lit everywhere.
         // One uniformly lit slab in front of the lens washes out every striped
         // one behind it.
         emitQuad( vec3( bx, H, -8.0 ), vec3( bx + t, H, -8.0 ),
-                  vec3( bx + t, H, SPAN ), vec3( bx, H, SPAN ),
+                  vec3( bx + t, H, Span ), vec3( bx, H, Span ),
                   vec3( 0.0, -1.0, 0.0 ), 0.0, 2.0 );
         return;
     }
 
     // ---- smoke slabs ----
-    int   s = int( id ) - 1 - NPILLQ - BEAMS;
-    float f = float( s ) / float( SLABS - 1 );
+    int   s = int( id ) - 1 - Npillq - Beams;
+    float f = float( s ) / float( Slabs - 1 );
     // Spaced by the cube of the parameter: near slices matter far more, because
     // they cover more screen and are what the eye resolves.
-    float zv = mix( NEARZ, FARZ, f * f * ( 3.0 - 2.0 * f ) );
+    float zv = mix( Nearz, Farz, f * f * ( 3.0 - 2.0 * f ) );
     // Each slab covers the whole frustum at its own depth.  An earlier version
     // capped the size to keep the slabs from reaching outside the hall, which
     // fixed the wrong problem and broke a real one: a capped far slab no longer

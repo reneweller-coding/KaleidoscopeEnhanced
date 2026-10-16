@@ -86,13 +86,13 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Position of the supermassive black hole
-    vec2 bhPos = vec2( 0.0, 0.0 );
+    vec2 bh_pos = vec2( 0.0, 0.0 );
 
     // Camera orbital motion (background rotates)
-    float camRot = time * 0.2 + audioAdvance * 0.5;
-    mat2  rotM = mat2( cos( camRot ), -sin( camRot ), sin( camRot ), cos( camRot ) );
+    float cam_rot = time * 0.2 + audioAdvance * 0.5;
+    mat2  rot_m = mat2( cos( cam_rot ), -sin( cam_rot ), sin( cam_rot ), cos( cam_rot ) );
 
-    vec2  st = uv - bhPos;
+    vec2  st = uv - bh_pos;
     float dist = length( st );
 
     // Gravitational Lensing effect
@@ -103,52 +103,52 @@ void main()
     float deflection = rs * rs / ( dist * dist );
     deflection *= lp; // adjust lensing strength
 
-    vec2 lensedSt = st * ( 1.0 - deflection );
+    vec2 lensed_st = st * ( 1.0 - deflection );
     // Rotate lensed coordinates to simulate orbiting
-    lensedSt = rotM * lensedSt;
+    lensed_st = rot_m * lensed_st;
 
     vec3 col = vec3( 0.0 );
 
-    vec3 coreColor = imgPalette( 0.8 + audioCentroid * 0.2 ); // Golden/white core
-    vec3 accretionColor = imgPalette( 0.3 );                  // Orange/reddisk
+    vec3 core_color = imgPalette( 0.8 + audioCentroid * 0.2 ); // Golden/white core
+    vec3 accretion_color = imgPalette( 0.3 );                  // Orange/reddisk
 
     if ( dist > rs * 0.95 )
     { // Outside event horizon
 
         // 1. Dense background stars of the galactic core
-        float bgStars = 0.0;
+        float bg_stars = 0.0;
         for ( int i = 0; i < 3; ++i )
         {
             float sc = 20.0 + 30.0 * float( i );
-            vec2  p = lensedSt * sc;
+            vec2  p = lensed_st * sc;
             vec2  cell = floor( p );
             vec2  f = fract( p ) - 0.5;
 
             float h = hash21( cell + float( i ) * 11.0 );
             if ( h > 0.6 )
             {
-                float starDist = length( f );
-                float intensity = exp( -starDist * ( 50.0 + h * 50.0 ) );
+                float star_dist = length( f );
+                float intensity = exp( -star_dist * ( 50.0 + h * 50.0 ) );
 
                 // Twinkle
                 intensity *= 0.6 + 0.4 * sin( time * ( 2.0 + h * 4.0 ) );
 
-                bgStars += intensity * ( 1.0 + audioSwell * 0.5 );
+                bg_stars += intensity * ( 1.0 + audioSwell * 0.5 );
             }
         }
-        col += coreColor * bgStars;
+        col += core_color * bg_stars;
 
         // 2. Fast moving foreground stars in tight orbits
         // We simulate this by transforming coordinates into polar and moving them rapidly
-        vec2 polar = vec2( length( lensedSt ), atan( lensedSt.y, lensedSt.x ) );
+        vec2 polar = vec2( length( lensed_st ), atan( lensed_st.y, lensed_st.x ) );
 
         for ( int j = 0; j < 15; ++j )
         {
             float seed = float( j );
-            float orbitRadius = 0.2 + hash11( seed ) * 1.5;
+            float orbit_radius = 0.2 + hash11( seed ) * 1.5;
             // Stark verlangsamt: bis zu 35 rad/s liessen die Sterne als
             // "sehr schnelle Kreise" um das Loch peitschen.
-            float speed = ( 0.5 + hash11( seed + 1.0 ) * 1.2 ) / orbitRadius;
+            float speed = ( 0.5 + hash11( seed + 1.0 ) * 1.2 ) / orbit_radius;
 
             // Retrograde or prograde
             speed *= ( hash11( seed + 2.0 ) > 0.5 ) ? 1.0 : -1.0;
@@ -156,33 +156,33 @@ void main()
             float angle = polar.y + time * speed * sp + audioAdvance * speed * 0.5;
 
             // Wrap angle
-            float aDiff = mod( angle, 6.28318 ) - 3.14159;
-            float rDiff = polar.x - orbitRadius;
+            float a_diff = mod( angle, 6.28318 ) - 3.14159;
+            float r_diff = polar.x - orbit_radius;
 
             // Map back to cartesian distance for drawing
-            float d2Star = length( vec2( rDiff, aDiff * polar.x ) );
+            float d2_star = length( vec2( r_diff, a_diff * polar.x ) );
 
-            if ( d2Star < 0.1 )
+            if ( d2_star < 0.1 )
             {
-                float sInt = 0.001 / max( d2Star * d2Star, 0.0001 );
+                float s_int = 0.001 / max( d2_star * d2_star, 0.0001 );
                 // Flares / tidal disruption near the black hole
-                if ( orbitRadius < 0.4 && hash11( floor( time * 1.2 ) + seed ) > 0.8 )
+                if ( orbit_radius < 0.4 && hash11( floor( time * 1.2 ) + seed ) > 0.8 )
                 {
-                    sInt *= 2.0 + audioKick * 5.0; // bright flash
+                    s_int *= 2.0 + audioKick * 5.0; // bright flash
                 }
 
-                vec3 sColor = imgPalette( hash11( seed + 3.0 ) );
-                col += sColor * sInt * sp;
+                vec3 s_color = imgPalette( hash11( seed + 3.0 ) );
+                col += s_color * s_int * sp;
             }
         }
 
         // 3. Faint accretion disk glow
         float disk = exp( -( dist - rs * 1.5 ) * ( dist - rs * 1.5 ) * 50.0 );
-        col += accretionColor * disk * ( 0.2 + audioSwell * 0.5 );
+        col += accretion_color * disk * ( 0.2 + audioSwell * 0.5 );
 
         // 4. Photon ring (extremely bright thin ring just outside event horizon)
-        float photonRing = smoothstep( rs * 1.05, rs, dist ) * smoothstep( rs * 0.9, rs * 0.98, dist );
-        col += coreColor * photonRing * ( 2.0 + audioKick );
+        float photon_ring = smoothstep( rs * 1.05, rs, dist ) * smoothstep( rs * 0.9, rs * 0.98, dist );
+        col += core_color * photon_ring * ( 2.0 + audioKick );
     }
     else
     {
@@ -191,14 +191,14 @@ void main()
     }
 
     // Core glow (general ambient brightness of being in the center of the galaxy)
-    float coreGlow = exp( -dist * 2.0 );
-    col += coreColor * coreGlow * 0.2 * ( 1.0 + audioSwell );
+    float core_glow = exp( -dist * 2.0 );
+    col += core_color * core_glow * 0.2 * ( 1.0 + audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

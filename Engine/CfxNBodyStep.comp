@@ -49,9 +49,9 @@ uniform float kick;
 uniform float hue;
 uniform float level;
 
-const float SCALE = 256.0;
-const uint  STRIDE = 32u;  ///< force sample: every 32nd body
-const float SOFTEN = 0.11; ///< generous: hard close encounters slingshot
+const float Scale = 256.0;
+const uint  Stride = 32u;  ///< force sample: every 32nd body
+const float Soften = 0.11; ///< generous: hard close encounters slingshot
                            // stars out as straight radial spikes
 
 shared vec4 tile[256];
@@ -63,10 +63,10 @@ void splat( vec2 uv, vec3 col, float w )
         return;
     uint i = uint( ip.y * size.x + ip.x ) * 4u;
     vec3 c = max( col, vec3( 0.0 ) ) * w;
-    atomicAdd( acc[i + 0u], uint( c.r * SCALE ) );
-    atomicAdd( acc[i + 1u], uint( c.g * SCALE ) );
-    atomicAdd( acc[i + 2u], uint( c.b * SCALE ) );
-    atomicAdd( acc[i + 3u], uint( w * SCALE ) );
+    atomicAdd( acc[i + 0u], uint( c.r * Scale ) );
+    atomicAdd( acc[i + 1u], uint( c.g * Scale ) );
+    atomicAdd( acc[i + 2u], uint( c.b * Scale ) );
+    atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -80,17 +80,17 @@ void main()
     vec3 a = vec3( 0.0 );
 
     // Gravity from a strided sample; G is scaled by STRIDE to compensate.
-    uint sampled = count / STRIDE;
+    uint sampled = count / Stride;
     for ( uint base = 0u; base < sampled; base += 256u )
     {
-        uint src = ( base + lid ) * STRIDE;
+        uint src = ( base + lid ) * Stride;
         tile[lid] = ( src < count ) ? pos[src] : vec4( 0.0 );
         barrier();
 
         for ( uint j = 0u; j < 256u; ++j )
         {
             vec3  d = tile[j].xyz - p;
-            float r2 = dot( d, d ) + SOFTEN;
+            float r2 = dot( d, d ) + Soften;
             a += d * ( tile[j].w * inversesqrt( r2 * r2 * r2 ) );
         }
         barrier();
@@ -108,7 +108,7 @@ void main()
     const float kG = 2.35e-5;
     // Bass tightens gravity (the discs visibly contract on heavy passages);
     // a kick adds a short outward pressure pulse from the barycentre.
-    float G = kG * float( STRIDE ) * ( 0.85 + 0.45 * clamp( bass, 0.0, 2.0 ) );
+    float G = kG * float( Stride ) * ( 0.85 + 0.45 * clamp( bass, 0.0, 2.0 ) );
     a *= G;
     a -= normalize( p + 1e-5 ) * kick * 0.015;
 

@@ -45,11 +45,11 @@ float hash11( float n )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     int  inst = gl_InstanceID;
     int  N = max( meshInstances, 1 );
 
-    if ( isBg )
+    if ( is_bg )
     {
         if ( inst > 0 )
         {

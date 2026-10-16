@@ -82,14 +82,14 @@ void main()
 
     const float S0 = 0.46; // half size of the rim
     const float RK = 0.9;  // each level this much smaller (perspective)
-    float       nLev = 11.0 + floor( clamp( levelsP, 0.0, 1.0 ) * 4.99 );
-    float       sWater = S0 * pow( RK, nLev );
+    float       n_lev = 11.0 + floor( clamp( levelsP, 0.0, 1.0 ) * 4.99 );
+    float       s_water = S0 * pow( RK, n_lev );
 
     // The sun wanders around the well; its light is the swell.
     float az = 0.7 + T * 0.012;
     vec2  ld = vec2( cos( az ), sin( az ) ); // direction toward the sun
-    vec3  sunC = mix( vec3( 1.0, 0.9, 0.75 ), vec3( 1.0, 0.75, 0.5 ), 0.3 + 0.4 * swell ) * ( 0.9 + 0.35 * swell );
-    vec3  shadeC = vec3( 0.36, 0.38, 0.5 );
+    vec3  sun_c = mix( vec3( 1.0, 0.9, 0.75 ), vec3( 1.0, 0.75, 0.5 ), 0.3 + 0.4 * swell ) * ( 0.9 + 0.35 * swell );
+    vec3  shade_c = vec3( 0.36, 0.38, 0.5 );
 
     vec3  stone = mix( vec3( 0.86, 0.7, 0.52 ), imgPalette( 0.08 + hueP * 0.159 ) * vec3( 1.0, 0.8, 0.6 ), 0.12 );
     vec3  col;
@@ -102,14 +102,14 @@ void main()
         float joint = min( 0.5 - abs( fract( fq.x + 0.5 * floor( fq.y ) ) - 0.5 ), 0.5 - abs( fract( fq.y ) - 0.5 ) );
         float grain = 0.6 * noise2( p * 300.0 ) + 0.4 * noise2( p * 90.0 );
         col = stone * ( 0.9 + 0.1 * grain ) * ( 0.88 + 0.12 * smoothstep( 0.0, 0.08, joint ) )
-              * ( 0.97 + 0.06 * hash21( floor( vec2( fq.x + 0.5 * floor( fq.y ), fq.y ) ) ) ) * sunC;
+              * ( 0.97 + 0.06 * hash21( floor( vec2( fq.x + 0.5 * floor( fq.y ), fq.y ) ) ) ) * sun_c;
         col *= mix( 0.6, 1.0, smoothstep( S0, S0 + 0.012, m ) ) * mix( 1.0, 0.72, smoothstep( S0 + 0.05, 0.9, m ) );
         depth = 0.0;
     }
-    else if ( m < sWater )
+    else if ( m < s_water )
     {
         // The pool: deep green water, the sky and the rim mirrored faintly.
-        vec2  wq = p / sWater;
+        vec2  wq = p / s_water;
         float rip = noise2( wq * 8.0 + vec2( T * 0.1, 0.0 ) ) + noise2( wq * 13.0 - vec2( 0.0, T * 0.08 ) );
         col = mix( vec3( 0.05, 0.16, 0.1 ), vec3( 0.14, 0.3, 0.2 ), 0.5 + 0.3 * ( rip - 1.0 ) );
         // Round glints of the sun on the ripples.
@@ -118,7 +118,7 @@ void main()
         float tw = 0.5 + 0.5 * sin( T * 1.3 + hash21( gi + 7.0 ) * 40.0 );
         col += vec3( 1.0, 0.95, 0.8 ) * smoothstep( 0.12, 0.0, length( gf - gc ) ) * step( 0.8, hash21( gi + 5.0 ) )
                * tw * ( 0.2 + 0.9 * hi );
-        depth = nLev + 0.5;
+        depth = n_lev + 0.5;
     }
     else
     {
@@ -146,29 +146,29 @@ void main()
         float u = fract( ( a * 0.5 + 0.5 ) * K );
         float fw = 0.27;
         float f1 = abs( b - u ), f2 = abs( b - ( 1.0 - u ) );
-        float flightD = min( f1, f2 );
+        float flight_d = min( f1, f2 );
         float aa = fwidth( fi ) * 1.5 + 1e-4;
-        float flight = smoothstep( fw + aa, fw - aa, flightD );
+        float flight = smoothstep( fw + aa, fw - aa, flight_d );
         // A walkway landing along the top of each level.
         float landing = smoothstep( 0.1 + aa, 0.1 - aa, b );
         // Treads lit from above, risers facing the pool: lit only when the
         // sun stands on the far side.
-        float nT = 6.0;
-        float st = fract( b * nT );
-        float sAA = fwidth( b * nT ) * 1.5;
-        float riser = smoothstep( 0.6 - sAA, 0.6 + sAA, st ) * smoothstep( 1.0 + sAA, 1.0 - sAA, st );
-        riser = mix( riser, 0.4, clamp( sAA * 2.0 - 0.3, 0.0, 1.0 ) ); // fine steps far down blend out
-        float riserLit = clamp( dot( inward, ld ) * 1.4 + 0.25, 0.0, 1.0 );
-        float stairs = mix( 1.0, mix( 0.35, 1.05, riserLit ), riser );
+        float n_t = 6.0;
+        float st = fract( b * n_t );
+        float s_aa = fwidth( b * n_t ) * 1.5;
+        float riser = smoothstep( 0.6 - s_aa, 0.6 + s_aa, st ) * smoothstep( 1.0 + s_aa, 1.0 - s_aa, st );
+        riser = mix( riser, 0.4, clamp( s_aa * 2.0 - 0.3, 0.0, 1.0 ) ); // fine steps far down blend out
+        float riser_lit = clamp( dot( inward, ld ) * 1.4 + 0.25, 0.0, 1.0 );
+        float stairs = mix( 1.0, mix( 0.35, 1.05, riser_lit ), riser );
         // Between the flights: steep wall faces, lit by the side they face.
-        float wallLit = mix( 0.3, 0.8, clamp( dot( inward, ld ) * 0.8 + 0.5, 0.0, 1.0 ) );
-        float lum = mix( wallLit, stairs, flight );
+        float wall_lit = mix( 0.3, 0.8, clamp( dot( inward, ld ) * 0.8 + 0.5, 0.0, 1.0 ) );
+        float lum = mix( wall_lit, stairs, flight );
         lum = mix( lum, 1.05, landing );
         // The level's inner edge: a dark line where it drops to the next.
         lum *= mix( 1.0, 0.55, smoothstep( 0.93 - aa, 0.97, b ) );
-        col = stone * ( 0.88 + 0.12 * noise2( p * 60.0 / max( pow( RK, lev ), 0.2 ) ) ) * lum * sunC;
+        col = stone * ( 0.88 + 0.12 * noise2( p * 60.0 / max( pow( RK, lev ), 0.2 ) ) ) * lum * sun_c;
         // Deeper levels are cooler and darker.
-        col *= mix( 1.0, 0.7, lev / nLev );
+        col *= mix( 1.0, 0.7, lev / n_lev );
     }
 
     // The rim's hard shadow cast into the well: a point is in shadow when
@@ -178,14 +178,14 @@ void main()
         vec2  dir = ld;
         float tx = ( sign( dir.x ) * S0 - p.x ) / ( dir.x + 1e-5 * sign( dir.x ) + 1e-6 );
         float ty = ( sign( dir.y ) * S0 - p.y ) / ( dir.y + 1e-5 * sign( dir.y ) + 1e-6 );
-        float tExit = min( abs( tx ), abs( ty ) );
+        float t_exit = min( abs( tx ), abs( ty ) );
         float reach = depth * 0.05; // shadow length per level of depth
-        float sh = smoothstep( reach - 0.004, reach + 0.004, tExit );
-        col = mix( col / max( sunC, 0.3 ) * shadeC * 0.8, col, sh );
+        float sh = smoothstep( reach - 0.004, reach + 0.004, t_exit );
+        col = mix( col / max( sun_c, 0.3 ) * shade_c * 0.8, col, sh );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

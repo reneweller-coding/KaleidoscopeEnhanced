@@ -127,23 +127,23 @@ void main()
     float T = sceneTime + sceneAdvance * 0.5;
 
     vec3 emberColor = max( imgPalette( 0.1 + hue * 0.159 ), vec3( 0.42, 0.16, 0.10 ) );
-    vec3 diskHot = vec3( 1.0, 0.55, 0.25 );
-    vec3 diskCool = mix( vec3( 0.45, 0.08, 0.04 ), emberColor, 0.3 );
+    vec3 disk_hot = vec3( 1.0, 0.55, 0.25 );
+    vec3 disk_cool = mix( vec3( 0.45, 0.08, 0.04 ), emberColor, 0.3 );
 
     // The last black hole, a little off centre.
     vec2  p = uv - vec2( 0.08, 0.03 );
     float r = length( p );
-    float Rs = 0.15;     // shadow radius
-    float thetaE = 0.28; // Einstein radius
+    float rs = 0.15;      // shadow radius
+    float theta_e = 0.28; // Einstein radius
 
     // Background: the last embers, lensed -- the star field is pulled around
-    // the hole (thin-lens deflection beta = theta - thetaE^2 / theta) and
+    // the hole (thin-lens deflection beta = theta - theta_e^2 / theta) and
     // drifts past very slowly.
-    vec2 src = p - normalize( p + 1e-5 ) * thetaE * thetaE / max( r, 1e-3 );
+    vec2 src = p - normalize( p + 1e-5 ) * theta_e * theta_e / max( r, 1e-3 );
     vec2 drift = vec2( T * 0.0015, T * 0.0004 );
     vec3 col = embers( src + drift, sp, emberColor ) * gp;
     // Einstein ring: a faint glow where the lensing piles light up.
-    col += emberColor * 0.08 * exp( -pow( ( r - thetaE ) / 0.02, 2.0 ) ) * gp;
+    col += emberColor * 0.08 * exp( -pow( ( r - theta_e ) / 0.02, 2.0 ) ) * gp;
     // The dim cosmic haze, lensed with the rest.
     col += vec3( 0.05, 0.02, 0.05 ) * smoothstep( 0.2, 0.9, noise2( src * 2.0 + drift * 5.0 ) );
 
@@ -151,44 +151,44 @@ void main()
     // along the orbit, the approaching side (left) brighter and hotter.
     float incl = 0.16;
     vec2  dq = vec2( p.x, p.y / incl );
-    float dr = length( dq ) / Rs;
+    float dr = length( dq ) / rs;
     float dang = atan( dq.y, dq.x );
     float streak = noiseP( vec2( ( dang - T * 0.05 ) / 6.2831853 * 32.0, dr * 7.0 ), 32.0 );
     streak = 0.45 + 0.8 * streak * streak;
-    float diskBand = smoothstep( 1.55, 1.8, dr ) * smoothstep( 5.8, 3.2, dr );
+    float disk_band = smoothstep( 1.55, 1.8, dr ) * smoothstep( 5.8, 3.2, dr );
     float beam = 1.0 + 0.7 * ( -p.x / max( length( dq ), 1e-3 ) ); // Doppler beaming
-    vec3  diskC = mix( diskCool, diskHot, smoothstep( 4.5, 1.8, dr ) ) * beam * streak;
-    float diskA = diskBand * ( 0.85 + 0.5 * swell ) * gp;
+    vec3  disk_c = mix( disk_cool, disk_hot, smoothstep( 4.5, 1.8, dr ) ) * beam * streak;
+    float disk_a = disk_band * ( 0.85 + 0.5 * swell ) * gp;
 
     // The far side of the disk, lensed up over the top of the shadow and
     // under its bottom: a halo hugging the hole (Interstellar's loop).
-    float hr = r / Rs;
+    float hr = r / rs;
     float halo = smoothstep( 1.02, 1.12, hr ) * smoothstep( 1.9, 1.3, hr );
     float hang = atan( p.y, p.x );
     halo *= 0.35 + 0.65 * abs( sin( hang ) ); // thickest above and below
-    float hStreak = noiseP( vec2( ( hang + T * 0.05 ) / 6.2831853 * 38.0, hr * 9.0 ), 38.0 );
-    col += mix( diskCool, diskHot, 0.6 ) * halo * ( 0.5 + 0.7 * hStreak ) * ( 0.7 + 0.5 * swell ) * gp
+    float h_streak = noiseP( vec2( ( hang + T * 0.05 ) / 6.2831853 * 38.0, hr * 9.0 ), 38.0 );
+    col += mix( disk_cool, disk_hot, 0.6 ) * halo * ( 0.5 + 0.7 * h_streak ) * ( 0.7 + 0.5 * swell ) * gp
            * ( 1.0 + 0.5 * ( -p.x / max( r, 1e-3 ) ) );
 
     // The shadow and its photon ring.
     float shadow = smoothstep( 1.0, 0.97, hr );
     col *= 1.0 - shadow;
-    col += diskHot * exp( -pow( ( hr - 1.02 ) / 0.02, 2.0 ) ) * ( 0.55 + 0.3 * swell + 0.25 * audioKick ) * gp;
+    col += disk_hot * exp( -pow( ( hr - 1.02 ) / 0.02, 2.0 ) ) * ( 0.55 + 0.3 * swell + 0.25 * audioKick ) * gp;
 
     // The near side of the disk crosses in front of the shadow; the far side
     // of the flat image lies behind it and stays hidden.
     float front = ( dq.y < 0.0 ) ? 1.0 : ( 1.0 - shadow );
-    col = mix( col, diskC, clamp( diskA * front, 0.0, 1.0 ) * 0.9 );
+    col = mix( col, disk_c, clamp( disk_a * front, 0.0, 1.0 ) * 0.9 );
 
     // The vast emptiness around it all.
-    vec3 voidColor = mix( vec3( 0.045, 0.02, 0.06 ), vec3( 0.01, 0.006, 0.018 ), length( uv ) );
-    col = max( col, voidColor * ( 1.0 + swell * 0.5 ) );
+    vec3 void_color = mix( vec3( 0.045, 0.02, 0.06 ), vec3( 0.01, 0.006, 0.018 ), length( uv ) );
+    col = max( col, void_color * ( 1.0 + swell * 0.5 ) );
 
     col *= 0.9 + 0.2 * audioLevel;
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

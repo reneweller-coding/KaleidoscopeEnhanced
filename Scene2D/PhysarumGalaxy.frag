@@ -101,12 +101,12 @@ void main()
 
         // Two species: warm streams and a cold web; the centroid decides
         // which one carries the light.
-        float wA = 1.0 - 0.6 * clamp( audioCentroid, 0.0, 1.0 );
-        float wB = 0.4 + 0.6 * clamp( audioCentroid, 0.0, 1.0 );
+        float w_a = 1.0 - 0.6 * clamp( audioCentroid, 0.0, 1.0 );
+        float w_b = 0.4 + 0.6 * clamp( audioCentroid, 0.0, 1.0 );
         vec3  warm = imgPalette( hue * 0.159 + 0.05 ) * 1.3;
         vec3  cold = imgPalette( hue * 0.159 + 0.55 );
         float a = smoothstep( 0.03, 0.9, tr.r ), b = smoothstep( 0.03, 0.9, tr.g );
-        vec3  veins = warm * a * wA + cold * b * wB;
+        vec3  veins = warm * a * w_a + cold * b * w_b;
         veins *= gain * ( 0.6 + 0.6 * audioLevel ) * ( 1.0 + 2.0 * ring );
 
         // Dust lanes: where trails are faint the disc darkens.
@@ -121,7 +121,7 @@ void main()
     float halo = exp( -max( sqrt( dot( p, p ) ) - R, 0.0 ) * 9.0 ) * ( 0.15 + 0.35 * audioSwell );
     col += imgPalette( hue * 0.159 + 0.3 ) * halo * float( r2 >= 0.97 );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

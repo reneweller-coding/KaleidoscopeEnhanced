@@ -111,15 +111,15 @@ void main()
     col *= 1.0 - 0.06 * clamp( grid, 0.0, 1.0 );
     // The belt band: the strip the bags ride on, slightly grey, with the
     // rubber texture scrolling.
-    float bandT = smoothstep( 0.42, 0.4, abs( p.y + 0.02 ) );
-    col *= 1.0 - 0.06 * bandT;
-    col -= vec3( 0.02 ) * bandT * ( 0.5 + 0.5 * sin( ( p.x + belt ) * 120.0 ) );
+    float band_t = smoothstep( 0.42, 0.4, abs( p.y + 0.02 ) );
+    col *= 1.0 - 0.06 * band_t;
+    col -= vec3( 0.02 ) * band_t * ( 0.5 + 0.5 * sin( ( p.x + belt ) * 120.0 ) );
 
     // The bags.  Each rides the belt, wraps around, and carries the photo
     // as its contents; its material mix and size are fixed per activation.
-    float densestX = -10.0;
-    float densestD = -1.0;
-    float densestH = 0.0;
+    float densest_x = -10.0;
+    float densest_d = -1.0;
+    float densest_h = 0.0;
     for ( int i = 0; i < 6; ++i )
     {
         if ( float( i ) >= bags )
@@ -161,12 +161,12 @@ void main()
             // Handles and straps as thin dark lines.
             float strap = smoothstep( 0.006, 0.0, abs( abs( bq.x ) - w * 0.45 ) ) * inside;
             col = mix( col, col * 0.7, strap );
-            float dTot = density + hard * 0.4;
-            if ( dTot > densestD )
+            float d_tot = density + hard * 0.4;
+            if ( d_tot > densest_d )
             {
-                densestD = dTot;
-                densestX = bx;
-                densestH = h;
+                densest_d = d_tot;
+                densest_x = bx;
+                densest_h = h;
             }
         }
     }
@@ -176,14 +176,14 @@ void main()
     col += vec3( 0.15, 0.65, 0.9 ) * smoothstep( 0.02, 0.0, abs( p.x - sx ) ) * 0.5;
     // The threat box: a rectangle around the densest bag, raised by the
     // kick (a light, local marker -- the box does not jump about).
-    if ( densestD > 0.0 )
+    if ( densest_d > 0.0 )
     {
-        vec2  tq = p - vec2( densestX, -0.02 );
-        vec2  hb = vec2( 0.34, densestH + 0.08 );
-        float onEdge = smoothstep( 0.008, 0.0, abs( sdBox( tq, hb, 0.01 ) ) );
+        vec2  tq = p - vec2( densest_x, -0.02 );
+        vec2  hb = vec2( 0.34, densest_h + 0.08 );
+        float on_edge = smoothstep( 0.008, 0.0, abs( sdBox( tq, hb, 0.01 ) ) );
         // Corner ticks, so it reads as an overlay and not a drawn box.
         float corner = step( hb.x * 0.55, abs( tq.x ) ) + step( hb.y * 0.55, abs( tq.y ) );
-        col = mix( col, vec3( 1.0, 0.15, 0.12 ), onEdge * clamp( corner, 0.0, 1.0 ) * ( 0.25 + 0.9 * audioKick ) );
+        col = mix( col, vec3( 1.0, 0.15, 0.12 ), on_edge * clamp( corner, 0.0, 1.0 ) * ( 0.25 + 0.9 * audioKick ) );
     }
     // Readout: a column of bars down the left edge, one per band group.
     for ( int b = 0; b < 8; ++b )
@@ -202,7 +202,7 @@ void main()
     col = mix( col, vec3( 0.05, 0.06, 0.07 ), clamp( border, 0.0, 1.0 ) );
     col *= 0.9 + 0.2 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

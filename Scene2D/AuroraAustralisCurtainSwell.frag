@@ -76,40 +76,42 @@ void main()
     float wave2 = cos( uv.x * 4.0 * crt - t * 2.5 ) * 0.18 + cos( uv.x * 8.0 + t * 2.0 ) * 0.08;
 
     // Distance to lower curtain boundary (bottom fold)
-    float baseAltitude = -0.15 + 0.1 * audioBass;
-    float dist1 = uv.y - ( baseAltitude + wave1 );
-    float dist2 = uv.y - ( baseAltitude + wave2 + 0.15 );
+    float base_altitude = -0.15 + 0.1 * audioBass;
+    float dist1 = uv.y - ( base_altitude + wave1 );
+    float dist2 = uv.y - ( base_altitude + wave2 + 0.15 );
 
     // Vertical ray filaments along geomagnetic field lines
-    float rayFilaments1 = pow( abs( sin( uv.x * 30.0 * ray + t * 4.0 ) ), 4.0 );
-    float rayFilaments2 = pow( abs( sin( uv.x * 25.0 * ray - t * 3.5 ) ), 4.0 );
+    float ray_filaments1 = pow( abs( sin( uv.x * 30.0 * ray + t * 4.0 ) ), 4.0 );
+    float ray_filaments2 = pow( abs( sin( uv.x * 25.0 * ray - t * 3.5 ) ), 4.0 );
 
     // Volumetric curtain brightness
-    float curtain1 = exp( -max( 0.0, dist1 ) * 3.5 ) * smoothstep( -0.05, 0.05, dist1 ) * ( 1.0 + rayFilaments1 * 0.8 );
-    float curtain2 = exp( -max( 0.0, dist2 ) * 3.0 ) * smoothstep( -0.05, 0.05, dist2 ) * ( 1.0 + rayFilaments2 * 0.8 );
+    float curtain1 = exp( -max( 0.0, dist1 ) * 3.5 ) * smoothstep( -0.05, 0.05, dist1 )
+                     * ( 1.0 + ray_filaments1 * 0.8 );
+    float curtain2 = exp( -max( 0.0, dist2 ) * 3.0 ) * smoothstep( -0.05, 0.05, dist2 )
+                     * ( 1.0 + ray_filaments2 * 0.8 );
 
     // Geomagnetic substorm surge on kick
     float substorm = ( curtain1 + curtain2 ) * ( audioKick * 3.5 + audioHigh * 1.5 );
 
     // Photo texture mapping into polar ice reflection and sky
-    vec2 photoUV = st + vec2( wave1, wave2 ) * 0.04 * ( 1.0 + audioKick * 0.6 );
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( wave1, wave2 ) * 0.04 * ( 1.0 + audioKick * 0.6 );
+    vec3 photo = img( fract( photo_uv ) );
 
     // Ion emission colors: Oxygen 557.7nm Emerald (lower altitude), Nitrogen 630.0nm Crimson (high altitude)
-    vec3 oxygenGreen = vec3( 0.05, 0.98, 0.45 );
-    vec3 nitrogenRed = vec3( 0.95, 0.15, 0.4 );
-    vec3 ionViolet = vec3( 0.5, 0.2, 0.95 );
+    vec3 oxygen_green = vec3( 0.05, 0.98, 0.45 );
+    vec3 nitrogen_red = vec3( 0.95, 0.15, 0.4 );
+    vec3 ion_violet = vec3( 0.5, 0.2, 0.95 );
 
-    float altFactor = clamp( ( uv.y - baseAltitude ) * 1.5, 0.0, 1.0 );
-    vec3  auroraCol1 = mix( oxygenGreen, nitrogenRed, altFactor );
-    vec3  auroraCol2 = mix( oxygenGreen, ionViolet, altFactor );
+    float alt_factor = clamp( ( uv.y - base_altitude ) * 1.5, 0.0, 1.0 );
+    vec3  aurora_col1 = mix( oxygen_green, nitrogen_red, alt_factor );
+    vec3  aurora_col2 = mix( oxygen_green, ion_violet, alt_factor );
 
-    vec3 auroraTotal = curtain1 * auroraCol1 + curtain2 * auroraCol2;
+    vec3 aurora_total = curtain1 * aurora_col1 + curtain2 * aurora_col2;
 
     // Combine visualizer with starry polar sky
-    vec3 nightSky = vec3( 0.02, 0.03, 0.08 );
-    vec3 col = mix( nightSky, photo * 0.8, 0.35 + 0.2 * audioLevel );
-    col += auroraTotal * ( 1.2 + audioSwell * 0.8 );
+    vec3 night_sky = vec3( 0.02, 0.03, 0.08 );
+    vec3 col = mix( night_sky, photo * 0.8, 0.35 + 0.2 * audioLevel );
+    col += aurora_total * ( 1.2 + audioSwell * 0.8 );
     col += substorm * vec3( 1.0, 0.98, 0.9 ) * 1.5;
 
     if ( audioChromaHue != 0.0 )
@@ -123,9 +125,9 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    _catTone /= 1.0 + 0.55 * max( _catTone.r, max( _catTone.g, _catTone.b ) ); // peak knee: tame local glare, keep
+    vec3 cat_tone = ( col ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    cat_tone /= 1.0 + 0.55 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) ); // peak knee: tame local glare, keep
                                                                                // midtones
-    fragColor = vec4( _catTone, 1.0 );
+    fragColor = vec4( cat_tone, 1.0 );
 }

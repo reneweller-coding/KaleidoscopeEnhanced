@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nCurtains = ( curtainCountP > 1.0 ) ? curtainCountP : 4.0;
+    float n_curtains = ( curtainCountP > 1.0 ) ? curtainCountP : 4.0;
     float wv = ( waveP > 0.01 ) ? waveP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -76,68 +76,68 @@ void main()
     vec3 ro = vec3( sin( t * 0.3 ) * 0.5, 0.0, t * 2.0 );
     vec3 rd = normalize( vec3( uv.x, uv.y + 0.1, 1.25 + 0.2 * sin( audioSwell * 2.0 ) ) );
 
-    vec3  auroraAcc = vec3( 0.0 );
-    float totDist = 0.0;
+    vec3  aurora_acc = vec3( 0.0 );
+    float tot_dist = 0.0;
 
     // Volumetric curtain raymarching loop
     for ( int i = 0; i < 48; i++ )
     {
-        vec3 p = ro + rd * totDist;
+        vec3 p = ro + rd * tot_dist;
 
         // Multilayered curtain wave functions along X and Z
-        int numC = int( clamp( nCurtains, 2.0, 5.0 ) );
+        int num_c = int( clamp( n_curtains, 2.0, 5.0 ) );
         for ( int k = 0; k < 4; k++ )
         {
-            if ( k >= numC )
+            if ( k >= num_c )
                 break;
             float kf = float( k );
 
             // Curtain baseline position along X
             // Sub-bass swells the sway AMPLITUDE only -- the wave's phase terms
             // stay untouched so the curtains never jump sideways on a bass hit.
-            float curtainX = sin( p.z * 0.4 + t * 0.8 + kf * 1.5 ) * ( 1.2 * wv ) * ( 1.0 + 0.4 * audioSubBass )
-                             + ( kf - 1.5 ) * 1.0;
-            float dCurtain = abs( p.x - curtainX );
+            float curtain_x = sin( p.z * 0.4 + t * 0.8 + kf * 1.5 ) * ( 1.2 * wv ) * ( 1.0 + 0.4 * audioSubBass )
+                              + ( kf - 1.5 ) * 1.0;
+            float d_curtain = abs( p.x - curtain_x );
 
             // Vertical height envelope: Aurora glows brightest between y = -0.5 and y = 1.5
-            float heightEnvelope = exp( -abs( p.y - 0.5 ) * 1.8 );
+            float height_envelope = exp( -abs( p.y - 0.5 ) * 1.8 );
 
             // Vertical shooting ray filaments
-            float rayFilament = sin( p.x * ( 15.0 + 8.0 * audioCentroid ) + p.z * 5.0 - t * 4.0 ) * 0.5 + 0.5;
-            rayFilament = pow( rayFilament, 3.0 );
+            float ray_filament = sin( p.x * ( 15.0 + 8.0 * audioCentroid ) + p.z * 5.0 - t * 4.0 ) * 0.5 + 0.5;
+            ray_filament = pow( ray_filament, 3.0 );
 
             // Ionization density at this sample point
-            float density = exp( -dCurtain * 14.0 ) * heightEnvelope * ( 0.4 + 0.6 * rayFilament );
+            float density = exp( -d_curtain * 14.0 ) * height_envelope * ( 0.4 + 0.6 * ray_filament );
             density *= ( 0.025 + 0.035 * audioLevel );
 
             // Aurora vertical color gradient: Emerald green at bottom (p.y < 0.2), Violet/Magenta at top (p.y > 0.5)
-            vec3 palBottom = vec3( 0.1, 1.4, 0.6 ); // Atomic Oxygen 557.7 nm
-            vec3 palTop = vec3( 1.2, 0.2, 1.6 );    // Molecular Nitrogen
-            vec3 curtainCol = mix( palBottom, palTop, clamp( ( p.y + 0.2 ) / 1.2, 0.0, 1.0 ) );
+            vec3 pal_bottom = vec3( 0.1, 1.4, 0.6 ); // Atomic Oxygen 557.7 nm
+            vec3 pal_top = vec3( 1.2, 0.2, 1.6 );    // Molecular Nitrogen
+            vec3 curtain_col = mix( pal_bottom, pal_top, clamp( ( p.y + 0.2 ) / 1.2, 0.0, 1.0 ) );
 
             // Blend with slideshow image palette
-            curtainCol = mix( curtainCol, imgPalette( kf * 0.25 + p.y * 0.3 ), 0.4 );
+            curtain_col = mix( curtain_col, imgPalette( kf * 0.25 + p.y * 0.3 ), 0.4 );
 
-            auroraAcc += curtainCol * density * ( 1.0 + 2.0 * audioKick ) * glw;
+            aurora_acc += curtain_col * density * ( 1.0 + 2.0 * audioKick ) * glw;
         }
 
-        totDist += 0.09;
+        tot_dist += 0.09;
     }
 
     // Deep cosmic background starfield with texture sample
     // SPIEGEL-Kachelung statt fract(): die harte Wrap-Naht des driftenden
     // Fotos war die gemeldete sichtbare Kante im Hintergrund.
-    vec2 skyRaw = uv * 0.3 + vec2( t * 0.02, 0.0 );
-    vec2 skyUV = abs( fract( skyRaw * 0.5 ) * 2.0 - 1.0 );
-    vec3 skyTex = img( skyUV );
-    vec3 bgNight = mix( imgPalette( 0.1 ) * 0.15, skyTex * 0.2, 0.5 );
+    vec2 sky_raw = uv * 0.3 + vec2( t * 0.02, 0.0 );
+    vec2 sky_uv = abs( fract( sky_raw * 0.5 ) * 2.0 - 1.0 );
+    vec3 sky_tex = img( sky_uv );
+    vec3 bg_night = mix( imgPalette( 0.1 ) * 0.15, sky_tex * 0.2, 0.5 );
 
-    vec3 finalCol = bgNight + auroraAcc;
+    vec3 final_col = bg_night + aurora_acc;
 
     // Atmospheric horizon glow
-    float horizonGlow = exp( -abs( uv.y + 0.2 ) * 5.0 ) * 0.25 * audioSwell;
-    finalCol += imgPalette( 0.4 ) * horizonGlow;
+    float horizon_glow = exp( -abs( uv.y + 0.2 ) * 5.0 ) * 0.25 * audioSwell;
+    final_col += imgPalette( 0.4 ) * horizon_glow;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

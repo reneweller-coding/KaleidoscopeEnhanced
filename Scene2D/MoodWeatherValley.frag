@@ -91,15 +91,15 @@ void main()
     float hills = 2.0 + 2.0 * clamp( hillsP, 0.0, 1.0 );
     float wind = 0.2 + 1.3 * clamp( audioArousal, 0.0, 1.0 );
     float sun = clamp( audioValence, 0.0, 1.0 );
-    float rainAmt = ( 1.0 - sun ) * ( 0.5 + 0.5 * clamp( rainP, 0.0, 1.0 ) );
-    float windPos = sceneAdvance * wind * 0.3 + sceneTime * 0.05;
+    float rain_amt = ( 1.0 - sun ) * ( 0.5 + 0.5 * clamp( rainP, 0.0, 1.0 ) );
+    float wind_pos = sceneAdvance * wind * 0.3 + sceneTime * 0.05;
 
     // Sky: clear and warm when the valence is high, overcast when low.
-    vec3  clearSky = mix( vec3( 0.45, 0.7, 1.0 ), vec3( 1.0, 0.85, 0.6 ), ( 0.5 - p.y ) * 0.6 );
-    vec3  cloudCol = mix( vec3( 0.35, 0.37, 0.42 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, 0.3 );
-    float cloud = fbm( vec2( p.x * 1.5 - windPos, p.y * 3.0 ) + 2.0 );
+    vec3  clear_sky = mix( vec3( 0.45, 0.7, 1.0 ), vec3( 1.0, 0.85, 0.6 ), ( 0.5 - p.y ) * 0.6 );
+    vec3  cloud_col = mix( vec3( 0.35, 0.37, 0.42 ), imgPalette( hue * 0.159 + 0.6 ) * 0.5, 0.3 );
+    float cloud = fbm( vec2( p.x * 1.5 - wind_pos, p.y * 3.0 ) + 2.0 );
     float cover = smoothstep( 0.7 - 0.6 * ( 1.0 - sun ), 0.9 - 0.4 * ( 1.0 - sun ), cloud );
-    vec3  sky = mix( clearSky, cloudCol * ( 0.7 + 0.5 * cloud ), cover );
+    vec3  sky = mix( clear_sky, cloud_col * ( 0.7 + 0.5 * cloud ), cover );
     // The sun: a warm disc when the sky is clear.
     sky += vec3( 1.0, 0.9, 0.7 ) * exp( -length( p - vec2( 0.45, 0.3 ) ) * 6.0 ) * sun * ( 1.0 - cover * 0.8 );
     // Lightning in the cloud on the kick: a diffuse flash, not a cut.
@@ -126,11 +126,11 @@ void main()
         // Aerial perspective toward the far ridges.
         hill = mix( hill, sky, depth * 0.55 );
         // Grass shimmer: the wind runs waves of light across the slope.
-        hill *= 0.9 + 0.1 * sin( p.x * 30.0 - windPos * 8.0 + p.y * 10.0 ) * ( wind - 0.2 );
+        hill *= 0.9 + 0.1 * sin( p.x * 30.0 - wind_pos * 8.0 + p.y * 10.0 ) * ( wind - 0.2 );
         col = mix( col, hill, m );
     }
     // Rain: round drops streaked by the wind, falling on the scene clock.
-    if ( rainAmt > 0.02 )
+    if ( rain_amt > 0.02 )
     {
         vec2  rp = vec2( p.x + p.y * 0.25 * ( wind - 0.2 ), p.y + sceneAdvance * 1.5 + sceneTime * 0.3 );
         vec2  gu = rp * vec2( 60.0, 14.0 );
@@ -138,13 +138,13 @@ void main()
         vec2  f = fract( gu ) - 0.5;
         vec2  off = vec2( hash21( cell + 3.1 ), hash21( cell + 7.7 ) ) - 0.5;
         vec2  d = ( f - off * 0.6 ) * vec2( 1.0, 0.25 );
-        float drops = smoothstep( 0.2, 0.05, length( d ) ) * step( 1.0 - rainAmt * 0.6, hash21( cell ) );
+        float drops = smoothstep( 0.2, 0.05, length( d ) ) * step( 1.0 - rain_amt * 0.6, hash21( cell ) );
         col = mix( col, vec3( 0.75, 0.8, 0.9 ), drops * 0.6 );
-        col *= 1.0 - 0.15 * rainAmt;
+        col *= 1.0 - 0.15 * rain_amt;
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

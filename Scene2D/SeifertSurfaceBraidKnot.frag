@@ -184,11 +184,11 @@ void main()
     // The soap film: a disc spanning the knot's core, seen through the loops.
     {
         vec3  fn = g_rot * vec3( 0.0, 1.0, 0.0 ); // not exactly the knot plane: that is the point of a Seifert surface
-        vec3  fnW = transpose( g_rot ) * vec3( 0.0, 1.0, 0.0 );
-        float den = dot( rd, fnW );
+        vec3  fn_w = transpose( g_rot ) * vec3( 0.0, 1.0, 0.0 );
+        float den = dot( rd, fn_w );
         if ( abs( den ) > 1e-3 )
         {
-            float tf = -dot( ro, fnW ) / den;
+            float tf = -dot( ro, fn_w ) / den;
             if ( tf > 0.0 )
             {
                 vec3  fp = g_rot * ( ro + rd * tf );
@@ -205,14 +205,14 @@ void main()
     float hit, tHit;
     vec3  kc = shade( ro, rd, swell, gloss, kick, T, hit, tHit );
     // Floor with a soft reflection of the knot.
-    float tFloor = ( rd.y < 0.0 ) ? ( -1.55 - ro.y ) / rd.y : 1e9;
-    if ( hit > 0.5 && tHit < tFloor )
+    float t_floor = ( rd.y < 0.0 ) ? ( -1.55 - ro.y ) / rd.y : 1e9;
+    if ( hit > 0.5 && tHit < t_floor )
     {
         col = kc;
     }
-    else if ( tFloor < 1e8 )
+    else if ( t_floor < 1e8 )
     {
-        vec3  fp = ro + rd * tFloor;
+        vec3  fp = ro + rd * t_floor;
         vec3  fcol = vec3( 0.03, 0.03, 0.04 ) * ( 1.0 - 0.15 * length( fp.xz ) );
         vec3  rro = fp, rrd = reflect( rd, vec3( 0.0, 1.0, 0.0 ) );
         float h2, t2;
@@ -220,11 +220,11 @@ void main()
         fcol += rc * h2 * 0.25 * exp( -t2 * 0.4 );
         // A soft contact shadow.
         fcol *= 0.6 + 0.4 * smoothstep( 0.0, 1.4, length( fp.xz ) );
-        col = mix( col, fcol, smoothstep( 12.0, 4.0, tFloor ) );
+        col = mix( col, fcol, smoothstep( 12.0, 4.0, t_floor ) );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

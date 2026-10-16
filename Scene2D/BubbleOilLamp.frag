@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -246,8 +246,8 @@ void main()
     float cyl = sqrt( max( 0.0, 1.0 - ( tx * 2.1 ) * ( tx * 2.1 ) ) );
     float glow = ( 0.35 + 0.5 * clamp( glowP, 0.0, 1.0 ) ) * ( 0.8 + 0.5 * bass );
     // Light from below fades upward (mirrored endlessly: a slow wave).
-    float lightY = 0.7 + 0.3 * sin( p.y * 1.5 + hash11( ti ) * 6.28 + 0.1 * sceneTime );
-    vec3  col = lc * cyl * glow * lightY;
+    float light_y = 0.7 + 0.3 * sin( p.y * 1.5 + hash11( ti ) * 6.28 + 0.1 * sceneTime );
+    vec3  col = lc * cyl * glow * light_y;
     // Bubbles: strings rising in each tube.
     float rise = 0.15 * sceneTime + 1.0 * audioAdvance;
     float bs = ( 0.1 + 0.08 * clamp( audioSpread, 0.0, 1.0 ) );

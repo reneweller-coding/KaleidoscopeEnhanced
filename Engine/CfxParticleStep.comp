@@ -50,7 +50,7 @@ uniform float     hue;
 uniform float     drop;
 uniform uint      frame;
 
-const float SCALE = 256.0;
+const float Scale = 256.0;
 
 /// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg( inout uint s )
@@ -110,10 +110,10 @@ void splat( vec2 uv, vec3 col, float w )
         return;
     uint i = uint( ip.y * size.x + ip.x ) * 4u;
     vec3 c = max( col, vec3( 0.0 ) ) * w;
-    atomicAdd( acc[i + 0u], uint( c.r * SCALE ) );
-    atomicAdd( acc[i + 1u], uint( c.g * SCALE ) );
-    atomicAdd( acc[i + 2u], uint( c.b * SCALE ) );
-    atomicAdd( acc[i + 3u], uint( w * SCALE ) );
+    atomicAdd( acc[i + 0u], uint( c.r * Scale ) );
+    atomicAdd( acc[i + 1u], uint( c.g * Scale ) );
+    atomicAdd( acc[i + 2u], uint( c.b * Scale ) );
+    atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).

@@ -60,7 +60,7 @@ void main()
 {
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float moon = 0.5 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
-    vec3  moonCol = vec3( 0.75, 0.82, 0.95 );
+    vec3  moon_col = vec3( 0.75, 0.82, 0.95 );
     vec3  col;
     if ( vKind < -2.5 )
     {
@@ -69,7 +69,7 @@ void main()
         vec3  sea = img( fract( uv * vec2( 4.0, 2.0 ) ) )
                     * mix( vec3( 0.15, 0.25, 0.4 ), imgPalette( hue * 0.159 + 0.6 ), 0.3 ) * 1.2;
         float path = exp( -abs( uv.x - 0.55 ) * 8.0 ) * moon;
-        sea += moonCol * path * 0.6 * pow( 0.5 + 0.5 * sin( uv.y * 120.0 + sceneAdvance ), 4.0 );
+        sea += moon_col * path * 0.6 * pow( 0.5 + 0.5 * sin( uv.y * 120.0 + sceneAdvance ), 4.0 );
         float wave = pow( 0.5 + 0.5 * sin( uv.y * 30.0 - sceneAdvance * 1.5 ), 6.0 )
                      * ( 0.3 + 0.7 * clamp( audioBass, 0.0, 1.0 ) );
         sea += vec3( 0.9, 0.95, 1.0 ) * wave * ( 0.3 + 1.0 * audioKick ) * ( 1.0 - uv.y );
@@ -90,7 +90,7 @@ void main()
         vec2  go = vec2( hash21( gc + 1.3 ), hash21( gc + 5.9 ) ) - 0.5;
         float glint = smoothstep( 0.2, 0.05, length( gf - go * 0.6 ) ) * step( 0.96, hash21( gc ) )
                       * smoothstep( 0.5, 0.95, uv.y );
-        col = sand * moon + moonCol * glint * clamp( audioHigh * 2.0, 0.0, 1.0 );
+        col = sand * moon + moon_col * glint * clamp( audioHigh * 2.0, 0.0, 1.0 );
         fragColor = vec4( col, 1.0 );
         return;
     }
@@ -104,7 +104,7 @@ void main()
         vec2 so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
         col += vec3( 0.7 ) * smoothstep( 0.14, 0.03, length( sf - so * 0.6 ) ) * step( 0.985, hash21( sc ) );
         float md = length( ( uv - vec2( 0.55, 0.45 ) ) * vec2( 1.8, 1.0 ) );
-        col += moonCol * ( smoothstep( 0.035, 0.03, md ) * 1.5 + exp( -md * 8.0 ) * 0.5 ) * moon;
+        col += moon_col * ( smoothstep( 0.035, 0.03, md ) * 1.5 + exp( -md * 8.0 ) * 0.5 ) * moon;
         fragColor = vec4( col, 1.0 );
         return;
     }
@@ -137,11 +137,11 @@ void main()
     float sh = sqrt( 1.0 - r * r );
     float scutes = smoothstep( 0.08, 0.0, abs( sin( d.x * 6.0 ) * sin( d.y * 5.0 ) ) - 0.02 );
     col = mix( vec3( 0.12, 0.13, 0.12 ), vec3( 0.2, 0.2, 0.18 ), scutes ) * ( 0.3 + 0.7 * sh ) * moon;
-    col += moonCol * pow( max( dot( normalize( vec3( d, sh ) ), normalize( vec3( 0.3, 0.8, 0.6 ) ) ), 0.0 ), 12.0 )
+    col += moon_col * pow( max( dot( normalize( vec3( d, sh ) ), normalize( vec3( 0.3, 0.8, 0.6 ) ) ), 0.0 ), 12.0 )
            * 0.5 * moon;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

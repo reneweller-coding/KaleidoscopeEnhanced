@@ -68,48 +68,48 @@ void main()
 
     float t = time * 0.0755 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Grating 1 and Grating 2 with relative twist angle
-    float rot1 = tProg * 0.8 * ang + t * 0.1;
-    float rot2 = -tProg * 0.8 * ang - t * 0.1;
+    float rot1 = t_prog * 0.8 * ang + t * 0.1;
+    float rot2 = -t_prog * 0.8 * ang - t * 0.1;
 
     vec2 p1 = rot2D( rot1 ) * p;
     vec2 p2 = rot2D( rot2 ) * p;
 
     // audioBass undulates the grating spatial frequency.  It multiplies the
     // SPATIAL term only — the +/- t*2.0 phase is untouched, so the gratings'
-    // drift rate stays audio-independent.  midTransition restores the base
+    // drift rate stays audio-independent.  mid_transition restores the base
     // frequency at both fade endpoints, where `blend` self-clamps to 0/1 and
     // both the displacement and the fringe glow are multiplied out.
-    float gratingFreq = 60.0 * frq; // constant: an envelope on a scale re-lays the whole pattern (speed
-                                    // pass 14.09.2026)
-    float g1 = sin( p1.x * gratingFreq + t * 2.0 );
-    float g2 = sin( p2.x * gratingFreq - t * 2.0 );
+    float grating_freq = 60.0 * frq; // constant: an envelope on a scale re-lays the whole pattern (speed
+                                     // pass 14.09.2026)
+    float g1 = sin( p1.x * grating_freq + t * 2.0 );
+    float g2 = sin( p2.x * grating_freq - t * 2.0 );
 
     // Moiré superlattice product: cos(k1 - k2)
-    float moireWave = g1 * g2;
-    float moireMask = smoothstep( -0.5, 0.5, moireWave );
+    float moire_wave = g1 * g2;
+    float moire_mask = smoothstep( -0.5, 0.5, moire_wave );
 
     // Coordinate displacement along Moiré gradient
-    vec2 disp = vec2( g1, g2 ) * 0.025 * midTransition;
+    vec2 disp = vec2( g1, g2 ) * 0.025 * mid_transition;
 
     vec4 c1 = texture( tex1, fract( uv + disp ) );
     vec4 c0 = texture( tex0, fract( uv - disp ) );
 
     // Staggered blend modulated by Moiré fringe
-    float blend = clamp( tProg * 1.5 - ( 1.0 - moireMask ) * 0.5, 0.0, 1.0 );
+    float blend = clamp( t_prog * 1.5 - ( 1.0 - moire_mask ) * 0.5, 0.0, 1.0 );
     vec4  col = mix( c1, c0, blend );
 
     // Glowing interference fringe highlights
-    float fringeGlow = pow( max( 0.0, moireWave ), 4.0 ) * midTransition;
-    col.rgb += fringeGlow * vec3( 0.2, 0.9, 1.0 ) * ( 1.2 + audioKick * 1.0 );
+    float fringe_glow = pow( max( 0.0, moire_wave ), 4.0 ) * mid_transition;
+    col.rgb += fringe_glow * vec3( 0.2, 0.9, 1.0 ) * ( 1.2 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

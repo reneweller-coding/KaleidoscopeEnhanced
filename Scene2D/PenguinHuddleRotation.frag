@@ -159,7 +159,7 @@ void main()
     // bird covering a pixel wins (z = depth).
     vec2  hc = vec2( -0.05, horizon - 0.12 );
     float R0 = 0.28 + 0.18 * colony;
-    float bestZ = 1e9;
+    float best_z = 1e9;
     vec4  pc = vec4( 0.0 );
     for ( int ring = 0; ring < 4; ++ring )
     {
@@ -180,16 +180,16 @@ void main()
             if ( abs( q.x ) > 0.35 || q.y < -0.05 || q.y > 1.0 )
                 continue;
             float z = R * depth; // true depth: inner rings sit behind the front of the outer ones
-            if ( z > bestZ )
+            if ( z > best_z )
                 continue;
             float look = ( hash11( fk * 5.3 + fr ) > 0.5 ) ? 1.0 : -1.0;
             vec4  pg = penguin( q, look, light * ( 0.9 - 0.25 * max( depth, 0.0 ) ) );
             if ( pg.a > 0.5 )
             {
-                bestZ = z;
+                best_z = z;
                 pc = pg;
             }
-            else if ( pg.a > 0.0 && z < bestZ )
+            else if ( pg.a > 0.0 && z < best_z )
             {
                 pc = vec4( mix( pc.rgb, pg.rgb, pg.a ), max( pc.a, pg.a ) );
             }
@@ -227,7 +227,7 @@ void main()
     col = mix( col, vec3( 0.95, 0.95, 1.0 ), clamp( audioKick, 0.0, 1.0 ) * 0.18 );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -61,44 +61,44 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // audioBass undulates membrane elasticity & expansion.  Both factors are
-    // folded in through midTransition, so at tProg 0 and 1 they collapse to the
+    // folded in through mid_transition, so at t_prog 0 and 1 they collapse to the
     // un-driven values; the daughter-cell geometry only ever reaches the frame
-    // through pinchDisp and the membrane glow, which are midTransition-gated.
-    float bassPulse = audioSwell * midTransition;
+    // through pinch_disp and the membrane glow, which are mid_transition-gated.
+    float bass_pulse = audioSwell * mid_transition;
 
     // Cleavage furrow: distance to dual daughter cell centers
-    float sep = mix( 0.0, 0.5, tProg ) * mts * ( 1.0 + bassPulse * 0.35 );
-    vec2  cLeft = vec2( -sep, 0.0 );
-    vec2  cRight = vec2( sep, 0.0 );
+    float sep = mix( 0.0, 0.5, t_prog ) * mts * ( 1.0 + bass_pulse * 0.35 );
+    vec2  c_left = vec2( -sep, 0.0 );
+    vec2  c_right = vec2( sep, 0.0 );
 
-    float d1 = length( p - cLeft );
-    float d2 = length( p - cRight );
+    float d1 = length( p - c_left );
+    float d2 = length( p - c_right );
 
     // Metaball fusion of two cell membranes: 1/d1^2 + 1/d2^2 = threshold
     float meta = ( 0.12 / max( d1 * d1, 0.001 ) ) + ( 0.12 / max( d2 * d2, 0.001 ) );
-    float elasticity = 0.2 * clv * ( 1.0 + bassPulse * 0.7 );
-    float cellIso = smoothstep( 1.0 - elasticity, 1.0 + elasticity, meta );
+    float elasticity = 0.2 * clv * ( 1.0 + bass_pulse * 0.7 );
+    float cell_iso = smoothstep( 1.0 - elasticity, 1.0 + elasticity, meta );
 
     // Membrane pinch displacement
-    vec2 pinchDisp = normalize( p + 1e-4 ) * ( 1.0 - cellIso ) * 0.04 * midTransition;
+    vec2 pinch_disp = normalize( p + 1e-4 ) * ( 1.0 - cell_iso ) * 0.04 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + pinchDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - pinchDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + pinch_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - pinch_disp ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Glowing lipid bilayer cell membrane
-    float membrane = exp( -abs( meta - 1.0 ) * 8.0 ) * midTransition;
+    float membrane = exp( -abs( meta - 1.0 ) * 8.0 ) * mid_transition;
     col.rgb += membrane * vec3( 0.2, 0.9, 0.6 ) * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

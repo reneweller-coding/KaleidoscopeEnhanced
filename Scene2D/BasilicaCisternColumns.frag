@@ -72,26 +72,26 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-const float SP = 3.0;  ///< column spacing
+const float Sp = 3.0;  ///< column spacing
 const float H = 4.2;   ///< springing of the vaults
-const float CR = 0.34; ///< column radius
+const float Cr = 0.34; ///< column radius
 
 float g_hue, g_light;
 
 /// Scene distance: repeated columns with capitals, cross vaults above.
 float map( vec3 p )
 {
-    vec2  c = floor( p.xz / SP + 0.5 );
-    vec2  q = p.xz - c * SP;
-    float r = CR * ( 1.0 + 0.04 * sin( p.y * 1.3 ) );
+    vec2  c = floor( p.xz / Sp + 0.5 );
+    vec2  q = p.xz - c * Sp;
+    float r = Cr * ( 1.0 + 0.04 * sin( p.y * 1.3 ) );
     float col = length( q ) - r;
     // Capital: a block that widens under the vault.
-    float cap = max( length( q ) - ( CR + 0.18 * smoothstep( H - 0.8, H - 0.2, p.y ) ),
+    float cap = max( length( q ) - ( Cr + 0.18 * smoothstep( H - 0.8, H - 0.2, p.y ) ),
                      abs( p.y - ( H - 0.45 ) ) - 0.35 );
     col = min( col, cap );
     // Cross vault: each bay is covered by two intersecting barrel vaults;
     // the ceiling height rises from H at the columns to H + 1.3 mid-bay.
-    vec2  b = abs( p.xz - ( floor( p.xz / SP ) + 0.5 ) * SP ) / ( 0.5 * SP ); // 0 mid-bay .. 1 at the arch lines
+    vec2  b = abs( p.xz - ( floor( p.xz / Sp ) + 0.5 ) * Sp ) / ( 0.5 * Sp ); // 0 mid-bay .. 1 at the arch lines
     float arch = H + 1.3 * sqrt( max( 1.0 - max( b.x, b.y ) * max( b.x, b.y ), 0.0 ) );
     float vault = arch - p.y;
     return min( col, vault );
@@ -109,14 +109,14 @@ vec3 normalAt( vec3 p )
 vec3 uplight( vec3 p, vec3 n )
 {
     vec3 acc = vec3( 0.0 );
-    vec2 c0 = floor( p.xz / SP );
+    vec2 c0 = floor( p.xz / Sp );
     for ( int j = 0; j < 2; ++j )
         for ( int i = 0; i < 2; ++i )
         {
             vec2 c = c0 + vec2( i, j );
-            vec3 L = vec3( c.x * SP, 0.15, c.y * SP );
+            vec3 L = vec3( c.x * Sp, 0.15, c.y * Sp );
             vec2 dir = normalize( p.xz - L.xz + 1e-4 );
-            L.xz += dir * ( CR + 0.12 ); // on the column's face
+            L.xz += dir * ( Cr + 0.12 ); // on the column's face
             vec3  d = L - p;
             float dist = length( d );
             float lam = clamp( dot( n, d / dist ), 0.0, 1.0 );
@@ -158,7 +158,7 @@ vec3 shade( vec3 ro, vec3 rd, out float tHit )
         stone *= 0.8
                  + 0.35
                        * noise2(
-                           vec2( atan( p.x - floor( p.x / SP + 0.5 ) * SP, p.z - floor( p.z / SP + 0.5 ) * SP ) * 3.0,
+                           vec2( atan( p.x - floor( p.x / Sp + 0.5 ) * Sp, p.z - floor( p.z / Sp + 0.5 ) * Sp ) * 3.0,
                                  p.y * 2.0 ) );
         if ( p.y > H - 0.1 )
         {
@@ -186,7 +186,7 @@ void main()
 
     // The glide: down the aisle between two rows, steady.
     float glide = sceneAdvance * 0.35 + sceneTime * 0.18;
-    vec3  ro = vec3( SP * 0.5 + 0.2 * sin( glide * 0.11 ), 0.95, glide );
+    vec3  ro = vec3( Sp * 0.5 + 0.2 * sin( glide * 0.11 ), 0.95, glide );
     vec3  fwd = normalize( vec3( 0.18 * sin( glide * 0.07 ), -0.04, 1.0 ) );
     vec3  rgt = normalize( cross( vec3( 0.0, 1.0, 0.0 ), fwd ) );
     vec3  up = cross( fwd, rgt );
@@ -218,12 +218,12 @@ void main()
     }
 
     // Haze: warm light hanging in the damp air.
-    vec3  hazeC = mix( vec3( 0.3, 0.15, 0.07 ), imgPalette( g_hue * 0.159 + 0.1 ) * 0.3, 0.3 );
+    vec3  haze_c = mix( vec3( 0.3, 0.15, 0.07 ), imgPalette( g_hue * 0.159 + 0.1 ) * 0.3, 0.3 );
     float dist = min( tHit, 40.0 );
-    col += hazeC * ( 1.0 - exp( -dist * 0.04 ) ) * ( 0.15 + 0.25 * swell );
+    col += haze_c * ( 1.0 - exp( -dist * 0.04 ) ) * ( 0.15 + 0.25 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

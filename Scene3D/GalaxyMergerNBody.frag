@@ -81,7 +81,7 @@ void main()
         col += vColor.rgb * clamp( vSpeed * 0.3, 0.0, 0.6 ) * a; // the streams run hot
         col *= clamp( 1.5 - vDepth * 0.07, 0.35, 1.0 );
     }
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -63,41 +63,41 @@ void main()
 
     float t = time * 0.048 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                   // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Central fountain geyser column: x close to 0, rising along y
-    float jetWidth = 0.25 * fnt;
-    float jetDist = abs( p.x ) / jetWidth;
-    float jetHeight = mix( -0.8, 0.9, tProg );
+    float jet_width = 0.25 * fnt;
+    float jet_dist = abs( p.x ) / jet_width;
+    float jet_height = mix( -0.8, 0.9, t_prog );
 
-    float fountainFlow = exp( -jetDist * jetDist * 3.0 ) * smoothstep( jetHeight - 0.2, jetHeight, p.y );
+    float fountain_flow = exp( -jet_dist * jet_dist * 3.0 ) * smoothstep( jet_height - 0.2, jet_height, p.y );
 
     // Zero-viscosity Rollin film waves
-    float filmWaves = sin( p.y * 25.0 - t * 8.0 ) * exp( -abs( p.x ) * 4.0 ) * crp;
+    float film_waves = sin( p.y * 25.0 - t * 8.0 ) * exp( -abs( p.x ) * 4.0 ) * crp;
 
     // Fluid fountain displacement
-    vec2 fountDisp = vec2( sin( p.y * 15.0 ), cos( p.x * 15.0 - t * 4.0 ) ) * 0.035 * midTransition
-                     * ( 1.0 + audioSwell * 0.7 );
+    vec2 fount_disp = vec2( sin( p.y * 15.0 ), cos( p.x * 15.0 - t * 4.0 ) ) * 0.035 * mid_transition
+                      * ( 1.0 + audioSwell * 0.7 );
 
-    vec4 c1 = texture( tex1, fract( uv + fountDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - fountDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + fount_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - fount_disp ) );
 
-    float fountainMask = smoothstep( jetHeight - 0.1, jetHeight + 0.1, p.y );
-    vec4  col = mix( c0, c1, fountainMask );
+    float fountain_mask = smoothstep( jet_height - 0.1, jet_height + 0.1, p.y );
+    vec4  col = mix( c0, c1, fountain_mask );
 
-    // Cryogenic diamond-blue quantum droplets.  fountainFlow must be
-    // windowed by the envelope too: at tProg=0 the jet mask is fully open,
+    // Cryogenic diamond-blue quantum droplets.  fountain_flow must be
+    // windowed by the envelope too: at t_prog=0 the jet mask is fully open,
     // and the ungated glow column stayed at full brightness at the fade's
     // very end (a bright blue pillar popping off with the pass).
-    float dropletGlow = pow( max( 0.0, filmWaves ), 4.0 ) * midTransition;
-    vec3  cryoBlue = vec3( 0.3, 0.85, 1.0 );
-    col.rgb += ( dropletGlow + fountainFlow * 0.6 * midTransition ) * cryoBlue * ( 1.4 + audioKick * 1.0 );
+    float droplet_glow = pow( max( 0.0, film_waves ), 4.0 ) * mid_transition;
+    vec3  cryo_blue = vec3( 0.3, 0.85, 1.0 );
+    col.rgb += ( droplet_glow + fountain_flow * 0.6 * mid_transition ) * cryo_blue * ( 1.4 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

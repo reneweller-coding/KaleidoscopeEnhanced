@@ -86,7 +86,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float dpth = ( depthP > 0.01 ) ? depthP : 1.0;
-    float wireW = ( wireP > 0.01 ) ? wireP : 1.0;
+    float wire_w = ( wireP > 0.01 ) ? wireP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     // The dive only advanced on audioAdvance (~0.25 units/s on quiet material),
@@ -95,12 +95,12 @@ void main()
     float t = time * 0.34 * spd + audioAdvance * 0.32 * spd;
 
     // Logarithmic scale dive for infinite zoom through tesseract layers
-    float zoomSpeed = t * 0.8;
-    float cellPhase = mod( zoomSpeed, 1.0 );
+    float zoom_speed = t * 0.8;
+    float cell_phase = mod( zoom_speed, 1.0 );
 
-    vec3  colAcc = vec3( 0.0 );
-    float glowAcc = 0.0;
-    float wSum = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float glow_acc = 0.0;
+    float w_sum = 0.0;
 
     // Sum over multiple nested recursive 4D tesseract frames.
     // The old log step of 1.1 put successive frames a factor e^1.1 = 3.0 apart, so
@@ -112,41 +112,41 @@ void main()
     for ( int k = 0; k < 9; k++ )
     {
         float kf = float( k );
-        float layerScale = exp( ( kf - cellPhase ) * 0.62 ) * dpth;
-        float layerFade = smoothstep( 0.0, 0.3, kf - cellPhase ) * smoothstep( 8.6, 6.0, kf - cellPhase );
+        float layer_scale = exp( ( kf - cell_phase ) * 0.62 ) * dpth;
+        float layer_fade = smoothstep( 0.0, 0.3, kf - cell_phase ) * smoothstep( 8.6, 6.0, kf - cell_phase );
 
-        if ( layerFade <= 0.001 )
+        if ( layer_fade <= 0.001 )
             continue;
 
-        vec2 pLayer = uv * layerScale;
+        vec2 p_layer = uv * layer_scale;
 
         // 4D Rotation angles. Brightness may not scale the accumulated angle
         // itself (that would remap the whole phase in one frame); it rides on
         // top as a bounded extra offset, so a rising centroid still swings the
         // hyper-plane forward -- i.e. it adds to the rotation RATE for as long
         // as the timbre keeps brightening, then relaxes.
-        float rotXY = t * 0.2 + kf * 0.4 + 0.8 * audioSwell;
-        float rotZW = t * 0.15 + audioPhase * 0.1 + 0.6 * audioSwell;
+        float rot_xy = t * 0.2 + kf * 0.4 + 0.8 * audioSwell;
+        float rot_zw = t * 0.15 + audioPhase * 0.1 + 0.6 * audioSwell;
 
         // Project 2D screen into 4D tesseract coordinates
-        vec4 p4 = vec4( pLayer, sin( kf * 1.2 + t * 0.4 ), cos( kf * 1.2 + t * 0.4 ) );
+        vec4 p4 = vec4( p_layer, sin( kf * 1.2 + t * 0.4 ), cos( kf * 1.2 + t * 0.4 ) );
 
         // 4D Rotations
-        float c1 = cos( rotXY ), s1 = sin( rotXY );
+        float c1 = cos( rot_xy ), s1 = sin( rot_xy );
         p4.xy = vec2( c1 * p4.x - s1 * p4.y, s1 * p4.x + c1 * p4.y );
-        float c2 = cos( rotZW ), s2 = sin( rotZW );
+        float c2 = cos( rot_zw ), s2 = sin( rot_zw );
         p4.zw = vec2( c2 * p4.z - s2 * p4.w, s2 * p4.z + c2 * p4.w );
 
         // Sub-bass swells the frame's half-extent. It is a plain per-frame
         // size parameter (no accumulated phase runs through it), so it can
         // breathe freely -- unlike the rotation angles above.
-        float frameR = 1.2 * ( 1.0 + 0.32 * audioSubBass );
+        float frame_r = 1.2 * ( 1.0 + 0.32 * audioSubBass );
 
         // Compute distance to 4D wireframe edges
         vec4  q = abs( p4 );
-        float dOuter = max( max( q.x, q.y ), max( q.z, q.w ) ) - frameR;
-        float dInner = max( max( q.x, q.y ), max( q.z, q.w ) ) - ( frameR - 0.15 );
-        float dFrame = max( dOuter, -dInner );
+        float d_outer = max( max( q.x, q.y ), max( q.z, q.w ) ) - frame_r;
+        float d_inner = max( max( q.x, q.y ), max( q.z, q.w ) ) - ( frame_r - 0.15 );
+        float d_frame = max( d_outer, -d_inner );
 
         // 2D Projection edge distance for wireframe lines. The old
         // cornerDist = length(max(q2-1.2,0)) is the correct SDF for OUTSIDE
@@ -155,82 +155,82 @@ void main()
         // min(edgeDist, cornerDist) then picked that spurious 0 over
         // edgeDist's real, positive interior falloff across the WHOLE
         // inside of the frame, on every layer, regardless of the
-        // layerScale decay-direction fix (which only reshapes falloff for
+        // layer_scale decay-direction fix (which only reshapes falloff for
         // wire>0, i.e. outside the frame -- it can't touch a value that's
         // hard-pinned to 0 inside). Verified numerically: at screen centre
-        // the summed edgeGlow across active layers was a near-constant
-        // ~4.0-4.6 for EVERY cellPhase, which is why the earlier fix
+        // the summed edge_glow across active layers was a near-constant
+        // ~4.0-4.6 for EVERY cell_phase, which is why the earlier fix
         // produced no visible change. edgeDist alone already gives the
         // correct thin-outline falloff both inside and outside the frame.
-        // Taken from the ROTATED p4.xy, not from raw pLayer: the 4D rotation
-        // above only ever fed dFrame, which nothing consumes, so the whole
+        // Taken from the ROTATED p4.xy, not from raw p_layer: the 4D rotation
+        // above only ever fed d_frame, which nothing consumes, so the whole
         // hyper-plane spin was invisible and no audio mapping on it could show.
         vec2  q2 = abs( p4.xy );
-        float wire = min( abs( q2.x - frameR ), abs( q2.y - frameR ) );
+        float wire = min( abs( q2.x - frame_r ), abs( q2.y - frame_r ) );
 
         // `wire` is measured in LAYER units and spans roughly 0..1.3, while the
-        // old decay constant was 25*layerScale*0.15 = 0.4..3.8. exp() of that
+        // old decay constant was 25*layer_scale*0.15 = 0.4..3.8. exp() of that
         // never actually decays: every pixel of every layer returned 0.1..1.0,
-        // six layers summed past 1.0, and min(glowAcc,1.0) then pinned the whole
-        // frame to full-intensity wireTint -- a flat white-violet flood with no
+        // six layers summed past 1.0, and min(glow_acc,1.0) then pinned the whole
+        // frame to full-intensity wire_tint -- a flat white-violet flood with no
         // wires visible in it at all.
-        // Converting to SCREEN units (pLayer = uv*layerScale, so screen distance
-        // is wire/layerScale) gives a line of constant on-screen thickness, and a
+        // Converting to SCREEN units (p_layer = uv*layer_scale, so screen distance
+        // is wire/layer_scale) gives a line of constant on-screen thickness, and a
         // decay constant matched to that range makes it an actual thin edge.
-        float wireScreen = wire / max( layerScale, 1e-4 );
+        float wire_screen = wire / max( layer_scale, 1e-4 );
         // 78 rather than 46: the layer count went from 6 to 9 above, so the same
         // line width would have put half again as much lit area on screen and the
         // capped glow sum would flatten out into a solid violet field. Thinner
         // lines, more of them -- which is what a receding hypercube stack is.
-        float edgeGlow = exp( -wireScreen * ( 78.0 / wireW ) ) * layerFade * glw;
+        float edge_glow = exp( -wire_screen * ( 78.0 / wire_w ) ) * layer_fade * glw;
 
         // Sample texture inside the tesseract cell face
-        vec2 sampleUV = fract( pLayer * 0.25 + 0.5 );
-        vec3 texCol = img( sampleUV );
-        vec3 palCol = imgPalette( kf * 0.2 + t * 0.1 );
+        vec2 sample_uv = fract( p_layer * 0.25 + 0.5 );
+        vec3 tex_col = img( sample_uv );
+        vec3 pal_col = imgPalette( kf * 0.2 + t * 0.1 );
 
         // Depth shading: near cells bright, far cells sinking into the abyss.
         // Six equally-lit layers averaged to one flat mid-level.
         // (exponent rescaled with the smaller log step above so the dive still
         // fades over the same physical depth, not over the same layer index)
-        float depthShade = exp( -( kf - cellPhase ) * 0.31 );
-        // Deep layers are sampled at pLayer = uv * layerScale with layerScale up
+        float depth_shade = exp( -( kf - cell_phase ) * 0.31 );
+        // Deep layers are sampled at p_layer = uv * layer_scale with layer_scale up
         // to ~145, i.e. the photo tiles dozens of times across the frame and
         // aliases into its own average -- a flat wash that swamps the near
         // layers. Only the resolvable octaves carry a photo crop; the far ones
         // contribute the flat palette tone.
-        float resolvable = smoothstep( 4.6, 1.6, kf - cellPhase );
-        vec3  cellCol = mix( palCol, texCol, 0.55 * resolvable );
-        float w = layerFade * depthShade;
-        colAcc += cellCol * w;
-        wSum += w;
+        float resolvable = smoothstep( 4.6, 1.6, kf - cell_phase );
+        vec3  cell_col = mix( pal_col, tex_col, 0.55 * resolvable );
+        float w = layer_fade * depth_shade;
+        col_acc += cell_col * w;
+        w_sum += w;
 
-        glowAcc += edgeGlow;
+        glow_acc += edge_glow;
     }
 
     // Weighted average rather than a raw sum: nine layers of a bright photo used
     // to stack straight past white (measured luma 0.823 at contrast 0.012 - one
     // flat wash). Normalising keeps the depth ordering while bounding exposure.
-    colAcc /= max( wSum, 1e-3 );
-    colAcc *= 0.62 * clamp( 0.40 / max( 0.06, photoLevel() ), 0.55, 1.70 );
+    col_acc /= max( w_sum, 1e-3 );
+    col_acc *= 0.62 * clamp( 0.40 / max( 0.06, photoLevel() ), 0.55, 1.70 );
 
     // Add glowing hypercube wireframe lines once, from the TOTAL glow
     // accumulated across layers (capped) rather than per-layer -- several
     // octaves' frames can still overlap near true wire crossings, and an
     // uncapped per-layer add let those crossings stack past white.
-    vec3 wireTint = min( vec3( 1.3, 1.0, 1.8 ) * min( glowAcc, 1.2 ) * ( 1.0 + 2.0 * audioKick ),
-                         vec3( 1.0, 0.85, 1.0 ) );
-    colAcc += wireTint;
+    vec3 wire_tint = min( vec3( 1.3, 1.0, 1.8 ) * min( glow_acc, 1.2 ) * ( 1.0 + 2.0 * audioKick ),
+                          vec3( 1.0, 0.85, 1.0 ) );
+    col_acc += wire_tint;
 
-    // Portal dimension crossing flash (when cellPhase wraps around)
-    float portalFlash = pow( max( 0.0, 1.0 - abs( cellPhase - 0.5 ) * 4.0 ), 4.0 ) * ( 0.4 + 1.2 * audioKick );
-    colAcc += min( imgPalette( 0.7 ) * portalFlash, vec3( 0.55 ) );
+    // Portal dimension crossing flash (when cell_phase wraps around)
+    float portal_flash = pow( max( 0.0, 1.0 - abs( cell_phase - 0.5 ) * 4.0 ), 4.0 ) * ( 0.4 + 1.2 * audioKick );
+    col_acc += min( imgPalette( 0.7 ) * portal_flash, vec3( 0.55 ) );
 
-    colAcc = pow( min( colAcc, vec3( 1.0 ) ), vec3( 0.88 ) );
+    col_acc = pow( min( col_acc, vec3( 1.0 ) ), vec3( 0.88 ) );
     // Soft knee on top of the hard cap: pow(x, 0.88) lifts the midtones, so a
     // wire crossing landing on an already-lit cell face still stacked flat
     // against the ceiling. The knee bends those crests over instead.
-    vec3 _catTone = clamp( colAcc, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.26 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col_acc, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.26 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

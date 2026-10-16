@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float rThroat = ( throatRadiusP > 0.01 ) ? throatRadiusP : 0.8;
-    float aSpin = ( spinP > 0.01 ) ? spinP : 1.0;
+    float r_throat = ( throatRadiusP > 0.01 ) ? throatRadiusP : 0.8;
+    float a_spin = ( spinP > 0.01 ) ? spinP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.35 * spd + audioAdvance * 0.28 * spd; // Zeit-Basis:
@@ -73,81 +73,81 @@ void main()
 
     // Relativistic camera flight along wormhole Z-axis
     // zThroat goes continuously from -infinity to +infinity (repeating universe cycles)
-    float zFlight = t * 1.8;
-    float cycleZ = mod( zFlight, 8.0 ) - 4.0; // Distance to throat center at z = 0
-    bool  universe2 = ( mod( floor( zFlight / 8.0 ), 2.0 ) == 1.0 );
+    float z_flight = t * 1.8;
+    float cycle_z = mod( z_flight, 8.0 ) - 4.0; // Distance to throat center at z = 0
+    bool  universe2 = ( mod( floor( z_flight / 8.0 ), 2.0 ) == 1.0 );
 
-    vec3 ro = vec3( 0.0, 0.0, cycleZ );
+    vec3 ro = vec3( 0.0, 0.0, cycle_z );
     vec3 rd = normalize( vec3( uv, 1.3 + 0.2 * sin( audioSwell * 2.0 ) ) );
 
     // Ray deflection in Ellis/Kerr wormhole metric: ds^2 = -dt^2 + dl^2 + (r0^2 + l^2)(dtheta^2 + sin^2 theta dphi^2)
     vec3  p = ro;
-    float totDist = 0.0;
-    float minThroatDist = 1e4;
-    float ringGlow = 0.0;
+    float tot_dist = 0.0;
+    float min_throat_dist = 1e4;
+    float ring_glow = 0.0;
 
     for ( int i = 0; i < 48; i++ )
     {
         float l = p.z; // Coordinate along throat
-        float rSq = dot( p.xy, p.xy );
-        float r = sqrt( rSq );
+        float r_sq = dot( p.xy, p.xy );
+        float r = sqrt( r_sq );
 
         // Effective wormhole radial throat radius
-        float rThroatEff = rThroat * ( 1.0 + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
-        float R_l = sqrt( rThroatEff * rThroatEff + l * l );
+        float r_throat_eff = r_throat * ( 1.0 + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
+        float r_l = sqrt( r_throat_eff * r_throat_eff + l * l );
 
         // Gravitational lensing curvature acceleration
-        vec2 d2r = -p.xy * ( 1.2 / pow( rSq + 0.1, 1.5 ) ) * ( rThroatEff / max( 0.5, R_l ) );
+        vec2 d2r = -p.xy * ( 1.2 / pow( r_sq + 0.1, 1.5 ) ) * ( r_throat_eff / max( 0.5, r_l ) );
         rd.xy += d2r * 0.08;
         rd = normalize( rd );
 
         // Kerr frame dragging spin
-        float spinAngle = aSpin * ( 0.04 / ( rSq + 0.2 ) ) * ( 1.0 + audioFlux );
-        float csS = cos( spinAngle ), snS = sin( spinAngle );
-        rd.xy = mat2( csS, -snS, snS, csS ) * rd.xy;
+        float spin_angle = a_spin * ( 0.04 / ( r_sq + 0.2 ) ) * ( 1.0 + audioFlux );
+        float cs_s = cos( spin_angle ), sn_s = sin( spin_angle );
+        rd.xy = mat2( cs_s, -sn_s, sn_s, cs_s ) * rd.xy;
 
-        float stepSize = max( 0.03, min( r, abs( l ) ) * 0.4 );
-        p += rd * stepSize;
-        totDist += stepSize;
+        float step_size = max( 0.03, min( r, abs( l ) ) * 0.4 );
+        p += rd * step_size;
+        tot_dist += step_size;
 
-        minThroatDist = min( minThroatDist, abs( length( p.xy ) - rThroatEff ) + abs( l ) );
-        ringGlow += exp( -minThroatDist * 8.0 ) * ( 0.02 + 0.03 * audioLevel );
+        min_throat_dist = min( min_throat_dist, abs( length( p.xy ) - r_throat_eff ) + abs( l ) );
+        ring_glow += exp( -min_throat_dist * 8.0 ) * ( 0.02 + 0.03 * audioLevel );
 
-        if ( totDist > 10.0 )
+        if ( tot_dist > 10.0 )
             break;
     }
 
     // Determine exit universe: l > 0 vs l < 0
-    bool inOtherUniverse = ( p.z > 0.0 );
+    bool in_other_universe = ( p.z > 0.0 );
     if ( universe2 )
-        inOtherUniverse = !inOtherUniverse;
+        in_other_universe = !in_other_universe;
 
     // Map asymptotic ray angles to celestial sphere texture
-    vec2 celestialUV = vec2(
+    vec2 celestial_uv = vec2(
         atan( rd.y, rd.x ) / 6.2831853 + 0.5,
         acos( clamp( rd.z, -1.0, 1.0 ) ) / 3.14159265 );
 
     // Swirl texture mapping at exit
-    celestialUV += vec2( t * 0.05, 0.0 );
-    vec3 starSample = img( fract( celestialUV ) );
+    celestial_uv += vec2( t * 0.05, 0.0 );
+    vec3 star_sample = img( fract( celestial_uv ) );
 
     // Colors of Universe 1 (cool blues/cyans) vs Universe 2 (warm fiery magentas/golds)
-    vec3 palU1 = imgPalette( rd.z * 0.5 + 0.2 );
-    vec3 palU2 = imgPalette( rd.z * 0.5 + 0.7 );
+    vec3 pal_u1 = imgPalette( rd.z * 0.5 + 0.2 );
+    vec3 pal_u2 = imgPalette( rd.z * 0.5 + 0.7 );
 
-    vec3 exitCol = inOtherUniverse ? mix( starSample, palU2, 0.5 ) : mix( starSample, palU1, 0.5 );
+    vec3 exit_col = in_other_universe ? mix( star_sample, pal_u2, 0.5 ) : mix( star_sample, pal_u1, 0.5 );
 
     // Photon ring throat laser glow
-    float throatLaser = exp( -minThroatDist * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
-    vec3  laserTint = vec3( 1.4, 1.2, 1.8 ) * ( throatLaser + ringGlow * 0.5 ) * ( 1.0 + 2.5 * audioKick );
+    float throat_laser = exp( -min_throat_dist * ( 24.0 + 12.0 * audioCentroid ) ) * glw;
+    vec3  laser_tint = vec3( 1.4, 1.2, 1.8 ) * ( throat_laser + ring_glow * 0.5 ) * ( 1.0 + 2.5 * audioKick );
 
-    vec3 finalCol = exitCol + laserTint;
+    vec3 final_col = exit_col + laser_tint;
 
     // Relativistic Doppler redshift/blueshift chromatic ring
     float doppler = 0.02 * ( audioFlux + audioKick );
-    finalCol.r *= ( 1.0 + doppler * 8.0 );
-    finalCol.b *= ( 1.0 - doppler * 4.0 );
+    final_col.r *= ( 1.0 + doppler * 8.0 );
+    final_col.b *= ( 1.0 - doppler * 4.0 );
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

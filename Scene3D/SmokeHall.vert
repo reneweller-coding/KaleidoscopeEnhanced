@@ -33,10 +33,10 @@ uniform float camHP; ///< Camera height knob, 0..1.
 void main()
 {
     float kind = attrA.w;
-    bool  isSmoke = ( kind > 0.5 );
-    bool  wantSmoke = ( oitPass > 0.5 ) && ( shadowPass < 0.5 );
+    bool  is_smoke = ( kind > 0.5 );
+    bool  want_smoke = ( oitPass > 0.5 ) && ( shadowPass < 0.5 );
 
-    if ( isSmoke != wantSmoke )
+    if ( is_smoke != want_smoke )
     {
         gl_Position = vec4( 0.0, 0.0, -2.0, 1.0 );
         vObj = vec3( 0.0 );

@@ -72,44 +72,44 @@ void main()
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // Quadrupolar gravitational wave metric strain: delta L_x = -delta L_y
-    float gwFrequency = 14.0 + 8.0 * audioKick;
-    float strainPlus = sin( t * gwFrequency ) * 0.25 * str * ( 1.0 + 1.5 * audioKick + audioBass );
-    float strainCross = cos( t * gwFrequency ) * 0.25 * str * ( 1.0 + 1.5 * audioKick + audioBass );
+    float gw_frequency = 14.0 + 8.0 * audioKick;
+    float strain_plus = sin( t * gw_frequency ) * 0.25 * str * ( 1.0 + 1.5 * audioKick + audioBass );
+    float strain_cross = cos( t * gw_frequency ) * 0.25 * str * ( 1.0 + 1.5 * audioKick + audioBass );
 
     // Strained coordinates (quadrupolar squeeze / stretch)
-    vec2 strainedUV = vec2(
-        uv.x * ( 1.0 + strainPlus ) + uv.y * strainCross,
-        uv.y * ( 1.0 - strainPlus ) + uv.x * strainCross );
+    vec2 strained_uv = vec2(
+        uv.x * ( 1.0 + strain_plus ) + uv.y * strain_cross,
+        uv.y * ( 1.0 - strain_plus ) + uv.x * strain_cross );
 
     // Orthogonal Fabry-Pérot resonant cavity arms (X and Y axes)
-    float armX = exp( -abs( strainedUV.y ) * 40.0 / cav );
-    float armY = exp( -abs( strainedUV.x ) * 40.0 / cav );
+    float arm_x = exp( -abs( strained_uv.y ) * 40.0 / cav );
+    float arm_y = exp( -abs( strained_uv.x ) * 40.0 / cav );
 
     // Optical interference fringes: delta phi = 4 pi (L_x - L_y) / lambda
-    float deltaL = ( strainedUV.x * strainedUV.x - strainedUV.y * strainedUV.y ) * 20.0 * cav;
-    float fringes = sin( deltaL + t * 6.0 + audioPhase * 4.0 );
-    float fringeIntensity = smoothstep( -0.2, 0.9, fringes );
+    float delta_l = ( strained_uv.x * strained_uv.x - strained_uv.y * strained_uv.y ) * 20.0 * cav;
+    float fringes = sin( delta_l + t * 6.0 + audioPhase * 4.0 );
+    float fringe_intensity = smoothstep( -0.2, 0.9, fringes );
 
     // Central beam splitter 45-degree mirror
-    float beamSplitter = exp( -abs( uv.x + uv.y ) * 35.0 );
+    float beam_splitter = exp( -abs( uv.x + uv.y ) * 35.0 );
 
     // Dark-port destructive interference readout flash on kick
-    float darkPortFlash = ( 1.0 - fringeIntensity ) * ( audioKick * 3.5 + audioHigh * 1.5 );
+    float dark_port_flash = ( 1.0 - fringe_intensity ) * ( audioKick * 3.5 + audioHigh * 1.5 );
 
     // Photo texture mapping on dielectric mirror coatings
-    vec2 photoUV = st + vec2( strainPlus, -strainPlus ) * 0.05;
-    vec3 photo = img( fract( photoUV ) );
+    vec2 photo_uv = st + vec2( strain_plus, -strain_plus ) * 0.05;
+    vec3 photo = img( fract( photo_uv ) );
 
     // Nd:YAG 1064nm infrared laser & green frequency doubled palette
-    vec3 laserGreen = vec3( 0.1, 1.0, 0.4 );
-    vec3 laserIR = vec3( 1.0, 0.2, 0.4 );
-    vec3 beamWhite = vec3( 0.95, 1.0, 0.9 );
+    vec3 laser_green = vec3( 0.1, 1.0, 0.4 );
+    vec3 laser_ir = vec3( 1.0, 0.2, 0.4 );
+    vec3 beam_white = vec3( 0.95, 1.0, 0.9 );
 
     vec3 col = photo * 0.75 * ( 0.8 + 0.3 * audioLevel );
-    col += ( armX + armY ) * laserGreen * ( 1.0 + audioSwell * 0.8 );
-    col += fringeIntensity * laserIR * 1.2;
-    col += beamSplitter * beamWhite * 1.6;
-    col += darkPortFlash * vec3( 1.0, 0.95, 0.5 ) * 1.5;
+    col += ( arm_x + arm_y ) * laser_green * ( 1.0 + audioSwell * 0.8 );
+    col += fringe_intensity * laser_ir * 1.2;
+    col += beam_splitter * beam_white * 1.6;
+    col += dark_port_flash * vec3( 1.0, 0.95, 0.5 ) * 1.5;
 
     if ( audioChromaHue != 0.0 )
         col = hueRot( col, audioChromaHue );
@@ -122,7 +122,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

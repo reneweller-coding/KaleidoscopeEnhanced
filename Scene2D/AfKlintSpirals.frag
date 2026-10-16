@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -264,7 +264,7 @@ void main()
     float best = -9.0;
     vec2  bid = vec2( 0.0 );
     vec2  bl = vec2( 0.0 );
-    float bR = 1.0;
+    float b_r = 1.0;
     float pxg = fwidth( g.x ) + 1e-4; // derivatives before any branch
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
@@ -283,7 +283,7 @@ void main()
                 best = sc;
                 bid = id;
                 bl = g - c;
-                bR = R;
+                b_r = R;
             }
         }
     if ( best > -0.02 )
@@ -291,7 +291,7 @@ void main()
         float px = pxg;
         float inside = smoothstep( -px, px, best );
         float h = hash21( bid + 4.0 );
-        float r = length( bl ) / bR;
+        float r = length( bl ) / b_r;
         float a = atan( bl.y, bl.x );
         vec3  fc;
         vec3  c1 = klintPal( floor( h * 6.0 ) ),
@@ -303,7 +303,7 @@ void main()
             float dir = hash21( bid + 6.0 ) < 0.5 ? 1.0 : -1.0;
             float sp = r * turns - ( a + dir * T ) / 6.2831853;
             float band = fract( sp );
-            float bpx = pxg * ( turns / bR + 1.0 / ( 6.2831853 * max( length( bl ), 1e-3 ) ) ) + 1e-4;
+            float bpx = pxg * ( turns / b_r + 1.0 / ( 6.2831853 * max( length( bl ), 1e-3 ) ) ) + 1e-4;
             // Sine edge avoids the fract jump at the atan cut: the band
             // boundaries are continuous (one turn = one band).
             float s = smoothstep( -bpx * 3.0, bpx * 3.0, sin( sp * 6.2831853 ) );

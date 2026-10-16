@@ -69,12 +69,12 @@ void main()
     float phi = wind + t * 1.5;
     vHelicoidAngle = phi;
 
-    float zPos = wind * pitch * 0.4;
+    float z_pos = wind * pitch * 0.4;
 
-    vec3 worldPos = vec3(
+    vec3 world_pos = vec3(
         rho * cos( phi ),
         rho * sin( phi ),
-        zPos - 1.2 );
+        z_pos - 1.2 );
 
     // Normal to Helicoid: n = (-sin(phi), cos(phi), -rho/c) / sqrt(1 + rho^2/c^2)
     float c_val = pitch * 0.4;
@@ -84,7 +84,7 @@ void main()
     vCol = imgPalette( fract( phi * 0.159 + rho * 0.2 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // 3D rotation
     float c = cos( t * 0.15 ), s = sin( t * 0.15 );

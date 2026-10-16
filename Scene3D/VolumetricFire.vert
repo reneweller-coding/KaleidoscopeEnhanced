@@ -42,11 +42,11 @@ out float vHeightFrac;
 out float vHue;
 out float vGlow;
 
-const float COLS = 5.0;
-const float ROWS = 4.0;
-const float FIRES = 5.0;
+const float Cols = 5.0;
+const float Rows = 4.0;
+const float Fires = 5.0;
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-const float kTanY = 0.5206;
+const float TanY = 0.5206;
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
@@ -58,11 +58,11 @@ void main()
     float aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     // Which fire this stretch of the ribbon belongs to, and where across it.
-    float j = min( floor( t * FIRES ), FIRES - 1.0 );
-    float u = clamp( t * FIRES - j, 0.0, 1.0 );
+    float j = min( floor( t * Fires ), Fires - 1.0 );
+    float u = clamp( t * Fires - j, 0.0, 1.0 );
 
-    float acol = mod( ri, COLS );
-    float arow = floor( ri / COLS );
+    float acol = mod( ri, Cols );
+    float arow = floor( ri / Cols );
     float vfrac = side * 0.5 + 0.5; // 0 base .. 1 top
 
     // Each fire takes a different crop (and every other one a mirrored crop)
@@ -73,7 +73,7 @@ void main()
     float au = clamp( 0.5 + flip * ( u - 0.5 ) * ( 0.62 + 0.07 * j ), 0.0, 1.0 );
     float av = clamp( vfrac * ( 0.80 + 0.10 * mod( j, 3.0 ) ), 0.0, 1.0 );
 
-    vAtlasUV = ( vec2( acol, arow ) + vec2( au, av ) ) / vec2( COLS, ROWS );
+    vAtlasUV = ( vec2( acol, arow ) + vec2( au, av ) ) / vec2( Cols, Rows );
     vHeightFrac = vfrac;
     vHue = audioChromaHue;
     // Five fires add up where they overlap, so each one burns a little
@@ -82,7 +82,7 @@ void main()
 
     // Zero at BOTH ends of the run: the flame narrows to nothing at its own
     // left and right edge, and the quad that straddles two runs degenerates.
-    float hTap = smoothstep( 0.0, 0.12, u ) * ( 1.0 - smoothstep( 0.88, 0.98, u ) );
+    float h_tap = smoothstep( 0.0, 0.12, u ) * ( 1.0 - smoothstep( 0.88, 0.98, u ) );
 
     // ---- Where this fire stands -------------------------------------
     // Depth-slice stack: each ribbon sits a touch further from the camera —
@@ -92,11 +92,11 @@ void main()
     // tapering away into a funnel behind the front slice.
     float cz = 21.0 + fract( j * 0.371 + 0.27 ) * 17.0; // depth 21..38
     float dz = cz + ri * 0.55;
-    float halfH = dz * kTanY; // frustum half-height
-    float halfW = halfH * aspect;
+    float half_h = dz * TanY; // frustum half-height
+    float half_w = half_h * aspect;
 
     // Stratified across the picture; the outer pair reaches past the edges.
-    float sx = ( ( j + 0.5 ) / FIRES - 0.5 ) * 2.0 * 0.88
+    float sx = ( ( j + 0.5 ) / Fires - 0.5 ) * 2.0 * 0.88
                + ( fract( j * 0.727 + 0.41 ) - 0.5 ) * 0.10;
     float sw = 0.26 + 0.10 * fract( j * 0.913 + 0.19 ); // half-width on screen
 
@@ -108,25 +108,25 @@ void main()
     // Bases sit just below the bottom edge, tips reach the top edge or past
     // it (the flame fades into smoke long before then), so no horizontal band
     // of the picture is left empty.
-    float baseY = -1.06 * halfH;
-    float tipY = ( 1.05 + 0.55 * fract( j * 0.517 + 0.63 ) ) * halfH;
-    float topY = mix( baseY, tipY, pulse );
+    float base_y = -1.06 * half_h;
+    float tip_y = ( 1.05 + 0.55 * fract( j * 0.517 + 0.63 ) ) * half_h;
+    float top_y = mix( base_y, tip_y, pulse );
 
     // EVERY term that moves a vertex uses vv, never vfrac on its own: with
     // vv the run's two end columns collapse to a single point each, so the
     // quad bridging two fires has zero area and is never rasterised.
-    float vv = vfrac * hTap;
+    float vv = vfrac * h_tap;
 
     // Wider at the bed, narrowing into the tongue.
     float widen = 1.0 + 0.55 * ( 1.0 - vv );
-    float lx = ( u - 0.5 ) * 2.0 * sw * widen * halfW * ( 1.0 + 0.12 * audioKick );
+    float lx = ( u - 0.5 ) * 2.0 * sw * widen * half_w * ( 1.0 + 0.12 * audioKick );
 
-    vec3 local = vec3( sx * halfW + lx,
-                       mix( baseY, topY, vv ),
+    vec3 local = vec3( sx * half_w + lx,
+                       mix( base_y, top_y, vv ),
                        0.0 );
 
     float sway = sin( time * 0.22 + j * 2.1 ) * 1.1 + sin( time * 0.55 + 1.7 + j ) * 0.4;
-    local.x += sway * vv * sw * halfW * 0.20; // leans at the tip, rooted at the base
+    local.x += sway * vv * sw * half_w * 0.20; // leans at the tip, rooted at the base
 
     vec3 world = local + vec3( 0.0, 0.0, dz );
 

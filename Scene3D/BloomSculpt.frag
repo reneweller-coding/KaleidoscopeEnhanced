@@ -138,8 +138,8 @@ void main()
 
     // Environment mirror — equirect lookup along the reflected ray.
     vec3 R = reflect( -V, n );
-    vec2 envUV = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5, clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
-    vec3 env = textureLod( tex0, fract( envUV ), 0.0 ).rgb;
+    vec2 env_uv = vec2( atan( R.x, R.z ) / 6.2831853 + 0.5, clamp( R.y * 0.5 + 0.5, 0.0, 1.0 ) );
+    vec3 env = textureLod( tex0, fract( env_uv ), 0.0 ).rgb;
     env = mix( vec3( dot( env, vec3( 0.333 ) ) ), env, 0.7 );
 
     float fres = pow( 1.0 - clamp( dot( n, V ), 0.0, 1.0 ), 4.0 );

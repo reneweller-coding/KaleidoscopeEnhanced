@@ -97,29 +97,29 @@ void main()
     float aspect = resolution.x / resolution.y;
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
-    float eL = clamp( audioStereoL, 0.0, 1.5 );
-    float eR = clamp( audioStereoR, 0.0, 1.5 );
+    float e_l = clamp( audioStereoL, 0.0, 1.5 );
+    float e_r = clamp( audioStereoR, 0.0, 1.5 );
     float width = clamp( audioStereo, 0.0, 1.0 );
 
     // The two halves diverge with the stereo width: the fold centres move
     // apart, so a wide mix literally opens the picture.
     float sep = 0.22 + 0.15 * audioSwell; // opens on builds (seconds), not on the frame's width
-    vec3  left = side( p + vec2( sep, 0.0 ), eL, -1.0 );
-    vec3  right = side( p - vec2( sep, 0.0 ), eR, 1.0 );
+    vec3  left = side( p + vec2( sep, 0.0 ), e_l, -1.0 );
+    vec3  right = side( p - vec2( sep, 0.0 ), e_r, 1.0 );
 
     // Seam down the middle, shimmering with the width; a mono track has
     // almost no seam and the halves read as one ornament.
-    float seamW = 0.02 + 0.10 * width;
-    float mixLR = smoothstep( -seamW, seamW, p.x );
-    vec3  col = mix( left, right, mixLR );
-    float seam = exp( -abs( p.x ) / max( seamW, 1e-3 ) * 2.0 ) * width;
+    float seam_w = 0.02 + 0.10 * width;
+    float mix_lr = smoothstep( -seam_w, seam_w, p.x );
+    vec3  col = mix( left, right, mix_lr );
+    float seam = exp( -abs( p.x ) / max( seam_w, 1e-3 ) * 2.0 ) * width;
     col += imgPalette( ( hueP > 0.001 ? hueP : 0.0 ) * 0.159 + 0.85 ) * seam * ( 0.4 + 0.8 * audioLevel );
 
     // Kick: a radial pulse from the centre.
     col *= 1.0 + 0.25 * audioKick * exp( -length( p ) * 3.0 );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

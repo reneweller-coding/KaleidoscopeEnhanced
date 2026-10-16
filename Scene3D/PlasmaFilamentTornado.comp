@@ -62,14 +62,14 @@ void main()
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
-    float fGid = float( gid );
+    float f_gid = float( gid );
 
     // Filament parameter along tornado vertical axis
-    float strandID = floor( fGid / 64.0 ); // 64 strands
-    float segID = mod( fGid, 64.0 );       // 64 segments per strand
+    float strand_id = floor( f_gid / 64.0 ); // 64 strands
+    float seg_id = mod( f_gid, 64.0 );       // 64 segments per strand
 
-    float u1 = segID / 64.0;
-    float u2 = ( segID + 1.0 ) / 64.0;
+    float u1 = seg_id / 64.0;
+    float u2 = ( seg_id + 1.0 ) / 64.0;
 
     // Tornado height range [-2.5, 2.5]
     float y1 = ( u1 - 0.5 ) * 5.0;
@@ -80,29 +80,29 @@ void main()
     float r2 = ( 0.3 + 0.4 * ( y2 * y2 ) + 0.3 * sin( y2 * 2.0 + t ) ) * vtx * ( 1.0 + 0.3 * audioBass );
 
     // Helical swirl angle
-    float strandOffset = strandID * ( 6.2831853 / 64.0 );
-    float a1 = strandOffset + y1 * 3.5 * pnc + t * 2.5;
-    float a2 = strandOffset + y2 * 3.5 * pnc + t * 2.5;
+    float strand_offset = strand_id * ( 6.2831853 / 64.0 );
+    float a1 = strand_offset + y1 * 3.5 * pnc + t * 2.5;
+    float a2 = strand_offset + y2 * 3.5 * pnc + t * 2.5;
 
     // Centerline positions
-    vec3 pA = vec3( cos( a1 ) * r1, y1, sin( a1 ) * r1 );
-    vec3 pB = vec3( cos( a2 ) * r2, y2, sin( a2 ) * r2 );
+    vec3 p_a = vec3( cos( a1 ) * r1, y1, sin( a1 ) * r1 );
+    vec3 p_b = vec3( cos( a2 ) * r2, y2, sin( a2 ) * r2 );
 
     // Z-Pinch magnetic compression shockwave on kick
-    float pinchCompression = exp( -abs( y1 ) * 2.0 ) * audioKick * 0.6;
-    pA.xz *= ( 1.0 - pinchCompression );
-    pB.xz *= ( 1.0 - pinchCompression );
+    float pinch_compression = exp( -abs( y1 ) * 2.0 ) * audioKick * 0.6;
+    p_a.xz *= ( 1.0 - pinch_compression );
+    p_b.xz *= ( 1.0 - pinch_compression );
 
     // Ribbon width vectors
-    vec3  forward = normalize( pB - pA );
+    vec3  forward = normalize( p_b - p_a );
     vec3  binormal = normalize( vec3( -forward.z, 0.0, forward.x ) );
-    float ribbonWidth = ( 0.02 + 0.02 * audioHigh );
+    float ribbon_width = ( 0.02 + 0.02 * audioHigh );
 
     // 4 ribbon quad corners
-    vec3 v0 = pA - binormal * ribbonWidth;
-    vec3 v1 = pA + binormal * ribbonWidth;
-    vec3 v2 = pB - binormal * ribbonWidth;
-    vec3 v3 = pB + binormal * ribbonWidth;
+    vec3 v0 = p_a - binormal * ribbon_width;
+    vec3 v1 = p_a + binormal * ribbon_width;
+    vec3 v2 = p_b - binormal * ribbon_width;
+    vec3 v3 = p_b + binormal * ribbon_width;
 
     // Allocate 6 vertices (2 triangles = 1 ribbon quad segment)
     uint base = atomicAdd( cmd[4], 6u );
@@ -110,21 +110,21 @@ void main()
         return;
 
     // Write 6 vertices in GL_TRIANGLES layout (stride = 8 floats)
-    vec3 pList[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
-    vec2 uvList[6] = vec2[6](
+    vec3 p_list[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
+    vec2 uv_list[6] = vec2[6](
         vec2( 0.0, u1 ), vec2( 1.0, u1 ), vec2( 0.0, u2 ),
         vec2( 1.0, u1 ), vec2( 1.0, u2 ), vec2( 0.0, u2 ) );
 
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
-        verts[off + 3u] = strandID;
-        verts[off + 4u] = hash11( strandID );
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
+        verts[off + 3u] = strand_id;
+        verts[off + 4u] = hash11( strand_id );
         verts[off + 5u] = u1;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }

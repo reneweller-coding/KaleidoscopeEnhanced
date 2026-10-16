@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -254,12 +254,12 @@ void main()
     vec2  cfw = fwidth( cs );
     float fw = max( length( cfw ) / 3.14159265, fwidth( z ) * 0.25 ) * 1024.0;
     vec3  behind = imgLod( uv, clamp( log2( max( fw, 1.0 ) ) + 1.5 - clar, 0.0, 9.0 ) );
-    vec3  waterC = mix( vec3( 0.6, 0.85, 1.0 ), vec3( 0.95, 0.9, 0.75 ), mode );
-    vec3  col = behind * waterC * ( 0.6 + 0.4 * streak );
+    vec3  water_c = mix( vec3( 0.6, 0.85, 1.0 ), vec3( 0.95, 0.9, 0.75 ), mode );
+    vec3  col = behind * water_c * ( 0.6 + 0.4 * streak );
     // Foam: white streaks racing along.
     float foam = smoothstep( 0.6 - 0.2 * clamp( foamP, 0.0, 1.0 ), 0.85, streak * 0.6 + streak2 * 0.5 );
-    col = mix( col, vec3( 0.92, 0.96, 1.0 ) * waterC, foam * 0.7 );
-    col += waterC * pow( streak2, 8.0 ) * ( 0.2 + 0.6 * kick );
+    col = mix( col, vec3( 0.92, 0.96, 1.0 ) * water_c, foam * 0.7 );
+    col += water_c * pow( streak2, 8.0 ) * ( 0.2 + 0.6 * kick );
     // Droplet glints (round, in angle-depth space).
     vec2 dg = vec2( a / 6.2831853 * 60.0, wz * 3.0 );
     vec2 di = floor( dg ), df = fract( dg );
@@ -268,7 +268,7 @@ void main()
     col += vec3( 1.0 ) * gl * ( 0.2 + 1.2 * hi ) * exp( -z * 0.2 );
     // Mist at the far end.
     vec3  gc = glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( travel * 0.02, 0.0 ), hueP * 0.159 );
-    vec3  mist = mix( waterC, gc, 0.3 ) * ( 0.3 + 0.6 * swell );
+    vec3  mist = mix( water_c, gc, 0.3 ) * ( 0.3 + 0.6 * swell );
     float fog = exp( -z * 0.15 );
     col = mix( mist, col, fog );
     col += mist * exp( -r * 10.0 ) * 1.2;

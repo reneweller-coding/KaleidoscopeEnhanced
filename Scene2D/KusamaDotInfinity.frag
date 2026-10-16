@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -266,8 +266,8 @@ void main()
     vec3  bg = mix( vec3( 0.85, 0.08, 0.1 ), vec3( 1.0, 0.82, 0.08 ), mode );
     vec3  dc = mix( vec3( 1.0 ), vec3( 0.03 ), mode );
     vec3  pcol = glowColour( ph, cp * 2.0, hueP * 0.159 );
-    float usePhoto = step( 0.5, hash21( cid + 0.3 ) ) * clamp( photoP, 0.0, 1.0 );
-    dc = mix( dc, pcol, usePhoto );
+    float use_photo = step( 0.5, hash21( cid + 0.3 ) ) * clamp( photoP, 0.0, 1.0 );
+    dc = mix( dc, pcol, use_photo );
     bg = mix( bg, bg * ( 0.5 + 0.8 * luma( imgLod( p * 0.7 + 0.5, 4.0 ) ) ), 0.35 );
     vec3 col = mix( bg, dc * ( 1.0 + 0.6 * kick * hash21( cid + 5.0 ) ), dot_ );
     col += dc * exp( -max( d - rad, 0.0 ) / ( 0.08 + 0.1 * swell ) ) * ( 1.0 - dot_ ) * 0.25 * ( 0.3 + swell );

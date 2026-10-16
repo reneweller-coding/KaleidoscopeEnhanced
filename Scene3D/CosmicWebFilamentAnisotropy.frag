@@ -41,7 +41,7 @@ void main()
     if ( r2 > 1.0 )
         discard;
 
-    float spriteGlow = exp( -r2 * 3.5 );
+    float sprite_glow = exp( -r2 * 3.5 );
 
     // The per-particle level is decided in the .vert (filament particles carry
     // their node density, void-glow particles their own dimmer gain), so this
@@ -49,9 +49,9 @@ void main()
     // fixed 0.06 base was calibrated for a scene where all 60k points piled
     // into one small blob; spread across the frustum it left the frame black.
     float gain = 0.5 + 0.5 * clamp( ( pointGainP > 0.01 ? pointGainP : 1.0 ), 0.5, 1.8 );
-    vec3  col = vCol * spriteGlow * gain * ( 0.8 + 0.4 * audioSwell );
+    vec3  col = vCol * sprite_glow * gain * ( 0.8 + 0.4 * audioSwell );
     // Merger shockwave: a bounded halo on the dense cluster nodes only.
-    col += vCol * spriteGlow * vDensity
+    col += vCol * sprite_glow * vDensity
            * clamp( ( haloP > 0.01 ? haloP : 1.0 ), 0.6, 2.2 ) * min( audioKick * 0.45, 0.55 );
 
     // Ceiling just under the knee's clipping point (1.47 in -> 0.97 out): 60k

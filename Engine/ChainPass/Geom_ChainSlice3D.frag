@@ -463,7 +463,7 @@ int ordbo( int i )
     return 8;
 }
 uniform vec3 walkSpace, walkCore, walkBody;
-float        fieldK_0( vec3 p, float xs, float xc, float xb, int world )
+float        fieldK0( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
     int   ks = ordsp( pickStage( xs, 20 ) );
@@ -854,8 +854,8 @@ float        fieldK_0( vec3 p, float xs, float xc, float xb, int world )
 #elif SPEC_BO0 == 20
     {
         float rho = length( q.xy ),
-              Rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
-        d = max( max( rho - Rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
+              rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
+        d = max( max( rho - rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
     }
 #elif SPEC_BO0 == 21
     {
@@ -870,7 +870,7 @@ float        fieldK_0( vec3 p, float xs, float xc, float xb, int world )
 
     return d / gDR * 0.8;
 }
-float fieldK_1( vec3 p, float xs, float xc, float xb, int world )
+float fieldK1( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
     int   ks = ordsp( pickStage( xs, 20 ) );
@@ -1261,8 +1261,8 @@ float fieldK_1( vec3 p, float xs, float xc, float xb, int world )
 #elif SPEC_BO1 == 20
     {
         float rho = length( q.xy ),
-              Rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
-        d = max( max( rho - Rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
+              rr = 0.45 * bs + 0.06 * bs * smoothstep( -0.3, 0.3, sin( 12.0 * atan( q.y, q.x ) ) );
+        d = max( max( rho - rr, 0.2 * bs - rho ), abs( q.z ) - 0.08 * bs * th ) * 0.7;
     }
 #elif SPEC_BO1 == 21
     {
@@ -1290,14 +1290,14 @@ float field3( vec3 p )
         yb = walkBody.y;
         f = smoothstep( 0.0, 1.0, max( walkSpace.z, max( walkCore.z, walkBody.z ) ) );
     }
-    float d0 = fieldK_0( p, xs, xc, xb, 0 );
+    float d0 = fieldK0( p, xs, xc, xb, 0 );
 #if SPEC_SP0 == SPEC_SP1 && SPEC_CO0 == SPEC_CO1 && SPEC_BO0 == SPEC_BO1
     return d0;
 #else
     if ( f <= 0.0 )
         return d0;
     vec3  p0 = gP;
-    float d1 = fieldK_1( p, ys, yc, yb, 1 );
+    float d1 = fieldK1( p, ys, yc, yb, 1 );
     gP = mix( p0, gP, f );
     return mix( d0, d1, f );
 #endif
@@ -1387,8 +1387,8 @@ void main()
 
 
 
-    vec3 sN, sX, sY;
-    sliceFrame( camP, sceneTime, sN, sX, sY );
+    vec3 s_n, s_x, s_y;
+    sliceFrame( camP, sceneTime, s_n, s_x, s_y );
 
 
 
@@ -1398,21 +1398,21 @@ void main()
     gRot += hyp * 0.03 * sceneTime;
 
     vec3  wcore = ( walkHost > 0.5 && walkAll() ) ? walkCore : vec3( coreP, coreP, 0.0 );
-    float sView = 3.0
-                  * mix( sliceZoom( ordco( pickStage( wcore.x, 22 ) ) ), sliceZoom( ordco( pickStage( wcore.y, 22 ) ) ),
-                         smoothstep( 0.0, 1.0, wcore.z ) );
-    float sDz = 0.4 * sView;
-    float sPx = sView / resolution.y;
+    float s_view = 3.0
+                   * mix( sliceZoom( ordco( pickStage( wcore.x, 22 ) ) ),
+                          sliceZoom( ordco( pickStage( wcore.y, 22 ) ) ), smoothstep( 0.0, 1.0, wcore.z ) );
+    float s_dz = 0.4 * s_view;
+    float s_px = s_view / resolution.y;
     gCam = sc0 - vec3( 0.0, 0.0, 6.0 );
-    vec3 rd = normalize( sN + ( sX * p.x + sY * p.y ) * 0.25 );
-    ro = sc0 + ( sX * p.x + sY * p.y ) * sView - rd;
-    vec3  sL = normalize( sX * 0.5 + sY * 0.7 - sN * 0.4 );
+    vec3 rd = normalize( s_n + ( s_x * p.x + s_y * p.y ) * 0.25 );
+    ro = sc0 + ( s_x * p.x + s_y * p.y ) * s_view - rd;
+    vec3  s_l = normalize( s_x * 0.5 + s_y * 0.7 - s_n * 0.4 );
     int   z0 = min( int( sceneTime ), 0 );
     int   nl = 1 + int( clamp( layerP, 0.0, 1.0 ) * 7.99 );
     float t = 1.0;
     bool  hit = false;
     vec3  fp = vec3( 0.0 );
-    float dHit = 0.0;
+    float d_hit = 0.0;
     vec3  q = vec3( 0.0 ), n = vec3( 0.0 ), e = vec3( 0.0 );
     float ao = 0.0;
     int   stage = 0, layer = 0; // stage 0 the planes, 1..4 normal taps, 5..6 AO taps
@@ -1436,12 +1436,12 @@ void main()
                 hit = true;
                 fp = gP;
                 q = pos;
-                dHit = d;
+                d_hit = d;
                 stage = 1;
                 continue;
             }
             ++layer;
-            t = 1.0 + sDz * float( layer );
+            t = 1.0 + s_dz * float( layer );
         }
         else if ( stage <= 4 )
         {
@@ -1453,13 +1453,13 @@ void main()
         else
         {
             float h = 0.06 * float( stage - 4 );
-            ao += ( h - d + dHit ) / h; // relative to the cut point
+            ao += ( h - d + d_hit ) / h; // relative to the cut point
             if ( stage == 6 )
                 break;
             ++stage;
         }
     }
-    ao = clamp( 1.0 - 0.4 * ao, 0.2, 1.0 ) * sliceShade( dHit, sPx );
+    ao = clamp( 1.0 - 0.4 * ao, 0.2, 1.0 ) * sliceShade( d_hit, s_px );
     gbPos = vec4( fp, t );
-    gbNrm = vec4( n * ( 2.0 + dHit / ( abs( dHit ) + sView ) ), ao );
+    gbNrm = vec4( n * ( 2.0 + d_hit / ( abs( d_hit ) + s_view ) ), ao );
 }

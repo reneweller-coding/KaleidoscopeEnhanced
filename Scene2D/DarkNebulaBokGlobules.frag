@@ -140,8 +140,8 @@ void main()
     vec2 nuv = fract( vec2( p.x * 0.35 + 0.5 + sceneAdvance * 0.004, p.y * 0.5 + 0.5 ) );
     // The nebula: the photo as glowing gas, mottled by fbm so it reads as
     // gas and not as a flat picture.
-    float gasMot = 0.5 + 0.9 * fbm( vec3( p * 2.5, sceneAdvance * 0.02 ) );
-    vec3  neb = img( nuv ) * imgPalette( hue * 0.159 + 0.05 ) * 4.5 * gasMot * ( 0.7 + 0.6 * audioLevel )
+    float gas_mot = 0.5 + 0.9 * fbm( vec3( p * 2.5, sceneAdvance * 0.02 ) );
+    vec3  neb = img( nuv ) * imgPalette( hue * 0.159 + 0.05 ) * 4.5 * gas_mot * ( 0.7 + 0.6 * audioLevel )
                 + imgPalette( hue * 0.159 + 0.05 ) * 0.25;
     neb += imgPalette( hue * 0.159 + 0.9 ) * 0.15 * audioKick;
     vec2  su = p * 70.0;
@@ -156,13 +156,13 @@ void main()
     // March the dust: transmittance, and protostars lit inside on the onset.
     float     trans = 1.0;
     vec3      col = vec3( 0.0 );
-    const int STEPS = 36;
+    const int Steps = 36;
     float     t0 = 3.0, t1 = 10.5;
-    float     dt = ( t1 - t0 ) / float( STEPS );
+    float     dt = ( t1 - t0 ) / float( Steps );
     float     onset = clamp( audioOnset, 0.0, 1.0 );
-    vec3      dustCol = imgPalette( hue * 0.159 + 0.6 ) * 0.06;
-    vec3      protoCol = vec3( 1.0, 0.45, 0.2 ) * 3.0;
-    for ( int i = 0; i < STEPS; ++i )
+    vec3      dust_col = imgPalette( hue * 0.159 + 0.6 ) * 0.06;
+    vec3      proto_col = vec3( 1.0, 0.45, 0.2 ) * 3.0;
+    for ( int i = 0; i < Steps; ++i )
     {
         float tt = t0 + ( float( i ) + 0.5 ) * dt;
         vec3  q = ro + rd * tt;
@@ -179,17 +179,17 @@ void main()
             vec3  c = globCentre( k, t );
             float dd = dot( q - c, q - c );
             float fam = step( 0.35, hash11( float( k ) * 2.2 ) );
-            lit += protoCol * exp( -dd * 6.0 ) * ( 0.15 + 1.2 * onset * fam );
+            lit += proto_col * exp( -dd * 6.0 ) * ( 0.15 + 1.2 * onset * fam );
         }
         float absorb = d * dt * 1.8;
-        col += ( dustCol + lit * d ) * absorb * trans;
+        col += ( dust_col + lit * d ) * absorb * trans;
         trans *= exp( -absorb );
         if ( trans < 0.01 )
             break;
     }
     col += bg * trans;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

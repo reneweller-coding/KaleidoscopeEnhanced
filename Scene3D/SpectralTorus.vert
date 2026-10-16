@@ -76,21 +76,21 @@ float modeSum( float u, float v )
 vec3 torusPoint( float u, float v )
 {
     float TU = 6.2831853;
-    float Th = u * TU; // major angle
+    float th = u * TU; // major angle
     float ph = v * TU; // minor angle
 
     float R = 10.0;
     float r = 4.0;
 
-    vec3 ring = vec3( cos( Th ), 0.0, sin( Th ) );
+    vec3 ring = vec3( cos( th ), 0.0, sin( th ) );
     vec3 nrm = ring * cos( ph ) + vec3( 0.0, 1.0, 0.0 ) * sin( ph ); // tube normal
     vec3 base = ring * R + nrm * r;
 
     float defo = modeSum( u, v );
     // KICK WAVE: a fat bulge races once around the ring on every beat —
     // the clearest possible "the music runs through this body" signal.
-    float wavePos = fract( u - audioBeatPhase );
-    defo += 0.35 * audioKick * exp( -wavePos * 9.0 );
+    float wave_pos = fract( u - audioBeatPhase );
+    defo += 0.35 * audioKick * exp( -wave_pos * 9.0 );
     // A drop TWISTS the tube: v-offset shear that unwinds as it decays.
     vec3 p = base + nrm * ( r * defo );
 

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -247,7 +247,7 @@ void main()
     float bin = floor( sa );
     float fa = fract( sa ) - 0.5;
     float len = 0.6 + 2.0 * clamp( audioSpread, 0.0, 1.0 );
-    float wA = ( 0.08 + 0.2 * clamp( widthP, 0.0, 1.0 ) );
+    float w_a = ( 0.08 + 0.2 * clamp( widthP, 0.0, 1.0 ) );
     for ( int k = -1; k <= 1; ++k )
     {
         float b = mod( bin + float( k ), N );
@@ -262,8 +262,8 @@ void main()
             float r1 = 0.4 / ( zc + len * ( 0.5 + 0.5 * hash21( vec2( b, fs + 5.0 ) ) ) ); // tail
             float along = smoothstep( r1, r0, r ) * step( r, r0 + 0.002 );
             float fade = smoothstep( 0.3, 0.6, zc ) * smoothstep( 6.3, 4.5, zc ); // born far, gone before the wrap
-            float dA = abs( fa - float( k ) - off ) / max( wA, 1e-3 );
-            float lat = exp( -dA * dA * 2.0 );
+            float d_a = abs( fa - float( k ) - off ) / max( w_a, 1e-3 );
+            float lat = exp( -d_a * d_a * 2.0 );
             vec3  sc = mix( vec3( 0.7, 0.85, 1.0 ),
                             glowColour( imgLod( vec2( b / N, h ), 3.0 ), vec2( b, fs ), hueP * 0.159 ),
                             0.3 + 0.6 * mode );

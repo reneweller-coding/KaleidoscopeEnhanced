@@ -60,27 +60,27 @@ void main()
     // Parabolic bow shock surface: z = a * (x^2 + y^2)
     float curv = ( shockCurvP > 0.01 ? shockCurvP : 0.45 );
     float r2 = dot( uv, uv );
-    float zBow = -r2 * curv * 2.5;
+    float z_bow = -r2 * curv * 2.5;
 
     // Magnetohydrodynamic Kelvin-Helmholtz ripples
-    float mhdFreq = ( mhdWaveP > 0.01 ? mhdWaveP : 8.0 );
-    float ripple = sin( uv.x * mhdFreq + t * 2.5 ) * cos( uv.y * mhdFreq - t * 2.0 ) * 0.12;
+    float mhd_freq = ( mhdWaveP > 0.01 ? mhdWaveP : 8.0 );
+    float ripple = sin( uv.x * mhd_freq + t * 2.5 ) * cos( uv.y * mhd_freq - t * 2.0 ) * 0.12;
     ripple *= ( 1.0 + 0.5 * audioSwell );
 
-    vec3 worldPos = vec3( uv.x * 2.8, uv.y * 2.8, zBow + ripple );
+    vec3 world_pos = vec3( uv.x * 2.8, uv.y * 2.8, z_bow + ripple );
 
     // Surface normal
     vec3 n = normalize( vec3( uv.x * curv * 5.0, uv.y * curv * 5.0, 1.0 ) );
     vNormal = n;
 
     // Shock compression intensity
-    float shockIntensity = exp( -abs( r2 - 0.45 ) * 6.0 ) * ( 1.0 + 2.0 * audioKick );
-    vShock = shockIntensity;
+    float shock_intensity = exp( -abs( r2 - 0.45 ) * 6.0 ) * ( 1.0 + 2.0 * audioKick );
+    vShock = shock_intensity;
 
     vCol = imgPalette( fract( r2 * 0.3 + uv.x * 0.2 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 4.5;
     vp.x -= eyeOff;
 

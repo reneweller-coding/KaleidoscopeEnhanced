@@ -72,10 +72,10 @@ vec2 cCos( vec2 z )
 vec2 collatzMap( vec2 z )
 {
     float pi = 3.14159265;
-    vec2  piZ = z * pi;
-    vec2  cosPiZ = cCos( piZ );
+    vec2  pi_z = z * pi;
+    vec2  cos_pi_z = cCos( pi_z );
     vec2  term1 = vec2( 1.0, 0.0 ) + 4.0 * z;
-    vec2  term2 = cMul( vec2( 1.0, 0.0 ) + 2.0 * z, cosPiZ );
+    vec2  term2 = cMul( vec2( 1.0, 0.0 ) + 2.0 * z, cos_pi_z );
     return ( term1 - term2 ) * 0.25;
 }
 
@@ -96,7 +96,7 @@ void main()
     // Zoom into Collatz fractal spire boundary. The old base multiplier
     // (2.2) kept |z| under ~0.4 at screen edges even at zoomProg=0 -- well
     // inside this map's basin of convergence, so almost every pixel just
-    // spirals toward a fixed point without ever crossing r2>64. iterCount
+    // spirals toward a fixed point without ever crossing r2>64. iter_count
     // then hits the "never escaped" fallback (=24) for nearly the whole
     // frame, and only the weak trap term was left to vary the flat wash.
     // A smaller base multiplier widens the visible |z| range enough to
@@ -106,13 +106,13 @@ void main()
     // back out instead: continuous in value AND velocity (the derivative
     // vanishes at both turns), so no seam anywhere.
     float zc = 0.5 - 0.5 * cos( 6.2831853 * fract( t * 0.6 / 5.0 ) ); // 0..1..0
-    float zoomLevel = exp( zc * 5.0 ) * ( 0.55 * zm );
-    vec2  z = uv / zoomLevel;
+    float zoom_level = exp( zc * 5.0 ) * ( 0.55 * zm );
+    vec2  z = uv / zoom_level;
 
     // Translation along real axis
     z.x += t * 0.2;
 
-    float iterCount = 0.0;
+    float iter_count = 0.0;
     float trap = 1e5;
 
     for ( int i = 0; i < 24; i++ )
@@ -126,20 +126,20 @@ void main()
         {
             // Smooth (fractional) escape count: the integer count painted a
             // hard concentric stripe per iteration on every exterior shell.
-            iterCount = float( i ) - log2( max( 1.0, log2( r2 ) / 6.0 ) );
+            iter_count = float( i ) - log2( max( 1.0, log2( r2 ) / 6.0 ) );
             break;
         }
     }
 
-    if ( iterCount == 0.0 )
-        iterCount = 24.0;
+    if ( iter_count == 0.0 )
+        iter_count = 24.0;
 
     // Sample texture on chaotic coordinate
-    vec2 sampleUV = fract( z * 0.25 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( z * 0.25 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing spiky needle lines. Deep interior points (the ones that never
-    // escape, iterCount==24) also tend to spiral toward the real axis where
+    // escape, iter_count==24) also tend to spiral toward the real axis where
     // trap approaches 0 -- the same near-zero trap this glow was meant to
     // reserve for actual boundary needles -- so exp(-trap*K) saturates to
     // ~1 across the ENTIRE non-escaping interior, not just its filigree
@@ -147,35 +147,35 @@ void main()
     // Sub-bass divides the falloff constant rather than adding light: a smaller
     // exponent widens the trap band each needle occupies, so the filigree
     // breathes THICKER on drones without raising its peak brightness.
-    float needleGlow = exp( -trap * ( 20.0 + 10.0 * audioCentroid ) * ndl / ( 1.0 + 0.45 * audioSubBass ) ) * glw;
-    if ( iterCount >= 23.5 )
-        needleGlow *= 0.15;
-    // The interior was one flat colour field (iterCount pinned at 24 makes
+    float needle_glow = exp( -trap * ( 20.0 + 10.0 * audioCentroid ) * ndl / ( 1.0 + 0.45 * audioSubBass ) ) * glw;
+    if ( iter_count >= 23.5 )
+        needle_glow *= 0.15;
+    // The interior was one flat colour field (iter_count pinned at 24 makes
     // the palette constant).  Carve concentric potential bands out of the
     // orbit trap so the abyss reads as DEPTH instead of a blob.
-    float abyssBand = 1.0;
-    if ( iterCount >= 23.5 )
-        abyssBand = 0.13
-                    + 0.55
-                          * pow( 0.5 + 0.5 * sin( length( z ) * 7.0 + trap * 30.0 - t * 1.6 + audioPhase * 0.25 ),
-                                 2.0 );
+    float abyss_band = 1.0;
+    if ( iter_count >= 23.5 )
+        abyss_band = 0.13
+                     + 0.55
+                           * pow( 0.5 + 0.5 * sin( length( z ) * 7.0 + trap * 30.0 - t * 1.6 + audioPhase * 0.25 ),
+                                  2.0 );
 
     // Palette mixing
     // Slow palette sweep, no per-iteration sin flip -- both were stripe
     // factories on top of the integer count.
-    vec3 palA = imgPalette( iterCount * 0.03 + trap * 0.12 );
-    vec3 palB = imgPalette( iterCount * 0.03 + 0.5 );
-    vec3 col = mix( palA, palB, 0.5 + 0.5 * sin( iterCount * 0.25 + t ) );
+    vec3 pal_a = imgPalette( iter_count * 0.03 + trap * 0.12 );
+    vec3 pal_b = imgPalette( iter_count * 0.03 + 0.5 );
+    vec3 col = mix( pal_a, pal_b, 0.5 + 0.5 * sin( iter_count * 0.25 + t ) );
 
-    col = mix( col, texCol, 0.35 + 0.15 * audioValence );
-    col *= abyssBand;
+    col = mix( col, tex_col, 0.35 + 0.15 * audioValence );
+    col *= abyss_band;
 
     // Add glowing spiky tree needles and kick flash
-    vec3 needleTint = vec3( 1.2, 1.4, 1.8 ) * needleGlow * ( 1.0 + 2.5 * audioKick );
-    col += needleTint;
+    vec3 needle_tint = vec3( 1.2, 1.4, 1.8 ) * needle_glow * ( 1.0 + 2.5 * audioKick );
+    col += needle_tint;
 
     col = pow( col, vec3( 0.88 ) );
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

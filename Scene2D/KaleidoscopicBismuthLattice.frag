@@ -79,10 +79,10 @@ float mapBismuth( vec3 p, float t, float nSteps, out float stepLevel )
         // more terraces into the same screen area -- the fold scale (1.45) is
         // deliberately left alone: it also normalises the DE below, so audio on
         // it would shorten every march step and starve the 52-iteration loop.
-        float stepDens = 1.0 - 0.18 * audioCentroid;
-        q.x -= 0.65 * stepDens;
-        q.y -= 0.45 * stepDens;
-        q.z -= 0.35 * stepDens;
+        float step_dens = 1.0 - 0.18 * audioCentroid;
+        q.x -= 0.65 * step_dens;
+        q.y -= 0.45 * step_dens;
+        q.z -= 0.35 * step_dens;
 
         // Scale
         q *= 1.45;
@@ -92,8 +92,8 @@ float mapBismuth( vec3 p, float t, float nSteps, out float stepLevel )
     // Manhattan box step edge distance. A smaller box radius on sub-bass sinks
     // the hopper pits deeper into each terrace (still an exact box DE, just for
     // the shrunken box), so drones breathe the cavity depth.
-    float dBox = max( max( q.x, q.y ), q.z ) - ( 1.2 - 0.2 * audioSubBass );
-    return dBox / pow( 1.45, 6.0 );
+    float d_box = max( max( q.x, q.y ), q.z ) - ( 1.2 - 0.2 * audioSubBass );
+    return d_box / pow( 1.45, 6.0 );
 }
 
 /// Same field, evaluated from a WORLD-space point (applies the identical
@@ -113,7 +113,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nSt = ( stepsP > 0.01 ) ? stepsP : 1.0;
+    float n_st = ( stepsP > 0.01 ) ? stepsP : 1.0;
     float irid = ( iridescenceP > 0.01 ) ? iridescenceP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -127,44 +127,44 @@ void main()
     float seg = 3.14159265 / 6.0;
     a = mod( a + seg * 0.5, seg ) - seg * 0.5;
     a = abs( a );
-    vec2 pFold = vec2( cos( a ), sin( a ) ) * r;
+    vec2 p_fold = vec2( cos( a ), sin( a ) ) * r;
 
     // Camera setup looking into the Bismuth hopper cavern -- ONE shared
-    // origin with the fold only steering ray DIRECTION. Folding pFold into
+    // origin with the fold only steering ray DIRECTION. Folding p_fold into
     // the origin too gave every pixel its own camera position correlated
     // with its own ray, so most rays started already touching the (equally
-    // pFold-symmetric) crystal -- an instant, near-uniform hit.
-    // camDist=2.4 still sat almost exactly ON the crystal surface (|d|~0.01
+    // p_fold-symmetric) crystal -- an instant, near-uniform hit.
+    // cam_dist=2.4 still sat almost exactly ON the crystal surface (|d|~0.01
     // at the shared origin) for large stretches of the rotation -- since
-    // every ray's FIRST sample is taken at that shared point (totDist=0),
+    // every ray's FIRST sample is taken at that shared point (tot_dist=0),
     // rays could converge to a near-instant, direction-independent hit.
     // 3.6 keeps the origin robustly outside the lattice so each ray's
     // march is actually its own (the flat-interior glow bug itself turned
     // out to be a separate, deeper issue -- see the Fresnel rim comment
     // below).
-    float camDist = 3.6 + 0.3 * sin( audioSwell * 2.0 );
-    vec3  ro = vec3( 0.0, 0.0, -camDist );
-    vec3  rd = normalize( vec3( pFold, 1.25 ) );
+    float cam_dist = 3.6 + 0.3 * sin( audioSwell * 2.0 );
+    vec3  ro = vec3( 0.0, 0.0, -cam_dist );
+    vec3  rd = normalize( vec3( p_fold, 1.25 ) );
 
     // Raymarching
-    float totDist = 0.0;
-    float hitStep = 0.0;
-    float stepGlow = 0.0;
-    vec3  hitCol = vec3( 0.0 );
+    float tot_dist = 0.0;
+    float hit_step = 0.0;
+    float step_glow = 0.0;
+    vec3  hit_col = vec3( 0.0 );
 
     for ( int i = 0; i < 52; i++ )
     {
-        vec3 pWorld = ro + rd * totDist;
-        vec3 p = pWorld;
+        vec3 p_world = ro + rd * tot_dist;
+        vec3 p = p_world;
 
         // Slow rotation of crystal inside
         float cs = cos( t * 0.2 ), sn = sin( t * 0.2 );
         p.xz = mat2( cs, -sn, sn, cs ) * p.xz;
 
-        float curStep;
-        float d = mapBismuth( p, t, nSt, curStep );
+        float cur_step;
+        float d = mapBismuth( p, t, n_st, cur_step );
 
-        // A camDist increase alone can't fix a flat interior: minD (closest
+        // A cam_dist increase alone can't fix a flat interior: minD (closest
         // |d| over the WHOLE march) is, by construction, always inside
         // [0, hit-threshold] for any ray that actually hits -- that's what
         // "hit" means, not an edge/proximity signal. Verified numerically:
@@ -180,44 +180,44 @@ void main()
         // hit surface, not a saturated constant).
         if ( abs( d ) < 0.002 )
         {
-            hitStep = curStep;
+            hit_step = cur_step;
 
             vec2 eps = vec2( 0.001, 0.0 );
             vec3 nrm = normalize( vec3(
-                mapBismuthWorld( pWorld + eps.xyy, t ) - mapBismuthWorld( pWorld - eps.xyy, t ),
-                mapBismuthWorld( pWorld + eps.yxy, t ) - mapBismuthWorld( pWorld - eps.yxy, t ),
-                mapBismuthWorld( pWorld + eps.yyx, t ) - mapBismuthWorld( pWorld - eps.yyx, t ) ) );
-            stepGlow = pow( 1.0 - abs( dot( nrm, -rd ) ), 3.0 ) * glw;
+                mapBismuthWorld( p_world + eps.xyy, t ) - mapBismuthWorld( p_world - eps.xyy, t ),
+                mapBismuthWorld( p_world + eps.yxy, t ) - mapBismuthWorld( p_world - eps.yxy, t ),
+                mapBismuthWorld( p_world + eps.yyx, t ) - mapBismuthWorld( p_world - eps.yyx, t ) ) );
+            step_glow = pow( 1.0 - abs( dot( nrm, -rd ) ), 3.0 ) * glw;
 
             // Thin-film oxide rainbow interference based on step depth
-            vec3 thinFilm = vec3(
-                                sin( hitStep * 4.0 * irid + t * 2.0 ),
-                                sin( hitStep * 4.0 * irid + t * 2.0 + 2.094 ),
-                                sin( hitStep * 4.0 * irid + t * 2.0 + 4.188 ) )
-                                * 0.5
-                            + 0.5;
+            vec3 thin_film = vec3(
+                                 sin( hit_step * 4.0 * irid + t * 2.0 ),
+                                 sin( hit_step * 4.0 * irid + t * 2.0 + 2.094 ),
+                                 sin( hit_step * 4.0 * irid + t * 2.0 + 4.188 ) )
+                                 * 0.5
+                             + 0.5;
 
-            vec2 sampleUV = fract( p.xy * 0.4 + 0.5 );
-            vec3 texCol = img( sampleUV );
-            vec3 pal = imgPalette( hitStep * 0.2 + 0.1 );
+            vec2 sample_uv = fract( p.xy * 0.4 + 0.5 );
+            vec3 tex_col = img( sample_uv );
+            vec3 pal = imgPalette( hit_step * 0.2 + 0.1 );
 
-            hitCol = mix( texCol, pal, 0.4 ) * thinFilm * ( 0.8 + 0.4 * ( 1.0 - d ) );
+            hit_col = mix( tex_col, pal, 0.4 ) * thin_film * ( 0.8 + 0.4 * ( 1.0 - d ) );
             break;
         }
-        if ( totDist > 6.0 )
+        if ( tot_dist > 6.0 )
             break;
 
-        totDist += max( 0.015, d * 0.7 );
+        tot_dist += max( 0.015, d * 0.7 );
     }
 
     // Glowing stepped hopper edges (rim-lit via the Fresnel term computed
-    // above; left at 0 on a true miss so bgCol shows through cleanly).
-    vec3 glowTint = vec3( 1.4, 1.2, 1.7 ) * stepGlow * ( 1.0 + 2.5 * audioKick );
+    // above; left at 0 on a true miss so bg_col shows through cleanly).
+    vec3 glow_tint = vec3( 1.4, 1.2, 1.7 ) * step_glow * ( 1.0 + 2.5 * audioKick );
 
-    vec3 bgCol = imgPalette( r * 0.5 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
-    vec3 finalCol = mix( bgCol, hitCol, clamp( length( hitCol ), 0.0, 1.0 ) );
-    finalCol += glowTint;
+    vec3 bg_col = imgPalette( r * 0.5 + 0.3 ) * ( 0.2 + 0.15 * audioLevel );
+    vec3 final_col = mix( bg_col, hit_col, clamp( length( hit_col ), 0.0, 1.0 ) );
+    final_col += glow_tint;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

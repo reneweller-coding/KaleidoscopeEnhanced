@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -266,8 +266,8 @@ void main()
     ink = mix( ink, dark * 0.9, fine );
     vec3 lc = mix( vec3( 1.0 ), glowColour( ph, p, hueP * 0.159 ), 0.2 + 0.6 * swell );
     vec3 paper = vec3( 0.95, 0.93, 0.87 ) * ( 0.97 + 0.03 * noise2( p * 350.0 ) );
-    vec3 inkC = mix( vec3( 0.06, 0.05, 0.08 ), lc * 0.3, 0.4 * swell );
-    vec3 onPaper = mix( paper, inkC, ink );
-    onPaper *= mix( vec3( 0.9, 0.95, 1.05 ), vec3( 1.04, 1.0, 0.94 ), mode );
-    finish( onPaper );
+    vec3 ink_c = mix( vec3( 0.06, 0.05, 0.08 ), lc * 0.3, 0.4 * swell );
+    vec3 on_paper = mix( paper, ink_c, ink );
+    on_paper *= mix( vec3( 0.9, 0.95, 1.05 ), vec3( 1.04, 1.0, 0.94 ), mode );
+    finish( on_paper );
 }

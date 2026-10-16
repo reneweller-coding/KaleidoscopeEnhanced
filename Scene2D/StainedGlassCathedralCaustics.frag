@@ -71,57 +71,57 @@ void main()
 
     // 16-fold Gothic rosette symmetry
     float sectors = 16.0;
-    float sectorAngle = 6.2831853 / sectors;
-    float symAngle = mod( angle + time * 0.05 + audioAdvance * 0.05 + 0.5 * sectorAngle, sectorAngle )
-                     - 0.5 * sectorAngle;
-    vec2  symUV = vec2( cos( symAngle ), sin( symAngle ) ) * r;
+    float sector_angle = 6.2831853 / sectors;
+    float sym_angle = mod( angle + time * 0.05 + audioAdvance * 0.05 + 0.5 * sector_angle, sector_angle )
+                      - 0.5 * sector_angle;
+    vec2  sym_uv = vec2( cos( sym_angle ), sin( sym_angle ) ) * r;
 
     // Procedural Gothic lead came (tracery borders)
     float ring1 = abs( r - 0.22 );
     float ring2 = abs( r - 0.45 );
     float ring3 = abs( r - 0.70 );
-    float petal = abs( sin( symAngle * 8.0 ) * 0.18 + 0.35 - r );
-    float spokes = abs( symAngle * r );
+    float petal = abs( sin( sym_angle * 8.0 ) * 0.18 + 0.35 - r );
+    float spokes = abs( sym_angle * r );
 
-    float leadTracery = min( min( min( ring1, ring2 ), min( ring3, petal ) ), spokes ) * trc;
-    float leadCame = smoothstep( 0.008, 0.018, leadTracery ); // 0 at lead borders, 1 in glass
+    float lead_tracery = min( min( min( ring1, ring2 ), min( ring3, petal ) ), spokes ) * trc;
+    float lead_came = smoothstep( 0.008, 0.018, lead_tracery ); // 0 at lead borders, 1 in glass
 
     // Antique bubbled glass refraction
-    float glassNoise = hash21( floor( symUV * 40.0 * gls ) );
-    vec2  glassDisplace = vec2(
-                              sin( glassNoise * 6.28 + time * 0.5 ),
-                              cos( glassNoise * 6.28 + time * 0.5 ) )
-                          * ( 0.015 * gls );
+    float glass_noise = hash21( floor( sym_uv * 40.0 * gls ) );
+    vec2  glass_displace = vec2(
+                               sin( glass_noise * 6.28 + time * 0.5 ),
+                               cos( glass_noise * 6.28 + time * 0.5 ) )
+                           * ( 0.015 * gls );
 
     // Photo texture embedded in stained glass panels
-    vec2 photoUV = symUV * 0.8 + vec2( 0.5 ) + glassDisplace;
-    vec3 stainedPhoto = img( fract( photoUV ) );
+    vec2 photo_uv = sym_uv * 0.8 + vec2( 0.5 ) + glass_displace;
+    vec3 stained_photo = img( fract( photo_uv ) );
 
     // Jewel-tone color enhancement (ruby reds, sapphire blues, emeralds, amber)
-    stainedPhoto = pow( stainedPhoto, vec3( 0.8 ) ) * 1.5;
+    stained_photo = pow( stained_photo, vec3( 0.8 ) ) * 1.5;
 
     // Dark cast-lead borders
-    vec3 leadColor = vec3( 0.06, 0.07, 0.09 );
-    vec3 glassColor = mix( leadColor, stainedPhoto, leadCame );
+    vec3 lead_color = vec3( 0.06, 0.07, 0.09 );
+    vec3 glass_color = mix( lead_color, stained_photo, lead_came );
 
     // Volumetric sunbeams (godrays) streaming from sunlight source
-    vec2  lightSource = vec2( sin( time * 0.2 ) * 0.3, 0.2 + cos( time * 0.15 ) * 0.2 );
-    vec2  rayDir = uv - lightSource;
-    float rayDist = length( rayDir );
-    float sunRay = sin( atan( rayDir.y, rayDir.x ) * 24.0 + time * 2.0 ) * 0.5 + 0.5;
-    sunRay = pow( sunRay, 4.0 ) * exp( -rayDist * 1.2 );
+    vec2  light_source = vec2( sin( time * 0.2 ) * 0.3, 0.2 + cos( time * 0.15 ) * 0.2 );
+    vec2  ray_dir = uv - light_source;
+    float ray_dist = length( ray_dir );
+    float sun_ray = sin( atan( ray_dir.y, ray_dir.x ) * 24.0 + time * 2.0 ) * 0.5 + 0.5;
+    sun_ray = pow( sun_ray, 4.0 ) * exp( -ray_dist * 1.2 );
 
-    vec3 godrayColor = ( stainedPhoto + vec3( 1.0, 0.9, 0.6 ) ) * sunRay * ( 1.2 + 2.5 * audioKick ) * gdr
-                       * ( 0.8 + 0.6 * audioSwell );
+    vec3 godray_color = ( stained_photo + vec3( 1.0, 0.9, 0.6 ) ) * sun_ray * ( 1.2 + 2.5 * audioKick ) * gdr
+                        * ( 0.8 + 0.6 * audioSwell );
 
     // Bass vibration on cathedral window panels
-    float bassVibe = sin( r * 40.0 - time * 12.0 ) * audioBass * 0.2 * leadCame;
-    glassColor += vec3( 0.2, 0.6, 1.0 ) * bassVibe;
+    float bass_vibe = sin( r * 40.0 - time * 12.0 ) * audioBass * 0.2 * lead_came;
+    glass_color += vec3( 0.2, 0.6, 1.0 ) * bass_vibe;
 
-    vec3 col = glassColor + godrayColor;
+    vec3 col = glass_color + godray_color;
 
     // Subtle cathedral interior ambient depth
-    col += vec3( 0.04, 0.02, 0.06 ) * ( 1.0 - leadCame );
+    col += vec3( 0.04, 0.02, 0.06 ) * ( 1.0 - lead_came );
 
     col = hueRot( col, audioChromaHue + hue );
     col = pow( col, vec3( 0.9 ) );

@@ -41,22 +41,22 @@ vec3 img( vec2 uv )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  lightDir = normalize( vec3( 0.5, 0.7, 0.6 ) );
-    float diff = max( 0.0, dot( vNormal, lightDir ) );
-    float spec = pow( max( 0.0, dot( reflect( -lightDir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 32.0 )
+    vec3  light_dir = normalize( vec3( 0.5, 0.7, 0.6 ) );
+    float diff = max( 0.0, dot( vNormal, light_dir ) );
+    float spec = pow( max( 0.0, dot( reflect( -light_dir, vNormal ), vec3( 0.0, 0.0, 1.0 ) ) ), 32.0 )
                  * ( specularP > 0.01 ? specularP : 1.2 );
 
     // Cubelet edge bevel glow
-    vec3  aPos = abs( vLocalPos );
-    float edgeDist = max( max( aPos.x, aPos.y ), aPos.z );
-    float edgeGlow = smoothstep( 0.42, 0.5, edgeDist );
+    vec3  a_pos = abs( vLocalPos );
+    float edge_dist = max( max( a_pos.x, a_pos.y ), a_pos.z );
+    float edge_glow = smoothstep( 0.42, 0.5, edge_dist );
 
-    vec2 photoUv = fract( vLocalPos.xy * 2.0 + 0.5 );
-    vec3 photo = img( photoUv );
+    vec2 photo_uv = fract( vLocalPos.xy * 2.0 + 0.5 );
+    vec3 photo = img( photo_uv );
 
     vec3 col = vCol * ( 0.6 + 0.4 * photo ) * ( 0.4 + 0.6 * diff );
     col += vec3( 0.95, 0.95, 1.0 ) * spec * ( 1.0 + 3.0 * audioKick );
-    col += vCol * edgeGlow * 1.5;
+    col += vCol * edge_glow * 1.5;
     col *= ( 0.85 + 0.35 * audioSwell );
     col += vCol * ( audioKick * 0.3 );
 

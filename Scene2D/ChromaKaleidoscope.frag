@@ -116,13 +116,13 @@ void main()
     // Wedge seams; the kick pulses a ring inward.
     float seam = exp( -min( loc, sector - loc ) * 50.0 ) * 0.25;
     col += imgPalette( hue * 0.159 + 0.85 ) * seam * ( 0.5 + e );
-    float ringR = 0.55 - 0.3 * audioKick;
-    col += tint * exp( -abs( r - ringR ) * 20.0 ) * 0.5 * audioKick;
+    float ring_r = 0.55 - 0.3 * audioKick;
+    col += tint * exp( -abs( r - ring_r ) * 20.0 ) * 0.5 * audioKick;
     // The ring itself, dark centre so the wedges read.
     col *= smoothstep( 0.02, 0.12, r );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

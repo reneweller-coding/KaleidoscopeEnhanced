@@ -79,7 +79,7 @@ void main()
 
     vec3  world;
     vec3  col;
-    float baseSize;
+    float base_size;
 
     if ( r1 < 0.10 )
     {
@@ -94,7 +94,7 @@ void main()
         float band = 0.5 + 0.5 * sin( ph * 11.0 + sin( th * 3.0 + ra ) * 0.4 );
         col = palTint( mix( vec3( 0.85, 0.55, 0.30 ), vec3( 0.95, 0.85, 0.65 ), band ), 0.20 * band, 0.18 );
         col = col * lit * 1.7;
-        baseSize = 110.0;
+        base_size = 110.0;
     }
     else if ( r1 < 0.80 )
     {
@@ -110,7 +110,7 @@ void main()
         float gap = smoothstep( 0.02, 0.10, abs( r2 - 0.55 ) ); // Cassini gap
         col = hueRot( vec3( 0.75, 0.65, 0.55 ), audioChromaHue * 0.6 + r2 * 0.5 )
               * ( 0.45 + 0.6 * r3 ) * gap * ( 1.0 + 2.2 * wave + 1.2 * audioDrop );
-        baseSize = 80.0;
+        base_size = 80.0;
     }
     else
     {
@@ -119,7 +119,7 @@ void main()
         float ph = acos( 2.0 * r3 - 1.0 );
         world = vec3( sin( ph ) * cos( th ), cos( ph ), sin( ph ) * sin( th ) ) * 130.0;
         col = vec3( 0.7, 0.75, 0.9 ) * ( 0.25 + 0.55 * r4 );
-        baseSize = 40.0;
+        base_size = 40.0;
     }
 
     // Orbiting camera with a gentle inclination swing; swell pulls closer.
@@ -140,8 +140,9 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( baseSize * ( 0.9 + 0.7 * r4 ) * px / dist, 1.5, 47.4 * px ); // sprite sweep 2026-08-22:
-                                                                                       // measured luma 0.042, area x3.3
+    gl_PointSize = clamp( base_size * ( 0.9 + 0.7 * r4 ) * px / dist, 1.5, 47.4 * px ); // sprite sweep 2026-08-22:
+                                                                                        // measured luma 0.042, area
+                                                                                        // x3.3
 
     col *= 0.75 + 0.5 * audioCentroid;
     vCol = vec4( col * 2.4, 1.0 );

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -245,8 +245,8 @@ void main()
     for ( int L = 0; L < 2; ++L )
     {
         float fl = float( L );
-        float Sl = S * ( 1.0 + 2.0 * fl );
-        vec2  g = p * Sl + vec2( T * ( 0.6 + 0.4 * fl ), 0.3 * T ) + fl * 11.0;
+        float sl = S * ( 1.0 + 2.0 * fl );
+        vec2  g = p * sl + vec2( T * ( 0.6 + 0.4 * fl ), 0.3 * T ) + fl * 11.0;
         vec2  gi = floor( g );
         for ( int j = -1; j <= 1; ++j )
             for ( int i = -1; i <= 1; ++i )
@@ -257,11 +257,11 @@ void main()
                     continue;
                 vec2  c = id + 0.5 + 0.35 * vec2( sin( T * ( 1.0 + h ) + h * 6.28 ), cos( T * ( 0.8 + h ) + h * 9.0 ) );
                 float R = ( 0.25 + 0.12 * clamp( audioSpread, 0.0, 1.0 ) ) * ( 0.6 + 0.5 * h ) * ( 1.0 - 0.4 * fl );
-                vec2  d = ( g - c ) / Sl; // screen units
+                vec2  d = ( g - c ) / sl; // screen units
                 float wob = 1.0
                             + ( 0.04 + 0.12 * rough )
                                   * sin( atan( d.y, d.x ) * 3.0 + sceneTime * ( 1.0 + h ) + h * 6.0 );
-                float rr = R / Sl * wob;
+                float rr = R / sl * wob;
                 float m = exp( -dot( d, d ) / ( rr * rr ) * 1.2 );
                 F += m;
                 G += m * d / ( rr * rr );
@@ -272,8 +272,8 @@ void main()
             }
     }
     vec3  dc = C / max( F, 1e-4 );
-    float fwF = fwidth( F ) + 1e-3;
-    float inside = smoothstep( 0.5 - fwF, 0.5 + fwF, F );
+    float fw_f = fwidth( F ) + 1e-3;
+    float inside = smoothstep( 0.5 - fw_f, 0.5 + fw_f, F );
     // Inner swirl.
     float sw = fbm3( p * 8.0
                      + ( 0.5 + clamp( swirlP, 0.0, 1.0 ) )

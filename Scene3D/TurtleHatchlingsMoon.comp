@@ -51,20 +51,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     if ( base + 6u > maxVertices )
         return;
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
-    vec3 pList[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
-    vec2 uvList[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
-                              vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
+    vec3 p_list[6] = vec3[6]( p0, p1, p2, p0, p2, p3 );
+    vec2 uv_list[6] = vec2[6]( vec2( uv0.x, uv0.y ), vec2( uv1.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv0.y ),
+                               vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
         verts[off + 3u] = id;
         verts[off + 4u] = lit;
         verts[off + 5u] = kind;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }
 
@@ -73,27 +73,27 @@ void main()
 {
     uvec3       g = gl_GlobalInvocationID;
     uint        id = g.x + 64u * ( g.y + 64u * g.z );
-    uint        nTurtles = 60u + uint( clamp( clutchP, 0.0, 1.0 ) * 80.0 );
+    uint        n_turtles = 60u + uint( clamp( clutchP, 0.0, 1.0 ) * 80.0 );
     float       wander = 0.3 + 0.7 * clamp( pathP, 0.0, 1.0 );
     float       clock = sceneAdvance * 0.25 + sceneTime * 0.05;
-    const float SAND_Y = -1.5;
-    const float NEST_Z = 5.0, SEA_Z = 16.0;
+    const float SandY = -1.5;
+    const float NestZ = 5.0, SeaZ = 16.0;
 
     if ( id == 0u )
     {
         emitQuad( vec3( 0.0, 4.0, 60.0 ), vec3( 90.0, 0.0, 0.0 ), vec3( 0.0, 40.0, 0.0 ), 0.0, 0.0, -1.0, vec2( 0.0 ),
                   vec2( 1.0 ) );
-        emitQuad( vec3( 0.0, SAND_Y, 12.0 ), vec3( 60.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 14.0 ), 0.0, 0.0, -2.0,
+        emitQuad( vec3( 0.0, SandY, 12.0 ), vec3( 60.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 14.0 ), 0.0, 0.0, -2.0,
                   vec2( 0.0 ), vec2( 1.0 ) ); // the beach
-        emitQuad( vec3( 0.0, SAND_Y - 0.02, 40.0 ), vec3( 90.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 22.0 ), 0.0, 0.0, -3.0,
+        emitQuad( vec3( 0.0, SandY - 0.02, 40.0 ), vec3( 90.0, 0.0, 0.0 ), vec3( 0.0, 0.0, 22.0 ), 0.0, 0.0, -3.0,
                   vec2( 0.0 ), vec2( 1.0 ) ); // the sea
         // The nest mound (kind 3).
-        emitQuad( vec3( 0.5, SAND_Y + 0.15, NEST_Z ), vec3( 1.2, 0.0, 0.0 ), vec3( 0.0, 0.25, 0.0 ), 0.0, 0.0, 3.0,
+        emitQuad( vec3( 0.5, SandY + 0.15, NestZ ), vec3( 1.2, 0.0, 0.0 ), vec3( 0.0, 0.25, 0.0 ), 0.0, 0.0, 3.0,
                   vec2( 0.0 ), vec2( 1.0 ) );
         return;
     }
     uint t = id - 1u;
-    if ( t >= nTurtles )
+    if ( t >= n_turtles )
         return;
     float ft = float( t );
     vec3  h = hash31( ft * 3.7 + 1.0 );
@@ -101,10 +101,10 @@ void main()
     // its own speed and a wandering course (sines), paddling as it goes.
     float ph = fract( clock * ( 0.25 + 0.2 * h.x ) + h.y );
     float ease = smoothstep( 0.0, 0.1, ph ); // emerges from the nest
-    float zc = mix( NEST_Z, SEA_Z, ph );
+    float zc = mix( NestZ, SeaZ, ph );
     float xc = 0.5 + ( h.z - 0.5 ) * 3.0 * ph + wander * 0.6 * sin( ph * 9.0 + ft ) * ph;
     float fade = 1.0 - smoothstep( 0.92, 1.0, ph ); // slips into the sea
-    vec3  pos = vec3( xc, SAND_Y + 0.06, zc );
+    vec3  pos = vec3( xc, SandY + 0.06, zc );
     float heading = atan( 1.0, wander * 0.6 * 9.0 * cos( ph * 9.0 + ft ) * ph );
     vec3  fwd = normalize( vec3( sin( heading * 0.3 ), 0.0, 1.0 ) );
     vec3  side = vec3( fwd.z, 0.0, -fwd.x );

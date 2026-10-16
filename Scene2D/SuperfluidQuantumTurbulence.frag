@@ -61,33 +61,33 @@ vec3 imgPalette( float t )
 /// Compute quantized vortex phase field: sum_k arctan(y - y_k, x - x_k)
 vec2 superfluidField( vec2 p, float t, float nVortices, out float minCoreDist )
 {
-    float totalPhase = 0.0;
+    float total_phase = 0.0;
     minCoreDist = 1e5;
-    int numV = int( clamp( nVortices, 4.0, 8.0 ) );
+    int num_v = int( clamp( nVortices, 4.0, 8.0 ) );
 
     for ( int k = 0; k < 8; k++ )
     {
-        if ( k >= numV )
+        if ( k >= num_v )
             break;
         float kf = float( k );
         // Vortex core orbital motion + reconnection oscillation
-        float aOrbit = t * 0.4 * ( k % 2 == 0 ? 1.0 : -1.0 ) + kf * ( 6.2831853 / float( numV ) );
+        float a_orbit = t * 0.4 * ( k % 2 == 0 ? 1.0 : -1.0 ) + kf * ( 6.2831853 / float( num_v ) );
         // Sub-bass swells the orbit RADIUS only, never the orbit angle: the
         // condensate cloud breathes wider on drones while each core keeps
         // travelling along its own continuous t-driven phase.
-        float rOrbit = ( 0.45 + 0.2 * sin( t * 0.5 + kf * 1.5 ) ) * ( 1.0 + 0.35 * audioSubBass );
-        vec2  vCore = vec2( cos( aOrbit ), sin( aOrbit ) ) * rOrbit;
+        float r_orbit = ( 0.45 + 0.2 * sin( t * 0.5 + kf * 1.5 ) ) * ( 1.0 + 0.35 * audioSubBass );
+        vec2  v_core = vec2( cos( a_orbit ), sin( a_orbit ) ) * r_orbit;
 
-        vec2  diff = p - vCore;
+        vec2  diff = p - v_core;
         float d = length( diff );
         minCoreDist = min( minCoreDist, d );
 
         // Quantized phase contribution (winding number +1 or -1)
         float winding = ( k % 2 == 0 ) ? 1.0 : -1.0;
-        totalPhase += atan( diff.y, diff.x ) * winding;
+        total_phase += atan( diff.y, diff.x ) * winding;
     }
 
-    return vec2( cos( totalPhase ), sin( totalPhase ) );
+    return vec2( cos( total_phase ), sin( total_phase ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -96,7 +96,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float nV = ( vortexCountP > 1.0 ) ? vortexCountP : 6.0;
+    float n_v = ( vortexCountP > 1.0 ) ? vortexCountP : 6.0;
     float klv = ( kelvinP > 0.01 ) ? kelvinP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -105,35 +105,35 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Superfluid quantum phase evaluation
-    float minCore;
-    vec2  phaseVec = superfluidField( uv, t, nV, minCore );
-    float quantumPhase = atan( phaseVec.y, phaseVec.x );
+    float min_core;
+    vec2  phase_vec = superfluidField( uv, t, n_v, min_core );
+    float quantum_phase = atan( phase_vec.y, phase_vec.x );
 
     // Kelvin wave ripples propagating on phase field
-    float kelvinWave = sin( quantumPhase * 4.0 * klv + minCore * 25.0 - t * 5.0 );
+    float kelvin_wave = sin( quantum_phase * 4.0 * klv + min_core * 25.0 - t * 5.0 );
 
     // Sample slideshow texture warped by quantum circulation
-    vec2 sampleUV = fract( uv * 0.5 + phaseVec * 0.08 + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.5 + phase_vec * 0.08 + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Glowing quantized vortex cores (zero density singularities)
-    float coreGlow = exp( -minCore * ( 35.0 + 15.0 * audioCentroid ) ) * glw;
+    float core_glow = exp( -min_core * ( 35.0 + 15.0 * audioCentroid ) ) * glw;
 
     // Phase interference fringe coloring
-    vec3 palA = imgPalette( quantumPhase / 6.2831853 + t * 0.05 );
-    vec3 palB = imgPalette( quantumPhase / 6.2831853 + 0.5 );
-    vec3 superfluidCol = mix( palA, palB, 0.5 + 0.5 * kelvinWave );
+    vec3 pal_a = imgPalette( quantum_phase / 6.2831853 + t * 0.05 );
+    vec3 pal_b = imgPalette( quantum_phase / 6.2831853 + 0.5 );
+    vec3 superfluid_col = mix( pal_a, pal_b, 0.5 + 0.5 * kelvin_wave );
 
-    superfluidCol = mix( superfluidCol, texCol, 0.35 + 0.15 * audioValence );
+    superfluid_col = mix( superfluid_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing vortex cores and reconnection bursts
-    vec3 coreTint = vec3( 1.2, 1.4, 1.9 ) * coreGlow * ( 1.0 + 3.0 * audioKick );
-    superfluidCol += coreTint;
+    vec3 core_tint = vec3( 1.2, 1.4, 1.9 ) * core_glow * ( 1.0 + 3.0 * audioKick );
+    superfluid_col += core_tint;
 
     // Acoustic shockwave ripples
-    float acousticWave = abs( sin( minCore * 35.0 - t * 8.0 ) );
-    superfluidCol += imgPalette( 0.8 ) * smoothstep( 0.9, 1.0, acousticWave ) * 0.35 * audioKick;
+    float acoustic_wave = abs( sin( min_core * 35.0 - t * 8.0 ) );
+    superfluid_col += imgPalette( 0.8 ) * smoothstep( 0.9, 1.0, acoustic_wave ) * 0.35 * audioKick;
 
-    superfluidCol = pow( superfluidCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( superfluidCol, 0.0, 1.0 ), 1.0 );
+    superfluid_col = pow( superfluid_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( superfluid_col, 0.0, 1.0 ), 1.0 );
 }

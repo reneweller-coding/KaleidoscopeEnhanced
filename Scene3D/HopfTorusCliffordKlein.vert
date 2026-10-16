@@ -91,32 +91,32 @@ void main()
 
     // Stereographic projection from S^3 to R^3: (x, y, z) / (1 - w)
     float denom = max( 1.0 - q.w * 0.8, 0.2 );
-    vec3  centerPos = ( q.xyz / denom ) * ( 3.5 * rad + audioSwell * 1.5 );
+    vec3  center_pos = ( q.xyz / denom ) * ( 3.5 * rad + audioSwell * 1.5 );
 
     // Dynamic kick burst
-    centerPos += normalize( centerPos ) * audioSwell * 0.8;
+    center_pos += normalize( center_pos ) * audioSwell * 0.8;
 
     // Ribbon normal and tangent vectors
-    float thetaNext = theta + 0.05;
-    vec4  qNext = vec4(
-        cos( eta ) * cos( thetaNext + phi ),
-        cos( eta ) * sin( thetaNext + phi ),
-        sin( eta ) * cos( thetaNext - phi ),
-        sin( eta ) * sin( thetaNext - phi ) );
-    vec3 centerNext = ( qNext.xyz / max( 1.0 - qNext.w * 0.8, 0.2 ) ) * ( 3.5 * rad + audioSwell * 1.5 );
+    float theta_next = theta + 0.05;
+    vec4  q_next = vec4(
+        cos( eta ) * cos( theta_next + phi ),
+        cos( eta ) * sin( theta_next + phi ),
+        sin( eta ) * cos( theta_next - phi ),
+        sin( eta ) * sin( theta_next - phi ) );
+    vec3 center_next = ( q_next.xyz / max( 1.0 - q_next.w * 0.8, 0.2 ) ) * ( 3.5 * rad + audioSwell * 1.5 );
 
-    vec3 tangent = normalize( centerNext - centerPos );
-    vec3 binormal = normalize( cross( tangent, normalize( centerPos ) ) );
+    vec3 tangent = normalize( center_next - center_pos );
+    vec3 binormal = normalize( cross( tangent, normalize( center_pos ) ) );
 
-    float ribbonWidth = ( 0.28 * wid ) * ( 1.0 + 0.3 * audioKick );
-    vec3  worldP = centerPos + binormal * ( side * ribbonWidth );
+    float ribbon_width = ( 0.28 * wid ) * ( 1.0 + 0.3 * audioKick );
+    vec3  world_p = center_pos + binormal * ( side * ribbon_width );
 
     // Camera space
-    vec3 camPos = vec3( 0.0, 0.0, -10.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 0.0, -10.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vSide = side;

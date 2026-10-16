@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -241,17 +241,17 @@ void main()
     float l = luma( imgLod( uv, 2.5 ) ) * 6.0;
     float px = fwidth( l ) + 1e-4;
     float contour = smoothstep( px * 1.5, 0.0, abs( fract( l ) - 0.5 ) - 0.5 + px * 1.5 );
-    vec3  laserA = mix( vec3( 0.2, 1.0, 0.4 ), vec3( 1.0, 0.15, 0.3 ), mode );
-    vec3  laserB = mix( vec3( 0.2, 0.8, 1.0 ), vec3( 1.0, 0.2, 0.9 ), mode );
-    col += mix( laserA, laserB, fract( l * 0.2 ) ) * contour * 0.25 * clamp( wallP + 0.2, 0.0, 1.2 );
+    vec3  laser_a = mix( vec3( 0.2, 1.0, 0.4 ), vec3( 1.0, 0.15, 0.3 ), mode );
+    vec3  laser_b = mix( vec3( 0.2, 0.8, 1.0 ), vec3( 1.0, 0.2, 0.9 ), mode );
+    col += mix( laser_a, laser_b, fract( l * 0.2 ) ) * contour * 0.25 * clamp( wallP + 0.2, 0.0, 1.2 );
     // Projectors: fans of beams from points along the edges (repeated so the plane is endless).
-    float nP = 2.0 + 2.0 * clamp( projP, 0.0, 1.0 );
-    float nB = 6.0 + 10.0 * clamp( beamP, 0.0, 1.0 );
+    float n_p = 2.0 + 2.0 * clamp( projP, 0.0, 1.0 );
+    float n_b = 6.0 + 10.0 * clamp( beamP, 0.0, 1.0 );
     float open = 0.3 + 0.8 * clamp( audioSpread, 0.0, 1.0 );
     for ( int k = 0; k < 4; ++k )
     {
         float fk = float( k );
-        float on = smoothstep( fk - 0.5, fk + 0.5, nP - 0.5 );
+        float on = smoothstep( fk - 0.5, fk + 0.5, n_p - 0.5 );
         if ( on <= 0.0 )
             break;
         vec2  src = vec2( mod( fk * 1.1 + 0.4, 2.2 ) - 1.1, fk < 2.0 ? -0.62 : 0.62 );
@@ -262,12 +262,12 @@ void main()
         a = mod( a + 3.14159265, 6.2831853 ) - 3.14159265;
         float r = length( d );
         // Beams: evenly spaced angles inside the fan.
-        float fan = a / open * nB;
+        float fan = a / open * n_b;
         float bi = floor( fan + 0.5 );
-        float inFan = step( abs( bi ), nB * 0.5 );
-        float da = abs( fan - bi ) * open / nB * r; // screen distance to the nearest beam
-        float beam = exp( -da * da / 0.000004 ) * inFan * smoothstep( 0.02, 0.1, r );
-        vec3  bc = mod( bi + fk, 2.0 ) < 0.5 ? laserA : laserB;
+        float in_fan = step( abs( bi ), n_b * 0.5 );
+        float da = abs( fan - bi ) * open / n_b * r; // screen distance to the nearest beam
+        float beam = exp( -da * da / 0.000004 ) * in_fan * smoothstep( 0.02, 0.1, r );
+        vec3  bc = mod( bi + fk, 2.0 ) < 0.5 ? laser_a : laser_b;
         bc = mix( bc, glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( fk, bi ), hueP * 0.159 ), 0.15 );
         col += bc * beam * ( 0.3 + 1.2 * haze ) * ( 1.0 + 1.5 * kick ) * on;
         col += bc * exp( -r * 20.0 ) * 0.5 * on; // the projector aperture

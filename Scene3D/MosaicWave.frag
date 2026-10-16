@@ -40,8 +40,8 @@ void main()
         col = hueRot( col.bgr, audioChromaHue * 2.0 + 2.6 );
 
     // Grout between tiles.
-    vec2  cellUV = fract( vUV * vec2( 100.0, 30.0 ) );
-    vec2  b = min( cellUV, 1.0 - cellUV );
+    vec2  cell_uv = fract( vUV * vec2( 100.0, 30.0 ) );
+    vec2  b = min( cell_uv, 1.0 - cell_uv );
     float grout = smoothstep( 0.0, 0.05, min( b.x, b.y ) );
 
     // Edge-on tiles darken naturally with the flip angle.

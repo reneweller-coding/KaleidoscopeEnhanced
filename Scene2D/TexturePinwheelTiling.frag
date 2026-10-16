@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -240,8 +240,8 @@ void main()
     float T = 0.1 * sceneTime + 0.6 * audioAdvance;
     float r = length( l );
     // Twirl: more rotation toward the centre, vanishing at the block edge (continuous across blocks).
-    float edgeFade = smoothstep( 0.5, 0.2, max( abs( l.x ), abs( l.y ) ) );
-    float tw = dir * ( T + ( 0.5 + 2.0 * clamp( twirlP, 0.0, 1.0 ) ) * ( 1.0 - r * 2.0 ) ) * edgeFade;
+    float edge_fade = smoothstep( 0.5, 0.2, max( abs( l.x ), abs( l.y ) ) );
+    float tw = dir * ( T + ( 0.5 + 2.0 * clamp( twirlP, 0.0, 1.0 ) ) * ( 1.0 - r * 2.0 ) ) * edge_fade;
     vec2  lr = rot2( tw ) * l;
     // Quarter-turn symmetry: fold into one quadrant by rotation (not mirroring).
     float ang = atan( lr.y, lr.x );

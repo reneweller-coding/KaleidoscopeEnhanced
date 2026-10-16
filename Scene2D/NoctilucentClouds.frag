@@ -89,7 +89,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     int   sheets = 2 + int( clamp( sheetsP, 0.0, 1.0 ) * 2.0 );
-    float rippleF = 6.0 + 8.0 * clamp( rippleP, 0.0, 1.0 );
+    float ripple_f = 6.0 + 8.0 * clamp( rippleP, 0.0, 1.0 );
     float twilight = 0.7 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float clock = sceneAdvance * 0.25 + sceneTime * 0.05;
@@ -121,7 +121,7 @@ void main()
         float band = horizon + 0.08 + fs * 0.09;               // the sheet's screen band
         float persp = 1.0 / max( p.y - horizon + 0.05, 0.05 ); // perspective compression upward
         vec2  cq = vec2( p.x * persp * 0.6 + clock * ( 0.2 + 0.1 * fs ) + fs * 11.0, persp * 0.8 );
-        float waves = 0.5 + 0.5 * sin( cq.y * rippleF + fbm( cq * 1.5 ) * 4.0 - clock * 0.5 );
+        float waves = 0.5 + 0.5 * sin( cq.y * ripple_f + fbm( cq * 1.5 ) * 4.0 - clock * 0.5 );
         float billows = fbm( cq * 3.0 + fs * 3.0 ) * 0.6 + fbm( cq * 9.0 + 5.0 ) * 0.4 * ( 0.5 + 0.5 * hi );
         float density = smoothstep( 0.35, 0.75, billows * 0.7 + waves * 0.4 );
         float extent = smoothstep( band - 0.06, band + 0.02, p.y )
@@ -136,7 +136,7 @@ void main()
     col = mix( col, ground, land );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

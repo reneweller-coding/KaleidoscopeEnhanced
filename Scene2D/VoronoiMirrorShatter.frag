@@ -84,7 +84,7 @@ void main()
     vec2  c = p * dens;
     vec2  n = floor( c );
     float best = 1e9, second = 1e9;
-    vec2  bestCell = n, bestCentre = vec2( 0.0 );
+    vec2  best_cell = n, best_centre = vec2( 0.0 );
     for ( int j = -2; j <= 2; ++j )
         for ( int i = -2; i <= 2; ++i )
         {
@@ -97,44 +97,44 @@ void main()
             {
                 second = best;
                 best = d;
-                bestCell = g;
-                bestCentre = centre;
+                best_cell = g;
+                best_centre = centre;
             }
             else if ( d < second )
                 second = d;
         }
     float edge = sqrt( second ) - sqrt( best ); // distance to the shard border
     // Gap: as the shards drift apart, the border widens into dark.
-    float gapW = 0.02 + 0.22 * open;
-    float inShard = smoothstep( gapW, gapW + 0.05, edge );
+    float gap_w = 0.02 + 0.22 * open;
+    float in_shard = smoothstep( gap_w, gap_w + 0.05, edge );
 
     // Each shard is a small kaleidoscope of the photo: fold around the shard
     // centre, turn on the scene clock.
-    vec2  q = c - bestCentre;
-    float nSides = 4.0 + floor( hash21( bestCell + 3.3 ) * 4.0 );
-    float rot = sceneAdvance * ( 0.1 + 0.2 * hash21( bestCell + 9.1 ) )
-                * ( hash21( bestCell + 1.1 ) > 0.5 ? 1.0 : -1.0 );
+    vec2  q = c - best_centre;
+    float n_sides = 4.0 + floor( hash21( best_cell + 3.3 ) * 4.0 );
+    float rot = sceneAdvance * ( 0.1 + 0.2 * hash21( best_cell + 9.1 ) )
+                * ( hash21( best_cell + 1.1 ) > 0.5 ? 1.0 : -1.0 );
     float a = atan( q.y, q.x ) + rot;
-    float sector = 6.2831853 / nSides;
+    float sector = 6.2831853 / n_sides;
     a = mod( a, sector );
     a = abs( a - sector * 0.5 );
     vec2 k = length( q ) * vec2( cos( a ), sin( a ) );
     // Tilt: an open shard shows the photo shifted (it has turned away).
-    vec2 tilt = ( hash22( bestCell + 5.5 ) - 0.5 ) * 0.4 * open;
-    vec2 uv = fract( k * 0.25 + hash22( bestCell ) * 0.5 + tilt );
+    vec2 tilt = ( hash22( best_cell + 5.5 ) - 0.5 ) * 0.4 * open;
+    vec2 uv = fract( k * 0.25 + hash22( best_cell ) * 0.5 + tilt );
     vec3 tex = img( uv );
-    vec3 tint = imgPalette( hue * 0.159 + hash21( bestCell + 2.2 ) * 0.3 );
+    vec3 tint = imgPalette( hue * 0.159 + hash21( best_cell + 2.2 ) * 0.3 );
     vec3 shard = mix( tex, tex * tint * 1.8, 0.35 ) * ( 0.7 + 0.5 * audioLevel );
 
     // Edges catch the light, harder on the kick; the gaps glow on the swell.
-    float rim = exp( -max( edge - gapW, 0.0 ) * 25.0 );
-    vec3  gapCol = imgPalette( hue * 0.159 + 0.6 ) * ( 0.03 + 0.12 * clamp( audioSwell, 0.0, 1.0 ) ) * open;
-    vec3  col = mix( gapCol, shard, inShard );
-    col += imgPalette( hue * 0.159 + 0.9 ) * rim * inShard * ( 0.2 + 1.0 * audioKick );
+    float rim = exp( -max( edge - gap_w, 0.0 ) * 25.0 );
+    vec3  gap_col = imgPalette( hue * 0.159 + 0.6 ) * ( 0.03 + 0.12 * clamp( audioSwell, 0.0, 1.0 ) ) * open;
+    vec3  col = mix( gap_col, shard, in_shard );
+    col += imgPalette( hue * 0.159 + 0.9 ) * rim * in_shard * ( 0.2 + 1.0 * audioKick );
     // A little photo showing through the gaps, darker (the wall behind).
-    col += img( fract( p * 0.3 + 0.5 ) ) * 0.08 * ( 1.0 - inShard );
+    col += img( fract( p * 0.3 + 0.5 ) ) * 0.08 * ( 1.0 - in_shard );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

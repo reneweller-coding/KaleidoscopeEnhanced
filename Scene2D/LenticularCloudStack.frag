@@ -92,7 +92,7 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
-    int   nL = 3 + int( clamp( layersP, 0.0, 1.0 ) * 3.99 );
+    int   n_l = 3 + int( clamp( layersP, 0.0, 1.0 ) * 3.99 );
 
     // Dusk sky: deep blue above, peach at the horizon.
     vec3 col = mix( vec3( 1.0, 0.72, 0.55 ), vec3( 0.62, 0.55, 0.72 ), smoothstep( -0.35, 0.0, p.y ) );
@@ -103,29 +103,29 @@ void main()
         col += vec3( 0.9, 0.95, 1.0 ) * smoothstep( 0.1, 0.0, length( gf - gc ) ) * step( 0.988, hash21( gi + 5.0 ) )
                * smoothstep( 0.2, 0.45, p.y ) * ( 0.3 + 0.8 * hi );
     }
-    vec3 pinkC = mix( vec3( 1.0, 0.55, 0.6 ), vec3( 1.0, 0.7, 0.45 ), 0.4 );
-    pinkC = mix( pinkC, imgPalette( 0.95 + hueP * 0.159 ) * 1.3, 0.1 );
+    vec3 pink_c = mix( vec3( 1.0, 0.55, 0.6 ), vec3( 1.0, 0.7, 0.45 ), 0.4 );
+    pink_c = mix( pink_c, imgPalette( 0.95 + hueP * 0.159 ) * 1.3, 0.1 );
     float glow = 0.85 + 0.5 * swell;
 
     // The volcano: a broad cone with snowfields and dark rock ribs.
-    float peakX = 0.02;
-    float cone = -0.42 + 0.52 * exp( -pow( abs( p.x - peakX ) * 1.6, 1.4 ) )
+    float peak_x = 0.02;
+    float cone = -0.42 + 0.52 * exp( -pow( abs( p.x - peak_x ) * 1.6, 1.4 ) )
                  + 0.015 * ( fbm( vec2( p.x * 8.0, 1.0 ) ) - 0.5 );
     // The stack of lenses over the summit.
     float summit = -0.42 + 0.52;
-    vec3  cloudCol = vec3( 0.0 );
-    float cloudA = 0.0;
+    vec3  cloud_col = vec3( 0.0 );
+    float cloud_a = 0.0;
     for ( int k = 5; k >= 0; --k )
     {
-        if ( k >= nL )
+        if ( k >= n_l )
             continue;
         float fk = float( k );
         float cy = summit + 0.06 + fk * 0.065 + 0.004 * sin( T * 0.07 + fk );
-        float cx = peakX + 0.03 * sin( fk * 1.7 ) + 0.01 * sin( T * 0.05 + fk * 2.0 );
-        float wR = ( 0.42 - 0.05 * fk ) * ( 1.0 + 0.03 * sin( T * 0.09 + fk * 1.3 ) );
+        float cx = peak_x + 0.03 * sin( fk * 1.7 ) + 0.01 * sin( T * 0.05 + fk * 2.0 );
+        float w_r = ( 0.42 - 0.05 * fk ) * ( 1.0 + 0.03 * sin( T * 0.09 + fk * 1.3 ) );
         float th = 0.042 + 0.008 * sin( fk * 2.3 );
         vec2  q = p - vec2( cx, cy );
-        float u = q.x / wR;
+        float u = q.x / w_r;
         if ( abs( u ) > 1.5 )
             continue;
         // Lens profile: thickest in the middle, tapering to a sharp rim.
@@ -138,7 +138,7 @@ void main()
                        * smoothstep( bot - fray - 0.006, bot - fray + 0.004, q.y );
         // Shading: lit tops, shaded undersides, brighter toward the sun (left).
         float hgt = clamp( ( q.y - bot ) / max( top - bot, 1e-4 ), 0.0, 1.0 );
-        vec3  c = mix( vec3( 0.5, 0.45, 0.62 ), pinkC * glow * ( 0.8 + 0.3 * smoothstep( 0.5, -0.8, u ) ),
+        vec3  c = mix( vec3( 0.5, 0.45, 0.62 ), pink_c * glow * ( 0.8 + 0.3 * smoothstep( 0.5, -0.8, u ) ),
                        smoothstep( 0.2, 0.9, hgt ) );
         c += vec3( 1.0, 0.85, 0.75 ) * smoothstep( 0.85, 1.0, hgt ) * 0.25 * glow; // the lit rim on top
         c *= 0.88 + 0.2 * fbm( vec2( q.x * 12.0, q.y * 40.0 + fk * 3.0 ) );        // soft cloud texture
@@ -146,27 +146,27 @@ void main()
         float veil = smoothstep( 0.85, 1.05, u ) * smoothstep( 1.45, 1.1, u )
                      * smoothstep( 0.018, 0.0, abs( q.y - 0.004 * ( fr - 0.5 ) ) ) * smoothstep( 0.4, 0.75, fr ) * 0.3;
         float a = max( inside, veil );
-        cloudCol = mix( cloudCol, c, a );
-        cloudA = max( cloudA, a );
+        cloud_col = mix( cloud_col, c, a );
+        cloud_a = max( cloud_a, a );
     }
     if ( p.y < cone )
     {
         // Snow above, rock ribs, forests low down; faint rose light on the snow.
         float h = ( p.y + 0.42 ) / 0.52;
-        float ribs = smoothstep( 0.55, 0.7, fbm( vec2( ( p.x - peakX ) * 14.0 / ( 0.2 + h ), h * 3.0 ) ) );
+        float ribs = smoothstep( 0.55, 0.7, fbm( vec2( ( p.x - peak_x ) * 14.0 / ( 0.2 + h ), h * 3.0 ) ) );
         vec3  snow = mix( vec3( 0.62, 0.62, 0.78 ), vec3( 1.0, 0.8, 0.8 ) * glow,
-                          smoothstep( 0.3, 0.9, h ) * smoothstep( 0.1, -0.2, p.x - peakX ) );
+                          smoothstep( 0.3, 0.9, h ) * smoothstep( 0.1, -0.2, p.x - peak_x ) );
         vec3  rock = vec3( 0.2, 0.18, 0.24 );
         vec3  m = mix( snow, rock, ribs * smoothstep( 0.95, 0.4, h ) );
         m = mix( m, vec3( 0.08, 0.1, 0.12 ), smoothstep( 0.35, 0.1, h ) ); // forest below the snowline
         col = m;
     }
-    col = mix( col, cloudCol, cloudA );
+    col = mix( col, cloud_col, cloud_a );
     // Haze in the valley.
     col = mix( col, vec3( 0.7, 0.6, 0.7 ), smoothstep( -0.3, -0.5, p.y ) * 0.4 );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

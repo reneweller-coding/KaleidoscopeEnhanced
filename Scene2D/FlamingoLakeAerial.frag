@@ -118,14 +118,14 @@ void main()
     // The salt crust lines the shore at the lower left and runs out in veins.
     float shore = dot( p, normalize( vec2( -0.6, -1.0 ) ) ) - 0.28 + 0.12 * ( fbm( p * 2.0 + 5.0 ) - 0.5 );
     float salt = smoothstep( 0.0, 0.02, shore );
-    float saltVein = smoothstep( 0.02, 0.0, abs( fbm( p * 4.0 + 20.0 ) - 0.5 ) ) * 0.7
-                     * smoothstep( -0.25, 0.0, shore );
+    float salt_vein = smoothstep( 0.02, 0.0, abs( fbm( p * 4.0 + 20.0 ) - 0.5 ) ) * 0.7
+                      * smoothstep( -0.25, 0.0, shore );
     // Salt crust: bright, cracked into plates, a faint pink tinge near the water.
     float plates = smoothstep( 0.015, 0.0, abs( fbm( p * 14.0 ) - 0.5 ) )
                    + 0.6 * smoothstep( 0.01, 0.0, abs( fbm( p * 30.0 + 3.0 ) - 0.5 ) );
-    vec3  saltC = mix( vec3( 1.0, 0.98, 0.95 ), vec3( 1.0, 0.85, 0.8 ), smoothstep( 0.08, 0.0, shore ) ) * 1.15
-                  * ( 1.0 - 0.18 * clamp( plates, 0.0, 1.0 ) ) * ( 0.94 + 0.06 * noise2( p * 200.0 ) );
-    vec3  col = mix( water, saltC, max( salt, saltVein ) );
+    vec3  salt_c = mix( vec3( 1.0, 0.98, 0.95 ), vec3( 1.0, 0.85, 0.8 ), smoothstep( 0.08, 0.0, shore ) ) * 1.15
+                   * ( 1.0 - 0.18 * clamp( plates, 0.0, 1.0 ) ) * ( 0.94 + 0.06 * noise2( p * 200.0 ) );
+    vec3  col = mix( water, salt_c, max( salt, salt_vein ) );
     // Shimmer of the sun on the water.
     {
         vec2  gg = p * 90.0, gi2 = floor( gg ), gf2 = fract( gg );
@@ -186,7 +186,7 @@ void main()
         }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

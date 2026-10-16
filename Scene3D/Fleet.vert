@@ -53,11 +53,11 @@ float hash11( float n )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     int  inst = gl_InstanceID;
     int  N = max( meshInstances, 1 );
 
-    if ( isBg )
+    if ( is_bg )
     {
         // One backdrop, not N. Collapse the shell on every instance but the
         // first: the vertices land on the same clip-space point, the triangle
@@ -109,29 +109,29 @@ void main()
     // Front half of the instance range = squadron 0, back half = squadron 1,
     // and all slot maths below runs on the LOCAL index -- an alternating split
     // would punch every second hole into each wedge.
-    float fnHalf = max( floor( fn * 0.5 ), 1.0 );
-    float squad = ( fi < fnHalf ) ? 0.0 : 1.0;
-    float fj = fi - squad * fnHalf;
-    float fnSq = ( squad < 0.5 ) ? fnHalf : max( fn - fnHalf, 1.0 );
+    float fn_half = max( floor( fn * 0.5 ), 1.0 );
+    float squad = ( fi < fn_half ) ? 0.0 : 1.0;
+    float fj = fi - squad * fn_half;
+    float fn_sq = ( squad < 0.5 ) ? fn_half : max( fn - fn_half, 1.0 );
     // Every craft runs the path at its OWN steady speed and phase, so ranks
     // slide past one another instead of moving as one rigid block (reported:
     // not all the same speed, not lined up on a grid).  Fifteen percent of
     // spread is a convoy that is loosening, not a crowd.
-    float ownSpeed = 0.85 + 0.30 * hash11( fi * 1.71 + 0.3 );
-    float ownPhase = 0.35 * hash11( fi * 9.13 + 0.7 );
-    float u = fract( phase * ownSpeed + ownPhase + 0.5 * squad );
+    float own_speed = 0.85 + 0.30 * hash11( fi * 1.71 + 0.3 );
+    float own_phase = 0.35 * hash11( fi * 9.13 + 0.7 );
+    float u = fract( phase * own_speed + own_phase + 0.5 * squad );
     float mirror = squad > 0.5 ? -1.0 : 1.0;
-    vec3  pStart = vec3( 14.0 * mirror, 2.0, 205.0 );
-    vec3  pEnd = vec3( -46.0 * mirror, -9.0, 12.0 );
-    vec3  centre = mix( pStart, pEnd, u );
-    vec3  fwd = normalize( pEnd - pStart );
+    vec3  p_start = vec3( 14.0 * mirror, 2.0, 205.0 );
+    vec3  p_end = vec3( -46.0 * mirror, -9.0, 12.0 );
+    vec3  centre = mix( p_start, p_end, u );
+    vec3  fwd = normalize( p_end - p_start );
 
     // The spacing no longer breathes with the BEAT -- even relative motion
     // between hulls in time read as the ships twitching (reported). A slow
     // autonomous swell keeps the formation alive; the music stays in the
     // running light and the engine glow.
     float tighten = 1.0 - 0.05 * sin( time * 0.22 );
-    float breakUp = clamp( audioDrop, 0.0, 1.0 );
+    float break_up = clamp( audioDrop, 0.0, 1.0 );
 
     vec3 slot;
     int  mode = int( clamp( formP, 0.0, 2.0 ) + 0.5 );
@@ -156,7 +156,7 @@ void main()
     {
         // A shell: the craft englobe something. Fibonacci placement, so they
         // are evenly spread rather than bunched at the poles.
-        float k = ( fj + 0.5 ) / fnSq;
+        float k = ( fj + 0.5 ) / fn_sq;
         float phi = acos( 1.0 - 2.0 * k );
         float th = 3.8832220774509327 * fj; // golden angle
         slot = vec3( sin( phi ) * cos( th ), cos( phi ), sin( phi ) * sin( th ) ) * craft * 2.60;
@@ -219,11 +219,11 @@ void main()
     // are going, not sideways along a rail.
     float yaw = atan( fwd.x, -fwd.z );
     float cyw = cos( yaw ), syw = sin( yaw );
-    mat3  yawM = mat3( cyw, 0.0, -syw, 0.0, 1.0, 0.0, syw, 0.0, cyw );
+    mat3  yaw_m = mat3( cyw, 0.0, -syw, 0.0, 1.0, 0.0, syw, 0.0, cyw );
     float pit = asin( clamp( fwd.y, -1.0, 1.0 ) );
     float cp = cos( pit ), sp = sin( pit );
-    mat3  pitM = mat3( 1.0, 0.0, 0.0, 0.0, cp, sp, 0.0, -sp, cp );
-    mat3  att = yawM * pitM * roll;
+    mat3  pit_m = mat3( 1.0, 0.0, 0.0, 0.0, cp, sp, 0.0, -sp, cp );
+    mat3  att = yaw_m * pit_m * roll;
 
     // Slots ride the moving formation centre; the same attitude turns the slot
     // OFFSETS too, so the wedge stays a wedge seen from any bearing instead of
@@ -235,12 +235,12 @@ void main()
     // surface, so a near ship slides AROUND the viewer instead of clipping
     // through. The whole hull moves as one (the push is per-craft, not
     // per-vertex), so the mesh never deforms.
-    vec3  shipC = att * slot + centre;
-    float rSafe = craft * 1.25 + 5.0;
-    float dC = length( shipC );
-    if ( dC < rSafe )
-        shipC *= rSafe / max( dC, 1e-3 );
-    vec3 world = att * ( p * ( craft * fit ) ) + shipC;
+    vec3  ship_c = att * slot + centre;
+    float r_safe = craft * 1.25 + 5.0;
+    float d_c = length( ship_c );
+    if ( d_c < r_safe )
+        ship_c *= r_safe / max( d_c, 1e-3 );
+    vec3 world = att * ( p * ( craft * fit ) ) + ship_c;
 
     vUV = vec2( attrA.w, attrB.w );
     vNormal = normalize( roll * nrm0 );

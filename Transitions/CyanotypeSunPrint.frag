@@ -50,7 +50,7 @@ uniform float contrastP;
 uniform float washP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -81,13 +81,13 @@ void main()
     float aspect = resolution.x / resolution.y;
     vec2  uv = gl_FragCoord.xy / resolution;
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
-    float halfW = aspect * 0.5;
+    float half_w = aspect * 0.5;
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
 
     // The rinse front sweeps across at the end of the turn; the paper cockles
     // in a narrow band right at the water's edge and nowhere else.
-    float fx = mix( -halfW - 0.25, halfW + 0.25, smoothstep( 0.66, 1.0, d ) );
+    float fx = mix( -half_w - 0.25, half_w + 0.25, smoothstep( 0.66, 1.0, d ) );
     float band = exp( -pow( ( p.x - fx ) / ( 0.075 * wash ), 2.0 ) );
     vec2  cockle = vec2( 0.0 );
     cockle.y = band * 0.010 * sin( p.y * 34.0 + audioAdvance * 0.05 );

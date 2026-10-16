@@ -132,7 +132,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -247,9 +247,9 @@ void main()
 
     // Where the photo is dark (relative to its surroundings) the crust splits.
     float fine = clamp( audioSpread, 0.0, 1.0 );
-    float hLocal = luma( imgLod( uv, 1.5 - 0.8 * fine ) );
-    float hWide = luma( imgLod( uv, 5.0 ) );
-    float valley = hWide - hLocal; // > 0 in dark lines and hollows
+    float h_local = luma( imgLod( uv, 1.5 - 0.8 * fine ) );
+    float h_wide = luma( imgLod( uv, 5.0 ) );
+    float valley = h_wide - h_local; // > 0 in dark lines and hollows
     float open = mix( 0.05, 0.13, swell ) + 0.08 * clamp( crustP, 0.0, 1.0 );
     // The cracks breathe in slow waves across the field.
     float breath = 0.5 + 0.5 * sin( dot( uv, vec2( 2.3, 1.7 ) ) + fbm3( uv * 2.0 ) * 3.0 - 0.15 * sceneTime );

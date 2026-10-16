@@ -99,19 +99,19 @@ void main()
     // Colour: the photo sampled by the field phase and the angle.
     vec2 suv = vec2( fract( lr * 0.15 - flow * 0.02 ), fract( th / 6.2831853 + 0.5 ) );
     vec3 photo = img( suv );
-    vec3 palA = imgPalette( hue * 0.159 + 0.0 );
-    vec3 palB = imgPalette( hue * 0.159 + 0.5 );
-    vec3 col = mix( palA * 0.4, photo * 1.2 + palB * 0.2, stripe );
+    vec3 pal_a = imgPalette( hue * 0.159 + 0.0 );
+    vec3 pal_b = imgPalette( hue * 0.159 + 0.5 );
+    vec3 col = mix( pal_a * 0.4, photo * 1.2 + pal_b * 0.2, stripe );
     col = mix( vec3( dot( col, vec3( 0.333 ) ) ), col, 0.7 + 0.3 * contrast );
     col *= 0.6 + 0.8 * contrast * stripe + 0.3;
     // The stripe edges glow on the kick.
     float edge = exp( -abs( field ) * 6.0 );
     col += imgPalette( hue * 0.159 + 0.9 ) * edge * ( 0.1 + 0.7 * audioKick );
     // Central fovea: bright, soft.
-    col += palB * exp( -r * 4.0 ) * 0.4;
+    col += pal_b * exp( -r * 4.0 ) * 0.4;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

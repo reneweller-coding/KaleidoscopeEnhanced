@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -243,33 +243,33 @@ void main()
     // Each row/column's offset bit, cross-faded when it changes (continuous):
     // bit(k) = step on a slow per-line wave.
     // Horizontal stitches lie along row y = gi.y, dashes on even or odd x segments.
-    float hRow = floor( g.y + 0.5 ), vCol = floor( g.x + 0.5 ); // the nearest horizontal / vertical line
-    float hPhase = sin( T * ( 0.5 + 0.5 * hash11( hRow * 1.3 ) ) * chg + hash11( hRow * 2.7 ) * 6.28 );
-    float vPhase = sin( T * ( 0.5 + 0.5 * hash11( vCol * 1.9 + 7.0 ) ) * chg + hash11( vCol * 3.1 + 7.0 ) * 6.28 );
-    float hBit = smoothstep( -0.15, 0.15, hPhase ); // 0..1
-    float vBit = smoothstep( -0.15, 0.15, vPhase );
+    float h_row = floor( g.y + 0.5 ), v_col = floor( g.x + 0.5 ); // the nearest horizontal / vertical line
+    float h_phase = sin( T * ( 0.5 + 0.5 * hash11( h_row * 1.3 ) ) * chg + hash11( h_row * 2.7 ) * 6.28 );
+    float v_phase = sin( T * ( 0.5 + 0.5 * hash11( v_col * 1.9 + 7.0 ) ) * chg + hash11( v_col * 3.1 + 7.0 ) * 6.28 );
+    float h_bit = smoothstep( -0.15, 0.15, h_phase ); // 0..1
+    float v_bit = smoothstep( -0.15, 0.15, v_phase );
     // Dash on the horizontal line at the bottom edge of this cell: on if (gi.x + bit) is even.
-    float hOnA = mod( gi.x, 2.0 ) < 0.5 ? 1.0 : 0.0; // dash on segment gi.x of that row
-    float hOn = mix( hOnA, 1.0 - hOnA, hBit );
-    float vOnA = mod( gi.y, 2.0 ) < 0.5 ? 1.0 : 0.0;
-    float vOn = mix( vOnA, 1.0 - vOnA, vBit );
+    float h_on_a = mod( gi.x, 2.0 ) < 0.5 ? 1.0 : 0.0; // dash on segment gi.x of that row
+    float h_on = mix( h_on_a, 1.0 - h_on_a, h_bit );
+    float v_on_a = mod( gi.y, 2.0 ) < 0.5 ? 1.0 : 0.0;
+    float v_on = mix( v_on_a, 1.0 - v_on_a, v_bit );
     float w = ( 0.05 + 0.06 * clamp( stitchP, 0.0, 1.0 ) ) * ( 1.0 + rough * 0.4 * ( noise2( g * 3.0 ) - 0.5 ) );
     float px = fwidth( g.x ) * 1.2;
     // Stitch = a dash with rounded ends along the edge, leaving a small gap at the grid points.
-    float hd = abs( g.y - hRow );
-    float hEnds = smoothstep( 0.02, 0.1, f.x ) * smoothstep( 0.98, 0.9, f.x );
-    float hSt = smoothstep( w + px, w - px, hd ) * hEnds * hOn;
-    float vd = abs( g.x - vCol );
-    float vEnds = smoothstep( 0.02, 0.1, f.y ) * smoothstep( 0.98, 0.9, f.y );
-    float vSt = smoothstep( w + px, w - px, vd ) * vEnds * vOn;
-    float thread = max( hSt, vSt );
+    float hd = abs( g.y - h_row );
+    float h_ends = smoothstep( 0.02, 0.1, f.x ) * smoothstep( 0.98, 0.9, f.x );
+    float h_st = smoothstep( w + px, w - px, hd ) * h_ends * h_on;
+    float vd = abs( g.x - v_col );
+    float v_ends = smoothstep( 0.02, 0.1, f.y ) * smoothstep( 0.98, 0.9, f.y );
+    float v_st = smoothstep( w + px, w - px, vd ) * v_ends * v_on;
+    float thread = max( h_st, v_st );
     vec2  uv = p * 0.5 + 0.5;
     vec3  ph = imgLod( uv, 2.5 );
     vec3  cloth = mix( vec3( 0.07, 0.1, 0.25 ), vec3( 0.93, 0.89, 0.8 ), mode );
     vec3  tone = mix( cloth, cloth * ( 0.7 + 0.6 * ph ), ( 0.2 + 0.4 * swell ) * clamp( photoP + 0.2, 0.0, 1.2 ) );
     tone *= 0.95 + 0.05 * noise2( g * 12.0 ); // cloth weave
-    vec3 threadC = mix( vec3( 0.95, 0.95, 0.92 ), vec3( 0.75, 0.1, 0.1 ), mode );
-    threadC = mix( threadC, glowColour( ph, p, hueP * 0.159 ), 0.1 );
-    vec3 col = mix( tone, threadC * ( 1.0 + 0.4 * kick ), thread );
+    vec3 thread_c = mix( vec3( 0.95, 0.95, 0.92 ), vec3( 0.75, 0.1, 0.1 ), mode );
+    thread_c = mix( thread_c, glowColour( ph, p, hueP * 0.159 ), 0.1 );
+    vec3 col = mix( tone, thread_c * ( 1.0 + 0.4 * kick ), thread );
     finish( col );
 }

@@ -52,7 +52,7 @@ uniform float grainP;
 uniform float biteP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float n )
@@ -72,7 +72,7 @@ void main()
     vec2  p = ( uv - 0.5 ) * vec2( aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // Grain size: a bigger aperture makes finer speckle.
     float k0 = 155.0 / max( grain, 0.2 ); // constant: an envelope on a scale re-lays the whole pattern (speed

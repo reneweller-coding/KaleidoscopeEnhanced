@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -245,7 +245,7 @@ void main()
     float by = ( p.y + 0.35 * fbm3( p * 0.9 ) ) / bw;
     float b0 = floor( by ), bf = fract( by );
     float gm = smoothstep( 0.3, 2.0, length( g ) );
-    vec2  dirPhoto = normalize( vec2( -g.y, g.x ) + 1e-4 );
+    vec2  dir_photo = normalize( vec2( -g.y, g.x ) + 1e-4 );
     float freq = 16.0 + 18.0 * clamp( audioSpread, 0.0, 1.0 );
     float hsum = 0.0;
     vec2  gsum = vec2( 0.0 );
@@ -254,8 +254,8 @@ void main()
     {
         float band = b0 + float( k );
         float wgt = ( k == 0 ) ? smoothstep( 0.85, 0.5, bf ) : smoothstep( 0.5, 0.85, bf );
-        float bandAng = ( hash11( band * 3.1 ) - 0.5 ) * 1.4;
-        vec2  dir = normalize( vec2( cos( bandAng ), sin( bandAng ) ) + dirPhoto * 0.5 * gm );
+        float band_ang = ( hash11( band * 3.1 ) - 0.5 ) * 1.4;
+        vec2  dir = normalize( vec2( cos( band_ang ), sin( band_ang ) ) + dir_photo * 0.5 * gm );
         vec2  nrm = vec2( -dir.y, dir.x );
         float ph = dot( p, nrm ) * freq + 3.0 * fbm3( p * 2.0 + band ) + 1.5 * rough * noise2( p * 30.0 );
         hsum += wgt * sin( ph );
@@ -271,13 +271,13 @@ void main()
     // The moving light.
     float lp = 0.06 * sceneTime + 0.3 * audioPhase;
     vec3  L = normalize( vec3( cos( lp ), sin( lp * 0.7 ), 1.2 ) );
-    float glossK = 6.0 + 14.0 * clamp( sheenP, 0.0, 1.0 );
-    float spec = pow( max( dot( reflect( -L, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), glossK );
-    float sheenB = pow( max( dot( reflect( -L, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 2.0 );
-    vec3  sheenC = mix( vec3( 0.75, 0.85, 1.0 ), vec3( 1.0, 0.85, 0.65 ), clamp( audioMode, 0.0, 1.0 ) );
-    sheenC = mix( sheenC, glowColour( imgLod( uv, 6.0 ), p, hueP * 0.159 ), 0.08 );
+    float gloss_k = 6.0 + 14.0 * clamp( sheenP, 0.0, 1.0 );
+    float spec = pow( max( dot( reflect( -L, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), gloss_k );
+    float sheen_b = pow( max( dot( reflect( -L, n ), vec3( 0.0, 0.0, 1.0 ) ), 0.0 ), 2.0 );
+    vec3  sheen_c = mix( vec3( 0.75, 0.85, 1.0 ), vec3( 1.0, 0.85, 0.65 ), clamp( audioMode, 0.0, 1.0 ) );
+    sheen_c = mix( sheen_c, glowColour( imgLod( uv, 6.0 ), p, hueP * 0.159 ), 0.08 );
     vec3 col = vec3( 0.012, 0.012, 0.014 );
-    col += sheenC * ( spec * 0.9 + sheenB * 0.18 ) * ( 0.7 + 0.6 * swell );
+    col += sheen_c * ( spec * 0.9 + sheen_b * 0.18 ) * ( 0.7 + 0.6 * swell );
     vec2  gq = p * 220.0, gcell = floor( gq );
     float glint = step( 0.985, hash21( gcell ) ) * smoothstep( 0.35, 0.1, length( fract( gq ) - 0.5 ) );
     col += vec3( 1.0 ) * spec * glint * ( 0.2 + 1.0 * hi );

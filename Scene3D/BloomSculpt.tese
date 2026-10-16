@@ -48,46 +48,46 @@ uniform float bloomP;   ///< preset: how far the lobes reach
 uniform float camDistP; ///< preset: distance to the sculpture
 uniform float twistP;   ///< preset: how fast the modes rotate
 
-const float PI = 3.14159265; ///< Pi.
+const float Pi = 3.14159265; ///< Pi.
 
 // Twelve (k, m) pairs, one per pitch class: k sets how many rings run from
 // pole to pole, m how many lobes run around the equator.  Low pitch classes
 // get the big slow shapes, high ones the fine ruffles.
-const float MODE_K[12] = float[12]( 1.0, 2.0, 2.0, 3.0, 3.0, 3.0,
-                                    4.0, 4.0, 5.0, 5.0, 6.0, 6.0 );
-const float MODE_M[12] = float[12]( 0.0, 1.0, 2.0, 1.0, 2.0, 3.0,
-                                    2.0, 3.0, 2.0, 4.0, 3.0, 5.0 );
+const float ModeK[12] = float[12]( 1.0, 2.0, 2.0, 3.0, 3.0, 3.0,
+                                   4.0, 4.0, 5.0, 5.0, 6.0, 6.0 );
+const float ModeM[12] = float[12]( 0.0, 1.0, 2.0, 1.0, 2.0, 3.0,
+                                   2.0, 3.0, 2.0, 4.0, 3.0, 5.0 );
 // Standing weight per mode, so the sculpture has a strong silhouette even in
 // silence — the music then swells individual lobes on top of it.  Alternating
 // signs make neighbouring modes carve INTO each other instead of piling up
 // into one smooth bulge.
-const float MODE_W[12] = float[12]( 0.34, -0.26, 0.30, -0.22, 0.25, -0.28,
-                                    0.20, -0.17, 0.15, -0.19, 0.12, -0.14 );
+const float ModeW[12] = float[12]( 0.34, -0.26, 0.30, -0.22, 0.25, -0.28,
+                                   0.20, -0.17, 0.15, -0.19, 0.12, -0.14 );
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 uvA = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
-    vec2 uvB = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
-    vec2 uv = mix( uvA, uvB, gl_TessCoord.y );
+    vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );
+    vec2 uv_b = mix( tcUV[3], tcUV[2], gl_TessCoord.x );
+    vec2 uv = mix( uv_a, uv_b, gl_TessCoord.y );
 
-    float th = uv.x * 2.0 * PI; // azimuth, closes exactly at u=0/1
-    float phi = uv.y * PI;      // polar angle, 0 = north pole
+    float th = uv.x * 2.0 * Pi; // azimuth, closes exactly at u=0/1
+    float phi = uv.y * Pi;      // polar angle, 0 = north pole
 
     float sp = sin( phi ), cp = cos( phi );
     float st = sin( th ), ct = cos( th );
 
-    vec3 eR = vec3( sp * ct, cp, sp * st );
-    vec3 eTh = vec3( -st, 0.0, ct );           // d(eR)/d(th) = sp * eTh
-    vec3 ePhi = vec3( cp * ct, -sp, cp * st ); // d(eR)/d(phi)
+    vec3 e_r = vec3( sp * ct, cp, sp * st );
+    vec3 e_th = vec3( -st, 0.0, ct );           // d(eR)/d(th) = sp * e_th
+    vec3 e_phi = vec3( cp * ct, -sp, cp * st ); // d(eR)/d(phi)
 
     // The raw harmonic sum and its two partial derivatives.
-    float S = 0.0, dSdTh = 0.0, dSdPhi = 0.0, swell = 0.0;
+    float S = 0.0, d_sd_th = 0.0, d_sd_phi = 0.0, swell = 0.0;
 
     for ( int i = 0; i < 12; ++i )
     {
-        float k = MODE_K[i];
-        float m = MODE_M[i];
+        float k = ModeK[i];
+        float m = ModeM[i];
 
         // Bins are L1-normalised (~0..0.3), so x4 brings a strong pitch class
         // to about 1.  The higher modes are damped as well, or a bright cymbal
@@ -101,7 +101,7 @@ void main()
         // already confines them to the equatorial band, which is what keeps
         // them from turning the poles into noise.
         float emph = 0.45 + 0.55 * m / 5.0;
-        float amp = bloomP * emph * ( MODE_W[i] * lfo + 0.75 * audioChroma[i] * 4.0 * sign( MODE_W[i] ) );
+        float amp = bloomP * emph * ( ModeW[i] * lfo + 0.75 * audioChroma[i] * 4.0 * sign( ModeW[i] ) );
 
         float ph = audioAdvance * twistP * ( 0.05 + 0.012 * float( i ) );
         float ca = cos( m * th + ph ), sa = sin( m * th + ph );
@@ -110,11 +110,11 @@ void main()
         // sin(phi)^m, and its derivative m*sin^(m-1)*cos — both written so the
         // m = 0 case stays exactly 1 and 0 without a pow(0,0).
         float sm = ( m < 0.5 ) ? 1.0 : pow( max( sp, 0.0 ), m );
-        float smD = ( m < 0.5 ) ? 0.0 : m * pow( max( sp, 1e-4 ), m - 1.0 ) * cp;
+        float sm_d = ( m < 0.5 ) ? 0.0 : m * pow( max( sp, 1e-4 ), m - 1.0 ) * cp;
 
         S += amp * sm * ca * ck;
-        dSdTh += -amp * m * sm * sa * ck;
-        dSdPhi += amp * ca * ( smD * ck - k * sm * sk );
+        d_sd_th += -amp * m * sm * sa * ck;
+        d_sd_phi += amp * ca * ( sm_d * ck - k * sm * sk );
         swell += abs( amp * sm * ca * ck );
     }
 
@@ -125,24 +125,24 @@ void main()
     // instead of drifting gently between them.  The exponent is applied to the
     // DERIVATIVES too (chain rule) — the normals have to follow the shape the
     // vertices actually take, or the creases light as if they were still round.
-    const float SHARP = 0.68;
-    float       aS = max( abs( S ), 0.035 ); // the guard keeps the crease finite
-    float       shaped = sign( S ) * pow( aS, SHARP );
-    float       dShape = SHARP * pow( aS, SHARP - 1.0 );
+    const float Sharp = 0.68;
+    float       a_s = max( abs( S ), 0.035 ); // the guard keeps the crease finite
+    float       shaped = sign( S ) * pow( a_s, Sharp );
+    float       d_shape = Sharp * pow( a_s, Sharp - 1.0 );
 
     // Valleys cut 1.35x deeper than the ridges rise, which is what separates
     // the petals instead of leaving them merged at the base.
     float asym = ( S < 0.0 ) ? 1.35 : 1.0;
 
     float r = 1.0 + shaped * asym;
-    float dRdTh = dShape * dSdTh * asym;
-    float dRdPhi = dShape * dSdPhi * asym;
+    float d_rd_th = d_shape * d_sd_th * asym;
+    float d_rd_phi = d_shape * d_sd_phi * asym;
 
     // A slow overall breath so the sculpture still lives through quiet passages.
     float breath = 1.0 + 0.06 * sin( audioAdvance * 0.31 ) + 0.10 * audioSubBass;
     r *= breath;
-    dRdTh *= breath;
-    dRdPhi *= breath;
+    d_rd_th *= breath;
+    d_rd_phi *= breath;
 
     // With twelve modes stacked, the valleys can reach through the origin and
     // the surface turns itself inside out.  Clamping the radius folds those
@@ -150,21 +150,21 @@ void main()
     if ( r < 0.18 )
     {
         r = 0.18;
-        dRdTh = 0.0;
-        dRdPhi = 0.0;
+        d_rd_th = 0.0;
+        d_rd_phi = 0.0;
     }
 
-    vec3 p = r * eR;
+    vec3 p = r * e_r;
 
-    // dp/dth = dRdTh * eR + r*sp * eTh ; dp/dphi = dRdPhi * eR + r * ePhi
-    vec3 dpdTh = dRdTh * eR + r * sp * eTh;
-    vec3 dpdPhi = dRdPhi * eR + r * ePhi;
+    // dp/dth = d_rd_th * eR + r*sp * e_th ; dp/dphi = d_rd_phi * eR + r * e_phi
+    vec3 dpd_th = d_rd_th * e_r + r * sp * e_th;
+    vec3 dpd_phi = d_rd_phi * e_r + r * e_phi;
 
-    vec3 n = cross( dpdPhi, dpdTh );
+    vec3 n = cross( dpd_phi, dpd_th );
     // At the poles dp/dth collapses to zero and the cross product with it is
     // meaningless; fall back to the radial direction there.
-    n = ( dot( n, n ) < 1e-9 ) ? eR : normalize( n );
-    if ( dot( n, eR ) < 0.0 )
+    n = ( dot( n, n ) < 1e-9 ) ? e_r : normalize( n );
+    if ( dot( n, e_r ) < 0.0 )
         n = -n;
 
     // Slow tumble, so the silhouette keeps presenting new lobes.

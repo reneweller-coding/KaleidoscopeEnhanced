@@ -82,10 +82,10 @@ float map4D( vec4 p, float facet )
     // 16-Cell SDF in 4D: (sum |x_i|) - R
     float d16 = ( q.x + q.y + q.z + q.w - 2.2 * grow ) * 0.5;
     // Hypercube bounds
-    float dBox = max( max( q.x, q.y ), max( q.z, q.w ) ) - 1.35 * grow;
+    float d_box = max( max( q.x, q.y ), max( q.z, q.w ) ) - 1.35 * grow;
     // Intersection of 24-cell facets
     float d24 = max( d16, ( max( q.x + q.y, q.z + q.w ) - 1.8 * grow ) * 0.7071 );
-    return mix( d24, dBox, facet * 0.4 );
+    return mix( d24, d_box, facet * 0.4 );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -108,8 +108,8 @@ void main()
     vec3 ro3 = vec3( 0.0, 0.0, -3.6 + 0.3 * sin( t * 0.5 ) );
     vec3 rd3 = normalize( vec3( uv, 1.25 + 0.25 * sin( audioSwell * 2.0 ) ) );
 
-    vec3  accCol = vec3( 0.0 );
-    float glowAcc = 0.0;
+    vec3  acc_col = vec3( 0.0 );
+    float glow_acc = 0.0;
 
     // Multi-spectral chromatic raymarch (R, G, B channels slightly refracted)
     vec3 wavelengths = vec3( 0.97, 1.0, 1.03 ) * ( 1.0 + 0.15 * ( audioCentroid + audioFlux ) * disp );
@@ -123,21 +123,21 @@ void main()
         // Near clip: the polychoron rotating through W periodically
         // sweeps a cell over the camera; without this the whole frame
         // collapsed to one flat colour sample whenever that happened.
-        float totalDist = 0.65;
-        float minD = 1e4;
-        vec3  colChannel = vec3( 0.0 );
+        float total_dist = 0.65;
+        float min_d = 1e4;
+        vec3  col_channel = vec3( 0.0 );
 
         for ( int i = 0; i < 48; i++ )
         {
-            vec3 pos3 = ro + rd * totalDist;
+            vec3 pos3 = ro + rd * total_dist;
             // Embed 3D point into 4D hyperspace with oscillating 4th dimension
-            vec4 pos4 = vec4( pos3, sin( totalDist * 0.8 + t * 0.6 ) * 0.85 );
+            vec4 pos4 = vec4( pos3, sin( total_dist * 0.8 + t * 0.6 ) * 0.85 );
             pos4 = rotate4D( pos4, rot1, rot2 );
 
             float d = map4D( pos4, fct );
-            minD = min( minD, abs( d ) );
+            min_d = min( min_d, abs( d ) );
 
-            if ( abs( d ) < 0.003 || totalDist > 8.0 )
+            if ( abs( d ) < 0.003 || total_dist > 8.0 )
             {
                 // Surface hit: compute normal in 4D & reflect
                 vec4  n4;
@@ -148,47 +148,47 @@ void main()
                 n4.w = map4D( pos4 + vec4( 0, 0, 0, eps ), fct ) - map4D( pos4 - vec4( 0, 0, 0, eps ), fct );
                 n4 = normalize( n4 );
 
-                vec2 uvMap = fract( pos4.xy * 0.4 + pos4.zw * 0.4 + 0.5 );
-                vec3 surfCol = img( uvMap ) * imgPalette( dot( pos4, vec4( 0.2, 0.3, 0.4, 0.1 ) ) );
-                colChannel = surfCol * ( 0.6 + 0.4 * abs( n4.z ) );
+                vec2 uv_map = fract( pos4.xy * 0.4 + pos4.zw * 0.4 + 0.5 );
+                vec3 surf_col = img( uv_map ) * imgPalette( dot( pos4, vec4( 0.2, 0.3, 0.4, 0.1 ) ) );
+                col_channel = surf_col * ( 0.6 + 0.4 * abs( n4.z ) );
                 break;
             }
 
-            totalDist += max( 0.02, d * 0.65 );
+            total_dist += max( 0.02, d * 0.65 );
         }
 
-        // Volumetric facet edge glow -- minD tracks the closest approach
+        // Volumetric facet edge glow -- min_d tracks the closest approach
         // over the ENTIRE march for this dispersion channel, so it reads
         // near-zero for almost any ray landing inside the polychoron's
         // octagonal silhouette (which the facets nearly fill from this
         // camera distance), not just true facet-edge hits. Left uncapped
         // this saturated the additive tint across the whole interior,
         // clipping to white; only rays that actually miss the shape
-        // (outside the octagon) kept a large minD and stayed dark.
-        float edgeGlow = exp( -minD * ( 24.0 + 10.0 * audioCentroid ) ) * glw;
-        edgeGlow = min( edgeGlow, 0.45 );
-        vec3 spectralTint = ( c == 0 ) ? vec3( 1.2, 0.3, 0.2 )
-                                       : ( ( c == 1 ) ? vec3( 0.2, 1.2, 0.4 ) : vec3( 0.3, 0.5, 1.4 ) );
+        // (outside the octagon) kept a large min_d and stayed dark.
+        float edge_glow = exp( -min_d * ( 24.0 + 10.0 * audioCentroid ) ) * glw;
+        edge_glow = min( edge_glow, 0.45 );
+        vec3 spectral_tint = ( c == 0 ) ? vec3( 1.2, 0.3, 0.2 )
+                                        : ( ( c == 1 ) ? vec3( 0.2, 1.2, 0.4 ) : vec3( 0.3, 0.5, 1.4 ) );
 
-        accCol += ( colChannel + edgeGlow * spectralTint * ( 1.0 + 2.0 * audioKick ) ) * 0.3333;
-        glowAcc += edgeGlow * 0.3333;
+        acc_col += ( col_channel + edge_glow * spectral_tint * ( 1.0 + 2.0 * audioKick ) ) * 0.3333;
+        glow_acc += edge_glow * 0.3333;
     }
 
     // Dynamic background flare
-    vec3 bgCol = imgPalette( length( uv ) * 0.5 + t * 0.1 ) * 0.25;
-    vec3 finalCol = mix( bgCol, accCol, clamp( length( accCol ), 0.0, 1.0 ) );
+    vec3 bg_col = imgPalette( length( uv ) * 0.5 + t * 0.1 ) * 0.25;
+    vec3 final_col = mix( bg_col, acc_col, clamp( length( acc_col ), 0.0, 1.0 ) );
 
-    // Center flare tint -- glowAcc is already bounded by the edgeGlow cap
+    // Center flare tint -- glow_acc is already bounded by the edge_glow cap
     // above, but audioSwell itself is an unbounded audio-energy scalar
     // (used raw elsewhere in this file), so cap its contribution here too
     // rather than letting a strong swell alone blow this additive term out.
-    finalCol += vec3( 0.1, 0.15, 0.25 ) * glowAcc * min( audioSwell, 1.5 );
+    final_col += vec3( 0.1, 0.15, 0.25 ) * glow_acc * min( audioSwell, 1.5 );
 
     // Contrast & saturation enhancement with a soft-knee compression so
     // the facet-edge glow compresses gracefully instead of clipping
     // straight to white.
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    vec3 _catTone = clamp( finalCol, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    vec3 cat_tone = clamp( final_col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

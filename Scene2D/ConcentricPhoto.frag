@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -242,12 +242,12 @@ void main()
     float T = 0.1 * sceneTime + 0.7 * audioAdvance;
     float N = 60.0 + 60.0 * ( 1.0 - clamp( audioSpread, 0.0, 1.0 ) );
     // Ring phase: from the nearest of a few drifting centres (smooth blend of distances).
-    float nC = 1.0 + 3.0 * clamp( centreP, 0.0, 1.0 );
+    float n_c = 1.0 + 3.0 * clamp( centreP, 0.0, 1.0 );
     float wsum = 0.0, rsum = 0.0;
     for ( int i = 0; i < 4; ++i )
     {
         float fi = float( i );
-        float on = smoothstep( fi - 0.5, fi + 0.5, nC - 0.5 );
+        float on = smoothstep( fi - 0.5, fi + 0.5, n_c - 0.5 );
         if ( on <= 0.0 )
             break;
         vec2  c = vec2( 0.8 * sin( 0.013 * sceneTime * ( 1.0 + 0.3 * fi ) + fi * 2.1 ),
@@ -265,9 +265,10 @@ void main()
     float w = clamp( 0.1 + 0.85 * dark, 0.05, 0.95 );
     float ring = smoothstep( w + px, w - px, f );
     ring = mix( ring, w, smoothstep( 0.4, 0.9, px ) ); // fade to tone where rings get too fine
-    vec3 inkC = mix( vec3( 1.0 ), glowColour( ph, p, hueP * 0.159 ), 0.2 + 0.6 * swell );
-    vec3 lightBg = vec3( 0.95, 0.93, 0.88 ), darkBg = vec3( 0.02, 0.02, 0.03 );
-    vec3 onDark = darkBg + inkC * ( 1.0 - ring ) * ( 1.0 + 0.4 * kick ) * 0.95; // light rings where the photo is light
-    vec3 onLight = mix( lightBg, inkC * 0.15, ring );
-    finish( mix( onDark, onLight, mode ) );
+    vec3 ink_c = mix( vec3( 1.0 ), glowColour( ph, p, hueP * 0.159 ), 0.2 + 0.6 * swell );
+    vec3 light_bg = vec3( 0.95, 0.93, 0.88 ), dark_bg = vec3( 0.02, 0.02, 0.03 );
+    vec3 on_dark = dark_bg + ink_c * ( 1.0 - ring ) * ( 1.0 + 0.4 * kick ) * 0.95; // light rings where the photo is
+                                                                                   // light
+    vec3 on_light = mix( light_bg, ink_c * 0.15, ring );
+    finish( mix( on_dark, on_light, mode ) );
 }

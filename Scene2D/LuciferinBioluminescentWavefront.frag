@@ -83,7 +83,7 @@ void main()
     float t = time * 0.4 + audioAdvance * 0.35;
 
     // Wave coordinate transformation
-    float waveSteepness = ( waveP > 0.01 ? waveP : 1.2 );
+    float wave_steepness = ( waveP > 0.01 ? waveP : 1.2 );
     vec2  p = uv * 2.5;
     p.x += sin( p.y * 1.5 + t * 0.5 ) * 0.25;
 
@@ -92,48 +92,48 @@ void main()
     float wave2 = sin( p.y * 7.0 - t * 3.5 + cos( p.x * 4.0 ) * 0.3 ) * 0.5;
     float wave3 = sin( p.y * 14.0 - t * 5.0 + sin( p.x * 8.0 ) * 0.2 ) * 0.25;
 
-    float waveHeight = ( wave1 + wave2 + wave3 ) * waveSteepness;
+    float wave_height = ( wave1 + wave2 + wave3 ) * wave_steepness;
 
     // Hydrodynamic shear rate ~ spatial gradient of wave surface
-    float dWave = abs( dFdx( waveHeight ) ) + abs( dFdy( waveHeight ) );
-    float shearThresh = ( shearP > 0.01 ? shearP : 1.0 );
-    float shearActivation = smoothstep( 0.04 * shearThresh, 0.18 * shearThresh, dWave );
+    float d_wave = abs( dFdx( wave_height ) ) + abs( dFdy( wave_height ) );
+    float shear_thresh = ( shearP > 0.01 ? shearP : 1.0 );
+    float shear_activation = smoothstep( 0.04 * shear_thresh, 0.18 * shear_thresh, d_wave );
 
     // Breaking wave crest detector (cusp regions where wave > threshold)
-    float crest = smoothstep( 0.8, 1.4, waveHeight + dWave * 3.0 );
+    float crest = smoothstep( 0.8, 1.4, wave_height + d_wave * 3.0 );
 
     // Turbulent bioluminescent foam trails
-    float foamPersistence = ( foamP > 0.01 ? foamP : 1.5 );
-    float foamNoise = sin( p.x * 12.0 + p.y * 6.0 - t * 2.0 ) * cos( p.x * 8.0 - p.y * 10.0 + t );
-    float foam = smoothstep( 0.2, 0.8, crest + foamNoise * 0.4 ) * foamPersistence;
+    float foam_persistence = ( foamP > 0.01 ? foamP : 1.5 );
+    float foam_noise = sin( p.x * 12.0 + p.y * 6.0 - t * 2.0 ) * cos( p.x * 8.0 - p.y * 10.0 + t );
+    float foam = smoothstep( 0.2, 0.8, crest + foam_noise * 0.4 ) * foam_persistence;
 
     // Micro-plankton twinkling scintillation
-    float sparkDensity = 40.0 * ( sparkP > 0.01 ? sparkP : 1.5 );
-    vec2  gridId = floor( p * sparkDensity );
-    float h = hash( gridId );
-    float sparkFlash = pow( max( 0.0, sin( h * 6.28 + t * 6.0 + audioFlux * 4.0 ) ), 12.0 );
-    sparkFlash *= smoothstep( 0.1, 0.6, shearActivation + crest ) * ( 0.8 + 2.0 * audioHigh );
+    float spark_density = 40.0 * ( sparkP > 0.01 ? sparkP : 1.5 );
+    vec2  grid_id = floor( p * spark_density );
+    float h = hash( grid_id );
+    float spark_flash = pow( max( 0.0, sin( h * 6.28 + t * 6.0 + audioFlux * 4.0 ) ), 12.0 );
+    spark_flash *= smoothstep( 0.1, 0.6, shear_activation + crest ) * ( 0.8 + 2.0 * audioHigh );
 
     // Base ocean deep color tinted with photo palette
-    vec3 deepWater = vec3( 0.01, 0.04, 0.12 );
-    vec3 oceanBase = palTint( deepWater, 0.7, 0.2 );
+    vec3 deep_water = vec3( 0.01, 0.04, 0.12 );
+    vec3 ocean_base = palTint( deep_water, 0.7, 0.2 );
 
     // Dinoflagellate bioluminescence color: Vibrant cyan-emerald identity tinted by photo
-    vec3 bioCyan = vec3( 0.05, 0.95, 0.85 );
-    vec3 bioEmerald = vec3( 0.1, 1.0, 0.45 );
-    vec3 bioColor = palTint( mix( bioCyan, bioEmerald, sin( audioCentroid * 3.14 ) * 0.5 + 0.5 ), waveHeight * 0.2,
-                             0.28 );
+    vec3 bio_cyan = vec3( 0.05, 0.95, 0.85 );
+    vec3 bio_emerald = vec3( 0.1, 1.0, 0.45 );
+    vec3 bio_color = palTint( mix( bio_cyan, bio_emerald, sin( audioCentroid * 3.14 ) * 0.5 + 0.5 ), wave_height * 0.2,
+                              0.28 );
 
     // Background photo texturing (refracted through water surface)
-    vec2 refrUv = gl_FragCoord.xy / resolution + vec2( dFdx( waveHeight ), dFdy( waveHeight ) ) * 0.05;
-    vec3 bgPhoto = img( fract( refrUv ) ) * 0.25;
+    vec2 refr_uv = gl_FragCoord.xy / resolution + vec2( dFdx( wave_height ), dFdy( wave_height ) ) * 0.05;
+    vec3 bg_photo = img( fract( refr_uv ) ) * 0.25;
 
-    vec3 col = oceanBase + bgPhoto * ( 0.6 + 0.4 * audioSwell );
-    col += bioColor * shearActivation * 1.5;
-    col += bioColor * crest * ( 1.5 + 3.0 * audioKick );
-    col += mix( bioColor, vec3( 0.8, 1.0, 0.95 ), 0.5 ) * foam * 1.8;
-    col += vec3( 0.7, 1.0, 0.9 ) * sparkFlash * 2.5;
-    col += bioColor * ( audioKick * 0.35 );
+    vec3 col = ocean_base + bg_photo * ( 0.6 + 0.4 * audioSwell );
+    col += bio_color * shear_activation * 1.5;
+    col += bio_color * crest * ( 1.5 + 3.0 * audioKick );
+    col += mix( bio_color, vec3( 0.8, 1.0, 0.95 ), 0.5 ) * foam * 1.8;
+    col += vec3( 0.7, 1.0, 0.9 ) * spark_flash * 2.5;
+    col += bio_color * ( audioKick * 0.35 );
 
     // Soft knee compression
     col /= 1.0 + 0.35 * max( col.r, max( col.g, col.b ) );

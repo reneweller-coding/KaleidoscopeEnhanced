@@ -133,57 +133,57 @@ void main()
     float t = time * 0.2 + audioAdvance * 0.15;
 
     // Atmospheric gravity wave distortion
-    vec2 waveUV = uv;
-    waveUV.x += sin( uv.y * 6.0 * wav + t ) * 0.05 * ( 1.0 + audioBass * 0.5 );
-    waveUV.y += cos( uv.x * 4.0 * wav - t * 0.8 ) * 0.04;
+    vec2 wave_uv = uv;
+    wave_uv.x += sin( uv.y * 6.0 * wav + t ) * 0.05 * ( 1.0 + audioBass * 0.5 );
+    wave_uv.y += cos( uv.x * 4.0 * wav - t * 0.8 ) * 0.04;
 
     // Multi-octave polar stratospheric cloud wisps
-    float n1 = fbm( waveUV * 3.0 + vec2( t * 0.5, -t * 0.2 ) );
-    float n2 = fbm( waveUV * 6.0 - vec2( t * 0.3, t * 0.4 ) );
-    float cloudDensity = smoothstep( 0.30, 0.80, ( n1 * 0.65 + n2 * 0.35 ) * den ) * ( 0.8 + 0.4 * audioSwell );
+    float n1 = fbm( wave_uv * 3.0 + vec2( t * 0.5, -t * 0.2 ) );
+    float n2 = fbm( wave_uv * 6.0 - vec2( t * 0.3, t * 0.4 ) );
+    float cloud_density = smoothstep( 0.30, 0.80, ( n1 * 0.65 + n2 * 0.35 ) * den ) * ( 0.8 + 0.4 * audioSwell );
 
     // Mie / Optical diffraction: Thin-film thickness variation produces pastel iridescent rainbow bands
-    float opticalThickness = n1 * 12.0 + n2 * 6.0 + audioPhase * 2.0;
-    float filmPh = fract( opticalThickness * 0.159 );
-    vec3  filmSpec = clamp( vec3( abs( filmPh * 6.0 - 3.0 ) - 1.0,
-                                  2.0 - abs( filmPh * 6.0 - 2.0 ),
-                                  2.0 - abs( filmPh * 6.0 - 4.0 ) ),
-                            0.0, 1.0 );
+    float optical_thickness = n1 * 12.0 + n2 * 6.0 + audioPhase * 2.0;
+    float film_ph = fract( optical_thickness * 0.159 );
+    vec3  film_spec = clamp( vec3( abs( film_ph * 6.0 - 3.0 ) - 1.0,
+                                   2.0 - abs( film_ph * 6.0 - 2.0 ),
+                                   2.0 - abs( film_ph * 6.0 - 4.0 ) ),
+                             0.0, 1.0 );
     // Real thin-film bands, photo-arc inflected; the old 35% white-wash
     // erased every band into pastel-white.
-    vec3 iridColor = mix( imgPalette( filmPh ), filmSpec, 0.45 );
-    iridColor = mix( iridColor, vec3( 1.0, 0.95, 0.9 ), 0.20 );
+    vec3 irid_color = mix( imgPalette( film_ph ), film_spec, 0.45 );
+    irid_color = mix( irid_color, vec3( 1.0, 0.95, 0.9 ), 0.20 );
 
     // Crepuscular god rays from low horizon twilight sun
-    vec2  sunPos = vec2( 0.3, -0.4 );
-    vec2  toSun = uv - sunPos;
-    float sunDist = length( toSun );
-    float sunAngle = atan( toSun.y, toSun.x );
-    float godRay = ( 0.5 + 0.5 * sin( sunAngle * 18.0 + t * 0.5 ) ) * exp( -sunDist * 1.5 ) * ry;
+    vec2  sun_pos = vec2( 0.3, -0.4 );
+    vec2  to_sun = uv - sun_pos;
+    float sun_dist = length( to_sun );
+    float sun_angle = atan( to_sun.y, to_sun.x );
+    float god_ray = ( 0.5 + 0.5 * sin( sun_angle * 18.0 + t * 0.5 ) ) * exp( -sun_dist * 1.5 ) * ry;
     // rayP alone reaches 2.2 and a kick trebles it, so the TINTED vector
     // carries the cap; bounding the scalar would have left the tint free.
-    vec3 rayColor = min( vec3( 1.0, 0.85, 0.6 ) * godRay * ( 1.0 + audioKick * 2.0 ), vec3( 1.05 ) );
+    vec3 ray_color = min( vec3( 1.0, 0.85, 0.6 ) * god_ray * ( 1.0 + audioKick * 2.0 ), vec3( 1.05 ) );
 
     // Hold the sheet back to a fixed exposure: both the cirrus layer and the
     // iridescence are photo samples, so a light photo used to pin the whole sky
     // near 1.0 with nothing left for the rays.
-    float expGain = clamp( 0.30 / max( 0.05, photoLevel() ), 0.30, 2.4 );
+    float exp_gain = clamp( 0.30 / max( 0.05, photoLevel() ), 0.30, 2.4 );
 
     // Twilight deep blue to violet background sky
-    vec3 skyColor = mix( vec3( 0.02, 0.05, 0.15 ), vec3( 0.12, 0.08, 0.22 ), st.y );
+    vec3 sky_color = mix( vec3( 0.02, 0.05, 0.15 ), vec3( 0.12, 0.08, 0.22 ), st.y );
 
     // Input photo blend as high-altitude cirrus texture
     vec3 photo = img( st );
     // Photo only as texture INSIDE the clouds -- flooding the whole sky
     // with it recorded as a white frame with debris.
-    skyColor += photo * expGain * 0.14 * cloudDensity;
+    sky_color += photo * exp_gain * 0.14 * cloud_density;
 
     // Combine nacreous cloud shading
-    float nacLum = dot( iridColor, vec3( 0.333 ) );
-    vec3  nacSat = clamp( mix( vec3( nacLum ), iridColor, 1.7 ), 0.0, 1.0 );
-    vec3  nacreous = nacSat * expGain * cloudDensity * 2.3;
-    vec3  col = mix( skyColor, nacreous, clamp( cloudDensity * 1.2, 0.0, 1.0 ) );
-    col += rayColor * 0.5 * clamp( cloudDensity * 2.2, 0.0, 1.0 ); // rays only THROUGH clouds
+    float nac_lum = dot( irid_color, vec3( 0.333 ) );
+    vec3  nac_sat = clamp( mix( vec3( nac_lum ), irid_color, 1.7 ), 0.0, 1.0 );
+    vec3  nacreous = nac_sat * exp_gain * cloud_density * 2.3;
+    vec3  col = mix( sky_color, nacreous, clamp( cloud_density * 1.2, 0.0, 1.0 ) );
+    col += ray_color * 0.5 * clamp( cloud_density * 2.2, 0.0, 1.0 ); // rays only THROUGH clouds
 
     // Lens sparkle on beats
     if ( audioHigh > 0.4 )
@@ -194,7 +194,7 @@ void main()
         vec2  kid = floor( kg );
         vec2  kf = fract( kg ) - 0.5;
         float sparkle = hash21( kid + floor( time * 4.00 ) );
-        if ( sparkle > 0.97 && cloudDensity > 0.3 )
+        if ( sparkle > 0.97 && cloud_density > 0.3 )
         {
             vec2  kp = ( vec2( fract( sparkle * 7.3 ), fract( sparkle * 13.7 ) ) - 0.5 ) * 0.7;
             float kd = dot( kf - kp, kf - kp );
@@ -208,7 +208,7 @@ void main()
 
     // Soft-knee exposure so a thick, sunlit cloud bank compresses instead of
     // clipping the whole stratosphere to paper white.
-    vec3 _catTone = clamp( col, 0.0, 1.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = clamp( col, 0.0, 1.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

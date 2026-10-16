@@ -68,41 +68,41 @@ void main()
 
     float t = time * 0.0278 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     float r = length( p );
 
     // Frame-dragging swirl angle: omega_drag ~ a / (r^3 + a^2 * r + 2M*a^2).
     // The spin parameter a/M is constant: the drag angle grows like r^-1.5
     // toward the centre, so an envelope on it spun the core.  The whole angle is
-    // already multiplied by midTransition, so it is exactly zero at both fade
-    // endpoints — and warpUV is additionally blended in by midTransition there.
-    float spinAM = spn * drg * 1.35; // constant: this amplitude is wrapped by fract(), so any envelope reshuffled the
-                                     // frame (speed pass 14.09.2026)
-    float dragAngle = ( 0.35 / max( pow( r, 1.5 ), 0.04 ) ) * midTransition * spinAM * 3.14159265;
-    vec2  pSwirled = rot2D( dragAngle + t * 0.5 ) * p;
+    // already multiplied by mid_transition, so it is exactly zero at both fade
+    // endpoints — and warp_uv is additionally blended in by mid_transition there.
+    float spin_am = spn * drg * 1.35; // constant: this amplitude is wrapped by fract(), so any envelope reshuffled the
+                                      // frame (speed pass 14.09.2026)
+    float drag_angle = ( 0.35 / max( pow( r, 1.5 ), 0.04 ) ) * mid_transition * spin_am * 3.14159265;
+    vec2  p_swirled = rot2D( drag_angle + t * 0.5 ) * p;
 
-    vec2 warpUV = ( pSwirled * resolution.y + 0.5 * resolution ) / resolution;
+    vec2 warp_uv = ( p_swirled * resolution.y + 0.5 * resolution ) / resolution;
 
-    vec4 c1 = texture( tex1, fract( mix( uv, warpUV, midTransition ) ) );
-    vec4 c0 = texture( tex0, fract( mix( warpUV, uv, 1.0 - midTransition ) ) );
+    vec4 c1 = texture( tex1, fract( mix( uv, warp_uv, mid_transition ) ) );
+    vec4 c0 = texture( tex0, fract( mix( warp_uv, uv, 1.0 - mid_transition ) ) );
 
-    vec4 col = mix( c1, c0, tProg );
+    vec4 col = mix( c1, c0, t_prog );
 
     // Ergosphere boundary glow
-    float rErgo = 0.35 * midTransition;
-    float ergoGlow = exp( -abs( r - rErgo ) * 25.0 ) * midTransition;
-    col.rgb += ergoGlow * vec3( 1.0, 0.6, 0.1 ) * ( 1.5 + audioKick * 1.0 );
+    float r_ergo = 0.35 * mid_transition;
+    float ergo_glow = exp( -abs( r - r_ergo ) * 25.0 ) * mid_transition;
+    col.rgb += ergo_glow * vec3( 1.0, 0.6, 0.1 ) * ( 1.5 + audioKick * 1.0 );
 
     // Center horizon shadow
-    float shadow = smoothstep( rErgo * 0.4, rErgo * 0.9, r );
-    col.rgb *= mix( 1.0, shadow, midTransition );
+    float shadow = smoothstep( r_ergo * 0.4, r_ergo * 0.9, r );
+    col.rgb *= mix( 1.0, shadow, mid_transition );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

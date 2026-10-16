@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -250,8 +250,8 @@ void main()
     float S = 1.2;
     vec2  g = x * vec2( S, S * 1.6 );
     vec2  gi = floor( g );
-    float stormSize = ( 0.15 + 0.15 * clamp( stormP, 0.0, 1.0 ) ) * ( 0.8 + 0.4 * swell );
-    float stormGlow = 0.0;
+    float storm_size = ( 0.15 + 0.15 * clamp( stormP, 0.0, 1.0 ) ) * ( 0.8 + 0.4 * swell );
+    float storm_glow = 0.0;
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
         {
@@ -261,13 +261,13 @@ void main()
             vec2  c = id + 0.5 + 0.3 * ( hash22( id + 1.0 ) - 0.5 )
                       + vec2( 0.1 * sin( 0.02 * sceneTime + hash21( id + 2.0 ) * 6.28 ), 0.0 ); // bounded wander
             vec2  d = ( g - c ) / vec2( 1.6, 1.0 );
-            float R = stormSize * ( 0.6 + 0.8 * hash21( id + 3.0 ) );
+            float R = storm_size * ( 0.6 + 0.8 * hash21( id + 3.0 ) );
             float fall = exp( -dot( d, d ) / ( R * R ) ) * smoothstep( 0.95, 0.5, length( g - c ) ); // ends inside the
                                                                                                      // 3x3 search
             float ang = fall * ( 3.0 + 1.5 * sin( 0.1 * sceneTime + 0.5 * audioAdvance + hash21( id + 4.0 ) * 6.28 ) )
                         * ( hash21( id + 6.0 ) < 0.5 ? 1.0 : -1.0 ); // bounded winding
             g = c + rot2( ang ) * ( g - c );
-            stormGlow += fall * step( 0.7, hash21( id + 5.0 ) );
+            storm_glow += fall * step( 0.7, hash21( id + 5.0 ) );
         }
     x = g / vec2( S, S * 1.6 );
     // Flow map: two phases half a period apart, cross-faded (no smearing forever).
@@ -281,14 +281,14 @@ void main()
     // Band colours from the photo palette by latitude, modulated by the clouds.
     float lat = x.y * gBands / 6.2831853;
     float band = 0.5 + 0.5 * sin( x.y * gBands * 0.5 + 0.7 );
-    vec3  cA = imgPalette( fract( lat * 0.37 + hueP * 0.159 ) );
-    vec3  cB = imgPalette( fract( lat * 0.37 + 0.33 + hueP * 0.159 ) );
-    vec3  col = mix( cA, cB, smoothstep( 0.3, 0.7, band + ( cl - 0.5 ) * ( 0.8 + 0.8 * rough ) ) );
+    vec3  c_a = imgPalette( fract( lat * 0.37 + hueP * 0.159 ) );
+    vec3  c_b = imgPalette( fract( lat * 0.37 + 0.33 + hueP * 0.159 ) );
+    vec3  col = mix( c_a, c_b, smoothstep( 0.3, 0.7, band + ( cl - 0.5 ) * ( 0.8 + 0.8 * rough ) ) );
     col = mix( col, col * mix( vec3( 0.85, 0.9, 1.1 ), vec3( 1.15, 0.95, 0.8 ), mode ), 0.6 );
     float con = 0.6 + 0.8 * clamp( contrastP, 0.0, 1.0 );
     col *= 0.55 + con * 0.6 * cl;
     col += vec3( 1.0, 0.95, 0.9 ) * smoothstep( 0.65, 0.9, cl ) * 0.15;
     // Lightning inside the storms.
-    col += vec3( 0.7, 0.8, 1.0 ) * stormGlow * kick * 0.6;
+    col += vec3( 0.7, 0.8, 1.0 ) * storm_glow * kick * 0.6;
     finish( col );
 }

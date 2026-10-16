@@ -68,46 +68,46 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Boost direction vector
-    vec2  boostDir = normalize( vec2( cos( t * 0.3 * ang ), sin( t * 0.3 * ang ) ) );
-    float proj = dot( p, boostDir );
+    vec2  boost_dir = normalize( vec2( cos( t * 0.3 * ang ), sin( t * 0.3 * ang ) ) );
+    float proj = dot( p, boost_dir );
 
     // Doppler factor delta = 1 / (gamma * (1 - beta * cos theta))
-    float beta = mix( -0.8, 0.8, tProg ) * dpl;
-    float dopplerFactor = 1.0 + beta * proj * 1.5;
+    float beta = mix( -0.8, 0.8, t_prog ) * dpl;
+    float doppler_factor = 1.0 + beta * proj * 1.5;
 
     // Relativistic aberration displacement
-    vec2 aberrDisp = boostDir * beta * 0.05 * midTransition;
+    vec2 aberr_disp = boost_dir * beta * 0.05 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + aberrDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - aberrDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + aberr_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - aberr_disp ) );
 
     // Doppler color shift: Blue shift (approaching) vs Red shift (receding).
     // audioBass widens the spectral shift — it scales the tint AMOUNT only,
-    // never beta itself (which sets the aberration).  midTransition drives the
+    // never beta itself (which sets the aberration).  mid_transition drives the
     // amount to exactly 0 at both fade endpoints, where the tint is vec3(1.0)
     // and the frame is untinted; the clamp keeps mix() from extrapolating past
     // the tint colour.
-    float shiftAmount = clamp( abs( beta ) * midTransition * ( 1.0 + audioSwell * 0.7 ), 0.0, 1.0 );
-    vec3  blueTint = vec3( 0.3, 0.85, 1.2 );
-    vec3  redTint = vec3( 1.2, 0.4, 0.2 );
-    vec3  dopplerTint = ( beta > 0.0 ) ? mix( vec3( 1.0 ), blueTint, shiftAmount )
-                                       : mix( vec3( 1.0 ), redTint, shiftAmount );
+    float shift_amount = clamp( abs( beta ) * mid_transition * ( 1.0 + audioSwell * 0.7 ), 0.0, 1.0 );
+    vec3  blue_tint = vec3( 0.3, 0.85, 1.2 );
+    vec3  red_tint = vec3( 1.2, 0.4, 0.2 );
+    vec3  doppler_tint = ( beta > 0.0 ) ? mix( vec3( 1.0 ), blue_tint, shift_amount )
+                                        : mix( vec3( 1.0 ), red_tint, shift_amount );
 
-    vec4 col = mix( c1, c0, tProg );
-    col.rgb *= dopplerTint;
+    vec4 col = mix( c1, c0, t_prog );
+    col.rgb *= doppler_tint;
 
     // Relativistic beaming headlamp beam
-    float headlamp = exp( -abs( proj ) * 15.0 ) * midTransition;
+    float headlamp = exp( -abs( proj ) * 15.0 ) * mid_transition;
     col.rgb += headlamp * vec3( 1.0, 0.95, 0.85 ) * ( 1.0 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

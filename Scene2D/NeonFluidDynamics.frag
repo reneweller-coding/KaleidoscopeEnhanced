@@ -112,48 +112,48 @@ void main()
 
     // Multi-step Runge-Kutta 2nd order advection simulation in fragment shader
     vec2  p = uv * 2.2;
-    vec2  advectedP = p;
+    vec2  advected_p = p;
     float dt = 0.12 / visc;
 
     // Advect across 4 time steps
     for ( int step = 0; step < 4; step++ )
     {
-        vec2 v1 = getVelocity( advectedP, t - float( step ) * dt, swrl );
-        vec2 midP = advectedP - 0.5 * dt * v1;
-        vec2 v2 = getVelocity( midP, t - ( float( step ) + 0.5 ) * dt, swrl );
-        advectedP -= dt * v2;
+        vec2 v1 = getVelocity( advected_p, t - float( step ) * dt, swrl );
+        vec2 mid_p = advected_p - 0.5 * dt * v1;
+        vec2 v2 = getVelocity( mid_p, t - ( float( step ) + 0.5 ) * dt, swrl );
+        advected_p -= dt * v2;
     }
 
     // Dye density accumulation from advected coordinates
-    float dye1 = noise( advectedP * 2.0 + vec2( t * 0.1, -t * 0.15 ) );
-    float dye2 = noise( advectedP * 4.5 - vec2( t * 0.2, t * 0.1 ) );
-    float dye3 = noise( advectedP * 9.0 + vec2( t * 0.3, t * 0.2 ) );
+    float dye1 = noise( advected_p * 2.0 + vec2( t * 0.1, -t * 0.15 ) );
+    float dye2 = noise( advected_p * 4.5 - vec2( t * 0.2, t * 0.1 ) );
+    float dye3 = noise( advected_p * 9.0 + vec2( t * 0.3, t * 0.2 ) );
 
-    float fluidPattern = ( dye1 * 0.5 + dye2 * 0.3 + dye3 * 0.2 );
+    float fluid_pattern = ( dye1 * 0.5 + dye2 * 0.3 + dye3 * 0.2 );
 
     // Neon dye palette generation: Electric cyan, ultraviolet, hot pink, solar gold
-    vec3 cCyan = vec3( 0.0, 1.0, 0.9 );
-    vec3 cPink = vec3( 1.0, 0.05, 0.6 );
-    vec3 cGold = vec3( 1.0, 0.8, 0.1 );
-    vec3 cPurple = vec3( 0.5, 0.0, 1.0 );
+    vec3 c_cyan = vec3( 0.0, 1.0, 0.9 );
+    vec3 c_pink = vec3( 1.0, 0.05, 0.6 );
+    vec3 c_gold = vec3( 1.0, 0.8, 0.1 );
+    vec3 c_purple = vec3( 0.5, 0.0, 1.0 );
 
-    vec3 dyeCol = mix( cCyan, cPink, sin( fluidPattern * 6.28 + t ) * 0.5 + 0.5 );
-    dyeCol = mix( dyeCol, cGold, sin( fluidPattern * 12.56 - t * 2.0 ) * 0.5 + 0.5 );
-    dyeCol = mix( dyeCol, cPurple, pow( dye3, 3.0 ) );
+    vec3 dye_col = mix( c_cyan, c_pink, sin( fluid_pattern * 6.28 + t ) * 0.5 + 0.5 );
+    dye_col = mix( dye_col, c_gold, sin( fluid_pattern * 12.56 - t * 2.0 ) * 0.5 + 0.5 );
+    dye_col = mix( dye_col, c_purple, pow( dye3, 3.0 ) );
 
     // Dynamic dye injection blast on audioKick
-    float shockDist = length( uv );
-    float shockwave = sin( shockDist * 16.0 - t * 8.0 - audioSubBass * 6.0 ) * exp( -shockDist * 2.5 );
-    float kickBlast = shockwave * audioKick * 2.0;
+    float shock_dist = length( uv );
+    float shockwave = sin( shock_dist * 16.0 - t * 8.0 - audioSubBass * 6.0 ) * exp( -shock_dist * 2.5 );
+    float kick_blast = shockwave * audioKick * 2.0;
 
     // Liquid marbling of input photo
-    vec2 photoWarp = st + ( advectedP - p ) * 0.18 * ( 1.0 + audioBass * 0.8 );
-    vec3 photo = img( clamp( photoWarp, 0.0, 1.0 ) );
+    vec2 photo_warp = st + ( advected_p - p ) * 0.18 * ( 1.0 + audioBass * 0.8 );
+    vec3 photo = img( clamp( photo_warp, 0.0, 1.0 ) );
 
     // Combine fluid luminescence
     vec3 col = mix( vec3( 0.02, 0.01, 0.04 ), photo * 1.2, 0.45 + 0.3 * audioLevel );
-    col += dyeCol * ( fluidPattern * 1.5 ) * ( 0.8 + audioSwell * 0.6 );
-    col += kickBlast * vec3( 1.0, 0.4, 0.8 );
+    col += dye_col * ( fluid_pattern * 1.5 ) * ( 0.8 + audioSwell * 0.6 );
+    col += kick_blast * vec3( 1.0, 0.4, 0.8 );
 
     // Fine viscous sparkles on high frequencies
     if ( audioHigh > 0.4 )

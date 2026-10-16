@@ -67,58 +67,58 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution.xy;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Quadtree hierarchy: level 1 (2x2), level 2 (4x4), level 3 (8x8), level 4 (16x16)
-    float gridBorder = 0.0;
-    float tileSeed = 0.0;
-    vec2  curUV = uv;
+    float grid_border = 0.0;
+    float tile_seed = 0.0;
+    vec2  cur_uv = uv;
 
     float scale = 2.0;
     for ( int lvl = 0; lvl < 4; ++lvl )
     {
-        vec2 cell = floor( curUV * scale );
-        vec2 f = fract( curUV * scale );
+        vec2 cell = floor( cur_uv * scale );
+        vec2 f = fract( cur_uv * scale );
 
-        tileSeed += hash21( cell + float( lvl ) * 13.7 ) * ( 1.0 / float( lvl + 1 ) );
+        tile_seed += hash21( cell + float( lvl ) * 13.7 ) * ( 1.0 / float( lvl + 1 ) );
 
         // Border detection -- sharp falloff: four overlaid levels of the
         // old exp(-b*30) glow covered most of the frame.
         float b = min( min( f.x, 1.0 - f.x ), min( f.y, 1.0 - f.y ) );
-        gridBorder = max( gridBorder, exp( -b * 80.0 ) );
+        grid_border = max( grid_border, exp( -b * 80.0 ) );
 
         scale *= 2.0;
     }
 
     // Staggered tile flip.  audioBass undulates the subdivision threshold, i.e.
-    // how far apart the tiles' flip times are spread.  The (tProg - d*s)/(1-s)
+    // how far apart the tiles' flip times are spread.  The (t_prog - d*s)/(1-s)
     // form is written so the divisor tracks the threshold: it still self-clamps
-    // to exactly 0 at tProg = 0 and exactly 1 at tProg = 1 for any s < 1, and
-    // midTransition additionally returns s to its base 0.35 at both endpoints.
-    float subdivThreshold = 0.35; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
-    float tileDelay = fract( tileSeed * 3.1415 );
-    float tileProg = clamp( ( tProg - tileDelay * subdivThreshold ) / ( 1.0 - subdivThreshold ), 0.0, 1.0 );
-    tileProg = smoothstep( 0.0, 1.0, tileProg );
+    // to exactly 0 at t_prog = 0 and exactly 1 at t_prog = 1 for any s < 1, and
+    // mid_transition additionally returns s to its base 0.35 at both endpoints.
+    float subdiv_threshold = 0.35; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    float tile_delay = fract( tile_seed * 3.1415 );
+    float tile_prog = clamp( ( t_prog - tile_delay * subdiv_threshold ) / ( 1.0 - subdiv_threshold ), 0.0, 1.0 );
+    tile_prog = smoothstep( 0.0, 1.0, tile_prog );
 
     // Tile flip 3D illusion
-    float flipAngle = ( 1.0 - tileProg ) * 3.14159265 * midTransition;
-    vec2  tileUV = uv + vec2( sin( flipAngle ), 0.0 ) * 0.02;
+    float flip_angle = ( 1.0 - tile_prog ) * 3.14159265 * mid_transition;
+    vec2  tile_uv = uv + vec2( sin( flip_angle ), 0.0 ) * 0.02;
 
-    vec4 c1 = texture( tex1, fract( tileUV ) );
-    vec4 c0 = texture( tex0, fract( tileUV ) );
+    vec4 c1 = texture( tex1, fract( tile_uv ) );
+    vec4 c0 = texture( tex0, fract( tile_uv ) );
 
-    vec4 col = mix( c1, c0, tileProg );
+    vec4 col = mix( c1, c0, tile_prog );
 
     // Neon grid border glow -- calibrated so the tiles' content stays
     // visible between the lines (old gain 1.2+kick*3 washed it cyan).
-    float borderGlow = gridBorder * midTransition * grd;
-    col.rgb += borderGlow * vec3( 0.1, 0.9, 1.0 ) * ( 0.3 + audioKick * 0.35 );
+    float border_glow = grid_border * mid_transition * grd;
+    col.rgb += border_glow * vec3( 0.1, 0.9, 1.0 ) * ( 0.3 + audioKick * 0.35 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

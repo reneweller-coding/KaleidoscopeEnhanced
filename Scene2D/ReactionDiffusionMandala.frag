@@ -39,7 +39,7 @@ uniform float innerZoomP; ///< inner layer's zoom relative to the outer (0 -> 2.
 uniform float spinP;      ///< outer-fold spin speed multiplier (0 -> 1.0; 0.5..1.8)
 uniform float glowP;      ///< overall brightness (0 -> 1.0; 0.7..1.4)
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot( float a )
@@ -73,8 +73,8 @@ vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
     float r = length( p );
-    float seg = PI / sides;
-    a = mod( a + PI, 2.0 * seg ) - seg;
+    float seg = Pi / sides;
+    a = mod( a + Pi, 2.0 * seg ) - seg;
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
@@ -97,24 +97,24 @@ void main()
     vec2 px = 1.0 / resolution;
 
     // Per-activation character (constant during the scene):
-    float sidesV = ( sidesP < 5 ) ? 8.0 : float( sidesP );
-    float innerZ = ( innerZoomP <= 0.01 ) ? 2.4 : innerZoomP;
-    float spinV = ( spinP <= 0.01 ) ? 1.0 : spinP;
-    float glowV = ( glowP <= 0.01 ) ? 1.0 : glowP;
+    float sides_v = ( sidesP < 5 ) ? 8.0 : float( sidesP );
+    float inner_z = ( innerZoomP <= 0.01 ) ? 2.4 : innerZoomP;
+    float spin_v = ( spinP <= 0.01 ) ? 1.0 : spinP;
+    float glow_v = ( glowP <= 0.01 ) ? 1.0 : glowP;
 
     vec2 cp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     // Outer fold: spins with the integrated audio phase (jump-free).
-    float outerA = audioPhase * 0.6 * spinV + time * 0.02 * spinV;
-    vec2  op = rot( outerA ) * cp;
-    vec2  ouv = kaleido( op, sidesV ) * 0.9 + 0.5;
+    float outer_a = audioPhase * 0.6 * spin_v + time * 0.02 * spin_v;
+    vec2  op = rot( outer_a ) * cp;
+    vec2  ouv = kaleido( op, sides_v ) * 0.9 + 0.5;
     float ob = bSmooth( ouv, px );
 
     // Inner fold: nested at a deeper zoom, counter-spinning, breathing with
     // the slow loudness swell -- a mandala seen through a mandala.
-    float innerZoom = innerZ * ( 1.0 + 0.15 * audioSwell );
-    vec2  ip = rot( -outerA * 1.7 ) * ( op * innerZoom );
-    vec2  iuv = kaleido( ip, sidesV * 0.5 ) * 0.9 + 0.5;
+    float inner_zoom = inner_z * ( 1.0 + 0.15 * audioSwell );
+    vec2  ip = rot( -outer_a * 1.7 ) * ( op * inner_zoom );
+    vec2  iuv = kaleido( ip, sides_v * 0.5 ) * 0.9 + 0.5;
     float ib = bSmooth( iuv, px );
 
     // Structure from the field (not colour): the outer layer draws the bulk
@@ -125,25 +125,25 @@ void main()
     // Colour from the picture's own palette arc, modulated by the field --
     // the simulation supplies WHERE, the photo supplies WHAT COLOUR (V8b/V8d:
     // no extra hue-rotation on top of imgPalette).
-    vec3 baseCol = imgPalette( structure * 1.4 + 0.1 * sin( audioBarPhase * 6.28318 ) ) * 1.6;
-    vec3 innerCol = imgPalette( ib * 1.4 + 0.35 ) * 1.6;
+    vec3 base_col = imgPalette( structure * 1.4 + 0.1 * sin( audioBarPhase * 6.28318 ) ) * 1.6;
+    vec3 inner_col = imgPalette( ib * 1.4 + 0.35 ) * 1.6;
 
-    vec3 col = baseCol * ( 0.55 + 1.3 * ob ) + innerCol * ( 0.4 + 0.9 * ib ) * 0.7;
-    col += edge * ( 0.5 + 0.6 * audioBeat + 0.35 * audioOnset ) * baseCol;
+    vec3 col = base_col * ( 0.55 + 1.3 * ob ) + inner_col * ( 0.4 + 0.9 * ib ) * 0.7;
+    col += edge * ( 0.5 + 0.6 * audioBeat + 0.35 * audioOnset ) * base_col;
 
     // Radial vignette so the fold reads as a mandala with a centre, not a
     // wallpaper tile filling the whole frame edge-to-edge.
-    float rFall = 1.0 - smoothstep( 0.35, 0.95, length( cp ) );
-    col *= mix( 0.72, 1.0, rFall );
+    float r_fall = 1.0 - smoothstep( 0.35, 0.95, length( cp ) );
+    col *= mix( 0.72, 1.0, r_fall );
 
-    col *= glowV * ( 1.25 + 0.4 * audioCentroid );
+    col *= glow_v * ( 1.25 + 0.4 * audioCentroid );
     col *= 1.05 + 0.4 * audioLevel;
 
     // Catalogue review: soft-knee exposure -- hot audio compresses instead
     // of clipping the whole frame to white.
-    vec3 _catTone = ( clamp( col, 0.0, 1.0 ) ) * 0.75;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    _catTone = clamp( pow( max( _catTone, 0.0 ), vec3( 2.0 ) ) * 1.30, 0.0, 1.0 ); // washed-out fix round 2: gamma
+    vec3 cat_tone = ( clamp( col, 0.0, 1.0 ) ) * 0.75;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    cat_tone = clamp( pow( max( cat_tone, 0.0 ), vec3( 2.0 ) ) * 1.30, 0.0, 1.0 ); // washed-out fix round 2: gamma
                                                                                    // crush
-    fragColor = vec4( _catTone, 1.0 );
+    fragColor = vec4( cat_tone, 1.0 );
 }

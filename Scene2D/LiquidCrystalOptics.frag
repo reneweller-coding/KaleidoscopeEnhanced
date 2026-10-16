@@ -87,29 +87,29 @@ void main()
     theta += rolls * def;
 
     // Cross-polarizer transmission intensity: I = I0 * sin^2(2*theta) * sin^2(pi*delta / lambda)
-    float analyzerAngle = time * 0.15 + audioPhase * 0.1;
-    float extinction = pow( sin( 2.0 * ( theta - analyzerAngle ) ), 2.0 );
+    float analyzer_angle = time * 0.15 + audioPhase * 0.1;
+    float extinction = pow( sin( 2.0 * ( theta - analyzer_angle ) ), 2.0 );
 
     // Optical path retardation delta
     float delta = ( length( uv ) * 2.5 + sin( theta * 3.0 ) * 0.8 + audioSwell * 0.6 ) * ret;
-    vec3  birefCol = michelLevy( delta );
+    vec3  biref_col = michelLevy( delta );
 
     // Polarized dual-axis photo sampling (ordinary and extraordinary rays)
-    vec2 ordUV = uv + vec2( cos( theta ), sin( theta ) ) * ( 0.02 + 0.03 * audioKick );
-    vec2 extUV = uv - vec2( sin( theta ), cos( theta ) ) * ( 0.02 + 0.03 * audioKick );
-    vec3 photoOrd = img( fract( ordUV + 0.5 ) );
-    vec3 photoExt = img( fract( extUV + 0.5 ) );
-    vec3 photoBiref = mix( photoOrd, photoExt, extinction );
+    vec2 ord_uv = uv + vec2( cos( theta ), sin( theta ) ) * ( 0.02 + 0.03 * audioKick );
+    vec2 ext_uv = uv - vec2( sin( theta ), cos( theta ) ) * ( 0.02 + 0.03 * audioKick );
+    vec3 photo_ord = img( fract( ord_uv + 0.5 ) );
+    vec3 photo_ext = img( fract( ext_uv + 0.5 ) );
+    vec3 photo_biref = mix( photo_ord, photo_ext, extinction );
 
     // Topological Schlieren dark brushes where director aligns with polarizers
-    vec3 col = photoBiref * birefCol * ( extinction * 1.8 + 0.15 );
+    vec3 col = photo_biref * biref_col * ( extinction * 1.8 + 0.15 );
 
     // Defect core bright flashes on kicks
     float core1 = exp( -dot( d1, d1 ) * 40.0 );
     float core2 = exp( -dot( d2, d2 ) * 40.0 );
     float core3 = exp( -dot( d3, d3 ) * 40.0 );
-    float defectGlow = ( core1 + core2 + core3 ) * ( 1.0 + 3.0 * audioKick );
-    col += vec3( 1.0, 0.9, 0.7 ) * defectGlow * 1.5;
+    float defect_glow = ( core1 + core2 + core3 ) * ( 1.0 + 3.0 * audioKick );
+    col += vec3( 1.0, 0.9, 0.7 ) * defect_glow * 1.5;
 
     col = hueRot( col, audioChromaHue + hue );
     col = pow( col, vec3( 0.9 ) ); // Saturation boost
@@ -117,7 +117,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

@@ -128,7 +128,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -324,15 +324,15 @@ void main()
     // Photo: the background far and dim, the pipes carry it flowing along.
     vec2  uv = p * 0.5 + 0.5;
     vec3  back = imgK( uv * 0.7 + 0.15, 3.0 ) * 0.18;
-    float hueF = hueP * 0.159 + 0.12 * audioPhase + 0.3 * mode;
+    float hue_f = hueP * 0.159 + 0.12 * audioPhase + 0.3 * mode;
     vec3  col = back;
     for ( int L = 0; L < 2; ++L )
     {
         float cc = L == 0 ? c2 : c1;
         vec2  dir = L == 0 ? dir2 : dir1;
         float on = L == 0 ? lay : 1.0;
-        float pxL = px / w * ( L == 0 ? 0.5 : 1.0 ) * 1.2;
-        float band = smoothstep( 1.0 + pxL, 1.0 - pxL, cc ) * on;
+        float px_l = px / w * ( L == 0 ? 0.5 : 1.0 ) * 1.2;
+        float band = smoothstep( 1.0 + px_l, 1.0 - px_l, cc ) * on;
         if ( band <= 0.0 )
             continue;
         float round_ = sqrt( max( 1.0 - cc * cc, 0.0 ) );                      // pipe profile
@@ -341,7 +341,7 @@ void main()
         vec3  ph = imgK( fuv, 1.5 );
         float m = luma( ph );
         vec3  field = hsv2rgb(
-            vec3( fract( hueF + 0.25 * m + 0.35 * float( L ) + 0.1 * ( x.x + x.y ) * 0.05 ), 0.7, 1.0 ) );
+            vec3( fract( hue_f + 0.25 * m + 0.35 * float( L ) + 0.1 * ( x.x + x.y ) * 0.05 ), 0.7, 1.0 ) );
         vec3 pipe = mix( max( ( ph - m ) * 1.4 + m, 0.0 ) * mix( vec3( 1.0 ), field, 0.35 ), field * ( 0.3 + 1.2 * m ),
                          smoothstep( 0.3, 0.7, clamp( styleP, 0.0, 1.0 ) ) );
         pipe *= 0.35 + 0.75 * round_;

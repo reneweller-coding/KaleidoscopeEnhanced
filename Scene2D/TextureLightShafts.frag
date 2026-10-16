@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -264,8 +264,8 @@ void main()
     vec3  lc = mix( vec3( 0.75, 0.88, 1.1 ), vec3( 1.2, 0.9, 0.55 ), mode );
     lc = mix( lc, glowColour( imgLod( p * 0.6 + 0.5, 5.0 ), p, hueP * 0.159 ), 0.15 );
     float haze = 0.4 + 0.6 * clamp( hazeP, 0.0, 1.0 );
-    float airN = 0.7 + 0.6 * fbm3( p * 2.0 + vec2( 0.03 * sceneTime, 0.0 ) );
-    vec3  col = lc * shaft * haze * airN * ( 0.7 + 0.6 * bass ) * 1.1;
+    float air_n = 0.7 + 0.6 * fbm3( p * 2.0 + vec2( 0.03 * sceneTime, 0.0 ) );
+    vec3  col = lc * shaft * haze * air_n * ( 0.7 + 0.6 * bass ) * 1.1;
     // The canopy: dark leaves, the openings glowing.
     vec2 uv = p * 0.6 + 0.5 + vec2( 0.004, 0.002 ) * sceneTime;
     vec3 leaves = imgLod( uv, 1.5 ) * 0.06;

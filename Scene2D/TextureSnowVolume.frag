@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -233,7 +233,7 @@ void main()
     float hi = clamp( audioHigh * 1.5, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  lampC = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.1, 0.75, 0.4 ), mode );
+    vec3  lamp_c = mix( vec3( 0.7, 0.85, 1.1 ), vec3( 1.1, 0.75, 0.4 ), mode );
     // Town lights behind: the photo, heavily blurred, neon-ish.
     vec2 uv = p * 0.5 + 0.5 + vec2( 0.002, 0.0 ) * sceneTime;
     vec3 town = neonOf( imgLod( uv, 5.0 ) + 1e-3, 1.5 ) * smoothstep( 0.35, 0.8, luma( imgLod( uv, 4.0 ) ) );
@@ -243,7 +243,7 @@ void main()
     float cone = smoothstep( 0.35 + 0.3 * clamp( lampP, 0.0, 1.0 ), 0.0,
                              abs( lx ) / max( 0.3 + ( 0.6 - p.y ) * 0.6, 0.05 ) );
     cone *= smoothstep( -0.8, 0.6, -p.y + 0.6 );
-    col += lampC * cone * 0.08 * ( 1.0 + 0.8 * kick );
+    col += lamp_c * cone * 0.08 * ( 1.0 + 0.8 * kick );
     // Snow: depth layers of flakes.
     float T = 0.12 * sceneTime + 0.8 * audioAdvance;
     float gust = 0.2 + 0.6 * clamp( audioSpread, 0.0, 1.0 );
@@ -265,7 +265,7 @@ void main()
         float tw = 1.0
                    + hi * 1.5 * step( 0.9, hash21( gi + 8.0 ) )
                          * pow( max( 0.0, sin( sceneTime * 4.0 + hash21( gi ) * 40.0 ) ), 8.0 );
-        col += mix( vec3( 0.85, 0.9, 1.0 ), lampC, cone ) * on * flake * lit * tw * ( 0.6 - 0.08 * fl );
+        col += mix( vec3( 0.85, 0.9, 1.0 ), lamp_c, cone ) * on * flake * lit * tw * ( 0.6 - 0.08 * fl );
     }
     col = mix( col, col * glowColour( imgLod( uv, 6.0 ), p, hueP * 0.159 ) * 1.3, 0.06 );
     finish( col );

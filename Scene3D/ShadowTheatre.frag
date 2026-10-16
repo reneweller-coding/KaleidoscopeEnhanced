@@ -87,8 +87,8 @@ void main()
 
     // Where the lamp sits behind the screen. Both the falloff on the screen and
     // the side the penumbra opens toward are measured from here, so they agree.
-    vec2 lampPos = vec2( 0.30 * sin( time * 0.07 + audioAdvance * 0.03 ),
-                         0.16 * cos( time * 0.05 ) + 0.06 );
+    vec2 lamp_pos = vec2( 0.30 * sin( time * 0.07 + audioAdvance * 0.03 ),
+                          0.16 * cos( time * 0.05 ) + 0.06 );
 
     if ( vBg > 0.5 )
     {
@@ -101,7 +101,7 @@ void main()
         }
 
         vec2  s = w.xy / 190.0; // -1..1 across the screen
-        float r = length( s - lampPos );
+        float r = length( s - lamp_pos );
 
         // A lamp behind a diffusing screen: bright core, long falloff. The
         // 1/(1+kr^2) form is what a diffuser actually does and it keeps a
@@ -129,16 +129,16 @@ void main()
     // fragments ARE the outline, so the fresnel term is the penumbra, and
     // widening it with nearP keeps the softness tied to the geometry.
     vec3  n = normalize( vNormal );
-    vec3  viewDir = normalize( -vPos );
-    float graze = 1.0 - max( dot( n, viewDir ), 0.0 );
+    vec3  view_dir = normalize( -vPos );
+    float graze = 1.0 - max( dot( n, view_dir ), 0.0 );
 
     float soft = mix( 6.0, 1.6, clamp( ( nr - 0.6 ) / 1.4, 0.0, 1.0 ) );
     float edge = pow( graze, soft );
 
     // Light bleeding past the caster, strongest on the side the lamp is on.
     vec2  sp = vWorld.xy / 190.0;
-    float toLamp = length( sp - lampPos );
-    float bleed = edge * ( 0.55 + 0.75 * audioKick ) / ( 1.0 + toLamp * toLamp * 3.0 );
+    float to_lamp = length( sp - lamp_pos );
+    float bleed = edge * ( 0.55 + 0.75 * audioKick ) / ( 1.0 + to_lamp * to_lamp * 3.0 );
 
     vec3 col = vec3( 0.008, 0.008, 0.011 );
     col += lamp * bleed * ( 0.8 + 0.7 * audioSwell );
@@ -146,7 +146,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.10 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

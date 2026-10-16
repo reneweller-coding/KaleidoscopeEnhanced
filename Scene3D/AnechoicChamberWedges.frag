@@ -75,14 +75,14 @@ void main()
     float diff = max( dot( n, L ), 0.0 );
     vec3  col = foam * ( 0.15 + 0.9 * diff * room );
     // The tip glow: the band's light, concentrated at the wedge tip.
-    vec3  tipCol = imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.8 + 0.2;
+    vec3  tip_col = imgPalette( hue * 0.159 + float( band ) / 32.0 ) * 1.8 + 0.2;
     float tip = pow( vHeight, 3.0 );
-    col += tipCol * tip * ( 0.3 + 1.4 * e + 0.6 * audioKick );
+    col += tip_col * tip * ( 0.3 + 1.4 * e + 0.6 * audioKick );
     // A faint glow bleeding down the wedge faces from the tip.
-    col += tipCol * vHeight * 0.12 * e;
+    col += tip_col * vHeight * 0.12 * e;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

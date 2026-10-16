@@ -172,37 +172,37 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // Harsh, hard-edged key light -- a searchlight raking across armor
     // plating, not a soft ambient star.
-    vec3  lightDir = normalize( vec3( 0.55, 0.35, -0.55 ) );
-    float diff = pow( max( dot( n, lightDir ), 0.0 ), 1.4 );
+    vec3  light_dir = normalize( vec3( 0.55, 0.35, -0.55 ) );
+    float diff = pow( max( dot( n, light_dir ), 0.0 ), 1.4 );
     float fill = 0.35 + 0.35 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 40.0, 8.0, roughness ) );
-    vec3  specColor = mix( vec3( 1.0, 0.9, 0.85 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 40.0, 8.0, roughness ) );
+    vec3  spec_color = mix( vec3( 1.0, 0.9, 0.85 ), base.rgb, metallic );
 
     // Dark by design (see RingStation/Spaceship's own notes on this) --
     // enough ambient floor to actually see the armor plating, but dimmer
     // overall than the civilian families: this hull is meant to look grim.
     vec3 col = base.rgb * ( 0.35 + diff * ( 1.5 + 0.5 * audioSwell ) + fill * 0.25 );
-    col += specColor * spec * ( 0.55 + 0.7 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.55 + 0.7 * ( 1.0 - roughness ) );
 
     // Alarm strobe: the hull's own brightest baked markings (hazard
     // stripes, running lights) pulse red on the beat instead of glowing
     // steadily -- a fortress under readiness, not asleep.
     float luma = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
-    float markingMask = smoothstep( 0.22, 0.5, luma );
+    float marking_mask = smoothstep( 0.22, 0.5, luma );
     float pulse = 0.5 + 0.5 * sin( time * 6.0 + audioAdvance * 2.0 );
-    float strobe = markingMask * ( pulse * 0.4 + audioKick * 0.8 ) * ap;
+    float strobe = marking_mask * ( pulse * 0.4 + audioKick * 0.8 ) * ap;
     col += vec3( 1.0, 0.12, 0.08 ) * strobe;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

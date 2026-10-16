@@ -68,57 +68,57 @@ void main()
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     float id = attrA.w;
-    vec2  localUV = attrA.xy - vec2( 0.5 );
+    vec2  local_uv = attrA.xy - vec2( 0.5 );
     vTexCoord = attrA.xy;
 
     float t = time * 0.35 * spd + audioAdvance * 0.2;
 
     // Hexagonal ring lattice placement
-    float totalQuads = 3000.0;
-    float ringID = floor( sqrt( id * 0.5 ) );
-    float angleInRing = ( id - 2.0 * ringID * ringID ) * ( 6.2831853 / max( ringID * 4.0, 1.0 ) );
-    float ringRadius = ringID * 0.12 * ( 1.0 + 0.2 * audioSwell );
+    float total_quads = 3000.0;
+    float ring_id = floor( sqrt( id * 0.5 ) );
+    float angle_in_ring = ( id - 2.0 * ring_id * ring_id ) * ( 6.2831853 / max( ring_id * 4.0, 1.0 ) );
+    float ring_radius = ring_id * 0.12 * ( 1.0 + 0.2 * audioSwell );
 
-    vec3 centerPos = vec3(
-        cos( angleInRing ) * ringRadius,
-        sin( angleInRing ) * ringRadius,
+    vec3 center_pos = vec3(
+        cos( angle_in_ring ) * ring_radius,
+        sin( angle_in_ring ) * ring_radius,
         0.0 );
 
     // Dynamic wave elevation traveling through kinetic array
-    float waveDist = length( centerPos.xy );
-    float heightWave = sin( waveDist * 4.0 - t * 3.0 + audioPhase ) * ( 0.4 + 0.4 * audioBass ) * wav;
-    centerPos.z += heightWave;
+    float wave_dist = length( center_pos.xy );
+    float height_wave = sin( wave_dist * 4.0 - t * 3.0 + audioPhase ) * ( 0.4 + 0.4 * audioBass ) * wav;
+    center_pos.z += height_wave;
 
     // Kinetic mirror tilt angle (mechanical wave machine)
-    float tiltAngleX = cos( waveDist * 3.0 - t * 2.5 ) * 0.6 * tlt;
-    float tiltAngleY = sin( waveDist * 3.0 - t * 2.5 ) * 0.6 * tlt;
+    float tilt_angle_x = cos( wave_dist * 3.0 - t * 2.5 ) * 0.6 * tlt;
+    float tilt_angle_y = sin( wave_dist * 3.0 - t * 2.5 ) * 0.6 * tlt;
 
     // 180° snap flip on kick
-    float snapFlip = smoothstep( 0.7, 1.0, sin( waveDist * 2.0 - time * 6.0 ) ) * 3.14159 * audioKick;
-    tiltAngleX += snapFlip;
+    float snap_flip = smoothstep( 0.7, 1.0, sin( wave_dist * 2.0 - time * 6.0 ) ) * 3.14159 * audioKick;
+    tilt_angle_x += snap_flip;
 
     // Quad facet vertices
-    float quadSize = 0.09;
-    vec3  quadOffset = vec3( localUV.x * quadSize, localUV.y * quadSize, 0.0 );
+    float quad_size = 0.09;
+    vec3  quad_offset = vec3( local_uv.x * quad_size, local_uv.y * quad_size, 0.0 );
 
     // Rotate quad offset by tilt angles
-    float cx = cos( tiltAngleX ), sx = sin( tiltAngleX );
-    float cy = cos( tiltAngleY ), sy = sin( tiltAngleY );
-    quadOffset.yz = vec2( quadOffset.y * cx - quadOffset.z * sx, quadOffset.y * sx + quadOffset.z * cx );
-    quadOffset.xz = vec2( quadOffset.x * cy - quadOffset.z * sy, quadOffset.x * sy + quadOffset.z * cy );
+    float cx = cos( tilt_angle_x ), sx = sin( tilt_angle_x );
+    float cy = cos( tilt_angle_y ), sy = sin( tilt_angle_y );
+    quad_offset.yz = vec2( quad_offset.y * cx - quad_offset.z * sx, quad_offset.y * sx + quad_offset.z * cx );
+    quad_offset.xz = vec2( quad_offset.x * cy - quad_offset.z * sy, quad_offset.x * sy + quad_offset.z * cy );
 
-    vec3 pos = centerPos + quadOffset;
+    vec3 pos = center_pos + quad_offset;
 
     // Surface normal calculation
-    vec3 localNormal = vec3( 0.0, 0.0, 1.0 );
-    localNormal.yz = vec2( localNormal.y * cx - localNormal.z * sx, localNormal.y * sx + localNormal.z * cx );
-    localNormal.xz = vec2( localNormal.x * cy - localNormal.z * sy, localNormal.x * sy + localNormal.z * cy );
-    vNormal = normalize( localNormal );
+    vec3 local_normal = vec3( 0.0, 0.0, 1.0 );
+    local_normal.yz = vec2( local_normal.y * cx - local_normal.z * sx, local_normal.y * sx + local_normal.z * cx );
+    local_normal.xz = vec2( local_normal.x * cy - local_normal.z * sy, local_normal.x * sy + local_normal.z * cy );
+    vNormal = normalize( local_normal );
 
     // Rim lighting & mirror chrome color
     vec3 chrome = vec3( 0.8, 0.9, 1.0 );
-    vec3 neonEdge = imgPalette( ( ringID * 0.3 + audioPhase ) * 0.159 );
-    vColor = vec4( mix( chrome, neonEdge, 0.3 ), 1.0 );
+    vec3 neon_edge = imgPalette( ( ring_id * 0.3 + audioPhase ) * 0.159 );
+    vColor = vec4( mix( chrome, neon_edge, 0.3 ), 1.0 );
 
     // Stereo 3D camera projection
     vec3 vp = pos;

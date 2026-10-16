@@ -295,7 +295,7 @@ void main()
     // ---- march the hull -------------------------------------------------
     float d = 0.0;
     float part = 0.0;
-    float hitPart = -1.0;
+    float hit_part = -1.0;
     vec3  hp = vec3( 0.0 );
     int   steps = 0;
     for ( int i = 0; i < 96; ++i )
@@ -305,7 +305,7 @@ void main()
         steps = i;
         if ( ds < 0.004 * ( 1.0 + d * 0.25 ) )
         {
-            hitPart = part;
+            hit_part = part;
             hp = p;
             break;
         }
@@ -317,7 +317,7 @@ void main()
     vec3 col = background( rd, drift, neb, nebTint );
 
     // ---- shade the hull -------------------------------------------------
-    if ( hitPart >= 0.0 )
+    if ( hit_part >= 0.0 )
     {
         vec3 n = shipNormal( hp, len );
 
@@ -340,11 +340,11 @@ void main()
         float seam = smoothstep( 0.46, 0.50, max( g1.x, g1.y ) );
         vec2  g2 = abs( fract( plate * 3.6 ) - 0.5 );
         float seam2 = smoothstep( 0.45, 0.50, max( g2.x, g2.y ) );
-        float plateTone = 0.78 + 0.32 * hash21( c1 );
+        float plate_tone = 0.78 + 0.32 * hash21( c1 );
 
-        vec3 albedo = vec3( 0.40, 0.43, 0.48 ) * plateTone;
-        if ( hitPart > 2.5 )
-            albedo = vec3( 0.30, 0.31, 0.34 ) * plateTone; // engine block
+        vec3 albedo = vec3( 0.40, 0.43, 0.48 ) * plate_tone;
+        if ( hit_part > 2.5 )
+            albedo = vec3( 0.30, 0.31, 0.34 ) * plate_tone; // engine block
         albedo *= 1.0 - 0.42 * seam - 0.16 * seam2;
 
         // Weathering streaks down the flanks.
@@ -359,7 +359,7 @@ void main()
         col *= clamp( 1.0 - float( steps ) * 0.0065, 0.35, 1.0 );
 
         // ---- lit windows on the tower and spine ----
-        if ( hitPart > 0.5 && hitPart < 2.5 )
+        if ( hit_part > 0.5 && hit_part < 2.5 )
         {
             vec2  wc = floor( vec2( hp.z * 2.6, hp.y * 3.4 ) );
             vec2  wf = fract( vec2( hp.z * 2.6, hp.y * 3.4 ) );
@@ -370,20 +370,20 @@ void main()
         }
 
         // ---- running lights: two rows along the flanks ----
-        float rowY = abs( abs( hp.y ) - 0.62 );
-        float beadZ = fract( hp.z * 1.15 );
-        float bead = smoothstep( 0.10, 0.0, rowY ) * smoothstep( 0.16, 0.02, abs( beadZ - 0.5 ) );
+        float row_y = abs( abs( hp.y ) - 0.62 );
+        float bead_z = fract( hp.z * 1.15 );
+        float bead = smoothstep( 0.10, 0.0, row_y ) * smoothstep( 0.16, 0.02, abs( bead_z - 0.5 ) );
         // A pulse runs bow-ward along the row on every kick.
         float chase = exp( -abs( fract( hp.z * 0.08 - audioBeatPhase ) - 0.5 ) * 9.0 );
         col += vec3( 0.35, 0.85, 1.0 ) * bead * ( 0.35 + 1.5 * chase * audioKick ) * glw;
 
         // ---- navigation strobe on the spine ----
         float strobe = pow( max( 0.0, 1.0 - abs( fract( audioBeatPhase ) - 0.06 ) * 9.0 ), 3.0 );
-        float atTop = smoothstep( 1.35, 1.65, hp.y ) * smoothstep( 0.9, 0.4, abs( hp.x ) );
-        col += vec3( 1.0, 0.35, 0.30 ) * atTop * strobe * 0.85 * glw;
+        float at_top = smoothstep( 1.35, 1.65, hp.y ) * smoothstep( 0.9, 0.4, abs( hp.x ) );
+        col += vec3( 1.0, 0.35, 0.30 ) * at_top * strobe * 0.85 * glw;
 
         // ---- engine bells: emissive, they carry the music ----
-        if ( hitPart > 3.5 )
+        if ( hit_part > 3.5 )
         {
             vec3 bp = hp - vec3( 0.0, 0.15, -1.13 * len );
             bp.xy = abs( bp.xy ) - vec2( 1.45, 0.72 );
@@ -416,7 +416,7 @@ void main()
 
     // Soft-knee exposure: the engine bells and the plume compress instead of
     // clipping the whole stern to white.
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.42 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.42 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

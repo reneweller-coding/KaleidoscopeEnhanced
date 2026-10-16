@@ -109,25 +109,25 @@ void main()
         float S = 0.9 * exp( ls );                   // apparent half-size on screen of this layer's square
         vec2  uvk = ( q + vec2( S ) ) / ( 2.0 * S ); // 0..1 across the layer's square
         float inside = step( 0.0, uvk.x ) * step( uvk.x, 1.0 ) * step( 0.0, uvk.y ) * step( uvk.y, 1.0 );
-        float ageA = uvk.x * fill * exp( -float( k ) * L ) * 0.25; // this layer spans a quarter^k of the ring
-        float ageB = uvk.y * fill * exp( -float( k ) * L ) * 0.25;
-        float sim = ssm( ageA, ageB );
+        float age_a = uvk.x * fill * exp( -float( k ) * L ) * 0.25; // this layer spans a quarter^k of the ring
+        float age_b = uvk.y * fill * exp( -float( k ) * L ) * 0.25;
+        float sim = ssm( age_a, age_b );
         float w = clamp( 1.0 - abs( ls ) / ( 1.5 * L ), 0.0, 1.0 ) * inside;
-        float simA = smoothstep( 0.15, 0.95, sim );
-        vec3 layerCol = mix( heat( simA ), heat( simA ) * imgPalette( hue * 0.159 + 0.15 + 0.2 * float( k + 1 ) ) * 1.8,
-                             0.15 )
-                        * 1.3;
+        float sim_a = smoothstep( 0.15, 0.95, sim );
+        vec3  layer_col = mix( heat( sim_a ),
+                               heat( sim_a ) * imgPalette( hue * 0.159 + 0.15 + 0.2 * float( k + 1 ) ) * 1.8, 0.15 )
+                          * 1.3;
         // Each cell a soft tile: the matrix as a glowing mosaic.
         vec2 tf = abs( fract( uvk * 32.0 ) - 0.5 );
-        layerCol *= 0.75 + 0.25 * smoothstep( 0.5, 0.3, max( tf.x, tf.y ) );
+        layer_col *= 0.75 + 0.25 * smoothstep( 0.5, 0.3, max( tf.x, tf.y ) );
         // Grid lines of the layer's own beat lattice.
         float grid = exp( -min( fract( uvk.x * 8.0 ), 1.0 - fract( uvk.x * 8.0 ) ) * 30.0 )
                      + exp( -min( fract( uvk.y * 8.0 ), 1.0 - fract( uvk.y * 8.0 ) ) * 30.0 );
-        layerCol += vec3( 0.6, 0.7, 1.0 ) * grid * 0.06;
+        layer_col += vec3( 0.6, 0.7, 1.0 ) * grid * 0.06;
         // The diagonal is "now against now": a bright line, flashing on the kick.
         float diag = exp( -abs( uvk.x - uvk.y ) * 40.0 );
-        layerCol += vec3( 0.5, 0.95, 1.0 ) * diag * ( 0.3 + 0.9 * audioKick );
-        col += layerCol * w;
+        layer_col += vec3( 0.5, 0.95, 1.0 ) * diag * ( 0.3 + 0.9 * audioKick );
+        col += layer_col * w;
         wsum += w;
     }
     col /= max( wsum, 1e-3 );
@@ -136,7 +136,7 @@ void main()
     col *= ( 0.7 + 0.5 * audioLevel ) * ( 0.85 + 0.35 * audioSwell );
     col *= 1.0 - 0.4 * smoothstep( 0.7, 1.15, length( p ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

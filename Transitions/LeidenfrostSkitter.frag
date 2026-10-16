@@ -50,7 +50,7 @@ uniform float dropsP;
 uniform float driftP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Pseudo-random number 0..1 from a 2D point.
 float hash21( vec2 p )
@@ -71,7 +71,7 @@ void main()
     vec2  sc = vec2( 1.0 / aspect, 1.0 );
 
     float d = clamp( 1.0 - interpolation, 0.0, 1.0 );
-    float arc = sin( d * PI );
+    float arc = sin( d * Pi );
 
     // The plate's temperature sets how thick the cushion is.
     float cushion = 0.55 + 0.75 * clamp( audioSwell, 0.0, 1.0 );
@@ -82,9 +82,9 @@ void main()
     vec2  g = p / cell;
     vec2  gi = floor( g );
 
-    float inDrop = 0.0, rimD = 0.0, spec = 0.0, cushD = 0.0;
+    float in_drop = 0.0, rim_d = 0.0, spec = 0.0, cush_d = 0.0;
     vec2  bend = vec2( 0.0 );
-    vec2  dropUv = uv;
+    vec2  drop_uv = uv;
 
     for ( int j = -2; j <= 2; ++j )
         for ( int i = -2; i <= 2; ++i )
@@ -111,19 +111,19 @@ void main()
             vec2  q = p - c;
             float dist = length( q );
             float inside = smoothstep( r, r * 0.90, dist );
-            if ( inside > inDrop )
+            if ( inside > in_drop )
             {
-                inDrop = inside;
+                in_drop = inside;
                 // A drop is a lens: what is inside it is bent toward its centre.
                 float rr = clamp( dist / r, 0.0, 1.0 );
                 vec2  n = ( dist > 1e-5 ) ? q / dist : vec2( 0.0 );
-                dropUv = clamp( uv - n * ( 0.5 - 0.5 * cos( rr * PI ) ) * r * 0.55 * sc, 0.0, 1.0 );
+                drop_uv = clamp( uv - n * ( 0.5 - 0.5 * cos( rr * Pi ) ) * r * 0.55 * sc, 0.0, 1.0 );
                 spec = exp( -pow( length( q - vec2( -r * 0.34, r * 0.34 ) ) / ( r * 0.20 ), 2.0 ) );
             }
-            rimD = max( rimD, exp( -pow( ( dist - r ) / ( r * 0.16 ), 2.0 ) ) );
+            rim_d = max( rim_d, exp( -pow( ( dist - r ) / ( r * 0.16 ), 2.0 ) ) );
             // The vapour cushion reaches past the drop and bends the plate under it.
             float halo = exp( -pow( dist / ( r * 1.9 ), 2.0 ) );
-            cushD = max( cushD, halo );
+            cush_d = max( cush_d, halo );
             bend += ( ( dist > 1e-5 ) ? q / dist : vec2( 0.0 ) ) * halo * 0.018 * cushion;
         }
 
@@ -131,32 +131,32 @@ void main()
     // film is unbroken, at the end the plate is dry.
     float begun = smoothstep( 0.0, 0.08, d ) * ( 1.0 - smoothstep( 0.86, 1.0, d ) );
     bend *= begun;
-    dropUv = mix( uv, dropUv, begun );
+    drop_uv = mix( uv, drop_uv, begun );
 
     // The plate, seen through the vapour.
     vec3 plate = textureLod( tex1, clamp( uv + bend * sc, 0.0, 1.0 ), 0.0 ).rgb;
-    plate *= 1.0 + cushD * 0.20 * arc * ( 0.3 + 0.9 * clamp( audioKick, 0.0, 1.0 ) );
+    plate *= 1.0 + cush_d * 0.20 * arc * ( 0.3 + 0.9 * clamp( audioKick, 0.0, 1.0 ) );
 
     // textureLod: the lens offset is picked per pixel by a branch, so its
     // implicit derivative jumps at a drop's edge and the sampler would drop
     // to its coarsest mip level -- blurred rectangular blocks.
-    vec3 drop = textureLod( tex0, dropUv, 0.0 ).rgb;
+    vec3 drop = textureLod( tex0, drop_uv, 0.0 ).rgb;
     // A drop is water, not a marble: the plate shows through it, refracted.
     drop = mix( drop, plate * 0.85, 0.30 * begun );
     // Denser than air: it darkens at the rim and carries a highlight.
-    drop *= 1.0 - rimD * 0.42 * begun;
+    drop *= 1.0 - rim_d * 0.42 * begun;
     // A small, tight highlight: brightening the whole drop turned a field of
     // droplets into a field of lamps.
-    drop += vec3( 1.0, 0.97, 0.92 ) * spec * inDrop * begun
+    drop += vec3( 1.0, 0.97, 0.92 ) * spec * in_drop * begun
             * ( 0.16 + 0.30 * clamp( audioHigh * 2.0, 0.0, 1.0 ) );
 
     // At the start the film is unbroken; at the end the plate is dry.
     float broken = smoothstep( 0.0, 0.22, d );
-    float cover = mix( 1.0, inDrop, broken );
+    float cover = mix( 1.0, in_drop, broken );
     cover *= 1.0 - smoothstep( 0.86, 1.0, d );
 
     vec3 col = mix( plate, drop, clamp( cover, 0.0, 1.0 ) );
-    col += vec3( 0.90, 0.94, 1.0 ) * rimD * cover * arc * 0.06;
+    col += vec3( 0.90, 0.94, 1.0 ) * rim_d * cover * arc * 0.06;
 
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

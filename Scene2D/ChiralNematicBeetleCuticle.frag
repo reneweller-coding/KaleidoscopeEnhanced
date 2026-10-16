@@ -78,50 +78,50 @@ void main()
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Hexagonal micro-cellular facet coordinates
-    float hexScale = ( hexP > 0.01 ? hexP : 4.5 );
-    vec4  hg = hexGrid( uv * hexScale + vec2( sin( t * 0.2 ), cos( t * 0.15 ) ) * 0.3 );
-    vec2  cellLocal = hg.xy;
-    vec2  cellId = hg.zw;
+    float hex_scale = ( hexP > 0.01 ? hexP : 4.5 );
+    vec4  hg = hexGrid( uv * hex_scale + vec2( sin( t * 0.2 ), cos( t * 0.15 ) ) * 0.3 );
+    vec2  cell_local = hg.xy;
+    vec2  cell_id = hg.zw;
 
     // Dome facet curvature inside each hexagonal cell
-    float cellR = length( cellLocal );
-    float cellDome = sqrt( max( 0.001, 1.0 - cellR * cellR * 4.0 ) );
-    vec3  facetNormal = normalize( vec3( cellLocal * 2.0, cellDome ) );
+    float cell_r = length( cell_local );
+    float cell_dome = sqrt( max( 0.001, 1.0 - cell_r * cell_r * 4.0 ) );
+    vec3  facet_normal = normalize( vec3( cell_local * 2.0, cell_dome ) );
 
     // Macro curvature of beetle body
-    vec3 macroNormal = normalize( vec3( uv * 1.5, sqrt( max( 0.001, 1.0 - dot( uv, uv ) * 0.8 ) ) ) );
-    vec3 normal = normalize( mix( macroNormal, facetNormal, 0.45 + 0.2 * audioCentroid ) );
+    vec3 macro_normal = normalize( vec3( uv * 1.5, sqrt( max( 0.001, 1.0 - dot( uv, uv ) * 0.8 ) ) ) );
+    vec3 normal = normalize( mix( macro_normal, facet_normal, 0.45 + 0.2 * audioCentroid ) );
 
     // Viewing direction & Bragg reflection angle
-    vec3  viewDir = vec3( 0.0, 0.0, 1.0 );
-    float cosTheta = clamp( dot( normal, viewDir ), 0.0, 1.0 );
+    vec3  view_dir = vec3( 0.0, 0.0, 1.0 );
+    float cos_theta = clamp( dot( normal, view_dir ), 0.0, 1.0 );
 
     // Cholesteric pitch Bragg resonance: lambda = 2 * n_avg * P * cos(theta)
     float pitch = ( pitchP > 0.01 ? pitchP : 1.0 );
-    float braggPhase = ( pitch * 3.0 / max( cosTheta, 0.1 ) + audioPhase * 0.5 - t * 0.8 );
+    float bragg_phase = ( pitch * 3.0 / max( cos_theta, 0.1 ) + audioPhase * 0.5 - t * 0.8 );
 
     // Structural color via photo palette mapped to Bragg reflection spectrum
-    float palCoord = fract( braggPhase * 0.159 + length( cellId ) * 0.05 );
-    vec3  structuralColor = imgPalette( palCoord ) * ( iridP > 0.01 ? iridP : 1.5 );
+    float pal_coord = fract( bragg_phase * 0.159 + length( cell_id ) * 0.05 );
+    vec3  structural_color = imgPalette( pal_coord ) * ( iridP > 0.01 ? iridP : 1.5 );
 
     // Specular metallic sheen & facet highlights
-    vec3  lightDir = normalize( vec3( cos( t * 0.6 ), sin( t * 0.6 ), 0.8 ) );
-    vec3  halfVec = normalize( lightDir + viewDir );
-    float spec = pow( max( 0.0, dot( normal, halfVec ) ), 28.0 ) * ( metalP > 0.01 ? metalP : 1.2 );
-    float kickGlint = pow( max( 0.0, dot( normal, halfVec ) ), 80.0 ) * ( 1.0 + 4.0 * audioKick );
+    vec3  light_dir = normalize( vec3( cos( t * 0.6 ), sin( t * 0.6 ), 0.8 ) );
+    vec3  half_vec = normalize( light_dir + view_dir );
+    float spec = pow( max( 0.0, dot( normal, half_vec ) ), 28.0 ) * ( metalP > 0.01 ? metalP : 1.2 );
+    float kick_glint = pow( max( 0.0, dot( normal, half_vec ) ), 80.0 ) * ( 1.0 + 4.0 * audioKick );
 
     // Hexagonal cell boundary lines
-    float hexEdge = smoothstep( 0.42, 0.48, cellR * 2.0 );
+    float hex_edge = smoothstep( 0.42, 0.48, cell_r * 2.0 );
 
     // Background photo reflection
-    vec2 bgUv = fract( reflect( -viewDir, normal ).xy * 0.4 + 0.5 );
-    vec3 bgRefl = img( bgUv ) * 0.35;
+    vec2 bg_uv = fract( reflect( -view_dir, normal ).xy * 0.4 + 0.5 );
+    vec3 bg_refl = img( bg_uv ) * 0.35;
 
-    vec3 col = bgRefl;
-    col += structuralColor * cosTheta * ( 0.8 + 0.4 * audioSwell );
+    vec3 col = bg_refl;
+    col += structural_color * cos_theta * ( 0.8 + 0.4 * audioSwell );
     col += vec3( 1.0, 0.95, 0.8 ) * spec * 1.2;
-    col += structuralColor * kickGlint * 2.0;
-    col -= vec3( 0.15 ) * hexEdge; // Dark etched boundary grooves
+    col += structural_color * kick_glint * 2.0;
+    col -= vec3( 0.15 ) * hex_edge; // Dark etched boundary grooves
     col += imgPalette( audioCentroid ) * ( audioKick * 0.3 );
 
     // Soft knee compression

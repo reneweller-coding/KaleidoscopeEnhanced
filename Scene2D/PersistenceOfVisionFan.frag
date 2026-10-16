@@ -77,9 +77,9 @@ void main()
     // shrinks with radius so the painted line has constant thickness.
     float sector = 6.2831853 / spokes;
     float rel = mod( a - rot, sector );
-    float dAng = min( rel, sector - rel );
-    float lineW = 0.012 / max( r, 0.05 );
-    float onSpoke = 1.0 - smoothstep( lineW * 0.5, lineW, dAng );
+    float d_ang = min( rel, sector - rel );
+    float line_w = 0.012 / max( r, 0.05 );
+    float on_spoke = 1.0 - smoothstep( line_w * 0.5, line_w, d_ang );
 
     // What the spoke paints: the photo at this pixel, weighted by the
     // spectrum band of this radius.
@@ -100,15 +100,15 @@ void main()
     // frame is never multiplied by anything but the decay (a global
     // brightness factor inside the loop shortened the persistence to a few
     // frames and the picture never built up).
-    vec3 fresh = paint * onSpoke * 0.9 * ( 0.9 + 0.2 * audioLevel );
+    vec3 fresh = paint * on_spoke * 0.9 * ( 0.9 + 0.2 * audioLevel );
     fresh += imgPalette( hue * 0.159 + 0.95 ) * exp( -r * 25.0 ) * ( 0.5 + 1.5 * audioKick );
     fresh *= 1.0 - 0.5 * smoothstep( 0.92, 1.1, r );
     vec3 col = prev + fresh;
 
     // Soft knee ABOVE 1 only: the feedback must stay linear below it, or the
     // tone map eats the afterimage a little more every frame.
-    vec3  _catTone = max( col, 0.0 );
-    float _mx = max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    _catTone /= 1.0 + 0.35 * max( _mx - 1.0, 0.0 );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3  cat_tone = max( col, 0.0 );
+    float mx = max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    cat_tone /= 1.0 + 0.35 * max( mx - 1.0, 0.0 );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

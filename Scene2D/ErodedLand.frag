@@ -85,15 +85,15 @@ vec3 noised( vec2 p )
 }
 
 const mat2  M2 = mat2( 1.6, -1.2, 1.2, 1.6 );
-const float HS = 60.0;   ///< height scale (world units)
-const float XS = 0.0085; ///< horizontal frequency of the broadest octave
+const float Hs = 60.0;   ///< height scale (world units)
+const float Xs = 0.0085; ///< horizontal frequency of the broadest octave
 
 /// Terrain height: each octave is damped by the slope accumulated so far
 /// (1 / (1 + |grad|^2)) -- steep flanks stay smooth, flats get detail,
 /// crests come out sharp.  `oct` octaves.
 float terrain( vec2 x, int oct )
 {
-    vec2  p = x * XS;
+    vec2  p = x * Xs;
     float a = 0.0, b = 1.0;
     vec2  d = vec2( 0.0 );
     for ( int i = 0; i < 9; ++i )
@@ -106,7 +106,7 @@ float terrain( vec2 x, int oct )
         b *= 0.5;
         p = M2 * p;
     }
-    return HS * a - 12.0;
+    return Hs * a - 12.0;
 }
 
 /// @brief Surface normal of the distance field by central differences.
@@ -141,15 +141,15 @@ void main()
     // The sun wheels slowly and stays low enough to rake the relief.
     float sa = T * 0.02 + 2.2;
     vec3  L = normalize( vec3( cos( sa ), 0.35 + 0.25 * clamp( sunP, 0.0, 1.0 ), sin( sa ) ) );
-    vec3  sunCol = mix( vec3( 0.82, 0.9, 1.08 ), vec3( 1.15, 1.0, 0.78 ), clamp( audioMode, 0.0, 1.0 ) )
-                   * ( 1.0 + 0.1 * audioBeat );
+    vec3  sun_col = mix( vec3( 0.82, 0.9, 1.08 ), vec3( 1.15, 1.0, 0.78 ), clamp( audioMode, 0.0, 1.0 ) )
+                    * ( 1.0 + 0.1 * audioBeat );
 
     // Sky and haze.
-    vec3 skyC = mix( vec3( 0.55, 0.68, 0.85 ), vec3( 0.2, 0.36, 0.66 ), clamp( rd.y * 2.0, 0.0, 1.0 ) );
-    skyC = mix( skyC, imgPalette( 0.55 ) * 0.9, 0.1 );
-    float sunA = max( dot( rd, L ), 0.0 );
-    vec3  col = skyC + sunCol * ( pow( sunA, 400.0 ) * 2.0 + pow( sunA, 8.0 ) * 0.18 );
-    vec3  hazeC = mix( vec3( 0.62, 0.72, 0.85 ), sunCol * 0.8, pow( sunA, 4.0 ) * 0.4 );
+    vec3 sky_c = mix( vec3( 0.55, 0.68, 0.85 ), vec3( 0.2, 0.36, 0.66 ), clamp( rd.y * 2.0, 0.0, 1.0 ) );
+    sky_c = mix( sky_c, imgPalette( 0.55 ) * 0.9, 0.1 );
+    float sun_a = max( dot( rd, L ), 0.0 );
+    vec3  col = sky_c + sun_col * ( pow( sun_a, 400.0 ) * 2.0 + pow( sun_a, 8.0 ) * 0.18 );
+    vec3  haze_c = mix( vec3( 0.62, 0.72, 0.85 ), sun_col * 0.8, pow( sun_a, 4.0 ) * 0.4 );
 
     // March the terrain.
     float wl = 2.0 + 5.0 * clamp( waterP, 0.0, 1.0 ); // lake level
@@ -173,8 +173,8 @@ void main()
 
     if ( hit > 0.5 )
     {
-        float hT = terrain( p.xz, 8 );
-        bool  lake = hT < wl;
+        float h_t = terrain( p.xz, 8 );
+        bool  lake = h_t < wl;
         vec3  n = lake ? vec3( 0.0, 1.0, 0.0 ) : calcNormal( p, t );
         // Relief contrast: dissonance steepens the shading.
         vec3  ns = normalize( vec3( n.x, n.y / ( 1.0 + 0.6 * clamp( audioRoughness, 0.0, 1.0 ) ), n.z ) );
@@ -197,12 +197,12 @@ void main()
         if ( lake )
         {
             vec3  R = reflect( rd, n );
-            vec3  skyR = mix( vec3( 0.55, 0.68, 0.85 ), vec3( 0.2, 0.36, 0.66 ), clamp( R.y * 2.0, 0.0, 1.0 ) );
+            vec3  sky_r = mix( vec3( 0.55, 0.68, 0.85 ), vec3( 0.2, 0.36, 0.66 ), clamp( R.y * 2.0, 0.0, 1.0 ) );
             float fres = 0.04 + 0.96 * pow( 1.0 - max( dot( -rd, n ), 0.0 ), 5.0 );
-            float specPow = mix( 60.0, 400.0, clamp( audioSharpness, 0.0, 1.0 ) );
+            float spec_pow = mix( 60.0, 400.0, clamp( audioSharpness, 0.0, 1.0 ) );
             vec3  wcol = vec3( 0.03, 0.12, 0.16 );
-            col = mix( wcol, skyR, fres )
-                  + sunCol * pow( max( dot( R, L ), 0.0 ), specPow ) * ( 1.2 + 1.5 * clamp( audioKick, 0.0, 1.0 ) )
+            col = mix( wcol, sky_r, fres )
+                  + sun_col * pow( max( dot( R, L ), 0.0 ), spec_pow ) * ( 1.2 + 1.5 * clamp( audioKick, 0.0, 1.0 ) )
                         * sh;
             col *= 0.85 + 0.3 * clamp( audioAmbient, 0.0, 1.0 );
         }
@@ -212,17 +212,17 @@ void main()
             vec3 grass = mix( vec3( 0.16, 0.26, 0.08 ), vec3( 0.3, 0.33, 0.12 ),
                               hash21( floor( p.xz * 0.3 ) ) * 0.3 + 0.35 );
             vec3 rock = mix( vec3( 0.34, 0.28, 0.22 ), vec3( 0.45, 0.42, 0.38 ),
-                             clamp( ( hT - 10.0 ) / 35.0, 0.0, 1.0 ) );
+                             clamp( ( h_t - 10.0 ) / 35.0, 0.0, 1.0 ) );
             rock = mix( rock, rock * imgPalette( 0.2 ) * 1.8, 0.15 );
             float flat_ = smoothstep( 0.72, 0.9, n.y );
-            alb = mix( rock, grass, flat_ * smoothstep( 30.0, 14.0, hT ) );
-            float snow = smoothstep( 26.0, 34.0, hT + 10.0 * ( n.y - 0.75 ) ) * smoothstep( 0.55, 0.75, n.y );
+            alb = mix( rock, grass, flat_ * smoothstep( 30.0, 14.0, h_t ) );
+            float snow = smoothstep( 26.0, 34.0, h_t + 10.0 * ( n.y - 0.75 ) ) * smoothstep( 0.55, 0.75, n.y );
             alb = mix( alb, vec3( 0.9, 0.93, 0.98 ), snow );
-            col = alb * ( sunCol * dif * sh * 1.5 + vec3( 0.35, 0.42, 0.55 ) * amb * 0.75 );
+            col = alb * ( sun_col * dif * sh * 1.5 + vec3( 0.35, 0.42, 0.55 ) * amb * 0.75 );
         }
         // Aerial perspective.
         float fog = 1.0 - exp( -t * 0.0032 );
-        col = mix( col, hazeC, fog );
+        col = mix( col, haze_c, fog );
     }
 
     col *= 0.9 + 0.2 * audioLevel;

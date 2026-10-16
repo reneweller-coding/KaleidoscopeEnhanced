@@ -71,9 +71,9 @@ vec3 sky( vec2 q, float alt, float hue )
     // alt = 0 outside, 1 inside: scale and tint of the nebula change.
     vec2  nuv = fract( q * mix( 0.3, 0.55, alt ) + 0.5 + vec2( sceneAdvance * 0.003, 0.0 ) );
     vec3  neb = img( nuv );
-    vec3  nebOut = neb * imgPalette( hue * 0.159 + 0.6 ) * 1.4;
-    vec3  nebIn = ( 1.0 - neb ) * imgPalette( hue * 0.159 + 0.1 ) * 1.6;
-    vec3  col = mix( nebOut, nebIn, alt ) * 0.5;
+    vec3  neb_out = neb * imgPalette( hue * 0.159 + 0.6 ) * 1.4;
+    vec3  neb_in = ( 1.0 - neb ) * imgPalette( hue * 0.159 + 0.1 ) * 1.6;
+    vec3  col = mix( neb_out, neb_in, alt ) * 0.5;
     vec2  su = q * 60.0;
     vec2  cell = floor( su );
     vec2  f = fract( su ) - 0.5;
@@ -82,14 +82,14 @@ vec3 sky( vec2 q, float alt, float hue )
     float star = smoothstep( 0.16, 0.02, length( f - off * 0.6 ) ) * step( 0.972, hs )
                  * ( 0.5 + 0.8 * hash21( cell + 9.9 ) );
     // Inside, stars split into small spectra (dispersion): three offset copies.
-    vec3 starCol = vec3( star );
+    vec3 star_col = vec3( star );
     if ( alt > 0.001 )
     {
-        float sR = smoothstep( 0.16, 0.02, length( f - off * 0.6 - vec2( 0.05, 0.0 ) * alt ) ) * step( 0.972, hs );
-        float sB = smoothstep( 0.16, 0.02, length( f - off * 0.6 + vec2( 0.05, 0.0 ) * alt ) ) * step( 0.972, hs );
-        starCol = mix( starCol, vec3( sR, star, sB ) * ( 0.5 + 0.8 * hash21( cell + 9.9 ) ), alt );
+        float s_r = smoothstep( 0.16, 0.02, length( f - off * 0.6 - vec2( 0.05, 0.0 ) * alt ) ) * step( 0.972, hs );
+        float s_b = smoothstep( 0.16, 0.02, length( f - off * 0.6 + vec2( 0.05, 0.0 ) * alt ) ) * step( 0.972, hs );
+        star_col = mix( star_col, vec3( s_r, star, s_b ) * ( 0.5 + 0.8 * hash21( cell + 9.9 ) ), alt );
     }
-    return col + starCol;
+    return col + star_col;
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -117,20 +117,20 @@ void main()
     vec2  dir = normalize( p - c + 1e-5 );
     vec3  col;
     {
-        vec2 qR = q - dir * rim * disp * 0.7;
-        vec2 qG = q - dir * rim * disp * 1.0;
-        vec2 qB = q - dir * rim * disp * 1.4;
-        col = vec3( sky( qR, inside, hue ).r, sky( qG, inside, hue ).g, sky( qB, inside, hue ).b );
+        vec2 q_r = q - dir * rim * disp * 0.7;
+        vec2 q_g = q - dir * rim * disp * 1.0;
+        vec2 q_b = q - dir * rim * disp * 1.4;
+        col = vec3( sky( q_r, inside, hue ).r, sky( q_g, inside, hue ).g, sky( q_b, inside, hue ).b );
     }
     // The wall: a thin bright shell, flashing on the drop; the inside pulses
     // faintly on the kick.
-    vec3 wallCol = imgPalette( hue * 0.159 + 0.9 );
-    col += wallCol * exp( -abs( d ) * 60.0 ) * ( 0.6 + 2.0 * clamp( audioDrop, 0.0, 1.0 ) );
-    col += wallCol * exp( -abs( d ) * 10.0 ) * 0.12;
+    vec3 wall_col = imgPalette( hue * 0.159 + 0.9 );
+    col += wall_col * exp( -abs( d ) * 60.0 ) * ( 0.6 + 2.0 * clamp( audioDrop, 0.0, 1.0 ) );
+    col += wall_col * exp( -abs( d ) * 10.0 ) * 0.12;
     col += imgPalette( hue * 0.159 + 0.1 ) * inside * 0.15 * audioKick;
     col *= 0.8 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

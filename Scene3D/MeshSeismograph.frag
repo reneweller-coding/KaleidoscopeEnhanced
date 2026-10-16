@@ -45,10 +45,10 @@ in float vBg;     ///< Background flag (from the vertex stage).
 in float vDrum;
 in float vTurn;
 
-const float kDist = 46.0;
-const float kGround = -16.0;
-const float kRate = 0.35;
-const float kPenAngle = 1.5708; ///< the pen touches the top of the drum (+Y in the drum's frame at turn 0)
+const float Dist = 46.0;
+const float Ground = -16.0;
+const float Rate = 0.35;
+const float PenAngle = 1.5708; ///< the pen touches the top of the drum (+Y in the drum's frame at turn 0)
 
 /// @brief Rotates a colour's hue by an angle (about the grey axis).
 vec3 hueRot( vec3 c, float a )
@@ -87,7 +87,7 @@ vec3 renderSky( vec3 dir )
     vec3  col;
     if ( dir.y < -0.004 )
     {
-        float t = kGround / dir.y;
+        float t = Ground / dir.y;
         vec3  P = dir * t;
         float haze = exp( -t * 0.010 );
         float grain = 0.7 + 0.4 * noise2( vec2( P.x * 0.4, P.z * 3.0 ) );
@@ -150,7 +150,7 @@ void main()
     if ( base.a < 0.1 )
         discard;
     vec3 n = normalize( vNormal );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
     vec3 alb = base.rgb * expose;
 
     if ( drum )
@@ -162,24 +162,24 @@ void main()
         float paper = smoothstep( 0.45, 0.7, luma ) * ( 1.0 - smoothstep( 0.15, 0.35, ( mx - mn ) / max( mx, 1e-3 ) ) );
         // Where on the cylinder: the angle round the axle, and the position along it.
         float phi = atan( vLocal.y, vLocal.z );
-        // This point passed under the pen when the drum had turned by (kPenAngle - phi).
-        float since = mod( vTurn - ( kPenAngle - phi ), 6.2831853 ) / kRate; // seconds ago, one revolution at most
+        // This point passed under the pen when the drum had turned by (PenAngle - phi).
+        float since = mod( vTurn - ( PenAngle - phi ), 6.2831853 ) / Rate; // seconds ago, one revolution at most
         float age01 = clamp( since / 20.0, 0.0, 0.95 );
         float e = texture( texSpectro, vec2( 0.08, fract( spectroHead - age01 ) ) ).r;
         float fine = texture( texSpectro, vec2( 0.45, fract( spectroHead - age01 ) ) ).r;
         e = clamp( e * 1.4, 0.0, 1.0 ) * min( spectroFill * 4.0, 1.0 );
         // The pen creeps along the drum as it turns, so the trace is a helix.
         float slow = fract( ( time - since ) / 140.0 );
-        float xPen = -0.70 + 1.40 * slow;
+        float x_pen = -0.70 + 1.40 * slow;
         float wiggle = ( e - 0.12 ) * 0.35 * sin( since * 9.0 + phi * 3.0 )
                        + ( fine - 0.1 ) * 0.12 * sin( since * 31.0 );
-        float ink = 1.0 - smoothstep( 0.010, 0.022, abs( vLocal.x - ( xPen + wiggle ) ) );
+        float ink = 1.0 - smoothstep( 0.010, 0.022, abs( vLocal.x - ( x_pen + wiggle ) ) );
         ink *= paper * smoothstep( 0.0, 0.06, age01 );
         // Older revolutions: the faint helix of earlier traces.
         float older = 0.0;
         for ( int k = 1; k < 5; k++ )
         {
-            float xk = xPen - float( k ) * ( 6.2831853 / kRate ) / 140.0 * 1.40;
+            float xk = x_pen - float( k ) * ( 6.2831853 / Rate ) / 140.0 * 1.40;
             float wk = 0.08 * sin( phi * 7.0 + float( k ) * 2.0 )
                        * ( 0.3 + 0.7 * noise2( vec2( phi * 3.0, float( k ) ) ) );
             older += ( 1.0 - smoothstep( 0.008, 0.018, abs( vLocal.x - ( xk + wk ) ) ) ) * 0.45;
@@ -190,11 +190,11 @@ void main()
         col += alb * 0.08;
         col = mix( col, vec3( 0.04, 0.04, 0.06 ), clamp( ink + older, 0.0, 1.0 ) );
         // The ink blooms at the pen on the kick.
-        float atPen = 1.0
-                      - smoothstep( 0.0, 0.15,
-                                    abs( atan( sin( phi - ( kPenAngle - mod( vTurn, 6.2831853 ) ) ),
-                                               cos( phi - ( kPenAngle - mod( vTurn, 6.2831853 ) ) ) ) ) );
-        col = mix( col, vec3( 0.05, 0.05, 0.10 ), atPen * paper * kick * 0.6 );
+        float at_pen = 1.0
+                       - smoothstep( 0.0, 0.15,
+                                     abs( atan( sin( phi - ( PenAngle - mod( vTurn, 6.2831853 ) ) ),
+                                                cos( phi - ( PenAngle - mod( vTurn, 6.2831853 ) ) ) ) ) );
+        col = mix( col, vec3( 0.05, 0.05, 0.10 ), at_pen * paper * kick * 0.6 );
         if ( hue > 0.001 )
             col = hueRot( col, 0.05 * sin( hue ) );
         vec3 _t = max( col, 0.0 );
@@ -203,20 +203,20 @@ void main()
         return;
     }
 
-    vec3 lampDir = normalize( vec3( 0.3, 0.7, -0.5 ) );
-    vec3 col = alb * vec3( 1.0, 0.9, 0.75 ) * max( dot( n, lampDir ), 0.0 ) * 1.2 * lamp;
+    vec3 lamp_dir = normalize( vec3( 0.3, 0.7, -0.5 ) );
+    vec3 col = alb * vec3( 1.0, 0.9, 0.75 ) * max( dot( n, lamp_dir ), 0.0 ) * 1.2 * lamp;
     col += alb * vec3( 0.18, 0.18, 0.20 ) * ( 0.55 + 0.45 * n.y ) * 0.6;
     col += alb * 0.05;
-    vec3  halfV = normalize( lampDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 80.0, 8.0, roughness ) );
+    vec3  half_v = normalize( lamp_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 80.0, 8.0, roughness ) );
     col += mix( vec3( 1.0, 0.95, 0.85 ), base.rgb, metallic ) * spec * ( 0.3 + 0.7 * metallic ) * lamp;
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 1.0, 0.85, 0.65 ) * fres * 0.12 * lamp;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.06 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.30 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.30 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

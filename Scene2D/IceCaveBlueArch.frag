@@ -112,8 +112,8 @@ float map( vec3 p )
     vec2  q = p.xy - a;
     float r = 3.0 + 0.8 * noise3( p * 0.15 ) + 0.4 * sin( p.z * 0.3 );
     float tube = r - length( q * vec2( 0.85, 1.0 ) );
-    float floorD = q.y + 1.9;
-    float d = min( tube, floorD );
+    float floor_d = q.y + 1.9;
+    float d = min( tube, floor_d );
     d += 0.18 * scallop( p ); // cups carved into the ice
     return d;
 }
@@ -147,7 +147,7 @@ void main()
     vec3 vv = cross( uu, ww );
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.2 * ww );
 
-    float mouthZ = 40.0;
+    float mouth_z = 40.0;
     vec3  day = vec3( 1.0, 0.98, 0.95 ) * ( 1.4 + 0.8 * clamp( audioKick, 0.0, 1.0 ) );
     vec3  blue = mix( vec3( 0.1, 0.45, 0.95 ), imgPalette( 0.55 + hue * 0.159 ), 0.1 );
 
@@ -156,7 +156,7 @@ void main()
     for ( int i = 0; i < 140; ++i )
     {
         p = ro + rd * t;
-        if ( p.z > mouthZ )
+        if ( p.z > mouth_z )
             break;
         float d = map( p );
         if ( d < 0.004 )
@@ -176,14 +176,14 @@ void main()
         float sc = scallop( p );
         // Light from outside: the ice glows by transmission, brighter nearer
         // the mouth and where the ice is thin (the cup centres).
-        float nearMouth = exp( -( mouthZ - p.z ) * 0.05 );
+        float near_mouth = exp( -( mouth_z - p.z ) * 0.05 );
         float thin = smoothstep( 0.35, 0.0, sc );
         vec3  ice = mix( vec3( 0.02, 0.12, 0.35 ), blue * vec3( 0.8, 1.05, 1.1 ), 0.4 + 0.55 * thin );
-        ice *= ( 0.55 + 1.2 * nearMouth ) * ( 0.85 + 0.35 * swell );
+        ice *= ( 0.55 + 1.2 * near_mouth ) * ( 0.85 + 0.35 * swell );
         // Rims: the scallop edges catch the daylight.
         float rim = smoothstep( 0.25, 0.45, sc );
         vec3  L = normalize( vec3( 0.0, 0.2, 1.0 ) );
-        ice += vec3( 0.7, 0.9, 1.0 ) * rim * max( dot( n, L ), 0.0 ) * ( 0.25 + 0.5 * hi ) * ( 0.4 + nearMouth );
+        ice += vec3( 0.7, 0.9, 1.0 ) * rim * max( dot( n, L ), 0.0 ) * ( 0.25 + 0.5 * hi ) * ( 0.4 + near_mouth );
         // Dark bands of rock dust frozen in the ice.
         float band = smoothstep( 0.08, 0.0, abs( sin( p.y * 1.7 + p.z * 0.25 + noise3( p * 0.3 ) * 2.0 ) ) - 0.02 );
         ice = mix( ice, vec3( 0.05, 0.05, 0.07 ), band * 0.7 * dust );
@@ -192,13 +192,13 @@ void main()
         {
             vec3  grav = vec3( 0.12, 0.13, 0.16 ) * ( 0.6 + 0.6 * noise3( p * 6.0 ) );
             float stream = smoothstep( 0.35, 0.1, abs( p.x - caveAxis( p.z ).x - 0.5 * sin( p.z * 0.4 ) ) );
-            grav = mix( grav, blue * 0.5 + day * 0.15 * nearMouth, stream );
+            grav = mix( grav, blue * 0.5 + day * 0.15 * near_mouth, stream );
             grav += vec3( 1.0 ) * stream * pow( noise3( p * 12.0 + vec3( 0.0, 0.0, -T ) ), 8.0 ) * ( 0.3 + 1.2 * hi );
             ice = mix( ice, grav, 0.85 );
         }
         // Blue haze in the cave.
         float fog = 1.0 - exp( -t * 0.035 );
-        col = mix( ice, blue * 0.6 * ( 0.5 + nearMouth ), fog );
+        col = mix( ice, blue * 0.6 * ( 0.5 + near_mouth ), fog );
     }
     else
     {
@@ -207,16 +207,16 @@ void main()
         col = mix( col, vec3( 0.85, 0.9, 1.0 ), smoothstep( -0.05, 0.1, rd.y ) * 0.3 );
         // Rays that slip past the wall right at the mouth: melt the edge
         // into glowing ice instead of a hard white ring.
-        vec3  pm = ro + rd * ( ( mouthZ - ro.z ) / max( rd.z, 1e-3 ) );
-        float rr = length( ( pm.xy - caveAxis( mouthZ ) ) * vec2( 0.85, 1.0 ) ) / 3.0;
+        vec3  pm = ro + rd * ( ( mouth_z - ro.z ) / max( rd.z, 1e-3 ) );
+        float rr = length( ( pm.xy - caveAxis( mouth_z ) ) * vec2( 0.85, 1.0 ) ) / 3.0;
         col = mix( col, mix( blue, vec3( 0.8, 0.95, 1.0 ), 0.6 ) * 1.2, smoothstep( 0.55, 0.95, rr ) );
     }
     // Glare from the mouth.
-    vec3 mdir = normalize( vec3( caveAxis( mouthZ ), mouthZ ) - ro );
+    vec3 mdir = normalize( vec3( caveAxis( mouth_z ), mouth_z ) - ro );
     col += day * pow( max( dot( rd, mdir ), 0.0 ), 40.0 ) * 0.4;
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

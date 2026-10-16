@@ -96,19 +96,19 @@ void main()
 
     // The row field repeats forever along the flight direction.
     const float spacing = 3.0;
-    const float fieldL = 70.0 * spacing;
-    float       camZ = time * 10.0 + audioAdvance * 18.0; // a real flight speed
-    float       z = mod( gz * spacing - camZ, fieldL );   // 0..210 ahead
+    const float field_l = 70.0 * spacing;
+    float       cam_z = time * 10.0 + audioAdvance * 18.0; // a real flight speed
+    float       z = mod( gz * spacing - cam_z, field_l );  // 0..210 ahead
 
     // NEAR FADE: towers shrink away before they reach the camera plane
     // (recycled cubes used to pop up huge right in front of the lens).
-    float nearFade = smoothstep( 2.0, 16.0, z );
+    float near_fade = smoothstep( 2.0, 16.0, z );
 
     // Column height = its spectrum band, bass at the street edges.
     int   band = int( clamp( ( abs( gx ) - 2.5 ) / 32.0 * 31.0, 0.0, 31.0 ) );
     float h = ( 0.6 + attrB.y * 1.6 )
               * ( 1.0 + 14.0 * audioSpectrum[band] )
-              * ( 1.0 + 0.25 * audioSwell ) * nearFade;
+              * ( 1.0 + 0.25 * audioSwell ) * near_fade;
 
     // Street-level kick flash lifts the near columns a touch.
     float lift = 0.5 * audioKick * exp( -abs( gx ) * 0.10 );
@@ -117,8 +117,8 @@ void main()
     world.x = gx * spacing;
     world.y = attrA.y * h + h * 0.5 + lift - 7.5;
     world.z = z;
-    world.x += attrA.x * ( 1.4 + 0.8 * attrB.z ) * nearFade; // cube footprint
-    world.z += attrA.z * ( 1.4 + 0.8 * attrB.w ) * nearFade;
+    world.x += attrA.x * ( 1.4 + 0.8 * attrB.z ) * near_fade; // cube footprint
+    world.z += attrA.z * ( 1.4 + 0.8 * attrB.w ) * near_fade;
 
     // Camera: flies ABOVE the street with a gentle downward pitch (city
     // overview instead of eye-level wall), light lateral sway.
@@ -133,8 +133,8 @@ void main()
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Colour: height + centroid temperature, key-hue drift; distance fog.
-    float hNorm = clamp( h / 16.0, 0.0, 1.0 );
-    vec3  col = imgPalette( 0.30 * hNorm ) * 1.4;
+    float h_norm = clamp( h / 16.0, 0.0, 1.0 );
+    vec3  col = imgPalette( 0.30 * h_norm ) * 1.4;
     col = mix( col, vec3( 1.0, 0.8, 0.3 ), audioCentroid * 0.4 );
     col = hueRot( col, seed * 0.8 );
     col *= 0.8 + 1.2 * audioDrop + 0.8 * audioKick * exp( -abs( gx ) * 0.10 );

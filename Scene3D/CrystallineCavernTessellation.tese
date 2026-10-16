@@ -77,29 +77,29 @@ void main()
     // closes the tube around the camera, and the two ends of the uv range land
     // on the same generator so the seam is a line, not a gap.
     float angle = ( uv.x - 0.5 ) * 6.2831853;
-    float cavernRadius = 3.2 + 0.5 * sin( uv.y * 8.0 - time * 0.5 );
+    float cavern_radius = 3.2 + 0.5 * sin( uv.y * 8.0 - time * 0.5 );
 
     // Voronoi crystal cluster displacement, 16 cells around the tube so the
     // field tiles across the closed seam (see voronoi() above).
-    float vCrystal = voronoi( uv * vec2( 16.0, 32.0 ), 16.0 );
+    float v_crystal = voronoi( uv * vec2( 16.0, 32.0 ), 16.0 );
     // max(..., 0.0) is load-bearing: this voronoi reaches 1.13, so 1.0 -
-    // vCrystal goes NEGATIVE on part of the surface, and pow(x, 2.2) with x < 0
+    // v_crystal goes NEGATIVE on part of the surface, and pow(x, 2.2) with x < 0
     // is UNDEFINED in GLSL -- in practice NaN, which propagates through r into
     // gl_Position and throws the whole patch off screen.
-    float crystalHeight = max( 1.0 - vCrystal, 0.0 ) * ( 0.8 + 0.6 * audioHigh );
+    float crystal_height = max( 1.0 - v_crystal, 0.0 ) * ( 0.8 + 0.6 * audioHigh );
 
     // Sharp faceted crystal spikes
-    crystalHeight = pow( crystalHeight, 2.2 ) * 1.5;
+    crystal_height = pow( crystal_height, 2.2 ) * 1.5;
 
     // Bass breathing of cavern walls.  TWO whole turns around the tube rather
     // than 10 radians: an integer number of periods is what keeps this
     // continuous across the closed seam -- cos(10) = -0.84 against cos(0) = 1
     // was a 0.55 step in the wall radius on its own.
-    float wallDisplace = ( sin( uv.y * 12.0 ) * cos( uv.x * 12.5663706 ) )
-                         * 0.3 * ( 1.0 + 0.5 * audioBass );
+    float wall_displace = ( sin( uv.y * 12.0 ) * cos( uv.x * 12.5663706 ) )
+                          * 0.3 * ( 1.0 + 0.5 * audioBass );
 
     // Total displacement
-    float r = cavernRadius - crystalHeight - wallDisplace;
+    float r = cavern_radius - crystal_height - wall_displace;
 
     // 3D position in cavern
     vec3 pos = vec3(
@@ -109,12 +109,12 @@ void main()
 
     // Approximate faceted surface normal
     vec3 normal = normalize( vec3( -sin( angle ), -cos( angle ), 0.0 )
-                             + vec3( sin( crystalHeight * 20.0 ) * 0.4, cos( crystalHeight * 20.0 ) * 0.4, 0.2 ) );
+                             + vec3( sin( crystal_height * 20.0 ) * 0.4, cos( crystal_height * 20.0 ) * 0.4, 0.2 ) );
 
     tePos = pos;
     teNormal = normal;
     teUV = uv;
-    teCrystal = crystalHeight;
+    teCrystal = crystal_height;
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;

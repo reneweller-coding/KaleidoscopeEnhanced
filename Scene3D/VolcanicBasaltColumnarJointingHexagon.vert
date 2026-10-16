@@ -72,66 +72,66 @@ vec3 palTint( vec3 c, float t, float k )
 void main()
 {
     vec3  corner = attrA.xyz;
-    float cIndex = attrA.w;
+    float c_index = attrA.w;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // Columnar basalt formation (Giant's Causeway / Fingal's Cave)
     // Hexagonal stepped columns of cooling basalt lava.
-    const float nSide = 70.0; // 70 x 70 = the 4900 cubes
-    float       ix = mod( cIndex, nSide );
-    float       iy = floor( cIndex / nSide );
+    const float n_side = 70.0; // 70 x 70 = the 4900 cubes
+    float       ix = mod( c_index, n_side );
+    float       iy = floor( c_index / n_side );
 
     // ---- ROWS: geometric depth steps ---------------------------------
     // The scene is viewed from steeply above (the 0.55 tilt below), so the
     // terrace plane covers the frame from the bottom edge (world y ~ -2.3)
     // past the top (~ +4.4).  A 4.25x growth over the 70 rows is what makes
     // the ON-SCREEN row spacing come out even end to end.
-    const float yNear = -2.35, yFar = 4.45, gRow = 4.25;
-    float       rowU = ( iy + 0.5 ) / nSide;
-    float       yy = yNear + ( yFar - yNear ) * ( pow( gRow, rowU ) - 1.0 ) / ( gRow - 1.0 );
-    float       dyRow = ( yFar - yNear ) * log( gRow ) * pow( gRow, rowU )
-                        / ( ( gRow - 1.0 ) * nSide );
+    const float y_near = -2.35, y_far = 4.45, g_row = 4.25;
+    float       row_u = ( iy + 0.5 ) / n_side;
+    float       yy = y_near + ( y_far - y_near ) * ( pow( g_row, row_u ) - 1.0 ) / ( g_row - 1.0 );
+    float       dy_row = ( y_far - y_near ) * log( g_row ) * pow( g_row, row_u )
+                         / ( ( g_row - 1.0 ) * n_side );
 
     // ---- COLUMNS: pitch grows with the row's depth --------------------
     // columnPitchP now sets the joint pitch RELATIVE to that depth ramp, so
     // a fine causeway and a coarse one both still reach past both edges.
-    float depthS = ( 0.522 * yy + 4.5 ) / 4.5;
+    float depth_s = ( 0.522 * yy + 4.5 ) / 4.5;
     float pitch = ( 0.155 + 0.11 * ( columnPitchP > 0.01 ? columnPitchP : 0.22 ) )
-                  * pow( depthS, 0.7 );
+                  * pow( depth_s, 0.7 );
 
     // Hexagonal stagger
-    float hexOffset = mod( iy, 2.0 ) < 0.5 ? 0.0 : 0.5;
-    float xx = ( ix - nSide * 0.5 + 0.5 + hexOffset ) * pitch;
-    vec2  pGrid = vec2( xx, yy );
+    float hex_offset = mod( iy, 2.0 ) < 0.5 ? 0.0 : 0.5;
+    float xx = ( ix - n_side * 0.5 + 0.5 + hex_offset ) * pitch;
+    vec2  p_grid = vec2( xx, yy );
 
     // Stepped fracture column heights.  +z runs down-and-away under the tilt,
     // so a column's TOP is at -h and its shaft runs back down into the flow.
-    float r = length( pGrid );
-    float hMax = ( columnHeightP > 0.01 ? columnHeightP : 0.8 );
-    float undul = 0.5 + 0.35 * sin( pGrid.x * 2.2 + pGrid.y * 1.7 + t * 0.5 )
-                  + 0.15 * sin( pGrid.x * 5.3 - pGrid.y * 4.1 - t * 0.31 );
-    float h = hMax * clamp( undul, 0.0, 1.0 );
+    float r = length( p_grid );
+    float h_max = ( columnHeightP > 0.01 ? columnHeightP : 0.8 );
+    float undul = 0.5 + 0.35 * sin( p_grid.x * 2.2 + p_grid.y * 1.7 + t * 0.5 )
+                  + 0.15 * sin( p_grid.x * 5.3 - p_grid.y * 4.1 - t * 0.31 );
+    float h = h_max * clamp( undul, 0.0, 1.0 );
 
-    vec3 centerPos = vec3( pGrid.x, pGrid.y, 0.45 - h * 0.5 );
+    vec3 center_pos = vec3( p_grid.x, p_grid.y, 0.45 - h * 0.5 );
 
     // Geothermal magma glow pulse in basalt joint cracks
-    float crackGlow = exp( -abs( fract( h * 2.0 - t * 1.5 ) - 0.5 ) * 16.0 )
-                      * ( 1.0 + 3.0 * audioKick );
-    vBasaltGlow = crackGlow;
+    float crack_glow = exp( -abs( fract( h * 2.0 - t * 1.5 ) - 0.5 ) * 16.0 )
+                       * ( 1.0 + 3.0 * audioKick );
+    vBasaltGlow = crack_glow;
 
     // SWELL thickens the prism cross-section; the shaft length follows the
     // column's own step height so the terrace never opens gaps.
     float widen = 0.86 + 0.10 * audioSwell;
-    vec3  worldPos = centerPos + corner * vec3( pitch * widen, dyRow * widen * 1.06, h + 0.9 );
+    vec3  world_pos = center_pos + corner * vec3( pitch * widen, dy_row * widen * 1.06, h + 0.9 );
     vNormal = normalize( corner );
 
     vec3 basalt = vec3( 0.30, 0.315, 0.375 ) * ( 0.8 + 0.45 * fract( attrB.x + iy * 0.017 ) );
-    vCol = palTint( basalt, fract( r * 0.2 + rowU * 0.3 + audioCentroid ), 0.30 );
+    vCol = palTint( basalt, fract( r * 0.2 + row_u * 0.3 + audioCentroid ), 0.30 );
     vFog = clamp( ( yy - 0.4 ) / 4.6, 0.0, 1.0 );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // 3D rotation
     float tilt = 0.55;

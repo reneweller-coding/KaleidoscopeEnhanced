@@ -77,27 +77,27 @@ void main()
     float angle = atan( uv.y, uv.x );
 
     // Conformal complex logarithm w = ln(z) = ln(r) + i*theta
-    float logR = log( max( r, 1e-4 ) );
+    float log_r = log( max( r, 1e-4 ) );
 
     // Logarithmic spiral transformation parameters
     // Droste condition: quantise the twist so one full turn advances u by
     // an INTEGER number of octaves — otherwise the octave blend tears at
     // the atan branch cut (the sharp edge on the left).
-    float spiralAngle = max( 1.0, floor( 0.35 * spi * 6.2831853 / log( 2.0 ) + 0.5 ) )
-                        * log( 2.0 ) / 6.2831853;
-    float scaleFactor = 2.0; // Zoom octave scale
-    float logScale = log( scaleFactor );
+    float spiral_angle = max( 1.0, floor( 0.35 * spi * 6.2831853 / log( 2.0 ) + 0.5 ) )
+                         * log( 2.0 ) / 6.2831853;
+    float scale_factor = 2.0; // Zoom octave scale
+    float log_scale = log( scale_factor );
 
     // Continuous forward zoom & spiral rotation
-    float zoomProg = ( time * 0.6 * spd + audioAdvance * 0.35 ) * zm;
+    float zoom_prog = ( time * 0.6 * spd + audioAdvance * 0.35 ) * zm;
 
     // Droste spiral coordinates
-    float u = ( logR - zoomProg * logScale + angle * spiralAngle ) / logScale;
+    float u = ( log_r - zoom_prog * log_scale + angle * spiral_angle ) / log_scale;
     float v = angle / 6.2831853 + audioPhase * 0.1;
 
     // Multi-octave blending to ensure 100% seamless continuity without pop-in
     float oct = fract( u );
-    float octIndex = floor( u );
+    float oct_index = floor( u );
 
     // Sample two neighboring scale octaves
     vec2 uv1 = vec2( fract( oct ), fract( v ) );
@@ -116,16 +116,16 @@ void main()
     vec3 col2 = img( fract( uv2 ) );
 
     // Smooth sinusoidal octave cross-fade
-    float blendWeight = smoothstep( 0.0, 1.0, oct );
-    vec3  photoMix = mix( col1, col2, blendWeight );
+    float blend_weight = smoothstep( 0.0, 1.0, oct );
+    vec3  photo_mix = mix( col1, col2, blend_weight );
 
     // Octave depth chromatic tint
-    vec3 octaveTint = imgPalette( ( octIndex * 0.8 + audioPhase ) * 0.159 );
+    vec3 octave_tint = imgPalette( ( oct_index * 0.8 + audioPhase ) * 0.159 );
 
     // Vignetting and central vortex glow
-    float centerVortex = exp( -r * 3.5 ) * ( 0.8 + 2.0 * audioKick );
-    vec3  col = photoMix * ( 0.85 + 0.35 * octaveTint ) * ( 0.8 + 0.5 * audioLevel );
-    col += ( vec3( 1.0, 0.85, 0.6 ) * col1 + vec3( 0.6, 0.9, 1.0 ) ) * centerVortex;
+    float center_vortex = exp( -r * 3.5 ) * ( 0.8 + 2.0 * audioKick );
+    vec3  col = photo_mix * ( 0.85 + 0.35 * octave_tint ) * ( 0.8 + 0.5 * audioLevel );
+    col += ( vec3( 1.0, 0.85, 0.6 ) * col1 + vec3( 0.6, 0.9, 1.0 ) ) * center_vortex;
 
     col = hueRot( col, hue );      // chromaHue handled inside imgPalette
     col = pow( col, vec3( 0.9 ) ); // Saturation boost
@@ -133,7 +133,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.5;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.5;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

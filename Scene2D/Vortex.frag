@@ -79,24 +79,24 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  Res = resolution;
+    vec2  res = resolution;
     float r = time;
     // Per-activation character (constant during the scene):
-    float travV = ( travP <= 0.01 ) ? 1.0 : travP;
-    float curveV = ( curveP <= 0.001 ) ? 0.09 : curveP;
+    float trav_v = ( travP <= 0.01 ) ? 1.0 : travP;
+    float curve_v = ( curveP <= 0.001 ) ? 0.09 : curveP;
     float seg = 3.14159265 / float( ( sectorsP >= 2 ) ? sectorsP : 10 );
     // Repeat cell length breathes gently with the slow swell (loudness -> size).
-    float cellL = 0.2 * ( 1.0 + 0.08 * audioSwell );
-    float adv = ( time + audioAdvance * 2.0 ) * travV; // forward scroll (jump-free)
+    float cell_l = 0.2 * ( 1.0 + 0.08 * audioSwell );
+    float adv = ( time + audioAdvance * 2.0 ) * trav_v; // forward scroll (jump-free)
     vec4  O = vec4( 0.0 );
     float t = 0.1, x = 0.0;
 
     for ( int e = 0; e < 40; e++ )
     {
         // Ray position (screen coord rotated over time + gentle audio spin).
-        vec3 o = t * normalize( vec3( ( 2.0 * gl_FragCoord.xy - Res ) * rotv( r * 0.15 + audioPhase * 0.08 ), Res.y ) );
-        o.y += t * t * curveV;
-        o.z = mod( o.z + adv, cellL ) - 0.5 * cellL;
+        vec3 o = t * normalize( vec3( ( 2.0 * gl_FragCoord.xy - res ) * rotv( r * 0.15 + audioPhase * 0.08 ), res.y ) );
+        o.y += t * t * curve_v;
+        o.z = mod( o.z + adv, cell_l ) - 0.5 * cell_l;
         x = t * 0.06 - r * 0.2;
         // Kaleidoscopic angular snap (per-activation sector count).
         o.xy = o.xy * rotv( floor( ( atan( o.y, o.x ) - x ) / seg + 0.5 ) * seg + x );
@@ -132,8 +132,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     fragColor = vec4( col, 1.0 );

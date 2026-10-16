@@ -32,9 +32,9 @@ void main()
     float idx = attrA.w;
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    float camZ = time * 4.5 + audioAdvance * 16.0;
+    float cam_z = time * 4.5 + audioAdvance * 16.0;
     float L = 3000.0 / 12.5; // one loop slot per billboard
-    float z = mod( idx * ( 240.0 / 3000.0 ) * 12.5 - camZ, 240.0 ) + 2.0;
+    float z = mod( idx * ( 240.0 / 3000.0 ) * 12.5 - cam_z, 240.0 ) + 2.0;
 
     // Billboards flank an open avenue; bigger ones sit further out and up.
     float side = ( r1 < 0.5 ) ? -1.0 : 1.0;

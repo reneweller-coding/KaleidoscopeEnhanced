@@ -88,9 +88,9 @@ void main()
     // Rings one beat apart along the depth.  Their phase is the countdown:
     // as seconds-to-boundary shrink, the rings slide toward the throat.
     // (left in seconds; a ring per beat at ~0.47 s means ~2 rings per second.)
-    float ringsPhase = left * 2.1 + audioPhrasePos * 32.0;
-    float ringCoord = depth * 1.4 - ringsPhase + sceneAdvance * 0.0;
-    float ring = pow( 0.5 + 0.5 * cos( ringCoord * 6.2831853 ), 6.0 );
+    float rings_phase = left * 2.1 + audioPhrasePos * 32.0;
+    float ring_coord = depth * 1.4 - rings_phase + sceneAdvance * 0.0;
+    float ring = pow( 0.5 + 0.5 * cos( ring_coord * 6.2831853 ), 6.0 );
     // Each ring pulses on its beat.
     ring *= 0.6 + 0.6 * ( 0.5 + 0.5 * cos( audioBeatPhase * 6.2831853 ) );
 
@@ -118,7 +118,7 @@ void main()
     col = mix( col, cool * 0.05, clamp( fog, 0.0, 0.85 ) );
     col *= 0.85 + 0.35 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

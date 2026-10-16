@@ -64,7 +64,7 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float mIdx = ( modeIndexP > 1.0 ) ? modeIndexP : 4.0;
+    float m_idx = ( modeIndexP > 1.0 ) ? modeIndexP : 4.0;
     float w0 = ( waistP > 0.01 ) ? waistP : 0.45;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
@@ -73,44 +73,45 @@ void main()
     // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
 
     // Laser beam waist radius w(z) with breathing
-    float beamWaist = w0 * ( 1.0 + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
+    float beam_waist = w0 * ( 1.0 + 0.15 * sin( audioSwell * 2.5 ) + 0.1 * audioSubBass );
 
-    float r = length( uv ) / max( 0.01, beamWaist );
+    float r = length( uv ) / max( 0.01, beam_waist );
     float a = atan( uv.y, uv.x );
 
     // Laguerre-Gaussian mode LG_l^p with orbital angular momentum l and radial nodes p
-    float lOAM = floor( mIdx + 2.0 * audioCentroid );
-    float pRadial = 2.0;
+    float l_oam = floor( m_idx + 2.0 * audioCentroid );
+    float p_radial = 2.0;
 
     // Laguerre polynomial approximation: L_p^l(2*r^2)
     float r2 = 2.0 * r * r;
     float laguerre = 1.0 - r2 + ( r2 * r2 ) * 0.25;
 
     // Mode field amplitude: (r*sqrt(2))^l * L_p^l(2*r^2) * exp(-r^2) * cos(l*a - GouyPhase)
-    float gouyPhase = t * 2.0 + audioPhase * 0.1;
-    float modeAmp = pow( max( 0.01, r * 1.4142 ), lOAM * 0.3 ) * laguerre * exp( -r * r ) * cos( lOAM * a - gouyPhase );
+    float gouy_phase = t * 2.0 + audioPhase * 0.1;
+    float mode_amp = pow( max( 0.01, r * 1.4142 ), l_oam * 0.3 ) * laguerre * exp( -r * r )
+                     * cos( l_oam * a - gouy_phase );
 
     // Laser intensity: I = |E|^2
-    float intensity = modeAmp * modeAmp;
+    float intensity = mode_amp * mode_amp;
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uv * 0.4 + vec2( modeAmp * 0.08 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv * 0.4 + vec2( mode_amp * 0.08 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Monochromatic / multi-spectral laser cavity palette
-    vec3 palLaser = imgPalette( intensity * 1.5 + 0.2 );
-    vec3 baseCol = mix( texCol * 0.25, palLaser, 0.45 );
+    vec3 pal_laser = imgPalette( intensity * 1.5 + 0.2 );
+    vec3 base_col = mix( tex_col * 0.25, pal_laser, 0.45 );
 
     // Glowing laser mode petals & nodal lines
-    float petalGlow = exp( -abs( modeAmp ) * 1.5 ) * intensity * ( 1.0 + 3.0 * audioKick ) * glw;
-    vec3  laserTint = vec3( 1.4, 1.2, 1.9 ) * petalGlow * 2.5;
+    float petal_glow = exp( -abs( mode_amp ) * 1.5 ) * intensity * ( 1.0 + 3.0 * audioKick ) * glw;
+    vec3  laser_tint = vec3( 1.4, 1.2, 1.9 ) * petal_glow * 2.5;
 
-    vec3 finalCol = baseCol + laserTint;
+    vec3 final_col = base_col + laser_tint;
 
     // Center optical vortex singularity core
-    float vortexCore = exp( -r * 8.0 ) * ( 0.8 + 1.5 * audioKick );
-    finalCol += imgPalette( 0.85 ) * vortexCore;
+    float vortex_core = exp( -r * 8.0 ) * ( 0.8 + 1.5 * audioKick );
+    final_col += imgPalette( 0.85 ) * vortex_core;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

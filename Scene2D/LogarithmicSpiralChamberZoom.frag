@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float sGrowth = ( spiralGrowthP > 0.01 ) ? spiralGrowthP : 0.306349; // Golden ratio growth: ln(phi)/(pi/2)
-    float nChamb = ( chambersP > 1.0 ) ? chambersP : 8.0;
+    float s_growth = ( spiralGrowthP > 0.01 ) ? spiralGrowthP : 0.306349; // Golden ratio growth: ln(phi)/(pi/2)
+    float n_chamb = ( chambersP > 1.0 ) ? chambersP : 8.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
@@ -78,51 +78,51 @@ void main()
     float a = atan( -uv.x, uv.y );
 
     // Log-polar spiral coordinate: theta_spiral = a - ln(r)/b
-    float thetaSpiral = a - ( log( r ) / sGrowth );
+    float theta_spiral = a - ( log( r ) / s_growth );
 
     // Chamber phase along the logarithmic spiral. Sub-bass thins the chamber
     // count, i.e. widens each chamber. The t*2.0 plunge is added afterwards at
-    // a FIXED rate rather than riding inside thetaSpiral: multiplied by an
+    // a FIXED rate rather than riding inside theta_spiral: multiplied by an
     // audio-varying chamber factor it would remap the whole accumulated spiral
     // phase in one frame.
-    float chamberW = nChamb / ( 1.0 + 0.3 * audioSubBass );
-    float chamberIndex = thetaSpiral * ( chamberW / 6.2831853 ) + t * 2.0 * ( nChamb / 6.2831853 );
-    float chamberFrac = fract( chamberIndex );
+    float chamber_w = n_chamb / ( 1.0 + 0.3 * audioSubBass );
+    float chamber_index = theta_spiral * ( chamber_w / 6.2831853 ) + t * 2.0 * ( n_chamb / 6.2831853 );
+    float chamber_frac = fract( chamber_index );
 
     // Distance to chamber septum wall
-    float dSeptum = abs( chamberFrac - 0.5 );
-    float septumGlow = smoothstep( 0.42, 0.5, dSeptum ) * glw;
+    float d_septum = abs( chamber_frac - 0.5 );
+    float septum_glow = smoothstep( 0.42, 0.5, d_septum ) * glw;
 
     // Mother-of-pearl (nacre) thin-film iridescence
-    float nacrePhase = log( r ) * 4.0 + a * 2.0 + t * 0.5;
-    vec3  nacreRainbow = vec3(
-                             sin( nacrePhase ),
-                             sin( nacrePhase + 2.094 ),
-                             sin( nacrePhase + 4.188 ) )
-                             * 0.5
-                         + 0.5;
+    float nacre_phase = log( r ) * 4.0 + a * 2.0 + t * 0.5;
+    vec3  nacre_rainbow = vec3(
+                              sin( nacre_phase ),
+                              sin( nacre_phase + 2.094 ),
+                              sin( nacre_phase + 4.188 ) )
+                              * 0.5
+                          + 0.5;
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( vec2( chamberFrac, a / 6.2831853 + 0.5 ) );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( vec2( chamber_frac, a / 6.2831853 + 0.5 ) );
+    vec3 tex_col = img( sample_uv );
 
     // Golden spiral palette
-    vec3 palA = imgPalette( floor( chamberIndex ) * 0.15 + t * 0.05 );
-    vec3 palB = imgPalette( floor( chamberIndex ) * 0.15 + 0.5 );
-    vec3 baseCol = mix( palA, palB, chamberFrac );
+    vec3 pal_a = imgPalette( floor( chamber_index ) * 0.15 + t * 0.05 );
+    vec3 pal_b = imgPalette( floor( chamber_index ) * 0.15 + 0.5 );
+    vec3 base_col = mix( pal_a, pal_b, chamber_frac );
 
-    baseCol = mix( baseCol, texCol, 0.35 + 0.15 * audioValence );
+    base_col = mix( base_col, tex_col, 0.35 + 0.15 * audioValence );
 
     // Add glowing septum walls & iridescent nacre highlights
-    vec3 septumTint = vec3( 1.5, 1.3, 1.7 ) * septumGlow * ( 1.0 + 2.5 * audioKick );
-    vec3 nacreTint = nacreRainbow * 0.35 * ( 0.8 + 0.6 * audioCentroid );
+    vec3 septum_tint = vec3( 1.5, 1.3, 1.7 ) * septum_glow * ( 1.0 + 2.5 * audioKick );
+    vec3 nacre_tint = nacre_rainbow * 0.35 * ( 0.8 + 0.6 * audioCentroid );
 
-    vec3 finalCol = baseCol + septumTint + nacreTint;
+    vec3 final_col = base_col + septum_tint + nacre_tint;
 
     // Center spiral origin singularity bloom
-    float centerBloom = exp( -r * 8.0 ) * ( 1.2 + 2.5 * audioKick );
-    finalCol += imgPalette( 0.85 ) * centerBloom;
+    float center_bloom = exp( -r * 8.0 ) * ( 1.2 + 2.5 * audioKick );
+    final_col += imgPalette( 0.85 ) * center_bloom;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

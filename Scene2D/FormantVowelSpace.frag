@@ -44,7 +44,7 @@ uniform float blobP;
 uniform float trailP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float kSpectroRows = 256.0;
+const float SpectroRows = 256.0;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -66,7 +66,7 @@ vec3 imgPalette( float t )
 /// from 16 of the 32 bands; the linear filter between rows smooths a little.
 vec2 rowShape( float age )
 {
-    float y = fract( spectroHead - age / kSpectroRows );
+    float y = fract( spectroHead - age / SpectroRows );
     float sum = 0.0, m1 = 0.0, m2 = 0.0;
     for ( int b = 0; b < 16; ++b )
     {
@@ -106,7 +106,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float blob = 0.09 + 0.05 * clamp( blobP, 0.0, 1.0 );
-    float trailLen = 30.0 + 50.0 * clamp( trailP, 0.0, 1.0 );
+    float trail_len = 30.0 + 50.0 * clamp( trailP, 0.0, 1.0 );
     float light = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
 
@@ -117,10 +117,10 @@ void main()
                + 0.05;
     // Trapezoid: the top wide (i .. u), the bottom narrow (a).
     float ty = clamp( ( p.y + 0.4 ) / 0.8, 0.0, 1.0 );
-    float halfW = mix( 0.18, 0.62, ty );
-    float inside = step( abs( p.x ), halfW ) * step( -0.4, p.y ) * step( p.y, 0.4 );
-    float edge = smoothstep( 0.006, 0.0, abs( abs( p.x ) - halfW ) ) * step( -0.4, p.y ) * step( p.y, 0.4 )
-                 + smoothstep( 0.006, 0.0, abs( abs( p.y ) - 0.4 ) ) * step( abs( p.x ), halfW + 0.006 );
+    float half_w = mix( 0.18, 0.62, ty );
+    float inside = step( abs( p.x ), half_w ) * step( -0.4, p.y ) * step( p.y, 0.4 );
+    float edge = smoothstep( 0.006, 0.0, abs( abs( p.x ) - half_w ) ) * step( -0.4, p.y ) * step( p.y, 0.4 )
+                 + smoothstep( 0.006, 0.0, abs( abs( p.y ) - 0.4 ) ) * step( abs( p.x ), half_w + 0.006 );
     col = mix( col, col * 0.75 + vec3( 0.03 ), inside );
     // Grid: close, mid and open rows, and the central line.
     float grid = smoothstep( 0.004, 0.0, abs( p.y - 0.13 ) ) + smoothstep( 0.004, 0.0, abs( p.y + 0.13 ) )
@@ -172,7 +172,7 @@ void main()
     vec3 mc = imgPalette( hue * 0.159 + 0.9 ) * 1.6 + 0.3;
     for ( int i = 1; i <= 8; ++i )
     {
-        float age = float( i ) / 8.0 * trailLen;
+        float age = float( i ) / 8.0 * trail_len;
         vec2  mp = markerAt( age, 2 );
         float d = length( p - mp );
         float f = 1.0 - float( i ) / 9.0;
@@ -183,7 +183,7 @@ void main()
     col += mc * ( smoothstep( 0.03, 0.02, dm ) * 1.5 + exp( -dm * 25.0 ) * ( 0.6 + 1.2 * audioKick ) );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

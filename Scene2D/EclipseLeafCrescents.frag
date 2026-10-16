@@ -88,8 +88,8 @@ float fbm( vec2 p )
 float sunImage( vec2 q, float radius, float cover, vec2 moonDir )
 {
     float sun = smoothstep( radius, radius * 0.72, length( q ) );
-    vec2  moonC = moonDir * radius * ( 1.9 * cover - 0.9 );
-    float moon = smoothstep( radius * 1.02, radius * 0.74, length( q - moonC ) );
+    vec2  moon_c = moonDir * radius * ( 1.9 * cover - 0.9 );
+    float moon = smoothstep( radius * 1.02, radius * 0.74, length( q - moon_c ) );
     return clamp( sun - moon, 0.0, 1.0 );
 }
 
@@ -113,20 +113,20 @@ void main()
     vec2  moonDir = normalize( vec2( 0.75, 0.66 ) );
 
     // The forest floor: the photo, damp and dim, with leaf litter texture.
-    vec3 floorCol = img( uv * vec2( 1.1, 0.8 ) + vec2( 0.0, 0.1 ) );
-    floorCol *= mix( vec3( 0.5, 0.45, 0.35 ), imgPalette( hue * 0.159 + 0.15 ), 0.35 );
-    floorCol *= 0.7 + 0.5 * fbm( p * 9.0 );
+    vec3 floor_col = img( uv * vec2( 1.1, 0.8 ) + vec2( 0.0, 0.1 ) );
+    floor_col *= mix( vec3( 0.5, 0.45, 0.35 ), imgPalette( hue * 0.159 + 0.15 ), 0.35 );
+    floor_col *= 0.7 + 0.5 * fbm( p * 9.0 );
     // Ambient light falls as the eclipse deepens -- the whole wood goes
     // dim and a little blue, which is what a deep partial eclipse looks like.
     float ambient = day * ( 1.0 - 0.55 * cover );
-    vec3  col = floorCol * ( 0.32 + 0.6 * ambient ) + 0.02;
+    vec3  col = floor_col * ( 0.32 + 0.6 * ambient ) + 0.02;
     col = mix( col, col * vec3( 0.8, 0.88, 1.1 ), cover * 0.6 );
 
     // The dapples.  A jittered lattice of gaps in the canopy; each casts
     // one image of the sun.  The lattice drifts with the sway, so the
     // whole pattern moves gently and continuously.
     vec2 sway = vec2( 0.045 * sin( clock * 0.5 ), 0.03 * cos( clock * 0.37 ) );
-    vec3 sunCol = mix( vec3( 1.0, 0.94, 0.75 ), imgPalette( hue * 0.159 + 0.08 ), 0.3 );
+    vec3 sun_col = mix( vec3( 1.0, 0.94, 0.75 ), imgPalette( hue * 0.159 + 0.08 ), 0.3 );
     for ( int layer = 0; layer < 2; ++layer )
     {
         float fl = float( layer );
@@ -155,8 +155,8 @@ void main()
                 // gap size.  Sparkle on the rim with the treble.
                 float rim = smoothstep( rad * 1.05, rad * 0.8, length( q ) )
                             * ( 1.0 - smoothstep( rad * 0.85, rad * 0.6, length( q ) ) );
-                col += sunCol * im * ambient * 1.9;
-                col += sunCol * rim * im * hi * 0.5;
+                col += sun_col * im * ambient * 1.9;
+                col += sun_col * rim * im * hi * 0.5;
             }
     }
     // Leaf shadows drifting over everything: a soft canopy pattern that
@@ -168,7 +168,7 @@ void main()
     col = mix( col, col * 0.35, leaves * smoothstep( 0.15, 0.45, p.y ) );
     col *= 0.85 + 0.3 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

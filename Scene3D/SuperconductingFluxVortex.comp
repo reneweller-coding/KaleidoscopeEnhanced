@@ -75,7 +75,7 @@ void main()
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
-    float fGid = float( gid );
+    float f_gid = float( gid );
 
     // ---- MEISSNER HAZE -------------------------------------------------
     // The last 512 invocations are not tubes at all: they are the expelled
@@ -84,7 +84,7 @@ void main()
     // frustum, because it is the stage that knows the aspect ratio.
     if ( gid >= 3584u )
     {
-        float fh = fGid - 3584.0;
+        float fh = f_gid - 3584.0;
         float hx = hash11( fh * 1.113 + 0.37 );
         float hy = hash11( fh * 2.371 + 5.11 );
         float hz = hash11( fh * 0.733 + 9.73 );
@@ -112,20 +112,20 @@ void main()
     }
 
     // 112 vortex flux tubes x 32 segments per tube
-    float vortexID = floor( fGid / 32.0 );
-    float segID = mod( fGid, 32.0 );
+    float vortex_id = floor( f_gid / 32.0 );
+    float seg_id = mod( f_gid, 32.0 );
 
-    float u1 = segID / 32.0;
-    float u2 = ( segID + 1.0 ) / 32.0;
+    float u1 = seg_id / 32.0;
+    float u2 = ( seg_id + 1.0 ) / 32.0;
 
     // Hexagonal Abrikosov lattice equilibrium coordinates: 16 columns x 7
     // rows.  fluxP still sets the pinning density, but only at 45% leverage --
     // at full leverage its 0.5..2.0 preset range swung the slab between a
     // quarter of the frame and well past its edges.
     float sp = 1.0 + 0.45 * ( flx - 1.0 );
-    float row = floor( vortexID / 16.0 ) - 3.0;
-    float col = mod( vortexID, 16.0 ) - 7.5;
-    vec2  hexPinning = vec2( col * 1.25 + mod( row, 2.0 ) * 0.625, row * 2.30 ) * sp;
+    float row = floor( vortex_id / 16.0 ) - 3.0;
+    float col = mod( vortex_id, 16.0 ) - 7.5;
+    vec2  hex_pinning = vec2( col * 1.25 + mod( row, 2.0 ) * 0.625, row * 2.30 ) * sp;
 
     // Height along the superconductor slab -- the tube axis.  Matched to the
     // lattice's own x extent so the rotating slab never turns "thin".
@@ -134,20 +134,20 @@ void main()
 
     // Kelvin helical wave excitation on flux tube (same wave count along the
     // now much longer tube, so the spatial frequency drops with the stretch)
-    float kelvinWave1 = sin( z1 * 1.35 - t * 4.0 + vortexID * 0.5 ) * 0.42 * klv;
-    float kelvinWave2 = sin( z2 * 1.35 - t * 4.0 + vortexID * 0.5 ) * 0.42 * klv;
+    float kelvin_wave1 = sin( z1 * 1.35 - t * 4.0 + vortex_id * 0.5 ) * 0.42 * klv;
+    float kelvin_wave2 = sin( z2 * 1.35 - t * 4.0 + vortex_id * 0.5 ) * 0.42 * klv;
 
     // Vortex avalanche displacement on kick
-    float avalanche = sin( length( hexPinning ) * 0.9 - time * 8.0 ) * audioKick * 0.75;
+    float avalanche = sin( length( hex_pinning ) * 0.9 - time * 8.0 ) * audioKick * 0.75;
 
-    vec3 pA = vec3( hexPinning.x + kelvinWave1 + avalanche, hexPinning.y + cos( z1 * 1.35 - t * 4.0 ) * 0.42 * klv,
-                    z1 );
-    vec3 pB = vec3( hexPinning.x + kelvinWave2 + avalanche, hexPinning.y + cos( z2 * 1.35 - t * 4.0 ) * 0.42 * klv,
-                    z2 );
+    vec3 p_a = vec3( hex_pinning.x + kelvin_wave1 + avalanche, hex_pinning.y + cos( z1 * 1.35 - t * 4.0 ) * 0.42 * klv,
+                     z1 );
+    vec3 p_b = vec3( hex_pinning.x + kelvin_wave2 + avalanche, hex_pinning.y + cos( z2 * 1.35 - t * 4.0 ) * 0.42 * klv,
+                     z2 );
 
     // Ribbon width vectors.  Widened with the slab: a 0.02-wide ribbon at the
     // new camera distance would have been a sub-pixel thread.
-    vec3 forward = normalize( pB - pA );
+    vec3 forward = normalize( p_b - p_a );
 
     // ...and made to FACE THE CAMERA even though the slab is rotated later.
     // The old binormal, (-forward.y, forward.x, 0), does lie in the screen
@@ -159,43 +159,43 @@ void main()
     // what the camera finally sees is always the ribbon's full width.
     // (Both stages read the same `time` and `audioPhase`, so both compute the
     // same rotation for a given frame.)
-    float rotY = time * 0.25 + audioPhase * 0.1;
-    float cy = cos( rotY ), sy = sin( rotY );
-    vec3  fR = vec3( forward.x * cy - forward.z * sy, forward.y,
-                     forward.x * sy + forward.z * cy );
-    vec3  sR = cross( fR, vec3( 0.0, 0.0, 1.0 ) );
-    float sl = length( sR );
-    sR = ( sl > 1e-4 ) ? sR / sl : vec3( 1.0, 0.0, 0.0 );
-    vec3 binormal = vec3( sR.x * cy + sR.z * sy, sR.y, -sR.x * sy + sR.z * cy );
+    float rot_y = time * 0.25 + audioPhase * 0.1;
+    float cy = cos( rot_y ), sy = sin( rot_y );
+    vec3  f_r = vec3( forward.x * cy - forward.z * sy, forward.y,
+                      forward.x * sy + forward.z * cy );
+    vec3  s_r = cross( f_r, vec3( 0.0, 0.0, 1.0 ) );
+    float sl = length( s_r );
+    s_r = ( sl > 1e-4 ) ? s_r / sl : vec3( 1.0, 0.0, 0.0 );
+    vec3 binormal = vec3( s_r.x * cy + s_r.z * sy, s_r.y, -s_r.x * sy + s_r.z * cy );
 
-    float ribbonWidth = ( 0.075 + 0.050 * audioHigh );
+    float ribbon_width = ( 0.075 + 0.050 * audioHigh );
 
     // 4 ribbon quad corners
-    vec3 v0 = pA - binormal * ribbonWidth;
-    vec3 v1 = pA + binormal * ribbonWidth;
-    vec3 v2 = pB - binormal * ribbonWidth;
-    vec3 v3 = pB + binormal * ribbonWidth;
+    vec3 v0 = p_a - binormal * ribbon_width;
+    vec3 v1 = p_a + binormal * ribbon_width;
+    vec3 v2 = p_b - binormal * ribbon_width;
+    vec3 v3 = p_b + binormal * ribbon_width;
 
     // Allocate 6 vertices (2 triangles = 1 ribbon segment)
     uint base = atomicAdd( cmd[4], 6u );
     if ( base + 6u > maxVertices )
         return;
 
-    vec3 pList[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
-    vec2 uvList[6] = vec2[6](
+    vec3 p_list[6] = vec3[6]( v0, v1, v2, v1, v3, v2 );
+    vec2 uv_list[6] = vec2[6](
         vec2( 0.0, u1 ), vec2( 1.0, u1 ), vec2( 0.0, u2 ),
         vec2( 1.0, u1 ), vec2( 1.0, u2 ), vec2( 0.0, u2 ) );
 
     for ( uint i = 0u; i < 6u; ++i )
     {
         uint off = ( base + i ) * 8u;
-        verts[off + 0u] = pList[i].x;
-        verts[off + 1u] = pList[i].y;
-        verts[off + 2u] = pList[i].z;
-        verts[off + 3u] = vortexID;
-        verts[off + 4u] = hash11( vortexID );
+        verts[off + 0u] = p_list[i].x;
+        verts[off + 1u] = p_list[i].y;
+        verts[off + 2u] = p_list[i].z;
+        verts[off + 3u] = vortex_id;
+        verts[off + 4u] = hash11( vortex_id );
         verts[off + 5u] = u1;
-        verts[off + 6u] = uvList[i].x;
-        verts[off + 7u] = uvList[i].y;
+        verts[off + 6u] = uv_list[i].x;
+        verts[off + 7u] = uv_list[i].y;
     }
 }

@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -236,13 +236,13 @@ void main()
     vec3  back = mix( vec3( 0.5, 0.6, 0.85 ), vec3( 1.0, 0.7, 0.45 ), mode );
     back *= ( 0.5 + 0.5 * bass ) * ( 0.8 + 0.4 * smoothstep( -0.6, 0.6, p.y ) );
     vec3  col = back * 0.12;
-    float nV = 2.0 + 3.0 * clamp( veilP, 0.0, 1.0 );
+    float n_v = 2.0 + 3.0 * clamp( veilP, 0.0, 1.0 );
     float T = 0.05 * sceneTime + 0.35 * audioAdvance;
     float bill = 0.4 + 0.8 * clamp( audioSpread, 0.0, 1.0 );
     for ( int k = 4; k >= 0; --k )
     { // back to front
         float fk = float( k );
-        float on = smoothstep( fk - 0.5, fk + 0.5, nV - 0.5 );
+        float on = smoothstep( fk - 0.5, fk + 0.5, n_v - 0.5 );
         if ( on <= 0.0 )
             continue;
         float h = hash11( fk * 1.73 );

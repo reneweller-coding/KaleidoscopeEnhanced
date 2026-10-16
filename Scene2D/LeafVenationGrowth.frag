@@ -84,15 +84,15 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float orders = 2.0 + 2.0 * clamp( ordersP, 0.0, 1.0 );
-    float branchAng = 0.6 + 0.5 * clamp( angleP, 0.0, 1.0 );
+    float branch_ang = 0.6 + 0.5 * clamp( angleP, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
     float sun = 0.6 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     float bass = clamp( audioBass, 0.0, 1.0 );
 
     // The leaf outline: an ellipse with a pointed tip, the midrib along x.
-    float leafR = length( p * vec2( 0.9, 1.9 ) );
-    float tipPinch = 1.0 - 0.25 * smoothstep( 0.2, 0.7, p.x );
-    float leaf = smoothstep( 0.66 * tipPinch, 0.64 * tipPinch, leafR );
+    float leaf_r = length( p * vec2( 0.9, 1.9 ) );
+    float tip_pinch = 1.0 - 0.25 * smoothstep( 0.2, 0.7, p.x );
+    float leaf = smoothstep( 0.66 * tip_pinch, 0.64 * tip_pinch, leaf_r );
     // Tissue: the photo backlit, green, with the cells as a fine round pattern.
     vec3  tissue = img( gl_FragCoord.xy / resolution )
                    * mix( vec3( 0.45, 0.85, 0.3 ), imgPalette( hue * 0.159 + 0.3 ), 0.3 ) * 1.3 * sun;
@@ -100,8 +100,8 @@ void main()
     vec2  cc = floor( cu );
     vec2  cf = fract( cu ) - 0.5;
     vec2  co = vec2( hash21( cc + 1.3 ), hash21( cc + 5.9 ) ) - 0.5;
-    float cellWall = smoothstep( 0.2, 0.32, length( cf - co * 0.4 ) );
-    tissue *= 0.85 + 0.15 * cellWall;
+    float cell_wall = smoothstep( 0.2, 0.32, length( cf - co * 0.4 ) );
+    tissue *= 0.85 + 0.15 * cell_wall;
     tissue += vec3( 1.0 ) * smoothstep( 0.12, 0.04, length( cf - co * 0.4 ) ) * step( 0.94, hash21( cc ) )
               * clamp( audioHigh * 2.0, 0.0, 1.0 ) * 0.5;
     // Outside the leaf: the sky behind, bright.
@@ -130,7 +130,7 @@ void main()
         for ( int side = -1; side <= 1; side += 2 )
         {
             vec2 a = vec2( x0, 0.0 );
-            vec2 dir = normalize( vec2( cos( branchAng ), float( side ) * sin( branchAng ) ) );
+            vec2 dir = normalize( vec2( cos( branch_ang ), float( side ) * sin( branch_ang ) ) );
             dir += vec2( 0.0, float( side ) * 0.15 * ( fi / 9.0 ) );
             vec2  b = a + normalize( dir ) * len;
             float t1;
@@ -146,7 +146,7 @@ void main()
                     float fj = float( j );
                     float g2 = smoothstep( start + 0.3, start + 0.55, prog ) * g1;
                     vec2  a2 = a + normalize( dir ) * len * ( fj / 4.0 );
-                    vec2  dir2 = normalize( vec2( cos( branchAng * 1.4 ), float( side ) * sin( branchAng * 1.4 ) ) );
+                    vec2  dir2 = normalize( vec2( cos( branch_ang * 1.4 ), float( side ) * sin( branch_ang * 1.4 ) ) );
                     vec2  b2 = a2 + dir2 * 0.09 * g2 * ( 1.0 - fi / 12.0 );
                     float t2;
                     float d2 = segDist( p, a2, b2, t2 );
@@ -156,14 +156,14 @@ void main()
         }
     }
     vein *= leaf;
-    vec3 veinCol = mix( vec3( 0.85, 0.95, 0.6 ), imgPalette( hue * 0.159 + 0.15 ), 0.3 ) * sun;
-    col = mix( col, veinCol, vein * 0.9 );
+    vec3 vein_col = mix( vec3( 0.85, 0.95, 0.6 ), imgPalette( hue * 0.159 + 0.15 ), 0.3 ) * sun;
+    col = mix( col, vein_col, vein * 0.9 );
     col += imgPalette( hue * 0.159 + 0.9 ) * sap * leaf * ( 0.2 + 1.0 * bass );
     // The sun behind the leaf.
     col += vec3( 1.0, 0.95, 0.8 ) * exp( -length( p - vec2( 0.2, 0.3 ) ) * 3.0 ) * 0.25 * sun * ( 1.0 - leaf * 0.6 );
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -93,9 +93,9 @@ void main()
     float R = ( 1.0 - u * u ) / ( 2.0 * u );
 
     // The disc breathes with the bass; outside it, invert in the rim.
-    float discR = 0.56 * ( 1.0 + 0.05 * clamp( audioSwell, 0.0, 1.0 ) ); // slow breath only (V7d)
-    vec2  z = p / discR;
-    float rimD = abs( length( z ) - 1.0 );
+    float disc_r = 0.56 * ( 1.0 + 0.05 * clamp( audioSwell, 0.0, 1.0 ) ); // slow breath only (V7d)
+    vec2  z = p / disc_r;
+    float rim_d = abs( length( z ) - 1.0 );
     if ( dot( z, z ) > 1.0 )
         z = z / dot( z, z );
 
@@ -143,13 +143,13 @@ void main()
     col = col * col * 2.6 * ( 0.6 + 0.6 * audioLevel ) * ( 0.55 + 0.45 * par );
 
     // Seams: the mirror lines of the tiling, flashing on the kick.
-    float seamL = exp( -seam * ( 45.0 - 20.0 * audioKick ) ) * ( 0.7 + 0.9 * audioKick );
-    col += imgPalette( hue * 0.159 + 0.9 ) * seamL;
+    float seam_l = exp( -seam * ( 45.0 - 20.0 * audioKick ) ) * ( 0.7 + 0.9 * audioKick );
+    col += imgPalette( hue * 0.159 + 0.9 ) * seam_l;
     // The rim of the disc: a bright ring where the two infinities meet.
-    col += imgPalette( hue * 0.159 + 0.6 ) * exp( -rimD * 30.0 ) * 0.6;
+    col += imgPalette( hue * 0.159 + 0.6 ) * exp( -rim_d * 30.0 ) * 0.6;
     col *= 0.85 + 0.4 * audioSwell;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

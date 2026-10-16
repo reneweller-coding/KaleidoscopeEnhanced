@@ -16,7 +16,7 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief Mixes two RGBA values with a clamped weight.
 vec4 blend4( vec4 a, vec4 b, float w )
@@ -31,7 +31,7 @@ void main()
     float d = 1.0 - interpolation; // transition progress 0..1
     // No beat surge any more: pushing the progress forward on every beat
     // made the geometry jump in time with the music (speed pass 14.09.2026).
-    float mid = sin( PI * d ); // 0 at both ends, 1 mid-transition
+    float mid = sin( Pi * d ); // 0 at both ends, 1 mid-transition
     // mid follows the progress only: a rotation, zoom or push that breathes with
     // the music is what the no-shake rule forbids, however slow the envelope.
 

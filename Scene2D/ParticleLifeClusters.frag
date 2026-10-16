@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -240,7 +240,7 @@ void main()
     float crawl = 0.03 * sceneTime + 0.25 * audioAdvance;
     vec2  q = p / cell + vec2( crawl, crawl * 0.6 );
     vec2  gi = floor( q );
-    int   nS = 2 + int( clamp( speciesP, 0.0, 1.0 ) * 2.99 );
+    int   n_s = 2 + int( clamp( speciesP, 0.0, 1.0 ) * 2.99 );
     vec3  col = vec3( 0.005, 0.006, 0.012 );
     for ( int j = -1; j <= 1; ++j )
         for ( int i = -1; i <= 1; ++i )
@@ -256,11 +256,11 @@ void main()
                 continue;
             float ang = atan( d.y, d.x );
             vec3  ph = imgLod( id * 0.113 + 0.5, 5.0 );
-            float h0 = ( satOf( ph ) > 0.2 ) ? hue_of( ph ) : hueP * 0.159 + hash21( id ) * 0.3;
+            float h0 = ( satOf( ph ) > 0.2 ) ? hueOf( ph ) : hueP * 0.159 + hash21( id ) * 0.3;
             // Rings of particles, one per species, each spinning at its own rate.
             for ( int s = 0; s < 4; ++s )
             {
-                if ( s >= nS )
+                if ( s >= n_s )
                     break;
                 float fs = float( s );
                 float R = 0.12 + 0.2 * fs + 0.05 * sin( sceneTime * 0.3 + fs + hash21( id ) * 6.0 );

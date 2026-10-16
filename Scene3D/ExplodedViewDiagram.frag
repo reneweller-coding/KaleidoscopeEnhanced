@@ -63,8 +63,8 @@ vec3 imgPalette( float t )
 void main()
 {
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    vec3  paperTint = mix( vec3( 0.15, 0.3, 0.55 ), imgPalette( hue * 0.159 + 0.6 ), 0.35 );
-    float paperLight = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
+    vec3  paper_tint = mix( vec3( 0.15, 0.3, 0.55 ), imgPalette( hue * 0.159 + 0.6 ), 0.35 );
+    float paper_light = 0.7 + 0.5 * clamp( audioSwell, 0.0, 1.0 );
     if ( vBg > 0.5 )
     {
         // Blueprint paper: the photo bleached into the blue, with a grid.
@@ -72,7 +72,7 @@ void main()
         vec2  uv = d.xy / max( d.z, 0.25 );
         vec3  photo = img( clamp( uv * 0.5 + 0.5, 0.0, 1.0 ) );
         float g = dot( photo, vec3( 0.333 ) );
-        vec3  col = paperTint * ( 0.5 + 0.7 * g ) * paperLight;
+        vec3  col = paper_tint * ( 0.5 + 0.7 * g ) * paper_light;
         vec2  gr = abs( fract( uv * 6.0 ) - 0.5 );
         float grid = smoothstep( 0.02, 0.0, min( gr.x, gr.y ) ) * 0.25
                      + smoothstep( 0.01, 0.0,
@@ -95,18 +95,18 @@ void main()
     wash = mix( wash, wash * vec3( 1.1, 0.95, 0.8 ), clamp( audioBass, 0.0, 1.0 ) * 0.4 );
     // Ink edges where the surface turns away.
     float ink = 1.0 - smoothstep( 0.1, 0.35, facing );
-    vec3  inkCol = vec3( 0.05, 0.08, 0.15 );
-    vec3  col = mix( wash, inkCol, ink * 0.9 );
+    vec3  ink_col = vec3( 0.05, 0.08, 0.15 );
+    vec3  col = mix( wash, ink_col, ink * 0.9 );
     col += imgPalette( hue * 0.159 + 0.9 ) * ink * audioKick * 0.8;
     // Hatching in the shadow tones, brought up by the treble.
     float hatch = pow( 0.5 + 0.5 * sin( ( vPos.x + vPos.y ) * 60.0 ), 10.0 ) * ( 1.0 - tone )
                   * clamp( audioHigh * 2.0, 0.0, 1.0 );
-    col = mix( col, inkCol, hatch * 0.6 );
+    col = mix( col, ink_col, hatch * 0.6 );
     // Leader lines: the exploded parts carry a light measure of their travel.
     col += imgPalette( hue * 0.159 + 0.1 ) * vSpread * 0.5;
-    col *= paperLight * ( 0.75 + 0.5 * audioLevel );
+    col *= paper_light * ( 0.75 + 0.5 * audioLevel );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

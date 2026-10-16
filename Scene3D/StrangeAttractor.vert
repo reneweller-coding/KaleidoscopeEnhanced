@@ -119,9 +119,9 @@ void main()
     float idx = attrA.w;
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
-    const float STEPS = 100.0;
-    float       traj = floor( idx / STEPS ); // 0..599
-    float       stp = mod( idx, STEPS );     // 0..99 along the trajectory
+    const float Steps = 100.0;
+    float       traj = floor( idx / Steps ); // 0..599
+    float       stp = mod( idx, Steps );     // 0..99 along the trajectory
 
     // ---- TWO NESTED SHELLS ------------------------------------------
     // One attractor is a small knot in the middle of a black frame: at the
@@ -144,13 +144,13 @@ void main()
         p.z += 24.0; // Lorenz sits high in z
 
     float dt = 0.0045;
-    float lead = mod( audioAdvance * 2.0 + hash11( traj * 9.7 ) * STEPS, STEPS );
-    float nSteps = stp + lead;
+    float lead = mod( audioAdvance * 2.0 + hash11( traj * 9.7 ) * Steps, Steps );
+    float n_steps = stp + lead;
 
     vec3 vel = vec3( 0.0 );
     for ( int i = 0; i < 200; ++i )
     {
-        if ( float( i ) >= nSteps )
+        if ( float( i ) >= n_steps )
             break;
         vel = field( p, sys );
         p += vel * dt;

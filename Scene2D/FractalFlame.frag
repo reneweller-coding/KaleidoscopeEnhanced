@@ -85,8 +85,8 @@ void main()
     // 47% of the frame came out past HSV saturation 0.8. Pulling a fixed
     // fraction back toward the flame's own luminance keeps the palette and the
     // filament structure exactly as the sim drew them, only less screaming.
-    float _fl = dot( col, vec3( 0.299, 0.587, 0.114 ) );
-    col = mix( vec3( _fl ), col, 0.68 );
+    float fl = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( fl ), col, 0.68 );
 
     // The photo only shows where the flame is dark, so it reads as the room
     // the fractal is burning in rather than a competing layer.

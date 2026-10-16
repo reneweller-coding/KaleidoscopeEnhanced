@@ -45,20 +45,20 @@ void main()
 
     const float spacing = 19.0;
     const float L = 20.0 * spacing;
-    float       camZ = time * 5.0 + audioAdvance * 14.0;
-    float       zg = mod( ri * spacing - camZ, L );
+    float       cam_z = time * 5.0 + audioAdvance * 14.0;
+    float       zg = mod( ri * spacing - cam_z, L );
 
-    float ringAng = t * 6.2831853;
+    float ring_ang = t * 6.2831853;
     float R = 7.5 * ( 0.85 + 0.35 * attrB.x ) * ( 1.0 + 0.06 * audioSwell );
 
     // Slalom: each gate sits at its own seeded offset off the axis.
     vec2 cg = vec2( ( attrB.y - 0.5 ) * 7.0, ( attrB.z - 0.5 ) * 5.0 );
 
-    vec2  P = cg + vec2( cos( ringAng ), sin( ringAng ) ) * ( R + sd * ( 0.55 + 0.35 * attrB.w ) );
-    float zTilt = sin( ringAng + attrB.x * 6.2831853 )
-                  * 1.4 * ( attrB.w - 0.5 ); // seeded gate tilt
+    vec2  P = cg + vec2( cos( ring_ang ), sin( ring_ang ) ) * ( R + sd * ( 0.55 + 0.35 * attrB.w ) );
+    float z_tilt = sin( ring_ang + attrB.x * 6.2831853 )
+                   * 1.4 * ( attrB.w - 0.5 ); // seeded gate tilt
 
-    vec3 vp = vec3( P.x, P.y, zg + zTilt );
+    vec3 vp = vec3( P.x, P.y, zg + z_tilt );
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.06 * gl_Position.w;

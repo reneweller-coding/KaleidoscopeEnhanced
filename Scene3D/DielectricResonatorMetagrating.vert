@@ -53,38 +53,38 @@ vec3 imgPalette( float t )
 void main()
 {
     // Remap quad UV [0,1] to centered [-1,1] domain
-    vec2 localUV = attrA.xy * 2.0 - 1.0;
+    vec2 local_uv = attrA.xy * 2.0 - 1.0;
     vUV = attrA.xy;
-    float qIndex = attrA.w;
+    float q_index = attrA.w;
 
     float t = time * 0.35 + audioAdvance * 0.3;
 
     // 16x16 2D array of high-index silicon dielectric resonant nanopillars
     float nx = 16.0;
-    float ix = mod( qIndex, nx );
-    float iy = floor( qIndex / nx );
+    float ix = mod( q_index, nx );
+    float iy = floor( q_index / nx );
 
     float pitch = ( gratingPitchP > 0.001 ? gratingPitchP : 0.18 );
-    vec2  pillarCenter = vec2( ( ix - 7.5 ) * pitch, ( iy - 7.5 ) * pitch );
+    vec2  pillar_center = vec2( ( ix - 7.5 ) * pitch, ( iy - 7.5 ) * pitch );
 
     // Dielectric Mie electric/magnetic dipole resonance: height modulation
-    float miePhase = pillarCenter.x * 4.0 + pillarCenter.y * 3.0 - t * 2.5;
-    float mieRes = sin( miePhase ) * 0.5 + 0.5;
-    vMieResonance = mieRes;
+    float mie_phase = pillar_center.x * 4.0 + pillar_center.y * 3.0 - t * 2.5;
+    float mie_res = sin( mie_phase ) * 0.5 + 0.5;
+    vMieResonance = mie_res;
 
-    float hScale = ( pillarHeightP > 0.001 ? pillarHeightP : 0.25 ) * ( 0.8 + 0.4 * audioSwell );
-    float pillarZ = ( mieRes * 0.6 ) * hScale;
+    float h_scale = ( pillarHeightP > 0.001 ? pillarHeightP : 0.25 ) * ( 0.8 + 0.4 * audioSwell );
+    float pillar_z = ( mie_res * 0.6 ) * h_scale;
 
     // Quad face size
-    float quadSize = pitch * 0.42;
-    vec3  worldPos = vec3( pillarCenter + localUV * quadSize, pillarZ );
-    worldPos.x *= 2.3; // the grating recorded as a narrow tower in 80% black
+    float quad_size = pitch * 0.42;
+    vec3  world_pos = vec3( pillar_center + local_uv * quad_size, pillar_z );
+    world_pos.x *= 2.3; // the grating recorded as a narrow tower in 80% black
 
     vNormal = normalize( vec3( 0.0, 0.0, 1.0 ) );
-    vCol = imgPalette( fract( qIndex * 0.0039 + mieRes * 0.3 + audioCentroid ) );
+    vCol = imgPalette( fract( q_index * 0.0039 + mie_res * 0.3 + audioCentroid ) );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
     vp.z += 3.6;
     vp.x -= eyeOff;
 

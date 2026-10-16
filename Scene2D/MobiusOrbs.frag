@@ -42,15 +42,15 @@ uniform float radiusP;  ///< 0 -> 11.0
 uniform float stretchP; ///< 0 -> 1.2    max extra ellipse aspect (length variance)
 uniform float shapeP;   ///< 0 -> 0.6    circle -> superellipse shape variance
 
-const float PI = 3.141592; ///< Pi.
-const float ORBS = 20.0;
+const float Pi = 3.141592; ///< Pi.
+const float Orbs = 20.0;
 
-const float CONTRAST = 0.13;
-const float COLORSHIFT = 10.32;
-const float COS_MUL = 2.38;
-const float X_MUL = 0.28;
-const float Y_DIVIDE = 4.99;
-const float X_DIVIDE = 6.27;
+const float Contrast = 0.13;
+const float Colorshift = 10.32;
+const float CosMul = 2.38;
+const float XMul = 0.28;
+const float YDivide = 4.99;
+const float XDivide = 6.27;
 
 /// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
 vec3 img( vec2 uv )
@@ -121,56 +121,56 @@ float orbDist( vec2 uv, vec2 p, float i, float stretchAmt, float shapeAmt )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  fragCoord = gl_FragCoord.xy;
+    vec2  frag_coord = gl_FragCoord.xy;
     float tt = time + audioAdvance * 2.0; // jump-free (host-integrated) clock
 
     // Per-activation parameters (0 / absent -> "Variant 01" defaults).
-    float zoomV = ( zoomP <= 0.001 ) ? 0.07 : zoomP;
-    float orbSize = ( orbSizeP <= 0.001 ) ? 6.46 : orbSizeP;
-    float radiusV = ( radiusP <= 0.001 ) ? 11.0 : radiusP;
-    float stretchV = ( stretchP <= 0.001 ) ? 1.2 : stretchP;
-    float shapeV = ( shapeP <= 0.001 ) ? 0.6 : shapeP;
+    float zoom_v = ( zoomP <= 0.001 ) ? 0.07 : zoomP;
+    float orb_size = ( orbSizeP <= 0.001 ) ? 6.46 : orbSizeP;
+    float radius_v = ( radiusP <= 0.001 ) ? 11.0 : radiusP;
+    float stretch_v = ( stretchP <= 0.001 ) ? 1.2 : stretchP;
+    float shape_v = ( shapeP <= 0.001 ) ? 0.6 : shapeP;
 
-    vec2 uv = ( 2.0 * fragCoord - resolution ) / resolution.y;
+    vec2 uv = ( 2.0 * frag_coord - resolution ) / resolution.y;
     // NOTE: accumulate in a LOCAL (acc), not in a shadowing "vec4 fragColor"
     // -- a local of that name hides the out variable, the real output is
     // never written and the scene renders solid black (found by the metric
     // scan; core-migration artefact).
     vec4 acc = vec4( 0.0 );
-    uv *= zoomV;
+    uv *= zoom_v;
     // CAPPED Mobius inversion.  A bare 1/r^2 inversion sends the screen centre
     // to infinity: every orb then sits at an effectively infinite distance and
     // the whole central disc collapsed to one hot singularity while the rest of
     // the picture sat outside the orb field entirely (measured occ 0.01).
-    // Flooring dot(uv,uv) at rMin^2 caps |uv| at 1/rMin and -- because the cap
-    // engages exactly where |uv| == rMin -- does it continuously, so the centre
-    // becomes a smooth plateau of orbs instead of a blown-out point.  rMin
-    // tracks zoomV so a rolled zoom keeps the same proportions.
-    float rMin = 0.28 * zoomV;
-    uv /= max( dot( uv, uv ), rMin * rMin );
+    // Flooring dot(uv,uv) at r_min^2 caps |uv| at 1/r_min and -- because the cap
+    // engages exactly where |uv| == r_min -- does it continuously, so the centre
+    // becomes a smooth plateau of orbs instead of a blown-out point.  r_min
+    // tracks zoom_v so a rolled zoom keeps the same proportions.
+    float r_min = 0.28 * zoom_v;
+    uv /= max( dot( uv, uv ), r_min * r_min );
     uv = uv * rotate( tt / 10.0 + audioPhase * 0.05 );
 
-    for ( float i = 0.0; i < ORBS; i += 1.0 )
+    for ( float i = 0.0; i < Orbs; i += 1.0 )
     {
-        uv.x += cos( uv.y / Y_DIVIDE - tt );
-        uv.y += COS_MUL * cos( uv.x * X_MUL ) - sin( uv.x / X_DIVIDE - tt );
-        float t = i * PI / ORBS * 2.0;
+        uv.x += cos( uv.y / YDivide - tt );
+        uv.y += CosMul * cos( uv.x * XMul ) - sin( uv.x / XDivide - tt );
+        float t = i * Pi / Orbs * 2.0;
         // tan() runs away near t = pi/2 and 3pi/2: two of the twenty orbs were
         // being flung ~3e7 units off screen, contributing a flat constant and
         // leaving that side of the ring empty.  Clamping keeps the projective
         // sweep of the ring but holds every orb inside the picture.
-        float x = radiusV * clamp( tan( t ), -4.0, 4.0 );
-        float y = radiusV * cos( t + tt / 10.0 );
+        float x = radius_v * clamp( tan( t ), -4.0, 4.0 );
+        float y = radius_v * cos( t + tt / 10.0 );
         vec2  position = vec2( x, y );
-        vec3  color = imgPalette( 0.0032 * ( uv.x + uv.y ) + 0.5 * i / COLORSHIFT );
+        vec3  color = imgPalette( 0.0032 * ( uv.x + uv.y ) + 0.5 * i / Colorshift );
         // Normalise the palette to a fixed LEVEL and keep only its chroma, so the
         // orb field's exposure no longer rides on whichever slide happens to be up.
         vec3 oc = color / max( dot( color, vec3( 0.3333 ) ), 0.15 ) * 0.55;
 
         // Accumulate the orbs' glow DIRECTLY.
-        // The old form was `acc += 0.65 - pow(orbSize/dist * colour, 0.13)`, a
+        // The old form was `acc += 0.65 - pow(orb_size/dist * colour, 0.13)`, a
         // difference of two near-equal numbers: an exponent of 0.13 crushes the
-        // three decades that orbSize/dist actually spans (0.1 .. 60 here) into the
+        // three decades that orb_size/dist actually spans (0.1 .. 60 here) into the
         // range 0.62 .. 0.77, i.e. the "glow" was essentially the SAME VALUE at
         // every pixel by construction. Subtracting a 0.65 bias from it left a
         // residual that hovered around zero and whose sign flipped on nothing more
@@ -178,8 +178,8 @@ void main()
         // black (measured luma 0.002, occ 0.01) and what survived had no range.
         // A plain inverse-distance falloff with a softening gap gives real bright
         // cores and real dark gaps, and is independent of the photo's exposure.
-        float dist = orbDist( uv, position, i, stretchV, shapeV );
-        float g = orbSize / ( dist + 0.45 );
+        float dist = orbDist( uv, position, i, stretch_v, shape_v );
+        float g = orb_size / ( dist + 0.45 );
         acc.rgb += oc * pow( g, 1.8 );
     }
 
@@ -196,7 +196,7 @@ void main()
 
     // Image-driven colour: a drifting crop of the picture rotates the hue.
     float himg = dot( imgPal( dot( col, vec3( 0.333 ) ) * 6.0
-                              + length( fragCoord / resolution - 0.5 ) * 4.0 ),
+                              + length( frag_coord / resolution - 0.5 ) * 4.0 ),
                       vec3( 0.333 ) );
     col = hueRot( col, ( himg - 0.5 ) * 3.0 + time * 0.05 );
 

@@ -96,13 +96,13 @@ void main()
     vec3 photo = img( vUV );
 
     // Solar collector gold & electric blue photovoltaic cells
-    vec3 pvColor = palTint( mix( vec3( 0.05, 0.2, 0.5 ), vec3( 1.0, 0.8, 0.2 ), vRingIdx ), 0.30 * vRingIdx, 0.22 );
+    vec3 pv_color = palTint( mix( vec3( 0.05, 0.2, 0.5 ), vec3( 1.0, 0.8, 0.2 ), vRingIdx ), 0.30 * vRingIdx, 0.22 );
 
     // High energy laser beam relay pulses
-    vec3 relayLaser = vec3( 0.2, 0.9, 1.0 ) * vLaserRelay * rlp;
+    vec3 relay_laser = vec3( 0.2, 0.9, 1.0 ) * vLaserRelay * rlp;
 
-    vec3 col = mix( pvColor, photo, 0.4 ) * ( 0.8 + 0.4 * audioSwell ) + edge * vec3( 1.0, 0.9, 0.5 ) * 1.5
-               + relayLaser;
+    vec3 col = mix( pv_color, photo, 0.4 ) * ( 0.8 + 0.4 * audioSwell ) + edge * vec3( 1.0, 0.9, 0.5 ) * 1.5
+               + relay_laser;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

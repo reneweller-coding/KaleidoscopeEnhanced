@@ -125,7 +125,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -270,12 +270,12 @@ void main()
                 else if ( d < f2 )
                     f2 = d;
             }
-        float laceLine = smoothstep( 0.14, 0.04, f2 - f1 );
+        float lace_line = smoothstep( 0.14, 0.04, f2 - f1 );
         float front = exp( -pow( ( fract( band ) - 0.1 ) * 5.0, 2.0 ) ) * step( band, 2.0 );
-        float foamEdge = exp( -dz * 14.0 ); // the surf line at the shore
-        float lace = laceLine * clamp( front * ( 0.4 + 0.6 * clamp( laceP, 0.0, 1.0 ) ) + foamEdge, 0.0, 1.0 );
+        float foam_edge = exp( -dz * 14.0 ); // the surf line at the shore
+        float lace = lace_line * clamp( front * ( 0.4 + 0.6 * clamp( laceP, 0.0, 1.0 ) ) + foam_edge, 0.0, 1.0 );
         col = mix( col, vec3( 0.95, 0.97, 1.0 ) * ( 1.0 + 0.4 * kick ), lace );
-        col = mix( col, vec3( 0.95, 0.97, 1.0 ), foamEdge * 0.6 );
+        col = mix( col, vec3( 0.95, 0.97, 1.0 ), foam_edge * 0.6 );
     }
     // Wet sand darkens just above the waterline.
     col *= 1.0 - 0.3 * smoothstep( 0.15, 0.0, x ) * step( 0.0, x );

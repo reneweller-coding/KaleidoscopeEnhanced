@@ -92,7 +92,7 @@ float starsField( vec3 dir, float density )
 }
 
 // The star sits BEHIND the flight path (+Z), so the ship crosses it.
-const vec3 kStarDir = vec3( 0.06, -0.05, 1.0 );
+const vec3 StarDir = vec3( 0.06, -0.05, 1.0 );
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir, vec3 tint )
@@ -111,7 +111,7 @@ vec3 renderSky( vec3 dir, vec3 tint )
     }
     // Backlit: a hard disc with a wide corona, bright enough that the hull
     // in front of it goes to near-silhouette.
-    vec3  s = normalize( kStarDir );
+    vec3  s = normalize( StarDir );
     float d = max( dot( dir, s ), 0.0 );
     vec3  col = vec3( 0.012, 0.012, 0.02 );
     col += tint * pow( d, 1400.0 ) * 14.0;                                               // the disc
@@ -198,36 +198,36 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // With a star behind the flight path the key has to come from there too,
     // or the shot contradicts itself: a bright source in frame lighting the
     // hull from the front reads instantly as wrong.
-    vec3  lightDir = ( bgTypeP < 0.5 ) ? normalize( vec3( 0.45, 0.55, -0.5 ) )
-                                       : normalize( kStarDir );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = ( bgTypeP < 0.5 ) ? normalize( vec3( 0.45, 0.55, -0.5 ) )
+                                        : normalize( StarDir );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 52.0, 8.0, roughness ) );
-    vec3  specColor = mix( vec3( 0.95, 0.97, 1.0 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 52.0, 8.0, roughness ) );
+    vec3  spec_color = mix( vec3( 0.95, 0.97, 1.0 ), base.rgb, metallic );
 
     float expose = materialExposure( texMeshMaterial );
     vec3  col;
     if ( bgTypeP < 0.5 )
     {
         col = base.rgb * expose * ( 0.45 + diff * ( 1.3 + 0.5 * audioSwell ) + fill * 0.3 );
-        col += specColor * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
+        col += spec_color * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
     }
     else
     {
         // Silhouette: almost no front fill, and a hot wrap where the star
         // grazes the hull's edge.
         col = base.rgb * expose * ( 0.10 + diff * 0.35 + fill * 0.10 );
-        float wrap = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 2.0 )
-                     * max( dot( normalize( kStarDir ), viewDir ), 0.0 );
+        float wrap = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 2.0 )
+                     * max( dot( normalize( StarDir ), view_dir ), 0.0 );
         col += tint * wrap * ( 1.6 + 0.9 * audioSwell );
-        col += specColor * spec * 0.35;
+        col += spec_color * spec * 0.35;
     }
 
     // Engine glow: the hull's own aft end (the model's nose is +Z, so the
@@ -242,13 +242,13 @@ void main()
     col += vec3( 1.0, 0.35, 0.30 ) * strip * blink * 0.8;
 
     // Rim, so the hull separates from the backdrop even in silhouette.
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += mix( vec3( 0.7, 0.85, 1.0 ), tint, 0.4 ) * fres * ( 0.15 + 0.25 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.15 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

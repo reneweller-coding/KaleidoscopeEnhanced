@@ -64,8 +64,8 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float wFactor = ( warpFactorP > 0.01 ) ? warpFactorP : 1.2;
-    float nRings = ( ringCountP > 1.0 ) ? ringCountP : 6.0;
+    float w_factor = ( warpFactorP > 0.01 ) ? warpFactorP : 1.2;
+    float n_rings = ( ringCountP > 1.0 ) ? ringCountP : 6.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.270 * spd + audioAdvance * 0.270 * spd;
@@ -77,43 +77,43 @@ void main()
 
     // Alcubierre shaping function: f(r_s) = (tanh(sigma*(r_s + R)) - tanh(sigma*(r_s - R))) / (2*tanh(sigma*R))
     float sigma = 6.0;
-    float R_warp = 0.55 * ( 1.0 + 0.15 * sin( audioSwell * 2.0 ) + 0.1 * audioSubBass );
-    float fWarp = ( tanh( sigma * ( r + R_warp ) ) - tanh( sigma * ( r - R_warp ) ) )
-                  / ( 2.0 * tanh( sigma * R_warp ) );
+    float r_warp = 0.55 * ( 1.0 + 0.15 * sin( audioSwell * 2.0 ) + 0.1 * audioSubBass );
+    float f_warp = ( tanh( sigma * ( r + r_warp ) ) - tanh( sigma * ( r - r_warp ) ) )
+                   / ( 2.0 * tanh( sigma * r_warp ) );
 
     // Relativistic forward coordinate distortion
-    vec2 uvWarp = uv * ( 1.0 + fWarp * 2.5 * wFactor );
+    vec2 uv_warp = uv * ( 1.0 + f_warp * 2.5 * w_factor );
 
     // Exotic matter warp ring containment pulses
     // Brightness raises the RADIAL frequency only; the t-coefficient stays fixed
     // so the travelling phase is never remapped mid-flight.
-    float ringPhase = r * ( 12.0 * ( nRings / 6.0 ) ) * ( 1.0 + 0.4 * audioCentroid ) - t * 6.0;
-    float ringGlow = smoothstep( 0.8 + 0.12 * audioCentroid, 1.0, abs( sin( ringPhase ) ) ) * glw;
+    float ring_phase = r * ( 12.0 * ( n_rings / 6.0 ) ) * ( 1.0 + 0.4 * audioCentroid ) - t * 6.0;
+    float ring_glow = smoothstep( 0.8 + 0.12 * audioCentroid, 1.0, abs( sin( ring_phase ) ) ) * glw;
 
     // Radial hyper-speed star streaks
     float streaks = abs( sin( a * 20.0 + sin( r * 15.0 ) * 2.0 ) );
-    float streakGlow = smoothstep( 0.88, 1.0, streaks ) * ( 0.8 + 1.2 * audioHigh );
+    float streak_glow = smoothstep( 0.88, 1.0, streaks ) * ( 0.8 + 1.2 * audioHigh );
 
     // Sample distorted background photo
-    vec2 sampleUV = fract( uvWarp * 0.4 + vec2( t * 0.1, 0.0 ) + 0.5 );
-    vec3 texCol = img( sampleUV );
+    vec2 sample_uv = fract( uv_warp * 0.4 + vec2( t * 0.1, 0.0 ) + 0.5 );
+    vec3 tex_col = img( sample_uv );
 
     // Doppler shift: center blueshift (hot cyan/white), edge redshift (magenta/amber)
-    vec3 blueshiftCol = vec3( 0.3, 1.4, 2.0 );
-    vec3 redshiftCol = vec3( 1.8, 0.4, 0.6 );
-    vec3 dopplerCol = mix( blueshiftCol, redshiftCol, clamp( r / R_warp - 0.3 * audioCentroid, 0.0, 1.0 ) );
+    vec3 blueshift_col = vec3( 0.3, 1.4, 2.0 );
+    vec3 redshift_col = vec3( 1.8, 0.4, 0.6 );
+    vec3 doppler_col = mix( blueshift_col, redshift_col, clamp( r / r_warp - 0.3 * audioCentroid, 0.0, 1.0 ) );
 
-    vec3 palBase = imgPalette( r * 0.8 + 0.2 );
-    vec3 col = mix( texCol, palBase, 0.45 ) * dopplerCol;
+    vec3 pal_base = imgPalette( r * 0.8 + 0.2 );
+    vec3 col = mix( tex_col, pal_base, 0.45 ) * doppler_col;
 
     // Add glowing exotic matter rings & star streaks
-    vec3 ringTint = vec3( 1.4, 1.1, 1.8 ) * ringGlow * ( 1.0 + 2.5 * audioKick );
-    vec3 streakTint = vec3( 1.6, 1.6, 2.0 ) * streakGlow * ( 1.0 + 2.0 * audioKick );
-    col += ringTint + streakTint;
+    vec3 ring_tint = vec3( 1.4, 1.1, 1.8 ) * ring_glow * ( 1.0 + 2.5 * audioKick );
+    vec3 streak_tint = vec3( 1.6, 1.6, 2.0 ) * streak_glow * ( 1.0 + 2.0 * audioKick );
+    col += ring_tint + streak_tint;
 
     // Forward warp singularity apex flare
-    float apexFlare = exp( -r * 10.0 ) * ( 1.5 + 3.5 * audioKick );
-    col += vec3( 1.8, 1.8, 2.0 ) * apexFlare;
+    float apex_flare = exp( -r * 10.0 ) * ( 1.5 + 3.5 * audioKick );
+    col += vec3( 1.8, 1.8, 2.0 ) * apex_flare;
 
     col = pow( col, vec3( 0.88 ) );
     col *= 0.79; // measured luma 0.636: knee, not a linear trim

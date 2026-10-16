@@ -54,15 +54,15 @@ void main()
         return;
     }
 
-    float colI = mod( idx, 98.0 );   // column around the arena
+    float col_i = mod( idx, 98.0 );  // column around the arena
     float row = floor( idx / 98.0 ); // 0..49 stacked upward
 
     // Column angle; the arena revolves slowly with the music.
-    float ang = ( colI / 98.0 ) * 6.2831853
+    float ang = ( col_i / 98.0 ) * 6.2831853
                 + time * 0.05 + audioAdvance * 0.10;
 
     // Mirrored band layout: bass at the front, highs behind you.
-    float frac_ = colI / 98.0;
+    float frac_ = col_i / 98.0;
     float m = abs( frac_ * 2.0 - 1.0 ); // 0 front .. 1 back
     int   band = int( min( m * 31.0, 31.0 ) );
     float lvl = audioSpectrum[band];
@@ -70,8 +70,8 @@ void main()
     float R = 30.0 * ( 1.0 + 0.05 * audioBass );
     // KICK SHOCKWAVE: every kick sends a ring of columns bulging outward,
     // rolling around the arena once per beat — the wall itself dances.
-    float ringPh = fract( colI / 98.0 * 2.0 - audioBeatPhase );
-    R += 3.5 * audioKick * exp( -ringPh * 6.0 );
+    float ring_ph = fract( col_i / 98.0 * 2.0 - audioBeatPhase );
+    R += 3.5 * audioKick * exp( -ring_ph * 6.0 );
     float y = ( row - 6.0 ) * 1.75;
     // Downbeat: the whole arena JUMPS a step upward and settles.
     y += 1.4 * audioDownbeat;
@@ -121,9 +121,9 @@ void main()
     // top, so the arena was a running rainbow whose rotated colours fell out of
     // gamut, clipped, and came back as flat primaries -- 57% of the frame past
     // HSV saturation 0.8.  The base is also pulled off the ceiling.
-    float bandHue = float( band ) / 31.0;
+    float band_hue = float( band ) / 31.0;
     vec3  hue = hueRot( vec3( 1.0, 0.42, 0.52 ),
-                        0.55 * ( bandHue - 0.5 ) + 0.22 * sin( audioChromaHue ) );
+                        0.55 * ( band_hue - 0.5 ) + 0.22 * sin( audioChromaHue ) );
     vec3  col = hue * ( 0.55 + 0.6 * ( row / 46.0 ) ) * lit
                 + vec3( 0.075, 0.085, 0.115 ) * ( 1.0 - lit );
     col = mix( col, hue * 1.6 + vec3( 0.5 ), head );

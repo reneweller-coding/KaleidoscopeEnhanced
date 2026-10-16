@@ -76,11 +76,11 @@ void main()
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
 
     vec3  n = normalize( vNormal );
-    float isSpire = vCol.w; // 1.0 if spire, 0.0 if ring
+    float is_spire = vCol.w; // 1.0 if spire, 0.0 if ring
 
     // Light from the central energy field
-    vec3  lightDir = normalize( vec3( 0.0, 0.0, vPos.z ) - vPos );
-    float dif = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.0, 0.0, vPos.z ) - vPos );
+    float dif = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
     vec3 albedo = vec3( 0.15, 0.16, 0.18 ); // Dark tech metal
@@ -101,37 +101,37 @@ void main()
     vec3 col = albedo * ( 0.12 + dif * 1.3 ) * ( 0.7 + 0.6 * pat );
     col += albedo * fill * 0.22;
 
-    vec3 energyColor = imgPalette( 0.3 + 0.1 * audioKick );
+    vec3 energy_color = imgPalette( 0.3 + 0.1 * audioKick );
 
     // Tachyon pulses
-    float pulseDist = abs( vPos.z - mod( time * 50.0, 200.0 ) );
-    float pulse = exp( -pulseDist * 0.05 ) * audioKick * 3.0;
+    float pulse_dist = abs( vPos.z - mod( time * 50.0, 200.0 ) );
+    float pulse = exp( -pulse_dist * 0.05 ) * audioKick * 3.0;
 
     // Data stream lines
     float line = step( 0.9, hash21( grid + vCol.xy ) );
     float flow = step( 0.5, fract( uv.x * 0.1 + time * 3.0 ) );
 
-    if ( isSpire > 0.5 )
+    if ( is_spire > 0.5 )
     {
         // Core spire pulses intensely
-        col += energyColor * line * flow * ( 1.0 + pulse * 2.0 ) * gp * 1.5;
-        col += energyColor * pulse * 0.5 * gp;
+        col += energy_color * line * flow * ( 1.0 + pulse * 2.0 ) * gp * 1.5;
+        col += energy_color * pulse * 0.5 * gp;
     }
     else
     {
         // Rings emit energy inward
-        col += energyColor * line * ( 0.5 + audioSwell ) * gp;
+        col += energy_color * line * ( 0.5 + audioSwell ) * gp;
         // Inner face of rings glows intensely
-        if ( dot( n, -lightDir ) > 0.8 )
+        if ( dot( n, -light_dir ) > 0.8 )
         {
-            col += energyColor * ( 1.0 + pulse ) * gp;
+            col += energy_color * ( 1.0 + pulse ) * gp;
         }
     }
 
     // Central energy beam (volumetric effect, faked by distance to center)
-    float distToCenter = length( vPos.xy );
-    float beam = exp( -distToCenter * 0.05 ) * ( 0.5 + 0.5 * audioSwell + pulse * 0.5 );
-    col += energyColor * beam * gp;
+    float dist_to_center = length( vPos.xy );
+    float beam = exp( -dist_to_center * 0.05 ) * ( 0.5 + 0.5 * audioSwell + pulse * 0.5 );
+    col += energy_color * beam * gp;
 
     // Depth fog
     float fog = clamp( vPos.z / 150.0, 0.0, 1.0 ); // z ahead is positive since the wrap-sign fix
@@ -140,7 +140,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

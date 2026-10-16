@@ -41,7 +41,7 @@ out float vEntry;    ///< 0 before contact, 1 deep in the glow -- drives the hea
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
 
     float t = sceneProgress;
     // Nothing happens for the first fifth: the ship is still in vacuum, and
@@ -50,7 +50,7 @@ void main()
     float entry = smoothstep( 0.20, 0.95, t );
     vEntry = entry;
 
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         // Put the hull's LONGEST axis on +Z, which is the nose direction the
@@ -82,15 +82,15 @@ void main()
         // at the end -- the classic entry attitude, belly to the airflow.
         float pitch = -0.10 - 0.55 * entry + 0.18 * smoothstep( 0.75, 1.0, t );
         float cp = cos( pitch ), sp2 = sin( pitch );
-        mat3  pitchM = mat3( 1.0, 0.0, 0.0, 0.0, cp, sp2, 0.0, -sp2, cp );
+        mat3  pitch_m = mat3( 1.0, 0.0, 0.0, 0.0, cp, sp2, 0.0, -sp2, cp );
 
         // A slow roll, so we see the lit belly rather than a flat profile.
         float roll = 0.35 + 0.25 * sin( t * 3.0 );
         float cr = cos( roll ), sr = sin( roll );
-        mat3  rollM = mat3( cr, sr, 0.0, -sr, cr, 0.0, 0.0, 0.0, 1.0 );
-        mat3  rotM = pitchM * rollM;
+        mat3  roll_m = mat3( cr, sr, 0.0, -sr, cr, 0.0, 0.0, 0.0, 1.0 );
+        mat3  rot_m = pitch_m * roll_m;
 
-        vec3 local = rotM * ( p * ( 46.0 * sz ) );
+        vec3 local = rot_m * ( p * ( 46.0 * sz ) );
 
         // Airframe judder once the atmosphere bites: high frequency, small
         // amplitude, and gated on `entry` so the vacuum part stays glassy.
@@ -107,7 +107,7 @@ void main()
         world.x += -18.0 + 26.0 * entry;
         world.y += 26.0 - 40.0 * entry;
         world.z += 140.0 - 62.0 * entry;
-        n = normalize( rotM * nrm );
+        n = normalize( rot_m * nrm );
         vUV = vec2( attrA.w, attrB.w );
         vLocalPos = p;
     }
@@ -123,10 +123,10 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 
     vNormal = n;
     vPos = world;
-    vBg = isBg ? 1.0 : 0.0;
+    vBg = is_bg ? 1.0 : 0.0;
 }

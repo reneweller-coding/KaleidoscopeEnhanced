@@ -146,11 +146,11 @@ void main()
 
     // Chase camera: sits close ahead on the path, the dragon filling the
     // frame as it flies at the viewer.
-    vec3 camP = leader( tp + 0.9 ) + vec3( 0.0, 4.0, 0.0 );
-    vec3 fwd = normalize( leader( tp - 0.3 ) - camP );
+    vec3 cam_p = leader( tp + 0.9 ) + vec3( 0.0, 4.0, 0.0 );
+    vec3 fwd = normalize( leader( tp - 0.3 ) - cam_p );
     vec3 rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 up = cross( rgt, fwd );
-    vec3 rel = world - camP;
+    vec3 rel = world - cam_p;
     vec3 vp = vec3( dot( rel, rgt ), dot( rel, up ), dot( rel, fwd ) );
 
     vp.x -= eyeOff;

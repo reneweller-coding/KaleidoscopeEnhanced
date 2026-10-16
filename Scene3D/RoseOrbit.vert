@@ -85,12 +85,12 @@ void main()
     // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
     // Placing the pollen in FRUSTUM coordinates rather than in a fixed world
     // box is what makes the field even across the picture at every depth.
-    const float kTanY = 0.5206;
+    const float TanY = 0.5206;
     float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
     vec3  vp;
     vec3  col;
-    float sizeBase, sizeCap, sizeMin, gain;
+    float size_base, size_cap, size_min, gain;
 
     if ( r1 < 0.18 )
     {
@@ -111,8 +111,8 @@ void main()
         // and yaws the view (every Scene3D preset carries one), and spectral
         // spread only ever opens it further.
         float open = 2.25 + 0.35 * spr;
-        vp = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 2.6 * cos( ph ),
-                   ( hy - 0.5 ) * open * dz * kTanY + 2.6 * sin( ph * 0.83 ),
+        vp = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 2.6 * cos( ph ),
+                   ( hy - 0.5 ) * open * dz * TanY + 2.6 * sin( ph * 0.83 ),
                    dz );
 
         col = mix( vec3( 0.42, 0.52, 0.92 ), vec3( 0.92, 0.52, 0.46 ), mmaj );
@@ -122,9 +122,9 @@ void main()
         // A grain of pollen has to stay a legible speck at any distance --
         // below roughly two and a half pixels an additive sprite averages
         // away to nothing and the far half of the field reads as black again.
-        sizeBase = 156.3;
-        sizeCap = 16.4;
-        sizeMin = 2.8;
+        size_base = 156.3;
+        size_cap = 16.4;
+        size_min = 2.8;
         gain = 4.2;
     }
     else
@@ -133,7 +133,7 @@ void main()
         // Layer 0 = the front rose (the subject), 1 = the mid rose, 2 = a
         // wide outer rose whose petals sweep past the frame edges.
         float lf = ( r1 < 0.46 ) ? 2.0 : ( ( r1 < 0.72 ) ? 1.0 : 0.0 );
-        sizeMin = 1.5;
+        size_min = 1.5;
         gain = 2.6;
 
         float k, R0, zc, spin, thr, bri;
@@ -147,8 +147,8 @@ void main()
             thr = 0.090;
             bri = 0.80;
             pc = mix( vec3( 0.45, 0.55, 0.95 ), vec3( 0.95, 0.35, 0.55 ), mmaj );
-            sizeBase = 181.7;
-            sizeCap = 23.6;
+            size_base = 181.7;
+            size_cap = 23.6;
         }
         else if ( lf < 1.5 )
         {
@@ -159,8 +159,8 @@ void main()
             thr = 0.062;
             bri = 0.50;
             pc = mix( vec3( 0.30, 0.45, 0.85 ), vec3( 0.85, 0.55, 0.35 ), mmaj );
-            sizeBase = 218.1;
-            sizeCap = 21.8;
+            size_base = 218.1;
+            size_cap = 21.8;
         }
         else
         {
@@ -171,8 +171,8 @@ void main()
             thr = 0.045;
             bri = 0.40;
             pc = mix( vec3( 0.35, 0.50, 0.90 ), vec3( 0.90, 0.50, 0.40 ), mmaj );
-            sizeBase = 263.5;
-            sizeCap = 20.0;
+            size_base = 263.5;
+            size_cap = 20.0;
         }
 
         // theta runs twice around for closure; particles stream along it.
@@ -224,8 +224,8 @@ void main()
 
     float px = resolution.y / 1080.0;
     float dist = max( vp.z, 0.5 );
-    gl_PointSize = clamp( sizeBase * ( 0.4 + 0.8 * r4 ) * px / dist,
-                          sizeMin, max( sizeCap * px, sizeMin ) );
+    gl_PointSize = clamp( size_base * ( 0.4 + 0.8 * r4 ) * px / dist,
+                          size_min, max( size_cap * px, size_min ) );
 
     vCol = vec4( col * gain, 1.0 );
 }

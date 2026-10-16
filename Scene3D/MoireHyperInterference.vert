@@ -70,15 +70,15 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2 gridUV = attrA.xy; // 0..1
+    vec2 grid_uv = attrA.xy; // 0..1
 
     float frq = ( freqP > 0.0 ) ? freqP : 1.0;
     float dpt = ( depthP > 0.0 ) ? depthP : 1.0;
     float spd = ( speedP > 0.0 ) ? speedP : 1.0;
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
-    float x = ( gridUV.x - 0.5 ) * 20.0;
-    float z = ( gridUV.y - 0.5 ) * 20.0;
+    float x = ( grid_uv.x - 0.5 ) * 20.0;
+    float z = ( grid_uv.y - 0.5 ) * 20.0;
 
     float t = time * 0.35 * spd + audioAdvance * 0.15;
 
@@ -99,17 +99,17 @@ void main()
     // Kick elevation
     y += audioKick * 1.5 * abs( moire );
 
-    vec3 worldP = vec3( x, y, z );
+    vec3 world_p = vec3( x, y, z );
 
     // Camera space
-    vec3 camPos = vec3( 0.0, 6.0, -16.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 6.0, -16.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-    vUV = gridUV;
+    vUV = grid_uv;
     vInterference = abs( moire );
     vNormal = normalize( vec3( -sin( p1.x ) * 0.5, 1.0, -cos( p2.y ) * 0.5 ) );
 

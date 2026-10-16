@@ -244,8 +244,8 @@ void main()
 
     float la = 0.1 * sceneTime;
     float relief = clamp( 0.5 + dot( grad, vec2( cos( la ), sin( la ) ) ) * 5.0, 0.0, 1.0 );
-    vec3  reliefC = photo * ( 0.3 + 1.2 * relief )
-                    + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell + 0.35 * kick );
+    vec3  relief_c = photo * ( 0.3 + 1.2 * relief )
+                     + vec3( 1.0 ) * pow( relief, 6.0 ) * ( 0.1 + 0.3 * swell + 0.35 * kick );
 
     vec3  gc = mix( glowColour( ph, p, hueP * 0.159 ), neonOf( field + 1e-3, 2.0 ), clamp( paletteP, 0.0, 1.0 ) );
     float edge = smoothstep( 0.01, 0.14, length( grad ) );
@@ -254,7 +254,7 @@ void main()
     float xi = m * 12.0 - gT * 6.0;
     float pxi = fwidth( xi ) + 1e-4;
     float iso = smoothstep( pxi * 1.5, 0.0, abs( fract( xi ) - 0.5 ) - 0.5 + pxi * 1.5 );
-    vec3  isoC = gc * iso * ( 1.3 + kick ) + photo * 0.12;
+    vec3  iso_c = gc * iso * ( 1.3 + kick ) + photo * 0.12;
 
 
 
@@ -279,7 +279,7 @@ void main()
 
 
 
-    vec3 flowC = photo * 0.25;
+    vec3 flow_c = photo * 0.25;
     if ( ords( s0 ) == 4 || ( ords( s1 ) == 4 && sf > 0.0 ) )
     {
         vec2  fd = vec2( -grad.y, grad.x );
@@ -297,9 +297,9 @@ void main()
             wsum += w;
         }
         float lic = smoothstep( 0.38, 0.72, acc / wsum ) * smoothstep( 0.004, 0.04, gl );
-        flowC = gc * lic * ( 1.3 + kick ) + photo * 0.25;
+        flow_c = gc * lic * ( 1.3 + kick ) + photo * 0.25;
     }
-    vec3 looks[5] = vec3[5]( photo, reliefC, neon, isoC, flowC );
+    vec3 looks[5] = vec3[5]( photo, relief_c, neon, iso_c, flow_c );
     s0 = ords( s0 );
     s1 = ords( s1 );
     vec3 col = mix( looks[s0], looks[s1], sf );

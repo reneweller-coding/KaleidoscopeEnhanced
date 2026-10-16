@@ -130,7 +130,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -243,11 +243,11 @@ void main()
     uv += 0.004 * rough * vec2( sin( uv.y * 90.0 + sceneTime ), cos( uv.x * 90.0 + sceneTime ) );
 
     // Edges at two scales; the spectrum's width brings in the fine ones.
-    float lodC = 3.5 - 1.5 * clamp( detailP, 0.0, 1.0 );
-    float eC = texEdge( uv, lodC );
-    float eF = texEdge( uv, lodC - 1.0 );
+    float lod_c = 3.5 - 1.5 * clamp( detailP, 0.0, 1.0 );
+    float e_c = texEdge( uv, lod_c );
+    float e_f = texEdge( uv, lod_c - 1.0 );
     float fine = clamp( audioSpread, 0.0, 1.0 );
-    float e = max( eC, eF * ( 0.35 + 0.65 * fine ) );
+    float e = max( e_c, e_f * ( 0.35 + 0.65 * fine ) );
     // Tubes: a thin core where the edge is strong, a halo around it.
     // Only the strongest edges become tubes; a slow noise field lets whole
     // regions go dark so the tubes stand in black, not in a grey hatching.

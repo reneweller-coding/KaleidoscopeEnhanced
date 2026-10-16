@@ -103,7 +103,7 @@ void main()
     vec2  ec = vec2( 0.0, -3.2 );
     float R = 3.55;
     float re = length( p - ec );
-    float onEarth = smoothstep( R + 0.003, R - 0.003, re );
+    float on_earth = smoothstep( R + 0.003, R - 0.003, re );
 
     // Space: stars (round, jittered) and the thin airglow above the limb.
     vec3  col = vec3( 0.0 );
@@ -112,11 +112,11 @@ void main()
     vec2  sj = hash22( sc ) - 0.5;
     float star = smoothstep( 0.12, 0.02, length( sf - sj * 0.7 ) ) * step( 0.985, hash21( sc + 3.3 ) );
     col += vec3( 0.9, 0.92, 1.0 ) * star * ( 0.4 + 0.6 * hash21( sc + 7.0 ) );
-    vec3 airC = mix( vec3( 0.2, 0.9, 0.45 ), imgPalette( hue * 0.159 + 0.4 ), 0.15 );
-    col += airC * exp( -abs( re - R - 0.012 ) * 180.0 ) * ( 0.35 + 0.35 * swell );
-    col += vec3( 0.25, 0.4, 1.0 ) * exp( -max( re - R, 0.0 ) * 40.0 ) * 0.08 * ( 1.0 - onEarth );
+    vec3 air_c = mix( vec3( 0.2, 0.9, 0.45 ), imgPalette( hue * 0.159 + 0.4 ), 0.15 );
+    col += air_c * exp( -abs( re - R - 0.012 ) * 180.0 ) * ( 0.35 + 0.35 * swell );
+    col += vec3( 0.25, 0.4, 1.0 ) * exp( -max( re - R, 0.0 ) * 40.0 ) * 0.08 * ( 1.0 - on_earth );
 
-    if ( onEarth > 0.0 )
+    if ( on_earth > 0.0 )
     {
         // Ground coordinates: foreshortened toward the limb.
         float h = ( R - re );                  // depth below the limb
@@ -132,19 +132,19 @@ void main()
         vec2  cj = hash22( ci ) - 0.5;
         float pt = smoothstep( 0.22, 0.05, length( cf - cj * 0.6 ) ) * step( 1.0 - 0.55 * settled, hash21( ci + 3.0 ) );
         float roads = smoothstep( 0.03, 0.0, abs( noise2( g * 6.0 ) - 0.5 ) ) * settled;
-        vec3  cityC = mix( vec3( 1.0, 0.68, 0.3 ), imgPalette( hue * 0.159 + 0.08 ), 0.2 );
-        vec3  ground = cityC * ( pt * ( 0.6 + 0.4 * hash21( ci + 5.0 ) ) + roads * 0.12 + settled * 0.03 )
+        vec3  city_c = mix( vec3( 1.0, 0.68, 0.3 ), imgPalette( hue * 0.159 + 0.08 ), 0.2 );
+        vec3  ground = city_c * ( pt * ( 0.6 + 0.4 * hash21( ci + 5.0 ) ) + roads * 0.12 + settled * 0.03 )
                        + vec3( 0.004, 0.006, 0.012 );
 
         // The storm clouds: tall tops, moonlit, covering part of the ground.
-        float cloudF = fbm( g * vec2( 1.3, 1.6 ) + 4.0 );
-        float cover = smoothstep( storm, storm + 0.12, cloudF );
+        float cloud_f = fbm( g * vec2( 1.3, 1.6 ) + 4.0 );
+        float cover = smoothstep( storm, storm + 0.12, cloud_f );
         // Anvil tops: billowed, moonlit from one side, with deep shadows.
         float tops = fbm( g * 3.2 + 1.0 );
         float tops2 = fbm( g * 3.2 + vec2( 0.05, 0.0 ) + 1.0 );
-        float sideLit = clamp( ( tops - tops2 ) * 25.0 + 0.5, 0.0, 1.0 );
+        float side_lit = clamp( ( tops - tops2 ) * 25.0 + 0.5, 0.0, 1.0 );
         vec3  moon = mix( vec3( 0.45, 0.52, 0.72 ), imgPalette( hue * 0.159 + 0.6 ) * 0.7, 0.2 );
-        vec3  cloud = moon * ( 0.18 + 0.75 * tops * tops + 0.45 * sideLit * tops ) * ( 0.8 + 0.5 * swell );
+        vec3  cloud = moon * ( 0.18 + 0.75 * tops * tops + 0.45 * side_lit * tops ) * ( 0.8 + 0.5 * swell );
 
         // Lightning: storm cells on a coarse grid of the cloud field.  A cell
         // glows from inside with (kick envelope) x (a weight that wanders
@@ -169,20 +169,20 @@ void main()
                 float e = drive * wander + own * 0.45 * wander + idle * wander;
                 flash += e * exp( -d * d * 3.0 );
             }
-        vec3 boltC = mix( vec3( 0.75, 0.82, 1.0 ), imgPalette( hue * 0.159 + 0.62 ), 0.15 );
-        cloud += boltC * flash * ( 0.35 + 1.1 * tops ) * 1.8;
+        vec3 bolt_c = mix( vec3( 0.75, 0.82, 1.0 ), imgPalette( hue * 0.159 + 0.62 ), 0.15 );
+        cloud += bolt_c * flash * ( 0.35 + 1.1 * tops ) * 1.8;
         // Light from a flash spreads into the cloud around it.
         vec3 surf = mix( ground, cloud, cover );
-        surf += boltC * flash * 0.15 * ( 1.0 - cover );
+        surf += bolt_c * flash * 0.15 * ( 1.0 - cover );
 
         // Atmosphere toward the limb: bluish haze.
         float hz = exp( -h * 4.0 );
         surf = mix( surf, vec3( 0.05, 0.08, 0.2 ) * ( 0.6 + 0.4 * swell ), hz * 0.7 );
-        col = mix( col, surf, onEarth );
+        col = mix( col, surf, on_earth );
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

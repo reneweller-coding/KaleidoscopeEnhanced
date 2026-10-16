@@ -92,7 +92,7 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float kick = clamp( audioKick, 0.0, 1.0 );
     float T = sceneTime + sceneAdvance * 0.4;
-    float nFig = 2.0 + floor( clamp( figuresP, 0.0, 1.0 ) * 2.99 );
+    float n_fig = 2.0 + floor( clamp( figuresP, 0.0, 1.0 ) * 2.99 );
 
     vec3 fluo = vec3( 0.95, 1.0, 0.82 ) * ( 0.9 + 0.25 * swell );
     fluo *= 0.97 + 0.03 * step( 0.97, noise2( vec2( T * 3.0, 1.0 ) ) ); // one tube not quite steady
@@ -128,16 +128,16 @@ void main()
     // us (right) away to a vanishing point far to the left, top and bottom
     // edges converging -- the long diagonal of the painting.
     vec2  vp = vec2( -2.2, 0.02 );
-    float xN = 0.62;                          // the near corner
-    float bN = -0.36, tN = 0.3;               // bottom / top at the corner
-    float k = ( p.x - vp.x ) / ( xN - vp.x ); // 1 at the corner, shrinking with depth
-    float yb = vp.y + ( bN - vp.y ) * k, yt = vp.y + ( tN - vp.y ) * k;
+    float x_n = 0.62;                          // the near corner
+    float b_n = -0.36, t_n = 0.3;              // bottom / top at the corner
+    float k = ( p.x - vp.x ) / ( x_n - vp.x ); // 1 at the corner, shrinking with depth
+    float yb = vp.y + ( b_n - vp.y ) * k, yt = vp.y + ( t_n - vp.y ) * k;
     // Rounded corner: the glass curves round to the right.
-    float inFront = step( p.x, xN ) * step( -0.95, p.x );
-    float bodyMask = inFront * step( yb, p.y ) * step( p.y, yt );
+    float in_front = step( p.x, x_n ) * step( -0.95, p.x );
+    float body_mask = in_front * step( yb, p.y ) * step( p.y, yt );
     float t = ( p.y - yb ) / max( yt - yb, 1e-4 ); // 0 bottom .. 1 top of the front
-    float sx = ( p.x - vp.x ) / ( xN - vp.x );     // position along the front (depth-ish)
-    if ( bodyMask > 0.0 )
+    float sx = ( p.x - vp.x ) / ( x_n - vp.x );    // position along the front (depth-ish)
+    if ( body_mask > 0.0 )
     {
         vec3 inside = fluo * vec3( 0.62, 0.72, 0.5 );
         // Back wall, pale yellow above the counter; a doorway to the kitchen.
@@ -165,14 +165,14 @@ void main()
         inside = mix( inside, vec3( 0.85, 0.8, 0.6 ) * fluo * 0.9, cfront );
         inside = mix( inside, vec3( 0.55, 0.18, 0.08 ), ctop );
         // Stools: round seats on posts.
-        float stoolX = fract( sx * 22.0 ) - 0.5;
-        float stool = step( abs( stoolX ), 0.12 ) * step( 0.08, t ) * step( t, 0.2 ) * step( 0.35, sx );
-        inside = mix( inside, vec3( 0.15, 0.1, 0.08 ), stool * step( abs( stoolX ), 0.04 + 0.1 * step( 0.17, t ) ) );
+        float stool_x = fract( sx * 22.0 ) - 0.5;
+        float stool = step( abs( stool_x ), 0.12 ) * step( 0.08, t ) * step( t, 0.2 ) * step( 0.35, sx );
+        inside = mix( inside, vec3( 0.15, 0.1, 0.08 ), stool * step( abs( stool_x ), 0.04 + 0.1 * step( 0.17, t ) ) );
         // Figures: hunched backs over the counter -- rounded shapes, a hat,
         // the woman in red.  Sizes follow the perspective (in t / sx).
         for ( int f = 0; f < 4; ++f )
         {
-            if ( float( f ) >= nFig )
+            if ( float( f ) >= n_fig )
                 break;
             float fx = 0.5 + 0.09 * float( f ) + 0.02 * step( 1.5, float( f ) );
             vec2  fq = vec2( ( sx - fx ) * 34.0 * ( 1.0 + 0.1 * float( f ) ), ( t - 0.36 ) * 5.0 );
@@ -208,17 +208,17 @@ void main()
         col += vec3( 1.0, 0.55, 0.25 ) * sgn * ( 0.8 + 0.7 * kick );
     }
     // Beyond the corner: the building's dark side wall going up.
-    if ( p.x > xN && p.y > yb - 0.05 )
-        col = mix( col, vec3( 0.06, 0.08, 0.08 ) * grain( p ), step( p.y, tN + 0.25 ) );
+    if ( p.x > x_n && p.y > yb - 0.05 )
+        col = mix( col, vec3( 0.06, 0.08, 0.08 ) * grain( p ), step( p.y, t_n + 0.25 ) );
     // The light the glass throws onto the pavement in front of it.
-    if ( p.y < yb && inFront > 0.0 )
+    if ( p.y < yb && in_front > 0.0 )
     {
         float d = ( yb - p.y ) / max( k, 0.05 );
         col += fluo * vec3( 0.5, 0.55, 0.3 ) * exp( -d * 5.0 ) * 0.5;
     }
     col = mix( col, col * imgPalette( 0.4 + hueP * 0.159 ) * 1.4, 0.08 );
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

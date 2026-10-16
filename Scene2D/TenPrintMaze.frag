@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -266,9 +266,9 @@ void main()
     vec2  uv = p * 0.5 + 0.5; // continuous: no cell checker
     vec3  ph = imgLod( uv, 2.0 );
     vec3  lc = glowColour( ph, p * 2.0, hueP * 0.159 );
-    vec3  glowLines = lc * line * ( 0.7 + ( 0.8 + 1.5 * kick ) * pulse ) + lc * exp( -min( dmin, 0.5 ) / 0.06 ) * 0.15;
+    vec3  glow_lines = lc * line * ( 0.7 + ( 0.8 + 1.5 * kick ) * pulse ) + lc * exp( -min( dmin, 0.5 ) / 0.06 ) * 0.15;
     vec3  bg = ph * ( 0.04 + 0.2 * swell * clamp( photoP + 0.3, 0.0, 1.3 ) );
-    vec3  dark = glowLines + bg;
+    vec3  dark = glow_lines + bg;
     vec3  light = mix( vec3( 0.94, 0.92, 0.88 ) * ( 0.8 + 0.3 * ph * clamp( photoP, 0.0, 1.0 ) ), lc * 0.25, line )
                   + lc * pulse * line * kick * 0.5;
     finish( mix( dark, light, mode ) );

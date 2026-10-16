@@ -80,12 +80,12 @@ void main()
 
     // Hexagonal crystal wafer boundary
     vec2  p = abs( vUV - vec2( 0.5 ) );
-    float hexDist = max( p.x * 0.866025 + p.y * 0.5, p.y );
-    if ( hexDist > 0.48 )
+    float hex_dist = max( p.x * 0.866025 + p.y * 0.5, p.y );
+    if ( hex_dist > 0.48 )
         discard;
 
     // Crystal edge rim glow
-    float edge = smoothstep( 0.42, 0.48, hexDist );
+    float edge = smoothstep( 0.42, 0.48, hex_dist );
 
     // Stored holographic photo imagery
     vec3 photo = img( vUV );
@@ -98,12 +98,12 @@ void main()
     vec3 irid = imgPalette( vTier + vUV.x * 0.64 );
 
     // Laser read pulse illumination
-    vec3 laserCol = vec3( 0.0, 1.0, 0.8 ) * vReadLaser * lsr * ( 1.0 + audioKick * 3.0 );
+    vec3 laser_col = vec3( 0.0, 1.0, 0.8 ) * vReadLaser * lsr * ( 1.0 + audioKick * 3.0 );
 
     // Combine wafer appearance
     vec3 col = mix( photo, irid, 0.35 ) * ( 0.8 + 0.4 * audioSwell );
     col += irid * edge * 2.0;
-    col += laserCol;
+    col += laser_col;
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

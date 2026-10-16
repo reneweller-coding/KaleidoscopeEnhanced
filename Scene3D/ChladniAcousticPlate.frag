@@ -61,10 +61,10 @@ void main()
     float alpha = smoothstep( 0.5, 0.05, r );
 
     // High contrast resonant sand colors: Gold/Bronze on nodal lines, electric azure in flight
-    vec3 nodalColor = vec3( 1.0, 0.85, 0.3 );
-    vec3 flightColor = vec3( 0.1, 0.8, 1.0 );
+    vec3 nodal_color = vec3( 1.0, 0.85, 0.3 );
+    vec3 flight_color = vec3( 0.1, 0.8, 1.0 );
 
-    vec3 col = mix( nodalColor, flightColor, clamp( vNodalDist * 2.0, 0.0, 1.0 ) );
+    vec3 col = mix( nodal_color, flight_color, clamp( vNodalDist * 2.0, 0.0, 1.0 ) );
     col *= ( 0.7 + 1.5 * vPlateEnergy ) * glw;
 
     if ( hue > 0.001 )
@@ -72,7 +72,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, alpha );
+    vec3 cat_tone = ( col ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, alpha );
 }

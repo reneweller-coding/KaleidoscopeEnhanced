@@ -89,23 +89,23 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float slope = 0.06 + 0.08 * clamp( slopeP, 0.0, 1.0 );
-    float foamAmt = 0.6 + 0.6 * clamp( foamP, 0.0, 1.0 );
+    float foam_amt = 0.6 + 0.6 * clamp( foamP, 0.0, 1.0 );
     float sunlight = 0.5 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     // The tide: a sine of the phrase position -- continuous at the wrap.
     float tide = 0.5 - 0.5 * cos( clamp( audioPhrasePos, 0.0, 1.0 ) * 6.2831853 );
     float drop = clamp( audioDrop, 0.0, 1.0 );
 
     // Beach seen from the dune: sky at the top, sea in the middle, sand
-    // below; the water line runs across at y = waterY (tide) with wavelets.
+    // below; the water line runs across at y = water_y (tide) with wavelets.
     float horizon = 0.22;
-    float waterY = -0.35 + 0.35 * tide;
+    float water_y = -0.35 + 0.35 * tide;
     // The breaking wave: at the drop the foam wall runs up the beach and
     // draws back -- its reach is a smooth pulse of the drop envelope.
-    float breakReach = smoothstep( 0.0, 0.35, drop ) * ( 1.0 - smoothstep( 0.35, 1.0, drop ) ) * 0.35;
-    float breakReach2 = sin( clamp( drop, 0.0, 1.0 ) * 3.14159 ) * 0.3;
-    float reach = max( breakReach, breakReach2 );
+    float break_reach = smoothstep( 0.0, 0.35, drop ) * ( 1.0 - smoothstep( 0.35, 1.0, drop ) ) * 0.35;
+    float break_reach2 = sin( clamp( drop, 0.0, 1.0 ) * 3.14159 ) * 0.3;
+    float reach = max( break_reach, break_reach2 );
     float wavelet = 0.02 * sin( p.x * 12.0 + sceneAdvance * 2.0 ) + 0.01 * sin( p.x * 31.0 - sceneAdvance * 3.1 );
-    float lineY = waterY + reach + wavelet + 0.01 * fbm( vec2( p.x * 6.0, sceneAdvance * 0.3 ) );
+    float line_y = water_y + reach + wavelet + 0.01 * fbm( vec2( p.x * 6.0, sceneAdvance * 0.3 ) );
 
     vec3 col;
     if ( p.y > horizon )
@@ -115,16 +115,16 @@ void main()
               * mix( vec3( 0.6, 0.75, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.4 );
         col += vec3( 1.0, 0.85, 0.6 ) * exp( -length( p - vec2( -0.3, 0.42 ) ) * 5.0 ) * sunlight * 0.5;
     }
-    else if ( p.y > lineY )
+    else if ( p.y > line_y )
     {
         // Sea: the palette in blue-green, sparkle from the sun, darker far.
-        float depthT = ( p.y - lineY ) / max( horizon - lineY, 1e-3 );
+        float depth_t = ( p.y - line_y ) / max( horizon - line_y, 1e-3 );
         vec3  sea = mix( imgPalette( hue * 0.159 + 0.55 ) * vec3( 0.4, 0.8, 1.0 ), vec3( 0.1, 0.35, 0.5 ),
-                         depthT * 0.7 );
+                         depth_t * 0.7 );
         float sparkle = pow( fbm( vec2( p.x * 20.0 + sceneAdvance, p.y * 60.0 - sceneAdvance * 0.5 ) ), 6.0 ) * 6.0;
         sea += vec3( 1.0, 0.95, 0.85 ) * sparkle * sunlight * 0.5;
         // Foam at the water line, more in the break.
-        float foam = smoothstep( 0.06 + reach * 0.3, 0.0, p.y - lineY ) * foamAmt * ( 0.4 + 2.0 * drop );
+        float foam = smoothstep( 0.06 + reach * 0.3, 0.0, p.y - line_y ) * foam_amt * ( 0.4 + 2.0 * drop );
         foam *= 0.6 + 0.4 * fbm( vec2( p.x * 25.0, p.y * 40.0 + sceneAdvance * 3.0 ) );
         col = mix( sea, vec3( 0.95, 0.97, 1.0 ), clamp( foam, 0.0, 1.0 ) );
     }
@@ -133,15 +133,15 @@ void main()
         // Sand: the photo, warm; wet below the highest recent water.
         vec3  sand = img( vec2( p.x / aspect + 0.5, ( p.y + 0.5 ) * 0.5 ) )
                      * mix( vec3( 0.9, 0.8, 0.6 ), imgPalette( hue * 0.159 + 0.1 ), 0.35 );
-        float wet = smoothstep( 0.0, 0.12, lineY - p.y );
-        float wetLine = smoothstep( 0.03, 0.0, lineY - p.y );
+        float wet = smoothstep( 0.0, 0.12, line_y - p.y );
+        float wet_line = smoothstep( 0.03, 0.0, line_y - p.y );
         // Wet sand mirrors the sky.
         vec3 mirror = img( vec2( p.x / aspect + 0.5, 0.75 ) )
                       * mix( vec3( 0.6, 0.75, 1.0 ), imgPalette( hue * 0.159 + 0.6 ), 0.4 );
         sand = mix( sand, mix( sand * 0.7, mirror, 0.5 ),
-                    ( 1.0 - wet ) * 0.6 * ( 1.0 - smoothstep( 0.0, 0.25, lineY - p.y ) ) );
+                    ( 1.0 - wet ) * 0.6 * ( 1.0 - smoothstep( 0.0, 0.25, line_y - p.y ) ) );
         col = sand;
-        col += vec3( 0.95, 0.97, 1.0 ) * wetLine * foamAmt * 0.5 * ( 0.3 + drop );
+        col += vec3( 0.95, 0.97, 1.0 ) * wet_line * foam_amt * 0.5 * ( 0.3 + drop );
         // Spray at the break: round droplets flung up the beach, on the
         // scene clock, only while the wave runs.
         vec2  su = ( p + vec2( sceneAdvance * 0.2, -sceneAdvance * 0.8 ) ) * 45.0;
@@ -149,12 +149,12 @@ void main()
         vec2  sf = fract( su ) - 0.5;
         vec2  so = vec2( hash21( sc + 1.3 ), hash21( sc + 5.9 ) ) - 0.5;
         float spray = smoothstep( 0.22, 0.06, length( sf - so * 0.6 ) ) * step( 0.92, hash21( sc ) )
-                      * smoothstep( 0.3, 0.0, p.y - lineY + 0.1 ) * drop;
+                      * smoothstep( 0.3, 0.0, p.y - line_y + 0.1 ) * drop;
         col += vec3( 0.95, 0.97, 1.0 ) * spray;
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

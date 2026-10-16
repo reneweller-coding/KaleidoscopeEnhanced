@@ -111,45 +111,45 @@ void main()
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Photospheric convection granulation
-    vec2  granuleCoord = uv * 10.0 * grn + vec2( sin( t * 0.2 ), cos( t * 0.15 ) ) * 0.5;
-    float vGran = voronoiGranules( granuleCoord );
-    float granuleCenter = smoothstep( 0.4, 0.0, vGran ); // Hot bright centers
-    float granuleLanes = smoothstep( 0.0, 0.25, vGran ); // Cooler dark intergranular lanes
+    vec2  granule_coord = uv * 10.0 * grn + vec2( sin( t * 0.2 ), cos( t * 0.15 ) ) * 0.5;
+    float v_gran = voronoiGranules( granule_coord );
+    float granule_center = smoothstep( 0.4, 0.0, v_gran ); // Hot bright centers
+    float granule_lanes = smoothstep( 0.0, 0.25, v_gran ); // Cooler dark intergranular lanes
 
     // Coronal magnetic loops (arches spanning the canvas)
-    float loopArch1 = uv.y - ( 0.4 - pow( uv.x * 1.5, 2.0 ) ) + 0.1 * sin( uv.x * 12.0 + t * 2.0 );
-    float loopArch2 = uv.y - ( 0.6 - pow( ( uv.x - 0.3 ) * 1.8, 2.0 ) ) + 0.08 * cos( uv.x * 14.0 - t * 3.0 );
-    float loopArch3 = uv.y - ( 0.5 - pow( ( uv.x + 0.35 ) * 1.6, 2.0 ) ) + 0.09 * sin( uv.x * 10.0 + t );
+    float loop_arch1 = uv.y - ( 0.4 - pow( uv.x * 1.5, 2.0 ) ) + 0.1 * sin( uv.x * 12.0 + t * 2.0 );
+    float loop_arch2 = uv.y - ( 0.6 - pow( ( uv.x - 0.3 ) * 1.8, 2.0 ) ) + 0.08 * cos( uv.x * 14.0 - t * 3.0 );
+    float loop_arch3 = uv.y - ( 0.5 - pow( ( uv.x + 0.35 ) * 1.6, 2.0 ) ) + 0.09 * sin( uv.x * 10.0 + t );
 
-    float loop1 = exp( -abs( loopArch1 ) * 20.0 );
-    float loop2 = exp( -abs( loopArch2 ) * 25.0 );
-    float loop3 = exp( -abs( loopArch3 ) * 22.0 );
-    float totalLoops = ( loop1 + loop2 + loop3 ) * lp;
+    float loop1 = exp( -abs( loop_arch1 ) * 20.0 );
+    float loop2 = exp( -abs( loop_arch2 ) * 25.0 );
+    float loop3 = exp( -abs( loop_arch3 ) * 22.0 );
+    float total_loops = ( loop1 + loop2 + loop3 ) * lp;
 
     // Relativistic magnetic reconnection snap on kicks
-    float reconnectSnap = exp( -abs( uv.x ) * 15.0 ) * exp( -abs( uv.y - 0.4 ) * 15.0 );
-    float flareFlash = reconnectSnap * ( audioKick * 3.0 + audioSubBass * 1.5 );
+    float reconnect_snap = exp( -abs( uv.x ) * 15.0 ) * exp( -abs( uv.y - 0.4 ) * 15.0 );
+    float flare_flash = reconnect_snap * ( audioKick * 3.0 + audioSubBass * 1.5 );
 
     // Plasma flow along magnetic loops
-    float plasmaFlow = sin( uv.x * 30.0 - time * 12.0 ) * 0.5 + 0.5;
+    float plasma_flow = sin( uv.x * 30.0 - time * 12.0 ) * 0.5 + 0.5;
 
     // Photo texture embedded into boiling solar granulation
-    vec2 photoUV = uv * 0.4 + vec2( 0.5 ) + vec2( cos( t * 0.1 ), sin( t * 0.15 ) ) * 0.05;
-    vec3 photoSolar = img( fract( photoUV ) );
+    vec2 photo_uv = uv * 0.4 + vec2( 0.5 ) + vec2( cos( t * 0.1 ), sin( t * 0.15 ) ) * 0.05;
+    vec3 photo_solar = img( fract( photo_uv ) );
 
     // Solar colors: 6000K Photosphere Gold, 2M Kelvin Coronal Cyan/Violet, Blinding Flare White
-    vec3 photoBase = mix( vec3( 1.0, 0.45, 0.05 ), vec3( 1.0, 0.85, 0.25 ), granuleCenter ) * photoSolar;
-    vec3 loopPlasma = palTint( mix( vec3( 1.0, 0.2, 0.05 ), vec3( 0.3, 0.8, 1.0 ), plasmaFlow ), 0.30 * plasmaFlow,
-                               0.20 );
-    vec3 flareWhite = vec3( 1.0, 0.98, 0.92 ) * 3.0;
+    vec3 photo_base = mix( vec3( 1.0, 0.45, 0.05 ), vec3( 1.0, 0.85, 0.25 ), granule_center ) * photo_solar;
+    vec3 loop_plasma = palTint( mix( vec3( 1.0, 0.2, 0.05 ), vec3( 0.3, 0.8, 1.0 ), plasma_flow ), 0.30 * plasma_flow,
+                                0.20 );
+    vec3 flare_white = vec3( 1.0, 0.98, 0.92 ) * 3.0;
 
-    vec3 col = photoBase * ( 0.8 + 0.5 * audioBass );
-    col += loopPlasma * totalLoops * ( 1.2 + 1.5 * audioHigh );
-    col += flareWhite * flareFlash;
+    vec3 col = photo_base * ( 0.8 + 0.5 * audioBass );
+    col += loop_plasma * total_loops * ( 1.2 + 1.5 * audioHigh );
+    col += flare_white * flare_flash;
 
     // Solar limb darkening & corona glow
-    float coronaGlow = exp( -length( uv ) * 2.0 ) * ( 0.4 + 0.6 * audioSwell );
-    col += vec3( 1.0, 0.6, 0.1 ) * coronaGlow;
+    float corona_glow = exp( -length( uv ) * 2.0 ) * ( 0.4 + 0.6 * audioSwell );
+    col += vec3( 1.0, 0.6, 0.1 ) * corona_glow;
 
     col = hueRot( col, hue ); // chromaHue handled inside imgPalette
     col = pow( col, vec3( 0.85 ) );

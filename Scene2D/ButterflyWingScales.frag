@@ -114,7 +114,7 @@ void main()
     float covered = 0.0;
     // The row above reaches down over this one with its tips, so it is on top.
     // Derivatives before the loops (undefined after a pixel-dependent continue).
-    float fwY = fwidth( w.y ) * 1.2;
+    float fw_y = fwidth( w.y ) * 1.2;
     float rfw = fwidth( w.x ) * 70.0; // q.x jumps between rows
     for ( int r = 1; r >= 0; --r )
     {
@@ -128,13 +128,14 @@ void main()
             // Local coordinates: u across, v along (0 at the socket, 1.3 at the tip).
             vec2 q = vec2( w.x - c, ( row + 1.0 ) - w.y );
             q.x += 0.05 * sin( q.y * 3.0 + hash21( id ) * 6.0 + T * 0.2 ); // a slight ripple
-            float halfW = 0.46 * ( 0.9 + 0.1 * hash21( id + 1.0 ) );
+            float half_w = 0.46 * ( 0.9 + 0.1 * hash21( id + 1.0 ) );
             float len = 1.35;
             // A paddle: straight sides, a rounded tip with a scalloped edge.
-            float tip = length( vec2( q.x, max( q.y - ( len - halfW ), 0.0 ) ) ) - halfW;
-            float side = max( abs( q.x ) - halfW, -q.y );
-            float d = max( side, tip ) + 0.02 * sin( atan( q.x, q.y - len + halfW ) * 5.0 ) * step( len - halfW, q.y );
-            float fw = fwY;
+            float tip = length( vec2( q.x, max( q.y - ( len - half_w ), 0.0 ) ) ) - half_w;
+            float side = max( abs( q.x ) - half_w, -q.y );
+            float d = max( side, tip )
+                      + 0.02 * sin( atan( q.x, q.y - len + half_w ) * 5.0 ) * step( len - half_w, q.y );
+            float fw = fw_y;
             float cov = smoothstep( fw, -fw, d ) * step( 0.0, q.y );
             if ( cov <= 0.0 )
                 continue;
@@ -165,7 +166,7 @@ void main()
     col *= 1.0 - 0.3 * smoothstep( -0.3, -0.5, p.y );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

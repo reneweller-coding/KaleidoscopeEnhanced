@@ -61,45 +61,45 @@ void main()
 
     float t = time * 0.1755 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Multi-scale harmonic approximation of Turing reaction-diffusion.
     // audioBass undulates the morphogenesis spot/stripe scale.  It is a purely
     // spatial factor on q -- the t terms inside the sines are untouched, so the
-    // pattern's drift rate stays audio-independent -- and midTransition
+    // pattern's drift rate stays audio-independent -- and mid_transition
     // restores the base scale exactly at both fade endpoints.
     vec2  q = p * 15.0 * scl; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
     float f1 = sin( q.x + sin( q.y * 1.5 + t ) );
     float f2 = sin( q.y + sin( q.x * 1.5 - t ) );
     float f3 = sin( ( q.x + q.y ) * 0.707 * trn + t * 1.5 );
-    float turingPattern = ( f1 + f2 + f3 ) / 3.0;
+    float turing_pattern = ( f1 + f2 + f3 ) / 3.0;
 
-    // Morphogenetic boundary mask. turingPattern is the mean of three sines,
+    // Morphogenetic boundary mask. turing_pattern is the mean of three sines,
     // so it spans exactly [-1, 1]; the old +-1.0 sweep therefore left an
     // extreme pixel sitting at argument 0 -- the MIDDLE of the smoothstep band
     // -- at the endpoints, resolving to a half-blend instead of fully to one
     // scene. Sweeping +-1.3 pushes the whole pattern clear of the +-0.2 band at
     // both ends, so the endpoints are exact for every scaleP.
-    float mask = smoothstep( -0.2, 0.2, turingPattern + ( tProg - 0.5 ) * 2.6 );
+    float mask = smoothstep( -0.2, 0.2, turing_pattern + ( t_prog - 0.5 ) * 2.6 );
 
     // Chemical displacement
-    vec2 chemDisp = vec2( f1 - f2, f3 ) * 0.02 * midTransition;
+    vec2 chem_disp = vec2( f1 - f2, f3 ) * 0.02 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( uv + chemDisp ) );
-    vec4 c0 = texture( tex0, fract( uv - chemDisp ) );
+    vec4 c1 = texture( tex1, fract( uv + chem_disp ) );
+    vec4 c0 = texture( tex0, fract( uv - chem_disp ) );
 
     vec4 col = mix( c1, c0, mask );
 
     // Glowing reaction boundary lines
-    float boundary = exp( -abs( turingPattern ) * 15.0 ) * midTransition;
-    vec3  chemColor = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + turingPattern * 5.0 + audioPhase );
-    col.rgb += boundary * chemColor * ( 1.2 + audioKick * 1.0 );
+    float boundary = exp( -abs( turing_pattern ) * 15.0 ) * mid_transition;
+    vec3  chem_color = 0.5 + 0.5 * cos( vec3( 0.0, 2.0, 4.0 ) + turing_pattern * 5.0 + audioPhase );
+    col.rgb += boundary * chem_color * ( 1.2 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

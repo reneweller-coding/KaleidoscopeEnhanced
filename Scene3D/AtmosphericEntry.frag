@@ -94,16 +94,16 @@ float starsField( vec3 dir, float density )
     return smoothstep( 1.0 - density, 1.0, hash13( floor( dir * 500.0 ) ) );
 }
 
-const vec3 kSunDir = vec3( 0.55, 0.42, -0.72 );
+const vec3 SunDir = vec3( 0.55, 0.42, -0.72 );
 
 /// @brief The sky colour for a direction.
 vec3 renderSky( vec3 dir, vec3 tint )
 {
     // The planet sits below and ahead; its angular radius grows with the
     // descent, which is what "approaching" looks like from inside the shot.
-    vec3  pDir = normalize( vec3( 0.10, -0.62, 0.78 ) );
-    float cosR = mix( 0.86, 0.02, smoothstep( 0.0, 1.0, sceneProgress ) );
-    float d = dot( dir, pDir );
+    vec3  p_dir = normalize( vec3( 0.10, -0.62, 0.78 ) );
+    float cos_r = mix( 0.86, 0.02, smoothstep( 0.0, 1.0, sceneProgress ) );
+    float d = dot( dir, p_dir );
 
     vec3 col = vec3( 0.006, 0.008, 0.014 ) + vec3( 1.0 ) * starsField( dir, 0.0016 );
 
@@ -111,19 +111,19 @@ vec3 renderSky( vec3 dir, vec3 tint )
     // Atmospheric limb: a band just OUTSIDE the disc, brightest where the
     // sun grazes it. This is what makes a flat disc read as a world with air
     // around it rather than a painted circle.
-    float limb = smoothstep( cosR - 0.10 * atmo, cosR, d ) * ( 1.0 - smoothstep( cosR, cosR + 0.012, d ) );
-    float sunFace = max( dot( pDir, normalize( kSunDir ) ), 0.0 );
-    col += tint * limb * ( 1.4 + 1.2 * sunFace ) * ( 0.7 + 0.5 * audioSwell );
+    float limb = smoothstep( cos_r - 0.10 * atmo, cos_r, d ) * ( 1.0 - smoothstep( cos_r, cos_r + 0.012, d ) );
+    float sun_face = max( dot( p_dir, normalize( SunDir ) ), 0.0 );
+    col += tint * limb * ( 1.4 + 1.2 * sun_face ) * ( 0.7 + 0.5 * audioSwell );
 
-    if ( d > cosR )
+    if ( d > cos_r )
     {
         // Surface. Build a local frame on the disc so the terrain and cloud
         // bands don't smear as the apparent size changes.
-        vec3  up = ( abs( pDir.y ) < 0.99 ) ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 );
-        vec3  rt = normalize( cross( up, pDir ) );
-        vec3  uv3 = normalize( dir - pDir * d );
-        vec2  s = vec2( dot( uv3, rt ), dot( uv3, cross( pDir, rt ) ) );
-        float r = sqrt( max( 0.0, 1.0 - ( 1.0 - d ) / max( 1.0 - cosR, 1e-4 ) ) ); // 1 at the centre, 0 at the limb
+        vec3  up = ( abs( p_dir.y ) < 0.99 ) ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 );
+        vec3  rt = normalize( cross( up, p_dir ) );
+        vec3  uv3 = normalize( dir - p_dir * d );
+        vec2  s = vec2( dot( uv3, rt ), dot( uv3, cross( p_dir, rt ) ) );
+        float r = sqrt( max( 0.0, 1.0 - ( 1.0 - d ) / max( 1.0 - cos_r, 1e-4 ) ) ); // 1 at the centre, 0 at the limb
 
         vec2  q = s * 3.2;
         float land = fbm( vec3( q, 2.7 ) );
@@ -134,12 +134,12 @@ vec3 renderSky( vec3 dir, vec3 tint )
         surf = mix( surf, vec3( 0.95, 0.96, 1.0 ), smoothstep( 0.55, 0.78, band ) * 0.75 );
 
         // Day/night across the disc, with a soft terminator.
-        float lam = clamp( dot( normalize( dir ), normalize( kSunDir ) ) * 0.5 + 0.62, 0.0, 1.0 );
+        float lam = clamp( dot( normalize( dir ), normalize( SunDir ) ) * 0.5 + 0.62, 0.0, 1.0 );
         surf *= 0.10 + 1.25 * smoothstep( 0.15, 0.85, lam ) * ( 0.8 + 0.4 * audioSwell );
         // Haze thickens toward the limb, where the sight line runs longest
         // through the air.
         surf = mix( surf, tint * 1.1, ( 1.0 - r ) * 0.45 * atmo );
-        col = mix( col, surf, smoothstep( cosR, cosR + 0.004, d ) );
+        col = mix( col, surf, smoothstep( cos_r, cos_r + 0.004, d ) );
     }
     return col;
 }
@@ -222,13 +222,13 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
-    vec3  lightDir = normalize( kSunDir );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( SunDir );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 50.0, 8.0, roughness ) );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 50.0, 8.0, roughness ) );
 
     float expose = materialExposure( texMeshMaterial );
     vec3  col = base.rgb * expose * ( 0.35 + diff * ( 1.2 + 0.4 * audioSwell ) + fill * 0.25 );
@@ -252,7 +252,7 @@ void main()
 
     // Ionised sheath standing off the leading edges, strongest at the limb
     // of the silhouette.
-    float fres = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 2.6 );
+    float fres = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 2.6 );
     col += mix( vec3( 1.0, 0.45, 0.15 ), vec3( 0.6, 0.85, 1.0 ), 0.25 )
            * fres * vEntry * ( 1.1 + 0.9 * audioKick );
 
@@ -263,7 +263,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.12 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

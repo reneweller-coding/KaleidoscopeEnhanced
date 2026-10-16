@@ -73,8 +73,8 @@ void main()
     // 57% of the frame past HSV saturation 0.8. Pulling a fixed fraction back
     // toward the filament's own luminance restores the photo's own colour
     // relationship without touching the flow structure or its brightness.
-    float _pl = dot( col, vec3( 0.299, 0.587, 0.114 ) );
-    col = mix( vec3( _pl ), col, 0.66 );
+    float pl = dot( col, vec3( 0.299, 0.587, 0.114 ) );
+    col = mix( vec3( pl ), col, 0.66 );
 
     // A very dark version of the photo underneath keeps the frame from going
     // black in the gaps between filaments — but only just: any more and the

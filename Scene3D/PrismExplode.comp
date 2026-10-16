@@ -52,7 +52,7 @@ uniform float burstP; ///< preset: how far the shards fly
 uniform float countP; ///< preset: how many shards
 uniform float sizeP;  ///< preset: shard size
 
-const int SHARDS = 900;
+const int Shards = 900;
 
 /// @brief Pseudo-random vec3 (each 0..1) from a float.
 vec3 hash3( float n )
@@ -80,7 +80,7 @@ void main()
     uvec3 g = gl_GlobalInvocationID;
     uint  id = g.x + 64u * ( g.y + 64u * g.z );
 
-    int n = int( clamp( countP, 0.15, 1.0 ) * float( SHARDS ) );
+    int n = int( clamp( countP, 0.15, 1.0 ) * float( Shards ) );
     if ( id >= uint( n ) )
         return;
 

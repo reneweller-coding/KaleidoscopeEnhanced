@@ -89,10 +89,10 @@ void main()
     float a = atan( p.y, p.x );
     float depth = 1.0 / max( r, 0.02 );
     float z = depth + travel;
-    float wallR = 1.0 + 0.12 * sin( z * 0.35 ) + 0.06 * sin( z * 0.9 + a * 2.0 );
-    float rr = r / wallR;
-    float depthW = 1.0 / max( rr, 0.02 );
-    float zw = depthW + travel;
+    float wall_r = 1.0 + 0.12 * sin( z * 0.35 ) + 0.06 * sin( z * 0.9 + a * 2.0 );
+    float rr = r / wall_r;
+    float depth_w = 1.0 / max( rr, 0.02 );
+    float zw = depth_w + travel;
 
     // Wall: translucent tissue, veins of the photo, a flush on the sub-bass.
     vec3  tissue = mix( vec3( 0.55, 0.12, 0.12 ), imgPalette( hue * 0.159 + 0.05 ), 0.4 );
@@ -107,29 +107,29 @@ void main()
         float fk = float( k );
         float zk = floor( zw / 7.0 + fk * 0.25 ) * 7.0 - fk * 0.25 * 7.0;
         float ak = hash11( zk * 1.3 + fk ) * 6.2831853;
-        float dA = atan( sin( a - ak ), cos( a - ak ) );
-        mouth += exp( -( dA * dA * 6.0 + ( zw - zk - 3.5 ) * ( zw - zk - 3.5 ) * 0.8 ) );
+        float d_a = atan( sin( a - ak ), cos( a - ak ) );
+        mouth += exp( -( d_a * d_a * 6.0 + ( zw - zk - 3.5 ) * ( zw - zk - 3.5 ) * 0.8 ) );
     }
     wall = mix( wall, tissue * 0.15, clamp( mouth, 0.0, 0.85 ) );
     // Light: from ahead, warm; fog is the plasma, dim.
-    float fog = 1.0 - exp( -depthW * 0.09 );
+    float fog = 1.0 - exp( -depth_w * 0.09 );
     vec3  col = mix( wall, tissue * 0.5, clamp( fog, 0.0, 0.92 ) ) * ( 0.6 + 0.5 * audioLevel );
     col += imgPalette( hue * 0.159 + 0.1 ) * exp( -rr * 5.0 ) * ( 0.3 + 0.6 * clamp( audioSwell, 0.0, 1.0 ) );
 
     // Red cells: discs streaming down the tube in the near half, each on its
     // own lane (angle, radius) and phase; tumbling as objects.
-    vec3 cellCol = vec3( 0.85, 0.15, 0.12 );
+    vec3 cell_col = vec3( 0.85, 0.15, 0.12 );
     for ( int k = 0; k < 14; ++k )
     {
         float fk = float( k );
         if ( hash11( fk * 4.4 ) > dens )
             continue;
         float lane = hash11( fk * 3.1 ) * 6.2831853;
-        float laneR = 0.35 + 0.5 * hash11( fk * 5.7 );
+        float lane_r = 0.35 + 0.5 * hash11( fk * 5.7 );
         float ph = fract( travel * ( 0.18 + 0.1 * hash11( fk * 7.9 ) ) + hash11( fk * 9.3 ) );
         float zc = 1.0 + 12.0 * ( 1.0 - ph ); // from far to near
         // Project the cell: its screen position and size from its depth.
-        float sr = laneR / zc;
+        float sr = lane_r / zc;
         vec2  cpos = vec2( cos( lane ), sin( lane ) ) * sr;
         float size = 0.09 / zc;
         vec2  d = p - cpos;
@@ -141,11 +141,11 @@ void main()
         float disc = 1.0 - smoothstep( 0.85, 1.0, e1 * e1 + e2 * e2 );
         float dimple = 1.0 - 0.35 * exp( -( e1 * e1 + e2 * e2 ) * 4.0 );
         float near = 1.0 - smoothstep( 0.0, 0.05, ph ); // fade out as it passes the camera
-        vec3  cc = cellCol * dimple * ( 0.7 + 0.6 * audioKick ) * ( 0.5 + 0.5 * ( 1.0 - ph ) );
+        vec3  cc = cell_col * dimple * ( 0.7 + 0.6 * audioKick ) * ( 0.5 + 0.5 * ( 1.0 - ph ) );
         col = mix( col, cc, disc * ( 1.0 - near ) * ( 1.0 - smoothstep( 10.0, 13.0, zc ) ) );
     }
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

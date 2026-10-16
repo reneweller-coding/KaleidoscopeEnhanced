@@ -75,7 +75,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nShells = 3 + int( clamp( countP, 0.0, 1.0 ) * 3.0 );
+    int   n_shells = 3 + int( clamp( countP, 0.0, 1.0 ) * 3.0 );
     float ratio = 1.12 + 0.1 * clamp( ratioP, 0.0, 1.0 );
     float light = 0.6 + 0.6 * clamp( audioSwell, 0.0, 1.0 );
     float prog = clamp( sceneProgress, 0.0, 1.0 );
@@ -90,7 +90,7 @@ void main()
 
     for ( int s = 0; s < 6; ++s )
     {
-        if ( s >= nShells )
+        if ( s >= n_shells )
             break;
         float     fs = float( s );
         vec2      c = vec2( ( hash11( fs * 3.7 ) - 0.5 ) * aspect * 0.85, ( hash11( fs * 5.3 ) - 0.5 ) * 0.85 )
@@ -122,21 +122,21 @@ void main()
             vec3  wall = mix( img( fract( cc * 0.5 + 0.5 ) ) * 1.3, vec3( 0.9, 0.88, 0.8 ), 0.5 );
             wall = mix( wall, wall * imgPalette( hue * 0.159 + float( k ) / 12.0 ) * 1.7, 0.3 + 0.4 * e );
             float shade = 0.55 + 0.6 * sqrt( max( 1.0 - d * d / max( sz * sz, 1e-6 ), 0.0 ) );
-            vec3  chamCol = wall * shade * light;
+            vec3  cham_col = wall * shade * light;
             // Suture line: a dark rim.
-            chamCol *= 1.0 - 0.5 * smoothstep( sz * 0.8, sz, d );
+            cham_col *= 1.0 - 0.5 * smoothstep( sz * 0.8, sz, d );
             // Pores: round glints on the treble.
             vec2  pu = ( p - cc ) / max( sz, 1e-4 ) * 6.0;
             vec2  pc = floor( pu );
             vec2  pf = fract( pu ) - 0.5;
             float pore = smoothstep( 0.25, 0.1, length( pf ) ) * step( 0.7, hash21( pc + fi ) );
-            chamCol += vec3( 1.0 ) * pore * clamp( audioHigh * 2.0, 0.0, 1.0 ) * 0.5;
-            col = mix( col, chamCol, cham );
+            cham_col += vec3( 1.0 ) * pore * clamp( audioHigh * 2.0, 0.0, 1.0 ) * 0.5;
+            col = mix( col, cham_col, cham );
         }
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -133,8 +133,8 @@ void main()
     float d = 0.0;
     vec3  col = vec3( 0.0 );
 
-    vec3 colorBase1 = max( imgPalette( 0.1 + audioCentroid * 0.2 ), vec3( 0.10, 0.14, 0.18 ) );
-    vec3 colorBase2 = max( imgPalette( 0.8 + audioKick * 0.1 ), vec3( 0.24, 0.34, 0.22 ) );
+    vec3 color_base1 = max( imgPalette( 0.1 + audioCentroid * 0.2 ), vec3( 0.10, 0.14, 0.18 ) );
+    vec3 color_base2 = max( imgPalette( 0.8 + audioKick * 0.1 ), vec3( 0.24, 0.34, 0.22 ) );
 
     // Volumetric raymarching for the nebula
     for ( int i = 0; i < 60; ++i )
@@ -161,19 +161,19 @@ void main()
             // Color mapping based on density. Brightness floor 0.45: the old
             // 0.2 + swell*0.8 went black on every quiet passage -- the
             // user-reported "the nebula is black".
-            vec3 localCol = mix( colorBase1, colorBase2, dens );
+            vec3 local_col = mix( color_base1, color_base2, dens );
             // Sichtbar ohne Musik: bei leisem Material blieb die Wolke sonst
             // eine kaum erkennbare Andeutung (Katalog-Frame A/B).
-            localCol *= ( 0.85 + 0.5 * audioSwell + pulse ) * gp;
+            local_col *= ( 0.85 + 0.5 * audioSwell + pulse ) * gp;
 
             // BIOLUMINESCENT VEINS: ridged filaments glowing inside the gas.
             float ridge = 1.0 - abs( 2.0 * fbm( np * 2.3 ) - 1.0 );
             ridge = pow( ridge, 5.0 );
-            localCol += mix( colorBase2, vec3( 1.0 ), 0.3 ) * ridge * 0.9 * gp;
+            local_col += mix( color_base2, vec3( 1.0 ), 0.3 ) * ridge * 0.9 * gp;
 
             // Fade by distance
             float alpha = dens * 0.1;
-            col += localCol * alpha * exp( -d * 0.05 );
+            col += local_col * alpha * exp( -d * 0.05 );
         }
 
         d += 0.5 + d * 0.02;
@@ -182,7 +182,7 @@ void main()
     }
 
     // Add glowing spores / stars
-    vec3 sporeCol = vec3( 0.0 );
+    vec3 spore_col = vec3( 0.0 );
     for ( int i = 0; i < 2; ++i )
     {
         float sc = 10.0 + 10.0 * float( i );
@@ -192,16 +192,16 @@ void main()
         if ( fract( sin( dot( cell, vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 ) > 0.93 )
         {
             float b = exp( -length( f ) * 120.0 );
-            sporeCol += mix( colorBase2, vec3( 1.0 ), hash11( cell.x ) ) * b * ( 1.0 + audioKick * 3.0 ) * gp;
+            spore_col += mix( color_base2, vec3( 1.0 ), hash11( cell.x ) ) * b * ( 1.0 + audioKick * 3.0 ) * gp;
         }
     }
-    col += sporeCol;
+    col += spore_col;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

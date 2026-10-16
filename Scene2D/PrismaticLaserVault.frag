@@ -109,25 +109,26 @@ void main()
     vec3 col = vec3( 0.01, 0.01, 0.03 );
 
     // 16 intersecting volumetric laser beam lines
-    float laserIntensity = 0.0;
-    vec3  laserRGB = vec3( 0.0 );
+    float laser_intensity = 0.0;
+    vec3  laser_rgb = vec3( 0.0 );
 
     for ( int i = 0; i < 16; ++i )
     {
         float fi = float( i );
-        float beamAngle = ( fi / 16.0 ) * 6.2831853 + t * ( 0.2 + 0.1 * sin( fi ) );
+        float beam_angle = ( fi / 16.0 ) * 6.2831853 + t * ( 0.2 + 0.1 * sin( fi ) );
 
         // Beam origin and direction
-        vec3 bOrg = vec3( sin( beamAngle ) * 2.0, cos( beamAngle * 2.0 ) * 1.5, cos( beamAngle ) * 2.0 );
-        vec3 bDir = normalize( vec3( -sin( beamAngle + 1.57 ), sin( t * 2.0 + fi ) * 0.5, -cos( beamAngle + 1.57 ) ) );
+        vec3 b_org = vec3( sin( beam_angle ) * 2.0, cos( beam_angle * 2.0 ) * 1.5, cos( beam_angle ) * 2.0 );
+        vec3 b_dir = normalize(
+            vec3( -sin( beam_angle + 1.57 ), sin( t * 2.0 + fi ) * 0.5, -cos( beam_angle + 1.57 ) ) );
 
         // Closest point between camera ray and laser beam ray
-        vec3  w0 = ro - bOrg;
+        vec3  w0 = ro - b_org;
         float a = dot( rd, rd );
-        float b = dot( rd, bDir );
-        float c = dot( bDir, bDir );
+        float b = dot( rd, b_dir );
+        float c = dot( b_dir, b_dir );
         float d = dot( rd, w0 );
-        float e = dot( bDir, w0 );
+        float e = dot( b_dir, w0 );
 
         float denom = a * c - b * b;
         float sc = ( denom > 1e-4 ) ? ( b * e - c * d ) / denom : 0.0;
@@ -135,18 +136,18 @@ void main()
 
         sc = max( sc, 0.0 );
 
-        vec3  pCam = ro + rd * sc;
-        vec3  pBeam = bOrg + bDir * tc;
-        float dist = length( pCam - pBeam );
+        vec3  p_cam = ro + rd * sc;
+        vec3  p_beam = b_org + b_dir * tc;
+        float dist = length( p_cam - p_beam );
 
         // Volumetric glow accumulation
-        float beamGlow = ( 0.003 * bm ) / ( dist * dist + 0.0004 );
-        beamGlow *= ( 0.8 + 0.4 * sin( tc * 4.0 - time * 12.0 ) ); // High speed pulse packets
+        float beam_glow = ( 0.003 * bm ) / ( dist * dist + 0.0004 );
+        beam_glow *= ( 0.8 + 0.4 * sin( tc * 4.0 - time * 12.0 ) ); // High speed pulse packets
 
         // Distinct dichroic RGB color per beam
-        vec3 bCol = imgPalette( ( fi * 0.8 + audioPhase ) * 0.159 );
+        vec3 b_col = imgPalette( ( fi * 0.8 + audioPhase ) * 0.159 );
 
-        laserRGB += bCol * beamGlow;
+        laser_rgb += b_col * beam_glow;
     }
 
     // Input photo mapped onto reflective background mirror walls
@@ -160,7 +161,7 @@ void main()
     vec2  smf = fract( smg ) - 0.5;
     float smoke = hash21( floor( smg ) + vec2( floor( time * 4.00 ), 0.0 ) )
                   * exp( -dot( smf, smf ) * 3.5 );
-    col += laserRGB * ( 1.0 + audioKick * 3.0 ) * ( 0.8 + 0.4 * audioSwell * smk );
+    col += laser_rgb * ( 1.0 + audioKick * 3.0 ) * ( 0.8 + 0.4 * audioSwell * smk );
 
     if ( audioHigh > 0.4 )
     {
@@ -172,7 +173,7 @@ void main()
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( col ) * 0.7;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.7;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

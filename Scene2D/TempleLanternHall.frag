@@ -60,9 +60,9 @@ float hash21( vec2 p )
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-const float LS = 0.8; ///< lantern spacing
-const float HW = 4.0; ///< half width of the hall
-const float CH = 5.0; ///< ceiling height
+const float Ls = 0.8; ///< lantern spacing
+const float Hw = 4.0; ///< half width of the hall
+const float Ch = 5.0; ///< ceiling height
 
 float g_hue, g_tint;
 
@@ -94,16 +94,16 @@ vec3 lanterns( vec3 ro, vec3 rd, out float tHit )
         if ( t > tb || t > 45.0 )
             break;
         vec3 p = ro + rd * t;
-        vec2 cell = floor( p.xz / LS + 0.5 );
+        vec2 cell = floor( p.xz / Ls + 0.5 );
         for ( int dz = -1; dz <= 1; ++dz )
             for ( int dx = -1; dx <= 1; ++dx )
             {
                 vec2 c = cell + vec2( dx, dz );
-                if ( abs( c.x * LS ) > HW - 0.6 )
+                if ( abs( c.x * Ls ) > Hw - 0.6 )
                     continue;
                 float drop = 0.2 + 1.6 * hash21( c + 7.0 ); // cord length
                 float sway = 0.05 * sin( sceneTime * 0.6 + hash21( c ) * 6.28 );
-                vec3  cen = vec3( c.x * LS + sway, CH - 0.4 - drop, c.y * LS + 0.4 * sway );
+                vec3  cen = vec3( c.x * Ls + sway, Ch - 0.4 - drop, c.y * Ls + 0.4 * sway );
                 vec3  rad = vec3( 0.17, 0.23, 0.17 );
                 // Ray-ellipsoid.
                 vec3  oc = ( ro - cen ) / rad, dd = rd / rad;
@@ -131,7 +131,7 @@ vec3 lanterns( vec3 ro, vec3 rd, out float tHit )
             }
         if ( tHit < 1e8 )
             break;
-        t += LS * 0.4;
+        t += Ls * 0.4;
     }
     return em;
 }
@@ -140,8 +140,8 @@ vec3 hall( vec3 ro, vec3 rd, out float tOut )
 {
     float tl;
     vec3  col = lanterns( ro, rd, tl );
-    float tw = ( rd.x > 0.0 ? HW - ro.x : -HW - ro.x ) / rd.x;
-    float tc = ( CH - ro.y ) / max( rd.y, 1e-4 );
+    float tw = ( rd.x > 0.0 ? Hw - ro.x : -Hw - ro.x ) / rd.x;
+    float tc = ( Ch - ro.y ) / max( rd.y, 1e-4 );
     if ( rd.y <= 0.0 )
         tc = 1e9;
     tOut = min( tl, min( tw, tc ) );
@@ -161,10 +161,10 @@ vec3 hall( vec3 ro, vec3 rd, out float tOut )
     }
     // The side walls: red lacquered pillars and gilded screens between.
     vec3  wp = ro + rd * tw;
-    float pil = smoothstep( 0.12, 0.08, abs( fract( wp.z / ( LS * 3.0 ) ) - 0.5 ) * LS * 3.0 - 0.12 );
+    float pil = smoothstep( 0.12, 0.08, abs( fract( wp.z / ( Ls * 3.0 ) ) - 0.5 ) * Ls * 3.0 - 0.12 );
     vec3  screen = img( fract( vec2( wp.z * 0.08, wp.y * 0.18 ) ) ) * vec3( 0.5, 0.38, 0.2 ) * 0.6;
     vec3  wall = mix( screen, vec3( 0.45, 0.06, 0.04 ), pil );
-    wall *= glow * ( 0.35 + 0.65 * smoothstep( 0.0, CH, wp.y ) );
+    wall *= glow * ( 0.35 + 0.65 * smoothstep( 0.0, Ch, wp.y ) );
     return wall * exp( -tw * 0.04 );
 }
 
@@ -200,14 +200,14 @@ void main()
     }
 
     // Incense haze glowing with the canopy.
-    vec3 hazeC = mix( vec3( 0.5, 0.28, 0.12 ), imgPalette( g_hue * 0.159 + 0.1 ) * 0.5, 0.25 );
-    col += hazeC * ( 1.0 - exp( -min( tHit, 40.0 ) * 0.04 ) ) * ( 0.12 + 0.2 * swell ) * smoothstep( -0.3, 0.4, p.y );
+    vec3 haze_c = mix( vec3( 0.5, 0.28, 0.12 ), imgPalette( g_hue * 0.159 + 0.1 ) * 0.5, 0.25 );
+    col += haze_c * ( 1.0 - exp( -min( tHit, 40.0 ) * 0.04 ) ) * ( 0.12 + 0.2 * swell ) * smoothstep( -0.3, 0.4, p.y );
     // The far end of the hall: the rows of lanterns merge into one glow.
     vec2 vp = p - vec2( 0.0, 0.07 );
-    col += hazeC * 1.4 * exp( -dot( vp, vp ) * 16.0 ) * ( 0.6 + 0.4 * swell );
+    col += haze_c * 1.4 * exp( -dot( vp, vp ) * 16.0 ) * ( 0.6 + 0.4 * swell );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

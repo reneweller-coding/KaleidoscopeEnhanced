@@ -105,10 +105,10 @@ void main()
     float T = time;
     // Per-activation character (constant during the scene):
     float snapV = ( snapP <= 0.01 ) ? 3.8 : snapP;
-    float travV = ( travP <= 0.01 ) ? 1.0 : travP;
+    float trav_v = ( travP <= 0.01 ) ? 1.0 : travP;
     // Wire glow width breathes with the slow swell (loudness -> size).
     float glowV = ( ( glowP <= 0.01 ) ? 50.0 : glowP ) * ( 1.0 - 0.12 * audioSwell );
-    float trav = ( time + audioAdvance * 3.0 ) * travV; // forward travel (jump-free)
+    float trav = ( time + audioAdvance * 3.0 ) * trav_v; // forward travel (jump-free)
 
     vec4  O = vec4( 0.0 );
     float t = 0.0;
@@ -150,8 +150,8 @@ void main()
         vec2  kp = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
         kp = mat2( cos( ka ), sin( ka ), -sin( ka ), cos( ka ) ) * kp;
         vec3  ros = img( fract( kaleido( kp, float( kSides ) ) * 0.8 + 0.5 ) );
-        float rosW = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
-        col += ros * ros * rosW * ( 0.6 + 0.4 * audioLevel );
+        float ros_w = ( rosetteP <= 0.001 ) ? 0.22 : rosetteP;
+        col += ros * ros * ros_w * ( 0.6 + 0.4 * audioLevel );
     }
 
     col *= 0.9 + 0.5 * audioLevel;

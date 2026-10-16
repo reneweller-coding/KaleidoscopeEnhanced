@@ -9,7 +9,7 @@
 // Every shard has to move as a RIGID piece: all three of its corners share
 // one translation and one rotation about one pivot, or the triangle shears
 // and the whole thing reads as melting rather than breaking. That pivot is
-// the triangle's centre point (shardMid below -- it cannot be called
+// the triangle's centre point (shard_mid below -- it cannot be called
 // `centroid`, which GLSL reserves as an interpolation qualifier), and no
 // vertex knows it on its own: a vertex is shared between triangles, so "my
 // triangle's centre" is not a vertex property. It only exists once all
@@ -124,7 +124,7 @@ void main()
     float burst = clamp( cycle * 0.9 + audioKick * 0.16, 0.0, 1.1 ) * bp;
     burst = smoothstep( 0.04, 1.0, burst );
 
-    vec3 shardMid = ( gPos[0] + gPos[1] + gPos[2] ) / 3.0;
+    vec3 shard_mid = ( gPos[0] + gPos[1] + gPos[2] ) / 3.0;
 
     // FRACTURE INTO CHUNKS, not into triangles. These meshes carry ~20k
     // triangles, so each one is tiny -- giving every triangle its own motion
@@ -135,20 +135,20 @@ void main()
     // centre onto a grid, and every triangle in that cell shares one
     // direction, one spin and one pivot -- so they fly as one rigid slab.
     float chunk = ( chunkP > 0.5 ? chunkP : 4.5 );
-    vec3  cellIdx = floor( shardMid * chunk );
-    vec3  cellMid = ( cellIdx + 0.5 ) / chunk;
-    float id = dot( cellIdx, vec3( 1.0, 37.0, 991.0 ) );
+    vec3  cell_idx = floor( shard_mid * chunk );
+    vec3  cell_mid = ( cell_idx + 0.5 ) / chunk;
+    float id = dot( cell_idx, vec3( 1.0, 37.0, 991.0 ) );
 
     // Chunks further from the statue's axis leave earlier and travel
     // further, so the burst peels outward instead of every piece leaving at
     // once.
-    float rad = clamp( length( cellMid.xz ) * 2.0, 0.0, 1.0 );
+    float rad = clamp( length( cell_mid.xz ) * 2.0, 0.0, 1.0 );
     float lead = mix( 0.55, 1.35, hash11( id * 0.37 ) ) * mix( 0.7, 1.3, rad );
     float travel = burst * lead;
 
     // Outward-biased direction: mostly away from the centre (so it reads as
     // an explosion from within), partly hashed (so it isn't a clean sphere).
-    vec3 outward = normalize( cellMid + vec3( 0.0, 0.02, 0.0 ) + 1e-5 );
+    vec3 outward = normalize( cell_mid + vec3( 0.0, 0.02, 0.0 ) + 1e-5 );
     vec3 dir = normalize( mix( hashDir( id ), outward, 0.55 ) );
 
     // 0.30 of the model's own size at full burst: far enough that the piece
@@ -157,14 +157,14 @@ void main()
     vec3 offset = dir * travel * 0.30;
     offset.y += travel * travel * -0.07; // a little fall, so it isn't weightless
 
-    mat3 shardSpin = axisRot( normalize( hashDir( id + 91.0 ) + 1e-5 ),
-                              travel * ( 1.6 + 2.4 * hash11( id * 0.77 ) ) * sp );
+    mat3 shard_spin = axisRot( normalize( hashDir( id + 91.0 ) + 1e-5 ),
+                               travel * ( 1.6 + 2.4 * hash11( id * 0.77 ) ) * sp );
 
     // The statue's own slow display rotation, applied after the shatter so
     // shards keep flying relative to the piece rather than being dragged
     // sideways by it.
-    float rotY = time * 0.10 + audioAdvance * 0.05;
-    float cy = cos( rotY ), sy = sin( rotY );
+    float rot_y = time * 0.10 + audioAdvance * 0.05;
+    float cy = cos( rot_y ), sy = sin( rot_y );
     mat3  disp = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
 
     for ( int i = 0; i < 3; ++i )
@@ -172,12 +172,12 @@ void main()
         // Pivot on the CHUNK's centre, not the triangle's -- rotating each
         // triangle about its own centre would shear the chunk apart again
         // and undo the grouping.
-        vec3 p = cellMid + shardSpin * ( gPos[i] - cellMid ) + offset;
+        vec3 p = cell_mid + shard_spin * ( gPos[i] - cell_mid ) + offset;
         vec3 w = disp * ( p * ( 30.0 * sz ) );
         w.z += 82.0;
 
         vUV = gUV[i];
-        vNormal = normalize( disp * shardSpin * gNormal[i] );
+        vNormal = normalize( disp * shard_spin * gNormal[i] );
         vPos = w;
         vBg = 0.0;
         vShard = clamp( travel, 0.0, 1.0 );

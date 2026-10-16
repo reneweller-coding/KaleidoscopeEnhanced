@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -260,8 +260,8 @@ void main()
     float th = ( 0.5 + 0.8 * clamp( audioSpread, 0.0, 1.0 ) ) * ( 0.5 + fbm3( p * 1.2 ) );
     vec2  bend = ( vec2( fbm3( p * 2.0 ), fbm3( p * 2.0 + 5.0 ) ) - 0.5 ) * 0.04 * th;
     vec3  ph = imgK( uv + bend, 1.0 + 2.0 * ( 1.0 - clamp( photoP, 0.0, 1.0 ) ) );
-    vec3  iceC = mix( vec3( 0.6, 0.85, 0.9 ), vec3( 0.92, 0.95, 1.0 ), mode );
-    vec3  col = ph * iceC * ( 0.9 - 0.25 * th );
+    vec3  ice_c = mix( vec3( 0.6, 0.85, 0.9 ), vec3( 0.92, 0.95, 1.0 ), mode );
+    vec3  col = ph * ice_c * ( 0.9 - 0.25 * th );
     // Fracture planes: straight cracks (voronoi-ish lines at angles), each a thin bright plane.
     float T = 0.05 * sceneTime + 0.35 * audioAdvance;
     float S = 1.5 + 2.0 * clamp( crackP, 0.0, 1.0 );
@@ -298,16 +298,16 @@ void main()
     float br = 0.08 + 0.15 * hash21( bi + 1.0 );
     float bd = length( fract( bg ) - bc ) / br;
     float along = smoothstep( 0.55, 0.7, fbm3( p * 3.0 + 9.0 ) );
-    float isB = step( hash21( bi + 2.0 ), ( 0.1 + 0.5 * clamp( bubbleP, 0.0, 1.0 ) ) * along );
+    float is_b = step( hash21( bi + 2.0 ), ( 0.1 + 0.5 * clamp( bubbleP, 0.0, 1.0 ) ) * along );
     float rim = smoothstep( 0.7, 1.0, bd ) * smoothstep( 1.2, 1.0, bd );
-    col = mix( col, col * 0.7, isB * smoothstep( 1.0, 0.8, bd ) * 0.3 );
-    col += vec3( 0.95, 0.98, 1.0 ) * isB
+    col = mix( col, col * 0.7, is_b * smoothstep( 1.0, 0.8, bd ) * 0.3 );
+    col += vec3( 0.95, 0.98, 1.0 ) * is_b
            * ( rim * 0.5
                + smoothstep( 0.35, 0.1, length( ( fract( bg ) - bc ) / br - vec2( -0.3, 0.3 ) ) )
                      * ( 0.3 + 1.2 * hi ) );
     // The sliding light: a soft gleam across the surface.
     float gl = exp( -pow( dot( p, vec2( 0.7, 0.7 ) ) - 1.5 * sin( T ), 2.0 ) * 4.0 );
-    col += iceC * gl * 0.12;
+    col += ice_c * gl * 0.12;
     col = mix( col, col * glowColour( ph, p, hueP * 0.159 ) * 1.2, 0.05 );
     finish( col );
 }

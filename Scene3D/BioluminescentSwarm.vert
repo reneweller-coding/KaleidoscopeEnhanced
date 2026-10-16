@@ -75,7 +75,7 @@ vec3 hueRot( vec3 c, float a )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec3  worldP = attrA.xyz;
+    vec3  world_p = attrA.xyz;
     float hue = attrA.w;
     vec3  norm = attrB.xyz;
     float glow = attrB.w;
@@ -87,7 +87,7 @@ void main()
         // hangs still relative to the eye is exactly what drifting particulate
         // in the water column looks like.
         // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
-        const float kTanY = 0.5206;
+        const float TanY = 0.5206;
         float       aspect = ( resolution.y > 0.5 ) ? resolution.x / resolution.y : 1.7778;
 
         float hx = attrA.x, hy = attrA.y, hz = attrA.z, hsz = attrB.z;
@@ -100,30 +100,30 @@ void main()
         // 2.0 would fit the frustum exactly; 2.3 so the field still reaches
         // past all four edges when the preset camera rig rolls and yaws.
         float open = 2.3;
-        vec3  c = vec3( ( hx - 0.5 ) * open * dz * kTanY * aspect + 2.6 * cos( ph ),
-                        ( hy - 0.5 ) * open * dz * kTanY + 2.6 * sin( ph * 0.79 ),
+        vec3  c = vec3( ( hx - 0.5 ) * open * dz * TanY * aspect + 2.6 * cos( ph ),
+                        ( hy - 0.5 ) * open * dz * TanY + 2.6 * sin( ph * 0.79 ),
                         dz );
         // Grows with depth so its ON-SCREEN size stays roughly constant; below
         // about 2.5 px a mote averages away and the far water reads black.
         float sz = ( 0.022 + 0.030 * hsz ) * dz;
 
-        vec3 snowP = c + vec3( ( attrB.xy * 2.0 - 1.0 ) * sz, 0.0 );
-        vec3 sp = snowP;
+        vec3 snow_p = c + vec3( ( attrB.xy * 2.0 - 1.0 ) * sz, 0.0 );
+        vec3 sp = snow_p;
         sp.x -= eyeOff;
         gl_Position = projM * vec4( sp.x, sp.y, -sp.z, 1.0 );
         gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
-        vec3  snowCol = palTint( vec3( 0.35, 0.80, 0.85 ), 0.55, 0.35 )
-                        * ( 0.035 + 0.115 * fract( hsz * 7.31 + hx * 3.17 ) )
-                        * ( 0.75 + 0.5 * audioSwell )
-                        * clamp( 1.0 - dz / 210.0, 0.0, 1.0 );
+        vec3  snow_col = palTint( vec3( 0.35, 0.80, 0.85 ), 0.55, 0.35 )
+                         * ( 0.035 + 0.115 * fract( hsz * 7.31 + hx * 3.17 ) )
+                         * ( 0.75 + 0.5 * audioSwell )
+                         * clamp( 1.0 - dz / 210.0, 0.0, 1.0 );
         float h2 = ( hueP > 0.0 ) ? hueP : 0.0;
         if ( h2 > 0.001 )
-            snowCol = hueRot( snowCol, h2 );
+            snow_col = hueRot( snow_col, h2 );
 
-        vCol = vec4( min( max( snowCol, vec3( 0.0 ) ), vec3( 1.0 ) ), 1.0 );
+        vCol = vec4( min( max( snow_col, vec3( 0.0 ) ), vec3( 1.0 ) ), 1.0 );
         vNormal = vec3( 0.0, 0.0, 1.0 );
-        vWorld = snowP;
+        vWorld = snow_p;
         vQuad = attrB.xy;
         vSnow = 1.0;
         return;
@@ -133,31 +133,31 @@ void main()
     vSnow = 0.0;
 
     // Orbiting Camera
-    float camAngle = time * 0.12 + audioAdvance * 0.04;
-    float camDist = 28.0 - audioSwell * 5.0;
-    vec3  camPos = vec3( sin( camAngle ) * camDist, 12.0 + 3.0 * sin( time * 0.15 ), cos( camAngle ) * camDist );
-    vec3  lookTarget = vec3( 0.0, 0.0, 0.0 );
+    float cam_angle = time * 0.12 + audioAdvance * 0.04;
+    float cam_dist = 28.0 - audioSwell * 5.0;
+    vec3  cam_pos = vec3( sin( cam_angle ) * cam_dist, 12.0 + 3.0 * sin( time * 0.15 ), cos( cam_angle ) * cam_dist );
+    vec3  look_target = vec3( 0.0, 0.0, 0.0 );
 
-    vec3 ww = normalize( lookTarget - camPos );
+    vec3 ww = normalize( look_target - cam_pos );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
 
-    vec3 relP = worldP - camPos;
-    vec3 viewP = vec3( dot( relP, uu ), dot( relP, vv ), dot( relP, ww ) );
+    vec3 rel_p = world_p - cam_pos;
+    vec3 view_p = vec3( dot( rel_p, uu ), dot( rel_p, vv ), dot( rel_p, ww ) );
 
-    viewP.x -= eyeOff;
-    gl_Position = projM * vec4( viewP.x, viewP.y, -viewP.z, 1.0 );
+    view_p.x -= eyeOff;
+    gl_Position = projM * vec4( view_p.x, view_p.y, -view_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Bioluminescent spectral color
-    vec3 boidCol = palTint( mix( vec3( 0.0, 1.0, 0.8 ), vec3( 0.9, 0.1, 1.0 ), hue ), 0.30 * hue, 0.28 );
-    boidCol = mix( boidCol, vec3( 1.0, 0.9, 0.2 ), glow * 0.3 );
+    vec3 boid_col = palTint( mix( vec3( 0.0, 1.0, 0.8 ), vec3( 0.9, 0.1, 1.0 ), hue ), 0.30 * hue, 0.28 );
+    boid_col = mix( boid_col, vec3( 1.0, 0.9, 0.2 ), glow * 0.3 );
 
     float h = ( hueP > 0.0 ) ? hueP : 0.0;
     if ( h > 0.001 )
-        boidCol = hueRot( boidCol, h );
+        boid_col = hueRot( boid_col, h );
 
-    vCol = vec4( boidCol * glow, 1.0 );
+    vCol = vec4( boid_col * glow, 1.0 );
     vNormal = norm;
     // CAMERA-RELATIVE, not world-absolute. The fragment stage builds its view
     // direction as normalize(-vWorld), which is only the direction back to the
@@ -165,5 +165,5 @@ void main()
     // was pointing at the swarm's centre instead, so the specular term answered
     // to the wrong geometry entirely. It also lets the fragment stage read a
     // true distance-to-camera for depth shading.
-    vWorld = relP;
+    vWorld = rel_p;
 }

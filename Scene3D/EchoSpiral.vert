@@ -69,10 +69,10 @@ void main()
     // Head phase: continuous flight, music-fed; the TRAIL samples the orbit
     // BACKWARD in phase, so the ribbon is the comet's frozen wake.  Kicks
     // add speed through the integrated advance (the whips crack).
-    float headPh = time * ( 0.55 + 0.18 * hash11( ri * 17.9 ) )
-                   + audioAdvance * 0.9 + ri * 2.4;
-    float trailLen = 1.6 * ( 0.7 + 0.6 * hash11( ri * 19.3 ) );
-    float ph = headPh - t * trailLen;
+    float head_ph = time * ( 0.55 + 0.18 * hash11( ri * 17.9 ) )
+                    + audioAdvance * 0.9 + ri * 2.4;
+    float trail_len = 1.6 * ( 0.7 + 0.6 * hash11( ri * 19.3 ) );
+    float ph = head_ph - t * trail_len;
 
     vec3 p = orbit( ri, ph );
 

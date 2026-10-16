@@ -134,48 +134,50 @@ void main()
 
     // Volumetric flame raymarch
     vec3  p = ro;
-    float accumFlame = 0.0;
-    float accumSmoke = 0.0;
-    float stepSize = 0.08;
+    float accum_flame = 0.0;
+    float accum_smoke = 0.0;
+    float step_size = 0.08;
 
     for ( int i = 0; i < 35; ++i )
     {
-        p += rd * stepSize;
+        p += rd * step_size;
         float y = p.y;
         float r = length( p.xz );
 
         // Tornado funnel profile: r(y) narrows near base, flares at top
-        float funnelR = ( 0.25 + 0.35 * pow( max( y + 1.0, 0.0 ), 1.2 ) ) * trn + 0.1 * audioBass;
+        float funnel_r = ( 0.25 + 0.35 * pow( max( y + 1.0, 0.0 ), 1.2 ) ) * trn + 0.1 * audioBass;
 
         // Upward vortex motion: theta + y * twist - t
         float theta = atan( p.z, p.x );
-        vec3  vortexCoord = vec3( r * 4.0, y * 3.0 - t * 4.0, theta * 2.0 + y * 2.0 - t * 6.0 );
+        vec3  vortex_coord = vec3( r * 4.0, y * 3.0 - t * 4.0, theta * 2.0 + y * 2.0 - t * 6.0 );
 
-        float fbmVal = fireFBM( vortexCoord );
+        float fbm_val = fireFBM( vortex_coord );
 
         // Distance to funnel core
-        float distToFunnel = abs( r - funnelR * fbmVal );
-        float flame = exp( -distToFunnel * 8.0 ) * exp( -abs( y ) * 1.2 );
-        accumFlame += flame * stepSize;
+        float dist_to_funnel = abs( r - funnel_r * fbm_val );
+        float flame = exp( -dist_to_funnel * 8.0 ) * exp( -abs( y ) * 1.2 );
+        accum_flame += flame * step_size;
 
         // Smoke envelope
-        float smoke = exp( -distToFunnel * 3.0 ) * ( 1.0 - flame );
-        accumSmoke += smoke * stepSize;
+        float smoke = exp( -dist_to_funnel * 3.0 ) * ( 1.0 - flame );
+        accum_smoke += smoke * step_size;
     }
 
     // Photo texture mapping warped by thermal updraft
-    vec2 photoWarp = st + vec2( sin( uv.y * 6.0 + t * 2.0 ), cos( uv.x * 6.0 - t * 2.0 ) ) * 0.04 * ( 1.0 + audioKick );
-    vec3 photo = img( fract( photoWarp ) );
+    vec2 photo_warp = st
+                      + vec2( sin( uv.y * 6.0 + t * 2.0 ), cos( uv.x * 6.0 - t * 2.0 ) ) * 0.04 * ( 1.0 + audioKick );
+    vec3 photo = img( fract( photo_warp ) );
 
     // Blackbody thermal flame colors (red -> orange -> yellow -> white-hot)
-    vec3 fireColor = palTint(
-        mix( vec3( 0.8, 0.15, 0.02 ), vec3( 1.0, 0.65, 0.1 ), clamp( accumFlame * 1.5, 0.0, 1.0 ) ),
-        0.08 * clamp( accumFlame * 1.5, 0.0, 1.0 ), 0.20 );
-    fireColor = mix( fireColor, vec3( 1.0, 0.95, 0.85 ), clamp( accumFlame * 0.8 * ht + audioKick * 1.5, 0.0, 1.0 ) );
+    vec3 fire_color = palTint(
+        mix( vec3( 0.8, 0.15, 0.02 ), vec3( 1.0, 0.65, 0.1 ), clamp( accum_flame * 1.5, 0.0, 1.0 ) ),
+        0.08 * clamp( accum_flame * 1.5, 0.0, 1.0 ), 0.20 );
+    fire_color = mix( fire_color, vec3( 1.0, 0.95, 0.85 ),
+                      clamp( accum_flame * 0.8 * ht + audioKick * 1.5, 0.0, 1.0 ) );
 
     // Combine visualizer
-    vec3 col = mix( photo * 0.7, vec3( 0.1, 0.08, 0.08 ), clamp( accumSmoke * 0.8, 0.0, 1.0 ) );
-    col += accumFlame * fireColor * ( 1.2 + audioSwell * 0.8 );
+    vec3 col = mix( photo * 0.7, vec3( 0.1, 0.08, 0.08 ), clamp( accum_smoke * 0.8, 0.0, 1.0 ) );
+    col += accum_flame * fire_color * ( 1.2 + audioSwell * 0.8 );
 
     // Rising ember sparks
     float embers = pow( fireFBM( vec3( uv * 12.0, t * 3.0 ) ), 4.0 ) * ( audioKick * 3.0 + audioHigh * 1.5 );

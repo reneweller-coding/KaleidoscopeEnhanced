@@ -87,9 +87,9 @@ void main()
     vec3 p = vec3( cos( ang ) * R, 0.0, sin( ang ) * R );
 
     // Each ring's plane is tilted differently and precesses slowly.
-    float tiltA = ring * 0.55;
+    float tilt_a = ring * 0.55;
     float prec = time * ( 0.05 + ring * 0.012 );
-    p.yz = mat2( cos( tiltA ), -sin( tiltA ), sin( tiltA ), cos( tiltA ) ) * p.yz;
+    p.yz = mat2( cos( tilt_a ), -sin( tilt_a ), sin( tilt_a ), cos( tilt_a ) ) * p.yz;
     p.xy = mat2( cos( prec ), -sin( prec ), sin( prec ), cos( prec ) ) * p.xy;
 
     // Soft glint travels around each ring once per bar (wrapped distance),

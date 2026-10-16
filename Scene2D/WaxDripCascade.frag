@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -266,7 +266,7 @@ void main()
     // Layers stack downward: layer k covers y above its edge; the lowest
     // covering layer (largest k whose edge is below us) is the visible one.
     float k0 = floor( w.y / spacing );
-    float vis = -1e3, edgeD = 1.0;
+    float vis = -1e3, edge_d = 1.0;
     for ( int i = 0; i <= 3; ++i )
     {
         float k = k0 + float( i );
@@ -274,7 +274,7 @@ void main()
         if ( w.y > e && k > vis )
         {
             vis = k;
-            edgeD = w.y - e;
+            edge_d = w.y - e;
         }
     }
     // Wax colour per layer.
@@ -283,7 +283,7 @@ void main()
     vec3  wc = glowColour( pc, vec2( vis * 0.4, 0.0 ), hueP * 0.159 + 0.06 * vis );
     wc = mix( wc, mix( vec3( 0.5, 0.7, 1.0 ), vec3( 1.0, 0.55, 0.25 ), mode ) * luma( wc ) * 1.8, 0.35 );
     // Thickness: thin near the edge (translucent, backlit), thick inside.
-    float th = smoothstep( 0.0, 0.12, edgeD );
+    float th = smoothstep( 0.0, 0.12, edge_d );
     float rough = clamp( audioRoughness, 0.0, 1.0 );
     float lump = fbm3( w * 6.0 + vis * 3.0 ) * ( 0.3 + 0.7 * rough );
     vec2  uv = vec2( w.x * 0.6, w.y * 0.6 ) + 0.5 + 0.05 * vec2( fbm3( w * 2.0 ), fbm3( w * 2.0 + 4.0 ) );

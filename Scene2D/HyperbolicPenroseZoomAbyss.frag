@@ -77,60 +77,60 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
-    float scMod = ( scaleP > 0.01 ) ? scaleP : 1.0;
-    float eWidth = ( edgeWidthP > 0.01 ) ? edgeWidthP : 1.0;
+    float sc_mod = ( scaleP > 0.01 ) ? scaleP : 1.0;
+    float e_width = ( edgeWidthP > 0.01 ) ? edgeWidthP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.35 * spd + audioAdvance * 0.28 * spd; // Zeit-Basis:
     // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
 
     // Golden ratio scaling for seamless deflation zoom
-    const float PHI = 1.6180339887;
-    float       zoomProg = mod( t * 0.7, 1.0 );
+    const float Phi = 1.6180339887;
+    float       zoom_prog = mod( t * 0.7, 1.0 );
 
-    vec3  colAcc = vec3( 0.0 );
-    float weightAcc = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float weight_acc = 0.0;
 
     // Accumulate across 4 nested Penrose scale octaves
     for ( int k = 0; k < 4; k++ )
     {
         float kf = float( k );
         // Sub-bass dilates every octave's star cluster: a smaller layer scale fits
-        // fewer kites across the frame, so the pentagonal clusters swell. zoomProg
+        // fewer kites across the frame, so the pentagonal clusters swell. zoom_prog
         // itself is untouched, keeping the golden-ratio octave crossfade seamless.
-        float layerScale = pow( PHI, kf - zoomProg + 2.0 ) * ( 2.0 * scMod ) / ( 1.0 + 0.3 * audioSubBass );
-        float layerFade = smoothstep( 0.0, 0.3, kf - zoomProg ) * smoothstep( 3.8, 2.5, kf - zoomProg );
+        float layer_scale = pow( Phi, kf - zoom_prog + 2.0 ) * ( 2.0 * sc_mod ) / ( 1.0 + 0.3 * audioSubBass );
+        float layer_fade = smoothstep( 0.0, 0.3, kf - zoom_prog ) * smoothstep( 3.8, 2.5, kf - zoom_prog );
 
-        if ( layerFade <= 0.001 )
+        if ( layer_fade <= 0.001 )
             continue;
 
         // 5-Fold rotated coordinate per octave
-        float rotA = t * 0.1 * ( k % 2 == 0 ? 1.0 : -1.0 ) + kf * 0.628;
-        float cs = cos( rotA ), sn = sin( rotA );
-        vec2  pPen = mat2( cs, -sn, sn, cs ) * uv * layerScale;
+        float rot_a = t * 0.1 * ( k % 2 == 0 ? 1.0 : -1.0 ) + kf * 0.628;
+        float cs = cos( rot_a ), sn = sin( rot_a );
+        vec2  p_pen = mat2( cs, -sn, sn, cs ) * uv * layer_scale;
 
-        float pot = penrosePotential( pPen, t );
-        float dEdge = abs( fract( pot * 2.5 ) - 0.5 ) - 0.05 * eWidth;
-        float edgeGlow = exp( -abs( dEdge ) * ( 22.0 + 10.0 * audioCentroid ) ) * glw;
+        float pot = penrosePotential( p_pen, t );
+        float d_edge = abs( fract( pot * 2.5 ) - 0.5 ) - 0.05 * e_width;
+        float edge_glow = exp( -abs( d_edge ) * ( 22.0 + 10.0 * audioCentroid ) ) * glw;
 
         // Sample distorted background photo
-        vec2 sampleUV = fract( pPen * 0.15 + 0.5 );
-        vec3 texCol = img( sampleUV );
-        vec3 palCol = imgPalette( kf * 0.25 + pot * 0.3 );
+        vec2 sample_uv = fract( p_pen * 0.15 + 0.5 );
+        vec3 tex_col = img( sample_uv );
+        vec3 pal_col = imgPalette( kf * 0.25 + pot * 0.3 );
 
-        vec3 tileCol = mix( texCol, palCol, 0.5 );
-        tileCol += vec3( 1.5, 1.3, 0.5 ) * edgeGlow * ( 1.0 + 2.5 * audioKick );
+        vec3 tile_col = mix( tex_col, pal_col, 0.5 );
+        tile_col += vec3( 1.5, 1.3, 0.5 ) * edge_glow * ( 1.0 + 2.5 * audioKick );
 
-        colAcc += tileCol * layerFade;
-        weightAcc += layerFade;
+        col_acc += tile_col * layer_fade;
+        weight_acc += layer_fade;
     }
 
-    vec3 finalCol = colAcc / max( 0.001, weightAcc );
+    vec3 final_col = col_acc / max( 0.001, weight_acc );
 
     // Center deflation burst
-    float centerPulse = pow( max( 0.0, 1.0 - abs( zoomProg - 0.5 ) * 4.0 ), 3.0 ) * ( 0.6 + 1.5 * audioKick );
-    finalCol += imgPalette( 0.85 ) * centerPulse;
+    float center_pulse = pow( max( 0.0, 1.0 - abs( zoom_prog - 0.5 ) * 4.0 ), 3.0 ) * ( 0.6 + 1.5 * audioKick );
+    final_col += imgPalette( 0.85 ) * center_pulse;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

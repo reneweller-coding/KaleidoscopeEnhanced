@@ -31,9 +31,9 @@ void main()
     vec4  seed = attrB;
 
     // Distribute particles into disk + spherical halo + bipolar jets
-    float isJet = step( 0.92, seed.x );                    // 8% of particles in jets
-    float isHalo = step( 0.70, seed.x ) * ( 1.0 - isJet ); // 22% in halo
-    float isDisk = 1.0 - isJet - isHalo;                   // 70% in accretion disk
+    float is_jet = step( 0.92, seed.x );                     // 8% of particles in jets
+    float is_halo = step( 0.70, seed.x ) * ( 1.0 - is_jet ); // 22% in halo
+    float is_disk = 1.0 - is_jet - is_halo;                  // 70% in accretion disk
 
     // Radius from center
     float r = pow( seed.y, 1.8 ) * 4.5 + 0.15;
@@ -44,40 +44,40 @@ void main()
 
     // Spiral density wave perturbation
     float spiral = sin( angle * 2.0 - r * 3.5 + audioPhase * 0.5 ) * 0.2;
-    r += spiral * isDisk;
+    r += spiral * is_disk;
 
     // Gravitational collapse compression on bass
     r *= ( 1.0 - 0.15 * audioSwell );
 
     vec3 pos = vec3( 0.0 );
 
-    if ( isDisk > 0.5 )
+    if ( is_disk > 0.5 )
     {
         // Flat disk with slight vertical flaring
         float h = ( seed.w - 0.5 ) * ( 0.1 + r * 0.08 );
         pos = vec3( cos( angle ) * r, h, sin( angle ) * r );
     }
-    else if ( isHalo > 0.5 )
+    else if ( is_halo > 0.5 )
     {
         // Spherical outer cloud
         float phi = seed.z * 6.28318;
         float theta = acos( clamp( seed.w * 2.0 - 1.0, -1.0, 1.0 ) );
-        float rHalo = seed.y * 5.5 + 1.0;
-        pos = vec3( sin( theta ) * cos( phi ), cos( theta ), sin( theta ) * sin( phi ) ) * rHalo;
+        float r_halo = seed.y * 5.5 + 1.0;
+        pos = vec3( sin( theta ) * cos( phi ), cos( theta ), sin( theta ) * sin( phi ) ) * r_halo;
     }
     else
     {
         // Bipolar relativistic plasma jets
-        float jetSign = ( seed.w > 0.5 ) ? 1.0 : -1.0;
-        float jetH = ( seed.y * 4.0 + 0.5 ) * jetSign;
-        float jetR = ( 0.05 + 0.08 * abs( jetH ) ) * ( 0.5 + 0.5 * seed.z );
-        float jetPhi = angle * 2.0;
-        pos = vec3( cos( jetPhi ) * jetR, jetH * ( 1.0 + 0.5 * audioKick ), sin( jetPhi ) * jetR );
+        float jet_sign = ( seed.w > 0.5 ) ? 1.0 : -1.0;
+        float jet_h = ( seed.y * 4.0 + 0.5 ) * jet_sign;
+        float jet_r = ( 0.05 + 0.08 * abs( jet_h ) ) * ( 0.5 + 0.5 * seed.z );
+        float jet_phi = angle * 2.0;
+        pos = vec3( cos( jet_phi ) * jet_r, jet_h * ( 1.0 + 0.5 * audioKick ), sin( jet_phi ) * jet_r );
     }
 
     // Temperature (core is ultra-hot white-blue, outer disk is reddish-orange)
     float temp = clamp( 1.0 - ( r / 5.0 ), 0.0, 1.0 );
-    if ( isJet > 0.5 )
+    if ( is_jet > 0.5 )
         temp = 1.0 + audioKick * 0.8;
 
     vPos = pos;
@@ -87,17 +87,17 @@ void main()
 
     // Stereoscopic 3D camera projection
     vec3  vp = pos;
-    float tiltAngle = 0.45;
-    float cosT = cos( tiltAngle ), sinT = sin( tiltAngle );
-    vec3  rotatedVP = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float tilt_angle = 0.45;
+    float cos_t = cos( tilt_angle ), sin_t = sin( tilt_angle );
+    vec3  rotated_vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
 
-    rotatedVP.z += 6.5;
-    rotatedVP.x -= eyeOff;
+    rotated_vp.z += 6.5;
+    rotated_vp.x -= eyeOff;
 
-    gl_Position = projM * vec4( rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0 );
+    gl_Position = projM * vec4( rotated_vp.x, rotated_vp.y, -rotated_vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     // Dynamic point size (larger near core and during beat hits)
-    float pSize = ( 1.5 + temp * 4.0 + 3.0 * audioKick * step( 0.8, temp ) ) * ( 1.0 + 0.5 * audioSwell );
-    gl_PointSize = clamp( pSize * ( 6.5 / rotatedVP.z ), 1.0, 48.0 );
+    float p_size = ( 1.5 + temp * 4.0 + 3.0 * audioKick * step( 0.8, temp ) ) * ( 1.0 + 0.5 * audioSwell );
+    gl_PointSize = clamp( p_size * ( 6.5 / rotated_vp.z ), 1.0, 48.0 );
 }

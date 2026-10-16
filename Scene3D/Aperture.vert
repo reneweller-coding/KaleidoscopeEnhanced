@@ -37,9 +37,9 @@ out float vBg;       ///< Background flag (from the vertex stage).
 void main()
 {
     vec3 world, n;
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
 
-    if ( !isBg )
+    if ( !is_bg )
     {
         float sz = ( sizeP > 0.01 ? sizeP : 1.0 );
         vec3  p = attrA.xyz - meshCenter;
@@ -55,22 +55,22 @@ void main()
         // sized so the whole silhouette stays inside the 55-degree frustum at
         // z=74 (half-height 38.5) with margin. The blend runs on flatness, so
         // a model between the two archetypes gets something in between.
-        float fitBox = 0.5 / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
-        float fitSphere = 1.0 / max( length( meshExtent ), 1e-5 );
+        float fit_box = 0.5 / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
+        float fit_sphere = 1.0 / max( length( meshExtent ), 1e-5 );
         float flat_ = min( min( meshExtent.x, meshExtent.y ), meshExtent.z )
                       / max( max( meshExtent.x, meshExtent.y ), meshExtent.z );
         float chunky = smoothstep( 0.16, 0.30, flat_ );
-        float scale = mix( 96.0 * fitBox, 31.0 * fitSphere, chunky );
+        float scale = mix( 96.0 * fit_box, 31.0 * fit_sphere, chunky );
 
         // Rotation on TIME alone. audioAdvance integrates a beat-driven rate,
         // so anything it turns visibly speeds up on every kick -- measured as
         // residual beat-periodic motion (autocorr 0.46 @ 1s) after every other
         // coupling was removed. The summed coefficient keeps the average pace.
-        float       rotY = time * 0.16 * spinP;
-        float       cy = cos( rotY ), sy = sin( rotY );
+        float       rot_y = time * 0.16 * spinP;
+        float       cy = cos( rot_y ), sy = sin( rot_y );
         mat3        spin = mat3( cy, 0.0, -sy, 0.0, 1.0, 0.0, sy, 0.0, cy );
-        const float tiltX = 0.10;
-        float       cx = cos( tiltX ), sx = sin( tiltX );
+        const float tilt_x = 0.10;
+        float       cx = cos( tilt_x ), sx = sin( tilt_x );
         mat3        tilt = mat3( 1.0, 0.0, 0.0, 0.0, cx, sx, 0.0, -sx, cx );
         mat3        rot = tilt * spin;
 
@@ -96,6 +96,6 @@ void main()
 
     vec3 vp = vec3( world.x - eyeOff, world.y, world.z );
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
-    if ( isBg )
+    if ( is_bg )
         gl_Position.z = gl_Position.w * 0.999999;
 }

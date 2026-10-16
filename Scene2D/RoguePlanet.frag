@@ -202,10 +202,10 @@ void main()
         }
     }
 
-    vec3 bgCol = vec3( 0.002, 0.003, 0.005 ); // pitch black sky, no stars
-    vec3 col = bgCol;
+    vec3 bg_col = vec3( 0.002, 0.003, 0.005 ); // pitch black sky, no stars
+    vec3 col = bg_col;
 
-    vec3 ventColor = imgPalette( 0.8 + 0.1 * audioCentroid );
+    vec3 vent_color = imgPalette( 0.8 + 0.1 * audioCentroid );
 
     if ( m > 0.5 )
     {
@@ -222,38 +222,38 @@ void main()
         // Fissure glow
         // Re-evaluate glow at hit point
         float ridges = ridged( p * 0.5 );
-        float localGlow = smoothstep( 0.7, 1.0, 1.0 - ridges );
+        float local_glow = smoothstep( 0.7, 1.0, 1.0 - ridges );
 
         // Pulsing magma/bioluminescence
         float pulse = sin( p.x * 2.0 + p.z * 1.5 - time * 3.0 ) * 0.5 + 0.5;
         pulse = mix( pulse, 1.0, audioKick * 0.8 );
 
-        col += ventColor * localGlow * pulse * ( 0.9 + audioSwell * 1.4 ) * gp * 2.0;
+        col += vent_color * local_glow * pulse * ( 0.9 + audioSwell * 1.4 ) * gp * 2.0;
 
         // Rim lighting from the glow
         float rim = 1.0 - max( dot( n, normalize( -rd ) ), 0.0 );
-        col += ventColor * smoothstep( 0.6, 1.0, rim ) * localGlow * 0.5 * gp;
+        col += vent_color * smoothstep( 0.6, 1.0, rim ) * local_glow * 0.5 * gp;
 
         col *= clamp( 1.0 - float( steps ) * 0.01, 0.1, 1.0 );
     }
 
     // Thick volcanic ash / fog near ground
-    float fogY = exp( -max( p.y + 1.0, 0.0 ) * 0.5 );
-    float fogZ = exp( -d * 0.03 );
-    float fogDens = clamp( fogY * ( 1.0 - fogZ ) * 1.5, 0.0, 1.0 );
+    float fog_y = exp( -max( p.y + 1.0, 0.0 ) * 0.5 );
+    float fog_z = exp( -d * 0.03 );
+    float fog_dens = clamp( fog_y * ( 1.0 - fog_z ) * 1.5, 0.0, 1.0 );
 
     // Fog is lit by the vents
-    vec3 fogCol = mix( bgCol, ventColor * 0.3 * ( 1.0 + audioSwell ), 0.5 );
+    vec3 fog_col = mix( bg_col, vent_color * 0.3 * ( 1.0 + audioSwell ), 0.5 );
 
-    col = mix( col, fogCol, fogDens );
+    col = mix( col, fog_col, fog_dens );
 
     // General distance fade
-    col = mix( bgCol, col, exp( -d * 0.02 ) );
+    col = mix( bg_col, col, exp( -d * 0.02 ) );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

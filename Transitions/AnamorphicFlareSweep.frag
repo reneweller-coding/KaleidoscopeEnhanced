@@ -61,46 +61,46 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midT = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_t = sin( t_prog * 3.14159265 );
 
     // Flare sweep front moving left to right
-    float sweepX = mix( -0.2, 1.2, tProg );
-    float distToFlare = uv.x - sweepX + p.y * 0.15 * ( swp - 1.0 );
+    float sweep_x = mix( -0.2, 1.2, t_prog );
+    float dist_to_flare = uv.x - sweep_x + p.y * 0.15 * ( swp - 1.0 );
 
     // Horizontal anamorphic streak: exp(-|y| * scale).  audioHigh sharpens the
     // lens flare lines by steepening the exponential falloffs — a pure profile
-    // change, no position moves.  midT is zero at both fade endpoints, so the
+    // change, no position moves.  mid_t is zero at both fade endpoints, so the
     // profile there is exactly the un-driven one (and both terms are only ever
-    // added through midTransition anyway).
-    float lineSharp = 1.0 + audioSwell * 0.8 * midT;
-    float horizStreak = exp( -abs( p.y ) * 20.0 * lineSharp ) * exp( -abs( distToFlare ) * 8.0 * lineSharp );
-    float verticalBar = exp( -abs( distToFlare ) * 25.0 * lineSharp / flr );
+    // added through mid_transition anyway).
+    float line_sharp = 1.0 + audioSwell * 0.8 * mid_t;
+    float horiz_streak = exp( -abs( p.y ) * 20.0 * line_sharp ) * exp( -abs( dist_to_flare ) * 8.0 * line_sharp );
+    float vertical_bar = exp( -abs( dist_to_flare ) * 25.0 * line_sharp / flr );
 
     // Cylindrical lens distortion near the flare — windowed by the envelope:
     // ungated, its exponential tail still warped the frame edge while the
     // sweep was parked just off-screen at the fade endpoints.
-    float lensDistort = exp( -abs( distToFlare ) * 10.0 ) * sign( distToFlare ) * 0.04 * midT;
-    vec2  warpUV = uv + vec2( lensDistort, 0.0 );
+    float lens_distort = exp( -abs( dist_to_flare ) * 10.0 ) * sign( dist_to_flare ) * 0.04 * mid_t;
+    vec2  warp_uv = uv + vec2( lens_distort, 0.0 );
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
-    float wipeMask = smoothstep( -0.05, 0.05, distToFlare );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.05, 0.05, dist_to_flare );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Cinematic anamorphic blue flare
-    vec3 flareBlue = vec3( 0.15, 0.7, 1.0 );
-    vec3 flareCore = vec3( 1.0, 0.98, 0.9 );
+    vec3 flare_blue = vec3( 0.15, 0.7, 1.0 );
+    vec3 flare_core = vec3( 1.0, 0.98, 0.9 );
 
-    float midTransition = sin( tProg * 3.14159265 );
-    col.rgb += verticalBar * flareBlue * ( 1.5 + audioKick * 1.0 ) * midTransition;
-    col.rgb += horizStreak * flareCore * ( 2.0 + audioKick * 1.33 ) * midTransition;
+    float mid_transition = sin( t_prog * 3.14159265 );
+    col.rgb += vertical_bar * flare_blue * ( 1.5 + audioKick * 1.0 ) * mid_transition;
+    col.rgb += horiz_streak * flare_core * ( 2.0 + audioKick * 1.33 ) * mid_transition;
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

@@ -122,7 +122,7 @@ void main()
 {
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float sc = clamp( ( scaleP > 0.01 ) ? scaleP : 1.0, 0.7, 1.5 );
-    float lThk = ( lineThicknessP > 0.01 ) ? lineThicknessP : 1.0;
+    float l_thk = ( lineThicknessP > 0.01 ) ? lineThicknessP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float swell = clamp( audioSwell, 0.0, 1.0 );
@@ -131,16 +131,16 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
     // Cells across the screen height, and a slow drift over the curve that
     // stays inside the 128 x 128 domain (continuous, no wrap).
-    float cellsH = 24.0 / sc;
+    float cells_h = 24.0 / sc;
     float aspect = resolution.x / resolution.y;
-    vec2  room = max( vec2( 64.0 ) - 0.5 * cellsH * vec2( aspect, 1.0 ) - 1.0, vec2( 0.0 ) );
+    vec2  room = max( vec2( 64.0 ) - 0.5 * cells_h * vec2( aspect, 1.0 ) - 1.0, vec2( 0.0 ) );
     vec2  centre = vec2( 64.0 ) + room * vec2( sin( T * 0.004 + 1.0 ), sin( T * 0.0053 ) );
-    vec2  g = uv * cellsH + centre; // grid coordinates
+    vec2  g = uv * cells_h + centre; // grid coordinates
     ivec2 gc = ivec2( floor( g ) );
 
-    const float TOTAL = float( N * N );
-    float       halfW = 0.1 * lThk;
-    float       best = 1e9, bestAlong = 0.0;
+    const float Total = float( N * N );
+    float       half_w = 0.1 * l_thk;
+    float       best = 1e9, best_along = 0.0;
     // The curve near this pixel: the path through each of the 3x3 cells,
     // centre to the midpoints towards its predecessor and successor.
     for ( int j = -1; j <= 1; ++j )
@@ -159,7 +159,7 @@ void main()
                 if ( ds < best )
                 {
                     best = ds;
-                    bestAlong = float( d ) - 0.5 * h;
+                    best_along = float( d ) - 0.5 * h;
                 }
             }
             if ( d < N * N - 1 )
@@ -169,7 +169,7 @@ void main()
                 if ( ds < best )
                 {
                     best = ds;
-                    bestAlong = float( d ) + 0.5 * h;
+                    best_along = float( d ) + 0.5 * h;
                 }
             }
         }
@@ -179,29 +179,29 @@ void main()
     vec3 col = vec3( 0.012, 0.014, 0.03 ) + vec3( 0.03, 0.035, 0.06 ) * smoothstep( 0.06, 0.0, length( cf ) );
 
     // Spectrum along the path: nested sub-curves share a colour band.
-    float s = bestAlong / TOTAL;
-    vec3  tubeC = spectral( s * 6.0 + hue * 0.159 + T * 0.004 );
-    tubeC = mix( tubeC, imgPalette( s * 3.0 ) * 1.2, 0.22 );
+    float s = best_along / Total;
+    vec3  tube_c = spectral( s * 6.0 + hue * 0.159 + T * 0.004 );
+    tube_c = mix( tube_c, imgPalette( s * 3.0 ) * 1.2, 0.22 );
 
     // Comets travelling along the path, each with a fading tail.
     float comet = 0.0;
     for ( int k = 0; k < 10; ++k )
     {
-        float head = mod( T * 14.0 * spd + float( k ) * TOTAL / 10.0, TOTAL );
-        float behind = head - bestAlong;
+        float head = mod( T * 14.0 * spd + float( k ) * Total / 10.0, Total );
+        float behind = head - best_along;
         comet += ( behind >= 0.0 ) ? exp( -behind / ( 110.0 * spd ) ) : 0.0;
     }
     comet = min( comet, 1.5 );
 
     float sharp = 1.0 + 0.6 * clamp( audioCentroid, 0.0, 1.0 );
-    float core = smoothstep( halfW, halfW * 0.4 / sharp, best );
+    float core = smoothstep( half_w, half_w * 0.4 / sharp, best );
     float glow = exp( -best * 5.0 ) * 0.45 * glw * ( 0.8 + 0.5 * swell );
     float lit = 0.9 + 0.3 * swell + comet * ( 1.6 + 1.2 * clamp( audioKick, 0.0, 1.0 ) );
-    col += tubeC * ( glow * lit + core * lit );
+    col += tube_c * ( glow * lit + core * lit );
     col += vec3( 1.0 ) * core * comet * 0.5; // the white-hot head
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

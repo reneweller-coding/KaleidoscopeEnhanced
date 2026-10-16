@@ -99,22 +99,22 @@ void main()
 
     // The lighthouse stands right of centre on its rock.
     vec2  base = vec2( 0.32 * aspect * 0.5, -0.12 );
-    float towerH = 0.42;
-    vec2  lamp = base + vec2( 0.0, towerH + 0.03 );
+    float tower_h = 0.42;
+    vec2  lamp = base + vec2( 0.0, tower_h + 0.03 );
 
     // Sky: torn cloud, moon glow behind it.
-    vec2  moonP = vec2( -0.55 * aspect * 0.5, 0.33 );
+    vec2  moon_p = vec2( -0.55 * aspect * 0.5, 0.33 );
     float cl = fbm( p * vec2( 1.6, 2.4 ) + vec2( t * 0.03, 0.0 ) );
     float cl2 = fbm( p * vec2( 3.0, 4.0 ) + vec2( t * 0.06, 1.0 ) );
-    vec3  skyC = mix( vec3( 0.03, 0.04, 0.07 ), imgPalette( hue * 0.159 + 0.6 ) * 0.12, 0.3 );
-    vec3  moonC = mix( vec3( 0.75, 0.8, 0.95 ), imgPalette( hue * 0.159 + 0.55 ), 0.15 );
-    float md = length( p - moonP );
+    vec3  sky_c = mix( vec3( 0.03, 0.04, 0.07 ), imgPalette( hue * 0.159 + 0.6 ) * 0.12, 0.3 );
+    vec3  moon_c = mix( vec3( 0.75, 0.8, 0.95 ), imgPalette( hue * 0.159 + 0.55 ), 0.15 );
+    float md = length( p - moon_p );
     float veil = smoothstep( 0.35, 0.75, cl );
-    vec3  col = skyC + moonC * exp( -md * 3.0 ) * 0.35 * ( 1.0 - 0.6 * veil );
-    col += moonC * exp( -md * 40.0 ) * ( 1.0 - veil ) * 1.2;
+    vec3  col = sky_c + moon_c * exp( -md * 3.0 ) * 0.35 * ( 1.0 - 0.6 * veil );
+    col += moon_c * exp( -md * 40.0 ) * ( 1.0 - veil ) * 1.2;
     // Cloud edges catch the moonlight.
-    col += moonC * 0.25 * smoothstep( 0.4, 0.6, cl2 ) * exp( -md * 1.4 ) * ( 1.0 - veil * 0.5 );
-    col = mix( col, skyC * 0.6, veil * 0.6 );
+    col += moon_c * 0.25 * smoothstep( 0.4, 0.6, cl2 ) * exp( -md * 1.4 ) * ( 1.0 - veil * 0.5 );
+    col = mix( col, sky_c * 0.6, veil * 0.6 );
 
     // The sea: rolling swell toward the horizon with foam streaks.
     float horizon = -0.05;
@@ -127,11 +127,11 @@ void main()
         float wav = sin( sq.y * 1.3 - t * 1.1 + sin( sq.x * 0.4 ) * 1.5 ) * 0.5 + 0.5;
         float chop = fbm( sq * vec2( 0.8, 1.2 ) + vec2( 0.0, -t * 0.6 ) );
         float crest = smoothstep( 0.75, 0.98, wav * ( 0.6 + 0.4 * chop ) * amp + chop * 0.35 );
-        vec3  seaC = mix( vec3( 0.03, 0.06, 0.08 ), imgPalette( hue * 0.159 + 0.5 ) * 0.1, 0.4 );
+        vec3  sea_c = mix( vec3( 0.03, 0.06, 0.08 ), imgPalette( hue * 0.159 + 0.5 ) * 0.1, 0.4 );
         // Slopes of the swell: the faces toward the moon catch its light.
         float slope = sin( sq.y * 1.3 - t * 1.1 + sin( sq.x * 0.4 ) * 1.5 + 0.6 ) * 0.5 + 0.5;
-        vec3  sea = seaC * ( 0.5 + 0.9 * chop ) * ( 0.6 + 0.8 * slope );
-        sea += moonC * 0.5 * exp( -abs( p.x - moonP.x ) * 3.0 ) * pow( chop * slope, 2.0 ) * ( 1.0 - veil * 0.4 );
+        vec3  sea = sea_c * ( 0.5 + 0.9 * chop ) * ( 0.6 + 0.8 * slope );
+        sea += moon_c * 0.5 * exp( -abs( p.x - moon_p.x ) * 3.0 ) * pow( chop * slope, 2.0 ) * ( 1.0 - veil * 0.4 );
         sea += vec3( 0.75, 0.8, 0.85 ) * crest * 0.55 * exp( -z * 0.04 );
         // Streaks of foam blown along the surface.
         float streaks = smoothstep( 0.62, 0.9, noise2( sq * vec2( 0.6, 3.0 ) + vec2( t * 0.2, 0.0 ) ) );
@@ -140,20 +140,20 @@ void main()
     }
 
     // The rock and the tower.
-    float rockTop = base.y + 0.02 - 0.05 * abs( p.x - base.x ) * 3.0 + 0.03 * fbm( vec2( p.x * 12.0, 1.0 ) );
-    float rockM = smoothstep( rockTop + 0.004, rockTop - 0.004, p.y ) * step( abs( p.x - base.x ), 0.3 )
-                  * step( horizon - 0.12, p.y );
-    vec3  rockC = vec3( 0.03, 0.03, 0.035 ) * ( 0.6 + 0.8 * fbm( p * 20.0 ) );
-    col = mix( col, rockC, rockM );
-    float tw = 0.035 - 0.012 * clamp( ( p.y - base.y ) / towerH, 0.0, 1.0 );
-    float towerM = step( abs( p.x - base.x ), tw ) * step( base.y, p.y ) * step( p.y, base.y + towerH );
-    float stripe = step( 0.5, fract( ( p.y - base.y ) / towerH * 3.0 ) );
-    vec3  towerC = mix( vec3( 0.08, 0.08, 0.09 ), vec3( 0.2, 0.05, 0.05 ), stripe );
-    towerC *= 0.6 + 0.6 * smoothstep( -tw, tw, ( p.x - base.x ) * sign( moonP.x - base.x ) * -1.0 );
-    col = mix( col, towerC, towerM );
+    float rock_top = base.y + 0.02 - 0.05 * abs( p.x - base.x ) * 3.0 + 0.03 * fbm( vec2( p.x * 12.0, 1.0 ) );
+    float rock_m = smoothstep( rock_top + 0.004, rock_top - 0.004, p.y ) * step( abs( p.x - base.x ), 0.3 )
+                   * step( horizon - 0.12, p.y );
+    vec3  rock_c = vec3( 0.03, 0.03, 0.035 ) * ( 0.6 + 0.8 * fbm( p * 20.0 ) );
+    col = mix( col, rock_c, rock_m );
+    float tw = 0.035 - 0.012 * clamp( ( p.y - base.y ) / tower_h, 0.0, 1.0 );
+    float tower_m = step( abs( p.x - base.x ), tw ) * step( base.y, p.y ) * step( p.y, base.y + tower_h );
+    float stripe = step( 0.5, fract( ( p.y - base.y ) / tower_h * 3.0 ) );
+    vec3  tower_c = mix( vec3( 0.08, 0.08, 0.09 ), vec3( 0.2, 0.05, 0.05 ), stripe );
+    tower_c *= 0.6 + 0.6 * smoothstep( -tw, tw, ( p.x - base.x ) * sign( moon_p.x - base.x ) * -1.0 );
+    col = mix( col, tower_c, tower_m );
     // Gallery and lantern.
-    float galM = step( abs( p.x - base.x ), 0.045 ) * step( abs( p.y - ( base.y + towerH ) ), 0.006 );
-    col = mix( col, vec3( 0.02 ), galM );
+    float gal_m = step( abs( p.x - base.x ), 0.045 ) * step( abs( p.y - ( base.y + tower_h ) ), 0.006 );
+    col = mix( col, vec3( 0.02 ), gal_m );
 
     // The beam: a wedge from the lamp turning about the vertical axis; its
     // projection sweeps across the frame and narrows when it points at us.
@@ -162,9 +162,9 @@ void main()
     float toward = cos( phi );          // 1 = pointing at the camera
     float side = sin( phi );
     vec2  rel = p - lamp;
-    vec3  lampC = mix( vec3( 1.0, 0.93, 0.78 ), imgPalette( hue * 0.159 + 0.1 ), 0.15 );
-    float lampI = 0.6 + 0.8 * bass;
-    float beamOut = 0.0;
+    vec3  lamp_c = mix( vec3( 1.0, 0.93, 0.78 ), imgPalette( hue * 0.159 + 0.1 ), 0.15 );
+    float lamp_i = 0.6 + 0.8 * bass;
+    float beam_out = 0.0;
     for ( int b = 0; b < 2; ++b )
     {
         // Two opposite beams (a double lens).
@@ -179,30 +179,30 @@ void main()
         float len = 2.4 * abs( sx ) + 0.1;
         float fall = smoothstep( len, 0.0, along ) * step( 0.0, along );
         float haze = 0.4 + 0.6 * fbm( p * 3.0 + vec2( t * 0.2, 0.0 ) );
-        beamOut += w * fall * haze * ( 0.6 + 0.4 * ( 1.0 - abs( tz ) ) );
+        beam_out += w * fall * haze * ( 0.6 + 0.4 * ( 1.0 - abs( tz ) ) );
         // Flare when it looks at us.
         float flare = pow( max( tz, 0.0 ), 6.0 );
-        col += lampC * flare * ( exp( -length( rel ) * 18.0 ) * 2.0 + exp( -length( rel ) * 3.0 ) * 0.4 ) * lampI;
+        col += lamp_c * flare * ( exp( -length( rel ) * 18.0 ) * 2.0 + exp( -length( rel ) * 3.0 ) * 0.4 ) * lamp_i;
     }
-    col += lampC * beamOut * 0.55 * lampI * ( 0.8 + 0.4 * swell );
-    col += lampC * exp( -length( rel ) * 60.0 ) * 1.2 * lampI;
+    col += lamp_c * beam_out * 0.55 * lamp_i * ( 0.8 + 0.4 * swell );
+    col += lamp_c * exp( -length( rel ) * 60.0 ) * 1.2 * lamp_i;
 
     // Spray bursting over the rock: bright where the beam or the kick lights it.
-    float sprayPh = fract( t * 0.18 );
-    float sprayH = sin( sprayPh * 3.14159 ) * ( 0.2 + 0.18 * swell );
-    float spr = fbm( vec2( p.x * 8.0, p.y * 6.0 - t * 0.8 ) ) * smoothstep( rockTop + sprayH + 0.05, rockTop, p.y )
-                * smoothstep( 0.35, 0.05, abs( p.x - base.x + 0.08 ) ) * step( rockTop - 0.02, p.y );
-    col += vec3( 0.8, 0.85, 0.9 ) * spr * ( 0.12 + 0.45 * clamp( kick, 0.0, 1.5 ) + beamOut * 0.6 );
+    float spray_ph = fract( t * 0.18 );
+    float spray_h = sin( spray_ph * 3.14159 ) * ( 0.2 + 0.18 * swell );
+    float spr = fbm( vec2( p.x * 8.0, p.y * 6.0 - t * 0.8 ) ) * smoothstep( rock_top + spray_h + 0.05, rock_top, p.y )
+                * smoothstep( 0.35, 0.05, abs( p.x - base.x + 0.08 ) ) * step( rock_top - 0.02, p.y );
+    col += vec3( 0.8, 0.85, 0.9 ) * spr * ( 0.12 + 0.45 * clamp( kick, 0.0, 1.5 ) + beam_out * 0.6 );
 
     // Rain: slanted streaks, brightest inside the beam.
     vec2  rg = vec2( p.x * 60.0 + p.y * 18.0, p.y * 7.0 + t * 9.0 );
     vec2  rc = floor( rg ), rf = fract( rg ) - 0.5;
     float streak = smoothstep( 0.06, 0.0, abs( rf.x - ( hash21( rc ) - 0.5 ) * 0.6 ) )
                    * smoothstep( 0.5, 0.1, abs( rf.y ) ) * step( 0.7, hash21( rc + 3.0 ) );
-    col += lampC * streak * ( 0.04 + beamOut * ( 0.5 + 1.2 * hi ) );
+    col += lamp_c * streak * ( 0.04 + beam_out * ( 0.5 + 1.2 * hi ) );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

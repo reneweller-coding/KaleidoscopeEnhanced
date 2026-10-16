@@ -22,16 +22,16 @@ uniform float     time;          ///< Seconds since the program started (never r
 void main()
 {
     // Glowing laser grid lines across the heightfield
-    vec2  gridUV = fract( vUV * vec2( 220.0, 120.0 ) );
-    vec2  gridLines = smoothstep( 0.08, 0.02, abs( gridUV - 0.5 ) );
-    float gridGlow = max( gridLines.x, gridLines.y );
+    vec2  grid_uv = fract( vUV * vec2( 220.0, 120.0 ) );
+    vec2  grid_lines = smoothstep( 0.08, 0.02, abs( grid_uv - 0.5 ) );
+    float grid_glow = max( grid_lines.x, grid_lines.y );
 
     // Sample texture projected onto the whirlpool
     vec3 photo = ( interpolation * texture( tex0, vUV ) + ( 1.0 - interpolation ) * texture( tex1, vUV ) ).rgb;
 
-    vec3 col = vCol.rgb * ( 0.3 + 0.7 * gridGlow );
+    vec3 col = vCol.rgb * ( 0.3 + 0.7 * grid_glow );
     col += photo * 0.4;
-    col += gridGlow * vec3( 1.0, 0.9, 0.7 ) * 1.5;
+    col += grid_glow * vec3( 1.0, 0.9, 0.7 ) * 1.5;
 
     // Atmospheric depth fade
     float dist = length( vWorld );

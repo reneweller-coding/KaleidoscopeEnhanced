@@ -106,35 +106,35 @@ void main()
     vec3 col = vec3( 0.0 );
 
     // Antimatter is exotic, maybe deep purple/magenta turning to blinding white
-    vec3 amColor = imgPalette( 0.7 + audioCentroid * 0.2 );
-    vec3 targetColor = vec3( 0.1, 0.15, 0.1 ); // Dark target (maybe a planet or moon)
+    vec3 am_color = imgPalette( 0.7 + audioCentroid * 0.2 );
+    vec3 target_color = vec3( 0.1, 0.15, 0.1 ); // Dark target (maybe a planet or moon)
 
     // 1. The Target (being annihilated)
     // Placed on the right side of the screen
-    vec2  targetPos = vec2( 0.5, 0.0 );
-    float dTarget = length( uv - targetPos );
-    float targetRad = 0.4;
+    vec2  target_pos = vec2( 0.5, 0.0 );
+    float d_target = length( uv - target_pos );
+    float target_rad = 0.4;
 
-    if ( dTarget < targetRad )
+    if ( d_target < target_rad )
     {
         // Target surface
         float surface = fbm( vec3( uv * 10.0, 0.0 ) );
-        col = targetColor * ( 0.5 + surface * 0.5 );
+        col = target_color * ( 0.5 + surface * 0.5 );
 
         // Annihilation spread / cracks propagating from the impact site
-        float impactDist = length( uv - vec2( 0.1, 0.0 ) ); // The impact hits the left edge of the target
+        float impact_dist = length( uv - vec2( 0.1, 0.0 ) ); // The impact hits the left edge of the target
         float destruction = fbm( vec3( uv * 20.0, time * 0.5 ) );
 
         // The destruction eats away the target
-        float eatAway = smoothstep( 0.4, 0.0, impactDist ) * destruction;
-        if ( eatAway > 0.3 )
+        float eat_away = smoothstep( 0.4, 0.0, impact_dist ) * destruction;
+        if ( eat_away > 0.3 )
         {
             // It turns into pure energy
-            col = mix( col, amColor * 2.0 * ( 1.0 + audioSwell ), smoothstep( 0.3, 0.8, eatAway ) );
+            col = mix( col, am_color * 2.0 * ( 1.0 + audioSwell ), smoothstep( 0.3, 0.8, eat_away ) );
         }
 
         // Limb darkening
-        col *= smoothstep( targetRad, targetRad - 0.1, dTarget );
+        col *= smoothstep( target_rad, target_rad - 0.1, d_target );
     }
 
     // 2. The Antimatter Beam
@@ -145,11 +145,11 @@ void main()
     if ( uv.x < 0.2 )
     {
         // Distance from the central axis of the beam
-        float beamAxisY = sin( uv.x * 5.0 - time * 5.0 ) * 0.02 * bp; // Slight wobble
-        float dBeam = abs( uv.y - beamAxisY );
+        float beam_axis_y = sin( uv.x * 5.0 - time * 5.0 ) * 0.02 * bp; // Slight wobble
+        float d_beam = abs( uv.y - beam_axis_y );
 
         // The beam narrows at the impact site
-        float beamWidth = 0.05 * bp * ( 1.0 - smoothstep( -0.5, 0.1, uv.x ) );
+        float beam_width = 0.05 * bp * ( 1.0 - smoothstep( -0.5, 0.1, uv.x ) );
 
         // Fractal noise moving extremely fast along the beam
         float stream = fbm( vec3( uv.x * 20.0 - ( time * 10.0 + audioAdvance * 20.0 ), uv.y * 50.0, time ) );
@@ -158,47 +158,47 @@ void main()
         float rings = step( 0.9, sin( uv.x * 50.0 + time * 5.0 ) );
 
         // Core of the beam is pure white/bright
-        float core = smoothstep( beamWidth, 0.0, dBeam ) * stream;
+        float core = smoothstep( beam_width, 0.0, d_beam ) * stream;
 
         // Outer aura
-        float aura = exp( -dBeam * ( 40.0 / bp ) );
+        float aura = exp( -d_beam * ( 40.0 / bp ) );
 
         // Intensity spikes on audio kick
-        float kickIntensity = 1.0 + audioKick * 5.0;
+        float kick_intensity = 1.0 + audioKick * 5.0;
 
-        vec3 beamRender = amColor * core * 3.0 * kickIntensity;
-        beamRender += amColor * aura * ( 0.5 + stream * 0.5 ) * ( 1.0 + audioSwell );
+        vec3 beam_render = am_color * core * 3.0 * kick_intensity;
+        beam_render += am_color * aura * ( 0.5 + stream * 0.5 ) * ( 1.0 + audioSwell );
 
         // Add magnetic containment rings
-        beamRender += amColor * rings * aura * 2.0;
+        beam_render += am_color * rings * aura * 2.0;
 
-        col += beamRender;
+        col += beam_render;
     }
 
     // 3. The Annihilation Impact Zone
     // Where matter and antimatter meet at x=0.1, y=0.0
-    vec2  impactPos = vec2( 0.1, 0.0 );
-    float dImpact = length( uv - impactPos );
+    vec2  impact_pos = vec2( 0.1, 0.0 );
+    float d_impact = length( uv - impact_pos );
 
     // Massive spherical blast wave radiating from impact
-    float blastWave = step( 0.95, fract( dImpact * 10.0 - ( time * 5.0 + audioAdvance * 5.0 ) ) );
-    float blastMask = exp( -dImpact * 5.0 );
+    float blast_wave = step( 0.95, fract( d_impact * 10.0 - ( time * 5.0 + audioAdvance * 5.0 ) ) );
+    float blast_mask = exp( -d_impact * 5.0 );
 
     // Violent flashes on audio kicks
     float explosion = step( 0.8, hash11( floor( time * 4.00 ) ) ) * audioKick * 10.0 * blast; // was 15 Hz
 
     // Core of the impact is completely blown out white
-    float impactCore = exp( -dImpact * 20.0 ) * ( 2.0 + explosion );
+    float impact_core = exp( -d_impact * 20.0 ) * ( 2.0 + explosion );
 
-    col += amColor * blastWave * blastMask * ( 1.0 + audioKick * 2.0 ) * blast;
-    col += amColor * impactCore * blast;
+    col += am_color * blast_wave * blast_mask * ( 1.0 + audioKick * 2.0 ) * blast;
+    col += am_color * impact_core * blast;
 
     // Background space (stars getting distorted by gravity/energy)
-    if ( dTarget >= targetRad )
+    if ( d_target >= target_rad )
     {
-        float bgDistort = dImpact;
-        vec2  bgUv = uv + normalize( uv - impactPos ) * ( 0.01 / max( bgDistort, 0.01 ) );
-        float bg = hash11( dot( floor( bgUv * 100.0 ), vec2( 12.3, 45.6 ) ) );
+        float bg_distort = d_impact;
+        vec2  bg_uv = uv + normalize( uv - impact_pos ) * ( 0.01 / max( bg_distort, 0.01 ) );
+        float bg = hash11( dot( floor( bg_uv * 100.0 ), vec2( 12.3, 45.6 ) ) );
         if ( bg > 0.99 )
         {
             col += vec3( 1.0 ) * ( 0.2 + audioSwell * 0.2 );
@@ -206,13 +206,13 @@ void main()
     }
 
     // Overall glare
-    col += amColor * exp( -dImpact * 3.0 ) * 0.3 * ( 1.0 + audioSwell ) * blast;
+    col += am_color * exp( -d_impact * 3.0 ) * 0.3 * ( 1.0 + audioSwell ) * blast;
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

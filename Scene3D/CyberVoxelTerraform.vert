@@ -12,7 +12,7 @@ in vec4 attrA; ///< Vertex attribute A (meaning per geometry kind, see the stage
                ///< index).
 in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal or per-element seeds).
 
-const vec3 CUBE_FACE_NORMALS[6] = vec3[6](
+const vec3 CubeFaceNormals[6] = vec3[6](
     vec3( 0.0, 0.0, -1.0 ), vec3( 0.0, 0.0, 1.0 ),
     vec3( -1.0, 0.0, 0.0 ), vec3( 1.0, 0.0, 0.0 ),
     vec3( 0.0, 1.0, 0.0 ), vec3( 0.0, -1.0, 0.0 ) );
@@ -38,17 +38,17 @@ out float vHeight;
 void main()
 {
     // 70x70 grid coordinates
-    float cubeID = attrA.w;
-    float gridX = mod( cubeID, 70.0 );
-    float gridZ = floor( cubeID / 70.0 );
+    float cube_id = attrA.w;
+    float grid_x = mod( cube_id, 70.0 );
+    float grid_z = floor( cube_id / 70.0 );
 
-    vec2  gridUV = ( vec2( gridX, gridZ ) - vec2( 35.0 ) ) / 35.0;
-    float dist = length( gridUV );
+    vec2  grid_uv = ( vec2( grid_x, grid_z ) - vec2( 35.0 ) ) / 35.0;
+    float dist = length( grid_uv );
 
     // Audio-reactive cyber voxel elevation
     float t = time * 0.4 + audioAdvance * 0.2;
     float ripple = sin( dist * 12.0 - t * 3.0 ) * cos( dist * 6.0 + t );
-    float pyramid = max( 1.0 - max( abs( gridUV.x ), abs( gridUV.y ) ) * 1.4, 0.0 );
+    float pyramid = max( 1.0 - max( abs( grid_uv.x ), abs( grid_uv.y ) ) * 1.4, 0.0 );
 
     // Kick shockwave ripple
     float shockwave = exp( -abs( dist - fract( time * 0.8 ) * 1.5 ) * 8.0 ) * audioKick * 2.0;
@@ -56,27 +56,27 @@ void main()
     float height = ( pyramid * 1.8 + ripple * 0.6 + shockwave ) * ( 0.8 + 0.6 * audioBass );
 
     // Position of cube instance
-    vec3 cubeCenter = vec3( gridUV.x * 5.0, height - 1.2, gridUV.y * 5.0 );
+    vec3 cube_center = vec3( grid_uv.x * 5.0, height - 1.2, grid_uv.y * 5.0 );
 
     // Local vertex of the cube (scaled)
-    vec3 localPos = attrA.xyz * vec3( 0.06, 0.06 + height * 0.15, 0.06 );
-    vec3 pos = cubeCenter + localPos;
+    vec3 local_pos = attrA.xyz * vec3( 0.06, 0.06 + height * 0.15, 0.06 );
+    vec3 pos = cube_center + local_pos;
 
     vPos = pos;
-    vNormal = CUBE_FACE_NORMALS[int( mod( float( gl_VertexID ), 36.0 ) ) / 6];
-    vUV = gridUV * 0.5 + 0.5;
+    vNormal = CubeFaceNormals[int( mod( float( gl_VertexID ), 36.0 ) ) / 6];
+    vUV = grid_uv * 0.5 + 0.5;
     vHeight = height;
 
     // Stereoscopic 3D camera projection
     vec3 vp = pos;
     // Camera tilted down towards voxel landscape
-    float tiltAngle = 0.45;
-    float cosT = cos( tiltAngle ), sinT = sin( tiltAngle );
-    vec3  rotatedVP = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float tilt_angle = 0.45;
+    float cos_t = cos( tilt_angle ), sin_t = sin( tilt_angle );
+    vec3  rotated_vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
 
-    rotatedVP.z += 6.5;
-    rotatedVP.x -= eyeOff;
+    rotated_vp.z += 6.5;
+    rotated_vp.x -= eyeOff;
 
-    gl_Position = projM * vec4( rotatedVP.x, rotatedVP.y, -rotatedVP.z, 1.0 );
+    gl_Position = projM * vec4( rotated_vp.x, rotated_vp.y, -rotated_vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 }

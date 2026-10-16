@@ -65,19 +65,19 @@ void main()
     float theta = atan( uv.y, uv.x );
 
     // 6-fold symmetry folding
-    float hexTheta = mod( theta + 0.52359877, 1.0471975 ) - 0.52359877;
-    vec2  hexPos = vec2( cos( hexTheta ), sin( hexTheta ) ) * r;
+    float hex_theta = mod( theta + 0.52359877, 1.0471975 ) - 0.52359877;
+    vec2  hex_pos = vec2( cos( hex_theta ), sin( hex_theta ) ) * r;
 
     // Dendritic side branches along 60-degree crystallographic axes
-    float nBranch = ( dendriteBranchP > 0.01 ? dendriteBranchP : 5.0 );
-    float branch = abs( sin( hexPos.x * nBranch * 6.2831853 + hexPos.y * 12.0 ) );
+    float n_branch = ( dendriteBranchP > 0.01 ? dendriteBranchP : 5.0 );
+    float branch = abs( sin( hex_pos.x * n_branch * 6.2831853 + hex_pos.y * 12.0 ) );
 
-    float fScale = ( flakeScaleP > 0.01 ? flakeScaleP : 1.3 ) * ( 0.85 + 0.35 * audioSwell );
+    float f_scale = ( flakeScaleP > 0.01 ? flakeScaleP : 1.3 ) * ( 0.85 + 0.35 * audioSwell );
 
     // Faceted prism thickness
-    float zThick = ( 0.15 - 0.08 * r + 0.04 * branch ) * ( 1.0 + 0.2 * audioKick );
+    float z_thick = ( 0.15 - 0.08 * r + 0.04 * branch ) * ( 1.0 + 0.2 * audioKick );
 
-    vec3 worldPos = vec3( uv.x * 3.9, uv.y * 3.9, zThick ) * fScale;
+    vec3 world_pos = vec3( uv.x * 3.9, uv.y * 3.9, z_thick ) * f_scale;
 
     // Crystal facet normal
     vNormal = normalize( vec3( cos( theta ) * 0.3, sin( theta ) * 0.3, 1.0 ) );
@@ -91,7 +91,7 @@ void main()
     vGrow = 0.62 + 0.38 * sin( t * 0.45 + audioSwell * 0.6 );
 
     // Camera Transform (V3)
-    vec3 vp = worldPos;
+    vec3 vp = world_pos;
 
     // In-plane spin plus a gentle tilt wobble.  The old full Y-rotation
     // turned the flat quad edge-on twice a cycle, blanking half the frame.

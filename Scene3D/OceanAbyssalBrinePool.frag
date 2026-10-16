@@ -74,19 +74,19 @@ void main()
     vec3 photo = img( vTexCoord );
 
     // Deep abyssal water with the brine pool glowing in photo colours
-    vec3 deepWater = vec3( 0.01, 0.1, 0.25 );
-    vec3 brineGlow = imgPalette( 0.12 ) * 1.3;
-    vec3 haloclineRefract = imgPalette( 0.55 ) * 1.2;
+    vec3 deep_water = vec3( 0.01, 0.1, 0.25 );
+    vec3 brine_glow = imgPalette( 0.12 ) * 1.3;
+    vec3 halocline_refract = imgPalette( 0.55 ) * 1.2;
 
     float r = length( vWorldPos.xz );
-    float isBrine = smoothstep( 1.8, 0.6, r );
+    float is_brine = smoothstep( 1.8, 0.6, r );
 
     // Halocline shimmering waves
     float shimmer = pow( abs( sin( vTexCoord.x * 25.0 + vTexCoord.y * 25.0 + time * 3.0 ) ), 6.0 );
 
-    vec3 waterCol = mix( deepWater, brineGlow, isBrine );
-    vec3 col = mix( photo * 0.8, waterCol, 0.5 );
-    col += shimmer * haloclineRefract * ( 0.8 + audioKick * 0.9 );
+    vec3 water_col = mix( deep_water, brine_glow, is_brine );
+    vec3 col = mix( photo * 0.8, water_col, 0.5 );
+    col += shimmer * halocline_refract * ( 0.8 + audioKick * 0.9 );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

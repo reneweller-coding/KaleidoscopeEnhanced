@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -307,7 +307,7 @@ void main()
     vec3  road = imgK( uv, 1.0 );
     road = mix( vec3( luma( road ) ), road, 0.3 ) * ( 0.15 + 0.25 * clamp( roadP, 0.0, 1.0 ) );
     road *= 0.8 + 0.4 * noise2( p * 250.0 );
-    vec3 lampC = mix( vec3( 0.6, 0.75, 1.0 ), vec3( 1.0, 0.6, 0.25 ), mode );
+    vec3 lamp_c = mix( vec3( 0.6, 0.75, 1.0 ), vec3( 1.0, 0.6, 0.25 ), mode );
     // Swirling film thickness.
     float T = 0.03 * sceneTime + 0.2 * audioAdvance;
     float sw = 0.6 + 1.2 * clamp( swirlP, 0.0, 1.0 );
@@ -326,6 +326,6 @@ void main()
     vec3  col = road + film * cover * refl * ( 0.3 + 0.3 * swell );
     // Wet sheen and the lamp's glint streak.
     float glint = exp( -abs( p.x - lp.x ) * 25.0 ) * exp( -abs( p.y - lp.y + 0.3 ) * 1.5 );
-    col += lampC * ( glint * ( 0.3 + 1.0 * kick ) + refl * 0.05 * swell );
+    col += lamp_c * ( glint * ( 0.3 + 1.0 * kick ) + refl * 0.05 * swell );
     finish( col );
 }

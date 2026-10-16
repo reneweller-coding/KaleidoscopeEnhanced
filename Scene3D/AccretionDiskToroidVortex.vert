@@ -51,47 +51,47 @@ void main()
     // Scene3DShader supplies attrA.xy in [0,1] for grid/quads geometry;
     // this shader's math assumes a centred [-1,1] domain, so remap it here
     // (otherwise everything lands in one quadrant, off to the side).
-    vec2 gridUV = attrA.xy * 2.0 - 1.0; // [-1,1]
-    vTexCoord = gridUV * 0.5 + 0.5;
+    vec2 grid_uv = attrA.xy * 2.0 - 1.0; // [-1,1]
+    vTexCoord = grid_uv * 0.5 + 0.5;
 
     float t = time * 0.4 * spd + audioAdvance * 0.2;
 
     // Convert Cartesian grid to polar accretion disk coords (r, theta)
-    float r = length( gridUV ) * 4.5 * trd;
-    float theta = atan( gridUV.y, gridUV.x );
+    float r = length( grid_uv ) * 4.5 * trd;
+    float theta = atan( grid_uv.y, grid_uv.x );
 
     // Inner ISCO boundary plunge (r < 1.0 drops rapidly into singularity)
-    float iscoRadius = 1.2 * isc;
-    float iscoPlunge = smoothstep( iscoRadius, iscoRadius * 0.4, r ) * -2.5;
+    float isco_radius = 1.2 * isc;
+    float isco_plunge = smoothstep( isco_radius, isco_radius * 0.4, r ) * -2.5;
 
     // Keplerian rotation velocity: v_phi ~ 1 / sqrt(r)
     float omega = ( 1.5 / max( sqrt( r ), 0.5 ) ) * t;
-    float spiralTheta = theta - omega;
+    float spiral_theta = theta - omega;
 
     // Toroidal disk height profile: bass thickens the torus, and audioBassRel
     // ("as loud as usual right now") adds a mix-independent low-end punch on
     // top so quiet productions still breathe.
-    float bassPunch = clamp( audioBassRel - 1.0, -1.0, 1.0 );
-    float diskHeight = exp( -abs( r - 2.5 ) * 1.2 ) * ( 0.8 + 0.4 * sin( spiralTheta * 3.0 + t ) )
-                       * ( 1.0 + 0.4 * audioBass + 0.30 * bassPunch );
+    float bass_punch = clamp( audioBassRel - 1.0, -1.0, 1.0 );
+    float disk_height = exp( -abs( r - 2.5 ) * 1.2 ) * ( 0.8 + 0.4 * sin( spiral_theta * 3.0 + t ) )
+                        * ( 1.0 + 0.4 * audioBass + 0.30 * bass_punch );
 
     // Sensory dissonance churns the smooth spiral density waves into ragged
     // convective turbulence; a consonant passage lets the torus lie flat.
     float turb = 0.20 + 0.55 * audioRoughness;
-    diskHeight += sin( r * 5.3 + spiralTheta * 4.0 ) * cos( spiralTheta * 2.0 - r * 3.1 )
-                  * 0.50 * turb * exp( -abs( r - 2.5 ) * 0.9 );
+    disk_height += sin( r * 5.3 + spiral_theta * 4.0 ) * cos( spiral_theta * 2.0 - r * 3.1 )
+                   * 0.50 * turb * exp( -abs( r - 2.5 ) * 0.9 );
 
-    diskHeight += iscoPlunge;
+    disk_height += isco_plunge;
 
-    vec3 pos = vec3( gridUV.x * 3.5, diskHeight, gridUV.y * 3.5 );
+    vec3 pos = vec3( grid_uv.x * 3.5, disk_height, grid_uv.y * 3.5 );
     vWorldPos = pos;
 
     // Relativistic Doppler beaming factor: approaching side (x > 0) is blue-shifted, receding side (x < 0) is
     // red-shifted
-    vDoppler = clamp( gridUV.x * ( 0.8 / max( sqrt( r ), 0.6 ) ), -1.0, 1.0 );
+    vDoppler = clamp( grid_uv.x * ( 0.8 / max( sqrt( r ), 0.6 ) ), -1.0, 1.0 );
 
     // Surface normal estimation
-    vNormal = normalize( vec3( -gridUV.x * 0.3, 1.0, -gridUV.y * 0.3 ) );
+    vNormal = normalize( vec3( -grid_uv.x * 0.3, 1.0, -grid_uv.y * 0.3 ) );
 
     // Camera: slow ORBIT around the central hole, then pitch DOWN onto the
     // disk (negative tilt — the old +0.45 tipped it into a ceiling) and push
@@ -101,9 +101,9 @@ void main()
     float cy = cos( yaw ), sy = sin( yaw );
     vp.xz = mat2( cy, -sy, sy, cy ) * vp.xz;
     vp.y -= 1.1;
-    float camTilt = -0.55;
-    float cosT = cos( camTilt ), sinT = sin( camTilt );
-    vp = vec3( vp.x, vp.y * cosT - vp.z * sinT, vp.y * sinT + vp.z * cosT );
+    float cam_tilt = -0.55;
+    float cos_t = cos( cam_tilt ), sin_t = sin( cam_tilt );
+    vp = vec3( vp.x, vp.y * cos_t - vp.z * sin_t, vp.y * sin_t + vp.z * cos_t );
     vp.z += 7.5;
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );

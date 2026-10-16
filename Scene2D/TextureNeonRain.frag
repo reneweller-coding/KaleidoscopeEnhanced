@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -266,26 +266,26 @@ void main()
     col += neon * 0.015;
     // Rain layers.
     float slant = -0.15 - 0.25 * clamp( slantP, 0.0, 1.0 );
-    float nLay = 2.0 + 2.0 * clamp( layerP, 0.0, 1.0 );
+    float n_lay = 2.0 + 2.0 * clamp( layerP, 0.0, 1.0 );
     float heavy = 0.25 + 0.5 * clamp( audioSpread, 0.0, 1.0 );
     float fall = 1.2 * sceneTime + 6.0 * audioAdvance;
     for ( int L = 0; L < 4; ++L )
     {
         float fl = float( L );
-        float on = smoothstep( fl - 0.5, fl + 0.5, nLay - 0.5 );
+        float on = smoothstep( fl - 0.5, fl + 0.5, n_lay - 0.5 );
         if ( on <= 0.0 )
             break;
         float depth = 1.0 + fl * 0.9;
         vec2  q = vec2( p.x - p.y * slant, p.y ) * depth;
-        float colW = 0.03;
-        float ci = floor( q.x / colW );
+        float col_w = 0.03;
+        float ci = floor( q.x / col_w );
         for ( int k = -1; k <= 1; ++k )
         {
             float c = ci + float( k );
             float h = hash21( vec2( c, fl ) );
             if ( h > heavy )
                 continue;
-            float x0 = ( c + 0.5 + 0.35 * ( hash21( vec2( fl, c ) + 3.0 ) - 0.5 ) ) * colW;
+            float x0 = ( c + 0.5 + 0.35 * ( hash21( vec2( fl, c ) + 3.0 ) - 0.5 ) ) * col_w;
             float len = ( 0.25 + 0.2 * hash21( vec2( c, fl ) + 5.0 ) ) / depth;
             float period = 1.6;
             float y = mod( q.y + fall * ( 1.0 + 0.3 * h ) + h * 10.0, period ); // drop head position cycles down

@@ -79,52 +79,52 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     const float L = 160.0;
-    float       camZ = time * 7.0 + audioAdvance * 15.0;
-    float       zRel = t * L;
-    float       zAbs = zRel + camZ;
+    float       cam_z = time * 7.0 + audioAdvance * 15.0;
+    float       z_rel = t * L;
+    float       z_abs = z_rel + cam_z;
 
     // Web node positions
-    float nodeAngle = ( ri / 20.0 ) * 6.2831853;
-    float webRadius = 7.0 + 3.0 * sin( ri * 1.7 + zAbs * 0.03 ) + audioSwell * 2.5;
+    float node_angle = ( ri / 20.0 ) * 6.2831853;
+    float web_radius = 7.0 + 3.0 * sin( ri * 1.7 + z_abs * 0.03 ) + audioSwell * 2.5;
 
     // Standing Kelvin wave oscillations along strings
-    float wave1 = sin( zAbs * 0.08 * tns + time * 3.0 ) * cos( ri * 1.5 ) * 1.8 * wav;
-    float wave2 = cos( zAbs * 0.06 * tns - time * 2.5 ) * sin( ri * 2.1 ) * 1.8 * wav;
-    float kickJolt = sin( zAbs * 0.15 - time * 8.0 ) * audioKick * 2.2;
+    float wave1 = sin( z_abs * 0.08 * tns + time * 3.0 ) * cos( ri * 1.5 ) * 1.8 * wav;
+    float wave2 = cos( z_abs * 0.06 * tns - time * 2.5 ) * sin( ri * 2.1 ) * 1.8 * wav;
+    float kick_jolt = sin( z_abs * 0.15 - time * 8.0 ) * audioKick * 2.2;
 
-    vec3 centerPos = vec3(
-        cos( nodeAngle ) * webRadius + wave1,
-        sin( nodeAngle ) * webRadius + wave2 + kickJolt,
-        zRel );
+    vec3 center_pos = vec3(
+        cos( node_angle ) * web_radius + wave1,
+        sin( node_angle ) * web_radius + wave2 + kick_jolt,
+        z_rel );
 
-    vec3 radialDir = normalize( vec3( cos( nodeAngle ), sin( nodeAngle ), 0.0 ) );
-    vec3 tangentDir = vec3( -radialDir.y, radialDir.x, 0.0 );
+    vec3 radial_dir = normalize( vec3( cos( node_angle ), sin( node_angle ), 0.0 ) );
+    vec3 tangent_dir = vec3( -radial_dir.y, radial_dir.x, 0.0 );
 
-    float ribbonWidth = ( 0.35 * wid ) * ( 1.0 + 0.3 * audioKick );
-    vec3  worldP = centerPos + tangentDir * ( side * ribbonWidth );
+    float ribbon_width = ( 0.35 * wid ) * ( 1.0 + 0.3 * audioKick );
+    vec3  world_p = center_pos + tangent_dir * ( side * ribbon_width );
 
     // Camera space
-    vec3 camPos = vec3( 0.0, 0.0, 0.0 );
-    vec3 relP = worldP - camPos;
-    relP.x -= eyeOff;
+    vec3 cam_pos = vec3( 0.0, 0.0, 0.0 );
+    vec3 rel_p = world_p - cam_pos;
+    rel_p.x -= eyeOff;
 
-    gl_Position = projM * vec4( relP.x, relP.y, -relP.z, 1.0 );
+    gl_Position = projM * vec4( rel_p.x, rel_p.y, -rel_p.z, 1.0 );
     gl_Position.x += eyeOff * 0.045 * gl_Position.w;
 
     vSide = side;
     vLength = t;
 
     // Relativistic light packet traveling down cosmic string
-    float packet = fract( zAbs * 0.04 - time * 4.0 - ri * 0.15 );
-    float packetGlow = exp( -packet * 8.0 ) * 2.5;
+    float packet = fract( z_abs * 0.04 - time * 4.0 - ri * 0.15 );
+    float packet_glow = exp( -packet * 8.0 ) * 2.5;
 
     // Cosmic string palette: Gravitational electric blue / violet / white
     vec3 col = imgPalette( ( ri * 0.5 + time ) * 0.159 ) * 1.4;
-    col = mix( col, vec3( 1.0, 0.95, 0.8 ), packetGlow * 0.6 );
+    col = mix( col, vec3( 1.0, 0.95, 0.8 ), packet_glow * 0.6 );
 
     if ( audioChromaHue != 0.0 )
         if ( hue > 0.001 )
             col = hueRot( col, hue );
 
-    vCol = vec4( col * ( 1.0 + packetGlow + audioHigh * 0.8 ), 1.0 );
+    vCol = vec4( col * ( 1.0 + packet_glow + audioHigh * 0.8 ), 1.0 );
 }

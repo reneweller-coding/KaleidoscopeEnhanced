@@ -161,12 +161,12 @@ void main()
     float dt = 0.2;
 
     vec3 col = vec3( 0.0 );
-    vec3 diskColor = imgPalette( 0.8 + audioCentroid * 0.2 );
+    vec3 disk_color = imgPalette( 0.8 + audioCentroid * 0.2 );
 
-    float inHorizon = 0.0;
+    float in_horizon = 0.0;
 
     // Tilt the accretion disk
-    mat2 diskTilt = rot( 0.2 );
+    mat2 disk_tilt = rot( 0.2 );
 
     for ( int i = 0; i < 80; i++ )
     {
@@ -175,7 +175,7 @@ void main()
         // Check if inside event horizon
         if ( r < rs )
         {
-            inHorizon = 1.0;
+            in_horizon = 1.0;
             break;
         }
 
@@ -187,7 +187,7 @@ void main()
 
         // Render accretion disk
         vec3 dp3 = p;
-        dp3.yz = diskTilt * dp3.yz; // Apply tilt
+        dp3.yz = disk_tilt * dp3.yz; // Apply tilt
 
         float dr = length( dp3.xz );
         float dy = abs( dp3.y );
@@ -200,33 +200,33 @@ void main()
             // time*5*(rs/dr) waechst unbegrenzt UND geht als
             // Rauschkoordinate weiter -- bei Uhr 3600 loest fbm dort
             // nichts mehr auf und die Scheibe wird strukturlos.
-            float flowSpeed = sceneTime * 5.0 * ( rs / dr ) + audioPhase * 2.0;
-            float diskDens = fbm( vec3( dr * 2.0, angle * 5.0 - flowSpeed, sceneTime ) );
+            float flow_speed = sceneTime * 5.0 * ( rs / dr ) + audioPhase * 2.0;
+            float disk_dens = fbm( vec3( dr * 2.0, angle * 5.0 - flow_speed, sceneTime ) );
 
             // Doppler shift (fake) based on velocity relative to camera
             vec3  vel = normalize( vec3( -dp3.z, 0.0, dp3.x ) );
             float doppler = dot( vel, v ); // > 0 means moving away (redshift), < 0 means towards (blueshift)
-            vec3  shiftedColor = mix( diskColor * vec3( 0.5, 0.8, 1.5 ), diskColor * vec3( 1.5, 0.8, 0.5 ),
-                                      doppler * 0.5 + 0.5 );
+            vec3  shifted_color = mix( disk_color * vec3( 0.5, 0.8, 1.5 ), disk_color * vec3( 1.5, 0.8, 0.5 ),
+                                       doppler * 0.5 + 0.5 );
 
             // Kick flashes in the disk
-            float flash = step( 0.9, hash11( floor( dr * 5.0 ) + floor( angle * 10.0 - flowSpeed ) ) );
-            shiftedColor *= 1.0 + flash * audioKick * 3.0;
+            float flash = step( 0.9, hash11( floor( dr * 5.0 ) + floor( angle * 10.0 - flow_speed ) ) );
+            shifted_color *= 1.0 + flash * audioKick * 3.0;
 
-            float alpha = smoothstep( 0.4, 0.8, diskDens ) * dp * 0.1 * ( rs * 3.0 / dr );
-            col += shiftedColor * alpha * ( 1.0 + audioSwell * 2.0 );
+            float alpha = smoothstep( 0.4, 0.8, disk_dens ) * dp * 0.1 * ( rs * 3.0 / dr );
+            col += shifted_color * alpha * ( 1.0 + audioSwell * 2.0 );
         }
 
         // Photon ring (intense glow near rs*1.5)
-        float photonDist = abs( r - rs * 1.5 );
-        if ( photonDist < 0.5 )
+        float photon_dist = abs( r - rs * 1.5 );
+        if ( photon_dist < 0.5 )
         {
-            col += diskColor * exp( -photonDist * 5.0 ) * 0.02 * ( 1.0 + audioSwell );
+            col += disk_color * exp( -photon_dist * 5.0 ) * 0.02 * ( 1.0 + audioSwell );
         }
     }
 
     // If ray escaped, sample background
-    if ( inHorizon < 0.5 )
+    if ( in_horizon < 0.5 )
     {
         col += background( v ) * ( 0.2 + audioSwell * 0.2 );
     }
@@ -238,7 +238,7 @@ void main()
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

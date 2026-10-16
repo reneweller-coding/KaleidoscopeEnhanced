@@ -32,25 +32,25 @@ uniform float     turbulence;   ///< audio treble/onset -> per-cell swirl streng
 uniform float     injectAmt;    ///< audio kick/bass/drop -> base injection strength
 uniform float     emitterPhase; ///< integrated (jump-free) wander phase for emitters
 
-const float TILE = 64.0;
-const float COLS = 5.0;
-const float ROWS = 4.0;
-const float NSLICES = COLS * ROWS; ///< 20
+const float Tile = 64.0;
+const float Cols = 5.0;
+const float Rows = 4.0;
+const float Nslices = Cols * Rows; ///< 20
 
 vec2 tileOrigin( float slice )
 {
-    float col = mod( slice, COLS );
-    float row = floor( slice / COLS );
-    return vec2( col, row ) * TILE;
+    float col = mod( slice, Cols );
+    float row = floor( slice / Cols );
+    return vec2( col, row ) * Tile;
 }
 
 /// Sample a texel by its LOCAL (0..TILE) position inside a given depth slice,
 /// clamped to stay inside that one cell (never bleeds into the neighbour).
 vec4 sampleSlice( float slice, vec2 localPx )
 {
-    slice = clamp( slice, 0.0, NSLICES - 1.0 );
+    slice = clamp( slice, 0.0, Nslices - 1.0 );
     vec2 o = tileOrigin( slice );
-    vec2 lp = clamp( localPx, vec2( 0.5 ), vec2( TILE - 0.5 ) );
+    vec2 lp = clamp( localPx, vec2( 0.5 ), vec2( Tile - 0.5 ) );
     return texture( texPrev, ( o + lp ) / resolution );
 }
 
@@ -65,18 +65,18 @@ float hash21( vec2 p )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    vec2  fragPx = gl_FragCoord.xy;
-    float col = floor( fragPx.x / TILE );
-    float row = floor( fragPx.y / TILE );
-    float slice = row * COLS + col;
-    vec2  local = mod( fragPx, TILE ); // 0..TILE local pixel in the cell
+    vec2  frag_px = gl_FragCoord.xy;
+    float col = floor( frag_px.x / Tile );
+    float row = floor( frag_px.y / Tile );
+    float slice = row * Cols + col;
+    vec2  local = mod( frag_px, Tile ); // 0..TILE local pixel in the cell
 
     if ( seedMode > 0.5 )
     {
         fragColor = vec4( 0.0 );
         return;
     }
-    if ( slice >= NSLICES )
+    if ( slice >= Nslices )
     {
         fragColor = vec4( 0.0 ); // unused atlas margin, if any
         return;
@@ -105,16 +105,16 @@ void main()
         // unbounded blow-up), so the ember->flame->white-hot gradient actually
         // has room to show instead of every emitter instantly clamping white.
         float inj = 0.0;
-        if ( local.y < TILE * 0.30 )
+        if ( local.y < Tile * 0.30 )
         {
             float sj0 = hash21( vec2( slice, 11.0 ) ) - 0.5;
             float sj1 = hash21( vec2( slice, 23.0 ) ) - 0.5;
             float sj2 = hash21( vec2( slice, 37.0 ) ) - 0.5;
             float sj3 = hash21( vec2( slice, 53.0 ) ) - 0.5;
-            vec2  c0 = vec2( 0.5 + 0.30 * sin( emitterPhase * 1.7 ) + sj0 * 0.30, 0.16 ) * TILE;
-            vec2  c1 = vec2( 0.5 + 0.30 * cos( emitterPhase * 1.3 + 2.1 ) + sj1 * 0.30, 0.10 ) * TILE;
-            vec2  c2 = vec2( 0.5 + 0.28 * sin( emitterPhase * 2.1 + 4.2 ) + sj2 * 0.30, 0.20 ) * TILE;
-            vec2  c3 = vec2( 0.5 + 0.28 * cos( emitterPhase * 1.9 + 1.1 ) + sj3 * 0.30, 0.08 ) * TILE;
+            vec2  c0 = vec2( 0.5 + 0.30 * sin( emitterPhase * 1.7 ) + sj0 * 0.30, 0.16 ) * Tile;
+            vec2  c1 = vec2( 0.5 + 0.30 * cos( emitterPhase * 1.3 + 2.1 ) + sj1 * 0.30, 0.10 ) * Tile;
+            vec2  c2 = vec2( 0.5 + 0.28 * sin( emitterPhase * 2.1 + 4.2 ) + sj2 * 0.30, 0.20 ) * Tile;
+            vec2  c3 = vec2( 0.5 + 0.28 * cos( emitterPhase * 1.9 + 1.1 ) + sj3 * 0.30, 0.08 ) * Tile;
             float f0 = 0.65 + 0.35 * hash21( vec2( 0.0, floor( time * 8.0 ) ) );
             float f1 = 0.65 + 0.35 * hash21( vec2( 1.0, floor( time * 8.0 ) ) );
             float f2 = 0.65 + 0.35 * hash21( vec2( 2.0, floor( time * 8.0 ) ) );
@@ -138,15 +138,15 @@ void main()
         vec4 above = sampleSlice( slice, local + vec2( 0.0, 1.6 ) );
         vec4 here = sampleSlice( slice, local );
 
-        vec4 depthPrev = sampleSlice( slice - 1.0, local );
-        vec4 depthNext = sampleSlice( slice + 1.0, local );
+        vec4 depth_prev = sampleSlice( slice - 1.0, local );
+        vec4 depth_next = sampleSlice( slice + 1.0, local );
 
         vec4 risen = mix( here, below, 0.55 );
         risen = mix( risen, above, 0.06 );
-        risen = mix( risen, ( depthPrev + depthNext ) * 0.5, 0.05 );
+        risen = mix( risen, ( depth_prev + depth_next ) * 0.5, 0.05 );
 
-        float heightFrac = local.y / TILE; // 0 base .. 1 top
-        float cool = 0.006 + 0.014 * heightFrac;
+        float height_frac = local.y / Tile; // 0 base .. 1 top
+        float cool = 0.006 + 0.014 * height_frac;
         float temp = risen.r * ( 1.0 - cool );
         float dens = risen.g * ( 1.0 - cool * 0.55 );
 

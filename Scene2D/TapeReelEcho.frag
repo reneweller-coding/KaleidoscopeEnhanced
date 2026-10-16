@@ -88,65 +88,65 @@ void main()
     vec3 col = img( gl_FragCoord.xy / resolution ) * 0.15 + vec3( 0.18, 0.18, 0.2 );
     col *= 0.9 + 0.1 * sin( p.y * 300.0 );
     col *= light;
-    vec2  reelL = vec2( -0.42, 0.18 ), reelR = vec2( 0.42, 0.18 );
-    float radL = 0.2 + 0.06 * sin( clock * 0.05 ); // supply reel pack (breathes very slowly)
-    float radR = 0.32 - radL * 0.6;
+    vec2  reel_l = vec2( -0.42, 0.18 ), reel_r = vec2( 0.42, 0.18 );
+    float rad_l = 0.2 + 0.06 * sin( clock * 0.05 ); // supply reel pack (breathes very slowly)
+    float rad_r = 0.32 - rad_l * 0.6;
     // Tape path: from the supply reel top, down over the heads (a straight
     // run along y = -0.12), up to the take-up reel.
     vec2  h0 = vec2( -0.3, -0.12 ), h1 = vec2( 0.3, -0.12 );
-    vec2  tan0 = reelL + vec2( -radL * 0.2, -radL );
-    vec2  tan1 = reelR + vec2( radR * 0.2, -radR );
+    vec2  tan0 = reel_l + vec2( -rad_l * 0.2, -rad_l );
+    vec2  tan1 = reel_r + vec2( rad_r * 0.2, -rad_r );
     float t0, t1, t2;
     float d0 = segDist( p, tan0, h0, t0 );
     float d1 = segDist( p, h0, h1, t1 );
     float d2 = segDist( p, h1, tan1, t2 );
-    float tapeD = min( d0, min( d1, d2 ) );
+    float tape_d = min( d0, min( d1, d2 ) );
     // Position along the whole path (0..1) for the oxide scroll.
     float along = ( d0 <= d1 && d0 <= d2 ) ? t0 * 0.25 : ( ( d1 <= d2 ) ? 0.25 + t1 * 0.5 : 0.75 + t2 * 0.25 );
-    float tapeW = 0.022;
-    float tape = smoothstep( tapeW, tapeW * 0.85, tapeD );
+    float tape_w = 0.022;
+    float tape = smoothstep( tape_w, tape_w * 0.85, tape_d );
     // The oxide: the photo scrolling along the tape with the clock.
     float scroll = along * 3.0 - clock * 0.6;
-    vec3  oxide = img( fract( vec2( scroll, 0.5 + ( tapeD / tapeW ) * 0.1 ) ) ) * vec3( 0.55, 0.45, 0.35 ) * 1.2;
+    vec3  oxide = img( fract( vec2( scroll, 0.5 + ( tape_d / tape_w ) * 0.1 ) ) ) * vec3( 0.55, 0.45, 0.35 ) * 1.2;
     col = mix( col, oxide * light, tape );
     // The printed spectrum: along the straight run, the record head at
     // x = -0.18 prints the bars; they scroll right and repeat at the
     // playback heads (x = 0.0, 0.18) dimmer: the echoes.
-    if ( d1 < tapeW * 3.0 && tapeD == d1 )
+    if ( d1 < tape_w * 3.0 && tape_d == d1 )
     {
         float x = p.x;
-        vec3  printCol = vec3( 0.0 );
+        vec3  print_col = vec3( 0.0 );
         for ( int e = 0; e < 3; ++e )
         {
             if ( float( e ) >= echoes )
                 break;
-            float headX = -0.18 + float( e ) * 0.18;
+            float head_x = -0.18 + float( e ) * 0.18;
             // The bar at this point: band by the position across the tape width.
-            float across = clamp( ( p.y + 0.12 ) / tapeW * 0.5 + 0.5, 0.0, 1.0 );
+            float across = clamp( ( p.y + 0.12 ) / tape_w * 0.5 + 0.5, 0.0, 1.0 );
             int   band = int( across * 31.0 );
             float en = clamp( audioSpectrum[band] * 1.6, 0.0, 1.0 );
-            float pattern = pow( 0.5 + 0.5 * sin( ( x - headX ) * 200.0 + scroll * 60.0 ), 6.0 );
-            float gain = pow( 0.5, float( e ) ) * step( headX, x ) * step( x, headX + 0.17 );
-            printCol += imgPalette( hue * 0.159 + float( band ) / 32.0 ) * pattern * en * gain;
+            float pattern = pow( 0.5 + 0.5 * sin( ( x - head_x ) * 200.0 + scroll * 60.0 ), 6.0 );
+            float gain = pow( 0.5, float( e ) ) * step( head_x, x ) * step( x, head_x + 0.17 );
+            print_col += imgPalette( hue * 0.159 + float( band ) / 32.0 ) * pattern * en * gain;
         }
-        col += printCol * 1.5 * tape;
+        col += print_col * 1.5 * tape;
     }
     // The reels: hub, spokes, tape pack, turning with the tape speed (v / r).
     for ( int r = 0; r < 2; ++r )
     {
-        vec2  c = ( r == 0 ) ? reelL : reelR;
-        float rad = ( r == 0 ) ? radL : radR;
+        vec2  c = ( r == 0 ) ? reel_l : reel_r;
+        float rad = ( r == 0 ) ? rad_l : rad_r;
         vec2  q = p - c;
         float rr = length( q );
         float ang = atan( q.y, q.x ) - clock * 0.6 / max( rad, 0.05 );
         float pack = smoothstep( rad, rad - 0.01, rr ) * step( 0.08, rr );
-        vec3  packCol = vec3( 0.35, 0.28, 0.22 ) * ( 0.7 + 0.3 * sin( rr * 300.0 ) ) * light;
+        vec3  pack_col = vec3( 0.35, 0.28, 0.22 ) * ( 0.7 + 0.3 * sin( rr * 300.0 ) ) * light;
         float flange = smoothstep( rad + 0.05, rad + 0.04, rr ) * ( 1.0 - pack ) * step( 0.08, rr );
         float spoke = pow( 0.5 + 0.5 * cos( ang * 3.0 ), 20.0 ) * step( 0.08, rr ) * step( rr, rad + 0.05 );
-        vec3  flangeCol = mix( vec3( 0.75, 0.75, 0.8 ), vec3( 0.4 ), 1.0 - spoke ) * light;
+        vec3  flange_col = mix( vec3( 0.75, 0.75, 0.8 ), vec3( 0.4 ), 1.0 - spoke ) * light;
         float hub = smoothstep( 0.08, 0.075, rr );
-        col = mix( col, packCol, pack );
-        col = mix( col, flangeCol, flange * 0.9 );
+        col = mix( col, pack_col, pack );
+        col = mix( col, flange_col, flange * 0.9 );
         col = mix( col, vec3( 0.6, 0.6, 0.65 ) * ( 0.6 + 0.4 * cos( ang * 3.0 ) ) * light, hub );
     }
     // The heads: three blocks under the straight run; the record head lamp on the kick, gaps glint on the treble.
@@ -168,20 +168,20 @@ void main()
         vec2  vc = vec2( float( v ) * 0.22, -0.38 );
         vec2  vq = p - vc;
         float dial = smoothstep( 0.1, 0.098, length( vq ) ) * step( 0.0, vq.y );
-        vec3  dialCol = vec3( 0.9, 0.85, 0.65 ) * light;
-        float scaleArc = smoothstep( 0.004, 0.0, abs( length( vq ) - 0.085 ) ) * step( 0.0, vq.y );
-        float needleAng = 2.6 - 2.2 * clamp( audioLevel, 0.0, 1.0 );
-        vec2  nd = vec2( cos( needleAng ), sin( needleAng ) );
+        vec3  dial_col = vec3( 0.9, 0.85, 0.65 ) * light;
+        float scale_arc = smoothstep( 0.004, 0.0, abs( length( vq ) - 0.085 ) ) * step( 0.0, vq.y );
+        float needle_ang = 2.6 - 2.2 * clamp( audioLevel, 0.0, 1.0 );
+        vec2  nd = vec2( cos( needle_ang ), sin( needle_ang ) );
         float tn;
         float needle = smoothstep( 0.004, 0.001, segDist( vq, vec2( 0.0 ), nd * 0.09, tn ) );
-        vec3  meter = mix( dialCol, vec3( 0.2 ), scaleArc );
+        vec3  meter = mix( dial_col, vec3( 0.2 ), scale_arc );
         meter = mix( meter, vec3( 0.1, 0.05, 0.05 ), needle );
-        meter = mix( meter, vec3( 0.8, 0.1, 0.1 ), scaleArc * step( atan( vq.y, vq.x ), 0.9 ) ); // the red zone
+        meter = mix( meter, vec3( 0.8, 0.1, 0.1 ), scale_arc * step( atan( vq.y, vq.x ), 0.9 ) ); // the red zone
         col = mix( col, meter, dial );
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

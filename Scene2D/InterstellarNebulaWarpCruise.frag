@@ -85,7 +85,7 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float dens = ( densityP > 0.01 ) ? densityP : 1.0;
-    float strMod = ( starsP > 0.01 ) ? starsP : 1.0;
+    float str_mod = ( starsP > 0.01 ) ? starsP : 1.0;
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
@@ -96,51 +96,51 @@ void main()
     vec3 ro = vec3( sin( t * 0.3 ) * 0.6, cos( t * 0.25 ) * 0.4, t * 2.0 );
     vec3 rd = normalize( vec3( uv, 1.2 + 0.2 * sin( audioSwell * 2.0 ) ) );
 
-    vec3  colAcc = vec3( 0.0 );
-    float transAcc = 1.0;
-    float totDist = 0.0;
+    vec3  col_acc = vec3( 0.0 );
+    float trans_acc = 1.0;
+    float tot_dist = 0.0;
 
     // Volumetric raymarching loop
     for ( int i = 0; i < 44; i++ )
     {
-        vec3 p = ro + rd * totDist;
+        vec3 p = ro + rd * tot_dist;
 
-        float gasNoise = fbm3D( p * 0.8, t );
+        float gas_noise = fbm3D( p * 0.8, t );
         // Sub-bass swells the cloud volume; the same factor also feeds the
         // Beer-Lambert absorption below, so thicker gas self-shadows instead of
         // simply glowing brighter.
-        float gasDensity = smoothstep( -0.2, 0.8, gasNoise ) * ( 0.04 * dens + 0.03 * audioLevel )
-                           * ( 1.0 + 0.3 * audioSubBass );
+        float gas_density = smoothstep( -0.2, 0.8, gas_noise ) * ( 0.04 * dens + 0.03 * audioLevel )
+                            * ( 1.0 + 0.3 * audioSubBass );
 
-        if ( gasDensity > 0.001 )
+        if ( gas_density > 0.001 )
         {
             // Protostellar core sparkle inside dense regions
-            float starSpark = pow( max( 0.0, sin( dot( p, vec3( 12.3, 45.6, 78.9 ) ) ) ), 32.0 ) * strMod;
+            float star_spark = pow( max( 0.0, sin( dot( p, vec3( 12.3, 45.6, 78.9 ) ) ) ), 32.0 ) * str_mod;
 
             // Emission color gradient based on gas temperature
-            vec3 palGas = imgPalette( gasNoise * 0.4 + p.z * 0.05 );
-            vec3 gasEmission = mix( vec3( 0.2, 1.1, 1.6 ), vec3( 1.8, 0.4, 0.9 ),
-                                    clamp( gasNoise * 0.5 + 0.5, 0.0, 1.0 ) );
-            gasEmission = mix( gasEmission, palGas, 0.45 );
+            vec3 pal_gas = imgPalette( gas_noise * 0.4 + p.z * 0.05 );
+            vec3 gas_emission = mix( vec3( 0.2, 1.1, 1.6 ), vec3( 1.8, 0.4, 0.9 ),
+                                     clamp( gas_noise * 0.5 + 0.5, 0.0, 1.0 ) );
+            gas_emission = mix( gas_emission, pal_gas, 0.45 );
 
-            vec3 gasColor = gasEmission + vec3( 1.8, 1.7, 1.2 ) * starSpark * ( 1.0 + 3.0 * audioKick ) * glw;
+            vec3 gas_color = gas_emission + vec3( 1.8, 1.7, 1.2 ) * star_spark * ( 1.0 + 3.0 * audioKick ) * glw;
 
             // Light integration with Beer-Lambert absorption
-            colAcc += gasColor * gasDensity * transAcc * ( 1.0 + 2.0 * audioKick );
-            transAcc *= ( 1.0 - gasDensity * 2.0 );
+            col_acc += gas_color * gas_density * trans_acc * ( 1.0 + 2.0 * audioKick );
+            trans_acc *= ( 1.0 - gas_density * 2.0 );
 
-            if ( transAcc < 0.02 )
+            if ( trans_acc < 0.02 )
                 break;
         }
 
-        totDist += 0.12;
+        tot_dist += 0.12;
     }
 
     // Background cosmic space texture
-    vec2 skyUV = fract( uv * 0.3 + vec2( t * 0.02, 0.0 ) );
-    vec3 bgTex = img( skyUV );
-    vec3 finalCol = bgTex * 0.25 * transAcc + colAcc;
+    vec2 sky_uv = fract( uv * 0.3 + vec2( t * 0.02, 0.0 ) );
+    vec3 bg_tex = img( sky_uv );
+    vec3 final_col = bg_tex * 0.25 * trans_acc + col_acc;
 
-    finalCol = pow( finalCol, vec3( 0.88 ) );
-    fragColor = vec4( clamp( finalCol, 0.0, 1.0 ), 1.0 );
+    final_col = pow( final_col, vec3( 0.88 ) );
+    fragColor = vec4( clamp( final_col, 0.0, 1.0 ), 1.0 );
 }

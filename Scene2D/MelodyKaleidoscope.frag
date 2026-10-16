@@ -97,22 +97,22 @@ void main()
     float halo = exp( -d * 8.0 ) * 0.35;
 
     // Colour by age and by the newest pitch; photo as the light behind.
-    vec3 lineCol = imgPalette( hue * 0.159 + 0.1 + 0.4 * ( age / 95.0 ) );
-    vec3 newCol = imgPalette( hue * 0.159 + 0.6 + 0.3 * clamp( audioMelodyPitch, 0.0, 1.0 ) );
-    lineCol = mix( newCol, lineCol, smoothstep( 0.0, 8.0, age ) );
+    vec3 line_col = imgPalette( hue * 0.159 + 0.1 + 0.4 * ( age / 95.0 ) );
+    vec3 new_col = imgPalette( hue * 0.159 + 0.6 + 0.3 * clamp( audioMelodyPitch, 0.0, 1.0 ) );
+    line_col = mix( new_col, line_col, smoothstep( 0.0, 8.0, age ) );
     vec2 uv = fract( vec2( mir * 0.6 + sceneAdvance * 0.01, r * 0.5 ) );
-    vec3 glass = img( uv ) * lineCol * 1.6;
-    vec3 col = glass * contour * ( 0.8 + 0.6 * audioLevel ) + lineCol * halo;
+    vec3 glass = img( uv ) * line_col * 1.6;
+    vec3 col = glass * contour * ( 0.8 + 0.6 * audioLevel ) + line_col * halo;
     // The dark field between: a dim photo so the ornament has a ground.
     col += img( fract( uv + 0.5 ) ) * imgPalette( hue * 0.159 + 0.6 ) * 0.12;
     // Seams and centre.
     float seam = exp( -min( loc, sector - loc ) * 50.0 ) * 0.2;
     col += imgPalette( hue * 0.159 + 0.9 ) * seam;
-    col += newCol * exp( -r * 10.0 ) * ( 0.5 + 1.5 * audioKick );
+    col += new_col * exp( -r * 10.0 ) * ( 0.5 + 1.5 * audioKick );
     col *= 0.85 + 0.35 * audioSwell;
     col *= 1.0 - 0.5 * smoothstep( 0.85, 1.15, r );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

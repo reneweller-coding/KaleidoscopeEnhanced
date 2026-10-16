@@ -47,37 +47,37 @@ void main()
     // GEOM_RIBBON packs the ribbon index into attrA.w; attrB.x is a random
     // hash01 in [0,1), so int(attrB.x) was always 0 and all 20 ribbons
     // collapsed onto ribbon 0 (see Scene3DShader::buildGeometry).
-    int   ribbonIdx = int( attrA.w );
+    int   ribbon_idx = int( attrA.w );
     float s = attrA.x;    // [0, 1] along ribbon
     float side = attrA.y; // -1 or +1
-    vHelixPhase = float( ribbonIdx ) / 20.0;
+    vHelixPhase = float( ribbon_idx ) / 20.0;
     vTexCoord = vec2( s * 6.0, side * 0.5 + 0.5 );
 
     float t = time * 0.4 + audioAdvance * 0.2;
 
     // 20 helical cholesteric molecular director ribbons
-    float xBase = ( float( ribbonIdx ) - 10.0 ) * 0.35;
+    float x_base = ( float( ribbon_idx ) - 10.0 ) * 0.35;
     float z = ( s - 0.5 ) * 7.5;
 
     // Helical molecular twist along Z axis: director n(z) = (cos(qz), sin(qz), 0)
     float qz = z * 4.0 * ptc * tws + t * 2.0;
-    float helixX = cos( qz ) * 0.3;
-    float helixY = sin( qz ) * 0.3;
+    float helix_x = cos( qz ) * 0.3;
+    float helix_y = sin( qz ) * 0.3;
 
-    vec3 p0 = vec3( xBase + helixX, helixY, z );
+    vec3 p0 = vec3( x_base + helix_x, helix_y, z );
 
     // Tangent & Binormal
     vec3 tangent = normalize( vec3( -sin( qz ) * 1.2, cos( qz ) * 1.2, 5.0 ) );
     vec3 binormal = normalize( cross( tangent, vec3( 0.0, 1.0, 0.0 ) ) );
 
-    float ribbonWidth = ( 0.045 + 0.02 * sin( s * 20.0 + t * 3.0 ) ) * wdp * ( 1.0 + audioKick * 0.7 );
-    vec3  worldPos = p0 + binormal * ( side * ribbonWidth );
-    vWorldPos = worldPos;
+    float ribbon_width = ( 0.045 + 0.02 * sin( s * 20.0 + t * 3.0 ) ) * wdp * ( 1.0 + audioKick * 0.7 );
+    vec3  world_pos = p0 + binormal * ( side * ribbon_width );
+    vWorldPos = world_pos;
 
     // Camera: the helices run along z — seen end-on they were just a row of
     // circles.  Orbit AROUND the bundle so the cholesteric twist shows from
     // the side, with a gentle pitch.
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float yaw = 1.25 + time * 0.12 + audioAdvance * 0.06;
     float cy = cos( yaw ), sy = sin( yaw );
     vp.xz = mat2( cy, -sy, sy, cy ) * vp.xz;

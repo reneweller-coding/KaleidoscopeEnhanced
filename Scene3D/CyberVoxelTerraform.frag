@@ -75,23 +75,23 @@ void main()
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;
 
     // Diffuse directional lighting
-    vec3  lightDir = normalize( vec3( 0.6, 1.0, -0.4 ) );
-    float diff = max( dot( vNormal, lightDir ), 0.0 ) * 0.7 + 0.3;
+    vec3  light_dir = normalize( vec3( 0.6, 1.0, -0.4 ) );
+    float diff = max( dot( vNormal, light_dir ), 0.0 ) * 0.7 + 0.3;
 
     // Projected photo mapping across voxel landscape
     vec3 photo = img( vUV );
 
     // Cyber voxel elevation color gradient
-    vec3 heightColor = imgPalette( 0.35 * clamp( vHeight / 2.5, 0.0, 1.0 ) )
-                       * ( 0.4 + 0.9 * clamp( vHeight / 2.5, 0.0, 1.0 ) );
-    heightColor = mix( heightColor, vec3( 1.0, 0.2, 0.8 ), clamp( ( vHeight - 1.5 ) / 1.5, 0.0, 1.0 ) );
+    vec3 height_color = imgPalette( 0.35 * clamp( vHeight / 2.5, 0.0, 1.0 ) )
+                        * ( 0.4 + 0.9 * clamp( vHeight / 2.5, 0.0, 1.0 ) );
+    height_color = mix( height_color, vec3( 1.0, 0.2, 0.8 ), clamp( ( vHeight - 1.5 ) / 1.5, 0.0, 1.0 ) );
 
     // Glowing neon voxel top face edge lines
-    float topFace = step( 0.8, vNormal.y );
-    vec3  neonRim = imgPalette( 0.45 + 0.30 * topFace ) * 1.5 * neo * ( 0.8 + audioKick * 2.0 );
+    float top_face = step( 0.8, vNormal.y );
+    vec3  neon_rim = imgPalette( 0.45 + 0.30 * top_face ) * 1.5 * neo * ( 0.8 + audioKick * 2.0 );
 
-    vec3 col = mix( photo, heightColor, 0.45 ) * diff;
-    col += neonRim * topFace * ( 0.6 + 0.4 * vHeight );
+    vec3 col = mix( photo, height_color, 0.45 ) * diff;
+    col += neon_rim * top_face * ( 0.6 + 0.4 * vHeight );
 
     if ( hue > 0.001 )
         col = hueRot( col, hue );

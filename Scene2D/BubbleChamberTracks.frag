@@ -108,7 +108,7 @@ void main()
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
     float curl = 1.5 + 3.5 * clamp( curlP, 0.0, 1.0 );
-    int   nTracks = 8 + int( clamp( tracksP, 0.0, 1.0 ) * 8.0 );
+    int   n_tracks = 8 + int( clamp( tracksP, 0.0, 1.0 ) * 8.0 );
     float clock = sceneAdvance * 0.35 + sceneTime * 0.05;
 
     // The chamber: the photo dim and blue-green through the liquid.
@@ -119,7 +119,7 @@ void main()
 
     for ( int i = 0; i < 16; ++i )
     {
-        if ( i >= nTracks )
+        if ( i >= n_tracks )
             break;
         float fi = float( i );
         // Life: each track has its own period and phase; age 0..1.
@@ -131,8 +131,8 @@ void main()
         vec2  s = vec2( ( hash11( seed + 1.0 ) - 0.5 ) * 0.3, ( hash11( seed + 2.0 ) - 0.5 ) * 0.3 ); // near the vertex
         float a0 = hash11( seed + 3.0 ) * 6.2831853;
         float k = ( hash11( seed + 4.0 ) - 0.5 ) * 2.0 * curl;
-        float maxLen = 0.6 + 1.2 * hash11( seed + 5.0 );
-        float len = maxLen * smoothstep( 0.0, 0.6, age );
+        float max_len = 0.6 + 1.2 * hash11( seed + 5.0 );
+        float len = max_len * smoothstep( 0.0, 0.6, age );
         float fade = 1.0 - smoothstep( 0.6, 1.0, age );
         float along;
         float d = trackDist( p, s, a0, k, len, along );
@@ -143,8 +143,8 @@ void main()
         vec3  tc = imgPalette( hue * 0.159 + fract( fi * 0.17 ) );
         col += ( tc * 0.7 + 0.5 ) * line * fade * ( 0.5 + 0.9 * onset );
         // A faint glow around the track head.
-        vec2 headPos = s; // the head glow is approximated at the birth vertex for cheapness
-        col += tc * exp( -length( p - headPos ) * 12.0 ) * 0.06 * fade;
+        vec2 head_pos = s; // the head glow is approximated at the birth vertex for cheapness
+        col += tc * exp( -length( p - head_pos ) * 12.0 ) * 0.06 * fade;
     }
     // The interaction vertex: a bright point glowing with the bass.
     col += imgPalette( hue * 0.159 + 0.9 ) * exp( -length( p ) * 10.0 ) * ( 0.3 + 1.0 * clamp( audioBass, 0.0, 1.0 ) );
@@ -155,7 +155,7 @@ void main()
     col += vec3( 0.6 ) * cross * 0.35;
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

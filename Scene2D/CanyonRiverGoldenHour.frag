@@ -129,8 +129,8 @@ void main()
     vec3  up = cross( fw, rt );
     vec3  rd = normalize( p.x * rt + p.y * up + 1.1 * fw );
 
-    vec3 sunDir = normalize( vec3( 0.6, 0.75, 0.3 ) );
-    vec3 sunC = vec3( 1.0, 0.72, 0.38 ) * ( 1.2 + 0.5 * bass );
+    vec3 sun_dir = normalize( vec3( 0.6, 0.75, 0.3 ) );
+    vec3 sun_c = vec3( 1.0, 0.72, 0.38 ) * ( 1.2 + 0.5 * bass );
 
     // March the height field.
     float t = 0.5, h = 0.0;
@@ -150,7 +150,7 @@ void main()
     }
     // Sky: gold near the sun, blue above.
     vec3 sky = mix( vec3( 1.0, 0.75, 0.45 ), vec3( 0.4, 0.55, 0.8 ), smoothstep( -0.05, 0.5, rd.y ) );
-    sky += vec3( 1.0, 0.8, 0.5 ) * pow( max( dot( rd, sunDir ), 0.0 ), 12.0 ) * 0.8;
+    sky += vec3( 1.0, 0.8, 0.5 ) * pow( max( dot( rd, sun_dir ), 0.0 ), 12.0 ) * 0.8;
     vec3 col = sky;
     if ( hit )
     {
@@ -169,7 +169,7 @@ void main()
         float sh = 1.0, st = 1.5;
         for ( int k = 0; k < 24; ++k )
         {
-            vec3  S = P + n * 0.6 + sunDir * st;
+            vec3  S = P + n * 0.6 + sun_dir * st;
             float hs = S.y - terrain( S.xz );
             sh = min( sh, 4.0 * hs / st );
             st += max( hs * 0.5, 0.4 );
@@ -177,9 +177,9 @@ void main()
                 break;
         }
         sh = clamp( sh, 0.0, 1.0 );
-        float dif = max( dot( n, sunDir ), 0.0 ) * sh;
+        float dif = max( dot( n, sun_dir ), 0.0 ) * sh;
         vec3  amb = vec3( 0.35, 0.42, 0.6 ) * ( 0.55 + 0.45 * n.y );
-        col = rock * ( amb * 0.6 + sunC * dif );
+        col = rock * ( amb * 0.6 + sun_c * dif );
         // The river along the floor: green water, sky and gold on it, glitter.
         float dx = abs( P.x - path( P.z ) );
         if ( P.y < 1.0 && dx < 5.0 )
@@ -203,7 +203,7 @@ void main()
     }
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

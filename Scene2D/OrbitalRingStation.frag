@@ -197,7 +197,7 @@ float stationSDF( vec3 p, out float part )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float rSz = ( ringP > 0.01 ? ringP : 1.0 );
+    float r_sz = ( ringP > 0.01 ? ringP : 1.0 );
     float cld = ( cloudP > 0.01 ? cloudP : 1.0 );
     float glw = ( glowP > 0.01 ? glowP : 1.0 );
     float hue = ( hueP > 0.01 ? hueP : 0.0 );
@@ -222,10 +222,10 @@ void main()
     // recorded a black disc and a station with nothing to reflect.
     vec3 sun = normalize( vec3( -0.50, 0.46, -0.73 ) );
 
-    vec3 airTint = imgPalette( 0.66 );
-    airTint = mix( vec3( 0.42, 0.60, 1.0 ), airTint, 0.35 );
-    vec3 bandTint = imgPalette( 0.20 + 0.15 * audioCentroid );
-    bandTint = mix( vec3( 0.72, 0.58, 0.40 ), bandTint, 0.45 );
+    vec3 air_tint = imgPalette( 0.66 );
+    air_tint = mix( vec3( 0.42, 0.60, 1.0 ), air_tint, 0.35 );
+    vec3 band_tint = imgPalette( 0.20 + 0.15 * audioCentroid );
+    band_tint = mix( vec3( 0.72, 0.58, 0.40 ), band_tint, 0.45 );
 
     // ---------------- starfield ----------------
     vec3 col = vec3( 0.004, 0.006, 0.013 );
@@ -248,13 +248,13 @@ void main()
     vec3        pc = vec3( 0.0, -0.34, 0.0 );
     vec3        pro = ro - pc;
 
-    float tHit = iSphere( pro, rd, R );
-    float planetDepth = 1e9;
+    float t_hit = iSphere( pro, rd, R );
+    float planet_depth = 1e9;
 
-    if ( tHit > 0.0 )
+    if ( t_hit > 0.0 )
     {
-        planetDepth = tHit;
-        vec3  sp = normalize( pro + rd * tHit );
+        planet_depth = t_hit;
+        vec3  sp = normalize( pro + rd * t_hit );
         float lam = dot( sp, sun );
         float day = smoothstep( -0.10, 0.22, lam );
 
@@ -283,18 +283,18 @@ void main()
         float deck = mix( belt, curl, 0.42 );
         deck = clamp( ( deck - 0.5 ) * ( 1.0 + 1.1 * cld ) + 0.5, 0.0, 1.0 );
 
-        vec3 lightBand = mix( bandTint * 0.55, vec3( 0.96, 0.92, 0.86 ), deck );
-        vec3 darkBand = mix( bandTint * 0.28, bandTint * 0.80, deck );
-        vec3 surf = mix( darkBand, lightBand, deck );
+        vec3 light_band = mix( band_tint * 0.55, vec3( 0.96, 0.92, 0.86 ), deck );
+        vec3 dark_band = mix( band_tint * 0.28, band_tint * 0.80, deck );
+        vec3 surf = mix( dark_band, light_band, deck );
 
         // One great storm oval, the way a gas giant carries one.
-        vec3  stormAxis = normalize( vec3( 0.55, -0.28, 0.79 ) );
-        float sd = dot( rot, stormAxis );
+        vec3  storm_axis = normalize( vec3( 0.55, -0.28, 0.79 ) );
+        float sd = dot( rot, storm_axis );
         float storm = smoothstep( 0.965, 0.995, sd );
-        surf = mix( surf, mix( vec3( 0.85, 0.42, 0.26 ), bandTint, 0.35 ), storm * 0.85 );
+        surf = mix( surf, mix( vec3( 0.85, 0.42, 0.26 ), band_tint, 0.35 ), storm * 0.85 );
 
         vec3 pcol = surf * ( 0.05 + 1.15 * max( lam, 0.0 ) ) * day;
-        pcol += airTint * ( 1.0 - day ) * 0.022;
+        pcol += air_tint * ( 1.0 - day ) * 0.022;
         col = pcol;
     }
 
@@ -306,11 +306,11 @@ void main()
         if ( h > 0.0 )
         {
             float ta = -b - sqrt( h ), tb = -b + sqrt( h );
-            float seg = max( 0.0, min( tb, planetDepth ) - max( ta, 0.0 ) );
+            float seg = max( 0.0, min( tb, planet_depth ) - max( ta, 0.0 ) );
             float dens = seg / ( R * 0.22 );
             vec3  mp = normalize( pro + rd * max( ta, 0.0 ) );
             float lam = max( dot( mp, sun ), 0.0 );
-            col += airTint * dens * pow( lam, 1.25 ) * ( 0.55 + 0.40 * audioSwell ) * 0.60;
+            col += air_tint * dens * pow( lam, 1.25 ) * ( 0.55 + 0.40 * audioSwell ) * 0.60;
             col += vec3( 1.0, 0.72, 0.46 ) * dens * pow( lam, 7.0 ) * 0.35;
         }
     }
@@ -322,29 +322,29 @@ void main()
         if ( abs( denom ) > 1e-4 )
         {
             float tr = ( pc.y - ro.y ) / denom;
-            if ( tr > 0.0 && tr < planetDepth )
+            if ( tr > 0.0 && tr < planet_depth )
             {
                 vec3  rp = ro + rd * tr - pc;
                 float rr = length( rp.xz );
                 if ( rr > 1.32 && rr < 2.34 )
                 {
                     // Banded ring with gaps; the photo palette tints it.
-                    float bandN = fbm3( vec3( rr * 26.0, 0.0, 0.0 ), 4 );
-                    float gap = smoothstep( 0.42, 0.50, bandN );
+                    float band_n = fbm3( vec3( rr * 26.0, 0.0, 0.0 ), 4 );
+                    float gap = smoothstep( 0.42, 0.50, band_n );
                     float edge = smoothstep( 1.32, 1.42, rr ) * smoothstep( 2.34, 2.18, rr );
                     float dens = gap * edge * 0.85;
 
                     // The planet's own shadow falls across the far side.
-                    vec3  toSun = sun;
+                    vec3  to_sun = sun;
                     float shadow = 1.0;
-                    float bb = dot( rp, toSun );
+                    float bb = dot( rp, to_sun );
                     float cc = dot( rp, rp ) - R * R;
                     if ( bb < 0.0 && bb * bb - cc > 0.0 )
                         shadow = 0.18;
 
-                    vec3 ringCol = mix( vec3( 0.68, 0.63, 0.56 ), bandTint, 0.45 );
-                    col = mix( col, ringCol * ( 0.35 + 0.75 * shadow ), clamp( dens, 0.0, 1.0 ) );
-                    planetDepth = min( planetDepth, tr );
+                    vec3 ring_col = mix( vec3( 0.68, 0.63, 0.56 ), band_tint, 0.45 );
+                    col = mix( col, ring_col * ( 0.35 + 0.75 * shadow ), clamp( dens, 0.0, 1.0 ) );
+                    planet_depth = min( planet_depth, tr );
                 }
             }
         }
@@ -352,17 +352,17 @@ void main()
 
     // ---------------- the station ----------------
     {
-        float k = 0.115 * max( rSz, 0.3 ); // station size in planet radii
-        vec3  stPos = ro + fwd * ( 1.55 + 0.10 * sin( t * 0.31 ) )
-                      + rgt * ( 0.22 + 0.06 * sin( t * 0.43 ) )
-                      + upv * ( 0.30 + 0.05 * sin( t * 0.37 ) );
+        float k = 0.115 * max( r_sz, 0.3 ); // station size in planet radii
+        vec3  st_pos = ro + fwd * ( 1.55 + 0.10 * sin( t * 0.31 ) )
+                       + rgt * ( 0.22 + 0.06 * sin( t * 0.43 ) )
+                       + upv * ( 0.30 + 0.05 * sin( t * 0.37 ) );
 
         // The ring turns on its own axis -- a habitat ring has to spin.
         float spin = t * 1.35 + audioAdvance * 0.20;
         // Tilt it so we see the ring as an ellipse, not edge-on or flat.
         float tilt = 1.02;
 
-        vec3 lro = ( ro - stPos ) / k;
+        vec3 lro = ( ro - st_pos ) / k;
         vec3 lrd = rd;
         // world -> station: undo tilt about X, then spin about Y.
         float ct = cos( -tilt ), st = sin( -tilt );
@@ -372,7 +372,7 @@ void main()
         lro.xz = mat2( cs2, -sn2, sn2, cs2 ) * lro.xz;
         lrd.xz = mat2( cs2, -sn2, sn2, cs2 ) * lrd.xz;
 
-        float d = 0.0, part = 0.0, hitPart = -1.0;
+        float d = 0.0, part = 0.0, hit_part = -1.0;
         vec3  hp = vec3( 0.0 );
         int   steps = 0;
         for ( int i = 0; i < 90; ++i )
@@ -382,7 +382,7 @@ void main()
             steps = i;
             if ( ds < 0.006 * ( 1.0 + d * 0.2 ) )
             {
-                hitPart = part;
+                hit_part = part;
                 hp = p;
                 break;
             }
@@ -391,7 +391,7 @@ void main()
                 break;
         }
 
-        if ( hitPart >= 0.0 && d * k < planetDepth )
+        if ( hit_part >= 0.0 && d * k < planet_depth )
         {
             vec2  e = vec2( 0.008, 0.0 );
             float u;
@@ -417,13 +417,13 @@ void main()
 
             vec3 scol = albedo * ( 0.24 + 1.85 * dif );
             // The planet throws light back up onto the station's underside.
-            float downFace = max( -n.y, 0.0 );
-            scol += mix( airTint, bandTint, 0.5 ) * albedo * downFace * 0.70;
+            float down_face = max( -n.y, 0.0 );
+            scol += mix( air_tint, band_tint, 0.5 ) * albedo * down_face * 0.70;
             scol += vec3( 0.72, 0.84, 1.0 ) * fres * 0.32;
             scol *= clamp( 1.0 - float( steps ) * 0.006, 0.40, 1.0 );
 
             // Window band around the hab ring's outer face.
-            if ( hitPart < 0.5 )
+            if ( hit_part < 0.5 )
             {
                 float ang = atan( hp.z, hp.x );
                 float band = smoothstep( 0.20, 0.05, abs( hp.y ) );
@@ -435,13 +435,13 @@ void main()
                         * ( 0.75 + 0.45 * audioSwell ) * glw;
             }
             // Docking beacons on the rim modules.
-            if ( hitPart > 1.5 )
+            if ( hit_part > 1.5 )
             {
                 float flash = pow( max( 0.0, 1.0 - abs( fract( audioBeatPhase ) - 0.10 ) * 7.0 ), 3.0 );
                 scol += vec3( 1.0, 0.35, 0.28 ) * ( 0.25 + 1.7 * flash * ( 0.4 + audioKick ) ) * glw;
             }
             // Hub beacon.
-            if ( hitPart > 0.5 && hitPart < 1.5 )
+            if ( hit_part > 0.5 && hit_part < 1.5 )
             {
                 float hb = smoothstep( 0.9, 1.15, hp.y );
                 float flash = pow( max( 0.0, 1.0 - abs( fract( audioBeatPhase * 0.5 ) - 0.08 ) * 8.0 ), 3.0 );
@@ -455,7 +455,7 @@ void main()
     if ( hue > 0.001 )
         col = hueRot( col, 0.20 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.40 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.40 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -66,60 +66,60 @@ void main()
     vec2 f = fract( p ) - vec2( 0.5 );
 
     // Diagonal fold lines: alternating triangular facets
-    float isEvenRow = mod( cell.y, 2.0 );
-    float diag = ( isEvenRow > 0.5 ) ? ( f.x + f.y ) : ( f.x - f.y );
-    float facetID = ( diag > 0.0 ) ? 1.0 : -1.0;
+    float is_even_row = mod( cell.y, 2.0 );
+    float diag = ( is_even_row > 0.5 ) ? ( f.x + f.y ) : ( f.x - f.y );
+    float facet_id = ( diag > 0.0 ) ? 1.0 : -1.0;
 
     // Folding kinematics angle (Miura-ori dihedral angle alpha)
-    float foldAngle = ( 0.5 + 0.35 * sin( audioPhase * 0.8 + t ) ) * fld;
-    foldAngle += audioKick * 0.4; // Snap fold on kick
+    float fold_angle = ( 0.5 + 0.35 * sin( audioPhase * 0.8 + t ) ) * fld;
+    fold_angle += audioKick * 0.4; // Snap fold on kick
 
     // 3D Surface normal of the folding facet
-    float nx = f.x * foldAngle * facetID;
-    float ny = f.y * foldAngle * facetID;
+    float nx = f.x * fold_angle * facet_id;
+    float ny = f.y * fold_angle * facet_id;
     float nz = sqrt( max( 1.0 - nx * nx - ny * ny, 0.05 ) );
     vec3  normal = normalize( vec3( nx, ny, nz ) );
 
     // Reflected ray vector (viewer looks along -Z)
-    vec3 viewDir = vec3( 0.0, 0.0, 1.0 );
-    vec3 ref = reflect( -viewDir, normal );
+    vec3 view_dir = vec3( 0.0, 0.0, 1.0 );
+    vec3 ref = reflect( -view_dir, normal );
 
     // Photo texture reflection with multi-channel chromatic dispersion
-    vec2 baseUV = cell * 0.15 + ref.xy * 0.4;
-    vec2 dispR = baseUV + ref.xy * 0.015;
-    vec2 dispG = baseUV;
-    vec2 dispB = baseUV - ref.xy * 0.015;
+    vec2 base_uv = cell * 0.15 + ref.xy * 0.4;
+    vec2 disp_r = base_uv + ref.xy * 0.015;
+    vec2 disp_g = base_uv;
+    vec2 disp_b = base_uv - ref.xy * 0.015;
 
-    vec3 photoR = img( fract( dispR ) );
-    vec3 photoG = img( fract( dispG ) );
-    vec3 photoB = img( fract( dispB ) );
-    vec3 photoMirror = vec3( photoR.r, photoG.g, photoB.b );
+    vec3 photo_r = img( fract( disp_r ) );
+    vec3 photo_g = img( fract( disp_g ) );
+    vec3 photo_b = img( fract( disp_b ) );
+    vec3 photo_mirror = vec3( photo_r.r, photo_g.g, photo_b.b );
 
     // Origami crease shadow and edge glints
-    float creaseX = abs( abs( f.x ) - 0.5 );
-    float creaseY = abs( abs( f.y ) - 0.5 );
-    float creaseDiag = abs( diag );
-    float creaseLine = min( min( creaseX, creaseY ), creaseDiag );
-    float creaseShadow = smoothstep( 0.0, 0.04, creaseLine );
+    float crease_x = abs( abs( f.x ) - 0.5 );
+    float crease_y = abs( abs( f.y ) - 0.5 );
+    float crease_diag = abs( diag );
+    float crease_line = min( min( crease_x, crease_y ), crease_diag );
+    float crease_shadow = smoothstep( 0.0, 0.04, crease_line );
 
     // Specular highlight on folded mirror facets
-    vec3  lightDir = normalize( vec3( 0.5, 0.8, 1.0 ) );
-    vec3  halfVec = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( normal, halfVec ), 0.0 ), 32.0 );
+    vec3  light_dir = normalize( vec3( 0.5, 0.8, 1.0 ) );
+    vec3  half_vec = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( normal, half_vec ), 0.0 ), 32.0 );
 
     // Shading composition
-    vec3 mirrorBase = photoMirror * ( 0.8 + 0.5 * audioLevel );
-    vec3 col = mirrorBase * ( 0.4 + 0.6 * creaseShadow );
+    vec3 mirror_base = photo_mirror * ( 0.8 + 0.5 * audioLevel );
+    vec3 col = mirror_base * ( 0.4 + 0.6 * crease_shadow );
     col += vec3( 1.0, 0.95, 0.85 ) * spec * ( 1.2 + 2.0 * audioHigh );
 
     // Crease laser line on kick
-    float laserCrease = exp( -creaseLine * 30.0 ) * audioKick * 2.0;
-    col += vec3( 0.2, 0.8, 1.0 ) * laserCrease;
+    float laser_crease = exp( -crease_line * 30.0 ) * audioKick * 2.0;
+    col += vec3( 0.2, 0.8, 1.0 ) * laser_crease;
 
     col = hueRot( col, audioChromaHue + hue );
     col = pow( col, vec3( 0.88 ) );
 
-    vec3 _catTone = ( col ) * 0.6;
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( col ) * 0.6;
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

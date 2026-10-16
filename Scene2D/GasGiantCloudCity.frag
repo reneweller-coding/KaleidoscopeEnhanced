@@ -122,27 +122,27 @@ void main()
     vec3 col = vec3( 0.0 );
     // Helligkeits-Floor: auf dunklen Fotos war die reine Palette schwarz
     // und die ganze Szene blieb es mit ("bleibt schwarz").
-    vec3 cloudColor = max( imgPalette( 0.3 ), vec3( 0.14, 0.11, 0.08 ) );
-    vec3 lightningColor = max( imgPalette( 0.8 + audioCentroid * 0.1 ), vec3( 0.65, 0.6, 0.5 ) );
-    vec3 cityColor = max( imgPalette( 0.5 ), vec3( 0.30, 0.24, 0.14 ) );
+    vec3 cloud_color = max( imgPalette( 0.3 ), vec3( 0.14, 0.11, 0.08 ) );
+    vec3 lightning_color = max( imgPalette( 0.8 + audioCentroid * 0.1 ), vec3( 0.65, 0.6, 0.5 ) );
+    vec3 city_color = max( imgPalette( 0.5 ), vec3( 0.30, 0.24, 0.14 ) );
 
     // 1. Thick Volumetric Clouds
     // We use a simplified raymarch/layering for speed
 
-    float totalDensity = 0.0;
-    vec3  atmosCol = vec3( 0.0 );
+    float total_density = 0.0;
+    vec3  atmos_col = vec3( 0.0 );
 
     for ( int i = 0; i < 5; ++i )
     {
         float z = 1.0 + float( i ) * 0.5; // distance of layer
-        vec2  pUv = uv * z;
-        pUv.y += sin( time * 0.1 ) * 0.1; // slow bobbing
+        vec2  p_uv = uv * z;
+        p_uv.y += sin( time * 0.1 ) * 0.1; // slow bobbing
 
         // Parallax movement
-        float layerDrift = drift / z;
+        float layer_drift = drift / z;
 
         // Massive cloud bands
-        vec3  p3 = vec3( pUv.x, pUv.y * 5.0 * cp, layerDrift );
+        vec3  p3 = vec3( p_uv.x, p_uv.y * 5.0 * cp, layer_drift );
         float clouds = fbm( p3 );
 
         // Add turbulent swirls
@@ -152,71 +152,71 @@ void main()
 
         // Lightning deep in the clouds
         // Triggers randomly but heavily influenced by audioKick
-        float flashTrigger = step( 0.9, hash11( floor( p3.x * 2.0 ) + floor( p3.z * 0.5 ) + floor( time * 4.00 ) ) );
-        float flash = flashTrigger * audioKick * 5.0 * density;
+        float flash_trigger = step( 0.9, hash11( floor( p3.x * 2.0 ) + floor( p3.z * 0.5 ) + floor( time * 4.00 ) ) );
+        float flash = flash_trigger * audioKick * 5.0 * density;
 
         // Add color
         float alpha = density * 0.4;
-        vec3  layerCol = mix( cloudColor * ( 0.4 + audioSwell * 0.35 ), lightningColor, flash );
+        vec3  layer_col = mix( cloud_color * ( 0.4 + audioSwell * 0.35 ), lightning_color, flash );
 
-        atmosCol += layerCol * alpha * ( 1.0 - totalDensity );
-        totalDensity += alpha;
+        atmos_col += layer_col * alpha * ( 1.0 - total_density );
+        total_density += alpha;
 
-        if ( totalDensity > 0.95 )
+        if ( total_density > 0.95 )
             break;
     }
 
-    col = atmosCol;
+    col = atmos_col;
 
     // 2. Floating City Structures
     // Sleek, dark geometric shapes floating in the foreground and midground
     // They pass by occasionally
 
-    float structDrift = drift * 1.5;
-    vec2  structUv = uv * 2.0;
+    float struct_drift = drift * 1.5;
+    vec2  struct_uv = uv * 2.0;
 
     // Grid for placing structures
-    float gridX = floor( structUv.x * 2.0 + structDrift * 0.5 );
-    float gridZ = floor( structDrift ); // using time as depth progression
+    float grid_x = floor( struct_uv.x * 2.0 + struct_drift * 0.5 );
+    float grid_z = floor( struct_drift ); // using time as depth progression
 
-    float structHash = hash11( gridX * 12.3 + gridZ * 45.6 );
+    float struct_hash = hash11( grid_x * 12.3 + grid_z * 45.6 );
 
-    if ( structHash > ( 1.0 - 0.2 * cy ) )
+    if ( struct_hash > ( 1.0 - 0.2 * cy ) )
     { // Probability of a structure
         // Local coordinates within the cell
-        vec2 localUv = fract( vec2( structUv.x * 2.0 + structDrift * 0.5, structUv.y + structHash ) );
-        localUv = localUv * 2.0 - 1.0;
+        vec2 local_uv = fract( vec2( struct_uv.x * 2.0 + struct_drift * 0.5, struct_uv.y + struct_hash ) );
+        local_uv = local_uv * 2.0 - 1.0;
 
         // Shape of the floating structure (aerodynamic/sleek)
-        float d = length( vec2( localUv.x, localUv.y * 5.0 ) ); // stretched vertically
+        float d = length( vec2( local_uv.x, local_uv.y * 5.0 ) ); // stretched vertically
 
         if ( d < 0.3 )
         {
-            vec3 sCol = vec3( 0.05 ); // dark hull
+            vec3 s_col = vec3( 0.05 ); // dark hull
 
             // Neon strips/windows
-            float windows = step( 0.8, sin( localUv.y * 100.0 ) );
-            float edgeLight = smoothstep( 0.25, 0.3, d );
+            float windows = step( 0.8, sin( local_uv.y * 100.0 ) );
+            float edge_light = smoothstep( 0.25, 0.3, d );
 
-            sCol = mix( sCol, cityColor * ( 1.0 + audioSwell ), windows * ( 1.0 - edgeLight ) * cy );
+            s_col = mix( s_col, city_color * ( 1.0 + audioSwell ), windows * ( 1.0 - edge_light ) * cy );
 
             // Atmospheric fog over the structure based on its "depth"
             // The structure is in front, so minimal fog, but edges fade into clouds
             float fog = smoothstep( 0.2, 0.3, d );
 
-            col = mix( sCol, col, fog );
+            col = mix( s_col, col, fog );
         }
     }
 
     // 3. Fast passing wisps of gas (very close to camera)
     float wisps = fbm( vec3( uv * 10.0, drift * 3.0 ) );
-    col = mix( col, cloudColor * ( 0.7 + audioSwell ), smoothstep( 0.35, 0.75, wisps ) * 0.55 );
+    col = mix( col, cloud_color * ( 0.7 + audioSwell ), smoothstep( 0.35, 0.75, wisps ) * 0.55 );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
     // Soft-knee exposure
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

@@ -111,40 +111,40 @@ void main()
     float T = sceneTime + sceneAdvance * 0.5;
 
     float horizon = -0.3;
-    vec3  sunC = mix( vec3( 1.0, 0.6, 0.25 ), vec3( 1.0, 0.8, 0.5 ), clamp( audioCentroid, 0.0, 1.0 ) )
-                 * ( 0.85 + 0.35 * swell );
-    sunC = mix( sunC, imgPalette( 0.08 + hue * 0.159 ), 0.12 );
+    vec3  sun_c = mix( vec3( 1.0, 0.6, 0.25 ), vec3( 1.0, 0.8, 0.5 ), clamp( audioCentroid, 0.0, 1.0 ) )
+                  * ( 0.85 + 0.35 * swell );
+    sun_c = mix( sun_c, imgPalette( 0.08 + hue * 0.159 ), 0.12 );
 
     // Sky: green-teal storm light overhead, gold under the storm to the left.
-    vec3 col = mix( vec3( 0.95, 0.62, 0.3 ) * sunC, vec3( 0.14, 0.22, 0.26 ), smoothstep( -0.3, 0.15, p.y ) );
+    vec3 col = mix( vec3( 0.95, 0.62, 0.3 ) * sun_c, vec3( 0.14, 0.22, 0.26 ), smoothstep( -0.3, 0.15, p.y ) );
     col = mix( col, vec3( 0.07, 0.1, 0.14 ), smoothstep( 0.1, 0.5, p.y ) );
-    col += sunC * exp( -length( p - vec2( -0.85, -0.26 ) ) * 4.0 ) * 0.6;
+    col += sun_c * exp( -length( p - vec2( -0.85, -0.26 ) ) * 4.0 ) * 0.6;
 
     // The anvil: a wide flat overhang spreading right across the top.
-    float anvilB = 0.3 - 0.06 * p.x + 0.04 * ( fbm( vec2( p.x * 3.0, 1.0 ) ) - 0.5 );
-    if ( p.y > anvilB )
+    float anvil_b = 0.3 - 0.06 * p.x + 0.04 * ( fbm( vec2( p.x * 3.0, 1.0 ) ) - 0.5 );
+    if ( p.y > anvil_b )
     {
         float tex = fbm( vec2( p.x * 2.5 - T * 0.004, p.y * 5.0 ) );
         vec3  ac = mix( vec3( 0.12, 0.15, 0.2 ), vec3( 0.3, 0.33, 0.38 ), tex );
-        ac += sunC * 0.3 * exp( -( p.y - anvilB ) * 12.0 ) * smoothstep( 0.3, -0.7, p.x ); // lit underside edge
+        ac += sun_c * 0.3 * exp( -( p.y - anvil_b ) * 12.0 ) * smoothstep( 0.3, -0.7, p.x ); // lit underside edge
         // Mammatus: round pouches hanging from the anvil's underside.
         float pouch = smoothstep( 0.45, 0.75, fbm( vec2( p.x * 9.0, p.y * 12.0 ) + 4.0 ) );
-        ac *= 0.85 + 0.25 * pouch * exp( -( p.y - anvilB ) * 10.0 );
-        col = mix( col, ac, smoothstep( 0.0, 0.02, p.y - anvilB ) );
+        ac *= 0.85 + 0.25 * pouch * exp( -( p.y - anvil_b ) * 10.0 );
+        col = mix( col, ac, smoothstep( 0.0, 0.02, p.y - anvil_b ) );
     }
 
     // The mesocyclone: stacked tiers round a vertical axis.
     vec2  axis = vec2( -0.05, 0.0 );
     float base = -0.08;
-    float top = anvilB + 0.02;
+    float top = anvil_b + 0.02;
     float y = p.y;
     float tiers = 4.0 + 2.0 * cp;
     float ty = ( y - base ) / ( top - base ); // 0..1 up the updraft
     // A bell: broad over the flat base, narrowing into the anvil.
-    float wB = ( 0.4 + 0.1 * cp ) * ( 0.78 + 0.3 * sin( 3.14159 * clamp( ty * 0.85 + 0.1, 0.0, 1.0 ) ) )
-               * ( 1.0 - 0.35 * ty * ty );
+    float w_b = ( 0.4 + 0.1 * cp ) * ( 0.78 + 0.3 * sin( 3.14159 * clamp( ty * 0.85 + 0.1, 0.0, 1.0 ) ) )
+                * ( 1.0 - 0.35 * ty * ty );
     float bulge = 0.008 * sin( ty * tiers * 3.14159 * 2.0 + 1.0 );
-    float w = wB + bulge + 0.04 * ( fbm( vec2( y * 7.0, p.x * 2.0 ) ) - 0.5 );
+    float w = w_b + bulge + 0.04 * ( fbm( vec2( y * 7.0, p.x * 2.0 ) ) - 0.5 );
     float dx = p.x - axis.x;
     // Seen from a little below: each tier's lower edge is an ellipse arc.
     float arc = 0.06 * ( 1.0 - clamp( dx * dx / ( w * w ), 0.0, 1.0 ) );
@@ -159,9 +159,9 @@ void main()
         // Light: the left (sunset) side glows, the right is steel-blue shade.
         float lit = smoothstep( 0.6, -0.9, phi );
         vec3  shade = vec3( 0.12, 0.17, 0.24 );
-        vec3  c = mix( shade, sunC * 0.9, lit * ( 0.6 + 0.4 * shelf ) );
+        vec3  c = mix( shade, sun_c * 0.9, lit * ( 0.6 + 0.4 * shelf ) );
         c *= 0.6 + 0.6 * striae;
-        c += sunC * pow( 1.0 - band, 16.0 ) * lit * 0.3; // lip on each tier
+        c += sun_c * pow( 1.0 - band, 16.0 ) * lit * 0.3; // lip on each tier
         // Soft outline against the sky.
         float edge = smoothstep( w, w - 0.03, abs( dx ) );
         col = mix( col, c, edge * smoothstep( -0.05, 0.02, ty ) * smoothstep( 1.02, 0.95, ty ) );
@@ -177,7 +177,7 @@ void main()
         float wall = smoothstep( 1.0, 0.55, wr + 0.25 * ( fbm( p * 18.0 ) - 0.5 ) ) * step( wq.y, 0.07 ) * 0.9;
         float wt = fbm( vec2( asin( clamp( wq.x / ww, -1.0, 1.0 ) ) * 2.0 - T * 0.08 * spd, wq.y * 30.0 ) );
         vec3  wc = vec3( 0.1, 0.13, 0.16 ) * ( 0.7 + 0.6 * wt ) * ( 1.0 - 0.3 * clamp( audioBass, 0.0, 1.0 ) );
-        wc += sunC * 0.15 * smoothstep( 0.1, -0.2, wq.x );
+        wc += sun_c * 0.15 * smoothstep( 0.1, -0.2, wq.x );
         col = mix( col, wc, wall );
     }
     // Rain curtain off to the right: translucent grey streaks to the ground.
@@ -202,11 +202,11 @@ void main()
         float z = 0.1 / d;
         vec3  field = mix( vec3( 0.25, 0.18, 0.08 ), vec3( 0.08, 0.07, 0.05 ), smoothstep( -0.8, 0.4, p.x ) );
         field *= 0.7 + 0.3 * noise2( vec2( p.x * z * 20.0, z * 3.0 ) );
-        field += sunC * 0.25 * exp( -d * 6.0 ) * smoothstep( 0.2, -0.8, p.x );
+        field += sun_c * 0.25 * exp( -d * 6.0 ) * smoothstep( 0.2, -0.8, p.x );
         // The road: converging to a point on the horizon.
         float rx = p.x / d * 0.1 - 0.02;
         float road = smoothstep( 0.03, 0.026, abs( rx ) );
-        field = mix( field, vec3( 0.12, 0.11, 0.1 ) + sunC * 0.05, road );
+        field = mix( field, vec3( 0.12, 0.11, 0.1 ) + sun_c * 0.05, road );
         field += vec3( 0.8, 0.7, 0.4 ) * smoothstep( 0.0012, 0.0, abs( rx ) ) * 0.15; // centre line
         // Fence posts along the right of the road.
         float fx = ( p.x / d * 0.1 - 0.07 );
@@ -214,10 +214,10 @@ void main()
         field = mix( field, vec3( 0.02 ), post * step( 0.01, d ) );
         col = field;
     }
-    col += sunC * exp( -abs( p.y - horizon ) * 120.0 ) * 0.25 * smoothstep( 0.3, -0.8, p.x );
+    col += sun_c * exp( -abs( p.y - horizon ) * 120.0 ) * 0.25 * smoothstep( 0.3, -0.8, p.x );
 
     col *= 0.9 + 0.2 * audioLevel;
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

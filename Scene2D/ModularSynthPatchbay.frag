@@ -110,10 +110,10 @@ void main()
 
     // The rack: two rows of modules.  Column width from cols; rails at
     // the row edges.
-    float colW = aspect / cols;
-    float rowH = 0.48;
-    vec2  cell = vec2( floor( ( p.x + aspect * 0.5 ) / colW ), floor( ( p.y + 0.5 ) / rowH ) );
-    vec2  cuv = vec2( fract( ( p.x + aspect * 0.5 ) / colW ), fract( ( p.y + 0.5 ) / rowH ) );
+    float col_w = aspect / cols;
+    float row_h = 0.48;
+    vec2  cell = vec2( floor( ( p.x + aspect * 0.5 ) / col_w ), floor( ( p.y + 0.5 ) / row_h ) );
+    vec2  cuv = vec2( fract( ( p.x + aspect * 0.5 ) / col_w ), fract( ( p.y + 0.5 ) / row_h ) );
     float mid = hash21( cell + 3.1 );
     // Panel: brushed aluminium with the photo as the graphic, faint.
     vec3 panel = vec3( 0.72, 0.72, 0.74 ) * ( 0.9 + 0.1 * sin( p.y * 500.0 ) );
@@ -126,39 +126,40 @@ void main()
     float gap = smoothstep( 0.02, 0.0, min( cuv.x, 1.0 - cuv.x ) ) + smoothstep( 0.02, 0.0, min( cuv.y, 1.0 - cuv.y ) );
     panel *= 1.0 - gap * 0.7;
     vec2 screw = min( cuv, 1.0 - cuv ) - 0.05;
-    panel = mix( panel, vec3( 0.5 ), smoothstep( 0.012, 0.008, length( screw * vec2( colW, rowH ) ) ) );
+    panel = mix( panel, vec3( 0.5 ), smoothstep( 0.012, 0.008, length( screw * vec2( col_w, row_h ) ) ) );
     vec3 col = panel * light;
     // Module contents by kind: knobs (0), scope (1), spectrum (2), LEDs (3).
     int kind = int( mod( floor( mid * 7.0 ), 4.0 ) );
     if ( cell.y < 0.0 || cell.y > 1.0 )
         kind = 0;
-    vec2 local = ( cuv - 0.5 ) * vec2( colW, rowH ); // local metric coords
+    vec2 local = ( cuv - 0.5 ) * vec2( col_w, row_h ); // local metric coords
     if ( kind == 0 || dark > 0.5 )
     {
         // Knobs: a grid of 2 x 3 knobs, each turning slowly at its own rate.
         for ( int k = 0; k < 6; ++k )
         {
-            vec2  kc = vec2( float( k % 2 ) - 0.5, float( k / 2 ) - 1.0 ) * vec2( colW * 0.45, rowH * 0.28 );
+            vec2  kc = vec2( float( k % 2 ) - 0.5, float( k / 2 ) - 1.0 ) * vec2( col_w * 0.45, row_h * 0.28 );
             vec2  kq = local - kc;
             float kr = length( kq );
-            float knobR = 0.032;
-            float cap = smoothstep( knobR, knobR - 0.004, kr );
+            float knob_r = 0.032;
+            float cap = smoothstep( knob_r, knob_r - 0.004, kr );
             float rot = clock * ( 0.3 + 0.5 * hash11( mid * 40.0 + float( k ) ) ) + float( k );
             vec2  ptr = vec2( cos( rot ), sin( rot ) );
             float pointer = smoothstep( 0.004, 0.001, abs( dot( kq, vec2( -ptr.y, ptr.x ) ) ) )
-                            * step( 0.0, dot( kq, ptr ) ) * step( kr, knobR * 0.9 );
-            vec3 knobCol = mix( vec3( 0.1, 0.1, 0.12 ), vec3( 0.85, 0.85, 0.8 ) * light, 0.5 + 0.5 * sin( kr * 200.0 ) )
-                               * 0.5
-                           + vec3( 0.05 );
-            knobCol = mix( knobCol, vec3( 0.95 ), pointer );
-            col = mix( col, knobCol, cap );
-            col = mix( col, vec3( 0.3 ), smoothstep( 0.004, 0.0, abs( kr - knobR - 0.006 ) ) );
+                            * step( 0.0, dot( kq, ptr ) ) * step( kr, knob_r * 0.9 );
+            vec3  knob_col = mix( vec3( 0.1, 0.1, 0.12 ), vec3( 0.85, 0.85, 0.8 ) * light,
+                                  0.5 + 0.5 * sin( kr * 200.0 ) )
+                                 * 0.5
+                             + vec3( 0.05 );
+            knob_col = mix( knob_col, vec3( 0.95 ), pointer );
+            col = mix( col, knob_col, cap );
+            col = mix( col, vec3( 0.3 ), smoothstep( 0.004, 0.0, abs( kr - knob_r - 0.006 ) ) );
         }
     }
     else if ( kind == 1 )
     {
         // Oscilloscope: a dark screen with the waveform, phosphor green.
-        vec2  sq = local / vec2( colW * 0.8, rowH * 0.6 );
+        vec2  sq = local / vec2( col_w * 0.8, row_h * 0.6 );
         float screen = step( abs( sq.x ), 0.5 ) * step( abs( sq.y ), 0.5 );
         vec3  scr = vec3( 0.02, 0.05, 0.03 );
         float wi = clamp( sq.x + 0.5, 0.0, 1.0 ) * 63.0;
@@ -175,36 +176,36 @@ void main()
     else if ( kind == 2 )
     {
         // Spectrum module: 32 LED bars.
-        vec2  sq = local / vec2( colW * 0.8, rowH * 0.6 );
+        vec2  sq = local / vec2( col_w * 0.8, row_h * 0.6 );
         float screen = step( abs( sq.x ), 0.5 ) * step( abs( sq.y ), 0.5 );
         float bx = ( sq.x + 0.5 ) * 32.0;
         int   band = int( clamp( bx, 0.0, 31.0 ) );
         float en = clamp( audioSpectrum[band] * 1.5, 0.0, 1.0 );
         float lev = sq.y + 0.5;
         float lit = smoothstep( 0.02, 0.0, lev - en ) * step( 0.1, fract( bx ) ) * step( 0.15, fract( lev * 12.0 ) );
-        vec3  barCol = mix( vec3( 0.2, 0.9, 0.3 ), vec3( 1.0, 0.3, 0.2 ), lev );
-        col = mix( col, vec3( 0.03 ) + barCol * lit * 1.5, screen );
+        vec3  bar_col = mix( vec3( 0.2, 0.9, 0.3 ), vec3( 1.0, 0.3, 0.2 ), lev );
+        col = mix( col, vec3( 0.03 ) + bar_col * lit * 1.5, screen );
     }
     else
     {
         // LED module: twelve LEDs lit by the chroma classes, a trigger LED on the kick.
         for ( int c = 0; c < 12; ++c )
         {
-            vec2  lc = vec2( float( c % 3 ) - 1.0, float( c / 3 ) - 1.5 ) * vec2( colW * 0.28, rowH * 0.18 );
+            vec2  lc = vec2( float( c % 3 ) - 1.0, float( c / 3 ) - 1.5 ) * vec2( col_w * 0.28, row_h * 0.18 );
             float d = length( local - lc );
             float e = clamp( audioChroma[c] * 1.5, 0.0, 1.0 );
             vec3  lcol = imgPalette( hue * 0.159 + float( c ) / 12.0 ) * 1.4 + 0.2;
             col = mix( col, vec3( 0.08 ), smoothstep( 0.014, 0.011, d ) );
             col += lcol * e * ( smoothstep( 0.012, 0.004, d ) * 1.5 + exp( -d * 60.0 ) * 0.6 );
         }
-        vec2 trig = local - vec2( 0.0, rowH * 0.42 );
+        vec2 trig = local - vec2( 0.0, row_h * 0.42 );
         col = mix( col, vec3( 0.08 ), smoothstep( 0.016, 0.013, length( trig ) ) );
         col += vec3( 1.0, 0.25, 0.15 )
                * ( smoothstep( 0.014, 0.004, length( trig ) ) * 1.5 + exp( -length( trig ) * 50.0 ) * 0.8 ) * audioKick;
     }
     // Rails between the rows.
     col = mix( col, vec3( 0.55, 0.55, 0.58 ) * light,
-               smoothstep( 0.012, 0.006, fract( ( p.y + 0.5 ) / rowH ) * rowH ) * 0.8 );
+               smoothstep( 0.012, 0.006, fract( ( p.y + 0.5 ) / row_h ) * row_h ) * 0.8 );
     // Patch cables: catenaries between jack positions (fixed per activation), lit by the band they carry.
     for ( int i = 0; i < 12; ++i )
     {
@@ -230,7 +231,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

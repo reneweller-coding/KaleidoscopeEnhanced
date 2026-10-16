@@ -92,27 +92,27 @@ void main()
     float alpha = smoothstep( 0.5, 0.05, r );
 
     // Particle species color (quarks=gold, muons=cyan, electrons=magenta)
-    vec3 specColor = vec3( 0.0 );
+    vec3 spec_color = vec3( 0.0 );
     if ( vSpecies < 0.33 )
     {
-        specColor = vec3( 1.0, 0.8, 0.2 ); // Quarks / Gluons
+        spec_color = vec3( 1.0, 0.8, 0.2 ); // Quarks / Gluons
     }
     else if ( vSpecies < 0.66 )
     {
-        specColor = vec3( 0.1, 0.9, 1.0 ); // Muons / Cherenkov
+        spec_color = vec3( 0.1, 0.9, 1.0 ); // Muons / Cherenkov
     }
     else
     {
-        specColor = vec3( 1.0, 0.2, 0.7 ); // Higgs decay cascades
+        spec_color = vec3( 1.0, 0.2, 0.7 ); // Higgs decay cascades
     }
 
     // A breath of the photo palette on top of the species identity.
-    specColor = palTint( specColor, vSpecies, 0.20 );
+    spec_color = palTint( spec_color, vSpecies, 0.20 );
 
     // Lower gain + soft compression: thousands of additive tracks summed the
     // old x2.0 into pure white (metric scan: saturation 0.01) -- the species
     // colours only survive if a single fragment stays below clip.
-    vec3 col = specColor * min( vEnergy, 1.6 ) * enp * glw * 0.45;
+    vec3 col = spec_color * min( vEnergy, 1.6 ) * enp * glw * 0.45;
     col = col / ( 1.0 + 0.45 * max( col.r, max( col.g, col.b ) ) );
 
     if ( hue > 0.001 )

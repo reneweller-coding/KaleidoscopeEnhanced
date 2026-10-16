@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -238,16 +238,16 @@ void main()
     vec2       a = mod( q, s ) - s * 0.5;
     vec2       b = mod( q - s * 0.5, s ) - s * 0.5;
     vec2       l = dot( a, a ) < dot( b, b ) ? a : b;
-    vec2       id = floor( q - l + 0.01 );                                      // cell identity (space only)
-    float      hexD = max( abs( l.x ) * 0.866 + abs( l.y ) * 0.5, abs( l.y ) ); // hex distance
-    float      rimW = 0.03 + 0.1 * clamp( rimP, 0.0, 1.0 );
-    float      tubeR = 0.5 - rimW;
+    vec2       id = floor( q - l + 0.01 );                                       // cell identity (space only)
+    float      hex_d = max( abs( l.x ) * 0.866 + abs( l.y ) * 0.5, abs( l.y ) ); // hex distance
+    float      rim_w = 0.03 + 0.1 * clamp( rimP, 0.0, 1.0 );
+    float      tube_r = 0.5 - rim_w;
     float      r = length( l );
     // Inside a tube: its own tunnel.
     float h = hash21( id );
     float pace = 1.0 + ( h - 0.5 ) * 1.2 * clamp( audioSpread, 0.0, 1.0 );
     float travel = ( 0.5 * sceneTime + 3.0 * audioAdvance ) * pace + h * 10.0;
-    float z = tubeR / max( r, 1e-3 );
+    float z = tube_r / max( r, 1e-3 );
     float ang = atan( l.y, l.x ) + h * 6.28;
     float wz = 0.3 + 0.4 * clamp( wallZoomP, 0.0, 1.0 );
     vec2  uv = vec2( ang / 3.14159265, ( z + travel ) * wz * 0.5 ) + hash22( id ); // one full turn = 2 = one mirror
@@ -263,15 +263,15 @@ void main()
     float ring = pow( 0.5 + 0.5 * sin( ( z + travel ) * 2.0 ), 12.0 );
     vec3  tube = wall * ( 0.35 + 0.75 * smoothstep( 1.0, 2.5, z ) ) + gc * ring * 0.5;
     tube = mix( gc * ( 0.4 + 1.2 * kick ), tube, fog );
-    tube += gc * exp( -r / tubeR * 8.0 ) * ( 0.6 + 1.5 * kick );
+    tube += gc * exp( -r / tube_r * 8.0 ) * ( 0.6 + 1.5 * kick );
     // Rims: brushed metal, lit from the upper left.
-    vec3  rimC = imgLod( q * 0.05 + 0.5, 3.0 ) * 0.3 + 0.18;
+    vec3  rim_c = imgLod( q * 0.05 + 0.5, 3.0 ) * 0.3 + 0.18;
     float rl = 0.6 + 0.4 * dot( normalize( l + 1e-4 ), normalize( vec2( -0.6, 0.8 ) ) );
-    rimC *= rl;
+    rim_c *= rl;
     float px = fwidth( r ) * 1.2;
-    float inTube = smoothstep( tubeR + px, tubeR - px, r );
-    vec3  col = mix( rimC, tube, inTube );
-    col += vec3( 1.0, 0.97, 0.9 ) * exp( -abs( r - tubeR ) / ( px * 1.5 ) ) * 0.25 * rl; // lip highlight
-    col *= 1.0 - 0.5 * smoothstep( 0.46, 0.5, hexD );                                    // seams between rims
+    float in_tube = smoothstep( tube_r + px, tube_r - px, r );
+    vec3  col = mix( rim_c, tube, in_tube );
+    col += vec3( 1.0, 0.97, 0.9 ) * exp( -abs( r - tube_r ) / ( px * 1.5 ) ) * 0.25 * rl; // lip highlight
+    col *= 1.0 - 0.5 * smoothstep( 0.46, 0.5, hex_d );                                    // seams between rims
     finish( col );
 }

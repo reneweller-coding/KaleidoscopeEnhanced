@@ -120,37 +120,37 @@ void main()
 
     // Camera rotation
     float t = time * 0.15 * spd + audioAdvance * 0.1;
-    mat2  rotXZ = mat2( cos( t ), sin( t ), -sin( t ), cos( t ) );
-    ro.xz = rotXZ * ro.xz;
-    rd.xz = rotXZ * rd.xz;
+    mat2  rot_xz = mat2( cos( t ), sin( t ), -sin( t ), cos( t ) );
+    ro.xz = rot_xz * ro.xz;
+    rd.xz = rot_xz * rd.xz;
 
     // Volumetric Raymarching Loop
-    vec3  accColor = vec3( 0.0 );
+    vec3  acc_color = vec3( 0.0 );
     float transmittance = 1.0;
-    float stepSize = 0.12;
+    float step_size = 0.12;
 
-    float shockwaveRadius = 0.45 + mod( time * 0.18 * spd + audioAdvance * 0.22, 2.4 )
-                            + audioKick * 0.35;
+    float shockwave_radius = 0.45 + mod( time * 0.18 * spd + audioAdvance * 0.22, 2.4 )
+                             + audioKick * 0.35;
 
     for ( int i = 0; i < 28; i++ )
     {
-        float depth = 1.0 + float( i ) * stepSize;
+        float depth = 1.0 + float( i ) * step_size;
         vec3  p = ro + rd * depth;
 
         // Radial distance from supernova core
         float dist = length( p );
 
         // Calculate density with noise and shockwave front
-        float shockFront = smoothstep( 0.3, 0.0, abs( dist - shockwaveRadius ) );
+        float shock_front = smoothstep( 0.3, 0.0, abs( dist - shockwave_radius ) );
         float n = fbm3D( p * 1.5 + vec3( 0.0, 0.0, time * 0.4 * spd ) );
 
         float d = smoothstep( 2.5, 0.2, dist ) * n * dens * 0.045; // the broad fog was drawing a solid ball
-        d += shockFront * ( 1.6 + 1.4 * ( audioKick + audioBass ) );
+        d += shock_front * ( 1.6 + 1.4 * ( audioKick + audioBass ) );
 
         // Radial EJECTA filaments streaking away from the core, plus a
         // white-hot centre - the difference between fog and an explosion.
         float fil = pow( fbm3D( normalize( p ) * 5.0 + vec3( 7.0 ) ), 3.5 )
-                    * smoothstep( shockwaveRadius + 0.25, shockwaveRadius * 0.2, dist )
+                    * smoothstep( shockwave_radius + 0.25, shockwave_radius * 0.2, dist )
                     * smoothstep( 0.10, 0.45, dist ); // shell, not the core fill
         d += fil * 2.6 * dens;                        // ejecta filaments carry the explosion
         d += smoothstep( 0.40, 0.05, dist ) * 0.55;
@@ -158,8 +158,8 @@ void main()
         if ( d > 0.01 )
         {
             // Map sample point to 2D UV for source image sampling
-            vec2 sampleUV = vec2( atan( p.z, p.x ) / 6.283185 + 0.5, p.y * 0.3 + 0.5 );
-            vec3 imgCol = img( fract( sampleUV ) );
+            vec2 sample_uv = vec2( atan( p.z, p.x ) / 6.283185 + 0.5, p.y * 0.3 + 0.5 );
+            vec3 img_col = img( fract( sample_uv ) );
 
             // TEMPERATURE ramp, not photo mud: white-hot core, gold shell,
             // ember red, violet outskirts.  The photo only textures it.
@@ -167,18 +167,18 @@ void main()
             // is white-hot, at the front gold, outside ember red fading to
             // violet.  Absolute dist thresholds never fired -- the marched
             // samples all sit past them.
-            float hot = clamp( 1.0 - dist / max( shockwaveRadius, 0.25 ), 0.0, 1.0 );
+            float hot = clamp( 1.0 - dist / max( shockwave_radius, 0.25 ), 0.0, 1.0 );
             vec3  fire = mix( vec3( 1.0, 0.32, 0.07 ), vec3( 1.0, 0.92, 0.62 ),
                               smoothstep( 0.15, 0.95, hot ) );
             fire = mix( vec3( 0.35, 0.12, 0.30 ), fire, smoothstep( 0.0, 0.35, hot ) );
-            vec3 glow = fire * ( 0.75 + 0.5 * dot( imgCol, vec3( 0.333 ) ) );
+            vec3 glow = fire * ( 0.75 + 0.5 * dot( img_col, vec3( 0.333 ) ) );
             glow *= ( 1.0 + audioKick * 0.45 + audioHigh * 0.3 );
-            glow += vec3( 1.0, 0.85, 0.60 ) * shockFront * 1.4; // golden shock rim
+            glow += vec3( 1.0, 0.85, 0.60 ) * shock_front * 1.4; // golden shock rim
 
             // Emission & Absorption
-            float stepDensity = d * stepSize * 2.5;
-            accColor += transmittance * glow * stepDensity;
-            transmittance *= exp( -stepDensity * 1.2 );
+            float step_density = d * step_size * 2.5;
+            acc_color += transmittance * glow * step_density;
+            transmittance *= exp( -step_density * 1.2 );
 
             if ( transmittance < 0.02 )
                 break;
@@ -186,23 +186,23 @@ void main()
     }
 
     // Add background texture glow
-    vec3 bgCol = img( fract( uv * 0.5 + 0.5 ) ) * 0.15 * transmittance;
-    vec3 finalCol = accColor + bgCol;
+    vec3 bg_col = img( fract( uv * 0.5 + 0.5 ) ) * 0.15 * transmittance;
+    vec3 final_col = acc_color + bg_col;
 
     // Add chromatic lens flare at center
-    float centerDist = length( uv );
-    float flare = 0.10 / ( centerDist + 0.10 ) * flr * ( audioKick * 0.5 + audioLevel * 0.5 );
-    vec3  flareCol = imgPalette( 0.30 * audioCentroid ) * 1.4;
-    finalCol += flareCol * flare;
+    float center_dist = length( uv );
+    float flare = 0.10 / ( center_dist + 0.10 ) * flr * ( audioKick * 0.5 + audioLevel * 0.5 );
+    vec3  flare_col = imgPalette( 0.30 * audioCentroid ) * 1.4;
+    final_col += flare_col * flare;
 
     if ( hueP > 0.0 )
     {
-        finalCol = hueRot( finalCol, 0.22 * sin( hueP ) ); // full rotation turned the FIRE cyan
+        final_col = hueRot( final_col, 0.22 * sin( hueP ) ); // full rotation turned the FIRE cyan
     }
 
     // Catalogue review: soft-knee exposure — hot audio compresses
     // instead of clipping the whole frame to white.
-    vec3 _catTone = ( finalCol ) * 0.85; // 0.34 crushed the explosion into a dim blue ball
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( _catTone, 1.0 );
+    vec3 cat_tone = ( final_col ) * 0.85; // 0.34 crushed the explosion into a dim blue ball
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( cat_tone, 1.0 );
 }

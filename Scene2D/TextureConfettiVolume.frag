@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -245,17 +245,17 @@ void main()
     { // far to near
         float fi = float( i );
         float z = ( fi + 1.0 - z0 ) * dz; // depth of this slice
-        float sliceId = floor( travel / dz ) + fi;
+        float slice_id = floor( travel / dz ) + fi;
         float fade = smoothstep( float( NS ) * dz, float( NS ) * dz - 2.0, z ) * smoothstep( 0.2, 0.6, z );
         vec2  q = p * z * ( 3.0 - 1.5 * clamp( sizeP, 0.0, 1.0 ) ); // perspective: the slice's plane
         float swirl = ( 0.2 + 0.5 * clamp( audioSpread, 0.0, 1.0 ) );
-        q += swirl * vec2( sin( sliceId * 1.3 + 0.2 * sceneTime ), cos( sliceId * 0.7 - 0.15 * sceneTime ) );
+        q += swirl * vec2( sin( slice_id * 1.3 + 0.2 * sceneTime ), cos( slice_id * 0.7 - 0.15 * sceneTime ) );
         vec2  gi = floor( q );
         vec2  f = fract( q ) - 0.5;
-        float h = hash21( gi + sliceId * 7.13 );
+        float h = hash21( gi + slice_id * 7.13 );
         if ( h > 0.25 + 0.5 * clamp( densityP, 0.0, 1.0 ) )
             continue;
-        vec2  c = 0.3 * ( hash22( gi + sliceId ) - 0.5 );
+        vec2  c = 0.3 * ( hash22( gi + slice_id ) - 0.5 );
         float rot = sceneTime * ( 1.0 + 2.0 * h ) + h * 6.28;
         float flip = cos( sceneTime * ( 1.3 + 2.0 * fract( h * 7.0 ) ) + h * 11.0 );
         vec2  l = rot2( rot ) * ( f - c );
@@ -273,13 +273,13 @@ void main()
         float flake = smoothstep( px, -px, sd );
         if ( flake <= 0.0 )
             continue;
-        vec3 pc = imgLod( gi * 0.07 + 0.5 + sliceId * 0.013, 3.0 );
+        vec3 pc = imgLod( gi * 0.07 + 0.5 + slice_id * 0.013, 3.0 );
         vec3 metal = mix( mix( vec3( 0.75, 0.8, 0.9 ), vec3( 0.3, 0.45, 0.9 ), step( 0.5, fract( h * 3.0 ) ) ),
                           mix( vec3( 1.0, 0.78, 0.3 ), vec3( 0.9, 0.2, 0.2 ), step( 0.5, fract( h * 3.0 ) ) ), mode );
         vec3 fc = mix( metal, glowColour( pc, gi, hueP * 0.159 ), clamp( photoP, 0.0, 1.0 ) * 0.7 );
         // Glint when it turns flat toward us.
         float glint = pow( abs( flip ), 80.0 );
-        float wave = kick * exp( -pow( fract( sliceId * 0.1 - sceneTime * 0.2 ) - 0.5, 2.0 ) * 20.0 );
+        float wave = kick * exp( -pow( fract( slice_id * 0.1 - sceneTime * 0.2 ) - 0.5, 2.0 ) * 20.0 );
         vec3  c3 = fc * ( 0.35 + 0.4 * abs( flip ) )
                    + mix( fc, vec3( 1.0 ), 0.5 ) * glint * ( 0.5 + 1.0 * hi + 2.0 * wave );
         col = mix( col, c3 * fade, flake * fade );

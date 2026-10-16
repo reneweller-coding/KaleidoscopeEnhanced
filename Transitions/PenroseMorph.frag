@@ -68,20 +68,20 @@ void main()
 
     float t = time * 0.1338 * spd; // clock rate measured down to about 1.2/255 of change per frame (PresetEditor
                                    // --transprofile); it spun many times that and read as frantic
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // 5-fold pentagrid folding lines
     float angle5 = 6.2831853 / 5.0;
-    float edgeMin = 1.0;
-    float tileIndex = 0.0;
+    float edge_min = 1.0;
+    float tile_index = 0.0;
 
-    vec2 q = rot2D( tProg * 1.5 + t * 0.2 ) * p;
+    vec2 q = rot2D( t_prog * 1.5 + t * 0.2 ) * p;
 
     // audioBass undulates the pentagonal tiling inflation scale.  It scales the
     // spatial projection only (the rotation's t term is untouched), and
-    // midTransition gates it, so at tProg 0 and 1 the pentagrid -- and with it
-    // the staggered tileProg and the grid glow -- is exactly the un-driven one.
+    // mid_transition gates it, so at t_prog 0 and 1 the pentagrid -- and with it
+    // the staggered tile_prog and the grid glow -- is exactly the un-driven one.
     float inflate = fld; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     for ( int i = 0; i < 5; ++i )
@@ -89,34 +89,34 @@ void main()
         float theta = float( i ) * angle5;
         vec2  dir = vec2( cos( theta ), sin( theta ) );
         float proj = dot( q, dir );
-        float gridLine = abs( fract( proj * inflate ) - 0.5 );
-        edgeMin = min( edgeMin, gridLine );
-        tileIndex += floor( proj * inflate );
+        float grid_line = abs( fract( proj * inflate ) - 0.5 );
+        edge_min = min( edge_min, grid_line );
+        tile_index += floor( proj * inflate );
     }
 
     // Tile-based staggered transition delay
-    float tileDelay = fract( tileIndex * 0.382 ); // Golden ratio fractional part
-    float tileProg = clamp( ( tProg - tileDelay * 0.3 ) / 0.7, 0.0, 1.0 );
-    tileProg = smoothstep( 0.0, 1.0, tileProg );
+    float tile_delay = fract( tile_index * 0.382 ); // Golden ratio fractional part
+    float tile_prog = clamp( ( t_prog - tile_delay * 0.3 ) / 0.7, 0.0, 1.0 );
+    tile_prog = smoothstep( 0.0, 1.0, tile_prog );
 
     // Warp coordinates along 5-fold rays
-    vec2 warpUV = uv + vec2( sin( tileIndex ), cos( tileIndex ) ) * 0.02 * midTransition;
+    vec2 warp_uv = uv + vec2( sin( tile_index ), cos( tile_index ) ) * 0.02 * mid_transition;
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
-    vec4 col = mix( c1, c0, tileProg );
+    vec4 col = mix( c1, c0, tile_prog );
 
     // Glowing Penrose grid lines -- thin and calibrated: the pentagrid's
-    // edgeMin covers much of the frame, so the old wide exp(-x*25) falloff
+    // edge_min covers much of the frame, so the old wide exp(-x*25) falloff
     // at 1.2+kick*3 gain buried the scene in gold.
-    float gridGlow = exp( -edgeMin * 55.0 ) * midTransition;
-    col.rgb += gridGlow * vec3( 1.0, 0.9, 0.4 ) * ( 0.3 + audioKick * 0.35 );
+    float grid_glow = exp( -edge_min * 55.0 ) * mid_transition;
+    col.rgb += grid_glow * vec3( 1.0, 0.9, 0.4 ) * ( 0.3 + audioKick * 0.35 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }

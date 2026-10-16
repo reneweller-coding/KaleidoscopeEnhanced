@@ -73,64 +73,64 @@ vec3 palTint( vec3 c, float t, float k )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    float tCoord = attrA.x;
+    float t_coord = attrA.x;
     float side = attrA.y;
-    float rIndex = attrA.w;
+    float r_index = attrA.w;
 
     vSide = side;
-    vRibbonID = rIndex;
-    vUV = vec2( tCoord, side * 0.5 + 0.5 );
+    vRibbonID = r_index;
+    vUV = vec2( t_coord, side * 0.5 + 0.5 );
 
     float t = time * 0.35 + audioAdvance * 0.3;
-    float vBraid = ( braidSpeedP > 0.01 ? braidSpeedP : 1.2 );
+    float v_braid = ( braidSpeedP > 0.01 ? braidSpeedP : 1.2 );
 
-    vec3  worldPos;
+    vec3  world_pos;
     vec3  col;
     float mzm = 0.0;
 
-    if ( rIndex < 17.5 )
+    if ( r_index < 17.5 )
     {
         // ---- THREE BRAIDED BUNDLES, 3 nanowire PAIRS each -------------
         vKind = 0.0;
-        float b = floor( rIndex / 6.0 ); // bundle 0..2
-        float sIdx = rIndex - b * 6.0;   // strand 0..5
-        float strandPhase = sIdx * 1.04719755 + b * 0.73;
+        float b = floor( r_index / 6.0 ); // bundle 0..2
+        float s_idx = r_index - b * 6.0;  // strand 0..5
+        float strand_phase = s_idx * 1.04719755 + b * 0.73;
 
         // The worldline axis runs up the frame and past both edges.
-        float yPos = ( tCoord - 0.5 ) * 6.4;
+        float y_pos = ( t_coord - 0.5 ) * 6.4;
 
         // Non-Abelian braiding permutations (braid group generators sigma_1, sigma_2)
-        float braidTime = yPos * 1.15 + t * vBraid;
-        float rBraid = ( 0.92 + 0.40 * sin( braidTime * 0.5 + strandPhase ) )
-                       * ( 1.0 + 0.10 * audioSwell );
-        float phiBraid = strandPhase + sin( braidTime + strandPhase ) * 1.2;
+        float braid_time = y_pos * 1.15 + t * v_braid;
+        float r_braid = ( 0.92 + 0.40 * sin( braid_time * 0.5 + strand_phase ) )
+                        * ( 1.0 + 0.10 * audioSwell );
+        float phi_braid = strand_phase + sin( braid_time + strand_phase ) * 1.2;
 
         float bx = ( b - 1.0 ) * 2.75;
-        vec3  centerPos = vec3( bx + cos( phiBraid ) * rBraid,
-                                yPos,
-                                sin( phiBraid ) * rBraid );
+        vec3  center_pos = vec3( bx + cos( phi_braid ) * r_braid,
+                                 y_pos,
+                                 sin( phi_braid ) * r_braid );
 
         // Ribbon frame: widen ACROSS THE SCREEN (perpendicular to the wire and
         // to the view axis), so a wire on the far side of the braid stays a
         // drawn line instead of turning edge-on and vanishing.
-        vec3 tangent = normalize( vec3( -sin( phiBraid ) * rBraid, 1.0,
-                                        cos( phiBraid ) * rBraid ) );
+        vec3 tangent = normalize( vec3( -sin( phi_braid ) * r_braid, 1.0,
+                                        cos( phi_braid ) * r_braid ) );
         vec3 binormal = normalize( cross( tangent, vec3( 0.0, 0.0, 1.0 ) ) );
 
         float width = ( ribbonWidthP > 0.001 ? ribbonWidthP : 0.045 )
                       * ( 1.0 + 0.3 * audioSwell ) * 2.6;
-        worldPos = centerPos + binormal * ( side * width );
+        world_pos = center_pos + binormal * ( side * width );
 
         // Majorana Zero Mode localized wavepackets at the wire ends
-        // (tCoord near 0 and 1 -- now the top and bottom of the frame).
-        float endProximity = max( exp( -tCoord * 14.0 ), exp( -( 1.0 - tCoord ) * 14.0 ) );
-        mzm = endProximity * ( 1.0 + 3.5 * audioKick );
+        // (t_coord near 0 and 1 -- now the top and bottom of the frame).
+        float end_proximity = max( exp( -t_coord * 14.0 ), exp( -( 1.0 - t_coord ) * 14.0 ) );
+        mzm = end_proximity * ( 1.0 + 3.5 * audioKick );
 
         // Each PAIR of strands shares a colour: the two halves of one
         // fermion, cyan through violet across the three pairs.
-        float pair = floor( sIdx * 0.5 ); // 0..2
+        float pair = floor( s_idx * 0.5 ); // 0..2
         vec3  base = mix( vec3( 0.30, 0.78, 1.00 ), vec3( 0.72, 0.40, 1.00 ), pair * 0.5 );
-        col = palTint( base, fract( rIndex * 0.166 + tCoord * 0.2 + audioCentroid ), 0.35 );
+        col = palTint( base, fract( r_index * 0.166 + t_coord * 0.2 + audioCentroid ), 0.35 );
     }
     else
     {
@@ -139,11 +139,11 @@ void main()
         // a slow Andreev interference fringe.  Dim by design: it only keeps
         // the space between the wires off pure black.
         vKind = 1.0;
-        float bi = rIndex - 18.0; // 0 or 1
-        float x = ( tCoord - 0.5 ) * 13.6;
+        float bi = r_index - 18.0; // 0 or 1
+        float x = ( t_coord - 0.5 ) * 13.6;
         float yb = ( bi - 0.5 ) * 3.4;
         float wav = 0.22 * sin( x * 0.8 - t * 0.5 + bi * 1.7 );
-        worldPos = vec3( x, yb + wav + side * 2.0, 1.6 );
+        world_pos = vec3( x, yb + wav + side * 2.0, 1.6 );
 
         float fringe = 0.5 + 0.5 * sin( x * 1.7 - t * 0.9 + bi * 2.2 ) * cos( x * 0.6 + t * 0.28 );
         col = palTint( vec3( 0.34, 0.52, 0.95 ), fract( 0.3 + bi * 0.17 + audioCentroid ), 0.35 )
@@ -156,7 +156,7 @@ void main()
 
     // Camera Transform (V3).  The old full turntable swung the bundle edge-on
     // twice a turn; a shallow sway keeps the braid field facing the camera.
-    vec3  vp = worldPos;
+    vec3  vp = world_pos;
     float ra = 0.20 * sin( t * 0.18 );
     float c = cos( ra ), s = sin( ra );
     vp = vec3( vp.x * c - vp.z * s, vp.y, vp.x * s + vp.z * c );

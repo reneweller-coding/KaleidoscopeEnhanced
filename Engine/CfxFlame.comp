@@ -46,9 +46,9 @@ uniform float kick;
 uniform float bright;
 uniform float drop;
 
-const float SCALE = 256.0;
-const int   ITERS = 32;
-const int   WARMUP = 12;
+const float Scale = 256.0;
+const int   Iters = 32;
+const int   Warmup = 12;
 
 /// @brief PCG random step: advances the state, returns 32 random bits.
 uint pcg( inout uint s )
@@ -159,10 +159,10 @@ void splat( vec2 p, vec3 col )
         return;
     uint i = uint( ip.y * size.x + ip.x ) * 4u;
     vec3 c = max( col, vec3( 0.0 ) );
-    atomicAdd( acc[i + 0u], uint( c.r * SCALE ) );
-    atomicAdd( acc[i + 1u], uint( c.g * SCALE ) );
-    atomicAdd( acc[i + 2u], uint( c.b * SCALE ) );
-    atomicAdd( acc[i + 3u], uint( SCALE ) );
+    atomicAdd( acc[i + 0u], uint( c.r * Scale ) );
+    atomicAdd( acc[i + 1u], uint( c.g * Scale ) );
+    atomicAdd( acc[i + 2u], uint( c.b * Scale ) );
+    atomicAdd( acc[i + 3u], uint( Scale ) );
 }
 
 /// @brief Entry point of this shader stage (the file description says what it draws).
@@ -178,38 +178,38 @@ void main()
 
     // Variation assignment per transform: two ids blended by a slow weight so
     // the flame changes CHARACTER without ever snapping between shapes.
-    int vA[4];
-    int vB[4];
-    vA[0] = 0;
-    vB[0] = 1;
-    vA[1] = 1;
-    vB[1] = 3;
-    vA[2] = 2;
-    vB[2] = 5;
-    vA[3] = 3;
-    vB[3] = 6;
-    float wBlend = 0.5 + 0.5 * sin( warp * 0.47 );
+    int v_a[4];
+    int v_b[4];
+    v_a[0] = 0;
+    v_b[0] = 1;
+    v_a[1] = 1;
+    v_b[1] = 3;
+    v_a[2] = 2;
+    v_b[2] = 5;
+    v_a[3] = 3;
+    v_b[3] = 6;
+    float w_blend = 0.5 + 0.5 * sin( warp * 0.47 );
     // A drop briefly pushes one lobe into the polar variation = a hard visual
     // "snap open" that still interpolates rather than jumping.
-    float polarMix = clamp( drop * 1.2, 0.0, 1.0 );
+    float polar_mix = clamp( drop * 1.2, 0.0, 1.0 );
 
-    for ( int it = 0; it < ITERS; ++it )
+    for ( int it = 0; it < Iters; ++it )
     {
         int  t = int( rnd( rs ) * 4.0 ) & 3;
         vec2 A, B, C;
         affine( t, A, B, C );
         vec2 q = vec2( dot( A, p ), dot( B, p ) ) + C;
 
-        vec2 v = mix( variation( vA[t], q ), variation( vB[t], q ), wBlend );
+        vec2 v = mix( variation( v_a[t], q ), variation( v_b[t], q ), w_blend );
         if ( t == 1 )
-            v = mix( v, vPolar( q ), polarMix );
+            v = mix( v, vPolar( q ), polar_mix );
         p = v;
 
         // Colour index drifts toward this transform's own colour.
         float tc = float( t ) * 0.25 + 0.08 * sin( phase * 0.4 + float( t ) );
         ci = 0.5 * ( ci + tc );
 
-        if ( it >= WARMUP )
+        if ( it >= Warmup )
         {
             // Kicks momentarily brighten the freshly plotted points.
             vec3 col = palette( ci ) * ( 1.0 + 0.55 * kick );

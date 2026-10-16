@@ -33,7 +33,7 @@ out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 out float vKind;   ///< 0 ship, 1 shadow of lamp A, 2 shadow of lamp B
 
-const float WALL_Z = 60.0;
+const float WallZ = 60.0;
 
 vec3 lampPos( int k )
 {
@@ -49,10 +49,10 @@ vec3 lampPos( int k )
 /// @brief Entry point of this shader stage (the file description says what it draws).
 void main()
 {
-    bool isBg = gl_VertexID >= meshVertexCount;
+    bool is_bg = gl_VertexID >= meshVertexCount;
     int  inst = gl_InstanceID;
 
-    if ( isBg )
+    if ( is_bg )
     {
         if ( inst > 0 )
         {
@@ -91,10 +91,10 @@ void main()
     vec3 world = ship;
     if ( inst > 0 )
     {
-        // Planar projection from the lamp onto the wall z = WALL_Z.
+        // Planar projection from the lamp onto the wall z = WallZ.
         vec3  L = lampPos( inst );
         vec3  d = ship - L;
-        float s = ( WALL_Z - L.z ) / max( d.z, 1e-3 );
+        float s = ( WallZ - L.z ) / max( d.z, 1e-3 );
         world = L + d * s;
         world.z -= 0.05 * float( inst ); // the two shadows never z-fight
     }

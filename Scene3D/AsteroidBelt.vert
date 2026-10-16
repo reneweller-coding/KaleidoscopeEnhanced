@@ -83,9 +83,9 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // Belt slab ahead; every rock loops independently down the flight path.
-    float camZ = time * 5.0 + audioAdvance * 18.0;
+    float cam_z = time * 5.0 + audioAdvance * 18.0;
     float L = 220.0;
-    float z = mod( r3 * L - camZ, L ) + 2.0;
+    float z = mod( r3 * L - cam_z, L ) + 2.0;
 
     vec3 centre = vec3( ( r1 - 0.5 ) * 130.0,
                         ( r2 - 0.5 ) * 55.0,

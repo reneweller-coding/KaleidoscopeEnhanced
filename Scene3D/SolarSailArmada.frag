@@ -70,26 +70,26 @@ void main()
     float frame = smoothstep( 0.85, 0.95, border );
 
     // Mylar / Gold foil reflectance
-    vec3 goldFoil = vec3( 1.0, 0.85, 0.45 );
-    vec3 titaniumFoil = vec3( 0.85, 0.90, 0.98 );
-    vec3 sailBase = mix( goldFoil, titaniumFoil, step( 1500.0, vQuadID ) );
+    vec3 gold_foil = vec3( 1.0, 0.85, 0.45 );
+    vec3 titanium_foil = vec3( 0.85, 0.90, 0.98 );
+    vec3 sail_base = mix( gold_foil, titanium_foil, step( 1500.0, vQuadID ) );
 
     // Live kaleidoscope photo projection on reflective membrane
-    vec2 photoUV = vUV * 0.8 + vec2( vQuadID * 0.001, sin( vQuadID ) );
-    vec3 photoCol = img( fract( photoUV ) );
+    vec2 photo_uv = vUV * 0.8 + vec2( vQuadID * 0.001, sin( vQuadID ) );
+    vec3 photo_col = img( fract( photo_uv ) );
 
     // Specular solar flare glint
-    vec3 glintColor = vec3( 1.0, 1.0, 1.0 ) * vGlint * ( 2.0 + 3.0 * audioKick );
+    vec3 glint_color = vec3( 1.0, 1.0, 1.0 ) * vGlint * ( 2.0 + 3.0 * audioKick );
 
     // Structural carbon struts
-    vec3 frameColor = vec3( 0.12, 0.14, 0.18 );
-    vec3 surfaceColor = mix( sailBase * photoCol * 1.5, frameColor, frame );
+    vec3 frame_color = vec3( 0.12, 0.14, 0.18 );
+    vec3 surface_color = mix( sail_base * photo_col * 1.5, frame_color, frame );
 
     // Inter-sail laser communication mesh glow
-    float laserBeam = exp( -abs( sin( vQuadID * 0.1 + time * 4.0 ) ) * 12.0 ) * frame;
-    vec3  laserCol = vec3( 0.1, 0.8, 1.0 ) * laserBeam * ( 1.0 + 2.0 * audioKick );
+    float laser_beam = exp( -abs( sin( vQuadID * 0.1 + time * 4.0 ) ) * 12.0 ) * frame;
+    vec3  laser_col = vec3( 0.1, 0.8, 1.0 ) * laser_beam * ( 1.0 + 2.0 * audioKick );
 
-    vec3 col = ( surfaceColor + glintColor + laserCol ) * glw * sl;
+    vec3 col = ( surface_color + glint_color + laser_col ) * glw * sl;
 
     col = hueRot( col, audioChromaHue + hue );
     fragColor = vec4( col, 1.0 );

@@ -95,7 +95,7 @@ void main()
     vec2  p = ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( aspect, 1.0 );
 
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;
-    int   nCulms = 14 + int( clamp( densP, 0.0, 1.0 ) * 12.0 );
+    int   n_culms = 14 + int( clamp( densP, 0.0, 1.0 ) * 12.0 );
     float wind = 0.3 + 0.7 * clamp( windP, 0.0, 1.0 );
     float light = 0.6 + 0.7 * clamp( audioSwell, 0.0, 1.0 );
     float hi = clamp( audioHigh * 2.0, 0.0, 1.0 );
@@ -108,30 +108,30 @@ void main()
                   * mix( vec3( 0.7, 1.0, 0.6 ), imgPalette( hue * 0.159 + 0.3 ), 0.3 ) * light;
     beyond *= 0.4 + 0.8 * smoothstep( -0.5, 0.5, p.y );
     float canopy = fbm( vec2( p.x * 3.0 + 0.1 * wave, p.y * 3.0 ) + 2.0 );
-    float leafMask = smoothstep( 0.4, 0.7, canopy ) * smoothstep( 0.0, 0.45, p.y );
+    float leaf_mask = smoothstep( 0.4, 0.7, canopy ) * smoothstep( 0.0, 0.45, p.y );
     vec3  leaf = mix( vec3( 0.3, 0.55, 0.2 ), imgPalette( hue * 0.159 + 0.35 ), 0.3 ) * light;
-    vec3  col = mix( beyond, leaf * ( 0.6 + 0.6 * canopy ), leafMask );
+    vec3  col = mix( beyond, leaf * ( 0.6 + 0.6 * canopy ), leaf_mask );
     // Leaf glints on the treble, brighter in a gust.
     vec2  gu = p * 40.0;
     vec2  gc = floor( gu );
     vec2  gf = fract( gu ) - 0.5;
     vec2  go = vec2( hash21( gc + 1.3 ), hash21( gc + 5.9 ) ) - 0.5;
-    float glint = smoothstep( 0.2, 0.06, length( gf - go * 0.6 ) ) * step( 0.93, hash21( gc ) ) * leafMask;
+    float glint = smoothstep( 0.2, 0.06, length( gf - go * 0.6 ) ) * step( 0.93, hash21( gc ) ) * leaf_mask;
     col += vec3( 1.0, 1.0, 0.85 ) * glint * ( 0.2 + 0.9 * hi + 0.8 * audioKick ) * light;
     // Culms: vertical columns from far (thin, pale) to near (thick, dark
     // green), each bending with the wind wave, more toward the top; nodes
     // as rings; the photo as their sheen.
     for ( int i = 0; i < 26; ++i )
     {
-        if ( i >= nCulms )
+        if ( i >= n_culms )
             break;
         float fi = float( i );
         float depth = hash11( fi * 3.7 ); // 0 near .. 1 far
         float x0 = ( hash11( fi * 5.3 ) - 0.5 ) * aspect * 1.2;
         float w = ( 0.05 - 0.04 * depth );
-        float bendAmp = wind * 0.12 * ( 1.0 - depth * 0.5 );
+        float bend_amp = wind * 0.12 * ( 1.0 - depth * 0.5 );
         float phase = clock * 0.9 - x0 * 1.5; // the wave runs across the grove
-        float bend = bendAmp * sin( phase ) * pow( clamp( p.y + 0.5, 0.0, 1.0 ), 2.0 );
+        float bend = bend_amp * sin( phase ) * pow( clamp( p.y + 0.5, 0.0, 1.0 ), 2.0 );
         float dx = p.x - x0 - bend;
         float culm = smoothstep( w, w * 0.85, abs( dx ) );
         float nx = dx / w;
@@ -151,7 +151,7 @@ void main()
     }
     col *= 0.75 + 0.5 * audioLevel;
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

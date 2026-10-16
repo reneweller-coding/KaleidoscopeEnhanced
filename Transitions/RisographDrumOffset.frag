@@ -49,7 +49,7 @@ uniform float inkP;
 uniform float misregP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-const float PI = 3.14159265358979; ///< Pi.
+const float Pi = 3.14159265358979; ///< Pi.
 
 /// @brief 2D rotation matrix.
 mat2 rot2D( float a )
@@ -96,7 +96,7 @@ void main()
     float swap = smoothstep( 0.34, 0.66, d );
 
     // Which sheet is on the drums right now.
-    vec3 baseHere = mix( texture( tex0, uv ).rgb, texture( tex1, uv ).rgb, swap );
+    vec3 base_here = mix( texture( tex0, uv ).rgb, texture( tex1, uv ).rgb, swap );
 
     // The two drums run out of register along a fixed axis, opening widest in
     // the middle of the pass.  Only audioSwell touches this -- a fast envelope
@@ -104,13 +104,13 @@ void main()
     float ang = ( hue > 0.001 ? hue : 1.05 ) + audioChromaHue * 0.5;
     vec2  axis = rot2D( ang ) * vec2( 1.0, 0.0 );
     float off = 0.0075 * mis * sep * ( 0.75 + 0.5 * clamp( audioSwell, 0.0, 1.0 ) );
-    vec2  offA = axis * off / vec2( aspect, 1.0 );
-    vec2  offB = -axis * off / vec2( aspect, 1.0 );
+    vec2  off_a = axis * off / vec2( aspect, 1.0 );
+    vec2  off_b = -axis * off / vec2( aspect, 1.0 );
 
-    vec3 sA = mix( texture( tex0, clamp( uv + offA, 0.0, 1.0 ) ).rgb,
-                   texture( tex1, clamp( uv + offA, 0.0, 1.0 ) ).rgb, swap );
-    vec3 sB = mix( texture( tex0, clamp( uv + offB, 0.0, 1.0 ) ).rgb,
-                   texture( tex1, clamp( uv + offB, 0.0, 1.0 ) ).rgb, swap );
+    vec3 s_a = mix( texture( tex0, clamp( uv + off_a, 0.0, 1.0 ) ).rgb,
+                    texture( tex1, clamp( uv + off_a, 0.0, 1.0 ) ).rgb, swap );
+    vec3 s_b = mix( texture( tex0, clamp( uv + off_b, 0.0, 1.0 ) ).rgb,
+                    texture( tex1, clamp( uv + off_b, 0.0, 1.0 ) ).rgb, swap );
 
     // A duotone separates by CHANNEL: each ink carries the light its own
     // complementary channel is missing.  Picking two arbitrary wheel colours
@@ -124,8 +124,8 @@ void main()
     // Two solid ink layers on top of each other take a dark picture down to
     // nothing, so the density is capped: a riso keeps paper showing through
     // even in its solids, and that is what carries the colour.
-    float a1 = clamp( 1.20 * ( 1.0 - sA.g ), 0.0, 0.88 );
-    float a2 = clamp( 1.20 * ( 1.0 - sB.r ), 0.0, 0.88 );
+    float a1 = clamp( 1.20 * ( 1.0 - s_a.g ), 0.0, 0.88 );
+    float a2 = clamp( 1.20 * ( 1.0 - s_b.r ), 0.0, 0.88 );
 
     // Paper, then ink on ink: multiplicative, the way a press actually works.
     vec3  paper = vec3( 0.95, 0.94, 0.90 );
@@ -146,9 +146,9 @@ void main()
 
     // The ink wells up at the edge of a solid, leaving a darker margin.
     float dens = max( a1, a2 );
-    float wellUp = clamp( fwidth( dens ) * 9.0, 0.0, 1.0 );
-    printed *= 1.0 - 0.30 * wellUp;
+    float well_up = clamp( fwidth( dens ) * 9.0, 0.0, 1.0 );
+    printed *= 1.0 - 0.30 * well_up;
 
-    vec3 col = mix( baseHere, printed, sep );
+    vec3 col = mix( base_here, printed, sep );
     fragColor = vec4( clamp( col, 0.0, 1.0 ), 1.0 );
 }

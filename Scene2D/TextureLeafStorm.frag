@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -277,8 +277,8 @@ void main()
                 lc *= flip > 0.0 ? 1.0 : 1.4 + 0.8 * hi;
                 lc *= 1.0 - 0.35 * smoothstep( 0.03, 0.0, abs( l.y ) );
                 lc *= 0.75 + 0.35 * ( 1.0 - abs( l.x / len ) );
-                float depthDim = 1.0 / ( 1.0 + fl * 0.5 );
-                col = mix( col, lc * depthDim * ( 1.0 + 0.5 * kick ), leaf * ( 1.0 - fl * 0.12 ) );
+                float depth_dim = 1.0 / ( 1.0 + fl * 0.5 );
+                col = mix( col, lc * depth_dim * ( 1.0 + 0.5 * kick ), leaf * ( 1.0 - fl * 0.12 ) );
             }
     }
     finish( col );

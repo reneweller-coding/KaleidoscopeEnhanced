@@ -39,21 +39,21 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw), and the
 // camera distance the companion .vert applies.  A generator program gets no
 // `resolution` uniform, so the layout assumes 16:9 -- the house fallback.
-const float kTanY = 0.5206;
-const float kAspect = 1.7778;
-const float kCam = 4.8;
+const float TanY = 0.5206;
+const float Aspect = 1.7778;
+const float Cam = 4.8;
 
-const uint ORGS = 7u;
-const uint SPIC_N = 48u;                 ///< radial axopodia per skeleton
-const uint SPIC_S = 32u;                 ///< segments per spicule
-const uint SPIC_TOT = SPIC_N * SPIC_S;   ///< 1536
-const uint ARC_N = 72u;                  ///< great-circle shell struts
-const uint ARC_S = 24u;                  ///< segments per strut
-const uint ARC_TOT = ARC_N * ARC_S;      ///< 1728
-const uint PER_ORG = SPIC_TOT + ARC_TOT; ///< 3264
-const uint ORG_TOT = PER_ORG * ORGS;     ///< 22848
-const uint DUST = 5000u;                 ///< silica dust motes
-const uint TOTAL = ORG_TOT + DUST;       ///< 27848 segs = 167088 vertices
+const uint Orgs = 7u;
+const uint SpicN = 48u;               ///< radial axopodia per skeleton
+const uint SpicS = 32u;               ///< segments per spicule
+const uint SpicTot = SpicN * SpicS;   ///< 1536
+const uint ArcN = 72u;                ///< great-circle shell struts
+const uint ArcS = 24u;                ///< segments per strut
+const uint ArcTot = ArcN * ArcS;      ///< 1728
+const uint PerOrg = SpicTot + ArcTot; ///< 3264
+const uint OrgTot = PerOrg * Orgs;    ///< 22848
+const uint Dust = 5000u;              ///< silica dust motes
+const uint Total = OrgTot + Dust;     ///< 27848 segs = 167088 vertices
 
 /// @brief Pseudo-random number 0..1 from a float.
 float hash11( float p )
@@ -126,7 +126,7 @@ void main()
 {
     uvec3 g = gl_GlobalInvocationID;
     uint  idx = g.x + 64u * ( g.y + 64u * g.z );
-    if ( idx >= TOTAL )
+    if ( idx >= Total )
         return;
 
     float t = time * 0.35 + audioAdvance * 0.3;
@@ -137,40 +137,40 @@ void main()
     // skeletons reads as ocean rather than as nothing.  The fragment stage
     // shades these dimmer via a low silicaGlow.
     // ------------------------------------------------------------------
-    if ( idx >= ORG_TOT )
+    if ( idx >= OrgTot )
     {
-        float fi = float( idx - ORG_TOT );
+        float fi = float( idx - OrgTot );
         float d0 = hash11( fi * 1.731 + 0.13 );
         float d1 = hash11( fi * 3.917 + 4.71 );
         float d2 = hash11( fi * 7.311 + 9.27 );
         float d3 = hash11( fi * 5.109 + 2.53 );
 
         float dz = 3.0 + 15.0 * d0;
-        float halfH = dz * kTanY;
-        float halfW = halfH * kAspect;
+        float half_h = dz * TanY;
+        float half_w = half_h * Aspect;
 
         // Slow sink with a lateral sway; the wrap keeps the field uniform.
         // Only CONSTANT per-mote factors ever multiply the clock.
         float fall = fract( d1 + t * 0.030 * ( 0.5 + d3 ) );
         float sway = sin( t * 0.5 + d2 * 6.2831853 ) * 0.05;
 
-        vec3  c = vec3( ( d2 * 2.0 - 1.0 + sway ) * halfW * 1.05,
-                        ( 1.05 - 2.10 * fall ) * halfH,
-                        dz - kCam );
+        vec3  c = vec3( ( d2 * 2.0 - 1.0 + sway ) * half_w * 1.05,
+                        ( 1.05 - 2.10 * fall ) * half_h,
+                        dz - Cam );
         float ang = d3 * 6.2831853 + t * 0.4;
         vec3  dd = vec3( cos( ang ), sin( ang ), 0.0 );
-        float hl = halfH * 0.0065;
+        float hl = half_h * 0.0065;
         emitSegment( c - dd * hl, c + dd * hl,
                      d1, 0.30 * ( 0.6 + 0.8 * d3 ) * ( 1.0 + 0.6 * audioKick ),
-                     halfH * 0.0035 );
+                     half_h * 0.0035 );
         return;
     }
 
     // ------------------------------------------------------------------
     // ONE SKELETON OF THE BLOOM
     // ------------------------------------------------------------------
-    uint org = idx / PER_ORG;
-    uint li = idx % PER_ORG;
+    uint org = idx / PerOrg;
+    uint li = idx % PerOrg;
 
     float fo = float( org );
     float o0 = hash11( fo * 13.77 + 2.10 );
@@ -183,43 +183,43 @@ void main()
     // ITS depth, so a far one reads the same size as a near one instead of
     // shrinking away into the dark.
     float dz = 4.0 + 13.0 * o0;
-    float halfH = dz * kTanY;
-    float halfW = halfH * kAspect;
-    vec3  ctr = vec3( ( o1 * 2.0 - 1.0 ) * halfW * 0.86,
-                      ( o2 * 2.0 - 1.0 ) * halfH * 0.80,
-                      dz - kCam );
-    float scale = halfH * ( 0.30 + 0.20 * o3 );
+    float half_h = dz * TanY;
+    float half_w = half_h * Aspect;
+    vec3  ctr = vec3( ( o1 * 2.0 - 1.0 ) * half_w * 0.86,
+                      ( o2 * 2.0 - 1.0 ) * half_h * 0.80,
+                      dz - Cam );
+    float scale = half_h * ( 0.30 + 0.20 * o3 );
 
     float sa = time * ( 0.10 + 0.10 * o3 ) + o4 * 6.2831853 + audioAdvance * 0.10;
     float sb = time * ( 0.07 + 0.06 * o4 ) + o1 * 6.2831853;
 
     // Shell radius with undulating breathing (in units of `scale`).
-    float rShell = ( 0.62 + 0.10 * sin( t * 0.5 + fo * 1.7 ) ) * ( 1.0 + 0.3 * audioSwell );
+    float r_shell = ( 0.62 + 0.10 * sin( t * 0.5 + fo * 1.7 ) ) * ( 1.0 + 0.3 * audioSwell );
 
     vec3  p0, p1;
-    float radiusOut, glow, thick;
+    float radius_out, glow, thick;
 
-    if ( li < SPIC_TOT )
+    if ( li < SpicTot )
     {
         // ---- RADIAL AXOPODIA SPICULES --------------------------------
-        uint strutIdx = li / SPIC_S;
-        uint segIdx = li % SPIC_S;
+        uint strut_idx = li / SpicS;
+        uint seg_idx = li % SpicS;
 
-        float phi0 = acos( 1.0 - 2.0 * ( float( strutIdx ) + 0.5 ) / float( SPIC_N ) );
-        float theta0 = 3.14159265 * ( 1.0 + sqrt( 5.0 ) ) * float( strutIdx )
+        float phi0 = acos( 1.0 - 2.0 * ( float( strut_idx ) + 0.5 ) / float( SpicN ) );
+        float theta0 = 3.14159265 * ( 1.0 + sqrt( 5.0 ) ) * float( strut_idx )
                        + audioPhase * 0.2 + fo * 1.13;
         vec3  dir0 = vec3( sin( phi0 ) * cos( theta0 ), sin( phi0 ) * sin( theta0 ), cos( phi0 ) );
 
-        float s0 = float( segIdx ) / float( SPIC_S );
-        float s1 = float( segIdx + 1u ) / float( SPIC_S );
-        float rA = rShell + s0 * 0.75;
-        float rB = rShell + s1 * 0.75;
+        float s0 = float( seg_idx ) / float( SpicS );
+        float s1 = float( seg_idx + 1u ) / float( SpicS );
+        float r_a = r_shell + s0 * 0.75;
+        float r_b = r_shell + s1 * 0.75;
 
-        p0 = dir0 * rA;
-        p1 = dir0 * rB;
-        radiusOut = rA / 1.4;
+        p0 = dir0 * r_a;
+        p1 = dir0 * r_b;
+        radius_out = r_a / 1.4;
         glow = ( 1.0 - s0 * 0.5 ) * ( 1.0 + 2.5 * audioKick );
-        thick = halfH * 0.0062 * ( 1.0 - s0 * 0.5 ) * ( 1.0 + 0.4 * audioSwell );
+        thick = half_h * 0.0062 * ( 1.0 - s0 * 0.5 ) * ( 1.0 + 0.4 * audioSwell );
     }
     else
     {
@@ -228,32 +228,32 @@ void main()
         // icosahedral lattice" the scene is named for and it was simply never
         // built: without it the skeleton is a bare sea-urchin of hairlines
         // with nothing between the spines.
-        uint a = ( li - SPIC_TOT ) / ARC_S;
-        uint sg = ( li - SPIC_TOT ) % ARC_S;
+        uint a = ( li - SpicTot ) / ArcS;
+        uint sg = ( li - SpicTot ) % ArcS;
 
-        float phiA = acos( 1.0 - 2.0 * ( float( a ) + 0.5 ) / float( ARC_N ) );
-        float thetaA = 3.14159265 * ( 1.0 + sqrt( 5.0 ) ) * float( a ) + fo * 2.31;
-        vec3  axis = vec3( sin( phiA ) * cos( thetaA ), sin( phiA ) * sin( thetaA ), cos( phiA ) );
+        float phi_a = acos( 1.0 - 2.0 * ( float( a ) + 0.5 ) / float( ArcN ) );
+        float theta_a = 3.14159265 * ( 1.0 + sqrt( 5.0 ) ) * float( a ) + fo * 2.31;
+        vec3  axis = vec3( sin( phi_a ) * cos( theta_a ), sin( phi_a ) * sin( theta_a ), cos( phi_a ) );
         vec3  ref = ( abs( axis.z ) > 0.9 ) ? vec3( 1.0, 0.0, 0.0 ) : vec3( 0.0, 0.0, 1.0 );
         vec3  e1 = normalize( cross( axis, ref ) );
         vec3  e2 = cross( axis, e1 );
 
-        float u0 = ( float( sg ) / float( ARC_S ) ) * 6.2831853;
-        float u1 = ( float( sg + 1u ) / float( ARC_S ) ) * 6.2831853;
+        float u0 = ( float( sg ) / float( ArcS ) ) * 6.2831853;
+        float u1 = ( float( sg + 1u ) / float( ArcS ) ) * 6.2831853;
         // A slow ripple over the shell keeps the lattice breathing rather than
         // reading as a rigid wire globe.
-        float rr0 = rShell * ( 1.0 + 0.055 * sin( u0 * 3.0 + t * 0.8 + fo ) );
-        float rr1 = rShell * ( 1.0 + 0.055 * sin( u1 * 3.0 + t * 0.8 + fo ) );
+        float rr0 = r_shell * ( 1.0 + 0.055 * sin( u0 * 3.0 + t * 0.8 + fo ) );
+        float rr1 = r_shell * ( 1.0 + 0.055 * sin( u1 * 3.0 + t * 0.8 + fo ) );
 
         p0 = ( e1 * cos( u0 ) + e2 * sin( u0 ) ) * rr0;
         p1 = ( e1 * cos( u1 ) + e2 * sin( u1 ) ) * rr1;
-        radiusOut = rShell / 1.4;
+        radius_out = r_shell / 1.4;
         glow = 0.70 * ( 1.0 + 1.6 * audioKick );
-        thick = halfH * 0.0042 * ( 1.0 + 0.4 * audioSwell );
+        thick = half_h * 0.0042 * ( 1.0 + 0.4 * audioSwell );
     }
 
     p0 = ctr + spin( p0, sa, sb ) * scale;
     p1 = ctr + spin( p1, sa, sb ) * scale;
 
-    emitSegment( p0, p1, radiusOut, glow, thick );
+    emitSegment( p0, p1, radius_out, glow, thick );
 }

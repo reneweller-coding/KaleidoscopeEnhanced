@@ -127,7 +127,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -236,66 +236,66 @@ void main()
     p = rot2( spin ) * p;
     float r = max( length( p ), 1e-4 );
     float a = atan( p.y, p.x );
-    float Ri = 0.35 + 0.25 * clamp( audioSpread, 0.0, 1.0 );         // well radius
-    float Ro = 1.0;                                                  // wall radius
-    float pitch = 0.8 + 1.2 * clamp( pitchP, 0.0, 1.0 );             // depth per turn
-    float nS = 2.0 * floor( 6.0 + 6.0 * clamp( stepsP, 0.0, 1.0 ) ); // steps per turn (even)
+    float ri = 0.35 + 0.25 * clamp( audioSpread, 0.0, 1.0 );          // well radius
+    float ro = 1.0;                                                   // wall radius
+    float pitch = 0.8 + 1.2 * clamp( pitchP, 0.0, 1.0 );              // depth per turn
+    float n_s = 2.0 * floor( 6.0 + 6.0 * clamp( stepsP, 0.0, 1.0 ) ); // steps per turn (even)
     float travel = 0.25 * sceneTime + 1.5 * audioAdvance;
     float af = a / 6.2831853 + 0.5; // 0..1 around
     // Step tops sit at depths z = pitch * (floor((af + k) * nS) / nS) - travel.
-    float zIn = Ri / r;                  // the ray reaches the well rim here
-    float zOut = Ro / r;                 // ... and the wall here
-    float u0 = ( zIn + travel ) / pitch; // in turns
+    float z_in = ri / r;                  // the ray reaches the well rim here
+    float z_out = ro / r;                 // ... and the wall here
+    float u0 = ( z_in + travel ) / pitch; // in turns
     float k = ceil( u0 - af );
-    float s = floor( ( af + k ) * nS );
-    // The first step top at or below zIn (stepped heights may sit just above).
-    if ( s / nS * pitch - travel < zIn )
+    float s = floor( ( af + k ) * n_s );
+    // The first step top at or below z_in (stepped heights may sit just above).
+    if ( s / n_s * pitch - travel < z_in )
         s += 1.0;
-    float zS = s / nS * pitch - travel;
+    float z_s = s / n_s * pitch - travel;
     vec3  col;
     float mode = clamp( audioMode, 0.0, 1.0 );
-    vec3  lampC = mix( vec3( 0.6, 0.8, 1.1 ), vec3( 1.15, 0.85, 0.55 ), mode );
+    vec3  lamp_c = mix( vec3( 0.6, 0.8, 1.1 ), vec3( 1.15, 0.85, 0.55 ), mode );
     vec3  gc = glowColour( imgLod( vec2( 0.5 ), 6.0 ), vec2( travel * 0.02, 0.0 ), hueP * 0.159 );
     // Derivatives before the branch (they are undefined in divergent code).
     float fwr = fwidth( r );
     vec2  cfw = fwidth( vec2( cos( a ), sin( a ) ) );
-    float fwzO = fwidth( zOut );
-    if ( zS < zOut )
+    float fwz_o = fwidth( z_out );
+    if ( z_s < z_out )
     {
         // On a step: where on its top face?
-        float rho = r * zS;                      // radius on the step
-        float within = fract( ( af + k ) * nS ); // 0..1 along the step (angle)
+        float rho = r * z_s;                      // radius on the step
+        float within = fract( ( af + k ) * n_s ); // 0..1 along the step (angle)
         // Which step we are on varies with angle too; recompute its angular position.
-        float stepA = ( s / nS - k - 0.5 ) * 6.2831853; // start angle of the step
+        float step_a = ( s / n_s - k - 0.5 ) * 6.2831853; // start angle of the step
         vec2  sp = rho * vec2( cos( a ), sin( a ) );
         vec2  suv = sp * 0.6 + vec2( hash11( s * 0.13 ), hash11( s * 0.71 ) ) + 0.5;
-        float fw = fwr * zS * 0.6 * 1024.0;
+        float fw = fwr * z_s * 0.6 * 1024.0;
         vec3  ph = imgLod( suv, clamp( log2( max( fw, 1.0 ) ), 0.0, 9.0 ) );
         vec3  stone = mix( vec3( 0.5, 0.48, 0.45 ), ph, clamp( photoP, 0.0, 1.0 ) );
-        float fog = exp( -zS * 0.35 );
+        float fog = exp( -z_s * 0.35 );
         // Light from above falls on the steps; the nosing (step front edge) is bright.
-        float angPos = fract( ( a / 6.2831853 + 0.5 + k ) * nS - s + 1.0 );
-        float nose = smoothstep( 0.08, 0.0, 1.0 - angPos ) + smoothstep( 0.05, 0.0, angPos ) * 0.5;
-        col = stone * lampC * ( 0.45 + 0.55 * smoothstep( Ro, Ri, rho ) );
-        col *= 1.0 - 0.45 * smoothstep( 0.2, 0.0, angPos ); // shadow under the step above
-        col += lampC * nose * 0.25;
+        float ang_pos = fract( ( a / 6.2831853 + 0.5 + k ) * n_s - s + 1.0 );
+        float nose = smoothstep( 0.08, 0.0, 1.0 - ang_pos ) + smoothstep( 0.05, 0.0, ang_pos ) * 0.5;
+        col = stone * lamp_c * ( 0.45 + 0.55 * smoothstep( ro, ri, rho ) );
+        col *= 1.0 - 0.45 * smoothstep( 0.2, 0.0, ang_pos ); // shadow under the step above
+        col += lamp_c * nose * 0.25;
         // The handrail at the inner rim with lamps.
-        float rail = exp( -abs( rho - Ri * 1.04 ) / ( 0.012 * zS + 0.003 ) );
-        float lampAt = pow( 0.5 + 0.5 * cos( within * 6.2831853 ), 20.0 );
-        col += gc * rail * ( 0.6 + ( 0.8 + 1.5 * kick ) * lampAt );
+        float rail = exp( -abs( rho - ri * 1.04 ) / ( 0.012 * z_s + 0.003 ) );
+        float lamp_at = pow( 0.5 + 0.5 * cos( within * 6.2831853 ), 20.0 );
+        col += gc * rail * ( 0.6 + ( 0.8 + 1.5 * kick ) * lamp_at );
         col = mix( gc * ( 0.1 + 0.5 * swell ), col, fog );
     }
     else
     {
         // The wall of the well behind/under the steps.
-        float zW = zOut;
-        vec2  wuv = vec2( a / 3.14159265, ( zW + travel ) * 0.3 );
-        float fw = max( length( cfw ) / 3.14159265, fwzO * 0.3 ) * 1024.0;
+        float z_w = z_out;
+        vec2  wuv = vec2( a / 3.14159265, ( z_w + travel ) * 0.3 );
+        float fw = max( length( cfw ) / 3.14159265, fwz_o * 0.3 ) * 1024.0;
         vec3  wall = imgLod( wuv, clamp( log2( max( fw, 1.0 ) ), 0.0, 9.0 ) ) * 0.5;
-        float fog = exp( -zW * 0.35 );
-        col = mix( gc * ( 0.1 + 0.5 * swell ), wall * lampC, fog );
+        float fog = exp( -z_w * 0.35 );
+        col = mix( gc * ( 0.1 + 0.5 * swell ), wall * lamp_c, fog );
     }
     // The open well: the glow of the bottom far below.
-    col += gc * exp( -r / Ri * 3.0 ) * ( 0.3 + 0.8 * swell );
+    col += gc * exp( -r / ri * 3.0 ) * ( 0.3 + 0.8 * swell );
     finish( col );
 }

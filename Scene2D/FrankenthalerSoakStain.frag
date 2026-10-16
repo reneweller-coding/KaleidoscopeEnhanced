@@ -126,7 +126,7 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
 /// @brief Hue of a colour, 0..1.
-float hue_of( vec3 c )
+float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
     float h = ( mx == c.r ) ? ( c.g - c.b ) / d : ( mx == c.g ) ? 2.0 + ( c.b - c.r ) / d
@@ -238,12 +238,12 @@ void main()
     canvas *= 0.95 + 0.05 * weave;
     vec3  col = canvas;
     float T = 0.02 * sceneTime + 0.15 * audioAdvance;
-    float nP = 4.0 + 4.0 * clamp( poolP, 0.0, 1.0 );
+    float n_p = 4.0 + 4.0 * clamp( poolP, 0.0, 1.0 );
     float size = 0.35 + 0.25 * clamp( audioSpread, 0.0, 1.0 );
     for ( int i = 0; i < 8; ++i )
     {
         float fi = float( i );
-        float on = smoothstep( fi - 0.5, fi + 0.5, nP - 0.5 );
+        float on = smoothstep( fi - 0.5, fi + 0.5, n_p - 0.5 );
         if ( on <= 0.0 )
             break;
         float life = fract( T * 0.4 + fi / 8.0 );
@@ -255,8 +255,8 @@ void main()
         vec2  d = p - c;
         float ang = atan( d.y, d.x );
         vec2  u = vec2( cos( ang ), sin( ang ) );
-        float edgeN = fbm3( u * 2.0 + h * 10.0 ) + ( 0.1 + 0.25 * rough ) * noise2( u * 9.0 + h * 3.0 );
-        float rr = length( d * vec2( 1.0, 1.3 ) ) / ( R * ( 0.75 + 0.5 * edgeN ) );
+        float edge_n = fbm3( u * 2.0 + h * 10.0 ) + ( 0.1 + 0.25 * rough ) * noise2( u * 9.0 + h * 3.0 );
+        float rr = length( d * vec2( 1.0, 1.3 ) ) / ( R * ( 0.75 + 0.5 * edge_n ) );
         float inside = smoothstep( 1.0, 0.95, rr );
         // Pigment gathers at the drying edge.
         float rim = smoothstep( 0.75, 1.0, rr ) * inside;

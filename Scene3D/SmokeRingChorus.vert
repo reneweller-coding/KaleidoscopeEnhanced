@@ -26,9 +26,9 @@ out float vId; ///< Instance or element id (from the vertex stage).
 void main()
 {
     float kind = attrB.y;
-    bool  isWall = kind < -0.5;
-    bool  wantRings = oitPass > 0.5;
-    if ( isWall == wantRings )
+    bool  is_wall = kind < -0.5;
+    bool  want_rings = oitPass > 0.5;
+    if ( is_wall == want_rings )
     {
         gl_Position = vec4( 0.0, 0.0, -2.0, 1.0 );
         vTexCoord = vec2( 0.0 );
@@ -44,7 +44,7 @@ void main()
     vKind = kind;
     vLife = attrB.x;
     vId = attrA.w;
-    if ( isWall )
+    if ( is_wall )
     {
         vTexCoord = attrB.zw;
         vNormal = vec3( 0.0, 0.0, -1.0 );

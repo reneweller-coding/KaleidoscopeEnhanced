@@ -94,8 +94,8 @@ vec3 renderSky( vec3 dir )
     // A foreign world sits at a fixed point in this sky -- fixed, not
     // orbiting itself, so it reads as a real distant body the CAMERA passes
     // rather than something spinning in place.
-    vec3  planetDir = normalize( vec3( 0.35, -0.12, 1.0 ) );
-    float d = dot( dir, planetDir );
+    vec3  planet_dir = normalize( vec3( 0.35, -0.12, 1.0 ) );
+    float d = dot( dir, planet_dir );
     // The disc used to span about 6 degrees -- a distant dot, when the brief
     // was a station ORBITING a foreign world. At 0.80 it spans about 37 and
     // reads as something you are actually in orbit around.
@@ -112,13 +112,13 @@ vec3 renderSky( vec3 dir )
 
     if ( disc > 0.0005 )
     {
-        vec3 up = ( abs( planetDir.y ) < 0.99 ) ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 );
-        vec3 rightV = normalize( cross( up, planetDir ) );
-        vec3 upV = cross( planetDir, rightV );
+        vec3 up = ( abs( planet_dir.y ) < 0.99 ) ? vec3( 0.0, 1.0, 0.0 ) : vec3( 1.0, 0.0, 0.0 );
+        vec3 right_v = normalize( cross( up, planet_dir ) );
+        vec3 up_v = cross( planet_dir, right_v );
         // Scaled WITH the disc. This was 90.0 when the planet spanned six
         // degrees; at 37 the same figure puts six times as many features
         // across it and the surface reads as static rather than terrain.
-        vec2  uv = vec2( dot( dir, rightV ), dot( dir, upV ) ) * 15.0;
+        vec2  uv = vec2( dot( dir, right_v ), dot( dir, up_v ) ) * 15.0;
         float terrain = fbm( vec3( uv * 0.6, 1.3 ) );
         float clouds = fbm( vec3( uv * 0.9 + vec2( time * 0.02, 0.0 ), 5.1 ) );
         vec3  surface = mix( vec3( 0.10, 0.22, 0.34 ), vec3( 0.5, 0.42, 0.28 ), terrain );
@@ -202,24 +202,24 @@ void main()
     vec3 n = normalize( vNormal );
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
-    vec3 viewDir = normalize( -vPos );
+    vec3 view_dir = normalize( -vPos );
 
     // A cold, distant star -- these hulls read as far-out infrastructure,
     // not something basking in a nearby sun.
-    vec3  lightDir = normalize( vec3( 0.3, 0.5, -0.6 ) );
-    float diff = max( dot( n, lightDir ), 0.0 );
+    vec3  light_dir = normalize( vec3( 0.3, 0.5, -0.6 ) );
+    float diff = max( dot( n, light_dir ), 0.0 );
     float fill = 0.5 + 0.5 * dot( n, vec3( 0.0, 1.0, 0.0 ) );
 
-    vec3  halfV = normalize( lightDir + viewDir );
-    float spec = pow( max( dot( n, halfV ), 0.0 ), mix( 48.0, 6.0, roughness ) );
-    vec3  specColor = mix( vec3( 0.9, 0.95, 1.0 ), base.rgb, metallic );
+    vec3  half_v = normalize( light_dir + view_dir );
+    float spec = pow( max( dot( n, half_v ), 0.0 ), mix( 48.0, 6.0, roughness ) );
+    vec3  spec_color = mix( vec3( 0.9, 0.95, 1.0 ), base.rgb, metallic );
 
     // Same balance lesson learned building the first mesh scene (Spaceship):
     // this hull's baked albedo is dark by design, so the ambient/diffuse
     // floor has to be generous or every additive accent below reads as if
     // it's the whole surface's color instead of a highlight on top of it.
     vec3 col = base.rgb * ( 0.5 + diff * ( 1.3 + 0.5 * audioSwell ) + fill * 0.3 );
-    col += specColor * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
+    col += spec_color * spec * ( 0.5 + 0.6 * ( 1.0 - roughness ) );
 
     // Faux window glow: the brightest patches of the baked albedo (window
     // strips, hazard markings) are treated as self-lit rather than merely
@@ -228,19 +228,19 @@ void main()
     // this batch of station textures), so the highlight threshold sits well
     // below what a normal-brightness texture would need.
     float luma = dot( base.rgb, vec3( 0.299, 0.587, 0.114 ) );
-    float windowMask = smoothstep( 0.25, 0.55, luma );
+    float window_mask = smoothstep( 0.25, 0.55, luma );
     // A fixed warm color -- the environment carries the "cool" palette
     // variety now (see renderSky() above), not a photo-tinted hull.
-    col += vec3( 1.0, 0.85, 0.55 ) * windowMask * wp * ( 0.4 + 0.4 * audioSwell ) * ( 0.85 + 0.3 * audioKick );
+    col += vec3( 1.0, 0.85, 0.55 ) * window_mask * wp * ( 0.4 + 0.4 * audioSwell ) * ( 0.85 + 0.3 * audioKick );
 
     // A soft cool starlight rim, kept modest -- an edge accent, not a wash.
-    float fresnel = pow( 1.0 - max( dot( n, viewDir ), 0.0 ), 4.0 );
+    float fresnel = pow( 1.0 - max( dot( n, view_dir ), 0.0 ), 4.0 );
     col += vec3( 0.7, 0.85, 1.0 ) * fresnel * ( 0.1 + 0.2 * audioSwell );
 
     if ( hue > 0.001 )
         col = hueRot( col, 0.2 * sin( hue ) );
 
-    vec3 _catTone = max( col, 0.0 );
-    _catTone /= 1.0 + 0.35 * max( _catTone.r, max( _catTone.g, _catTone.b ) );
-    fragColor = vec4( clamp( _catTone, 0.0, 1.0 ), 1.0 );
+    vec3 cat_tone = max( col, 0.0 );
+    cat_tone /= 1.0 + 0.35 * max( cat_tone.r, max( cat_tone.g, cat_tone.b ) );
+    fragColor = vec4( clamp( cat_tone, 0.0, 1.0 ), 1.0 );
 }

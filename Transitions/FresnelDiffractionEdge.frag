@@ -60,52 +60,52 @@ void main()
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.4 * spd; // clock only: audioAdvance integrates transients and sped the motion up on every surge
-    float tProg = clamp( interpolation, 0.0, 1.0 );
-    float midTransition = sin( tProg * 3.14159265 );
+    float t_prog = clamp( interpolation, 0.0, 1.0 );
+    float mid_transition = sin( t_prog * 3.14159265 );
 
     // Knife edge position sweeping left to right
-    float edgePos = mix( -1.2, 1.2, tProg );
-    float v = ( p.x - edgePos ) * 20.0 * edg; // Dimensionless Fresnel parameter
+    float edge_pos = mix( -1.2, 1.2, t_prog );
+    float v = ( p.x - edge_pos ) * 20.0 * edg; // Dimensionless Fresnel parameter
 
     // audioBass undulates the Fresnel zone distance, i.e. the spacing of the
     // diffraction zones inside the fringe term.  It is deliberately kept OUT of
     // v itself, which is the knife-edge coordinate driving the wipe mask.
-    // midTransition returns it to exactly 1.0 at both fade endpoints, and
-    // fresnelIntensity only reaches the frame through the midTransition-gated
-    // diffDisp below.
-    float zoneDist = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
+    // mid_transition returns it to exactly 1.0 at both fade endpoints, and
+    // fresnel_intensity only reaches the frame through the mid_transition-gated
+    // diff_disp below.
+    float zone_dist = 1.0; // constant: an envelope on a scale re-lays the whole pattern (speed pass 14.09.2026)
 
     // Analytical approximation of straight-edge Fresnel diffraction intensity
-    float fresnelIntensity;
+    float fresnel_intensity;
     if ( v > 0.0 )
     {
         // Illuminated region: decaying oscillations
-        fresnelIntensity = 1.0 + ( sin( 0.5 * 3.14159265 * v * v * zoneDist ) / ( 3.14159265 * v + 1e-3 ) ) * frg;
+        fresnel_intensity = 1.0 + ( sin( 0.5 * 3.14159265 * v * v * zone_dist ) / ( 3.14159265 * v + 1e-3 ) ) * frg;
     }
     else
     {
         // Geometrical shadow: exponential decay
-        fresnelIntensity = exp( v * 2.0 ) * 0.25;
+        fresnel_intensity = exp( v * 2.0 ) * 0.25;
     }
 
     // Diffraction phase displacement
-    float diffDisp = ( fresnelIntensity - 1.0 ) * 0.03 * midTransition;
-    vec2  warpUV = uv + vec2( diffDisp, 0.0 );
+    float diff_disp = ( fresnel_intensity - 1.0 ) * 0.03 * mid_transition;
+    vec2  warp_uv = uv + vec2( diff_disp, 0.0 );
 
-    vec4 c1 = texture( tex1, fract( warpUV ) );
-    vec4 c0 = texture( tex0, fract( warpUV ) );
+    vec4 c1 = texture( tex1, fract( warp_uv ) );
+    vec4 c0 = texture( tex0, fract( warp_uv ) );
 
-    float wipeMask = smoothstep( -0.5, 0.5, v );
-    vec4  col = mix( c0, c1, wipeMask );
+    float wipe_mask = smoothstep( -0.5, 0.5, v );
+    vec4  col = mix( c0, c1, wipe_mask );
 
     // Glowing primary fringe maximum
-    float primaryPeak = exp( -abs( v - 1.22 ) * 10.0 ) * midTransition;
-    col.rgb += primaryPeak * vec3( 0.2, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.0 );
+    float primary_peak = exp( -abs( v - 1.22 ) * 10.0 ) * mid_transition;
+    col.rgb += primary_peak * vec3( 0.2, 0.9, 1.0 ) * ( 1.5 + audioKick * 1.0 );
 
     if ( audioChromaHue != 0.0 )
-        col.rgb = hueRot( col.rgb, audioChromaHue * midTransition );
+        col.rgb = hueRot( col.rgb, audioChromaHue * mid_transition );
     if ( hue > 0.001 )
-        col.rgb = hueRot( col.rgb, hue * midTransition );
+        col.rgb = hueRot( col.rgb, hue * mid_transition );
 
     fragColor = col;
 }
