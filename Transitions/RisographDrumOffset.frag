@@ -51,25 +51,50 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2D( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -78,7 +103,7 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float ink = clamp( inkP, 0.0, 1.0 );

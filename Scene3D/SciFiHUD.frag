@@ -27,7 +27,7 @@ in float vSide; ///< Which side of a strip (from the vertex stage).
  * is computed in SciFiHUD.vert.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float d = abs( vSide );

@@ -41,7 +41,7 @@ const float Dist = 46.0;
 const float Ground = -16.0;
 const float Rate = 0.35; ///< radians per second, shared with the fragment stage
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     bool is_base = gl_VertexID < meshVertexCount;

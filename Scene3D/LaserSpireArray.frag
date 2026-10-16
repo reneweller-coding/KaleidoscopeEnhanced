@@ -31,7 +31,7 @@ in float gBeam;
 
 uniform float audioUpperMid; ///< 2-6 kHz metallic / industrial edge
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( gBeam > 0.5 )

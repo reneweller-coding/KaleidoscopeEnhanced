@@ -13,7 +13,7 @@ in vec4 vCol;    ///< Colour (from the vertex stage).
 in vec3 vNormal; ///< Surface normal (from the vertex stage).
 in vec3 vWorld;  ///< World position (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  n = normalize( vNormal );

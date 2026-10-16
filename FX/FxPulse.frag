@@ -31,20 +31,33 @@ uniform float waveAmtP;   ///< shock-wave strength (0 -> 0.012; 0.008 = faint, 0
 uniform float spinP;      ///< rotation speed      (0 -> 0.05; 0.02 = slow, 0.12 = lively)
 uniform float chromaP;    ///< onset chroma split  (0 -> 0.0022; up to ~0.005)
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
 
+/**  The cross-faded photo at a coordinate.
+ *
+ * @param uv  The coordinate. (in)
+ *
+ * @return
+ *   The colour (RGBA).
+ **/
 vec4 frame( vec2 uv )
 {
     return interpolation * texture( tex0, uv )
            + ( 1.0 - interpolation ) * texture( tex1, uv );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 p = gl_FragCoord.xy / resolution;

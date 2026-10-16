@@ -28,19 +28,33 @@ in float vR;
  * flashes the whole sky; audioChromaHue tints the glowing sector seams.
  */
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
+/**  Mirror-repeats a coordinate (a triangle wave of period 2).
+ *
+ * @param uv  The coordinate. (in)
+ *
+ * @return
+ *   The folded coordinate, 0..1.
+ **/
 vec2 mfold( vec2 uv )
 {
     return abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Rosette: fold the dome angle into 8/10/12/14 mirrored sectors (rolled

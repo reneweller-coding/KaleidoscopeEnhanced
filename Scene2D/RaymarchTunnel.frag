@@ -38,7 +38,13 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -47,10 +53,15 @@ vec3 img( vec2 uv )
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,7 +71,13 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
+/**  A colour of the photo along a slowly wandering arc (palette lookup).
+ *
+ * @param x  Position along the arc (radians). (in)
+ *
+ * @return
+ *   The photo's colour there (RGB).
+ **/
 vec3 imgPal( float x )
 {
     vec2 cc = vec2( 0.5 )
@@ -68,7 +85,14 @@ vec3 imgPal( float x )
     return img( fract( cc + 0.24 * vec2( cos( x ), sin( x * 1.31 ) ) ) );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -76,12 +100,15 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Overall level of the photo currently on the texture units, from a fixed
-/// 5-tap grid. The bore is papered with the picture itself, so a bright photo
-/// left the tempo-locked rings and the light at the end of the tunnel no
-/// headroom at all. The probe rides the tex0/tex1 crossfade, so the gain it
-/// feeds can never pop, and being one number for the whole frame it rescales
-/// exposure without touching local contrast.
+/**  Overall level of the photo currently on the texture units, from a fixed 5-tap grid.
+ *
+ * @return
+ *   The photo's average level, 0..1.
+ *
+ * The bore is papered with the picture itself, so a bright photo left the tempo-locked rings and the light at the end
+ * of the tunnel no headroom at all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can never pop, and
+ * being one number for the whole frame it rescales exposure without touching local contrast.
+ **/
 float photoLevel()
 {
     vec3 s = img( vec2( 0.25, 0.25 ) ) + img( vec2( 0.75, 0.25 ) )
@@ -90,7 +117,15 @@ float photoLevel()
     return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
-/// Distance to the inside of a wobbling cylindrical tunnel wall.
+/**  Distance to the inside of a wobbling cylindrical tunnel wall.
+ *
+ * @param p      The point. (in)
+ * @param snake  Snaking of the tunnel. (in)
+ * @param widen  Widening of the radius. (in)
+ *
+ * @return
+ *   The distance (positive inside).
+ **/
 float mapTunnel( vec3 p, float snake, float widen )
 {
     p.xy += snake * vec2( sin( p.z * 0.30 ), cos( p.z * 0.25 ) ); // tunnel snakes
@@ -98,7 +133,7 @@ float mapTunnel( vec3 p, float snake, float widen )
     return radius - length( p.xy ); // >0 inside
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / resolution.y;

@@ -53,22 +53,43 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2D( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
 
-/// The near field of a grating after a fraction zz of one Talbot distance.
-/// Five orders, each carrying the quadratic propagation phase.
+/**  The near field of a grating after a fraction zz of one Talbot distance.
+ *
+ * @param x   Position across the grating (in periods). (in)
+ * @param zz  Distance as a fraction of the Talbot distance. (in)
+ *
+ * @return
+ *   The intensity.
+ *
+ * Five orders, each carrying the quadratic propagation phase.
+ **/
 float carpet( float x, float zz )
 {
     float re = 0.0, im = 0.0;
@@ -86,7 +107,7 @@ float carpet( float x, float zz )
     return re * re + im * im;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float per = ( periodP > 0.0 ) ? periodP : 1.0;

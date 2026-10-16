@@ -47,7 +47,7 @@ out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex
 out float vQuadID;
 out float vGlint;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  corner_uv = attrA.xy;

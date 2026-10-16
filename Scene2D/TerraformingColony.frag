@@ -36,13 +36,25 @@ uniform float domeP;
 uniform float gasP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -52,7 +64,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -60,18 +79,36 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Smooth value noise.
+/**  Smooth value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise( vec3 p )
 {
     vec3 i = floor( p );
@@ -86,7 +123,13 @@ float noise( vec3 p )
         f.z );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
@@ -99,7 +142,14 @@ float fbm( vec3 p )
     return f;
 }
 
-/// @brief Signed distance to a box of half size b.
+/**  Signed distance to a box of half size b.
+ *
+ * @param p  The point. (in)
+ * @param b  Half size of the box. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdBox( vec3 p, vec3 b )
 {
     vec3 q = abs( p ) - b;
@@ -109,7 +159,14 @@ float sdBox( vec3 p, vec3 b )
 float hitMat = 0.0;
 float hitGlow = 0.0;
 
-/// @brief The scene's distance field: distance from p to the nearest surface.
+/**  The scene's distance field: distance from p to the nearest surface.
+ *
+ * @param p   The point. (in)
+ * @param dp  Scene parameter (see the file). (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map( vec3 p, float dp )
 {
     float d = 1e10;
@@ -177,7 +234,14 @@ float map( vec3 p, float dp )
     return d;
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p   The surface point. (in)
+ * @param dp  Scene parameter passed to the field. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 p, float dp )
 {
     vec2 e = vec2( 0.02, 0.0 );
@@ -187,7 +251,7 @@ vec3 calcNormal( vec3 p, float dp )
         map( p + e.yyx, dp ) - map( p - e.yyx, dp ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float dp = ( domeP > 0.01 ? domeP : 1.0 );

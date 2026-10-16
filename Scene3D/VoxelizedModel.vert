@@ -29,7 +29,7 @@ out vec3  vObj;    ///< object-space position, unit-scaled (for the voxel grid)
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     bool is_bg = gl_VertexID >= meshVertexCount;

@@ -44,7 +44,13 @@ uniform float palShiftP; ///< cosine palette offset  (0 -> 0; any value = differ
 uniform int   kSides;    ///< >=2: weave a spinning n-fold image rosette in (0 = off)
 uniform float rosetteP;  ///< rosette strength       (0 -> 0.22)
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -52,7 +58,14 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// n-fold kaleidoscopic mirror fold of a centred coordinate.
+/**  n-fold kaleidoscopic mirror fold of a centred coordinate.
+ *
+ * @param p      The coordinate (centred). (in)
+ * @param sides  Number of mirrors. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
@@ -64,10 +77,15 @@ vec2 kaleido( vec2 p, float sides )
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -77,7 +95,13 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
+/**  A colour of the photo along a slowly wandering arc (palette lookup).
+ *
+ * @param x  Position along the arc (radians). (in)
+ *
+ * @return
+ *   The photo's colour there (RGB).
+ **/
 vec3 imgPal( float x )
 {
     vec2 cc = vec2( 0.5 )
@@ -85,7 +109,14 @@ vec3 imgPal( float x )
     return img( fract( cc + 0.24 * vec2( cos( x ), sin( x * 1.31 ) ) ) );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -93,7 +124,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// iq-style cosine palette (https://www.shadertoy.com/view/dlVSDK).
+/**  iq-style cosine palette (https://www.shadertoy.com/view/dlVSDK).
+ *
+ * @param t  Position on the palette. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 palette( float t )
 {
     vec3 a = vec3( 0.2, 0.7, 0.4 );
@@ -103,7 +140,7 @@ vec3 palette( float t )
     return imgPalette( t );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  v = resolution;

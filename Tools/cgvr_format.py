@@ -229,7 +229,9 @@ def all_files():
     files = []
     for d, ext in [ ( d, CPP_EXT ) for d in CPP_DIRS ] + [ ( d, GLSL_EXT ) for d in GLSL_DIRS ]:
         for base, _, names in os.walk( os.path.join( ROOT, d ) ):
-            files += [ os.path.join( base, n ) for n in names if n.lower().endswith( ext ) and not n.startswith( ( "moc_", "ui_", "qrc_" ) ) ]
+            # Source/mainwindow.h is uic output (class Ui_MainWindow) like the ui_ files, and stays as uic writes it
+            files += [ os.path.join( base, n ) for n in names if n.lower().endswith( ext ) and not n.startswith( ( "moc_", "ui_", "qrc_" ) )
+                       and not ( d == "Source" and n == "mainwindow.h" ) ]
     return sorted( files )
 
 

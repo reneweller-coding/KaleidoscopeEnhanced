@@ -53,13 +53,25 @@ uniform float beatSpeedP;
 const float TanY = 0.5206;
 const float Jelly = 5.0; ///< jellies in the bloom (runs 0..4; run 5 = tentacles)
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -69,7 +81,15 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Tints a colour toward the house palette at t, keeping its brightness.
+/**  Tints a colour toward the house palette at t, keeping its brightness.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
@@ -77,10 +97,17 @@ vec3 palTint( vec3 c, float t, float k )
     return mix( c, tp, k );
 }
 
-/// Where jelly `gi` hangs, and how big it is.  Placed in FRUSTUM coordinates
-/// (x,y scaled by depth) so the bloom stays evenly spread across the picture
-/// however deep each animal sits -- the fix for the classic "dense in the
-/// middle, empty at the edges" look.  Returns the body half-radius as bScale.
+/**  Where jelly `gi` hangs, and how big it is.
+ *
+ * @param gi      Index of the jelly. (in)
+ * @param aspect  Aspect of the screen. (in)
+ * @param ctr     Receives the centre. (out)
+ * @param bScale  Receives the body half-radius. (out)
+ *
+ * Placed in FRUSTUM coordinates (x,y scaled by depth) so the bloom stays evenly spread across the picture however deep
+ * each animal sits -- the fix for the classic "dense in the middle, empty at the edges" look.  Returns the body
+ * half-radius as bScale.
+ **/
 void jellyRig( float gi, float aspect, out vec3 ctr, out float bScale )
 {
     float jz = 3.8 + fract( gi * 0.371 + 0.19 ) * 8.4; // depth 3.8 .. 12.2
@@ -104,7 +131,7 @@ void jellyRig( float gi, float aspect, out vec3 ctr, out float bScale )
     bScale = ( 0.30 + 0.17 * fract( gi * 0.727 + 0.55 ) ) * half_h / 0.95;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float t_coord = attrA.x;

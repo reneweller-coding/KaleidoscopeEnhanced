@@ -52,24 +52,42 @@ uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plu
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2D( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief Luminance of the photo at a coordinate.
+/**  Luminance of a colour.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance (Rec. 709).
+ **/
 float lum( vec3 c )
 {
     return dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float gain = ( gainP > 0.0 ) ? gainP : 1.0;

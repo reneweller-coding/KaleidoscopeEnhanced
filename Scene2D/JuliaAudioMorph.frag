@@ -40,7 +40,13 @@ uniform float speedP; ///< morph-circle traversal speed (0 -> 1.0; 0.5..1.8)
 uniform float glowP;  ///< rim brightness (0 -> 1.0; 0.7..1.4)
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -48,7 +54,13 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,7 +70,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -66,7 +85,7 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float zoom_v = ( zoomP <= 0.01 ) ? 1.0 : zoomP;

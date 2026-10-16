@@ -18,12 +18,19 @@ layout( rgba16f, binding = 1 ) writeonly uniform image2D prsDst;
 
 uniform ivec2 size; ///< Size of the simulation grid in cells.
 
+/**  Velocity at a texel (clamped to the image).
+ *
+ * @param p  The texel. (in)
+ *
+ * @return
+ *   The velocity.
+ **/
 vec2 vAt( ivec2 p )
 {
     return imageLoad( velSrc, clamp( p, ivec2( 0 ), size - ivec2( 1 ) ) ).rg;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     ivec2 p = ivec2( gl_GlobalInvocationID.xy );

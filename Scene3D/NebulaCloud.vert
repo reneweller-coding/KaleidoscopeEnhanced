@@ -42,20 +42,33 @@ uniform float audioMode; ///< Mode of the music: 0 minor .. 1 major.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;

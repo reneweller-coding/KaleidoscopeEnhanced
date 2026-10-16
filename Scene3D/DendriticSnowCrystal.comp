@@ -34,7 +34,13 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -43,7 +49,13 @@ float hash11( float p )
     return fract( p );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot   Index of the vertex in the buffer. (in)
+ * @param p      Position. (in)
+ * @param ice    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param armID  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, float ice, float armID )
 {
     uint o = slot * 8u;
@@ -57,7 +69,14 @@ void writeVertex( uint slot, vec3 p, float ice, float armID )
     verts[o + 7u] = armID;
 }
 
-/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
+/**  Appends a thick line segment (two triangles) to the output buffer (compute stage).
+ *
+ * @param pA         Start of the segment. (in)
+ * @param pB         End of the segment. (in)
+ * @param ice        Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param armID      Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param thickness  Width of the ribbon. (in)
+ **/
 void emitSegment( vec3 pA, vec3 pB, float ice, float armID, float thickness )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -101,7 +120,7 @@ const uint FlakeTotal = SegFlake * Flakes; ///< 57288
 const uint Dust = 4000u;
 const uint TotalSegments = FlakeTotal + Dust; ///< 61288 segs, 367728 verts
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

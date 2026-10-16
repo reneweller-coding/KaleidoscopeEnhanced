@@ -53,18 +53,36 @@ uniform float sizeP;  ///< Size knob, 0..1.
 uniform float cloudP; ///< how large the initial cloud is
 uniform float puffP;  ///< puff size
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 12.9898 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
 
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -77,7 +95,7 @@ float noise3( vec3 p )
                 f.z );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( gBg[0] > 0.5 )

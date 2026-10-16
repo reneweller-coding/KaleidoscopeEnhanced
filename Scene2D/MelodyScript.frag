@@ -40,20 +40,38 @@ uniform float audioLevel;     ///< Overall loudness, 0..1.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -62,7 +80,13 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/// Melody sample k steps into the past (0 = newest).
+/**  Melody sample k steps into the past (0 = newest).
+ *
+ * @param k  Steps into the past (0 = newest). (in)
+ *
+ * @return
+ *   The melody pitch, 0..1.
+ **/
 float melodyAgo( int k )
 {
     int head = int( audioMelodyHead * 96.0 + 0.5 );
@@ -70,9 +94,15 @@ float melodyAgo( int k )
     return audioMelody[i];
 }
 
-/// Periodic value noise over the 96-sample ring (18 cells): the brush's
-/// pressure and dry streaks are tied to the ink itself, so they scroll with
-/// the stroke instead of standing still while the ink slides through them.
+/**  Periodic value noise over the 96-sample ring (18 cells): the brush's pressure and dry streaks are tied to the ink
+ * itself, so they scroll with the stroke instead of standing still while the ink slides through them.
+ *
+ * @param s  Position along the ring (samples). (in)
+ * @param y  Second coordinate. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float ringNoise( float s, float y )
 {
     float x = s * 0.1875;
@@ -82,7 +112,7 @@ float ringNoise( float s, float y )
     return mix( a, b, f );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

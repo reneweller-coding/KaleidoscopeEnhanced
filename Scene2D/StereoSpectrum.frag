@@ -33,7 +33,13 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
                               ///< backwards).
 uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -42,10 +48,15 @@ vec3 img( vec2 uv )
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,14 +66,20 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief HSV (all 0..1) to RGB.
+/**  HSV (all 0..1) to RGB.
+ *
+ * @param c  Hue, saturation and value, all 0..1. (in)
+ *
+ * @return
+ *   The RGB colour.
+ **/
 vec3 hsv2rgb( vec3 c )
 {
     vec3 p = imgPalette( c.x ) * 1.35; // photo-arc palette (house standard)
     return c.z * mix( vec3( 1.0 ), p, c.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;

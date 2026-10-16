@@ -41,13 +41,25 @@ uniform float densP; ///< Density knob, 0..1.
 uniform float globP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,19 +69,37 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash13( vec3 p )
 {
     p = fract( p * 0.3183099 + vec3( 0.71, 0.113, 0.419 ) );
     p *= 17.0;
     return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param x  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 x )
 {
     vec3 i = floor( x ), f = fract( x );
@@ -80,7 +110,13 @@ float noise3( vec3 x )
                      mix( hash13( i + vec3( 0, 1, 1 ) ), hash13( i + vec3( 1, 1, 1 ) ), f.x ), f.y ),
                 f.z );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec3 p )
 {
     float v = 0.0, a = 0.5;
@@ -95,7 +131,14 @@ float fbm( vec3 p )
     return v;
 }
 
-/// Globule centres: a handful of cocoons, each drifting slowly.
+/**  Globule centres: a handful of cocoons, each drifting slowly.
+ *
+ * @param k  Index of the globule. (in)
+ * @param t  Time of the drift. (in)
+ *
+ * @return
+ *   The globule's centre.
+ **/
 vec3 globCentre( int k, float t )
 {
     float fk = float( k );
@@ -104,6 +147,16 @@ vec3 globCentre( int k, float t )
                  5.0 + hash11( fk * 7.7 ) * 4.0 );
 }
 
+/**  Density of the dark nebula at a point: a base plus the globules.
+ *
+ * @param q      The point. (in)
+ * @param t      Time of the drift. (in)
+ * @param base   Base density. (in)
+ * @param nGlob  Number of globules (up to 6). (in)
+ *
+ * @return
+ *   The density.
+ **/
 float density( vec3 q, float t, float base, int nGlob )
 {
     float d = 0.0;
@@ -121,7 +174,7 @@ float density( vec3 q, float t, float base, int nGlob )
     return clamp( d * base, 0.0, 1.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

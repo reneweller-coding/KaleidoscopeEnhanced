@@ -39,13 +39,25 @@ uniform float sizeP; ///< Size knob, 0..1.
 uniform float tiltP; ///< Tilt knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,19 +67,32 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// The figure eight (a lemniscate of Gerono, close to the true choreography).
+/**  The figure eight (a lemniscate of Gerono, close to the true choreography).
+ *
+ * @param t   Phase (radians). (in)
+ * @param sz  Size of the figure. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec2 orbit( float t, float sz )
 {
     return vec2( sin( t ), sin( 2.0 * t ) * 0.5 ) * sz;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

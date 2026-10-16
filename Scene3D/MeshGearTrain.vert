@@ -36,13 +36,20 @@ out vec2  vCentre; ///< the gear's centre in world xy, for the meshing-point spa
 const float Dist = 58.0;
 const float R = 9.0;
 
+/**  Centre of gear i of the train.
+ *
+ * @param i  Index of the gear. (in)
+ *
+ * @return
+ *   The centre (x, y).
+ **/
 vec2 gearCentre( int i )
 {
     float fi = float( i ) - 3.0;
     return vec2( fi * 15.8, ( mod( float( i ), 2.0 ) < 0.5 ? 4.5 : -4.5 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int  inst = gl_InstanceID;

@@ -37,13 +37,25 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -51,10 +63,15 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,6 +80,13 @@ vec3 imgPalette( float t )
     float pg = dot( pc, vec3( 0.333 ) );
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
+/**  iq-style cosine palette (https://www.shadertoy.com/view/dlVSDK).
+ *
+ * @param t  Position on the palette. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 palette( float t )
 {
     return imgPalette( t );
@@ -71,7 +95,7 @@ vec3 palette( float t )
 
 
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( 2.0 * gl_FragCoord.xy - resolution ) / resolution.y;

@@ -39,13 +39,25 @@ uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, 
 uniform float heightP; ///< Height knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,14 +67,26 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -70,7 +94,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -85,14 +115,33 @@ float fbm( vec2 p )
 
 float gBand[8];
 
+/**  Antialiased mask of an axis-aligned box.
+ *
+ * @param q   The point. (in)
+ * @param lo  Lower corner. (in)
+ * @param hi  Upper corner. (in)
+ * @param aa  Width of the antialiasing per axis. (in)
+ *
+ * @return
+ *   The coverage, 0..1.
+ **/
 float boxMask( vec2 q, vec2 lo, vec2 hi, vec2 aa )
 {
     vec2 a = smoothstep( lo - aa, lo + aa, q ) * smoothstep( hi + aa, hi - aa, q );
     return a.x * a.y;
 }
 
-/// One facade at (along, height): the colour of flats, windows, AC boxes
-/// and laundry, averaged out where the floors grow too small to resolve.
+/**  One facade at (along, height): the colour of flats, windows, AC boxes and laundry, averaged out where the floors
+ * grow too small to resolve.
+ *
+ * @param u       Position along the facade. (in)
+ * @param Y       Height. (in)
+ * @param wallId  Index of the wall. (in)
+ * @param H       Height of the building. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 facade( float u, float Y, float wallId, float H )
 {
     vec2  g = vec2( u / 1.6, Y / 2.9 );
@@ -161,7 +210,7 @@ vec3 facade( float u, float Y, float wallId, float H )
     return mix( avg, c, detail );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

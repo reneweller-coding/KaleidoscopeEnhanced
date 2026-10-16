@@ -43,7 +43,7 @@ uniform float camHP; ///< Camera height knob, 0..1.
 uniform float foamP;
 uniform float glitterP;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 n = normalize( vNormal );

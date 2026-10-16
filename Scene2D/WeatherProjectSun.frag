@@ -42,13 +42,25 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float crowdP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,19 +70,37 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -78,7 +108,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -102,7 +138,15 @@ const float Sunr = 8.0;
 float gT; ///< The chain's (or scene's) time this frame.
 int   gCrowd;
 
-/// Nearest hit of a ray inside the box: 0 floor, 1 ceiling, 2 wall, 3 end wall.
+/**  Nearest hit of a ray inside the box: 0 floor, 1 ceiling, 2 wall, 3 end wall.
+ *
+ * @param ro   Ray origin. (in)
+ * @param rd   Ray direction. (in)
+ * @param mat  Receives the surface: 0 floor, 1 ceiling, 2 wall, 3 end wall. (out)
+ *
+ * @return
+ *   The hit distance.
+ **/
 float traceBox( vec3 ro, vec3 rd, out int mat )
 {
     float t = 1e9;
@@ -136,9 +180,18 @@ float traceBox( vec3 ro, vec3 rd, out int mat )
     return t;
 }
 
-/// People as upright cut-outs facing the sun; some lie on the floor.
-/// Returns the distance along the ray to the nearest figure (or 1e9) and
-/// its soft coverage.
+/**  People as upright cut-outs facing the sun; some lie on the floor.
+ *
+ * @param ro    Ray origin. (in)
+ * @param rd    Ray direction. (in)
+ * @param tMax  Largest distance considered. (in)
+ * @param cov   Receives the figure's coverage. (out)
+ *
+ * @return
+ *   The distance to the nearest figure (or 1e9).
+ *
+ * Returns the distance along the ray to the nearest figure (or 1e9) and its soft coverage.
+ **/
 float people( vec3 ro, vec3 rd, float tMax, out float cov )
 {
     float t_best = 1e9;
@@ -184,15 +237,29 @@ float people( vec3 ro, vec3 rd, float tMax, out float cov )
     return t_best;
 }
 
-/// The sun's light falling off from the disc's centre (approximately a point).
+/**  The sun's light falling off from the disc's centre (approximately a point).
+ *
+ * @param P  The point. (in)
+ *
+ * @return
+ *   The light, 0..1.
+ **/
 float sunLight( vec3 P )
 {
     vec3 v = P - Sunc;
     return 500.0 / ( dot( v, v ) + 500.0 );
 }
 
-/// Closed-form in-scattering of the sun along a ray segment [0, t1] in
-/// uniform haze: the integral of A / (h^2 + b + (t - t0)^2) dt.
+/**  Closed-form in-scattering of the sun along a ray segment [0, t1] in uniform haze: the integral of A / (h^2 + b +
+ * (t - t0)^2) dt.
+ *
+ * @param ro  Ray origin. (in)
+ * @param rd  Ray direction. (in)
+ * @param t1  End of the segment. (in)
+ *
+ * @return
+ *   The in-scattered light.
+ **/
 float inscatter( vec3 ro, vec3 rd, float t1 )
 {
     float t0 = dot( Sunc - ro, rd );
@@ -201,7 +268,15 @@ float inscatter( vec3 ro, vec3 rd, float t1 )
     return 500.0 / s * ( atan( ( t1 - t0 ) / s ) - atan( -t0 / s ) );
 }
 
-/// Shade one surface hit (without the mirror bounce).
+/**  Shade one surface hit (without the mirror bounce).
+ *
+ * @param P    The hit point. (in)
+ * @param mat  The surface. (in)
+ * @param t    The hit distance. (in)
+ *
+ * @return
+ *   The brightness.
+ **/
 float shade( vec3 P, int mat, float t )
 {
     float L = sunLight( P );
@@ -229,7 +304,7 @@ float shade( vec3 P, int mat, float t )
     return 0.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

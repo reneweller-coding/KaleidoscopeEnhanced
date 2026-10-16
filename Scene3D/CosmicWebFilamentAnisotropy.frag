@@ -32,7 +32,7 @@ uniform float audioSwell; ///< Slow loudness envelope, 0..1 (seconds).
 uniform float pointGainP;
 uniform float haloP;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Radial sprite falloff (GL_POINTS only)

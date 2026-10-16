@@ -36,7 +36,7 @@ uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue pl
 out vec3  vWorldPos; ///< World position (from the vertex stage).
 out float vVortexPhase;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float flx = ( fluxP > 0.0 ) ? fluxP : 1.0;

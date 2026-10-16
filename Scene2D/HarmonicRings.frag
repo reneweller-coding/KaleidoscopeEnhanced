@@ -61,19 +61,30 @@ uniform float audioAdvance;          ///< The music's advance: integrated tempo-
 uniform float audioValence;          ///< Mood valence: 0 dark .. 1 bright.
 const float   Pi = 3.14159265358979; ///< Pi.
 
-/// Gaussian glow ring intensity at radius r for a ring centred at ri.
-/// wBase: structural minimum half-width.
-/// energy: band energy 0..1, widens and brightens the ring.
+/**  Gaussian glow ring intensity at radius r for a ring centred at ri.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ *
+ * wBase: structural minimum half-width. energy: band energy 0..1, widens and brightens the ring.
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -83,6 +94,16 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
+/**  Gaussian glow of one ring, widened and brightened by its band energy.
+ *
+ * @param r       Radius of the point. (in)
+ * @param ri      Radius of the ring. (in)
+ * @param wBase   Base width. (in)
+ * @param energy  The band energy, 0..1. (in)
+ *
+ * @return
+ *   The glow.
+ **/
 float ringGlow( float r, float ri, float wBase, float energy )
 {
     float w = wBase + energy * 0.045;
@@ -90,8 +111,15 @@ float ringGlow( float r, float ri, float wBase, float energy )
     return exp( -( diff * diff ) / ( w * w ) ) * ( 0.35 + energy * 1.65 );
 }
 
-/// Sample the image texture along the ring arc, offset per ring to avoid
-/// identical wrapping on all rings.
+/**  Sample the image texture along the ring arc, offset per ring to avoid identical wrapping on all rings.
+ *
+ * @param angle    Angle around the ring (radians). (in)
+ * @param r        Radius. (in)
+ * @param ringIdx  Index of the ring. (in)
+ *
+ * @return
+ *   The photo sample (RGBA).
+ **/
 vec4 ringTex( float angle, float r, float ringIdx )
 {
     float u = angle / ( 2.0 * Pi ) + ringIdx * 0.137;
@@ -100,7 +128,7 @@ vec4 ringTex( float angle, float r, float ringIdx )
            + ( 1.0 - interpolation ) * texture( tex1, vec2( u, v ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // ---- Centred polar coordinates ----

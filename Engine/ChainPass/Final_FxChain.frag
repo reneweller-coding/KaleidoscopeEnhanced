@@ -29,7 +29,13 @@ uniform float speedP;            ///< Speed knob, 0..1.
 uniform float detailP;           ///< Detail knob, 0..1.
 uniform float paletteP;          ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float hueP;              ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-/// @brief The scene's chain of transforms: a coordinate in, the transformed coordinate out.
+/**  The scene's chain of transforms: a coordinate in, the transformed coordinate out.
+ *
+ * @param p  The coordinate. (in)
+ *
+ * @return
+ *   The coordinate after the chain.
+ **/
 vec2 chain( vec2 p )
 {
     vec2 fp = gl_FragCoord.xy - chainOff;
@@ -47,25 +53,49 @@ vec2 chain( vec2 p )
         return f.y < 0.5 ? ( f.x < 0.5 ? a : b ) : ( f.x < 0.5 ? c : d );
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
-/// @brief Sub-sample i (0..3) of this pixel on the doubled grid (chainScale 2).
+/**  Sub-sample i (0..3) of this pixel on the doubled grid (chainScale 2).
+ *
+ * @param i  Index of the sub-sample (0..3). (in)
+ *
+ * @return
+ *   The chain coordinate there.
+ **/
 vec2 chainSub( int i )
 {
     ivec2 b = ivec2( gl_FragCoord.xy - chainOff ) * 2 + ivec2( i & 1, i >> 1 );
     return texelFetch( texChain, clamp( b, ivec2( 0 ), textureSize( texChain, 0 ) - 1 ), 0 ).xy;
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -73,7 +103,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -85,35 +121,74 @@ float fbm3( vec2 p )
     }
     return v;
 }
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
+/**  The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
+ *
+ * @param uv   Coordinate in the photo (mirror-repeated outside 0..1). (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 imgLod( vec2 uv, float lod )
 {
     uv = mirrorUV( uv );
     return ( interpolation * textureLod( tex0, uv, lod ) + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ) ).rgb;
 }
-/// @brief Luminance of a colour (Rec. 601 weights).
+/**  Luminance of a colour (Rec. 601 weights).
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance.
+ **/
 float luma( vec3 c )
 {
     return dot( c, vec3( 0.299, 0.587, 0.114 ) );
 }
-/// @brief HSV (all 0..1) to RGB.
+/**  HSV (all 0..1) to RGB.
+ *
+ * @param c  Hue, saturation and value, all 0..1. (in)
+ *
+ * @return
+ *   The RGB colour.
+ **/
 vec3 hsv2rgb( vec3 c )
 {
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
-/// @brief Saturation of a colour, 0..1.
+/**  Saturation of a colour, 0..1.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The saturation, 0..1.
+ **/
 float satOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) );
     return ( mx - min( c.r, min( c.g, c.b ) ) ) / max( mx, 1e-3 );
 }
-/// @brief A glowing colour for a place: the photo's own hue where it has one, a wandering hue field where it is grey.
+/**  A glowing colour for a place: the photo's own hue where it has one, a wandering hue field where it is grey.
+ *
+ * @param photo  The photo's colour at the place. (in)
+ * @param q      The place; drives the wandering hue field. (in)
+ * @param hue0   Anchor hue, 0..1. (in)
+ *
+ * @return
+ *   The glow colour (RGB, bright).
+ **/
 vec3 glowColour( vec3 photo, vec2 q, float hue0 )
 {
     vec3 field = hsv2rgb( vec3( fract( hue0 + 0.55 * fbm3( q * 0.8 ) + 0.03 * audioAdvance ), 0.85, 1.0 ) );
@@ -121,18 +196,32 @@ vec3 glowColour( vec3 photo, vec2 q, float hue0 )
     own = own * own * own;
     return mix( field, own, smoothstep( 0.12, 0.35, satOf( photo ) ) );
 }
-/// @brief A colour normalised to its maximum and raised to a power: a saturated neon of it.
+/**  A colour normalised to its maximum and raised to a power: a saturated neon of it.
+ *
+ * @param c  The colour. (in)
+ * @param k  Exponent: the higher, the purer (and darker) the neon. (in)
+ *
+ * @return
+ *   The saturated colour.
+ **/
 vec3 neonOf( vec3 c, float k )
 {
     vec3 n = c / max( max( c.r, max( c.g, c.b ) ), 1e-3 );
     return pow( n, vec3( k ) );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// @brief Writes the pixel: loudness brightness and a soft highlight roll-off.
+/**  Writes the pixel: loudness brightness and a soft highlight roll-off.
+ *
+ * @param col  The scene's colour; written to fragColor after the finish. (in)
+ **/
 void finish( vec3 col )
 {
     col *= 0.9 + 0.2 * audioLevel;
@@ -141,7 +230,15 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 vec2 gChainM, gChainDx, gChainDy;
-/// @brief The photo through the chain, with its footprint-correct mip level and the luma gradient.
+/**  The photo through the chain, with its footprint-correct mip level and the luma gradient.
+ *
+ * @param p     The pixel's centred coordinate. (in)
+ * @param bias  Bias added to the footprint's mip level. (in)
+ * @param grad  Receives the luma gradient of the photo there. (out)
+ *
+ * @return
+ *   The photo colour through the chain (RGB).
+ **/
 vec3 imgChain( vec2 p, float bias, out vec2 grad )
 {
     vec2 c0 = chain( p );
@@ -172,11 +269,25 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 }
 float gT, gSpread, gRot, gMw;
 vec2  gCw, gCt;
-/// @brief Class position of a knob value (n classes).
+/**  Class position of a knob value (n classes).
+ *
+ * @param x  The knob value, 0..1. (in)
+ * @param n  Number of classes. (in)
+ *
+ * @return
+ *   The class, 0..n-1.
+ **/
 int pickStage( float x, int n )
 {
     return int( min( floor( clamp( x, 0.0, 1.0 ) * float( n ) ), float( n - 1 ) ) );
 }
+/**  The style classes in order of energy (calm .. energetic).
+ *
+ * @param i  Position on the energy scale. (in)
+ *
+ * @return
+ *   The style class at that position.
+ **/
 int ords( int i )
 {
     if ( i == 0 )
@@ -191,10 +302,25 @@ int ords( int i )
 }
 uniform vec3  walkA, walkB, walkC, walkD, walkS;
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
-bool          walkAll()
+/**  Chain walk.
+ *
+ * @return
+ *   True if every stage walks (morphP from 0.5).
+ **/
+bool walkAll()
 {
     return clamp( morphP, 0.0, 1.0 ) >= 0.5;
 }
+/**  The transform (k) and sub-variant (v) shown in walk cycle c; cycle 0 is the rolled one.
+ *
+ * @param c     The walk cycle (0 = the rolled pick). (in)
+ * @param k0    The rolled transform. (in)
+ * @param v0    The rolled sub-variant. (in)
+ * @param n     Number of transforms of the stage. (in)
+ * @param salt  Per-stage salt of the hash. (in)
+ * @param k     Receives the transform. (out)
+ * @param v     Receives the sub-variant. (out)
+ **/
 void walkPick( float c, int k0, float v0, int n, float salt, out int k, out float v )
 {
     if ( c < 0.5 )
@@ -210,14 +336,21 @@ void walkPick( float c, int k0, float v0, int n, float salt, out int k, out floa
 uniform vec3      walkO;
 uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
 uniform sampler2D texPrevFrame; ///< The last frame, fully composited (feedback).
-vec3              chainAfterglow( vec3 col )
+/**  Afterglow: the brighter of the colour and the decayed previous frame (from glowP 0.15).
+ *
+ * @param col  The frame's colour. (in)
+ *
+ * @return
+ *   The colour with the afterglow.
+ **/
+vec3 chainAfterglow( vec3 col )
 {
     if ( glowP <= 0.15 )
         return col;
     vec3 prev = texture( texPrevFrame, gl_FragCoord.xy / resolution ).rgb;
     return max( col, prev * ( 0.78 * smoothstep( 0.15, 1.0, glowP ) ) );
 }
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = screenP();

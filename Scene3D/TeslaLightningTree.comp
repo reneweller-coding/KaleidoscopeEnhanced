@@ -31,7 +31,13 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -40,7 +46,13 @@ float hash11( float p )
     return fract( p );
 }
 
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float p )
 {
     vec3 p3 = fract( vec3( p ) * vec3( 0.1031, 0.1030, 0.0973 ) );
@@ -56,11 +68,18 @@ vec3 hash31( float p )
 // m_timeOffset + time*m_speedFactor to both), so the two agree exactly.
 vec3 gViewAxis = vec3( 0.0, 0.0, 1.0 );
 
-/// attrB.x carries a per-segment GAIN.  The draw is opaque (no additive
-/// blending), so a faint element cannot be made faint by drawing less of it --
-/// the shading floor in the .frag lights every fragment it covers.  The gain is
-/// what lets the surface creep and the corona sparks sit BEHIND the strokes in
-/// brightness instead of competing with them.
+/**  attrB.x carries a per-segment GAIN.
+ *
+ * @param slot      Index of the vertex in the buffer. (in)
+ * @param p         Position. (in)
+ * @param heat      Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param branchID  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param gain      Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ *
+ * The draw is opaque (no additive blending), so a faint element cannot be made faint by drawing less of it -- the
+ * shading floor in the .frag lights every fragment it covers.  The gain is what lets the surface creep and the corona
+ * sparks sit BEHIND the strokes in brightness instead of competing with them.
+ **/
 void writeVertex( uint slot, vec3 p, float heat, float branchID, float gain )
 {
     uint o = slot * 8u;
@@ -74,7 +93,15 @@ void writeVertex( uint slot, vec3 p, float heat, float branchID, float gain )
     verts[o + 7u] = branchID;
 }
 
-/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
+/**  Appends a thick line segment (two triangles) to the output buffer (compute stage).
+ *
+ * @param pA         Start of the segment. (in)
+ * @param pB         End of the segment. (in)
+ * @param heat       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param branchID   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param thickness  Width of the ribbon. (in)
+ * @param gain       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitSegment( vec3 pA, vec3 pB, float heat, float branchID, float thickness,
                   float gain )
 {
@@ -105,8 +132,15 @@ void emitSegment( vec3 pA, vec3 pB, float heat, float branchID, float thickness,
     writeVertex( base + 5u, b0, heat, branchID, gain );
 }
 
-/// Where bolt `b` strikes the ground.  Shared by the bolt itself and by the
-/// surface creep that runs outward from the same point.
+/**  Where bolt `b` strikes the ground.
+ *
+ * @param b  Index of the bolt. (in)
+ *
+ * @return
+ *   The point on the ground (x, z).
+ *
+ * Shared by the bolt itself and by the surface creep that runs outward from the same point.
+ **/
 vec2 strikePoint( float b )
 {
     float a = hash11( b * 43.3 ) * 6.2831853;
@@ -128,7 +162,7 @@ const uint  CreepSegs = CreepArms * CreepSteps; ///< 4608
 const uint  SparkSegs = 3072u;
 const float GroundY = -2.7;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

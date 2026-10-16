@@ -42,7 +42,7 @@ uniform float camHP; ///< Camera height knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float skyP;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Sun kept low so the blades throw long, warm highlights.

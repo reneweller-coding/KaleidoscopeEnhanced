@@ -37,7 +37,7 @@ out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 out float vBg;       ///< Background flag (from the vertex stage).
 out float vEntry;    ///< 0 before contact, 1 deep in the glow -- drives the heating
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world, n;

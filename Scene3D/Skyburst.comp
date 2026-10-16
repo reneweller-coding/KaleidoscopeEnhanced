@@ -93,20 +93,41 @@ const float Grav = 3.4;
 const float BurstAt = 0.30; ///< fraction of the shell's life
 const float Drag = 1.15;
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( float n )
 {
     return fract( sin( n * 91.3458 ) * 47453.5453 );
 }
+/**  Pseudo-random value(s) of the input.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   Pseudo-random numbers, each 0..1.
+ **/
 vec2 hash2( float n )
 {
     return fract( sin( vec2( n * 91.3458, n * 47.1234 ) ) * 43758.5453 );
 }
 
-/// Where a spark is at local time t after the burst.  Exponential drag, not a
-/// linear slowdown: a spark decelerates hardest immediately after the burst,
-/// which is what gives a firework its characteristic sudden bloom followed by a
-/// slow drift.
+/**  Where a spark is at local time t after the burst.
+ *
+ * @param burstPos  Where the shell burst. (in)
+ * @param v         The spark's initial velocity. (in)
+ * @param t         Time since the burst. (in)
+ *
+ * @return
+ *   The position.
+ *
+ * Exponential drag, not a linear slowdown: a spark decelerates hardest immediately after the burst, which is what gives
+ * a firework its characteristic sudden bloom followed by a slow drift.
+ **/
 vec3 sparkAt( vec3 burstPos, vec3 v, float t )
 {
     float k = Drag;
@@ -114,8 +135,17 @@ vec3 sparkAt( vec3 burstPos, vec3 v, float t )
     return burstPos + v * f - vec3( 0.0, 0.5 * Grav * t * t, 0.0 );
 }
 
-/// kind: 0 = spark trail, 1 = sky dome.  It rides in the slot that used to be
-/// written as a constant zero, so the vertex layout is unchanged.
+/**  kind: 0 = spark trail, 1 = sky dome.
+ *
+ * @param slot      Index of the vertex in the buffer. (in)
+ * @param p         Position. (in)
+ * @param age       Age of the spark. (in)
+ * @param shellHue  Hue of the shell. (in)
+ * @param bright    Brightness. (in)
+ * @param kind      0 spark trail, 1 sky dome. (in)
+ *
+ * It rides in the slot that used to be written as a constant zero, so the vertex layout is unchanged.
+ **/
 void writeVertexK( uint slot, vec3 p, float age, float shellHue, float bright,
                    float kind )
 {
@@ -130,20 +160,34 @@ void writeVertexK( uint slot, vec3 p, float age, float shellHue, float bright,
     verts[o + 7u] = 0.0;
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot      Index of the vertex in the buffer. (in)
+ * @param p         Position. (in)
+ * @param age       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param shellHue  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param bright    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, float age, float shellHue, float bright )
 {
     writeVertexK( slot, p, age, shellHue, bright, 0.0 );
 }
 
-/// A point on the dome from azimuth a and normalised height h (-1 .. 1).
+/**  A point on the dome from azimuth a and normalised height h (-1 .. 1).
+ *
+ * @param a  Azimuth (radians). (in)
+ * @param h  Height, -1..1. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 domeAt( float a, float h )
 {
     float rr = sqrt( max( 1.0 - h * h, 0.0 ) );
     return vec3( SkyR * rr * cos( a ), SkyR * h, SkyR * rr * sin( a ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

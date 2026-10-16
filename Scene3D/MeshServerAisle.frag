@@ -37,19 +37,38 @@ in float vInst;
 
 const float Ground = -16.0;
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param x  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 x )
 {
     vec2 i = floor( x ), f = fract( x );
@@ -58,14 +77,28 @@ float noise2( vec2 x )
     float c = hash21( i + vec2( 0.0, 1.0 ) ), d = hash21( i + vec2( 1.0, 1.0 ) );
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
-/// @brief Exposure that brings the material's average brightness to a common level.
+/**  Exposure that brings the material's average brightness to a common level.
+ *
+ * @param tex  The material texture array (layer 0 is the albedo). (in)
+ *
+ * @return
+ *   The exposure factor, 0.3..2.
+ **/
 float materialExposure( sampler2DArray tex )
 {
     vec3  avg = textureLod( tex, vec3( 0.5, 0.5, 0.0 ), 20.0 ).rgb;
     float l = dot( avg, vec3( 0.299, 0.587, 0.114 ) );
     return clamp( 0.28 / max( l, 0.02 ), 0.60, 1.8 );
 }
-/// @brief Tangent frame from screen derivatives (normal mapping without tangents).
+/**  Tangent frame from screen derivatives (normal mapping without tangents).
+ *
+ * @param N   The surface normal. (in)
+ * @param p   The position (world). (in)
+ * @param uv  The texture coordinate. (in)
+ *
+ * @return
+ *   The tangent frame (tangent, bitangent, normal) as the columns of a matrix.
+ **/
 mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
 {
     vec3  dp1 = dFdx( p ), dp2 = dFdy( p );
@@ -77,7 +110,18 @@ mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
     float inv = inversesqrt( max( max( dot( T, T ), dot( B, B ) ), 1e-12 ) );
     return mat3( T * inv, B * inv, N );
 }
-/// @brief The normal tilted by the material's normal map.
+/**  The normal tilted by the material's normal map.
+ *
+ * @param tex       The material texture array. (in)
+ * @param layers    Its layer count (the normal map is layer 2). (in)
+ * @param uv        Material texture coordinate. (in)
+ * @param n         The surface normal. (in)
+ * @param wpos      World position (for the tangent frame). (in)
+ * @param strength  Strength of the normal map. (in)
+ *
+ * @return
+ *   The tilted normal (unit length); n itself without a normal map.
+ **/
 vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength )
 {
     if ( layers < 3 )
@@ -89,7 +133,13 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-/// @brief The sky colour for a direction.
+/**  The sky colour for a direction.
+ *
+ * @param dir  The view direction (unit length). (in)
+ *
+ * @return
+ *   The sky colour (RGB).
+ **/
 vec3 renderSky( vec3 dir )
 {
     float swell = clamp( audioSwell, 0.0, 1.0 );
@@ -128,7 +178,7 @@ vec3 renderSky( vec3 dir )
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( vBg > 0.5 )

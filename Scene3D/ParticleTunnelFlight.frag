@@ -15,7 +15,7 @@ in float vLife;
  * overlap instead of clipping the whole frame to white.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  pc = gl_PointCoord - 0.5;

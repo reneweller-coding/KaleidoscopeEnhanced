@@ -47,13 +47,19 @@ uniform float audioKick;    ///< Kick-drum envelope, 0..1 (fast attack, short de
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float spinP; ///< Spin knob, 0..1.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 12.9898 ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // The sky shell passes through untouched -- glitching the room around

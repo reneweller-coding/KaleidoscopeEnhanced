@@ -18,7 +18,7 @@ out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out float vChainPhase;
 out vec2  vQuadUV;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 pos = attrA.xyz;

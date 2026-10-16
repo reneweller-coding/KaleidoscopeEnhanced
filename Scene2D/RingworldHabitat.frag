@@ -41,13 +41,25 @@ uniform float cityP;
 uniform float cloudP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,7 +69,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -65,18 +84,36 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Smooth value noise.
+/**  Smooth value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise( vec3 p )
 {
     vec3 i = floor( p );
@@ -91,7 +128,13 @@ float noise( vec3 p )
         f.z );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
@@ -111,29 +154,53 @@ float g_rot = 0.0; ///< how far the ring has turned under us
 const float Rad = 100.0; ///< ring radius (the sun sits on the axis)
 const float W = 38.0;    ///< half width of the band
 
-/// World -> ring coordinates: the ring turns about the X axis beneath the
-/// camera, which is how the glide is done without the camera ever leaving
-/// the geometry (V7b).
+/**  World -> ring coordinates: the ring turns about the X axis beneath the camera, which is how the glide is done
+ * without the camera ever leaving the geometry (V7b).
+ *
+ * @param p  The world point. (in)
+ *
+ * @return
+ *   The point in ring coordinates.
+ **/
 vec3 toRing( vec3 p )
 {
     float c = cos( g_rot ), s = sin( g_rot );
     return vec3( p.x, c * p.y - s * p.z, s * p.y + c * p.z );
 }
 
-/// Point on the ideal surface below q: 3D noise there has no seam anywhere
-/// around the ring (no atan wrap).
+/**  Point on the ideal surface below q: 3D noise there has no seam anywhere around the ring (no atan wrap).
+ *
+ * @param q  The point. (in)
+ * @param r  Radius of the ring. (in)
+ *
+ * @return
+ *   The surface point.
+ **/
 vec3 onSurface( vec3 q, float r )
 {
     return vec3( q.x, normalize( q.yz ) * r );
 }
 
+/**  Terrain height at the surface point below q.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float terrainAt( vec3 q )
 {
     vec3 qs = onSurface( q, Rad );
     return fbm( qs * 0.05 ) * 4.0 + fbm( qs * 0.2 ) * 1.0;
 }
 
-/// @brief The scene's distance field: distance from p to the nearest surface.
+/**  The scene's distance field: distance from p to the nearest surface.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map( vec3 p )
 {
     vec3  q = toRing( p );
@@ -154,7 +221,13 @@ float map( vec3 p )
     return d;
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p  The surface point. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 p )
 {
     vec2 e = vec2( 0.1, 0.0 );
@@ -164,14 +237,20 @@ vec3 calcNormal( vec3 p )
         map( p + e.yyx ) - map( p - e.yyx ) ) );
 }
 
-/// Shadow squares orbit the sun inside the ring: 1 = day, 0 = night.
+/**  Shadow squares orbit the sun inside the ring: 1 = day, 0 = night.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The daylight, 0..1.
+ **/
 float daylight( vec3 q )
 {
     float a = atan( q.y, q.z );
     return smoothstep( -0.75, -0.15, sin( a * 4.0 + sceneTime * 0.035 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float cp = ( cityP > 0.01 ? cityP : 1.0 );

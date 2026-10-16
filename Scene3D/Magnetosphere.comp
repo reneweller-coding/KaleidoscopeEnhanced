@@ -69,12 +69,23 @@ const int SphereV = 20;
 
 const float Pi = 3.14159265; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( float n )
 {
     return fract( sin( n * 91.3458 ) * 47453.5453 );
 }
 
+/**  The dipole's orientation: a lean that slowly tumbles about all three axes.
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 tilt()
 {
     // The dipole leans against the orbit AND slowly tumbles through all three
@@ -94,7 +105,15 @@ mat3 tilt()
     return ry * rx * rz;
 }
 
-/// A point on the field line (L, phi) at colatitude theta.
+/**  A point on the field line (L, phi) at colatitude theta.
+ *
+ * @param L      Shell parameter of the line. (in)
+ * @param phi    Longitude (radians). (in)
+ * @param theta  Colatitude (radians). (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 linePoint( float L, float phi, float theta )
 {
     float s = sin( theta );
@@ -102,7 +121,14 @@ vec3 linePoint( float L, float phi, float theta )
     return vec3( r * s * cos( phi ), r * cos( theta ), r * s * sin( phi ) );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot    Index of the vertex in the buffer. (in)
+ * @param p       Position. (in)
+ * @param n       Normal. (in)
+ * @param energy  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float energy, float kind )
 {
     uint o = slot * 8u;
@@ -121,6 +147,17 @@ void writeVertex( uint slot, vec3 p, vec3 n, float energy, float kind )
     verts[o + 7u] = kind;
 }
 
+/**  Appends a triangle to the output buffer.
+ *
+ * @param a       First corner. (in)
+ * @param b       Second corner. (in)
+ * @param c       Third corner. (in)
+ * @param na      Normal at a. (in)
+ * @param nb      Normal at b. (in)
+ * @param nc      Normal at c. (in)
+ * @param energy  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitTri( vec3 a, vec3 b, vec3 c, vec3 na, vec3 nb, vec3 nc,
               float energy, float kind )
 {
@@ -132,7 +169,7 @@ void emitTri( vec3 a, vec3 b, vec3 c, vec3 na, vec3 nb, vec3 nc,
     writeVertex( base + 2u, c, nc, energy, kind );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

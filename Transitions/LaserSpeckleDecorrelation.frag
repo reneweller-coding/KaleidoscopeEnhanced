@@ -54,13 +54,19 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float grain = ( grainP > 0.0 ) ? grainP : 1.0;

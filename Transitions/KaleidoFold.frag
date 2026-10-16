@@ -18,6 +18,14 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 
 const float Pi = 3.14159265358979; ///< Pi.
 
+/**  Folds a centred coordinate into one mirrored sector.
+ *
+ * @param c      The centred coordinate. (in)
+ * @param sides  Number of sectors. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleidoT( vec2 c, float sides )
 {
     float a = atan( c.y, c.x );
@@ -28,13 +36,21 @@ vec2 kaleidoT( vec2 c, float sides )
     return vec2( cos( a ), sin( a ) ) * r;
 }
 
-/// @brief Mixes two RGBA values with a clamped weight.
+/**  Mixes two RGBA values with a clamped weight.
+ *
+ * @param a  The value at weight 0. (in)
+ * @param b  The value at weight 1. (in)
+ * @param w  The weight; clamped to 0..1. (in)
+ *
+ * @return
+ *   The mixed value.
+ **/
 vec4 blend4( vec4 a, vec4 b, float w )
 {
     return mix( a, b, clamp( w, 0.0, 1.0 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = gl_FragCoord.xy / resolution;

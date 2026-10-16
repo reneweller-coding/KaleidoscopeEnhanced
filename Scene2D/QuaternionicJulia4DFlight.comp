@@ -32,13 +32,27 @@ uniform float sliceP;       ///< 4D hyperspace slice offset (feeds w_coord below
 const int   Res = 96;
 const float Extent = 2.2; ///< bake cube spans [-EXTENT, EXTENT] on every axis
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2D( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
 
+/**  Quaternion multiplication.
+ *
+ * @param q1  One quaternion. (in)
+ * @param q2  The other. (in)
+ *
+ * @return
+ *   The product.
+ **/
 vec4 qMul( vec4 q1, vec4 q2 )
 {
     return vec4(
@@ -46,6 +60,15 @@ vec4 qMul( vec4 q1, vec4 q2 )
         q1.x * q2.yzw + q2.x * q1.yzw + cross( q1.yzw, q2.yzw ) );
 }
 
+/**  Distance estimate to the quaternion Julia set.
+ *
+ * @param p     The point (4D). (in)
+ * @param c     The Julia constant. (in)
+ * @param trap  Receives the orbit trap. (out)
+ *
+ * @return
+ *   The distance estimate.
+ **/
 float qJuliaSDF( vec4 p, vec4 c, out float trap )
 {
     vec4 q = p;
@@ -67,7 +90,7 @@ float qJuliaSDF( vec4 p, vec4 c, out float trap )
     return 0.5 * r * log( r ) / max( length( qp ), 1e-4 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     ivec3 gid = ivec3( gl_GlobalInvocationID );

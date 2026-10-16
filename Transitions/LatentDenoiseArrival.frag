@@ -52,12 +52,24 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -66,8 +78,17 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/// A band of the picture: a ring of samples at one radius keeps the frequencies
-/// below it and throws the ones above it away.
+/**  A band of the picture: a ring of samples at one radius keeps the frequencies below it and throws the ones above
+ * it away.
+ *
+ * @param tx  The texture. (in)
+ * @param uv  The coordinate. (in)
+ * @param r   Radius of the ring. (in)
+ * @param sc  Aspect scale of the ring. (in)
+ *
+ * @return
+ *   The low-passed colour (RGB).
+ **/
 vec3 band( sampler2D tx, vec2 uv, float r, vec2 sc )
 {
     if ( r < 0.002 )
@@ -83,7 +104,7 @@ vec3 band( sampler2D tx, vec2 uv, float r, vec2 sc )
     return s / w;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float steps = ( stepsP > 0.0 ) ? stepsP : 1.0;

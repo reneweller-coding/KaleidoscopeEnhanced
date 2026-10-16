@@ -45,13 +45,25 @@ uniform float ratioP;
 uniform float holeP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -61,19 +73,37 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -81,12 +111,25 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
+/**  Spectral colour for a dispersion angle (the fire is the spectrum itself, a documented rainbow identity, V8b).
+ *
+ * @param x  Position in the spectrum, 0..1. (in)
+ *
+ * @return
+ *   The spectral colour (RGB).
+ **/
 vec3 spectral( float x )
 {
     return clamp( abs( fract( x + vec3( 0.0, 2.0 / 3.0, 1.0 / 3.0 ) ) * 6.0 - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
-/// Gear ratios R/r = p/q (lobes p, turns q): the figures a 96-tooth ring makes.
+/**  Gear ratios R/r = p/q (lobes p, turns q): the figures a 96-tooth ring makes.
+ *
+ * @param i  Index of the figure (taken modulo 10). (in)
+ *
+ * @return
+ *   Lobes p (x) and turns q (y).
+ **/
 vec2 ratioOf( float i )
 {
     int k = int( mod( i, 10.0 ) );
@@ -111,14 +154,37 @@ vec2 ratioOf( float i )
     return vec2( 11.0, 4.0 );
 }
 
+/**  Point of a hypotrochoid.
+ *
+ * @param t  Curve parameter (radians). (in)
+ * @param R  Radius of the fixed ring. (in)
+ * @param r  Radius of the rolling gear. (in)
+ * @param d  Distance of the pen. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec2 hypo( float t, float R, float r, float d )
 {
     float k = ( R - r ) / r;
     return vec2( ( R - r ) * cos( t ) + d * cos( k * t ), ( R - r ) * sin( t ) - d * sin( k * t ) );
 }
 
-/// Distance from p to the hypotrochoid, and the parameter of the nearest
-/// point (in 0..2 pi q).  Only parameters <= tMax count (the drawn part).
+/**  Distance from p to the hypotrochoid, and the parameter of the nearest point (in 0..2 pi q).
+ *
+ * @param p     The point. (in)
+ * @param R     Radius of the ring. (in)
+ * @param r     Radius of the gear. (in)
+ * @param d     Distance of the pen. (in)
+ * @param P     Lobes. (in)
+ * @param Q     Turns. (in)
+ * @param tMax  Drawn part (parameters up to tMax). (in)
+ *
+ * @return
+ *   The distance (x) and the parameter of the nearest point (y).
+ *
+ * Only parameters <= tMax count (the drawn part).
+ **/
 vec2 curveDist( vec2 p, float R, float r, float d, float P, float Q, float tMax )
 {
     float A = ( R - r ) * ( R - r ) + d * d;
@@ -148,7 +214,7 @@ vec2 curveDist( vec2 p, float R, float r, float d, float P, float Q, float tMax 
     return vec2( best, bt );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;

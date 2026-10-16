@@ -34,7 +34,7 @@ uniform float audioHigh;      ///< High band level, 0..1.
 uniform float smearP; ///< preset: streak length
 uniform float glowP;  ///< preset: halo strength
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

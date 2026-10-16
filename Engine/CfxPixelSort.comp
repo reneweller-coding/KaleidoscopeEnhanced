@@ -37,7 +37,7 @@ uniform int   reverse; ///< 1 = bright-to-dark
 shared uint hist[256];
 shared uint ofs[256];
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int y = int( gl_WorkGroupID.x );

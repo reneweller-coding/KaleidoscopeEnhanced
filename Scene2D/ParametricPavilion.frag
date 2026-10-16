@@ -42,13 +42,25 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float twistP; ///< Twist knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,19 +72,39 @@ vec3 imgPalette( float t )
 
 float gTw;
 
-/// The cross-section's centre drifts and the section twists along z.
+/**  The cross-section's centre drifts and the section twists along z.
+ *
+ * @param z  Depth. (in)
+ *
+ * @return
+ *   The axis's x/y offset.
+ **/
 vec2 axis( float z )
 {
     return vec2( 0.9 * sin( z * 0.11 ), 0.4 * sin( z * 0.08 + 1.0 ) );
 }
 
-/// Section coordinates: angle around the axis (twisted) and the radius.
+/**  Section coordinates: angle around the axis (twisted) and the radius.
+ *
+ * @param th  Angle around the axis (twisted). (in)
+ * @param z   Depth. (in)
+ *
+ * @return
+ *   The radius.
+ **/
 float radiusAt( float th, float z )
 {
     return 3.0 + 0.7 * sin( th * 2.0 + z * 0.23 * gTw ) + 0.35 * sin( th * 3.0 - z * 0.17 + 2.0 )
            + 0.25 * sin( z * 0.31 );
 }
 
+/**  Distance to the pavilion's shell (a twisted tube), scaled down for safe steps.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float sdf( vec3 p )
 {
     vec2  q = p.xy - axis( p.z );
@@ -84,6 +116,13 @@ float sdf( vec3 p )
     return min( tube, floor_d );
 }
 
+/**  Surface normal by central differences.
+ *
+ * @param p  The surface point. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 normalAt( vec3 p )
 {
     vec2 e = vec2( 0.01, 0.0 );
@@ -92,7 +131,7 @@ vec3 normalAt( vec3 p )
                             sdf( p + e.yyx ) - sdf( p - e.yyx ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

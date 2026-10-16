@@ -39,7 +39,7 @@ out float vBg;     ///< Background flag (from the vertex stage).
 const float Dist = 54.0;
 const float Ground = -21.0;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     bool is_bg = gl_VertexID >= meshVertexCount;

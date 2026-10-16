@@ -32,7 +32,13 @@ uniform float densP; ///< Density knob, 0..1.
 uniform float spinP; ///< Spin knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -40,16 +46,35 @@ float hash11( float p )
     p *= p + p;
     return fract( p );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
+/**  Pseudo-random value of a 3D point.
+ *
+ * @param p  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash31s( vec3 p )
 {
     return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -62,7 +87,17 @@ float noise3( vec3 p )
                 mix( mix( n001, n101, f.x ), mix( n011, n111, f.x ), f.y ), f.z );
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param c     Centre of the quad. (in)
+ * @param ax    Half the quad's extent along its first axis. (in)
+ * @param ay    Half its extent along the second axis. (in)
+ * @param id    Element id written to every vertex. (in)
+ * @param lit   Lighting weight written to every vertex. (in)
+ * @param kind  Element kind written to every vertex. (in)
+ * @param uv0   Texture coordinate of the first corner. (in)
+ * @param uv1   Texture coordinate of the opposite corner. (in)
+ **/
 void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1 )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -86,14 +121,20 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     }
 }
 
-/// Body radius in direction d: a spinning top (equatorial ridge) with noise.
+/**  Body radius in direction d: a spinning top (equatorial ridge) with noise.
+ *
+ * @param d  The direction (unit length). (in)
+ *
+ * @return
+ *   The radius.
+ **/
 float bodyRadius( vec3 d )
 {
     float top = 1.0 - 0.28 * abs( d.y ) + 0.12 * exp( -d.y * d.y * 30.0 );
     return ( top + 0.12 * noise3( d * 3.0 ) + 0.05 * noise3( d * 8.0 ) ) * 3.1;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

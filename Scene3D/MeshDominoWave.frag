@@ -37,19 +37,38 @@ in vec3  vFront;
 
 const float Ground = -8.0;
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param x  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 x )
 {
     vec2 i = floor( x ), f = fract( x );
@@ -58,13 +77,30 @@ float noise2( vec2 x )
     float c = hash21( i + vec2( 0.0, 1.0 ) ), d = hash21( i + vec2( 1.0, 1.0 ) );
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
-/// @brief Exposure that brings the material's average brightness to a common level.
+/**  Exposure that brings the material's average brightness to a common level.
+ *
+ * @param tex  The material texture array (layer 0 is the albedo). (in)
+ *
+ * @return
+ *   The exposure factor, 0.3..2.
+ **/
 float materialExposure( sampler2DArray tex )
 {
     vec3  avg = textureLod( tex, vec3( 0.5, 0.5, 0.0 ), 20.0 ).rgb;
     float l = dot( avg, vec3( 0.299, 0.587, 0.114 ) );
     return clamp( 0.28 / max( l, 0.02 ), 0.60, 1.8 );
 }
+/**  Diffuse light from a point light with a soft range falloff.
+ *
+ * @param P      The lit point. (in)
+ * @param n      Its normal. (in)
+ * @param lp     Position of the light. (in)
+ * @param lc     Colour of the light. (in)
+ * @param range  Range of the falloff. (in)
+ *
+ * @return
+ *   The light arriving (RGB).
+ **/
 vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
 {
     vec3  d = lp - P;
@@ -74,7 +110,13 @@ vec3 lightAt( vec3 P, vec3 n, vec3 lp, vec3 lc, float range )
     return lc * max( dot( n, d ), 0.0 ) * att;
 }
 
-/// @brief The sky colour for a direction.
+/**  The sky colour for a direction.
+ *
+ * @param dir  The view direction (unit length). (in)
+ *
+ * @return
+ *   The sky colour (RGB).
+ **/
 vec3 renderSky( vec3 dir )
 {
     float swell = clamp( audioSwell, 0.0, 1.0 );
@@ -103,7 +145,7 @@ vec3 renderSky( vec3 dir )
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( vBg > 0.5 )

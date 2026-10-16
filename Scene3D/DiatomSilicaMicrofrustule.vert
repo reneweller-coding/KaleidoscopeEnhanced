@@ -37,7 +37,7 @@ out vec3  vWorldPos; ///< World position (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vDiatomIndex;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float dtm = ( diatomP > 0.0 ) ? diatomP : 1.0;

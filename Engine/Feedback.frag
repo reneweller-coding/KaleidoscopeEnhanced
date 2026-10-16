@@ -32,6 +32,14 @@ uniform float swirlAmp;    ///< extra rotation toward the rim (radians/frame)
 uniform float flowAmp;     ///< pseudo-noise flow field amplitude
 uniform float flowPhase;   ///< integrated flow drift phase
 
+/**  Turns a colour's hue (a rotation about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 hueRotF( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -39,7 +47,7 @@ vec3 hueRotF( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

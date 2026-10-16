@@ -45,13 +45,25 @@ uniform float cloudP;
 uniform float stormP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -61,7 +73,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -69,13 +88,25 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// @brief Smooth value noise.
+/**  Smooth value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise( vec3 p )
 {
     vec3 i = floor( p );
@@ -90,7 +121,13 @@ float noise( vec3 p )
         f.z );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec3 p )
 {
     float f = 0.0, a = 0.5;
@@ -103,12 +140,24 @@ float fbm( vec3 p )
     return f;
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -116,7 +165,14 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise of the given number of octaves.
+/**  Fractal noise of the given number of octaves.
+ *
+ * @param p    The point. (in)
+ * @param oct  Number of octaves (up to 6). (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm2( vec2 p, int oct )
 {
     float v = 0.0, a = 0.5;
@@ -130,8 +186,15 @@ float fbm2( vec2 p, int oct )
     }
     return v;
 }
-/// Billows: |2n - 1| per octave -- rounded puffs with creases between them,
-/// the cauliflower look of convective cloud tops.
+/**  Billows: |2n - 1| per octave -- rounded puffs with creases between them, the cauliflower look of convective cloud
+ * tops.
+ *
+ * @param p    The point. (in)
+ * @param oct  Number of octaves (up to 6). (in)
+ *
+ * @return
+ *   The billow value, about 0..1.
+ **/
 float billow( vec2 p, int oct )
 {
     float v = 0.0, a = 0.5;
@@ -146,8 +209,16 @@ float billow( vec2 p, int oct )
     return v;
 }
 
-/// The cloud deck: billowing tops, with tall convective towers here and
-/// there.  Heights in km-ish units; the camera cruises at 9.
+/**  The cloud deck: billowing tops, with tall convective towers here and there.
+ *
+ * @param xz   Position (x, z). (in)
+ * @param oct  Number of octaves. (in)
+ *
+ * @return
+ *   The cloud-top height.
+ *
+ * Heights in km-ish units; the camera cruises at 9.
+ **/
 float deck( vec2 xz, int oct )
 {
     float b = billow( xz * 0.07, oct ) * 5.0 + fbm2( xz * 0.015, 2 ) * 3.0;
@@ -156,8 +227,14 @@ float deck( vec2 xz, int oct )
     return b;
 }
 
-/// Zones and belts: the gas giant's own colours (cream, ochre, rust, white),
-/// in bands across the flight, warped into eddies.
+/**  Zones and belts: the gas giant's own colours (cream, ochre, rust, white), in bands across the flight, warped into
+ * eddies.
+ *
+ * @param xz  Position (x, z). (in)
+ *
+ * @return
+ *   The cloud colour (RGB).
+ **/
 vec3 bandCol( vec2 xz )
 {
     float w = fbm2( xz * 0.01, 3 );
@@ -177,7 +254,7 @@ vec3 bandCol( vec2 xz )
     return c;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float cp = ( cloudP > 0.01 ? cloudP : 1.0 );

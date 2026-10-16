@@ -30,7 +30,13 @@ uniform float audioMid;     ///< Mid band level, 0..1.
 uniform float audioHigh;    ///< High band level, 0..1.
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -39,7 +45,13 @@ float hash11( float p )
     return fract( p );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot  Index of the vertex in the buffer. (in)
+ * @param p     Position. (in)
+ * @param e1    Extra value (attribute A's w). (in)
+ * @param e2    Extra value (attribute B's w). (in)
+ **/
 void writeVertex( uint slot, vec3 p, float e1, float e2 )
 {
     uint o = slot * 8u;
@@ -53,8 +65,15 @@ void writeVertex( uint slot, vec3 p, float e1, float e2 )
     verts[o + 7u] = e2;
 }
 
-/// A plume/organism streamer is a line from A to B; GL_TRIANGLES needs a real
-/// triangle, so it is emitted as a thin two-triangle ribbon.
+/**  A plume/organism streamer is a line from A to B; GL_TRIANGLES needs a real triangle, so it is emitted as a thin
+ * two-triangle ribbon.
+ *
+ * @param pA         Start of the segment. (in)
+ * @param pB         End of the segment. (in)
+ * @param e1         Extra value written to every vertex (first slot). (in)
+ * @param e2         Extra value written to every vertex (second slot). (in)
+ * @param thickness  Width of the ribbon. (in)
+ **/
 void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -91,7 +110,7 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
     writeVertex( base + 5u, b0, e1, e2 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

@@ -22,7 +22,7 @@ out float vKind;     ///< Element kind (from the vertex stage).
 out float vT;
 out float vId; ///< Instance or element id (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float kind = attrB.y;

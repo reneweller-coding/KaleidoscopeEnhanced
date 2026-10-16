@@ -48,6 +48,13 @@ uniform float camHP;   ///< Camera height knob, 0..1.
 
 const int Seg = 8;
 
+/**  Projects a world position into the eye's clip space.
+ *
+ * @param world  The world position. (in)
+ *
+ * @return
+ *   The clip-space position.
+ **/
 vec4 project( vec3 world )
 {
     vec3 vp = vec3( world.x - eyeOff, world.y - camHP, world.z );
@@ -56,6 +63,14 @@ vec4 project( vec3 world )
     return c;
 }
 
+/**  Emits one vertex with its varyings.
+ *
+ * @param world  World position. (in)
+ * @param tang   Tangent along the strand. (in)
+ * @param along  Position along the blade or strand, 0 root .. 1 tip. (in)
+ * @param tint   Tint variation. (in)
+ * @param kind   Element kind. (in)
+ **/
 void emit( vec3 world, vec3 tang, float along, float tint, float kind )
 {
     vWorld = world;
@@ -67,7 +82,7 @@ void emit( vec3 world, vec3 tang, float along, float tint, float kind )
     EmitVertex();
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Point 0 is spent on a backdrop quad at the far plane; without it the gaps

@@ -55,13 +55,25 @@ uniform float sizeP;  ///< Size knob, 0..1.
 uniform float looseP; ///< how far the cloud travels
 uniform float grainP; ///< splat size
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 12.9898 ) * 43758.5453 );
 }
 
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -74,9 +86,16 @@ float noise3( vec3 p )
                 f.z );
 }
 
-/// Curl of a noise field, by finite differences. Divergence-free, so the cloud
-/// stirs and folds rather than inflating -- which is the whole difference
-/// between "breathing" and "exploding".
+/**  Curl of a noise field, by finite differences.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The curl (a divergence-free flow).
+ *
+ * Divergence-free, so the cloud stirs and folds rather than inflating -- which is the whole difference between
+ * "breathing" and "exploding".
+ **/
 vec3 curl( vec3 p )
 {
     const float e = 0.14;
@@ -89,7 +108,7 @@ vec3 curl( vec3 p )
     return normalize( vec3( x1 - x2, y1 - y2, z1 - z2 ) + vec3( 1e-5 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( gBg[0] > 0.5 )

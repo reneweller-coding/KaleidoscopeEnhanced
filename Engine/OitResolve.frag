@@ -32,7 +32,7 @@ uniform sampler2D texAccum;   ///< RGBA16F: sum of colour*alpha*w, and sum of al
 uniform sampler2D texReveal;  ///< R16F: product of (1 - alpha)
 uniform vec2      resolution; ///< Size of the render target in pixels.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

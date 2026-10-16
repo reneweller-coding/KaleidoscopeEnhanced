@@ -32,13 +32,25 @@ in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vCopy;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -48,7 +60,13 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Exposure that brings the material's average brightness to a common level.
+/**  Exposure that brings the material's average brightness to a common level.
+ *
+ * @param tex  The material texture array (layer 0 is the albedo). (in)
+ *
+ * @return
+ *   The exposure factor, 0.3..2.
+ **/
 float materialExposure( sampler2DArray tex )
 {
     vec3  avg = textureLod( tex, vec3( 0.5, 0.5, 0.0 ), 20.0 ).rgb;
@@ -56,7 +74,7 @@ float materialExposure( sampler2DArray tex )
     return clamp( 0.20 / max( l, 0.02 ), 0.30, 2.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hue = ( hueP > 0.001 ) ? hueP : 0.0;

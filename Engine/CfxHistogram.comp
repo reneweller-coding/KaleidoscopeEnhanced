@@ -55,7 +55,7 @@ uniform float     slewDown; ///< like slew, but for DARKENING -- may be faster
 
 shared uint hist[256];
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uint lid = gl_LocalInvocationIndex;

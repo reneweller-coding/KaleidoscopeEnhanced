@@ -25,7 +25,7 @@ uniform float audioOnset;   ///< Onset envelope (any instrument), 0..1.
 out vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vLight;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = attrA.w;

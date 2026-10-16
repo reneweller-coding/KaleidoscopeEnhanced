@@ -42,8 +42,17 @@ out vec3  vView; ///< View vector (from the vertex stage).
 out float vDefo;
 out float vHue;
 
-/// Damped modal displacement at direction d.  The envelopes decay host-side;
-/// cos(w*time) runs free — amplitude-gated ringing, no phase remapping.
+/**  Damped modal displacement at direction d.
+ *
+ * @param d   The direction (unit length). (in)
+ * @param th  Azimuth (radians). (in)
+ * @param ph  Polar angle (radians). (in)
+ *
+ * @return
+ *   The displacement.
+ *
+ * The envelopes decay host-side; cos(w*time) runs free — amplitude-gated ringing, no phase remapping.
+ **/
 float modes( vec3 d, float th, float ph )
 {
     float x = d.x, y = d.y, z = d.z;
@@ -74,6 +83,14 @@ float modes( vec3 d, float th, float ph )
     return s;
 }
 
+/**  Point of the jelly's surface at mesh coordinate (u, v), with its modal displacement.
+ *
+ * @param u  Around, 0..1. (in)
+ * @param v  From top to bottom, 0..1. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 jellyPoint( float u, float v )
 {
     float th = u * 6.2831853;
@@ -99,8 +116,14 @@ vec3 jellyPoint( float u, float v )
 }
 
 
-/// 3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the
-/// body's own y-spin, so the pattern is seen from ever-new angles.
+/**  3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the body's own y-spin, so the pattern is seen
+ * from ever-new angles.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The rotated point.
+ **/
 vec3 tumble( vec3 q )
 {
     float tx = time * 0.19 + audioAdvance * 0.05;
@@ -110,7 +133,7 @@ vec3 tumble( vec3 q )
     return q;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x, v = attrA.y;

@@ -46,26 +46,50 @@ uniform float canvasP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * vec3( 0.1031, 0.1030, 0.0973 ) );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.xx + p3.yz ) * p3.zy );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -73,7 +97,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -85,7 +115,13 @@ float fbm( vec2 p )
     }
     return v;
 }
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -98,35 +134,74 @@ float fbm3( vec2 p )
     return v;
 }
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
-/// Mirror-repeat in the shader (the engine's textures mirror, the editor's
-/// repeat -- doing it here makes both identical).  Identity inside [0,1].
+/**  Mirror-repeat in the shader (the engine's textures mirror, the editor's repeat -- doing it here makes both
+ * identical).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ *
+ * Identity inside [0,1].
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// The photo at a mip level: lod 0 is full detail, ~4 a soft field, ~7 broad masses.
+/**  The photo at a mip level: lod 0 is full detail, ~4 a soft field, ~7 broad masses.
+ *
+ * @param uv   Coordinate in the photo (mirror-repeated outside 0..1). (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 imgLod( vec2 uv, float lod )
 {
     uv = mirrorUV( uv );
     return ( interpolation * textureLod( tex0, uv, lod ) + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ) ).rgb;
 }
-/// @brief Luminance of a colour (Rec. 601 weights).
+/**  Luminance of a colour (Rec. 601 weights).
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance.
+ **/
 float luma( vec3 c )
 {
     return dot( c, vec3( 0.299, 0.587, 0.114 ) );
 }
-/// @brief HSV (all 0..1) to RGB.
+/**  HSV (all 0..1) to RGB.
+ *
+ * @param c  Hue, saturation and value, all 0..1. (in)
+ *
+ * @return
+ *   The RGB colour.
+ **/
 vec3 hsv2rgb( vec3 c )
 {
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
-/// @brief Hue of a colour, 0..1.
+/**  Hue of a colour, 0..1.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The hue, 0..1.
+ **/
 float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
@@ -134,14 +209,28 @@ float hueOf( vec3 c )
                                                                 : 4.0 + ( c.r - c.g ) / d;
     return fract( h / 6.0 );
 }
-/// @brief Saturation of a colour, 0..1.
+/**  Saturation of a colour, 0..1.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The saturation, 0..1.
+ **/
 float satOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) );
     return ( mx - min( c.r, min( c.g, c.b ) ) ) / max( mx, 1e-3 );
 }
-/// A glowing colour for a place: the photo's own hue where it has one, a
-/// slowly wandering hue field (anchored on hue0) where the photo is grey.
+/**  A glowing colour for a place: the photo's own hue where it has one, a slowly wandering hue field (anchored on
+ * hue0) where the photo is grey.
+ *
+ * @param photo  The photo's colour at the place. (in)
+ * @param q      The place; drives the wandering hue field. (in)
+ * @param hue0   Anchor hue, 0..1. (in)
+ *
+ * @return
+ *   The glow colour (RGB, bright).
+ **/
 vec3 glowColour( vec3 photo, vec2 q, float hue0 )
 {
     vec3 field = hsv2rgb( vec3( fract( hue0 + 0.55 * fbm3( q * 0.8 ) + 0.03 * audioAdvance ), 0.85, 1.0 ) );
@@ -149,27 +238,55 @@ vec3 glowColour( vec3 photo, vec2 q, float hue0 )
     own = own * own * own;
     return mix( field, own, smoothstep( 0.12, 0.35, satOf( photo ) ) );
 }
-/// Push a colour toward full saturation, keeping its hue (neon from a photo).
+/**  Push a colour toward full saturation, keeping its hue (neon from a photo).
+ *
+ * @param c  The colour. (in)
+ * @param k  Exponent: the higher, the purer (and darker) the neon. (in)
+ *
+ * @return
+ *   The saturated colour.
+ **/
 vec3 neonOf( vec3 c, float k )
 {
     vec3 n = c / max( max( c.r, max( c.g, c.b ) ), 1e-3 );
     return pow( n, vec3( k ) );
 }
-/// The photo along an endless scroll in y without mirror seams: the photo
-/// repeats mirrored, so a scroll crosses a visible fold every unit; two reads
-/// half a period apart are cross-faded so each fold is hidden by the other.
+/**  The photo along an endless scroll in y without mirror seams: the photo repeats mirrored, so a scroll crosses a
+ * visible fold every unit; two reads half a period apart are cross-faded so each fold is hidden by the other.
+ *
+ * @param uv   Coordinate in the photo; y may run on endlessly. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The photo colour (RGB).
+ **/
 vec3 imgScroll( vec2 uv, float lod )
 {
     float w = abs( fract( uv.y ) - 0.5 ) * 2.0; // 1 at the fold, 0 between
     w = smoothstep( 0.55, 1.0, w );
     return mix( imgLod( uv, lod ), imgLod( uv + vec2( 0.37, 0.5 ), lod ), w );
 }
-/// Height from the photo: broad masses plus a share of the detail.
+/**  Height from the photo: broad masses plus a share of the detail.
+ *
+ * @param uv        Coordinate in the photo. (in)
+ * @param lodBroad  Mip level of the broad masses. (in)
+ * @param detail    Share of the detail three mip levels finer, 0..1. (in)
+ *
+ * @return
+ *   The height (luma of the photo), 0..1.
+ **/
 float texHeight( vec2 uv, float lodBroad, float detail )
 {
     return mix( luma( imgLod( uv, lodBroad ) ), luma( imgLod( uv, max( lodBroad - 3.0, 0.0 ) ) ), detail );
 }
-/// Gradient of the photo's luma at a mip level (per UV unit).
+/**  Gradient of the photo's luma at a mip level (per UV unit).
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The luma gradient per UV unit.
+ **/
 vec2 texGrad( vec2 uv, float lod )
 {
     float e = exp2( lod ) / 1024.0;
@@ -177,13 +294,26 @@ vec2 texGrad( vec2 uv, float lod )
                  luma( imgLod( uv + vec2( 0.0, e ), lod ) ) - luma( imgLod( uv - vec2( 0.0, e ), lod ) ) )
            / ( 2.0 * e );
 }
-/// Edge strength of the photo (0..1-ish) at a mip level.
+/**  Edge strength of the photo (0..1-ish) at a mip level.
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The edge strength, about 0..1.
+ **/
 float texEdge( vec2 uv, float lod )
 {
     return length( texGrad( uv, lod ) ) * exp2( lod ) / 1024.0 * 6.0;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -193,31 +323,60 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief Smooth minimum of two distances (blend width k).
+/**  Smooth minimum of two distances (blend width k).
+ *
+ * @param a  One distance. (in)
+ * @param b  The other distance. (in)
+ * @param k  Blend width. (in)
+ *
+ * @return
+ *   The smooth minimum.
+ **/
 float smin( float a, float b, float k )
 {
     float h = clamp( 0.5 + 0.5 * ( b - a ) / k, 0.0, 1.0 );
     return mix( b, a, h ) - k * h * ( 1.0 - h );
 }
-/// @brief Distance from a point to a line segment.
+/**  Distance from a point to a line segment.
+ *
+ * @param p  The point. (in)
+ * @param a  One end of the segment. (in)
+ * @param b  The other end. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float sdSeg( vec2 p, vec2 a, vec2 b )
 {
     vec2  pa = p - a, ba = b - a;
     float h = clamp( dot( pa, ba ) / dot( ba, ba ), 0.0, 1.0 );
     return length( pa - ba * h );
 }
-/// Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
+/**  Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// House finish: loudness brightness and the soft highlight roll-off.
+/**  House finish: loudness brightness and the soft highlight roll-off.
+ *
+ * @param col  The scene's colour; written to fragColor after the finish. (in)
+ **/
 void finish( vec3 col )
 {
     col *= 0.9 + 0.2 * audioLevel;
@@ -226,7 +385,17 @@ void finish( vec3 col )
     fragColor = vec4( clamp( t, 0.0, 1.0 ), 1.0 );
 }
 
-/// One skein: an isoline of a warped noise field, with varying thickness.
+/**  One skein: an isoline of a warped noise field, with varying thickness.
+ *
+ * @param x      The point. (in)
+ * @param seed   Seed of the skein. (in)
+ * @param T      Time. (in)
+ * @param loop   Looping of the line. (in)
+ * @param thick  Receives the line's thickness there. (out)
+ *
+ * @return
+ *   The skein's coverage.
+ **/
 float skein( vec2 x, float seed, float T, float loop, out float thick )
 {
     vec2  q = x * ( 1.5 + 0.5 * seed ) + seed * 7.3;
@@ -239,7 +408,7 @@ float skein( vec2 x, float seed, float T, float loop, out float thick )
     return abs( f - 0.5 ) / g;                                                // distance to the line (screen units)
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = screenP();

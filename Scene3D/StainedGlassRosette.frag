@@ -31,10 +31,24 @@ in vec2 vXY;
  * the camera with a soft circular vignette at its rim.
  */
 
+/**  Pseudo-random value(s) of the input.
+ *
+ * @param p  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hashG( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
+/**  Pseudo-random value(s) of the input.
+ *
+ * @param p  The input. (in)
+ *
+ * @return
+ *   Pseudo-random numbers, each 0..1.
+ **/
 vec2 hash2G( vec2 p )
 {
     return fract( sin( vec2( dot( p, vec2( 127.1, 311.7 ) ),
@@ -42,7 +56,13 @@ vec2 hash2G( vec2 p )
                   * 43758.5453 );
 }
 
-/// Classic 2D Voronoi: returns (cell_hash, edgeDist F2-F1).
+/**  Classic 2D Voronoi: returns (cell_hash, edgeDist F2-F1).
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The cell's hash (x), the nearest distance F1 (y) and the second nearest F2 (z).
+ **/
 vec3 voronoi( vec2 p )
 {
     vec2  ip = floor( p ), fp = fract( p );
@@ -67,6 +87,14 @@ vec3 voronoi( vec2 p )
         }
     return vec3( hashG( best_off ), f1, f2 );
 }
+/**  Turns a colour's hue (a rotation about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour.
+ **/
 vec3 hueRotG( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -74,7 +102,7 @@ vec3 hueRotG( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float ang = vPolar.x + time * 0.02;

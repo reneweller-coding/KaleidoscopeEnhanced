@@ -19,11 +19,25 @@ uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
 // vec4 col = interpolation * texture(tex0, c1) + (1.0-interpolation)*texture(tex1, c1);
 
+/**  Pseudo-random value of a 2D point.
+ *
+ * @param n  The point. (in)
+ *
+ * @return
+ *   The pseudo-random value.
+ **/
 float rand( vec2 n )
 {
     return 0.5 + 0.5 * fract( sin( dot( n.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
 }
 
+/**  Height of the water surface.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float water( vec3 p )
 {
     float t = ( time + 0.5 * audioAdvance ) / 4.;
@@ -46,7 +60,13 @@ float water( vec3 p )
 }
 
 
-/// @brief The scene's distance field: distance from p to the nearest surface.
+/**  The scene's distance field: distance from p to the nearest surface.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map( vec3 p )
 {
     float d = 100.0;
@@ -54,6 +74,14 @@ float map( vec3 p )
     return d;
 }
 
+/**  Distance along a ray to the water surface (ray marching).
+ *
+ * @param ro  Ray origin. (in)
+ * @param rd  Ray direction. (in)
+ *
+ * @return
+ *   The hit distance.
+ **/
 float intersect( vec3 ro, vec3 rd )
 {
     float d = 0.0;
@@ -67,6 +95,13 @@ float intersect( vec3 ro, vec3 rd )
     return 0.0;
 }
 
+/**  Normal of the water surface.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 norm( vec3 p )
 {
     float eps = .1;
@@ -76,7 +111,7 @@ vec3 norm( vec3 p )
         map( p + vec3( 0, 0, eps ) ) - map( p + vec3( 0, 0, -eps ) ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy - 0.5;

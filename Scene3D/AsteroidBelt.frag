@@ -18,7 +18,7 @@ in vec3 vCorner;
  * vertex shader.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  a = abs( vCorner ) * 2.0;

@@ -20,7 +20,7 @@ out float vBand;
 out float vKind; ///< Element kind (from the vertex stage).
 out float vFace;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float kind = attrB.y;

@@ -43,18 +43,36 @@ uniform float audioRoughness; ///< 0=consonant .. 1=dissonant -> fbm domain-warp
 uniform float audioMode;      ///< 0=minor/cold .. 1=major/warm -> paper colour
 
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -62,7 +80,13 @@ float vnoise( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1, 0 ) ), f.x ),
                 mix( hash21( i + vec2( 0, 1 ) ), hash21( i + vec2( 1, 1 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float v = 0.0, a = 0.55;
@@ -75,10 +99,11 @@ float fbm( vec2 p )
     return v;
 }
 
-/// USER-FEEDBACK-REDESIGN: a real, ever-morphing Rorschach inkblot — an fbm
-/// ink field mirrored on the vertical axis, breathing with the music, on a
-/// warm paper ghost of the photo.  The old 124-metaball loop collapsed into
-/// a static heart (and inverted to solid black on hot audio).
+/**  USER-FEEDBACK-REDESIGN: a real, ever-morphing Rorschach inkblot — an fbm ink field mirrored on the vertical axis,
+ * breathing with the music, on a warm paper ghost of the photo.
+ *
+ * The old 124-metaball loop collapsed into a static heart (and inverted to solid black on hot audio).
+ **/
 void main( void )
 {
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;

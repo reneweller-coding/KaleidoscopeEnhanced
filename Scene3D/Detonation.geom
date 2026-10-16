@@ -56,20 +56,34 @@ const float Pi = 3.14159265; ///< Pi.
 const float PlateW = 28.0;
 const float PlateH = 15.0;
 
-/// Rotate v around a unit axis by angle a (Rodrigues).
+/**  Rotate v around a unit axis by angle a (Rodrigues).
+ *
+ * @param v     The vector. (in)
+ * @param axis  The axis (unit length). (in)
+ * @param a     The angle in radians. (in)
+ *
+ * @return
+ *   The rotated vector.
+ **/
 vec3 rotAxis( vec3 v, vec3 axis, float a )
 {
     float c = cos( a ), s = sin( a );
     return v * c + cross( axis, v ) * s + axis * dot( axis, v ) * ( 1.0 - c );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( vec2 p )
 {
     return fract( sin( dot( p, vec2( 41.317, 289.113 ) ) ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 a = gObj[0], b = gObj[1], c = gObj[2];

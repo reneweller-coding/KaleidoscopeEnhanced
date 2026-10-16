@@ -326,12 +326,6 @@ vec2 tMirrorLine(vec2 uv, vec2 c, float a)
     return uv - n * (s - abs(s));
 }
 
-// Hyperbolic {p,q} tiling of the Poincare disk, built only from mirrors (the
-// p-fold kaleidoscope and the inversion in a circle orthogonal to the rim), so
-// the map is continuous; the outside of the disk is folded in by the inversion
-// in the rim.  `move` is a point inside the disk: the disk automorphism
-// z -> (z - a) / (1 - conj(a) z) carries the tiling along it (a flight
-// through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
 // The {p,q} reflection folding inside the unit disk (shared by the disk and
 // the band model).
 vec2 poincareFold(vec2 z, float p, float q)
@@ -350,6 +344,13 @@ vec2 poincareFold(vec2 z, float p, float q)
     }
     return z;
 }
+// Poincare-disc transform about c (zoom, move: hyperbolic drift).
+// Hyperbolic {p,q} tiling of the Poincare disk, built only from mirrors (the
+// p-fold kaleidoscope and the inversion in a circle orthogonal to the rim), so
+// the map is continuous; the outside of the disk is folded in by the inversion
+// in the rim.  `move` is a point inside the disk: the disk automorphism
+// z -> (z - a) / (1 - conj(a) z) carries the tiling along it (a flight
+// through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
 vec2 tPoincare(vec2 uv, vec2 c, float p, float q, float zoom, vec2 move)
 {
     vec2 z = (uv - c) * zoom;
@@ -394,13 +395,6 @@ vec2 tDrosteSpiral(vec2 uv, vec2 c, float K, float zoom)
     float tri = abs(fract(u * 0.5) * 2.0 - 1.0);               // mirrored, period 2: 0..1..0
     return c + exp(tri * lk - lk) * vec2(cos(w.y), sin(w.y)) * 0.45;
 }
-// Farris wallpaper functions ("Creating Symmetry", 2015): sums of plane waves
-// averaged over a symmetry group are smooth complex functions with exactly
-// that symmetry; their value at a point picks the photo's pixel.  Three waves
-// whose amplitudes and phases drift with time: the wallpaper keeps changing
-// while keeping its symmetry.  kind 0: p4 (square), 1: p3 (hexagonal),
-// 2: p6, 3: p4m (square with mirrors), 4: pg, 5: pgg (glide reflections --
-// impossible as a fold, natural as a wave function), 6: p3m1, 7: p31m, 8: p4g, 9: cmm.
 vec2 cexpi(float a) { return vec2(cos(a), sin(a)); }
 vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }
 vec2 cdiv(vec2 a, vec2 b) { return vec2(a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y) / max(dot(b, b), 1e-8); }
@@ -452,6 +446,14 @@ vec2 farrisWave(vec2 X, int kind, float n, float m)
                       + cexpi(TAU * (-m * X.x - n * X.y)) + cexpi(TAU * (n * X.x - m * X.y));
     return w / (kind == 3 ? 8.0 : 4.0);
 }
+// Wallpaper-group transform about c (kind: the group, cells: cells per unit, t: phase).
+// Farris wallpaper functions ("Creating Symmetry", 2015): sums of plane waves
+// averaged over a symmetry group are smooth complex functions with exactly
+// that symmetry; their value at a point picks the photo's pixel.  Three waves
+// whose amplitudes and phases drift with time: the wallpaper keeps changing
+// while keeping its symmetry.  kind 0: p4 (square), 1: p3 (hexagonal),
+// 2: p6, 3: p4m (square with mirrors), 4: pg, 5: pgg (glide reflections --
+// impossible as a fold, natural as a wave function), 6: p3m1, 7: p31m, 8: p4g, 9: cmm.
 vec2 tFarris(vec2 uv, vec2 c, int kind, float cells, float t)
 {
     vec2 X = (uv - c) * cells;
@@ -462,13 +464,14 @@ vec2 tFarris(vec2 uv, vec2 c, int kind, float cells, float t)
     return c + f * 0.35;
 }
 // ---- Peirce quincuncial: the plane as a square-tiled sphere ----
+vec2 csin(vec2 a) { return vec2(sin(a.x) * cosh(a.y), cos(a.x) * sinh(a.y)); }
+vec2 ccos(vec2 a) { return vec2(cos(a.x) * cosh(a.y), -sin(a.x) * sinh(a.y)); }
+// Numerator and denominator of the Jacobi cn function via theta series.
 // cn(u; m = 1/2) is doubly periodic on a square lattice (its periods 4K and
 // 2K + 2iK, with K = K' = 1.8540747) and maps each square onto the Riemann
 // sphere: Peirce's quincuncial projection, inverted.  For m = 1/2 the theta
 // nome is q = exp(-pi), so three terms of each series are exact to float
 // precision.  cn = (th4(0)/th2(0)) * th2(v) / th4(v), v = pi u / (2K).
-vec2 csin(vec2 a) { return vec2(sin(a.x) * cosh(a.y), cos(a.x) * sinh(a.y)); }
-vec2 ccos(vec2 a) { return vec2(cos(a.x) * cosh(a.y), -sin(a.x) * sinh(a.y)); }
 void cnTheta(vec2 v, out vec2 N, out vec2 D)
 {
     // reduce by the periods (2 pi and pi + i pi in v): the series stay small
@@ -528,6 +531,9 @@ vec2 tRosette(vec2 uv, vec2 c, float p, float k, float t)
     return c + f * 0.6;                                         // audit: 0.3 read too small a patch (flat, grey)
 }
 // ---- Penrose rhombus tiling (de Bruijn's pentagrid) ----
+vec2 pentE(int j) { float a = 1.2566371 * float(j); return vec2(cos(a), sin(a)); }
+float pentG(int j, vec4 g) { return j == 0 ? g.x : j == 1 ? g.y : j == 2 ? g.z : j == 3 ? g.w : -(g.x + g.y + g.z + g.w); }
+// Finds the Penrose rhomb a point lies in (de Bruijn pentagrid).
 // Five families of parallel lines (directions e_j = 72 deg apart, offsets
 // gam_j with sum 0).  Every crossing of a line of family r (value n_r) with
 // one of family s (n_s) is a rhombus with edges e_r, e_s; its corner is
@@ -535,8 +541,6 @@ vec2 tRosette(vec2 uv, vec2 c, float p, float k, float t)
 // K_s = n_r, n_s.  The tiling is about 5/2 times the pentagrid, so the
 // crossings near x * 0.4 are searched (3 x 3 per pair of families).  Returns
 // the rhombus coordinates a, b in [0, 1] (x = base + a e_r + b e_s).
-vec2 pentE(int j) { float a = 1.2566371 * float(j); return vec2(cos(a), sin(a)); }
-float pentG(int j, vec4 g) { return j == 0 ? g.x : j == 1 ? g.y : j == 2 ? g.z : j == 3 ? g.w : -(g.x + g.y + g.z + g.w); }
 bool penroseFind(vec2 x, vec4 g, out vec2 ab, out int rr, out int ss, out vec2 base, out vec2 nrs)
 {
     vec2 pg = x * 0.4;
@@ -776,10 +780,11 @@ vec2 tVicsek(vec2 uv, vec2 c, float iters, float turn)
     return c + p / sc * 1.5;
 }
 // ---- multigrid quasicrystals (de Bruijn): N line families at pi/N ----
-// N = 4: Ammann-Beenker (8-fold), N = 5: Penrose (10-fold), N = 6: 12-fold,
-// N = 7: 14-fold.  As penroseFind, for any N (up to 7).
 vec2 gridE(int j, float N) { float a = 3.14159265 * float(j) / N; return vec2(cos(a), sin(a)); }
 float gridG(int j) { return fract(0.1234 + 0.6180339 * float(j)) - 0.5; }
+// Finds the rhomb a point lies in (de Bruijn multigrid of N families).
+// N = 4: Ammann-Beenker (8-fold), N = 5: Penrose (10-fold), N = 6: 12-fold,
+// N = 7: 14-fold.  As penroseFind, for any N (up to 7).
 bool multiGridFind(vec2 x, float N, out vec2 ab, out int rr, out int ss, out vec2 base, out vec2 nrs)
 {
     vec2 pg = x * 2.0 / N;
@@ -1510,12 +1515,12 @@ vec2 tJoukowski(vec2 uv, vec2 c, float R, float scale)
 }
 
 vec2 chain(vec2 p);
-// The chain's photo read with a seam-proof footprint (per axis the smaller of
-// the two one-sided differences) and the screen-space luma gradient.
 // A loop count the compiler cannot see through (it depends on a uniform), so
 // the loop is NOT unrolled and its body -- a whole chain -- is inlined once.
 int loopN(int n) { return n + int(min(interpolation, 0.0)); }
 vec2 gChainM, gChainDx, gChainDy;    // mirrored chain coordinate of this pixel and its derivatives per pixel
+// The chain's photo read with a seam-proof footprint (per axis the smaller of
+// the two one-sided differences) and the screen-space luma gradient.
 vec3 imgChain(vec2 p, float bias, out vec2 grad)
 {
     vec2 c0 = chain(p);
@@ -2058,7 +2063,7 @@ def assemble(name):
     # //@target fx: an overlay (CombineShader) -- tex0/tex1 are then the finished
     # scene frame instead of the photos; the same library applies.
     folder = "FX" if re.search(r"^//@target\s+fx\b", src, re.M) else "Scene2D"
-    return folder, _doc.annotate("\n".join(out))
+    return folder, _doc.annotate("\n".join(out), os.path.join(folder, name + ".frag"))
 
 
 def build(name):

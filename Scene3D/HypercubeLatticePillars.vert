@@ -46,7 +46,7 @@ const vec3 CubeNormals[6] = vec3[6](
     vec3( 0.0, 1.0, 0.0 ),
     vec3( 0.0, -1.0, 0.0 ) );
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hgt = ( heightP > 0.0 ) ? heightP : 1.0;

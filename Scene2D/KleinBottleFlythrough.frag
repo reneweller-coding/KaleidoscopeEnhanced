@@ -41,13 +41,25 @@ uniform float neckP;
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,21 +69,47 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
+/**  Signed distance to a torus in the xz plane.
+ *
+ * @param p  The point. (in)
+ * @param R  Radius of the ring. (in)
+ * @param r  Radius of the tube. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdTorus( vec3 p, float R, float r )
 {
     vec2 q = vec2( length( p.xz ) - R, p.y );
     return length( q ) - r;
 }
-/// @brief Smooth minimum of two distances (blend width k).
+/**  Smooth minimum of two distances (blend width k).
+ *
+ * @param a  One distance. (in)
+ * @param b  The other distance. (in)
+ * @param k  Blend width. (in)
+ *
+ * @return
+ *   The smooth minimum.
+ **/
 float smin( float a, float b, float k )
 {
     float h = clamp( 0.5 + 0.5 * ( b - a ) / k, 0.0, 1.0 );
     return mix( b, a, h ) - k * h * ( 1.0 - h );
 }
 
-/// The bottle: a fat torus body in the xz plane and a thinner torus neck in
-/// the xy plane that loops over the top and pierces the body.  Their smooth
-/// union is one surface that passes through itself.
+/**  The bottle: a fat torus body in the xz plane and a thinner torus neck in the xy plane that loops over the top and
+ * pierces the body.
+ *
+ * @param p        The point. (in)
+ * @param neck     Radius of the neck. (in)
+ * @param inflate  Inflation of both tubes. (in)
+ *
+ * @return
+ *   The distance to the bottle.
+ *
+ * Their smooth union is one surface that passes through itself.
+ **/
 float bottle( vec3 p, float neck, float inflate )
 {
     float body = sdTorus( p, 2.2, 0.95 * inflate );
@@ -80,6 +118,15 @@ float bottle( vec3 p, float neck, float inflate )
     return smin( body, nk, 0.5 );
 }
 
+/**  Surface normal of the bottle by central differences.
+ *
+ * @param p        The surface point. (in)
+ * @param neck     Radius of the neck. (in)
+ * @param inflate  Inflation. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 normalAt( vec3 p, float neck, float inflate )
 {
     const vec2 e = vec2( 0.01, 0.0 );
@@ -88,13 +135,28 @@ vec3 normalAt( vec3 p, float neck, float inflate )
                             bottle( p + e.yyx, neck, inflate ) - bottle( p - e.yyx, neck, inflate ) ) );
 }
 
-/// The camera loop: the centre line of the neck torus, which runs through
-/// the body.  Angle s around that torus.
+/**  The camera loop: the centre line of the neck torus, which runs through the body.
+ *
+ * @param s  Angle around the neck torus (radians). (in)
+ *
+ * @return
+ *   The camera position.
+ *
+ * Angle s around that torus.
+ **/
 vec3 loopPos( float s )
 {
     return vec3( 1.2 + 2.0 * cos( s ), 0.6 + 2.0 * sin( s ), 0.0 );
 }
 
+/**  The photo projected triplanarly, mirror-repeated (no seams across the tube).
+ *
+ * @param p  The point. (in)
+ * @param n  Its normal. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 triplanar( vec3 p, vec3 n )
 {
     vec3 w = abs( n );
@@ -105,7 +167,7 @@ vec3 triplanar( vec3 p, vec3 n )
     return img( a ) * w.x + img( b ) * w.y + img( c ) * w.z;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

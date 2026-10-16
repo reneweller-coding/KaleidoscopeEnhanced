@@ -34,17 +34,29 @@ uniform float zoomP;  ///< Zoom knob, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
-/// come from a rotating arc in the CURRENT slideshow image, so every
-/// activation inherits a fresh palette from the photos, and the arc follows
-/// the musical key (chromaHue is circular-slewed = jump-free) with a slow
-/// advance drift.  Valence shapes saturation toward the mood.
+/**  IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours come from a rotating arc in the CURRENT
+ * slideshow image, so every activation inherits a fresh palette from the photos, and the arc follows the musical
+ * key (chromaHue is circular-slewed = jump-free) with a slow advance drift.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ *
+ * Valence shapes saturation toward the mood.
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,7 +67,14 @@ vec3 imgPalette( float t )
 }
 
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -63,7 +82,14 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Hyperbolic Mobius translation (isometry of Poincare disk)
+/**  Hyperbolic Mobius translation (isometry of Poincare disk)
+ *
+ * @param z  The point in the disc. (in)
+ * @param a  The translation (inside the disc). (in)
+ *
+ * @return
+ *   The translated point.
+ **/
 vec2 mobius( vec2 z, vec2 a )
 {
     vec2 num = z + a;
@@ -74,7 +100,7 @@ vec2 mobius( vec2 z, vec2 a )
            / dot( den, den );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float sym = ( symmP > 0.0 ) ? symmP : 7.0; // 7-fold hyperbolic symmetry

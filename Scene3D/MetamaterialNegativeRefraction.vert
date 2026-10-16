@@ -38,7 +38,7 @@ out vec3  vNormal;   ///< Surface normal (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vPhaseVelocity;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float n_val = ( nP > 0.0 ) ? nP : 1.0;

@@ -16,7 +16,7 @@ in float vSide; ///< Which side of a strip (from the vertex stage).
  * reactivity to the music is driven entirely by the companion vertex shader.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hem = exp( -( vSide + 1.0 ) * ( vSide + 1.0 ) * 1.4 );

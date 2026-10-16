@@ -50,13 +50,25 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 
 uniform float magnetosomeSizeP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -66,13 +78,20 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from two values and a seed.
+/**  Pseudo-random number 0..1 from two values.
+ *
+ * @param a  First value. (in)
+ * @param b  Second value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hsh( float a, float b )
 {
     return fract( sin( a * 91.73 + b * 47.31 ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  corner = attrA.xyz;

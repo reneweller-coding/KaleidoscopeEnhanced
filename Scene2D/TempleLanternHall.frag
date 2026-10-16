@@ -38,13 +38,25 @@ uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float tintP; ///< Tint knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -54,7 +66,13 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
@@ -66,15 +84,30 @@ const float Ch = 5.0; ///< ceiling height
 
 float g_hue, g_tint;
 
+/**  The paper colour of a lantern: warm, slightly tinted by the palette.
+ *
+ * @param cell  The lantern's cell. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 paperOf( vec2 cell )
 {
     vec3 warm = mix( vec3( 1.0, 0.72, 0.3 ), vec3( 1.0, 0.45, 0.25 ), g_tint );
     return mix( warm, imgPalette( g_hue * 0.159 + hash21( cell ) * 0.35 ), 0.18 );
 }
 
-/// Lanterns: ellipsoids hanging in a grid under the ceiling.  Returns the
-/// emission seen along the ray (front to back, first hit wins) and the hit
-/// distance in tHit.
+/**  Lanterns: ellipsoids hanging in a grid under the ceiling.
+ *
+ * @param ro    Ray origin. (in)
+ * @param rd    Ray direction. (in)
+ * @param tHit  Receives the hit distance. (out)
+ *
+ * @return
+ *   The premultiplied glow (RGB).
+ *
+ * Returns the emission seen along the ray (front to back, first hit wins) and the hit distance in tHit.
+ **/
 vec3 lanterns( vec3 ro, vec3 rd, out float tHit )
 {
     tHit = 1e9;
@@ -136,6 +169,15 @@ vec3 lanterns( vec3 ro, vec3 rd, out float tHit )
     return em;
 }
 
+/**  The hall along a ray: lanterns, walls and ceiling.
+ *
+ * @param ro    Ray origin. (in)
+ * @param rd    Ray direction. (in)
+ * @param tOut  Receives the hit distance. (out)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hall( vec3 ro, vec3 rd, out float tOut )
 {
     float tl;
@@ -168,7 +210,7 @@ vec3 hall( vec3 ro, vec3 rd, out float tOut )
     return wall * exp( -tw * 0.04 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

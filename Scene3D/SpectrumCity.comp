@@ -69,13 +69,28 @@ const float Spacing = 7.0;
 const float Foot = 4.6;     ///< building footprint (the rest is street)
 const float AgeSpan = 0.82; ///< how much of the ring the city spans
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( vec2 p )
 {
     return fract( sin( dot( p, vec2( 41.317, 289.113 ) ) ) * 43758.5453 );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot      Index of the vertex in the buffer. (in)
+ * @param p         Position. (in)
+ * @param faceU     Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param faceIdx   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param upAmount  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param lotHash   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param energy    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, float faceU, float faceIdx,
                   float upAmount, float lotHash, float energy )
 {
@@ -90,7 +105,20 @@ void writeVertex( uint slot, vec3 p, float faceU, float faceIdx,
     verts[o + 7u] = energy;
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param a        First corner (the corners run around the quad). (in)
+ * @param b        Second corner. (in)
+ * @param c        Third corner. (in)
+ * @param d        Fourth corner. (in)
+ * @param wa       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param wb       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param face     Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param h0       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param h1       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param lotHash  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param energy   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, float wa, float wb,
                float face, float h0, float h1, float lotHash, float energy )
 {
@@ -105,7 +133,7 @@ void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, float wa, float wb,
     writeVertex( base + 5u, d, wa, face, h1, lotHash, energy );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

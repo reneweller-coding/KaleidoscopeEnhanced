@@ -35,7 +35,7 @@ uniform float audioLevel;   ///< Overall loudness, 0..1.
 
 uniform float camHP; ///< Camera height knob, 0..1.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // The camera drifts off the bundle's axis and back, so the weave is seen

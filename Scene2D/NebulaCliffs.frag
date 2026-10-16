@@ -42,13 +42,25 @@ uniform float dustP;
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,14 +70,26 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -73,7 +97,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -85,6 +115,13 @@ float fbm( vec2 p )
     }
     return v;
 }
+/**  Ridged fractal noise (four octaves).
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, about 0..1.
+ **/
 float ridged( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -98,7 +135,16 @@ float ridged( vec2 p )
     return v;
 }
 
-/// Stars: round points in cells; the brightest get six diffraction spikes.
+/**  Stars: round points in cells; the brightest get six diffraction spikes.
+ *
+ * @param p        The point. (in)
+ * @param scale    Cells per unit. (in)
+ * @param density  Share of cells with a star. (in)
+ * @param spikes   Strength of the diffraction spikes. (in)
+ *
+ * @return
+ *   The star colour (RGB).
+ **/
 vec3 stars( vec2 p, float scale, float density, float spikes )
 {
     vec2 g = p * scale;
@@ -134,7 +180,15 @@ vec3 stars( vec2 p, float scale, float density, float spikes )
     return c;
 }
 
-/// Edge profile of range L at x: towering crags and spires.
+/**  Edge profile of range L at x: towering crags and spires.
+ *
+ * @param x   Horizontal position. (in)
+ * @param fl  The range (as a float). (in)
+ * @param dp  Depth knob of the crags. (in)
+ *
+ * @return
+ *   The edge height.
+ **/
 float edgeAt( float x, float fl, float dp )
 {
     float base = -0.08 - 0.17 * fl + 0.1 * ( dp - 1.0 );
@@ -144,7 +198,7 @@ float edgeAt( float x, float fl, float dp )
            + 0.05 * fbm( vec2( x * 6.0, fl * 3.0 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

@@ -42,13 +42,25 @@ uniform float dispersionP;
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
@@ -58,7 +70,15 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// 4D Rotation matrix along two orthogonal planes (XY and ZW)
+/**  4D Rotation matrix along two orthogonal planes (XY and ZW)
+ *
+ * @param p   The 4-vector. (in)
+ * @param a1  Angle in the xy plane. (in)
+ * @param a2  Angle in the zw plane. (in)
+ *
+ * @return
+ *   The rotated 4-vector.
+ **/
 vec4 rotate4D( vec4 p, float a1, float a2 )
 {
     float c1 = cos( a1 ), s1 = sin( a1 );
@@ -71,7 +91,14 @@ vec4 rotate4D( vec4 p, float a1, float a2 )
     return q;
 }
 
-/// Distance estimator for 4D Polychoron (Hyper-Octahedron / 16-Cell & 24-Cell cross-section)
+/**  Distance estimator for 4D Polychoron (Hyper-Octahedron / 16-Cell & 24-Cell cross-section)
+ *
+ * @param p      The point (4D). (in)
+ * @param facet  Facet knob. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map4D( vec4 p, float facet )
 {
     vec4 q = abs( p );
@@ -88,7 +115,7 @@ float map4D( vec4 p, float facet )
     return mix( d24, d_box, facet * 0.4 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );

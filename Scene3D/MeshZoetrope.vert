@@ -33,7 +33,7 @@ out float vDrum;
 const float Dist = 50.0;
 const float Ground = -20.0;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     bool is_bg = gl_VertexID >= meshVertexCount;

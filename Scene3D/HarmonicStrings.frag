@@ -15,7 +15,7 @@ in float vSide; ///< Which side of a strip (from the vertex stage).
  * audio reactivity arrives already baked into that per-vertex color.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float d = abs( vSide );

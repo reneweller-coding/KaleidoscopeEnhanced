@@ -36,6 +36,13 @@ const float Ground = -8.0;
 const int   PerLane = 28;
 const float Pitch = 2.4;
 
+/**  Resting position of tile k (lanes of tiles, alternating direction).
+ *
+ * @param k  Index of the tile. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 tilePos( int k )
 {
     int   lane = k / PerLane;
@@ -46,7 +53,7 @@ vec3 tilePos( int k )
     return vec3( x, Ground, z );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int  inst = gl_InstanceID;

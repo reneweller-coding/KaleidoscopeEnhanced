@@ -19,7 +19,7 @@ in vec3  vTint;
 
 uniform float audioKick; ///< Kick-drum envelope, 0..1 (fast attack, short decay).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  n = normalize( vNormal );

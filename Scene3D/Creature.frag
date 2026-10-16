@@ -37,7 +37,14 @@ in vec3  vPos;      ///< Position (from the vertex stage).
 in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 in float vBg;       ///< Background flag (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -45,14 +52,26 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash13( vec3 p )
 {
     p = fract( p * 0.3183099 + vec3( 0.71, 0.113, 0.419 ) );
     p *= 17.0;
     return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
 }
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param x  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 x )
 {
     vec3 i = floor( x ), f = fract( x );
@@ -65,9 +84,16 @@ float noise3( vec3 x )
                 mix( mix( n001, n101, f.x ), mix( n011, n111, f.x ), f.y ), f.z );
 }
 
-/// Caustics: two counter-drifting noise fields, each sharpened to a ridge by
-/// folding around 0.5. Where the two ridge sets cross you get the bright
-/// knots real caustics show, which a single field never produces.
+/**  Caustics: two counter-drifting noise fields, each sharpened to a ridge by folding around 0.5.
+ *
+ * @param p  The point. (in)
+ * @param t  Phase of the layers' drift. (in)
+ *
+ * @return
+ *   The caustic brightness.
+ *
+ * Where the two ridge sets cross you get the bright knots real caustics show, which a single field never produces.
+ **/
 float caustic( vec2 p, float t )
 {
     float a = 1.0 - abs( noise3( vec3( p * 3.1, t * 0.25 ) ) * 2.0 - 1.0 );
@@ -76,8 +102,15 @@ float caustic( vec2 p, float t )
 }
 
 // ---- Sky shell: the water column. Bright green-blue toward the surface
-/// overhead, falling off to near-black below; caustics only where you can
-/// actually see the surface, plus marine snow drifting through. ----
+// overhead, falling off to near-black below; caustics only where you can
+// actually see the surface, plus marine snow drifting through. ----
+/**  The sky colour for a direction.
+ *
+ * @param dir  The view direction (unit length). (in)
+ *
+ * @return
+ *   The sky colour (RGB).
+ **/
 vec3 renderSky( vec3 dir )
 {
     float up = dir.y;
@@ -111,15 +144,23 @@ vec3 renderSky( vec3 dir )
 }
 
 // ---- normal mapping ------------------------------------------------------
-/// Layer 2 of the material array is a tangent-space normal map, present on the
-/// assets whose generator run produced a usable one (about a fifth of them).
-///
-/// There are no tangents in the vertex format -- it is a fixed 8 floats shared
-/// by every geom kind -- so the frame is rebuilt per fragment from screen-space
-/// derivatives of position and UV. That is the standard cotangent-frame trick,
-/// and it costs nothing in the vertex stage and no change to the buffer layout.
-/// A model WITHOUT a normal map has materialLayers < 3 and this returns the
-/// interpolated normal untouched, so every scene works either way.
+/**  Layer 2 of the material array is a tangent-space normal map, present on the assets whose generator run produced a
+ * usable one (about a fifth of them).
+ *
+ * @param N   The surface normal. (in)
+ * @param p   The position (world). (in)
+ * @param uv  The texture coordinate. (in)
+ *
+ * @return
+ *   The tangent frame (tangent, bitangent, normal) as the columns of a matrix.
+ *
+ * There are no tangents in the vertex format -- it is a fixed 8 floats shared
+ * by every geom kind -- so the frame is rebuilt per fragment from screen-space
+ * derivatives of position and UV. That is the standard cotangent-frame trick,
+ * and it costs nothing in the vertex stage and no change to the buffer layout.
+ * A model WITHOUT a normal map has materialLayers < 3 and this returns the
+ * interpolated normal untouched, so every scene works either way.
+ **/
 mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
 {
     vec3  dp1 = dFdx( p ), dp2 = dFdy( p );
@@ -132,7 +173,18 @@ mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
     return mat3( T * inv, B * inv, N );
 }
 
-/// @brief The normal tilted by the material's normal map.
+/**  The normal tilted by the material's normal map.
+ *
+ * @param tex       The material texture array. (in)
+ * @param layers    Its layer count (the normal map is layer 2). (in)
+ * @param uv        Material texture coordinate. (in)
+ * @param n         The surface normal. (in)
+ * @param wpos      World position (for the tangent frame). (in)
+ * @param strength  Strength of the normal map. (in)
+ *
+ * @return
+ *   The tilted normal (unit length); n itself without a normal map.
+ **/
 vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength )
 {
     if ( layers < 3 )
@@ -146,7 +198,7 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( vBg > 0.5 )

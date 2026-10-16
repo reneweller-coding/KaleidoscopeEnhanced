@@ -43,13 +43,25 @@ uniform float symbolsP;
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -59,12 +71,24 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
@@ -72,21 +96,44 @@ float hash21( vec2 p )
     return fract( ( p3.x + p3.y ) * p3.z );
 }
 
-/// @brief Distance from a point to a line segment.
+/**  Distance from a point to a line segment.
+ *
+ * @param p  The point. (in)
+ * @param a  One end of the segment. (in)
+ * @param b  The other end. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float sdSeg( vec2 p, vec2 a, vec2 b )
 {
     vec2  pa = p - a, ba = b - a;
     float h = clamp( dot( pa, ba ) / dot( ba, ba ), 0.0, 1.0 );
     return length( pa - ba * h );
 }
-/// @brief Signed distance to a box of half size b.
+/**  Signed distance to a box of half size b.
+ *
+ * @param p  The point. (in)
+ * @param b  Half size of the box. (in)
+ * @param r  Corner radius. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdBox( vec2 p, vec2 b, float r )
 {
     vec2 d = abs( p ) - b + r;
     return length( max( d, 0.0 ) ) + min( max( d.x, d.y ), 0.0 ) - r;
 }
 
-/// One symbol in its cell (q in -0.5..0.5); returns rgb, a = coverage.
+/**  One symbol in its cell (q in -0.5..0.5); returns rgb, a = coverage.
+ *
+ * @param q     The point in the cell (-0.5..0.5). (in)
+ * @param kind  The symbol. (in)
+ *
+ * @return
+ *   Colour (rgb) and coverage (a).
+ **/
 vec4 symbol( vec2 q, int kind )
 {
     vec3  c = vec3( 0.0 );
@@ -145,7 +192,7 @@ vec4 symbol( vec2 q, int kind )
     return vec4( c, smoothstep( 0.012, -0.004, d ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

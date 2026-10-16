@@ -18,13 +18,19 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p2  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hashT( vec2 p2 )
 {
     return fract( sin( dot( p2, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = gl_FragCoord.xy / resolution;

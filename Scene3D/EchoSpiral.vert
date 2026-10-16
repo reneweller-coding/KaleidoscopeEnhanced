@@ -31,20 +31,40 @@ uniform float audioDrop;      ///< Drop envelope: high after a detected drop, de
 out vec4  vCol;  ///< Colour (from the vertex stage).
 out float vSide; ///< Which side of a strip (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// Seeded Lissajous orbit for snake ri at path phase ph.
+/**  Seeded Lissajous orbit for snake ri at path phase ph.
+ *
+ * @param ri  Index of the snake. (in)
+ * @param ph  Phase along the path. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 orbit( float ri, float ph )
 {
     float fa = 1.0 + floor( hash11( ri * 3.1 ) * 3.0 ); // 1..3
@@ -59,7 +79,7 @@ vec3 orbit( float ri, float ph )
                  sin( ph * fc + oa * 0.5 ) * amp.z );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float t = attrA.x; // 0 head .. 1 tail

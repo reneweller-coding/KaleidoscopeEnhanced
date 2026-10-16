@@ -44,8 +44,16 @@ uniform float dotP;  ///< preset: screen frequency
 uniform float inkP;  ///< preset: ink density
 uniform float slipP; ///< preset: registration error
 
-/// One separation: sample the channel on a grid rotated by 'ang', and return how
-/// much of this pixel the dot covers.
+/**  One separation: sample the channel on a grid rotated by 'ang', and return how much of this pixel the dot covers.
+ *
+ * @param p      The point. (in)
+ * @param ang    Angle of the screen (radians). (in)
+ * @param value  The channel's value, 0..1. (in)
+ * @param freq   Screen frequency (cells per unit). (in)
+ *
+ * @return
+ *   The dot's coverage, 0..1.
+ **/
 float screenDot( vec2 p, float ang, float value, float freq )
 {
     float c = cos( ang ), s = sin( ang );
@@ -72,7 +80,7 @@ float screenDot( vec2 p, float ang, float value, float freq )
     return smoothstep( r + aa, r - aa, d );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;

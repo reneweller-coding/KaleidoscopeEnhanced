@@ -23,7 +23,7 @@ uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpol
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 uniform float     time;          ///< Seconds since the program started (never reset; see sceneTime).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = vec2( vSide * 0.5 + 0.5, fract( vLength * 4.0 + time * 0.2 ) );

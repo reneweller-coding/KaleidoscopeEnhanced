@@ -41,13 +41,25 @@ uniform float glowP;      ///< overall brightness (0 -> 1.0; 0.7..1.4)
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -55,10 +67,15 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue, jump-free) with
-/// a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue, jump-free)
+ * with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -68,7 +85,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Kaleidoscope fold of the coordinate with the given mirrors.
+/**  Kaleidoscope fold of the coordinate with the given mirrors.
+ *
+ * @param p      The coordinate (centred). (in)
+ * @param sides  Number of mirrors. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
@@ -79,8 +103,15 @@ vec2 kaleido( vec2 p, float sides )
     return vec2( cos( a ), sin( a ) ) * r;
 }
 
-/// Blurred B-field sample (2px cross) -- low-passes the sim so per-step noise
-/// doesn't shimmer the fold's fine detail.
+/**  Blurred B-field sample (2px cross) -- low-passes the sim so per-step noise doesn't shimmer the fold's fine
+ * detail.
+ *
+ * @param suv  Coordinate in the simulation. (in)
+ * @param px   Size of a texel. (in)
+ *
+ * @return
+ *   The smoothed B concentration.
+ **/
 float bSmooth( vec2 suv, vec2 px )
 {
     float b = texture( texSim, suv ).g * 2.0;
@@ -91,7 +122,7 @@ float bSmooth( vec2 suv, vec2 px )
     return b / 6.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 px = 1.0 / resolution;

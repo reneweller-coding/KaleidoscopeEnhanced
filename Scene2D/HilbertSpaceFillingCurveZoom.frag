@@ -46,13 +46,25 @@ uniform float lineThicknessP;
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -62,6 +74,13 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
+/**  Spectral colour for a dispersion angle (the fire is the spectrum itself, a documented rainbow identity, V8b).
+ *
+ * @param x  Position in the spectrum, 0..1. (in)
+ *
+ * @return
+ *   The spectral colour (RGB).
+ **/
 vec3 spectral( float x )
 {
     return clamp( abs( fract( x + vec3( 0.0, 2.0 / 3.0, 1.0 / 3.0 ) ) * 6.0 - 3.0 ) - 1.0, 0.0, 1.0 );
@@ -69,7 +88,13 @@ vec3 spectral( float x )
 
 const int N = 128; ///< order 7
 
-/// Hilbert index of cell p (the classic xy2d).
+/**  Hilbert index of cell p (the classic xy2d).
+ *
+ * @param p  The cell. (in)
+ *
+ * @return
+ *   The Hilbert index.
+ **/
 int xy2d( ivec2 p )
 {
     int d = 0;
@@ -88,7 +113,13 @@ int xy2d( ivec2 p )
     return d;
 }
 
-/// Cell of Hilbert index d (the classic d2xy).
+/**  Cell of Hilbert index d (the classic d2xy).
+ *
+ * @param d  The Hilbert index. (in)
+ *
+ * @return
+ *   The cell.
+ **/
 ivec2 d2xy( int d )
 {
     ivec2 p = ivec2( 0 );
@@ -109,7 +140,16 @@ ivec2 d2xy( int d )
     return p;
 }
 
-/// @brief Distance from a point to a line segment.
+/**  Distance from a point to a line segment.
+ *
+ * @param p  The point. (in)
+ * @param a  One end of the segment. (in)
+ * @param b  The other end. (in)
+ * @param h  Receives the parameter of the closest point, 0..1. (out)
+ *
+ * @return
+ *   The distance.
+ **/
 float sdSeg( vec2 p, vec2 a, vec2 b, out float h )
 {
     vec2 pa = p - a, ba = b - a;
@@ -117,7 +157,7 @@ float sdSeg( vec2 p, vec2 a, vec2 b, out float h )
     return length( pa - ba * h );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;

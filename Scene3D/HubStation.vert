@@ -36,12 +36,19 @@ out vec3  vNormal; ///< Surface normal (from the vertex stage).
 out vec3  vPos;    ///< Position (from the vertex stage).
 out float vBg;     ///< Background flag (from the vertex stage).
 
-/// Rotation about one of the model's own object-space axes.
-/// spinAxisP: 0 = X, 1 = Y, 2 = Z -- set per instance to the axis the hull is
-/// actually rotationally symmetric about (measured per model, not guessed).
-/// A station only spins if it HAS such an axis: turning an irregular hull
-/// reads as tumbling, which a structure this size would never do, whereas a
-/// symmetric one that does NOT turn reads as broken spin gravity.
+/**  Rotation about one of the model's own object-space axes.
+ *
+ * @param axis  The axis: 0 = x, 1 = y, 2 = z. (in)
+ * @param ang   The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ *
+ * spinAxisP: 0 = X, 1 = Y, 2 = Z -- set per instance to the axis the hull is actually rotationally symmetric about
+ * (measured per model, not guessed). A station only spins if it HAS such an axis: turning an irregular hull reads as
+ * tumbling, which a structure this size would never do, whereas a symmetric one that does NOT turn reads as broken spin
+ * gravity.
+ **/
 mat3 axisSpin( float axis, float ang )
 {
     float c = cos( ang ), s = sin( ang );
@@ -52,7 +59,7 @@ mat3 axisSpin( float axis, float ang )
     return mat3( c, s, 0.0, -s, c, 0.0, 0.0, 0.0, 1.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world, n;

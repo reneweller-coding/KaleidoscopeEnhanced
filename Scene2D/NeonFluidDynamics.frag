@@ -42,13 +42,26 @@ uniform float swirlP; ///< Swirl knob, 0..1.
 uniform float flowP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -56,7 +69,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 345.67, 567.89 ) );
@@ -64,7 +83,13 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// @brief Smooth value noise.
+/**  Smooth value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise( vec2 p )
 {
     vec2 i = floor( p );
@@ -74,7 +99,15 @@ float noise( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/// Analytical curl of noise potential field to generate divergence-free velocity field
+/**  Analytical curl of noise potential field to generate divergence-free velocity field
+ *
+ * @param p      The point. (in)
+ * @param t      The scene's time. (in)
+ * @param swirl  Strength of the swirl. (in)
+ *
+ * @return
+ *   The velocity.
+ **/
 vec2 getVelocity( vec2 p, float t, float swirl )
 {
     const float eps = 0.04;
@@ -97,7 +130,7 @@ vec2 getVelocity( vec2 p, float t, float swirl )
     return ( curl * 1.5 + ( v1 - v2 ) * 0.8 ) * swirl;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float visc = ( viscosityP > 0.0 ) ? viscosityP : 1.0;

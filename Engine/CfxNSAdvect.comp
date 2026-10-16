@@ -31,6 +31,13 @@ uniform vec2      jetPos;
 uniform vec2      jetDir;
 uniform float     jetAmp;
 
+/**  Velocity at a coordinate (bilinear).
+ *
+ * @param uv  The coordinate. (in)
+ *
+ * @return
+ *   The velocity.
+ **/
 vec2 velAt( vec2 uv )
 {
     // Bilinear fetch from the velocity image (imageLoad has no filtering).
@@ -45,6 +52,13 @@ vec2 velAt( vec2 uv )
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
+/**  Dye at a coordinate (bilinear).
+ *
+ * @param uv  The coordinate. (in)
+ *
+ * @return
+ *   The dye (RGBA).
+ **/
 vec4 dyeAt( vec2 uv )
 {
     vec2  p = uv * vec2( size ) - 0.5;
@@ -58,7 +72,7 @@ vec4 dyeAt( vec2 uv )
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     ivec2 p = ivec2( gl_GlobalInvocationID.xy );

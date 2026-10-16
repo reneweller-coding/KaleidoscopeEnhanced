@@ -42,7 +42,7 @@ out vec4  vColor;
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vHaze;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vTexCoord = attrB.zw;

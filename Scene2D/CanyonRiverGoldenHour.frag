@@ -43,13 +43,25 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float depthP; ///< Depth knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -59,14 +71,26 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -74,7 +98,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -89,12 +119,25 @@ float fbm3( vec2 p )
 
 float gDepth;
 
+/**  The river's x position at depth z.
+ *
+ * @param z  Depth. (in)
+ *
+ * @return
+ *   The x position.
+ **/
 float path( float z )
 {
     return 7.0 * sin( z * 0.035 ) + 3.5 * sin( z * 0.083 + 1.0 );
 }
 
-/// Terrain height: the river floor, then terraced walls climbing away.
+/**  Terrain height: the river floor, then terraced walls climbing away.
+ *
+ * @param q  Position on the ground (x, z). (in)
+ *
+ * @return
+ *   The terrain height.
+ **/
 float terrain( vec2 q )
 {
     float dx = abs( q.x - path( q.y ) );
@@ -108,7 +151,7 @@ float terrain( vec2 q )
     return h;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

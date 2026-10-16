@@ -73,7 +73,14 @@ const int Nspoke = Rings * Sect;          ///< 80 radial ribs
 const int Nringq = ( Rings + 1 ) * Sect;  ///< 96 arc ribs
 const int Nquads = Nglass + Nspoke + Nringq;
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot  Index of the vertex in the buffer. (in)
+ * @param p     Position. (in)
+ * @param n     Normal. (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param lvl   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float kind, float lvl )
 {
     uint o = slot * 8u;
@@ -87,12 +94,21 @@ void writeVertex( uint slot, vec3 p, vec3 n, float kind, float lvl )
     verts[o + 7u] = lvl;
 }
 
-/// Both windings, always.  A pane of glass has no back: it is a flat sheet meant
-/// to be seen from either side, and the window tips as it sways.  Emitting one
-/// winding leaves the result at the mercy of whatever cull state the frame
-/// happens to be in — and the failure is not a missing pane but a missing
-/// TRIANGLE, so a quad comes back as a thin wedge and the cause reads like a
-/// shading bug rather than a geometry one.
+/**  Both windings, always.
+ *
+ * @param a     First corner (the corners run around the quad). (in)
+ * @param b     Second corner. (in)
+ * @param c     Third corner. (in)
+ * @param d     Fourth corner. (in)
+ * @param n     Normal of the pane. (in)
+ * @param kind  Element kind written to every vertex. (in)
+ * @param lvl   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ *
+ * A pane of glass has no back: it is a flat sheet meant to be seen from either side, and the window tips as it sways.
+ * Emitting one winding leaves the result at the mercy of whatever cull state the frame happens to be in — and the
+ * failure is not a missing pane but a missing TRIANGLE, so a quad comes back as a thin wedge and the cause reads like a
+ * shading bug rather than a geometry one.
+ **/
 void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float lvl )
 {
     uint base = atomicAdd( cmd[4], 12u );
@@ -112,12 +128,21 @@ void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, vec3 n, float kind, float lvl )
     writeVertex( base + 11u, a, n, kind, lvl );
 }
 
+/**  Point from cylinder coordinates.
+ *
+ * @param r  Radius. (in)
+ * @param a  Angle (radians). (in)
+ * @param z  Height. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 pol( float r, float a, float z )
 {
     return vec3( r * cos( a ), r * sin( a ), z );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

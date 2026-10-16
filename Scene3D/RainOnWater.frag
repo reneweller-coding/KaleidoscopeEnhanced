@@ -44,7 +44,14 @@ in float vSky;
  *   audioZCR       -> fine wind-chop grain across the whole surface (.vert)
  */
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -52,13 +59,25 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -68,7 +87,13 @@ float vnoise( vec2 p )
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float s = 0.0, a = 0.55;
@@ -86,7 +111,7 @@ const float MoonX = 0.031;
 const float MoonY = 0.055;
 const float TanY = 0.5206; ///< tan(55 deg / 2) -- the scene projection
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Angular position of this fragment: world offset over distance.  Both

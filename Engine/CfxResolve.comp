@@ -40,7 +40,7 @@ uniform float decay;    ///< how much of the previous frame survives
 
 const float Scale = 1.0 / 256.0;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     ivec2 p = ivec2( gl_GlobalInvocationID.xy );

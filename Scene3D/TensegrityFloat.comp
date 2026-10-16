@@ -31,7 +31,17 @@ uniform float sizeP; ///< Size knob, 0..1.
 uniform float swayP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param c     Centre of the quad. (in)
+ * @param ax    Half the quad's extent along its first axis. (in)
+ * @param ay    Half its extent along the second axis. (in)
+ * @param id    Element id written to every vertex. (in)
+ * @param lit   Lighting weight written to every vertex. (in)
+ * @param kind  Element kind written to every vertex. (in)
+ * @param uv0   Texture coordinate of the first corner. (in)
+ * @param uv1   Texture coordinate of the opposite corner. (in)
+ **/
 void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1 )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -55,7 +65,14 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     }
 }
 
-/// Strut endpoints of the expanded octahedron: strut s (0..5), end e (0/1).
+/**  Strut endpoints of the expanded octahedron: strut s (0..5), end e (0/1).
+ *
+ * @param s  Index of the strut (0..5). (in)
+ * @param e  The end (0 or 1). (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 strutEnd( int s, int e )
 {
     float L = 1.0, w = 0.5;
@@ -69,7 +86,7 @@ vec3 strutEnd( int s, int e )
     return vec3( 0.0, side * w, sgn * L );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

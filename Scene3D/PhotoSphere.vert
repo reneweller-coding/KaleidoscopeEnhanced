@@ -25,7 +25,7 @@ out vec2 vUV; ///< Texture coordinate 0..1 over the screen (from the vertex stag
 out vec3 vN;
 out vec3 vView; ///< View vector (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float lon = attrA.x * 6.2831853;

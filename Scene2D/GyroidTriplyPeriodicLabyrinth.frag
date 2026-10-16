@@ -47,17 +47,28 @@ uniform float wallP;
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -67,7 +78,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -75,20 +93,33 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2D( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
 
-/// Triply Periodic Minimal Surface (Gyroid) Distance Function.
-/// NOTE the divisor: dividing only by `scale` treats |grad g| as 1, but the
-/// gyroid field's gradient runs to about 1.7 in the corridors and past 3 near
-/// the saddles.  With the old bound the marcher stepped roughly twice the true
-/// clearance, tunnelled straight through the thin walls, ran out of range and
-/// took the miss branch -- which painted vec3(0.02,0.03,0.06), i.e. nothing.
-/// That is where this scene's dead, flat, quarter-full frame came from.
+/**  Triply Periodic Minimal Surface (Gyroid) Distance Function.
+ *
+ * @param p          The point. (in)
+ * @param scale      Scale of the gyroid. (in)
+ * @param thickness  Thickness of the sheet. (in)
+ *
+ * @return
+ *   The distance bound.
+ *
+ * NOTE the divisor: dividing only by `scale` treats |grad g| as 1, but the gyroid field's gradient runs to about 1.7 in
+ * the corridors and past 3 near the saddles.  With the old bound the marcher stepped roughly twice the true clearance,
+ * tunnelled straight through the thin walls, ran out of range and took the miss branch -- which painted
+ * vec3(0.02,0.03,0.06), i.e. nothing. That is where this scene's dead, flat, quarter-full frame came from.
+ **/
 float gyroidSDF( vec3 p, float scale, float thickness )
 {
     vec3  q = p * scale;
@@ -96,8 +127,14 @@ float gyroidSDF( vec3 p, float scale, float thickness )
     return ( abs( g ) - thickness ) / ( scale * 1.75 );
 }
 
-/// Analytic gradient of the gyroid field in q space (used to keep the flight
-/// path in the middle of a corridor -- far cheaper than a full calcNormal).
+/**  Analytic gradient of the gyroid field in q space (used to keep the flight path in the middle of a corridor -- far
+ * cheaper than a full calcNormal).
+ *
+ * @param q  The point in gyroid space. (in)
+ *
+ * @return
+ *   The gradient.
+ **/
 vec3 gyroidGrad( vec3 q )
 {
     return vec3( cos( q.x ) * cos( q.z ) - sin( q.y ) * sin( q.x ),
@@ -105,7 +142,15 @@ vec3 gyroidGrad( vec3 q )
                  cos( q.z ) * cos( q.y ) - sin( q.x ) * sin( q.z ) );
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p          The surface point. (in)
+ * @param scale      Scale of the gyroid. (in)
+ * @param thickness  Thickness of the sheet. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 p, float scale, float thickness )
 {
     float eps = 0.005;
@@ -116,7 +161,7 @@ vec3 calcNormal( vec3 p, float scale, float thickness )
         gyroidSDF( p + h.yyx, scale, thickness ) - gyroidSDF( p - h.yyx, scale, thickness ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float scl = ( scaleP > 0.0 ) ? scaleP : 1.0;

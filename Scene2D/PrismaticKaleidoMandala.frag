@@ -43,17 +43,28 @@ uniform float facetP;
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,7 +74,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -71,7 +89,14 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Hyperbolic Poincaré disk inversion
+/**  Hyperbolic Poincaré disk inversion
+ *
+ * @param z     The point inside the unit disc. (in)
+ * @param rMax  Radius of the inversion circle. (in)
+ *
+ * @return
+ *   The point folded into the tiling's fundamental triangle.
+ **/
 vec2 poincareFold( vec2 z, float rMax )
 {
     float d2 = dot( z, z );
@@ -82,7 +107,14 @@ vec2 poincareFold( vec2 z, float rMax )
     return z;
 }
 
-/// Kaleidoscope reflection fold
+/**  Kaleidoscope reflection fold
+ *
+ * @param p        The coordinate (centred). (in)
+ * @param sectors  Number of sectors. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleidoFold( vec2 p, float sectors )
 {
     float a = atan( p.y, p.x );
@@ -93,10 +125,11 @@ vec2 kaleidoFold( vec2 p, float sectors )
     return vec2( cos( a ), sin( a ) ) * r;
 }
 
-/// USER-FEEDBACK-REDESIGN: an actual sacral photo kaleidoscope.  The old
-/// version stacked five additive crystal-fog layers that clipped to white —
-/// now ONE clean angular mirror fold carries the picture, mandala rings
-/// breathe over it, and thin bevel lines spark on the wedge seams.
+/**  USER-FEEDBACK-REDESIGN: an actual sacral photo kaleidoscope.
+ *
+ * The old version stacked five additive crystal-fog layers that clipped to white — now ONE clean angular mirror fold
+ * carries the picture, mandala rings breathe over it, and thin bevel lines spark on the wedge seams.
+ **/
 void main()
 {
     float sym = ( symmetryP > 0.0 ) ? symmetryP : 1.0;

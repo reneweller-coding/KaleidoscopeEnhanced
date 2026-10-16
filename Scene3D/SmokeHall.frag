@@ -68,17 +68,28 @@ uniform float     hueP;         ///< Hue knob (radians), usually the music's chr
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioValence; ///< Mood valence: 0 dark .. 1 bright.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -88,13 +99,25 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash13( vec3 p )
 {
     p = fract( p * 0.3183099 + vec3( 0.71, 0.113, 0.419 ) );
@@ -102,7 +125,13 @@ float hash13( vec3 p )
     return fract( p.x * p.y * p.z * ( p.x + p.y + p.z ) );
 }
 
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param x  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec3 x )
 {
     vec3 i = floor( x ), f = fract( x );
@@ -114,13 +143,26 @@ float vnoise( vec3 x )
                 f.z );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec3 p )
 {
     return 0.55 * vnoise( p ) + 0.28 * vnoise( p * 2.03 ) + 0.17 * vnoise( p * 4.11 );
 }
 
-/// @brief Shadow factor from the shadow map at a world position.
+/**  Shadow factor from the shadow map at a world position.
+ *
+ * @param world  The world position. (in)
+ * @param ndl    N dot L there (scales the bias). (in)
+ *
+ * @return
+ *   1 for lit, 0 for shadowed (filtered in between).
+ **/
 float shadowAt( vec3 world, float ndl )
 {
     float lift = ( 2.0 * shadowExtent * shadowTexel ) * 2.0 / max( ndl, 0.20 );
@@ -142,7 +184,7 @@ float shadowAt( vec3 world, float ndl )
     return s / 9.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( shadowPass > 0.5 )

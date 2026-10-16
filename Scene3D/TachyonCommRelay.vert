@@ -24,7 +24,7 @@ out vec3 vCorner;
 out vec3 vPos;    ///< Position (from the vertex stage).
 out vec3 vNormal; ///< Surface normal (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( cubeBudget < 0.75 && mod( attrA.w, 2.0 ) > 0.5 )

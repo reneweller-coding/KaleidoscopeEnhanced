@@ -34,13 +34,19 @@ uniform float audioHigh;    ///< High band level, 0..1.
 uniform float meltP; ///< how much of the frame melts at rest
 uniform float bandP; ///< band structure of the mask
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     return fract( sin( p * 127.1 ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

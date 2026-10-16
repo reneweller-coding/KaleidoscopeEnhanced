@@ -42,13 +42,25 @@ uniform float radiusP; ///< Radius knob, 0..1.
 uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
@@ -58,7 +70,16 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// Parametric Möbius Strip surface point: r(u, v)
+/**  Parametric Möbius Strip surface point: r(u, v)
+ *
+ * @param u      Angle around (radians). (in)
+ * @param v      Position across, -1..1. (in)
+ * @param rBase  Radius of the centre circle. (in)
+ * @param w      Half width. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 mobiusPoint( float u, float v, float rBase, float w )
 {
     float u_half = u * 0.5;
@@ -66,22 +87,33 @@ vec3 mobiusPoint( float u, float v, float rBase, float w )
     return vec3( rad * cos( u ), rad * sin( u ), v * w * sin( u_half ) );
 }
 
-/// Signed distance to the Möbius RIBBON.
-///
-/// The march used to measure distance to mobiusPoint(u, v = 0), but BOTH the
-/// width term and the twist term carry a factor of v, so at v = 0 they vanish
-/// identically and mobiusPoint collapses to (rB*cos u, rB*sin u, 0) -- a plain
-/// flat circle. What got raymarched was therefore a thin torus around that
-/// circle, with no width and no half-twist: `stripWidthP` provably could not
-/// affect a single pixel (the hit mask was bit-identical for stripWidthP 0.4 /
-/// 0.65 / 0.9), and because a torus is rotationally symmetric about z while the
-/// camera frame was built from the track itself, flying along the track just
-/// rotated the whole configuration onto itself -- the image was very nearly
-/// INVARIANT, which is why a "roller drive" barely moved.
-///
-/// So build the real surface instead. At angle u the ribbon is a segment of
-/// half-width halfW through the centre circle, rotated by u/2 in the local
-/// (radial, z) plane.
+/**  Signed distance to the Möbius RIBBON.
+ *
+ * @param p      The point. (in)
+ * @param rB     Radius of the centre circle. (in)
+ * @param halfW  Half width of the ribbon. (in)
+ * @param thick  Thickness. (in)
+ * @param along  Receives the position across the ribbon. (out)
+ * @param uOut   Receives the angle around. (out)
+ *
+ * @return
+ *   The signed distance.
+ *
+ * The march used to measure distance to mobiusPoint(u, v = 0), but BOTH the
+ * width term and the twist term carry a factor of v, so at v = 0 they vanish
+ * identically and mobiusPoint collapses to (rB*cos u, rB*sin u, 0) -- a plain
+ * flat circle. What got raymarched was therefore a thin torus around that
+ * circle, with no width and no half-twist: `stripWidthP` provably could not
+ * affect a single pixel (the hit mask was bit-identical for stripWidthP 0.4 /
+ * 0.65 / 0.9), and because a torus is rotationally symmetric about z while the
+ * camera frame was built from the track itself, flying along the track just
+ * rotated the whole configuration onto itself -- the image was very nearly
+ * INVARIANT, which is why a "roller drive" barely moved.
+ *
+ * So build the real surface instead. At angle u the ribbon is a segment of
+ * half-width halfW through the centre circle, rotated by u/2 in the local
+ * (radial, z) plane.
+ **/
 float mobiusSDF( vec3 p, float rB, float halfW, float thick,
                  out float along, out float uOut )
 {
@@ -104,7 +136,7 @@ float mobiusSDF( vec3 p, float rB, float halfW, float thick,
     return ( length( q ) - thick ) * 0.6; // 0.6: Lipschitz safety for the twist
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );

@@ -31,7 +31,7 @@ uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music i
 uniform float inkP;  ///< preset: how "ink-like" the dense parts get
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

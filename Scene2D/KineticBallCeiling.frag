@@ -43,13 +43,25 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 uniform float waveP; ///< Wave knob.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -59,7 +71,13 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
@@ -73,7 +91,13 @@ const float Ceil = 11.0;
 
 float gT, gW;
 
-/// Height of the ball hanging in cell c: a slow superposition of waves.
+/**  Height of the ball hanging in cell c: a slow superposition of waves.
+ *
+ * @param c  The cell. (in)
+ *
+ * @return
+ *   The ball's height.
+ **/
 float ballY( vec2 c )
 {
     float a1 = 0.5 + 0.5 * sin( gT * 0.021 + gW * 3.0 );
@@ -84,7 +108,13 @@ float ballY( vec2 c )
     return 6.0 + h;
 }
 
-/// The photo as the hall around the balls, seen in their mirrors.
+/**  The photo as the hall around the balls, seen in their mirrors.
+ *
+ * @param R  The reflection direction. (in)
+ *
+ * @return
+ *   The reflected colour (RGB).
+ **/
 vec3 envir( vec3 R )
 {
     // Mirrored around the view axis, so the wrap of the angle leaves no seam.
@@ -98,7 +128,7 @@ vec3 envir( vec3 R )
     return mix( e * 0.18 + vec3( 0.02 ), e * 1.1 + 0.08, floor_side );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

@@ -60,13 +60,25 @@ uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float fogP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -76,7 +88,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -84,12 +103,24 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
@@ -99,7 +130,14 @@ float hash21( vec2 p )
 const float StreetHalf = 4.6; ///< kerb to kerb, the camera weaves well inside
 const float Block = 9.0;      ///< one building per block along z
 
-/// A building's footprint and height from its block index and side.
+/**  A building's footprint and height from its block index and side.
+ *
+ * @param k       Index of the block. (in)
+ * @param side    Side of the street (-1 or 1). (in)
+ * @param bp      Building knob. (in)
+ * @param centre  Receives the building's centre. (out)
+ * @param half_   Receives its half size. (out)
+ **/
 void building( float k, float side, float bp,
                out vec3 centre, out vec3 half_ )
 {
@@ -115,7 +153,15 @@ void building( float k, float side, float bp,
     half_ = vec3( half_w, height * 0.5, half_d );
 }
 
-/// @brief Signed distance to a box of half size b.
+/**  Signed distance to a box of half size h about c.
+ *
+ * @param p  The point. (in)
+ * @param c  Centre of the box. (in)
+ * @param h  Half size of the box. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdBox( vec3 p, vec3 c, vec3 h )
 {
     vec3 q = abs( p - c ) - h;
@@ -125,6 +171,14 @@ float sdBox( vec3 p, vec3 c, vec3 h )
 // Distance to the city, and which box was nearest (for the analytic normal).
 vec3  gC, gH; // the nearest box, handed back to the shader
 float gSide, gBlock;
+/**  Distance to the city: the road and the buildings of the nearby blocks.
+ *
+ * @param p   The point. (in)
+ * @param bp  Building knob. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float mapCity( vec3 p, float bp )
 {
     float d = p.y; // the road
@@ -153,8 +207,14 @@ float mapCity( vec3 p, float bp )
     return d;
 }
 
-/// The normal of the nearest surface, read off the nearest box face -- no
-/// finite differences, so nothing flips at a seam.
+/**  The normal of the nearest surface, read off the nearest box face -- no finite differences, so nothing flips at a
+ * seam.
+ *
+ * @param p  The surface point. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 normalCity( vec3 p )
 {
     if ( gSide == 0.0 )
@@ -168,7 +228,7 @@ vec3 normalCity( vec3 p )
     return vec3( 0.0, 0.0, sign( q.z ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float bp = ( buildP > 0.01 ) ? buildP : 1.0;

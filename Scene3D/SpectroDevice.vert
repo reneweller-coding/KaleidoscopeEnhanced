@@ -37,7 +37,7 @@ out vec3 vLocalPos;   ///< object space, pre-scale -- the spectrum bars live in 
 out vec3  vObjNormal; ///< object space normal, for picking out the flat front panel
 out float vBg;        ///< Background flag (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world, n;

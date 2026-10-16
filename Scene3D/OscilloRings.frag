@@ -17,7 +17,7 @@ in float vSide; ///< Which side of a strip (from the vertex stage).
  * cross-ring offset into the core-plus-halo glow.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float d = abs( vSide );

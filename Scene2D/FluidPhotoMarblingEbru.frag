@@ -34,13 +34,26 @@ uniform float swirlP; ///< Swirl knob, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -48,12 +61,15 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Overall level of the photo currently on the texture units, from a fixed
-/// 5-tap grid. The whole picture here IS the photo, floated on the water bath,
-/// so a bright photo left the gold veins and the surface specular no headroom
-/// at all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can
-/// never pop, and being one number for the whole frame it rescales exposure
-/// without touching the marbling's local contrast.
+/**  Overall level of the photo currently on the texture units, from a fixed 5-tap grid.
+ *
+ * @return
+ *   The photo's average level, 0..1.
+ *
+ * The whole picture here IS the photo, floated on the water bath, so a bright photo left the gold veins and the surface
+ * specular no headroom at all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can never pop, and being
+ * one number for the whole frame it rescales exposure without touching the marbling's local contrast.
+ **/
 float photoLevel()
 {
     vec3 s = img( vec2( 0.25, 0.25 ) ) + img( vec2( 0.75, 0.25 ) )
@@ -62,7 +78,16 @@ float photoLevel()
     return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
-/// Mathematical Ebru Comb / Rake transformation
+/**  Mathematical Ebru Comb / Rake transformation
+ *
+ * @param p        The point. (in)
+ * @param dir      Direction of the rake's motion. (in)
+ * @param spacing  Spacing of the tines. (in)
+ * @param speed    Phase of the rake. (in)
+ *
+ * @return
+ *   The raked point.
+ **/
 vec2 ebruRake( vec2 p, vec2 dir, float spacing, float speed )
 {
     float proj = dot( p, vec2( -dir.y, dir.x ) ); // Distance perpendicular to rake motion
@@ -70,7 +95,16 @@ vec2 ebruRake( vec2 p, vec2 dir, float spacing, float speed )
     return p + dir * ( wave * 0.12 );
 }
 
-/// Mathematical Ebru Vortex / Droplet tine transformation
+/**  Mathematical Ebru Vortex / Droplet tine transformation
+ *
+ * @param p         The point. (in)
+ * @param center    Centre of the vortex. (in)
+ * @param strength  Turn at the centre (radians). (in)
+ * @param radius    Radius of the falloff. (in)
+ *
+ * @return
+ *   The swirled point.
+ **/
 vec2 ebruVortex( vec2 p, vec2 center, float strength, float radius )
 {
     vec2  d = p - center;
@@ -80,7 +114,7 @@ vec2 ebruVortex( vec2 p, vec2 center, float strength, float radius )
     return center + vec2( d.x * c - d.y * s, d.x * s + d.y * c );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float rk = ( rakeP > 0.0 ) ? rakeP : 1.0;

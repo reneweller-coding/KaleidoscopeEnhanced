@@ -31,7 +31,7 @@ in vec3 gBary;
 
 uniform float audioSharpness; ///< Zwicker HF loudness: 0 = dull, 1 = harsh-bright
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  n = normalize( gNormal );

@@ -36,13 +36,25 @@ uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighte
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -51,10 +63,15 @@ vec3 img( vec2 uv )
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -64,12 +81,12 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// USER-FEEDBACK-REDESIGN: the old fold/rotate/scale parametrisation was
-/// degenerate (its attractor is space-filling, every orbit trap read ~0 and
-/// the frame came out as flat mush).  Core replaced by the battle-tested
-/// KALISET  p = abs(p)/dot(p,p) - c  — robust, endlessly detailed fractal
-/// lace for practically any c, with the photo sampled through the final
-/// folded coordinate.
+/**  USER-FEEDBACK-REDESIGN: the old fold/rotate/scale parametrisation was degenerate (its attractor is space-filling,
+ * every orbit trap read ~0 and the frame came out as flat mush).
+ *
+ * Core replaced by the battle-tested KALISET  p = abs(p)/dot(p,p) - c  — robust, endlessly detailed fractal lace for
+ * practically any c, with the photo sampled through the final folded coordinate.
+ **/
 void main()
 {
     vec2 p = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / resolution.y;

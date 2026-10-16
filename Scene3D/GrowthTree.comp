@@ -76,19 +76,41 @@ const uint  Trees = 7u;                              ///< trees in the grove
 const uint  Slots = 512u;                            ///< invocations reserved per tree
 const float Groundy = -1.80;                         ///< the forest floor the trunks stand on
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( float n )
 {
     return fract( sin( n * 91.3458 ) * 47453.5453 );
 }
 
+/**  Rotation of a vector about an axis (Rodrigues).
+ *
+ * @param v     The vector. (in)
+ * @param axis  The axis (unit length). (in)
+ * @param a     The angle in radians. (in)
+ *
+ * @return
+ *   The rotated vector.
+ **/
 vec3 rotAxis( vec3 v, vec3 axis, float a )
 {
     float c = cos( a ), s = sin( a );
     return v * c + cross( axis, v ) * s + axis * dot( axis, v ) * ( 1.0 - c );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot    Index of the vertex in the buffer. (in)
+ * @param p       Position. (in)
+ * @param n       Normal. (in)
+ * @param depthN  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float depthN, float kind )
 {
     uint o = slot * 8u;
@@ -102,6 +124,17 @@ void writeVertex( uint slot, vec3 p, vec3 n, float depthN, float kind )
     verts[o + 7u] = kind; // 0 = wood, 1 = leaf
 }
 
+/**  Appends a triangle to the output buffer.
+ *
+ * @param a       First corner. (in)
+ * @param b       Second corner. (in)
+ * @param c       Third corner. (in)
+ * @param na      Normal at a. (in)
+ * @param nb      Normal at b. (in)
+ * @param nc      Normal at c. (in)
+ * @param depthN  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitTri( vec3 a, vec3 b, vec3 c, vec3 na, vec3 nb, vec3 nc,
               float depthN, float kind )
 {
@@ -113,7 +146,7 @@ void emitTri( vec3 a, vec3 b, vec3 c, vec3 na, vec3 nb, vec3 nc,
     writeVertex( base + 2u, c, nc, depthN, kind );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

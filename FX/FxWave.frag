@@ -16,7 +16,7 @@ uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
 

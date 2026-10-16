@@ -31,7 +31,13 @@ out float vInst;
 
 const float Ground = -22.0;
 
-/// The three towers' feet, shared with the fragment stage.
+/**  The three towers' feet, shared with the fragment stage.
+ *
+ * @param i  Index of the tower (0..2). (in)
+ *
+ * @return
+ *   The foot's position.
+ **/
 vec3 towerFoot( int i )
 {
     if ( i == 0 )
@@ -41,7 +47,7 @@ vec3 towerFoot( int i )
     return vec3( 72.0, Ground, 172.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int  inst = gl_InstanceID;

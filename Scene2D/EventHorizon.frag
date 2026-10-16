@@ -51,7 +51,13 @@ uniform float massP; ///< preset: how strongly it lenses
 uniform float diskP; ///< preset: disk brightness
 uniform float tiltP; ///< preset: viewing angle onto the disk
 
-/// Blackbody-ish ramp for the disk: inner edge white-hot, outer edge deep red.
+/**  Blackbody-ish ramp for the disk: inner edge white-hot, outer edge deep red.
+ *
+ * @param t  Position from the outer (0) to the inner edge (1). (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 diskColour( float t )
 {
     vec3 hot = vec3( 1.15, 1.05, 0.95 );
@@ -60,7 +66,7 @@ vec3 diskColour( float t )
     return ( t < 0.5 ) ? mix( cool, mid, t * 2.0 ) : mix( mid, hot, ( t - 0.5 ) * 2.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

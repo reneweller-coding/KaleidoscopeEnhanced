@@ -65,7 +65,13 @@ const float D0 = 4.6;      ///< initial core separation
 const float Eps = 0.28;    ///< softening
 const float Tmerge = 75.0; ///< simulation seconds until the cores meet
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -73,48 +79,103 @@ float hash11( float p )
     p *= p + p;
     return fract( p );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
 
+/**  Rotation matrix about the x axis.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 rotX( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat3( 1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c );
 }
+/**  Rotation matrix about the z axis.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 rotZ( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat3( c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0 );
 }
 
+/**  The marker word that shows the state buffer was set up for this seed.
+ *
+ * @return
+ *   The marker word.
+ **/
 uint expectedMagic()
 {
     return 0xC0FFEE00u ^ uint( fract( sceneSeed * 0.731 ) * 65535.0 );
 }
 
-/// Core positions on the in-spiral: separation shrinks over TMERGE, the pair
-/// turns faster as it closes.  Galaxy 0 at +c, galaxy 1 at -c.
+/**  Core positions on the in-spiral: separation shrinks over TMERGE, the pair turns faster as it closes.
+ *
+ * @param tau  Merger progress, 0..1. (in)
+ * @param th   Orbit angle (radians). (in)
+ *
+ * @return
+ *   Position of core 0 (core 1 sits opposite).
+ *
+ * Galaxy 0 at +c, galaxy 1 at -c.
+ **/
 vec3 corePos( float tau, float th )
 {
     float sep = D0 * ( 1.0 - 0.92 * smoothstep( 0.0, 1.0, tau ) );
     return 0.5 * sep * vec3( cos( th ), 0.12 * sin( th * 1.3 ), sin( th ) );
 }
+/**  Angular speed of the pair at merger progress tau.
+ *
+ * @param tau  Merger progress, 0..1. (in)
+ *
+ * @return
+ *   The angular speed.
+ **/
 float omega( float tau )
 {
     float sep = D0 * ( 1.0 - 0.92 * smoothstep( 0.0, 1.0, tau ) );
     return 0.55 / ( pow( sep, 1.5 ) + 0.3 );
 }
 
+/**  Orientation of a galaxy's disc.
+ *
+ * @param galaxy  The galaxy (0 or 1). (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 discFrame( float galaxy )
 {
     float tilt = ( galaxy < 0.5 ) ? 0.35 + 0.4 * spinP : -0.55 - 0.3 * spinP;
     return rotZ( galaxy * 1.1 ) * rotX( tilt );
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param c        Centre of the quad. (in)
+ * @param s        Half size of the quad. (in)
+ * @param id       Element id written to every vertex. (in)
+ * @param a        Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind     Element kind written to every vertex. (in)
+ * @param uvScale  Scale of the texture coordinates. (in)
+ **/
 void emitQuad( vec3 c, float s, float id, float a, float kind, vec2 uvScale )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -139,7 +200,7 @@ void emitQuad( vec3 c, float s, float id, float a, float kind, vec2 uvScale )
     }
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

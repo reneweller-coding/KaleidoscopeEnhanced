@@ -39,7 +39,7 @@ out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vCoreDist;
 out float vKind; ///< 0 = capillary, 1 = the glass slab behind the lattice
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float pcf = ( pcfP > 0.0 ) ? pcfP : 1.0;

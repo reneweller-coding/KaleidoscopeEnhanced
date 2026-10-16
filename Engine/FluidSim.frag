@@ -26,7 +26,13 @@ uniform float     flowPhase;
 uniform float     impulse;
 uniform float     injectAmt;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -34,14 +40,26 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 345.45 ) );
     p += dot( p, p + 34.345 );
     return fract( p.x * p.y );
 }
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -51,14 +69,20 @@ float vnoise( vec2 p )
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
-/// Noise potential (2 octaves, drifting with the integrated flow phase).
+/**  Noise potential (2 octaves, drifting with the integrated flow phase).
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The potential's value.
+ **/
 float psi( vec2 p )
 {
     return vnoise( p * 3.0 + vec2( 0.0, flowPhase ) )
            + 0.5 * vnoise( p * 6.0 + vec2( 3.7, -flowPhase * 0.7 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

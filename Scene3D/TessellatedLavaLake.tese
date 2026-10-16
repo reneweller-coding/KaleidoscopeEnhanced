@@ -33,15 +33,28 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 uniform float camHP;        ///< Camera height knob, 0..1.
 uniform float plateP;
 
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     p = vec2( dot( p, vec2( 127.1, 311.7 ) ), dot( p, vec2( 269.5, 183.3 ) ) );
     return fract( sin( p ) * 43758.5453 );
 }
 
-/// Voronoi: distance to the nearest and second-nearest plate centre; the
-/// centres drift slowly on the clock (each on its own small circle).
+/**  Voronoi: distance to the nearest and second-nearest plate centre; the centres drift slowly on the clock (each on
+ * its own small circle).
+ *
+ * @param x      The point. (in)
+ * @param clock  The scene clock. (in)
+ * @param d1     Receives the distance to the nearest centre. (out)
+ * @param d2     Receives the distance to the second nearest. (out)
+ * @param id     Receives the nearest plate's id. (out)
+ **/
 void voronoi( vec2 x, float clock, out float d1, out float d2, out float id )
 {
     vec2 n = floor( x ), f = fract( x );
@@ -71,6 +84,17 @@ void voronoi( vec2 x, float clock, out float d1, out float d2, out float id )
     d2 = sqrt( d2 );
 }
 
+/**  Height of the lava lake: crusted plates heaving between glowing seams.
+ *
+ * @param xz     Position (x, z). (in)
+ * @param clock  The scene clock. (in)
+ * @param heave  Heave amplitude. (in)
+ * @param seam   Receives the distance to the plate's edge. (out)
+ * @param plate  Receives the plate's id. (out)
+ *
+ * @return
+ *   The height.
+ **/
 float surface( vec2 xz, float clock, float heave, out float seam, out float plate )
 {
     float scale = 0.05 + 0.04 * clamp( plateP, 0.0, 1.0 );
@@ -87,7 +111,7 @@ float surface( vec2 xz, float clock, float heave, out float seam, out float plat
     return plateau + wave + 0.3 * sin( xz.x * 0.3 + id * 6.28 ) * sin( xz.y * 0.27 ) + wall;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

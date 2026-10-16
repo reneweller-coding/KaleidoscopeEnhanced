@@ -50,6 +50,13 @@ const float FieldD = 55.0;
 // the horizon into the upper third and lets the field open out into the frame.
 const float Pitch = 0.30;
 
+/**  Projects a world position into the eye's clip space.
+ *
+ * @param world  The world position. (in)
+ *
+ * @return
+ *   The clip-space position.
+ **/
 vec4 project( vec3 world )
 {
     vec3  vp = vec3( world.x - eyeOff, world.y - ( camHP + 1.7 ), world.z );
@@ -60,6 +67,14 @@ vec4 project( vec3 world )
     return c;
 }
 
+/**  Emits one vertex with its varyings.
+ *
+ * @param world  World position. (in)
+ * @param n      Normal. (in)
+ * @param along  Position along the blade or strand, 0 root .. 1 tip. (in)
+ * @param tint   Tint variation. (in)
+ * @param kind   Element kind. (in)
+ **/
 void emit( vec3 world, vec3 n, float along, float tint, float kind )
 {
     vWorld = world;
@@ -71,7 +86,7 @@ void emit( vec3 world, vec3 n, float along, float tint, float kind )
     EmitVertex();
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = gIndex[0];

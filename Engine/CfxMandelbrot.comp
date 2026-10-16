@@ -32,6 +32,14 @@ uniform float rot; ///< slow view rotation (radians), integrated host-side
 // Standard error-free-transformation building blocks; see e.g. Thall,
 // "Extended-Precision Floating Point Numbers for GPU Computation".
 
+/**  Sum of two floats as a double-single (value, error); needs |a| >= |b|.
+ *
+ * @param a  One summand. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The double-single.
+ **/
 vec2 dsQuickTwoSum( float a, float b )
 {
     float s = a + b;
@@ -39,6 +47,14 @@ vec2 dsQuickTwoSum( float a, float b )
     return vec2( s, err );
 }
 
+/**  Exact sum of two floats as a double-single (value, error).
+ *
+ * @param a  One summand. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The double-single.
+ **/
 vec2 dsTwoSum( float a, float b )
 {
     float s = a + b;
@@ -47,6 +63,14 @@ vec2 dsTwoSum( float a, float b )
     return vec2( s, err );
 }
 
+/**  Exact product of two floats as a double-single (value, error).
+ *
+ * @param a  One factor. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The double-single.
+ **/
 vec2 dsTwoProd( float a, float b )
 {
     float p = a * b;
@@ -54,6 +78,14 @@ vec2 dsTwoProd( float a, float b )
     return vec2( p, err );
 }
 
+/**  Sum of two double-singles.
+ *
+ * @param a  One summand. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The double-single.
+ **/
 vec2 dsAdd( vec2 a, vec2 b )
 {
     vec2 s = dsTwoSum( a.x, b.x );
@@ -61,11 +93,27 @@ vec2 dsAdd( vec2 a, vec2 b )
     return dsQuickTwoSum( s.x, s.y );
 }
 
+/**  Difference of two double-singles.
+ *
+ * @param a  The minuend. (in)
+ * @param b  The subtrahend. (in)
+ *
+ * @return
+ *   The double-single.
+ **/
 vec2 dsSub( vec2 a, vec2 b )
 {
     return dsAdd( a, vec2( -b.x, -b.y ) );
 }
 
+/**  Product of two double-singles.
+ *
+ * @param a  One factor. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The double-single.
+ **/
 vec2 dsMul( vec2 a, vec2 b )
 {
     vec2 p = dsTwoProd( a.x, b.x );
@@ -73,7 +121,7 @@ vec2 dsMul( vec2 a, vec2 b )
     return dsQuickTwoSum( p.x, p.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     ivec2 gid = ivec2( gl_GlobalInvocationID.xy );

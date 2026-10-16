@@ -56,6 +56,12 @@ const float Soften = 0.11; ///< generous: hard close encounters slingshot
 
 shared vec4 tile[256];
 
+/**  A bird gets a small CROSS footprint, not a single texel.
+ *
+ * @param uv   Position in the field, 0..1. (in)
+ * @param col  The colour. (in)
+ * @param w    The weight of the centre texel. (in)
+ **/
 void splat( vec2 uv, vec3 col, float w )
 {
     ivec2 ip = ivec2( uv * vec2( size ) );
@@ -69,7 +75,7 @@ void splat( vec2 uv, vec3 col, float w )
     atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uint gid = gl_GlobalInvocationID.x;

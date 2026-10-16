@@ -41,13 +41,25 @@ uniform float viscosityP;
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
@@ -57,7 +69,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// 2D Curl noise field for viscous fluid advection
+/**  2D Curl noise field for viscous fluid advection
+ *
+ * @param p  The point. (in)
+ * @param t  Phase of the field. (in)
+ *
+ * @return
+ *   The flow vector.
+ **/
 vec2 curlNoise( vec2 p, float t )
 {
     float n1 = sin( p.y * 3.5 + t * 0.8 ) + cos( p.x * 2.5 - t * 0.5 );
@@ -65,7 +84,16 @@ vec2 curlNoise( vec2 p, float t )
     return vec2( n1, n2 ) * 0.2;
 }
 
-/// Chladni 2D nodal function: a*sin(n*pi*x)*sin(m*pi*y) - b*sin(m*pi*x)*sin(n*pi*y)
+/**  Chladni 2D nodal function: a*sin(n*pi*x)*sin(m*pi*y) - b*sin(m*pi*x)*sin(n*pi*y)
+ *
+ * @param p      The point. (in)
+ * @param n      First mode number. (in)
+ * @param m      Second mode number. (in)
+ * @param ratio  Weight of the second term. (in)
+ *
+ * @return
+ *   The nodal function's value (0 on the nodal lines).
+ **/
 float chladni2D( vec2 p, float n, float m, float ratio )
 {
     float pi = 3.14159265;
@@ -74,7 +102,7 @@ float chladni2D( vec2 p, float n, float m, float ratio )
     return term1 - ratio * term2;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );

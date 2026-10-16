@@ -52,7 +52,14 @@ in vec3  vPos;      ///< Position (from the vertex stage).
 in vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 in float vBg;       ///< Background flag (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     const vec3 k = vec3( 0.57735 );
@@ -60,15 +67,26 @@ vec3 hueRot( vec3 c, float a )
     return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
-/// The two photographs the rest of the catalogue is drawing from, cross-faded
-/// exactly as every 2D scene sees them.
+/**  The two photographs the rest of the catalogue is drawing from, cross-faded exactly as every 2D scene sees them.
+ *
+ * @param uv  Coordinate in the photo (clamped). (in)
+ *
+ * @return
+ *   The photo colour (RGB).
+ **/
 vec3 photo( vec2 uv )
 {
     uv = clamp( uv, 0.0, 1.0 );
     return mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, 1.0 - interpolation );
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     // Sample the photo along a diagonal: a cheap palette that is guaranteed to
@@ -76,7 +94,7 @@ vec3 imgPalette( float t )
     return photo( vec2( fract( t ), fract( t * 0.37 + 0.2 ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hue = ( hueP > 0.01 ? hueP : 0.0 );

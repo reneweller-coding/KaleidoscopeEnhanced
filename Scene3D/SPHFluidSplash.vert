@@ -18,7 +18,7 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
                             ///< backwards).
 uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world_p = attrA.xyz;

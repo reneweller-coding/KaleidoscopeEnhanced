@@ -58,7 +58,13 @@ uniform float heatP;  ///< preset: how strongly the air bends
 uniform float scaleP; ///< preset: cell size of the turbulence
 uniform float splitP; ///< preset: chromatic dispersion
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 456.21 ) );
@@ -66,7 +72,13 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param x  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 x )
 {
     vec2 i = floor( x ), f = fract( x );
@@ -75,13 +87,25 @@ float vnoise( vec2 x )
                 mix( hash21( i + vec2( 0, 1 ) ), hash21( i + vec2( 1, 1 ) ), f.x ), f.y );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     return 0.58 * vnoise( p ) + 0.28 * vnoise( p * 2.07 ) + 0.14 * vnoise( p * 4.13 );
 }
 
-/// @brief Depth buffer value to linear distance.
+/**  Depth buffer value to linear distance.
+ *
+ * @param d  Depth buffer value, 0..1. (in)
+ *
+ * @return
+ *   The linear distance.
+ **/
 float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
@@ -89,7 +113,7 @@ float linearise( float d )
     return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;

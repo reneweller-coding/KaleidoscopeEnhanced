@@ -40,13 +40,25 @@ uniform float audioValence;   ///< Mood valence: 0 dark .. 1 bright.
 uniform float shapeP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -56,17 +68,35 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash31( vec3 p )
 {
     return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -95,6 +125,13 @@ struct Shape
     float ang;
 };
 
+/**  The shape projector j draws now (kind, centre, size, angle).
+ *
+ * @param j  Index of the projector. (in)
+ *
+ * @return
+ *   The shape.
+ **/
 Shape shapeOf( int j )
 {
     float c = g_clock;
@@ -123,7 +160,14 @@ Shape shapeOf( int j )
     return sh;
 }
 
-/// Distance on the wall from point w (y, z) to the shape (for the drawn line).
+/**  Distance on the wall from point w (y, z) to the shape (for the drawn line).
+ *
+ * @param sh  The shape. (in)
+ * @param w   The point on the wall (y, z). (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float wallDist( Shape sh, vec2 w )
 {
     vec2  d = w - sh.c;
@@ -134,8 +178,19 @@ float wallDist( Shape sh, vec2 w )
     return max( abs( d.y ), abs( d.x ) - sh.r.x );
 }
 
-/// Hit list of the view ray with the light sheet of projector P drawing sh.
-/// Returns up to two (t, brightness) pairs packed as vec4.
+/**  Hit list of the view ray with the light sheet of projector P drawing sh.
+ *
+ * @param ro     Ray origin. (in)
+ * @param rd     Ray direction. (in)
+ * @param P      Position of the projector. (in)
+ * @param sh     The shape it draws. (in)
+ * @param tWall  Distance to the wall. (in)
+ *
+ * @return
+ *   Up to two (t, brightness) pairs.
+ *
+ * Returns up to two (t, brightness) pairs packed as vec4.
+ **/
 vec4 sheetHits( vec3 ro, vec3 rd, vec3 P, Shape sh, float tWall )
 {
     float a = Xw - P.x;
@@ -197,7 +252,7 @@ vec4 sheetHits( vec3 ro, vec3 rd, vec3 P, Shape sh, float tWall )
     return res;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

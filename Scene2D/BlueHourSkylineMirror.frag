@@ -41,13 +41,25 @@ uniform float audioChromaHue;    ///< Hue of the dominant pitch class (radians, 
 uniform float towersP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,19 +69,37 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -80,8 +110,18 @@ float noise2( vec2 p )
 
 float g_dens = 0.5;
 
-/// The city at screen point q (above the waterline).  Returns colour, and
-/// in `mask` whether a building covers the point.
+/**  The city at screen point q (above the waterline).
+ *
+ * @param q        The screen point. (in)
+ * @param horizon  Height of the waterline. (in)
+ * @param T        Time of the windows. (in)
+ * @param mask     Receives 1 where a building covers the point. (out)
+ *
+ * @return
+ *   The city's colour (RGB).
+ *
+ * Returns colour, and in `mask` whether a building covers the point.
+ **/
 vec3 city( vec2 q, float horizon, float T, out float mask )
 {
     vec3 c = vec3( 0.0 );
@@ -132,6 +172,15 @@ vec3 city( vec2 q, float horizon, float T, out float mask )
     return c;
 }
 
+/**  The blue-hour sky: orange glow at the horizon, deep blue above.
+ *
+ * @param q        The screen point. (in)
+ * @param horizon  Height of the horizon. (in)
+ * @param swell    The music's swell, 0..1. (in)
+ *
+ * @return
+ *   The sky colour (RGB).
+ **/
 vec3 sky( vec2 q, float horizon, float swell )
 {
     float e = q.y - horizon;
@@ -141,7 +190,7 @@ vec3 sky( vec2 q, float horizon, float swell )
     return s;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

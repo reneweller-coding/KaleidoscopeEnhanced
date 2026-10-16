@@ -121,7 +121,7 @@ class _DocFile:
         sys.path.insert(0, os.path.join(ROOT, "Tools"))
         import doc_shaders
         import cgvr_glsl_names
-        text = cgvr_glsl_names.layout_and_names(doc_shaders.annotate(text), self.path)
+        text = cgvr_glsl_names.layout_and_names(doc_shaders.annotate(text, self.path), self.path)
         io.open(self.path, "w", encoding="utf-8", newline="\n").write(text)
 
 

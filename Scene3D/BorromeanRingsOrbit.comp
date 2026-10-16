@@ -31,6 +31,20 @@ uniform float sizeP; ///< Size knob, 0..1.
 uniform float thickP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/**  Appends a quad with a normal per corner (two triangles) to the output buffer.
+ *
+ * @param p0    First corner (the corners run around the quad). (in)
+ * @param p1    Second corner. (in)
+ * @param p2    Third corner. (in)
+ * @param p3    Fourth corner. (in)
+ * @param n0    Normal at p0. (in)
+ * @param n1    Normal at p1. (in)
+ * @param n2    Normal at p2. (in)
+ * @param n3    Normal at p3. (in)
+ * @param id    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param aux   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitQuadN( vec3 p0, vec3 p1, vec3 p2, vec3 p3, vec3 n0, vec3 n1, vec3 n2, vec3 n3, float id, float aux,
                 float kind )
 {
@@ -53,7 +67,7 @@ void emitQuadN( vec3 p0, vec3 p1, vec3 p2, vec3 p3, vec3 n0, vec3 n1, vec3 n2, v
     }
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

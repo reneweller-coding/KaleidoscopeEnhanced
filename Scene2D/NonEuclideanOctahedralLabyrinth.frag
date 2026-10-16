@@ -34,17 +34,28 @@ uniform float foldP;  ///< Fold knob, 0..1.
 uniform float scaleP; ///< Scale knob.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -54,7 +65,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -62,7 +80,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// 3D Octahedral Coxeter fold
+/**  3D Octahedral Coxeter fold
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The folded point.
+ **/
 vec3 foldOctahedron( vec3 p )
 {
     p = abs( p );
@@ -75,11 +99,18 @@ vec3 foldOctahedron( vec3 p )
     return p;
 }
 
-/// USER-FEEDBACK-REDESIGN: an actual mirror labyrinth.  The old loop was a
-/// pseudo-march that mostly stalled near the camera (one big smooth surface).
-/// Now: hollow octahedral chambers repeated through space, sphere-traced from
-/// inside — photo-textured walls, glowing edge lines exactly on the mirror
-/// seams, headlamp falloff into the deeper chambers.
+/**  USER-FEEDBACK-REDESIGN: an actual mirror labyrinth.
+ *
+ * @param q     The point. (in)
+ * @param size  Size of the chamber. (in)
+ *
+ * @return
+ *   The distance (positive inside the room).
+ *
+ * The old loop was a pseudo-march that mostly stalled near the camera (one big smooth surface). Now: hollow octahedral
+ * chambers repeated through space, sphere-traced from inside — photo-textured walls, glowing edge lines exactly on the
+ * mirror seams, headlamp falloff into the deeper chambers.
+ **/
 float chamber( vec3 q, float size )
 {
     q = mod( q + 2.0, 4.0 ) - 2.0; // infinite chamber lattice
@@ -87,7 +118,7 @@ float chamber( vec3 q, float size )
     return -( ( a.x + a.y + a.z - size ) * 0.57735 ); // hollow: inside the room
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float scl = ( scaleP > 0.0 ) ? scaleP : 1.0;

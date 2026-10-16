@@ -50,21 +50,40 @@ uniform float audioRotPhase;
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// Pitch class i -> point on the Clifford torus in S³:
-/// alpha runs the circle of fifths (i·7 mod 12), beta the chromatic circle.
+/**  Pitch class i -> point on the Clifford torus in S³: alpha runs the circle of fifths (i·7 mod 12), beta the
+ * chromatic circle.
+ *
+ * @param i  Pitch class, 0..11. (in)
+ *
+ * @return
+ *   The point on S³.
+ **/
 vec4 nodePos4( float i )
 {
     float a = mod( i * 7.0, 12.0 ) / 12.0 * 6.2831853;
@@ -72,7 +91,13 @@ vec4 nodePos4( float i )
     return vec4( cos( a ), sin( a ), cos( b ), sin( b ) ) * 0.70710678;
 }
 
-/// 4D double rotation + slow isoclinic wobble, then stereographic projection.
+/**  4D double rotation + slow isoclinic wobble, then stereographic projection.
+ *
+ * @param q  The point in 4D. (in)
+ *
+ * @return
+ *   The projected point.
+ **/
 vec3 project4( vec4 q )
 {
     float a1 = time * 0.11 + audioRotPhase * 0.10 + sceneSeed * 6.2831853;
@@ -84,8 +109,17 @@ vec3 project4( vec4 q )
     return q.xyz * ( 1.55 / ( 1.35 - q.w ) ) * 8.4;
 }
 
-/// SLERP between two (unit) points on S³ — the geodesic edge.
-/// (nodePos4 is unit-norm: 0.7071·|(cos,sin,cos,sin)| = 0.7071·√2 = 1.)
+/**  SLERP between two (unit) points on S³ — the geodesic edge.
+ *
+ * @param a  One point. (in)
+ * @param b  The other. (in)
+ * @param t  Parameter, 0..1. (in)
+ *
+ * @return
+ *   The point on the arc.
+ *
+ * (nodePos4 is unit-norm: 0.7071·|(cos,sin,cos,sin)| = 0.7071·√2 = 1.)
+ **/
 vec4 slerp4( vec4 a, vec4 b, float t )
 {
     float d = clamp( dot( a, b ), -1.0, 1.0 );
@@ -94,7 +128,7 @@ vec4 slerp4( vec4 a, vec4 b, float t )
     return ( a * sin( ( 1.0 - t ) * om ) + b * sin( t * om ) ) / so;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = attrA.w;

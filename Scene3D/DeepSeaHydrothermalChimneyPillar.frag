@@ -40,18 +40,31 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
 
 uniform float specularP; ///< Specular knob, 0..1.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
+/**  Pseudo-random value of a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Pseudo-random value, 0..1.
+ **/
 float h21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 91.73, 47.31 ) ) ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 col;

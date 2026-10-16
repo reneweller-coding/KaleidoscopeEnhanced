@@ -55,7 +55,13 @@ uniform float dustP;   ///< preset: haze density
 
 const int Steps = 28;
 
-/// @brief Depth buffer value to linear distance.
+/**  Depth buffer value to linear distance.
+ *
+ * @param d  Depth buffer value, 0..1. (in)
+ *
+ * @return
+ *   The linear distance.
+ **/
 float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
@@ -63,21 +69,36 @@ float linearise( float d )
     return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
-/// March from uv toward the light and measure how much of the path is OPEN.
-///
-/// The tempting version accumulates the frame's own colour along the ray, the
-/// way a pure radial-blur godray does.  It is wrong here and the reason is worth
-/// stating: the colour at a sample is bright exactly where there is geometry —
-/// lit windows, a glowing surface — while the light only travels where there is
-/// NO geometry.  The two gates then cancel and the shafts vanish.  What travels
-/// along the ray is the sky's light; what the frame contributes is only the
-/// occluders.  So this returns openness, and the caller supplies the colour.
+/**  March from uv toward the light and measure how much of the path is OPEN.
+ *
+ * @param dep      The depth texture. (in)
+ * @param uv       Screen coordinate. (in)
+ * @param lightUV  Screen coordinate of the light. (in)
+ * @param valid    1 where the depth buffer is valid, else 0. (in)
+ *
+ * @return
+ *   The openness, 0..1.
+ *
+ * The tempting version accumulates the frame's own colour along the ray, the
+ * way a pure radial-blur godray does.  It is wrong here and the reason is worth
+ * stating: the colour at a sample is bright exactly where there is geometry —
+ * lit windows, a glowing surface — while the light only travels where there is
+ * NO geometry.  The two gates then cancel and the shafts vanish.  What travels
+ * along the ray is the sky's light; what the frame contributes is only the
+ * occluders.  So this returns openness, and the caller supplies the colour.
+ **/
 float shafts( sampler2D dep, vec2 uv, vec2 lightUV, float valid )
 {
     if ( valid < 0.5 )
@@ -109,7 +130,7 @@ float shafts( sampler2D dep, vec2 uv, vec2 lightUV, float valid )
     return acc / float( Steps );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

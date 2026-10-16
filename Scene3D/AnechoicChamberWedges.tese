@@ -27,12 +27,19 @@ const vec2    Extent = vec2( 24.0, 14.0 );
 
 uniform float wedgeP;
 
+/**  Triangle wave 0..1..0 of period 1.
+ *
+ * @param x  The input. (in)
+ *
+ * @return
+ *   The wave value.
+ **/
 float tri( float x )
 {
     return 1.0 - abs( fract( x ) * 2.0 - 1.0 );
 } // 0..1..0 triangle wave
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

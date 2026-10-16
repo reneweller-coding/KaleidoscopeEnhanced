@@ -39,13 +39,25 @@ uniform float sepP;
 uniform float massP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,14 +67,26 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// Source plane: a star field (round, jittered) plus the photo as a faint
-/// background nebula.
+/**  Source plane: a star field (round, jittered) plus the photo as a faint background nebula.
+ *
+ * @param s    The point in the source plane. (in)
+ * @param hue  Hue of the stars. (in)
+ *
+ * @return
+ *   The source's colour (RGB).
+ **/
 vec3 sourceAt( vec2 s, float hue )
 {
     vec2  su = s * 40.0;
@@ -77,14 +101,24 @@ vec3 sourceAt( vec2 s, float hue )
     return star_col * star * 1.5 + neb;
 }
 
-/// The lens map: image position -> source position, two point masses.
+/**  The lens map: image position -> source position, two point masses.
+ *
+ * @param x   The image position. (in)
+ * @param c1  Position of the first mass. (in)
+ * @param c2  Position of the second. (in)
+ * @param m1  Strength of the first. (in)
+ * @param m2  Strength of the second. (in)
+ *
+ * @return
+ *   The source position.
+ **/
 vec2 lensMap( vec2 x, vec2 c1, vec2 c2, float m1, float m2 )
 {
     vec2 d1 = x - c1, d2 = x - c2;
     return x - m1 * d1 / max( dot( d1, d1 ), 1e-5 ) - m2 * d2 / max( dot( d2, d2 ), 1e-5 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

@@ -4,7 +4,7 @@ out vec4          fragColor; ///< The pixel's colour (output).
 uniform sampler2D texGPos;
 uniform int       plane;
 uniform float     solidP; ///< Solid-texture knob, 0..1.
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec4  g = texelFetch( texGPos, ivec2( gl_FragCoord.xy ), 0 );

@@ -41,12 +41,26 @@ uniform float rosetteP; ///< rosette strength      (0 -> 0.22)
 #define ATTENUATION ( ( ( attenP <= 0.01 ) ? 22.0 : attenP ) * ( 1.0 - 0.15 * audioSwell ) )
 #define EPSILON     0.005
 
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rotm( float a )
 {
     return mat2( cos( a ), -sin( a ), sin( a ), cos( a ) );
 }
 
-/// n-fold kaleidoscopic mirror fold of a centred coordinate.
+/**  n-fold kaleidoscopic mirror fold of a centred coordinate.
+ *
+ * @param p      The coordinate (centred). (in)
+ * @param sides  Number of mirrors. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
@@ -56,7 +70,13 @@ vec2 kaleido( vec2 p, float sides )
     a = abs( a );
     return vec2( cos( a ), sin( a ) ) * r;
 }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -64,8 +84,14 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
-/// palette comes from the image and keeps changing over time + with the harmony.
+/**  Colour from a slowly-drifting crop of the picture, indexed by a scalar so the palette comes from the image and
+ * keeps changing over time + with the harmony.
+ *
+ * @param x  Position along the arc (radians). (in)
+ *
+ * @return
+ *   The photo's colour there (RGB).
+ **/
 vec3 imgPal( float x )
 {
     vec2 cc = vec2( 0.5 )
@@ -73,7 +99,14 @@ vec3 imgPal( float x )
     return img( fract( cc + 0.24 * vec2( cos( x ), sin( x * 1.31 ) ) ) );
 }
 
-/// Hue rotation around the luminance axis (keeps brightness + saturation).
+/**  Hue rotation around the luminance axis (keeps brightness + saturation).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -81,6 +114,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash12( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
@@ -91,11 +131,28 @@ float hash12( vec2 p )
 #define REP( p, r ) ( mod( ( p ) + ( r ) / 2.0, ( r ) ) - ( r ) / 2.0 )
 #define TORUS( p )  ( length( vec2( length( ( p ).xz ) - 0.6, ( p ).y ) ) - 0.06 )
 
+/**  Glow of the torus light at a point, falling off with its distance.
+ *
+ * @param p      The point. (in)
+ * @param color  Colour of the light. (in)
+ *
+ * @return
+ *   The light (RGB).
+ **/
 vec3 getLight( vec3 p, vec3 color )
 {
     return max( vec3( 0.0 ), color / ( 1.0 + pow( abs( TORUS( p ) * ATTENUATION ), 1.3 ) ) - 0.001 );
 }
 
+/**  The repeated torus geometry: updates the nearest distance and its glow.
+ *
+ * @param po  The point. (in)
+ * @param d   The nearest distance so far; updated. (in,out)
+ * @param f   Glow state; updated. (in,out)
+ *
+ * @return
+ *   The point in the torus cell's frame.
+ **/
 vec3 geo( vec3 po, inout float d, inout vec2 f )
 {
     float r = hash12( floor( po.yz / SPACING + vec2( 0.5 ) ) ) - 0.5;
@@ -115,7 +172,13 @@ vec3 geo( vec3 po, inout float d, inout vec2 f )
     return p;
 }
 
-/// @brief The scene's distance field: distance from p to the nearest surface.
+/**  The scene's distance field: distance from p to the nearest surface.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The colour of the nearest surface (rgb) and the distance to it (a).
+ **/
 vec4 map( vec3 p )
 {
     float d = 1e6;
@@ -138,6 +201,13 @@ vec4 map( vec3 p )
     return vec4( col, d );
 }
 
+/**  The camera's position on its orbit at a time.
+ *
+ * @param t  The time. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 getOrigin( float t )
 {
     t = ( t + 35.0 ) * -0.05;
@@ -145,7 +215,7 @@ vec3 getOrigin( float t )
     return vec3( rad * sin( t * 0.97 ), rad * cos( t * 1.11 ), rad * sin( t * 1.27 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( 2.0 * gl_FragCoord.xy - resolution ) / resolution.y;

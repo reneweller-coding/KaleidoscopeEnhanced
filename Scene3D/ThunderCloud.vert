@@ -44,17 +44,28 @@ uniform float audioValence;       ///< Mood valence: 0 dark .. 1 bright.
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -65,22 +76,42 @@ vec3 imgPalette( float t )
 }
 
 
-/// House tint: bend a colour toward the photo palette while keeping its
-/// luminance -- the identity look survives, only the hue follows the photos.
+/**  House tint: bend a colour toward the photo palette while keeping its luminance -- the identity look survives,
+ * only the hue follows the photos.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
     tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
     return mix( c, tp, k );
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// Strike envelope of bolt b: its own slow clock arms it, the flash decays
-/// fast; audio (snare/drop) multiplies whatever is armed RIGHT NOW.
+/**  Strike envelope of bolt b: its own slow clock arms it, the flash decays fast; audio (snare/drop) multiplies
+ * whatever is armed RIGHT NOW.
+ *
+ * @param b  Index of the bolt. (in)
+ *
+ * @return
+ *   The envelope, 0..1.
+ **/
 float boltEnv( float b )
 {
     float cyc = fract( time * ( 0.10 + 0.07 * hash11( b * 3.3 ) )
@@ -91,7 +122,14 @@ float boltEnv( float b )
     return max( exp( -cyc * 14.0 ), leader );
 }
 
-/// Bolt b's jagged column: position at height h (0 top .. 1 ground).
+/**  Bolt b's jagged column: position at height h (0 top .. 1 ground).
+ *
+ * @param b  Index of the bolt. (in)
+ * @param h  Height, 0 top .. 1 ground. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 boltPos( float b, float h )
 {
     vec2  start = vec2( ( hash11( b * 1.9 ) - 0.5 ) * 110.0,
@@ -103,7 +141,7 @@ vec3 boltPos( float b, float h )
     return vec3( start.x + jag.x, 34.0 - h * 58.0, start.y + jag.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;

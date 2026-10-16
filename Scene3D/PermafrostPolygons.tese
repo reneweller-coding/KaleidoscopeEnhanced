@@ -31,13 +31,26 @@ uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float camHP;        ///< Camera height knob, 0..1.
 uniform float cellP;        ///< Cell size knob, 0..1.
 
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     p = vec2( dot( p, vec2( 127.1, 311.7 ) ), dot( p, vec2( 269.5, 183.3 ) ) );
     return fract( sin( p ) * 43758.5453 );
 }
 
+/**  Voronoi cells of a point.
+ *
+ * @param x   The point. (in)
+ * @param d1  Receives the distance to the nearest centre. (out)
+ * @param d2  Receives the distance to the second nearest. (out)
+ * @param id  Receives the nearest cell's id. (out)
+ **/
 void voronoi( vec2 x, out float d1, out float d2, out float id )
 {
     vec2 n = floor( x ), f = fract( x );
@@ -66,6 +79,15 @@ void voronoi( vec2 x, out float d1, out float d2, out float id )
     d2 = sqrt( d2 );
 }
 
+/**  Height of the frost-polygon ground: raised rims, low centres and troughs along the cell edges.
+ *
+ * @param xz      Position (x, z). (in)
+ * @param trough  Receives the trough depth. (out)
+ * @param cell    Receives the cell id. (out)
+ *
+ * @return
+ *   The height.
+ **/
 float surface( vec2 xz, out float trough, out float cell )
 {
     float scale = 0.05 + 0.04 * clamp( cellP, 0.0, 1.0 );
@@ -85,7 +107,7 @@ float surface( vec2 xz, out float trough, out float cell )
     return h + rise;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

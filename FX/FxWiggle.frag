@@ -56,13 +56,25 @@ uniform float wiggleP; ///< preset: how far the line moves
 uniform float holdP;   ///< preset: holds per second (the "on twos" rate)
 uniform float grainP;  ///< preset: paper grain
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash31( vec3 p )
 {
     p = fract( p * 0.1031 );
@@ -70,6 +82,13 @@ float hash31( vec3 p )
     return fract( ( p.x + p.y ) * p.z );
 }
 
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param x  The point. (in)
+ *
+ * @return
+ *   The noise value.
+ **/
 float vnoise3( vec3 x )
 {
     vec3 i = floor( x ), f = fract( x );
@@ -81,7 +100,7 @@ float vnoise3( vec3 x )
                 f.z );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;

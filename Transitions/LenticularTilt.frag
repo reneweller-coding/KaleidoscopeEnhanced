@@ -51,7 +51,7 @@ uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue p
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float pitch = 60.0 + floor( clamp( pitchP, 0.0, 1.0 ) * 90.0 ); // lenticules across

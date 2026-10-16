@@ -42,7 +42,14 @@ uniform float audioDrop;      ///< Drop envelope: high after a detected drop, de
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -50,13 +57,21 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from two values and a seed.
+/**  Pseudo-random number 0..1 from two values and a seed.
+ *
+ * @param a  First value. (in)
+ * @param b  Second value. (in)
+ * @param s  Seed. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hsh( float a, float b, float s )
 {
     return fract( sin( a * 91.73 + b * 47.31 + s ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;

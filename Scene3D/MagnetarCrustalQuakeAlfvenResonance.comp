@@ -60,7 +60,13 @@ const float CamZ = 4.5;
 const float TanY = 0.5206; ///< tan(55 deg / 2), the engine's scene FOV
 const float Aspect = 1.78;
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -69,7 +75,14 @@ float hash11( float p )
     return fract( p );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot  Index of the vertex in the buffer. (in)
+ * @param p     Position. (in)
+ * @param e1    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param e2    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, float e1, float e2, float kind )
 {
     uint o = slot * 8u;
@@ -83,7 +96,15 @@ void writeVertex( uint slot, vec3 p, float e1, float e2, float kind )
     verts[o + 7u] = e2;
 }
 
-/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
+/**  Appends a thick line segment (two triangles) to the output buffer (compute stage).
+ *
+ * @param pA         Start of the segment. (in)
+ * @param pB         End of the segment. (in)
+ * @param e1         Extra value written to every vertex (first slot). (in)
+ * @param e2         Extra value written to every vertex (second slot). (in)
+ * @param thickness  Width of the ribbon. (in)
+ * @param kind       Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness, float kind )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -114,7 +135,15 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness, float k
     writeVertex( base + 5u, b0, e1, e2, kind );
 }
 
-/// Flat billboard with constant e1/e2 (the far-field X-ray specks).
+/**  Flat billboard with constant e1/e2 (the far-field X-ray specks).
+ *
+ * @param c     Centre of the quad. (in)
+ * @param ax    Half the quad's extent along its first axis. (in)
+ * @param ay    Half its extent along the second axis. (in)
+ * @param e1    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param e2    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Element kind written to every vertex. (in)
+ **/
 void emitQuad( vec3 c, vec3 ax, vec3 ay, float e1, float e2, float kind )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -131,8 +160,13 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float e1, float e2, float kind )
     writeVertex( base + 5u, p01, e1, e2, kind );
 }
 
-/// Plasma-haze panel: e1/e2 carry a 0..1 panel u/v so the fragment stage can
-/// paint a gradient across it instead of a flat wash.
+/**  Plasma-haze panel: e1/e2 carry a 0..1 panel u/v so the fragment stage can paint a gradient across it instead of a
+ * flat wash.
+ *
+ * @param c   Centre of the panel. (in)
+ * @param ax  Half the panel's extent along its first axis. (in)
+ * @param ay  Half its extent along the second axis. (in)
+ **/
 void emitHazePanel( vec3 c, vec3 ax, vec3 ay )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -149,15 +183,21 @@ void emitHazePanel( vec3 c, vec3 ax, vec3 ay )
     writeVertex( base + 5u, p01, 0.0, 1.0, 2.0 );
 }
 
-/// Undo the .vert's fixed tilt: a point/direction given in view space (before
-/// the vert's +CamZ push) mapped back to the world value that lands on it.
+/**  Undo the .vert's fixed tilt: a point/direction given in view space (before the vert's +CamZ push) mapped back to
+ * the world value that lands on it.
+ *
+ * @param vp  The point in view space. (in)
+ *
+ * @return
+ *   The world point.
+ **/
 vec3 viewToWorld( vec3 vp )
 {
     float c = cos( Tilt ), s = sin( Tilt );
     return vec3( vp.x, vp.y * c + vp.z * s, -vp.y * s + vp.z * c );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

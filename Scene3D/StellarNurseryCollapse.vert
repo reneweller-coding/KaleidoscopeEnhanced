@@ -24,7 +24,7 @@ out float vTemp;
 out float vSeed; ///< Per-instance random seed (from the vertex stage).
 out float vRadius;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float id = attrA.w;

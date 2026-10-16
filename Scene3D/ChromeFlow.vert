@@ -26,7 +26,7 @@ out vec2  vUV; ///< Texture coordinate 0..1 over the screen (from the vertex sta
 out vec3  vNrm;
 out float vDist; ///< Distance (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x, w = attrA.y;

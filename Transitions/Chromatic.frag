@@ -18,7 +18,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = gl_FragCoord.xy / resolution;

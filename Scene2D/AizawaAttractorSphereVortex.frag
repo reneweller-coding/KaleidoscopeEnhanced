@@ -42,13 +42,25 @@ uniform float vortexP;
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
@@ -58,11 +70,15 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// Overall level of the photo currently bound, from a fixed 5-tap grid. The
-/// celestial base is entirely photo-derived and the library spans near-black
-/// to near-white; a bright photo left the shell and funnel flares no headroom.
-/// The probe rides the tex0/tex1 crossfade so the gain can never pop, and one
-/// number for the whole frame rescales exposure without touching contrast.
+/**  Overall level of the photo currently bound, from a fixed 5-tap grid.
+ *
+ * @return
+ *   The photo's average level, 0..1.
+ *
+ * The celestial base is entirely photo-derived and the library spans near-black to near-white; a bright photo left the
+ * shell and funnel flares no headroom. The probe rides the tex0/tex1 crossfade so the gain can never pop, and one
+ * number for the whole frame rescales exposure without touching contrast.
+ **/
 float photoLevel()
 {
     vec3 s = img( vec2( 0.25, 0.25 ) ) + img( vec2( 0.75, 0.25 ) )
@@ -74,6 +90,13 @@ float photoLevel()
 // Aizawa system parameters: a=0.95, b=0.7, c=0.6, d=3.5, e=0.25, f=0.1
 const float AizA = 0.95, AIZ_B = 0.7, AIZ_C = 0.6, AIZ_D = 3.5, AIZ_E = 0.25, AIZ_F = 0.1;
 
+/**  The Aizawa attractor's velocity at a point.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   dq/dt.
+ **/
 vec3 aizawaDeriv( vec3 q )
 {
     float r2xy = q.x * q.x + q.y * q.y;
@@ -84,7 +107,7 @@ vec3 aizawaDeriv( vec3 q )
             - r2xy * ( 1.0 + AIZ_E * q.z ) + AIZ_F * q.z * ( q.x * q.x * q.x ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );

@@ -45,26 +45,50 @@ uniform float detailP; ///< Detail knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
 // ---- shared building blocks (texture pool, noise, shapes) ----
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * vec3( 0.1031, 0.1030, 0.0973 ) );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.xx + p3.yz ) * p3.zy );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -72,7 +96,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -84,7 +114,13 @@ float fbm( vec2 p )
     }
     return v;
 }
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -97,35 +133,74 @@ float fbm3( vec2 p )
     return v;
 }
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
-/// Mirror-repeat in the shader (the engine's textures mirror, the editor's
-/// repeat -- doing it here makes both identical).  Identity inside [0,1].
+/**  Mirror-repeat in the shader (the engine's textures mirror, the editor's repeat -- doing it here makes both
+ * identical).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ *
+ * Identity inside [0,1].
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// The photo at a mip level: lod 0 is full detail, ~4 a soft field, ~7 broad masses.
+/**  The photo at a mip level: lod 0 is full detail, ~4 a soft field, ~7 broad masses.
+ *
+ * @param uv   Coordinate in the photo (mirror-repeated outside 0..1). (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 imgLod( vec2 uv, float lod )
 {
     uv = mirrorUV( uv );
     return ( interpolation * textureLod( tex0, uv, lod ) + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ) ).rgb;
 }
-/// @brief Luminance of a colour (Rec. 601 weights).
+/**  Luminance of a colour (Rec. 601 weights).
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance.
+ **/
 float luma( vec3 c )
 {
     return dot( c, vec3( 0.299, 0.587, 0.114 ) );
 }
-/// @brief HSV (all 0..1) to RGB.
+/**  HSV (all 0..1) to RGB.
+ *
+ * @param c  Hue, saturation and value, all 0..1. (in)
+ *
+ * @return
+ *   The RGB colour.
+ **/
 vec3 hsv2rgb( vec3 c )
 {
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
-/// @brief Hue of a colour, 0..1.
+/**  Hue of a colour, 0..1.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The hue, 0..1.
+ **/
 float hueOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) ), mn = min( c.r, min( c.g, c.b ) ), d = mx - mn + 1e-5;
@@ -133,14 +208,28 @@ float hueOf( vec3 c )
                                                                 : 4.0 + ( c.r - c.g ) / d;
     return fract( h / 6.0 );
 }
-/// @brief Saturation of a colour, 0..1.
+/**  Saturation of a colour, 0..1.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The saturation, 0..1.
+ **/
 float satOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) );
     return ( mx - min( c.r, min( c.g, c.b ) ) ) / max( mx, 1e-3 );
 }
-/// A glowing colour for a place: the photo's own hue where it has one, a
-/// slowly wandering hue field (anchored on hue0) where the photo is grey.
+/**  A glowing colour for a place: the photo's own hue where it has one, a slowly wandering hue field (anchored on
+ * hue0) where the photo is grey.
+ *
+ * @param photo  The photo's colour at the place. (in)
+ * @param q      The place; drives the wandering hue field. (in)
+ * @param hue0   Anchor hue, 0..1. (in)
+ *
+ * @return
+ *   The glow colour (RGB, bright).
+ **/
 vec3 glowColour( vec3 photo, vec2 q, float hue0 )
 {
     vec3 field = hsv2rgb( vec3( fract( hue0 + 0.55 * fbm3( q * 0.8 ) + 0.03 * audioAdvance ), 0.85, 1.0 ) );
@@ -148,27 +237,55 @@ vec3 glowColour( vec3 photo, vec2 q, float hue0 )
     own = own * own * own;
     return mix( field, own, smoothstep( 0.12, 0.35, satOf( photo ) ) );
 }
-/// Push a colour toward full saturation, keeping its hue (neon from a photo).
+/**  Push a colour toward full saturation, keeping its hue (neon from a photo).
+ *
+ * @param c  The colour. (in)
+ * @param k  Exponent: the higher, the purer (and darker) the neon. (in)
+ *
+ * @return
+ *   The saturated colour.
+ **/
 vec3 neonOf( vec3 c, float k )
 {
     vec3 n = c / max( max( c.r, max( c.g, c.b ) ), 1e-3 );
     return pow( n, vec3( k ) );
 }
-/// The photo along an endless scroll in y without mirror seams: the photo
-/// repeats mirrored, so a scroll crosses a visible fold every unit; two reads
-/// half a period apart are cross-faded so each fold is hidden by the other.
+/**  The photo along an endless scroll in y without mirror seams: the photo repeats mirrored, so a scroll crosses a
+ * visible fold every unit; two reads half a period apart are cross-faded so each fold is hidden by the other.
+ *
+ * @param uv   Coordinate in the photo; y may run on endlessly. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The photo colour (RGB).
+ **/
 vec3 imgScroll( vec2 uv, float lod )
 {
     float w = abs( fract( uv.y ) - 0.5 ) * 2.0; // 1 at the fold, 0 between
     w = smoothstep( 0.55, 1.0, w );
     return mix( imgLod( uv, lod ), imgLod( uv + vec2( 0.37, 0.5 ), lod ), w );
 }
-/// Height from the photo: broad masses plus a share of the detail.
+/**  Height from the photo: broad masses plus a share of the detail.
+ *
+ * @param uv        Coordinate in the photo. (in)
+ * @param lodBroad  Mip level of the broad masses. (in)
+ * @param detail    Share of the detail three mip levels finer, 0..1. (in)
+ *
+ * @return
+ *   The height (luma of the photo), 0..1.
+ **/
 float texHeight( vec2 uv, float lodBroad, float detail )
 {
     return mix( luma( imgLod( uv, lodBroad ) ), luma( imgLod( uv, max( lodBroad - 3.0, 0.0 ) ) ), detail );
 }
-/// Gradient of the photo's luma at a mip level (per UV unit).
+/**  Gradient of the photo's luma at a mip level (per UV unit).
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The luma gradient per UV unit.
+ **/
 vec2 texGrad( vec2 uv, float lod )
 {
     float e = exp2( lod ) / 1024.0;
@@ -176,13 +293,26 @@ vec2 texGrad( vec2 uv, float lod )
                  luma( imgLod( uv + vec2( 0.0, e ), lod ) ) - luma( imgLod( uv - vec2( 0.0, e ), lod ) ) )
            / ( 2.0 * e );
 }
-/// Edge strength of the photo (0..1-ish) at a mip level.
+/**  Edge strength of the photo (0..1-ish) at a mip level.
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The edge strength, about 0..1.
+ **/
 float texEdge( vec2 uv, float lod )
 {
     return length( texGrad( uv, lod ) ) * exp2( lod ) / 1024.0 * 6.0;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -192,31 +322,60 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief Smooth minimum of two distances (blend width k).
+/**  Smooth minimum of two distances (blend width k).
+ *
+ * @param a  One distance. (in)
+ * @param b  The other distance. (in)
+ * @param k  Blend width. (in)
+ *
+ * @return
+ *   The smooth minimum.
+ **/
 float smin( float a, float b, float k )
 {
     float h = clamp( 0.5 + 0.5 * ( b - a ) / k, 0.0, 1.0 );
     return mix( b, a, h ) - k * h * ( 1.0 - h );
 }
-/// @brief Distance from a point to a line segment.
+/**  Distance from a point to a line segment.
+ *
+ * @param p  The point. (in)
+ * @param a  One end of the segment. (in)
+ * @param b  The other end. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float sdSeg( vec2 p, vec2 a, vec2 b )
 {
     vec2  pa = p - a, ba = b - a;
     float h = clamp( dot( pa, ba ) / dot( ba, ba ), 0.0, 1.0 );
     return length( pa - ba * h );
 }
-/// The photo read through a turning kaleidoscope -- the trick of the original
-/// Kaleidoscope/Tunnel scenes: uv is folded into mirrored wedges around a
-/// slowly wandering centre and turned with time and the integrated audio
-/// phase, so the texture itself keeps changing (detailed, continuous, never
-/// repeating).  The fold is continuous at every wedge border and at the atan
-/// cut (sides is a whole number); the explicit mip level avoids seams.
+/**  The photo read through a turning kaleidoscope -- the trick of the original Kaleidoscope/Tunnel scenes: uv is
+ * folded into mirrored wedges around a slowly wandering centre and turned with time and the integrated audio phase,
+ * so the texture itself keeps changing (detailed, continuous, never repeating).
+ *
+ * @param uv     Coordinate in the photo. (in)
+ * @param sides  Number of mirror wedges (whole). (in)
+ *
+ * @return
+ *   The folded coordinate.
+ *
+ * The fold is continuous at every wedge border and at the atan cut (sides is a whole number); the explicit mip level
+ * avoids seams.
+ **/
 vec2 kaleidoUV( vec2 uv, float sides )
 {
     vec2  c = vec2( 0.5 ) + 0.2 * vec2( sin( 0.0107 * sceneTime ), cos( 0.0131 * sceneTime ) );
@@ -227,14 +386,29 @@ vec2 kaleidoUV( vec2 uv, float sides )
     a += 0.03 * sceneTime + 0.25 * audioPhase;
     return c + r * vec2( cos( a ), sin( a ) );
 }
-/// @brief The photo through the scene's kaleidoscope.
+/**  The photo through the scene's kaleidoscope.
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The photo colour through the kaleidoscope (RGB).
+ **/
 vec3 imgK( vec2 uv, float lod )
 {
     return imgLod( kaleidoUV( uv, 6.0 ), lod );
 }
-/// Other channels than RGB: the photo's structure, read through the kaleidoscope.
-/// Gradient / edges / Laplacian are rotation invariant in magnitude, so they
-/// stay seamless across the mirror folds (direction-based colours would not).
+/**  Other channels than RGB: the photo's structure, read through the kaleidoscope.
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The luma gradient per UV unit.
+ *
+ * Gradient / edges / Laplacian are rotation invariant in magnitude, so they stay seamless across the mirror folds
+ * (direction-based colours would not).
+ **/
 vec2 imgKGrad( vec2 uv, float lod )
 {
     float e = exp2( lod ) / 1024.0 + 0.001;
@@ -242,12 +416,26 @@ vec2 imgKGrad( vec2 uv, float lod )
                  luma( imgK( uv + vec2( 0.0, e ), lod ) ) - luma( imgK( uv - vec2( 0.0, e ), lod ) ) )
            / ( 2.0 * e );
 }
-/// @brief Edge strength of the kaleidoscoped photo.
+/**  Edge strength of the kaleidoscoped photo.
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The edge strength.
+ **/
 float imgKEdge( vec2 uv, float lod )
 {
     return length( imgKGrad( uv, lod ) ) * ( exp2( lod ) / 1024.0 + 0.001 ) * 6.0;
 }
-/// @brief Laplacian of the kaleidoscoped photo's luma (ridges and valleys).
+/**  Laplacian of the kaleidoscoped photo's luma (ridges and valleys).
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The Laplacian of the luma (ridges > 0).
+ **/
 float imgKLap( vec2 uv, float lod )
 {
     float e = exp2( lod ) / 1024.0 + 0.001;
@@ -256,15 +444,31 @@ float imgKLap( vec2 uv, float lod )
              + luma( imgK( uv + vec2( 0.0, e ), lod ) ) + luma( imgK( uv - vec2( 0.0, e ), lod ) ) - 4.0 * c )
            * 4.0;
 }
-/// Embossed relief of the kaleidoscoped photo, lit from a direction.
+/**  Embossed relief of the kaleidoscoped photo, lit from a direction.
+ *
+ * @param uv        Coordinate in the photo. (in)
+ * @param lod       Mip level of the photo (0 = full detail). (in)
+ * @param lightDir  Direction of the light in the image plane. (in)
+ *
+ * @return
+ *   The relief shade, 0..1 (0.5 = flat).
+ **/
 float imgKRelief( vec2 uv, float lod, vec2 lightDir )
 {
     vec2 g = imgKGrad( uv, lod ) * ( exp2( lod ) / 1024.0 + 0.001 ) * 8.0;
     return clamp( 0.5 + dot( g, normalize( lightDir ) ), 0.0, 1.0 );
 }
-/// A second continuous transform: the photo wound into a log-polar spiral that
-/// zooms forever (Droste-like).  angle/pi spans one mirror period, so the atan
-/// cut is seamless; the zoom runs on integrated time, never jumps.
+/**  A second continuous transform: the photo wound into a log-polar spiral that zooms forever (Droste-like).
+ *
+ * @param uv    Coordinate in the photo. (in)
+ * @param arms  Spiral arms (even: seamless at the atan cut). (in)
+ * @param zoom  Zoom phase on integrated time. (in)
+ *
+ * @return
+ *   The spiral coordinate (log radius and angle).
+ *
+ * angle/pi spans one mirror period, so the atan cut is seamless; the zoom runs on integrated time, never jumps.
+ **/
 vec2 spiralUV( vec2 uv, float arms, float zoom )
 {
     vec2  d = uv - 0.5;
@@ -274,12 +478,19 @@ vec2 spiralUV( vec2 uv, float arms, float zoom )
     // a/pi jumps by 2, and a/pi*arms/2 by arms (arms must be even).
     return vec2( log( r ) * 0.5 - zoom + a / 3.14159265, a / 3.14159265 * arms * 0.5 );
 }
-/// Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
+/**  Centred coordinates: y in -0.5..0.5, x scaled by the aspect.
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// House finish: loudness brightness and the soft highlight roll-off.
+/**  House finish: loudness brightness and the soft highlight roll-off.
+ *
+ * @param col  The scene's colour; written to fragColor after the finish. (in)
+ **/
 void finish( vec3 col )
 {
     col *= 0.9 + 0.2 * audioLevel;
@@ -290,9 +501,18 @@ void finish( vec3 col )
 
 
 // ---- composable continuous transforms (photo space, centre 0.5) ----
-/// Every stage may be followed by mirrorUV: it is continuous and periodic with
-/// the photo's mirror period 2, so stages whose output jumps by whole periods
-/// (log-polar at the atan cut) stay seamless, in any order and any number.
+/**  Every stage may be followed by mirrorUV: it is continuous and periodic with the photo's mirror period 2, so
+ * stages whose output jumps by whole periods (log-polar at the atan cut) stay seamless, in any order and any
+ * number.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param sides  Number of mirror wedges. (in)
+ * @param rot    Turn of the folded angle (radians). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tKaleido( vec2 uv, vec2 c, float sides, float rot )
 {
     vec2  d = uv - c;
@@ -300,7 +520,17 @@ vec2 tKaleido( vec2 uv, vec2 c, float sides, float rot )
     float a = abs( mod( atan( d.y, d.x ), sec ) - 0.5 * sec ) + rot;
     return c + length( d ) * vec2( cos( a ), sin( a ) );
 }
-/// @brief Log-polar spiral about c (arms, scale; zoom runs it inward): an endless zoom.
+/**  Log-polar spiral about c (arms, scale; zoom runs it inward): an endless zoom.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the spiral. (in)
+ * @param arms   Spiral arms (even: seamless when mirrored). (in)
+ * @param scale  Scale of the log radius. (in)
+ * @param zoom   Zoom phase; running it moves inward. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tSpiral( vec2 uv, vec2 c, float arms, float scale, float zoom )
 {
     vec2  d = uv - c;
@@ -308,38 +538,89 @@ vec2 tSpiral( vec2 uv, vec2 c, float arms, float scale, float zoom )
     // both outputs jump by even integers at the cut (arms even) -> seamless after mirrorUV
     return vec2( log( max( length( d ), 1e-5 ) ) * scale - zoom + a / 3.14159265, a / 3.14159265 * arms * 0.5 );
 }
-/// @brief Moebius map streaming the plane from pole pa to pole pb.
+/**  Moebius map streaming the plane from pole pa to pole pb.
+ *
+ * @param uv     The coordinate. (in)
+ * @param pa     The pole the picture streams out of. (in)
+ * @param pb     The pole it streams into. (in)
+ * @param scale  Scale of the result. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tMobius( vec2 uv, vec2 pa, vec2 pb, float scale )
 {
     vec2 z1 = uv - pa, z2 = uv - pb;
     vec2 w = vec2( z1.x * z2.x + z1.y * z2.y, z1.y * z2.x - z1.x * z2.y ) / max( dot( z2, z2 ), 1e-6 );
     return 0.5 + w * scale;
 }
-/// @brief The coordinate squared in the complex plane about c (every angle doubled).
+/**  The coordinate squared in the complex plane about c (every angle doubled).
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  Scale of the coordinate before squaring. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tSquare( vec2 uv, vec2 c, float scale )
 {
     vec2 z = ( uv - c ) * scale;
     return c + vec2( z.x * z.x - z.y * z.y, 2.0 * z.x * z.y );
 }
-/// @brief Circle inversion about c with radius R.
+/**  Circle inversion about c with radius R.
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param R   Radius of the inversion circle. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tInvert( vec2 uv, vec2 c, float R )
 {
     vec2 d = uv - c;
     return c + d * R * R / max( dot( d, d ), 1e-5 );
 }
-/// @brief Twirl about c: rotation that fades out with the radius.
+/**  Twirl about c: rotation that fades out with the radius.
+ *
+ * @param uv      The coordinate. (in)
+ * @param c       Centre of the transform. (in)
+ * @param amount  Rotation at the centre (radians). (in)
+ * @param radius  Radius over which the twirl fades out. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tTwirl( vec2 uv, vec2 c, float amount, float radius )
 {
     vec2  d = uv - c;
     float a = amount * exp( -dot( d, d ) / ( radius * radius ) );
     return c + rot2( a ) * d;
 }
-/// @brief Flowing domain warp by noise (strength, time).
+/**  Flowing domain warp by noise (strength, time).
+ *
+ * @param uv        The coordinate. (in)
+ * @param strength  Strength of the warp. (in)
+ * @param t         Flow phase. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tWarp( vec2 uv, float strength, float t )
 {
     return uv + strength * ( vec2( fbm3( uv * 3.0 + vec2( t, 0.0 ) ), fbm3( uv * 3.0 + vec2( 5.2, -t ) ) ) - 0.5 );
 }
-/// @brief Iterated fractal fold (angle, scale, iterations).
+/**  Iterated fractal fold (angle, scale, iterations).
+ *
+ * @param uv     The coordinate. (in)
+ * @param ang    Turn of each fold (radians). (in)
+ * @param scale  Scale of each fold. (in)
+ * @param iters  Number of folds, up to 4. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tFold( vec2 uv, float ang, float scale, float iters )
 {
     vec2 q = uv - 0.5;
@@ -353,30 +634,69 @@ vec2 tFold( vec2 uv, float ang, float scale, float iters )
     }
     return q + 0.5;
 }
-/// @brief Square mirror lattice (wallpaper group p4m) with the given cells.
+/**  Square mirror lattice (wallpaper group p4m) with the given cells.
+ *
+ * @param uv     The coordinate. (in)
+ * @param cells  Cells per unit. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tP4m( vec2 uv, float cells )
 {
     vec2 f = abs( fract( uv * cells * 0.5 ) * 2.0 - 1.0 );
     return f.y > f.x ? f.yx : f;
 }
-/// @brief Rotation of the coordinate about c by a.
+/**  Rotation of the coordinate about c by a.
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param a   Angle in radians. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tRot( vec2 uv, vec2 c, float a )
 {
     return c + rot2( a ) * ( uv - c );
 }
-/// The classic tunnel: angle around, 1/r along (both jump by whole periods at the cut).
+/**  The classic tunnel: angle around, 1/r along (both jump by whole periods at the cut).
+ *
+ * @param uv      The coordinate. (in)
+ * @param c       Centre of the transform. (in)
+ * @param depth   Depth scale: the 1/r of the tunnel. (in)
+ * @param travel  Flight phase along the tunnel. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tTunnel( vec2 uv, vec2 c, float depth, float travel )
 {
     vec2 d = uv - c;
     return vec2( atan( d.y, d.x ) / 3.14159265, depth / max( length( d ), 1e-3 ) + travel );
 }
-/// Plain polar unwrap: angle across, radius along.
+/**  Plain polar unwrap: angle across, radius along.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  Scale of the radius. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tPolar( vec2 uv, vec2 c, float scale )
 {
     vec2 d = uv - c;
     return vec2( atan( d.y, d.x ) / 3.14159265, length( d ) * scale );
 }
-/// Six-fold mirror tiling (p6m) of the plane, cell size 1/cells.
+/**  Six-fold mirror tiling (p6m) of the plane, cell size 1/cells.
+ *
+ * @param uv     The coordinate. (in)
+ * @param cells  Cells per unit (cell size 1/cells). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tHex( vec2 uv, float cells )
 {
     vec2       q = ( uv - 0.5 ) * cells;
@@ -388,31 +708,75 @@ vec2 tHex( vec2 uv, float cells )
     an = abs( mod( an, sec ) - 0.5 * sec );
     return 0.5 + length( h ) * vec2( cos( an ), sin( an ) ) / cells * 2.0;
 }
-/// Complex exponential and sine: entire functions, smooth everywhere.
+/**  Complex exponential and sine: entire functions, smooth everywhere.
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param k   Scale of the coordinate before the exponential. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tExp( vec2 uv, vec2 c, float k )
 {
     vec2 z = ( uv - c ) * k;
     return c + exp( z.x ) * vec2( cos( z.y ), sin( z.y ) ) * 0.3;
 }
-/// @brief Complex sine of the coordinate about c (a periodic lattice of the photo).
+/**  Complex sine of the coordinate about c (a periodic lattice of the photo).
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param k   Scale of the coordinate before the sine. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tSin( vec2 uv, vec2 c, float k )
 {
     vec2 z = ( uv - c ) * k;
     return c + vec2( sin( z.x ) * cosh( z.y ), cos( z.x ) * sinh( z.y ) ) * 0.3;
 }
-/// Radial ripple and a sinusoidal shear wave.
+/**  Radial ripple and a sinusoidal shear wave.
+ *
+ * @param uv    The coordinate. (in)
+ * @param c     Centre of the ripples. (in)
+ * @param freq  Ripple frequency. (in)
+ * @param amp   Amplitude. (in)
+ * @param t     Phase. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tRipple( vec2 uv, vec2 c, float freq, float amp, float t )
 {
     vec2  d = uv - c;
     float r = length( d );
     return uv + d / max( r, 1e-4 ) * amp * sin( r * freq - t );
 }
-/// @brief Sine wave displacement (frequency, amplitude, time).
+/**  Sine wave displacement (frequency, amplitude, time).
+ *
+ * @param uv    The coordinate. (in)
+ * @param freq  Wave frequency. (in)
+ * @param amp   Amplitude. (in)
+ * @param t     Phase. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tWave( vec2 uv, float freq, float amp, float t )
 {
     return uv + amp * vec2( sin( uv.y * freq + t ), sin( uv.x * freq * 1.3 - t * 0.8 ) );
 }
-/// Lens: bulge (k > 0) or pinch (k < 0) inside radius R.
+/**  Lens: bulge (k > 0) or pinch (k < 0) inside radius R.
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param R   Radius of the lens. (in)
+ * @param k   Bulge (k > 0) or pinch (k < 0). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tLens( vec2 uv, vec2 c, float R, float k )
 {
     vec2  d = uv - c;
@@ -420,9 +784,17 @@ vec2 tLens( vec2 uv, vec2 c, float R, float k )
     float f = r < 1.0 ? pow( max( r, 1e-4 ), k ) / max( r, 1e-4 ) : 1.0;
     return c + d * mix( 1.0, f, smoothstep( 1.0, 0.6, r ) );
 }
-/// Droste zoom without a spiral: the radius is folded in log scale (a
-/// triangle wave in log r), so the picture repeats inward at every scale,
-/// mirrored at each repeat; the zoom runs on integrated time.
+/**  Droste zoom without a spiral: the radius is folded in log scale (a triangle wave in log r), so the picture
+ * repeats inward at every scale, mirrored at each repeat; the zoom runs on integrated time.
+ *
+ * @param uv    The coordinate. (in)
+ * @param c     Centre of the transform. (in)
+ * @param K     Scale ratio between two repeats. (in)
+ * @param zoom  Zoom phase; running it moves inward. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tDroste( vec2 uv, vec2 c, float K, float zoom )
 {
     vec2  d = uv - c;
@@ -431,7 +803,15 @@ vec2 tDroste( vec2 uv, vec2 c, float K, float zoom )
     float tri = abs( fract( u * 0.5 ) * 2.0 - 1.0 ); // 0..1 triangle wave
     return c + d / r * exp( tri * log( K ) ) * 0.15;
 }
-/// A single mirror line through c at angle a (the half-plane reflected).
+/**  A single mirror line through c at angle a (the half-plane reflected).
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   A point of the mirror line. (in)
+ * @param a   Angle of the mirror line (radians). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tMirrorLine( vec2 uv, vec2 c, float a )
 {
     vec2  n = vec2( cos( a ), sin( a ) );
@@ -439,12 +819,23 @@ vec2 tMirrorLine( vec2 uv, vec2 c, float a )
     return uv - n * ( s - abs( s ) );
 }
 
-/// Hyperbolic {p,q} tiling of the Poincare disk, built only from mirrors (the
-/// p-fold kaleidoscope and the inversion in a circle orthogonal to the rim), so
-/// the map is continuous; the outside of the disk is folded in by the inversion
-/// in the rim.  `move` is a point inside the disk: the disk automorphism
-/// z -> (z - a) / (1 - conj(a) z) carries the tiling along it (a flight
-/// through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
+/**  Poincare-disc transform about c (zoom, move: hyperbolic drift).
+ *
+ * @param uv    The coordinate. (in)
+ * @param c     Centre of the disc. (in)
+ * @param p     Sides of each polygon of the {p,q} tiling. (in)
+ * @param q     Polygons meeting at each vertex. (in)
+ * @param zoom  Scale of the disc. (in)
+ * @param move  Hyperbolic drift: a point inside the unit disc. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ *
+ * Hyperbolic {p,q} tiling of the Poincare disk, built only from mirrors (the p-fold kaleidoscope and the inversion in a
+ * circle orthogonal to the rim), so the map is continuous; the outside of the disk is folded in by the inversion in the
+ * rim.  `move` is a point inside the disk: the disk automorphism z -> (z - a) / (1 - conj(a) z) carries the tiling
+ * along it (a flight through the hyperbolic plane).  Needs 1/p + 1/q < 1/2.
+ **/
 vec2 tPoincare( vec2 uv, vec2 c, float p, float q, float zoom, vec2 move )
 {
     vec2  z = ( uv - c ) * zoom;
@@ -469,10 +860,20 @@ vec2 tPoincare( vec2 uv, vec2 c, float p, float q, float zoom, vec2 move )
     }
     return c + z * 0.9;
 }
-/// Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the
-/// foci subtend) across, tau (log ratio of the distances) along -- the picture
-/// streams out of one focus into the other.  sigma/pi jumps by 2 on the segment
-/// between the foci, so `bands` must be whole.
+/**  Bipolar coordinates around two foci at c -/+ (f, 0): sigma (the angle the foci subtend) across, tau (log ratio of
+ * the distances) along -- the picture streams out of one focus into the other.
+ *
+ * @param uv      The coordinate. (in)
+ * @param c       Midpoint between the foci. (in)
+ * @param f       Half the distance of the foci. (in)
+ * @param bands   Bands across (whole number). (in)
+ * @param travel  Flow phase along the bands. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ *
+ * sigma/pi jumps by 2 on the segment between the foci, so `bands` must be whole.
+ **/
 vec2 tBipolar( vec2 uv, vec2 c, float f, float bands, float travel )
 {
     vec2  z = uv - c;
@@ -481,7 +882,16 @@ vec2 tBipolar( vec2 uv, vec2 c, float f, float bands, float travel )
     float tau = 0.5 * log( max( dot( a, a ), 1e-8 ) / max( dot( b, b ), 1e-8 ) );
     return vec2( sigma / 3.14159265 * bands, tau * 0.35 - travel );
 }
-/// Joukowski map w = z + R^2 / z (the airfoil map): circles become wings.
+/**  Joukowski map w = z + R^2 / z (the airfoil map): circles become wings.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param R      Radius of the circle that becomes the wing. (in)
+ * @param scale  Scale of the coordinate. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
 {
     vec2 z = ( uv - c ) * scale;
@@ -490,8 +900,16 @@ vec2 tJoukowski( vec2 uv, vec2 c, float R, float scale )
 }
 
 vec2 chain( vec2 p );
-/// The chain's photo read with a seam-proof footprint (per axis the smaller of
-/// the two one-sided differences) and the screen-space luma gradient.
+/**  The chain's photo read with a seam-proof footprint (per axis the smaller of the two one-sided differences) and
+ * the screen-space luma gradient.
+ *
+ * @param p     The pixel's centred coordinate. (in)
+ * @param bias  Bias added to the footprint's mip level. (in)
+ * @param grad  Receives the luma gradient of the photo there. (out)
+ *
+ * @return
+ *   The photo colour through the chain (RGB).
+ **/
 vec3 imgChain( vec2 p, float bias, out vec2 grad )
 {
     float h = 1.5 / resolution.y;
@@ -510,7 +928,13 @@ vec3 imgChain( vec2 p, float bias, out vec2 grad )
 }
 
 float gT, gSpread;
-/// @brief The scene's chain of transforms: a coordinate in, the transformed coordinate out.
+/**  The scene's chain of transforms: a coordinate in, the transformed coordinate out.
+ *
+ * @param p  The coordinate. (in)
+ *
+ * @return
+ *   The coordinate after the chain.
+ **/
 vec2 chain( vec2 p )
 {
     vec2 uv = p * 0.5 + 0.5;
@@ -522,7 +946,7 @@ vec2 chain( vec2 p )
     return uv;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = screenP();

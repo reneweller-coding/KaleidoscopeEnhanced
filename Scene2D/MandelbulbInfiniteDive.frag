@@ -42,13 +42,25 @@ uniform float detailP; ///< Detail knob, 0..1.
 uniform float glowP;   ///< Glow / afterglow knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853 + hueP;
@@ -58,7 +70,15 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// 3D Mandelbulb distance estimator with dynamic power N
+/**  3D Mandelbulb distance estimator with dynamic power N
+ *
+ * @param p      The point. (in)
+ * @param power  Power of the bulb. (in)
+ * @param trap   Receives the orbit trap. (out)
+ *
+ * @return
+ *   The distance estimate.
+ **/
 float mapMandelbulb( vec3 p, float power, out float trap )
 {
     vec3  w = p;
@@ -92,7 +112,7 @@ float mapMandelbulb( vec3 p, float power, out float trap )
     return 0.5 * log( r ) * r / dr;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution.xy ) / min( resolution.x, resolution.y );

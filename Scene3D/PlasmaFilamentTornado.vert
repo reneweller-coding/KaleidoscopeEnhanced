@@ -31,7 +31,7 @@ uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unw
 out vec4 vColor;
 out vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  pos = attrA.xyz;

@@ -15,6 +15,13 @@ uniform vec2      resolution; ///< TARGET (bloom buffer) resolution
 uniform vec2      dir;        ///< blur direction in target pixels
 uniform float     threshold;  ///< >0 -> bright-pass extract (first pass only)
 
+/**  The bright part of the frame at a coordinate (above the threshold).
+ *
+ * @param uv  The coordinate. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 tap( vec2 uv )
 {
     vec3 c = texture( tex, uv ).rgb;
@@ -23,7 +30,7 @@ vec3 tap( vec2 uv )
     return c;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

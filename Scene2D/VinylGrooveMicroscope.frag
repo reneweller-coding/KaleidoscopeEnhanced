@@ -42,13 +42,25 @@ uniform float pitchP; ///< Pitch knob, 0..1.
 uniform float dustP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,15 +70,27 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// The wall modulation at groove position s (scroll coordinate): the
-/// waveform sampled by position, so the shape is fixed in the vinyl and
-/// scrolls past, plus a slow bass-widened swell.
+/**  The wall modulation at groove position s (scroll coordinate): the waveform sampled by position, so the shape is
+ * fixed in the vinyl and scrolls past, plus a slow bass-widened swell.
+ *
+ * @param s      Position along the groove. (in)
+ * @param depth  Depth of the modulation. (in)
+ *
+ * @return
+ *   The wall's offset.
+ **/
 float wall( float s, float depth )
 {
     float f = fract( s * 0.02 ) * 63.0;
@@ -76,7 +100,7 @@ float wall( float s, float depth )
     return w * depth;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

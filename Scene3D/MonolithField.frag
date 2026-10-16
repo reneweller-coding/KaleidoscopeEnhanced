@@ -28,7 +28,7 @@ in float vFlat;
  * coupling alone barely moved any pixels.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float pulse = 0.85 + 0.30 * audioLevel + 0.35 * audioKick;

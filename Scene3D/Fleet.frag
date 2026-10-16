@@ -42,7 +42,14 @@ in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 in float vRank;
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     const vec3 k = vec3( 0.57735 );
@@ -50,13 +57,25 @@ vec3 hueRot( vec3 c, float a )
     return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 12.9898 ) * 43758.5453 );
 }
 
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -69,7 +88,13 @@ float noise3( vec3 p )
                 f.z );
 }
 
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec3 p )
 {
     // Rotated octaves, same reason as FortressStation: without the
@@ -89,7 +114,14 @@ float fbm3( vec3 p )
     return v;
 }
 
-/// @brief Star field brightness for a direction.
+/**  Star field brightness for a direction.
+ *
+ * @param dir      The view direction. (in)
+ * @param density  Share of grid cells with a star, 0..1. (in)
+ *
+ * @return
+ *   The star brightness, 0..1.
+ **/
 float starsField( vec3 dir, float density )
 {
     // Jittered point stars, NOT lattice cells. The old version lit the
@@ -110,7 +142,13 @@ float starsField( vec3 dir, float density )
     return smoothstep( 0.30, 0.05, d ) * ( 0.35 + 0.65 * hash11( h * 31.7 ) );
 }
 
-/// @brief Exposure that brings the material's average brightness to a common level.
+/**  Exposure that brings the material's average brightness to a common level.
+ *
+ * @param tex  The material texture array (layer 0 is the albedo). (in)
+ *
+ * @return
+ *   The exposure factor, 0.3..2.
+ **/
 float materialExposure( sampler2DArray tex )
 {
     vec3  avg = textureLod( tex, vec3( 0.5, 0.5, 0.0 ), 20.0 ).rgb;
@@ -118,8 +156,17 @@ float materialExposure( sampler2DArray tex )
     return clamp( 0.20 / max( l, 0.02 ), 0.30, 2.0 );
 }
 
-/// Deep sky with a distant front. The formation has to be flying somewhere, and
-/// a plain black field gives the eye nothing to measure the motion against.
+/**  Deep sky with a distant front.
+ *
+ * @param dir   The view direction. (in)
+ * @param tint  Tint of the light. (in)
+ *
+ * @return
+ *   The sky colour (RGB).
+ *
+ * The formation has to be flying somewhere, and a plain black field gives the eye nothing to measure the motion
+ * against.
+ **/
 vec3 renderSky( vec3 dir, vec3 tint )
 {
     // Two nebula layers at different scales and a faint complementary
@@ -138,15 +185,23 @@ vec3 renderSky( vec3 dir, vec3 tint )
 }
 
 // ---- normal mapping ------------------------------------------------------
-/// Layer 2 of the material array is a tangent-space normal map, present on the
-/// assets whose generator run produced a usable one (about a fifth of them).
-///
-/// There are no tangents in the vertex format -- it is a fixed 8 floats shared
-/// by every geom kind -- so the frame is rebuilt per fragment from screen-space
-/// derivatives of position and UV. That is the standard cotangent-frame trick,
-/// and it costs nothing in the vertex stage and no change to the buffer layout.
-/// A model WITHOUT a normal map has materialLayers < 3 and this returns the
-/// interpolated normal untouched, so every scene works either way.
+/**  Layer 2 of the material array is a tangent-space normal map, present on the assets whose generator run produced a
+ * usable one (about a fifth of them).
+ *
+ * @param N   The surface normal. (in)
+ * @param p   The position (world). (in)
+ * @param uv  The texture coordinate. (in)
+ *
+ * @return
+ *   The tangent frame (tangent, bitangent, normal) as the columns of a matrix.
+ *
+ * There are no tangents in the vertex format -- it is a fixed 8 floats shared
+ * by every geom kind -- so the frame is rebuilt per fragment from screen-space
+ * derivatives of position and UV. That is the standard cotangent-frame trick,
+ * and it costs nothing in the vertex stage and no change to the buffer layout.
+ * A model WITHOUT a normal map has materialLayers < 3 and this returns the
+ * interpolated normal untouched, so every scene works either way.
+ **/
 mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
 {
     vec3  dp1 = dFdx( p ), dp2 = dFdy( p );
@@ -159,7 +214,18 @@ mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
     return mat3( T * inv, B * inv, N );
 }
 
-/// @brief The normal tilted by the material's normal map.
+/**  The normal tilted by the material's normal map.
+ *
+ * @param tex       The material texture array. (in)
+ * @param layers    Its layer count (the normal map is layer 2). (in)
+ * @param uv        Material texture coordinate. (in)
+ * @param n         The surface normal. (in)
+ * @param wpos      World position (for the tangent frame). (in)
+ * @param strength  Strength of the normal map. (in)
+ *
+ * @return
+ *   The tilted normal (unit length); n itself without a normal map.
+ **/
 vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength )
 {
     if ( layers < 3 )
@@ -173,7 +239,7 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hue = ( hueP > 0.01 ? hueP : 0.0 );

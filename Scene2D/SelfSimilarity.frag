@@ -43,34 +43,66 @@ uniform float zoomP;  ///< matrix zoom (0 -> 1.0; 0.7..1.6)
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
              + ( 1.0 - interpolation ) * texture( tex1, uv ) )
         .rgb;
 }
-/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
+/**  A colour of the photo along a slowly wandering arc (palette lookup).
+ *
+ * @param x  Position along the arc (radians). (in)
+ *
+ * @return
+ *   The photo's colour there (RGB).
+ **/
 vec3 imgPal( float x )
 {
     vec2 cc = vec2( 0.5 )
               + 0.30 * vec2( cos( time * 0.041 + audioPhase * 0.10 ), sin( time * 0.029 + audioPhase * 0.08 ) );
     return img( fract( cc + 0.22 * vec2( cos( x ), sin( x * 1.37 ) ) ) );
 }
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Kaleidoscope fold of the coordinate with the given mirrors.
+/**  Kaleidoscope fold of the coordinate with the given mirrors.
+ *
+ * @param p      The coordinate (centred). (in)
+ * @param sides  Number of mirrors. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
@@ -81,15 +113,21 @@ vec2 kaleido( vec2 p, float sides )
     return vec2( cos( a ), sin( a ) ) * r;
 }
 
-/// Sample the matrix in HISTORY coordinates: h = 0 is the oldest stored
-/// moment, h = 1 is now.  The ring texture repeats, so head-unwrapping is a
-/// simple add (wrap mode GL_REPEAT does the mod).
+/**  Sample the matrix in HISTORY coordinates: h = 0 is the oldest stored moment, h = 1 is now.
+ *
+ * @param h  History coordinates (0 oldest .. 1 now on both axes). (in)
+ *
+ * @return
+ *   Their similarity, 0..1.
+ *
+ * The ring texture repeats, so head-unwrapping is a simple add (wrap mode GL_REPEAT does the mod).
+ **/
 float ssm( vec2 h )
 {
     return texture( texSSM, h + vec2( ssmHead ) ).r;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;

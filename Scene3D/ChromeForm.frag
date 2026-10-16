@@ -45,7 +45,14 @@ in vec3  vNormal; ///< Surface normal (from the vertex stage).
 in vec3  vPos;    ///< Position (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     const vec3 k = vec3( 0.57735 );
@@ -53,13 +60,25 @@ vec3 hueRot( vec3 c, float a )
     return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 12.9898 ) * 43758.5453 );
 }
 
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -69,16 +88,31 @@ float noise2( vec2 p )
                 mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y );
 }
 
+/**  The two photographs the rest of the catalogue is drawing from, cross-faded exactly as every 2D scene sees them.
+ *
+ * @param uv  Coordinate in the photo (clamped). (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 photo( vec2 uv )
 {
     uv = clamp( uv, 0.0, 1.0 );
     return mix( texture( tex1, uv ).rgb, texture( tex0, uv ).rgb, 1.0 - interpolation );
 }
 
-/// THE room. Called for both the sky shell and the reflection, so what the
-/// object mirrors is provably the background the viewer can see -- if these
-/// were two different functions the metal would reflect a place that is not
-/// there, which is exactly what makes cheap chrome look wrong.
+/**  THE room.
+ *
+ * @param dir   The direction. (in)
+ * @param tint  Tint of the room. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ *
+ * Called for both the sky shell and the reflection, so what the object mirrors is provably the background the viewer
+ * can see -- if these were two different functions the metal would reflect a place that is not there, which is exactly
+ * what makes cheap chrome look wrong.
+ **/
 vec3 environment( vec3 dir, vec3 tint )
 {
     float h = dir.y;
@@ -115,7 +149,7 @@ vec3 environment( vec3 dir, vec3 tint )
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hue = ( hueP > 0.01 ? hueP : 0.0 );

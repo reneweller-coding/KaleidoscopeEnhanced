@@ -46,7 +46,7 @@ uniform float audioTrebRel;   ///< 0..2.5, ~1 = "as loud as usual" -> star-glow 
 uniform float glowP; ///< preset: halo width
 uniform float dustP; ///< preset: interstellar dust haze
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

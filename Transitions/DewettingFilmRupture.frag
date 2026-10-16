@@ -52,13 +52,19 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float sites = 3.0 + floor( clamp( sitesP, 0.0, 1.0 ) * 4.0 ); // rolled ONCE

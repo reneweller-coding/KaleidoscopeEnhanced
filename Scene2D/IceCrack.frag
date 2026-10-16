@@ -55,17 +55,28 @@ uniform float     refractP;
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioValence; ///< preset: how much each shard bends the image
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -75,13 +86,25 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * vec3( 0.1031, 0.1030, 0.0973 ) );
@@ -89,7 +112,7 @@ vec2 hash22( vec2 p )
     return fract( ( p3.xx + p3.yz ) * p3.zy );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;

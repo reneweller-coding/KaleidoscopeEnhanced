@@ -31,14 +31,27 @@ const vec2    Extent = vec2( 220.0, 320.0 );
 uniform float camHP;   ///< preset: camera height above the water
 uniform float detailP; ///< preset: tessellation quality
 
-/// Same flat mapping the evaluation shader starts from: z runs AHEAD of the
-/// camera, matching the engine's -z projection convention.
+/**  Same flat mapping the evaluation shader starts from: z runs AHEAD of the camera, matching the engine's -z
+ * projection convention.
+ *
+ * @param uv  The patch coordinate, 0..1. (in)
+ *
+ * @return
+ *   The world position on the flat ground.
+ **/
 vec3 flatAt( vec2 uv )
 {
     return vec3( ( uv.x - 0.5 ) * Extent.x, 0.0, uv.y * Extent.y + 2.0 );
 }
 
-/// @brief Brightness level between two coordinates.
+/**  Brightness level between two coordinates.
+ *
+ * @param uvA  One end of the patch edge. (in)
+ * @param uvB  The other end. (in)
+ *
+ * @return
+ *   The tessellation level for the edge, 4..32.
+ **/
 float levelFor( vec2 uvA, vec2 uvB )
 {
     vec3  mid = flatAt( mix( uvA, uvB, 0.5 ) );
@@ -46,7 +59,7 @@ float levelFor( vec2 uvA, vec2 uvB )
     return clamp( 190.0 * detailP / max( d, 2.0 ), 1.0, 22.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     tcUV[gl_InvocationID] = vUV[gl_InvocationID];

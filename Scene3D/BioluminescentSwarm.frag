@@ -25,7 +25,7 @@ in float vSnow;   ///< 0 = creature, 1 = marine snow
  * shaped into soft discs.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     if ( vSnow > 0.5 )

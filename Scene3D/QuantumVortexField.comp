@@ -35,18 +35,37 @@ uniform float glowP; ///< Glow / afterglow knob, 0..1.
 const int Filaments = 64 * 48; ///< 3072 streamlines
 const int Steps = 8;           ///< 8 segments per filament -> quad strip
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( float n )
 {
     return fract( sin( n * 143.567 ) * 43758.5453 );
 }
-/// @brief Pseudo-random vec3 (each 0..1) from a float.
+/**  Pseudo-random vec3 (each 0..1) from a float.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   Pseudo-random numbers, each 0..1.
+ **/
 vec3 hash3( float n )
 {
     return fract( sin( vec3( n * 83.34, n * 39.12, n * 67.56 ) ) * 43758.5453 );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot  Index of the vertex in the buffer. (in)
+ * @param p     Position. (in)
+ * @param n     Normal. (in)
+ * @param hue   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param glow  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float hue, float glow )
 {
     uint o = slot * 8u;
@@ -60,7 +79,14 @@ void writeVertex( uint slot, vec3 p, vec3 n, float hue, float glow )
     verts[o + 7u] = glow;
 }
 
-/// 3D Toroidal Vortex Vector Field
+/**  3D Toroidal Vortex Vector Field
+ *
+ * @param p  The point. (in)
+ * @param t  Time. (in)
+ *
+ * @return
+ *   The flow vector.
+ **/
 vec3 vortexField( vec3 p, float t )
 {
     float r = length( p.xz );
@@ -85,7 +111,7 @@ vec3 vortexField( vec3 p, float t )
     return v_toroidal + v_poloidal + lorenz;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

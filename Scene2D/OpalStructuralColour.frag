@@ -40,13 +40,25 @@ uniform float domainP;
 uniform float milkP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -56,19 +68,37 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     p = vec2( dot( p, vec2( 127.1, 311.7 ) ), dot( p, vec2( 269.5, 183.3 ) ) );
     return fract( sin( p ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// Voronoi domains: id, distance to the edge.
+/**  Voronoi domains: id, distance to the edge.
+ *
+ * @param x       The point. (in)
+ * @param id      Receives the domain's id. (out)
+ * @param edge    Receives the distance to the edge. (out)
+ * @param orient  Receives the domain's orientation. (out)
+ **/
 void domains( vec2 x, out float id, out float edge, out vec2 orient )
 {
     vec2  n = floor( x ), f = fract( x );
@@ -95,7 +125,13 @@ void domains( vec2 x, out float id, out float edge, out vec2 orient )
     edge = sqrt( d2 ) - sqrt( d1 );
 }
 
-/// A spectral colour for a wavelength parameter 0 (violet) .. 1 (red).
+/**  A spectral colour for a wavelength parameter 0 (violet) .. 1 (red).
+ *
+ * @param t  Position in the spectrum, 0..1. (in)
+ *
+ * @return
+ *   The spectral colour (RGB).
+ **/
 vec3 spectral( float t )
 {
     return clamp(
@@ -103,7 +139,7 @@ vec3 spectral( float t )
         0.0, 1.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

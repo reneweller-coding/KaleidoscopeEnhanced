@@ -30,7 +30,7 @@ uniform float time;         ///< Seconds since the program started (never reset;
 
 uniform float camDistP; ///< Camera distance knob, 0..1.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 p = attrA.xyz;

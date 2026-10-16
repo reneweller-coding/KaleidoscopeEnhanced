@@ -46,7 +46,7 @@ uniform float     audioRoughness; ///< 0=consonant .. 1=dissonant -> the reverse
 
 const float Pi = 3.141592653589793;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
 

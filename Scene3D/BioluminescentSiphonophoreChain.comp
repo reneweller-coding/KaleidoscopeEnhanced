@@ -79,7 +79,13 @@ const uint ChainPts = PerCol * Colonies; ///< 30720
 const uint Snow = 6000u;                 ///< marine snow motes
 const uint Total = ChainPts + Snow;      ///< 36720 quads = 220320 vertices
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -88,13 +94,19 @@ float hash11( float p )
     return fract( p );
 }
 
-/// attrA = (pos.xyz, corner), attrB = (normal.xyz, phase) -- the 8-float stride
-/// Scene3DShader binds as attrA/attrB.
-/// corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
-/// quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
-/// available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
-/// A NEGATIVE normal.z marks a marine-snow mote for the fragment stage; every
-/// zooid normal has a fixed +0.5 z component before normalisation.
+/**  attrA = (pos.xyz, corner), attrB = (normal.xyz, phase) -- the 8-float stride Scene3DShader binds as attrA/attrB.
+ *
+ * @param slot    Index of the vertex in the buffer. (in)
+ * @param p       Position. (in)
+ * @param n       Normal. (in)
+ * @param phase   Phase written to attribute B's w. (in)
+ * @param corner  Corner of the quad, 0..3 (attribute A's w). (in)
+ *
+ * corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a quad-local coordinate for its round sprite
+ * falloff -- gl_PointCoord is NOT available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS. A NEGATIVE
+ * normal.z marks a marine-snow mote for the fragment stage; every zooid normal has a fixed +0.5 z component before
+ * normalisation.
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float phase, float corner )
 {
     uint o = slot * 8u;
@@ -108,8 +120,14 @@ void writeVertex( uint slot, vec3 p, vec3 n, float phase, float corner )
     verts[o + 7u] = phase;
 }
 
-/// A camera-facing quad: the scene camera looks down -z, so an XY-plane quad
-/// always faces it without needing a view matrix in here.
+/**  A camera-facing quad: the scene camera looks down -z, so an XY-plane quad always faces it without needing a view
+ * matrix in here.
+ *
+ * @param c      Centre of the quad. (in)
+ * @param n      Normal written to every vertex. (in)
+ * @param phase  Phase written to every vertex. (in)
+ * @param r      Half size of the quad. (in)
+ **/
 void emitQuad( vec3 c, vec3 n, float phase, float r )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -129,7 +147,7 @@ void emitQuad( vec3 c, vec3 n, float phase, float r )
     writeVertex( base + 5u, e, n, phase, 3.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

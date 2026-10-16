@@ -55,7 +55,13 @@ const uint Tangle = Strands * PerStr; ///< 12288
 const uint Haze = 6000u;
 const uint Points = Tangle + Haze; ///< 18288 quads = 109728 vertices
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -64,11 +70,17 @@ float hash11( float p )
     return fract( p );
 }
 
-/// attrA = (pos.xyz, 1.0), attrB = (normal.xyz, phase) -- the 8-float stride
-/// Scene3DShader binds as attrA/attrB.
-/// corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a
-/// quad-local coordinate for its round sprite falloff -- gl_PointCoord is NOT
-/// available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
+/**  attrA = (pos.xyz, 1.0), attrB = (normal.xyz, phase) -- the 8-float stride Scene3DShader binds as attrA/attrB.
+ *
+ * @param slot    Index of the vertex in the buffer. (in)
+ * @param p       Position. (in)
+ * @param n       Normal. (in)
+ * @param phase   Phase written to attribute B's w. (in)
+ * @param corner  Corner of the quad, 0..3 (attribute A's w). (in)
+ *
+ * corner: 0=(-1,-1) 1=(1,-1) 2=(1,1) 3=(-1,1).  The fragment shader needs a quad-local coordinate for its round sprite
+ * falloff -- gl_PointCoord is NOT available here because geom="indirect" draws GL_TRIANGLES, not GL_POINTS.
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float phase, float corner )
 {
     uint o = slot * 8u;
@@ -82,16 +94,22 @@ void writeVertex( uint slot, vec3 p, vec3 n, float phase, float corner )
     verts[o + 7u] = phase;
 }
 
-/// A billboard sprite.  All six vertices carry the CENTRE and the sprite radius
-/// (packed into attrB.x); the vertex stage spreads the corners out in VIEW space
-/// after the camera transform, so the sprite faces the lens at every point of
-/// the orbit.
-///
-/// Widening the quad HERE, in world space, only faced the camera while the view
-/// axis was still +z: the .vert yaws the whole tangle about y, and a quarter
-/// turn later every one of these XY quads was exactly edge-on and the scene
-/// drew nothing at all.  attrB.y carries the layer marker (negative = the
-/// surrounding thermal cloud).
+/**  A billboard sprite.
+ *
+ * @param c      Centre of the quad. (in)
+ * @param n      Normal written to every vertex. (in)
+ * @param phase  Phase written to every vertex. (in)
+ * @param r      Half size of the quad. (in)
+ *
+ * All six vertices carry the CENTRE and the sprite radius (packed into attrB.x); the vertex stage spreads the corners
+ * out in VIEW space after the camera transform, so the sprite faces the lens at every point of the orbit.
+ *
+ * Widening the quad HERE, in world space, only faced the camera while the view
+ * axis was still +z: the .vert yaws the whole tangle about y, and a quarter
+ * turn later every one of these XY quads was exactly edge-on and the scene
+ * drew nothing at all.  attrB.y carries the layer marker (negative = the
+ * surrounding thermal cloud).
+ **/
 void emitQuad( vec3 c, vec3 n, float phase, float r )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -107,7 +125,7 @@ void emitQuad( vec3 c, vec3 n, float phase, float r )
     writeVertex( base + 5u, c, nn, phase, 3.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

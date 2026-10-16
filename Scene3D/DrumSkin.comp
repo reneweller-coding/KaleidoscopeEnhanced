@@ -79,6 +79,14 @@ const float Alpha[8] = float[8]( 2.4048, 3.8317, 5.1356, 5.5201,
 const int   Order[8] = int[8]( 0, 1, 2, 0,
                                3, 1, 4, 2 );
 
+/**  Bessel function J_n of the first kind.
+ *
+ * @param n  Order. (in)
+ * @param x  Argument. (in)
+ *
+ * @return
+ *   The value.
+ **/
 float besselJ( int n, float x )
 {
     x = abs( x );
@@ -109,6 +117,16 @@ float besselJ( int n, float x )
     return amp * cos( x - float( n ) * 1.5707963 - 0.7853982 );
 }
 
+/**  Height of the drum skin: the sum of its circular modes, each driven by its band.
+ *
+ * @param pxz    Position on the skin (x, z). (in)
+ * @param amp    Amplitude. (in)
+ * @param modes  Number of modes that ring. (in)
+ * @param speed  Speed of the ringing. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float skin( vec2 pxz, float amp, float modes, float speed )
 {
     float r = length( pxz );
@@ -156,7 +174,14 @@ float skin( vec2 pxz, float amp, float modes, float speed )
     return z * amp * clamp_rim;
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot  Index of the vertex in the buffer. (in)
+ * @param p     Position. (in)
+ * @param n     Normal. (in)
+ * @param h     Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param rr    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float h, float rr )
 {
     uint o = slot * 8u;
@@ -170,7 +195,7 @@ void writeVertex( uint slot, vec3 p, vec3 n, float h, float rr )
     verts[o + 7u] = rr;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

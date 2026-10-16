@@ -37,7 +37,7 @@ out vec3 vWorldPos; ///< World position (from the vertex stage).
 out vec3 vNormal;   ///< Surface normal (from the vertex stage).
 out vec2 vTexCoord; ///< Texture coordinate (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float brn = ( brineP > 0.0 ) ? brineP : 1.0;

@@ -31,7 +31,13 @@ uniform float shapeP;
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -40,6 +46,20 @@ float hash11( float p )
     return fract( p );
 }
 
+/**  Appends a quad with a normal per corner (two triangles) to the output buffer.
+ *
+ * @param p0    First corner (the corners run around the quad). (in)
+ * @param p1    Second corner. (in)
+ * @param p2    Third corner. (in)
+ * @param p3    Fourth corner. (in)
+ * @param n0    Normal at p0. (in)
+ * @param n1    Normal at p1. (in)
+ * @param n2    Normal at p2. (in)
+ * @param n3    Normal at p3. (in)
+ * @param id    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param aux   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitQuadN( vec3 p0, vec3 p1, vec3 p2, vec3 p3, vec3 n0, vec3 n1, vec3 n2, vec3 n3, float id, float aux,
                 float kind )
 {
@@ -62,6 +82,13 @@ void emitQuadN( vec3 p0, vec3 p1, vec3 p2, vec3 p3, vec3 n0, vec3 n1, vec3 n2, v
     }
 }
 
+/**  Appends a flat quad (two triangles) to the output buffer.
+ *
+ * @param c     Centre of the quad. (in)
+ * @param ax    Half the quad's extent along its first axis. (in)
+ * @param ay    Half its extent along the second axis. (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitFlat( vec3 c, vec3 ax, vec3 ay, float kind )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -85,7 +112,15 @@ void emitFlat( vec3 c, vec3 ax, vec3 ay, float kind )
     }
 }
 
-/// Radius of vessel k at height t (0 foot .. 1 lip).
+/**  Radius of vessel k at height t (0 foot .. 1 lip).
+ *
+ * @param t    Height, 0 foot .. 1 lip. (in)
+ * @param k    Index of the vessel. (in)
+ * @param fam  Family knob. (in)
+ *
+ * @return
+ *   The radius.
+ **/
 float profile( float t, float k, float fam )
 {
     float kind = mod( k + floor( fam * 3.0 ), 4.0 );
@@ -98,7 +133,7 @@ float profile( float t, float k, float fam )
     return 0.3 * sqrt( 1.0 - pow( 2.0 * t - 1.0, 2.0 ) ) + 0.06; // round flask
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

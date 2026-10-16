@@ -39,27 +39,52 @@ uniform float paletteP; ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float spinP;    ///< Spin knob, 0..1.
 uniform float accentP;
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
              + ( 1.0 - interpolation ) * texture( tex1, uv ) )
         .rgb;
 }
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 345.45 ) );
@@ -67,7 +92,13 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// Reduce an image colour to a poster colour: strong saturation, few steps.
+/**  Reduce an image colour to a poster colour: strong saturation, few steps.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The poster colour.
+ **/
 vec3 poster( vec3 c )
 {
     float lum = dot( c, vec3( 0.299, 0.587, 0.114 ) );
@@ -76,7 +107,7 @@ vec3 poster( vec3 c )
     return clamp( c, 0.0, 1.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int   n = ( gridP > 0 ) ? gridP : 5;

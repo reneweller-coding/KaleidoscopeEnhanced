@@ -41,6 +41,13 @@ uniform float     audioHat;      ///< hi-hat/cymbal onset envelope -> rim shimme
 uniform float     audioLowMid;   ///< 150-500 Hz harmonic warmth -> wall colour
 
 
+/**  Folds a coordinate's x mirror-wise per whole unit (keeps the tunnel texture seamless).
+ *
+ * @param p  The coordinate. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 clampQuadratic( vec2 p )
 {
     vec2  uv = p;
@@ -61,7 +68,7 @@ vec2 clampQuadratic( vec2 p )
 }
 
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
 

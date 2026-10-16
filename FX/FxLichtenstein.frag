@@ -22,7 +22,7 @@ uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 // Radius of the circle
 // const float radius = size * 0.5 * 0.75;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     // normalize to the center

@@ -57,13 +57,25 @@ uniform float inkP;   ///< preset: line weight
 uniform float bandsP; ///< preset: how many tone steps inside the lines
 uniform float paperP; ///< preset: warmth of the paper
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
-/// @brief Depth buffer value to linear distance.
+/**  Depth buffer value to linear distance.
+ *
+ * @param d  Depth buffer value, 0..1. (in)
+ *
+ * @return
+ *   The linear distance.
+ **/
 float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
@@ -71,6 +83,15 @@ float linearise( float d )
     return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
+/**  Edge strength of the depth around a pixel.
+ *
+ * @param dep  The depth texture. (in)
+ * @param uv   Screen coordinate. (in)
+ * @param px   Size of a pixel. (in)
+ *
+ * @return
+ *   The edge strength.
+ **/
 float depthEdge( sampler2D dep, vec2 uv, vec2 px )
 {
     float c = linearise( texture( dep, uv ).r );
@@ -90,6 +111,15 @@ float depthEdge( sampler2D dep, vec2 uv, vec2 px )
     return ( ex + ey ) / max( c, 0.5 );
 }
 
+/**  Edge strength of the luma around a pixel.
+ *
+ * @param src  The frame. (in)
+ * @param uv   Screen coordinate. (in)
+ * @param px   Size of a pixel. (in)
+ *
+ * @return
+ *   The edge strength.
+ **/
 float lumaEdge( sampler2D src, vec2 uv, vec2 px )
 {
     vec3  w = vec3( 0.299, 0.587, 0.114 );
@@ -101,6 +131,21 @@ float lumaEdge( sampler2D src, vec2 uv, vec2 px )
     return length( vec2( r - l, d - u ) );
 }
 
+/**  The frame as ink on paper: flattened tones with dark outlines.
+ *
+ * @param src     The frame. (in)
+ * @param dep     The depth texture. (in)
+ * @param uv      Screen coordinate. (in)
+ * @param valid   1 where the depth buffer is valid, else 0. (in)
+ * @param px      Size of a pixel. (in)
+ * @param paper   Paper colour. (in)
+ * @param inkCol  Ink colour. (in)
+ * @param weight  Line weight. (in)
+ * @param bands   Number of tone steps. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 inked( sampler2D src, sampler2D dep, vec2 uv, float valid,
             vec2 px, vec3 paper, vec3 inkCol, float weight, float bands )
 {
@@ -121,7 +166,7 @@ vec3 inked( sampler2D src, sampler2D dep, vec2 uv, float valid,
     return mix( flat_, inkCol, e );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

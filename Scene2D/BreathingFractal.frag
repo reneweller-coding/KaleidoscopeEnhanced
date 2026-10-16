@@ -46,7 +46,13 @@ uniform float glowP;    ///< line glow sharpness (0 -> 5.0; 3.5 = soft, 7 = cris
 uniform int   kSides;   ///< >=2: weave a spinning n-fold image rosette in (0 = off)
 uniform float rosetteP; ///< rosette strength    (0 -> 0.22)
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -54,7 +60,14 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// n-fold kaleidoscopic mirror fold of a centred coordinate.
+/**  n-fold kaleidoscopic mirror fold of a centred coordinate.
+ *
+ * @param p      The coordinate (centred). (in)
+ * @param sides  Number of mirrors. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleido( vec2 p, float sides )
 {
     float a = atan( p.y, p.x );
@@ -65,7 +78,13 @@ vec2 kaleido( vec2 p, float sides )
     return vec2( cos( a ), sin( a ) ) * r;
 }
 
-/// @brief A colour of the photo along a slowly wandering arc (palette lookup).
+/**  A colour of the photo along a slowly wandering arc (palette lookup).
+ *
+ * @param x  Position along the arc (radians). (in)
+ *
+ * @return
+ *   The photo's colour there (RGB).
+ **/
 vec3 imgPal( float x )
 {
     vec2 cc = vec2( 0.5 )
@@ -73,7 +92,14 @@ vec3 imgPal( float x )
     return img( fract( cc + 0.24 * vec2( cos( x ), sin( x * 1.31 ) ) ) );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -81,7 +107,7 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 v = resolution;

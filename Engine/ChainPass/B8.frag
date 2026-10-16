@@ -17,23 +17,46 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioSpread;      ///< Spectral spread, 0..1.
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float speedP;           ///< Speed knob, 0..1.
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// @brief Direction of pentagrid family j.
+/**  Direction of pentagrid family j.
+ *
+ * @param j  The family, 0..4. (in)
+ *
+ * @return
+ *   The family's unit direction.
+ **/
 vec2 pentE( int j )
 {
     float a = 1.2566371 * float( j );
     return vec2( cos( a ), sin( a ) );
 }
-/// @brief Pentagrid offset of family j.
+/**  Pentagrid offset of family j.
+ *
+ * @param j  The family, 0..4. (in)
+ * @param g  Offsets of the first four families. (in)
+ *
+ * @return
+ *   The family's offset (the fifth makes the sum 0).
+ **/
 float pentG( int j, vec4 g )
 {
     return j == 0 ? g.x : j == 1 ? g.y
@@ -41,7 +64,19 @@ float pentG( int j, vec4 g )
                       : j == 3   ? g.w
                                  : -( g.x + g.y + g.z + g.w );
 }
-/// @brief Finds the Penrose rhomb a point lies in (de Bruijn pentagrid).
+/**  Finds the Penrose rhomb a point lies in (de Bruijn pentagrid).
+ *
+ * @param x     The point in grid units. (in)
+ * @param g     Offsets of four grid families (the fifth makes the sum 0). (in)
+ * @param ab    Receives the point's position inside the rhomb, 0..1 along both edges. (out)
+ * @param rr    Receives the first family of the rhomb. (out)
+ * @param ss    Receives the second family. (out)
+ * @param base  Receives the rhomb's corner. (out)
+ * @param nrs   Receives the line indices of both families at the crossing. (out)
+ *
+ * @return
+ *   True if the rhomb was found.
+ **/
 bool penroseFind( vec2 x, vec4 g, out vec2 ab, out int rr, out int ss, out vec2 base, out vec2 nrs )
 {
     vec2 pg = x * 0.4;
@@ -84,6 +119,17 @@ bool penroseFind( vec2 x, vec4 g, out vec2 ab, out int rr, out int ss, out vec2 
         }
     return false;
 }
+/**  Penrose mirror: the rhombus coordinates folded symmetrically -- a quasi-periodic kaleidoscope.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param cells  Cells per unit. (in)
+ * @param drift  Offset of the pentagrid (makes it drift). (in)
+ * @param g      Offsets of four of the five grid families (the fifth makes the sum 0). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tPenrose( vec2 uv, vec2 c, float cells, vec2 drift, vec4 g )
 {
     vec2 ab, base, nrs;
@@ -97,19 +143,34 @@ vec2          gCw, gCt;
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
 uniform float tiltP;    ///< Tilt knob, 0..1.
 uniform float tiltA;
-float         chainTiltZ( vec2 q )
+/**  Time tilt of the chain: a linear ramp across the picture, along the tilt direction.
+ *
+ * @param q  The pixel's coordinate. (in)
+ *
+ * @return
+ *   The tilt offset (added to the chain's time).
+ **/
+float chainTiltZ( vec2 q )
 {
     float k = smoothstep( 0.15, 1.0, tiltP ) * 0.6 * ( 0.55 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) );
     float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot( vec2( cos( a ), sin( a ) ), q );
 }
+/**  One class of this stage: the transform the stage applies for knob value v.
+ *
+ * @param uv  The coordinate. (in)
+ * @param v   The stage's knob value (its class and sub-variant). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 cls( vec2 uv, float v )
 {
     return tPenrose( uv, gCw, 3.0 + 2.0 * v, vec2( gT * 0.7, gT * 0.3 ), vec4( 0.13, 0.27, -0.21, 0.36 ) );
     return uv;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     gT = ( 0.03 + 0.06 * clamp( speedP, 0.0, 1.0 ) ) * sceneTime + 0.25 * audioAdvance;

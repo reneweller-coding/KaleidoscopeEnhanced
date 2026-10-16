@@ -35,6 +35,13 @@ out float vKind;   ///< 0 ship, 1 shadow of lamp A, 2 shadow of lamp B
 
 const float WallZ = 60.0;
 
+/**  Position of lamp k, swinging slowly behind the ship.
+ *
+ * @param k  Index of the lamp. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 lampPos( int k )
 {
     float t = sceneAdvance * 0.12 + sceneTime * 0.025;
@@ -46,7 +53,7 @@ vec3 lampPos( int k )
     return vec3( 16.0 + 9.0 * sw * sin( t + 2.1 ), 6.0 + 3.0 * sin( t * 0.6 + 1.0 ), 4.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     bool is_bg = gl_VertexID >= meshVertexCount;

@@ -41,7 +41,14 @@ uniform float vortexP;
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -49,7 +56,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// 2D Curl Noise helper
+/**  2D Curl Noise helper
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 443.34, 755.21 ) );
@@ -57,7 +70,13 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// @brief Smooth value noise.
+/**  Smooth value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise( vec2 p )
 {
     vec2 i = floor( p );
@@ -69,6 +88,13 @@ float noise( vec2 p )
         u.y );
 }
 
+/**  Compute 2D Curl Noise for divergence-free incompressible fluid simulation
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The flow vector (divergence-free).
+ **/
 vec2 curlNoise( vec2 p )
 {
     float eps = 0.01;
@@ -79,7 +105,7 @@ vec2 curlNoise( vec2 p )
     return vec2( ( n1 - n2 ) / ( 2.0 * eps ), -( n3 - n4 ) / ( 2.0 * eps ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float vsc = ( viscP > 0.0 ) ? viscP : 1.0;

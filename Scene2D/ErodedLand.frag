@@ -47,13 +47,25 @@ uniform float audioMode;      ///< 0=minor/cold .. 1=major/warm -> sunlight colo
 uniform float sunP;
 uniform float waterP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,8 +75,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// Sine-free hash (Hoskins): the octaves reach large coordinates, where
-/// fract(sin(x) * 43758) loses precision on the GPU.
+/**  Sine-free hash (Hoskins): the octaves reach large coordinates, where fract(sin(x) * 43758) loses precision on the
+ * GPU.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
@@ -72,7 +90,13 @@ float hash21( vec2 p )
     return fract( ( p3.x + p3.y ) * p3.z );
 }
 
-/// Value noise with analytic derivatives (quintic fade).
+/**  Value noise with analytic derivatives (quintic fade).
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value (x) and its derivatives (yz).
+ **/
 vec3 noised( vec2 p )
 {
     vec2  i = floor( p ), f = fract( p );
@@ -88,9 +112,17 @@ const mat2  M2 = mat2( 1.6, -1.2, 1.2, 1.6 );
 const float Hs = 60.0;   ///< height scale (world units)
 const float Xs = 0.0085; ///< horizontal frequency of the broadest octave
 
-/// Terrain height: each octave is damped by the slope accumulated so far
-/// (1 / (1 + |grad|^2)) -- steep flanks stay smooth, flats get detail,
-/// crests come out sharp.  `oct` octaves.
+/**  Terrain height: each octave is damped by the slope accumulated so far (1 / (1 + |grad|^2)) -- steep flanks stay
+ * smooth, flats get detail, crests come out sharp.
+ *
+ * @param x    Position on the ground. (in)
+ * @param oct  Number of octaves (up to 9). (in)
+ *
+ * @return
+ *   The terrain height.
+ *
+ * `oct` octaves.
+ **/
 float terrain( vec2 x, int oct )
 {
     vec2  p = x * Xs;
@@ -109,7 +141,14 @@ float terrain( vec2 x, int oct )
     return Hs * a - 12.0;
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param pos  The surface point. (in)
+ * @param t    Distance from the camera (widens the step). (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 pos, float t )
 {
     vec2 e = vec2( 0.002 * t + 0.02, 0.0 );
@@ -118,7 +157,7 @@ vec3 calcNormal( vec3 pos, float t )
                             terrain( pos.xz - e.yx, 8 ) - terrain( pos.xz + e.yx, 8 ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;

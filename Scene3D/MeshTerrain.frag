@@ -42,7 +42,14 @@ in vec3  vPos;    ///< Position (from the vertex stage).
 in float vDist;   ///< Distance (from the vertex stage).
 in float vBg;     ///< Background flag (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     const vec3 k = vec3( 0.57735 );
@@ -50,13 +57,25 @@ vec3 hueRot( vec3 c, float a )
     return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 12.9898 ) * 43758.5453 );
 }
 
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -66,7 +85,13 @@ float noise2( vec2 p )
                 mix( hash11( n + 57.0 ), hash11( n + 58.0 ), f.x ), f.y );
 }
 
-/// @brief Fractal noise of the given number of octaves.
+/**  Fractal noise: octaves of noise2, each turned against the last.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm2( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -79,7 +104,13 @@ float fbm2( vec2 p )
     return v;
 }
 
-/// @brief Exposure that brings the material's average brightness to a common level.
+/**  Exposure that brings the material's average brightness to a common level.
+ *
+ * @param tex  The material texture array (layer 0 is the albedo). (in)
+ *
+ * @return
+ *   The exposure factor, 0.3..2.
+ **/
 float materialExposure( sampler2DArray tex )
 {
     vec3  avg = textureLod( tex, vec3( 0.5, 0.5, 0.0 ), 20.0 ).rgb;
@@ -91,6 +122,14 @@ float materialExposure( sampler2DArray tex )
 // the haze glows brightest toward it.
 const vec3 SunDir = vec3( -0.36, 0.11, 0.93 );
 
+/**  The sky colour for a direction.
+ *
+ * @param dir   The direction. (in)
+ * @param tint  Tint. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 skyColour( vec3 dir, vec3 tint )
 {
     float h = clamp( dir.y * 0.5 + 0.5, 0.0, 1.0 );
@@ -107,15 +146,23 @@ vec3 skyColour( vec3 dir, vec3 tint )
 }
 
 // ---- normal mapping ------------------------------------------------------
-/// Layer 2 of the material array is a tangent-space normal map, present on the
-/// assets whose generator run produced a usable one (about a fifth of them).
-///
-/// There are no tangents in the vertex format -- it is a fixed 8 floats shared
-/// by every geom kind -- so the frame is rebuilt per fragment from screen-space
-/// derivatives of position and UV. That is the standard cotangent-frame trick,
-/// and it costs nothing in the vertex stage and no change to the buffer layout.
-/// A model WITHOUT a normal map has materialLayers < 3 and this returns the
-/// interpolated normal untouched, so every scene works either way.
+/**  Layer 2 of the material array is a tangent-space normal map, present on the assets whose generator run produced a
+ * usable one (about a fifth of them).
+ *
+ * @param N   The surface normal. (in)
+ * @param p   The position (world). (in)
+ * @param uv  The texture coordinate. (in)
+ *
+ * @return
+ *   The tangent frame (tangent, bitangent, normal) as the columns of a matrix.
+ *
+ * There are no tangents in the vertex format -- it is a fixed 8 floats shared
+ * by every geom kind -- so the frame is rebuilt per fragment from screen-space
+ * derivatives of position and UV. That is the standard cotangent-frame trick,
+ * and it costs nothing in the vertex stage and no change to the buffer layout.
+ * A model WITHOUT a normal map has materialLayers < 3 and this returns the
+ * interpolated normal untouched, so every scene works either way.
+ **/
 mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
 {
     vec3  dp1 = dFdx( p ), dp2 = dFdy( p );
@@ -128,7 +175,18 @@ mat3 cotangentFrame( vec3 N, vec3 p, vec2 uv )
     return mat3( T * inv, B * inv, N );
 }
 
-/// @brief The normal tilted by the material's normal map.
+/**  The normal tilted by the material's normal map.
+ *
+ * @param tex       The material texture array. (in)
+ * @param layers    Its layer count (the normal map is layer 2). (in)
+ * @param uv        Material texture coordinate. (in)
+ * @param n         The surface normal. (in)
+ * @param wpos      World position (for the tangent frame). (in)
+ * @param strength  Strength of the normal map. (in)
+ *
+ * @return
+ *   The tilted normal (unit length); n itself without a normal map.
+ **/
 vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, float strength )
 {
     if ( layers < 3 )
@@ -142,7 +200,7 @@ vec3 perturbNormal( sampler2DArray tex, int layers, vec2 uv, vec3 n, vec3 wpos, 
     return normalize( cotangentFrame( n, wpos, uv ) * normalize( m ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hue = ( hueP > 0.01 ? hueP : 0.0 );

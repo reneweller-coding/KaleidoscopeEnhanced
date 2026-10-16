@@ -44,13 +44,25 @@ uniform float flatBandP;
 uniform float interfP;
 uniform float honeyP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,7 +72,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// Hexagonal honeycomb wave generator
+/**  Hexagonal honeycomb wave generator
+ *
+ * @param p      The point. (in)
+ * @param scale  Scale of the lattice. (in)
+ *
+ * @return
+ *   The wave value.
+ **/
 float hexGraphene( vec2 p, float scale )
 {
     vec2  q = p * scale;
@@ -70,7 +89,7 @@ float hexGraphene( vec2 p, float scale )
     return ( k1 + k2 + k3 ) / 3.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );

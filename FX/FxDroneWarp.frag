@@ -27,14 +27,26 @@ uniform float warpScaleP; ///< warp field scale     (0 -> 3.0; 2 = broad billows
 uniform float warpAmtP;   ///< warp amount multiplier (0 -> 1.0; 0.5 = calm, 1.8 = molten)
 uniform float driftP;     ///< warp field drift speed (0 -> 1.0; 0.5 = glacial, 2 = flowing)
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 345.45 ) );
     p += dot( p, p + 34.345 );
     return fract( p.x * p.y );
 }
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -44,7 +56,7 @@ float vnoise( vec2 p )
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 p = gl_FragCoord.xy / resolution;

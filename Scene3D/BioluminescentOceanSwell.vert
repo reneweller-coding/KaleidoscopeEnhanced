@@ -25,7 +25,18 @@ out vec2  vUV;     ///< Texture coordinate 0..1 over the screen (from the vertex
 out float vCrest;
 out float vHeight;
 
-/// Gerstner wave function
+/**  Gerstner wave function
+ *
+ * @param p           Position on the surface (x, z). (in)
+ * @param dir         Direction of travel (unit length). (in)
+ * @param steepness   Steepness, 0..1. (in)
+ * @param wavelength  Wavelength. (in)
+ * @param speed       Speed factor. (in)
+ * @param normal      Accumulates the normal. (in,out)
+ *
+ * @return
+ *   The displacement.
+ **/
 vec3 gerstnerWave( vec2 p, vec2 dir, float steepness, float wavelength, float speed, inout vec3 normal )
 {
     float k = 6.2831853 / wavelength;
@@ -43,7 +54,7 @@ vec3 gerstnerWave( vec2 p, vec2 dir, float steepness, float wavelength, float sp
         dir.y * ( a * cos( f ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = attrA.xy;

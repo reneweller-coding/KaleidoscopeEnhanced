@@ -47,13 +47,25 @@ uniform float twistP; ///< Twist knob, 0..1.
 uniform float decayP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,7 +75,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     const vec3 k = vec3( 0.57735 );
@@ -71,14 +90,22 @@ vec3 hueRot( vec3 c, float a )
     return c * ca + cross( k, c ) * sin( a ) + k * dot( k, c ) * ( 1.0 - ca );
 }
 
-/// Signed distance to a rounded rectangle (the portal outline).
+/**  Signed distance to a rounded rectangle (the portal outline).
+ *
+ * @param p  The point. (in)
+ * @param b  Half size of the rectangle. (in)
+ * @param r  Corner radius. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdRoundBox( vec2 p, vec2 b, float r )
 {
     vec2 q = abs( p ) - b + r;
     return length( max( q, 0.0 ) ) + min( max( q.x, q.y ), 0.0 ) - r;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

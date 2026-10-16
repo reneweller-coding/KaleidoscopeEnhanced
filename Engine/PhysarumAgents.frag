@@ -27,7 +27,13 @@ uniform float     sensDist;   ///< sensor distance (trail-map uv units)
 uniform float     turnRate;   ///< turn per frame (radians)
 uniform float     scatter;    ///< 0..1 fraction of agents re-randomised now
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 345.45 ) );
@@ -35,13 +41,21 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
+/**  The trail of an agent's own species at a position.
+ *
+ * @param pos      Position (wraps). (in)
+ * @param species  The species (0 or 1). (in)
+ *
+ * @return
+ *   The trail strength.
+ **/
 float senseOwn( vec2 pos, float species )
 {
     vec2 t = texture( texTrail, fract( pos ) ).rg;
     return mix( t.r, t.g, species );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 texel = gl_FragCoord.xy / resolution;

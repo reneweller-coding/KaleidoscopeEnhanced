@@ -26,7 +26,13 @@ out vec3  vPos; ///< Position (from the vertex stage).
 out vec2  vUV;  ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out float vFoldAngle;
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -35,7 +41,7 @@ float hash11( float p )
     return fract( p );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float quad_id = attrA.w;

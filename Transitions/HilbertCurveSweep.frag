@@ -51,9 +51,18 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// The distance along the Hilbert curve of the cell (x, y) in an n x n grid.
-/// Walks down the orders: read the quadrant, add the quadrant's share of the
-/// curve, then rotate the frame the way the construction does.
+/**  The distance along the Hilbert curve of the cell (x, y) in an n x n grid.
+ *
+ * @param n  Size of the grid (a power of two). (in)
+ * @param x  Column. (in)
+ * @param y  Row. (in)
+ *
+ * @return
+ *   The distance along the curve.
+ *
+ * Walks down the orders: read the quadrant, add the quadrant's share of the curve, then rotate the frame the way the
+ * construction does.
+ **/
 uint hilbertIndex( uint n, uint x, uint y )
 {
     uint rx, ry, dd = 0u;
@@ -77,7 +86,7 @@ uint hilbertIndex( uint n, uint x, uint y )
     return dd;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float ord = clamp( orderP, 0.0, 1.0 );

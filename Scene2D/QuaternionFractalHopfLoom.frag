@@ -44,13 +44,25 @@ uniform float sliceP;
 uniform float trapP;
 uniform float hopfP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -60,7 +72,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// Quaternion multiplication: q1 * q2
+/**  Quaternion multiplication: q1 * q2
+ *
+ * @param a  One quaternion. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The product a b.
+ **/
 vec4 qMul( vec4 a, vec4 b )
 {
     return vec4(
@@ -70,7 +89,13 @@ vec4 qMul( vec4 a, vec4 b )
         a.x * b.w + a.y * b.z - a.z * b.y + a.w * b.x );
 }
 
-/// Quaternion square: q^2
+/**  Quaternion square: q^2
+ *
+ * @param q  The quaternion. (in)
+ *
+ * @return
+ *   q^2.
+ **/
 vec4 qSquare( vec4 q )
 {
     return vec4(
@@ -78,7 +103,7 @@ vec4 qSquare( vec4 q )
         2.0 * q.x * q.yzw );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / min( resolution.x, resolution.y );

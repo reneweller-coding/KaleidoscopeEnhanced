@@ -47,13 +47,20 @@ out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vIndex;
 out float vDust;
 
-/// @brief Pseudo-random number 0..1 from two values and a seed.
+/**  Pseudo-random number 0..1 from two values.
+ *
+ * @param a  First value. (in)
+ * @param b  Second value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hsh( float a, float b )
 {
     return fract( sin( a * 91.73 + b * 47.31 ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float trs = ( torusP > 0.0 ) ? torusP : 1.0;

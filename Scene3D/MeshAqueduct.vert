@@ -37,7 +37,7 @@ out float vInst;
 const float Dist = 92.0;
 const float Ground = -14.0;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int  inst = gl_InstanceID;

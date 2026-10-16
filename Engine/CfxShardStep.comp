@@ -47,6 +47,12 @@ uniform float     level;
 
 const float Scale = 256.0;
 
+/**  Adds a weighted colour to the accumulation buffer at a pixel (skipped off the image).
+ *
+ * @param ip   The pixel. (in)
+ * @param col  The colour. (in)
+ * @param w    The weight. (in)
+ **/
 void splat1( ivec2 ip, vec3 col, float w )
 {
     if ( ip.x < 0 || ip.y < 0 || ip.x >= size.x || ip.y >= size.y )
@@ -59,7 +65,7 @@ void splat1( ivec2 ip, vec3 col, float w )
     atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

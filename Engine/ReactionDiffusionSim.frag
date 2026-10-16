@@ -16,12 +16,19 @@ uniform float     feed;       ///< Gray-Scott feed rate  (audio-modulated, ~0.05
 uniform float     kill;       ///< Gray-Scott kill rate  (~0.062)
 uniform float     inject;     ///< 1.0 on a beat/onset -> add reagent at fixed spots
 
+/**  Pseudo random hash for plankton sparkles
+ *
+ * @param p  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

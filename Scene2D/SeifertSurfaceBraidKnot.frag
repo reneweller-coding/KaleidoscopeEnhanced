@@ -42,13 +42,25 @@ uniform float knotP;
 uniform float ribbonWidthP;
 uniform float sheenP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -62,8 +74,14 @@ float g_P = 3.0, g_Q = 5.0, g_th = 0.14;
 mat3  g_rot;
 float g_s = 0.0; ///< knot parameter at the hit (for colour)
 
-/// Torus knot (P around the tube, Q around the axis): in the cross-section
-/// at azimuth phi the Q strands sit at angles (phi + 2 pi i) P / Q.
+/**  Torus knot (P around the tube, Q around the axis): in the cross-section at azimuth phi the Q strands sit at
+ * angles (phi + 2 pi i) P / Q.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdKnot( vec3 p )
 {
     const float R = 1.0, r = 0.42;
@@ -86,13 +104,25 @@ float sdKnot( vec3 p )
     return ( d - g_th ) * 0.6;
 }
 
-/// @brief The scene's distance field: distance from p to the nearest surface.
+/**  The scene's distance field: distance from p to the nearest surface.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map( vec3 p )
 {
     return sdKnot( g_rot * p );
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p  The surface point. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 p )
 {
     vec2 e = vec2( 0.0015, 0.0 );
@@ -100,12 +130,32 @@ vec3 calcNormal( vec3 p )
                             map( p + e.yyx ) - map( p - e.yyx ) ) );
 }
 
-/// Thin-film interference colour for an optical path difference x.
+/**  Thin-film interference colour for an optical path difference x.
+ *
+ * @param x  Optical path difference. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 thinFilm( float x )
 {
     return 0.5 + 0.5 * cos( 6.2831853 * ( x * vec3( 1.0, 1.18, 1.36 ) + vec3( 0.0, 0.1, 0.2 ) ) );
 }
 
+/**  Marches a ray to the surface and shades what it hits.
+ *
+ * @param ro     Ray origin. (in)
+ * @param rd     Ray direction. (in)
+ * @param swell  The music's swell. (in)
+ * @param gloss  Gloss knob. (in)
+ * @param kick   The kick. (in)
+ * @param T      Time. (in)
+ * @param hit    Receives 1 on a hit. (out)
+ * @param tHit   Receives the hit distance. (out)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 shade( vec3 ro, vec3 rd, float swell, float gloss, float kick, float T, out float hit, out float tHit )
 {
     float t = 0.0;
@@ -151,7 +201,7 @@ vec3 shade( vec3 ro, vec3 rd, float swell, float gloss, float kick, float T, out
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;

@@ -38,7 +38,7 @@ out vec3 vLocalPos; ///< object space, BEFORE the turn: the plane cuts the
                     // sweeping the cut across itself.
 out float vBg;      ///< Background flag (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world, n;

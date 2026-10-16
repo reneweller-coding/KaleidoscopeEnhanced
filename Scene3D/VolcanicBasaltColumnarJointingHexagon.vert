@@ -42,13 +42,25 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float columnPitchP;
 uniform float columnHeightP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -58,9 +70,18 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// House tint: bend a colour toward the photo palette while keeping its
-/// luminance.  The raw palette was used directly before, so a dark corner of
-/// the slideshow image handed the whole causeway near-black stone.
+/**  House tint: bend a colour toward the photo palette while keeping its luminance.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ *
+ * The raw palette was used directly before, so a dark corner of the slideshow image handed the whole causeway
+ * near-black stone.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
@@ -68,7 +89,7 @@ vec3 palTint( vec3 c, float t, float k )
     return mix( c, tp, k );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  corner = attrA.xyz;

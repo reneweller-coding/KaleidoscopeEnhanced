@@ -34,17 +34,28 @@ uniform float stepP;
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -54,7 +65,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -62,7 +80,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Thin-film interference optical spectrum
+/**  Thin-film interference optical spectrum
+ *
+ * @param thickness  Film thickness (phase). (in)
+ *
+ * @return
+ *   The interference colour (RGB).
+ **/
 vec3 thinFilmColor( float thickness )
 {
     // Iridescent banding from arc positions in the photo (house standard)
@@ -70,16 +94,32 @@ vec3 thinFilmColor( float thickness )
     return imgPalette( thickness * 1.5 ) * 1.35;
 }
 
-/// Bismuth hopper crystal distance function
-/// Soft-max, used to carve a smooth clearance bubble around the camera out
-/// of the distance field: the flight can never clip through geometry -- a
-/// would-be collision becomes a soft bulge sliding past the lens.
+/**  Bismuth hopper crystal distance function Soft-max, used to carve a smooth clearance bubble around the camera out
+ * of the distance field: the flight can never clip through geometry -- a would-be collision becomes a soft bulge
+ * sliding past the lens.
+ *
+ * @param a  One distance. (in)
+ * @param b  The other distance. (in)
+ * @param k  Blend width. (in)
+ *
+ * @return
+ *   The smooth maximum.
+ **/
 float smax( float a, float b, float k )
 {
     float h = clamp( 0.5 - 0.5 * ( a - b ) / k, 0.0, 1.0 );
     return mix( a, b, h ) + k * h * ( 1.0 - h );
 }
 
+/**  Distance estimator of the bismuth labyrinth (repeated, folded hopper crystals).
+ *
+ * @param p          The point. (in)
+ * @param outUVW     Receives the folded coordinate (for colouring). (out)
+ * @param stepScale  Scale of the repetition. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float mapBismuth( vec3 p, out vec3 outUVW, float stepScale )
 {
     vec3  z = p;
@@ -114,7 +154,14 @@ float mapBismuth( vec3 p, out vec3 outUVW, float stepScale )
     return box / scale;
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p          The surface point. (in)
+ * @param stepScale  Scale of the march step the field uses. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 p, float stepScale )
 {
     vec2 e = vec2( 0.002, 0.0 );
@@ -125,7 +172,7 @@ vec3 calcNormal( vec3 p, float stepScale )
         mapBismuth( p + e.yyx, dummy, stepScale ) - mapBismuth( p - e.yyx, dummy, stepScale ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float zm = ( zoomP > 0.0 ) ? zoomP : 1.0;

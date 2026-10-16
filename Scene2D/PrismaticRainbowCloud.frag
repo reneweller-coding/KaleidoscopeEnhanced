@@ -43,17 +43,29 @@ uniform float waveP;    ///< Wave knob.
 uniform float rayP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
-/// come from a rotating arc in the CURRENT slideshow image, so every
-/// activation inherits a fresh palette from the photos, and the arc follows
-/// the musical key (chromaHue is circular-slewed = jump-free) with a slow
-/// advance drift.  Valence shapes saturation toward the mood.
+/**  IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours come from a rotating arc in the CURRENT
+ * slideshow image, so every activation inherits a fresh palette from the photos, and the arc follows the musical
+ * key (chromaHue is circular-slewed = jump-free) with a slow advance drift.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ *
+ * Valence shapes saturation toward the mood.
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -64,7 +76,14 @@ vec3 imgPalette( float t )
 }
 
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -72,12 +91,15 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Overall level of the photo currently on the texture units, from a fixed
-/// 5-tap grid. The nacreous colour is imgPalette (a photo sample) and the
-/// cirrus layer is the photo itself, so a bright photo left the god rays and
-/// the sparkles no headroom at all. The probe rides the tex0/tex1 crossfade, so
-/// the gain it feeds can never pop, and being one number for the whole frame it
-/// rescales exposure without touching local contrast.
+/**  Overall level of the photo currently on the texture units, from a fixed 5-tap grid.
+ *
+ * @return
+ *   The photo's average level, 0..1.
+ *
+ * The nacreous colour is imgPalette (a photo sample) and the cirrus layer is the photo itself, so a bright photo left
+ * the god rays and the sparkles no headroom at all. The probe rides the tex0/tex1 crossfade, so the gain it feeds can
+ * never pop, and being one number for the whole frame it rescales exposure without touching local contrast.
+ **/
 float photoLevel()
 {
     vec3 s = img( vec2( 0.25, 0.25 ) ) + img( vec2( 0.75, 0.25 ) )
@@ -86,7 +108,13 @@ float photoLevel()
     return dot( s * 0.2, vec3( 0.299, 0.587, 0.114 ) );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 219.78, 483.12 ) );
@@ -94,7 +122,13 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// @brief Smooth value noise.
+/**  Smooth value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise( vec2 p )
 {
     vec2 i = floor( p );
@@ -104,7 +138,13 @@ float noise( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float v = 0.0;
@@ -119,7 +159,7 @@ float fbm( vec2 p )
     return v;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float den = ( densityP > 0.0 ) ? densityP : 1.0;

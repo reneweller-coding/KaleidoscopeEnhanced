@@ -26,6 +26,14 @@ float deg30 = TAU / 12.0;
 // http://www.gamedev.net/page/resources/_/technical/game-programming/coordinates-in-hexagon-based-tile-maps-r1800
 // nearest hexagon sampling, not quite sure if it's correct
 
+/**  Hexagonal distance between two points.
+ *
+ * @param a  One point. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float hexDist( vec2 a, vec2 b )
 {
     vec2  p = abs( b - a );
@@ -36,6 +44,14 @@ float hexDist( vec2 a, vec2 b )
     return max( diag_dist, p.x ) / c;
 }
 
+/**  Centre of the hexagon nearest to a point.
+ *
+ * @param s   Size of a hexagon. (in)
+ * @param st  The point. (in)
+ *
+ * @return
+ *   The centre.
+ **/
 vec2 nearestHex( float s, vec2 st )
 {
     float h = sin( deg30 ) * s;
@@ -87,7 +103,7 @@ vec2 nearestHex( float s, vec2 st )
     return vec2( coord.x * 2.0 * r - xoff, coord.y * ( h + s ) ) + vec2( r * 2.0, s );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     vec2 uv = gl_FragCoord.xy / resolution.xy;

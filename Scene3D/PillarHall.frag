@@ -71,17 +71,28 @@ uniform float     audioAdvance; ///< The music's advance: integrated tempo-weigh
                                 ///< backwards).
 uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -91,7 +102,13 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
@@ -103,10 +120,21 @@ vec3 hue2rgb( float h )
 uniform float shadowExtent;
 #define SHADOW_WORLD_TEXEL ( 2.0 * shadowExtent * shadowTexel )
 
-/// Generalised over WHICH light's map/matrix to sample -- lights 1 and 2 are
-/// otherwise shaded identically, just from different directions and maps.
-/// Passing a sampler2DShadow by value is fine in GLSL (opaque handle, not the
-/// texture data itself), so this stays one function instead of two copies.
+/**  Generalised over WHICH light's map/matrix to sample -- lights 1 and 2 are otherwise shaded identically, just from
+ * different directions and maps.
+ *
+ * @param world      The world position. (in)
+ * @param n          Its normal (lifts the lookup off the surface). (in)
+ * @param ndl        N dot L there (scales the bias). (in)
+ * @param shadowTex  The light's shadow map. (in)
+ * @param lm         The light's matrix. (in)
+ *
+ * @return
+ *   1 for lit, 0 for shadowed (filtered in between).
+ *
+ * Passing a sampler2DShadow by value is fine in GLSL (opaque handle, not the texture data itself), so this stays one
+ * function instead of two copies.
+ **/
 float shadowAt( vec3 world, vec3 n, float ndl, sampler2DShadow shadowTex, mat4 lm )
 {
     // Normal offset.  A shadow texel covers a patch of surface, and the depth
@@ -145,7 +173,7 @@ float shadowAt( vec3 world, vec3 n, float ndl, sampler2DShadow shadowTex, mat4 l
     return s / 9.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Depth pass (either light): write nothing but depth.

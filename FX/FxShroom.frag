@@ -21,6 +21,14 @@ uniform float     scaleFactor;
 // const float scale = 0.02;
 
 
+/**  The wobble offset of a coordinate.
+ *
+ * @param time  Time. (in)
+ * @param uv    The coordinate. (in)
+ *
+ * @return
+ *   The offset.
+ **/
 vec2 getOffset( float time, vec2 uv )
 {
     // float a = 1.0 + 0.5 * sin(time + uv.x * 10.0);
@@ -42,7 +50,7 @@ vec2 getOffset( float time, vec2 uv )
 }
 
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     vec2 uv = -gl_FragCoord.xy / resolution.xy;

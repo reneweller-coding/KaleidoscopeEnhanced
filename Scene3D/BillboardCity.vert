@@ -26,7 +26,7 @@ out vec4  vSeed; ///< Per-instance random seed (from the vertex stage).
 out float vBand;
 out float vFade;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = attrA.w;

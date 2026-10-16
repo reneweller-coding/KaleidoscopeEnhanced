@@ -22,13 +22,25 @@ uniform vec2      nearFar;    ///< shared scene clip planes (linearisation)
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p2  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hashT( vec2 p2 )
 {
     return fract( sin( dot( p2, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// Smooth 2D value noise.
+/**  Smooth 2D value noise.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2T( vec2 q )
 {
     vec2 i = floor( q ), f = fract( q );
@@ -38,13 +50,21 @@ float noise2T( vec2 q )
     return mix( mix( a, b, f.x ), mix( c, e, f.x ), f.y );
 }
 
-/// @brief Mixes two RGBA values with a clamped weight.
+/**  Mixes two RGBA values with a clamped weight.
+ *
+ * @param a  The value at weight 0. (in)
+ * @param b  The value at weight 1. (in)
+ * @param w  The weight; clamped to 0..1. (in)
+ *
+ * @return
+ *   The mixed value.
+ **/
 vec4 blend4( vec4 a, vec4 b, float w )
 {
     return mix( a, b, clamp( w, 0.0, 1.0 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = gl_FragCoord.xy / resolution;

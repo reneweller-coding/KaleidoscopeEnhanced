@@ -23,7 +23,7 @@ uniform float time;         ///< Seconds since the program started (never reset;
 const float FieldW = 26.0;
 const float FieldD = 55.0;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = attrA.w;

@@ -21,12 +21,26 @@ precision highp float;
 
 const int Radius = 10;
 
+/**  Pseudo-random value of a 2D point.
+ *
+ * @param co  The point. (in)
+ *
+ * @return
+ *   The pseudo-random value.
+ **/
 float rand( vec2 co )
 {
     // implementation found at: lumina.sourceforge.net/Tutorials/Noise.html
     return fract( sin( dot( co.xy, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );
 }
 
+/**  Smooth 2D value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value.
+ **/
 float noise2f( in vec2 p )
 {
     vec2 ip = vec2( floor( p ) );
@@ -43,7 +57,13 @@ float noise2f( in vec2 p )
     // return 2.0* (res-10.7);
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param c  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 c )
 {
     float f = 0.0;
@@ -59,11 +79,28 @@ float fbm( vec2 c )
 
 
 
+/**  Complex arithmetic helpers
+ *
+ * @param a  One complex number. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The product a b.
+ **/
 vec2 cMul( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x );
 }
 
+/**  Domain-warped fractal noise (the flow of the paint).
+ *
+ * @param p  The point. (in)
+ * @param q  Receives the first warp. (out)
+ * @param r  Receives the second warp. (out)
+ *
+ * @return
+ *   The pattern value.
+ **/
 float pattern( vec2 p, out vec2 q, out vec2 r )
 {
     float tw = time + 0.5 * audioAdvance;
@@ -81,61 +118,157 @@ const vec3 Color2 = vec3( 0.666667, 0.666667, 0.498039 );
 const vec3 Color3 = vec3( 0, 0, 0.164706 );
 const vec3 Color4 = vec3( 0.666667, 1, 1 );
 
+/**  Blend mode darken: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 darken( vec3 s, vec3 d )
 {
     return min( s, d );
 }
 
+/**  Blend mode multiply: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 multiply( vec3 s, vec3 d )
 {
     return s * d;
 }
 
+/**  Blend mode colour burn: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 colorBurn( vec3 s, vec3 d )
 {
     return 1.0 - ( 1.0 - d ) / s;
 }
 
+/**  Blend mode linear burn: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 linearBurn( vec3 s, vec3 d )
 {
     return s + d - 1.0;
 }
 
+/**  Blend mode darker colour: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 darkerColor( vec3 s, vec3 d )
 {
     return ( s.x + s.y + s.z < d.x + d.y + d.z ) ? s : d;
 }
 
+/**  Blend mode lighten: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 lighten( vec3 s, vec3 d )
 {
     return max( s, d );
 }
 
+/**  Blend mode screen: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 screen( vec3 s, vec3 d )
 {
     return s + d - s * d;
 }
 
+/**  Blend mode colour dodge: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 colorDodge( vec3 s, vec3 d )
 {
     return d / ( 1.0 - s );
 }
 
+/**  Blend mode linear dodge (add): s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 linearDodge( vec3 s, vec3 d )
 {
     return s + d;
 }
 
+/**  Blend mode lighter colour: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 lighterColor( vec3 s, vec3 d )
 {
     return ( s.x + s.y + s.z > d.x + d.y + d.z ) ? s : d;
 }
 
+/**  Blend mode overlay: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 float overlay( float s, float d )
 {
     return ( d < 0.5 ) ? 2.0 * s * d : 1.0 - 2.0 * ( 1.0 - s ) * ( 1.0 - d );
 }
 
+/**  Blend mode overlay: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 overlay( vec3 s, vec3 d )
 {
     vec3 c;
@@ -145,6 +278,14 @@ vec3 overlay( vec3 s, vec3 d )
     return c;
 }
 
+/**  Blend mode soft light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 float softLight( float s, float d )
 {
     return ( s < 0.5 )    ? d - ( 1.0 - 2.0 * s ) * d * ( 1.0 - d )
@@ -152,6 +293,14 @@ float softLight( float s, float d )
                           : d + ( 2.0 * s - 1.0 ) * ( sqrt( d ) - d );
 }
 
+/**  Blend mode soft light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 softLight( vec3 s, vec3 d )
 {
     vec3 c;
@@ -161,11 +310,27 @@ vec3 softLight( vec3 s, vec3 d )
     return c;
 }
 
+/**  Blend mode hard light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 float hardLight( float s, float d )
 {
     return ( s < 0.5 ) ? 2.0 * s * d : 1.0 - 2.0 * ( 1.0 - s ) * ( 1.0 - d );
 }
 
+/**  Blend mode hard light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 hardLight( vec3 s, vec3 d )
 {
     vec3 c;
@@ -175,11 +340,27 @@ vec3 hardLight( vec3 s, vec3 d )
     return c;
 }
 
+/**  Blend mode vivid light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 float vividLight( float s, float d )
 {
     return ( s < 0.5 ) ? 1.0 - ( 1.0 - d ) / ( 2.0 * s ) : d / ( 2.0 * ( 1.0 - s ) );
 }
 
+/**  Blend mode vivid light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 vividLight( vec3 s, vec3 d )
 {
     vec3 c;
@@ -189,17 +370,41 @@ vec3 vividLight( vec3 s, vec3 d )
     return c;
 }
 
+/**  Blend mode linear light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 linearLight( vec3 s, vec3 d )
 {
     return 2.0 * s + d - 1.0;
 }
 
+/**  Blend mode pin light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 float pinLight( float s, float d )
 {
     return ( 2.0 * s - 1.0 > d ) ? 2.0 * s - 1.0 : ( s < 0.5 * d ) ? 2.0 * s
                                                                    : d;
 }
 
+/**  Blend mode pin light: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 pinLight( vec3 s, vec3 d )
 {
     vec3 c;
@@ -209,33 +414,78 @@ vec3 pinLight( vec3 s, vec3 d )
     return c;
 }
 
+/**  Blend mode hard mix: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 hardMix( vec3 s, vec3 d )
 {
     return floor( s + d );
 }
 
+/**  Blend mode difference: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 difference( vec3 s, vec3 d )
 {
     return abs( d - s );
 }
 
+/**  Blend mode exclusion: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 exclusion( vec3 s, vec3 d )
 {
     return s + d - 2.0 * s * d;
 }
 
+/**  Blend mode subtract: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 subtract( vec3 s, vec3 d )
 {
     return s - d;
 }
 
+/**  Blend mode divide: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 divide( vec3 s, vec3 d )
 {
     return s / d;
 }
 
-///	rgb<-->hsv functions by Sam Hocevar
-///	http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+/**  rgb<-->hsv functions by Sam Hocevar http://lolengine.net/blog/2013/07/27/rgb-to-hsv-in-glsl
+ *
+ * @param c  The colour (RGB). (in)
+ *
+ * @return
+ *   The colour (HSV).
+ **/
 vec3 rgb2hsv( vec3 c )
 {
     vec4 K = vec4( 0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0 );
@@ -247,7 +497,13 @@ vec3 rgb2hsv( vec3 c )
     return vec3( abs( q.z + ( q.w - q.y ) / ( 6.0 * d + e ) ), d / ( q.x + e ), q.x );
 }
 
-/// @brief HSV (all 0..1) to RGB.
+/**  HSV (all 0..1) to RGB.
+ *
+ * @param c  Hue, saturation and value, all 0..1. (in)
+ *
+ * @return
+ *   The RGB colour.
+ **/
 vec3 hsv2rgb( vec3 c )
 {
     vec4 K = vec4( 1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0 );
@@ -255,6 +511,14 @@ vec3 hsv2rgb( vec3 c )
     return c.z * mix( K.xxx, clamp( p - K.xxx, 0.0, 1.0 ), c.y );
 }
 
+/**  Blend mode hue: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 hue( vec3 s, vec3 d )
 {
     d = rgb2hsv( d );
@@ -262,6 +526,14 @@ vec3 hue( vec3 s, vec3 d )
     return hsv2rgb( d );
 }
 
+/**  Blend mode colour: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 color( vec3 s, vec3 d )
 {
     s = rgb2hsv( s );
@@ -269,6 +541,14 @@ vec3 color( vec3 s, vec3 d )
     return hsv2rgb( s );
 }
 
+/**  Blend mode saturation: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 saturation( vec3 s, vec3 d )
 {
     d = rgb2hsv( d );
@@ -276,6 +556,14 @@ vec3 saturation( vec3 s, vec3 d )
     return hsv2rgb( d );
 }
 
+/**  Blend mode luminosity: s over d.
+ *
+ * @param s  The blend colour. (in)
+ * @param d  The base colour. (in)
+ *
+ * @return
+ *   The blended colour.
+ **/
 vec3 luminosity( vec3 s, vec3 d )
 {
     float d_lum = dot( d, vec3( 0.3, 0.59, 0.11 ) );
@@ -291,6 +579,15 @@ vec3 luminosity( vec3 s, vec3 d )
     else
         return c;
 }
+/**  The frame at a pixel offset.
+ *
+ * @param x      Offset in x (pixels). (in)
+ * @param y      Offset in y (pixels). (in)
+ * @param delta  Extra offset (UV). (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 sample( const int x, const int y, vec2 delta )
 {
     vec2 uv = ( gl_FragCoord.xy + vec2( x, y ) ) / resolution.xy;
@@ -304,7 +601,7 @@ vec3 sample( const int x, const int y, vec2 delta )
 
 
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     vec2  src_size = vec2( 1.0 / resolution.x, 1.0 / resolution.y );

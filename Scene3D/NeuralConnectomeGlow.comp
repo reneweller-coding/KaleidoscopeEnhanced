@@ -31,7 +31,13 @@ uniform float neuronsP;
 uniform float branchP; ///< Branching knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -39,13 +45,29 @@ float hash11( float p )
     p *= p + p;
     return fract( p );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param c     Centre of the quad. (in)
+ * @param ax    Half the quad's extent along its first axis. (in)
+ * @param ay    Half its extent along the second axis. (in)
+ * @param id    Element id written to every vertex. (in)
+ * @param lit   Lighting weight written to every vertex. (in)
+ * @param kind  Element kind written to every vertex. (in)
+ * @param uv0   Texture coordinate of the first corner. (in)
+ * @param uv1   Texture coordinate of the opposite corner. (in)
+ **/
 void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1 )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -69,12 +91,29 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     }
 }
 
+/**  Position of neuron n.
+ *
+ * @param n  Index of the neuron. (in)
+ * @param R  Orientation of the cloud. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 somaPos( float n, mat3 R )
 {
     vec3 h = hash31( n * 3.7 + 5.0 );
     return R * vec3( ( h.x - 0.5 ) * 12.0, ( h.y - 0.5 ) * 7.0, ( h.z - 0.5 ) * 6.0 ) + vec3( 0.0, 0.0, 10.0 );
 }
 
+/**  Appends a fibre (a ribbon of six segments along a gentle bulge) to the output buffer.
+ *
+ * @param a      Start of the fibre. (in)
+ * @param b      End of the fibre. (in)
+ * @param width  Width of the ribbon. (in)
+ * @param id     Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param band   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitFibre( vec3 a, vec3 b, float width, float id, float band, float kind )
 {
     // A fibre as 6 segments along a gently curved path (a sine bulge).
@@ -92,7 +131,7 @@ void emitFibre( vec3 a, vec3 b, float width, float id, float band, float kind )
     }
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

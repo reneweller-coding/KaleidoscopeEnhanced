@@ -45,7 +45,13 @@ uniform float spreadP; ///< Spread knob, 0..1.
 uniform float speedP;  ///< Speed knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -53,13 +59,25 @@ float hash11( float p )
     p *= p + p;
     return fract( p );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
 
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -72,8 +90,13 @@ float noise3( vec3 p )
         f.z );
 }
 
-/// Curl of the noise field: divergence-free, so the flock folds instead of
-/// inflating.
+/**  Curl of the noise field: divergence-free, so the flock folds instead of inflating.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The curl (a divergence-free flow).
+ **/
 vec3 curl( vec3 p )
 {
     const float e = 0.12;
@@ -86,8 +109,20 @@ vec3 curl( vec3 p )
     return vec3( x1 - x2, y1 - y2, z1 - z2 ) / ( 2.0 * e );
 }
 
-/// Where bird `id` is at flow time t: a home point on a squashed ellipsoid,
-/// carried by the curl field.  Two evaluations a moment apart give heading.
+/**  Where bird `id` is at flow time t: a home point on a squashed ellipsoid, carried by the curl field.
+ *
+ * @param id         Index of the bird. (in)
+ * @param t          Flow time. (in)
+ * @param spread     Spread of the flock. (in)
+ * @param compact    How compact the flock is, 0..1. (in)
+ * @param fright     Position of the fright. (in)
+ * @param frightAmt  Strength of the fright. (in)
+ *
+ * @return
+ *   The position.
+ *
+ * Two evaluations a moment apart give heading.
+ **/
 vec3 birdPos( float id, float t, float spread, float compact, vec3 fright, float frightAmt )
 {
     vec3 h = hash31( id ) * 2.0 - 1.0;
@@ -106,7 +141,7 @@ vec3 birdPos( float id, float t, float spread, float compact, vec3 fright, float
     return p;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

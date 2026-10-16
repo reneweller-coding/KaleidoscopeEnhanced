@@ -28,19 +28,33 @@ in vec3 vView; ///< View vector (from the vertex stage).
  * audioDrop lights the entire globe.
  */
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
+/**  Mirror-repeats a coordinate (a triangle wave of period 2).
+ *
+ * @param uv  The coordinate. (in)
+ *
+ * @return
+ *   The folded coordinate, 0..1.
+ **/
 vec2 mfold( vec2 uv )
 {
     return abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = vec2( vUV.x * 2.0, vUV.y );

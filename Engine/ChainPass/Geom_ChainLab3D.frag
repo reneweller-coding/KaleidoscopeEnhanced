@@ -20,14 +20,26 @@ uniform float bodyP;        ///< Body class knob of the 3D chain, 0..1.
 uniform float morphP;       ///< Morph knob: how the scene changes over time, 0..1.
 uniform float speedP;       ///< Speed knob, 0..1.
 uniform float camP;         ///< Camera knob, 0..1.
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -35,31 +47,62 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
 float gDR = 1.0;
 vec3  gP = vec3( 0.0 );
-/// @brief Rotation of p about an axis.
+/**  Rotation of p about an axis.
+ *
+ * @param p     The point. (in)
+ * @param axis  The axis (normalised here). (in)
+ * @param a     The angle in radians. (in)
+ *
+ * @return
+ *   The rotated point.
+ **/
 vec3 fRot( vec3 p, vec3 axis, float a )
 {
     axis = normalize( axis );
     float c = cos( a ), s = sin( a );
     return p * c + cross( axis, p ) * s + axis * dot( axis, p ) * ( 1.0 - c );
 }
-/// @brief Mirror fold in all three axes.
+/**  Mirror fold in all three axes.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fAbs( vec3 p )
 {
     return abs( p );
 }
+/**  Octahedral mirror fold.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fOcta( vec3 p )
 {
     p = abs( p );
@@ -71,6 +114,13 @@ vec3 fOcta( vec3 p )
         p.yz = p.zy;
     return p;
 }
+/**  Tetrahedral mirror fold.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fTetra( vec3 p )
 {
     if ( p.x + p.y < 0.0 )
@@ -81,11 +131,27 @@ vec3 fTetra( vec3 p )
         p.zy = -p.yz;
     return p;
 }
+/**  Mandelbox box fold.
+ *
+ * @param p  The point. (in)
+ * @param l  Folding limit per axis. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fBox( vec3 p, float l )
 {
     return clamp( p, -l, l ) * 2.0 - p;
 }
-/// @brief Sphere-inversion fold (Mandelbox style).
+/**  Sphere-inversion fold (Mandelbox style).
+ *
+ * @param p     The point. (in)
+ * @param rMin  Inner radius (fixed scaling inside). (in)
+ * @param rFix  Radius of the inversion. (in)
+ *
+ * @return
+ *   The folded point (gDR scaled along).
+ **/
 vec3 fSphere( vec3 p, float rMin, float rFix )
 {
     float r2 = dot( p, p );
@@ -93,22 +159,55 @@ vec3 fSphere( vec3 p, float rMin, float rFix )
     gDR *= k;
     return p * k;
 }
-/// @brief Scale and offset step of a fold (tracks the distance derivative gDR).
+/**  Scale and offset step of a fold (tracks the distance derivative gDR).
+ *
+ * @param p       The point. (in)
+ * @param s       Scale factor. (in)
+ * @param offset  Offset subtracted after scaling. (in)
+ *
+ * @return
+ *   The scaled point (gDR scaled along).
+ **/
 vec3 fScale( vec3 p, float s, vec3 offset )
 {
     gDR *= abs( s );
     return p * s - offset;
 }
+/**  Mirrored repetition (triangle wave: continuous), period 4c per axis.
+ *
+ * @param p  The point. (in)
+ * @param c  Half the period per axis. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fRepeat( vec3 p, vec3 c )
 {
     return c * ( abs( mod( p / c - 1.0, 4.0 ) - 2.0 ) - 1.0 );
 }
+/**  Mirrored polar repetition around the z axis (n wedges, n whole).
+ *
+ * @param p  The point. (in)
+ * @param n  Number of wedges (whole). (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fPolarZ( vec3 p, float n )
 {
     float sec = 6.2831853 / n;
     float a = abs( mod( atan( p.y, p.x ), sec ) - 0.5 * sec );
     return vec3( length( p.xy ) * vec2( cos( a ), sin( a ) ), p.z );
 }
+/**  Knighty's polyhedral fold: symmetric under the polyhedral group of type n (3 tetrahedral, 4 octahedral, 5
+ * icosahedral) -- abs of x and y and one oblique mirror, repeated n times; every fold is a reflection (continuous).
+ *
+ * @param p  The point. (in)
+ * @param n  Symmetry: 3 tetrahedral, 4 octahedral, 5 icosahedral. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fPoly( vec3 p, float n )
 {
     float cospin = cos( 3.14159265 / n ), scospin = sqrt( max( 0.75 - cospin * cospin, 1e-4 ) );
@@ -122,6 +221,18 @@ vec3 fPoly( vec3 p, float n )
     }
     return p;
 }
+/**  A lattice folded in FOUR dimensions and sliced by our space: the point is lifted to 4D (w from time), turned in
+ * the xw and yw planes, mirror-repeated in 4D and dropped back to 3D.
+ *
+ * @param p   The point. (in)
+ * @param c   Cell size of the 4D lattice. (in)
+ * @param a1  Turn in the xw plane (radians). (in)
+ * @param a2  Turn in the yw plane (radians). (in)
+ * @param w   The fourth coordinate (from time). (in)
+ *
+ * @return
+ *   The folded point (a projection: distances never grow).
+ **/
 vec3 f4DLattice( vec3 p, float c, float a1, float a2, float w )
 {
     vec4 q = vec4( p, w );
@@ -130,6 +241,17 @@ vec3 f4DLattice( vec3 p, float c, float a1, float a2, float w )
     q = c * ( abs( mod( q / c - 1.0, 4.0 ) - 2.0 ) - 1.0 );
     return q.xyz;
 }
+/**  Log-spherical Droste in 3D: around a centre the radius is folded in log scale (mirrored triangle wave), so the
+ * world repeats inward and outward in shells at every scale; gDR carries the local scale.
+ *
+ * @param p     The point. (in)
+ * @param c     Centre of the shells. (in)
+ * @param K     Scale ratio between two shells. (in)
+ * @param zoom  Zoom phase (integrated time). (in)
+ *
+ * @return
+ *   The folded point (gDR carries the local scale).
+ **/
 vec3 fLogSphere( vec3 p, vec3 c, float K, float zoom )
 {
     vec3  d = p - c;
@@ -140,6 +262,15 @@ vec3 fLogSphere( vec3 p, vec3 c, float K, float zoom )
     gDR *= rn / r;
     return d / r * rn;
 }
+/**  Hyperbolic honeycomb in the Poincare ball: the octahedral mirrors plus the sphere orthogonal to the unit ball
+ * (centre k(1,1,1), R^2 = |c|^2 - 1), repeated -- cells shrinking without end toward the ball's rim.
+ *
+ * @param p  The point. (in)
+ * @param k  Centre offset of the orthogonal sphere: k (1, 1, 1). (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fHyperBall( vec3 p, float k )
 {
     vec3  c = vec3( k );
@@ -164,6 +295,16 @@ vec3 fHyperBall( vec3 p, float k )
     }
     return p;
 }
+/**  The world wrapped round a great ring (radius R, in the xz plane): the distance to the ring, the height and the
+ * arc length become the new axes.
+ *
+ * @param p     The point. (in)
+ * @param R     Radius of the ring. (in)
+ * @param cell  Size of the repeated cell. (in)
+ *
+ * @return
+ *   The wrapped point.
+ **/
 vec3 fTorusWrap( vec3 p, float R, float cell )
 {
     float rho = length( p.xz );
@@ -173,23 +314,57 @@ vec3 fTorusWrap( vec3 p, float R, float cell )
     vec3 q = vec3( rho - R, p.y, arc );
     return per * ( abs( mod( q / per - 1.0, 4.0 ) - 2.0 ) - 1.0 ) * vec3( 1.0, 1.0, 1.0 );
 }
+/**  Gyroid-warped space: every point shifted along a gyroid-like field (smooth; the shift's slope is bounded, gDR
+ * takes it).
+ *
+ * @param p  The point. (in)
+ * @param s  Strength of the shift. (in)
+ * @param t  Phase of the field. (in)
+ *
+ * @return
+ *   The shifted point (gDR takes the slope).
+ **/
 vec3 fGyroidWarp( vec3 p, float s, float t )
 {
     gDR *= 1.0 + 1.3 * s;
     return p + s * sin( p.yzx * 1.3 + vec3( t, 1.7 * t, 2.3 + t ) );
 }
-/// @brief Signed distance bound to an octahedron of size s.
+/**  Signed distance bound to an octahedron of size s.
+ *
+ * @param p  The point. (in)
+ * @param s  Size of the octahedron. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdOcta3( vec3 p, float s )
 {
     p = abs( p );
     return ( p.x + p.y + p.z - s ) * 0.57735027;
 }
+/**  Upper half-space model of hyperbolic space (height = |y|): the lattice shrinks without end toward the floor
+ * plane, its scale falling as 1/h.
+ *
+ * @param p  The point. (in)
+ * @param c  Cell size of the lattice. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fHalfSpace( vec3 p, float c )
 {
     float h = abs( p.y + 4.0 ) + 0.35;
     gDR *= 1.0 / h;
     return vec3( p.x / h, log( h ) * 1.6, p.z / h );
 }
+/**  Log-cylindrical Droste: the distance to the flight axis folded in log scale.
+ *
+ * @param p  The point. (in)
+ * @param K  Scale ratio between two repeats. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fLogCyl( vec3 p, float K )
 {
     float rho = max( length( p.xy ), 1e-3 ), lk = log( K );
@@ -198,19 +373,41 @@ vec3 fLogCyl( vec3 p, float K )
     gDR *= max( rn / rho, 1e-3 );
     return vec3( p.xy / rho * rn, p.z * rn / rho );
 }
-/// @brief Distance bound to a superquadric (exponent e).
+/**  Distance bound to a superquadric (exponent e).
+ *
+ * @param p  The point. (in)
+ * @param r  Radius. (in)
+ * @param e  Exponent (2 = sphere, large = box). (in)
+ *
+ * @return
+ *   The distance bound.
+ **/
 float sdSuperquad( vec3 p, float r, float e )
 {
     vec3 a = pow( abs( p ) / r, vec3( e ) );
     return ( pow( a.x + a.y + a.z, 1.0 / e ) - 1.0 ) * r * 0.7;
 }
-/// @brief Distance bound to a Neovius minimal surface sheet.
+/**  Distance bound to a Neovius minimal surface sheet.
+ *
+ * @param p   The point. (in)
+ * @param th  Thickness of the sheet. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdNeovius( vec3 p, float th )
 {
     vec3 c = cos( p );
     return ( abs( 3.0 * ( c.x + c.y + c.z ) + 4.0 * c.x * c.y * c.z ) - th ) / 9.0;
 }
-/// @brief Distance bound to a Lidinoid minimal surface sheet.
+/**  Distance bound to a Lidinoid minimal surface sheet.
+ *
+ * @param p   The point. (in)
+ * @param th  Thickness of the sheet. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdLidinoid( vec3 p, float th )
 {
     vec3  s2 = sin( 2.0 * p ), c = cos( p ), s = sin( p ), c2 = cos( 2.0 * p );
@@ -218,7 +415,15 @@ float sdLidinoid( vec3 p, float th )
               - 0.5 * ( c2.x * c2.y + c2.y * c2.z + c2.z * c2.x ) + 0.15;
     return ( abs( f ) - th ) / 3.0;
 }
-/// @brief The world rolled round the z axis.
+/**  The world rolled round the z axis.
+ *
+ * @param p     The point. (in)
+ * @param R     Radius of the roll. (in)
+ * @param cell  Size of the repeated cell. (in)
+ *
+ * @return
+ *   The rolled point.
+ **/
 vec3 fRollZ( vec3 p, float R, float cell )
 {
     float rho = length( p.xy ), arc = atan( p.y, p.x ) * R;
@@ -227,12 +432,26 @@ vec3 fRollZ( vec3 p, float R, float cell )
     vec3 q = vec3( rho - R, arc, p.z );
     return per * ( abs( mod( q / per - 1.0, 4.0 ) - 2.0 ) - 1.0 );
 }
-/// @brief Signed distance bound to a tetrahedron of size s.
+/**  Signed distance bound to a tetrahedron of size s.
+ *
+ * @param p  The point. (in)
+ * @param s  Size of the tetrahedron. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdTetra3( vec3 p, float s )
 {
     return ( max( abs( p.x + p.y ) - p.z, abs( p.x - p.y ) + p.z ) - s ) * 0.57735027;
 }
-/// @brief Signed distance bound to an icosahedron of size s.
+/**  Signed distance bound to an icosahedron of size s.
+ *
+ * @param p  The point. (in)
+ * @param s  Size of the icosahedron. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdIcosa3( vec3 p, float s )
 {
     p = abs( p );
@@ -243,17 +462,42 @@ float sdIcosa3( vec3 p, float s )
     d = max( d, dot( p, vec3( g, 0.0, ig ) ) );
     return ( d * 0.57735027 - s );
 }
+/**  Twist around z (keep k small: it stretches space).
+ *
+ * @param p  The point. (in)
+ * @param k  Twist per unit of z (radians); keep small. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fTwistZ( vec3 p, float k )
 {
     vec2 q = rot2( k * p.z ) * p.xy;
     return vec3( q, p.z );
 }
+/**  Sphere inversion (radius R): the outside comes inside, endlessly nested.
+ *
+ * @param p  The point. (in)
+ * @param R  Radius of the inversion sphere. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fInvert( vec3 p, float R )
 {
     float r2 = max( dot( p, p ), 1e-4 );
     gDR *= R * R / r2;
     return p * R * R / r2;
 }
+/**  Smooth 3D noise warp (small strength).
+ *
+ * @param p  The point. (in)
+ * @param s  Strength of the warp. (in)
+ * @param t  Phase of the noise. (in)
+ *
+ * @return
+ *   The warped point (gDR takes the slope).
+ **/
 vec3 fWarp( vec3 p, float s, float t )
 {
 
@@ -266,22 +510,52 @@ vec3 fWarp( vec3 p, float s, float t )
                      - 0.5 )
                  * 1.6;
 }
+/**  Signed distance to a sphere of radius r.
+ *
+ * @param p  The point. (in)
+ * @param r  Radius. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdSphere3( vec3 p, float r )
 {
     return length( p ) - r;
 }
-/// @brief Signed distance to a box of half size b.
+/**  Signed distance to a box of half size b.
+ *
+ * @param p  The point. (in)
+ * @param b  Half size of the box. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdBox3( vec3 p, vec3 b )
 {
     vec3 q = abs( p ) - b;
     return length( max( q, 0.0 ) ) + min( max( q.x, max( q.y, q.z ) ), 0.0 );
 }
-/// @brief Signed distance to a torus (ring radius R, tube radius r).
+/**  Signed distance to a torus (ring radius R, tube radius r).
+ *
+ * @param p  The point. (in)
+ * @param R  Radius of the ring. (in)
+ * @param r  Radius of the tube. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdTorus3( vec3 p, float R, float r )
 {
     return length( vec2( length( p.xz ) - R, p.y ) ) - r;
 }
-/// @brief Distance bound to a gyroid sheet of the given thickness.
+/**  Distance bound to a gyroid sheet of the given thickness.
+ *
+ * @param p      The point. (in)
+ * @param thick  Thickness of the sheet. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdGyroid3( vec3 p, float thick )
 {
     return ( abs( dot( sin( p ), cos( p.yzx ) ) ) - thick ) / 1.8;
@@ -293,20 +567,40 @@ float gTube = 0.45;
 float gSide = 0.0;
 float gOrtho = 0.0;
 vec3  gAxis = vec3( 0.0, 0.0, 1.0 );
-/// @brief The camera path's x/y offset at depth z.
+/**  The camera path's x/y offset at depth z.
+ *
+ * @param z  Depth along the flight. (in)
+ *
+ * @return
+ *   The path's x/y offset.
+ **/
 vec2 camPathXY( float z )
 {
     return gPathAmp
            * vec2( 1.1 * sin( z * 0.11 ) + 0.4 * sin( z * 0.23 + 1.3 ),
                    0.8 * sin( z * 0.083 + 0.7 ) + 0.3 * cos( z * 0.19 ) );
 }
-/// @brief Smooth maximum of two distances (blend width k).
+/**  Smooth maximum of two distances (blend width k).
+ *
+ * @param a  One distance. (in)
+ * @param b  The other distance. (in)
+ * @param k  Blend width. (in)
+ *
+ * @return
+ *   The smooth maximum.
+ **/
 float smaxK( float a, float b, float k )
 {
     float h = clamp( 0.5 - 0.5 * ( b - a ) / k, 0.0, 1.0 );
     return mix( b, a, h ) + k * h * ( 1.0 - h );
 }
-/// @brief The world's distance field with the flight tube carved out.
+/**  The world's distance field with the flight tube carved out.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float fieldD( vec3 p )
 {
     gDR = 1.0;
@@ -325,6 +619,14 @@ float fieldD( vec3 p )
         tube = max( tube, mix( -1.0, 0.35 - abs( dot( p - gCam, gAxis ) ), gOrtho ) );
     return max( smaxK( d, 0.8 * tube, 0.15 ), 0.3 - length( p - gCam ) );
 }
+/**  The camera frame at depth z: on the path, looking at the path ahead.
+ *
+ * @param z   Depth along the flight. (in)
+ * @param ro  Receives the camera position. (out)
+ *
+ * @return
+ *   The camera frame (right, up, forward), banked into the curves.
+ **/
 mat3 camFrame( float z, out vec3 ro )
 {
     ro = vec3( camPathXY( z ), z );
@@ -341,7 +643,15 @@ mat3 camFrame( float z, out vec3 ro )
 uniform float camHost; ///< 1 when the app drives the camera (camZ, camGaze).
 uniform float camZ;    ///< Flight position along the camera path (integrated by the app).
 uniform vec3  camGaze; ///< Gaze shown, gaze panned to, pan progress.
-vec4          gazeAngles( float k, float time )
+/**  (yaw, pitch, ortho, carve the tube only near the camera)
+ *
+ * @param k     Gaze variant (taken modulo 7). (in)
+ * @param time  The scene's time. (in)
+ *
+ * @return
+ *   Yaw, pitch, orthographic share, and whether to carve the tube only near the camera.
+ **/
+vec4 gazeAngles( float k, float time )
 {
     float i = mod( k, 7.0 );
 
@@ -360,17 +670,43 @@ vec4          gazeAngles( float k, float time )
         return vec4( 1.35, -0.08, 0.0, 1.0 );
     return vec4( 0.0 );
 }
-/// @brief Turns a direction by the gaze angles (yaw, pitch).
+/**  Turns a direction by the gaze angles (yaw, pitch).
+ *
+ * @param v  The direction. (in)
+ * @param a  The gaze angles (yaw, pitch) in radians. (in)
+ *
+ * @return
+ *   The turned direction.
+ **/
 vec3 gazeTurn( vec3 v, vec2 a )
 {
     v.yz = rot2( a.y ) * v.yz;
     v.xz = rot2( -a.x ) * v.xz;
     return v;
 }
+/**  The camera's flight position (the app's integrated one, or gT).
+ *
+ * @param gt  The scene's own time (used without a host camera). (in)
+ *
+ * @return
+ *   The camera's position along the flight.
+ **/
 float camFlight( float gt )
 {
     return camHost > 0.5 ? camZ : gt;
 }
+/**  The ray of pixel p: its direction, and its origin moved off the camera for the orthographic share (rays start on
+ * a plane through the camera).
+ *
+ * @param p     The pixel's centred coordinate. (in)
+ * @param cam   Camera knob (orthographic share and gaze). (in)
+ * @param time  The scene's time. (in)
+ * @param cf    The camera frame (right, up, forward). (in)
+ * @param ro    The ray origin; moved off the camera for the orthographic share. (in,out)
+ *
+ * @return
+ *   The ray direction (unit length).
+ **/
 vec3 gazeDir( vec2 p, float cam, float time, mat3 cf, inout vec3 ro )
 {
     float k0, k1, f;
@@ -400,26 +736,62 @@ vec3 gazeDir( vec2 p, float cam, float time, mat3 cf, inout vec3 ro )
 }
 float gT, gTC, gSpread, gRot, gMw;
 vec2  gCw, gCt;
-/// @brief Class position of a knob value (n classes).
+/**  Class position of a knob value (n classes).
+ *
+ * @param x  The knob value, 0..1. (in)
+ * @param n  Number of classes. (in)
+ *
+ * @return
+ *   The class, 0..n-1.
+ **/
 int pickStage( float x, int n )
 {
     return int( min( floor( clamp( x, 0.0, 1.0 ) * float( n ) ), float( n - 1 ) ) );
 }
-/// @brief Sub-variant of a knob value within its class, 0..1.
+/**  Sub-variant of a knob value within its class, 0..1.
+ *
+ * @param x  The knob value, 0..1. (in)
+ * @param n  Number of classes. (in)
+ *
+ * @return
+ *   The position within the class, 0..1.
+ **/
 float subVar( float x, int n )
 {
     return fract( clamp( x, 0.0, 0.9999 ) * float( n ) );
 }
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
-bool          walkAll()
+/**  Chain walk.
+ *
+ * @return
+ *   True if every stage walks (morphP from 0.5).
+ **/
+bool walkAll()
 {
     return clamp( morphP, 0.0, 1.0 ) >= 0.5;
 }
+/**  Mirrored repetition along z (triangle wave: continuous), period 4c.
+ *
+ * @param q  The point. (in)
+ * @param c  Half the period. (in)
+ *
+ * @return
+ *   The repeated point.
+ **/
 vec3 zRepeat( vec3 q, float c )
 {
     q.z = c * ( abs( mod( q.z / c - 1.0, 4.0 ) - 2.0 ) - 1.0 );
     return q;
 }
+/**  Six-fold mirror lattice across the tube (p6m in xy): nearest hexagon centre, then the angle folded into a
+ * 30-degree wedge -- mirror symmetric, so the pieces meet without seams.
+ *
+ * @param p     The point. (in)
+ * @param cell  Size of a hexagonal cell. (in)
+ *
+ * @return
+ *   The transformed point (gDR tracks the scale).
+ **/
 vec3 fHexXY( vec3 p, float cell )
 {
     vec2       q = p.xy / cell;
@@ -429,6 +801,15 @@ vec3 fHexXY( vec3 p, float cell )
     float      an = abs( mod( atan( h.y, h.x ), 1.0471976 ) - 0.5235988 );
     return vec3( length( h ) * vec2( cos( an ), sin( an ) ) * cell, p.z );
 }
+/**  The structure classes in order of energy (calm .. energetic), as the chain's (if-chains, not const arrays: NVIDIA
+ * returned entry 0 for three arrays indexed in one function -- the body never changed): the music's energy picks
+ * the region of the world too.
+ *
+ * @param i  Position on the energy scale. (in)
+ *
+ * @return
+ *   The structure class at that position.
+ **/
 int ordsp( int i )
 {
     if ( i == 0 )
@@ -471,6 +852,13 @@ int ordsp( int i )
         return 5;
     return 8;
 }
+/**  The colour classes of the 3D lab in order of energy (calm .. energetic).
+ *
+ * @param i  Position on the energy scale. (in)
+ *
+ * @return
+ *   The colour class at that position.
+ **/
 int ordco( int i )
 {
     if ( i == 0 )
@@ -517,6 +905,13 @@ int ordco( int i )
         return 19;
     return 6;
 }
+/**  The body classes of the 3D lab in order of energy (calm .. energetic).
+ *
+ * @param i  Position on the energy scale. (in)
+ *
+ * @return
+ *   The body class at that position.
+ **/
 int ordbo( int i )
 {
     if ( i == 0 )
@@ -564,7 +959,18 @@ int ordbo( int i )
     return 8;
 }
 uniform vec3 walkSpace, walkCore, walkBody;
-float        fieldK0( vec3 p, float xs, float xc, float xb, int world )
+/**  fieldK() with the world fixed at compile time (the shown end of a specialised pass).
+ *
+ * @param p      The point. (in)
+ * @param xs     Structure knob, 0..1. (in)
+ * @param xc     Colour-fold knob, 0..1. (in)
+ * @param xb     Body knob, 0..1. (in)
+ * @param world  Which world. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
+float fieldK0( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
     int   ks = ordsp( pickStage( xs, 20 ) );
@@ -971,6 +1377,17 @@ float        fieldK0( vec3 p, float xs, float xc, float xb, int world )
 
     return d / gDR * 0.8;
 }
+/**  fieldK() with the world fixed at compile time (the target end of a specialised pass).
+ *
+ * @param p      The point. (in)
+ * @param xs     Structure knob, 0..1. (in)
+ * @param xc     Colour-fold knob, 0..1. (in)
+ * @param xb     Body knob, 0..1. (in)
+ * @param world  Which world. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float fieldK1( vec3 p, float xs, float xc, float xb, int world )
 {
     gDR = 1.0;
@@ -1378,6 +1795,13 @@ float fieldK1( vec3 p, float xs, float xc, float xb, int world )
 
     return d / gDR * 0.8;
 }
+/**  The world's distance field (folded lattice of bodies).
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float field3( vec3 p )
 {
     float xs = spaceP, xc = coreP, xb = bodyP, ys = xs, yc = xc, yb = xb, f = 0.0;
@@ -1403,7 +1827,7 @@ float field3( vec3 p )
     return mix( d0, d1, f );
 #endif
 }
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
 

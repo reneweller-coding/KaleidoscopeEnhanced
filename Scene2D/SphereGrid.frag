@@ -31,7 +31,13 @@ uniform float audioValence;  ///< Mood valence: 0 dark .. 1 bright.
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform float spacingP; ///< lattice fold spacing (0 -> 4.0; 3 = dense, 6 = sparse)
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -39,9 +45,14 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// Colour from a slowly-drifting crop of the picture, indexed by a scalar so the
-/// palette varies with depth and the crop window moves over time + with the
-/// harmony (audioPhase) — the effect is coloured by the ever-changing image.
+/**  Colour from a slowly-drifting crop of the picture, indexed by a scalar so the palette varies with depth and the
+ * crop window moves over time + with the harmony (audioPhase) — the effect is coloured by the ever-changing image.
+ *
+ * @param x  Position along the arc (radians). (in)
+ *
+ * @return
+ *   The photo's colour there (RGB).
+ **/
 vec3 imgPal( float x )
 {
     vec2 cc = vec2( 0.5 )
@@ -50,7 +61,7 @@ vec3 imgPal( float x )
     return img( fract( iuv ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  n = resolution;

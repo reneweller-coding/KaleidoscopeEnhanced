@@ -60,12 +60,24 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -74,8 +86,16 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/// A band-limited field: one wavelength amplified, its neighbours suppressed.
-/// That narrow band is what makes a labyrinth instead of clouds.
+/**  A band-limited field: one wavelength amplified, its neighbours suppressed.
+ *
+ * @param p  The point. (in)
+ * @param k  Frequency of the kept wavelength. (in)
+ *
+ * @return
+ *   The field value.
+ *
+ * That narrow band is what makes a labyrinth instead of clouds.
+ **/
 float banded( vec2 p, float k )
 {
     float a = noise2( p * k );
@@ -85,7 +105,7 @@ float banded( vec2 p, float k )
     return ( a - 0.5 ) * 2.0 - ( b - 0.5 ) * 0.55 - ( c - 0.5 ) * 0.75;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float sc = ( scaleP > 0.0 ) ? scaleP : 1.0;

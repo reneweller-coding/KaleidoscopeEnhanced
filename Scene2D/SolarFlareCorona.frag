@@ -43,17 +43,28 @@ uniform float flareP;
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -64,15 +75,30 @@ vec3 imgPalette( float t )
 }
 
 
-/// House tint: bend a colour toward the photo palette while keeping its
-/// luminance -- the identity look survives, only the hue follows the photos.
+/**  House tint: bend a colour toward the photo palette while keeping its luminance -- the identity look survives,
+ * only the hue follows the photos.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
     tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
     return mix( c, tp, k );
 }
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -80,7 +106,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 456.23, 789.12 ) );
@@ -88,6 +120,13 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value.
+ **/
 float noise2D( vec2 p )
 {
     vec2 i = floor( p );
@@ -97,7 +136,13 @@ float noise2D( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
-/// 2D curl noise for realistic turbulent magnetic plasma advection
+/**  2D curl noise for realistic turbulent magnetic plasma advection
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The flow vector.
+ **/
 vec2 curlNoise( vec2 p )
 {
     const float eps = 0.05;
@@ -108,6 +153,14 @@ vec2 curlNoise( vec2 p )
     return vec2( n1 - n2, -( n3 - n4 ) ) / ( 2.0 * eps );
 }
 
+/**  Fractal noise of five rotated octaves for the plasma.
+ *
+ * @param p     The point. (in)
+ * @param turb  Turbulence (warp of each octave). (in)
+ *
+ * @return
+ *   The noise value, about 0..1.
+ **/
 float fbmPlasma( vec2 p, float turb )
 {
     float v = 0.0;
@@ -123,20 +176,26 @@ float fbmPlasma( vec2 p, float turb )
     return v;
 }
 
-/// Blackbody thermal incandescent color curve.
-///
-/// The ramps used to be 0.0-0.8 / 0.3-1.4 / 0.8-2.2 while `total_thermal` below
-/// never dropped under about 1.2 anywhere in the frame -- a constant core_heat
-/// floor plus a granule term whose MEAN was 0.77. So the red channel's
-/// smoothstep was hard at 1.0 for every single pixel, green nearly so, and the
-/// Reinhardt tone-map then squeezed what little was left into a band about 0.05
-/// wide: one uniform orange, measured contrast 0.035. The scene had no
-/// temperature range at all, because the curve's whole working range sat below
-/// the coldest point of the picture.
-///
-/// The ramps now span the temperature distribution the scene ACTUALLY produces
-/// (about -1.1 at the cold limb to +3.3 in the core), so the photosphere runs
-/// black -> deep red -> orange -> white-hot across the frame.
+/**  Blackbody thermal incandescent color curve.
+ *
+ * @param t  The temperature value (about -1.1..3.3). (in)
+ *
+ * @return
+ *   The colour (RGB).
+ *
+ * The ramps used to be 0.0-0.8 / 0.3-1.4 / 0.8-2.2 while `total_thermal` below
+ * never dropped under about 1.2 anywhere in the frame -- a constant core_heat
+ * floor plus a granule term whose MEAN was 0.77. So the red channel's
+ * smoothstep was hard at 1.0 for every single pixel, green nearly so, and the
+ * Reinhardt tone-map then squeezed what little was left into a band about 0.05
+ * wide: one uniform orange, measured contrast 0.035. The scene had no
+ * temperature range at all, because the curve's whole working range sat below
+ * the coldest point of the picture.
+ *
+ * The ramps now span the temperature distribution the scene ACTUALLY produces
+ * (about -1.1 at the cold limb to +3.3 in the core), so the photosphere runs
+ * black -> deep red -> orange -> white-hot across the frame.
+ **/
 vec3 blackbody( float t )
 {
     t = clamp( t, -2.0, 3.4 );
@@ -147,7 +206,7 @@ vec3 blackbody( float t )
     return c;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float turb = ( turbulenceP > 0.0 ) ? turbulenceP : 1.0;

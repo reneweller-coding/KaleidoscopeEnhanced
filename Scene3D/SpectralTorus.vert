@@ -45,8 +45,16 @@ out vec3  vView; ///< View vector (from the vertex stage).
 out float vDefo;
 out float vHue;
 
-/// (n,m) mode table: band k excites cos(2π(n·u + m·v)).  Low bands = low
-/// wavenumbers (global bending), high bands = fine tube ripples.
+/**  (n,m) mode table: band k excites cos(2π(n·u + m·v)).
+ *
+ * @param u  Around the axis, 0..1. (in)
+ * @param v  Around the tube, 0..1. (in)
+ *
+ * @return
+ *   The displacement.
+ *
+ * Low bands = low wavenumbers (global bending), high bands = fine tube ripples.
+ **/
 float modeSum( float u, float v )
 {
     float TU = 6.2831853;
@@ -73,6 +81,14 @@ float modeSum( float u, float v )
     return s;
 }
 
+/**  Point of the torus at mesh coordinate (u, v), displaced by the modes.
+ *
+ * @param u  Around the axis, 0..1. (in)
+ * @param v  Around the tube, 0..1. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 torusPoint( float u, float v )
 {
     float TU = 6.2831853;
@@ -103,8 +119,14 @@ vec3 torusPoint( float u, float v )
 }
 
 
-/// 3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the
-/// body's own y-spin, so the pattern is seen from ever-new angles.
+/**  3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the body's own y-spin, so the pattern is seen
+ * from ever-new angles.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The rotated point.
+ **/
 vec3 tumble( vec3 q )
 {
     float tx = time * 0.19 + audioAdvance * 0.05;
@@ -114,7 +136,7 @@ vec3 tumble( vec3 q )
     return q;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x, v = attrA.y;

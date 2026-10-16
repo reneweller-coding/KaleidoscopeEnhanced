@@ -52,12 +52,25 @@ uniform float burstP;
 uniform float spinP;  ///< Spin knob, 0..1.
 uniform float chunkP; ///< fracture grid resolution: SMALL = few big slabs, LARGE = fine gravel
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 12.9898 ) * 43758.5453 );
 }
 
+/**  Pseudo-random direction on the unit sphere.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   The unit direction.
+ **/
 vec3 hashDir( float n )
 {
     // Two independent hashes -> a point on the sphere. Straight per-axis
@@ -69,6 +82,14 @@ vec3 hashDir( float n )
     return vec3( r * cos( a ), u, r * sin( a ) );
 }
 
+/**  Rotation matrix about an axis (Rodrigues).
+ *
+ * @param ax   The axis (unit length). (in)
+ * @param ang  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 axisRot( vec3 ax, float ang )
 {
     float c = cos( ang ), s = sin( ang ), t = 1.0 - c;
@@ -77,7 +98,7 @@ mat3 axisRot( vec3 ax, float ang )
                  t * ax.x * ax.z + s * ax.y, t * ax.y * ax.z - s * ax.x, t * ax.z * ax.z + c );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // The sky shell: emit verbatim, no shatter, no statue transform.

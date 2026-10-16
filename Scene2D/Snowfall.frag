@@ -48,17 +48,28 @@ uniform float     depthP;       ///< Depth knob, 0..1.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioValence; ///< preset: how much the photo recedes
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -69,26 +80,59 @@ vec3 imgPalette( float t )
 }
 
 
-/// House tint: bend a colour toward the photo palette while keeping its
-/// luminance -- the identity look survives, only the hue follows the photos.
+/**  House tint: bend a colour toward the photo palette while keeping its luminance -- the identity look survives,
+ * only the hue follows the photos.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
     tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
     return mix( c, tp, k );
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     return fract( sin( p * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Two pseudo-random numbers 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash21( float p )
 {
     return fract( sin( vec2( p * 127.1, p * 311.7 ) ) * 43758.5453 );
 }
 
-/// One sheet of flakes.  Returns coverage; 'soft' is how out of focus it is.
+/**  One sheet of flakes.
+ *
+ * @param uv      The coordinate. (in)
+ * @param aspect  Aspect of the screen. (in)
+ * @param cells   Cells per unit (flake spacing). (in)
+ * @param speed   Falling speed. (in)
+ * @param soft    How out of focus the sheet is. (in)
+ * @param seed    Seed of the sheet. (in)
+ *
+ * @return
+ *   The flakes' coverage, 0..1.
+ *
+ * Returns coverage; 'soft' is how out of focus it is.
+ **/
 float layer( vec2 uv, float aspect, float cells, float speed, float soft, float seed )
 {
     // The shared wind field.  It is a function of HEIGHT, so a gust travels
@@ -132,7 +176,7 @@ float layer( vec2 uv, float aspect, float cells, float speed, float soft, float 
     return clamp( acc, 0.0, 1.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;

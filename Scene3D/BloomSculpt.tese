@@ -64,7 +64,7 @@ const float ModeM[12] = float[12]( 0.0, 1.0, 2.0, 1.0, 2.0, 3.0,
 const float ModeW[12] = float[12]( 0.34, -0.26, 0.30, -0.22, 0.25, -0.28,
                                    0.20, -0.17, 0.15, -0.19, 0.12, -0.14 );
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

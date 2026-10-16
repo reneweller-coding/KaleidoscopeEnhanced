@@ -46,7 +46,14 @@ uniform float beamP;
 uniform float camDistP; ///< Camera distance knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -54,6 +61,17 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
+/**  Emits one vertex: the world position in the eye's clip space, with its varyings.
+ *
+ * @param worldPos  World position. (in)
+ * @param norm      Normal. (in)
+ * @param col       Colour. (in)
+ * @param isBeam    1 for a beam vertex, 0 for the structure. (in)
+ * @param camPos    Camera position. (in)
+ * @param uu        Camera right axis. (in)
+ * @param vv        Camera up axis. (in)
+ * @param ww        Camera forward axis. (in)
+ **/
 void emitVert( vec3 worldPos, vec3 norm, vec3 col, float isBeam, vec3 camPos, vec3 uu, vec3 vv, vec3 ww )
 {
     vec3 rel_p = worldPos - camPos;
@@ -70,7 +88,7 @@ void emitVert( vec3 worldPos, vec3 norm, vec3 col, float isBeam, vec3 camPos, ve
     EmitVertex();
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = vSpireIndex[0];

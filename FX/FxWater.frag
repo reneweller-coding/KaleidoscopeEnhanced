@@ -43,6 +43,13 @@ const float ReflectionIntence = 200000.;
 // ===================================================
 
 
+/**  Caustic brightness at a coordinate: waves from several angles.
+ *
+ * @param coord  The coordinate. (in)
+ *
+ * @return
+ *   The brightness.
+ **/
 float col( vec2 coord )
 {
     float delta_theta = 2.0 * Pi / float( Angle );
@@ -63,7 +70,7 @@ float col( vec2 coord )
 
 //---------- main
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     vec2  p = ( gl_FragCoord.xy ) / resolution.xy, c1 = p, c2 = p;

@@ -43,17 +43,28 @@ uniform float neonP;
 uniform float hueP;           ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 uniform float audioChromaHue; ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,7 +74,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -91,19 +109,41 @@ const float Ty = 0.0408;    ///< iso tread y (0.6 * TX, high viewpoint)
 const float StepH = 0.024;  ///< riser height (screen units)
 const float Column = 0.075; ///< short support skirt below each step
 
-/// Solve p = P + s*e1 + t*e2; returns (s,t).
+/**  Solve p = P + s*e1 + t*e2; returns (s,t).
+ *
+ * @param p   The point. (in)
+ * @param P   The origin. (in)
+ * @param e1  The first edge. (in)
+ * @param e2  The second edge. (in)
+ *
+ * @return
+ *   (s, t).
+ **/
 vec2 invBilinear( vec2 p, vec2 P, vec2 e1, vec2 e2 )
 {
     float det = e1.x * e2.y - e1.y * e2.x;
     vec2  d = p - P;
     return vec2( d.x * e2.y - d.y * e2.x, e1.x * d.y - e1.y * d.x ) / det;
 }
+/**  Whether a point's (s, t) lies inside the unit parallelogram.
+ *
+ * @param st  The coordinates (s, t). (in)
+ *
+ * @return
+ *   True if inside.
+ **/
 bool inQuad( vec2 st )
 {
     return st.x >= 0.0 && st.x <= 1.0 && st.y >= 0.0 && st.y <= 1.0;
 }
 
-/// Iso tread edge per flight (top-face advance direction).
+/**  Iso tread edge per flight (top-face advance direction).
+ *
+ * @param f  The flight, 0..3. (in)
+ *
+ * @return
+ *   The tread edge on screen.
+ **/
 vec2 flightTread( int f )
 {
     if ( f == 0 )
@@ -114,14 +154,26 @@ vec2 flightTread( int f )
         return vec2( -Tx, -Ty );
     return vec2( Tx, -Ty );
 }
-/// Per-step anchor lift: long flights rise by StepH; the short flights
-/// carry the closure correction  StepH - NTotal*StepH/(2*NShort).
+/**  Per-step anchor lift: long flights rise by StepH; the short flights carry the closure correction  StepH -
+ * NTotal*StepH/(2*NShort).
+ *
+ * @param f  The flight, 0..3. (in)
+ *
+ * @return
+ *   The lift per step.
+ **/
 float flightLift( int f )
 {
     float corr = StepH * ( 1.0 - float( NTotal ) / float( 2 * NShort ) );
     return ( f == 0 || f == 2 ) ? StepH : corr;
 }
-/// Depth edge of the tread (the other iso axis of the top rhombus).
+/**  Depth edge of the tread (the other iso axis of the top rhombus).
+ *
+ * @param f  The flight, 0..3. (in)
+ *
+ * @return
+ *   The depth edge on screen.
+ **/
 vec2 flightD( int f )
 {
     if ( f == 0 )
@@ -133,7 +185,7 @@ vec2 flightD( int f )
     return vec2( 0.044, 0.026 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hue = ( hueP > 0.0 ) ? hueP : 0.0;

@@ -31,6 +31,14 @@ uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
 #define PI 3.141592653589793238462643383279
 
+/**  Four-quadrant arc tangent.
+ *
+ * @param y  The y component. (in)
+ * @param x  The x component. (in)
+ *
+ * @return
+ *   The angle in radians.
+ **/
 float atan2( float y, float x )
 {
     if ( x > 0. )
@@ -48,6 +56,14 @@ float atan2( float y, float x )
     return PI / 2.;
 }
 
+/**  Polar coordinates of a point about a centre.
+ *
+ * @param uv      The point. (in)
+ * @param center  The centre. (in)
+ *
+ * @return
+ *   (angle, radius).
+ **/
 vec2 uvPolar( vec2 uv, vec2 center )
 {
     vec2  c = uv - center;
@@ -56,6 +72,16 @@ vec2 uvPolar( vec2 uv, vec2 center )
     return vec2( ang, rad );
 }
 
+/**  A coordinate refracted through a glass half-sphere.
+ *
+ * @param uv            The coordinate. (in)
+ * @param position      Centre of the lens. (in)
+ * @param radius        Radius of the lens. (in)
+ * @param refractivity  Strength of the refraction. (in)
+ *
+ * @return
+ *   The refracted coordinate.
+ **/
 vec2 getModifiedUV( vec2 uv, vec2 position, float radius, float refractivity )
 {
     vec2  polar = uvPolar( uv, position );
@@ -68,7 +94,7 @@ vec2 getModifiedUV( vec2 uv, vec2 position, float radius, float refractivity )
     return mix( uv, refrac_uv, float( length( uv - position ) < radius ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     const float radius = 0.15;

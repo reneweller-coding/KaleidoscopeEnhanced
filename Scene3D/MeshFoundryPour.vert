@@ -41,7 +41,7 @@ out vec3  vCup;
 const float Dist = 48.0;
 const float Ground = -18.0;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     bool is_mould = gl_VertexID < meshVertexCount;

@@ -41,13 +41,25 @@ uniform float techP;
 uniform float dataP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,21 +69,39 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash31( vec3 p )
 {
     p = fract( p * 0.1031 );
     p += dot( p, p.zyx + 31.32 );
     return fract( ( p.x + p.y ) * p.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -80,6 +110,14 @@ float noise2( vec2 p )
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
 
+/**  Rotation matrix about an axis (Rodrigues).
+ *
+ * @param a    The axis (normalised here). (in)
+ * @param ang  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 rotAxis( vec3 a, float ang )
 {
     a = normalize( a );
@@ -89,9 +127,17 @@ mat3 rotAxis( vec3 a, float ang )
                  t * a.x * a.z + s * a.y, t * a.y * a.z - s * a.x, t * a.z * a.z + c );
 }
 
-/// Panels on a sphere: cube-sphere grid (gnomonic), whose lines are great
-/// circles and so join seamlessly across the cube's edges.  Returns (panel
-/// id hash, distance to the nearest seam in grid units, seam coordinate).
+/**  Panels on a sphere: cube-sphere grid (gnomonic), whose lines are great circles and so join seamlessly across the
+ * cube's edges.
+ *
+ * @param n  The point on the unit sphere. (in)
+ * @param N  Panels per cube edge. (in)
+ *
+ * @return
+ *   Panel id hash (x), distance to the nearest seam (y), seam coordinate (z).
+ *
+ * Returns (panel id hash, distance to the nearest seam in grid units, seam coordinate).
+ **/
 vec3 panels( vec3 n, float N )
 {
     vec3  a = abs( n );
@@ -119,6 +165,16 @@ vec3 panels( vec3 n, float N )
     return vec3( hash31( vec3( gi, face ) ), seam, along );
 }
 
+/**  Ray-sphere intersection (sphere at the origin).
+ *
+ * @param ro  Ray origin. (in)
+ * @param rd  Ray direction. (in)
+ * @param R   Radius. (in)
+ * @param t0  Receives the near hit distance. (out)
+ *
+ * @return
+ *   True if the ray hits.
+ **/
 bool sphere( vec3 ro, vec3 rd, float R, out float t0 )
 {
     float b = dot( ro, rd ), c = dot( ro, ro ) - R * R;
@@ -129,7 +185,7 @@ bool sphere( vec3 ro, vec3 rd, float R, out float t0 )
     return t0 > 0.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;

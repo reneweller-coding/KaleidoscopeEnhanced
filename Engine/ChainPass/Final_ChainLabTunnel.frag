@@ -25,45 +25,90 @@ uniform float speedP;            ///< Speed knob, 0..1.
 uniform float detailP;           ///< Detail knob, 0..1.
 uniform float paletteP;          ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float hueP;              ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-/// @brief The scene's chain of transforms: a coordinate in, the transformed coordinate out.
+/**  The scene's chain of transforms: a coordinate in, the transformed coordinate out.
+ *
+ * @param p  The coordinate. (in)
+ *
+ * @return
+ *   The coordinate after the chain.
+ **/
 vec2 chain( vec2 p )
 {
     return texture( texChain, p ).xy;
 }
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
+/**  The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
+ *
+ * @param uv   Coordinate in the photo (mirror-repeated outside 0..1). (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 imgLod( vec2 uv, float lod )
 {
     uv = mirrorUV( uv );
     return ( interpolation * textureLod( tex0, uv, lod ) + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ) ).rgb;
 }
-/// @brief Luminance of a colour (Rec. 601 weights).
+/**  Luminance of a colour (Rec. 601 weights).
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance.
+ **/
 float luma( vec3 c )
 {
     return dot( c, vec3( 0.299, 0.587, 0.114 ) );
 }
-/// @brief HSV (all 0..1) to RGB.
+/**  HSV (all 0..1) to RGB.
+ *
+ * @param c  Hue, saturation and value, all 0..1. (in)
+ *
+ * @return
+ *   The RGB colour.
+ **/
 vec3 hsv2rgb( vec3 c )
 {
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
-/// @brief A colour normalised to its maximum and raised to a power: a saturated neon of it.
+/**  A colour normalised to its maximum and raised to a power: a saturated neon of it.
+ *
+ * @param c  The colour. (in)
+ * @param k  Exponent: the higher, the purer (and darker) the neon. (in)
+ *
+ * @return
+ *   The saturated colour.
+ **/
 vec3 neonOf( vec3 c, float k )
 {
     vec3 n = c / max( max( c.r, max( c.g, c.b ) ), 1e-3 );
     return pow( n, vec3( k ) );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// @brief Writes the pixel: loudness brightness and a soft highlight roll-off.
+/**  Writes the pixel: loudness brightness and a soft highlight roll-off.
+ *
+ * @param col  The scene's colour; written to fragColor after the finish. (in)
+ **/
 void finish( vec3 col )
 {
     col *= 0.9 + 0.2 * audioLevel;
@@ -77,28 +122,66 @@ uniform vec3      walkA, walkB, walkC, walkD, walkS;
 uniform float     walkHost;     ///< 1 when the app walks this lab's stages (walk uniforms valid).
 uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
 uniform sampler2D texPrevFrame; ///< The last frame, fully composited (feedback).
-vec3              chainAfterglow( vec3 col )
+/**  Afterglow: the brighter of the colour and the decayed previous frame (from glowP 0.15).
+ *
+ * @param col  The frame's colour. (in)
+ *
+ * @return
+ *   The colour with the afterglow.
+ **/
+vec3 chainAfterglow( vec3 col )
 {
     if ( glowP <= 0.15 )
         return col;
     vec3 prev = texture( texPrevFrame, gl_FragCoord.xy / resolution ).rgb;
     return max( col, prev * ( 0.78 * smoothstep( 0.15, 1.0, glowP ) ) );
 }
+/**  The tube's axis winds slowly: the vanishing point wanders.
+ *
+ * @param z  Depth along the tube. (in)
+ *
+ * @return
+ *   The axis's x/y offset.
+ **/
 vec2 axisXY( float z )
 {
     return vec2( 0.35 * sin( z * 0.11 ) + 0.15 * sin( z * 0.27 + 1.0 ),
                  0.3 * sin( z * 0.087 + 0.6 ) + 0.12 * cos( z * 0.21 ) );
 }
+/**  Wall coordinates: angle around (jumps by a whole mirror period at the atan cut, so mirrorUV makes it seamless)
+ * and depth along.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The wall coordinate (mirrored into 0..1).
+ **/
 vec2 wallUV( vec3 q )
 {
     vec2 d = q.xy - axisXY( q.z );
     return mirrorUV( vec2( atan( d.y, d.x ) / 3.14159265, q.z * 0.32 ) );
 }
+/**  Distance to the wall: radius 1 minus the relief (the chain's smooth brightness).
+ *
+ * @param w  The wall coordinate. (in)
+ * @param c  The chain's coordinate there. (in)
+ *
+ * @return
+ *   The relief height, 0..1.
+ **/
 float wallHeight( vec2 w, vec2 c )
 {
     float J = length( mirrorUV( chain( w + vec2( 0.01, 0.01 ) ) ) - mirrorUV( c ) ) / 0.0141;
     return luma( imgLod( c, 4.0 + clamp( log2( max( J, 1.0 ) ), 0.0, 5.0 ) ) );
 }
+/**  Distance to the tube's wall: radius 1 minus the relief.
+ *
+ * @param q  The point. (in)
+ * @param c  Receives the chain's coordinate there. (out)
+ *
+ * @return
+ *   The distance.
+ **/
 float tunnelD( vec3 q, out vec2 c )
 {
     vec2 w = wallUV( q );
@@ -107,7 +190,7 @@ float tunnelD( vec3 q, out vec2 c )
 
     return ( 1.0 - gH * luma( imgLod( c, 5.0 ) ) ) - length( q.xy - axisXY( q.z ) );
 }
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  p = screenP();

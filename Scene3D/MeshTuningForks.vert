@@ -32,7 +32,7 @@ const float Dist = 42.0;
 const float Ground = -10.0;
 const float Spacing = 4.6;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int  inst = gl_InstanceID;

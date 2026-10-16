@@ -52,20 +52,38 @@ uniform uint      frame;
 
 const float Scale = 256.0;
 
-/// @brief PCG random step: advances the state, returns 32 random bits.
+/**  PCG random step: advances the state, returns 32 random bits.
+ *
+ * @param s  The state; advanced. (in,out)
+ *
+ * @return
+ *   32 random bits.
+ **/
 uint pcg( inout uint s )
 {
     s = s * 747796405u + 2891336453u;
     uint w = ( ( s >> ( ( s >> 28 ) + 4u ) ) ^ s ) * 277803737u;
     return ( w >> 22 ) ^ w;
 }
-/// @brief Random number 0..1 from a PCG state.
+/**  Random number 0..1 from a PCG state.
+ *
+ * @param s  The PCG state; advanced. (in,out)
+ *
+ * @return
+ *   A random number 0..1.
+ **/
 float rnd( inout uint s )
 {
     return float( pcg( s ) ) * ( 1.0 / 4294967296.0 );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 456.21 ) );
@@ -73,7 +91,13 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -83,7 +107,13 @@ float vnoise( vec2 p )
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
-/// Scalar stream function; its curl is the (divergence-free) velocity.
+/**  Scalar stream function; its curl is the (divergence-free) velocity.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The stream function's value.
+ **/
 float potential( vec2 p )
 {
     float s = vnoise( p * 2.3 + vec2( curlPhase, -curlPhase * 0.7 ) ) * 1.0
@@ -95,6 +125,13 @@ float potential( vec2 p )
     return s + 0.55 * sin( flow * 0.5 + r * 6.0 );
 }
 
+/**  Curl of a scalar potential: a divergence-free velocity field.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The velocity.
+ **/
 vec2 curl( vec2 p )
 {
     const float e = 0.0035;
@@ -103,6 +140,12 @@ vec2 curl( vec2 p )
     return vec2( dy, -dx ) / ( 2.0 * e );
 }
 
+/**  A bird gets a small CROSS footprint, not a single texel.
+ *
+ * @param uv   Position in the field, 0..1. (in)
+ * @param col  The colour. (in)
+ * @param w    The weight of the centre texel. (in)
+ **/
 void splat( vec2 uv, vec3 col, float w )
 {
     ivec2 ip = ivec2( uv * vec2( size ) );
@@ -116,7 +159,7 @@ void splat( vec2 uv, vec3 col, float w )
     atomicAdd( acc[i + 3u], uint( w * Scale ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uint i = gl_GlobalInvocationID.x;

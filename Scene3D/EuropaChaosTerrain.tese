@@ -32,13 +32,28 @@ uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float camHP;        ///< Camera height knob, 0..1.
 uniform float raftP;
 
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     p = vec2( dot( p, vec2( 127.1, 311.7 ) ), dot( p, vec2( 269.5, 183.3 ) ) );
     return fract( sin( p ) * 43758.5453 );
 }
 
+/**  Voronoi cells of a point, the centres drifting slowly.
+ *
+ * @param x         The point. (in)
+ * @param clock     The scene clock. (in)
+ * @param d1        Receives the distance to the nearest centre. (out)
+ * @param d2        Receives the distance to the second nearest. (out)
+ * @param id        Receives the nearest cell's id. (out)
+ * @param toCentre  Receives the vector to the nearest centre. (out)
+ **/
 void voronoi( vec2 x, float clock, out float d1, out float d2, out float id, out vec2 toCentre )
 {
     vec2 n = floor( x ), f = fract( x );
@@ -70,6 +85,16 @@ void voronoi( vec2 x, float clock, out float d1, out float d2, out float id, out
     d2 = sqrt( d2 );
 }
 
+/**  Height of the chaos terrain: tilted ice rafts in low rubble.
+ *
+ * @param xz     Position (x, z). (in)
+ * @param clock  The scene clock. (in)
+ * @param seam   Receives the distance to the raft's edge. (out)
+ * @param raft   Receives the raft's id. (out)
+ *
+ * @return
+ *   The height.
+ **/
 float surface( vec2 xz, float clock, out float seam, out float raft )
 {
     float scale = 0.04 + 0.03 * clamp( raftP, 0.0, 1.0 );
@@ -90,7 +115,7 @@ float surface( vec2 xz, float clock, out float seam, out float raft )
     return plateau + rubble + rise + ridges;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

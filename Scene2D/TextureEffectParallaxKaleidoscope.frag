@@ -48,6 +48,13 @@ uniform float     audioMode;     ///< 0=minor/cold .. 1=major/warm -> depth-haze
 
 const float Pi = 3.141592653589793;
 
+/**  The photo through the kaleidoscope at a coordinate.
+ *
+ * @param coord  Coordinate, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 getKaleidoscopeColor( vec2 coord )
 {
 
@@ -100,7 +107,7 @@ vec3 getKaleidoscopeColor( vec2 coord )
 }
 
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
 

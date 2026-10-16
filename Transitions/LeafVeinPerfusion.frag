@@ -51,13 +51,28 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// Distance to a segment, and how far along the segment the closest point lies.
+/**  Distance to a segment, and how far along the segment the closest point lies.
+ *
+ * @param p  The point. (in)
+ * @param a  Start of the segment. (in)
+ * @param b  Its end. (in)
+ * @param t  Receives the parameter of the closest point, 0..1. (out)
+ *
+ * @return
+ *   The distance.
+ **/
 float segDist( vec2 p, vec2 a, vec2 b, out float t )
 {
     vec2 ab = b - a;
@@ -65,7 +80,7 @@ float segDist( vec2 p, vec2 a, vec2 b, out float t )
     return length( p - ( a + ab * t ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float n_sec = 4.0 + floor( clamp( veinsP, 0.0, 1.0 ) * 5.0 ); // rolled ONCE

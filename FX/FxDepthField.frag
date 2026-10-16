@@ -51,9 +51,15 @@ uniform float bokehP;    ///< preset: highlight blooming in the blur
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// A depth buffer is stored non-linearly — most of its precision sits near the
-/// camera.  Comparing raw values would put the whole scene in one bucket, so it
-/// has to be turned back into a distance first.
+/**  A depth buffer is stored non-linearly — most of its precision sits near the camera.
+ *
+ * @param d  Depth buffer value, 0..1. (in)
+ *
+ * @return
+ *   The linear distance.
+ *
+ * Comparing raw values would put the whole scene in one bucket, so it has to be turned back into a distance first.
+ **/
 float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
@@ -61,9 +67,20 @@ float linearise( float d )
     return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
-/// 12-tap ring, golden-angle spaced.  A ring gathers a disc of confusion far
-/// more evenly than a box of the same tap count, which is what keeps the bokeh
-/// round instead of cross-shaped.
+/**  12-tap ring, golden-angle spaced.
+ *
+ * @param src    The frame. (in)
+ * @param dep    The depth texture. (in)
+ * @param uv     Screen coordinate. (in)
+ * @param focus  Focus distance. (in)
+ * @param valid  1 where the depth buffer is valid, else 0. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ *
+ * A ring gathers a disc of confusion far more evenly than a box of the same tap count, which is what keeps the bokeh
+ * round instead of cross-shaped.
+ **/
 vec3 blurAt( sampler2D src, sampler2D dep, vec2 uv, float focus, float valid )
 {
     vec3 c = texture( src, uv ).rgb;
@@ -117,7 +134,7 @@ vec3 blurAt( sampler2D src, sampler2D dep, vec2 uv, float focus, float valid )
     return sum / wsum;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

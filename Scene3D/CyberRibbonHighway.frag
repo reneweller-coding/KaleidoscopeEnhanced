@@ -18,7 +18,7 @@ in float vLength;
  * into the glowing ribbon-edge and lane-marking look via vSide/vLength.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Additive glowing ribbon edges & center stripe

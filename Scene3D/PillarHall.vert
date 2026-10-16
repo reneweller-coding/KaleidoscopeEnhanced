@@ -51,7 +51,7 @@ uniform float spacingP;
 // sky; a hall wants to recede until the haze closes it off.
 const int Grid = 30;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = attrA.w;

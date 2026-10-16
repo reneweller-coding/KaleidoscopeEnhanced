@@ -50,16 +50,27 @@ uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float nebulaP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -69,7 +80,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -77,23 +95,47 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash31( vec3 p )
 {
     return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -106,7 +148,13 @@ float noise3( vec3 p )
     return mix( mix( a, b, f.y ), mix( c, d, f.y ), f.z );
 }
 
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec3 p )
 {
     float s = 0.0, a = 0.5;
@@ -119,22 +167,47 @@ float fbm3( vec3 p )
     return s;
 }
 
-/// @brief Signed distance to a box of half size b.
+/**  Signed distance to a box of half size b.
+ *
+ * @param p  The point. (in)
+ * @param b  Half size of the box. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdBox( vec3 p, vec3 b )
 {
     vec3 q = abs( p ) - b;
     return length( max( q, 0.0 ) ) + min( max( q.x, max( q.y, q.z ) ), 0.0 );
 }
 
+/**  Signed distance to a capped cylinder along z.
+ *
+ * @param p  The point. (in)
+ * @param h  Half length. (in)
+ * @param r  Radius. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdCyl( vec3 p, float h, float r )
 {
     vec2 d = vec2( length( p.xy ) - r, abs( p.z ) - h );
     return min( max( d.x, d.y ), 0.0 ) + length( max( d, 0.0 ) );
 }
 
-/// The ship, in its own space: +z is the bow, -z the engines.
-/// Only the SILHOUETTE is modelled -- plating and greebles are shaded, not
-/// carved, which is what keeps a hull this size cheap to march.
+/**  The ship, in its own space: +z is the bow, -z the engines.
+ *
+ * @param p     The point in the ship's space. (in)
+ * @param len   Length of the ship. (in)
+ * @param part  Receives which part was nearest (for shading). (out)
+ *
+ * @return
+ *   The distance to the hull.
+ *
+ * Only the SILHOUETTE is modelled -- plating and greebles are shaded, not carved, which is what keeps a hull this size
+ * cheap to march.
+ **/
 float shipSDF( vec3 p, float len, out float part )
 {
     // Bow taper: the hull narrows over the forward third.
@@ -201,6 +274,14 @@ float shipSDF( vec3 p, float len, out float part )
     return d;
 }
 
+/**  Surface normal of the hull by central differences.
+ *
+ * @param p    The surface point. (in)
+ * @param len  Length of the ship. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 shipNormal( vec3 p, float len )
 {
     vec2  e = vec2( 0.012, 0.0 );
@@ -211,7 +292,16 @@ vec3 shipNormal( vec3 p, float len )
         shipSDF( p + e.yyx, len, u ) - shipSDF( p - e.yyx, len, u ) ) );
 }
 
-/// Deep-space backdrop: three star magnitudes plus a photo-tinted nebula.
+/**  Deep-space backdrop: three star magnitudes plus a photo-tinted nebula.
+ *
+ * @param rd       View direction. (in)
+ * @param drift    Drift phase of the nebula. (in)
+ * @param neb      Strength of the nebula. (in)
+ * @param nebTint  Tint of the nebula (from the photo). (in)
+ *
+ * @return
+ *   The backdrop colour (RGB).
+ **/
 vec3 background( vec3 rd, float drift, float neb, vec3 nebTint )
 {
     vec3 col = vec3( 0.006, 0.008, 0.016 );
@@ -247,7 +337,7 @@ vec3 background( vec3 rd, float drift, float neb, vec3 nebTint )
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float len = ( hullP > 0.01 ? 12.0 + 9.0 * hullP : 18.0 );

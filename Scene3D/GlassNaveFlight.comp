@@ -39,7 +39,16 @@ uniform float bayP;
 uniform float heightP; ///< Height knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param a     First corner (the corners run around the quad). (in)
+ * @param b     Second corner. (in)
+ * @param c     Third corner. (in)
+ * @param d     Fourth corner. (in)
+ * @param band  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param face  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Element kind written to every vertex. (in)
+ **/
 void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, float band, float face, float kind )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -62,6 +71,13 @@ void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, float band, float face, float kin
     }
 }
 
+/**  Appends a box (six quads) to the output buffer.
+ *
+ * @param c     Centre of the box. (in)
+ * @param h     Half extents. (in)
+ * @param band  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitBox( vec3 c, vec3 h, float band, float kind )
 {
     vec3 x = vec3( h.x, 0.0, 0.0 ), y = vec3( 0.0, h.y, 0.0 ), z = vec3( 0.0, 0.0, h.z );
@@ -71,7 +87,7 @@ void emitBox( vec3 c, vec3 h, float band, float kind )
     emitQuad( c - x + y - z, c + x + y - z, c + x + y + z, c - x + y + z, band, 2.0, kind ); // top
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

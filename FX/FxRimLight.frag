@@ -58,13 +58,25 @@ uniform float rimP;   ///< preset: rim strength
 uniform float sharpP; ///< preset: how tight the rim band is
 uniform float fillP;  ///< preset: opposing fill light
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
-/// @brief Depth buffer value to linear distance.
+/**  Depth buffer value to linear distance.
+ *
+ * @param d  Depth buffer value, 0..1. (in)
+ *
+ * @return
+ *   The linear distance.
+ **/
 float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
@@ -72,6 +84,14 @@ float linearise( float d )
     return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
+/**  View-space position of a pixel at linear depth z.
+ *
+ * @param uv  Screen coordinate. (in)
+ * @param z   Linear depth. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 viewPos( vec2 uv, float z )
 {
     vec2  ndc = uv * 2.0 - 1.0;
@@ -79,6 +99,22 @@ vec3 viewPos( vec2 uv, float z )
     return vec3( ndc.x * tanHalfFov * aspect, ndc.y * tanHalfFov, -1.0 ) * z;
 }
 
+/**  The frame relit by a key and a fill light, with normals from the depth.
+ *
+ * @param src      The frame. (in)
+ * @param dep      The depth texture. (in)
+ * @param uv       Screen coordinate. (in)
+ * @param valid    1 where the depth buffer is valid, else 0. (in)
+ * @param px       Size of a pixel. (in)
+ * @param keyDir   Direction of the key light. (in)
+ * @param keyCol   Colour of the key light. (in)
+ * @param fillDir  Direction of the fill light. (in)
+ * @param fillCol  Colour of the fill light. (in)
+ * @param sharp    Sharpness of the rim. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 lit( sampler2D src, sampler2D dep, vec2 uv, float valid, vec2 px,
           vec3 keyDir, vec3 keyCol, vec3 fillDir, vec3 fillCol, float sharp )
 {
@@ -126,7 +162,7 @@ vec3 lit( sampler2D src, sampler2D dep, vec2 uv, float valid, vec2 px,
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

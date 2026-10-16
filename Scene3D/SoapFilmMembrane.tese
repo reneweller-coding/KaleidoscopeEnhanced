@@ -31,6 +31,16 @@ uniform float audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 uniform float modesP;
 uniform float drainP;
 
+/**  Height of the membrane: standing modes of a rectangle pinned at its edges.
+ *
+ * @param uv     Position on the membrane, 0..1. (in)
+ * @param clock  The scene clock. (in)
+ * @param amp    Amplitude. (in)
+ * @param modes  Share of the higher modes. (in)
+ *
+ * @return
+ *   The height.
+ **/
 float height( vec2 uv, float clock, float amp, float modes )
 {
     // Standing modes of a rectangle (edges pinned: sin(m pi u) sin(n pi v)).
@@ -42,7 +52,7 @@ float height( vec2 uv, float clock, float amp, float modes )
     return h * amp;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

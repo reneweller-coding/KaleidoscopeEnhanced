@@ -38,13 +38,25 @@ uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float densityP; ///< Density knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -54,17 +66,35 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -80,7 +110,14 @@ const int   Nsign = 16; ///< slots looked at ahead (two blades per slot)
 float g_sp; ///< slot spacing along the alley
 float g_hue;
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -88,9 +125,16 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Saturated neon colour for a sign.  A street of neon IS many colours (a
-/// documented rainbow identity, V8b): the photo arc gives the base, each sign
-/// turns it by its own angle, and the result is pushed toward pure hue.
+/**  Saturated neon colour for a sign.
+ *
+ * @param id  Id of the sign. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ *
+ * A street of neon IS many colours (a documented rainbow identity, V8b): the photo arc gives the base, each sign turns
+ * it by its own angle, and the result is pushed toward pure hue.
+ **/
 vec3 neonCol( float id )
 {
     vec3 c = imgPalette( g_hue * 0.159 + hash11( id * 1.7 ) * 0.5 );
@@ -102,14 +146,31 @@ vec3 neonCol( float id )
     return mix( c, vec3( 1.0 ), 0.1 );
 }
 
+/**  The spectrum band a sign follows (its id picks the band).
+ *
+ * @param id  Id of the sign. (in)
+ *
+ * @return
+ *   The band level, 0..1.
+ **/
 float bandOf( float id )
 {
     return clamp( audioSpectrum[int( mod( id * 7.0, 32.0 ) )] * 1.6, 0.0, 1.0 );
 }
 
-/// Emission and coverage of one blade sign at slot k, seen along the ray.
-/// A blade stands perpendicular to its wall: the plane z = zk, spanning x
-/// from the wall inward.  Returns rgb emission, a = coverage.
+/**  Emission and coverage of one blade sign at slot k, seen along the ray.
+ *
+ * @param ro    Ray origin. (in)
+ * @param rd    Ray direction. (in)
+ * @param k     The slot. (in)
+ * @param side  The wall (-1 or 1). (in)
+ *
+ * @return
+ *   Emission (rgb) and coverage (a).
+ *
+ * A blade stands perpendicular to its wall: the plane z = zk, spanning x from the wall inward.  Returns rgb emission, a
+ * = coverage.
+ **/
 vec4 blade( vec3 ro, vec3 rd, float k, float side )
 {
     float id = k * 2.0 + ( side > 0.0 ? 1.0 : 0.0 );
@@ -153,7 +214,15 @@ vec4 blade( vec3 ro, vec3 rd, float k, float side )
     return vec4( em * fog, inside );
 }
 
-/// Everything the ray sees above the floor: walls, sky strip and signs.
+/**  Everything the ray sees above the floor: walls, sky strip and signs.
+ *
+ * @param ro     Ray origin. (in)
+ * @param rd     Ray direction. (in)
+ * @param tWall  Receives the wall distance. (out)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 alley( vec3 ro, vec3 rd, out float tWall )
 {
     float tw = ( W ) / max( abs( rd.x ), 1e-4 );
@@ -219,7 +288,7 @@ vec3 alley( vec3 ro, vec3 rd, out float tWall )
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

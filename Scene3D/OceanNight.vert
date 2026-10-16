@@ -27,7 +27,7 @@ out vec3  vWorld; ///< World position (from the vertex stage).
 out float vSpec;
 out float vDist; ///< Distance (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x, w = attrA.y;

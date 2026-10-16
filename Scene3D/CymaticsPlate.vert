@@ -46,20 +46,39 @@ uniform float audioBeatPhase; ///< 0..1 within the beat -> tempo-locked flutter
 
 out vec4 vCol; ///< Colour (from the vertex stage).
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// Pick the k-th (n,m) pair from a fixed table of nicely distinct figures.
+/**  Pick the k-th (n,m) pair from a fixed table of nicely distinct figures.
+ *
+ * @param k  Index of the figure (taken modulo 8). (in)
+ *
+ * @return
+ *   The mode pair (n, m).
+ **/
 vec2 modePair( float k )
 {
     float i = mod( k, 8.0 );
@@ -80,12 +99,28 @@ vec2 modePair( float k )
     return vec2( 1.0, 3.0 );
 }
 
+/**  The Chladni pattern of mode (n, m) at a point (0 on the nodal lines).
+ *
+ * @param p   The point (0..1). (in)
+ * @param nm  The mode pair. (in)
+ *
+ * @return
+ *   The pattern value.
+ **/
 float chladni( vec2 p, vec2 nm ) // p in 0..1
 {
     float PI = 3.1415927;
     return cos( nm.x * PI * p.x ) * cos( nm.y * PI * p.y )
            - cos( nm.y * PI * p.x ) * cos( nm.x * PI * p.y );
 }
+/**  Gradient of chladni().
+ *
+ * @param p   The point (0..1). (in)
+ * @param nm  The mode pair. (in)
+ *
+ * @return
+ *   The gradient.
+ **/
 vec2 chladniGrad( vec2 p, vec2 nm )
 {
     float PI = 3.1415927;
@@ -96,7 +131,7 @@ vec2 chladniGrad( vec2 p, vec2 nm )
     return vec2( dx, dy );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = attrA.w;

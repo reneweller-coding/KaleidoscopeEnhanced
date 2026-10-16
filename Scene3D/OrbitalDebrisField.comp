@@ -43,7 +43,13 @@ uniform float radiusP; ///< Radius knob, 0..1.
 uniform float tumbleP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -51,29 +57,65 @@ float hash11( float p )
     p *= p + p;
     return fract( p );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
 
+/**  Rotation matrix about the y axis.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 rotY( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat3( c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c );
 }
+/**  Rotation matrix about the x axis.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 rotX( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat3( 1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c );
 }
+/**  Rotation matrix about the z axis.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat3 rotZ( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat3( c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0 );
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param a     First corner (the corners run around the quad). (in)
+ * @param b     Second corner. (in)
+ * @param c     Third corner. (in)
+ * @param d     Fourth corner. (in)
+ * @param id    Element id written to every vertex. (in)
+ * @param lit   Lighting weight written to every vertex. (in)
+ * @param kind  Element kind written to every vertex. (in)
+ **/
 void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, float id, float lit, float kind )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -96,7 +138,15 @@ void emitQuad( vec3 a, vec3 b, vec3 c, vec3 d, float id, float lit, float kind )
     }
 }
 
-/// A box as six quads.
+/**  A box as six quads.
+ *
+ * @param c     Centre of the box. (in)
+ * @param h     Half extents. (in)
+ * @param R     Orientation of the box. (in)
+ * @param id    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param lit   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitBox( vec3 c, vec3 h, mat3 R, float id, float lit, float kind )
 {
     vec3 x = R * vec3( h.x, 0.0, 0.0 ), y = R * vec3( 0.0, h.y, 0.0 ), z = R * vec3( 0.0, 0.0, h.z );
@@ -108,7 +158,7 @@ void emitBox( vec3 c, vec3 h, mat3 R, float id, float lit, float kind )
     emitQuad( c - x - y - z, c - x - y + z, c + x - y + z, c + x - y - z, id, lit * 0.6, kind );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

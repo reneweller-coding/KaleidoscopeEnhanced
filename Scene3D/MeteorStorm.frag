@@ -21,7 +21,7 @@ in vec4 vCol; ///< Colour (from the vertex stage).
  * vert-side coupling alone barely moved any pixels.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  d = gl_PointCoord - 0.5;

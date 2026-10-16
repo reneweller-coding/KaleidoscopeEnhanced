@@ -75,8 +75,17 @@ const vec2 Just[12] = vec2[12](
     vec2( 15.0, 8.0 )   // major seventh
 );
 
-/// The curve.  Three damped pendulums, the classic harmonograph: two driving
-/// the plane and one the depth.
+/**  The curve.
+ *
+ * @param t      Curve parameter. (in)
+ * @param ratio  Frequency ratio of the two plane pendulums. (in)
+ * @param damp   Damping. (in)
+ *
+ * @return
+ *   The point.
+ *
+ * Three damped pendulums, the classic harmonograph: two driving the plane and one the depth.
+ **/
 vec3 curveAt( float t, vec2 ratio, float damp )
 {
     float a = ratio.x, b = ratio.y;
@@ -90,7 +99,14 @@ vec3 curveAt( float t, vec2 ratio, float damp )
            * d * sizeP * 2.6;
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot    Index of the vertex in the buffer. (in)
+ * @param p       Position. (in)
+ * @param n       Normal. (in)
+ * @param along   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param energy  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float along, float energy )
 {
     uint o = slot * 8u;
@@ -104,7 +120,7 @@ void writeVertex( uint slot, vec3 p, vec3 n, float along, float energy )
     verts[o + 7u] = energy;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

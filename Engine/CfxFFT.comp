@@ -41,11 +41,26 @@ uniform int inverse; ///< 0 = forward, 1 = inverse (conjugate twiddles + 1/N)
 
 shared vec2 s[256];
 
+/**  Buffer index of element k of a line along the current axis.
+ *
+ * @param line  Index of the line. (in)
+ * @param k     Index in the line. (in)
+ *
+ * @return
+ *   The buffer index.
+ **/
 int idx( int line, int k )
 {
     return ( axis == 0 ) ? ( line * N + k ) : ( k * N + line );
 }
 
+/**  Reverses the order of the low 8 bits.
+ *
+ * @param v  The value. (in)
+ *
+ * @return
+ *   The reversed value.
+ **/
 uint bitrev8( uint v )
 {
     v = ( ( v >> 1 ) & 0x55u ) | ( ( v & 0x55u ) << 1 );
@@ -54,13 +69,20 @@ uint bitrev8( uint v )
     return v & 0xFFu;
 }
 
-/// @brief Complex multiplication.
+/**  Complex multiplication.
+ *
+ * @param a  One complex number. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The product a b.
+ **/
 vec2 cmul( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int line = int( gl_WorkGroupID.x );

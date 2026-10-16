@@ -67,7 +67,14 @@ const float AgeSpan = 0.84;
 // leaves the corners of the frame black.  The dust is what fills them.
 const uint DustBase = uint( Bands * Segs );
 
-/// Energy of band b at the given age, straight from the ring.
+/**  Energy of band b at the given age, straight from the ring.
+ *
+ * @param b    Index of the band. (in)
+ * @param age  Age, 0 now .. 1 oldest. (in)
+ *
+ * @return
+ *   The energy.
+ **/
 float energyAt( int b, float age )
 {
     float t = spectroHead - age * AgeSpan;
@@ -75,10 +82,17 @@ float energyAt( int b, float age )
     return e * smoothstep( 0.0, 0.12, spectroFill );
 }
 
-/// Where strand b sits at depth z.  A helix whose radius comes from a
-/// golden-ratio spread of the band index, so neighbouring bands are NOT
-/// neighbouring strands — that is what makes the bundle look woven instead of
-/// like a rolled-up sheet.
+/**  Where strand b sits at depth z.
+ *
+ * @param b  Index of the band. (in)
+ * @param z  Depth. (in)
+ *
+ * @return
+ *   The position.
+ *
+ * A helix whose radius comes from a golden-ratio spread of the band index, so neighbouring bands are NOT neighbouring
+ * strands — that is what makes the bundle look woven instead of like a rolled-up sheet.
+ **/
 vec3 strandAt( int b, float z )
 {
     // Bundle radius.  At 1.6..6.2 the whole cable fitted inside a third of the
@@ -90,7 +104,14 @@ vec3 strandAt( int b, float z )
     return vec3( r * cos( th ), r * sin( th ), z );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot    Index of the vertex in the buffer. (in)
+ * @param p       Position. (in)
+ * @param n       Normal. (in)
+ * @param energy  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param band    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float energy, float band )
 {
     uint o = slot * 8u;
@@ -104,7 +125,7 @@ void writeVertex( uint slot, vec3 p, vec3 n, float energy, float band )
     verts[o + 7u] = band;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

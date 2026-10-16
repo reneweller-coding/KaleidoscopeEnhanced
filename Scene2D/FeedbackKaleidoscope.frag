@@ -60,7 +60,13 @@ uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue p
 const float Pi = 3.14159265358979; ///< Pi.
 const vec3  Lw = vec3( 0.2126, 0.7152, 0.0722 );
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -68,11 +74,15 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// Mean colour of the current photo (the 1x1 mip; the slideshow textures are
-/// uploaded at 1024x1024 with glGenerateMipmap, see RenderPipeline.cpp).  The
-/// injection is divided by it, so the loop's brightness is a property of the
-/// FEEDBACK, not of whichever picture happens to be up -- the library runs from
-/// mean luma 0.14 (nebulae) to 0.74 (bright portraits).
+/**  Mean colour of the current photo (the 1x1 mip; the slideshow textures are uploaded at 1024x1024 with
+ * glGenerateMipmap, see RenderPipeline.cpp).
+ *
+ * @return
+ *   The photo's mean colour (RGB).
+ *
+ * The injection is divided by it, so the loop's brightness is a property of the FEEDBACK, not of whichever picture
+ * happens to be up -- the library runs from mean luma 0.14 (nebulae) to 0.74 (bright portraits).
+ **/
 vec3 imgDC()
 {
     return ( interpolation * textureLod( tex0, vec2( 0.5 ), 10.0 )
@@ -80,7 +90,13 @@ vec3 imgDC()
         .rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -90,9 +106,16 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// imgPalette at a fixed luminance, so the mandala's own lines keep their
-/// brightness on a dark photo.  A nearly-black sample is eased to neutral first:
-/// dividing (0.01,0.0,0.0) by its luma would make a hard saturated primary.
+/**  imgPalette at a fixed luminance, so the mandala's own lines keep their brightness on a dark photo.
+ *
+ * @param t  Position on the palette. (in)
+ *
+ * @return
+ *   The colour (RGB) at a fixed luminance.
+ *
+ * A nearly-black sample is eased to neutral first: dividing (0.01,0.0,0.0) by its luma would make a hard saturated
+ * primary.
+ **/
 vec3 palNorm( float t )
 {
     vec3  p = imgPalette( t );
@@ -101,7 +124,14 @@ vec3 palNorm( float t )
     return mix( vec3( 1.0 ), pn, clamp( pl * 8.0, 0.25, 1.0 ) ) * 0.55;
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -109,8 +139,19 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Mirror fold.  Also hands back the angle WITHIN the wedge and the wedge width,
-/// which the seam and petal terms below need in order to draw the mirror lines.
+/**  Mirror fold.
+ *
+ * @param p       The coordinate (centred). (in)
+ * @param sides   Number of mirrors. (in)
+ * @param wedgeA  Receives the angle within the wedge. (out)
+ * @param segOut  Receives the wedge's half width. (out)
+ *
+ * @return
+ *   The folded coordinate.
+ *
+ * Also hands back the angle WITHIN the wedge and the wedge width, which the seam and petal terms below need in order to
+ * draw the mirror lines.
+ **/
 vec2 kaleido( vec2 p, float sides, out float wedgeA, out float segOut )
 {
     float a = atan( p.y, p.x );
@@ -123,7 +164,7 @@ vec2 kaleido( vec2 p, float sides, out float wedgeA, out float segOut )
     return vec2( cos( a ), sin( a ) ) * r;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float sides_v = ( sidesP < 5 ) ? 7.0 : float( sidesP );

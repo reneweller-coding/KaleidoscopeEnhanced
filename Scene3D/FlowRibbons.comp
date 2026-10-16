@@ -56,13 +56,25 @@ const int   Ribbons = 2400;
 const int   Segs = 32;    ///< segments per ribbon
 const float Step = 0.085; ///< integration step, world units
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( vec3 p )
 {
     return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
 }
 
-/// Value noise: cheap, and smooth enough that its curl is well behaved.
+/**  Value noise: cheap, and smooth enough that its curl is well behaved.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -75,9 +87,16 @@ float noise3( vec3 p )
                 mix( mix( n001, n101, f.x ), mix( n011, n111, f.x ), f.y ), f.z );
 }
 
-/// The vector potential.  The flow is its curl, so this is what actually gets
-/// designed — and because the curl of ANY field is divergence-free, no amount of
-/// messing with this can make the flow leak.
+/**  The vector potential.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The potential.
+ *
+ * The flow is its curl, so this is what actually gets designed — and because the curl of ANY field is divergence-free,
+ * no amount of messing with this can make the flow leak.
+ **/
 vec3 potential( vec3 p )
 {
     float s = 1.0 / max( scaleP * 1.6, 0.2 );
@@ -92,6 +111,13 @@ vec3 potential( vec3 p )
     return ( vec3( a, b, c ) - 0.5 ) * 2.2 + base;
 }
 
+/**  Curl of a noise field, by finite differences.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The curl (a divergence-free flow).
+ **/
 vec3 curl( vec3 p )
 {
     const float e = 0.12;
@@ -105,7 +131,14 @@ vec3 curl( vec3 p )
            / ( 2.0 * e );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot   Index of the vertex in the buffer. (in)
+ * @param p      Position. (in)
+ * @param n      Normal. (in)
+ * @param along  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param rnd    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float along, float rnd )
 {
     uint o = slot * 8u;
@@ -119,7 +152,7 @@ void writeVertex( uint slot, vec3 p, vec3 n, float along, float rnd )
     verts[o + 7u] = rnd;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

@@ -44,13 +44,26 @@ uniform float stepP;
 uniform float iridescenceP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -58,7 +71,13 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Thin-film iridescent rainbow color function (Airy/Newton optical rings)
+/**  Thin-film iridescent rainbow color function (Airy/Newton optical rings)
+ *
+ * @param thickness  Film thickness (phase). (in)
+ *
+ * @return
+ *   The interference colour (RGB).
+ **/
 vec3 thinFilmColor( float thickness )
 {
     vec3 col;
@@ -69,8 +88,15 @@ vec3 thinFilmColor( float thickness )
     return pow( col, vec3( 1.3 ) ) * 1.5;
 }
 
-/// Bismuth Hopper Crystal Distance Function
-/// Fold space into orthogonal stepped square concentric terraces
+// ---- Bismuth Hopper Crystal Distance Function: fold space into orthogonal stepped square concentric terraces ----
+/**  Signed distance to a box of half size b.
+ *
+ * @param p  The point. (in)
+ * @param b  Half size of the box. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdBox( vec3 p, vec3 b )
 {
     vec3 d = abs( p ) - b;
@@ -83,7 +109,16 @@ float sdBox( vec3 p, vec3 b )
 vec2  gAxis = vec2( 0.0 );
 float gCorrR = 0.78;
 
-/// @brief The scene's distance field: distance from p to the nearest surface.
+/**  The scene's distance field: distance from p to the nearest surface.
+ *
+ * @param p         The point. (in)
+ * @param outLayer  Receives the crystal layer (for colouring). (out)
+ * @param stpScale  Height of the hopper steps. (in)
+ * @param boxScale  Size of the boxes. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map( vec3 p, out float outLayer, float stpScale, float boxScale )
 {
     // Spatial repetition for infinite labyrinth
@@ -135,7 +170,15 @@ float map( vec3 p, out float outLayer, float stpScale, float boxScale )
     return d;
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p         The surface point. (in)
+ * @param stpScale  Scene parameter passed to the field. (in)
+ * @param boxScale  Scene parameter passed to the field. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 p, float stpScale, float boxScale )
 {
     float       dummy;
@@ -148,7 +191,7 @@ vec3 calcNormal( vec3 p, float stpScale, float boxScale )
     return normalize( n );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float iters = ( iterP > 0.0 ) ? iterP : 1.0;

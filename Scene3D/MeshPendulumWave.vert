@@ -40,7 +40,7 @@ const float Dist = 70.0;
 const float PivotY = 22.0;
 const float Spacing = 10.5;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int  inst = gl_InstanceID;

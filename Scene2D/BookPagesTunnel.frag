@@ -37,13 +37,25 @@ uniform float pagesP;
 uniform float sizeP; ///< Size knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,15 +65,33 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// Intersect a ray with a rectangular page: a quad in the plane through the
-/// spine (the x axis at height 0, running along z) tilted by angle `ang`.
-/// Returns t, and uv on the page, or t < 0.
+/**  Intersect a ray with a rectangular page: a quad in the plane through the spine (the x axis at height 0, running
+ * along z) tilted by angle `ang`.
+ *
+ * @param ro   Ray origin. (in)
+ * @param rd   Ray direction. (in)
+ * @param zc   Position of the page's spine along z. (in)
+ * @param ang  Tilt of the page (radians). (in)
+ * @param w    Half width of the page. (in)
+ * @param h    Height of the page. (in)
+ *
+ * @return
+ *   The ray parameter t (x) and the uv on the page (yz), or t < 0.
+ *
+ * Returns t, and uv on the page, or t < 0.
+ **/
 vec3 hitPage( vec3 ro, vec3 rd, float zc, float ang, float w, float h )
 {
     // Page plane: contains the spine line (y = 0, z = zc) along x, rotated
@@ -84,8 +114,17 @@ vec3 hitPage( vec3 ro, vec3 rd, float zc, float ang, float w, float h )
     return vec3( t, u / w * 0.5 + 0.5, v / h );
 }
 
-/// Shade one page hit: the photo on the front, its palette negative on the
-/// back, a reading light from above, a kick-lit edge, faint text lines.
+/**  Shade one page hit: the photo on the front, its palette negative on the back, a reading light from above, a
+ * kick-lit edge, faint text lines.
+ *
+ * @param best     The hit: t (x) and the uv (yz). (in)
+ * @param bestAng  Tilt of the hit page (radians). (in)
+ * @param rd       Ray direction. (in)
+ * @param hue      Hue of the light. (in)
+ *
+ * @return
+ *   The page colour (RGB).
+ **/
 vec3 shadePage( vec3 best, float bestAng, vec3 rd, float hue )
 {
     vec3  n = vec3( 0.0, -sin( bestAng ), cos( bestAng ) );
@@ -105,7 +144,7 @@ vec3 shadePage( vec3 best, float bestAng, vec3 rd, float hue )
     return mix( col, imgPalette( hue * 0.159 + 0.6 ) * 0.25, clamp( fog, 0.0, 0.85 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

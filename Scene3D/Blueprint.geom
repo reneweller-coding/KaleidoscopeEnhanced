@@ -45,7 +45,7 @@ uniform float audioLevel;   ///< Overall loudness, 0..1.
 
 uniform float camDistP; ///< Camera distance knob, 0..1.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // One triangle of the mesh is spent on the paper.  A blueprint without its

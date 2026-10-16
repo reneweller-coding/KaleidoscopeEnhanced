@@ -32,14 +32,26 @@ uniform float detailP;  ///< Detail knob, 0..1.
 uniform float paletteP; ///< Palette knob: photo colours .. colour field, 0..1.
 uniform float camP;     ///< Camera knob, 0..1.
 uniform float hueP;     ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -47,7 +59,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -59,35 +77,74 @@ float fbm3( vec2 p )
     }
     return v;
 }
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
+/**  The photo at a mip level, mirrored at its edges: lod 0 full detail, ~4 a soft field, ~7 broad masses.
+ *
+ * @param uv   Coordinate in the photo (mirror-repeated outside 0..1). (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 imgLod( vec2 uv, float lod )
 {
     uv = mirrorUV( uv );
     return ( interpolation * textureLod( tex0, uv, lod ) + ( 1.0 - interpolation ) * textureLod( tex1, uv, lod ) ).rgb;
 }
-/// @brief Luminance of a colour (Rec. 601 weights).
+/**  Luminance of a colour (Rec. 601 weights).
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance.
+ **/
 float luma( vec3 c )
 {
     return dot( c, vec3( 0.299, 0.587, 0.114 ) );
 }
-/// @brief HSV (all 0..1) to RGB.
+/**  HSV (all 0..1) to RGB.
+ *
+ * @param c  Hue, saturation and value, all 0..1. (in)
+ *
+ * @return
+ *   The RGB colour.
+ **/
 vec3 hsv2rgb( vec3 c )
 {
     vec3 k = clamp( abs( mod( c.x * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
     return c.z * mix( vec3( 1.0 ), k, c.y );
 }
-/// @brief Saturation of a colour, 0..1.
+/**  Saturation of a colour, 0..1.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The saturation, 0..1.
+ **/
 float satOf( vec3 c )
 {
     float mx = max( c.r, max( c.g, c.b ) );
     return ( mx - min( c.r, min( c.g, c.b ) ) ) / max( mx, 1e-3 );
 }
-/// @brief A glowing colour for a place: the photo's own hue where it has one, a wandering hue field where it is grey.
+/**  A glowing colour for a place: the photo's own hue where it has one, a wandering hue field where it is grey.
+ *
+ * @param photo  The photo's colour at the place. (in)
+ * @param q      The place; drives the wandering hue field. (in)
+ * @param hue0   Anchor hue, 0..1. (in)
+ *
+ * @return
+ *   The glow colour (RGB, bright).
+ **/
 vec3 glowColour( vec3 photo, vec2 q, float hue0 )
 {
     vec3 field = hsv2rgb( vec3( fract( hue0 + 0.55 * fbm3( q * 0.8 ) + 0.03 * audioAdvance ), 0.85, 1.0 ) );
@@ -95,7 +152,14 @@ vec3 glowColour( vec3 photo, vec2 q, float hue0 )
     own = own * own * own;
     return mix( field, own, smoothstep( 0.12, 0.35, satOf( photo ) ) );
 }
-/// @brief A kaleidoscope of the coordinate around a slowly wandering centre.
+/**  A kaleidoscope of the coordinate around a slowly wandering centre.
+ *
+ * @param uv     Coordinate in the photo. (in)
+ * @param sides  Number of mirror wedges (whole). (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 kaleidoUV( vec2 uv, float sides )
 {
     vec2  c = vec2( 0.5 ) + 0.2 * vec2( sin( 0.0107 * sceneTime ), cos( 0.0131 * sceneTime ) );
@@ -106,17 +170,31 @@ vec2 kaleidoUV( vec2 uv, float sides )
     a += 0.03 * sceneTime + 0.25 * audioPhase;
     return c + r * vec2( cos( a ), sin( a ) );
 }
-/// @brief The photo through the scene's kaleidoscope.
+/**  The photo through the scene's kaleidoscope.
+ *
+ * @param uv   Coordinate in the photo. (in)
+ * @param lod  Mip level of the photo (0 = full detail). (in)
+ *
+ * @return
+ *   The photo colour through the kaleidoscope (RGB).
+ **/
 vec3 imgK( vec2 uv, float lod )
 {
     return imgLod( kaleidoUV( uv, 6.0 ), lod );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// @brief Writes the pixel: loudness brightness and a soft highlight roll-off.
+/**  Writes the pixel: loudness brightness and a soft highlight roll-off.
+ *
+ * @param col  The scene's colour; written to fragColor after the finish. (in)
+ **/
 void finish( vec3 col )
 {
     col *= 0.9 + 0.2 * audioLevel;
@@ -128,37 +206,76 @@ vec3          gCam = vec3( 0.0 );
 uniform float camHost; ///< 1 when the app drives the camera (camZ, camGaze).
 uniform float camZ;    ///< Flight position along the camera path (integrated by the app).
 uniform vec3  camGaze; ///< Gaze shown, gaze panned to, pan progress.
-float         camFlight( float gt )
+/**  The camera's flight position (the app's integrated one, or gT).
+ *
+ * @param gt  The scene's own time (used without a host camera). (in)
+ *
+ * @return
+ *   The camera's position along the flight.
+ **/
+float camFlight( float gt )
 {
     return camHost > 0.5 ? camZ : gt;
 }
 float gT, gTC, gSpread, gRot, gMw;
 vec2  gCw, gCt;
-/// @brief Class position of a knob value (n classes).
+/**  Class position of a knob value (n classes).
+ *
+ * @param x  The knob value, 0..1. (in)
+ * @param n  Number of classes. (in)
+ *
+ * @return
+ *   The class, 0..n-1.
+ **/
 int pickStage( float x, int n )
 {
     return int( min( floor( clamp( x, 0.0, 1.0 ) * float( n ) ), float( n - 1 ) ) );
 }
-/// @brief A mirror count 5..9 from a sub-variant.
+/**  A mirror count 5..9 from a sub-variant.
+ *
+ * @param v  The sub-variant, 0..1. (in)
+ *
+ * @return
+ *   The mirror count, 5..9.
+ **/
 float sides( float v )
 {
     return 5.0 + floor( v * 4.99 );
 }
 uniform vec3  walkA, walkB, walkC, walkD, walkS;
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
-bool          walkAll()
+/**  Chain walk.
+ *
+ * @return
+ *   True if every stage walks (morphP from 0.5).
+ **/
+bool walkAll()
 {
     return clamp( morphP, 0.0, 1.0 ) >= 0.5;
 }
 uniform float     glowP;        ///< Glow / afterglow knob, 0..1.
 uniform sampler2D texPrevFrame; ///< The last frame, fully composited (feedback).
-vec3              chainAfterglow( vec3 col )
+/**  Afterglow: the brighter of the colour and the decayed previous frame (from glowP 0.15).
+ *
+ * @param col  The frame's colour. (in)
+ *
+ * @return
+ *   The colour with the afterglow.
+ **/
+vec3 chainAfterglow( vec3 col )
 {
     if ( glowP <= 0.15 )
         return col;
     vec3 prev = texture( texPrevFrame, gl_FragCoord.xy / resolution ).rgb;
     return max( col, prev * ( 0.78 * smoothstep( 0.15, 1.0, glowP ) ) );
 }
+/**  The colour classes of the 3D lab in order of energy (calm .. energetic).
+ *
+ * @param i  Position on the energy scale. (in)
+ *
+ * @return
+ *   The colour class at that position.
+ **/
 int ordco( int i )
 {
     if ( i == 0 )
@@ -206,7 +323,15 @@ int ordco( int i )
     return 6;
 }
 uniform vec3 walkSpace, walkCore, walkBody;
-float        sliceZoom( int kc )
+/**  How close the view comes per fold core: the finer it folds (its scale per round to the power of its rounds; the
+ * inversion folds count as fine), the closer -- a Menger sponge (3^3) seen at a third of the plain lattice's view.
+ *
+ * @param kc  The fold core. (in)
+ *
+ * @return
+ *   The zoom factor of the view.
+ **/
+float sliceZoom( int kc )
 {
     if ( kc == 5 )
         return 0.35;
@@ -222,6 +347,14 @@ float        sliceZoom( int kc )
         return 0.9;
     return 1.1;
 }
+/**  The plane normal per gaze (the app pans between gazes, clock only).
+ *
+ * @param k     Gaze variant (taken modulo 7). (in)
+ * @param time  The scene's clock. (in)
+ *
+ * @return
+ *   The slice plane's normal (unit length).
+ **/
 vec3 sliceAxis( float k, float time )
 {
     float i = mod( k, 7.0 );
@@ -239,6 +372,14 @@ vec3 sliceAxis( float k, float time )
         return normalize( vec3( 0.3, 0.2, 1.0 ) );
     return vec3( 0.0, 0.0, 1.0 );
 }
+/**  The slice plane's frame per gaze: its normal and two in-plane axes.
+ *
+ * @param cam   Camera knob. (in)
+ * @param time  The scene's clock. (in)
+ * @param N     Receives the plane's normal. (out)
+ * @param X     Receives the plane's x axis. (out)
+ * @param Y     Receives the plane's y axis. (out)
+ **/
 void sliceFrame( float cam, float time, out vec3 N, out vec3 X, out vec3 Y )
 {
     float k0, k1, f;
@@ -261,6 +402,15 @@ void sliceFrame( float cam, float time, out vec3 N, out vec3 X, out vec3 Y )
     X = cos( a ) * x0 + sin( a ) * y0;
     Y = cos( a ) * y0 - sin( a ) * x0;
 }
+/**  Colour of a chain coordinate: the photo, shifted toward a hue that follows the music.
+ *
+ * @param c    The chain coordinate. (in)
+ * @param lod  Mip level of the photo. (in)
+ * @param pal  Share of the palette colour, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 chainPlaneC( vec2 c, float lod, float pal )
 {
     vec3 ph = imgLod( c, lod );
@@ -275,6 +425,15 @@ vec3 chainPlaneC( vec2 c, float lod, float pal )
     return mix( ph, fc, pal );
 }
 
+/**  Colour of a surface point from the three planes' chain coordinates, weighted by its normal.
+ *
+ * @param n    The normal. (in)
+ * @param lod  Mip level of the photo. (in)
+ * @param pal  Share of the palette colour, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 colour3T( vec3 n, float lod, float pal )
 {
     // the three projection planes' chain coordinates, weighted by the normal (tiny weights skipped)
@@ -290,7 +449,7 @@ vec3 colour3T( vec3 n, float lod, float pal )
         c += chainPlaneC( texelFetch( texChain2, ip, 0 ).xy, lod, pal ) * w.z;
     return c;
 }
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
 

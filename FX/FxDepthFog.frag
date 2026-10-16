@@ -57,13 +57,25 @@ uniform float densityP; ///< preset: how thick the air is
 uniform float heightP;  ///< preset: how fast the layer thins with height
 uniform float glowP;    ///< preset: strength of the forward scattering
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 );
 }
 
-/// @brief Depth buffer value to linear distance.
+/**  Depth buffer value to linear distance.
+ *
+ * @param d  Depth buffer value, 0..1. (in)
+ *
+ * @return
+ *   The linear distance.
+ **/
 float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
@@ -71,8 +83,14 @@ float linearise( float d )
     return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
-/// Henyey-Greenstein phase function: how much light scattered from direction L
-/// ends up travelling toward the viewer.
+/**  Henyey-Greenstein phase function: how much light scattered from direction L ends up travelling toward the viewer.
+ *
+ * @param cosT  Cosine of the scattering angle. (in)
+ * @param g     Anisotropy, -1..1. (in)
+ *
+ * @return
+ *   The phase value.
+ **/
 float phaseHG( float cosT, float g )
 {
     float g2 = g * g;
@@ -80,6 +98,19 @@ float phaseHG( float cosT, float g )
     return ( 1.0 - g2 ) / ( 12.566371 * max( pow( d, 1.5 ), 1e-4 ) );
 }
 
+/**  The frame at a pixel behind the depth fog, with the sun's in-scattering.
+ *
+ * @param src     The frame. (in)
+ * @param dep     The depth texture. (in)
+ * @param uv      Screen coordinate. (in)
+ * @param sunDir  Direction to the sun. (in)
+ * @param sunCol  Colour of the sun. (in)
+ * @param airCol  Colour of the air. (in)
+ * @param valid   1 where the depth buffer is valid, else 0. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
              vec3 airCol, float valid )
 {
@@ -122,7 +153,7 @@ vec3 fogged( sampler2D src, sampler2D dep, vec2 uv, vec3 sunDir, vec3 sunCol,
     return mix( c, air, ext );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

@@ -50,12 +50,24 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -63,20 +75,44 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2D( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
-/// @brief Luminance of the photo at a coordinate.
+/**  Luminance of a colour.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance (Rec. 709).
+ **/
 float lum( vec3 c )
 {
     return dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
 }
 
-/// One hatch set: parallel strokes at angle a, of spacing f, whose width follows
-/// the local tone.  Returns how far this pixel is INTO a stroke, 0..1.
+/**  One hatch set: parallel strokes at angle a, of spacing f, whose width follows the local tone.
+ *
+ * @param p      The point. (in)
+ * @param a      Angle of the strokes (radians). (in)
+ * @param f      Strokes per unit. (in)
+ * @param tone   The local tone, 0..1. (in)
+ * @param width  Base width of a stroke. (in)
+ * @param drift  Drift of the strokes. (in)
+ *
+ * @return
+ *   How far the pixel is into a stroke, 0..1.
+ *
+ * Returns how far this pixel is INTO a stroke, 0..1.
+ **/
 float hatch( vec2 p, float a, float f, float tone, float width, float drift )
 {
     vec2  q = rot2D( a ) * p;
@@ -90,7 +126,7 @@ float hatch( vec2 p, float a, float f, float tone, float width, float drift )
     return smoothstep( half_w, half_w * 0.45, abs( u - wob * half_w ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float hatch_dens = ( hatchP > 0.0 ) ? hatchP : 1.0;

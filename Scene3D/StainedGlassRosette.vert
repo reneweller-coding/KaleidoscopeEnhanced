@@ -24,7 +24,7 @@ uniform float audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 out vec2 vPolar; ///< angle, radius 0..1
 out vec2 vXY;    ///< cartesian, for the fragment's own polar re-map
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x; // angle 0..1

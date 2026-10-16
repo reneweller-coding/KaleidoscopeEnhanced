@@ -54,7 +54,7 @@ uniform float audioRolloff;   ///< 0=bass-bound .. 1=reaching into the highs -> 
 
 const float Pi = 3.141592653589793;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
 

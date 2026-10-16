@@ -46,9 +46,16 @@ out vec3  vWorldPos; ///< World position (from the vertex stage).
 out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out float vRibbonIndex;
 
-/// The 20 vertices of a regular dodecahedron: the cube (+-1,+-1,+-1) plus the
-/// three cyclic rectangle families (0, +-1/phi, +-phi).  All lie on a sphere of
-/// radius sqrt(3), so one scale factor normalises the lot.
+/**  The 20 vertices of a regular dodecahedron: the cube (+-1,+-1,+-1) plus the three cyclic rectangle families (0,
+ * +-1/phi, +-phi).
+ *
+ * @param i  Index of the vertex (0..19). (in)
+ *
+ * @return
+ *   The vertex (radius sqrt(3)).
+ *
+ * All lie on a sphere of radius sqrt(3), so one scale factor normalises the lot.
+ **/
 vec3 dodecaVertex( int i )
 {
     const float Phi = 1.6180339887;
@@ -69,7 +76,7 @@ vec3 dodecaVertex( int i )
     return vec3( a * Phi, 0.0, b * Iph );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float ddc = ( dodecaP > 0.0 ) ? dodecaP : 1.0;

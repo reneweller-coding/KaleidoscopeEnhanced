@@ -37,7 +37,7 @@ out vec2  vTexCoord; ///< Texture coordinate (from the vertex stage).
 out vec4  vColor;
 out float vHeight;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float bsp = ( bowShockP > 0.0 ) ? bowShockP : 1.0;

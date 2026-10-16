@@ -16,7 +16,7 @@ uniform sampler2D texAgents;
 
 out float vSpecies;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec4 ag = texture( texAgents, aTexel );

@@ -14,6 +14,13 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float     audioPhase;    ///< music adds orbital drift
 uniform float     audioSwell;    ///< Slow loudness envelope, 0..1 (seconds).
 
+/**  Folds a coordinate's x mirror-wise per whole unit (keeps the texture seamless).
+ *
+ * @param p  The coordinate. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 clampQuadratic( vec2 p )
 {
     vec2  uv = p;
@@ -33,7 +40,7 @@ vec2 clampQuadratic( vec2 p )
     return uv;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
 

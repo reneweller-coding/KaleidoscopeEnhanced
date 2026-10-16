@@ -39,18 +39,31 @@ uniform float kick;
 uniform float level;
 uniform float time; ///< Seconds since the program started (never reset; see sceneTime).
 
+/**  Displacement of grid node p (clamped to the grid).
+ *
+ * @param p  The node. (in)
+ *
+ * @return
+ *   The displacement.
+ **/
 vec3 dAt( ivec2 p )
 {
     return imageLoad( imgCur, clamp( p, ivec2( 0 ), size - ivec2( 1 ) ) ).rgb;
 }
 
-/// Rest position of a grid node, in the cloth's own space.
+/**  Rest position of a grid node, in the cloth's own space.
+ *
+ * @param p  The grid node. (in)
+ *
+ * @return
+ *   The rest position.
+ **/
 vec3 rest( ivec2 p )
 {
     return vec3( ( vec2( p ) + 0.5 ) / vec2( size ) * 2.0 - 1.0, 0.0 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     ivec2 p = ivec2( gl_GlobalInvocationID.xy );

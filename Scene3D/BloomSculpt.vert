@@ -13,7 +13,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 out vec2 vUV;   ///< Texture coordinate 0..1 over the screen (from the vertex stage).
 out vec4 vSeed; ///< Per-instance random seed (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vUV = attrA.xy;

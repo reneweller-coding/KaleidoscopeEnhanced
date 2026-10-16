@@ -41,13 +41,25 @@ uniform float sizeP; ///< Size knob, 0..1.
 uniform float lacquerP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,13 +69,28 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// Signed distance to a triangle (a, b, c).
+/**  Signed distance to a triangle (a, b, c).
+ *
+ * @param p  The point. (in)
+ * @param a  First corner. (in)
+ * @param b  Second corner. (in)
+ * @param c  Third corner. (in)
+ *
+ * @return
+ *   The signed distance (a bound where the shape has no exact one).
+ **/
 float sdTri( vec2 p, vec2 a, vec2 b, vec2 c )
 {
     vec2  e0 = b - a, e1 = c - b, e2 = a - c;
@@ -78,8 +105,15 @@ float sdTri( vec2 p, vec2 a, vec2 b, vec2 c )
     return -sqrt( d.x ) * sign( d.y );
 }
 
-/// Pose of piece i in figure f: position and rotation (five figures x
-/// seven pieces).  Local shapes are defined about their own centroid.
+/**  Pose of piece i in figure f: position and rotation (five figures x seven pieces).
+ *
+ * @param i    Index of the piece. (in)
+ * @param f    Index of the figure. (in)
+ * @param pos  Receives the position. (out)
+ * @param rot  Receives the rotation (radians). (out)
+ *
+ * Local shapes are defined about their own centroid.
+ **/
 void pose( int i, int f, out vec2 pos, out float rot )
 {
     vec2  P[35];
@@ -164,6 +198,14 @@ void pose( int i, int f, out vec2 pos, out float rot )
     rot = rr[idx];
 }
 
+/**  Signed distance to tangram piece i in its own frame.
+ *
+ * @param i  Index of the piece. (in)
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float pieceSD( int i, vec2 q )
 {
     // Local shapes about their centroid (unit square tangram, side 1).
@@ -180,7 +222,7 @@ float pieceSD( int i, vec2 q )
                 sdTri( q, vec2( -0.35, -0.09 ), vec2( 0.18, 0.09 ), vec2( -0.18, 0.09 ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

@@ -30,6 +30,13 @@ uniform float     audioSwell;   ///< Slow loudness envelope, 0..1 (seconds).
 // Created by inigo quilez - iq/2013
 // License Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported License.
 
+/**  Folds a coordinate's x mirror-wise per whole unit (keeps the texture seamless).
+ *
+ * @param p  The coordinate. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 clampQuadratic( vec2 p )
 {
     vec2  uv = p;
@@ -50,6 +57,14 @@ vec2 clampQuadratic( vec2 p )
 }
 
 
+/**  Rotates a point about the origin.
+ *
+ * @param p       The point. (in)
+ * @param amount  The angle in radians. (in)
+ *
+ * @return
+ *   The rotated point.
+ **/
 vec2 rotate( vec2 p, float amount )
 {
     // a rotation
@@ -59,7 +74,7 @@ vec2 rotate( vec2 p, float amount )
 }
 
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
 

@@ -33,13 +33,25 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float torusRadiusP;
 uniform float torusThickP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -49,7 +61,15 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Tints a colour toward the house palette at t, keeping its brightness.
+/**  Tints a colour toward the house palette at t, keeping its brightness.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
@@ -58,13 +78,23 @@ vec3 palTint( vec3 c, float t, float k )
 }
 
 // ---- Cross-section of the accretion structure ------------------------------
-/// (rho, h) traced as v runs once around the tube.  For |v| < pi/2 this is the
-/// plain Polish-donut tube; past that the INNER half of the tube flares
-/// smoothly outward into the thin, tapering, spiral-corrugated accretion flow
-/// that feeds it.  One continuous surface, so the grid mesh never has to
-/// stretch a row of quads between two separate bodies -- and the flow is what
-/// carries the picture out to its edges instead of leaving the donut as a
-/// small bright ring in the middle of a black frame.
+/**  (rho, h) traced as v runs once around the tube.
+ *
+ * @param v     Angle around the tube (radians, -pi..pi). (in)
+ * @param u     Angle around the axis (radians). (in)
+ * @param R     Major radius of the torus. (in)
+ * @param r     Radius of the tube. (in)
+ * @param Rout  Outer radius of the flow. (in)
+ * @param t     Time. (in)
+ *
+ * @return
+ *   The cross-section point (rho, h).
+ *
+ * For |v| < pi/2 this is the plain Polish-donut tube; past that the INNER half of the tube flares smoothly outward into
+ * the thin, tapering, spiral-corrugated accretion flow that feeds it.  One continuous surface, so the grid mesh never
+ * has to stretch a row of quads between two separate bodies -- and the flow is what carries the picture out to its
+ * edges instead of leaving the donut as a small bright ring in the middle of a black frame.
+ **/
 vec2 crossSection( float v, float u, float R, float r, float Rout, float t )
 {
     float s = min( abs( v ) * 0.31830989, 1.0 ); // |v| / pi
@@ -81,13 +111,25 @@ vec2 crossSection( float v, float u, float R, float r, float Rout, float t )
     return vec2( rho, h );
 }
 
+/**  Point of the accretion surface at (u, v).
+ *
+ * @param u     Angle around the axis (radians). (in)
+ * @param v     Angle around the tube (radians, -pi..pi). (in)
+ * @param R     Major radius of the torus. (in)
+ * @param r     Radius of the tube. (in)
+ * @param Rout  Outer radius of the flow. (in)
+ * @param t     Time. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 surfacePos( float u, float v, float R, float r, float Rout, float t )
 {
     vec2 c = crossSection( v, u, R, r, Rout, t );
     return vec3( c.x * cos( u ), c.x * sin( u ), c.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Remap patch UV [0,1] to centered [-1,1] domain

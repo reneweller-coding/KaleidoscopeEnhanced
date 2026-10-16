@@ -285,6 +285,8 @@ def split_first_sentence( text ):
         head = text[ :m.start() + 1 ]
         if ABBREV.search( head ) or re.search( r"\d\.$", head ) and re.match( r"\d", text[ m.end(): ] or "x" ):
             continue
+        if head.endswith( ".." ):              # a range "0 .. 1" or an ellipsis, not the end of a sentence
+            continue
         if head.count( "(" ) > head.count( ")" ) or head.count( "`" ) % 2:
             continue
         return head.strip(), text[ m.end(): ].strip()

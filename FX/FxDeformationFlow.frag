@@ -39,7 +39,7 @@ uniform int       leftRight;
 
 const float Scaletexture = 2.0; ///< 2.0
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     vec2 p = gl_FragCoord.xy;

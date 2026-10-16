@@ -53,10 +53,20 @@ uniform float audioZCR;       ///< 0=pure tone .. 1=broadband noise -> corona cr
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float skyP;  ///< how much of the photo the flash reveals
 
-/// One instance of the discharge: the raw filament plus its two halo scales.
-/// Every tap is wrapped with fract(), so a sibling frame that runs off the edge
-/// of the canvas re-enters on the other side instead of smearing the border
-/// texel across half the sky.
+/**  One instance of the discharge: the raw filament plus its two halo scales.
+ *
+ * @param p      The point in the lightning field. (in)
+ * @param jit    Jitter of the halo taps. (in)
+ * @param zcr    Zero-crossing rate (noise). (in)
+ * @param r1     Radius of the near halo. (in)
+ * @param r2     Radius of the far halo. (in)
+ * @param bolt   Receives the filament. (out)
+ * @param nearH  Receives the near halo. (out)
+ * @param farH   Receives the far halo. (out)
+ *
+ * Every tap is wrapped with fract(), so a sibling frame that runs off the edge of the canvas re-enters on the other
+ * side instead of smearing the border texel across half the sky.
+ **/
 void gather( vec2 p, float jit, float zcr, float r1, float r2,
              out vec3 bolt, out vec3 nearH, out vec3 farH )
 {
@@ -74,13 +84,25 @@ void gather( vec2 p, float jit, float zcr, float r1, float r2,
     farH *= 0.125;
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -90,7 +112,13 @@ float vnoise( vec2 p )
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
 
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float s = 0.0, a = 0.55;
@@ -103,7 +131,7 @@ float fbm( vec2 p )
     return s;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

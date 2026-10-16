@@ -52,17 +52,28 @@ uniform float     photoP;       ///< Photo knob: how much of the photo shows, 0.
 uniform sampler2D tex1;         ///< The next photo (cross-faded in by interpolation).
 uniform float     audioValence; ///< preset: how much of the photo shows through
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -72,21 +83,41 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief A hue as a colour (the house palette).
+/**  A hue as a colour (the house palette).
+ *
+ * @param h  The hue, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 hue2rgb( float h )
 {
     return imgPalette( h ) * 1.35; // photo-arc palette (house standard), was HSV rainbow
 }
 
-/// Pitch class at lattice coordinates (a, b): a steps of a perfect fifth (7
-/// semitones) and b steps of a major third (4).  That single line is the whole
-/// Tonnetz — everything else here is drawing.
+/**  Pitch class at lattice coordinates (a, b): a steps of a perfect fifth (7 semitones) and b steps of a major third
+ * (4).
+ *
+ * @param n  Lattice coordinates (a, b). (in)
+ *
+ * @return
+ *   The pitch class, 0..11.
+ *
+ * That single line is the whole Tonnetz — everything else here is drawing.
+ **/
 int pitchAt( vec2 n )
 {
     int v = int( mod( n.x * 7.0 + n.y * 4.0, 12.0 ) + 12.0 );
     return v % 12;
 }
 
+/**  Brightness of a Tonnetz node: a floor, the level, and its pitch class's chroma.
+ *
+ * @param n  Lattice coordinates (a, b). (in)
+ *
+ * @return
+ *   The brightness, 0..1.4.
+ **/
 float energyAt( vec2 n )
 {
     // Bins are L1-normalised (~0..0.3), so x4 brings a strong pitch class near 1.
@@ -95,7 +126,7 @@ float energyAt( vec2 n )
     return clamp( 0.14 + 0.30 * audioLevel + audioChroma[pitchAt( n )] * 4.0, 0.0, 1.4 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = gl_FragCoord.xy / resolution;

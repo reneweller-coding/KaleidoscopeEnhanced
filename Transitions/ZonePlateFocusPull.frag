@@ -52,7 +52,14 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -60,8 +67,16 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// Out of focus: a ring of samples at radius r, which is what a lens actually
-/// spreads a point into.
+/**  Out of focus: a ring of samples at radius r, which is what a lens actually spreads a point into.
+ *
+ * @param tx  The texture. (in)
+ * @param uv  The coordinate. (in)
+ * @param r   Radius of the ring. (in)
+ * @param sc  Aspect scale of the ring. (in)
+ *
+ * @return
+ *   The defocused colour (RGB).
+ **/
 vec3 defocus( sampler2D tx, vec2 uv, float r, vec2 sc )
 {
     if ( r < 0.0015 )
@@ -75,7 +90,7 @@ vec3 defocus( sampler2D tx, vec2 uv, float r, vec2 sc )
     return s / 8.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float zn = ( zonesP > 0.0 ) ? zonesP : 1.0;

@@ -17,37 +17,78 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioSpread;      ///< Spectral spread, 0..1.
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float speedP;           ///< Speed knob, 0..1.
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// @brief The complex number e^(i a).
+/**  The complex number e^(i a).
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The unit complex number (cos a, sin a).
+ **/
 vec2 cexpi( float a )
 {
     return vec2( cos( a ), sin( a ) );
 }
-/// @brief Complex multiplication.
+/**  Complex multiplication.
+ *
+ * @param a  One complex number. (in)
+ * @param b  The other. (in)
+ *
+ * @return
+ *   The product a b.
+ **/
 vec2 cmul( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x );
 }
-/// @brief Complex division.
+/**  Complex division.
+ *
+ * @param a  The numerator. (in)
+ * @param b  The denominator. (in)
+ *
+ * @return
+ *   The quotient a / b.
+ **/
 vec2 cdiv( vec2 a, vec2 b )
 {
     return vec2( a.x * b.x + a.y * b.y, a.y * b.x - a.x * b.y ) / max( dot( b, b ), 1e-8 );
 }
-/// @brief Complex cosine.
+/**  Complex cosine.
+ *
+ * @param a  The complex argument. (in)
+ *
+ * @return
+ *   cos a.
+ **/
 vec2 ccos( vec2 a )
 {
     return vec2( cos( a.x ) * cosh( a.y ), -sin( a.x ) * sinh( a.y ) );
 }
-/// @brief Numerator and denominator of the Jacobi cn function via theta series.
+/**  Numerator and denominator of the Jacobi cn function via theta series.
+ *
+ * @param v  The complex argument. (in)
+ * @param N  Receives the numerator. (out)
+ * @param D  Receives the denominator. (out)
+ **/
 void cnTheta( vec2 v, out vec2 N, out vec2 D )
 {
 
@@ -61,6 +102,17 @@ void cnTheta( vec2 v, out vec2 N, out vec2 D )
     N = th2 * ( 1.0 - 2.0 * q1 + 2.0 * q4 ) / ( 2.0 * ( q14 + q94 + q254 ) );
     D = th4;
 }
+/**  Jacobi sn/cn wallpaper: cn itself (m = 1/2) as a doubly periodic picture, its value turned with time (the colours
+ * travel round every cell).
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param scale  Scale of the lattice. (in)
+ * @param t      Turn phase of the values. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tEllipticWall( vec2 uv, vec2 c, float scale, float t )
 {
     vec2 z = ( uv - c ) * scale * 1.8540747;
@@ -74,19 +126,34 @@ vec2          gCw, gCt;
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
 uniform float tiltP;    ///< Tilt knob, 0..1.
 uniform float tiltA;
-float         chainTiltZ( vec2 q )
+/**  Time tilt of the chain: a linear ramp across the picture, along the tilt direction.
+ *
+ * @param q  The pixel's coordinate. (in)
+ *
+ * @return
+ *   The tilt offset (added to the chain's time).
+ **/
+float chainTiltZ( vec2 q )
 {
     float k = smoothstep( 0.15, 1.0, tiltP ) * 0.6 * ( 0.55 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) );
     float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot( vec2( cos( a ), sin( a ) ), q );
 }
+/**  One class of this stage: the transform the stage applies for knob value v.
+ *
+ * @param uv  The coordinate. (in)
+ * @param v   The stage's knob value (its class and sub-variant). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 cls( vec2 uv, float v )
 {
     return tEllipticWall( uv, gCw, 2.0 + 2.0 * v, gT );
     return uv;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     gT = ( 0.03 + 0.06 * clamp( speedP, 0.0, 1.0 ) ) * sceneTime + 0.25 * audioAdvance;

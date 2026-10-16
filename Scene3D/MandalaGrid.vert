@@ -25,7 +25,7 @@ uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted 
 out vec2  vPolar; ///< angle, radius 0..1
 out float vLift;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x; // angle 0..1

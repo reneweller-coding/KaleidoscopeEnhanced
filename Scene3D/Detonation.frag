@@ -63,18 +63,29 @@ uniform float     audioAdvance; ///< The music's advance: integrated tempo-weigh
                                 ///< backwards).
 uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
 
-/// Same normal-offset lookup as PillarHall; the offset is in world units, so it
-/// follows this scene's much smaller shadow box automatically.
+/**  Same normal-offset lookup as PillarHall; the offset is in world units, so it follows this scene's much smaller
+ * shadow box automatically.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -85,15 +96,31 @@ vec3 imgPalette( float t )
 }
 
 
-/// House tint: bend a colour toward the photo palette while keeping its
-/// luminance -- the identity look survives, only the hue follows the photos.
+/**  House tint: bend a colour toward the photo palette while keeping its luminance -- the identity look survives,
+ * only the hue follows the photos.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
     tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
     return mix( c, tp, k );
 }
-/// @brief Shadow factor from the shadow map at a world position.
+/**  Shadow factor from the shadow map at a world position.
+ *
+ * @param world  The world position. (in)
+ * @param n      Its normal (lifts the lookup off the surface). (in)
+ * @param ndl    N dot L there (scales the bias). (in)
+ *
+ * @return
+ *   1 for lit, 0 for shadowed (filtered in between).
+ **/
 float shadowAt( vec3 world, vec3 n, float ndl )
 {
     float lift = ( 2.0 * shadowExtent * shadowTexel ) * 2.2 / max( ndl, 0.15 );
@@ -111,7 +138,7 @@ float shadowAt( vec3 world, vec3 n, float ndl )
     return s / 9.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Depth pass: nothing to shade, and sampling texShadow here would read the

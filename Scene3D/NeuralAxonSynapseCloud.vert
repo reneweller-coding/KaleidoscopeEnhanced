@@ -44,7 +44,7 @@ uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue pl
 out vec4  vColor;
 out float vSize;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float neu = ( neuralP > 0.0 ) ? neuralP : 1.0;

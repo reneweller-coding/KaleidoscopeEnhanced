@@ -43,17 +43,29 @@ uniform float ringP; ///< Ring knob, 0..1.
 uniform float oilP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours
-/// come from a rotating arc in the CURRENT slideshow image, so every
-/// activation inherits a fresh palette from the photos, and the arc follows
-/// the musical key (chromaHue is circular-slewed = jump-free) with a slow
-/// advance drift.  Valence shapes saturation toward the mood.
+/**  IMG-PALETTE (house standard, replaces the generic cos-rainbow): colours come from a rotating arc in the CURRENT
+ * slideshow image, so every activation inherits a fresh palette from the photos, and the arc follows the musical
+ * key (chromaHue is circular-slewed = jump-free) with a slow advance drift.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ *
+ * Valence shapes saturation toward the mood.
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -64,7 +76,14 @@ vec3 imgPalette( float t )
 }
 
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -72,14 +91,28 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief 2D rotation matrix.
+/**  2D rotation matrix.
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The rotation matrix.
+ **/
 mat2 rot2D( float a )
 {
     float c = cos( a ), s = sin( a );
     return mat2( c, -s, s, c );
 }
 
-/// Ferrofluid surface height function
+/**  Ferrofluid surface height function
+ *
+ * @param p    Position on the fluid. (in)
+ * @param spk  Spike knob. (in)
+ * @param rng  Range knob (how far the spikes spread). (in)
+ *
+ * @return
+ *   The height of the fluid surface.
+ **/
 float ferroHeight( vec2 p, float spk, float rng )
 {
     float r = length( p );
@@ -97,7 +130,7 @@ float ferroHeight( vec2 p, float spk, float rng )
     return spike_h * exp( -r * 0.6 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float spk = ( spikeP > 0.0 ) ? spikeP : 1.0;

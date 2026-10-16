@@ -17,14 +17,26 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioSpread;      ///< Spectral spread, 0..1.
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float speedP;           ///< Speed knob, 0..1.
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -32,7 +44,13 @@ float noise2( vec2 p )
     return mix( mix( hash21( i ), hash21( i + vec2( 1.0, 0.0 ) ), f.x ),
                 mix( hash21( i + vec2( 0.0, 1.0 ) ), hash21( i + vec2( 1.0, 1.0 ) ), f.x ), f.y );
 }
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of three octaves, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec2 p )
 {
     float v = 0.0, a = 0.5;
@@ -44,16 +62,36 @@ float fbm3( vec2 p )
     }
     return v;
 }
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
+/**  Curl flow: displaced along the curl of a noise field -- divergence-free, so the picture swirls like a fluid
+ * without bunching up.
+ *
+ * @param uv        The coordinate. (in)
+ * @param strength  Strength of the displacement. (in)
+ * @param t         Flow phase of the noise field. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tCurl( vec2 uv, float strength, float t )
 {
     const float e = 0.01;
@@ -65,25 +103,49 @@ vec2 tCurl( vec2 uv, float strength, float t )
 float         gT, gSpread, gRot, gMw;
 vec2          gCw, gCt;
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
-vec2          morphMix( vec2 a, vec2 b, float f )
+/**  Cross-fade of two coordinates after mirroring both (a seamless morph between two transforms).
+ *
+ * @param a  One coordinate. (in)
+ * @param b  The other. (in)
+ * @param f  The weight of b, 0..1. (in)
+ *
+ * @return
+ *   The mixed coordinate.
+ **/
+vec2 morphMix( vec2 a, vec2 b, float f )
 {
     return mix( mirrorUV( a ), mirrorUV( b ), f );
 }
 uniform float tiltP; ///< Tilt knob, 0..1.
 uniform float tiltA;
-float         chainTiltZ( vec2 q )
+/**  Time tilt of the chain: a linear ramp across the picture, along the tilt direction.
+ *
+ * @param q  The pixel's coordinate. (in)
+ *
+ * @return
+ *   The tilt offset (added to the chain's time).
+ **/
+float chainTiltZ( vec2 q )
 {
     float k = smoothstep( 0.15, 1.0, tiltP ) * 0.6 * ( 0.55 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) );
     float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot( vec2( cos( a ), sin( a ) ), q );
 }
+/**  One class of this stage: the transform the stage applies for knob value v.
+ *
+ * @param uv  The coordinate. (in)
+ * @param v   The stage's knob value (its class and sub-variant). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 cls( vec2 uv, float v )
 {
     return tCurl( uv, 0.4 + 0.8 * gSpread, gT );
     return uv;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     gT = ( 0.03 + 0.06 * clamp( speedP, 0.0, 1.0 ) ) * sceneTime + 0.25 * audioAdvance;

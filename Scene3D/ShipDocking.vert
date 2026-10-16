@@ -49,7 +49,7 @@ out float vBg;       ///< Background flag (from the vertex stage).
 out float vShip;     ///< 1 on the ship, 0 on the station -- the frag stage lights them differently
 out float vApproach; ///< 0 far out, 1 docked; drives thruster and floodlight intensity
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world, n;

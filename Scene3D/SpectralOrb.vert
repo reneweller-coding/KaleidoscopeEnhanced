@@ -49,9 +49,17 @@ out vec3  vView; ///< View vector (from the vertex stage).
 out float vDefo; ///< |displacement| -> antinode glow
 out float vHue;
 
-/// Sum of excited eigenmodes at unit direction d (θ,φ passed alongside to
-/// avoid re-deriving them).  Amplitudes come straight from the 32-band
-/// spectrum: band b -> mode with angular order growing with b.
+/**  Sum of excited eigenmodes at unit direction d (θ,φ passed alongside to avoid re-deriving them).
+ *
+ * @param d   The direction (unit length). (in)
+ * @param th  Azimuth (radians). (in)
+ * @param ph  Polar angle (radians). (in)
+ *
+ * @return
+ *   The displacement.
+ *
+ * Amplitudes come straight from the 32-band spectrum: band b -> mode with angular order growing with b.
+ **/
 float modeSum( vec3 d, float th, float ph )
 {
     float x = d.x, y = d.y, z = d.z;
@@ -105,6 +113,14 @@ float modeSum( vec3 d, float th, float ph )
     return s;
 }
 
+/**  Point of the orb's surface at mesh coordinate (u, v), displaced by the modes.
+ *
+ * @param u  Around, 0..1. (in)
+ * @param v  From top to bottom, 0..1. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 orbPoint( float u, float v )
 {
     float th = u * 6.2831853;
@@ -125,8 +141,14 @@ vec3 orbPoint( float u, float v )
 }
 
 
-/// 3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the
-/// body's own y-spin, so the pattern is seen from ever-new angles.
+/**  3-AXIS TUMBLE (user feedback): slow rolls around x and z on top of the body's own y-spin, so the pattern is seen
+ * from ever-new angles.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The rotated point.
+ **/
 vec3 tumble( vec3 q )
 {
     float tx = time * 0.19 + audioAdvance * 0.05;
@@ -136,7 +158,7 @@ vec3 tumble( vec3 q )
     return q;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x, v = attrA.y;

@@ -21,6 +21,13 @@ uniform float audioSwell; ///< slow loudness swell -> the grid looms closer
 // Per-activation variety (re-rolled each activation; 0 = default):
 uniform float spinP; ///< grid spin speed (0 -> static, like the original)
 
+/**  Folds a coordinate's x mirror-wise per whole unit (keeps the texture seamless).
+ *
+ * @param p  The coordinate. (in)
+ *
+ * @return
+ *   The folded coordinate.
+ **/
 vec2 clampQuadratic( vec2 p )
 {
     vec2  uv = p;
@@ -41,6 +48,14 @@ vec2 clampQuadratic( vec2 p )
 }
 
 
+/**  Rotates a point about the origin.
+ *
+ * @param p       The point. (in)
+ * @param amount  The angle in radians. (in)
+ *
+ * @return
+ *   The rotated point.
+ **/
 vec2 rotate( vec2 p, float amount )
 {
     // a rotation
@@ -50,7 +65,7 @@ vec2 rotate( vec2 p, float amount )
 }
 
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
 

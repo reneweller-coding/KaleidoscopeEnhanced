@@ -37,6 +37,13 @@ const float Cols = 5.0;
 const float Rows = 4.0;
 const float Nslices = Cols * Rows; ///< 20
 
+/**  Pixel origin of a depth slice's tile in the atlas.
+ *
+ * @param slice  Index of the slice. (in)
+ *
+ * @return
+ *   The origin (pixels).
+ **/
 vec2 tileOrigin( float slice )
 {
     float col = mod( slice, Cols );
@@ -44,8 +51,15 @@ vec2 tileOrigin( float slice )
     return vec2( col, row ) * Tile;
 }
 
-/// Sample a texel by its LOCAL (0..TILE) position inside a given depth slice,
-/// clamped to stay inside that one cell (never bleeds into the neighbour).
+/**  Sample a texel by its LOCAL (0..TILE) position inside a given depth slice, clamped to stay inside that one cell
+ * (never bleeds into the neighbour).
+ *
+ * @param slice    Index of the slice. (in)
+ * @param localPx  Position inside the tile (pixels). (in)
+ *
+ * @return
+ *   The texel.
+ **/
 vec4 sampleSlice( float slice, vec2 localPx )
 {
     slice = clamp( slice, 0.0, Nslices - 1.0 );
@@ -54,7 +68,13 @@ vec4 sampleSlice( float slice, vec2 localPx )
     return texture( texPrev, ( o + lp ) / resolution );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 345.45 ) );
@@ -62,7 +82,7 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  frag_px = gl_FragCoord.xy;

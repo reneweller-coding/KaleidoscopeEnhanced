@@ -33,7 +33,13 @@ uniform float lengthP;
 uniform float packP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -41,13 +47,29 @@ float hash11( float p )
     p *= p + p;
     return fract( p );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param c     Centre of the quad. (in)
+ * @param ax    Half the quad's extent along its first axis. (in)
+ * @param ay    Half its extent along the second axis. (in)
+ * @param id    Element id written to every vertex. (in)
+ * @param lit   Lighting weight written to every vertex. (in)
+ * @param kind  Element kind written to every vertex. (in)
+ * @param uv0   Texture coordinate of the first corner. (in)
+ * @param uv1   Texture coordinate of the opposite corner. (in)
+ **/
 void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1 )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -71,7 +93,15 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     }
 }
 
-/// Residue i of N: three conformations.
+/**  Residue i of N: three conformations.
+ *
+ * @param i        Index of the residue. (in)
+ * @param N        Number of residues. (in)
+ * @param breathe  Breathing phase. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 coilPos( float i, float N, float breathe )
 {
     // A random-walk-like coil from sums of sines (smooth in i).
@@ -79,6 +109,15 @@ vec3 coilPos( float i, float N, float breathe )
     return vec3( sin( s * 1.7 + 1.0 ) * 2.6 + sin( s * 4.3 ) * 0.8, sin( s * 2.3 + 2.0 ) * 1.8 + cos( s * 5.1 ) * 0.6,
                  sin( s * 1.3 + 0.5 ) * 1.4 + sin( s * 3.7 + breathe ) * 0.5 );
 }
+/**  Residue i in the helix conformation: four helices in a row along x.
+ *
+ * @param i        Index of the residue. (in)
+ * @param N        Number of residues. (in)
+ * @param breathe  Breathing phase. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 helixPos( float i, float N, float breathe )
 {
     // Four helices in a row along x, 3.6 residues per turn.
@@ -89,6 +128,16 @@ vec3 helixPos( float i, float N, float breathe )
     return axis0 + vec3( 0.0, cos( ang ) * 0.45, sin( ang ) * 0.45 )
            + vec3( 0.0, j * 0.055 - ( N / 8.0 ) * 0.055, 0.0 ) * 1.0 + vec3( 0.0, 0.0, 0.0 );
 }
+/**  Residue i in the packed conformation: the four helices bundled.
+ *
+ * @param i        Index of the residue. (in)
+ * @param N        Number of residues. (in)
+ * @param pack     Packing progress, 0..1. (in)
+ * @param breathe  Breathing phase. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 packedPos( float i, float N, float pack, float breathe )
 {
     // The four helices packed into a bundle: axes on a small circle, tilted.
@@ -104,7 +153,7 @@ vec3 packedPos( float i, float N, float pack, float breathe )
     return axis0 + up * ( j * 0.055 - ( N / 8.0 ) * 0.055 ) + ( t1 * cos( ang ) + t2 * sin( ang ) ) * 0.45;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

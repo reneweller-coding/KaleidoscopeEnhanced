@@ -44,7 +44,7 @@ uniform float     audioUpperMid; ///< 2k-6k Hz metallic/industrial edge -> chrom
 
 const float Pi = 3.141592653589793;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
 

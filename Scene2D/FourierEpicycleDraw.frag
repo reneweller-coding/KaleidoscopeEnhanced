@@ -41,13 +41,25 @@ uniform float termsP;
 uniform float traceP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,22 +69,42 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
 
-/// Radius of term k: a fixed geometric fall-off times the band energy
-/// (kept small so the shape is steady, the bands only breathe it).
+/**  Radius of term k: a fixed geometric fall-off times the band energy (kept small so the shape is steady, the bands
+ * only breathe it).
+ *
+ * @param k  The term. (in)
+ * @param e  Receives the band energy, 0..1. (out)
+ *
+ * @return
+ *   The radius.
+ **/
 float termRadius( int k, out float e )
 {
     e = clamp( audioSpectrum[int( mod( float( k ) * 3.0 + 1.0, 32.0 ) )] * 1.5, 0.0, 1.0 );
     return ( 0.34 / ( 1.0 + float( k ) * 0.9 ) ) * ( 0.7 + 0.3 * e );
 }
 
-/// Position of the pen (end of the chain) at phase t (0..1), and the
-/// circle centres along the way for drawing.
+/**  Position of the pen (end of the chain) at phase t (0..1), and the circle centres along the way for drawing.
+ *
+ * @param t      Phase, 0..1. (in)
+ * @param terms  Number of terms. (in)
+ * @param upTo   Last term included. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec2 chainPos( float t, int terms, int upTo )
 {
     vec2 q = vec2( 0.0 );
@@ -90,7 +122,15 @@ vec2 chainPos( float t, int terms, int upTo )
     return q;
 }
 
-/// @brief Closest distance between a ray and a segment (and the ray parameter there).
+/**  Distance from a point to a segment.
+ *
+ * @param p  The point. (in)
+ * @param a  One end. (in)
+ * @param b  The other end. (in)
+ *
+ * @return
+ *   The distance.
+ **/
 float segDist( vec2 p, vec2 a, vec2 b )
 {
     vec2  d = b - a;
@@ -98,7 +138,7 @@ float segDist( vec2 p, vec2 a, vec2 b )
     return length( p - ( a + d * t ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

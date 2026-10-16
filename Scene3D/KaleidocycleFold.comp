@@ -32,6 +32,18 @@ uniform float sizeP;  ///< Size knob, 0..1.
 uniform float speedP; ///< Speed knob, 0..1.
 uniform float hueP;   ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
+/**  Appends a triangle to the output buffer.
+ *
+ * @param a     First corner. (in)
+ * @param b     Second corner. (in)
+ * @param c     Third corner. (in)
+ * @param id    Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param lit   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param ua    Texture coordinate of a. (in)
+ * @param ub    Texture coordinate of b. (in)
+ * @param uc    Texture coordinate of c. (in)
+ **/
 void emitTri( vec3 a, vec3 b, vec3 c, float id, float lit, float kind, vec2 ua, vec2 ub, vec2 uc )
 {
     uint base = atomicAdd( cmd[4], 3u );
@@ -53,7 +65,17 @@ void emitTri( vec3 a, vec3 b, vec3 c, float id, float lit, float kind, vec2 ua, 
     }
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param c     Centre of the quad. (in)
+ * @param ax    Half the quad's extent along its first axis. (in)
+ * @param ay    Half its extent along the second axis. (in)
+ * @param id    Element id written to every vertex. (in)
+ * @param lit   Lighting weight written to every vertex. (in)
+ * @param kind  Element kind written to every vertex. (in)
+ * @param uv0   Texture coordinate of the first corner. (in)
+ * @param uv1   Texture coordinate of the opposite corner. (in)
+ **/
 void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 uv0, vec2 uv1 )
 {
     vec3 p0 = c - ax - ay, p1 = c + ax - ay, p2 = c + ax + ay, p3 = c - ax + ay;
@@ -61,9 +83,16 @@ void emitQuad( vec3 c, vec3 ax, vec3 ay, float id, float lit, float kind, vec2 u
     emitTri( p0, p2, p3, id, lit, kind, vec2( uv0.x, uv0.y ), vec2( uv1.x, uv1.y ), vec2( uv0.x, uv1.y ) );
 }
 
-/// Hinge k (0..5): a short edge on a circle, its direction alternating
-/// between "radial-tilted" and "horizontal", the tilt advancing with the
-/// fold phase; the classic kaleidocycle parametrisation.
+/**  Hinge k (0..5): a short edge on a circle, its direction alternating between "radial-tilted" and "horizontal", the
+ * tilt advancing with the fold phase; the classic kaleidocycle parametrisation.
+ *
+ * @param k      Index of the hinge (0..5). (in)
+ * @param phase  Fold phase. (in)
+ * @param R      Radius of the ring. (in)
+ * @param h      Half length of the hinge. (in)
+ * @param a      Receives one end. (out)
+ * @param b      Receives the other end. (out)
+ **/
 void hinge( int k, float phase, float R, float h, out vec3 a, out vec3 b )
 {
     float ang = float( k ) * 1.0471976;
@@ -79,7 +108,7 @@ void hinge( int k, float phase, float R, float h, out vec3 a, out vec3 b )
     b = centre + dir * h * 0.5;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3      g = gl_GlobalInvocationID;

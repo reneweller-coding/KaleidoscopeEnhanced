@@ -50,13 +50,25 @@ uniform float cloudP;
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -66,7 +78,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -74,23 +93,47 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Pseudo-random number 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash31( vec3 p )
 {
     return fract( sin( dot( p, vec3( 127.1, 311.7, 74.7 ) ) ) * 43758.5453 );
 }
 
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -103,7 +146,14 @@ float noise3( vec3 p )
     return mix( mix( a, b, f.y ), mix( c, d, f.y ), f.z );
 }
 
-/// @brief Fractal noise of three octaves, 0..1.
+/**  Fractal noise of the given number of octaves, 0..1.
+ *
+ * @param p    The point. (in)
+ * @param oct  Number of octaves (up to 6). (in)
+ *
+ * @return
+ *   The fractal noise value, 0..1.
+ **/
 float fbm3( vec3 p, int oct )
 {
     float s = 0.0, a = 0.5;
@@ -118,25 +168,59 @@ float fbm3( vec3 p, int oct )
     return s;
 }
 
-/// @brief Signed distance to a box of half size b.
+/**  Signed distance to a box of half size b.
+ *
+ * @param p  The point. (in)
+ * @param b  Half size of the box. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdBox( vec3 p, vec3 b )
 {
     vec3 q = abs( p ) - b;
     return length( max( q, 0.0 ) ) + min( max( q.x, max( q.y, q.z ) ), 0.0 );
 }
 
+/**  Signed distance to a torus in the xz plane.
+ *
+ * @param p  The point. (in)
+ * @param R  Radius of the ring. (in)
+ * @param r  Radius of the tube. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdTorus( vec3 p, float R, float r )
 {
     vec2 q = vec2( length( p.xz ) - R, p.y );
     return length( q ) - r;
 }
 
+/**  Signed distance to a capped cylinder along y.
+ *
+ * @param p  The point. (in)
+ * @param h  Half height. (in)
+ * @param r  Radius. (in)
+ *
+ * @return
+ *   The signed distance.
+ **/
 float sdCylY( vec3 p, float h, float r )
 {
     vec2 d = vec2( length( p.xz ) - r, abs( p.y ) - h );
     return min( max( d.x, d.y ), 0.0 ) + length( max( d, 0.0 ) );
 }
 
+/**  Ray-sphere intersection (sphere at the origin).
+ *
+ * @param ro  Ray origin. (in)
+ * @param rd  Ray direction. (in)
+ * @param r   Radius. (in)
+ *
+ * @return
+ *   The near hit distance, or -1.
+ **/
 float iSphere( vec3 ro, vec3 rd, float r )
 {
     float b = dot( ro, rd );
@@ -147,8 +231,16 @@ float iSphere( vec3 ro, vec3 rd, float r )
     return -b - sqrt( h );
 }
 
-/// The station, in its own space: the hab ring lies in the XZ plane, the hub
-/// on the Y axis.  part: 0 ring, 1 spoke/hub, 2 rim module.
+/**  The station, in its own space: the hab ring lies in the XZ plane, the hub on the Y axis.
+ *
+ * @param p     The point in the station's space. (in)
+ * @param part  Receives the part: 0 ring, 1 spoke/hub, 2 rim module. (out)
+ *
+ * @return
+ *   The distance.
+ *
+ * part: 0 ring, 1 spoke/hub, 2 rim module.
+ **/
 float stationSDF( vec3 p, out float part )
 {
     // Hab ring: a torus with a squared-off outer profile.
@@ -194,7 +286,7 @@ float stationSDF( vec3 p, out float part )
     return d;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float r_sz = ( ringP > 0.01 ? ringP : 1.0 );

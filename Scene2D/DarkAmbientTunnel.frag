@@ -42,7 +42,7 @@ uniform float audioAdvance; ///< audio tunnel forward advance
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // ---- Normalise to centred coordinates ----

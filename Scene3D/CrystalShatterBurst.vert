@@ -13,7 +13,7 @@ out vec3  vObjPos;
 out vec4  vSeeds;
 out float vCubeIndex;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vObjPos = attrA.xyz;

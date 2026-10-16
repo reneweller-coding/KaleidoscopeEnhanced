@@ -45,7 +45,13 @@ uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue p
 uniform float heightP; ///< Height knob, 0..1.
 uniform float speedP;  ///< Speed knob, 0..1.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv )
@@ -53,10 +59,15 @@ vec3 img( vec2 uv )
         .rgb;
 }
 
-/// IMG-PALETTE (house standard): colours come from a rotating arc in the
-/// CURRENT slideshow image, so every activation inherits a fresh palette from
-/// the photos; the arc follows the musical key (audioChromaHue is circular-
-/// slewed = jump-free) with a slow advance drift, valence shapes saturation.
+/**  IMG-PALETTE (house standard): colours come from a rotating arc in the CURRENT slideshow image, so every
+ * activation inherits a fresh palette from the photos; the arc follows the musical key (audioChromaHue is circular-
+ * slewed = jump-free) with a slow advance drift, valence shapes saturation.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -67,29 +78,56 @@ vec3 imgPalette( float t )
 }
 
 
-/// House tint: bend a colour toward the photo palette while keeping its
-/// luminance -- the identity look survives, only the hue follows the photos.
+/**  House tint: bend a colour toward the photo palette while keeping its luminance -- the identity look survives,
+ * only the hue follows the photos.
+ *
+ * @param c  The colour. (in)
+ * @param t  Position on the palette, 0..1. (in)
+ * @param k  Strength of the tint, 0..1. (in)
+ *
+ * @return
+ *   The tinted colour.
+ **/
 vec3 palTint( vec3 c, float t, float k )
 {
     vec3 tp = imgPalette( t );
     tp *= dot( c, vec3( 0.3333 ) ) / max( dot( tp, vec3( 0.3333 ) ), 1e-3 );
     return mix( c, tp, k );
 }
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
     float cs = cos( a ), sn = sin( a );
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 123.34, 345.45 ) );
     p += dot( p, p + 34.345 );
     return fract( p.x * p.y );
 }
-/// @brief Value noise with a seed.
+/**  Smooth value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float vnoise( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -98,7 +136,13 @@ float vnoise( vec2 p )
     float c = hash21( i + vec2( 0.0, 1.0 ) ), d = hash21( i + vec2( 1.0, 1.0 ) );
     return mix( mix( a, b, f.x ), mix( c, d, f.x ), f.y );
 }
-/// @brief Fractal noise: octaves of value noise.
+/**  Fractal noise: octaves of value noise.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The fractal noise value, about 0..1.
+ **/
 float fbm( vec2 p )
 {
     float s = 0.0, a = 0.5;
@@ -111,7 +155,18 @@ float fbm( vec2 p )
     return s;
 }
 
-/// One curtain layer: .x = glow, .y = colour fringe 0..1, .z = brightness env.
+/**  One curtain layer: .x = glow, .y = colour fringe 0..1, .z = brightness env.
+ *
+ * @param uv       The coordinate. (in)
+ * @param t        Phase of the waves. (in)
+ * @param bands    Folds per unit width. (in)
+ * @param height   Height of the curtain. (in)
+ * @param baseOff  Height of the curtain's lower edge. (in)
+ * @param seed     Seed of the layer. (in)
+ *
+ * @return
+ *   Glow (x), colour fringe 0..1 (y) and brightness envelope (z).
+ **/
 vec3 curtainLayer( vec2 uv, float t, float bands, float height,
                    float baseOff, float seed )
 {
@@ -138,7 +193,16 @@ vec3 curtainLayer( vec2 uv, float t, float bands, float height,
     return vec3( glow, fringe, env );
 }
 
-/// Colour a curtain layer: green core -> purple fringe -> RED top, image-lit.
+/**  Colour a curtain layer: green core -> purple fringe -> RED top, image-lit.
+ *
+ * @param uv      The coordinate. (in)
+ * @param base    Height of the lower edge. (in)
+ * @param fringe  Colour fringe, 0..1. (in)
+ * @param hueOff  Hue offset on the palette. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 curtainColour( vec2 uv, float base, float fringe, float hueOff )
 {
     vec3 acol = palTint( mix( vec3( 0.10, 0.95, 0.45 ), vec3( 0.55, 0.20, 0.85 ),
@@ -152,7 +216,7 @@ vec3 curtainColour( vec2 uv, float base, float fringe, float hueOff )
     return hueRot( acol, hueP + audioChromaHue * 1.2 + hueOff );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float bands = ( bandsP > 0.0 ) ? bandsP : 1.0;

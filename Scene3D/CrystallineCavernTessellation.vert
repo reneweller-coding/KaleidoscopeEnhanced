@@ -10,7 +10,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 out vec3 vControlPos;
 out vec2 vControlUV;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vControlPos = attrA.xyz;

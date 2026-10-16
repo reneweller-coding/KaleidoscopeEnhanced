@@ -52,15 +52,29 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float Pi = 3.14159265358979; ///< Pi.
 
-/// @brief Luminance of the photo at a coordinate.
+/**  Luminance of a colour.
+ *
+ * @param c  The colour. (in)
+ *
+ * @return
+ *   The luminance (Rec. 709).
+ **/
 float lum( vec3 c )
 {
     return dot( c, vec3( 0.2126, 0.7152, 0.0722 ) );
 }
 
-/// How much a column is worth keeping: the gradient it carries, sampled down its
-/// height.  A cheap stand-in for the full energy map, and it is the same
-/// quantity -- edges are expensive, flat areas are not.
+/**  How much a column is worth keeping: the gradient it carries, sampled down its height.
+ *
+ * @param tx            The texture. (in)
+ * @param x             The column, 0..1. (in)
+ * @param colourWeight  Weight of the colour edges against the luma edges. (in)
+ *
+ * @return
+ *   The energy.
+ *
+ * A cheap stand-in for the full energy map, and it is the same quantity -- edges are expensive, flat areas are not.
+ **/
 float columnEnergy( sampler2D tx, float x, float colourWeight )
 {
     float e = 0.0;
@@ -74,7 +88,7 @@ float columnEnergy( sampler2D tx, float x, float colourWeight )
     return e / 5.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float ew = clamp( energyP, 0.0, 1.0 );

@@ -28,7 +28,7 @@ uniform float audioBeatPhase;    ///< Position within the current beat, 0..1.
 out vec3  vWorld; ///< x, z_abs, height (for the fragment grid lines)
 out float vDist;  ///< Distance (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = attrA.x, v = attrA.y;

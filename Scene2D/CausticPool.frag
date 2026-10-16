@@ -47,7 +47,7 @@ uniform float audioLowMid;    ///< 150-500 Hz harmonic warmth -> water body / de
 uniform float warpP; ///< refraction strength
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

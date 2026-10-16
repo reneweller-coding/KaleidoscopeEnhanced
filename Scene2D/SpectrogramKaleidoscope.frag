@@ -41,13 +41,25 @@ uniform float sidesP;
 uniform float spanP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,7 +69,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// Spectrogram value for band b (0..1) at age (0 = now, 1 = 20 s ago).
+/**  Spectrogram value for band b (0..1) at age (0 = now, 1 = 20 s ago).
+ *
+ * @param b    Band, 0..1. (in)
+ * @param age  Age, 0 = now .. 1 = oldest. (in)
+ *
+ * @return
+ *   The band's level then, 0..1.
+ **/
 float spec( float b, float age )
 {
     float x = ( floor( b * 32.0 ) + 0.5 ) / 32.0;
@@ -65,7 +84,7 @@ float spec( float b, float age )
     return texture( texSpectro, vec2( x, y ) ).r;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

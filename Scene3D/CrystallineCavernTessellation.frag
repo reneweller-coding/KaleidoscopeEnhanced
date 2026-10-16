@@ -43,17 +43,29 @@ uniform float glowP; ///< Glow / afterglow knob, 0..1.
 uniform float crystalP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// IMG-PALETTE (house standard): the gem hue comes from a rotating arc in the
-/// CURRENT slideshow photo, so every activation inherits its colour from the
-/// pictures instead of from two hard-coded candy tones.  The arc follows the
-/// musical key (audioChromaHue is circular-slewed, so it never jumps), drifts
-/// with audioAdvance, and valence shapes how saturated it comes out.
+/**  IMG-PALETTE (house standard): the gem hue comes from a rotating arc in the CURRENT slideshow photo, so every
+ * activation inherits its colour from the pictures instead of from two hard-coded candy tones.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ *
+ * The arc follows the musical key (audioChromaHue is circular-slewed, so it never jumps), drifts with audioAdvance, and
+ * valence shapes how saturated it comes out.
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -63,7 +75,14 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Rotates a colour's hue by an angle (about the grey axis).
+/**  Rotates a colour's hue by an angle (about the grey axis).
+ *
+ * @param c  The colour. (in)
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The colour with its hue turned.
+ **/
 vec3 hueRot( vec3 c, float a )
 {
     vec3  k = vec3( 0.57735026919 );
@@ -71,7 +90,7 @@ vec3 hueRot( vec3 c, float a )
     return c * cs + cross( k, c ) * sn + k * dot( k, c ) * ( 1.0 - cs );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float glw = ( glowP > 0.0 ) ? glowP : 1.0;

@@ -45,9 +45,23 @@ uniform float camHP;        ///< preset: camera height
 uniform float swellP;       ///< preset: wave height
 uniform float choppyP;      ///< preset: Gerstner pinch
 
-/// One Gerstner wave.  Accumulates the analytic tangent frame, so the normal
-/// is exact and needs no finite differences (which would alias badly once the
-/// tessellation level changes between neighbouring patches).
+/**  One Gerstner wave.
+ *
+ * @param pos    Position on the water plane. (in)
+ * @param dir    Direction of the wave (unit length). (in)
+ * @param amp    Amplitude. (in)
+ * @param len    Wavelength. (in)
+ * @param phase  Phase. (in)
+ * @param sharp  Steepness (0 = sine). (in)
+ * @param tanX   Tangent along x; the wave's share is added. (in,out)
+ * @param tanZ   Tangent along z; the wave's share is added. (in,out)
+ *
+ * @return
+ *   The wave's displacement.
+ *
+ * Accumulates the analytic tangent frame, so the normal is exact and needs no finite differences (which would alias
+ * badly once the tessellation level changes between neighbouring patches).
+ **/
 vec3 gerstner( vec2 pos, vec2 dir, float amp, float len, float phase,
                float sharp, inout vec3 tanX, inout vec3 tanZ )
 {
@@ -67,7 +81,7 @@ vec3 gerstner( vec2 pos, vec2 dir, float amp, float len, float phase,
     return d;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

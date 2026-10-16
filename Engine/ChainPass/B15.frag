@@ -18,28 +18,63 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioSpread;      ///< Spectral spread, 0..1.
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float speedP;           ///< Speed knob, 0..1.
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// @brief Direction of multigrid family j.
+/**  Direction of multigrid family j.
+ *
+ * @param j  The family. (in)
+ * @param N  Number of families. (in)
+ *
+ * @return
+ *   The family's unit direction.
+ **/
 vec2 gridE( int j, float N )
 {
     float a = 3.14159265 * float( j ) / N;
     return vec2( cos( a ), sin( a ) );
 }
-/// @brief Offset of multigrid family j.
+/**  Offset of multigrid family j.
+ *
+ * @param j  The family. (in)
+ *
+ * @return
+ *   The family's offset.
+ **/
 float gridG( int j )
 {
     return fract( 0.1234 + 0.6180339 * float( j ) ) - 0.5;
 }
-/// @brief Finds the rhomb a point lies in (de Bruijn multigrid of N families).
+/**  Finds the rhomb a point lies in (de Bruijn multigrid of N families).
+ *
+ * @param x     The point in grid units. (in)
+ * @param N     Number of grid families (5..7). (in)
+ * @param ab    Receives the point's position inside the rhomb, 0..1 along both edges. (out)
+ * @param rr    Receives the first family of the rhomb. (out)
+ * @param ss    Receives the second family. (out)
+ * @param base  Receives the rhomb's corner. (out)
+ * @param nrs   Receives the line indices of both families at the crossing. (out)
+ *
+ * @return
+ *   True if the rhomb was found.
+ **/
 bool multiGridFind( vec2 x, float N, out vec2 ab, out int rr, out int ss, out vec2 base, out vec2 nrs )
 {
     vec2 pg = x * 2.0 / N;
@@ -90,7 +125,17 @@ bool multiGridFind( vec2 x, float N, out vec2 ab, out int rr, out int ss, out ve
     }
     return false;
 }
-/// @brief Quasicrystal mirror of N-fold symmetry about c.
+/**  Quasicrystal mirror of N-fold symmetry about c.
+ *
+ * @param uv     The coordinate. (in)
+ * @param c      Centre of the transform. (in)
+ * @param N      Symmetry order of the quasicrystal (number of grid families). (in)
+ * @param cells  Cells per unit. (in)
+ * @param drift  Offset of the grid (makes it drift). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tQuasiMirror( vec2 uv, vec2 c, float N, float cells, vec2 drift )
 {
     vec2 ab, base, nrs;
@@ -104,19 +149,34 @@ vec2          gCw, gCt;
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
 uniform float tiltP;    ///< Tilt knob, 0..1.
 uniform float tiltA;
-float         chainTiltZ( vec2 q )
+/**  Time tilt of the chain: a linear ramp across the picture, along the tilt direction.
+ *
+ * @param q  The pixel's coordinate. (in)
+ *
+ * @return
+ *   The tilt offset (added to the chain's time).
+ **/
+float chainTiltZ( vec2 q )
 {
     float k = smoothstep( 0.15, 1.0, tiltP ) * 0.6 * ( 0.55 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) );
     float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot( vec2( cos( a ), sin( a ) ), q );
 }
+/**  One class of this stage: the transform the stage applies for knob value v.
+ *
+ * @param uv  The coordinate. (in)
+ * @param v   The stage's knob value (its class and sub-variant). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 cls( vec2 uv, float v )
 {
     return tQuasiMirror( uv, gCw, 6.0, 3.0 + 2.0 * v, vec2( gT * 0.7, gT * 0.3 ) );
     return uv;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     gT = ( 0.03 + 0.06 * clamp( speedP, 0.0, 1.0 ) ) * sceneTime + 0.25 * audioAdvance;

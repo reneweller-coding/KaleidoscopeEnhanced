@@ -20,7 +20,7 @@ uniform float sceneSeed; ///< A random number fixed per activation.
 const float SpanZ = 5.5;  ///< depth: several layers of strands
 const float CrownR = 7.0; ///< radius of the surface the hair falls over
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float idx = attrA.w;

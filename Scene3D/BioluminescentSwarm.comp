@@ -54,18 +54,37 @@ const int Creatures = 64 * 64; ///< 4096 boid creatures, each emitted as a 3D fa
 const uint Snow = 1600u;
 const uint SnowBase = uint( Creatures );
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash1( float n )
 {
     return fract( sin( n * 123.456 ) * 43758.5453 );
 }
-/// @brief Pseudo-random vec3 (each 0..1) from a float.
+/**  Pseudo-random vec3 (each 0..1) from a float.
+ *
+ * @param n  The input. (in)
+ *
+ * @return
+ *   Pseudo-random numbers, each 0..1.
+ **/
 vec3 hash3( float n )
 {
     return fract( sin( vec3( n * 91.34, n * 47.12, n * 73.56 ) ) * 43758.5453 );
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot  Index of the vertex in the buffer. (in)
+ * @param p     Position. (in)
+ * @param n     Normal. (in)
+ * @param hue   Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param glow  Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void writeVertex( uint slot, vec3 p, vec3 n, float hue, float glow )
 {
     uint o = slot * 8u;
@@ -79,6 +98,14 @@ void writeVertex( uint slot, vec3 p, vec3 n, float hue, float glow )
     verts[o + 7u] = glow;
 }
 
+/**  Appends a boid (two triangles: a body with wings) to the output buffer.
+ *
+ * @param center   Centre of the boid. (in)
+ * @param forward  Its heading (unit length). (in)
+ * @param size     Size. (in)
+ * @param hue      Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param glow     Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ **/
 void emitBoid( vec3 center, vec3 forward, float size, float hue, float glow )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -108,7 +135,7 @@ void emitBoid( vec3 center, vec3 forward, float size, float hue, float glow )
     writeVertex( base + 5u, rgt_p, n2, hue, glow );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

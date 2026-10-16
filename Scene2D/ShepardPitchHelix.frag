@@ -41,13 +41,25 @@ uniform float turnsP;
 uniform float radiusP; ///< Radius knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,6 +69,13 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
+/**  Melody sample k steps into the past (0 = newest).
+ *
+ * @param k  Steps into the past (0 = newest). (in)
+ *
+ * @return
+ *   The melody pitch, 0..1.
+ **/
 float melodyAgo( int k )
 {
     int head = int( audioMelodyHead * 96.0 + 0.5 );
@@ -64,20 +83,36 @@ float melodyAgo( int k )
     return audioMelody[i];
 }
 
-/// Helix point for a pitch value (0..1 spans the shown octaves) at rotation rot.
+/**  Helix point for a pitch value (0..1 spans the shown octaves) at rotation rot.
+ *
+ * @param pitch  Pitch, 0..1. (in)
+ * @param turns  Turns of the helix. (in)
+ * @param R      Radius. (in)
+ * @param rot    Rotation (radians). (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 helixPoint( float pitch, float turns, float R, float rot )
 {
     float ang = pitch * turns * 6.2831853 + rot;
     return vec3( cos( ang ) * R, ( pitch - 0.5 ) * 0.8, sin( ang ) * R );
 }
 
+/**  Perspective projection of a point onto the screen.
+ *
+ * @param q  The point. (in)
+ *
+ * @return
+ *   The screen point.
+ **/
 vec2 project( vec3 q )
 {
     float persp = 1.0 / ( 1.0 + q.z * 0.35 );
     return vec2( q.x * persp, q.y * persp );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

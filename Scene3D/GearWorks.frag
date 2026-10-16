@@ -15,7 +15,7 @@ in vec3 vCorner;
  * audio reactivity arrives already baked into that per-vertex color.
  */
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3  a = abs( vCorner ) * 2.0;

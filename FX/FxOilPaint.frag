@@ -15,6 +15,7 @@ uniform float     audioBeat;     ///< beats sharpen the painting toward the raw 
 
 const int Radius = 7;
 
+/** Entry point of this shader stage (the file description says what it draws). */
 void main( void )
 {
     vec2  src_size = vec2( 1.0 / resolution.x, 1.0 / resolution.y );

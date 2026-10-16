@@ -24,7 +24,7 @@ in vec3 vCorner;
 
 uniform float audioSharpness;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // Bevel band width follows SHARPNESS: dull -> a wide soft sheen along the

@@ -43,13 +43,25 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float diskScaleP;
 uniform float levitateDistP;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -59,14 +71,18 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// Profile of the surface of revolution, as (radius, height) against p in [0,1]:
-///   p 0.00 .. 0.20   the cryostat cold plate: a shallow bowl from its wide
-///                    outer rim inward to the YBCO disc's edge
-///   p 0.20 .. 0.52   the YBCO disc, rim inward to its centre (slightly domed)
-///   p 0.52 .. 0.60   the pinched flux column bridging the levitation gap
-///   p 0.60 .. 1.00   the levitating magnet, centre outward and over its dome
-/// One connected profile, so the patch grid never has to stretch triangles
-/// between two disjoint pieces.
+/**  Profile of the surface of revolution, as (radius, height) against p in [0,1]: p 0.00 .. 0.20   the cryostat cold
+ * plate: a shallow bowl from its wide outer rim inward to the YBCO disc's edge p 0.20 .. 0.52   the YBCO disc, rim
+ * inward to its centre (slightly domed) p 0.52 .. 0.60   the pinched flux column bridging the levitation gap p 0.60
+ * .. 1.00   the levitating magnet, centre outward and over its dome One connected profile, so the patch grid never
+ * has to stretch triangles between two disjoint pieces.
+ *
+ * @param p       Position along the profile, 0..1. (in)
+ * @param levGap  Height of the levitation gap. (in)
+ *
+ * @return
+ *   The profile point (radius, height).
+ **/
 vec2 mpProfile( float p, float levGap )
 {
     float mag_part = smoothstep( 0.545, 0.72, p );
@@ -92,7 +108,7 @@ vec2 mpProfile( float p, float levGap )
                  mix( mix( h_disc, h_mag, mag_part ), h_plate, plate_part ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     // WHICH ASSEMBLY.  Derived from the CELL INDEX, so all six vertices of a

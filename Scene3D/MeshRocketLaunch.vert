@@ -48,7 +48,7 @@ out float vClimb; ///< 0 on the pad, 1 at the top of the climb
 const float Dist = 84.0;    ///< the pad's distance from the camera
 const float Ground = -16.0; ///< ground height: the pad sits low so the sky above has room for the climb
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     bool is_pad = gl_VertexID < meshVertexCount;

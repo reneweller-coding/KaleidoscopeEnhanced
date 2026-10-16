@@ -42,14 +42,20 @@ uniform float scrollP;  ///< preset: how fast the sheet drifts
 uniform float camDistP; ///< Camera distance knob, 0..1.
 uniform float tiltP;    ///< Tilt knob, 0..1.
 
-/// @brief Luminance of the photo at a coordinate.
+/**  Luminance of the photo at a coordinate.
+ *
+ * @param uv  Coordinate in the photo. (in)
+ *
+ * @return
+ *   The luminance (Rec. 709).
+ **/
 float lum( vec2 uv )
 {
     return dot( texture( tex0, clamp( uv, vec2( 0.001 ), vec2( 0.999 ) ) ).rgb,
                 vec3( 0.299, 0.587, 0.114 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = attrA.xy;

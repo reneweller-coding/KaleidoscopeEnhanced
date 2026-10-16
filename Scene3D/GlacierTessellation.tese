@@ -33,6 +33,15 @@ out float vCrevasse;
 
 const vec2 Extent = vec2( 240.0, 320.0 );
 
+/**  Height of the glacier: cliffs, wave ripples and crevasses.
+ *
+ * @param p         Position (x, z). (in)
+ * @param t         Time. (in)
+ * @param crevasse  Receives the crevasse strength. (out)
+ *
+ * @return
+ *   The height.
+ **/
 float glacierHeight( vec2 p, float t, out float crevasse )
 {
     float wh = ( waveHP > 0.0 ) ? waveHP : 1.0;
@@ -59,7 +68,7 @@ float glacierHeight( vec2 p, float t, out float crevasse )
     return h;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 u0 = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

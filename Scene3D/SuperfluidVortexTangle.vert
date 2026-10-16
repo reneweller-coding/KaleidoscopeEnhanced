@@ -17,7 +17,7 @@ out vec3  vPos; ///< Position (from the vertex stage).
 out float vCirc;
 out float vRingID;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world_p = attrA.xyz;

@@ -54,7 +54,13 @@ uniform float tintP;     ///< preset: how much colour the shadow keeps
 
 const int Samples = 12;
 
-/// @brief Depth buffer value to linear distance.
+/**  Depth buffer value to linear distance.
+ *
+ * @param d  Depth buffer value, 0..1. (in)
+ *
+ * @return
+ *   The linear distance.
+ **/
 float linearise( float d )
 {
     float n = nearFar.x, f = nearFar.y;
@@ -62,7 +68,14 @@ float linearise( float d )
     return ( 2.0 * n * f ) / ( f + n - z * ( f - n ) );
 }
 
-/// Screen position -> view-space position, using the depth at that pixel.
+/**  Screen position -> view-space position, using the depth at that pixel.
+ *
+ * @param dep  The depth texture. (in)
+ * @param uv   Screen coordinate. (in)
+ *
+ * @return
+ *   The view-space position.
+ **/
 vec3 viewPos( sampler2D dep, vec2 uv )
 {
     float z = linearise( texture( dep, uv ).r );
@@ -73,6 +86,15 @@ vec3 viewPos( sampler2D dep, vec2 uv )
     return ray * z;
 }
 
+/**  Ambient occlusion at a pixel, from the depth around it.
+ *
+ * @param dep    The depth texture. (in)
+ * @param uv     Screen coordinate. (in)
+ * @param valid  1 where the depth buffer is valid, else 0. (in)
+ *
+ * @return
+ *   The occlusion, 0..1.
+ **/
 float occlusion( sampler2D dep, vec2 uv, float valid )
 {
     if ( valid < 0.5 )
@@ -127,8 +149,16 @@ float occlusion( sampler2D dep, vec2 uv, float valid )
     return clamp( occ / float( Samples ) * ( 1.2 + 3.4 * strengthP ), 0.0, 1.0 );
 }
 
-/// A cheap 4-tap blur of the occlusion, so the per-pixel dither in the sampling
-/// pattern averages out instead of showing as grain.
+/**  A cheap 4-tap blur of the occlusion, so the per-pixel dither in the sampling pattern averages out instead of
+ * showing as grain.
+ *
+ * @param dep    The depth texture. (in)
+ * @param uv     Screen coordinate. (in)
+ * @param valid  1 where the depth buffer is valid, else 0. (in)
+ *
+ * @return
+ *   The occlusion, 0..1.
+ **/
 float occlusionSmooth( sampler2D dep, vec2 uv, float valid )
 {
     vec2 t = 1.5 / resolution;
@@ -137,7 +167,7 @@ float occlusionSmooth( sampler2D dep, vec2 uv, float valid )
                + occlusion( dep, uv + vec2( t.x, -t.y ), valid ) + occlusion( dep, uv + vec2( -t.x, -t.y ), valid ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;

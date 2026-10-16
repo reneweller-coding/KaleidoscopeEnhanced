@@ -16,7 +16,7 @@ out vec2 gUV;
 
 const float Pi = 3.14159265; ///< Pi.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float th = attrA.x * 2.0 * Pi;

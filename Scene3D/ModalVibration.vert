@@ -48,7 +48,7 @@ out vec3  vLocalPos; ///< Object-space position (from the vertex stage).
 out float vAmp;      ///< signed displacement, for the fragment stage
 out float vBg;       ///< Background flag (from the vertex stage).
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 world, n;

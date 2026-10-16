@@ -48,7 +48,7 @@ const float Fires = 5.0;
 // The scene projection: 55 deg vertical FOV (see Scene3DShader::draw).
 const float TanY = 0.5206;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float t = attrA.x;    // 0..1 along the ribbon

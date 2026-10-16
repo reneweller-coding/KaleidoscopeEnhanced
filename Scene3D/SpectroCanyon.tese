@@ -53,6 +53,15 @@ const vec2 Extent = vec2( 78.0, 260.0 );
 // wraps into the newest row.
 const float AgeSpan = 0.86;
 
+/**  Height of the canyon: the spectrogram mirrored across the centre line.
+ *
+ * @param uv      Position, 0..1. (in)
+ * @param energy  Receives the band's energy. (out)
+ * @param freq    Receives the band position (0 at the edges .. 1 in the middle). (out)
+ *
+ * @return
+ *   The height.
+ **/
 float terrain( vec2 uv, out float energy, out float freq )
 {
     // Mirror across the centre line: 0 at the edges (lowest band), 1 in the
@@ -89,7 +98,7 @@ float terrain( vec2 uv, out float energy, out float freq )
     return ( base + energy * heightP * ( 0.35 + 0.65 * v ) ) * 30.0;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv_a = mix( tcUV[0], tcUV[1], gl_TessCoord.x );

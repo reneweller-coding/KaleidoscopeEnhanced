@@ -64,7 +64,13 @@ uniform float hueP;  ///< Hue knob (radians), usually the music's chroma hue plu
 const uint  Parts = 24576u;
 const float Eps = 0.18;
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -72,25 +78,50 @@ float hash11( float p )
     p *= p + p;
     return fract( p );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash31( float n )
 {
     return vec3( hash11( n ), hash11( n + 17.3 ), hash11( n + 41.7 ) );
 }
+/**  The marker word that shows the state buffer was set up for this seed.
+ *
+ * @return
+ *   The marker word.
+ **/
 uint expectedMagic()
 {
     return 0xBEEF0100u ^ uint( fract( sceneSeed * 0.617 ) * 65535.0 );
 }
 
-/// The star's centre on a parabola-like fly-by, parameterised by the arc.
-/// Pericentre at u = 0.6 of the arc, closest approach 1.1 units.
+/**  The star's centre on a parabola-like fly-by, parameterised by the arc.
+ *
+ * @param u  Position along the arc, 0..1. (in)
+ *
+ * @return
+ *   The position.
+ *
+ * Pericentre at u = 0.6 of the arc, closest approach 1.1 units.
+ **/
 vec3 starPath( float u )
 {
     float s = ( u - 0.6 ) * 9.0; // -5.4 .. 3.6
     return vec3( s * 0.75, 0.05 * s, 0.55 + 0.09 * s * s );
 }
 
-/// @brief Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+/**  Appends a camera-facing quad (two triangles) to the output buffer (compute stage).
+ *
+ * @param c     Centre of the quad. (in)
+ * @param s     Half size of the quad. (in)
+ * @param id    Element id written to every vertex. (in)
+ * @param a     Per-vertex value written to the buffer (the vertex stage gives it its meaning). (in)
+ * @param kind  Element kind written to every vertex. (in)
+ **/
 void emitQuad( vec3 c, float s, float id, float a, float kind )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -115,7 +146,7 @@ void emitQuad( vec3 c, float s, float id, float a, float kind )
     }
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

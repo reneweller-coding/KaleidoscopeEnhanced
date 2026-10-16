@@ -26,7 +26,15 @@ out float vRibbonID;
 out float vVelocity;
 out float vSide; ///< Which side of a strip (from the vertex stage).
 
-/// Integrated strange attractor parametric path
+/**  Integrated strange attractor parametric path
+ *
+ * @param s          Position along the ribbon. (in)
+ * @param ribbonIdx  Index of the ribbon. (in)
+ * @param seed       Seed. (in)
+ *
+ * @return
+ *   The point.
+ **/
 vec3 evalAttractor( float s, float ribbonIdx, float seed )
 {
     float t_param = s * 14.0 + time * 0.4 + audioAdvance * 0.2 + ribbonIdx * 0.35;
@@ -51,7 +59,7 @@ vec3 evalAttractor( float s, float ribbonIdx, float seed )
     return vec3( x * ca - y * sa, x * sa + y * ca, z );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float t = attrA.x;

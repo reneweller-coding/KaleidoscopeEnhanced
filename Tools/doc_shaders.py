@@ -23,6 +23,9 @@ Idempotent.  gen.py runs annotate() on every scene it builds.
 """
 import argparse, io, os, re, sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import glsl_docs                                            # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIRS = ["Scene2D", "Scene3D", "FX", "Transitions", "Engine"]
 EXT = (".frag", ".vert", ".comp", ".tesc", ".tese", ".geom")
@@ -305,7 +308,7 @@ FUNCS = {
     "evenArms": "An even arm count 2..8 from a sub-variant (seamless with mirroring).",
     "sides": "A mirror count 5..9 from a sub-variant.",
     "hashT": "Pseudo-random number 0..1 from a 2D point.",
-    "flatAt": "The flat (unlit) colour at a coordinate.",
+    "flatAt": "The flat ground position of a patch coordinate (before the displacement).",
     "levelFor": "Brightness level between two coordinates.",
 }
 
@@ -354,22 +357,8 @@ def annotate(text, path=""):
                 f = TOP_FUNC.match(l)
                 prototype = code.rstrip().endswith(";") and "{" not in code   # a one-liner body has ';' too
                 if f and not re.match(r"^(return|else|if|for|while|layout)\b", s) and not prototype:
-                    name = f.group(1)
-                    # rule 1: a // block directly above (no blank line) becomes ///
-                    j = len(out) - 1
-                    block = []
-                    while j >= 0 and out[j].strip().startswith("//") and not out[j].strip().startswith("///") \
-                            and not SECTION.match(out[j].strip()):
-                        block.append(j)
-                        j -= 1
-                    above = out[len(out) - 1].strip() if out else ""
-                    if block and not (j >= 0 and out[j].strip().startswith("///")):
-                        for k in block:
-                            out[k] = out[k].replace("//", "///", 1)
-                    elif not above.startswith(("//", "*/", "*", "/**")) or SECTION.match(above):
-                        doc = FUNCS.get(name)
-                        if doc:                                   # rule 4
-                            out.append("/// @brief " + (doc if name != "main" else stage_main))
+                    # rules 1 and 4: the block above (or FUNCS) in the CGVR layout, with parameters and return value
+                    glsl_docs.function_block(out, lines, i, path, stage_main, FUNCS)
         depth += code.count("{") - code.count("}")
         if depth < 0:
             depth = 0

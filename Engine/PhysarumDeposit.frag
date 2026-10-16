@@ -17,7 +17,7 @@ uniform float depositAmt;
 
 in float vSpecies;
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     fragColor = vec4( depositAmt * ( 1.0 - vSpecies ),

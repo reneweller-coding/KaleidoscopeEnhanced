@@ -18,21 +18,47 @@ uniform float audioPhase;       ///< Rotation phase driven by the music (integra
 uniform float audioSpread;      ///< Spectral spread, 0..1.
 uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 uniform float speedP;           ///< Speed knob, 0..1.
-/// @brief Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+/**  Mirrored repeat of a coordinate into 0..1 (seamless at every edge).
+ *
+ * @param uv  The coordinate, any range. (in)
+ *
+ * @return
+ *   The coordinate mirror-repeated into 0..1.
+ **/
 vec2 mirrorUV( vec2 uv )
 {
     return 1.0 - abs( fract( uv * 0.5 ) * 2.0 - 1.0 );
 }
-/// @brief The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+/**  The pixel's position, centred and aspect-corrected (y spans -0.5..0.5).
+ *
+ * @return
+ *   The pixel's centred coordinate (y in -0.5..0.5, x scaled by the aspect).
+ **/
 vec2 screenP()
 {
     return ( gl_FragCoord.xy / resolution - 0.5 ) * vec2( resolution.x / resolution.y, 1.0 );
 }
-/// @brief The complex number e^(i a).
+/**  The complex number e^(i a).
+ *
+ * @param a  The angle in radians. (in)
+ *
+ * @return
+ *   The unit complex number (cos a, sin a).
+ **/
 vec2 cexpi( float a )
 {
     return vec2( cos( a ), sin( a ) );
 }
+/**  Cardioid coordinates: sqrt(1 - 4z) with the angle mirrored (the main bulb of the Mandelbrot set unrolled).
+ *
+ * @param uv  The coordinate. (in)
+ * @param c   Centre of the transform. (in)
+ * @param k   Scale of the coordinate. (in)
+ * @param t   Turn phase of the result. (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 tCardioid( vec2 uv, vec2 c, float k, float t )
 {
     vec2  z = ( uv - c ) * k;
@@ -45,19 +71,34 @@ vec2          gCw, gCt;
 uniform float walkHost; ///< 1 when the app walks this lab's stages (walk uniforms valid).
 uniform float tiltP;    ///< Tilt knob, 0..1.
 uniform float tiltA;
-float         chainTiltZ( vec2 q )
+/**  Time tilt of the chain: a linear ramp across the picture, along the tilt direction.
+ *
+ * @param q  The pixel's coordinate. (in)
+ *
+ * @return
+ *   The tilt offset (added to the chain's time).
+ **/
+float chainTiltZ( vec2 q )
 {
     float k = smoothstep( 0.15, 1.0, tiltP ) * 0.6 * ( 0.55 + 0.45 * clamp( audioSwell, 0.0, 1.0 ) );
     float a = walkHost > 0.5 ? tiltA : 0.011 * sceneTime;
     return k * dot( vec2( cos( a ), sin( a ) ), q );
 }
+/**  One class of this stage: the transform the stage applies for knob value v.
+ *
+ * @param uv  The coordinate. (in)
+ * @param v   The stage's knob value (its class and sub-variant). (in)
+ *
+ * @return
+ *   The transformed coordinate.
+ **/
 vec2 cls( vec2 uv, float v )
 {
     return tCardioid( uv, gCw, 2.5 + v, gT );
     return uv;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     gT = ( 0.03 + 0.06 * clamp( speedP, 0.0, 1.0 ) ) * sceneTime + 0.25 * audioAdvance;

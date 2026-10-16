@@ -55,7 +55,13 @@ const uint OrgTot = PerOrg * Orgs;    ///< 22848
 const uint Dust = 5000u;              ///< silica dust motes
 const uint Total = OrgTot + Dust;     ///< 27848 segs = 167088 vertices
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param p  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float p )
 {
     p = fract( p * 0.1031 );
@@ -64,10 +70,18 @@ float hash11( float p )
     return fract( p );
 }
 
-/// Each skeleton turns on its own two axes, about ITS OWN centre.  The spin used
-/// to live in the vertex stage, where it rotated every position about the world
-/// origin -- harmless for a single skeleton sitting there, but it would swing a
-/// whole field of them right out of the frustum.
+/**  Each skeleton turns on its own two axes, about ITS OWN centre.
+ *
+ * @param p  The point relative to the skeleton's centre. (in)
+ * @param a  Turn about y (radians). (in)
+ * @param b  Turn about x (radians). (in)
+ *
+ * @return
+ *   The turned point.
+ *
+ * The spin used to live in the vertex stage, where it rotated every position about the world origin -- harmless for a
+ * single skeleton sitting there, but it would swing a whole field of them right out of the frustum.
+ **/
 vec3 spin( vec3 p, float a, float b )
 {
     float ca = cos( a ), sa = sin( a );
@@ -77,7 +91,13 @@ vec3 spin( vec3 p, float a, float b )
     return p;
 }
 
-/// @brief Writes one vertex into the output buffer (compute stage).
+/**  Writes one vertex into the output buffer (compute stage).
+ *
+ * @param slot  Index of the vertex in the buffer. (in)
+ * @param p     Position. (in)
+ * @param e1    Extra value (attribute A's w). (in)
+ * @param e2    Extra value (attribute B's w). (in)
+ **/
 void writeVertex( uint slot, vec3 p, float e1, float e2 )
 {
     uint o = slot * 8u;
@@ -91,7 +111,14 @@ void writeVertex( uint slot, vec3 p, float e1, float e2 )
     verts[o + 7u] = e2;
 }
 
-/// @brief Appends a thick line segment (two triangles) to the output buffer (compute stage).
+/**  Appends a thick line segment (two triangles) to the output buffer (compute stage).
+ *
+ * @param pA         Start of the segment. (in)
+ * @param pB         End of the segment. (in)
+ * @param e1         Extra value written to every vertex (first slot). (in)
+ * @param e2         Extra value written to every vertex (second slot). (in)
+ * @param thickness  Width of the ribbon. (in)
+ **/
 void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
 {
     uint base = atomicAdd( cmd[4], 6u );
@@ -121,7 +148,7 @@ void emitSegment( vec3 pA, vec3 pB, float e1, float e2, float thickness )
     writeVertex( base + 5u, b0, e1, e2 );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uvec3 g = gl_GlobalInvocationID;

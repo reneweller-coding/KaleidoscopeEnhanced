@@ -27,7 +27,13 @@ out vec3  teNormal;
 out vec2  teUV;
 out float teCrystal;
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     p = fract( p * vec2( 234.34, 435.345 ) );
@@ -35,13 +41,20 @@ float hash21( vec2 p )
     return fract( p.x * p.y );
 }
 
-/// Periodic in x over `px` cells.  The cavern is a CLOSED tube now, so uv.x = 0
-/// and uv.x = 1 are the SAME generator; seeding the cells from an unwrapped
-/// index put a different crystal field on either side of that seam and opened a
-/// crack running the full length of the tunnel (measured step in the wall
-/// radius: 0.46 mean, 1.39 peak, on a tube of radius 3.2).  Wrapping the CELL
-/// INDEX -- and not the sample point -- makes the field tile while leaving every
-/// distance in the cell exact, so the crystals look identical, minus the crack.
+/**  Periodic in x over `px` cells.
+ *
+ * @param x   The point. (in)
+ * @param px  Period in x (cells). (in)
+ *
+ * @return
+ *   Distance to the nearest cell centre.
+ *
+ * The cavern is a CLOSED tube now, so uv.x = 0 and uv.x = 1 are the SAME generator; seeding the cells from an unwrapped
+ * index put a different crystal field on either side of that seam and opened a crack running the full length of the
+ * tunnel (measured step in the wall radius: 0.46 mean, 1.39 peak, on a tube of radius 3.2).  Wrapping the CELL INDEX --
+ * and not the sample point -- makes the field tile while leaving every distance in the cell exact, so the crystals look
+ * identical, minus the crack.
+ **/
 float voronoi( vec2 x, float px )
 {
     vec2  n = floor( x );
@@ -63,7 +76,7 @@ float voronoi( vec2 x, float px )
     return sqrt( m );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float u = gl_TessCoord.x;

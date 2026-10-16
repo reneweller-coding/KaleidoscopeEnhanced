@@ -41,13 +41,25 @@ uniform float scallopP;
 uniform float dustP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -57,20 +69,39 @@ vec3 imgPalette( float t )
     return mix( vec3( pg ), pc, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     vec3 p3 = fract( vec3( p.xyx ) * 0.1031 );
     p3 += dot( p3, p3.yzx + 33.33 );
     return fract( ( p3.x + p3.y ) * p3.z );
 }
+/**  Three pseudo-random numbers 0..1 from a 3D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Pseudo-random numbers, each 0..1.
+ **/
 vec3 hash33( vec3 p )
 {
     p = fract( p * vec3( 0.1031, 0.1030, 0.0973 ) );
     p += dot( p, p.yxz + 33.33 );
     return fract( ( p.xxy + p.yxx ) * p.zyx );
 }
-/// @brief Smooth 3D value noise, 0..1.
+/**  Smooth 3D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise3( vec3 p )
 {
     vec3 i = floor( p ), f = fract( p );
@@ -84,7 +115,13 @@ float noise3( vec3 p )
 
 float g_sc = 1.0;
 
-/// Scallops: Voronoi cells on the wall; each cell a shallow cup.
+/**  Scallops: Voronoi cells on the wall; each cell a shallow cup.
+ *
+ * @param p  The point on the wall. (in)
+ *
+ * @return
+ *   The scallop depth.
+ **/
 float scallop( vec3 p )
 {
     vec3  g = p * 1.6 / g_sc;
@@ -99,13 +136,25 @@ float scallop( vec3 p )
     return d1; // 0 in the cup centre, ~0.5 at rims
 }
 
-/// The cave: a winding tube along z, flattened floor.
+/**  The cave: a winding tube along z, flattened floor.
+ *
+ * @param z  Depth. (in)
+ *
+ * @return
+ *   The axis's x/y offset.
+ **/
 vec2 caveAxis( float z )
 {
     return vec2( 1.2 * sin( z * 0.08 ), 0.5 * sin( z * 0.11 + 1.0 ) );
 }
 
-/// @brief The scene's distance field: distance from p to the nearest surface.
+/**  The scene's distance field: distance from p to the nearest surface.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map( vec3 p )
 {
     vec2  a = caveAxis( p.z );
@@ -118,7 +167,13 @@ float map( vec3 p )
     return d;
 }
 
-/// @brief Surface normal of the distance field by central differences.
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p  The surface point. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 calcNormal( vec3 p )
 {
     vec2 e = vec2( 0.02, 0.0 );
@@ -126,7 +181,7 @@ vec3 calcNormal( vec3 p )
                             map( p + e.yyx ) - map( p - e.yyx ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2  uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;

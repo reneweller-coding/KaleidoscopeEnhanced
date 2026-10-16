@@ -50,56 +50,124 @@ const float Scale = 256.0;
 const int   Iters = 32;
 const int   Warmup = 12;
 
-/// @brief PCG random step: advances the state, returns 32 random bits.
+/**  PCG random step: advances the state, returns 32 random bits.
+ *
+ * @param s  The state; advanced. (in,out)
+ *
+ * @return
+ *   32 random bits.
+ **/
 uint pcg( inout uint s )
 {
     s = s * 747796405u + 2891336453u;
     uint w = ( ( s >> ( ( s >> 28 ) + 4u ) ) ^ s ) * 277803737u;
     return ( w >> 22 ) ^ w;
 }
-/// @brief Random number 0..1 from a PCG state.
+/**  Random number 0..1 from a PCG state.
+ *
+ * @param s  The PCG state; advanced. (in,out)
+ *
+ * @return
+ *   A random number 0..1.
+ **/
 float rnd( inout uint s )
 {
     return float( pcg( s ) ) * ( 1.0 / 4294967296.0 );
 }
 
 // ---- classic flame variations ----
+/**  Flame variation linear.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vLinear( vec2 p )
 {
     return p;
 }
+/**  Flame variation sinusoidal.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vSinusoidal( vec2 p )
 {
     return sin( p );
 }
+/**  Flame variation spherical.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vSpherical( vec2 p )
 {
     float r = dot( p, p ) + 1e-6;
     return p / r;
 }
+/**  Flame variation swirl.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vSwirl( vec2 p )
 {
     float r = dot( p, p );
     float s = sin( r ), c = cos( r );
     return vec2( p.x * s - p.y * c, p.x * c + p.y * s );
 }
+/**  Flame variation horseshoe.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vHorseshoe( vec2 p )
 {
     float r = length( p ) + 1e-6;
     return vec2( ( p.x - p.y ) * ( p.x + p.y ), 2.0 * p.x * p.y ) / r;
 }
+/**  Flame variation polar.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vPolar( vec2 p )
 {
     float r = length( p );
     float a = atan( p.y, p.x );
     return vec2( a * 0.3183099, r - 1.0 );
 }
+/**  Flame variation handkerchief.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vHandkerchief( vec2 p )
 {
     float r = length( p );
     float a = atan( p.y, p.x );
     return r * vec2( sin( a + r ), cos( a - r ) );
 }
+/**  Flame variation disc.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 vDisc( vec2 p )
 {
     float r = length( p );
@@ -107,6 +175,14 @@ vec2 vDisc( vec2 p )
     return a * vec2( sin( 3.14159265 * r ), cos( 3.14159265 * r ) );
 }
 
+/**  Flame variation id applied to a point.
+ *
+ * @param id  Index of the variation. (in)
+ * @param p   The point. (in)
+ *
+ * @return
+ *   The varied point.
+ **/
 vec2 variation( int id, vec2 p )
 {
     if ( id == 0 )
@@ -126,7 +202,13 @@ vec2 variation( int id, vec2 p )
     return vLinear( p );
 }
 
-/// Four affine maps whose coefficients breathe on the integrated phases.
+/**  Four affine maps whose coefficients breathe on the integrated phases.
+ *
+ * @param i  Index of the map (0..3). (in)
+ * @param A  Receives the first row. (out)
+ * @param B  Receives the second row. (out)
+ * @param C  Receives the offset. (out)
+ **/
 void affine( int i, out vec2 A, out vec2 B, out vec2 C )
 {
     float fi = float( i );
@@ -144,11 +226,23 @@ void affine( int i, out vec2 A, out vec2 B, out vec2 C )
     C = vec2( cos( ta ), sin( ta ) ) * tr;
 }
 
+/**  iq-style cosine palette (https://www.shadertoy.com/view/dlVSDK).
+ *
+ * @param c  Position on the palette, 0..1. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 palette( float c )
 {
     return 0.5 + 0.5 * cos( 6.2831853 * ( c + vec3( 0.0, 0.33, 0.67 ) ) + hue );
 }
 
+/**  Adds a colour to the accumulation buffer at a point of the flame's plane.
+ *
+ * @param p    The point. (in)
+ * @param col  The colour. (in)
+ **/
 void splat( vec2 p, vec3 col )
 {
     // World [-2.2, 2.2] -> pixels, with a gentle zoom on loud passages.
@@ -165,7 +259,7 @@ void splat( vec2 p, vec3 col )
     atomicAdd( acc[i + 3u], uint( Scale ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uint id = gl_GlobalInvocationID.x;

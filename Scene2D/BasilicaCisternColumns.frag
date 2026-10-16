@@ -37,13 +37,25 @@ uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float lightP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -53,17 +65,35 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Pseudo-random 2D vector (each 0..1) from a 2D point.
+/**  Pseudo-random 2D vector (each 0..1) from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   Two pseudo-random numbers 0..1.
+ **/
 vec2 hash22( vec2 p )
 {
     return vec2( hash21( p ), hash21( p + 17.3 ) );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -78,7 +108,13 @@ const float Cr = 0.34; ///< column radius
 
 float g_hue, g_light;
 
-/// Scene distance: repeated columns with capitals, cross vaults above.
+/**  Scene distance: repeated columns with capitals, cross vaults above.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The distance to the nearest surface.
+ **/
 float map( vec3 p )
 {
     vec2  c = floor( p.xz / Sp + 0.5 );
@@ -97,6 +133,13 @@ float map( vec3 p )
     return min( col, vault );
 }
 
+/**  Surface normal of the distance field by central differences.
+ *
+ * @param p  The surface point. (in)
+ *
+ * @return
+ *   The unit normal.
+ **/
 vec3 normalAt( vec3 p )
 {
     vec2 e = vec2( 0.004, 0.0 );
@@ -104,8 +147,16 @@ vec3 normalAt( vec3 p )
                             map( p + e.yyx ) - map( p - e.yyx ) ) );
 }
 
-/// The uplights: one at the foot of each column.  Returns the light arriving
-/// at point p with normal n from the nearest four columns.
+/**  The uplights: one at the foot of each column.
+ *
+ * @param p  The lit point. (in)
+ * @param n  Its normal. (in)
+ *
+ * @return
+ *   The light arriving (RGB).
+ *
+ * Returns the light arriving at point p with normal n from the nearest four columns.
+ **/
 vec3 uplight( vec3 p, vec3 n )
 {
     vec3 acc = vec3( 0.0 );
@@ -131,6 +182,15 @@ vec3 uplight( vec3 p, vec3 n )
     return acc;
 }
 
+/**  Marches a ray through the cistern and shades what it hits.
+ *
+ * @param ro    Ray origin. (in)
+ * @param rd    Ray direction. (in)
+ * @param tHit  Receives the hit distance (60 for none). (out)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 shade( vec3 ro, vec3 rd, out float tHit )
 {
     float t = 0.05;
@@ -173,7 +233,7 @@ vec3 shade( vec3 ro, vec3 rd, out float tHit )
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

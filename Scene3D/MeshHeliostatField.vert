@@ -47,6 +47,11 @@ const float Ground = -6.0;
 const vec3  TowerFoot = vec3( 0.0, Ground, 170.0 );
 const float TowerH = 70.0;
 
+/**  Direction to the sun, drifting slowly.
+ *
+ * @return
+ *   The unit direction.
+ **/
 vec3 sunDir()
 {
     float a = 0.4 + 0.10 * sin( time * 0.017 );
@@ -54,7 +59,7 @@ vec3 sunDir()
     return normalize( vec3( sin( a ) * cos( e ), sin( e ), -cos( a ) * cos( e ) ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     int  inst = gl_InstanceID;

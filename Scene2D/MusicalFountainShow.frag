@@ -39,13 +39,25 @@ uniform float audioValence;      ///< Mood valence: 0 dark .. 1 bright.
 uniform float jetsP;
 uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -55,17 +67,35 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param n  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float n )
 {
     return fract( sin( n * 127.1 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 2D point.
+/**  Pseudo-random number 0..1 from a 2D point.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash21( vec2 p )
 {
     return fract( sin( dot( p, vec2( 127.1, 311.7 ) ) ) * 43758.5453 );
 }
-/// @brief Smooth 2D value noise, 0..1.
+/**  Smooth 2D value noise, 0..1.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The noise value, 0..1.
+ **/
 float noise2( vec2 p )
 {
     vec2 i = floor( p ), f = fract( p );
@@ -78,6 +108,13 @@ float g_hue;
 float g_aspect;
 float g_n;
 
+/**  Colour of jet i: the photo arc, saturated like a coloured gel.
+ *
+ * @param i  Index of the jet. (in)
+ *
+ * @return
+ *   The colour (RGB).
+ **/
 vec3 jetColour( float i )
 {
     // Fountain lights are coloured gels: the photo arc, saturated.
@@ -87,7 +124,16 @@ vec3 jetColour( float i )
     return mix( c, vec3( 1.0 ), 0.25 );
 }
 
-/// The fountain seen above the water line (y > wl).  Returns emission.
+/**  The fountain seen above the water line (y > wl).
+ *
+ * @param p   The point. (in)
+ * @param wl  Height of the water line. (in)
+ *
+ * @return
+ *   The emission (RGB).
+ *
+ * Returns emission.
+ **/
 vec3 fountain( vec2 p, float wl )
 {
     vec3  col = vec3( 0.0 );
@@ -127,7 +173,7 @@ vec3 fountain( vec2 p, float wl )
     return col;
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     g_aspect = resolution.x / resolution.y;

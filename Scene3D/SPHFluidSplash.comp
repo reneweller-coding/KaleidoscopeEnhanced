@@ -73,45 +73,104 @@ uniform float audioLevel;   ///< Overall loudness, 0..1.
 uniform float audioSubBass; ///< Sub-bass band level, 0..1.
 uniform uint  maxVertices;  ///< Capacity of the vertex buffer (compute stage).
 
-/// @brief Pseudo-random number 0..1 from a float.
+/**  Pseudo-random number 0..1 from a float.
+ *
+ * @param x  The input value. (in)
+ *
+ * @return
+ *   A pseudo-random number 0..1.
+ **/
 float hash11( float x )
 {
     return fract( sin( x * 127.1 + sceneSeed * 311.7 ) * 43758.5453 );
 }
-/// @brief Pseudo-random number 0..1 from a 3D point.
+/**  Three pseudo-random numbers 0..1 from a float.
+ *
+ * @param x  The input value. (in)
+ *
+ * @return
+ *   Three pseudo-random numbers 0..1.
+ **/
 vec3 hash13( float x )
 {
     return vec3( hash11( x ), hash11( x + 71.17 ), hash11( x + 143.71 ) );
 }
 
+/**  Linear index of a grid cell.
+ *
+ * @param c  The cell. (in)
+ *
+ * @return
+ *   The index, or -1 outside the grid.
+ **/
 int cellIndex( ivec3 c )
 {
     c = clamp( c, ivec3( 0 ), ivec3( GridRes - 1 ) );
     return ( c.z * GridRes + c.y ) * GridRes + c.x;
 }
+/**  The grid cell a point falls in.
+ *
+ * @param p  The point. (in)
+ *
+ * @return
+ *   The cell.
+ **/
 ivec3 cellOf( vec3 p )
 {
     return ivec3( floor( ( p - vec3( -Domain, FloorY, -Domain ) ) / CellSize ) );
 }
 
+/**  Position of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ *
+ * @return
+ *   The position.
+ **/
 vec3 posOf( int i )
 {
     int b = i * 8;
     return vec3( particles[b + 0], particles[b + 1], particles[b + 2] );
 }
+/**  Density of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ *
+ * @return
+ *   The density.
+ **/
 float densOf( int i )
 {
     return particles[i * 8 + 3];
 }
+/**  Velocity of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ *
+ * @return
+ *   The velocity.
+ **/
 vec3 velOf( int i )
 {
     int b = i * 8;
     return vec3( particles[b + 4], particles[b + 5], particles[b + 6] );
 }
+/**  Pressure of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ *
+ * @return
+ *   The pressure.
+ **/
 float presOf( int i )
 {
     return particles[i * 8 + 7];
 }
+/**  Stores the position of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ * @param p  The position. (in)
+ **/
 void setPos( int i, vec3 p )
 {
     int b = i * 8;
@@ -119,10 +178,20 @@ void setPos( int i, vec3 p )
     particles[b + 1] = p.y;
     particles[b + 2] = p.z;
 }
+/**  Stores the density of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ * @param d  The density. (in)
+ **/
 void setDens( int i, float d )
 {
     particles[i * 8 + 3] = d;
 }
+/**  Stores the velocity of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ * @param v  The velocity. (in)
+ **/
 void setVel( int i, vec3 v )
 {
     int b = i * 8;
@@ -130,15 +199,26 @@ void setVel( int i, vec3 v )
     particles[b + 5] = v.y;
     particles[b + 6] = v.z;
 }
+/**  Stores the pressure of particle i.
+ *
+ * @param i  Index of the particle. (in)
+ * @param p  The pressure. (in)
+ **/
 void setPres( int i, float p )
 {
     particles[i * 8 + 7] = p;
 }
 
-/// Poly6 (density) and spiky-gradient (pressure force) kernels -- the
-/// standard SPH pair, chosen because poly6 is smooth (good for a scalar
-/// density sum) while spiky avoids poly6's vanishing gradient at short range
-/// (which would let particles pile up with no repulsion).
+/**  Poly6 (density) and spiky-gradient (pressure force) kernels -- the standard SPH pair, chosen because poly6 is
+ * smooth (good for a scalar density sum) while spiky avoids poly6's vanishing gradient at short range (which would
+ * let particles pile up with no repulsion).
+ *
+ * @param r2  Squared distance. (in)
+ * @param h2  Squared smoothing radius. (in)
+ *
+ * @return
+ *   The kernel weight.
+ **/
 float poly6( float r2, float h2 )
 {
     if ( r2 >= h2 )
@@ -146,6 +226,15 @@ float poly6( float r2, float h2 )
     float t = h2 - r2;
     return 1.5666814711 / pow( sqrt( h2 ), 9.0 ) * t * t * t; // 315/(64*pi) folded in
 }
+/**  Gradient of the spiky kernel (the direction of the pressure force).
+ *
+ * @param rij  Vector between the two particles. (in)
+ * @param r    Its length. (in)
+ * @param h    Smoothing radius. (in)
+ *
+ * @return
+ *   The gradient.
+ **/
 vec3 spikyGrad( vec3 rij, float r, float h )
 {
     if ( r <= 1e-5 || r >= h )
@@ -155,7 +244,7 @@ vec3 spikyGrad( vec3 rij, float r, float h )
     return coeff * ( rij / r );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     uint gid = gl_GlobalInvocationID.x

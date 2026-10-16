@@ -47,7 +47,7 @@ uniform float audioAmbient;   ///< How ambient (sustained, beatless) the music i
 uniform float lineP;
 uniform float glowP; ///< Glow / afterglow knob, 0..1.
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec3 n = normalize( vNormal );

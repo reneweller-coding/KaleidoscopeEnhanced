@@ -46,13 +46,25 @@ uniform float hueP; ///< Hue knob (radians), usually the music's chroma hue plus
 
 const float SpectroRows = 256.0;
 
-/// @brief The photo at a coordinate: the cross-fade of tex0 and tex1.
+/**  The photo at a coordinate: the cross-fade of tex0 and tex1.
+ *
+ * @param uv  Coordinate in the photo, 0..1. (in)
+ *
+ * @return
+ *   The cross-faded photo colour (RGB).
+ **/
 vec3 img( vec2 uv )
 {
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/// @brief The house palette: a colour of the photo on an arc that turns with the music's hue.
+/**  The house palette: a colour of the photo on an arc that turns with the music's hue.
+ *
+ * @param t  Position on the palette arc, 0..1 for one turn. (in)
+ *
+ * @return
+ *   The palette colour (RGB).
+ **/
 vec3 imgPalette( float t )
 {
     float ang = audioChromaHue + audioAdvance * 0.04 + t * 6.2831853;
@@ -62,8 +74,14 @@ vec3 imgPalette( float t )
     return mix( vec3( g ), col, 0.55 + 0.45 * audioValence );
 }
 
-/// Centroid and spread of one spectrogram row at the given age (in rows),
-/// from 16 of the 32 bands; the linear filter between rows smooths a little.
+/**  Centroid and spread of one spectrogram row at the given age (in rows), from 16 of the 32 bands; the linear filter
+ * between rows smooths a little.
+ *
+ * @param age  Age of the row (in rows). (in)
+ *
+ * @return
+ *   The centroid (x) and spread (y), each 0..1.
+ **/
 vec2 rowShape( float age )
 {
     float y = fract( spectroHead - age / SpectroRows );
@@ -83,8 +101,15 @@ vec2 rowShape( float age )
     return vec2( cen, spr );
 }
 
-/// Marker position on the chart: F2 across (centroid, reversed), F1 down
-/// (spread), the shape averaged over a window of rows starting at the age.
+/**  Marker position on the chart: F2 across (centroid, reversed), F1 down (spread), the shape averaged over a window
+ * of rows starting at the age.
+ *
+ * @param age     Age of the first row (in rows). (in)
+ * @param window  Number of rows averaged (up to 4). (in)
+ *
+ * @return
+ *   The marker's position on the chart.
+ **/
 vec2 markerAt( float age, int window )
 {
     vec2 acc = vec2( 0.0 );
@@ -98,7 +123,7 @@ vec2 markerAt( float age, int window )
     return vec2( clamp( 0.5 - ( acc.x - 0.3 ) * 2.2, -0.6, 0.6 ), clamp( ( acc.y - 0.12 ) * 4.0 - 0.3, -0.42, 0.42 ) );
 }
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     float aspect = resolution.x / resolution.y;

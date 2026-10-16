@@ -33,7 +33,7 @@ uniform float audioMusic;
 uniform float glowP;  ///< preset: bloom strength
 uniform float photoP; ///< preset: how much photo shows through
 
-/// @brief Entry point of this shader stage (the file description says what it draws).
+/** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
     vec2 uv = gl_FragCoord.xy / resolution;
