@@ -208,9 +208,9 @@ private:
     int getTextureNode( char *filename );
     /** @brief Builds a sibling filename by taking the directory of @p src and appending @p newName, replicating the
      * common "texture/material path is relative to the .obj file" convention. @param tgt Output buffer receiving the
-     * resulting path. @param src Reference path whose directory is reused. @param newName Filename to append to that
-     * directory. */
-    void replaceFilename( char *tgt, const char *src, const char *newName );
+     * resulting path. @param tgtSize Size of @p tgt in bytes; the path is cut to fit. @param src Reference path whose
+     * directory is reused (none: @p newName alone). @param newName Filename to append to that directory. */
+    void replaceFilename( char *tgt, size_t tgtSize, const char *src, const char *newName );
     bool m_meshRead;    ///< Whether readObj() successfully opened the .obj file (see success()).
     bool m_objTexAvail; ///< Whether the .obj file itself defined materials/textures (via usemtl), set at the end of
                         ///< readObj()/assignTexture(); gates whether

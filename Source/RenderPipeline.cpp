@@ -3790,7 +3790,6 @@ bool RenderPipeline::checkFramebufferStatus( void )
             printf( "Framebuffer incomplete, status 0x%x\n", status );
             return false;
     }
-    return false;
 }
 
 

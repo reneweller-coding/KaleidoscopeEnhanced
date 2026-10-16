@@ -159,8 +159,8 @@ GLuint loadBinary( const QString &path )
         return 0;
     } // another driver: build again
     f.close();
-    f.open( QIODevice::ReadWrite ); // "last used" for trimCache()
-    f.setFileTime( QDateTime::currentDateTime(), QFileDevice::FileModificationTime );
+    if ( f.open( QIODevice::ReadWrite ) ) // "last used" for trimCache(); a read-only cache only trims sooner
+        f.setFileTime( QDateTime::currentDateTime(), QFileDevice::FileModificationTime );
     return prog;
 }
 

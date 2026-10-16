@@ -6,7 +6,13 @@
 #define CGLTF_IMPLEMENTATION
 #include "../ThirdParty/cgltf/cgltf.h"
 #define TINYOBJLOADER_IMPLEMENTATION
+#ifdef _MSC_VER
+#pragma warning( push, 0 ) // third-party code: its warnings are not ours to fix
+#endif
 #include "../ThirdParty/tinyobjloader/tiny_obj_loader.h"
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
 
 #include "MeshImport.h"
 

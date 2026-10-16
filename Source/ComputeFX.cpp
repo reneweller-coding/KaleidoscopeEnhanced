@@ -560,7 +560,7 @@ GLuint ComputeFX::stepNBody( const AudioFeatures &a, float dt, float t )
 // 4. Boids with a real neighbourhood (spatial hash built with atomics).
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
+GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, [[maybe_unused]] float t )
 {
     const int Boids = 1 << 17; // 131,072
     const int Grid = 128;      // 128x128 cells
@@ -646,7 +646,7 @@ GLuint ComputeFX::stepBoids( const AudioFeatures &a, float dt, float t )
 // 5. Diffusion-limited aggregation — frost creeping across the frame.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
+GLuint ComputeFX::stepCrystal( const AudioFeatures &a, [[maybe_unused]] float dt, float t )
 {
     const int Walkers = 1 << 15; // 32,768
     Field    &f = m_field[CFX_CRYSTAL];
@@ -704,7 +704,7 @@ GLuint ComputeFX::stepCrystal( const AudioFeatures &a, float dt, float t )
 // 6. Dielectric breakdown — a branching bolt that grows itself on the GPU.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
+GLuint ComputeFX::stepLightning( const AudioFeatures &a, [[maybe_unused]] float dt, float t )
 {
     const int Tips = 4096;
     Canvas   &c = m_canvas[CFX_LIGHTNING];
@@ -776,8 +776,8 @@ GLuint ComputeFX::stepLightning( const AudioFeatures &a, float dt, float t )
 // 7. Caustics — wave surface + photon splatting onto the pool floor.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
-                                GLuint srcImage )
+GLuint ComputeFX::stepCaustics( const AudioFeatures &a, [[maybe_unused]] float dt, float t,
+                                [[maybe_unused]] GLuint srcImage )
 {
     Field    &f = m_field[CFX_CAUSTICS];
     Canvas   &c = m_canvas[CFX_CAUSTICS];
@@ -849,7 +849,7 @@ GLuint ComputeFX::stepCaustics( const AudioFeatures &a, float dt, float t,
 // 8. Pixel sorting — one workgroup per row, counting sort in shared memory.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepPixelSort( const AudioFeatures &a, float dt, float t,
+GLuint ComputeFX::stepPixelSort( const AudioFeatures &a, float dt, [[maybe_unused]] float t,
                                  GLuint srcImage, int outW, int outH )
 {
     Field &f = m_field[CFX_PIXELSORT];
@@ -885,7 +885,7 @@ GLuint ComputeFX::stepPixelSort( const AudioFeatures &a, float dt, float t,
 // 9. 2D FFT — the audio spectrum filters the image's spatial frequencies.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint srcImage )
+GLuint ComputeFX::stepFFT( const AudioFeatures &a, [[maybe_unused]] float dt, float t, GLuint srcImage )
 {
     const int N = 256;
     Field    &f = m_field[CFX_FFT];
@@ -958,7 +958,7 @@ GLuint ComputeFX::stepFFT( const AudioFeatures &a, float dt, float t, GLuint src
 // 10. Ferrofluid — Swift-Hohenberg pattern formation (Rosensweig spikes).
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepFerro( const AudioFeatures &a, float dt, float t )
+GLuint ComputeFX::stepFerro( const AudioFeatures &a, [[maybe_unused]] float dt, float t )
 {
     // A COARSE grid on purpose.  Swift-Hohenberg selects k = 1/sqrt(qScale)
     // radians per texel, so a visible spike spacing needs qScale near 1 — and
@@ -1018,7 +1018,7 @@ GLuint ComputeFX::stepFerro( const AudioFeatures &a, float dt, float t )
 // 11. Hydraulic erosion — droplets carving a landscape in real time.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepErosion( const AudioFeatures &a, float dt, float t )
+GLuint ComputeFX::stepErosion( const AudioFeatures &a, [[maybe_unused]] float dt, float t )
 {
     // 8k droplets x 64 steps x a 3x3 kernel rewrote every texel ~18 times per
     // frame and sanded the whole landscape flat within seconds.  2k keeps it
@@ -1068,7 +1068,7 @@ GLuint ComputeFX::stepErosion( const AudioFeatures &a, float dt, float t )
 // 12. Navier-Stokes with a real pressure projection.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
+GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, [[maybe_unused]] float t,
                                GLuint srcImage )
 {
     const int W = 512, H = 288;
@@ -1169,7 +1169,7 @@ GLuint ComputeFX::stepNSFluid( const AudioFeatures &a, float dt, float t,
 // particles are self-contained and never sample the photo, but the parameter
 // is kept so step()'s call site stays uniform with the other photo-consuming
 // kinds.
-GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
+GLuint ComputeFX::stepMetal( const AudioFeatures &a, [[maybe_unused]] float dt, float t, GLuint )
 {
     const int Parts = 1 << 16; // 65,536
     const int Grid = 96, PerCell = 32;
@@ -1238,7 +1238,7 @@ GLuint ComputeFX::stepMetal( const AudioFeatures &a, float dt, float t, GLuint )
 // 14. Shatter & reassemble.
 // ---------------------------------------------------------------------------
 
-GLuint ComputeFX::stepShards( const AudioFeatures &a, float dt, float t,
+GLuint ComputeFX::stepShards( const AudioFeatures &a, [[maybe_unused]] float dt, float t,
                               GLuint srcImage )
 {
     const int gx = 48, gy = 27;

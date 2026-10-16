@@ -139,7 +139,7 @@ void Mesh::loadMaterials( const char *sFilename )
         if ( strncmp( ac_line, "newmtl ", 7 ) == 0 )
         {
             char matname[1024];
-            if ( sscanf( ac_line, "newmtl %s", matname ) )
+            if ( sscanf( ac_line, "newmtl %1023s", matname ) )
             {
                 // Put Last material to the MaterialList
                 if ( matnode != NULL )
@@ -149,7 +149,7 @@ void Mesh::loadMaterials( const char *sFilename )
 
                 // Create new Shader
                 matnode = new MaterialNode;
-                strcpy( matnode->m_name, matname );
+                snprintf( matnode->m_name, sizeof( matnode->m_name ), "%s", matname );
             }
         }
         else if ( strncmp( ac_line, "Ns ", 3 ) == 0 )
@@ -182,9 +182,9 @@ void Mesh::loadMaterials( const char *sFilename )
         }
         else if ( strncmp( ac_line, "map_Kd ", 7 ) == 0 )
         {
-            sscanf( ac_line, "map_Kd %s", texname );
+            sscanf( ac_line, "map_Kd %255s", texname );
             char texture_filename[256];
-            replaceFilename( texture_filename, sFilename, texname );
+            replaceFilename( texture_filename, sizeof( texture_filename ), sFilename, texname );
             matnode->textureIndex = getTextureNode( texture_filename );
         }
 
@@ -226,7 +226,7 @@ int Mesh::getTextureNode( char *filename )
         TextureNode texnode;
         texnode.qImageTexture = 0;
         texnode.textureId = 0;
-        strcpy( texnode.texname, filename );
+        snprintf( texnode.texname, sizeof( texnode.texname ), "%s", filename );
         idx = static_cast<int>( m_textures.size() );
         m_textures.push_back( texnode );
     }
@@ -338,10 +338,10 @@ void Mesh::readObj( const char *sFilename )
         if ( strncmp( ac_line, "mtllib ", 7 ) == 0 )
         {
             char filename[1024];
-            if ( sscanf( ac_line, "mtllib %s", filename ) )
+            if ( sscanf( ac_line, "mtllib %1023s", filename ) )
             {
                 char newname[256];
-                replaceFilename( newname, sFilename, filename );
+                replaceFilename( newname, sizeof( newname ), sFilename, filename );
                 loadMaterials( newname );
             }
         }
@@ -362,7 +362,7 @@ void Mesh::readObj( const char *sFilename )
             bool foundmaterial = false;
 
             char matname[1024];
-            if ( sscanf( ac_line, "usemtl %s", matname ) )
+            if ( sscanf( ac_line, "usemtl %1023s", matname ) )
             {
                 for ( unsigned int counter = 0; counter < m_materialList.size(); ++counter )
                 {
@@ -571,27 +571,15 @@ void Mesh::computeBoundingBox()
 // filename from inside an .obj/.mtl file, e.g. "map_Kd wall.png") relative to
 // the file that referenced it rather than relative to the process's working
 // directory.
-// CAUTION: if src has neither '/' nor '\\' at all (no directory component),
-// p is still NULL after the inner if-block's strcpy(tgt,newName), and the
-// unconditional `p++; strcpy(p,newName);` below then writes through that
-// stale NULL pointer. Every current call site passes sFilename (the .obj/
-// .mtl path as given to the constructor), which in practice always carries a
-// directory, so this path isn't normally exercised — but a bare filename
-// with no path prefix would hit it.
-void Mesh::replaceFilename( char *tgt, const char *src, const char *newName )
+// The directory ends at the last '/', or at the last '\\' when there is no '/'; a src
+// without either has no directory and gives newName alone. The result is cut to fit tgt.
+void Mesh::replaceFilename( char *tgt, size_t tgtSize, const char *src, const char *newName )
 {
-    strcpy( tgt, src );
-    char *p = strrchr( tgt, '/' );
-    if ( NULL == p )
-    {
-        p = strrchr( tgt, '\\' );
-        if ( NULL == p )
-        {
-            strcpy( tgt, newName );
-        }
-    }
-    ++p;
-    strcpy( p, newName );
+    const char *sep = strrchr( src, '/' );
+    if ( sep == NULL )
+        sep = strrchr( src, '\\' );
+    const int dir_len = sep != NULL ? static_cast<int>( sep - src + 1 ) : 0;
+    snprintf( tgt, tgtSize, "%.*s%s", dir_len, src, newName );
 }
 
 void Mesh::loadTextureImages()
@@ -614,7 +602,7 @@ void Mesh::assignTexture( char *filename )
         m_materialList.push_back( new MaterialNode( 0 ) );
         m_textures.push_back( TextureNode() );
         m_textures[0].qImageTexture = new QImage;
-        strcpy( m_textures[0].texname, filename );
+        snprintf( m_textures[0].texname, sizeof( m_textures[0].texname ), "%s", filename );
         loadTexture( *( m_textures[0].qImageTexture ), m_textures[0].textureId, m_textures[0].texname );
     }
 }

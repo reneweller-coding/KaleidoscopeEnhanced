@@ -131,6 +131,8 @@ this is not written. Generated shaders get their names when they are written (`g
 | `++i`, not `i++` | Where the value is unused: `for` increments and statements of their own, C++ and GLSL (`Tools/cgvr_preincrement.py`) |
 | `new`, not `malloc`; no leaks | `textFileRead()` returns a `std::string`; the shader file names of `EffectShader`/`Scene3DShader` are `std::string` members (they were malloc'd and never freed) |
 | Headers guarded against double inclusion | All headers (`shader_setup.h` and `textfile.h` had no guard) |
+| Strict warnings, warning-free | `/W4` in all three projects (the PresetEditor was at `/W3`), 0 warnings in our code; `tiny_obj_loader.h` is third-party and included with its warnings off |
+| Bounds-checked copies, return values checked | `mesh.cpp` copies with `snprintf` and reads with `sscanf` widths; `Mesh::replaceFilename()` takes the buffer size and no longer writes through NULL for a bare file name (a documented, postponed bug); `ShaderForge` checks `QFile::open()` |
 
 ### Deviations
 
@@ -142,6 +144,10 @@ this is not written. Generated shaders get their names when they are written (`g
 | Avoid nested classes | Records nested in the class they serve stay (`Mesh::Triangle`, `ScoreCues::Frame`) | They have no meaning outside it |
 | Assignment operators return `void` | Defaulted ones (`ExprProgram`) return a reference | That is what `= default` declares; the containers holding them require it |
 | — | `IMMDeviceEnumerator`'s destructor | A Windows COM interface, not ours |
+| Avoid magic numbers | The tuned constants of the audio analysis and the shaders stay inline, explained in the comment beside them | Hundreds of values, each used once; a name per value would say less than the comment |
+| Compare floats with an epsilon | Ten exact comparisons stay | All test values that were assigned or parsed, not computed: 0 meaning "not set", divide-by-zero asserts, self tests against 0.75 or 12.5 |
+| Use namespaces | The app's classes live in the global namespace; helper groups use one (`Strings`, `Platform`, `ExprVars`) | A Qt application, one module; wrapping it would touch every file for no gain in safety |
+| Every `if`-`else if` chain ends in `else` | Only where a "can't happen" case exists | Most chains choose among cases where doing nothing is the right default |
 | Avoid abrupt `exit` | `shader_setup.cpp` still exits when `Engine/Fullscreen.vert` or a program's own source cannot be read | Without them no frame can be drawn; the message names the missing file |
 
 ## Known state outside the guidelines
