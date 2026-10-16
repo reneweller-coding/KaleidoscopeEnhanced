@@ -1708,19 +1708,8 @@ void GLwidget::paintGL()
 
 
 
-void GLwidget::draw()
+void GLwidget::stepSweeps( qint64 nowMs )
 {
-    AudioFeatures audio;
-    if ( m_audioAnalyzer )
-        audio = m_audioAnalyzer->getFeatures();
-    if ( RenderPipeline::freezeTime() >= 0.f ) // a comparison run: silence, whatever is playing
-        audio = AudioFeatures();
-    m_eventLatch.apply( audio ); // the beats, onsets and track changes since the last frame, none lost
-    updateRest( audio );
-
-    // Song boundaries: the silence between tracks and the media session's title (updateSongBoundary()).
-    updateSongBoundary( audio );
-
     // KALEIDO_FX_SWEEP=<seconds>: the same walk, but over the OVERLAYS.
     // The scene stays put (review mode holds it) and the combine shader steps
     // on, so each overlay lands at a known timestamp over identical content --
@@ -1736,7 +1725,7 @@ void GLwidget::draw()
             m_sweepReview = true;
             rp->setReviewMode( true );
         }
-        const qint64 now_ms = m_fpsTimer.elapsed();
+        const qint64 now_ms = nowMs;
         if ( m_fxSweepNextMs < 0 || now_ms >= m_fxSweepNextMs )
         {
             if ( m_fxSweepIdx < names.size() )
@@ -1781,7 +1770,7 @@ void GLwidget::draw()
             m_sweepReview = true;
             rp->setReviewMode( true );
         }
-        const qint64 now_ms = m_fpsTimer.elapsed();
+        const qint64 now_ms = nowMs;
         const int    secs = sweepSeconds();
 
         if ( m_sweepNextMs < 0 || now_ms >= m_sweepNextMs )
@@ -1832,6 +1821,23 @@ void GLwidget::draw()
             rp->forceScene( m_sweepWant );
         }
     }
+}
+
+void GLwidget::draw()
+{
+    AudioFeatures audio;
+    if ( m_audioAnalyzer )
+        audio = m_audioAnalyzer->getFeatures();
+    if ( RenderPipeline::freezeTime() >= 0.f ) // a comparison run: silence, whatever is playing
+        audio = AudioFeatures();
+    m_eventLatch.apply( audio ); // the beats, onsets and track changes since the last frame, none lost
+    updateRest( audio );
+
+    // Song boundaries: the silence between tracks and the media session's title (updateSongBoundary()).
+    updateSongBoundary( audio );
+
+    // The scene and FX sweeps (KALEIDO_SCENE_SWEEP, KALEIDO_FX_SWEEP), on the wall clock live.
+    stepSweeps( m_fpsTimer.elapsed() );
 
     // Apply any queued MIDI control messages.
     applyMidi();
@@ -2834,7 +2840,10 @@ void GLwidget::exportStep()
         EngineClock::setVirtualSeconds( m_export->engineSeconds( k ) );
         AudioFeatures audio = m_export->featuresFor( k );
         m_eventLatch.apply( audio ); // several analyzer blocks per frame: no beat or onset lost between them
-        if ( audio.trackChange )
+        // A sweep in an export walks on the frame clock: a catalogue rendered as fast as the GPU allows, every scene
+        // at a known time of the video (Tools/render_catalog_export.py).
+        stepSweeps( std::llround( m_export->engineSeconds( k ) * 1000.0 ) );
+        if ( audio.trackChange && !sweepActive() )
             rp->requestSceneChange( false );
         if ( m_export->titleDue( k ) )
             rp->showTitle( m_export->title(), m_export->artist() );

@@ -563,6 +563,13 @@ protected:
      * lyrics/ artist-image overlays, and any QPainter overlays (menus, help, REC dot).
      **/
     void draw();
+    /**  One step of the scene and FX sweeps (KALEIDO_SCENE_SWEEP, KALEIDO_FX_SWEEP): the next jump when its time
+     * has come, the scene actually on screen logged ("[shown]"), one retry when the scheduler cut away.
+     *
+     * @param nowMs  The sweep's clock in milliseconds: the wall clock live (draw()), the frame clock in a video
+     *               export (exportStep()) -- so the catalogue renders as an export, faster than real time. (in)
+     **/
+    void stepSweeps( qint64 nowMs );
 
     /**  Draws the numbered configuration-selection overlay (key '0').
      *
@@ -1128,10 +1135,10 @@ protected:
     int    m_fxSweepIdx = 0;       ///< Next FX index the sweep will jump to.
     qint64 m_fxSweepNextMs = -1;   ///< Deadline for the next FX jump; -1 = not started.
     int    m_sweepIdx = 0;         ///< Next scene index the sweep will jump to.
-    qint64 m_sweepNextMs = -1;     ///< m_fpsTimer deadline for the next jump; -1 = not started yet.
+    qint64 m_sweepNextMs = -1;     ///< Sweep-clock deadline for the next jump (stepSweeps()); -1 = not started yet.
     int    m_sweepWant = -1;       ///< Scene the sweep last asked for; -1 = none yet.
     int    m_sweepShown = -1;      ///< Scene last seen ACTUALLY active, so drift gets logged rather than assumed away.
-    qint64 m_sweepJumpMs = 0;      ///< m_fpsTimer stamp of the last jump (the retry waits out the cross-fade).
+    qint64 m_sweepJumpMs = 0;      ///< Sweep-clock stamp of the last jump (the retry waits out the cross-fade).
     bool   m_sweepReview = false;  ///< Review mode enabled once at sweep start (the scheduler must not cut mid-window).
     bool   m_sweepRetried = false; ///< One retry per window: enough to undo a stolen cut, not enough to fight the
                                    ///< scheduler.

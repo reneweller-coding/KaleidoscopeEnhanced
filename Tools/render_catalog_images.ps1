@@ -7,6 +7,10 @@
 # live-dumped JPGs.
 #
 #   .\Tools\render_catalog_images.ps1 -Kind scene -Names A,B,C -OutDir scan
+#
+# For SCENES, Tools/render_catalog_export.py is the faster way (16.10.2026): one video export on the frame clock
+# per chunk, the scene sweep walking it -- about 2 s a scene instead of 35 s here (one app start and 28 s of real
+# time each).  This script stays for FX and transitions, and for a single scene seen exactly as live.
 #   .\Tools\render_catalog_images.ps1 -Kind fx    -Names FxOilPaint -OutDir fxscan
 #   .\Tools\render_catalog_images.ps1 -Kind trans -Names Shatter    -OutDir fxscan
 #
