@@ -24,6 +24,7 @@
 #include "LongRunVariety.h"
 #include "AudioAnalyzer.h"
 #include "AudioConditioner.h"
+#include "RenderPipeline.h"
 #include "VideoExport.h"
 #include "coreclock.h"
 
@@ -629,6 +630,140 @@ void inputChecks()
     }
 }
 
+/**  Circular distance of two hues.
+ *
+ * @param a  A hue in turns. (in)
+ * @param b  Another hue in turns. (in)
+ *
+ * @return
+ *   Their distance on the circle, 0..0.5 turns.
+ **/
+float hueDistance( float a, float b )
+{
+    const float d = std::fabs( a - b ) - std::floor( std::fabs( a - b ) );
+    return std::min( d, 1.f - d );
+}
+
+/**  The picture's continuity (16.10.2026): the cube budget against the panel's rate and gliding, the stage lamps'
+ * chase gliding, the key's hue on the circle of fifths.
+ **/
+void outputChecks()
+{
+    printf( "\noutput and continuity (RenderPipeline::stepCubeBudget, AudioConditioner chase, chroma hue)\n" );
+
+    // 1. The cube budget on a 50-Hz panel: 5 s at 50 fps, 3 s of a struggling GPU at 20 fps, 6 s at 50 fps again.
+    //    The old fixed thresholds (45/57 fps, a jump) are run beside it.
+    {
+        RenderPipeline::CubeBudgetClock clk;
+        float                           budget = 1.f, low = 1.f, max_step = 0.f, old_budget = 1.f, old_ema = 60.f;
+        auto                            run = [&]( float fps, float seconds )
+        {
+            for ( float t = 0.f; t < seconds; t += 1.f / fps )
+            {
+                const float next = RenderPipeline::stepCubeBudget( budget, clk, 1.f / fps, 50.f );
+                max_step = std::max( max_step, std::fabs( next - budget ) * fps );
+                budget = next;
+                low = std::min( low, budget );
+                old_ema += 0.05f * ( fps - old_ema );
+                if ( old_ema < 45.f && old_budget > 0.75f )
+                    old_budget = 0.5f;
+                else if ( old_ema > 57.f && old_budget < 0.75f )
+                    old_budget = 1.f;
+            }
+        };
+        run( 50.f, 5.f );
+        const float before = budget;
+        run( 20.f, 3.f );
+        run( 50.f, 6.f );
+        check( before == 1.f && low <= 0.5f && budget == 1.f && old_budget == 0.5f,
+               "on a 50-Hz panel the cube budget drops under load and comes back (the fixed 57 fps never did)",
+               "low " + std::to_string( low ).substr( 0, 4 ) + ", after " + std::to_string( budget ).substr( 0, 4 )
+                   + ", the old way after " + std::to_string( old_budget ).substr( 0, 4 ) );
+        check( max_step <= 0.5001f, "the cube budget glides, half its range per second at most",
+               std::to_string( max_step ).substr( 0, 5 ) + " per second" );
+
+        RenderPipeline::CubeBudgetClock clk30;
+        float                           b30 = 1.f;
+        for ( int i = 0; i < 300; ++i )
+            b30 = RenderPipeline::stepCubeBudget( b30, clk30, 1.f / 30.f, 30.f );
+        check( b30 == 1.f, "a 30-Hz panel running at its 30 fps keeps all cubes (45 fps fixed halved them)" );
+    }
+
+    // 2. The lamps' chase over a drum track: it moves on by a quarter per onset, but never by more than
+    //    1.25 turns/s -- stepped, it jumped a quarter turn in one frame.
+    {
+        const int                        rate = 48000;
+        const std::vector<float>         drums = drumTrack( rate, 8.0 );
+        const std::vector<AudioFeatures> tl =
+            AudioAnalyzer::analyzeSamples( drums.data(), static_cast<int>( drums.size() ), 1, rate );
+        AudioConditioner          cond;
+        AudioConditioner::Context ctx;
+        float                     prev = cond.chasePhase(), max_step = 0.f, travel = 0.f;
+        for ( size_t i = 0; i < tl.size(); ++i )
+        {
+            ctx.globalTime += 0.01f;
+            cond.update( tl[i], 0.01f, ctx );
+            const float d = hueDistance( cond.chasePhase(), prev );
+            max_step = std::max( max_step, d );
+            travel += d;
+            prev = cond.chasePhase();
+        }
+        check( travel > 0.5f && max_step <= 0.0126f, "the lamps' chase glides from corner to corner",
+               "travelled " + std::to_string( travel ).substr( 0, 4 ) + " turns, at most "
+                   + std::to_string( max_step ).substr( 0, 6 ) + " per 10 ms" );
+    }
+
+    // 3. I-IV-V (C, F, G major in octave 5, three harmonics each): on the circle of fifths the three hues lie close; on
+    // the
+    //    chromatic circle (the old mapping, worked out from the same chroma) they spread over half the wheel.
+    {
+        const int          rate = 48000, frames = rate * 12;
+        std::vector<float> pcm( static_cast<size_t>( frames ), 0.f );
+        // Octave 5: below ~400 Hz a 2048-point FFT's bin (23 Hz) is wider than a semitone, and the chroma there
+        // still files a tone under a neighbouring pitch class (a C major triad in octave 3 came out as C#, F#, A#).
+        const int chords[3][3] = { { 72, 76, 79 }, { 77, 81, 84 }, { 79, 83, 86 } }; // C, F, G
+        for ( int i = 0; i < frames; ++i )
+        {
+            const double t = static_cast<double>( i ) / rate;
+            const int   *ch = chords[std::min( 2, static_cast<int>( t / 4.0 ) )];
+            double       v = 0.0;
+            for ( int k = 0; k < 3; ++k )
+            {
+                const double f = 440.0 * std::pow( 2.0, ( ch[k] - 69 ) / 12.0 );
+                for ( int h = 1; h <= 3; ++h )
+                    v += 0.06 / h * std::sin( 6.283185307 * f * h * t );
+            }
+            pcm[static_cast<size_t>( i )] = static_cast<float>( v );
+        }
+        const std::vector<AudioFeatures> tl = AudioAnalyzer::analyzeSamples( pcm.data(), frames, 1, rate );
+        float                            hue[3], chromatic[3];
+        for ( int c = 0; c < 3; ++c )
+        {
+            const AudioFeatures &f = tl[std::min( tl.size() - 1, static_cast<size_t>( 390 + 400 * c ) )];
+            hue[c] = f.chromaHue;
+            float s = 0.f, co = 0.f;
+            for ( int i = 0; i < 12; ++i )
+            {
+                s += f.chroma[i] * std::sin( 6.2831853f * i / 12.f );
+                co += f.chroma[i] * std::cos( 6.2831853f * i / 12.f );
+            }
+            chromatic[c] = std::atan2( s, co ) / 6.2831853f;
+        }
+        float spread = 0.f, old_spread = 0.f;
+        for ( int a = 0; a < 3; ++a )
+            for ( int b = a + 1; b < 3; ++b )
+            {
+                spread = std::max( spread, hueDistance( hue[a], hue[b] ) );
+                old_spread = std::max( old_spread, hueDistance( chromatic[a], chromatic[b] ) );
+            }
+        auto deg = []( float turns )
+        { return std::to_string( static_cast<int>( std::lround( turns * 360.f ) ) ); };
+        check( spread < 0.21f && old_spread > 0.33f, "I-IV-V keeps the key's hue together (circle of fifths)",
+               "C/F/G at " + deg( hue[0] ) + "/" + deg( hue[1] ) + "/" + deg( hue[2] ) + " degrees, spread "
+                   + deg( spread ) + "; on the chromatic circle " + deg( old_spread ) );
+    }
+}
+
 /**  The video export's frame clock (EngineClock, WallClock) and its command line (-g, -j).
  *
  * Runs last: it switches this process's engine clock to virtual time for good.
@@ -964,6 +1099,7 @@ int runCueSelfTest()
     longRunChecks();
     harmonyChecks();
     inputChecks();
+    outputChecks();
     exportChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );

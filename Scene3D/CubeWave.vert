@@ -24,7 +24,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform float cubeBudget; ///< FPS detail budget: <1 -> drop every 2nd cube
+uniform float cubeBudget; ///< FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5
 
 uniform float audioAdvance;          ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                      ///< backwards).
@@ -93,9 +93,10 @@ void main()
 {
     float i = attrA.w;
 
-    // FPS budget: below full detail, every 2nd cube collapses (checkerboard
+    // FPS budget (gliding 1 -> 0.5): every 2nd cube shrinks away with it and is not drawn once gone (checkerboard
     // over the field so no visible hole appears).
-    if ( cubeBudget < 0.75 && mod( i, 2.0 ) > 0.5 )
+    float budget_k = ( mod( i, 2.0 ) > 0.5 ) ? smoothstep( 0.5, 1.0, cubeBudget ) : 1.0;
+    if ( budget_k <= 0.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
@@ -125,7 +126,7 @@ void main()
 
     // NEAR FADE: towers shrink away before they reach the camera plane
     // (recycled cubes used to pop up huge right in front of the lens).
-    float near_fade = smoothstep( 2.0, 16.0, z );
+    float near_fade = smoothstep( 2.0, 16.0, z ) * budget_k;
 
     // Column height = its spectrum band, bass at the street edges.
     int   band = int( clamp( ( abs( gx ) - 2.5 ) / 32.0 * 31.0, 0.0, 31.0 ) );

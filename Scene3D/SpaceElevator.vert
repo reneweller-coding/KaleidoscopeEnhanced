@@ -29,7 +29,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform float cubeBudget; ///< Number of cubes the scene may draw (the host's instance budget).
+uniform float cubeBudget; ///< FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5
 
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
@@ -70,7 +70,8 @@ void main()
     float idx = float( gl_VertexID / 36 );
     vec3  corner_id = Cube[gl_VertexID - ( gl_VertexID / 36 ) * 36];
 
-    if ( cubeBudget < 0.75 && mod( idx, 2.0 ) > 0.5 )
+    float budget_k = ( mod( idx, 2.0 ) > 0.5 ) ? smoothstep( 0.5, 1.0, cubeBudget ) : 1.0;
+    if ( budget_k <= 0.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
@@ -145,7 +146,7 @@ void main()
         role_w = 0.6;
     }
 
-    vec3 local_pos = corner_id * scale;
+    vec3 local_pos = corner_id * scale * budget_k;
     vec3 world = centre + rot_mat * local_pos;
 
     // Camera climbs slowly along the tether axis.

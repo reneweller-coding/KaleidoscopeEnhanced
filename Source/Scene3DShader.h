@@ -275,15 +275,13 @@ public:
         m_eyeOffset = e;
     }
 
-    // FPS-driven detail budget (1.0 = full detail, 0.5 = half), maintained by
-    // RenderPipeline from the frame rate. Two consumers: GEOM_CUBES scenes
-    // read it directly as the `cubeBudget` uniform (every 2nd cube dropped at
-    // 0.5); geom="indirect" generators never see it themselves -- it reaches
-    // them indirectly, via the shared IndirectClamp.comp pass capping the
-    // drawn vertex count to maxVertices*budget (see runGenerator()).
-    static float M_CubeBudget; ///< Global FPS-driven detail budget (1.0 = draw everything, 0.5 = every 2nd/half, ...);
-                               ///< GEOM_CUBES reads it as the `cubeBudget` uniform, geom="indirect" scenes get it via
-                               ///< IndirectClamp.comp's `budget` uniform instead.
+    // FPS-driven detail budget (1.0 = full detail, 0.5 = half), gliding between the two, maintained by
+    // RenderPipeline::stepCubeBudget() from the frame rate against the panel's.  GEOM_CUBES scenes read it as the
+    // `cubeBudget` uniform: every 2nd cube shrinks with it and is gone at 0.5.  geom="indirect" scenes no longer
+    // see it (16.10.2026): a cut of their vertex count drops whichever triangles atomicAdd handed out last -- a
+    // different set every frame, i.e. flicker -- and none of them costs more than ~3 ms (.screen/scene-cost.json).
+    static float M_CubeBudget; ///< Global FPS-driven detail budget, 0.5..1 (1 = draw everything); GEOM_CUBES reads it
+                               ///< as the `cubeBudget` uniform.
 
     /**  Mean fraction of the frame the loaded model covered, or -1 if nothing was measured (KALEIDO_COVER_LOG unset,
      * or not a mesh).

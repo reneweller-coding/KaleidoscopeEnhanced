@@ -45,6 +45,17 @@ bool spoutOutInit( const char *senderName );
  **/
 void spoutOutSend( unsigned int glTexture, unsigned int width, unsigned int height );
 
+/**  Publishes the colour attachment of a framebuffer as this frame's Spout output.
+ *
+ * @param fbo     The framebuffer to read; it must be the bound one, and is bound again afterwards. (in)
+ * @param width   Width to send in pixels; the call is skipped if 0. (in)
+ * @param height  Height to send in pixels; the call is skipped if 0. (in)
+ *
+ * Must be called with the app's GL context current (i.e. from paint()).  Used for the window's framebuffer after
+ * the present pass, so the receiver gets the displayed frame.
+ **/
+void spoutOutSendFbo( unsigned int fbo, unsigned int width, unsigned int height );
+
 /**  Releases the Spout sender.
  *
  * @sideeffects

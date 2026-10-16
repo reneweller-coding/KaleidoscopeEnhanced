@@ -2860,18 +2860,28 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
         m_sHCDF = 0.85f * m_sHCDF + 0.15f * hcdf;
     }
 
-    // ---- Chroma hue: harmonic "colour" = circular mean of the chroma on the wheel ----
+    // ---- Chroma hue: harmonic "colour" = circular mean of the chroma on the circle of fifths ----
     // Maps the music's harmonic centre onto the colour wheel (0..1), so the key /
     // harmony drives a consistent global hue shift.  Uses the slow smoothed chroma.
+    // Pitch class i sits at 2*pi * (7*i mod 12) / 12 -- the fifths circle, the
+    // projection tc[0]/tc[1] of the HCDF above.  Until 16.10.2026 it was the
+    // chromatic circle (2*pi * i / 12), on which a key's notes spread around the
+    // whole wheel: the major profile's vector was 0.015 long (0.204 on the fifths
+    // circle), a triad's 0.17 (0.64), so in broadband music noise steered the
+    // angle more than the key, and I-IV-V moved the hue by up to 150 degrees
+    // (C 135, F 285, G 345 degrees; on the fifths circle 45, 15 and 75).  Now
+    // related keys are neighbouring colours, and every key has a new colour.
     float ch_sin = 0.f, ch_cos = 0.f;
     for ( int i = 0; i < 12; ++i )
     {
-        float ang = 6.28318530718f * static_cast<float>( i ) / 12.f;
+        float ang = 6.28318530718f * static_cast<float>( ( 7 * i ) % 12 ) / 12.f;
         ch_sin += m_smoothedChroma[i] * std::sin( ang );
         ch_cos += m_smoothedChroma[i] * std::cos( ang );
     }
     // Smooth the hue VECTOR (not the angle) — this drifts the colour slowly and
-    // continuously, even through the wheel's wrap-around, instead of jumping.
+    // continuously, even through the wheel's wrap-around, instead of jumping;
+    // and a weak (atonal) vector weighs little, so the hue then holds instead
+    // of wandering.
     m_hueCos = 0.99f * m_hueCos + 0.01f * ch_cos;
     m_hueSin = 0.99f * m_hueSin + 0.01f * ch_sin;
     float chroma_hue = std::atan2( m_hueSin, m_hueCos ) * 0.15915494f; // /(2π) → -0.5..0.5

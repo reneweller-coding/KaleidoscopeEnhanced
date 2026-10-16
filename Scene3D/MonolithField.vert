@@ -30,7 +30,7 @@ uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
 uniform vec2  resolution; ///< Size of the render target in pixels.
-uniform float cubeBudget; ///< FPS detail budget: <1 -> drop every 2nd cube
+uniform float cubeBudget; ///< FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5
 
 uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                  ///< backwards).
@@ -77,7 +77,8 @@ void main()
     float idx = attrA.w;
 
     // The monoliths are never dropped by the detail budget.
-    if ( cubeBudget < 0.75 && mod( idx, 2.0 ) > 0.5 && idx >= 200.0 )
+    float budget_k = ( mod( idx, 2.0 ) > 0.5 && idx >= 200.0 ) ? smoothstep( 0.5, 1.0, cubeBudget ) : 1.0;
+    if ( budget_k <= 0.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
@@ -216,7 +217,7 @@ void main()
         vFlat = 1.0;
     }
 
-    world += attrA.xyz * scale;
+    world += attrA.xyz * scale * budget_k;
 
     vec3 vp = vec3( world.x, world.y + 4.0, world.z );
     vp.x -= eyeOff;

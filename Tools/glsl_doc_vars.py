@@ -302,7 +302,7 @@ VAR_DOCS = {
     "mesh2VertexCount": "Vertices of the scene's second mesh.",
     "meshCenter2": "Centre of the second mesh's bounding box.",
     "meshExtent2": "Half size of the second mesh's bounding box.",
-    "cubeBudget": "Number of cubes the scene may draw (the host's instance budget).",
+    "cubeBudget": "FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5",
     "genPass": "1 while the generation pass runs (it fills the state buffer once), 0 in the frames after.",
     "frameIndex": "Frame counter since the scene started.",
     # ---- the chain labs and their passes (Tools/scenegen/make_chainpass.py, EffectShader's chain runner)

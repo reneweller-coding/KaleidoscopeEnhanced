@@ -24,7 +24,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform float cubeBudget; ///< Number of cubes the scene may draw (the host's instance budget).
+uniform float cubeBudget; ///< FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5
 
 uniform float audioAdvance;      ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                  ///< backwards).
@@ -102,7 +102,8 @@ void main()
     float i = attrA.w;
 
     // FPS budget
-    if ( cubeBudget < 0.75 && mod( i, 2.0 ) > 0.5 )
+    float budget_k = ( mod( i, 2.0 ) > 0.5 ) ? smoothstep( 0.5, 1.0, cubeBudget ) : 1.0;
+    if ( budget_k <= 0.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
@@ -135,7 +136,7 @@ void main()
     // Tile dimensions: thin levitating superconductor plates
     vec3 local_corner = attrA.xyz;
     vec3 tile_size = vec3( 0.85, 0.12, 0.85 );
-    vec3 tile_pos = local_corner * tile_size;
+    vec3 tile_pos = local_corner * tile_size * budget_k;
 
     // Quantum magnetic tilt along surface normal gradient
     float tilt_angle_x = cos( wave_phase ) * 0.25 * tlt;

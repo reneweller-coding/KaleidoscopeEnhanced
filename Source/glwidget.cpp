@@ -972,6 +972,10 @@ void GLwidget::initializeGL()
     if ( refresh_ms < 1 )
         refresh_ms = 1;
     m_displayHz = ( refresh_ms > 0 ) ? 1000.0f / static_cast<float>( refresh_ms ) : 60.0f;
+    // The cube detail budget weighs the frame rate against what the panel shows (RenderPipeline::stepCubeBudget()).
+    RenderPipeline::M_DisplayHz = ( screen() && screen()->refreshRate() > 20.0 )
+                                      ? static_cast<float>( screen()->refreshRate() )
+                                      : m_displayHz;
     fprintf( stderr, "Render timer: %d ms (%.1f Hz display)\n",
              refresh_ms, screen() ? screen()->refreshRate() : 0.0 );
     startTimer( refresh_ms );

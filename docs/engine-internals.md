@@ -132,7 +132,9 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   min == max time ranges) no longer crash with a silent division by zero —
   they fall back with a clear stderr warning.
 - **Spout output (`-o`):** publishes the displayed frame as Spout sender
-  "Kaleidoscope" for OBS / Resolume / any Spout receiver (Spout2 SDK
+  "Kaleidoscope" for OBS / Resolume / any Spout receiver -- since 16.10.2026
+  really the displayed one, sent after the present pass with the limiter,
+  blackout, grade and titles (`spoutSource=clean` in the ini: the raw render) (Spout2 SDK
   vendored under `ThirdParty/SpoutGL`, BSD-2; isolated in its own
   translation unit so its GL extension loading never collides with the
   app's own `glcore` loader).
@@ -251,11 +253,12 @@ Audio is captured via WASAPI loopback (`AudioAnalyzer`) and analysed in real tim
   sweep (one full swing per 4 beats, phase-offset per corner), mood-coloured
   with a slightly different hue each, flashing on the beat with extra punch
   on the downbeat.  Silent on speech/silence (gated the same way the beat
-  pulse is).  Layered on top: a **colour chase** that steps the flash
-  emphasis through the four corners once per onset; a soft **haze** —
+  pulse is).  Layered on top: a **colour chase** that moves the flash
+  emphasis on by one corner per onset (gliding over ~200 ms since
+  16.10.2026, it used to jump); a soft **haze** —
   a wider, dimmer glow around each beam, as if scattering in stage fog, for
   a 3-D look; a slowly rotating **mirror-ball** speckle field of twinkling
-  dots; and a rotating **gobo** wheel — a fan of light rays from screen
+  dots (each off its grid cell and of its own size); and a rotating **gobo** wheel — a fan of light rays from screen
   centre, fading out toward the middle so it never washes the picture.
 - **Real bloom:** a two-pass Gaussian bloom (quarter-res bright-pass + separable
   blur) replaces the old single-mip glow — soft halos around bright detail.
@@ -4696,3 +4699,41 @@ things the show had long been playing.
   device is chosen by name (midiDevice), and the log lists the inputs.
 
 `Kaleidoscope.exe -q` shows each old way failing beside the new one (93 checks).
+
+## 16.10.2026 (6): what leaves the window, and how it moves
+
+The second round of the idea list: the output, and four places where the picture jumped.
+
+- **Spout sends the displayed frame.** It was sent before the present pass, at the render size: without the
+  brightness limiter, the blackout, the grade, the stereo packing, titles and lyrics -- a projector fed through
+  Spout bypassed the photosensitivity limiter, and 'b' left the Spout picture running. It now goes out after the
+  present pass from the window's framebuffer at the display size (Spout's SendFbo). Checked end to end with a
+  second instance receiving it (`-i Kaleidoscope`): the sender's blackout turns the receiver's picture black.
+  `spoutSource=clean` in the ini sends the raw render, for a mixer that limits on its own. The 700-ms preset
+  crossfade and the text overlays are painted later by QPainter and stay out of both.
+- **The cube budget.** Fixed thresholds of 45 and 57 fps kept a 50-Hz panel at half detail for good after one slow
+  phase and halved a 30-Hz one from the first frame; the switch made every 2nd cube vanish in one frame.
+  RenderPipeline::stepCubeBudget() compares the frame rate with the panel's (below 75 % down, above 95 % up, the
+  rate capped at 72 like the adaptive resolution) and glides half the range per second; the twelve cube shaders
+  shrink every 2nd cube with smoothstep(0.5, 1, cubeBudget) and skip it only once it is gone. The geom="indirect"
+  scenes no longer see the budget: a cut of their vertex count drops whichever triangles atomicAdd handed out last,
+  a different set every frame, and none of them costs more than ~3 ms (.screen/scene-cost.json).
+- **The stage lamps.** The chase stepped a quarter turn per onset, so one corner's light fell and the next rose in
+  the same frame over a large area. It now glides there (about 200 ms, at most 1.25 turns/s, unwrapped so the wrap
+  never runs backwards, at most half a turn queued). The mirror-ball dots sat on the centres of a 16x9 grid; each
+  is now off its centre by up to 0.2 cell and has its own size, offset plus radius inside the cell so none is cut.
+- **The recorder's NVENC** got the ceiling the export found (`-rc vbr -b:v 0 -maxrate -bufsize`, 60 Mbit/s at
+  1080p60, scaled with the pixel rate to the 3/4 power): without it `-cq 20` was capped by the level -- a noisy
+  1080p30 test came out at 20 Mbit/s, with it at the 41 Mbit/s the quality needs.
+- **The key's hue on the circle of fifths.** chromaHue was the chroma's circular mean on the chromatic circle, where
+  a key's notes spread around the whole wheel: I-IV-V moved the hue by up to 150 degrees, and in broadband music
+  noise steered it more than the key. Pitch class i now sits at 2*pi * (7i mod 12) / 12 (the HCDF's fifths
+  projection); related keys are neighbouring colours. The self-test plays C, F and G major: 53/23/86 degrees
+  (computed 50/20/80), against a spread of 164 degrees on the chromatic circle. Every key has a new colour.
+
+Found on the way: the chroma files tones below about 400 Hz under the wrong pitch class -- a 2048-point FFT's bin
+(23 Hz at 48 kHz) is wider than a semitone there, and each bin goes whole to the class of its centre frequency. A C
+major triad in octave 3 came out as C#, F# and A#. That is the later idea "chroma with semitone resolution in the
+bass"; the self-test plays its chords in octave 5 until then.
+
+`Kaleidoscope.exe -q`: 98 checks.

@@ -35,6 +35,19 @@ void spoutOutSend( unsigned int glTexture, unsigned int width, unsigned int heig
     s_spout->SendTexture( glTexture, GL_TEXTURE_2D, width, height );
 }
 
+void spoutOutSendFbo( unsigned int fbo, unsigned int width, unsigned int height )
+{
+    if ( !s_spout || width == 0 || height == 0 )
+        return;
+    // Blits from the bound framebuffer into the shared texture (flipped to DirectX's top-down rows) and binds fbo
+    // again afterwards.  A failure is said once per run of failures, not 60 times a second.
+    static bool failing = false;
+    const bool  ok = s_spout->SendFbo( fbo, width, height );
+    if ( !ok && !failing )
+        fprintf( stderr, "SPOUT: sending the %ux%u frame failed\n", width, height );
+    failing = !ok;
+}
+
 void spoutOutRelease()
 {
     if ( s_spout )
@@ -57,6 +70,9 @@ bool spoutOutInit( const char * )
     return false;
 }
 void spoutOutSend( unsigned int, unsigned int, unsigned int )
+{
+}
+void spoutOutSendFbo( unsigned int, unsigned int, unsigned int )
 {
 }
 void spoutOutRelease()

@@ -369,12 +369,24 @@ AudioFeatures AudioConditioner::update( const AudioFeatures &audio, float rawDt,
     m_spreadSmooth += ( audio.spectralSpread - m_spreadSmooth ) * ( 1.f - expf( -dt / 1.5f ) );
     audio_fx.spectralSpread = m_spreadSmooth;
 
-    // Colour-chase phase: advance a quarter-turn on each fresh onset (music-
-    // gated), so the corner cones light up in sequence (a chase / Lauflicht).
+    // Colour-chase phase: the target advances a quarter-turn on each fresh onset (music-gated), so the corner cones
+    // light up in sequence (a chase / Lauflicht).  The lamps follow it, a quarter turn in about 200 ms and never
+    // faster than 1.25 turns/s: stepped, as it was, the old corner fell and the new one rose in the same frame -- a
+    // jump in the brightness of a large corner area.  Unwrapped until both are past a whole turn, so the wrap never
+    // runs backwards; a run of onsets queues at most half a turn ahead.
     float onset_gated = audio.onsetStrength * gate;
     if ( onset_gated > 0.30f && m_prevChaseOnset <= 0.15f )
-        m_chasePhase = fmodf( m_chasePhase + 0.25f, 1.0f );
+        m_chaseTarget = std::min( m_chaseTarget + 0.25f, m_chasePhase + 0.5f );
     m_prevChaseOnset = onset_gated;
+    {
+        const float cap = 1.25f * dt;
+        m_chasePhase += std::clamp( ( m_chaseTarget - m_chasePhase ) * ( 1.f - expf( -dt / 0.07f ) ), -cap, cap );
+        if ( m_chasePhase >= 1.f )
+        {
+            m_chasePhase -= 1.f;
+            m_chaseTarget -= 1.f;
+        }
+    }
 
     audio_fx.audioRotPhase = m_audioRotPhase;
     audio_fx.audioAdvance = m_audioAdvance;

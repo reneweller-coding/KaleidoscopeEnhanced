@@ -636,6 +636,9 @@ public:
 
     // Spout output (CLI -o): publish the displayed frame as sender "Kaleidoscope".
     static bool M_SpoutEnabled; ///< Whether the Spout output sender ("Kaleidoscope") is enabled (CLI -o).
+    /// Whether Spout sends the raw render (ini spoutSource=clean) instead of the displayed frame, which carries the
+    /// brightness limiter, the blackout, the grade, titles and lyrics.
+    static bool M_SpoutClean;
 
     /** Video export (VideoExport.h): every frame is exactly this long, in seconds; 0 = a live show on the wall clock.
      *
@@ -1339,6 +1342,30 @@ private:
      *   Changes Scene3DShader::M_CubeBudget.
      **/
     FrameTiming readFrameClock();
+
+public:
+    /** The frame-rate watch behind the cube detail budget (see stepCubeBudget()). */
+    struct CubeBudgetClock
+    {
+        float fpsEma = 0.f; ///< Moving average of the frame rate; 0 = not started (it starts at the panel's rate).
+        float want = 1.f;   ///< Where the budget is heading: 1 (all cubes) or 0.5 (every 2nd one shrunk away).
+    };
+    /**  One frame of the cube detail budget: below 3/4 of the panel's rate it heads for 0.5, above 95 % back to 1,
+     * gliding half the range per second.
+     *
+     * @param budget     The budget now, 0.5..1. (in)
+     * @param clock      The frame-rate watch. (in,out)
+     * @param dtWall     This frame's wall-clock step in seconds; a hitch of 0.5 s or more changes nothing. (in)
+     * @param displayHz  The panel's refresh rate (M_DisplayHz); counted up to 72 Hz. (in)
+     *
+     * @return
+     *   The budget for this frame.
+     **/
+    static float stepCubeBudget( float budget, CubeBudgetClock &clock, float dtWall, float displayHz );
+    /// The refresh rate the render timer was paced to (glwidget), the reference for the cube detail budget.
+    static float M_DisplayHz;
+
+private:
     /**  Applies VJ freeze ('e'), VJ pin ('u') and the DJ-stop break-hold to the scene time step.
      *
      * @param audio                  This frame's raw features. (in)
@@ -1515,9 +1542,8 @@ private:
      *   Changes EffectShader::M_OitPass.
      **/
     void renderOitPass( EffectShader *fx, GLuint depthTex, GLuint targetFbo );
-    // FPS EMA for the cube-scene detail budget (see paint()).
-    float m_cubeFpsEma = 60.f; ///< Exponential moving average of the frame rate, driving Scene3DShader::M_CubeBudget
-                               ///< (drops detail below ~45 fps, restores it above ~57 fps).
+    /// The frame-rate watch driving Scene3DShader::M_CubeBudget (stepCubeBudget(): relative to the panel's rate).
+    CubeBudgetClock m_cubeClock;
     // TRUE-STEREO state (real per-eye rendering of a solo 3D scene):
     // hold = a 3D scene is solo while SBS/TB stereo is on (freezes combine
     // switching); now = additionally the combine is solo -> the scene renders

@@ -55,7 +55,7 @@ uniform float     audioBeat;      ///< beat → extra bloom on hits
 uniform float     audioDownbeat;  ///< bigger accent on the bar's "1"
 uniform float     audioOnset;     ///< full-spectrum onset (snares/claps/melodic) → cone pulse
 uniform float     time;           ///< for the slow moving-head beam sweep
-uniform float     audioChase;     ///< 0..1, steps 1/4 each onset → corner-cone colour chase
+uniform float     audioChase;     ///< 0..1, glides 1/4 per onset (~200 ms) → corner-cone colour chase
 uniform float     lightShow;      ///< 1 = stage lamps (cones/haze/mirror-ball/gobo) on, 0 = off
 uniform float     audioSwell;     ///< slow loudness build (ambient dynamics) → glow breathing
 uniform float     audioBarPhase;  ///< 0..1 position within the 4-beat bar → per-bar lamp sweep
@@ -568,7 +568,7 @@ void main()
         vec2  d2 = rot2( normalize( ctr - c2 ), sw_amp * sin( sw_ph + 3.3 ) );
         vec2  d3 = rot2( normalize( ctr - c3 ), sw_amp * sin( sw_ph + 5.0 ) );
 
-        // Colour CHASE: emphasis cycles through the corners (audioChase steps 1/4
+        // Colour CHASE: emphasis cycles through the corners (audioChase glides 1/4
         // on each onset).  Non-active corners keep a 0.45 base so all stay alive.
         float cw0 = 0.45 + 0.55 * ( 1.0 - smoothstep( 0.0, 0.25, abs( fract( audioChase - 0.00 + 0.5 ) - 0.5 ) ) );
         float cw1 = 0.45 + 0.55 * ( 1.0 - smoothstep( 0.0, 0.25, abs( fract( audioChase - 0.25 + 0.5 ) - 0.5 ) ) );
@@ -597,11 +597,15 @@ void main()
 
         // MIRROR-BALL speckle: a slowly rotating field of soft twinkling light dots
         // (disco-ball), music-gated so it fades in with the music.
-        vec2  mb = rot2( uv - 0.5, time * 0.06 );
-        vec2  cell = mb * vec2( 16.0, 9.0 );
-        vec2  idc = floor( cell );
-        vec2  fc = fract( cell ) - 0.5;
-        float dotm = smoothstep( 0.42, 0.0, length( fc ) ) * step( 0.62, hash21( idc ) );
+        vec2 mb = rot2( uv - 0.5, time * 0.06 );
+        vec2 cell = mb * vec2( 16.0, 9.0 );
+        vec2 idc = floor( cell );
+        // Each dot sits off its cell's centre by up to 0.2 cell and has its own size (a ball's facets are not a
+        // grid); offset plus radius stay within half a cell, so no dot is cut at a cell edge.
+        vec2  fc = fract( cell ) - 0.5
+                   - 0.4 * ( vec2( hash21( idc + 17.3 ), hash21( idc + 41.9 ) ) - 0.5 );
+        float dot_r = 0.20 + 0.10 * hash21( idc + 73.1 );
+        float dotm = smoothstep( dot_r, 0.0, length( fc ) ) * step( 0.62, hash21( idc ) );
         float tw = 0.5 + 0.5 * sin( time * 2.5 + hash21( idc ) * 31.0 );
         c += hueRotate( vec3( 0.85, 0.85, 0.95 ), audioChromaHue + 0.5 )
              * dotm * tw * 0.12 * ( 0.2 + 0.8 * audioLevel );

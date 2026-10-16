@@ -118,10 +118,10 @@ public:
     {
         return m_gateSmooth;
     }
-    /**  0..1 corner-cone colour-chase phase, advances 1/4 turn per onset.
+    /**  The corner-cone colour-chase phase.
      *
      * @return
-     *   0..1 corner-cone colour-chase phase, advances 1/4 turn per onset.
+     *   0..1, gliding a quarter turn per onset (about 200 ms each); continuous across the wrap at 1.
      **/
     float chasePhase() const
     {
@@ -329,7 +329,8 @@ private:
                                  ///< seeded).
 
     // ---- colour-chase ----
-    float m_chasePhase = 0.f;     ///< 0..1, advances 1/4 each onset -> corner-cone colour chase.
+    float m_chasePhase = 0.f;     ///< 0..1, the lamps' chase phase, gliding after m_chaseTarget.
+    float m_chaseTarget = 0.f; ///< Where the chase is heading: +1/4 per onset, unwrapped (m_chasePhase + 0.5 at most).
     float m_prevChaseOnset = 0.f; ///< Previous onset value (rising-edge detect for the chase).
 
     // ---- chroma-hue slew ----

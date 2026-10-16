@@ -20,7 +20,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform float cubeBudget; ///< FPS detail budget: <1 -> drop every 2nd cube
+uniform float cubeBudget; ///< FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5
 
 uniform float audioAdvance;       ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                                   ///< backwards).
@@ -102,8 +102,9 @@ vec3 hueRot( vec3 c, float a )
 /** Entry point of this shader stage (the file description says what it draws). */
 void main()
 {
-    // FPS budget: below full detail, every 2nd rock collapses.
-    if ( cubeBudget < 0.75 && mod( attrA.w, 2.0 ) > 0.5 )
+    // FPS budget (gliding 1 -> 0.5): every 2nd rock shrinks away with it and is not drawn once gone.
+    float budget_k = ( mod( attrA.w, 2.0 ) > 0.5 ) ? smoothstep( 0.5, 1.0, cubeBudget ) : 1.0;
+    if ( budget_k <= 0.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
@@ -151,7 +152,7 @@ void main()
     // Squash into an irregular shard.
     c *= vec3( 1.0, 0.55 + 0.8 * r2, 0.7 + 0.6 * r3 );
 
-    vec3 world = centre + c * s;
+    vec3 world = centre + c * s * budget_k;
 
     vec3 vp = world;
     vp.x -= eyeOff;

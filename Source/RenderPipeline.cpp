@@ -67,6 +67,8 @@ float RenderPipeline::M_RenderScaleMax = 1.0f; // no supersampling unless asked 
 bool  RenderPipeline::M_RenderScaleFromCli = false;
 float RenderPipeline::M_LightShow = 0.0f;     // corner lamps / light-show OFF by default
 bool  RenderPipeline::M_SpoutEnabled = false; // Spout sender (CLI -o)
+bool  RenderPipeline::M_SpoutClean = false;   // Spout sends the displayed frame, not the raw render
+float RenderPipeline::M_DisplayHz = 60.f;     // the panel rate (glwidget sets it)
 float RenderPipeline::M_LatencyLead = 0.05f;  // display-phase lead vs. heard audio
 float RenderPipeline::M_FrameStep = 0.f;      // video export: fixed frame step (0 = live, wall clock)
 int   RenderPipeline::M_StereoMode = 0;       // stereoscopic output (CLI -3 / 'z')
@@ -158,6 +160,7 @@ void RenderPipeline::loadSettings()
         M_MoodStrength = clampParam( qEnvironmentVariable( "KALEIDO_MOOD" ).toFloat(), 0.f, 2.5f );
     M_LatencyLead = clampParam( s.value( "latencyLead", M_LatencyLead ).toFloat(), 0.f, 0.25f );
     M_StereoMode = s.value( "stereoMode", M_StereoMode ).toInt() & 3;
+    M_SpoutClean = s.value( "spoutSource" ).toString().trimmed().compare( "clean", Qt::CaseInsensitive ) == 0;
     // Photo source. Empty (the shipped default) means "whatever the preset
     // says", which is the bundled Images/ folder -- see init().
     M_ImageDirUser = s.value( "imageDirectory", M_ImageDirUser ).toString().trimmed();
@@ -1712,20 +1715,31 @@ RenderPipeline::FrameTiming RenderPipeline::readFrameClock()
     // must keep moving even over a frozen picture).
     const float dt_wall = time_since_last_frame_sec;
 
-    // FPS-driven detail budget for the heavy cube scenes: below ~45 fps every
-    // 2nd cube is dropped (uniform `cubeBudget`, hysteresis so it never
-    // oscillates); above ~57 fps full detail returns.
-    if ( dt_wall > 1e-4f && dt_wall < 0.5f )
-    {
-        float fps = 1.f / dt_wall;
-        m_cubeFpsEma += 0.05f * ( fps - m_cubeFpsEma );
-        if ( m_cubeFpsEma < 45.f && Scene3DShader::M_CubeBudget > 0.75f )
-            Scene3DShader::M_CubeBudget = 0.5f;
-        else if ( m_cubeFpsEma > 57.f && Scene3DShader::M_CubeBudget < 0.75f )
-            Scene3DShader::M_CubeBudget = 1.f;
-    }
+    Scene3DShader::M_CubeBudget = stepCubeBudget( Scene3DShader::M_CubeBudget, m_cubeClock, dt_wall, M_DisplayHz );
 
     return { time_since_last_frame_sec, dt_wall };
+}
+
+float RenderPipeline::stepCubeBudget( float budget, CubeBudgetClock &clock, float dtWall, float displayHz )
+{
+    // A hitch (a shader link, a minimised window) says nothing about the GPU's steady load.
+    if ( dtWall <= 1e-4f || dtWall >= 0.5f )
+        return budget;
+    // What the panel can show, capped at 72 like the adaptive resolution (glwidget updateAdaptiveScale()): fixed
+    // 45/57 fps, as before, kept a 50-Hz panel at half detail for good after one slow phase and halved a 30-Hz one
+    // from the first frame.
+    const float target = displayHz > 20.f ? std::min( displayHz, 72.f ) : 60.f;
+    if ( clock.fpsEma <= 0.f )
+        clock.fpsEma = target;
+    clock.fpsEma += 0.05f * ( 1.f / dtWall - clock.fpsEma );
+    if ( clock.fpsEma < 0.75f * target )
+        clock.want = 0.5f;
+    else if ( clock.fpsEma > 0.95f * target )
+        clock.want = 1.f;
+    // Half the range per second: the odd cubes shrink away (and grow back) over about a second instead of
+    // vanishing in one frame.
+    const float step = 0.5f * dtWall;
+    return budget + std::clamp( clock.want - budget, -step, step );
 }
 
 void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float &timeSinceLastFrameSec, float dtWall )
@@ -2899,17 +2913,27 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     const GLuint present_source =
         renderTrailsPass( audio, audio_fx, time_since_last_frame_sec, dt_wall );
 
-    // Spout output (-o): publish the displayed frame for OBS / Resolume etc.
-    // (Needs the GL context, which is current here; texture-share via DX interop.)
+    glcoreDebugMark( "present" );
+    runPresentPass( present_source, audio, audio_fx, time_since_last_frame_sec, dt_wall );
+
+    // Spout output (-o): publish the displayed frame for OBS / Resolume etc. -- the one the present pass just wrote,
+    // so the receiver gets what the room sees: the brightness limiter, the blackout, the grade, the stereo packing,
+    // titles and lyrics, at the display size.  (Sent before it, as it once was, a projector fed by Spout bypassed the
+    // photosensitivity limiter.)  spoutSource=clean in the ini sends the raw render instead, for a mixer that grades
+    // and limits on its own.  The window's text overlays and the preset crossfade are painted later by QPainter and
+    // stay out either way.  Needs the GL context, which is current here; texture-share via DX interop.
     if ( M_SpoutEnabled )
     {
         if ( !m_spoutStarted )
             m_spoutStarted = spoutOutInit( "Kaleidoscope" );
-        spoutOutSend( present_source, m_width, m_height );
+        if ( M_SpoutClean )
+            spoutOutSend( present_source, m_width, m_height );
+        else
+        {
+            glBindFramebuffer( GL_FRAMEBUFFER, m_defaultFBO );
+            spoutOutSendFbo( m_defaultFBO, m_displayW, m_displayH );
+        }
     }
-
-    glcoreDebugMark( "present" );
-    runPresentPass( present_source, audio, audio_fx, time_since_last_frame_sec, dt_wall );
     checkGLErrors( "paint() 2" );
 }
 

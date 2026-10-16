@@ -21,7 +21,7 @@ in vec4 attrB; ///< Vertex attribute B (meaning per geometry kind; e.g. normal o
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform float cubeBudget; ///< FPS detail budget: <1 -> drop every 2nd cube
+uniform float cubeBudget; ///< FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5
 
 uniform float audioSpectrum[32]; ///< Spectrum bands, 0..1.
 uniform float audioBass;         ///< Bass band level, 0..1.
@@ -56,9 +56,10 @@ void main()
 {
     float idx = attrA.w;
 
-    // FPS budget: below full detail, every 2nd cube collapses (vertical
+    // FPS budget (gliding 1 -> 0.5): every 2nd cube shrinks away with it and is not drawn once gone (vertical
     // pairing keeps every meter column alive, just half as dense).
-    if ( cubeBudget < 0.75 && mod( floor( idx / 98.0 ), 2.0 ) > 0.5 )
+    float budget_k = ( mod( floor( idx / 98.0 ), 2.0 ) > 0.5 ) ? smoothstep( 0.5, 1.0, cubeBudget ) : 1.0;
+    if ( budget_k <= 0.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vCol = vec4( 0.0 );
@@ -114,7 +115,7 @@ void main()
     // Cube corners tangent to the wall.
     vec3 tangent = vec3( -sin( ang ), 0.0, cos( ang ) );
     vec3 normal = vec3( -cos( ang ), 0.0, -sin( ang ) );
-    vec3 c = attrA.xyz;
+    vec3 c = attrA.xyz * budget_k;
     vec3 world = centre
                  + tangent * c.x * 1.55
                  + vec3( 0.0, c.y * 1.55, 0.0 )

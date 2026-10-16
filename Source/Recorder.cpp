@@ -11,6 +11,7 @@
  */
 
 #include <algorithm>
+#include <cmath>
 #include <mutex>
 #include <chrono>
 #include <thread>
@@ -22,6 +23,7 @@
 #include <QtCore/QProcess>
 #include <QtCore/QSettings>
 #include <QtCore/QStringList>
+#include <QtGui/QImageReader>
 
 #include "glcore.h"       // core-profile entry points (PBO functions)
 #include "shader_setup.h" // setShaders() for the accumulation pass
@@ -304,6 +306,36 @@ static QStringList videoCodecArgs()
     std::call_once( g_codecOnce, []
     { g_codecArgs = computeVideoCodecArgs(); } );
     return g_codecArgs;
+}
+
+/**  The codec arguments for a stream of this size and rate: the probed encoder's, plus NVENC's ceiling.
+ *
+ * @param w    Frame width in pixels; 0 leaves the ceiling out. (in)
+ * @param h    Frame height in pixels; 0 leaves the ceiling out. (in)
+ * @param fps  Frame rate; 0 leaves the ceiling out. (in)
+ *
+ * @return
+ *   videoCodecArgs(), with "-rc vbr -b:v 0 -maxrate -bufsize" added when the encoder is NVENC.
+ *
+ * NVENC's constant quality (-cq) is constant only below a VBV maximum. Without one the encoder caps at what it picks
+ * for the level -- measured for the video export (VideoExport::pickEncoder()): at 1080p60 41.5 Mbit/s for h264, so a
+ * busy scene came out at a fraction of the quality asked for. The same ceiling as there: 60 Mbit/s at 1080p60, scaled
+ * with the pixel rate to the 3/4 power, which also keeps the level one that televisions and phones play.
+ **/
+static QStringList videoCodecArgs( int w, int h, double fps )
+{
+    QStringList a = videoCodecArgs();
+    const int   at = a.indexOf( "-c:v" );
+    if ( at < 0 || at + 1 >= a.size() || !a[at + 1].endsWith( "_nvenc" ) || w <= 0 || h <= 0 || fps <= 0.0 )
+        return a;
+    const double rate = static_cast<double>( w ) * h * fps;
+    const int max_mbit = std::max( 8, static_cast<int>( 60.0 * std::pow( rate / ( 1920.0 * 1080.0 * 60.0 ), 0.75 ) ) );
+    if ( !a.contains( "-rc" ) )
+        a << "-rc" << "vbr";
+    if ( !a.contains( "-b:v" ) )
+        a << "-b:v" << "0";
+    a << "-maxrate" << QString( "%1M" ).arg( max_mbit ) << "-bufsize" << QString( "%1M" ).arg( 2 * max_mbit );
+    return a;
 }
 
 /**  Start the encoder probe on a throwaway thread now, so its answer is ready long before the mux needs it.
@@ -775,7 +807,7 @@ bool Recorder::startVideoPipe( int w, int h )
       << "-video_size" << QString( "%1x%2" ).arg( w ).arg( h )
       << "-framerate" << QString::number( recordFps() )
       << "-i" << "-"
-      << videoCodecArgs()
+      << videoCodecArgs( w, h, recordFps() )
       << m_videoPath;
 
     m_ff = new QProcess();
@@ -1137,7 +1169,13 @@ void Recorder::saveReplay()
         args << "-ss" << QString::number( std::max( 0.f, wav_len - total ), 'f', 2 )
              << "-i" << ( dir + "/audio.wav" );
     }
-    args << videoCodecArgs();
+    {
+        // The frames are JPEGs of one size (at most 720 px tall); their rate is what the ring held.
+        QBuffer      first( &frames[0].jpg );
+        const QSize  sz = QImageReader( &first ).size();
+        const double fps = total > 0.f ? static_cast<double>( frames.size() ) / total : 0.0;
+        args << videoCodecArgs( sz.width(), sz.height(), fps );
+    }
     if ( have_audio )
         args << "-c:a" << "aac";
     args << "-shortest" << ( dir + "/replay.mp4" );
@@ -1298,16 +1336,18 @@ void Recorder::finishRecording()
             lf.write( data );
             lf.close();
         }
+        const QSize       first = QImageReader( m_recDir + "/frame_000000.jpg" ).size();
+        const QStringList codec = videoCodecArgs( first.width(), first.height(), recordFps() );
         args << "-y" << "-f" << "concat" << "-safe" << "0" << "-i" << list_path
              << "-i" << ( m_recDir + "/audio.wav" )
-             << videoCodecArgs() << "-c:a" << "aac"
+             << codec << "-c:a" << "aac"
              << "-shortest" << ( m_recDir + "/kaleidoscope.mp4" );
         // Mirror whatever the probe actually selected, so the manual fallback is
         // not silently slower than the automatic mux beside it.
         bat_cmd = QString( "@echo off\r\ncd /d \"%~dp0\"\r\n"
                            "ffmpeg -y -f concat -safe 0 -i frames.txt -i audio.wav %1 "
                            "-c:a aac -shortest kaleidoscope.mp4\r\npause\r\n" )
-                      .arg( videoCodecArgs().join( ' ' ) );
+                      .arg( codec.join( ' ' ) );
     }
 
     QFile bf( m_recDir + "/make_video.bat" );

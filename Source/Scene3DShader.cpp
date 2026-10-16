@@ -998,23 +998,15 @@ void Scene3DShader::runGenerator( float time )
     // just cheap insurance against that changing later).
     static GLuint clamp_loc_prog = 0;
     static GLint  clamp_loc_max_v = -1;
-    static GLint  clamp_loc_budget = -1;
     if ( clamp_loc_prog != M_ClampProg )
     {
         clamp_loc_max_v = glGetUniformLocation( M_ClampProg, "maxVertices" );
-        clamp_loc_budget = glGetUniformLocation( M_ClampProg, "budget" );
         clamp_loc_prog = M_ClampProg;
     }
     if ( clamp_loc_max_v >= 0 )
         glUniform1ui( clamp_loc_max_v, static_cast<GLuint>( m_meshCapacity ) );
-    // Same FPS-driven detail knob GEOM_CUBES scenes already read as
-    // `cubeBudget` -- indirect generators had no way to shed triangles under
-    // load before this. GLSL floats default to 0 (not 1) when never set, so
-    // this MUST be uploaded every dispatch, not just when it changes -- a
-    // missed upload after a program relink would silently clamp every
-    // indirect scene to zero vertices.
-    if ( clamp_loc_budget >= 0 )
-        glUniform1f( clamp_loc_budget, M_CubeBudget );
+    // No FPS budget here (it was, until 16.10.2026): a lower vertex count drops whichever triangles atomicAdd handed
+    // out last, a different set every frame -- flicker, where the cube scenes shrink a fixed half smoothly.
     glDispatchCompute( 1, 1, 1 );
 
     // Three consumers to fence against: the vertex puller, the indirect command

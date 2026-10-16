@@ -26,7 +26,7 @@ in vec4 attrB; ///< 4 random seeds in [0,1)
 uniform mat4  projM;      ///< Projection matrix.
 uniform float eyeOff;     ///< Stereo eye offset (0 in mono).
 uniform float time;       ///< Seconds since the program started (never reset; see sceneTime).
-uniform float cubeBudget; ///< Number of cubes the scene may draw (the host's instance budget).
+uniform float cubeBudget; ///< FPS detail budget gliding 1..0.5: every 2nd cube shrinks with it, gone at 0.5
 
 uniform float audioAdvance;   ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                               ///< backwards).
@@ -102,7 +102,8 @@ void main()
 {
     float i = attrA.w;
 
-    if ( cubeBudget < 0.75 && mod( i, 2.0 ) > 0.5 )
+    float budget_k = ( mod( i, 2.0 ) > 0.5 ) ? smoothstep( 0.5, 1.0, cubeBudget ) : 1.0;
+    if ( budget_k <= 0.0 )
     {
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
         vNormal = vec3( 0.0, 0.0, 1.0 );
@@ -159,7 +160,7 @@ void main()
     // origin looking down +Z; the disc is ahead of it, so the resting facet
     // normal points toward -Z).
     vec3 plate_size = vec3( 0.34, 0.34, 0.045 ) * shard_v;
-    vec3 local_corner = tilt_r * ( attrA.xyz * plate_size );
+    vec3 local_corner = tilt_r * ( attrA.xyz * plate_size * budget_k );
 
     vec3 world_p = vec3( xy, 6.4 + ring * 0.55 + dome_curve );
     vec3 final_world = world_p + local_corner;

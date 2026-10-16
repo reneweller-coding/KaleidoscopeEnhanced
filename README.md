@@ -627,7 +627,7 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-l`          | Log to `kaleidoscope.log` instead of the console (kiosk)          |
 | `-r`          | Start recording immediately on launch                             |
 | `-w <wav>`    | Offline: analyze this WAV instead of capturing live audio (test)  |
-| `-o`          | Spout output: publish the frame as sender "Kaleidoscope"           |
+| `-o`          | Spout output: publish the displayed frame (brightness limiter, blackout, titles) as sender "Kaleidoscope"; `spoutSource=clean` in the ini sends the raw render |
 | `-t <port>`   | Web remote port (default 8080; `-t 0` disables it)                 |
 | `-x <wav>`    | Batch render: record this WAV to an mp4, then exit                |
 | `-k <file>`   | Score cues for the `-w`/`-x` WAV, from a file (see [Score cues](#score-cues-letting-a-generator-say-where-the-bars-are)) |
