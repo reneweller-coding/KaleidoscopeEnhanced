@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "ShaderForge.h"
 #include "shader_setup.h"
 #include <set>
 #include <cstring>
@@ -111,6 +112,32 @@ QString               RenderPipeline::M_ImageDirUser; // photo source override (
  * the moment the command line set it up: after that the scene memory is neither read nor written, while the class
  * memory read before (loadSettings() runs first) only steers the export's choices.
  **/
+/**  Whether a comparison run (KALEIDO_FREEZE_TIME) still waits for programs before its fixed steps go on.
+ *
+ * @return
+ *   True while background builds (the driver's, the forge's) are running -- at most 20 s from the first call.
+ *
+ * Without vsync the 600 fixed steps take well under a second, and a frame integrated while the 3D lab's geometry was
+ * still being forged froze half-built; with vsync the steps took 5 s, and the programs had usually arrived.  Waiting
+ * for them makes every run integrate the same, at any frame rate.
+ **/
+static bool comparisonWaitsForPrograms()
+{
+    static QElapsedTimer waited;
+    static bool          said = false;
+    if ( !waited.isValid() )
+        waited.start();
+    const int  pending = shaderPrebuildPoll() + shaderForgePending();
+    const bool wait = pending > 0 && waited.elapsed() < 20000;
+    if ( !wait && !said && waited.elapsed() > 50 )
+    {
+        said = true;
+        fprintf( stderr, "FREEZE: steps went on after %.1f s waiting for programs%s\n", waited.elapsed() * 0.001,
+                 pending > 0 ? " (gave up, some still building)" : "" );
+    }
+    return wait;
+}
+
 static bool scriptedRun()
 {
     static const bool Scripted = qEnvironmentVariableIsSet( "KALEIDO_SEED" )
@@ -1950,8 +1977,8 @@ void RenderPipeline::applyTransportModifiers( const AudioFeatures &audio, float 
     if ( freezeTime() >= 0.f && !M_Freeze )
     {
         static int frames = 0;
-        timeSinceLastFrameSec = 1.f / 120.f;
-        if ( ++frames > 600 )
+        timeSinceLastFrameSec = dtWall > 0.f ? 1.f / 120.f : 0.f; // 0: waiting for programs (paint())
+        if ( dtWall > 0.f && ++frames > 600 )
         {
             M_Freeze = true;
             m_globaltime = freezeTime();
@@ -3016,7 +3043,10 @@ void RenderPipeline::paint( const float *rotMatrix, float tx, float ty, float tz
     // A comparison run (KALEIDO_FREEZE_TIME): the wall-clock slews too (exposure,
     // title, trails) step 1/120 s per frame and stop with the freeze -- the
     // frame is final the moment it freezes, not ~20 s later.
-    const float dt_wall = freezeTime() < 0.f ? ft.dtWall : ( M_Freeze ? 0.f : 1.f / 120.f );
+    // ... and before it, while the programs it asked for are still being built, everything stands (the fixed steps
+    // too, applyTransportModifiers()): every run then integrates the same, with vsync or without.
+    const bool  program_hold = freezeTime() >= 0.f && !M_Freeze && comparisonWaitsForPrograms();
+    const float dt_wall = freezeTime() < 0.f ? ft.dtWall : ( M_Freeze || program_hold ? 0.f : 1.f / 120.f );
     // A frame far beyond any real frame rate is a STALL (first-activation
     // shader compile + mesh load, a driver recompile, a suspend), not time the
     // viewer spent watching. Subtract it from the scheduler's wall clocks, or

@@ -55,6 +55,12 @@ def settings_env(env):
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 WORK = os.path.join(ROOT, ".screen")
 RELEASE = os.path.join(ROOT, "Release")
+# The folder the app runs from (its exe, its scene-cost.json); KALEIDO_SCREEN_DIR points at another build.
+APP_DIR = os.environ.get("KALEIDO_SCREEN_DIR", RELEASE)
+# The screening renders as a video export (Kaleidoscope.exe -e) on the frame clock, as fast as the GPU allows: the
+# measurement below looks at 160 x 90 at 5 fps, and the scene cost is the GPU time of each frame at the size a show
+# runs at.  Until 16.10.2026 it was a real-time recording (-x): 1430 scenes x 8 s = more than three hours of waiting.
+EXPORT_SIZE, EXPORT_FPS = "1920x1080", 15
 KOMPLETT = os.path.join(ROOT, "Presets", "Komplett.xml")
 
 # Analysis raster.  160x90 is small on purpose: it is a structure measure, not
@@ -297,6 +303,7 @@ def decodable(vid):
 
 
 def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env=None):
+    """One chunk as a video export; returns the video's path (None if there is none)."""
     # Die Engine liest KALEIDO_SCENE_SWEEP mit qEnvironmentVariableIntValue:
     # "12.0" ergibt dort 0 und der Sweep laeuft schlicht nicht an -- die
     # Aufnahme sieht dann wie ein normaler Lauf aus und liefert null Fenster.
@@ -327,10 +334,15 @@ def render(cfg, wav, log_path, hold, seed, kind="scene", time_start=0, extra_env
         env["KALEIDO_MAX_RUNTIME_SECS"] = str(int(secs + 120))
         env["KALEIDO_NO_ACTIVATE"] = "1"
         below = 0x00004000 if os.name == "nt" else 0
-        subprocess.run([os.path.join(RELEASE, "Kaleidoscope.exe"),
-                        "-c", "Test" + cfg, "-x", wav],
-                       cwd=RELEASE, env=env, stdout=fh, stderr=subprocess.STDOUT,
+        vid = os.path.join(WORK, "%s.mp4" % cfg)
+        if os.path.exists(vid):
+            os.remove(vid)
+        subprocess.run([os.path.join(APP_DIR, "Kaleidoscope.exe"),
+                        "-c", "Test" + cfg, "-e", wav, "-g", EXPORT_SIZE, "-p", str(EXPORT_FPS), "-d", vid,
+                        "-j", "nofade", "-t", "0"],
+                       cwd=APP_DIR, env=env, stdout=fh, stderr=subprocess.STDOUT,
                        creationflags=below)
+    return vid if os.path.exists(vid) else None
 
 
 # --------------------------------------------------------------- measure ----
@@ -496,12 +508,10 @@ def measure_scenes(names, hold, seed=1, time_start=0, extra_env=None):
     if not os.path.exists(wav):
         write_wav(wav, need)
     log = os.path.join(WORK, "%s.log" % cfg)
-    render(cfg, wav, log, hold, seed, "scene", time_start, extra_env)
-    folder = newest_recording()
-    vid = wait_for_video(folder) if folder else None
+    vid = render(cfg, wav, log, hold, seed, "scene", time_start, extra_env)
     rows = measure(vid, log, hold) if vid else []
-    if folder and rows:
-        subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
+    if vid and rows:
+        os.remove(vid)
     p = os.path.join(ROOT, "Presets", cfg + ".xml")
     if os.path.exists(p):
         os.remove(p)
@@ -791,27 +801,26 @@ def main():
         for si in range(max(1, a.seeds)):
             seed = a.seed + si
             log = os.path.join(WORK, "%s.log" % cfg)
-            print("  %s: rendern (%d Szenen, Seed %d, ~%.0f min) ..."
+            t_render = time.time()
+            print("  %s: rendern (%d Szenen, Seed %d, %.0f min Video) ..."
                   % (cfg, count, seed, (count * a.hold + 40) / 60.0))
-            render(cfg, wav, log, a.hold, seed, a.kind, a.time_start)
-            folder = newest_recording()
-            vid = wait_for_video(folder) if folder else None
+            vid = render(cfg, wav, log, a.hold, seed, a.kind, a.time_start)
             if not vid:
-                print("  %s: KEIN Video -- uebersprungen" % cfg)
+                print("  %s: KEIN Video -- uebersprungen (Log: %s)" % (cfg, log))
                 continue
             part = measure(vid, log, a.hold)
             for r in part:
                 r["seed"] = seed
             if part:
-                subprocess.run(["cmd", "/c", "rmdir", "/s", "/q", folder], check=False)
+                os.remove(vid)
             else:
-                print("  %s: 0 Fenster -- Aufnahme BLEIBT unter %s" % (cfg, folder))
+                print("  %s: 0 Fenster -- Video BLEIBT: %s" % (cfg, vid))
             rows += part
         # The app writes scene-cost.json into its working directory and
         # overwrites it per chunk, so fold it into a running total before the
         # next render clobbers it.  Measured cost is the honest replacement for
         # the hand-set `complexity` the scheduler budgets with.
-        cp = os.path.join(RELEASE, "scene-cost.json")
+        cp = os.path.join(APP_DIR, "scene-cost.json")
         if os.path.exists(cp):
             try:
                 part = json.load(io.open(cp, encoding="utf-8"))
@@ -821,7 +830,7 @@ def main():
             os.remove(cp)
         if rows:
             json.dump(rows, io.open(mpath, "w", encoding="utf-8"), indent=1)
-            print("  %s: %d Fenster" % (cfg, len(rows)))
+            print("  %s: %d Fenster in %.1f min" % (cfg, len(rows), (time.time() - t_render) / 60.0))
         allrows += rows
 
     for cfg, _ in chunks:

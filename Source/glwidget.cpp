@@ -1944,6 +1944,37 @@ void GLwidget::draw()
         } );
     }
 
+    // KALEIDO_FREEZE_SHOT=<file>: a comparison run (KALEIDO_FREEZE_TIME) takes its frozen frame itself and ends --
+    // the clean frame, read every 30th frame after the freeze until two reads agree (feedback and trails settle
+    // after it), at most 8 s; 640 x 360, JPEG.  The snapshot tool fetched the remote preview instead, refreshed at
+    // most every 0.9 s, until two agreed: some 3 s a scene of waiting (Tools/scene_snapshots.py).
+    static const QString FreezeShot = qEnvironmentVariable( "KALEIDO_FREEZE_SHOT" );
+    if ( !FreezeShot.isEmpty() && RenderPipeline::frozen() && !m_freezeShotDone && m_width > 1 && m_height > 1 )
+    {
+        if ( !m_freezeShotClock.isValid() )
+            m_freezeShotClock.start();
+        if ( m_freezeShotFrames++ % 30 == 0 )
+        {
+            QImage img( m_width, m_height, QImage::Format_RGBA8888 );
+            glBindFramebuffer( GL_READ_FRAMEBUFFER, defaultFramebufferObject() );
+            glReadPixels( 0, 0, m_width, m_height, GL_RGBA, GL_UNSIGNED_BYTE, img.bits() );
+            const QImage small = img.mirrored()
+                                     .convertToFormat( QImage::Format_RGB888 )
+                                     .scaled( 640, 360, Qt::IgnoreAspectRatio, Qt::SmoothTransformation );
+            const bool   stable = !m_freezeShotPrev.isNull() && small == m_freezeShotPrev;
+            if ( stable || m_freezeShotClock.elapsed() > 8000 )
+            {
+                const bool ok = small.save( FreezeShot, "JPG", 92 );
+                fprintf( stderr, "FREEZE shot %s (%s, %d frames after the freeze) -> %s\n", ok ? "saved" : "NOT saved",
+                         stable ? "stable" : "unstable", m_freezeShotFrames, qPrintable( FreezeShot ) );
+                m_freezeShotDone = true;
+                QTimer::singleShot( 0, qApp, []
+                { QCoreApplication::exit( 0 ); } );
+            }
+            m_freezeShotPrev = small;
+        }
+    }
+
     // Config cross-fade: draw the captured previous frame on top, fading out.
     float fade_alpha = 0.f;
     if ( m_fadeStart >= 0 )
@@ -2633,6 +2664,11 @@ void GLwidget::applyDisplayRate()
         m_displayHz = RenderPipeline::M_DisplayHz;
     fprintf( stderr, "Render timer: %d ms (%.1f Hz display%s)\n", refresh_ms, screen() ? screen()->refreshRate() : 0.0,
              M_FrameDivisor > 1 ? qPrintable( QString( ", every %1. refresh" ).arg( M_FrameDivisor ) ) : "" );
+    // A comparison run without vsync (KALEIDO_FREEZE_TIME and KALEIDO_NO_VSYNC: Tools/scene_snapshots.py) renders as
+    // fast as it can: its 600 fixed steps do not depend on the frame rate, and at the panel's 120 Hz they were 5 s of
+    // waiting a scene.
+    if ( RenderPipeline::freezeTime() >= 0.f && qEnvironmentVariableIsSet( "KALEIDO_NO_VSYNC" ) )
+        refresh_ms = 0;
     if ( m_renderTimer )
         killTimer( m_renderTimer );
     m_renderTimer = startTimer( refresh_ms );
@@ -2848,7 +2884,25 @@ void GLwidget::exportStep()
         if ( m_export->titleDue( k ) )
             rp->showTitle( m_export->title(), m_export->artist() );
         rp->setDefaultFBO( m_export->renderFbo() );
+        // KALEIDO_COST_LOG: what each scene costs, measured as fast as the GPU renders (the screening,
+        // Tools/screen.py) -- live the frames wait for the panel, and an hour of catalogue took an hour.
+        static const bool CostLog = qEnvironmentVariableIsSet( "KALEIDO_COST_LOG" );
+        const qint64      cost_t0 = CostLog ? slice.nsecsElapsed() : 0;
+        const bool        costed = CostLog && exportCostBegin( rp );
         rp->paint( m_rotationMatrix, m_xTrans, m_yTrans, m_zTrans, audio );
+        if ( costed )
+            exportCostEnd( rp, ( slice.nsecsElapsed() - cost_t0 ) * 1e-6 );
+        // A program the forge is still building (the 3D lab's geometry, a chain lab's passes): live the scene shows a
+        // moment later; an export renders far faster than the helper builds, and an eight-second window of the
+        // screening was over before ChainLab3D had its program -- an empty window.  The frame clock waits for it
+        // (15 s at most).
+        if ( shaderForgePending() > 0 )
+        {
+            QElapsedTimer waited;
+            waited.start();
+            while ( shaderForgePoll() > 0 && waited.elapsed() < 15000 )
+                std::this_thread::sleep_for( std::chrono::milliseconds( 5 ) );
+        }
         m_export->subFrameDone( k );
     }
     int code = -1;
@@ -2865,6 +2919,60 @@ void GLwidget::exportStep()
     else
         QTimer::singleShot( 0, this, [this]
         { exportStep(); } );
+}
+
+bool GLwidget::exportCostBegin( RenderPipeline *rp )
+{
+    if ( !glGenQueries || !glBeginQuery || !glEndQuery || !glGetQueryObjectuiv )
+        return false;
+    if ( !m_xcQuery[0] )
+        glGenQueries( 4, m_xcQuery );
+    const int old = ( m_xcFrame + 1 ) & 3; // issued three frames ago
+    if ( m_xcFrame >= 3 && !m_xcScene[old].isEmpty() )
+    {
+        GLuint ns = 0;
+        glGetQueryObjectuiv( m_xcQuery[old], GL_QUERY_RESULT, &ns ); // an export may wait for it
+        SceneCost &c = m_sceneCost[m_xcScene[old]];
+        c.gpuMs += ns * 1e-6;
+        ++c.gpuFrames;
+    }
+    m_xcScene[old].clear();
+    // Charged only while a scene stands: not in a fade, not on the first frame after a switch (the driver builds a
+    // program's machine code at its first draw).
+    QString           scene;
+    const QStringList nm = rp->sceneNames();
+    const int         idx = rp->activeSceneIndex();
+    if ( idx >= 0 && idx < nm.size() && !rp->sceneTransitioning() )
+    {
+        if ( nm[idx] == m_xcLast )
+            scene = nm[idx];
+        m_xcLast = nm[idx];
+    }
+    else
+        m_xcLast.clear();
+    m_xcScene[m_xcFrame & 3] = scene;
+    glBeginQuery( 0x88BF /* GL_TIME_ELAPSED */, m_xcQuery[m_xcFrame & 3] );
+    return true;
+}
+
+void GLwidget::exportCostEnd( RenderPipeline *rp, double cpuMs )
+{
+    glEndQuery( 0x88BF );
+    ++m_xcFrame;
+    const QStringList nm = rp->sceneNames();
+    const int         idx = rp->activeSceneIndex();
+    if ( idx >= 0 && idx < nm.size() )
+    {
+        SceneCost  &c = m_sceneCost[nm[idx]];
+        const float cov = rp->activeCoverage();
+        if ( cov >= 0.f )
+        {
+            c.cover += cov;
+            ++c.coverN;
+        }
+        c.ms += cpuMs;
+        ++c.frames;
+    }
 }
 
 void GLwidget::paintExportPreview()

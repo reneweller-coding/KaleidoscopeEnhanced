@@ -240,6 +240,40 @@ void shaderForgeStartHelper()
         fprintf( stderr, "FORGE helper running\n" );
 }
 
+int shaderForgePending()
+{
+    int n = 0;
+    for ( const auto &kv : s_entries )
+        n += ( kv.second.queued && !kv.second.prog && !kv.second.failed ) ? 1 : 0;
+    return n;
+}
+
+int shaderForgePoll()
+{
+    for ( auto &kv : s_entries )
+    {
+        Entry &e = kv.second;
+        if ( !e.queued || e.prog || e.failed )
+            continue;
+        const QString base = s_dir + "/" + QString::fromStdString( kv.first );
+        if ( QFileInfo::exists( base + ".bin" ) )
+        {
+            e.prog = loadBinary( base + ".bin" );
+            if ( e.prog )
+            {
+                e.queued = false;
+                QFile::remove( base + ".frag" );
+            }
+        }
+        else if ( QFileInfo::exists( base + ".err" ) )
+        {
+            e.failed = true; // the caller's next shaderForgeGet() reports it and builds it itself
+            e.queued = false;
+        }
+    }
+    return shaderForgePending();
+}
+
 GLuint shaderForgeGet( const std::string &fragSource, bool *failed, int targets )
 {
     if ( failed )

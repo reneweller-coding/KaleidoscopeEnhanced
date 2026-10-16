@@ -75,3 +75,18 @@ void shaderForgeStartHelper();
  * forge (cached for the session); callers must not delete it.
  **/
 GLuint shaderForgeGet( const std::string &fragSource, bool *failed = nullptr, int targets = 1 );
+/**  How many programs asked for are still being built by the helper.
+ *
+ * @return
+ *   The number of queued builds whose result has not arrived (a comparison run waits for none before it starts).
+ **/
+int shaderForgePending();
+/**  Collects the programs the helper has finished since they were asked for -- without the draw that asked asking
+ * again (a video export waits on it).
+ *
+ * @return
+ *   The number of builds still on the way (as shaderForgePending()).
+ *
+ * Needs the GL context current (a finished program is loaded from its binary).
+ **/
+int shaderForgePoll();

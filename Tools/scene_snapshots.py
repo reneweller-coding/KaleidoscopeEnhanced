@@ -55,54 +55,33 @@ ERRORS = ("Expr [", "OpenGL ERROR", "FAILED")   # lines of a run's stderr that a
 
 
 def shoot(block, fx, out, photo, timeout, slot=0):
-    """One scene in its own app run (preset _snap<slot>, port 18200+slot).
+    """One scene in its own app run (preset _snap<slot>).
     Returns "ok", "unstable" (the frame never stood still after the freeze -- a
     simulation or a clock of its own; the last one is saved, compare it loosely)
-    or "" (no frame).  The run's error lines (ERRORS) go to <out>.err.txt."""
+    or "" (no frame).  The run's error lines (ERRORS) go to <out>.err.txt.
+
+    The app takes the frame itself (KALEIDO_FREEZE_SHOT): it waits for every program it asked for, runs the 600
+    fixed steps without vsync (KALEIDO_NO_VSYNC: they took 5 s at the panel's 120 Hz, whatever the scene cost),
+    reads the frozen frame until two reads agree, writes it and ends.  Until 16.10.2026 this script fetched the web
+    remote's preview -- refreshed at most every 0.9 s -- until two agreed: 9 s a scene, most of it waiting."""
     name = "_snap%d" % slot
     io.open(os.path.join(ROOT, "Presets", name + ".xml"), "w", encoding="utf-8").write(preset(block, fx, name))
+    if os.path.exists(out):
+        os.remove(out)
     env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(timeout + 15), KALEIDO_NO_ACTIVATE="1",
-                      KALEIDO_FREEZE_TIME="20", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7"), slot)
+                      KALEIDO_FREEZE_TIME="20", KALEIDO_FIXED_PHOTO=photo, KALEIDO_SEED="7",
+                      KALEIDO_NO_VSYNC="1", KALEIDO_FREEZE_SHOT=out), slot)
     # no -l: stderr comes here through a pipe -- runs at once never share a log file
-    p = subprocess.Popen([os.path.join(REL, EXE), "-c", name, "-t", str(18200 + slot)], cwd=REL, env=env,
+    p = subprocess.Popen([os.path.join(REL, EXE), "-c", name, "-t", "0"], cwd=REL, env=env,
                          stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
     lines = []
-    threading.Thread(target=lambda: [lines.append(l.decode("utf-8", "replace")) for l in p.stderr], daemon=True).start()
-    t0 = time.time()
+    reader = threading.Thread(target=lambda: [lines.append(l.decode("utf-8", "replace")) for l in p.stderr],
+                              daemon=True)
+    reader.start()
     try:
-        port = None
-        while time.time() - t0 < timeout:                    # the frame is final when the app freezes
-            time.sleep(0.5)
-            lg = "".join(lines)
-            if port is None:
-                m = re.search(r"WEB REMOTE: http://<this-pc>:(\d+)/", lg)
-                port = m.group(1) if m else None
-            if "FREEZE engaged" in lg and port:
-                # The preview is refreshed ~1x per second while it is asked for.  A frame
-                # counts when two previews in a row are byte-identical: a program still
-                # arriving after the freeze (the 3D lab's geometry from the forge) would
-                # otherwise be caught half-way.
-                get = lambda: urllib.request.urlopen("http://127.0.0.1:%s/api/snapshot" % port, timeout=8).read()
-                get()
-                prev = None
-                from PIL import Image
-                save = lambda j: Image.open(io.BytesIO(j)).convert("RGB").resize((640, 360), Image.LANCZOS).save(out, quality=92)
-                for _ in range(25):                         # ~30 s: feedback and trails settle slowly
-                    time.sleep(1.2)
-                    jpg = get()
-                    if jpg[:2] != b"\xff\xd8":
-                        continue
-                    if jpg == prev:
-                        save(jpg)
-                        return "ok"
-                    prev = jpg
-                if prev:
-                    save(prev)
-                    return "unstable"
-                return ""
-        return ""
-    except OSError:
-        return ""
+        p.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        pass
     finally:
         if p.poll() is None:
             p.terminate()                                     # our own run: it would end itself later anyway
@@ -110,12 +89,18 @@ def shoot(block, fx, out, photo, timeout, slot=0):
                 p.wait(timeout=20)
             except subprocess.TimeoutExpired:
                 p.kill()
-        bad = [l.rstrip() for l in "".join(lines).splitlines() if any(e in l for e in ERRORS)]
+        reader.join(timeout=5)
+        lg = "".join(lines)
+        bad = [l.rstrip() for l in lg.splitlines() if any(e in l for e in ERRORS)]
         err = out[:-4] + ".err.txt"
         if bad:
             io.open(err, "w", encoding="utf-8").write("\n".join(bad) + "\n")
         elif os.path.exists(err):
             os.remove(err)
+    m = re.search(r"FREEZE shot saved \((stable|unstable)", lg)
+    if not m or not os.path.exists(out):
+        return ""
+    return "ok" if m.group(1) == "stable" else "unstable"
 
 
 def render(label, only, photo, timeout, jobs=1):

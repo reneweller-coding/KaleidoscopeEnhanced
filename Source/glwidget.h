@@ -570,6 +570,22 @@ protected:
      *               export (exportStep()) -- so the catalogue renders as an export, faster than real time. (in)
      **/
     void stepSweeps( qint64 nowMs );
+    /**  KALEIDO_COST_LOG in a video export, before a frame: collects the GPU time of the frame queried three frames
+     * ago (charged to the scene that stood then) and starts this frame's query.
+     *
+     * @param rp  The pipeline about to render. (in)
+     *
+     * @return
+     *   True if a query was started (exportCostEnd() must follow).
+     **/
+    bool exportCostBegin( RenderPipeline *rp );
+    /**  KALEIDO_COST_LOG in a video export, after a frame: ends the query and books the frame's CPU time and coverage
+     * on the scene on screen (as paintGL() does live).
+     *
+     * @param rp     The pipeline that rendered. (in)
+     * @param cpuMs  The frame's CPU time in milliseconds. (in)
+     **/
+    void exportCostEnd( RenderPipeline *rp, double cpuMs );
 
     /**  Draws the numbered configuration-selection overlay (key '0').
      *
@@ -670,14 +686,22 @@ protected:
     // feedback ("jumps too much"), switched on with Shift+W (persisted like
     // the other overlay settings).
     bool m_lyricsKinetic = false; ///< Kinetic line-slam animation on karaoke line change, off by default (Shift+W).
-    bool        m_keyFeedback = true;    ///< feedback() on screen (ini keyFeedback); off: only in the log.
-    QString     m_shotPending; ///< A screenshot asked for: its path; taken at the next frame's clean point (paintGL).
-    WebRemote  *m_webRemote = nullptr;   ///< The web remote (a child QObject), for its port; null when it is off.
-    QStringList m_cardUrls;              ///< The remote card's addresses, taken when it opened.
-    qint64      m_cardUntil = 0;         ///< When the remote card goes (m_fpsTimer ms); 0 = not shown.
-    int         m_skippedMesh = 0;       ///< Mesh scenes left out for want of the model pack (OSD Info says so).
-    bool        m_firstStart = false;    ///< The settings file did not exist at the start: show the remote card.
-    QString     m_lastShot; ///< The screenshot saved last (set on the GUI thread once the worker has written it).
+    bool          m_keyFeedback = true;          ///< feedback() on screen (ini keyFeedback); off: only in the log.
+    QString       m_shotPending; ///< A screenshot asked for: its path; taken at the next frame's clean point (paintGL).
+    GLuint        m_xcQuery[4] = { 0, 0, 0, 0 }; ///< KALEIDO_COST_LOG in an export: GPU time queries, read three late.
+    QString m_xcScene[4]; ///< The scene each query is charged to (empty: a fade or the first frame after a switch).
+    QString       m_xcLast;                      ///< The scene of the last export frame.
+    int           m_xcFrame = 0;                 ///< Export frames queried so far.
+    int           m_freezeShotFrames = 0;        ///< KALEIDO_FREEZE_SHOT: frames since the freeze.
+    QImage        m_freezeShotPrev; ///< KALEIDO_FREEZE_SHOT: the last read of the frozen frame (640 x 360).
+    bool          m_freezeShotDone = false;      ///< KALEIDO_FREEZE_SHOT: written, the app is ending.
+    QElapsedTimer m_freezeShotClock;             ///< KALEIDO_FREEZE_SHOT: since the freeze (gives up after 8 s).
+    WebRemote    *m_webRemote = nullptr; ///< The web remote (a child QObject), for its port; null when it is off.
+    QStringList   m_cardUrls;                    ///< The remote card's addresses, taken when it opened.
+    qint64        m_cardUntil = 0;               ///< When the remote card goes (m_fpsTimer ms); 0 = not shown.
+    int           m_skippedMesh = 0;    ///< Mesh scenes left out for want of the model pack (OSD Info says so).
+    bool          m_firstStart = false; ///< The settings file did not exist at the start: show the remote card.
+    QString       m_lastShot; ///< The screenshot saved last (set on the GUI thread once the worker has written it).
     // Optional, and off unless the user switches it on in the setup tool --
     // it is the only thing here that contacts a server on its own.
     bool m_updateCheck = false; ///< Whether to ask GitHub for a newer release at startup ("updateCheck" setting).
