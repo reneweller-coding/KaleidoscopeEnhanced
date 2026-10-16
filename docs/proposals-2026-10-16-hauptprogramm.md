@@ -4,9 +4,40 @@ Sechs Blickwinkel haben im Code nach Optimierungen und Erweiterungen gesucht; je
 Prüfer jede Idee gegen den Code gehalten (schon vorhanden? Problem echt? Regelverstoß? Aufwand ehrlich?).
 Hier steht, was die Prüfung überstanden hat, in der vom Prüfer korrigierten Fassung, sortiert nach Wert
 (5 = bald machen, 1 = kaum lohnend) und mit den Belegen, die der Prüfer selbst nachgesehen hat. Aufwand:
-S klein, M mittel, L groß, XL sehr groß. Nichts davon ist umgesetzt.
+S klein, M mittel, L groß, XL sehr groß.
 
-53 von 59 Ideen behalten.
+53 von 59 Ideen behalten -- und noch am selben Tag umgesetzt (Stand unten).
+
+## Stand der Umsetzung (16.10.2026)
+
+Alle 53 Ideen sind eingebaut, in neun Runden, je ein Commit (Einzelheiten je Runde in docs/engine-internals.md,
+Abschnitte "16.10.2026 (5)" bis "(13)"):
+
+| Runde | Commit | Inhalt |
+|---|---|---|
+| 1 Audio-Eingang | f780b3fd | angehaltene Player, verlorene Ein-Block-Ereignisse, 5.1, hohe Abtastraten, NaN-Schranke, Standardgerät, MIDI |
+| 2 Ausgabe | e9cfa8c8 | Spout nach dem Present-Pass, gleitendes Würfel-Budget, Bühnenlampen, NVENC, Tonart auf dem Quintenzirkel |
+| 3 Einstellungen | 6845c929 | ein Einstellungspfad, Setup-Änderungen bleiben, Installer je Nutzer, Quelllisten, lesbares Log |
+| 4 Leistung | 1b442ecc | Vorschau aus dem Render-Thread, Begrenzer je Bild, bildratenunabhängig, Ruhemodus, Auflösung nach GPU-Zeit |
+| 5 Analyse | ced6d785 | Regressionswerkzeug, Chroma mit langer FFT, Kick-Tempo, Melodie, Songgrenzen, Tempo-Autokorrelation |
+| 6 Dramaturgie | 24ac3462 | Solozeit nach Schauwert, Fotogedächtnis, Spektakel-Reserve, Wechsel auf der Phrase, sechs Noir-Szenen |
+| 7 Live-Betrieb | 0fc832f8 | Fernbedienungs-Schutz, Absturzbericht, Hängerwache, geduldiger Watchdog, Bildschirm nach Namen, externe Uhr, OSC |
+| 8 Nutzerseite | fdf34760 | Tasten-Rückmeldung, Hilfe skaliert, QR-Karte, Geschmack korrigierbar, saubere Screenshots, Blitzflächen, strenger Lichtschutz |
+| 9 Werkzeuge | c9085b00 | release_check mit Selbsttest und Regeln, Szenenplan im echten Code (--schedule, check_schedule.py) |
+
+Nicht oder nur teilweise:
+
+- **processBlock zerlegen** (Stufe 2 der Analyse-Idee): bewusst nicht -- die Prüfung hat nur Stufe 1 bewertet, und die
+  ist in Runde 5 gekommen.
+- **Valenz-Anker** neu kalibrieren: nicht ohne Musik-Korpus (keiner auf dem Rechner); die Analyse-Runde hebt die
+  Erregung (arousal) bei Beat-Musik um etwa 0,1 an.
+- Nur synthetisch geprüft: die neuen Regie-Regeln aus Runde 9 (Abschnitt im Drop-Anlauf, Abschnitt direkt nach einem
+  Wechsel, Spektakel-Reserve bei Aufbauten ohne Drop) -- am Strukturtrack, am Screening-Groove und im Selbsttest.
+- Nicht live geprüft: der Installer auf einem echten Nutzerkonto und die Bildschirmwahl nach Namen.
+
+Der Szenenplan im echten Code hat beim ersten Lauf vier Fehler des Schedulers gezeigt (Runde 9), die Abschlussarbeiten
+drei Fehler in Werkzeugen: das Paket nahm Arbeits-Presets mit, das Screening brach jede Aufnahme nach 240 s ab,
+und zwei Batch-Werkzeuge beendeten fremde Prozesse bzw. liefen auf der Nutzer-ini.
 
 ## Übersicht
 
