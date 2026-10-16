@@ -78,7 +78,8 @@ def banner( name, header, copyright_ ):
 
 def file_block( brief, details, author ):
     out = [ "/*! @file", " *", " *  @brief" ]
-    out += [ " *  " + l for l in textwrap.wrap( brief, WIDTH - 4, break_long_words=False, break_on_hyphens=False ) ]
+    out += [ " *  " + l for l in cgvr_comments.no_list_starts(
+        textwrap.wrap( brief, WIDTH - 4, break_long_words=False, break_on_hyphens=False ) ) ]
     if details:
         out.append( " *" )
         out += [ ( " *  " + l ).rstrip() for l in details ]

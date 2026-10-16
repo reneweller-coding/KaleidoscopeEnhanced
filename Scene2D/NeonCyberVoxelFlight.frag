@@ -102,8 +102,8 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.252 * spd + audioAdvance * 0.252 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Flight camera weaving between city skyscrapers
     vec3 ro = vec3( sin( t * 0.3 ) * 1.5, 1.9 + 0.25 * sin( t * 0.4 ), t * 3.5 ); // was y = 1.8 +

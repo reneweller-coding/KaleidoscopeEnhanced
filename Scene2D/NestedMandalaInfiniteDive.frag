@@ -118,7 +118,7 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.38 * spd + audioAdvance * 0.30 * spd; // Zeit-Basis:
-    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
+    // audioAdvance alone stands still in quiet music ("looks like a still picture").
 
     // Plunge coordinate along depth Z
     float z_dive = t * 1.5;

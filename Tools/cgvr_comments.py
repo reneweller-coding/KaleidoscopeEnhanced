@@ -368,8 +368,24 @@ def return_from_brief( brief ):
 
 
 def wrap( text, first, rest ):
-    return textwrap.wrap( text, width=max( 40, WIDTH - len( rest ) ), initial_indent="", subsequent_indent="",
-                          break_long_words=False, break_on_hyphens=False ) or [ "" ]
+    return no_list_starts( textwrap.wrap( text, width=max( 40, WIDTH - len( rest ) ), initial_indent="", subsequent_indent="",
+                                          break_long_words=False, break_on_hyphens=False ) ) or [ "" ]
+
+
+LIST_START = re.compile( r"^(\s*)([-+*]|\d+\.)\s+" )
+
+
+def no_list_starts( lines ):
+    """Wrapped lines where no continuation line begins like a list item ("- c).", "3600. Written"): Doxygen's Markdown
+    would start a list there.  The marker goes back to the end of the line before."""
+    out = list( lines )
+    for i in range( 1, len( out ) ):
+        m = LIST_START.match( out[ i ] )
+        while m and i > 0:
+            out[ i - 1 ] = out[ i - 1 ].rstrip() + " " + m.group( 2 )
+            out[ i ] = m.group( 1 ) + out[ i ][ m.end(): ]
+            m = LIST_START.match( out[ i ] ) if out[ i ].strip() else None
+    return [ l for l in out if l.strip() ] or out[ :1 ]
 
 
 def render( model, indent ):

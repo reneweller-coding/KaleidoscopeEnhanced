@@ -234,8 +234,8 @@ void main()
     // Lens sparkle on beats
     if ( audioHigh > 0.4 )
     {
-        // Runde Funken statt aufgehellter uv-Zellen: floor(uv*40) leuchtet
-        // ein ganzes ~48-px-QUADRAT auf.
+        // Round sparks instead of brightened uv cells: floor(uv*40) lights up a
+        // whole ~48 px SQUARE.
         vec2  kg = uv * 40.0;
         vec2  kid = floor( kg );
         vec2  kf = fract( kg ) - 0.5;

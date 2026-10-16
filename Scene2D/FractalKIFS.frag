@@ -105,8 +105,8 @@ void main()
     p = rot( audioPhase * 0.25 + time * 0.08 ) * p;
 
     // Per-mood fractal character: mode bends the c-vector, arousal tightens it.
-    // Kraeftigerer Eigen-Morph: mit 0.03 Amplitude stand die Form
-    // praktisch still ("wirkt wie ein Bild, das gedreht wird").
+    // A stronger morph of its own: with an amplitude of 0.03 the shape stood
+    // practically still ("looks like a picture being turned").
     vec2 c = vec2( 0.84 + 0.22 * audioMode + 0.10 * sin( time * 0.11 ),
                    0.60 + 0.14 * audioArousal + 0.06 * cos( time * 0.09 ) );
 

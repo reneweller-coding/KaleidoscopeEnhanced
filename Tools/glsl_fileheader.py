@@ -70,7 +70,7 @@ def describe( text_lines ):
     brief, rest = C.split_first_sentence( para )
     details = []
     if rest:
-        details = textwrap.wrap( rest, WIDTH - 4, break_long_words=False, break_on_hyphens=False ) + [ "" ]
+        details = C.no_list_starts( textwrap.wrap( rest, WIDTH - 4, break_long_words=False, break_on_hyphens=False ) ) + [ "" ]
     # the rest as written -- only a line too long for the block is wrapped (its indentation kept), so that a generator's
     # unwrapped source and an already laid-out file give the same header
     for l in keep[ end: ]:
@@ -79,8 +79,8 @@ def describe( text_lines ):
             details.append( l )
             continue
         pad = l[ :len( l ) - len( l.lstrip() ) ]
-        details += textwrap.wrap( l.strip(), WIDTH - 4, initial_indent=pad, subsequent_indent=pad,
-                                  break_long_words=False, break_on_hyphens=False )
+        details += C.no_list_starts( textwrap.wrap( l.strip(), WIDTH - 4, initial_indent=pad, subsequent_indent=pad,
+                                                   break_long_words=False, break_on_hyphens=False ) )
     while details and not details[ 0 ].strip():
         details.pop( 0 )
     while details and not details[ -1 ].strip():

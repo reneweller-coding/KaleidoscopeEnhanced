@@ -35,9 +35,9 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
-// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
-// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
-// als Phase, nicht als Position oder Rauschkoordinate.
+// Both count from THIS activation instead of from the program start:
+// `time` and `audioAdvance` grow without bound and so serve only as a
+// phase, never as a position or a noise coordinate.
 uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 

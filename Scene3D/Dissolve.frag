@@ -114,10 +114,10 @@ float materialExposure( sampler2DArray tex )
 vec3 renderSky( vec3 dir, vec3 tint )
 {
     float h = clamp( dir.y * 0.5 + 0.5, 0.0, 1.0 );
-    // Der Himmel dominiert das Bild: die Partikel sind spaerlich, also ist
-    // SEIN Wert der Medianpixel.  Bei 0.012..0.026 mass die ganze Szene Luma
-    // 4.7 bis 8.3 von 255 und wurde in ALLEN sieben Screening-Fenstern als
-    // leer markiert.  Dunkel ist gewollt (mood=dark), unsichtbar nicht.
+    // The sky dominates the picture: the particles are sparse, so ITS value is
+    // the median pixel.  At 0.012..0.026 the whole scene measured luma 4.7 to
+    // 8.3 of 255 and was marked empty in ALL seven screening windows.  Dark is
+    // intended (mood=dark), invisible is not.
     vec3 col = mix( vec3( 0.030, 0.034, 0.048 ), vec3( 0.062, 0.058, 0.086 ), h );
     col += tint * 0.05 * ( 1.0 + 0.7 * audioKick ) // beat in the sky, not the body
            * pow( max( dot( dir, normalize( vec3( -0.3, 0.6, 0.74 ) ) ), 0.0 ), 6.0 );
@@ -208,7 +208,7 @@ void main()
     // Relief from the material's normal map, where the asset has one.
     n = perturbNormal( texMeshMaterial, texMeshMaterialLayers, vUV, n, vPos, 1.0 );
     float lam = max( dot( n, normalize( vec3( -0.4, 0.7, -0.58 ) ) ), 0.0 );
-    // Ebenfalls angehoben: der Koerper hob sich kaum vom Himmel ab.
+    // Raised as well: the body hardly stood out from the sky.
     vec3 col = base * ( 0.55 + 1.20 * lam );
 
     // Loose particles glow and lose their shading: a speck of dust in the air

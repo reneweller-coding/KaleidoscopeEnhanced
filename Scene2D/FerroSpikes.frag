@@ -95,8 +95,8 @@ void main()
     vec2 uv = gl_FragCoord.xy / resolution;
     vec2 px = 1.0 / resolution;
 
-    // Langsame Dreh-Drift des Lesefensters: das Sim-Feld selbst ist traege,
-    // so bekommt die Flaeche trotzdem eine stetige Eigenbewegung.
+    // Slow turning drift of the read window: the simulation field itself is
+    // sluggish, so this gives the surface a steady motion of its own anyway.
     vec2  cen = vec2( 0.5 );
     float ra = time * 0.045 + audioAdvance * 0.03;
     uv = cen
@@ -105,8 +105,8 @@ void main()
     float h = hAt( uv );
 
     // Surface normal from the height gradient.
-    // Breitere Tastung: 2-px-Gradienten auf dem groben Sim-Feld machten
-    // Klotz-Normalen -> "extrem pixelig". 5 px glaettet, ohne zu verwaschen.
+    // Wider sampling: 2 px gradients on the coarse simulation field made
+    // blocky normals -> "extremely pixelated".  5 px smooths without blurring.
     float hx = hAt( uv + vec2( px.x * 5.0, 0.0 ) ) - hAt( uv - vec2( px.x * 5.0, 0.0 ) );
     float hy = hAt( uv + vec2( 0.0, px.y * 5.0 ) ) - hAt( uv - vec2( 0.0, px.y * 5.0 ) );
     vec3  n = normalize( vec3( -hx * 5.0, -hy * 5.0, 1.0 ) );

@@ -124,8 +124,8 @@ void main()
     float t = time * 0.3 * spd + audioAdvance * 0.15;
 
     // Poincaré disk coordinate normalization
-    // Kick-Zoom raus: 15% Vollbild-Pump pro Schlag war das "Hektische";
-    // der Swell atmet langsam statt zu springen.
+    // Kick zoom removed: a 15% full-frame pump on every beat was the "hectic"
+    // look; the swell breathes slowly instead of jumping.
     vec2 z = uv * ( 2.8 / gns ) * ( 1.0 - 0.06 * audioSwell );
     z = rot2D( t * 0.25 ) * z;
 

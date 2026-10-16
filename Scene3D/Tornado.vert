@@ -106,12 +106,12 @@ void main()
     float r1 = attrB.x, r2 = attrB.y, r3 = attrB.z, r4 = attrB.w;
 
     // Height in the funnel (dense near the ground).  Taller than before
-    // (war 42) - User-Feedback: die Szene sollte den Bildschirm mehr fuellen.
+    // (was 42) - user feedback: the scene should fill more of the screen.
     float y = -18.0 + 50.0 * pow( r1, 1.5 );
 
     // Funnel radius grows with height; the kick cinches it, a DROP rips it
-    // wide open for a beat.  Staerkeres Breitenwachstum (war 1.8/0.28) fuer
-    // einen insgesamt groesseren, bildfuellenderen Trichter.
+    // wide open for a beat.  Stronger growth in width (was 1.8/0.28) for a
+    // bigger funnel overall that fills more of the picture.
     float r_base = ( 2.2 + ( y + 18.0 ) * 0.36 ) * ( 0.55 + 0.9 * r2 );
     float r = r_base * ( 1.0 + 0.15 * audioSwell );
 
@@ -138,14 +138,13 @@ void main()
 
     vec3 world = vec3( cos( ang ) * r + sway.x, y, sin( ang ) * r + sway.y );
 
-    // FORKED LIGHTNING shape: KONTINUIERLICH windend statt periodisch neu
-    // ausgewuerfelt.  Die alte Fassung tauschte per floor(time*1.3) alle
-    // ~0.77s die GESAMTE Form gegen eine neue Zufallsform aus - selbst mit
-    // Ueberblendung ist ein Morph zwischen zwei UNZUSAMMENHAENGENDEN
-    // Zickzack-Formen kein Gleiten, sondern ein Zucken (User-Feedback:
-    // "dickere Balken, die unstetig umherspringen").  Jetzt gibt es gar
-    // keine floor()/Zufalls-Stufe mehr: bx/zig sind glatte Zeitfunktionen,
-    // der Bogen windet sich lebendig statt zu teleportieren.
+    // FORKED LIGHTNING shape: winding CONTINUOUSLY instead of being re-rolled
+    // periodically.  The old version swapped the WHOLE shape for a new random
+    // one every ~0.77 s via floor(time*1.3) - even with a cross-fade, a morph
+    // between two UNRELATED zigzag shapes is no glide but a twitch (user
+    // feedback: "thicker bars that jump around discontinuously").  Now there
+    // is no floor() / random step at all: bx/zig are smooth functions of time,
+    // and the arc writhes lively instead of teleporting.
     if ( is_bolt )
     {
         float t_b = r1; // 0 top .. 1 strike point
@@ -176,12 +175,12 @@ void main()
     vp.x -= eyeOff;
     gl_Position = projM * vec4( vp.x, vp.y, -vp.z, 1.0 );
     gl_Position.x += eyeOff * 0.05 * gl_Position.w;
-    // Weiches Ausblenden statt hartem Teleport: die alte Zeile "if (vp.z<0.4)
-    // gl_Position = fernab" liess Partikel, die beim Kamera-Tauchflug nah
-    // vorbeiziehen, INSTANT verschwinden/wieder auftauchen - eine der vom
-    // User gemeldeten Unstetigkeiten.  near_fade blendet die FARBE aus, lange
-    // bevor der reine Sicherheits-Cutoff (fuer numerisch entartete
-    // Projektionen ganz nah/hinter der Kamera) ueberhaupt greift.
+    // A soft fade-out instead of a hard teleport: the old line "if (vp.z<0.4)
+    // gl_Position = far away" made particles that pass close by during the
+    // camera's dive vanish and reappear INSTANTLY - one of the discontinuities
+    // the user reported.  near_fade fades the COLOUR out long before the pure
+    // safety cut-off (for numerically degenerate projections very close to or
+    // behind the camera) takes effect at all.
     float near_fade = smoothstep( 0.15, 0.65, vp.z );
     if ( vp.z < 0.05 )
         gl_Position = vec4( 0.0, 0.0, -3.0, 1.0 );
@@ -193,13 +192,13 @@ void main()
 
     // Dust and debris; a few crackle white on the snare.  LIGHTNING: the
     // snare also fires a flash INSIDE the funnel at a wandering height —
-    // the whole storm glows from within for an instant.  Leichte Hoehen-
-    // Farbdrift (kuehl unten, warm oben) fuer mehr visuelle Tiefe/Interesse.
+    // the whole storm glows from within for an instant.  A slight colour drift
+    // with height (cool below, warm above) for more visual depth and interest.
     vec3 col = palTint( mix( vec3( 0.45, 0.38, 0.33 ), vec3( 0.60, 0.58, 0.62 ), r2 ), 0.30 * r2, 0.15 );
     col = mix( col, col * vec3( 1.05, 0.95, 1.20 ), clamp( ( y + 18.0 ) / 48.0, 0.0, 1.0 ) );
     col = col;
-    // Ebenfalls kontinuierlich wandernd statt per floor()-Sprung (gleicher
-    // Grund wie beim Blitz-Bogen oben).
+    // Also wandering continuously instead of jumping via floor() (the same
+    // reason as for the lightning arc above).
     float flash_y = 7.0 + 25.0 * sin( time * 1.15 + 2.1 );
     float inner = exp( -abs( y - flash_y ) * 0.10 ) * audioSnare;
     col += vec3( 0.75, 0.80, 1.0 ) * inner * 2.4;
@@ -207,9 +206,9 @@ void main()
         col = vec3( 0.9, 0.95, 1.2 ) * ( audioSnare * 6.0 + audioDrop * 2.0 );
     else if ( r4 > 0.94 )
         col += vec3( 0.8, 0.85, 1.0 ) * ( audioSnare * 2.2 + audioDrop * 1.5 );
-    // Hoeherer Ruhe-Anteil (war 0.5): in ruhigen Passagen wirkte der
-    // Trichter zu duenn/leer - jetzt bleibt er auch ohne starken Pegel klar
-    // sichtbar, ohne dass die Musikreaktion (die 0.9/0.8-Terme) an Biss verliert.
+    // A higher resting share (was 0.5): in quiet passages the funnel looked
+    // too thin/empty - now it stays clearly visible even without a strong
+    // level, without the music's reaction (the 0.9/0.8 terms) losing its bite.
     col *= ( 0.62 + 0.9 * audioLevel + 0.8 * audioDrop )
            * ( 0.45 + 0.55 * pow( 1.0 - r1, 0.7 ) )
            * clamp( 1.0 - vp.z / 110.0, 0.0, 1.0 )

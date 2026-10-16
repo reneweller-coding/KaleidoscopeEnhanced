@@ -105,8 +105,8 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Zoom target on a Gothic lancet arch cusp. The old centre (-0.1, 0.65)
     // sits well OUTSIDE this variation's set -- it escapes in six iterations
@@ -130,9 +130,9 @@ void main()
     float zoom_level = exp( zc * 2.3 ) * ( 1.6 * zm );
     // Sub-bass narrows the sampled c-window across the nave axis only, so the
     // arches widen sideways instead of the whole vault simply zooming.
-    // Langsame Fensterrotation (Nutzerwunsch: "mindestens noch eine
-    // Rotation") -- das Fraktal selbst ist nicht rotationssymmetrisch,
-    // also dreht die KAMERA.
+    // Slow window rotation (the user asked for "at least one more
+    // rotation") -- the fractal itself is not rotationally symmetric, so the
+    // CAMERA turns.
     float v_rot = time * 0.06 + audioAdvance * 0.05;
     vec2  ruv = mat2( cos( v_rot ), -sin( v_rot ), sin( v_rot ), cos( v_rot ) ) * uv;
     vec2  c = c_center + vec2( ruv.x / ( 1.0 + 0.3 * audioSubBass ), ruv.y ) / zoom_level;

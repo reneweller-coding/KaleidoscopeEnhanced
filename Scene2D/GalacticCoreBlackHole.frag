@@ -191,8 +191,8 @@ void main()
         {
             float seed = float( j );
             float orbit_radius = 0.2 + hash11( seed ) * 1.5;
-            // Stark verlangsamt: bis zu 35 rad/s liessen die Sterne als
-            // "sehr schnelle Kreise" um das Loch peitschen.
+            // Slowed down a lot: up to 35 rad/s whipped the stars around the hole as
+            // "very fast circles".
             float speed = ( 0.5 + hash11( seed + 1.0 ) * 1.2 ) / orbit_radius;
 
             // Retrograde or prograde

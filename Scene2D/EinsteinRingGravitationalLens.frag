@@ -174,9 +174,9 @@ void main()
 
     vec3 photo = img( photo_uv );
 
-    // WANDERNDER QUASAR hinter der Linse: er laeuft im Orbit und wird durch
-    // das GEWARPTE Feld gezeichnet -- die Linse zerlegt ihn in wandernde
-    // Bogen und Mehrfachbilder.
+    // A WANDERING QUASAR behind the lens: it runs on an orbit and is drawn
+    // through the WARPED field -- the lens breaks it into wandering arcs and
+    // multiple images.
     vec2  src_pos = vec2( sin( t * 0.23 ), cos( t * 0.31 ) ) * 0.45;
     float src_d = length( warped_rel - src_pos );
     vec3  quasar = max( imgPalette( 0.82 ), vec3( 0.85, 0.75, 0.55 ) )

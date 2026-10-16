@@ -121,8 +121,8 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Camera path swimming along winding organic tunnel
     vec3 ro = vec3( sin( t * 0.4 ) * 0.3, cos( t * 0.3 ) * 0.3, t * 2.0 );

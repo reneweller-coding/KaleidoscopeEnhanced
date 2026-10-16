@@ -117,8 +117,8 @@ void main()
     float t = time * 0.3 + audioAdvance * 0.35;
 
     // Hopf fibration coordinates
-    // Ganzzahlige Hopf-Windung, sonst springt r*sin(theta) am atan-Cut
-    // (die gemeldete Kante links).
+    // A whole-number Hopf winding, otherwise r*sin(theta) jumps at the atan cut
+    // (the reported edge on the left).
     float hopf_winding = max( 1.0, floor( ( hopfP > 0.01 ? hopfP : 2.0 ) + 0.5 ) );
     float r = length( uv );
     float theta = atan( uv.y, uv.x ) * hopf_winding + audioPhase;

@@ -101,7 +101,7 @@ void main()
     float a = atan( uv.y, uv.x );
 
     // Warp speed
-    // Halbiert: time*5 + advance*20 war der gemeldete Extremflug.
+    // Halved: time*5 + advance*20 was the reported extreme flight.
     float z = time * 2.0 + audioAdvance * 6.0;
 
     // Tunnel twisting

@@ -161,7 +161,7 @@ void main()
 
     // We render the sphere filling most of the view
     vec2  sphere_center = vec2( 0.0 );
-    float sphere_rad = 0.62; // ganze Sphaere sichtbar, Korona hat Platz
+    float sphere_rad = 0.62; // the whole sphere visible, room for the corona
     float dist = length( uv - sphere_center );
 
     // Slow rotation

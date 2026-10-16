@@ -282,8 +282,8 @@ void main()
     {
         p = ro + rd * d;
         float ds = map( p, yp );
-        // Clearance-Blase: die Bahn schneidet Werft-Traeger; ohne sie flog
-        // die Kamera IN die Struktur und der Schirm wurde vollflaechig.
+        // Clearance bubble: the path cuts the shipyard's girders; without it the
+        // camera flew INTO the structure and the screen filled completely.
         ds = max( ds, 4.0 - d );
         m = hitMat;
         steps = i;
@@ -298,8 +298,8 @@ void main()
     }
 
     // Nebula background
-    // Nebel mit Floor und Grundhelligkeit -- vorher pow(n,2)*Palette auf
-    // dunklem Foto = schwarzer Hintergrund, nur Traeger im Nichts.
+    // Nebula with a floor and a base brightness -- before, pow(n,2)*palette on
+    // a dark photo = a black background, only girders in the void.
     vec3  neb_tint = max( imgPalette( 0.3 + 0.1 * audioCentroid ), vec3( 0.14, 0.10, 0.18 ) );
     float neb_noise = fbm( rd * 2.0 + vec3( 0.0, 0.0, drift * 0.01 ) );
     vec3  col = neb_tint * ( 0.22 + pow( neb_noise, 1.5 ) * np * ( 0.8 + audioSwell * 0.5 ) );
@@ -322,7 +322,7 @@ void main()
 
         col = albedo * ( 0.16 + dif );
         col += neb_tint * albedo * fill * 0.35;
-        // Rim-Licht: grosse Rumpfflaechen bekommen Kontur statt grauer Wand.
+        // Rim light: large hull areas get an outline instead of a grey wall.
         col += albedo * pow( 1.0 - max( dot( n, -rd ), 0.0 ), 3.0 ) * 0.5;
 
         // Add welding flares

@@ -87,8 +87,8 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Helical director twisting phase field (fingerprint texture with disclinations)
     float base_pitch = ( 12.0 + 8.0 * audioCentroid ) * p_freq;
@@ -97,8 +97,8 @@ void main()
     float a_defect = atan( uv.y, uv.x );
     float r_defect = length( uv );
 
-    // GANZZAHLIGE Windung: ein nicht-ganzzahliger atan-Koeffizient springt
-    // am Branch-Cut (die gemeldete unstetige Kante links der Mitte).
+    // WHOLE-NUMBER winding: a non-integer atan coefficient jumps at the
+    // branch cut (the reported discontinuous edge left of the centre).
     float wind = max( 1.0, floor( 2.0 * d_dens + 0.5 ) );
     float helical_phase = r_defect * base_pitch + a_defect * wind - t * 3.0;
 

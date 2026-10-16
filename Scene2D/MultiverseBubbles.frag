@@ -182,8 +182,8 @@ void main()
         vec3 i_cell = floor( cell_p );
         vec3 f_cell = fract( cell_p ) - 0.5; // -0.5 to 0.5
 
-        // Direkter fract(sin(dot))-Hash: hash11 mit Riesenargument kollabiert
-        // auf der GPU (Praezision), das Blasenfeld war entartet.
+        // A direct fract(sin(dot)) hash: hash11 with a huge argument collapses on
+        // the GPU (precision); the bubble field had degenerated.
         float cell_hash = fract( sin( dot( i_cell, vec3( 12.9898, 78.233, 37.719 ) ) ) * 43758.5453 );
 
         // Randomize bubble position within cell

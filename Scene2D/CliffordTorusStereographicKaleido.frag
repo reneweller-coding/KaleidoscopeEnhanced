@@ -107,8 +107,8 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Inverse stereographic projection of 2D screen coordinate uv to S3 4D hypersphere
     float r2 = dot( uv, uv );

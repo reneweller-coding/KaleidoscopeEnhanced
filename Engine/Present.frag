@@ -75,40 +75,40 @@ uniform int       stereoMode;     ///< 0 off, 1 side-by-side, 2 top-bottom, 3 an
 uniform float     stereoDepth;    ///< disparity strength 0..2 (host, key c/m)
 uniform int       stereoSource;   ///< 1 = source is ALREADY eye-packed (true 3D stereo)
 
-// ---- Lyrics-Overlay (LRCLIB; Taste 'w': aus / Scroll / Karaoke) ----
-uniform sampler2D lyricsTex;     ///< hohe Zeilen-Textur (transparenter Grund)
-uniform float     lyricsAlpha;   ///< 0 = aus (Host blendet weich)
-uniform float     lyricsScrollV; ///< Textur-V, das im Bildzentrum liegt
-uniform float     lyricsAspect;  ///< Texturbreite / -hoehe
-uniform vec3      lyricsHl;      ///< Karaoke: aktive Zeile v0, v1, Fortschritt (v0<0 = aus)
-uniform float     lyricsUScale;  ///< nominale/tatsaechliche Texturbreite (<=1, s. TrackMedia)
-uniform vec2      lyricsFocusV;  ///< V-Band der gerade gelesenen Zeile (x<0 = keine), beide Modi
-uniform float     lyricsScrollU; ///< Marquee-Versatz (Textur-U) fuer die fokussierte Zeile
+// ---- Lyrics overlay (LRCLIB; key 'w': off / scroll / karaoke) ----
+uniform sampler2D lyricsTex;     ///< tall texture of the lines (transparent background)
+uniform float     lyricsAlpha;   ///< 0 = off (the host fades smoothly)
+uniform float     lyricsScrollV; ///< the texture V that lies at the picture's centre
+uniform float     lyricsAspect;  ///< texture width / height
+uniform vec3      lyricsHl;      ///< karaoke: the active line v0, v1, the progress (v0<0 = off)
+uniform float     lyricsUScale;  ///< nominal / actual texture width (<=1, see TrackMedia)
+uniform vec2      lyricsFocusV;  ///< V band of the line being read (x<0 = none), both modes
+uniform float     lyricsScrollU; ///< marquee offset (texture U) for the focused line
 
-// ---- Kuenstlerbild-Overlay (Deezer; Taste 'o') ----
+// ---- Artist picture overlay (Deezer; key 'o') ----
 uniform sampler2D artistTex;    ///< Picture of the playing artist (overlay).
-uniform float     artistAlpha;  ///< 0 = aus (Host blendet weich + rotiert Bilder)
-uniform float     artistAspect; ///< Bildbreite / -hoehe
+uniform float     artistAlpha;  ///< 0 = off (the host fades smoothly + rotates the pictures)
+uniform float     artistAspect; ///< picture width / height
 
-// ---- Zeit-Regie: Frame-History-Ring (Drittel-Auflösung, letzte ~3 s) ----
-uniform sampler2DArray histTex;    ///< Unit 5 - IMMER eigene Unit (Sampler-Typ!)
-uniform vec2           rewind;     ///< x = Mix 0..1, y = Ring-Layer (Vergangenheit)
-uniform vec2           echo;       ///< x = Staerke,  y = Ring-Layer (~1.4 s zurueck)
-uniform float          breath;     ///< Build-up "Atem anhalten": Desat/Dim/Vignette
-uniform vec4           sceneGrade; ///< Szenen-Grade: x/z Modus (0 aus, 1 verblasst, 2 grau, 3 Sepia) der
-                                   // ausgehenden/kommenden Szene, y/w ihr Gewicht (Ueberblendung schon drin)
-uniform float audioDrop;           ///< Drop-/Slam-Puls (Streak-Boost, Rewind-Wuerze)
+// ---- Time direction: frame-history ring (third resolution, last ~3 s) ----
+uniform sampler2DArray histTex;    ///< unit 5 - ALWAYS a unit of its own (sampler type!)
+uniform vec2           rewind;     ///< x = mix 0..1, y = ring layer (the past)
+uniform vec2           echo;       ///< x = strength, y = ring layer (~1.4 s back)
+uniform float          breath;     ///< build-up "hold your breath": desaturate / dim / vignette
+uniform vec4           sceneGrade; ///< scene grade: x/z the look (0 off, 1 faded, 2 grey, 3 sepia) of the
+                                   ///< outgoing / incoming scene, y/w its weight (the cross-fade included)
+uniform float audioDrop;           ///< drop / slam pulse (streak boost, rewind seasoning)
 
-// ---- Welle 2 ----
-uniform float     letterbox;     ///< CinemaScope-Balken 0..1 (Drop reisst auf)
-uniform vec2      shock;         ///< Bass-Schockwelle: x = Radius, y = Amplitude
-uniform float     lyricsLineAge; ///< Sek. seit Wechsel der aktiven Karaoke-Zeile
-uniform vec3      paletteA;      ///< Cover-Palette: dominante Farbe (Lichter)
-uniform vec3      paletteB;      ///< Zweitfarbe (Schatten)
-uniform float     paletteAmt;    ///< 0 = neutral (kein/farbloses Cover)
-uniform sampler2D sceneDepth;    ///< Unit 6: Tiefe der AKTIVEN Szene (2.5D-Parallaxe)
-uniform float     depthPar;      ///< Parallaxe-Staerke (geslewte 3D-heit der Szene)
-uniform vec2      nearFar2;      ///< Clip-Ebenen zur Linearisierung
+// ---- Wave 2 ----
+uniform float     letterbox;     ///< CinemaScope bars 0..1 (the drop tears them open)
+uniform vec2      shock;         ///< bass shock wave: x = radius, y = amplitude
+uniform float     lyricsLineAge; ///< seconds since the active karaoke line changed
+uniform vec3      paletteA;      ///< cover palette: the dominant colour (lights)
+uniform vec3      paletteB;      ///< the second colour (shadows)
+uniform float     paletteAmt;    ///< 0 = neutral (no cover, or a colourless one)
+uniform sampler2D sceneDepth;    ///< unit 6: depth of the ACTIVE scene (2.5D parallax)
+uniform float     depthPar;      ///< parallax strength (the scene's slewed 3D-ness)
+uniform vec2      nearFar2;      ///< clip planes for the linearisation
 
 /**  Pseudo-random number 0..1 from a 2D point.
  *
@@ -284,8 +284,8 @@ void main()
     // bigger on the downbeat).  It's motion, not a flash, and uses the already
     // slew-limited beat, so it reads as a soft pump rather than a strobe - easy on
     // the eyes.  Sampled from puv; the corner lights below keep the un-zoomed uv.
-    // Gedaempft (war ungeklammert bis zu 1.0 -> 4% Zoom-Puls JEDEN Beat):
-    // User-Feedback, die Beat-Reaktion war insgesamt zu praesent.
+    // Damped (was unclamped up to 1.0 -> a 4% zoom pulse on EVERY beat):
+    // user feedback, the reaction to the beat was too present overall.
     float scene_pulse = clamp( audioBeat + 0.4 * audioDownbeat, 0.0, 1.0 ) * 0.6;
     // Virtual camera: aspect-true roll + punch-in zoom + drift/shake offset,
     // combined with the beat "breath".  The host guarantees the zoom covers
@@ -299,10 +299,10 @@ void main()
     float camz = ( 1.0 + 0.040 * scene_pulse ) * max( camZoom, 1.0 );
     vec2  puv = cuv / camz + 0.5 - camOff;
 
-    // --- 2.5D-Parallaxe: die Kameradrift verschiebt NAHE Strukturen bis
-    // 1.8x staerker als den Frame selbst (Tiefe der aktiven 3D-Szene,
-    // linearisiert).  Eine 2D-Szene hat auf fern geloeschte Tiefe ->
-    // nearness 0 -> neutral.  Der Host deckt den Extra-Versatz im Zoom.
+    // --- 2.5D parallax: the camera drift moves NEAR structures up to 1.8x
+    // more than the frame itself (depth of the active 3D scene, linearised).
+    // A 2D scene has its depth cleared to far -> nearness 0 -> neutral.  The
+    // host covers the extra offset in the zoom.
     if ( depthPar > 0.001 )
     {
         float zr = texture( sceneDepth, clamp( puv, 0.0, 1.0 ) ).r;
@@ -312,8 +312,8 @@ void main()
         puv -= camOff * ( 1.8 * nearness * depthPar );
     }
 
-    // --- Bass-Schockwelle: ein expandierender Verzerrungsring vom Zentrum
-    // (Kick klein, Drop gross).  Reine Verschiebung - keine Helligkeit.
+    // --- Bass shock wave: an expanding ring of distortion from the centre
+    // (small on a kick, large on a drop).  Pure displacement - no brightness.
     if ( shock.y > 0.0005 )
     {
         vec2 sd = puv - 0.5;
@@ -356,11 +356,11 @@ void main()
     else
         c = texture( tex, puv ).rgb;
 
-    // --- Drop-Rewind / Break-Scrub: statt des Live-Bilds laeuft ein Frame aus
-    // dem History-Ring - mit VHS-Wuerze (Zeilenzittern, Chroma-Versatz,
-    // Scanlines), die das "Band spult" sofort lesbar macht und nebenbei die
-    // Drittel-Aufloesung des Rings kaschiert.  Alles VOR dem Grade, damit
-    // Mood-Farben und Limiter normal weiterwirken.
+    // --- Drop rewind / break scrub: instead of the live picture a frame from
+    // the history ring plays - with a VHS seasoning (line jitter, chroma
+    // offset, scanlines) that makes the "tape rewinding" readable at once and
+    // hides the ring's third resolution on the side.  All of it BEFORE the
+    // grade, so that the mood colours and the limiter keep working as usual.
     if ( rewind.x > 0.001 )
     {
         vec2  ruv = puv;
@@ -372,13 +372,13 @@ void main()
         hc.b = texture( histTex, vec3( ruv - vec2( 0.0016, 0.0 ), rewind.y ) ).b;
         hc *= 0.90 + 0.10 * sin( ruv.y * resolution.y * 3.14159 ); // scanlines
         hc += ( hash21( gl_FragCoord.xy + fract( time * 17.0 ) * 61.0 ) - 0.5 )
-              * 0.05; // Bandrauschen
+              * 0.05; // tape noise
         c = mix( c, hc, rewind.x );
     }
 
-    // --- Zeitecho: die Szene von vor ~1.4 s als Geisterschicht (Screen-Blend,
-    // leicht groesser skaliert -> loest sich sichtbar vom Live-Bild).  Traeumt
-    // in Ambient-Passagen und blitzt als Flashback nach einem Drop auf.
+    // --- Time echo: the scene of ~1.4 s ago as a ghost layer (screen blend,
+    // scaled slightly larger -> it visibly comes apart from the live picture).
+    // Dreams in ambient passages and flashes up as a flashback after a drop.
     if ( echo.x > 0.001 )
     {
         vec2 euv = ( puv - 0.5 ) / 1.045 + 0.5;
@@ -405,7 +405,7 @@ void main()
     // brightness -- happy/major music is associated with warm, bright colour,
     // sad/minor with bluish, darker, muted colour, and the association is
     // emotion-mediated at r~0.99 across cultures. AROUSAL carries saturation
-    // ("Erregung vor allem mit Saettigung"). The previous grade had the two
+    // ("arousal goes above all with saturation"). The previous grade had the two
     // swapped (centroid on temperature, valence on saturation), which never
     // showed because valence was a near-constant until the axes were rebuilt.
     // Timbre keeps a minority say in temperature: bright timbre = warm light
@@ -445,10 +445,10 @@ void main()
     // (most effective on the near-white areas).
     c = pow( max( c, 0.0 ) * 0.78, vec3( 1.25 ) );
 
-    // --- Cover-Palette: das Grading zieht dezent in die Farbwelt des
-    // Kuenstlerbild-Covers (Duotone aus der Luminanz: Schatten -> Zweitfarbe,
-    // Lichter -> Hauptfarbe).  Bewusst subtil (max ~20%) und sehr langsam
-    // eingeblendet - jeder Song bekommt "seine" Farbwelt.
+    // --- Cover palette: the grading pulls gently toward the colours of the
+    // artist picture's cover (a duotone from the luminance: shadows -> second
+    // colour, lights -> main colour).  Deliberately subtle (at most ~20%) and
+    // faded in very slowly - every song gets "its" colours.
     if ( paletteAmt > 0.001 )
     {
         float lp = dot( c, vec3( 0.299, 0.587, 0.114 ) );
@@ -473,10 +473,10 @@ void main()
         bloom = max( texture( tex, puv, 4.5 ).rgb - 0.75, 0.0 );
     c += bloom * ( 0.12 + 0.05 * audioBeat + 0.10 * audioSwell );
 
-    // --- Kino-Kamera: anamorphotische Streaks + Halation -------------------
-    // Streaks: die hellen Spitzen des (bereits bright-passed) Bloom-Puffers
-    // horizontal weit ausgezogen und kuehl getoent - der Anamorphot-Look.
-    // Atmet mit dem Swell und schiesst auf Drops auf.
+    // --- Cinema camera: anamorphic streaks + halation -----------------------
+    // Streaks: the bright peaks of the (already bright-passed) bloom buffer
+    // drawn out far horizontally and tinted cool - the anamorphic look.
+    // Breathes with the swell and shoots up on drops.
     if ( useBloom > 0.5 )
     {
         vec3  streak = vec3( 0.0 );
@@ -494,8 +494,8 @@ void main()
         float streak_w = 0.10 + 0.30 * audioSwell + 0.80 * audioDrop;
         c += streak * vec3( 0.55, 0.75, 1.30 ) * 0.30 * streak_w;
     }
-    // Halation: warmes Filmglimmen um die Lichter (breiter Mip-Tap des
-    // Frames, warm getoent) - gibt Highlights den "Fotoemulsion"-Schmelz.
+    // Halation: a warm film glow around the lights (a wide mip tap of the
+    // frame, tinted warm) - gives highlights the "photo emulsion" melt.
     {
         vec3 hal = max( texture( tex, puv, 5.0 ).rgb - 0.55, 0.0 );
         c += hal * vec3( 1.15, 0.72, 0.42 ) * 0.14;
@@ -505,24 +505,24 @@ void main()
     // hard-clipping the whole frame to flat white when the grade pushes it high.
     c = c / ( 1.0 + max( c - 0.8, 0.0 ) );
 
-    // --- Szenen-Grade: eine bunte Szene in einem dunklen Preset (Noir) wird
-    // verblasst, grau oder in Sepia gezeigt (Preset-Attribut grade="...").  Die
-    // Gewichte folgen der Szenen-Ueberblendung, also blendet der Look mit.
+    // --- Scene grade: a colourful scene in a dark preset (Noir) is shown
+    // faded, grey or in sepia (the preset attribute grade="...").  The weights
+    // follow the scene cross-fade, so the look fades along with it.
     if ( sceneGrade.y + sceneGrade.w > 0.001 )
     {
         c = mix( c, sceneGradeCol( c, sceneGrade.x ), sceneGrade.y );
         c = mix( c, sceneGradeCol( c, sceneGrade.z ), sceneGrade.w );
     }
 
-    // --- Build-up "Atem anhalten": in den letzten Takten vor dem Drop nimmt
-    // das Bild koordiniert Farbe und Licht zurueck und die Vignette zieht
-    // sich zu - die Anspannung vor dem Schlag.  Der Drop selbst loest mit
-    // Punch/Shake/Streaks auf.  breath ist geslewt (kein Pumpen).
+    // --- Build-up "hold your breath": in the last bars before the drop the
+    // picture takes back colour and light together and the vignette closes
+    // in - the tension before the blow.  The drop itself releases it with
+    // punch/shake/streaks.  breath is slewed (no pumping).
     if ( breath > 0.001 )
     {
         float lb = dot( c, vec3( 0.299, 0.587, 0.114 ) );
-        c = mix( c, vec3( lb ), 0.38 * breath ); // entsaettigen
-        c *= 1.0 - 0.13 * breath;                // leicht dimmen
+        c = mix( c, vec3( lb ), 0.38 * breath ); // desaturate
+        c *= 1.0 - 0.13 * breath;                // dim slightly
         float vg = length( vec2( ( uv.x - 0.5 ) * ( resolution.x / resolution.y ),
                                  uv.y - 0.5 ) );
         c *= 1.0 - 0.50 * breath * smoothstep( 0.34, 0.72, vg );
@@ -615,20 +615,20 @@ void main()
              * rays * 0.08 * ( 0.2 + 0.8 * audioLevel ) * smoothstep( 0.05, 0.45, length( g ) );
     }
 
-    // --- Kuenstlerbild: organisch in die Ecke unten links eingeschmolzen.
-    // Gefiederter, per Noise unregelmaessig ausgefranster Rand + weiche
-    // Mischung (mix + sanftes Screen) statt hartem Bilderrahmen; eine leichte
-    // audio-phasige Wabernbewegung laesst es mit der Szene atmen.  Vor dem
-    // Titel/Limiter komponiert, damit Blackout & Co. mitwirken.
+    // --- Artist picture: melted organically into the lower left corner.  A
+    // feathered edge, frayed irregularly by noise, + a soft blend (mix + a
+    // gentle screen) instead of a hard picture frame; a slight wobble on the
+    // audio phase lets it breathe with the scene.  Composited before the
+    // title/limiter, so that blackout & co. act on it too.
     if ( artistAlpha > 0.001 )
     {
-        float w_u = 0.26; // 26% der Bildbreite
+        float w_u = 0.26; // 26% of the picture's width
         float h_u = w_u * ( resolution.x / resolution.y ) / max( artistAspect, 0.2 );
-        vec2  m0 = vec2( 0.035, 0.045 ); // Ecke unten links
+        vec2  m0 = vec2( 0.035, 0.045 ); // lower left corner
         vec2  a = ( uv - m0 ) / vec2( w_u, h_u );
         if ( a.x > -0.2 && a.x < 1.2 && a.y > -0.2 && a.y < 1.2 )
         {
-            // Atmen: kleine, langsame Verformung (zeitbasiert, flickerfrei).
+            // Breathing: a small, slow deformation (time-based, flicker-free).
             vec2 warp = vec2( sin( time * 0.37 + a.y * 5.0 ),
                               cos( time * 0.31 + a.x * 4.0 ) )
                         * 0.012;
@@ -638,33 +638,32 @@ void main()
             float feather = smoothstep( 0.0, 0.16, a.x ) * smoothstep( 0.0, 0.16, a.y )
                             * smoothstep( 0.0, 0.16, 1.0 - a.x )
                             * smoothstep( 0.0, 0.16, 1.0 - a.y );
-            // Organischer Fransen-Rand statt sauberer Kante.
+            // An organic frayed edge instead of a clean one.
             feather *= 0.62 + 0.38 * vnoise2( a * 6.0 + vec2( time * 0.05, 0.0 ) );
 
             float aa = feather * artistAlpha;
             c = mix( c, img, aa * 0.78 );
-            c += img * img * aa * 0.22; // sanfter Screen-Anteil
+            c += img * img * aa * 0.22; // a gentle screen share
         }
     }
 
-    // --- Lyrics: Credits-Scroll ueber die Bildmitte bzw. Karaoke mit
-    // goldenem Zeilen-Highlight und Fortschritts-Sweep.  Das V-Fenster wird
-    // vom Host positioniert (Scroll folgt der Playback-Position; Karaoke
-    // zentriert die aktive Zeile).
+    // --- Lyrics: a credits scroll across the middle of the picture, or
+    // karaoke with a golden line highlight and a progress sweep.  The host
+    // places the V window (the scroll follows the playback position; karaoke
+    // centres the active line).
     if ( lyricsAlpha > 0.001 )
     {
-        float u = ( uv.x - 0.5 ) / 0.62 + 0.5; // Textband: 62% Breite
-        // Sichtbares V pro Bildschirm-UV (Textur behaelt ihr Pixel-Seitenverhaeltnis).
+        float u = ( uv.x - 0.5 ) / 0.62 + 0.5; // text band: 62% of the width
+        // Visible V per screen UV (the texture keeps its pixel aspect ratio).
         float v_span = ( resolution.y / resolution.x ) * lyricsAspect / 0.62;
         float v = lyricsScrollV + ( 0.5 - uv.y ) * v_span;
         if ( u > 0.0 && u < 1.0 && v > 0.0 && v < 1.0 )
         {
-            // Kinetik (optional, Umschalt+W - Default AUS: User-Feedback,
-            // der urspruengliche 1.5x-Slam sprang zu stark): die frische
-            // aktive Zeile wird nur noch sanft groesser (1.18x -> 1.0 in
-            // 0.35 s, ease-out) statt zu "springen".  lyricsLineAge bleibt
-            // bei deaktivierter Kinetik immer 999 (siehe glwidget.cpp) ->
-            // dieser Block ist dann komplett wirkungslos.
+            // Kinetics (optional, Shift+W - OFF by default: user feedback, the
+            // original 1.5x slam jumped too much): the fresh active line now only
+            // grows gently (1.18x -> 1.0 in 0.35 s, ease-out) instead of
+            // "jumping".  With kinetics switched off lyricsLineAge always stays
+            // 999 (see glwidget.cpp) -> this block then has no effect at all.
             float u2 = u, v2 = v, slam_glow = 0.0;
             if ( lyricsHl.x >= 0.0 && lyricsLineAge < 0.35 )
             {
@@ -680,34 +679,33 @@ void main()
                     slam_glow = rem;
                 }
             }
-            // Physische Textur-U (kann breiter als das nominale Fenster sein,
-            // wenn eine Zeile im Textband nicht passte, siehe TrackMedia) --
-            // lyricsUScale skaliert zurueck, damit sich dadurch keine Zeile
-            // sichtbar verkleinert; nur innerhalb des Bands der gerade
-            // gelesenen Zeile (Host, beide Modi) kommt der langsame
-            // Marquee-Versatz dazu, statt abzuschneiden.
+            // Physical texture U (may be wider than the nominal window when a
+            // line did not fit the text band, see TrackMedia) -- lyricsUScale
+            // scales back so that no line visibly shrinks because of it; only
+            // inside the band of the line being read (host, both modes) the
+            // slow marquee offset is added instead of cutting the line off.
             float u_phys = u2 * lyricsUScale;
             if ( lyricsFocusV.x >= 0.0 && v2 >= lyricsFocusV.x && v2 <= lyricsFocusV.y )
                 u_phys += lyricsScrollU;
             vec4 lt = texture( lyricsTex, vec2( clamp( u_phys, 0.0, 1.0 ), v2 ) );
-            // Weiche Raender oben/unten (Credits-Fenster).
+            // Soft edges at the top and bottom (the credits window).
             float edge = smoothstep( 0.04, 0.22, uv.y ) * smoothstep( 0.96, 0.78, uv.y );
             float a = lt.a * lyricsAlpha * edge;
 
             vec3 col = lt.rgb;
             if ( lyricsHl.x >= 0.0 )
             {
-                // Karaoke: aktive Zeile gold + Sweep, restliche Zeilen dezent.
+                // Karaoke: the active line golden + a sweep, the other lines subdued.
                 if ( v2 >= lyricsHl.x && v2 <= lyricsHl.y )
                 {
                     float sweep = smoothstep( lyricsHl.z + 0.02, lyricsHl.z - 0.02, u2 );
                     vec3  gold = col * vec3( 1.0, 0.86, 0.42 );
                     col = mix( col, gold, 0.35 + 0.65 * sweep );
                     c += gold * a * 0.25 * ( 0.5 + 0.5 * audioBeat );
-                    c += gold * a * 0.18 * slam_glow; // dezentes Aufblitzen
+                    c += gold * a * 0.18 * slam_glow; // a subtle flash
                 }
                 else
-                    a *= 0.45; // Kontext-Zeilen dezenter
+                    a *= 0.45; // context lines more subdued
             }
             c = mix( c, col, a * 0.95 );
         }
@@ -917,10 +915,10 @@ void main()
     if ( autoExposure > 0.0 )
         c *= clamp( autoExposure, 0.72, 1.35 );
 
-    // --- Filmkorn: feines, temporales Korn, staerker in den Schatten (wie
-    // echte Emulsion) und einen Hauch praesenter, wenn Musik laeuft.  Zero-
-    // mean Pixelrauschen - keine Fullscreen-Helligkeitsschwankung, also
-    // unkritisch fuer die Photosensitivitaet.
+    // --- Film grain: fine temporal grain, stronger in the shadows (like real
+    // emulsion) and a touch more present while music plays.  Zero-mean pixel
+    // noise - no full-screen brightness flicker, so harmless for
+    // photosensitivity.
     {
         float gr = hash21( gl_FragCoord.xy * 0.73
                            + vec2( fract( time * 13.7 ) * 91.0,
@@ -931,9 +929,9 @@ void main()
              * ( 0.55 + 0.45 * audioLevel );
     }
 
-    // --- CinemaScope-Letterbox: schwarze Balken kriechen im Build-up herein
-    // und reissen auf den Drop auf (Host slewt asymmetrisch).  NACH dem Korn,
-    // damit die Balken sauber schwarz bleiben (echte Matte, kein Filmbild).
+    // --- CinemaScope letterbox: black bars creep in during the build-up and
+    // tear open on the drop (the host slews asymmetrically).  AFTER the grain,
+    // so that the bars stay clean black (a real matte, no film picture).
     if ( letterbox > 0.001 )
     {
         float bar = 0.11 * letterbox;

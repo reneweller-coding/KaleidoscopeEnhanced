@@ -34,8 +34,8 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
-// Beide zaehlen ab DIESER Aktivierung, nicht ab Programmstart -- siehe unten
-// bei `drift`, warum das hier ueber Bild oder kein Bild entscheidet.
+// Both count from THIS activation, not from the program start -- see `drift`
+// below for why that decides here between a picture and none.
 uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
@@ -154,14 +154,14 @@ void main()
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
     float t = time * 0.1 + audioAdvance * 0.2;
-    // Die Flugstrecke MUSS pro Aktivierung bei 0 anfangen.  Sie ist die
-    // z-Koordinate, mit der das Rauschfeld abgetastet wird; mit `time` stand
-    // hier nach einer Stunde 7200, und `sin(n * 12.9898)` hat bei solchen
-    // Argumenten keine Aufloesung mehr fuer benachbarte Zellen -- die Wolke
-    // wird konstant, smoothstep(0.40, 0.80, ...) schneidet sie ganz weg und
-    // das Bild ist SCHWARZ (gemessen: Struktur 0.0534 bei Uhr 0, exakt
-    // 0.0000 bei Uhr 3600).  Der Musikschub bleibt erhalten, er zaehlt nur
-    // ebenfalls ab dem Auftritt.
+    // The distance flown MUST start at 0 with every activation.  It is the z
+    // coordinate the noise field is sampled at; with `time` it stood at 7200
+    // here after an hour, and `sin(n * 12.9898)` has no resolution left for
+    // neighbouring cells at such arguments -- the cloud turns constant,
+    // smoothstep(0.40, 0.80, ...) cuts it away completely and the picture is
+    // BLACK (measured: structure 0.0534 at clock 0, exactly 0.0000 at clock
+    // 3600).  The music's push stays; it, too, just counts from the scene's
+    // entrance.
     float drift = sceneTime * 2.0 + sceneAdvance * 5.0;
 
     vec3 ro = vec3( 3.0 * sin( t ), 3.0 * cos( t * 0.8 ), drift );
@@ -207,8 +207,8 @@ void main()
             // 0.2 + swell*0.8 went black on every quiet passage -- the
             // user-reported "the nebula is black".
             vec3 local_col = mix( color_base1, color_base2, dens );
-            // Sichtbar ohne Musik: bei leisem Material blieb die Wolke sonst
-            // eine kaum erkennbare Andeutung (Katalog-Frame A/B).
+            // Visible without music: with quiet material the cloud otherwise stayed
+            // a barely recognisable hint (catalogue frame A/B).
             local_col *= ( 0.85 + 0.5 * audioSwell + pulse ) * gp;
 
             // BIOLUMINESCENT VEINS: ridged filaments glowing inside the gas.

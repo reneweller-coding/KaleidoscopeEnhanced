@@ -8,7 +8,7 @@
  *  CALABI-YAU SIX-DIMENSIONAL MANIFOLD CROSS SECTION: 220x120 heightfield grid of a 3D projection of a
  *  6-dimensional Ricci-flat Calabi-Yau compactification manifold (quintic threefold).
  *
- *  Toric folds, complex Käler metric modulations, glass specular sheen, and string-theory photo texturing.
+ *  Toric folds, complex Kähler metric modulations, glass specular sheen, and string-theory photo texturing.
  *
  *    audioAdvance -> navigates complex structure moduli space deformation & rotation
  *    audioKick    -> flashes singular conifold transition & mirror symmetry bursts

@@ -233,8 +233,8 @@ void main()
     else
     {
         // Deep space
-        // Runde, gejitterte Sterne: ganze floor()-Zellen aufzuhellen ergibt
-        // QUADRATE (der wiederholt gemeldete "Riesenpixel"-Fehler).
+        // Round, jittered stars: brightening whole floor() cells gives SQUARES
+        // (the repeatedly reported "giant pixel" fault).
         vec2  sgrid = uv * 60.0;
         vec2  sid = floor( sgrid );
         vec2  sfr = fract( sgrid ) - 0.5;

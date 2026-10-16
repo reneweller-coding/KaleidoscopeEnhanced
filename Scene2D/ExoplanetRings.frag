@@ -202,7 +202,7 @@ float map( vec3 p, float dp, float sp )
     if ( abs( id.y ) < 1.0 && h > 0.4 / dp )
     {
         // Random tumble
-        float speed = ( h - 0.5 ) * 1.8; // Brocken taumeln, statt zu schleudern
+        float speed = ( h - 0.5 ) * 1.8; // chunks tumble instead of being flung
         q.xy = rot( time * speed ) * q.xy;
         q.xz = rot( time * speed * 0.7 ) * q.xz;
 
@@ -278,8 +278,8 @@ void main()
     {
         p = ro + rd * d;
         float ds = map( p, dp, sp );
-        // Clearance-Blase: die Bahn schneidet die Brockenebene -- ohne sie
-        // flog die Kamera IN die Eisbrocken hinein.
+        // Clearance bubble: the path cuts the plane of the chunks -- without it
+        // the camera flew INTO the ice chunks.
         ds = max( ds, 1.3 - d );
         m = hitMat;
         steps = i;
@@ -317,7 +317,7 @@ void main()
         float id = hash31( floor( p / 4.0 ) );
         if ( id > 0.9 )
         {
-            // Nur auf Kicks, ohne 5-Hz-Dauerstrobo.
+            // Only on kicks, without a constant 5 Hz strobe.
             float flash = step( 0.93, fract( time * 0.7 + id * 10.0 ) );
             col += flash_color * flash * audioKick * 2.5;
         }

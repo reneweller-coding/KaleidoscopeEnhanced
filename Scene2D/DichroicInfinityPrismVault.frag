@@ -175,7 +175,7 @@ void main()
     vec3 dichroic = imgPalette( ( bounce_count * 0.4 + audioPhase ) * 0.159 );
 
     // Diamond specular glints on kick
-    // Kompakter Zentrums-Glint statt des bildschirmbreiten weissen Kreuzes.
+    // A compact glint at the centre instead of the screen-wide white cross.
     float glint = exp( -( abs( uv.x ) + abs( uv.y ) ) * 6.0 ) * ( audioKick * 1.5 + audioHigh * 0.6 );
 
     // Combine visualizer

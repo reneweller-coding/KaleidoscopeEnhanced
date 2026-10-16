@@ -86,7 +86,7 @@ float dens( vec2 uv )
 {
     // Smooth the raw splat field: individual discs must merge into one body.
     float d = texture( texMetal, uv ).a * 4.0;
-    vec2  px = 28.0 / resolution; // noch breiter: das Splat-Feld las sich als HF-Rauschen
+    vec2  px = 28.0 / resolution; // wider still: the splat field read as high-frequency noise
     d += texture( texMetal, uv + vec2( px.x, 0.0 ) ).a * 2.0;
     d += texture( texMetal, uv + vec2( -px.x, 0.0 ) ).a * 2.0;
     d += texture( texMetal, uv + vec2( 0.0, px.y ) ).a * 2.0;

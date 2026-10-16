@@ -284,8 +284,8 @@ void main()
 
         // Thin-film interference thickness based on surface angle, depth & position
         float dot_nv = max( dot( n, view ), 0.0 );
-        // audioAdvance statt audioCentroid: der Centroid zittert pro Frame und
-        // schob den kompletten Regenbogen ueber den Schirm -- das "Hektische".
+        // audioAdvance instead of audioCentroid: the centroid jitters every frame
+        // and pushed the whole rainbow across the screen -- the "hectic" look.
         float film_thickness = dot_nv * 2.5 + hit_layer * 0.9 + p.z * 0.15 + audioAdvance * 0.06;
         // Capped: thinFilmColor peaks at 1.5 per channel, and with the terraces
         // now actually being hit that peak would land straight on the clip.

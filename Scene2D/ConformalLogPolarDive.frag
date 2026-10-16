@@ -100,14 +100,14 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float sprl = ( spiralP > 0.01 ) ? spiralP : 1.0;
-    // Ganzzahlig gerundet: ein nicht-ganzzahliges n_arms reisst die
-    // Winkel-Kachelung am Branch-Cut auf (zweite Quelle derselben Naht).
+    // Rounded to a whole number: a non-integer n_arms tears the angular
+    // tiling open at the branch cut (a second source of the same seam).
     float n_arms = floor( ( ( armsP > 1.0 ) ? armsP : 2.0 ) + 0.5 );
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     float r = max( 1e-5, length( uv ) );
     float a = atan( uv.y, uv.x );

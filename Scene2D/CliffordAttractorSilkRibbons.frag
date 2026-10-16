@@ -86,11 +86,11 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.28 * spd + audioAdvance * 0.22 * spd; // Zeit-Basis:
-    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
+    // audioAdvance alone stands still in quiet music ("looks like a still picture").
 
     // Clifford attractor parameters modulated smoothly across time
-    // audioPhase statt Centroid: der Centroid zittert pro Frame und liess die
-    // Attraktor-Form zucken statt fliessen.
+    // audioPhase instead of the centroid: the centroid jitters every frame and
+    // made the attractor's shape twitch instead of flow.
     float a = -1.4 + 0.4 * sin( t * 0.3 ) + 0.08 * sin( audioPhase * 0.5 );
     float b = 1.6 + 0.3 * cos( t * 0.25 );
     // c/d scale the cosine terms, i.e. how far each Clifford step folds the

@@ -112,7 +112,7 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.25 * spd + audioAdvance * 0.20 * spd; // Zeit-Basis:
-    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
+    // audioAdvance alone stands still in quiet music ("looks like a still picture").
 
     // Deep zoom into the Kleinian cusp, ping-ponged. The old
     // exp(mod(t * 0.6, 6.0)) snapped from e^6 (403x) back to e^0 every ~10 s
@@ -120,8 +120,8 @@ void main()
     // back out instead: continuous in value AND velocity (the derivative
     // vanishes at both turns), so no seam anywhere.
     float zc = 0.5 - 0.5 * cos( 6.2831853 * fract( t * 0.6 / 6.0 ) ); // 0..1..0
-    // Zoom gedeckelt (max ~9x statt 403x): tief im Set blieb nur noch die
-    // Grenzlinie uebrig -- "zwei einfarbige Flaechen".
+    // Zoom capped (at most ~9x instead of 403x): deep in the set only the
+    // border line was left -- "two flat-coloured areas".
     float zoom_level = exp( zc * 2.2 ) * zm;
     vec2  z = uv / zoom_level;
 

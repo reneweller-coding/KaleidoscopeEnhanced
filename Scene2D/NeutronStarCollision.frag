@@ -32,9 +32,9 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
-// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
-// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
-// als Phase, nicht als Position oder Rauschkoordinate.
+// Both count from THIS activation instead of from the program start:
+// `time` and `audioAdvance` grow without bound and so serve only as a
+// phase, never as a position or a noise coordinate.
 uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 
@@ -156,11 +156,11 @@ void main()
     // DER DRITTE AKT: Inspiral -> Merger-Blitz -> Schockwelle, zyklisch.
     // Vorher kreisten die Sterne nur ewig ("extrem langweilig").
     float cyc = fract( time / 45.0 );
-    float insp = smoothstep( 0.0, 0.82, cyc );    // 0..1 bis zum Merger
-    float post_m = smoothstep( 0.82, 0.86, cyc ); // 1 nach dem Merger
+    float insp = smoothstep( 0.0, 0.82, cyc );    // 0..1 until the merger
+    float post_m = smoothstep( 0.82, 0.86, cyc ); // 1 after the merger
     float orbit_speed = sceneTime * 2.0 + sceneTime * insp * insp * 5.0
                         + sceneAdvance * 4.0;
-    float orbit_rad = 0.42 * dp * ( 1.0 - 0.92 * insp ); // Spirale zieht sich zu
+    float orbit_rad = 0.42 * dp * ( 1.0 - 0.92 * insp ); // the spiral tightens
 
     vec2 p1 = vec2( cos( orbit_speed ), sin( orbit_speed ) ) * orbit_rad;
     vec2 p2 = vec2( cos( orbit_speed + 3.14159 ), sin( orbit_speed + 3.14159 ) ) * orbit_rad;
@@ -182,7 +182,7 @@ void main()
     vec3 jet_col = imgPalette( 0.4 );
 
     // Core of the stars (very small but infinitely bright)
-    float star_vis = 1.0 - post_m; // nach dem Merger verschmolzen
+    float star_vis = 1.0 - post_m; // merged after the merger
     col += star_col1 * star_vis * 0.005 / max( d1 - 0.01, 0.001 );
     col += star_col2 * star_vis * 0.005 / max( d2 - 0.01, 0.001 );
 

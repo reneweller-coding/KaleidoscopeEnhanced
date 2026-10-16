@@ -150,9 +150,9 @@ void main()
     {
         p = ro + rd * d_o;
         float d_s = chamber( p * scl, size ) / scl;
-        // Kamera-Clearance-Blase: der Skriptpfad kreuzt Kammerwaende, und
-        // ohne Blase steckte das Auge zeitweise IN der Geometrie
-        // ("Eindringen in das Objekt / Kollision mit Kamera").
+        // Camera clearance bubble: the scripted path crosses chamber walls, and
+        // without the bubble the eye was at times INSIDE the geometry
+        // ("entering the object / collision with the camera").
         d_s = max( d_s, 0.5 - d_o );
         if ( d_s < 0.004 )
         {

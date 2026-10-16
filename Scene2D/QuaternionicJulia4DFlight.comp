@@ -113,8 +113,8 @@ void main()
         -0.08 + 0.05 * cos( t * 1.1 ) + 0.03 * sin( t * 1.7 ) // Kick-Morph raus: Set-Form sprang pro Schlag
     );
     float slc = ( sliceP > 0.0 ) ? sliceP : 1.0;
-    // Amplitude gesenkt: bei |w| ~0.4 war der 3D-Schnitt zeitweise fast
-    // LEER -- die gemeldeten Schwarzphasen.
+    // Amplitude lowered: at |w| ~0.4 the 3D slice was at times almost EMPTY
+    // -- the reported black phases.
     float w_coord = sin( t * 0.6 ) * 0.22 * slc;
 
     vec3 p = mix( vec3( -Extent ), vec3( Extent ), vec3( gid ) / float( Res - 1 ) );

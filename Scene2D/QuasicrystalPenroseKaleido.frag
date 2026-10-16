@@ -86,8 +86,8 @@ void main()
     float sym_n = ( symmetryP > 1.0 ) ? symmetryP : 5.0; // 5 or 7 or 10
 
     float t = time * 0.132 * spd + audioAdvance * 0.132 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Golden ratio scale factor
     float phi = 1.6180339887;

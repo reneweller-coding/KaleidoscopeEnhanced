@@ -52,8 +52,8 @@ vec3 img( vec2 uv )
     return ( interpolation * texture( tex0, uv ) + ( 1.0 - interpolation ) * texture( tex1, uv ) ).rgb;
 }
 
-/**  Smooth Gor'kov clustering: a monotone warp of one axis that pulls particles toward the pressure NODES of cos(k*x
- * + ph) (the zeros at pi/2 + n*pi) and away from the antinodes.
+/**  Smooth Gor'kov clustering: a monotone warp of one axis that pulls particles toward the pressure NODES of cos(k*x +
+ * ph) (the zeros at pi/2 + n*pi) and away from the antinodes.
  *
  * @param x   The coordinate. (in)
  * @param k   Wave number. (in)

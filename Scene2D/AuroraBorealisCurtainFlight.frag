@@ -87,8 +87,8 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.210 * spd + audioAdvance * 0.210 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Flight camera position floating among aurora curtains
     vec3 ro = vec3( sin( t * 0.3 ) * 0.5, 0.0, t * 2.0 );
@@ -143,8 +143,8 @@ void main()
     }
 
     // Deep cosmic background starfield with texture sample
-    // SPIEGEL-Kachelung statt fract(): die harte Wrap-Naht des driftenden
-    // Fotos war die gemeldete sichtbare Kante im Hintergrund.
+    // MIRRORED tiling instead of fract(): the hard wrap seam of the drifting
+    // photo was the reported visible edge in the background.
     vec2 sky_raw = uv * 0.3 + vec2( t * 0.02, 0.0 );
     vec2 sky_uv = abs( fract( sky_raw * 0.5 ) * 2.0 - 1.0 );
     vec3 sky_tex = img( sky_uv );

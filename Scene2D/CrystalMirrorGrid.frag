@@ -157,9 +157,9 @@ float mapLattice( vec3 p, float fDensity, float shatter )
     // permanently inside a crystal, so every frame was one facet's flat
     // interior. Carve a spherical chamber around the orbit: the camera
     // now circles inside a crystal hall whose walls ARE the grid.
-    // FLOATING CLUSTER statt Kammer: die Kammerwand zeigte nur noch das
-    // gespiegelte Foto am Stueck ("wirkt wie einfach nur das Bild"). Ein
-    // aussen umkreister Spiegelblock fragmentiert es sichtbar.
+    // FLOATING CLUSTER instead of a chamber: the chamber wall only showed the
+    // mirrored photo in one piece ("looks like just the picture").  A mirror
+    // block circled from outside breaks it up visibly.
     return max( lat, length( p ) - 2.2 );
 }
 
@@ -228,9 +228,9 @@ void main()
     {
         vec3 p = ro + rd * hit_dist;
         vec3 N = calcNormal( p, 2.0 * f_dens, shat );
-        // MOSAIK-Spiegel: jede Zelle kippt ihren Spiegel eigenwillig, sonst
-        // reflektiert die glatte Kammerwand einfach nur das Foto am Stueck
-        // ("wirkt wie einfach nur das Bild").
+        // MOSAIC mirrors: every cell tilts its mirror its own way, otherwise the
+        // smooth chamber wall simply reflects the photo in one piece ("looks like
+        // just the picture").
         vec3 cell_id = floor( p * 2.0 * f_dens );
         vec3 tilt_h = vec3( hash3D( cell_id ), hash3D( cell_id + 7.1 ), hash3D( cell_id + 13.7 ) );
         N = normalize( N + ( tilt_h - 0.5 ) * 0.85 );
@@ -266,8 +266,8 @@ void main()
     else
     {
         // Background fallback projection
-        // Dunkler Raum + Palettenhauch: der Cluster soll leuchten, nicht
-        // der Hintergrund.
+        // Dark room + a breath of palette: the cluster should glow, not the
+        // background.
         final_col = imgPalette( 0.6 ) * 0.10 + img( fract( uv * 0.5 + 0.5 ) ) * 0.06;
     }
 

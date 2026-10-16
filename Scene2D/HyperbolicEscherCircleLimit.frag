@@ -140,8 +140,8 @@ void main()
 
     // Hyperbolic space drift & translation
     float t = time * 0.180 * spd + audioAdvance * 0.180 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
     float rot_angle = t * 0.15 + audioPhase * 0.1;
     float cs = cos( rot_angle ), sn = sin( rot_angle );
     vec2  z = mat2( cs, -sn, sn, cs ) * uv * ( 1.45 + 0.15 * sin( audioSwell * 2.0 ) );

@@ -83,14 +83,14 @@ void main()
 
     float spd = ( speedP > 0.01 ) ? speedP : 1.0;
     float g_freq = ( gratingFreqP > 0.01 ) ? gratingFreqP : 1.0;
-    // Ganzzahlig gerundet: r_bow multipliziert unten den atan-Winkel; jeder
-    // nicht-ganzzahlige Faktor reisst am Branch-Cut eine Kante auf.
+    // Rounded to a whole number: r_bow multiplies the atan angle below; any
+    // non-integer factor tears an edge open at the branch cut.
     float r_bow = max( 1.0, floor( ( ( rainbowP > 0.01 ) ? rainbowP : 1.2 ) + 0.5 ) );
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.192 * spd + audioAdvance * 0.192 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Rotation of holographic foil
     float rot_a = t * 0.15 + audioPhase * 0.1;

@@ -33,7 +33,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
-// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart.
+// Both count from THIS activation instead of from the program start.
 uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
@@ -153,20 +153,20 @@ void main()
 
     // We are flying through a thick atmosphere (no stars, just clouds)
     // Map uv to a perspective view facing forwards
-    // Die Flugstrecke ist die Koordinate, mit der das Rauschfeld
-    // abgetastet wird -- sie MUSS pro Auftritt bei 0 anfangen.  Mit
-    // `time` stand hier nach einer Stunde 7200, und `sin(n * 12.9898)`
-    // hat bei solchen Argumenten keine Aufloesung mehr fuer benachbarte
-    // Zellen: das Rauschen wird konstant und das Bild flach bis schwarz.
-    // Der Musikschub bleibt, er zaehlt nur ebenfalls ab dem Auftritt.
+    // The distance flown is the coordinate the noise field is sampled at --
+    // it MUST start at 0 with every entrance.  With `time` it stood at 7200
+    // here after an hour, and `sin(n * 12.9898)` has no resolution left for
+    // neighbouring cells at such arguments: the noise turns constant and the
+    // picture flat or black.  The music's push stays; it, too, just counts
+    // from the entrance.
     float drift = sceneTime * 2.0 + sceneAdvance * 5.0;
 
     // Y is up/down in the atmosphere, X is sideways, Z is forwards
     // The clouds are organized in massive horizontal bands
 
     vec3 col = vec3( 0.0 );
-    // Helligkeits-Floor: auf dunklen Fotos war die reine Palette schwarz
-    // und die ganze Szene blieb es mit ("bleibt schwarz").
+    // Brightness floor: on dark photos the plain palette was black and the
+    // whole scene stayed black with it ("stays black").
     vec3 cloud_color = max( imgPalette( 0.3 ), vec3( 0.14, 0.11, 0.08 ) );
     vec3 lightning_color = max( imgPalette( 0.8 + audioCentroid * 0.1 ), vec3( 0.65, 0.6, 0.5 ) );
     vec3 city_color = max( imgPalette( 0.5 ), vec3( 0.30, 0.24, 0.14 ) );

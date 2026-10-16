@@ -179,8 +179,8 @@ void main()
         // The exposed magma is incredibly bright
         float heat = smoothstep( 0.6, 0.3, cells );
 
-        // Eruptionen: runde glimmende Herde statt der einfarbigen
-        // Riesenquadrate (ganze 0.5er-Zellen blinkten mit 5 Hz).
+        // Eruptions: round glowing vents instead of the flat-coloured giant
+        // squares (whole 0.5 cells blinked at 5 Hz).
         vec2  e_cell = floor( plane_uv * 4.0 );
         vec2  e_frac = fract( plane_uv * 4.0 ) - 0.5;
         float eh = fract( sin( dot( e_cell, vec2( 12.9898, 78.233 ) ) ) * 43758.5453 );

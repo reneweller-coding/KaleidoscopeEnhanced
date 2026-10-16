@@ -202,11 +202,11 @@ void main()
     vec3  photo = texture( tex0, uv ).rgb;
     float lum = dot( photo, vec3( 0.299, 0.587, 0.114 ) );
     vec3  lit = mix( vec3( lum ), photo, 0.5 ) * vec3( 0.80, 0.88, 1.10 );
-    // Basis-Anteil erneut angehoben (war 0.045, dann 0.16): mit 16% Fotolicht
-    // blieb alles ausserhalb des einen Blitzbaums praktisch schwarz, das Bild
-    // war zu drei Vierteln tot.  Jetzt liegt immer ein gedaempftes,
-    // gewitterstimmiges Foto unter der Wolkendecke, die Blitze setzen die
-    // Akzente obendrauf.
+    // Base share raised again (was 0.045, then 0.16): with 16% photo light
+    // everything outside the one lightning tree stayed practically black,
+    // three quarters of the picture were dead.  Now a dimmed, stormy photo
+    // always lies under the cloud cover, and the bolts set the accents on
+    // top.
     // Snares and claps are the thunder: they deepen how far the sheet glow
     // reveals the landscape.  Still GATED by 'flash', so a snare on its own
     // never lights an empty sky -- and bounded, so the reveal cannot run away.

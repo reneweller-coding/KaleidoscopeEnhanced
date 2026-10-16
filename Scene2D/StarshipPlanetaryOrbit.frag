@@ -279,11 +279,11 @@ void main()
     // patch of surface -- no limb, no weather, just a grey gradient.
     vec3  ro = vec3( 0.0, 0.92, -3.05 );
     float pitch = -0.16 + 0.035 * sin( t * 0.5 );
-    // Yaw DARF NICHT akkumulieren: mit "+ t * 0.10" dreht sich die Kamera
-    // nach ein paar Minuten Laufzeit dauerhaft vom Planeten weg, und die
-    // Szene zeigt nur noch das Schiff im Leeren (im Screening-Sweep nach
-    // 13 min Laufzeit: Luma 0.000). Zwei ueberlagerte Schwingungen geben
-    // dieselbe Unruhe, bleiben aber fuer immer auf das Motiv gerichtet.
+    // The yaw MUST NOT accumulate: with "+ t * 0.10" the camera turns away
+    // from the planet for good after a few minutes of running, and the scene
+    // shows only the ship in the void (in the screening sweep after 13 min of
+    // running: luma 0.000).  Two superposed oscillations give the same
+    // restlessness but stay pointed at the subject for ever.
     float yaw = 0.20 * sin( t * 0.37 ) + 0.30 * sin( t * 0.11 );
     vec3  fwd = normalize( vec3( sin( yaw ) * cos( pitch ), sin( pitch ), cos( yaw ) * cos( pitch ) ) );
     vec3  rgt = normalize( cross( fwd, vec3( 0.0, 1.0, 0.0 ) ) );

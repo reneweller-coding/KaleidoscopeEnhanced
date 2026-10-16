@@ -32,7 +32,7 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
-// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart.
+// Both count from THIS activation instead of from the program start.
 uniform float sceneTime;      ///< Seconds since this scene was activated.
 uniform float sceneAdvance;   ///< The music's advance since this scene was activated (integrated, never jumps).
 uniform float audioSwell;     ///< Slow loudness envelope, 0..1 (seconds).
@@ -215,12 +215,12 @@ void main()
 
     vec2 uv = ( gl_FragCoord.xy - 0.5 * resolution ) / resolution.y;
 
-    // Die Flugstrecke ist die Koordinate, mit der das Rauschfeld
-    // abgetastet wird -- sie MUSS pro Auftritt bei 0 anfangen.  Mit
-    // `time` stand hier nach einer Stunde 7200, und `sin(n * 12.9898)`
-    // hat bei solchen Argumenten keine Aufloesung mehr fuer benachbarte
-    // Zellen: das Rauschen wird konstant und das Bild flach bis schwarz.
-    // Der Musikschub bleibt, er zaehlt nur ebenfalls ab dem Auftritt.
+    // The distance flown is the coordinate the noise field is sampled at --
+    // it MUST start at 0 with every entrance.  With `time` it stood at 7200
+    // here after an hour, and `sin(n * 12.9898)` has no resolution left for
+    // neighbouring cells at such arguments: the noise turns constant and the
+    // picture flat or black.  The music's push stays; it, too, just counts
+    // from the entrance.
     float drift = sceneTime * 2.0 + sceneAdvance * 5.0;
     vec3  ro = vec3( sin( time * 0.2 ) * 2.0, cos( time * 0.3 ) * 2.0, drift );
 
@@ -288,9 +288,9 @@ void main()
 
         // Distance fog
         col = mix( col, bg_col, smoothstep( 10.0, 40.0, d ) );
-        // Weiche MATERIALISIERUNG: die alte harte Blase (2.2) liess jeden
-        // Kristall beim Grenzuebertritt schlagartig als Riesenmenge
-        // aufploppen -- jetzt blendet Naehe sanft ein.
+        // Soft MATERIALISATION: the old hard bubble (2.2) made every crystal pop
+        // up all at once in a huge crowd as it crossed the border -- now
+        // nearness fades it in gently.
         col = mix( bg_col, col, smoothstep( 0.7, 3.2, d ) );
     }
     else

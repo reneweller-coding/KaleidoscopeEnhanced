@@ -233,8 +233,8 @@ void main()
             break;
         }
 
-        // Feiner Schritt: 0.015 min-step gegen 0.003-Schwelle uebersprang
-        // die Konvergenz und zackte jede Silhouette aus ("pixelig").
+        // Fine step: a 0.015 min-step against a 0.003 threshold skipped the
+        // convergence and jagged every silhouette ("pixelated").
         tot_dist += max( 0.004, d * 0.8 );
     }
 

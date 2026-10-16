@@ -161,8 +161,8 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.150 * spd + audioAdvance * 0.150 * spd;
-    // Zeit-Basis + Musik-Schub: audioAdvance ALLEIN steht bei ruhiger
-    // Musik still (die gemeldete "wirkt wie ein Bild"-Klasse).
+    // Time base + music push: audioAdvance ALONE stands still in quiet
+    // music (the reported "looks like a still picture" class).
 
     // Camera ray setup with dynamic orbital tilt
     float cam_dist = 2.9 + 0.35 * sin( audioSwell * 2.0 );

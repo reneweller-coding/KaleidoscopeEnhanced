@@ -192,9 +192,9 @@ void main()
         cos( t * 0.35 ) * 1.15,
         t * 2.5 );
 
-    // (Der fruehere Newton-Push sprang beim Wanddurchgang auf die andere
-    // Slab-Seite -- der gemeldete Kamerasprung. Ersetzt durch die
-    // Clearance-Blase im March unten: stetig per Konstruktion.)
+    // (The earlier Newton push jumped to the other side of the slab when it
+    // passed through a wall -- the reported camera jump.  Replaced by the
+    // clearance bubble in the march below: continuous by construction.)
 
     vec3 look_target = ro + vec3( sin( t * 0.6 ) * 0.4, cos( t * 0.4 ) * 0.4, 1.0 );
 

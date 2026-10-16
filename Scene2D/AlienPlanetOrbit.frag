@@ -34,9 +34,9 @@ uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0
 uniform float audioPhase;   ///< Rotation phase driven by the music (integrated, never jumps).
 uniform float audioAdvance; ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
                             ///< backwards).
-// Beide zaehlen ab DIESER Aktivierung statt ab Programmstart:
-// `time` und `audioAdvance` wachsen unbegrenzt und taugen daher nur
-// als Phase, nicht als Position oder Rauschkoordinate.
+// Both count from THIS activation instead of from the program start:
+// `time` and `audioAdvance` grow without bound and so serve only as a
+// phase, never as a position or a noise coordinate.
 uniform float sceneTime;    ///< Seconds since this scene was activated.
 uniform float sceneAdvance; ///< The music's advance since this scene was activated (integrated, never jumps).
 
@@ -176,16 +176,16 @@ float map( vec3 p, float pr, float sd )
     float mat = 0.0;
 
     // 1. The Planet (massive sphere below).
-    // Die Kamera steht bei y = 0, der Planet lag mit `-pr - 2.0` also nur ZWEI
-    // Einheiten unter ihr -- bei Radius 80 ist das kein Orbit, sondern
-    // Bodenhoehe: der Horizont sass bei sqrt(82^2 - 80^2) = 18 Einheiten, die
-    // Kugel war von einer Ebene nicht zu unterscheiden, streifend beleuchtet,
-    // und der ganze obere Bildteil war leerer Himmel.  Ein frueherer Anlauf
-    // hat nur die FARBE des Streifens angehoben, nicht seine Groesse.
-    // Auf 0.28 * pr Flughoehe: der Planet spannt jetzt rund 51 Grad, seine
-    // Kruemmung ist sichtbar, und der Horizont liegt bei 0.79 * pr -- weit
-    // innerhalb der Marschgrenze von 200.  Nebenbei steckt damit keine der
-    // Stationen mehr in der Oberflaeche (die sitzen bei y = -2 .. +2).
+    // The camera sits at y = 0, so with `-pr - 2.0` the planet lay only TWO
+    // units below it -- at radius 80 that is no orbit but ground level: the
+    // horizon sat at sqrt(82^2 - 80^2) = 18 units, the sphere could not be told
+    // from a plane, lit at a grazing angle, and the whole upper part of the
+    // picture was empty sky.  An earlier attempt only raised the strip's
+    // COLOUR, not its size.
+    // At a flight height of 0.28 * pr the planet now spans about 51 degrees,
+    // its curvature shows, and the horizon lies at 0.79 * pr -- well inside
+    // the march limit of 200.  As a side effect none of the stations is stuck
+    // in the surface any more (they sit at y = -2 .. +2).
     // Centred under the CAMERA: with a fixed centre the camera flew off the
     // planet along z and after ~20 s the frame was empty space (V7b).
     float planet = sdSphere( p - vec3( 0.0, -pr * 1.28, g_camZ ), pr );
@@ -343,9 +343,9 @@ void main()
     vec3 col = background( rd, drift );
 
     // Sun direction
-    // Sonne hoeher gestellt: bei streifendem Licht stand die Normale des
-    // sichtbaren Planetenstuecks (fast senkrecht) bei dif~0.2, und mit einer
-    // dunklen Foto-Palette war der Planet komplett schwarz.
+    // Sun raised: with grazing light the normal of the visible piece of the
+    // planet (nearly vertical) stood at dif ~0.2, and with a dark photo
+    // palette the planet was completely black.
     vec3 sun_dir = normalize( vec3( 0.55, 0.62, 0.55 ) );
 
     if ( m > 0.5 )

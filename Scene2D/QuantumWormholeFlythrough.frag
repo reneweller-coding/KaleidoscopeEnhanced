@@ -88,7 +88,7 @@ void main()
     float glw = ( glowP > 0.01 ) ? glowP : 1.0;
 
     float t = time * 0.35 * spd + audioAdvance * 0.28 * spd; // Zeit-Basis:
-    // audioAdvance allein steht bei ruhiger Musik still ("wirkt wie ein Bild").
+    // audioAdvance alone stands still in quiet music ("looks like a still picture").
 
     // Relativistic camera flight along wormhole Z-axis
     // zThroat goes continuously from -infinity to +infinity (repeating universe cycles)

@@ -108,13 +108,13 @@ void main()
     float ion_diffusion = exp( -r * d_grad * 2.0 );
 
     // Nucleation flash on kick
-    // Blitz nur an der wachsenden Front (Zentrum), nicht ueber alle Ringe.
+    // A flash only at the growing front (the centre), not across all rings.
     float nuc_flash = precip_band * exp( -r * 2.2 ) * ( 0.6 + 1.2 * audioKick )
                       * ( colloidGlowP > 0.01 ? colloidGlowP : 1.3 );
 
     // Palette assignment
-    // audioAdvance statt Centroid: der Centroid liess ALLE Ringe pro Frame
-    // die Farbe wechseln ("blinkendes Moire").
+    // audioAdvance instead of the centroid: the centroid made ALL rings change
+    // colour every frame ("blinking moire").
     float pal_angle = fract( log_r * 0.15 + r * 0.2 + audioAdvance * 0.05 );
     vec3  col_band = imgPalette( pal_angle );
     vec3  col_gel = imgPalette( fract( pal_angle + 0.5 ) ) * 0.6;

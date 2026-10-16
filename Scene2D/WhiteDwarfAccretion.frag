@@ -267,8 +267,8 @@ void main()
     col += wd_color * j2 * dp * ( 0.5 + j_pulse * audioKick * 5.0 );
 
     // --- 5. Background ---
-    // Runde, gejitterte Sterne: ganze floor()-Zellen aufzuhellen ergibt
-    // QUADRATE (der wiederholt gemeldete "Riesenpixel"-Fehler).
+    // Round, jittered stars: brightening whole floor() cells gives SQUARES
+    // (the repeatedly reported "giant pixel" fault).
     vec2  sgrid = uv * 55.0;
     vec2  sid = floor( sgrid );
     vec2  sfr = fract( sgrid ) - 0.5;

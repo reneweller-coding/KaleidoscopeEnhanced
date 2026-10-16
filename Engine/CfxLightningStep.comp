@@ -147,10 +147,10 @@ void main()
     // bolt travels but never in a straight line.
     ang += ( rnd( rs ) - 0.5 ) * 0.9;
     ang = mix( ang, -1.5707963, 0.10 ); // pulled toward the ground (-y)
-    // War 0.010+0.010*level: kombiniert mit der alten kurzen Lebensdauer
-    // erreichte ein Blitz bei ruhigem Pegel nie den unteren Bildrand - jetzt
-    // reicht die Basisgeschwindigkeit allein (samt Reserve fuer die
-    // Winkel-Drift) fuer die volle Bildhoehe.
+    // Was 0.010+0.010*level: combined with the old short lifetime a bolt never
+    // reached the bottom edge of the picture at a quiet level - now the base
+    // speed alone (with a reserve for the angular drift) covers the full
+    // height of the picture.
     float step_len = 0.013 + 0.009 * level;
     vec2  q = p + vec2( cos( ang ), sin( ang ) ) * step_len;
 

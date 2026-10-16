@@ -123,8 +123,8 @@ void main()
         sin( z * 0.8 + time * 0.5 ) * ( 1.0 + 0.5 * audioMid ) );
 
     // Multi-plane 4D rotations (continuous + kick hyper-flips)
-    // Weich eingeleitete Vierteldrehung statt floor()-Schnapp + Kick-Ruck --
-    // beides zusammen war die gemeldete Unstetigkeit.
+    // A softly started quarter turn instead of a floor() snap + a jerk on the
+    // kick -- the two together were the reported discontinuity.
     float fb = time * 0.5;
     float flip = ( floor( fb ) + smoothstep( 0.7, 1.0, fract( fb ) ) ) * 1.5707963
                  + 0.15 * sin( audioPhase );

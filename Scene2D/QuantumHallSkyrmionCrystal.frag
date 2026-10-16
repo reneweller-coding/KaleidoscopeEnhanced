@@ -91,18 +91,18 @@ void main()
     float pitch = ( crystalPitchP > 0.01 ? crystalPitchP : 3.8 );
     vec2  p = uv * pitch;
 
-    // ECHTE Inverse der cart_pos-Formel unten (X = sqrt3*(cx+0.5*cy),
-    // Y = 1.5*cy) -- die alte Rueckrechnung gehoerte zu einem anderen
-    // Gitter und liess am unteren Rand abgeschnittene Spikes stehen.
+    // The TRUE inverse of the cart_pos formula below (X = sqrt3*(cx+0.5*cy),
+    // Y = 1.5*cy) -- the old inverse belonged to another lattice and left
+    // cut-off spikes at the bottom edge.
     vec2 cell = floor( vec2( p.x * 0.57735027 - p.y * 0.33333333,
                              p.y * 0.66666667 ) );
 
     float min_dist = 1e5;
     vec2  closest_offset = vec2( 0.0 );
 
-    // +-2 statt +-1: die +-1-Suche im GESCHERTEN Zellraum verfehlte in der
-    // unteren Bildhaelfte den wahren naechsten Mittelpunkt, und die Kugeln
-    // wurden an der Zellgrenze halbiert ("Kugeln unten nur halb").
+    // +-2 instead of +-1: the +-1 search in the SHEARED cell space missed the
+    // true nearest centre in the lower half of the picture, and the spheres
+    // were cut in half at the cell border ("spheres at the bottom only half").
     for ( int y = -2; y <= 2; ++y )
     {
         for ( int x = -2; x <= 2; ++x )

@@ -160,7 +160,7 @@ void main()
     vec3 ww = normalize( ta - ro );
     vec3 uu = normalize( cross( ww, vec3( 0.0, 1.0, 0.0 ) ) );
     vec3 vv = cross( uu, ww );
-    // FOV konstant: der Kick-Zoom war ein Vollbild-Sprung pro Schlag.
+    // Constant FOV: the kick zoom was a full-frame jump on every beat.
     vec3 rd = normalize( uv.x * uu + uv.y * vv + 1.35 * ww );
 
     float total_dist = 0.0;

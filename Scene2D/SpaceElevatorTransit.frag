@@ -201,8 +201,8 @@ void main()
         col += vec3( 0.1, 0.2, 0.5 ) * halo * ( 0.5 + audioSwell );
 
         // Deep space background
-        // Runde, gejitterte Sterne: ganze floor()-Zellen aufzuhellen ergibt
-        // QUADRATE (der wiederholt gemeldete "Riesenpixel"-Fehler).
+        // Round, jittered stars: brightening whole floor() cells gives SQUARES
+        // (the repeatedly reported "giant pixel" fault).
         vec2  sgrid = uv * 55.0;
         vec2  sid = floor( sgrid );
         vec2  sfr = fract( sgrid ) - 0.5;

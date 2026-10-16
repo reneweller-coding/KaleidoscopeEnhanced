@@ -180,10 +180,9 @@ void main()
         float glint = pow( max( dot( reflect( cur_dir, normal ), normalize( vec3( 0.5, 0.8, -0.6 ) ) ), 0.0 ), 48.0 );
         glint *= ( 1.0 + 1.2 * audioHigh * glint_hash ); // ohne Blink-Gate
 
-        // KANTEN-FADE: wenn ein Bounce von einer Wand zur Nachbarwand
-        // wechselt, springt sein Foto-Ausschnitt -- nahe der Kante wird der
-        // Beitrag deshalb ausgeblendet, aus dem harten Texturwechsel wird
-        // eine Ueberblendung.
+        // EDGE FADE: when a bounce changes from one wall to the neighbouring one,
+        // its crop of the photo jumps -- so near the edge its share is faded out,
+        // and the hard change of texture becomes a cross-fade.
         vec3  an = abs( cur_p ) / box_size;
         float second = max( min( an.x, an.y ), min( max( an.x, an.y ), an.z ) );
         float edge_w = smoothstep( 1.0, 0.86, second );
