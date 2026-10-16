@@ -48,9 +48,9 @@ uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
 uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
 uniform float audioBass;       ///< Bass band level, 0..1.
 
-uniform float slatsP;  ///< Slats knob: bars across the frame.
-uniform float smokeP;  ///< Smoke knob: smoke density.
-uniform float silverP; ///< Silver knob: how much of the photo the light shows.
+uniform float slatsP;  ///< Slats knob: bars across the frame, 0..1.
+uniform float smokeP;  ///< Smoke knob: smoke density, 0..1.
+uniform float silverP; ///< Silver knob: how much of the photo the light shows, 0..1.
 uniform float tiltP;   ///< Tilt knob, 0..1.
 uniform float hueP;    ///< Hue knob (radians), usually the music's chroma hue plus a rolled offset.
 
@@ -529,7 +529,7 @@ void main()
     vec2  dir = vec2( cos( ang ), sin( ang ) );
     float n = 7.0 + 14.0 * clamp( slatsP, 0.0, 1.0 );
     float u = dot( p, dir ) * n + 0.5 * body + 0.07 * sceneTime; // the bars bend over the smoke's body
-    float open = 0.22 + 0.24 * spread + 0.08 * clamp( audioHarmChange, 0.0, 1.0 );
+    float open = 0.30 + 0.20 * spread + 0.08 * clamp( audioHarmChange, 0.0, 1.0 );
     float tri = abs( fract( u ) - 0.5 ) * 2.0; // 0 in a bar's middle, 1 at its edge (continuous)
     float fw = fwidth( u ) * 2.0;
     float hard = smoothstep( open + fw, open - fw, tri );
@@ -547,8 +547,8 @@ void main()
     // The light falls in broad pools that wander (the window's patch on the smoke), the rest stays dark.
     float pool = smoothstep( 0.30, 0.62,
                              fbm3( p * 0.55 + vec2( 0.011 * sceneTime, -0.017 * sceneTime ) + 0.2 * audioPhase ) );
-    float lit = 1.6 * bar * ( 0.22 + 0.78 * smoke ) * ( 0.45 + 1.1 * silver ) * ( 0.22 + 0.78 * pool );
-    vec3  col = light_c * lit * ( 0.75 + 0.6 * bass );
+    float lit = 2.3 * bar * ( 0.22 + 0.78 * smoke ) * ( 0.45 + 1.1 * silver ) * ( 0.35 + 0.65 * pool );
+    vec3  col = light_c * lit * ( 0.9 + 0.5 * bass );
     // Between the bars the smoke catches a trace of scattered light -- black, but not dead.
     col += light_c * 0.05 * smoke * pool;
     finish( col );

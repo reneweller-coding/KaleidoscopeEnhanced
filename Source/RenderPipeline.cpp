@@ -546,6 +546,45 @@ void RenderPipeline::start( int width, int height )
     for ( unsigned int i = 0; i < start; ++i )
         ++m_imageListIterator;
 
+    addFallbackEntries();
+
+    // Initial effect/combine pick and the scene clocks: SceneScheduler.  The
+    // scenes this preset showed last come back from the settings file, so a
+    // show that runs every evening does not start on the same few scenes
+    // (written back by saveHistory() whenever a scene has come on screen).
+    m_scheduler.attach( &m_effectTextures, &m_effectFx, &m_effectTransitions );
+    m_scheduler.setTasteCallback( [this]( const char *f )
+    { return tasteFor( f ); } );
+    m_scheduler.setBannedCallback( [this]( const char *f )
+    { return isBanned( f ); } );
+    if ( !scriptedRun() )
+    {
+        QSettings                s( SettingsFile::path(), QSettings::IniFormat );
+        std::vector<std::string> names;
+        for ( const QString &n :
+              s.value( historyKey( m_presetName ) ).toString().split( QChar( '|' ), Qt::SkipEmptyParts ) )
+            names.push_back( n.toStdString() );
+        m_scheduler.setHistory( names );
+        m_scheduler.setHistoryCallback( [this]( const std::vector<std::string> &n )
+        { saveHistory( n ); } );
+    }
+    m_scheduler.reset();
+
+    // Start the timers
+    m_time.start();
+    m_timeTexture.start();
+
+
+    // m_renderPipeline = new RenderPipeline(100,100, directory);
+    m_imageLoader = new ImageLoader( this );
+    m_imageLoader->start();
+
+    loadShader();
+    reinit( width, height );
+}
+
+void RenderPipeline::addFallbackEntries()
+{
     // A malformed configuration (wrong attribute names, missing type="normal")
     // used to yield ZERO valid entries here — and every qrand() % size() below
     // then crashed with a silent integer division by zero (0xC0000094).  Fall
@@ -582,40 +621,30 @@ void RenderPipeline::start( int width, int height )
         fb->setComplexity( 1 );
         m_effectTransitions.push_back( fb );
     }
+}
 
-    // Initial effect/combine pick and the scene clocks: SceneScheduler.  The
-    // scenes this preset showed last come back from the settings file, so a
-    // show that runs every evening does not start on the same few scenes
-    // (written back by saveHistory() whenever a scene has come on screen).
+void RenderPipeline::simulateBegin()
+{
+    EffectShader::M_Headless = true;
+    addFallbackEntries();
     m_scheduler.attach( &m_effectTextures, &m_effectFx, &m_effectTransitions );
-    m_scheduler.setTasteCallback( [this]( const char *f )
-    { return tasteFor( f ); } );
-    m_scheduler.setBannedCallback( [this]( const char *f )
-    { return isBanned( f ); } );
-    if ( !scriptedRun() )
-    {
-        QSettings                s( SettingsFile::path(), QSettings::IniFormat );
-        std::vector<std::string> names;
-        for ( const QString &n :
-              s.value( historyKey( m_presetName ) ).toString().split( QChar( '|' ), Qt::SkipEmptyParts ) )
-            names.push_back( n.toStdString() );
-        m_scheduler.setHistory( names );
-        m_scheduler.setHistoryCallback( [this]( const std::vector<std::string> &n )
-        { saveHistory( n ); } );
-    }
     m_scheduler.reset();
+}
 
-    // Start the timers
-    m_time.start();
-    m_timeTexture.start();
-
-
-    // m_renderPipeline = new RenderPipeline(100,100, directory);
-    m_imageLoader = new ImageLoader( this );
-    m_imageLoader->start();
-
-    loadShader();
-    reinit( width, height );
+SceneScheduler::Tick RenderPipeline::simulateFrame( const AudioFeatures &audio, float dt )
+{
+    m_scheduler.setMood( audio.arousal, audio.valence, audio.ambientFactor ); // as beginFrame()
+    updateTimingScale( audio );
+    conditionAudio( audio, dt );
+    const SceneScheduler::Tick tick = buildSchedulerTick( audio, dt );
+    // The scene passes: a chain lab decides at its first frame on screen whether this activation walks -- the scene
+    // on screen, and during a fade the incoming one.
+    m_effectTextures[m_scheduler.actTexture()]->simulateWalk();
+    if ( m_scheduler.texState() != 0 )
+        m_effectTextures[m_scheduler.nextTexture()]->simulateWalk();
+    m_globaltime += dt;
+    m_scheduler.tickFx( tick, false );
+    return tick;
 }
 
 void RenderPipeline::showState( QByteArray &scene, bool &fading, QByteArray &transition, float &fadeSecs,

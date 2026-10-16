@@ -2,6 +2,12 @@
 """One check before a release: every test of the visual side in one run, one report, green or red.
 
 Steps (each with its own threshold; --skip leaves steps out):
+  selftest   Release/Kaleidoscope.exe -q -- the self-test (score cues, analysis, scheduler, export, QR ...)
+  schedule   Tools/check_schedule.py --quick -- the real scheduler over 6 h of silence and 6 h of the structure track
+             per genre preset (Kaleidoscope.exe --schedule): solo ranges, holds, labs, lab share, fade floors
+  rules      Tools/temporal_budget.py, check_uniform_types.py, check_enum_tables.py, check_strings.py,
+             check_mood_tags.py, and shake_scan.py against Tools/shake_baseline.tsv (red only for NEW
+             SHAKE/FRAME/STEP hits) -- the standing rules, in seconds
   buildlists Tools/check_build_lists.py -- CMakeLists.txt and Kaleidoscope.pro list what the vcxproj builds;
              Tools/check_settings_path.py -- the settings file is named in SettingsFile.h only
   analyzer   Tools/analyzer_regress.py -- chord changes, drops and tempo of synthetic tracks with a known truth,
@@ -38,6 +44,52 @@ def run(cmd, timeout):
     t = time.time()
     p = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout)
     return p.returncode, (p.stdout or "") + (p.stderr or ""), time.time() - t
+
+
+def step_selftest():
+    exe = os.path.join(ROOT, "Release", "Kaleidoscope.exe")
+    if not os.path.exists(exe):
+        return None, "Release\\Kaleidoscope.exe missing -- build first", 0.0
+    env = dict(os.environ, PATH=os.environ.get("PATH", "") + os.pathsep + r"C:\Qt\6.11.1\msvc2022_64\bin")
+    t = time.time()
+    p = subprocess.run([exe, "-q"], cwd=os.path.join(ROOT, "Release"), capture_output=True, text=True, encoding="utf-8",
+                       errors="replace", timeout=900, env=env)
+    out = (p.stdout or "") + (p.stderr or "")
+    last = re.search(r"(\d+) passed, (\d+) failed", out)
+    fails = [l.strip() for l in out.splitlines() if "[FAIL]" in l]
+    msg = last.group(0) if last else out[-300:]
+    if fails:
+        msg += ": " + "; ".join(fails[:3])
+    return p.returncode == 0 and last is not None and last.group(2) == "0", msg, time.time() - t
+
+
+def step_rules():
+    checks = [("temporal_budget", [PY, "Tools/temporal_budget.py"]),
+              ("uniform types", [PY, "Tools/check_uniform_types.py"]),
+              ("enum tables", [PY, "Tools/check_enum_tables.py"]),
+              ("strings", [PY, "Tools/check_strings.py"]),
+              ("mood tags", [PY, "Tools/check_mood_tags.py"]),
+              ("shake", [PY, "Tools/shake_scan.py", "--summary", "--baseline", "Tools/shake_baseline.tsv"])]
+    red, parts, total = [], [], 0.0
+    for name, cmd in checks:
+        rc, out, dt = run(cmd, 600)
+        total += dt
+        if rc != 0:
+            red.append(name)
+        line = [l for l in out.splitlines() if l.strip()]
+        parts.append("%s %s" % (name, "ok" if rc == 0 else "RED (%s)" % ( line[-1][:120] if line else "rc %d" % rc )))
+    return not red, "; ".join(parts), total
+
+
+def step_schedule():
+    t = time.time()
+    rc, out, _ = run([PY, "Tools/check_schedule.py", "--quick"], 1800)
+    last = [l for l in out.splitlines() if l.startswith("schedule:")]
+    fails = [l.strip() for l in out.splitlines() if l.startswith("FAIL") or l.startswith("       ")]
+    msg = last[-1] if last else out[-300:]
+    if fails:
+        msg += ": " + "; ".join(fails[:3])
+    return rc == 0, msg, time.time() - t
 
 
 def step_buildlists():
@@ -116,6 +168,8 @@ def step_snapshots(label):
     rc, out, dt = run([PY, "Tools/scene_snapshots.py", "render", label, "--jobs", "3"], 8 * 3600)
     failed = re.search(r"(\d+) rendered, (\d+) failed", out)
     failed = int(failed.group(2)) if failed else -1
+    logged = re.search(r"(\d+) with errors in the log", out)                 # Expr [, OpenGL ERROR, FAILED
+    logged = int(logged.group(1)) if logged else 0
     if not os.path.exists(base_f):
         return None, "rendered %s; no baseline named in Tools/snapshot_baseline.txt -- nothing to compare" % label, dt
     base = io.open(base_f, encoding="utf-8").read().strip()
@@ -124,7 +178,8 @@ def step_snapshots(label):
     # changed scenes are not a failure by themselves: they have to be looked at
     black = re.search(r"\((\d+) newly black\)", last[-1]) if last else None
     ok = black is not None and black.group(1) == "0" and failed == 0
-    return ok, "%s; %d render(s) failed" % (last[-1] if last else out2[-300:], failed), dt + dt2
+    return ok, "%s; %d render(s) failed; %d scene(s) with errors in the log (listed in the report)" \
+        % (last[-1] if last else out2[-300:], failed, logged), dt + dt2
 
 
 def main():
@@ -133,7 +188,7 @@ def main():
     ap.add_argument("--label", default=datetime.date.today().isoformat(), help="name of this snapshot set")
     a = ap.parse_args()
     sys.stdout.reconfigure(encoding="utf-8")
-    steps = [("buildlists", step_buildlists), ("analyzer", step_analyzer), ("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("layout", step_layout), ("doxygen", step_doxygen),
+    steps = [("selftest", step_selftest), ("schedule", step_schedule), ("rules", step_rules), ("buildlists", step_buildlists), ("analyzer", step_analyzer), ("shaders", step_shaders), ("shaderdoc", step_shaderdoc), ("layout", step_layout), ("doxygen", step_doxygen),
              ("chain", step_chain), ("perf", step_perf), ("snapshots", lambda: step_snapshots(a.label))]
     rows, red = [], 0
     for name, fn in steps:

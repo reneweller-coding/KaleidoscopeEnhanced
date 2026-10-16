@@ -346,6 +346,18 @@ public:
      *   The currently rolled solo duration (seconds) for this effect.
      **/
     unsigned int getTimeSolo() const;
+    /**  The entry's solo range, as the preset gave it (absent or 0: 20..90 s).
+     *
+     * @return
+     *   Shortest solo in seconds.
+     **/
+    unsigned int minTimeSolo() const { return m_minTimeSolo; }
+    /**  See minTimeSolo().
+     *
+     * @return
+     *   Longest solo in seconds (getTimeSolo() rolls below it).
+     **/
+    unsigned int maxTimeSolo() const { return m_maxTimeSolo; }
     /**  The currently rolled interpolation (cross-fade) duration (seconds) for this effect.
      *
      * @return
@@ -614,6 +626,10 @@ public:
      * the uber-shaders.
      **/
     static bool M_ChainRunner;
+    /** No GL context (the scene plan run, ScheduleSim.h): a chain lab's walk host is read from its source
+     * (`uniform float walkHost`, `// @chainclasses`) instead of the linked program.
+     **/
+    static bool M_Headless;
     /// Whether every compiled formula is logged ("Expr OK"): KALEIDO_EXPR_LOG, or the editor; otherwise a preset
     /// logs one summary line.
     static bool M_ExprLog;
@@ -800,6 +816,11 @@ public:
      * can carry a whole set.
      **/
     bool walksWithMusic() const { return m_walk.active; }
+    /**  What the first frame on screen decides without GL (the scene plan run, ScheduleSim.h): whether this
+     * activation's chain walks (EffectShader::stepChainWalk() decides it from the rolled knobs once the program
+     * runs).  Needs M_Headless.
+     **/
+    void simulateWalk();
     /**  True if this entry is a chain lab that walks every time it runs: its shader takes the host's walk and the
      * entry rolls morphP only where the walk is on.
      *

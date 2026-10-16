@@ -347,6 +347,7 @@ void longRunChecks()
         lcg = lcg * 1664525u + 1013904223u;
         return static_cast<float>( lcg >> 8 ) / 16777216.f;
     };
+    clock.setLabStay( 600.f );
     bool  lab = false, twice = false;
     float lab_secs = 0.f, all_secs = 0.f;
     while ( all_secs < 48.f * 3600.f )
@@ -360,7 +361,7 @@ void longRunChecks()
         lab_secs += lab ? secs : 0.f;
     }
     const float share = lab_secs / all_secs;
-    check( share > 0.33f && share < 0.37f && !twice, "over two days the labs get the share asked for (35 %)",
+    check( share > 0.34f && share < 0.36f && !twice, "over two days the labs get the share asked for (35 %)",
            std::to_string( static_cast<int>( share * 1000.f + 0.5f ) / 10.f ).substr( 0, 4 ) + " %" );
 
     LabShareClock decay;
@@ -1187,6 +1188,107 @@ void phraseChecks()
            std::to_string( off.size() ) + " changes, " + std::to_string( off_phrase ) + " on the phrase" );
 }
 
+/**  A new section neither cuts in the drop's run-up nor right after a change (SceneScheduler, 16.10.2026): the scene
+ * plan run found both cutting a scene away two or three seconds after it came.
+ **/
+void runUpChecks()
+{
+    printf( "\nno section cut in the drop's run-up or right after a change (SceneScheduler)\n" );
+    // Never deleted: their destructor frees GL objects, and -q has no GL context.
+    static std::vector<EffectShader *> tex, fx, trans;
+    if ( tex.empty() )
+    {
+        for ( int i = 0; i < 4; ++i )
+            tex.push_back( new EffectShader( 60, 61, 1, 2 ) ); // a minute's solo: no change by the timer here
+        fx.push_back( new EffectShader( 600, 601, 1, 2 ) );
+    }
+    // Seconds from a new section to the next fade start; -1 if none within 3 s.  120 BPM (16 beats = 8 s), the
+    // build-up and the seconds to the phrase held as given; manual_at >= 0: a manual change at that moment first.
+    auto cut_after = [&]( float build_up, float phrase_left, double section_at, double manual_at, double t0 )
+    {
+        SceneScheduler sched;
+        sched.attach( &tex, &fx, &trans );
+        EngineClock::setVirtualSeconds( t0 );
+        sched.reset();
+        const float dt = 1.f / 60.f;
+        int         prev = sched.texState();
+        for ( int f = 1; f < 60 * 40; ++f )
+        {
+            const double s = f * static_cast<double>( dt );
+            EngineClock::setVirtualSeconds( t0 + s );
+            if ( manual_at >= 0.0 && s >= manual_at && s < manual_at + dt )
+                sched.forceScene( static_cast<int>( ( sched.actTexture() + 1 ) % tex.size() ) );
+            SceneScheduler::Tick t{};
+            t.dt = dt;
+            t.gateSmooth = 1.f;
+            t.timingScale = 1.f;
+            t.musicPresence = 1.f;
+            t.rhythmStrength = 0.8f;
+            t.estimatedBPM = 0.5f;
+            t.buildUp = build_up;
+            t.phraseSecsLeft = phrase_left;
+            t.sectionCount = s >= section_at ? 1 : 0;
+            sched.tick( t );
+            if ( s >= section_at && s < section_at + 3.0 && prev == 0 && sched.texState() == 1 )
+                return static_cast<float>( s - section_at );
+            prev = sched.texState();
+        }
+        return -1.f;
+    };
+    const float held = cut_after( 0.5f, 2.f, 30.0, -1.0, 400000.0 );
+    const float calm = cut_after( 0.3f, 2.f, 30.0, -1.0, 410000.0 );
+    const float distant = cut_after( 0.5f, 20.f, 30.0, -1.0, 420000.0 );
+    check( held < 0.f && calm >= 0.f && calm < 0.2f && distant >= 0.f && distant < 0.2f,
+           "a section in the last half phrase of a build-up waits for the drop; without the build-up, or a phrase "
+           "away, it cuts at once",
+           std::to_string( held ) + " / " + std::to_string( calm ) + " / " + std::to_string( distant ) + " s" );
+    // A manual change at 20 s fades in 0.8 s: a section 1.2 s after its end was answered by it, one 4.7 s after cuts.
+    const float answered = cut_after( 0.3f, 2.f, 22.0, 20.0, 430000.0 );
+    const float later = cut_after( 0.3f, 2.f, 25.5, 20.0, 440000.0 );
+    check( answered < 0.f && later >= 0.f && later < 0.2f,
+           "a section within 4 s after a change was answered by it; later it cuts",
+           std::to_string( answered ) + " / " + std::to_string( later ) + " s" );
+
+    // The spectacle reserve: a build-up every 30 s, a phrase (10 s) away, and no drop -- music that builds and never
+    // drops.  Two reserves, then none until a drop comes (at 130 s), then again.
+    static std::vector<EffectShader *> show;
+    if ( show.empty() )
+        for ( int i = 0; i < 4; ++i )
+        {
+            show.push_back( new EffectShader( 600, 601, 1, 2 ) );
+            show.back()->setInterest( 9 );
+        }
+    SceneScheduler sched;
+    sched.attach( &show, &fx, &trans );
+    EngineClock::setVirtualSeconds( 450000.0 );
+    sched.reset();
+    int         before = 0, after = 0;
+    bool        was = false;
+    const float dt = 1.f / 60.f;
+    for ( int f = 1; f < 60 * 170; ++f )
+    {
+        const double s = f * static_cast<double>( dt );
+        EngineClock::setVirtualSeconds( 450000.0 + s );
+        SceneScheduler::Tick t{};
+        t.dt = dt;
+        t.gateSmooth = 1.f;
+        t.timingScale = 1.f;
+        t.musicPresence = 1.f;
+        t.rhythmStrength = 0.8f;
+        t.estimatedBPM = 0.5f;
+        t.buildUp = std::fmod( s, 30.0 ) >= 10.0 ? 0.6f : 0.3f;
+        t.phraseSecsLeft = 10.f;
+        t.dropCount = s >= 130.0 ? 1 : 0;
+        sched.tick( t );
+        if ( sched.spectacleReserved() && !was )
+            ++( s < 130.0 ? before : after );
+        was = sched.spectacleReserved();
+    }
+    check( before == 2 && after >= 1, "the spectacle reserve rests after two predicted drops that did not come, until "
+                                      "a drop comes",
+           std::to_string( before ) + " before the drop, " + std::to_string( after ) + " after" );
+}
+
 } // namespace
 
 int runCueSelfTest()
@@ -1490,6 +1592,7 @@ int runCueSelfTest()
     qrChecks();
     exportChecks();
     phraseChecks(); // after exportChecks(): it needs the virtual engine clock
+    runUpChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );
     return g_failed == 0 ? 0 : 1;

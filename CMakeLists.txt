@@ -59,6 +59,7 @@ set(KALEIDO_SOURCES
 	Source/NowPlaying.cpp
 	Source/OscSender.cpp
 	Source/QrCode.cpp
+	Source/ScheduleSim.cpp
 	Source/OsdMenu.cpp
 	Source/Platform.cpp
 	Source/PresentPass.cpp

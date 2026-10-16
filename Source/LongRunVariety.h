@@ -161,6 +161,18 @@ public:
      *   The target share, 0..1.
      **/
     float target() const { return m_target; }
+    /**  How long a lab stays, on average.
+     *
+     * @param secs  Seconds of one lab stay (the lab entries' mean solo time); 0 decides at the share itself. (in)
+     *
+     * A lab is one big step of screen time.  Called the moment the labs fall behind, each lab carried them past the
+     * share, and they stayed ahead: +0.2 to +1.8 points in the genre presets (the scene plan run, Kaleidoscope.exe
+     * --schedule, 16.10.2026).  With the stay known, a lab is called once the labs are behind by 0.3 of the
+     * overshoot one stay makes, and the share swings around the target instead of above it: 0.3 centred it within
+     * 0.1 points in a simulation of this clock over labs of 120..900 s; half a stay, the obvious guess, fell short by
+     * as much as the old rule overshot.
+     **/
+    void setLabStay( float secs ) { m_labStay = secs > 0.f ? secs : 0.f; }
     /**  Books screen time.
      *
      * @param secs  Seconds a scene was on screen. (in)
@@ -192,7 +204,8 @@ public:
      * @param roll         A uniform random number 0..1, used only before any time was booked. (in)
      *
      * @return
-     *   True if the labs are behind their share (and the scene on screen is not one).
+     *   True if the labs are behind their share by more than 0.3 of a stay's overshoot (setLabStay()), and the
+     *   scene on screen is not one.
      **/
     bool wantLab( bool activeIsLab, float roll ) const
     {
@@ -204,7 +217,7 @@ public:
             return false;
         if ( m_all < 1.f )
             return roll < m_target;
-        return m_lab < m_target * m_all;
+        return m_lab + ( 1.f - m_target ) * 0.3f * m_labStay < m_target * m_all;
     }
 
 private:
@@ -212,6 +225,7 @@ private:
     float                  m_target = 0.f;     ///< The share the preset asks for.
     float                  m_lab = 0.f;        ///< Decayed seconds of walking labs.
     float                  m_all = 0.f;        ///< Decayed seconds of everything.
+    float                  m_labStay = 0.f;    ///< Seconds of one lab stay on average (setLabStay()).
 private:
     /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     LabShareClock( const LabShareClock & ) = delete;

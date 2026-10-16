@@ -39,7 +39,7 @@ void main()
     vec2 dir = vec2(cos(ang), sin(ang));
     float n = 7.0 + 14.0 * clamp(slatsP, 0.0, 1.0);
     float u = dot(p, dir) * n + 0.5 * body + 0.07 * sceneTime;   // the bars bend over the smoke's body
-    float open = 0.22 + 0.24 * spread + 0.08 * clamp(audioHarmChange, 0.0, 1.0);
+    float open = 0.30 + 0.20 * spread + 0.08 * clamp(audioHarmChange, 0.0, 1.0);
     float tri = abs(fract(u) - 0.5) * 2.0;      // 0 in a bar's middle, 1 at its edge (continuous)
     float fw = fwidth(u) * 2.0;
     float hard = smoothstep(open + fw, open - fw, tri);
@@ -56,8 +56,8 @@ void main()
     float silver = mix(0.6, smoothstep(0.08, 0.92, luma(ph)), clamp(silverP, 0.0, 1.0));
     // The light falls in broad pools that wander (the window's patch on the smoke), the rest stays dark.
     float pool = smoothstep(0.30, 0.62, fbm3(p * 0.55 + vec2(0.011 * sceneTime, -0.017 * sceneTime) + 0.2 * audioPhase));
-    float lit = 1.6 * bar * (0.22 + 0.78 * smoke) * (0.45 + 1.1 * silver) * (0.22 + 0.78 * pool);
-    vec3 col = lightC * lit * (0.75 + 0.6 * bass);
+    float lit = 2.3 * bar * (0.22 + 0.78 * smoke) * (0.45 + 1.1 * silver) * (0.35 + 0.65 * pool);
+    vec3 col = lightC * lit * (0.9 + 0.5 * bass);
     // Between the bars the smoke catches a trace of scattered light -- black, but not dead.
     col += lightC * 0.05 * smoke * pool;
     finish(col);

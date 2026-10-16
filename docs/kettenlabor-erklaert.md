@@ -721,4 +721,5 @@ Messung in `docs/engine-internals.md` (16.10.2026).
 | Messlauf über alle Labore | `Tools/perf_labs.py` (`--wav` für Musik) |
 | Presets | `Tools/make_genre_configs.py` → `Presets/Kettenlabor.xml`, `Presets/Transformationen.xml`, die Labor-Varianten der Genre-Presets (`LAB_FLAVOURS`) |
 | Bildzeit-Anteil, Szenengedächtnis, Klassen-Neuheit | `Source/LongRunVariety.h`; `SceneScheduler.cpp` (`pickScene`); `RenderPipeline.cpp` (`saveHistory`) |
-| Langlauf-Simulation (wann kommt eine Szene wieder?) | `Tools/long_run_sim.py` |
+| Langlauf-Simulation (wann kommt eine Szene wieder?) | `Tools/long_run_sim.py` (`--real`: die App selbst daneben) |
+| Szenenplan im echten Code, Regeln dazu | `Kaleidoscope.exe --schedule` (`Source/ScheduleSim.cpp`), `Tools/check_schedule.py` |

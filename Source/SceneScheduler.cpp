@@ -126,6 +126,18 @@ void SceneScheduler::reset()
     }
     m_labsScheduled = !labs.empty();
     m_labFiles = labs.size();
+    // A lab's mean stay, for the lab clock's step (a walking lab's solo is not scaled by the music's timing).
+    {
+        float sum = 0.f;
+        int   count = 0;
+        for ( unsigned int i = 0; i < tex.size(); ++i )
+            if ( m_isLab[i] )
+            {
+                sum += 0.5f * static_cast<float>( tex[i]->minTimeSolo() + tex[i]->maxTimeSolo() );
+                ++count;
+            }
+        m_labClock.setLabStay( count > 0 ? sum / static_cast<float>( count ) : 0.f );
+    }
     const size_t n = regular.size();
     m_recent.setCapacity( n > 2 ? std::min( n * 3 / 4, n - 2 ) : 0 );
     m_recent.assign( m_pendingHistory );
@@ -142,6 +154,7 @@ void SceneScheduler::reset()
     m_actTexture = pickScene( -1, true );
     noteTextureShown( m_actTexture );
     m_nextTexture = pickScene( static_cast<int>( m_actTexture ), true );
+    m_nextHow = "start";
 
     // KALEIDO_SEED: the first scene rolls its own seeded stream too.  It does not
     // pass through resetParameters() otherwise, and keeps the rolls made while
@@ -208,6 +221,7 @@ void SceneScheduler::forceScene( int idx )
     if ( m_texState == 0 )
     {
         m_nextTexture = idx;
+        m_nextHow = "forced";
         m_forcedNextTexture = -1;
     }
     else
@@ -558,7 +572,21 @@ void SceneScheduler::tick( const Tick &t )
     // and the chain labs' walk.
     m_noveltyCooldown -= t.dt;
     m_harmCutCooldown -= t.dt;
-    if ( !m_reviewMode && m_noveltyCooldown <= 0.f && m_harmCutCooldown <= 0.f
+    // THE DROP'S RUN-UP (16.10.2026): the riser and the snare roll at the end of a build-up read as a new section to
+    // the analyser, two or three seconds before the drop.  That cut took the scene reserved for the drop, and the
+    // drop cut it away again after the two-second minimum, to whatever came next -- in the structure track before
+    // every drop (the scene plan run, Kaleidoscope.exe --schedule; Tools/check_schedule.py).  While the tension
+    // rises in the last half phrase before the predicted drop, a section or a harmonic jump does not cut: the drop
+    // does.  If no drop comes, the scene's own time ends it.  Not in a calm preset, which never cuts on a drop.
+    const float beat_secs = 60.f / ( 40.f + 160.f * std::max( t.estimatedBPM, 0.004f ) );
+    const bool  run_up = !m_reviewMode && m_sceneFadeMin <= 0.f && m_regieWarm > 20.f && t.buildUp > 0.45f
+                         && t.phraseSecsLeft > 0.f && t.phraseSecsLeft <= 16.f * beat_secs;
+    // ANSWERED: a natural change waits for the phrase and its fade ends on the 8-bar boundary -- where a new section
+    // begins.  The analyser names the section a fraction of a second later, and the scene that had just come in for
+    // that very boundary was cut away after the two-second minimum (20 of 47 section cuts in the structure track).
+    // A section or a harmonic jump within 4 s after a fade ended was answered by that fade, as one during a fade is.
+    const bool answered = !m_reviewMode && m_texState == 0 && secsSince( m_clockEffectTexture ) < 4.f;
+    if ( !m_reviewMode && !run_up && !answered && m_noveltyCooldown <= 0.f && m_harmCutCooldown <= 0.f
          && t.harmonicChange * t.musicPresence > 0.95f )
     {
         if ( !mid_fade )
@@ -600,14 +628,20 @@ void SceneScheduler::tick( const Tick &t )
     // in forceScene()); not in a calm preset (it never cuts on a drop); not over a pending section replay or a
     // remote jump; not while a walking lab is on screen (it walks on instead of cutting).  2D only: a 3D or mesh
     // scene is not prebuilt, and its warm-up would hold the drop's cut back by seconds.  Once per prediction.
+    //
+    // Two limits (16.10.2026, the scene plan run on a long recording with build-ups and no drop): a lab waiting as
+    // the next scene keeps its turn -- a walking lab takes a drop itself, and overwriting it starved the labs to 0 %
+    // of their 40 %; and after two predictions without a drop the reserve rests until a drop comes -- otherwise every
+    // fade end in such music rolled a spectacle, and the show was nothing else.
     if ( drop_ahead && m_texState == 0 && m_sceneFadeMin <= 0.f && m_pendingSectionRestore < 0
          && m_pendingSectionNext < 0 && m_forcedNextTexture < 0 && !m_forceIsManual && m_actTexture < tex.size()
-         && !tex[m_actTexture]->walksWithMusic() )
+         && !tex[m_actTexture]->walksWithMusic() && !isLab( m_nextTexture ) && m_missedDrops < 2 )
     {
         const int pick = pickSpectacle( static_cast<int>( m_actTexture ) );
         if ( pick >= 0 )
         {
             m_nextTexture = static_cast<unsigned int>( pick );
+            m_nextHow = "spectacle";
             // Until the drop, or one phrase past its prediction: before a song's first drop the phrase grid is not
             // anchored yet, and in the structure track the drop came some 10 s after "in 7.9 s".
             m_spectacleFor = t.phraseSecsLeft + 32.f * 60.f / ( 40.f + 160.f * std::max( t.estimatedBPM, 0.5f ) );
@@ -622,7 +656,17 @@ void SceneScheduler::tick( const Tick &t )
     // RECURRING section (chorus #2 = chorus #1) plays the shader, combine and
     // exact parameters of back then; a NEW one rolls fresh and its look is
     // stored under the id after the change.
-    if ( !m_reviewMode && t.sectionCount == m_lastSectionCount + 1 )
+    if ( ( run_up || answered ) && t.sectionCount == m_lastSectionCount + 1 )
+    {
+        if ( run_up )
+            fprintf( stderr, "SCHED section id=%d in the drop's run-up (%.1f s to the phrase) -> held for the drop\n",
+                     t.sectionId, t.phraseSecsLeft );
+        else
+            fprintf( stderr, "SCHED section id=%d %.1f s after a change -> answered by it\n", t.sectionId,
+                     secsSince( m_clockEffectTexture ) );
+        m_noveltyCooldown = 8.0f;
+    }
+    else if ( !m_reviewMode && t.sectionCount == m_lastSectionCount + 1 )
     {
         int  id = t.sectionId;
         auto it = m_sectionEffect.find( id );
@@ -674,7 +718,8 @@ void SceneScheduler::tick( const Tick &t )
                 // TEXTURE slot happened to be idle at that moment).
                 if ( !mid_fade )
                 {
-                    m_nextTexture = it->second;   // replay that section's shader
+                    m_nextTexture = it->second; // replay that section's shader
+                    m_nextHow = "section";
                     m_pendingSectionRestore = id; //   ... with its exact params
                 }
                 else
@@ -721,9 +766,16 @@ void SceneScheduler::tick( const Tick &t )
     // DROP: immediate scene cut (still beat-quantised by the pending machinery,
     // but a drop IS a downbeat-scale accent).
     m_secsSinceDrop += t.dt;
-    m_spectacleFor = std::max( 0.f, m_spectacleFor - t.dt );
+    if ( m_spectacleFor > 0.f )
+    {
+        m_spectacleFor = std::max( 0.f, m_spectacleFor - t.dt );
+        if ( m_spectacleFor <= 0.f && t.dropCount == m_lastDropCount && ++m_missedDrops == 2 )
+            fprintf( stderr, "REGIE: zweimal kein Drop nach der Vorhersage -> keine Spektakel-Reserve bis zum "
+                             "naechsten Drop\n" );
+    }
     if ( t.dropCount != m_lastDropCount )
     {
+        m_missedDrops = 0;
         m_dropInSong = true;
         m_secsSinceDrop = 0.f;
         m_spectacleFor = 0.f;
@@ -806,6 +858,14 @@ void SceneScheduler::tick( const Tick &t )
         float      min_solo = m_forceIsManual ? 0.6f : ( m_sceneFadeMin > 0.f ? 20.f : 2.0f );
         if ( ts > m_texFadeDur || ( forced && ts > min_solo ) )
         {
+            if ( !m_pendingEffectChange )
+                m_changeHold = 2.5f;
+            if ( !m_pendingEffectChange || forced )
+                // (a trigger still waiting for a calm preset's 20 s when the solo time runs out: the timer's change)
+                m_changeWhy = !forced || ( calm_trigger && ts > m_texFadeDur ) ? "timer"
+                              : m_forceIsManual                                ? "manual"
+                              : calm_trigger                                   ? "music-calm"
+                                                                               : "music";
             m_forceEffectChange = false;
             m_forceIsManual = false;
             m_pendingEffectChange = true;
@@ -828,6 +888,7 @@ void SceneScheduler::tick( const Tick &t )
                 const float beat = 60.f / ( 40.f + 160.f * t.estimatedBPM );
                 phrase_due = t.phraseSecsLeft <= 4.f * beat && t.phraseSecsLeft > 3.f * beat;
                 phrase_wait = !phrase_due && m_pendingEffectAge < 33.f * beat;
+                m_changeHold = std::max( m_changeHold, 33.f * beat );
             }
             if ( m_pendingEffectForced || m_reviewMode || phrase_due
                  || ( !phrase_wait && ( t.downbeatTick || m_pendingEffectAge > 2.5f ) ) || t.gateSmooth < 0.25f )
@@ -842,6 +903,7 @@ void SceneScheduler::tick( const Tick &t )
                 m_pendingEffectAge = 0.f;
 
                 m_texState = 1;
+                m_changeOnPhrase = phrase_due;
 
                 // Roll the TRANSITION for this fade: probability-weighted
                 // rejection sampling over the registered Transitions/ shaders,
@@ -943,6 +1005,7 @@ void SceneScheduler::tick( const Tick &t )
                 if ( m_dropCutPending && !m_reviewMode )
                 {
                     m_dropCutPending = false;
+                    m_changeWhy = "drop";
                     fprintf( stderr, "DROP cut -> %s (interest %d)\n", tex[m_nextTexture]->fragmentName(),
                              tex[m_nextTexture]->interest() );
                     int cross = findTransition( "Crossfade.frag" );
@@ -1023,6 +1086,7 @@ void SceneScheduler::tick( const Tick &t )
                  && m_forcedNextTexture < static_cast<int>( tex.size() ) )
             {
                 m_nextTexture = m_forcedNextTexture;
+                m_nextHow = "forced";
                 m_forcedNextTexture = -1;
                 // A remote jump supersedes a deferred section replay too --
                 // it must not surface later at some unrelated fade-end.
@@ -1052,6 +1116,7 @@ void SceneScheduler::tick( const Tick &t )
                     m_reviewPos = 0;
                 }
                 m_nextTexture = m_reviewOrder[m_reviewPos % m_reviewOrder.size()];
+                m_nextHow = "review";
                 m_reviewPos = ( m_reviewPos + 1 ) % static_cast<int>( m_reviewOrder.size() );
                 fprintf( stderr, "Review: %s\n", tex[m_nextTexture]->fragmentName() );
             }
@@ -1062,6 +1127,7 @@ void SceneScheduler::tick( const Tick &t )
                 // apply it now, at a safe (Solo-just-ended) point, instead of
                 // where it originally landed.
                 m_nextTexture = static_cast<unsigned>( m_pendingSectionNext );
+                m_nextHow = "section";
                 m_pendingSectionRestore = m_pendingSectionNextId;
                 m_pendingSectionNext = -1;
                 m_pendingSectionNextId = -1;
@@ -1069,15 +1135,18 @@ void SceneScheduler::tick( const Tick &t )
             else
             {
                 m_nextTexture = pickScene( static_cast<int>( m_actTexture ), false );
+                m_nextHow = "roll";
                 // The reserve holds until its drop: a section cut just before a drop (the rule in dance music)
                 // took the reserved scene, and the drop then cut to whatever came next.  While the drop is still
                 // ahead, the scene after the cut is a spectacle again.
-                if ( m_spectacleFor > 0.f && m_sceneFadeMin <= 0.f && !tex[m_actTexture]->walksWithMusic() )
+                if ( m_spectacleFor > 0.f && m_sceneFadeMin <= 0.f && !tex[m_actTexture]->walksWithMusic()
+                     && !isLab( m_nextTexture ) )
                 {
                     const int pick = pickSpectacle( static_cast<int>( m_actTexture ) );
                     if ( pick >= 0 )
                     {
                         m_nextTexture = static_cast<unsigned int>( pick );
+                        m_nextHow = "spectacle";
                         fprintf( stderr, "REGIE: Spektakel bleibt fuer den Drop: %s (interest %d)\n",
                                  tex[m_nextTexture]->fragmentName(), tex[m_nextTexture]->interest() );
                     }
@@ -1086,6 +1155,7 @@ void SceneScheduler::tick( const Tick &t )
 
             if ( m_nextTexture == m_actTexture )
             {
+                m_nextHow = "step";
                 m_nextTexture += 1;
                 if ( m_nextTexture == tex.size() )
                     m_nextTexture = 0;

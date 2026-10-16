@@ -219,6 +219,7 @@ float                         EffectShader::M_DepthValid[2] = { 0.f, 0.f };
 float                         EffectShader::M_ShadowPass = 0.f;
 float                         EffectShader::M_ReviewSolo = 0.f;
 bool                          EffectShader::M_ChainRunner = false;
+bool                          EffectShader::M_Headless = false;
 bool                          EffectShader::M_ExprLog = qEnvironmentVariableIsSet( "KALEIDO_EXPR_LOG" );
 int                           EffectShader::M_ExprCompiled = 0;
 float                         EffectShader::M_ChainScale = 1.f;
@@ -1481,6 +1482,8 @@ void EffectShader::carryChainOver()
         fprintf( stderr, "%s: %d stage(s) carried over from %s\n", fragmentName(), n, s_lastChain.frag.c_str() );
 }
 
+static bool sourceHasWalk( const std::string &path );
+
 void EffectShader::resetChainWalk()
 {
     // At most one of the stages A..D on a class that streams the picture into
@@ -1518,7 +1521,8 @@ void EffectShader::resetChainWalk()
     for ( const Uniform *u : m_uniforms )
         if ( u->getName() == "morphP" )
             morph = u->snapshotValue();
-    m_walk.active = ( m_walkHostLoc >= 0 && morph >= ( !m_compileFile.empty() ? 0.15f : 0.5f ) );
+    const bool host = m_walkHostLoc >= 0 || ( M_Headless && sourceHasWalk( m_fragmentShaderFilename ) );
+    m_walk.active = ( host && morph >= ( !m_compileFile.empty() ? 0.15f : 0.5f ) );
     m_walkMorph = morph;
     // The ranges the preset entry allows (its <float> knob ranges): the walk
     // stays inside them.  The classes are sorted calm .. wild, so a range is a
@@ -3273,6 +3277,15 @@ static bool sourceHasWalk( const std::string &path )
         it = cache.emplace( path, declaresWalkHost( t ) && t.find( "// @chainclasses " ) != std::string::npos ).first;
     }
     return it->second;
+}
+
+void EffectShader::simulateWalk()
+{
+    if ( m_walk.pending )
+    {
+        m_walk.pending = false;
+        resetChainWalk();
+    }
 }
 
 bool EffectShader::isWalkingLab()

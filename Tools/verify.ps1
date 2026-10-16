@@ -28,7 +28,12 @@ $root = Split-Path $PSScriptRoot -Parent
 $rel  = Join-Path $root "Release"
 $cfgD = Join-Path $root "Presets"
 $wav  = Join-Path $PSScriptRoot "broadband120.wav"
-$presets = @('Allround','Ambient','Club','Galerie','Komplett','Noir','Psychedelic')
+# The presets as they are (a fixed list missed SpaceAmbient, Kettenlabor and Transformationen): every
+# Presets\*.xml with a ConfigurationName, without the rig table, the Test* benches and ZZMesh.
+$presets = Get-ChildItem (Join-Path $root "Presets") -Filter *.xml | ForEach-Object {
+    $m = Select-String -Path $_.FullName -Pattern 'ConfigurationName="([^"]+)"' | Select-Object -First 1
+    if ($m) { $m.Matches[0].Groups[1].Value }
+} | Where-Object { $_ -notlike 'Test*' -and $_ -ne 'ZZMesh' } | Sort-Object
 
 if (-not (Test-Path (Join-Path $rel "Kaleidoscope.exe"))) {
     Write-Host "Release\Kaleidoscope.exe fehlt - erst bauen."; exit 1

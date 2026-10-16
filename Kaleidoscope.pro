@@ -43,6 +43,7 @@ SOURCES += \
     Source/NowPlaying.cpp \
     Source/OscSender.cpp \
     Source/QrCode.cpp \
+    Source/ScheduleSim.cpp \
     Source/OsdMenu.cpp \
     Source/PresentPass.cpp \
     Source/QMyWindow.cpp \
@@ -101,6 +102,7 @@ HEADERS += \
     Source/NowPlaying.h \
     Source/OscSender.h \
     Source/QrCode.h \
+    Source/ScheduleSim.h \
     Source/OsdMenu.h \
     Source/Platform.h \
     Source/PlatformQt.h \

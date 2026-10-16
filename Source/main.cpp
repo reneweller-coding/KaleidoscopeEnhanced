@@ -54,6 +54,9 @@
  *                     <fps>` (default 60), `-d <file>` (output) and `-j <options>` (comma list:
  *                     h264/hevc/av1, blur, nofade, title, cq=N). The window is only a preview.
  *   - `-h`            print the help/usage text and exit.
+ *   - `--schedule <preset> <audio.wav|silence> <hours> <out.tsv>` (first argument): the scene plan of a long run,
+ *                     computed by the real scheduler on a virtual clock without a window, GL or settings
+ *                     (ScheduleSim.h); Tools/check_schedule.py checks it.
  *
  *  There is only one runtime path after parsing: the normal windowed Qt application
  *  (QApplication + QMyWindow, shown either windowed or fullscreen). The various flags
@@ -72,6 +75,7 @@
 
 #include "RenderPipeline.h"
 #include "glwidget.h"
+#include "ScheduleSim.h"
 #include "SettingsFile.h"
 #include "EffectShader.h"
 #include "CueReceiver.h"
@@ -530,6 +534,14 @@ int main( int argc, char *argv[] )
                         : static_cast<unsigned>( std::chrono::high_resolution_clock::now()
                                                      .time_since_epoch()
                                                      .count() ) );
+    }
+
+    // --schedule: the scene plan of a long run (ScheduleSim.h) -- before the settings are read: the plan is the
+    // preset's and the scheduler's, not this viewer's.
+    if ( argc >= 2 && strcmp( argv[1], "--schedule" ) == 0 )
+    {
+        QCoreApplication app( argc, argv );
+        return runScheduleSim( argc - 2, argv + 2 );
     }
 
     // The photo source used to be resolved here, from the Windows "My Pictures"

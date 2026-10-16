@@ -702,6 +702,7 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-3 <mode>`   | Stereo 3D: `sbs`, `tb` or `ana`(glyph)                              |
 | `-f <dir>`    | Photo folder for this run (outranks the Setup tool's setting)      |
 | `-h`          | Print usage and exit                                                |
+| `--schedule <preset> <wav\|silence> <hours> <out.tsv>` | The scene plan of a long run, from the real scheduler without a window (first argument; `Tools/check_schedule.py` checks it) |
 
 For an unattended installation/kiosk, combine `-m`, `-c`, `-s` and `-l`; the
 app suppresses the screensaver/standby while it runs. The fullscreen shortcut

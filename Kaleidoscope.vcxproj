@@ -266,6 +266,7 @@ if errorlevel 1 exit /b 1
     <ClCompile Include="Source\VideoExport.cpp" />
     <ClCompile Include="Source\OscSender.cpp" />
     <ClCompile Include="Source\QrCode.cpp" />
+    <ClCompile Include="Source\ScheduleSim.cpp" />
     <ClCompile Include="moc\moc_AudioAnalyzer.cpp" />
     <ClCompile Include="moc\moc_glwidget.cpp" />
     <ClCompile Include="moc\moc_QMyWindow.cpp" />
@@ -309,6 +310,7 @@ if errorlevel 1 exit /b 1
     <ClInclude Include="Source\VideoExport.h" />
     <ClInclude Include="Source\OscSender.h" />
     <ClInclude Include="Source\QrCode.h" />
+    <ClInclude Include="Source\ScheduleSim.h" />
     <ClInclude Include="Source\CueReceiver.h" />
     <ClInclude Include="Source\ScoreCues.h" />
     <ClInclude Include="Source\AudioConditioner.h" />

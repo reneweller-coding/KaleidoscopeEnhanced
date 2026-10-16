@@ -970,7 +970,7 @@ void AudioAnalyzer::feedBlock( const float *data, int frames, int channels, int 
     ingest( data, frames, channels, sampleRate, false );
 }
 
-std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path )
+std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &path, unsigned int *sampleRate )
 {
     std::vector<AudioFeatures> timeline;
 
@@ -1016,6 +1016,8 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
         fclose( f );
         return timeline;
     }
+    if ( sampleRate )
+        *sampleRate = sample_rate;
 
     AudioAnalyzer az;    // never start()ed: pure DSP state
     az.m_running = true; // processBlock guards check this
@@ -1040,8 +1042,8 @@ std::vector<AudioFeatures> AudioAnalyzer::analyzeWavToTimeline( const QString &p
     delete[] pcm;
     delete[] conv;
     fclose( f );
-    fprintf( stderr, "TIMELINE: %d blocks (%.1f s)\n",
-             static_cast<int>( timeline.size() ), timeline.size() * 0.01f );
+    fprintf( stderr, "TIMELINE: %d blocks (%.1f s)\n", static_cast<int>( timeline.size() ),
+             timeline.size() * static_cast<double>( chunk ) / ( sample_rate ? sample_rate : 48000u ) );
     return timeline;
 }
 

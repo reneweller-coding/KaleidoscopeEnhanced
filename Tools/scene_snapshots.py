@@ -51,11 +51,14 @@ def preset(block, fx, name="_snap"):
 PS = None  # the private settings of this run (render())
 
 
+ERRORS = ("Expr [", "OpenGL ERROR", "FAILED")   # lines of a run's stderr that are a defect, not a remark
+
+
 def shoot(block, fx, out, photo, timeout, slot=0):
     """One scene in its own app run (preset _snap<slot>, port 18200+slot).
     Returns "ok", "unstable" (the frame never stood still after the freeze -- a
     simulation or a clock of its own; the last one is saved, compare it loosely)
-    or "" (no frame)."""
+    or "" (no frame).  The run's error lines (ERRORS) go to <out>.err.txt."""
     name = "_snap%d" % slot
     io.open(os.path.join(ROOT, "Presets", name + ".xml"), "w", encoding="utf-8").write(preset(block, fx, name))
     env = PS.env(dict(os.environ, KALEIDO_MAX_RUNTIME_SECS=str(timeout + 15), KALEIDO_NO_ACTIVATE="1",
@@ -107,6 +110,12 @@ def shoot(block, fx, out, photo, timeout, slot=0):
                 p.wait(timeout=20)
             except subprocess.TimeoutExpired:
                 p.kill()
+        bad = [l.rstrip() for l in "".join(lines).splitlines() if any(e in l for e in ERRORS)]
+        err = out[:-4] + ".err.txt"
+        if bad:
+            io.open(err, "w", encoding="utf-8").write("\n".join(bad) + "\n")
+        elif os.path.exists(err):
+            os.remove(err)
 
 
 def render(label, only, photo, timeout, jobs=1):
@@ -120,7 +129,7 @@ def render(label, only, photo, timeout, jobs=1):
     idx = io.open(os.path.join(out, "index.tsv"), "a", encoding="utf-8")
     todo = [(n, b) for n, b in entries() if (not only or any(o in n for o in only))
             and not os.path.exists(os.path.join(out, n + ".jpg"))]          # resumable
-    count = {"ok": 0, "bad": 0}
+    count = {"ok": 0, "bad": 0, "errors": 0}
     lock = threading.Lock()
     def worker(slot):
         while True:
@@ -130,9 +139,11 @@ def render(label, only, photo, timeout, jobs=1):
                 name, block = todo.pop(0)
             t = time.time()
             r = shoot(block, fx, os.path.join(out, name + ".jpg"), photo, timeout, slot)
+            errs = os.path.exists(os.path.join(out, name + ".err.txt"))
             with lock:
                 count["ok" if r else "bad"] += 1
-                idx.write("%s\t%s\t%.1f\n" % (name, r or "FAIL", time.time() - t))
+                count["errors"] += errs
+                idx.write("%s\t%s\t%.1f\t%s\n" % (name, r or "FAIL", time.time() - t, "errors" if errs else ""))
                 idx.flush()
                 print("%-44s %-8s %.1f s" % (name, r or "FAIL", time.time() - t), flush=True)
     try:
@@ -150,7 +161,7 @@ def render(label, only, photo, timeout, jobs=1):
                 os.remove(os.path.join(ROOT, "Presets", "_snap%d.xml" % k))
             except OSError:
                 pass
-    print("%d rendered, %d failed -> %s" % (count["ok"], count["bad"], out))
+    print("%d rendered, %d failed, %d with errors in the log -> %s" % (count["ok"], count["bad"], count["errors"], out))
 
 
 def compare(a, b, tol):
@@ -195,6 +206,13 @@ def compare(a, b, tol):
                 h.write("<tr><td><b>%s</b><br>diff %.2f<br>mean %.0f</td><td><img src='file:///%s'></td><td><img src='file:///%s'></td></tr>"
                         % (html.escape(n), d, m, os.path.join(da, n + ".jpg").replace("\\", "/"), os.path.join(db, n + ".jpg").replace("\\", "/")))
             h.write("</table>")
+        # What the runs complained about (Expr [, OpenGL ERROR, FAILED): a defect even where the picture is fine.
+        errs = sorted(f[:-8] for f in os.listdir(db) if f.endswith(".err.txt"))
+        h.write("<h2>Errors in the log (%d)</h2><table>" % len(errs))
+        for n in errs:
+            body = io.open(os.path.join(db, n + ".err.txt"), encoding="utf-8").read()
+            h.write("<tr><td><b>%s</b></td><td><pre>%s</pre></td></tr>" % (html.escape(n), html.escape(body[:2000])))
+        h.write("</table>")
         for title, names in (("New", sorted(nb - na)), ("Gone", sorted(na - nb))):
             h.write("<h2>%s</h2><p>%s</p>" % (title, ", ".join(html.escape(x) for x in names) or "-"))
     print("%d compared, %d changed, %d new, %d gone, %d black (%d newly black), %d unstable -> %s"

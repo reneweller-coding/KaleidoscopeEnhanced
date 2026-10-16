@@ -124,9 +124,18 @@ def scan_rigs():
         pass
     return out
 
+def baseline_key(f, k, line):
+    """A hit's identity for the baseline: the category, the file and the line's text (not its number, which moves)."""
+    return "%s\t%s\t%s" % (k, f.replace("\\", "/"), " ".join(line.split()))
+
+
 def main():
     args = sys.argv[1:]
     summary = "--summary" in args
+    # --baseline FILE: exit 1 only for SHAKE, FRAME and STEP hits not in the file (the known ones were looked at);
+    # --write-baseline FILE: record today's hits as known.
+    base_in = args[args.index("--baseline") + 1] if "--baseline" in args else None
+    base_out = args[args.index("--write-baseline") + 1] if "--write-baseline" in args else None
     files = []
     if "--files" in args:
         files = [a for a in args[args.index("--files") + 1:] if not a.startswith("--")]
@@ -159,6 +168,18 @@ def main():
         nf = sum(1 for h in per_file.values() if h.get(k))
         print("  %-5s %4d Zeilen in %3d Dateien" % (k, totals[k], nf))
     print("  RIG   %4d Formeln" % len(rigs))
+    gated = [baseline_key(f, k, l) for f, h in per_file.items() for k in ("SHAKE", "FRAME", "STEP")
+             for _, l in h.get(k, [])]
+    if base_out:
+        io.open(base_out, "w", encoding="utf-8", newline="\n").write("\n".join(sorted(set(gated))) + "\n")
+        print("baseline written: %d known SHAKE/FRAME/STEP hit(s) -> %s" % (len(set(gated)), base_out))
+    if base_in:
+        known = set(l for l in io.open(base_in, encoding="utf-8").read().splitlines() if l.strip())
+        new = sorted(set(gated) - known)
+        for n in new:
+            print("  NEW   " + n.replace("\t", "  "))
+        print("shake baseline: %d new SHAKE/FRAME/STEP hit(s), %d known" % (len(new), len(set(gated) & known)))
+        sys.exit(1 if new else 0)
 
 if __name__ == "__main__":
     main()

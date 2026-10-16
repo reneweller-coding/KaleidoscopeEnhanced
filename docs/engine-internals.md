@@ -5105,3 +5105,76 @@ learned, where a screenshot went, how the eyes are protected.
   It now rises exactly as fast as the picture's mean may (1.0 in the strict mode).
 
 `Kaleidoscope.exe -q`: 118 checks. Linux (WSL, Qt 6.2.4): built, 118 of 118.
+
+## 16.10.2026 (13): the checks, and the scene plan in the real code
+
+The ninth round of the idea list: the tools -- one check before a release that runs what there is, and the scene
+plan of a long run computed by the scheduler itself instead of a Python model of it.
+
+- **release_check runs what there is.** Two new steps in front. `selftest` runs `Kaleidoscope.exe -q` (6 s).
+  `rules` runs the standing rules in seconds: `temporal_budget.py`, `check_uniform_types.py`,
+  `check_enum_tables.py`, `check_strings.py` and `check_mood_tags.py` -- all of them existed and none was run by
+  anything -- and `shake_scan.py` against `Tools/shake_baseline.tsv`. The shake scan had no exit code and 74 hits
+  that a person had looked at; `--baseline FILE` is red only for a new SHAKE, FRAME or STEP hit (a hit is known by
+  its category, file and line text, not its line number), and `--write-baseline FILE` records today's.
+  `check_mood_tags.py` was red: it compared every preset with Komplett.xml and called the generator's deliberate
+  variants 294 "problems" (a lab's calm flavour in Ambient, its wild one in Club), and its `--sync` would have
+  rewritten generated presets by hand. It now checks the source only -- every entry of a preset that is not
+  generated carries a mood (1580 entries, green). `scene_snapshots.py` keeps what a scene's run complained about
+  (`Expr [`, `OpenGL ERROR`, `FAILED`) as `<scene>.err.txt`; the comparison page lists them, and the snapshot
+  step counts them. `verify.ps1` takes its presets from `Presets/*.xml` (a fixed list of seven missed
+  SpaceAmbient, Kettenlabor and Transformationen).
+- **The scene plan in the real code.** `Tools/long_run_sim.py` modelled `pickScene` in Python ("a model, not the
+  app": no music, no complexity budget, no mood), and every change to the scheduler had to be made twice. Now
+  `Kaleidoscope.exe --schedule <preset> <audio.wav|silence> <hours> <out.tsv>` (`Source/ScheduleSim.cpp`) loads the
+  preset without a GL context and drives `RenderPipeline::simulateFrame()` -- the mood, the timing scale, the
+  AudioConditioner, `SceneScheduler::tick()` and `tickFx()`, the chain labs' walk decision -- on the virtual
+  engine clock at 60 frames a second, from the analysis of a WAV (looped; its counters go on counting, every loop
+  a new track) or of silence. A day of silence takes 20 seconds. Neutral where the app is personal: no taste, no
+  ban, no scene memory, no settings. The walk decision needs the program in the app (`walkHost` is a uniform
+  location); without GL it is read from the shader source (`EffectShader::M_Headless`, `simulateWalk()`), so a
+  lab stays its full solo and takes the drops as it does on screen. The scheduler now says why a change came and
+  how the next scene was chosen (`changeWhy()`: timer, music, music-calm, drop, manual; `nextHow()`: roll,
+  spectacle, section, forced, step; `changeOnPhrase()`, `changeHold()`), and the plan has one line per completed
+  change with the planned and the actual times.
+- **`Tools/check_schedule.py`** checks the plans of the seven genre presets -- 12 hours of silence and 6 of the
+  structure track each, 26 seconds -- against the rules: the solo ranges the app read are the preset's; every
+  planned solo is a roll of its entry; a change by the timer comes after its solo and at most the downbeat wait
+  later (33 beats where the phrase held it), a change on the phrase with four beats left; a drop cuts after 2 s
+  at the earliest, a section after 4 s, in a calm preset after 20 s and never as a cut; never two labs in a row;
+  the lab share within 3 points; every natural fade at least the preset's floor and the transition's minFade.
+  `--audio song.wav` puts a recording in; `--quick` is release_check's step `schedule`. Each rule was made to fail
+  once (labShare 1 forced through `KALEIDO_LAB_SHARE`, and lines of a plan changed by hand). `long_run_sim.py
+  --real` puts the app beside its model: the model changes some 8 % less often than the app and underrates the
+  favourites' screen time (hi/lo 2.2..2.9 against 2.4..3.4); where they differ, the app is right.
+- **What the plan showed, and what changed in the scheduler.**
+  - *A section cut before every drop.* In the structure track the analyser names a new section 2.0..2.6 s before
+    each drop -- the snare roll at the end of the build-up. That cut took the scene reserved for the drop, and the
+    drop cut it away after the two-second minimum, to a random scene: 1 drop cut of 144 landed on a spectacle.
+    While the tension rises (buildUp > 0.45) in the last half phrase before the predicted drop, a section or a
+    harmonic jump no longer cuts -- the drop does; if none comes, the scene's own time ends it ("held for the
+    drop" in the log).
+  - *A section right after a change.* Since round 6 a natural change waits for the phrase and its fade ends on the
+    8-bar boundary -- where sections begin. The analyser names the section a fraction of a second later, and the
+    scene that had come for that boundary was cut away after 2 s: 20 of 47 section cuts. A section within 4 s
+    after a fade ended was answered by that fade, as one during a fade already was. Music cuts in the structure
+    track: 177 before, 33 after, none sooner than 4 s; drop cuts on a spectacle: 1 of 144 before, 41 of 120 after
+    (the build-up edge comes too late for the reserve before most of that track's drops).
+  - *Build-ups without drops.* On a 15-minute recording with build-ups and no drop (`.screen/screen.wav`) every
+    change in Club went to a spectacle and the labs got 0 % of their 40 %: the reserve was re-armed on every
+    build-up edge, and its re-roll at a fade end overwrote the lab the clock had called. A lab waiting as the next
+    scene now keeps its turn (a walking lab takes a drop itself), and after two predictions without a drop the
+    reserve rests until a drop comes. Labs then: 40.6 %.
+  - *The lab clock ran ahead.* Every preset showed more lab time than it asked for, +0.2 to +1.8 points: a lab is
+    one big step (4..10 minutes), and called the moment the labs fall behind it carried them past the share each
+    time. `LabShareClock::setLabStay()` gets the labs' mean stay, and a lab is called once the labs are behind by
+    0.3 of the overshoot one stay makes. 0.3, not the half that the obvious argument gives: a simulation of the
+    clock alone over labs of 120..900 s centred the share within 0.1 points at 0.3 and fell short by as much at
+    0.5 as the old rule overshot -- and the app at 0.5 confirmed it (-0.0..-1.6). Now -1.0..+1.7 across the 21
+    plans, mostly within 0.6; the two-day check in `-q` reads 35.0 % for 35 %.
+- **Not done:** taking `processBlock()` apart (the second stage of the analysis proposal). Its first stage --
+  the regression against known truth -- came in round 5, and the proposal itself rated only that stage.
+
+`Kaleidoscope.exe -q`: 121 checks (the run-up, the answered section and the resting reserve, each seen failing
+with its rule switched off). Linux (WSL, Qt 6.2.4): built, 121 of 121; `--schedule` runs there too (its rolls are
+glibc's).

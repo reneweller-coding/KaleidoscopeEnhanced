@@ -992,6 +992,49 @@ public:
      * delegate to resize(), which avoids leaking GL objects and spawning a duplicate loader thread.
      **/
     void start( int width, int height );
+    /**  The scene plan without a window (Kaleidoscope.exe --schedule, ScheduleSim.h): what start() does for the
+     * scheduler -- the fallback entries, attach, the first roll -- without a GL context, photos or the viewer's
+     * memory.  The taste is neutral (1 for every scene), nothing is banned, the no-repeat memory starts empty.
+     **/
+    void simulateBegin();
+    /**  One frame of the scene plan without GL: the scheduler's half of paint() -- the mood, the timing scale, the
+     * conditioned audio, the scheduler tick, the chain labs' walk decision and the combine half -- through the same
+     * functions paint() calls.
+     *
+     * @param audio  The analysis at this frame's moment. (in)
+     * @param dt     Frame time in seconds; the caller has advanced EngineClock by it. (in)
+     *
+     * @return
+     *   The tick the scheduler got (timing scale, beat, phrase), for the caller's log.
+     *
+     * Left out: the transport (freeze, DJ stop), the mesh warm-up hold (no model loads, so a fade starts at once)
+     * and everything that draws.
+     **/
+    SceneScheduler::Tick simulateFrame( const AudioFeatures &audio, float dt );
+    /**  The scene scheduler, for the scene plan run's log.
+     *
+     * @return
+     *   The scheduler (read only).
+     **/
+    const SceneScheduler &scheduler() const { return m_scheduler; }
+    /**  The preset's scene entries (TextureShader), in scheduler index order.
+     *
+     * @return
+     *   The entries (read only).
+     **/
+    const std::vector<EffectShader *> &sceneEntries() const { return m_effectTextures; }
+    /**  The preset's combine entries (CombineShader), in scheduler index order.
+     *
+     * @return
+     *   The entries (read only).
+     **/
+    const std::vector<EffectShader *> &fxEntries() const { return m_effectFx; }
+    /**  The preset's transition entries (TransitionShader), in scheduler index order.
+     *
+     * @return
+     *   The entries (read only).
+     **/
+    const std::vector<EffectShader *> &transitionEntries() const { return m_effectTransitions; }
     /**  Tears down this instance's GL resources and background thread: terminates and deletes the ImageLoader, then
      * releases textures and shader programs.
      *
@@ -1601,6 +1644,10 @@ private:
      *   Changes EffectShader::M_CueDrops, EffectShader::M_CueLive, EffectShader::M_CueSections.
      **/
     SceneScheduler::Tick buildSchedulerTick( const AudioFeatures &audio, float timeSinceLastFrameSec );
+    /**  A preset without scenes, combines or transitions gets one plain entry for each (start(), simulateBegin()):
+     * every pick below divides by the list's size.
+     **/
+    void addFallbackEntries();
     /**  Steps only the simulations a visible effect actually samples (GpuSims, ComputeFX, Mandelbrot) and binds their
      * outputs, plus last frame's composited image.
      *

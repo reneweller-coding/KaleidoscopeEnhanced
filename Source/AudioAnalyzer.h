@@ -193,17 +193,19 @@ public:
 
     /**  Offline (Preset-Editor) analysis: run a 16-bit PCM WAV through the FULL analysis pipeline at full speed.
      *
-     * @param path  Path to a 16-bit PCM WAV file. (in)
+     * @param path        Path to a 16-bit PCM WAV file. (in)
+     * @param sampleRate  Receives the file's sample rate, if not null: a block is 480 samples, 10 ms only at 48 kHz.
+     *                    (out)
      *
      * @return
-     *   One AudioFeatures snapshot per 10 ms block of audio (empty if the file could not be read).
+     *   One AudioFeatures snapshot per 480-sample block of audio (empty if the file could not be read).
      *
      * No capture thread, no WASAPI — returns one AudioFeatures snapshot per
      * 10 ms block. The editor plays these back in sync with the sound so
      * presets can be tuned against real music with the real analyzer, not the
      * synthetic profile.
      **/
-    static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path );
+    static std::vector<AudioFeatures> analyzeWavToTimeline( const QString &path, unsigned int *sampleRate = nullptr );
     /**  Offline analysis of samples in memory: the same pipeline as analyzeWavToTimeline(), for checks that build
      * their own signal (`Kaleidoscope.exe -q`).
      *

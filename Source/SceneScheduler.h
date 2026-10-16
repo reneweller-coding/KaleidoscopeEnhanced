@@ -402,6 +402,63 @@ public:
      *   Seconds.
      **/
     float texFadeDur() const { return m_texFadeDur; }
+    /**  Why the last scene change came.
+     *
+     * @return
+     *   "timer" (the scene's solo time ran out), "music" (a section, novelty or drop trigger cut the solo short),
+     *   "music-calm" (such a trigger in a calm preset, taken as a natural change after 20 s), "drop" (a drop cut),
+     *   "manual" (a key, the remote, a forced scene) or "start" before the first change.
+     *
+     * For the scene plan run (Kaleidoscope.exe --schedule, ScheduleSim.h), which checks each kind against its rule.
+     **/
+    const char *changeWhy() const { return m_changeWhy; }
+    /**  Whether the last scene change was held for the phrase (it started four beats before an 8-bar boundary).
+     *
+     * @return
+     *   True if it waited for the phrase.
+     **/
+    bool changeOnPhrase() const { return m_changeOnPhrase; }
+    /**  The longest the last change could wait once it was due: 2.5 s (the downbeat wait gives up), or 33 beats
+     * where the phrase could hold it.
+     *
+     * @return
+     *   Seconds.
+     **/
+    float changeHold() const { return m_changeHold; }
+    /**  Whether a scene of high interest waits for a predicted drop (the spectacle reserve).
+     *
+     * @return
+     *   True while the reserve holds.
+     **/
+    bool spectacleReserved() const { return m_spectacleFor > 0.f; }
+    /**  How the scene waiting as nextTexture() was chosen.
+     *
+     * @return
+     *   "roll" (pickScene()), "spectacle" (a scene of high interest held for a predicted drop), "section" (the scene
+     *   of a recurring section), "forced" (forceScene()), "review" (the Test* walk), "step" (the roll fell on the
+     *   scene on screen, so the next index) or "start" (reset()).
+     **/
+    const char *nextHow() const { return m_nextHow; }
+    /**  The preset-wide floor on natural scene fades (setSceneFadeMin()).
+     *
+     * @return
+     *   Seconds; 0 = none.
+     **/
+    float sceneFadeMin() const { return m_sceneFadeMin; }
+    /**  The walking labs' share of the screen time the preset asks for (setLabShare()).
+     *
+     * @return
+     *   0..1.
+     **/
+    float labShare() const { return m_labClock.target(); }
+    /**  Whether an entry is a walking chain lab (as reset() sorted them).
+     *
+     * @param idx  Scene entry index. (in)
+     *
+     * @return
+     *   True for a walking lab; false for any other entry or an index out of range.
+     **/
+    bool isLab( unsigned int idx ) const { return idx < m_isLab.size() && m_isLab[idx] != 0; }
 
 private:
     using ClockT = EngineClock; ///< The engine clock behind every Solo/Fade timer: monotonic wall time like the
@@ -515,13 +572,17 @@ private:
     bool m_forceFxChange = false; ///< Set by requestChange(alsoFx)/triggers; consumed at the next FX Solo-phase check.
     int  m_forcedNextTexture = -1; ///< Remote direct-jump target index (-1 = none); wins over review mode and random
                                    ///< pick.
-    bool m_pendingEffectChange = false; ///< True while an effect change is due but waiting on beat quantisation.
+    bool        m_pendingEffectChange = false; ///< True while an effect change is due but waiting on beat quantisation.
+    const char *m_changeWhy = "start";         ///< changeWhy(): why the last scene change came.
+    bool        m_changeOnPhrase = false;      ///< changeOnPhrase(): the last change waited for the phrase.
+    float       m_changeHold = 2.5f;           ///< changeHold(): how long the pending change could be held.
+    const char *m_nextHow = "start";           ///< nextHow(): how m_nextTexture was chosen.
     bool m_pendingEffectForced = false; ///< True if the pending effect change was manual/forced (fires immediately,
                                         ///< skips the downbeat wait).
     float m_pendingEffectAge = 0.f; ///< Seconds the pending effect change has been waiting (timeout escape at 2.5 s).
-    bool  m_pendingFxChange = false;    ///< True while a combine change is due but waiting on beat quantisation.
-    bool  m_pendingFxForced = false;    ///< True if the pending combine change was manual/forced.
-    float m_pendingFxAge = 0.f;         ///< Seconds the pending combine change has been waiting.
+    bool  m_pendingFxChange = false;           ///< True while a combine change is due but waiting on beat quantisation.
+    bool  m_pendingFxForced = false;           ///< True if the pending combine change was manual/forced.
+    float m_pendingFxAge = 0.f;                ///< Seconds the pending combine change has been waiting.
 
     // Trigger bookkeeping
     float m_noveltyCooldown = 0.f; ///< Seconds until another harmonic-novelty/section trigger is allowed to fire (rate
@@ -533,6 +594,7 @@ private:
     bool  m_dropInSong = false;    ///< A drop has come in this song (newSong() clears it): the phrase grid is anchored.
     float m_secsSinceDrop = 1e9f;  ///< Seconds since the last drop; the phrase grid drifts with the tempo error.
     float m_spectacleFor = 0.f;    ///< Seconds the spectacle reserve still waits for its predicted drop (0 = none).
+    int   m_missedDrops = 0;       ///< Reserves that ran out without a drop since the last drop (2: no more).
     // A drop triggered the change: when it fires, it becomes a HARD cut
     // (music-video look) or the shatter transition instead of the normal
     // cross-fade.

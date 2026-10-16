@@ -12,12 +12,17 @@ fade (15..50 s).
   python Tools/long_run_sim.py                       # the genre presets, 72 h: as committed (HEAD) against now
   python Tools/long_run_sim.py Ambient,Club 48 7     # presets, hours, seed
   python Tools/long_run_sim.py --old-scheduler       # HEAD's presets under the scheduler before 16.10.2026
+  python Tools/long_run_sim.py --real                # this model against the app's own scheduler
 
 "HEAD" runs the presets as committed, "now" the working tree's, both under today's scheduler -- what a preset change
 does.  "old" (--old-scheduler) is the scheduler before 16.10.2026: a memory of min(40, a third of the preset) scenes,
 the labs ordinary entries.  hi/lo is the screen time a scene of interest >= 8 gets against one of interest <= 5
 (Tools/preset_fit.tsv).  The run is a model, not the app: no music (no section or drop cuts, no taste), and the
 complexity budget is left out.
+
+--real puts the app itself beside it: Kaleidoscope.exe --schedule (Source/ScheduleSim.h) runs the real
+SceneScheduler over the same hours of silence on a virtual clock, and the same statistics come from its plan.  Where
+the two differ, the app is right; Tools/check_schedule.py checks that plan against the rules.
 """
 import collections, io, math, os, random, re, statistics, subprocess, sys
 import xml.etree.ElementTree as ET
@@ -66,11 +71,12 @@ def run(entries, share, hours, seed, old):
     regular = sorted(set(e[0] for e, l in zip(entries, is_lab) if not l))
     cap = min(40, n // 3) if old else (min(len(regular) * 3 // 4, len(regular) - 2) if len(regular) > 2 else 0)
     lab_files = len(set(e[0] for e, l in zip(entries, is_lab) if l))
+    stays = [(e[2] + e[3]) / 2.0 for e, l in zip(entries, is_lab) if l]
+    lab_stay = sum(stays) / len(stays) if stays else 0.0     # LabShareClock::setLabStay()
     recent = collections.deque()
-    t, last_seen, gaps, shown, screen = 0.0, {}, [], collections.Counter(), collections.Counter()
+    t, seq = 0.0, []
     m_lab = m_all = 0.0
-    lab_time, act, last_lab, since_lab, longest_gap = 0.0, -1, "", 0.0, 0.0
-    first_repeat = None
+    act, last_lab = -1, ""
     while t < hours * 3600:
         want = False
         if labs:
@@ -79,7 +85,7 @@ def run(entries, share, hours, seed, old):
             elif m_all < 1:
                 want = rnd.random() < share
             else:
-                want = m_lab < share * m_all
+                want = m_lab + (1 - share) * 0.3 * lab_stay < share * m_all
         pool = [i for i in range(n) if is_lab[i] == want] if labs else list(range(n))
         pick = None
         for i in range(300):
@@ -96,8 +102,27 @@ def run(entries, share, hours, seed, old):
             pick = k
         base, p, mi, ma, walking = entries[pick]
         dur = rnd.uniform(mi, ma) + rnd.uniform(15, 50)
+        seq.append((base, t, dur, is_lab[pick]))
         if is_lab[pick]:
             last_lab = base
+        else:
+            recent.append(base)
+            while len(recent) > cap:
+                recent.popleft()
+        k_dec = math.exp(-dur / TAU)
+        m_lab, m_all = m_lab * k_dec + (dur if is_lab[pick] else 0.0), m_all * k_dec + dur
+        act = pick
+        t += dur
+    return summarize(seq, regular, cap, hours)
+
+
+def summarize(seq, regular, cap, hours):
+    """The statistics of a run: seq lists (shader file, time it came, seconds on screen, a scheduled lab)."""
+    last_seen, gaps, shown, screen = {}, [], collections.Counter(), collections.Counter()
+    lab_time = since_lab = longest_gap = 0.0
+    first_repeat = None
+    for base, t, dur, lab in seq:
+        if lab:
             longest_gap = max(longest_gap, since_lab)
             since_lab = 0.0
         else:
@@ -108,16 +133,10 @@ def run(entries, share, hours, seed, old):
             last_seen[base] = t
             shown[base] += 1
             screen[base] += dur
-            recent.append(base)
-            while len(recent) > cap:
-                recent.popleft()
             since_lab += dur
         if base[:-5] in LABS:
             lab_time += dur
-        k_dec = math.exp(-dur / TAU)
-        m_lab, m_all = m_lab * k_dec + (dur if is_lab[pick] else 0.0), m_all * k_dec + dur
-        act = pick
-        t += dur
+    total = sum(s[2] for s in seq)
     gaps.sort()
     day = shown and statistics.mean(shown.values()) * 24.0 / hours
     rating = interest()
@@ -126,7 +145,36 @@ def run(entries, share, hours, seed, old):
     hilo = statistics.mean(hi) / statistics.mean(lo) if hi and lo and statistics.mean(lo) > 0 else 0.0
     return {"changes": sum(shown.values()) / hours, "distinct": len(regular), "cap": cap,
             "per_day": day, "median": statistics.median(gaps) if gaps else 0, "p10": gaps[len(gaps) // 10] if gaps else 0,
-            "first": first_repeat or 0, "labs": 100.0 * lab_time / t, "nolab": longest_gap / 60.0, "hilo": hilo}
+            "first": first_repeat or 0, "labs": 100.0 * lab_time / total if total else 0.0,
+            "nolab": longest_gap / 60.0, "hilo": hilo}
+
+
+def real(preset, hours, seed):
+    """The same statistics from the app's own scheduler (Kaleidoscope.exe --schedule, silence)."""
+    out = os.path.join(ROOT, ".screen", "schedule", "%s_longrun.tsv" % preset)
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    env = dict(os.environ, KALEIDO_SEED=str(seed))
+    env["PATH"] = r"C:\Qt\6.11.1\msvc2022_64\bin" + os.pathsep + env.get("PATH", "")
+    subprocess.run([os.path.join(ROOT, "Release", "Kaleidoscope.exe"), "--schedule", preset, "silence", "%g" % hours,
+                    out], cwd=os.path.join(ROOT, "Release"), env=env, check=True, capture_output=True)
+    entries, rows, share, cols = [], [], 0.0, None
+    for line in io.open(out, encoding="utf-8"):
+        v = line.rstrip("\n").split("\t")
+        if v[0] == "# schedule":
+            share = float(dict(x.split("=", 1) for x in v[1:])["labShare"])
+        elif v[0] == "# entry":
+            entries.append((v[2], v[5] == "1"))
+        elif v[0] == "kind":
+            cols = v
+        elif cols and v[0] == "scene":
+            rows.append(dict(zip(cols, v)))
+    labs = set(f for f, lab in entries if lab) if share > 0 else set()
+    regular = sorted(set(f for f, _ in entries) - labs)
+    cap = min(len(regular) * 3 // 4, len(regular) - 2) if len(regular) > 2 else 0
+    # a scene came when its solo began; it stood for the solo and the fade out (as the lab clock books it)
+    seq = [(r["scene"], float(r["start"]) - float(r["solo"]), float(r["solo"]) + float(r["fade"]), r["scene"] in labs)
+           for r in rows]
+    return summarize(seq, regular, cap, hours)
 
 
 def main():
@@ -139,10 +187,12 @@ def main():
                                                                   "median", "10%", "first", "labs", "nolab", "hi/lo"))
     runs = (("old", True, True), ("now", False, False)) if old_scheduler else (("HEAD", True, False),
                                                                                 ("now", False, False))
+    if "--real" in sys.argv:
+        runs = (("model", False, False), ("app", False, None))
     for p in presets:
         for label, head, old in runs:
             entries, share = load(p, head)
-            r = run(entries, share, hours, seed, old)
+            r = real(p, hours, seed) if old is None else run(entries, share, hours, seed, old)
             print("%-12s %-4s %5d %4d %5.1f %6.2f %5.0f m %5.0f m %5.0f m %5.1f%% %4.0f m %5.2f"
                   % (p, label, r["distinct"], r["cap"], r["changes"], r["per_day"], r["median"], r["p10"], r["first"],
                      r["labs"], r["nolab"], r["hilo"]))
