@@ -26,6 +26,10 @@
 //    EDM drops; pin suppresses all forced cuts
 //  - choice of the next effect: chance + complexity budget + useShader
 //    + moodAccept (arousal busyness, mood tags, learned taste via callback)
+//  - long runs (LongRunVariety.h): a no-repeat memory of three quarters of
+//    the preset, kept across restarts by the caller (setHistory, the history
+//    callback), and the walking chain labs' share of the screen time
+//    (setLabShare: a lab when the clock calls for one, never two in a row)
 //  - review mode (Test* presets): alphabetical, a fixed time per scene
 //  - a remote direct jump (forceScene) beats everything
 //  - transition choice: one shader from Transitions/ per fade (weighted by
@@ -39,7 +43,10 @@
 #include <chrono>
 #include <functional>
 #include <map>
+#include <string>
 #include <vector>
+
+#include "LongRunVariety.h"
 
 class EffectShader;
 
@@ -59,7 +66,10 @@ class EffectShader;
  * "song structure memory" so a repeated chorus replays its earlier look,
  * and EDM drops), a review mode that walks every scene alphabetically for a
  * fixed ReviewSoloSecs each, and a remote forceScene() jump that pre-empts everything
- * else. The render pipeline only ever reads the public accessors
+ * else. For shows that run for days it keeps a no-repeat memory of three
+ * quarters of the preset (stored by the caller: setHistory(),
+ * setHistoryCallback()) and gives the walking chain labs the share of the
+ * screen time the preset asks for (setLabShare()). The render pipeline only ever reads the public accessors
  * (actTexture()/nextTexture()/texInterp()/...); it never touches the state
  * machine directly. The class is Qt-free (a RendererCore building block);
  * persisting the learned taste is left to the caller via setTasteCallback().
@@ -137,6 +147,31 @@ public:
      *           callback every shader counts as 1.0. (in)
      **/
     void setTasteCallback( std::function<float( const char * )> f ) { m_tasteFor = std::move( f ); }
+    /**  The walking chain labs' share of the screen time the preset asks for (attribute labShare).
+     *
+     * @param share  0..1; 0 (the default) leaves the labs ordinary entries of the random pick. (in)
+     *
+     * Above 0 the labs (EffectShader::isWalkingLab()) leave the random pick: a lab comes when the clock says the
+     * labs are behind their share, never two in a row, and never the same lab file twice in succession.  Set it
+     * before reset().
+     **/
+    void setLabShare( float share ) { m_labClock.setTarget( share ); }
+    /**  The no-repeat memory a previous run left (shader file names, oldest first).
+     *
+     * @param names  The stored names; reset() trims them to the memory's capacity. (in)
+     *
+     * Set it before reset(), which takes it over -- the first scenes of the session then come from outside it too.
+     **/
+    void setHistory( const std::vector<std::string> &names ) { m_pendingHistory = names; }
+    /**  Install the callback that stores the no-repeat memory (called whenever a scene has come on screen).
+     *
+     * @param f  Receives the memory, oldest first; persistence is the caller's job.  Not called in review mode.
+     *           (in)
+     **/
+    void setHistoryCallback( std::function<void( const std::vector<std::string> & )> f )
+    {
+        m_onHistory = std::move( f );
+    }
 
     // ---- VJ / Remote ----
     /**  Request an early cut on the next tick (manual 'n' or remote request).
@@ -210,7 +245,7 @@ public:
     /** Per-frame inputs consumed by tick()/tickFx(). */
     struct Tick
     {
-        float dt = 0.f;             ///< timeSinceLastFrameSec (break-skaliert)
+        float dt = 0.f;             ///< Scene time step, seconds (timeSinceLastFrameSec; scaled by a freeze/DJ stop).
         bool  downbeatTick = false; ///< True on the frame a downbeat lands (quantises pending changes).
         float gateSmooth = 0.f;     ///< Smoothed music-presence gate; below 0.25 triggers the no-music escape.
         float timingScale = 1.f;    ///< Divides fade/solo durations (e.g. break-time stretch).
@@ -453,7 +488,7 @@ private:
     bool  m_pendingFxForced = false;    ///< True if the pending combine change was manual/forced.
     float m_pendingFxAge = 0.f;         ///< Seconds the pending combine change has been waiting.
 
-    // Trigger-Buchhaltung
+    // Trigger bookkeeping
     float m_noveltyCooldown = 0.f; ///< Seconds until another harmonic-novelty/section trigger is allowed to fire (rate
                                    ///< limit).
     int m_lastSectionCount = 0;    ///< Last seen Tick::sectionCount, to detect the rising edge of a new section.
@@ -483,18 +518,50 @@ private:
     // Recently shown scenes.  The random roll only ever excluded the scene
     // on screen, so any filter that narrowed the pool (the build-up rule
     // preferring staged scenes, the mood test) could bring one scene back
-    // every few minutes.  The last RecentMax scenes (at most a third of the
-    // preset) are refused during the first two thirds of the search; a
-    // section replay and a manual pick bypass it -- those repeat on purpose.
-    static const unsigned int RecentMax = 40; ///< Upper bound of the no-repeat window, in scenes (~15-40 min at the
-                                              ///< usual solo times).
-    std::vector<unsigned int> m_recentTex;    ///< Texture indices shown most recently, oldest first (see RecentMax).
-    /** True if texture @p idx is inside the current no-repeat window. */
+    // every few minutes.  The memory holds three quarters of the preset's
+    // scenes (by shader file) and is refused during the first two thirds of
+    // the search; a section replay and a manual pick bypass it -- those repeat
+    // on purpose.  It used to hold at most 40 scenes, so every scene came back
+    // two or three times a day; now a preset of 400 scenes runs some five
+    // hours before one returns, and the memory survives a restart.
+    RecentScenes             m_recent;         ///< The no-repeat memory (shader file names, oldest first).
+    std::vector<std::string> m_pendingHistory; ///< Memory from a previous run, taken over by reset().
+    std::function<void( const std::vector<std::string> & )> m_onHistory; ///< Stores the memory (setHistoryCallback()).
+    /**  True if texture @p idx is inside the no-repeat memory.
+     *
+     * @param idx  Texture index into the attached texture list. (in)
+     *
+     * @return
+     *   True if a scene of the same shader file was shown within the memory's span.
+     **/
     bool isRecentTexture( unsigned int idx ) const;
-    /** Append texture @p idx to the no-repeat window and trim it to its size. */
-    void             noteTextureShown( unsigned int idx );
-    static const int SectionMemorySpan = 24; ///< Max sectionCount distance for a replay (sections are >= ~12 s apart,
-                                             ///< so ~5+ min -- within one song, not across the set).
+    /**  Records that texture @p idx has come on screen: a hand-made scene goes into the no-repeat memory, a walking
+     * lab becomes the last lab (the next lab is another file).
+     *
+     * @param idx  Texture index that has just become the active scene. (in)
+     **/
+    void noteTextureShown( unsigned int idx );
+    /**  Rolls the scene to follow scene @p act: a walking lab when the lab clock calls for one, otherwise a hand-made
+     * scene outside the no-repeat memory.
+     *
+     * @param act      The scene it follows; -1 for the first scene of the session. (in)
+     * @param initial  The picks of reset(): no mood test, and the looser texture-only complexity budget
+     *                 (ComplexityBudgetInitial) instead of the four-term one. (in)
+     *
+     * @return
+     *   The texture index; never @p act while the pool holds another scene.
+     **/
+    unsigned int pickScene( int act, bool initial );
+
+    // The walking chain labs' share of the screen time (setLabShare()).
+    LabShareClock     m_labClock;              ///< Lab time against all time, and the share the preset asks for.
+    std::vector<char> m_isLab;                 ///< Per texture index: a walking chain lab (built by reset()).
+    bool              m_labsScheduled = false; ///< A share was asked for and the preset has labs: the clock decides.
+    size_t            m_labFiles = 0;          ///< Distinct lab files among the labs (the next lab is another one).
+    std::string       m_lastLab;               ///< File name of the lab shown last.
+    float             m_shownSecs = 0.f;       ///< Screen time of the scene on screen so far (its solo and its fade).
+    static const int  SectionMemorySpan = 24;  ///< Max sectionCount distance for a replay (sections are >= ~12 s apart,
+                                               ///< so ~5+ min -- within one song, not across the set).
     int m_pendingSectionStore = -1;   ///< Section id whose final look should be stored at the next fade-end (-1 = none
                                       ///< pending).
     int m_pendingSectionRestore = -1; ///< Section id whose stored look should be restored at the next fade-start (-1 =
@@ -511,7 +578,7 @@ private:
                                      ///< restored at that fade's start.
     int m_pendingSectionNextFx = -1; ///< Deferred combine-slot replay target index (-1 = none pending).
 
-    // Review-Modus
+    // Review mode
     bool  m_reviewMode = false;       ///< True while walking scenes alphabetically instead of picking randomly.
     float m_sceneFadeMin = 0.f;       ///< Preset-wide floor on natural scene fades (seconds); 0 = none. See
                                       ///< setSceneFadeMin().

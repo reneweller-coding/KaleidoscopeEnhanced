@@ -347,6 +347,12 @@ void Configuration::readConfiguration( const QString &filenameIn )
     // otherwise clamps fades to four beats, which is not what a calm preset is for.
     m_renderPipeline->setSceneFadeMin( doc_elem.attribute( "timeSceneFadeMin" ).toFloat() );
 
+    // Optional share of the screen time for the walking chain labs (0..1; the
+    // genre presets ask for 20..50 %).  With it the labs come when the
+    // scheduler's lab clock calls for one -- a long walking stay, then the
+    // hand-made scenes -- instead of as one entry among four hundred.
+    m_renderPipeline->setLabShare( doc_elem.attribute( "labShare" ).toFloat() );
+
     // Image-cycling times: optional (music steering paces the show anyway);
     // absent/0 falls back to the long-standing baseline.
     // The two-step fallback below distinguishes "attribute wasn't given at

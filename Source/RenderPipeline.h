@@ -293,6 +293,12 @@ public:
     {
         m_scheduler.setSceneFadeMin( secs );
     }
+    /**  The walking chain labs' share of the screen time (preset attribute labShare); see
+     * SceneScheduler::setLabShare().
+     *
+     * @param share  0..1; 0 leaves the labs ordinary entries. (in)
+     **/
+    void setLabShare( float share ) { m_scheduler.setLabShare( share ); }
 
     /**  Eagerly compiles every texture-effect and combine-effect shader of this configuration (validation aid; GL
      * context must be current).
@@ -724,9 +730,9 @@ public:
      * Must be called before the command line is parsed so explicit CLI flags can still override.
      *
      * @sideeffects
-     *   Changes EffectShader::M_ChainSS, EffectShader::M_ChainScale, EffectShader::M_ClassTaste, M_CalmMotion,
-     *   M_ChainScaleIni, M_ImageDirUser, M_LatencyLead, M_MoodStrength, M_Reactivity, M_StereoDepth, M_StereoMode,
-     *   M_Taste, M_TrailAmount.
+     *   Changes EffectShader::M_ChainSS, EffectShader::M_ChainScale, EffectShader::M_ClassNovelty,
+     *   EffectShader::M_ClassSeen, EffectShader::M_ClassTaste, M_CalmMotion, M_ChainScaleIni, M_ImageDirUser,
+     *   M_LatencyLead, M_MoodStrength, M_Reactivity, M_StereoDepth, M_StereoMode, M_Taste, M_TrailAmount.
      **/
     static void loadSettings();
     /** Persists the live-tunable look parameters and render scale to the settings INI. */
@@ -1586,6 +1592,18 @@ private:
      *   Changes M_Taste.
      **/
     void bumpTaste( const char *fragPath, float mul );
+    /**  Stores the scheduler's no-repeat memory in the settings file (group history, key: the preset name), and the
+     * chain classes seen since the last call (group classSeen).
+     *
+     * @param names  The memory, oldest first (shader file names). (in)
+     *
+     * Called by the scheduler whenever a scene has come on screen (about once a minute), so a restart -- or a crash
+     * -- loses at most the scene on screen.
+     *
+     * @sideeffects
+     *   Clears EffectShader::M_ClassSeenDirty.
+     **/
+    void saveHistory( const std::vector<std::string> &names ) const;
     /**  Clamps @p v to the inclusive range [@p lo, @p hi].
      *
      * @param v   Value to clamp. (in)

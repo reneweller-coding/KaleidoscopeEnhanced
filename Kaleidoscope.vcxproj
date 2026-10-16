@@ -311,6 +311,7 @@ if errorlevel 1 exit /b 1
     <ClInclude Include="Source\GpuSims.h" />
     <ClInclude Include="Source\PresentPass.h" />
     <ClInclude Include="Source\SceneScheduler.h" />
+    <ClInclude Include="Source\LongRunVariety.h" />
     <ClInclude Include="Source\coreclock.h" />
     <ClInclude Include="Source\TrackMedia.h" />
     <CustomBuild Include="Source\AudioAnalyzer.h">

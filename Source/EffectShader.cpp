@@ -16,6 +16,7 @@
 #include "ShaderForge.h"
 #include "EffectShader.h"
 #include "ComputeFX.h"
+#include "LongRunVariety.h"
 #include "textfile.h"
 #include <string>
 #include <cstring>
@@ -190,26 +191,29 @@ void EffectShader::retireIdleChainTextures()
     }
 }
 
-float                        EffectShader::M_DepthValid[2] = { 0.f, 0.f };
-float                        EffectShader::M_ShadowPass = 0.f;
-float                        EffectShader::M_ReviewSolo = 0.f;
-bool                         EffectShader::M_ChainRunner = false;
-float                        EffectShader::M_ChainScale = 1.f;
-bool                         EffectShader::M_ChainSS = true;
-float                        EffectShader::M_FreezeTime = -1.f;
-bool                         EffectShader::M_Frozen = false;
-std::map<std::string, float> EffectShader::M_ClassTaste;
-bool                         EffectShader::M_CueLive = false;
-int                          EffectShader::M_CueSections = 0;
-int                          EffectShader::M_CueDrops = 0;
-float                        EffectShader::M_ShadowExtent = EffectShader::ShadowExtent;
-float                        EffectShader::M_LightDir[3] = { 0.45f, 0.80f, -0.40f };
-float                        EffectShader::M_LightM[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
-                                                            0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
-float                        EffectShader::M_ShadowPass2 = 0.f;
-float                        EffectShader::M_LightDir2[3] = { -0.35f, 0.55f, 0.60f };
-float                        EffectShader::M_LightM2[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
+float                         EffectShader::M_DepthValid[2] = { 0.f, 0.f };
+float                         EffectShader::M_ShadowPass = 0.f;
+float                         EffectShader::M_ReviewSolo = 0.f;
+bool                          EffectShader::M_ChainRunner = false;
+float                         EffectShader::M_ChainScale = 1.f;
+bool                          EffectShader::M_ChainSS = true;
+float                         EffectShader::M_FreezeTime = -1.f;
+bool                          EffectShader::M_Frozen = false;
+std::map<std::string, float>  EffectShader::M_ClassTaste;
+std::map<std::string, double> EffectShader::M_ClassSeen;
+std::set<std::string>         EffectShader::M_ClassSeenDirty;
+bool                          EffectShader::M_ClassNovelty = true;
+bool                          EffectShader::M_CueLive = false;
+int                           EffectShader::M_CueSections = 0;
+int                           EffectShader::M_CueDrops = 0;
+float                         EffectShader::M_ShadowExtent = EffectShader::ShadowExtent;
+float                         EffectShader::M_LightDir[3] = { 0.45f, 0.80f, -0.40f };
+float                         EffectShader::M_LightM[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
                                                              0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
+float                         EffectShader::M_ShadowPass2 = 0.f;
+float                         EffectShader::M_LightDir2[3] = { -0.35f, 0.55f, 0.60f };
+float                         EffectShader::M_LightM2[16] = { 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, 0.f, 0.f,
+                                                              0.f, 0.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f };
 
 void EffectShader::cleanShaderPrograms()
 {
@@ -1477,6 +1481,21 @@ void EffectShader::resetChainWalk()
             morph = u->snapshotValue();
     m_walk.active = ( m_walkHostLoc >= 0 && morph >= ( !m_compileFile.empty() ? 0.15f : 0.5f ) );
     m_walkMorph = morph;
+    // The ranges the preset entry allows (its <float> knob ranges): the walk
+    // stays inside them.  The classes are sorted calm .. wild, so a range is a
+    // character -- an Ambient lab walks only the calm part, a gallery lab only
+    // the photo and the relief look.
+    for ( int s = 0; s < WalkN; ++s )
+    {
+        float lo = 0.f, hi = 1.f;
+        for ( const Uniform *u : m_uniforms )
+            if ( u->getName() == kWalkKnob[s] && u->floatRange( lo, hi ) )
+                break;
+        m_walkLo[s] = lo < 0.f ? 0.f : ( lo > 1.f ? 1.f : lo );
+        m_walkHi[s] = hi < m_walkLo[s] ? m_walkLo[s] : ( hi > 1.f ? 1.f : hi );
+        m_seenPos[s] = -1;
+    }
+    m_seenValid = false;
     m_specOff = false;
     m_specWait = 0.f;
     for ( int s = 0; s < WalkN; ++s )
@@ -1576,6 +1595,16 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     s_lastChain.frag = fragmentName();
     s_lastChain.when = std::chrono::steady_clock::now();
     s_lastChain.cls.clear();
+    // The viewer's memory of the classes (M_ClassSeen, read by classNoveltyAt()):
+    // every class on screen is stamped with the wall clock, one that has just
+    // come at once and the others every 30 s while they stay.  Only where the
+    // host knows what is shown: a walking lab or a fixed chain (the shader's
+    // own one-stage walk, morphP 0.15 .. 0.5, shows a class the host does not know).
+    const auto   steady_now = std::chrono::steady_clock::now();
+    const double wall_now = std::chrono::duration<double>( std::chrono::system_clock::now().time_since_epoch() )
+                                .count();
+    const bool   seen_known = m_walk.active || m_walkMorph < 0.15f;
+    const bool   seen_all = !m_seenValid || steady_now - m_seenAt > std::chrono::seconds( 30 );
     for ( int s = 0; s < WalkN; ++s )
     {
         auto n = m_chainClasses.find( kWalkKnob[s] );
@@ -1594,6 +1623,18 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
         const int   cnt = static_cast<int>( n->second.size() ), k = classPos( x, cnt );
         const float sub = x * cnt - static_cast<float>( k );
         s_lastChain.cls[kWalkKnob[s]] = { n->second[k], sub < 0.f ? 0.f : ( sub > 0.99f ? 0.99f : sub ) };
+        if ( seen_known && ( seen_all || k != m_seenPos[s] ) )
+        {
+            const std::string key = classTasteKey( kWalkKnob[s], n->second[k] );
+            M_ClassSeen[key] = wall_now;
+            M_ClassSeenDirty.insert( key );
+            m_seenPos[s] = k;
+        }
+    }
+    if ( seen_known && seen_all )
+    {
+        m_seenAt = steady_now;
+        m_seenValid = true;
     }
     if ( !m_walk.active )
         return;
@@ -1625,17 +1666,18 @@ void EffectShader::stepChainWalk( const AudioFeatures &audio )
     const float Eb = E + 0.3f * f.buildUp < 1.f ? E + 0.3f * f.buildUp : 1.f;
     auto        pick = [&]()
     { return 0.08f + 0.84f * Eb + ( uni( m_walk.rng ) - 0.5f ) * 0.5f; };
-    // Taste: of three such targets for stage s, one with odds after its class's
-    // taste weight (classTaste).  Without any taste learnt: one target, as before.
+    // Taste and novelty: of three such targets for stage s -- mapped into the
+    // range the preset entry allows for it (walkTarget) -- one with odds after
+    // its class's learnt taste (classTaste) times its novelty (classNoveltyAt:
+    // a class seen minutes ago is five times less likely than one not seen for
+    // six hours).  With equal weights that is the same as one target.
     auto pick_for = [&]( int s )
     {
-        if ( M_ClassTaste.empty() )
-            return pick();
         float c[3], w[3], sum = 0.f;
         for ( int i = 0; i < 3; ++i )
         {
-            c[i] = pick();
-            w[i] = classTaste( s, c[i] );
+            c[i] = walkTarget( pick(), m_walkLo[s], m_walkHi[s] );
+            w[i] = classTaste( s, c[i] ) * classNoveltyAt( s, c[i], wall_now );
             sum += w[i];
         }
         float r = uni( m_walk.rng ) * sum;
@@ -3114,6 +3156,86 @@ float EffectShader::classTaste( int s, float x ) const
     auto t = M_ClassTaste.find(
         classTasteKey( kWalkKnob[s], n->second[classPos( x, static_cast<int>( n->second.size() ) )] ) );
     return t == M_ClassTaste.end() ? 1.f : t->second;
+}
+
+float EffectShader::classNoveltyAt( int s, float x, double now ) const
+{
+    if ( !M_ClassNovelty || M_ClassSeen.empty() )
+        return 1.f;
+    auto n = m_chainClasses.find( kWalkKnob[s] );
+    if ( n == m_chainClasses.end() || n->second.empty() )
+        return 1.f;
+    auto t = M_ClassSeen.find(
+        classTasteKey( kWalkKnob[s], n->second[classPos( x, static_cast<int>( n->second.size() ) )] ) );
+    // a stamp from the future (the clock was set back) counts as just seen
+    return classNovelty( t == M_ClassSeen.end() ? -1.0 : ( now > t->second ? now - t->second : 0.0 ) );
+}
+
+/**  Whether a shader text declares the walk host: "uniform float walkHost", with any spaces between the words (the
+ * layout may align a run of declarations).
+ *
+ * @param t  The shader text. (in)
+ *
+ * @return
+ *   True if the declaration is there.
+ **/
+static bool declaresWalkHost( const std::string &t )
+{
+    for ( size_t at = t.find( "walkHost" ); at != std::string::npos; at = t.find( "walkHost", at + 1 ) )
+    {
+        size_t e = at;
+        auto   word_before = [&]( const char *w )
+        {
+            while ( e > 0 && ( t[e - 1] == ' ' || t[e - 1] == '\t' ) )
+                --e;
+            const size_t n = strlen( w );
+            if ( e == at || e < n || t.compare( e - n, n, w ) != 0 )
+                return false;
+            e -= n;
+            return true;
+        };
+        if ( word_before( "float" ) && word_before( "uniform" ) )
+            return true;
+    }
+    return false;
+}
+
+/**  Whether a fragment file is a chain lab the host can walk: it declares the walk host and lists its classes.
+ *
+ * @param path  The fragment file, as the entry names it. (in)
+ *
+ * @return
+ *   True if the file declares "uniform float walkHost" and has a "// @chainclasses " line.
+ *
+ * Read once per file and cached: a preset holds a few lab files and many entries of them (the genre variants).
+ **/
+static bool sourceHasWalk( const std::string &path )
+{
+    static std::map<std::string, bool> cache;
+    auto                               it = cache.find( path );
+    if ( it == cache.end() )
+    {
+        const std::string t = textFileRead( path.c_str() );
+        it = cache.emplace( path, declaresWalkHost( t ) && t.find( "// @chainclasses " ) != std::string::npos ).first;
+    }
+    return it->second;
+}
+
+bool EffectShader::isWalkingLab()
+{
+    if ( m_walkingLab < 0 )
+    {
+        m_walkingLab = 0;
+        float lo = 0.f, hi = 0.f;
+        bool  ranged = false;
+        for ( const Uniform *u : m_uniforms )
+            if ( u->getName() == "morphP" && u->floatRange( lo, hi ) )
+                ranged = true;
+        // the same thresholds as resetChainWalk(): every roll of morphP walks
+        if ( ranged && lo >= ( m_compileFile.empty() ? 0.5f : 0.15f ) && sourceHasWalk( m_fragmentShaderFilename ) )
+            m_walkingLab = 1;
+    }
+    return m_walkingLab == 1;
 }
 
 std::vector<std::pair<std::string, float>> EffectShader::bumpClassTaste( float mul )

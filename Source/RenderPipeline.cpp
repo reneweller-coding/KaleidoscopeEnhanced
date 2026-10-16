@@ -103,6 +103,37 @@ static QString settingsFilePath()
     return Platform::assetPath( QString( "..\\kaleidoscope_settings.ini" ) );
 }
 
+/**  Whether this is a scripted run (a test tool driving the app): KALEIDO_SEED, KALEIDO_FREEZE_TIME,
+ * KALEIDO_SCENE_SWEEP or KALEIDO_FX_SWEEP is set.
+ *
+ * @return
+ *   True for a scripted run.
+ *
+ * Such a run must come out the same every time and must not change what the viewer's show remembers: it neither
+ * reads nor writes the scene memory ([history]) and the class memory ([classSeen]).
+ **/
+static bool scriptedRun()
+{
+    static const bool Scripted = qEnvironmentVariableIsSet( "KALEIDO_SEED" )
+                                 || qEnvironmentVariableIsSet( "KALEIDO_FREEZE_TIME" )
+                                 || qEnvironmentVariableIsSet( "KALEIDO_SCENE_SWEEP" )
+                                 || qEnvironmentVariableIsSet( "KALEIDO_FX_SWEEP" );
+    return Scripted;
+}
+
+/**  The settings key of a preset's scene memory.
+ *
+ * @param preset  The preset name (ConfigurationName). (in)
+ *
+ * @return
+ *   "history/<preset>", with any slash in the name made '_' (a slash would open a group).
+ **/
+static QString historyKey( QString preset )
+{
+    preset.replace( QChar( '/' ), QChar( '_' ) ).replace( QChar( '\\' ), QChar( '_' ) );
+    return "history/" + preset;
+}
+
 void RenderPipeline::loadSettings()
 {
     QSettings s( settingsFilePath(), QSettings::IniFormat );
@@ -184,6 +215,19 @@ void RenderPipeline::loadSettings()
             EffectShader::M_ClassTaste[k.toStdString()] = v;
     }
     s.endGroup();
+    // When the viewer last saw each chain class (EffectShader::M_ClassSeen):
+    // the labs' walk prefers the classes not seen for hours.  Not in a
+    // scripted run, which must not depend on the clock or this file.
+    EffectShader::M_ClassSeen.clear();
+    EffectShader::M_ClassSeenDirty.clear();
+    EffectShader::M_ClassNovelty = !scriptedRun();
+    if ( EffectShader::M_ClassNovelty )
+    {
+        s.beginGroup( "classSeen" );
+        for ( const QString &k : s.allKeys() ) // recursive: knob/class
+            EffectShader::M_ClassSeen[k.toStdString()] = s.value( k, 0.0 ).toDouble();
+        s.endGroup();
+    }
 }
 
 /**  Basename of a fragment path ("..\\Scene2D\\Voyager.frag" -> "Voyager.frag"), the per-scene part of a taste/cue
@@ -233,6 +277,21 @@ static void bumpClassTaste( EffectShader *e, float mul )
     QSettings s( settingsFilePath(), QSettings::IniFormat );
     for ( const auto &kv : changed )
         s.setValue( "classTaste/" + QString::fromStdString( kv.first ), kv.second );
+    s.sync();
+}
+
+void RenderPipeline::saveHistory( const std::vector<std::string> &names ) const
+{
+    if ( scriptedRun() )
+        return;
+    QStringList list;
+    for ( const std::string &n : names )
+        list << QString::fromStdString( n );
+    QSettings s( settingsFilePath(), QSettings::IniFormat );
+    s.setValue( historyKey( m_presetName ), list.join( QChar( '|' ) ) );
+    for ( const std::string &k : EffectShader::M_ClassSeenDirty )
+        s.setValue( "classSeen/" + QString::fromStdString( k ), EffectShader::M_ClassSeen[k] );
+    EffectShader::M_ClassSeenDirty.clear();
     s.sync();
 }
 
@@ -500,10 +559,24 @@ void RenderPipeline::start( int width, int height )
         m_effectTransitions.push_back( fb );
     }
 
-    // Initiale Effekt-/Combine-Wahl + Szenen-Uhren: SceneScheduler.
+    // Initial effect/combine pick and the scene clocks: SceneScheduler.  The
+    // scenes this preset showed last come back from the settings file, so a
+    // show that runs every evening does not start on the same few scenes
+    // (written back by saveHistory() whenever a scene has come on screen).
     m_scheduler.attach( &m_effectTextures, &m_effectFx, &m_effectTransitions );
     m_scheduler.setTasteCallback( [this]( const char *f )
     { return tasteFor( f ); } );
+    if ( !scriptedRun() )
+    {
+        QSettings                s( settingsFilePath(), QSettings::IniFormat );
+        std::vector<std::string> names;
+        for ( const QString &n :
+              s.value( historyKey( m_presetName ) ).toString().split( QChar( '|' ), Qt::SkipEmptyParts ) )
+            names.push_back( n.toStdString() );
+        m_scheduler.setHistory( names );
+        m_scheduler.setHistoryCallback( [this]( const std::vector<std::string> &n )
+        { saveHistory( n ); } );
+    }
     m_scheduler.reset();
 
     // Start the timers

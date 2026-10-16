@@ -18,6 +18,7 @@
 #include <QtGui/qopengl.h>
 #include <string>
 #include <map>
+#include <set>
 #include <array>
 #include <chrono>
 #include <random>
@@ -628,6 +629,18 @@ public:
      * takes one with odds after these weights.  Shared by every lab; RenderPipeline loads and saves it.
      **/
     static std::map<std::string, float> M_ClassTaste;
+    /** When each chain class was last on screen: classTasteKey() -> seconds since the epoch (wall clock).
+     *
+     * The walk weighs its candidate classes by how long ago the viewer saw them (classNovelty() in
+     * LongRunVariety.h), so over days every class comes round instead of the music's favourite few.  Shared by every
+     * lab; RenderPipeline loads it and stores what changed (M_ClassSeenDirty).
+     **/
+    static std::map<std::string, double> M_ClassSeen;
+    static std::set<std::string>         M_ClassSeenDirty; ///< Keys of M_ClassSeen changed since they were stored.
+    /** The walk weighs its candidates by novelty (M_ClassSeen); RenderPipeline turns it off for a scripted run
+     * (KALEIDO_SEED ...), which must not depend on the wall clock or the settings file.
+     **/
+    static bool M_ClassNovelty;
     /**  The taste key of a chain class: "<stage knob>/<class name>" ('/' in the name made '_').
      *
      * @param knob  Stage knob ("chainAP", "coreP", ...). (in)
@@ -771,6 +784,17 @@ public:
      * can carry a whole set.
      **/
     bool walksWithMusic() const { return m_walk.active; }
+    /**  True if this entry is a chain lab that walks every time it runs: its shader takes the host's walk and the
+     * entry rolls morphP only where the walk is on.
+     *
+     * @return
+     *   True for a walking chain lab (read once, then cached).
+     *
+     * GL-free, so the scheduler can sort the labs out at load time (SceneScheduler::setLabShare()): the shader file
+     * declares `uniform float walkHost` and lists its classes (`// @chainclasses`), and the entry's morphP range
+     * starts at the walk threshold (0.5; 0.15 for a lab that runs its chain as passes).
+     **/
+    bool isWalkingLab();
     /**  The chain lab's current chain in words, one line per stage, for the shader-info overlay (key v).
      *
      * @return
@@ -1195,13 +1219,31 @@ protected:
      * @return
      *   The weight, 1 if the class has none or the lab has no class table.
      **/
-    float  classTaste( int s, float x ) const;
-    GLuint m_walkProg = 0; ///< Program the walk locations belong to.
-    GLint  m_walkLoc[9] = { -1, -1, -1, -1, -1,
-                            -1, -1, -1, -1 }; ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 =
-                                              ///< stage absent).
-    GLint m_walkHostLoc = -1;                 ///< Location of walkHost (-1: not a chain lab).
-    GLint m_tiltALoc = -1;                    ///< Location of tiltA (the time tilt's direction).
+    float classTaste( int s, float x ) const;
+    /**  The novelty weight (classNovelty() of M_ClassSeen) of the class knob value x picks on walk stage s.
+     *
+     * @param s    Walk stage index (as kWalkKnob). (in)
+     * @param x    Knob value 0..1. (in)
+     * @param now  The wall clock, seconds since the epoch. (in)
+     *
+     * @return
+     *   0.2 for a class on screen right now .. 1 for one not seen for six hours (or never); 1 without a class table
+     *   or with M_ClassNovelty off.
+     **/
+    float classNoveltyAt( int s, float x, double now ) const;
+    float m_walkLo[9] = {}; ///< Lower end of the range the entry allows each walk stage (its float knob range).
+    float m_walkHi[9] = { 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f, 1.f }; ///< Upper end of that range.
+    int   m_walkingLab = -1; ///< isWalkingLab(): -1 = not decided yet, 0 = no, 1 = yes.
+    int   m_seenPos[9] = { -1, -1, -1, -1, -1, -1, -1, -1, -1 }; ///< Class position each stage showed when it was last
+                                                                 ///< stamped into M_ClassSeen (-1: not yet).
+    std::chrono::steady_clock::time_point m_seenAt;              ///< When the classes on screen were last all stamped.
+    bool                                  m_seenValid = false;           ///< m_seenAt is valid (reset per activation).
+    GLuint                                m_walkProg = 0;                ///< Program the walk locations belong to.
+    GLint m_walkLoc[9] = { -1, -1, -1, -1, -1,
+                           -1, -1, -1, -1 }; ///< Locations of walkA..walkD, walkS, walkSpace, walkCore, walkBody (-1 =
+                                             ///< stage absent).
+    GLint m_walkHostLoc = -1;                ///< Location of walkHost (-1: not a chain lab).
+    GLint m_tiltALoc = -1;                   ///< Location of tiltA (the time tilt's direction).
     /** Re-reads the rolled knobs into the walk state (called lazily after an activation). */
     void resetChainWalk();
     /**  Sets the stage knobs to the classes the chain lab fading out shows (by class name; see s_lastChain in
@@ -1216,6 +1258,9 @@ protected:
      *
      * @param audio  This frame's audio features; with live score cues their section and drop counts replace the
      *               analyser's. (in)
+     *
+     * @sideeffects
+     *   Changes M_ClassSeen.
      **/
     void stepChainWalk( const AudioFeatures &audio );
     /**  Starts stage @p s fading to knob value @p target over @p dur seconds (no-op while that stage already fades: a

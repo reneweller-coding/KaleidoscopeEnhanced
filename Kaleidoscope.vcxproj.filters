@@ -206,6 +206,9 @@
     <ClInclude Include="Source\ScoreCues.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Source\LongRunVariety.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Source\EffectShader.h">
       <Filter>Header Files</Filter>
     </ClInclude>

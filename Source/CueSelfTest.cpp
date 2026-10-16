@@ -4,7 +4,8 @@
 /*! @file
  *
  *  @brief
- *  `Kaleidoscope.exe -q`: the score-cue receiver checked without a window, a sound card or a generator.
+ *  `Kaleidoscope.exe -q`: the score-cue receiver checked without a window, a sound card or a generator -- and the
+ *  building blocks of a show that runs for days (LongRunVariety.h: scene memory, lab clock, class novelty).
  *
  *  The datagrams below are written out byte by byte from the OSC 1.0 specification -- address string
  *  terminated and padded with nulls to a multiple of four, then the type tag string beginning with a
@@ -18,6 +19,7 @@
  */
 
 #include "CueReceiver.h"
+#include "LongRunVariety.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDir>
@@ -280,6 +282,84 @@ int decodeCapture( const char *path )
     fclose( f );
     fprintf( stderr, "cue capture: %d decoded, %d refused\n", good, bad );
     return bad == 0 && good > 0 ? 0 : 1;
+}
+
+/**  The building blocks of a show that runs for days (LongRunVariety.h): the scene memory, the lab clock, the novelty
+ * of a class and the walk's range.
+ *
+ * The lab clock is run over two simulated days with hand-made scenes of 50..110 s and lab stays of ten minutes:
+ * the share it keeps must land on the share asked for, and two labs must never follow each other.
+ **/
+void longRunChecks()
+{
+    printf( "\nlong runs (LongRunVariety.h)\n" );
+
+    RecentScenes r;
+    r.setCapacity( 3 );
+    for ( const char *n : { "a", "b", "c", "d" } )
+        r.push( n );
+    check( r.size() == 3 && !r.contains( "a" ) && r.contains( "b" ) && r.contains( "d" ),
+           "the scene memory holds its capacity and lets the oldest go" );
+    r.assign( { "a", "b", "a" } );
+    r.push( "c" );
+    const std::vector<std::string> kept = r.names();
+    check( kept == std::vector<std::string>( { "b", "a", "c" } ) && r.contains( "a" ),
+           "a scene shown twice stays in while its newer showing does" );
+    r.setCapacity( 2 );
+    r.assign( { "x", "", "y", "z" } );
+    check( r.names() == std::vector<std::string>( { "y", "z" } ) && !r.contains( "x" ),
+           "a stored memory is trimmed from its old end, empty names skipped" );
+    r.setCapacity( 0 );
+    r.push( "q" );
+    check( r.size() == 0 && !r.contains( "q" ), "a memory of capacity 0 holds nothing" );
+
+    LabShareClock clock;
+    check( !clock.wantLab( false, 0.f ), "without a share the labs are never called for" );
+    clock.setTarget( 1.f );
+    check( clock.wantLab( true, 0.9f ), "at a share of 1 always a lab, even after one" );
+    clock.setTarget( 0.35f );
+    check( clock.wantLab( false, 0.2f ) && !clock.wantLab( false, 0.5f ),
+           "before any time is booked the dice decide, at the share asked for" );
+    check( !clock.wantLab( true, 0.f ), "never two labs in a row" );
+
+    // Two days: a lab stays ten minutes, a hand-made scene 50..110 s (a fixed LCG, so the run is the same every time).
+    unsigned int lcg = 12345u;
+    auto         uni = [&lcg]()
+    {
+        lcg = lcg * 1664525u + 1013904223u;
+        return static_cast<float>( lcg >> 8 ) / 16777216.f;
+    };
+    bool  lab = false, twice = false;
+    float lab_secs = 0.f, all_secs = 0.f;
+    while ( all_secs < 48.f * 3600.f )
+    {
+        const bool next = clock.wantLab( lab, uni() );
+        twice = twice || ( lab && next );
+        lab = next;
+        const float secs = lab ? 600.f : 50.f + 60.f * uni();
+        clock.add( secs, lab );
+        all_secs += secs;
+        lab_secs += lab ? secs : 0.f;
+    }
+    const float share = lab_secs / all_secs;
+    check( share > 0.33f && share < 0.37f && !twice, "over two days the labs get the share asked for (35 %)",
+           std::to_string( static_cast<int>( share * 1000.f + 0.5f ) / 10.f ).substr( 0, 4 ) + " %" );
+
+    LabShareClock decay;
+    decay.add( 3.f * 3600.f, true );
+    decay.add( 3.f * 3600.f, false );
+    check( decay.share() > 0.26f && decay.share() < 0.28f,
+           "the clock follows the last hours: three hours of labs, then three without, read as 27 %" );
+
+    check( classNovelty( -1.0 ) == 1.f && classNovelty( 0.0 ) == 0.2f
+               && classNovelty( 3.0 * 3600.0 ) > 0.59f && classNovelty( 3.0 * 3600.0 ) < 0.61f
+               && classNovelty( 6.0 * 3600.0 ) == 1.f && classNovelty( 30.0 * 3600.0 ) == 1.f,
+           "a class seen just now weighs 0.2, after three hours 0.6, after six (or never seen) 1" );
+
+    check( walkTarget( 0.5f, 0.f, 0.6f ) > 0.29f && walkTarget( 0.5f, 0.f, 0.6f ) < 0.31f
+               && walkTarget( -1.f, 0.2f, 0.4f ) == 0.2f && walkTarget( 2.f, 0.f, 1.f ) == 0.999f
+               && walkTarget( 0.5f, 0.4f, 0.4f ) == 0.4f,
+           "a walk target lands in the entry's range, never past the last class" );
 }
 
 } // namespace
@@ -573,6 +653,8 @@ int runCueSelfTest()
                    "and one frame carries the bar line, the section, the drop and the key" );
         }
     }
+
+    longRunChecks();
 
     printf( "\n%d passed, %d failed\n", g_passed, g_failed );
     return g_failed == 0 ? 0 : 1;

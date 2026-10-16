@@ -33,7 +33,7 @@ void SceneScheduler::setReviewMode( bool on )
     EffectShader::M_ReviewSolo = on ? ReviewSoloSecs : 0.f;
 }
 
-// Basename eines Fragment-Pfads, case-insensitiver Vergleich (Review-Sortierung).
+// Basename of a fragment path, and a case-insensitive comparison of two (the review order).
 /**  Return the basename (after the last slash/backslash) of a fragment path.
  *
  * @param p  Path string (may be null). (in)
@@ -97,43 +97,50 @@ static bool baseLess( const char *a, const char *b )
 
 /**  Roll the initial act/next effect and combine picks and start both clocks.
  *
- * Mirrors the old inline start() block exactly, including its slightly
- * different (looser) complexity budgets for the very first pick: 12 for the
- * texture pair alone, 20 once the combine pair is added in. Each pick is a
- * bounded rejection-sampling loop (up to #MaxSearch tries) that requires
- * useShader() and, for "next", a distinct index from "act" within the
- * complexity budget; if the loop still lands on the same index as "act" it
- * is nudged forward by one (wrapping) rather than retried further.
+ * Mirrors the old inline start() block, including its slightly different
+ * (looser) complexity budgets for the very first pick: 12 for the texture
+ * pair alone, 20 once the combine pair is added in. Each pick is a bounded
+ * rejection-sampling loop (up to #MaxSearch tries) that requires useShader()
+ * and, for "next", a distinct index from "act" within the complexity budget
+ * (pickScene()). Before the picks it sorts the walking chain labs out of the
+ * ordinary pool (when the preset asks for a lab share), sizes the no-repeat
+ * memory and takes over the memory a previous run left (setHistory()), so
+ * the first scenes of a session come from outside it too.
  **/
 void SceneScheduler::reset()
 {
-    // Initial random pick - exactly the old start() block (including the
-    // slightly different complexity budgets 12 and 20 of the first pick).
-    for ( unsigned int i = 0; i < MaxSearch; ++i )
+    const std::vector<EffectShader *> &tex = *m_textures;
+    // Which entries are walking chain labs, and how many hand-made scenes the
+    // preset has (by shader file: a mesh family is one scene).  The memory
+    // holds three quarters of them and leaves at least two free.
+    m_isLab.assign( tex.size(), 0 );
+    std::vector<std::string> regular, labs;
+    for ( unsigned int i = 0; i < tex.size(); ++i )
     {
-        m_actTexture = rand() % m_textures->size();
-        if ( ( *m_textures )[m_actTexture]->useShader() )
-            break;
+        const std::string name = fragBase( tex[i]->fragmentName() );
+        m_isLab[i] = tex[i]->isWalkingLab() ? 1 : 0;
+        std::vector<std::string> &into = ( m_isLab[i] && m_labClock.target() > 0.f ) ? labs : regular;
+        if ( std::find( into.begin(), into.end(), name ) == into.end() )
+            into.push_back( name );
     }
-    // A new preset has new indices: the old window means nothing here.
-    m_recentTex.clear();
-    noteTextureShown( m_actTexture );
+    m_labsScheduled = !labs.empty();
+    m_labFiles = labs.size();
+    const size_t n = regular.size();
+    m_recent.setCapacity( n > 2 ? std::min( n * 3 / 4, n - 2 ) : 0 );
+    m_recent.assign( m_pendingHistory );
+    m_pendingHistory.clear();
+    m_lastLab.clear();
+    m_shownSecs = 0.f;
+    if ( m_labsScheduled )
+        fprintf( stderr,
+                 "SCHED %zu scenes, no-repeat memory %zu (%zu stored); %zu lab file(s) at %.0f %% of the time\n", n,
+                 m_recent.capacity(), m_recent.size(), m_labFiles, 100.f * m_labClock.target() );
 
-    for ( unsigned int i = 0; i < MaxSearch; ++i )
-    {
-        m_nextTexture = rand() % m_textures->size();
-        if ( m_nextTexture != m_actTexture
-             && ( ( ( *m_textures )[m_actTexture]->getComplexity() + ( *m_textures )[m_nextTexture]->getComplexity() )
-                  < ComplexityBudgetInitial )
-             && ( *m_textures )[m_nextTexture]->useShader() )
-            break;
-    }
-    if ( m_nextTexture == m_actTexture )
-    {
-        m_nextTexture += 1;
-        if ( m_nextTexture == m_textures->size() )
-            m_nextTexture = 0;
-    }
+    // Initial random pick - the old start() block (including the slightly
+    // different complexity budgets 12 and 20 of the first pick).
+    m_actTexture = pickScene( -1, true );
+    noteTextureShown( m_actTexture );
+    m_nextTexture = pickScene( static_cast<int>( m_actTexture ), true );
 
     // KALEIDO_SEED: the first scene rolls its own seeded stream too.  It does not
     // pass through resetParameters() otherwise, and keeps the rolls made while
@@ -300,15 +307,11 @@ int SceneScheduler::findTransition( const char *basename ) const
     return -1;
 }
 
-/**  Tells whether texture @p idx was shown within the no-repeat window.
+/**  Tells whether texture @p idx was shown within the no-repeat memory.
  *
- * @param idx  Texture index into the attached texture list. (in)
- *
- * @return
- *   True if @p idx is in the window.
- *
- * The window holds the last min(RecentMax, a third of the preset) scenes, so
- * a small preset still has two thirds of its scenes to choose from.
+ * The memory holds three quarters of the preset's scenes and leaves at least
+ * two free, so a small preset still has scenes to choose from.  Parameter and
+ * return value are documented in SceneScheduler.h.
  **/
 bool SceneScheduler::isRecentTexture( unsigned int idx ) const
 {
@@ -319,25 +322,99 @@ bool SceneScheduler::isRecentTexture( unsigned int idx ) const
     const std::vector<EffectShader *> &tex = *m_textures;
     if ( idx >= tex.size() )
         return false;
-    const char *name = fragBase( tex[idx]->fragmentName() );
-    for ( unsigned int r : m_recentTex )
-        if ( r < tex.size() && ( r == idx || strcmp( fragBase( tex[r]->fragmentName() ), name ) == 0 ) )
-            return true;
-    return false;
+    return m_recent.contains( fragBase( tex[idx]->fragmentName() ) );
 }
 
-/**  Records that texture @p idx is on screen and trims the no-repeat window.
+/**  Records that texture @p idx is on screen.
  *
- * @param idx  Texture index that has just become the active scene. (in)
+ * A walking lab under a lab share stays out of the memory -- the labs never
+ * run out, and the memory would hold them back for hours -- and only becomes
+ * the last lab, so the next lab is another file.  The parameter is documented
+ * in SceneScheduler.h.
  **/
 void SceneScheduler::noteTextureShown( unsigned int idx )
 {
-    m_recentTex.push_back( idx );
-    size_t cap = m_textures ? m_textures->size() / 3 : 0;
-    if ( cap > RecentMax )
-        cap = RecentMax;
-    while ( m_recentTex.size() > cap )
-        m_recentTex.erase( m_recentTex.begin() );
+    const std::vector<EffectShader *> &tex = *m_textures;
+    if ( idx >= tex.size() )
+        return;
+    const char *name = fragBase( tex[idx]->fragmentName() );
+    if ( m_labsScheduled && idx < m_isLab.size() && m_isLab[idx] )
+        m_lastLab = name;
+    else
+        m_recent.push( name );
+}
+
+/**  Rolls the scene to follow scene @p act.
+ *
+ * Without a lab share every entry is in the pool, exactly as before (the
+ * random stream is untouched).  With one the lab clock first decides between
+ * the walking labs and the hand-made scenes, and only that pool is searched:
+ * a lab that is not the last lab's file, or a scene outside the no-repeat
+ * memory -- both conditions for the first two thirds of the search only, so a
+ * narrow pool still finds a scene.  The other conditions are the old ones:
+ * not @p act, the complexity budget, useShader() and moodAccept().
+ * Parameters and return value are documented in SceneScheduler.h.
+ **/
+unsigned int SceneScheduler::pickScene( int act, bool initial )
+{
+    const std::vector<EffectShader *> &tex = *m_textures;
+    const std::vector<EffectShader *> &comb = *m_fxShaders;
+    const unsigned int                 n = static_cast<unsigned int>( tex.size() );
+    if ( n == 0 )
+        return 0;
+    const bool                act_lab = act >= 0 && static_cast<unsigned int>( act ) < m_isLab.size() && m_isLab[act];
+    const bool want_lab = m_labsScheduled
+                          && m_labClock.wantLab( act_lab,
+                                                 static_cast<float>( rand() ) / static_cast<float>( RAND_MAX ) );
+    std::vector<unsigned int> pool;
+    if ( m_labsScheduled )
+        for ( unsigned int i = 0; i < n && i < m_isLab.size(); ++i )
+            if ( ( m_isLab[i] != 0 ) == want_lab )
+                pool.push_back( i );
+
+    unsigned int pick = 0;
+    for ( unsigned int i = 0; i < MaxSearch; ++i )
+    {
+        pick = pool.empty() ? rand() % n : pool[rand() % pool.size()];
+        // Nothing from the memory (a lab: not the last lab's file), unless the
+        // search is running dry (a small preset, a narrow filter).
+        if ( i < MaxSearch * 2 / 3
+             && ( want_lab ? ( m_labFiles > 1 && m_lastLab == fragBase( tex[pick]->fragmentName() ) )
+                           : isRecentTexture( pick ) ) )
+            continue;
+        // No more preference for STAGED scenes (sceneProgress) when the
+        // tension rises (29.09.2026).  The rule was meant to lay their climax
+        // onto the drop, but pulled forward exactly the scenes that tend to be
+        // the calm, boring ones in the programme -- 51 % of all changes for
+        // 12 % of the catalogue.  If a staged scene happens to be running,
+        // setClimaxIn() still bends its arc onto the drop; it is not picked
+        // for it.
+        if ( static_cast<int>( pick ) == act )
+            continue;
+        if ( act >= 0 )
+        {
+            const unsigned int sum = initial ? tex[act]->getComplexity() + tex[pick]->getComplexity()
+                                             : tex[act]->getComplexity() + tex[pick]->getComplexity()
+                                                   + comb[m_actFx]->getComplexity() + comb[m_nextFx]->getComplexity();
+            if ( sum >= ( initial ? ComplexityBudgetInitial : ComplexityBudget ) )
+                continue;
+        }
+        if ( tex[pick]->useShader() && ( initial || moodAccept( tex[pick] ) ) )
+            break;
+    }
+    // Unlucky to the end on the scene on screen: the next one of the pool.
+    if ( static_cast<int>( pick ) == act )
+    {
+        if ( pool.size() > 1 )
+            pick = pool[( static_cast<size_t>( std::find( pool.begin(), pool.end(), pick ) - pool.begin() ) + 1 )
+                        % pool.size()];
+        else if ( pool.empty() )
+            pick = ( pick + 1 ) % n;
+    }
+    if ( want_lab )
+        fprintf( stderr, "SCHED lab share %.0f %% (asked %.0f %%) -> %s\n", 100.f * m_labClock.share(),
+                 100.f * m_labClock.target(), tex[pick]->fragmentName() );
+    return pick;
 }
 
 // Mood-based selection bias - two components:
@@ -430,6 +507,11 @@ void SceneScheduler::tick( const Tick &t )
     // scene get cut away again after the 0.6 s minimum solo -- the reported
     // "scene flashes in for a fraction of a second and is replaced".
     const bool mid_fade = ( m_texState != 0 );
+
+    // Screen time of the scene on screen, for the lab clock (a stall counts
+    // at most a second: the books are kept for hours, not frames).
+    if ( t.dt > 0.f )
+        m_shownSecs += t.dt < 1.f ? t.dt : 1.f;
 
     m_noveltyCooldown -= t.dt;
     if ( !m_reviewMode && m_noveltyCooldown <= 0.f && t.harmonicChange * t.musicPresence > 0.5f )
@@ -616,7 +698,7 @@ void SceneScheduler::tick( const Tick &t )
         m_dropCutPending = false;
     }
 
-    // ---- Effekt-Zustandsmaschine: Solo ----
+    // ---- Effect state machine: Solo ----
     if ( m_texState == 0 )
     {
         m_texInterp = 1.0;
@@ -805,9 +887,15 @@ void SceneScheduler::tick( const Tick &t )
         {
             m_texState = 0;
 
+            // The scene going out was on screen for its solo and this fade:
+            // that time goes on the lab clock.
+            m_labClock.add( m_shownSecs, m_actTexture < m_isLab.size() && m_isLab[m_actTexture] );
+            m_shownSecs = 0.f;
             tex[m_actTexture]->resetParameters();
             m_actTexture = m_nextTexture;
             noteTextureShown( m_actTexture );
+            if ( m_onHistory && !m_reviewMode )
+                m_onHistory( m_recent.names() );
 
             // Song-structure memory: the RESTORE now happens at the START OF
             // THE FADE (see above, the effect fades in with the stored look);
@@ -874,27 +962,7 @@ void SceneScheduler::tick( const Tick &t )
                 m_pendingSectionNextId = -1;
             }
             else
-                for ( unsigned int i = 0; i < MaxSearch; ++i )
-                {
-                    m_nextTexture = rand() % tex.size();
-                    // Nothing shown in the last RecentMax scenes, unless the
-                    // search is running dry (a small preset, a narrow filter).
-                    if ( i < MaxSearch * 2 / 3 && isRecentTexture( m_nextTexture ) )
-                        continue;
-                    // No more preference for STAGED scenes (sceneProgress) when
-                    // the tension rises (29.09.2026).  The rule was meant to lay
-                    // their climax onto the drop, but pulled forward exactly the
-                    // scenes that tend to be the calm, boring ones in the
-                    // programme -- 51 % of all changes for 12 % of the catalogue.
-                    // If a staged scene happens to be running, setClimaxIn()
-                    // still bends its arc onto the drop; it is not picked for it.
-                    if ( m_nextTexture != m_actTexture
-                         && ( ( tex[m_actTexture]->getComplexity() + tex[m_nextTexture]->getComplexity()
-                                + comb[m_actFx]->getComplexity() + comb[m_nextFx]->getComplexity() )
-                              < ComplexityBudget )
-                         && tex[m_nextTexture]->useShader() && moodAccept( tex[m_nextTexture] ) )
-                        break;
-                }
+                m_nextTexture = pickScene( static_cast<int>( m_actTexture ), false );
 
             if ( m_nextTexture == m_actTexture )
             {
@@ -934,7 +1002,7 @@ void SceneScheduler::tickFx( const Tick &t, bool trueStereoHold )
     std::vector<EffectShader *> &tex = *m_textures;
     std::vector<EffectShader *> &comb = *m_fxShaders;
 
-    // ---- Combine-Zustandsmaschine: Solo ----
+    // ---- Combine state machine: Solo ----
     if ( m_fxState == 0 )
     {
         m_fxInterp = 1.0;

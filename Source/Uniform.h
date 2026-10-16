@@ -251,6 +251,22 @@ public:
         else
             m_data.vi = static_cast<int>( v + ( ( v >= 0.f ) ? 0.5f : -0.5f ) );
     }
+    /**  The range a BASE_TYPE_FLOAT uniform is rolled from: what the preset entry allows (minValue .. maxValue).
+     *
+     * @param lo  Receives the lower bound. (out)
+     * @param hi  Receives the upper bound. (out)
+     *
+     * @return
+     *   True for a float uniform; false, with nothing written, for every other type.
+     **/
+    bool floatRange( float &lo, float &hi ) const
+    {
+        if ( m_type != BASE_TYPE_FLOAT )
+            return false;
+        lo = m_dataMin.vf;
+        hi = m_dataMax.vf;
+        return true;
+    }
 
 private:
     /** The actual data container.

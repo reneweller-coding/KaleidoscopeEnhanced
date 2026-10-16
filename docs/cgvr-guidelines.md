@@ -46,6 +46,7 @@ Same tokens are not enough where a program searches the shader *text*. These con
 | `EffectShader::parseChainSource()` | `const float chainAP = 0.4752;` (frozen likes) | lines starting with `const float `; these names mirror the knob uniforms and are not renamed |
 | `EffectShader::usesSceneLod()` | a `textureLod( tex0, ... )` call | `callsWithFirstArg()`: spaces between name, parenthesis and argument do not matter |
 | `EffectShader` constructor | `// @chainbake`, `// @chain3d` | substring of a comment line |
+| `EffectShader::isWalkingLab()` (`sourceHasWalk()`) | the `uniform float walkHost` declaration and a `// @chainclasses ` line | `declaresWalkHost()`: any spaces between the three words; the chain lab files only |
 | `shaderVariantStart()` (`shader_setup.cpp`) | the `#version` line | a variant's `#define`s go in after the first line, so `#version` stays first and the file header follows it |
 | `Tools/make_catalog.py` | the file header's `@brief` and description | `header_comment()`: the banner skipped, `@author` dropped |
 | `Tools/scenegen/register_new.py` | `uniform float <knob>P;` | `uniform\s+float\s+(\w+P)\s*;` |
