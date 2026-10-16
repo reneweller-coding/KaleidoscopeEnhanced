@@ -15,7 +15,7 @@
  *  Audio Reactivity (structure, not only light):
  *    audioAdvance    -> the waves travel (integrated, jump-free)
  *    audioSpread     -> how strongly the photo bends the stripes
- *    audioHarmChange -> the stripe direction turns (slow, smoothed)
+ *    audioHarmAdvance -> the stripe direction sways on with every chord change
  *    audioMode       -> palette: black/white in minor, photo colours in major
  *    audioKick       -> the light stripes brighten (light)
  *    audioSwell      -> wave height (slow)
@@ -32,18 +32,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioMode;        ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float stripeP; ///< Stripe knob: stripe density, 0..1.
 uniform float bendP;   ///< Bend knob: base bending, 0..1.
@@ -397,7 +398,7 @@ void main()
     float kick = clamp( audioKick, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float T = 0.05 * sceneTime + 0.4 * audioAdvance;
-    float dir_a = 0.3 * sin( 0.01 * sceneTime ) + 0.3 * clamp( audioHarmChange, 0.0, 1.0 );
+    float dir_a = 0.3 * sin( 0.01 * sceneTime + 0.6 * audioHarmAdvance );
     vec2  d = vec2( cos( dir_a ), sin( dir_a ) );
     vec2  uv = p * 0.6 + 0.5 + vec2( 0.003, 0.002 ) * sceneTime;
     float h = luma( imgLod( uv, 5.5 ) );

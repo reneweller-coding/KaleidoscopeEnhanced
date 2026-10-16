@@ -12,12 +12,12 @@
  *   audioSpread     -> the forms grow
  *   audioMode       -> palette: blue-violet in minor, rose-ochre in major (a tint)
  *   audioKick       -> the light colours brighten (light)
- *   audioHarmChange -> the forms drift (slow, smoothed)
+ *   audioHarmAdvance -> the forms drift on with every chord change
  *   audioSwell      -> the paper texture shows (slow)
  *
  * Knobs: turnsP (spiral turns), formP (form density), photoP, hueP.
 //@params turnsP formP photoP
-//@audio audioSpread audioMode audioKick audioHarmChange audioSwell
+//@audio audioSpread audioMode audioKick audioHarmAdvance audioSwell
 //@body
 vec3 klintPal(float k)
 {
@@ -37,7 +37,7 @@ void main()
     float swell = clamp(audioSwell, 0.0, 1.0);
     float mode = clamp(audioMode, 0.0, 1.0);
     float T = 0.06 * sceneTime + 0.5 * audioAdvance;
-    float drift = 0.008 * sceneTime + 0.15 * clamp(audioHarmChange, 0.0, 1.0);
+    float drift = 0.008 * sceneTime + 0.075 * audioHarmAdvance;
     // Pastel field: soft bands.
     float fb = fbm3(p * 0.8 + vec2(drift, 0.0));
     vec3 col = mix(klintPal(0.0), klintPal(2.0), smoothstep(0.3, 0.7, fb));

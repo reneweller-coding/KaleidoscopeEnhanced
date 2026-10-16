@@ -17,7 +17,7 @@
  *    audioSpread     -> the forms grow
  *    audioMode       -> palette: blue-violet in minor, rose-ochre in major (a tint)
  *    audioKick       -> the light colours brighten (light)
- *    audioHarmChange -> the forms drift (slow, smoothed)
+ *    audioHarmAdvance -> the forms drift on with every chord change
  *    audioSwell      -> the paper texture shows (slow)
  *
  *  Knobs: turnsP (spiral turns), formP (form density), photoP, hueP.
@@ -32,18 +32,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioMode;        ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float turnsP; ///< Turns knob: spiral turns, 0..1.
 uniform float formP;  ///< Form knob: form density, 0..1.
@@ -422,7 +423,7 @@ void main()
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float mode = clamp( audioMode, 0.0, 1.0 );
     float T = 0.06 * sceneTime + 0.5 * audioAdvance;
-    float drift = 0.008 * sceneTime + 0.15 * clamp( audioHarmChange, 0.0, 1.0 );
+    float drift = 0.008 * sceneTime + 0.075 * audioHarmAdvance;
     // Pastel field: soft bands.
     float fb = fbm3( p * 0.8 + vec2( drift, 0.0 ) );
     vec3  col = mix( klintPal( 0.0 ), klintPal( 2.0 ), smoothstep( 0.3, 0.7, fb ) );

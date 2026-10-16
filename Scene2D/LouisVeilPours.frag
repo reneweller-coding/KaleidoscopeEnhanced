@@ -14,7 +14,7 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioAdvance    -> the pours flow (integrated, jump-free)
- *    audioHarmChange -> a new veil begins (smoothed)
+ *    audioHarmAdvance -> the veils' clock steps on with every chord change
  *    audioSpread     -> veil width
  *    audioRoughness  -> the tide lines get more ragged
  *    audioMode       -> the palette warms in major
@@ -32,18 +32,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioMode;        ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float layersP; ///< Layers knob: how many veils, 0..1.
 uniform float glazeP;  ///< Glaze knob: transparency, 0..1.
@@ -396,7 +397,7 @@ void main()
     vec2  p = screenP();
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float rough = clamp( audioRoughness, 0.0, 1.0 );
-    float T = 0.03 * sceneTime + 0.3 * audioAdvance + 0.1 * clamp( audioHarmChange, 0.0, 1.0 );
+    float T = 0.03 * sceneTime + 0.3 * audioAdvance + 0.05 * audioHarmAdvance;
     vec3  canvas = vec3( 0.9, 0.87, 0.8 ) * ( 0.95 + 0.05 * noise2( p * 300.0 ) );
     vec3  col = canvas;
     int   n_v = 4 + int( clamp( layersP, 0.0, 1.0 ) * 3.99 );

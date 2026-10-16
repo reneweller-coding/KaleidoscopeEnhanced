@@ -8,7 +8,7 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the blooms spread (integrated, jump-free)
- *   audioHarmChange -> new blooms open (smoothed)
+ *   audioHarmAdvance -> the blooms' clock steps on with every chord change
  *   audioSpread     -> bloom size
  *   audioRoughness  -> the bloom edges get more cauliflower-like
  *   audioSwell      -> pigment strength (slow)
@@ -16,14 +16,14 @@
  *
  * Knobs: bloomsP, granP (granulation), edgeP (edge darkness), hueP.
 //@params bloomsP granP edgeP
-//@audio audioHarmChange audioSpread audioRoughness audioSwell audioMode
+//@audio audioHarmAdvance audioSpread audioRoughness audioSwell audioMode
 //@body
 void main()
 {
     vec2 p = screenP();
     float swell = clamp(audioSwell, 0.0, 1.0);
     float rough = clamp(audioRoughness, 0.0, 1.0);
-    float T = 0.035 * sceneTime + 0.3 * audioAdvance + 0.08 * clamp(audioHarmChange, 0.0, 1.0);
+    float T = 0.035 * sceneTime + 0.3 * audioAdvance + 0.04 * audioHarmAdvance;
     vec3 paper = vec3(0.96, 0.95, 0.91) * (0.96 + 0.04 * noise2(p * 250.0));
     vec3 col = paper;
     float edgeAcc = 0.0;

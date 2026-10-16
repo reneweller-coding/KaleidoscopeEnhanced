@@ -18,7 +18,7 @@
  *    audioMode       -> palette: cool contrasts in minor, warm in major
  *    audioKick       -> the colours brighten (light)
  *    audioRoughness  -> the brushed paint texture
- *    audioHarmChange -> the discs drift to new places (slow, smoothed)
+ *    audioHarmAdvance -> the discs drift on with every chord change
  *
  *  Knobs: ringP (ring count), sectorP (sectors per ring), photoP (photo colours), hueP.
  *
@@ -32,18 +32,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioMode;        ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
 
 uniform float ringP;   ///< Ring knob, 0..1.
 uniform float sectorP; ///< Sector knob: sectors per ring, 0..1.
@@ -425,7 +426,7 @@ void main()
     float mode = clamp( audioMode, 0.0, 1.0 );
     float rough = clamp( audioRoughness, 0.0, 1.0 );
     float T = 0.1 * sceneTime + 0.8 * audioAdvance;
-    float drift = 0.01 * sceneTime + 0.2 * clamp( audioHarmChange, 0.0, 1.0 );
+    float drift = 0.01 * sceneTime + 0.1 * audioHarmAdvance;
     // Discs on a jittered grid; the one whose rim is furthest away on top.
     float S = 1.6;
     vec2  g = p * S;

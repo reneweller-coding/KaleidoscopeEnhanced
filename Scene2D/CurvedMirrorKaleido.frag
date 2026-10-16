@@ -16,7 +16,7 @@
  *    audioPhase      -> the rosette turns (integrated, jump-free)
  *    audioAdvance    -> the window drifts through the photo (integrated)
  *    audioMode       -> mirror curvature: straight petals in minor, full bowed petals in major
- *    audioHarmChange -> the rosette breathes open on chord changes (slow release)
+ *    audioHarmAdvance -> the rosette turns on with every chord change
  *    audioRoughness  -> the mirror glass ripples
  *    audioSpread     -> the inner stage's scale
  *    audioHigh       -> the mirror seams glint (light)
@@ -34,19 +34,20 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioPhase;      ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioHigh;       ///< High band level, 0..1.
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioPhase;       ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioMode;        ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioHigh;        ///< High band level, 0..1.
 
 uniform float sidesP; ///< Sides knob: number of mirrors, 0..1.
 uniform float bowP;   ///< Bow knob: base curvature, 0..1.
@@ -425,8 +426,7 @@ void main()
     float hi = clamp( audioHigh * 1.5, 0.0, 1.0 );
     float n = 3.0 + floor( clamp( sidesP, 0.0, 1.0 ) * 5.99 );
     float bow = ( 0.15 + 0.35 * clamp( bowP, 0.0, 1.0 ) ) * ( 0.3 + 0.7 * clamp( audioMode, 0.0, 1.0 ) );
-    float breath = 1.0 + 0.12 * clamp( audioHarmChange, 0.0, 1.0 );
-    p = rot2( 0.02 * sceneTime + 0.3 * audioPhase ) * p / breath;
+    p = rot2( 0.02 * sceneTime + 0.3 * audioPhase + 0.12 * audioHarmAdvance ) * p;
 
     float seam1;
     vec2  f1 = fold( p, n, bow, rough, seam1 );

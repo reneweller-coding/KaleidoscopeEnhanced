@@ -11,7 +11,7 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the pressing and rocking (integrated, jump-free)
- *   audioHarmChange -> a fresh bloom opens on chord changes (smoothed, never a cut)
+ *   audioHarmAdvance -> the blooms' life cycle steps on with every chord change (never a cut)
  *   audioSpread     -> bloom size (wide spectrum = many small blossoms)
  *   audioRoughness  -> the outlines wobble
  *   audioBass       -> the lamp's brightness (light)
@@ -20,7 +20,7 @@
  * Knobs: bloomsP (how many blossoms), oilP (share of oil cells), ringP
  * (ring structure inside the blooms), hueP.
 //@params bloomsP oilP ringP
-//@audio audioHarmChange audioSpread audioRoughness audioBass audioSwell
+//@audio audioHarmAdvance audioSpread audioRoughness audioBass audioSwell
 //@body
 float gT;
 
@@ -52,7 +52,7 @@ void main()
         if (k >= nB) break;
         float fk = float(k);
         // Each blossom has a life cycle (grows, then is pushed aside); staggered.
-        float life = fract(gT * 0.08 + fk / float(nB) + 0.13 * clamp(audioHarmChange, 0.0, 1.0));
+        float life = fract(gT * 0.08 + fk / float(nB) + 0.065 * audioHarmAdvance);
         vec2 c = vec2(sin(fk * 2.4 + gT * 0.1), cos(fk * 1.7 - gT * 0.13)) * 0.9;
         float R = scale * (0.2 + 1.2 * life) * (0.7 + 0.5 * hash11(fk));
         vec2 d = q - c;

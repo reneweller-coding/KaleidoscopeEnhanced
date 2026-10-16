@@ -9,7 +9,7 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the pours flow (integrated, jump-free)
- *   audioHarmChange -> a new veil begins (smoothed)
+ *   audioHarmAdvance -> the veils' clock steps on with every chord change
  *   audioSpread     -> veil width
  *   audioRoughness  -> the tide lines get more ragged
  *   audioMode       -> the palette warms in major
@@ -17,14 +17,14 @@
  *
  * Knobs: layersP (how many veils), glazeP (transparency), canvasP (raw canvas), hueP.
 //@params layersP glazeP canvasP
-//@audio audioHarmChange audioSpread audioRoughness audioMode audioSwell
+//@audio audioHarmAdvance audioSpread audioRoughness audioMode audioSwell
 //@body
 void main()
 {
     vec2 p = screenP();
     float swell = clamp(audioSwell, 0.0, 1.0);
     float rough = clamp(audioRoughness, 0.0, 1.0);
-    float T = 0.03 * sceneTime + 0.3 * audioAdvance + 0.1 * clamp(audioHarmChange, 0.0, 1.0);
+    float T = 0.03 * sceneTime + 0.3 * audioAdvance + 0.05 * audioHarmAdvance;
     vec3 canvas = vec3(0.9, 0.87, 0.8) * (0.95 + 0.05 * noise2(p * 300.0));
     vec3 col = canvas;
     int nV = 4 + int(clamp(layersP, 0.0, 1.0) * 3.99);

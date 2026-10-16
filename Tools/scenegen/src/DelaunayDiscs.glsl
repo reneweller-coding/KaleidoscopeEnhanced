@@ -13,11 +13,11 @@
  *   audioMode       -> palette: cool contrasts in minor, warm in major
  *   audioKick       -> the colours brighten (light)
  *   audioRoughness  -> the brushed paint texture
- *   audioHarmChange -> the discs drift to new places (slow, smoothed)
+ *   audioHarmAdvance -> the discs drift on with every chord change
  *
  * Knobs: ringP (ring count), sectorP (sectors per ring), photoP (photo colours), hueP.
 //@params ringP sectorP photoP
-//@audio audioSpread audioMode audioKick audioRoughness audioHarmChange
+//@audio audioSpread audioMode audioKick audioRoughness audioHarmAdvance
 //@body
 // One rich palette of eight Delaunay colours; the mode only warms or cools it.
 vec3 delaunayPal(float k, float mode)
@@ -38,7 +38,7 @@ void main()
     float mode = clamp(audioMode, 0.0, 1.0);
     float rough = clamp(audioRoughness, 0.0, 1.0);
     float T = 0.1 * sceneTime + 0.8 * audioAdvance;
-    float drift = 0.01 * sceneTime + 0.2 * clamp(audioHarmChange, 0.0, 1.0);
+    float drift = 0.01 * sceneTime + 0.1 * audioHarmAdvance;
     // Discs on a jittered grid; the one whose rim is furthest away on top.
     float S = 1.6;
     vec2 g = p * S;

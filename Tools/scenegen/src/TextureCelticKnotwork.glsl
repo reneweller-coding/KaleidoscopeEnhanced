@@ -12,12 +12,12 @@
  *   audioSpread     -> ribbon width
  *   audioKick       -> the pulses flare (light)
  *   audioMode       -> the ink: black in minor, gold in major
- *   audioHarmChange -> the knot re-routes (slow, smoothed)
+ *   audioHarmAdvance -> the knot re-routes with every chord change
  *   audioSwell      -> the ground between ribbons glows (slow)
  *
  * Knobs: cellP (knot scale), breakP (open crossings), photoP (photo on the ribbons), hueP.
 //@params cellP breakP photoP
-//@audio audioSpread audioKick audioMode audioHarmChange audioSwell
+//@audio audioSpread audioKick audioMode audioHarmAdvance audioSwell
 //@body
 void main()
 {
@@ -41,7 +41,7 @@ void main()
     float over = mod(cc.x + cc.y, 2.0);
     // Some crossings open into turns (breaks), slowly changing.
     float br = 0.15 + 0.35 * clamp(breakP, 0.0, 1.0);
-    float change = 0.02 * sceneTime + 0.3 * clamp(audioHarmChange, 0.0, 1.0);
+    float change = 0.02 * sceneTime + 0.15 * audioHarmAdvance;
     float isBreak = smoothstep(br + 0.05, br - 0.05, noise2(cc * 0.7 + change));
     // At a break, cut the ribbons near the crossing and round them into turns (approx.).
     vec2 cr = d - cc;

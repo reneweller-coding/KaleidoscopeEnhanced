@@ -10,14 +10,14 @@
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the waves travel (integrated, jump-free)
  *   audioSpread     -> how strongly the photo bends the stripes
- *   audioHarmChange -> the stripe direction turns (slow, smoothed)
+ *   audioHarmAdvance -> the stripe direction sways on with every chord change
  *   audioMode       -> palette: black/white in minor, photo colours in major
  *   audioKick       -> the light stripes brighten (light)
  *   audioSwell      -> wave height (slow)
  *
  * Knobs: stripeP (stripe density), bendP (base bending), colourP (colour stripes), hueP.
 //@params stripeP bendP colourP
-//@audio audioSpread audioHarmChange audioMode audioKick audioSwell
+//@audio audioSpread audioHarmAdvance audioMode audioKick audioSwell
 //@body
 void main()
 {
@@ -25,7 +25,7 @@ void main()
     float kick = clamp(audioKick, 0.0, 1.0);
     float swell = clamp(audioSwell, 0.0, 1.0);
     float T = 0.05 * sceneTime + 0.4 * audioAdvance;
-    float dirA = 0.3 * sin(0.01 * sceneTime) + 0.3 * clamp(audioHarmChange, 0.0, 1.0);
+    float dirA = 0.3 * sin(0.01 * sceneTime + 0.6 * audioHarmAdvance);
     vec2 d = vec2(cos(dirA), sin(dirA));
     vec2 uv = p * 0.6 + 0.5 + vec2(0.003, 0.002) * sceneTime;
     float h = luma(imgLod(uv, 5.5));

@@ -12,7 +12,7 @@
  *   audioPhase      -> the rosette turns (integrated, jump-free)
  *   audioAdvance    -> the window drifts through the photo (integrated)
  *   audioMode       -> mirror curvature: straight petals in minor, full bowed petals in major
- *   audioHarmChange -> the rosette breathes open on chord changes (slow release)
+ *   audioHarmAdvance -> the rosette turns on with every chord change
  *   audioRoughness  -> the mirror glass ripples
  *   audioSpread     -> the inner stage's scale
  *   audioHigh       -> the mirror seams glint (light)
@@ -20,7 +20,7 @@
  * Knobs: sidesP (number of mirrors), bowP (base curvature), innerP (inner
  * stage strength), hueP.
 //@params sidesP bowP innerP
-//@audio audioPhase audioMode audioHarmChange audioRoughness audioSpread audioHigh
+//@audio audioPhase audioMode audioHarmAdvance audioRoughness audioSpread audioHigh
 //@body
 vec2 fold(vec2 p, float n, float bow, float rough, out float seam)
 {
@@ -42,8 +42,7 @@ void main()
     float hi = clamp(audioHigh * 1.5, 0.0, 1.0);
     float n = 3.0 + floor(clamp(sidesP, 0.0, 1.0) * 5.99);
     float bow = (0.15 + 0.35 * clamp(bowP, 0.0, 1.0)) * (0.3 + 0.7 * clamp(audioMode, 0.0, 1.0));
-    float breath = 1.0 + 0.12 * clamp(audioHarmChange, 0.0, 1.0);
-    p = rot2(0.02 * sceneTime + 0.3 * audioPhase) * p / breath;
+    p = rot2(0.02 * sceneTime + 0.3 * audioPhase + 0.12 * audioHarmAdvance) * p;
 
     float seam1;
     vec2 f1 = fold(p, n, bow, rough, seam1);

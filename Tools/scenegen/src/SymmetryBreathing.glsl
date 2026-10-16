@@ -13,13 +13,13 @@
  *   audioAdvance    -> the window drifts through the photo (integrated)
  *   audioSwell      -> the symmetry grows toward more folds (slow)
  *   audioMode       -> round petals in major, pointed star in minor (superellipse)
- *   audioHarmChange -> the ring layers shift against each other (smoothed)
+ *   audioHarmAdvance -> the ring layers shift against each other with every chord change
  *   audioHigh       -> the mirror seams glint (light)
  *
  * Knobs: minFoldP, maxFoldP (the breathing range), ringsP (how many ring
  * layers), hueP.
 //@params minFoldP maxFoldP ringsP
-//@audio audioPhase audioSwell audioMode audioHarmChange audioHigh
+//@audio audioPhase audioSwell audioMode audioHarmAdvance audioHigh
 //@body
 vec3 kaleido(vec2 p, float n, vec2 win, out float seam)
 {
@@ -56,7 +56,7 @@ void main()
     for (int k = 0; k < 2; ++k) {
         float rr = min(r0i + float(k), nR - 1.0);
         float w = (k == 0) ? 1.0 - rt : rt;
-        float breath = 0.5 - 0.5 * cos(sceneTime * (0.05 + 0.02 * rr) + rr * 1.7 + 0.8 * clamp(audioHarmChange, 0.0, 1.0));
+        float breath = 0.5 - 0.5 * cos(sceneTime * (0.05 + 0.02 * rr) + rr * 1.7 + 0.4 * audioHarmAdvance);
         breath = clamp(breath + 0.3 * clamp(audioSwell, 0.0, 1.0), 0.0, 1.0);
         float nF = mix(mn, mx, breath);
         float n0 = floor(nF), f = smoothstep(0.0, 1.0, nF - n0);

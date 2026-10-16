@@ -17,7 +17,7 @@
  *    audioAdvance    -> the window drifts through the photo (integrated)
  *    audioSwell      -> the symmetry grows toward more folds (slow)
  *    audioMode       -> round petals in major, pointed star in minor (superellipse)
- *    audioHarmChange -> the ring layers shift against each other (smoothed)
+ *    audioHarmAdvance -> the ring layers shift against each other with every chord change
  *    audioHigh       -> the mirror seams glint (light)
  *
  *  Knobs: minFoldP, maxFoldP (the breathing range), ringsP (how many ring
@@ -33,18 +33,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioPhase;      ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioHigh;       ///< High band level, 0..1.
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioPhase;       ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioMode;        ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioHigh;        ///< High band level, 0..1.
 
 uniform float minFoldP; ///< Min fold knob, 0..1.
 uniform float maxFoldP; ///< Max fold knob: the breathing range, 0..1.
@@ -445,7 +446,7 @@ void main()
         float breath = 0.5
                        - 0.5
                              * cos( sceneTime * ( 0.05 + 0.02 * rr ) + rr * 1.7
-                                    + 0.8 * clamp( audioHarmChange, 0.0, 1.0 ) );
+                                    + 0.4 * audioHarmAdvance );
         breath = clamp( breath + 0.3 * clamp( audioSwell, 0.0, 1.0 ), 0.0, 1.0 );
         float n_f = mix( mn, mx, breath );
         float n0 = floor( n_f ), f = smoothstep( 0.0, 1.0, n_f - n0 );

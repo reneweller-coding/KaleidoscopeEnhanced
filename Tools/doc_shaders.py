@@ -133,6 +133,7 @@ VARS = {
     "gChainDx": "Its screen derivative in x.",
     "gChainDy": "Its screen derivative in y.",
     "audioHarmChange": "Harmonic change (chord change) envelope, 0..1.",
+    "audioHarmAdvance": "The harmony's advance: ~1 more with every chord change (integrated, never jumps back).",
     "audioMelodyPitch": "Pitch of the melody, 0..1 over the tracked range.",
     "audioBuildUp": "Build-up toward a drop, 0..1.",
     "audioSnare": "Snare envelope, 0..1.",

@@ -17,7 +17,7 @@
  *    audioSpread     -> ribbon width
  *    audioKick       -> the pulses flare (light)
  *    audioMode       -> the ink: black in minor, gold in major
- *    audioHarmChange -> the knot re-routes (slow, smoothed)
+ *    audioHarmAdvance -> the knot re-routes with every chord change
  *    audioSwell      -> the ground between ribbons glows (slow)
  *
  *  Knobs: cellP (knot scale), breakP (open crossings), photoP (photo on the ribbons), hueP.
@@ -32,18 +32,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioKick;       ///< Kick-drum envelope, 0..1 (fast attack, short decay).
-uniform float audioMode;       ///< Mode of the music: 0 minor .. 1 major.
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioKick;        ///< Kick-drum envelope, 0..1 (fast attack, short decay).
+uniform float audioMode;        ///< Mode of the music: 0 minor .. 1 major.
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float cellP;  ///< Cell size knob, 0..1.
 uniform float breakP; ///< Break knob: open crossings, 0..1.
@@ -413,7 +414,7 @@ void main()
     float over = mod( cc.x + cc.y, 2.0 );
     // Some crossings open into turns (breaks), slowly changing.
     float br = 0.15 + 0.35 * clamp( breakP, 0.0, 1.0 );
-    float change = 0.02 * sceneTime + 0.3 * clamp( audioHarmChange, 0.0, 1.0 );
+    float change = 0.02 * sceneTime + 0.15 * audioHarmAdvance;
     float is_break = smoothstep( br + 0.05, br - 0.05, noise2( cc * 0.7 + change ) );
     // At a break, cut the ribbons near the crossing and round them into turns (approx.).
     vec2  cr = d - cc;

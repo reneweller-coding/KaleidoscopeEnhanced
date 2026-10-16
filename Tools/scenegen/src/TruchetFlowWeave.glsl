@@ -8,7 +8,7 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the light pulses flow along the ribbons (integrated)
- *   audioHarmChange -> tiles turn over (smoothed)
+ *   audioHarmAdvance -> tiles turn over with the chord changes
  *   audioSpread     -> ribbon width
  *   audioMode       -> the pulse colour warms in major
  *   audioKick       -> the pulses flare (light)
@@ -17,7 +17,7 @@
  * Knobs: scaleP (tile size), weaveP (ribbon relief), flipP (how often tiles
  * turn), hueP.  (weaveP: how rounded the ribbons look)
 //@params scaleP weaveP flipP
-//@audio audioHarmChange audioSpread audioMode audioKick audioSwell
+//@audio audioHarmAdvance audioSpread audioMode audioKick audioSwell
 //@body
 void main()
 {
@@ -36,7 +36,7 @@ void main()
     // Each tile has two orientation states; a tile re-routes by cross-fading
     // (a turn would break the ribbons at the tile borders).
     float h = hash21(gi);
-    float flipT = sceneTime * (0.02 + 0.06 * clamp(flipP, 0.0, 1.0)) + h * 10.0 + 0.5 * clamp(audioHarmChange, 0.0, 1.0);
+    float flipT = sceneTime * (0.02 + 0.06 * clamp(flipP, 0.0, 1.0)) + h * 10.0 + 0.25 * audioHarmAdvance;
     float fade = smoothstep(0.75, 1.0, fract(flipT));
     vec3 cols[2];
     for (int k = 0; k < 2; ++k) {

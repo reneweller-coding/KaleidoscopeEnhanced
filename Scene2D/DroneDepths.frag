@@ -29,15 +29,16 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float audioPhase;      ///< Rotation phase driven by the music (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioCentroid;   ///< Spectral centroid (brightness of the sound), 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioPitch;      ///< The dominant pitch, 0..1 over the tracked range (0 = no clear pitch).
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
+uniform float audioPhase;       ///< Rotation phase driven by the music (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioCentroid;    ///< Spectral centroid (brightness of the sound), 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioPitch;       ///< The dominant pitch, 0..1 over the tracked range (0 = no clear pitch).
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
 
 /**  2D rotation matrix.
  *
@@ -154,7 +155,7 @@ void main()
     float lift = ( audioPitch - 0.5 ) * 0.35;
 
     // Very slow, majestic multi-layer warp; harmonic changes morph the structure.
-    float t = time * 0.015 + audioAdvance * 0.10 + audioHarmChange * 0.30;
+    float t = time * 0.015 + audioAdvance * 0.10 + audioHarmAdvance * 0.15;
     vec2  q1 = vec2( fbm( p * 1.4 + vec2( 0.0, t - lift ) ),
                      fbm( p * 1.4 + vec2( 5.2, t * 1.2 ) ) );
     vec2  q2 = vec2( fbm( p * 2.2 + 2.5 * q1 + vec2( 1.7, 9.2 ) - t * 0.6 ),

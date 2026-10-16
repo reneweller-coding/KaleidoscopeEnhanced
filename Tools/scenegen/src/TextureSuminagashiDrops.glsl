@@ -10,14 +10,14 @@
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the drops fall (integrated, jump-free)
  *   audioSpread     -> drop size
- *   audioHarmChange -> the stirring swirls (slow, smoothed)
+ *   audioHarmAdvance -> the stirring swirls on with every chord change
  *   audioMode       -> inks: indigo-black in minor, the photo's colours in major
  *   audioKick       -> the wet sheen on the water (light)
  *   audioSwell      -> the paper shows through (slow)
  *
  * Knobs: dropRateP, swirlP, colourP (photo colours in the ink), hueP.
 //@params dropRateP swirlP colourP
-//@audio audioSpread audioHarmChange audioMode audioKick audioSwell
+//@audio audioSpread audioHarmAdvance audioMode audioKick audioSwell
 //@body
 void main()
 {
@@ -26,13 +26,13 @@ void main()
     float swell = clamp(audioSwell, 0.0, 1.0);
     float mode = clamp(audioMode, 0.0, 1.0);
     // The breath of air: a slow swirl (undone first, it acts last).
-    float sw = (0.4 + 1.2 * clamp(swirlP, 0.0, 1.0)) * (0.6 + 0.6 * clamp(audioHarmChange, 0.0, 1.0));
+    float sw = (0.4 + 1.2 * clamp(swirlP, 0.0, 1.0)) * 0.6;
     vec2 q = p;
     for (int i = 0; i < 2; ++i) {
         float fi = float(i);
         vec2 c = 0.4 * vec2(sin(0.013 * sceneTime + fi * 2.0), cos(0.011 * sceneTime + fi * 3.0));
         vec2 d = q - c;
-        float ang = sw * 0.6 * sin(0.05 * sceneTime + fi * 1.7) * exp(-dot(d, d) * 3.0);
+        float ang = sw * 0.6 * sin(0.05 * sceneTime + 0.3 * audioHarmAdvance + fi * 1.7) * exp(-dot(d, d) * 3.0);
         q = c + rot2(-ang) * d;
     }
     // Drops: one every period; the last N are applied newest first.

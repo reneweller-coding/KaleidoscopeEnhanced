@@ -14,11 +14,11 @@
  *   audioRoughness  -> the painted texture inside the strokes
  *   audioMode       -> the palette: muted in minor, vivid in major
  *   audioKick       -> the strokes brighten (light)
- *   audioHarmChange -> the field bends further (slow, smoothed)
+ *   audioHarmAdvance -> the field bends on with every chord change
  *
  * Knobs: curlP (how much the field curls), strokeP (stroke length), gapP (gap width), hueP.
 //@params curlP strokeP gapP
-//@audio audioSpread audioRoughness audioMode audioKick audioHarmChange
+//@audio audioSpread audioRoughness audioMode audioKick audioHarmAdvance
 //@body
 float lcOf(vec3 c) { return 0.4 + 0.8 * luma(c); }
 float streamFn(vec2 p, float t, float curl)
@@ -30,7 +30,7 @@ void main()
 {
     vec2 p = screenP() * 3.0;
     float kick = clamp(audioKick, 0.0, 1.0);
-    float t = 0.02 * sceneTime + 0.1 * clamp(audioHarmChange, 0.0, 1.0);
+    float t = 0.02 * sceneTime + 0.05 * audioHarmAdvance;
     float curl = 0.7 + 1.1 * clamp(curlP, 0.0, 1.0);
     float psi = streamFn(p, t, curl);
     float e = 0.01;

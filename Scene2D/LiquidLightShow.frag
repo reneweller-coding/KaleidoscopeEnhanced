@@ -15,7 +15,7 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioAdvance    -> the pressing and rocking (integrated, jump-free)
- *    audioHarmChange -> a fresh bloom opens on chord changes (smoothed, never a cut)
+ *    audioHarmAdvance -> the blooms' life cycle steps on with every chord change (never a cut)
  *    audioSpread     -> bloom size (wide spectrum = many small blossoms)
  *    audioRoughness  -> the outlines wobble
  *    audioBass       -> the lamp's brightness (light)
@@ -34,18 +34,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioBass;       ///< Bass band level, 0..1.
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioBass;        ///< Bass band level, 0..1.
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float bloomsP; ///< Blooms knob: how many blossoms, 0..1.
 uniform float oilP;    ///< Oil knob: share of oil cells, 0..1.
@@ -425,7 +426,7 @@ void main()
             break;
         float fk = float( k );
         // Each blossom has a life cycle (grows, then is pushed aside); staggered.
-        float life = fract( gT * 0.08 + fk / float( n_b ) + 0.13 * clamp( audioHarmChange, 0.0, 1.0 ) );
+        float life = fract( gT * 0.08 + fk / float( n_b ) + 0.065 * audioHarmAdvance );
         vec2  c = vec2( sin( fk * 2.4 + gT * 0.1 ), cos( fk * 1.7 - gT * 0.13 ) ) * 0.9;
         float R = scale * ( 0.2 + 1.2 * life ) * ( 0.7 + 0.5 * hash11( fk ) );
         vec2  d = q - c;

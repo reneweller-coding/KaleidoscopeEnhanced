@@ -15,7 +15,7 @@
  *
  *  Audio Reactivity (structure, not only light):
  *    audioAdvance    -> the blooms spread (integrated, jump-free)
- *    audioHarmChange -> a fresh bloom starts on chord changes (smoothed)
+ *    audioHarmAdvance -> the blooms' clock steps on with every chord change
  *    audioSpread     -> bloom size
  *    audioRoughness  -> the rims get lacier
  *    audioHigh       -> the gold lines glint (light)
@@ -34,18 +34,19 @@ uniform sampler2D tex0;          ///< The current photo.
 uniform sampler2D tex1;          ///< The next photo (cross-faded in by interpolation).
 uniform float     interpolation; ///< Cross-fade between the photos: 1 = tex0, 0 = tex1.
 
-uniform float sceneTime;       ///< Seconds since this scene was activated.
-uniform float sceneAdvance;    ///< The music's advance since this scene was activated (integrated, never jumps).
-uniform float audioAdvance;    ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
-                               ///< backwards).
-uniform float audioLevel;      ///< Overall loudness, 0..1.
-uniform float audioValence;    ///< Mood valence: 0 dark .. 1 bright.
-uniform float audioChromaHue;  ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
-uniform float audioHarmChange; ///< Harmonic change (chord change) envelope, 0..1.
-uniform float audioSpread;     ///< Spectral spread, 0..1.
-uniform float audioRoughness;  ///< Roughness (dissonance) of the sound, 0..1.
-uniform float audioHigh;       ///< High band level, 0..1.
-uniform float audioSwell;      ///< Slow loudness envelope, 0..1 (seconds).
+uniform float sceneTime;        ///< Seconds since this scene was activated.
+uniform float sceneAdvance;     ///< The music's advance since this scene was activated (integrated, never jumps).
+uniform float audioAdvance;     ///< The music's advance: integrated tempo-weighted energy (never jumps, never runs
+                                ///< backwards).
+uniform float audioLevel;       ///< Overall loudness, 0..1.
+uniform float audioValence;     ///< Mood valence: 0 dark .. 1 bright.
+uniform float audioChromaHue;   ///< Hue of the dominant pitch class (radians, unwrapped: continuous).
+uniform float audioHarmAdvance; ///< The harmony's advance: ~1 more with every chord change (integrated, never jumps
+                                ///< back).
+uniform float audioSpread;      ///< Spectral spread, 0..1.
+uniform float audioRoughness;   ///< Roughness (dissonance) of the sound, 0..1.
+uniform float audioHigh;        ///< High band level, 0..1.
+uniform float audioSwell;       ///< Slow loudness envelope, 0..1 (seconds).
 
 uniform float bloomsP; ///< Blooms knob: how many, 0..1.
 uniform float goldP;   ///< Gold knob: metallic rims, 0..1.
@@ -399,7 +400,7 @@ void main()
     float hi = clamp( audioHigh * 1.5, 0.0, 1.0 );
     float swell = clamp( audioSwell, 0.0, 1.0 );
     float rough = clamp( audioRoughness, 0.0, 1.0 );
-    float T = 0.05 * sceneTime + 0.4 * audioAdvance + 0.08 * clamp( audioHarmChange, 0.0, 1.0 );
+    float T = 0.05 * sceneTime + 0.4 * audioAdvance + 0.04 * audioHarmAdvance;
 
     // Blooms on a jittered grid in "time layers": each layer is a generation
     // of drops; a drop's radius grows over its life, later ones lie on top.

@@ -10,7 +10,7 @@
  *
  * Audio Reactivity (structure, not only light):
  *   audioAdvance    -> the blooms spread (integrated, jump-free)
- *   audioHarmChange -> a fresh bloom starts on chord changes (smoothed)
+ *   audioHarmAdvance -> the blooms' clock steps on with every chord change
  *   audioSpread     -> bloom size
  *   audioRoughness  -> the rims get lacier
  *   audioHigh       -> the gold lines glint (light)
@@ -19,7 +19,7 @@
  * Knobs: bloomsP (how many), goldP (metallic rims), paperP (how much white
  * shows), hueP.
 //@params bloomsP goldP paperP
-//@audio audioHarmChange audioSpread audioRoughness audioHigh audioSwell
+//@audio audioHarmAdvance audioSpread audioRoughness audioHigh audioSwell
 //@body
 void main()
 {
@@ -27,7 +27,7 @@ void main()
     float hi = clamp(audioHigh * 1.5, 0.0, 1.0);
     float swell = clamp(audioSwell, 0.0, 1.0);
     float rough = clamp(audioRoughness, 0.0, 1.0);
-    float T = 0.05 * sceneTime + 0.4 * audioAdvance + 0.08 * clamp(audioHarmChange, 0.0, 1.0);
+    float T = 0.05 * sceneTime + 0.4 * audioAdvance + 0.04 * audioHarmAdvance;
 
     // Blooms on a jittered grid in "time layers": each layer is a generation
     // of drops; a drop's radius grows over its life, later ones lie on top.
