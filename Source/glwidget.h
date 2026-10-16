@@ -121,6 +121,8 @@ public:
      * mux continues detached).
      **/
     static bool M_BatchRender;
+    /** Counts the render timer's ticks; main()'s hang watch (KALEIDO_WATCHDOG) reads it from its own thread. */
+    static std::atomic<unsigned> M_Heartbeat;
 
     // ---- Web-remote hooks (same harmless controls as the keyboard) ----
     /**  Lists the display names of every user-facing (non-hidden) configuration.

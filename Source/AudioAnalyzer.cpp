@@ -749,6 +749,49 @@ void AudioAnalyzer::tapTempo()
     fprintf( stderr, "TAP tempo: %.1f BPM (%d taps)\n", 60000.f / med, cnt );
 }
 
+bool  AudioAnalyzer::M_ExternalClock = true;
+float AudioAnalyzer::M_ClockDelay = 0.06f;
+
+void AudioAnalyzer::externalBeat( const char *source, qint64 refMs, float bpm, bool phase )
+{
+    if ( !M_ExternalClock )
+        return;
+    const qint64 t = refMs - m_tapClock.msecsSinceReference(); // this beat on the analysis' own clock
+    float        iv = 0.f;
+    if ( bpm > 1.f )
+        iv = 60000.f / bpm;
+    else
+    {
+        // From the beats' spacing: the median of the last intervals (a beat missed or doubled does not move it).
+        if ( m_extN > 0 && t - m_extTimes[( m_extN - 1 ) & 7] > 2000 )
+            m_extN = 0; // a pause: a new series
+        if ( m_extN > 0 && t - m_extTimes[( m_extN - 1 ) & 7] < 60 )
+            return; // the same beat twice
+        m_extTimes[m_extN & 7] = t;
+        ++m_extN;
+        const int cnt = std::min( m_extN, 8 );
+        if ( cnt < 3 )
+            return;
+        float ivs[7];
+        int   n = 0;
+        for ( int i = cnt - 1; i >= 1; --i )
+            ivs[n++] = static_cast<float>( m_extTimes[( m_extN - i ) & 7] - m_extTimes[( m_extN - i - 1 ) & 7] );
+        std::sort( ivs, ivs + n );
+        iv = ivs[n / 2];
+    }
+    iv = std::max( 250.f, std::min( iv, 1500.f ) ); // 40..240 BPM, as the tap
+    m_extIntervalMs = static_cast<int>( iv + 0.5f );
+    m_extPhase = phase;
+    m_extAnchorMs = t + static_cast<qint64>( M_ClockDelay * 1000.f + 0.5f );
+    m_extUntilMs = t + 2000;
+    if ( m_extSource != source )
+    {
+        m_extSource = source;
+        fprintf( stderr, "CLOCK: %s sets the tempo%s (%.1f BPM)\n", source, phase ? " and the beat phase" : "",
+                 60000.f / iv );
+    }
+}
+
 /** Definition of the static offline-WAV path flag (see AudioAnalyzer::M_OfflineWav in the header). */
 QString AudioAnalyzer::M_OfflineWav;
 
@@ -3685,6 +3728,27 @@ void AudioAnalyzer::processBlock( const float *data, int numFrames,
                         / static_cast<double>( tap_iv );
             m_features.beatPhase = static_cast<float>( ph - std::floor( ph ) );
             m_features.rhythmStrength = std::max( m_features.rhythmStrength, 0.85f );
+        }
+        else
+        {
+            // An external clock (externalBeat()): the same, for as long as its beats keep coming.
+            const int  ext_iv = m_extIntervalMs.load();
+            const bool ext_on = ext_iv > 0 && m_tapClock.elapsed() < m_extUntilMs.load();
+            if ( ext_on )
+            {
+                const float bpm = 60000.f / static_cast<float>( ext_iv );
+                m_features.estimatedBPM = std::max( 0.f, std::min( ( bpm - 40.f ) / 160.f, 1.f ) );
+                if ( m_extPhase.load() )
+                {
+                    const double ph = static_cast<double>( m_tapClock.elapsed() - m_extAnchorMs.load() )
+                                      / static_cast<double>( ext_iv );
+                    m_features.beatPhase = static_cast<float>( ph - std::floor( ph ) );
+                }
+                m_features.rhythmStrength = std::max( m_features.rhythmStrength, 0.85f );
+            }
+            if ( m_extWasOn && !ext_on )
+                fprintf( stderr, "CLOCK: the external beats stopped -- the analysis keeps the time again\n" );
+            m_extWasOn = ext_on;
         }
     }
     m_features.fluxVariance = m_sFluxVar;

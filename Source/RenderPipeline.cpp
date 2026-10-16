@@ -606,6 +606,27 @@ void RenderPipeline::start( int width, int height )
     reinit( width, height );
 }
 
+void RenderPipeline::showState( QByteArray &scene, bool &fading, QByteArray &transition, float &fadeSecs,
+                                float &blackout, float rgb[3] )
+{
+    auto stem = []( const char *p ) -> QByteArray
+    {
+        QByteArray s( p ? p : "" );
+        s = s.mid( std::max( s.lastIndexOf( '\\' ), s.lastIndexOf( '/' ) ) + 1 );
+        return s.endsWith( ".frag" ) ? s.left( s.size() - 5 ) : s;
+    };
+    scene = m_effectTextures.empty() ? QByteArray()
+                                     : stem( m_effectTextures[m_scheduler.actTexture()]->fragmentName() );
+    fading = m_scheduler.texState() != 0;
+    transition = ( fading && m_scheduler.actTransition() < m_effectTransitions.size() )
+                     ? stem( m_effectTransitions[m_scheduler.actTransition()]->fragmentName() )
+                     : QByteArray();
+    fadeSecs = m_scheduler.texFadeDur();
+    blackout = m_present.blackLevel();
+    m_present.setMeanColourWanted( true );
+    m_present.meanColour( rgb );
+}
+
 QString RenderPipeline::activeShaderInfo() const
 {
     auto base = []( const char *p ) -> QString

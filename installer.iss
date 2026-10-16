@@ -80,10 +80,13 @@ english.PackFailed=Downloading the extra content failed:%n%n%1%n%nInstallation c
 german.OldInstall=Eine ältere Installation für alle Benutzer liegt in%n%n%1%n%nDort kann das Programm seine Einstellungen nicht speichern; die neue Version installiert sich deshalb in Ihr Benutzerprofil.%n%nDie alte Installation jetzt entfernen?%n%nJa: entfernen (fragt nach Administratorrechten). Nein: beide behalten. Abbrechen: Setup beenden.
 german.OldUninstFailed=Die alte Installation wurde nicht entfernt. Sie lässt sich später unter Einstellungen > Apps deinstallieren.
 english.OldInstall=An older installation for all users is in%n%n%1%n%nThe program cannot save its settings there, so the new version installs into your user profile.%n%nRemove the old installation now?%n%nYes: remove it (asks for administrator rights). No: keep both. Cancel: quit setup.
+german.Autostart=Beim Anmelden im Vollbild starten (mit Watchdog: startet nach Absturz oder Hänger neu)
+english.Autostart=Start fullscreen at sign-in (with the watchdog: restarts after a crash or a hang)
 english.OldUninstFailed=The old installation was not removed. You can uninstall it later under Settings > Apps.
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "autostart";   Description: "{cm:Autostart}";        GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 ; FLAT names on purpose. Inno reads a backslash in a task name as hierarchy, and
 ; "packs\images" with no "packs" task above it does not fail to compile -- it
 ; silently becomes a CHILD of whatever task precedes it, here the desktop icon,
@@ -117,7 +120,10 @@ Source: "{tmp}\KaleidoscopeModels-objects.zip";  DestDir: "{app}\Models"; Flags:
 [Icons]
 ; Working directory = {app}\bin so the app's "..\" asset paths resolve.
 Name: "{group}\{#MyAppName}";            Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"
-Name: "{group}\{#MyAppName} (Vollbild)"; Filename: "{app}\bin\{#MyAppExeName}"; WorkingDir: "{app}\bin"; Parameters: "-b"
+; Fullscreen through the watchdog (watchdog.ps1 starts bin\Kaleidoscope.exe -b -l and restarts it after a crash
+; or a hang); PowerShell hidden, so no console window stands behind the show.
+Name: "{group}\{#MyAppName} (Vollbild)"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\watchdog.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\bin\{#MyAppExeName}"
+Name: "{userstartup}\{#MyAppName} (Vollbild)"; Filename: "{sys}\WindowsPowerShell\v1.0\powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -ExecutionPolicy Bypass -File ""{app}\watchdog.ps1"""; WorkingDir: "{app}"; IconFilename: "{app}\bin\{#MyAppExeName}"; Tasks: autostart
 ; Preset editor (bundled since the deploy.ps1 3b step): its own console window
 ; shows shader-compile/formula logs on purpose. The exe re-anchors its CWD to
 ; {app}\PresetEditor itself, so bin\ as WorkingDir is only the starting point.

@@ -83,6 +83,9 @@
 #include <QtGui/QScreen>
 #include <QtGui/QSurfaceFormat>
 #include <QtNetwork/QNetworkProxy>
+#include <QtCore/QDir>
+#include <QtCore/QFile>
+#include <QtCore/QSettings>
 #include <QtCore/QTimer>
 #include "QMyWindow.h"
 
@@ -92,8 +95,11 @@
 #endif
 #include <windows.h>
 #include <shellapi.h> // CommandLineToArgvW
+#include <dbghelp.h>  // MINIDUMP_* types only: the function itself is loaded on demand
 #pragma comment( lib, "shell32.lib" )
 #endif
+#include <atomic>
+#include <thread>
 
 // NOTE: keep this AFTER any Windows headers.  With C++17 std::byte and a
 // `using namespace std;` active, the Windows SDK's unqualified `byte` in
@@ -416,6 +422,64 @@ void parsecommandline( int argc, char *argv[] )
 
 
 
+#ifdef _WIN32
+/**  The crash report (16.10.2026): a minidump beside the log, and a line in the log saying where.
+ *
+ * @param info  The exception, as Windows hands it to the last-chance filter. (in)
+ *
+ * @return
+ *   EXCEPTION_EXECUTE_HANDLER: the process ends at once, with the exception's code -- no Windows error dialog
+ *   that would keep a crashed installation waiting for a click before the watchdog can restart it.
+ *
+ * An unattended show that crashed left nothing but "it was black in the morning": no handler, no dump, and the
+ * log of the first crash overwritten by the second restart.  dbghelp is loaded here, when the program is going
+ * down anyway -- nothing to link, nothing loaded in a healthy run.  The dump names the build it came from, so
+ * it can be read against that build's Kaleidoscope.pdb.
+ **/
+static LONG WINAPI writeCrashDump( EXCEPTION_POINTERS *info )
+{
+    typedef BOOL( WINAPI * DumpFn )( HANDLE, DWORD, HANDLE, MINIDUMP_TYPE, PMINIDUMP_EXCEPTION_INFORMATION,
+                                     PMINIDUMP_USER_STREAM_INFORMATION, PMINIDUMP_CALLBACK_INFORMATION );
+    SYSTEMTIME st;
+    GetLocalTime( &st );
+    char name[64];
+    snprintf( name, sizeof( name ), "crash-%04d%02d%02d-%02d%02d%02d.dmp", st.wYear, st.wMonth, st.wDay, st.wHour,
+              st.wMinute, st.wSecond );
+    HMODULE dbg = LoadLibraryA( "dbghelp.dll" );
+    DumpFn  dump = dbg ? reinterpret_cast<DumpFn>( GetProcAddress( dbg, "MiniDumpWriteDump" ) ) : nullptr;
+    HANDLE  file = CreateFileA( name, GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr );
+    BOOL    ok = FALSE;
+    if ( dump && file != INVALID_HANDLE_VALUE )
+    {
+        MINIDUMP_EXCEPTION_INFORMATION mei;
+        mei.ThreadId = GetCurrentThreadId();
+        mei.ExceptionPointers = info;
+        mei.ClientPointers = FALSE;
+        ok = dump( GetCurrentProcess(), GetCurrentProcessId(), file,
+                   static_cast<MINIDUMP_TYPE>( MiniDumpWithThreadInfo | MiniDumpWithIndirectlyReferencedMemory ), &mei,
+                   nullptr, nullptr );
+    }
+    if ( file != INVALID_HANDLE_VALUE )
+        CloseHandle( file );
+    fprintf( stderr, "CRASH: exception 0x%08lX at %p -- %s %s\n",
+             static_cast<unsigned long>( info->ExceptionRecord->ExceptionCode ),
+             info->ExceptionRecord->ExceptionAddress, ok ? "minidump" : "no minidump (dbghelp failed)", name );
+    fflush( stderr );
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#endif
+
+/**  Keeps the newest few crash dumps in the working directory and deletes the older ones.
+ *
+ * @param keep  How many to keep. (in)
+ **/
+static void pruneCrashDumps( int keep )
+{
+    QStringList dumps = QDir( "." ).entryList( { "crash-*.dmp" }, QDir::Files, QDir::Name );
+    while ( dumps.size() > keep )
+        QFile::remove( dumps.takeFirst() );
+}
+
 /**  Application entry point.
  *
  * @param argc  Argument count. (in)
@@ -521,7 +585,11 @@ int main( int argc, char *argv[] )
     // session as kaleidoscope.log.1 so the file can't grow without bound.
     if ( logToFile )
     {
-        remove( "kaleidoscope.log.1" );
+        // Three generations: after a crash the watchdog's restart -- and a second crash -- used to overwrite the
+        // log of the first one, which is the one that tells what happened.
+        remove( "kaleidoscope.log.3" );
+        rename( "kaleidoscope.log.2", "kaleidoscope.log.3" );
+        rename( "kaleidoscope.log.1", "kaleidoscope.log.2" );
         rename( "kaleidoscope.log", "kaleidoscope.log.1" );
         if ( freopen( "kaleidoscope.log", "w", stderr ) )
         {
@@ -581,6 +649,62 @@ int main( int argc, char *argv[] )
     if ( cueSelfTest )
         return runCueSelfTest();
 
+#ifdef _WIN32
+    SetUnhandledExceptionFilter( writeCrashDump );
+    pruneCrashDumps( 5 );
+    // KALEIDO_CRASH_TEST=1 crashes on purpose ten seconds in, KALEIDO_HANG_TEST=1 blocks the GUI thread then --
+    // to see the dump, the hang watch and the watchdog's restart happen.
+    if ( qEnvironmentVariableIsSet( "KALEIDO_CRASH_TEST" ) )
+        QTimer::singleShot( 10000, []()
+        {
+            fprintf( stderr, "KALEIDO_CRASH_TEST: crashing on purpose\n" );
+            *static_cast<volatile int *>( nullptr ) = 0;
+        } );
+    if ( qEnvironmentVariableIsSet( "KALEIDO_HANG_TEST" ) )
+        QTimer::singleShot( 10000, []()
+        {
+            fprintf( stderr, "KALEIDO_HANG_TEST: blocking the GUI thread\n" );
+            std::this_thread::sleep_for( std::chrono::hours( 1 ) );
+        } );
+    // The hang watch (16.10.2026): under the watchdog (which sets KALEIDO_WATCHDOG), a render timer that stands
+    // still for a minute ends the process with exit code 3, so the watchdog starts it again -- a frozen window
+    // in an installation stayed frozen until someone came.  The timer, not paintGL: a covered window does not
+    // paint, but its timer still ticks.  Not in a debugger, not for a video export or a compile-all run, and only
+    // once the first tick came (the start may compile for a while).
+    if ( qEnvironmentVariableIsSet( "KALEIDO_WATCHDOG" ) && !IsDebuggerPresent() && !VideoExport::requested()
+         && !qEnvironmentVariableIsSet( "KALEIDO_COMPILE_ALL" ) )
+    {
+        const int hang_secs = qEnvironmentVariableIsSet( "KALEIDO_HANG_SECS" )
+                                  ? std::max( 5, qEnvironmentVariableIntValue( "KALEIDO_HANG_SECS" ) )
+                                  : 60;
+        std::thread( [hang_secs]()
+        {
+            unsigned   last = GLwidget::M_Heartbeat.load( std::memory_order_relaxed );
+            auto       since = std::chrono::steady_clock::now();
+            const auto step = std::chrono::milliseconds( std::min( 5000, hang_secs * 250 ) );
+            for ( ;; )
+            {
+                std::this_thread::sleep_for( step );
+                const unsigned now = GLwidget::M_Heartbeat.load( std::memory_order_relaxed );
+                if ( now != last || now == 0 )
+                {
+                    last = now;
+                    since = std::chrono::steady_clock::now();
+                    continue;
+                }
+                if ( std::chrono::steady_clock::now() - since > std::chrono::seconds( hang_secs ) )
+                {
+                    fprintf( stderr, "HANG: the render timer stood still for %d s -- ending for the watchdog\n",
+                             hang_secs );
+                    fflush( stderr );
+                    TerminateProcess( GetCurrentProcess(), 3 );
+                }
+            }
+        } ).detach();
+        fprintf( stderr, "[watchdog] hang watch on: %d s without a timer tick end the run\n", hang_secs );
+    }
+#endif
+
     // A dead man's switch for batch runs.  A catalogue render or a screening
     // pass is started by a script that is supposed to stop it again -- but if
     // that script is killed (a tool run hitting its time limit, a cancelled
@@ -638,16 +762,38 @@ int main( int argc, char *argv[] )
     }
     else
     {
-        // Pick the target monitor: -m <index> if valid, else the 2nd screen if
+        // Pick the target monitor: -m <index> if valid, else the screen the ini names (screenName=<part of its
+        // name>, e.g. a projector's model -- an index moves when screens are added), else the 2nd screen if
         // present, otherwise the primary.
         const QList<QScreen *> screens = QGuiApplication::screens();
-        int                    idx = monitorIndex;
+        const QString          want_name =
+            QSettings( SettingsFile::path(), QSettings::IniFormat ).value( "screenName" ).toString().trimmed();
+        int idx = monitorIndex;
+        if ( ( idx < 0 || idx >= screens.size() ) && !want_name.isEmpty() )
+            for ( int i = 0; i < screens.size(); ++i )
+                if ( screens[i]->name().contains( want_name, Qt::CaseInsensitive )
+                     || screens[i]->model().contains( want_name, Qt::CaseInsensitive ) )
+                    idx = i;
         if ( idx < 0 || idx >= screens.size() )
             idx = ( screens.size() > 1 ) ? 1 : 0;
         QScreen *target = screens.at( idx );
         window.setGeometry( target->geometry() );
         window.setFocus();
         window.showFullScreen();
+        // A projector switched off and on again (or a cable re-plugged) comes back as a NEW screen; Windows moved
+        // the window to the other one meanwhile, and there it stayed.  The screen the show was on is found again
+        // by its name, and the show goes back to it.
+        const QString show_screen = target->name();
+        fprintf( stderr, "SCREEN: fullscreen on %s (%s)\n", qPrintable( show_screen ), qPrintable( target->model() ) );
+        QObject::connect( &app, &QGuiApplication::screenAdded, &window, [&window, show_screen]( QScreen *s )
+        {
+            if ( s->name() != show_screen )
+                return;
+            fprintf( stderr, "SCREEN: %s is back -- the show goes there again\n", qPrintable( show_screen ) );
+            window.showNormal();
+            window.setGeometry( s->geometry() );
+            window.showFullScreen();
+        } );
     }
 
     return app.exec();

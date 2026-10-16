@@ -23,6 +23,7 @@
 #include <QtCore/QString>
 
 #include <atomic>
+#include <functional>
 #include <cstddef>
 #include <vector>
 
@@ -132,6 +133,11 @@ public:
      * @param c  The cue. (in)
      **/
     void apply( const ScoreCue &c );
+    /**  Who hears every beat cue the moment it arrives (main thread): the analysis' external clock.
+     *
+     * @param f  Called with the arrival time (QElapsedTimer reference ms); empty to stop. (in)
+     **/
+    void setBeatListener( std::function<void( qint64 )> f ) { m_onBeat = std::move( f ); }
 
     /**  Reads and clears one frame's worth of events, and ages the live flag.
      *
@@ -162,16 +168,17 @@ public:
 private:
     ScoreCues() {}
 
-    float m_silence = 1.0e6f; ///< seconds since the last accepted datagram
-    bool  m_bar = false;      ///< a bar arrived since the last drain()
-    bool  m_section = false;  ///< @copydoc m_bar
-    bool  m_drop = false;     ///< @copydoc m_bar
-    float m_energy = 0.f;     ///< the last section's energy
-    int   m_sectionType = -1; ///< the last section's type
-    int   m_keyPc = -1;       ///< the last key
-    int   m_barIndex = -1;    ///< the last bar number
-    int   m_accepted = 0;     ///< @copydoc accepted
-    int   m_rejected = 0;     ///< @copydoc rejected
+    float                         m_silence = 1.0e6f; ///< seconds since the last accepted datagram
+    std::function<void( qint64 )> m_onBeat;           ///< setBeatListener()
+    bool                          m_bar = false;      ///< a bar arrived since the last drain()
+    bool                          m_section = false;  ///< @copydoc m_bar
+    bool                          m_drop = false;     ///< @copydoc m_bar
+    float                         m_energy = 0.f;     ///< the last section's energy
+    int                           m_sectionType = -1; ///< the last section's type
+    int                           m_keyPc = -1;       ///< the last key
+    int                           m_barIndex = -1;    ///< the last bar number
+    int                           m_accepted = 0;     ///< @copydoc accepted
+    int                           m_rejected = 0;     ///< @copydoc rejected
 private:
     /**  Move assignment: reset() assigns a fresh instance.
      *

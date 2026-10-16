@@ -169,6 +169,25 @@ public:
      **/
     void tapTempo();
 
+    /**  An external beat (GUI thread): a /phos/beat cue, a quarter note of MIDI clock.
+     *
+     * @param source  For the log: who keeps the time ("score cues", "MIDI clock"). (in)
+     * @param refMs   When it arrived, as QElapsedTimer::msecsSinceReference() of a timer started then. (in)
+     * @param bpm     The tempo if the source knows it (MIDI clock: from its ticks); 0 = from the beats' spacing. (in)
+     * @param phase   Whether the beat is a beat-one boundary of the source (MIDI clock before Start or a song
+     *                position: false -- the tempo is known, the phase is not). (in)
+     *
+     * Like a tap that keeps tapping: tempo and (with @p phase) the beat phase follow the source while its beats
+     * keep coming, and the analysis takes over 2 s after the last one.  A manual tap still wins.  The beat is
+     * placed #M_ClockDelay seconds after it arrived: a generator's cue and a DAW's clock come before the sound
+     * that the loopback hears.  Off with #M_ExternalClock.
+     **/
+    void externalBeat( const char *source, qint64 refMs, float bpm, bool phase );
+    /** ini externalClock (default on): external beats (score cues, MIDI clock) may set tempo and phase. */
+    static bool M_ExternalClock;
+    /** ini clockDelay, seconds (default 0.06): how much later a beat is heard than its cue or clock arrives. */
+    static float M_ClockDelay;
+
     /**  Offline (Preset-Editor) analysis: run a 16-bit PCM WAV through the FULL analysis pipeline at full speed.
      *
      * @param path  Path to a 16-bit PCM WAV file. (in)
@@ -729,6 +748,15 @@ private:
     std::atomic<int>    m_tapIntervalMs{ 0 }; ///< Manually tapped interval in ms; 0 = no manual tempo override active.
     std::atomic<qint64> m_tapAnchorMs{ 0 };   ///< Phase anchor timestamp (the last tap), for beat-phase reconstruction.
     std::atomic<qint64> m_tapUntilMs{ 0 };    ///< Timestamp at which the manual tap-tempo override expires.
+    // ---- External clock (externalBeat()): GUI thread writes, the analysis reads the atomics ----
+    qint64              m_extTimes[8] = {};    ///< GUI-thread-only ring of external beat times (m_tapClock ms).
+    int                 m_extN = 0;            ///< External beats in the current series.
+    std::atomic<int>    m_extIntervalMs{ 0 };  ///< The external beat interval in ms; 0 = none.
+    std::atomic<qint64> m_extAnchorMs{ 0 };    ///< The last external beat as heard (m_tapClock ms, delay added).
+    std::atomic<qint64> m_extUntilMs{ 0 };     ///< When the external clock stops counting (2 s after its last beat).
+    std::atomic<bool>   m_extPhase{ false };   ///< The external beats carry the phase too.
+    const char         *m_extSource = nullptr; ///< Who keeps the time (GUI thread, for the log).
+    bool                m_extWasOn = false;    ///< The analysis thread's view: the clock was in charge last block.
 
     // ---- Shared output ----
     mutable QMutex m_mutex;    ///< Guards #m_features (and the device-selection / recording-path fields above).

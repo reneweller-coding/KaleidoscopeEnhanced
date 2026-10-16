@@ -67,6 +67,26 @@ public:
      **/
     void tick( const AudioFeatures &f, float dtSec );
 
+    /** What the show does now (RenderPipeline::showState()), for show(). */
+    struct ShowState
+    {
+        QByteArray scene;          ///< The scene on screen.
+        QByteArray preset;         ///< The preset.
+        bool       fading = false; ///< A scene fade runs.
+        QByteArray transition;     ///< Its transition.
+        float      fadeSecs = 0.f; ///< Its length.
+        float      blackout = 0.f; ///< Slewed blackout, 0 lit .. 1 black.
+        float      rgb[3] = {};    ///< The picture's mean colour, 0..1.
+    };
+    /**  The show's state (16.10.2026): /scene/name, /preset and /transition/start when they change, /blackout and
+     * /color/mean at up to 10 Hz -- the colour times the blackout and held to the brightness limiter's rule (it may
+     * rise 2 of 255 a second), so a light that follows the picture never flashes where the picture may not.
+     *
+     * @param s      The state. (in)
+     * @param dtSec  Wall-clock seconds since the previous call. (in)
+     **/
+    void show( const ShowState &s, float dtSec );
+
 private:
     /**  One OSC message: address + float arguments, 4-byte aligned throughout.
      *
@@ -87,6 +107,16 @@ private:
      *   The encoded message.
      **/
     static QByteArray messageStr( const char *address, const QByteArray &value );
+    /**  One OSC message with a string and a float argument.
+     *
+     * @param address  OSC address. (in)
+     * @param value    The string argument (UTF-8). (in)
+     * @param f        The float argument. (in)
+     *
+     * @return
+     *   The encoded message.
+     **/
+    static QByteArray messageStrF( const char *address, const QByteArray &value, float f );
     /**  Wrap already-encoded messages into an OSC bundle (immediate timetag).
      *
      * @param messages  Encoded messages, as message() and messageStr() build them. (in)
@@ -113,6 +143,12 @@ private:
     float        m_fastAcc = 0.f;      ///< Time since the last ~30 Hz /audio bundle.
     float        m_moodAcc = 999.f;    ///< Time since the last ~5 Hz /mood bundle (999 = fire immediately).
     float        m_prevDownbeat = 0.f; ///< Previous downbeat pulse, for edge detection.
+    QByteArray   m_lastScene;          ///< The scene last announced.
+    QByteArray   m_lastPreset;         ///< The preset last announced.
+    bool         m_wasFading = false;  ///< A fade ran at the previous show() call.
+    float        m_showAcc = 999.f;    ///< Time since the last /blackout and /color/mean (999 = at once).
+    float        m_lastBlack = -1.f;   ///< The blackout last sent.
+    float        m_rgb[3] = {};        ///< The colour as sent: the picture's mean, rise-limited.
 public:
     /** Default construction, which the declared copy operations would otherwise suppress. */
     OscSender() = default;

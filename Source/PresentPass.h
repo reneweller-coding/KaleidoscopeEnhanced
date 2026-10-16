@@ -72,6 +72,30 @@ public:
         m_liveWanted = true;
         return m_liveStd;
     }
+    /**  The slewed blackout level the picture is dimmed by.
+     *
+     * @return
+     *   0 = lit, 1 = black.
+     **/
+    float blackLevel() const { return m_blackSmooth; }
+    /**  Asks for (or stops) the picture's mean colour, read from the top mip without a stall (OSC /color/mean).
+     *
+     * @param on  Whether it is wanted. (in)
+     **/
+    void setMeanColourWanted( bool on ) { m_wantMean = on; }
+    /**  The picture's mean colour as last read: the scene's picture before grade and blackout, 6..12 frames old.
+     *
+     * @param rgb  The colour, 0..1 per channel (black until the first read). (out)
+     *
+     * @return
+     *   True once a colour has been read.
+     **/
+    bool meanColour( float rgb[3] ) const
+    {
+        for ( int i = 0; i < 3; ++i )
+            rgb[i] = m_mean[i];
+        return m_meanKnown;
+    }
     /**  Mean absolute change against the previous measured frame.
      *
      * @return
@@ -392,6 +416,12 @@ private:
     float m_lastSafetyScale = 1.f;     ///< Brightness scale from the last luminance sample, reused on skipped frames.
     float m_safetyAccumDt = 0.f; ///< Accumulated dtFrame since the last luminance sample (keeps the per-second rise
                                  ///< limit correct).
+    bool   m_wantMean = false;            ///< setMeanColourWanted()
+    bool   m_meanKnown = false;           ///< A mean colour has been read.
+    bool   m_meanPending[2] = {};         ///< The pixel-pack buffer holds a read not yet taken.
+    GLuint m_meanPbo[2] = {};             ///< Two pixel-pack buffers, taken in turn every 6th frame (no stall).
+    int    m_meanFrame = 0;               ///< Frames counted for the read.
+    float  m_mean[3] = {};                ///< The last mean colour read.
     float m_blackSmooth = 0.f; ///< Slewed blackout level 0..1 (geslewter Blackout-Pegel): follows Inputs::blackout at a
                                ///< wall-clock rate and multiplies the brightness scale by (1 - level).
     GLuint m_autoExpBuf = 0;              ///< SSBO (bind point 3): { exposure, p50, p98 } from CfxHistogram.comp, then

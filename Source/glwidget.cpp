@@ -64,11 +64,12 @@
 
 
 // Start configuration requested on the command line (-c <name>); empty = default.
-QString GLwidget::M_StartConfig;
-int     GLwidget::M_FrameDivisor = 1;  // ini frameDivisor (main())
-int     GLwidget::M_RemotePort = 8080; // on by default (LAN-only, auto-discovered); -t 0 disables
-bool    GLwidget::M_RemotePortFromCli = false;
-bool    GLwidget::M_BatchRender = false;
+QString               GLwidget::M_StartConfig;
+int                   GLwidget::M_FrameDivisor = 1;  // ini frameDivisor (main())
+int                   GLwidget::M_RemotePort = 8080; // on by default (LAN-only, auto-discovered); -t 0 disables
+bool                  GLwidget::M_RemotePortFromCli = false;
+bool                  GLwidget::M_BatchRender = false;
+std::atomic<unsigned> GLwidget::M_Heartbeat{ 0 };
 
 namespace
 {
@@ -666,6 +667,19 @@ GLwidget::GLwidget( QWidget *parent )
     // datagram becomes state that the very next frame reads without any synchronisation.
     if ( m_cuePort > 0 && !m_export )
         new CueReceiver( this, m_cueBind, m_cuePort );
+    // The external clock (AudioAnalyzer::externalBeat()): a beat cue keeps the time the moment it arrives, a
+    // DAW's MIDI clock too (applyMidi()).  externalClock=false leaves the time to the analysis alone.
+    {
+        QSettings s( SettingsFile::path(), QSettings::IniFormat );
+        AudioAnalyzer::M_ExternalClock = s.value( "externalClock", true ).toBool();
+        AudioAnalyzer::M_ClockDelay =
+            std::clamp( s.value( "clockDelay", AudioAnalyzer::M_ClockDelay ).toFloat(), 0.f, 0.5f );
+    }
+    ScoreCues::instance().setBeatListener( [this]( qint64 ms )
+    {
+        if ( m_audioAnalyzer )
+            m_audioAnalyzer->externalBeat( "score cues", ms, 0.f, true );
+    } );
 
     // Optional update check -- OFF unless switched on in the setup tool, and
     // even then it only ASKS GitHub and reports; downloading and running the
@@ -885,6 +899,7 @@ GLwidget::~GLwidget()
     // worker) WHILE the audio analyzer is still alive — the recorder closes
     // the WAV through it.  After shutdown() the recorder never touches it.
     m_recorder.shutdown();
+    ScoreCues::instance().setBeatListener( nullptr ); // nothing may reach the analyzer once it is gone
     if ( m_audioAnalyzer )
     {
         m_audioAnalyzer->stop();
@@ -1578,6 +1593,14 @@ void GLwidget::draw()
         if ( !m_oscClock.isValid() )
             m_oscClock.start();
         m_osc.tick( audio, dt );
+        if ( m_actConfiguration && m_actConfiguration->renderPipeline() )
+        {
+            OscSender::ShowState st;
+            m_actConfiguration->renderPipeline()->showState( st.scene, st.fading, st.transition, st.fadeSecs,
+                                                             st.blackout, st.rgb );
+            st.preset = m_actConfiguration->getConfigurationName().toUtf8();
+            m_osc.show( st, dt );
+        }
     }
 
     // Batch render (-x): once the offline WAV has been fully analysed, stop
@@ -2421,6 +2444,7 @@ void GLwidget::mouseDoubleClickEvent( QMouseEvent *e )
 
 void GLwidget::timerEvent( QTimerEvent * )
 {
+    M_Heartbeat.fetch_add( 1, std::memory_order_relaxed ); // the hang watch's sign of life (main.cpp)
     // Apply a requested configuration switch here, outside paintGL: capture the
     // current (old) frame for the cross-fade, then stop/start the configurations.
     if ( m_pendingConfig && m_pendingConfig != m_actConfiguration )
@@ -2891,6 +2915,13 @@ void GLwidget::applyMidi()
     std::vector<MidiInput::Event> evs = m_midi->drain();
     for ( const MidiInput::Event &e : evs )
     {
+        // MIDI clock: a quarter note, with when it arrived and the clock's tempo (MidiInput::clockTick()).
+        if ( e.type == 0xF8 )
+        {
+            if ( m_audioAnalyzer )
+                m_audioAnalyzer->externalBeat( "MIDI clock", e.refMs, e.bpm, e.data1 != 0 );
+            continue;
+        }
         // ---- MIDI LEARN: bind the incoming controller to the current target ----
         if ( m_midiLearn >= 0 )
         {

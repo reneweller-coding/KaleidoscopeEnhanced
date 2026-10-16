@@ -4985,3 +4985,62 @@ where a change lands.
   first test run).
 
 `Kaleidoscope.exe -q`: 110 checks. Linux (WSL, Qt 6.2.4): built, 110 of 110.
+
+## 16.10.2026 (11): a show nobody watches, and the time from outside
+
+The seventh round of the idea list: live operation -- what happens when nobody is in the room, and who keeps the
+time.
+
+- **The web remote against other web pages.** Every route answered any GET -- blackout, recording, "save as
+  default", "install update" -- so a page in a browser on the same network could fire them with an `<img>` tag,
+  and a domain made to resolve to this PC (DNS rebinding) could read the state and the preview. An action now
+  needs the header `X-Kaleido: 1`, which a foreign page cannot send without a preflight this server never
+  answers; the page sends it from `cmd()`/`setv()`, and the Android app (the same page in a WebView) with it.
+  Reading (`/`, state, snapshot, scenes, thumbnails) stays open. Every request must name this PC as its Host (an
+  IP address, `localhost`, the computer's name or `<name>.local`). `chain_regress.py`, the one tool that calls an
+  action (`/api/screenshot`), sends the header. Tried against the running app: reading without the header 200,
+  an action without it 403 and with it 200, `Host: evil.example.com` 403, IP and localhost 200.
+- **A crash leaves a report.** No handler, no dump, and the second restart overwrote the log of the first crash.
+  An unhandled exception now writes `crash-<time>.dmp` (dbghelp, loaded only then) beside the log and a line
+  "CRASH: exception 0x... at ..." into it, and ends the process at once with the exception's code -- returning
+  "continue search" could leave Windows' error dialog waiting for a click before the watchdog sees the exit.
+  The newest five dumps are kept; the log keeps three generations. Tried with `KALEIDO_CRASH_TEST=1`: exit code
+  0xC0000005, a 429 KB dump, the log line with the address.
+- **A hang ends itself.** Under the watchdog (which sets `KALEIDO_WATCHDOG`), a thread watches the render timer's
+  heartbeat (`GLwidget::M_Heartbeat`, counted in timerEvent -- a covered window does not paint, its timer still
+  ticks); a minute without a tick ends the process with exit code 3 and a "HANG:" line. Not in a debugger, not
+  for a video export or a compile-all run, and only after the first tick. Tried with `KALEIDO_HANG_TEST=1` and
+  `KALEIDO_HANG_SECS=5`: exit code 3 after five seconds of stillness. No hang in a running show has been
+  observed; this is a precaution.
+- **The watchdog no longer gives up.** It stopped after five quick crashes in a row -- right for a broken
+  option, wrong for an installation that has to come back. It now waits longer each time (5 s, 15 s, 45 s,
+  2 min 15 s, then 5 min) and starts over after a run of a minute or more, and writes every restart to
+  `watchdog.log`. Run against a stand-in that exits at once: 5, 15, 45 s, as planned. The installer's
+  fullscreen shortcut started the exe directly, without the watchdog and without `-l`; it now runs
+  `watchdog.ps1` through a hidden PowerShell, and a new (unticked) task starts the show at sign-in.
+- **The screen by name.** `screenName=<part of its name or model>` in the ini picks the fullscreen output (an
+  index moves when screens come and go); `-m` still wins. When the screen the show was on is added again -- a
+  projector switched off and on, a cable re-plugged -- the show goes back to it; Windows had moved it to the
+  other screen, and there it stayed. Not tried live (it would have taken over a screen of this machine).
+- **The time from outside.** `AudioAnalyzer::externalBeat()`: beat cues (`/phos/beat`) and MIDI clock set tempo
+  and beat phase while they come, like a tap that keeps tapping; two seconds after the last beat the analysis
+  keeps the time again, and a manual tap still wins. Cues are taken the moment they arrive (`ScoreCues`' beat
+  listener) -- a frame later would have cost up to 8 ms of jitter. MIDI clock (0xF8, 24 a quarter) was dropped by
+  the input; now every 24th tick queues a beat with its arrival time and the tempo over the last two beats (single
+  tick intervals are too coarse at millisecond resolution), the phase counts once Start (0xFA) or a song position
+  (0xF2) said where the song is, Stop (0xFC) silences it. Both arrive before the sound the loopback hears:
+  `clockDelay` (0.06 s) places the beat that much later; `externalClock=false` switches it off. Checks in `-q`:
+  five cues at 120 BPM give 120.0 BPM and the phase within 0.002 of a beat, the analysis takes over two seconds
+  after the last one, and 49 real ticks after Start give two beats with the phase at 120.0 BPM. Nothing cuts on
+  the clock and nothing moves the camera; only the time.
+- **The show's state over OSC.** `/scene/name`, `/preset` and `/transition/start` (name and length) when they
+  change, `/blackout` (the slewed level), and `/color/mean`: the picture's mean colour from the top mip, read
+  into one of two pixel-pack buffers every 6th frame while OSC is on (the buffer filled 12 frames earlier is
+  mapped, so nothing waits), times the blackout, at 10 Hz, rising at most 2 of 255 a second -- the brightness
+  limiter's own rule, so a light that follows the picture never flashes where the picture may not. A host name
+  in `oscHost` is now looked up once at the start (it fell back to 127.0.0.1 without looking). Tried with
+  `oscHost=localhost` and a listening socket: the preset, three scenes, two transitions with their lengths, the
+  blackout ramping both ways, the colour at 9 Hz; `KALEIDO_OSC_LOG=1` showed a real colour read (0.36 0.51 0.43)
+  and the sent one rising at 2/255 a second.
+
+`Kaleidoscope.exe -q`: 114 checks. Linux (WSL, Qt 6.2.4): built, 114 of 114.

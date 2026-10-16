@@ -61,7 +61,9 @@ def shot(pins, out, runner, photo, wait):
             lg = io.open(os.path.join(REL, "kaleidoscope.log"), encoding="utf-8", errors="replace").read()
             m = re.search(r"WEB REMOTE: http://<this-pc>:(\d+)/", lg)
             try:
-                urllib.request.urlopen("http://127.0.0.1:%s/api/screenshot" % (m.group(1) if m else "8091"), timeout=5).read()
+                urllib.request.urlopen(urllib.request.Request(
+                    "http://127.0.0.1:%s/api/screenshot" % (m.group(1) if m else "8091"),
+                    headers={"X-Kaleido": "1"}), timeout=5).read()   # an action: the remote wants the header
             except OSError:
                 continue
             time.sleep(1.5)

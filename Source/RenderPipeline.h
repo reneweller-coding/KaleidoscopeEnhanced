@@ -195,6 +195,19 @@ public:
      *   Mean absolute change against the previously measured frame.
      **/
     float liveMotion() const { return m_present.liveMotion(); }
+    /**  The show's state for the OSC output: scene, transition, blackout and the picture's mean colour.
+     *
+     * @param scene       The scene on screen (its file name without the extension). (out)
+     * @param fading      Whether a scene fade runs. (out)
+     * @param transition  The running fade's transition (file name without the extension). (out)
+     * @param fadeSecs    Its length in seconds. (out)
+     * @param blackout    The slewed blackout level, 0 = lit .. 1 = black. (out)
+     * @param rgb         The picture's mean colour, 0..1 (black until known). (out)
+     *
+     * Asking for it switches the mean-colour readback on (a pixel-pack buffer every 6th frame).
+     **/
+    void showState( QByteArray &scene, bool &fading, QByteArray &transition, float &fadeSecs, float &blackout,
+                    float rgb[3] );
     /**  Uploads the current lyrics-line texture to the present pass.
      *
      * @param rgba  Packed RGBA8 pixel data. (in)

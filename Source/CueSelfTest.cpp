@@ -22,6 +22,7 @@
 
 #include "CueReceiver.h"
 #include "LongRunVariety.h"
+#include "MidiInput.h"
 #include "AudioAnalyzer.h"
 #include "AudioConditioner.h"
 #include "RenderPipeline.h"
@@ -947,6 +948,69 @@ void melodyChecks()
            "confidence at least " + std::to_string( t_conf ).substr( 0, 4 ) );
 }
 
+/**  The external clock (16.10.2026): beat cues and MIDI clock set tempo and phase while they come, the analysis
+ * keeps the time again two seconds after the last one.  Real time (the analysis' clock is the wall clock).
+ **/
+void clockChecks()
+{
+    printf( "\nexternal clock (AudioAnalyzer::externalBeat, MidiInput clock)\n" );
+    const int                rate = 48000, block = 480;
+    const std::vector<float> zeros( block, 0.f );
+    auto                     nowRef = []()
+    {
+        QElapsedTimer t;
+        t.start();
+        return t.msecsSinceReference();
+    };
+    AudioAnalyzer::M_ExternalClock = true;
+    AudioAnalyzer::M_ClockDelay = 0.06f;
+    {
+        AudioAnalyzer az;
+        const qint64  last = nowRef();
+        for ( int k = 4; k >= 0; --k ) // five cues at 120 BPM, the last one now
+            az.externalBeat( "test cues", last - k * 500, 0.f, true );
+        az.feedBlock( zeros.data(), block, 1, rate );
+        const AudioFeatures f = az.getFeatures();
+        const double        want = std::fmod( ( nowRef() - last - 60 ) / 500.0 + 1.0, 1.0 ); // heard 60 ms later
+        const double        dph = std::fabs( std::remainder( f.beatPhase - want, 1.0 ) );
+        check( std::fabs( 40.f + 160.f * f.estimatedBPM - 120.f ) < 0.5f && dph < 0.04 && f.rhythmStrength >= 0.85f,
+               "beat cues set the tempo and the phase (placed clockDelay after they arrive)",
+               std::to_string( 40.f + 160.f * f.estimatedBPM ).substr( 0, 5 ) + " BPM, phase off by "
+                   + std::to_string( dph ).substr( 0, 5 ) );
+        std::this_thread::sleep_for( std::chrono::milliseconds( 2100 ) );
+        az.feedBlock( zeros.data(), block, 1, rate );
+        check( az.getFeatures().estimatedBPM < 0.01f,
+               "two seconds after the last beat the analysis keeps the time again" );
+        AudioAnalyzer::M_ExternalClock = false;
+        az.externalBeat( "test cues", nowRef(), 140.f, true );
+        az.feedBlock( zeros.data(), block, 1, rate );
+        check( az.getFeatures().estimatedBPM < 0.01f, "externalClock=false: beats from outside change nothing" );
+        AudioAnalyzer::M_ExternalClock = true;
+    }
+    // MIDI clock: Start, then 49 real ticks at 120 BPM (20.83 ms apart, waited out actively: a sleep is too coarse).
+    {
+        MidiInput mi;
+        mi.handleMessage( 0xFA );
+        const auto t0 = std::chrono::steady_clock::now();
+        for ( int i = 0; i < 49; ++i )
+        {
+            while ( std::chrono::steady_clock::now() - t0 < std::chrono::microseconds( 20833 * i ) )
+            {
+            }
+            mi.handleMessage( 0xF8 );
+        }
+        std::vector<MidiInput::Event> beats;
+        for ( const MidiInput::Event &e : mi.drain() )
+            if ( e.type == 0xF8 )
+                beats.push_back( e );
+        check( beats.size() == 2 && beats[0].data1 == 1 && std::fabs( beats.back().bpm - 120.f ) < 2.f,
+               "MIDI clock after Start: a beat every 24 ticks, with the phase, at the clock's tempo",
+               std::to_string( beats.size() ) + " beats, "
+                   + ( beats.empty() ? std::string( "-" ) : std::to_string( beats.back().bpm ).substr( 0, 5 ) )
+                   + " BPM" );
+    }
+}
+
 /**  The video export's frame clock (EngineClock, WallClock) and its command line (-g, -j).
  *
  * Runs last: it switches this process's engine clock to virtual time for good.
@@ -1350,6 +1414,7 @@ int runCueSelfTest()
     settingsChecks();
     rhythmChecks();
     melodyChecks();
+    clockChecks();
     exportChecks();
     phraseChecks(); // after exportChecks(): it needs the virtual engine clock
 

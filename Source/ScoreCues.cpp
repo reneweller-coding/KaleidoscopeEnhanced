@@ -12,6 +12,7 @@
 
 #include "ScoreCues.h"
 
+#include <QtCore/QElapsedTimer>
 #include <QtCore/QFile>
 
 #include <algorithm>
@@ -555,7 +556,14 @@ void ScoreCues::apply( const ScoreCue &c )
         default:
             // A beat carries no state of its own: the scheduler quantises to the BAR line, and a
             // per-beat trigger is exactly the kind of thing the temporal budget forbids. It still
-            // counts as traffic, which is what keeps the live flag alive between bar lines.
+            // counts as traffic, which is what keeps the live flag alive between bar lines -- and
+            // it keeps the time: the analysis' external clock hears it the moment it arrives.
+            if ( c.kind == ScoreCue::KindE::BEAT && m_onBeat )
+            {
+                QElapsedTimer now;
+                now.start();
+                m_onBeat( now.msecsSinceReference() );
+            }
             break;
     }
 }

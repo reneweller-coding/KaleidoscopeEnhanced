@@ -36,9 +36,11 @@ public:
     /** One decoded MIDI short-message event, queued for the host to consume via drain(). */
     struct Event
     {
-        int type;  ///< Status nibble: 0xB0 = Control-Change, 0x90 = Note-On.
-        int data1; ///< First MIDI data byte (CC number for CC messages, note number for Note-On).
-        int data2; ///< Second MIDI data byte (CC value for CC messages, velocity for Note-On).
+        int    type;      ///< Status nibble: 0xB0 = Control-Change, 0x90 = Note-On.
+        int    data1;     ///< First MIDI data byte (CC number for CC messages, note number for Note-On).
+        int    data2;     ///< Second MIDI data byte (CC value for CC messages, velocity for Note-On).
+        qint64 refMs = 0; ///< 0xF8 (a quarter note of MIDI clock): when it arrived (QElapsedTimer reference ms).
+        float  bpm = 0.f; ///< 0xF8: the clock's tempo over its last two beats.
     };
 
     /** Constructs the object without opening any device; call start() to open one. */
@@ -92,6 +94,11 @@ private:
      * @param d2    Second MIDI data byte. (in)
      **/
     void push( int type, int d1, int d2 );
+    /**  One tick of MIDI clock (24 a quarter note), winmm callback thread: every 24th queues a clock beat.
+     *
+     * @param nowMs  When it arrived (QElapsedTimer reference ms). (in)
+     **/
+    void clockTick( qint64 nowMs );
 
     void *m_handle = nullptr;    ///< HMIDIIN of the open device (kept as an opaque void* to avoid pulling in windows.h
                                  ///< here); nullptr when closed.
@@ -100,6 +107,12 @@ private:
     std::vector<Event> m_events; ///< Queue of decoded events awaiting the next drain() call (capped at 256, see
                                  ///< push()).
     QString m_name;              ///< Display name of the opened MIDI device, as reported by midiInGetDevCapsW().
+    // ---- MIDI clock, winmm callback thread only ----
+    qint64 m_tickMs[49] = {};      ///< Ring of the last 49 tick times (two beats of intervals).
+    int    m_tickN = 0;            ///< Ticks seen since the clock (re)started.
+    int    m_clockPos = 0;         ///< Tick position within the song, from Start (0xFA) or a song position (0xF2).
+    bool   m_clockPhase = false;   ///< m_clockPos is a real position (Start or a song position came).
+    bool   m_clockStopped = false; ///< Stop (0xFC) came: ticks are ignored until Start or Continue.
 private:
     /** Not copyable (CGVR template: copy constructor and assignment are always declared). */
     MidiInput( const MidiInput & ) = delete;

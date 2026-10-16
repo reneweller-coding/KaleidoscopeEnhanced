@@ -401,16 +401,19 @@ start "" /D "%~dp0bin" "%~dp0bin\Kaleidoscope.exe" %*
 '@
 $batFs = @'
 @echo off
-rem Launch fullscreen (kiosk) WITH WATCHDOG: if the app ever crashes it is
-rem restarted after 5 s automatically (quitting with Esc/Q really quits).
+rem Launch fullscreen (kiosk) WITH WATCHDOG: if the app ever crashes or hangs it is
+rem restarted automatically (after 5 s, longer after repeated crashes; Esc/Q really quits).
 rem Add -m <n> to choose a monitor, -c <name> a configuration, -s <factor> the render scale.
 powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0watchdog.ps1" %*
 '@
 # The kiosk watchdog: relaunches the app on any abnormal exit (crash, GPU
-# reset, ...) so an unattended installation never stays black.  A normal quit
-# (Esc/Q -> exit code 0) ends the loop; 5 rapid crashes in a row give up
-# (otherwise a broken option would loop forever).  -l keeps a log for
-# diagnosing whatever caused the restarts.
+# reset, a hang the app ends itself with exit code 3, ...) so an unattended
+# installation never stays black.  A normal quit (Esc/Q -> exit code 0) ends
+# the loop.  A crash series no longer gives up -- the installation must come
+# back by itself -- it waits longer each time instead (5 s, 15 s, 45 s,
+# 2 min 15 s, then 5 min), and starts over after a run of a minute or more.
+# Every restart is written to watchdog.log; -l keeps the app's own log (three
+# generations) and crash-*.dmp lands beside it.
 $watchdog = @'
 param([Parameter(ValueFromRemainingArguments=$true)]$Rest)
 $exe = Join-Path $PSScriptRoot 'bin\Kaleidoscope.exe'
@@ -421,16 +424,22 @@ $bin = Join-Path $PSScriptRoot 'bin'
 # the launcher would then do nothing at all.
 $argList = @('-b','-l')
 foreach ($r in $Rest) { if ($null -ne $r -and "$r" -ne '') { $argList += "$r" } }
-$fast = 0
+$log = Join-Path $PSScriptRoot 'watchdog.log'
+# Tells the app it is watched: it then ends itself (exit code 3) when its render timer stands still for a minute.
+$env:KALEIDO_WATCHDOG = '1'
+$wait = 5
 while ($true) {
     $t0 = Get-Date
     $p = Start-Process -FilePath $exe -ArgumentList $argList `
                        -WorkingDirectory $bin -PassThru
     $p.WaitForExit()
-    if ($p.ExitCode -eq 0) { break }                     # normal quit (Esc/Q)
-    if (((Get-Date) - $t0).TotalSeconds -lt 60) { $fast++ } else { $fast = 0 }
-    if ($fast -ge 5) { break }                           # crash loop: give up
-    Start-Sleep -Seconds 5
+    $code = $p.ExitCode
+    if ($code -eq 0) { break }                           # normal quit (Esc/Q)
+    $ran = ((Get-Date) - $t0).TotalSeconds
+    if ($ran -ge 60) { $wait = 5 }                       # it ran a while: start the series over
+    Add-Content -Path $log -Value ("{0:yyyy-MM-dd HH:mm:ss}  exit code {1} after {2:N0} s, restart in {3} s" -f (Get-Date), $code, $ran, $wait)
+    Start-Sleep -Seconds $wait
+    $wait = [Math]::Min($wait * 3, 300)
 }
 '@
 Set-Content -Path (Join-Path $pkgDir "Kaleidoscope-starten.bat")  -Value $batWin -Encoding Ascii

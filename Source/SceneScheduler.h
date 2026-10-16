@@ -390,6 +390,12 @@ public:
     {
         return m_actTransition;
     }
+    /**  The running fade's length (meaningful while texState() != 0).
+     *
+     * @return
+     *   Seconds.
+     **/
+    float texFadeDur() const { return m_texFadeDur; }
 
 private:
     using ClockT = EngineClock; ///< The engine clock behind every Solo/Fade timer: monotonic wall time like the

@@ -265,6 +265,9 @@ Other software can consume the analysis live: set `oscPort` in the settings
 (or the Setup tool) and the visualizer streams OSC/UDP — `/mood/valence`,
 `/mood/arousal`, `/mood/quadrant`, `/beat`, `/audio/bands`, `/tempo/bpm` and
 more — to TouchDesigner, Resolume, Max/MSP or anything else that speaks OSC.
+The show's state goes along: `/scene/name`, `/preset`, `/transition/start`,
+`/blackout`, and `/color/mean` — the picture's mean colour for lights that
+follow the image, held to the same brightness-rise limit as the picture.
 
 The full story, with the literature and the measurements, is in
 [docs/mood-and-mapping.md](docs/mood-and-mapping.md).
@@ -292,10 +295,19 @@ Five messages are understood, and nothing else on that port is acted on:
 | message             | effect                                                   |
 |---------------------|----------------------------------------------------------|
 | `/phos/bar i`       | the bar line a due scene change is quantized to           |
-| `/phos/beat i`      | traffic only; a beat never causes a cut                   |
+| `/phos/beat i`      | keeps the time (tempo and beat phase); never causes a cut |
 | `/phos/section s f` | a section starts (type and energy 0..1) → a scene change  |
 | `/phos/drop`        | a drop lands on this instant → a hard cut                 |
 | `/phos/key s`       | the key from here, e.g. `F# Phrygian`                     |
+
+**An external clock.** Beat cues keep the time: while they come, tempo and
+beat phase follow them (as a tap that keeps tapping), and two seconds after the
+last one the analysis takes over again. MIDI clock from a DAW or a DJ program
+does the same on the MIDI input (`midiDevice`): the tempo from its ticks, the
+phase once Start or a song position has said where the song is. Both arrive
+before the sound the visualizer hears; `clockDelay` (seconds, default 0.06)
+places the beat that much later. `externalClock=false` leaves the time to the
+analysis alone.
 
 The cues feed the same two rising-edge triggers the audio analysis has always
 fed, so everything that guards them still guards them: a cue that lands during
@@ -557,7 +569,10 @@ next-effect, blackout, favourite, mark/save-marked, replay, a scene browser you 
 straight into, and sliders for reactivity/trails/mood/latency — plus all the
 toggles from the Setup tool (lyrics mode, artist images, music video,
 auto-preset, auto-scale, …). LAN convenience only — no auth, don't expose it
-to the internet.
+to the internet. Other web pages cannot drive it: an action needs the header
+`X-Kaleido: 1` (the page and the app send it; a script calling `/api/...` must
+too), reading the state and the preview does not, and a request has to name
+this PC — an IP address, `localhost` or its own name — as its host.
 
 **Zero-touch pairing:** the running instance broadcasts itself on the LAN
 (UDP discovery), so a client never needs the PC's IP typed in by hand.
@@ -659,9 +674,16 @@ $env:Path = "C:\Qt\6.11.1\msvc2022_64\bin;" + $env:Path
 | `-h`          | Print usage and exit                                                |
 
 For an unattended installation/kiosk, combine `-m`, `-c`, `-s` and `-l`; the
-app suppresses the screensaver/standby while it runs, and the packaged
-fullscreen launcher restarts it automatically after a crash (5 s delay, gives
-up after 5 rapid crashes in a row). If the default output device changes
+app suppresses the screensaver/standby while it runs. The fullscreen shortcut
+and the packaged fullscreen launcher go through a watchdog that restarts it
+after a crash or a hang (the app ends itself when its render timer stands still
+for a minute): after 5 s, longer after repeated crashes (up to 5 min) — it no
+longer gives up. Every restart is written to `watchdog.log`; a crash leaves a
+`crash-<time>.dmp` beside the log, which keeps three generations
+(`kaleidoscope.log.1` … `.3`). The installer can also start the show at
+sign-in. `screenName=<part of the screen's name>` in the ini picks the output
+by name rather than by index, and a projector that is switched off and on
+again gets the show back. If the default output device changes
 (headphones unplugged, outputs switched), audio capture reconnects on its
 own — no manual restart needed. A missing image folder or `Presets`
 folder degrades gracefully (fallback texture / clear error) instead of

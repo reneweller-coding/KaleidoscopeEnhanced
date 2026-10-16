@@ -17,6 +17,7 @@
 #include "Strings.h"
 
 #include <QtNetwork/QTcpServer>
+#include <QtNetwork/QHostInfo>
 #include <QtNetwork/QTcpSocket>
 #include <QtNetwork/QUdpSocket>
 #include <QtNetwork/QHostAddress>
@@ -246,8 +247,9 @@ static const char *kPageTemplate = R"HTML(<!DOCTYPE html>
 </div>
 <script>
 let hold=0;
-function cmd(u){hold=Date.now()+300;fetch(u).then(refresh);}
-function setv(k,v){hold=Date.now()+800;fetch('/api/set?k='+k+'&v='+v);
+const H={headers:{'X-Kaleido':'1'}};
+function cmd(u){hold=Date.now()+300;fetch(u,H).then(refresh);}
+function setv(k,v){hold=Date.now()+800;fetch('/api/set?k='+k+'&v='+v,H);
   document.getElementById('v'+k).textContent=(k=='latency')?Math.round(v*1000):(+v).toFixed(2);}
 let tab='live';
 function showTab(t){
@@ -549,6 +551,51 @@ void WebRemote::handleDiscovery()
     }
 }
 
+/**  A request header's value; the name is matched without regard to case.
+ *
+ * @param req   The request: request line and headers. (in)
+ * @param name  The header's name. (in)
+ *
+ * @return
+ *   The value, trimmed; empty when the header is absent.
+ **/
+static QByteArray headerValue( const QByteArray &req, const QByteArray &name )
+{
+    const QByteArray want = name.toLower();
+    for ( const QByteArray &line : req.split( '\n' ) )
+    {
+        const int colon = line.indexOf( ':' );
+        if ( colon > 0 && line.left( colon ).trimmed().toLower() == want )
+            return line.mid( colon + 1 ).trimmed();
+    }
+    return QByteArray();
+}
+
+/**  Whether a request's Host header names this machine: an IP address, localhost, or the computer's own name.
+ *
+ * @param host  The Host header's value ("192.168.1.20:18091", "[::1]:18091", "studio-pc:18091"). (in)
+ *
+ * @return
+ *   True for this machine (and for a request without the header, which no browser sends).
+ *
+ * DNS rebinding: a foreign page whose domain is made to resolve to this address reaches the remote as the same
+ * origin, but its requests still carry that domain as Host -- refused here.
+ **/
+static bool hostIsOurs( const QByteArray &host )
+{
+    if ( host.isEmpty() )
+        return true;
+    QString h = QString::fromLatin1( host ).toLower();
+    if ( h.startsWith( '[' ) )
+        h = h.mid( 1, h.indexOf( ']' ) - 1 ); // [v6]:port
+    else if ( h.count( ':' ) == 1 )
+        h = h.left( h.indexOf( ':' ) ); // name:port, v4:port
+    if ( !QHostAddress( h ).isNull() )
+        return true;
+    const QString me = QHostInfo::localHostName().toLower();
+    return h == "localhost" || h == me || h == me + ".local";
+}
+
 void WebRemote::handleConnection()
 {
     while ( QTcpSocket *sock = m_server->nextPendingConnection() )
@@ -595,23 +642,42 @@ void WebRemote::handleConnection()
                 QByteArray body = "{}";
                 QByteArray ctype = "application/json";
                 bool       cacheable = false; // only /api/thumb hits (a real JPEG) sets this
+                QByteArray status = "200 OK";
 
                 // GET-only dispatch: the request line's method/target, then one branch per route.
                 // Every branch either fills body/ctype for the response below, or (for the
                 // fire-and-forget action routes) just calls straight into GLwidget/RenderPipeline
                 // and leaves body as the default "{}" acknowledgement.
-                if ( parts.size() >= 2 && parts[0] == "GET" )
+                // Guarded against other web pages (16.10.2026): every route answered any GET -- blackout,
+                // recording, "save as default", "install update" -- so a page in any browser on this network
+                // could fire them with an <img> tag.  An action now needs the header X-Kaleido: 1, which a
+                // foreign page cannot send without a preflight this server never answers; the page and the
+                // Android app (the same page in a WebView) send it.  Reading stays open.  And the Host must
+                // name this machine, against DNS rebinding.
+                if ( !hostIsOurs( headerValue( req, "Host" ) ) )
+                {
+                    status = "403 Forbidden";
+                    body = "{\"error\":\"unknown host\"}";
+                }
+                else if ( parts.size() >= 2 && parts[0] == "GET" )
                 {
                     const QUrl      url = QUrl::fromEncoded( parts[1] );
                     const QString   path = url.path();
                     const QUrlQuery q( url );
+                    const bool      reads = path == "/" || path == "/api/state" || path == "/api/snapshot"
+                                            || path == "/api/thumb" || path == "/api/scenes";
+                    const bool      allowed = reads || headerValue( req, "X-Kaleido" ) == "1";
 
                     // A request that does something wakes a resting show; the page's own polling does not.
-                    if ( path.startsWith( "/api/" ) && path != "/api/state" && path != "/api/snapshot"
-                         && path != "/api/thumb" && path != "/api/scenes" )
+                    if ( !reads && allowed && path.startsWith( "/api/" ) )
                         m_widget->remoteActivity();
 
-                    if ( path == "/" )
+                    if ( !allowed )
+                    {
+                        status = "403 Forbidden";
+                        body = "{\"error\":\"X-Kaleido header required\"}";
+                    }
+                    else if ( path == "/" )
                     {
                         body = buildPage();
                         ctype = "text/html; charset=utf-8";
@@ -781,7 +847,7 @@ void WebRemote::handleConnection()
                 // ever change, and only once per session-visit) -- a short max-age lets the
                 // browser skip the round trip on a quick close/reopen of the scene browser
                 // instead of re-fetching all of them from scratch every time.
-                QByteArray resp = "HTTP/1.1 200 OK\r\nContent-Type: " + ctype
+                QByteArray resp = "HTTP/1.1 " + status + "\r\nContent-Type: " + ctype
                                   + "\r\nContent-Length: " + QByteArray::number( body.size() )
                                   + ( cacheable ? "\r\nCache-Control: max-age=30" : "" )
                                   + ( close_after ? "\r\nConnection: close" : "\r\nConnection: keep-alive" )

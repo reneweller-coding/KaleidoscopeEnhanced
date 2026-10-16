@@ -18,6 +18,10 @@
 #include "PresentPass.h"
 #include "shader_setup.h"
 
+#ifndef GL_STREAM_READ
+#define GL_STREAM_READ 0x88E1 ///< Usage hint for the mean-colour PBOs: written once by the GPU, read once by the CPU.
+#endif
+
 // Gemeinsames Fullscreen-Dreieck (gl_VertexID-VAO), definiert in RenderPipeline.cpp.
 /**  Shared fullscreen-triangle VAO (gl_VertexID trick), defined in RenderPipeline.cpp.
  *
@@ -453,6 +457,40 @@ void PresentPass::run( const Inputs &in )
     glActiveTexture( GL_TEXTURE0 );
     glBindTexture( GL_TEXTURE_2D, in.source );
     glGenerateMipmap( GL_TEXTURE_2D ); // every frame (bloom samples a mip)
+
+    // The picture's mean colour for the OSC output (setMeanColourWanted()): the top mip is the mean, read into one
+    // of two pixel-pack buffers every 6th frame; the buffer filled 12 frames ago is mapped first -- long done, so
+    // nothing waits.
+    if ( m_wantMean && ( ++m_meanFrame % 6 ) == 0 )
+    {
+        if ( !m_meanPbo[0] )
+        {
+            glGenBuffers( 2, m_meanPbo );
+            for ( GLuint pbo : m_meanPbo )
+            {
+                glBindBuffer( GL_PIXEL_PACK_BUFFER, pbo );
+                glBufferData( GL_PIXEL_PACK_BUFFER, 4 * sizeof( float ), nullptr, GL_STREAM_READ );
+            }
+        }
+        const int slot = ( m_meanFrame / 6 ) & 1;
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, m_meanPbo[slot] );
+        if ( m_meanPending[slot] )
+        {
+            if ( const float *p = static_cast<const float *>( glMapBuffer( GL_PIXEL_PACK_BUFFER, GL_READ_ONLY ) ) )
+            {
+                for ( int i = 0; i < 3; ++i )
+                    m_mean[i] = std::max( 0.f, std::min( p[i], 1.f ) );
+                m_meanKnown = true;
+                glUnmapBuffer( GL_PIXEL_PACK_BUFFER );
+            }
+        }
+        int top = 0;
+        for ( int d = std::max( in.renderW, in.renderH ); d > 1; d >>= 1 )
+            ++top;
+        glGetTexImage( GL_TEXTURE_2D, top, GL_RGBA, GL_FLOAT, nullptr );
+        m_meanPending[slot] = true;
+        glBindBuffer( GL_PIXEL_PACK_BUFFER, 0 );
+    }
 
     // The programs and the buffer they share (binding 3), made once: the photosensitivity limiter
     // (Engine/SafetyLimit.comp) and the percentile auto-exposure (Engine/CfxHistogram.comp).

@@ -170,7 +170,7 @@ ein Port gesetzt ist:
 
 ```ini
 oscPort=9000          ; 0 = aus (Standard)
-oscHost=127.0.0.1     ; Ziel-IP
+oscHost=127.0.0.1     ; Ziel: IP oder Rechnername (einmal beim Start aufgelöst)
 ```
 
 Adressen, Typen und Raten (implementiert in `Source/OscSender.cpp`, OSC 1.0,
@@ -191,6 +191,11 @@ Parser):
 | `/tempo/bpm` | f | ~5 Hz | echte BPM (0 = kein Beat erkannt) |
 | `/music/presence` | f | ~5 Hz | Musik-vs-Sprache-Gate 0..1 |
 | `/music/ambient` | f | ~5 Hz | Ambient-Faktor 0..1 |
+| `/scene/name` | s | Ereignis | die Szene auf dem Schirm (Dateiname ohne Endung) |
+| `/preset` | s | Ereignis | das Preset |
+| `/transition/start` | sf | Ereignis | eine Szenenblende beginnt: Übergang und Dauer in s |
+| `/blackout` | f | ≤ 10 Hz | geslewter Blackout 0 (hell) .. 1 (schwarz), bei Änderung |
+| `/color/mean` | fff | ~10 Hz | mittlere Bildfarbe 0..1 (aus der obersten Mip-Stufe), mal Blackout; steigt höchstens um 2/255 je Sekunde wie das Bild selbst, fällt in einer halben Sekunde |
 
 Beat-Ereignisse verlassen das Programm außerhalb der Bundles, sofort bei
 Erkennung — die zusätzliche Latenz ist ein Render-Frame (~7–16 ms), deutlich

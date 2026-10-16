@@ -12,6 +12,10 @@
 
 #include "MidiInput.h"
 
+#include <QtCore/QElapsedTimer>
+
+#include <algorithm>
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
@@ -112,10 +116,65 @@ void MidiInput::handleMessage( unsigned long dwParam1 )
     int d2 = ( dwParam1 >> 16 ) & 0xFF;
     int type = status & 0xF0;
 
+    // MIDI clock (16.10.2026): 24 ticks a quarter note, Start/Continue/Stop, and the song position (in 16ths).
+    // The ticks were dropped; a DAW or a DJ program that sends clock now sets the tempo -- and, once Start or a
+    // song position said where the song is, the beat phase (AudioAnalyzer::externalBeat()).
+    switch ( status )
+    {
+        case 0xF8:
+        {
+            QElapsedTimer now;
+            now.start();
+            clockTick( now.msecsSinceReference() );
+            return;
+        }
+        case 0xFA: // Start: the next tick is the song's first
+            m_clockPos = 0;
+            m_clockPhase = true;
+            m_clockStopped = false;
+            m_tickN = 0;
+            return;
+        case 0xFB: // Continue
+            m_clockStopped = false;
+            return;
+        case 0xFC: // Stop
+            m_clockStopped = true;
+            return;
+        case 0xF2: // Song position pointer: 16ths since the start, six ticks each
+            m_clockPos = ( d1 | ( d2 << 7 ) ) * 6;
+            m_clockPhase = true;
+            return;
+        default:
+            break;
+    }
+
     // Control-Change, or Note-On with non-zero velocity (a Note-On with velocity 0 is the
     // conventional MIDI encoding of Note-Off, which this class ignores entirely).
     if ( type == 0xB0 || ( type == 0x90 && d2 > 0 ) )
         push( type, d1, d2 );
+}
+
+void MidiInput::clockTick( qint64 nowMs )
+{
+    if ( m_clockStopped )
+        return;
+    if ( m_tickN > 0 && nowMs - m_tickMs[( m_tickN - 1 ) % 49] > 2000 )
+        m_tickN = 0; // the clock paused: start counting again
+    m_tickMs[m_tickN % 49] = nowMs;
+    ++m_tickN;
+    const int pos = m_clockPos++;
+    if ( pos % 24 != 0 )
+        return;
+    // The tempo over the last two beats (48 intervals): single tick intervals are a few ms at millisecond
+    // resolution, too coarse to be read one by one.
+    const int span = std::min( m_tickN - 1, 48 );
+    if ( span < 24 )
+        return;
+    const float  ms = static_cast<float>( nowMs - m_tickMs[( m_tickN - 1 - span ) % 49] );
+    const float  bpm = ms > 0.f ? 60000.f * static_cast<float>( span ) / ( 24.f * ms ) : 0.f;
+    QMutexLocker lk( &m_mutex );
+    if ( m_events.size() < 256 )
+        m_events.push_back( Event{ 0xF8, m_clockPhase ? 1 : 0, 0, nowMs, bpm } );
 }
 
 void MidiInput::push( int type, int d1, int d2 )

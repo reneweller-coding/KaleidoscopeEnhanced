@@ -12,6 +12,9 @@
 #include "OscSender.h"
 
 #include <QtCore/QtEndian>
+#include <QtNetwork/QHostInfo>
+
+#include <algorithm>
 
 void OscSender::pad4( QByteArray &b )
 {
@@ -55,6 +58,24 @@ QByteArray OscSender::messageStr( const char *address, const QByteArray &value )
     return b;
 }
 
+QByteArray OscSender::messageStrF( const char *address, const QByteArray &value, float f )
+{
+    QByteArray b( address );
+    b.append( '\0' );
+    pad4( b );
+    b.append( ",sf" );
+    b.append( '\0' );
+    pad4( b );
+    b.append( value );
+    b.append( '\0' );
+    pad4( b );
+    quint32 bits;
+    memcpy( &bits, &f, 4 );
+    bits = qToBigEndian( bits );
+    b.append( reinterpret_cast<const char *>( &bits ), 4 );
+    return b;
+}
+
 QByteArray OscSender::bundle( const QList<QByteArray> &messages )
 {
     QByteArray b( "#bundle" );
@@ -79,11 +100,19 @@ void OscSender::configure( const QString &host, int port )
         m_addr = QHostAddress( host );
         if ( m_addr.isNull() ) // a hostname, not an IP
         {
-            // One blocking lookup at startup is fine; a per-send lookup is not.
-            const QHostAddress fallback( QHostAddress::LocalHost );
-            m_addr = fallback;
-            fprintf( stderr, "OSC: host '%s' is not an IP address - using 127.0.0.1\n",
-                     host.toLocal8Bit().constData() );
+            // One blocking lookup at startup is fine; a per-send lookup is not.  (It said so and fell back to
+            // 127.0.0.1 without looking -- a lighting desk named "qlc-pc" never got a datagram.)
+            for ( const QHostAddress &a : QHostInfo::fromName( host ).addresses() )
+                if ( a.protocol() == QAbstractSocket::IPv4Protocol )
+                {
+                    m_addr = a;
+                    break;
+                }
+            if ( m_addr.isNull() )
+            {
+                m_addr = QHostAddress( QHostAddress::LocalHost );
+                fprintf( stderr, "OSC: host '%s' not found - using 127.0.0.1\n", host.toLocal8Bit().constData() );
+            }
         }
         fprintf( stderr, "OSC output enabled -> %s:%d\n",
                  m_addr.toString().toLocal8Bit().constData(), m_port );
@@ -93,6 +122,55 @@ void OscSender::configure( const QString &host, int port )
 void OscSender::send( const QByteArray &datagram )
 {
     m_socket.writeDatagram( datagram, m_addr, static_cast<quint16>( m_port ) );
+}
+
+void OscSender::show( const ShowState &s, float dtSec )
+{
+    if ( m_port <= 0 )
+        return;
+    if ( s.scene != m_lastScene && !s.scene.isEmpty() )
+    {
+        send( messageStr( "/scene/name", s.scene ) );
+        m_lastScene = s.scene;
+    }
+    if ( s.preset != m_lastPreset && !s.preset.isEmpty() )
+    {
+        send( messageStr( "/preset", s.preset ) );
+        m_lastPreset = s.preset;
+    }
+    if ( s.fading && !m_wasFading )
+        send( messageStrF( "/transition/start", s.transition, s.fadeSecs ) );
+    m_wasFading = s.fading;
+
+    m_showAcc += dtSec;
+    if ( m_showAcc < 0.1f )
+        return;
+    const float dt = std::min( m_showAcc, 1.f );
+    m_showAcc = 0.f;
+    QList<QByteArray> msgs;
+    if ( std::fabs( s.blackout - m_lastBlack ) > 0.005f )
+    {
+        msgs << message( "/blackout", &s.blackout, 1 );
+        m_lastBlack = s.blackout;
+    }
+    // The colour: times the blackout, rising at most 2 of 255 a second (the limiter's rule), falling freely but
+    // smoothly (half a second for the whole range).
+    for ( int i = 0; i < 3; ++i )
+    {
+        const float want = s.rgb[i] * ( 1.f - s.blackout );
+        m_rgb[i] = std::min( std::max( want, m_rgb[i] - 2.f * dt ), m_rgb[i] + 2.f / 255.f * dt );
+    }
+    msgs << message( "/color/mean", m_rgb, 3 );
+    send( bundle( msgs ) );
+    // KALEIDO_OSC_LOG=1: once a second, the picture's mean as read and the colour as sent.
+    static const bool Log = getenv( "KALEIDO_OSC_LOG" ) != nullptr;
+    static float      logAcc = 0.f;
+    if ( Log && ( logAcc += dt ) >= 1.f )
+    {
+        logAcc = 0.f;
+        fprintf( stderr, "OSC colour: picture %.3f %.3f %.3f, sent %.3f %.3f %.3f, blackout %.2f\n", s.rgb[0], s.rgb[1],
+                 s.rgb[2], m_rgb[0], m_rgb[1], m_rgb[2], s.blackout );
+    }
 }
 
 void OscSender::tick( const AudioFeatures &f, float dtSec )
